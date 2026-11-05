@@ -1896,3 +1896,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 
 `claude/substation-niagara-arc`, stablet på PR428 fordi automatisk fletting ble avvist av sikkerhetsregel. Trafostasjonen har ribbon-lyn opp og ned portalbeina, korona og broer; `S47SubstationLiveTest` består. Skumringskula er tre Niagara-kuler med ekte lys som snuser rundt og flykter rett opp innenfor 7 m; `S47DuskOrbTest` 107 kontroller består, inkludert foto, Continue og flukt. Ett testvindu ble lukket utenfra og tatt på nytt.
 
+## 5. november 2026 kl.22:30, tekst uten opplesning, lyd ved mottaker, meny og reel-look
+
+`claude/night-ui-audio`, stablet på PR429. Opplesning ved inspeksjon er av; hele modemlyden ved registrering; musikken dempes til 22 % ved receiver; søket har skurr, svelling mot 100 % og svak fremmed telegraf, bare i live-monitoren. Menyens UFO er byttet med ett lysende objekt (TITLE-UFO-VHS-01, ikke sett i bilde ennå). Reel-deck har olivenfarge, kremtekst og fylte valg etter Toms referanse (UI-POLISH-20261105-01, delvis). Selvtester 2496 og `S47InternalControlTest` 30 består. Ingenting er hørt av et menneske.
+

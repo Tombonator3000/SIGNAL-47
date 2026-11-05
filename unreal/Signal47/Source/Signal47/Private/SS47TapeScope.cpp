@@ -7,7 +7,8 @@
 
 namespace
 {
- const FLinearColor Trace(.47f,.95f,.55f),Dim(.13f,.34f,.17f),Grid(.05f,.15f,.08f),Amber(1.f,.66f,.2f),Ghost(.03f,.016f,.005f);
+ // Sits on the reel deck's dark olive panel; signal stays a muted green, labels are cream.
+ const FLinearColor Trace(.38f,.69f,.28f),Dim(.13f,.2f,.09f),Grid(.07f,.08f,.04f),Amber(.87f,.43f,.05f),Ghost(.05f,.055f,.028f),Cream(.87f,.8f,.62f);
  double Hash(double N){const double V=FMath::Sin(N*12.9898)*43758.5453;return V-FMath::FloorToDouble(V);}
  const float TraceLeft=34,TraceRightGap=22,TraceTop=26;
  float TraceHeight(float SizeY){return SizeY*.5f;}
@@ -28,14 +29,14 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  // Trace: the whole tape, left to right.
  const float Left=TraceLeft,Right=S.X-TraceRightGap,Top=TraceTop,TraceH=TraceHeight(S.Y),Base=Top+TraceH*.78f,W=Right-Left;
  auto Px=[&](double T){return Left+float(T/L)*W;};
- Label(Control.Get(false)?TEXT("NOW LOADED: CONTROL / THE STATION'S OWN REFERENCE"):TEXT("NOW LOADED: ORIGINAL / WHAT THE ANTENNAS RECORDED"),Left,0,Trace,20);
+ Label(Control.Get(false)?TEXT("NOW LOADED: CONTROL / THE STATION'S OWN REFERENCE"):TEXT("NOW LOADED: ORIGINAL / WHAT THE ANTENNAS RECORDED"),Left,0,Cream,20);
  if(CanMark.Get(false))Label(TEXT("CLICK TO MARK"),Right-150,0,Amber,20);
  const double In=MarkIn.Get(-1.),OutMark=MarkOut.Get(-1.);
  if(In>=0)Box(Px(In),Top,FMath::Max(2.f,(OutMark>In?Px(OutMark):Px(At))-Px(In)),TraceH,FLinearColor(.45f,.27f,.05f,.45f));
  for(int32 I=0;I<=int32(L);I+=2)
  {
   Line({FVector2f(Px(I),Top),FVector2f(Px(I),Top+TraceH)},Grid,1);
-  Label(FString::FromInt(I),Px(I)-5,Top+TraceH+2,Trace,17);
+  Label(FString::FromInt(I),Px(I)-5,Top+TraceH+2,Cream,17);
  }
  Line({FVector2f(Left,Base),FVector2f(Right,Base)},Grid,1);
  const int32 N=FMath::Max(2,int32(W/2));TArray<FVector2f> Heard,Ahead;Heard.Reserve(N);Ahead.Reserve(N);
@@ -48,7 +49,7 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  if(Heard.Num())Ahead.Insert(Heard.Last(),0);
  if(Ahead.Num()>1)Line(Ahead,Dim,1);if(Heard.Num()>1)Line(Heard,Trace,1.4f);
  Line({FVector2f(Px(At),Top-3),FVector2f(Px(At),Top+TraceH+3)},Amber,2);
- Label(TEXT("s"),Right+1,Top+TraceH+2,Trace,17);
+ Label(TEXT("s"),Right+1,Top+TraceH+2,Cream,17);
  if(Hover>=0&&CanMark.Get(false))
  {
   Line({FVector2f(Px(Hover),Top),FVector2f(Px(Hover),Top+TraceH)},Amber*FLinearColor(1,1,1,.55f),1);
@@ -65,7 +66,7 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
   const double Level=Run?FMath::Clamp(Shape*(.28+.26*Hash(Step*.71+B*3.1))+Pulse*.62*Shape,0.,1.):0.;
   const int32 Lit=FMath::RoundToInt32(Level*Segments);const float X=Left+Slot*B+Slot*.17f,BarW=Slot*.66f;
   for(int32 I=0;I<Segments;++I)Box(X,BarBottom-SegH*(I+1)+1,BarW,FMath::Max(2.f,SegH-3),I<Lit?Amber:Ghost);
-  Label(Bands[B],X+BarW*.5f-14,BarBottom+1,Trace,17);
+  Label(Bands[B],X+BarW*.5f-14,BarBottom+1,Cream,17);
  }
  return Layer;
 }

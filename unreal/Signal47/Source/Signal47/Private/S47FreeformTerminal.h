@@ -17,6 +17,11 @@ namespace S47FreeformTerminal
  FW Pair(FW Left,FW Right);
  FW Knob(const FString& Label,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange);
  FW Frame(const FString& Title,FW Body,TSharedPtr<SWidget> Footer=nullptr);
+ // The reel deck's own look (Tom's reference, 5 Nov): dark olive, cream text, amber action. Widgets
+ // built while one of these lives keep it; the green workstation screens are untouched.
+ struct FReelLook { FReelLook(); ~FReelLook(); };
+ FW Toggle(const FString& Text,TAttribute<bool> On,TFunction<void()> Action,TAttribute<bool> Enabled=true); // filled when on
+ FW Filled(const FString& Text,TFunction<void()> Action,TAttribute<bool> Enabled=true); // the one thing to do
  // The right-hand header clock ("DAY 01 | 19:10"). The owner clears it when it stops.
  void SetClock(TFunction<FString()> Clock);
 

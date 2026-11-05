@@ -383,7 +383,7 @@ void US47Flow::Init(US47Main* InM)
 	// V: the last description read again (ui.readLastDescription), not in a cinematic
 	M->OnAction(TEXT("describe"), [this]
 	{
-		if (M->Mode != EMode::Play) return false;
+		if (!FS47ReadAloud::bOfferInGame || M->Mode != EMode::Play) return false;
 		if (!(M->Story && M->Story->IsCinematic())) M->UI->ReadLastDescription();
 		return true;
 	});

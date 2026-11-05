@@ -159,6 +159,7 @@ void US47Main::Step(double Dt)
 		const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
 		Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
 		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
+		Score->SetDuck(Score->MusicDuck());
 	}
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);

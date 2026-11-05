@@ -255,7 +255,8 @@ private:
  };
  FReceiverTextureGraph ReceiverTexture;
  FReceiverTextureGraph ReceiverTape;
- void ReceiverTextureFrame(FReceiverTextureGraph& Graph,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset=-1,int32 TextureVersion=1);
+ void ReceiverTextureFrame(FReceiverTextureGraph& Graph,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset=-1,int32 TextureVersion=1,double SignalMul=1.,double NoiseMul=1.);
+	int64 ReceiverStationSlot=-1;
  void ReceiverTextureStop(FReceiverTextureGraph& Graph);
  TMap<FString,TSharedPtr<FS47AudioBuffer>> ReceiverBuffers;
 	bool bTitleTexture = false, bTitlePrivateMix = false;

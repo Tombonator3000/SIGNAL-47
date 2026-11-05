@@ -233,7 +233,6 @@ namespace
 				{ TEXT("Mouse"), TEXT("Look. Click the picture first to take the mouse.") },
 				{ KeysSaid(TEXT("use")) + TEXT(", click"), TEXT("Use what the crosshair is on. Put a paper back.") },
 				{ KeysSaid(TEXT("zoom")) + TEXT(", held"), TEXT("A closer look at what the crosshair is on.") },
-				{ KeysSaid(TEXT("describe")), TEXT("Read the current or last description. Press again to stop.") },
 				{ KeysSaid(TEXT("light")), TEXT("The flashlight, once you have it.") },
 				{ KeysSaid(TEXT("camera")), TEXT("Raise or lower the field camera.") } } };
 			if (bShared) Foot.Rows.Add({ KeysSaid(TEXT("jump")), TEXT("Jump. With the camera raised: the shutter.") });

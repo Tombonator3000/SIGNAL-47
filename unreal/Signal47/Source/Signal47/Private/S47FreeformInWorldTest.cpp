@@ -397,7 +397,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(Age-At<1)return;
   if(!Check(F.TerminalWindowRendered()&&M->Audio&&M->Audio->ReceiverMonitorOn(),TEXT("physical receiver starts continuous monitor through production Step")))return;
-  if(!Check(M->Score&&M->Score->MusicHeld(),TEXT("search listening holds adaptive music")))return;
+  if(!Check(M->Score&&!M->Score->MusicHeld()&&M->Score->MusicDuck()<.5,TEXT("search listening lowers the adaptive music without stopping it")))return;
   const auto* P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("receiver uses the current observing profile")))return;
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Gain=P->Gain[0];Rx.Bandwidth=P->Bw[0];Rx.Azimuth=(P->Az[0]+P->Az[1])*.5;
   Go(51);return;

@@ -45,6 +45,9 @@ public:
 	// other modules supply these exact properties when ported, rather than duplicating their state.
 	FString MusicWant() const;
 	bool MusicHeld() const;
+	// Below 1 while the score stays audible under something the player is listening to.
+	double MusicDuck() const;
+	void SetDuck(double Level);
 	struct FHeldHooks
 	{
 		TFunction<bool()> RoadsideSilent, MotelTvHeard, AbductionBusy, RecWalkBusy;
@@ -59,6 +62,7 @@ private:
 	US47Main* M = nullptr;
 	TSharedRef<FS47AudioContext> Ctx;
 	TSharedPtr<FS47AudioNode> Dest;
+	TSharedPtr<FS47GainNode> Bus; // every deck passes this, so a duck leaves deck fades alone
 	TSharedPtr<FS47MediaSource> El;
 	TSharedPtr<FS47GainNode> Gain;
 	TSharedPtr<FS47MediaSource> Outgoing;

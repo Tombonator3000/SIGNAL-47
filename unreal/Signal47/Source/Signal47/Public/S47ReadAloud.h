@@ -40,6 +40,9 @@ namespace S47Reading
 class SIGNAL47_API FS47ReadAloud
 {
 public:
+	// Tom 5 Nov 2026: descriptions and papers are text only. The bank and its tests stay; nothing in play offers it.
+	static constexpr bool bOfferInGame = false;
+public:
 	explicit FS47ReadAloud(US47Audio* InAudio, const FS47ReadingBank& InBank = S47Reading::KinskiBank());
 	~FS47ReadAloud();
 
