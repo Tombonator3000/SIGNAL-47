@@ -563,12 +563,18 @@ void US47Flow::PlayInput()
 
 void US47Flow::MenuMusic()
 {
-	// Music on the title screen ("Signal to Noise", the end's music too), from the first key or click
+	// Music on the title screen, from the first key or click: Tom's own "Signal 47 - menu" from the private
+	// sound folder (Tom 5 Nov). "Signal to Noise" stays for the end, and for a clone without the private folder.
 	if (M->Mode != EMode::Title || (Opening && Opening->Active())) return;
 	// audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }): the one before stops
 	// Refreshing title controls must not restart the VHS texture.
 	if (M->Audio) M->Audio->Stop(TEXT("music"), 0.05f);
-	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); M->Audio->TitleTexture(true); }
+	if (M->Audio)
+	{
+		const TCHAR* Own = TEXT("lic:signal47_menu");const bool bOwn = M->Audio->Buf.Contains(Own);
+		// Mastered 9.4 LU louder than the old track: the same level in the room.
+		FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = bOwn ? 0.2f : 0.6f; M->Audio->LoopSfx(TEXT("music"), bOwn ? Own : TEXT("titleMusic"), O); M->Audio->TitleTexture(true);
+	}
 }
 
 void US47Flow::StopMusic(float Fade)
@@ -605,6 +611,7 @@ void US47Flow::StoryTitleTest(double Dt)
    const auto Pass=SS47Title::SampleTitlePass(10.5f),Repeat=SS47Title::SampleTitlePass(45.5f);
    if(!Check(!SS47Title::SampleTitlePass(0).bVisible&&!SS47Title::SampleTitlePass(7.9f).bVisible&&!SS47Title::SampleTitlePass(13.f).bVisible&&!SS47Title::SampleTitlePass(42.9f).bVisible&&Pass.bVisible&&Repeat.bVisible&&Pass.Opacity>0&&Pass.Position.Equals(Repeat.Position,.0001f),TEXT("title pass sample is hidden outside five-second window and repeats after 35 seconds")))return;
    if(!Check(M->Audio->Ctx.IsValid(),TEXT("production audio context is ready before menu sound unlock")))return;
+   if(!Check(M->Audio->Buf.Contains(TEXT("lic:signal47_menu"))&&M->Audio->Buf.Contains(TEXT("titleMusic")),TEXT("menu music and the kept title track are both in the sound bank")))return;
    bSoundUnlocked=true;MenuMusic();
    if(!Check(M->Audio->TitleTextureOn(),TEXT("actual title MenuMusic enables texture after explicit unlock")))return;
    ShowTitleAgain();ShowTitleAgain();Next(1);return;
