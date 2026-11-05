@@ -94,6 +94,7 @@ public:
  int32 OperationsSection() const { return OpsSection; }
  TArray<FString> TerminalLines(int32 Screen) const;
  void OpenArchive();
+ int32 ArchiveTab=0;FString ArchivePick; // presentation only, never saved
  void OpenCaseBoard(int32 Line=-1);
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);
