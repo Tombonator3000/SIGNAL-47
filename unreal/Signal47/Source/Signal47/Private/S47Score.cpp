@@ -1,4 +1,5 @@
 #include "S47Score.h"
+#include "S47CosmicAmbient.h"
 
 #include "S47Ambience.h"
 #include "S47Audio.h"
@@ -110,7 +111,25 @@ double FS47Score::TransitionAt(bool bUrgent) const
 
 void FS47Score::Update(double Dt, const FString& InWant, bool bHeld)
 {
-	if (bPaused) { RequestedMood.Empty(); RequestedSeverity = 0; return; }
+	if (bPaused)
+	{
+		if (Cosmic) Cosmic->Pause(true);
+		RequestedMood.Empty(); RequestedSeverity = 0; return;
+	}
+	// One persistent texture under the same music destination and volume control.
+	// No hidden event data is read. A receiver always gets clean listening space,
+	// including builds that duck rather than fully hold their music at the PC.
+	if (!Cosmic && !InWant.IsEmpty() && !bHeld)
+	{
+		FS47AudioContext::FBatch Batch(*Ctx);
+		Cosmic = MakeShared<FS47CosmicAmbient>(Ctx); Cosmic->Connect(Dest);
+		if (M && M->Audio)
+		{
+			for (const TCHAR* Key : { TEXT("nasa_earth_chorus"), TEXT("nasa_cassini_jupiter"), TEXT("space_nebula") })
+				Cosmic->AddReference(M->Audio->SoundSource(Key));
+		}
+	}
+	if (Cosmic) Cosmic->Set(InWant, bHeld || bFading || (M && M->Audio && M->Audio->ReceiverMonitorOn()));
 	Dt = FMath::IsFinite(Dt) ? FMath::Max(0.0, Dt) : 0;
 	T += Dt;
 	const double Severity = RequestedSeverity;
@@ -246,6 +265,7 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 // Explicit fades and listening holds fade both decks. The generation protects replacements.
 void FS47Score::Fade(double Secs, double Quiet)
 {
+	if (Cosmic) Cosmic->Set(FString(), true);
 	if (!El || !Gain || bFading) return;
 	Secs = FMath::IsFinite(Secs) ? FMath::Clamp(Secs, 0.01, 30.0) : 0.35;
 	bFading = true; FadeQuiet = Quiet; Pending.Empty(); Candidate.Empty();
@@ -264,6 +284,7 @@ void FS47Score::Fade(double Secs, double Quiet)
 
 void FS47Score::Stop()
 {
+	if (Cosmic) { FS47AudioContext::FBatch Batch(*Ctx); Cosmic->Disconnect(); Cosmic.Reset(); }
 	FS47AudioContext::FBatch B(*Ctx);
 	++Generation;
 	SilenceDeck(El, Gain); RetireOutgoing();
@@ -278,6 +299,7 @@ void FS47Score::Pause(bool bOn)
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
 	bPaused = bOn;
+	if (Cosmic) Cosmic->Pause(bOn);
 	if (bOn)
 	{
 		PauseAt = Now; PausedRampLeft = FMath::Max(0.0, RampUntil - Now); PausedOutgoingLeft = FMath::Max(0.0, OutgoingUntil - Now);
@@ -300,7 +322,9 @@ void FS47Score::Pause(bool bOn)
 
 void FS47Score::Done(double Quiet)
 {
-	Stop(); Rest = Quiet;
+	// A natural track gap keeps the same texture, seed and reference timeline.
+	auto KeepCosmic = MoveTemp(Cosmic);
+	Stop(); Cosmic = MoveTemp(KeepCosmic); Rest = Quiet;
 }
 
 // main.ts musicWant: keep these tests in the same order as the original.
@@ -359,13 +383,25 @@ bool FS47Score::MusicHeld() const
 
 bool FS47Score::SelfTest(TArray<FString>& Lines)
 {
-	bool bOk = true;
+	bool bOk = FS47CosmicAmbient::SelfTest(Lines);
 	auto Check = [&Lines, &bOk](bool bPass, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s score: %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), What)); bOk &= bPass; };
 	const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make();
 	FS47Score S(nullptr, C, C->Destination);
 	Check(S47Score::TRACKS.Num() == 17 && S47Score::CUES.Num() == 7, TEXT("17 tracks and seven cues"));
 	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("docks"), TEXT("cue order"));
 	Check(S.Rest >= 6 && S.Rest <= 14, TEXT("initial quiet 6 to 14 seconds"));
+	{
+		FS47Score Layer(nullptr, C, C->Destination);
+		Layer.Update(.01, TEXT("night"), false);
+		const auto First = Layer.Cosmic;
+		Check(First.IsValid() && Layer.HasAudio() && Layer.Playing.IsEmpty(), TEXT("cosmic texture is counted as audio during a track gap"));
+		Layer.Done(5);
+		Check(Layer.Cosmic == First && Layer.Rest == 5, TEXT("natural deck completion preserves the cosmic texture"));
+		Layer.Update(.01, TEXT("night"), false);
+		Check(Layer.Cosmic == First, TEXT("repeated score frames reuse one cosmic node"));
+		Layer.Stop();
+		Check(!Layer.HasAudio() && !Layer.Cosmic, TEXT("full score stop releases cosmic audio even without a deck"));
+	}
 	S.Track = TEXT("nowhere");
 	Check(S.Pick(TEXT("town")) == TEXT("docks"), TEXT("does not immediately repeat a piece"));
 	S.Track.Empty(); S.Last.Add(TEXT("nowhere"), -1000); S.Last.Add(TEXT("docks"), 0);
