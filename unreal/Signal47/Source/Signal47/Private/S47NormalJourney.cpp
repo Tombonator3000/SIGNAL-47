@@ -11,6 +11,9 @@
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
+#include "S47FreeformAudioDesk.h"
+#include "S47Audio.h"
+#include "S47WebAudio.h"
 #include "S47Story.h"
 #include "S47Night.h"
 #include "S47Album.h"
@@ -54,11 +57,11 @@ namespace
  {if(W->GetTypeAsString()==TEXT("SVerticalBox")&&Text(W,Label)){TArray<TSharedRef<SSlider>> Local;Sliders(W,Local);if(Local.Num()==1)Out.AddUnique(Local[0]);}auto* C=W->GetChildren();for(int I=0;C&&I<C->Num();++I)Knobs(C->GetChildAt(I),Label,Out);}
  struct FRun
  {
-  TWeakObjectPtr<US47Main> Main;int Phase=0,Stage=0,Knob=0,Checks=0;bool Done=false;double Age=0,At=0,SaveAt=0,TravelAt=0;FString Root,User,Photo,Job;TMap<FString,FString> PreservedSaves;int Waits=0;S47J::FObj Base=S47J::New();TArray<TSharedPtr<FJsonValue>> Evidence;TWeakPtr<SSlider> Locked;
+  TWeakObjectPtr<US47Main> Main;int Phase=0,Stage=0,Knob=0,Checks=0;bool Done=false;double Age=0,At=0,SaveAt=0,TravelAt=0;FString Root,User,Photo,Job;TMap<FString,FString> PreservedSaves;int Waits=0;S47J::FObj Base=S47J::New();TArray<TSharedPtr<FJsonValue>> Evidence;TWeakPtr<SSlider> Locked;bool ChangedDials=false;FString CaptureJob,Original,Control,Document;TArray<double> Ticks;int LoadingSeen=-1,LoadingChecked=-1;
   bool Finish(bool Good,const FString& Why)
   {
    auto R=S47J::New();S47J::Set(R,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(R,TEXT("reason"),Why);S47J::Set(R,TEXT("phase"),Phase);S47J::Set(R,TEXT("stage"),Stage);S47J::Set(R,TEXT("checks"),Checks);
-   S47J::Set(R,TEXT("method"),TEXT("Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state."));R->SetArrayField(TEXT("evidence"),Evidence);
+   S47J::Set(R,TEXT("method"),TEXT("Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state."));if(Phase>=6)S47J::Set(R,TEXT("method"),TEXT("Ordinary case1, title Continue and manual Save Case across separate processes. Explicit existing pulsar selection/anomaly/dial/approach fixtures; actual pointing, acquisition, printer eye ray, control, source rendering and transport. No fabricated job, elapsed, recipe, sample completion or listening coverage; no natural anomaly discovery or human listening claim."));R->SetArrayField(TEXT("evidence"),Evidence);
    if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(R,true),*(Root/FString::Printf(TEXT("phase-%d.json"),Phase)));
    UE_LOG(LogTemp,Display,TEXT("S47 normal journey %s phase%d stage%d: %s"),Good?TEXT("PASS"):TEXT("FAIL"),Phase,Stage,*Why);Done=true;FPlatformMisc::RequestExitWithStatus(false,Good?0:1);return false;
   }
@@ -93,6 +96,18 @@ namespace
   {
    auto M=Main.Get();auto& F=*M->Freeform;auto* J=F.Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==Job;});
    return Check(J&&J->bPaid&&J->Stage==FS47FreeformSession::EJobStage::Filed&&Hash(J->OriginalPage)==S47J::Str(Base,TEXT("originalHash"))&&J->OriginalStamp==S47J::Str(Base,TEXT("stamp"))&&Shot()&&!Shot()->bUnavailable&&Shot()->Pose.IsSet()&&Shot()->Pose->Valid()&&Shot()->Url.StartsWith(TEXT("data:image/"))&&Hash(Shot()->Url)==S47J::Str(Base,TEXT("photoHash"))&&M->Night->Album->Left()==S47J::Int(Base,TEXT("film"))-(S47J::Str(Base,TEXT("eventPhoto")).IsEmpty()?0:1),TEXT("same paid routine document and original photograph survive normal Continue"));
+  }
+  const FS47FreeformSession::FJob* CaptureCard()const
+  {return Main->Freeform->Jobs().FindByPredicate([&](const auto& J){return J.Id==CaptureJob;});}
+  bool CaptureRetained()
+  {
+   const auto* J=CaptureCard();
+   return Check(S47J::Obj(Base,TEXT("captureOriginal")).IsValid()&&S47J::Obj(Base,TEXT("captureControl")).IsValid()&&J&&J->CaptureOriginal.Playable()&&J->CaptureControl.Playable()&&FJsonValue::CompareEqual(FJsonValueObject(J->CaptureOriginal.Save()),FJsonValueObject(S47J::Obj(Base,TEXT("captureOriginal"))))&&FJsonValue::CompareEqual(FJsonValueObject(J->CaptureControl.Save()),FJsonValueObject(S47J::Obj(Base,TEXT("captureControl"))))&&Hash(J->OriginalPage)==S47J::Str(Base,TEXT("captureDocumentHash"))&&J->OriginalStamp==S47J::Str(Base,TEXT("captureStamp"))&&J->TraceTicks==S47J::Nums(Base,TEXT("captureTicks"))&&J->OriginalCovered==S47J::Num(Base,TEXT("captureOriginalCovered"))&&J->ControlCovered==S47J::Num(Base,TEXT("captureControlCovered")),TEXT("real v3 recipes, settings/frames, original/stamp, ticks and actual coverage exactly match manual checkpoint"));
+  }
+  bool CaptureHealth()
+  {
+   auto M=Main.Get();auto& F=*M->Freeform;
+   return Check(M->Audio&&M->Audio->Ctx&&M->Audio->Ctx->State()==TEXT("running")&&!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&F.AvailableDishCount()==27&&!F.PowerFault()&&!F.Field->HasArrayFault(),TEXT("native audio clock available and actual array27/27 without clearing faults or adding service results"));
   }
   int SaveSlot()const{return Phase<=3?Phase-1:Phase-4;}
   bool VisibleText(const FString& Label){for(auto R:Roots())if(Text(R,Label))return true;return false;}
@@ -154,7 +169,7 @@ namespace
    if(Done)return false;Age+=FMath::Max(0.f,Dt);auto M=Main.Get();if(!M)return Finish(false,TEXT("main lost"));
    if(Age>1800||Age-At>600)return Finish(false,TEXT("bounded normal-journey timeout; no gate bypass attempted"));
    if(!M->Flow||!M->UI||!M->Player||!M->World||!M->Web||!M->Web->IsLoaded()||S47Startup::Blocking())return true;
-   if(Age-At<.4)return true;
+   if(Age-At<.4&&!(Stage>=601&&Stage<=608)&&Stage!=702&&Stage!=703)return true;
    if(Stage==0)
    {
     if(Age<5)return true;
@@ -183,15 +198,88 @@ namespace
     else if(Phase>=4)
     {
      Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));
-     if(!Retained()||!Check(F.Director&&Shot()->IsDeveloped()&&!F.InTutorial()&&F.Budget()==S47J::Num(Base,TEXT("cash"))+(Phase==5?5:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&F.Field->ParcelStage()==0&&F.Field->DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&F.Field->CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1,TEXT("later restart preserves completed delivery and phase-specific exact economy")))return false;
-     if(Phase==5&&!EventRetained(true))return false;
-     if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(Phase==4?400:430);
+     if(!Retained()||!Check(F.Director&&Shot()->IsDeveloped()&&!F.InTutorial()&&F.Budget()==S47J::Num(Base,TEXT("cash"))+(Phase>=5?5:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&F.Field->ParcelStage()==0&&F.Field->DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&F.Field->CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1,TEXT("later restart preserves completed delivery and phase-specific exact economy")))return false;
+     if(Phase>=5&&!EventRetained(true))return false;
+     if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(Phase>=6?(Phase==6?600:700):(Phase==4?400:430));
     }
     else {Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));if(!Retained()||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+(Phase==2?20:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("restart preserves exact earned/spent cash and not-yet-delivered stock")))return false;if(Phase==2){if(!Check(Shot()->LabStage==1,TEXT("normal Continue retains processed-film stage"))||!Place(TEXT("wetBench")))return false;Go(40);}else {if(!Check(Shot()->IsDeveloped(),TEXT("second process restart retains the actually developed original")))return false;Go(60);}}
     return true;
    }
    if(M->Flow->bStarting||M->Flow->bRestoringNow||!M->Freeform||!M->Freeform->Active())return true;
    auto& F=*M->Freeform;auto& W=*F.Field;
+   if(Stage>=601&&Stage<=608)
+   {
+    const auto* J=F.CurrentJob();if(!J||J->Id!=CaptureJob)return Finish(false,TEXT("same selected capture job lost"));
+   if(Stage==601){if(F.StartAcquisition()){Go(602);}return true;}
+   if(Stage==602)
+   {
+    if(!J->CaptureOriginal.Failure.IsEmpty())return Finish(false,J->CaptureOriginal.Failure);
+    if(J->Elapsed>=6&&!ChangedDials){const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[1];M->Story->Rx.Bandwidth=P->Bw[1];ChangedDials=true;}
+    if(J->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return true;
+    if(!Check(J->CaptureOriginal.Playable()&&ChangedDials&&J->CaptureOriginal.Frames[0].Gain!=J->CaptureOriginal.Frames.Last().Gain,TEXT("actual full-rate capture retains real mid-recording dial change")))return false;
+    const auto State=F.CaptureSoundState();if(S47J::Num(State,TEXT("liveRendered"))<18*M->Audio->Ctx->SampleRate)return true;
+    Evidence.Add(MakeShared<FJsonValueObject>(State));Original=S47J::Write(J->CaptureOriginal.Save());Ticks=J->TraceTicks;
+    M->UI->Close(true);const auto* It=M->Inter->Get(TEXT("printer"));const FVector T=It&&It->Object?It->Object.WorldBox().GetCenter():S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));
+    M->Player->Place(T.X,T.Z+1,0);const FVector D=T-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(603);return true;
+   }
+   if(Stage==603)
+   {
+    if(Age-At<.4)return true;
+    if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("printer")&&bool(M->Player->OnUse),TEXT("actual printer selectable by physical eye ray")))return false;
+    M->Player->OnUse(TEXT("printer"));M->UI->Close(true);J=F.CurrentJob();
+    if(!Check(J->Stage==FS47FreeformSession::EJobStage::Recorded&&!J->OriginalPage.IsEmpty(),TEXT("actual printed original retained")))return false;Document=J->OriginalPage;
+    const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[0];M->Story->Rx.Bandwidth=P->Bw[0];M->Player->Place(0,-2.15,0);F.OpenReceiver();
+    if(!Check(F.StartControl(),TEXT("production eight-second internal reference begins with own settings")))return false;Go(604);return true;
+   }
+   if(Stage==604)
+   {
+    if(!J->CaptureControl.Failure.IsEmpty())return Finish(false,J->CaptureControl.Failure);
+    if(J->ControlAt<8||S47J::Num(F.CaptureSoundState(),TEXT("liveRendered"))<8*M->Audio->Ctx->SampleRate)return true;
+    if(!Check(J->CaptureControl.Playable()&&J->CaptureControl.Control&&J->CaptureControl.Ticks.IsEmpty()&&S47J::Write(J->CaptureOriginal.Save())==Original&&J->TraceTicks==Ticks&&J->OriginalPage==Document,TEXT("actual reference fully rendered independently; original and evidence ticks unchanged")))return false;
+    Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));Control=S47J::Write(J->CaptureControl.Save());
+    M->UI->Close(true);if(!Check(F.AudioDesk&&F.AudioDesk->Ready(),TEXT("physical audio comparator exists")))return false;const auto T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(T.X,T.Z-1.2,0);Go(605);return true;
+   }
+   if(Stage==605)
+   {
+    if(Age-At<.3)return true;if(!Check(F.AudioDesk->ListeningPosition(),TEXT("actual player stands within powered reel-deck listening area")))return false;F.OpenAudio();F.AudioAction(TEXT("original"));F.SeekAudio(7.25);
+    if(!Check(F.AudioAction(TEXT("play"))&&F.AudioPreparing(),TEXT("explicit PLAY requests tape preparation")))return false;
+    if(!Check(F.AudioDesk->Use(TEXT("ff:audio:play"))&&!F.AudioPreparing()&&!F.AudioPlaying()&&F.AudioPosition()==7.25&&J->OriginalCovered==0,TEXT("physical PLAY STOP callback cancels preparation without moving cursor or coverage")))return false;
+    if(!Check(F.AudioAction(TEXT("play")),TEXT("actual retained transport seeks and plays original")))return false;Go(606);return true;
+   }
+   if(Stage==606)
+   {
+    if(F.AudioPreparing()){if(!(F.AudioPosition()==7.25&&J->OriginalCovered==0)){Check(false,TEXT("tape readiness advanced cursor or unheard coverage"));return false;}LoadingSeen=Stage;return true;}
+    if(LoadingChecked!=Stage){if(!Check(LoadingSeen==Stage,TEXT("observed tape readiness held cursor and unheard coverage throughout preparation")))return false;LoadingChecked=Stage;}
+    if(!F.AudioPlaying()&&!F.AudioPreparing()&&F.AudioPosition()<8.25)return Finish(false,TEXT("seek playback stopped early: ")+F.FeedbackText()+TEXT(" / ")+F.AudioDisplay());
+    if(F.AudioPosition()<8.25)return true;F.AudioAction(TEXT("pause"));
+    if(!Check(J->OriginalCovered==0,TEXT("seeking across unheard beginning does not grant listening coverage")))return false;
+    F.AudioAction(TEXT("control"));if(!Check(F.AudioAction(TEXT("play")),TEXT("actual independent control playback starts")))return false;Go(607);return true;
+   }
+   if(Stage==607)
+   {
+    if(F.AudioPreparing()){if(!(F.AudioPosition()==0&&J->ControlCovered==0)){Check(false,TEXT("tape readiness advanced cursor or unheard coverage"));return false;}LoadingSeen=Stage;return true;}
+    if(LoadingChecked!=Stage){if(!Check(LoadingSeen==Stage,TEXT("observed tape readiness held cursor and unheard coverage throughout preparation")))return false;LoadingChecked=Stage;}
+    if(!F.AudioPlaying()&&!F.AudioPreparing()&&F.AudioPosition()<8)return Finish(false,TEXT("control playback stopped early: ")+F.FeedbackText()+TEXT(" / ")+F.AudioDisplay());
+    if(F.AudioPosition()<8||S47J::Num(F.CaptureSoundState(),TEXT("tapeRendered"))<8*M->Audio->Ctx->SampleRate)return true;
+    if(!Check(J->ControlCovered>=8,TEXT("complete actual control listening retains existing coverage rule")))return false;
+    Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));F.AudioAction(TEXT("original"));if(!Check(F.AudioAction(TEXT("play")),TEXT("original playback restarts at zero after prior seek")))return false;Go(608);return true;
+   }
+   if(Stage==608)
+   {
+    if(F.AudioPreparing()){if(!(F.AudioPosition()==0&&J->OriginalCovered==0)){Check(false,TEXT("tape readiness advanced cursor or unheard coverage"));return false;}LoadingSeen=Stage;return true;}
+    if(LoadingChecked!=Stage){if(!Check(LoadingSeen==Stage,TEXT("observed tape readiness held cursor and unheard coverage throughout preparation")))return false;LoadingChecked=Stage;}
+    if(!F.AudioPlaying()&&!F.AudioPreparing()&&F.AudioPosition()<18)return Finish(false,TEXT("original playback stopped early: ")+F.FeedbackText()+TEXT(" / ")+F.AudioDisplay());
+    if(F.AudioPosition()<18||S47J::Num(F.CaptureSoundState(),TEXT("tapeRendered"))<18*M->Audio->Ctx->SampleRate)return true;
+    if(!Check(J->OriginalCovered>=18&&J->ControlCovered>=8&&J->TraceTicks==Ticks&&J->OriginalPage==Document,TEXT("full actual playback keeps all evidence positions and original bytes")))return false;
+    Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));
+    S47J::Set(Base,TEXT("captureOriginal"),J->CaptureOriginal.Save());S47J::Set(Base,TEXT("captureControl"),J->CaptureControl.Save());
+    S47J::Set(Base,TEXT("captureDocumentHash"),Hash(J->OriginalPage));S47J::Set(Base,TEXT("captureStamp"),J->OriginalStamp);S47J::Set(Base,TEXT("captureTicks"),J->TraceTicks);
+    S47J::Set(Base,TEXT("captureOriginalCovered"),J->OriginalCovered);S47J::Set(Base,TEXT("captureControlCovered"),J->ControlCovered);
+    if(!CaptureRetained()||!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&!F.AudioPlaying(),TEXT("capture/listening grants no payment and transport has stopped before normal save")))return false;
+    SaveMenu();return true;
+   }
+    return !Done;
+   }
    switch(Stage)
    {
     case 10:if(!Use(TEXT("opsTerminal")))return false;Go(11);break;
@@ -322,11 +410,50 @@ namespace
     case 432:
      if(!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Documentation credit already received."))&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
      SaveMenu();break;
+    case 600:
+    {
+     if(!CaptureHealth())return false;
+     const int32 Index=F.Jobs().IndexOfByPredicate([](const auto& J){return J.Source==1&&J.Day==1&&J.Slot==1&&J.CaseTest<0;});
+     if(!Check(F.Jobs().IsValidIndex(Index)&&(F.Jobs()[Index].Stage==FS47FreeformSession::EJobStage::New||F.Jobs()[Index].Stage==FS47FreeformSession::EJobStage::Pointed)&&F.Jobs()[Index].Elapsed==0&&!F.Jobs()[Index].CaptureOriginal.Enabled(),TEXT("existing untouched day1 pulsar; no job creation, reset or injected capture")))return false;
+     CaptureJob=F.Jobs()[Index].Id;S47J::Set(Base,TEXT("captureJob"),CaptureJob);const int32 Count=F.Jobs().Num();
+     M->UI->Close(true);if(!Check(F.SelectJob(Index),TEXT("explicit selection of existing first-day pulsar card")))return false;
+     F.SetAnomaly(true);if(!Check(F.Jobs().Num()==Count&&F.CurrentJob()&&F.CurrentJob()->Id==CaptureJob,TEXT("explicit discrepancy fixture changes no job identity/count or acquired data")))return false;
+     const auto* P=F.ConsoleProfile();if(!Check(P!=nullptr&&F.CurrentJob()->bGenerated&&F.CurrentJob()->Card.Seconds==18,TEXT("actual existing18s pulsar profile")))return false;
+     M->Story->Rx.Frequency=P->F;M->Story->Rx.Gain=P->Gain[0];M->Story->Rx.Bandwidth=P->Bw[0];M->Player->Place(0,-2.15,0);
+     if(!Check(F.PointSelected(),TEXT("production pointing command accepted")))return false;F.OpenReceiver();Go(601);break;
+    }
+    case 700:
+    {
+     CaptureJob=S47J::Str(Base,TEXT("captureJob"));
+     if(!CaptureHealth()||!CaptureRetained()||!Check(F.CurrentJob()&&F.CurrentJob()->Id==CaptureJob,TEXT("ordinary title Continue restores selected captured pulsar")))return false;
+     if(!Check(F.AudioDesk&&F.AudioDesk->Ready(),TEXT("restored physical reel deck exists")))return false;
+     // Different current dial settings cannot rewrite either retained recipe.
+     const auto* P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("restored real card profile")))return false;
+     M->Story->Rx.Gain=P->Gain[1];M->Story->Rx.Bandwidth=P->Bw[1];
+     M->UI->Close(true);const auto T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(T.X,T.Z-1.2,0);Go(701);break;
+    }
+    case 701:
+     if(!Check(F.AudioDesk->ListeningPosition(),TEXT("actual deck listening area after process restart")))return false;
+     F.OpenAudio();F.AudioAction(TEXT("original"));if(!Check(F.AudioAction(TEXT("play")),TEXT("normal retained original transport starts after process restart")))return false;Go(702);break;
+    case 702:
+    case 703:
+    {
+     if(F.AudioPreparing())return true;
+     const double Duration=Stage==702?18.:8.;
+     if(!F.AudioPlaying()&&F.AudioPosition()<Duration)return Finish(false,TEXT("restored captured transport stopped before full original/control rendering: ")+F.FeedbackText());
+     if(F.AudioPosition()<Duration||S47J::Num(F.CaptureSoundState(),TEXT("tapeRendered"))<Duration*M->Audio->Ctx->SampleRate)return true;
+     Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));
+     if(!CaptureRetained())return false;
+     if(Stage==702){F.AudioAction(TEXT("control"));if(!Check(F.AudioAction(TEXT("play")),TEXT("normal retained internal-control transport starts after process restart")))return false;Go(703);break;}
+     if(!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1,TEXT("actual restarted playback preserves older photo/economy and delivered stock")))return false;
+     S47J::Set(Base,TEXT("completedPhase"),7);if(!Check(FFileHelper::SaveStringToFile(S47J::Write(Base,true),*(Root/TEXT("journey.json"))),TEXT("final verification receipt written without an extra manual save")))return false;
+     return Finish(true,TEXT("ordinary Save Case, separate process and exact title Continue preserve actual v3 original/control; both render through real transport again"));
+    }
     case 890:
      if(Age-At<2.5)return true;
-     S47Keys::TestPresses(Phase==4?TEXT("Left,Left,Enter"):TEXT("Left,Left,Right,Enter"),.5f);Go(891);break;
+     S47Keys::TestPresses(Phase==4?TEXT("Left,Left,Enter"):(Phase==6?TEXT("Left,Left,Right,Right,Enter"):TEXT("Left,Left,Right,Enter")),.5f);Go(891);break;
     case 891:
-     if(Age-At<2.5||(!VisibleText(FString::Printf(TEXT("Overwrite save %d?"),SaveSlot()+1))&&Age-At<6))return true;
+     if(Age-At<3||(!VisibleText(FString::Printf(TEXT("Overwrite save %d?"),SaveSlot()+1))&&Age-At<6))return true;
      if(!Check(VisibleText(FString::Printf(TEXT("Overwrite save %d?"),SaveSlot()+1)),TEXT("normal dialog names explicitly selected occupied slot")))return false;S47Keys::TestPresses(TEXT("Enter"),.5f);Go(900);break;
     case 900:
     {
@@ -359,8 +486,9 @@ void S47NormalJourney::Start(US47Main* M)
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney")))return;static bool Started=false;if(Started)return;Started=true;
  auto R=MakeShared<FRun>();R->Main=M;FParse::Value(FCommandLine::Get(),TEXT("S47JourneyPhase="),R->Phase);FParse::Value(FCommandLine::Get(),TEXT("UserDir="),R->User);
  const FString Dir=FPaths::ConvertRelativePathToFull(R->User);const FString Saved=FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
- if(R->User.Contains(TEXT(".."))||!R->User.StartsWith(TEXT("/tmp/S47-normal-journey-"))||!FPaths::IsUnderDirectory(Saved,Dir)||R->Phase<1||R->Phase>5||!FParse::Param(FCommandLine::Get(),TEXT("S47Title"))||!FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47Freeform"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")))
- {R->Finish(false,TEXT("requires isolated normal-journey UserDir, title+smoke, phase1..5 and no developer Freeform flags"));return;}
+ if(R->User.Contains(TEXT(".."))||!R->User.StartsWith(TEXT("/tmp/S47-normal-journey-"))||!FPaths::IsUnderDirectory(Saved,Dir)||R->Phase<1||R->Phase>7||!FParse::Param(FCommandLine::Get(),TEXT("S47Title"))||!FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47Freeform"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")))
+ {R->Finish(false,TEXT("requires isolated normal-journey UserDir, title+smoke, phase1..7 and no developer Freeform flags"));return;}
+ if(R->Phase>=6&&(!FParse::Param(FCommandLine::Get(),TEXT("S47JourneyCapture"))||FParse::Param(FCommandLine::Get(),TEXT("NoSound"))||FParse::Param(FCommandLine::Get(),TEXT("S47CaptureSoundTest")))){R->Finish(false,TEXT("capture phases require explicit S47JourneyCapture, real audio, and no parallel capture driver"));return;}
  R->Root=Saved/TEXT("NormalJourney");IFileManager::Get().MakeDirectory(*R->Root,true);
  if(R->Phase>1){FString Text;if(!FFileHelper::LoadFileToString(Text,*(R->Root/TEXT("journey.json")))||!(R->Base=S47J::Read(Text))||S47J::Int(R->Base,TEXT("completedPhase"))!=R->Phase-1){R->Finish(false,TEXT("previous process checkpoint receipt missing"));return;}}
  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([R](float Dt){return R->Tick(Dt);}));
