@@ -37,6 +37,20 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
 namespace
 {
+ const FS47FreeformDirector::FPhotoClaim* SelectPhotoReturnPlan(
+  const TArray<FS47FreeformDirector::FPhotoClaim>& Claims,const FString& Focus,
+  TFunctionRef<bool(const FS47FreeformDirector::FPhotoClaim&)> Available)
+ {
+  const FS47FreeformDirector::FPhotoClaim* First=nullptr;
+  for(const auto& C:Claims)
+  {
+   if(C.ControlPlannedAt<0||C.ControlOriginalId.IsEmpty()||!C.ControlPhotoId.IsEmpty()||!Available(C))continue;
+   if(C.Id==Focus)return &C;
+   if(!First)First=&C;
+  }
+  return First;
+ }
+
  // The previous staff bay stays clear after the sedan moves west to x24.6.
  // Retain this existing event anchor, outside the new east-wing garage approach.
  const FVector EmptyCarFoot(27,-.576,9.8);
@@ -207,7 +221,7 @@ FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
- PendingThreatNight=PendingMajorNight=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();FieldObservations.Reset();
+ PendingThreatNight=PendingMajorNight=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
@@ -215,6 +229,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   Event=S47J::Str(O,TEXT("event"));if(!Event.IsEmpty()&&!Definition(Event)){bEnabled=false;return;}
   IncidentSerial=FMath::Clamp(S47J::Int(O,TEXT("incidentSerial")),0,1000000000);
   IncidentId=S47J::Str(O,TEXT("incidentId"));
+  PhotoControlFocus=S47J::Str(O,TEXT("photoControlFocus")).Left(200);
   for(const auto& V:S47J::Arr(O,TEXT("photoClaims")))
   {
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
@@ -294,6 +309,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  TArray<TSharedPtr<FJsonValue>> PaidPhotos;
  for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);if(P.ControlPlannedAt>=0&&!P.ControlOriginalId.IsEmpty()){S47J::Set(C,TEXT("controlOriginal"),P.ControlOriginalId);S47J::Set(C,TEXT("controlPlannedAt"),P.ControlPlannedAt);if(!P.ControlPhotoId.IsEmpty())S47J::Set(C,TEXT("controlPhoto"),P.ControlPhotoId);}PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
  O->SetArrayField(TEXT("photoClaims"),PaidPhotos);
+ if(!PhotoControlFocus.IsEmpty())S47J::Set(O,TEXT("photoControlFocus"),PhotoControlFocus);
  TArray<TSharedPtr<FJsonValue>> Observed;
  for(const auto& P:FieldObservations)Observed.Add(MakeShared<FJsonValueObject>(P.Save()));
  O->SetArrayField(TEXT("observations"),Observed);
@@ -881,7 +897,8 @@ FString FS47FreeformDirector::PhotoControlHint(const FString& Id) const
  const auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C)return {};
  const FString OriginalId=C->ControlOriginalId.IsEmpty()?C->PhotoId:C->ControlOriginalId;
  const auto* S=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==OriginalId;});
- if(!S||!S->Pose.IsSet()||!S->Pose->Valid())return TEXT("Original camera position was not retained. The image can still be viewed and registered; a same-place comparison cannot be verified.");
+ if(!S||S->bUnavailable||S->Url.IsEmpty())return TEXT("Frozen original unavailable. Existing records remain retained; no verified comparison can be registered.");
+ if(!S->Pose.IsSet()||!S->Pose->Valid())return TEXT("Original camera position was not retained. The image can still be viewed and registered; a same-place comparison cannot be verified.");
  const auto& P=S->Pose.GetValue();const FVector Reference(4.647,0,-39.4);
  const double Metres=FVector2D::Distance({Reference.X,Reference.Z},{P.Eye.X,P.Eye.Z});
  const FString Direction=FS47FreeformObservation::Direction(Reference,P.Eye),Facing=FS47FreeformObservation::Direction(FVector::ZeroVector,P.Forward*10.);
@@ -890,13 +907,34 @@ FString FS47FreeformDirector::PhotoControlHint(const FString& Id) const
  if(M->Player&&M->Web&&M->Web->Area()==P.Scene)Hint+=FString::Printf(TEXT(" Your current distance from the original viewpoint: %.0f m."),FVector2D::Distance({M->Player->Pos.X,M->Player->Pos.Z},{P.Eye.X,P.Eye.Z}));
  return Hint;
 }
+bool FS47FreeformDirector::PhotoControlOriginalAvailable(const FPhotoClaim& C) const
+{
+ if(!M||!M->Night||!M->Night->Album)return false;
+ const auto* S=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C.ControlOriginalId;});
+ return S&&!S->bUnavailable&&!S->Url.IsEmpty()&&S->IsDeveloped()&&S->Pose.IsSet()&&S->Pose->Valid();
+}
+FString FS47FreeformDirector::PhotoControlFocusId() const
+{
+ const auto* C=SelectPhotoReturnPlan(Claims,PhotoControlFocus,[this](const FPhotoClaim& P){return PhotoControlOriginalAvailable(P);});
+ return C?C->Id:FString();
+}
+bool FS47FreeformDirector::FollowPhotoControl(const FString& Id)
+{
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence())return false;
+ const auto* C=SelectPhotoReturnPlan(Claims,Id,[this](const FPhotoClaim& P){return PhotoControlOriginalAvailable(P);});
+ if(!C||C->Id!=Id)return false;
+ if(PhotoControlFocus!=Id){PhotoControlFocus=Id;Changed();}
+ return true;
+}
 FString FS47FreeformDirector::PhotoControlFieldHint(bool& bReady) const
 {
  bReady=false;
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Night||!M->Night->Album||!M->Web||!M->Player)return {};
- const auto* C=Claims.FindByPredicate([](const FPhotoClaim& P){return P.ControlPlannedAt>=0&&P.ControlPhotoId.IsEmpty();});if(!C)return {};
- const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});
- if(!Original||Original->bUnavailable||!Original->Pose.IsSet()||!Original->Pose->Valid())return TEXT("CONTROL / ORIGINAL VIEW UNAVAILABLE");
+ const auto& Shots=M->Night->Album->Shots();
+ const auto* C=SelectPhotoReturnPlan(Claims,PhotoControlFocus,[this](const FPhotoClaim& P){return PhotoControlOriginalAvailable(P);});
+ const bool Pending=Claims.ContainsByPredicate([](const FPhotoClaim& P){return P.ControlPlannedAt>=0&&P.ControlPhotoId.IsEmpty();});
+ if(!C)return Pending?FString(TEXT("CONTROL / ORIGINAL VIEW UNAVAILABLE; RECORDS RETAINED")):FString();
+ const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->ControlOriginalId;});
  auto ControlFor=[&](const FS47AlbumShot& S){return !S.bUnavailable&&!S.Url.IsEmpty()&&S.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+C->Id;});};
  if(Shots.ContainsByPredicate([&](const FS47AlbumShot& S){return ControlFor(S)&&S.IsDeveloped();}))return TEXT("OPS / COMPARE DEVELOPED ORIGINALS");
  if(Shots.ContainsByPredicate(ControlFor))return TEXT("PHOTO LAB / DEVELOP CONTROL ORIGINAL");
@@ -920,13 +958,20 @@ FString FS47FreeformDirector::PhotoControlFieldHint(bool& bReady) const
  if(FMath::Abs(Live.Fov-Target.Fov)>1)return TEXT("CONTROL / MATCH THE ORIGINAL LENS");
  return FString::Printf(TEXT("MATCH VIEW / %s %.0f DEG / %s %.0f DEG"),Yaw>=0?TEXT("LEFT"):TEXT("RIGHT"),FMath::Abs(Yaw),Pitch>=0?TEXT("UP"):TEXT("DOWN"),FMath::Abs(Pitch));
 }
-bool FS47FreeformDirector::RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId)
+bool FS47FreeformDirector::CanRegisterPhotoControl(const FString& Id,const FString& ControlPhotoId) const
 {
  if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album)return false;
  auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->ControlPlannedAt<0||!C->ControlPhotoId.IsEmpty()||ControlPhotoId==C->ControlOriginalId)return false;
  const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});const auto* Control=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==ControlPhotoId;});
  auto Usable=[](const FS47AlbumShot* S){return S&&!S->bUnavailable&&!S->Url.IsEmpty()&&S->IsDeveloped()&&S->Pose.IsSet()&&S->Pose->Valid();};
  if(!Usable(Original)||!Usable(Control)||!FMath::IsFinite(Control->Clock)||Control->Clock<=C->ControlPlannedAt||!Original->Pose->Matches(Control->Pose.GetValue())||!Control->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+Id;}))return false;
+ return true;
+}
+bool FS47FreeformDirector::RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId)
+{
+ if(!CanRegisterPhotoControl(Id,ControlPhotoId))return false;
+ auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});
+ const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});const auto* Control=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==ControlPhotoId;});
  C->ControlPhotoId=Control->Id;
  M->Freeform->RecordEvidence(TEXT("orb-photo-comparison.")+Id,FString::Printf(TEXT("RETAINED PHOTOGRAPHIC COMPARISON / %s\nFirst original: %s / exposure clock %.3f s\nLater control: %s / exposure clock %.3f s\nBoth developed originals are retained. The later view matches the original scene, position (within 1.5 m), direction (within 5 degrees) and lens. Lighting and elapsed time can differ. This records a paired visual control, not an automated image interpretation, confirmed identity or shared signal source. No additional payment."),*Id,*Original->Id,Original->Clock,*Control->Id,Control->Clock));
  Changed();return true;
@@ -1000,6 +1045,26 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(Photos.Claims.Num()==1&&Photos.Claims[0].bPaid,TEXT("Duplicate serialized photo incident cannot create a second claim"));
  auto LegacyPhoto=S47J::Clone(Active);LegacyPhoto->RemoveField(TEXT("incidentId"));LegacyPhoto->RemoveField(TEXT("photoClaims"));Photos.Begin(LegacyPhoto);const FString LegacyIncident=Photos.IncidentId;Photos.Begin(Photos.Save());
  Check(Photos.Claims.IsEmpty()&&!LegacyIncident.IsEmpty()&&Photos.IncidentId==LegacyIncident,TEXT("Legacy active incident gets stable identity without inventing paid photographs"));
+ // Pure selection/serialization fixtures: not native image/render qualification.
+ FS47FreeformDirector FocusModel(nullptr);FocusModel.Begin(nullptr);
+ FPhotoClaim FA;FA.Id=TEXT("dusk_orb.focus-a");FA.PhotoId=FA.ControlOriginalId=TEXT("original-a");FA.Quality=.5;FA.ControlPlannedAt=100;FA.bPaid=true;
+ FPhotoClaim FB=FA;FB.Id=TEXT("dusk_orb.focus-b");FB.PhotoId=FB.ControlOriginalId=TEXT("original-b");FB.ControlPlannedAt=200;
+ FocusModel.Claims={FA,FB};const auto BeforeFocus=FocusModel.Save();
+ auto AllAvailable=[](const FPhotoClaim&){return true;};
+ auto Selected=[&](const FS47FreeformDirector& D){const auto* C=SelectPhotoReturnPlan(D.Claims,D.PhotoControlFocus,AllAvailable);return C?C->Id:FString();};
+ Check(Selected(FocusModel)==FA.Id,TEXT("legacy photo focus defaults to first pending available return plan"));
+ FocusModel.PhotoControlFocus=FB.Id;
+ Check(Selected(FocusModel)==FB.Id,TEXT("second pending photo plan can guide without completing the oldest"));
+ FS47FreeformDirector FocusCopy(nullptr);FocusCopy.Begin(S47J::Clone(FocusModel.Save()));
+ Check(FocusCopy.PhotoControlFocus==FB.Id&&Selected(FocusCopy)==FB.Id&&FocusCopy.Claims.Num()==2&&FocusCopy.Claims[0].bPaid&&FocusCopy.Claims[1].bPaid,TEXT("selected return-plan ID survives Continue with both paid original records"));
+ auto AfterFocus=FocusCopy.Save();BeforeFocus->RemoveField(TEXT("photoControlFocus"));AfterFocus->RemoveField(TEXT("photoControlFocus"));
+ Check(FJsonValue::CompareEqual(FJsonValueObject(BeforeFocus),FJsonValueObject(AfterFocus)),TEXT("photo focus selection preserves all non-focus history and payment state"));
+ FocusCopy.PhotoControlFocus=TEXT("missing-plan");Check(Selected(FocusCopy)==FA.Id,TEXT("missing saved focus safely falls back to first pending plan"));
+ FocusCopy.PhotoControlFocus=FB.Id;const auto* AvailableFallback=SelectPhotoReturnPlan(FocusCopy.Claims,FB.Id,[&](const FPhotoClaim& C){return C.Id!=FB.Id;});
+ Check(AvailableFallback&&AvailableFallback->Id==FA.Id,TEXT("unavailable focused original falls back without erasing the planned record"));
+ FocusCopy.Claims[1].ControlPhotoId=TEXT("retained-control-b");
+ Check(Selected(FocusCopy)==FA.Id&&FocusCopy.Claims.Num()==2&&FocusCopy.Claims[1].ControlPhotoId==TEXT("retained-control-b")&&FocusCopy.Claims[1].bPaid,TEXT("completed focused plan yields guidance to pending plan and retains completed history"));
+ FocusCopy.Claims[0].ControlPhotoId=TEXT("retained-control-a");Check(Selected(FocusCopy).IsEmpty()&&FocusCopy.Claims.Num()==2,TEXT("all completed return plans stop field guidance without deleting original pairs"));
  FS47FreeformDirector Facts(nullptr);Facts.Begin(nullptr);
  FS47FreeformObservation Fact;Fact.Id=TEXT("roof_steps.day2.3");Fact.Event=TEXT("roof_steps");Fact.Place=TEXT("SARO roof / service yard");Fact.Bearing=TEXT("NW");Fact.Day=2;Fact.Clock=160000;Fact.bHeard=true;
  Facts.RetainObservation(Fact);Fact.Day=4;Fact.Clock=300000;Fact.PhotoId=TEXT("photo-original");Facts.RetainObservation(Fact);Facts.RetainObservation(Fact);

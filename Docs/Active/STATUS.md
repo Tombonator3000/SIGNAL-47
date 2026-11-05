@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
+Fotoreturplaner har nå lagret fokusvalg på OPS. Kamera/Now følger valgt brukbar plan og faller tilbake når originalen mangler eller planen er ferdig. Sammenligningsknapp og backend bruker samme vern. En nyere ufremkalt eller utilgjengelig claim-original skjuler ikke lenger den uavhengig frosne planen. Editorbygg, 2397 selvtester og 87 native kontroller/tre disk-Continue består. Knappprøven bruker to eksplisitte planfiksturer fra samme faktiske original, gjenoppretter historikken og viser ingen ny betaling; dette er ikke to naturlig opptjente hendelser eller menneskelig flytaksept.
+
 Portforseglingen overvåkes nå fra fysisk klargjøring helt til inspeksjon. Åpning eller kryssing før/etter selve målevinduet ugyldiggjør kontrollen; lukking reparerer ikke forseglingen. Nytt editorbygg, 2389 selvtester og 89 native kontroller/sju disk-Continue består, inkludert et helt aktivt tre timers vindu. Den destruktive etterprøven gjenoppretter uttrykkelig en separat, faktisk innsamlet gyldig testgren for å kontrollere begge utfall. Ingen dekning er fabrikkert; dette er fortsatt en styrt prøve. Installasjon følger samlet kandidat.
 
 En faktisk Nanite-advarsel på mesa-materialet er rettet i det private assetgrunnlaget, med verifisert originalbackup. Bare materialets Nanite-bruksflagg er endret. Ny separat audit bekrefter lagret flagg; GPU-kjøring viser fjellmaterialet uten den tidligere standardmateriale-advarselen. Den redigerbare materialgeneratoren setter nå samme flagg ved senere import. Installasjon følger samlet kandidat.

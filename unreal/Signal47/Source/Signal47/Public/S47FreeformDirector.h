@@ -28,6 +28,9 @@ public:
  bool PlanPhotoControl(const FString& Id);
  FString PhotoControlHint(const FString& Id) const;
  FString PhotoControlFieldHint(bool& bReady) const;
+ bool FollowPhotoControl(const FString& Id);
+ FString PhotoControlFocusId() const;
+ bool CanRegisterPhotoControl(const FString& Id,const FString& ControlPhotoId) const;
  bool RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId);
  void TagPhoto(FS47AlbumShot& Shot); // rendered exposures only, before album persistence
  void Photo(const FS47AlbumShot& Shot);
@@ -62,6 +65,8 @@ private:
  FBox2D TaggedRegion = FBox2D(ForceInit); // transient projection of the photographed native component
  double TaggedQuality=0,PhotoSubjectMean=-1;
  TArray<FPhotoClaim> Claims;
+ FString PhotoControlFocus; // Presentation preference only; never evidence or payment.
+ bool PhotoControlOriginalAvailable(const FPhotoClaim& Claim) const;
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
