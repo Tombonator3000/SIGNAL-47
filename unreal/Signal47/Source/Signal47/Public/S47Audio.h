@@ -93,8 +93,8 @@ public:
 	void Stop(const FString& Key, float Fade = 0.05f); // stop(key, fade)
 	void Pour(const FVector& At);
 	void StartCarrier();
-	void MonitorReceiver(const FS47Rx& Rx, const FS47Profile& Profile, const FString& SourceId=TEXT("receiver"), double Reception=1.);
-	void MonitorReceiverRecording(const FString& SourceId,double Gain,double Bandwidth,double Quality,double Cursor);
+	void MonitorReceiver(const FS47Rx& Rx, const FS47Profile& Profile, const FString& SourceId=TEXT("receiver"), double Reception=1.,int32 TextureVersion=2);
+	void MonitorReceiverRecording(const FString& SourceId,double Gain,double Bandwidth,double Quality,double Cursor,int32 TextureVersion=1);
 	void ReceiverRecordingOff();
 	void ReceiverMonitorOff();
 	bool ReceiverMonitorOn() const { return bReceiverMonitor; }
@@ -251,10 +251,11 @@ private:
   TSharedPtr<FS47GainNode> SignalGain, NoiseGain;
   TSharedPtr<FS47BiquadFilterNode> Filter;
   double Started=0, Offset=0;
+  int32 Version=1;
  };
  FReceiverTextureGraph ReceiverTexture;
  FReceiverTextureGraph ReceiverTape;
- void ReceiverTextureFrame(FReceiverTextureGraph& Graph,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset=-1);
+ void ReceiverTextureFrame(FReceiverTextureGraph& Graph,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset=-1,int32 TextureVersion=1);
  void ReceiverTextureStop(FReceiverTextureGraph& Graph);
  TMap<FString,TSharedPtr<FS47AudioBuffer>> ReceiverBuffers;
 	bool bTitleTexture = false, bTitlePrivateMix = false;

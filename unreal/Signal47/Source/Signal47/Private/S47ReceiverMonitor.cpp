@@ -10,24 +10,25 @@ void US47Audio::ReceiverTextureStop(FReceiverTextureGraph& G)
  for(auto Gain:{G.SignalGain,G.NoiseGain}){Gain->Gain.CancelAndHoldAtTime(T);Gain->Gain.LinearRampToValueAtTime(0,T+.06);}
  G.Source->Stop(T+.07);G.Noise->Stop(T+.07);G=FReceiverTextureGraph();
 }
-void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset)
+void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset,int32 TextureVersion)
 {
- if(!Ctx||!FMath::IsFinite(Gain)||!FMath::IsFinite(Bandwidth)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Offset)){ReceiverTextureStop(G);return;}
+ if((TextureVersion!=1&&TextureVersion!=2)||!Ctx||!FMath::IsFinite(Gain)||!FMath::IsFinite(Bandwidth)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Offset)){ReceiverTextureStop(G);return;}
  const double T=Ctx->CurrentTime();
- if(G.Source&&(G.Id!=Id||(Offset>=0&&FMath::Abs(Offset-(G.Offset+T-G.Started))>.25)))ReceiverTextureStop(G);
+ if(G.Source&&(G.Id!=Id||G.Version!=TextureVersion||(Offset>=0&&FMath::Abs(Offset-(G.Offset+T-G.Started))>.25)))ReceiverTextureStop(G);
  if(!G.Source)
  {
   // Fixed small catalogue, cached once. No per-frame PCM generation or global RNG.
   const FString StableId=Id.Left(80);
+  const FString CacheId=StableId+FString::Printf(TEXT("|v%d|"),TextureVersion);
   for(int32 I=0;I<2;++I)
   {
-   const FString Key=StableId+FString::FromInt(I);
-   if(!ReceiverBuffers.Contains(Key))ReceiverBuffers.Add(Key,S47ReceiverTexture::MakeLoop(Ctx.ToSharedRef(),S47ReceiverTexture::Seed(StableId),I==0?S47ReceiverTexture::ELayer::Source:S47ReceiverTexture::ELayer::Static));
+   const FString Key=CacheId+FString::FromInt(I);
+   if(!ReceiverBuffers.Contains(Key))ReceiverBuffers.Add(Key,S47ReceiverTexture::MakeLoop(Ctx.ToSharedRef(),S47ReceiverTexture::Seed(StableId),I==0?S47ReceiverTexture::ELayer::Source:S47ReceiverTexture::ELayer::Static,1.f,TextureVersion));
   }
   FS47AudioContext::FBatch Batch(*Ctx);
-  G.Id=Id;G.Started=T;G.Offset=FMath::Max(0.,Offset);
+  G.Id=Id;G.Version=TextureVersion;G.Started=T;G.Offset=FMath::Max(0.,Offset);
   G.Source=Ctx->CreateBufferSource();G.Noise=Ctx->CreateBufferSource();
-  G.Source->Buffer=ReceiverBuffers[StableId+TEXT("0")];G.Noise->Buffer=ReceiverBuffers[StableId+TEXT("1")];
+  G.Source->Buffer=ReceiverBuffers[CacheId+TEXT("0")];G.Noise->Buffer=ReceiverBuffers[CacheId+TEXT("1")];
   G.Source->bLoop=G.Noise->bLoop=true;
   G.SignalGain=Ctx->CreateGain();G.NoiseGain=Ctx->CreateGain();G.SignalGain->Gain.SetValue(0);G.NoiseGain->Gain.SetValue(0);
   G.Filter=Ctx->CreateBiquadFilter();G.Filter->SetType(TEXT("lowpass"));G.Filter->Q.SetValue(.65);
@@ -44,22 +45,22 @@ void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,
 
 // Freeform monitor: source texture emerges through receiver noise as actual
 // tuning AND physical reception improve. Story's carrier/signature stay separate.
-void US47Audio::MonitorReceiver(const FS47Rx& Rx,const FS47Profile& Profile,const FString& SourceId,double Reception)
+void US47Audio::MonitorReceiver(const FS47Rx& Rx,const FS47Profile& Profile,const FString& SourceId,double Reception,int32 TextureVersion)
 {
  const double Quality=Rx.Quality(Profile)*FMath::Clamp(Reception,0.,1.);
- if(!Ctx||!Rx.bPowered||!FMath::IsFinite(Reception)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Rx.Frequency)||!FMath::IsFinite(Rx.Gain)||!FMath::IsFinite(Rx.Bandwidth)){ReceiverMonitorOff();return;}
+ if((TextureVersion!=1&&TextureVersion!=2)||!Ctx||!Rx.bPowered||!FMath::IsFinite(Reception)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Rx.Frequency)||!FMath::IsFinite(Rx.Gain)||!FMath::IsFinite(Rx.Bandwidth)){ReceiverMonitorOff();return;}
  bReceiverMonitor=true;
- ReceiverTextureFrame(ReceiverTexture,SourceId,Rx.Gain,Rx.Bandwidth,Quality);
+ ReceiverTextureFrame(ReceiverTexture,SourceId,Rx.Gain,Rx.Bandwidth,Quality,-1,TextureVersion);
 }
 void US47Audio::ReceiverMonitorOff()
 {
  if(!bReceiverMonitor)return;
  bReceiverMonitor=false;ReceiverTextureStop(ReceiverTexture);
 }
-void US47Audio::MonitorReceiverRecording(const FString& SourceId,double Gain,double Bandwidth,double Quality,double Cursor)
+void US47Audio::MonitorReceiverRecording(const FString& SourceId,double Gain,double Bandwidth,double Quality,double Cursor,int32 TextureVersion)
 {
  if(Cursor<0){ReceiverRecordingOff();return;}
- ReceiverTextureFrame(ReceiverTape,SourceId,Gain,Bandwidth,Quality,Cursor);
+ ReceiverTextureFrame(ReceiverTape,SourceId,Gain,Bandwidth,Quality,Cursor,TextureVersion);
 }
 void US47Audio::ReceiverRecordingOff(){ReceiverTextureStop(ReceiverTape);}
 
@@ -93,6 +94,11 @@ bool US47Audio::ReceiverMonitorSelfTest(TArray<FString>& Lines)
  Check(Render()<1e-5&&!A->ReceiverMonitorOn(),TEXT("leaving the receiver fades it to silence"));
  A->MonitorReceiverRecording(TEXT("freeform-source-1"),60,50,1,0);const double Tape=Render();
  A->ReceiverMonitorOff();Check(Render()>.001&&Tape>.001,TEXT("live monitor release leaves separately owned tape playing"));
+ const auto V1Buffer=A->ReceiverTape.Source->Buffer;
+ A->MonitorReceiverRecording(TEXT("freeform-source-1"),60,50,1,0,2);Render();
+ Check(A->ReceiverTape.Version==2&&A->ReceiverTape.Source->Buffer!=V1Buffer,TEXT("v2 playback uses a version-specific cached graph"));
+ A->MonitorReceiverRecording(TEXT("freeform-source-1"),60,50,1,0,1);Render();
+ Check(A->ReceiverTape.Version==1&&A->ReceiverTape.Source->Buffer==V1Buffer,TEXT("switching back restores the original v1 buffer without rewriting it"));
  A->ReceiverRecordingOff();Check(Render()<1e-5,TEXT("tape stop releases its graph"));
  A->StartCarrier();A->SetCarrier(.04,0,0);A->ReceiverMonitorOff();
  Check(Render()>.005,TEXT("inactive monitor does not mute the Story-owned carrier"));

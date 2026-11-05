@@ -9,16 +9,19 @@ namespace S47ReceiverTexture
 {
  enum class ELayer : uint8 { Source, Static };
  constexpr double LoopSeconds=12.;
+ // Version 1 is immutable retained-recording reconstruction. Version 2 changes
+ // designed atmosphere only; neither version produces measured pulse events.
+ constexpr int32 CurrentVersion=2;
  // Stable across processes/platforms; do not use transient job numbers as identity.
  uint32 Seed(const FString& SourceId);
  // Quality/Bandwidth/Gain are normalised 0..1. Bandwidth=1 is the open audio band.
  float SourceLevel(float Quality,float Gain);
  float StaticLevel(float Quality,float Gain);
  // Stateless source-time evaluation: identical samples regardless of chunk order.
- float Sample(uint32 Identity,double SourceTime,float Quality,float Gain,float Bandwidth=1.f);
+ float Sample(uint32 Identity,double SourceTime,float Quality,float Gain,float Bandwidth=1.f,int32 Version=1);
  // Loop both layers from the SAME source-time offset and ramp their gain nodes with
  // SourceLevel/StaticLevel. Cache per identity/bandwidth; never regenerate per frame.
  // Mono, context sample rate, exactly LoopSeconds; boundary is intrinsically periodic.
- TSharedPtr<FS47AudioBuffer> MakeLoop(const TSharedRef<FS47AudioContext>& Context,uint32 Identity,ELayer Layer,float Bandwidth=1.f);
+ TSharedPtr<FS47AudioBuffer> MakeLoop(const TSharedRef<FS47AudioContext>& Context,uint32 Identity,ELayer Layer,float Bandwidth=1.f,int32 Version=1);
  bool SelfTest(TArray<FString>& Lines);
 }

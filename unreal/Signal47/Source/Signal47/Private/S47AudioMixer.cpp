@@ -213,7 +213,7 @@ bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 	// Actual Freeform receiver graph, independent of the private recording bank.
 	// Each source gets a fresh context: 0-2s search, 2-7s tuning/reception ramp,
 	// 7-10s locked, then power off with two seconds to hear and check the release.
-	for (int32 Source=0; Source<FS47Observing::Runs().Num(); ++Source)
+	for (int32 Source=0; Source<FS47Observing::Runs().Num(); ++Source)for(int32 Version:{1,2})
 	{
 		US47Audio* Receiver=NewObject<US47Audio>(GetTransientPackage());
 		Receiver->AddToRoot();Receiver->Unlock(false,false);
@@ -227,10 +227,10 @@ bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 			const double T=F/48000.;
 			const double Tune=FMath::Clamp((T-2.)/5.,0.,1.);
 			Rx.Frequency=Profile.F+Profile.FTol*4.*(1.-Tune);
-			if(T<10)Receiver->MonitorReceiver(Rx,Profile,Id,.08+.92*Tune);
+			if(T<10)Receiver->MonitorReceiver(Rx,Profile,Id,.08+.92*Tune,Version);
 			else if(F==48000*10)
 			{
-				Rx.bPowered=false;Receiver->MonitorReceiver(Rx,Profile,Id,1.);
+				Rx.bPowered=false;Receiver->MonitorReceiver(Rx,Profile,Id,1.,Version);
 				Receiver->ReceiverMonitorOff(); // Repeated off must remain harmless.
 			}
 			Receiver->Ctx->Render(Samples.GetData()+F*2,800,2);Receiver->Ctx->Tick(1./60.);
@@ -243,11 +243,12 @@ bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 			if(I>=48000*23)TailPeak=FMath::Max(TailPeak,FMath::Abs(V)); // Last half second.
 		}
 		const double Rms=FMath::Sqrt(Energy/Samples.Num());
-		const FString File=FString::Printf(TEXT("receiver_source_%d_search_tuned_off.wav"),Source);
+		const FString File=FString::Printf(TEXT("receiver_source_%d_v%d_search_tuned_off.wav"),Source,Version);
 		const bool Valid=Finite&&Rms>1e-6&&Peak<.25&&TailPeak<1e-7;
 		const bool Saved=Valid&&SaveWave(Output/File,Samples);bOk&=Saved;
 		auto Result=MakeShared<FJsonObject>();Result->SetStringField(TEXT("name"),Id);
 		Result->SetStringField(TEXT("source"),FS47Observing::Runs()[Source].Source);
+  Result->SetNumberField(TEXT("texture_version"),Version);Result->SetBoolField(TEXT("human_listening_verified"),false);
 		Result->SetStringField(TEXT("file"),File);Result->SetStringField(TEXT("graph"),TEXT("MonitorReceiver: search 0-2, tuning 2-7, locked 7-10, powered off 10-12 seconds"));
 		Result->SetNumberField(TEXT("peak"),Peak);Result->SetNumberField(TEXT("rms"),Rms);
 		Result->SetNumberField(TEXT("off_tail_peak"),TailPeak);Result->SetBoolField(TEXT("ok"),Saved);
