@@ -1821,3 +1821,7 @@ Dinerens boarding-proxy slipper nå samme faktiske cargo-stråle gjennom som SAR
 ### 5. november 2026 kl.03:07: full feltloggerreise og overlapp per original
 
 `codex/night-logger-overlap-20261105`: per-original målt overlapp, bevart første jobb og separat låst sammenligningsvalg; eldre lagringer får kun sin kjente overlapp. Bygg/2410 selvtester og native37/to diskreturer består med7200s dekning,14s SARO-opptak, fysisk utlån/benk/felt/printer/retur og uendret økonomi. Tosteders- eller himmelbevis påstås ikke. Verkstedundersøkelsen er avgrenset til nyttig eksisterende lånekit før ny donor-crafting; bred oppgave forblir åpen. Installasjon følger samlet kandidat.
+
+### 5. november 2026 kl.03:18: motellstolpens sokkel ved asfaltkanten
+
+`codex/night-motel-foot-20261105`: gjenbrukte plate-/krage-/boltkomponenter rundt uendret stolpe og40cm sperre;36cm betong følger faktisk asfalt/gårdskant med25mm nedstikk. FBX-kantprofil forklarer det målte bevelavviket, uten utvidet toleranse. Bygg r3, før-/etterprobe med81+1 identiske treff og fire sammenhengende gangsegmenter hver, samt visuelt kontrollerte før-/etterbilder består. Ingen asset-/lys-/Road-endring. Installasjon følger samlet kandidat.

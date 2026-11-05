@@ -43,7 +43,7 @@ namespace
  }
  bool Contains(const FS47Rect& R,const FVector& P)
  {return R.MinX<=P.X-Half+1e-8&&R.MaxX>=P.X+Half-1e-8&&R.MinZ<=P.Z-Half+1e-8&&R.MaxZ>=P.Z+Half-1e-8;}
- bool Measure(AS47Web* W,UStaticMeshComponent* Pole,const TArray<UStaticMeshComponent*>& Surfaces,TArray<FFoot>& Feet)
+ bool Measure(AS47Web* W,UStaticMeshComponent* Pole,const TArray<UStaticMeshComponent*>& Surfaces,TArray<FFoot>& Feet,bool MotelNorth=false)
  {
   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RouteLampFeetContact),true);
   for(auto& F:Feet)
@@ -67,20 +67,42 @@ namespace
     // Preserve that cap; let this foundation surround the embedded pole bottom.
     const bool RaisedSeam=F.P.Equals(FVector(-18.5,-.6,36),1.e-8)&&Z>=36-1.e-8&&Winner&&
      Winner->GetStaticMesh()->GetPathName()==TEXT("/Game/Signal47/Art/SaroRoad/SM_SaroVergeSeam.SM_SaroVergeSeam");
-    const double MaxTop=F.P.Y+(RaisedSeam?.015:-.012);
+    const double MaxTop=F.P.Y+(MotelNorth?.003:(RaisedSeam?.015:-.012));
     // All other feet/surfaces retain the existing ground-below-cap requirement.
     if(!Found||Top>MaxTop||Top<F.P.Y-.20)
     {UE_LOG(LogTemp,Warning,TEXT("S47: route foot support FAIL footX=%.9f footZ=%.9f grid=%d/%d x=%.9f z=%.9f found=%d top=%.9f pole=%.9f gap=%.9f winner=%s"),F.P.X,F.P.Z,IX,IZ,X,Z,Found,Top,F.P.Y,F.P.Y-Top,Winner&&Winner->GetStaticMesh()?*Winner->GetStaticMesh()->GetPathName():TEXT("none"));return false;}
     Low=FMath::Min(Low,Top);High=FMath::Max(High,Top);
    }
+   // The original asphalt approach meets the replacement court at an 8cm step.
+   // Require both measured elevations; do not accept a ground-only floating pier.
+   if(MotelNorth&&(FMath::Abs(Low-(-2.184426280932433))>.003||FMath::Abs(High-F.P.Y)>.003))return false;
+   double FoundationLow=Low;
+   if(MotelNorth)
+   {
+    // CourtSurface FBX f5ede772: 25mm rounded north edge, not a flat slab.
+    // The 9x9 grid touches triangle165 at Z667.91; the continuous edge at
+    // Z667.9 reaches this lower top bound. Verify active contact just inside it.
+    constexpr double EdgeBound=-2.203568382038064,EdgeZ=667.9001,EdgeExpected=-2.2031948089787035;
+    {
+     const double X=F.P.X;double Top=-1e9;UStaticMeshComponent* Winner=nullptr;
+     for(auto* C:Surfaces)if(C->LineTraceComponent(Hit,S47Three::ToUE(X,F.P.Y+.03,EdgeZ),S47Three::ToUE(X,F.P.Y-.30,EdgeZ),Q))
+     {const double Y=S47Three::ToThree(Hit.ImpactPoint).Y;if(Y>Top){Top=Y;Winner=C;}}
+     if(!Winner||Winner->GetStaticMesh()->GetPathName()!=TEXT("/Game/MotelV2/SM_Sierra_CourtSurface.SM_Sierra_CourtSurface")||FMath::Abs(Top-EdgeExpected)>.003)
+     {UE_LOG(LogTemp,Warning,TEXT("S47: motel north bevel contact differs x=%.9f y=%.9f expected=%.9f"),X,Top,EdgeExpected);return false;}
+     FoundationLow=FMath::Min(FoundationLow,Top);
+    }
+    FoundationLow=FMath::Min(FoundationLow,EdgeBound);
+    UE_LOG(LogTemp,Display,TEXT("S47: motel north measured grid low=%.9f source edge bound=%.9f foundation low=%.9f"),Low,EdgeBound,FoundationLow);
+   }
    if(High-Low>.12){UE_LOG(LogTemp,Warning,TEXT("S47: route foot terrain variation FAIL x=%.9f z=%.9f low=%.9f high=%.9f"),F.P.X,F.P.Z,Low,High);return false;}
-   F.Bottom=Low-Embed;F.ConcreteTop=FMath::Max(F.P.Y-.01,High+.01);
+   F.Bottom=FoundationLow-Embed;F.ConcreteTop=FMath::Max(F.P.Y-.01,High+.01);
    // Reuse only existing narrow pole exclusions that cover the whole new support.
-   bool Covered=false;for(const auto& R:W->CollidersMutable(TEXT("saro")))Covered|=Contains(R,F.P)&&R.MaxX-R.MinX<=.501&&R.MaxZ-R.MinZ<=.501;
+   bool Covered=false;for(const auto& R:W->CollidersMutable(TEXT("saro")))Covered|=(!MotelNorth||R.bEnabled)&&Contains(R,F.P)&&R.MaxX-R.MinX<=.501&&R.MaxZ-R.MinZ<=.501;
+   if(MotelNorth&&!Covered)return false;
    F.AddCollider=!Covered;
    // Road foot west edge stays at least .52m east of the widest asphalt lane edge -19.2.
-   if(F.P.X-Half< -18.68-1e-8)return false;
-   UE_LOG(LogTemp,Display,TEXT("S47: route lamp foot preflight %s x=%.3f z=%.3f pole=%.6f ground=%.6f..%.6f buriedBottom=%.6f concreteTop=%.6f existingExclusion=%d"),TEXT("road"),F.P.X,F.P.Z,F.P.Y,Low,High,F.Bottom,F.ConcreteTop,Covered);
+   if(!MotelNorth&&F.P.X-Half< -18.68-1e-8)return false;
+   UE_LOG(LogTemp,Display,TEXT("S47: route lamp foot preflight %s x=%.3f z=%.3f pole=%.6f ground=%.6f..%.6f buriedBottom=%.6f concreteTop=%.6f existingExclusion=%d"),MotelNorth?TEXT("motel-north"):TEXT("road"),F.P.X,F.P.Z,F.P.Y,Low,High,F.Bottom,F.ConcreteTop,Covered);
   }
   return true;
  }
@@ -92,14 +114,14 @@ namespace
   const auto B=C->GetStaticMesh()->GetBounds();const FBox A=FBox(B.Origin-B.BoxExtent,B.Origin+B.BoxExtent).TransformBy(T);
   return A.Min.Equals(S47Three::ToUE(Low),.05)&&A.Max.Equals(S47Three::ToUE(High),.05);
  }
- bool Install(AS47Web* W,int32 Parent,const FString& Family,UStaticMeshComponent* Pole,const TArray<UStaticMeshComponent*>& Surfaces,TArray<FFoot> Feet)
+ bool Install(AS47Web* W,int32 Parent,const FString& Family,UStaticMeshComponent* Pole,const TArray<UStaticMeshComponent*>& Surfaces,TArray<FFoot> Feet,bool MotelNorth=false)
  {
   const auto* N=W->Node(Parent);if(!N||!N->Comp.IsValid())return Skip(Family,TEXT("parent unavailable"));
   const FString Prefix=TEXT("routeLampFeet:")+Family+TEXT(":");
   // Build is called once. Never mix a second or partial set with these supports.
   for(int32 I=0;I<W->PartCount();++I)if(const auto* Existing=W->Node(I);Existing&&Existing->Name.StartsWith(Prefix))return Skip(Family,TEXT("existing set"));
   for(const auto& R:W->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(Prefix))return Skip(Family,TEXT("orphaned collider"));
-  if(!Measure(W,Pole,Surfaces,Feet))return Skip(Family,TEXT("original cap, actual support grid or old collision exclusion differs"));
+  if(!Measure(W,Pole,Surfaces,Feet,MotelNorth))return Skip(Family,TEXT("original cap, actual support grid or old collision exclusion differs"));
   auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
   auto* Cylinder=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
   auto* Concrete=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/SaroSite/Materials/M_SaroSite_Concrete.M_SaroSite_Concrete"));
@@ -153,10 +175,33 @@ namespace
   return Install(W,W->Handle(TEXT("ext.group")),TEXT("road"),Pole,{Land,Road,Verge},Feet);
  }
 
+ bool MotelNorth(AS47Web* W)
+ {
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47MotelLampFootOff")))return false;
+  auto* Pole=Part(W,678,463,TEXT("/Game/MotelV2/Trim/g463.g463"));
+  auto* Land=Part(W,7,4,TEXT("/Game/MotelV2/Trim/g4.g4"));
+  auto* Approach=Part(W,671,456,TEXT("/Game/MotelV2/Trim/g456.g456"));
+  UStaticMeshComponent* Court=nullptr;
+  for(int32 I=0;I<W->PartCount();++I)
+  {
+   const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+   if(N&&N->Name==TEXT("motel-v2:SM_Sierra_CourtSurface")&&C&&C->GetStaticMesh()&&
+      C->GetStaticMesh()->GetPathName()==TEXT("/Game/MotelV2/SM_Sierra_CourtSurface.SM_Sierra_CourtSurface"))Court=C;
+  }
+  if(!RigidAt(Pole,{-2.5,-2.098568384594018,650})||Pole->GetStaticMesh()->GetNumTriangles(0)!=80||
+     !RigidAt(Approach,{-2.5,-2.098568384594018,650})||Approach->GetStaticMesh()->GetNumTriangles(0)!=30||
+     !RigidAt(Land,FVector::ZeroVector)||!RigidAt(Court,{-45.9,-2.0985683853163195,674.9}))
+   return Skip(TEXT("motel-north"),TEXT("active original pole / native court / terrain differs"));
+  // Same original pole, light, flood slots, and 40cm exclusion. 36cm footing
+  // bridges the retained approach/new-court step without moving either slab.
+  TArray<FFoot> Feet;Feet.Add(FFoot{{-30.9,-2.098568384594018,668}});
+  return Install(W,W->Handle(TEXT("world.motel.group")),TEXT("motel-north"),Pole,{Land,Approach,Court},Feet,true);
+ }
+
 }
 bool Build(AS47Web* W)
 {
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47RouteLampFeetOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))return false;
- return Road(W);
+ const bool RoadBuilt=Road(W);const bool MotelBuilt=MotelNorth(W);return RoadBuilt||MotelBuilt;
 }
 }
