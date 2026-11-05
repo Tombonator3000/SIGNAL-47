@@ -808,9 +808,13 @@ void FS47FreeformWorld::OpenWorkbench()
   const TCHAR* Connections[]={TEXT("Seat loan receiver in case"),TEXT("Connect shielded antenna lead"),TEXT("Connect charged loan battery")};
   if(Logger.Assembly<3&&!Logger.bCheckedOut)R.Add(S47Kit::Button(Connections[Logger.Assembly],[this]{LoggerAction(TEXT("connect"));},true));
   R.Add(S47Kit::Button(TEXT("Calibrate against bench clock / recharge battery"),[this]{LoggerAction(TEXT("calibrate"));},false,Logger.Assembly==3&&!Logger.bCheckedOut&&Logger.Site<0&&Payload==0&&!bLoggerCalibrating));
-  R.Add(S47Kit::Button(TEXT("Tune logger to selected SARO work card"),[this]{LoggerAction(TEXT("tune"));},false,!Logger.bCheckedOut&&Logger.Site<0&&Payload==0));
+  const FString TuneBlock=LoggerPreparationBlock(TEXT("tune"));
+  R.Add(S47Kit::Button(TEXT("Tune logger to selected SARO work card"),[this]{LoggerAction(TEXT("tune"));},false,TuneBlock.IsEmpty()));
+  if(!TuneBlock.IsEmpty())R.Add(S47Kit::Small(TuneBlock));
   R.Add(S47Kit::Small(FString::Printf(TEXT("LOAN RECORD / fieldlogger01 / %s / collections %d / bench returns %d"),Logger.bCheckedOut?TEXT("OUT WITH OPERATOR"):TEXT("AT THIS BENCH"),Logger.Checkouts,Logger.Returns)));
-  R.Add(S47Kit::Button(TEXT("Collect prepared field logger from bench"),[this]{LoggerAction(TEXT("take"));},false,!Logger.bCheckedOut&&Logger.bCalibrated&&Logger.Site<0&&Payload==0&&!bLoggerCalibrating));
+  const FString TakeBlock=LoggerPreparationBlock(TEXT("take"));
+  R.Add(S47Kit::Button(TEXT("Collect prepared field logger from bench"),[this]{LoggerAction(TEXT("take"));},false,TakeBlock.IsEmpty()));
+  if(!TakeBlock.IsEmpty()&&TakeBlock!=TuneBlock)R.Add(S47Kit::Small(TakeBlock));
   R.Add(S47Kit::Button(TEXT("Read and compare retained field originals"),[this]{LoggerAction(TEXT("compare"));},false,!Logger.bCheckedOut&&Payload==0));
  }
  R.Add(S47Kit::Button(TEXT("Take reusable SARO service case"),[this]
@@ -1188,8 +1192,24 @@ FVector FS47FreeformWorld::LoggerPoint(int32 Site)const
  FVector At=Site==0?FVector(8,0,5):FVector(34,0,-28);
  At.Y=US47Night::SaroFloorAt(M?M->Web.Get():nullptr,At.X,At.Z)+.8;return At;
 }
+FString FS47FreeformWorld::LoggerPreparationBlock(const FString& Action) const
+{
+ if(Action!=TEXT("tune")&&Action!=TEXT("take"))return TEXT("Unknown logger preparation action.");
+ if(!Ready()||!LoggerAccess())return TEXT("Complete THE REPEATED INTERVAL to unlock the loan logger.");
+ if(!Logger.bLoanIssued)return TEXT("Collect the loan kit at PARTS STORAGE first.");
+ if(Logger.Site>=0)return TEXT("Retrieve the logger from its field site first.");
+ if(Logger.bCheckedOut)return TEXT("Return the logger to CALIBRATION / REPAIR first.");
+ if(M->Web->Area()!=TEXT("saro")||!Near(BenchAt))return TEXT("Use the CALIBRATION / REPAIR bench.");
+ if(Payload!=0)return TEXT("Free both hands before preparing the logger.");
+ if(Action==TEXT("tune"))return M->Freeform->ConsoleProfile()?FString():FString(TEXT("Select a SARO card in OPS / DAILY WORK. If work is finished, start an optional reference check."));
+ if(bLoggerCalibrating)return TEXT("Wait for clock calibration to finish.");
+ if(!Logger.bCalibrated||Logger.Battery<=0)return TEXT("Calibrate at this bench to recharge the logger.");
+ if(Logger.Tapes.Num()>=256)return TEXT("Tape capacity is full. Retained originals can still be read here.");
+ return FString();
+}
 bool FS47FreeformWorld::LoggerAction(const FString& Action,const FString& TapeId,const FString& OriginalId)
 {
+ if(Action==TEXT("tune")||Action==TEXT("take")){const FString Why=LoggerPreparationBlock(Action);if(!Why.IsEmpty()){if(Ready())Change(Why);return false;}}
  if(!Ready()||!LoggerAccess())return false;
  if(Action==TEXT("site0")||Action==TEXT("site1"))
  {

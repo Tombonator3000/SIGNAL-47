@@ -80,6 +80,36 @@ namespace
   const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,Clock),86400.));
   return FString::Printf(TEXT("DAY %d / %02d:%02d:%02d"),Day,Seconds/3600,(Seconds/60)%60,Seconds%60);
  }
+
+ FString LocalNoiseEquipmentHint(const FS47FieldLogger& L,const FS47FreeformSession::FJob* J,const FS47Profile* P)
+ {
+  FString Text=TEXT("\n")+L.NextAction();
+  const bool UnhandledTape=!L.Tapes.IsEmpty()&&!L.Tapes.Last().bCompared;
+  if(L.Site<0&&!L.bRecording&&!UnhandledTape&&L.Tapes.Num()<256)
+   Text+=TEXT("\nFor your next new check, try SITE A on the generator service path. Placement starts two hours; sleeping does not supply observations.");
+  if(L.bRecording&&!L.Tapes.IsEmpty())
+  {
+   const auto& T=L.Tapes.Last();Text+=FString::Printf(TEXT("\nEXISTING RECORDING / %.3f MHz. Elapsed interval: %s to %s. Sampled %.0f s; missed %.0f s. Planned finish: %s. This recording is separate from the saved idea; overlap still needs actual SARO acquisition."),T.Frequency,*LightStamp(T.Start),*LightStamp(T.End),T.Seconds,T.GapSeconds,*LightStamp(T.Start+FS47FieldLogger::Window));
+  }
+  using E=FS47FreeformSession::EJobStage;
+  if(J&&P&&!J->bLegacyTrace&&!J->bDuplicateRejected)
+  {
+   if(J->Stage==E::Chart)return Text+TEXT("\nSARO / Collect the finished recording at the printer. A finished acquisition cannot add new overlap.");
+   if(J->Stage==E::New||J->Stage==E::Pointed||J->Stage==E::Integrating)
+   {
+    Text+=FString::Printf(TEXT("\nSELECTED SARO CARD / %s / %.3f MHz."),*J->Id,P->F);
+    if(L.bRecording)
+    {
+     if(FMath::Abs(L.Frequency-P->F)>.001)return Text+TEXT(" Frequencies differ. Select a matching SARO card if available, or prepare another logger run later; do not retune a deployed logger.");
+     return Text+(J->Stage==E::Integrating?TEXT(" Frequencies match. SARO acquisition is running; let both recordings finish, then retrieve the logger."):TEXT(" Frequencies match. Point and tune SARO, then start its recording while the logger runs."));
+    }
+    if(J->Stage==E::Integrating)return Text+TEXT(" SARO acquisition is already running. Finish this observation; prepare a separate overlapping run when the logger is ready.");
+    if(UnhandledTape||L.Site>=0||L.Tapes.Num()>=256)return Text+TEXT(" Handle the existing logger and original as directed above before preparing another run.");
+    return Text+TEXT(" At CALIBRATION / REPAIR, tune the returned logger to this card. Place it before starting the SARO recording.");
+   }
+  }
+  return Text+TEXT("\nOPS / DAILY WORK: select an unfinished observation. When none remain, the optional reference check provides a new SARO original.");
+ }
  const FEvent* Definition(const FString& Id){return Catalog().FindByPredicate([&](const FEvent& D){return D.Id==Id;});}
  bool Instrument(const FString& Id){const auto* D=Definition(Id);return D && D->Family==TEXT("instrument");}
  FVector ReadVector(const S47J::FObj& O,const TCHAR* Key,const FVector& Default=FVector::ZeroVector)
@@ -235,6 +265,8 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
    FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
    P.Quality=S47J::Num(*C,TEXT("quality"));
+   P.LocalNoiseOriginalId=S47J::Str(*C,TEXT("localNoiseOriginal")).Left(128);P.LocalNoisePlannedAt=S47J::Num(*C,TEXT("localNoisePlannedAt"),-1);
+   if(!FMath::IsFinite(P.LocalNoisePlannedAt)||P.LocalNoisePlannedAt<0||P.LocalNoiseOriginalId.IsEmpty()){P.LocalNoisePlannedAt=-1;P.LocalNoiseOriginalId.Empty();}
    P.ControlOriginalId=S47J::Str(*C,TEXT("controlOriginal"));P.ControlPhotoId=S47J::Str(*C,TEXT("controlPhoto"));P.ControlPlannedAt=S47J::Num(*C,TEXT("controlPlannedAt"),-1);
    if(!FMath::IsFinite(P.ControlPlannedAt)||P.ControlPlannedAt<0||P.ControlOriginalId.IsEmpty()){P.ControlPlannedAt=-1;P.ControlOriginalId.Empty();P.ControlPhotoId.Empty();}
    if(P.Id.IsEmpty()||P.PhotoId.IsEmpty()||!FMath::IsFinite(P.Quality)||P.Quality<.025||P.Quality>1||Claims.ContainsByPredicate([&](const FPhotoClaim& Q){return Q.Id==P.Id;}))continue;
@@ -307,7 +339,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
  S47J::Set(O,TEXT("incidentSerial"),IncidentSerial);S47J::Set(O,TEXT("incidentId"),IncidentId);
  TArray<TSharedPtr<FJsonValue>> PaidPhotos;
- for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);if(P.ControlPlannedAt>=0&&!P.ControlOriginalId.IsEmpty()){S47J::Set(C,TEXT("controlOriginal"),P.ControlOriginalId);S47J::Set(C,TEXT("controlPlannedAt"),P.ControlPlannedAt);if(!P.ControlPhotoId.IsEmpty())S47J::Set(C,TEXT("controlPhoto"),P.ControlPhotoId);}PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
+ for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);if(P.LocalNoisePlannedAt>=0&&!P.LocalNoiseOriginalId.IsEmpty()){S47J::Set(C,TEXT("localNoiseOriginal"),P.LocalNoiseOriginalId);S47J::Set(C,TEXT("localNoisePlannedAt"),P.LocalNoisePlannedAt);}if(P.ControlPlannedAt>=0&&!P.ControlOriginalId.IsEmpty()){S47J::Set(C,TEXT("controlOriginal"),P.ControlOriginalId);S47J::Set(C,TEXT("controlPlannedAt"),P.ControlPlannedAt);if(!P.ControlPhotoId.IsEmpty())S47J::Set(C,TEXT("controlPhoto"),P.ControlPhotoId);}PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
  O->SetArrayField(TEXT("photoClaims"),PaidPhotos);
  if(!PhotoControlFocus.IsEmpty())S47J::Set(O,TEXT("photoControlFocus"),PhotoControlFocus);
  TArray<TSharedPtr<FJsonValue>> Observed;
@@ -891,6 +923,29 @@ bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
  M->Freeform->RecordEvidence(TEXT("orb-return-plan.")+Id,FString::Printf(TEXT("PLANNED SAME-PLACE PHOTOGRAPH / %s\nFrozen original: %s / exposure clock %.3f s\n%s\nTake a separate photograph after this passage ends, then develop it and compare both originals at OPS. This plan is not a completed control or an additional paid observation."),*Id,*Shot->Id,Shot->Clock,*PhotoControlHint(Id)));
  Changed();return true;
 }
+bool FS47FreeformDirector::PlanLocalNoiseCheck(const FString& Id)
+{
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album||!Id.StartsWith(TEXT("dusk_orb.")))return false;
+ auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->LocalNoisePlannedAt>=0)return false;
+ const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->PhotoId;});
+ if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform:")+Id;}))return false;
+ C->LocalNoiseOriginalId=Shot->Id;C->LocalNoisePlannedAt=M->Freeform->Clock();
+ const FString Original=Shot->Id,When=LightStamp(Shot->Clock); // copy before journal callbacks
+ M->Freeform->RecordEvidence(TEXT("photo-local-noise-plan.")+Id,TEXT("OPTIONAL PLAN / Later local-noise check\nPhotograph ")+Original+TEXT(" / ")+When+TEXT("\nUse a loan logger during a new SARO recording. This plan supplies no measurement, loan access or explanation of the photographed light. The free return photograph remains independent."));
+ Changed();return true;
+}
+FString FS47FreeformDirector::LocalNoisePlanHint(const FString& Id) const
+{
+ if(!M||!M->Freeform||!M->Night||!M->Night->Album)return {};
+ const auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->LocalNoisePlannedAt<0)return {};
+ const auto* Photo=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->LocalNoiseOriginalId;});
+ FString Text=TEXT("OPTIONAL / LATER LOCAL-NOISE CHECK\n");
+ Text+=Photo&&!Photo->bUnavailable&&!Photo->Url.IsEmpty()&&Photo->IsDeveloped()?TEXT("Photograph ")+Photo->Id+TEXT(" / ")+LightStamp(Photo->Clock):TEXT("The reference photograph is unavailable. Your saved idea remains; no comparison with that image is claimed.");
+ Text+=TEXT("\nA later recording can describe local electrical noise. It cannot tell us what caused this earlier light. You can still repeat the photograph without the logger.");
+ const auto* Field=M->Freeform->Field.Get();
+ if(!Field||!Field->LoggerAccess())return Text+TEXT("\nLOAN ACCESS / Reach a supported conclusion in THE REPEATED INTERVAL before borrowing the logger. Keeping this idea does not unlock the loan.");
+ return Text+LocalNoiseEquipmentHint(Field->FieldLogger(),M->Freeform->CurrentJob(),M->Freeform->ConsoleProfile());
+}
 FString FS47FreeformDirector::PhotoControlHint(const FString& Id) const
 {
  if(!M||!M->Night||!M->Night->Album)return {};
@@ -1065,6 +1120,21 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  FocusCopy.Claims[1].ControlPhotoId=TEXT("retained-control-b");
  Check(Selected(FocusCopy)==FA.Id&&FocusCopy.Claims.Num()==2&&FocusCopy.Claims[1].ControlPhotoId==TEXT("retained-control-b")&&FocusCopy.Claims[1].bPaid,TEXT("completed focused plan yields guidance to pending plan and retains completed history"));
  FocusCopy.Claims[0].ControlPhotoId=TEXT("retained-control-a");Check(Selected(FocusCopy).IsEmpty()&&FocusCopy.Claims.Num()==2,TEXT("all completed return plans stop field guidance without deleting original pairs"));
+ auto NoiseState=FocusModel.Save();auto NoiseClaims=S47J::Arr(NoiseState,TEXT("photoClaims"));
+ if(NoiseClaims.Num())
+ {
+  S47J::Set(NoiseClaims[0]->AsObject(),TEXT("localNoiseOriginal"),TEXT("frozen-noise-reference"));S47J::Set(NoiseClaims[0]->AsObject(),TEXT("localNoisePlannedAt"),123.);S47J::Set(NoiseClaims[0]->AsObject(),TEXT("photo"),TEXT("newer-best-claim-image"));
+  FS47FreeformDirector NoiseCopy(nullptr);NoiseCopy.Begin(NoiseState);const auto Round=S47J::Arr(NoiseCopy.Save(),TEXT("photoClaims"));
+  Check(Round.Num()==NoiseClaims.Num()&&NoiseCopy.Claims[0].LocalNoiseOriginalId==TEXT("frozen-noise-reference")&&NoiseCopy.Claims[0].LocalNoisePlannedAt==123.&&NoiseCopy.Claims[0].PhotoId==TEXT("newer-best-claim-image")&&NoiseCopy.Claims[1].LocalNoisePlannedAt<0&&NoiseCopy.Claims[0].bPaid==FocusModel.Claims[0].bPaid,TEXT("optional local-noise idea preserves frozen source and plan time without changing payment"));
+ }
+
+ FS47FieldLogger HintLogger;HintLogger.Site=1;HintLogger.bRecording=true;HintLogger.Frequency=1420.11;FS47FieldLogger::FTape HT;HT.Start=100;HT.End=120;HT.Frequency=1420.11;HT.Site=1;HintLogger.Tapes.Add(HT);
+ FS47FreeformSession::FJob HJ;HJ.Id=TEXT("hint-job");HJ.Stage=FS47FreeformSession::EJobStage::Chart;FS47Profile HP{};HP.F=1420.11;
+ const auto ChartHint=LocalNoiseEquipmentHint(HintLogger,&HJ,&HP);
+ Check(ChartHint.Contains(TEXT("SITE B"))&&ChartHint.Contains(TEXT("Elapsed interval"))&&ChartHint.Contains(TEXT("Planned finish"))&&ChartHint.Contains(TEXT("printer"))&&!ChartHint.Contains(TEXT("separate later window"))&&!ChartHint.Contains(TEXT("try SITE A")),TEXT("existing B recording has observed/expected times, never claims later-photo simultaneity, and finished SARO card goes to printer"));
+ HJ.Stage=FS47FreeformSession::EJobStage::Integrating;const auto ActiveHint=LocalNoiseEquipmentHint(HintLogger,&HJ,&HP);
+ Check(ActiveHint.Contains(TEXT("Frequencies match"))&&ActiveHint.Contains(TEXT("acquisition is running"))&&!ActiveHint.Contains(TEXT("tune the returned logger")),TEXT("active matching acquisition never directs player to retune deployed logger"));
+ HP.F=1420.2;Check(LocalNoiseEquipmentHint(HintLogger,&HJ,&HP).Contains(TEXT("Frequencies differ")),TEXT("frequency mismatch offers no fabricated acquisition overlap"));
  FS47FreeformDirector Facts(nullptr);Facts.Begin(nullptr);
  FS47FreeformObservation Fact;Fact.Id=TEXT("roof_steps.day2.3");Fact.Event=TEXT("roof_steps");Fact.Place=TEXT("SARO roof / service yard");Fact.Bearing=TEXT("NW");Fact.Day=2;Fact.Clock=160000;Fact.bHeard=true;
  Facts.RetainObservation(Fact);Fact.Day=4;Fact.Clock=300000;Fact.PhotoId=TEXT("photo-original");Facts.RetainObservation(Fact);Facts.RetainObservation(Fact);

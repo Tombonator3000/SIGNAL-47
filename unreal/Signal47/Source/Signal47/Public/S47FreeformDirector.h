@@ -22,10 +22,12 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
- struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId; double ControlPlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
+ struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
  bool PlanPhotoControl(const FString& Id);
+ bool PlanLocalNoiseCheck(const FString& Id);
+ FString LocalNoisePlanHint(const FString& Id) const;
  FString PhotoControlHint(const FString& Id) const;
  FString PhotoControlFieldHint(bool& bReady) const;
  bool FollowPhotoControl(const FString& Id);

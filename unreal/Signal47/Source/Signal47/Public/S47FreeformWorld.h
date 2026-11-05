@@ -34,6 +34,7 @@ public:
  void OpenWorkbench();
  bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
+ FString LoggerPreparationBlock(const FString& Action) const; // shared tune/collect availability and reason
  bool LoggerAction(const FString& Action,const FString& TapeId=FString(),const FString& OriginalId=FString());
  const FS47FieldLogger& FieldLogger() const { return Logger; }
  bool AnalyzeSample();

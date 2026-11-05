@@ -1262,6 +1262,16 @@ void FS47FreeformSession::OpenOperations()
       if(Planned)Claims.Add(T::Small(!Baseline||Baseline->bUnavailable||Baseline->Url.IsEmpty()||!Baseline->IsDeveloped()||!Baseline->Pose.IsSet()||!Baseline->Pose->Valid()?TEXT("CONTROL UNAVAILABLE / The frozen original view is unavailable. This plan and existing originals remain retained without a comparison."):TEXT("NEXT / After the passage ends, take the matching view and develop the separate original at PHOTO LAB. Compare both here.")));
      }
    }
+   // Optional research idea comes after the independent free return-photo route.
+   if(Orb)
+   {
+    if(Claim.LocalNoisePlannedAt>=0)Claims.Add(T::Small(Director->LocalNoisePlanHint(Id)));
+    else if(Shot&&!Shot->bUnavailable&&!Shot->Url.IsEmpty()&&Shot->IsDeveloped())
+    {
+     Claims.Add(T::Small(TEXT("Optional: keep an idea for a later local-noise recording. It does not explain the light or unlock equipment. You can repeat the photograph now.")));
+     Claims.Add(T::Button(TEXT("Keep a local-noise check for later / no payment"),[this,Id]{if(Director)Director->PlanLocalNoiseCheck(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+    }
+   }
   }
   if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));
  }
