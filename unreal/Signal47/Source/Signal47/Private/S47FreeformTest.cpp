@@ -100,7 +100,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest"))){S47J::Set(O,TEXT("scope"),TEXT("night-logger-film-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit case-access and player-placement fixtures, actual timed bench calibration, production custody callbacks, native camera and film ray, three disk/Flow Continue rounds. No full field recording or natural travel claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-native-controls"));S47J::Set(O,TEXT("method"),TEXT("Explicit session-seed/open-case/player-placement fixtures. Actual native planning/wait buttons, interaction rays, physical preparation/inspection, natural active clock ticks through the entire gate window and timed roof listening, paused/absent listening checks and disk/Flow Continue. Time jumps occur before valid windows or deliberately invalidate the skipped window. No human input, natural lead discovery or subjective listening acceptance."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldPreview"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-roof-visual-preview"));S47J::Set(O,TEXT("method"),TEXT("Explicit seed, clock and player-placement fixture. Native roof plan button and actual preparation ray, before/after screenshots with cleared toasts and separate rendering delays, then explicitly injected gate disturbance geometry. No control-window, listening or gate-result claim."));}
- if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual native component, retained camera exposure, wet-bench Slate actions, powered OPS guards, unique control plan and once-only payment, with two full disk/Flow restores. Natural scheduling is checked separately in pure tests; no natural discovery, OS-input journey or completed field comparison is claimed."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual camera originals, wet-bench Slate actions, powered OPS guards, completed paired-photo comparison, optional later local-noise plan and once-only payment. Disk/Flow restores are counted separately. Two-plan Follow wiring uses a declared synthetic fixture with real history restored. No natural discovery, human input, logger measurement from the plan or additional payment is claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))
  {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("logger-full-active-window"));S47J::Set(O,TEXT("method"),TEXT("Explicit access and approach/dial fixtures; actual eye-ray/OnUse at depot, bench, field post and printer; production menu callbacks for loan/assembly/tune/acquisition/comparison. Full active game-clock sampling and real SARO acquisition, disk/Flow Continue mid-window and after comparison. No natural access, walking route, native menu clicks, Visitors contact or human listening claim."));}
@@ -230,6 +230,12 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(Age>120){Finish(false,TEXT("bounded logger/photolab supply test timeout"));return;}
   if(!F.Field||!M->Night||!M->Night->Album||!M->Player||!M->UI||!M->Inter)return;
+  auto LoggerButtons=[&](const FString& Label)
+  {
+   TArray<TSharedRef<SButton>> Buttons;
+   if(const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr)PhotoButtons(Modal.ToSharedRef(),Label,Buttons);
+   return Buttons;
+  };
   auto AtStation=[&](const FString& Id)
   {
    M->UI->Close(true);const FVector P=F.Field->StandPoint(Id);M->Player->Place(P.X,P.Z,0);
@@ -283,6 +289,41 @@ void FS47FreeformTest::Step(double Dt)
    if(!Restore(TEXT("nightlogger-prepared-at-bench")))return;Go(9403,.4);return;
   }
   if(Stage==9403)
+  {
+   // Explicit UI-state fixtures; no extra completed work or consumed battery is claimed.
+   Snapshot=S47J::Clone(F.Save());auto Empty=S47J::Clone(Snapshot);S47J::Set(Empty,TEXT("selected"),-1);S47J::Set(S47J::Obj(S47J::Obj(Empty,TEXT("field")),TEXT("fieldlogger")),TEXT("frequency"),1420.6);
+   F.Begin(Empty);F.Director->Stop();AtStation(TEXT("ff:bench"));
+   const auto Before=S47J::Write(F.Field->FieldLogger().Save());
+   if(!Check(!F.CurrentJob()&&F.Field->LoggerPreparationBlock(TEXT("tune")).Contains(TEXT("DAILY WORK"))&&!F.Field->LoggerAction(TEXT("tune"))&&S47J::Write(F.Field->FieldLogger().Save())==Before,TEXT("missing selected card rejects tuning with next step and unchanged logger")))return;
+   F.Field->Use(TEXT("ff:bench"));Go(94030,.4);return;
+  }
+  if(Stage==94030)
+  {
+   const auto Buttons=LoggerButtons(TEXT("Tune logger to selected SARO work card"));
+   if(!Check(Buttons.Num()==1&&!Buttons[0]->IsEnabled(),TEXT("native tuning button is disabled without a selected SARO card")))return;
+   M->UI->Close(true);if(!Check(F.SelectJob(1)&&F.Field->LoggerPreparationBlock(TEXT("tune")).IsEmpty(),TEXT("explicit player card selection makes tuning available")))return;
+   F.Field->Use(TEXT("ff:bench"));Go(94031,.4);return;
+  }
+  if(Stage==94031)
+  {
+   const auto Buttons=LoggerButtons(TEXT("Tune logger to selected SARO work card"));
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled()&&F.ConsoleProfile()&&!FMath::IsNearlyEqual(F.Field->FieldLogger().Frequency,F.ConsoleProfile()->F,1e-6),TEXT("native tuning button becomes enabled for a card differing from explicit logger-frequency fixture")))return;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();
+#endif
+   const auto* Profile=F.ConsoleProfile();if(!Check(Profile&&FMath::IsNearlyEqual(F.Field->FieldLogger().Frequency,Profile->F,1e-9),TEXT("native tune callback uses actual selected SARO frequency")))return;
+   M->UI->Close(true);const auto Baseline=S47J::Clone(F.Field->Save());
+   auto EmptyBattery=S47J::Clone(Baseline);S47J::Set(S47J::Obj(EmptyBattery,TEXT("fieldlogger")),TEXT("battery"),0.);F.Field->Begin(EmptyBattery);
+   const auto Before=S47J::Write(F.Field->FieldLogger().Save());
+   if(!Check(F.Field->LoggerPreparationBlock(TEXT("take")).Contains(TEXT("recharge"))&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0&&S47J::Write(F.Field->FieldLogger().Save())==Before,TEXT("explicit empty-battery fixture blocks collection without changing custody or originals")))return;
+   auto Full=S47J::Clone(Baseline);auto Logger=S47J::Obj(Full,TEXT("fieldlogger"));TArray<TSharedPtr<FJsonValue>> Tapes;
+   for(int I=0;I<256;++I){auto T=S47J::New();S47J::Set(T,TEXT("id"),FString::Printf(TEXT("capacity-fixture-%d"),I));Tapes.Add(MakeShared<FJsonValueObject>(T));}Logger->SetArrayField(TEXT("tapes"),Tapes);F.Field->Begin(Full);
+   if(!Check(F.Field->LoggerPreparationBlock(TEXT("take")).Contains(TEXT("capacity"))&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0&&F.Field->FieldLogger().Tapes.Num()==256,TEXT("explicit full-capacity fixture blocks collection without deleting retained tapes")))return;
+   F.Begin(S47J::Clone(Snapshot));F.Director->Stop();AtStation(TEXT("ff:bench"));
+   if(!Check(F.Field->LoggerPreparationBlock(TEXT("take")).IsEmpty()&&F.Field->FieldLogger().Tapes.IsEmpty(),TEXT("restore real prepared logger after UI fixtures without new tapes or lost capacity")))return;
+   Go(94032,.3);return;
+  }
+  if(Stage==94032)
   {
    F.Director->Stop();const auto& L=F.Field->FieldLogger();
    if(!Check(L.bLoanIssued&&!L.bCheckedOut&&L.Checkouts==2&&L.Returns==2&&L.Assembly==3&&L.bCalibrated&&L.Site==-1&&L.Tapes.IsEmpty()&&F.Field->ParcelStage()==0,TEXT("Continue retains one prepared logger at bench without invented deployment or original tape")))return;

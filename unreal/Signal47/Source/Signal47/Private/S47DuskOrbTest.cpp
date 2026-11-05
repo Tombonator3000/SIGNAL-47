@@ -1,6 +1,7 @@
 #include "S47FreeformTest.h"
 #include "S47DuskOrb.h"
 #include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Flow.h"
@@ -58,6 +59,24 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
    if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());OrbButtons(W.ToSharedRef(),Label,Buttons);}
   },true);
   return Buttons;
+ };
+ auto NoiseHints=[&]
+ {
+  TArray<TSharedRef<SWidget>> Found;TSet<const SWidget*> Seen;
+  TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> W)
+  {
+   if(Seen.Contains(&W.Get())||!W->GetVisibility().IsVisible())return;Seen.Add(&W.Get());
+   if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(TEXT("OPTIONAL / LATER LOCAL-NOISE CHECK")))Found.Add(W);
+   auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)Visit(C->GetChildAt(I));
+  };
+  if(const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr)Visit(Modal.ToSharedRef());
+  if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& U){auto W=U.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(W->GetTypeAsString().Contains(TEXT("Window")))Visit(W.ToSharedRef());},true);
+  return Found;
+ };
+ auto HintScroll=[](TSharedRef<SWidget> Hint)
+ {
+  TSharedPtr<SWidget> W=Hint;while(W){if(W->GetTypeAsString()==TEXT("SScrollBox"))return StaticCastSharedPtr<SScrollBox>(W);W=W->GetParentWidget();}
+  return TSharedPtr<SScrollBox>();
  };
  auto RestoreFocusFixture=[&]
  {
@@ -121,6 +140,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==9503)
  {
+  if(!Check(!F.Director->PlanLocalNoiseCheck(PhotoClaimId)&&!F.Director->PlanLocalNoiseCheck(TEXT("missing-photo-incident")),TEXT("optional noise idea rejects undeveloped photo and absent incident")))return;
   if(!Check(F.CanRegisterPhotoEvidence()&&Original()&&Original()->LabStage==0&&!F.Director->PlanPhotoControl(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("physical OPS rejects control plan and payment while real orb original is undeveloped")))return;
   M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));
   if(!Check(Bench&&bool(Bench->Object),TEXT("orb print uses actual wet-bench world object")))return;
@@ -161,6 +181,74 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
    bool Ready=false;if(!Check(F.Director->PhotoControlFieldHint(Ready).Contains(TEXT("OPS"))&&!Ready,TEXT("developed matching control points back to OPS without declaring camera readiness")))return;
    F.Use(TEXT("opsTerminal"));Go(9604,.8);return;
   }
+  S47J::Set(Snapshot,TEXT("noiseLoggerBefore"),F.Field->FieldLogger().Save());S47J::Set(Snapshot,TEXT("noiseCasesBefore"),F.CaseFile().Save());
+  S47J::Set(Snapshot,TEXT("noiseAlbumBefore"),M->Night->Album->SaveData());S47J::Set(Snapshot,TEXT("noiseDebtBefore"),F.Debt());S47J::Set(Snapshot,TEXT("noiseFocusBefore"),F.Director->PhotoControlFocusId());
+  const auto RealAlbum=S47J::Clone(M->Night->Album->SaveData());auto Unavailable=S47J::Clone(RealAlbum);
+  for(const auto& V:S47J::Arr(Unavailable,TEXT("shots")))if(S47J::Str(V->AsObject(),TEXT("id"))==RetainedPhotoId)S47J::Set(V->AsObject(),TEXT("unavailable"),true);
+  M->Night->Album->Restore(Unavailable);const bool Rejected=!F.Director->PlanLocalNoiseCheck(PhotoClaimId);M->Night->Album->Restore(RealAlbum);
+  if(!Check(Rejected,TEXT("optional noise idea rejects unavailable original without altering it")))return;
+  if(!Check(F.Use(TEXT("opsTerminal")),TEXT("optional noise idea opens actual OPS")))return;Go(95060,.5);return;
+ }
+ if(Stage==95060)
+ {
+  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies opens optional noise idea")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#endif
+  Go(95061,.5);return;
+ }
+ if(Stage==95061)
+ {
+  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("Keep a local-noise check for later / no payment"));
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("one optional native plan button for developed real original")))return;
+  TSharedPtr<SWidget> W=Buttons[0];while(W.IsValid()){if(W->GetTypeAsString()==TEXT("SScrollBox")){StaticCastSharedPtr<SScrollBox>(W)->ScrollDescendantIntoView(Buttons[0],false);break;}W=W->GetParentWidget();}
+  Go(95062,.5);return;
+ }
+ if(Stage==95062)
+ {
+  const auto Buttons=NativeButtons(TEXT("Keep a local-noise check for later / no payment"));
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native optional plan button ready after layout")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#endif
+  Go(95063,.4);return;
+ }
+ if(Stage==95063)
+ {
+  const auto& Noise=F.Director->PhotoClaims()[0];
+  if(!Check(Noise.LocalNoiseOriginalId==RetainedPhotoId&&Noise.LocalNoisePlannedAt>=0&&F.HasFinding(TEXT("photo-local-noise-plan.")+PhotoClaimId)&&!F.Director->PlanLocalNoiseCheck(PhotoClaimId)&&F.Budget()==PhotoBudget&&F.Debt()==S47J::Int(Snapshot,TEXT("noiseDebtBefore"))&&F.Director->PhotoControlFocusId()==S47J::Str(Snapshot,TEXT("noiseFocusBefore"))&&FJsonValue::CompareEqual(FJsonValueObject(F.Field->FieldLogger().Save()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("noiseLoggerBefore"))))&&FJsonValue::CompareEqual(FJsonValueObject(F.CaseFile().Save()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("noiseCasesBefore"))))&&FJsonValue::CompareEqual(FJsonValueObject(M->Night->Album->SaveData()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("noiseAlbumBefore")))),TEXT("native idea retains frozen original once; cash, access, cases, logger tapes/overlap and photographs unchanged")))return;
+  S47J::Set(Snapshot,TEXT("noisePlannedAt"),Noise.LocalNoisePlannedAt);
+  if(!Check(F.Field->LoggerAccess()||F.Director->LocalNoisePlanHint(PhotoClaimId).Contains(TEXT("THE REPEATED INTERVAL")),TEXT("without logger access the saved idea explains the existing loan gate")))return;
+  if(!F.TerminalWindowRendered())return;
+  const auto Hints=NoiseHints();if(!Check(Hints.Num()==1,TEXT("exactly one local-noise hint exists in current native UI roots")))return;
+  const auto Scroll=HintScroll(Hints[0]);if(!Check(Scroll.IsValid(),TEXT("local-noise hint has actual scroll ancestor")))return;
+  UE_LOG(LogTemp,Display,TEXT("S47 noise hint scroll before=%.2f end=%.2f hintHeight=%.2f viewportHeight=%.2f"),Scroll->GetScrollOffset(),Scroll->GetScrollOffsetOfEnd(),Hints[0]->GetCachedGeometry().GetLocalSize().Y,Scroll->GetCachedGeometry().GetLocalSize().Y);
+  Scroll->SetScrollOffset(Scroll->GetScrollOffsetOfEnd());
+  Go(950631,.5);return;
+ }
+ if(Stage==950631)
+ {
+  const auto Hints=NoiseHints();if(!Check(Hints.Num()==1,TEXT("same unique hint remains after scroll layout")))return;
+  const auto Scroll=HintScroll(Hints[0]);if(!Check(Scroll.IsValid(),TEXT("scroll ancestor remains after layout")))return;
+  // Offscreen AutoWrap text acquires its final height only after first becoming
+  // visible. Read the new content extent after that paint, then inspect bounds.
+  Scroll->SetScrollOffset(Scroll->GetScrollOffsetOfEnd());Go(950632,.5);return;
+ }
+ if(Stage==950632)
+ {
+  const auto Hints=NoiseHints();if(!Check(Hints.Num()==1,TEXT("unique local-noise hint survives final wrap layout")))return;
+  const auto Scroll=HintScroll(Hints[0]);if(!Check(Scroll.IsValid(),TEXT("actual scroll viewport retained after text wrapping")))return;
+  const auto HG=Hints[0]->GetCachedGeometry(),SG=Scroll->GetCachedGeometry();
+  const double Top=HG.LocalToAbsolute(FVector2D::ZeroVector).Y,Bottom=HG.LocalToAbsolute(FVector2D(0,HG.GetLocalSize().Y)).Y;
+  const double ViewTop=SG.LocalToAbsolute(FVector2D::ZeroVector).Y,ViewBottom=SG.LocalToAbsolute(FVector2D(0,SG.GetLocalSize().Y)).Y;
+  UE_LOG(LogTemp,Display,TEXT("S47 noise hint scroll after=%.2f end=%.2f bounds=%.2f..%.2f viewport=%.2f..%.2f"),Scroll->GetScrollOffset(),Scroll->GetScrollOffsetOfEnd(),Top,Bottom,ViewTop,ViewBottom);
+  if(!Check(Bottom>Top&&Top>=ViewTop-2&&Bottom<=ViewBottom+2,TEXT("complete local-noise instruction is geometrically inside native scroll viewport before screenshot")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("orb-optional-local-noise-plan.png"),false,false);Go(95064,.6);return;
+ }
+ if(Stage==95064)
+ {
+  M->UI->Close(true);
   if(!Check(F.Director->PlanPhotoControl(PhotoClaimId)&&F.HasFinding(TEXT("orb-return-plan.")+PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("developed original unlocks persisted S-03 reference plan without payment or manufactured control result")))return;
   if(!Check(!F.Director->PlanPhotoControl(PhotoClaimId)&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("orb plan is idempotent and documentation pays once only")))return;
   if(!Check(F.Director->FollowPhotoControl(PhotoClaimId)&&F.Director->PhotoControlFocusId()==PhotoClaimId&&!F.Director->FollowPhotoControl(TEXT("missing-plan"))&&F.Director->PhotoControlFocusId()==PhotoClaimId,TEXT("real developed plan can be followed at powered OPS; invalid focus leaves it unchanged")))return;
@@ -172,6 +260,8 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==9508)
  {
+  const auto& Noise=F.Director->PhotoClaims()[0];
+  if(!Check(Noise.LocalNoiseOriginalId==RetainedPhotoId&&Noise.LocalNoisePlannedAt==S47J::Num(Snapshot,TEXT("noisePlannedAt"))&&F.HasFinding(TEXT("photo-local-noise-plan.")+PhotoClaimId)&&!F.Director->PlanLocalNoiseCheck(PhotoClaimId)&&FJsonValue::CompareEqual(FJsonValueObject(F.Field->FieldLogger().Save()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("noiseLoggerBefore"))))&&FJsonValue::CompareEqual(FJsonValueObject(F.CaseFile().Save()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("noiseCasesBefore")))),TEXT("existing disk Continue retains optional noise idea without loan, tape, overlap, access or case changes")))return;
   if(!Check(F.Director->PhotoControlFocusId()==PhotoClaimId,TEXT("disk Continue preserves selected real photo return plan")))return;
   if(!Check(Original()&&Original()->IsDeveloped()&&Original()->Url==RetainedPhotoUrl&&Original()->Clock==S47J::Num(Snapshot,TEXT("photoClock"))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].bPaid&&F.HasFinding(TEXT("orb-return-plan.")+PhotoClaimId)&&!F.Director->PlanPhotoControl(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("disk Continue preserves real developed original, paid incident and unique uncompleted control plan")))return;
   if(!Check(Original()->Pose.IsSet(),TEXT("real orb exposure retained its shutter pose")))return;
@@ -304,6 +394,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   auto Pending=S47J::Read(S47J::Write(SavedDirector));auto PendingClaims=S47J::Arr(Pending,TEXT("photoClaims"));PendingClaims[0]->AsObject()->RemoveField(TEXT("controlPhoto"));F.Director->Begin(Pending);
   if(!Check(F.Director->CanRegisterPhotoControl(PhotoClaimId,RetainedPhotoId),TEXT("restored real developed pair remains eligible before missing-original fixture")))return;
   M->Night->Album->Restore(Unavailable);
+  if(!Check(F.Director->LocalNoisePlanHint(PhotoClaimId).Contains(TEXT("reference photograph is unavailable")),TEXT("missing frozen noise reference is reported honestly while its saved idea remains")))return;
   Ready=true;if(!Check(!F.Director->CanRegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Director->PhotoControlFieldHint(Ready).Contains(TEXT("ORIGINAL VIEW UNAVAILABLE"))&&!Ready,TEXT("marked unavailable undeveloped original is never treated as a usable control baseline")))return;
   M->Night->Album->Restore(SavedAlbum);F.Director->Begin(SavedDirector);
   if(!Check(F.Budget()==PhotoBudget&&S47J::Write(M->Night->Album->SaveData())==S47J::Write(SavedAlbum)&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId,TEXT("availability fixtures leave actual originals, comparison history and payment unchanged")))return;
@@ -392,7 +483,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   const auto Real=S47J::Obj(Snapshot,TEXT("nativeFocusRealDirector"));
   if(!Check(FJsonValue::CompareEqual(FJsonValueObject(F.Director->Save()),FJsonValueObject(Real))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id==PhotoClaimId&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId&&F.Budget()==PhotoBudget,TEXT("after UI fixture, exact genuine Director history and completed paid original pair restored")))return;
   Snapshot->RemoveField(TEXT("nativeFocusRealDirector"));Snapshot->RemoveField(TEXT("nativeFocusRealAlbum"));Snapshot->RemoveField(TEXT("nativeFocusFixtureBefore"));
-  Finish(true,TEXT("PHOTO04 native real-original journey plus explicitly synthetic two-plan Follow-button wiring; real history restored. No second natural event or additional payment claimed."));return;
+  Finish(true,TEXT("PHOTO04 real-original journey and optional local-noise idea; explicit synthetic two-plan Follow wiring restores real history. No logger measurement, second natural event or additional payment claimed."));return;
  }
 
 }
