@@ -1904,3 +1904,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 
 `claude/night-ui-audio`: felles panel har oliven bakgrunn, kremtittel og større overskrifter; workshop og array-boks har statuskolonner og fylt ravfarget handling (UI-POLISH-20261105-01, delvis; arkiv og bil følger bare felles stil). `S47ArrayWearTest` 41 og `S47WorkshopTest` 56 består. `S47FreeformEvidenceTest` må kjøres uten `-S47FreeformTest`; den kommer nå forbi DAILY WORK, men stopper fortsatt på printerstrålen i steg 15, som før. Permens fylte knapp er derfor ikke klikket gjennom den testen, og ikke med fysisk mus.
 
+## 5. november 2026 kl.23:25, nattinstallasjon
+
+`4cf5475b` installert: 2496 selvtester, oppstart, 136 Saved-filer uendret. Normalreisen på pakken består fase 1 til 5 etter at fotoplassen ble flyttet utenfor kulenes 7 m; fase 6 og 7 ikke kjørt. Neste samlede rydding: `~/scratch-bm/Signal47-night-20261105/d1` kan fjernes, og `d2` når `d3` er eldste beholdte; `d4/candidate` er installert kilde.
+
