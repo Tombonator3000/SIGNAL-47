@@ -1032,10 +1032,11 @@ void FS47FreeformSession::OpenOperations()
   }
   return S47Kit::Col(A);
  };
- int32 Remaining=0,TodayRemaining=0,EarlierRemaining=0;
- for(const auto& X:Work)if(X.Stage!=EJobStage::Filed){++Remaining;if(X.Day==DayNumber)++TodayRemaining;else if(X.Day<DayNumber)++EarlierRemaining;}
+ int32 Remaining=0,TodayRemaining=0,EarlierRemaining=0,Rejected=0;
+ for(const auto& X:Work)if(X.Stage!=EJobStage::Filed&&X.bDuplicateRejected)++Rejected;
+ for(const auto& X:Work)if(X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected){++Remaining;if(X.Day==DayNumber)++TodayRemaining;else if(X.Day<DayNumber)++EarlierRemaining;}
  const FString QueueExplanation=Remaining==0
-  ?FString(TEXT("ALL OBSERVING WORK COMPLETE / Results are retained in EARLIER WORK and CASE ARCHIVE. "))+AvailableActivities()
+  ?FString(Rejected>0?TEXT("NO ACTIONABLE OBSERVATIONS REMAIN / Unverifiable legacy originals remain retained without completion, finding or payment. "):TEXT("ALL OBSERVING WORK COMPLETE / Results are retained in EARLIER WORK and CASE ARCHIVE. "))+AvailableActivities()
   :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK includes completed results immediately and untouched older jobs. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
  const FJob* J=CurrentJob();
  auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
@@ -1057,7 +1058,7 @@ void FS47FreeformSession::OpenOperations()
      if(SelectJob(Next)){OpsSection=1;OpenOperations();}
     },true));
    }
-   else Continue.Add(T::Small(Remaining>0?TEXT("Only unverifiable legacy observations remain in this queue. Their originals stay retained without a finding or payment. Photo preparation is available below; new daily observations arrive at 08:00."):TEXT("Daily observations are complete. Start the optional reference check below to retain a fresh baseline without extra payment.")));
+   else Continue.Add(T::Small(Rejected>0?TEXT("Only unverifiable legacy observations remain in this queue. Their originals stay retained without a finding or payment. Start the optional reference check below for a fresh baseline without payment, or prepare your camera. New daily observations arrive at 08:00."):TEXT("Daily observations are complete. Start the optional reference check below to retain a fresh baseline without extra payment.")));
    FString Photo;
    const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
    if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS.");
@@ -1485,18 +1486,18 @@ void FS47FreeformSession::ClearCompletedSelection()
 }
 FString FS47FreeformSession::AvailableActivities()const
 {
- int32 Pending=0;for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed)++Pending;
+ int32 Pending=0;for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected)++Pending;
  if(Pending>0)return FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending);
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)
   return C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title);
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH");
  if(ServiceGuide==1)return ServiceObjective();
- if(Field&&Field->LoggerAccess())return Field->FieldLogger().bLoanIssued?TEXT("EAST WING / CALIBRATION BENCH: PREPARE THE LOAN LOGGER FOR A TWO-HOUR LOCAL-NOISE COMPARISON; KEEP A MATCHING SARO ORIGINAL"):TEXT("EAST WING / PARTS STORAGE: COLLECT YOUR FIRST LOAN LOGGER AT EQUIPMENT CHECKOUT; THEN PREPARE IT AT THE CALIBRATION BENCH");
+ if(Field&&Field->LoggerAccess())return Field->FieldLogger().NextAction();
  return TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL.");
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
- if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed;}))return false;
+ if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected;}))return false;
  FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-REFERENCE-%04d"),DayNumber,Work.Num());J.Day=DayNumber;J.Slot=0;J.Source=0;
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,0,0);J.bGenerated=true;J.bPaid=true;
  J.Card.Receiver.Card=TEXT("OPTIONAL REFERENCE CHECK / NO PAYMENT\nRetain a fresh instrument baseline using the usual tracking cross and receiver. This check creates no incident or cause by itself.\n\n")+J.Card.Receiver.Card;
