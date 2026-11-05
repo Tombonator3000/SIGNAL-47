@@ -1859,3 +1859,7 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ## 5. november 2026 kl.12:36, samlet oppfølging installert
 
 `bef9fa88`, PR415 og PR416, er installert via uendret standardstarter: 2464 pakkede/installerte selvtester, 213 kontroller over sju prosesser og 126 Saved-filer byteidentiske. Ingen rydderunde; nattkandidaten er beholdt som tilbakerulling.
+
+## 5. november 2026 kl.13:45, verksted og samling
+
+Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, kontrollert med hash. `claude/crafting-20261105`: donor, deltest, oppskrifter, demontering og synlig brett på benken. Bygg, 2484 selvtester og 56 native kontroller består; brett og panel visuelt kontrollert. Ikke installert.

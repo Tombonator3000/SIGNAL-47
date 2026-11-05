@@ -204,6 +204,7 @@ void AS47HUD::Start()
 		bOk &= FS47CaseFieldTests::SelfTest(Lines);
 		bOk &= FS47HighwayUfo::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);
+		bOk &= FS47Workshop::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
 		bOk &= FS47SC04::SelfTest(Lines);
 		bOk &= FS47SC08::SelfTest(Lines);

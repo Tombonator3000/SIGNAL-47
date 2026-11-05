@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
+**Verksted og crafting i Freeform, ikke installert:** Caliche selger brukt feltopptaker, tørrceller og skjermefolie. På kalibreringsbenken demonteres opptakeren til fire deler med egen identitet, hver testes (død eller god, første giver har dødt tidsur, andre død opptaksmodul), og delene ligger synlig på benken. Tre oppskrifter viser eksakt mangel: egen feltlogger (åpner feltarbeid uten lån eller saksadgang), batteripakke (6 til 12 timer) og folieskjermet ledning (tre firedeler lavere lokal støy på originalen). Alt kan demonteres med vist utbytte; celler og folie kommer ikke tilbake. Jobbene overlever lagring. Editorbygg, 2484 selvtester og 56 native kontroller med tre diskreturer består, med erklært startlager og plassering. Butikkturen i spill, en full to-timers tape og menneskelig aksept er ikke prøvd.
+
 **Installert samlet 5. november kl.12:36:** `bef9fa88` etter PR415 og PR416 er nå standard. 2464 selvtester og 213 pakkede reisekontroller består, og alle 126 Saved-filer er uendret. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-05_bef9fa88.md). SC04-returen er prøvd i editor, ikke i pakket bygg.
 
 **Dagbokoppfølging etter nattkandidaten:** Now viser nå riktig navngitt serviceantenne med ett tydelig fokus, og fotoreturplaner kan velges og følges uavhengig av betaling, med egen tilstand når originalen mangler. Editorbygg, 2464 selvtester og 118 native kontroller består, og tre skjermbilder er visuelt kontrollert. Prøven bruker erklærte fixtures og SButton-kall, ikke to naturlige hendelser, OS-mus eller fullført service. SC04-returen kom i egen PR.

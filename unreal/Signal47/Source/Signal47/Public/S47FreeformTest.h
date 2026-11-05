@@ -32,6 +32,8 @@ private:
  FString PrinterId,PrinterOriginal,PrinterStamp,GuidanceExpected,TutorialId;
  S47J::FObj Snapshot;
  void StepLoggerJourney(double Dt);
+ void StepWorkshopJourney(double Dt);
+ TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;
  TSharedPtr<struct FS47LoggerJourneyState> LoggerJourney;
  void StepStoryCamera(double Dt);
  S47J::FObj StoryCameraSnapshot;

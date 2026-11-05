@@ -20,6 +20,8 @@ Undersøkelsen 5. november velger eksisterende gratis lånekit som første avgre
 
 Editorleveranse 5. november: OPS kan lagre en frivillig lokalstøyidé fra et faktisk fremkalt lysfoto, med frossen original/tid, uendret gratis fotokontroll og uten ny adgang eller måling. Loggerbenkens tune-/henteknapper følger faktisk tilgjengelighet og forklarer manglende valgt kort, tomt batteri og full kapasitet. Bygg/2461 selvtester, foto 104 kontroller/tre diskreturer og logger/film 52/tre består. Fototeksten er visuelt kontrollert på CRT; tilstandsfixtures for knappvern er erklært. Installasjon og naturlig samlet spillerreise gjenstår.
 
+**Første crafting-reise levert i editor 5. november (Toms bestilling):** se [status](STATUS.md). Stativ og retningsmarkør for nattfoto, flere oppskrifter og Toms vurdering av nytte og tempo gjenstår. Avsnittet under beskriver vurderingen før denne leveransen.
+
 Ekte crafting krever fortsatt en konkret donor med testbar opptaksmodul/timer, beholdt deltilstand, en eksakt oppskrift med atomisk forbruk/resultat og regler for gjenopptak og demontering. Dagens donor gir et relé; den er ikke en dokumentert kilde til loggerhus eller opptaksmodul. Undersøk først nytten av lånekitreisen før én eventuell donorbasert alternativ oppskrift implementeres. Oppgaven forblir åpen: dette er et kildebasert designvalg, ikke en ny implementeringsleveranse eller menneskelig aksept av reisen.
 
 Referanser undersøkt 4. november, kun for design/kildeundersøkelse; ingen kode er importert eller runtime-testet i Unreal:
