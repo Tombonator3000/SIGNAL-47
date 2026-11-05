@@ -1919,6 +1919,16 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			W.Hints = { TEXT("A field plan remains available while you work on a normal observation."), W.NextAction };
 			if (W.bFollowed) X.WorkItems.Insert(W, 0); else X.WorkItems.Add(W);
 		}
+		if (F->Field && F->Field->ArrayWear().bActive)
+			if (const auto* Next = F->Field->ArrayWear().NextBranch())
+			{
+				const int32 Up = 27 - F->Field->ArrayWear().DownCount();
+				const FString Missing = F->Field->BranchNeeds(*Next);
+				FS47NbWorkItem W; W.Id = TEXT("array/") + FString(Next->Id); W.Title = FString::Printf(TEXT("Restore the array / %d of 27"), Up); W.Status = TEXT("Station goal");
+				W.NextAction = FString::Printf(TEXT("%s: %s %s"), Next->Title, Next->Fault, Missing.IsEmpty() ? TEXT("You have what it needs.") : *(TEXT("Needs ") + Missing + TEXT(".")));
+				W.Location = FString::Printf(TEXT("%s junction, beside antenna %s"), Next->Title, Next->Junction);
+				X.WorkItems.Add(W);
+			}
 		if (F->ActiveServiceGuide() > 0)
 		{
 			FS47NbWorkItem W; W.Id = TEXT("service/") + FString::FromInt(F->ActiveServiceGuide()); W.Title = (F->Field ? F->Field->ServiceDishId() : FString(TEXT("Array"))) + TEXT(" service work order");

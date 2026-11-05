@@ -68,10 +68,10 @@ namespace
  const FVector GeneratorAt(5.93,1.35,.65);
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
- const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil") };
- int32 Price(const FString& Id) { return Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:0; }
- FString ItemTitle(const FString& Id) { return Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
- bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
+ const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor") };
+ int32 Price(const FString& Id) { return Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:0; }
+ FString ItemTitle(const FString& Id) { return Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
+ bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
  double PumpIncrement(double Tank,double Remaining) { return FMath::Max(0.,FMath::Min(.25,FMath::Min(4.-Tank,Remaining))); }
@@ -113,7 +113,10 @@ FString FS47FreeformWorld::ServiceWords(const FString& Text) const
 
 void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
- Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));Crafting.Load(S47J::Obj(O,TEXT("workshop")));bWorkshopResume=false;bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
+ Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));Crafting.Load(S47J::Obj(O,TEXT("workshop")));bWorkshopResume=false;Wear.Load(S47J::Obj(O,TEXT("arrayWear")));
+ // Tests written for the full array keep it; only their own explicit fixture wears it down.
+ if(!O&&(!(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformEvidenceTest")))||FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))))Wear.Start();
+bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
  ServiceTarget=TEXT("S-03");OrdinaryServiceSerial=0;
  PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
@@ -159,7 +162,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
-  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
+  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("splice_kit")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
  if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  // Old saves already carrying the device retain their physical loan. New loans
@@ -171,6 +174,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
  const auto RestoredCarry=MigrateBenchParcel(O,Dropped,Payload);
  Build();if(Carry)Carry->Restore(RestoredCarry,Payload==4?Dropped:FVector::ZeroVector);OverrideExisting();
  if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=true;
+ ApplyWear();
  if(M&&M->Web&&ServiceDishIndex()>=0)
  {
   M->Web->SetDishRemoteAvailable(ServiceDishIndex(),!HasArrayFault());
@@ -200,6 +204,8 @@ void FS47FreeformWorld::Stop()
  RestoreServiceCabinet();
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=false;
  if(ServiceDishIndex()>=0)Web->SetDishRemoteAvailable(ServiceDishIndex(),true);
+ for(const auto& Pose:WearPose){Web->SetDishRemoteAvailable(Pose.Key,true);Web->SnapDish(Pose.Key,Pose.Value.X,Pose.Value.Y);}
+ WearPose.Reset();
  for(FS47Obj O:Parts)if(O.W==Web&&O)
  {
   O.SetVisible(false);
@@ -210,7 +216,7 @@ void FS47FreeformWorld::Stop()
 
 S47J::FObj FS47FreeformWorld::Save() const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("eastWingAnchors"),1);S47J::Set(O,TEXT("fieldlogger"),Logger.Save());S47J::Set(O,TEXT("workshop"),Crafting.Save());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("service"),Service);S47J::Set(O,TEXT("feeder"),Feeder);
+ auto O=S47J::New();S47J::Set(O,TEXT("eastWingAnchors"),1);S47J::Set(O,TEXT("fieldlogger"),Logger.Save());S47J::Set(O,TEXT("workshop"),Crafting.Save());S47J::Set(O,TEXT("arrayWear"),Wear.Save());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("service"),Service);S47J::Set(O,TEXT("feeder"),Feeder);
  S47J::Set(O,TEXT("faultDay"),LastFaultDay);S47J::Set(O,TEXT("emergencyDay"),EmergencyDay);S47J::Set(O,TEXT("payload"),Payload);S47J::Set(O,TEXT("item"),Item);
  auto C=S47J::New();if(Payload>0&&Price(Item)>0)for(const auto& Pair:Contents)S47J::Set(C,*Pair.Key,Pair.Value);S47J::Set(O,TEXT("contents"),C);
  S47J::Set(O,TEXT("powerFaultSerial"),PowerFaultSerial);S47J::Set(O,TEXT("emergencyFuseFault"),EmergencyFuseFault);S47J::Set(O,TEXT("trackedPowerFault"),bTrackedPowerFault);
@@ -221,7 +227,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
- S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
+ S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("splice_kit")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
 }
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
@@ -535,6 +541,12 @@ bool FS47FreeformWorld::Build()
  if(BenchMeter)Bind(BenchMeter,TEXT("ff:bench"));
  else BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02+BenchRaise,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
  BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),bCase?BenchAt+FVector(-.10,CaseTop+.20,-.05):BenchAt+FVector(-.44,1.04+BenchRaise,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
+ // A dead branch shows it from the jeep: an amber fault lamp on top of its junction box.
+ for(int32 I=0;I<FS47ArrayWear::Branches().Num()&&I<4;++I)
+ {
+  const FVector At=InteractionPoint(FString(TEXT("field:"))+FS47ArrayWear::Branches()[I].Junction);
+  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.66,0),FVector(.11,.09,.11),0xd08a2c,Saro);
+ }
  // EASTWING workshop tray: one small part per slot on the free right of the worktop.
  for(int32 I=0;I<FS47Workshop::TraySize;++I)
  {
@@ -620,6 +632,13 @@ void FS47FreeformWorld::Apply()
  if(PumpModel){PumpModel.SetVisible(bActive&&bTripoPump);if(!bTripoPump)if(const auto* N=PumpModel.W->Node(PumpModel.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
  for(int32 I=0;I<2;++I)if(LoggerPosts[I]){const bool Show=bActive&&LoggerAccess();LoggerPosts[I].SetVisible(Show);if(const auto* N=M->Web->Node(LoggerPosts[I].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
  if(LoggerBody){const bool Show=bActive&&Logger.Site>=0;LoggerBody.SetVisible(Show);if(const auto* N=M->Web->Node(LoggerBody.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);if(Show)C->SetWorldLocation(S47Three::ToUE(LoggerPoint(Logger.Site)));}}
+ for(int32 I=0;I<FS47ArrayWear::Branches().Num()&&I<4;++I)if(WearLamps[I])
+ {
+  const FS47ArrayWear::FBranch& B=FS47ArrayWear::Branches()[I];const bool Down=bActive&&Wear.bActive&&!Wear.IsRestored(B.Id);
+  WearLamps[I].SetVisible(Down);
+  if(const auto* N=M->Web->Node(WearLamps[I].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  if(Down)WearLamps[I].SetEmissive(S47Three::Hex(0xd08a2c),Wear.Job==B.Id?1.f:.45f);
+ }
  for(int32 I=0;I<FS47Workshop::TraySize;++I)if(TrayParts[I])
  {
   const auto* P=Crafting.Tray.IsValidIndex(I)?&Crafting.Tray[I]:nullptr;const bool Show=bActive&&P;TrayParts[I].SetVisible(Show);
@@ -694,7 +713,7 @@ bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
  if(!AtShopCounter()||Price(Id)<=0||(Emergency?Payload!=0:!CanAddShopItem()))return false;
  if(InventoryCount(Id)+Contents.FindRef(Id)>=99){Change(TEXT("SARO stock plus this paid parcel has reached the 99-item storage limit for that supply."));return false;}
  if(!Emergency&&!ShopOpen()){Change(TEXT("The shop counter sells supplies 08:00–20:00. Essential credit requisitions remain available here after hours."));return false;}
- if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film")||Id==TEXT("recorder_donor")||Id==TEXT("cell")||Id==TEXT("foil"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
+ if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film")||Id==TEXT("recorder_donor")||Id==TEXT("cell")||Id==TEXT("foil")||Id==TEXT("drive_motor"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
  if(!M->Freeform->Spend(Price(Id),Emergency)){Change(M->Freeform->FeedbackText());return false;}
  if(Emergency)EmergencyDay=M->Freeform->Day();if(Payload==0){Item=Id;Contents.Reset();}++Contents.FindOrAdd(Id);Payload=1;bParcelWasLoaded=false;Change(TEXT("Paid and added to your counter parcel. Add more supplies or close the list and collect the sealed parcel."));return true;
 }
@@ -913,6 +932,7 @@ void FS47FreeformWorld::FinishWorkshopJob(const FString& Job)
   const auto* R=FS47Workshop::Recipe(Arg);if(!R)return;const int32 Cells=InventoryCount(TEXT("cell")),Foil=InventoryCount(TEXT("foil"));
   if(!Crafting.Build(Arg,Cells,Foil)){Change(TEXT("CALIBRATION / REPAIR: Assembly abandoned; the parts are unchanged."));return;}
   for(int32 I=0;I<R->Cells;++I)Consume(TEXT("cell"));for(int32 I=0;I<R->Foil;++I)Consume(TEXT("foil"));
+  if(R->Stock)AddItem(R->Stock);
   if(Arg==TEXT("own_logger")){Logger.bOwned=true;Logger.bLoanIssued=true;Logger.Assembly=3;Logger.bCalibrated=false;Logger.Calibration=0;Logger.Battery=0;}
   if(Arg==TEXT("battery_pack"))Logger.bBatteryPack=true;
   if(Arg==TEXT("shielded_lead"))Logger.bShieldedLead=true;
@@ -988,6 +1008,58 @@ void FS47FreeformWorld::OpenWorkshop()
  }
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / WORKSHOP"),S47Kit::Two(S47Kit::Col(L),S47Kit::Col(R),.42f,.58f),980));
 }
+void FS47FreeformWorld::ApplyWear()
+{
+ if(!M||!M->Web||!Wear.bActive)return;
+ for(int32 I=0;I<M->Web->DishCount();++I)if(Wear.BranchOfDish(M->Web->DishId(I)))
+ {
+  // Out of service, parked low and left: the state of the array reads from the ground.
+  if(!WearPose.Contains(I))WearPose.Add(I,FVector2D(M->Web->DishAz(I),M->Web->DishEl(I)));
+  M->Web->SetDishRemoteAvailable(I,false);M->Web->SnapDish(I,WearPose[I].X,12);
+ }
+}
+FString FS47FreeformWorld::BranchNeeds(const FS47ArrayWear::FBranch& B) const
+{
+ TArray<FString> Out;
+ for(const auto& N:B.Needs){const int32 Have=InventoryCount(N.Item);if(Have<N.Count)Out.Add(FString::Printf(TEXT("%d x %s (have %d)"),N.Count,*ItemTitle(N.Item),Have));}
+ return FString::Join(Out,TEXT(", "));
+}
+void FS47FreeformWorld::OpenBranch(const FString& BranchId)
+{
+ const auto* B=FS47ArrayWear::Branch(BranchId);if(!Ready()||!B||!M->UI||Wear.IsRestored(BranchId))return;
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("%s / %d ANTENNAS OUT OF SERVICE\n%s"),B->Title,B->Dishes.Num(),B->Fault)));
+ for(const auto& N:B->Needs)R.Add(S47Kit::Text(FString::Printf(TEXT("%d x %s / have %d"),N.Count,*ItemTitle(N.Item),InventoryCount(N.Item)),InventoryCount(N.Item)>=N.Count?1:-1));
+ const FString Id(B->Id),Missing=BranchNeeds(*B);
+ R.Add(S47Kit::Button(TEXT("Repair and test this branch"),[this,Id]{RepairBranch(Id);},Missing.IsEmpty(),Missing.IsEmpty()&&Wear.Job.IsEmpty()));
+ if(FString(B->Id)==TEXT("centre"))R.Add(S47Kit::Small(TEXT("CALIBRATION / REPAIR: make up the splice in the workshop from two good antenna leads and foil.")));
+ else if(!Missing.IsEmpty())R.Add(S47Kit::Small(TEXT("Caliche sells these. Unpack the parcel at GARAGE RECEIVING and bring them back in your pouch.")));
+ M->UI->Open(S47Kit::Shell(M->UI,FString(B->Title)+TEXT(" JUNCTION"),S47Kit::Col(R),760));
+}
+bool FS47FreeformWorld::RepairBranch(const FString& BranchId)
+{
+ const auto* B=FS47ArrayWear::Branch(BranchId);
+ if(!Ready()||!B||Wear.IsRestored(BranchId)||!Wear.bActive||!Wear.Job.IsEmpty())return false;
+ if(!Near(InteractionPoint(FString(TEXT("field:"))+B->Junction),4.0)){Change(FString::Printf(TEXT("%s: work at its junction beside %s."),B->Title,B->Junction));return false;}
+ if(!BranchNeeds(*B).IsEmpty()){Change(FString(B->Title)+TEXT(" needs ")+BranchNeeds(*B)+TEXT("."));return false;}
+ Wear.Job=BranchId;Wear.JobSeconds=0;if(M->UI)M->UI->Close();
+ Change(FString(B->Title)+TEXT(": Parts fitted, running the three-second branch test."));return true;
+}
+void FS47FreeformWorld::FinishBranch(const FString& BranchId)
+{
+ const auto* B=FS47ArrayWear::Branch(BranchId);if(!Ready()||!B)return;
+ if(!BranchNeeds(*B).IsEmpty()){Change(FString(B->Title)+TEXT(": Test abandoned; the parts are no longer in your pouch."));return;}
+ for(const auto& N:B->Needs)for(int32 I=0;I<N.Count;++I)Consume(N.Item);
+ Wear.Restore(BranchId);
+ FVector2D Aim(180,45);for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){Aim=FVector2D(M->Web->DishAz(I),M->Web->DishEl(I));break;}
+ for(const TCHAR* D:B->Dishes)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==D)
+ {
+  M->Web->SetDishRemoteAvailable(I,true);M->Web->PointDish(I,Aim.X,Aim.Y,2.2,true); // visibly comes back up
+  WearPose.Remove(I);
+ }
+ const int32 Up=M->Web->DishCount()-Wear.DownCount();
+ M->Freeform->RecordEvidence(TEXT("service-branch-")+BranchId,FString(B->Title)+FString::Printf(TEXT(" repaired and tested at its junction. %d of 27 antennas in service."),Up));
+ Change(FString::Printf(TEXT("%s back in service. ARRAY %d/27 / MEASUREMENT %.0f%%."),B->Title,Up,100*FS47ArrayWear::RateForCount(Up))+(Wear.DownCount()==0?TEXT(" SARO is whole again."):TEXT("")));
+}
 void FS47FreeformWorld::OpenSampleLab()
 {
  if(!Ready()||!Near(SampleAt,2.6)||!M->UI)return;
@@ -1032,6 +1104,8 @@ bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& Reques
 {
  if(!Ready()||HasArrayFault()||M->Freeform->PowerFault()||(Service==9&&M->Freeform->ActiveServiceGuide()==1))return false;
  if(!RequestedDish.IsEmpty()&&!ValidServiceDish(RequestedDish))return false;
+ if(!RequestedDish.IsEmpty()&&Wear.BranchOfDish(RequestedDish))return false;
+ if(!bTraining&&RequestedDish.IsEmpty())for(int32 Skip=0;Skip<27&&Wear.BranchOfDish(OrdinaryServiceDish(OrdinaryServiceSerial));++Skip)OrdinaryServiceSerial=(OrdinaryServiceSerial+1)%27;
  const FString Target=bTraining?TEXT("S-03"):RequestedDish.IsEmpty()?OrdinaryServiceDish(OrdinaryServiceSerial):RequestedDish;
  int32 Index=INDEX_NONE;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==Target)Index=I;
  // Authored cabinet items use the existing HUD fallback; not all have native Inter overrides.
@@ -1105,7 +1179,8 @@ bool FS47FreeformWorld::Use(const FString& Id)
  if(Id==TEXT("ff:cargo"))return CargoUse();
  if(Id.StartsWith(TEXT("field:")))
  {
-  if(Id!=TEXT("field:")+ServiceTarget){Change(Label(Id));return true;}
+  if(const auto* Down=Wear.DownJunction(Id.Mid(6))){OpenBranch(Down->Id);return true;}
+  if(Id!=TEXT("field:")+ServiceTarget||Wear.BranchOfDish(Id.Mid(6))){Change(Label(Id));return true;}
   return ServiceUse();
  }
  if(Id==TEXT("ff:service")||Id==TEXT("obs:service"))return ServiceUse();
@@ -1137,6 +1212,9 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return bGenerator?TEXT("Stop backup generator"):TEXT("Start / fuel backup generator");
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return M->Freeform->PowerFault()?Feeder==4&&FeederSeconds>0?TEXT("Feeder test running"):Feeder==4?TEXT("Run feeder replacement-fuse test"):Feeder==3?TEXT("Replace isolated feeder control fuse"):Feeder==2?TEXT("Open enclosed feeder isolation switch"):TEXT("Measure SARO feeder supply"):TEXT("Check normal feeder supply");
+ if(Id.StartsWith(TEXT("field:")))
+  if(const auto* Down=Wear.BranchOfDish(Id.Mid(6)))
+   return Wear.DownJunction(Id.Mid(6))?FString::Printf(TEXT("%s JUNCTION / %s / OUT OF SERVICE"),Down->Title,*Id.Mid(6)):FString::Printf(TEXT("%s / OUT OF SERVICE / %s junction at %s"),*Id.Mid(6),Down->Title,Down->Junction);
  if(Id.StartsWith(TEXT("field:"))&&Id!=TEXT("field:")+ServiceTarget)
   return FString::Printf(TEXT("%s / REMOTE ready / no local fault; active work order: %s"),*Id.Mid(6),*ServiceTarget);
  if(Id==TEXT("ff:service")||Id==TEXT("obs:service")||Id==TEXT("field:")+ServiceTarget)
@@ -1184,6 +1262,11 @@ void FS47FreeformWorld::Step(double Dt)
    Settle=On?Settle+FMath::Min(Dt,.1):0;
    if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
   }
+ }
+ if(!Wear.Job.IsEmpty())
+ {
+  Wear.JobSeconds+=FMath::Min(Dt,.1);
+  if(Wear.JobSeconds>=3){const FString Finished=Wear.Job;Wear.Job.Empty();Wear.JobSeconds=0;FinishBranch(Finished);}
  }
  if(!BenchJob.IsEmpty())
  {

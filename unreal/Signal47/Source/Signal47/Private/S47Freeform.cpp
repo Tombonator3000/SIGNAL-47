@@ -277,7 +277,8 @@ double FS47FreeformSession::MeasurementRateForCount(int32 Count)
  const int32 N=FMath::Clamp(Count,0,27);
  return N<24?0.:double(N*(N-1))/(27.*26.);
 }
-double FS47FreeformSession::ArrayMeasurementRate()const{return MeasurementRateForCount(AvailableDishCount());}
+bool FS47FreeformSession::ArrayBlocked()const{return AvailableDishCount()<(Field&&Field->ArrayWear().bActive?FS47ArrayWear::MinDishes:24);}
+double FS47FreeformSession::ArrayMeasurementRate()const{return Field&&Field->ArrayWear().bActive?FS47ArrayWear::RateForCount(AvailableDishCount()):MeasurementRateForCount(AvailableDishCount());}
 double FS47FreeformSession::ReceiverReception()const
 {
  if(!CurrentJob()||!M||!M->Web||!HasPower())return 0;
@@ -290,13 +291,14 @@ double FS47FreeformSession::ReceiverReception()const
  }
  // A commanded bearing is not an encoder measurement. Let a moving/settling
  // array reveal the source gradually, without changing acquisition requirements.
- const double Reception=FMath::Clamp(Sum/27.,0.,1.);
+ // A worn array sounds thin rather than silent; a whole one is unchanged.
+ const double Reception=Field&&Field->ArrayWear().bActive?FMath::Sqrt(FMath::Clamp(Sum/27.,0.,1.)):FMath::Clamp(Sum/27.,0.,1.);
  return PointReady()?Reception*(.25+.75*FMath::Clamp(Settle,0.,1.)):FMath::Min(.6,Reception);
 }
 FString FS47FreeformSession::ArrayMeasurementStatus()const
 {
- const int32 N=AvailableDishCount();
- return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*MeasurementRateForCount(N),N<24?TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"):N<27?TEXT("DEGRADED: repair restores rate"):TEXT("FULL RATE"));
+ const int32 N=AvailableDishCount();const bool Worn=Field&&Field->ArrayWear().bActive;const int32 Least=Worn?FS47ArrayWear::MinDishes:24;
+ return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*ArrayMeasurementRate(),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %d"),Least):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
 }
 bool FS47FreeformSession::PointReady()const
 {
@@ -308,7 +310,7 @@ bool FS47FreeformSession::EncodersAt(double Az,double El)const
  if(!M||!M->Web||M->Web->DishCount()!=27||!HasPower())return false;
  int32 Count=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))
  {++Count;if(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az))>.1||FMath::Abs(M->Web->DishEl(I)-El)>.1)return false;}
- return Count>=24;
+ return Count>=(Field&&Field->ArrayWear().bActive?FS47ArrayWear::MinDishes:24);
 }
 S47J::FObj FS47FreeformSession::CaptureSoundState()const
 {
@@ -600,7 +602,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
- if(M&&M->Web&&J->Stage<=EJobStage::Integrating&&AvailableDishCount()<24)return ArrayMeasurementStatus();
+ if(M&&M->Web&&J->Stage<=EJobStage::Integrating&&ArrayBlocked())return ArrayMeasurementStatus();
  if(J->Stage==EJobStage::New)return TEXT("TRACKING (right-hand PC): Point the array at the selected source.");
  if(J->Stage==EJobStage::Integrating)
  {
@@ -1930,7 +1932,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 {
  const FJob* J=&JobValue;
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
- if(M&&M->Web&&AvailableDishCount()<24&&(J->Stage<=EJobStage::Integrating||(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("wrong_source")&&(!J->bControl||J->ControlAt<8))))return ArrayMeasurementStatus();
+ if(M&&M->Web&&ArrayBlocked()&&(J->Stage<=EJobStage::Integrating||(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("wrong_source")&&(!J->bControl||J->ControlAt<8))))return ArrayMeasurementStatus();
  switch(J->Stage)
  {
   case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");

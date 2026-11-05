@@ -93,6 +93,7 @@ public:
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  int32 OperationsSection() const { return OpsSection; }
  TArray<FString> TerminalLines(int32 Screen) const;
+ bool ArrayBlocked() const; // too few antennas to measure at all
  void OpenArchive();
  int32 ArchiveTab=0;FString ArchivePick; // presentation only, never saved
  void OpenCaseBoard(int32 Line=-1);

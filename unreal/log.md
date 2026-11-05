@@ -1867,3 +1867,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.14:30, verksted- og arkivpanel
 
 `claude/workshop-archive-ux-20261105`: begge paneler er liste pluss detalj med én tydelig handling. 2484 selvtester, 56 og 247 native kontroller består. Evidence-testen feiler uendret også på installert `bef9fa88`. Ikke installert.
+
+## 5. november 2026 kl.16:30, slitt stasjon
+
+`claude/worn-station-20261105`: nye Freeform-spill på 12/27 med fire grener. Normalreisen fanget at opptak aldri ble aktivert med under 24 antenner; rettet. 2494 selvtester, 40, 247 og 146 kontroller består. Ikke installert.
