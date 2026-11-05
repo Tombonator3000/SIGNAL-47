@@ -545,7 +545,7 @@ bool FS47FreeformWorld::Build()
  for(int32 I=0;I<FS47ArrayWear::Branches().Num()&&I<4;++I)
  {
   const FVector At=InteractionPoint(FString(TEXT("field:"))+FS47ArrayWear::Branches()[I].Junction);
-  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.66,0),FVector(.11,.09,.11),0xd08a2c,Saro);
+  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.80,0),FVector(.11,.09,.11),0xd08a2c,Saro);
  }
  // EASTWING workshop tray: one small part per slot on the free right of the worktop.
  for(int32 I=0;I<FS47Workshop::TraySize;++I)
