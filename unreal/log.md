@@ -1871,3 +1871,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.16:30, slitt stasjon
 
 `claude/worn-station-20261105`: nye Freeform-spill på 12/27 med fire grener. Normalreisen fanget at opptak aldri ble aktivert med under 24 antenner; rettet. 2494 selvtester, 40, 247 og 146 kontroller består. Ikke installert.
+
+## 5. november 2026 kl.18:50, Freeform-start, internkontroll og båndstasjon
+
+`claude/freeform-start-garage`: ny start ute med Jeep i lukket garasje; RECORD-fanen forklarer og starter kontrollen; båndspilleren har skilt og panel med signalspor. Bygg, 12, 21 og 9 kontroller består. Ett motorkrasj i HTTP-tråd ved oppstart, utenfor spillkoden, gikk ikke igjen. Ikke installert.

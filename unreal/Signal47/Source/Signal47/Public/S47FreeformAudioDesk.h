@@ -23,6 +23,8 @@ public:
  FString Label(const FString& Id) const;
  bool Ready() const;
  bool ListeningPosition() const;
+ FString ReferenceLabel() const;
+ bool ReferencePlaying() const;
  FVector InteractionPoint(const FString& Id) const;
 private:
  US47Main* M=nullptr;
@@ -44,6 +46,9 @@ private:
  };
  TArray<FControl> Controls;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Texts;
+ // Freeform marks the station with a wall sign and opens one screen panel instead of the small keys.
+ TArray<TWeakObjectPtr<UTextRenderComponent>> SignTexts;
+ TWeakObjectPtr<UStaticMeshComponent> SignBoard;
  bool Build();
  void BindControls();
  bool Live() const;

@@ -23,6 +23,9 @@ namespace
 {
  const TCHAR* Actions[]={TEXT("original"),TEXT("control"),TEXT("play"),TEXT("rewind"),TEXT("mark_start"),TEXT("mark_end"),TEXT("retain"),TEXT("ref_next"),TEXT("ref_play"),TEXT("ref_stop")};
  const TCHAR* Captions[]={TEXT("ORIGINAL"),TEXT("CONTROL"),TEXT("PLAY / STOP"),TEXT("REWIND"),TEXT("MARK IN"),TEXT("MARK OUT"),TEXT("RETAIN"),TEXT("REF NEXT"),TEXT("REF PLAY"),TEXT("REF STOP")};
+ const TCHAR* StationId=TEXT("ff:audio:station");
+ // These two tests still aim at the physical keys; players use the panel on the same actions.
+ bool AimedKeyTest(){return FParse::Param(FCommandLine::Get(),TEXT("S47FreeformEvidenceTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformInWorldTest"));}
  int32 ActionIndex(const FString& Id)
  {for(int32 I=0;I<UE_ARRAY_COUNT(Actions);++I)if(Id==FString(TEXT("ff:audio:"))+Actions[I])return I;return INDEX_NONE;}
 }
@@ -60,13 +63,16 @@ FVector FS47FreeformAudioDesk::InteractionPoint(const FString& Id)const
 void FS47FreeformAudioDesk::Show(bool bShow)
 {
  if(!Live())return;
- for(const auto& C:Controls)if(C.Mesh.IsValid()){C.Mesh->SetVisibility(bShow);C.Mesh->SetHiddenInGame(!bShow);C.Mesh->SetCollisionEnabled(bShow?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
- for(const auto& T:Texts)if(T.IsValid()){T->SetVisibility(bShow);T->SetHiddenInGame(!bShow);}
+ const bool Free=M->IsFreeform();const bool Keys=bShow&&(!Free||AimedKeyTest()),Sign=bShow&&Free;
+ for(const auto& C:Controls)if(C.Mesh.IsValid()){C.Mesh->SetVisibility(Keys);C.Mesh->SetHiddenInGame(!Keys);C.Mesh->SetCollisionEnabled(Keys?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+ for(const auto& T:Texts)if(T.IsValid()){T->SetVisibility(Keys);T->SetHiddenInGame(!Keys);}
+ for(const auto& T:SignTexts)if(T.IsValid()){T->SetVisibility(Sign);T->SetHiddenInGame(!Sign);}
+ if(SignBoard.IsValid()){SignBoard->SetVisibility(Sign);SignBoard->SetHiddenInGame(!Sign);}
 }
 void FS47FreeformAudioDesk::Begin()
 {
  Stop();if(!IsValid(M)||!IsValid(M->Web))return;
- if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();Readout.Reset();Deck={};}
+ if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();SignTexts.Reset();SignBoard.Reset();Readout.Reset();Deck={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;LastReadout.Empty();
  if(Build()){BindControls();Show(Ready());}
 }
@@ -106,6 +112,17 @@ bool FS47FreeformAudioDesk::Build()
   Text(FString::Printf(TEXT("FreeformTapeLabel%d"),I),Captions[I],At+FVector(0,0,-.016),1.1);
  }
  Readout=Text(TEXT("FreeformTapeReadout"),TEXT("SARO / ORIGINAL - INTERNAL REFERENCE"),FVector(X,Y+.172,Z-.002),1.15);
+ // A sign on the wall above the deck, readable from across the room.
+ const FVector SignAt(B.GetCenter().X-.26,B.Max.Y+.30,B.Max.Z-.01); // clear of the notice board beside it
+ auto* SignMat=UMaterialInstanceDynamic::Create(Base,M->Web);SignMat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.05,.07,.06));SignMat->SetScalarParameterValue(TEXT("Roughness"),.7);SignMat->SetScalarParameterValue(TEXT("NativeLighting"),1);
+ auto* Board=NewObject<UStaticMeshComponent>(M->Web,TEXT("FreeformTapeSign"));Board->SetMobility(EComponentMobility::Movable);Board->SetupAttachment(N->Comp.Get());Board->SetStaticMesh(Cube);Board->SetMaterial(0,SignMat);Board->SetCollisionEnabled(ECollisionEnabled::NoCollision);Board->RegisterComponent();
+ Board->SetWorldLocation(S47Three::ToUE(SignAt));Board->SetWorldScale3D(S47Three::DirToUE(FVector(.58,.17,.012)));SignBoard=Board;
+ auto SignLine=[&](const TCHAR* Name,const TCHAR* Value,double Up,double Size)
+ {
+  auto* T=Text(Name,Value,SignAt+FVector(0,Up,-.012),Size);T->SetTextRenderColor(FColor(240,172,62));Texts.Pop();SignTexts.Add(T);
+ };
+ SignLine(TEXT("FreeformTapeSign1"),TEXT("REEL DECK"),.028,7.);
+ SignLine(TEXT("FreeformTapeSign2"),TEXT("COMPARE RECORDINGS"),-.05,3.8);
  bBuilt=true;return true;
 }
 void FS47FreeformAudioDesk::BindControls()
@@ -120,9 +137,20 @@ void FS47FreeformAudioDesk::BindControls()
   I.Examine=[this,Guard,Owner,Id]{return !IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid()?Label(Id):FString();};
   M->Inter->Add(I);M->Web->MarkUsable(C.Object.I,Id);
  }
+ if(M->IsFreeform()&&!AimedKeyTest())
+ {
+  const FString Id=StationId;FS47Interactable I;I.Id=Id;I.Object=Deck;I.Range=2.4;
+  I.Label=[this,Guard,Owner,Id]{return !IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid()?Label(Id):FString();};
+  I.Use=[this,Guard,Owner,Id]{if(!IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid())Use(Id);};
+  I.Examine=I.Label;
+  M->Inter->Add(I);M->Web->MarkUsable(Deck.I,Id);
+ }
 }
+FString FS47FreeformAudioDesk::ReferenceLabel()const{return Reference?Reference->Label():FString(TEXT("Press NEXT to load a reference recording."));}
+bool FS47FreeformAudioDesk::ReferencePlaying()const{return Reference&&Reference->Playing();}
 FString FS47FreeformAudioDesk::Label(const FString& Id)const
 {
+ if(Id==StationId)return !Ready()||!M->IsFreeform()?FString():Powered()?FString(TEXT("Reel deck / compare recordings")):FString(TEXT("Reel deck unpowered / restore feeder or generator"));
  const int32 I=ActionIndex(Id);if(!Ready()||I==INDEX_NONE)return FString();
  if(!Powered())return TEXT("Tape comparator unpowered / restore feeder or generator");
  if(I==7)return TEXT("Select next listening reference");
@@ -134,6 +162,7 @@ FString FS47FreeformAudioDesk::Label(const FString& Id)const
 }
 bool FS47FreeformAudioDesk::Use(const FString& Id)
 {
+ if(Id==StationId){if(!Ready()||!M->IsFreeform())return false;M->Freeform->OpenTapePanel();return true;}
  const int32 I=ActionIndex(Id);if(I==INDEX_NONE||!Ready())return false;
  if(!ListeningPosition()){if(IsValid(M->UI))M->UI->Toast(TEXT("Use the powered tape comparator at the radio table."),3);return true;}
  const bool Free=M->IsFreeform();bool Accepted=true;
@@ -171,7 +200,7 @@ void FS47FreeformAudioDesk::Step(double Dt)
  if(!bActive||!Live()){if(Reference)Reference->Stop();return;}
  if(!bBuilt){if(!Build())return;BindControls();}
  const bool EvidencePlaying=M->IsFreeform()?M->Freeform&&M->Freeform->AudioPlaying():M->Observing&&M->Observing->AudioPlaying();
- if(Reference)Reference->Step(ListeningPosition()&&!EvidencePlaying&&!M->bPausedByMenu&&!M->ModalOpen()&&M->Story&&!M->Story->IsCinematic(),M->Audio&&M->Audio->Ctx?M->Audio->Ctx->CurrentTime():0);
+ if(Reference)Reference->Step(ListeningPosition()&&!EvidencePlaying&&!M->bPausedByMenu&&(!M->ModalOpen()||(M->IsFreeform()&&M->Freeform&&M->Freeform->TapePanelOpen()))&&M->Story&&!M->Story->IsCinematic(),M->Audio&&M->Audio->Ctx?M->Audio->Ctx->CurrentTime():0);
  const bool Shown=Ready()&&M->Web->Area()==TEXT("saro");Show(Shown);if(!Shown)return;
  int32 Source=0;double Cursor=0,HeardO=0,HeardC=0,MarkIn=-1,MarkOut=-1,Control=0;bool Playing=false,Reviewed=false,Original=false;
  if(M->IsFreeform())

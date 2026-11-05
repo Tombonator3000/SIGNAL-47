@@ -1010,6 +1010,17 @@ void US47Flow::StartGame(const FStart& O)
   }
   M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
+  // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
+  // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
+  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))))
+  {
+   auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
+   if(M->World)M->World->PlaceTruck(TEXT("saro"),Pose);
+   auto Shut=S47J::New();S47J::Set(Shut,TEXT("personnel"),false);S47J::Set(Shut,TEXT("service"),false);S47J::Set(Shut,TEXT("garage"),0.);S47J::Set(Shut,TEXT("garageUp"),false);
+   if(M->EastWing)M->EastWing->Begin(Shut);
+   if(M->Web)for(const auto& Door:M->Web->DoorStates())M->Web->SetDoorById(Door.Key,false,true);
+   if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
+  }
  }
  // New Freeform operators collect the camera physically. Every legacy Freeform
  // save had the automatic grant, so absence of this new field preserves that right.

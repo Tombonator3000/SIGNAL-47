@@ -34,6 +34,8 @@ private:
  void StepLoggerJourney(double Dt);
  void StepWorkshopJourney(double Dt);
  void StepArrayWear(double Dt);
+ void StepGarageStart(double Dt);
+ void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;
  TSharedPtr<struct FS47LoggerJourneyState> LoggerJourney;
  void StepStoryCamera(double Dt);

@@ -87,6 +87,8 @@ public:
  void OpenStatus();
  void OpenReceiver();
  void OpenAudio();
+ void OpenTapePanel();
+ bool TapePanelOpen() const { return bTapePanel; }
  const FString& FeedbackText() const { return Feedback; }
  bool TerminalOnGlass() const;
  bool TerminalWindowRendered() const;
@@ -194,7 +196,7 @@ private:
  bool ValidJournalEntry(const FString& Id) const;
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
- bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
+ bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
  bool bPowerApplied=false,bLastPower=true;
  bool bMotorFeedback=false,bPrinterFeedback=false;
  int32 PrinterIndex() const;
