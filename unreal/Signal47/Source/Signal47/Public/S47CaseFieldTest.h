@@ -14,7 +14,7 @@ private:
  US47Main* M=nullptr;
  double Start=0,End=0,PreparedAt=0,Listened=0,PauseClock=0,Coverage=0;
  bool bGateRestored=false,bRoofPresent=false,bGatePresent=false;
- S47J::FObj Sample;
+ S47J::FObj Sample,GateBranch;
  void Pose(const FVector& Stand,const FVector& Target);
  void ApproachControl(int32 Test);
  void Board();

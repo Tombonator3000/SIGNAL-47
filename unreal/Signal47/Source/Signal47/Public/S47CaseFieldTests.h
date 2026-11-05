@@ -49,6 +49,7 @@ private:
  bool Build();
  void Present();
  void SyncPlan();
+ void MonitorGateIntegrity();
  int32 PlannedTest() const;
  FString PlannedJob() const;
  bool Near(const FVector& At,double Range) const;

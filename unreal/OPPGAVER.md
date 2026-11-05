@@ -4,7 +4,7 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-normal-journey-20261105`, fra main `4661eeb5` etter flettet PR405. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-gate-integrity-20261105`, fra main etter flettet PR406. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
 - root: samlet vanlig spillreise, fysisk lastesikting ved diner, integrering av gjennomgåtte felt-/fotorettinger, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: privat kryssreview av motellprøve og avgrenset SIGNAL-EXT-04-forslag; ingen aktive kildefiler eller motorjobb.
