@@ -1990,3 +1990,7 @@ FF-FARM-HORROR-01 steg 2: lysene forlater gården når spilleren nærmer seg, og
 ## 6. november 2026 kl.12:50, Toms retning
 
 `183e8db1` etter PR449 installert. Tom: Freeform fullføres før Story, skrekk og bortføring skal kunne skje flere steder via lys eller walkie-talkie, og referanser til gårdshuset er lagt i Design. Claudes rekkefølge: generelle steder, hus som blokkmodell, walkie-talkie, reaksjon, bortføring, detaljert hus.
+
+## 6. november 2026 kl.13:35, lys og spor i byen
+
+Steg 3: `town_lights` med fire steder i Caliche, og `S47FarmSite` tar nå sted, område og punkt. `-S47MenuPointerTown` består for alle fire: lys presentert, lyse piksler i fotoet (146 til 237), flukt, spor og feltfunn. Selvtest 2510 og regresjon 251 består. Ikke installert. Husk at Caliche er områdedelen `diner`; plassering i `road` gir feil gulv.

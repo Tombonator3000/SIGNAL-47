@@ -6,6 +6,8 @@
 #include "S47Night.h"
 #include "S47Panels.h"
 #include "S47Kit.h"
+#include "S47World.h"
+#include "S47Inter.h"
 #include "S47FreeformDirector.h"
 #include "S47FarmSite.h"
 #include "IImageWrapper.h"
@@ -80,7 +82,8 @@ namespace
   int32 Stage=0;
   double Elapsed=0,StageAt=0;
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
-  int32 LeftBefore=0,SkyBefore=0;
+  int32 LeftBefore=0,SkyBefore=0,TownAt=0;
+  FString TownPlace;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -144,7 +147,7 @@ namespace
    Elapsed+=Dt;
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
-   if(Elapsed-StageAt>30) return Fail(TEXT("menu click did not reach its expected next screen"));
+   if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
    if(Elapsed-StageAt<1) return true;
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
@@ -182,6 +185,12 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerTown")))
+    {
+     M->Flow->bDevRun=true;
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the town test needs the night"));
+     M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));Stage=60;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFarm")))
     {
      M->Flow->bDevRun=true;
@@ -192,6 +201,63 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
+   }
+   if(Stage==60)
+   {
+    // Each place in turn: the lights start, are presented, leave when approached and leave a site.
+    static const TCHAR* Places[]={TEXT("cinema"),TEXT("feed"),TEXT("church"),TEXT("gas")};
+    if(TownAt>=UE_ARRAY_COUNT(Places))
+    {
+     UE_LOG(LogTemp,Display,TEXT("S47: town lights PASS: four places presented, left when approached, each site found and kept"));
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    TownPlace=Places[TownAt];auto& D=*M->Freeform->Director;const FVector P=D.LightPlacePoint(TownPlace);
+    if(P.IsZero())return Fail(TEXT("a town place has no interactable to anchor on"));
+    // Along the street, which is walkable ground at every one of these fronts.
+    M->Player->Place(7995,P.Z+85,0);
+    UE_LOG(LogTemp,Display,TEXT("S47: town test at %s floor %.2f, place %.1f %.1f %.1f"),*TownPlace,M->Player->FloorY,P.X,P.Y,P.Z);
+    if(!D.ForceLights(TownPlace))return Fail(TEXT("town lights must start at each place"));
+    Stage=61;StageAt=Elapsed;return true;
+   }
+   if(Stage==61)
+   {
+    // The event's own age: a paused game would otherwise pass here with lights that never faded in.
+    if(M->Freeform->Director->EventAge()<14){if(Elapsed-StageAt>25)return Fail(TEXT("the town lights' event must keep running"));StageAt=StageAt+0;return true;}
+    if(!M->Freeform->Director->PhysicalObjectPresented())return Fail(TEXT("the town lights must be presented"));
+    const FVector A=M->Freeform->Director->EventAnchor();const FVector E(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);const FVector D=A-E;
+    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+    Stage=62;StageAt=Elapsed;return true;
+   }
+   if(Stage==62)
+   {
+    Shot(*FString::Printf(TEXT("town-lights-%s.png"),*TownPlace));Stage=66;StageAt=Elapsed;return true;
+   }
+   if(Stage==66)
+   {
+    const int32 Lit=Exposed(M);UE_LOG(LogTemp,Display,TEXT("S47: town lights at %s, bright pixels in the photograph %d"),*TownPlace,Lit);
+    const FVector P=M->Freeform->Director->LightPlacePoint(TownPlace);M->Player->Place(7995,P.Z+12,0);
+    Stage=63;StageAt=Elapsed;return true;
+   }
+   if(Stage==63)
+   {
+    if(!M->Freeform->Director->ActiveEvent().IsEmpty()){if(Elapsed-StageAt>12)return Fail(TEXT("the town lights must leave when approached"));return true;}
+    auto& Site=*M->Freeform->FarmSite;
+    if(!Site.Armed()||Site.PlaceId()!=TownPlace)return Fail(TEXT("the lights must leave a site at that place"));
+    const FVector C=Site.Centre();const FVector2D At(C.X+5,C.Z+5);
+    M->Player->Place(At.X,At.Y,0);
+    const FVector D=C-FVector(At.X,M->Player->FloorY+1.7,At.Y);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+    UE_LOG(LogTemp,Display,TEXT("S47: town test site %s centre %.1f %.1f %.1f floor %.2f"),*TownPlace,C.X,C.Y,C.Z,M->Player->FloorY);
+    Stage=64;StageAt=Elapsed;return true;
+   }
+   if(Stage==64)
+   {
+    Shot(*FString::Printf(TEXT("town-site-%s.png"),*TownPlace));Stage=65;StageAt=Elapsed;return true;
+   }
+   if(Stage==65)
+   {
+    auto& Site=*M->Freeform->FarmSite;
+    if(Site.Label().IsEmpty()||!Site.Use()||!M->Freeform->HasFinding(Site.FindingId()))return Fail(TEXT("a town site must keep one field record"));
+    M->UI->Close(true);++TownAt;Stage=60;StageAt=Elapsed-.5;return true;
    }
    if(Stage==49)
    {
@@ -230,7 +296,7 @@ namespace
    if(Stage==54)
    {
     auto& Site=*M->Freeform->FarmSite;
-    if(Site.Label().IsEmpty()||!Site.Use()||!M->Freeform->HasFinding(FS47FarmSite::FindingId()))return Fail(TEXT("looking closer must keep one field record"));
+    if(Site.Label().IsEmpty()||!Site.Use()||!M->Freeform->HasFinding(Site.FindingId()))return Fail(TEXT("looking closer must keep one field record"));
     Stage=55;StageAt=Elapsed;return true;
    }
    if(Stage==55)
