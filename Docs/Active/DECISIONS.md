@@ -1,6 +1,6 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 4. november 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 6. november 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
@@ -11,6 +11,10 @@ Tom bestiller alt spilldesign, gameplay og Story samlet i [GAME BIBLE](../Design
 Tom vil kunne følge UFO-observasjoner og nærkontakter utenfor SARO på tvers av motellet, byen, gården og andre spillbare steder: observere, fotografere, finne gjenstander og undersøke. Hendelser og etterspor bygger på eksisterende saksmotor, Director og fotoløkken. SARO er fortsatt arbeidssted og sted for analyse. Dette utvider D-23/D-25s første avgrensning til basen og byens forsyningsrolle; det opphever ikke Story-kanon.
 
 Gården skal også gi skrekk: mange mystiske lys sett fra SARO, tur ut, søkbart forlatt gårdshus, mystiske ulyder, lett tåke og ubehagelig atmosfære. Noe rart kan skje, med mulig flukt eller bortføring og tapt tid i Freeform. Dette overstyrer eldre avgrensning mot tidstap for akkurat det nye Freeform-forløpet; Storys tilfeldige hendelser får fortsatt ikke hoppe over faste tidspunkt. Huset er ny designbestilling, ikke ferdig interiør; kuer og eksisterende gårdsadkomst bevares. Detaljert varighet, plassering og balansering er åpne i bibelen. Sikret arbeid og en praktisk vei tilbake skal bevares.
+
+## Opptakslyd på slitt stasjon, 6. november 2026
+
+Tom valgte at opptakslyd skal virke med redusert målehastighet. Slitasje gir en tidskostnad, men stopper ikke lydarbeidet. Originalen lagres i signaltid og spilles av i normal hastighet; under et saktere opptak høres vanlig mottakerlyd.
 
 ## Nattskift 4. til 5. november 2026
 
