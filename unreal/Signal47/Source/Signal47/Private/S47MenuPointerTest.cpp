@@ -1,5 +1,6 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47CalicheAccess.h"
 #include "S47TownLayer.h"
 #include "S47Herd.h"
 #include "S47Taken.h"
@@ -98,7 +99,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -224,6 +225,11 @@ namespace
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the taken test needs the night"));
      FParse::Value(FCommandLine::Get(),TEXT("S47TakenKind="),TakenKind);TakenEscape=FParse::Param(FCommandLine::Get(),TEXT("S47TakenEscape"));
+     FParse::Value(FCommandLine::Get(),TEXT("S47TakenPlace="),TakenPlace);
+     if(!TakenPlace.IsEmpty())
+     {
+      M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));VisitFrom=Elapsed;Stage=149;StageAt=Elapsed;return true;
+     }
      M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
      // Inside the old house for the light through its windows, out on the pasture for the crab.
      const FVector C=M->Freeform->FarmSite->Centre();const FVector In=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);
@@ -395,11 +401,27 @@ namespace
     }
     ++Stage;StageAt=Elapsed;return true;
    }
+   if(Stage==149)
+   {
+    StageAt=Elapsed;
+    if(Elapsed-VisitFrom<2.5)return true;
+    FVector In;
+    if(!S47CalicheAccess::RoomMiddle(TakenPlace,In))return Fail(TEXT("no such room"));
+    const FVector P=M->Freeform->Director->LightPlacePoint(TakenPlace);
+    M->Freeform->FarmSite->Arm(M->Freeform->Clock(),TakenPlace,TEXT("the place"),TEXT("diner"),P.IsZero()?In:P);
+    M->Player->Place(In.X,In.Z,0);M->Player->Pitch=0;
+    UE_LOG(LogTemp,Display,TEXT("S47: taken test in %s at %s"),*TakenPlace,*In.ToCompactString());
+    VisitClock=M->Freeform->Clock();VisitFrom=Elapsed;TakenPos=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);
+    M->Freeform->FarmSite->TestVisit(TakenKind);Stage=150;return true;
+   }
    // Left where they stand: each kind must take them, and leave them where and when its terms say.
    if(Stage>=150&&Stage<=154)
    {
     StageAt=Elapsed;
     auto& Tk=*M->Freeform->Taken;auto& Site=*M->Freeform->FarmSite;
+    // Walls can hold, in a town room: staying put and unseen is one way for it to pass.
+    if(!TakenPlace.IsEmpty()&&Site.VisitStage()==4&&!Tk.Busy()&&M->Freeform->Clock()<VisitClock+25*60)
+    {UE_LOG(LogTemp,Display,TEXT("S47: taken PASS in %s: the walls held"),*TakenPlace);FPlatformMisc::RequestExitWithStatus(false,0);return false;}
     if(Elapsed-VisitFrom>170)return Fail(TEXT("the taker must take a player who stays"));
     // The way out: stand out of the light, and it passes with nothing lost.
     if(TakenEscape)
