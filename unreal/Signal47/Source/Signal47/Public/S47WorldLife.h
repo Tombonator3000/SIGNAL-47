@@ -100,6 +100,7 @@ private:
 	bool bQuality = false;
 	FString LastQuality;
 	void BuildFlora(bool bBind);
+	bool bNaturalApplied = false;   // whether the ground cover has Freeform's rules of nature now
 	FVector CamPos() const;
 	FVector CamDir() const;
 	void TestFlags(double Dt);

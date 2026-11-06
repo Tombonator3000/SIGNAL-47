@@ -37,6 +37,41 @@ namespace
 	/** Along a fence: none in its line, thick either side. */
 	double Fence(double D) { return D < 0.22 ? 0 : D < 1.9 ? 2.4 : 1; }
 
+	// ---------- Freeform's farm (road-local; the plots of the new buildings with a 1 m margin) ----------
+	// barn X136 Z170 16x11, house X108 Z190 12x8, shed A X116.5 Z170 9x5.5, shed B X84.5 Z206.5 5x4, the old house 92..104 x 214..225
+	const TArray<FRect>& FARM_PLOTS()
+	{
+		static const TArray<FRect> V = { R(127, 145, 163.5, 176.5), R(101, 115, 185, 195), R(111, 122, 166.25, 173.75), R(81, 88, 203.5, 209.5), R(91, 105, 213, 226) };
+		return V;
+	}
+	double RectGap(const FRect& r, double X, double Z)
+	{
+		const double Dx = FMath::Max3(r.MinX - X, 0.0, X - r.MaxX), Dz = FMath::Max3(r.MinZ - Z, 0.0, Z - r.MaxZ);
+		return FMath::Sqrt(Dx * Dx + Dz * Dz);
+	}
+	/** How much of a kind grows at a road-local point of the farm: bare round the buildings, trampled round the
+	 *  water trough (76, 251) and the pasture gate (66..75, 215), grazed but grassier pasture south of the houses. */
+	double FarmMul(double X, double Z, ES47FloraKind Kind)
+	{
+		if (X < 30 || X > 190 || Z < 140 || Z > 320) return 1.0;
+		double Mul = 1.0, Gap = TNumericLimits<double>::Max();
+		for (const FRect& P : FARM_PLOTS()) Gap = FMath::Min(Gap, RectGap(P, X, Z));
+		if (Gap < 7) { const double T = Gap / 7; Mul *= 0.08 + 0.92 * T * T; }
+		const bool bTuft = Kind == ES47FloraKind::Grass || Kind == ES47FloraKind::Stalks;
+		const bool bShrub = Kind == ES47FloraKind::Sage || Kind == ES47FloraKind::Creosote || Kind == ES47FloraKind::Succulent;
+		// the pasture (x 45..115, z 216..282), its edge soft over 8 m
+		const double Inner = FMath::Min(FMath::Min(X - 45, 115 - X), FMath::Min(Z - 216, 282 - Z));
+		const double W = FMath::Clamp(Inner / 8, 0.0, 1.0);
+		if (W > 0) Mul *= bTuft ? 1 + 1.3 * W : bShrub ? 1 - 0.85 * W : Kind == ES47FloraKind::Stones ? 1 - 0.4 * W : 1.0;
+		// trampled bare: the trough, the gate, and the worn track between them
+		const double Dt = FMath::Sqrt(FMath::Square(X - 76) + FMath::Square(Z - 251));
+		if (Dt < 11) Mul *= Dt < 3 ? 0.0 : 0.04 + 0.96 * FMath::Square((Dt - 3) / 8);
+		const double Dg = SegDist(X, Z, 66, 215, 75, 215);
+		if (Dg < 7) Mul *= 0.05 + 0.95 * FMath::Square(FMath::Clamp((Dg - 1.5) / 5.5, 0.0, 1.0));
+		if (bTuft && SegDist(X, Z, 70, 215, 76, 251) < 2) Mul *= 0.25;
+		return Mul;
+	}
+
 	// ---------- the road's land (road-local) ----------
 	const FRect& MOTEL_ROAD() { static const FRect V = ToRoadRect(R(S47Geo::MOTEL_RECT().MinX, S47Geo::MOTEL_RECT().MaxX, S47Geo::MOTEL_RECT().MinZ, S47Geo::MOTEL_RECT().MaxZ)); return V; }
 	// world/Crossing.ts SHOULDER (site), in the road's terms
@@ -348,6 +383,15 @@ FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts)
 	S.Walks = { SHOULDER_ROAD() };
 	S.Ways = [](double X, double Z) { return RoadWays(X, Z); };
 	return S;
+}
+
+void Naturalise(FS47FloraSpec& S, bool bFarm)
+{
+	// only data: FS47Flora::SetNatural (Freeform) decides whether it is used
+	if (!bFarm) return;
+	S.NatBlocks = FARM_PLOTS();
+	S.NatWalks = { R(70, 82, 245, 257), R(62, 79, 210, 220) };
+	S.Farm = [](double X, double Z, ES47FloraKind Kind) { return FarmMul(X, Z, Kind); };
 }
 
 FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS47FloraRect>& Zones)

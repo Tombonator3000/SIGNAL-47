@@ -8,6 +8,7 @@
 #include "S47Audio.h"
 #include "S47Chapter1.h"
 #include "S47Flora.h"
+#include "S47FarmWorld.h"
 #include "S47Flow.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
@@ -183,6 +184,9 @@ void US47WorldLife::Init(US47Main* InM)
 void US47WorldLife::BuildFlora(bool bBind)
 {
 	AS47Web* W = M->Web.Get();
+	// Freeform has the newer rules of nature (S47FarmWorld::Enabled); Story keeps the web version's, as the tests have them
+	const bool bNaturalNow = S47FarmWorld::Enabled(M);
+	bNaturalApplied = bNaturalNow;
 	// arrayLayout.ts FIELD_ZONES: SARO's walk zones of the antenna field
 	TArray<FS47FloraRect> Field, SaroZones, SaroColliders;
 	for (const FS47Rect& Z : W->ZonesMutable(TEXT("saro")))
@@ -210,13 +214,17 @@ void US47WorldLife::BuildFlora(bool bBind)
 		TSharedPtr<FS47Flora> F;
 		if (Name == TEXT("saro"))
 		{
-			F = MakeShared<FS47Flora>(S47GroundCover::SaroFlora(SaroColliders, SaroZones));
+			FS47FloraSpec SaroSpec = S47GroundCover::SaroFlora(SaroColliders, SaroZones);
+			S47GroundCover::Naturalise(SaroSpec, true);
+			F = MakeShared<FS47Flora>(SaroSpec);
 			// World.initSaro: the posts and poles of SARO's stretch of the highway, as the road's patch has them
 			F->Add(S47GroundCover::PostsOf(Obstacles(W, TEXT("saro")), -S47Geo::SARO_IN_ROAD.X, -S47Geo::SARO_IN_ROAD.Z), {});
 		}
 		else if (Name == TEXT("road"))
 		{
-			F = MakeShared<FS47Flora>(S47GroundCover::RoadFlora(S47GroundCover::PostsOf(Obstacles(W, TEXT("road")), ROAD_ORIGIN.X, ROAD_ORIGIN.Z)));
+			FS47FloraSpec RoadSpec = S47GroundCover::RoadFlora(S47GroundCover::PostsOf(Obstacles(W, TEXT("road")), ROAD_ORIGIN.X, ROAD_ORIGIN.Z));
+			S47GroundCover::Naturalise(RoadSpec, true);
+			F = MakeShared<FS47Flora>(RoadSpec);
 			TArray<FS47FloraRect> B, Wk;
 			CoverOf(ROAD_ORIGIN, B, Wk);
 			const FS47Obj Road = W->Obj(TEXT("world.legs.road.area.group"));
@@ -266,7 +274,7 @@ void US47WorldLife::BuildFlora(bool bBind)
 			CoverOf(O, B, Wk);
 			F->Add(B, Wk);
 		}
-		if (F && (!bBind || F->Bind(W, Node))) Flora.Add(F);
+		if (F && (!bBind || F->Bind(W, Node))) { F->SetNatural(bNaturalNow); Flora.Add(F); }
 	}
 }
 
@@ -287,6 +295,12 @@ void US47WorldLife::Step(double Dt)
 	const double Clock = M->Story ? M->Story->Clock() : 0;
 	const FS47Cam Cam = FS47Cam::Of(M->Player, Area == TEXT("roswell") ? 12000 : 5000);
 	TestFlags(Dt);
+	// the world is built before the mode is chosen: the rules of nature follow it (the cells are made again)
+	if (const bool bNat = S47FarmWorld::Enabled(M); bNat != bNaturalApplied)
+	{
+		bNaturalApplied = bNat;
+		for (const TSharedPtr<FS47Flora>& F : Flora) F->SetNatural(bNat);
+	}
 	// World.update's tail: the light in the air, and the life in it
 	AirStep(Dt, T);
 	// main.ts step(), at its end: sky.group.rotation.y = world.skyYaw; sky.update(dt, t, camera.position)

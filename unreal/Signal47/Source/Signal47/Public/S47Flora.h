@@ -32,6 +32,12 @@ struct SIGNAL47_API FS47FloraSpec
 	TFunction<FString(double, double)> Ways;     // tests: a way the story uses at a point
 	TFunction<double(double, double)> Seam;     // in a way's seam: tiny grass and pebbles
 	TFunction<double(double, double)> Spill;    // the gravel spilt onto the dirt just off a way
+	// Freeform only (S47FarmWorld::Enabled, set by FS47Flora::SetNatural): the newer, more realistic rules
+	// of nature. false = the web version's rules exactly (Story, and the tests against its cells).
+	bool bNatural = false;
+	TArray<FS47FloraRect> NatBlocks;            // natural only: the new buildings' plots (nothing grows)
+	TArray<FS47FloraRect> NatWalks;             // natural only: trampled ground (only the low kinds, small)
+	TFunction<double(double, double, ES47FloraKind)> Farm;   // natural only: how much of a kind grows at a point (0 none)
 };
 
 namespace S47Flora
@@ -63,6 +69,8 @@ public:
 	void Follow(const FVector& CamPos, bool bLow);
 	/** The wind's way in this patch's terms, on its materials (world/wind.ts, turned with the group). */
 	void SetWind(const FVector2D& Dir);
+	/** Freeform's rules of nature on or off; the cells are made again when it changes. */
+	void SetNatural(bool bOn);
 	/** The second kind of a pair is drawn when the first is (its mesh is shown and hidden with the area's). */
 	void SyncVisibility();
 
@@ -84,9 +92,12 @@ private:
 	bool bWalked = false, bSeamed = false, bSpilt = false;
 	struct FNext { int32 Kind = 0, At = 0; } Next;
 	bool bPending = false;
+	// where the last fill was (patch terms) and whether the near plants cast shadows (not in Low)
+	double FillX = 0, FillZ = 0;
+	bool bShadowNear = false;
 
 	int64 Key(int32 I, int32 J) const { return int64(I + 40000) * 80000 + int64(J + 40000); }
-	double NoiseAt(double X, double Z, int32 Ki) const;
+	double NoiseAt(double X, double Z, int32 Ki, double Terrain = 1) const;
 	double CoverAt(double X, double Z, int32 Ki, double Noise);
 	const FKindCell& Cell(int32 I, int32 J, int32 Ki);
 	TArray<float> Nurses(int32 I, int32 J, const TArray<int32>& Kinds);
@@ -98,7 +109,8 @@ private:
 	TWeakObjectPtr<AS47Web> Web;
 	int32 Group = -1;
 	/** a kind's mesh: the export's for the first of a pair, one of its own for the second */
-	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; };
+	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; };
 	TArray<FLayer> Layers;
 	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
+	void DropShadows();
 };

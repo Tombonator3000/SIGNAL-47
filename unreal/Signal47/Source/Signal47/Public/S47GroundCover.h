@@ -45,6 +45,9 @@ namespace S47GroundCover
 
 	/** The road area's patch (road-local); blocks: the posts (and later the diner's and the town's walls). */
 	SIGNAL47_API FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts);
+	/** Freeform's farm as data on a road-terms spec (new buildings' plots, trampled ground, yard and pasture);
+	 *  used only while the spec is natural (FS47Flora::SetNatural). */
+	SIGNAL47_API void Naturalise(FS47FloraSpec& S, bool bFarm);
 	/** SARO's patch in the road's terms: SARO's colliders and walks (site terms; the walks without the highway's). */
 	SIGNAL47_API FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS47FloraRect>& Zones);
 	/** STATION 01's patch in the road's terms; the station's colliders and zones in world terms, its origin. */
