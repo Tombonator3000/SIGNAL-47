@@ -14,7 +14,7 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
 {
  FS47RoswellContacts Out;
  auto* C=R.Mesh.Get(); if (!C || R.Rest.Num()!=R.Parents.Num() || R.Rest.Num()!=R.Names.Num()) return Out;
- C->SetVisibility(In.bVisible);
+ C->SetVisibility(In.bVisible,true);
  if (!In.bVisible) { bInit=false; return Out; }
  if (In.bHeld) return Out;
  Dt=FMath::Clamp(Dt,0.,.1); Clock+=Dt;

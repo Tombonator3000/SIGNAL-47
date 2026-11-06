@@ -90,6 +90,18 @@ namespace
   }
   for(auto* C:Touched){C->MarkRenderStateDirty();if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);}
  }
+ // The farm road's strip lies 3 to 8 cm over the land with a visible edge, which reads as floating. Sunk this
+ // far its edge meets the ground instead; the walking floor is the terrain's and does not move.
+ TWeakObjectPtr<AS47Web> SunkWorld;FVector SunkFrom=FVector::ZeroVector;bool bSunk=false;
+ void SinkRanchRoad(AS47Web* W,bool On)
+ {
+  if(SunkWorld.Get()!=W){SunkWorld=W;bSunk=false;}
+  const auto* N=W->Node(959);auto* C=N?N->Comp.Get():nullptr;if(!C)return;
+  if(On==bSunk)return;
+  if(On){SunkFrom=C->GetRelativeLocation();C->SetRelativeLocation(SunkFrom+FVector(0,0,-9));}
+  else C->SetRelativeLocation(SunkFrom);
+  bSunk=On;
+ }
  void Build(AS47Web* W)
  {
   if(Built==W)return;Built=W;Parts.Reset();auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));if(!Cube)return;
@@ -140,7 +152,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);ClearHousePad(W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
   if(Apply)for(auto& P:Parts)if(auto* C=P.C.Get())
   {

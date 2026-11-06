@@ -1,9 +1,34 @@
 #include "S47TripoCreature.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "S47Web.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
 #include "ReferenceSkeleton.h"
 #include "Misc/CommandLine.h"
+
+// A pinprick of light in each big black eye: it reads in the dark before the rest of the face does. Children of the
+// head bone, so they turn with it and hide with the body.
+void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
+{
+ auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+ auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ if(!Sphere||!Base)return;
+ const FTransform Head=C->GetBoneTransform(C->GetBoneIndex(TEXT("head")),FTransform::Identity);
+ for(int32 I=0;I<2;++I)
+ {
+  auto* Mat=UMaterialInstanceDynamic::Create(Base,W);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*14.f);Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
+  auto* G=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("%sGlint%d"),*C->GetName(),I));
+  G->SetMobility(EComponentMobility::Movable);G->SetupAttachment(C,TEXT("head"));G->SetStaticMesh(Sphere);G->SetMaterial(0,Mat);
+  G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetCastShadow(false);G->SetVisibility(false);G->RegisterComponent();
+  // Component space (the body faces +Y, Z up) into the head bone's own frame.
+  const FVector Target=Head.GetLocation()+FVector(I?EyeSide:-EyeSide,EyeFront,EyeUp);
+  G->SetRelativeLocation(Head.InverseTransformPosition(Target));
+  G->SetWorldScale3D(FVector(EyeSize));
+  Glints.Add(G);
+ }
+}
 
 bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString& Name, const TCHAR* AssetPath)
 {
@@ -24,6 +49,7 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetGenerateOverlapEvents(false);
  C->SetCanEverAffectNavigation(false); C->SetCastShadow(true); C->BoundsScale=1.35f;
  C->SetVisibility(false); C->RegisterComponent(); Mesh=C;
+ if (FCString::Stristr(AssetPath,TEXT("Roswell"))) AddEyeGlints(W,C);
  UE_LOG(LogTemp,Display,TEXT("S47: animated Tripo body %s ready, %d original skin bones, %s"), *Name, Rest.Num(), AssetPath);
  return true;
 }
@@ -31,7 +57,7 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
 void FS47TripoCreature::Peek(bool bShow, double Exposure, double HeadTurn, double Clock)
 {
  auto* C=Mesh.Get(); if (!C) return;
- C->SetVisibility(bShow); if (!bShow) return;
+ C->SetVisibility(bShow,true); if (!bShow) return;
  TArray<FTransform> Pose=Rest;
  for (int32 I=0; I<Pose.Num(); ++I) if (Parents[I]>=0) Pose[I]=Pose[I]*Pose[Parents[I]];
  const auto Descends=[&](int32 Child,int32 Root)
@@ -107,7 +133,7 @@ bool FS47TripoCreature::Rendered() const
 void FS47TripoCreature::Apply(bool bShow, double HeadTurn, double Gait, double Phase, double Clock, bool bGrab, bool bListen)
 {
  auto* C=Mesh.Get(); if (!C) return;
- C->SetVisibility(bShow); if (!bShow) return;
+ C->SetVisibility(bShow,true); if (!bShow) return;
  TArray<FTransform> Pose=Rest;
  for (int32 I=0; I<Pose.Num(); ++I) if (Parents[I]>=0) Pose[I]=Pose[I]*Pose[Parents[I]];
  const auto Descends=[&](int32 Child,int32 Root)

@@ -17,6 +17,7 @@ public:
  bool LampsOn() const{return bOn;}
  int32 FarmSounds() const{return Sounds;}
  static FVector EntryLampRoad();
+ static FVector TrafoLampWorld();
  static FVector SignLampWorld();
  static FVector SignWorld();
 private:
