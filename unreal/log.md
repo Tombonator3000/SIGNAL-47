@@ -2038,3 +2038,7 @@ To nye utviklerhendelser lar Tom vurdere bevegelsene. Nærbilde av dagens Tall O
 ## 6. november 2026 kl.18:50, walkie-talkie-melding
 
 `farm_lights` og `town_lights` melder nå over båret radio. Lyden genereres i spillet uten opptak. Byprøven gir melding med lyd på alle fire steder, selvtest 2517 består. Regresjon 251 kjørte før siste nivåjustering, som bare endret lydnivå og prøvekode.
+
+## 6. november 2026 kl.19:30, besøk på lyssteder
+
+`FS47FarmSite` har fått et besøk med lydvarsel, Roswell ut av dekning, lusking, jakt og mulighet til å dra. Roswell-hjernen brukes uendret, med åpen mark rundt spilleren som kandidatpunkter. Første prøve ga falsk bestått fordi andre besøk aldri fikk frem noen kropp; punktene lå for høyt over bakken, og prøven krever nå kropp. Byprøven ved kinoen og gårdsprøven består, selvtest 2517 og regresjon 251. Ikke prøvd: lagring midt i et besøk og naturlig oppstart uten prøvekrok.

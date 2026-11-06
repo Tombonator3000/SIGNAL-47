@@ -1,4 +1,6 @@
 #include "S47RoswellWorld.h"
+#include "S47FarmSite.h"
+#include "S47Freeform.h"
 
 #include "Components/PrimitiveComponent.h"
 #include "Components/BoxComponent.h"
@@ -477,6 +479,16 @@ TArray<FS47RoswellWorld::FPoint> FS47RoswellWorld::Candidates(const FVector& Nea
   P.Y = FloorY.GetValue();
   if (IsStandable(P)) Out.Add({Id, P, bCover, bRoof, bWindow});
  };
+ // A visit at a site out in the world: the open ground round the player, wherever that is.
+ if (!bRoof && M->Freeform && M->Freeform->FarmSite && M->Freeform->FarmSite->VisitWantsGround())
+ {
+  for (double R : {12., 16., 20., 24.}) for (int32 I = 0; I < 12; ++I)
+  {
+   const double A = I * PI / 6 + R;
+   Add(TEXT("site-ground"), Near.X + FMath::Cos(A) * R, Near.Y + .3, Near.Z + FMath::Sin(A) * R, true, false);
+  }
+  return Out;
+ }
  if (bRoof)
  {
   if (Scene != TEXT("saro")) return Out;
