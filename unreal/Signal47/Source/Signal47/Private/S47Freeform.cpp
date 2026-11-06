@@ -2,6 +2,7 @@
 #include "S47Image.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47RoomDecor.h"
+#include "S47FarmSite.h"
 #include "SS47TapeScope.h"
 #include "S47FreeformTerminal.h"
 #include "S47ReceiverReadout.h"
@@ -213,6 +214,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  LastServiceFeedback=Field->ServiceCompletions();CommandClicks=ServiceClicks=0;FeedbackEncoders.Reset();
  if(!AudioDesk)AudioDesk=FS47FreeformAudioDesk::Shared(M);AudioDesk->Begin();
  if(!Decor)Decor=MakeShared<FS47RoomDecor>(M);Decor->Begin(S47J::Obj(Saved,TEXT("decor")));
+ if(!FarmSite)FarmSite=MakeShared<FS47FarmSite>(M);FarmSite->Begin(S47J::Obj(Saved,TEXT("farmSite")));
  Director->Begin(S47J::Obj(Saved,TEXT("director")));
  IngestedObservations=0;IngestObservations();
  if(M&&M->Story){M->Story->SetClock(FMath::Fmod(WorldClock,86400.));M->Story->Rx.bPowered=true;}
@@ -229,7 +231,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(Field)Field->Stop();
+ if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(FarmSite)FarmSite->Stop();if(Field)Field->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
@@ -416,6 +418,7 @@ void FS47FreeformSession::Step(double Dt)
  if(!ArrayMotionHeld())StepWork(D);
  if(AudioDesk)AudioDesk->Step(D);
  if(Decor)Decor->Step();
+ if(FarmSite)FarmSite->Step(D);
  if(bAudioOpen&&!Held())StepAudio(CaptureStartStage?Dt:D);
  if(M->Audio&&(!bAudioPlaying||!bAudioOpen||Held()||!HasPower()||!AudioDesk||!AudioDesk->ListeningPosition()))M->Audio->ReceiverRecordingOff();
  if(Field)Field->Step(D);
@@ -2168,7 +2171,7 @@ S47J::FObj FS47FreeformSession::Save()const
  TArray<double> Angles=SavedAngles;if(!bRestoreAngles&&M&&M->Web&&M->Web->IsLoaded()){Angles.Reset();for(int32 I=0;I<M->Web->DishCount();++I)Angles.Append({M->Web->DishAz(I),M->Web->DishEl(I),M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)});}S47J::Set(O,TEXT("angles"),Angles);
  S47J::Set(O,TEXT("cases"),Cases.Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
- if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
+ if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {

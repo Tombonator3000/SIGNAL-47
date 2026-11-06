@@ -7,6 +7,10 @@
 #include "S47Panels.h"
 #include "S47Kit.h"
 #include "S47FreeformDirector.h"
+#include "S47FarmSite.h"
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "Modules/ModuleManager.h"
 #include "S47FieldCamera.h"
 #include "S47RoomDecor.h"
 #include "S47Walker.h"
@@ -76,7 +80,27 @@ namespace
   int32 Stage=0;
   double Elapsed=0,StageAt=0;
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
-  int32 LeftBefore=0;
+  int32 LeftBefore=0,SkyBefore=0;
+  // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
+  void FaceFarm(US47Main* M)
+  {
+   const FVector Target(84,20,492);const FVector2D At(0,30);const FVector D=Target-FVector(At.X,1.7,At.Y);
+   M->Player->Place(At.X,At.Y,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  }
+  // Takes a real photograph and counts bright pixels in the middle of it, where the farm is.
+  int32 Exposed(US47Main* M)
+  {
+   M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);M->UI->Viewfinder(false);
+   FString Base64;if(!Photo.Url.Split(TEXT(","),nullptr,&Base64))return -1;
+   TArray<uint8> Bytes;if(!FBase64::Decode(Base64,Bytes))return -1;
+   auto& Images=FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
+   const EImageFormat Format=Images.DetectImageFormat(Bytes.GetData(),Bytes.Num());if(Format==EImageFormat::Invalid)return -1;
+   const auto Image=Images.CreateImageWrapper(Format);if(!Image.IsValid()||!Image->SetCompressed(Bytes.GetData(),Bytes.Num()))return -1;
+   TArray<uint8> Raw;if(!Image->GetRaw(ERGBFormat::RGBA,8,Raw))return -1;
+   const int32 W=Image->GetWidth(),H=Image->GetHeight();int32 Count=0;
+   for(int32 Y=H*2/5;Y<H*3/5;++Y)for(int32 X=W*3/10;X<W*7/10;++X){const uint8* P=&Raw[(Y*W+X)*4];if(P[0]>=170&&P[1]>=170&&P[2]>=150)++Count;}
+   return Count;
+  }
   void Shot(const TCHAR* Name){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("AlbumTest")/Name,true,false);}
   void Press(const FKey& Key)
   {
@@ -161,32 +185,69 @@ namespace
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFarm")))
     {
      M->Flow->bDevRun=true;
-     if(!M->Freeform->TestAdvance(13.*3600.)||!M->Freeform->Director->Force(TEXT("farm_lights")))return Fail(TEXT("farm lights must start at night"));
-     Stage=50;StageAt=Elapsed;return true;
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the farm test needs the night"));
+     FaceFarm(M);Stage=49;StageAt=Elapsed;return true;
     }
     if(bAlbum){GiveAlbum(M);M->UI->NotebookAt(TEXT("photos"));M->Flow->OpenNotebook();Stage=10;StageAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }
+   if(Stage==49)
+   {
+    SkyBefore=Exposed(M);
+    if(!M->Freeform->Director->Force(TEXT("farm_lights")))return Fail(TEXT("farm lights must start at night"));
+    Stage=50;StageAt=Elapsed;return true;
+   }
    if(Stage==50)
    {
     if(Elapsed-StageAt<15)return true; // Faded in.
-    const FVector Target=M->Freeform->Director->EventAnchor();const FVector2D At(0,30);const FVector D=Target-FVector(At.X,1.7,At.Y);
-    M->Player->Place(At.X,At.Y,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-    Stage=51;StageAt=Elapsed;return true;
+    if(!M->Freeform->Director->PhysicalObjectPresented())return Fail(TEXT("the farm lights must be presented from the yard"));
+    Shot(TEXT("farm-lights.png"));Stage=51;StageAt=Elapsed;return true;
    }
    if(Stage==51)
    {
-    if(!M->Freeform->Director->PhysicalObjectPresented())return Fail(TEXT("the farm lights must be presented from the yard"));
-    Shot(TEXT("farm-lights.png"));Stage=52;StageAt=Elapsed;return true;
+    const int32 Lit=Exposed(M);
+    const auto& Claims=M->Freeform->Director->PhotoClaims();
+    // The same view before and after: the lights have to be bright in the actual photograph, not just present.
+    UE_LOG(LogTemp,Display,TEXT("S47: farm lights photo bright pixels %d before, %d with lights"),SkyBefore,Lit);
+    if(Claims.Num()!=1||!Claims[0].Id.StartsWith(TEXT("farm_lights.")))return Fail(TEXT("a photograph from the yard must qualify the farm lights"));
+    if(Lit<SkyBefore+6)return Fail(TEXT("the farm lights must actually be bright in the photograph"));
+    M->Player->Place(40,450,0);Stage=52;StageAt=Elapsed;return true;
    }
    if(Stage==52)
    {
-    M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);M->UI->Viewfinder(false);
-    const auto& Claims=M->Freeform->Director->PhotoClaims();
-    if(Photo.bUnavailable||Claims.Num()!=1||!Claims[0].Id.StartsWith(TEXT("farm_lights.")))return Fail(TEXT("a photograph from the yard must qualify the farm lights"));
-    UE_LOG(LogTemp,Display,TEXT("S47: farm lights PASS: presented and photographed from the yard, quality %.3f"),Claims[0].Quality);
+    if(!M->Freeform->Director->ActiveEvent().IsEmpty()){if(Elapsed-StageAt>10)return Fail(TEXT("the farm lights must leave when someone comes close"));return true;}
+    if(!M->Freeform->FarmSite->Armed())return Fail(TEXT("the lights must leave something behind"));
+    const FVector C=M->Freeform->FarmSite->Centre();const FVector2D At(C.X+7,C.Z+7);const FVector D=C-FVector(At.X,C.Y+1.7,At.Y);
+    M->Player->Place(At.X,At.Y,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+    Stage=53;StageAt=Elapsed;return true;
+   }
+   if(Stage==53)
+   {
+    Shot(TEXT("farm-site.png"));Stage=54;StageAt=Elapsed;return true;
+   }
+   if(Stage==54)
+   {
+    auto& Site=*M->Freeform->FarmSite;
+    if(Site.Label().IsEmpty()||!Site.Use()||!M->Freeform->HasFinding(FS47FarmSite::FindingId()))return Fail(TEXT("looking closer must keep one field record"));
+    Stage=55;StageAt=Elapsed;return true;
+   }
+   if(Stage==55)
+   {
+    Shot(TEXT("farm-site-panel.png"));Stage=56;StageAt=Elapsed;return true;
+   }
+   if(Stage==56)
+   {
+    M->UI->Close(true);auto& Site=*M->Freeform->FarmSite;
+    const auto Saved=Site.Save();Site.Begin(Saved);if(!Site.Armed())return Fail(TEXT("the site must survive a reload"));
+    if(!M->Freeform->TestAdvance(10.*3600.))return Fail(TEXT("advancing to morning"));
+    Stage=57;StageAt=Elapsed;return true;
+   }
+   if(Stage==57)
+   {
+    if(M->Freeform->FarmSite->Armed())return Fail(TEXT("the site must be gone by morning"));
+    UE_LOG(LogTemp,Display,TEXT("S47: farm lights PASS: bright in the photograph, left when approached, site found, kept, reloaded and gone by morning"));
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }
