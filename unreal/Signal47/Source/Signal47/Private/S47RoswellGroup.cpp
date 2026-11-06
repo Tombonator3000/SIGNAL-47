@@ -126,6 +126,7 @@ int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoo
  }
  if (bRoof) UE_LOG(LogTemp,Display,TEXT("S47: Roswell supported roof candidates=%d"),Places.Num());
  int32 Spawned=0;
+ if (bControlled) UE_LOG(LogTemp,Display,TEXT("S47: Roswell controlled spawn in %s: %d places round %s"),*P->Scene,Places.Num(),*Feet.ToCompactString());
  for (const auto& Place:Places)
  {
   if (Spawned>=FMath::Clamp(Count,1,6) || P->Occupied(Place.Pos)>=1) continue;

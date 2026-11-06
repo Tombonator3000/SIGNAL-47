@@ -23,6 +23,10 @@ public:
  bool Use();
  FString Label() const;
  bool Armed() const{return ClearAt>0;}
+ // Whether a body is coming or here at this site, so that spawning may use the open ground round the player.
+ bool VisitWantsGround() const{return Visit>=1&&Visit<=3;}
+ int32 VisitStage() const{return Visit;}
+ void TestVisit(){Visit=1;VisitAge=0;bVisitSeen=false;}
  FVector Centre() const{return Middle;}
  FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
  FString PlaceId() const{return Place;}
@@ -36,6 +40,12 @@ private:
  FString Place,Title,AreaId;
  FVector Middle=FVector::ZeroVector;
  double ClearAt=0,SoundIn=0;
+ // A visit: 0 may come, 1 the warning, 2 it sneaks toward the player, 3 it hunts, 4 over for this site.
+ int32 Visit=4;
+ double VisitAge=0,VisitDwell=0;
+ bool bVisitSeen=false;
+ void StepVisit(double Dt,double Dist);
+ void EndVisit(bool bContact);
  bool bBuilt=false,bActive=false,bBound=false,bShown=false;
  bool Build();
  void Show(bool bShow);

@@ -95,7 +95,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  double VisitClock=0,VisitFrom=0;FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -203,6 +203,18 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the eye test needs the night"));
      M->Player->Place(3.18,3.7,0);M->Player->Pitch=-.2;
      Stage=99;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerVisit")))
+    {
+     M->Flow->bDevRun=true;VisitFrom=Elapsed;
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the visit test needs the night"));
+     if(FParse::Param(FCommandLine::Get(),TEXT("S47VisitTown")))
+     {
+      M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));Stage=139;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+     }
+     M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
+     const FVector C=M->Freeform->FarmSite->Centre();M->Player->Place(C.X+8,C.Z+8,0);
+     VisitClock=M->Freeform->Clock();M->Freeform->FarmSite->TestVisit();Stage=140;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
     {
@@ -353,6 +365,83 @@ namespace
       Look(60);Stage=110;StageAt=Elapsed;return true;
     }
     ++Stage;StageAt=Elapsed;return true;
+   }
+   if(Stage==139)
+   {
+    if(Elapsed-VisitFrom<2)return true;
+    auto& D=*M->Freeform->Director;const FVector P=D.LightPlacePoint(TEXT("cinema"));
+    if(P.IsZero())return Fail(TEXT("the cinema must be a place"));
+    M->Freeform->FarmSite->Arm(M->Freeform->Clock(),TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("diner"),P);
+    const FVector C=M->Freeform->FarmSite->Centre();M->Player->Place(C.X,C.Z,0);
+    UE_LOG(LogTemp,Display,TEXT("S47: visit test in town, site %s"),*C.ToCompactString());
+    VisitClock=M->Freeform->Clock();M->Freeform->FarmSite->TestVisit();Stage=140;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+   }
+   // Stay and it comes for you; walk off and it lets go.
+   if(Stage>=140&&Stage<=146)
+   {
+    auto& Site=*M->Freeform->FarmSite;
+    StageAt=Elapsed; // long waits by design; the visit keeps its own time
+    if(Stage==140)
+    {
+     if(Site.VisitStage()>=2){Stage=141;VisitFrom=Elapsed;StageAt=Elapsed;return true;}
+     if(Elapsed-VisitFrom>35)return Fail(TEXT("a body must come out at the site"));
+     return true;
+    }
+    if(Stage==141)
+    {
+     auto Views=M->Night->Glimpses->Individuals();
+     if(Views.IsEmpty())return Fail(TEXT("the visit has no body"));
+     if(Elapsed-VisitFrom<9)return true;
+     const FVector D=Views[0].Pos-FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+     M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.12;
+     UE_LOG(LogTemp,Display,TEXT("S47: visit body %.1f m away, state %d, rendered %d"),D.Size(),int32(Views[0].State),Views[0].bRendered);
+     Stage=142;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+    }
+    if(Stage==142){if(Elapsed-VisitFrom<1)return true;Shot(TEXT("visit-body.png"));Stage=143;VisitFrom=Elapsed;StageAt=Elapsed;return true;}
+    if(Stage==143)
+    {
+     const double Before=VisitClock;
+     if(Site.VisitStage()==4)
+     {
+      M->Player->TestMove.Reset();
+      UE_LOG(LogTemp,Display,TEXT("S47: visit reached the player after %.1f s"),Elapsed-VisitFrom);
+      if(M->Freeform->Clock()<VisitClock+14*60)return Fail(TEXT("contact must take about fifteen minutes"));
+      Stage=144;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+     }
+     (void)Before;
+     // The player goes to look. It must come for them once it hunts and they are near.
+     {
+      const auto Views=M->Night->Glimpses->Individuals();
+      if(!Views.IsEmpty()&&Site.VisitStage()==3)
+      {
+       const FVector D=Views[0].Pos-FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+       M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.1;M->Player->TestMove=FVector2D(0,-.8);
+       static double NextLog=0;
+       if(Elapsed>=NextLog){NextLog=Elapsed+4;UE_LOG(LogTemp,Display,TEXT("S47: visit watch %.1f m, state %d, speed %.2f"),D.Size(),int32(Views[0].State),Views[0].Speed);}
+      }
+     }
+     if(Elapsed-VisitFrom>100)return Fail(TEXT("staying must end in contact"));
+     return true;
+    }
+    if(Stage==144)
+    {
+     if(Elapsed-VisitFrom<2.5)return true;
+     Site.TestVisit();Stage=145;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+    }
+    if(Stage==145)
+    {
+     if(Site.VisitStage()==4)return Fail(TEXT("a second body must come"));
+     if(Site.VisitStage()<2)return true;
+     const FVector C=Site.Centre();M->Player->Place(C.X+90,C.Z,0);Stage=146;VisitFrom=Elapsed;StageAt=Elapsed;return true;
+    }
+    if(Site.VisitStage()==4)
+    {
+     if(!M->Night->Glimpses->Individuals().IsEmpty())return Fail(TEXT("leaving must clear the body"));
+     UE_LOG(LogTemp,Display,TEXT("S47: visit PASS: warned, came out, reached the player who stayed, let go of the one who left"));
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    if(Elapsed-VisitFrom>6)return Fail(TEXT("the visit must end when the player leaves"));
+    return true;
    }
    // The service door on a far antenna, then the truck out over the field and the walk from where it stops.
    if(Stage>=120&&Stage<=132)

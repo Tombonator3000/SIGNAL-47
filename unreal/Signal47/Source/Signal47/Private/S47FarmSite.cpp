@@ -1,4 +1,13 @@
 #include "S47FarmSite.h"
+#include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
+#include "S47Story.h"
+#include "S47FreeformDirector.h"
+#include "S47World.h"
+#include "S47Sky.h"
+#include "S47WorldLife.h"
+#include "S47Glimpses.h"
+#include "S47Night.h"
 #include "S47Audio.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
@@ -93,6 +102,7 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();SpotSaro={};SpotRoad={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
+ Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -111,12 +121,18 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  Layout();Show(Armed());
 }
 
-void FS47FarmSite::Stop(){bActive=false;Life.Reset();Show(false);}
+void FS47FarmSite::Stop()
+{
+ // Not while the engine or the owner is going away: the scene the body hangs in may already be gone.
+ const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Web.Get());
+ if(Visit>=2&&Visit<=3&&bLive&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
+ Visit=4;bActive=false;Life.Reset();Show(false);
+}
 
 S47J::FObj FS47FarmSite::Save() const
 {
  const auto O=S47J::New();
- if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("place"),Place);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("area"),AreaId);S47J::Set(O,TEXT("at"),TArray<double>{Middle.X,Middle.Y,Middle.Z});}
+ if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),Visit==0?0:4);S47J::Set(O,TEXT("place"),Place);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("area"),AreaId);S47J::Set(O,TEXT("at"),TArray<double>{Middle.X,Middle.Y,Middle.Z});}
  return O;
 }
 
@@ -128,6 +144,8 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  static constexpr double Day=86400,Morning=6*3600;
  ClearAt=FMath::FloorToDouble((Clock-Morning)/Day+1)*Day+Morning;
  Place=InPlace;Title=InTitle;AreaId=InArea;Middle=Point;
+ // Not every night's lights leave something behind that comes back for you.
+ Visit=FMath::FRand()<.6f?0:4;VisitDwell=0;
  if(Place!=TEXT("farm")&&M&&M->Web&&M->Web->GetWorld())
  {
   // The longest clear way out from the front, and a few metres along it.
@@ -150,14 +168,73 @@ void FS47FarmSite::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform)return;
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
+ if(Visit>=1&&Visit<=3&&(!Armed()||!M->Web||!Here()||!M->Player)){EndVisit(false);return;}
  if(!Armed()||!M->Audio||!M->Player||!M->Web||!Here())return;
  const double Dist=FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size();
+ StepVisit(Dt,Dist);
  if(Dist>140)return;
  SoundIn-=Dt;if(SoundIn>0)return;
  SoundIn=FMath::FRandRange(22.f,48.f);
  // From the place itself: it gets louder and turns with the listener, it never follows them.
  const float Side=FMath::FRandRange(-6.f,6.f);
  M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.3f,.At=Middle+FVector(Side,1,-Side)});
+}
+
+void FS47FarmSite::StepVisit(double Dt,double Dist)
+{
+ auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G||!M->World)return;
+ const bool bDriving=M->World->bDriving;
+ if(Visit==0)
+ {
+  // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
+  const bool bDark=M->Life&&M->Life->Sky.IsValid()&&M->Life->Sky->Daylight()<.1;
+  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty();
+  VisitDwell=Dist<38&&!bDriving&&bDark&&bQuiet&&!M->ModalOpen()?VisitDwell+Dt:0;
+  if(VisitDwell<12)return;
+  Visit=1;VisitAge=0;bVisitSeen=false;UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s"),*Place);
+ }
+ if(Visit<1||Visit>3)return;
+ if(M->ModalOpen())return;
+ const bool bFirst=VisitAge<=0;VisitAge+=Dt;
+ if(Visit==1)
+ {
+  // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.
+  if(bFirst)M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
+  if(VisitAge<6)return;
+  if(bDriving||Dist>70){EndVisit(false);return;}
+  if(FMath::Fmod(VisitAge,1.)>Dt)return; // tried about once a second
+  if(G->ControlledSpawn(1,FS47RoswellBrain::EMode::Curious,false)>0){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: a body came out of cover"));}
+  else if(VisitAge>25){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no cover to come from here"));EndVisit(false);}
+  return;
+ }
+ if(Visit==2&&VisitAge>22){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
+ for(const auto& I:G->Individuals())
+ {
+  bVisitSeen|=I.bRendered;
+  if(I.State==FS47RoswellBrain::EState::Contact&&!bDriving){EndVisit(true);return;}
+ }
+ // Away from the place, it lets go.
+ if(bDriving||Dist>70||VisitAge>120)EndVisit(false);
+}
+
+void FS47FarmSite::EndVisit(bool bContact)
+{
+ const bool bWas=Visit>=2;
+ Visit=4;VisitDwell=0;
+ if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
+ if(!M||!M->Freeform)return;
+ UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, contact %d, seen %d"),*Place,bContact,bVisitSeen);
+ if(bVisitSeen&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. A small figure came out of cover and kept coming toward me%s. It says what I saw, not what it was."),*Title,bContact?TEXT(" until it reached me. I lost about fifteen minutes"):TEXT(" until I left")));
+ if(bContact)
+ {
+  // Left where it happened, with the truck and the way home: nothing else is taken.
+  M->Freeform->SpendTime(15*60.);
+  if(M->UI){M->UI->Fade(true,TEXT("CONTACT LOST"));
+   if(M->Story){TWeakObjectPtr<US47Main> Weak=M;M->Story->After(1.2,[Weak]{if(Weak.IsValid()&&Weak->UI){Weak->UI->Fade(false);Weak->UI->Toast(TEXT("You are on the ground where you stood. Your watch has moved on about fifteen minutes."),6);}},TEXT("site-visit"));}
+  }
+ }
+ M->RequestAutosave();
 }
 
 FString FS47FarmSite::Label() const
