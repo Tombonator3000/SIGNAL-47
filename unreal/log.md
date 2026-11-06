@@ -1978,3 +1978,7 @@ Tom valgte at opptakslyd skal virke med redusert målehastighet. `S47CaptureSoun
 ## 6. november 2026 kl.11:55, gårdslys
 
 Freeform-regresjonen besto 247 kontroller på pakken `9e8a80fe`. FF-FARM-HORROR-01 steg 1: `farm_lights` med åtte lys over gården, foto fra plassen består (`-S47MenuPointerFarm`). Første bilde viste svarte prikker: lamper med `EmissivePower` uten `Emissive`-farge lyser ikke, også i `response_lights` og `flyover`, så de får nå farge. Selvtest 2509 og regresjon 249 består i editor; ingen automatisk kontroll sjekker at lysene faktisk er lyse på bildet.
+
+## 6. november 2026, installasjon av gårdslys
+
+`e0e6c6fe` etter PR447 installert med rask installasjon: selvtester og 138 uendrede Saved-filer.
