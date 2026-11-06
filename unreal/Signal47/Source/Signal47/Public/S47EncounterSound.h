@@ -18,6 +18,8 @@ public:
  void UpdateRadio(US47Audio* Audio,double Level,TOptional<FVector> AtThree={},bool bHeld=false);
  // A message on the set: click, squelch, a voice too broken to make out, and the squelch closing.
  bool Message(US47Audio* Audio);
+ // The same broken voice, slowed and from a place: not quite speech, not through any set.
+ bool Talk(US47Audio* Audio,const FVector& AtThree);
  void Hold(bool bHeld);
  void Reset();
  static bool SelfTest(TArray<FString>& Lines);
@@ -29,7 +31,7 @@ private:
  TArray<FVoice> Voices;
  TSharedPtr<FS47BufferSourceNode> RadioSource, Transmission;
  TSharedPtr<FS47AudioBuffer> TransmissionBuffer,MessageSound;
- TSharedPtr<FS47BufferSourceNode> MessageSource;
+ TSharedPtr<FS47BufferSourceNode> MessageSource,TalkSource;
  double NextTransmission=0;
  TSharedPtr<FS47GainNode> RadioGain,RadioVolume,TransmissionGain;
  TSharedPtr<FS47PannerNode> RadioPan;

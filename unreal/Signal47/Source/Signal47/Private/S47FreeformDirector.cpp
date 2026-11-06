@@ -690,6 +690,7 @@ FString FS47FreeformDirector::InspectRoomLight(const FString& Room)
  }
  return Text;
 }
+void FS47FreeformDirector::RestFor(double Seconds){RestUntil=FMath::Max(RestUntil,ActiveTime+Seconds);}
 void FS47FreeformDirector::StepGroup(double Dt)
 {
  if(!M||!M->Night||!M->Night->Glimpses)return;auto G=M->Night->Glimpses;

@@ -10,6 +10,8 @@ struct FS47AlbumShot;
 class FS47FreeformDirector
 {
 public:
+ // Nothing new for this long of active time: after being taken there is calm.
+ void RestFor(double Seconds);
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);
