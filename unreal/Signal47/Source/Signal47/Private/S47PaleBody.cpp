@@ -80,6 +80,17 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
  return true;
 }
 
+void FS47PaleBody::ApplyCrab(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Clock, double Fold, bool bRun)
+{
+ if (!bBuilt) return;
+ if (Root) Root.SetVisible(bShow);
+ else if (UBoxComponent* R = RootComp.Get()) R->SetVisibility(bShow, true);
+ FS47CrabPose Visual;Visual.bVisible=bShow;Visual.Clock=Clock;Visual.Fold=Fold;Visual.HeadYaw=PaleWrap(HeadYaw-BodyYaw);
+ Visual.Mode=bRun?ES47CrabMode::Run:ES47CrabMode::Walk;
+ if (bShow) if (UBoxComponent* R = RootComp.Get()) R->SetWorldLocationAndRotation(S47Three::ToUE(Feet.X, Feet.Y, Feet.Z), FRotator(0, FMath::RadiansToDegrees(BodyYaw), 0));
+ Creature.ApplyCrab(Visual);
+}
+
 bool FS47PaleBody::Owns(const UPrimitiveComponent* C) const
 {
  return C && All.ContainsByPredicate([C](const TWeakObjectPtr<UStaticMeshComponent>& P) { return P.Get() == C; });
@@ -97,7 +108,7 @@ void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double
  if (!bBuilt) return;
  if (Root) Root.SetVisible(bShow);
  else if (UBoxComponent* R = RootComp.Get()) R->SetVisibility(bShow, true);
- FS47PalePose Visual;Visual.bVisible=bShow;Visual.HeadYaw=PaleWrap(HeadYaw-BodyYaw);Visual.Clock=Clock;
+ FS47PalePose Visual;Visual.Style=Style;Visual.bVisible=bShow;Visual.HeadYaw=PaleWrap(HeadYaw-BodyYaw);Visual.Clock=Clock;
  Visual.Mode=Pose==EPose::Grab?ES47PaleMotion::Grab:Pose==EPose::Chase?ES47PaleMotion::Run:
   Pose==EPose::Listen?ES47PaleMotion::Listen:Gait>.03?ES47PaleMotion::Walk:ES47PaleMotion::Idle;
  Visual.GrabProgress=GrabProgress;Visual.GrabTargetUE=GrabTargetUE;Visual.LegacyGait=Gait;Visual.LegacyPhase=Phase;

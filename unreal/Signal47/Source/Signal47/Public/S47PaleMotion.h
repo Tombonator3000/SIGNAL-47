@@ -3,10 +3,13 @@
 
 struct FS47TripoCreature;
 enum class ES47PaleMotion : uint8 { Idle, Listen, Walk, Run, Grab };
+// Hunter is the SC02 pale. Tall stoops and goes on long slow strides with its arms hanging and its head out in front.
+enum class ES47PaleStyle : uint8 { Hunter, Tall };
 struct FS47PalePose
 {
  bool bVisible=true;
  ES47PaleMotion Mode=ES47PaleMotion::Idle;
+ ES47PaleStyle Style=ES47PaleStyle::Hunter;
  // Existing controller clock holds with menus/cinematics. No separate wall clock.
  double Clock=0, HeadYaw=0, GrabProgress=-1;
  // Actual player chest target in Unreal cm, supplied only by a live controller/explicit preview.
@@ -35,7 +38,7 @@ private:
   double CorrectionTime=0,SwingStart=0,SwingEnd=1;
  } Feet[2];
  bool bInit=false;
- double LastClock=0,Phase=0,Motion=0,Run=0,HeadYaw=0,Reach=0;
+ double LastClock=0,Phase=0,Motion=0,Run=0,HeadYaw=0,Reach=0,HeadTilt=0;
  FVector LastRoot=FVector::ZeroVector;
  TOptional<FVector> LastGrabTargetUE;
 };

@@ -34,6 +34,8 @@ namespace S47Legs
 	/** Where the truck is left at the motel: the lot north of the office. */
 	SIGNAL47_API const FS47Box2& MOTEL_PARK();
 	inline constexpr FS47Box2 SARO_PAD = { 6.6, 13.0, 3.4, 12.4 };
+	// All 27 antennas with a margin, north of the site's own yard.
+	inline constexpr FS47Box2 ARRAY_FIELD = { -245.0, 225.0, -435.0, -21.0 };
 	/** The truck changes from the road to the station this far along the road's track. */
 	inline constexpr double HANDOFF = 330;
 

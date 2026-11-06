@@ -1,4 +1,5 @@
 #include "S47FreeformWorld.h"
+#include "S47Legs.h"
 #include "S47Freeform.h"
 #include "S47Observing.h"
 #include "S47FreeformCarry.h"
@@ -202,6 +203,7 @@ void FS47FreeformWorld::Stop()
  if(!Live(Web)||Web->IsActorBeingDestroyed())return;
  RestorePumpModel();
  RestoreServiceCabinet();
+ SetFieldZone(false);PlacedTarget.Empty();bFirstDoorStep=true;DoorK=0;
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=false;
  if(ServiceDishIndex()>=0)Web->SetDishRemoteAvailable(ServiceDishIndex(),true);
  for(const auto& Pose:WearPose){Web->SetDishRemoteAvailable(Pose.Key,true);Web->SnapDish(Pose.Key,Pose.Value.X,Pose.Value.Y);}
@@ -428,9 +430,113 @@ bool FS47FreeformWorld::InstallServiceCabinet()
  };
  if(!CabinetBody)CabinetBody=Part(TEXT("FreeformOriginalS03Body"),BodyMesh,FVector::ZeroVector,{0,1,3});
  if(!Lid)Lid=Part(TEXT("FreeformOriginalS03Door"),DoorMesh,FVector(4.647,-.01,-39.72),{1,2});
+ if(!FieldLid)
+ {
+  FieldLid=Part(TEXT("FreeformFieldServiceDoor"),DoorMesh,FVector(4.647,-.01,-39.72),{1,2});
+  M->Web->MarkUsable(FieldLid.I,TEXT("ff:service"));FieldLid.SetVisible(false);
+  // The door's texture is painted for S-03. On the other antennas a plate covers that name; their box has its own.
+  if(const auto* Node=M->Web->Node(FieldLid.I))if(auto* DoorComp=Node->Comp.Get())
+  {
+   auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+   auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+   if(Cube&&Base)
+   {
+    auto* Plate=NewObject<UStaticMeshComponent>(M->Web,TEXT("FreeformFieldServicePlate"));
+    Plate->SetMobility(EComponentMobility::Movable);Plate->SetupAttachment(DoorComp);Plate->SetStaticMesh(Cube);
+    auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0x8b8d8a));Plate->SetMaterial(0,Mat);
+    Plate->SetCollisionEnabled(ECollisionEnabled::NoCollision);Plate->SetCastShadow(false);
+    Plate->RegisterComponent();
+    Plate->SetRelativeLocation(FVector(-2.2,32,24));Plate->SetRelativeScale3D(FVector(.012,.56,.25));
+    auto* Words=NewObject<UTextRenderComponent>(M->Web,TEXT("FreeformFieldServiceWords"));
+    Words->SetMobility(EComponentMobility::Movable);Words->SetupAttachment(DoorComp);
+    Words->SetText(FText::FromString(TEXT("RELAY HATCH")));Words->SetWorldSize(4.2f);Words->SetHorizontalAlignment(EHTA_Center);Words->SetVerticalAlignment(EVRTA_TextCenter);
+    Words->SetTextRenderColor(FColor(28,28,26));Words->SetCollisionEnabled(ECollisionEnabled::NoCollision);Words->RegisterComponent();
+    Words->SetRelativeLocation(FVector(-3.0,32,24));Words->SetRelativeRotation(FRotator(0,180,0));
+   }
+  }
+ }
  for(int32 K=0;K<4;++K)if(auto* C=CabinetOriginals[K].Component.Get())
  {C->SetStaticMesh(Trim[K]);C->SetMaterial(0,CabinetOriginals[K].Materials[0].Get());}
  bServiceCabinet=true;return true;
+}
+void FS47FreeformWorld::PlaceServiceDoor()
+{
+ if(!M||!M->Web||PlacedTarget==ServiceTarget)return;
+ FVector At=ServiceAt(),Door(4.647,-.01,-39.72);DoorYaw=0;
+ if(ServiceTarget!=TEXT("S-03"))
+ {
+  const auto* I=M->Web->Item(TEXT("field:")+ServiceTarget);const int32 D=ServiceDishIndex();
+  if(!I||D==INDEX_NONE)return;
+  // The face of the drive box turned away from its antenna. Rotated from the S-03 cabinet, whose door is on its -X side.
+  const FVector Mid=(I->Min+I->Max)*.5,Size=I->Max-I->Min;
+  const bool bThinX=Size.X<Size.Z;
+  const FVector2D Out=bThinX?FVector2D(FMath::Sign(Mid.X-M->Web->DishX(D)),0):FVector2D(0,FMath::Sign(Mid.Z-M->Web->DishZ(D)));
+  DoorYaw=FMath::Atan2(Out.Y,-Out.X);
+  const double Half=(bThinX?Size.X:Size.Z)*.5;
+  const auto Local=[&](double X,double Y,double Z){return FVector(Mid.X+X*FMath::Cos(DoorYaw)+Z*FMath::Sin(DoorYaw),Y,Mid.Z-X*FMath::Sin(DoorYaw)+Z*FMath::Cos(DoorYaw));};
+  At=Local(-Half-.335,-.01,0);Door=Local(-Half-.01,-.01,-.32);
+ }
+ PlacedTarget=ServiceTarget;DoorFace=At;
+ const double Deg=-FMath::RadiansToDegrees(DoorYaw);
+ const auto Put=[&](FS47Obj O,const FVector& Local)
+ {
+  const FVector P=At+FVector(Local.X*FMath::Cos(DoorYaw)+Local.Z*FMath::Sin(DoorYaw),Local.Y,-Local.X*FMath::Sin(DoorYaw)+Local.Z*FMath::Cos(DoorYaw));
+  if(O)if(const auto* N=O.W->Node(O.I))if(auto* C=N->Comp.Get())C->SetWorldLocationAndRotation(S47Three::ToUE(P),FRotator(0,Deg,0));
+ };
+ Put(Panel,FVector(.32,0,0));Put(Relay,FVector(.24,.04,0));Put(Selector,FVector(.23,-.20,-.16));
+ if(ServiceText.IsValid())
+ {
+  ServiceText->SetWorldLocationAndRotation(S47Three::ToUE(At+FVector(.30*FMath::Cos(DoorYaw),.30,-.30*FMath::Sin(DoorYaw))),FRotator(0,180+Deg,0));
+ }
+ if(FieldLid)if(const auto* N=FieldLid.W->Node(FieldLid.I))if(auto* C=N->Comp.Get())C->SetWorldLocation(S47Three::ToUE(Door));
+}
+void FS47FreeformWorld::ApplyServiceDoor()
+{
+ if(!M||!M->Web)return;
+ PlaceServiceDoor();
+ const bool bS03=ServiceTarget==TEXT("S-03");
+ const bool Show=bActive&&bServiceCabinet&&DoorK>.02;
+ const double A=-1.4*DoorK;
+ if(Lid){Lid.SetRotY(bS03?A:0);Lid.SetVisible(bActive&&bServiceCabinet);}
+ if(FieldLid)
+ {
+  const bool bHere=bActive&&bServiceCabinet&&!bS03;
+  FieldLid.SetVisible(bHere);
+  if(const auto* N=FieldLid.W->Node(FieldLid.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))
+  {
+   C->SetCollisionEnabled(bHere?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
+   C->SetWorldRotation(FRotator(0,-FMath::RadiansToDegrees(DoorYaw+A),0));
+  }
+ }
+ if(bServiceCabinet)
+ {
+  const double G=bS03?A:0;const FVector D(-.017,.41,.54);
+  FS47GlowView(M->Web,TEXT("world.field.glow.points")).SetPos(2,FVector(4.647,-.01,-39.72)+FVector(FMath::Cos(G)*D.X+FMath::Sin(G)*D.Z,D.Y,-FMath::Sin(G)*D.X+FMath::Cos(G)*D.Z));
+ }
+ if(ServiceText.IsValid())ServiceText->SetVisibility(Show);
+ for(FS47Obj O:{Panel,Relay,Selector})if(O){O.SetVisible(Show);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+}
+void FS47FreeformWorld::StepServiceDoor(double Dt)
+{
+ const bool bOpen=bActive&&Service>=4&&Service<=5;
+ if(bOpen!=bDoorOpen)
+ {
+  bDoorOpen=bOpen;
+  if(M&&M->Audio&&!bFirstDoorStep)M->Audio->Sfx(bOpen?TEXT("doorCreak0"):TEXT("doorClose"));
+ }
+ bFirstDoorStep=false;
+ const double Was=DoorK;
+ DoorK=FMath::FInterpConstantTo(DoorK,bOpen?1.:0.,Dt,1.6);
+ if(DoorK!=Was||PlacedTarget!=ServiceTarget)ApplyServiceDoor();
+}
+void FS47FreeformWorld::SetFieldZone(bool bOn)
+{
+ if(!M||!IsValid(M->Web)||bOn==bFieldZone)return;
+ bFieldZone=bOn;
+ auto& Zones=M->Web->ZonesMutable(TEXT("saro"));
+ Zones.RemoveAll([](const FS47Rect& R){return R.Id==TEXT("ff:arrayfield");});
+ // Out of the truck anywhere it can be driven, one can walk.
+ if(bOn)Zones.Add({S47Legs::ARRAY_FIELD.MinX,S47Legs::ARRAY_FIELD.MaxX,S47Legs::ARRAY_FIELD.MinZ,S47Legs::ARRAY_FIELD.MaxZ,TEXT("ff:arrayfield"),true});
 }
 void FS47FreeformWorld::RestoreServiceCabinet()
 {
@@ -647,16 +753,7 @@ void FS47FreeformWorld::Apply()
  }
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
  if(BenchLamp){const bool Testing=!BenchJob.IsEmpty()||bLoggerCalibrating;BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float((bLoggerCalibrating?Logger.Calibration:BenchSeconds)/3.)*.8f:.15f);}
- const bool Open=bActive&&ServiceTarget==TEXT("S-03")&&Service>=4&&Service<=5;
- if(Lid){Lid.SetRotY(Open?-1.4:0);Lid.SetVisible(bActive&&bServiceCabinet);}
- if(bServiceCabinet)
- {
-  const double A=Open?-1.4:0;const FVector D(-.017,.41,.54);
-  FS47GlowView(M->Web,TEXT("world.field.glow.points")).SetPos(2,FVector(4.647,-.01,-39.72)+FVector(FMath::Cos(A)*D.X+FMath::Sin(A)*D.Z,D.Y,-FMath::Sin(A)*D.X+FMath::Cos(A)*D.Z));
- }
- if(ServiceText.IsValid()){ServiceText->SetVisibility(Open&&bServiceCabinet);}
- for(FS47Obj O:{Panel,Relay,Selector})if(O){O.SetVisible(Open&&bServiceCabinet);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Open&&bServiceCabinet?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
-
+ ApplyServiceDoor();
  if(Relay)Relay.SetColor(S47Three::Hex(Service>=5?0x739470:0xb19651));
  if(Selector)
  {
@@ -664,7 +761,7 @@ void FS47FreeformWorld::Apply()
   // AdoptNode retains position, not native scale. Rotate the actual component
   // so the fitted 4.5 cm selector cannot become a one-metre interaction blocker.
   if(const auto* N=Selector.W->Node(Selector.I))if(auto* C=N->Comp.Get())
-   C->SetWorldRotation(FRotator(0,0,ServiceTarget==TEXT("S-03")&&Service>=3&&Service<=8?FMath::RadiansToDegrees(.65):0));
+   C->SetWorldRotation(FRotator(0,-FMath::RadiansToDegrees(DoorYaw),Service>=3&&Service<=8?FMath::RadiansToDegrees(.65):0));
  }
  if(FeederLamp)FeederLamp.SetColor(S47Three::Hex(M&&M->Freeform&&M->Freeform->PowerFault()?0xc57d32:0x58a769));
  if(FeederLever)FeederLever.SetRotX(Feeder>=2&&Feeder<5?.55:0);
@@ -1252,6 +1349,7 @@ void FS47FreeformWorld::AdvanceUnobservedTo(double Clock)
 void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
+ SetFieldZone(true);StepServiceDoor(Dt);
  TrackPowerFault(M->Freeform->PowerFault());
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;

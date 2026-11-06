@@ -1,5 +1,8 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47FreeformWorld.h"
+#include "S47Story.h"
+#include "S47TripoCreature.h"
 #include "S47Freeform.h"
 #include "S47Album.h"
 #include "S47Flow.h"
@@ -91,7 +94,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -199,6 +202,11 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the eye test needs the night"));
      M->Player->Place(3.18,3.7,0);M->Player->Pitch=-.2;
      Stage=99;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     M->Freeform->Field->TestService(TEXT("S-08"),3);Stage=120;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRoad")))
     {
@@ -339,9 +347,98 @@ namespace
      case 104:Shot(TEXT("eyes-10m.png"));break;
      case 105:Look(25);break;
      case 106:Shot(TEXT("eyes-25m.png"));break;
-     case 107:UE_LOG(LogTemp,Display,TEXT("S47: eye test PASS: close, 10 and 25 metres captured"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
+     case 107:
+      if(FS47TripoCreature::ShownEyeGlints()<2)return Fail(TEXT("the eyes must show at 25 m at night"));
+      Look(60);Stage=110;StageAt=Elapsed;return true;
     }
     ++Stage;StageAt=Elapsed;return true;
+   }
+   // The service door on a far antenna, then the truck out over the field and the walk from where it stops.
+   if(Stage>=120&&Stage<=132)
+   {
+    auto* F=M->Freeform->Field.Get();
+    if(Elapsed-StageAt<(Stage==124||Stage==127?2.5:Stage==129?7.:Stage==130?5.:.8))return true;
+    switch(Stage)
+    {
+     case 120:
+     {
+      const FVector Face=F->ServiceDoorFace();const double Y=F->ServiceDoorYaw();
+      if(Face.IsNearlyZero())return Fail(TEXT("no service door at S-08"));
+      // Stand 1.6 m out from the face, a little to the hinge side, looking at it.
+      const FVector Eye=Face+FVector(-1.6*FMath::Cos(Y)+.5*FMath::Sin(Y),0,1.6*FMath::Sin(Y)+.5*FMath::Cos(Y));
+      M->Player->Place(Eye.X,Eye.Z,0);
+      const FVector D=Face-Eye;M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.25;
+      break;
+     }
+     case 121:Shot(TEXT("field-door-shut.png"));break;
+     case 122:if(!M->Freeform->Field->Use(TEXT("ff:service")))return Fail(TEXT("the service door does not take E"));break;
+     case 123:if(F->ServiceStage()!=4)return Fail(TEXT("using S-08 must open the hatch"));if(F->ServiceDoorOpen()<=.05||F->ServiceDoorOpen()>=.98)UE_LOG(LogTemp,Display,TEXT("S47: door k %.2f"),F->ServiceDoorOpen());break;
+     case 124:if(F->ServiceDoorOpen()<.99)return Fail(TEXT("the door must swing fully open"));Shot(TEXT("field-door-open.png"));break;
+     case 125:M->Player->Place(-24,-60,0);M->World->DriveOut();break;
+     case 126:
+      if(!M->World->bDriving)return Fail(TEXT("not driving"));
+      if(!M->World->MoveDriven(-24,-150,PI/2))return Fail(TEXT("cannot move the truck to the highway"));
+      M->World->CabDrive()->bEngine=true;
+      M->World->TestInput=[]{FS47DriveIn In;In.Throttle=.8;return In;};
+      break;
+     case 127:break;
+     case 128:Shot(TEXT("field-drive.png"));break;
+     case 129:
+     {
+      const FVector P=M->World->CabDrive()->Pos;
+      UE_LOG(LogTemp,Display,TEXT("S47: field drive at %.1f %.1f"),P.X,P.Z);
+      if(FMath::Abs(P.X+24)<12)return Fail(TEXT("the truck must leave the highway onto the field"));
+      M->World->TestInput=[M]{FS47DriveIn In;const auto* C=M->World->CabDrive();In.Throttle=C&&C->Speed>.08?-1.:0.;return In;};
+      break;
+     }
+     case 130:
+      if(!M->World->GetOutHere(true))return Fail(TEXT("must get out in the field"));
+      FieldFrom=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);
+      M->World->TestInput=nullptr;
+      M->Player->TestMove=FVector2D(0,-1);
+      break;
+     case 131:Shot(TEXT("field-out.png"));break;
+     case 132:
+     {
+      const double Moved=FVector(M->Player->Pos.X-FieldFrom.X,0,M->Player->Pos.Z-FieldFrom.Z).Size();
+      M->Player->TestMove.Reset();
+      if(Moved<1)return Fail(TEXT("must walk on the field after getting out"));
+      UE_LOG(LogTemp,Display,TEXT("S47: field PASS: S-08 door opened with a swing, truck drove onto the field, walked %.1f m from it"),Moved);
+      Stage=133;StageAt=Elapsed;return true;
+     }
+    }
+    ++Stage;StageAt=Elapsed;return true;
+   }
+   // The door on the three other ways the drive boxes stand round their antennas.
+   if(Stage>=133&&Stage<=134)
+   {
+    static const TCHAR* Dishes[3]={TEXT("S-01"),TEXT("S-02"),TEXT("S-04")};
+    if(Elapsed-StageAt<1.)return true;
+    auto* F=M->Freeform->Field.Get();
+    if(FieldShot>=3){FPlatformMisc::RequestExitWithStatus(false,0);return false;}
+    if(Stage==133)
+    {
+     F->TestService(Dishes[FieldShot],4);
+     const FVector Face=F->ServiceDoorFace();const double Y=F->ServiceDoorYaw();
+     const FVector Eye=Face+FVector(-1.7*FMath::Cos(Y)+.6*FMath::Sin(Y),0,1.7*FMath::Sin(Y)+.6*FMath::Cos(Y));
+     M->Player->Place(Eye.X,Eye.Z,0);const FVector D=Face-Eye;M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.25;
+     Stage=134;StageAt=Elapsed;return true;
+    }
+    Shot(*FString::Printf(TEXT("field-door-%d.png"),FieldShot));++FieldShot;Stage=133;StageAt=Elapsed;return true;
+   }
+   if(Stage==110)
+   {
+    if(Elapsed-StageAt<.5)return true;
+    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint past 50 m"));
+    Shot(TEXT("eyes-60m.png"));
+    if(M->Story)M->Story->SetClock(12*3600);
+    Stage=111;StageAt=Elapsed;return true;
+   }
+   if(Stage==111)
+   {
+    if(Elapsed-StageAt<1.5)return true;
+    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint by day"));
+    UE_LOG(LogTemp,Display,TEXT("S47: eye test PASS: night 10 and 25 m show, 60 m and daylight do not"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==109)
    {

@@ -9,17 +9,30 @@
 #include "Misc/CommandLine.h"
 
 namespace { TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints; }
-void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE)
+void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
 {
- // A dot of a fixed size falls under one pixel past a few metres. Held at a minimum width on screen, the eyes
- // can be made out far into the dark, as two points, while the body is still unseen.
- static constexpr double PerMetre=.0028;
+ // A dot of a fixed size falls under one pixel past a few metres, so it holds a small width on screen. It belongs
+ // to the dark and to near distances: gone by day and fully out at 50 m, fading from 30 m.
+ static constexpr double PerMetre=.0018,FadeFrom=30.,GoneAt=50.,Glow=3.;
+ const double Dark=1.-FMath::SmoothStep(.02,.25,Daylight);
  AllGlints.RemoveAll([](const TWeakObjectPtr<UStaticMeshComponent>& G){return !G.IsValid();});
- for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())if(G->IsVisible())
+ for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())
  {
   const double Metres=FVector::Dist(EyeUE,G->GetComponentLocation())/100.;
+  const double Level=Dark*(1.-FMath::SmoothStep(FadeFrom,GoneAt,Metres));
+  const bool bShow=Level>.01;
+  if(G->bHiddenInGame==bShow)G->SetHiddenInGame(!bShow);
+  if(!bShow||!G->IsVisible())continue;
   G->SetWorldScale3D(FVector(FMath::Max(EyeSize,Metres*PerMetre)));
+  if(auto* Mat=Cast<UMaterialInstanceDynamic>(G->GetMaterial(0)))Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*float(Glow*Level));
  }
+}
+
+int32 FS47TripoCreature::ShownEyeGlints()
+{
+ int32 N=0;
+ for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())if(G->IsVisible()&&!G->bHiddenInGame)++N;
+ return N;
 }
 
 // A pinprick of light in each big black eye: it reads in the dark before the rest of the face does. Children of the
@@ -32,10 +45,13 @@ void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
  const FTransform Head=C->GetBoneTransform(C->GetBoneIndex(TEXT("head")),FTransform::Identity);
  for(int32 I=0;I<2;++I)
  {
-  auto* Mat=UMaterialInstanceDynamic::Create(Base,W);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*14.f);Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
+  auto* Mat=UMaterialInstanceDynamic::Create(Base,W);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*3.f);Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
   auto* G=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("%sGlint%d"),*C->GetName(),I));
   G->SetMobility(EComponentMobility::Movable);G->SetupAttachment(C,TEXT("head"));G->SetStaticMesh(Sphere);G->SetMaterial(0,Mat);
-  G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetCastShadow(false);G->SetVisibility(false);G->RegisterComponent();
+  G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetCastShadow(false);G->SetVisibility(false);
+  // A point seen, not a lamp: it gives no light to what is around it.
+  G->bAffectDynamicIndirectLighting=false;G->bAffectDistanceFieldLighting=false;G->SetVisibleInRayTracing(false);
+  G->RegisterComponent();
   // Component space (the body faces +Y, Z up) into the head bone's own frame.
   const FVector Target=Head.GetLocation()+FVector(I?EyeSide:-EyeSide,EyeFront,EyeUp);
   G->SetRelativeLocation(Head.InverseTransformPosition(Target));
@@ -66,6 +82,13 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  if (FCString::Stristr(AssetPath,TEXT("Roswell"))) AddEyeGlints(W,C);
  UE_LOG(LogTemp,Display,TEXT("S47: animated Tripo body %s ready, %d original skin bones, %s"), *Name, Rest.Num(), AssetPath);
  return true;
+}
+
+void FS47TripoCreature::ApplyCrab(const FS47CrabPose& Pose)
+{
+ if(!Mesh.IsValid())return;
+ if(!CrabMotion)CrabMotion=MakeShared<FS47CrabMotion>();
+ CrabContacts=CrabMotion->Apply(*this,Pose);
 }
 
 void FS47TripoCreature::Peek(bool bShow, double Exposure, double HeadTurn, double Clock)
