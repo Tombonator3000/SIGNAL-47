@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47RoomDecor.h"
 #include "S47EastWing.h"
 #include "SS47FreeformStart.h"
 #include "S47TitleEraseSound.h"
@@ -2037,6 +2038,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto& Dir = Weak->M->Freeform->Director;
 			if (!Dir) return true;
 			if (Dir->HoldsPhoto(Id)) return false;
+			if (Weak->M->Freeform->Decor && Weak->M->Freeform->Decor->HoldsPhoto(Id)) return false;
 			for (const auto& C : Dir->PhotoClaims()) if (C.PhotoId == Id || C.ControlOriginalId == Id || C.ControlPhotoId == Id || C.LocalNoiseOriginalId == Id) return false;
 			for (const auto& O : Dir->Observations()) if (O.PhotoId == Id) return false;
 			return true;

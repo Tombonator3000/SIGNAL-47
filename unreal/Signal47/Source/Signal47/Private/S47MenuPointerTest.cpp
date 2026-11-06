@@ -6,6 +6,8 @@
 #include "S47Night.h"
 #include "S47Panels.h"
 #include "S47Kit.h"
+#include "S47RoomDecor.h"
+#include "S47Walker.h"
 #include "S47UI.h"
 #include "S47Json.h"
 #include "ImageUtils.h"
@@ -188,7 +190,37 @@ namespace
    {
     if(M->Night->Album->Shots().Num()!=1)return Fail(TEXT("a kept print was thrown away"));
     UE_LOG(LogTemp,Display,TEXT("S47: album PASS: tab, open print, two-step throw away, frame stays used, kept print refused"));
-    M->UI->Close(true);S47Panels::WetBench(M->UI,TEXT("SARO / PHOTO LAB  |  FILM: free1067653  |  Control room"),0,FString(),[]{});Stage=16;StageAt=Elapsed;return true;
+    M->UI->Close(true);
+    const auto& Decor=M->Freeform->Decor;const FString Kept=M->Night->Album->Shots()[0].Id;
+    if(!Decor||!Decor->Hang(1,Kept)||!Decor->HoldsPhoto(Kept))return Fail(TEXT("a developed print must go up in a frame"));
+    const TArray<FString> Saved=S47J::Strs(Decor->Save(),TEXT("frames"));
+    if(Saved.Num()!=FS47RoomDecor::SlotCount||Saved[1]!=Kept)return Fail(TEXT("the frame must save which print it holds"));
+    M->Player->Place(-3.4,2.2,PI/2);Stage=20;StageAt=Elapsed;return true;
+   }
+   if(Stage==20)
+   {
+    Shot(TEXT("decor-wall.png"));Stage=22;StageAt=Elapsed;return true;
+   }
+   if(Stage==22)
+   {
+    M->Freeform->Decor->Use(TEXT("ff:decor:0"));Stage=23;StageAt=Elapsed;return true;
+   }
+   if(Stage==23)
+   {
+    Shot(TEXT("decor-panel.png"));Stage=21;StageAt=Elapsed;return true;
+   }
+   if(Stage==21)
+   {
+    M->UI->Close(true);
+    // A reload puts the same print back; a print that no longer exists leaves the frame empty.
+    const auto Saved=M->Freeform->Decor->Save();const FString Kept=M->Freeform->Decor->SlotPhoto(1);
+    M->Freeform->Decor->Begin(Saved);M->Freeform->Decor->Step();
+    if(M->Freeform->Decor->SlotPhoto(1)!=Kept)return Fail(TEXT("a reloaded frame must hold the same print"));
+    const auto Gone=S47J::New();S47J::Set(Gone,TEXT("frames"),TArray<FString>{TEXT("no-such-print"),Kept});
+    M->Freeform->Decor->Begin(Gone);M->Freeform->Decor->Step();
+    if(!M->Freeform->Decor->SlotPhoto(0).IsEmpty())return Fail(TEXT("a missing print must leave its frame empty"));
+    UE_LOG(LogTemp,Display,TEXT("S47: room decor PASS: hang, save, reload, missing print"));
+    S47Panels::WetBench(M->UI,TEXT("SARO / PHOTO LAB  |  FILM: free1067653  |  Control room"),0,FString(),[]{});Stage=16;StageAt=Elapsed;return true;
    }
    if(Stage==16)
    {
