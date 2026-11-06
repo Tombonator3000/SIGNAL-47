@@ -1,5 +1,6 @@
 #include "S47FieldRadio.h"
 #include "S47Main.h"
+#include "S47Audio.h"
 #include "S47Inter.h"
 #include "S47Web.h"
 #include "S47Walker.h"
@@ -175,7 +176,7 @@ void FS47FieldRadio::Step(double Dt)
  const bool Shown=Play && !bOwned && M->Web && M->Web->Area()==TEXT("saro");
  if(Root) Root.SetVisible(Shown);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(Shown?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
- const bool Held=!Play || M->bPausedByMenu || M->ModalOpen() || !M->Story || M->Story->IsPaused() || M->Story->IsCinematic();
+ const bool Held=!Play || M->bPausedByMenu || (M->ModalOpen() && !(M->Audio && M->Audio->ReceiverMonitorOn())) || !M->Story || M->Story->IsPaused() || M->Story->IsCinematic();
  Sound.Hold(Held);
  if(Held || !M->Player) return;
  const FVector Eye=S47Three::ToThree(M->Player->EyeUE());
@@ -191,8 +192,14 @@ void FS47FieldRadio::Step(double Dt)
  SeenFor=Visible?SeenFor+Dt:0; ThreatFor=Level>.04?ThreatFor+Dt:0;
  if(QuietFor>8) LastCue=-1;
  int32 Want=Hunting?2:SeenFor>.25?1:ThreatFor>1.1?0:-1;
- if(Want>LastCue && Want>=0 && Sound.Cue(M->Audio,FS47EncounterSound::EKind(Want),{},FMath::Max(.3,Level))) LastCue=Want;
- Sound.UpdateRadio(M->Audio,bOwned?Level:0,{},false);
+ if(!M->ModalOpen() && Want>LastCue && Want>=0 && Sound.Cue(M->Audio,FS47EncounterSound::EKind(Want),{},FMath::Max(.3,Level))) LastCue=Want;
+ // One shared interference voice: carried set, active monitor or powered AM set.
+ // The historical Room 6 radio and its authored 4/7 sequence are untouched.
+ TOptional<FVector> Speaker;
+ bool Listening=bOwned || (M->Audio && M->Audio->ReceiverMonitorOn());
+ if(!Listening && M->Audio && M->Audio->RadioOn())
+ { Listening=true; Speaker=M->Audio->AmRadioPosition(); }
+ Sound.UpdateRadio(M->Audio,Listening?Level:0,Speaker,false);
  ControlTest(Dt);
 }
 void FS47FieldRadio::ControlTest(double Dt)

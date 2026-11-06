@@ -250,6 +250,7 @@ void US47Audio::AmRadioThree(TOptional<FVector> At)
 		return;
 	}
 	if (Am.Out.IsValid()) return;
+	Am.At=At.GetValue();
 	// (the tune is written before the lock is taken, so the speaker does not wait for it)
 	const float Sr = Ctx->SampleRate;
 	const double Secs = 19.2;
