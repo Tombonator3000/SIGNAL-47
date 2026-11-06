@@ -36,7 +36,7 @@ namespace
  struct FOriginal {FString Id,Page,Stamp;};
  struct FRun
  {
-  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;
+  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;bool PrinterAimed=false;
   int32 Stage=0,Job=0,Cursor=0,Cross=0,Knob=0,Checks=0,InitialCash=0,InitialDebt=0,Restores=0;
   double Began=0,At=0,Delay=.25,ProgressAt=0,WalkMetres=0,SampleAt=0,PhotoAt=0,BaseAz=0,BaseEl=0;
   FString Root,Ids[2],PendingPhoto,PickFailure;
@@ -123,6 +123,21 @@ namespace
   }
   if(!Check(M,true,TEXT("actual camera ray picks physical ")+Id))return false;
   M->Player->OnUse(Id);return true;
+ }
+ // The printer's box centre can lie above the sheet, in open air. Look along the unit as a player would
+ // and aim at the middle of what the ordinary use ray accepts; production picking is not changed.
+ bool AimAtPrinter(US47Main* M)
+ {
+  const FVector T=Target(M,TEXT("printer"));TArray<double> Hits;FString Map;
+  for(double Dy=.35;Dy>=-.40;Dy-=.05)
+  {
+   // The camera only follows Yaw/Pitch on its next tick, so the scan gives the ray its own direction.
+   const FVector Eye=M->Player->EyeUE();const FString Picked=M->Inter->Pick(Eye,S47Three::ToUE(T+FVector(0,Dy,0))-Eye);
+   Map+=FString::Printf(TEXT("%+.2f=%s "),Dy,Picked.IsEmpty()?TEXT("-"):*Picked);if(Picked==TEXT("printer"))Hits.Add(Dy);
+  }
+  UE_LOG(LogTemp,Display,TEXT("S47 Evidence printer aim map: %s"),*Map);
+  if(!Check(M,Hits.Num()>0,TEXT("ordinary use ray can reach the printer from the walked stance")))return false;
+  Aim(M,T+FVector(0,Hits[Hits.Num()/2],0));S.PrinterAimed=true;Go(S.Stage,.2);return false;
  }
  void Close(US47Main* M){M->UI->Close(true);S.LockedSlider.Reset();}
  void WalkTo(US47Main* M,TArray<FVector2D> Points,int32 Next)
@@ -325,6 +340,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==15)
   {
    if(F.PrinterJobId()!=J->Id||F.PrinterProgress()<1.)return;
+   if(!S.PrinterAimed){AimAtPrinter(M);return;}S.PrinterAimed=false;
    if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Recorded,TEXT("actual printer use collects the uncollected original chart"))||!Document(M,J->Id+TEXT("-original"),true))return;
    Photo(S.Job?TEXT("02-pulsar-original"):TEXT("01-normal-reference-original"));Go(16);return;
   }
@@ -409,6 +425,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==34){Aim(M,Target(M,TEXT("printer")));Go(35);return;}
   if(S.Stage==35)
   {if(F.PrinterJobId()!=J->Id||F.PrinterProgress()<1.)return;
+   if(!S.PrinterAimed){AimAtPrinter(M);return;}S.PrinterAimed=false;
    if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Packet,TEXT("actual printer use collects the registered paper packet"))||!Document(M,J->Id+TEXT("-packet"),true)||!Document(M,J->Id+TEXT("-original"),false))return;Photo(TEXT("04-registered-packet"));Go(36);return;}
   if(S.Stage==36){Close(M);WalkTo(M,{{3.8,1.2},{-2.4,1.2},{-2.4,3.6}},37);return;}
   if(S.Stage==37){Aim(M,Target(M,TEXT("doorSouth")));Go(38);return;}
@@ -436,7 +453,9 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==71)
   {
    if(!Check(M,M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->World->Area==TEXT("saro")&&FVector::Dist(M->Player->Pos,S.SavedFoot)<.03&&!M->ModalOpen()&&!F.TerminalOnGlass(),TEXT("ordinary title/disk Continue restores actual records-room pose, Freeform mode and no orphan modal")))return;
-   if(!Check(M,J&&J->Id==S.Ids[1]&&J->Stage==EJob::Filed&&J->bPaid&&J->bAudioReviewed&&J->OriginalCovered==18&&J->ControlCovered==8&&J->MarkStart<=9.3&&J->MarkEnd>=12.6&&F.Budget()==S.InitialCash+40&&F.Debt()==S.InitialDebt,TEXT("disk Continue preserves measured comparison, original marks and exactly-once filing credit")))return;
+   // Filed work moves to EARLIER WORK and loses active focus, so look the job up by its identity.
+   const auto* Kept=F.Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==S.Ids[1];});
+   if(!Check(M,Kept&&Kept->Stage==EJob::Filed&&Kept->bPaid&&Kept->bAudioReviewed&&Kept->OriginalCovered==18&&Kept->ControlCovered==8&&Kept->MarkStart<=9.3&&Kept->MarkEnd>=12.6&&F.Budget()==S.InitialCash+40&&F.Debt()==S.InitialDebt,TEXT("disk Continue preserves measured comparison, original marks and exactly-once filing credit")))return;
    if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.CaseFile().Get(0)->Planned==0&&F.Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& X){return X.CaseTest==0&&!X.bCaseRecorded;}),TEXT("disk Continue keeps the open case and its planned generator test job")))return;
    for(const auto& Doc:S.Originals)if(!Document(M,Doc.Id,false))return;++S.Restores;Aim(M,Target(M,TEXT("binder")));Go(72);return;
   }
