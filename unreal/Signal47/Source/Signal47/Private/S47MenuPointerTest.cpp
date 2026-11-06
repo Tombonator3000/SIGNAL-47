@@ -5,6 +5,7 @@
 #include "S47Flow.h"
 #include "S47Night.h"
 #include "S47Panels.h"
+#include "S47Kit.h"
 #include "S47UI.h"
 #include "S47Json.h"
 #include "ImageUtils.h"
@@ -191,7 +192,16 @@ namespace
    }
    if(Stage==16)
    {
-    Shot(TEXT("wetbench.png"));Stage=17;StageAt=Elapsed;return true;
+    Shot(TEXT("wetbench.png"));M->UI->Close(true);
+    M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / RECORDS"),S47Kit::Col({
+     S47Kit::Choice(TEXT("Logger battery pack"),true,[]{},false,TEXT("DAY 1")),
+     S47Kit::Choice(TEXT("D01-01 / ORIGINAL D01-01-original"),false,[]{},false,TEXT("COMPARISON PENDING / RECORDED")),
+     S47Kit::Paper(TEXT("DAY 1\nRETAINED RECORD / Logger battery pack built at the SARO bench from tested donor parts."))}),1000));
+    Stage=18;StageAt=Elapsed;return true;
+   }
+   if(Stage==18)
+   {
+    Shot(TEXT("records.png"));Stage=17;StageAt=Elapsed;return true;
    }
    if(Stage==17)
    {

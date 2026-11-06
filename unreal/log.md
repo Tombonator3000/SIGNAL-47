@@ -1937,4 +1937,8 @@ Terminalen ble drept 09:25 under avspillingsmåling; arbeidet gjenopptatt uten t
 
 ## 6. november 2026 kl.10:10, våtbenk etter konsept
 
-UI-POLISH-20261105-01, første panel: våtbenken har numrerte trinn, lys stripe på gjeldende trinn, status til høyre og fylt ravfarget knapp i Freeform og Story. Sett på skjerm med Story-tekst; selvtest 2504 består. Ikke installert. Workshop, arkiv, bil, array-boks og reel-deck gjenstår.
+UI-POLISH-20261105-01, første panel: våtbenken har numrerte trinn, lys stripe på gjeldende trinn, status til høyre og fylt ravfarget knapp i Freeform og Story. Sett på skjerm med Story-tekst; selvtest 2504 består. Ikke installert. Reel-deck, workshop og array-boks fikk stilen natt til 6. november; arkiv og bil følger bare felles stil og gjenstår.
+
+## 6. november 2026 kl.10:15, arkivrader
+
+UI-POLISH-20261105-01: arkivradene i rommet har status eller dag i egen høyrekolonne. Selve radene er sett på skjerm med oppdiktede data; selvtest 2504 består. Bil-panelet er uendret: fullastet Jeep losser fortsatt med ett trykk uten panel, fordi konseptets ekstra steg ville endret løpet mange prøver og spillere bruker. Konseptets innholdsliste er derfor ikke laget.

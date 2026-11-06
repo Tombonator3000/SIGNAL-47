@@ -356,7 +356,7 @@ S47Kit::FW S47Kit::ButtonLive(TAttribute<FString> Label, TFunction<void()> OnCli
 		];
 }
 
-S47Kit::FW S47Kit::Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto)
+S47Kit::FW S47Kit::Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto, const FString& Right)
 {
 	// .lp-choice: padding 8px 10px, min-height 48px, a faint line; [aria-pressed=true] filled pale green, dark text
 	static FButtonStyle Bare = []
@@ -374,8 +374,17 @@ S47Kit::FW S47Kit::Choice(const FString& Label, TAttribute<bool> Pressed, TFunct
 		[
 			SNew(SBox).MinDesiredHeight(48 * PX - 16 * PX).VAlign(VAlign_Center)
 			[
-				SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(19.f))
-				.ColorAndOpacity_Lambda([Pressed] { return FSlateColor(Pressed.Get() ? Css(0x12100e) : Css(0xe9e2cf)); })
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+				[
+					SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(19.f))
+					.ColorAndOpacity_Lambda([Pressed] { return FSlateColor(Pressed.Get() ? Css(0x12100e) : Css(0xe9e2cf)); })
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14 * PX, 0, 0, 0)
+				[
+					SNew(STextBlock).Text(FText::FromString(Right)).Font(Term(19.f)).Visibility(Right.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible)
+					.ColorAndOpacity_Lambda([Pressed] { return FSlateColor(Pressed.Get() ? Css(0x12100e) : Css(0xc4bfae)); })
+				]
 			]
 		];
 	return SNew(SBox).Padding(FMargin(0, bAuto ? 0.f : 6 * PX, 0, 0)).HAlign(bAuto ? HAlign_Left : HAlign_Fill)
