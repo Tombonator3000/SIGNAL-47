@@ -1,5 +1,16 @@
 #include "S47FarmHouse.h"
 #include "S47RoadTerrain.h"
+#include "S47Audio.h"
+#include "S47Inter.h"
+#include "S47Main.h"
+#include "S47Three.h"
+#include "S47UI.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
 
 namespace
 {
@@ -104,6 +115,21 @@ namespace S47FarmHouse
   return Out;
  }
 
+ TArray<FDoorPlan> DoorPlans()
+ {
+  TArray<FDoorPlan> Out;
+  for(const FWall& W:Walls())
+  {
+   const bool bAlongX=W.X1-W.X0>W.Y1-W.Y0;int32 Index=0;
+   for(const FOpening& O:W.Openings)if(O.bDoor)
+   {
+    const double Mid=bAlongX?(W.Y0+W.Y1)*.5:(W.X0+W.X1)*.5;
+    Out.Add({FString::Printf(TEXT("%s%d"),W.Name,Index++),bAlongX?Point(O.From,Mid):Point(Mid,O.From),bAlongX?Point(O.To,Mid):Point(Mid,O.To)});
+   }
+  }
+  return Out;
+ }
+
  bool SelfTest(TArray<FString>& Lines)
  {
   // Straight through the hall from the front door to the back door, nothing in the way.
@@ -123,8 +149,129 @@ namespace S47FarmHouse
   // Walls that are not doors stay solid, windows included.
   const auto Blocked=[&](double X,double Y){const FVector P=Point(X,Y);for(const FBox2D& B:Solid)if(B.IsInside(FVector2D(P.X,P.Z)))return true;return false;};
   const bool bClosed=Blocked(2.5,.15)&&Blocked(5.17,4)&&Blocked(.15,6.5);
-  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Pieces().Num()>30;
+  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Pieces().Num()>30&&DoorPlans().Num()==7;
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farmhouse plan: hall runs clear front to back, rooms open off it, walls and windows are solid"));
   return bGood;
+ }
+}
+
+// ---------- the doors ----------
+namespace
+{
+ const FVector SaroFrame(-24,0,300); // The house stands in the farm's part of the SARO area.
+ constexpr double SwingDegrees=100,SwingSeconds=.55,LeafHeight=2.02,LeafThick=.05;
+ const TCHAR* const Walk=TEXT("saro");
+ FString RectId(const FString& Name){return TEXT("door:oldhouse:")+Name;}
+}
+
+int32 FS47FarmHouseDoors::IndexOf(const FString& Name) const{return Doors.IndexOfByPredicate([&](const FDoor& D){return D.Name==Name;});}
+
+bool FS47FarmHouseDoors::Build()
+{
+ if(bBuilt)return true;
+ if(!M||!IsValid(M->Web))return false;
+ const int32 Saro=M->Web->Handle(TEXT("ext.group"));if(Saro<0)return false;
+ auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+ auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood"));if(!Cube)return false;
+ for(const auto& Plan:S47FarmHouse::DoorPlans())
+ {
+  FDoor D;D.Name=Plan.Name;D.Id=TEXT("ff:olddoor:")+Plan.Name;
+  D.Hinge=Plan.From+SaroFrame;const FVector Span=Plan.To-Plan.From;D.Width=Span.Size();D.Along=Span.GetSafeNormal();
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*(TEXT("S47OldDoor")+Plan.Name));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Cube);if(Wood)C->SetMaterial(0,Wood);
+  C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
+  D.Leaf=C;D.Object=M->Web->ObjAt(M->Web->AdoptNode(C,Saro,D.Id));
+  C->SetWorldScale3D(FVector(D.Width,LeafThick,LeafHeight));
+  const FVector End=D.Hinge+Span;
+  const double Half=.09;
+  D.Closed=FBox2D(FVector2D(FMath::Min(D.Hinge.X,End.X)-Half,FMath::Min(D.Hinge.Z,End.Z)-Half),FVector2D(FMath::Max(D.Hinge.X,End.X)+Half,FMath::Max(D.Hinge.Z,End.Z)+Half));
+  FS47Rect R;R.MinX=R.MaxX=R.MinZ=R.MaxZ=1e9;R.Id=RectId(D.Name);M->Web->CollidersMutable(Walk).Add(R);
+  Doors.Add(D);
+ }
+ bBuilt=true;return true;
+}
+
+void FS47FarmHouseDoors::SetCollider(const FDoor& D)
+{
+ // Nothing to tidy while the engine or the world is going away; the owner may already be gone.
+ if(IsEngineExitRequested()||IsGarbageCollecting()||!Scene.IsValid())return;
+ for(FS47Rect& R:Scene->CollidersMutable(Walk))if(R.Id==RectId(D.Name))
+ {
+  if(D.bOpen||!bActive)R.MinX=R.MaxX=R.MinZ=R.MaxZ=1e9;
+  else{R.MinX=D.Closed.Min.X;R.MaxX=D.Closed.Max.X;R.MinZ=D.Closed.Min.Y;R.MaxZ=D.Closed.Max.Y;}
+ }
+}
+
+void FS47FarmHouseDoors::Pose(FDoor& D)
+{
+ auto* C=D.Leaf.Get();if(!C)return;
+ const double A=FMath::DegreesToRadians(SwingDegrees)*D.K;
+ const FVector Dir(D.Along.X*FMath::Cos(A)-D.Along.Z*FMath::Sin(A),0,D.Along.X*FMath::Sin(A)+D.Along.Z*FMath::Cos(A));
+ C->SetWorldLocationAndRotation(S47Three::ToUE(D.Hinge+Dir*(D.Width*.5)+FVector(0,LeafHeight*.5,0)),S47Three::DirToUE(Dir).Rotation());
+}
+
+void FS47FarmHouseDoors::Begin(const S47J::FObj& Saved)
+{
+ Stop();if(!M||!IsValid(M->Web))return;
+ if(Scene.Get()!=M->Web){bBuilt=false;Doors.Reset();}
+ Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;
+ if(!Build())return;
+ const TArray<FString> Open=Saved.IsValid()?S47J::Strs(Saved,TEXT("open")):TArray<FString>();
+ const TWeakPtr<uint8> Guard=Life;
+ for(int32 I=0;I<Doors.Num();++I)
+ {
+  FDoor& D=Doors[I];
+  // Left as they were: an empty house's inner doors stand open, its outer doors are shut.
+  D.bOpen=Saved.IsValid()&&Saved->HasField(TEXT("open"))?Open.Contains(D.Name):!D.Name.StartsWith(TEXT("north"))&&!D.Name.StartsWith(TEXT("south"));
+  D.K=D.bOpen?1:0;
+  if(auto* C=D.Leaf.Get()){C->SetVisibility(true);C->SetHiddenInGame(false);}
+  Pose(D);SetCollider(D);
+  if(IsValid(M->Inter))
+  {
+   FS47Interactable It;It.Id=D.Id;It.Object=D.Object;It.Range=2.6;
+   It.Label=[this,Guard,I]{return Guard.IsValid()&&Doors.IsValidIndex(I)?FString(Doors[I].bOpen?TEXT("Close the door"):TEXT("Open the door")):FString();};
+   It.Use=[this,Guard,I]{if(Guard.IsValid())Use(I);};
+   It.Examine=It.Label;
+   M->Inter->Add(It);M->Web->MarkUsable(D.Object.I,D.Id);
+  }
+ }
+}
+
+void FS47FarmHouseDoors::Stop()
+{
+ bActive=false;Life.Reset();
+ for(FDoor& D:Doors){SetCollider(D);if(auto* C=D.Leaf.Get()){C->SetVisibility(false);C->SetHiddenInGame(true);}}
+}
+
+S47J::FObj FS47FarmHouseDoors::Save() const
+{
+ const auto O=S47J::New();TArray<FString> Open;for(const FDoor& D:Doors)if(D.bOpen)Open.Add(D.Name);
+ S47J::Set(O,TEXT("open"),Open);return O;
+}
+
+bool FS47FarmHouseDoors::PlayerIn(const FDoor& D) const
+{
+ if(!M||!M->Player)return false;const double R=M->Player->Radius;
+ return M->Player->Pos.X+R>D.Closed.Min.X&&M->Player->Pos.X-R<D.Closed.Max.X&&M->Player->Pos.Z+R>D.Closed.Min.Y&&M->Player->Pos.Z-R<D.Closed.Max.Y;
+}
+
+bool FS47FarmHouseDoors::Use(int32 Index)
+{
+ if(!bActive||!Doors.IsValidIndex(Index))return false;
+ FDoor& D=Doors[Index];
+ if(D.bOpen&&PlayerIn(D)){if(M&&M->UI)M->UI->Toast(TEXT("You are in the doorway."),2);return false;}
+ D.bOpen=!D.bOpen;SetCollider(D);
+ if(M&&M->Audio){FS47Sound S;S.At=D.Hinge+FVector(0,1,0);S.Gain=.7f;S.Rate=FMath::FRandRange(.85f,1.05f);M->Audio->Sfx(D.bOpen?TEXT("doorCreak0"):TEXT("doorClose"),S);}
+ if(M)M->RequestAutosave();
+ return true;
+}
+
+void FS47FarmHouseDoors::Step(double Dt)
+{
+ if(!bActive)return;
+ for(FDoor& D:Doors)
+ {
+  const double Want=D.bOpen?1:0;if(D.K==Want)continue;
+  D.K=FMath::Clamp(D.K+(Want>D.K?1:-1)*Dt/SwingSeconds,FMath::Min(D.K,Want),FMath::Max(D.K,Want));
+  Pose(D);
  }
 }
