@@ -161,7 +161,8 @@ S47Kit::FW S47Kit::Status(const FString& Name, const FString& State, int32 Tone,
 	NameCol->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Term(21.f)).ColorAndOpacity(Ink)];
 	if (!Detail.IsEmpty())
 		NameCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(14.f)).ColorAndOpacity(bSelected ? Css(0x3d3626) : Css(0xb9b29f)).AutoWrapText(true))];
-	const FW StateW = bBadge ? Badge(State, Tone) : SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(Tint);
+	FW StateW = Badge(State, Tone);
+	if (!bBadge) StateW = SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(Tint);
 	return SNew(SBorder).BorderImage(bSelected ? Box(Css(0xc9d6c2), Css(0xc9d6c2)) : Box(FLinearColor::Transparent, Css(0xd9d0b4, 0.16f))).Padding(FMargin(12, 6))
 		[
 			SNew(SHorizontalBox)
