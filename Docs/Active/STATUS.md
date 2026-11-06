@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november, gårdslys
+## Installert 6. november kl. 12:50
+
+`183e8db1` etter PR449 er nå standard, med rask installasjon: gårdslysene stikker av når spilleren nærmer seg og etterlater spor, dis og lyd til neste morgen. Selvtester og 138 uendrede Saved-filer. Normalreisen og Freeform-regresjonen er ikke kjørt på pakken. Forrige grunnlag ligger i `~/scratch-bm/Signal47-day-20261106/d6`, gjeldende i `d7`.
+
+## Tidligere installert 6. november, gårdslys
 
 `e0e6c6fe` etter PR447 er nå standard, med rask installasjon: lys over gården sett fra plassen ved SARO, første steg av gårdsreisen. 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_e0e6c6fe.md).
 

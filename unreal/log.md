@@ -1986,3 +1986,7 @@ Freeform-regresjonen besto 247 kontroller på pakken `9e8a80fe`. FF-FARM-HORROR-
 ## 6. november 2026 kl.12:40, gårdsreise steg 2
 
 FF-FARM-HORROR-01 steg 2: lysene forlater gården når spilleren nærmer seg, og `S47FarmSite` gir spor, dis og lyd til neste morgen. `-S47MenuPointerFarm` måler nå lyse piksler i selve fotoet: 0 uten lys, 79 med. Selvtest 2509 og regresjon 249 består i editor; regresjonen dekker ikke sporet.
+
+## 6. november 2026 kl.12:50, Toms retning
+
+`183e8db1` etter PR449 installert. Tom: Freeform fullføres før Story, skrekk og bortføring skal kunne skje flere steder via lys eller walkie-talkie, og referanser til gårdshuset er lagt i Design. Claudes rekkefølge: generelle steder, hus som blokkmodell, walkie-talkie, reaksjon, bortføring, detaljert hus.

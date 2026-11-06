@@ -12,6 +12,14 @@ Tom vil kunne følge UFO-observasjoner og nærkontakter utenfor SARO på tvers a
 
 Gården skal også gi skrekk: mange mystiske lys sett fra SARO, tur ut, søkbart forlatt gårdshus, mystiske ulyder, lett tåke og ubehagelig atmosfære. Noe rart kan skje, med mulig flukt eller bortføring og tapt tid i Freeform. Dette overstyrer eldre avgrensning mot tidstap for akkurat det nye Freeform-forløpet; Storys tilfeldige hendelser får fortsatt ikke hoppe over faste tidspunkt. Huset er ny designbestilling, ikke ferdig interiør; kuer og eksisterende gårdsadkomst bevares. Detaljert varighet, plassering og balansering er åpne i bibelen. Sikret arbeid og en praktisk vei tilbake skal bevares.
 
+## Freeform først, 6. november 2026
+
+Tom bestemte at alt til Freeform fullføres først. Story fortsetter når han er fornøyd med Freeform, fordi all mekanikk og grafikk da er ferdig. Eksisterende Story skal fortsatt bestå selvtestene, men Story-punkter venter med mindre Tom ber om dem.
+
+## Skrekk og bortføring over hele verden, 6. november 2026
+
+Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
+
 ## Opptakslyd på slitt stasjon, 6. november 2026
 
 Tom valgte at opptakslyd skal virke med redusert målehastighet. Slitasje gir en tidskostnad, men stopper ikke lydarbeidet. Originalen lagres i signaltid og spilles av i normal hastighet; under et saktere opptak høres vanlig mottakerlyd.
