@@ -28,6 +28,11 @@ private:
  TArray<FEvent> List;
  double ShowerLeft = 0, ShowerNext = 0;
  FS47PaleBody Pale;
+ // Tall and crab, coming from a distance so their gait can be judged.
+ FS47PaleBody TallBody, CrabBody;
+ struct FGaitTest { double Left=0,Clock=0,Yaw=0,Fold=0;FVector At=FVector::ZeroVector; } TallTest,CrabTest;
+ void SpawnGait(bool bCrab);
+ void StepGait(bool bCrab,double Dt);
  double PaleLeft = 0, PaleClock = 0;
  FVector PaleAt = FVector::ZeroVector;
  double PaleYaw = 0;

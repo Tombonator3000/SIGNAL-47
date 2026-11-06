@@ -44,6 +44,8 @@ void FS47DevEvents::AddBuiltIn()
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
  Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
+ Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on today's body until the new Pale; 30 seconds"), [this, Say] { SpawnGait(false); Say(TEXT("tall one")); });
+ Add(TEXT("Aliens"), TEXT("Crab: folds down and crawls up"), TEXT("then sideways round you and away; 30 seconds"), [this, Say] { SpawnGait(true); Say(TEXT("crab")); });
  Add(TEXT("Roswell aliens"),TEXT("Number: 1"),TEXT("cycle 1, 2, 3 or 6 individuals"),[this]
  {
   RoswellNumber=RoswellNumber==1?2:RoswellNumber==2?3:RoswellNumber==3?6:1;
@@ -168,6 +170,61 @@ void FS47DevEvents::SpawnPale()
  if (M->Audio) M->Audio->Gasp(M->Audio->Spatial(PaleAt + FVector(0, 1.8, 0), 2.f));
 }
 
+void FS47DevEvents::SpawnGait(bool bCrab)
+{
+ if (!M || !M->Web || !M->Player) return;
+ FS47PaleBody& Body=bCrab?CrabBody:TallBody;
+ if (!Body.bBuilt){if(!bCrab)Body.Style=ES47PaleStyle::Tall;if(!Body.Build(M->Web.Get(),TEXT("#root"),bCrab?TEXT("DevCrab"):TEXT("DevTall")))return;}
+ if(!Body.Creature.Ready()){if(M->UI)M->UI->Toast(TEXT("Developer event: this body needs the private skinned model."),3);return;}
+ const FVector P=M->Player->Pos;
+ const FVector Eye(P.X,P.Y+1.62,P.Z);
+ for(const double Turn:{0.,.5,-.5,1.,-1.,1.6,-1.6,double(PI)})for(const double D:{16.,11.,7.})
+ {
+  const double Yaw=M->Player->Yaw+Turn;
+  const FVector2D C(P.X-FMath::Sin(Yaw)*D,P.Z-FMath::Cos(Yaw)*D);
+  FHitResult Block;FCollisionQueryParams Sight(SCENE_QUERY_STAT(S47DevGaitSight),true);
+  const FVector A=S47Three::ToUE(Eye),B=S47Three::ToUE(C.X,P.Y+1.,C.Y);
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,A,B,ECC_Visibility,Sight))continue;
+  FGaitTest& T=bCrab?CrabTest:TallTest;
+  T.At=FVector(C.X,P.Y,C.Y);T.Yaw=FMath::Atan2(P.Z-C.Y,P.X-C.X);T.Left=30;T.Clock=0;
+  return;
+ }
+ if(M->UI)M->UI->Toast(TEXT("Developer event: no free ground in sight; try outdoors."),3);
+}
+
+void FS47DevEvents::StepGait(bool bCrab,double Dt)
+{
+ FGaitTest& T=bCrab?CrabTest:TallTest;FS47PaleBody& Body=bCrab?CrabBody:TallBody;
+ if(T.Left<=0||!Body.bBuilt||!M||!M->Player||!M->Web)return;
+ T.Left-=Dt;T.Clock+=Dt;
+ const bool bShow=T.Left>0;
+ const FVector2D To(M->Player->Pos.X-T.At.X,M->Player->Pos.Z-T.At.Z);
+ const double Dist=To.Size();const double Face=FMath::Atan2(To.Y,To.X);
+ const double Fold=bCrab?FMath::Clamp(T.Clock/2.5,0.,1.):0.;
+ double Ahead=0,Across=0;
+ const bool bAway=T.Left<7;
+ if(bAway){T.Yaw=FMath::Lerp(T.Yaw,T.Yaw+FMath::UnwindRadians(Face+PI-T.Yaw),FMath::Min(1.,Dt*3.));Ahead=bCrab?3.:1.9;}
+ else
+ {
+  T.Yaw=T.Yaw+FMath::UnwindRadians(Face-T.Yaw)*FMath::Min(1.,Dt*1.2);
+  if(!bCrab||Fold>=1.)
+  {
+   const double Stop=bCrab?5.:4.;
+   if(Dist>Stop)Ahead=bCrab?1.2:.95;else if(bCrab)Across=.9*(FMath::Fmod(T.Clock,10.)<5.?1.:-1.);
+  }
+ }
+ T.At.X+=(FMath::Cos(T.Yaw)*Ahead-FMath::Sin(T.Yaw)*Across)*Dt;
+ T.At.Z+=(FMath::Sin(T.Yaw)*Ahead+FMath::Cos(T.Yaw)*Across)*Dt;
+ // The ground under it, ignoring its own stand-in parts.
+ FCollisionQueryParams Under(SCENE_QUERY_STAT(S47DevGaitFloor),true);
+ for(const auto& Part:Body.All)if(auto* C=Part.Get())Under.AddIgnoredComponent(C);
+ FHitResult Floor;
+ if(M->Web->GetWorld()->LineTraceSingleByChannel(Floor,S47Three::ToUE(T.At.X,T.At.Y+2.,T.At.Z),S47Three::ToUE(T.At.X,T.At.Y-3.,T.At.Z),ECC_Visibility,Under))
+  T.At.Y=FMath::FInterpTo(T.At.Y,S47Three::ToThree(Floor.ImpactPoint).Y,Dt,12.);
+ if(bCrab)Body.ApplyCrab(bShow,T.At,T.Yaw,Face,T.Clock,Fold,bAway);
+ else Body.Apply(bShow,T.At,T.Yaw,Face,Ahead>1.5?1.4:Ahead>0?.85:0.,T.Clock*3,T.Clock,bAway?FS47PaleBody::EPose::Chase:FS47PaleBody::EPose::Walk);
+}
+
 void FS47DevEvents::Step(double Dt)
 {
  if (!M) return;
@@ -187,6 +244,7 @@ void FS47DevEvents::Step(double Dt)
   }
   if (ShowerNext <= 0) ShowerNext = FS47Sky::SHOWER_GAP_MIN;
  }
+ if (bPlay) { StepGait(false,Dt); StepGait(true,Dt); }
  if (PaleLeft > 0)
  {
   if (bPlay) { PaleLeft -= Dt; PaleClock += Dt; }
