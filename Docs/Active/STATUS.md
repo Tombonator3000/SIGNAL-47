@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november, gårdsvei og nattlys
+## Installert 6. november, stolpelampe og øyeglimt
+
+`10f1073c` etter PR458 er nå standard, med rask installasjon: gatelys på stolpen, lampe ved trafoinnkjøringen, senket gårdsvei, hørbar radio og glimt i alien-øynene. Pakken har et privat filmklipp og skal ikke deles. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_10f1073c.md).
+
+## Tidligere installert 6. november, gårdsvei og nattlys
 
 `4ffb7210` etter PR455 er nå standard, med rask installasjon: ryddet gårdsvei, gatelys ved avkjørselen, lampe over trafoskiltet og lyd på gården. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_4ffb7210.md).
 
