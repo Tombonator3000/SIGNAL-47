@@ -153,6 +153,20 @@ FVector FS47Herd::WanderAt(int32 I, double T, bool& bWalking, FVector& Heading) 
  return FMath::Lerp(A,B,S*S*(3-2*S));
 }
 
+void FS47Herd::SetStare(int32 Cow, const FVector& TowardWorld)
+{
+ if(!S47FarmWorld::Enabled(M))Cow=-1;
+ if(Cow>=0&&!Offsets.IsValidIndex(Cow))return; // not yet living: try again next step
+ if(Cow!=Stare)
+ {
+  // Let go gently: the way back to its own wandering runs through the same slow drift that follows a fright.
+  if(Stare>=0&&Fled.IsValidIndex(Stare)&&Offsets.IsValidIndex(Stare)){bool bWalk=false;FVector Heading;Fled[Stare]=StareHold-WanderAt(Stare,LastT,bWalk,Heading);}
+  Stare=Cow;
+  StareHold=(Cow>=0&&Offsets.IsValidIndex(Cow))?Offsets[Cow]:FVector::ZeroVector;
+ }
+ if(Cow>=0)StareAt=TowardWorld-(Group?Group.LocalToWorld(FVector::ZeroVector):ModeOffset);
+}
+
 void FS47Herd::SetAlarm(double K, const FVector& FromWorld)
 {
  Alarm=FMath::Clamp(K,0.,1.);
@@ -182,7 +196,7 @@ void FS47Herd::ClearLife()
   const FVector P(COWS[I][0],Ys[I],COWS[I][1]);const FVector Base=Group?Group.LocalToWorld(P):P+ModeOffset;
   if(FVector2D::Distance(FVector2D(Base.X,Base.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))>.001)MoveObstacle(ColliderAt[I],Base,I==Missing?0:S47Herd::COW_R);
  }
- ColliderAt.Reset();Fled.Reset();Offsets.Reset();Yaws.Reset();Alarm=0;
+ ColliderAt.Reset();Fled.Reset();Offsets.Reset();Yaws.Reset();Alarm=0;Stare=-1;
 }
 
 // Herd.pose: body and head matrices in road-local terms.
@@ -206,7 +220,8 @@ void FS47Herd::Pose(int32 I, double T)
 		bool bWalk = false; FVector Heading(0, 0, -1);
 		const FVector Wander = WanderAt(I, T, bWalk, Heading);
 		const FVector Fear = Fled.IsValidIndex(I) ? Fled[I] : FVector::ZeroVector;
-		const FVector Off = Wander + Fear;
+		const bool bStare = I == Stare && Alarm <= .05 && Offsets.IsValidIndex(I);
+		const FVector Off = bStare ? StareHold : Wander + Fear;
 		const double Base = S47FarmWorld::FloorRoad(X + ModeOffset.X, Z + ModeOffset.Z);
 		const double Here = S47FarmWorld::FloorRoad(X + ModeOffset.X + Off.X, Z + ModeOffset.Z + Off.Z);
 		BodyP = FVector(X + Off.X, Ys[I] + (Here - Base), Z + Off.Z);
@@ -223,6 +238,12 @@ void FS47Herd::Pose(int32 I, double T)
 				BodyP.Y += .09 * FMath::Abs(FMath::Sin(T * 7.5 + I));
 				BodyPitch = .09 * FMath::Sin(T * 7.5 + I);
 			}
+		}
+		else if (bStare)
+		{
+			// Quite still, head up, towards the marks.
+			Heading = (FVector(StareAt.X, 0, StareAt.Z) - FVector(BodyP.X, 0, BodyP.Z)).GetSafeNormal();
+			Pitch = .12; Turn = 0;
 		}
 		else if (bWalk)
 		{
