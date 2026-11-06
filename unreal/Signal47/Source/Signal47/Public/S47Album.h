@@ -146,6 +146,9 @@ public:
 	int32 FilmCapacity() const { return Data.FilmCapacity; }
 	/** Take a free frame now (Chapter1.shutter, when the case has no frame to take here). */
 	FS47AlbumShot Expose();
+	/** A frame on the roll that the player did not take: dark sky, or ground seen from straight above. Nothing is rendered
+	 *  and nothing is said about it. False when the roll is full. */
+	bool AddUnbidden(bool bGround);
 	const FS47AlbumShot* PendingLabPhoto() const;
 	/** Advance exactly one physical bench action; stale UI actions cannot advance twice. */
 	bool AdvanceLabPhoto(const FString& Id, int32 ExpectedStage);
