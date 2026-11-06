@@ -1970,3 +1970,7 @@ Codex, `codex/game-bible-20261106`: samlet gameplay, verden, Story, skrekk, visu
 ## 6. november 2026 kl.11:30, opptakslyd på slitt stasjon
 
 Tom valgte at opptakslyd skal virke med redusert målehastighet. `S47CaptureSoundTest` består på slitt anlegg med lyd: ingen live-blokker under originalen, kontrollen live i full hastighet, 18 sekunder bånd. Selvtest 2508 består. Normalreisens lydfaser er ikke kjørt på nytt.
+
+## 6. november 2026 kl.11:29, installasjon og ny rekkefølge
+
+`9e8a80fe` etter PR445 installert: 2508 selvtester og 138 uendrede Saved-filer. Claude setter FF-FARM-HORROR-01 foran PC-WORLD-DISPLAY etter den samlede bibelen.
