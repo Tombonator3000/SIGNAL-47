@@ -1,27 +1,11 @@
-# Design og gjeldende retning
+# Samlet spilldesign
 
-**Gjelder:** kategorien beskrevet her. **Sist kontrollert:** 28. oktober 2026.
+**Status:** Gjeldende inngang. **Gjelder:** Unreal-utgavens design. **Sist kontrollert:** 6. november 2026.
 
-**Status: Referanse** · Design beskriver ønsket spill, ikke automatisk implementasjon.
+Start i **[SIGNAL / 47: samlet game bible](GAME_BIBLE.md)**. Den samler identitet, verden, gameplay, Freeform, UFO-feltundersøkelser, gårdshorror, personer, hele Story-natten, visuell retning, UI, lyd og komfort.
 
-Gjeldende planrekkefølge er ført i [DECISIONS](../Active/DECISIONS.md). Ny kveldsplan går foran eldre rekkefølge der de kolliderer, og SC02–SC13-revisjonen går foran eldre scenedetaljer.
+Den inneholder også et fullstendig kildekart til bevarte detaljplaner, historiske designbibler, bildegrunnlag og engelske produksjonskilder. Eldre planer beholdes som referanser; videre samlet design vedlikeholdes i hovedbibelen. Frosne PDF-/bildepakker og genererte manus beholdes på originalstiene.
 
-## Historie og produksjonsgrunnlag
-
-- [Ny kveldsrekkefølge](Story/KVELD_PLAN_2026-10-28.md).
-- [Revidert SC02 til SC13](Story/HISTORIE_SC02_SC13_REVISJON.md).
-- [Implementeringsplan](Story/HISTORIE_IMPLEMENTERINGSPLAN.md).
-- [Horror-regi](Story/HORROR_STORY_PLAN.md).
-- [Mission Flow](Story/MISSION_FLOW_1800_ROSWELL.md), under de senere revisjonene.
-
-## Visuell retning og senere innhold
-
-- [SARO-kontor og kontrollrom i 1986](SARO_1986.md), analyse av Toms referanser og føringer for neste detaljpass.
-- [Levert designbibel, 42 sider, med redigerbare kilder](../DesignBible-2026-10-27/README.md). Fast snapshot; overstyrer ikke nyere beslutninger.
-- [Visuelle mål og konsepter](../VisualTargets).
-- [Tidligere konsept 11](Concepts/CONCEPT_11.md), referanse.
-- [Cloud tank-UFO](Proposals/FINALE_CLOUD_TANK_UFO.md), planlagt effekt.
-- [Meteorpassasje](Proposals/NIAGARA_VFX_2026-10-28.md), planlagt effekt.
-- [Found footage-forslag](Proposals/FOUND_FOOTAGE_FORSLAG.md), forslag med egen implementeringsstatus.
+[DECISIONS](../Active/DECISIONS.md) fører vedtak, [TODO](../Active/TODO.md) aktive oppgaver og [STATUS](../Active/STATUS.md) faktisk levering. En skrevet scene eller et konsept er ikke implementert spill.
 
 [Start her](../README.md).

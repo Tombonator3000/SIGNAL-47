@@ -1,3 +1,5 @@
+> **Samlet design fra 6. november 2026:** [GAME BIBLE](../../../Docs/Design/GAME_BIBLE.md). Denne pakken beholder forfatterformat, ID-er og genererte produksjonsfiler; historiske tider og statussetninger under er ikke dagens samlede design eller leveringsstatus.
+
 # Manuspakke for innkjøring, Dale og det hemmelige kontoret
 
 Runtime for trinn 1 og 2 ligger nå i `S47Evening`/`S47EveningPack`. Se [runtime-rapport og tester](../../../Docs/Evidence/UnrealDeliveries/EVENING_RUNTIME.md). Kontoret og T01/T02 er siden levert; se [T02-rapporten](../../../Docs/Evidence/UnrealDeliveries/T02_RUNTIME.md). De 109 eksisterende opptakene er produsert. Original bevegelig felt-VHS står fortsatt åpen.
