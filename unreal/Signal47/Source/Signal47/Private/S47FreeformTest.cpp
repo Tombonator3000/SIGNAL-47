@@ -103,6 +103,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual camera originals, wet-bench Slate actions, powered OPS guards, completed paired-photo comparison, optional later local-noise plan and once-only payment. Disk/Flow restores are counted separately. Two-plan Follow wiring uses a declared synthetic fixture with real history restored. No natural discovery, human input, logger measurement from the plan or additional payment is claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))
  {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("rescue-journey-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with a declared saved-state fixture: empty account, debt, outage, no spares, closed garage, after hours. Production door, truck, shop, parcel, rack, roadside, receiving, feeder, recording, printer, registration and pump callbacks; actual button SimulateClick and eye-ray at the counter; two short real drives; disk/Flow restores. Explicit fixtures replace the long drives, the walking approaches and the receiver dials, and one fixture sets the near-empty tank. Not human input, route-finding or balance acceptance."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){S47J::Set(O,TEXT("scope"),TEXT("array-wear-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with explicit stock and player-placement fixtures; physical eye-ray at branch junctions, actual repair button, disk/Flow restore. No drive to the antennas or shop trip."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
@@ -115,6 +116,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
 bool FS47FreeformTest::Restore(const FString& Name)
 {
  const auto O=M->Flow->GameState();const FString File=Root/(Name+TEXT(".json"));
+ if(RestorePatch){RestorePatch(O);RestorePatch=nullptr;}
  if(!Check(FFileHelper::SaveStringToFile(S47J::Write(O),*File),TEXT("full state written to isolated disk: ")+Name))return false;
  FString Text;if(!Check(FFileHelper::LoadFileToString(Text,*File),TEXT("fresh disk state read: ")+Name))return false;
  const auto State=S47J::Read(Text);if(!Check(State&&S47J::Str(State,TEXT("sessionMode"))==TEXT("freeform"),TEXT("saved mode identity retained: ")+Name))return false;
@@ -218,6 +220,7 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){StepLoggerJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){StepWorkshopJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){StepArrayWear(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))){StepRescueJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){StepGarageStart(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))

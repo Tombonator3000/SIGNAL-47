@@ -34,6 +34,9 @@ private:
  void StepLoggerJourney(double Dt);
  void StepWorkshopJourney(double Dt);
  void StepArrayWear(double Dt);
+ void StepRescueJourney(double Dt);
+ TFunction<void(const S47J::FObj&)> RestorePatch; // declared fixture, applied once to the next Restore's saved state
+ double RescueClock=0;
  void StepGarageStart(double Dt);
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;

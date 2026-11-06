@@ -144,7 +144,8 @@ FString FS47EastWing::DoorLabel() const
 {
  if(!M||!M->IsFreeform())return FString();
  const bool Powered=M->Freeform&&M->Freeform->HasPowerForReactiveLight();
- if(!Powered)return TEXT("Garage door opener (no power)");
+ // No softlock: the Jeep is the only way to the feeder and the shop, so a dead opener leaves a hand chain.
+ if(!Powered)return bDoorMoving?TEXT("Stop hand chain"):bDoorUp?TEXT("No power / lower garage door by hand chain"):TEXT("No power / raise garage door by hand chain");
  if(bDoorMoving)return TEXT("Stop garage door");
  return bDoorUp?TEXT("Lower garage door"):TEXT("Raise garage door");
 }
@@ -154,9 +155,14 @@ void FS47EastWing::UseDoor()
  if(!M||!M->IsFreeform())return;
  const FVector At=S47Three::ToUE(FVector(38.,1.3,5.3));
  if(M->Audio)M->Audio->Play(TEXT("rack_switch"),.7f,At);
- if(!(M->Freeform&&M->Freeform->HasPowerForReactiveLight())){if(M->UI)M->UI->Toast(TEXT("The door opener is dead: no power to the garage."));return;}
- if(bDoorMoving){bDoorMoving=false;if(M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.15f);M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.8f);}return;}
- bDoorUp=!bDoorUp;bDoorMoving=true;
+ if(bDoorMoving){bDoorMoving=bDoorHand=false;if(M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.15f);M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.8f);}return;}
+ bDoorUp=!bDoorUp;bDoorMoving=true;bDoorHand=!(M->Freeform&&M->Freeform->HasPowerForReactiveLight());
+ if(bDoorHand)
+ {
+  if(M->UI)M->UI->Toast(TEXT("The door opener is dead: no power to the garage. You haul on the hand chain; it is slow, but the door moves."));
+  if(M->Audio)M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.7f);
+  return;
+ }
  if(M->Audio){M->Audio->Play(TEXT("door_metal"),.55f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.7f);M->Audio->Loop(TEXT("eastwing-door-motor"),TEXT("engine_idle"),.16f,S47Three::ToUE(FVector(35.4,3.1,5.3)));}
 }
 
@@ -164,7 +170,7 @@ void FS47EastWing::Begin(const S47J::FObj& Saved)
 {
  for(int32 I=0;I<2;++I){LeafOpen[I]=!Saved||S47J::Bool(Saved,I==0?TEXT("personnel"):TEXT("service"),true);LeafAmount[I]=LeafOpen[I]?1.:0.;}
  DoorOpen=Saved?FMath::Clamp(S47J::Num(Saved,TEXT("garage"),1.),0.,1.):1.;
- bDoorUp=Saved?S47J::Bool(Saved,TEXT("garageUp"),DoorOpen>.5):true;bDoorMoving=false;
+ bDoorUp=Saved?S47J::Bool(Saved,TEXT("garageUp"),DoorOpen>.5):true;bDoorMoving=bDoorHand=false;
 }
 S47J::FObj FS47EastWing::Save() const
 {
@@ -220,7 +226,7 @@ bool FS47EastWing::DoorControls()
   FS47Obj Down=Part(FString::Printf(TEXT("EastWingDoorControlDown_%s"),S.Id),FVector(X,1.26,Face+S.Out*.04),FVector(.045,.045,.02),0xa3271c,.4f);
   Part(FString::Printf(TEXT("EastWingDoorConduit_%s"),S.Id),FVector(X,2.25,S.Z+S.Out*.015),FVector(.025,1.7,.025),0x8c8f8c,.35f);
   FS47Interactable It;It.Id=FString::Printf(TEXT("eastwing:garage-door-%s"),S.Id);It.Object=Housing;It.Label=[this]{return DoorLabel();};It.Use=[this]{UseDoor();};It.Range=2.2;
-  It.Examine=[]{return FString(TEXT("A push-button station for the roll-up door opener: UP in green, DOWN in red."));};
+  It.Examine=[]{return FString(TEXT("A push-button station for the roll-up door opener: UP in green, DOWN in red. A hand chain hangs beside it for when the power is out."));};
   M->Inter->Add(It);M->Web->MarkUsable(Up.I,It.Id);M->Web->MarkUsable(Down.I,It.Id);
  }
  bDoorControls=true;
@@ -231,19 +237,19 @@ bool FS47EastWing::DoorControls()
 
 void FS47EastWing::StepDoor(float Dt,bool bFree,bool bPowered)
 {
- if(!bFree){DoorOpen=0;bDoorMoving=false;return;} // Story: the opener is locked out
+ if(!bFree){DoorOpen=0;bDoorMoving=bDoorHand=false;return;} // Story: the opener is locked out
  if(!bDoorMoving)return;
- if(!bPowered)
+ if(!bPowered&&!bDoorHand)
  {
   bDoorMoving=false;
   if(M&&M->Audio)M->Audio->Stop(TEXT("eastwing-door-motor"),.3f);
   return;
  }
  const double Target=bDoorUp?1.:0.;
- DoorOpen=FMath::Clamp(DoorOpen+(bDoorUp?1.:-1.)*Dt/DoorTravel,0.,1.);
+ DoorOpen=FMath::Clamp(DoorOpen+(bDoorUp?1.:-1.)*Dt/(bDoorHand?2.*DoorTravel:DoorTravel),0.,1.);
  if(FMath::IsNearlyEqual(DoorOpen,Target))
  {
-  bDoorMoving=false;
+  bDoorMoving=bDoorHand=false;
   if(M&&M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.2f);M->Audio->Play(bDoorUp?TEXT("door_metal"):TEXT("door_heavy"),.6f,S47Three::ToUE(FVector(35.4,bDoorUp?2.9:.3,5.5)));}
  }
 }
