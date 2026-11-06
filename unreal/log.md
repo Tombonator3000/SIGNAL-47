@@ -1994,3 +1994,7 @@ FF-FARM-HORROR-01 steg 2: lysene forlater gården når spilleren nærmer seg, og
 ## 6. november 2026 kl.13:35, lys og spor i byen
 
 Steg 3: `town_lights` med fire steder i Caliche, og `S47FarmSite` tar nå sted, område og punkt. `-S47MenuPointerTown` består for alle fire: lys presentert, lyse piksler i fotoet (146 til 237), flukt, spor og feltfunn. Selvtest 2510 og regresjon 251 består. Ikke installert. Husk at Caliche er områdedelen `diner`; plassering i `road` gir feil gulv.
+
+## 6. november 2026 kl.13:58, gårdshus som blokkmodell
+
+Toms plantegning v1 er data i `S47FarmHouse`: 12 × 9 m pluss veranda på ledig tomt øst for beitet, siden biblen sier at Alderete-gården ikke er forlatt og bakgrunnshuset deler mesh med fjøsene. Vegetasjon holdes unna tomten; dette gjelder også Story, der det bare er en bar flekk langt ute. `-S47MenuPointerHouse` går inn frontdøren og ut bakdøren. Selvtest 2511 og regresjon 251 består. Toms mappe `Gard-modeller-Blender` er uttrekk fra The Greyhill Incident og brukes ikke.

@@ -1,4 +1,6 @@
 #include "S47FarmWorld.h"
+#include "S47FarmHouse.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "S47Main.h"
 #include "S47World.h"
 #include "S47Web.h"
@@ -60,6 +62,34 @@ namespace
   for(const auto& R:Rocks)if(auto* C=R.C.Get())C->UpdateInstanceTransform(R.Index,On?R.Clear:R.Original,false,true,true);
   RocksOn=On;UE_LOG(LogTemp,Display,TEXT("S47 farm clearance mode=%s moved=%d; instance transforms updated; no authored drive/walk rock colliders"),On?TEXT("Freeform"):TEXT("Story"),Rocks.Num());
  }
+ // Plants and stones scattered across the open land would stand through the old house's floor.
+ struct FPadPlant{TWeakObjectPtr<UInstancedStaticMeshComponent> C;int32 Index=0;FTransform Original;};
+ TArray<FPadPlant> PadPlants;TWeakObjectPtr<AS47Web> PadWorld;bool bPadScanned=false,bPadOn=false;
+ void ClearHousePad(AS47Web* W,bool On)
+ {
+  if(PadWorld.Get()!=W){PadWorld=W;PadPlants.Reset();bPadScanned=false;bPadOn=false;}
+  if(!bPadScanned)
+  {
+   if(!W->HighwayLandscapeReady())return;bPadScanned=true;
+   TArray<UInstancedStaticMeshComponent*> Comps;W->GetComponents<UInstancedStaticMeshComponent>(Comps);
+   for(auto* C:Comps)for(int32 I=0;I<C->GetInstanceCount();++I)
+   {
+    FTransform Local,World;if(!C->GetInstanceTransform(I,Local,false)||!C->GetInstanceTransform(I,World,true))continue;
+    FVector Road=W->HighwayMapEye(S47Three::ToThree(World.GetLocation()));Road.X-=8000;
+    if(!S47FarmHouse::OnPad(Road.X,Road.Z,1.2))continue;
+    PadPlants.Add({C,I,Local});
+   }
+   UE_LOG(LogTemp,Display,TEXT("S47 farmhouse pad: %d scattered instances inside its footprint"),PadPlants.Num());
+  }
+  if(bPadOn==On)return;bPadOn=On;
+  TSet<UInstancedStaticMeshComponent*> Touched;
+  for(const auto& P:PadPlants)if(auto* C=P.C.Get())
+  {
+   FTransform T=P.Original;if(On)T.SetScale3D(FVector(.0001));
+   C->UpdateInstanceTransform(P.Index,T,false,false,true);Touched.Add(C);
+  }
+  for(auto* C:Touched){C->MarkRenderStateDirty();if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);}
+ }
  void Build(AS47Web* W)
  {
   if(Built==W)return;Built=W;Parts.Reset();auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));if(!Cube)return;
@@ -79,6 +109,8 @@ namespace
    for(double H:{.45,.95}){const double X=(X0+X1)*.5,Z=(Z0+Z1)*.5;Box(FString::Printf(TEXT("farm:fence:%d:rail%.0f"),Id,H*100),FVector(X,S47FarmWorld::FloorRoad(X,Z)+H,Z),X0==X1?FVector(.05,.06,L):FVector(L,.06,.05),Metal);}
   };
   Fence(30,215,30,265,0);Fence(80,215,80,265,1);Fence(30,265,80,265,2);Fence(30,215,66,215,3);Fence(75,215,80,215,4);
+  auto* Plaster=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_ChurchWhiteBoard.M_Town_ChurchWhiteBoard"));
+  for(const auto& Piece:S47FarmHouse::Pieces())Box(Piece.Name,Piece.Centre,Piece.Size,Piece.Mat==S47FarmHouse::EMat::Wall?Plaster:Wood);
   const double Y=S47FarmWorld::FloorRoad(76,251);Box(TEXT("farm:trough:bottom"),{76,Y+.15,251},{2,.16,.9},Metal);
   for(double DX:{-1.,1.})Box(TEXT("farm:trough:end"),{76+DX,Y+.40,251},{.10,.6,.9},Metal);
   for(double DZ:{-.45,.45})Box(TEXT("farm:trough:side"),{76,Y+.40,251+DZ},{2,.6,.08},Metal);
@@ -99,7 +131,7 @@ namespace S47FarmWorld
  {
   return (X>=6&&X<=116&&FMath::Abs(Z-S47RoadTerrain::RanchZ(X))<=3.1)||(X>=27&&X<=161&&Z>=150&&Z<=268);
  }
- double FloorRoad(double X,double Z){return S47RoadTerrain::SurfaceY(X,Z);}
+ double FloorRoad(double X,double Z){return S47FarmHouse::OnPad(X,Z)?S47FarmHouse::PadY():S47RoadTerrain::SurfaceY(X,Z);}
  bool HouseVisible(const US47Main* M)
  {
   if(!M||!M->Web)return false;int32 Count=0;for(int32 I=0;;++I){const auto* N=M->Web->Node(I);if(!N)break;if(N->Name.StartsWith(TEXT("highway:ranch:g")))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))if(C->IsVisible()&&!C->bHiddenInGame)++Count;}return Count==3;
@@ -110,7 +142,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);ClearHousePad(W,On);
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
   if(Apply)for(auto& P:Parts)if(auto* C=P.C.Get())
   {
@@ -137,6 +169,7 @@ namespace S47FarmWorld
  {
   const FBox Edge(FVector(10,0,S47RoadTerrain::RanchZ(11)+3.3),FVector(12,2,S47RoadTerrain::RanchZ(11)+6));
   const FBox Verge(FVector(10,0,S47RoadTerrain::RanchZ(11)-20),FVector(12,2,S47RoadTerrain::RanchZ(11)-10));
+  S47FarmHouse::SelfTest(Lines);
   const bool Good=OverlapsLane(Edge)&&!OverlapsLane(Verge)&&InRoadAccess(21,S47RoadTerrain::RanchZ(21))&&InRoadAccess(96,196.8)&&InRoadAccess(55,240)&&!InRoadAccess(200,196)&&RoadToArea(TEXT("saro"),{21,0,196}).Equals({-3,0,496},.00001);
   Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));return Good;
  }

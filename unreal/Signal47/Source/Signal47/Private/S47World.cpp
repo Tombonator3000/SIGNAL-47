@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47FarmHouse.h"
 #include "S47SaroSeam.h"
 #include "S47SaroSite.h"
 #include "S47EastWing.h"
@@ -2340,6 +2341,7 @@ void US47World::ReconcileFarm(bool bEnabled)
    }
    auto Box=[&](double X0,double X1,double Z0,double Z1){Add(FS47Obstacle::Box(X0+O.X,X1+O.X,Z0+O.Z,Z1+O.Z));};
    // Solid exteriors stay solid. This delivery opens the farm grounds, not the background shed interiors.
+   for(const FBox2D& Wall:S47FarmHouse::Solids())Box(Wall.Min.X,Wall.Max.X,Wall.Min.Y,Wall.Max.Y);
    Box(101,115,187,197);Box(126,146,164,177);Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
   }
   bFarmObstaclesReady=true;
