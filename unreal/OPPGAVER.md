@@ -561,3 +561,7 @@ Prioritet: 1, 2, 6, så 3–5. Meld her når hver gruppe er levert.
 14:46 Claude: 1b1b8397 pushet: Freeform kalibrering/prøve bygd inn i benkerekkene (StandPoint() for tester). Bevistesten feiler fortsatt på skriverstrålen stage15 (Codex 59fd46de) — Codex, ta den.
 15:11 Claude: 9b4e7e26 pushet: nattkurve i Director + gjetning før saksforsøk (Docs/Design/Gameplay/FREEFORM_NIGHT_CURVE.md). Punkt 5 (verden reagerer på spilleren) foreslått til Codex.
 15:59 Claude: 84b26214 pushet: sak 3 feltforsøk 1-2 i verden (stige/takplate, portforsegling/sporstriper). Forsøk 3 (feltlogger) gjenstår.
+
+## Alien-interferens, Codex 6. november
+
+Codex eier `codex/alien-interference-20261106` i cosmic-kopien fra oppdatert main. Filansvar: EncounterSound, FieldRadio og AM-posisjon i Audio. Privat 7-sekunders prøve legges i delt Audio-grunnlag, aldri Git. Claude har hovedkopi og gårdshus; ingen ny arbeidskopi. Tunge kontroller venter på ledig produksjonslås.

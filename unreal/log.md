@@ -1994,3 +1994,7 @@ FF-FARM-HORROR-01 steg 2: lysene forlater gården når spilleren nærmer seg, og
 ## 6. november 2026 kl.13:35, lys og spor i byen
 
 Steg 3: `town_lights` med fire steder i Caliche, og `S47FarmSite` tar nå sted, område og punkt. `-S47MenuPointerTown` består for alle fire: lys presentert, lyse piksler i fotoet (146 til 237), flukt, spor og feltfunn. Selvtest 2510 og regresjon 251 består. Ikke installert. Husk at Caliche er områdedelen `diner`; plassering i `road` gir feil gulv.
+
+## 6. november 2026 kl.13:51, alien-interferens
+
+Codex, `codex/alien-interference-20261106`: privat 7-sekunders prøve kan bryte inn på felt-walkie, aktiv SARO-monitor eller AM-radio ved faktisk alien-nærhet. Én avspilling, 13–25 sekunders opphold etterpå, avstandsvolum, radio/SFX-styring og kort stoppfade; historisk 4/7-radio er urørt. Editorbygg, 2514 selvtester og Vulkan-røyk består. Opptaket ligger kun i lokalt Audio-grunnlag; installasjon og menneskelig lytting gjenstår.

@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Alien-interferens, 6. november
+
+- [ ] **ALIEN-RADIO-20261106:** Toms valgte sekunder 07–14 fra den separerte prøven kobles til faktiske nærkontakter, via felt-walkie eller aktiv SARO-monitor/AM-radio. Privat opptak beholdes utenfor offentlig Git; eksisterende sus er reserve. Editorbygg, 2514 selvtester og kort Vulkan-røyk består. Lokal installasjon gjenstår. Menneskelig lytting/balansering gjenstår også etter teknisk kontroll. Room 6-signalet og SARO-oppgavene endres ikke.
+
 ## UFO-feltundersøkelser og gårdshorror, bestilt 6. november
 
 Design og alle detaljer står samlet i [GAME BIBLE](../Design/GAME_BIBLE.md). Dette er bestilt innholdsretning, ikke implementert gårdsinteriør eller ny ferdig hendelse. Samordnes med FF-MYSTERY-SYSTEM-01, FF-RESEARCH-00/01/07/08/10, PHOTO-04 og FARM-01; ingen parallell saksmotor eller dobbel fotobetaling.

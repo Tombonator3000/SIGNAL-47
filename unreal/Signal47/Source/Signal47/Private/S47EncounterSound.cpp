@@ -1,6 +1,7 @@
 #include "S47EncounterSound.h"
 #include "S47Audio.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 namespace
 {
@@ -65,6 +66,10 @@ bool FS47EncounterSound::Bind(US47Audio* A)
  if (!A || !A->bReady || !A->Ctx || !A->SfxBus || A->Ctx->State()!=TEXT("running")) return false;
  if (Context==A->Ctx && Owner.Get()==A) return true;
  Reset(); Context=A->Ctx; Owner=A;
+ // Optional private recording. Decode once, never from the audio callback.
+ TArray<uint8> Bytes;
+ if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design/alien_interference.wav"))))
+  TransmissionBuffer=S47Wa::DecodeWav(Bytes);
  return true;
 }
 
@@ -144,14 +149,40 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
   if (bRadioPlaced) RadioGain->Connect(RadioPan); else RadioGain->Connect(RadioVolume);
  }
  if (At && RadioPan) RadioPan->SetPosition(At->X,At->Y,At->Z);
+ // A transmission is an occasional intrusion, not a repeating proximity tone.
+ const double Now=Context->CurrentTime();
+ if (Transmission && (RadioLevel<=.015 || bHeld))
+ { StopTransmission(); }
+ if (TransmissionBuffer && RadioGain && !bHeld && RadioLevel>.12 && Now>=NextTransmission
+     && (!Transmission || Transmission->Ended()))
+ {
+  Transmission=Context->CreateBufferSource(); Transmission->Buffer=TransmissionBuffer;
+  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValue(4.);
+  auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(4200.);
+  Transmission->Connect(Band); Band->Connect(TransmissionGain); TransmissionGain->Connect(RadioGain);
+  Transmission->Start(Now);
+  NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(13.f,25.f);
+ }
  RadioMix();
+}
+
+void FS47EncounterSound::StopTransmission()
+{
+ if(Transmission && Context)
+ {
+  FS47AudioContext::FBatch Batch(*Context);
+  const double Now=Context->CurrentTime();
+  if(TransmissionGain) { TransmissionGain->Gain.CancelAndHoldAtTime(Now); TransmissionGain->Gain.LinearRampToValueAtTime(0,Now+.035); }
+  Transmission->Stop(Now+.035);
+ }
+ Transmission.Reset(); TransmissionGain.Reset();
 }
 
 void FS47EncounterSound::Hold(bool bInHeld)
 {
  if (bHeld==bInHeld) return;
  bHeld=bInHeld;
- if (bHeld) { FadeVoices(.035); CueUntil=0; }
+ if (bHeld) { FadeVoices(.035); CueUntil=0; if(Transmission) { StopTransmission(); } }
  RadioMix();
 }
 
@@ -164,7 +195,9 @@ void FS47EncounterSound::Reset()
   { V.Gain->Gain.CancelScheduledValues(0); V.Gain->Gain.SetValue(0); V.Source->Stop(); }
   if (RadioVolume) RadioVolume->Gain.SetValue(0);
   if (RadioSource) RadioSource->Stop();
+  if (Transmission) Transmission->Stop();
  }
+ Transmission.Reset(); TransmissionGain.Reset(); TransmissionBuffer.Reset(); NextTransmission=0;
  Voices.Reset(); Cues.Reset(); RadioSource.Reset(); RadioGain.Reset(); RadioVolume.Reset(); RadioPan.Reset();
  Context.Reset(); Owner.Reset(); bHeld=bRadioPlaced=false; RadioLevel=NextAny=CueUntil=0; LastKind=-1;
  for (double& T:NextKind) T=0;
@@ -183,8 +216,21 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  double Peak=0; bool Finite=true;
  for (float V:Samples) { Finite&=FMath::IsFinite(V); Peak=FMath::Max(Peak,FMath::Abs(double(V))); }
  Check(Finite && Peak>.001 && Peak<.12,TEXT("original cue produces finite, bounded low-level audio"));
- Mix.UpdateRadio(A,1.); const double Before=A->Ctx->CurrentTime();
+ Mix.Reset(); Mix.Bind(A);
+ // Synthetic fixture proves the optional recording path without publishing private audio.
+ Mix.TransmissionBuffer=CueBuffer(0); Mix.NextTransmission=0;
+ Mix.UpdateRadio(A,1.);
+ const auto FirstTransmission=Mix.Transmission;
+ const double Next=Mix.NextTransmission;
+ Check(FirstTransmission && Next>A->Ctx->CurrentTime()+13.,TEXT("nearby radio starts a bounded recording with a quiet cooldown"));
+ Mix.UpdateRadio(A,1.);
+ Check(Mix.Transmission==FirstTransmission && Mix.NextTransmission==Next,TEXT("continuous presence cannot stack or retrigger the recording"));
+ Mix.UpdateRadio(A,0.);
+ Check(!Mix.Transmission,TEXT("leaving the proximity range stops the recording"));
+ Mix.NextTransmission=0; Mix.UpdateRadio(A,1.);
+ const double Before=A->Ctx->CurrentTime();
  Mix.Hold(true);
+ Check(!Mix.Transmission,TEXT("pause stops the optional transmission"));
  Check(!Mix.Cue(A,EKind::Hunt) && A->Ctx->State()==TEXT("running"),TEXT("holding this mixer blocks cues without suspending the game"));
  A->Ctx->Render(Samples.GetData(),Rate/4,2); A->Ctx->Tick(.25);
  Check(A->Ctx->CurrentTime()>Before,TEXT("unrelated audio clock continues while this mixer is held"));
