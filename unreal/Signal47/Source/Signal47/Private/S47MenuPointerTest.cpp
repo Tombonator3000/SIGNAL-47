@@ -258,6 +258,14 @@ namespace
      M->Freeform->Field->AddItem(TEXT("relay"),3);M->Freeform->Field->AddItem(TEXT("fuse"),2);
      Stage=180;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerStare")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the stare needs the night"));
+     M->Freeform->FarmSite->SetCalm(1e12);M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
+     const FVector C=M->Freeform->FarmSite->Centre();M->Player->Place(C.X+6,C.Z+18,0);
+     CowFrom=Elapsed;Stage=190;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -627,6 +635,28 @@ namespace
      case 188:Close();UE_LOG(LogTemp,Display,TEXT("S47: panels shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
     }
     ++Stage;StageAt=Elapsed;return true;
+   }
+   // One of them, stock still, head up, looking at the marks.
+   if(Stage==190)
+   {
+    StageAt=Elapsed;
+    auto* H=M->TownLayer&&!M->TownLayer->Herds.IsEmpty()?M->TownLayer->Herds[0].Get():nullptr;
+    if(!H)return Fail(TEXT("no herd"));
+    if(Elapsed-CowFrom<3)return true;
+    if(H->Starer()<0)return Fail(TEXT("one cow must stand and stare at the marks"));
+    FVector A;H->CowAt(H->Starer(),A);CowA=A;CowFrom=Elapsed;Stage=191;
+    UE_LOG(LogTemp,Display,TEXT("S47: cow %d stares"),H->Starer());return true;
+   }
+   if(Stage==191)
+   {
+    StageAt=Elapsed;
+    auto* H=M->TownLayer->Herds[0].Get();
+    if(Elapsed-CowFrom<20)return true;
+    if(H->Starer()<0)return Fail(TEXT("the stare must last"));
+    FVector B;H->CowAt(H->Starer(),B);
+    if(FVector::Dist(FVector(CowA.X,0,CowA.Z),FVector(B.X,0,B.Z))>.7)return Fail(TEXT("the staring cow must stay put"));
+    UE_LOG(LogTemp,Display,TEXT("S47: stare PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==139)
    {

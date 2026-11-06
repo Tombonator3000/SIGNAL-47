@@ -234,7 +234,7 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  if(bStare&&StareCow<0)
  {
   double Best=1e18;
-  for(int32 I=0;I<H->Count();++I){FVector P;if(H->CowAt(I,P)){const double D=FVector::DistSquared(P,Site->Centre());if(D<Best){Best=D;StareCow=I;}}}
+  for(int32 I=0;I<H->Count();++I){FVector P;if(I!=S47Herd::MISSING&&H->CowAt(I,P)){const double D=FVector::DistSquared(P,Site->Centre());if(D<Best){Best=D;StareCow=I;}}}
   bStare=StareCow>=0;
  }
  H->SetStare(bStare?StareCow:-1,bStare?Site->Centre():FVector::ZeroVector);
