@@ -183,6 +183,24 @@ private:
  };
  TArray<FCabinetOriginal> CabinetOriginals;
  FS47Obj CabinetBody;
+ // One service door that follows the work order: S-03 has its own, the other antennas get this one on their drive box.
+ FS47Obj FieldLid;
+ double DoorK = 0;
+ bool bDoorOpen = false, bFieldZone = false, bFirstDoorStep = true;
+ FString PlacedTarget;
+ FVector DoorFace = FVector::ZeroVector;
+ double DoorYaw = 0;
+ void StepServiceDoor(double Dt);
+ void ApplyServiceDoor();
+ void PlaceServiceDoor();
+ void SetFieldZone(bool bOn);
+public:
+ // Test: a work order at this dish, at this stage.
+ void TestService(const FString& Dish,int32 Stage){ServiceTarget=Dish;Service=Stage;DoorK=0;bDoorOpen=false;ApplyServiceDoor();}
+ double ServiceDoorOpen() const { return DoorK; }
+ FVector ServiceDoorFace() const { return DoorFace; }
+ double ServiceDoorYaw() const { return DoorYaw; }
+private:
  bool bServiceCabinet = false;
  void Change(const FString& Message = FString());
  bool ServiceUse();

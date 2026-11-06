@@ -2018,3 +2018,7 @@ Gatelys på eksisterende stolpe (veilokalt 15, 190), ny stolpe med lampe ved tra
 ## 6. november 2026 kl.16:40, dører i gårdshuset
 
 Sju dører fra plantegningen i `FS47FarmHouseDoors`, med kollisjon og lagret tilstand. Rettelse: prøven kl.13:58 startet inne i huset, så den gikk aldri inn frontdøren. Nå går den utenfra, blir stoppet av lukket dør, åpner og går ut bakdøren. Selvtest 2515 og regresjon 251 består.
+
+## 6. november 2026 kl.17:50, kjøring i array-feltet, felles servicedør, øyegrenser og alienbevegelser
+
+Freeform: bilen kan kjøre og spilleren gå i hele feltet rundt de 27 antennene. Servicedøren følger arbeidsordren, svinger med lyd og er sett på alle fire boksretninger. Øyeglimtene er begrenset til 50 m og mørke etter Toms tilbakemelding om at de lyste på flere hundre meter og lyste opp omgivelsene. `FS47CrabMotion` og Tall-stil er skrevet og sett i forhåndsvisning, ikke i spillhendelser. Selvtest 2515 og regresjon 251 består. Ikke prøvd: lagring og Continue med bilen ute i feltet.

@@ -21,8 +21,11 @@ void S47CreaturePreview::Start(US47Main* M)
  FPaths::NormalizeDirectoryName(UserDir);
  if (!HasCase || Case!=0 || !UserDir.StartsWith(TEXT("/tmp/")))
  { UE_LOG(LogTemp,Error,TEXT("S47: creature preview refused: explicit Case0 and /tmp UserDir required")); return; }
- struct FPreview { FS47PaleBody Body; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
+ struct FPreview { FS47PaleBody Body; bool bReported=false; double StageError=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
  auto Fixture=MakeShared<FPreview>(); TWeakObjectPtr<US47Main> Weak=M;
+ FString Style;FParse::Value(FCommandLine::Get(),TEXT("S47CreatureStyle="),Style);
+ Fixture->Style=Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
+ if(Fixture->Style==1)Fixture->Body.Style=ES47PaleStyle::Tall;
  auto Capture=FS47CreatureCapture::Create([Fixture]
  { return FS47CreatureCapture::FSample{Fixture->T,Fixture->Last,Fixture->bPlaced,Fixture->Body.Rendered(),Fixture->Body.Creature.Mesh}; });
  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Weak,Fixture,Capture](float Dt)
@@ -42,6 +45,47 @@ void S47CreaturePreview::Start(US47Main* M)
   }
   Fixture->T+=FMath::Min(double(Dt),.1);
   const double T=Fixture->T;
+  if(Fixture->Style!=0)
+  {
+   // Tall and crab: stand or fold, wait, walk ahead, step sideways, run, turn on the spot and stop.
+   const bool bCrab=Fixture->Style==2;
+   const double Sd=FMath::Min(double(Dt),.1);
+   const int32 St=T<3?0:T<5?1:T<9?2:T<12?3:T<14?4:T<16?5:6;
+   if(T>=3)
+   {
+    const double Ahead=St==2?(bCrab?1.1:1.0):St==4?(bCrab?2.8:1.9):0,Across=St==3&&bCrab?.8:0;
+    Fixture->X+=FMath::Cos(Fixture->Yaw)*Ahead*Sd-FMath::Sin(Fixture->Yaw)*Across*Sd;
+    Fixture->Z+=FMath::Sin(Fixture->Yaw)*Ahead*Sd+FMath::Cos(Fixture->Yaw)*Across*Sd;
+    if(St==5)Fixture->Yaw+=.65*Sd;
+   }
+   const FVector At(Fixture->X,S47RoadTerrain::SurfaceY(Fixture->X-8000,Fixture->Z),Fixture->Z);
+   if(bCrab)
+   {
+    Fixture->Body.ApplyCrab(true,At,Fixture->Yaw,Fixture->Yaw+.3*FMath::Sin(T*.7),T,T/3.,St==4);
+    Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Fixture->Body.Creature.CrabContacts.MaxPlantErrorCm);
+    for(bool bStep:Fixture->Body.Creature.CrabContacts.bStep)Fixture->Contacts+=int32(bStep);
+   }
+   else
+   {
+    Fixture->Body.Apply(true,At,Fixture->Yaw,Fixture->Yaw+.25*FMath::Sin(T*.7),St==2?.85:St==4?1.4:0.,T*3,T,St==4?FS47PaleBody::EPose::Chase:FS47PaleBody::EPose::Walk);
+    const auto& Plant=Fixture->Body.Creature.Contacts;
+    Fixture->Contacts+=int32(Plant.bLeft)+int32(Plant.bRight);
+    Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Plant.MaxPlantErrorCm);
+   }
+   Fixture->StageError=FMath::Max(Fixture->StageError,bCrab?Fixture->Body.Creature.CrabContacts.MaxPlantErrorCm:Fixture->Body.Creature.Contacts.MaxPlantErrorCm);
+   // The camera holds a quarter view from ahead, at the player's height.
+   const double Cam=Fixture->Yaw+.7,Dist=bCrab?3.4:4.6;
+   const FVector Eye(At.X+FMath::Cos(Cam)*Dist,At.Y+1.62,At.Z+FMath::Sin(Cam)*Dist),To(At.X,At.Y+(bCrab?.5:1.2),At.Z);
+   const FVector D=To-Eye;
+   Main->Player->Place(Eye.X,Eye.Z,FMath::Atan2(-D.X,-D.Z));Main->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   if(St!=Fixture->Last){UE_LOG(LogTemp,Display,TEXT("S47: creature preview %s stage %d done, worst planted %.2f cm"),bCrab?TEXT("crab"):TEXT("tall"),Fixture->Last,Fixture->StageError);Fixture->StageError=0;Fixture->Last=St;}
+   if(T>=17.4&&!Fixture->bReported)
+   {
+    Fixture->bReported=true;
+    UE_LOG(LogTemp,Display,TEXT("S47: creature preview COMPLETE %s: %d steps, worst planted error %.3f cm, skin rendered %d"),bCrab?TEXT("crab"):TEXT("tall"),Fixture->Contacts,Fixture->MaxPlantError,Fixture->Body.Rendered());
+   }
+   return true;
+  }
   const int32 Stage=T<2?0:T<4?1:T<8?2:T<11?3:T<14?4:T<15.2?5:6;
   const double Travel=FMath::Clamp(T-4.,0.,4.)*1.15+FMath::Clamp(T-8.,0.,3.)*2.1;
   const FVector Feet(7885-Travel,S47RoadTerrain::SurfaceY(-115-Travel,522),522);

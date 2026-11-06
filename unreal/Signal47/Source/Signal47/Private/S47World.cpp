@@ -105,6 +105,10 @@ namespace
    return FMath::IsFinite(AS47Props::FloorAt(35.4,0))&&Main->Web->CollidersMutable(TEXT("saro")).ContainsByPredicate(
     [](const FS47Rect& R){return R.bEnabled&&R.Id==TEXT("eastwing:n");});
   }
+  // The antennas lie up to 420 m out with nothing between them but desert; in Freeform the truck may go there from the
+  // road along the west side. Only what stands there stops it (the site's own yard keeps its ways).
+  static bool InArrayField(double X,double Z){return X>=S47Legs::ARRAY_FIELD.MinX&&X<=S47Legs::ARRAY_FIELD.MaxX&&Z>=S47Legs::ARRAY_FIELD.MinZ&&Z<=S47Legs::ARRAY_FIELD.MaxZ;}
+  bool ArrayFieldOpen() const{const US47Main* Main=Owner.Get();return Main&&Main->IsFreeform();}
   bool OnVisitorLot(double X,double Z) const
   {
    return bVisitorLot&&((X>=-18.2&&X<=-7.8&&Z>=10.5&&Z<=20.5)
@@ -132,7 +136,7 @@ namespace
   virtual bool Blocked(double X,double Z) override
   {
    SyncWingObstacles();
-   return OnVisitorLot(X,Z)||OnNativePaving(X,Z)?false:FS47SaroDrive::Blocked(X,Z);
+   return OnVisitorLot(X,Z)||OnNativePaving(X,Z)||(ArrayFieldOpen()&&InArrayField(X,Z))?false:FS47SaroDrive::Blocked(X,Z);
   }
   virtual double Height(double X,double Z) const override
   {
@@ -709,6 +713,9 @@ void US47World::EnsureLegs()
 	{
 		TUniquePtr<FArrivalSaroDrive> A = MakeUnique<FArrivalSaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>(), W);
 		A->Owner=M;
+		for(const FS47Box2& C:Boxes(W->CollidersMutable(TEXT("saro")),SaroCol))
+			if(C.MaxX>S47Legs::ARRAY_FIELD.MinX&&C.MinX<S47Legs::ARRAY_FIELD.MaxX&&C.MaxZ>S47Legs::ARRAY_FIELD.MinZ&&C.MinZ<S47Legs::ARRAY_FIELD.MaxZ)
+				A->Obstacles.Add(FS47Obstacle::Box(C.MinX,C.MaxX,C.MinZ,C.MaxZ));
 		TArray<FString> ArrivalChecks;
 		A->bVisitorLot = W->AuditSaroArrival(ArrivalChecks);
 		UE_LOG(LogS47World,Display,TEXT("S47: SARO visitor driving corridor ready=%d; original service corridors retained"),A->bVisitorLot);

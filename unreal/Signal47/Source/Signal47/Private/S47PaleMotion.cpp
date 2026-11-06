@@ -68,7 +68,8 @@ FS47PaleContacts FS47PaleMotion::Apply(FS47TripoCreature& R,const FS47PalePose& 
  const int32 Hip[2]={Bone(TEXT("thigh_l")),Bone(TEXT("thigh_r"))},Knee[2]={Bone(TEXT("calf_l")),Bone(TEXT("calf_r"))},Foot[2]={Bone(TEXT("foot_l")),Bone(TEXT("foot_r"))};
  const double Leg=(Ref[Knee[0]].GetLocation()-Ref[Hip[0]].GetLocation()).Size()+(Ref[Foot[0]].GetLocation()-Ref[Knee[0]].GetLocation()).Size();
  if(!FMath::IsFinite(Leg)||Leg<20||Leg>200){Out.bValid=false;return Out;}
- const double Cycle=Leg*FMath::Lerp(.95,1.25,Run),Duty=FMath::Lerp(.64,.48,Run);
+ const bool Tall=In.Style==ES47PaleStyle::Tall;
+ const double Cycle=Leg*(Tall?FMath::Lerp(1.15,1.3,Run):FMath::Lerp(.95,1.25,Run)),Duty=Tall?FMath::Lerp(.66,.48,Run):FMath::Lerp(.64,.48,Run);
  if(!bInit)Phase=Duty*.5; // initial stance never drags one planted foot a whole first cycle
  if(Moving)Phase+=Travel/Cycle;
  const double Wave=FMath::Sin(Phase*2*PI);
@@ -86,7 +87,7 @@ FS47PaleContacts FS47PaleMotion::Apply(FS47TripoCreature& R,const FS47PalePose& 
   const FVector Chest=World.InverseTransformPosition(LastGrabTargetUE.GetValue());
   if(Chest.Y>0)FarGrabLean=16.*Ease((Chest.Size2D()-90.)/15.)*Reach;
  }
- Rotate(Bone(TEXT("spine_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-(2.+Motion*FMath::Lerp(5.,15.,Run)+(Listen?4.:0.)+Reach*4.+FarGrabLean))));
+ Rotate(Bone(TEXT("spine_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-(2.+Motion*FMath::Lerp(5.,15.,Run)+(Listen?4.:0.)+Reach*4.+FarGrabLean+(Tall?9.:0.)))));
  Rotate(Bone(TEXT("spine_03")),FQuat(FVector::YAxisVector,FMath::DegreesToRadians(.5*FMath::Sin(In.Clock*1.3)+Motion*Wave*FMath::Lerp(.6,2.,Run))));
  // Probe only visual foot targets. The controller still owns walkability, collision, position and floor.
  FCollisionQueryParams Query(SCENE_QUERY_STAT(S47PaleFootPlant),true);
@@ -148,14 +149,23 @@ FS47PaleContacts FS47PaleMotion::Apply(FS47TripoCreature& R,const FS47PalePose& 
   const double Upper=(Ref[Elbow].GetLocation()-Ref[Arm].GetLocation()).Size(),Fore=(Ref[Hand].GetLocation()-Ref[Elbow].GetLocation()).Size();
   const double Sign=FMath::Sign(Ref[Arm].GetLocation().X-Ref[Bone(TEXT("spine_03"))].GetLocation().X),Swing=(S==0?-Wave:Wave)*Motion;
   const double Prepare=In.Mode==ES47PaleMotion::Grab?Ease(Grab/.16)*(1.-Ease((Grab-.16)/.20)):0;
-  Aim(Arm,Elbow,P[Arm].GetLocation()+FVector(Sign*.15, Swing*FMath::Lerp(.22,.55,Run)+Prepare*.25,-1)*Upper);
-  Aim(Elbow,Hand,P[Elbow].GetLocation()+FVector(Sign*.06,.18+Run*.5+Swing*.12,-1)*Fore);
+  Aim(Arm,Elbow,P[Arm].GetLocation()+FVector(Sign*.15, Swing*FMath::Lerp(.22,.55,Run)*(Tall?.3:1.)+Prepare*.25+(Tall?.1:0.),-1)*Upper);
+  Aim(Elbow,Hand,P[Elbow].GetLocation()+FVector(Sign*.06,(Tall?.08:.18)+Run*(Tall?.25:.5)+Swing*(Tall?.05:.12),-1)*Fore);
   if(Reach>.001&&LastGrabTargetUE.IsSet())
   {
    const FVector Contact=World.InverseTransformPosition(LastGrabTargetUE.GetValue())+FVector(Sign*Leg*.10,0,0);
    const FVector Target=FMath::Lerp(P[Hand].GetLocation(),Contact,Reach);
    Solve(Arm,Elbow,Hand,Target,FVector(Sign,0,-.5).GetSafeNormal());
   }
+ }
+ if(Tall)
+ {
+  // The neck reaches forward and the head comes level again; every so often it slowly tips to one side.
+  const double Seed=FMath::FloorToDouble(In.Clock/2.7);
+  HeadTilt=Follow(HeadTilt,22.*(FMath::Frac(FMath::Sin(Seed*12.9898)*43758.5453)-.5),Dt,3.);
+  Rotate(Bone(TEXT("neck_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-8.)));
+  Rotate(Bone(TEXT("head")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(15.)));
+  Rotate(Bone(TEXT("head")),FQuat(FVector::YAxisVector,FMath::DegreesToRadians(HeadTilt)));
  }
  Rotate(Bone(TEXT("neck_01")),FQuat(FVector::UpVector,HeadYaw*.25));
  Rotate(Bone(TEXT("head")),FQuat(FVector::UpVector,HeadYaw*.75));
