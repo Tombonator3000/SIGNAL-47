@@ -36,6 +36,6 @@ private:
   bool bSwing=false;
  } Feet[2];
  bool bInit=false;
- double Distance=0, Phase=0, Clock=0, Duck=0, HeadYaw=0, HeadPitch=0, Motion=0, Reach=0;
+ double Distance=0, Phase=0, Clock=0, Duck=0, HeadYaw=0, HeadPitch=0, Motion=0, Reach=0, SneakK=0;
  FVector LastRoot=FVector::ZeroVector;
 };

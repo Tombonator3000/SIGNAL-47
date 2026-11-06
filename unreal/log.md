@@ -2026,3 +2026,7 @@ Freeform: bilen kan kjøre og spilleren gå i hele feltet rundt de 27 antennene.
 ## 6. november 2026 kl.17:58, installasjon
 
 `31824b50` og `cfbd9fb5` er installert lokalt med kvitteringer. Toms lenker om animasjon er gjennomgått: ingen direkte løsning, men Game Animation Sample og Mixamo er aktuelle hvis kode ikke holder for Roswell-lusking.
+
+## 6. november 2026 kl.18:10, Roswell-lusking
+
+Dagens lusking var tripping: 47 cm mellom hvert steg og 10 cm huk. Nå dypere huk, lengre steg, vektoverføring, hender foran kroppen og fart i rykk. Hjernens tilstander Stalk og Search regnes nå som lusking også uten egen huk. Selvtest 2515 og regresjon 251 består. Sett i forhåndsvisning, ikke i spilt møte.

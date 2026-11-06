@@ -1,4 +1,5 @@
 #include "S47RoswellBrain.h"
+#include "S47TripoCreature.h"
 
 namespace
 {
@@ -189,7 +190,10 @@ void FS47RoswellBrain::Move(double Dt,const FWorld& World)
  while (NextPoint<Path.Num() && FVector::Dist(Pos,Path[NextPoint])<.035) ++NextPoint;
  if (NextPoint>=Path.Num()) { bAtGoal=true; Path.Reset(); NextPoint=0; return; }
  const FVector D=Path[NextPoint]-Pos;
- const double Speed=FMath::Min(DesiredSpeed,OldSpeed+Dt*3.8);
+ // Unhurried, it goes in steps and stops between them.
+ const bool bSneaking=DesiredSpeed<1.3&&(State==EState::Stalk||State==EState::Search||Crouch>.2);
+ const double Speed=FMath::Min(DesiredSpeed*(bSneaking?S47Roswell::StalkPulse(Age):1.),OldSpeed+Dt*3.8);
+
  FVector To=Pos+D.GetSafeNormal()*FMath::Min(D.Size(),Speed*Dt);
  bool bGrounded=true;
  if (World.GroundedStep)

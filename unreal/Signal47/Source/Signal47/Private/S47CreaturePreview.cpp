@@ -1,4 +1,7 @@
 #include "S47TripoCreature.h"
+#include "S47RoswellMotion.h"
+#include "Components/BoxComponent.h"
+#include "Components/PoseableMeshComponent.h"
 #include "S47Three.h"
 #include "S47PaleBody.h"
 #include "S47Main.h"
@@ -21,10 +24,11 @@ void S47CreaturePreview::Start(US47Main* M)
  FPaths::NormalizeDirectoryName(UserDir);
  if (!HasCase || Case!=0 || !UserDir.StartsWith(TEXT("/tmp/")))
  { UE_LOG(LogTemp,Error,TEXT("S47: creature preview refused: explicit Case0 and /tmp UserDir required")); return; }
- struct FPreview { FS47PaleBody Body; bool bReported=false; double StageError=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
+ struct FPreview { FS47PaleBody Body; bool bReported=false; FS47RoswellMotion RoswellMotion; double Travelled=0; double StageError=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
  auto Fixture=MakeShared<FPreview>(); TWeakObjectPtr<US47Main> Weak=M;
  FString Style;FParse::Value(FCommandLine::Get(),TEXT("S47CreatureStyle="),Style);
- Fixture->Style=Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
+ Fixture->Style=Style==TEXT("roswell")?3:Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
+ if(Fixture->Style==3)Fixture->Body.CreatureAsset=TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell");
  if(Fixture->Style==1)Fixture->Body.Style=ES47PaleStyle::Tall;
  auto Capture=FS47CreatureCapture::Create([Fixture]
  { return FS47CreatureCapture::FSample{Fixture->T,Fixture->Last,Fixture->bPlaced,Fixture->Body.Rendered(),Fixture->Body.Creature.Mesh}; });
@@ -45,6 +49,27 @@ void S47CreaturePreview::Start(US47Main* M)
   }
   Fixture->T+=FMath::Min(double(Dt),.1);
   const double T=Fixture->T;
+  if(Fixture->Style==3)
+  {
+   // Small Roswell: stand, sneak with its stops, listen, sneak on, run, duck and stop.
+   const double Sd=FMath::Min(double(Dt),.1);
+   const int32 St=T<2?0:T<8?1:T<10?2:T<13?3:T<15?4:5;
+   const bool bSneak=St==1||St==3;
+   const double V=bSneak?.8*S47Roswell::StalkPulse(T):St==4?2.8:0;
+   Fixture->X+=FMath::Cos(Fixture->Yaw)*V*Sd;Fixture->Z+=FMath::Sin(Fixture->Yaw)*V*Sd;Fixture->Travelled+=V*Sd;
+   const FVector At(Fixture->X,S47RoadTerrain::SurfaceY(Fixture->X-8000,Fixture->Z),Fixture->Z);
+   if(UBoxComponent* R=Fixture->Body.RootComp.Get())R->SetWorldLocationAndRotation(S47Three::ToUE(At),FRotator(0,FMath::RadiansToDegrees(Fixture->Yaw),0));
+   Fixture->Body.Creature.Mesh->SetVisibility(true,true);
+   FS47RoswellPose Pose;Pose.SpeedMps=V;Pose.DistanceTravelled=Fixture->Travelled;Pose.Crouch=St==5?1.:bSneak?.3:0.;
+   Pose.Mode=St==4?ES47RoswellMotion::Run:bSneak?ES47RoswellMotion::Stalk:St==2?ES47RoswellMotion::Listen:St==5?ES47RoswellMotion::Peek:ES47RoswellMotion::Idle;
+   Fixture->RoswellMotion.Apply(Fixture->Body.Creature,Pose,Sd);
+   const double Cam=Fixture->Yaw+.8,Dist=2.6;
+   const FVector Eye(At.X+FMath::Cos(Cam)*Dist,At.Y+1.5,At.Z+FMath::Sin(Cam)*Dist),To(At.X,At.Y+.5,At.Z);
+   const FVector D=To-Eye;
+   Main->Player->Place(Eye.X,Eye.Z,FMath::Atan2(-D.X,-D.Z));Main->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   Fixture->Last=St;
+   return true;
+  }
   if(Fixture->Style!=0)
   {
    // Tall and crab: stand or fold, wait, walk ahead, step sideways, run, turn on the spot and stop.

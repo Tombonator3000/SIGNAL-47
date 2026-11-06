@@ -71,7 +71,7 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
  ShinL = Part(TEXT("ShinL"), ShinMesh, TL, ThighLNode, FVector(0, 0, -49), One, Leaf);
  UStaticMeshComponent* TR = Part(TEXT("ThighR"), ThighMesh, R, RootNode, FVector(0, 10, 100), Mirror, ThighRNode); ThighR = TR;
  ShinR = Part(TEXT("ShinR"), ShinMesh, TR, ThighRNode, FVector(0, 0, -49), One, Leaf);
- if (Creature.Build(W,R,FString(Prefix)+TEXT("TripoSkin")))
+ if (CreatureAsset.IsEmpty()?Creature.Build(W,R,FString(Prefix)+TEXT("TripoSkin")):Creature.Build(W,R,FString(Prefix)+TEXT("TripoSkin"),*CreatureAsset))
   for (const auto& Old:All) if (auto* C=Old.Get())
   { C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false); }
  bBuilt = true;
