@@ -1919,3 +1919,11 @@ PR430 (Codex, kosmisk lag) kom i main; flettet nedenfra og opp gjennom PR428, 42
 ## 6. november 2026 kl.07:25, fletting og bevistest
 
 Tom ba om fletting. PR428 ble squashet av Tom kl. 07:20; PR429, 431 og 432 er flettet med `6edef2e3` med uendret filtre. `S47FreeformEvidenceTest` består 108 kontroller i editor etter at testen sikter på selve skriveren og finner arkivert jobb på identitet. Nattskiftet stoppet kl. 23:35 i stedet for 08:00; arbeidet ble tatt opp igjen kl. 06:57 etter Toms beskjed.
+
+## 6. november 2026 kl.07:35, normalreisen på flettet kode
+
+Alle sju faser består på pakken `8457d9b1`. Manuelle lagringer endres bare der fasene skal skrive. Mistanken om at printerarket ikke svarer på siktet ble avkreftet med strålelogg; endringen ble forkastet.
+
+## 6. november 2026 kl.08:00, terminalstopp og menyobjekt
+
+Claude-terminalen som døde kl. 07:34 var startet av Codex og gikk ned idet Codex stengte sin inaktive tråd; samme sammenfall kl. 16:48, 20:49 og 02:03. Ikke OOM, krasj eller spillprøven. Omkjørt tittelprøve på pakken `d5` består med status 0 uten terminalstopp. Objektet kan ikke skilles fra stjernene i stillbildet `title-ufo-pass.png`; Tom bekreftet kl. 08 at ikke ser noe på startmenyen.
