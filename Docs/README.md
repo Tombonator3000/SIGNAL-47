@@ -4,6 +4,7 @@
 
 | Det du vil vite | Åpne |
 | --- | --- |
+| Hva er det samlede spilldesignet, historien og gameplayet? | **[GAME BIBLE](Design/GAME_BIBLE.md)** |
 | Hva er faktisk på main, testet, installert og nedlastbart? | **[STATUS](Active/STATUS.md)** |
 | Hva skal gjøres nå? | **[TODO](Active/TODO.md)** |
 | Hvilke beslutninger og planer gjelder? | **[DECISIONS](Active/DECISIONS.md)** |

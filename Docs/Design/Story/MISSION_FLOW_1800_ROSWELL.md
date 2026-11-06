@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 > **Status: Gjeldende** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../Active/STATUS.md).
 
 # SIGNAL / 47: én sammenhengende natt fra 18:00 til Roswell Road

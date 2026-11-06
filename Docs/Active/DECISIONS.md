@@ -4,6 +4,14 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## Samlet game bible og UFO-feltundersøkelser, 6. november
+
+Tom bestiller alt spilldesign, gameplay og Story samlet i [GAME BIBLE](../Design/GAME_BIBLE.md) på GitHub. Hovedbibelen er samlet designfasit; gamle detaljplaner, originale kildepakker og produksjons-JSON bevares som sporbare vedlegg. Active beholder egne roller for status, oppgaver og vedtak.
+
+Tom vil kunne følge UFO-observasjoner og nærkontakter utenfor SARO på tvers av motellet, byen, gården og andre spillbare steder: observere, fotografere, finne gjenstander og undersøke. Hendelser og etterspor bygger på eksisterende saksmotor, Director og fotoløkken. SARO er fortsatt arbeidssted og sted for analyse. Dette utvider D-23/D-25s første avgrensning til basen og byens forsyningsrolle; det opphever ikke Story-kanon.
+
+Gården skal også gi skrekk: mange mystiske lys sett fra SARO, tur ut, søkbart forlatt gårdshus, mystiske ulyder, lett tåke og ubehagelig atmosfære. Noe rart kan skje, med mulig flukt eller bortføring og tapt tid i Freeform. Dette overstyrer eldre avgrensning mot tidstap for akkurat det nye Freeform-forløpet; Storys tilfeldige hendelser får fortsatt ikke hoppe over faste tidspunkt. Huset er ny designbestilling, ikke ferdig interiør; kuer og eksisterende gårdsadkomst bevares. Detaljert varighet, plassering og balansering er åpne i bibelen. Sikret arbeid og en praktisk vei tilbake skal bevares.
+
 ## Nattskift 4. til 5. november 2026
 
 Tom bestiller arbeid på TODO så langt tiden rekker, med agenter og eksisterende harness, frem til 5. november kl. 08:00 Europe/Oslo. Gameplay-løkken beholder førsteprioritet. Fra 07:30 prioriteres sikring og nødvendige leveringskontroller. Én tung jobb om gangen; den samlede nattstartkontrollen av arbeidskopier og disk gjenbrukes gjennom skiftet. Ingen offentlig spillutgave er bestilt.
@@ -67,7 +75,7 @@ Tom ønsker enkel billasting: Hold en pakkbar gjenstand og bruk egen parkerte bi
 
 Nyere eksplisitte beslutninger går foran eldre planer for den delen de endrer. De erstatter ikke automatisk alle andre krav.
 
-1. **Toms siste direkte instrukser** gjelder først.
+1. **Toms siste direkte instrukser** gjelder først. Samlet spilldesign og det avklarte forløpet leses nå i [GAME BIBLE](../Design/GAME_BIBLE.md). Den godkjente [tidslinjen fra 29. oktober](../Design/Story/TIDSLINJE_SC01_SC13_2026-10-29.md) og [produksjonsmanuset fra 30. oktober](../Design/Story/PRODUKSJON_SC01_SC13.md) overstyrer de eldre tidene nedenfor. Punkt 2 til 5 er bevarte detaljkilders innbyrdes rekkefølge, ikke separate designfasiter.
 2. **[Ny kveldsrekkefølge, 28. oktober](../Design/Story/KVELD_PLAN_2026-10-28.md)** styrer den endrede forbindelsen mellom SC01, signal/strøm, trafotur og SC02/SC03. Den senere mørke trafoturen og enklere SC01 overstyrer eldre rekkefølge der de er uenige.
 3. **[SC02 til SC13-revisjonen](../Design/Story/HISTORIE_SC02_SC13_REVISJON.md)** styrer revidert dramaturgi og fire aktleveranser der den avviker fra den eldre planen. Ny talende sjåfør i SC12 og diktering av måletabeller er kuttet; H08/H09 er slått sammen. Dette er ikke en beskjed om å fjerne den eksisterende bakgrunnssjåføren i diner.
 4. **[Implementeringsplanen](../Design/Story/HISTORIE_IMPLEMENTERINGSPLAN.md)** fører scenario-/verdenskontrakter og produksjonsgrunnlag under revisjonene ovenfor. Den gamle regelen om full separat levering per scenario er erstattet av fire sammenhengende akter og det reduserte testregimet.

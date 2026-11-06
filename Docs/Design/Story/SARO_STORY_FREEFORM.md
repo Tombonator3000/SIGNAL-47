@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 # SARO-løkken, Story og Freeform
 
 **Status:** Gjeldende. **Gjelder:** Toms modusretning og første SARO-kontrollsløyfe i Unreal. **Sist kontrollert:** 1. november 2026.

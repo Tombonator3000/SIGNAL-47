@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 > **Status: Gjeldende produksjonsmanus** · Laget 30.10.2026 av Claude på Toms bestilling: «lag så detaljert plan og historie for sc01-sc13 så når det er din tur er det bare å plassere inn». Bygger på [tidslinjen](TIDSLINJE_SC01_SC13_2026-10-29.md) og [revisjonen](HISTORIE_SC02_SC13_REVISJON.md). Kode-referansene er lest på main `4ce9244b` (stier under `unreal/Signal47/Source/Signal47/Private/` hvis ikke annet står).
 
 # Produksjonsmanus SC01 til SC13
