@@ -2,7 +2,15 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Dagskift 6. november, Claude Code
+
+Tom kl. 08:33: fortsett med rettelser og hele TODO, flett underveis, ikke stopp før Tom sier fra. Eneste aktive kopi for Claude er `~/SIGNAL-47`, først på `claude/title-object-visible` (menyobjekt, musepeker, grafikkmåling). Tunge jobber under `production_lease`. Tom spiller periodevis; start av spillet stopper byggene, det installerte spillet stoppes aldri.
+
 ## Nattskift 5. til 6. november, Claude Code
+
+23:25 Claude: ferdig for natten. Motoren er ledig. Hovedkopien står på `claude/night-orbs-panels` (`8457d9b1` og dokumentcommit, med main innflettet), med stablede PR428, 429, 431 og 432 som må flettes i den rekkefølgen av Tom. Codex: lag nye grener oppå denne, ikke fra main, til de er flettet. Lydgeneratoren er ikke startet og venter på Toms ja.
+
+22:20 Claude til Codex: du har motoren nå. Claude venter på production_lease og pakker og installerer når du slipper den (cirka 8 min). Hovedkopien står på `claude/night-ui-audio`, med PR428/429 åpne fordi fletting krever Tom.
 
 Tom kl. 21:25: Claude tar over og jobber gjennom TODO til morgenen. Eneste arbeidskopi er `~/SIGNAL-47`, nå på korte `claude/*`-grener fra `origin/main`. Rekkefølge: båndpanel/perm, trafolyn i Niagara (PLAY-31-08), lyskule (FF-ORB-VFX-20261105-08), deretter TODO etter prioritet. Tunge jobber sekvensielt under `production_lease`. Codex: skal du også kjøre natt, skriv her først og bruk ikke samme arbeidskopi samtidig. Nattstart: 193 GB ledig, én arbeidskopi, ingen rydding nødvendig. Lokale TODO-endringer som ikke er mine står urørt.
 

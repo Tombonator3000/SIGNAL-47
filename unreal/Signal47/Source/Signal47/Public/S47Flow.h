@@ -122,6 +122,8 @@ public:
 	virtual void BeginDestroy() override;
 
 private:
+	bool bPendingFreshThumb = false, bReuseThumb = false;
+	FString LastThumb; int32 LastThumbCase = 0; double LastThumbAt = 0;
  FS47Journal Journal;
  bool ValidJournalHint(const FString& Id) const;
  bool ValidJournalEntry(const FString& Id) const;

@@ -17,8 +17,10 @@
 #include "S47Truck.h"
 #include "S47Flow.h"
 #include "S47UI.h"
+#include "S47Keys.h"
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -442,4 +444,144 @@ void Tick(AS47Web* W, float)
  FScreenshotRequest::RequestScreenshot(ShotPath, true, false);
  UE_LOG(LogTemp, Display, TEXT("S47: graphics sample %s"), *Row.TrimEnd());
 }
+}
+
+// Does touching a setting leave the game slower after it is put back? Same place, same walk,
+// one process: measure, change one control, measure, restore, measure.
+// -S47GraphicsTouchContinue presses Continue on the title and measures where the save stands.
+void S47GraphicsTouch::Tick(AS47Web* W)
+{
+ FString Directory;
+ if (!FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouch="), Directory)) return;
+ US47Main* M = US47Main::Get(W);
+ if (!M || !M->World || !M->Player || !M->Story || !M->Flow) return;
+ const bool bContinue = FParse::Param(FCommandLine::Get(), TEXT("S47GraphicsTouchContinue"));
+ static double TitleAt = 0; static bool bPressed = false;
+ const double Now = FPlatformTime::Seconds();
+ if (bContinue && M->Mode == US47Main::EMode::Title)
+ {
+  if (TitleAt == 0) TitleAt = Now;
+  if (!bPressed && Now - TitleAt > 10) { bPressed = true; S47Keys::TestPresses(TEXT("Enter"), .5f); }
+  return;
+ }
+ if (UGameplayStatics::IsGamePaused(W) || (bContinue && (M->Mode != US47Main::EMode::Play || M->Flow->bStarting || M->Flow->bRestoringNow))) return;
+ struct FStep { const TCHAR* Name; int32 FS47GraphicsSettings::*Field; int32 Value, Alternate; };
+ static const FStep Steps[] = {
+  { TEXT("baseline"), nullptr, 0, 0 },
+  { TEXT("shadows-low"), &FS47GraphicsSettings::Shadows, 1, 2 }, { TEXT("restore-after-shadows-low"), nullptr, 0, 0 },
+  { TEXT("shadows-ultra"), &FS47GraphicsSettings::Shadows, 3, 2 }, { TEXT("restore-after-shadows-ultra"), nullptr, 0, 0 },
+  { TEXT("indirect-change"), &FS47GraphicsSettings::IndirectLighting, 2, 1 }, { TEXT("restore-after-indirect"), nullptr, 0, 0 },
+  { TEXT("detail-change"), &FS47GraphicsSettings::Detail, 0, 1 }, { TEXT("restore-after-detail"), nullptr, 0, 0 },
+ };
+ static constexpr double Warmup = 30, Settle = 15, Measure = 20;
+ static TWeakObjectPtr<AS47Web> World; static FS47GraphicsSettings Base;
+ static double BeginAt = 0, LastAt = 0, StepAt = 0; static int32 Step = -1; static bool bDone = false; static double X = 0, Z = 0;
+ static TArray<float> Frames, Game, Draw, Gpu;
+ if (bDone) return;
+ if (World != W)
+ {
+  World = W; BeginAt = LastAt = Now; Step = -1;
+  Base = FS47GraphicsSettings::ForPreset(TEXT("high"));
+  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchScale="), Base.RenderScale);
+  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchShadows="), Base.Shadows);
+  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchIndirect="), Base.IndirectLighting);
+  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchDetail="), Base.Detail);
+  IFileManager::Get().MakeDirectory(*Directory, true);
+  FFileHelper::SaveStringToFile(FString(TEXT("step,phase,samples,mean_ms,p95_ms,p99_ms,max_ms,over50,over100,game_ms,draw_ms,gpu_ms\n")), *(Directory / TEXT("touch.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+  X = 2.8; Z = 16.0; FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchX="), X); FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTouchZ="), Z);
+ }
+ const float FrameMs = float((Now - LastAt) * 1000); LastAt = Now;
+ if (!bContinue) { M->Story->SetPaused(true); M->Story->SetCinematic(true); }
+ // Let the first room finish before moving anywhere, as a player's start does.
+ if (Now - BeginAt < Warmup) return;
+ static bool bEntered = false; static double EnteredAt = 0;
+ if (!bEntered) { bEntered = true; EnteredAt = Now; if (!bContinue) M->World->Enter(TEXT("saro")); W->ApplyGraphicsSettings(Base); }
+ // A walking pace back and forth, so new shadow pages are asked for as they are in play.
+ const double Walk = 3 * FMath::Sin((Now - BeginAt) * .25);
+ M->Player->Place(X + Walk, Z + Walk * .5, .6 * FMath::Sin((Now - BeginAt) * .5)); M->Player->Pitch = -.05;
+ if (Now - EnteredAt < Warmup) return;
+ // -S47GraphicsTouchReplay: Tom's own changes from the 6 November log, at their original spacing.
+ if (FParse::Param(FCommandLine::Get(), TEXT("S47GraphicsTouchReplay")))
+ {
+  struct FChange { double At; int32 Shadows, Indirect; };
+  static const FChange Changes[] = { {30, 1, 2}, {31.4, 0, 2}, {32.2, 3, 2}, {33.9, 2, 2}, {34.9, 1, 2}, {36.1, 2, 2}, {62.8, 1, 2}, {79.4, 2, 2}, {80.6, 3, 2},
+   {114.0, 3, 1}, {119.2, 3, 2}, {124.5, 3, 1}, {128.2, 3, 2} };
+  static constexpr double End = 190;
+  static double ReplayAt = 0, SecondAt = 0; static int32 Next = 0, Count = 0; static float Worst = 0;
+  if (ReplayAt == 0)
+  {
+   ReplayAt = SecondAt = Now;
+   FFileHelper::SaveStringToFile(FString(TEXT("second,shadows,indirect,fps,worst_ms,game_ms,draw_ms,gpu_ms\n")), *(Directory / TEXT("replay.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+  }
+  const double Elapsed = Now - ReplayAt;
+  ++Count; Worst = FMath::Max(Worst, FrameMs);
+  if (Now - SecondAt >= 1)
+  {
+   const FS47GraphicsSettings& G = W->GetGraphicsSettings();
+   const FString Row = FString::Printf(TEXT("%.1f,%d,%d,%.1f,%.1f,%.2f,%.2f,%.2f\n"), Elapsed, G.Shadows, G.IndirectLighting, Count / (Now - SecondAt), Worst, FPlatformTime::ToMilliseconds(GGameThreadTime), FPlatformTime::ToMilliseconds(GRenderThreadTime), FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
+   FFileHelper::SaveStringToFile(Row, *(Directory / TEXT("replay.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append);
+   SecondAt = Now; Count = 0; Worst = 0;
+  }
+  if (Next < int32(UE_ARRAY_COUNT(Changes)) && Elapsed >= Changes[Next].At)
+  {
+   FS47GraphicsSettings G = Base; G.Shadows = Changes[Next].Shadows; G.IndirectLighting = Changes[Next].Indirect;
+   W->ApplyGraphicsSettings(G); ++Next;
+  }
+  if (Elapsed >= End) { bDone = true; UE_LOG(LogTemp, Display, TEXT("S47: graphics touch complete")); FPlatformMisc::RequestExit(false, TEXT("S47GraphicsTouch")); }
+  return;
+ }
+ auto Flush = [&](const TCHAR* Phase)
+ {
+  if (Frames.IsEmpty()) return;
+  TArray<float> Ordered = Frames; Ordered.Sort();
+  auto Pct = [&](double K) { return Ordered[FMath::Clamp(FMath::CeilToInt(Ordered.Num() * K) - 1, 0, Ordered.Num() - 1)]; };
+  auto Mean = [](const TArray<float>& A) { double N = 0; for (float V : A) N += V; return N / FMath::Max(1, A.Num()); };
+  int32 Over50 = 0, Over100 = 0; for (float V : Frames) { Over50 += V > 50; Over100 += V > 100; }
+  const FString Row = FString::Printf(TEXT("%s,%s,%d,%.2f,%.2f,%.2f,%.2f,%d,%d,%.2f,%.2f,%.2f\n"), Steps[Step].Name, Phase, Frames.Num(), Mean(Frames), Pct(.95), Pct(.99), Ordered.Last(), Over50, Over100, Mean(Game), Mean(Draw), Mean(Gpu));
+  FFileHelper::SaveStringToFile(Row, *(Directory / TEXT("touch.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append);
+  UE_LOG(LogTemp, Display, TEXT("S47: graphics touch %s"), *Row.TrimEnd());
+  Frames.Reset(); Game.Reset(); Draw.Reset(); Gpu.Reset();
+ };
+ const bool bStarted = Step >= 0;
+ const double Since = bStarted ? Now - StepAt : Settle + Measure;
+ if (!bStarted || Since >= Settle + Measure)
+ {
+  if (bStarted) Flush(TEXT("steady"));
+  if (++Step >= int32(UE_ARRAY_COUNT(Steps))) { bDone = true; UE_LOG(LogTemp, Display, TEXT("S47: graphics touch complete")); FPlatformMisc::RequestExit(false, TEXT("S47GraphicsTouch")); return; }
+  FS47GraphicsSettings G = Base; if (Steps[Step].Field) G.*Steps[Step].Field = G.*Steps[Step].Field == Steps[Step].Value ? Steps[Step].Alternate : Steps[Step].Value;
+  W->ApplyGraphicsSettings(G);
+  StepAt = Now;
+  return;
+ }
+ static int32 FlushedStep = -1;
+ if (Since >= Settle && FlushedStep != Step) { Flush(TEXT("settle")); FlushedStep = Step; }
+ Frames.Add(FrameMs); Game.Add(FPlatformTime::ToMilliseconds(GGameThreadTime));
+ Draw.Add(FPlatformTime::ToMilliseconds(GRenderThreadTime)); Gpu.Add(FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
+}
+
+void S47SlowFrames::Tick(AS47Web* W)
+{
+ static constexpr double SlowFps = 10, RepeatAfter = 30;
+ static constexpr int32 SlowSeconds = 3;
+ static double SecondAt = 0, LastAt = 0, LoggedAt = -RepeatAfter; static int32 Count = 0, Slow = 0; static float Worst = 0;
+ const double Now = FPlatformTime::Seconds();
+ if (SecondAt == 0) SecondAt = LastAt = Now;
+ Worst = FMath::Max(Worst, float((Now - LastAt) * 1000)); LastAt = Now; ++Count;
+ if (Now - SecondAt < 1) return;
+ const double Fps = Count / (Now - SecondAt);
+ const float WorstMs = Worst;
+ SecondAt = Now; Count = 0; Worst = 0;
+ US47Main* M = US47Main::Get(W);
+ // Loading and starting a game are allowed to be slow.
+ const bool bPlaying = M && M->Flow && M->Mode == US47Main::EMode::Play && !M->Flow->bStarting && !M->Flow->bRestoringNow;
+ Slow = bPlaying && Fps < SlowFps ? Slow + 1 : 0;
+ if (Slow < SlowSeconds || Now - LoggedAt < RepeatAfter) return;
+ LoggedAt = Now;
+ const FS47GraphicsSettings& G = W->GetGraphicsSettings();
+ FTextureMemoryStats Memory; if (GDynamicRHI) RHIGetTextureMemoryStats(Memory);
+ const FPlatformMemoryStats Ram = FPlatformMemory::GetStats();
+ UE_LOG(LogTemp, Warning, TEXT("S47: slow frames fps=%.1f worst=%.0fms game=%.1f draw=%.1f gpu=%.1f seconds=%d foreground=%d paused=%d scale=%d shadows=%d indirect=%d reflections=%d detail=%d clouds=%d gpuStreaming=%lldMiB gpuTotal=%lldMiB ramFree=%lluMiB"),
+  Fps, WorstMs, FPlatformTime::ToMilliseconds(GGameThreadTime), FPlatformTime::ToMilliseconds(GRenderThreadTime), FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()), Slow,
+  FPlatformApplicationMisc::IsThisApplicationForeground() ? 1 : 0, UGameplayStatics::IsGamePaused(W) ? 1 : 0, G.RenderScale, G.Shadows, G.IndirectLighting, G.Reflections, G.Detail, G.Clouds,
+  static_cast<long long>(Memory.StreamingMemorySize / (1024 * 1024)), static_cast<long long>(Memory.DedicatedVideoMemory / (1024 * 1024)), static_cast<unsigned long long>(Ram.AvailablePhysical / (1024 * 1024)));
 }

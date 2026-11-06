@@ -4,6 +4,15 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Toms gjennomspilling, 6. november
+
+Meldt av Tom underveis i spilling. Punktene er åpne; registreringen er ikke implementering.
+
+- [ ] **MENU-CURSOR-20261106-01: musepekeren hopper mot høyre ved klikk i menyer, også binder.** Rettet i kode: panelbytte går ikke lenger via spillmodus og flytter ikke pekeren på Wayland. Bygget og selvtestene består; ekte mus må kontrolleres av Tom i installert spill.
+- [ ] **PHOTO-GALLERY-20261106-02: se og slette egne foto.** Skrevet: notatboka har egen Album-fane, og i Freeform kan ett åpent foto kastes med X to ganger. Rammen forblir brukt, og valget overlever lagring (selvtest). Ansiktsbildet, bilder med spillmerking eller avvik og bilder som saker, kontroller, feltnotater eller en pågående hendelse peker på kan ikke kastes; det er bevisst forsiktig, så noen vanlige bilder blir stående. Story har ingen kasting. Vinduet er ikke prøvd med klikk eller sett på skjerm ennå; det må prøves i installert spill.
+- [ ] **GRAPHICS-STUTTER-20261106-04: lavere grafikkvalg hakker mer enn høyere.** Tom: Shadows på LOW eller HIGH hakker mer enn ULTRA, og valg ved siden av LUMEN HIGH ser også ut til å gi hakking. Målt 6. november i editor, 2560×1440, med kopi av Toms lagring og hans innstillingsbytter avspilt i SARO: motorens skyggepool var 512 sider på LOW, 2048 på HIGH og 4096 på ULTRA, og ble bygget om ved hvert bytte. LOW og HIGH deler nå 2048 sider. Vanlig autolagring gjenbruker et nylig bilde i opptil 120 sekunder. Før/etter: poolombygginger 8 til 3, sekunder med bilde over 35 ms 18 til 13, og etter avspillingens siste bytter 2 til 0, med 9 autolagringer i begge. Snitt 54,8 til 55,0 FPS. Selve byttene gir fortsatt enkeltbilder på 50-100 ms, størst ved Indirect-bytte på ULTRA. Ny logglinje `S47: slow frames` fanger vedvarende lysbildefremvisning. Toms opplevelse i installert spill gjenstår.
+- [ ] **ROOM-DECOR-20261106-03: gjøre veggene og rommene personlige.** Tom: veggene er anemiske og kjedelige. Forslag: klistre opp egne foto og plakater man kjøper eller finner, og dekorere med objekter man finner eller kjøper. Avklar hvilke rom, hvordan plassering virker og lagres, og hvor plakater og objekter kommer fra. Bygger på PHOTO-GALLERY-20261106-02.
+
 ## Kosmisk ambient, bestilt 5. november
 
 - [ ] **COSMIC-AMBIENT-01:** ekstra adaptivt musikklag med cosmic ambient og lokale romreferanser. Prototype og 21 selvstendige DSP-sjekker finnes i [lytteverktøyet](../../unreal/Signal47/Tools/cosmic-ambient/README.md). Unreal-editorbygg og faktisk 72-sekunders lydgraf med tre lokale referanser består; 56 musikk-/grafkontroller og 21 DSP-sjekker består. Samlet menneskelig lytting, endelig balanse og lokal installasjon gjenstår.
