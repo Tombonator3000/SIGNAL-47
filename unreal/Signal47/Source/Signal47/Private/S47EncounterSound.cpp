@@ -136,6 +136,20 @@ bool FS47EncounterSound::Message(US47Audio* Audio)
  return true;
 }
 
+bool FS47EncounterSound::Talk(US47Audio* Audio,const FVector& At)
+{
+ if(!Bind(Audio)||bHeld||At.ContainsNaN())return false;
+ if(!MessageSound)MessageSound=MessageBuffer();
+ FS47AudioContext::FBatch Batch(*Context);
+ auto Src=Context->CreateBufferSource();Src->Buffer=MessageSound;
+ Src->PlaybackRate.SetValue(FMath::FRandRange(.55f,.72f));
+ auto Level=Context->CreateGain();Level->Gain.SetValue(.7);
+ auto Pan=Context->CreatePanner();Pan->RefDistance=2.;Pan->RolloffFactor=.6;Pan->MaxDistance=30.;Pan->SetPosition(At.X,At.Y,At.Z);
+ Src->Connect(Level);Level->Connect(Pan);Pan->Connect(Owner->SfxBus);Src->Start(Context->CurrentTime());
+ TalkSource=Src;
+ return true;
+}
+
 void FS47EncounterSound::FadeVoices(double Secs)
 {
  if (!Context) return;

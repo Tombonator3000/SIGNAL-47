@@ -1,4 +1,7 @@
 #include "S47FarmSite.h"
+#include "S47Taken.h"
+#include "S47PaleBody.h"
+#include "S47Three.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 #include "S47Story.h"
@@ -126,6 +129,8 @@ void FS47FarmSite::Stop()
  // Not while the engine or the owner is going away: the scene the body hangs in may already be gone.
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Web.Get());
  if(Visit>=2&&Visit<=3&&bLive&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
+ if(bLive)HideBody();
+ VisitBody.Reset();bBodyOut=false;
  Visit=4;bActive=false;Life.Reset();Show(false);
 }
 
@@ -180,60 +185,150 @@ void FS47FarmSite::Step(double Dt)
  M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.3f,.At=Middle+FVector(Side,1,-Side)});
 }
 
+double FS47FarmSite::VisitBodyDistance() const
+{
+ if(!M||!M->Player)return -1;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ if(bBodyOut)return FVector::Dist(BodyAt,Feet);
+ if(M->Night&&M->Night->Glimpses){const auto V=M->Night->Glimpses->Individuals();if(!V.IsEmpty())return FVector::Dist(V[0].Pos,Feet);}
+ return -1;
+}
+
+bool FS47FarmSite::PutBody(const FVector& Near,double Dist)
+{
+ if(!M||!M->Web||!M->Player)return false;
+ if(!VisitBody)VisitBody=MakeShared<FS47PaleBody>();
+ if(VisitWho==2)VisitBody->Style=ES47PaleStyle::Tall;
+ if(!VisitBody->bBuilt&&!VisitBody->Build(M->Web.Get(),TEXT("#root"),TEXT("SiteVisit")))return false;
+ if(!VisitBody->Creature.Ready())return false;
+ // Out of view if it can be, and with the way clear to the player.
+ const FVector Eye=Near+FVector(0,1.6,0);
+ for(const double Turn:{double(PI),2.4,-2.4,1.7,-1.7,1.,-1.})
+ {
+  const double Yaw=M->Player->Yaw+Turn;
+  const FVector At=Near+FVector(-FMath::Sin(Yaw)*Dist,0,-FMath::Cos(Yaw)*Dist);
+  FHitResult Block;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodySight),true);
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,S47Three::ToUE(Eye),S47Three::ToUE(At+FVector(0,.8,0)),ECC_Visibility,Q))continue;
+  BodyAt=At;BodyYaw=FMath::Atan2(Near.Z-At.Z,Near.X-At.X);BodyClock=0;bBodyOut=true;return true;
+ }
+ return false;
+}
+
+void FS47FarmSite::StepBody(double Dt,double Speed)
+{
+ if(!bBodyOut||!VisitBody||!M||!M->Player||!M->Web)return;
+ BodyClock+=Dt;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ const double Face=FMath::Atan2(Feet.Z-BodyAt.Z,Feet.X-BodyAt.X);
+ BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5);
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodyWay),true);
+ for(const auto& Part:VisitBody->All)if(auto* C=Part.Get())Q.AddIgnoredComponent(C);
+ // Straight for the player, a little round what is in the way. Walls hold it, and doors give time.
+ if(Speed>0)for(const double Off:{0.,.8,-.8,1.5,-1.5})
+ {
+  const double Y=BodyYaw+Off;const FVector Dir(FMath::Cos(Y),0,FMath::Sin(Y));
+  FHitResult Hit;
+  const FVector A=BodyAt+FVector(0,.55,0);
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(A),S47Three::ToUE(A+Dir*.6),ECC_Visibility,Q))continue;
+  BodyAt+=Dir*Speed*Dt;break;
+ }
+ FHitResult Floor;
+ if(M->Web->GetWorld()->LineTraceSingleByChannel(Floor,S47Three::ToUE(BodyAt+FVector(0,1.5,0)),S47Three::ToUE(BodyAt-FVector(0,3,0)),ECC_Visibility,Q))
+  BodyAt.Y=FMath::FInterpTo(BodyAt.Y,S47Three::ToThree(Floor.ImpactPoint).Y,Dt,12.);
+ if(VisitWho==1)VisitBody->ApplyCrab(true,BodyAt,BodyYaw,Face,BodyClock,BodyClock/1.6,Speed>2.);
+ else VisitBody->Apply(true,BodyAt,BodyYaw,Face,Speed>0?.85:0.,BodyClock*3,BodyClock,FS47PaleBody::EPose::Walk);
+ bVisitSeen|=VisitBody->Rendered();
+}
+
+void FS47FarmSite::HideBody()
+{
+ if(VisitBody&&VisitBody->bBuilt&&bBodyOut)
+ {
+  if(VisitWho==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
+  else VisitBody->Apply(false,BodyAt,BodyYaw,BodyYaw,0,0,BodyClock,FS47PaleBody::EPose::Walk);
+ }
+ bBodyOut=false;
+}
+
 void FS47FarmSite::StepVisit(double Dt,double Dist)
 {
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G||!M->World)return;
+ auto Tk=M->Freeform->Taken;if(!Tk)return;
  const bool bDriving=M->World->bDriving;
  if(Visit==0)
  {
   // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
   const bool bDark=M->Life&&M->Life->Sky.IsValid()&&M->Life->Sky->Daylight()<.1;
   const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty();
-  VisitDwell=Dist<38&&!bDriving&&bDark&&bQuiet&&!M->ModalOpen()?VisitDwell+Dt:0;
+  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
-  Visit=1;VisitAge=0;bVisitSeen=false;UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s"),*Place);
+  const float Roll=FMath::FRand();
+  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Roll<.6f?0:Roll<.85f?1:2;
+  UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
  }
  if(Visit<1||Visit>3)return;
  if(M->ModalOpen())return;
+ const ES47Taker Who=VisitWho==1?ES47Taker::Crab:VisitWho==2?ES47Taker::Tall:ES47Taker::Roswell;
+ // Taken: all else waits, and when they are back, it is over.
+ if(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away){bVisitTaken=true;HideBody();if(!G->Individuals().IsEmpty())G->DevClear();return;}
+ if(bVisitTaken){EndVisit(true);return;}
  const bool bFirst=VisitAge<=0;VisitAge+=Dt;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  if(Visit==1)
  {
   // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.
-  if(bFirst)M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
+  if(bFirst)
+  {
+   M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
+   // Under a roof it starts overhead, whoever it is. The tall one's light is how it comes at all.
+   if(VisitWho==2||Tk->Indoors())Tk->Begin(Who,Title);
+  }
   if(VisitAge<6)return;
-  if(bDriving||Dist>70){EndVisit(false);return;}
-  if(FMath::Fmod(VisitAge,1.)>Dt)return; // tried about once a second
-  if(G->ControlledSpawn(1,FS47RoswellBrain::EMode::Curious,false)>0){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: a body came out of cover"));}
-  else if(VisitAge>25){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no cover to come from here"));EndVisit(false);}
+  if(bDriving||Dist>80){EndVisit(false);return;}
+  if(VisitWho==0)
+  {
+   if(FMath::Fmod(VisitAge,1.)>Dt)return; // tried about once a second
+   if(G->ControlledSpawn(1,FS47RoswellBrain::EMode::Curious,false)>0){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: a body came out of cover"));}
+   else if(VisitAge>25){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no cover to come from here"));EndVisit(false);}
+   return;
+  }
+  // The tall one stands off and comes slowly; the crab comes from further, along the ground.
+  if(FMath::Fmod(VisitAge,1.)>Dt)return;
+  if(PutBody(Feet,VisitWho==1?20.:11.)){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: kind %d is here"),VisitWho);}
+  else if(VisitAge>25){EndVisit(false);}
   return;
  }
- if(Visit==2&&VisitAge>22){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
- for(const auto& I:G->Individuals())
+ if(VisitWho==0)
  {
-  bVisitSeen|=I.bRendered;
-  if(I.State==FS47RoswellBrain::EState::Contact&&!bDriving){EndVisit(true);return;}
- }
- // Away from the place, it lets go.
- if(bDriving||Dist>70||VisitAge>120)EndVisit(false);
-}
-
-void FS47FarmSite::EndVisit(bool bContact)
-{
- const bool bWas=Visit>=2;
- Visit=4;VisitDwell=0;
- if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
- if(!M||!M->Freeform)return;
- UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, contact %d, seen %d"),*Place,bContact,bVisitSeen);
- if(bVisitSeen&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
-  M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. A small figure came out of cover and kept coming toward me%s. It says what I saw, not what it was."),*Title,bContact?TEXT(" until it reached me. I lost about fifteen minutes"):TEXT(" until I left")));
- if(bContact)
- {
-  // Left where it happened, with the truck and the way home: nothing else is taken.
-  M->Freeform->SpendTime(15*60.);
-  if(M->UI){M->UI->Fade(true,TEXT("CONTACT LOST"));
-   if(M->Story){TWeakObjectPtr<US47Main> Weak=M;M->Story->After(1.2,[Weak]{if(Weak.IsValid()&&Weak->UI){Weak->UI->Fade(false);Weak->UI->Toast(TEXT("You are on the ground where you stood. Your watch has moved on about fifteen minutes."),6);}},TEXT("site-visit"));}
+  if(Visit==2&&VisitAge>22){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
+  for(const auto& I:G->Individuals())
+  {
+   bVisitSeen|=I.bRendered;
+   if(I.State==FS47RoswellBrain::EState::Contact&&!bDriving){G->DevClear();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
   }
  }
+ else
+ {
+  const double To=FVector::Dist(BodyAt,Feet);
+  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):.75;
+  StepBody(Dt,Speed);
+  if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
+ }
+ // Away from the place, it lets go.
+ if(bDriving||Dist>80||VisitAge>120)EndVisit(false);
+}
+
+void FS47FarmSite::EndVisit(bool bTaken)
+{
+ const bool bWas=Visit>=2;
+ Visit=4;VisitDwell=0;bVisitTaken=false;
+ if(M&&M->Freeform&&M->Freeform->Taken&&!bTaken)M->Freeform->Taken->GiveUp();
+ HideBody();
+ if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
+ if(!M||!M->Freeform)return;
+ UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, taken %d, seen %d"),*Place,bTaken,bVisitSeen);
+ if(bVisitSeen&&!bTaken&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. Something came toward me until I left. It says what I saw, not what it was."),*Title));
  M->RequestAutosave();
 }
 

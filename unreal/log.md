@@ -2042,3 +2042,7 @@ To nye utviklerhendelser lar Tom vurdere bevegelsene. Nærbilde av dagens Tall O
 ## 6. november 2026 kl.19:30, besøk på lyssteder
 
 `FS47FarmSite` har fått et besøk med lydvarsel, Roswell ut av dekning, lusking, jakt og mulighet til å dra. Roswell-hjernen brukes uendret, med åpen mark rundt spilleren som kandidatpunkter. Første prøve ga falsk bestått fordi andre besøk aldri fikk frem noen kropp; punktene lå for høyt over bakken, og prøven krever nå kropp. Byprøven ved kinoen og gårdsprøven består, selvtest 2517 og regresjon 251. Ikke prøvd: lagring midt i et besøk og naturlig oppstart uten prøvekrok.
+
+## 6. november 2026 kl.20:15, ekte bortføring
+
+Tom ba om ekte bortføring med ulik grad per alien, og skrekk inne i bygg. `FS47Taken` gir skritt og snakking, flomlys gjennom vinduer, løft og tapt tid. Terms per type ligger i kode og selvtest. Prøver: alle tre typer, og veien ut av lyset. Selvtest 2520 og regresjon 251 består. Skyggen i flomlyset er grov, og flekken på veggen er fortsatt nesten hvit.

@@ -23,6 +23,8 @@ public:
  // Comes over the carried set, if there is one. False: the player has no walkie to hear it on.
  bool Message(const FString& Text);
  void TestOwn() { bOwned=true; }
+ // Something said, out of the air at this place, with no radio involved.
+ void Talk(const FVector& At);
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };
  static double Proximity(const FVector& Eye,const FPresence& In);
  // Music reads only a nearby visible body, never a hidden encounter schedule.

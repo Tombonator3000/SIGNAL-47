@@ -107,6 +107,8 @@ bool FS47FieldRadio::Message(const FString& Text)
  return true;
 }
 
+void FS47FieldRadio::Talk(const FVector& At){if(M&&M->Audio)Sound.Talk(M->Audio,At);}
+
 void FS47FieldRadio::Take()
 {
  if(bOwned || !bAvailable || bUnsupported || !Root || !Root.Shown() || !M || !M->Player) return;

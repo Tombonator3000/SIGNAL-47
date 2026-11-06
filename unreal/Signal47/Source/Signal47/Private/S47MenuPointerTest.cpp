@@ -1,5 +1,6 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
@@ -95,7 +96,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  double VisitClock=0,VisitFrom=0;FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  double VisitClock=0,VisitFrom=0;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -215,6 +216,19 @@ namespace
      M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
      const FVector C=M->Freeform->FarmSite->Centre();M->Player->Place(C.X+8,C.Z+8,0);
      VisitClock=M->Freeform->Clock();M->Freeform->FarmSite->TestVisit();Stage=140;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerTaken")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the taken test needs the night"));
+     FParse::Value(FCommandLine::Get(),TEXT("S47TakenKind="),TakenKind);TakenEscape=FParse::Param(FCommandLine::Get(),TEXT("S47TakenEscape"));
+     M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
+     // Inside the old house for the light through its windows, out on the pasture for the crab.
+     const FVector C=M->Freeform->FarmSite->Centre();const FVector In=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);
+     if(TakenKind==1)M->Player->Place(C.X+8,C.Z+8,0);else M->Player->Place(In.X,In.Z,0);
+     M->Player->Yaw=0;M->Player->Pitch=0;
+     VisitClock=M->Freeform->Clock();VisitFrom=Elapsed;TakenPos=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);
+     M->Freeform->FarmSite->TestVisit(TakenKind);Stage=150;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
     {
@@ -365,6 +379,86 @@ namespace
       Look(60);Stage=110;StageAt=Elapsed;return true;
     }
     ++Stage;StageAt=Elapsed;return true;
+   }
+   // Left where they stand: each kind must take them, and leave them where and when its terms say.
+   if(Stage>=150&&Stage<=154)
+   {
+    StageAt=Elapsed;
+    auto& Tk=*M->Freeform->Taken;auto& Site=*M->Freeform->FarmSite;
+    if(Elapsed-VisitFrom>170)return Fail(TEXT("the taker must take a player who stays"));
+    // The way out: stand out of the light, and it passes with nothing lost.
+    if(TakenEscape)
+    {
+     if(Tk.Stage()==FS47Taken::EStage::Flood&&!TakenShot[1])
+     {
+      TakenShot[1]=true;const FVector Aside=S47FarmHouse::Point(3,6.5)+FVector(-24,0,300);M->Player->Place(Aside.X,Aside.Z,0);
+      UE_LOG(LogTemp,Display,TEXT("S47: taken test: out of the light, into the next room"));return true;
+     }
+     if(TakenShot[1]&&!Tk.Busy()&&Site.VisitStage()!=4)
+     {
+      // The body is still about; this test is the light. Done with the visit.
+      if(M->Freeform->Clock()>VisitClock+10*60)return Fail(TEXT("getting out of the light must cost no time"));
+      UE_LOG(LogTemp,Display,TEXT("S47: taken PASS: out of the light, %.1f minutes passed"),(M->Freeform->Clock()-VisitClock)/60.);
+      FPlatformMisc::RequestExitWithStatus(false,0);return false;
+     }
+     return true;
+    }
+    {static double NextLog=0;if(Elapsed>=NextLog){NextLog=Elapsed+5;UE_LOG(LogTemp,Display,TEXT("S47: taken watch, stage %d, visit %d, in light %.1f, body %.1f m, indoors %d"),int32(Tk.Stage()),Site.VisitStage(),Tk.LightOn(),Site.VisitBodyDistance(),Tk.Indoors());}}
+    if(Stage==150)
+    {
+     if(Tk.Stage()==FS47Taken::EStage::Dread&&!TakenShot[0]&&Elapsed-VisitFrom>3){TakenShot[0]=true;Shot(TEXT("taken-dread.png"));return true;}
+     if(Tk.Stage()==FS47Taken::EStage::Flood&&!TakenShot[1])
+     {
+      TakenShot[1]=true;TakenAt=Elapsed;
+     }
+     if(TakenShot[1]&&!TakenShot[2]&&Tk.Stage()==FS47Taken::EStage::Flood&&Elapsed-TakenAt>1.2)
+     {
+      // Look at where it comes in, then round at the room it lights.
+      const FVector D=Tk.LightFrom()-FVector(M->Player->Pos.X,M->Player->FloorY+1.6,M->Player->Pos.Z);
+      M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+      TakenShot[2]=true;TakenAt=Elapsed;return true;
+     }
+     if(TakenShot[2]&&!TakenShot[3]&&Elapsed-TakenAt>.6){TakenShot[3]=true;Shot(TEXT("taken-flood.png"));TakenAt=Elapsed;M->Player->Yaw+=PI;M->Player->Pitch=-.25;return true;}
+     if(TakenKind==1&&!TakenShot[3]&&Site.VisitBodyDistance()>0&&Site.VisitBodyDistance()<7)
+     {
+      const FVector Fe(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);(void)Fe;
+      TakenShot[3]=true;Shot(TEXT("taken-near.png"));return true;
+     }
+     if(TakenShot[3]&&!TakenRoom&&Elapsed-TakenAt>.6&&Tk.Stage()==FS47Taken::EStage::Flood){TakenRoom=true;Shot(TEXT("taken-room.png"));return true;}
+     if(Tk.Stage()==FS47Taken::EStage::Lift){TakenAt=Elapsed;Stage=151;return true;}
+     if(Tk.Stage()==FS47Taken::EStage::Away){Stage=152;return true;}
+     return true;
+    }
+    if(Stage==151)
+    {
+     if(Elapsed-TakenAt>3.5&&!TakenShot[4]){TakenShot[4]=true;Shot(TEXT("taken-lift.png"));}
+     if(Tk.Stage()==FS47Taken::EStage::Away)Stage=152;
+     return true;
+    }
+    if(Stage==152)
+    {
+     if(Tk.Busy())return true;
+     const FS47TakenTerms& T=FS47Taken::Terms(TakenKind==1?ES47Taker::Crab:TakenKind==2?ES47Taker::Tall:ES47Taker::Roswell);
+     const double Gone=(M->Freeform->Clock()-VisitClock)/60.;
+     const double Moved=FVector(M->Player->Pos.X-TakenPos.X,0,M->Player->Pos.Z-TakenPos.Z).Size();
+     UE_LOG(LogTemp,Display,TEXT("S47: taken: %.0f minutes gone, moved %.0f m, area %s. %s"),Gone,Moved,*M->Web->Area(),*Tk.LastNote());
+     if(Gone<T.MinMinutes-3||Gone>T.MaxMinutes+12)return Fail(TEXT("the time gone must be within this taker's terms"));
+     if(T.bHome&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(9.2,1.2))>2)return Fail(TEXT("the tall one must leave them at SARO"));
+     if(T.WakeMax>0&&Moved<T.WakeMin-1)return Fail(TEXT("the crab must leave them away from the place"));
+     if(!T.bHome&&T.WakeMax==0&&Moved>4)return Fail(TEXT("the small ones must leave them where they stood"));
+     if(M->Player->CameraOverride&&Tk.Busy())return Fail(TEXT("the camera must be given back"));
+     TakenAt=Elapsed;Stage=153;return true;
+    }
+    if(Stage==153)
+    {
+     if(Elapsed-TakenAt<1.5)return true;
+     const double C0=M->Freeform->Clock();(void)C0;
+     Shot(TEXT("taken-wake.png"));TakenAt=Elapsed;Stage=154;return true;
+    }
+    if(Elapsed-TakenAt<1)return true;
+    if(Site.VisitStage()!=4)return Fail(TEXT("the visit must be over after waking"));
+    UE_LOG(LogTemp,Display,TEXT("S47: taken PASS kind %d"),TakenKind);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==139)
    {

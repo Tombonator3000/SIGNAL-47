@@ -1,4 +1,6 @@
 #include "S47DevEvents.h"
+#include "S47Freeform.h"
+#include "S47FarmSite.h"
 #include "S47HighwayUfo.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -46,6 +48,18 @@ void FS47DevEvents::AddBuiltIn()
  Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
  Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on today's body until the new Pale; 30 seconds"), [this, Say] { SpawnGait(false); Say(TEXT("tall one")); });
  Add(TEXT("Aliens"), TEXT("Crab: folds down and crawls up"), TEXT("then sideways round you and away; 30 seconds"), [this, Say] { SpawnGait(true); Say(TEXT("crab")); });
+ for(int32 Kind=0;Kind<3;++Kind)
+ {
+  static const TCHAR* const Names[3]={TEXT("Visit and taken: small Roswell"),TEXT("Visit and taken: crab"),TEXT("Visit and taken: tall one")};
+  static const TCHAR* const Notes[3]={TEXT("roof steps indoors, flood; about an hour gone, where you stood"),TEXT("along the ground; hours gone, far from here"),TEXT("silhouette in the light; most of a night gone, at SARO")};
+  Add(TEXT("Aliens"),Names[Kind],Notes[Kind],[this,Say,Kind]
+  {
+   if(!M||!M->Freeform||!M->Freeform->FarmSite||!M->Player||!M->Web)return;
+   auto& Site=*M->Freeform->FarmSite;
+   Site.Arm(M->Freeform->Clock(),TEXT("dev"),TEXT("here"),M->Web->Area(),FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z));
+   Site.TestVisit(Kind);Say(TEXT("visit"));
+  });
+ }
  Add(TEXT("Roswell aliens"),TEXT("Number: 1"),TEXT("cycle 1, 2, 3 or 6 individuals"),[this]
  {
   RoswellNumber=RoswellNumber==1?2:RoswellNumber==2?3:RoswellNumber==3?6:1;
