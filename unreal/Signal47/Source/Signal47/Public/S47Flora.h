@@ -15,7 +15,8 @@ class UMaterialInstanceDynamic;
 // instanced mesh per kind: the pair's second kind on a mesh of its own, export.js pairGeo); the
 // distance fade and the sway are the flora materials' (import_web.py FLORA_WPO). Each outdoor area
 // has one patch (S47GroundCover.h says where it grows and how thick).
-enum class ES47FloraKind : uint8 { Grass, Sage, Creosote, Stalks, Succulent, Stones, Stain };
+// Rock: Freeform only, a real stone mesh of its own (S47Flora.cpp EnsureRocks); no copy of it in the web version's rules.
+enum class ES47FloraKind : uint8 { Grass, Sage, Creosote, Stalks, Succulent, Stones, Stain, Rock };
 
 struct FS47FloraRect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; };
 
@@ -95,6 +96,9 @@ private:
 	// where the last fill was (patch terms) and whether the near plants cast shadows (not in Low)
 	double FillX = 0, FillZ = 0;
 	bool bShadowNear = false;
+	// Freeform's rocks: whether their mesh was looked for, its scale for a metre across and where its foot is (metres per unit of scale)
+	bool bRockTried = false;
+	double RockUnit = 0, RockFoot = 0;
 
 	int64 Key(int32 I, int32 J) const { return int64(I + 40000) * 80000 + int64(J + 40000); }
 	double NoiseAt(double X, double Z, int32 Ki, double Terrain = 1) const;
@@ -113,4 +117,5 @@ private:
 	TArray<FLayer> Layers;
 	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
 	void DropShadows();
+	void EnsureRocks();
 };

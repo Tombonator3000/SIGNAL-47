@@ -2061,3 +2061,6 @@ Roswell-øynene har små sprang og blink innenfor 12 m. Én ku står stille og s
 ## 6. november 2026 kl.23:50, natt, gårdsbyggene
 
 Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skrevet i egen worktree (`S47FarmBuildings`): låve, hus og to skjul erstatter boksene, ekte hindringer med åpen låvedør og flatt gulv, plantefrie tomter, gløden fra østvinduet flyttet til huset (den sto igjen 310 m øst i Freeform). Prøve: `-S47MenuPointerBuildings`. Ikke kompilert, importert eller kjørt ennå; koordinatoren kjører det.
+## 7. november 2026 kl.00:45, natur i Freeform, runde 2
+
+Bare `S47Flora`, bak `bNatural`. Kreosot står i tette bestand med nesten bare felt mellom, gress og sage i egne felt, høyst 2 m busk. Fargene var nesten svarte og oransje fordi de multipliseres med atlaset, og er rettet. Frie flekker er borte; hver busk har en myk mørk fot og strø. Småstein i klynger, og noen få Sandstone_A på 0,3 til 0,6 m. Tallene er prøvd i Python-kopi av støyen. Ikke kompilert eller sett i spillet; koordinatoren bygger og tar bilder.
