@@ -6,6 +6,8 @@
 #include "S47Night.h"
 #include "S47Panels.h"
 #include "S47Kit.h"
+#include "S47FreeformDirector.h"
+#include "S47FieldCamera.h"
 #include "S47RoomDecor.h"
 #include "S47Walker.h"
 #include "S47UI.h"
@@ -156,8 +158,35 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFarm")))
+    {
+     M->Flow->bDevRun=true;
+     if(!M->Freeform->TestAdvance(13.*3600.)||!M->Freeform->Director->Force(TEXT("farm_lights")))return Fail(TEXT("farm lights must start at night"));
+     Stage=50;StageAt=Elapsed;return true;
+    }
     if(bAlbum){GiveAlbum(M);M->UI->NotebookAt(TEXT("photos"));M->Flow->OpenNotebook();Stage=10;StageAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
+    FPlatformMisc::RequestExitWithStatus(false,0);
+    return false;
+   }
+   if(Stage==50)
+   {
+    if(Elapsed-StageAt<15)return true; // Faded in.
+    const FVector Target=M->Freeform->Director->EventAnchor();const FVector2D At(0,30);const FVector D=Target-FVector(At.X,1.7,At.Y);
+    M->Player->Place(At.X,At.Y,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+    Stage=51;StageAt=Elapsed;return true;
+   }
+   if(Stage==51)
+   {
+    if(!M->Freeform->Director->PhysicalObjectPresented())return Fail(TEXT("the farm lights must be presented from the yard"));
+    Shot(TEXT("farm-lights.png"));Stage=52;StageAt=Elapsed;return true;
+   }
+   if(Stage==52)
+   {
+    M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);M->UI->Viewfinder(false);
+    const auto& Claims=M->Freeform->Director->PhotoClaims();
+    if(Photo.bUnavailable||Claims.Num()!=1||!Claims[0].Id.StartsWith(TEXT("farm_lights.")))return Fail(TEXT("a photograph from the yard must qualify the farm lights"));
+    UE_LOG(LogTemp,Display,TEXT("S47: farm lights PASS: presented and photographed from the yard, quality %.3f"),Claims[0].Quality);
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }

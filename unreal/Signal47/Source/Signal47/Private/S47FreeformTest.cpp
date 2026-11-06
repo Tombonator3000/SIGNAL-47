@@ -1761,7 +1761,7 @@ void FS47FreeformTest::Step(double Dt)
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
   const auto Events=FS47FreeformDirector::EventIds();
-  if(!Check(Events.Num()==20&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes seventeen authored events, the room-light incident and both physical service-site encounters")))return;
+  if(!Check(Events.Num()==21&&Events.Contains(TEXT("farm_lights"))&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes eighteen authored events, the room-light incident and both physical service-site encounters")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)
@@ -1793,7 +1793,7 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(!Check(!F.Director->ActiveEvent().IsEmpty(),TEXT("event owns a persisted running state")))return;
   const FString Id=F.Director->ActiveEvent();
-  if(Id==TEXT("empty_car")||Id==TEXT("landing_trace")||Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))
+  if(Id==TEXT("empty_car")||Id==TEXT("landing_trace")||Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass")||Id==TEXT("farm_lights"))
    if(!Check(F.Director->PhysicalObjectPresented(),TEXT("event presents actual visible native render components: ")+Id))return;
   if(Id==TEXT("empty_car")&&!bCarRoundTrip){bCarRoundTrip=true;M->World->Enter(TEXT("diner"));Go(222,.4);return;}
   Shot(FString::Printf(TEXT("event-%02d"),EventIndex));
