@@ -1,6 +1,15 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47Album.h"
+#include "S47Flow.h"
+#include "S47Night.h"
+#include "S47UI.h"
+#include "S47Json.h"
+#include "ImageUtils.h"
+#include "Misc/Base64.h"
+#include "Misc/Paths.h"
+#include "UnrealClient.h"
 #include "Containers/Ticker.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -60,7 +69,40 @@ namespace
   TWeakObjectPtr<US47Main> Main;
   int32 Stage=0;
   double Elapsed=0,StageAt=0;
-  bool bLethal=false,bQuit=false,bFullCases=false;
+  bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
+  int32 LeftBefore=0;
+  void Shot(const TCHAR* Name){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("AlbumTest")/Name,true,false);}
+  void Press(const FKey& Key)
+  {
+   auto& App=FSlateApplication::Get();
+   const FKeyEvent E(Key,App.GetModifierKeys(),0,false,0,0);
+   App.ProcessKeyDownEvent(E);App.ProcessKeyUpEvent(E);
+  }
+  bool Sees(const TCHAR* Text) const
+  {
+   const auto Window=GEngine&&GEngine->GameViewport?GEngine->GameViewport->GetWindow():nullptr;
+   return Window&&FindText(Window.ToSharedRef(),Text).IsValid();
+  }
+  // Two prints: an ordinary one, and one the game saw something in, which has to stay.
+  void GiveAlbum(US47Main* M)
+  {
+   TArray<FColor> Pixels;Pixels.SetNum(320*240);
+   for(int32 I=0;I<Pixels.Num();++I)Pixels[I]=FColor(uint8(40+(I%320)/2),uint8(60+(I/320)/2),90);
+   TArray64<uint8> Png;FImageUtils::PNGCompressImageArray(320,240,Pixels,Png);
+   const FString Url=TEXT("data:image/png;base64,")+FBase64::Encode(Png.GetData(),int32(Png.Num()));
+   TArray<TSharedPtr<FJsonValue>> Shots;
+   for(int32 I=0;I<2;++I)
+   {
+    const auto O=S47J::New();
+    S47J::Set(O,TEXT("id"),FString::Printf(TEXT("albumtest%d@10800"),I));S47J::Set(O,TEXT("url"),Url);S47J::Set(O,TEXT("clock"),10800.);
+    S47J::Set(O,TEXT("place"),TEXT("Service yard"));S47J::Set(O,TEXT("text"),I?TEXT("The print the game saw something in."):TEXT("An ordinary print."));S47J::Set(O,TEXT("labStage"),3);
+    if(I){const auto T=S47J::New();S47J::Set(T,TEXT("anomaly:albumtest"),TArray<double>{.5,.5});S47J::Set(O,TEXT("targets"),T);}
+    Shots.Add(MakeShared<FJsonValueObject>(O));
+   }
+   const auto V=S47J::New();V->SetArrayField(TEXT("shots"),Shots);
+   M->Night->Album->Restore(V);
+   LeftBefore=M->Night->Album->Left();
+  }
   bool Fail(const TCHAR* Why)
   {
    UE_LOG(LogTemp,Error,TEXT("S47: menu pointer FAIL: %s (stage %d)"),Why,Stage);
@@ -110,7 +152,40 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(bAlbum){GiveAlbum(M);M->UI->NotebookAt(TEXT("photos"));M->Flow->OpenNotebook();Stage=10;StageAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
+    FPlatformMisc::RequestExitWithStatus(false,0);
+    return false;
+   }
+   if(Stage==10)
+   {
+    if(!Sees(TEXT("Album")))return Fail(TEXT("the notebook did not open on the Album"));
+    Shot(TEXT("album-tab.png"));Press(EKeys::Enter);Stage=11;StageAt=Elapsed;return true;
+   }
+   if(Stage==11)
+   {
+    if(!Sees(TEXT("X  THROW AWAY PHOTO")))return Fail(TEXT("an open ordinary print offers no way to throw it away"));
+    Shot(TEXT("album-print.png"));Press(EKeys::X);Stage=12;StageAt=Elapsed;return true;
+   }
+   if(Stage==12)
+   {
+    if(!Sees(TEXT("X  AGAIN TO THROW IT AWAY"))||M->Night->Album->Shots().Num()!=2)return Fail(TEXT("the first X must only ask"));
+    Shot(TEXT("album-armed.png"));Press(EKeys::X);Stage=13;StageAt=Elapsed;return true;
+   }
+   if(Stage==13)
+   {
+    if(M->Night->Album->Shots().Num()!=1||M->Night->Album->Left()!=LeftBefore||!M->ModalOpen())return Fail(TEXT("the second X must remove the print and keep its frame used"));
+    Shot(TEXT("album-after.png"));Press(EKeys::Enter);Stage=14;StageAt=Elapsed;return true;
+   }
+   if(Stage==14)
+   {
+    if(!Sees(TEXT("KEPT: USED IN YOUR WORK")))return Fail(TEXT("a print the game saw something in must be kept"));
+    Shot(TEXT("album-kept.png"));Press(EKeys::X);Press(EKeys::X);Stage=15;StageAt=Elapsed;return true;
+   }
+   if(Stage==15)
+   {
+    if(M->Night->Album->Shots().Num()!=1)return Fail(TEXT("a kept print was thrown away"));
+    UE_LOG(LogTemp,Display,TEXT("S47: album PASS: tab, open print, two-step throw away, frame stays used, kept print refused"));
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }
@@ -135,5 +210,6 @@ void S47MenuPointerTest::Start(US47Main* Main)
  Run->bLethal=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerLethal"));
  Run->bQuit=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerQuit"));
  Run->bFullCases=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFullCases"));
+ Run->bAlbum=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAlbum"));
  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Run](float Dt){return Run->Step(Dt);}));
 }

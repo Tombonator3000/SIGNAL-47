@@ -552,7 +552,7 @@ TSharedRef<SWidget> SS47Notebook::TabStack()
 		const FVector2D Size = FSlateApplication::IsInitialized()
 			? FVector2D(FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(S, TabFont))
 			: FVector2D(P(float(S.Len()) * 14.f), P(28.f));
-		return Size + P2(4, 4); // ink/shadow bearing must not touch the allocation edge
+		return Size + P2(10, 8); // the word's own padding and its ink/shadow bearing must fit inside the allocation
 	};
 	auto Long = [Measure](const FString& S) { return FMath::Max(58.f, float(Measure(S).X) / U + 10.f); };
 	auto Word = [TabFont, Measure](const FString& S, const FLinearColor& Ink, bool bBold) -> TSharedRef<SWidget>
@@ -900,7 +900,7 @@ void SS47Notebook::Build()
 		TSharedRef<SWrapBox> Prints = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(P(22), P(24)));
 		for (int32 I = 0; I < NShots; ++I) Prints->AddSlot()[Entry(Photos.Num() + I, SNew(SBox).Padding(P(8))[Print(I, 214.f, false)])];
 		bRightIsEntries = NShots > 0;
-		if (NShots) RightSlot->SetContent(Lay(Head(TEXT("Tonight"), FString::Printf(TEXT("FREE FRAMES · %d"), NShots)), Prints, RightScroll, 146.f, true));
+		if (NShots) RightSlot->SetContent(Lay((Album && Album->OnDiscard ? Head(TEXT("Your photographs"), FString::Printf(TEXT("%d KEPT"), NShots)) : Head(TEXT("Tonight"), FString::Printf(TEXT("FREE FRAMES · %d"), NShots))), Prints, RightScroll, 146.f, true));
 	}
 	else if (Tab == TEXT("map") && X.Map)
 	{
