@@ -45,7 +45,7 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
  const bool Sneak=In.Mode==ES47RoswellMotion::Stalk || In.Mode==ES47RoswellMotion::Peek;
  const double Speed=FMath::Clamp(In.SpeedMps,0.,5.);
  // Different contact timing and stride geometry; time alone never walks the feet.
- const double CycleM=Run?1.25:(Sneak?.47:.72), Duty=Run?.49:(Sneak?.73:.62);
+ const double CycleM=Run?1.25:(Sneak?.70:.72), Duty=Run?.49:(Sneak?.72:.62);
  double Travel=bInit?FMath::Max(0.,In.DistanceTravelled-Distance):0.;
  const double Actual=bInit?(Root-LastRoot).Size()/100.:0.;
  const bool Teleport=bInit && (Actual>1.5 || Travel>1.5 || In.DistanceTravelled<Distance);
@@ -54,9 +54,13 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
  Travel=FMath::Min(Travel,Actual+.002);
  const bool Moving=Travel>.00001 && Speed>.025;
  Motion=Follow(Motion,Moving?1.:0.,Dt,Moving?10.:13.);
- const double WantDuck=FMath::Clamp(In.Crouch,0.,1.);
+ // Low on bent legs whenever it sneaks, whatever the controller's own crouch (that one is about being seen).
+ const double WantDuck=FMath::Max(FMath::Clamp(In.Crouch,0.,1.),Sneak?.60:0.);
+ SneakK=Follow(SneakK,Sneak?1.:0.,Dt,5.);
  Duck=Follow(Duck,WantDuck,Dt,7.);
- HeadYaw=Follow(HeadYaw,FMath::Clamp(In.HeadYaw,-1.1,1.1),Dt,8.);
+ // Sneaking and unhurried, it looks about, more when it stands still between steps.
+ const double Scan=SneakK*(.20+.30*(1.-Motion))*FMath::Sin(Clock*1.1)*FMath::Cos(Clock*.37);
+ HeadYaw=Follow(HeadYaw,FMath::Clamp(In.HeadYaw+Scan,-1.1,1.1),Dt,8.);
  HeadPitch=Follow(HeadPitch,FMath::Clamp(In.HeadPitch,-.4,.4),Dt,6.);
  Reach=Follow(Reach,In.Mode==ES47RoswellMotion::Grab?1.:0.,Dt,9.);
  Distance=In.DistanceTravelled; LastRoot=Root;
@@ -64,11 +68,15 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
  if (Moving) Phase+=Travel/CycleM;
  const double Wave=FMath::Sin(Phase*2.*PI);
  const double DuckCm=Duck*S47Roswell::DuckM*100.;
- const double Bob=Motion*(Run?1.4:(Sneak?.18:.7))*(1.-FMath::Cos(Phase*4.*PI));
+ const double Bob=Motion*(Run?1.4:(Sneak?.55:.7))*(1.-FMath::Cos(Phase*4.*PI));
  if (Hips>=0) for (int32 I=0;I<P.Num();++I) if (Below(I,Hips)) P[I].AddToTranslation(FVector(0,0,-DuckCm+Bob));
  // Spine breathing and a listening tilt remain much smaller than locomotion.
  const double Listen=In.Mode==ES47RoswellMotion::Listen?1.:0.;
- Rotate(Bone(TEXT("spine_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-(2.+Motion*(Run?14.:(Sneak?10.:5.))+Listen*4.))));
+ // Weight over the foot that stands, hips rolling with it.
+ if (Hips>=0) for (int32 I=0;I<P.Num();++I) if (Below(I,Hips)) P[I].AddToTranslation(FVector(SneakK*Motion*Wave*2.6,0,0));
+ Rotate(Hips,FQuat(FVector::YAxisVector,FMath::DegreesToRadians(SneakK*Motion*Wave*5.)));
+ Rotate(Hips,FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-SneakK*9.)));
+ Rotate(Bone(TEXT("spine_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-(2.+Motion*(Run?14.:(Sneak?0.:5.))+SneakK*16.+Listen*4.))));
  Rotate(Bone(TEXT("spine_03")),FQuat(FVector::YAxisVector,FMath::DegreesToRadians(.6*FMath::Sin(Clock*1.6)+Motion*Wave*(Run?2.:.7))));
  for (int32 S=0;S<2;++S)
  {
@@ -110,7 +118,7 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
    if (!Moving)
    { Leg.Target=World.TransformPosition(RestFoot); Leg.Anchor=FMath::Lerp(Leg.Current,Leg.Target,1.-FMath::Exp(-Dt*18.)); Leg.Start=Leg.Anchor; }
    else FootWorld=FMath::Lerp(Leg.Start,Leg.Target,SwingT);
-   FootWorld.Z+=FMath::Sin(SwingT*PI)*(Run?13.:(Sneak?3.:6.));
+   FootWorld.Z+=FMath::Sin(SwingT*PI)*(Run?13.:(Sneak?7.:6.));
    if (!Moving) { FootWorld=Leg.Anchor; if ((Leg.Anchor-Leg.Target).Size()<.2) Leg.bSwing=false; }
   }
   // Large turns in place need a small corrective plant instead of stretched
@@ -149,12 +157,13 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
   const double ArmSwing=(S==0?-Wave:Wave)*Motion;
   if (Arm>=0 && Elbow>=0)
   {
-   const FVector Idle(Sign*(Sneak?13.:12.),(Sneak?8.:2.)+ArmSwing*(Run?15.:(Sneak?2.:8.)),-24.);
+   // Sneaking, the upper arms stay in against the ribs and hardly swing.
+   const FVector Idle=FMath::Lerp(FVector(Sign*12.,2.+ArmSwing*(Run?15.:8.),-24.),FVector(Sign*8.,11.+ArmSwing*1.5,-22.),SneakK);
    const FVector Grab(Sign*13.,28.,-7.);
    Aim(Arm,Elbow,P[Arm].GetLocation()+FMath::Lerp(Idle,Grab,Reach));
   }
   if (Elbow>=0 && Hand>=0)
-   Aim(Elbow,Hand,P[Elbow].GetLocation()+FMath::Lerp(FVector(Sign*(Sneak?6.:4.),(Sneak?15.:7.)+ArmSwing*5.,-21.),FVector(Sign*6.,24.,0),Reach));
+   Aim(Elbow,Hand,P[Elbow].GetLocation()+FMath::Lerp(FMath::Lerp(FVector(Sign*4.,7.+ArmSwing*5.,-21.),FVector(-Sign*5.,20.+ArmSwing,5.),SneakK),FVector(Sign*6.,24.,0),Reach));
   // Gently curl the retained finger chains; the source skin keeps its shape.
   for (const TCHAR* Digit:{TEXT("Index"),TEXT("Middle"),TEXT("Ring"),TEXT("Pinky"),TEXT("Thumb")})
   {
@@ -163,6 +172,9 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
   }
   Leg.Previous=F;
  }
+ // The head stays level and out in front of the bent back.
+ Rotate(Bone(TEXT("neck_01")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(-SneakK*6.)));
+ Rotate(Bone(TEXT("head")),FQuat(FVector::XAxisVector,FMath::DegreesToRadians(SneakK*(9.+16.+6.))));
  Rotate(Bone(TEXT("neck_01")),FQuat(FVector::UpVector,HeadYaw*.25));
  Rotate(Bone(TEXT("head")),FQuat(FVector::UpVector,HeadYaw*.75));
  Rotate(Bone(TEXT("head")),FQuat(FVector::XAxisVector,HeadPitch));

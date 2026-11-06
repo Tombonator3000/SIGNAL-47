@@ -20,6 +20,7 @@ struct FS47PaleBody
  TArray<TWeakObjectPtr<UStaticMeshComponent>> All;
  FS47TripoCreature Creature;
  ES47PaleStyle Style = ES47PaleStyle::Hunter;
+ FString CreatureAsset; // another skinned body than the pale
  bool bBuilt = false, bFailed = false, bCollide = true;
  static constexpr int32 JointCount = 10;
  double JointPose[JointCount] = {};

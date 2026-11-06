@@ -13,6 +13,12 @@ namespace S47CreaturePreview { void Start(US47Main* M); }
 namespace S47Roswell
 {
  constexpr double HeightM=1.20, HeadM=1.08, ProbeM=1.12, DuckM=.42;
+ // Speed over time while sneaking: a few steps, then near still. Averages about .7.
+ inline double StalkPulse(double Age)
+ {
+  const double U=FMath::Frac(Age/1.9);
+  return U<.62?1.5*FMath::Sqrt(FMath::Sin(UE_DOUBLE_PI*U/.62)):.04;
+ }
 }
 
 // Visual adapter for the user's skinned Tripo creatures. The existing

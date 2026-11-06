@@ -228,7 +228,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
    FVector2D::Distance(FVector2D(A.Brain.LookTarget.X,A.Brain.LookTarget.Z),FVector2D(A.Brain.Pos.X,A.Brain.Pos.Z))),-.35,.35);
   using E=FS47RoswellBrain::EState;
   Pose.Mode=A.Brain.State==E::Contact?ES47RoswellMotion::Grab:
-   Pose.SpeedMps>1.6?ES47RoswellMotion::Run:Pose.SpeedMps>.03?(Pose.Crouch>.2?ES47RoswellMotion::Stalk:ES47RoswellMotion::Walk):
+   Pose.SpeedMps>1.6?ES47RoswellMotion::Run:Pose.SpeedMps>.03?(Pose.Crouch>.2||A.Brain.State==E::Stalk||A.Brain.State==E::Search?ES47RoswellMotion::Stalk:ES47RoswellMotion::Walk):
    A.Brain.State==E::Peek?ES47RoswellMotion::Peek:A.Brain.State==E::Listen?ES47RoswellMotion::Listen:ES47RoswellMotion::Idle;
   const auto Contact=A.Motion.Apply(*A.Body,Pose,Dt);
   A.Contacts+=(Contact.bLeft?1:0)+(Contact.bRight?1:0);
