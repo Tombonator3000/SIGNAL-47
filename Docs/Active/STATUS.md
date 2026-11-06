@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november kl. 14:13
+## Installert 6. november, gårdsvei og nattlys
+
+`4ffb7210` etter PR455 er nå standard, med rask installasjon: ryddet gårdsvei, gatelys ved avkjørselen, lampe over trafoskiltet og lyd på gården. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_4ffb7210.md).
+
+## Tidligere installert 6. november kl. 14:13
 
 `c3c7bd99` etter PR453 er nå standard, med rask installasjon: lys og spor over stedene i byen, det forlatte gårdshuset som blokkmodell og Codex' alien-interferens. 2515 selvtester og 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_c3c7bd99.md).
 
