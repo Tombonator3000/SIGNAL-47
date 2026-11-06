@@ -1,3 +1,4 @@
+#include "Components/PointLightComponent.h"
 #include "S47FarmWorld.h"
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
@@ -111,6 +112,7 @@ namespace
  struct FBuilding{TWeakObjectPtr<UStaticMeshComponent> C;FVector Road;double Degrees=0;};
  TArray<FBuilding> Buildings;TWeakObjectPtr<AS47Web> BuildingWorld;bool bBuildingsTried=false;
  TWeakObjectPtr<UMaterialInstanceDynamic> WindowMid;FLinearColor WindowLit=FLinearColor::Black;
+ TWeakObjectPtr<UPointLightComponent> BarnDay;
  void BuildBuildings(AS47Web* W,bool On)
  {
   if(BuildingWorld.Get()!=W){BuildingWorld=W;Buildings.Reset();WindowMid.Reset();bBuildingsTried=false;}
@@ -123,6 +125,13 @@ namespace
    C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
    C->SetCastShadow(true);C->RegisterComponent();W->AdoptNode(C,INDEX_NONE,FString(TEXT("farm:building:"))+Site.Name);
    Buildings.Add({C,S47FarmBuildings::Anchor(Site),FMath::RadiansToDegrees(-Site.Yaw)});
+   // The daylight that gets in through the big doors and the gaps in the boards. Off after dark.
+   if(FCString::Stristr(Site.Mesh,TEXT("Barn")))
+   {
+    auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(C);L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);
+    L->SetLightColor(FLinearColor(1.f,.93f,.82f));L->SetAttenuationRadius(1100.f);L->SetCastShadows(false);L->SetVolumetricScatteringIntensity(0.f);L->RegisterComponent();L->SetRelativeLocation(FVector(0,0,330));
+    BarnDay=L;
+   }
    const int32 Slot=C->GetMaterialIndex(TEXT("M_Farm_WindowLit"));
    if(Slot!=INDEX_NONE)if(auto* Mid=C->CreateDynamicMaterialInstance(Slot)){WindowMid=Mid;WindowLit=Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));}
   }
@@ -151,6 +160,7 @@ namespace
    G->SetOutputScale(Row.Index,State==1?0.f:1.f);
   }
   if(auto* Mid=WindowMid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),State==2?WindowLit:FLinearColor::Black);
+  if(auto* L=BarnDay.Get())L->SetIntensity(State==1?5200.f:0.f);
  }
  // A save from before the buildings can stand where a wall is now. The walker never enters one by itself, and it
  // could not leave one either: walk it out to the nearest clear ground. No save field changes.

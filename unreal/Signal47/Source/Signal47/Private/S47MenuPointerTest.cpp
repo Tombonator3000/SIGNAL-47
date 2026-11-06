@@ -300,7 +300,7 @@ namespace
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
      const double Today=FMath::Fmod(M->Freeform->Clock(),86400.);
      if(!M->Freeform->TestAdvance(FMath::Fmod(11*3600.-Today+86400.,86400.)))return Fail(TEXT("the nature test needs the day"));
-     Stage=200;StageAt=Elapsed;return true;
+     Stage=300;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFarm")))
     {
@@ -455,7 +455,7 @@ namespace
    }
    // The nature: the pasture, the roadside south of SARO, flat desert towards the mountains, the antenna field, the edge of Caliche and
    // STATION 01 by day, then the pasture at night. Each view waits for the plants to fill in before its picture.
-   if(Stage>=200&&Stage<=206)
+   if(Stage>=300&&Stage<=306)
    {
     struct FN{const TCHAR* Name;const TCHAR* Area;double X,Z,LX,LZ,Lift;};
     const auto Saro=[](double X,double Z){return S47FarmWorld::RoadToArea(TEXT("saro"),FVector(X,0,Z));};
@@ -468,14 +468,14 @@ namespace
      {TEXT("caliche-edge"),TEXT("diner"),7995,Edge-50,7995,Edge+30,0},
      {TEXT("station01"),TEXT("station01"),-4,8014,-11,8003,0},
      {TEXT("pasture-night"),TEXT("saro"),Past0.X,Past0.Z,Past1.X,Past1.Z,0}};
-    const int32 I=Stage-200;
+    const int32 I=Stage-300;
     StageAt=Elapsed;
     if(ShotPending)
     {
      if(Elapsed-WalkFrom<4)return true;
      Shot(*FString::Printf(TEXT("nature-%s.png"),V[I].Name));ShotPending=false;
-     if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=206;}
-     else Stage=I==6?207:Stage+1;
+     if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=306;}
+     else Stage=I==6?307:Stage+1;
      return true;
     }
     if(M->Web->Area()!=V[I].Area){M->World->Enter(V[I].Area);return true;}
@@ -484,7 +484,7 @@ namespace
     ShotPending=true;WalkFrom=Elapsed;
     return true;
    }
-   if(Stage==207)
+   if(Stage==307)
    {
     UE_LOG(LogTemp,Display,TEXT("S47: nature shown"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
