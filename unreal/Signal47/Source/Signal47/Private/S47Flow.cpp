@@ -1021,7 +1021,7 @@ void US47Flow::StartGame(const FStart& O)
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
   // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
   // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
-  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))))
+  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
   {
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
    if(M->World)M->World->PlaceTruck(TEXT("saro"),Pose);

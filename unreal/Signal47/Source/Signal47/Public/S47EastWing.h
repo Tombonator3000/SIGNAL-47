@@ -44,7 +44,7 @@ private:
  void Grime();
  // Motorised roll-up door (Tom 4 Nov): two control stations (inside / outside), 4.5 s travel.
  double DriveSince=0;
- double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorControls=false;
+ double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorHand=false,bDoorControls=false;
  bool bLeafControls=false; bool LeafOpen[2]={true,true}; double LeafAmount[2]={1.,1.};
  bool LeafControls(); void UseLeaf(int32 Index); void DoorTest(); int32 DoorTestStage=0; double DoorTestAt=0;
  bool DoorControls();void StepDoor(float Dt,bool bFree,bool bPowered);

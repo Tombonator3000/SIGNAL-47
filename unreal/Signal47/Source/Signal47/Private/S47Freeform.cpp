@@ -960,7 +960,7 @@ bool FS47FreeformSession::Spend(int32 Amount,bool bEmergency)
  if(Amount<0||Amount>10000)return false;
  if(Cash<Amount)
  {
-  if(!bEmergency||Loan>0){Feedback=TEXT("Insufficient budget. Complete reference work or request the one outstanding emergency requisition.");return false;}
+  if(!bEmergency||Loan>0){Feedback=bEmergency?TEXT("A requisition balance is still standing. OPS: Registered daily work clears it first. An outage's feeder-repair fuse is the one exception."):TEXT("Insufficient budget. OPS: Register paid daily work, or request an essential requisition at the Caliche counter.");return false;}
   Loan=Amount-Cash;Cash=0;
  }
  else Cash-=Amount;
@@ -1795,6 +1795,8 @@ FString FS47FreeformSession::AvailableActivities()const
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH");
  if(ServiceGuide==1)return ServiceObjective();
  if(Field&&Field->LoggerAccess())return Field->FieldLogger().NextAction();
+ // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
+ if(Cash<5||Loan>0)return TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEY CLEAR ANY REQUISITION BALANCE FIRST.");
  return TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL.");
 }
 bool FS47FreeformSession::StartReferenceCheck()
@@ -2079,9 +2081,15 @@ FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  if(Director&&!Director->TipLine().IsEmpty())return Director->TipLine();
+ // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
+ if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE JEEP: TANK EMPTY. GET OUT AND USE THE JEEP TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
- if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+ if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
+ {
+  if(Field&&Field->EmergencyFuseAvailable()&&Field->InventoryCount(TEXT("fuel"))<=0&&Field->GeneratorHours()<=0)return TEXT("NO POWER, NO SPARE FUSE: THE CALICHE STORE COUNTER ISSUES ONE FEEDER-REPAIR FUSE ON CREDIT, DAY OR NIGHT");
+  return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+ }
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  if(Tutorial>0){const FString T=TutorialObjective();if(!T.IsEmpty())return T;}
  return NextAction();
@@ -2160,6 +2168,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  TArray<FS47Task> Result;
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
+ if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": choose a test on the OPS case board"),false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
