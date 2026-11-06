@@ -195,7 +195,7 @@ void S47Panels::WetBench(US47UI* UI, const FString& Frame, int32 Step, const FSt
 			S47Kit::Sub(Frame),
 			S47Kit::Steps(Steps, Active),
 			Step == 1 ? S47Kit::Text(TEXT("The film is in the tank. Wait for the timer."))
-				: S47Kit::Button(Labels[FMath::Clamp(Step, 0, 3)], [U, OnAct] { if (U.IsValid()) U->Close(); if (OnAct) OnAct(); }, true) }, 0.f);
+				: S47Kit::Action(Labels[FMath::Clamp(Step, 0, 3)], [U, OnAct] { if (U.IsValid()) U->Close(); if (OnAct) OnAct(); }) }, 0.f);
 	}
 	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("WET BENCH"), Body));
 }

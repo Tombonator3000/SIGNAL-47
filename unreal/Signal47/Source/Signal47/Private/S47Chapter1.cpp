@@ -756,7 +756,7 @@ void US47Chapter1::UseWetBench()
 		if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door before processing the photograph.")); return; }
 		// Refresh this same bench session after each action; Story keeps its timed panel.
 		TArray<S47Kit::FW> Rows;
-		Rows.Add(S47Kit::Sub(Id + TEXT(" / ") + Shot->Place));
+		Rows.Add(S47Kit::Sub(TEXT("SARO / PHOTO LAB  |  FILM: ") + Id + TEXT("  |  ") + Shot->Place));
 		Rows.Add(S47Kit::Steps({
 			{ TEXT("1 / DEVELOP EXPOSED FILM"), TEXT("Keep the door closed. The original negative is retained.") },
 			{ TEXT("2 / TRANSFER PRINT TO FIXER"), TEXT("Stabilize the contact print in the adjacent tray.") },
@@ -764,7 +764,7 @@ void US47Chapter1::UseWetBench()
 		}, Stage));
 		if (Stage == 2) Rows.Add(SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(Shot->Url), 480.f)]);
 		const FString Label = Stage == 0 ? TEXT("LOAD SEALED FILM INTO TANK") : Stage == 1 ? TEXT("TRANSFER CONTACT PRINT TO FIXER") : TEXT("COLLECT AND EXAMINE PRINT");
-		Rows.Add(S47Kit::Button(Label, [this, Id, Stage]
+		Rows.Add(S47Kit::Action(Label, [this, Id, Stage]
 		{
 			if (!M || !M->IsFreeform() || !M->Night || !M->Night->Album || !M->Freeform || !M->Player || !Yard) return;
 			if (FVector::Distance(M->Player->Pos, Yard->Obj(TEXT("wetBench")).WorldPosition()) > 2.6) { Toast(TEXT("PHOTO LAB: Return to the wet bench to continue processing.")); return; }
@@ -782,7 +782,7 @@ void US47Chapter1::UseWetBench()
 			Done.Add(S47Kit::Text(TEXT("Original collected. Register eligible evidence at OPS; the original stays in your album.")));
 			if (M->Night->Album->PendingLabPhoto()) Done.Add(S47Kit::Button(TEXT("DEVELOP NEXT EXPOSED PHOTOGRAPH"), [this] { UseWetBench(); }, true));
 			if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Done)));
-		}, true));
+		}));
 		if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Rows)));
 		return;
 	}
