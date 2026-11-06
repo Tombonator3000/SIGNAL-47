@@ -9,12 +9,13 @@
 #include "Misc/CommandLine.h"
 
 namespace { TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints; }
+bool FS47TripoCreature::bTestGlintsAlways=false;
 void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
 {
  // A dot of a fixed size falls under one pixel past a few metres, so it holds a small width on screen. It belongs
  // to the dark and to near distances: gone by day and fully out at 50 m, fading from 30 m.
  static constexpr double PerMetre=.0018,FadeFrom=30.,GoneAt=50.,Glow=3.;
- const double Dark=1.-FMath::SmoothStep(.02,.25,Daylight);
+ const double Dark=bTestGlintsAlways?1.:1.-FMath::SmoothStep(.02,.25,Daylight);
  AllGlints.RemoveAll([](const TWeakObjectPtr<UStaticMeshComponent>& G){return !G.IsValid();});
  for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())
  {
@@ -53,7 +54,7 @@ void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
   G->bAffectDynamicIndirectLighting=false;G->bAffectDistanceFieldLighting=false;G->SetVisibleInRayTracing(false);
   G->RegisterComponent();
   // Component space (the body faces +Y, Z up) into the head bone's own frame.
-  const FVector Target=Head.GetLocation()+FVector(I?EyeSide:-EyeSide,EyeFront,EyeUp);
+  const FVector Target=Head.GetLocation()+FVector(I?EyeAt.X:-EyeAt.X,EyeAt.Y,EyeAt.Z);
   G->SetRelativeLocation(Head.InverseTransformPosition(Target));
   G->SetWorldScale3D(FVector(EyeSize));
   Glints.Add(G);AllGlints.Add(G);

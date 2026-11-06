@@ -2030,3 +2030,7 @@ Freeform: bilen kan kjøre og spilleren gå i hele feltet rundt de 27 antennene.
 ## 6. november 2026 kl.18:10, Roswell-lusking
 
 Dagens lusking var tripping: 47 cm mellom hvert steg og 10 cm huk. Nå dypere huk, lengre steg, vektoverføring, hender foran kroppen og fart i rykk. Hjernens tilstander Stalk og Search regnes nå som lusking også uten egen huk. Selvtest 2515 og regresjon 251 består. Sett i forhåndsvisning, ikke i spilt møte.
+
+## 6. november 2026 kl.18:30, Tall og Crab i utviklermenyen
+
+To nye utviklerhendelser lar Tom vurdere bevegelsene. Nærbilde av dagens Tall One-kropp viser grov tekstur og ingen store svarte øyne, så øyeglimt venter på ny Pale. Selvtest 2515 og regresjon 251 består. Menyprøven krasjer ikke, men har ikke bilder av de to hendelsene.

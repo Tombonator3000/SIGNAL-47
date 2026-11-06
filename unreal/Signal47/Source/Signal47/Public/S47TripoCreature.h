@@ -27,7 +27,10 @@ struct FS47TripoCreature
 {
  TWeakObjectPtr<UPoseableMeshComponent> Mesh;
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Glints;
- static constexpr double EyeSide=4.9,EyeFront=12.3,EyeUp=3.9,EyeSize=.0042; // Component centimetres from the head bone; sphere scale.
+ // Where the eyes sit on this body, component centimetres from the head bone, and the dot's smallest scale.
+ static constexpr double EyeSize=.0042;
+ FVector EyeAt=FVector(4.9,12.3,3.9);
+ static bool bTestGlintsAlways;
  void AddEyeGlints(class AS47Web* W, UPoseableMeshComponent* C);
  static void StepEyeGlints(const FVector& EyeUE, double Daylight);
  static int32 ShownEyeGlints();

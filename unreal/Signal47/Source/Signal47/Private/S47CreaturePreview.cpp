@@ -98,6 +98,18 @@ void S47CreaturePreview::Start(US47Main* M)
     Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Plant.MaxPlantErrorCm);
    }
    Fixture->StageError=FMath::Max(Fixture->StageError,bCrab?Fixture->Body.Creature.CrabContacts.MaxPlantErrorCm:Fixture->Body.Creature.Contacts.MaxPlantErrorCm);
+   if(FParse::Param(FCommandLine::Get(),TEXT("S47CreatureFace"))&&Fixture->Body.Creature.Mesh.IsValid())
+   {
+    // Right up to the face, with the dots shown by day so they can be set against it.
+    FS47TripoCreature::bTestGlintsAlways=true;
+    auto* Skin=Fixture->Body.Creature.Mesh.Get();
+    const FVector Head=S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace));
+    const FVector Out=S47Three::ToThree(Skin->GetRightVector()*100.).GetSafeNormal();
+    const FVector E=Head+Out*.55+FVector(0,.05,0);const FVector D2=Head+FVector(0,.05,0)-E;
+    Main->Player->Place(E.X,E.Z,FMath::Atan2(-D2.X,-D2.Z));Main->Player->Eye=E.Y-Main->Player->FloorY;Main->Player->Pitch=FMath::Atan2(D2.Y,FVector2D(D2.X,D2.Z).Size());
+    if(St!=Fixture->Last)Fixture->Last=St;
+    return true;
+   }
    // The camera holds a quarter view from ahead, at the player's height.
    const double Cam=Fixture->Yaw+.7,Dist=bCrab?3.4:4.6;
    const FVector Eye(At.X+FMath::Cos(Cam)*Dist,At.Y+1.62,At.Z+FMath::Sin(Cam)*Dist),To(At.X,At.Y+(bCrab?.5:1.2),At.Z);
