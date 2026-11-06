@@ -93,6 +93,7 @@ public:
 
 	// tests: walk as if these keys were held (x right, z back: main.ts input.move), or unset; and run
 	TOptional<FVector2D> TestMove;
+	double MoveScale = 1; // legs going heavy: held in the light
 	bool bTestRun = false;
 
 private:

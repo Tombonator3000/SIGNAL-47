@@ -83,3 +83,13 @@ Rapporter kort hva som er endret, faktiske filstier, gjenbrukte kilder, antatte 
 Tilpasset Toms referansebilde «OPUS 5.5 / BLENDER MCP», mottatt 4. november 2026, og prosjektets gjeldende Unreal-regler. Referansens krav om alt fra bunnen er erstattet med gjenbruk først; MCP og GLB er muligheter, ikke absolutte krav.
 
 Prosjektbibliotekets [bpy-løsning uten GPU](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/losninger/bygg/blender-bpy-i-skyokt-uten-gpu.md) har PASS for sitt opprinnelige modell-/renderforsøk, ikke for vilkårlig Unreal-import. Bibliotekprofilen for [arjun988/blender-skills](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/repoer/prosjekter/arjun988--blender-skills.md) er UNVERIFIED mot prosjektets Blender-/UE-løype. Ingen ny addon eller programvare er installert som del av denne malen.
+
+## Kritikerrunder mot referanse
+
+Lagt til 6. november 2026 etter Toms tips om Mirages arbeidsflyt for 3D-scener. Flyten er lest fra skjermbilder av tråden, ikke prøvd med deres verktøy.
+
+1. Ett referansebilde per modell før skripting. Finn kamera og øyehøyde fra forsvinningspunktene, så renderen kan legges rett ved siden av referansen.
+2. Første runde i grå leire: form, proporsjoner og åpninger godkjennes før materialer.
+3. Etter hver render sammenligner to uavhengige kritikeragenter renderen med referansen og leverer en rangert retteliste. De får bildene og referansen, ikke byggerens konklusjon.
+4. Byggeren retter listen. Stopp når kritikerne bare finner småting, eller etter et fast antall runder.
+5. Spillet stiller flere krav enn en filmscene: ekte kollisjon, dører og vinduer, LOD og spillbar skala. 2D-kort og forhåndsrendret bakgrunn teller ikke som ferdig bygg, bortsett fra ved vinduer eller horisont.

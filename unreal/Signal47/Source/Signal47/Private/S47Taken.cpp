@@ -1,4 +1,6 @@
 #include "S47Taken.h"
+#include "S47FarmSite.h"
+#include "S47FarmHouse.h"
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -14,6 +16,9 @@
 #include "S47UfoPresentation.h"
 #include "SS47AwayOverlay.h"
 #include "Components/SpotLightComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Components/LocalFogVolumeComponent.h"
+#include "S47Flow.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
@@ -50,7 +55,7 @@ bool FS47Taken::Indoors() const
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
- Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();
+ Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=!Indoors();
  UE_LOG(LogTemp,Display,TEXT("S47: taken begins, %s, %s"),bOutdoors?TEXT("in the open"):TEXT("under a roof"),*Title);
  if(!bOutdoors||bOnlyDread)
@@ -69,7 +74,8 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  if(Now==EStage::None)SafeClock=M->Freeform->Clock();
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
- if(Now!=EStage::Flood)ChooseLight();
+ // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.
+ if(Now!=EStage::Flood&&!ChooseLight()){From=Feet()+FVector(0,14,0);Aim=Feet()+FVector(0,1.25,0);}
  Lift();return true;
 }
 
@@ -140,6 +146,49 @@ bool FS47Taken::StartFlood()
  return true;
 }
 
+FLinearColor FS47Taken::LightColor(double Time) const
+{
+ // Never quite one colour: it drifts through its own range, each kind in its own.
+ static const FLinearColor Warm[3]={FLinearColor(1.f,.55f,.18f),FLinearColor(1.f,.82f,.45f),FLinearColor(1.f,.28f,.22f)};
+ static const FLinearColor Cold[3]={FLinearColor(.82f,.86f,1.f),FLinearColor(.62f,.46f,1.f),FLinearColor(.45f,.95f,.95f)};
+ static const FLinearColor Sick[3]={FLinearColor(1.f,.32f,.10f),FLinearColor(.72f,1.f,.30f),FLinearColor(1.f,.70f,.2f)};
+ const FLinearColor* P=Taker==ES47Taker::Tall?Cold:Taker==ES47Taker::Crab?Sick:Warm;
+ const double U=FMath::Fmod(Time/2.6,3.);const int32 A=FMath::FloorToInt(U);const double F=U-A;
+ return FLinearColor::LerpUsingHSV(P[A%3],P[(A+1)%3],float(F*F*(3-2*F)));
+}
+
+double FS47Taken::Pulse(double Time) const
+{
+ // A steady glare broken by bursts of strobe. With calm flashes chosen, it only breathes.
+ const bool bCalm=M&&M->Flow&&M->Flow->bCalmFlash;
+ const double Breath=.86+.14*FMath::Sin(Time*2.3);
+ if(bCalm||Time<2.2)return Breath;
+ const double Into=FMath::Fmod(Time-2.2,4.3);
+ if(Into<1.15)return FMath::Fmod(Into*11.,1.)<.5?1.25:.06;
+ return Breath;
+}
+
+void FS47Taken::StepMist(double Dt)
+{
+ if(!M||!M->Web||!M->Player)return;
+ const bool bWant=Now==EStage::Dread||Now==EStage::Flood||Now==EStage::Lift;
+ MistK=FMath::FInterpConstantTo(MistK,bWant?1.:0.,Dt,bWant?.16:.3);
+ auto* F=Mist.Get();
+ if(!F)
+ {
+  if(MistK<=0)return;
+  F=NewObject<ULocalFogVolumeComponent>(M->Web.Get(),TEXT("S47TakenMist"));
+  F->SetupAttachment(M->Web->GetRootComponent());F->RegisterComponent();
+  F->SetWorldScale3D(FVector(1.5,1.5,.5));F->SetFogPhaseG(.5f);F->SetHeightFogFalloff(320.f);
+  Mist=F;
+ }
+ // A mist comes in round them, low at first, and it takes the colour of whatever is shining through it.
+ F->SetWorldLocation(S47Three::ToUE(Feet()+FVector(0,1.1,0)));
+ F->SetRadialFogExtinction(float(MistK*1.1));F->SetHeightFogExtinction(float(MistK*.7));
+ F->SetFogAlbedo(Now==EStage::Flood||Now==EStage::Lift?LightColor(Age):FLinearColor(.82f,.8f,.76f));
+ F->SetVisibility(MistK>.002);
+}
+
 void FS47Taken::ShowLight(double K)
 {
  if(!M||!M->Web)return;
@@ -152,10 +201,23 @@ void FS47Taken::ShowLight(double K)
   L->ShadowResolutionScale=4.f;L->MarkRenderStateDirty();L->SetInnerConeAngle(13.f);L->SetOuterConeAngle(24.f);L->SetAttenuationRadius(9000.f);L->SetIndirectLightingIntensity(1.f);
   Spot=L;
  }
- L->SetLightColor(Terms(Taker).Light);
+ const FLinearColor Col=LightColor(Age);
+ L->SetLightColor(Col);
  L->SetWorldLocation(S47Three::ToUE(From));
  L->SetWorldRotation((S47Three::ToUE(Aim)-S47Three::ToUE(From)).Rotation());
- L->SetIntensity(float(26000.*K));L->SetVisibility(K>.001);
+ L->SetIntensity(float(9000.*K));L->SetVisibility(K>.001);
+ // What the beam throws back: the whole room comes up in it, not just the patch on the wall.
+ auto* B=Fill.Get();
+ if(!B)
+ {
+  B=NewObject<UPointLightComponent>(M->Web.Get(),TEXT("S47TakenFill"));
+  B->SetupAttachment(M->Web->GetRootComponent());B->SetMobility(EComponentMobility::Movable);B->RegisterComponent();
+  B->SetIntensityUnits(ELightUnits::Candelas);B->SetCastShadows(false);B->SetAttenuationRadius(950.f);B->SetVolumetricScatteringIntensity(1.f);
+  Fill=B;
+ }
+ const FVector Toward=(From-Aim).GetSafeNormal();
+ B->SetWorldLocation(S47Three::ToUE(Aim+Toward*1.6+FVector(0,.3,0)));
+ B->SetLightColor(Col);B->SetIntensity(float((bOutdoors?30.:75.)*K));B->SetVisibility(K>.001);
  if(bOutdoors)
  {
   if(!Ufo)Ufo=MakeUnique<FS47UfoPresentation>(M->Web.Get());
@@ -170,6 +232,10 @@ void FS47Taken::ShowLight(double K)
 void FS47Taken::HideLight()
 {
  if(auto* L=Spot.Get()){L->SetIntensity(0);L->SetVisibility(false);}
+ if(auto* B=Fill.Get()){B->SetIntensity(0);B->SetVisibility(false);}
+ if(M&&M->Player)M->Player->MoveScale=1;
+ if(M&&M->Audio)M->Audio->HoldRoomTone(1.f,1.2f);
+ if(M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,TEXT("taken"));
  if(Ufo)Ufo->Hide();
 }
 
@@ -217,6 +283,8 @@ void FS47Taken::Apply()
  Seconds=Minutes*60;
  // Once, and whole: the clock, the place and the note together, before anything can be saved in between.
  M->Freeform->TakenAway(Seconds);
+ const double WakeClock=M->Freeform->Clock();
+ if(M->Freeform->FarmSite)M->Freeform->FarmSite->SetCalm(WakeClock+3600);
  const FVector Before=Feet();
  FString Where=TEXT("where I had been standing");
  if(T.bHome&&M->World)
@@ -233,10 +301,15 @@ void FS47Taken::Apply()
   {
    const double A=FMath::FRandRange(0.f,6.283f),D=FMath::FRandRange(float(T.WakeMin),float(T.WakeMax));
    const double X=Before.X+FMath::Cos(A)*D,Z=Before.Z+FMath::Sin(A)*D;
-   if(M->Player->Walkable(X,Z)){M->Player->Place(X,Z,A);Where=FString::Printf(TEXT("about %d metres from there, on the ground"),FMath::RoundToInt(D/10)*10);break;}
+   // Open ground only: not inside a room, a wall or the truck.
+   if(!M->Player->OpenLand||!M->Player->OpenLand(X,Z)||!M->Player->Walkable(X,Z))continue;
+   if(M->World&&M->World->Indoors(FVector(X,Before.Y+1,Z)))continue;
+   bool bClear=true;
+   for(const FS47Rect& R:M->Web->Colliders())if(R.bEnabled&&X>R.MinX-.5&&X<R.MaxX+.5&&Z>R.MinZ-.5&&Z<R.MaxZ+.5){bClear=false;break;}
+   if(bClear){M->Player->Place(X,Z,A);Where=FString::Printf(TEXT("about %d metres from there, on the ground"),FMath::RoundToInt(D/10)*10);break;}
   }
  }
- Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. My film and papers are as I left them. It says what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(SafeClock+Seconds),FMath::RoundToInt(Minutes),*Where);
+ Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s My film and papers are as I left them. It says what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."));
  Note[0]=FChar::ToUpper(Note[0]);
  M->Freeform->RecordEvidence(FString::Printf(TEXT("taken-%d-%d"),M->Freeform->Day(),int32(SafeClock)),Note);
  if(M->Freeform->Director)M->Freeform->Director->RestFor(1800);
@@ -249,7 +322,7 @@ void FS47Taken::Finish()
  if(M&&M->UI)
  {
   M->UI->Fade(false);
-  if(Seconds>0)M->UI->Toast(FString::Printf(TEXT("%s. Your watch has moved on."),*ClockText(SafeClock+Seconds)),6);
+  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s. Your watch has moved on. It is in your field records (TAB)."),*ClockText(M->Freeform->Clock())),7);
  }
  Seconds=0;
  if(M)M->RequestAutosave();
@@ -264,22 +337,30 @@ void FS47Taken::Stop()
 {
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);
  Alive=MakeShared<bool>(true);
- Now=EStage::None;Age=0;
+ Now=EStage::None;Age=0;Seconds=0;
  if(bLive)
  {
   Unhook();HideLight();White(TOptional<double>());
   if(auto* L=Spot.Get())L->DestroyComponent();
+  if(auto* B=Fill.Get())B->DestroyComponent();
+  if(auto* F=Mist.Get())F->DestroyComponent();
   if(Overlay&&GEngine&&GEngine->GameViewport)GEngine->GameViewport->RemoveViewportWidgetContent(Overlay.ToSharedRef());
   if(Ufo)Ufo->Hide();
  }
- Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();
+ Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();Fill.Reset();Mist.Reset();MistK=0;
 }
 
 void FS47Taken::Step(double Dt)
 {
- if(Now==EStage::None||!M||!M->Player||!M->Freeform||!M->Audio)return;
- if(Dt<=0)return;
+ if(!M||!M->Player||!M->Freeform||!M->Audio||Dt<=0)return;
+ StepMist(Dt);
+ if(Now==EStage::None)return;
+ if(M->Freeform->Dead()){GiveUp();return;}
+ // Held with the game: a menu or a panel is no time spent in the light.
+ if(M->bPausedByMenu||M->ModalOpen())return;
  Age+=Dt;
+ if(M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(Now==EStage::Dread?.3+.45*FMath::Abs(FMath::Sin(Age*1.7)):Now==EStage::Flood?.85:0.,TEXT("taken"));
+ if(Now==EStage::Dread)M->Audio->HoldRoomTone(.15f,.8f);
  if(Now==EStage::Dread)
  {
   // Someone on the roof, going over and back. Then something said, not quite language.
@@ -297,12 +378,29 @@ void FS47Taken::Step(double Dt)
    TalkIn=FMath::FRandRange(5.f,8.f);
    if(M->FieldRadio)M->FieldRadio->Talk(StepAt+FVector(1.5,-1,1));
   }
+  // A door in the house moves, with nobody at it.
+  if(!bDoorDone&&Age>=6.5)
+  {
+   bDoorDone=true;
+   if(M->Freeform->HouseDoors&&M->Web->Area()==TEXT("saro"))
+   {
+    double Best=11;int32 Door=INDEX_NONE;
+    for(const auto& Plan:S47FarmHouse::DoorPlans())
+    {
+     const int32 I=M->Freeform->HouseDoors->IndexOf(Plan.Name);if(I==INDEX_NONE)continue;
+     const FVector P=Plan.From+FVector(-24,0,300);
+     const double D=FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(M->Player->Pos.X,M->Player->Pos.Z));
+     if(D<Best&&D>1.4){Best=D;Door=I;}
+    }
+    if(Door!=INDEX_NONE)M->Freeform->HouseDoors->Use(Door);
+   }
+  }
   if(Age>=DreadSeconds&&!StartFlood())GiveUp();
   return;
  }
  if(Now==EStage::Flood)
  {
-  const double K=FMath::Clamp(Age/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Age));
+  const double K=Pulse(Age)*FMath::Clamp(Age/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Age));
   const FVector Chest=Feet()+FVector(0,1.25,0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
   const bool bReach=LightReaches(Chest);
@@ -310,7 +408,9 @@ void FS47Taken::Step(double Dt)
   ShowLight(K);
   const bool bCaught=FVector::Dist(Aim,Chest)<1.6&&bReach;
   InLight=bCaught?InLight+Dt:FMath::Max(0.,InLight-Dt*.6);
-  if(InLight>=TakenAfter){Lift();return;}
+  // The legs go: the longer in it, the harder to leave it.
+  M->Player->MoveScale=FMath::Lerp(1.,.22,FMath::Clamp(InLight/TakenAfter,0.,1.));
+  if(InLight>=TakenAfter){M->Player->MoveScale=1;Lift();return;}
   if(Age>=FloodSeconds||(M->World&&M->World->bDriving))GiveUp();
   return;
  }
@@ -327,7 +427,8 @@ void FS47Taken::Step(double Dt)
  }
  if(Now==EStage::Away)
  {
-  // Sound and picture gone; the time passes out here, once.
+  // Sound and picture gone; the time passes out here, once. Nothing to walk with till it is back.
+  M->Player->MoveScale=0;
   if(Seconds<=0&&Age>=.5)
   {
    White(TOptional<double>());Unhook();Apply();

@@ -98,6 +98,7 @@ bool FS47Herd::ReconcileMode()
 {
  const FVector Offset=S47FarmWorld::HerdOffset(M);
  if(bModeKnown&&ModeOffset.Equals(Offset,1e-9))return false;
+ ClearLife();
  const bool WasFreeform=!ModeOffset.IsNearlyZero();
  TArray<FVector> Old;
  for(int32 I=0;I<Count();++I){const FVector P(COWS[I][0],Ys[I],COWS[I][1]);Old.Add(Group?Group.LocalToWorld(P):P+ModeOffset);}
@@ -136,6 +137,54 @@ void FS47Herd::MoveObstacle(const FVector& Old,const FVector& New,double Radius)
  {const double DX=New.X-Old.X,DZ=New.Z-Old.Z;C.MinX+=DX;C.MaxX+=DX;C.MinZ+=DZ;C.MaxZ+=DZ;C.bEnabled=Radius>0;}
 }
 
+// Grazing a while, then a few unhurried steps to the next spot, on a clock of its own and never far from where it belongs.
+FVector FS47Herd::WanderAt(int32 I, double T, bool& bWalking, FVector& Heading) const
+{
+ const auto Spot=[I](int32 Seg)
+ {
+  const double A=FMath::Frac(FMath::Sin(Seg*12.9898+I*78.233)*43758.5453)*2*UE_DOUBLE_PI,R=2+FMath::Frac(FMath::Sin(Seg*39.346+I*11.135)*24634.6345)*5;
+  return FVector(FMath::Cos(A)*R,0,FMath::Sin(A)*R);
+ };
+ const double Clock=T/(34.+I*4.3)+I*.37;const int32 Seg=FMath::FloorToInt(Clock);const double U=Clock-Seg;
+ const FVector A=Spot(Seg),B=Spot(Seg+1);
+ bWalking=U<.34;
+ Heading=(B-A).GetSafeNormal();
+ const double S=FMath::Clamp(U/.34,0.,1.);
+ return FMath::Lerp(A,B,S*S*(3-2*S));
+}
+
+void FS47Herd::SetAlarm(double K, const FVector& FromWorld)
+{
+ Alarm=FMath::Clamp(K,0.,1.);
+ AlarmFrom=FromWorld-(Group?Group.LocalToWorld(FVector::ZeroVector):ModeOffset);
+}
+
+// The collider and the handle go where the cow has got to, without being rewritten every frame.
+void FS47Herd::FollowColliders()
+{
+ if(ColliderAt.Num()!=Count()||Offsets.Num()!=Count())return;
+ for(int32 I=0;I<Count();++I)
+ {
+  const FVector P(COWS[I][0]+Offsets[I].X,Ys[I],COWS[I][1]+Offsets[I].Z);
+  const FVector New=Group?Group.LocalToWorld(P):P+ModeOffset;
+  if(FVector2D::Distance(FVector2D(New.X,New.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))<.6)continue;
+  MoveObstacle(ColliderAt[I],New,S47Herd::COW_R);ColliderAt[I]=New;
+  if(LookAreas.IsValidIndex(I)&&LookBases.IsValidIndex(I))
+  {FVector Look=LookBases[I]+FVector(Offsets[I].X,Ys[I]-S47RoadTerrain::SurfaceY(COWS[I][0],COWS[I][1]),Offsets[I].Z);LookAreas[I].SetPosition(Look);}
+ }
+}
+
+// Back to their own places, when the mode changes: Story's cattle stand where Story left them.
+void FS47Herd::ClearLife()
+{
+ if(ColliderAt.Num()==Count())for(int32 I=0;I<Count();++I)
+ {
+  const FVector P(COWS[I][0],Ys[I],COWS[I][1]);const FVector Base=Group?Group.LocalToWorld(P):P+ModeOffset;
+  if(FVector2D::Distance(FVector2D(Base.X,Base.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))>.001)MoveObstacle(ColliderAt[I],Base,I==Missing?0:S47Herd::COW_R);
+ }
+ ColliderAt.Reset();Fled.Reset();Offsets.Reset();Yaws.Reset();Alarm=0;
+}
+
 // Herd.pose: body and head matrices in road-local terms.
 void FS47Herd::Pose(int32 I, double T)
 {
@@ -150,7 +199,47 @@ void FS47Herd::Pose(int32 I, double T)
 		Pitch = -1.22 * (1 - Up) + 0.05 * Up + 0.05 * FMath::Sin(T * 1.3 + I) * (1 - Up);
 		Turn = 0.28 * FMath::Sin(T * 0.29 + I * 2.1) * (1 - Up) + 0.35 * FMath::Sin(T * 0.21 + I) * Up;
 	}
-	BodyP = FVector(X, Ys[I], Z); BodyQ = S47Three::Euler(0, Yaw, 0);
+	BodyP = FVector(X, Ys[I], Z);
+	double BodyPitch = 0;
+	if (!bStill && S47FarmWorld::Enabled(M) && I != S47Herd::MISSING && Ys.IsValidIndex(I))
+	{
+		bool bWalk = false; FVector Heading(0, 0, -1);
+		const FVector Wander = WanderAt(I, T, bWalk, Heading);
+		const FVector Fear = Fled.IsValidIndex(I) ? Fled[I] : FVector::ZeroVector;
+		const FVector Off = Wander + Fear;
+		const double Base = S47FarmWorld::FloorRoad(X + ModeOffset.X, Z + ModeOffset.Z);
+		const double Here = S47FarmWorld::FloorRoad(X + ModeOffset.X + Off.X, Z + ModeOffset.Z + Off.Z);
+		BodyP = FVector(X + Off.X, Ys[I] + (Here - Base), Z + Off.Z);
+		if (Offsets.IsValidIndex(I)) Offsets[I] = Off;
+		const bool bRun = Alarm > .05 && Fear.SizeSquared() < 16 * 16;
+		if (Alarm > .05)
+		{
+			// Head up and turned about, always ready to go; running when it can still get further off.
+			const FVector Away = FVector(BodyP.X, 0, BodyP.Z) - FVector(AlarmFrom.X, 0, AlarmFrom.Z);
+			Heading = Away.GetSafeNormal();
+			Pitch = FMath::Lerp(Pitch, .12, Alarm); Turn = FMath::Lerp(Turn, .55 * FMath::Sin(T * 3.1 + I * 2.), Alarm);
+			if (bRun)
+			{
+				BodyP.Y += .09 * FMath::Abs(FMath::Sin(T * 7.5 + I));
+				BodyPitch = .09 * FMath::Sin(T * 7.5 + I);
+			}
+		}
+		else if (bWalk)
+		{
+			BodyP.Y += .022 * FMath::Abs(FMath::Sin(T * 3.4 + I));
+			BodyPitch = .012 * FMath::Sin(T * 3.4 + I);
+			Pitch = FMath::Lerp(Pitch, -.25, .8); Turn *= .4;
+		}
+		// Turning takes it a moment.
+		const double Want = FMath::Atan2(-Heading.X, -Heading.Z);
+		if (Yaws.IsValidIndex(I)) { Yaws[I] += FMath::UnwindRadians(Want - Yaws[I]) * FMath::Min(1., StepDt * (Alarm > .05 ? 4. : 1.2)); Yaw = Yaws[I]; }
+		else Yaw = Want;
+	}
+	else if (!bStill && I == S47Herd::MISSING && Alarm > .05 && S47FarmWorld::Enabled(M))
+	{
+		Pitch = FMath::Lerp(Pitch, .12, Alarm); Turn = FMath::Lerp(Turn, .55 * FMath::Sin(T * 3.1), Alarm);
+	}
+	BodyQ = S47Three::Euler(BodyPitch, Yaw, 0);
 	HeadP = BodyP + BodyQ.RotateVector(S47Herd::NECK);
 	HeadQ = BodyQ * S47Three::Euler(Pitch, Turn, 0, TEXT("YXZ"));
 }
@@ -213,8 +302,36 @@ double FS47Herd::BeamAt(const FVector& P) const
 void FS47Herd::Update(double T, const TOptional<FS47HerdHeadlights>& Headlights)
 {
  ReconcileMode();
-	LastT = T;
+	const double Elapsed = FMath::Clamp(T - LastT, 0., .2);
+	LastT = T; StepDt = Elapsed;
+	if (S47FarmWorld::Enabled(M))
+	{
+		if (Fled.Num() != Count())
+		{
+			Fled.Init(FVector::ZeroVector, Count()); Offsets.Init(FVector::ZeroVector, Count()); Yaws.SetNum(Count());
+			ColliderAt.SetNum(Count());
+			for (int32 I = 0; I < Count(); ++I)
+			{
+				Yaws[I] = -COWS[I][2];
+				const FVector P(COWS[I][0], Ys[I], COWS[I][1]);
+				ColliderAt[I] = Group ? Group.LocalToWorld(P) : P + ModeOffset;
+			}
+		}
+		for (int32 I = 0; I < Count(); ++I)
+		{
+			if (Alarm > .05)
+			{
+				// Away from it, each its own way; they bunch and scatter rather than march.
+				const FVector Now(COWS[I][0] + Fled[I].X, 0, COWS[I][1] + Fled[I].Z);
+				FVector Dir = (Now - FVector(AlarmFrom.X, 0, AlarmFrom.Z)).GetSafeNormal();
+				Dir = FQuat(FVector::UpVector, .35 * FMath::Sin(T * .7 + I * 1.9)).RotateVector(Dir);
+				if (Fled[I].Size() < 16) Fled[I] += Dir * 3.4 * Alarm * Elapsed;
+			}
+			else if (!Fled[I].IsNearlyZero()) Fled[I] = FMath::VInterpConstantTo(Fled[I], FVector::ZeroVector, Elapsed, .28);
+		}
+	}
 	if (!bStill || bDirty) { Place(T); bDirty = false; }
+	if (S47FarmWorld::Enabled(M)) FollowColliders();
 	if (Headlights)
 	{
 		const FVector4& F0 = Headlights->F0;
@@ -255,6 +372,8 @@ bool FS47Herd::CowAt(int32 I, FVector& Out) const
 	if (I < 0 || I >= Count() || I == Missing) return false;
 	Out = FVector(COWS[I][0], Ys[I] + 1.1, COWS[I][1]);
 	if (Group) Out = Group.LocalToWorld(Out);else Out+=ModeOffset;
+	// Where its collider stands: within a step of the cow, and one place for everything that asks.
+	if (ColliderAt.IsValidIndex(I)) { Out.X = ColliderAt[I].X; Out.Z = ColliderAt[I].Z; }
 	return true;
 }
 

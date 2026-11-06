@@ -301,7 +301,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
 		// Player.update
-		const double Sp = Speed * (bRun ? 1.6 : 1.0);
+		const double Sp = Speed * (bRun ? 1.6 : 1.0) * MoveScale;
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
 		const double Vx = (Mx * C + Mz * S) * Sp * Dt, Vz = (-Mx * S + Mz * C) * Sp * Dt;
 		const FVector Before = Pos;

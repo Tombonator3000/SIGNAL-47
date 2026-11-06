@@ -2046,3 +2046,7 @@ To nye utviklerhendelser lar Tom vurdere bevegelsene. Nærbilde av dagens Tall O
 ## 6. november 2026 kl.20:15, ekte bortføring
 
 Tom ba om ekte bortføring med ulik grad per alien, og skrekk inne i bygg. `FS47Taken` gir skritt og snakking, flomlys gjennom vinduer, løft og tapt tid. Terms per type ligger i kode og selvtest. Prøver: alle tre typer, og veien ut av lyset. Selvtest 2520 og regresjon 251 består. Skyggen i flomlyset er grov, og flekken på veggen er fortsatt nesten hvit.
+
+## 6. november 2026 kl.21:50, nattskift til 7. november 08:00, første runde
+
+Tom bestilte nattskift med agenter. Samlet diskkontroll: d1–d14 pensjonert, kvitteringer beholdt, 193 GB ledig, to arbeidskopier. To harness-agenter fant at kjeden lys, besøk og bortføring nesten aldri kunne skje naturlig, og at prøvene skjulte det med tvungen start. Rettet: nattens egen trekning av lys, samme scene i by og bil, tak sjekkes hvert sekund, pause holder bortføringen, notat og lagring. Ny `-S47MenuPointerChain` går hele veien uten Force. Regresjon 251 består. Regresjonen feilet én gang på `extra_pulse` uten at årsaken er funnet, og består to ganger etter det.

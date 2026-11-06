@@ -1783,7 +1783,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll
   if(!F.Director->Force(Ids[EventIndex]))
   {
-   UE_LOG(LogTemp,Warning,TEXT("S47 Freeform event fixture %s refused: area=%s arrayFault=%d individuals=%d nativeBody=%d active=%s"),*Ids[EventIndex],*M->Web->Area(),F.Field&&F.Field->HasArrayFault(),
+   UE_LOG(LogTemp,Warning,TEXT("S47 Freeform event fixture %s refused: held=%d modal=%d worldBusy=%d mode=%d paused=%d area=%s arrayFault=%d individuals=%d nativeBody=%d active=%s"),*Ids[EventIndex],F.Held(),M->ModalOpen(),M->World&&M->World->bBusy,int32(M->Mode),M->bPausedByMenu,*M->Web->Area(),F.Field&&F.Field->HasArrayFault(),
     M->Night&&M->Night->Glimpses?M->Night->Glimpses->Individuals().Num():-1,M->Night&&M->Night->Glimpses&&M->Night->Glimpses->HasNativeBody(),*F.Director->ActiveEvent());
    Check(false,TEXT("explicit native event fixture starts: ")+Ids[EventIndex]);return;
   }

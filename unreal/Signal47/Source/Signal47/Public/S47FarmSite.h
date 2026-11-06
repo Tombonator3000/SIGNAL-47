@@ -28,6 +28,10 @@ public:
  int32 VisitStage() const{return Visit;}
  void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;}
  double VisitBodyDistance() const;
+ TOptional<FVector> VisitBodyEye() const{return bBodyOut?TOptional<FVector>(BodyAt+FVector(0,VisitWho==1?.6:1.9,0)):TOptional<FVector>();}
+ // After being taken, no new visit before this clock.
+ void SetCalm(double Until){CalmUntil=Until;}
+ void TestReadyVisit(){Visit=0;VisitDwell=0;}
  FVector Centre() const{return Middle;}
  FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
  FString PlaceId() const{return Place;}
@@ -44,7 +48,8 @@ private:
  // A visit: 0 may come, 1 the warning, 2 it sneaks toward the player, 3 it hunts, 4 over for this site.
  int32 Visit=4;
  double VisitAge=0,VisitDwell=0;
- bool bVisitSeen=false,bVisitTaken=false;
+ bool bVisitSeen=false,bVisitTaken=false,bVisitDread=false;
+ double CalmUntil=0;
  int32 VisitWho=0; // 0 Roswell, 1 crab, 2 tall
  // Crab and tall are moved here; the small ones have their own brain.
  TSharedPtr<struct FS47PaleBody> VisitBody;

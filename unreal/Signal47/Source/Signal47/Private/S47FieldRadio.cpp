@@ -1,4 +1,6 @@
 #include "S47FieldRadio.h"
+#include "S47Freeform.h"
+#include "S47FarmSite.h"
 #include "S47Main.h"
 #include "S47Audio.h"
 #include "S47Inter.h"
@@ -165,6 +167,7 @@ TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
    Add(A.EyePosition(),A.State()==FS47HorrorThreat::EState::Chase || A.State()==FS47HorrorThreat::EState::Capture);
  }
  if(M->DevEvents) if(auto At=M->DevEvents->PalePresence()) Add(*At,false);
+ if(M->Freeform&&M->Freeform->FarmSite) if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,true);
  return Out;
 }
 double FS47FieldRadio::ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible)

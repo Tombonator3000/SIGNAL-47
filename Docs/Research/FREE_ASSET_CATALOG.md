@@ -68,3 +68,22 @@ Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og
 | Camera Shutter — roachpowder | CC0 | Photograph shutter feedback; processed public HQ preview | https://freesound.org/people/roachpowder/sounds/170229/ |
 | Kenney RPG Audio | CC0 | Researched; not imported in this slice | https://kenney.nl/assets/rpg-audio |
 | Plastered Wall 05 — Charlotte Baglioni | CC0 | Researched for later motel work; not imported | https://polyhaven.com/a/plastered_wall_05 |
+
+## Tillegg 6. november 2026: lyd og bygninger
+
+**I bruk (utenfor Git, i `Content/Audio/Raw/sound_design/`):** [Cow moos #2](https://bigsoundbank.com/cow-moos-2-s2382.html), [#3](https://bigsoundbank.com/cow-moos-3-s2383.html) og [#4](https://bigsoundbank.com/cow-moos-4-s2384.html) fra BigSoundBank, merket CC0 på egen side. Klippet og normalisert til `cow_moo_0..2.wav`.
+
+**Kandidater, ikke lastet ned.** Lisens og antall trekanter er lest fra Sketchfabs API 6. november 2026. Nedlasting krever Toms konto. CC Attribution krever kreditering, og hver modell må vurderes for stil og opphav før bruk. Ingen CC0-hus ble funnet. Treff som etterligner andre spill brukes ikke.
+
+| Bruk | Modell og opphav | Trekanter | Lisens |
+|---|---|---|---|
+| Gårdshus med interiør | [Old House Wooden Enterable Rusty, yadrogames](https://sketchfab.com/3d-models/none-7f496b3002d24341a618408cb8221e8c) | 24 246 | CC Attribution |
+| Forlatt butikk eller hus | [Abandoned Building Shop Old House, yadrogames](https://sketchfab.com/3d-models/none-0ed14367314946b298d9a58db66da040) | 12 792 | CC Attribution |
+| Amerikansk hus | [American House, AleixoAlonso](https://sketchfab.com/3d-models/none-798ffaeadacf4e08a2665785422fb45d) | 41 991 | CC Attribution |
+| Låve | [Old wooden barn, mitin41401](https://sketchfab.com/3d-models/none-4887c7e3de244a9db3eb5b4974418b1b) | 23 968 | CC Attribution |
+| Våningshus | [Red Farmhouse (Game-Ready), knjaq_alone](https://sketchfab.com/3d-models/none-dba08ea9e8fd4e919374eb85f6729b5f) | 5 382 | CC Attribution |
+| Skjul | [Worn Shed PBR Game-Ready, donnichols](https://sketchfab.com/3d-models/none-be6edd62e55a4f9a99da940fc164a5b9) | 2 086 | CC Attribution |
+| Skjul med interiør | [Free Modular Shed with interior, denniswoo1993](https://sketchfab.com/3d-models/none-30b1eb71bb0e4b889160f8283e1750c1) | 190 350 | CC Attribution |
+| Motell | [Motel, YD92](https://sketchfab.com/3d-models/none-ca86a44635054d9aa43f91b49694c3cc) | 55 292 | CC Attribution |
+| Kirkeinteriør | [Old church modeling - Interior Scene, aurelien_martel](https://sketchfab.com/3d-models/none-eb6cf543aa7d45e3acee49887ae3135c) | 306 300 | CC Attribution |
+| Bensinstasjon | [Gas station, Elbolilloduro](https://sketchfab.com/3d-models/none-eeb913b90b4344ddbd7852f82a7ef160) | 51 967 | CC Attribution |

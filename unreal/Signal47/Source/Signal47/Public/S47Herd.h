@@ -45,6 +45,9 @@ public:
 	double LitAt(int32 I) const;
 	int32 Count() const { return 9; }
 	FVector Middle() const;
+	// Something near that animals can feel: 0 calm, 1 run from this place.
+	void SetAlarm(double K, const FVector& FromWorld);
+	double AlarmLevel() const { return Alarm; }
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
@@ -65,6 +68,17 @@ private:
 	TArray<double> Ys;
 	bool bDirty = true;
 	double LastT = 0;
+	// Freeform: where each has wandered to, what fear has added to that, and which way it faces.
+	double Alarm = 0;
+	FVector AlarmFrom = FVector::ZeroVector; // herd-local
+	double StepDt = 0;
+	TArray<double> Yaws;
+	TArray<FVector> ColliderAt; // where its collider and handle stand, which follows it in steps
+	void FollowColliders();
+	void ClearLife();
+	TArray<FVector> Fled;
+	TArray<FVector> Offsets;
+	FVector WanderAt(int32 I, double T, bool& bWalking, FVector& Heading) const;
 	FVector BodyP, HeadP;
 	FQuat BodyQ, HeadQ;
 	void Pose(int32 I, double T);
