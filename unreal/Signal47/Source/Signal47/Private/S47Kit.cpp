@@ -186,27 +186,47 @@ S47Kit::FW S47Kit::Paper(const FString& S, bool bReport)
 
 S47Kit::FW S47Kit::Steps(const TArray<TPair<FString, FString>>& Items, int32 Active)
 {
+	// Numbered rows with their state on the right; the current one is the light strip (Tom, wet bench concept 6 November).
 	TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
 	for (int32 i = 0; i < Items.Num(); ++i)
 	{
 		const bool bNow = i == Active, bDone = i < Active;
-		FTextBlockStyle Head = FTextBlockStyle().SetFont(Term(20.f)).SetColorAndOpacity(bNow ? Css(0xffcf9f) : bDone ? Css(0x7f8a78) : Css(0xbdb5a3));
-		if (bDone) Head.SetStrikeBrush(*FCoreStyle::Get().GetBrush("WhiteBrush"));
-		static TArray<TSharedPtr<FTextBlockStyle>> Keep; // the style must outlive the widget
-		Keep.Add(MakeShared<FTextBlockStyle>(Head));
+		FString Title = Items[i].Key, Left, Right;
+		if (Title.Split(TEXT(" / "), &Left, &Right) && Left.IsNumeric()) Title = Right;
+		const FLinearColor Ink = bNow ? Css(0x1a160f) : bDone ? Css(0x8b9284) : Css(0xe9e2cf);
+		const FLinearColor Line = bNow ? Css(0x3d3626) : bDone ? Css(0x7f8a78) : Css(0xc4bfae);
+		const FString State = bNow ? TEXT("CURRENT STEP") : bDone ? TEXT("DONE") : i == Active + 1 ? TEXT("NEXT") : TEXT("THEN");
 		L->AddSlot().AutoHeight().Padding(0, 0, 0, 8)
 		[
 			SNew(SBorder)
-			.BorderImage(bNow ? Box(Css(0xff3c1e, 0.06f), Css(0xff785a, 0.6f)) : Box(FLinearColor::Transparent, FLinearColor(1, 1, 1, 0.1f)))
-			.Padding(FMargin(12, 8))
+			.BorderImage(bNow ? Box(Css(0xeeddb8), Css(0xeeddb8)) : Box(FLinearColor::Transparent, Css(0x6d7562, bDone ? 0.45f : 0.9f)))
+			.Padding(FMargin(12, 9))
 			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Items[i].Key)).TextStyle(Keep.Last().Get())]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(14.f)).ColorAndOpacity(Css(0x9b9483)).AutoWrapText(true))]
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 14, 0)
+				[
+					SNew(SBorder).BorderImage(Box(bNow ? Css(0xe5a33f) : Css(0x3d4a37), bNow ? Css(0xe5a33f) : Css(0x3d4a37))).Padding(FMargin(9, 3))
+					[
+						SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("%02d"), i + 1))).Font(Term(22.f)).ColorAndOpacity(bNow ? Css(0x1a160f) : Css(0xd6d9c4))
+					]
+				]
+				+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Title)).Font(Term(22.f)).ColorAndOpacity(Ink)]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(15.f)).ColorAndOpacity(Line).AutoWrapText(true))]
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)
+				[
+					SNew(SBorder).BorderImage(bNow ? Box(Css(0xe5a33f), Css(0xe5a33f)) : Box(FLinearColor::Transparent, FLinearColor::Transparent)).Padding(FMargin(9, 3))
+					[
+						SNew(STextBlock).Text(FText::FromString(State)).Font(Term(18.f)).ColorAndOpacity(bNow ? Css(0x1a160f) : bDone ? Css(0x8b9284) : Css(0xc4bfae))
+					]
+				]
 			]
 		];
 	}
-	return SNew(SBox).Padding(FMargin(0, 0, 0, 14))[L];
+	return SNew(SBox).Padding(FMargin(0, 0, 0, 10))[L];
 }
 
 S47Kit::FW S47Kit::Button(const FString& Label, TFunction<void()> OnClick, bool bPrimary, TAttribute<bool> Enabled)

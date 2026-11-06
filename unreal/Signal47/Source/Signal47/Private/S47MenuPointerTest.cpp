@@ -4,6 +4,7 @@
 #include "S47Album.h"
 #include "S47Flow.h"
 #include "S47Night.h"
+#include "S47Panels.h"
 #include "S47UI.h"
 #include "S47Json.h"
 #include "ImageUtils.h"
@@ -186,6 +187,14 @@ namespace
    {
     if(M->Night->Album->Shots().Num()!=1)return Fail(TEXT("a kept print was thrown away"));
     UE_LOG(LogTemp,Display,TEXT("S47: album PASS: tab, open print, two-step throw away, frame stays used, kept print refused"));
+    M->UI->Close(true);S47Panels::WetBench(M->UI,TEXT("SARO / PHOTO LAB  |  FILM: free1067653  |  Control room"),0,FString(),[]{});Stage=16;StageAt=Elapsed;return true;
+   }
+   if(Stage==16)
+   {
+    Shot(TEXT("wetbench.png"));Stage=17;StageAt=Elapsed;return true;
+   }
+   if(Stage==17)
+   {
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }

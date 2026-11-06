@@ -1934,3 +1934,7 @@ Terminalen ble drept 09:25 under avspillingsmåling; arbeidet gjenopptatt uten t
 ## 6. november 2026 kl.09:57, installasjon
 
 `612b903c` etter PR435 installert med rask installasjon: 2504 selvtester, tittelkontrakt og 138 uendrede Saved-filer. Lysobjektet i hovedmenyen syner nå i testbildet.
+
+## 6. november 2026 kl.10:10, våtbenk etter konsept
+
+UI-POLISH-20261105-01, første panel: våtbenken har numrerte trinn, lys stripe på gjeldende trinn, status til høyre og fylt ravfarget knapp i Freeform og Story. Sett på skjerm med Story-tekst; selvtest 2504 består. Ikke installert. Workshop, arkiv, bil, array-boks og reel-deck gjenstår.
