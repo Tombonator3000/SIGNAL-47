@@ -1,5 +1,6 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47FieldRadio.h"
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
 #include "S47TripoCreature.h"
@@ -460,6 +461,7 @@ namespace
     // Along the street, which is walkable ground at every one of these fronts.
     M->Player->Place(7995,P.Z+85,0);
     UE_LOG(LogTemp,Display,TEXT("S47: town test at %s floor %.2f, place %.1f %.1f %.1f"),*TownPlace,M->Player->FloorY,P.X,P.Y,P.Z);
+    if(M->FieldRadio)M->FieldRadio->TestOwn();
     if(!D.ForceLights(TownPlace))return Fail(TEXT("town lights must start at each place"));
     Stage=61;StageAt=Elapsed;return true;
    }

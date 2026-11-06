@@ -98,6 +98,15 @@ bool FS47FieldRadio::Build()
  for(auto C:Copies) if(C.IsValid()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  return true;
 }
+bool FS47FieldRadio::Message(const FString& Text)
+{
+ if(!bOwned||!M)return false;
+ const bool bHeard=M->Audio&&Sound.Message(M->Audio);
+ if(M->UI)M->UI->Toast(TEXT("WALKIE: ")+Text,7);
+ UE_LOG(LogTemp,Display,TEXT("S47: walkie message, sound %d: %s"),bHeard,*Text);
+ return true;
+}
+
 void FS47FieldRadio::Take()
 {
  if(bOwned || !bAvailable || bUnsupported || !Root || !Root.Shown() || !M || !M->Player) return;

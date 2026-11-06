@@ -16,6 +16,8 @@ public:
  FS47EncounterSound& operator=(const FS47EncounterSound&)=delete;
  bool Cue(US47Audio* Audio,EKind Kind,TOptional<FVector> AtThree={},double Strength=1.);
  void UpdateRadio(US47Audio* Audio,double Level,TOptional<FVector> AtThree={},bool bHeld=false);
+ // A message on the set: click, squelch, a voice too broken to make out, and the squelch closing.
+ bool Message(US47Audio* Audio);
  void Hold(bool bHeld);
  void Reset();
  static bool SelfTest(TArray<FString>& Lines);
@@ -26,7 +28,8 @@ private:
  TArray<TSharedPtr<FS47AudioBuffer>> Cues;
  TArray<FVoice> Voices;
  TSharedPtr<FS47BufferSourceNode> RadioSource, Transmission;
- TSharedPtr<FS47AudioBuffer> TransmissionBuffer;
+ TSharedPtr<FS47AudioBuffer> TransmissionBuffer,MessageSound;
+ TSharedPtr<FS47BufferSourceNode> MessageSource;
  double NextTransmission=0;
  TSharedPtr<FS47GainNode> RadioGain,RadioVolume,TransmissionGain;
  TSharedPtr<FS47PannerNode> RadioPan;

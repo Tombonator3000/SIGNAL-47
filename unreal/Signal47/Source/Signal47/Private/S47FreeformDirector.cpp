@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include "S47FieldRadio.h"
 #include "S47FarmSite.h"
 #include "S47Inter.h"
 #include "S47UfoPresentation.h"
@@ -467,13 +468,15 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  {
   Anchor=FVector(84,20,492); // Over the Alderete house; a clear line from the yard south of the station.
   LightPlace=TEXT("farm");
-  if(M->UI)M->UI->Toast(TEXT("RADIO: A caller on the county road reports lights low over the Alderete place, south of the station."),7);
+  const FString Tip=TEXT("A caller on the county road reports lights low over the Alderete place, south of the station.");
+  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
  }
  if(Id==TEXT("town_lights"))
  {
   LightPlace=NextLightPlace.IsEmpty()?PickLightPlace():NextLightPlace;NextLightPlace.Empty();
   Anchor=LightPlacePoint(LightPlace)+FVector(0,28,0);
-  if(M->UI)M->UI->Toast(FString(TEXT("RADIO: Somebody in town reports lights low over "))+LightPlaceTitle(LightPlace)+TEXT("."),7);
+  const FString Tip=FString(TEXT("Somebody in town reports lights low over "))+LightPlaceTitle(LightPlace)+TEXT(".");
+  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
  }
  if(Id==TEXT("dusk_orb")){Anchor=FVector(-3.25,US47Night::SaroFloorAt(M->Web,-3.25,-47)+2.2,-47);DuskOrb.Started(M->Freeform->Clock());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);

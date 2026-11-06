@@ -28,6 +28,43 @@ namespace
   }
   return B;
  }
+ // Made here, with no recording: a pulse voice through two moving formants and a small speaker's narrow band, in
+ // syllables at about the rate of speech, under hiss.
+ TSharedPtr<FS47AudioBuffer> MessageBuffer()
+ {
+  static constexpr int32 MsgRate=22050;static constexpr double Dur=3.5,Open=.16,Close=.14;
+  auto B=MakeShared<FS47AudioBuffer>(1,FMath::RoundToInt(MsgRate*Dur),MsgRate);FRandomStream R(47471);
+  float* Out=B->GetChannelData(0);const int32 N=B->Length();
+  // The syllables: when each begins, how long, and where the mouth is.
+  struct FSyl{double At,Len,F1,F2;};TArray<FSyl> Syl;
+  for(double T=Open+.06;T<Dur-Close-.2;){const double Len=R.FRandRange(.09f,.24f);Syl.Add({T,Len,R.FRandRange(320.f,780.f),R.FRandRange(1000.f,2300.f)});T+=Len+(R.FRand()<.2f?R.FRandRange(.14f,.3f):R.FRandRange(.02f,.06f));}
+  double Phase=0,B1=0,B1v=0,B2=0,B2v=0,Lp=0,Hp=0,Crack=0;int32 S=0;
+  for(int32 I=0;I<N;++I)
+  {
+   const double T=double(I)/MsgRate;
+   while(S<Syl.Num()-1&&T>Syl[S].At+Syl[S].Len)++S;
+   const FSyl& Y=Syl[S];const double U=(T-Y.At)/Y.Len;
+   const double Env=U>=0&&U<=1?FMath::Sin(UE_DOUBLE_PI*U):0.;
+   const double F0=118.+18.*FMath::Sin(T*2.1)+10.*FMath::Sin(T*7.3);
+   Phase+=F0/MsgRate;const bool Pulse=Phase>=1.;if(Pulse)Phase-=1.;
+   const double Src=(Pulse?1.:0.)*Env;
+   // Two resonators.
+   const auto Res=[&](double F,double Bw,double& X,double& V,double In)
+   {const double W=2*UE_DOUBLE_PI*F/MsgRate,Rr=FMath::Exp(-UE_DOUBLE_PI*Bw/MsgRate);const double Nx=2*Rr*FMath::Cos(W)*X-Rr*Rr*V+In;V=X;X=Nx;return Nx;};
+   const double V=Res(Y.F1,90.,B1,B1v,Src)*.9+Res(Y.F2,140.,B2,B2v,Src)*.55;
+   // Small speaker, and the set dropping words now and then.
+   Lp+=.42*(V-Lp);Hp+=.06*(Lp-Hp);
+   if(R.FRand()<.00012f)Crack=R.FRandRange(.03f,.1f);
+   const double Keep=Crack>0?.1:1.;Crack=FMath::Max(0.,Crack-1./MsgRate);
+   const double Voice=FMath::Atan((Lp-Hp)*1.5)*.5*Keep;
+   const bool Sq=T<Open||T>Dur-Close;
+   const double Hiss=(R.FRand()*2.f-1.f)*(Sq?.5:.09);
+   const double Click=FMath::Exp(-T*340.)*.45+FMath::Exp(-FMath::Max(0.,T-(Dur-Close))*340.)*(T>Dur-Close?.3:0.);
+   const double Fade=FMath::Clamp((Dur-T)/.01,0.,1.);
+   Out[I]=float((Voice+Hiss+Click)*Fade);
+  }
+  return B;
+ }
  TSharedPtr<FS47AudioBuffer> HissBuffer()
  {
   auto B=MakeShared<FS47AudioBuffer>(1,Rate*2,Rate); FRandomStream R(47241);
@@ -84,6 +121,18 @@ bool FS47EncounterSound::Bind(US47Audio* A)
   UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording loaded, %.1f s, peak %.3f before levelling"),TransmissionBuffer->Duration(),Peak);
  }
  else UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording absent, radio hiss only"));
+ return true;
+}
+
+bool FS47EncounterSound::Message(US47Audio* Audio)
+{
+ if(!Bind(Audio)||bHeld)return false;
+ if(!MessageSound)MessageSound=MessageBuffer();
+ FS47AudioContext::FBatch Batch(*Context);
+ auto Src=Context->CreateBufferSource();Src->Buffer=MessageSound;
+ auto Level=Context->CreateGain();Level->Gain.SetValue(.8*FMath::Clamp(double(Owner->RadioLevel),.35,1.));
+ Src->Connect(Level);Level->Connect(Owner->SfxBus);Src->Start(Context->CurrentTime());
+ MessageSource=Src;
  return true;
 }
 
@@ -225,6 +274,14 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why)
  { OK&=B; Lines.Add(FString::Printf(TEXT("%s encounter audio: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why)); };
+ {
+  // The walkie message must carry: heard over a small set, not silent and not all noise.
+  const auto Msg=MessageBuffer();const float* P=Msg->GetChannelData(0);double Mid=0;int32 Count=0;float Peak=0;
+  for(int32 I=0;I<Msg->Length();++I){Peak=FMath::Max(Peak,FMath::Abs(P[I]));const double Sec=double(I)/22050;if(Sec>.3&&Sec<3.2){Mid+=P[I]*P[I];++Count;}}
+  const double Rms=FMath::Sqrt(Mid/FMath::Max(1,Count));
+  Lines.Add(FString::Printf(TEXT("INFO walkie message RMS %.3f peak %.2f"),Rms,Peak));
+  Check(Rms>.05&&Rms<.5&&Peak<=1.2f,TEXT("walkie message is audible, with a voice over its hiss"));
+ }
  auto* A=OfflineAudio(); FS47EncounterSound Mix;
  TArray<float> Samples; Samples.SetNumZeroed(Rate/4*2);
  Check(Mix.Cue(A,EKind::Presence),TEXT("presence starts without any imported audio"));

@@ -2034,3 +2034,7 @@ Dagens lusking var tripping: 47 cm mellom hvert steg og 10 cm huk. Nå dypere hu
 ## 6. november 2026 kl.18:30, Tall og Crab i utviklermenyen
 
 To nye utviklerhendelser lar Tom vurdere bevegelsene. Nærbilde av dagens Tall One-kropp viser grov tekstur og ingen store svarte øyne, så øyeglimt venter på ny Pale. Selvtest 2515 og regresjon 251 består. Menyprøven krasjer ikke, men har ikke bilder av de to hendelsene.
+
+## 6. november 2026 kl.18:50, walkie-talkie-melding
+
+`farm_lights` og `town_lights` melder nå over båret radio. Lyden genereres i spillet uten opptak. Byprøven gir melding med lyd på alle fire steder, selvtest 2517 består. Regresjon 251 kjørte før siste nivåjustering, som bare endret lydnivå og prøvekode.
