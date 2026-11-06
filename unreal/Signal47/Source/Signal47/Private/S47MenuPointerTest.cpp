@@ -474,6 +474,13 @@ namespace
     {
      if(Elapsed-WalkFrom<4)return true;
      Shot(*FString::Printf(TEXT("nature-%s.png"),V[I].Name));ShotPending=false;
+     {
+      // Which surface is underfoot, by name, since a shared look can hide which mesh actually shows.
+      const FVector Foot=S47Three::ToUE(M->Player->Pos);FHitResult Hit;FCollisionQueryParams Q;Q.bTraceComplex=true;
+      const bool bHit=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Foot+FVector(0,0,300),Foot-FVector(0,0,800),ECC_Visibility,Q);
+      const auto* C=bHit?Cast<UPrimitiveComponent>(Hit.GetComponent()):nullptr;const auto* Mat=C?C->GetMaterial(0):nullptr;const auto* SM=Cast<UStaticMeshComponent>(C);
+      UE_LOG(LogTemp,Display,TEXT("S47: nature underfoot %s: %s mesh %s material %s"),V[I].Name,C?*C->GetName():TEXT("none"),SM&&SM->GetStaticMesh()?*SM->GetStaticMesh()->GetName():TEXT("-"),Mat?*Mat->GetName():TEXT("-"));
+     }
      if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=306;}
      else Stage=I==6?307:Stage+1;
      return true;
