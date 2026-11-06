@@ -4,11 +4,15 @@
 
 ## Samlet game bible, Codex 6. november
 
-Codex gjenbruker ferdig cosmic-kopi på `codex/game-bible-20261106` fra origin/main. Dokumentarbeid: samlet bibel, kildekart, innganger og nye designbeslutninger/TODO. Ingen motorjobb, runtimeendring, ny kopi eller rydderunde. Hovedkopiens lokale UI/TODO-arbeid er urørt. To arbeidskopier totalt; cosmic-prototypens lokale lydgrunnlag bevares.
+Ferdig: PR444 flettet til main som `2a77e219`. Hovedbibel: Docs/Design/GAME_BIBLE.md, med gameplay, verden, SC01-SC13, UFO-feltundersøkelser og gårdshorror/tapt tid i Freeform. 62 detaljkilder er registrert og gamle planer peker til bibelen. Ingen nye lenkefeil mot førtilstanden; ingen motorjobb, installasjon eller runtimeendring. Eksisterende cosmic-kopi på `codex/game-bible-20261106` er ferdig og kan gjenbrukes eller avvikles ved neste samlede kjøring; privat lydgrunnlag bevares. Totalt to kopier. Hovedkopiens lokale UI/TODO-arbeid er urørt; ikke overskriv dette ved innhenting av main.
 
 ## Dagskift 6. november, Claude Code
 
 Tom kl. 08:33: fortsett med rettelser og hele TODO, flett underveis, ikke stopp før Tom sier fra. Eneste aktive kopi for Claude er `~/SIGNAL-47`, først på `claude/title-object-visible` (menyobjekt, musepeker, grafikkmåling). Tunge jobber under `production_lease`. Tom spiller periodevis; start av spillet stopper byggene, det installerte spillet stoppes aldri.
+
+## Cosmic ambient, Codex 5. november
+
+Ferdig kildeprototype, PR430 flettet til main som `10816fee` kl.22:30. Egen kopi `~/SIGNAL-47-cosmic`, gren `codex/cosmic-ambient-20261105`; totalt to kopier. Editorbygg, 56 musikk-/grafkontroller og 21 DSP-sjekker består; commandlet gir 72s med tre lokale referanser og avslutter med status 0. Før/etter-WAV og runtime-WAV ligger i ChatGPT-prosjektets lydreferanser/cosmic-prototype. Ingen installasjon eller endring av hovedkopiens kildefiler. Motorvindu og filansvar frigitt; egen ferdig kopi/cache kan avvikles ved neste samlede kjøring. Hovedkopiens UI/receiver-arbeid er urørt; ved sammenslåing av S47Score.h beholdes både den nye Bus og Cosmic. Ingen ny rydderunde.
 
 ## Nattskift 5. til 6. november, Claude Code
 
