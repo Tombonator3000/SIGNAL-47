@@ -8,6 +8,20 @@
 #include "ReferenceSkeleton.h"
 #include "Misc/CommandLine.h"
 
+namespace { TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints; }
+void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE)
+{
+ // A dot of a fixed size falls under one pixel past a few metres. Held at a minimum width on screen, the eyes
+ // can be made out far into the dark, as two points, while the body is still unseen.
+ static constexpr double PerMetre=.0028;
+ AllGlints.RemoveAll([](const TWeakObjectPtr<UStaticMeshComponent>& G){return !G.IsValid();});
+ for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())if(G->IsVisible())
+ {
+  const double Metres=FVector::Dist(EyeUE,G->GetComponentLocation())/100.;
+  G->SetWorldScale3D(FVector(FMath::Max(EyeSize,Metres*PerMetre)));
+ }
+}
+
 // A pinprick of light in each big black eye: it reads in the dark before the rest of the face does. Children of the
 // head bone, so they turn with it and hide with the body.
 void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
@@ -26,7 +40,7 @@ void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
   const FVector Target=Head.GetLocation()+FVector(I?EyeSide:-EyeSide,EyeFront,EyeUp);
   G->SetRelativeLocation(Head.InverseTransformPosition(Target));
   G->SetWorldScale3D(FVector(EyeSize));
-  Glints.Add(G);
+  Glints.Add(G);AllGlints.Add(G);
  }
 }
 
