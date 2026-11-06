@@ -94,14 +94,12 @@ namespace
  {
   if(Built==W)return;Built=W;Parts.Reset();auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));if(!Cube)return;
   auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood"));auto* Metal=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_Metal.M_Town_Metal"));
-  UMaterialInterface* Gravel=nullptr;if(const auto* N=W->Node(1250))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))Gravel=C->GetMaterial(0);
   auto Box=[&](const FString& Name,FVector Road,FVector Size,UMaterialInterface* Material)
   {
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->GetRootComponent());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);if(Material)C->SetMaterial(0,Material);
    C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCastShadow(true);C->RegisterComponent();W->AdoptNode(C,INDEX_NONE,Name);Parts.Add({C,Road,Size});
   };
-  // Visible road dressing supports the same authoritative driving/walking floor; no invisible floor bypass.
-  for(int32 I=0;I<22;++I){const double X=8+I*5.;Box(FString::Printf(TEXT("farm:ground/path:%02d"),I),FVector(X,S47FarmWorld::FloorRoad(X,S47RoadTerrain::RanchZ(X))-.08,S47RoadTerrain::RanchZ(X)),FVector(5.03,.16,6.4),Gravel);}
+  // The road is the terrain's own ranch road. Flat gravel plates here stood in steps and overlapped it (Tom, 6 November).
   auto Fence=[&](double X0,double Z0,double X1,double Z1,int32 Id)
   {
    const double L=FVector2D(X1-X0,Z1-Z0).Size();const int32 Count=FMath::CeilToInt(L/4.);

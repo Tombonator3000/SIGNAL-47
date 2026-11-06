@@ -11,6 +11,8 @@
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
 #include "S47FarmSite.h"
+#include "S47FarmNight.h"
+#include "S47Web.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
 #include "Modules/ModuleManager.h"
@@ -187,6 +189,12 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRoad")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the road test needs the night"));
+     M->World->Enter(TEXT("road"));Stage=80;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerHouse")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();Stage=70;StageAt=Elapsed;return true;
@@ -240,6 +248,38 @@ namespace
     if(Left<.3){++WalkAt;return true;}
     M->Player->Yaw=FMath::Atan2(-V.X,-V.Z);M->Player->Pitch=-.08;M->Player->TestMove=FVector2D(0,-FMath::Min(1.,Left/.4));
     return true;
+   }
+   // The way out at night, from the road side and from the farm, in the frame each is really seen in.
+   if(Stage>=80&&Stage<86)
+   {
+    struct FV{const TCHAR* Name;const TCHAR* Area;double X,Z,LX,LZ;double Lift;};
+    const FVector Sign=FS47FarmNight::SignWorld();
+    const FV V[]={{TEXT("turnoff-far"),TEXT("road"),8001,110,8007,196,6},{TEXT("turnoff-near"),TEXT("road"),8002,178,8007,196,3},{TEXT("sign"),TEXT("road"),Sign.X,Sign.Z-24,Sign.X,Sign.Z,3},{TEXT("road-in"),TEXT("saro"),-16,497,16,497,0},{TEXT("road-mid"),TEXT("saro"),30,501,70,497,0},{TEXT("road-end"),TEXT("saro"),100,503,60,497,0}};
+    const int32 I=Stage-80;
+    if(ShotPending){Shot(*FString::Printf(TEXT("road-%s.png"),V[I].Name));ShotPending=false;Stage=I==5?86:Stage+1;StageAt=Elapsed;return true;}
+    if(M->Web->Area()!=V[I].Area){M->World->Enter(V[I].Area);StageAt=Elapsed;return true;}
+    const FVector D(V[I].LX-V[I].X,V[I].Lift,V[I].LZ-V[I].Z);M->Player->Place(V[I].X,V[I].Z,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());ShotPending=true;StageAt=Elapsed;
+    return true;
+   }
+   if(Stage==86)
+   {
+    if(!M->Freeform->FarmNight->LampsOn())return Fail(TEXT("the lamps must be lit at night"));
+    const FVector C=FVector(84,0,492);M->Player->Place(C.X,C.Z,0);Stage=87;StageAt=Elapsed;WalkFrom=Elapsed;return true;
+   }
+   if(Stage==87)
+   {
+    StageAt=Elapsed;
+    if(Elapsed-WalkFrom<45&&M->Freeform->FarmNight->FarmSounds()<2)return true;
+    if(M->Freeform->FarmNight->FarmSounds()<2)return Fail(TEXT("the farm must make sounds of its own"));
+    if(!M->Freeform->TestAdvance(12.*3600.))return Fail(TEXT("advancing to day"));
+    Stage=88;WalkFrom=Elapsed;return true;
+   }
+   if(Stage==88)
+   {
+    StageAt=Elapsed;if(Elapsed-WalkFrom<1)return true;
+    if(M->Freeform->FarmNight->LampsOn())return Fail(TEXT("the lamps must be off by day"));
+    UE_LOG(LogTemp,Display,TEXT("S47: farm road PASS: lamps lit at night and off by day, %d farm sounds played"),M->Freeform->FarmNight->FarmSounds());
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==60)
    {

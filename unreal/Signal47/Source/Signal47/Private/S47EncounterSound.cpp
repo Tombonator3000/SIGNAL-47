@@ -70,6 +70,7 @@ bool FS47EncounterSound::Bind(US47Audio* A)
  TArray<uint8> Bytes;
  if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design/alien_interference.wav"))))
   TransmissionBuffer=S47Wa::DecodeWav(Bytes);
+ UE_LOG(LogTemp,Display,TEXT("S47: alien interference %s"),TransmissionBuffer?*FString::Printf(TEXT("recording loaded, %.1f s"),TransmissionBuffer->Duration()):TEXT("recording absent, radio hiss only"));
  return true;
 }
 
@@ -161,6 +162,7 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
   auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(4200.);
   Transmission->Connect(Band); Band->Connect(TransmissionGain); TransmissionGain->Connect(RadioGain);
   Transmission->Start(Now);
+  UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f"),RadioLevel);
   NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(13.f,25.f);
  }
  RadioMix();
