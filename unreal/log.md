@@ -1942,3 +1942,7 @@ UI-POLISH-20261105-01, første panel: våtbenken har numrerte trinn, lys stripe 
 ## 6. november 2026 kl.10:15, arkivrader
 
 UI-POLISH-20261105-01: arkivradene i rommet har status eller dag i egen høyrekolonne. Selve radene er sett på skjerm med oppdiktede data; selvtest 2504 består. Bil-panelet er uendret: fullastet Jeep losser fortsatt med ett trykk uten panel, fordi konseptets ekstra steg ville endret løpet mange prøver og spillere bruker. Konseptets innholdsliste er derfor ikke laget.
+
+## 6. november 2026 kl.10:16, installasjon
+
+`45fe414c` etter PR438 installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer. Til neste samlede rydding: `~/scratch-bm/Signal47-night-20261105/d1` til `d4` er ferdige kandidater; `d5`, dag `d1` og `d2` beholdes foreløpig.
