@@ -278,7 +278,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  const bool bFirst=VisitAge<=0;VisitAge+=Dt;
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  // Under a roof it starts overhead, also when they have only just run in there.
- if(!bVisitDread&&!bDriving&&!Tk->Busy()&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))bVisitDread=true;
+ // Twice at most: when the light has given up on one window, it tries another.
+ if(bFirst)VisitRounds=0;
+ if(VisitRounds<2&&!bDriving&&!Tk->Busy()&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))++VisitRounds;
  if(Visit==1)
  {
   // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.
@@ -286,9 +288,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   {
    M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
    // The truck will not start now, the first time it is tried.
-   M->World->bKeyStall=true;bVisitDread=false;
+   M->World->bKeyStall=true;
    // The tall one's light is how it comes at all.
-   if(VisitWho==2&&Tk->Begin(Who,Title))bVisitDread=true;
+   if(VisitWho==2&&VisitRounds<2&&Tk->Begin(Who,Title))++VisitRounds;
   }
   if(VisitAge<6)return;
   if(bAway||Dist>80){EndVisit(false);return;}

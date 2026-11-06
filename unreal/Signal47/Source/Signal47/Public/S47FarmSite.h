@@ -48,7 +48,8 @@ private:
  // A visit: 0 may come, 1 the warning, 2 it sneaks toward the player, 3 it hunts, 4 over for this site.
  int32 Visit=4;
  double VisitAge=0,VisitDwell=0;
- bool bVisitSeen=false,bVisitTaken=false,bVisitDread=false;
+ bool bVisitSeen=false,bVisitTaken=false;
+ int32 VisitRounds=0;
  double CalmUntil=0;
  int32 VisitWho=0; // 0 Roswell, 1 crab, 2 tall
  // Crab and tall are moved here; the small ones have their own brain.

@@ -1,4 +1,5 @@
 #include "S47Taken.h"
+#include "S47CalicheAccess.h"
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
 #include "S47Main.h"
@@ -198,7 +199,7 @@ void FS47Taken::ShowLight(double K)
   L=NewObject<USpotLightComponent>(M->Web.Get(),TEXT("S47TakenFlood"));
   L->SetupAttachment(M->Web->GetRootComponent());L->SetMobility(EComponentMobility::Movable);L->RegisterComponent();
   L->SetIntensityUnits(ELightUnits::Candelas);L->SetCastShadows(true);L->SetVolumetricScatteringIntensity(5.f);
-  L->ShadowResolutionScale=4.f;L->MarkRenderStateDirty();L->SetInnerConeAngle(13.f);L->SetOuterConeAngle(24.f);L->SetAttenuationRadius(9000.f);L->SetIndirectLightingIntensity(1.f);
+  L->ShadowResolutionScale=4.f;L->SetSourceRadius(55.f);L->SetSoftSourceRadius(90.f);L->MarkRenderStateDirty();L->SetInnerConeAngle(13.f);L->SetOuterConeAngle(24.f);L->SetAttenuationRadius(9000.f);L->SetIndirectLightingIntensity(1.f);
   Spot=L;
  }
  const FLinearColor Col=LightColor(Age);
@@ -235,6 +236,7 @@ void FS47Taken::HideLight()
  if(auto* B=Fill.Get()){B->SetIntensity(0);B->SetVisibility(false);}
  if(M&&M->Player)M->Player->MoveScale=1;
  if(M&&M->Audio)M->Audio->HoldRoomTone(1.f,1.2f);
+ S47CalicheAccess::SetLampLevel(1);
  if(M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,TEXT("taken"));
  if(Ufo)Ufo->Hide();
 }
@@ -363,6 +365,8 @@ void FS47Taken::Step(double Dt)
  if(Now==EStage::Dread)M->Audio->HoldRoomTone(.15f,.8f);
  if(Now==EStage::Dread)
  {
+  // The room's own lamp is failing.
+  S47CalicheAccess::SetLampLevel(.55+.45*FMath::Sin(Age*7.3)*FMath::Sin(Age*2.1));
   // Someone on the roof, going over and back. Then something said, not quite language.
   StepIn-=Dt;
   if(StepIn<=0)
@@ -394,6 +398,7 @@ void FS47Taken::Step(double Dt)
     }
     if(Door!=INDEX_NONE)M->Freeform->HouseDoors->Use(Door);
    }
+   else if(M->Web->Area()==TEXT("diner")||M->Web->Area()==TEXT("road"))S47CalicheAccess::MoveNearestDoor(Feet(),11);
   }
   if(Age>=DreadSeconds&&!StartFlood())GiveUp();
   return;
@@ -403,6 +408,7 @@ void FS47Taken::Step(double Dt)
   const double K=Pulse(Age)*FMath::Clamp(Age/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Age));
   const FVector Chest=Feet()+FVector(0,1.25,0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
+  S47CalicheAccess::SetLampLevel(0);
   const bool bReach=LightReaches(Chest);
   if(bReach||!bSpill)Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
   ShowLight(K);

@@ -67,6 +67,27 @@ namespace
   for(const TCHAR* Area:{TEXT("road"),TEXT("diner")})for(auto& C:Main->Web->CollidersMutable(Area))if(C.Id==TEXT("access:door:")+R.Id)C.bEnabled=!R.bOpen;
  }
 }
+bool MoveNearestDoor(const FVector& At,double Range)
+{
+ FRoom* Best=nullptr;double Near=Range;
+ for(FRoom& R:Rooms)if(auto* C=R.Leaf.Get())
+ {
+  const FVector P=S47Three::ToThree(C->GetComponentLocation());
+  const double D=FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(At.X,At.Z));
+  if(D<Near&&D>1.4){Near=D;Best=&R;}
+ }
+ return Best&&UseDoor(Best->Id);
+}
+void SetLampLevel(double K)
+{
+ for(const auto& L:Lamps)if(auto* P=L.Get())P->SetIntensity(float(650.*FMath::Clamp(K,0.,1.5)));
+}
+bool RoomMiddle(const FString& Id,FVector& Out)
+{
+ const FRoom* R=Find(Id);if(!R)return false;
+ Out=R->Root+FVector((R->X0+R->X1)*.5,R->Floor,-(R->Y0+R->Y1)*.5);
+ return true;
+}
 bool HasDoor(const FString& Id){return Find(Id)!=nullptr;}
 bool IsOpen(const FString& Id){const auto* R=Find(Id);return R&&R->bOpen;}
 bool UseDoor(const FString& Id)

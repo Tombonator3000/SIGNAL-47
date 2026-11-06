@@ -233,6 +233,10 @@ void US47World::Init(US47Main* InM)
 				// The parked service vehicle itself accepts a held parcel before offering a drive.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
 					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
+				// An empty tank offers the way out instead of a drive that cannot move. This is the jeep's
+				// own handle, so it also answers at STATION 01, where the Freeform cargo rack is not drawn.
+				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && !M->Freeform->Field->HasVehicleFuel())
+					return { TEXT("Tank empty / roadside return and cargo rack"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
 				return { TEXT("Drive / SARO service work"), [this,Place] { Roam(Place); } };
 			}
 			const FS47Truck* Parked = TruckHere();

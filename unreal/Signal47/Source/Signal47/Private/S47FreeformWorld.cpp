@@ -116,7 +116,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
  Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));Crafting.Load(S47J::Obj(O,TEXT("workshop")));bWorkshopResume=false;Wear.Load(S47J::Obj(O,TEXT("arrayWear")));
  // Tests written for the full array keep it; only their own explicit fixture wears it down.
- if(!O&&(!(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformEvidenceTest")))||FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))))Wear.Start();
+ if(!O&&(!(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformEvidenceTest")))||FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))Wear.Start();
 bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
  ServiceTarget=TEXT("S-03");OrdinaryServiceSerial=0;
  PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
@@ -310,9 +310,10 @@ bool FS47FreeformWorld::StartPump()
  if(!Ready()||M->Freeform->Held()||bPumping)return false;
  if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
  {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
- const double Volume=FMath::Min(1.,4.-Fuel);const int32 Cost=FMath::CeilToInt(Volume/.25-.00001);
+ const double Volume=FMath::Min(1.,4.-Fuel);
  if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
- if(M->Freeform->Budget()<Cost){Change(FString::Printf(TEXT("This metered fill needs up to $%d of operating budget. No fuel delivered or charged."),Cost));return false;}
+ // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
+ if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: No operating budget, so no fuel delivered or charged. OPS: Registered work pays into the budget. An empty tank can call roadside return from the jeep."));return false;}
  bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
  Change(TEXT("REGULAR connected to SARO truck. Each completed two-second interval delivers up to 0.25 tank units for $1. E stops; only delivered fuel is charged."));return true;
 }
@@ -459,6 +460,7 @@ bool FS47FreeformWorld::InstallServiceCabinet()
  {C->SetStaticMesh(Trim[K]);C->SetMaterial(0,CabinetOriginals[K].Materials[0].Get());}
  bServiceCabinet=true;return true;
 }
+FVector FS47FreeformWorld::TruckPointForTest(){return TruckPoint();}
 void FS47FreeformWorld::PlaceServiceDoor()
 {
  if(!M||!M->Web||PlacedTarget==ServiceTarget)return;
@@ -831,8 +833,10 @@ void FS47FreeformWorld::OpenShop()
  TrackPowerFault(M->Freeform->PowerFault());
  Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Jeep; unpack at GARAGE RECEIVING to add stock."),M->Freeform->Budget())));
  if(Payload>0)Rows.Add(S47Kit::Paper(TEXT("PAID PARCEL / ")+ParcelDescription()));
+ if(!CanAddShopItem())Rows.Add(S47Kit::Small(TEXT("The counter handles one parcel at a time, and you already have one out. GARAGE RECEIVING: Unpack supplies. CALIBRATION / REPAIR: Return a service case or logger. Then buy here again.")));
+ if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Use the jeep to call roadside return; it costs time, not money.")));
  for(const TCHAR* Id:Items){const FString Key(Id);Rows.Add(S47Kit::Button(FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key)),[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99));}
- Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work. Donor controllers require bench testing before harvesting their relay.")));
+ Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work, and only with no requisition balance already standing. Donor controllers require bench testing before harvesting their relay.")));
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
  if(M->Freeform->PowerFault())
  {
@@ -870,15 +874,25 @@ bool FS47FreeformWorld::ParcelUse()
 bool FS47FreeformWorld::CargoUse()
 {
  if(!M||!M->World||M->World->bDriving||!Near(M->World->ServicePosition(),4.8)){Change(TEXT("Move closer to your parked service jeep to load or unload its cargo."));return true;}
+ const auto Unload=[this]{Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));};
  if(Payload==2){Payload=3;bParcelWasLoaded=true;Change(TEXT("Parcel secured in the service-truck cargo rack. It travels with the truck."));}
- else if(Payload==3){Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));}
+ else if(Payload==3&&Fuel>.001)Unload();
  else
  {
-  TArray<S47Kit::FW> R;R.Add(S47Kit::Sub(FString::Printf(TEXT("FUEL  %.1f / 4"),Fuel)));
-  R.Add(S47Kit::Status(TEXT("Cargo"),Payload==3?ParcelDescription().ToUpper():FString(TEXT("EMPTY")),Payload==3?1:0));
+  // A loaded rack on an empty tank still opens this menu: roadside return carries the truck and its cargo.
+  TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / 4"),Fuel)));
+  R.Add(S47Kit::Section(TEXT("CARGO")));
+  R.Add(S47Kit::Status(TEXT("Parcel"),Payload==3?TEXT("LOADED"):TEXT("EMPTY"),Payload==3?1:0,FString(),false,Payload==3));
+  if(Payload==3)
+  {
+   TArray<TPair<FString,FString>> Lines;
+   for(const TCHAR* Key:Items)if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
+   if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
+  }
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
   R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001));
-  if(Fuel>.001)R.Add(S47Kit::Small(TEXT("Roadside return is available when the fuel is empty.")));
+  if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
+  R.Add(S47Kit::Small(Fuel>.001?TEXT("Roadside return is available when the fuel is empty."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE JEEP / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -1056,7 +1070,7 @@ void FS47FreeformWorld::OpenWorkshop()
  // The world is paused under a panel: step back for the bench job, then return here when it is done.
  auto Act=[this](const FString& Action,const FString& Arg){WorkshopAction(Action,Arg);if(BenchJob.IsEmpty())OpenWorkshop();else{M->UI->Close();bWorkshopResume=true;}};
  // Left: what is on the bench and the one thing to do with it.
- TArray<S47Kit::FW> L;L.Add(S47Kit::Sub(FString::Printf(TEXT("TRAY %d / %d"),Crafting.Tray.Num(),FS47Workshop::TraySize)));
+ TArray<S47Kit::FW> L;L.Add(S47Kit::Section(TEXT("PARTS"),FString::Printf(TEXT("%d OF %d"),Crafting.Tray.Num(),FS47Workshop::TraySize)));
  int32 Untested=0,Dead=0;
  for(const auto& P:Crafting.Tray)
  {
@@ -1068,15 +1082,16 @@ void FS47FreeformWorld::OpenWorkshop()
  if(Dead>0)L.Add(S47Kit::Button(FString::Printf(TEXT("Scrap %d dead"),Dead),[Act]{Act(TEXT("scrapdead"),FString());},false,WorkshopBlock(TEXT("scrapdead")).IsEmpty()));
  const FString StripBlock=WorkshopBlock(TEXT("unpack"));
  L.Add(S47Kit::Button(FString::Printf(TEXT("Strip a used recorder (%d)"),InventoryCount(TEXT("recorder_donor"))),[Act]{Act(TEXT("unpack"),FString());},Untested==0&&Dead==0&&Crafting.Tray.IsEmpty(),StripBlock.IsEmpty()));
- L.Add(S47Kit::Small(FString::Printf(TEXT("Stock: %d dry cells, %d foil. Caliche sells both."),Cells,Foil)));
+ L.Add(S47Kit::Small(FString::Printf(TEXT("Stock: %d dry cells / %d foil."),Cells,Foil)));
  // Right: the known recipes, one in detail.
- TArray<S47Kit::FW> R;R.Add(S47Kit::Sub(TEXT("BUILD")));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("BUILD")));
  const FS47Workshop::FRecipe* Pick=FS47Workshop::Recipe(WorkshopPick);if(Pick&&!Crafting.Known(*Pick))Pick=nullptr;
  for(const auto& Recipe:FS47Workshop::Recipes())if(Crafting.Known(Recipe))
  {
   if(!Pick)Pick=&Recipe;const FString Id(Recipe.Id);
-  const FString State=Crafting.IsBuilt(Id)?TEXT("BUILT"):Crafting.Missing(Recipe,Cells,Foil).IsEmpty()?TEXT("READY"):TEXT("needs parts");
-  R.Add(S47Kit::Choice(FString(Recipe.Title)+TEXT(" / ")+State,Pick==&Recipe,[this,Id]{WorkshopPick=Id;OpenWorkshop();}));
+  const FString State=Crafting.IsBuilt(Id)?TEXT("BUILT"):Crafting.Missing(Recipe,Cells,Foil).IsEmpty()?TEXT("READY"):TEXT("NEEDS PARTS");
+  // the recipe name left, its state in the right-hand column, as the parts list
+  R.Add(S47Kit::Choice(FString(Recipe.Title),Pick==&Recipe,[this,Id]{WorkshopPick=Id;OpenWorkshop();},false,State));
  }
  if(!Pick)R.Add(S47Kit::Small(TEXT("Strip a recorder to see what its parts can become. The loan logger needs none of this.")));
  else
@@ -1098,8 +1113,8 @@ void FS47FreeformWorld::OpenWorkshop()
     const bool Waiting=!Good&&Crafting.Tray.ContainsByPredicate([&](const FS47Workshop::FPart& P){return P.Kind==K&&!P.bTested;});
     R.Add(S47Kit::Status(FS47Workshop::PartTitle(K),Good?TEXT("HAVE"):Waiting?TEXT("TEST FIRST"):TEXT("MISSING"),Good?1:Waiting?0:-1));
    }
-   if(Pick->Cells>0)R.Add(S47Kit::Status(FString::Printf(TEXT("%d dry cell%s"),Pick->Cells,Pick->Cells==1?TEXT(""):TEXT("s")),FString::Printf(TEXT("HAVE %d"),Cells),Cells>=Pick->Cells?1:-1));
-   if(Pick->Foil>0)R.Add(S47Kit::Status(TEXT("Shielding foil"),FString::Printf(TEXT("HAVE %d"),Foil),Foil>=Pick->Foil?1:-1));
+   if(Pick->Cells>0)R.Add(S47Kit::Status(TEXT("Dry cell"),FString::Printf(TEXT("NEED %d / HAVE %d"),Pick->Cells,Cells),Cells>=Pick->Cells?1:-1));
+   if(Pick->Foil>0)R.Add(S47Kit::Status(TEXT("Shielding foil"),FString::Printf(TEXT("NEED %d / HAVE %d"),Pick->Foil,Foil),Foil>=Pick->Foil?1:-1));
    const FString Block=WorkshopBlock(TEXT("build"),Id);
    if(Block.IsEmpty())R.Add(S47Kit::Action(TEXT("Build"),[Act,Id]{Act(TEXT("build"),Id);}));else R.Add(S47Kit::Button(TEXT("Build"),[]{},false,false));
    if(Crafting.Missing(*Pick,Cells,Foil).IsEmpty()&&!Block.IsEmpty())R.Add(S47Kit::Small(Block));
@@ -1126,13 +1141,25 @@ FString FS47FreeformWorld::BranchNeeds(const FS47ArrayWear::FBranch& B) const
 void FS47FreeformWorld::OpenBranch(const FString& BranchId)
 {
  const auto* B=FS47ArrayWear::Branch(BranchId);if(!Ready()||!B||!M->UI||Wear.IsRestored(BranchId))return;
- TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("%s / %d ANTENNAS OUT OF SERVICE\n%s"),B->Title,B->Dishes.Num(),B->Fault)));
- for(const auto& N:B->Needs)R.Add(S47Kit::Status(FString::Printf(TEXT("%s, %d needed"),*ItemTitle(N.Item),N.Count),FString::Printf(TEXT("IN STOCK %d / %s"),InventoryCount(N.Item),InventoryCount(N.Item)>=N.Count?TEXT("READY"):TEXT("MISSING")),InventoryCount(N.Item)>=N.Count?1:-1));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Banner(TEXT("BRANCH STATUS"),FString::Printf(TEXT("%d antenna%s out of service"),B->Dishes.Num(),B->Dishes.Num()==1?TEXT(""):TEXT("s")),B->Fault,TEXT("FAULT"),-1));
+ for(const auto& N:B->Needs)
+ {
+  const int32 Have=InventoryCount(N.Item);const bool Enough=Have>=N.Count;
+  const FString Needed=ItemTitle(N.Item);
+  R.Add(S47Kit::Status(Needed.Left(1).ToUpper()+Needed.Mid(1),Enough?TEXT("READY"):TEXT("MISSING"),Enough?1:-1,FString::Printf(TEXT("Required: %d / in stock: %d"),N.Count,Have),true));
+ }
  const FString Id(B->Id),Missing=BranchNeeds(*B);
  if(Missing.IsEmpty()&&Wear.Job.IsEmpty())R.Add(S47Kit::Action(TEXT("Repair and test this branch"),[this,Id]{RepairBranch(Id);}));else R.Add(S47Kit::Button(TEXT("Repair and test this branch"),[]{},false,false));
  if(FString(B->Id)==TEXT("centre"))R.Add(S47Kit::Small(TEXT("CALIBRATION / REPAIR: make up the splice in the workshop from two good antenna leads and foil.")));
  else if(!Missing.IsEmpty())R.Add(S47Kit::Small(TEXT("Caliche sells these. Unpack the parcel at GARAGE RECEIVING and bring them back in your pouch.")));
  M->UI->Open(S47Kit::Shell(M->UI,FString(B->Title)+TEXT(" JUNCTION"),S47Kit::Col(R),760));
+}
+bool FS47FreeformWorld::BranchStrandsFeeder(const FS47ArrayWear::FBranch& B,bool bFault) const
+{
+ // Each outage issues one credit fuse. Spent on a branch, it would leave no fuse, no credit and no paid work.
+ if(!bFault||PowerFaultSerial==0||EmergencyFuseFault!=PowerFaultSerial||Feeder>=4)return false;
+ for(const auto& N:B.Needs)if(FString(N.Item)==TEXT("fuse"))return InventoryCount(TEXT("fuse"))-N.Count<1;
+ return false;
 }
 bool FS47FreeformWorld::RepairBranch(const FString& BranchId)
 {
@@ -1140,6 +1167,7 @@ bool FS47FreeformWorld::RepairBranch(const FString& BranchId)
  if(!Ready()||!B||Wear.IsRestored(BranchId)||!Wear.bActive||!Wear.Job.IsEmpty())return false;
  if(!Near(InteractionPoint(FString(TEXT("field:"))+B->Junction),4.0)){Change(FString::Printf(TEXT("%s: work at its junction beside %s."),B->Title,B->Junction));return false;}
  if(!BranchNeeds(*B).IsEmpty()){Change(FString(B->Title)+TEXT(" needs ")+BranchNeeds(*B)+TEXT("."));return false;}
+ if(BranchStrandsFeeder(*B,M->Freeform->PowerFault())){Change(FString(B->Title)+TEXT(": SERVICE BAY FEEDER needs your control fuse first. Restore mains, then repair this branch; the parts stay in your pouch."));return false;}
  Wear.Job=BranchId;Wear.JobSeconds=0;if(M->UI)M->UI->Close();
  Change(FString(B->Title)+TEXT(": Parts fitted, running the three-second branch test."));return true;
 }
@@ -1318,7 +1346,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:depot"))return TEXT("PARTS STORAGE: First logger issue and spare stock");
  if(Id==TEXT("ff:delivery"))return Payload==2?TEXT("GARAGE RECEIVING: Unpack carried supplies into SARO stock"):TEXT("GARAGE RECEIVING: Delivery instructions");
  if(Id==TEXT("ff:parcel"))return Payload>0&&Payload!=2?FString(TEXT("Carry "))+ParcelDescription():FString();
- if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
+ if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Fuel<=.001?TEXT("Tank empty / roadside return and cargo rack"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return bGenerator?TEXT("Stop backup generator"):TEXT("Start / fuel backup generator");
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return M->Freeform->PowerFault()?Feeder==4&&FeederSeconds>0?TEXT("Feeder test running"):Feeder==4?TEXT("Run feeder replacement-fuse test"):Feeder==3?TEXT("Replace isolated feeder control fuse"):Feeder==2?TEXT("Open enclosed feeder isolation switch"):TEXT("Measure SARO feeder supply"):TEXT("Check normal feeder supply");
  if(Id.StartsWith(TEXT("field:")))
@@ -1362,7 +1390,11 @@ void FS47FreeformWorld::Step(double Dt)
  if(M->World&&M->World->bDriving)
  {
   Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.);
-  if(Fuel<=.001){M->World->HoldTruck(25.);bFuelHeld=true;}
+  if(Fuel<=.001)
+  {
+   if(!bFuelHeld)Change(TEXT("SERVICE JEEP: Tank empty; the engine dies. Stop, get out and use the jeep to call roadside return. It costs time, not money."));
+   M->World->HoldTruck(25.);bFuelHeld=true;
+  }
   else if(bFuelHeld){M->World->HoldTruck(0);bFuelHeld=false;}
  }
  if((Service==7||Service==8)&&(!M->Freeform->PowerFault()||HasBackupPower()))
@@ -1510,6 +1542,13 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  RescueCopy.Begin(S47J::Read(S47J::Write(OldRescue)));RescueCopy.TrackPowerFault(true);
  C(RescueCopy.PowerFaultSerial==1&&RescueCopy.CanIssueEmergencyFuse(true)&&RescueCopy.InventoryCount(TEXT("fuse"))==0&&RescueCopy.ParcelStage()==0,TEXT("Legacy outage gains a repair identity without inventing stock, a paid parcel or a transaction"));
  C(!RescueCopy.RequestEmergencyFuse()&&RescueCopy.EmergencyFuseFault==0&&RescueCopy.ParcelStage()==0,TEXT("A rescue request still requires the actual player at the indoor store counter"));
+ {
+  const auto& WestBranch=FS47ArrayWear::Branches()[0];FS47FreeformWorld Reserve(nullptr);Reserve.Begin();Reserve.Stock.FindOrAdd(TEXT("fuse"))=2;Reserve.Feeder=3;Reserve.TrackPowerFault(true);
+  const bool BeforeIssue=!Reserve.BranchStrandsFeeder(WestBranch,true);Reserve.EmergencyFuseFault=Reserve.PowerFaultSerial;const bool AfterIssue=Reserve.BranchStrandsFeeder(WestBranch,true);
+  Reserve.Stock.FindOrAdd(TEXT("fuse"))=3;const bool SpareLeft=!Reserve.BranchStrandsFeeder(WestBranch,true);Reserve.Stock.FindOrAdd(TEXT("fuse"))=2;
+  C(BeforeIssue&&AfterIssue&&SpareLeft&&!Reserve.BranchStrandsFeeder(WestBranch,false)&&!Reserve.BranchStrandsFeeder(FS47ArrayWear::Branches()[1],true),TEXT("A fuse branch cannot spend the one credit fuse of an active outage; other branches, spare fuses and normal mains are unaffected"));
+  Reserve.Stop();
+ }
  FS47FreeformSession Credit(nullptr);Credit.Begin(nullptr);auto CreditState=Credit.Save();
  S47J::Set(CreditState,TEXT("cash"),0);S47J::Set(CreditState,TEXT("loan"),25);Credit.Begin(CreditState);
  C(!Credit.Spend(5,true)&&Credit.Budget()==0&&Credit.Debt()==25&&Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==0&&Credit.Debt()==30,TEXT("Existing debt still blocks ordinary credit but the bounded feeder transaction adds exactly five dollars without requiring working instruments"));

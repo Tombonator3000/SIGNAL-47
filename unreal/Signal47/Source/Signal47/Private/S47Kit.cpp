@@ -140,16 +140,90 @@ S47Kit::FW S47Kit::Text(TAttribute<FString> S, TAttribute<int32> Tone)
 		.Margin(FMargin(0, 10, 0, 10)));
 }
 
-S47Kit::FW S47Kit::Status(const FString& Name, const FString& State, int32 Tone)
+S47Kit::FW S47Kit::Badge(const FString& S, int32 Tone)
+{
+	// Tone > 0 green (ready), < 0 amber (fault), 0 a plain outline
+	const FLinearColor Fill = Tone > 0 ? Css(0xa4d890) : Tone < 0 ? Css(0xe5a33f) : FLinearColor::Transparent;
+	const FLinearColor Ink = Tone == 0 ? Css(0xcfc8b5) : Css(0x1a160f);
+	return SNew(SBorder).BorderImage(Box(Fill, Tone == 0 ? Css(0xd9d0b4, 0.4f) : Fill)).Padding(FMargin(10, 3))
+		[
+			SNew(STextBlock).Text(FText::FromString(S)).Font(Term(18.f)).ColorAndOpacity(Ink)
+		];
+}
+
+S47Kit::FW S47Kit::Status(const FString& Name, const FString& State, int32 Tone, const FString& Detail, bool bBadge, bool bSelected)
 {
 	// One row: name left, state in its own column, so a list can be read down the right edge.
-	const FLinearColor C = Tone > 0 ? Css(0xa4d890) : Tone < 0 ? Css(0xff8a70) : Css(0xcfc8b5);
-	return SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Css(0xd9d0b4, 0.16f))).Padding(FMargin(12, 6))
+	// The selected row is the light strip with dark ink (the same as a pressed choice).
+	const FLinearColor Ink = bSelected ? Css(0x12100e) : Css(0xf1e8cf);
+	const FLinearColor Tint = bSelected ? Css(0x12100e) : Tone > 0 ? Css(0xa4d890) : Tone < 0 ? Css(0xff8a70) : Css(0xcfc8b5);
+	TSharedRef<SVerticalBox> NameCol = SNew(SVerticalBox);
+	NameCol->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Term(21.f)).ColorAndOpacity(Ink)];
+	if (!Detail.IsEmpty())
+		NameCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(14.f)).ColorAndOpacity(bSelected ? Css(0x3d3626) : Css(0xb9b29f)).AutoWrapText(true))];
+	FW StateW = Badge(State, Tone);
+	if (!bBadge) StateW = SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(Tint);
+	return SNew(SBorder).BorderImage(bSelected ? Box(Css(0xc9d6c2), Css(0xc9d6c2)) : Box(FLinearColor::Transparent, Css(0xd9d0b4, 0.16f))).Padding(FMargin(12, 6))
 		[
 			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Name)).Font(Term(21.f)).ColorAndOpacity(Css(0xf1e8cf))]
-			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(C)]
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[NameCol]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)[StateW]
 		];
+}
+
+S47Kit::FW S47Kit::Section(const FString& Title, const FString& Right)
+{
+	FSlateFontInfo Head = Term(21.f);
+	Head.LetterSpacing = 40;
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Title)).Font(Head).ColorAndOpacity(Css(0xffb052))]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Right)).Font(Term(19.f)).ColorAndOpacity(Css(0xcfc8b5))]
+		]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 6, 0, 10)
+		[
+			SNew(SBox).HeightOverride(1.f)[SNew(SBorder).BorderImage(Box(Css(0xd9d0b4, 0.4f), FLinearColor::Transparent, 0.f))]
+		];
+}
+
+S47Kit::FW S47Kit::Banner(const FString& Kicker, const FString& Headline, const FString& Detail, const FString& BadgeText, int32 Tone)
+{
+	// the light strip: dark ink on paper, so the state of the whole panel reads before anything else
+	TSharedRef<SVerticalBox> TextCol = SNew(SVerticalBox);
+	if (!Kicker.IsEmpty())
+		TextCol->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Kicker)).Font(Term(16.f)).ColorAndOpacity(Css(0x5a5648))];
+	TextCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Headline)).Font(Term(25.f)).ColorAndOpacity(Css(0x1a160f)).AutoWrapText(true))];
+	if (!Detail.IsEmpty())
+		TextCol->AddSlot().AutoHeight().Padding(0, 4, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(15.f)).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true))];
+	return SNew(SBorder).BorderImage(Box(Css(0xebe3cf), FLinearColor::Transparent, 0.f)).Padding(FMargin(16, 12))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[TextCol]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)[BadgeText.IsEmpty() ? SNullWidget::NullWidget : Badge(BadgeText, Tone)]
+		];
+}
+
+S47Kit::FW S47Kit::Table(const FString& Head1, const FString& Head2, const TArray<TPair<FString, FString>>& Lines)
+{
+	TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+	auto AddLine = [&L](const FString& A, const FString& B, bool bHead)
+	{
+		const FLinearColor Ink = bHead ? Css(0xffb052) : Css(0xf1e8cf);
+		L->AddSlot().AutoHeight()
+		[
+			SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Css(0xd9d0b4, bHead ? 0.4f : 0.16f))).Padding(FMargin(12, 5))
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(A)).Font(Term(bHead ? 18.f : 20.f)).ColorAndOpacity(Ink)]
+				+ SHorizontalBox::Slot().AutoWidth().Padding(14, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(B)).Font(Term(bHead ? 18.f : 20.f)).ColorAndOpacity(Ink)]
+			]
+		];
+	};
+	AddLine(Head1, Head2, true);
+	for (const TPair<FString, FString>& P : Lines) AddLine(P.Key, P.Value, false);
+	return L;
 }
 
 S47Kit::FW S47Kit::Sub(const FString& S)

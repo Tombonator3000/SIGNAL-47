@@ -43,6 +43,7 @@ public:
  void OpenBranch(const FString& BranchId);
  bool RepairBranch(const FString& BranchId);
  FString BranchNeeds(const FS47ArrayWear::FBranch& B) const; // empty when stock covers the repair
+ bool BranchStrandsFeeder(const FS47ArrayWear::FBranch& B,bool bFault) const; // would spend the outage's credit fuse
  void RestoreWholeArrayFixture(); // declared test fixture: no parts, evidence or player feedback
  bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
@@ -196,6 +197,7 @@ private:
  void SetFieldZone(bool bOn);
 public:
  // Test: a work order at this dish, at this stage.
+ FVector TruckPointForTest();
  void TestService(const FString& Dish,int32 Stage){ServiceTarget=Dish;Service=Stage;DoorK=0;bDoorOpen=false;ApplyServiceDoor();}
  double ServiceDoorOpen() const { return DoorK; }
  FVector ServiceDoorFace() const { return DoorFace; }
