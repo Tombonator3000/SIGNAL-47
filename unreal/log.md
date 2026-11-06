@@ -2022,3 +2022,7 @@ Sju dører fra plantegningen i `FS47FarmHouseDoors`, med kollisjon og lagret til
 ## 6. november 2026 kl.17:50, kjøring i array-feltet, felles servicedør, øyegrenser og alienbevegelser
 
 Freeform: bilen kan kjøre og spilleren gå i hele feltet rundt de 27 antennene. Servicedøren følger arbeidsordren, svinger med lyd og er sett på alle fire boksretninger. Øyeglimtene er begrenset til 50 m og mørke etter Toms tilbakemelding om at de lyste på flere hundre meter og lyste opp omgivelsene. `FS47CrabMotion` og Tall-stil er skrevet og sett i forhåndsvisning, ikke i spillhendelser. Selvtest 2515 og regresjon 251 består. Ikke prøvd: lagring og Continue med bilen ute i feltet.
+
+## 6. november 2026 kl.17:58, installasjon
+
+`31824b50` og `cfbd9fb5` er installert lokalt med kvitteringer. Toms lenker om animasjon er gjennomgått: ingen direkte løsning, men Game Animation Sample og Mixamo er aktuelle hvis kode ikke holder for Roswell-lusking.
