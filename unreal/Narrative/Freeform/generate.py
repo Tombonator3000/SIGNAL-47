@@ -13,6 +13,6 @@ for event in data['events']:
  if event['id'] in ('roof_steps','observer','landing_trace'):
   assert isinstance(event.get('observationPlace'),str) and event['observationPlace'].startswith('SARO ')
  ids.add(event['id'])
-assert len(ids)==18
+assert len(ids)==19
 (root/'generated/FreeformEvents.inl').write_text('// Generated from ../events.json. Rebuild with Narrative/Freeform/generate.py.\nstatic const TCHAR* FreeformEventsJson=TEXT(R"S47JSON('+(root/'events.json').read_text()+')S47JSON");\n')
 print(f'{len(ids)} Freeform events validated and embedded')

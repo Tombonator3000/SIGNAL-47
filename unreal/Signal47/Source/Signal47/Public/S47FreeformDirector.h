@@ -22,6 +22,9 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
+ bool ForceLights(const FString& Place); // town lights at one named place, same conditions as Force
+ FVector LightPlacePoint(const FString& Place) const;
+ FString LightPlaceTitle(const FString& Place) const;
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
@@ -62,7 +65,8 @@ private:
  TUniquePtr<FEffects> Effects;
  US47Main* M=nullptr;
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;
- FString Event,PhotoId,Scene,IncidentId,TaggedShot;
+ FString Event,PhotoId,Scene,IncidentId,TaggedShot,LightPlace,NextLightPlace;
+ FString PickLightPlace() const;
  FString TaggedIncident,TaggedTitle;
  bool bTaggedLamps=false;
  int32 IncidentSerial=0;
