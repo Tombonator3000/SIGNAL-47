@@ -2006,3 +2006,7 @@ Toms plantegning v1 er data i `S47FarmHouse`: 12 × 9 m pluss veranda på ledig 
 ## 6. november 2026 kl.14:13, installasjon
 
 `c3c7bd99` etter PR453 installert: 2515 selvtester og 138 uendrede Saved-filer. Tidligere oppføring med kl.12:50 for `183e8db1` skulle vært kl.12:47.
+
+## 6. november 2026 kl.15:00, Toms gårdstest
+
+Grusplatene på gårdsveien er fjernet; de sto i trinn oppå terrengveien. Gatelys ved avkjørselen, lampe over trafoskiltet og egne lyder på gården i `S47FarmNight`. Alien-interferensen fra Codex er kontrollert: klippet lastes og spilles av i radioprøven. Selvtest 2515, regresjon 251 og `-S47MenuPointerRoad` består i editor. Lydene er ikke hørt av et menneske.
