@@ -20,6 +20,9 @@ public:
  bool Owned() const { return bOwned; }
  bool Ready() const { return Root.IsValid(); }
  void Take();
+ // Comes over the carried set, if there is one. False: the player has no walkie to hear it on.
+ bool Message(const FString& Text);
+ void TestOwn() { bOwned=true; }
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };
  static double Proximity(const FVector& Eye,const FPresence& In);
  // Music reads only a nearby visible body, never a hidden encounter schedule.
