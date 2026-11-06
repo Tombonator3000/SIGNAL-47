@@ -6,7 +6,7 @@ class FS47AudioNode;
 class FS47AudioBuffer;
 class FS47BufferSourceNode;
 
-// New full-rate pulsar captures only. Existing v1/v2 originals are untouched.
+// New pulsar captures only, at any measurement rate; they play back at normal speed. Existing v1/v2 originals are untouched.
 namespace S47CaptureSound
 {
  struct FFrame { double Start=0,End=0,Frequency=0,Gain=0,Bandwidth=0,Quality=0; };
@@ -15,6 +15,7 @@ namespace S47CaptureSound
   FString Id,Failure;
   double Duration=0;
   bool Complete=false,Control=false;
+  bool bMonitorOnly=false; // Recorded slower than real time: the receiver's ordinary monitor is what is heard live.
   TArray<FFrame> Frames;
   TArray<double> Ticks;
   bool Enabled() const { return !Id.IsEmpty(); }

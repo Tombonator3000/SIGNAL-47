@@ -362,10 +362,15 @@ bool FS47FreeformSession::QueueCapture(S47CaptureSound::FTrack& Track,double Fro
  if(!Track.Eligible()||Track.Complete)return false;
  if(!M||!M->Audio||!M->Audio->Ctx||!M->Audio->SfxBus){Track.Interrupt(TEXT("Receiver capture unavailable; retained measurements use compatible reference sound."));return false;}
  if(!LiveCapture)LiveCapture=MakeShared<FS47CapturePlayer>(M->Audio->Ctx.ToSharedRef(),M->Audio->SfxBus);
- if(!Track.Append(From,To,Dt,Rate,Input.Frequency,Input.Gain,Input.Bandwidth,Input.Quality)||!LiveCapture->Queue(Track))
+ if(!Track.Append(From,To,Dt,Rate,Input.Frequency,Input.Gain,Input.Bandwidth,Input.Quality))
+ {Track.Interrupt(TEXT("Receiver capture was interrupted; retained measurements use compatible reference sound."));LiveCapture->Stop();return false;}
+ // Live blocks need real-time signal. A worn array records slower, so only the tape keeps the capture.
+ if(Rate<1-1e-6&&!Track.bMonitorOnly){Track.bMonitorOnly=true;LiveCapture->Stop();}
+ const bool bLive=!Track.bMonitorOnly;
+ if(bLive&&!LiveCapture->Queue(Track))
  {Track.Interrupt(TEXT("Receiver capture missed its audio deadline; retained measurements use compatible reference sound."));LiveCapture->Stop();return false;}
  if(To>=Track.Duration-1e-6)Track.Complete=true;
- return true;
+ return bLive;
 }
 void FS47FreeformSession::InterruptCapture(const FString& Why)
 {
@@ -580,7 +585,7 @@ void FS47FreeformSession::StepWork(double Dt)
    const double ControlWas=J->ControlAt;
    J->ControlAt=FMath::Min(8.,J->ControlAt+Dt);
    CaptureInput.Quality=1.; // independently driven internal reference, not a sky reception claim
-   QueueCapture(J->CaptureControl,ControlWas,J->ControlAt,Dt,ArrayMeasurementRate(),CaptureInput);
+   QueueCapture(J->CaptureControl,ControlWas,J->ControlAt,Dt,1,CaptureInput); // The internal reference runs at full speed whatever the array can do.
    if(J->ControlAt>=8)
    {
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");

@@ -113,8 +113,8 @@ namespace
     if(!J->CaptureOriginal.Failure.IsEmpty())return Finish(false,J->CaptureOriginal.Failure);
     if(J->Elapsed>=6&&!ChangedDials){const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[1];M->Story->Rx.Bandwidth=P->Bw[1];ChangedDials=true;}
     if(J->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return true;
-    if(!Check(J->CaptureOriginal.Playable()&&ChangedDials&&J->CaptureOriginal.Frames[0].Gain!=J->CaptureOriginal.Frames.Last().Gain,TEXT("actual full-rate capture retains real mid-recording dial change")))return false;
-    const auto State=F.CaptureSoundState();if(S47J::Num(State,TEXT("liveRendered"))<18*M->Audio->Ctx->SampleRate)return true;
+    if(!Check(J->CaptureOriginal.Playable()&&ChangedDials&&J->CaptureOriginal.Frames[0].Gain!=J->CaptureOriginal.Frames.Last().Gain,TEXT("actual capture retains real mid-recording dial change")))return false;
+    const auto State=F.CaptureSoundState();if(!J->CaptureOriginal.bMonitorOnly&&S47J::Num(State,TEXT("liveRendered"))<18*M->Audio->Ctx->SampleRate)return true;
     Evidence.Add(MakeShared<FJsonValueObject>(State));Original=S47J::Write(J->CaptureOriginal.Save());Ticks=J->TraceTicks;
     M->UI->Close(true);const auto* It=M->Inter->Get(TEXT("printer"));const FVector T=It&&It->Object?It->Object.WorldBox().GetCenter():S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));
     M->Player->Place(T.X,T.Z+1,0);const FVector D=T-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(3);return true;

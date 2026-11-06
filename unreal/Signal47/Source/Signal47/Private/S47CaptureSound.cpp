@@ -27,8 +27,14 @@ namespace S47CaptureSound
   if(!Eligible()||Complete)return false;
   const double Previous=Frames.IsEmpty()?0:Frames.Last().End;
   const bool FiniteInputs=FMath::IsFinite(From)&&FMath::IsFinite(To)&&FMath::IsFinite(Dt)&&FMath::IsFinite(Rate)&&FMath::IsFinite(Frequency)&&FMath::IsFinite(Gain)&&FMath::IsFinite(BW)&&FMath::IsFinite(Quality);
-  if(!FiniteInputs||Dt<=0||Dt>.100001||FMath::Abs(Rate-1)>1e-6||FMath::Abs(Previous-From)>1e-6||To<=From||To>Duration+1e-6||FMath::Abs((To-From)-FMath::Min(Dt,Duration-From))>1e-6||Frames.Num()>=MaxFrames||Frequency<1419.5||Frequency>1420.7||Gain<0||Gain>100||BW<0||BW>100||Quality<0||Quality>1)
+  if(!FiniteInputs||Dt<=0||Dt>.100001||Rate<=0||Rate>1+1e-6||FMath::Abs(Previous-From)>1e-6||To<=From||To>Duration+1e-6||FMath::Abs((To-From)-FMath::Min(Dt*Rate,Duration-From))>1e-6||Frames.Num()>=MaxFrames||Frequency<1419.5||Frequency>1420.7||Gain<0||Gain>100||BW<0||BW>100||Quality<0||Quality>1)
   {Interrupt(TEXT("Continuous receiver capture was interrupted; retained measurement remains available."));return false;}
+  // A slow array stretches the same signal over more frames; short ones merge so a long take cannot hit the frame limit.
+  if(Rate<1-1e-6&&!Frames.IsEmpty()&&To-Frames.Last().Start<.05)
+  {
+   auto& L=Frames.Last();L.End=To;L.Frequency=Frequency;L.Gain=FMath::Clamp(Gain,0.,100.);L.Bandwidth=FMath::Clamp(BW,0.,100.);L.Quality=FMath::Clamp(Quality,0.,1.);
+   return true;
+  }
   FFrame F;F.Start=From;F.End=To;F.Frequency=Frequency;F.Gain=FMath::Clamp(Gain,0.,100.);F.Bandwidth=FMath::Clamp(BW,0.,100.);F.Quality=FMath::Clamp(Quality,0.,1.);Frames.Add(F);return true;
  }
  float FTrack::Sample(double At)const
@@ -156,6 +162,18 @@ bool FS47CapturePlayer::Play(const S47CaptureSound::FTrack& T,double Cursor)
 bool S47CaptureSound::SelfTest(TArray<FString>& Lines)
 {
  bool Good=true;auto Check=[&](bool B,const TCHAR* Why){Good&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("capture sound: ")+Why);};
+ {
+  // A worn array: slower than real time, every small step kept, the same 18 seconds on tape.
+  FTrack Slow;Slow.Begin(TEXT("worn/original"),false,{});double At=0;bool Kept=true;int32 Steps=0;
+  while(At<Slow.Duration-1e-9&&Steps<200000){const double Next=FMath::Min(Slow.Duration,At+(1./144)*.17);Kept&=Slow.Append(At,Next,1./144,.17,1420.11,40,20,.9);At=Next;++Steps;}
+  Slow.Complete=Kept;
+  Check(Kept&&Slow.Eligible()&&Slow.Frames.Num()<8192&&Steps>8192,TEXT("a capture at 17% rate and 144 fps is kept without reaching the frame limit"));
+  Check(FMath::IsNearlyEqual(Slow.Frames.Last().End,Slow.Duration,1e-6)&&Slow.Sample(9)!=0,TEXT("a slow capture covers the whole signal and renders"));
+  FTrack Back;Back.Load(S47J::Read(S47J::Write(Slow.Save())));
+  Check(Back.Playable()&&Back.Frames.Num()==Slow.Frames.Num(),TEXT("a slow capture survives a reload as playable"));
+  FTrack Wrong;Wrong.Begin(TEXT("worn/original"),false,{});
+  Check(!Wrong.Append(0,.05,.05,.5,1420.11,40,20,.9)&&!Wrong.Eligible(),TEXT("a step that does not match its rate still interrupts"));
+ }
  for(const int TestRate:{8000,48000})
  {
  bool Boundaries=true;
@@ -210,7 +228,7 @@ bool S47CaptureSound::SelfTest(TArray<FString>& Lines)
  for(int I=0;I<ControlRate;++I)SeekError=FMath::Max(SeekError,double(FMath::Abs(ControlPlayed[SeekStart+I]-ControlExpected->GetChannelData(0)[SeekOffset+I])));
  Check(SeekError<1e-5,TEXT("48k actual control playback retains exact saved phase/settings after seek"));
  FTrack Partial;Partial.Begin(TEXT("partial"),false,{});Partial.Append(0,.05,.05,1,1420.11,50,50,1);FTrack Continued;Continued.Load(Partial.Save());Check(!Continued.Playable()&&!Continued.Failure.IsEmpty(),TEXT("mid-capture Continue explicitly falls back without fabricating audio continuity"));
- Check(!Partial.Append(.05,.075,.05,.5,1420.11,50,50,1)&&!Partial.Failure.IsEmpty(),TEXT("partial array rate rejects phase capture without changing acquisition itself"));
+ Check(Partial.Append(.05,.075,.05,.5,1420.11,50,50,1)&&Partial.Failure.IsEmpty(),TEXT("partial array rate keeps the capture (Tom, 6 November)"));
  FTrack Gap;Gap.Begin(TEXT("gap"),false,{});Gap.Append(0,.05,.05,1,1420.11,50,50,1);Gap.Interrupt(TEXT("held"));Check(!Gap.Append(.05,.1,.05,1,1420.11,50,50,1)&&!Gap.Playable(),TEXT("explicit held/power/tuning gap cannot be joined into a continuous capture"));
  // No Render calls: Tick and a running context do not establish audio progress.
  // The same guard is exercised at both rates already used by the PCM audit.

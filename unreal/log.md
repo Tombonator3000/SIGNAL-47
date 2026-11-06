@@ -1962,3 +1962,7 @@ Normalreisen består alle sju faser på pakken `72637b13` med egne prosesser og 
 ## 6. november 2026 kl.11:07, installasjon og markørknapper
 
 `8ceed8e4` etter PR442 installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer. Deretter fire knapper under himmelkartet (AZ/EL ±5°), så markøren kan nås uten mus; ikke installert, knappene er bare sett på skjerm og ikke trykket i prøve, og håndkontrollens fokus til dem er ikke prøvd.
+
+## 6. november 2026 kl.11:30, opptakslyd på slitt stasjon
+
+Tom valgte at opptakslyd skal virke med redusert målehastighet. `S47CaptureSoundTest` består på slitt anlegg med lyd: ingen live-blokker under originalen, kontrollen live i full hastighet, 18 sekunder bånd. Selvtest 2508 består. Normalreisens lydfaser er ikke kjørt på nytt.
