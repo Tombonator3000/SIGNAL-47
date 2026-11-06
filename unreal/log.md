@@ -2050,3 +2050,7 @@ Tom ba om ekte bortføring med ulik grad per alien, og skrekk inne i bygg. `FS47
 ## 6. november 2026 kl.21:50, nattskift til 7. november 08:00, første runde
 
 Tom bestilte nattskift med agenter. Samlet diskkontroll: d1–d14 pensjonert, kvitteringer beholdt, 193 GB ledig, to arbeidskopier. To harness-agenter fant at kjeden lys, besøk og bortføring nesten aldri kunne skje naturlig, og at prøvene skjulte det med tvungen start. Rettet: nattens egen trekning av lys, samme scene i by og bil, tak sjekkes hvert sekund, pause holder bortføringen, notat og lagring. Ny `-S47MenuPointerChain` går hele veien uten Force. Regresjon 251 består. Regresjonen feilet én gang på `extra_pulse` uten at årsaken er funnet, og består to ganger etter det.
+
+## 6. november 2026 kl.22:45, natt, runde 2
+
+Agenter i egne worktrees. GAMEPLAY-03 fant at Jeepen kunne bli innelåst ved strømbrudd; rettet med håndkjede, nødmeny ved tom tank og tydeligere tekst. `-S47RescueJourneyTest` 76 består. UI-POLISH: felles klosser, workshop, array-boks og bil. Bortføring inne i kino, kirke og fôrbutikk er prøvd på bilde; i kirken holdt veggene. Dør og lamper svikter i byen.
