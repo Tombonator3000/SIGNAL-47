@@ -303,7 +303,7 @@ namespace S47FarmWorldTest
   if(S.Stage==8)
   {
    if(!Check(M,!M->World->bDriving&&FVector::Dist(M->World->ServicePosition(),S.Park)<.1,TEXT("actual own parked vehicle remains at the farm")))return;
-   S.EgressRoad=Road(M->Player->Pos,M->World->Area);WalkPath({FVector(85,0,205),FVector(70,0,212),FVector(70,0,220),FVector(55,0,240)});Go(9);return;
+   S.EgressRoad=Road(M->Player->Pos,M->World->Area);WalkPath({FVector(79,0,203),FVector(70,0,212),FVector(70,0,220),FVector(55,0,240)});Go(9);return;
   }
   if(S.Stage==9)
   {
@@ -315,7 +315,7 @@ namespace S47FarmWorldTest
   {
    M->Freeform->Director->Stop();
    if(!Check(M,M->IsFreeform()&&FVector::Dist(M->Player->Pos,S.SavedFoot)<.05&&FVector::Dist(M->World->ServicePosition(),S.Park)<.1&&M->Freeform->Field->ParcelStage()==3&&M->Freeform->Field->ParcelItem()==TEXT("relay"),TEXT("disk/full Flow Continue retains pasture pose, actual parked Jeep and loaded parcel")))return;
-   Photo(TEXT("05-continued-pasture"));WalkPath({FVector(70,0,220),FVector(70,0,212),FVector(85,0,205),FVector(91,0,200)});Go(12);return;
+   Photo(TEXT("05-continued-pasture"));WalkPath({FVector(70,0,220),FVector(70,0,212),FVector(79,0,203),FVector(91,0,200)});Go(12);return;
   }
   if(S.Stage==12)
   {

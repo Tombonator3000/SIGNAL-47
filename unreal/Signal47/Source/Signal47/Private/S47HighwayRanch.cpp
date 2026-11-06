@@ -1,6 +1,7 @@
 // Share only the existing ranch triangles across the ordinary road/SARO handoff.
 #include "S47Web.h"
 #include "S47FarmWorld.h"
+#include "S47FarmBuildings.h"
 #include "S47Main.h"
 #include "S47RoadTerrain.h"
 #include "S47HighwayLandscape.h"
@@ -71,6 +72,12 @@ namespace
  {
   const FVector P=S47Three::ToThree(FVector(Position));
   return P.X>=390&&P.X<=485&&P.Z>=140&&P.Z<=235;
+ }
+ // The boxes the new farm buildings replace, by where they stand in the source: the house's wall and two roof
+ // boxes, the barn's wall and two roof boxes. The tank, the windmill and the lamp post share these meshes and stay.
+ bool ReplacedBox(const FVector& ThreePos)
+ {
+  return (ThreePos.X>=437.1&&ThreePos.X<=454.9&&ThreePos.Z>=163.5&&ThreePos.Z<=176.5)||(ThreePos.X>=411.2&&ThreePos.X<=424.8&&ThreePos.Z>=187.25&&ThreePos.Z<=196.75);
  }
  void Bytes(FSHA1& Hash,const void* Data,uint32 Count)
  {
@@ -412,11 +419,37 @@ void AS47Web::ReconcileFarmRanch(bool bFreeform)
    // that structure's authored anchor; never drape a roof or change original source buffers.
    const FVector2D Anchors[]={{418,192},{446,170},{462,200},{456,214},{432,204}};
    FBox NewBounds(ForceInit);
+   // Where the new buildings stand their boxes go, in this Freeform copy only. The triangles stay in the index
+   // buffer, each folded to a point, so the partition keeps its exact indices and Story's mesh is never touched.
+   TSet<uint32> Folded;
+   if(S47FarmBuildings::Available())
+   {
+    const TArray<uint32>& All=Part.FarmSelection.Indices;int32 FoldedTriangles=0;
+    for(int32 Tri=0;Tri+2<All.Num();Tri+=3)
+    {
+     bool Inside=true;for(int32 Corner=0;Corner<3;++Corner)Inside&=ReplacedBox(S47Three::ToThree(FVector(Positions.VertexPosition(All[Tri+Corner]))));
+     if(!Inside)continue;++FoldedTriangles;for(int32 Corner=0;Corner<3;++Corner)Folded.Add(All[Tri+Corner]);
+    }
+    const int32 WantTriangles=Part.Source.Geo==911?48:12;
+    if(FoldedTriangles!=WantTriangles)
+    {
+     UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch g%d: %d box triangles under the new buildings, expected %d; keeping them"),Part.Source.Geo,FoldedTriangles,WantTriangles);
+     Folded.Reset();
+    }
+   }
    for(uint32 I:Part.FarmSelection.Indices)if(!Used.Contains(I))
    {
-    Used.Add(I);FVector V=S47Three::ToThree(FVector(Positions.VertexPosition(I)));int32 Best=0;double Distance=1e30;
+    Used.Add(I);if(Folded.Contains(I))continue;
+    FVector V=S47Three::ToThree(FVector(Positions.VertexPosition(I)));int32 Best=0;double Distance=1e30;
     for(int32 K=0;K<UE_ARRAY_COUNT(Anchors);++K){const double D=FVector2D::DistSquared({V.X,V.Z},Anchors[K]);if(D<Distance){Distance=D;Best=K;}}
     const auto A=Anchors[Best];V.Y+=S47RoadTerrain::SurfaceY(A.X-310,A.Y)-S47RoadTerrain::SurfaceY(A.X,A.Y);Positions.VertexPosition(I)=FVector3f(S47Three::ToUE(V));NewBounds+=FVector(Positions.VertexPosition(I));
+   }
+   if(!Folded.IsEmpty())
+   {
+    // g910 was only the house's wall: nothing is left, so its bounds are a small box round the folded point.
+    const FVector3f Point=NewBounds.IsValid?FVector3f(NewBounds.GetCenter()):FVector3f(S47Three::ToUE(FVector(108,0,190)));
+    for(uint32 I:Folded)Positions.VertexPosition(I)=Point;
+    NewBounds+=FBox(FVector(Point)-FVector(1.),FVector(Point)+FVector(1.));
    }
    Data.Bounds=FBoxSphereBounds(NewBounds);Data.LODResources[0].SourceMeshBounds=Data.Bounds;Copy->SetExtendedBounds(Data.Bounds);Copy->InitResources();Part.GroundedFarm.Reset(Copy);Part.GroundedHash=MeshHash(Copy);
   }

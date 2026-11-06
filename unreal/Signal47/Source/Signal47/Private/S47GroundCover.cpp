@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47FarmBuildings.h"
 #include "S47MotelV2.h"
 #include "S47SaroSite.h"
 
@@ -324,6 +325,12 @@ TArray<FS47FloraRect> PostsOf(const TArray<FObstacle>& Obstacles, double Dx, dou
 
 // The old farmhouse's plot in road terms. Nothing grows through its floor; in Story this is only a bare patch of far field.
 static FS47FloraRect FarmHouseRect(){FS47FloraRect B;B.MinX=91;B.MaxX=105;B.MinZ=213;B.MaxZ=226;return B;}
+// The same for the four new farm buildings' plots, far off in Story too: no plant stands through a floor or a wall.
+static void AddFarmBuildingPlots(TArray<FS47FloraRect>& Blocks)
+{
+	if (!S47FarmBuildings::Available()) return;
+	for (const FBox2D& Plot : S47FarmBuildings::Plots()) { FS47FloraRect B; B.MinX = Plot.Min.X; B.MaxX = Plot.Max.X; B.MinZ = Plot.Min.Y; B.MaxZ = Plot.Max.Y; Blocks.Add(B); }
+}
 
 FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts)
 {
@@ -337,6 +344,7 @@ FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts)
 	// Native motel pool/deck and approach extend west of the legacy court. Only an installed replacement supplies these.
 	for (const FVector4& B : FS47MotelV2::LandscapeFootprints()) S.Blocks.Add(ToRoadRect(R(B.X,B.Y,B.Z,B.W)));
 	S.Blocks.Add(FarmHouseRect());
+	AddFarmBuildingPlots(S.Blocks);
 	S.Walks = { SHOULDER_ROAD() };
 	S.Ways = [](double X, double Z) { return RoadWays(X, Z); };
 	return S;
@@ -373,6 +381,7 @@ FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS4
 	S.Blocks.Add(ToRoadRect(R(X0,X1,Z0,Z1)));
 	S.Blocks.Add(ToRoadRect(R(AccessX0,AccessX1,AccessZ0,AccessZ1)));
 	S.Blocks.Add(FarmHouseRect());
+	AddFarmBuildingPlots(S.Blocks);
 	// These authored slabs are beyond the old motel rectangle and the MinZ<80 site filter above.
 	// Exclude at generation so newly streamed cells never regrow through the deck, water or paths.
 	for (const FVector4& B : FS47MotelV2::LandscapeFootprints()) S.Blocks.Add(ToRoadRect(R(B.X,B.Y,B.Z,B.W)));

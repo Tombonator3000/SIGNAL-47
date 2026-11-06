@@ -2058,3 +2058,6 @@ Agenter i egne worktrees. GAMEPLAY-03 fant at Jeepen kunne bli innelåst ved str
 ## 6. november 2026 kl.23:40, natt, runde 3
 
 Roswell-øynene har små sprang og blink innenfor 12 m. Én ku står stille og ser mot sporene om natten. Ekstra bilde på filmen etter bortføring, uten at spilleren tok det. Installasjon d19 stoppet på en vakt mot agentens uferdige mappe; vakten godtar nå bare den mappen. Kuprøven fant at ku 4, som ikke vandrer, kunne bli valgt. Egen køhjelper gjentok regresjonen i rundt 20 minutter før feilen ble funnet.
+## 6. november 2026 kl.23:50, natt, gårdsbyggene
+
+Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skrevet i egen worktree (`S47FarmBuildings`): låve, hus og to skjul erstatter boksene, ekte hindringer med åpen låvedør og flatt gulv, plantefrie tomter, gløden fra østvinduet flyttet til huset (den sto igjen 310 m øst i Freeform). Prøve: `-S47MenuPointerBuildings`. Ikke kompilert, importert eller kjørt ennå; koordinatoren kjører det.

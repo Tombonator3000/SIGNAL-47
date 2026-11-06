@@ -18,6 +18,10 @@ namespace S47FarmWorld
  bool Audit(US47Main* Main,TArray<FString>& Lines);
  bool HouseVisible(const US47Main* Main);
  FVector HousePhotoPoint(const US47Main* Main);
+ // The four original buildings stand and show in the current area (Freeform only).
+ bool BuildingsShown(const US47Main* Main);
+ // How many of the three exported window glows now stand at the house's east window.
+ int32 WindowGlowsAtHouse(const US47Main* Main);
  bool IsGateRemainder(const AS47Web* Web,const UStaticMeshComponent* Component,const UStaticMesh* Source);
  bool GateReady(const US47Main* Main);
  void ReconcileRanch(US47Main* Main);
