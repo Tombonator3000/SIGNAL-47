@@ -6,7 +6,8 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Alien-interferens, 6. november
 
-- [ ] **ALIEN-RADIO-20261106:** Toms valgte sekunder 07–14 fra den separerte prøven kobles til faktiske nærkontakter, via felt-walkie eller aktiv SARO-monitor/AM-radio. Privat opptak beholdes utenfor offentlig Git; eksisterende sus er reserve. Klippet er med i pakken og lastes (7,0 s), og `-S47FieldRadioContract` med lyd viser at det spilles av ved en skapning i nærheten (Claude 6. november). Menneskelig lytting og balansering gjenstår. Room 6-signalet og SARO-oppgavene endres ikke.
+- [x] **ALIEN-RADIO-20261106:** Sekunder 07–14 fra Toms valgte prøve er integrert via PR452: faktiske nærkontakter gir sporadisk interferens i felt-walkie eller aktiv SARO-monitor/AM-radio. Avstand, pause, volum og opphold mellom innslag er kontrollert. Installert med nyere runtime `4ffb7210` (PR455), som inkluderer PR452; pakket selvtest 2515 og Vulkan-røyk består, 140 Saved-filer uendret. Opptaket ligger kun lokalt; eksisterende sus er reserve. Room 6-signalet og SARO-oppgavene er beholdt.
+- [ ] **ALIEN-RADIO-LISTEN:** Menneskelig lytting og eventuell justering av nivå og balanse i faktiske nærkontakter gjenstår.
 
 ## UFO-feltundersøkelser og gårdshorror, bestilt 6. november
 
