@@ -2010,3 +2010,7 @@ Toms plantegning v1 er data i `S47FarmHouse`: 12 × 9 m pluss veranda på ledig 
 ## 6. november 2026 kl.15:00, Toms gårdstest
 
 Grusplatene på gårdsveien er fjernet; de sto i trinn oppå terrengveien. Gatelys ved avkjørselen, lampe over trafoskiltet og egne lyder på gården i `S47FarmNight`. Alien-interferensen fra Codex er kontrollert: klippet lastes og spilles av i radioprøven. Selvtest 2515, regresjon 251 og `-S47MenuPointerRoad` består i editor. Lydene er ikke hørt av et menneske.
+
+## 6. november 2026 kl.15:55, Toms andre gårdstest
+
+Gatelys på eksisterende stolpe (veilokalt 15, 190), ny stolpe med lampe ved trafoinnkjøringen (7990, 512), veistripen node 959 senket 9 cm i Freeform. Radiostille forklart: `alien_interference.wav` har topp 0,195 og RMS 0,004, og går nå utenom susgrenen på 12 %. Klippet er fra filmen Signs og kan ikke deles. Ugle og hund brukte vanlig plassering utover 60 m og bruker nå `Far`. Øyeglimt på Roswell. Radio, vei, selvtest 2515 og regresjon 251 består i editor.
