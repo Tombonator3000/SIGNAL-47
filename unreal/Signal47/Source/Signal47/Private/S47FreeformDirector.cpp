@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include "S47FarmSite.h"
 #include "S47UfoPresentation.h"
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
@@ -548,7 +549,8 @@ void FS47FreeformDirector::Draw()
  const bool Farm=Event==TEXT("farm_lights");
  const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover")||(Farm&&M->Web->Area()==Scene);
  // Eight lights, wide enough to read as many from half a kilometre. They drift, never answer the viewer.
- auto FarmAt=[&](int32 I){const double T=Age*.05+I*1.7;return Anchor+FVector((I<3?(I-1)*22.:(I-5)*11.)+FMath::Sin(T)*8,(I%3)*5.-8+FMath::Sin(Age*.13+I)*4,FMath::Cos(T*.7)*14);};
+ // Once someone comes close they go straight up, staggered, and are out of sight within seconds.
+ auto FarmAt=[&](int32 I){const double T=Age*.05+I*1.7;const double Up=OrbFleeAge>=0?FMath::Square(FMath::Max(0.,OrbFleeAge-I*.1))*40:0;return Anchor+FVector(0,Up,0)+FVector((I<3?(I-1)*22.:(I-5)*11.)+FMath::Sin(T)*8,(I%3)*5.-8+FMath::Sin(Age*.13+I)*4,FMath::Cos(T*.7)*14);};
  const float FarmFade=float(FMath::Min(FMath::Clamp(Age/12.,0.,1.),FMath::Clamp((240.-Age)/20.,0.,1.)));
  for(int32 I=0;I<Effects->FarmExtra.Num();++I)if(auto* C=Effects->FarmExtra[I].Get())
  {
@@ -702,6 +704,13 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
  {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
+ if(Event==TEXT("farm_lights")&&M->Player)
+ {
+  static constexpr double FarmFleeRange=130,FarmFleeSeconds=4;
+  if(OrbFleeAge>=0){OrbFleeAge+=Dt;if(OrbFleeAge>=FarmFleeSeconds){Finish(bPhoto,TEXT("Several lights hung low over the Alderete place, then went straight up as someone came near. A retained photograph records that they were there, not what they were."));return;}}
+  else if(FVector2D(M->Player->Pos.X-Anchor.X,M->Player->Pos.Z-Anchor.Z).Size()<FarmFleeRange)
+  {OrbFleeAge=0;UE_LOG(LogTemp,Display,TEXT("S47: farm lights left at %.1f s"),Age);}
+ }
  if(Event==TEXT("dusk_orb")&&M->Player)
  {
   if(OrbFleeAge>=0)
@@ -810,6 +819,7 @@ void FS47FreeformDirector::ObserveVisitor(const FVector& At,bool Heard)
 void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
 {
  if(Event.IsEmpty())return;const auto* D=Definition(Event);const bool Threat=D&&D->Family==TEXT("threat");
+ if(Event==TEXT("farm_lights")&&M&&M->Freeform&&M->Freeform->FarmSite)M->Freeform->FarmSite->Arm(M->Freeform->Clock());
  if(Evidence&&M&&M->Freeform&&D)
  {
   FString Record=Text.IsEmpty()?D->Finding:Text;

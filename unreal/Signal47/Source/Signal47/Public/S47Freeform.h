@@ -180,6 +180,7 @@ public:
  const FS47Profile* ConsoleProfile() const;
  TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
  TSharedPtr<class FS47RoomDecor> Decor;
+ TSharedPtr<class FS47FarmSite> FarmSite;
  // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
  FVector2D AimAzEl();
  bool AimOnTarget() const;
