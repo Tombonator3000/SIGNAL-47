@@ -1,4 +1,15 @@
 #include "S47FarmNight.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
+#include "S47Herd.h"
+#include "S47TownLayer.h"
+#include "S47FarmSite.h"
+#include "S47Taken.h"
+#include "S47FreeformDirector.h"
+#include "S47WebAudio.h"
+#include "Components/LocalFogVolumeComponent.h"
 #include "S47Audio.h"
 #include "S47FarmHouse.h"
 #include "S47FarmWorld.h"
@@ -126,33 +137,136 @@ void FS47FarmNight::SetOn(bool bNow,const FString& Area)
 
 void FS47FarmNight::Stop()
 {
- if(bWind&&M&&M->Audio)M->Audio->Stop(LoopKey,.5f);bWind=false;
+ const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);
+ if(bWind&&bLive&&IsValid(M->Audio))M->Audio->Stop(LoopKey,.5f);bWind=false;
  for(FLamp& L:Lamps)
  {
   for(const auto& C:L.Parts)if(C.IsValid()){C->SetVisibility(false);C->SetHiddenInGame(true);}
   if(auto* S=L.Light.Get()){S->SetIntensity(0);S->SetVisibility(false);}
  }
  LastArea.Empty();bOn=false;
+ // Back to the Story's air, when Freeform ends with the scene still up.
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting())for(const auto& H:Hazes)if(auto* F=H.Get())F->DestroyComponent();
+ Hazes.Reset();
 }
 
 void FS47FarmNight::Step(double Dt)
 {
  if(!M||!IsValid(M->Web)||!M->Freeform)return;
- if(Scene.Get()!=M->Web){Scene=M->Web;bBuilt=false;Lamps.Reset();LastArea.Empty();}
+ if(Scene.Get()!=M->Web){Scene=M->Web;bBuilt=false;Lamps.Reset();LastArea.Empty();Hazes.Reset();}
  if(!Build())return;
  const FString Area=M->Web->Area();
  const double Hour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;const bool bNight=Hour>=18.75||Hour<6.25;
  const bool bAreaChanged=Area!=LastArea;
  if(bAreaChanged){Place(Area);LastArea=Area;}
  if(bAreaChanged||bNight!=bOn)SetOn(bNight,Area);
+ BuildHaze();
+ // A menu or a panel holds them: nothing starts in a paused sound context, to all come at once on the way out.
+ if(M->bPausedByMenu||M->ModalOpen())return;
+ StepCattle(Dt,Area);
  StepSound(Dt,bNight,Area);
+}
+
+namespace
+{
+ // A cow, made here with no recording: a buzzing voice through a long throat, sliding up and down. Fear makes it
+ // higher, rougher and shorter.
+ TSharedPtr<FS47AudioBuffer> MooBuffer(bool bAfraid,int32 Seed)
+ {
+  static constexpr int32 Rate=22050;
+  const double Dur=bAfraid?1.25:2.1;
+  auto B=MakeShared<FS47AudioBuffer>(1,FMath::RoundToInt(Rate*Dur),Rate);float* Out=B->GetChannelData(0);FRandomStream R(4711+Seed);
+  const double Lo=bAfraid?150:82,Up=bAfraid?248:128;
+  double Ph=0,X1=0,V1=0,X2=0,V2=0,Hp=0,Lp=0;
+  const auto Res=[](double F,double Bw,double& X,double& V,double In)
+  {const double W=2*UE_DOUBLE_PI*F/Rate,Rr=FMath::Exp(-UE_DOUBLE_PI*Bw/Rate);const double N=2*Rr*FMath::Cos(W)*X-Rr*Rr*V+In;V=X;X=N;return N;};
+  for(int32 I=0;I<B->Length();++I)
+  {
+   const double T=double(I)/Rate,U=T/Dur;
+   const double Glide=FMath::Sin(UE_DOUBLE_PI*FMath::Pow(U,.7));
+   const double F0=FMath::Lerp(Lo,Up,Glide)*(1+(bAfraid?.02:.008)*FMath::Sin(T*(bAfraid?38.:22.)));
+   Ph+=F0/Rate;if(Ph>=1)Ph-=1;
+   const double Src=(Ph*2-1)+(bAfraid?(R.FRand()*2-1)*.25:0);
+   const double Open=FMath::Lerp(280.,640.,Glide);
+   const double V=Res(Open,110,X1,V1,Src*.1)+.5*Res(Open*2.4,190,X2,V2,Src*.1);
+   Lp+=.5*(V-Lp);Hp+=.012*(Lp-Hp);
+   const double Env=FMath::SmoothStep(0.,.14,U)*(1-FMath::SmoothStep(.78,1.,U));
+   Out[I]=float(FMath::Atan((Lp-Hp)*1.3)*.72*Env);
+  }
+  return B;
+ }
+ void PlayMoo(US47Audio* A,const FVector& At,bool bAfraid)
+ {
+  if(!A||!A->bReady||!A->Ctx||!A->SfxBus)return;
+  // Real cows (BigSoundBank, CC0, see FREE_ASSET_CATALOG) where the files are there; the made voice otherwise.
+  static TSharedPtr<FS47AudioBuffer> Real[3],Made[2][3];
+  const int32 K=FMath::RandRange(0,2);
+  if(!Real[K])
+  {
+   TArray<uint8> Bytes;
+   if(FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/FString::Printf(TEXT("Audio/Raw/sound_design/cow_moo_%d.wav"),K))))Real[K]=S47Wa::DecodeWav(Bytes);
+  }
+  auto Buf=Real[K];
+  if(!Buf){auto& M2=Made[bAfraid?1:0][K];if(!M2)M2=MooBuffer(bAfraid,K);Buf=M2;}
+  FS47AudioContext::FBatch Batch(*A->Ctx);
+  auto Src=A->Ctx->CreateBufferSource();Src->Buffer=Buf;Src->PlaybackRate.SetValue(Real[K]&&bAfraid?FMath::FRandRange(1.25f,1.55f):FMath::FRandRange(.92f,1.08f));
+  auto Gain=A->Ctx->CreateGain();Gain->Gain.SetValue(bAfraid?.95:.7);
+  auto Pan=A->Ctx->CreatePanner();Pan->RefDistance=9.;Pan->RolloffFactor=.55;Pan->MaxDistance=220.;Pan->SetPosition(At.X,At.Y,At.Z);
+  Src->Connect(Gain);Gain->Connect(Pan);Pan->Connect(A->SfxBus);Src->Start(A->Ctx->CurrentTime());
+ }
+}
+
+void FS47FarmNight::StepCattle(double Dt,const FString& Area)
+{
+ if(!M->TownLayer||M->TownLayer->Herds.IsEmpty()||!M->Player||!M->Freeform)return;
+ FS47Herd* H=M->TownLayer->Herds[0].Get();if(!H)return;
+ // They know before the player does: a visit at the farm, a taking, or the lights over it.
+ FVector Threat=FVector::ZeroVector;double Level=0;
+ const auto& Site=M->Freeform->FarmSite;
+ if(Site&&Site->VisitWantsGround()&&Site->PlaceId()==TEXT("farm")){Threat=Site->Centre();Level=1;}
+ if(M->Freeform->Taken&&M->Freeform->Taken->Busy()&&Area==TEXT("saro")&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(FarmX,FarmZ))<170)
+ {Threat=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);Level=1;}
+ if(M->Freeform->Director&&M->Freeform->Director->ActiveEvent()==TEXT("farm_lights")){Threat=M->Freeform->Director->EventAnchor();Level=FMath::Max(Level,.7);}
+ if(!TestAlarmAt.IsZero()){Threat=TestAlarmAt;Level=1;}
+ H->SetAlarm(Level,Threat);
+ if(Area!=TEXT("saro"))return;
+ const FVector Eye(M->Player->Pos.X,M->Player->FloorY+1.6,M->Player->Pos.Z);
+ FVector Near;int32 Cow=FMath::RandRange(0,H->Count()-1);
+ if(!H->CowAt(Cow,Near)||FVector::Dist(Eye,Near)>260)return;
+ const bool bAfraid=Level>.3;
+ if(bAfraid&&MooIn>3.4)MooIn=.4; // fear does not wait its turn
+ MooIn-=Dt;if(MooIn>0)return;
+ MooIn=bAfraid?FMath::FRandRange(1.1f,3.4f):FMath::FRandRange(16.f,44.f);
+ PlayMoo(M->Audio,Near,bAfraid);++Moos;
+}
+
+void FS47FarmNight::BuildHaze()
+{
+ if(!Hazes.IsEmpty()||!M||!M->Web)return;
+ // The same faint air as the garage: lamplight and sun get a shape in it. One volume per room.
+ struct FRoom{const TCHAR* Name;double X0,X1,Z0,Z1;double Y;};
+ const FVector O(-24,0,300);const FVector A=S47FarmHouse::Point(0,0)+O,B=S47FarmHouse::Point(12,9)+O;
+ const FRoom Rooms[]={{TEXT("Control"),-5.75,5.75,-4.22,4.22,1.6},{TEXT("Corridor"),-5.8,1.8,5.,6.3,1.6},{TEXT("Records"),-5.8,-1.2,7.,10.2,1.6},
+  {TEXT("Lab"),12.8,19.,-5.8,.8,1.6},{TEXT("OldHouse"),FMath::Min(A.X,B.X),FMath::Max(A.X,B.X),FMath::Min(A.Z,B.Z),FMath::Max(A.Z,B.Z),A.Y+1.4}};
+ for(const FRoom& R:Rooms)
+ {
+  auto* F=NewObject<ULocalFogVolumeComponent>(M->Web.Get(),*FString::Printf(TEXT("S47Haze_%s"),R.Name));
+  F->SetupAttachment(M->Web->GetRootComponent());F->RegisterComponent();
+  F->SetWorldLocation(S47Three::ToUE(FVector((R.X0+R.X1)*.5,R.Y,(R.Z0+R.Z1)*.5)));
+  F->SetWorldScale3D(FVector((R.X1-R.X0)*.12,(R.Z1-R.Z0)*.12,.42));
+  F->SetRadialFogExtinction(.35f);F->SetHeightFogExtinction(.15f);F->SetHeightFogFalloff(400.f);
+  F->SetFogAlbedo(FLinearColor(.85f,.8f,.7f));F->SetFogPhaseG(.55f);
+  Hazes.Add(F);
+ }
 }
 
 void FS47FarmNight::StepSound(double Dt,bool bNight,const FString& Area)
 {
  if(!M->Audio||!M->Player)return;
  const double Dist=Area==TEXT("saro")?FVector2D(M->Player->Pos.X-FarmX,M->Player->Pos.Z-FarmZ).Size():1e9;
- const bool bAt=Dist<FarmReach;
+ // Everything out here goes quiet before it starts. That is the warning.
+ const bool bHush=(M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround())||(M->Freeform->Taken&&M->Freeform->Taken->Busy());
+ const bool bAt=Dist<FarmReach&&!bHush;
  if(bAt!=bWind)
  {
   bWind=bAt;

@@ -12,6 +12,10 @@ class FS47FreeformDirector
 public:
  // Nothing new for this long of active time: after being taken there is calm.
  void RestFor(double Seconds);
+ // The hint on the player's objective line while lights are reported somewhere.
+ FString TipLine() const;
+ // Test: tonight is a night for lights, at the next scheduler tick.
+ void TestLightsTonight();
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);
@@ -80,7 +84,8 @@ private:
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
- int32 PendingThreatNight=0,PendingMajorNight=0;
+ int32 PendingThreatNight=0,PendingMajorNight=0,LightRollDay=0,PendingLightNight=0;
+ bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
  FVector Anchor=FVector::ZeroVector;

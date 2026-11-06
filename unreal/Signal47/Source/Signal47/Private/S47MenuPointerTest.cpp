@@ -1,5 +1,7 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47TownLayer.h"
+#include "S47Herd.h"
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformWorld.h"
@@ -96,7 +98,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  double VisitClock=0,VisitFrom=0;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -229,6 +231,19 @@ namespace
      M->Player->Yaw=0;M->Player->Pitch=0;
      VisitClock=M->Freeform->Clock();VisitFrom=Elapsed;TakenPos=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);
      M->Freeform->FarmSite->TestVisit(TakenKind);Stage=150;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerCows")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     M->Player->Place(0,-1.2,PI);M->Player->Pitch=-.05;CowFrom=Elapsed;Stage=160;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerChain")))
+    {
+     M->Flow->bDevRun=true;
+     if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the chain needs night two"));
+     M->Freeform->TestEndFirstShift();M->Freeform->Director->TestLightsTonight();ChainFrom=Elapsed;Stage=170;StageAt=Elapsed;
+     UE_LOG(LogTemp,Display,TEXT("S47: chain: night two, day %d, clock %.0f, area %s"),M->Freeform->Day(),M->Freeform->Clock(),*M->Web->Area());
+     return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
     {
@@ -458,6 +473,110 @@ namespace
     if(Elapsed-TakenAt<1)return true;
     if(Site.VisitStage()!=4)return Fail(TEXT("the visit must be over after waking"));
     UE_LOG(LogTemp,Display,TEXT("S47: taken PASS kind %d"),TakenKind);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // Air in the rooms, and cattle that live: they wander, they call, and something near sends them off.
+   if(Stage>=160&&Stage<=166)
+   {
+    StageAt=Elapsed;
+    auto* H=M->TownLayer&&!M->TownLayer->Herds.IsEmpty()?M->TownLayer->Herds[0].Get():nullptr;
+    if(!H)return Fail(TEXT("no herd"));
+    if(Stage==160){if(Elapsed-CowFrom<3)return true;Shot(TEXT("haze-control.png"));CowFrom=Elapsed;Stage=161;return true;}
+    if(Stage==161)
+    {
+     if(Elapsed-CowFrom<1)return true;
+     // Out in the pasture among them, looking across the herd.
+     FVector Herd;H->CowAt(4,Herd);M->Player->Place(Herd.X+3,Herd.Z+24,0);M->Player->Pitch=-.04;
+     H->CowAt(0,CowA);CowFrom=Elapsed;Stage=162;return true;
+    }
+    if(Stage==162)
+    {
+     if(Elapsed-CowFrom<25)return true;
+     FVector Now;H->CowAt(0,Now);H->CowAt(1,CowB);
+     UE_LOG(LogTemp,Display,TEXT("S47: cows: first moved %.2f m in 25 s, %d calls"),FVector::Dist(CowA,Now),M->Freeform->FarmNight->MooCount());
+     Shot(TEXT("cows-calm.png"));CowA=Now;
+     FVector Mid;H->CowAt(4,Mid);M->Freeform->FarmNight->TestAlarmAt=FVector(Mid.X,0,Mid.Z);CowCalls=M->Freeform->FarmNight->MooCount();CowFrom=Elapsed;Stage=163;return true;
+    }
+    if(Stage==163)
+    {
+     if(Elapsed-CowFrom<5)return true;
+     Shot(TEXT("cows-panic.png"));Stage=164;return true;
+    }
+    if(Elapsed-CowFrom<9)return true;
+    FVector Now;H->CowAt(1,Now);const double Ran=FVector::Dist(Now,CowB);const int32 Calls=M->Freeform->FarmNight->MooCount()-CowCalls;
+    UE_LOG(LogTemp,Display,TEXT("S47: cows: ran %.1f m, %d frightened calls"),Ran,Calls);
+    if(Ran<8)return Fail(TEXT("frightened cattle must run"));
+    if(Calls<2)return Fail(TEXT("frightened cattle must call"));
+    UE_LOG(LogTemp,Display,TEXT("S47: cows PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // The whole way with nothing forced: the scheduler's own draw, the lights, going there, the marks, standing about,
+   // running into a building. Only the waits and the journey are shortened.
+   if(Stage>=170&&Stage<=176)
+   {
+    StageAt=Elapsed;
+    auto& D=*M->Freeform->Director;auto& Site=*M->Freeform->FarmSite;
+    if(Elapsed-ChainFrom>150)return Fail(TEXT("the chain stopped"));
+    if(Stage==170)
+    {
+     if(D.ActiveEvent().IsEmpty())return true;
+     if(D.ActiveEvent()!=TEXT("farm_lights")&&D.ActiveEvent()!=TEXT("town_lights"))return true;
+     ChainEvent=D.ActiveEvent();
+     UE_LOG(LogTemp,Display,TEXT("S47: chain: the night's draw started %s; objective: %s"),*ChainEvent,*M->Freeform->Objective());
+     if(!M->Freeform->Objective().Contains(TEXT("RADIO TIP")))return Fail(TEXT("the tip must stand on the objective line"));
+     // Go there as the player would end up: on foot at the place, in its own area.
+     if(ChainEvent==TEXT("town_lights")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
+     ChainAt=Elapsed;Stage=171;return true;
+    }
+    if(Stage==171)
+    {
+     if(Elapsed-ChainAt<1.5)return true;
+     const FVector A=D.EventAnchor();M->Player->Place(A.X+30,A.Z,0);
+     // In town the lights rise when someone is near, however long they have been there.
+     ChainAt=Elapsed;Stage=172;return true;
+    }
+    if(Stage==172)
+    {
+     if(!D.ActiveEvent().IsEmpty()){const FVector A=D.EventAnchor();M->Player->Place(A.X+10,A.Z,0);return true;}
+     if(!Site.Armed())return Fail(TEXT("the lights must leave marks behind"));
+     UE_LOG(LogTemp,Display,TEXT("S47: chain: lights gone, marks at %s, %s"),*Site.PlaceId(),*Site.Centre().ToCompactString());
+     Site.TestReadyVisit(); // the 60 percent, taken as given
+     const FVector C=Site.Centre();M->Player->Place(C.X+6,C.Z+6,0);ChainAt=Elapsed;Stage=173;return true;
+    }
+    if(Stage==173)
+    {
+     // Twelve seconds standing about, on its own.
+     if(Site.VisitStage()>=1){UE_LOG(LogTemp,Display,TEXT("S47: chain: the visit began after %.1f s standing there"),Elapsed-ChainAt);ChainAt=Elapsed;Stage=174;return true;}
+     if(Elapsed-ChainAt>25)return Fail(TEXT("standing at the marks must bring the visit"));
+     return true;
+    }
+    if(Stage==174)
+    {
+     // Run for a roof: the old house at the farm, any building in town.
+     auto& Tk=*M->Freeform->Taken;
+     if(Site.PlaceId()==TEXT("farm"))
+     {
+      const FVector In=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);M->Player->Place(In.X,In.Z,0);
+      if(Tk.Indoors()&&Tk.Busy()){UE_LOG(LogTemp,Display,TEXT("S47: chain: steps overhead after running in"));Stage=175;ChainAt=Elapsed;return true;}
+      if(Elapsed-ChainAt>12)return Fail(TEXT("running under a roof must start the steps overhead"));
+      return true;
+     }
+     UE_LOG(LogTemp,Display,TEXT("S47: chain: in town, indoors %d"),Tk.Indoors());Stage=175;ChainAt=Elapsed;return true;
+    }
+    if(Stage==175)
+    {
+     // And a menu holds it: no time passes in the light behind a panel.
+     auto& Tk=*M->Freeform->Taken;
+     if(Tk.Busy()&&!ChainPaused){M->bPausedByMenu=true;ChainPaused=true;ChainAt=Elapsed;ChainAge=Tk.LightOn();return true;}
+     if(ChainPaused&&Elapsed-ChainAt<3)return true;
+     if(ChainPaused&&M->bPausedByMenu)
+     {
+      M->bPausedByMenu=false;
+      if(Tk.LightOn()>ChainAge+.01)return Fail(TEXT("the light must not count behind a menu"));
+     }
+     Stage=176;ChainAt=Elapsed;return true;
+    }
+    UE_LOG(LogTemp,Display,TEXT("S47: chain PASS"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==139)
@@ -736,12 +855,12 @@ namespace
    {
     M->UI->Close(true);auto& Site=*M->Freeform->FarmSite;
     const auto Saved=Site.Save();Site.Begin(Saved);if(!Site.Armed())return Fail(TEXT("the site must survive a reload"));
-    if(!M->Freeform->TestAdvance(10.*3600.))return Fail(TEXT("advancing to morning"));
+    if(!M->Freeform->TestAdvance(16.*3600.))return Fail(TEXT("advancing past noon"));
     Stage=57;StageAt=Elapsed;return true;
    }
    if(Stage==57)
    {
-    if(M->Freeform->FarmSite->Armed())return Fail(TEXT("the site must be gone by morning"));
+    if(M->Freeform->FarmSite->Armed())return Fail(TEXT("the site must be gone by the next noon"));
     UE_LOG(LogTemp,Display,TEXT("S47: farm lights PASS: bright in the photograph, left when approached, site found, kept, reloaded and gone by morning"));
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;

@@ -1008,6 +1008,13 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  if(M&&M->Story)
  {
   FS47Doc D;D.Id=TEXT("freeform-")+Id;D.Title=TEXT("Field record: ")+Id;D.Kind=TEXT("fieldnote");D.Stamp=FString::Printf(TEXT("SARO / DAY %d / %s"),DayNumber,*Id);
+  // Out in the world: named by what it says, not by its key, and not stamped as if it were at the site.
+  if(Id.StartsWith(TEXT("taken-"))||Id.Contains(TEXT("_visit"))||Id.Contains(TEXT("_trace")))
+  {
+   int32 Stop=INDEX_NONE;Text.FindChar(TEXT('.'),Stop);
+   D.Title=TEXT("Field record: ")+(Stop>0?Text.Left(FMath::Min(Stop,60)):Text.Left(60));
+   D.Stamp=FString::Printf(TEXT("IN THE FIELD / DAY %d"),DayNumber);
+  }
   D.Page=D.Stamp+TEXT("\n\nOBSERVATION\n")+Text+TEXT("\n\nInterpretation remains separate from the retained observation. Compare independent sources before assigning an origin.");D.Transcript=D.Page;
   M->Story->AddDoc(D);
  }
@@ -2071,6 +2078,7 @@ FString FS47FreeformSession::TutorialObjective()const
 FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
+ if(Director&&!Director->TipLine().IsEmpty())return Director->TipLine();
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");

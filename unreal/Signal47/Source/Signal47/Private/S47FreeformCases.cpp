@@ -73,6 +73,7 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
  if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
+ if(Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit")))return 2;
  return -1;
 }
 int32 FS47FreeformCases::LineForObservation(const FString& Event)

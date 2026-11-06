@@ -28,6 +28,15 @@ private:
  FString LastArea;
  double SoundIn=4;
  int32 Sounds=0;
+ TArray<TWeakObjectPtr<class ULocalFogVolumeComponent>> Hazes;
+ void BuildHaze();
+ void StepCattle(double Dt,const FString& Area);
+ double MooIn=9;
+ int32 Moos=0;
+public:
+ int32 MooCount() const{return Moos;}
+ FVector TestAlarmAt=FVector::ZeroVector;
+private:
  bool bBuilt=false,bOn=false,bWind=false;
  bool Build();
  void Place(const FString& Area);

@@ -102,7 +102,7 @@ void FS47FarmSite::Show(bool bShow)
 void FS47FarmSite::Begin(const S47J::FObj& Saved)
 {
  Stop();if(!M||!IsValid(M->Web))return;
- if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();SpotSaro={};SpotRoad={};}
+ if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();VisitBody.Reset();bBodyOut=false;SpotSaro={};SpotRoad={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
  Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;
@@ -130,7 +130,7 @@ void FS47FarmSite::Stop()
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Web.Get());
  if(Visit>=2&&Visit<=3&&bLive&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  if(bLive)HideBody();
- VisitBody.Reset();bBodyOut=false;
+ bBodyOut=false;
  Visit=4;bActive=false;Life.Reset();Show(false);
 }
 
@@ -145,12 +145,13 @@ void FS47FarmSite::ArmFarm(double Clock){Arm(Clock,TEXT("farm"),TEXT("the Aldere
 
 void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitle,const FString& InArea,const FVector& Point)
 {
- // Gone by the next 06:00: the morning is a separate, later look at the place.
- static constexpr double Day=86400,Morning=6*3600;
+ // Gone by the next noon: time for the second look by daylight that the note asks for.
+ static constexpr double Day=86400,Morning=12*3600;
+ if(Visit>=1&&Visit<=3)EndVisit(false);
  ClearAt=FMath::FloorToDouble((Clock-Morning)/Day+1)*Day+Morning;
  Place=InPlace;Title=InTitle;AreaId=InArea;Middle=Point;
  // Not every night's lights leave something behind that comes back for you.
- Visit=FMath::FRand()<.6f?0:4;VisitDwell=0;
+ Visit=FMath::FRand()<.6f&&Clock>=CalmUntil?0:4;VisitDwell=0;
  if(Place!=TEXT("farm")&&M&&M->Web&&M->Web->GetWorld())
  {
   // The longest clear way out from the front, and a few metres along it.
@@ -173,7 +174,7 @@ void FS47FarmSite::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform)return;
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
- if(Visit>=1&&Visit<=3&&(!Armed()||!M->Web||!Here()||!M->Player)){EndVisit(false);return;}
+ if(Visit>=1&&Visit<=3&&(!Armed()||!M->Web||!Here()||!M->Player)){EndVisit(bVisitTaken||(M->Freeform->Taken&&M->Freeform->Taken->Busy()));return;}
  if(!Armed()||!M->Audio||!M->Player||!M->Web||!Here())return;
  const double Dist=FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size();
  StepVisit(Dt,Dist);
@@ -255,6 +256,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G||!M->World)return;
  auto Tk=M->Freeform->Taken;if(!Tk)return;
  const bool bDriving=M->World->bDriving;
+ // In the truck with the engine dead is not away. That is the worst place to be.
+ const bool bAway=bDriving&&!M->World->Trouble.WantsKey();
  if(Visit==0)
  {
   // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
@@ -274,17 +277,21 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  if(bVisitTaken){EndVisit(true);return;}
  const bool bFirst=VisitAge<=0;VisitAge+=Dt;
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ // Under a roof it starts overhead, also when they have only just run in there.
+ if(!bVisitDread&&!bDriving&&!Tk->Busy()&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))bVisitDread=true;
  if(Visit==1)
  {
   // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.
   if(bFirst)
   {
    M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
-   // Under a roof it starts overhead, whoever it is. The tall one's light is how it comes at all.
-   if(VisitWho==2||Tk->Indoors())Tk->Begin(Who,Title);
+   // The truck will not start now, the first time it is tried.
+   M->World->bKeyStall=true;bVisitDread=false;
+   // The tall one's light is how it comes at all.
+   if(VisitWho==2&&Tk->Begin(Who,Title))bVisitDread=true;
   }
   if(VisitAge<6)return;
-  if(bDriving||Dist>80){EndVisit(false);return;}
+  if(bAway||Dist>80){EndVisit(false);return;}
   if(VisitWho==0)
   {
    if(FMath::Fmod(VisitAge,1.)>Dt)return; // tried about once a second
@@ -315,7 +322,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
  }
  // Away from the place, it lets go.
- if(bDriving||Dist>80||VisitAge>120)EndVisit(false);
+ if(bAway||Dist>80||VisitAge>120)EndVisit(false);
 }
 
 void FS47FarmSite::EndVisit(bool bTaken)

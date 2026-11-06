@@ -6,6 +6,8 @@
 class US47Main;
 class SS47AwayOverlay;
 class USpotLightComponent;
+class UPointLightComponent;
+class ULocalFogVolumeComponent;
 #include "S47UfoPresentation.h"
 
 // Who takes the player decides how: how long is gone, and where they come to. Different bodies are different in kind,
@@ -53,10 +55,16 @@ private:
  double SafeClock=0;
  FVector From=FVector::ZeroVector,Aim=FVector::ZeroVector,StartEye=FVector::ZeroVector;
  FVector StepAt=FVector::ZeroVector;
- bool bOutdoors=false,bHooked=false,bOverlay=false,bSpill=false;
+ bool bOutdoors=false,bHooked=false,bOverlay=false,bSpill=false,bDoorDone=false;
  double StartYaw=0,StartPitch=0;
  TSharedPtr<SS47AwayOverlay> Overlay;
  TWeakObjectPtr<USpotLightComponent> Spot;
+ TWeakObjectPtr<UPointLightComponent> Fill;
+ TWeakObjectPtr<ULocalFogVolumeComponent> Mist;
+ void StepMist(double Dt);
+ double MistK=0;
+ FLinearColor LightColor(double Time) const;
+ double Pulse(double Time) const;
  TUniquePtr<FS47UfoPresentation> Ufo;
  TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> BeforeCamera;
  TWeakObjectPtr<AS47Walker> Hooked;

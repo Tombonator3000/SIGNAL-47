@@ -15,6 +15,7 @@
 #include "S47Spine.h"
 #include "SS47Dev.h"
 #include "S47DevEvents.h"
+#include "S47Taken.h"
 #include "Misc/App.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/FileManager.h"
@@ -1526,6 +1527,7 @@ FString US47Flow::SaveBlock() const
 	if (M->IsFreeform())
  {
   if(bStarting || (M->World && M->World->bBusy))return TEXT("Let the journey finish before saving.");
+  if(M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Busy())return TEXT("Not now.");
   if(M->World && M->World->bDriving)return TEXT("Park and get out before saving the current supply trip.");
   return FString();
  }

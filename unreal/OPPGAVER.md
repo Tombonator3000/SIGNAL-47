@@ -6,6 +6,10 @@
 
 Ferdig: PR444 flettet til main som `2a77e219`. Hovedbibel: Docs/Design/GAME_BIBLE.md, med gameplay, verden, SC01-SC13, UFO-feltundersøkelser og gårdshorror/tapt tid i Freeform. 62 detaljkilder er registrert og gamle planer peker til bibelen. Ingen nye lenkefeil mot førtilstanden; ingen motorjobb, installasjon eller runtimeendring. Eksisterende cosmic-kopi på `codex/game-bible-20261106` er ferdig og kan gjenbrukes eller avvikles ved neste samlede kjøring; privat lydgrunnlag bevares. Totalt to kopier. Hovedkopiens lokale UI/TODO-arbeid er urørt; ikke overskriv dette ved innhenting av main.
 
+## Nattskift 6.–7. november til 08:00, Claude Code
+
+Tom kl. 21:15: jobb gjennom natten, først bortføring ferdig, deretter iterasjon og TODO, med agenter og modell etter oppgave. Hovedkopi `~/SIGNAL-47`. Én tung motorjobb om gangen. Agenter skriver i egne worktrees, samlet høyst fire kopier. Tripo-oppdrag går til Codex med `codex exec` fra `~/SIGNAL-47-cosmic`.
+
 ## Dagskift 6. november, Claude Code
 
 Tom kl. 08:33: fortsett med rettelser og hele TODO, flett underveis, ikke stopp før Tom sier fra. Eneste aktive kopi for Claude er `~/SIGNAL-47`, først på `claude/title-object-visible` (menyobjekt, musepeker, grafikkmåling). Tunge jobber under `production_lease`. Tom spiller periodevis; start av spillet stopper byggene, det installerte spillet stoppes aldri.
