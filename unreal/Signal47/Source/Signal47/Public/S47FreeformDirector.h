@@ -39,6 +39,8 @@ public:
  double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region
 
  const TArray<FS47FreeformObservation>& Observations() const { return FieldObservations; }
+ // The live event's print, and the one waiting to be developed and registered.
+ bool HoldsPhoto(const FString& Id) const { return Id==PhotoId||Id==TaggedShot; }
  void RetainObservation(const FS47FreeformObservation& Observation);
 
  const FString& ActiveEvent() const { return Event; }

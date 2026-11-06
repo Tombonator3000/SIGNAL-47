@@ -421,6 +421,9 @@ void AS47Web::ApplyGraphicsSettings(const FS47GraphicsSettings& Settings)
 	Cvar(TEXT("sg.AntiAliasingQuality"), Graphics.AntiAliasing);
 	Cvar(TEXT("sg.GlobalIlluminationQuality"), GI + 1);
 	Cvar(TEXT("sg.ReflectionQuality"), FMath::Min(Reflection, 2));
+	// The engine gives Low only 512 pages, which overflowed at full scale in SARO (55 unserved pages in
+	// a real session) and rebuilds the pool on every step. Low and High share one pool; Ultra keeps its own.
+	Cvar(TEXT("r.Shadow.Virtual.MaxPhysicalPages"), Shadow == 3 ? 4096 : 2048);
 	Cvar(TEXT("r.Shadow.Virtual.OnePassProjection.MaxLightsPerPixel"), 32);
 	Cvar(TEXT("r.ScreenPercentage"), Graphics.RenderScale);
 	Cvar(TEXT("r.Shadow.Virtual.MarkPixelPagesMipModeLocal"), Shadow == 3 ? 0 : 2);

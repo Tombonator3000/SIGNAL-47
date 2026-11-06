@@ -94,6 +94,9 @@ struct FS47AlbumView
 	struct FShot { FString Id, Url, Text, Meta; double Dev = 1; bool bOdd = false; };
 	TArray<FShot> Shots;
 	TFunction<void(const FString&)> Look;
+	// Freeform only: throw a print away. Story leaves both unset.
+	TFunction<bool(const FString&)> CanDiscard;
+	TFunction<void(const FString&)> OnDiscard;
 };
 struct FS47NbWorkItem
 {

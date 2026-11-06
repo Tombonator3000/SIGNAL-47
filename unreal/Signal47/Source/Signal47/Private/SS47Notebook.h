@@ -97,4 +97,7 @@ private:
 	TSharedRef<SWidget> Print(int32 I, float W, bool bBig);
 	void ShowBig(int32 I);
 	void CloseBig();
+	FString DiscardLabel() const;
+	void DiscardBig();
+	bool bDiscardArmed = false;
 };

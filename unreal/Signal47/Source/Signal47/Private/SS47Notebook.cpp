@@ -423,7 +423,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
 	for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty())) Papers.Add(D);
 
-	Order = { TEXT("tasks"), TEXT("findings"), TEXT("papers"), TEXT("kit"), TEXT("map"), TEXT("guide") };
+	Order = { TEXT("tasks"), TEXT("findings"), TEXT("papers"), TEXT("photos"), TEXT("kit"), TEXT("map"), TEXT("guide") };
 	for (int32 I = 0; I < Tasks.Num(); ++I)
 	{
 		if (!X.WorkItems.IsEmpty() && X.OnFollow) break; // Freeform has authoritative structured work.
@@ -1186,7 +1186,6 @@ void SS47Notebook::Activate()
 FString SS47Notebook::MainTab() const
 {
 	if (Tab == TEXT("notes") || Tab == TEXT("people")) return TEXT("findings");
-	if (Tab == TEXT("photos")) return TEXT("papers");
 	if (Tab == TEXT("controls")) return TEXT("guide");
 	return Tab;
 }
@@ -1281,6 +1280,7 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	// one print open big: these only page through the album and put the print back (ui/album.ts)
 	if (Big != INDEX_NONE)
 	{
+		if (K == EKeys::X || K == EKeys::Delete || K == EKeys::Gamepad_FaceButton_Left) { DiscardBig(); return FReply::Handled(); }
 		if (K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_LeftShoulder) { ShowBig(Big - 1); return FReply::Handled(); }
 		if (K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right || K == EKeys::Gamepad_RightShoulder) { ShowBig(Big + 1); return FReply::Handled(); }
 		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom || K == EKeys::Gamepad_FaceButton_Right) { CloseBig(); return FReply::Handled(); }
@@ -1353,13 +1353,31 @@ TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 	return Shadow;
 }
 
+FString SS47Notebook::DiscardLabel() const
+{
+	if (!Album || !Album->Shots.IsValidIndex(Big)) return FString();
+	if (Album->CanDiscard && !Album->CanDiscard(Album->Shots[Big].Id)) return TEXT("KEPT: USED IN YOUR WORK");
+	return bDiscardArmed ? TEXT("X  AGAIN TO THROW IT AWAY") : TEXT("X  THROW AWAY PHOTO");
+}
+
+void SS47Notebook::DiscardBig()
+{
+	if (!Album || !Album->OnDiscard || !Album->Shots.IsValidIndex(Big)) return;
+	const FString Id = Album->Shots[Big].Id;
+	if (Album->CanDiscard && !Album->CanDiscard(Id)) return;
+	if (!bDiscardArmed) { bDiscardArmed = true; return; }
+	bDiscardArmed = false;
+	TFunction<void(const FString&)> Fn = Album->OnDiscard;
+	Fn(Id); // Rebuilds the notebook: this widget is gone afterwards.
+}
+
 void SS47Notebook::ShowBig(int32 I)
 {
 	using namespace S47Game;
 	if (!Album || !Album->Shots.IsValidIndex(I) || !BigSlot.IsValid()) return;
 	// (reading.change(): another print, or none, stops what was being read)
 	if (UI.IsValid()) UI->StopSpeech();
-	Big = I;
+	Big = I; bDiscardArmed = false;
 	Sel.FindOrAdd(TEXT("photos")) = Photos.Num() + I;
 	// --w: min(100vw - 150px, (100vh - 48px) / .844, 920px), in the mockup's pixels
 	const FVector2D View = FVector2D(GetCachedGeometry().GetLocalSize()) / U;
@@ -1401,6 +1419,16 @@ void SS47Notebook::ShowBig(int32 I)
 			]
 			+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center).Padding(P(6), 0, 0, 0)[Nav(TEXT("‹"), I - 1, I > 0)]
 			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Nav(TEXT("›"), I + 1, I < N - 1)]
+			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(0, 0, P(12), P(14))
+			[
+				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(P(10), P(6))).IsFocusable(false)
+				.Visibility_Lambda([this] { return Album && Album->OnDiscard ? EVisibility::Visible : EVisibility::Collapsed; })
+				.OnClicked_Lambda([this] { DiscardBig(); return FReply::Handled(); })
+				[
+					SNew(STextBlock).Font(Term(22)).ColorAndOpacity_Lambda([this] { return bDiscardArmed ? C(0xff8a5c) : C(0xcfc8b5); })
+					.Text_Lambda([this] { return FText::FromString(DiscardLabel()); })
+				]
+			]
 			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(8), P(12), 0)
 			[
 				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, P(6))).IsFocusable(false).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
@@ -1446,7 +1474,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	const TSharedRef<SS47Notebook> Nb = SNew(SS47Notebook).Tasks(T).Notes({ TEXT("One."), TEXT("Two.") }).Docs({ Log, Typed, Find })
 		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).OnBoard([&Boards] { ++Boards; }).Extras(Ex);
 	auto Key = [&](const FKey& K) { Nb->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
-	Check(TEXT("tabs in order"), FString::Join(Nb->Order, TEXT(" ")) == TEXT("tasks findings papers kit map guide"), FString::Join(Nb->Order, TEXT(" ")));
+	Check(TEXT("tabs in order"), FString::Join(Nb->Order, TEXT(" ")) == TEXT("tasks findings papers photos kit map guide"), FString::Join(Nb->Order, TEXT(" ")));
 	Check(TEXT("opens on tasks"), Nb->Tab == TEXT("tasks"), Nb->Tab);
 	Key(EKeys::E);
 	Check(TEXT("E turns on"), Nb->Tab == TEXT("findings"), Nb->Tab);

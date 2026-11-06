@@ -83,7 +83,16 @@ void FS47Album::PlaceHalos(const TArray<FVector>& Figs)
 	}
 }
 
-int32 FS47Album::Left() const { return FMath::Max(0, Data.FilmCapacity - Data.Shots.Num() - (D.Extra ? D.Extra() : 0)); }
+int32 FS47Album::Left() const { return FMath::Max(0, Data.FilmCapacity - Data.Shots.Num() - Data.Discarded - (D.Extra ? D.Extra() : 0)); }
+
+bool FS47Album::Discard(const FString& Id)
+{
+	if (Id.IsEmpty() || (Data.Face && Data.Face->Id == Id)) return false;
+	const int32 At = Data.Shots.IndexOfByPredicate([&](const FS47AlbumShot& S) { return S.Id == Id; });
+	if (At == INDEX_NONE) return false;
+	Data.Shots.RemoveAt(At); ++Data.Discarded;
+	return true;
+}
 
 bool FS47Album::AddFilm(int32 Frames)
 {
@@ -198,6 +207,7 @@ void FS47Album::Restore(const S47J::FObj& V)
 		const double Capacity = S47J::Num(V, TEXT("filmCapacity"), ROLL);
 		if (FMath::IsFinite(Capacity) && Capacity >= ROLL && Capacity <= 1000000 && FMath::FloorToDouble(Capacity) == Capacity)
 			Data.FilmCapacity = int32(Capacity);
+		Data.Discarded = FMath::Clamp(S47J::Int(V, TEXT("discarded")), 0, 1000000);
 		for (const TSharedPtr<FJsonValue>& Sv : S47J::Arr(V, TEXT("shots")))
 		{
 			const TSharedPtr<FJsonObject>* O = nullptr;
@@ -255,6 +265,7 @@ S47J::FObj FS47Album::SaveData() const
 	O->SetArrayField(TEXT("shots"), Shots);
 	S47J::Set(O, TEXT("ghosts"), Data.Ghosts);
 	if (Data.FilmCapacity != ROLL) S47J::Set(O, TEXT("filmCapacity"), Data.FilmCapacity);
+	if (Data.Discarded > 0) S47J::Set(O, TEXT("discarded"), Data.Discarded);
 	if (Data.Face)
 	{
 		const S47J::FObj Fc = S47J::New();
@@ -510,6 +521,11 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	FS47Album Finished(Deps); Finished.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
 	Check(Finished.Shots()[0].LabStage == 3 && Finished.Shots()[0].Id == OriginalId && Finished.Shots()[0].Url == OriginalUrl && Finished.Shots()[0].Clock == OriginalClock && Finished.Shots()[1].Targets.Num() == 1, TEXT("developed original identity, image, timestamp and other photo targets survive Continue"));
 	Check(Finished.Shots()[1].LabStage == -1 && !S47J::Arr(Finished.SaveData(), TEXT("shots"))[1]->AsObject()->HasField(TEXT("labStage")), TEXT("legacy and Story instant photographs retain their previous serialized shape"));
+ const int32 LeftBeforeDiscard=Finished.Left();const FString ThrownId=Finished.Shots()[0].Id;
+ Check(Finished.FaceShot()&&!Finished.Discard(Finished.FaceShot()->Id)&&Finished.Left()==LeftBeforeDiscard,TEXT("the print the case is waiting for cannot be thrown away"));
+ Check(Finished.Discard(ThrownId)&&Finished.Left()==LeftBeforeDiscard&&!Finished.Discard(ThrownId),TEXT("a thrown-away print leaves the album and its frame stays used"));
+ FS47Album ThrownBack(Deps);ThrownBack.Restore(S47J::Read(S47J::Write(Finished.SaveData())));
+ Check(ThrownBack.Left()==LeftBeforeDiscard&&!ThrownBack.Shots().ContainsByPredicate([&](const FS47AlbumShot& S){return S.Id==ThrownId;}),TEXT("a thrown-away print stays gone after reload"));
  Check(!Extended.Shots()[0].Pose.IsSet(),TEXT("legacy image has no invented capture pose"));
  FS47PhotoPose Pose;Pose.Scene=TEXT("saro");Pose.Eye=FVector(1,1.62,-40);Pose.Forward=FVector(0,0,-1);Pose.Fov=44.6;
  Lab.Data.Shots[0].Pose=Pose;FS47Album PoseCopy(Deps);PoseCopy.Restore(S47J::Read(S47J::Write(Lab.SaveData())));

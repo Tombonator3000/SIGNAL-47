@@ -1545,7 +1545,7 @@ void US47Flow::RequestAutosave(bool bMilestone)
 {
 	// Progress asks for an autosave; it is written after the next frame, once the game may be saved.
 	if (!CaseId || M->Mode != EMode::Play || bRestoringNow) return;
-	if (bMilestone) Saves.NewGeneration(CaseId);
+	if (bMilestone) { Saves.NewGeneration(CaseId); bPendingFreshThumb = true; }
 	bPendingAuto = true;
 }
 
@@ -1553,8 +1553,13 @@ void US47Flow::FlushAutosave()
 {
 	if (!bPendingAuto || !SaveBlock().IsEmpty()) return;
 	bPendingAuto = false;
+	// Rendering a save's picture stops the game for about 60 ms, and Freeform autosaves at least every
+	// 30 seconds. Routine autosaves share a recent picture; milestones and every other save take a new one.
+	bReuseThumb = !bPendingFreshThumb; bPendingFreshThumb = false;
 	FString Err;
-	if (!WriteSave(TEXT("auto"), -1, Err)) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
+	const bool bSaved = WriteSave(TEXT("auto"), -1, Err).IsSet();
+	bReuseThumb = false;
+	if (!bSaved) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
 }
 
 bool US47Flow::AutosaveNow(FString* OutError)
@@ -1645,7 +1650,9 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	Card.Playtime = M->Playtime;
 	// the picture without what stands over you on waking (story/abduction.ts)
 	const bool bOver = M->Away && M->Away->HideOver(true);
-	Card.Thumb = CaptureThumb();
+	const double ThumbNow = FPlatformTime::Seconds();
+	if (bReuseThumb && !LastThumb.IsEmpty() && LastThumbCase == CaseId && ThumbNow - LastThumbAt < 120) Card.Thumb = LastThumb;
+	else { Card.Thumb = CaptureThumb(); LastThumb = Card.Thumb; LastThumbCase = CaseId; LastThumbAt = ThumbNow; }
 	if (bOver) M->Away->HideOver(false);
 	return Saves.Save(CaseId, Kind, Slot, State, Card, OutError);
 }
@@ -1985,7 +1992,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const FS47AlbumShot* Photo = M->Night && M->Night->Album ? M->Night->Album->Shots().FindByPredicate([&Claim](const FS47AlbumShot& P) { return P.Id == Claim.PhotoId; }) : nullptr;
 			const bool Developed = Photo && Photo->IsDeveloped();
 			W.Status = Developed ? TEXT("Developed original / awaiting registration") : TEXT("Exposed original / needs developing");
-			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d documentation credit. The image remains in Documents / Photos."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
+			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d documentation credit. The image remains in the Album."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
 			W.Location = Developed ? TEXT("OPS / corner PC") : TEXT("PHOTO LAB / wet bench"); X.WorkItems.Add(W);
 		}
 		X.OnFollow = [Self](const FString& Id)
@@ -2016,6 +2023,33 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		}
 	}
 	if (M->Night && M->Night->Album && M->Story) X.Album = M->Night->Album->View(Free ? M->Freeform->Clock() : M->Story->Clock());
+	if (X.Album && Free)
+	{
+		TWeakObjectPtr<US47Flow> Weak = const_cast<US47Flow*>(this);
+		// A print a case, a control or a field note points at stays: those records show the image.
+		X.Album->CanDiscard = [Weak](const FString& Id)
+		{
+			if (!Weak.IsValid() || !Weak->M || !Weak->M->Freeform) return false;
+			const FS47Album* Album = Weak->M->Night && Weak->M->Night->Album ? Weak->M->Night->Album.Get() : nullptr;
+			const FS47AlbumShot* Shot = Album ? Album->Shots().FindByPredicate([&Id](const FS47AlbumShot& S) { return S.Id == Id; }) : nullptr;
+			// Targets are what the game saw in the frame: controls and anomalies find their print by them.
+			if (!Shot || Shot->bOdd || Shot->Targets.Num() > 0 || (Album->FaceShot() && Album->FaceShot()->Id == Id)) return false;
+			const auto& Dir = Weak->M->Freeform->Director;
+			if (!Dir) return true;
+			if (Dir->HoldsPhoto(Id)) return false;
+			for (const auto& C : Dir->PhotoClaims()) if (C.PhotoId == Id || C.ControlOriginalId == Id || C.ControlPhotoId == Id || C.LocalNoiseOriginalId == Id) return false;
+			for (const auto& O : Dir->Observations()) if (O.PhotoId == Id) return false;
+			return true;
+		};
+		X.Album->OnDiscard = [Weak](const FString& Id)
+		{
+			if (!Weak.IsValid() || !Weak->M || !Weak->M->Night || !Weak->M->Night->Album) return;
+			const bool bGone = Weak->M->Night->Album->Discard(Id);
+			UE_LOG(LogS47Flow, Display, TEXT("S47: album discard %s: %s"), *Id, bGone ? TEXT("removed") : TEXT("refused"));
+			if (Weak->M->UI) Weak->M->UI->NotebookAt(TEXT("photos"));
+			Weak->OpenNotebook();
+		};
+	}
 	return X;
 }
 

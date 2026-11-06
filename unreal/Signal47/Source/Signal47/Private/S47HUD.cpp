@@ -1,4 +1,7 @@
 #include "S47HUD.h"
+#if PLATFORM_LINUX
+#include "Linux/LinuxPlatformApplicationMisc.h"
+#endif
 #include "S47MenuPointerTest.h"
 #include "S47CaptureSoundTest.h"
 #include "S47BoardClusterTest.h"
@@ -734,6 +737,15 @@ void AS47HUD::Toast(const FString& Text, float Secs)
 	if (Hud.IsValid()) Hud->Toast(Text, Secs);
 }
 
+static bool S47HudCursorWarpIsWrong()
+{
+#if PLATFORM_LINUX
+	return FLinuxPlatformApplicationMisc::IsUsingWayland();
+#else
+	return false;
+#endif
+}
+
 void AS47HUD::SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed)
 {
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
@@ -741,17 +753,21 @@ void AS47HUD::SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed)
 	if (!Viewport || !PC) return;
 	// A dialogue line replaced by the next one closes and reopens the panel. Keep the pointer where
 	// the player left it instead of where the brief game-mode capture parked it (FIX-06).
-	const bool bReopen = !Modal.IsValid() && LastModalClosedAt > 0 && FPlatformTime::Seconds() - LastModalClosedAt < .75;
-	const FVector2D KeepCursor = Modal.IsValid() && FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : LastModalCursor;
-	const bool bKeep = Modal.IsValid() || bReopen;
+	const bool bSwap = Modal.IsValid();
+	const bool bReopen = !bSwap && LastModalClosedAt > 0 && FPlatformTime::Seconds() - LastModalClosedAt < .75;
+	const FVector2D KeepCursor = LastModalCursor;
+	// A panel rebuilt by its own button never leaves menu input, so the pointer has nothing to recover from.
+	bSwappingModal = bSwap;
 	CloseModal();
+	bSwappingModal = false;
 	Modal = Widget;
 	ModalClosed = MoveTemp(OnClosed);
 	Viewport->AddViewportWidgetContent(Widget.ToSharedRef(), 30);
 	if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetAllUserFocus(Widget, EFocusCause::SetDirectly);
 	PC->bShowMouseCursor = true;
 	PC->SetInputMode(FInputModeUIOnly());
-	if (bKeep && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetCursorPos(KeepCursor);
+	// Wayland hides the window position, so the engine's warp lands up to one monitor to the right.
+	if (bReopen && !S47HudCursorWarpIsWrong() && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetCursorPos(KeepCursor);
 	if (Walker.IsValid()) Walker->SetActive(false);
 	if (Story.IsValid()) Story->SetPaused(true);
 }
@@ -765,10 +781,13 @@ void AS47HUD::CloseModal()
 	LastModalClosedAt = FPlatformTime::Seconds();
 	Viewport->RemoveViewportWidgetContent(Modal.ToSharedRef());
 	Modal.Reset();
-	FInputModeGameOnly Mode;
-	Mode.SetConsumeCaptureMouseDown(false);
-	PC->SetInputMode(Mode);
-	PC->bShowMouseCursor = false;
+	if (!bSwappingModal)
+	{
+		FInputModeGameOnly Mode;
+		Mode.SetConsumeCaptureMouseDown(false);
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = false;
+	}
 	const US47Main* Mn = US47Main::Get(this);
 	if (Walker.IsValid() && !bEnded && (!Mn || (Mn->Mode == US47Main::EMode::Play && !(Mn->Evening && Mn->Evening->MealBusy())))) Walker->SetActive(true);
 	if (Story.IsValid()) Story->SetPaused(false);

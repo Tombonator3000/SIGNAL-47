@@ -253,16 +253,21 @@ int32 SS47Title::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlat
  const auto Pass=SampleTitlePass(PassT);
  if(Pass.bVisible)
  {
-  // One lit object, a little larger than a star: no craft, no row of lamps.
-  static const FSlateRoundedBoxBrush Disc(FLinearColor::White,32.f);
+  // One lit object, clearly larger than any star: a soft glow and a white core, no craft shape.
+  // A brush radius larger than the box draws a diamond, or nothing at the size of a star (Tom, 6 November).
   const FVector2f At(Pass.Position.X*S.X,Pass.Position.Y*S.Y);
   const float Scale=FMath::Clamp(S.X/1920.f,.65f,1.5f);
+  static TMap<int32,TUniquePtr<FSlateRoundedBoxBrush>> Discs;
   const auto Dot=[&](float Radius,float Alpha,const FLinearColor& C)
   {
-   const float R=Radius*Scale;
-   FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(2*R,2*R),FSlateLayoutTransform(At-FVector2f(R,R))),&Disc,ESlateDrawEffect::None,C.CopyWithNewOpacity(Pass.Opacity*Alpha));
+   const float R=FMath::Max(1.f,FMath::RoundToFloat(Radius*Scale*2.f)*.5f);
+   TUniquePtr<FSlateRoundedBoxBrush>& Disc=Discs.FindOrAdd(FMath::RoundToInt32(R*2.f));
+   if(!Disc)Disc=MakeUnique<FSlateRoundedBoxBrush>(FLinearColor::White,R);
+   FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(2*R,2*R),FSlateLayoutTransform(At-FVector2f(R,R))),Disc.Get(),ESlateDrawEffect::None,C.CopyWithNewOpacity(Pass.Opacity*Alpha));
   };
-  Dot(9.f,.07f,FLinearColor(1.f,.86f,.68f));Dot(5.f,.20f,FLinearColor(1.f,.88f,.72f));Dot(2.4f,.65f,FLinearColor(1.f,.93f,.82f));Dot(1.3f,1.f,FLinearColor::White);
+  // Many faint discs add up to a falloff without a visible edge.
+  for(int32 I=0;I<14;++I)Dot(FMath::Lerp(22.f,3.5f,FMath::Sqrt(I/13.f)),.04f,FLinearColor(1.f,.86f,.68f));
+  Dot(3.5f,.8f,FLinearColor(1.f,.93f,.82f));Dot(2.5f,1.f,FLinearColor::White);
  }
 	return SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer + 1, Style, bParentEnabled);
 }

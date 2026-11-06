@@ -1676,6 +1676,8 @@ void AS47Web::Tick(float Dt)
 	UpdateRetroProps();
 	SampleLightingPerformance(Dt);
 	S47GraphicsReview::Tick(this, Dt);
+	S47GraphicsTouch::Tick(this);
+	S47SlowFrames::Tick(this);
 	S47RenderAudit::Tick(this);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);
