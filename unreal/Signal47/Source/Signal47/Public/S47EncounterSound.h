@@ -25,8 +25,10 @@ private:
  TSharedPtr<FS47AudioContext> Context;
  TArray<TSharedPtr<FS47AudioBuffer>> Cues;
  TArray<FVoice> Voices;
- TSharedPtr<FS47BufferSourceNode> RadioSource;
- TSharedPtr<FS47GainNode> RadioGain,RadioVolume;
+ TSharedPtr<FS47BufferSourceNode> RadioSource, Transmission;
+ TSharedPtr<FS47AudioBuffer> TransmissionBuffer;
+ double NextTransmission=0;
+ TSharedPtr<FS47GainNode> RadioGain,RadioVolume,TransmissionGain;
  TSharedPtr<FS47PannerNode> RadioPan;
  TWeakObjectPtr<US47Audio> Owner;
  bool bHeld=false,bRadioPlaced=false;
@@ -34,5 +36,6 @@ private:
  int32 LastKind=-1;
  bool Bind(US47Audio* Audio);
  void RadioMix();
+ void StopTransmission();
  void FadeVoices(double Secs);
 };

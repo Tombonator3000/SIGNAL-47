@@ -151,6 +151,7 @@ public:
 
 	void AmRadioThree(TOptional<FVector> At); // amRadio(at | null)
 	bool RadioOn() const { return Am.Out.IsValid(); }
+	FVector AmRadioPosition() const { return Am.At; }
 	void Beep(float Freq = 1200.f, float Dur = 0.08f, float Gain = 0.12f, float When = 0.f, const FString& Type = TEXT("square"));
 	void HoldThunder(float Level);
 	void Thunder(float Strength = 0.6f);
@@ -293,7 +294,7 @@ private:
 	TSharedPtr<FS47SignalVoice> Signal;
 	TSharedPtr<FS47GainNode> RoomTone, ToneHold, ThunderBus;
 	struct FMotor { TSharedPtr<FS47GainNode> Gain; TSharedPtr<FS47OscillatorNode> Osc; } Motor;
-	struct FAm { TSharedPtr<FS47GainNode> Out, MusicGain, Hiss; TFunction<void()> Stop; } Am;
+	struct FAm { FVector At=FVector::ZeroVector; TSharedPtr<FS47GainNode> Out, MusicGain, Hiss; TFunction<void()> Stop; } Am;
 	struct FTv { TSharedPtr<FS47BufferSourceNode> Src; TSharedPtr<FS47GainNode> Gain; } Tv;
 	struct FPhoneSession { TArray<TSharedPtr<FS47ScheduledSourceNode>> Sources; TArray<TSharedPtr<FS47AudioNode>> Nodes; };
 	TSharedPtr<FPhoneSession> PhoneSession;
