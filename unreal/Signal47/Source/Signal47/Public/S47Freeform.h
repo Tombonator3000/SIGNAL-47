@@ -179,6 +179,7 @@ public:
  FString AudioCaptureStatus() const;
  const FS47Profile* ConsoleProfile() const;
  TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
+ TSharedPtr<class FS47RoomDecor> Decor;
  TSharedPtr<FS47FreeformDirector> Director;
  TSharedPtr<FS47FreeformWorld> Field;
  TSharedPtr<FS47CaseFieldTests> CaseField;
