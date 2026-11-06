@@ -19,6 +19,8 @@
 #include "Components/PoseableMeshComponent.h"
 #include "UObject/UObjectIterator.h"
 #include "S47FarmHouse.h"
+#include "S47FarmWorld.h"
+#include "S47RoadShape.h"
 #include "S47World.h"
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
@@ -279,6 +281,14 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the town test needs the night"));
      M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));Stage=60;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerNature")))
+    {
+     // The rules of nature in Freeform: day shots at eleven from six places, and the pasture at night.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     const double Today=FMath::Fmod(M->Freeform->Clock(),86400.);
+     if(!M->Freeform->TestAdvance(FMath::Fmod(11*3600.-Today+86400.,86400.)))return Fail(TEXT("the nature test needs the day"));
+     Stage=200;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFarm")))
     {
      M->Flow->bDevRun=true;
@@ -370,6 +380,42 @@ namespace
     StageAt=Elapsed;if(Elapsed-WalkFrom<1)return true;
     if(M->Freeform->FarmNight->LampsOn())return Fail(TEXT("the lamps must be off by day"));
     UE_LOG(LogTemp,Display,TEXT("S47: farm road PASS: lamps lit at night and off by day, %d farm sounds played"),M->Freeform->FarmNight->FarmSounds());
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // The nature: the pasture, the roadside south of SARO, flat desert towards the mountains, the antenna field, the edge of Caliche and
+   // STATION 01 by day, then the pasture at night. Each view waits for the plants to fill in before its picture.
+   if(Stage>=200&&Stage<=206)
+   {
+    struct FN{const TCHAR* Name;const TCHAR* Area;double X,Z,LX,LZ,Lift;};
+    const auto Saro=[](double X,double Z){return S47FarmWorld::RoadToArea(TEXT("saro"),FVector(X,0,Z));};
+    const FVector Past0=Saro(70,240),Past1=Saro(76,251);
+    const double Edge=S47RoadShape::TOWN().Z0;
+    const FN V[]={{TEXT("pasture-day"),TEXT("saro"),Past0.X,Past0.Z,Past1.X,Past1.Z,0},
+     {TEXT("roadside"),TEXT("road"),8010,40,8013,140,0},
+     {TEXT("flat-desert"),TEXT("road"),8070,300,8300,300,12},
+     {TEXT("antenna-field"),TEXT("saro"),-1,-30,-1,-110,0},
+     {TEXT("caliche-edge"),TEXT("diner"),7995,Edge-50,7995,Edge+30,0},
+     {TEXT("station01"),TEXT("station01"),-4,8014,-11,8003,0},
+     {TEXT("pasture-night"),TEXT("saro"),Past0.X,Past0.Z,Past1.X,Past1.Z,0}};
+    const int32 I=Stage-200;
+    StageAt=Elapsed;
+    if(ShotPending)
+    {
+     if(Elapsed-WalkFrom<4)return true;
+     Shot(*FString::Printf(TEXT("nature-%s.png"),V[I].Name));ShotPending=false;
+     if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=206;}
+     else Stage=I==6?207:Stage+1;
+     return true;
+    }
+    if(M->Web->Area()!=V[I].Area){M->World->Enter(V[I].Area);return true;}
+    const FVector D(V[I].LX-V[I].X,V[I].Lift,V[I].LZ-V[I].Z);
+    M->Player->Place(V[I].X,V[I].Z,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+    ShotPending=true;WalkFrom=Elapsed;
+    return true;
+   }
+   if(Stage==207)
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: nature shown"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==99)

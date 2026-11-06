@@ -36,6 +36,25 @@ namespace
 		// the stains in the dirt, and the litter under a big tuft or a shrub (ranked last: near only)
 		{ ES47FloraKind::Stain, 0.0045, 1.2, 90, 0, 1, 1.4, { 0.9, 2.6 }, 1, 1100, 0, 0, 0, { 42, 0.5 }, true },
 	};
+	// Freeform's rules of nature (FS47FloraSpec::bNatural), measured by eye from the references
+	// of southern New Mexico (7 Nov 2026): creosote in an even stand 2-4 m apart on flat ground, 6-15 m
+	// where it is thin (Make: a jittered grid, four to a cell, thinned by a wide density field);
+	// grass in small tufts, drifts and bands with bare dirt (50-70 % on flat ground) between.
+	// What differs from KINDS: grass (size, count, nursing), sage (rate), creosote (the grid), stalks (nursing).
+	const FKind NATURAL[] = {
+		{ ES47FloraKind::Grass, 0.46, 3.8, 65, 0.45, 0.85, 1.0, { 0.3, 0.8 }, 26, 5200, 3.5, 0.3, 3.6, { 0, 0 }, false },
+		{ ES47FloraKind::Sage, 0.02, 2.2, 110, 0.7, 0.35, 0.5, { 0.45, 1.2 }, 38, 1600, 0, 0, 0, { 0, 0 }, false },
+		{ ES47FloraKind::Creosote, 0.0625, 1.0, 240, 0.8, 0, 0, { 0.7, 1.6 }, 60, 1200, 0, 0, 0, { 40, 0.22 }, true },
+		{ ES47FloraKind::Stalks, 0.012, 3.4, 70, 0.4, 0.5, 0.75, { 0.6, 1.3 }, 30, 1500, 4, 0.45, 0, { 0, 0 }, false },
+		{ ES47FloraKind::Succulent, 0.0027, 1.1, 260, 1, 0, 0, { 0.62, 1.28 }, 60, 520, 0, 0, 0, { 130, 0.14 }, true },
+		{ ES47FloraKind::Stones, 0.07, 1.6, 36, 0.35, 0.8, 0.9, { 0.3, 2.1 }, 18, 3000, 0, 0, 1.4, { 0, 0 }, false },
+		{ ES47FloraKind::Stain, 0.0045, 1.2, 90, 0, 1, 1.4, { 0.9, 2.6 }, 1, 1100, 0, 0, 0, { 42, 0.5 }, true },
+	};
+	const FKind& KindFor(bool bNat, int32 Ki) { return bNat ? NATURAL[Ki] : KINDS[Ki]; }
+	// the sway of each kind in Freeform: the grass and the stalks most, the woody shrubs less, stones and stains none
+	constexpr double WIND_OF[] = { 1.0, 0.6, 0.4, 1.2, 0.15, 0, 0 };
+	// the shrubs that cast a shadow: within this many metres of the eye
+	constexpr double SHADOW_CREOSOTE = 30, SHADOW_SAGE = 22;
 	constexpr int32 NK = 7;
 	constexpr double CLUMP_K = 4.5;   // the drifts' noise raised to 2.5 averages about 1/4.5
 	// NURSE: the grass and the stalks stand round the sage and the creosote
@@ -69,9 +88,24 @@ namespace
 	// ---------- the colours of the copies (sRGB tints, as the shapes) ----------
 	double SrgbToLinear(double V) { return V < 0.04045 ? V * 0.0773993808 : FMath::Pow(V * 0.9478672986 + 0.0521327014, 2.4); }
 	FVector Lin(double R, double G, double B) { return FVector(SrgbToLinear(R), SrgbToLinear(G), SrgbToLinear(B)); }
-	const TArray<FVector>& PAL(ES47FloraKind K)
+	const TArray<FVector>& PAL(ES47FloraKind K, bool bNat = false)
 	{
-		static TArray<TArray<FVector>> P;
+		static TArray<TArray<FVector>> P, Pn;
+		if (bNat)
+		{
+			// Freeform: dry grass and straw beige (0.9, 0.82, 0.62), creosote olive green (0.35, 0.40, 0.20)
+			if (Pn.Num() == 0)
+			{
+				const TArray<FVector> Sage = PAL(ES47FloraKind::Sage, false), Succ = PAL(ES47FloraKind::Succulent, false), Stone = PAL(ES47FloraKind::Stones, false), Stain = PAL(ES47FloraKind::Stain, false);
+				Pn.SetNum(NK);
+				Pn[0] = { Lin(0.9, 0.82, 0.62), Lin(0.82, 0.75, 0.57), Lin(0.95, 0.87, 0.67), Lin(0.74, 0.69, 0.54), Lin(0.88, 0.8, 0.6) };
+				Pn[1] = Sage;
+				Pn[2] = { Lin(0.35, 0.4, 0.2), Lin(0.31, 0.36, 0.18), Lin(0.4, 0.45, 0.24), Lin(0.33, 0.38, 0.22) };
+				Pn[3] = { Lin(0.92, 0.84, 0.64), Lin(0.85, 0.78, 0.6), Lin(0.97, 0.9, 0.7) };
+				Pn[4] = Succ; Pn[5] = Stone; Pn[6] = Stain;
+			}
+			return Pn[int32(K)];
+		}
 		if (P.Num() == 0)
 		{
 			P.SetNum(NK);
@@ -189,9 +223,27 @@ void FS47Flora::Add(const TArray<FS47FloraRect>& Blocks, const TArray<FS47FloraR
 	bDirty = true;
 }
 
-double FS47Flora::NoiseAt(double X, double Z, int32 Ki) const
+double FS47Flora::NoiseAt(double X, double Z, int32 Ki, double Terrain) const
 {
-	const FKind& K = KINDS[Ki];
+	const FKind& K = KindFor(Spec.bNatural, Ki);
+	if (Spec.bNatural && K.Id == ES47FloraKind::Creosote)
+	{
+		// a wide field of density: an even stand where it is high, thin and far apart where it is low
+		const double Field = FMath::Clamp(2 * VNoise(X, Z, 70, Spec.Seed + 31) - 0.3, 0.1, 1.3);
+		const double* Mx = Spec.Mix.Find(K.Id);
+		return Field * (Mx ? *Mx : 1);
+	}
+	if (Spec.bNatural && K.Id == ES47FloraKind::Grass)
+	{
+		// tufts in drifts and in bands (stretched 3 : 1 along a line of runoff, 35 degrees), dirt between;
+		// thicker in the lows of the ground (Terrain, from Make), none in the lightest third of the noise
+		const double Iso = VNoise(X, Z, K.Clump, Spec.Seed + 911);
+		const double U = X * 0.8192 + Z * 0.5736, V = -X * 0.5736 + Z * 0.8192;
+		const double Band = VNoise(U / 3.0, V, 5.0, Spec.Seed + 913);
+		const double Live = FMath::Max(0.0, (0.5 * Iso + 0.5 * Band - 0.3) / 0.7);
+		const double* Mx = Spec.Mix.Find(K.Id);
+		return 6.0 * Live * Live * Terrain * (Mx ? *Mx : 1);
+	}
 	double N = K.Patch > 1 ? 0.3 + 1.4 * VNoise(X, Z, K.Patch, Spec.Seed + int32(K.Patch)) : 1;
 	// drifts a few metres across with bare dirt between (raised to a power: most of it thin, some thick)
 	if (K.Clump > 0) N *= CLUMP_K * FMath::Pow(VNoise(X, Z, K.Clump, Spec.Seed + 911), 2.5);
@@ -201,7 +253,7 @@ double FS47Flora::NoiseAt(double X, double Z, int32 Ki) const
 
 double FS47Flora::CoverAt(double X, double Z, int32 Ki, double Noise)
 {
-	const FKind& K = KINDS[Ki];
+	const FKind& K = KindFor(Spec.bNatural, Ki);
 	bWalked = false; bSeamed = false; bSpilt = false;
 	double D = Spec.Cover ? Spec.Cover(X, Z) : 1;
 	if (D <= 0)
@@ -220,6 +272,13 @@ double FS47Flora::CoverAt(double X, double Z, int32 Ki, double Noise)
 		for (const FS47FloraRect& W : E->W) if (Inside(W, X, Z)) { bWalked = true; break; }
 	}
 	if (K.Id == ES47FloraKind::Stones && !bSeamed && Spec.Spill) { const double S = Spec.Spill(X, Z); if (S > 1) { D *= S; bSpilt = true; } }
+	if (Spec.bNatural)
+	{
+		// the new buildings' plots (nothing grows), the trampled ground, and the farm's yard and pasture
+		for (const FS47FloraRect& B : Spec.NatBlocks) if (Inside(B, X, Z)) return 0;
+		for (const FS47FloraRect& W : Spec.NatWalks) if (Inside(W, X, Z)) { bWalked = true; break; }
+		if (Spec.Farm) { const double F = Spec.Farm(X, Z, K.Id); if (F <= 0) return 0; D *= F; }
+	}
 	return D * Noise;
 }
 
@@ -258,13 +317,17 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 {
 	// A cell's copies of a kind: drawn the same every time from the cell's own random numbers (the
 	// same count of them for every candidate, kept or not), sorted by rank so Low keeps the first.
-	const FKind& K = KINDS[Ki];
+	const bool bNat = Spec.bNatural;
+	const FKind& K = KindFor(bNat, Ki);
 	FMulberry R(Hash4(I, J, Ki, Spec.Seed));
 	const double Want = K.Rate * C * C * K.Most;
-	const int32 N = int32(FMath::FloorToDouble(Want)) + (R() < FMath::Fmod(Want, 1.0) ? 1 : 0);
+	// Freeform's creosote: four candidates in a cell, one in each 4 m square at a jittered place (at least
+	// 1.6 m from its neighbours), then thinned by the density field; the rest as before
+	const bool bGrid = bNat && K.Id == ES47FloraKind::Creosote;
+	const int32 N = bGrid ? 4 : int32(FMath::FloorToDouble(Want)) + (R() < FMath::Fmod(Want, 1.0) ? 1 : 0);
 	struct FOut { float M[16]; float Cl[3]; double Rank; bool bSeam; };
 	TArray<FOut> Out;
-	const TArray<FVector>& Pal = PAL(K.Id);
+	const TArray<FVector>& Pal = PAL(K.Id, bNat);
 	const TFunction<double(double, double)>& G = Spec.Ground;
 	auto Gy = [&G](double X, double Z) { return G ? G(X, Z) : 0.0; };
 	const TArray<int32>& NurseKinds = NurseOf(K.Id);
@@ -290,10 +353,19 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		return C0 + (C1 - C0) * F;
 	};
 	const bool bStones = K.Id == ES47FloraKind::Stones, bStain = K.Id == ES47FloraKind::Stain;
+	// Freeform's grass grows thicker in the lows of the ground: how far the ground lies under the mean of
+	// its neighbours 8 m off, at the cell's four corners (twenty samples a cell, not a hundred)
+	double Low4[4] = { 0, 0, 0, 0 };
+	if (bNat && K.Id == ES47FloraKind::Grass && G)
+	{
+		auto Lowness = [&G](double Px, double Pz) { return 0.25 * (G(Px + 8, Pz) + G(Px - 8, Pz) + G(Px, Pz + 8) + G(Px, Pz - 8)) - G(Px, Pz); };
+		Low4[0] = Lowness(I * C, J * C); Low4[1] = Lowness((I + 1) * C, J * C); Low4[2] = Lowness(I * C, (J + 1) * C); Low4[3] = Lowness((I + 1) * C, (J + 1) * C);
+	}
 	for (int32 T = 0; T < N; ++T)
 	{
 		const double U = R(), V = R(), A = R(), B = R(), CA = R(), CB = R(), Ry = R(), L1 = R(), L2 = R(), Rank = R(), N1 = R(), N2 = R(), N3 = R();
 		double X = (I + U) * C, Z = (J + V) * C;
+		if (bGrid) { X = (I + ((T & 1) + 0.2 + 0.6 * U) * 0.5) * C; Z = (J + ((T >> 1) + 0.2 + 0.6 * V) * 0.5) * C; }
 		// most of the grass and the stalks stand 0.4 to 1.5 m from a shrub of the cell
 		if (Nn && N1 < K.Nurse)
 		{
@@ -301,9 +373,24 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			const double An = N3 * UE_DOUBLE_PI * 2, Dist = Nurse[Qi + 2] * 0.3 + 0.4 + V * 1.1;
 			X = Nurse[Qi] + FMath::Cos(An) * Dist; Z = Nurse[Qi + 1] + FMath::Sin(An) * Dist;
 		}
-		const double Noise = NoiseAt(X, Z, Ki);
+		double Terrain = 1;
+		if (bNat && K.Id == ES47FloraKind::Grass)
+		{
+			const double Fx = FMath::Clamp(X / C - I, 0.0, 1.0), Fz = FMath::Clamp(Z / C - J, 0.0, 1.0);
+			const double Lo = (Low4[0] * (1 - Fx) + Low4[1] * Fx) * (1 - Fz) + (Low4[2] * (1 - Fx) + Low4[3] * Fx) * Fz;
+			Terrain = FMath::Clamp(1 + Lo * 8, 0.4, 2.2);
+		}
+		const double Noise = NoiseAt(X, Z, Ki, Terrain);
 		if (A * K.Most >= Noise * 4.2) continue;   // (the cover is at most about that much, near a wall in a ditch)
-		const double D = CoverAt(X, Z, Ki, Noise);
+		double D = CoverAt(X, Z, Ki, Noise);
+		// Freeform's stones: gravel thickens with the slope (over 6 m), only small stones on flat ground
+		double SlopeF = 1;
+		if (bNat && bStones && !bSeamed && !bSpilt)
+		{
+			const double Sx = Gy(X + 3, Z) - Gy(X - 3, Z), Sz = Gy(X, Z + 3) - Gy(X, Z - 3);
+			SlopeF = FMath::Clamp(FMath::Sqrt(Sx * Sx + Sz * Sz) / 6 / 0.18, 0.0, 1.0);
+			D *= 0.3 + 3.0 * SlopeF;
+		}
 		if (A * K.Most >= FMath::Min(D, K.Most)) continue;
 		// big where it is thick, small and mostly tiny in the open
 		const double Dens = FMath::Min(1.0, D / K.Most);
@@ -312,9 +399,16 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		// in a seam tiny grass and pebbles; the gravel spilt off a way small
 		if (bSeamed) S = K.Id == ES47FloraKind::Grass ? 0.25 + B * 0.2 : 0.3 + B * 0.2;
 		else if (bSpilt) S = FMath::Min(S, 0.3 + B * 0.35);
+		else if (bNat && bStones) S = FMath::Min(S, 0.45 + 1.7 * SlopeF);
 		const double Y = Gy(X, Z);
 		double Sy = S;
 		FVector Col = Tint(CA, CB, L2 * 0.5);
+		// Freeform: the dry and the green shift a little from one area to the next
+		if (bNat && (K.Id == ES47FloraKind::Grass || K.Id == ES47FloraKind::Stalks || K.Id == ES47FloraKind::Creosote))
+		{
+			const double Dry = VNoise(X, Z, 160, Spec.Seed + 57);
+			Col = Col * FVector(0.93 + 0.14 * Dry, 1.0, 1.07 - 0.14 * Dry);
+		}
 		if (bStones || bStain)
 		{
 			// flat on the ground's slope; a stain only where the ground is near flat across it
@@ -392,7 +486,7 @@ bool FS47Flora::Shown() const
 
 void FS47Flora::Follow(const FVector& CamPos, bool bLow)
 {
-	if (!Shown()) return;
+	if (!Shown()) { DropShadows(); return; }
 	AS47Web* W = Web.Get();
 	const FS47Obj G(W, Group);
 	const FVector P = G.WorldToLocal(CamPos);
@@ -422,7 +516,7 @@ bool FS47Flora::Ahead(double Px, double Pz)
 	for (; Next.Kind < NK; Next.Kind++, Next.At = 0)
 	{
 		const int32 Ki = Next.Kind;
-		const double R = KINDS[Ki].Reach + 3 * STEP;
+		const double R = KindFor(Spec.bNatural, Ki).Reach + 3 * STEP;
 		for (; Next.At < OFF.Num(); Next.At++)
 		{
 			const FOff& O = OFF[Next.At];
@@ -448,13 +542,14 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 	const bool bTrimInvisible = GroupComp && GroupComp->GetComponentScale().Equals(FVector::OneVector, 1e-5) &&
 		GroupComp->GetUpVector().Equals(FVector::UpVector, 1e-5);
 	bPending = false;
+	FillX = Px; FillZ = Pz; bShadowNear = !bLow;
 	const TArray<FOff>& OFF = OFFSETS();
 	// Unreal-only: retain a bounded circle around the eye. The renderer handles
 	// frustum/occlusion culling; a head turn must not replace whole plant batches.
 	// Existing per-kind reaches, distance fades and instance caps still bound the work.
 	for (int32 Ki = 0; Ki < NK; ++Ki)
 	{
-		const FKind& K = KINDS[Ki];
+		const FKind& K = KindFor(Spec.bNatural, Ki);
 		const double Keep = bLow ? K.Low : 1;
 		const bool bFar = !bLow && K.bFar;
 		// Low: none of the far ring, and nearer
@@ -557,6 +652,24 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 	// the meshes the patch has (flora.ts: one per kind, the second of a pair in the first's), by name
 	const TPair<const TCHAR*, int32> Draws[] = { { TEXT("flora-grass+sage"), 0 }, { TEXT("flora-creosote+stalks"), 2 }, { TEXT("flora-succulent"), 4 }, { TEXT("flora-stones"), 5 }, { TEXT("flora-stain"), 6 } };
 	int32 Bound = 0, ActivatedEmptyDraws = 0;
+	// a shadow proxy (Freeform only fills it: Put): the same mesh and material, hidden but casting its shadow
+	auto MakeShadow = [W](UInstancedStaticMeshComponent* Src, UMaterialInstanceDynamic* Mid)
+	{
+		UInstancedStaticMeshComponent* P = NewObject<UInstancedStaticMeshComponent>(W);
+		P->SetMobility(EComponentMobility::Movable);
+		P->SetupAttachment(Src);
+		P->SetStaticMesh(Src->GetStaticMesh());
+		P->NumCustomDataFloats = 4;
+		P->SetCastShadow(true);
+		P->SetCastHiddenShadow(true);
+		P->SetVisibleInRayTracing(false);
+		P->bAffectDistanceFieldLighting = false;
+		P->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (Mid) P->SetMaterial(0, Mid);
+		P->RegisterComponent();
+		P->SetHiddenInGame(true);
+		return TWeakObjectPtr<UInstancedStaticMeshComponent>(P);
+	};
 	for (int32 Ch : G->Children)
 	{
 		const FS47WebNode* N = W->Node(Ch);
@@ -588,6 +701,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			UMaterialInstanceDynamic* Da = Mids.Num() ? Mids[0] : nullptr;
 			if (Da) Da->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
 			Layers[Dw.Value].Mesh = A; Layers[Dw.Value].Mid = Da;
+			if (Dw.Value == 2) Layers[2].Shadow = MakeShadow(A, Da);
 			++Bound;
 			// the second of a pair: its own shape (export.js pairGeo) beside the first's, its own reach
 			if (N->GeoB >= 0 && Dw.Value + 1 < NK)
@@ -606,6 +720,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 				B->RegisterComponent();
 				B->SetVisibility(A->IsVisible());
 				Layers[Dw.Value + 1].Mesh = B; Layers[Dw.Value + 1].Mid = Db;
+				if (Dw.Value == 0) Layers[1].Shadow = MakeShadow(B, Db);
 			}
 		}
 	}
@@ -628,6 +743,12 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, i
 	TArray<FTransform> T;
 	TArray<float> Cd;
 	T.Reserve(N); Cd.Reserve(N * 4);
+	// Freeform: the near creosote and sage also cast shadows, from a proxy mesh holding only those near the eye
+	UInstancedStaticMeshComponent* Sh = L.Shadow.Get();
+	const double ShadowR = Ki == 2 ? SHADOW_CREOSOTE : SHADOW_SAGE;
+	const bool bShadows = Sh && Spec.bNatural && bShadowNear;
+	TArray<FTransform> ShT;
+	TArray<float> ShCd;
 	for (int32 k = 0; k < N; ++k)
 	{
 		double E[16];
@@ -636,6 +757,11 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, i
 		// mirrored (a cholla, flora.ts succulentShape): the determinant of its 3x3 is negative
 		const double Det = E[0] * (E[5] * E[10] - E[9] * E[6]) - E[4] * (E[1] * E[10] - E[9] * E[2]) + E[8] * (E[1] * E[6] - E[5] * E[2]);
 		Cd.Add(Cc[k * 3]); Cd.Add(Cc[k * 3 + 1]); Cd.Add(Cc[k * 3 + 2]); Cd.Add(Det < 0 ? 1.f : 0.f);
+		if (bShadows && FMath::Square(E[12] - FillX) + FMath::Square(E[14] - FillZ) < ShadowR * ShadowR)
+		{
+			ShT.Add(T.Last());
+			ShCd.Add(Cd[k * 4]); ShCd.Add(Cd[k * 4 + 1]); ShCd.Add(Cd[k * 4 + 2]); ShCd.Add(Cd[k * 4 + 3]);
+		}
 	}
 	if (I->GetInstanceCount() != N)
 	{
@@ -645,6 +771,27 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, i
 	else if (N > 0) I->BatchUpdateInstancesTransforms(0, T, false, false, true);
 	if (N > 0) I->SetCustomData(0, N - 1, Cd, false); // (the last index, not past it)
 	I->MarkRenderStateDirty();
+	if (Sh && (Sh->GetInstanceCount() > 0 || ShT.Num() > 0))
+	{
+		Sh->ClearInstances();
+		if (ShT.Num() > 0) { Sh->AddInstances(ShT, false, false, false); Sh->SetCustomData(0, ShT.Num() - 1, ShCd, false); }
+		Sh->MarkRenderStateDirty();
+	}
+}
+
+void FS47Flora::DropShadows()
+{
+	for (FLayer& L : Layers)
+		if (UInstancedStaticMeshComponent* Sh = L.Shadow.Get()) if (Sh->GetInstanceCount() > 0) { Sh->ClearInstances(); Sh->MarkRenderStateDirty(); }
+}
+
+void FS47Flora::SetNatural(bool bOn)
+{
+	if (Spec.bNatural == bOn) return;
+	Spec.bNatural = bOn;
+	// every cell is made again under the other rules, and the meshes refilled
+	Cells.Empty(); Next = FNext(); bPending = false; bDirty = true;
+	if (!bOn) DropShadows();
 }
 
 void FS47Flora::SyncVisibility()
@@ -663,6 +810,11 @@ void FS47Flora::SetWind(const FVector2D& Dir)
 	if (!W || Group < 0) return;
 	// wind.dir is in the patch's terms (its shader turns it with the copies): into the world's, and Unreal's x, y
 	const FVector Wd = FS47Obj(W, Group).WorldQuaternion().RotateVector(FVector(Dir.X, 0, Dir.Y));
-	const FLinearColor V(float(Wd.X), float(Wd.Z), 0.f, 0.f);
-	for (const FLayer& L : Layers) if (UMaterialInstanceDynamic* D = L.Mid.Get()) D->SetVectorParameterValue(TEXT("WindDir"), V);
+	// Freeform: each kind sways its own amount (WIND_OF; the shader's offset follows the vector's length)
+	for (int32 Ki = 0; Ki < Layers.Num(); ++Ki)
+	{
+		const double Sc = Spec.bNatural && Ki < NK ? WIND_OF[Ki] : 1.0;
+		const FLinearColor V(float(Wd.X * Sc), float(Wd.Z * Sc), 0.f, 0.f);
+		if (UMaterialInstanceDynamic* D = Layers[Ki].Mid.Get()) D->SetVectorParameterValue(TEXT("WindDir"), V);
+	}
 }
