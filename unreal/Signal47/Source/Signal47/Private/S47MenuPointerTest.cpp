@@ -1,5 +1,6 @@
 #include "S47MenuPointerTest.h"
 #include "S47Main.h"
+#include "S47ArrayWear.h"
 #include "S47CalicheAccess.h"
 #include "S47TownLayer.h"
 #include "S47Herd.h"
@@ -251,6 +252,12 @@ namespace
      UE_LOG(LogTemp,Display,TEXT("S47: chain: night two, day %d, clock %.0f, area %s"),M->Freeform->Day(),M->Freeform->Clock(),*M->Web->Area());
      return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerPanels")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     M->Freeform->Field->AddItem(TEXT("relay"),3);M->Freeform->Field->AddItem(TEXT("fuse"),2);
+     Stage=180;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerField")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -420,7 +427,7 @@ namespace
     StageAt=Elapsed;
     auto& Tk=*M->Freeform->Taken;auto& Site=*M->Freeform->FarmSite;
     // Walls can hold, in a town room: staying put and unseen is one way for it to pass.
-    if(!TakenPlace.IsEmpty()&&Site.VisitStage()==4&&!Tk.Busy()&&M->Freeform->Clock()<VisitClock+25*60)
+    if(!TakenPlace.IsEmpty()&&Site.VisitStage()==4&&!Tk.Busy()&&Tk.LastNote().IsEmpty())
     {UE_LOG(LogTemp,Display,TEXT("S47: taken PASS in %s: the walls held"),*TakenPlace);FPlatformMisc::RequestExitWithStatus(false,0);return false;}
     if(Elapsed-VisitFrom>170)return Fail(TEXT("the taker must take a player who stays"));
     // The way out: stand out of the light, and it passes with nothing lost.
@@ -600,6 +607,26 @@ namespace
     }
     UE_LOG(LogTemp,Display,TEXT("S47: chain PASS"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // A look at each simplified panel.
+   if(Stage>=180&&Stage<=188)
+   {
+    if(Elapsed-StageAt<.9)return true;
+    auto& F=*M->Freeform->Field;
+    const auto Close=[&]{if(M->UI)M->UI->Close(true);};
+    switch(Stage)
+    {
+     case 180:{const FVector B=F.InteractionPoint(TEXT("ff:bench"));M->Player->Place(B.X,B.Z-1,0);F.OpenWorkshop();break;}
+     case 181:Shot(TEXT("panel-workshop.png"));break;
+     case 182:Close();F.OpenBranch(FS47ArrayWear::Branches()[0].Id);break;
+     case 183:Shot(TEXT("panel-branch.png"));break;
+     case 184:Close();M->Freeform->OpenArchive();break;
+     case 185:Shot(TEXT("panel-archive.png"));break;
+     case 186:Close();{const FVector T=F.TruckPointForTest();M->Player->Place(T.X,T.Z+3,0);}F.Use(TEXT("ff:cargo"));break;
+     case 187:Shot(TEXT("panel-cargo.png"));break;
+     case 188:Close();UE_LOG(LogTemp,Display,TEXT("S47: panels shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    ++Stage;StageAt=Elapsed;return true;
    }
    if(Stage==139)
    {

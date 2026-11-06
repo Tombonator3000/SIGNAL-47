@@ -459,6 +459,7 @@ bool FS47FreeformWorld::InstallServiceCabinet()
  {C->SetStaticMesh(Trim[K]);C->SetMaterial(0,CabinetOriginals[K].Materials[0].Get());}
  bServiceCabinet=true;return true;
 }
+FVector FS47FreeformWorld::TruckPointForTest(){return TruckPoint();}
 void FS47FreeformWorld::PlaceServiceDoor()
 {
  if(!M||!M->Web||PlacedTarget==ServiceTarget)return;

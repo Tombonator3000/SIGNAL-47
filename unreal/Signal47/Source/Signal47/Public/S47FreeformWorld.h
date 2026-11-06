@@ -196,6 +196,7 @@ private:
  void SetFieldZone(bool bOn);
 public:
  // Test: a work order at this dish, at this stage.
+ FVector TruckPointForTest();
  void TestService(const FString& Dish,int32 Stage){ServiceTarget=Dish;Service=Stage;DoorK=0;bDoorOpen=false;ApplyServiceDoor();}
  double ServiceDoorOpen() const { return DoorK; }
  FVector ServiceDoorFace() const { return DoorFace; }
