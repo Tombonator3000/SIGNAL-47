@@ -1533,7 +1533,7 @@ void FS47FreeformSession::OpenArchive()
   int32 Stop=INDEX_NONE;Record.FindChar(TEXT('.'),Stop);FString Title=Stop>0?Record.Left(Stop):Record;if(Title.Len()>58)Title=Title.Left(55)+TEXT("...");
   FString Entry=FString::Printf(TEXT("DAY %d\nRETAINED RECORD / %s"),FindingDays.FindRef(K),*Record);
   if(Investigate)Entry+=TEXT("\nSTILL UNKNOWN / Whether this repeats under independent conditions.\nPOSSIBLE NEXT CHECK / Retain a later observation and its independent control; compare with this original.");
-  Tabs[Bench?2:1].Add({K,Title,FString::Printf(TEXT("D%d"),FindingDays.FindRef(K)),Entry});
+  Tabs[Bench?2:1].Add({K,Title,FString::Printf(TEXT("DAY %d"),FindingDays.FindRef(K)),Entry});
  }
  if(Tabs[0].IsEmpty()&&Tabs[1].IsEmpty()&&Tabs[2].IsEmpty())
   Rows.Add(Paper(TEXT("NO RETAINED RECORDS YET\nSelect DAILY WORK at OPS, complete an observation and collect its original at the printer. Retained originals and field findings appear here automatically. Register routine results at OPS; an anomaly packet must also be collected and placed in the records-room binder.")));
@@ -1554,7 +1554,7 @@ void FS47FreeformSession::OpenArchive()
   {
    TArray<S47Kit::FW> Bar;for(int32 I=0;I<3;++I)Bar.Add(S47Kit::Choice(FString::Printf(TEXT("%s %d"),TabNames[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();OpenArchive();}));
    Rows.Add(S47Kit::Row(Bar));
-   for(const auto& E:List)Scroll->AddSlot()[S47Kit::Choice(E.Title+TEXT(" / ")+E.Tag,&E==Pick,[this,Key=E.Key]{ArchivePick=Key;OpenArchive();})];
+   for(const auto& E:List)Scroll->AddSlot()[S47Kit::Choice(E.Title,&E==Pick,[this,Key=E.Key]{ArchivePick=Key;OpenArchive();},false,E.Tag)];
   }
   Rows.Add(SNew(SBox).HeightOverride(210).VAlign(VAlign_Top)[Scroll]);
   Rows.Add(Paper(Pick->Detail));

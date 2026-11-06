@@ -69,7 +69,7 @@ namespace S47Kit
 	// a button whose label follows the state (.lp-btn whose textContent sync() sets)
 	SIGNAL47_API FW ButtonLive(TAttribute<FString> Label, TFunction<void()> OnClick, bool bPrimary = false, TAttribute<bool> Enabled = true);
 	// a choice that stays pressed (.lp-choice[aria-pressed]); bAuto: as wide as its label (.dsp-mode)
-	SIGNAL47_API FW Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto = false);
+	SIGNAL47_API FW Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto = false, const FString& Right = FString());
 
 	// a picture at a width (its height from the picture), and the brush it needs kept alive
 	SIGNAL47_API FW Image(UTexture2D* T, float Width);
