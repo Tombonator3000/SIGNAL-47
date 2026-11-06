@@ -123,6 +123,8 @@ struct FS47FreeformDirector::FEffects
  US47Main* M=nullptr;
  TUniquePtr<FS47UfoPresentation> Ufo;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
+ TArray<TWeakObjectPtr<UStaticMeshComponent>> FarmExtra;
+ TArray<FVector> LampScale;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
  FS47Obj Sample,Car;
  TWeakObjectPtr<UStaticMeshComponent> Orb;
@@ -187,6 +189,7 @@ struct FS47FreeformDirector::FEffects
    if(C)if(auto* Mat=Cast<UMaterialInstanceDynamic>(C->GetMaterial(0)))Mat->SetScalarParameterValue(TEXT("EmissivePower"),6.f);
    auto* L=NewObject<UPointLightComponent>(M->Web.Get());L->SetupAttachment(M->Web->GetRootComponent());L->SetMobility(EComponentMobility::Movable);L->SetIntensity(0);L->SetAttenuationRadius(900);L->SetCastShadows(false);L->SetLightColor(FLinearColor(.65,.85,.72));L->RegisterComponent();Lights.Add(L);
   }
+  for(int32 I=0;I<5;++I)if(auto* C=Mesh(FString::Printf(TEXT("FreeformFarmLight%d"),I),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(84,20,492),FVector(3.5),0xffe9df))FarmExtra.Add(C);
   Orb=Mesh(TEXT("FreeformDuskOrb"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(-3.25,2,-47),FVector(.85),0xffe7bd);
   if(Orb.IsValid())if(auto* Mat=Cast<UMaterialInstanceDynamic>(Orb->GetMaterial(0))){Mat->SetVectorParameterValue(TEXT("Emissive"),S47Three::Hex(0xffe7bd));Mat->SetScalarParameterValue(TEXT("EmissivePower"),4.f);}
   for(int32 I=0;I<FS47DuskOrb::Count;++I)
@@ -424,6 +427,11 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
  OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
+ if(Id==TEXT("farm_lights"))
+ {
+  Anchor=FVector(84,20,492); // Over the Alderete house; a clear line from the yard south of the station.
+  if(M->UI)M->UI->Toast(TEXT("RADIO: A caller on the county road reports lights low over the Alderete place, south of the station."),7);
+ }
  if(Id==TEXT("dusk_orb")){Anchor=FVector(-3.25,US47Night::SaroFloorAt(M->Web,-3.25,-47)+2.2,-47);DuskOrb.Started(M->Freeform->Clock());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
@@ -537,7 +545,17 @@ void FS47FreeformDirector::Draw()
    L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse));L->SetVisibility(Show>0);
   }
  }
- const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover");
+ const bool Farm=Event==TEXT("farm_lights");
+ const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover")||(Farm&&M->Web->Area()==Scene);
+ // Eight lights, wide enough to read as many from half a kilometre. They drift, never answer the viewer.
+ auto FarmAt=[&](int32 I){const double T=Age*.05+I*1.7;return Anchor+FVector((I<3?(I-1)*22.:(I-5)*11.)+FMath::Sin(T)*8,(I%3)*5.-8+FMath::Sin(Age*.13+I)*4,FMath::Cos(T*.7)*14);};
+ const float FarmFade=float(FMath::Min(FMath::Clamp(Age/12.,0.,1.),FMath::Clamp((240.-Age)/20.,0.,1.)));
+ for(int32 I=0;I<Effects->FarmExtra.Num();++I)if(auto* C=Effects->FarmExtra[I].Get())
+ {
+  C->SetVisibility(Sky&&Farm);if(!(Sky&&Farm))continue;
+  C->SetWorldLocation(S47Three::ToUE(FarmAt(I+3)));
+  if(auto* Mat=Cast<UMaterialInstanceDynamic>(C->GetMaterial(0))){const FLinearColor Glow=S47Three::Hex(I%2?0xffe9df:0xffd9a8);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),Glow*FarmFade*float(70+25*FMath::Sin(Age*.7+I)));Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);}
+ }
  if(Effects->Ufo)
  {
   if(Event==TEXT("close_pass")&&M->Web->Area()==Scene)
@@ -555,6 +573,8 @@ void FS47FreeformDirector::Draw()
  for(int32 I=0;I<4&&I<Effects->Parts.Num();++I)if(auto* C=Effects->Parts[I].Get())
  {
   const bool Hull=I==0;C->SetVisibility(Sky&&(!Hull||Event==TEXT("close_pass")));
+  while(Effects->LampScale.Num()<=I)Effects->LampScale.Add(Effects->Parts[Effects->LampScale.Num()].IsValid()?Effects->Parts[Effects->LampScale.Num()]->GetComponentScale():FVector::OneVector);
+  if(!Hull)C->SetWorldScale3D(Farm?FVector(3.5):Effects->LampScale[I]);
   const double Side=Event==TEXT("response_lights")?0:Age*(Event==TEXT("close_pass")?2.3:5.);
   const FVector Centre=Anchor+FVector(Side,FMath::Sin(Age*.2)*.6,0);
   // The close-pass hull and its lamps share one transform. Three bounded
@@ -562,14 +582,15 @@ void FS47FreeformDirector::Draw()
   // a displaced hull ten metres to the side of an unrelated light line.
   const FVector AttachedLamps[]={FVector(-2.55,-Effects->HullLampDrop,-1.35),FVector(2.55,-Effects->HullLampDrop,-1.35),FVector(0,-Effects->HullLampDrop,2.7)};
   const FVector Offset=Hull?FVector::ZeroVector:Event==TEXT("close_pass")?AttachedLamps[I-1]:FVector((I-2)*5.,(FMath::Sin(Age*.2+I)-FMath::Sin(Age*.2))*.6,0);
-  const FVector At=Centre+Offset;
+  const FVector At=Farm&&!Hull?FarmAt(I-1):Centre+Offset;
   C->SetWorldLocation(S47Three::ToUE(At)-(Hull?Effects->HullCentreOffsetUE:FVector::ZeroVector));
   if(!Hull)if(auto* Mat=Cast<UMaterialInstanceDynamic>(C->GetMaterial(0)))
   {
    // Slow independent lamps; honour calm-flash preference by keeping a steady output.
    const float On=M&&M->Flow&&M->Flow->bCalmFlash?1.f:float(.65+.35*FMath::Sin(Age*(bControlled?1.1:.6)+I*2.));
    Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(I==2?0xffe9df:0xff4936));
-   Mat->SetScalarParameterValue(TEXT("EmissivePower"),5*On);
+   Mat->SetScalarParameterValue(TEXT("EmissivePower"),Farm?1.f:5*On);
+   Mat->SetVectorParameterValue(TEXT("Emissive"),Farm?S47Three::Hex(0xffe9df)*FarmFade*80*On:S47Three::Hex(I==2?0xffe9df:0xff4936)); // Without this colour the power lights nothing.
   }
   if(!Hull&&Effects->Lights.IsValidIndex(I-1))if(auto* L=Effects->Lights[I-1].Get())
   {L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(0.f);}
@@ -835,7 +856,7 @@ bool FS47FreeformDirector::PhysicalObjectPresented()const
  if(!bEnabled||!Effects)return false;
  if(Event==TEXT("dusk_orb")){const auto* C=Effects->Orb.Get();return M&&M->Web&&M->Web->Area()==Scene&&IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame;}
  if(Event==TEXT("close_pass"))return M&&M->Web&&M->Web->Area()==Scene&&Effects->Ufo&&Effects->Ufo->Presented();
- if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass"))
+ if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("farm_lights"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
  const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
  const auto* C=Effects->PresentedComponent(Object);
@@ -907,7 +928,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  {
   if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
  }
- else if(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights"))
+ else if(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights"))
  {
   if(RoadPhoto||PhysicalObjectPresented())
   {
@@ -929,7 +950,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  if(TaggedQuality<.025)return;
  TaggedShot=Shot.Id;TaggedIncident=RoadPhoto?RoadIncident:IncidentId;
  TaggedTitle=RoadPhoto?TEXT("highway light"):Event.Replace(TEXT("_"),TEXT(" "));
- bTaggedLamps=RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights");
+ bTaggedLamps=RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights");
  Shot.Targets.Add({TEXT("freeform:")+TaggedIncident,FVector2D(.5,.5)});
 }
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
@@ -1119,7 +1140,7 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   Check(SubjectMean(P,W,H,Region)<15,TEXT("bright margins inside component bounds cannot mask a dark subject centre"));
   Check(SubjectMean(P,W,H,FBox2D(ForceInit))<0&&SubjectMean(P,W,H,FBox2D(FVector2D(.5,.5),FVector2D(.501,.501)))<0,TEXT("missing or subpixel subject region cannot qualify"));
  }
- Check(Catalog().Num()==20&&Definition(TEXT("roomlight_return")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
+ Check(Catalog().Num()==21&&Definition(TEXT("roomlight_return"))&&Definition(TEXT("farm_lights")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}
  FS47FreeformDirector D(nullptr);D.Begin(nullptr);auto Saved=D.Save();FS47FreeformDirector R(nullptr);R.Begin(Saved);
  Check(S47J::Write(Saved)==S47J::Write(R.Save()),TEXT("idle director seed, budgets and schedule round-trip without reroll"));

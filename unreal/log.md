@@ -1974,3 +1974,7 @@ Tom valgte at opptakslyd skal virke med redusert målehastighet. `S47CaptureSoun
 ## 6. november 2026 kl.11:29, installasjon og ny rekkefølge
 
 `9e8a80fe` etter PR445 installert: 2508 selvtester og 138 uendrede Saved-filer. Claude setter FF-FARM-HORROR-01 foran PC-WORLD-DISPLAY etter den samlede bibelen.
+
+## 6. november 2026 kl.11:55, gårdslys
+
+Freeform-regresjonen besto 247 kontroller på pakken `9e8a80fe`. FF-FARM-HORROR-01 steg 1: `farm_lights` med åtte lys over gården, foto fra plassen består (`-S47MenuPointerFarm`). Første bilde viste svarte prikker: lamper med `EmissivePower` uten `Emissive`-farge lyser ikke, også i `response_lights` og `flyover`, så de får nå farge. Selvtest 2509 og regresjon 249 består i editor; ingen automatisk kontroll sjekker at lysene faktisk er lyse på bildet.
