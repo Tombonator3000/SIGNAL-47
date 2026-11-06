@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november kl. 11:29
+## Installert 6. november, gårdslys
+
+`e0e6c6fe` etter PR447 er nå standard, med rask installasjon: lys over gården sett fra plassen ved SARO, første steg av gårdsreisen. 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_e0e6c6fe.md).
+
+## Tidligere installert 6. november kl. 11:29
 
 `9e8a80fe` etter PR445 er nå standard, med rask installasjon: opptakslyd med redusert målehastighet og knapper for tracking-markøren. 2508 selvtester og 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_9e8a80fe.md).
 
