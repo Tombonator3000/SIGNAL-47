@@ -10,7 +10,7 @@ void US47Audio::ReceiverTextureStop(FReceiverTextureGraph& G)
  for(auto Gain:{G.SignalGain,G.NoiseGain}){Gain->Gain.CancelAndHoldAtTime(T);Gain->Gain.LinearRampToValueAtTime(0,T+.06);}
  G.Source->Stop(T+.07);G.Noise->Stop(T+.07);G=FReceiverTextureGraph();
 }
-void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset,int32 TextureVersion)
+void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset,int32 TextureVersion,double SignalMul,double NoiseMul)
 {
  if((TextureVersion!=1&&TextureVersion!=2)||!Ctx||!FMath::IsFinite(Gain)||!FMath::IsFinite(Bandwidth)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Offset)){ReceiverTextureStop(G);return;}
  const double T=Ctx->CurrentTime();
@@ -38,8 +38,8 @@ void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,
  }
  FS47AudioContext::FBatch Batch(*Ctx);
  const float Q=FMath::Clamp(Quality,0.,1.),Level=.42*FMath::Clamp(Gain/100.,0.,1.);
- G.SignalGain->Gain.SetTargetAtTime(S47ReceiverTexture::SourceLevel(Q,Level),T,.10);
- G.NoiseGain->Gain.SetTargetAtTime(S47ReceiverTexture::StaticLevel(Q,Level),T,.08);
+ G.SignalGain->Gain.SetTargetAtTime(S47ReceiverTexture::SourceLevel(Q,Level)*SignalMul,T,.10);
+ G.NoiseGain->Gain.SetTargetAtTime(S47ReceiverTexture::StaticLevel(Q,Level)*NoiseMul,T,.04);
  G.Filter->Frequency.SetTargetAtTime(650.+3300.*FMath::Sqrt(FMath::Clamp(Bandwidth/100.,0.,1.)),T,.08);
 }
 
@@ -50,7 +50,27 @@ void US47Audio::MonitorReceiver(const FS47Rx& Rx,const FS47Profile& Profile,cons
  const double Quality=Rx.Quality(Profile)*FMath::Clamp(Reception,0.,1.);
  if((TextureVersion!=1&&TextureVersion!=2)||!Ctx||!Rx.bPowered||!FMath::IsFinite(Reception)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Rx.Frequency)||!FMath::IsFinite(Rx.Gain)||!FMath::IsFinite(Rx.Bandwidth)){ReceiverMonitorOff();return;}
  bReceiverMonitor=true;
- ReceiverTextureFrame(ReceiverTexture,SourceId,Rx.Gain,Rx.Bandwidth,Quality,-1,TextureVersion);
+ // Atmosphere of a live search, on the monitor only, never in a recording or its measured pulses:
+ // the static scrapes, the wanted signal swells harder as the search closes on 100 %, and now
+ // and then another station's telegraph key is faintly in the band.
+ const double T=Ctx->CurrentTime();
+ auto Hash=[](double N){const double V=FMath::Sin(N*12.9898)*43758.5453;return V-FMath::FloorToDouble(V);};
+ const double Scrape=.5+.9*Hash(FMath::FloorToDouble(T*11.))*(.5+.5*FMath::Sin(T*.73));
+ const double Near=FMath::SmoothStep(.55,1.,Quality);
+ const double Swell=1.+1.1*Near*FMath::Pow(.5+.5*FMath::Sin(T*2.*PI/.84),3.);
+ ReceiverTextureFrame(ReceiverTexture,SourceId,Rx.Gain,Rx.Bandwidth,Quality,-1,TextureVersion,Swell,Scrape);
+ const int64 Slot=int64(FMath::FloorToDouble(T/6.));
+ if(Slot!=ReceiverStationSlot)
+ {
+  ReceiverStationSlot=Slot;
+  if(Hash(double(Slot))<.5&&Quality<.97)
+  {
+   // Well away from the 820/1240 Hz measured pulses.
+   const float Freq=float(470.+290.*Hash(Slot*1.7));const float Level=float(.016*(1.-.7*Near));float At=0;
+   const int32 Marks=3+int32(5.*Hash(Slot*2.3));
+   for(int32 I=0;I<Marks;++I){const float Len=Hash(Slot+I*3.1)<.4?.27f:.09f;Beep(Freq,Len,Level,At,TEXT("sine"));At+=Len+.09f;}
+  }
+ }
 }
 void US47Audio::ReceiverMonitorOff()
 {

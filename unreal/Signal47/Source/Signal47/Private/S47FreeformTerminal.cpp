@@ -20,8 +20,18 @@ namespace S47FreeformTerminal
 {
  // Phosphor palette (mockups): bright green text and lines, amber selection/action,
  // near-black ink on filled amber/green, red only for an isolated element.
- const FLinearColor Green=S47Kit::Css(0x8cffa4),Amber=S47Kit::Css(0xffb84a),Line=S47Kit::Css(0x3f9a5a),Dim=S47Kit::Css(0x1d4a2b),
-  Ink=S47Kit::Css(0x000000),Red=S47Kit::Css(0xff5a44),Black=S47Kit::Css(0x020a05);
+ // FReelLook swaps these while one panel is built; widgets copy what they need at that moment.
+ FLinearColor Green=S47Kit::Css(0x8cffa4),Amber=S47Kit::Css(0xffb84a),Line=S47Kit::Css(0x3f9a5a),Dim=S47Kit::Css(0x1d4a2b),Black=S47Kit::Css(0x020a05);
+ const FLinearColor Ink=S47Kit::Css(0x000000),Red=S47Kit::Css(0xff5a44);
+ static bool bReel=false;
+ FReelLook::FReelLook()
+ {
+  bReel=true;Green=S47Kit::Css(0xf1e8cf);Amber=S47Kit::Css(0xf0b040);Line=S47Kit::Css(0xd9d0b4);Dim=S47Kit::Css(0x62664a);Black=S47Kit::Css(0x24271b);
+ }
+ FReelLook::~FReelLook()
+ {
+  bReel=false;Green=S47Kit::Css(0x8cffa4);Amber=S47Kit::Css(0xffb84a);Line=S47Kit::Css(0x3f9a5a);Dim=S47Kit::Css(0x1d4a2b);Black=S47Kit::Css(0x020a05);
+ }
  namespace
  {
   TFunction<FString()> ClockSource;
@@ -36,8 +46,11 @@ namespace S47FreeformTerminal
     .SetNormal(FSlateRoundedBoxBrush(Normal,2.f,Edge,EdgeWidth)).SetHovered(FSlateRoundedBoxBrush(Hover,2.f,Edge,EdgeWidth)).SetPressed(FSlateRoundedBoxBrush(Pressed,2.f,Edge,EdgeWidth))
     .SetDisabled(FSlateRoundedBoxBrush(FLinearColor::Transparent,2.f,Dim,EdgeWidth)).SetNormalPadding(FMargin(12,8)).SetPressedPadding(FMargin(12,9,12,7));
   }
-  const FButtonStyle& OutlineStyle(){static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),Green,2.f);return S;}
-  const FButtonStyle& PrimaryStyle(){static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x2a1c05),S47Kit::Css(0x4a3008),Amber,3.f);return S;}
+  const FButtonStyle& ReelOutline(){static const FButtonStyle S=MakeStyle(S47Kit::Css(0x24271b),S47Kit::Css(0x3a3e2b),S47Kit::Css(0x4b5038),S47Kit::Css(0xf1e8cf),2.f);return S;}
+  const FButtonStyle& ReelPrimary(){static const FButtonStyle S=MakeStyle(S47Kit::Css(0x24271b),S47Kit::Css(0x423617),S47Kit::Css(0x57471c),S47Kit::Css(0xf0b040),3.f);return S;}
+  const FButtonStyle& ReelFilled(){static const FButtonStyle S=MakeStyle(S47Kit::Css(0xa4d890),S47Kit::Css(0xb8e6a6),S47Kit::Css(0x90c67c),S47Kit::Css(0xa4d890),2.f);return S;}
+  const FButtonStyle& OutlineStyle(){if(bReel)return ReelOutline();static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),Green,2.f);return S;}
+  const FButtonStyle& PrimaryStyle(){if(bReel)return ReelPrimary();static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x2a1c05),S47Kit::Css(0x4a3008),Amber,3.f);return S;}
   const FButtonStyle& FilledStyle(){static const FButtonStyle S=MakeStyle(Green,S47Kit::Css(0xb4ffc4),S47Kit::Css(0x6fdc88),Green,2.f);return S;}
   const FButtonStyle& PlainStyle(){static const FButtonStyle S=MakeStyle(FLinearColor::Transparent,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),FLinearColor::Transparent,0.f);return S;}
   const FButtonStyle& SelectedStyle(){static const FButtonStyle S=MakeStyle(Amber,S47Kit::Css(0xffcc73),S47Kit::Css(0xe09a30),Amber,2.f);return S;}
@@ -72,14 +85,29 @@ namespace S47FreeformTerminal
  }
 
  FW Text(TAttribute<FString> Value,TAttribute<int32> Tone)
- {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Tone]{return FSlateColor(Tone.Get()<0?Amber:Green);}).AutoWrapText(true).Margin(FMargin(0,5));}
+ {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Tone,AmberNow=Amber,GreenNow=Green]{return FSlateColor(Tone.Get()<0?AmberNow:GreenNow);}).AutoWrapText(true).Margin(FMargin(0,5));}
  FW Text(const FString& Value,int32 Tone){return Text(TAttribute<FString>(Value),TAttribute<int32>(Tone));}
  FW Paper(const FString& Value){return Text(Value);}
  FW Small(const FString& Value){return SNew(STextBlock).Text(FText::FromString(Value)).Font(S47Style::Mono(20)).ColorAndOpacity(Green*.8f).AutoWrapText(true).Margin(FMargin(0,6));}
  FW ButtonLive(TAttribute<FString> Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled)
  {
   return SNew(SButton).ButtonStyle(Primary?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
-  [SNew(STextBlock).Text_Lambda([Text]{return FText::FromString(Text.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Primary,Enabled]{return FSlateColor(!Enabled.Get()?Dim*1.6f:Primary?Amber:Green);}).AutoWrapText(true)];
+  [SNew(STextBlock).Text_Lambda([Text]{return FText::FromString(Text.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);}).AutoWrapText(true)];
+ }
+ FW Toggle(const FString& Text,TAttribute<bool> On,TFunction<void()> Action,TAttribute<bool> Enabled)
+ {
+  const TAttribute<EVisibility> Off=TAttribute<EVisibility>::CreateLambda([On]{return On.Get()?EVisibility::Collapsed:EVisibility::Visible;});
+  const TAttribute<EVisibility> Lit=TAttribute<EVisibility>::CreateLambda([On]{return On.Get()?EVisibility::Visible:EVisibility::Collapsed;});
+  return SNew(SOverlay)
+   +SOverlay::Slot()[SNew(SBox).Visibility(Off)[Button(Text,Action,false,Enabled)]]
+   +SOverlay::Slot()[SNew(SBox).Visibility(Lit)
+    [SNew(SButton).ButtonStyle(bReel?&ReelFilled():&FilledStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+     [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(24)).ColorAndOpacity(Ink)]]];
+ }
+ FW Filled(const FString& Text,TFunction<void()> Action,TAttribute<bool> Enabled)
+ {
+  return SNew(SButton).ButtonStyle(&SelectedStyle()).ContentPadding(FMargin(12,7)).HAlign(HAlign_Center).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+   [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(26)).ColorAndOpacity_Lambda([Enabled,DimNow=Dim]{return FSlateColor(Enabled.Get()?Ink:DimNow*1.6f);})];
  }
  FW Button(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled){return ButtonLive(TAttribute<FString>(Text),Action,Primary,Enabled);}
  FW Pair(FW Left,FW Right)
@@ -123,7 +151,7 @@ namespace S47FreeformTerminal
       [SNew(SHorizontalBox)
        +SHorizontalBox::Slot().AutoWidth()[Label(Title,30,Amber)]
        // A slow block cursor: the station is live even while nothing is selected.
-       +SHorizontalBox::Slot().AutoWidth().Padding(4,0,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("_"))).Font(S47Style::Mono(30)).ColorAndOpacity_Lambda([]{return FSlateColor(Amber*(FMath::Fmod(Now(),1.1)<.6?1.f:0.f));})]]
+       +SHorizontalBox::Slot().AutoWidth().Padding(4,0,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("_"))).Font(S47Style::Mono(30)).ColorAndOpacity_Lambda([AmberNow=Amber]{return FSlateColor(AmberNow*(FMath::Fmod(Now(),1.1)<.6?1.f:0.f));})]]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[Bar()]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(TAttribute<FString>::CreateLambda([Clock]{return Clock?Clock():FString(TEXT("SIGNAL / 47"));}),24,Green)]]
    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,8)[Rule(Green)]

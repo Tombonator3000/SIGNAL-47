@@ -67,7 +67,11 @@ namespace
 }
 
 FS47Score::FS47Score(US47Main* InM, const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& InDest)
-	: M(InM), Ctx(InCtx), Dest(InDest), Rest(Rnd(6, 14)) {}
+	: M(InM), Ctx(InCtx), Dest(InDest), Rest(Rnd(6, 14))
+{
+	FS47AudioContext::FBatch Batch(*Ctx);
+	Bus = Ctx->CreateGain(); Bus->Gain.SetValue(1); Bus->Connect(Dest);
+}
 
 FS47Score::~FS47Score()
 {
@@ -251,7 +255,7 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 		OutgoingUntil = Now + FadeSeconds;
 	}
 	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	NewEl->Connect(G); G->Connect(Dest);
+	NewEl->Connect(G); G->Connect(Bus);
 	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C->Gain, Now + FadeSeconds);
 	RampUntil = Now + FadeSeconds; TargetGain = C->Gain;
 	const TWeakPtr<FS47MediaSource> WeakEl = NewEl;
@@ -349,6 +353,20 @@ FString FS47Score::MusicWant() const
 }
 
 // main.ts musicHeld: the unported modules' properties are supplied through Held.
+double FS47Score::MusicDuck() const
+{
+	// Tom 5 Nov: the music stays faintly there at the receiver PC, under the search and signal.
+	if (!M || !M->IsFreeform() || !M->Freeform) return 1.;
+	return M->Freeform->TerminalOnGlass() && M->Freeform->ActiveTerminalScreen() == 1 ? .22 : 1.;
+}
+
+void FS47Score::SetDuck(double Level)
+{
+	if (!Bus) return;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	Bus->Gain.SetTargetAtTime(FMath::Clamp(Level, 0., 1.), Ctx->CurrentTime(), .25);
+}
+
 bool FS47Score::MusicHeld() const
 {
 	if (!M) return false;
@@ -377,7 +395,7 @@ bool FS47Score::MusicHeld() const
 		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy)
 		|| On(Held.TruckBRacing) || On(Held.MorningBusy));
 	return bDecoderHeld || bFreeformListening || bReferenceListening || bStoryHeld
-		|| (M->Audio && M->Audio->ReceiverMonitorOn())
+		|| (!Free && M->Audio && M->Audio->ReceiverMonitorOn())
 		|| (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard")) || M->bRadioHeard
 		|| (M->Audio && M->Audio->Night && M->Audio->Night->Breathing().IsSet());
 }

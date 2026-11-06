@@ -32,3 +32,12 @@ Koordinatene er lokale centimeter. Komponenten står stille ved isolatoren, med 
 `S47SubstationArc.cpp` setter `User.SparkCount`, `User.SparkColor`, `User.Direction` og `User.GroundZ`, frøoffset og starter systemet. Runtime slår av ray tracing, skygger, kollisjon og distansefeltlys, og avbryter effekten ved relevante gjenopprettinger/sceneoverganger. `-S47FxOff` deaktiverer effekten. Hendelses- og lagringsregler eies av SC02-integrasjonen i C++.
 
 Materialmodus bygger materialgrafene på eksisterende asset-objekter, slik at Niagara-referansen bevares. Niagara-systemet lastes, regenereres eller lagres ikke i denne modusen. Spark-alfa kobles direkte fra `ParticleColor`-utgangen `A`; standardutgangen er RGB og kan ikke alfa-maskeres. Materialkontroll i NullRHI er kun graf-/egenskapskontroll. Vulkan-shaderkompilering må bekreftes av cook/pakking.
+
+## Natteffektene: lyn og lyskule
+
+`bash unreal/Signal47/Tools/fx/import.sh import_night.py` bygger `NS_S47_Bolt`, `NS_S47_Orb`, `M_S47_FxBolt` og `M_S47_FxOrb`. Slett de fire assetene først ved gjenbygging: å slette og lage systemet i samme kjøring krasjet editoren 5. november.
+
+- `NS_S47_Bolt` er én taggete ribbon fra `User.Start` til `User.End`. C++ flytter endene og øker `User.Phase`, så lynet står stille ved pause og slår om `User.Rate` ganger per sekund. HLSL-uttrykkene bruker bare frø og fase, ingen tilfeldighet.
+- `NS_S47_Orb` har kjerne og glød i lokalt rom, og støv som blir liggende igjen i verden, så en kule i bevegelse får et svakt spor.
+- HDR-fargen i partikkelen driver bloom. Over cirka 10 blir lynet hvitt og uldent; hold fargen lav og bredden smal.
+

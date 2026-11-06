@@ -343,6 +343,7 @@ void SS47Settings::BuildRows()
 			TEXT("Mouse up looks down, as a pilot's stick does."));
 		FString Group;
 		for (const S47Keys::FAction& A : S47Keys::Actions())
+			if (A.Id != FName(TEXT("describe")))
 		{
 			if (A.Group != Group) { Group = A.Group; AddSep(Group.ToUpper()); }
 			FRow R; R.Kind = FRow::EKind::Keys; R.Label = A.Label; R.Action = A.Id;

@@ -1891,6 +1891,28 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.21:40, båndpanel og perm
 
 `claude/tape-panel-exit`: REEL DECK-panelet hadde ingen vei ut; fikk fast knapp, Esc, bruk-tast og B. Sammenligningen har klartekst og sjekkliste, klikk i sporet merker uten å flytte båndet, og RETAIN er aktiv først når alt er gjort. Permen har fylt handlingsknapp, bekreftelse og finner pakke også når en annen jobb er valgt. Editorbygg og `S47InternalControlTest` 30 kontroller består, inkludert ekte Esc og pekerhendelser. `S47FreeformEvidenceTest` med ny knappetekst er ikke kjørt. Ikke installert ennå.
+
+## 5. november 2026 kl.22:00, Niagara-lyn og lyskuler
+
+`claude/substation-niagara-arc`, stablet på PR428 fordi automatisk fletting ble avvist av sikkerhetsregel. Trafostasjonen har ribbon-lyn opp og ned portalbeina, korona og broer; `S47SubstationLiveTest` består. Skumringskula er tre Niagara-kuler med ekte lys som snuser rundt og flykter rett opp innenfor 7 m; `S47DuskOrbTest` 107 kontroller består, inkludert foto, Continue og flukt. Ett testvindu ble lukket utenfra og tatt på nytt.
+
+## 5. november 2026 kl.22:30, tekst uten opplesning, lyd ved mottaker, meny og reel-look
+
+`claude/night-ui-audio`, stablet på PR429. Opplesning ved inspeksjon er av; hele modemlyden ved registrering; musikken dempes til 22 % ved receiver; søket har skurr, svelling mot 100 % og svak fremmed telegraf, bare i live-monitoren. Menyens UFO er byttet med ett lysende objekt (TITLE-UFO-VHS-01, ikke sett i bilde ennå). Reel-deck har olivenfarge, kremtekst og fylte valg etter Toms referanse (UI-POLISH-20261105-01, delvis). Selvtester 2496 og `S47InternalControlTest` 30 består. Ingenting er hørt av et menneske.
+
+## 5. november 2026 kl.22:45, enklere panelstil
+
+`claude/night-ui-audio`: felles panel har oliven bakgrunn, kremtittel og større overskrifter; workshop og array-boks har statuskolonner og fylt ravfarget handling (UI-POLISH-20261105-01, delvis; arkiv og bil følger bare felles stil). `S47ArrayWearTest` 41 og `S47WorkshopTest` 56 består. `S47FreeformEvidenceTest` må kjøres uten `-S47FreeformTest`; den kommer nå forbi DAILY WORK, men stopper fortsatt på printerstrålen i steg 15, som før. Permens fylte knapp er derfor ikke klikket gjennom den testen, og ikke med fysisk mus.
+
+## 5. november 2026 kl.23:25, nattinstallasjon
+
+`4cf5475b` installert: 2496 selvtester, oppstart, 136 Saved-filer uendret. Normalreisen på pakken består fase 1 til 5 etter at fotoplassen ble flyttet utenfor kulenes 7 m; fase 6 og 7 ikke kjørt. Neste samlede rydding: `~/scratch-bm/Signal47-night-20261105/d1` kan fjernes, og `d2` når `d3` er eldste beholdte; `d4/candidate` er installert kilde.
+
 ## 5. november 2026 kl.22:29, kosmisk musikklag
 
 `codex/cosmic-ambient-20261105`, PR430: original tredelt stereotekstur, valgfrie lokale NASA/Nebula-innslag og Score-integrasjon. Editorbygg, 56 musikk-/grafkontroller, 21 DSP-sjekker og 72s offline-graf med tre referanser består, med ren commandlet-avslutning. Før/etter-WAV er laget lokalt; menneskelig lytting og installasjon gjenstår. Motorvindu frigitt; ingen pakking eller rydderunde, egen kopi og byggcache kan avvikles ved neste samlede kjøring etter integrering.
+
+## 5. november 2026 kl.23:34, main flettet inn og endelig nattinstallasjon
+
+PR430 (Codex, kosmisk lag) kom i main; flettet nedenfra og opp gjennom PR428, 429, 431 og 432, som nå kan flettes. Konflikter bare i `log.md` og `S47Score.h`, begge beholdt. `8457d9b1` installert: 2501 selvtester og oppstart. Normalreisen er ikke kjørt på nytt etter flettingen.
+

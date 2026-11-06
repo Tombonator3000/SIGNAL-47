@@ -149,12 +149,19 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==95012)
  {
-  const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+6,0);
+  const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+9,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());M->UI->ClearToasts();Go(9502,2.3);return;
  }
  if(Stage==9502)
  {
-  Shot(TEXT("orb-native-before-exposure"));Go(95021,.4);return;
+  // The orb has moved on since the placement: aim at where it is now, as a person would.
+  const FVector Live=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());const FVector LiveD=Live-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  M->Player->Yaw=FMath::Atan2(-LiveD.X,-LiveD.Z);M->Player->Pitch=FMath::Atan2(LiveD.Y,FVector2D(LiveD.X,LiveD.Z).Size());
+  Go(95020,.12);return;
+ }
+ if(Stage==95020)
+ {
+  Shot(TEXT("orb-native-before-exposure"));Go(95021,.05);return;
  }
  if(Stage==95021)
  {
@@ -510,6 +517,25 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   if(!Check(FJsonValue::CompareEqual(FJsonValueObject(F.Director->Save()),FJsonValueObject(Real))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id==PhotoClaimId&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId&&F.Budget()==PhotoBudget,TEXT("after UI fixture, exact genuine Director history and completed paid original pair restored")))return;
   Snapshot->RemoveField(TEXT("nativeFocusRealDirector"));Snapshot->RemoveField(TEXT("nativeFocusRealAlbum"));Snapshot->RemoveField(TEXT("nativeFocusFixtureBefore"));
   if(FParse::Param(FCommandLine::Get(),TEXT("S47NotebookFocusTest"))){Go(9700,.4);return;}
+  Go(9800,.2);return;
+ }
+ // Forced second appearance, only to walk up to it: the lights must leave, straight up, without any record.
+ if(Stage==9800)
+ {
+  M->UI->Close(true);if(!Check(F.Director->Force(TEXT("dusk_orb")),TEXT("orb lights can appear again for the approach check")))return;
+  M->Player->Place(F.Director->EventAnchor().X+30,F.Director->EventAnchor().Z+30,0);Go(9801,4.);return;
+ }
+ if(Stage==9801)
+ {
+  if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb"),TEXT("orb lights stay while nobody is near")))return;
+  const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+3,0);
+  const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  M->UI->ClearToasts();Go(9802,.5);return;
+ }
+ if(Stage==9802){Shot(TEXT("orb-startled"));Go(9803,2.2);return;}
+ if(Stage==9803)
+ {
+  if(!Check(F.Director->ActiveEvent().IsEmpty(),TEXT("a person coming close sends the lights straight up and ends the appearance")))return;
   Finish(true,TEXT("PHOTO04 real-original journey and optional local-noise idea; explicit synthetic two-plan Follow wiring restores real history. No logger measurement, second natural event or additional payment claimed."));return;
  }
 

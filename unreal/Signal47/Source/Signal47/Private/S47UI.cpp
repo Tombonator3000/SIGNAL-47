@@ -179,6 +179,7 @@ void US47UI::StopSpeech()
 
 TSharedRef<SWidget> US47UI::ReadingControls(const TArray<FString>& Texts, const FString& Label, const FString& Kind)
 {
+	if (!FS47ReadAloud::bOfferInGame) return SNullWidget::NullWidget;
 	const TSharedPtr<FS47ReadAloud> Reader = Kind == TEXT("document") || Kind == TEXT("conversation") ? ReadAloud : DescriptionReader();
 	if (!Reader.IsValid() || !Reader->Enabled()) return SNullWidget::NullWidget;
 	return MakeReadingBox(this, Reader.ToSharedRef(), Texts, Label).Key;
@@ -186,6 +187,7 @@ TSharedRef<SWidget> US47UI::ReadingControls(const TArray<FString>& Texts, const 
 
 TSharedRef<SWidget> US47UI::DescriptionReadings(const TSharedRef<SWidget>& Parent, const FString& Kind, TFunction<TArray<FString>()> Extra)
 {
+	if (!FS47ReadAloud::bOfferInGame) return SNullWidget::NullWidget; // Tom 5 Nov: descriptions are text only
 	const TSharedPtr<FS47ReadAloud> Reader = DescriptionReader();
 	if (!Reader.IsValid() || !Reader->Enabled()) return SNullWidget::NullWidget;
 	const TSharedRef<SS47Readings> W = SNew(SS47Readings, this, Parent, Kind, MoveTemp(Extra));
@@ -229,6 +231,7 @@ FString FS47ReadingAction::Status() const
 
 TSharedPtr<FS47ReadingAction> US47UI::ReadingAction(const TArray<FString>& Texts, const FString& Kind)
 {
+	if (!FS47ReadAloud::bOfferInGame) return nullptr;
 	// the reader readingControls would give the box: Kinski for a paper and a conversation, else the
 	// description reader
 	const TSharedPtr<FS47ReadAloud> R = Kind == TEXT("document") || Kind == TEXT("conversation") ? ReadAloud : DescriptionReader();
@@ -261,7 +264,7 @@ void US47UI::UpdateDescriptionButton()
 	if (!H) return;
 	const TSharedPtr<FS47ReadAloud> R = DescriptionReader();
 	const FString Last = LastDescription();
-	H->DescButton.bShown = R.IsValid() && R->Enabled() && !(ExamineText.IsEmpty() && Last.IsEmpty()) && !Modal() && !(CanDescribe && !CanDescribe());
+	H->DescButton.bShown = FS47ReadAloud::bOfferInGame && R.IsValid() && R->Enabled() && !(ExamineText.IsEmpty() && Last.IsEmpty()) && !Modal() && !(CanDescribe && !CanDescribe());
 	const FString V = TEXT(" [") + S47Keys::Label(TEXT("describe")) + TEXT("]"); // (the key as bound, S47Keys)
 	H->DescButton.Text = (bDescriptionActive ? TEXT("Stop reading") : !ExamineText.IsEmpty() ? TEXT("Read description") : TEXT("Read last description")) + V;
 	H->DescButton.bDisabled = !bDescriptionActive && !(R.IsValid() && R->Available({ ExamineText.IsEmpty() ? Last : ExamineText }));
@@ -269,6 +272,7 @@ void US47UI::UpdateDescriptionButton()
 
 void US47UI::PlayDescription(const FString& Text, bool bAutomatic)
 {
+	if (!FS47ReadAloud::bOfferInGame) return;
 	const TSharedPtr<FS47ReadAloud> Reader = DescriptionReader();
 	if (!Reader.IsValid() || !Reader->Enabled() || Text.IsEmpty()) return;
 	if (OnReadingStart) OnReadingStart(Reader.Get());
@@ -284,6 +288,7 @@ void US47UI::PlayDescription(const FString& Text, bool bAutomatic)
 
 void US47UI::ReadLastDescription()
 {
+	if (!FS47ReadAloud::bOfferInGame) return;
 	const TSharedPtr<FS47ReadAloud> Reader = DescriptionReader();
 	if (!Reader.IsValid() || !Reader->Enabled() || Modal() || (CanDescribe && !CanDescribe())) return;
 	if (bDescriptionActive) Reader->Stop();
@@ -329,7 +334,7 @@ void US47UI::Examine(const FString& Text)
 	if (bExamineActive && Reader.IsValid()) Reader->Stop();
 	bExamineActive = false;
 	UpdateDescriptionButton();
-	if (Text.IsEmpty() || !Reader.IsValid() || !Reader->Enabled()) return;
+	if (!FS47ReadAloud::bOfferInGame || Text.IsEmpty() || !Reader.IsValid() || !Reader->Enabled()) return;
 	const TWeakObjectPtr<US47UI> Self = this;
 	ExamineTimer = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self, Text](float)
 	{

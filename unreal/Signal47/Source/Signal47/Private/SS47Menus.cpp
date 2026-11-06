@@ -4,6 +4,7 @@
 #include "SS47Screens.h"
 
 #include "Framework/Application/SlateApplication.h"
+#include "Brushes/SlateRoundedBoxBrush.h"
 #include "S47Docs.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
@@ -195,7 +196,7 @@ float SS47Title::Number47Opacity() const
  return O.bHide47 || bEraseDone ? 0.f : O.bErase47 ? SampleErase47(EraseT,O.bCalm).Opacity : 1.f;
 }
 
-// Stylised distant menu lights, not a world-space craft or story encounter.
+// A distant lit object crossing the menu sky, not a world-space craft or story encounter.
 SS47Title::FTitlePassSample SS47Title::SampleTitlePass(float Seconds)
 {
  FTitlePassSample S;
@@ -203,7 +204,7 @@ SS47Title::FTitlePassSample SS47Title::SampleTitlePass(float Seconds)
  const float Phase=FMath::Fmod(Seconds-8.f,35.f);
  if(Phase>=5.f)return S;
  const float P=Phase/5.f;
- S.Opacity=.65f*FMath::SmoothStep(0.f,.2f,P)*(1.f-FMath::SmoothStep(.8f,1.f,P));
+ S.Opacity=.9f*FMath::SmoothStep(0.f,.2f,P)*(1.f-FMath::SmoothStep(.8f,1.f,P));
  S.bVisible=S.Opacity>0.f;
  S.Position=FVector2f(FMath::Lerp(.96f,.64f,P),.19f-.035f*FMath::Sin(P*PI));
  return S;
@@ -252,16 +253,16 @@ int32 SS47Title::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlat
  const auto Pass=SampleTitlePass(PassT);
  if(Pass.bVisible)
  {
+  // One lit object, a little larger than a star: no craft, no row of lamps.
+  static const FSlateRoundedBoxBrush Disc(FLinearColor::White,32.f);
   const FVector2f At(Pass.Position.X*S.X,Pass.Position.Y*S.Y);
   const float Scale=FMath::Clamp(S.X/1920.f,.65f,1.5f);
-  for(int32 I=0;I<3;++I)
+  const auto Dot=[&](float Radius,float Alpha,const FLinearColor& C)
   {
-   const FVector2f P=At+FVector2f(I*10.f*Scale,I==1?1.f*Scale:0.f);
-   const float A=Pass.Opacity*(I==0?1.f:.55f);
-   const TArray<FVector2f> Dot={P,P+FVector2f(3.f*Scale,0.f)};
-   FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),Dot,ESlateDrawEffect::None,FLinearColor(1.f,.63f,.29f,A*.22f),true,11.f*Scale);
-   FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),Dot,ESlateDrawEffect::None,FLinearColor(1.f,.58f,.16f,A),true,3.2f*Scale);
-  }
+   const float R=Radius*Scale;
+   FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(2*R,2*R),FSlateLayoutTransform(At-FVector2f(R,R))),&Disc,ESlateDrawEffect::None,C.CopyWithNewOpacity(Pass.Opacity*Alpha));
+  };
+  Dot(9.f,.07f,FLinearColor(1.f,.86f,.68f));Dot(5.f,.20f,FLinearColor(1.f,.88f,.72f));Dot(2.4f,.65f,FLinearColor(1.f,.93f,.82f));Dot(1.3f,1.f,FLinearColor::White);
  }
 	return SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer + 1, Style, bParentEnabled);
 }

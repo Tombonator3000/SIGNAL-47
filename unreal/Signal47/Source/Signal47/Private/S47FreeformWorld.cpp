@@ -777,10 +777,12 @@ bool FS47FreeformWorld::CargoUse()
  else if(Payload==3){Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));}
  else
  {
-  TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SERVICE TRUCK\nFUEL %.1f / 4\nCARGO: %s"),Fuel,Payload==3?*ParcelDescription():TEXT("empty"))));
+  TArray<S47Kit::FW> R;R.Add(S47Kit::Sub(FString::Printf(TEXT("FUEL  %.1f / 4"),Fuel)));
+  R.Add(S47Kit::Status(TEXT("Cargo"),Payload==3?ParcelDescription().ToUpper():FString(TEXT("EMPTY")),Payload==3?1:0));
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
   R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001));
-  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE TRUCK / CARGO AND FUEL"),S47Kit::Col(R),800));
+  if(Fuel>.001)R.Add(S47Kit::Small(TEXT("Roadside return is available when the fuel is empty.")));
+  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE JEEP / CARGO"),S47Kit::Col(R),800));
  }
  return true;
 }
@@ -962,7 +964,7 @@ void FS47FreeformWorld::OpenWorkshop()
  for(const auto& P:Crafting.Tray)
  {
   if(!P.bTested)++Untested;else if(P.bFaulty)++Dead;
-  L.Add(S47Kit::Text(FS47Workshop::PartTitle(P.Kind)+(!P.bTested?TEXT(" / untested"):P.bFaulty?TEXT(" / DEAD"):TEXT(" / good")),!P.bTested?0:P.bFaulty?-1:1));
+  L.Add(S47Kit::Status(FS47Workshop::PartTitle(P.Kind),!P.bTested?TEXT("UNTESTED"):P.bFaulty?TEXT("DEAD"):TEXT("GOOD"),!P.bTested?0:P.bFaulty?-1:1));
  }
  if(Crafting.Tray.IsEmpty())L.Add(S47Kit::Small(TEXT("Nothing on the bench.")));
  if(Untested>0)L.Add(S47Kit::Button(FString::Printf(TEXT("Test all %d untested"),Untested),[Act]{Act(TEXT("testall"),FString());},true,WorkshopBlock(TEXT("testall")).IsEmpty()));
@@ -997,12 +999,12 @@ void FS47FreeformWorld::OpenWorkshop()
     const auto* Good=Crafting.Tray.FindByPredicate([&](const FS47Workshop::FPart& P){return P.Kind==K&&P.Usable()&&!Used.Contains(P.Id);});
     if(Good)Used.Add(Good->Id);
     const bool Waiting=!Good&&Crafting.Tray.ContainsByPredicate([&](const FS47Workshop::FPart& P){return P.Kind==K&&!P.bTested;});
-    R.Add(S47Kit::Text(FS47Workshop::PartTitle(K)+(Good?TEXT(" / have"):Waiting?TEXT(" / test first"):TEXT(" / MISSING")),Good?1:Waiting?0:-1));
+    R.Add(S47Kit::Status(FS47Workshop::PartTitle(K),Good?TEXT("HAVE"):Waiting?TEXT("TEST FIRST"):TEXT("MISSING"),Good?1:Waiting?0:-1));
    }
-   if(Pick->Cells>0)R.Add(S47Kit::Text(FString::Printf(TEXT("%d dry cell%s / have %d"),Pick->Cells,Pick->Cells==1?TEXT(""):TEXT("s"),Cells),Cells>=Pick->Cells?1:-1));
-   if(Pick->Foil>0)R.Add(S47Kit::Text(FString::Printf(TEXT("shielding foil / have %d"),Foil),Foil>=Pick->Foil?1:-1));
+   if(Pick->Cells>0)R.Add(S47Kit::Status(FString::Printf(TEXT("%d dry cell%s"),Pick->Cells,Pick->Cells==1?TEXT(""):TEXT("s")),FString::Printf(TEXT("HAVE %d"),Cells),Cells>=Pick->Cells?1:-1));
+   if(Pick->Foil>0)R.Add(S47Kit::Status(TEXT("Shielding foil"),FString::Printf(TEXT("HAVE %d"),Foil),Foil>=Pick->Foil?1:-1));
    const FString Block=WorkshopBlock(TEXT("build"),Id);
-   R.Add(S47Kit::Button(TEXT("Build"),[Act,Id]{Act(TEXT("build"),Id);},Block.IsEmpty(),Block.IsEmpty()));
+   if(Block.IsEmpty())R.Add(S47Kit::Action(TEXT("Build"),[Act,Id]{Act(TEXT("build"),Id);}));else R.Add(S47Kit::Button(TEXT("Build"),[]{},false,false));
    if(Crafting.Missing(*Pick,Cells,Foil).IsEmpty()&&!Block.IsEmpty())R.Add(S47Kit::Small(Block));
   }
  }
@@ -1028,9 +1030,9 @@ void FS47FreeformWorld::OpenBranch(const FString& BranchId)
 {
  const auto* B=FS47ArrayWear::Branch(BranchId);if(!Ready()||!B||!M->UI||Wear.IsRestored(BranchId))return;
  TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("%s / %d ANTENNAS OUT OF SERVICE\n%s"),B->Title,B->Dishes.Num(),B->Fault)));
- for(const auto& N:B->Needs)R.Add(S47Kit::Text(FString::Printf(TEXT("%d x %s / have %d"),N.Count,*ItemTitle(N.Item),InventoryCount(N.Item)),InventoryCount(N.Item)>=N.Count?1:-1));
+ for(const auto& N:B->Needs)R.Add(S47Kit::Status(FString::Printf(TEXT("%s, %d needed"),*ItemTitle(N.Item),N.Count),FString::Printf(TEXT("IN STOCK %d / %s"),InventoryCount(N.Item),InventoryCount(N.Item)>=N.Count?TEXT("READY"):TEXT("MISSING")),InventoryCount(N.Item)>=N.Count?1:-1));
  const FString Id(B->Id),Missing=BranchNeeds(*B);
- R.Add(S47Kit::Button(TEXT("Repair and test this branch"),[this,Id]{RepairBranch(Id);},Missing.IsEmpty(),Missing.IsEmpty()&&Wear.Job.IsEmpty()));
+ if(Missing.IsEmpty()&&Wear.Job.IsEmpty())R.Add(S47Kit::Action(TEXT("Repair and test this branch"),[this,Id]{RepairBranch(Id);}));else R.Add(S47Kit::Button(TEXT("Repair and test this branch"),[]{},false,false));
  if(FString(B->Id)==TEXT("centre"))R.Add(S47Kit::Small(TEXT("CALIBRATION / REPAIR: make up the splice in the workshop from two good antenna leads and foil.")));
  else if(!Missing.IsEmpty())R.Add(S47Kit::Small(TEXT("Caliche sells these. Unpack the parcel at GARAGE RECEIVING and bring them back in your pouch.")));
  M->UI->Open(S47Kit::Shell(M->UI,FString(B->Title)+TEXT(" JUNCTION"),S47Kit::Col(R),760));
