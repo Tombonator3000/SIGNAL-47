@@ -1947,6 +1947,10 @@ UI-POLISH-20261105-01: arkivradene i rommet har status eller dag i egen høyreko
 
 `45fe414c` etter PR438 installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer. Til neste samlede rydding: `~/scratch-bm/Signal47-night-20261105/d1` til `d4` er ferdige kandidater; `d5`, dag `d1` og `d2` beholdes foreløpig.
 
-## 6. november 2026 kl.10:40, plan og veggrammer
+## 6. november 2026 kl.10:28, plan og veggrammer
 
-Tom godkjente rekkefølgen: ROOM-DECOR v1, normalreise og Freeform-regresjon, TRACKING-INTERACTION, opptakslyd på slitt stasjon (venter på Tom), PC-WORLD-DISPLAY, saksløkken. ROOM-DECOR v1 er fire rammer på vestveggen i kontrollrommet: `S47RoomDecor`, opt-in-prøven `-S47MenuPointerAlbum` består, selvtest 2504 består.
+Tom ba om en prioritert plan og sa ja til veggrammene. Claudes rekkefølge: ROOM-DECOR v1, normalreise og Freeform-regresjon, TRACKING-INTERACTION, opptakslyd på slitt stasjon (venter på Tom), PC-WORLD-DISPLAY, saksløkken. ROOM-DECOR v1 er fire rammer på vestveggen i kontrollrommet: `S47RoomDecor`, opt-in-prøven `-S47MenuPointerAlbum` består, selvtest 2504 består.
+
+## 6. november 2026 kl.10:35, installasjon
+
+`72637b13` (PR440, spillkoden er lik `40797a65` på main) installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer.

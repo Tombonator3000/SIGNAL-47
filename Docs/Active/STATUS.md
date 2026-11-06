@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november kl. 10:16
+## Installert 6. november kl. 10:35
+
+`72637b13` fra PR440 er nå standard (spillkoden er lik `40797a65` på main), med rask installasjon: egne foto i fire rammer på vestveggen i kontrollrommet i Freeform. 2504 selvtester og 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_72637b13.md).
+
+## Tidligere installert 6. november kl. 10:16
 
 `45fe414c` etter PR438 er nå standard, med rask installasjon: våtbenk med numrerte trinn, statuskolonne i arkivet og rettet Album. 2504 selvtester og 138 uendrede Saved-filer. Normalreisen og Freeform-regresjonen er ikke kjørt på pakken. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_45fe414c.md).
 
