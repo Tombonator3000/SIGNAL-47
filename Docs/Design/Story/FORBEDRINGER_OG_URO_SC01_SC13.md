@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 # Forslag til bedre spillerreise, skrekk og uro
 
 **Status:** Under arbeid. **Gjelder:** Forslag for åpningen og SC01 til SC13 i Unreal. **Sist kontrollert:** 31. oktober 2026.

@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 # SARO: bakke, omgivelser og fjell, overlevering til Codex
 
 **Status:** Under arbeid. **Eier nå:** Codex (overtar fra Claude 4. november). **Gren:** `claude/east-wing-20261103` (PR #380). **Sist kontrollert:** 4. november 2026.

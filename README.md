@@ -4,6 +4,8 @@ Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986. Gjeldende spi
 
 ## Finn frem
 
+- **[Samlet game bible](Docs/Design/GAME_BIBLE.md)**: hele spilldesignet, gameplay, verden, Story, Freeform og UFO-feltundersøkelser.
+
 - **[Start her](Docs/README.md)**: samlet dokumentoversikt.
 - **[Status](Docs/Active/STATUS.md)**: hva som finnes på main, i testet kandidat, lokalt installert og offentlig nedlastbart.
 - **[Todo](Docs/Active/TODO.md)**: åpne oppgaver.

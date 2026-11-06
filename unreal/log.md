@@ -1963,6 +1963,10 @@ Normalreisen består alle sju faser på pakken `72637b13` med egne prosesser og 
 
 `8ceed8e4` etter PR442 installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer. Deretter fire knapper under himmelkartet (AZ/EL ±5°), så markøren kan nås uten mus; ikke installert, knappene er bare sett på skjerm og ikke trykket i prøve, og håndkontrollens fokus til dem er ikke prøvd.
 
+## 6. november 2026 kl.11:19, samlet game bible
+
+Codex, `codex/game-bible-20261106`: samlet gameplay, verden, Story, skrekk, visuell retning, UI og lyd i Docs/Design/GAME_BIBLE.md med kildekart og avklarte tidslinjekonflikter. Toms gårdsforløp med forlatt hus, tåke, flukt og mulig Freeform-bortføring/tapt tid er design og åpne TODO-punkter. Dokumentkontroll gir ingen nye lenkefeil mot førtilstanden; eksisterende dokumentgjeld beholdes åpen. Kun dokumentasjon; ingen motorjobb, installasjon, Saved-endring eller ny arbeidskopi.
+
 ## 6. november 2026 kl.11:30, opptakslyd på slitt stasjon
 
 Tom valgte at opptakslyd skal virke med redusert målehastighet. `S47CaptureSoundTest` består på slitt anlegg med lyd: ingen live-blokker under originalen, kontrollen live i full hastighet, 18 sekunder bånd. Selvtest 2508 består. Normalreisens lydfaser er ikke kjørt på nytt.

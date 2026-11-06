@@ -1,3 +1,5 @@
+> **Samlet design fra 6. november 2026:** [GAME BIBLE](../../../Docs/Design/GAME_BIBLE.md). Denne pakken beholder forfatterformat, ID-er og genererte produksjonsfiler; historiske tider og statussetninger under er ikke dagens samlede design eller leveringsstatus.
+
 # H1: produksjonshistorie for hele natten
 
 ## Gjeldende forfatterkilder, 28. oktober 2026

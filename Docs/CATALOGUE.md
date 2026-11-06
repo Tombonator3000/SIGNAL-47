@@ -4,6 +4,8 @@
 
 Katalogen skiller gjeldende styring fra planer, referanser, bevis og erstattet historikk. Originalpakker beholder sine historiske tekster og kontrollsummer; statusen her forklarer deres rolle i dag. Kilders gamle «current»/«installed»-tekst beskriver sitt dokumenterte tidspunkt. [Maskinlesbart flytte-/hashkart](Archive/document-map.json).
 
+**Samlet designinngang fra 6. november:** [GAME BIBLE](Design/GAME_BIBLE.md). De eldre enkeltplanene i tabellene er bevarte detaljkilder, selv når originalklassifiseringen nedenfor sier «Gjeldende». Bibelens kildekart forklarer overstyringene; Active beholder status, oppgaver og vedtak.
+
 ## Gjeldende
 
 | Dokument | Tidligere plassering når flyttet |

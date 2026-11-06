@@ -1,3 +1,5 @@
+> **Status: Referanse etter samling 6. november 2026.** Gjeldende samordnet design står i [samlet game bible](../GAME_BIBLE.md). Innholdet under er bevart detaljgrunnlag med kildens opprinnelige dato; eldre tidslinje, status og arbeidsfordeling overstyrer ikke hovedbibelen eller Active.
+
 > **Status: Gjeldende** · Godkjent av Tom 29.10.2026: behold 05:29:47, SC05 som eget scenario, egen bil fritt fra SC03. Erstatter tidene i [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md) når den er godkjent. Innholdet i scenarioene står der; dette dokumentet flytter dem i tid og beskriver rammen i koden.
 
 # Ny tidslinje SC01 til SC13 og ramme for hele natta

@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Samlet game bible, Codex 6. november
+
+Codex gjenbruker ferdig cosmic-kopi på `codex/game-bible-20261106` fra origin/main. Dokumentarbeid: samlet bibel, kildekart, innganger og nye designbeslutninger/TODO. Ingen motorjobb, runtimeendring, ny kopi eller rydderunde. Hovedkopiens lokale UI/TODO-arbeid er urørt. To arbeidskopier totalt; cosmic-prototypens lokale lydgrunnlag bevares.
+
 ## Dagskift 6. november, Claude Code
 
 Tom kl. 08:33: fortsett med rettelser og hele TODO, flett underveis, ikke stopp før Tom sier fra. Eneste aktive kopi for Claude er `~/SIGNAL-47`, først på `claude/title-object-visible` (menyobjekt, musepeker, grafikkmåling). Tunge jobber under `production_lease`. Tom spiller periodevis; start av spillet stopper byggene, det installerte spillet stoppes aldri.
