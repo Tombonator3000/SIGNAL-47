@@ -6,7 +6,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Installert 6. november, stolpelampe og øyeglimt
 
-`cfbd9fb5` etter PR462 er nå standard, med rask installasjon: bil og gange i hele array-feltet i Freeform, servicedør på alle antenner, dører i gårdshuset og øyeglimt bare i mørke innen 50 m. Pakken har et privat filmklipp og skal ikke deles. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_cfbd9fb5.md).
+`d1923eed` etter PR465 er nå standard, med rask installasjon: bil og gange i hele array-feltet i Freeform, servicedør på alle antenner, dører i gårdshuset, øyeglimt bare i mørke innen 50 m, ny Roswell-lusking, og Tall og Crab i utviklermenyen. Pakken har et privat filmklipp og skal ikke deles. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_d1923eed.md).
 
 ## Tidligere installert 6. november, gårdsvei og nattlys
 
