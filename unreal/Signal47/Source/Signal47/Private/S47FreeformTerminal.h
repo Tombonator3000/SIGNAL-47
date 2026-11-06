@@ -40,7 +40,7 @@ namespace S47FreeformTerminal
  FW Readout(const FString& Label,TAttribute<FString> Shown,TAttribute<float> Fill=-1.f); // big number, optional bar
  FW Control(const FString& Label,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange);
  FW Spectrum(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
- FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source);
+ FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source,TFunction<void(FVector2D)> OnAim=nullptr,TFunction<bool()> OnTarget=nullptr);
  FW FivePoint(TFunction<int32()> Done,TFunction<bool()> Running,TFunction<bool()> Required);
  // State per element: 0 ready, 1 selected, 2 isolated/fault, 3 moving
  FW AntennaGrid(int32 Count,TFunction<FString(int32)> Label,TFunction<int32(int32)> State,TFunction<void(int32)> Pick);

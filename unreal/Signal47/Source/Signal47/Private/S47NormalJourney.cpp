@@ -73,6 +73,42 @@ namespace
    if(M->Freeform->TerminalOnGlass())FSlateApplication::Get().ForEachUser([&](FSlateUser& U){auto W=U.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);return Out;
   }
   bool Enabled(const FString& Label){TArray<TSharedRef<SButton>> B;for(auto W:Roots())Buttons(W,Label,B);return B.Num()==1&&B[0]->IsEnabled();}
+  // A held mouse button swept over the screen, through the same routing as a player's: the array
+  // cannot be commanded until this reaches the plot on the terminal's glass.
+  int32 DragAt=-1;
+  bool DragMarker()
+  {
+   auto& App=FSlateApplication::Get();const auto Window=GEngine&&GEngine->GameViewport?GEngine->GameViewport->GetWindow():nullptr;if(!Window)return false;
+   const FVector2D Origin=Window->GetPositionInScreen(),Size=Window->GetSizeInScreen();static constexpr int32 DragCols=160,DragRows=90;
+   const TSet<FKey> Held={EKeys::LeftMouseButton};
+   auto Screen=[&](int32 I){return Origin+FVector2D(Size.X*(.05+.9*(I%DragCols)/DragCols),Size.Y*(.05+.9*(I/DragCols)/DragRows));};
+   if(DragAt<0)
+   {
+    FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("NormalJourney/tracking-before.png"),true,false);
+    const FVector2D Spot=Origin+Size*.5;App.ProcessMouseMoveEvent(FPointerEvent(0,Spot,Spot,TSet<FKey>(),EKeys::Invalid,0.f,App.GetModifierKeys()));
+    App.ProcessMouseButtonDownEvent(nullptr,FPointerEvent(0,Spot,Spot,Held,EKeys::LeftMouseButton,0.f,App.GetModifierKeys()));
+    DragAt=0;return false;
+   }
+   for(int32 Move=0;Move<40&&DragAt<DragCols*DragRows;++Move,++DragAt)
+   {
+    const FVector2D Spot=Screen(DragAt),Last=Screen(FMath::Max(0,DragAt-1));
+    App.ProcessMouseMoveEvent(FPointerEvent(0,Spot,Last,Held,EKeys::Invalid,0.f,App.GetModifierKeys()));
+    if(Main->Freeform->AimOnTarget())
+    {
+     App.ProcessMouseButtonUpEvent(FPointerEvent(0,Spot,Spot,TSet<FKey>(),EKeys::LeftMouseButton,0.f,App.GetModifierKeys()));
+     UE_LOG(LogTemp,Display,TEXT("S47: tracking drag PASS after %d moves"),DragAt);
+     DragAt=DragCols*DragRows+1;return false;
+    }
+   }
+   if(DragAt>DragCols*DragRows)
+   {
+    // The glass draws what the plot was a frame ago: give it a moment before the picture.
+    if(++DragAt==DragCols*DragRows+8)FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("NormalJourney/tracking-on-source.png"),true,false);
+    return DragAt>DragCols*DragRows+12;
+   }
+   if(DragAt>=DragCols*DragRows){UE_LOG(LogTemp,Error,TEXT("S47: tracking drag FAIL: the marker never reached the source"));FPlatformMisc::RequestExitWithStatus(false,1);}
+   return false;
+  }
   bool Click(const FString& Label)
   {
    TArray<TSharedRef<SButton>> Found;for(auto W:Roots())Buttons(W,Label,Found);
@@ -286,7 +322,7 @@ namespace
     case 11:if(!Click(TEXT("DAILY WORK")))return false;Go(12);break;
     case 12:if(!Click(TEXT("Accept this job and start the shift"))||!Place(TEXT("crtRight")))return false;Go(13);break;
     case 13:if(!Use(TEXT("crtRight")))return false;Go(14);break;
-    case 14:if(!Click(TEXT("POINT ARRAY"))||!Place(TEXT("crtCenter")))return false;Go(15);break;
+    case 14:if(FParse::Param(FCommandLine::Get(),TEXT("S47JourneyTrackingDrag"))){if(!DragMarker())return true;}else Main->Freeform->AimAtSource();if(!Click(TEXT("POINT ARRAY"))||!Place(TEXT("crtCenter")))return false;Go(15);break;
     case 15:if(!Use(TEXT("crtCenter")))return false;Go(16);break;
     case 16:if(Tune())Go(17);break;
     case 17:if(!Enabled(TEXT("START RECORDING")))return true;if(!Click(TEXT("START RECORDING")))return false;M->UI->Close(true);Go(18);break;

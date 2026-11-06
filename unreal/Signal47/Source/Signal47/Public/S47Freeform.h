@@ -180,6 +180,11 @@ public:
  const FS47Profile* ConsoleProfile() const;
  TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
  TSharedPtr<class FS47RoomDecor> Decor;
+ // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
+ FVector2D AimAzEl();
+ bool AimOnTarget() const;
+ void SetAim(FVector2D AzEl);
+ void AimAtSource(){SetAim(FVector2D(TargetAz(),TargetEl()));}
  TSharedPtr<FS47FreeformDirector> Director;
  TSharedPtr<FS47FreeformWorld> Field;
  TSharedPtr<FS47CaseFieldTests> CaseField;
@@ -188,6 +193,7 @@ public:
  bool TestAdvance(double WorldSeconds);
  bool SpendTime(double WorldSeconds) { return TestAdvance(WorldSeconds); }
 private:
+ FVector2D Aim=FVector2D::ZeroVector;FString AimJob;bool bAimLocked=false;
  TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
  bool UsesCapturedAudio() const;
  int32 CaptureStartStage=0; // 1 prepare; 2 discard build frame; 3 start on stable frame
