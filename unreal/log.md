@@ -2002,3 +2002,7 @@ Codex, `codex/alien-interference-20261106`: privat 7-sekunders prøve kan bryte 
 ## 6. november 2026 kl.13:58, gårdshus som blokkmodell
 
 Toms plantegning v1 er data i `S47FarmHouse`: 12 × 9 m pluss veranda på ledig tomt øst for beitet, siden biblen sier at Alderete-gården ikke er forlatt og bakgrunnshuset deler mesh med fjøsene. Vegetasjon holdes unna tomten; dette gjelder også Story, der det bare er en bar flekk langt ute. `-S47MenuPointerHouse` går inn frontdøren og ut bakdøren. Selvtest 2511 og regresjon 251 består. Toms mappe `Gard-modeller-Blender` er uttrekk fra The Greyhill Incident og brukes ikke.
+
+## 6. november 2026 kl.14:13, installasjon
+
+`c3c7bd99` etter PR453 installert: 2515 selvtester og 138 uendrede Saved-filer. Tidligere oppføring med kl.12:50 for `183e8db1` skulle vært kl.12:47.

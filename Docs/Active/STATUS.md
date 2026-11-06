@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november kl. 12:50
+## Installert 6. november kl. 14:13
+
+`c3c7bd99` etter PR453 er nå standard, med rask installasjon: lys og spor over stedene i byen, det forlatte gårdshuset som blokkmodell og Codex' alien-interferens. 2515 selvtester og 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_c3c7bd99.md).
+
+## Tidligere installert 6. november kl. 12:47
 
 `183e8db1` etter PR449 er nå standard, med rask installasjon: gårdslysene stikker av når spilleren nærmer seg og etterlater spor, dis og lyd til neste morgen. Selvtester og 138 uendrede Saved-filer. Normalreisen og Freeform-regresjonen er ikke kjørt på pakken. Forrige grunnlag ligger i `~/scratch-bm/Signal47-day-20261106/d6`, gjeldende i `d7`.
 
