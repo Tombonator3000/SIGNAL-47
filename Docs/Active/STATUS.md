@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november kl. 11:07
+## Installert 6. november kl. 11:29
+
+`9e8a80fe` etter PR445 er nå standard, med rask installasjon: opptakslyd med redusert målehastighet og knapper for tracking-markøren. 2508 selvtester og 138 uendrede Saved-filer. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_9e8a80fe.md).
+
+## Tidligere installert 6. november kl. 11:07
 
 `8ceed8e4` etter PR442 er nå standard, med rask installasjon: tracking-markør som dras til kilden. 2504 selvtester og 138 uendrede Saved-filer. Normalreisens sju faser besto på forrige pakke; Freeform-regresjonen er ikke kjørt. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_8ceed8e4.md).
 
