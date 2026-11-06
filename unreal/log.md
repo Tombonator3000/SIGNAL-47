@@ -2014,3 +2014,7 @@ Grusplatene på gårdsveien er fjernet; de sto i trinn oppå terrengveien. Gatel
 ## 6. november 2026 kl.15:55, Toms andre gårdstest
 
 Gatelys på eksisterende stolpe (veilokalt 15, 190), ny stolpe med lampe ved trafoinnkjøringen (7990, 512), veistripen node 959 senket 9 cm i Freeform. Radiostille forklart: `alien_interference.wav` har topp 0,195 og RMS 0,004, og går nå utenom susgrenen på 12 %. Klippet er fra filmen Signs og kan ikke deles. Ugle og hund brukte vanlig plassering utover 60 m og bruker nå `Far`. Øyeglimt på Roswell. Radio, vei, selvtest 2515 og regresjon 251 består i editor.
+
+## 6. november 2026 kl.16:40, dører i gårdshuset
+
+Sju dører fra plantegningen i `FS47FarmHouseDoors`, med kollisjon og lagret tilstand. Rettelse: prøven kl.13:58 startet inne i huset, så den gikk aldri inn frontdøren. Nå går den utenfra, blir stoppet av lukket dør, åpner og går ut bakdøren. Selvtest 2515 og regresjon 251 består.

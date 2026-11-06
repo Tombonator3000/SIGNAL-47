@@ -91,7 +91,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
-  bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
+  bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -241,18 +241,35 @@ namespace
    }
    if(Stage==76)
    {
-    // Actually walked: in by the front door, down the hall, out of the back. Stopped by any wall on the way.
-    const FVector O(-24,0,300);WalkTo={S47FarmHouse::Point(6,9.6)+O,S47FarmHouse::Point(6,4.5)+O,S47FarmHouse::Point(6,-1)+O};WalkAt=0;
-    M->Player->Place(WalkTo[0].X,WalkTo[0].Z+2,0);Stage=77;StageAt=Elapsed;WalkFrom=Elapsed;return true;
+    // First against the shut front door: it has to stop the player, then opening it has to clear the way.
+    const FVector O(-24,0,300);auto& H=*M->Freeform->HouseDoors;
+    if(H.Num()!=7||H.IsOpen(H.IndexOf(TEXT("south0"))))return Fail(TEXT("the house has seven doors and its front door starts shut"));
+    WalkTo={S47FarmHouse::Point(6,9.6)+O,S47FarmHouse::Point(6,4.5)+O};WalkAt=0;BlockTest=true;
+    M->Player->Place(WalkTo[0].X,WalkTo[0].Z-2,0);Stage=77;StageAt=Elapsed;WalkFrom=Elapsed;return true;
    }
    if(Stage==77)
    {
     StageAt=Elapsed;
+    if(BlockTest&&Elapsed-WalkFrom>7)
+    {
+     const FVector Door=S47FarmHouse::Point(6,8.85)+FVector(-24,0,300);
+     // The hall is farther into +Z than the door: past it means the shut door failed.
+     if(M->Player->Pos.Z>Door.Z+.05)return Fail(TEXT("a shut door must stop the player"));
+     M->Player->TestMove.Reset();auto& H=*M->Freeform->HouseDoors;
+     const auto Saved=H.Save();
+     if(!H.Use(H.IndexOf(TEXT("south0")))||!H.Use(H.IndexOf(TEXT("north0"))))return Fail(TEXT("the doors must open"));
+     H.Begin(H.Save());if(!H.IsOpen(H.IndexOf(TEXT("south0"))))return Fail(TEXT("door state must survive a reload"));
+     H.Begin(Saved);if(H.IsOpen(H.IndexOf(TEXT("south0"))))return Fail(TEXT("an older saved state must restore"));
+     H.Use(H.IndexOf(TEXT("south0")));H.Use(H.IndexOf(TEXT("north0")));
+     Shot(TEXT("house-door-open.png"));
+     const FVector O(-24,0,300);WalkTo={S47FarmHouse::Point(6,4.5)+O,S47FarmHouse::Point(6,-1)+O};WalkAt=0;BlockTest=false;WalkFrom=Elapsed;return true;
+    }
     if(Elapsed-WalkFrom>30)return Fail(TEXT("the hall must be walkable from the front door to the back door"));
+    if(BlockTest&&WalkAt>=WalkTo.Num())return Fail(TEXT("a shut door must stop the player"));
     if(WalkAt>=WalkTo.Num())
     {
      M->Player->TestMove.Reset();
-     UE_LOG(LogTemp,Display,TEXT("S47: farmhouse PASS: level floor, walked in the front door and out of the back in %.1f s"),Elapsed-WalkFrom);
+     UE_LOG(LogTemp,Display,TEXT("S47: farmhouse PASS: level floor, shut door stopped the player, opened, walked through and out of the back in %.1f s"),Elapsed-WalkFrom);
      FPlatformMisc::RequestExitWithStatus(false,0);return false;
     }
     const FVector V=WalkTo[WalkAt]-M->Player->Pos;const double Left=FVector2D(V.X,V.Z).Size();

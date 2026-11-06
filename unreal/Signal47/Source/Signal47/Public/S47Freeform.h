@@ -182,6 +182,7 @@ public:
  TSharedPtr<class FS47RoomDecor> Decor;
  TSharedPtr<class FS47FarmSite> FarmSite;
  TSharedPtr<class FS47FarmNight> FarmNight;
+ TSharedPtr<class FS47FarmHouseDoors> HouseDoors;
  // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
  FVector2D AimAzEl();
  bool AimOnTarget() const;
