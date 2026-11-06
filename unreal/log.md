@@ -1958,3 +1958,7 @@ Tom ba om en prioritert plan og sa ja til veggrammene. Claudes rekkefølge: ROOM
 ## 6. november 2026 kl.11:00, normalreise og tracking-markør
 
 Normalreisen består alle sju faser på pakken `72637b13` med egne prosesser og disk-Continue; Freeform-regresjonen er ikke kjørt. TRACKING-INTERACTION-20261105-02: gul markør dras i himmelkartet; treff gir pling, ring og opplåst POINT ARRAY. `-S47JourneyTrackingDrag` beviser dette med ekte pekerhendelser gjennom skjermvisningen i fase 1 (uten lyd). Selvtest 2504 består.
+
+## 6. november 2026 kl.11:07, installasjon og markørknapper
+
+`8ceed8e4` etter PR442 installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer. Deretter fire knapper under himmelkartet (AZ/EL ±5°), så markøren kan nås uten mus; ikke installert, knappene er bare sett på skjerm og ikke trykket i prøve, og håndkontrollens fokus til dem er ikke prøvd.

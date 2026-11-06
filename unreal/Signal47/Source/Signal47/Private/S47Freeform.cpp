@@ -1335,7 +1335,10 @@ void FS47FreeformSession::OpenTracking()
  auto Done=[this]{const FJob* J=CurrentJob();if(!J||J->Source!=0)return 0;return J->Stage>=EJobStage::Chart?5:bCrossRunning?CrossPoint:0;};
  auto Cal=T::Panel(TEXT("CALIBRATION / 5-POINT"),S47Kit::Col({T::FivePoint(Done,[this]{return bCrossRunning;},[this]{return CurrentJob()&&CurrentJob()->Source==0;}),
   T::Value(TEXT("PROGRESS"),TAttribute<FString>::CreateLambda([Done]{return FString::Printf(TEXT("%d / 5"),Done());}))}),true);
- auto Plot=T::Panel(FString::Printf(TEXT("AZ / EL PLOT (TARGET %s)"),*Name),T::SkyPlot([this]{return AimAzEl();},ArrayAzEl,Name,[this](FVector2D At){SetAim(At);},[this]{return AimOnTarget();}),true);
+ auto Nudge=[this](double Az,double El){return [this,Az,El]{const FVector2D A=AimAzEl();SetAim(FVector2D(A.X+Az,A.Y+El));};};
+ auto Plot=T::Panel(FString::Printf(TEXT("AZ / EL PLOT (TARGET %s)"),*Name),S47Kit::Col({T::SkyPlot([this]{return AimAzEl();},ArrayAzEl,Name,[this](FVector2D At){SetAim(At);},[this]{return AimOnTarget();}),
+  // Without a mouse: 5° steps always land within the marker's 3° of the source.
+  T::Columns({{1.f,T::Button(TEXT("AZ -5"),Nudge(-5,0))},{1.f,T::Button(TEXT("AZ +5"),Nudge(5,0))},{1.f,T::Button(TEXT("EL -5"),Nudge(0,-5))},{1.f,T::Button(TEXT("EL +5"),Nudge(0,5))}},6)}),true);
  auto Current=T::Panel(TEXT("CURRENT (ARRAY)"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().X);}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().Y);}),true)}),true);
  auto Target=T::Panel(TEXT("TARGET"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}),true)}),true);
  TArray<S47Kit::FW> Right={Current,Target,
