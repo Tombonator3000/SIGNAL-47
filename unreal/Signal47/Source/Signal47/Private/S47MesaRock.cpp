@@ -2,6 +2,7 @@
 #include "S47Web.h"
 #include "S47FarmWorld.h"
 #include "S47Main.h"
+#include "S47Freeform.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -60,12 +61,17 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor StoryTint;static float StoryGravel,StoryCrust;
   if(Read.Get()!=Mid){Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),StoryTint);Mid->GetScalarParameterValue(TEXT("GravelAmount"),StoryGravel);Mid->GetScalarParameterValue(TEXT("CrustAmount"),StoryCrust);}
   const bool bReal=S47FarmWorld::Enabled(US47Main::Get(Web));
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),bReal?FLinearColor(.24f,.265f,.275f):StoryTint);
+  // Only the day changes: a darker soil would take the moonlit ground, already at the edge of sight, down to black.
+  const US47Main* Main=US47Main::Get(Web);
+  const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
+  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  const auto Tint=[&](const FLinearColor& Real){return bReal?FMath::Lerp(StoryTint,Real,Day):StoryTint;};
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f,.265f,.275f)));
   Mid->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
   Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   if(auto* Seam=SeamMid.Get())
   {
-   Seam->SetVectorParameterValue(TEXT("GroundTint"),bReal?FLinearColor(.24f*.525f,.265f*.35f,.275f*.28f):StoryTint);
+   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f*.525f,.265f*.35f,.275f*.28f)));
    Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
    Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   }
