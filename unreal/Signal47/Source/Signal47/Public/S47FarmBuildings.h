@@ -1,0 +1,27 @@
+#pragma once
+#include "CoreMinimal.h"
+
+// The four original farm buildings in Freeform (Tools/farmbuildings): where they stand, what stops the player and
+// the truck, and the flat floors under them. Road-local metres, as S47FarmWorld. Story never shows them.
+namespace S47FarmBuildings
+{
+ struct FSite { const TCHAR* Name; const TCHAR* Mesh; double X,Z,Yaw; };
+ // The cooked meshes are there. Without them the farm keeps its old boxes and their collision.
+ bool Available();
+ // Barn, house, machine shed, feed shed. Yaw is the three.js turn in radians; the UE rotation is -Yaw.
+ const TArray<FSite>& Sites();
+ FVector Anchor(const FSite& Site);
+ // obstacles_road_local from placement.json, as (MinX,MinZ)-(MaxX,MaxZ).
+ const TArray<FBox2D>& Obstacles();
+ bool Blocked(double RoadX,double RoadZ,double Radius);
+ // The four plots with their roof overhangs: nothing grows here.
+ const TArray<FBox2D>& Plots();
+ bool OnPlot(double RoadX,double RoadZ,double Margin=0);
+ // The flat floor under a roof the player can stand under: barn, both sheds and the house's porch.
+ bool FloorAt(double RoadX,double RoadZ,double& OutY);
+ // A point in the barn's own metres (x east, y north, Blender's axes) as road-local, on the barn's floor.
+ FVector BarnPoint(double LocalX,double LocalY);
+ // Just outside the lit east window of the house, where its glow belongs.
+ FVector EastWindow();
+ bool SelfTest(TArray<FString>& Lines);
+}

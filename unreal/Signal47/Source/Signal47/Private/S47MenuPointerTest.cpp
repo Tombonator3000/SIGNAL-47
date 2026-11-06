@@ -19,6 +19,8 @@
 #include "Components/PoseableMeshComponent.h"
 #include "UObject/UObjectIterator.h"
 #include "S47FarmHouse.h"
+#include "S47FarmBuildings.h"
+#include "S47FarmWorld.h"
 #include "S47World.h"
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
@@ -165,7 +167,7 @@ namespace
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Stage!=77&&Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Stage!=212&&Elapsed-StageAt<1) return true;
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -269,6 +271,10 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the road test needs the night"));
      M->World->Enter(TEXT("road"));Stage=80;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerBuildings")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();Stage=200;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerHouse")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();Stage=70;StageAt=Elapsed;return true;
@@ -289,6 +295,64 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
+   }
+   // The new farm buildings, in the saro frame: a look at each from the yard by day and by night and one inside the
+   // barn, then in through its door on foot and on until the back wall stops the walk.
+   if(Stage==205)
+   {
+    if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the buildings test needs the night"));
+    Stage=206;StageAt=Elapsed;return true;
+   }
+   if(Stage>=200&&Stage<=210)
+   {
+    if(!S47FarmWorld::BuildingsShown(M))return Fail(TEXT("the four farm buildings must stand and show; was the import run?"));
+    struct FView{const TCHAR* Name;double X,Z,LookX,LookHeight,LookZ;};
+    const FVector Aisle=S47FarmBuildings::BarnPoint(1.3,-4),BackOfAisle=S47FarmBuildings::BarnPoint(1.3,4.6);
+    const FView Views[]={{TEXT("barn"),137.5,186,136,3,172},{TEXT("house"),125,191,110,1.8,190},{TEXT("shedA"),117,180,116.5,1.5,170},{TEXT("shedB"),90,213,84.5,1.5,206.5},
+     {TEXT("barn-inside"),Aisle.X,Aisle.Z,BackOfAisle.X,1.8,BackOfAisle.Z}};
+    const bool bNight=Stage>=206;const int32 I=Stage-(bNight?206:200);
+    if(ShotPending)
+    {
+     if(I==4&&!FMath::IsNearlyEqual(M->Player->FloorY,S47FarmBuildings::BarnPoint(0,0).Y,.01))return Fail(TEXT("the barn's floor must be level"));
+     Shot(*FString::Printf(TEXT("buildings-%s-%s.png"),bNight?TEXT("night"):TEXT("day"),Views[I].Name));ShotPending=false;Stage=Stage==210?211:Stage+1;StageAt=Elapsed;return true;
+    }
+    const FVector O(-24,0,300);const FVector2D D(Views[I].LookX-Views[I].X,Views[I].LookZ-Views[I].Z);
+    M->Player->Place(Views[I].X+O.X,Views[I].Z+O.Z,FMath::Atan2(-D.X,-D.Y));M->Player->Pitch=FMath::Atan2(Views[I].LookHeight-1.62,D.Size());ShotPending=true;
+    StageAt=Elapsed;return true;
+   }
+   if(Stage==211)
+   {
+    if(S47FarmWorld::WindowGlowsAtHouse(M)!=3)return Fail(TEXT("the lit window's three glows must follow the house"));
+    const FVector O(-24,0,300);
+    WalkTo={S47FarmBuildings::BarnPoint(1.3,-8)+O,S47FarmBuildings::BarnPoint(1.3,-2)+O,S47FarmBuildings::BarnPoint(1.3,7)+O};WalkAt=1;
+    M->Player->Place(WalkTo[0].X,WalkTo[0].Z,0);Stage=212;StageAt=Elapsed;WalkFrom=Elapsed;return true;
+   }
+   if(Stage==212)
+   {
+    StageAt=Elapsed;
+    const FVector V=WalkTo[WalkAt]-M->Player->Pos;const double Left=FVector2D(V.X,V.Z).Size();
+    if(WalkAt==1)
+    {
+     if(Elapsed-WalkFrom>20)return Fail(TEXT("the barn's door must let the player in"));
+     if(Left<.3)
+     {
+      if(!FMath::IsNearlyEqual(M->Player->FloorY,S47FarmBuildings::BarnPoint(0,0).Y,.02))return Fail(TEXT("the barn's floor must carry the player"));
+      WalkAt=2;WalkFrom=Elapsed;return true;
+     }
+    }
+    else if(Elapsed-WalkFrom>8)
+    {
+     // Its road-local z falls toward the back wall. Stopped close to it, and not through it.
+     M->Player->TestMove.Reset();
+     const double Reached=M->Player->Pos.Z-300;const double WallZ=S47FarmBuildings::BarnPoint(1.3,5.4).Z,NearZ=S47FarmBuildings::BarnPoint(1.3,4.6).Z;
+     if(Reached<WallZ)return Fail(TEXT("the barn's back wall must stop the player"));
+     if(Reached>NearZ)return Fail(TEXT("the barn's aisle must run clear to the back wall"));
+     Shot(TEXT("buildings-night-barn-wall.png"));
+     UE_LOG(LogTemp,Display,TEXT("S47: buildings PASS: four buildings shown day and night, glow at the house, in through the barn's door, level floor, stopped %.2f m from the back wall"),Reached-WallZ);
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    M->Player->Yaw=FMath::Atan2(-V.X,-V.Z);M->Player->Pitch=-.08;M->Player->TestMove=FVector2D(0,-FMath::Min(1.,Left/.4));
+    return true;
    }
    // The abandoned house, in the saro frame the farm lies in: a look from each named spot, then the real walk.
    if(Stage>=70&&Stage<=75)

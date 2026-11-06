@@ -2054,3 +2054,7 @@ Tom bestilte nattskift med agenter. Samlet diskkontroll: d1–d14 pensjonert, kv
 ## 6. november 2026 kl.22:45, natt, runde 2
 
 Agenter i egne worktrees. GAMEPLAY-03 fant at Jeepen kunne bli innelåst ved strømbrudd; rettet med håndkjede, nødmeny ved tom tank og tydeligere tekst. `-S47RescueJourneyTest` 76 består. UI-POLISH: felles klosser, workshop, array-boks og bil. Bortføring inne i kino, kirke og fôrbutikk er prøvd på bilde; i kirken holdt veggene. Dør og lamper svikter i byen.
+
+## 6. november 2026 kl.23:50, natt, gårdsbyggene
+
+Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skrevet i egen worktree (`S47FarmBuildings`): låve, hus og to skjul erstatter boksene, ekte hindringer med åpen låvedør og flatt gulv, plantefrie tomter, gløden fra østvinduet flyttet til huset (den sto igjen 310 m øst i Freeform). Prøve: `-S47MenuPointerBuildings`. Ikke kompilert, importert eller kjørt ennå; koordinatoren kjører det.
