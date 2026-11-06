@@ -43,7 +43,16 @@ namespace S47Kit
 	SIGNAL47_API FW Text(TAttribute<FString> S, TAttribute<int32> Tone);
 	SIGNAL47_API FW Sub(const FString& S);
 	// a list row with its state in a right-hand column; Tone: 0 plain, 1 good, -1 bad
-	SIGNAL47_API FW Status(const FString& Name, const FString& State, int32 Tone = 0);
+	// Detail: a small second line under the name; bBadge: the state as a filled chip; bSelected: the row lit light green
+	SIGNAL47_API FW Status(const FString& Name, const FString& State, int32 Tone = 0, const FString& Detail = FString(), bool bBadge = false, bool bSelected = false);
+	// a filled chip for a state; Tone: 1 green (ready), -1 amber (fault), 0 plain outline
+	SIGNAL47_API FW Badge(const FString& S, int32 Tone = 0);
+	// a section heading: amber, with a thin rule under it and an optional note on the right (PARTS / 7 OF 8)
+	SIGNAL47_API FW Section(const FString& Title, const FString& Right = FString());
+	// the light information strip at the top of a panel: kicker, headline, a line, and a state chip on the right
+	SIGNAL47_API FW Banner(const FString& Kicker, const FString& Headline, const FString& Detail, const FString& BadgeText, int32 Tone = 0);
+	// a small two-column table with a header row (CONTENTS / QTY): the second column is right-aligned
+	SIGNAL47_API FW Table(const FString& Head1, const FString& Head2, const TArray<TPair<FString, FString>>& Lines);
 	SIGNAL47_API FW Small(const FString& S);
 	SIGNAL47_API FW Question(const FString& S);
 	// a paper inside a panel (.lp-paper): typed paragraphs on paper colour
