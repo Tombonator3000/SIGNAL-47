@@ -1,8 +1,12 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 5. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 6. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
+
+## Installert 6. november kl. 09:57
+
+`612b903c` etter PR435 er nå standard, med rask installasjon: mindre hakking ved grafikkbytte, menypekerretting, lysobjekt i hovedmenyen og Album med kasting. 2504 selvtester, tittelkontrakt og 138 uendrede Saved-filer. Normalreisen og Freeform-regresjonen er ikke kjørt på denne pakken, og Album er ikke prøvd på skjerm. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_612b903c.md).
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 

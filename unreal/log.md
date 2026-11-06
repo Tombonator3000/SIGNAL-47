@@ -1930,3 +1930,7 @@ Claude-terminalen som døde kl. 07:34 var startet av Codex og gikk ned idet Code
 ## 6. november 2026 kl.09:50, grafikk, peker og album
 
 Terminalen ble drept 09:25 under avspillingsmåling; arbeidet gjenopptatt uten tap. Delt skyggepool for LOW og HIGH, gjenbruk av autolagringsbilde, `S47: slow frames`, pekerretting, lysobjekt i tittel og Album med kasting bygget. Selvtest 2504 består. Selvtesten fant at testen prøvde å kaste ansiktsbildet, og vernet mot kasting ble strammet inn.
+
+## 6. november 2026 kl.09:57, installasjon
+
+`612b903c` etter PR435 installert med rask installasjon: 2504 selvtester, tittelkontrakt og 138 uendrede Saved-filer. Lysobjektet i hovedmenyen syner nå i testbildet.
