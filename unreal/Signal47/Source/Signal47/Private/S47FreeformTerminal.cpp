@@ -108,7 +108,7 @@ namespace S47FreeformTerminal
  FW Knob(const FString& Name,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange)
  {return Control(Name,Shown,Min,Max,Step,Value,OnChange);}
  void SetClock(TFunction<FString()> Clock){ClockSource=MoveTemp(Clock);}
- FW Frame(const FString& Title,FW Body)
+ FW Frame(const FString& Title,FW Body,TSharedPtr<SWidget> Footer)
  {
   // One header row as in the mockups: station | screen title | day and clock.
   const TFunction<FString()> Clock=ClockSource;
@@ -127,7 +127,9 @@ namespace S47FreeformTerminal
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[Bar()]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(TAttribute<FString>::CreateLambda([Clock]{return Clock?Clock():FString(TEXT("SIGNAL / 47"));}),24,Green)]]
    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,8)[Rule(Green)]
-   +SVerticalBox::Slot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[Body]]];
+   +SVerticalBox::Slot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[Body]]
+   // Below the scroll area, so the way out stays in view however long the page is.
+   +SVerticalBox::Slot().AutoHeight().Padding(0,8,0,0)[Footer.IsValid()?Footer.ToSharedRef():SNullWidget::NullWidget]];
  }
  FW Nav(const TArray<FNav>& Items)
  {

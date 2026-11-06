@@ -1888,6 +1888,9 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 
 `d2da46c0` (PR426) med rask installasjon: 2494 selvtester, tittel og 22 kontroller på pakken; 130 Saved-filer uendret. Tom: rask installasjon er standard fra nå; regresjon og normalreise i nattskift, ved aktslutt og før release. Neste samlede rydding: kandidatene `20261105c`, `e` og `f` kan pensjoneres.
 
+## 5. november 2026 kl.21:40, båndpanel og perm
+
+`claude/tape-panel-exit`: REEL DECK-panelet hadde ingen vei ut; fikk fast knapp, Esc, bruk-tast og B. Sammenligningen har klartekst og sjekkliste, klikk i sporet merker uten å flytte båndet, og RETAIN er aktiv først når alt er gjort. Permen har fylt handlingsknapp, bekreftelse og finner pakke også når en annen jobb er valgt. Editorbygg og `S47InternalControlTest` 30 kontroller består, inkludert ekte Esc og pekerhendelser. `S47FreeformEvidenceTest` med ny knappetekst er ikke kjørt. Ikke installert ennå.
 ## 5. november 2026 kl.22:29, kosmisk musikklag
 
 `codex/cosmic-ambient-20261105`, PR430: original tredelt stereotekstur, valgfrie lokale NASA/Nebula-innslag og Score-integrasjon. Editorbygg, 56 musikk-/grafkontroller, 21 DSP-sjekker og 72s offline-graf med tre referanser består, med ren commandlet-avslutning. Før/etter-WAV er laget lokalt; menneskelig lytting og installasjon gjenstår. Motorvindu frigitt; ingen pakking eller rydderunde, egen kopi og byggcache kan avvikles ved neste samlede kjøring etter integrering.

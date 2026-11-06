@@ -16,7 +16,7 @@ namespace S47FreeformTerminal
  FW ButtonLive(TAttribute<FString> Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true);
  FW Pair(FW Left,FW Right);
  FW Knob(const FString& Label,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange);
- FW Frame(const FString& Title,FW Body);
+ FW Frame(const FString& Title,FW Body,TSharedPtr<SWidget> Footer=nullptr);
  // The right-hand header clock ("DAY 01 | 19:10"). The owner clears it when it stops.
  void SetClock(TFunction<FString()> Clock);
 

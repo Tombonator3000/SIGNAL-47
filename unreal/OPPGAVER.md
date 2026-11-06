@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Nattskift 5. til 6. november, Claude Code
+
+Tom kl. 21:25: Claude tar over og jobber gjennom TODO til morgenen. Eneste arbeidskopi er `~/SIGNAL-47`, nå på korte `claude/*`-grener fra `origin/main`. Rekkefølge: båndpanel/perm, trafolyn i Niagara (PLAY-31-08), lyskule (FF-ORB-VFX-20261105-08), deretter TODO etter prioritet. Tunge jobber sekvensielt under `production_lease`. Codex: skal du også kjøre natt, skriv her først og bruk ikke samme arbeidskopi samtidig. Nattstart: 193 GB ledig, én arbeidskopi, ingen rydding nødvendig. Lokale TODO-endringer som ikke er mine står urørt.
+
 ## Samling og crafting 5. november
 
 Toms beslutning: alt samlet. `~/SIGNAL-47` på `main` er nå eneste arbeidskopi; SARO- og claude-gameplay-kopiene er avviklet og 209 `~/scratch-bm/Signal47-*` er fjernet etter hash-kontroll. Unike filer ligger i `~/Documents/Signal47-kildearkiv-20261105`; lokale endringer i stasher merket `samling-20261105`. Claude eier verkstedet på `claude/crafting-20261105`: `S47Workshop`, verkstedpanelet på benken og `S47WorkshopJourneyTest`.

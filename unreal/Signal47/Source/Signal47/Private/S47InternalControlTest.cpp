@@ -10,6 +10,7 @@
 #include "S47Startup.h"
 #include "S47Inter.h"
 #include "S47FreeformAudioDesk.h"
+#include "SS47TapeScope.h"
 #include "UnrealClient.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/SlateUser.h"
@@ -147,7 +148,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==73)
  {
-  if(!Check(Shows(TEXT("WHAT TO DO HERE"))&&Shows(TEXT("Listen to the whole ORIGINAL")),TEXT("panel says what to do first")))return;
+  if(!Check(Shows(TEXT("WHAT TO DO HERE"))&&Shows(TEXT("LISTEN TO THE WHOLE ORIGINAL"))&&Shows(TEXT("HERE you compare")),TEXT("panel says what to do first")))return;
   Shot(TEXT("deck-panel.png"));Go(74,.5);return;
  }
  if(Stage==74){if(!Click(TEXT("PLAY")))return;TapeFrom=F.AudioPosition();Go(75,3.);return;}
@@ -157,7 +158,36 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(F.AudioPlaying()&&F.AudioPosition()>TapeFrom,FString::Printf(TEXT("tape position advances, %.1f s"),F.AudioPosition())))return;
   Shot(TEXT("deck-panel-playing.png"));Go(76,.5);return;
  }
- if(Stage==76){if(!Click(TEXT("STOP")))return;M->UI->Close(true);if(!Check(!F.TapePanelOpen(),TEXT("closing the panel clears its hold exemption")))return;Go(8,.3);return;}
+ if(Stage==76){if(!Click(TEXT("STOP")))return;Go(760,.3);return;}
+ if(Stage==760)
+ {
+  // Real pointer events on the drawn trace, right to left: the mark still reads left to right, and the tape stays put.
+  TSharedPtr<SS47TapeScope> Scope;
+  TFunction<void(TSharedRef<SWidget>)> Find=[&](TSharedRef<SWidget> X){if(X->GetTypeAsString()==TEXT("SS47TapeScope"))Scope=StaticCastSharedRef<SS47TapeScope>(X);FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Find(Ch->GetChildAt(I));};
+  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Find(W.ToSharedRef());},true);
+  if(!Check(Scope.IsValid(),TEXT("the panel shows the signal trace")))return;
+  const FGeometry G=Scope->GetTickSpaceGeometry();const double Tape=F.AudioPosition();
+  auto Press=[&](double At){const FVector2D P=G.LocalToAbsolute(FVector2D(Scope->LocalAt(At,FVector2f(G.GetLocalSize()))));return Scope->OnMouseButtonDown(G,FPointerEvent(0,0,P,P,TSet<FKey>{EKeys::LeftMouseButton},EKeys::LeftMouseButton,0.f,FModifierKeysState())).IsEventHandled();};
+  if(!Check(Press(13)&&F.CurrentJob()->MarkEnd<0,TEXT("first click on the trace sets one end")))return;
+  if(!Check(Press(9)&&FMath::IsNearlyEqual(F.CurrentJob()->MarkStart,9.,.05)&&FMath::IsNearlyEqual(F.CurrentJob()->MarkEnd,13.,.05),FString::Printf(TEXT("second click completes the mark, %.2f to %.2f s"),F.CurrentJob()->MarkStart,F.CurrentJob()->MarkEnd)))return;
+  if(!Check(FMath::IsNearlyEqual(F.AudioPosition(),Tape),TEXT("marking does not move the tape")))return;
+  if(!Check(Shows(TEXT("COVERS THE TICKS")),TEXT("the panel says the mark covers the ticks")))return;
+  Shot(TEXT("deck-panel-marked.png"));Go(77,.3);return;
+ }
+ if(Stage==77)
+ {
+  if(!Click(TEXT("ESC / RETURN TO ROOM")))return;
+  if(!Check(!F.TapePanelOpen()&&!M->ModalOpen(),TEXT("the visible button leaves the panel and clears its hold exemption")))return;
+  if(!Check(F.AudioDesk->Use(TEXT("ff:audio:station"))&&F.TapePanelOpen(),TEXT("the deck opens again")))return;
+  Go(78,.3);return;
+ }
+ if(Stage==78)
+ {
+  FSlateApplication& App=FSlateApplication::Get();const FKeyEvent Esc(EKeys::Escape,FModifierKeysState(),0,false,0,0);
+  App.ProcessKeyDownEvent(Esc);App.ProcessKeyUpEvent(Esc);
+  if(!Check(!F.TapePanelOpen()&&!M->ModalOpen()&&!M->bPausedByMenu,TEXT("a real Escape press leaves the panel without opening the pause menu")))return;
+  Go(8,.3);return;
+ }
  if(Stage==8)
  {
   const FString Next=F.JobNextAction(*F.CurrentJob());

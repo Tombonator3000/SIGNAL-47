@@ -414,9 +414,9 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==41){Aim(M,Target(M,TEXT("binder")));Go(42);return;}
   if(S.Stage==42){if(!Use(M,TEXT("binder")))return;Go(43,.5);return;}
   if(S.Stage==43)
-  {if(!Click(M,TEXT("Place registered originals in this binder"))||!Check(M,J->Stage==EJob::Filed&&J->bPaid&&F.HasFinding(TEXT("pulse-archive"))&&F.Budget()==S.InitialCash+40,TEXT("actual binder filing pays exactly once after both physical printer collections")))return;Photo(TEXT("05-physically-filed-archive"));Go(44);return;}
+  {if(!Click(M,TEXT("FILE PACKET IN THIS BINDER"))||!Check(M,J->Stage==EJob::Filed&&J->bPaid&&F.HasFinding(TEXT("pulse-archive"))&&F.Budget()==S.InitialCash+40,TEXT("actual binder filing pays exactly once after both physical printer collections")))return;Photo(TEXT("05-physically-filed-archive"));Go(44);return;}
   if(S.Stage==44)
-  {if(!Check(M,ButtonCount(M,TEXT("Place registered originals in this binder"))==0,TEXT("filed archive offers no repeat filing/payment action")))return;Close(M);Go(60,.5);return;}
+  {if(!Check(M,ButtonCount(M,TEXT("FILE PACKET IN THIS BINDER"))==0,TEXT("filed archive offers no repeat filing/payment action")))return;Close(M);Go(60,.5);return;}
   if(S.Stage==60)
   {
    if(!S.Quarantined)
@@ -438,7 +438,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==73)
   {
    bool Found=false;for(const auto& Root:Roots(M))Found|=Text(Root,S.Ids[1]+TEXT("-original"),false)&&Text(Root,TEXT("SOURCE UNRESOLVED"),false)&&Text(Root,TEXT("FILED"),false);
-   if(!Check(M,Found&&ButtonCount(M,TEXT("Place registered originals in this binder"))==0,TEXT("actual restored binder archive displays the same original reference, unresolved conclusion and filed state")))return;
+   if(!Check(M,Found&&ButtonCount(M,TEXT("FILE PACKET IN THIS BINDER"))==0,TEXT("actual restored binder archive displays the same original reference, unresolved conclusion and filed state")))return;
    Photo(TEXT("06-continued-filed-archive"));Go(74);return;
   }
   if(S.Stage==74){Close(M);M->UI->NotebookAt(TEXT("papers"));M->Flow->OpenNotebook();Go(75,.6);return;}

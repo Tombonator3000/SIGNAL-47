@@ -139,6 +139,8 @@ public:
  bool StartControl();
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
+ // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
+ bool MarkAudioAt(double At);
  bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
@@ -196,6 +198,7 @@ private:
  bool ValidJournalEntry(const FString& Id) const;
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
+ FString ArchiveNote;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
  bool bPowerApplied=false,bLastPower=true;
  bool bMotorFeedback=false,bPrinterFeedback=false;
