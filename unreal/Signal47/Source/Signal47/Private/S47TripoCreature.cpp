@@ -8,7 +8,17 @@
 #include "ReferenceSkeleton.h"
 #include "Misc/CommandLine.h"
 
-namespace { TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints; }
+namespace
+{
+ TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints;
+ // Rest position of a dot in the head bone's frame, the bone-frame directions of the body's sideways and up axes, and a
+ // seed shared by both eyes of one creature so they look the same way together.
+ struct FGlintRest { FVector Base,Side,Up; uint32 Seed; };
+ TMap<TWeakObjectPtr<UStaticMeshComponent>,FGlintRest> GlintRest;
+ uint32 NextGlintSeed=1;
+ // A repeatable 0..1 number from a seed and a time slot.
+ double Rand01(uint32 Seed,int64 Slot,uint32 Salt){return double((HashCombineFast(HashCombineFast(Seed,GetTypeHash(Slot)),Salt*2654435761u)>>8)&0xFFFFu)/65536.;}
+}
 bool FS47TripoCreature::bTestGlintsAlways=false;
 void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
 {
@@ -17,6 +27,7 @@ void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
  static constexpr double PerMetre=.0018,FadeFrom=30.,GoneAt=50.,Glow=3.;
  const double Dark=bTestGlintsAlways?1.:1.-FMath::SmoothStep(.02,.25,Daylight);
  AllGlints.RemoveAll([](const TWeakObjectPtr<UStaticMeshComponent>& G){return !G.IsValid();});
+ for(auto It=GlintRest.CreateIterator();It;++It)if(!It.Key().IsValid())It.RemoveCurrent();
  for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())
  {
   const double Metres=FVector::Dist(EyeUE,G->GetComponentLocation())/100.;
@@ -24,7 +35,23 @@ void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
   const bool bShow=Level>.01;
   if(G->bHiddenInGame==bShow)G->SetHiddenInGame(!bShow);
   if(!bShow||!G->IsVisible())continue;
-  G->SetWorldScale3D(FVector(FMath::Max(EyeSize,Metres*PerMetre)));
+  double Size=FMath::Max(EyeSize,Metres*PerMetre);
+  // A gaze: now and then a sudden small jump of both dots inside the eye, and a rare quick blink. Not needed past 12 m.
+  if(const FGlintRest* R=GlintRest.Find(G))
+  {
+   FVector At=R->Base;
+   if(Metres<12.&&G->GetWorld())
+   {
+    const double T=G->GetWorld()->GetTimeSeconds();
+    const int64 Look=int64(FMath::FloorToDouble(T/(.7+1.3*Rand01(R->Seed,0,1))));
+    const double Reach=.35*(1.-FMath::SmoothStep(8.,12.,Metres));
+    At+=(R->Side*(Rand01(R->Seed,Look,2)*2.-1.)+R->Up*(Rand01(R->Seed,Look,3)*2.-1.))*Reach;
+    const double Gap=7.,InGap=FMath::Fmod(T,Gap);const int64 Round=int64(FMath::FloorToDouble(T/Gap));
+    if(Rand01(R->Seed,Round,4)<.7&&InGap>Gap*.15+Rand01(R->Seed,Round,5)*Gap*.7&&InGap<Gap*.15+Rand01(R->Seed,Round,5)*Gap*.7+.13)Size*=.08;
+   }
+   if(!At.Equals(G->GetRelativeLocation(),KINDA_SMALL_NUMBER))G->SetRelativeLocation(At);
+  }
+  G->SetWorldScale3D(FVector(Size));
   if(auto* Mat=Cast<UMaterialInstanceDynamic>(G->GetMaterial(0)))Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*float(Glow*Level));
  }
 }
@@ -44,6 +71,7 @@ void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
  auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
  if(!Sphere||!Base)return;
  const FTransform Head=C->GetBoneTransform(C->GetBoneIndex(TEXT("head")),FTransform::Identity);
+ const uint32 Seed=NextGlintSeed++*7919u;
  for(int32 I=0;I<2;++I)
  {
   auto* Mat=UMaterialInstanceDynamic::Create(Base,W);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*3.f);Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
@@ -58,6 +86,7 @@ void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
   G->SetRelativeLocation(Head.InverseTransformPosition(Target));
   G->SetWorldScale3D(FVector(EyeSize));
   Glints.Add(G);AllGlints.Add(G);
+  GlintRest.Add(G,{G->GetRelativeLocation(),Head.InverseTransformVector(FVector(1,0,0)),Head.InverseTransformVector(FVector(0,0,1)),Seed});
  }
 }
 

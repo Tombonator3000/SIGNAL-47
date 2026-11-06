@@ -48,6 +48,9 @@ public:
 	// Something near that animals can feel: 0 calm, 1 run from this place.
 	void SetAlarm(double K, const FVector& FromWorld);
 	double AlarmLevel() const { return Alarm; }
+	// One cow (or -1 for none) stands quite still, head up, facing this place, instead of grazing or wandering.
+	void SetStare(int32 Cow, const FVector& TowardWorld);
+	int32 Starer() const { return Stare; }
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
@@ -72,6 +75,8 @@ private:
 	double Alarm = 0;
 	FVector AlarmFrom = FVector::ZeroVector; // herd-local
 	double StepDt = 0;
+	int32 Stare = -1;
+	FVector StareAt = FVector::ZeroVector, StareHold = FVector::ZeroVector; // herd-local
 	TArray<double> Yaws;
 	TArray<FVector> ColliderAt; // where its collider and handle stand, which follows it in steps
 	void FollowColliders();

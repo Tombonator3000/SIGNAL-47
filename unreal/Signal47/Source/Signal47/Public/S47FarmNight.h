@@ -32,6 +32,7 @@ private:
  void BuildHaze();
  void StepCattle(double Dt,const FString& Area);
  double MooIn=9;
+ int32 StareCow=-1;
  int32 Moos=0;
 public:
  int32 MooCount() const{return Moos;}

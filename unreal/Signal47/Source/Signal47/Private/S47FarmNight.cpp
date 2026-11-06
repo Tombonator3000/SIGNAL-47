@@ -229,6 +229,16 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  if(M->Freeform->Director&&M->Freeform->Director->ActiveEvent()==TEXT("farm_lights")){Threat=M->Freeform->Director->EventAnchor();Level=FMath::Max(Level,.7);}
  if(!TestAlarmAt.IsZero()){Threat=TestAlarmAt;Level=1;}
  H->SetAlarm(Level,Threat);
+ // A site armed for the night with no visit under way: one cow stands quite still and faces the marks. Morning clears the site.
+ bool bStare=Level<=0&&Site&&Site->Armed()&&Site->PlaceId()==TEXT("farm")&&!Site->VisitWantsGround();
+ if(bStare&&StareCow<0)
+ {
+  double Best=1e18;
+  for(int32 I=0;I<H->Count();++I){FVector P;if(I!=S47Herd::MISSING&&H->CowAt(I,P)){const double D=FVector::DistSquared(P,Site->Centre());if(D<Best){Best=D;StareCow=I;}}}
+  bStare=StareCow>=0;
+ }
+ H->SetStare(bStare?StareCow:-1,bStare?Site->Centre():FVector::ZeroVector);
+ if(!bStare)StareCow=-1;
  if(Area!=TEXT("saro"))return;
  const FVector Eye(M->Player->Pos.X,M->Player->FloorY+1.6,M->Player->Pos.Z);
  FVector Near;int32 Cow=FMath::RandRange(0,H->Count()-1);

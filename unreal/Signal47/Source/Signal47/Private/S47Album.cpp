@@ -189,6 +189,59 @@ FS47AlbumShot FS47Album::Expose()
 	return Shot;
 }
 
+bool FS47Album::AddUnbidden(bool bGround)
+{
+	if (Left() <= 0) return false;
+	const double Clock = D.Clock ? D.Clock() : 0;
+	const bool bSmall = D.Small && D.Small();
+	const int32 W = bSmall ? 320 : 640, H = W * 400 / 640;
+	const double Seed = FMath::FloorToDouble(Clock * 1000) + Data.Shots.Num() * 104729 + 31;
+	FRandomStream R(int32(US47FieldCamera::ToUint32(Seed) & 0x7fffffff));
+	constexpr int32 GX = 12, GY = 8;
+	double Coarse[(GY + 1) * (GX + 1)];
+	for (double& C : Coarse) C = R.FRand();
+	TArray<FColor> Px;
+	Px.SetNumUninitialized(W * H);
+	for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+	{
+		double V = 4 + 5.0 * Y / H;
+		if (bGround)
+		{
+			// mottled earth: a slow unevenness, nothing in it that reads as a thing
+			const double Fx = double(X) / W * GX, Fy = double(Y) / H * GY;
+			const int32 Ix = FMath::Min(int32(Fx), GX - 1), Iy = FMath::Min(int32(Fy), GY - 1);
+			const double Tx = Fx - Ix, Ty = Fy - Iy;
+			const double A = FMath::Lerp(Coarse[Iy * (GX + 1) + Ix], Coarse[Iy * (GX + 1) + Ix + 1], Tx);
+			const double B = FMath::Lerp(Coarse[(Iy + 1) * (GX + 1) + Ix], Coarse[(Iy + 1) * (GX + 1) + Ix + 1], Tx);
+			V = 9 + 16 * FMath::Lerp(A, B, Ty);
+		}
+		const uint8 G = uint8(FMath::Clamp(V, 0.0, 255.0));
+		Px[Y * W + X] = FColor(G, G, uint8(FMath::Min(255, int32(G) + 2)), 255);
+	}
+	// stars over the sky, a few pale stones on the ground: small, sparse, a little different in brightness
+	const int32 Specks = bGround ? 22 : 70;
+	for (int32 I = 0; I < Specks; ++I)
+	{
+		const int32 Sx = R.RandRange(1, W - 3), Sy = R.RandRange(1, H - 3);
+		const int32 Br = R.RandRange(bGround ? 40 : 90, bGround ? 90 : 230);
+		for (int32 Dy = 0; Dy < 2; ++Dy) for (int32 Dx = 0; Dx < 2; ++Dx)
+		{
+			const uint8 G = uint8(Dx + Dy == 0 ? Br : Br / 3);
+			Px[(Sy + Dy) * W + Sx + Dx] = FColor(G, G, G, 255);
+		}
+	}
+	US47FieldCamera::FilmLook(Px, W, H, Seed);
+	FS47AlbumShot Shot;
+	int32 N = Data.Shots.Num();
+	do { Shot.Id = FString::Printf(TEXT("free%d@%d"), ++N, int32(FMath::FloorToDouble(Clock + 0.5))); }
+	while (Data.Shots.ContainsByPredicate([&Shot](const FS47AlbumShot& S) { return S.Id == Shot.Id; }));
+	Shot.Url = S47Image::ToDataUrl(Px, W, H, true, bSmall ? 62 : 74);
+	Shot.Clock = Clock; Shot.Place = D.Place ? D.Place() : FString();
+	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
+	Data.Shots.Add(Shot);
+	return true;
+}
+
 TPair<TArray<FString>, TArray<FString>> FS47Album::Peek()
 {
 	if (D.Fcam) D.Fcam->Sync();
