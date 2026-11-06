@@ -70,7 +70,20 @@ bool FS47EncounterSound::Bind(US47Audio* A)
  TArray<uint8> Bytes;
  if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design/alien_interference.wav"))))
   TransmissionBuffer=S47Wa::DecodeWav(Bytes);
- UE_LOG(LogTemp,Display,TEXT("S47: alien interference %s"),TransmissionBuffer?*FString::Printf(TEXT("recording loaded, %.1f s"),TransmissionBuffer->Duration()):TEXT("recording absent, radio hiss only"));
+ if (TransmissionBuffer)
+ {
+  // A clip with quiet speech and rare peaks would vanish under a small radio's level: lift it evenly and
+  // round the peaks, as a cheap set's limiter would, so the voice reads through the hiss.
+  float Peak=0;
+  for (int32 Ch=0;Ch<TransmissionBuffer->NumberOfChannels();++Ch){const float* P=TransmissionBuffer->GetChannelData(Ch);for (int32 I=0;I<TransmissionBuffer->Length();++I)Peak=FMath::Max(Peak,FMath::Abs(P[I]));}
+  if (Peak>.0001f)
+  {
+   static constexpr float Drive=10.f;const float Lift=1.f/Peak,Top=FMath::Atan(Drive);
+   for (int32 Ch=0;Ch<TransmissionBuffer->NumberOfChannels();++Ch){float* P=TransmissionBuffer->GetChannelData(Ch);for (int32 I=0;I<TransmissionBuffer->Length();++I)P[I]=FMath::Atan(P[I]*Lift*Drive)/Top;}
+  }
+  UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording loaded, %.1f s, peak %.3f before levelling"),TransmissionBuffer->Duration(),Peak);
+ }
+ else UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording absent, radio hiss only"));
  return true;
 }
 
@@ -116,7 +129,7 @@ void FS47EncounterSound::RadioMix()
  if (!Context || !RadioGain || !RadioVolume) return;
  FS47AudioContext::FBatch Batch(*Context); const double Now=Context->CurrentTime();
  const bool Duck=Now<CueUntil;
- const double Want=bHeld?0.:RadioLevel*.12*(Duck?.28:1.);
+ const double Want=bHeld?0.:RadioLevel*.24*(Duck?.28:1.);
  RadioGain->Gain.CancelAndHoldAtTime(Now);
  RadioGain->Gain.SetTargetAtTime(Want,Now,bHeld?.025:Duck?.06:.16);
  // Route through SfxBus for the game's quiet scenes, with the independent
@@ -158,9 +171,11 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
      && (!Transmission || Transmission->Ended()))
  {
   Transmission=Context->CreateBufferSource(); Transmission->Buffer=TransmissionBuffer;
-  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValue(4.);
+  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValue(.95*FMath::Sqrt(RadioLevel));
   auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(4200.);
-  Transmission->Connect(Band); Band->Connect(TransmissionGain); TransmissionGain->Connect(RadioGain);
+  Transmission->Connect(Band); Band->Connect(TransmissionGain);
+  // Past the hiss's own low level, still under the player's radio slider and placed with the set.
+  if (bRadioPlaced&&RadioPan) TransmissionGain->Connect(RadioPan); else TransmissionGain->Connect(RadioVolume);
   Transmission->Start(Now);
   UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f"),RadioLevel);
   NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(13.f,25.f);

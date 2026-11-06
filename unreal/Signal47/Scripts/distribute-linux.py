@@ -7,6 +7,11 @@ parser.add_argument("source", type=Path, help="Verified package's Linux director
 parser.add_argument("output", type=Path, help="New output directory, with BUILD.json and README_NO.md prepared")
 parser.add_argument("--date", required=True)
 args = parser.parse_args()
+# Audio/Raw is staged into every package. These are third-party clips kept for private local trials only.
+PRIVATE_ONLY = [Path(__file__).resolve().parents[1] / 'Content/Audio/Raw/sound_design/alien_interference.wav']
+present = [str(path) for path in PRIVATE_ONLY if path.exists()]
+if present:
+    sys.exit('Refusing to package for distribution: private third-party audio would ship: ' + ', '.join(present))
 WORK = args.output.resolve()
 ARCHIVES = WORK / 'archives'
 ARCHIVES.mkdir(exist_ok=True)

@@ -6,12 +6,16 @@
 #include "S47Night.h"
 #include "S47Panels.h"
 #include "S47Kit.h"
+#include "S47Glimpses.h"
+#include "Components/PoseableMeshComponent.h"
+#include "UObject/UObjectIterator.h"
 #include "S47FarmHouse.h"
 #include "S47World.h"
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
 #include "S47FarmSite.h"
 #include "S47FarmNight.h"
+#include "S47Three.h"
 #include "S47Web.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
@@ -189,6 +193,13 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerEyes")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the eye test needs the night"));
+     M->Player->Place(3.18,3.7,0);M->Player->Pitch=-.2;
+     Stage=99;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRoad")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -250,37 +261,66 @@ namespace
     return true;
    }
    // The way out at night, from the road side and from the farm, in the frame each is really seen in.
-   if(Stage>=80&&Stage<86)
+   if(Stage>=80&&Stage<87)
    {
     struct FV{const TCHAR* Name;const TCHAR* Area;double X,Z,LX,LZ;double Lift;};
     const FVector Sign=FS47FarmNight::SignWorld();
-    const FV V[]={{TEXT("turnoff-far"),TEXT("road"),8001,110,8007,196,6},{TEXT("turnoff-near"),TEXT("road"),8002,178,8007,196,3},{TEXT("sign"),TEXT("road"),Sign.X,Sign.Z-24,Sign.X,Sign.Z,3},{TEXT("road-in"),TEXT("saro"),-16,497,16,497,0},{TEXT("road-mid"),TEXT("saro"),30,501,70,497,0},{TEXT("road-end"),TEXT("saro"),100,503,60,497,0}};
+    const FV V[]={{TEXT("turnoff-far"),TEXT("road"),8001,110,8007,196,6},{TEXT("turnoff-near"),TEXT("road"),8002,178,8007,196,3},{TEXT("sign"),TEXT("road"),Sign.X,Sign.Z-24,Sign.X,Sign.Z,3},{TEXT("road-in"),TEXT("saro"),-16,497,16,497,0},{TEXT("road-mid"),TEXT("saro"),30,501,70,497,0},{TEXT("road-end"),TEXT("saro"),100,503,60,497,0},{TEXT("trafo-entry"),TEXT("road"),8003,460,7997,520,4}};
     const int32 I=Stage-80;
-    if(ShotPending){Shot(*FString::Printf(TEXT("road-%s.png"),V[I].Name));ShotPending=false;Stage=I==5?86:Stage+1;StageAt=Elapsed;return true;}
+    if(ShotPending){Shot(*FString::Printf(TEXT("road-%s.png"),V[I].Name));ShotPending=false;Stage=I==6?90:Stage+1;StageAt=Elapsed;return true;}
     if(M->Web->Area()!=V[I].Area){M->World->Enter(V[I].Area);StageAt=Elapsed;return true;}
     const FVector D(V[I].LX-V[I].X,V[I].Lift,V[I].LZ-V[I].Z);M->Player->Place(V[I].X,V[I].Z,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());ShotPending=true;StageAt=Elapsed;
     return true;
    }
-   if(Stage==86)
+   if(Stage==90)
    {
     if(!M->Freeform->FarmNight->LampsOn())return Fail(TEXT("the lamps must be lit at night"));
-    const FVector C=FVector(84,0,492);M->Player->Place(C.X,C.Z,0);Stage=87;StageAt=Elapsed;WalkFrom=Elapsed;return true;
+    M->World->Enter(TEXT("saro"));const FVector C=FVector(84,0,492);M->Player->Place(C.X,C.Z,0);Stage=91;StageAt=Elapsed;WalkFrom=Elapsed;return true;
    }
-   if(Stage==87)
+   if(Stage==91)
    {
     StageAt=Elapsed;
     if(Elapsed-WalkFrom<45&&M->Freeform->FarmNight->FarmSounds()<2)return true;
     if(M->Freeform->FarmNight->FarmSounds()<2)return Fail(TEXT("the farm must make sounds of its own"));
     if(!M->Freeform->TestAdvance(12.*3600.))return Fail(TEXT("advancing to day"));
-    Stage=88;WalkFrom=Elapsed;return true;
+    Stage=92;WalkFrom=Elapsed;return true;
    }
-   if(Stage==88)
+   if(Stage==92)
    {
     StageAt=Elapsed;if(Elapsed-WalkFrom<1)return true;
     if(M->Freeform->FarmNight->LampsOn())return Fail(TEXT("the lamps must be off by day"));
     UE_LOG(LogTemp,Display,TEXT("S47: farm road PASS: lamps lit at night and off by day, %d farm sounds played"),M->Freeform->FarmNight->FarmSounds());
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
+   if(Stage==99)
+   {
+    if(Elapsed-StageAt<3)return true;
+    if(M->Night->Glimpses->DevSpawn(1,FS47RoswellBrain::EMode::Stand)!=1)return Fail(TEXT("the eye test needs one body"));
+    Stage=100;StageAt=Elapsed;return true;
+   }
+   // Right up to the face, then from where a player would first notice it.
+   if(Stage>=100&&Stage<=103)
+   {
+    UPoseableMeshComponent* Skin=nullptr;
+    for(TObjectIterator<UPoseableMeshComponent> It;It;++It)if(It->GetWorld()==M->Web->GetWorld()&&It->IsVisible()&&It->GetName().Contains(TEXT("Roswell")))Skin=*It;
+    if(!Skin)return Fail(TEXT("no visible Roswell body"));
+    const FVector Head=S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace));
+    const FVector Face=(S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace)+Skin->GetRightVector()*100)-Head).GetSafeNormal();
+    const double Away=Stage<=101?.5:5;
+    if(Stage==100||Stage==102)
+    {
+     const FVector At=Head+Face*Away;M->Player->Place(At.X,At.Z,0);
+     if(Stage==100)M->Player->Eye=Head.Y-M->Player->FloorY+.08;else M->Player->Eye=1.62; // Level with the face, then a person's height.
+     const FVector Eye(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z),D=Head+FVector(0,.08,0)-Eye;
+     M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+     UE_LOG(LogTemp,Display,TEXT("S47: eye test head %s face %s bounds %s"),*Head.ToCompactString(),*Face.ToCompactString(),*Skin->Bounds.BoxExtent.ToCompactString());
+     ++Stage;StageAt=Elapsed;return true;
+    }
+    Shot(Stage==101?TEXT("eyes-close.png"):TEXT("eyes-far.png"));
+    if(Stage==103){Stage=104;StageAt=Elapsed;return true;}
+    ++Stage;StageAt=Elapsed;return true;
+   }
+   if(Stage==104){FPlatformMisc::RequestExitWithStatus(false,0);return false;}
    if(Stage==60)
    {
     // Each place in turn: the lights start, are presented, leave when approached and leave a site.
