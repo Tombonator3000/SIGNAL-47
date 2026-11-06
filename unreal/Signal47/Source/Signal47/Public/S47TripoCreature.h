@@ -22,6 +22,7 @@ struct FS47TripoCreature
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Glints;
  static constexpr double EyeSide=4.9,EyeFront=12.3,EyeUp=3.9,EyeSize=.0042; // Component centimetres from the head bone; sphere scale.
  void AddEyeGlints(class AS47Web* W, UPoseableMeshComponent* C);
+ static void StepEyeGlints(const FVector& EyeUE);
  TArray<FTransform> Rest;
  TArray<int32> Parents;
  TArray<FName> Names;

@@ -315,29 +315,40 @@ namespace
     if(M->Night->Glimpses->DevSpawn(1,FS47RoswellBrain::EMode::Stand)!=1)return Fail(TEXT("the eye test needs one body"));
     Stage=100;StageAt=Elapsed;return true;
    }
-   // Right up to the face, then from where a player would first notice it.
-   if(Stage>=100&&Stage<=103)
+   // Right up to the face, then out in the open at night from a distance, the player's own height and no torch.
+   if(Stage>=100&&Stage<=108)
    {
     UPoseableMeshComponent* Skin=nullptr;
     for(TObjectIterator<UPoseableMeshComponent> It;It;++It)if(It->GetWorld()==M->Web->GetWorld()&&It->IsVisible()&&It->GetName().Contains(TEXT("Roswell")))Skin=*It;
     if(!Skin)return Fail(TEXT("no visible Roswell body"));
     const FVector Head=S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace));
     const FVector Face=(S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace)+Skin->GetRightVector()*100)-Head).GetSafeNormal();
-    const double Away=Stage<=101?.5:5;
-    if(Stage==100||Stage==102)
+    auto Look=[&](double Away)
     {
      const FVector At=Head+Face*Away;M->Player->Place(At.X,At.Z,0);
-     if(Stage==100)M->Player->Eye=Head.Y-M->Player->FloorY+.08;else M->Player->Eye=1.62; // Level with the face, then a person's height.
-     const FVector Eye(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z),D=Head+FVector(0,.08,0)-Eye;
+     M->Player->Eye=Away<1?Head.Y-M->Player->FloorY+.08:1.62;
+     const FVector Eye(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z),D=Head+FVector(0,Away<1?.08:Away*.03,0)-Eye; // From afar, aim a little over the head so the crosshair does not sit on the eyes.
      M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-     UE_LOG(LogTemp,Display,TEXT("S47: eye test head %s face %s bounds %s"),*Head.ToCompactString(),*Face.ToCompactString(),*Skin->Bounds.BoxExtent.ToCompactString());
-     ++Stage;StageAt=Elapsed;return true;
+    };
+    switch(Stage)
+    {
+     case 100:Look(.5);break;
+     case 101:Shot(TEXT("eyes-close.png"));break;
+     case 102:M->Night->Glimpses->DevClear();M->Player->Eye=1.62;M->Player->Place(0,30,0);M->Player->Pitch=-.05;Stage=109;StageAt=Elapsed;return true;
+     case 103:Look(10);break;
+     case 104:Shot(TEXT("eyes-10m.png"));break;
+     case 105:Look(25);break;
+     case 106:Shot(TEXT("eyes-25m.png"));break;
+     case 107:UE_LOG(LogTemp,Display,TEXT("S47: eye test PASS: close, 10 and 25 metres captured"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
     }
-    Shot(Stage==101?TEXT("eyes-close.png"):TEXT("eyes-far.png"));
-    if(Stage==103){Stage=104;StageAt=Elapsed;return true;}
     ++Stage;StageAt=Elapsed;return true;
    }
-   if(Stage==104){FPlatformMisc::RequestExitWithStatus(false,0);return false;}
+   if(Stage==109)
+   {
+    if(Elapsed-StageAt<3)return true;
+    if(M->Night->Glimpses->DevSpawn(1,FS47RoswellBrain::EMode::Stand)!=1)return Fail(TEXT("the eye test needs a body outdoors"));
+    Stage=103;StageAt=Elapsed;return true;
+   }
    if(Stage==60)
    {
     // Each place in turn: the lights start, are presented, leave when approached and leave a site.
