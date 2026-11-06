@@ -311,7 +311,7 @@ namespace S47FreeformEvidenceTest
    const auto* P=F.ConsoleProfile();if(!Check(M,P&&F.TerminalWindowRendered(),TEXT("actual tracking terminal/card is ready")))return;
    if(!S.TrackShot){S.TrackShot=true;Photo(S.Job==0?TEXT("ui-03-tracking"):TEXT("ui-03b-tracking-pulsar"));Go(8,1.2);return;}S.TrackShot=false;
    S.BaseAz=(P->Az[0]+P->Az[1])*.5;S.BaseEl=J->bGenerated?J->Card.El:FS47Observing::Runs()[J->Source].El;
-   if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
+   F.AimAtSource();if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
   }
   if(S.Stage==9){Aim(M,Target(M,TEXT("crtCenter")));Go(10);return;}
   if(S.Stage==10){if(!Use(M,TEXT("crtCenter")))return;S.Knob=0;Go(11,.6);return;}

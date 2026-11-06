@@ -304,6 +304,33 @@ FString FS47FreeformSession::ArrayMeasurementStatus()const
  const int32 N=AvailableDishCount();const bool Worn=Field&&Field->ArrayWear().bActive;const int32 Least=Worn?FS47ArrayWear::MinDishes:24;
  return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*ArrayMeasurementRate(),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %d"),Least):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
 }
+FVector2D FS47FreeformSession::AimAzEl()
+{
+ const FJob* J=CurrentJob();if(!J||!M||!M->Web)return FVector2D::ZeroVector;
+ if(AimJob!=J->Id)
+ {
+  // A new job starts from where the array points now; the player finds the source from there.
+  double Az=0,El=0;int32 N=0;
+  for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){Az+=M->Web->DishAz(I);El+=M->Web->DishEl(I);++N;}
+  AimJob=J->Id;Aim=N?FVector2D(FMath::Clamp(Az/N,0.,180.),FMath::Clamp(El/N,0.,90.)):FVector2D(90,45);bAimLocked=AimOnTarget();
+ }
+ return Aim;
+}
+bool FS47FreeformSession::AimOnTarget()const
+{
+ // The plot covers azimuth 0 to 180, so a target is compared where the plot can show it.
+ static constexpr double Tolerance=3;
+ return CurrentJob()&&AimJob==CurrentJob()->Id&&FMath::Abs(Aim.X-FMath::Clamp(TargetAz(),0.,180.))<=Tolerance&&FMath::Abs(Aim.Y-FMath::Clamp(TargetEl(),0.,90.))<=Tolerance;
+}
+void FS47FreeformSession::SetAim(FVector2D AzEl)
+{
+ if(!CurrentJob())return;AimAzEl();
+ Aim=FVector2D(FMath::Clamp(AzEl.X,0.,180.),FMath::Clamp(AzEl.Y,0.,90.));
+ const bool bOn=AimOnTarget();
+ if(bOn)Aim=FVector2D(FMath::Clamp(TargetAz(),0.,180.),FMath::Clamp(TargetEl(),0.,90.)); // Settles on the source.
+ if(bOn&&!bAimLocked&&M&&M->Audio)M->Audio->Beep(1320.f,.12f,.16f);
+ bAimLocked=bOn;
+}
 bool FS47FreeformSession::PointReady()const
 {
  const FVector2D Off=bCrossRunning?Cross[CrossPoint]:FVector2D::ZeroVector;
@@ -1308,12 +1335,13 @@ void FS47FreeformSession::OpenTracking()
  auto Done=[this]{const FJob* J=CurrentJob();if(!J||J->Source!=0)return 0;return J->Stage>=EJobStage::Chart?5:bCrossRunning?CrossPoint:0;};
  auto Cal=T::Panel(TEXT("CALIBRATION / 5-POINT"),S47Kit::Col({T::FivePoint(Done,[this]{return bCrossRunning;},[this]{return CurrentJob()&&CurrentJob()->Source==0;}),
   T::Value(TEXT("PROGRESS"),TAttribute<FString>::CreateLambda([Done]{return FString::Printf(TEXT("%d / 5"),Done());}))}),true);
- auto Plot=T::Panel(FString::Printf(TEXT("AZ / EL PLOT (TARGET %s)"),*Name),T::SkyPlot([this]{return FVector2D(TargetAz(),TargetEl());},ArrayAzEl,Name),true);
+ auto Plot=T::Panel(FString::Printf(TEXT("AZ / EL PLOT (TARGET %s)"),*Name),T::SkyPlot([this]{return AimAzEl();},ArrayAzEl,Name,[this](FVector2D At){SetAim(At);},[this]{return AimOnTarget();}),true);
  auto Current=T::Panel(TEXT("CURRENT (ARRAY)"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().X);}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().Y);}),true)}),true);
  auto Target=T::Panel(TEXT("TARGET"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}),true)}),true);
  TArray<S47Kit::FW> Right={Current,Target,
   T::Banner(TAttribute<FString>::CreateLambda([this]{const FString State=PointReady()?Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING"):CurrentJob()&&CurrentJob()->Stage==EJobStage::Pointed?TEXT("ARRAY MOVING"):TEXT("READY TO POINT");return State+TEXT("\n")+ArrayMeasurementStatus();}),TAttribute<bool>::CreateLambda([this]{return !PointReady();})),
-  T::Big(FString(TEXT("POINT ARRAY")),[this]{if(PointSelected())M->UI->Close();},1,CurrentJob()->Stage<=EJobStage::Pointed)};
+  T::Text(TAttribute<FString>::CreateLambda([this]{AimAzEl();return FString::Printf(TEXT("YELLOW MARKER AZ %.1f° EL %.1f°\n%s"),Aim.X,Aim.Y,AimOnTarget()?TEXT("ON THE SOURCE"):TEXT("DRAG IT ONTO THE SOURCE'S AZ / EL"));}),TAttribute<int32>(0)),
+  T::Big(FString(TEXT("POINT ARRAY")),[this]{if(PointSelected())M->UI->Close();},1,TAttribute<bool>::CreateLambda([this]{AimAzEl();const auto* J=CurrentJob();return J&&J->Stage<=EJobStage::Pointed&&AimOnTarget();}))};
  if(CurrentJob()->Phenomenon==TEXT("wrong_source")&&CurrentJob()->Stage==EJobStage::Recorded)
  {
   Right.Add(T::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ADJACENT CONTROL %d/3 / SETTLE %.1f s / SAMPLE %.1f s"),J->BeamPoint+1,J->BeamSettle,J->BeamSample):FString();}),TAttribute<int32>(0)));

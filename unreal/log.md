@@ -1954,3 +1954,7 @@ Tom ba om en prioritert plan og sa ja til veggrammene. Claudes rekkefølge: ROOM
 ## 6. november 2026 kl.10:35, installasjon
 
 `72637b13` (PR440, spillkoden er lik `40797a65` på main) installert med rask installasjon: 2504 selvtester og 138 uendrede Saved-filer.
+
+## 6. november 2026 kl.11:00, normalreise og tracking-markør
+
+Normalreisen består alle sju faser på pakken `72637b13` med egne prosesser og disk-Continue; Freeform-regresjonen er ikke kjørt. TRACKING-INTERACTION-20261105-02: gul markør dras i himmelkartet; treff gir pling, ring og opplåst POINT ARRAY. `-S47JourneyTrackingDrag` beviser dette med ekte pekerhendelser gjennom skjermvisningen i fase 1 (uten lyd). Selvtest 2504 består.

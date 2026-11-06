@@ -345,9 +345,22 @@ namespace S47FreeformTerminal
  public:
   SLATE_BEGIN_ARGS(SSkyPlot){} SLATE_END_ARGS()
   TFunction<FVector2D()> Target,Current;FString Source;
+  // Freeform: the marker the player drags. Without these the plot only shows the target.
+  TFunction<void(FVector2D)> OnAim;TFunction<bool()> OnTarget;
   mutable FVector2D Shown=FVector2D(-1,-1);mutable double LastPaint=0;
   void Construct(const FArguments&){ForceVolatile(true);}
   virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(560,360);}
+  void AimFrom(const FGeometry& G,const FVector2D& Screen)const
+  {
+   const FVector2f S(G.GetLocalSize());const float R=FMath::Min(S.X*.5f-26,S.Y-96);const FVector2f C(S.X*.5f,S.Y-44);
+   const FVector2f V=FVector2f(G.AbsoluteToLocal(Screen))-C;const double Rr=FMath::Min(double(V.Size()),double(R));
+   const double Th=V.Y>0?(V.X>0?0.:PI):FMath::Atan2(double(-V.Y),double(V.X));
+   OnAim(FVector2D(180.*(1-Th/PI),90.*(1-Rr/R)));
+  }
+  virtual FReply OnMouseButtonDown(const FGeometry& G,const FPointerEvent& E)override
+  {if(!OnAim||E.GetEffectingButton()!=EKeys::LeftMouseButton)return FReply::Unhandled();AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
+  virtual FReply OnMouseMove(const FGeometry& G,const FPointerEvent& E)override
+  {if(!OnAim||!E.IsMouseButtonDown(EKeys::LeftMouseButton))return FReply::Unhandled();AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    // Half-sky plot: zenith at the centre of the base line, horizon on the rim,
@@ -371,17 +384,23 @@ namespace S47FreeformTerminal
    if(Shown.X<0)Shown=Want;Shown+=(Want-Shown)*FMath::Min(1.,Dt*8.);
    const FVector2f Tp=At(Aim),Cp=At(Shown);
    if(FVector2D::Distance(Shown,Aim)>.3)Dashed(Out,L+1,G,Cp,Tp,Amber*.6f,5,1.5f);
+   if(OnTarget&&OnTarget())
+   {
+    const float Ring=16+10*Pulse(3);TArray<FVector2f> Circle;
+    for(int32 I=0;I<=32;++I){const float A=2*PI*I/32;Circle.Add(Tp+FVector2f(FMath::Cos(A),FMath::Sin(A))*Ring);}
+    Lines(Out,L+2,G,Circle,Amber,2.f);
+   }
    const float Arm=9+3*Pulse(4);
    Lines(Out,L+2,G,{Tp-FVector2f(Arm,0),Tp+FVector2f(Arm,0)},Amber,2.5f);Lines(Out,L+2,G,{Tp-FVector2f(0,Arm),Tp+FVector2f(0,Arm)},Amber,2.5f);
    Rect(Out,L+2,G,Tp-FVector2f(4,4),FVector2f(8,8),Amber,false);
    Rect(Out,L+3,G,Cp-FVector2f(8,8),FVector2f(16,16),Green,false);Lines(Out,L+3,G,{Cp-FVector2f(5,5),Cp+FVector2f(5,5)},Green,1.5f);
-   Lines(Out,L+1,G,{{10,14},{26,14}},Amber,2.5f);Lines(Out,L+1,G,{{18,6},{18,22}},Amber,2.5f);Text2(Out,L+1,G,TEXT("TARGET ")+Source.Left(12),34,3,18,Green);
+   Lines(Out,L+1,G,{{10,14},{26,14}},Amber,2.5f);Lines(Out,L+1,G,{{18,6},{18,22}},Amber,2.5f);Text2(Out,L+1,G,OnAim?FString(TEXT("YOUR MARKER")):TEXT("TARGET ")+Source.Left(12),34,3,18,Green);
    Rect(Out,L+1,G,FVector2f(12,32),FVector2f(12,12),Green,false);Text2(Out,L+1,G,TEXT("ARRAY (CURRENT)"),34,28,18,Green);
    return L+4;
   }
  };
- FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source)
- {const auto W=SNew(SSkyPlot);W->Target=Target;W->Current=Current;W->Source=Source;return SNew(SBox).HeightOverride(400)[W];}
+ FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source,TFunction<void(FVector2D)> OnAim,TFunction<bool()> OnTarget)
+ {const auto W=SNew(SSkyPlot);W->Target=Target;W->Current=Current;W->Source=Source;W->OnAim=OnAim;W->OnTarget=OnTarget;return SNew(SBox).HeightOverride(400)[W];}
 
  class SFivePoint:public SLeafWidget
  {
