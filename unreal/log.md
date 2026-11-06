@@ -1998,3 +1998,7 @@ Steg 3: `town_lights` med fire steder i Caliche, og `S47FarmSite` tar nå sted, 
 ## 6. november 2026 kl.13:51, alien-interferens
 
 Codex, `codex/alien-interference-20261106`: privat 7-sekunders prøve kan bryte inn på felt-walkie, aktiv SARO-monitor eller AM-radio ved faktisk alien-nærhet. Én avspilling, 13–25 sekunders opphold etterpå, avstandsvolum, radio/SFX-styring og kort stoppfade; historisk 4/7-radio er urørt. Editorbygg, 2514 selvtester og Vulkan-røyk består. Opptaket ligger kun i lokalt Audio-grunnlag; installasjon og menneskelig lytting gjenstår.
+
+## 6. november 2026 kl.13:58, gårdshus som blokkmodell
+
+Toms plantegning v1 er data i `S47FarmHouse`: 12 × 9 m pluss veranda på ledig tomt øst for beitet, siden biblen sier at Alderete-gården ikke er forlatt og bakgrunnshuset deler mesh med fjøsene. Vegetasjon holdes unna tomten; dette gjelder også Story, der det bare er en bar flekk langt ute. `-S47MenuPointerHouse` går inn frontdøren og ut bakdøren. Selvtest 2511 og regresjon 251 består. Toms mappe `Gard-modeller-Blender` er uttrekk fra The Greyhill Incident og brukes ikke.

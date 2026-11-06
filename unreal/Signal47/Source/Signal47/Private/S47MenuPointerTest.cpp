@@ -6,6 +6,7 @@
 #include "S47Night.h"
 #include "S47Panels.h"
 #include "S47Kit.h"
+#include "S47FarmHouse.h"
 #include "S47World.h"
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
@@ -84,6 +85,7 @@ namespace
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   FString TownPlace;
+  bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
   {
@@ -148,7 +150,7 @@ namespace
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Elapsed-StageAt<1) return true;
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -185,6 +187,10 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerHouse")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();Stage=70;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerTown")))
     {
      M->Flow->bDevRun=true;
@@ -201,6 +207,39 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
+   }
+   // The abandoned house, in the saro frame the farm lies in: a look from each named spot, then the real walk.
+   if(Stage>=70&&Stage<=75)
+   {
+    struct FView{const TCHAR* Name;double X,Y,LookX,LookY;};
+    static const FView Views[]={{TEXT("outside"),6,16,6,4},{TEXT("hall"),6,8.3,6,0},{TEXT("bedroom"),4.8,2.25,1,2.25},{TEXT("living"),7.2,6.55,11,6.55},{TEXT("kitchen"),4.8,6.55,1,6.55},{TEXT("back"),8.4,2.25,8.4,1}};
+    const int32 I=Stage-70;
+    if(ShotPending){Shot(*FString::Printf(TEXT("house-%s.png"),Views[I].Name));ShotPending=false;Stage=I==5?76:Stage+1;StageAt=Elapsed;return true;}
+    const FVector O(-24,0,300);const FVector At=S47FarmHouse::Point(Views[I].X,Views[I].Y)+O,Look=S47FarmHouse::Point(Views[I].LookX,Views[I].LookY)+O;const FVector D=Look-At;
+    M->Player->Place(At.X,At.Z,FMath::Atan2(-D.X,-D.Z));M->Player->Pitch=0;ShotPending=true;
+    if(I>0&&!FMath::IsNearlyEqual(M->Player->FloorY,S47FarmHouse::PadY(),.01))return Fail(TEXT("the floor inside the house must be level"));
+    StageAt=Elapsed;return true;
+   }
+   if(Stage==76)
+   {
+    // Actually walked: in by the front door, down the hall, out of the back. Stopped by any wall on the way.
+    const FVector O(-24,0,300);WalkTo={S47FarmHouse::Point(6,9.6)+O,S47FarmHouse::Point(6,4.5)+O,S47FarmHouse::Point(6,-1)+O};WalkAt=0;
+    M->Player->Place(WalkTo[0].X,WalkTo[0].Z+2,0);Stage=77;StageAt=Elapsed;WalkFrom=Elapsed;return true;
+   }
+   if(Stage==77)
+   {
+    StageAt=Elapsed;
+    if(Elapsed-WalkFrom>30)return Fail(TEXT("the hall must be walkable from the front door to the back door"));
+    if(WalkAt>=WalkTo.Num())
+    {
+     M->Player->TestMove.Reset();
+     UE_LOG(LogTemp,Display,TEXT("S47: farmhouse PASS: level floor, walked in the front door and out of the back in %.1f s"),Elapsed-WalkFrom);
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    const FVector V=WalkTo[WalkAt]-M->Player->Pos;const double Left=FVector2D(V.X,V.Z).Size();
+    if(Left<.3){++WalkAt;return true;}
+    M->Player->Yaw=FMath::Atan2(-V.X,-V.Z);M->Player->Pitch=-.08;M->Player->TestMove=FVector2D(0,-FMath::Min(1.,Left/.4));
+    return true;
    }
    if(Stage==60)
    {
