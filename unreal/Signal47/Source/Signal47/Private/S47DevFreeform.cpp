@@ -20,6 +20,9 @@
 #include "S47Main.h"
 #include "S47Rhythm.h"
 #include "S47Night.h"
+#include "S47Openings.h"
+#include "S47Places.h"
+#include "S47RadioTips.h"
 #include "S47RoadTerrain.h"
 #include "S47RoomLights.h"
 #include "S47SkyVisitors.h"
@@ -29,6 +32,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47Legs.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Misc/CommandLine.h"
@@ -890,6 +894,92 @@ void FS47DevFreeform::AddTimePlace(FS47DevEvents& E)
  }
 }
 
+// ---- out on the land, what the shops have, and the radio ----
+void FS47DevFreeform::ToLandPlace(const FString& Id,double Off,double From,double To,TFunction<void(double,double)> Then)
+{
+ auto* F=Session();
+ double X=0,Z=0;
+ if(!F||!F->Places||!F->Places->Spot(Id,X,Z)){Tell(false,TEXT("that place is not in this scene"));return;}
+ const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+ const double WorldX=Road.X+X,WorldZ=Road.Z+Z;
+ FStage Stage;Stage.From=From;Stage.To=To;Stage.Area=TEXT("road");Stage.Where=[WorldX,WorldZ,Off]{return FVector2D(WorldX,WorldZ+Off);};Stage.Yaw=0;
+ Go(Stage,[Then,WorldX,WorldZ]{Then(WorldX,WorldZ);});
+}
+
+void FS47DevFreeform::AddLand(FS47DevEvents& E)
+{
+ static const TCHAR* const G=TEXT("Places out on the land");
+ for(const FS47Places::FDef& D:FS47Places::Defs())
+ {
+  const FString Id=D.Id,Title=D.Title;
+  if(Id==TEXT("motel"))continue;
+  E.AddFreeform(G,FString::Printf(TEXT("Go: %s"),*Title),TEXT("on foot, in front of it, the clock as it is; E on it finds it"),[this,Id,Title]
+  {
+   ToLandPlace(Id,5,-1,-1,[this,Title](double X,double Z){AimAt(FVector(X,M->Player->FloorY+1,Z));Tell(true,FString::Printf(TEXT("At %s. E on it finds it, and marks the map."),*Title),5);});
+  });
+  E.AddFreeform(G,FString::Printf(TEXT("Lights over %s"),*Title),TEXT("22:00, 110 m off, looking at them; they leave marks"),[this,Id,Title]
+  {
+   ToLandPlace(Id,110,EveningFrom,EveningTo,[this,Id,Title](double,double)
+   {
+    auto* F=Session();if(!F||!F->Director)return;
+    if(!F->Director->ForceLights(Id)){Tell(false,F->Director->LightPlacePoint(Id).IsZero()?FString::Printf(TEXT("%s is not in this scene yet"),*Title):WhyRefused(TEXT("town_lights")));return;}
+    AimAt(F->Director->EventAnchor());
+    Tell(true,FString::Printf(TEXT("Lights low over %s. They go when you come within 70 m, and leave marks."),*Title));
+   });
+  });
+  E.AddFreeform(G,FString::Printf(TEXT("Marks at %s, and what comes"),*Title),TEXT("03:12, at the marks; 12 seconds on foot, then the night's own draw of who"),[this,Id,Title]
+  {
+   ToLandPlace(Id,8,SmallFrom,SmallTo,[this,Id,Title](double,double)
+   {
+    auto* F=Session();if(!F||!F->FarmSite||!F->Director)return;
+    const FVector Point=F->Director->LightPlacePoint(Id);
+    if(Point.IsZero()){Tell(false,FString::Printf(TEXT("%s is not in this scene yet"),*Title));return;}
+    F->FarmSite->Arm(F->Clock(),Id,Title,M->Web->Area(),Point);F->FarmSite->TestReadyVisit();
+    const FVector C=F->FarmSite->Centre();M->Player->Place(C.X+6,C.Z+6,0);M->Player->Pitch=0;AimAt(C);
+    Tell(true,FString::Printf(TEXT("Marks at %s. Stay 12 seconds on foot, in the dark, and something comes."),*Title),7);
+   });
+  });
+ }
+ static const TCHAR* const K=TEXT("What the shops have, and the radio");
+ E.AddFreeform(K,TEXT("Give me everything on offer"),TEXT("spotlight, cot, magnetometer, second logger, film, alarm; this test run only"),[this]
+ {
+  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
+  for(const auto& O:FS47Openings::Defs())F->TestGiveKit(O.Id);
+  Tell(true,TEXT("All of it is yours. The spotlight is F in the cab; the cot is at a place on the land; the alarm is in the yard."),6);
+ });
+ for(const bool bOut:{false,true})
+  E.AddFreeform(K,bOut?TEXT("Yard alarm trips, and is put out"):TEXT("Yard alarm trips"),bOut?TEXT("22:00, yard; then it wants a fuse at its box"):TEXT("22:00, yard; lights and klaxon"),[this,bOut]
+  {
+   FStage Stage;Stage.From=EveningFrom;Stage.To=EveningTo;Stage.Area=TEXT("saro");Stage.Where=[]{return Yard();};Stage.Yaw=UE_DOUBLE_PI;
+   Go(Stage,[this,bOut]
+   {
+    auto* F=Session();if(!F||!F->YardAlarm){Tell(false,TEXT("Freeform only"));return;}
+    F->TestGiveKit(TEXT("alarm"));
+    F->YardAlarm->TestTrip(bOut?0.f:1.f);
+    Tell(true,bOut?TEXT("The klaxon, and then it is out. A fuse at its box puts it right."):TEXT("Lights and klaxon: as if something had come within 48 m."));
+   });
+  });
+ E.AddFreeform(K,TEXT("CB: the next line"),TEXT("the next that fits; each once in a game, and most mean nothing"),[this]
+ {
+  auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevCb();
+  if(!bSaid)Tell(false,TEXT("no CB line left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
+ });
+ E.AddFreeform(K,TEXT("1420: the next caller"),TEXT("the next that fits; each once in a game"),[this]
+ {
+  auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevAm();
+  if(!bSaid)Tell(false,TEXT("no caller left that fits this game"));else{bLastOk=true;LastText=TEXT("a caller on 1420");}
+ });
+ const auto SleepUntilMorning=[this](FS47FreeformSession::ERest Where,const TCHAR* Say)
+ {
+  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
+  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600.)/86400.)+1)*86400.+8*3600.;
+  if(!F->RestAt(Next,Where)){Tell(false,TEXT("rest was refused: something is close by, or a recording is running"));return;}
+  Tell(true,FString::Printf(TEXT("%s It is now day %d, %s."),Say,F->Day(),*ClockText(F->Clock())),6);
+ };
+ E.AddFreeform(K,TEXT("Sleep at the motel"),TEXT("until morning; nothing wakes you there"),[SleepUntilMorning]{SleepUntilMorning(FS47FreeformSession::ERest::Motel,TEXT("A night at the motel."));});
+ E.AddFreeform(K,TEXT("Sleep on a cot, where you are"),TEXT("until morning; whatever comes by wakes you"),[SleepUntilMorning]{SleepUntilMorning(FS47FreeformSession::ERest::Field,TEXT("A night on the cot."));});
+}
+
 void FS47DevFreeform::AddEntries(FS47DevEvents& E)
 {
  Menu=&E;
@@ -901,6 +991,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddHighway(E);
  AddTaken(E);
  AddAfter(E);
+ AddLand(E);
 }
 
 void FS47DevFreeform::Stop()

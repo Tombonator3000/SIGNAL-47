@@ -64,6 +64,14 @@ public:
  FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr) const;
  // The world's answers, from what each system lets be read.
  FS47RhythmNow ReadNow() const;
+ // A system's own question, at the moment it would start, after its dice. True when nothing stops it or its "enforce" is off; with it off,
+ // what would have stopped it goes to the log. Fixtures on a developer run's fixed rules are not asked.
+ bool Allow(FName Id);
+ // It has started, or is over: a danger is counted for the night, and the rest after it runs for everyone.
+ void Began(FName Id);
+ void Ended(FName Id);
+ // The night's chance from the file, with the code's own number if the file does not have it.
+ float PerNight(FName Id,float Otherwise) const;
  bool NeedHolds(FName Name) const;
  // Watches who starts while the panel or a log is on, for the log: what started, and what the rules would have said just before it.
  void Observe(double Dt);
@@ -84,6 +92,7 @@ private:
  struct FTally{int32 Night=0,Hint=0,Observation=0,Presence=0,Danger=0,WouldStop=0,Minor=0,Invest=0,Sky=0;double FirstClock=-1,LastClock=-1;};
  FTally Tally;
  TArray<FString> Recent;
- void Started(FName Id,const FS47RhythmNow& At);
+ void Observed(FName Id,const FS47RhythmNow& At);
+ TMap<FName,FName> ShadowSaid;
  void CloseNight(int32 NewNight);
 };

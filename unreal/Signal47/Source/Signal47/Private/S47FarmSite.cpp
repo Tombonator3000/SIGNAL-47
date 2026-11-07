@@ -1,4 +1,5 @@
 #include "S47FarmSite.h"
+#include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
 #include "S47Openings.h"
@@ -74,12 +75,15 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const bool bQuiet=G&&F.Director&&F.Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!F.Taken->Busy()&&!(F.IndoorDread&&F.IndoorDread->DoorActive());
  if(bAtMarks||!bQuiet||M->ModalOpen()||!OutOnFoot(M->Web->Area(),Foot.Size(),M->World->bDriving,F.Taken->Indoors())){FieldDwell=0;return;}
  FieldDwell+=Dt;if(FieldDwell<FieldDwellSeconds)return;
+ // Before the draw: a night's one is not spent on a moment the rules would not let it come.
+ if(M->Rhythm&&!M->Rhythm->Allow(TEXT("field_visit")))return;
  // One draw a night, the game's own: going indoors and out again does not throw it twice.
  FieldNight=Night;FieldDwell=0;
  const float Roll=FieldRoll>=0?FieldRoll:FS47NightRhythm::Roll(F.Seed(),Night,0x4649454cu);FieldRoll=-1;
  M->RequestAutosave();
  const bool bLit=F.TruckLamp&&F.TruckLamp->LitTonight(Night);
  if(Roll>=FS47NightRhythm::FieldChance(Night)+(bLit?.25f:0.f)){UE_LOG(LogTemp,Display,TEXT("S47: field visit: nothing comes tonight, night %d"),Night);return;}
+ if(M->Rhythm)M->Rhythm->Began(TEXT("field_visit"));
  Home={Place,Title,AreaId,Middle,Visit};bField=true;
  const FString Area=M->Web->Area();
  Place=TEXT("field");AreaId=Area;Middle=FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
@@ -470,6 +474,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   const bool bLampOut=bDriving&&M->Freeform->TruckLamp&&M->Freeform->TruckLamp->On()&&M->World->CabDrive()&&FMath::Abs(M->World->CabDrive()->Speed)<.5;
   VisitDwell=(bLampOut?Dist<130:Dist<55&&!bDriving)&&bDark&&bQuiet&&Hours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
+  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("site_visit")))return;
+  if(M->Rhythm)M->Rhythm->Began(TEXT("site_visit"));
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
   Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,Roll);
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
@@ -625,6 +631,7 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
 
 void FS47FarmSite::EndVisit(bool bTaken)
 {
+ if(M&&M->Rhythm)M->Rhythm->Ended(bField?TEXT("field_visit"):TEXT("site_visit"));
  const bool bWas=Visit>=2;
  Visit=4;VisitDwell=0;bVisitTaken=false;
  LetAttentionGo();

@@ -169,3 +169,17 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
  auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("cb01"),TEXT("am02")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
  return OK;
 }
+
+bool FS47RadioTips::DevCb()
+{
+ const int32 Before=Used.Num();
+ if(M&&M->Freeform)StepCb();
+ return Used.Num()>Before;
+}
+
+bool FS47RadioTips::DevAm()
+{
+ const int32 Before=Used.Num();
+ if(M&&M->Freeform)StepAm();
+ return Used.Num()>Before;
+}

@@ -50,6 +50,8 @@ private:
  void AddAfter(FS47DevEvents& E);
  void AddRunNight(FS47DevEvents& E);
  void AddTimePlace(FS47DevEvents& E);
+ void AddLand(FS47DevEvents& E);
+ void ToLandPlace(const FString& Id,double Off,double From,double To,TFunction<void(double,double)> Then);
  void StartHighway(bool bNorth,bool bFollow);
  void StartRoomLight();
  void StartDoor(const FString& Place,bool bLight);

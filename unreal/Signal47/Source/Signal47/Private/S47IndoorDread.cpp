@@ -1,4 +1,5 @@
 #include "S47IndoorDread.h"
+#include "S47Rhythm.h"
 #include "S47PaleBody.h"
 #include "Engine/SkeletalMesh.h"
 #include "S47Audio.h"
@@ -324,6 +325,7 @@ void FS47IndoorDread::Draw()
 
 void FS47IndoorDread::EndPeek()
 {
+ if(M&&M->Rhythm)M->Rhythm->Ended(TEXT("peek"));
  if(Body.Ready())Body.Peek(false,1,0,0);
  Stage=EStage::None;ExposureNow=0;Withdraw=-1;
  UE_LOG(LogTemp,Display,TEXT("S47: peek over, seen %d, after %.1f s"),bSeen,T);
@@ -407,6 +409,7 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
    if(!bPeekTonight)return;
   }
   if(InsideFor<PeekWait)return;
+  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("peek")))return;
  }
  if(RingPause>0){RingPause-=Dt;return;}
  const auto In=M->Night->GlimpseIn(true);
@@ -447,6 +450,7 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  if(!bHere||!M->Freeform->TheirHoursNow(Clock)||Clock<FloodClock+FloodRestSeconds)return;
  const int32 Day=M->Freeform->Day();
  if(FloodRollDay==Day||FloodFor<25)return;
+ if(M->Rhythm&&!M->Rhythm->Allow(TEXT("lit_room")))return;
  // A night's own draw, and at most one. The rest is long whatever it says.
  FloodRollDay=Day;
  const bool bAgain=FMath::FRand()<FloodChance;

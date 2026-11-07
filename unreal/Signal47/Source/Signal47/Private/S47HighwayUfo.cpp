@@ -1,4 +1,5 @@
 #include "S47HighwayUfo.h"
+#include "S47Rhythm.h"
 #include "S47FarmSite.h"
 
 #include "S47Audio.h"
@@ -260,6 +261,7 @@ bool FS47HighwayUfo::CanStart(bool Forced)const
  // A lit roof spotlight is seen from a long way off: that night it need not wait its usual turn.
  const bool bRoofLit=M->IsFreeform()&&M->Freeform&&M->Freeform->TruckLamp&&M->Freeform->TruckLamp->LitTonight(NightId());
  if(M->IsFreeform()?NightId()-LastNight<(bRoofLit?1:3):LastNight>=0)return false;
+ if(M->IsFreeform()&&M->Rhythm&&!M->Rhythm->Allow(TEXT("highway_ufo")))return false;
  // Story keeps the one south-bound stretch it was written with.
  if(Way<0&&!M->IsFreeform())return false;
  return FMath::Abs(Along)>.85&&OpenStretch(P.Z,Way);
@@ -385,7 +387,7 @@ void FS47HighwayUfo::Note()
 }
 void FS47HighwayUfo::Finish(const FString& Why)
 {
- if(!bActive)return;bActive=false;Outcome=Why;Rest=QuietTime;Note();if(Visual->Ufo)Visual->Ufo->Hide();Visual->SoundOff();Changed();
+ if(!bActive)return;bActive=false;Outcome=Why;Rest=QuietTime;Note();if(M&&M->IsFreeform()&&M->Rhythm)M->Rhythm->Ended(TEXT("highway_ufo"));if(Visual->Ufo)Visual->Ufo->Hide();Visual->SoundOff();Changed();
  UE_LOG(LogS47HighwayUfo,Display,TEXT("S47: highway UFO %s; seen=%d car=%d pass=%d incident=%d"),*Why,bSeen,bSawCar,bSawPass,Serial);
 }
 void FS47HighwayUfo::Step(double Dt)

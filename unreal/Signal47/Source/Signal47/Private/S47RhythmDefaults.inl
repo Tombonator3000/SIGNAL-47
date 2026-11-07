@@ -39,7 +39,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "taken", "system": "taken", "slot": "ground", "level": "danger", "from_day": 1, "hours": "any", "needs": [], "enforce": false },
     { "id": "highway_ufo", "system": "highway", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "min_nights_between": 3, "needs": ["driving"], "enforce": false },
     { "id": "sky_formation", "system": "sky", "slot": "background", "level": "observation", "from_day": 1, "hours": [21.5, 5.5], "schedule": "fixed_table", "needs": ["outdoors"], "enforce": false },
-    { "id": "sky_high", "system": "sky", "slot": "background", "level": "observation", "from_day": 2, "hours": [21, 3], "draw": { "per_night": 0.22 }, "needs": ["outdoors"], "enforce": false },
+    { "id": "sky_high", "system": "sky", "slot": "background", "level": "observation", "from_day": 2, "hours": [21, 4], "draw": { "per_night": 0.22 }, "needs": ["outdoors"], "enforce": false },
     { "id": "mystery", "system": "director", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 2.5], "draw": { "per_night": 0.3, "state": "mystery" }, "needs": ["not_driving"], "enforce": false }
   ]
 }

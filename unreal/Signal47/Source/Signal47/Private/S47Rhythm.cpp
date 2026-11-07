@@ -179,21 +179,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  N.Clock=F->Clock();N.Day=F->Day();N.bTutorial=F->InTutorial();
  N.bQuiet=F->QuietNight(FS47FreeformSession::NightOf(N.Clock));N.bTheirHours=F->TheirHoursNow(N.Clock);
  N.Area=M->Web?M->Web->Area():FString();
- // Read from what the Director would save: it says all of it, and it is the one thing that cannot disagree with the Director.
- if(F->Director)
- {
-  const auto O=F->Director->Save();
-  N.RestLeft=FMath::Max(0.,S47J::Num(O,TEXT("restUntil"))-S47J::Num(O,TEXT("activeTime")));
-  N.MinorLeft=S47J::Int(O,TEXT("minorLeft"));N.InvestLeft=S47J::Int(O,TEXT("investLeft"));N.SkyLeft=S47J::Int(O,TEXT("skyLeft"));
-  if(const auto H=S47J::Obj(O,TEXT("history")))for(const auto& Pair:H->Values){double V=0;if(Pair.Value.IsValid()&&Pair.Value->TryGetNumber(V))N.LastDays.Add(FName(*Pair.Key),int32(V));}
-  const auto Drew=[&](const TCHAR* Key,const TCHAR* RollKey)
-  {
-   if(S47J::Int(O,RollKey)<N.Day)return; // Not yet thrown tonight.
-   N.Draws.Add(Key,S47J::Int(O,Key)==N.Day?1:0);
-  };
-  Drew(TEXT("pendingThreatNight"),TEXT("threatRollDay"));Drew(TEXT("pendingMajorNight"),TEXT("majorRollDay"));Drew(TEXT("pendingLightNight"),TEXT("lightRollDay"));Drew(TEXT("pendingObserverNight"),TEXT("observerRollDay"));Drew(TEXT("pendingSiteNight"),TEXT("siteRollDay"));
-  if(F->Director->Busy())N.Busy=FName(*F->Director->ActiveEvent());
- }
+ if(F->Director)F->Director->FillRhythm(N);
  if(F->IndoorDread)
  {
   auto& Door=F->IndoorDread->Door();
@@ -205,8 +191,56 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  if(F->Taken&&F->Taken->Busy())N.Busy=TEXT("taken");
  if(F->FarmSite&&F->FarmSite->VisitWantsGround())N.Busy=F->FarmSite->FieldVisit()?TEXT("field_visit"):TEXT("site_visit");
  if(M->HighwayUfo&&M->HighwayUfo->StageName()!=TEXT("idle")&&M->HighwayUfo->StageName()!=TEXT("done"))N.Busy=TEXT("highway_ufo");
- N.DangerTonight=Tally.Night==FS47FreeformSession::NightOf(N.Clock)?Tally.Danger:0;
  return N;
+}
+
+bool FS47Rhythm::Allow(FName Id)
+{
+ auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive())return true;
+ const auto* E=Rules.Find(Id);
+ if(!E)return true;
+ // Its own ground does not count against it, and its own needs it has just answered itself.
+ FS47RhythmNow Now=ReadNow();
+ if(Now.Busy==Id)Now.Busy=NAME_None;
+ const FS47Verdict V=May(Id,Now);
+ if(V.bMay){ShadowSaid.Remove(Id);return true;}
+ // Once each time the answer changes: this is asked every frame while it waits.
+ FName& Said=ShadowSaid.FindOrAdd(Id);
+ if(Said!=V.Why)
+ {
+  Said=V.Why;
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm %s %s: %s %s, day %d %s"),E->bEnforce?TEXT("stops"):TEXT("would stop"),*Id.ToString(),*V.Why.ToString(),*V.Detail,Now.Day,*ClockText(Now.Clock));
+ }
+ return !E->bEnforce;
+}
+
+void FS47Rhythm::Began(FName Id)
+{
+ auto* F=M&&M->Freeform?M->Freeform.Get():nullptr;
+ const auto* E=Rules.Find(Id);
+ if(!F||!F->Director||!E)return;
+ // Being taken at the end of a visit or at a door is the same meeting, not another one.
+ if(Id==TEXT("taken")&&((F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||F->Director->ActiveEvent()==TEXT("service_presence")))return;
+ if(E->Level==ES47RhythmLevel::Danger)
+ {
+  F->Director->NoteDanger();
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm danger %s: %d tonight"),*Id.ToString(),F->Director->DangerTonight());
+ }
+}
+
+void FS47Rhythm::Ended(FName Id)
+{
+ auto* F=M&&M->Freeform?M->Freeform.Get():nullptr;
+ const auto* E=Rules.Find(Id);
+ if(!F||!F->Director||!E||!E->bEnforce||!F->RulesLive())return;
+ F->Director->RestFor(E->Level==ES47RhythmLevel::Danger?Rules.RestDanger:Rules.RestOther);
+}
+
+float FS47Rhythm::PerNight(FName Id,float Otherwise) const
+{
+ const auto* E=Rules.Find(Id);
+ return E&&E->PerNight>=0?float(E->PerNight):Otherwise;
 }
 
 bool FS47Rhythm::NeedHolds(FName Name) const
@@ -250,7 +284,7 @@ void FS47Rhythm::SetWatching(bool bOn)
  if(bOn){bWatchInit=false;Since=1;}
 }
 
-void FS47Rhythm::Started(FName Id,const FS47RhythmNow& At)
+void FS47Rhythm::Observed(FName Id,const FS47RhythmNow& At)
 {
  const auto* E=Rules.Find(Id);
  // What the rules would have said just before it: the ground it is itself on does not count against it.
@@ -295,7 +329,7 @@ void FS47Rhythm::Observe(double Dt)
  const auto On=[&](FName Id,bool bNow)
  {
   bool& Was=WasOn.FindOrAdd(Id);
-  if(bNow&&!Was)Started(Id,Before);
+  if(bNow&&!Was)Observed(Id,Before);
   Was=bNow;
  };
  const FString Ev=F.Director?F.Director->ActiveEvent():FString();

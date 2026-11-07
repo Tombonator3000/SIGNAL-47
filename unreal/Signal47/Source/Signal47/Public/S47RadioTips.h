@@ -20,6 +20,9 @@ public:
  S47J::FObj Save() const;
  static bool SelfTest(TArray<FString>& Lines);
  const TSet<FString>& Said() const{return Used;}
+ // Developer menu: the next one now, whatever the waiting. False: there is none left that fits.
+ bool DevCb();
+ bool DevAm();
 private:
  US47Main* M=nullptr;
  TSet<FString> Used;
