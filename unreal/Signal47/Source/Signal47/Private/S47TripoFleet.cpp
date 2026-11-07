@@ -8,14 +8,18 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
+#include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47TripoFleet,Log,All);
 namespace
 {
+ // The service truck's own body and wheels (T16-15, Tools/lived/truck): square, generic and open, on the authored cab. No maker's name.
+ FString NewTruckPackage(const TCHAR* Name){return FString(TEXT("/Game/Lived/Truck/"))+Name;}
  UStaticMesh* Asset(const TCHAR* Id,const TCHAR* Name)
  {
-  const FString Path=FString::Printf(TEXT("/Game/Licensed/TripoFleet/%s/%s.%s"),Id,Name,Name);
+  const bool bNew=FPackageName::DoesPackageExist(NewTruckPackage(Name));
+  const FString Path=bNew?NewTruckPackage(Name)+TEXT(".")+Name:FString::Printf(TEXT("/Game/Licensed/TripoFleet/%s/%s.%s"),Id,Name,Name);
   UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*Path);
   if(!Mesh||Mesh->GetNumLODs()!=3||Mesh->GetNumTriangles(0)>100000)return nullptr;
   for(const FStaticMaterial& M:Mesh->GetStaticMaterials())if(!M.MaterialInterface)return nullptr;
@@ -107,11 +111,15 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
   // orientation. These are not the C10's grounded centres or mirrored wheel copies.
   const FVector At[]={FVector(-.6956192851066589,.44323502155020833,-1.3639821708202362),FVector(.8012761771678925,.4459287308854982,-1.3623809218406677),FVector(-.6950077712535858,.4376322799362242,1.249414473772049),FVector(.8004297316074371,.4430245810071938,1.2492537796497345)};
   const double Radii[]={.442296105902642,.44793655641842634,.44882689183577895,.4421187586267479};
+  // The new truck is square: its hubs are.
+  const FVector NewAt[]={FVector(-.76,.445,-1.36),FVector(.76,.445,-1.36),FVector(-.76,.445,1.25),FVector(.76,.445,1.25)};
+  const bool bNewTruck=WheelMeshes[0]->GetPathName().StartsWith(TEXT("/Game/Lived/"));
   for(int32 I=0;I<4;++I)
   {
-   auto* P=Part(W,WheelMeshes[I+1],T.Body.I,FString::Printf(TEXT("tripo:jeep-wheel:%s:%d"),*T.Path,I),At[I]);
+   const FVector Hub=bNewTruck?NewAt[I]:At[I];
+   auto* P=Part(W,WheelMeshes[I+1],T.Body.I,FString::Printf(TEXT("tripo:jeep-wheel:%s:%d"),*T.Path,I),Hub);
    if(!P)break;
-   F->WheelParts.Add(P);F->WheelAt.Add(At[I]);F->WheelRadius.Add(Radii[I]);F->ExpectedWheels.Add(P->GetRelativeTransform());
+   F->WheelParts.Add(P);F->WheelAt.Add(Hub);F->WheelRadius.Add(bNewTruck?.445:Radii[I]);F->ExpectedWheels.Add(P->GetRelativeTransform());
   }
   F->bJeepWheels=F->WheelParts.Num()==4;
   if(F->bJeepWheels)F->NativeParts.Append(F->WheelParts);
@@ -143,6 +151,7 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
  // existing Truck controller terms (metres, Y up, nose -Z).
  T.DriverEye=FVector(-.41,1.70,.65);
  F->JeepHeadlamps[0]=FVector(-.31,1.18,-1.86);F->JeepHeadlamps[1]=FVector(.41,1.18,-1.86);
+ if(WheelsReady&&WheelMeshes[0]->GetPathName().StartsWith(TEXT("/Game/Lived/"))){F->JeepHeadlamps[0]=FVector(-.56,1.135,-1.99);F->JeepHeadlamps[1]=FVector(.56,1.135,-1.99);}
  if(CabReady)
  {
   T.FitJeepCab();F->Steer(0);

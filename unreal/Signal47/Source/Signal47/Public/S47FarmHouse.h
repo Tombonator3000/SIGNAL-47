@@ -17,6 +17,8 @@ namespace S47FarmHouse
  // Within the outer walls: the pad less its veranda, which has a roof but is outdoors.
  bool Inside(double RoadX,double RoadZ);
  double PadY();
+ // The one house's model is imported (T16-15): it is drawn from that, not from Pieces().
+ bool HasModel();
  // Road-local points in the plan's own rooms, for tests and later events.
  FVector Point(double PlanX,double PlanY);
  bool SelfTest(TArray<FString>& Lines);

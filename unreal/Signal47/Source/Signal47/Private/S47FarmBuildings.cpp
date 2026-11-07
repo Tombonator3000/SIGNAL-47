@@ -1,4 +1,5 @@
 #include "S47FarmBuildings.h"
+#include "S47FarmHouse.h"
 #include "S47RoadTerrain.h"
 #include "Misc/PackageName.h"
 
@@ -72,10 +73,13 @@ namespace S47FarmBuildings
 {
  const TArray<FSite>& Sites()
  {
+  static const bool bOne=S47FarmHouse::HasModel();
   static const TArray<FSite> Data={
    {TEXT("barn"),TEXT("/Game/FarmBuildings/SM_FarmBarn.SM_FarmBarn"),136,170,FarmYaw,.02},
+   // T16-15: one house, the plan's own (S47FarmHouse), its front to the yard; the model stood 20 m off without an inside.
+   bOne?FSite{TEXT("house"),TEXT("/Game/Lived/Farm/SM_Lived_FarmHouse.SM_Lived_FarmHouse"),98,220.5,UE_DOUBLE_PI,0}:
    // Two metres north of the old box: its porch would otherwise stand in the road.
-   {TEXT("house"),TEXT("/Game/FarmBuildings/SM_FarmHouse.SM_FarmHouse"),108,190,FarmYaw,.02},
+   FSite{TEXT("house"),TEXT("/Game/FarmBuildings/SM_FarmHouse.SM_FarmHouse"),108,190,FarmYaw,.02},
    {TEXT("shedA"),TEXT("/Game/FarmBuildings/SM_FarmShedA.SM_FarmShedA"),116.5,170,FarmYaw,.02},
    {TEXT("shedB"),TEXT("/Game/FarmBuildings/SM_FarmShedB.SM_FarmShedB"),84.5,206.5,0,.03}};
   return Data;
@@ -95,16 +99,22 @@ namespace S47FarmBuildings
   return bHave;
  }
 
- FVector Anchor(const FSite& Site){return FVector(Site.X,S47RoadTerrain::SurfaceY(Site.X,Site.Z)-Site.Sink,Site.Z);}
+ FVector Anchor(const FSite& Site)
+ {
+  // The one house's floor is the plan's level floor; its walls carry on down into the ground under it.
+  if(S47FarmHouse::HasModel()&&FCString::Strcmp(Site.Name,TEXT("house"))==0)return FVector(Site.X,S47FarmHouse::PadY(),Site.Z);
+  return FVector(Site.X,S47RoadTerrain::SurfaceY(Site.X,Site.Z)-Site.Sink,Site.Z);
+ }
 
  FVector2D LocalToRoad(const FSite& Site,double LocalX,double LocalY){return ToRoad(Site,LocalX,LocalY);}
 
  const TArray<FWallFoot>& WallFeet()
  {
   // barn.py and house.py's rectangles, the house with its porch slab; the machine shed has no wall along its open front.
+  static const bool bOne=S47FarmHouse::HasModel();
   static const TArray<FWallFoot> Data={
    {0,-8.,-5.5,8.,-5.5},{0,8.,-5.5,8.,5.5},{0,8.,5.5,-8.,5.5},{0,-8.,5.5,-8.,-5.5},
-   {1,-6.02,-4.03,6.02,-4.03},{1,6.,-4.03,6.,4.},{1,6.,4.,-6.,4.},{1,-6.,4.,-6.,-4.03},
+   bOne?FWallFoot{1,-6.,-4.5,6.,-4.5}:FWallFoot{1,-6.02,-4.03,6.02,-4.03},bOne?FWallFoot{1,6.,-4.5,6.,4.5}:FWallFoot{1,6.,-4.03,6.,4.},bOne?FWallFoot{1,6.,4.5,-6.,4.5}:FWallFoot{1,6.,4.,-6.,4.},bOne?FWallFoot{1,-6.,4.5,-6.,-4.5}:FWallFoot{1,-6.,4.,-6.,-4.03},
    {2,4.5,-2.6,4.5,2.75},{2,4.5,2.75,-4.5,2.75},{2,-4.5,2.75,-4.5,-2.6},
    {3,-2.5,-2.,2.5,-2.},{3,2.5,-2.,2.5,2.},{3,2.5,2.,-2.5,2.},{3,-2.5,2.,-2.5,-2.}};
   return Data;
@@ -115,7 +125,14 @@ namespace S47FarmBuildings
   static const TArray<FBox2D> Data=[]
   {
    TArray<FBox2D> Out;Out.Reserve(UE_ARRAY_COUNT(Rows));
-   for(const FRow& R:Rows)Out.Add(FBox2D(FVector2D(R.MinX,R.MinZ),FVector2D(R.MaxX,R.MaxZ)));
+   const FBox2D OldHouse(FVector2D(100.9,184.36),FVector2D(114.94,195.31));
+   for(const FRow& R:Rows)
+   {
+    const FBox2D Row(FVector2D(R.MinX,R.MinZ),FVector2D(R.MaxX,R.MaxZ));
+    // Its walls are S47FarmHouse::Solids where it stands now.
+    if(S47FarmHouse::HasModel()&&OldHouse.IsInside(Row.GetCenter()))continue;
+    Out.Add(Row);
+   }
    return Out;
   }();
   return Data;
@@ -132,7 +149,7 @@ namespace S47FarmBuildings
   // road_bounds_incl_overhang from placement.json.
   static const TArray<FBox2D> Data={
    FBox2D(FVector2D(126.83,162.9),FVector2D(145.24,177.42)),
-   FBox2D(FVector2D(100.9,184.36),FVector2D(114.94,195.31)),
+   S47FarmHouse::HasModel()?FBox2D(FVector2D(91,213),FVector2D(105,226)):FBox2D(FVector2D(100.9,184.36),FVector2D(114.94,195.31)),
    FBox2D(FVector2D(111.24,166.3),FVector2D(121.79,173.93)),
    FBox2D(FVector2D(81.5,204.08),FVector2D(87.5,209.44))};
   return Data;
@@ -150,6 +167,7 @@ namespace S47FarmBuildings
   if(!Available())return false;
   for(const FFloor& F:Floors)
   {
+   if(F.Site==1&&S47FarmHouse::HasModel())continue; // the plan's pad under the one house
    const FSite& S=Sites()[F.Site];const FVector2D L=ToLocal(S,RoadX,RoadZ);
    if(L.X>=F.X0&&L.X<=F.X1&&L.Y>=F.Y0&&L.Y<=F.Y1){OutY=Anchor(S).Y+F.Top;return true;}
   }
@@ -165,6 +183,8 @@ namespace S47FarmBuildings
  FVector EastWindow()
  {
   // house.py: the east wall at local x=6, its lit window centred at y=-1, sill .95 and head 2.15.
+  // The one house (build_house.py): the sitting room's window, plan x 12, y 6.2..7.5.
+  if(S47FarmHouse::HasModel()){const FSite& H=Sites()[1];const FVector2D Q=ToRoad(H,6.05,-2.35);return FVector(Q.X,Anchor(H).Y+1.5,Q.Y);}
   const FSite& S=Sites()[1];const FVector2D P=ToRoad(S,6.05,-1);
   return FVector(P.X,Anchor(S).Y+1.55,P.Y);
  }
@@ -176,7 +196,7 @@ namespace S47FarmBuildings
   bool bAisle=true;
   for(double Y=-8;Y<=5;Y+=.05){const FVector P=BarnPoint(1.3,Y);bAisle&=!Blocked(P.X,P.Z,WalkerRadius);}
   const FVector Back=BarnPoint(1.3,5.3),Wall=BarnPoint(5,-5.45);
-  const bool bStops=Blocked(Back.X,Back.Z,WalkerRadius)&&Blocked(Wall.X,Wall.Z,WalkerRadius)&&Blocked(108,190,WalkerRadius);
+  const bool bStops=Blocked(Back.X,Back.Z,WalkerRadius)&&Blocked(Wall.X,Wall.Z,WalkerRadius)&&(S47FarmHouse::HasModel()||Blocked(108,190,WalkerRadius));
   const FVector Window=EastWindow();
   const bool bWindow=Plots()[1].IsInside(FVector2D(Window.X,Window.Z));
   // The ranch road stays open past the house.
@@ -185,10 +205,11 @@ namespace S47FarmBuildings
   bool bFloors=true;
   for(const FFloor& F:Floors)for(int32 I=0;I<=20;++I)for(int32 J=0;J<=20;++J)
   {
+   if(F.Site==1&&S47FarmHouse::HasModel())continue;
    const FSite& S=Sites()[F.Site];const FVector2D P=ToRoad(S,FMath::Lerp(F.X0,F.X1,I/20.),FMath::Lerp(F.Y0,F.Y1,J/20.));
    bFloors&=S47RoadTerrain::SurfaceY(P.X,P.Y)<Anchor(S).Y+F.Top-.005;
   }
-  const bool bGood=bAisle&&bStops&&bWindow&&bRoad&&bFloors&&Obstacles().Num()==133;
+  const bool bGood=bAisle&&bStops&&bWindow&&bRoad&&bFloors&&Obstacles().Num()==(S47FarmHouse::HasModel()?108:133);
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: barn door and aisle clear, its back wall and the house stop the walker, the road stays open, the land stays under the floors"));
   return bGood;
  }

@@ -466,7 +466,7 @@ void SS47Settings::BuildRows()
 			Says(TEXT("Scenery detail")),
 			Says(TEXT("Reduced simplifies optional distant vegetation and scenery details. Lower detail can reduce drawing and scene work; it does not remove story objects or change interaction distances.")));
 		AddToggle(TEXT("Vehicle mirrors"), &FS47PauseOpts::bVehicleMirrors, &FS47PauseOpts::OnVehicleMirrors, true,
-			TEXT("Live side and rear-view mirrors in the Jeep: each mirror shows the road behind you as you drive. They draw a few small extra views of the scene, which costs a little performance while you are in the driver's seat. Off shows plain dark mirror glass.\n\nChanges apply immediately and save automatically."));
+			TEXT("Live side and rear-view mirrors in the truck: each mirror shows the road behind you as you drive. They draw a few small extra views of the scene, which costs a little performance while you are in the driver's seat. Off shows plain dark mirror glass.\n\nChanges apply immediately and save automatically."));
 		AddSep();
 		FRow R; R.Kind = FRow::EKind::Action; R.Label = TEXT("Restore High defaults");
 		R.Activate = [Defaults, SetGraphics, P]

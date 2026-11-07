@@ -632,7 +632,7 @@ void US47World::Hold(bool bOn) { if (M && M->Story) M->Story->SetCinematic(bOn);
 FString US47World::ServiceDescription(const FString& Place)const
 {
  const FS47Truck* Truck=TruckOf(Place);
- return Truck&&Truck->TripoJeep()?FString(TEXT("The observatory's white Jeep. Open sides, worn seats, and the service keys where they always are.")):FString(EXAMINE_TRUCK);
+ return Truck&&Truck->TripoJeep()?FString(TEXT("The observatory's old white four-by-four. Open sides, worn seats, and the service keys where they always are.")):FString(EXAMINE_TRUCK);
 }
 void US47World::Fade(bool bOn) { if (M && M->UI) M->UI->Fade(bOn, TEXT("")); }
 void US47World::Toast(const FString& Text, float Secs) { if (M && M->UI) M->UI->Toast(Text, Secs); }

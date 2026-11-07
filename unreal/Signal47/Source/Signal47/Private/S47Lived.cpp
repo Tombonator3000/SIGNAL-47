@@ -43,7 +43,7 @@ namespace
  struct FState
  {
   TWeakObjectPtr<AS47Web> Web;
-  int32 FloorNode=-1,DressNode=-1;
+  int32 FloorNode=-1,DressNode=-1,OutNode=-1;
   TWeakObjectPtr<UMaterialInstanceDynamic> Green,Amber,Red,Bulb;
   FLinearColor GreenOn=FLinearColor::Black,AmberOn=FLinearColor::Black,RedOn=FLinearColor::Black,BulbOn=FLinearColor::Black;
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
@@ -128,12 +128,29 @@ namespace
    UE_LOG(LogS47Lived,Display,TEXT("S47: lived-in control room up: floor %s, dressing %s, %d small lamps, %d solids"),S.FloorNode>=0?TEXT("yes"):TEXT("no"),S.DressNode>=0?TEXT("yes"):TEXT("no"),S.Lights.Num(),int32(UE_ARRAY_COUNT(Solids)));
   }
  }
+ // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
+ void BuildOutside(FState& S,AS47Web* W)
+ {
+  if(S.OutNode>=0)return;
+  const int32 Ext=W->Handle(TEXT("ext.group"));
+  if(Ext<0)return;
+  if(UStaticMesh* Out=OptionalMesh(TEXT("/Game/Lived/Saro/SM_Lived_SaroExterior")))
+  {
+   UStaticMeshComponent* C=nullptr;
+   S.OutNode=PlaceRoomMesh(W,Ext,Out,TEXT("LivedSaroExterior"),true,C);
+  }
+ }
  void Show(FState& S,US47Main* M,AS47Web* W,double Dt)
  {
   const FS47Obj Room=W->Obj(TEXT("room.group"));
   const bool bVisible=M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Room&&Room.Shown();
   if(S.FloorNode>=0)W->ObjAt(S.FloorNode).SetVisible(bVisible);
   if(S.DressNode>=0)W->ObjAt(S.DressNode).SetVisible(bVisible);
+  if(S.OutNode>=0)
+  {
+   const FS47Obj Ext=W->ObjAt(W->Handle(TEXT("ext.group")));
+   W->ObjAt(S.OutNode).SetVisible(M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Ext&&Ext.Shown());
+  }
   // SARO's own power (S47SaroPower.h): all of this goes with it, and comes back when the inside does.
   const float Power=M->SaroNight&&M->SaroNight->Power?float(FMath::Clamp(M->SaroNight->Power->Inner,0.,1.)):1.f;
   S.T+=Dt;
@@ -164,6 +181,11 @@ void S47Lived::Update(US47Main* Main,double Dt)
  AS47Web* W=Main->Web.Get();
  if(S.Web.Get()!=W){S=FState();S.Web=W;}
  S.Retry-=FMath::Max(0.,Dt);
- if(S.Retry<=0&&(S.DressNode<0||!S.bColliders)&&!S.bMissingSaid){BuildControl(S,W);S.Retry=1;}
+ if(S.Retry<=0)
+ {
+  if((S.DressNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
+  BuildOutside(S,W);
+  S.Retry=1;
+ }
  Show(S,Main,W,Dt);
 }

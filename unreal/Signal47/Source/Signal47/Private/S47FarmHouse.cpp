@@ -11,6 +11,7 @@
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Misc/PackageName.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 
@@ -71,7 +72,14 @@ namespace S47FarmHouse
   return Y;
  }
 
- TArray<FPiece> Pieces()
+ bool HasModel()
+ {
+  // T16-15: one house. With the model, it stands for the cubes below, on the same plan and doors (S47FarmBuildings puts it here).
+  static const bool bHave=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Farm/SM_Lived_FarmHouse"));
+  return bHave;
+ }
+
+ static TArray<FPiece> Blocks()
  {
   TArray<FPiece> Out;
   for(const FWall& W:Walls())
@@ -148,6 +156,8 @@ namespace S47FarmHouse
   return Out;
  }
 
+ TArray<FPiece> Pieces(){return HasModel()?TArray<FPiece>():Blocks();}
+
  TArray<FBox2D> Solids()
  {
   TArray<FBox2D> Out;
@@ -164,6 +174,13 @@ namespace S47FarmHouse
    for(const FOpening& O:W.Openings)if(O.bDoor){Run(At,O.From);At=O.To;}
    Run(At,End);
   }
+  // What stands against the walls in the model (build_house.py), all clear of the hall and the door swings.
+  if(HasModel())for(const FBox2D& F:{FBox2D(FVector2D(.5,.42),FVector2D(1.95,2.42)),FBox2D(FVector2D(2.05,.4),FVector2D(2.5,.82)),FBox2D(FVector2D(3.9,.32),FVector2D(5.08,1.35)),FBox2D(FVector2D(.5,3.84),FVector2D(1.75,4.38)),
+   FBox2D(FVector2D(.32,4.57),FVector2D(1.,8.3)),FBox2D(FVector2D(1.,4.57),FVector2D(3.32,5.08)),FBox2D(FVector2D(3.72,4.58),FVector2D(4.45,5.28)),FBox2D(FVector2D(1.55,6.75),FVector2D(2.55,7.75)),
+   FBox2D(FVector2D(8.,4.58),FVector2D(10.2,5.42)),FBox2D(FVector2D(8.5,6.25),FVector2D(9.6,6.85)),FBox2D(FVector2D(10.1,8.06),FVector2D(11.55,8.68)),FBox2D(FVector2D(10.78,4.65),FVector2D(11.42,5.26)),
+   FBox2D(FVector2D(7.,.42),FVector2D(7.45,2.6)),FBox2D(FVector2D(9.2,.42),FVector2D(9.72,2.6)),FBox2D(FVector2D(7.55,3.6),FVector2D(8.05,4.3)),
+   FBox2D(FVector2D(10.,.33),FVector2D(11.65,1.1)),FBox2D(FVector2D(11.2,3.35),FVector2D(11.68,3.75)),FBox2D(FVector2D(11.35,2.),FVector2D(11.68,2.5))})
+   Box(F.Min.X,F.Min.Y,F.Max.X,F.Max.Y);
   return Out;
  }
 
@@ -201,7 +218,7 @@ namespace S47FarmHouse
   // Walls that are not doors stay solid, windows included.
   const auto Blocked=[&](double X,double Y){const FVector P=Point(X,Y);for(const FBox2D& B:Solid)if(B.IsInside(FVector2D(P.X,P.Z)))return true;return false;};
   const bool bClosed=Blocked(2.5,.15)&&Blocked(5.17,4)&&Blocked(.15,6.5);
-  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Inside(Point(6,4).X,Point(6,4).Z)&&OnPad(Point(6,10).X,Point(6,10).Z)&&!Inside(Point(6,10).X,Point(6,10).Z)&&Pieces().Num()>30&&DoorPlans().Num()==7;
+  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Inside(Point(6,4).X,Point(6,4).Z)&&OnPad(Point(6,10).X,Point(6,10).Z)&&!Inside(Point(6,10).X,Point(6,10).Z)&&Blocks().Num()>30&&DoorPlans().Num()==7;
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farmhouse plan: hall runs clear front to back, rooms open off it, walls and windows are solid"));
   return bGood;
  }
@@ -225,11 +242,13 @@ bool FS47FarmHouseDoors::Build()
  const int32 Saro=M->Web->Handle(TEXT("ext.group"));if(Saro<0)return false;
  auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood"));if(!Cube)return false;
+ // A leaf with its panels and its handle: a metre cube, scaled to each door like the plain one.
+ auto* Leaf=S47FarmHouse::HasModel()&&FPackageName::DoesPackageExist(TEXT("/Game/Lived/Farm/SM_Lived_HouseDoor"))?LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Lived/Farm/SM_Lived_HouseDoor.SM_Lived_HouseDoor")):nullptr;
  for(const auto& Plan:S47FarmHouse::DoorPlans())
  {
   FDoor D;D.Name=Plan.Name;D.Id=TEXT("ff:olddoor:")+Plan.Name;
   D.Hinge=Plan.From+SaroFrame;const FVector Span=Plan.To-Plan.From;D.Width=Span.Size();D.Along=Span.GetSafeNormal();
-  auto* C=NewObject<UStaticMeshComponent>(M->Web,*(TEXT("S47OldDoor")+Plan.Name));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Cube);if(Wood)C->SetMaterial(0,Wood);
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*(TEXT("S47OldDoor")+Plan.Name));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Leaf?Leaf:Cube);if(Wood&&!Leaf)C->SetMaterial(0,Wood);
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
   D.Leaf=C;D.Object=M->Web->ObjAt(M->Web->AdoptNode(C,Saro,D.Id));
   C->SetWorldScale3D(FVector(D.Width,LeafThick,LeafHeight));
