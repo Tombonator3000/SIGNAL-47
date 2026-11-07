@@ -22,6 +22,8 @@ public:
  void Take();
  // Comes over the carried set, if there is one. False: the player has no walkie to hear it on.
  bool Message(const FString& Text);
+ // How many have come over the set, for whatever may hear it there too.
+ int32 MessagesHeard() const { return MessageCount; }
  void TestOwn() { bOwned=true; }
  // Something said, out of the air at this place, with no radio involved.
  void Talk(const FVector& At);
@@ -45,7 +47,7 @@ private:
  bool bOwned=false,bUnsupported=false,bAvailable=false;
  S47J::FObj Unknown;
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0;
- int32 Crackled=0;
+ int32 Crackled=0,MessageCount=0;
  int32 LastCue=-1,TestStage=0;
  bool Build();
  TArray<FPresence> Nearby() const;

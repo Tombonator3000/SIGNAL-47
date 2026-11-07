@@ -27,6 +27,11 @@ public:
   // Measured movement, not a key held while the player is blocked by a wall.
   double PlayerSpeed = 0.;
   TOptional<FNoise> Noise;
+  // A visit's attention (FS47VisitAttention): stop and face this, a lamp or a sound, easing back from it at HoldBack m/s.
+  // Comes from outside on each tick, so nothing of it is in a save and Story never sets it. Never changes the mode.
+  TOptional<FVector> HoldLook;
+  double HoldBack = 0.;
+  bool bHoldHeard = false; // a sound, not a lamp: it now also knows where to look next
  };
  struct FWorld
  {

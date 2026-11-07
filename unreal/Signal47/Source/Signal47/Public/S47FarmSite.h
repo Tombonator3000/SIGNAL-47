@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Obj.h"
+#include "S47VisitAttention.h"
 class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
@@ -30,7 +31,8 @@ public:
  bool VisitHushed() const{return VisitWantsGround()||(Visit==0&&VisitDwell>5);}
  // The warning has no body yet: what a radio breaks up on is the place itself.
  TOptional<FVector> VisitWarningAt() const{return Visit==1?TOptional<FVector>(Middle+FVector(0,1,0)):TOptional<FVector>();}
- void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;}
+ // Test: a visit now, past the dice. The player counts as noticed whatever they do, for the tests of what happens if it reaches them.
+ void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
  // Marks that will still be there at this clock, with a visit still to come.
  bool WillStandAt(double Clock) const{return Visit==0&&ClearAt>Clock&&Clock>=CalmUntil;}
@@ -47,6 +49,14 @@ public:
  // the tall one keeps to the last of the night. Roll is 0 to 1.
  static int32 PickWho(const FString& InPlace,double Hour,float Roll);
  double VisitBodyDistance() const;
+ // Tests: what the body is doing about the lamp and noise, its next lamp draw in place of the dice, and the visit's two clocks.
+ const FS47VisitAttention& VisitAttention() const{return Attention;}
+ void TestAttentionRoll(float Roll){AttentionRoll=Roll;}
+ // Test: no hunt and no surprise from the set, so that each reaction can be looked at by itself.
+ void TestHoldHunt(){bTestHoldHunt=true;}
+ void TestFreshPatience(){VisitPatience=120;}
+ double VisitPatienceLeft() const{return VisitPatience;}
+ double VisitHuntClock() const{return VisitHunt;}
  TOptional<FVector> VisitBodyEye() const{return bBodyOut?TOptional<FVector>(BodyAt+FVector(0,VisitWho==1?.6:1.9,0)):TOptional<FVector>();}
  // After being taken, no new visit before this clock.
  void SetCalm(double Until){CalmUntil=Until;}
@@ -80,13 +90,21 @@ private:
  bool bBodyOut=false;
  bool bStallSet=false,bNudged=false;
  double HushIn=0;
- float TestRoll=-1;
+ float TestRoll=-1,AttentionRoll=-1;
+ FS47VisitAttention Attention;
+ // Hunt clock and how long it stays interested. Both slow or quicken with what the player gives it to go on.
+ double VisitHunt=0,VisitPatience=120,RadioIn=-1;
+ FVector AttentionFeet=FVector::ZeroVector;
+ bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false;
+ int32 RadioSeen=0;
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);
  void HideBody();
  void SayNudge();
  int32 BodyKind=0; // the kind whose body is out now, whatever VisitWho says
  void StepVisit(double Dt,double Dist);
+ void StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn);
+ void LetAttentionGo();
  void EndVisit(bool bTaken);
  bool bBuilt=false,bActive=false,bBound=false,bShown=false;
  bool Build();

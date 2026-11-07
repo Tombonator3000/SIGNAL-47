@@ -39,8 +39,16 @@ public:
  bool IsOpen(int32 Index) const{return Doors.IsValidIndex(Index)&&Doors[Index].bOpen;}
  int32 Num() const{return Doors.Num();}
  int32 IndexOf(const FString& Name) const;
+ FString NameOf(int32 Index) const{return Doors.IsValidIndex(Index)?Doors[Index].Name:FString();}
+ // Three-space, in the SARO area: the middle of the shut leaf at floor height, and square to it.
+ FVector Middle(int32 Index) const;
+ FVector Normal(int32 Index) const;
+ // A hand on it from the other side (FS47DoorVisit): this fraction of the full swing, drawn over what the door says it is.
+ // Negative lets go, and the door goes on from there to where it should be.
+ void PoseOver(int32 Index,double K);
+ void SetOpenQuietly(int32 Index,bool bOpen);
 private:
- struct FDoor{FString Name,Id;FVector Hinge,Along;double Width=1,K=0;bool bOpen=false;TWeakObjectPtr<UStaticMeshComponent> Leaf;FS47Obj Object;FBox2D Closed;};
+ struct FDoor{FString Name,Id;FVector Hinge,Along;double Width=1,K=0,Over=-1;bool bOpen=false;TWeakObjectPtr<UStaticMeshComponent> Leaf;FS47Obj Object;FBox2D Closed;};
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
  TSharedPtr<uint8> Life;

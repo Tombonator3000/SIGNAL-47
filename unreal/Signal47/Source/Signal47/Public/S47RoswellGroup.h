@@ -28,6 +28,8 @@ public:
  bool Restore(const S47J::FObj& Saved);
  void ReleaseControlled();
  void SetMode(FS47RoswellBrain::EMode Mode);
+ // A visit's attention, passed to every brain until changed. Unset lets go.
+ void SetAttention(const TOptional<FVector>& Look,double Back,bool bHeard);
  bool Developer() const;
  void Clear();
  TArray<FView> Views() const;

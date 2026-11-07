@@ -1,5 +1,6 @@
 #include "S47IndoorDread.h"
 #include "S47Audio.h"
+#include "S47DoorVisit.h"
 #include "S47FarmHouse.h"
 #include "S47FarmSite.h"
 #include "S47Flow.h"
@@ -36,6 +37,22 @@ namespace
  const FVector HouseFrame(-24,0,300); // The old house stands in the farm's part of the SARO area.
 }
 
+FS47IndoorDread::FS47IndoorDread(US47Main* Main):M(Main),DoorVisit(MakeShared<FS47DoorVisit>(Main,this)){}
+
+void FS47IndoorDread::ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock)
+{
+ if(!BuildBody())return;
+ auto* R=Root.Get();if(!R||!Body.Ready())return;
+ R->SetWorldLocation(S47Three::ToUE(Feet));
+ R->SetWorldRotation(FRotationMatrix::MakeFromX(S47Three::DirToUE(FVector(FMath::Sin(Yaw),0,FMath::Cos(Yaw)))).Rotator());
+ if(bWalk)Body.Apply(true,0,.9,Clock*6.,Clock,false,false);
+ else Body.Peek(true,1.,.2*FMath::Sin(Clock*.85),Clock);
+}
+
+void FS47IndoorDread::HideDoorBody(){if(Body.Ready())Body.Peek(false,1,0,0);}
+
+bool FS47IndoorDread::DoorBodyRendered() const{return Body.Ready()&&Body.Rendered();}
+
 void FS47IndoorDread::Begin(const S47J::FObj& Saved)
 {
  Stop();
@@ -53,11 +70,13 @@ void FS47IndoorDread::Begin(const S47J::FObj& Saved)
   FloodRollDay=S47J::Int(Room,TEXT("rollDay"));FloodCount=S47J::Int(Room,TEXT("count"));
  }
  if(M)Sight.Init(M);
+ DoorVisit->Begin(S47J::Obj(Saved,TEXT("door")));
 }
 
 void FS47IndoorDread::Stop()
 {
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);
+ DoorVisit->Stop();
  if(bLive&&Scene.Get()==M->Web.Get()&&Body.Ready())Body.Peek(false,1,0,0);
  Stage=EStage::None;T=Noticed=0;Withdraw=-1;ExposureNow=0;
 }
@@ -65,6 +84,7 @@ void FS47IndoorDread::Stop()
 S47J::FObj FS47IndoorDread::Save() const
 {
  const auto O=S47J::New();
+ if(const auto Visit=DoorVisit->Save();Visit->Values.Num()>0)S47J::Set(O,TEXT("door"),Visit);
  if(PeekRollDay>0)S47J::Set(O,TEXT("peekRollDay"),PeekRollDay);
  if(PeekCount>0)S47J::Set(O,TEXT("peeks"),PeekCount);
  if(bPeekTonight)S47J::Set(O,TEXT("peekTonight"),true);
@@ -422,6 +442,7 @@ void FS47IndoorDread::Step(double Dt)
  // Nothing moves and nothing is counted behind a menu; the body stays as it was. A screen in the world is not a menu.
  if(M->Freeform->Held())return;
  if(Stage!=EStage::None){StepPeek(Dt);return;}
+ if(DoorVisit->Step(Dt))return;
  StepPeekDraw(Dt);
  if(Stage==EStage::None)StepFloodRoom(Dt);
 }
@@ -447,5 +468,7 @@ bool FS47IndoorDread::SelfTest(TArray<FString>& Lines)
  Check(Copy.HasFloodRoom()&&Copy.FloodRoomClock()==90000&&Copy.FloodRoomAt().Equals(FVector(1,2,3))&&Copy.FloodRoomRollDay()==3&&Copy.PeekRollDayOf()==4,TEXT("the lit room and the night's draws survive Continue"));
  FS47IndoorDread Again(nullptr);Again.Begin(Copy.Save());
  Check(S47J::Write(Copy.Save())==S47J::Write(Again.Save()),TEXT("saving again changes nothing"));
+ OK&=FS47DoorVisit::SelfTest(Lines);
+ OK&=FS47VisitAttention::SelfTest(Lines);
  return OK;
 }

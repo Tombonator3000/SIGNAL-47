@@ -1051,7 +1051,7 @@ void FS47FreeformSession::UpdateMysteries()
     bool bDigits=!Suffix.IsEmpty();for(TCHAR C:Suffix)bDigits&=C>=TEXT('0')&&C<=TEXT('9');
     const bool bFollowup=bDigits&&FCString::Atoi(*Suffix)>0;
     // Something at the window, a light come back to the room: these are the same family as a figure seen at the base.
-    const bool bKin=Base==TEXT("observer")&&(Record.Key.StartsWith(TEXT("peek-"))||Record.Key.StartsWith(TEXT("flood-room-")));
+    const bool bKin=Base==TEXT("observer")&&(Record.Key.StartsWith(TEXT("peek-"))||Record.Key.StartsWith(TEXT("flood-room-"))||Record.Key.StartsWith(TEXT("door-visit-"))||Record.Key.StartsWith(TEXT("door-marks-")));
     if(!bOriginal&&!bFollowup&&!bKin)continue;
     const int32 D=FindingDays.FindRef(Record.Key);if(D<1)continue;
     bFamilySeen=true;Sources.Add(Record.Key);First=FMath::Min(First,D);Last=FMath::Max(Last,D);
@@ -1618,7 +1618,7 @@ void FS47FreeformSession::OpenArchive()
  TArray<FString> Keys;Findings.GetKeys(Keys);Keys.Sort([this](const FString& A,const FString& B){const int32 X=FindingDays.FindRef(A),Y=FindingDays.FindRef(B);return X!=Y?X>Y:A<B;});
  for(const FString& K:Keys)
  {
-  const bool Investigate=K.StartsWith(TEXT("extra_pulse"))||K.StartsWith(TEXT("feeder_fault"))||K.StartsWith(TEXT("wrong_source"))||K.StartsWith(TEXT("roof_steps"))||K.StartsWith(TEXT("observer"))||K.StartsWith(TEXT("peek-"))||K.StartsWith(TEXT("flood-room-"))||K.StartsWith(TEXT("landing_trace"))||K.StartsWith(TEXT("time_disagreement"))||K.StartsWith(TEXT("duplicate_print"))||K.StartsWith(TEXT("carrier_"));
+  const bool Investigate=K.StartsWith(TEXT("extra_pulse"))||K.StartsWith(TEXT("feeder_fault"))||K.StartsWith(TEXT("wrong_source"))||K.StartsWith(TEXT("roof_steps"))||K.StartsWith(TEXT("observer"))||K.StartsWith(TEXT("peek-"))||K.StartsWith(TEXT("flood-room-"))||K.StartsWith(TEXT("door-visit-"))||K.StartsWith(TEXT("door-marks-"))||K.StartsWith(TEXT("landing_trace"))||K.StartsWith(TEXT("time_disagreement"))||K.StartsWith(TEXT("duplicate_print"))||K.StartsWith(TEXT("carrier_"));
   const FString Record=Findings.FindRef(K);const bool Bench=K.StartsWith(TEXT("service"))||K.StartsWith(TEXT("workshop"))||K.StartsWith(TEXT("donor"))||K.StartsWith(TEXT("feeder-repair"))||K.StartsWith(TEXT("sample"));
   // The record's own first sentence names it; internal keys stay internal.
   int32 Stop=INDEX_NONE;Record.FindChar(TEXT('.'),Stop);FString Title=Stop>0?Record.Left(Stop):Record;if(Title.Len()>58)Title=Title.Left(55)+TEXT("...");

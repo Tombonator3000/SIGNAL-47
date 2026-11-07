@@ -81,6 +81,7 @@ int32 FS47Glimpses::DevSpawn(int32 Number,FS47RoswellBrain::EMode Mode,bool bRoo
 { return Group?Group->Spawn(Number,Mode,bRoof):0; }
 void FS47Glimpses::DevMode(FS47RoswellBrain::EMode Mode) { if (Group) Group->SetMode(Mode); }
 void FS47Glimpses::DevClear() { if (Group) Group->Clear(); Hide(); }
+void FS47Glimpses::HoldAttention(const TOptional<FVector>& Look, double Back, bool bHeard) { if (Group) Group->SetAttention(Look, Back, bHeard); }
 void FS47Glimpses::SyncGroup()
 {
  Count=Group->NightCount; const auto Views=Group->Views(); bVisible=!Views.IsEmpty();

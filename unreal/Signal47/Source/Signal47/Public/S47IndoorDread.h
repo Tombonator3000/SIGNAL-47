@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47RoswellWorld.h"
 #include "S47TripoCreature.h"
+#include "S47DoorVisit.h"
 
 class US47Main;
 class AS47Web;
@@ -21,7 +22,7 @@ struct FS47Cam;
 class FS47IndoorDread
 {
 public:
- explicit FS47IndoorDread(US47Main* Main):M(Main){}
+ explicit FS47IndoorDread(US47Main* Main);
  void Begin(const S47J::FObj& Saved);
  void Stop();
  void Step(double Dt);
@@ -56,6 +57,15 @@ public:
  // Developer menu: skip the draw and the wait. The search and every physical rule still apply.
  bool DevPeek();
  static bool SelfTest(TArray<FString>& Lines);
+
+ // Something at a shut door (FS47DoorVisit), which shares the body and goes in turn with the rest of this.
+ FS47DoorVisit& Door(){return *DoorVisit;}
+ bool DoorPressed(const FString& DoorKey){return DoorVisit->Pressed(DoorKey);}
+ FString DoorLabel(const FString& DoorKey) const{return DoorVisit->LabelFor(DoorKey);}
+ bool DoorQuiet() const{return Quiet();}
+ void ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock);
+ void HideDoorBody();
+ bool DoorBodyRendered() const;
 private:
  enum class EStage : uint8 { None, Up, Leaving };
  struct FCandidate
@@ -70,6 +80,7 @@ private:
  FS47TripoCreature Body;
  FS47RoswellWorld Sight;
  bool bBodyFailed=false;
+ TSharedPtr<FS47DoorVisit> DoorVisit;
 
  // The peek under way.
  EStage Stage=EStage::None;
