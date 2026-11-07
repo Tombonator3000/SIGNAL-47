@@ -2148,3 +2148,7 @@ Skrevet i egen worktree; ikke importert, kompilert eller sett i spillet. Bakken 
 ## 7. november 2026 kl.09:20, relieffprøven: klumper, void, bil og én jordtone
 
 Skrevet i egen worktree, ikke bygget eller kjørt. Klumpene ved byen finnes ikke i verden: området `road` har ingen land, så gulvet ble stående (−2,547 mot −1,020 under øyet) og bildet ble tatt 9 cm over bakken, mesa-bildet under den. `void` 44/44 har samme årsak; spilleren sto stille i alle tre `road`-målinger (Off i loggen er Off på startpunktet). Trippens 1,842 m er taket på bilen. Prøven går nå i `diner`, sjekker at turen flytter seg og at øyet står på bakken, og logger x,z og `under`. Veien .299 er kollisjonsmeshens toleranse langt ute. SARO .849 er ekte: meshen ligger opptil 0,83 m under gulvet i masken nord for antennefeltet; beskrevet for kart-agenten. Tunet var lyst fordi gårdsmeshen manglet UV1. Tone mot sRGB 165,130,105 satt fra forhold, ikke lest tilbake.
+
+## 7. november 2026 kl.11:50, Pale One, Tall One og Roswell 2 med egne klipp
+
+Importert til Licensed (utenfor Git) med `Tools/triponpcs/run_pale_one.py`: alle tre skinn og 28 klipp stemmer med Blender innen 0,12 cm ved tilbakelesing. Kode skrevet i egen worktree, ikke bygget eller kjørt: `FS47ClipBank`/`FS47ClipMotion`, fase fra faktisk tilbakelagt vei og fotplanting, øyeglimt på alle tre, fallback til gamle kropper. Pale One bærer Crab og dørmøtet, Tall One bærer Tall, Roswell 2 bærer de små. `climb`, `jump_down`, `fall`, `sit` og `jump` er bare i forhåndsvisningen.

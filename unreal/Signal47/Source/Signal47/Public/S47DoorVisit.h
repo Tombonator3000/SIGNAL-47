@@ -21,7 +21,7 @@ class FS47DoorVisit
 public:
  enum class EStage : uint8 { None, Trying, Waiting, Holding, Opening, Standing, Leaving };
  enum class EEnding : uint8 { None, Held, Walked, Opened };
- static constexpr double TrySeconds=8,WaitSeconds=7,HoldSeconds=3.2,OpenSeconds=3.5,ComeChance=.45;
+ static constexpr double TrySeconds=8,WaitSeconds=7,HoldSeconds=3.2,OpenSeconds=3.5,ComeChance=.45,LookedBackSeconds=1.6;
  FS47DoorVisit(US47Main* Main,FS47IndoorDread* InOwner):M(Main),Owner(InOwner){}
  void Begin(const S47J::FObj& Saved);
  void Stop();

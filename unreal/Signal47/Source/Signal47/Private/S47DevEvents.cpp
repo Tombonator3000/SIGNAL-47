@@ -47,7 +47,7 @@ void FS47DevEvents::AddBuiltIn()
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
  Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
- Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on today's body until the new Pale; 30 seconds"), [this, Say] { SpawnGait(false); Say(TEXT("tall one")); });
+ Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on the Pale One with its clips, if this build has it; 30 seconds"), [this, Say] { SpawnGait(false); Say(TEXT("tall one")); });
  Add(TEXT("Aliens"), TEXT("Crab: folds down and crawls up"), TEXT("then sideways round you and away; 30 seconds"), [this, Say] { SpawnGait(true); Say(TEXT("crab")); });
  for(int32 Kind=0;Kind<3;++Kind)
  {

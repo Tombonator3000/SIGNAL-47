@@ -192,7 +192,8 @@ void FS47RoswellBrain::Move(double Dt,const FWorld& World)
  const FVector D=Path[NextPoint]-Pos;
  // Unhurried, it goes in steps and stops between them.
  const bool bSneaking=DesiredSpeed<1.3&&(State==EState::Stalk||State==EState::Search||Crouch>.2);
- const double Speed=FMath::Min(DesiredSpeed*(bSneaking?S47Roswell::StalkPulse(Age):1.),OldSpeed+Dt*3.8);
+ const double Pulse=!bSneaking?1.:bSteadySneak?(FMath::Fmod(Age,8.3)<6.5?.9:.02):S47Roswell::StalkPulse(Age);
+ const double Speed=FMath::Min(DesiredSpeed*Pulse,OldSpeed+Dt*3.8);
 
  FVector To=Pos+D.GetSafeNormal()*FMath::Min(D.Size(),Speed*Dt);
  bool bGrounded=true;

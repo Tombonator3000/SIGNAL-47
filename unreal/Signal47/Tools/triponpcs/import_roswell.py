@@ -43,7 +43,7 @@ def require_fbx_data(settings):
             abs(float(settings.import_rotation.yaw) - 90) < 1e-5)
 
 
-def verify_render_lod(mesh, row):
+def verify_render_lod(mesh, row, tolerance=.1, triangle_share=0.):
     required = ('GeometryScript_AssetUtils', 'GeometryScript_MeshQueries', 'GeometryScript_List')
     require('GeometryScripting enabled for actual LOD render-position validation',
             all(hasattr(unreal, name) for name in required), 'Use -EnablePlugins=GeometryScripting')
@@ -69,16 +69,16 @@ def verify_render_lod(mesh, row):
     expected = [[100 * low[0], -100 * high[1], 100 * low[2]],
                 [100 * high[0], -100 * low[1], 100 * high[2]]]
     bound_error = max(abs(a - b) for aa, bb in zip(actual, expected) for a, b in zip(aa, bb))
-    require('actual Roswell render LOD frame and scale', bound_error < .1, (row['level'], actual, expected))
+    require('actual Roswell render LOD frame and scale', bound_error < tolerance, (row['level'], actual, expected))
     probes = row.get('probe_points_blender_m', [])
     require('asymmetric Blender probes available; rerun prepare_roswell', len(probes) == 9)
     errors = []
     for x, y, z in probes:
         expected_point = (100 * x, -100 * y, 100 * z)
         errors.append(math.sqrt(min(sum((p[k] - expected_point[k]) ** 2 for k in range(3)) for p in positions)))
-    require('actual Roswell render LOD asymmetric geometry/facing', max(errors) < .1, (row['level'], errors))
+    require('actual Roswell render LOD asymmetric geometry/facing', max(errors) < tolerance, (row['level'], errors))
     triangles = dynamic.get_triangle_count()
-    require('actual Roswell render triangle count', triangles == row['triangles'], (row['level'], triangles))
+    require('actual Roswell render triangle count', abs(triangles - row['triangles']) <= row['triangles'] * triangle_share, (row['level'], triangles))
     return {'level': row['level'], 'triangles': triangles, 'bounds_cm': actual,
             'maximum_bounds_error_cm': bound_error, 'maximum_probe_error_cm': max(errors),
             'probe_count': len(probes), 'read_mode': 'RENDER_DATA'}

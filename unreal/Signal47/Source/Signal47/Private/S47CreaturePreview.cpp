@@ -27,9 +27,11 @@ void S47CreaturePreview::Start(US47Main* M)
  struct FPreview { FS47PaleBody Body; bool bReported=false; FS47RoswellMotion RoswellMotion; double Travelled=0; double StageError=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
  auto Fixture=MakeShared<FPreview>(); TWeakObjectPtr<US47Main> Weak=M;
  FString Style;FParse::Value(FCommandLine::Get(),TEXT("S47CreatureStyle="),Style);
- Fixture->Style=Style==TEXT("roswell")?3:Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
- if(Fixture->Style==3)Fixture->Body.CreatureAsset=TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell");
- if(Fixture->Style==1)Fixture->Body.Style=ES47PaleStyle::Tall;
+ Fixture->Style=Style==TEXT("pale")?4:Style==TEXT("roswell")?3:Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
+ if(Fixture->Style==3)Fixture->Body.CreatureAsset=S47KindBody::Roswell;
+ if(Fixture->Style==2)Fixture->Body.CreatureAsset=S47KindBody::Crab;
+ if(Fixture->Style==4)Fixture->Body.CreatureAsset=S47KindBody::Pale;
+ if(Fixture->Style==1){Fixture->Body.CreatureAsset=S47KindBody::Tall;Fixture->Body.Style=ES47PaleStyle::Tall;}
  auto Capture=FS47CreatureCapture::Create([Fixture]
  { return FS47CreatureCapture::FSample{Fixture->T,Fixture->Last,Fixture->bPlaced,Fixture->Body.Rendered(),Fixture->Body.Creature.Mesh}; });
  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Weak,Fixture,Capture](float Dt)
@@ -51,18 +53,40 @@ void S47CreaturePreview::Start(US47Main* M)
   const double T=Fixture->T;
   if(Fixture->Style==3)
   {
-   // Small Roswell: stand, sneak with its stops, listen, sneak on, run, duck and stop.
+   // Small Roswell: stand, sneak with its stops, listen, sneak on, run, duck and stop. With its own clips, then also
+   // the fright at a lamp, the climb, the jump down and the fall, at the speed its steps were made for.
    const double Sd=FMath::Min(double(Dt),.1);
-   const int32 St=T<2?0:T<8?1:T<10?2:T<13?3:T<15?4:5;
+   auto& Worn=Fixture->Body.Creature;
+   const bool bClips=Worn.Clips.IsValid();
+   const int32 St=T<2?0:T<8?1:T<10?2:T<13?3:T<15?4:T<17||!bClips?5:T<20?6:T<24?7:T<28?8:T<31.2?9:5;
    const bool bSneak=St==1||St==3;
-   const double V=bSneak?.8*S47Roswell::StalkPulse(T):St==4?2.8:0;
+   const double V=bSneak?(bClips?Worn.Clips->GaitSpeedMps(ES47Clip::Sneak):.8*S47Roswell::StalkPulse(T)):St==4?2.8:0;
    Fixture->X+=FMath::Cos(Fixture->Yaw)*V*Sd;Fixture->Z+=FMath::Sin(Fixture->Yaw)*V*Sd;Fixture->Travelled+=V*Sd;
+   if(bClips&&Worn.ClipMotion&&Worn.Mesh.IsValid())
+   {
+    const FVector Along=S47Three::ToThree(Worn.Mesh->GetComponentTransform().TransformVectorNoScale(Worn.ClipMotion->ActRootVelocity(*Worn.Clips)));
+    Fixture->X+=Along.X*Sd;Fixture->Z+=Along.Z*Sd;
+   }
    const FVector At(Fixture->X,S47RoadTerrain::SurfaceY(Fixture->X-8000,Fixture->Z),Fixture->Z);
    if(UBoxComponent* R=Fixture->Body.RootComp.Get())R->SetWorldLocationAndRotation(S47Three::ToUE(At),FRotator(0,FMath::RadiansToDegrees(Fixture->Yaw),0));
    Fixture->Body.Creature.Mesh->SetVisibility(true,true);
    FS47RoswellPose Pose;Pose.SpeedMps=V;Pose.DistanceTravelled=Fixture->Travelled;Pose.Crouch=St==5?1.:bSneak?.3:0.;
    Pose.Mode=St==4?ES47RoswellMotion::Run:bSneak?ES47RoswellMotion::Stalk:St==2?ES47RoswellMotion::Listen:St==5?ES47RoswellMotion::Peek:ES47RoswellMotion::Idle;
-   Fixture->RoswellMotion.Apply(Fixture->Body.Creature,Pose,Sd);
+   Pose.Act=St==6?ES47Clip::Afraid:St==7?ES47Clip::Climb:St==8?ES47Clip::JumpDown:St==9?ES47Clip::Fall:ES47Clip::Num;
+   const auto Stepped=Fixture->RoswellMotion.Apply(Fixture->Body.Creature,Pose,Sd);
+   Fixture->Contacts+=int32(Stepped.bLeft)+int32(Stepped.bRight);
+   if(bClips)
+   {
+    Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Worn.Contacts.MaxPlantErrorCm);
+    Fixture->StageError=FMath::Max(Fixture->StageError,Worn.Contacts.MaxPlantErrorCm);
+   }
+   if(St!=Fixture->Last&&Fixture->Last>=0)UE_LOG(LogTemp,Display,TEXT("S47: creature preview roswell stage %d done, worst planted %.2f cm"),Fixture->Last,Fixture->StageError);
+   if(St!=Fixture->Last)Fixture->StageError=0;
+   if(T>=(bClips?31.4:15.4)&&!Fixture->bReported)
+   {
+    Fixture->bReported=true;
+    UE_LOG(LogTemp,Display,TEXT("S47: creature preview COMPLETE roswell: %d steps, worst planted error %.3f cm, skin rendered %d, clips %d"),Fixture->Contacts,Fixture->MaxPlantError,Fixture->Body.Rendered(),bClips);
+   }
    const double Cam=Fixture->Yaw+.8,Dist=2.6;
    const FVector Eye(At.X+FMath::Cos(Cam)*Dist,At.Y+1.5,At.Z+FMath::Sin(Cam)*Dist),To(At.X,At.Y+.5,At.Z);
    const FVector D=To-Eye;
@@ -73,10 +97,43 @@ void S47CreaturePreview::Start(US47Main* M)
   if(Fixture->Style!=0)
   {
    // Tall and crab: stand or fold, wait, walk ahead, step sideways, run, turn on the spot and stop.
-   const bool bCrab=Fixture->Style==2;
+   // Pale: the Pale One's own clips one after the other, walking ahead and backwards, each act to its end.
+   const bool bCrab=Fixture->Style==2,bPale=Fixture->Style==4;
    const double Sd=FMath::Min(double(Dt),.1);
-   const int32 St=T<3?0:T<5?1:T<9?2:T<12?3:T<14?4:T<16?5:6;
-   if(T>=3)
+   int32 St=T<3?0:T<5?1:T<9?2:T<12?3:T<14?4:T<16?5:6;
+   double PaleAhead=0;
+   static constexpr int32 PaleBeats=9;
+   static constexpr double PaleUntil[PaleBeats]={3,8,10,12,17,19.5,23.3,27.3,29};
+   static constexpr double PaleSpeed[PaleBeats]={0,1.,-.55,0,0,0,0,0,0};
+   static constexpr ES47Clip PaleAct[PaleBeats]={ES47Clip::Num,ES47Clip::Num,ES47Clip::Num,ES47Clip::Num,ES47Clip::Frustrated,ES47Clip::Angry,ES47Clip::Climb,ES47Clip::JumpDown,ES47Clip::Num};
+   if(bPale)
+   {
+    St=PaleBeats;
+    for(int32 Beat=PaleBeats-1;Beat>=0;--Beat)if(T<PaleUntil[Beat])St=Beat;
+    Fixture->Body.Act=St<PaleBeats?PaleAct[St]:ES47Clip::Num;
+    PaleAhead=St<PaleBeats?PaleSpeed[St]:0.;
+    Fixture->X+=FMath::Cos(Fixture->Yaw)*PaleAhead*Sd;Fixture->Z+=FMath::Sin(Fixture->Yaw)*PaleAhead*Sd;
+   }
+   // The Tall One, once it has stopped: all it has beyond walking and running.
+   static constexpr int32 TallBeats=8;
+   static constexpr double TallUntil[TallBeats]={20,23,31.2,38.6,42,47.2,51.2,55};
+   static constexpr ES47Clip TallAct[TallBeats]={ES47Clip::Observe,ES47Clip::LookAround,ES47Clip::Shh,ES47Clip::Sit,ES47Clip::Relax,ES47Clip::Freeze,ES47Clip::JumpDown,ES47Clip::Fall};
+   const bool bTallClips=Fixture->Style==1&&Fixture->Body.Creature.Clips.IsValid();
+   if(bTallClips&&T>=17)
+   {
+    int32 Beat=TallBeats;
+    for(int32 Down=TallBeats-1;Down>=0;--Down)if(T<TallUntil[Down])Beat=Down;
+    Fixture->Body.Act=Beat<TallBeats?TallAct[Beat]:ES47Clip::Num;
+    St=7+Beat;
+   }
+   // An act that goes somewhere takes the root along.
+   auto& Worn=Fixture->Body.Creature;
+   if(Worn.ClipMotion&&Worn.Clips&&Worn.Mesh.IsValid())
+   {
+    const FVector Along=S47Three::ToThree(Worn.Mesh->GetComponentTransform().TransformVectorNoScale(Worn.ClipMotion->ActRootVelocity(*Worn.Clips)));
+    Fixture->X+=Along.X*Sd;Fixture->Z+=Along.Z*Sd;
+   }
+   if(!bPale&&T>=3&&!(bTallClips&&T>=17))
    {
     const double Ahead=St==2?(bCrab?1.1:1.0):St==4?(bCrab?2.8:1.9):0,Across=St==3&&bCrab?.8:0;
     Fixture->X+=FMath::Cos(Fixture->Yaw)*Ahead*Sd-FMath::Sin(Fixture->Yaw)*Across*Sd;
@@ -92,7 +149,8 @@ void S47CreaturePreview::Start(US47Main* M)
    }
    else
    {
-    Fixture->Body.Apply(true,At,Fixture->Yaw,Fixture->Yaw+.25*FMath::Sin(T*.7),St==2?.85:St==4?1.4:0.,T*3,T,St==4?FS47PaleBody::EPose::Chase:FS47PaleBody::EPose::Walk);
+    const bool bRun=!bPale&&St==4;
+    Fixture->Body.Apply(true,At,Fixture->Yaw,Fixture->Yaw+.25*FMath::Sin(T*.7),bPale?(PaleAhead!=0?.85:0.):St==2?.85:bRun?1.4:0.,T*3,T,bRun?FS47PaleBody::EPose::Chase:FS47PaleBody::EPose::Walk);
     const auto& Plant=Fixture->Body.Creature.Contacts;
     Fixture->Contacts+=int32(Plant.bLeft)+int32(Plant.bRight);
     Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Plant.MaxPlantErrorCm);
@@ -115,11 +173,12 @@ void S47CreaturePreview::Start(US47Main* M)
    const FVector Eye(At.X+FMath::Cos(Cam)*Dist,At.Y+1.62,At.Z+FMath::Sin(Cam)*Dist),To(At.X,At.Y+(bCrab?.5:1.2),At.Z);
    const FVector D=To-Eye;
    Main->Player->Place(Eye.X,Eye.Z,FMath::Atan2(-D.X,-D.Z));Main->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-   if(St!=Fixture->Last){UE_LOG(LogTemp,Display,TEXT("S47: creature preview %s stage %d done, worst planted %.2f cm"),bCrab?TEXT("crab"):TEXT("tall"),Fixture->Last,Fixture->StageError);Fixture->StageError=0;Fixture->Last=St;}
-   if(T>=17.4&&!Fixture->bReported)
+   const TCHAR* const Who=bCrab?TEXT("crab"):bPale?TEXT("pale"):TEXT("tall");
+   if(St!=Fixture->Last){UE_LOG(LogTemp,Display,TEXT("S47: creature preview %s stage %d done, worst planted %.2f cm"),Who,Fixture->Last,Fixture->StageError);Fixture->StageError=0;Fixture->Last=St;}
+   if(T>=(bPale?29.4:bTallClips?55.4:17.4)&&!Fixture->bReported)
    {
     Fixture->bReported=true;
-    UE_LOG(LogTemp,Display,TEXT("S47: creature preview COMPLETE %s: %d steps, worst planted error %.3f cm, skin rendered %d"),bCrab?TEXT("crab"):TEXT("tall"),Fixture->Contacts,Fixture->MaxPlantError,Fixture->Body.Rendered());
+    UE_LOG(LogTemp,Display,TEXT("S47: creature preview COMPLETE %s: %d steps, worst planted error %.3f cm, skin rendered %d, clips %d"),Who,Fixture->Contacts,Fixture->MaxPlantError,Fixture->Body.Rendered(),Fixture->Body.Creature.Clips.IsValid());
    }
    return true;
   }

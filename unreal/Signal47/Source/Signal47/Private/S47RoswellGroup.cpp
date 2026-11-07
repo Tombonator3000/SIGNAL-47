@@ -49,8 +49,7 @@ struct FS47RoswellGroup::FImpl
   auto* Root=NewObject<USceneComponent>(M->Web.Get());
   M->Web->AddInstanceComponent(Root); Root->SetMobility(EComponentMobility::Movable);
   Root->SetupAttachment(M->Web->GetRootComponent()); Root->RegisterComponent(); A->Root=Root;
-  if (!A->OwnedBody.Build(M->Web.Get(),Root,*FString::Printf(TEXT("RoswellGroupBody%d"),Actors.Num()),
-   TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell")))
+  if (!A->OwnedBody.Build(M->Web.Get(),Root,*FString::Printf(TEXT("RoswellGroupBody%d"),Actors.Num()),S47KindBody::Roswell))
   { Root->DestroyComponent(); return nullptr; }
   A->Body=&A->OwnedBody; auto* Out=A.Get(); Actors.Add(MoveTemp(A)); IgnoreBodies(); return Out;
  }
@@ -220,6 +219,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   W.CanMove=[this](const FVector& From,const FVector& To){return P->World.MoveAllowed(From,To);};
   W.Sight=[this](const FVector& From,const FVector& To){return P->World.ClearSight(From,To);};
   W.Occupancy=[this,&A](const FVector& At){return P->Occupied(At,&A);};
+  A.Brain.bSteadySneak=A.Body->Clips.IsValid();
   FS47RoswellBrain::FInput In; In.bHeld=Held; In.bCanContact=!(M->World&&M->World->bDriving); In.PlayerFeet=Feet; In.PlayerEye=Input.Cam.Pos;
   In.PlayerForward=Input.Cam.Forward; In.PlayerSpeed=Speed; In.bFlashlight=Input.bFlashlight;
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
@@ -235,6 +235,8 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   Pose.Mode=A.Brain.State==E::Contact?ES47RoswellMotion::Grab:
    Pose.SpeedMps>1.6?ES47RoswellMotion::Run:Pose.SpeedMps>.03?(Pose.Crouch>.2||A.Brain.State==E::Stalk||A.Brain.State==E::Search?ES47RoswellMotion::Stalk:ES47RoswellMotion::Walk):
    A.Brain.State==E::Peek?ES47RoswellMotion::Peek:A.Brain.State==E::Listen?ES47RoswellMotion::Listen:ES47RoswellMotion::Idle;
+  // A lamp on it, and it stands: it cowers. Told to back away it goes back on its steps instead.
+  if (In.HoldLook.IsSet() && !In.bHoldHeard && Pose.SpeedMps<=.03) Pose.Act=ES47Clip::Afraid;
   const auto Contact=A.Motion.Apply(*A.Body,Pose,Dt);
   A.Contacts+=(Contact.bLeft?1:0)+(Contact.bRight?1:0);
   FS47RoswellFoley Surface; Surface.bHeld=Held; Surface.bRoof=A.bRoof; Surface.bMetal=false;

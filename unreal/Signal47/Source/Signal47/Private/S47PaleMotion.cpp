@@ -16,7 +16,7 @@ FS47PaleContacts FS47PaleMotion::Apply(FS47TripoCreature& R,const FS47PalePose& 
  auto* C=R.Mesh.Get();if(!C||R.Rest.Num()!=R.Parents.Num()||R.Rest.Num()!=R.Names.Num())return Out;
  const auto Bone=[&](const TCHAR* N){return R.Names.IndexOfByKey(FName(N));};
  for(const TCHAR* N:{TEXT("pelvis"),TEXT("spine_01"),TEXT("spine_03"),TEXT("head"),TEXT("thigh_l"),TEXT("calf_l"),TEXT("foot_l"),TEXT("thigh_r"),TEXT("calf_r"),TEXT("foot_r"),TEXT("upperarm_l"),TEXT("lowerarm_l"),TEXT("hand_l"),TEXT("upperarm_r"),TEXT("lowerarm_r"),TEXT("hand_r")})if(Bone(N)<0)return Out;
- Out.bValid=true;C->SetVisibility(In.bVisible);
+ Out.bValid=true;C->SetVisibility(In.bVisible,true);
  if(!In.bVisible){*this=FS47PaleMotion();return Out;}
  if(!FMath::IsFinite(In.Clock)||!FMath::IsFinite(In.HeadYaw)){Out.bValid=false;return Out;}
  const FTransform World=C->GetComponentTransform();const FVector Root=World.GetLocation();

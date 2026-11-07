@@ -304,6 +304,20 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  if(bHeldNow)Speed=Attention.BackSpeed();
  const double Face=FMath::Atan2(FaceAt.Z-BodyAt.Z,FaceAt.X-BodyAt.X);
  BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5);
+ if(VisitWho==2)
+ {
+  // Far off it watches, looks about, and waits, in long turns. Held in a lamp close by, and only when it is really seen, it
+  // may once a visit, and not often, put a finger to its mouth. It stands for as long as that takes.
+  const double Turn=FMath::Fmod(BodyClock,34.);
+  VisitBody->Stand=Turn<13?ES47Clip::Observe:Turn<26?ES47Clip::LookAround:ES47Clip::Idle;
+  ShhLeft=FMath::Max(0.,ShhLeft-Dt);
+  if(!bShhTried&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&FVector::Dist(BodyAt,Feet)<ShhWithin&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Shh))
+  {
+   bShhTried=true;
+   if(FMath::FRand()<.4f)ShhLeft=VisitBody->Creature.Clips->Seconds(ES47Clip::Shh);
+  }
+  if(ShhLeft>0)Speed=0;
+ }
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodyWay),true);
  for(const auto& Part:VisitBody->All)if(auto* C=Part.Get())Q.AddIgnoredComponent(C);
  // Straight for the player, a little round what is in the way. Walls hold it, and doors give time.
@@ -318,6 +332,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  FHitResult Floor;
  if(M->Web->GetWorld()->LineTraceSingleByChannel(Floor,S47Three::ToUE(BodyAt+FVector(0,1.5,0)),S47Three::ToUE(BodyAt-FVector(0,3,0)),ECC_Visibility,Q))
   BodyAt.Y=FMath::FInterpTo(BodyAt.Y,S47Three::ToThree(Floor.ImpactPoint).Y,Dt,12.);
+ VisitBody->Act=ShhLeft>0?ES47Clip::Shh:ES47Clip::Num;
  if(VisitWho==1)VisitBody->ApplyCrab(true,BodyAt,BodyYaw,Face,BodyClock,BodyClock/1.6,Speed>2.);
  else VisitBody->Apply(true,BodyAt,BodyYaw,Face,Speed>0?.85:0.,BodyClock*3,BodyClock,FS47PaleBody::EPose::Walk);
  bVisitSeen|=VisitBody->Rendered();
@@ -366,6 +381,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  // Twice at most: when the light has given up on one window, it tries another.
  if(bFirst)
  {
+  bShhTried=false;ShhLeft=0;
   VisitRounds=0;VisitHunt=0;VisitPatience=120;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
   RadioSeen=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
