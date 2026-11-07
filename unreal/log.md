@@ -2138,3 +2138,7 @@ Skrevet i egen worktree, ikke bygget eller kjørt. Beviset sier bare at et lys k
 ## 7. november 2026 kl.07:35, natt, kreosot som egne modeller
 
 Kilde bygd i Blender, FBX lest tilbake; ikke importert, kompilert eller sett i spillet. `SM_DP_Creosote_A`, `_B`, `_C` (`Tools/desertplants/creosote.py`, eget 1024-atlas): LOD0 2876/2716/2180 trekanter, høyde 1,64/1,45/1,18 m. `FS47Flora::EnsureCreosote` bytter Freeforms kreosot til dem når alle tre finnes, ellers står kortene; fordeling, størrelser og døde busker er de samme tallene. Importen kjøres med `S47_DESERT_ONLY=creosote`. Kritikerrunden ble ikke kjørt: køen tok fristen.
+
+## 7. november 2026 kl.07:57, natt, relieff i Freeform: kode for kart og meshbytte
+
+Skrevet i egen worktree, ikke bygget eller kjørt, og ingen kart i denne kopien. `S47Relief` leser `Content/FreeformTerrain/relief.bin` og gir `Off`, bare på SurfaceYs ørkengren og til slutt i SaroLand, av under bygging og selvtest. `S47FreeformTerrain` bytter mesh på node 1242 og 7 og løfter instanser, ledningsbiter, frittstående props og g684/g918 med `Off` ved modusvalg; alt tilbake utenfor Freeform, flatt med én logglinje hvis noe mangler. Fant to brudd mappingen ikke hadde: `S47SaroSeam::Current` og `S47RadioWoman` krevde den gamle meshstien, rettet. Selvtest med kunstig tabell og prøven `-S47MenuPointerRelief` er skrevet. Kartet må være 0 i `SARO_PATCH` og `STATION_PATCH`, ellers svever gulvet over de flate korridormeshene; selvtesten og prøven sier fra.

@@ -1,4 +1,5 @@
 #include "S47MenuPointerTest.h"
+#include "S47ReliefProbe.h"
 #include "S47Main.h"
 #include "S47ArrayWear.h"
 #include "S47CalicheAccess.h"
@@ -1663,6 +1664,7 @@ namespace
    Elapsed+=Dt;
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
+   if(Stage==720)return S47ReliefProbe::Step(M,Dt);
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
    if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&!(Stage>=540&&Stage<600&&Stage!=599)&&Elapsed-StageAt<1) return true;
    if(Stage>=400&&Stage<500)return StepDread(M);
@@ -1705,6 +1707,12 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    // -S47MenuPointerRelief: Freeform's rolling land from an ordinary game (S47ReliefProbe.h says what it does and when it passes).
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRelief")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     S47ReliefProbe::Begin(M);Stage=720;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerEyes")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();

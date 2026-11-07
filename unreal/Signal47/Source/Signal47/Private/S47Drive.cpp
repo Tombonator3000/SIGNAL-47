@@ -1,4 +1,5 @@
 #include "S47Drive.h"
+#include "S47Relief.h"
 
 #include "S47Legs.h"
 #include "S47OldRoad.h"
@@ -463,6 +464,7 @@ void FS47DriveController::Pose(double Dt, double WheelAngle, bool bSettle)
 
 bool S47Drive::SelfTest(TArray<FString>& Lines)
 {
+	const S47Relief::FSuspend FlatLand;   // (the web version's numbers are for the land without Freeform's relief)
 	bool bOk = true;
 	auto Check = [&](bool bPass, const FString& What) { Lines.Add(FString(bPass ? TEXT("ok   drive: ") : TEXT("FAIL drive: ")) + What); bOk &= bPass; };
 	auto Near = [](double A, double B, double Tol = 1e-9) { return FMath::Abs(A - B) <= Tol; };

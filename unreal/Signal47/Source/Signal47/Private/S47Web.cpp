@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "S47Relief.h"
 #include "S47SaroSeam.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -699,6 +700,8 @@ void AS47Web::UpdateCrtMaterials()
 void AS47Web::BeginPlay()
 {
 	Super::BeginPlay();
+	// Everything below is placed and checked against the flat land; Freeform's relief goes on after the mode is chosen.
+	S47Relief::SetActive(false);
 	FParse::Value(FCommandLine::Get(), TEXT("S47Exposure="), ExposureOffset);
 	bLoaded = Load();
 	if (!bLoaded) return;

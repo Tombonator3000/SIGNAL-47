@@ -1,4 +1,5 @@
 #include "S47RoadTerrain.h"
+#include "S47Relief.h"
 
 #include <limits>
 
@@ -267,7 +268,9 @@ double SurfaceY(double X, double Z)
 	const FNear O = OldNearest(X, Z);
 	if (T.D <= W + TRK.Soft) return HLow(X, Z) + TrkLift(T.D, W);
 	if (O.D <= OLD.Shoulder) return OldBase(X, Z) + OldLift(O.D);
-	double Y = GridY(X, Z);
+	// (Unreal only) Freeform's rolling land goes on the desert's own branch alone: the strips above, GridY, HLow and everything
+	// worked out from them (STATION_DY, the diner, the motel, the road meshes) stay as they were. 0 outside Freeform.
+	double Y = GridY(X, Z) + S47Relief::Off(X, Z);
 	if (Ax <= HWY.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(Ax, HWY.Flat, HWY.Margin));
 	if (T.D <= TRK.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(T.D, TRK.Flat, TRK.Margin));
 	return Y;

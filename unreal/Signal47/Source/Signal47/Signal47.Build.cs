@@ -25,5 +25,8 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheAccess/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/MotelV2/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheStreet/Nature/*.json", StagedFileType.UFS);
+		// Freeform's height table (S47Relief), read from disk beside the cooked relief meshes in the same folder.
+		RuntimeDependencies.Add("$(ProjectDir)/Content/FreeformTerrain/*.bin", StagedFileType.UFS);
+		RuntimeDependencies.Add("$(ProjectDir)/Content/FreeformTerrain/*.json", StagedFileType.UFS);
 	}
 }
