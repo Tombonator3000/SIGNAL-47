@@ -74,6 +74,7 @@ SPL_STEPS = 26
 CAP = [(300, 26), (400, 46), (600, 85), (900, 135), (1500, 210), (3000, 330), (6000, 440), (10000, 500)]
 FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE = 12000.0, .95, .05   # radius = FAN_RADIUS sqrt(area); height = slope * radius, falling as it grows
 GULLY_DEPTH, GULLY_FULL_M2, GULLY_HEAD_M2, GULLY_REACH = 26.0, 14000.0, 300.0, 7000.0   # how deep a slope's rills get, at what area of water
+HOLLOW = ((420.0, 1.5), (130.0, 1.22))    # metres across, and the power that hollows the flanks
 APRON_SHARE, APRON_M, APRON_SLOPE = .09, (3.5, 11.0), .042   # of the hill behind it, within these, falling at about this much
 FAR_IN = (2500.0, 7000.0)
 ROUGH_ROWS, ROUGH_COLS = 430, 1500        # the map's rough north, in 10 m cells: row 0 is north
@@ -619,6 +620,14 @@ def near_hills(dem_bands, D2, rng):
     rest = np.tan(np.radians(REST_DEG[0] + (REST_DEG[1] - REST_DEG[0]) * smooth(-1.1, 1.1, hard + .55 * noise(rng, n2, 3, 2049)))).astype(np.float32)
     start = np.where(mask, 60 * np.maximum(plan, 0) + .5 * c2 * ndi.distance_transform_edt(mask).astype(np.float32), 0).astype(np.float32)
     h, acc, rec = drained_land(mask, start, uk.astype(np.float32), rest, c2, SPL_STEPS, table(D2, CAP))
+    # Planes from a rounded outline make a dome, however sharp their crests from above. Real flanks hollow out: steep under the crest,
+    # easing into the plain. Between the lowest and highest near each point, at two sizes: the whole hill, then its spurs.
+    for size, power in HOLLOW:
+        w = max(int(size / c2), 3)
+        lo = gauss(ndi.minimum_filter(h, size=w), w / 4)
+        hi = gauss(ndi.maximum_filter(h, size=w), w / 4)
+        r = np.clip((h - lo) / np.maximum(hi - lo, 1), 0, 1)
+        h = np.where(mask, lo + (hi - lo) * r ** power, 0).astype(np.float32)
     # fans at the mouths
     warp = noise(rng, n2, 9)
     fan, mouths = spread_fans(mask, rec, acc, c2, FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE, np.clip(warp, -1.6, 1.6))
@@ -1024,7 +1033,7 @@ def main():
     np.save(cache / 'range_G.npy', G)
     np.save(cache / 'range_D.npy', D[::4, ::4])
     np.save(cache / 'range_U.npy', U)
-    report = {'vertical_factor_far': [FAR_GAIN, RIDGE_GAIN, RILL_GAIN], 'plain_m': PLAIN_M, 'sink_m': SINK, 'share': SHARE, 'nearest': NEAREST, 'cap': CAP, 'uk': UK, 'spl': [SPL_M, SPL_STEPS, REST_DEG], 'fan': [FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE], 'rough': [ROUGH_ROWS, ROUGH_COLS], 'bench': [BENCH_M, BENCH_NEAR], 'far_in': FAR_IN,
+    report = {'vertical_factor_far': [FAR_GAIN, RIDGE_GAIN, RILL_GAIN], 'plain_m': PLAIN_M, 'sink_m': SINK, 'share': SHARE, 'nearest': NEAREST, 'cap': CAP, 'uk': UK, 'spl': [SPL_M, SPL_STEPS, REST_DEG], 'fan': [FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE], 'rough': [ROUGH_ROWS, ROUGH_COLS], 'bench': [BENCH_M, BENCH_NEAR], 'hollow': HOLLOW, 'far_in': FAR_IN,
                'cell_m': CELL, 'extent_m': EXTENT, 'x0': X0, 'z0': Z0, 'ground_rim': GROUND, 'relief_sha256': rj.get('sha256'), 'haze': HAZE_NOTE}
     report.update(measures(R, G, inside, D, U, A))
     log(json.dumps({k: report[k] for k in ('range_above_ground_nearest_to_masks_m', 'plain_share_of_the_map', 'plain_R_minus_lowest_ground_m', 'R_over_road_ground_share', 'foot_more_than_3m_up_from_highway_m', 'rows_with_foot_280_540m_from_highway', 'range_height_m', 'slope_deg_percentiles_above_ground')}))
