@@ -198,6 +198,11 @@ public:
  TSharedPtr<class FS47RoomDecor> Decor;
  TSharedPtr<class FS47FarmSite> FarmSite;
  TSharedPtr<class FS47Taken> Taken;
+ // What stays a little wrong for a while after being taken, or after a night with them at the farm.
+ TSharedPtr<class FS47Aftermath> Aftermath;
+ // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
+ FString TerminalClock() const;
+ bool OpsOnGlass() const { return ActiveTerminal==3&&TerminalOnGlass(); }
  // Gone for this long: the clock moves, and work under way is broken off as after contact. Nothing secured is lost.
  void TakenAway(double WorldSeconds);
  void TestEndFirstShift(){Tutorial=0;}

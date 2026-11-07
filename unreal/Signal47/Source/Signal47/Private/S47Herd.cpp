@@ -117,7 +117,7 @@ bool FS47Herd::ReconcileMode()
   FVector Look=LookBases[I];Look.Y+=Ys[I]-S47RoadTerrain::SurfaceY(COWS[I][0],COWS[I][1]);LookAreas[I].SetPosition(Look);
  }
  FVector R=RingBase;R.Y+=Ys[4]-S47RoadTerrain::SurfaceY(COWS[4][0],COWS[4][1]);Ring.SetPosition(R);
- if(S47FarmWorld::Enabled(M)){bStill=false;Missing=-1;Ring.SetVisible(false);}
+ if(S47FarmWorld::Enabled(M)){bStill=false;Missing=Away;Ring.SetVisible(Away>=0);}
  else if(WasFreeform){bStill=bStoryStill;Missing=StoryMissing;Ring.SetVisible(bStoryRing);}
  for(int32 I=0;I<LookAreas.Num();++I)LookAreas[I].SetVisible(I!=Missing);
  bDirty=true;Place(LastT);
@@ -285,11 +285,20 @@ void FS47Herd::Set(bool bInStill, int32 InMissing, bool bRing)
 {
  if(!S47FarmWorld::Enabled(M)){bStoryStill=bInStill;StoryMissing=InMissing;bStoryRing=bRing;}
  ReconcileMode();
- if(S47FarmWorld::Enabled(M)){bInStill=false;InMissing=-1;bRing=false;}
+ if(S47FarmWorld::Enabled(M)){bInStill=false;InMissing=Away;bRing=Away>=0;}
 	if (bInStill != bStill || InMissing != Missing) { bStill = bInStill; Missing = InMissing; Place(LastT); }
 	Ring.SetVisible(bRing);
 	for (int32 I = 0; I < LookAreas.Num(); ++I) LookAreas[I].SetVisible(I != Missing);
 	UpdateObstacles();
+}
+
+void FS47Herd::SetAway(int32 Cow)
+{
+ if(!S47FarmWorld::Enabled(M)||Cow!=S47Herd::MISSING)Cow=-1;
+ if(Cow==Away)return;
+ Away=Cow;
+ // Set does the rest: the cow, her handle, her collider and the ring where she stood, as for Story's ninth.
+ if(S47FarmWorld::Enabled(M))Set(false,-1,false);
 }
 
 FS47Obstacle FS47Herd::Obstacle(const FVector2D& Origin)
@@ -428,6 +437,11 @@ bool FS47Herd::SelfTest(TArray<FString>& Lines)
 	H.Set(true, S47Herd::MISSING, true); FVector Out;
 	Check(!H.CowAt(S47Herd::MISSING, Out) && H.CowAt(0, Out) && H.LitAt(S47Herd::MISSING) == 0, TEXT("the ninth and its beam sample disappear"));
 	Check(H.Obstacle(FVector2D(8000, 0)).R == 0, TEXT("missing cow does not stop the truck"));
+ {
+  // Story's count is its own: away means nothing outside Freeform.
+  FS47Herd Story(nullptr,FString(),TEXT("road"));Story.SetAway(S47Herd::MISSING);
+  Check(Story.Missing==-1&&Story.Away==-1,TEXT("a cow can only be away in Freeform"));
+ }
  // An asset-free relocation sample checks all nine photo/pose coordinates
  // against the same offset and terrain basis, without altering Story samples.
  FS47Herd Farm(nullptr,FString(),TEXT("road"));Farm.ModeOffset=FVector(92,0,-316);

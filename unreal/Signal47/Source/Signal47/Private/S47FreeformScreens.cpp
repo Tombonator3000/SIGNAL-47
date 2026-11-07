@@ -1,5 +1,6 @@
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47Aftermath.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
@@ -17,7 +18,7 @@ bool FS47FreeformSession::TerminalWindowRendered()const
 void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live)
 {
  if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
- S47FreeformTerminal::SetClock([this]{return FString::Printf(TEXT("DAY %02d  |  %s"),DayNumber,*FS47FreeformCases::Clock(FMath::Fmod(WorldClock,86400.)));});
+ S47FreeformTerminal::SetClock([this]{return TerminalClock();});
  auto Content=S47FreeformTerminal::Frame(Title,Body);
  S47FreeformTerminal::SetClock(nullptr); // the frame keeps its own copy; Story screens show no stale Freeform clock
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
@@ -34,6 +35,14 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
   TerminalView.Reset();ActiveTerminal=-1;bTelemetry=false;Changed();
  });
  TerminalView=View;ActiveTerminal=Screen;bTelemetry=Live;
+}
+FString FS47FreeformSession::TerminalClock()const
+{
+ // The world's own. For a while after being taken, it stands at the last time the player is sure of (FS47Aftermath).
+ const bool bStuck=Aftermath&&Aftermath->PcStuck();
+ const double Shown=bStuck?Aftermath->PcShown():WorldClock;
+ const int32 ShownDay=bStuck?FMath::Max(1,int32(FMath::FloorToDouble((Shown-8*3600)/86400.))+1):DayNumber;
+ return FString::Printf(TEXT("DAY %02d  |  %s"),ShownDay,*FS47FreeformCases::Clock(FMath::Fmod(Shown,86400.)));
 }
 TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
 {
@@ -55,6 +64,8 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  else
  {
   L={FString::Printf(TEXT("SARO OPS / DAY %02d"),DayNumber),FString::Printf(TEXT("BUDGET $%d / DEBT $%d"),Cash,Loan),TEXT("DAILY OBSERVING QUEUE")};
+  // To be seen from across the room: it is only ever on the glass when it is wrong.
+  if(Aftermath&&Aftermath->PcStuck())L.Insert(FString::Printf(TEXT("SYSTEM CLOCK %s"),*FS47FreeformCases::Clock(FMath::Fmod(Aftermath->PcShown(),86400.))),1);
   for(const auto& W:Work)if(W.Stage!=EJobStage::Filed&&L.Num()<6)L.Add(W.Id+FString::Printf(TEXT(" / SRC%d %s"),W.Source,W.Stage==EJobStage::Filed?TEXT("FILED"):TEXT("OPEN")));
   L.Add(ServiceGuide==1?TEXT("SERVICE ORDER / IN PROGRESS"):TEXT("SERVICE ORDER / OPTIONAL"));L.Add(TEXT("ORIGINALS / CASE ARCHIVE"));
  }

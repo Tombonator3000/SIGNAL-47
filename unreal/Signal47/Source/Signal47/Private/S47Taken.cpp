@@ -3,6 +3,7 @@
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
 #include "S47IndoorDread.h"
+#include "S47Aftermath.h"
 #include "S47Ambience.h"
 #include "S47Main.h"
 #include "S47Web.h"
@@ -69,6 +70,22 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
   return true;
  }
  return StartFlood();
+}
+
+bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
+{
+ if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
+ Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
+ bOutdoors=true;bSpill=false;bOverPlace=true;
+ From=Over+FVector(0,26,0);Aim=Over+FVector(0,.6,0);
+ Now=EStage::Flood;FloodFeet=Feet();FloodArea=M->Web?M->Web->Area():FString();
+ if(M->Audio)
+ {
+  M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.7f,.Rate=.5f,.At=Over});
+  M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.Rate=.7f,.At=Over});
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: taken: a light stands over %s"),*Title);
+ return true;
 }
 
 bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
@@ -141,7 +158,7 @@ bool FS47Taken::StartFlood()
   UE_LOG(LogTemp,Display,TEXT("S47: taken: no window for the light to come through"));
   Now=EStage::None;return false;
  }
- Now=EStage::Flood;Age=0;InLight=0;FloodFeet=Feet();FloodArea=M->Web?M->Web->Area():FString();
+ Now=EStage::Flood;Age=0;InLight=0;bOverPlace=false;FloodFeet=Feet();FloodArea=M->Web?M->Web->Area():FString();
  if(M->Audio)
  {
   M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=1.f,.Rate=.5f});
@@ -228,7 +245,7 @@ void FS47Taken::ShowLight(double K)
   if(!Ufo)Ufo=MakeUnique<FS47UfoPresentation>(M->Web.Get());
   if(Ufo->Prepare())
   {
-   FS47UfoPresentation::FFrame F;F.Position=From;F.GroundTarget=Feet();F.Seconds=Age;F.Width=9;F.Opacity=FMath::Min(1.,K);F.Beam=K;F.NearWhite=0;F.bSlowBeam=true;
+   FS47UfoPresentation::FFrame F;F.Position=From;F.GroundTarget=bOverPlace?Aim-FVector(0,1.25,0):Feet();F.Seconds=Age;F.Width=9;F.Opacity=FMath::Min(1.,K);F.Beam=K;F.NearWhite=0;F.bSlowBeam=true;
    Ufo->Show(F);
   }
  }
@@ -292,6 +309,7 @@ void FS47Taken::Apply()
  const double WakeClock=M->Freeform->Clock();
  if(M->Freeform->FarmSite)M->Freeform->FarmSite->SetCalm(WakeClock+3600);
  if(M->Freeform->IndoorDread)M->Freeform->IndoorDread->AfterTaken();
+ if(M->Freeform->Aftermath)M->Freeform->Aftermath->AfterTaken(int32(Taker),SafeClock);
  const FVector Before=Feet();
  FString Where=TEXT("where I had been standing");
  if(T.bHome&&M->World)
@@ -327,7 +345,7 @@ void FS47Taken::Apply()
 
 void FS47Taken::Finish()
 {
- Now=EStage::None;Age=0;InLight=0;HideLight();White(TOptional<double>());Unhook();
+ Now=EStage::None;Age=0;InLight=0;bOverPlace=false;HideLight();White(TOptional<double>());Unhook();
  if(M&&M->UI)
  {
   M->UI->Fade(false);
@@ -343,7 +361,7 @@ void FS47Taken::GiveUp()
  {
   // Out of it with the roof still over them: that room will know them again, later.
   if(Now==EStage::Flood&&!bOutdoors&&M&&M->Freeform&&M->Freeform->IndoorDread&&!FloodArea.IsEmpty())M->Freeform->IndoorDread->SurvivedFlood(FloodFeet,FloodArea,int32(Taker),Place);
-  Now=EStage::None;Age=0;InLight=0;HideLight();UE_LOG(LogTemp,Display,TEXT("S47: taken: the light goes out"));
+  Now=EStage::None;Age=0;InLight=0;bOverPlace=false;HideLight();UE_LOG(LogTemp,Display,TEXT("S47: taken: the light goes out"));
  }
 }
 
@@ -351,7 +369,7 @@ void FS47Taken::Stop()
 {
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);
  Alive=MakeShared<bool>(true);
- Now=EStage::None;Age=0;Seconds=0;
+ Now=EStage::None;Age=0;Seconds=0;bOverPlace=false;
  if(bLive)
  {
   Unhook();HideLight();White(TOptional<double>());
@@ -424,19 +442,21 @@ void FS47Taken::Step(double Dt)
  }
  if(Now==EStage::Flood)
  {
-  const double K=Pulse(Age)*FMath::Clamp(Age/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Age));
+  // Over a place first (BeginOver): faint and standing still, for as long as the warning takes. Otherwise Lit is Age.
+  const double Lit=Age-(bOverPlace?OverWarnSeconds:0.);
+  const double K=Lit<0?.05:Pulse(Lit)*FMath::Clamp(Lit/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Lit));
   const FVector Chest=Feet()+FVector(0,1.25,0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
   S47CalicheAccess::SetLampLevel(0);
   const bool bReach=LightReaches(Chest);
-  if(bReach||!bSpill)Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
+  if(Lit>=0&&(bReach||!bSpill))Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
   ShowLight(K);
-  const bool bCaught=FVector::Dist(Aim,Chest)<1.6&&bReach;
+  const bool bCaught=Lit>=0&&FVector::Dist(Aim,Chest)<1.6&&bReach;
   InLight=bCaught?InLight+Dt:FMath::Max(0.,InLight-Dt*.6);
   // The legs go: the longer in it, the harder to leave it.
   M->Player->MoveScale=FMath::Lerp(1.,.22,FMath::Clamp(InLight/TakenAfter,0.,1.));
   if(InLight>=TakenAfter){M->Player->MoveScale=1;Lift();return;}
-  if(Age>=FloodSeconds||(M->World&&M->World->bDriving))GiveUp();
+  if(Lit>=FloodSeconds||(M->World&&M->World->bDriving))GiveUp();
   return;
  }
  if(Now==EStage::Lift)
@@ -485,5 +505,6 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
  const double Night2=86400.+19*3600.;
  Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));
  OK&=FS47IndoorDread::SelfTest(Lines);
+ OK&=FS47Aftermath::SelfTest(Lines);
  return OK;
 }

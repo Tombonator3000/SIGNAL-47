@@ -25,6 +25,11 @@ public:
  // The night's mystery (FS47FreeformCases::MysteryLine). Test: its own dice, -1 for the usual. A developer run draws none
  // unless a test asks, so that the fixtures built on other events stay as they were.
  void TestMysteryDice(float Dice){MysteryDice=Dice;}
+ // The empty car, rarely and only after two: a light stands over it (FF-RESEARCH-08). Test: its own dice, -1 for the
+ // usual; a developer run draws none unless a test asks.
+ void TestCarDice(float Dice){CarDice=Dice;}
+ bool CarLightDrawn() const{return bCarLight;}
+ int32 CarLightStage() const{return CarStage;}
  int32 MysteryDrawnNight() const{return PendingMysteryNight;}
  int32 MysteryNoticeClue() const{return MysteryClue;}
  double MysteryNoticeAge() const{return MysteryAge;}
@@ -127,6 +132,11 @@ private:
  int32 MysteryRollDay=0,PendingMysteryNight=0,MysterySeen=0,MysteryClue=-1;
  double MysteryAfter=0,MysteryClearAt=0,MysteryAge=0;
  float MysteryDice=-1;
+ float CarDice=-1;
+ bool bCarLight=false,bCarTaken=false;
+ int32 CarStage=0; // 0 not yet, 1 the light is on, 2 it has gone
+ double CarLightClock=-1;
+ bool StepCarLight(double Duration);
  static constexpr double MysteryNoticeSeconds=6;
  void StepMystery(double Dt);
  int32 MysteryClueHere() const;

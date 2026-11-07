@@ -289,7 +289,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
@@ -297,6 +297,8 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
  {
   if(S47J::Num(O,TEXT("v"))!=1){bEnabled=false;return;}
   Event=S47J::Str(O,TEXT("event"));if(!Event.IsEmpty()&&!Definition(Event)){bEnabled=false;return;}
+  // A light under way does not come back with a Continue: the car does, and whatever was seen stands.
+  bCarLight=Event==TEXT("empty_car")&&S47J::Bool(O,TEXT("carLight"));CarLightClock=bCarLight?S47J::Num(O,TEXT("carLightClock"),-1):-1;CarStage=CarLightClock>=0?2:0;
   IncidentSerial=FMath::Clamp(S47J::Int(O,TEXT("incidentSerial")),0,1000000000);
   IncidentId=S47J::Str(O,TEXT("incidentId"));
   PhotoControlFocus=S47J::Str(O,TEXT("photoControlFocus")).Left(200);
@@ -390,6 +392,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
+ if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
  if(SkyLeft>0)S47J::Set(O,TEXT("skyLeft"),SkyLeft);if(bOwedArray)S47J::Set(O,TEXT("owedArray"),true);if(bOwedFeeder)S47J::Set(O,TEXT("owedFeeder"),true);if(bForcedEvent)S47J::Set(O,TEXT("forced"),true);
  if(MysteryRollDay>0)
  {
@@ -505,6 +508,8 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
  IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
  bForcedEvent=Forced;OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
+ bCarTaken=false;CarStage=0;CarLightClock=-1;
+ bCarLight=Id==TEXT("empty_car")&&FS47FarmSite::TheirHours(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("farm_lights"))
  {
@@ -991,6 +996,7 @@ void FS47FreeformDirector::Step(double Dt)
  // Nothing else outlives the player leaving: an event held open out of sight would close the night to everything else.
  if(!SameScene()&&Event!=TEXT("farm_lights")&&Event!=TEXT("town_lights"))
  {if(!bForcedEvent||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("I left before it was over. Any retained photograph records the observation, not its origin."));return;}
+ if(Event==TEXT("empty_car")&&bCarLight&&StepCarLight(Def->Duration))return;
  if((Event==TEXT("farm_lights")||Event==TEXT("town_lights"))&&M->Player)
  {
   const double FarmFleeRange=Event==TEXT("farm_lights")?130:70;static constexpr double FarmFleeSeconds=4;
@@ -1072,6 +1078,30 @@ void FS47FreeformDirector::Step(double Dt)
   Finish(bPhoto||bCompared||(Event==TEXT("quiet_zone")&&Stage==2));
  }
 }
+// True when this has decided what the event does this step. Nobody near and it is only a parked car, as on any other night.
+bool FS47FreeformDirector::StepCarLight(double Duration)
+{
+ const auto Tk=M->Freeform->Taken;if(!Tk)return false;
+ if(CarStage==0)
+ {
+  const bool bVisit=M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround();
+  if(!FS47FarmSite::TheirHours(M->Freeform->Clock())||!Near(EmptyCarReference,32)||bVisit||M->ModalOpen())return false;
+  if(!Tk->BeginOver(ES47Taker::Roswell,TEXT("the car in the staff bay"),EmptyCarFoot))return false;
+  CarStage=1;CarLightClock=M->Freeform->Clock();Changed();return true;
+ }
+ if(CarStage==1)
+ {
+  // The time to inspect it afterwards is not used up while the light stands there.
+  Age=FMath::Min(Age,Duration-60);
+  if(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away)bCarTaken=true;
+  if(Tk->Busy())return true;
+  // Taken: FS47Taken wrote what they can check, and the car is no longer the story.
+  if(bCarTaken){Finish(false);return true;}
+  CarStage=2;Changed();return true;
+ }
+ if(Age>Duration)Finish(bPhoto,TEXT("A light stood over the unoccupied car in the staff bay, then went out. I kept my distance and did not go up to the car. A retained photograph records that it was there, not what it was."));
+ return true;
+}
 void FS47FreeformDirector::RetainObservation(const FS47FreeformObservation& Observation)
 {
  if(!Observation.Valid())return;
@@ -1122,6 +1152,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  }
  if(M&&M->Night&&M->Night->Glimpses&&(Event==TEXT("observer")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Threat))M->Night->Glimpses->ControlledRelease();
  if(Instrument(Event)&&M&&M->Freeform){M->Freeform->SetAnomaly(false);M->Freeform->SetPhenomenon(FString());}
+ bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;
  Effects->Hide();if(M&&M->Audio){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s ended evidence=%d"),*Event,Evidence);
  if(Threat)RestUntil=FMath::Max(RestUntil,ActiveTime+480);else RestUntil=FMath::Max(RestUntil,ActiveTime+45);
@@ -1130,7 +1161,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
 FString FS47FreeformDirector::Label(const FString& Id)const
 {
  if(!bEnabled||Event.IsEmpty())return {};
- if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car"))return TEXT("Inspect the unoccupied car and dashboard clock");
+ if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&!(bCarLight&&CarStage==1))return TEXT("Inspect the unoccupied car and dashboard clock");
  if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace"))return bPhoto?TEXT("Inspect and retain the loose fragment"):TEXT("Photograph the marked surface before moving anything");
  return {};
 }
@@ -1146,6 +1177,15 @@ bool FS47FreeformDirector::Use(const FString& Id)
   FS47Doc Doc;Doc.Id=TEXT("ff_unsigned_telex_")+FString::FromInt(M->Freeform->Day());Doc.Kind=TEXT("telex");Doc.Title=TEXT("Unsigned line / retained original");Doc.Stamp=M->Story?M->Story->ClockText(true):FString();
   Doc.Page=TEXT("RECEIVED / NO VERIFIED SENDER\n\nYOUR PREVIOUS REGISTERED INTERVAL IS STILL PRESENT. RECHECK THE LOCAL TIMING PATH.\n\nThe header carries no originating station. Compare against the original observation; this message is a new source, not a correction to it.");
   if(M->Story)M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);Finish(true);return true;
+ }
+ if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&bCarLight&&CarStage==1)return true;
+ // Gone up to it afterwards: not what the ordinary night's car shows.
+ if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4)&&bCarLight&&CarStage==2)
+ {
+  const FString Stopped=FS47FreeformCases::Clock(FMath::Fmod(CarLightClock,86400.));
+  Finish(true,FString::Printf(TEXT("The unoccupied car in the staff bay, after a light stood over it. Roof warm, bonnet cold, ignition off, dashboard clock stopped at %s. This records what I checked, not what it was."),*Stopped));
+  if(M->UI)M->UI->Toast(FString::Printf(TEXT("Roof warm. Bonnet cold. Ignition off. The dashboard clock has stopped at %s. No driver in sight."),*Stopped),6);
+  return true;
  }
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4))
  {Finish(true);if(M->UI)M->UI->Toast(TEXT("Bonnet warm. Ignition off. The dashboard clock is six minutes behind the retained base reference. No driver in sight."),6);return true;}
@@ -1229,6 +1269,11 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  else if(!RoadPhoto&&Event==TEXT("landing_trace"))
  {
   if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
+ }
+ else if(!RoadPhoto&&Event==TEXT("empty_car")&&bCarLight&&CarStage>=1)
+ {
+  // From a distance, with the light on it: on any other night the car alone is no incident to register.
+  if(const auto* C=Effects->PresentedComponent(Effects->Car))TaggedQuality=Qualify(Anchor,1.4,C);
  }
  else if(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights")||Event==TEXT("town_lights"))
  {
