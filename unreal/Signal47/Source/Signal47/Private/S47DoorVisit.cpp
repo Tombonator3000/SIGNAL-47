@@ -281,6 +281,8 @@ void FS47DoorVisit::StepDraw(double Dt)
  bTonight=false;LastBefore=LastDay;LastDay=Day;
  Target=Found;Now=EStage::Trying;T=AllT=0;SoundIn=0;HushIn=0;Noticed=0;Shake=0;Beat=0;bBodyOut=bSawBody=bLightComes=bSawOpen=bCutShort=false;
  if(M->Web)Sight.Init(M);
+ // A door in town gives its height in the street's terms; the room can stand well above that.
+ if(M->Player&&FMath::Abs(Target.Middle.Y-M->Player->FloorY)>1.5)Target.Middle.Y=M->Player->FloorY;
  UE_LOG(LogTemp,Display,TEXT("S47: door visit starts at %s, door %s, %.1f m off, at clock %.0f"),*Target.Title,*Target.Key,FVector::Dist(Target.Middle,FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z)),M->Freeform->Clock());
  M->RequestAutosave();
 }

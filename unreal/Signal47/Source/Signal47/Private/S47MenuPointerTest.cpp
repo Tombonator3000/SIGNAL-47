@@ -910,14 +910,14 @@ namespace
    {
     if(Visit.StageNow()!=EV::Standing)return Fail(TEXT("not looked at, it stays"));
     if(Elapsed-DreadAt<3)return true;
-    DreadLookAt(M,*Visit.BodyEye());DreadAt=Elapsed;Stage=550;return true;
+    StandBy(2.2);DreadLookAt(M,*Visit.BodyEye());DreadAt=Elapsed;Stage=550;return true;
    }
    if(Stage==550)
    {
     if(Visit.StageNow()==EV::Standing||Visit.StageNow()==EV::Leaving)
     {
      if(Elapsed-DreadAt>10)return Fail(TEXT("looked at, it must go"));
-     if(Visit.BodyEye().IsSet())DreadLookAt(M,*Visit.BodyEye());
+     if(Visit.BodyEye().IsSet()){StandBy(2.2);DreadLookAt(M,*Visit.BodyEye());}
      if(Elapsed-DreadAt>.3&&DoorFirst==0){DoorFirst=1;Shot(TEXT("door-standing.png"));}
      return true;
     }

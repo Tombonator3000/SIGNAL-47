@@ -195,8 +195,8 @@ namespace
  TArray<FFarmDecal> FarmDecals;TArray<FDecalTone> DecalTones;TWeakObjectPtr<AS47Web> DecalWorld;bool bDecalsTried=false;float DecalDay=-1.f;
  constexpr double DecalRoadHalf=3.8,DecalBandHalf=.9,DecalMargin=.5; // Half widths of ground_decals.py's maps; how far past the land a box reaches.
  // The only numbers to retune from a capture: the maps' albedo is reckoned for the sun, sRGB 180,140,105 on the road.
- const FLinearColor DecalRoadTint(1.f,1.f,1.f),DecalBandTint(1.f,1.f,1.f),DecalFieldTint(1.f,1.f,1.f),DecalCornerTint(.5f,.46f,.44f);
- constexpr float DecalBandOpacity=.95f,DecalYardOpacity=.5f,DecalDoorOpacity=.85f,DecalCornerOpacity=.9f;
+ const FLinearColor DecalRoadTint(.62f,.56f,.5f),DecalBandTint(.6f,.62f,.66f),DecalFieldTint(.8f,.74f,.68f),DecalCornerTint(.5f,.46f,.44f);
+ constexpr float DecalBandOpacity=.7f,DecalYardOpacity=.32f,DecalDoorOpacity=.6f,DecalCornerOpacity=.9f;
  void BuildFarmDecals(AS47Web* W,bool On)
  {
   if(DecalWorld.Get()!=W){DecalWorld=W;FarmDecals.Reset();DecalTones.Reset();bDecalsTried=false;DecalDay=-1.f;}
