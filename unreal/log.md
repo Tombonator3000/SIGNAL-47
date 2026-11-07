@@ -2152,3 +2152,7 @@ Skrevet i egen worktree, ikke bygget eller kjørt. Klumpene ved byen finnes ikke
 ## 7. november 2026 kl.11:00, ekte terreng og gården på bakken
 
 Tom avviste bildene av gården og bad om ekte natur. Soklene var modellert og er borte, gulvet i det åpne skjulet svevde, og SARO-ringen lå opptil 0,7 m under `SurfaceY`, som bygg og vei står på; tun og vei har nå egne mesher, og dekaler gir spor og overgang mot jord. Codex laget åtte teksturer med bildeverktøyet. Relieff fra USGS-data ligger bak et flagg i `SurfaceY` og `SaroLand`. Blender utenfor reservasjonen stoppet motorprøver; alle agenter skal bruke køen. Fase 7 i normalreisen feilet én gang av tre uten funnet årsak. Kino-prøven for dørmøtet stoppet på at neste natt ikke skal trekke; ikke funnet årsak.
+
+## 7. november 2026 kl.10:30, SM_FF_Range i stedet for mesaene (Freeform)
+
+Skrevet og importert, ikke kompilert eller sett i spillet; bare sett i Blender med forenklet lys. `Tools/freeformterrain/build_range.py` lager 24 x 24 km fra USGS 3DEP på relieffets plassering, 1,25 M trekanter, fallback 4 %, ingen kollisjon; fjellene utenfor ca. 5 km er kartet ganget med 2,2, de nære åsene har målt plassering, men laget høyde. `S47FreeformTerrain` setter den på mesaenes egen komponent mens relieffet er på; uten asset eller med `-S47RangeOff` står mesaene. Formen er fortsatt for glatt, og foten står lenger ut enn mesaenes.
