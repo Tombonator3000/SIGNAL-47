@@ -230,8 +230,8 @@ void FS47Herd::Pose(int32 I, double T)
 		if (Alarm > .05)
 		{
 			// Head up and turned about, always ready to go; running when it can still get further off.
-			const FVector Away = FVector(BodyP.X, 0, BodyP.Z) - FVector(AlarmFrom.X, 0, AlarmFrom.Z);
-			Heading = Away.GetSafeNormal();
+			const FVector FromAlarm = FVector(BodyP.X, 0, BodyP.Z) - FVector(AlarmFrom.X, 0, AlarmFrom.Z);
+			Heading = FromAlarm.GetSafeNormal();
 			Pitch = FMath::Lerp(Pitch, .12, Alarm); Turn = FMath::Lerp(Turn, .55 * FMath::Sin(T * 3.1 + I * 2.), Alarm);
 			if (bRun)
 			{
