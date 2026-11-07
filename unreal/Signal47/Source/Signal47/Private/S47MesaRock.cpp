@@ -64,8 +64,14 @@ namespace
    Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),NightTint);LastDay=-1;
    Mid->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Mid->SetScalarParameterValue(TEXT("CrustAmount"),.75f);
   }
-  const float Day=DayAt(US47Main::Get(Web));if(FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),FMath::Lerp(NightTint,FLinearColor(.50f,.42f,.36f),Day));
+  // The range's foot is this same soil, so it takes the same tint and amounts the moment it appears.
+  auto* Range=S47FreeformTerrain::RangeMid(Web);
+  static TWeakObjectPtr<UMaterialInstanceDynamic> RangeRead;const bool bRangeNew=Range&&RangeRead.Get()!=Range;
+  if(bRangeNew){RangeRead=Range;Range->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Range->SetScalarParameterValue(TEXT("CrustAmount"),.75f);}
+  const float Day=DayAt(US47Main::Get(Web));if(!bRangeNew&&FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
+  const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.50f,.42f,.36f),Day);
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint);
+  if(Range)Range->SetVectorParameterValue(TEXT("GroundTint"),Tint);
  }
  // The other ground the player stands on keeps its own exported MI_W* material (the station's sand, its gravel, the gravel
  // tracks and the farm road). Measured at 11:00 in Freeform against the new soil, which reads 170,134,110: the station's sand
@@ -146,6 +152,8 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   if(!Legacy&&!Backdrop)continue;
   UStaticMeshComponent* C=Cast<UStaticMeshComponent>(N->Comp.Get());
   if(!C||Done.Contains(C))continue;
+  // (not while Freeform's range stands on it: S47FreeformTerrain gives it back to this as it was, and this picks it up then)
+  if(S47FreeformTerrain::HoldsMaterial(Web,C))continue;
   // Caliche CN5 backdrop slots (Tools/calichestreet/backdrop): talus, sandstone beds, pale cap,
   // recessive beds, eroded talus, distant ridges. New Mexico palette over the photo sandstone.
   static const FLinearColor Palette[6]={{1.05f,.98f,.90f},{1.18f,.88f,.72f},{1.22f,1.14f,1.f},{1.f,.76f,.62f},{1.1f,.94f,.84f},{.86f,.88f,.96f}};

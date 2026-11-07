@@ -40,3 +40,10 @@ Raw: uint16 little-endian, rad 0 = nord, meter = `zmin_m + v/65535*(zmax_m-zmin_
 - Første støyversjon var isotrop «sandpapir»; den er redusert og modulert etter helning, men er fortsatt prosedyral og ikke strømstyrt.
 - Fjell i ringen: nord-silhuetten er best (bred, lav kuppel), øst/vest/sør er lave bånd 1-3 % av bildehøyden; mesh er glatt og facettert, uten dis. Vertikal skala beholdt 1,0 (kritikeren foreslo 1,5-2 x; ikke gjort).
 - Forbedringer rangert: (1) bygg arroyo-nettverk fra ekte flytretning (carve), (2) streng/strømstrukket støy, (3) dis og blåtone, vegetasjon (tuer, busker) og grus-/calichetekstur i materialet.
+
+## SM_FF_Range (7. november 2026, `build_range.py`)
+Samme kilde og kartplassering som relieffet: `dem/far_24km_10m_h16`, kartsenter på veilokal x -1100, z -200. Dekker hele 24 x 24 km.
+- **Målt:** form og plassering av fjellene utenfor ca. 5 km. Høyden over sletta (1419 m o.h.) er ganget med **2,2** (`FAR_GAIN`), under sletta med 0,3.
+- **Målt plassering, laget høyde:** nære åser 0,3 til 8 km ut står der kartet har egne svelninger (båndene 40-150, 150-600 og 600-2400 m), normalisert lokalt. Høyden er tabellene `AMP_*` og `BIAS`, ikke kartets: den virkelige sletta har bare 3 m rms her.
+- **Laget:** strømkrafterosjon og rasvinkel (`erode`, `talus`) over de nære åsene, samt masker for busker og stein. Ingen trinn eller lagdeling.
+- Foten er `GridY + Off` minus 1 m: bygges på nytt hvis relieffet bakes på nytt.
