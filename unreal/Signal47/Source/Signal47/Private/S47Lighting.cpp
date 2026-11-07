@@ -1,5 +1,6 @@
 #include "S47Web.h"
 #include "S47DevEvents.h"
+#include "S47OutsideLight.h"
 
 #include "Components/DirectionalLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -597,7 +598,8 @@ void AS47Web::UpdateNativeFog()
 		LightingFog->FSSSSceneColorScatteringAmountScale = ScatteringAmount;
 		LightingFog->MarkRenderStateDirty();
 	}
-	LightingFog->SetVolumetricFogScatteringDistribution(Look.Scattering);
+	// The massive light (S47OutsideLight.h) holds these while it lasts.
+	LightingFog->SetVolumetricFogScatteringDistribution(GS47FloodFogPhase >= 0.f ? GS47FloodFogPhase : Look.Scattering);
 	LightingFog->SetVolumetricFogAlbedo(Look.FogAlbedo.ToFColor(false));
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
@@ -618,7 +620,7 @@ void AS47Web::UpdateNativeFog()
 	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
 	LightingFog->SetDirectionalInscatteringColor(FMath::Lerp(FLinearColor(.55f, .26f, .10f), FLinearColor(1.f, .43f, .12f), Amber) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * (FMath::Lerp(.15f, .45f, Caliche) + .35f * Amber)));
 	LightingFog->SetStartDistance(7000.f * Caliche);
-	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
+	LightingFog->SetVolumetricFogDistance(GS47FloodFogDistance > 0.f ? GS47FloodFogDistance : FMath::Lerp(14000.f, 120000.f, Caliche));
 }
 
 void AS47Web::SyncFloodLights()

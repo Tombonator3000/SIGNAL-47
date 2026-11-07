@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47FloodProbe.h"
 #include "S47Freeform.h"
 #include "S47FarmSite.h"
 #include "S47IndoorDread.h"
@@ -104,6 +105,20 @@ void FS47DevEvents::AddBuiltIn()
    const bool Started=M&&M->HighwayUfo&&M->HighwayUfo->Force(Follow);
    if(M&&M->UI)M->UI->Toast(Started?TEXT("Highway encounter started. Your steering and brakes remain in control."):TEXT("Drive south on the open highway, clear of junctions and other encounters, then try again."),5);
   });
+ // ---- the massive light outside (S47FloodProbe.h) ----
+ {
+  const auto Massive=[this,Say](const FString& Room)
+  {
+   FString Why;
+   Say(S47FloodProbe::BeginLive(M,Room,Why)?FString(TEXT("the light is outside, 40 seconds")):Why);
+  };
+  Add(TEXT("Massive light outside"),TEXT("Here, where you stand"),TEXT("through whatever window or door reaches you; finds none, says so"),[Massive]{Massive(FString());});
+  Add(TEXT("Massive light outside"),TEXT("SARO control room"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("control"));});
+  Add(TEXT("Massive light outside"),TEXT("The old house"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("house"));});
+  Add(TEXT("Massive light outside"),TEXT("The garage"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("garage"));});
+  Add(TEXT("Massive light outside"),TEXT("The Plaza cinema"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("cinema"));});
+  Add(TEXT("Massive light outside"),TEXT("Put it out"),TEXT("back to the night"),[this,Say]{S47FloodProbe::StopLive(M);Say(TEXT("the light is out"));});
+ }
  // ---- weather ----
  Add(TEXT("Weather"), TEXT("Fog: the night's own"), TEXT("as the scene has it"), [this, Say] { GS47DevFogDensity = -1.f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("fog as the night has it")); });
  Add(TEXT("Weather"), TEXT("Fog: light"), TEXT("about 100 m"), [this, Say] { GS47DevFogDensity = .04f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("light fog")); });
@@ -249,6 +264,7 @@ void FS47DevEvents::Step(double Dt)
 {
  if (!M) return;
  if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevStep(Dt,M->Night->GlimpseIn(true));
+ if (S47FloodProbe::LiveActive()) S47FloodProbe::Step(M,float(Dt));
  const bool bPlay = M->Mode == US47Main::EMode::Play && !M->bPausedByMenu;
  // The shower's own free-play guard: a menu, an open panel or a held story freezes it (time and image).
  const bool bShowerFree = bPlay && !M->ModalOpen() && !(M->Story && M->Story->IsPaused());
@@ -461,6 +477,7 @@ void FS47DevEvents::ControlTest(double Dt)
 void FS47DevEvents::Stop()
 {
  if (M && M->SkyVisitors) M->SkyVisitors->DevStage(0);
+ S47FloodProbe::StopLive(M);
  if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();
  if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
  if (M && M->Life && M->Life->Sky) { M->Life->Sky->ShowerClear(); M->Life->Sky->bShowerHeld = false; }

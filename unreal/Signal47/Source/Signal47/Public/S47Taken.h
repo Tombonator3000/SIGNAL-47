@@ -7,7 +7,7 @@ class US47Main;
 class SS47AwayOverlay;
 class USpotLightComponent;
 class UPointLightComponent;
-class ULocalFogVolumeComponent;
+class FS47OutsideLight;
 #include "S47UfoPresentation.h"
 
 // Who takes the player decides how: how long is gone, and where they come to. Different bodies are different in kind,
@@ -70,7 +70,8 @@ private:
  TSharedPtr<SS47AwayOverlay> Overlay;
  TWeakObjectPtr<USpotLightComponent> Spot;
  TWeakObjectPtr<UPointLightComponent> Fill;
- TWeakObjectPtr<ULocalFogVolumeComponent> Mist;
+ // Under a roof the light is the massive one from outside (S47OutsideLight.h). The air is its own too, here and in the open.
+ TSharedPtr<FS47OutsideLight> Rig;
  void StepMist(double Dt);
  double MistK=0;
  FLinearColor LightColor(double Time) const;

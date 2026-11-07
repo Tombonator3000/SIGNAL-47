@@ -20,10 +20,10 @@
 #include "S47Night.h"
 #include "S47Flashlight.h"
 #include "S47UfoPresentation.h"
+#include "S47OutsideLight.h"
 #include "SS47AwayOverlay.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/LocalFogVolumeComponent.h"
 #include "S47Flow.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -146,8 +146,12 @@ bool FS47Taken::LightReaches(const FVector& Chest) const
  if(!M||!M->Web||!M->Web->GetWorld())return false;
  FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47TakenLight),true);
  const FVector A=S47Three::ToUE(From),B=S47Three::ToUE(Chest);
- if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,A,B,ECC_Visibility,Q))return true;
- return Hit.Distance>FVector::Dist(A,B)-30.;
+ UWorld* World=M->Web->GetWorld();
+ if(World->LineTraceSingleByChannel(Hit,A,B,ECC_Visibility,Q)&&Hit.Distance<=FVector::Dist(A,B)-30.)return false;
+ // And back: a ceiling or a roof with one face lets a ray from above go through it. The light then stood in the attic of the
+ // Plaza and lit its whole interior.
+ FHitResult Back;
+ return !World->LineTraceSingleByChannel(Back,B,A,ECC_Visibility,Q)||Back.Distance>FVector::Dist(A,B)-30.;
 }
 
 bool FS47Taken::StartFlood()
@@ -195,25 +199,28 @@ void FS47Taken::StepMist(double Dt)
  if(!M||!M->Web||!M->Player)return;
  const bool bWant=Now==EStage::Dread||Now==EStage::Flood||Now==EStage::Lift;
  MistK=FMath::FInterpConstantTo(MistK,bWant?1.:0.,Dt,bWant?.16:.3);
- auto* F=Mist.Get();
- if(!F)
- {
-  if(MistK<=0)return;
-  F=NewObject<ULocalFogVolumeComponent>(M->Web.Get(),TEXT("S47TakenMist"));
-  F->SetupAttachment(M->Web->GetRootComponent());F->RegisterComponent();
-  F->SetWorldScale3D(FVector(1.5,1.5,.5));F->SetFogPhaseG(.5f);F->SetHeightFogFalloff(320.f);
-  Mist=F;
- }
- // A mist comes in round them, low at first, and it takes the colour of whatever is shining through it.
- F->SetWorldLocation(S47Three::ToUE(Feet()+FVector(0,1.1,0)));
- F->SetRadialFogExtinction(float(MistK*1.1));F->SetHeightFogExtinction(float(MistK*.7));
- F->SetFogAlbedo(Now==EStage::Flood||Now==EStage::Lift?LightColor(Age):FLinearColor(.82f,.8f,.76f));
- F->SetVisibility(MistK>.002);
+ if(MistK<=0&&!Rig)return;
+ if(!Rig)Rig=MakeShared<FS47OutsideLight>(M);
+ // A mist comes in round them, low at first, and it takes the colour of whatever is shining through it. Under a roof it is
+ // thin and pale: the room's own haze is there too, and the shafts take the light's colour from the light.
+ const FLinearColor Albedo=!bOutdoors?FLinearColor(.9f,.9f,.92f):Now==EStage::Flood||Now==EStage::Lift?LightColor(Age):FLinearColor(.82f,.8f,.76f);
+ Rig->SetAir(MistK,Feet()+FVector(0,1.1,0),Albedo,!bOutdoors);
 }
 
 void FS47Taken::ShowLight(double K)
 {
  if(!M||!M->Web)return;
+ if(!bOutdoors)
+ {
+  // One real source out there and nothing else: it cannot come through a wall, and it moves, so what it throws moves.
+  if(!Rig)Rig=MakeShared<FS47OutsideLight>(M);
+  FS47OutsideLight::FFrame Frame;
+  Frame.Aim=Aim;Frame.From=FS47OutsideLight::Swept(From,Aim,Age);Frame.Color=LightColor(Age);Frame.K=K;Frame.Seconds=Age;
+  // Only once they are held, in a room with no way in: it comes down on them all the same (TakeNow).
+  Frame.bThroughRoof=Now==EStage::Lift&&!LightReaches(Feet()+FVector(0,1.25,0));
+  Rig->Show(Frame);
+  return;
+ }
  auto* L=Spot.Get();
  if(!L)
  {
@@ -255,6 +262,7 @@ void FS47Taken::HideLight()
 {
  if(auto* L=Spot.Get()){L->SetIntensity(0);L->SetVisibility(false);}
  if(auto* B=Fill.Get()){B->SetIntensity(0);B->SetVisibility(false);}
+ if(Rig)Rig->Hide();
  if(M&&M->Player)M->Player->MoveScale=1;
  if(M&&M->Audio)M->Audio->HoldRoomTone(1.f,1.2f);
  S47CalicheAccess::SetLampLevel(1);
@@ -375,11 +383,11 @@ void FS47Taken::Stop()
   Unhook();HideLight();White(TOptional<double>());
   if(auto* L=Spot.Get())L->DestroyComponent();
   if(auto* B=Fill.Get())B->DestroyComponent();
-  if(auto* F=Mist.Get())F->DestroyComponent();
+  if(Rig)Rig->Stop();
   if(Overlay&&GEngine&&GEngine->GameViewport)GEngine->GameViewport->RemoveViewportWidgetContent(Overlay.ToSharedRef());
   if(Ufo)Ufo->Hide();
  }
- Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();Fill.Reset();Mist.Reset();MistK=0;
+ Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();Fill.Reset();Rig.Reset();MistK=0;
 }
 
 void FS47Taken::Step(double Dt)
