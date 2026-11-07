@@ -76,6 +76,9 @@ public:
  static const TCHAR* StateName(EState Value);
  static bool SelfTest(TArray<FString>& Lines);
 
+ // The body's sneak is a clip with its own rhythm of steps, set by the owner every tick: it goes steadily at the same
+ // pace as the steps and stops, and stops now and then to listen, in place of StalkPulse.
+ bool bSteadySneak = false;
 private:
  FRandomStream Random;
  TArray<FVector> Path;

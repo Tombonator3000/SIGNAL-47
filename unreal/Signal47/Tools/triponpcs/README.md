@@ -91,3 +91,16 @@ Skriptet setter og leser også det samme flagget i importprosessen. Eksplisitt
 enhetskonvertering bevarer meter til centimeter. Hver faktisk render-LOD
 kontrolleres mot sine egne Blender-grenser og ni asymmetriske vertexpunkter,
 slik at et riktig felles asset-bound ikke skjuler feilvendt/mikroskopisk LOD.
+
+## Pale One, Tall One og Roswell 2 med egne klipp (7. november)
+
+Toms riggede GLB-er (`Pale-One.glb`, UE5-bein, seks klipp; `Tall-One.glb`, UE5-bein, 14 klipp; `Roswell.glb`, Mixamo-bein, åtte klipp) ligger i `modeller/pale-one-2026-11-07/`. Kjør hvert steg gjennom reservasjonen:
+
+```sh
+Q=~/.claude/skills/signal47-nattskift/scripts/q.py
+python3 $Q python3 run_pale_one.py inspect [pale|tall|roswell]   # bilder, rig.json
+python3 $Q python3 run_pale_one.py prepare [pale|tall|roswell]   # FBX for skinn, LOD og hvert klipp, manifest.json
+python3 $Q python3 run_pale_one.py import  [pale|tall|roswell]   # /Game/Licensed/TripoNPC/{Animated,Roswell}, mot hovedprosjektet
+```
+
+`prepare_pale_one.py` legger skala, gulv og akser inn i selve dataene og skalerer klippenes bein-location med. Armaturet heter `Armature`, så Unreal dropper dummy-noden. Mixamo-navn gis samme alias som i `prepare_roswell.py`, også i klippenes kanaler. `manifest.json` har øyemål (`eyes`) og bein per klipp som importen leser tilbake mot Blender: importen feiler over 1 cm avvik. `FS47ClipBank` leser klippene som `A_PaleOne_*`, `A_TallOne_*` og `A_Roswell2_*`; mangler skinn eller klipp, faller spillet tilbake til gammel kropp og prosedyrale bevegelser med én logglinje.

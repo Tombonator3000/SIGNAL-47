@@ -2156,3 +2156,6 @@ Tom avviste bildene av gården og bad om ekte natur. Soklene var modellert og er
 ## 7. november 2026 kl.10:30, SM_FF_Range i stedet for mesaene (Freeform)
 
 Skrevet og importert, ikke kompilert eller sett i spillet; bare sett i Blender med forenklet lys. `Tools/freeformterrain/build_range.py` lager 24 x 24 km fra USGS 3DEP på relieffets plassering, 1,25 M trekanter, fallback 4 %, ingen kollisjon; fjellene utenfor ca. 5 km er kartet ganget med 2,2, de nære åsene har målt plassering, men laget høyde. `S47FreeformTerrain` setter den på mesaenes egen komponent mens relieffet er på; uten asset eller med `-S47RangeOff` står mesaene. Formen er fortsatt for glatt, og foten står lenger ut enn mesaenes.
+## 7. november 2026 kl.11:50, Pale One, Tall One og Roswell 2 med egne klipp
+
+Importert til Licensed (utenfor Git) med `Tools/triponpcs/run_pale_one.py`: alle tre skinn og 28 klipp stemmer med Blender innen 0,12 cm ved tilbakelesing. Kode skrevet i egen worktree, ikke bygget eller kjørt: `FS47ClipBank`/`FS47ClipMotion`, fase fra faktisk tilbakelagt vei og fotplanting, øyeglimt på alle tre, fallback til gamle kropper. Pale One bærer Crab og dørmøtet, Tall One bærer Tall, Roswell 2 bærer de små. `climb`, `jump_down`, `fall`, `sit` og `jump` er bare i forhåndsvisningen.

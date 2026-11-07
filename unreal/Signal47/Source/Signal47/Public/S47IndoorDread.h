@@ -64,7 +64,9 @@ public:
  FString DoorLabel(const FString& DoorKey) const{return DoorVisit->LabelFor(DoorKey);}
  bool DoorQuiet() const{return Quiet();}
  bool DoorActive() const{return DoorVisit->Active();}
- void ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock);
+ // Act: what a body with clips does there. Without the Pale One the small one stands at the door, as before.
+ void ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock,ES47Clip Act=ES47Clip::Num);
+ bool DoorBodyHasClips() const{return DoorPale.Clips.IsValid();}
  void HideDoorBody();
  bool DoorBodyRendered() const;
 private:
@@ -78,7 +80,8 @@ private:
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
  TWeakObjectPtr<USceneComponent> Root;
- FS47TripoCreature Body;
+ FS47TripoCreature Body,DoorPale;
+ bool bDoorPaleTried=false;
  FS47RoswellWorld Sight;
  bool bBodyFailed=false;
  TSharedPtr<FS47DoorVisit> DoorVisit;

@@ -48,8 +48,7 @@ FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 		auto* Root=NewObject<USceneComponent>(InWeb,TEXT("RoswellGlimpseRoot"));
 		InWeb->AddInstanceComponent(Root); Root->SetMobility(EComponentMobility::Movable);
 		Root->SetupAttachment(InWeb->GetRootComponent()); Root->RegisterComponent(); BodyRoot=Root;
-		bRoswell=Body.Build(InWeb,Root,TEXT("RoswellGlimpseBody"),
-			TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell"));
+		bRoswell=Body.Build(InWeb,Root,TEXT("RoswellGlimpseBody"),S47KindBody::Roswell);
 		if (bRoswell) Fig.Traverse([&](FS47Obj O)
 		{
 			if (const auto* N=InWeb->Node(O.I)) if (auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))

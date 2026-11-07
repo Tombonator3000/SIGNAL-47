@@ -112,6 +112,7 @@ void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double
  Visual.Mode=Pose==EPose::Grab?ES47PaleMotion::Grab:Pose==EPose::Chase?ES47PaleMotion::Run:
   Pose==EPose::Listen?ES47PaleMotion::Listen:Gait>.03?ES47PaleMotion::Walk:ES47PaleMotion::Idle;
  Visual.GrabProgress=GrabProgress;Visual.GrabTargetUE=GrabTargetUE;Visual.LegacyGait=Gait;Visual.LegacyPhase=Phase;
+ Visual.Act=Act;Visual.Stand=Stand;
  if (bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or pick trace.

@@ -15,9 +15,28 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
  FS47RoswellContacts Out;
  auto* C=R.Mesh.Get(); if (!C || R.Rest.Num()!=R.Parents.Num() || R.Rest.Num()!=R.Names.Num()) return Out;
  C->SetVisibility(In.bVisible,true);
- if (!In.bVisible) { bInit=false; return Out; }
+ if (!In.bVisible) { bInit=bOnClips=false; if (R.ClipMotion) *R.ClipMotion=FS47ClipMotion(); return Out; }
  if (In.bHeld) return Out;
  Dt=FMath::Clamp(Dt,0.,.1); Clock+=Dt;
+ // Tom's own clips where the body has them: the sneak, the stop to listen, the walk and the run. Their steps keep to the
+ // ground by themselves. A seizure and a look from cover stay as below, on the same bones.
+ if (R.Clips && In.Mode!=ES47RoswellMotion::Grab && In.Mode!=ES47RoswellMotion::Peek)
+ {
+  if (!R.ClipMotion) R.ClipMotion=MakeShared<FS47ClipMotion>();
+  if (!bOnClips) { bOnClips=true; R.bOnProcedural=false; if (bInit) R.ClipMotion->FadeFromShown(C); bInit=false; }
+  FS47ClipPose Clip; Clip.Clock=Clock; Clip.HeadYaw=In.HeadYaw; Clip.HeadPitch=In.HeadPitch; Clip.Act=In.Act;
+  Clip.Stand=ES47Clip::Listen;
+  // A curious body hurrying along upright is walking, whatever its crouch says; a quiet one sneaks.
+  Clip.Move=In.Mode==ES47RoswellMotion::Run?ES47Clip::Run:In.Mode==ES47RoswellMotion::Stalk&&In.SpeedMps<.95?ES47Clip::Sneak:ES47Clip::Walk;
+  R.PlayClips(Clip);
+  if (R.Contacts.bValid)
+  {
+   Out.bLeft=R.Contacts.bLeft; Out.bRight=R.Contacts.bRight; Out.AtUE[0]=R.Contacts.AtUE[0]; Out.AtUE[1]=R.Contacts.AtUE[1];
+   Out.Energy=In.SpeedMps>.03?FMath::Clamp(.20+In.SpeedMps*.22,.18,1.):0.;
+   return Out;
+  }
+ }
+ if (bOnClips) { bOnClips=false; R.BeginProcFade(Clock); if (R.ClipMotion) *R.ClipMotion=FS47ClipMotion(); }
  TArray<FTransform> P=R.Rest;
  for (int32 I=0;I<P.Num();++I) if (R.Parents[I]>=0) P[I]=P[I]*P[R.Parents[I]];
  const TArray<FTransform> Ref=P;
@@ -182,6 +201,7 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
  C->BoneSpaceTransforms.SetNum(P.Num());
  for (int32 I=0;I<P.Num();++I) C->BoneSpaceTransforms[I]=R.Parents[I]<0?P[I]:P[I].GetRelativeTransform(P[R.Parents[I]]);
  C->MarkRefreshTransformDirty(); C->RefreshBoneTransforms();
+ R.StepProcFade(Clock);
  Out.Energy=Moving?FMath::Clamp(.20+Speed*.22,.18,1.):0.;
  bInit=true;
  return Out;

@@ -81,7 +81,8 @@ FS47CrabContacts FS47CrabMotion::Apply(FS47TripoCreature& R,const FS47CrabPose& 
  const double Wave=FMath::Sin(Phase*2*PI);
 
  // The body comes down and over, the chest ending parallel to the ground.
- const double PelvisHeight=Leg*FMath::Lerp(.50,.42,Run);
+ // Lower on short arms: the hands must still reach the ground from the shoulders.
+ const double PelvisHeight=FMath::Min(Leg*FMath::Lerp(.50,.42,Run),Arm*.63);
  const double Bob=Motion*Leg*.012*FMath::Sin(Phase*4*PI)+.5*FMath::Sin(In.Clock*1.1);
  const double Down=(Ref[Pelvis].GetLocation().Z-PelvisHeight-Bob)*F;
  for(int32 I=0;I<P.Num();++I)if(Below(I,Pelvis))P[I].AddToTranslation(FVector(0,0,-Down));

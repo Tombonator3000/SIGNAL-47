@@ -461,16 +461,22 @@ void FS47DoorVisit::StepVisit(double Dt)
   if(Owner)bSawBody|=bInView&&bClear&&Owner->DoorBodyRendered();
   if(Now==EStage::Standing)
   {
-   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT);
+   // Restless while it waits to be seen.
+   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT,ES47Clip::Frustrated);
    Noticed=bInView&&bClear&&Off<20?Noticed+Dt:FMath::Max(0.,Noticed-Dt*.4);
    // Looked at, it goes. Never looked at, it goes when nobody can see it go.
    if(Noticed>.45||T>30){Now=EStage::Leaving;T=0;if(M->Audio)M->Audio->Sfx(TEXT("stepConcrete0"),FS47Sound{.Gain=.25f,.Rate=.8f,.At=BodyFeet});}
   }
   else
   {
-   BodyFeet+=Target.Out*(1.9*Dt);BodyFeet.Y=FMath::FInterpTo(BodyFeet.Y,GroundNear(BodyFeet),Dt,10.);
-   BodyYaw=FMath::Atan2(Target.Out.X,Target.Out.Z);
-   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,true,AllT);
+   // A body with clips takes being seen badly, for a moment, facing the one who looked. Then it goes like the other.
+   if(Owner&&Owner->DoorBodyHasClips()&&T<LookedBackSeconds)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT,ES47Clip::Angry);
+   else
+   {
+    BodyFeet+=Target.Out*(1.9*Dt);BodyFeet.Y=FMath::FInterpTo(BodyFeet.Y,GroundNear(BodyFeet),Dt,10.);
+    BodyYaw=FMath::Atan2(Target.Out.X,Target.Out.Z);
+    if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,true,AllT);
+   }
    if(!bInView||!bClear||T>6)Finish(EEnding::Walked);
   }
   break;

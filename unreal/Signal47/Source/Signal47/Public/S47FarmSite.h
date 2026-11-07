@@ -87,6 +87,9 @@ private:
  TSharedPtr<struct FS47PaleBody> VisitBody,CrabBody,TallBody;
  FVector BodyAt=FVector::ZeroVector;
  double BodyYaw=0,BodyClock=0;
+ static constexpr double ShhWithin=12;
+ double ShhLeft=0;
+ bool bShhTried=false;
  bool bBodyOut=false;
  bool bStallSet=false,bNudged=false;
  double HushIn=0;
