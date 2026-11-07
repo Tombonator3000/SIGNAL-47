@@ -9,3 +9,7 @@ Den inneholder også et fullstendig kildekart til bevarte detaljplaner, historis
 [DECISIONS](../Active/DECISIONS.md) fører vedtak, [TODO](../Active/TODO.md) aktive oppgaver og [STATUS](../Active/STATUS.md) faktisk levering. En skrevet scene eller et konsept er ikke implementert spill.
 
 [Start her](../README.md).
+
+## Director og editor, forslag 7. november 2026
+
+[Oversikt over alle hendelser](Director/HENDELSER.md), [forslag til samlet director](Director/DIRECTOR-FORSLAG.md) og [forslag til visuell editor](Director/EDITOR-FORSLAG.md). Ikke vedtatt; venter på Toms svar.
