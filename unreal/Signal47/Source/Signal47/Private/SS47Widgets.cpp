@@ -189,7 +189,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(4), 0, 0)
 		[
 			SNew(STextBlock).Font(Term(18, 2)).ColorAndOpacity(C(0x8a857a)).ShadowOffset(FVector2D(0, P(1))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
-			.Text_Lambda([] { const US47Main* M = Main(); if (M && M->IsFreeform() && M->Freeform && M->Mode==US47Main::EMode::Play) { const FDateTime Date=FDateTime(1986,4,13)+FTimespan::FromDays(M->Freeform->Day()-1); return FText::FromString(Date.ToString(TEXT("%a %b %d")).ToUpper()); } return FText::FromString(M && M->Story && M->Mode == US47Main::EMode::Play ? DayLine(M->Story->Clock()) : FString()); })
+			.Text_Lambda([] { const US47Main* M = Main(); if (M && M->IsFreeform() && M->Freeform && M->Mode==US47Main::EMode::Play) { const FDateTime Date=FDateTime(1986,4,13)+FTimespan::FromDays(M->Freeform->Day()-1); return FText::FromString(S47Game::DateLine(Date)); } return FText::FromString(M && M->Story && M->Mode == US47Main::EMode::Play ? DayLine(M->Story->Clock()) : FString()); })
 		];
 
 	// .read: V and what it reads (UI.ts descriptionButton; dimmed when there is no recording of the text)

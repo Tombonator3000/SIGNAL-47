@@ -255,6 +255,15 @@ void FS47EastWingProps::BuildCalendars(AS47Web* Web,const TArray<UStaticMeshComp
  UTexture2D* Tex=UTexture2D::CreateTransient(CalW,CalH,PF_B8G8R8A8);
  if(!Plane||!Base||!Tex||Blades.IsEmpty()){UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendars keep their printed sheet (plane %d, material %d, texture %d, blades %d)"),Plane!=nullptr,Base!=nullptr,Tex!=nullptr,Blades.Num());return;}
  Tex->SRGB=true;Tex->Filter=TF_Bilinear;
+ {
+  // As the motel's television: the texture has its resource before a material takes it, and is then only written to. A material
+  // bound to it earlier goes on showing the default white.
+  TArray<FColor> Blank;Blank.Init(FColor(0xe0,0xec,0xf0,255),CalW*CalH);
+  void* Data=Tex->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+  FMemory::Memcpy(Data,Blank.GetData(),Blank.Num()*sizeof(FColor));
+  Tex->GetPlatformData()->Mips[0].BulkData.Unlock();
+  Tex->UpdateResource();
+ }
  UMaterialInstanceDynamic* Mat=UMaterialInstanceDynamic::Create(Base,Web);
  Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.86f,.86f,.86f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
  Mat->SetScalarParameterValue(TEXT("Roughness"),.86f);Mat->SetScalarParameterValue(TEXT("Metalness"),0);Mat->SetScalarParameterValue(TEXT("EmissivePower"),0);
@@ -287,10 +296,10 @@ void FS47EastWingProps::UpdateCalendar(US47Main* Main)
  if(Key==CalendarKey)return; // the sheet changes with the day, not with the frame
  TArray<FColor> Px;DrawCalendar(Date,Px);
  if(Px.Num()!=CalW*CalH)return;
- void* Data=Tex->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
- FMemory::Memcpy(Data,Px.GetData(),Px.Num()*sizeof(FColor));
- Tex->GetPlatformData()->Mips[0].BulkData.Unlock();
- Tex->UpdateResource();
+ if(!Tex->GetResource())return;
+ FUpdateTextureRegion2D* Region=new FUpdateTextureRegion2D(0,0,0,0,CalW,CalH);
+ uint8* Copy=(uint8*)FMemory::Malloc(Px.Num()*sizeof(FColor));FMemory::Memcpy(Copy,Px.GetData(),Px.Num()*sizeof(FColor));
+ Tex->UpdateTextureRegions(0,1,Region,CalW*sizeof(FColor),sizeof(FColor),Copy,[](uint8* Src,const FUpdateTextureRegion2D* R){FMemory::Free(Src);delete R;});
  CalendarKey=Key;
- UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*Date.ToString(TEXT("%a %b %d %Y")).ToUpper(),CalendarSheets.Num(),CalW,CalH);
+ UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*S47Game::DateLine(Date)).ToUpper(),CalendarSheets.Num(),CalW,CalH);
 }

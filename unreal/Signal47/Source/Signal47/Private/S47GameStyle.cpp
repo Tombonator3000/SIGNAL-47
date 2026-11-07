@@ -260,6 +260,14 @@ namespace S47Game
 		return D >= 12 * 3600 ? TEXT("SUN APR 13") : TEXT("MON APR 14");
 	}
 
+	FString DateLine(const FDateTime& Date)
+	{
+		// (FDateTime's %a is am/pm, not the weekday: the clock read "AM B 13")
+		static const TCHAR* Days[] = { TEXT("MON"), TEXT("TUE"), TEXT("WED"), TEXT("THU"), TEXT("FRI"), TEXT("SAT"), TEXT("SUN") };
+		static const TCHAR* Months[] = { TEXT("JAN"), TEXT("FEB"), TEXT("MAR"), TEXT("APR"), TEXT("MAY"), TEXT("JUN"), TEXT("JUL"), TEXT("AUG"), TEXT("SEP"), TEXT("OCT"), TEXT("NOV"), TEXT("DEC") };
+		return FString::Printf(TEXT("%s %s %d"), Days[int32(Date.GetDayOfWeek())], Months[Date.GetMonth() - 1], Date.GetDay());
+	}
+
 	FDateTime GameDate(bool bFreeform, int32 FreeformDay, double StoryClock)
 	{
 		if (bFreeform) return FDateTime(1986, 4, 13) + FTimespan::FromDays(FMath::Max(0, FreeformDay - 1));
@@ -326,6 +334,7 @@ namespace S47Game
 			bOk &= bPass;
 		};
 		Check(TEXT("day before midnight"), DayLine(23 * 3600 + 41 * 60) == TEXT("SUN APR 13"));
+		Check(TEXT("the clock's date line"), DateLine(FDateTime(1986, 4, 13)) == TEXT("SUN APR 13") && DateLine(FDateTime(1986, 5, 2)) == TEXT("FRI MAY 2"));
 		Check(TEXT("day after midnight"), DayLine(2 * 3600 + 13 * 60) == TEXT("MON APR 14") && DayLine(86400 + 600) == TEXT("MON APR 14"));
 		{
 			// the wall calendars follow the game's date; the weekday comes from the date, not from a table

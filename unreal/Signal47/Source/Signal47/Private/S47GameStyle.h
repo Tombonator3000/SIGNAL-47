@@ -77,6 +77,7 @@ namespace S47Game
 	FString DayLine(double Clock);
 	// the game's calendar date, as the HUD's day line counts it: Freeform starts on 13 April 1986 and adds a day per
 	// Day() after the first; the Story is 13 April before midnight and 14 April after
+	FString DateLine(const FDateTime& Date);
 	FDateTime GameDate(bool bFreeform, int32 FreeformDay, double StoryClock);
 	// a month's printed grid, weeks starting on Sunday: the weekday column of the 1st (0 = SUN), its days, its rows
 	void MonthGrid(int32 Year, int32 Month, int32& FirstColumn, int32& Days, int32& Rows);
