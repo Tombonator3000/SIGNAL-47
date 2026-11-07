@@ -72,15 +72,23 @@ public:
  void SetCalm(double Until){CalmUntil=Until;}
  void TestReadyVisit(){Visit=0;VisitDwell=0;}
  FVector Centre() const{return Middle;}
- FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
+ FString FindingId() const;
  // The second look the note asks for: what the marks are by daylight, the morning after. 0 ordinary, 1 undecided, 2 strange;
  // fixed by the game, the place and the day, so looking again never changes it.
  FString DaylightId() const;
  static int32 DaylightRead(int32 Seed,const FString& InPlace,int32 Day);
  static FString DaylightText(int32 Read,bool bFarm);
  static bool ByDaylight(double Clock);
- FString PlaceId() const{return Place;}
- FString PlaceTitle() const{return Title;}
+ FString PlaceId() const{return bField?Home.Place:Place;}
+ FString PlaceTitle() const{return bField?Home.Title:Title;}
+ // A visit with no marks at all: someone on foot, out from under any roof past the station, in their hours (T16-17, 4). Its own
+ // draw once a night, once they have been out there a while. The marks somewhere else, if any, stand as they were.
+ bool FieldVisit() const{return bField;}
+ static constexpr double FieldDwellSeconds=60;
+ static bool OutOnFoot(const FString& Area,double FromStation,bool bDriving,bool bRoof);
+ int32 FieldDrawnNight() const{return FieldNight;}
+ // Test: the next field draw, in place of the game's own.
+ void TestFieldRoll(float Roll){FieldRoll=Roll;}
 private:
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
@@ -117,6 +125,15 @@ private:
  bool bStallSet=false,bNudged=false,bFalseCall=false;
  int32 EmptyTipNight=0;
  bool Hours(double Clock) const;
+ struct FHome{FString Place,Title,Area;FVector Middle=FVector::ZeroVector;int32 Visit=4;};
+ FHome Home;
+ bool bField=false;
+ int32 FieldNight=0;
+ double FieldDwell=0;
+ float FieldRoll=-1;
+ void StepFieldDraw(double Dt);
+ void RestoreHome();
+ bool Live() const{return Armed()||bField;}
  void StepEmptyTip();
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;

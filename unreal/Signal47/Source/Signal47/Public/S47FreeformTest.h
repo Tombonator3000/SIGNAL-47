@@ -32,6 +32,7 @@ private:
  FString PrinterId,PrinterOriginal,PrinterStamp,GuidanceExpected,TutorialId;
  S47J::FObj Snapshot;
  void StepLoggerJourney(double Dt);
+ void StepFreeLife(double Dt);
  void StepWorkshopJourney(double Dt);
  void StepArrayWear(double Dt);
  void StepRescueJourney(double Dt);

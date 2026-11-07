@@ -522,6 +522,11 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
   Check(Farm[1]>Town[1]&&Town[0]>Farm[0],TEXT("the crab keeps to open ground, town is mostly the small ones"));
   Check(Early[2]==0&&Early[0]>0&&Early[1]>0,TEXT("the tall one keeps to the last of the night"));
  }
+ {
+  int32 Open[3]={0,0,0};for(int32 I=0;I<1000;++I)++Open[FS47FarmSite::PickWho(TEXT("field"),4.,(I+.5f)/1000.f)];
+  Check(Open[0]>0&&Open[1]>Open[0]&&Open[2]>0,TEXT("out in the open it is mostly the crab, and the others can come"));
+  Check(FS47FarmSite::OutOnFoot(TEXT("road"),900,false,false)&&FS47FarmSite::OutOnFoot(TEXT("saro"),300,false,false)&&!FS47FarmSite::OutOnFoot(TEXT("saro"),100,false,false)&&!FS47FarmSite::OutOnFoot(TEXT("road"),900,true,false)&&!FS47FarmSite::OutOnFoot(TEXT("road"),900,false,true)&&!FS47FarmSite::OutOnFoot(TEXT("room6"),900,false,false),TEXT("a field visit wants someone on foot, under no roof, away from the station"));
+ }
  const double Night2=86400.+19*3600.;
  Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));
  OK&=FS47IndoorDread::SelfTest(Lines);

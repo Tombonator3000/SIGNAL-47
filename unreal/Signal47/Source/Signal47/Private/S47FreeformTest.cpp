@@ -108,6 +108,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){S47J::Set(O,TEXT("scope"),TEXT("workshop-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit stock, player-placement and tuning fixtures; physical bench ray, actual SButton callbacks, three disk/Flow restores. No shop trip, natural discovery or full two-hour tape."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeLifeTest"))){S47J::Set(O,TEXT("scope"),TEXT("freeform-life"));S47J::Set(O,TEXT("method"),TEXT("Developer run with the live rules switched on. The field visit starts from its own draw and dwell; only the roll and the player's position are given. Taken, gear, fetch and the day's cards are then real."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("logger-full-active-window"));S47J::Set(O,TEXT("method"),TEXT("Explicit access and approach/dial fixtures; actual eye-ray/OnUse at depot, bench, field post and printer; production menu callbacks for loan/assembly/tune/acquisition/comparison. Full active game-clock sampling and real SARO acquisition, disk/Flow Continue mid-window and after comparison. No natural access, walking route, native menu clicks, Visitors contact or human listening claim."));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
@@ -218,6 +219,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(((Stage>=8690&&Stage<=8701)||(Stage>=86970&&Stage<=86979))&&FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression"))){StepStoryCamera(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){StepLoggerJourney(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeLifeTest"))){StepFreeLife(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){StepWorkshopJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){StepArrayWear(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))){StepRescueJourney(Dt);return;}
