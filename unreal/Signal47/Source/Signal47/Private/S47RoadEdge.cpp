@@ -23,6 +23,7 @@ namespace
 {
 	const TCHAR* const EdgeMaterialPackage = TEXT("/Game/RoadEdge/M_S47_RoadEdge");
 	const TCHAR* const EdgeMaterialPath = TEXT("/Game/RoadEdge/M_S47_RoadEdge.M_S47_RoadEdge");
+	constexpr int32 EdgeSitePlate = 19;          // the highway through SARO's site: an 8 m plate, geometry 14
 	constexpr int32 EdgeCorridorNode = 952;      // saroCorridor (S47FreeformTerrain ReliefCorridorNode), road-local z SARO_FROM..600
 	constexpr double EdgeLiftRoad = .02, EdgeLiftLand = .03;   // over what it lies on, in metres: the depth test keeps it there and nowhere else
 	constexpr double EdgeSiteX = -24, EdgeSiteY = -.58, EdgeSiteHalf = 4, EdgeSiteZ0 = -480, EdgeSiteZ1 = 36, EdgeSiteToRoadZ = -300;
@@ -188,7 +189,8 @@ namespace
 	// Small stones and dry grass right up to the edge, thicker in some stretches than in others. Culled at 70-130 m, so a few dozen of them draw at a time.
 	struct FEdgeKit { const TCHAR* Id; int32 Cull; double Density, MinX, MaxX, Scale; };
 	const FEdgeKit EdgeKits[] = {
-		{ TEXT("Caliche_A"), 8500, .42, 5.1, 7.8, .55 }, { TEXT("Sandstone_A"), 8500, .14, 5.3, 8.5, .42 },
+		// These stones are made to be half a metre across: at a sixth of that they read as gravel, not as boulders put down along the road.
+		{ TEXT("Caliche_A"), 6000, .55, 5.1, 7.8, .15 },
 		{ TEXT("Grass_A"), 13000, .13, 5.9, 8.6, .68 }, { TEXT("Grass_B"), 13000, .09, 6., 9.5, .72 } };
 	void EdgeAddStones(AS47Web* W, int32 Parent, const TCHAR* Name, double Z0, double Z1)
 	{
@@ -306,6 +308,8 @@ namespace S47RoadEdge
 		{
 			EdgeRun.bShown = bOn;
 			for (const int32 Node : EdgeRun.Nodes) W->SetVisible(Node, bOn);
+			// The site's plate lies 4-9 cm over its ground and draws a black line along itself with its own shadow, however the soil meets it. Back in Story.
+			if (const FS47WebNode* Plate = W->Node(EdgeSitePlate)) if (auto* C = Cast<UPrimitiveComponent>(Plate->Comp.Get())) C->SetCastShadow(!bOn);
 		}
 		if (bOn) EdgeTone(W);
 	}

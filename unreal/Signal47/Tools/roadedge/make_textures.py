@@ -107,7 +107,7 @@ def build(rng):
     return np.stack([tongue, patch, np.clip(rut, 0, 1), grain], axis=2)
 
 
-def edge_rule(m, x, z, soil, under, dust=(1.17, 1.16, 1.14)):
+def edge_rule(m, x, z, soil, under, dust=(1.13, 1.12, 1.1)):
     """EDGE_HLSL i numpy, for forhåndsvisningen: m er kartet, x og z meter, soil og under farger."""
     def tex(u, v):
         iy = (np.floor((v % 1) * H).astype(int)) % H
@@ -123,22 +123,26 @@ def edge_rule(m, x, z, soil, under, dust=(1.17, 1.16, 1.14)):
     width = .55 + .9 * c[..., 0]
     p = np.clip((a[..., 1] + b[..., 1]) * .5 * 1.6 - .3, 0, 1)
 
-    reach = (.12 + 2.5 * t ** 2.8) * width
-    inner = np.clip((ax - (4.8 - reach)) / (.2 + .6 * reach), 0, 1)
-    on_road = sstep(0, 1, inner) * (.22 + .73 * inner) * sstep(.12, .7, p + .3 * inner)
+    fine = d[..., 1]
+    reach = (.3 + 2.3 * t ** 2.2) * width
+    d_in = ax - (4.8 - reach) + ((p - .5) * .8 + (fine - .5) * .35) * (.25 + .3 * reach)
+    inner = np.clip(d_in / (.12 + .4 * reach), 0, 1)
+    on_road = sstep(0, 1, inner) * (.25 + .7 * np.clip(d_in / np.maximum(reach, .05), 0, 1)) * sstep(.15, .6, p * .7 + fine * .3 + .35 * inner)
+    flecks = sstep(.7, .88, a[..., 1] * .5 + b[..., 0] * .5) * sstep(2.7, 4.2, ax) * sstep(.35, .7, fine) * .4
+    on_road = np.maximum(on_road, flecks)
     s = np.clip((ax - 4.8) / 1.2, 0, 1)
-    shoulder = .58 + .4 * sstep(.2, .72, p + .45 * s)
+    shoulder = .68 + .32 * sstep(.2, .72, p + .45 * s)
     cover = on_road + (shoulder - on_road) * sstep(4.55, 5.05, ax + (p - .5) * .5)
     far = 6.6 + (1.2 + 7.5 * t) * width
     out = (1 - sstep(6.3, far, ax + (p - .5) * 1.6)) * (1 - sstep(14.6, 16.3, ax))
     opacity = cover * out
 
-    amount = np.clip(1 - (ax - 6) / (1.5 + 6 * t * width), 0, 1) * (.5 + .5 * p)
+    amount = np.clip(1 - (ax - 6 + (p - .5) * 2.5) / (1 + 6.5 * t * width), 0, 1) * sstep(.15, .7, p + .25 * s)
     tone = 1 + (np.array(dust)[None, None, :] - 1) * amount[..., None]
-    speck = sstep(.74, .86, d[..., 3]) * sstep(4.5, 5.4, ax) * (1 - sstep(8.5, 11, ax))
-    gate = sstep(.42, .55, c[..., 2])
+    speck = sstep(.74, .86, d[..., 3]) * sstep(4.5, 5.4, ax) * (1 - sstep(6.5 + 3 * t, 8.5 + 4 * t, ax))
+    gate = sstep(.35, .5, c[..., 2])
     ruts = a[..., 2] * gate
-    colour = soil * tone * (1 - .24 * speck[..., None]) * (1 - .22 * ruts[..., None])
+    colour = soil * tone * (1 - .24 * speck[..., None]) * (1 - .3 * ruts[..., None])
     opacity = np.maximum(opacity, ruts * .9 * sstep(4.2, 4.8, ax))
     return under + (colour - under) * opacity[..., None]
 

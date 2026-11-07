@@ -69,7 +69,7 @@ namespace
 		{ TEXT("edge-site"), TEXT("saro"), 7, -500, 2, -900, 0 },
 		{ TEXT("edge-farm"), TEXT("saro"), 9, 170, 16, 200, 0 },
 	};
-	const double EdgeHours[] = { 11, 18.6 };
+	const double EdgeHours[] = { 11, 17.6 };
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
 	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
@@ -462,7 +462,8 @@ namespace S47ReliefProbe
 			const bool bGround = ProbeGroundY(W, P->Pos, P->FloorY, GroundY);
 			ProbeLine(FString::Printf(TEXT("%s: frame %.1f ms on average, %.1f ms at worst over %d frames; Off under the eye %.2f m, floor %.3f, ground mesh %.3f, eye %.2f m over it"), *Shot, R.FrameCount ? R.FrameSum / R.FrameCount * 1000 : 0., R.FrameMost * 1000, R.FrameCount, S47Relief::Off(Rx, Rz), P->FloorY, GroundY, P->FloorY + P->Eye - GroundY));
 			// (the station's own ground is none of the meshes this looks in)
-			if (Life->Area != TEXT("station01") && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
+			// (nor is the highway: the land's own ground lies .45 m under its strip)
+			if (Life->Area != TEXT("station01") && !(FMath::Abs(Rx) < S47RoadTerrain::HWY.Flat) && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
 			if (R.HourAt == 0) ProbeUnder(W, Shot, P->Pos, P->FloorY);
 			R.Phase = 10; R.Since = R.Now;
 			return true;
