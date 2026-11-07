@@ -87,14 +87,14 @@ namespace S47FreeformTerminal
  }
 
  FW Text(TAttribute<FString> Value,TAttribute<int32> Tone)
- {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Tone,AmberNow=Amber,GreenNow=Green]{return FSlateColor(Tone.Get()<0?AmberNow:GreenNow);}).AutoWrapText(true).Margin(FMargin(0,5));}
+ {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Tone,AmberNow=Amber,GreenNow=Green]{return FSlateColor(Tone.Get()<0?AmberNow:GreenNow);}).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0,5));}
  FW Text(const FString& Value,int32 Tone){return Text(TAttribute<FString>(Value),TAttribute<int32>(Tone));}
  FW Paper(const FString& Value){return Text(Value);}
- FW Small(const FString& Value){return SNew(STextBlock).Text(FText::FromString(Value)).Font(S47Style::Mono(20)).ColorAndOpacity(Green*.8f).AutoWrapText(true).Margin(FMargin(0,6));}
+ FW Small(const FString& Value){return SNew(STextBlock).Text(FText::FromString(Value)).Font(S47Style::Mono(20)).ColorAndOpacity(Green*.8f).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0,6));}
  FW ButtonLive(TAttribute<FString> Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled)
  {
   return SNew(SButton).ButtonStyle(Primary?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
-  [SNew(STextBlock).Text_Lambda([Text]{return FText::FromString(Text.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);}).AutoWrapText(true)];
+  [SNew(STextBlock).Text_Lambda([Text]{return FText::FromString(Text.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);}).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>())];
  }
  FW Toggle(const FString& Text,TAttribute<bool> On,TFunction<void()> Action,TAttribute<bool> Enabled)
  {
@@ -143,6 +143,8 @@ namespace S47FreeformTerminal
   // One header row as in the mockups: station | screen title | day and clock.
   const TFunction<FString()> Clock=ClockSource;
   auto Bar=[]{return SNew(STextBlock).Text(FText::FromString(TEXT("|"))).Font(S47Style::Mono(26)).ColorAndOpacity(Green);};
+  // The glass is 1200 wide; the frame's padding takes 24 of it (FS47WrapMark).
+  S47Kit::FirstFrameWrap(Body,1176.f);
   return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(12,6))
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
@@ -203,17 +205,17 @@ namespace S47FreeformTerminal
   Box->AddSlot().AutoHeight().Padding(12,8)[Body];
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(2)[Box];
  }
- FW Heading(const FString& V,int32 Size){return SNew(STextBlock).Text(FText::FromString(V)).Font(S47Style::Mono(Size)).ColorAndOpacity(Amber).AutoWrapText(true);}
+ FW Heading(const FString& V,int32 Size){return SNew(STextBlock).Text(FText::FromString(V)).Font(S47Style::Mono(Size)).ColorAndOpacity(Amber).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>());}
  FW Banner(TAttribute<FString> V,TAttribute<bool> Urgent)
  {
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor_Lambda([Urgent]{return FSlateColor(Amber*(Urgent.Get()?Pulse(4):1.f));}).Padding(FMargin(14,8))
-   [SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(28)).ColorAndOpacity(Amber).Justification(ETextJustify::Center).AutoWrapText(true)];
+   [SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(28)).ColorAndOpacity(Amber).Justification(ETextJustify::Center).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>())];
  }
  FW Big(TAttribute<FString> V,TFunction<void()> Action,int32 Kind,TAttribute<bool> Enabled)
  {
   const FButtonStyle* S=Kind==2?&FilledStyle():Kind==1?&PrimaryStyle():&OutlineStyle();
   return SNew(SButton).ButtonStyle(S).ContentPadding(FMargin(16,9)).HAlign(HAlign_Center).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
-   [SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(28)).Justification(ETextJustify::Center).AutoWrapText(true)
+   [SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(28)).Justification(ETextJustify::Center).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>())
     .ColorAndOpacity_Lambda([Kind,Enabled]{return FSlateColor(!Enabled.Get()?Dim*1.8f:Kind==2?Ink:Kind==1?Amber:Green);})];
  }
  FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows)
@@ -284,17 +286,19 @@ namespace S47FreeformTerminal
  FW Columns(const TArray<TPair<float,FW>>& Cols,float Gap)
  {
   TSharedRef<SHorizontalBox> H=SNew(SHorizontalBox);
-  for(int32 I=0;I<Cols.Num();++I)H->AddSlot().FillWidth(Cols[I].Key).Padding(I?Gap*.5f:0.f,0,I+1<Cols.Num()?Gap*.5f:0.f,0)[Cols[I].Value];
+  float Sum=0;for(const auto& C:Cols)Sum+=FMath::Max(0.f,C.Key);
+  for(int32 I=0;I<Cols.Num();++I)H->AddSlot().FillWidth(Cols[I].Key).Padding(I?Gap*.5f:0.f,0,I+1<Cols.Num()?Gap*.5f:0.f,0)[S47Kit::Share(Cols[I].Value,Sum>0?Cols[I].Key/Sum:1.f)];
   return H;
  }
 
  FW Split(const TArray<TPair<float,FW>>& Cols)
  {
   TSharedRef<SHorizontalBox> H=SNew(SHorizontalBox);
+  float Sum=0;for(const auto& C:Cols)Sum+=FMath::Max(0.f,C.Key);
   for(int32 I=0;I<Cols.Num();++I)
   {
    if(I)H->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(2)[SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Line)]];
-   H->AddSlot().FillWidth(Cols[I].Key).Padding(14,6).VAlign(VAlign_Center)[Cols[I].Value];
+   H->AddSlot().FillWidth(Cols[I].Key).Padding(14,6).VAlign(VAlign_Center)[S47Kit::Share(Cols[I].Value,Sum>0?Cols[I].Key/Sum:1.f)];
   }
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(2)[H];
  }

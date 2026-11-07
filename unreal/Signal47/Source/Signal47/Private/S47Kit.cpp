@@ -86,6 +86,7 @@ S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width,
 	TWeakObjectPtr<US47UI> U = UI;
 	FSlateFontInfo H3 = Term(28.f);
 	H3.LetterSpacing = 60;
+	FirstFrameWrap(Body, (Width - 44.f) * PX);
 	return SNew(SBorder)
 		// .overlay: the dark over the game; a click on it closes the panel
 		.BorderImage(Box(Css(0x020306, 0.72f), FLinearColor::Transparent, 0.f))
@@ -135,7 +136,7 @@ S47Kit::FW S47Kit::Text(TAttribute<FString> S, TAttribute<int32> Tone)
 {
 	return Readable(SNew(STextBlock)
 		.Text_Lambda([S] { return FText::FromString(S.Get()); })
-		.Font(Type(15.5f)).AutoWrapText(true).LineHeightPercentage(1.15f)
+		.Font(Type(15.5f)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).LineHeightPercentage(1.15f)
 		.ColorAndOpacity_Lambda([Tone] { const int32 T = Tone.Get(); return FSlateColor(T > 0 ? Css(0xb9ffc7) : T < 0 ? Css(0xffb3a0) : Css(0xddd5c2)); })
 		.Margin(FMargin(0, 10, 0, 10)));
 }
@@ -160,7 +161,7 @@ S47Kit::FW S47Kit::Status(const FString& Name, const FString& State, int32 Tone,
 	TSharedRef<SVerticalBox> NameCol = SNew(SVerticalBox);
 	NameCol->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Term(21.f)).ColorAndOpacity(Ink)];
 	if (!Detail.IsEmpty())
-		NameCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(14.f)).ColorAndOpacity(bSelected ? Css(0x3d3626) : Css(0xb9b29f)).AutoWrapText(true))];
+		NameCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(14.f)).ColorAndOpacity(bSelected ? Css(0x3d3626) : Css(0xb9b29f)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))];
 	FW StateW = Badge(State, Tone);
 	if (!bBadge) StateW = SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(Tint);
 	return SNew(SBorder).BorderImage(bSelected ? Box(Css(0xc9d6c2), Css(0xc9d6c2)) : Box(FLinearColor::Transparent, Css(0xd9d0b4, 0.16f))).Padding(FMargin(12, 6))
@@ -194,9 +195,9 @@ S47Kit::FW S47Kit::Banner(const FString& Kicker, const FString& Headline, const 
 	TSharedRef<SVerticalBox> TextCol = SNew(SVerticalBox);
 	if (!Kicker.IsEmpty())
 		TextCol->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Kicker)).Font(Term(16.f)).ColorAndOpacity(Css(0x5a5648))];
-	TextCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Headline)).Font(Term(25.f)).ColorAndOpacity(Css(0x1a160f)).AutoWrapText(true))];
+	TextCol->AddSlot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Headline)).Font(Term(25.f)).ColorAndOpacity(Css(0x1a160f)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))];
 	if (!Detail.IsEmpty())
-		TextCol->AddSlot().AutoHeight().Padding(0, 4, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(15.f)).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true))];
+		TextCol->AddSlot().AutoHeight().Padding(0, 4, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Detail)).Font(Type(15.f)).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))];
 	return SNew(SBorder).BorderImage(Box(Css(0xebe3cf), FLinearColor::Transparent, 0.f)).Padding(FMargin(16, 12))
 		[
 			SNew(SHorizontalBox)
@@ -228,17 +229,17 @@ S47Kit::FW S47Kit::Table(const FString& Head1, const FString& Head2, const TArra
 
 S47Kit::FW S47Kit::Sub(const FString& S)
 {
-	return SNew(STextBlock).Text(FText::FromString(S)).Font(Term(21.f)).ColorAndOpacity(Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10));
+	return SNew(STextBlock).Text(FText::FromString(S)).Font(Term(21.f)).ColorAndOpacity(Css(0xffb052)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0, 0, 0, 10));
 }
 
 S47Kit::FW S47Kit::Small(const FString& S)
 {
-	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(13.5f)).ColorAndOpacity(Css(0xa59e90)).AutoWrapText(true).Margin(FMargin(0, 12, 0, 0)));
+	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(13.5f)).ColorAndOpacity(Css(0xa59e90)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0, 12, 0, 0)));
 }
 
 S47Kit::FW S47Kit::Question(const FString& S)
 {
-	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Term(20.f)).ColorAndOpacity(Css(0xf0e7d0)).AutoWrapText(true).Margin(FMargin(0, 8, 0, 6)));
+	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Term(20.f)).ColorAndOpacity(Css(0xf0e7d0)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0, 8, 0, 6)));
 }
 
 S47Kit::FW S47Kit::Paper(const FString& S, bool bReport)
@@ -250,7 +251,7 @@ S47Kit::FW S47Kit::Paper(const FString& S, bool bReport)
 	{
 		FSlateFontInfo F = Type(bReport && i == 0 ? 17.f : 14.5f);
 		if (bReport && i == 0) F.LetterSpacing = 40;
-		Ps->AddSlot().AutoHeight().Padding(0, 0, 0, 10)[Readable(SNew(STextBlock).Text(FText::FromString(Paras[i])).Font(F).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true))];
+		Ps->AddSlot().AutoHeight().Padding(0, 0, 0, 10)[Readable(SNew(STextBlock).Text(FText::FromString(Paras[i])).Font(F).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))];
 	}
 	TSharedRef<SWidget> W = SNew(SBorder).BorderImage(Box(Css(0xebe3cf), FLinearColor::Transparent, 0.f)).Padding(FMargin(22, 18))[Ps];
 	W->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(-0.4f))));
@@ -288,7 +289,7 @@ S47Kit::FW S47Kit::Steps(const TArray<TPair<FString, FString>>& Items, int32 Act
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Title)).Font(Term(22.f)).ColorAndOpacity(Ink)]
-					+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(15.f)).ColorAndOpacity(Line).AutoWrapText(true))]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(15.f)).ColorAndOpacity(Line).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))]
 				]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)
 				[
@@ -345,7 +346,7 @@ S47Kit::FW S47Kit::Card(const FString& Title, const FString& Line, TFunction<voi
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Title)).Font(Term(22.f)).ColorAndOpacity(Css(0xffb052))]
-			+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Line)).Font(Type(14.5f)).ColorAndOpacity(Css(0xd6cebb)).AutoWrapText(true))]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Line)).Font(Type(14.5f)).ColorAndOpacity(Css(0xd6cebb)).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()))]
 		];
 }
 
@@ -354,6 +355,26 @@ S47Kit::FW S47Kit::Row(const TArray<FW>& Children)
 	TSharedRef<SWrapBox> W = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(10, 10));
 	for (const FW& C : Children) W->AddSlot()[C];
 	return SNew(SBox).Padding(FMargin(0, 6))[W];
+}
+
+void S47Kit::FirstFrameWrap(const FW& Root, float Width)
+{
+	// Depth-first, the width narrowing only where a column says by how much. A text block takes it as WrapTextAt; nothing else
+	// about any widget changes.
+	TFunction<void(const FW&, float, int32)> Walk = [&Walk](const FW& W, float Avail, int32 Depth)
+	{
+		if (Depth > 64 || Avail < 1.f) return;
+		if (const TSharedPtr<FS47WidthShare> S = W->GetMetaData<FS47WidthShare>()) Avail *= FMath::Clamp(S->Share, 0.f, 1.f);
+		if (W->GetMetaData<FS47WrapMark>().IsValid() && W->GetType() == FName(TEXT("STextBlock"))) StaticCastSharedRef<STextBlock>(W)->SetWrapTextAt(Avail);
+		if (FChildren* C = W->GetChildren()) for (int32 I = 0; I < C->Num(); ++I) Walk(C->GetChildAt(I), Avail, Depth + 1);
+	};
+	Walk(Root, Width, 0);
+}
+
+S47Kit::FW S47Kit::Share(FW W, float Fraction)
+{
+	W->AddMetadata(MakeShared<FS47WidthShare>(Fraction));
+	return W;
 }
 
 S47Kit::FW S47Kit::Col(const TArray<FW>& Children, float Gap)
@@ -366,8 +387,8 @@ S47Kit::FW S47Kit::Col(const TArray<FW>& Children, float Gap)
 S47Kit::FW S47Kit::Two(FW Left, FW Right, float LeftShare, float RightShare)
 {
 	return SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().FillWidth(LeftShare).Padding(0, 0, 10, 0)[Left]
-		+ SHorizontalBox::Slot().FillWidth(RightShare).Padding(10, 0, 0, 0)[Right];
+		+ SHorizontalBox::Slot().FillWidth(LeftShare).Padding(0, 0, 10, 0)[Share(Left, LeftShare / FMath::Max(.001f, LeftShare + RightShare))]
+		+ SHorizontalBox::Slot().FillWidth(RightShare).Padding(10, 0, 0, 0)[Share(Right, RightShare / FMath::Max(.001f, LeftShare + RightShare))];
 }
 
 S47Kit::FW S47Kit::Cards(const TArray<FW>& Children)

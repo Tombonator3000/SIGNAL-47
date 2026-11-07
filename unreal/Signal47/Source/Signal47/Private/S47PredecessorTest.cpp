@@ -81,8 +81,12 @@ void FS47FreeformTest::StepReyes(double Dt)
   M->UI->Close(true);
   for(const TCHAR* Doc:{TEXT("note"),TEXT("home"),TEXT("pay"),TEXT("mail"),TEXT("list")}){P.ReadDoc(Doc);M->UI->Close(true);}
   if(!Check(P.Heard(TEXT("windmill"))&&F.Places->Heard(TEXT("windmill")),TEXT("the clipboard points at the windmill: a question mark on the map")))return;
-  M->World->Enter(TEXT("road"));TagAt=0;Stage=30;Hold=.5;return;
+  M->World->Enter(TEXT("road"));TagAt=0;Stage=25;Hold=.5;return;
  }
+ // A Places panel, the kit's own text: its first frame and its settled frame must look the same (FS47WrapMark).
+ if(Stage==25){M->UI->Close(true);F.Places->Use(TEXT("windmill"));Shot(TEXT("kit-places-first"));Stage=26;Hold=1;return;}
+ if(Stage==26){Shot(TEXT("kit-places-settled"));Stage=27;Hold=.3;return;}
+ if(Stage==27){M->UI->Close(true);Stage=30;return;}
  if(Stage==30)
  {
   const auto& Tags=S47PredecessorText::Tags();

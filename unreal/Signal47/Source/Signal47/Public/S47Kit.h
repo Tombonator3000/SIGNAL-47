@@ -27,6 +27,26 @@ public:
 //       S47Kit::Sub(Frame),
 //       S47Kit::Steps(StepList, Active),
 //       S47Kit::Button(TEXT("LOAD SEALED FILM INTO TANK"), [=] { UI->Close(); OnAct(); }, true) })));
+// Wrapped text learns how wide it is only when it is first painted (Slate caches the allotted width in OnPaint), so on the first
+// frame a column of paragraphs is laid out as if each were one line, and the rows below sit over the lines still to come. Text
+// that wraps carries this mark; S47Kit::FirstFrameWrap gives it, as a WrapTextAt, the widest it can be where it stands. Slate
+// takes the smaller of that and the width it later paints at, so the settled look is exactly as before: only the first frame is
+// right now, where its text has the panel's full width (FS47WidthShare narrows it in known columns, and never below the truth).
+class FS47WrapMark : public ISlateMetaData
+{
+public:
+	SLATE_METADATA_TYPE(FS47WrapMark, ISlateMetaData)
+	FS47WrapMark() {}
+};
+// This share of the width of the parent's area at most: set on the columns of S47Kit::Two and the terminal's Columns and Split.
+class FS47WidthShare : public ISlateMetaData
+{
+public:
+	SLATE_METADATA_TYPE(FS47WidthShare, ISlateMetaData)
+	explicit FS47WidthShare(float InShare) : Share(InShare) {}
+	float Share = 1.f;
+};
+
 namespace S47Kit
 {
 	using FW = TSharedRef<SWidget>;
@@ -90,4 +110,8 @@ namespace S47Kit
 	// the reading marks (FS47ReadingMark): a text the description reader reads, a part it leaves alone
 	SIGNAL47_API FW Readable(FW W);
 	SIGNAL47_API FW Unread(FW W);
+
+	// See FS47WrapMark. Width: the inner width of the area Root is laid out in, in its own units. Safe to call on any widget tree.
+	SIGNAL47_API void FirstFrameWrap(const FW& Root, float Width);
+	SIGNAL47_API FW Share(FW W, float Fraction);
 }
