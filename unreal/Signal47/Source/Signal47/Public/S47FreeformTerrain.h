@@ -27,6 +27,7 @@ namespace S47FreeformTerrain
 	UMaterialInstanceDynamic* GroundMid(const AS47Web* Web);
 	/** The range's material while it stands, for the same day tone at its foot. Null with the mesas. */
 	UMaterialInstanceDynamic* RangeMid(const AS47Web* Web);
+	UMaterialInstanceDynamic* CorridorMid(const AS47Web* Web);
 	/** What moved and what could not, one line each. */
 	void Report(const AS47Web* Web, TArray<FString>& Lines);
 }

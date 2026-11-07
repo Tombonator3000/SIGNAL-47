@@ -10,6 +10,7 @@ Does not touch import_ground.py or M_S47_DesertGround, which Story uses. Reuses 
 - crust and gravel from real ground: dry cracked clay and dense mixed gravel (T_FF_Crust_*, T_FF_Gravel_*), as ratios over one soil, and a grain under everything (T_FF_Grit)
 - no count of tiles: each layer's offset jumps by a smooth index (T_FF_Noise.a), the sand crossfaded over the jump and the rest picked
 - stones lying in the ground: T_FF_Stones_*, whole stones by rank, more on slopes, on fans and in gravel washes, standing up by displacement
+- PlainMesh (scalar, 0): for a flat mesh with no sediment in UV1 and no vertex colours of its own (the SARO corridor's ground, S47FreeformTerrain): no sediment, and the ring's own shade
 - soil and plants agree: T_FF_Field holds what S47Flora decides by road-local metres, so the soil is darker under each creosote and against
   the farm's buildings, a little darker where the stands are, and the stones lie where the flora's own rocks lie
 
@@ -210,13 +211,15 @@ return min(p, 0.98);
 
 def build(mat, tex, stone, ff, report):
     wp = node(mat, unreal.MaterialExpressionWorldPosition, -3600, -1800)
-    uv1 = node(mat, unreal.MaterialExpressionTextureCoordinate, -3600, -1700, coordinate_index=1)
+    uv1_raw = node(mat, unreal.MaterialExpressionTextureCoordinate, -3600, -1700, coordinate_index=1)
     n_ws = node(mat, unreal.MaterialExpressionVertexNormalWS, -3600, -1600)
     color = dict(r=True, g=True, b=False, a=False)
     gray = unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE
     normal = unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL
     linear = unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR
     f2, f3, f4, f1 = (getattr(unreal.CustomMaterialOutputType, 'CMOT_FLOAT%d' % i) for i in (2, 3, 4, 1))
+    plain = node(mat, unreal.MaterialExpressionScalarParameter, -3600, -1500, parameter_name='PlainMesh', default_value=0.)
+    uv1 = custom(mat, 'return UV * (1.0 - Plain);', dict(UV=uv1_raw, Plain=plain), f2, -3400, -1700)
 
     # the fields. The second is turned 37 degrees and pulled about by the first, so neither runs in lines
     n1 = sample(mat, ff['T_FF_Noise'], world_uv(mat, wp, color, NOISE_SPANS[0], -3300, -2300), -3100, -2300, linear)
@@ -369,7 +372,9 @@ c *= lerp(float3(1.0, 1.0, 1.0), float3(0.77, 0.75, 0.73), saturate(F.b * 1.3 - 
 // back to 165,130,105 over nature-flat-desert, -roadside and -yard together (7 November): the gravel and the bushes take from the mean, the blue most
 return c * float3(1.37, 1.61, 1.74);
 """, dict(N1=n1, N2=n2, F=(fld, 'RGBA'), P1=patch1, P2=patch2, Ratio=node(mat, unreal.MaterialExpressionConstant, -950, -380, r=RATIO)), f3, -950, -600)
-    vc = node(mat, unreal.MaterialExpressionVertexColor, -800, -600)
+    # (the ring's vertex colour, Exterior.ts ground, as S47FarmWorld's MakeYardGround has it: road-local minus the site's offset is the SARO world's own)
+    vc = custom(mat, 'float2 p = World.xy * 0.01; float s = 0.81 + 0.25 * sin(p.x * 0.013) * cos(p.y * 0.011); return lerp(VC.rgb, float3(s, s, s), Plain);',
+                dict(World=wp, VC=node(mat, unreal.MaterialExpressionVertexColor, -1000, -600), Plain=plain), f3, -800, -600)
     tint = node(mat, unreal.MaterialExpressionVectorParameter, -800, -500, parameter_name='GroundTint', default_value=DEFAULT_TINT)
     # (a VertexColor's first output has no name: it was asked for 'RGB' here, which left this Multiply's A open at 0)
     vt = mul(mat, vc, tint, -600, -550)

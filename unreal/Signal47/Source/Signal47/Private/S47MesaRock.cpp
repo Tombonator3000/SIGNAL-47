@@ -83,7 +83,11 @@ namespace
   auto* Range=S47FreeformTerrain::RangeMid(Web);
   static TWeakObjectPtr<UMaterialInstanceDynamic> RangeRead;const bool bRangeNew=Range&&RangeRead.Get()!=Range;
   if(bRangeNew){RangeRead=Range;Range->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Range->SetScalarParameterValue(TEXT("CrustAmount"),.75f);}
-  const float Day=DayAt(US47Main::Get(Web));if(!bRangeNew&&FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
+  // The SARO corridor's flat ground, the same soil with no mesh data of its own (S47FreeformTerrain).
+  auto* Corridor=S47FreeformTerrain::CorridorMid(Web);
+  static TWeakObjectPtr<UMaterialInstanceDynamic> CorridorRead;const bool bCorridorNew=Corridor&&CorridorRead.Get()!=Corridor;
+  if(bCorridorNew){CorridorRead=Corridor;Corridor->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Corridor->SetScalarParameterValue(TEXT("CrustAmount"),.75f);}
+  const float Day=DayAt(US47Main::Get(Web));if(!bRangeNew&&!bCorridorNew&&FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
   // SoilDay: one bare soil in the sun over the whole of Freeform's land, sRGB 165,130,105 (Tom, 7 November), measured in captures.
   // One soil, not three (Tom, 7 November: "ett jordfarge"). The crust layer is a pale grey cream, linear mean .726 .581 .431 against the sand's
   // .617 .387 .272 and the gravel's .581 .425 .306 (T_Ground*_D, 2048 maps measured). Where the 1100 m noise field turns the crust on (the town,
@@ -96,7 +100,7 @@ namespace
   const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.850f,.666f,.631f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
   const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day)*FMath::Lerp(FLinearColor::White,SandToMix,Day);
   const FLinearColor Crust=FMath::Lerp(NightCrust,CrustDay,Day),Gravel=FMath::Lerp(NightGravel,GravelDay,Day);
-  for(UMaterialInstanceDynamic* M:{Mid,Range})
+  for(UMaterialInstanceDynamic* M:{Mid,Range,Corridor})
   {
    if(!M)continue;
    M->SetVectorParameterValue(TEXT("GroundTint"),Tint);M->SetVectorParameterValue(TEXT("CrustTint"),Crust);M->SetVectorParameterValue(TEXT("GravelTint"),Gravel);

@@ -1,11 +1,13 @@
 #include "S47ReliefProbe.h"
 #include "S47Drive.h"
 #include "S47FarmWorld.h"
+#include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47FreeformTerrain.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
 #include "S47Main.h"
+#include "S47Night.h"
 #include "S47Relief.h"
 #include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
@@ -16,9 +18,11 @@
 #include "S47World.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "HAL/PlatformMisc.h"
 #include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
@@ -79,6 +83,63 @@ namespace
 	const int32 RampMinutes[] = {
 		18 * 60, 18 * 60 + 10, 18 * 60 + 20, 18 * 60 + 30, 18 * 60 + 40, 18 * 60 + 50, 19 * 60, 19 * 60 + 10, 19 * 60 + 20, 19 * 60 + 30, 19 * 60 + 40, 19 * 60 + 50, 20 * 60,
 		4 * 60 + 30, 4 * 60 + 40, 4 * 60 + 50, 5 * 60, 5 * 60 + 10, 5 * 60 + 20, 5 * 60 + 30, 5 * 60 + 40, 5 * 60 + 50, 6 * 60, 6 * 60 + 10, 6 * 60 + 20, 6 * 60 + 30 };
+	// -S47ViewsFile=<path>: any views, with no rebuild and none of the walks. A line each: name area x z lookX lookZ lift hour, then at will lamp, hide=node,node
+	// and cmd=console.command (underscores for spaces), which stay for the views after it. Road-local as above; # starts a comment. <name>.png.
+	struct FFileView { FString Name, Area; FReliefView View; double Hour = 12; bool bLamp = false; TArray<int32> Hide; TArray<FString> Cmds; };
+	TArray<FFileView> FileViews;
+	TArray<TWeakObjectPtr<UPrimitiveComponent>> FileHidden;
+	void ReadFileViews(const FString& Path)
+	{
+		FileViews.Reset();
+		TArray<FString> Lines;
+		if (!FFileHelper::LoadFileToStringArray(Lines, *Path)) return;
+		for (const FString& Line : Lines)
+		{
+			TArray<FString> Words;
+			Line.ParseIntoArrayWS(Words);
+			if (Words.Num() < 8 || Words[0].StartsWith(TEXT("#"))) continue;
+			FFileView& V = FileViews.AddDefaulted_GetRef();
+			V.Name = Words[0]; V.Area = Words[1]; V.Hour = FCString::Atod(*Words[7]);
+			V.View = { nullptr, nullptr, FCString::Atod(*Words[2]), FCString::Atod(*Words[3]), FCString::Atod(*Words[4]), FCString::Atod(*Words[5]), FCString::Atod(*Words[6]) };
+			for (int32 K = 8; K < Words.Num(); ++K)
+			{
+				FString Rest;
+				if (Words[K] == TEXT("lamp")) V.bLamp = true;
+				else if (Words[K].Split(TEXT("hide="), nullptr, &Rest))
+				{
+					TArray<FString> Nodes;
+					Rest.ParseIntoArray(Nodes, TEXT(","));
+					for (const FString& Node : Nodes) V.Hide.Add(FCString::Atoi(*Node));
+				}
+				else if (Words[K].Split(TEXT("cmd="), nullptr, &Rest)) V.Cmds.Add(Rest.Replace(TEXT("_"), TEXT(" ")));
+			}
+		}
+		for (FFileView& V : FileViews) { V.View.Name = *V.Name; V.View.Area = *V.Area; }
+	}
+	void FileViewEnter(US47Main* M, const FFileView& V)
+	{
+		AS47Web* W = M->Web.Get();
+		const double Clock = FMath::Fmod(M->Freeform->Clock(), 86400.);
+		const double Ahead = FMath::Fmod(V.Hour * 3600. - Clock + 86400., 86400.);
+		if (Ahead > 30 && Ahead < 86370) M->Freeform->TestAdvance(Ahead);
+		for (const FString& Cmd : V.Cmds) if (GEngine) GEngine->Exec(W->GetWorld(), *Cmd);
+		for (const int32 Node : V.Hide)
+			if (const FS47WebNode* N = W->Node(Node)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get()))
+			{
+				C->SetVisibility(false);
+				FileHidden.Add(C);
+			}
+		if (M->Night && M->Night->Flashlight)
+		{
+			M->Night->Flashlight->bHave = true;
+			if (M->Night->Flashlight->bOn != V.bLamp) M->Night->Flashlight->Toggle();
+		}
+	}
+	void FileViewLeave()
+	{
+		for (const TWeakObjectPtr<UPrimitiveComponent>& C : FileHidden) if (C.IsValid()) C->SetVisibility(true);
+		FileHidden.Reset();
+	}
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
 	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
@@ -97,7 +158,7 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
-		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false;
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bFile = false;
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -253,22 +314,27 @@ namespace
 	}
 	int32 ProbeHourCount()
 	{
+		if (ReliefRun.bFile) return 1;
 		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
 	}
 	double ProbeHourAt(int32 At)
 	{
+		if (ReliefRun.bFile) return FileViews.IsValidIndex(ReliefRun.ViewAt) ? FileViews[ReliefRun.ViewAt].Hour : 12.;
 		return ReliefRun.bRamp ? RampMinutes[At] / 60. : ReliefRun.bEdgeOnly ? EdgeHours[At] : ReliefHours[At];
 	}
 	int32 ProbeViewCount()
 	{
+		if (ReliefRun.bFile) return FileViews.Num();
 		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampViews) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews));
 	}
 	const FReliefView& ProbeViewAt(int32 At)
 	{
+		if (ReliefRun.bFile) return FileViews[At].View;
 		return ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
 	}
 	void ProbeSetHour(US47Main* M, double Hour)
 	{
+		if (ReliefRun.bFile) return;
 		const double Clock = FMath::Fmod(M->Freeform->Clock(), 86400.);
 		const double Ahead = FMath::Fmod(Hour * 3600. - Clock + 86400., 86400.);
 		if (Ahead > 1 && !M->Freeform->TestAdvance(Ahead)) ProbeCheck(false, FString::Printf(TEXT("the clock would not go to %.1f"), Hour));
@@ -283,6 +349,12 @@ namespace S47ReliefProbe
 		ReliefRun = FReliefRun();
 		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
 		ReliefRun.bRamp = FParse::Param(FCommandLine::Get(), TEXT("S47DuskRamp"));
+		FString ViewsFile;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47ViewsFile="), ViewsFile))
+		{
+			ReadFileViews(ViewsFile);
+			ReliefRun.bFile = FileViews.Num() > 0;
+		}
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -308,7 +380,7 @@ namespace S47ReliefProbe
 			Lines.Reset();
 			S47RoadEdge::Report(W, Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
-			if (R.bEdgeOnly || R.bRamp) { R.Phase = 7; R.Since = R.Now; return true; }
+			if (R.bEdgeOnly || R.bRamp || R.bFile) { R.Phase = 7; R.Since = R.Now; return true; }
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
 			return true;
@@ -464,6 +536,7 @@ namespace S47ReliefProbe
 			if (R.ViewAt >= ProbeViewCount()) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
 			const FReliefView& View = ProbeViewAt(R.ViewAt);
 			if (Life->Area != View.Area) { Life->Enter(View.Area); R.Since = R.Now; return true; }
+			if (R.bFile) FileViewEnter(M, FileViews[R.ViewAt]);
 			const FVector Eye = S47FarmWorld::RoadToArea(View.Area, FVector(View.X, 0, View.Z)), Look = S47FarmWorld::RoadToArea(View.Area, FVector(View.LookX, 0, View.LookZ));
 			const FVector Along(Look.X - Eye.X, View.Lift, Look.Z - Eye.Z);
 			P->Place(Eye.X, Eye.Z, FMath::Atan2(-Along.X, -Along.Z));
@@ -479,7 +552,7 @@ namespace S47ReliefProbe
 			if (R.Now - R.Since < 2.5) return true;
 			const FReliefView& View = ProbeViewAt(R.ViewAt);
 			const int32 Hour = FMath::FloorToInt(ProbeHourAt(R.HourAt));
-			const FString Shot = R.bRamp ? FString::Printf(TEXT("relief-%02d%02d-%s.png"), RampMinutes[R.HourAt] / 60, RampMinutes[R.HourAt] % 60, View.Name) : FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
+			const FString Shot = R.bFile ? FString(View.Name) + TEXT(".png") : R.bRamp ? FString::Printf(TEXT("relief-%02d%02d-%s.png"), RampMinutes[R.HourAt] / 60, RampMinutes[R.HourAt] % 60, View.Name) : FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("AlbumTest") / Shot, true, false);
 			double Rx = 0, Rz = 0;
 			ProbeRoadXZ(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
@@ -490,7 +563,7 @@ namespace S47ReliefProbe
 			// (the station's own ground is none of the meshes this looks in)
 			// (nor is the highway: the land's own ground lies .45 m under its strip)
 			if (Life->Area != TEXT("station01") && !(FMath::Abs(Rx) < S47RoadTerrain::HWY.Flat) && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
-			if (R.HourAt == 0) ProbeUnder(W, Shot, P->Pos, P->FloorY);
+			if (R.HourAt == 0 && !R.bFile) ProbeUnder(W, Shot, P->Pos, P->FloorY);
 			R.Phase = 10; R.Since = R.Now;
 			return true;
 		}
@@ -498,6 +571,7 @@ namespace S47ReliefProbe
 		{
 			// The picture is written in the next frame; nothing moves before then.
 			if (R.Now - R.Since < .3) return true;
+			FileViewLeave();
 			++R.ViewAt; R.Phase = 8; R.Since = R.Now;
 			return true;
 		}

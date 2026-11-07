@@ -242,6 +242,14 @@ namespace
 	/** Freeform: an old tuft of grass, multiplying the kind's colour: grey-brown and darker. */
 	const FVector& GREY_TUFT(int32 I) { static const FVector V[2] = { Lin(0.68, 0.65, 0.62), Lin(0.6, 0.58, 0.56) }; return V[I]; }
 
+	// Tom, 7 November: "hvite bomullsdotter" against the low sun. A blade's normal points up, so with the eye looking toward a low sun it stands in the mirror angle, where UE's
+	// Fresnel goes to 1 at any roughness whenever Specular is above 0: white, with all shape gone. A dry leaf does not shine like that. 0 removes it and only it; the sky and the
+	// sun's diffuse stay, so a plant is dark toward the sun. (-S47FloraShiny keeps the old for a before picture.)
+	void Matte(UMaterialInstanceDynamic* D)
+	{
+		static const bool bShiny = FParse::Param(FCommandLine::Get(), TEXT("S47FloraShiny"));
+		if (D && !bShiny) D->SetScalarParameterValue(TEXT("Specular"), 0.f);
+	}
 	bool Inside(const FS47FloraRect& B, double X, double Z, double M = 0) { return X >= B.MinX - M && X <= B.MaxX + M && Z >= B.MinZ - M && Z <= B.MaxZ + M; }
 	double Fmod1(double V) { return V - FMath::FloorToDouble(V); } // (a % 1 of a non-negative number)
 
@@ -1052,6 +1060,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			TArray<UMaterialInstanceDynamic*> Mids = W->NodeMids(Ch);
 			UMaterialInstanceDynamic* Da = Mids.Num() ? Mids[0] : nullptr;
 			if (Da) Da->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
+			if (Spec.bNatural) Matte(Da);
 			Layers[Dw.Value].Mesh = A; Layers[Dw.Value].Mid = Da;
 			if (Dw.Value == 2) Layers[2].Shadow = MakeShadow(W, A, Da);
 			++Bound;
@@ -1244,6 +1253,7 @@ void FS47Flora::EnsureDesert()
 		const int32 First = DESERT_FIRST[Ki - DESERT_KI], End = DESERT_FIRST[Ki - DESERT_KI + 1];
 		// one material to a species: one set of what the flora's material takes at run time (Reach, WindDir)
 		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Meshes[First]->GetMaterial(0), W);
+		Matte(D);
 		// The atlases' small mips average leaf, flower and dry leaf together, pale: stay sharp however far the plant stands.
 		if (D) D->SetForceMipLevelsToBeResident(true, true, -1.f);
 		L.Mid = D;
@@ -1298,6 +1308,7 @@ void FS47Flora::EnsureCreosote()
 	if (Loaded < CREOSOTE_N) return;
 	FLayer& L = Layers[CREOSOTE_KI];
 	UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Meshes[0]->GetMaterial(0), W);
+	Matte(D);
 	// (as EnsureDesert: the atlas's small mips would average the leaves and the air between them)
 	if (D) D->SetForceMipLevelsToBeResident(true, true, -1.f);
 	L.PartMid = D;

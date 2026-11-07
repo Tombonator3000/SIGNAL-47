@@ -34,7 +34,9 @@ struct FS47FreeformTerrainState
 	TArray<FPropLift> Props;
 	TArray<FWireSwap> Wires;
 	FRangeSwap Range;
-	TStrongObjectPtr<UMaterialInstanceDynamic> Mid, RangeMid;
+	TStrongObjectPtr<UMaterialInstanceDynamic> Mid, RangeMid, CorridorMid;
+	TWeakObjectPtr<UStaticMeshComponent> Corridor;
+	TArray<TStrongObjectPtr<UMaterialInterface>> CorridorFlat;
 	TArray<FString> Notes;
 	int32 Instances = 0, Segments = 0;
 	bool bPrepared = false, bFailed = false, bOn = false;
@@ -47,7 +49,7 @@ namespace
 	const TCHAR* const ReliefMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformGround.M_S47_FreeformGround");
 	const TCHAR* const RangeMeshPath = TEXT("/Game/FreeformTerrain/SM_FF_Range.SM_FF_Range");
 	const TCHAR* const RangeMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformRange.M_S47_FreeformRange");
-	const int32 ReliefRoadNode = 1242, ReliefRoadGeo = 873, ReliefSaroNode = 7, ReliefSaroGeo = 4, ReliefCorridorNode = 952;
+	const int32 ReliefRoadNode = 1242, ReliefRoadGeo = 873, ReliefSaroNode = 7, ReliefSaroGeo = 4, ReliefCorridorNode = 952, ReliefCorridorGroundNode = 953;
 	constexpr double ReliefMinMove = .002;   // less than this is not worth the update: 0 in the mask, and nothing to see
 
 	// Which set of coordinates a node stands in. The shared landscape follows the area; the others stay where they are.
@@ -344,6 +346,18 @@ namespace
 		Mid->SetForceMipLevelsToBeResident(true, true, -1.f);
 		S.Mid.Reset(Mid);
 		S.Grounds = MoveTemp(Swaps);
+		// Tom, 7 November: "overlapp mellom to forskjellige teksturer". The SARO corridor's flat ground (node 953) is no relief mesh, so it stayed on M_S47_DesertGround, another
+		// set of layers and tints, with a straight edge along the farm at road x 107.66 and along the whole strip. It takes the relief's material now. It has no sediment in its UV1
+		// and no vertex colours: PlainMesh stands for both, with the shade the ring and the yard carry (MakeYardGround).
+		if (const FS47WebNode* CorridorNode = W->Node(ReliefCorridorGroundNode))
+			if (auto* CorridorComp = Cast<UStaticMeshComponent>(CorridorNode->Comp.Get()); CorridorComp && CorridorNode->Name == TEXT("saroCorridorGround"))
+				if (UMaterialInstanceDynamic* CorridorMid = UMaterialInstanceDynamic::Create(Material, GetTransientPackage()))
+				{
+					CorridorMid->SetScalarParameterValue(TEXT("PlainMesh"), 1.f);
+					CorridorMid->SetForceMipLevelsToBeResident(true, true, -1.f);
+					S.CorridorMid.Reset(CorridorMid);
+					S.Corridor = CorridorComp;
+				}
 		const double Started = FPlatformTime::Seconds();
 		ScanInstances(W, S);
 		ScanProps(W, S);
@@ -403,6 +417,16 @@ namespace
 				for (int32 Slot = 0; Slot < G.FlatMaterials.Num(); ++Slot) C->SetMaterial(Slot, G.FlatMaterials[Slot].Get());
 			}
 		}
+		if (UStaticMeshComponent* C = S.Corridor.Get())
+		{
+			if (bOn)
+			{
+				S.CorridorFlat.Reset();
+				for (int32 Slot = 0; Slot < C->GetNumMaterials(); ++Slot) S.CorridorFlat.Emplace(C->GetMaterial(Slot));
+				C->SetMaterial(0, S.CorridorMid.Get());
+			}
+			else for (int32 Slot = 0; Slot < S.CorridorFlat.Num(); ++Slot) C->SetMaterial(Slot, S.CorridorFlat[Slot].Get());
+		}
 		for (const auto& Row : S.Rows)
 		{
 			UInstancedStaticMeshComponent* C = Row.C.Get();
@@ -451,6 +475,7 @@ namespace S47FreeformTerrain
 			// Whoever sets a material on the ground later must not take it back to the flat land's.
 			for (const auto& G : S.Grounds) if (UStaticMeshComponent* C = G.C.Get()) if (C->GetMaterial(0) != S.Mid.Get()) C->SetMaterial(0, S.Mid.Get());
 			if (UStaticMeshComponent* C = S.Range.C.Get()) if (C->GetMaterial(0) != S.RangeMid.Get()) C->SetMaterial(0, S.RangeMid.Get());
+			if (UStaticMeshComponent* C = S.Corridor.Get()) if (C->GetMaterial(0) != S.CorridorMid.Get()) C->SetMaterial(0, S.CorridorMid.Get());
 		}
 		return S.bOn;
 	}
@@ -466,10 +491,11 @@ namespace S47FreeformTerrain
 	{
 		if (!IsOn(Web)) return false;
 		for (const auto& G : Web->FreeformTerrain->Grounds) if (G.C.Get() == Component) return true;
-		return Component && Web->FreeformTerrain->Range.C.Get() == Component;
+		return Component && (Web->FreeformTerrain->Range.C.Get() == Component || Web->FreeformTerrain->Corridor.Get() == Component);
 	}
 	UMaterialInstanceDynamic* GroundMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->Mid.Get() : nullptr; }
 	UMaterialInstanceDynamic* RangeMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->RangeMid.Get() : nullptr; }
+	UMaterialInstanceDynamic* CorridorMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->CorridorMid.Get() : nullptr; }
 	void Report(const AS47Web* Web, TArray<FString>& Lines)
 	{
 		if (!Web || !Web->FreeformTerrain.IsValid()) { Lines.Add(TEXT("relief: not prepared")); return; }
