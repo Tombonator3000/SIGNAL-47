@@ -68,6 +68,8 @@ public:
 	FVector Position() const { return FigPos; }
 	bool Visible() const { return bVisible; }
 	bool HasNativeBody() const { return bRoswell; }
+	/** The two control-room windows it can look in at, ground-level point outside each (Three metres, X and Z). */
+	static TArray<FVector2D> SaroWindowSpots();
 
 	void Attach(US47Main* Main);
 	int32 DevSpawn(int32 Number, FS47RoswellBrain::EMode Mode, bool bRoof=false);

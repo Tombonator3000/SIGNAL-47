@@ -180,15 +180,151 @@ namespace
   // or more off in a clear line, stays put at first, has its head up; the radio rises as it nears and crackles; leaving
   // ends each with the light out and the body gone; the crab's head is down near the ground, and if it reaches the
   // player they lose its hours and wake 150 m or more away.
-  // -S47MenuPointerPeek [-S47PeekPlace=house|room6|cinema|feed|church|gas]: PASS only if: nothing in 30 s indoors at
+  // -S47MenuPointerPeek [-S47PeekPlace=house|saro|cinema|feed|church|gas]: PASS only if: nothing in 30 s indoors at
   // 21:00; at 02:30 the night's draw alone brings it (a lost draw moves on a night, at most 14); its start pose is hidden
   // from the player's actual eye (no pop-in) and its raised head is in a clear line; the radio hears it; a menu stops its
   // clock; it goes and leaves a record of what was seen.
   // -S47MenuPointerReflood: the first light is set up; PASS only if: getting out of it remembers the room; it does not
   // come back in 32 s in the room straight after, nor at 21:00 three days later; at 02:30 its own draw brings it (at most
   // 14 nights); getting out again counts, restarts the rest and leaves a record.
+  // -S47MenuPointerNight: the real scheduler from 19:00 to 06:00 on night two, with the world clock and its active-time
+  // clock run 40 times over. Set up: the lights' draw comes out yes with its hour at 01:12, every other event but the
+  // lights is cancelled as soon as it starts, the lights too once started, and the site's 60 percent. Natural: every roll
+  // but the lights', every start, the visit from standing at the marks. PASS only if: no body, no visit, no peek and no
+  // body-event before 02:00; the lights start past midnight, not before their hour; a visit at the marks waits for 02:00.
+  // -S47MenuPointerRest: the real Rest with the Director running. Set up: armed marks, then dice forced to yes, then to
+  // no, in that order. PASS only if: rest over marks stops 02:05 to 03:00 with the call given; the next goes to morning;
+  // dice yes stops it again and an event starts by itself; rest is refused while it runs and goes through once over;
+  // dice no sleeps straight through.
+  bool StepNight(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& Site=*F.FarmSite;auto& D=*F.Director;
+   const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.,Late=Hour<12?Hour+24:Hour;
+   const auto Marks=Site.Centre();
+   const bool bTheirs=FS47FarmSite::TheirHours(F.Clock());
+   if(!bTheirs&&(!M->Night->Glimpses->Individuals().IsEmpty()||(Site.VisitStage()>=1&&Site.VisitStage()<=3)||F.IndoorDread->PeekActive()))
+    return Fail(TEXT("no body before two in the morning"));
+   if(Stage==460)
+   {
+    if(Late>=30)
+    {
+     if(DreadFirst<=0)return Fail(TEXT("the night's lights never started"));
+     UE_LOG(LogTemp,Display,TEXT("S47: night PASS: lights at %.2f, the visit waited for two, %d events in all"),DreadFirst-24,DreadRound);
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    const FString Id=D.ActiveEvent();
+    if(Id.IsEmpty()){if(!F.TestAdvance(FMath::Min(Elapsed-DreadAt,.25)*560.))return Fail(TEXT("no clock"));DreadAt=Elapsed;return true;}
+    ++DreadRound;
+    UE_LOG(LogTemp,Display,TEXT("S47: night: %s started by itself at %.2f"),*Id,Hour);
+    if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!bTheirs)return Fail(TEXT("no such event before two in the morning"));
+    const bool bLights=Id==TEXT("farm_lights")||Id==TEXT("town_lights");
+    if(bLights&&(Late<25.2||Late>=30))return Fail(TEXT("the lights must keep their hour, past midnight"));
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+    if(bLights&&DreadFirst<=0)
+    {
+     DreadFirst=Late;
+     if(!Site.Armed())return Fail(TEXT("the lights must leave marks"));
+     if(Site.PlaceId()!=TEXT("farm")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
+     // The scheduler back to its own pace while the player stands at the marks: nothing else may crowd the visit.
+     D.TestSchedule(-1.f,25.2,1.);
+     Site.TestReadyVisit();DreadAt=Elapsed;Stage=461;
+    }
+    return true;
+   }
+   if(Stage>=461&&Stage<=463&&!D.ActiveEvent().IsEmpty())
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: night: %s started at %.2f, stopped so the visit can be judged"),*D.ActiveEvent(),Hour);
+    D.CancelForTest();return true;
+   }
+   if(Stage==461)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;DreadAt=Elapsed;Stage=462;return true;
+   }
+   if(Stage==462)
+   {
+    // Standing there with the clock held: before two nothing comes, however long.
+    if(!bTheirs&&Elapsed-DreadAt<16)return true;
+    if(!bTheirs)UE_LOG(LogTemp,Display,TEXT("S47: night: 16 s at the marks at %.2f, nothing came"),Hour);
+    if(!bTheirs&&!DreadToClock(M,2.2))return Fail(TEXT("no clock"));
+    DreadAt=Elapsed;Stage=463;return true;
+   }
+   if(Stage==463)
+   {
+    if(Site.VisitStage()>=1){UE_LOG(LogTemp,Display,TEXT("S47: night: visit began at %.2f, kind %d"),Hour,Site.VisitKind());M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=464;return true;}
+    if(Elapsed-DreadAt>25)return Fail(TEXT("standing at the marks in the small hours must bring the visit"));
+    return true;
+   }
+   if(Stage==464)
+   {
+    if(Site.VisitStage()!=4){if(Elapsed-DreadAt>8)return Fail(TEXT("leaving must end it"));return true;}
+    D.TestSchedule(-1.f,25.2,40.);DreadAt=Elapsed;Stage=460;return true;
+   }
+   // The rest.
+   if(Stage==480)
+   {
+    if(Elapsed-DreadFrom<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest must be accepted"));
+    if(F.LastWakeClock()!=F.Clock())return Fail(TEXT("this rest must have been broken, not finished"));
+    const double Now=FMath::Fmod(F.Clock(),86400.)/3600.;
+    if(Now<2+4.9/60.||Now>3.01||F.Day()!=Day)return Fail(TEXT("rest over standing marks must stop between 02:05 and 03:00, the same day"));
+    if(!Site.Nudged())return Fail(TEXT("waking must give the call about the marks"));
+    UE_LOG(LogTemp,Display,TEXT("S47: rest: woken at %.2f by the call"),Now);
+    DreadAt=Elapsed;Stage=481;return true;
+   }
+   if(Stage==481)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("a second rest must be accepted"));
+    if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("the second rest must reach the morning"));
+    D.TestSchedule(1.f,25.,1);DreadAt=Elapsed;Stage=482;return true;
+   }
+   if(Stage==482)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest must be accepted"));
+    const double Now=FMath::Fmod(F.Clock(),86400.)/3600.;
+    if(Now<2+4.9/60.||Now>3.01||F.Day()!=Day)return Fail(TEXT("a drawn night must stop the rest between 02:05 and 03:00"));
+    UE_LOG(LogTemp,Display,TEXT("S47: rest: woken at %.2f by the night's draw"),Now);
+    DreadAt=Elapsed;Stage=483;return true;
+   }
+   if(Stage==483)
+   {
+    const FString Id=D.ActiveEvent();
+    if(Id.IsEmpty()){if(Elapsed-DreadAt>30)return Fail(TEXT("what woke them must follow by itself"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: rest: %s started by itself after waking"),*Id);
+    const double Before=F.Clock();
+    if(F.WaitUntil(F.Clock()+3600.)||F.Clock()!=Before)return Fail(TEXT("no sleeping through an active encounter"));
+    if(M->UI)M->UI->Close(true);
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+    D.TestSchedule(0.f,-1,1);DreadAt=Elapsed;Stage=484;return true;
+   }
+   if(Stage==484)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest after the encounter must not lock"));
+    if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("rest after waking must reach the morning"));
+    DreadAt=Elapsed;Stage=485;return true;
+   }
+   if(Stage==485)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest must be accepted"));
+    if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("a night with nothing drawn sleeps straight through"));
+    UE_LOG(LogTemp,Display,TEXT("S47: rest PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such night stage"));
+  }
   bool StepDread(US47Main* M)
   {
+   if(Stage>=460&&Stage<=489)return StepNight(M);
    StageAt=Elapsed;
    auto& Site=*M->Freeform->FarmSite;auto& Tk=*M->Freeform->Taken;auto& Dread=*M->Freeform->IndoorDread;
    const FVector Marks=Site.Centre();
@@ -305,12 +441,10 @@ namespace
    {
     if(Elapsed-DreadFrom<3)return true;
     FVector Room=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);
-    if(DreadPlace==TEXT("room6")){if(M->Web->Area()!=TEXT("room6")){if(Elapsed-DreadFrom>12)return Fail(TEXT("the motel room must open"));return true;}}
-    else
-    {
-     if(DreadPlace!=TEXT("house")&&!S47CalicheAccess::RoomMiddle(DreadPlace,Room))return Fail(TEXT("no such room"));
-     M->Player->Place(Room.X,Room.Z,0);
-    }
+    // In the control room, looking north at its windows; yaw 0 faces -Z.
+    if(DreadPlace==TEXT("saro"))Room=FVector(0,0,-1.2);
+    else if(DreadPlace!=TEXT("house")&&!S47CalicheAccess::RoomMiddle(DreadPlace,Room))return Fail(TEXT("no such room"));
+    M->Player->Place(Room.X,Room.Z,0);
     M->Player->Pitch=0;DreadAt=Elapsed;Stage=421;return true;
    }
    if(Stage==421)
@@ -608,9 +742,27 @@ namespace
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
      if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the peek test needs night two"));
      M->FieldRadio->TestOwn();DreadPlace=TEXT("house");FParse::Value(FCommandLine::Get(),TEXT("S47PeekPlace="),DreadPlace);
-     if(DreadPlace==TEXT("room6"))M->World->GoRoom6();
-     else if(DreadPlace!=TEXT("house")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
+     if(DreadPlace!=TEXT("house")&&DreadPlace!=TEXT("saro")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
      DreadFrom=Elapsed;Stage=420;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerNight")))
+    {
+     // The Director stays on. From 19:00 of night two, in the control room, the world and scheduler clocks run fast.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(35.*3600.))return Fail(TEXT("the night test needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(-1.f,25.2,40.);
+     DreadFirst=0;DreadRound=0;DreadFrom=DreadAt=Elapsed;Stage=460;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRest")))
+    {
+     // The Director stays on. 22:00 of night two, marks standing, nothing else drawn.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();M->Freeform->TestAllowWake();
+     if(!M->Freeform->TestAdvance(38.*3600.))return Fail(TEXT("the rest test needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(0.f,-1,1);
+     M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());M->Freeform->FarmSite->TestReadyVisit();
+     DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerReflood")))
     {

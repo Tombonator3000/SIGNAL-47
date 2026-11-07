@@ -32,6 +32,11 @@ public:
  TOptional<FVector> VisitWarningAt() const{return Visit==1?TOptional<FVector>(Middle+FVector(0,1,0)):TOptional<FVector>();}
  void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;}
  int32 VisitKind() const{return VisitWho;}
+ // Marks that will still be there at this clock, with a visit still to come.
+ bool WillStandAt(double Clock) const{return Visit==0&&ClearAt>Clock&&Clock>=CalmUntil;}
+ // The second report, on the set if the player has it. False: no marks to report.
+ bool WakeCall();
+ bool Nudged() const{return bNudged;}
  // Test: how high the moved body's head is over its feet, -1 when it is not out.
  double VisitHeadHeight() const;
  // Test: the next visit's draw, in place of the dice. Goes through PickWho like any other.
@@ -78,6 +83,8 @@ private:
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);
  void HideBody();
+ void SayNudge();
+ int32 BodyKind=0; // the kind whose body is out now, whatever VisitWho says
  void StepVisit(double Dt,double Dist);
  void EndVisit(bool bTaken);
  bool bBuilt=false,bActive=false,bBound=false,bShown=false;

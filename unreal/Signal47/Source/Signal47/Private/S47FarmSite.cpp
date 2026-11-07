@@ -192,6 +192,21 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  UE_LOG(LogTemp,Display,TEXT("S47: lights site %s armed in %s at %.1f %.1f %.1f until clock %.0f"),*Place,*AreaId,Middle.X,Middle.Y,Middle.Z,ClearAt);
 }
 
+void FS47FarmSite::SayNudge()
+{
+ bNudged=true;
+ if(!M)return;
+ const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says it has not gone away, and will not go out to look."),*Title);
+ if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+ M->RequestAutosave();
+}
+
+bool FS47FarmSite::WakeCall()
+{
+ if(!M||!M->Freeform||!WillStandAt(M->Freeform->Clock()))return false;
+ SayNudge();return true;
+}
+
 void FS47FarmSite::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform)return;
@@ -201,10 +216,7 @@ void FS47FarmSite::Step(double Dt)
  // Evening's marks, and now the hour they can come: a second report of the same place, for whoever went home.
  if(Visit==0&&!bNudged&&Armed()&&TheirHours(M->Freeform->Clock())&&M->Player&&(!Here()||FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()>100))
  {
-  bNudged=true;
-  const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says it has not gone away, and will not go out to look."),*Title);
-  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
-  M->RequestAutosave();
+  SayNudge();
  }
  if(Visit>=1&&Visit<=3&&(!Armed()||!M->Web||!Here()||!M->Player)){EndVisit(bVisitTaken||(M->Freeform->Taken&&M->Freeform->Taken->Busy()));return;}
  if(!Armed()||!M->Audio||!M->Player||!M->Web||!Here())return;
@@ -248,7 +260,9 @@ bool FS47FarmSite::PutBody(const FVector& Near)
  }
  if(!Own->bBuilt&&!Own->Build(M->Web.Get(),TEXT("#root"),bTall?TEXT("SiteVisitTall"):TEXT("SiteVisitCrab")))return false;
  if(!Own->Creature.Ready())return false;
- VisitBody=Own;
+ // Whatever was out goes first, by its own kind, before this one takes over.
+ HideBody();
+ VisitBody=Own;BodyKind=VisitWho;
  // Always out of the view, so nothing pops in, and with a clear line once the player turns. The tall one stands far
  // off in the open, to be seen across the ground; the crab starts nearer, low. As far as the land allows.
  const FVector Eye=Near+FVector(0,1.6,0);
@@ -305,7 +319,7 @@ void FS47FarmSite::HideBody()
 {
  if(VisitBody&&VisitBody->bBuilt&&bBodyOut)
  {
-  if(VisitWho==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
+  if(BodyKind==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
   else VisitBody->Apply(false,BodyAt,BodyYaw,BodyYaw,0,0,BodyClock,FS47PaleBody::EPose::Walk);
  }
  bBodyOut=false;
@@ -316,7 +330,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G||!M->World)return;
  auto Tk=M->Freeform->Taken;if(!Tk)return;
  const bool bDriving=M->World->bDriving;
- // In the truck with the engine dead is not away. That is the worst place to be.
+ // In the truck with the engine dead is not away: the visit goes on round it until the key turns. Nothing reaches into
+ // the cab, though, so a stalled truck is frightening, and safe.
  const bool bAway=bDriving&&!M->World->Trouble.WantsKey();
  if(Visit==0)
  {

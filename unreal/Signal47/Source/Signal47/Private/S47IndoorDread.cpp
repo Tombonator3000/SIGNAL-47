@@ -40,7 +40,9 @@ void FS47IndoorDread::Begin(const S47J::FObj& Saved)
 {
  Stop();
  PeekRollDay=S47J::Int(Saved,TEXT("peekRollDay"));PeekCount=S47J::Int(Saved,TEXT("peeks"));
- InsideFor=FloodFor=0;bPeekTonight=bDevWanted=false;ProbeAt=SearchRings=EmptyRings=0;Best=FCandidate();
+ InsideFor=FloodFor=0;bDevWanted=false;ProbeAt=SearchRings=EmptyRings=EmptyRun=0;bSearchStopped=false;Best=FCandidate();
+ // A night's draw that has not come yet still comes after Continue, after a little while indoors.
+ bPeekTonight=S47J::Bool(Saved,TEXT("peekTonight"));PeekWait=bPeekTonight?20:0;
  FloodArea.Empty();FloodTitle.Empty();FloodAt=FVector::ZeroVector;FloodClock=0;FloodWho=FloodRollDay=FloodCount=0;
  const S47J::FObj Room=S47J::Obj(Saved,TEXT("floodRoom"));
  const TArray<double> At=S47J::Nums(Room,TEXT("at"));
@@ -65,6 +67,7 @@ S47J::FObj FS47IndoorDread::Save() const
  const auto O=S47J::New();
  if(PeekRollDay>0)S47J::Set(O,TEXT("peekRollDay"),PeekRollDay);
  if(PeekCount>0)S47J::Set(O,TEXT("peeks"),PeekCount);
+ if(bPeekTonight)S47J::Set(O,TEXT("peekTonight"),true);
  if(!FloodArea.IsEmpty())
  {
   const auto R=S47J::New();
@@ -107,11 +110,19 @@ bool FS47IndoorDread::PlayerInPeekPlace() const
  if(!M||!M->Web||!M->Player||!M->Freeform||!M->Freeform->Taken)return false;
  const FString Area=M->Web->Area();
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
- // The motel room has its own area, with the walk outside its door in it.
- if(Area==TEXT("room6"))return M->World&&M->World->Indoors(Feet);
  if(!M->Freeform->Taken->Indoors())return false;
  if(Area==TEXT("road")||Area==TEXT("diner"))return true;
- return Area==TEXT("saro")&&S47FarmHouse::OnPad(Feet.X-HouseFrame.X,Feet.Z-HouseFrame.Z);
+ if(Area!=TEXT("saro"))return false;
+ // Room 6 is Story's: Freeform never opens it. The motel here is whatever of it has a roof over the player.
+ return InSaroBuilding()||S47FarmHouse::OnPad(Feet.X-HouseFrame.X,Feet.Z-HouseFrame.Z)||(M->World&&M->World->AtMotel(Feet));
+}
+
+bool FS47IndoorDread::InSaroBuilding() const
+{
+ if(!M||!M->Web||!M->Player||M->Web->Area()!=TEXT("saro"))return false;
+ for(const TCHAR* Room:{TEXT("room.bounds"),TEXT("annex.zone.southDoor"),TEXT("annex.zone.corridor"),TEXT("annex.zone.recordsDoor"),TEXT("annex.zone.records")})
+  if(M->Web->Rect(Room).Contains(M->Player->Pos))return true;
+ return false;
 }
 
 bool FS47IndoorDread::Quiet() const
@@ -152,12 +163,13 @@ TOptional<double> FS47IndoorDread::GroundUnder(double X,double Z,double FromY,do
 // Outside a window: open sky over it, its crouched head behind the sill from here, its raised head over it from here,
 // close behind whatever hides it. The feet may stand a little above the ground, on something: they can only be seen
 // from outside, by which time it has gone.
-bool FS47IndoorDread::TryWindow(const FS47Cam& Cam,const FVector& At,FCandidate& Out) const
+bool FS47IndoorDread::TryWindow(const FS47Cam& Cam,const FVector& At,FCandidate& Out,bool bKnownWindow) const
 {
  auto* World=M->Web->GetWorld();
  const double Floor=M->Player->FloorY;
  const auto Ground=GroundUnder(At.X,At.Z,Cam.Pos.Y+.6,Floor-3);
  if(!Ground.IsSet()||Ground.GetValue()>Floor+.35||Ground.GetValue()<Floor-1.6)return false;
+ if(!bKnownWindow)
  {
   FHitResult Roof;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47PeekRoof),true);
   const FVector Over(At.X,Ground.GetValue()+1.4,At.Z);
@@ -218,6 +230,16 @@ void FS47IndoorDread::SearchStep(const FS47Cam& Cam)
 {
  // Close together: a sill hides a crouched head only from just behind it.
  static const double Steps[Rings]={2.2,2.8,3.4,4.2,5.2,6.5,8.};
+ // In the station its own windows first, measured by the same rules as anywhere else.
+ if(ProbeAt==0&&InSaroBuilding())for(const FVector2D& Spot:FS47Glimpses::SaroWindowSpots())
+ {
+  FCandidate C;
+  if(TryWindow(Cam,FVector(Spot.X,Cam.Pos.Y,Spot.Y),C,true))
+  {
+   ScoreOf(Cam,C);C.Score+=.5;
+   if(C.Score>Best.Score)Best=C;
+  }
+ }
  for(int32 N=0;N<10&&ProbeAt<Bearings*Rings;++N)
  {
   const int32 Index=ProbeAt++;
@@ -326,6 +348,7 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
  const bool bHour=M&&M->Freeform&&FS47FarmSite::TheirHours(M->Freeform->Clock());
  const bool bInside=bQuietNow&&PlayerInPeekPlace();
  InsideFor=bInside?InsideFor+Dt:0;
+ if(!bQuietNow)bDevWanted=false;
  if(!bQuietNow||!bInside||(!bHour&&!bDevWanted))
  {
   ProbeAt=0;Best=FCandidate();SearchRings=0;
@@ -348,13 +371,18 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
  }
  if(RingPause>0){RingPause-=Dt;return;}
  const auto In=M->Night->GlimpseIn(true);
+ if(bSearchStopped)
+ {
+  if(FVector::Dist(In.Cam.Pos,StoppedAt)<2.5)return;
+  bSearchStopped=false;EmptyRun=0;
+ }
  SearchStep(In.Cam);
  if(ProbeAt<Bearings*Rings)return;
  ProbeAt=0;++SearchRings;
  // One in their sight if the room gives it soon. Otherwise any: turning round to it is its own thing.
  if(Best.bFound&&(Best.bInView||SearchRings>=8)&&StillHidden(In.Cam,Best))
  {
-  const FCandidate Chosen=Best;Best=FCandidate();SearchRings=0;
+  const FCandidate Chosen=Best;Best=FCandidate();SearchRings=0;EmptyRun=0;
   StartPeek(In.Cam,Chosen);
   // The night's one, whether a body could be had for it or not.
   bPeekTonight=false;bDevWanted=false;
@@ -363,6 +391,7 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
  if(!Best.bFound)
  {
   ++EmptyRings;
+  if(++EmptyRun>=6){bSearchStopped=true;StoppedAt=In.Cam.Pos;}
   if(EmptyRings==1||EmptyRings%20==0)UE_LOG(LogTemp,Display,TEXT("S47: peek: no window or edge in sight from %s, %d rounds"),*In.Cam.Pos.ToCompactString(),EmptyRings);
   if(bDevWanted){bDevWanted=false;if(M->UI)M->UI->Toast(TEXT("Developer event: no window or door edge in sight from here."),3);}
  }
@@ -374,7 +403,7 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  if(FloodArea.IsEmpty()||!M||!M->Web||!M->Player||!M->Freeform->Taken)return;
  const double Clock=M->Freeform->Clock();
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
- const bool bHere=Quiet()&&M->Web->Area()==FloodArea&&FVector2D::Distance(FVector2D(Feet.X,Feet.Z),FVector2D(FloodAt.X,FloodAt.Z))<6&&M->Freeform->Taken->Indoors();
+ const bool bHere=Quiet()&&!M->ModalOpen()&&M->Web->Area()==FloodArea&&FVector2D::Distance(FVector2D(Feet.X,Feet.Z),FVector2D(FloodAt.X,FloodAt.Z))<6&&M->Freeform->Taken->Indoors();
  FloodFor=bHere?FloodFor+Dt:0;
  if(!bHere||!FS47FarmSite::TheirHours(Clock)||Clock<FloodClock+FloodRestSeconds)return;
  const int32 Day=M->Freeform->Day();
@@ -390,11 +419,8 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
 void FS47IndoorDread::Step(double Dt)
 {
  if(!M||!M->Freeform||!M->Freeform->Active()||Dt<=0||!M->Web)return;
- if(M->bPausedByMenu||M->ModalOpen())
- {
-  // Nothing moves and nothing is counted. The body stays as it was.
-  return;
- }
+ // Nothing moves and nothing is counted behind a menu; the body stays as it was. A screen in the world is not a menu.
+ if(M->Freeform->Held())return;
  if(Stage!=EStage::None){StepPeek(Dt);return;}
  StepPeekDraw(Dt);
  if(Stage==EStage::None)StepFloodRoom(Dt);

@@ -66,6 +66,13 @@ FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 	Wait = Rnd(120, 300);
 }
 
+TArray<FVector2D> FS47Glimpses::SaroWindowSpots()
+{
+	TArray<FVector2D> Out;
+	for (const FPeek& P : PEEKS) if (P.bWindow) Out.Add(FVector2D(P.X, P.Z));
+	return Out;
+}
+
 void FS47Glimpses::Attach(US47Main* Main)
 {
  if (bRoswell && Main) Group=MakeShared<FS47RoswellGroup>(Main,BodyRoot.Get(),&Body);
