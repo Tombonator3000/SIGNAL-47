@@ -2064,3 +2064,7 @@ Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skre
 ## 7. november 2026 kl.00:45, natur i Freeform, runde 2
 
 Bare `S47Flora`, bak `bNatural`. Kreosot står i tette bestand med nesten bare felt mellom, gress og sage i egne felt, høyst 2 m busk. Fargene var nesten svarte og oransje fordi de multipliseres med atlaset, og er rettet. Frie flekker er borte; hver busk har en myk mørk fot og strø. Småstein i klynger, og noen få Sandstone_A på 0,3 til 0,6 m. Tallene er prøvd i Python-kopi av støyen. Ikke kompilert eller sett i spillet; koordinatoren bygger og tar bilder.
+
+## 7. november 2026, natt, Freeform-skrekk som faktisk skjer
+
+Skrevet i egen worktree, ikke bygget eller kjørt. Crab og Tall var alt koblet til lysstedene; det som manglet er rettet: ingen kropp før kl. 02 (`FS47FarmSite::TheirHours`), og nattens lys kommer nå oftest sent, med en ny melding om steder merket tidlig på kvelden. Tall står langt unna og kommer etter hvert, Crab langs bakken, hvem som kommer avhenger av sted og time, og modellvalget står i `S47KindBody`. Nytt `FS47IndoorDread`: Roswell ved vindu eller dørkant målt med sikt fra spillerens øye, og et rom man kom seg ut av flomlyset i kan lyses igjen etter minst tre dager. Radioen hører 48 m unna og knitrer tettere jo nærmere. Stillhet også utenfor gården, lykt som svikter under besøket. Gjemme seg er hoppet over: ingen huking, ingen skjulinteraksjon. Prøver: `-S47MenuPointerKinds`, `-S47MenuPointerPeek`, `-S47MenuPointerReflood`, og `-S47MenuPointerChain` går nå til 02:30. Lyd ikke hørt.

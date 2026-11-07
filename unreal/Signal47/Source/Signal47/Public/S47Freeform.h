@@ -187,6 +187,7 @@ public:
  void TestEndFirstShift(){Tutorial=0;}
  TSharedPtr<class FS47FarmNight> FarmNight;
  TSharedPtr<class FS47FarmHouseDoors> HouseDoors;
+ TSharedPtr<class FS47IndoorDread> IndoorDread;
  // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
  FVector2D AimAzEl();
  bool AimOnTarget() const;

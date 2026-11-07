@@ -6,6 +6,8 @@
 #include "S47Herd.h"
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
+#include "S47IndoorDread.h"
+#include "S47RoswellWorld.h"
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
 #include "S47TripoCreature.h"
@@ -102,6 +104,7 @@ namespace
   double Elapsed=0,StageAt=0;
   bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
+  double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
@@ -162,13 +165,296 @@ namespace
    FPlatformMisc::RequestExitWithStatus(false,1);
    return false;
   }
+  void DreadLookAt(US47Main* M,const FVector& Target)
+  {
+   const FVector Eye=M->Night->GlimpseIn(true).Cam.Pos,D=Target-Eye;
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  }
+  bool DreadToClock(US47Main* M,double Hours,double ExtraDays=0)
+  {
+   const double Today=FMath::Fmod(M->Freeform->Clock(),86400.);
+   return M->Freeform->TestAdvance(ExtraDays*86400.+FMath::Fmod(Hours*3600.-Today+86400.,86400.));
+  }
+  // -S47MenuPointerKinds: from the visit's own dice (a set roll, through PickWho) at the marks. PASS only if: nothing at
+  // all in 25 s of standing there at 21:00; at 03:30 each kind comes on its own after the wait; the tall one stands 25 m
+  // or more off in a clear line, stays put at first, has its head up; the radio rises as it nears and crackles; leaving
+  // ends each with the light out and the body gone; the crab's head is down near the ground, and if it reaches the
+  // player they lose its hours and wake 150 m or more away.
+  // -S47MenuPointerPeek [-S47PeekPlace=house|room6|cinema|feed|church|gas]: PASS only if: nothing in 30 s indoors at
+  // 21:00; at 02:30 the night's draw alone brings it (a lost draw moves on a night, at most 14); its start pose is hidden
+  // from the player's actual eye (no pop-in) and its raised head is in a clear line; the radio hears it; a menu stops its
+  // clock; it goes and leaves a record of what was seen.
+  // -S47MenuPointerReflood: the first light is set up; PASS only if: getting out of it remembers the room; it does not
+  // come back in 32 s in the room straight after, nor at 21:00 three days later; at 02:30 its own draw brings it (at most
+  // 14 nights); getting out again counts, restarts the rest and leaves a record.
+  bool StepDread(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& Site=*M->Freeform->FarmSite;auto& Tk=*M->Freeform->Taken;auto& Dread=*M->Freeform->IndoorDread;
+   const FVector Marks=Site.Centre();
+   const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+   const FVector EyeNow=M->Night->GlimpseIn(true).Cam.Pos;
+   static const float Rolls[3]={.35f,.9f,.05f};static const int32 Kinds[3]={2,0,1};
+   const auto NextRound=[&]
+   {
+    Site.TestRollWho(Rolls[DreadRound]);Site.TestReadyVisit();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+    DreadAt=Elapsed;DreadSample=0;Stage=402;
+   };
+   if(Stage==400)
+   {
+    if(Elapsed-DreadFrom<25)
+    {
+     if(Site.VisitStage()!=0)return Fail(TEXT("no body may come at the marks at 21:00"));
+     if(Site.VisitHushed())return Fail(TEXT("nothing may go quiet for it at 21:00"));
+     return true;
+    }
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds: 25 s at the marks at 21:00, nothing came"));
+    if(!DreadToClock(M,3.5))return Fail(TEXT("the kinds test needs the small hours"));
+    DreadRound=0;NextRound();return true;
+   }
+   if(Stage==402)
+   {
+    if(Site.VisitStage()>=1)
+    {
+     if(Site.VisitKind()!=Kinds[DreadRound])return Fail(TEXT("the dice must decide who comes"));
+     UE_LOG(LogTemp,Display,TEXT("S47: kinds: kind %d's visit began after %.1f s standing there"),Site.VisitKind(),Elapsed-DreadAt);
+     DreadAt=Elapsed;Stage=403;return true;
+    }
+    if(Elapsed-DreadAt>25)return Fail(TEXT("standing at the marks at 03:30 must bring the visit"));
+    return true;
+   }
+   if(Stage==403)
+   {
+    if(Site.VisitStage()==4)return Fail(TEXT("the visit ended with nothing out: no ground for it, or no model in this build"));
+    if(Site.VisitStage()<2){if(Elapsed-DreadAt>35)return Fail(TEXT("a body must come"));return true;}
+    const int32 Kind=Site.VisitKind();
+    DreadFirst=Site.VisitBodyDistance();
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds: kind %d is out %.1f m off"),Kind,DreadFirst);
+    if(Kind==2&&DreadFirst<25)return Fail(TEXT("the tall one must first stand far off"));
+    if(Kind==1&&DreadFirst>24)return Fail(TEXT("the crab starts within twenty-odd metres"));
+    if(Kind!=0)
+    {
+     const auto BodyEye=Site.VisitBodyEye();
+     if(!BodyEye.IsSet())return Fail(TEXT("the body must be out"));
+     FHitResult Block;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47KindsSight),true);
+     if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,S47Three::ToUE(EyeNow),S47Three::ToUE(*BodyEye),ECC_Visibility,Q)&&FVector::Dist(S47Three::ToThree(Block.ImpactPoint),*BodyEye)>1.5)
+      return Fail(TEXT("it must stand in a clear line from the player"));
+    }
+    DreadAt=Elapsed;Stage=404;return true;
+   }
+   if(Stage==404)
+   {
+    const int32 Kind=Site.VisitKind();
+    if(Site.VisitStage()==4)return Fail(TEXT("the visit must last while the player stays"));
+    if(Kind==2)
+    {
+     const double To=Site.VisitBodyDistance();
+     if(Elapsed-DreadAt<10&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still"));
+     if(DreadSample==0&&Elapsed-DreadAt>1&&Site.VisitHeadHeight()<1.4){UE_LOG(LogTemp,Error,TEXT("S47: kinds: tall head %.2f m"),Site.VisitHeadHeight());return Fail(TEXT("the tall one must stand tall"));}
+     // Further in, louder: three readings of what the set is actually playing.
+     const double Base=FMath::Min(DreadFirst,44.)-2,Spacing=FMath::Clamp((DreadFirst-27)/2.5,.5,6.);
+     if(DreadSample<3&&To<=Base-Spacing*DreadSample)
+     {
+      DreadLevels[DreadSample]=M->FieldRadio->RadioLevelNow();
+      UE_LOG(LogTemp,Display,TEXT("S47: kinds: radio %.3f at %.1f m, %d crackles"),DreadLevels[DreadSample],To,M->FieldRadio->CrackleCount());
+      ++DreadSample;
+     }
+     if(DreadSample==3)
+     {
+      if(!(DreadLevels[0]>0&&DreadLevels[0]<DreadLevels[1]&&DreadLevels[1]<DreadLevels[2]))return Fail(TEXT("the radio must rise as it nears"));
+      if(M->FieldRadio->CrackleCount()<=0)return Fail(TEXT("the radio must crackle"));
+      M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=405;return true;
+     }
+     if(Elapsed-DreadAt>80)return Fail(TEXT("the tall one must come on"));
+     return true;
+    }
+    if(Kind==0)
+    {
+     if(M->Night->Glimpses->Individuals().IsEmpty())return Fail(TEXT("the small one's visit has no body"));
+     if(Elapsed-DreadAt<6)return true;
+     M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=405;return true;
+    }
+    // The crab: down on all fours within seconds, then left to it.
+    if(Elapsed-DreadAt<3)return true;
+    const double Head=Site.VisitHeadHeight();
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds: crab head %.2f m over its feet"),Head);
+    if(Head<0||Head>1.1)return Fail(TEXT("the crab must go along the ground"));
+    DreadClock=M->Freeform->Clock();DreadPos=Feet;DreadAt=Elapsed;Stage=406;return true;
+   }
+   if(Stage==405)
+   {
+    if(Site.VisitStage()!=4){if(Elapsed-DreadAt>6)return Fail(TEXT("leaving must end the visit"));return true;}
+    if(Tk.Busy()||Site.VisitBodyEye().IsSet()||!M->Night->Glimpses->Individuals().IsEmpty())return Fail(TEXT("leaving must put out the light and take the body"));
+    if(!Tk.LastNote().IsEmpty())return Fail(TEXT("leaving must cost nothing"));
+    ++DreadRound;NextRound();return true;
+   }
+   if(Stage==406)
+   {
+    if(Site.VisitStage()!=4||Tk.Busy()){if(Elapsed-DreadAt>60)return Fail(TEXT("the crab must reach a player who stays"));return true;}
+    if(Tk.LastNote().IsEmpty())return Fail(TEXT("the crab must have taken them"));
+    const FS47TakenTerms& Terms=FS47Taken::Terms(ES47Taker::Crab);
+    const double Gone=(M->Freeform->Clock()-DreadClock)/60.;
+    const double Moved=FVector2D::Distance(FVector2D(Feet.X,Feet.Z),FVector2D(DreadPos.X,DreadPos.Z));
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds: crab took them, %.0f minutes, moved %.0f m. %s"),Gone,Moved,*Tk.LastNote());
+    if(Gone<Terms.MinMinutes-3||Gone>Terms.MaxMinutes+12)return Fail(TEXT("the crab's hours are its own"));
+    if(Moved<Terms.WakeMin-1)return Fail(TEXT("the crab leaves them far from there"));
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds PASS: tall from %.0f m, radio %.3f, %.3f, %.3f, %d crackles; small; crab"),FMath::Min(DreadFirst,58.),DreadLevels[0],DreadLevels[1],DreadLevels[2],M->FieldRadio->CrackleCount());
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   if(Stage==420)
+   {
+    if(Elapsed-DreadFrom<3)return true;
+    FVector Room=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);
+    if(DreadPlace==TEXT("room6")){if(M->Web->Area()!=TEXT("room6")){if(Elapsed-DreadFrom>12)return Fail(TEXT("the motel room must open"));return true;}}
+    else
+    {
+     if(DreadPlace!=TEXT("house")&&!S47CalicheAccess::RoomMiddle(DreadPlace,Room))return Fail(TEXT("no such room"));
+     M->Player->Place(Room.X,Room.Z,0);
+    }
+    M->Player->Pitch=0;DreadAt=Elapsed;Stage=421;return true;
+   }
+   if(Stage==421)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(!Dread.PlayerInPeekPlace())return Fail(TEXT("this must count as indoors at a place it looks in"));
+    if(Dread.PeekActive())return Fail(TEXT("nothing may look in at 21:00"));
+    if(Elapsed-DreadAt<30)return true;
+    UE_LOG(LogTemp,Display,TEXT("S47: peek: 30 s indoors at 21:00 in %s, nothing"),*DreadPlace);
+    if(!DreadToClock(M,2.5))return Fail(TEXT("the peek test needs the small hours"));
+    DreadRound=0;DreadAt=Elapsed;Stage=422;return true;
+   }
+   if(Stage==422)
+   {
+    if(Dread.PeekActive()){UE_LOG(LogTemp,Display,TEXT("S47: peek: the night's own draw, after %d lost draws"),DreadRound);DreadAt=Elapsed;Stage=423;return true;}
+    if(Dread.PeekRollDayOf()==M->Freeform->Day()&&!Dread.PeekDrawnTonight())
+    {
+     if(++DreadRound>14)return Fail(TEXT("fourteen nights without the draw: the odds are wrong"));
+     if(!M->Freeform->TestAdvance(86400.))return Fail(TEXT("no next night"));
+     DreadAt=Elapsed;return true;
+    }
+    if(Elapsed-DreadAt>120){UE_LOG(LogTemp,Error,TEXT("S47: peek: %d empty rounds from this room"),Dread.SearchesEmpty());return Fail(TEXT("nowhere to look in from, or it never came"));}
+    return true;
+   }
+   if(Stage>=423&&Stage<=426&&!Dread.PeekActive())return Fail(TEXT("it left before the test had seen it"));
+   if(Stage==423)
+   {
+    FS47RoswellWorld Sight;Sight.Init(M);
+    if(Sight.ClearSight(EyeNow,Dread.PeekHiddenHead()))return Fail(TEXT("it must start out of sight: this would pop in"));
+    UE_LOG(LogTemp,Display,TEXT("S47: peek: %s, %.1f m off, its start is hidden from the eye"),Dread.PeekIsWindow()?TEXT("window"):TEXT("corner"),FVector::Dist(EyeNow,Dread.PeekRaisedHead()));
+    Stage=424;return true;
+   }
+   if(Stage==424)
+   {
+    if(Dread.PeekClock()<1.3)return true;
+    FS47RoswellWorld Sight;Sight.Init(M);
+    if(!Sight.ClearSight(EyeNow,Dread.PeekRaisedHead()))return Fail(TEXT("raised, its head must be in a clear line"));
+    DreadLookAt(M,Dread.PeekRaisedHead());
+    if(M->FieldRadio->RadioLevelNow()<=0)return Fail(TEXT("the carried radio must hear it"));
+    UE_LOG(LogTemp,Display,TEXT("S47: peek: up, exposure %.2f, radio %.3f"),Dread.PeekExposure(),M->FieldRadio->RadioLevelNow());
+    DreadAt=Elapsed;Stage=425;return true;
+   }
+   if(Stage==425)
+   {
+    if(Elapsed-DreadAt<.4)return true;
+    Shot(TEXT("peek-up.png"));M->bPausedByMenu=true;DreadClock=Dread.PeekClock();DreadAt=Elapsed;Stage=426;return true;
+   }
+   if(Stage==426)
+   {
+    if(Elapsed-DreadAt<2.5)return true;
+    M->bPausedByMenu=false;
+    if(FMath::Abs(Dread.PeekClock()-DreadClock)>.001)return Fail(TEXT("a menu must hold it"));
+    DreadAt=Elapsed;Stage=427;return true;
+   }
+   if(Stage==427)
+   {
+    if(Dread.PeekActive())
+    {
+     if(Elapsed-DreadAt>25)return Fail(TEXT("it must go"));
+     DreadLookAt(M,Dread.PeekRaisedHead());
+     return true;
+    }
+    if(!M->Freeform->HasFinding(FString::Printf(TEXT("peek-%d"),M->Freeform->Day())))return Fail(TEXT("what was seen must be in the field records"));
+    UE_LOG(LogTemp,Display,TEXT("S47: peek PASS in %s, %s, %d lost draws"),*DreadPlace,Dread.PeekIsWindow()?TEXT("window"):TEXT("corner"),DreadRound);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   if(Stage==440)
+   {
+    if(Elapsed-DreadFrom<1.5)return true;
+    if(!Tk.Begin(ES47Taker::Roswell,TEXT("the old house")))return Fail(TEXT("the first light must start"));
+    if(Tk.Stage()!=FS47Taken::EStage::Dread)return Fail(TEXT("under a roof it must begin overhead"));
+    DreadPos=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);DreadAt=Elapsed;Stage=441;return true;
+   }
+   if(Stage==441||Stage==446)
+   {
+    // Into the next room as the light comes.
+    if(Tk.Stage()==FS47Taken::EStage::Flood)
+    {
+     const FVector Aside=S47FarmHouse::Point(3,6.5)+FVector(-24,0,300);M->Player->Place(Aside.X,Aside.Z,0);
+     DreadAt=Elapsed;++Stage;return true;
+    }
+    if(!Tk.Busy())return Fail(TEXT("no way in for the light in this room"));
+    if(Elapsed-DreadAt>30)return Fail(TEXT("the light must come"));
+    return true;
+   }
+   if(Stage==442)
+   {
+    if(Tk.Stage()==FS47Taken::EStage::Lift||Tk.Stage()==FS47Taken::EStage::Away)return Fail(TEXT("the next room must be a way out"));
+    if(Tk.Busy()){if(Elapsed-DreadAt>40)return Fail(TEXT("the light must give up"));return true;}
+    if(!Dread.HasFloodRoom())return Fail(TEXT("the room must be remembered"));
+    if(FVector2D::Distance(FVector2D(Dread.FloodRoomAt().X,Dread.FloodRoomAt().Z),FVector2D(DreadPos.X,DreadPos.Z))>2)return Fail(TEXT("the room remembered must be the one it found them in"));
+    DreadClock=Dread.FloodRoomClock();
+    M->Player->Place(DreadPos.X,DreadPos.Z,0);DreadAt=Elapsed;Stage=443;
+    UE_LOG(LogTemp,Display,TEXT("S47: reflood: out of the light, room remembered"));
+    return true;
+   }
+   if(Stage==443)
+   {
+    if(Tk.Busy())return Fail(TEXT("it must rest after the first time"));
+    if(Elapsed-DreadAt<32)return true;
+    if(!DreadToClock(M,21,3))return Fail(TEXT("the reflood test needs three days"));
+    UE_LOG(LogTemp,Display,TEXT("S47: reflood: 32 s back in the room straight after, nothing; now %.0f"),M->Freeform->Clock());
+    DreadAt=Elapsed;Stage=444;return true;
+   }
+   if(Stage==444)
+   {
+    if(Tk.Busy())return Fail(TEXT("not at 21:00"));
+    if(Elapsed-DreadAt<32)return true;
+    if(!DreadToClock(M,2.5))return Fail(TEXT("the reflood test needs the small hours"));
+    if(M->Freeform->Clock()<DreadClock+FS47IndoorDread::FloodRestSeconds)return Fail(TEXT("test clock short of the rest"));
+    UE_LOG(LogTemp,Display,TEXT("S47: reflood: 32 s in the room at 21:00, nothing"));
+    DreadRound=0;DreadAt=Elapsed;Stage=445;return true;
+   }
+   if(Stage==445)
+   {
+    if(Tk.Busy()){UE_LOG(LogTemp,Display,TEXT("S47: reflood: back, on the room's own draw, after %d lost draws"),DreadRound);DreadAt=Elapsed;Stage=446;return true;}
+    if(Dread.FloodRoomRollDay()==M->Freeform->Day())
+    {
+     if(++DreadRound>14)return Fail(TEXT("fourteen nights without the draw: the odds are wrong"));
+     if(!M->Freeform->TestAdvance(86400.))return Fail(TEXT("no next night"));
+     DreadAt=Elapsed;return true;
+    }
+    if(Elapsed-DreadAt>60)return Fail(TEXT("the room's own draw must come"));
+    return true;
+   }
+   if(Stage==447)
+   {
+    if(Tk.Stage()==FS47Taken::EStage::Lift||Tk.Stage()==FS47Taken::EStage::Away)return Fail(TEXT("the next room must still be a way out"));
+    if(Tk.Busy()){if(Elapsed-DreadAt>40)return Fail(TEXT("the light must give up again"));return true;}
+    if(Dread.FloodsSurvived()!=2||Dread.FloodRoomClock()<=DreadClock)return Fail(TEXT("the second time must count and restart the rest"));
+    if(!M->Freeform->HasFinding(FString::Printf(TEXT("flood-room-%d-2"),M->Freeform->Day())))return Fail(TEXT("the second time must leave a record"));
+    UE_LOG(LogTemp,Display,TEXT("S47: reflood PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such dread stage"));
+  }
   bool Step(float Dt)
   {
    Elapsed+=Dt;
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Stage!=77&&Stage!=212&&Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<500)&&Elapsed-StageAt<1) return true;
+   if(Stage>=400&&Stage<500)return StepDread(M);
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -307,6 +593,32 @@ namespace
      M->Flow->bDevRun=true;
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the farm test needs the night"));
      FaceFarm(M);Stage=49;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerKinds")))
+    {
+     // Night two at 21:00, at marks the lights left, the player on foot beside them and carrying the radio.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the kinds test needs night two"));
+     M->FieldRadio->TestOwn();M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());M->Freeform->FarmSite->TestReadyVisit();
+     const FVector Marks=M->Freeform->FarmSite->Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+     DreadFrom=Elapsed;Stage=400;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerPeek")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the peek test needs night two"));
+     M->FieldRadio->TestOwn();DreadPlace=TEXT("house");FParse::Value(FCommandLine::Get(),TEXT("S47PeekPlace="),DreadPlace);
+     if(DreadPlace==TEXT("room6"))M->World->GoRoom6();
+     else if(DreadPlace!=TEXT("house")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
+     DreadFrom=Elapsed;Stage=420;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerReflood")))
+    {
+     // Night two at 02:30, in a room of the old house. The first light is set up; what comes back afterwards is not.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the reflood test needs night two"));
+     const FVector Room=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);M->Player->Place(Room.X,Room.Z,0);M->Player->Pitch=0;
+     DreadFrom=Elapsed;Stage=440;StageAt=Elapsed;return true;
     }
     if(bAlbum){GiveAlbum(M);M->UI->NotebookAt(TEXT("photos"));M->Flow->OpenNotebook();Stage=10;StageAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
@@ -693,6 +1005,8 @@ namespace
      if(!D.ActiveEvent().IsEmpty()){const FVector A=D.EventAnchor();M->Player->Place(A.X+10,A.Z,0);return true;}
      if(!Site.Armed())return Fail(TEXT("the lights must leave marks behind"));
      UE_LOG(LogTemp,Display,TEXT("S47: chain: lights gone, marks at %s, %s"),*Site.PlaceId(),*Site.Centre().ToCompactString());
+     // The night passes: nothing comes for anyone before about two. S47MenuPointerKinds holds that rule to account.
+     {const double ChainToday=FMath::Fmod(M->Freeform->Clock(),86400.);if(!M->Freeform->TestAdvance(FMath::Fmod(2.5*3600.-ChainToday+86400.,86400.)))return Fail(TEXT("the chain needs its small hours"));}
      Site.TestReadyVisit(); // the 60 percent, taken as given
      const FVector C=Site.Centre();M->Player->Place(C.X+6,C.Z+6,0);ChainAt=Elapsed;Stage=173;return true;
     }

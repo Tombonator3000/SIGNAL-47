@@ -42,6 +42,8 @@ public:
  void GiveUp();
  bool Indoors() const;
  double LightOn() const{return InLight;}
+ // Where a radio breaks up on it while it is coming: over the roof, then where the light is.
+ TOptional<FVector> RadioAt() const{return Now==EStage::Dread?TOptional<FVector>(StepAt):Now==EStage::Flood?TOptional<FVector>(Aim):TOptional<FVector>();}
  FVector LightFrom() const{return From;}
  const FString& LastNote() const{return Note;}
  static const FS47TakenTerms& Terms(ES47Taker Who);
@@ -55,6 +57,10 @@ private:
  double SafeClock=0;
  FVector From=FVector::ZeroVector,Aim=FVector::ZeroVector,StartEye=FVector::ZeroVector;
  FVector StepAt=FVector::ZeroVector;
+ // Where and in what area the light first found them, for the room that remembers it.
+ FVector FloodFeet=FVector::ZeroVector;
+ FString FloodArea;
+ double HushIn=0;
  bool bOutdoors=false,bHooked=false,bOverlay=false,bSpill=false,bDoorDone=false;
  double StartYaw=0,StartPitch=0;
  TSharedPtr<SS47AwayOverlay> Overlay;

@@ -2,6 +2,8 @@
 #include "S47CalicheAccess.h"
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
+#include "S47IndoorDread.h"
+#include "S47Ambience.h"
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -139,7 +141,7 @@ bool FS47Taken::StartFlood()
   UE_LOG(LogTemp,Display,TEXT("S47: taken: no window for the light to come through"));
   Now=EStage::None;return false;
  }
- Now=EStage::Flood;Age=0;InLight=0;
+ Now=EStage::Flood;Age=0;InLight=0;FloodFeet=Feet();FloodArea=M->Web?M->Web->Area():FString();
  if(M->Audio)
  {
   M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=1.f,.Rate=.5f});
@@ -289,6 +291,7 @@ void FS47Taken::Apply()
  M->Freeform->TakenAway(Seconds);
  const double WakeClock=M->Freeform->Clock();
  if(M->Freeform->FarmSite)M->Freeform->FarmSite->SetCalm(WakeClock+3600);
+ if(M->Freeform->IndoorDread)M->Freeform->IndoorDread->AfterTaken();
  const FVector Before=Feet();
  FString Where=TEXT("where I had been standing");
  if(T.bHome&&M->World)
@@ -336,7 +339,12 @@ void FS47Taken::Finish()
 
 void FS47Taken::GiveUp()
 {
- if(Now==EStage::Dread||Now==EStage::Flood){Now=EStage::None;Age=0;InLight=0;HideLight();UE_LOG(LogTemp,Display,TEXT("S47: taken: the light goes out"));}
+ if(Now==EStage::Dread||Now==EStage::Flood)
+ {
+  // Out of it with the roof still over them: that room will know them again, later.
+  if(Now==EStage::Flood&&!bOutdoors&&M&&M->Freeform&&M->Freeform->IndoorDread&&!FloodArea.IsEmpty())M->Freeform->IndoorDread->SurvivedFlood(FloodFeet,FloodArea,int32(Taker),Place);
+  Now=EStage::None;Age=0;InLight=0;HideLight();UE_LOG(LogTemp,Display,TEXT("S47: taken: the light goes out"));
+ }
 }
 
 void FS47Taken::Stop()
@@ -367,6 +375,13 @@ void FS47Taken::Step(double Dt)
  Age+=Dt;
  if(M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(Now==EStage::Dread?.3+.45*FMath::Abs(FMath::Sin(Age*1.7)):Now==EStage::Flood?.85:0.,TEXT("taken"));
  if(Now==EStage::Dread)M->Audio->HoldRoomTone(.15f,.8f);
+ // The night outside stops too, wherever it began from; a stretch at a time, so it comes back by itself.
+ if(Now==EStage::Dread||Now==EStage::Flood)
+ {
+  HushIn-=Dt;
+  if(HushIn<=0&&M->Audio->Night.IsValid()){HushIn=3;M->Audio->Night->Hush(5,.05,.8,3);}
+ }
+ else HushIn=0;
  if(Now==EStage::Dread)
  {
   // The room's own lamp is failing.
@@ -455,5 +470,20 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
  Check(R.MaxMinutes<=C.MinMinutes&&C.MaxMinutes<=T.MinMinutes,TEXT("each kind of taker costs more time than the one before"));
  Check(R.bLift&&!C.bLift&&T.bLift,TEXT("the crab takes in the dark, the others in the light"));
  Check(R.WakeMax==0&&!R.bHome&&C.WakeMin>=100&&!C.bHome&&T.bHome,TEXT("each comes to in its own place"));
+ // Who comes where, from the visit's own dice: each kind can be drawn at each place, only in its hours.
+ {
+  int32 Farm[3]={0,0,0},Town[3]={0,0,0},Early[3]={0,0,0};
+  for(int32 I=0;I<1000;++I)
+  {
+   const float Roll=(I+.5f)/1000.f;
+   ++Farm[FS47FarmSite::PickWho(TEXT("farm"),4.,Roll)];++Town[FS47FarmSite::PickWho(TEXT("cinema"),4.,Roll)];++Early[FS47FarmSite::PickWho(TEXT("farm"),2.5,Roll)];
+  }
+  Check(Farm[0]>0&&Farm[1]>0&&Farm[2]>0&&Town[0]>0&&Town[1]>0&&Town[2]>0,TEXT("all three kinds can come, at the farm and in town"));
+  Check(Farm[1]>Town[1]&&Town[0]>Farm[0],TEXT("the crab keeps to open ground, town is mostly the small ones"));
+  Check(Early[2]==0&&Early[0]>0&&Early[1]>0,TEXT("the tall one keeps to the last of the night"));
+ }
+ const double Night2=86400.+19*3600.;
+ Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));
+ OK&=FS47IndoorDread::SelfTest(Lines);
  return OK;
 }
