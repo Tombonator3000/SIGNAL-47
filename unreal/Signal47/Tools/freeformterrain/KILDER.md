@@ -53,3 +53,9 @@ Samme kilde og kartplassering som relieffet: `dem/far_24km_10m_h16`, kartsenter 
 
 ## Bakkens detaljteksturer (7. november 2026, `make_ground_textures.py`)
 Skanninger fra Poly Haven, CC0, kreditering ikke påkrevd: [Dry Ground Rocks](https://polyhaven.com/a/dry_ground_rocks), [Aerial Ground Rock](https://polyhaven.com/a/aerial_ground_rock) og [Dry Ground 01](https://polyhaven.com/a/dry_ground_01) av Rob Tuytel, [Rocky Trail](https://polyhaven.com/a/rocky_trail) av Amal Kumar, [Sandy Gravel 02](https://polyhaven.com/a/sandy_gravel_02) av Dario Barresi. `T_FF_Noise` og `T_FF_Field` er laget her uten ekstern kilde. Kildefiler og `make_ground_textures.py` ligger under `~/Documents/ChatGPT/Signal 47/modeller/terreng-2026-11-07/freeformterrain/`.
+
+## Fjellenes farge (7. november 2026, `bake_range_color.py`)
+- **USGS NAIP Plus** (The National Map, offentlig eiendom, kreditering anbefalt: «Imagery: USGS, USDA, The National Map: Orthoimagery»), hentet 7. november 2026 fra `https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage` over kartets egne 24 km: E 287000-311000, N 3576000-3600000, EPSG:26913, fire fliser à 2048 px (5,86 m per piksel), lagret i `naip/` ved siden av denne fila. Ikke i repoet.
+- **Målt:** fargen på fjell og slette utenfor ca. 7 km er flyfotoets egen, som forhold til slettens jord (`T_FF_Range_C.rgb`), litt mer metning og kontrast enn fotoet.
+- **Laget:** de nære åsene (inntil 2,5-7 km) har form fra `build_range.py`, så fotoets arroyoer passer ikke der. Farge fra kartets ruglete nord, speilet og myknet, blandet med oker på solsiden, gråere kratt i kløfter og nordsider. Bar stein etter helning og rygger (`T_FF_Range_C.a`).
+- **Lagene:** `T_FF_Range_B`, 512 m snitt, rødbrun, gråbrun, grå, oker, mørk og tynne lyse kalichebenker. Rekkefølge og tykkelse er laget; bergartene er de som nevnes for Organ- og Doña Ana-fjellene (ryolitt, andesitt, kalkstein).
