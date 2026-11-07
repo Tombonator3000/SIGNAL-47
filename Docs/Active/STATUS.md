@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november kl. 11:18, ekte terreng og gården på bakken
+## Installert 7. november kl. 16:04, fjell, ny bakke, veikant, nye figurer og lyskuler
+
+`d150d75d` etter PR482 er nå standard, med rask installasjon: `SM_FF_Range` fra dreneringsnett med stans ved foten, bakke med CC0-skanninger og variasjon, `S47RoadEdge` med jord og støv over veikanten, Pale One, Tall One og Roswell 2 med klipp, Crab med plantede lemmer, og lyskuler om natten ved ekte utstyr. Selvtest 2663 i pakken, regresjon 251, `-S47MenuPointerRelief` og normalreisen i editor; 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. Kjent: bakken er svart ved skumring, gul `DryGrass` ved dineren og E ved kinodøra (DUSK-20261107-03, patcher skrevet), fjellfoten er en rett linje fra øyehøyde, bleik by, svake sandtunger, og relieffkartet har et trinn på 53 m ved kanten. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d27/candidate/Linux`.
+
+## Tidligere installert 7. november kl. 11:18, ekte terreng og gården på bakken
 
 `51fedcb0` etter PR480 er nå standard, med rask installasjon: bakke fra USGS-data med relieff bare i Freeform, gårdsbygg uten sokler med Codex-teksturer, tun og vei som følger bakken, ny kreosot, dørmøte og lykt som påvirker kroppene. Selvtest 2647, regresjon 251 og normalreisen i editor; 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. `-S47MenuPointerRelief` har 17 av 3000 punkter over grensen nord for antennefeltet, og fase 7 i normalreisen feilet én gang av tre. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d26/candidate/Linux`.
 
