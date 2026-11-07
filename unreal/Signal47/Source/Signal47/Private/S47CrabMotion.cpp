@@ -76,19 +76,24 @@ FS47CrabContacts FS47CrabMotion::Apply(FS47TripoCreature& R,const FS47CrabPose& 
  const double Leg=(Ref[Mid0[2]].GetLocation()-Ref[Root0[2]].GetLocation()).Size()+(Ref[End0[2]].GetLocation()-Ref[Mid0[2]].GetLocation()).Size();
  const double Arm=(Ref[Mid0[0]].GetLocation()-Ref[Root0[0]].GetLocation()).Size()+(Ref[End0[0]].GetLocation()-Ref[Mid0[0]].GetLocation()).Size();
  if(!FMath::IsFinite(Leg)||Leg<20||Leg>200||Arm<20||Arm>200){Out.bValid=false;return Out;}
- const double Cycle=Leg*FMath::Lerp(1.,1.5,Run),Duty=FMath::Lerp(.76,.58,Run);
+ // The arms set the stride: a hand has to stay within reach of its shoulder from landing ahead of it to lifting behind it.
+ // On the Pale One the arm is 69 cm against a leg of 114, so a stride measured from the leg can never be stood through.
+ const double Stride=Arm*.76,Duty=FMath::Lerp(.68,.52,Run),Cycle=Stride/Duty;
  if(Moving)Phase+=Travel/Cycle;
  const double Wave=FMath::Sin(Phase*2*PI);
 
  // The body comes down and over, the chest ending parallel to the ground.
- // Lower on short arms: the hands must still reach the ground from the shoulders.
- const double PelvisHeight=FMath::Min(Leg*FMath::Lerp(.50,.42,Run),Arm*.63);
- const double Bob=Motion*Leg*.012*FMath::Sin(Phase*4*PI)+.5*FMath::Sin(In.Clock*1.1);
- const double Down=(Ref[Pelvis].GetLocation().Z-PelvisHeight-Bob)*F;
- for(int32 I=0;I<P.Num();++I)if(Below(I,Pelvis))P[I].AddToTranslation(FVector(0,0,-Down));
  Rotate(Pelvis,FQuat(FVector::XAxisVector,Rad(-34.*F)));
  Rotate(Bone(TEXT("spine_01")),FQuat(FVector::XAxisVector,Rad(-(30.+Run*5.)*F)));
  Rotate(Bone(TEXT("spine_03")),FQuat(FVector::XAxisVector,Rad(-16.*F)));
+ // As low as it takes to leave the shoulders at three quarters of an arm above the hands, measured on this pose: the elbows
+ // then stand out, and there is ground under the hand to plant on. Higher and the arms hang straight with nowhere to go.
+ const double HandHeight=Leg*.04;
+ const double Rise=P[Root0[0]].GetLocation().Z-P[Pelvis].GetLocation().Z;
+ const double PelvisHeight=FMath::Clamp(HandHeight+Arm*.76-Rise,Leg*.22,Leg*FMath::Lerp(.50,.42,Run));
+ const double Bob=Motion*Leg*.012*FMath::Sin(Phase*4*PI)+.5*FMath::Sin(In.Clock*1.1);
+ const double Down=(Ref[Pelvis].GetLocation().Z-PelvisHeight-Bob)*F;
+ for(int32 I=0;I<P.Num();++I)if(Below(I,Pelvis))P[I].AddToTranslation(FVector(0,0,-Down));
  // Hips roll and the shoulders swing against them with each step.
  Rotate(Pelvis,FQuat(FVector::YAxisVector,Rad(Motion*Wave*FMath::Lerp(3.,5.,Run))));
  Rotate(Bone(TEXT("spine_03")),FQuat(FVector::UpVector,Rad(Motion*Wave*FMath::Lerp(5.,9.,Run))));
@@ -113,10 +118,10 @@ FS47CrabContacts FS47CrabMotion::Apply(FS47TripoCreature& R,const FS47CrabPose& 
   FLimb& Limb=Limbs[L];
   const bool bHand=L<2;
   const double Side=FMath::Sign(Ref[Root0[L]].GetLocation().X-Ref[Pelvis].GetLocation().X);
-  const double Height=bHand?Leg*.04:Ref[End0[L]].GetLocation().Z;
-  // Where the limb belongs folded: hands wide and ahead of the shoulders, feet wide and behind the hips.
+  const double Height=bHand?HandHeight:Ref[End0[L]].GetLocation().Z;
+  // Where the limb belongs folded: hands wide and ahead of the shoulders, well inside their reach, feet wide and behind the hips.
   const FVector Spread=bHand
-   ?FVector(Side*(FMath::Abs(P[Root0[L]].GetLocation().X-ChestAt.X)+Arm*.40),P[Root0[L]].GetLocation().Y+Arm*.18,Height)
+   ?FVector(Side*(FMath::Abs(P[Root0[L]].GetLocation().X-ChestAt.X)+Arm*.32),P[Root0[L]].GetLocation().Y+Arm*.12,Height)
    :FVector(Side*Leg*.56,HipAt.Y-Leg*.16,Height);
   // Standing: the feet where they are, the arms hanging.
   const FVector Upright=bHand
@@ -135,24 +140,37 @@ FS47CrabContacts FS47CrabMotion::Apply(FS47TripoCreature& R,const FS47CrabPose& 
    if(!bInit){Limb.Anchor=Limb.Start=Limb.Target=Limb.Current=Neutral;}
    const double Now=Phase+StepOffset[L],Local=FMath::Frac(Now);
    if(Limb.bSwing&&!Limb.bCorrection&&Moving&&Now>=Limb.SwingEnd){Limb.Anchor=Limb.Target;Limb.bSwing=false;Landed=true;}
+   const double Length=bHand?Arm:Leg,Longest=Length*.96;
+   const FVector RootAt=World.TransformPosition(P[Root0[L]].GetLocation());
+   // A limb on the ground is only as long as it is. Past that it lifts, whatever the others are doing, and does not slide.
+   const bool bPastReach=!Limb.bSwing&&(Limb.Anchor-RootAt).Size()>Longest&&(Limb.Anchor-Neutral).Size()>Length*.1;
    // Long before it would straighten, a limb the body has gone past takes its step, whatever the turn.
-   const double Reach=(bHand?Arm:Leg)*.36;
-   const bool bFarBehind=Moving&&!Limb.bSwing&&(Limb.Anchor-Neutral).Size()>Reach;
-   if(Moving&&!Limb.bSwing&&(Local>=Duty||bFarBehind))
+   const bool bFarBehind=Moving&&!Limb.bSwing&&(bPastReach||(Limb.Anchor-Neutral).Size()>(bHand?Arm*.5:Leg*.36));
+   // Its turn in the walk, if the body has come past it: one that stepped out of turn may still stand well ahead.
+   const bool bItsTurn=Local>=Duty&&FVector::DotProduct(Limb.Anchor-Neutral,Direction)<Stride*.2;
+   if(Moving&&!Limb.bSwing&&(bItsTurn||bFarBehind))
    {
-    Limb.Start=Limb.Current;Limb.SwingStart=Now;Limb.SwingEnd=Local>=Duty?FMath::FloorToDouble(Now)+1.:Now+.22;
-    Limb.Target=Grounded(Neutral+Direction*(Cycle*(Limb.SwingEnd-Now+Duty*.5)),Height);Limb.bSwing=true;Limb.bCorrection=false;
+    const double ToCycleEnd=FMath::FloorToDouble(Now)+1.-Now;
+    Limb.Start=Limb.Current;Limb.SwingStart=Now;Limb.SwingEnd=Local>=Duty&&ToCycleEnd>.1?Now+ToCycleEnd:Now+.22;
+    // Half a stride ahead of where it belongs, but never further than it can reach from where the body will be by then.
+    const double Ahead=Cycle*(Limb.SwingEnd-Now);
+    const FVector Wanted=Neutral+Direction*(Ahead+Stride*.5),RootThen=RootAt+Direction*Ahead;
+    const double Most=FMath::Sqrt(FMath::Max(0.,Longest*Longest-FMath::Square(RootThen.Z-Wanted.Z)));
+    const FVector2D Off(Wanted.X-RootThen.X,Wanted.Y-RootThen.Y);
+    const FVector2D Kept=Off.Size()>Most?Off.GetSafeNormal()*Most:Off;
+    Limb.Target=Grounded(FVector(RootThen.X+Kept.X,RootThen.Y+Kept.Y,Wanted.Z),Height);Limb.bSwing=true;Limb.bCorrection=false;
    }
    if(!Moving&&Limb.bSwing&&!Limb.bCorrection){Limb.Start=Limb.Current;Limb.Target=Neutral;Limb.bCorrection=true;Limb.CorrectionTime=0;}
    // Standing or turning on the spot, a limb left behind catches up, one at a time.
    bool bOtherSwing=false;for(int32 K=0;K<4;++K)if(K!=L&&Limbs[K].bSwing)bOtherSwing=true;
-   if(!Moving&&!Limb.bSwing&&!bOtherSwing&&(Limb.Anchor-Neutral).Size()>Leg*.12)
+   if(!Moving&&!Limb.bSwing&&(bPastReach||(!bOtherSwing&&(Limb.Anchor-Neutral).Size()>Length*.2)))
    {Limb.Start=Limb.Current;Limb.Target=Neutral;Limb.bSwing=Limb.bCorrection=true;Limb.CorrectionTime=0;}
    At=Limb.Anchor;
    if(Limb.bSwing)
    {
     double U;
-    if(Limb.bCorrection){Limb.CorrectionTime+=Dt;U=Ease(Limb.CorrectionTime/.26);}else U=Ease((Now-Limb.SwingStart)/FMath::Max(.001,Limb.SwingEnd-Limb.SwingStart));
+    // A catching-up limb goes to where it belongs when it lands, not where that was when it lifted.
+    if(Limb.bCorrection){Limb.Target=Neutral;Limb.CorrectionTime+=Dt;U=Ease(Limb.CorrectionTime/.26);}else U=Ease((Now-Limb.SwingStart)/FMath::Max(.001,Limb.SwingEnd-Limb.SwingStart));
     At=FMath::Lerp(Limb.Start,Limb.Target,U);At.Z+=FMath::Sin(U*PI)*Leg*(Limb.bCorrection?.10:FMath::Lerp(.20,.26,Run));
     if(Limb.bCorrection&&Limb.CorrectionTime>=.26){Limb.Anchor=Limb.Target;Limb.bSwing=Limb.bCorrection=false;At=Limb.Anchor;Landed=true;}
    }
@@ -203,6 +221,9 @@ FS47CrabContacts FS47CrabMotion::Apply(FS47TripoCreature& R,const FS47CrabPose& 
  for(int32 I=0;I<P.Num();++I)C->BoneSpaceTransforms[I]=R.Parents[I]<0?P[I]:P[I].GetRelativeTransform(P[R.Parents[I]]);
  C->MarkRefreshTransformDirty();C->RefreshBoneTransforms();bInit=true;
  for(int32 L=0;L<4;++L)if(!Limbs[L].bSwing&&bFolded)
+ {
+  ++Out.PlantedLimbs;
   Out.MaxPlantErrorCm=FMath::Max(Out.MaxPlantErrorCm,(C->GetBoneTransformByName(R.Names[End0[L]],EBoneSpaces::WorldSpace).GetLocation()-Limbs[L].Anchor).Size());
+ }
  return Out;
 }
