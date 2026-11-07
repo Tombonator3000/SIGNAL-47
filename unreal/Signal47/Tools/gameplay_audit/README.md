@@ -134,4 +134,6 @@ Korte, opt-in Unreal-kontrakter bruker isolert profil og eksisterende spillfunks
 - Samme kommando med `=follow`: eksplisitt forfølgelsesstart og reell flukt ved kjøring. `=chase -S47HighwayKeepDriving` følger sheriffen videre for et bilde av nærpasseringen; standardprøven stanser for å kontrollere at spilleren kan velge hendelsen bort.
 - `-S47HorrorContract=SC03Resume -S47HorrorRestore=/absolutt/faktisk-save.json -UserDir=/tmp/s47-ufo-sc03`: hydrert faktisk SC02-escape eller SC03-møtegrense med originalfoto inkludert (`*.loaded.json`); `-S47SC03LookAway` prøver bortvendt kamera og separat savnetrapport. `-S47SC03UfoOnly` avgrenser til reell Ortiz-interaksjon, løft, forsvinning og tre disk-/Flow-returer etter én uttrykkelig posisjonsfixture; dette erstatter ikke den lange Caliche-ruten.
 
+`saro_hold_soak.py` er den isolerte renderprøven for PLAY-31-16: egen `-UserDir` under `/tmp`, reservasjon, GPU-minne utenfra prosessen, og PASS, FAIL eller INVALID. `--focus-cycles N` legger til fokusbytte og ny swapchain, `--video-driver x11` er sammenligningen. Start er opt-in med `--execute`. `test_saro_hold_soak.py` prøver beslutningene uten motor.
+
 Dette er native utviklerkontrakter med navngitte fixtures, ikke menneskelig spillaksept. Selve `audit.py` starter ingen spillprosess og erklærer ikke disse runtime-prøvene bestått.
