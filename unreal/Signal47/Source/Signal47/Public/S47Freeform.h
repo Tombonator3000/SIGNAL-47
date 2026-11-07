@@ -78,6 +78,8 @@ public:
  void MarkJournalEntryRead(const FString& Id);
  FString NextAction() const;
  FString JobNextAction(const FJob& J) const;
+ bool EveningGated(const FJob& Job) const;
+ FString EveningLine(const FJob& Job) const;
  FString JobLocation(const FJob& J) const;
  bool ChargeEmergencyFeederFuse();
  bool CanRegisterPhotoEvidence() const;
@@ -112,10 +114,18 @@ public:
  // something wakes the player. Once a night: the next rest goes straight through. Developer runs sleep through it
  // (their fixtures count on Rest reaching the morning) unless a test asks.
  void TestAllowWake(){bTestWake=true;}
+ int32 LastRousedNight() const{return RousedNight;}
  double LastWakeClock() const{return WakeClock;}
  int32 FocusedFieldCase() const { return FieldFocus; }
  FString FieldNextAction(int32 Line) const;
  FString AvailableActivities() const;
+ // The next branch of a worn array, on one line for the HUD; empty once it is whole, or in a save without wear.
+ FString StationGoalLine() const;
+ // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
+ // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
+ // open (their fixtures run all three cards in one sitting) unless a test asks.
+ static constexpr double EveningLead=30*60.;
+ void TestEveningGate(){bTestEvening=true;}
  bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
@@ -246,6 +256,8 @@ private:
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 WokenNight=0;
+ int32 RousedNight=0; // the last night a rest was really broken: never two running
+ bool bTestEvening=false;
  double WakeClock=0;
  bool bTestWake=false;
  bool WakeBefore(double Target,double& Out);

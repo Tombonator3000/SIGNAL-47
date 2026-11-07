@@ -90,7 +90,7 @@ namespace
  },
  {
   TEXT("THE SAME MINUTE"),
-  TEXT("A burst of hash crossed the receiver, and something was found at the remote feeder as well. The traces need not agree, and nobody is going to tell you which reading is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  TEXT("A burst of hash crossed the receiver one night, and the remote feeder on the county road may have something to do with it. Whichever you have seen, the other is worth a look: the chart at the rack, or the feeder after midnight, and neither lasts past noon. The traces need not agree, and nobody is going to tell you which reading is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
@@ -224,8 +224,24 @@ int32 FS47FreeformCases::ValidTestsTotal() const{int32 N=0;for(const FCase& C:Ca
 bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
 {
  const FCase* C=Get(Line);if(!C)return false;
- for(int32 T=0;T<TestCount;++T)if(C->Results[T].bDone&&PresentFor(Line,Cause,T)!=C->Results[T].bPresent)return true;
+ const auto ByTests=[&](int32 Which){for(int32 T=0;T<TestCount;++T)if(C->Results[T].bDone&&PresentFor(Line,Which,T)!=C->Results[T].bPresent)return true;return false;};
+ if(ByTests(Cause))return true;
+ // Unless the retained tests have already closed everything else: no case ends with nothing left to conclude.
+ if(C->bBeyondWind&&Cause==0)for(int32 Other=1;Other<CauseCount;++Other)if(!ByTests(Other))return true;
  return false;
+}
+void FS47FreeformCases::RuleOutWind(int32 Line)
+{
+ if(Line!=2||!Cases.IsValidIndex(Line)||Cases[Line].bConcluded)return;
+ FCase& C=Cases[Line];C.bBeyondWind=true;
+ // The hidden cause follows: what the tests go on to show has to be able to end somewhere else.
+ if(C.Truth==0)C.Truth=2;
+}
+FString FS47FreeformCases::QuestionText(int32 Line) const
+{
+ const FCase* C=Get(Line);
+ if(C&&C->bBeyondWind)return TEXT("What came for you out there, and is it what moves around SARO at night? Wind does not take time from anyone or light up a room. Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation that is left.");
+ return Def(Line).Question;
 }
 int32 FS47FreeformCases::Remaining(int32 Line) const{int32 N=0;for(int32 I=0;I<CauseCount;++I)N+=Excluded(Line,I)?0:1;return N;}
 bool FS47FreeformCases::Conclude(int32 Line,int32 Cause,FString& Why,int32 Day)
@@ -328,6 +344,14 @@ FString FS47FreeformCases::Clock(double DayClock)
 bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
 {
  bool Good=true;
+ {
+  int32 WindSeed=0;while(Seeded(WindSeed,2)!=0)++WindSeed;
+  FS47FreeformCases K;K.Reset(WindSeed);K.Open(2,1,0);K.RuleOutWind(2);
+  Good&=K.Excluded(2,0)&&K.Get(2)->Truth==2&&K.Remaining(2)==2&&K.QuestionText(2)!=Def(2).Question;
+  // The fastened plate already stopped the impacts, which closes the other two: wind stays, so that the case can end.
+  FS47FreeformCases L;L.Reset(WindSeed);L.Open(2,1,0);bool bFirstValid=false;L.Plan(2,0,TEXT("J"));L.Record(2,0,1,true,false,bFirstValid);L.RuleOutWind(2);
+  Good&=L.Remaining(2)==1&&!L.Excluded(2,0);
+ }
  for(int32 Line=0;Line<CaseCount;++Line)
  {
   // Every pair of different tests separates all three causes.

@@ -1115,7 +1115,7 @@ void SS47Notebook::BuildRight()
 				.ColorAndOpacity(bPencil ? C(0x4a4a52) : bHand ? InkBlue() : Ink()).AutoWrapText(true)
 			];
 		}
-		if (bFinding) { Lines->AddSlot().AutoHeight().Padding(0, P(12), 0, 0)[Typed(TEXT("SOURCE / ") + D.Id + (D.Kind == TEXT("fieldnote") ? TEXT("\nOPEN QUESTION / What does an independent record support or contradict?") : TEXT("\nINTERPRETATION / This is the retained comparison, not a new notebook conclusion.")), 13)]; }
+		if (bFinding) { Lines->AddSlot().AutoHeight().Padding(0, P(12), 0, 0)[Typed((D.Id.StartsWith(TEXT("freeform-")) ? FString() : TEXT("SOURCE / ") + D.Id + TEXT("\n")) + (D.Kind == TEXT("fieldnote") ? TEXT("OPEN QUESTION / What does an independent record support or contradict?") : TEXT("INTERPRETATION / This is the retained comparison, not a new notebook conclusion.")), 13)]; }
 		if (Image && D.Kind == TEXT("map")) { Lines->ClearChildren(); Lines->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(P(300))[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SImage).Image(Picture(Image))]]]; }
 		const TSharedRef<SWidget> Sheet = SNew(SOverlay)
 			+ SOverlay::Slot()[SNew(SS47GameSheet).Color(bPrint ? C(0xeef0e4) : C(0xf3ecdb)).bTorn(bHand)]

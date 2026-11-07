@@ -16,6 +16,11 @@ public:
  FString TipLine() const;
  // Test: tonight is a night for lights, at the next scheduler tick.
  void TestLightsTonight();
+ // Test: a natural event's whole life, without waiting for its dice. Force keeps the older fixture behaviour instead.
+ bool TestBegin(const FString& Id);
+ // Test: the save an event starts with fails, as a full disk would make it.
+ void TestSaveFails(bool bFails){bTestSaveFails=bFails;}
+ int32 LightsDrawnNight() const{return PendingLightNight;}
  void TestSchedule(float Dice,double LightHour,double Scale){TestDice=Dice;TestLightAfter=LightHour;TestScale=Scale;}
  // The night's mystery (FS47FreeformCases::MysteryLine). Test: its own dice, -1 for the usual. A developer run draws none
  // unless a test asks, so that the fixtures built on other events stay as they were.
@@ -25,9 +30,17 @@ public:
  double MysteryNoticeAge() const{return MysteryAge;}
  // Whatever is at the other place can still be found.
  bool MysteryTrailOpen() const{return MysteryClearAt>0;}
- // A long rest crosses this night: its dice, as the scheduler would throw them. True if anything is now due, in which
- // case the scheduler looks again soon after waking.
- bool DrawForNight(int32 Night);
+ // A long rest crosses this night, to wake at about the clock At: its dice, as the scheduler would throw them. True only
+ // if something that would really start then, and can be noticed, is drawn; the scheduler then looks again soon after waking.
+ bool DrawForNight(int32 Night,double At);
+ // Why the player cannot lie down now, in words for the player; empty when they can. Only what is close or after them.
+ FString RestBlock() const;
+ // Whatever else is going on ends when the player sleeps. A fault stays in the equipment.
+ void EndForRest();
+ // A task row while lights are reported somewhere, and while their marks stand. Empty otherwise.
+ FString ReportedLine() const;
+ // What the night's mystery still has to show, as a task row, while it can be found.
+ FString MysteryTrailHint() const;
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);
@@ -83,6 +96,11 @@ private:
  TUniquePtr<FEffects> Effects;
  US47Main* M=nullptr;
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;
+ // Started by Force: a test fixture, which keeps the older life of an event across a change of area. Never in a real game.
+ bool bForcedEvent=false,bTestSaveFails=false;
+ // A fault lives in the equipment, not in Event. Its finding is written when the equipment says it is mended.
+ bool bOwedArray=false,bOwedFeeder=false;
+ void StepOwed();
  FString Event,PhotoId,Scene,IncidentId,TaggedShot,LightPlace,NextLightPlace;
  FString PickLightPlace() const;
  FString TaggedIncident,TaggedTitle;
@@ -95,6 +113,7 @@ private:
  bool PhotoControlOriginalAvailable(const FPhotoClaim& Claim) const;
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
+ int32 SkyLeft=0; // the day's lights in the distance and quiet ground: their own pot, not spent by the day's instruments
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0,LightRollDay=0,PendingLightNight=0;
  // When tonight's lights are due, in hours from the night's own midday (25.5 is 01:30). 0: as soon as they can.
@@ -133,7 +152,8 @@ private:
  bool ReactiveReady() const;
  void StepReactive(double Dt);
  bool Start(const FString& Id,bool bForced);
- bool Eligible(const FString& Id,bool bForced) const;
+ // At: the clock to ask about, for a rest that would wake then. Negative: now.
+ bool Eligible(const FString& Id,bool bForced,double At=-1) const;
  bool RollNightChoice(int32 Day,int32 FirstDay,float Chance,int32& RolledDay,int32& PendingNight);
  bool ExpireNightChoices(int32 Day,bool bNight);
  bool StartPendingNightChoice(const FString& Id,int32 Day,int32& PendingNight);

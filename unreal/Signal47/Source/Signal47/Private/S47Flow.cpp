@@ -1519,18 +1519,20 @@ void US47Flow::DoorChanged(const FString& Id, bool bOpen)
 
 // ---------- saving ----------
 
+FString US47Flow::FreeformSaveBlock() const
+{
+ if(bStarting || (M->World && M->World->bBusy))return TEXT("Let the journey finish before saving.");
+ if(M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Busy())return TEXT("Not now.");
+ if(M->World && M->World->bDriving)return TEXT("Park and get out before saving the current supply trip.");
+ return FString();
+}
+
 FString US47Flow::SaveBlock() const
 {
 	if (bDevRun) return TEXT("This is a developer run. Nothing is saved.");
 	if (M->Mode != EMode::Play || !CaseId) return TEXT("There is no night running to save.");
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return TEXT("Load the last save to resume this assignment.");
-	if (M->IsFreeform())
- {
-  if(bStarting || (M->World && M->World->bBusy))return TEXT("Let the journey finish before saving.");
-  if(M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Busy())return TEXT("Not now.");
-  if(M->World && M->World->bDriving)return TEXT("Park and get out before saving the current supply trip.");
-  return FString();
- }
+	if (M->IsFreeform()) return FreeformSaveBlock();
 	// (the time away's 47 seconds, the array put back, SARO going dark: not in the Unreal version yet)
 	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
 	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }
