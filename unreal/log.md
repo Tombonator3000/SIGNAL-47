@@ -2156,3 +2156,7 @@ Tom avviste bildene av gården og bad om ekte natur. Soklene var modellert og er
 ## 7. november 2026 kl.10:30, SM_FF_Range i stedet for mesaene (Freeform)
 
 Skrevet og importert, ikke kompilert eller sett i spillet; bare sett i Blender med forenklet lys. `Tools/freeformterrain/build_range.py` lager 24 x 24 km fra USGS 3DEP på relieffets plassering, 1,25 M trekanter, fallback 4 %, ingen kollisjon; fjellene utenfor ca. 5 km er kartet ganget med 2,2, de nære åsene har målt plassering, men laget høyde. `S47FreeformTerrain` setter den på mesaenes egen komponent mens relieffet er på; uten asset eller med `-S47RangeOff` står mesaene. Formen er fortsatt for glatt, og foten står lenger ut enn mesaenes.
+
+## 7. november 2026 kl.12:45, SM_FF_Range under all bakke og alle gulv
+
+Sletta i meshen lå 1,10 m over `GridY + Off` overalt, fordi en myk maks i `build_range.py` ga +2 m der høyden var 0. Det dekket vei og planter og gulvet i kontrollrommet; `saro` så bare riktig ut utendørs fordi `SaroLand` ligger lavere. Nå ligger sletta 1,5 m under laveste av veiland, SARO-land og stasjonsland, og er utelatt der alle tre har egen bakke. Importert og prøvd i spillet: planter tilbake, sekskantgulvet tilbake, fjell i lag. Rettingen av malt horisont og to nye prøvebilder i `S47Sky.cpp` og `S47ReliefProbe.cpp` er skrevet, ikke bygget. Åsene er fortsatt for glatte, og foten står innen 540 m bare langs 39 % av veien i vest og 2 % i øst. `station01` er målt, ikke sett.
