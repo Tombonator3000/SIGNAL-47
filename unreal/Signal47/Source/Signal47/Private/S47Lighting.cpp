@@ -703,7 +703,7 @@ void AS47Web::UpdateNativeLighting()
 	// grazing, the sky light's capture gives next to nothing under the real-time clouds, and the moon's 0.055 falls in the tone curve's toe. The fill goes
 	// through the moon's own lights, since they cast shadows already, stay out of the rooms and do not light the clouds. Blue and soft while it lasts.
 	// The sky's curves are not touched, and it is exactly nothing from 19:30 (FS47Sky::TwilightAt). -S47TwilightFill= retunes it, 0 is as before.
-	static const float TwilightGain = [] { float V = 0.6f; FParse::Value(FCommandLine::Get(), TEXT("S47TwilightFill="), V); return V; }();
+	static const float TwilightGain = [] { float V = 1.8f; FParse::Value(FCommandLine::Get(), TEXT("S47TwilightFill="), V); return V; }();
 	const float Twilight = CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(SkyTwilight, 0.f, 1.f);
 	int32 MoonsUp = 0;   // (the road's and the diner's stand together: the fill must not count twice there)
 	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get())) MoonsUp += R.Base > 0 && Moon->IsVisible();
