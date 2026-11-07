@@ -83,6 +83,11 @@ namespace S47FarmHouse
     if(To-From<.001||Top-Bottom<.001)return;
     if(bAlongX)Add(Out,Name,From,W.Y0,To,W.Y1,Bottom,Top,EMat::Wall);else Add(Out,Name,W.X0,From,W.X1,To,Bottom,Top,EMat::Wall);
    };
+   // Proud of both faces of the wall: the turquoise frames of the concept pictures (Docs/Design/Concepts/Farmhouse), around an opening and never in a door's way.
+   auto Frame=[&](const FString& Name,double From,double To,double Bottom,double Top,double Proud,EMat Mat)
+   {
+    if(bAlongX)Add(Out,Name,From,W.Y0-Proud,To,W.Y1+Proud,Bottom,Top,Mat);else Add(Out,Name,W.X0-Proud,From,W.X1+Proud,To,Bottom,Top,Mat);
+   };
    double At=Start;int32 Index=0;
    for(const FOpening& O:W.Openings)
    {
@@ -91,15 +96,55 @@ namespace S47FarmHouse
     if(!O.bDoor)Run(Base+TEXT(":sill"),O.From,O.To,0,Sill);
     Run(Base+TEXT(":head"),O.From,O.To,O.bDoor?DoorHead:WindowHead,WallHeight);
     At=O.To;
+    const double Foot=O.bDoor?0.:Sill-.07,Head=O.bDoor?DoorHead:WindowHead;
+    Frame(Base+TEXT(":jambA"),O.From-.09,O.From,Foot,Head+.02,.035,EMat::Paint);
+    Frame(Base+TEXT(":jambB"),O.To,O.To+.09,Foot,Head+.02,.035,EMat::Paint);
+    Frame(Base+TEXT(":lintel"),O.From-.14,O.To+.14,Head,Head+.13,.07,EMat::Trim);
+    if(!O.bDoor)
+    {
+     Frame(Base+TEXT(":ledge"),O.From-.05,O.To+.05,Sill-.07,Sill,.09,EMat::Trim);
+     // The sash, its glass long gone.
+     const double Mid=(O.From+O.To)*.5,Half=(Sill+WindowHead)*.5;
+     if(bAlongX){Add(Out,Base+TEXT(":bar"),Mid-.02,W.Y0+.11,Mid+.02,W.Y1-.11,Sill,WindowHead,EMat::Paint);Add(Out,Base+TEXT(":rail"),O.From,W.Y0+.11,O.To,W.Y1-.11,Half-.02,Half+.02,EMat::Paint);}
+     else{Add(Out,Base+TEXT(":bar"),W.X0+.11,Mid-.02,W.X1-.11,Mid+.02,Sill,WindowHead,EMat::Paint);Add(Out,Base+TEXT(":rail"),W.X0+.11,O.From,W.X1-.11,O.To,Half-.02,Half+.02,EMat::Paint);}
+    }
    }
    Run(FString::Printf(TEXT("farm:oldhouse:%s:end"),W.Name),At,End,0,WallHeight);
   }
   Add(Out,TEXT("farm:oldhouse:floor"),0,0,Width,Depth,-.3,0,EMat::Floor);
   Add(Out,TEXT("farm:oldhouse:ceiling"),0,0,Width,Depth,WallHeight,WallHeight+.12,EMat::Trim);
-  Add(Out,TEXT("farm:oldhouse:roof"),-.4,-.4,Width+.4,Depth+.4,WallHeight+.12,WallHeight+.3,EMat::Roof);
-  Add(Out,TEXT("farm:oldhouse:veranda"),0,Depth,Width,Depth+VerandaDepth,-.3,-.04,EMat::Floor);
-  Add(Out,TEXT("farm:oldhouse:verandaRoof"),0,Depth,Width,Depth+VerandaDepth+.2,WallHeight-.14,WallHeight,EMat::Roof);
-  for(const double X:{.3,4.,8.,11.7})Add(Out,FString::Printf(TEXT("farm:oldhouse:post%.0f"),X*10),X-.08,Depth+VerandaDepth-.16,X+.08,Depth+VerandaDepth,-.04,WallHeight-.14,EMat::Trim);
+  // Tom, 7 November: it read as a box, with a thin plate for a roof. A flat roof as this country builds them, behind a parapet with its wooden spouts and a cap, the walls carrying on up into it.
+  const double RoofTop=WallHeight+.3,Parapet=WallHeight+.72;
+  Add(Out,TEXT("farm:oldhouse:roof"),.2,.2,Width-.2,Depth-.2,WallHeight+.12,RoofTop,EMat::Roof);
+  const auto Ring=[&](const TCHAR* What,double Out_,double Bottom,double Top,EMat Mat)
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:n"),What),-Out_,-Out_,Width+Out_,.3+Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:s"),What),-Out_,Depth-.3-Out_,Width+Out_,Depth+Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:w"),What),-Out_,.3+Out_,.3+Out_,Depth-.3-Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:e"),What),Width-.3-Out_,.3+Out_,Width+Out_,Depth-.3-Out_,Bottom,Top,Mat);
+  };
+  Ring(TEXT("parapet"),0,WallHeight,Parapet,EMat::Wall);
+  Ring(TEXT("cap"),.035,Parapet,Parapet+.07,EMat::Trim);
+  for(const double X:{2.2,9.6})Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutN%.0f"),X*10),X-.1,-.62,X+.1,.3,RoofTop+.02,RoofTop+.16,EMat::Trim);
+  for(const double Y:{2.,6.5})
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutW%.0f"),Y*10),-.62,Y-.1,.3,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutE%.0f"),Y*10),Width-.3,Y-.1,Width+.62,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);
+  }
+  Add(Out,TEXT("farm:oldhouse:chimney"),8.5,3.,9.25,3.7,RoofTop,RoofTop+1.3,EMat::Wall);
+  Add(Out,TEXT("farm:oldhouse:chimneyCap"),8.42,2.92,9.33,3.78,RoofTop+1.3,RoofTop+1.38,EMat::Trim);
+  // The veranda on thick beams, the ends of them showing over a header, as the portales here stand.
+  const double BeamUnder=WallHeight-.34,Front=Depth+VerandaDepth;
+  Add(Out,TEXT("farm:oldhouse:veranda"),0,Depth,Width,Front,-.3,-.04,EMat::Floor);
+  Add(Out,TEXT("farm:oldhouse:verandaRoof"),-.06,Depth,Width+.06,Front+.14,WallHeight-.1,WallHeight+.04,EMat::Roof);
+  Add(Out,TEXT("farm:oldhouse:verandaFascia"),-.09,Front+.14,Width+.09,Front+.2,WallHeight-.14,WallHeight+.08,EMat::Trim);
+  Add(Out,TEXT("farm:oldhouse:verandaHeader"),-.02,Front-.24,Width+.02,Front-.02,BeamUnder-.2,BeamUnder,EMat::Trim);
+  for(double X=.35;X<Width;X+=1.1)Add(Out,FString::Printf(TEXT("farm:oldhouse:beam%.0f"),X*100),X-.08,Depth-.02,X+.08,Front+.36,BeamUnder,WallHeight-.1,EMat::Trim);
+  for(const double X:{.3,4.,8.,11.7})
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:post%.0f"),X*10),X-.11,Front-.24,X+.11,Front-.02,-.04,BeamUnder-.34,EMat::Trim);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:corbel%.0f"),X*10),X-.34,Front-.22,X+.34,Front-.04,BeamUnder-.34,BeamUnder-.2,EMat::Trim);
+  }
   return Out;
  }
 
