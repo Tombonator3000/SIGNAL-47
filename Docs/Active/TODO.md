@@ -18,11 +18,14 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 - [ ] **T16-07: Pale One** virker ikke i utviklermenyen.
 - [ ] **T16-08: kalenderen** i vestfløyen, som viser spillets dag, skal også henge i kontrollrommet i SARO.
 - [ ] **T16-09: modemlyd** følger spilleren ut av kontrollrommet etter at en jobb er sendt.
-- [ ] **T16-10: sidedøra** på garasjen i SARO kan ikke brukes.
+- [ ] **T16-10: sidedøra** på garasjen i SARO kan ikke brukes. Tom bekrefter at det er servicedøra på østsiden av vingen: «Service dør ja, kommer ikke igjennom.» Rettet i kilde (`RefreshWingObstacles`), ikke prøvd.
 - [ ] **T16-11: takplaten.** Oppdraget sier «fasten plate at the ladder», men det finnes ingen stige å klatre opp på taket med.
 - [ ] **T16-12: walkie-talkie** skriker for mye og for sterkt når Roswell dukker opp. Roes kraftig ned.
 - [ ] **T16-13: tåke.** Litt mer tåke inne i SARO sett utenfra om natten.
 - [ ] **T16-14: massivt lys utenfra.** Prøver innendørs der enormt lys kommer inn utenfra, med tåke og lyssøyler.
+- [ ] **T16-15: bygg, utvendig og innvendig.** Toms ord: «bygnings realisme utvendig og innenfra pass med kritikere agenter for å få økt realisme (og 1980s interiør og stemning).»
+- [ ] **T16-16: Story.** Toms ord: «trenger også Story mode kritiker agents pass.»
+- [ ] **T16-17: spillbarhet i Freeform.** Toms ord: «må ha en gameplay freeform kritiker pass.»
 
 ## Lommelykt og reservebatteri, idé 6. november
 
