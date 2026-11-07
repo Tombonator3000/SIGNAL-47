@@ -2090,3 +2090,6 @@ Regelen «ingen kropp før ca. kl. 02» håndheves nå, og uavhengig gjennomgang
 ## 7. november 2026, natt, UI-polish: fotofremkalling og prøvebilder
 
 Skrevet, ikke bygget eller kjørt. Fotofremkalling (Freeform og Story) bruker `Section` for «SARO / PHOTO LAB» med film og sted til høyre, den ferdige skjermen viser alle tre trinn som DONE, og tom benk er et `Banner`. `Small` er litt større og lysere (kontrast 4,7 til 6,4). `-S47MenuPointerPanels` tar nå også `panel-wetbench.png`, `panel-wetbench-empty.png` og `panel-reeldeck.png`, og arkivet har to oppdiktede funn. Reel-deck og arkiv ligger i `S47Freeform.cpp` og er ikke endret.
+## 7. november 2026 kl.03:35, natt, variasjon i ørkenen
+
+Skrevet i egen worktree, ikke bygget eller kjørt, bare `S47Flora.cpp` bak `bNatural`. Kreosot: skala 0,5 til 1,3 med vekt mot små, rutenettet brutt opp (stripeskår 0,24 til 0,03 i Python-kopi), 15 % døde står som grå `SM_DP_Mesquite_B`, mindre innen 7 m fra vei. Lavt dekke: 1,4 til 2,7 ganger mer gress, 2,5 ganger stilker, sage ut til 235 m som teppe, 20 % grå tuer. Yucca var bleik i alle fire variantene, ikke bare to, og FBX-en er riktig; rettet med instansfarge og egen skygge nær, ingen ny eksport. Fargesoner med `Stain` er ikke gjort: de hører hjemme i bakkematerialet.
