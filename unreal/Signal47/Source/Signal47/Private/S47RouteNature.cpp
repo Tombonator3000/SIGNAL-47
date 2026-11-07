@@ -306,10 +306,13 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
  {
   auto* C=NewObject<UHierarchicalInstancedStaticMeshComponent>(W,*FString::Printf(TEXT("RouteNature_%s"),F.Name));
   C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(F.Mesh);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  if(FString(F.Name).StartsWith(TEXT("Pebble")))for(int32 Slot=0;Slot<F.Mesh->GetStaticMaterials().Num();++Slot)
+  // The dry grass's own texture is a strong yellow: in the sun at 11:01 (relief-11-road) its lit blades read 232,211,141 and the Flora's grass beside it
+  // 185,159,115, and it takes no colour from Flora's palette. This is that ratio through the picture's tone curve, in scene light (film_tone.hlsl).
+  const bool bPebble=FString(F.Name).StartsWith(TEXT("Pebble")),bDryGrass=FString(F.Name).StartsWith(TEXT("DryGrass"));
+  if(bPebble||bDryGrass)for(int32 Slot=0;Slot<F.Mesh->GetStaticMaterials().Num();++Slot)
    if(auto* Tint=UMaterialInstanceDynamic::Create(F.Mesh->GetStaticMaterials()[Slot].MaterialInterface,C))
    {
-    Tint->SetVectorParameterValue(TEXT("TextureTint"),FLinearColor(.50f,.43f,.33f,1.f));
+    Tint->SetVectorParameterValue(TEXT("TextureTint"),bPebble?FLinearColor(.50f,.43f,.33f,1.f):FLinearColor(.38f,.42f,.90f,1.f));
     C->SetMaterial(Slot,Tint);
    }
   C->SetCastShadow(F.Rock);C->SetVisibleInRayTracing(F.Rock);C->bAffectDistanceFieldLighting=F.Rock;

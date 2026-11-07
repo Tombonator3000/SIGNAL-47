@@ -6,6 +6,7 @@
 #include "S47Main.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
+#include "S47IndoorDread.h"
 
 FS47Interactable& US47Inter::Add(const FS47Interactable& It)
 {
@@ -74,6 +75,15 @@ FString US47Inter::Pick(const FVector& EyeUE, const FVector& DirUE, double MaxDi
 	TArray<FHitResult> Hits;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Pick), true);
 	Web->GetWorld()->LineTraceMultiByChannel(Hits, EyeUE, EyeUE + DirUE.GetSafeNormal() * 600.0, ECC_GameTraceChannel1, Q);
+	// Something at a door just now: while the visit lasts E is about that door, wherever on the line it lies. The leaf moves as the
+	// handle is tried, so in town it and the proxy around it (town:cinema) took turns being first on the ray.
+	US47Main* Run = US47Main::Get(Web);
+	if (Run && Run->IsFreeform() && Run->Freeform && Run->Freeform->Active() && Run->Freeform->IndoorDread && Run->Freeform->IndoorDread->DoorActive())
+		for (const FHitResult& H : Hits)
+		{
+			const FString Door = Run->Freeform->IndoorDread->DoorKeyOf(Web->UsableAt(H.GetComponent()));
+			if (!Door.IsEmpty() && H.Distance / 100.0 <= RangeOf(Door) && !LabelOf(Door).IsEmpty()) return Door;
+		}
 	for (const FHitResult& H : Hits)
 	{
 		const FString Id = Web->UsableAt(H.GetComponent());

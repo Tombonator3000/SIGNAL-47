@@ -632,6 +632,8 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	HoleK = S47StarHoleAt(Clock, HoleFrom);
 	// (FX-01: the passage's time is Life's, SetPassageTime; the clock never starts or spends it)
 	CloudCover = CloudCoverAt(Clock); Cirrus = CirrusAt(Clock);
+	// (a chapter that sets the sun's height has its own light on the ground, approved as it is)
+	Twilight = SunElevDeg.IsSet() ? 0 : TwilightAt(Clock);
 	const FLinearColor A(0.043f, 0.059f, 0.098f), B(0.19f, 0.2f, 0.25f);
 	FogColor = A + (B - A) * float(D * 0.8);
 	// the sun: azimuth 79 degrees, rising about 0.18 degrees a minute; its upper limb reaches
@@ -679,6 +681,17 @@ double FS47Sky::PureSkyWeightAt(double Clock)
 	const double S = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
 	// Independent of Dawn/Evening and story gates. Fade out before the night stars return.
 	return Smooth01((S - 6 * 3600) / 3600) * (1 - Smooth01((S - 18 * 3600) / (53 * 60)));
+}
+
+double FS47Sky::TwilightAt(double Clock)
+{
+	const double S = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+	// Sunset 18:27 and sunrise 05:30. The sky stays bright for half an hour past the sun, and the ground under it is plain to see. Up as the
+	// low sun stops reaching the ground, whole at 18:30, falling with the sky's own brightness (the land should not outshine it: 18:40 read about
+	// 60 in the picture, 18:46 about 35, 19:04 about 20), and exactly nothing from 19:30, so that the night is what it was.
+	if (S > 12 * 3600) return Smooth01((S - (17 * 3600 + 55 * 60)) / (35 * 60)) * FMath::Square(1 - Smooth01((S - (18 * 3600 + 30 * 60)) / (60 * 60)));
+	// The same at dawn, mirrored about sunrise, and given over to the day as the sun climbs and Midday comes in (05:40 to 06:00).
+	return FMath::Square(Smooth01((S - (4 * 3600 + 27 * 60)) / (60 * 60))) * (1 - Smooth01((S - (5 * 3600 + 35 * 60)) / (30 * 60)));
 }
 
 double FS47Sky::CloudCoverAt(double Clock)

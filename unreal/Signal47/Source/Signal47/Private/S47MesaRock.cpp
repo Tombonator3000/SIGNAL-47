@@ -25,10 +25,12 @@ namespace
   if(bWait)IStreamingManager::Get().StreamAllResources(1.f);
  }
  // 0 at night, 1 in full day, with an hour and a quarter of dawn and dusk; 1 outside Freeform's clock.
+ // Dawn mirrors dusk about the sun, sunrise 05:30 to sunset 18:27. It ran to 07:00, an hour behind the sun: at 06:00 with the day's light on it the ground
+ // still had four fifths of the night's far paler tint.
  float DayAt(const US47Main* Main)
  {
   const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
-  return float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  return float(FMath::Clamp(FMath::Min((Hour-4.72)/1.25,(19.25-Hour)/1.25),0.,1.));
  }
  // Measured against photographs of this desert (7 November): the bare ground read 230 where the photographs read
  // 150, so in Freeform it comes down to real soil and shows more of its gravel. Story keeps the look it was approved in.

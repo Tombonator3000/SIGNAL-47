@@ -32,6 +32,8 @@ public:
  bool Pressed(const FString& DoorKey);
  // What the prompt says on this door just now; empty: its own label.
  FString LabelFor(const FString& DoorKey) const;
+ // While one is under way: the door's key if this thing the ray met is that door, under any of its names. Else empty.
+ FString DoorKeyOf(const FString& Usable) const;
  bool Active() const{return Now!=EStage::None;}
  // At most one in two nights: the same night and the next are out.
  static bool MayCome(int32 Day,int32 LastDay){return LastDay<=0||Day>=LastDay+2;}

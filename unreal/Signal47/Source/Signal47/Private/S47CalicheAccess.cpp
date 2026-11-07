@@ -125,6 +125,7 @@ void SetOpenQuietly(const FString& Id,bool bOpen)
  if(Main.IsValid())Main->RequestAutosave(false);
 }
 bool HasDoor(const FString& Id){return Find(Id)!=nullptr;}
+bool SameDoor(const FString& A,const FString& B){const auto* R=Find(A);return R&&R==Find(B);}
 bool IsOpen(const FString& Id){const auto* R=Find(Id);return R&&R->bOpen;}
 bool UseDoor(const FString& Id)
 {

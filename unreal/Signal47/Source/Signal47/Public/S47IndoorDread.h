@@ -62,6 +62,7 @@ public:
  FS47DoorVisit& Door(){return *DoorVisit;}
  bool DoorPressed(const FString& DoorKey){return DoorVisit->Pressed(DoorKey);}
  FString DoorLabel(const FString& DoorKey) const{return DoorVisit->LabelFor(DoorKey);}
+ FString DoorKeyOf(const FString& Usable) const{return DoorVisit->DoorKeyOf(Usable);}
  bool DoorQuiet() const{return Quiet();}
  bool DoorActive() const{return DoorVisit->Active();}
  // Act: what a body with clips does there. Without the Pale One the small one stands at the door, as before.

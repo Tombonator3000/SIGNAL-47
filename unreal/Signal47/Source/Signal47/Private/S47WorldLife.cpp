@@ -329,7 +329,7 @@ void US47WorldLife::Step(double Dt)
 	Sky->bPassageLow = M->Flow && M->Flow->Graphics.Effects == 0;
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
 	PassageStep(Dt); // presentation time is independent of story-clock jumps
-	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening));
+	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening), float(Sky->Twilight));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
 	const double FogK = Area != TEXT("roswell") ? NIGHT_FOG + (DAWN_FOG - NIGHT_FOG) * DawnK : NIGHT_FOG + (1 - NIGHT_FOG) * DawnK;
@@ -810,6 +810,22 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	EveningSky.SetClock(5 * 3600 + 29 * 60, 2.0);
 	Check(EveningSky.Evening == 0 && EveningSky.Sun == 1 && FMath::IsNearlyEqual(EveningSky.SunDir.Y, FMath::Sin(FMath::DegreesToRadians(2.0)), 1e-12),
 		TEXT("evening sky: finale sun elevation override retained"));
+	{
+		// The land's light with the sun down: rising and falling without a jump, whole at dusk, and nothing at all by day or at night.
+		bool bSmooth = true;
+		double Last = FS47Sky::TwilightAt(0);
+		for (int32 Minute = 1; Minute <= 24 * 60; ++Minute)
+		{
+			const double Now = FS47Sky::TwilightAt(Minute * 60);
+			bSmooth &= FMath::Abs(Now - Last) < 0.07;
+			Last = Now;
+		}
+		const auto At = [](int32 H, int32 Mi) { return FS47Sky::TwilightAt((H * 60 + Mi) * 60); };
+		Check(bSmooth && At(12, 0) == 0 && At(17, 55) == 0 && At(18, 30) == 1 && At(18, 40) > .8 && At(19, 0) > .2 && At(19, 0) < .3 && At(19, 30) == 0 && At(23, 0) == 0 && At(2, 0) == 0 && At(4, 27) == 0 && At(5, 27) == 1 && At(6, 5) == 0,
+			TEXT("twilight: the land's light past sunset and before sunrise is continuous, and the night and the day are as they were"));
+		FS47Sky Set; Set.SetClock(18 * 3600 + 40 * 60); const double Free = Set.Twilight; Set.SetClock(5 * 3600 + 29 * 60, 2.0);
+		Check(Free > .8 && Set.Twilight == 0, TEXT("twilight: a chapter that sets the sun's height keeps its own ground light"));
+	}
 	// SKY.md: volumetric cloud cover follows the clock, continuously, without hiding the night.
 	{
 		bool bBroken = true, bSparse = true, bSmooth = true;

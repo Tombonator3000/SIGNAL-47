@@ -70,6 +70,15 @@ namespace
 		{ TEXT("edge-farm"), TEXT("saro"), 9, 170, 16, 200, 0 },
 	};
 	const double EdgeHours[] = { 11, 17.6 };
+	// -S47DuskRamp: only dusk and dawn, every ten minutes, in three of the views and with none of the walks: relief-1840-road.png.
+	const FReliefView RampViews[] = {
+		{ TEXT("road"), TEXT("diner"), -40, 900, -400, 880, 2 },
+		{ TEXT("array"), TEXT("saro"), -320, -500, 0, -520, 6 },
+		{ TEXT("farm"), TEXT("saro"), 25, 300, 100, 215, 2 },
+	};
+	const int32 RampMinutes[] = {
+		18 * 60, 18 * 60 + 10, 18 * 60 + 20, 18 * 60 + 30, 18 * 60 + 40, 18 * 60 + 50, 19 * 60, 19 * 60 + 10, 19 * 60 + 20, 19 * 60 + 30, 19 * 60 + 40, 19 * 60 + 50, 20 * 60,
+		4 * 60 + 30, 4 * 60 + 40, 4 * 60 + 50, 5 * 60, 5 * 60 + 10, 5 * 60 + 20, 5 * 60 + 30, 5 * 60 + 40, 5 * 60 + 50, 6 * 60, 6 * 60 + 10, 6 * 60 + 20, 6 * 60 + 30 };
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
 	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
@@ -88,7 +97,7 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
-		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false;
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false;
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -242,6 +251,22 @@ namespace
 			return true;
 		});
 	}
+	int32 ProbeHourCount()
+	{
+		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
+	}
+	double ProbeHourAt(int32 At)
+	{
+		return ReliefRun.bRamp ? RampMinutes[At] / 60. : ReliefRun.bEdgeOnly ? EdgeHours[At] : ReliefHours[At];
+	}
+	int32 ProbeViewCount()
+	{
+		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampViews) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews));
+	}
+	const FReliefView& ProbeViewAt(int32 At)
+	{
+		return ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
+	}
 	void ProbeSetHour(US47Main* M, double Hour)
 	{
 		const double Clock = FMath::Fmod(M->Freeform->Clock(), 86400.);
@@ -257,6 +282,7 @@ namespace S47ReliefProbe
 		(void)Main;
 		ReliefRun = FReliefRun();
 		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
+		ReliefRun.bRamp = FParse::Param(FCommandLine::Get(), TEXT("S47DuskRamp"));
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -282,7 +308,7 @@ namespace S47ReliefProbe
 			Lines.Reset();
 			S47RoadEdge::Report(W, Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
-			if (R.bEdgeOnly) { R.Phase = 7; R.Since = R.Now; return true; }
+			if (R.bEdgeOnly || R.bRamp) { R.Phase = 7; R.Since = R.Now; return true; }
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
 			return true;
@@ -428,15 +454,15 @@ namespace S47ReliefProbe
 		// The views. A place, then two and a half seconds for the textures, and the picture the frame after it is asked for.
 		if (R.Phase == 7)
 		{
-			if (R.HourAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours))) return ProbeFinish();
-			ProbeSetHour(M, R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
+			if (R.HourAt >= ProbeHourCount()) return ProbeFinish();
+			ProbeSetHour(M, ProbeHourAt(R.HourAt));
 			R.ViewAt = 0; R.Phase = 8; R.Since = R.Now;
 			return true;
 		}
 		if (R.Phase == 8)
 		{
-			if (R.ViewAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews))) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
-			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
+			if (R.ViewAt >= ProbeViewCount()) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
+			const FReliefView& View = ProbeViewAt(R.ViewAt);
 			if (Life->Area != View.Area) { Life->Enter(View.Area); R.Since = R.Now; return true; }
 			const FVector Eye = S47FarmWorld::RoadToArea(View.Area, FVector(View.X, 0, View.Z)), Look = S47FarmWorld::RoadToArea(View.Area, FVector(View.LookX, 0, View.LookZ));
 			const FVector Along(Look.X - Eye.X, View.Lift, Look.Z - Eye.Z);
@@ -451,9 +477,9 @@ namespace S47ReliefProbe
 			// Over the settled second and a half only: the first second carries the jump's own streaming.
 			if (R.Now - R.Since > 1) { R.FrameSum += Dt; R.FrameMost = FMath::Max(R.FrameMost, double(Dt)); ++R.FrameCount; }
 			if (R.Now - R.Since < 2.5) return true;
-			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
-			const int32 Hour = FMath::FloorToInt(R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
-			const FString Shot = FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
+			const FReliefView& View = ProbeViewAt(R.ViewAt);
+			const int32 Hour = FMath::FloorToInt(ProbeHourAt(R.HourAt));
+			const FString Shot = R.bRamp ? FString::Printf(TEXT("relief-%02d%02d-%s.png"), RampMinutes[R.HourAt] / 60, RampMinutes[R.HourAt] % 60, View.Name) : FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("AlbumTest") / Shot, true, false);
 			double Rx = 0, Rz = 0;
 			ProbeRoadXZ(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);

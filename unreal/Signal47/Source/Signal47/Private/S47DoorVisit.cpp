@@ -532,6 +532,13 @@ FString FS47DoorVisit::LabelFor(const FString& DoorKey) const
  }
 }
 
+FString FS47DoorVisit::DoorKeyOf(const FString& Usable) const
+{
+ if(Now==EStage::None||Usable.IsEmpty())return FString();
+ // In town the street's old proxy (town:cinema) stands around the same door and opens it without asking this.
+ return Usable==Target.Key||(!Target.bHouse&&S47CalicheAccess::SameDoor(Usable,Target.Name))?Target.Key:FString();
+}
+
 void FS47DoorVisit::Finish(EEnding Ending)
 {
  LetGo();
