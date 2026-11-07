@@ -1,6 +1,7 @@
 #include "S47FarmWorld.h"
 #include "S47FreeformTerrain.h"
 #include "S47Relief.h"
+#include "S47RoadEdge.h"
 #include "Components/PointLightComponent.h"
 #include "Components/MaterialBillboardComponent.h"
 #include "S47FarmHouse.h"
@@ -480,7 +481,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);BuildFarmDecals(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);if(On)ToneFarmDecals(M);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);S47RoadEdge::Reconcile(W,Enabled(M));ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);BuildFarmDecals(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);if(On)ToneFarmDecals(M);
   if(On)KeepPlayerOutOfWalls(M,W);
   if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
