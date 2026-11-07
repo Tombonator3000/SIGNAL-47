@@ -29,6 +29,8 @@
 #include "S47FreeformDirector.h"
 #include "S47FarmSite.h"
 #include "S47FarmNight.h"
+#include "S47Flora.h"
+#include "S47WorldLife.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "IImageWrapper.h"
@@ -977,7 +979,40 @@ namespace
     ShotPending=true;WalkFrom=Elapsed;
     return true;
    }
-   if(Stage==320)
+   // The desert plants: first what the planner itself drew round the flat desert (the views above show it too, and none of it is forced), then
+   // one copy of each of the eight at scale 1 on an arc 15 m before the eye, from there, from 55 m back (the far LODs) and from 6 m.
+   if(Stage>=320&&Stage<=323)
+   {
+    StageAt=Elapsed;
+    if(M->Web->Area()!=TEXT("road")){M->World->Enter(TEXT("road"));return true;}
+    FS47Flora* RoadPatch=nullptr;
+    if(M->Life)for(const TSharedPtr<FS47Flora>& Patch:M->Life->Flora)if(Patch&&Patch->Spec.Name==TEXT("road"))RoadPatch=Patch.Get();
+    if(!RoadPatch)return Fail(TEXT("the desert plants' view needs the road's plants"));
+    const double RowX=8070,RowZ=300,RowStep[]={0,0,-55,9};
+    const double EyeX=RowX+RowStep[Stage-320];
+    if(ShotPending)
+    {
+     if(Elapsed-WalkFrom<4)return true;
+     ShotPending=false;
+     if(Stage==320)
+     {
+      const TMap<ES47FloraKind,int32> Counted=RoadPatch->Drawn();
+      const int32 NatYucca=Counted.FindRef(ES47FloraKind::Yucca),NatCholla=Counted.FindRef(ES47FloraKind::Cholla),NatMesquite=Counted.FindRef(ES47FloraKind::Mesquite),NatOld=Counted.FindRef(ES47FloraKind::Succulent);
+      UE_LOG(LogTemp,Display,TEXT("S47: nature desert plants as the planner drew them round the flat desert: %d meshes in use, yucca %d, cholla %d, mesquite %d, old succulents %d"),RoadPatch->DesertInUse(),NatYucca,NatCholla,NatMesquite,NatOld);
+      if(RoadPatch->DesertInUse()==0){UE_LOG(LogTemp,Display,TEXT("S47: nature: no desert plants imported, the old succulents stay"));Stage=324;return true;}
+      if(NatOld>0)return Fail(TEXT("the old succulents must be gone where the desert plants stand"));
+      if(NatYucca<=0||NatCholla<=0||NatMesquite<=0)return Fail(TEXT("the planner must draw each desert species by itself"));
+      UE_LOG(LogTemp,Display,TEXT("S47: nature desert arc: %d plants stood"),RoadPatch->TestDesertArc(FVector(RowX,0,RowZ),FVector(RowX+15,0,RowZ),15));
+     }
+     else Shot(*FString::Printf(TEXT("nature-desert-%s.png"),Stage==321?TEXT("row"):Stage==322?TEXT("far"):TEXT("near")));
+     ++Stage;
+     return true;
+    }
+    M->Player->Place(EyeX,RowZ,FMath::Atan2(-15.,0.));M->Player->Pitch=FMath::Atan2(.4,15.);
+    ShotPending=true;WalkFrom=Elapsed;
+    return true;
+   }
+   if(Stage==324)
    {
     UE_LOG(LogTemp,Display,TEXT("S47: nature shown"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;

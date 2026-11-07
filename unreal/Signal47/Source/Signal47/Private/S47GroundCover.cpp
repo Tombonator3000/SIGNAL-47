@@ -58,11 +58,14 @@ namespace
 		for (const FRect& P : FARM_PLOTS()) Gap = FMath::Min(Gap, RectGap(P, X, Z));
 		if (Gap < 7) { const double T = Gap / 7; Mul *= 0.08 + 0.92 * T * T; }
 		const bool bTuft = Kind == ES47FloraKind::Grass || Kind == ES47FloraKind::Stalks;
-		const bool bShrub = Kind == ES47FloraKind::Sage || Kind == ES47FloraKind::Creosote || Kind == ES47FloraKind::Succulent;
+		const bool bShrub = Kind == ES47FloraKind::Sage || Kind == ES47FloraKind::Creosote || Kind == ES47FloraKind::Succulent
+			|| Kind == ES47FloraKind::Yucca || Kind == ES47FloraKind::Cholla || Kind == ES47FloraKind::Mesquite;
 		// the pasture (x 45..115, z 216..282), its edge soft over 8 m
 		const double Inner = FMath::Min(FMath::Min(X - 45, 115 - X), FMath::Min(Z - 216, 282 - Z));
 		const double W = FMath::Clamp(Inner / 8, 0.0, 1.0);
 		if (W > 0) Mul *= bTuft ? 1 + 1.3 * W : bShrub ? 1 - 0.85 * W : Kind == ES47FloraKind::Stones ? 1 - 0.4 * W : 1.0;
+		// the cattle keep the mesquite down inside the fence; just outside it, out of their reach, it thickens
+		else if (Kind == ES47FloraKind::Mesquite && Inner > -14) Mul *= 1.9;
 		// trampled bare: the trough, the gate, and the worn track between them
 		const double Dt = FMath::Sqrt(FMath::Square(X - 76) + FMath::Square(Z - 251));
 		if (Dt < 11) Mul *= Dt < 3 ? 0.0 : 0.04 + 0.96 * FMath::Square((Dt - 3) / 8);
@@ -70,6 +73,14 @@ namespace
 		if (Dg < 7) Mul *= 0.05 + 0.95 * FMath::Square(FMath::Clamp((Dg - 1.5) / 5.5, 0.0, 1.0));
 		if (bTuft && SegDist(X, Z, 70, 215, 76, 251) < 2) Mul *= 0.25;
 		return Mul;
+	}
+
+	/** Freeform's desert plants in an area: more or less yucca, cholla and mesquite (only data; no copy of them in Story). */
+	void DesertMix(FS47FloraSpec& S, double Yucca, double Cholla, double Mesquite)
+	{
+		S.Mix.Add(ES47FloraKind::Yucca, Yucca);
+		S.Mix.Add(ES47FloraKind::Cholla, Cholla);
+		S.Mix.Add(ES47FloraKind::Mesquite, Mesquite);
 	}
 
 	// ---------- the road's land (road-local) ----------
@@ -382,6 +393,7 @@ FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts)
 	AddFarmBuildingPlots(S.Blocks);
 	S.Walks = { SHOULDER_ROAD() };
 	S.Ways = [](double X, double Z) { return RoadWays(X, Z); };
+	DesertMix(S, 1.0, 0.7, 0.6);
 	return S;
 }
 
@@ -431,6 +443,7 @@ FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS4
 	for (const FVector4& B : FS47MotelV2::LandscapeFootprints()) S.Blocks.Add(ToRoadRect(R(B.X,B.Y,B.Z,B.W)));
 	S.Walks.Add(SHOULDER_ROAD());
 	S.Ways = [](double X, double Z) { const double Sx = X - SIR().X, Sz = Z - SIR().Z; return Sz < 80 ? SiteWays(Sx, Sz) : RoadWays(X, Z); };
+	DesertMix(S, 0.5, 0.8, 0.4);
 	return S;
 }
 
@@ -509,6 +522,7 @@ FS47FloraSpec StationFlora(const TArray<FS47FloraRect>& Colliders, const TArray<
 		const S47Geo::FXZ St = S47Geo::RoadToStation(X, Z);
 		return StationClear(St.X, St.Z, -0.3) ? FString() : FString(TEXT("a path, the pad or the fence at the station"));
 	};
+	DesertMix(S, 1.4, 0.8, 0.3);
 	return S;
 }
 
@@ -561,6 +575,7 @@ FS47FloraSpec OldRoadFlora(const TArray<FS47FloraRect>& Posts)
 		return Nearest(X, Z).D < SHOULDER + 1 ? 4.0 : 1.0;
 	};
 	S.Ways = [](double X, double Z) { return Nearest(X, Z).D < HALF ? FString(TEXT("the old road")) : FString(); };
+	DesertMix(S, 1.0, 1.0, 0.9);
 	return S;
 }
 }

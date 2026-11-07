@@ -2079,3 +2079,7 @@ Skrevet i egen worktree, ikke bygget eller kjørt. Crab og Tall var alt koblet t
 ## 7. november 2026, natt, gjennomgang av Freeform-skrekken
 
 Skrevet, ikke bygget. En uavhengig gjennomgang fant hull, og de er kontrollert i kilden og rettet. Hvile som krysser kl. 02 trekker nattens valg og vekker spilleren 02:05 til 03:00 hvis noe er trukket eller merker står, én gang per natt. Vindu i SARO-bygget, kontrollrommet først; rom 6 er fjernet fordi Freeform aldri åpner det. `observer`, og `feeder_presence` eller `array_presence`, har egne nattrekninger som venter. `peek-N` og `flood-room-...` teller i saken om besøkende. `close_pass` og motorveihendelsen venter til kl. 02 i Freeform. Nye prøver: `-S47MenuPointerNight`, `-S47MenuPointerRest`.
+
+## 7. november 2026 kl.03:00, natt, ørkenplantene i Freeform
+
+Skrevet i egen worktree, ikke bygget, importert eller kjørt. `Tools/desertplants/import_assets.py` gir `/Game/DesertPlants` (kokes alltid). Yucca, cholla og mesquite er nye flora-arter med egne mesher per variant, bare i Freeform, og erstatter de gamle sukkulentene der; mangler ett av de åtte meshene, står de gamle. `-S47MenuPointerNature` logger `S47: desert plants N of 8 loaded`, tar tre nye bilder (`nature-desert-*.png`) og feiler hvis planleggeren ikke trekker alle tre artene selv. Tettheter er anslag.

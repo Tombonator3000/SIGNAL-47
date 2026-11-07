@@ -1,6 +1,6 @@
 # Ørkenplantene: cholla, yucca og mesquite
 
-**Status:** Kilde bygd og kontrollert i Blender, FBX lest tilbake i Blender. Ikke importert i Unreal, ikke kompilert, ikke sett i spillet. **Gjelder:** Egne plantemodeller til flora-systemet (`S47Flora`), Freeform først. **Sist kontrollert:** 7. november 2026.
+**Status:** Kilde bygd og kontrollert i Blender, FBX lest tilbake i Blender. `import_assets.py` og spillkoden er skrevet, men ikke kjørt, kompilert eller sett i spillet. **Gjelder:** Egne plantemodeller til flora-systemet (`S47Flora`), Freeform først. **Sist kontrollert:** 7. november 2026.
 
 Originale prosedyrale `bpy`-modeller med egne prosedyrale atlas. Ingen nedlastede modeller, foto eller uttrekk. Binærfiler ligger privat i `~/Documents/ChatGPT/Signal 47/modeller/desertplants-2026-11-07/` (`fbx/`, `blend/`, `textures/`, `renders/`, `milepæler/`, `model_contract.json`, `materials.json`, `reimport.json`), aldri i Git.
 
@@ -15,6 +15,7 @@ Originale prosedyrale `bpy`-modeller med egne prosedyrale atlas. Ingen nedlasted
 | `run_blender.py` | Moduser `clay`, `mat`, `wire`, `lods`, `wind`, `export`, `verify`. |
 | `heavy.py` | Kjører `run_blender.py` gjennom `HeavyReservation` og `unreal_guard.run_owned`. Stopper aldri andre. |
 | `check.py` | Rask kontroll uten Blender: trekanter, mål og vindtall mot `spec.py`. |
+| `import_assets.py` | Bygger materialinstansene og importerer de åtte meshene til `/Game/DesertPlants`. Kontrollerer hver LOD mot `reimport.json`. |
 
 ## Kjøring
 
@@ -42,15 +43,25 @@ Plantene er laget for `M_WebFlora_Card` (cholla og mesquite, masked) og `M_WebFl
 
 ## Import til Unreal
 
-Ikke skrevet eller kjørt her. Bruk samme løype som `Tools/farmbuildings/import_assets.py` (legacy FBX, `MATCH_UP_FORWARD_AXES`, `import_rotation` yaw +90, `import_lod` for `_LOD1` og `_LOD2`), med disse forskjellene:
+Fra `unreal/Signal47/`, i en kopi der `Content/Web/Base` finnes (mastrene er generert og ligger ikke i Git):
 
-- `generate_lightmap_u_vs = False`, ellers overskrives UV-kanal 1 og vinden blir feil.
+```sh
+python3 Scripts/unreal_guard.py require-idle && S47_DESERT_REPORT="$HOME/scratch-bm/Signal47-desertplants/import-$(date +%H%M%S).json" "$HOME/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" -run=pythonscript -script="$PWD/Tools/desertplants/import_assets.py" -unattended -nullrhi -nosplash -NoSound '-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0'
+```
+
+Resultat: `Content/DesertPlants/` (`SM_DP_*`, `Materials/MI_DP_*`, `Textures/T_DP_*`, LFS). Rapporten har trekanter, UV-kanaler, vindtall og materialer per LOD, og loggen har én `DESERTPLANTS`-linje per mesh. Samme løype som `Tools/farmbuildings/import_assets.py` (legacy FBX, `MATCH_UP_FORWARD_AXES`, `import_rotation` yaw +90, `import_lod` for `_LOD1` og `_LOD2`), med disse forskjellene:
+
+- `generate_lightmap_u_vs = False` på importen og på hver LOD, ellers overskrives UV-kanal 1 og vinden blir feil. FBX-importen snur V, så `UVChannel_2.y` er 1 i Unreal, ikke 0. Det er ufarlig så lenge `Parts` er 0.
 - `normal_import_method = FBXNIM_IMPORT_NORMALS`, `vertex_color_import_option = REPLACE`.
 - `use_full_precision_u_vs = True` i kildemodellene, så vindtallene holder.
 - Ingen kollisjon, ingen Nanite. Skjermstørrelser som `calichenature`: `[1.0, 0.12, 0.025]`.
 - Nye `MaterialInstance` av mastrene over: `UseMap` 1, `Map` = BC, `UseRoughnessMap` 1, `RoughnessMap` = R, `UseVertexColor` 1, `UseInstanceColor` 1, `Parts` 0, `Shade` 1. `Back` 1 på mesquite, 0 på cholla. Klipp 0,42 på de maskerte.
 
 Mål etter import: `SM_DP_Cholla_A` skal være 189 cm over null og `SM_DP_Cholla_B` 162 cm (bounds går 6 cm under null), og `UVChannel_2` skal fortsatt finnes som kanal 1. Alle tall står i `reimport.json`.
+
+## I spillet
+
+Bare i Freeform (`FS47Flora::EnsureDesert`, `DESERT_PARTS`, `NATURAL` i `S47Flora.cpp`). Hver art er én `ES47FloraKind`, hver variant ett instansert mesh, og alle åtte må finnes, ellers blir de gamle sukkulentene stående. Områdemiksen står i `S47GroundCover.cpp` (`DesertMix`). Tallene er anslag fra modellene, ikke målt i spillet.
 
 ## Kilder og lisens
 
