@@ -161,7 +161,7 @@ namespace
 				Pn[7] = { FVector(1, 1, 1) };   // (the rock's own material takes no colour from the copy)
 				// (the atlases and the shapes' corners have the plants' colours already: only a little from one plant to the next)
 				Pn[8] = { Lin(1, 1, 1), Lin(0.96, 0.98, 0.93), Lin(1.02, 1, 0.96) };
-				Pn[9] = { Lin(1, 1, 1), Lin(0.95, 0.97, 0.95), Lin(1.03, 1, 0.95) };
+				Pn[9] = { Lin(1.9, 1.6, 1.45), Lin(1.8, 1.55, 1.4), Lin(1.95, 1.6, 1.4) };
 				Pn[10] = { Lin(1, 1, 1), Lin(0.93, 0.96, 0.9), Lin(1.03, 1.02, 0.95) };
 			}
 			return Pn[int32(K)];
@@ -1116,6 +1116,8 @@ void FS47Flora::EnsureDesert()
 		const int32 First = DESERT_FIRST[Ki - DESERT_KI], End = DESERT_FIRST[Ki - DESERT_KI + 1];
 		// one material to a species: one set of what the flora's material takes at run time (Reach, WindDir)
 		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Meshes[First]->GetMaterial(0), W);
+		// The atlases' small mips average leaf, flower and dry leaf together, pale: stay sharp however far the plant stands.
+		if (D) D->SetForceMipLevelsToBeResident(true, true, -1.f);
 		L.Mid = D;
 		for (int32 Pi = First; Pi < End; ++Pi)
 		{
