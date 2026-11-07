@@ -888,13 +888,17 @@ namespace
     M->UI->Close(true);
     UE_LOG(LogTemp,Display,TEXT("S47: door: held, %d marks looked at"),Visit.MarksOut());
     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+    // Back from the door: right beside it nothing is drawn (the draw wants the player clear of it), and a room in town has
+    // only the one door, so the night would prove nothing. In the old house there was another outer door to find.
+    StandBy(4.5);
     DreadAt=Elapsed;Stage=547;return true;
    }
    if(Stage==547)
    {
     if(Visit.Active())return Fail(TEXT("at most one in two nights"));
     if(Elapsed-DreadAt<34)return true;
-    if(Visit.RollDayOf()!=F.Day()||Visit.DrawnTonight())return Fail(TEXT("the night after may not draw it, with the dice at yes"));
+    if(Visit.RollDayOf()!=F.Day())return Fail(TEXT("the draw must have been made the night after, or this proves nothing"));
+    if(Visit.DrawnTonight())return Fail(TEXT("the night after may not draw it, with the dice at yes"));
     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
     DreadRound=1;DreadAt=Elapsed;Stage=542;return true;
    }
