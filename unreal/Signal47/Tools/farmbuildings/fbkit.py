@@ -20,6 +20,10 @@ TILE = {'Board': 2.4, 'Tin': 3.2, 'Stucco': 6.0, 'Wood': 1.6, 'Paint': 1.2, 'Con
         'Steel': 1.0, 'Glass': 2.0, 'WindowLit': 1.0, 'Dirt': 3.0}
 ORDER = list(TILE)
 X, Y, Z = (1, 0, 0), (0, 1, 0), (0, 0, 1)
+# Veggene fortsetter så langt under bakken. Terrenget under et fotavtrykk varierer opptil 0,23 m, se README.
+WALL_BASE = -.5
+# Skitten stripe i selve veggmaterialet: 13 cm, så en mykere overgang opp til 75 cm. Flatene kuttes her i finish().
+STRIPE, FADE = .13, .75
 
 
 def smoothstep(a, b, v):
@@ -192,7 +196,7 @@ def _ztop(poly, u):
 
 
 def wall(k, name, a, b, top, holes=(), t=.12, base=0., mat='Board', imat=None, rmat=None,
-         rows=(.25, .7), inner=True, itint=(1, 1, 1), trim=(0, 0), v0=None):
+         rows=(0,), inner=True, itint=(1, 1, 1), trim=(0, 0), v0=None):
     """Vegg med ekte hull. top er høyde eller [(u, z), ...]. holes er (u0, u1, z0, z1)."""
     F = Frame(k, a, b)
     k.tag = name
@@ -222,7 +226,8 @@ def wall(k, name, a, b, top, holes=(), t=.12, base=0., mat='Board', imat=None, r
             ps = [F.P(u0, z), F.P(u1, z), F.P(u1, t1), F.P(u0, t0)]
             k.face(ps, mat, [(p_u / tm + off[0], p_z / tm + off[1]) for p_u, p_z in
                              [(u0, z), (u1, z), (u1, t1), (u0, t0)]], False, (1, 1, 1), F.dd)
-            if inner:
+            # Innsiden under gulvet er aldri synlig.
+            if inner and z1 > 1e-6:
                 ia, ib = max(u0, trim[0]), min(u1, L - trim[1])
                 if ib - ia > 1e-4:
                     ta = t0 + (t1 - t0) * (ia - u0) / (u1 - u0)
@@ -265,7 +270,7 @@ def battens(k, F, name, u0, u1, step, top, holes=(), base=0., w=.07, h=.022, mat
         ztop = min(_ztop(poly, uj - ww / 2), _ztop(poly, uj + ww / 2)) - .02
         spans = [(base, ztop)]
         if roll > .9:           # Kort list som ikke når helt ned.
-            spans = [(base + .25 + k.rng.random() * .5, ztop)]
+            spans = [(max(base, 0) + .25 + k.rng.random() * .5, ztop)]
         for h0, h1, h2, h3 in holes:
             if h0 - ww / 2 < uj < h1 + ww / 2:
                 new = []
@@ -276,7 +281,7 @@ def battens(k, F, name, u0, u1, step, top, holes=(), base=0., w=.07, h=.022, mat
                         new.append((max(a, h3), b))
                 spans = new
         for a, b in spans:
-            if b - a > .05 and uj - ww / 2 > 0 and uj + ww / 2 < F.L:
+            if b > 0 and b - a > .05 and uj - ww / 2 > 0 and uj + ww / 2 < F.L:
                 start = len(k.v)
                 F.box(name, uj - ww / 2, uj + ww / 2, a, b, 0, hh, mat, 2, ((1, -1),), (tone, tone, tone * .97))
                 if k.lod == 0 and .2 < roll < .34 and b - a > 1:   # Bord som har sklidd litt.
@@ -369,21 +374,87 @@ def lamp(k, F, u, z, out=.55):
     k.tint.extend([(.8, .78, .72)] * (len(k.f) - len(k.tint)))
 
 
+def _cut(ps, uv, z):
+    """Del en konveks flate med et vannrett plan. Gir delen under og delen over, med UV-er interpolert."""
+    lo, hi = ([], []), ([], [])
+    for i, p in enumerate(ps):
+        q, tp, tq = ps[(i + 1) % len(ps)], uv[i], uv[(i + 1) % len(ps)]
+        for side, ok in ((lo, p[2] <= z), (hi, p[2] >= z)):
+            if ok:
+                side[0].append(p)
+                side[1].append(tp)
+        if (p[2] - z) * (q[2] - z) < 0 and abs(p[2] - z) > 1e-7 and abs(q[2] - z) > 1e-7:
+            t = (z - p[2]) / (q[2] - p[2])
+            m = (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, z)
+            mt = (tp[0] + (tq[0] - tp[0]) * t, tp[1] + (tq[1] - tp[1]) * t)
+            for side in (lo, hi):
+                side[0].append(m)
+                side[1].append(mt)
+    return lo, hi
+
+
+def slice_grime(k):
+    """Vertex color interpoleres over flaten. Kutt alt som krysser stripen, så vegg, list, stolpe og karm får samme stripe."""
+    cuts = (0, STRIPE, FADE) if k.lod < 2 else (0, STRIPE)
+    v, f, uv, mat, smooth, tags, tint = [], [], [], [], [], [], []
+    for i, ids in enumerate(k.f):
+        pieces = [([k.v[n] for n in ids], list(k.uv[i]))]
+        if grime_of(k.mat[i]):
+            for z in cuts:
+                nxt = []
+                for ps, ts in pieces:
+                    zs = [p[2] for p in ps]
+                    if min(zs) < z - 1e-4 and max(zs) > z + 1e-4:
+                        for side in _cut(ps, ts, z):
+                            if len(side[0]) >= 3:
+                                nxt.append(side)
+                    else:
+                        nxt.append((ps, ts))
+                pieces = nxt
+        for ps, ts in pieces:
+            start = len(v)
+            v.extend(ps)
+            f.append(list(range(start, start + len(ps))))
+            uv.append(ts)
+            mat.append(k.mat[i])
+            smooth.append(k.smooth[i])
+            tags.append(k.tags[i])
+            tint.append(k.tint[i])
+    k.v, k.f, k.uv, k.mat, k.smooth, k.tags, k.tint = v, f, uv, mat, smooth, tags, tint
+
+
 def finish(k):
-    """Lathe og andre arvede metoder legger flater uten fargefaktor. Fyll inn til slutt."""
+    """Lathe og andre arvede metoder legger flater uten fargefaktor. Fyll inn til slutt, og kutt for skittstripen."""
     k.tint.extend([(1, 1, 1)] * (len(k.f) - len(k.tint)))
+    slice_grime(k)
     return k
 
 
+def grime_of(mat):
+    return mat not in ('M_Farm_Glass', 'M_Farm_WindowLit', 'M_Farm_Dirt', 'M_Farm_Steel', 'M_Farm_Concrete')
+
+
 def grime(mat, p):
-    """Skitt nederst på vegger: mørkere ved bakken, ingen effekt på tak og glass."""
-    if mat in ('M_Farm_Glass', 'M_Farm_WindowLit', 'M_Farm_Dirt', 'M_Farm_Steel'):
-        return 1.0
-    if mat == 'M_Farm_Tin':
-        return .78 + .22 * smoothstep(-.1, .5, p[2]) if p[2] < 1.2 else 1.0
+    """Skitt nederst på vegger: mørk, smal stripe mot bakken, ingen effekt på glass og stål."""
     if mat == 'M_Farm_Concrete':
         return .82 + .18 * smoothstep(-.02, .22, p[2])
-    return .62 + .38 * smoothstep(-.02, .75, p[2])
+    if not grime_of(mat):
+        return 1.0
+    low, mid = (.52, .82) if mat == 'M_Farm_Tin' else (.4, .76)
+    z = p[2]
+    if z <= 0:
+        return low
+    if z <= STRIPE:
+        return low + (mid - low) * z / STRIPE
+    if z <= FADE:
+        return mid + (1 - mid) * (z - STRIPE) / (FADE - STRIPE)
+    return 1.0
+
+
+def earth(g):
+    """Faktoren som farge: mørkere jord er varmere, ikke grå."""
+    d = 1 - g
+    return (g, g * (1 - .12 * d), g * (1 - .26 * d))
 
 
 def triangles(k):
@@ -400,19 +471,6 @@ def ucx_box(x0, x1, y0, y1, z0, z1):
 
 
 UCX_FACES_BOX = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
-
-
-def rough_skirt(k, F, u0, u1, z0, top, d, mat='Concrete', tint=(.92, .87, .8), step=1.5, d_in=-.06):
-    """Sokkel støpt i omganger: ujevn overkant, litt ulik tykkelse, varm av jord."""
-    u = u0
-    while u < u1 - .01:
-        un = min(u1, u + step * (.6 + k.rng.random() * .8)) if k.lod == 0 else u1
-        if u1 - un < .25:
-            un = u1
-        zt = top + (k.rng.random() - .5) * .07
-        dd = d + (k.rng.random() - .5) * .012
-        F.box('skirt', u, un, z0, zt, d_in, dd, mat, 0, skip=((2, -1), (1, -1)), tint=tint)
-        u = un
 
 
 def wall_stains(k, F, spots, d=.004):

@@ -1,11 +1,11 @@
 """Alderete-huset. 12 x 8 m som dagens boks, bebodd våningshus.
 
-Adobe med jordpuss og sementsokkel, bølgeblikktak med møne øst-vest som dagens tak, overbygd portal
+Adobe med jordpuss som går rett ned i bakken, bølgeblikktak med møne øst-vest som dagens tak, overbygd portal
 mot sør innenfor fotavtrykket (veien går rett sør for bygget), dype vindusnisjer, turkise karmer.
 Tegn på folk: rund kjøler i nordvinduet, TV-antenne, pipe, strømstigerør, dørmatte og vaskesnor-stolpe.
 Vinduet på østveggen lyser, der spillet allerede tegner en varm glød.
 """
-from fbkit import Kit, Frame, wall, roof, lamp, finish, chamfer, ucx_box, rough_skirt, wall_stains
+from fbkit import Kit, Frame, wall, roof, lamp, finish, chamfer, WALL_BASE, ucx_box, wall_stains
 
 W2, D2 = 6.0, 4.0
 POSTS = [-5.82, -2.35, 1.15, 5.82]   # Ulik avstand, og døra står ikke midt mellom to stolper.
@@ -85,46 +85,34 @@ def door(k, F, name, u0, u1, z0, z1, *, screen=False):
 
 def build(lod=0):
     k = Kit('SM_FarmHouse', lod, 911)
-    rows = (.45, .8)
     ztop = lambda y: zroof(y) - .13
     # Sørvegg under portalen: hoveddør, stuevindu, kjøkkenvindu.
     fd = (5.0 - .49, 5.0 + .49, FLOOR, 2.26)
     w1 = (1.3, 2.85, .9, 2.2)
     w2 = (8.0, 9.25, 1.0, 2.2)
     holes_s = [fd, w1, w2]
-    S = wall(k, 'south', (-W2, BODY_S), (W2, BODY_S), ztop(BODY_S), holes_s, T, -.5, 'Stucco', rows=rows, itint=(.7, .7, .7))
+    S = wall(k, 'south', (-W2, BODY_S), (W2, BODY_S), ztop(BODY_S), holes_s, T, WALL_BASE, 'Stucco', itint=(.7, .7, .7))
     # Østgavl: det lysende vinduet ligger ved lokal y = -1, som gløden i spillet.
     ez = [(0, ztop(BODY_S)), (-BODY_S, ztop(0)), (D2 - BODY_S, ztop(D2))]
     we = (.65, 1.75, .95, 2.15)
     we2 = (3.9, 4.8, 1.1, 2.1)
-    E = wall(k, 'east', (W2, BODY_S), (W2, D2), ez, [we, we2], T, -.5, 'Stucco', rows=rows, itint=(.7, .7, .7))
+    E = wall(k, 'east', (W2, BODY_S), (W2, D2), ez, [we, we2], T, WALL_BASE, 'Stucco', itint=(.7, .7, .7))
     # Nord: bakdør, badevindu, kjøkkenvindu med kjøler.
     bd = (3.2, 4.1, FLOOR, 2.1)
     wn1 = (6.6, 7.2, 1.45, 2.1)
     wn2 = (8.6, 9.8, 1.05, 2.1)
     wn3 = (.9, 2.1, 1.05, 2.1)
-    N = wall(k, 'north', (W2, D2), (-W2, D2), ztop(D2), [bd, wn1, wn2, wn3], T, -.5, 'Stucco', rows=rows, itint=(.7, .7, .7))
+    N = wall(k, 'north', (W2, D2), (-W2, D2), ztop(D2), [bd, wn1, wn2, wn3], T, WALL_BASE, 'Stucco', itint=(.7, .7, .7))
     # Vestgavl.
     wz = [(0, ztop(D2)), (D2, ztop(0)), (D2 - BODY_S, ztop(BODY_S))]
     ww = (1.8, 3.0, .95, 2.15)
-    Wst = wall(k, 'west', (-W2, D2), (-W2, BODY_S), wz, [ww], T, -.5, 'Stucco', rows=rows, itint=(.7, .7, .7))
+    Wst = wall(k, 'west', (-W2, D2), (-W2, BODY_S), wz, [ww], T, WALL_BASE, 'Stucco', itint=(.7, .7, .7))
 
-    # Sementsokkel som står litt ut fra pussen, ujevn topp, varm av jord.
-    def skirt(F, cuts):
-        prev = 0
-        for a, b in cuts + [(F.L, F.L)]:
-            if a > prev + .02:
-                rough_skirt(k, F, prev, a, -.5, .46, .04)
-            prev = b
     for x, y, sx, sy in ((-W2, BODY_S, -1, -1), (W2, BODY_S, 1, -1), (W2, D2, 1, 1), (-W2, D2, -1, 1)):
-        chamfer(k, x, y, -.5, min(zroof(y), 3.0), .09, 'Stucco', sx, sy)
-    skirt(S, [(fd[0], fd[1])])
-    skirt(N, [(bd[0], bd[1])])
-    skirt(E, [])
-    skirt(Wst, [])
+        chamfer(k, x, y, WALL_BASE, min(zroof(y), 3.0), .09, 'Stucco', sx, sy)
 
     if lod == 0:
-        # Avrenning under sålbenker og rør, lapper i sement og bart adobe ved hjørner og sokkel.
+        # Avrenning under sålbenker og rør, lapper i sement og bart adobe ved hjørner og mot bakken.
         for F, holes in ((S, [w1, w2]), (E, [we, we2]), (N, [wn1, wn3]), (Wst, [ww])):
             for h0, h1, z0, z1 in holes:
                 wall_stains(k, F, [(h0 + .12, z0 - .08, .06, .5), ((h0 + h1) / 2, z0 - .08, .08, .7), (h1 - .14, z0 - .08, .05, .35)])

@@ -5,7 +5,8 @@
 // the truck, and the flat floors under them. Road-local metres, as S47FarmWorld. Story never shows them.
 namespace S47FarmBuildings
 {
- struct FSite { const TCHAR* Name; const TCHAR* Mesh; double X,Z,Yaw; };
+ // Sink: how far under the land at its middle the building's z=0 lies, so its walls meet the ground on the low side too.
+ struct FSite { const TCHAR* Name; const TCHAR* Mesh; double X,Z,Yaw,Sink; };
  // The cooked meshes are there. Without them the farm keeps its old boxes and their collision.
  bool Available();
  // Barn, house, machine shed, feed shed. Yaw is the three.js turn in radians; the UE rotation is -Yaw.

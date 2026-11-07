@@ -46,7 +46,8 @@ namespace
   Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   if(auto* Seam=SeamMid.Get())
   {
-   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.175f*.525f,.225f*.35f,.265f*.28f)));
+   // Beside the ring in one picture at 11:18, the old .525 .35 .28 read 134,89,71 to its 176,141,118: linear 1.83 2.66 2.87 too dark.
+   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.175f*.96f,.225f*.93f,.265f*.80f)));
    Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
    Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   }

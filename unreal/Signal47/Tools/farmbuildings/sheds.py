@@ -5,7 +5,7 @@ Skjul B: lite fôr- og redskapsskjul, 5 x 4 m, stående bord og lavt saltak, dø
 """
 import math
 
-from fbkit import Kit, wall, battens, roof, finish, ucx_box, rough_skirt
+from fbkit import Kit, wall, battens, roof, finish, ucx_box, WALL_BASE
 from barn import plank_leaf, frame
 
 A_W2, A_D2 = 4.5, 2.75
@@ -13,6 +13,7 @@ A_HF, A_HB = 3.55, 2.65
 A_POSTS = [-4.4, -1.75, 1.6, 4.4]
 B_W2, B_D2 = 2.5, 2.0
 B_EAVE, B_RIDGE = 2.3, 3.05
+A_FLOOR, B_FLOOR = .05, .165  # Over høyeste terreng i fotavtrykket: S47FarmBuildings.cpp Floors.
 
 
 def azf(y):
@@ -65,23 +66,22 @@ def tin_ribs(k, F, u0, u1, top, base, step=.8, holes=()):
         if k.lod == 0 and clear and k.rng.random() < .16:
             # Løs plate som står ut nederst.
             start = len(k.v)
-            F.box('tinLoose', u + .04, un - .04, base + .1, min(base + 1.5, zt), .012, .022, 'Tin', 2, ((1, -1),), (.93, .86, .78))
-            k.rotate_since(start, F.P((u + un) / 2, min(base + 1.5, zt), .015), F.du, .02)
+            F.box('tinLoose', u + .04, un - .04, .1, min(1.5, zt), .012, .022, 'Tin', 2, ((1, -1),), (.93, .86, .78))
+            k.rotate_since(start, F.P((u + un) / 2, min(1.5, zt), .015), F.du, .02)
         u = un
 
 
 def build_shed_a(lod=0):
     k = Kit('SM_FarmShedA', lod, 912)
     it = (1, 1, 1)
-    rows = (.45,)
-    base = -.25
+    base = WALL_BASE
     win_n = (6.3, 7.1, 1.25, 1.85)
     win_w = (2.5, 3.3, 1.2, 1.85)
-    N = wall(k, 'north', (A_W2, A_D2), (-A_W2, A_D2), A_HB + .03, [win_n], .03, base, 'Tin', rows=rows, itint=it, rmat='Steel', v0=.08)
+    N = wall(k, 'north', (A_W2, A_D2), (-A_W2, A_D2), A_HB + .03, [win_n], .03, base, 'Tin', itint=it, rmat='Steel', v0=.08)
     ye = -A_D2 + .15
     Lq = 2 * A_D2 - .15
-    E = wall(k, 'east', (A_W2, ye), (A_W2, A_D2), [(0, azf(ye) + .03), (Lq, A_HB + .03)], [], .03, base, 'Tin', rows=rows, itint=it, rmat='Steel', v0=.08)
-    Wst = wall(k, 'west', (-A_W2, A_D2), (-A_W2, ye), [(0, A_HB + .03), (Lq, azf(ye) + .03)], [win_w], .03, base, 'Tin', rows=rows, itint=it, rmat='Steel', v0=.08)
+    E = wall(k, 'east', (A_W2, ye), (A_W2, A_D2), [(0, azf(ye) + .03), (Lq, A_HB + .03)], [], .03, base, 'Tin', itint=it, rmat='Steel', v0=.08)
+    Wst = wall(k, 'west', (-A_W2, A_D2), (-A_W2, ye), [(0, A_HB + .03), (Lq, azf(ye) + .03)], [win_w], .03, base, 'Tin', itint=it, rmat='Steel', v0=.08)
     tin_ribs(k, N, 0, 9, lambda u: A_HB, base, holes=[win_n])
     tin_ribs(k, E, 0, Lq, lambda u: azf(ye + u), base)
     tin_ribs(k, Wst, 0, Lq, lambda u: azf(A_D2 - u), base, holes=[win_w])
@@ -135,9 +135,9 @@ def build_shed_a(lod=0):
     k.beam('fasciaBack', (-A_W2 - ov, y1, z1 - .08), (A_W2 + ov, y1, z1 - .08), .05, .15, 'Wood', (0, 0, 1))
     for x in (-A_W2 - ov, A_W2 + ov):
         k.beam('rake', (x, y0, z0 - .07), (x, y1, z1 - .07), .04, .14, 'Wood', (0, 0, 1))
-    # Jordgulv og en arbeidsbenk bak.
+    # Jordgulv som ligger på bakken, sidene går ned i den, og en arbeidsbenk bak.
     k.ambient = 1
-    k.bx('floor', -A_W2 + .03, A_W2 - .03, -A_D2 - .02, A_D2 - .03, -.1, .02, 'Dirt', skip=((2, -1),))
+    k.bx('floor', -A_W2 + .03, A_W2 - .03, -A_D2 - .02, A_D2 - .03, base, A_FLOOR, 'Dirt', skip=((2, -1),))
     k.ambient = .9
     if lod < 2:
         k.bx('bench', 1.0, 4.1, A_D2 - .9, A_D2 - .12, .78, .85, 'Wood', 0)
@@ -170,36 +170,30 @@ def build_shed_b(lod=0):
     k = Kit('SM_FarmShedB', lod, 913)
     t = .05
     it = (.8, .8, .8)
-    rows = (.2, .7)
     gable = [(0, B_EAVE + .08), (B_W2, B_RIDGE + .08), (2 * B_W2, B_EAVE + .08)]
-    door = (1.0, 1.98, 0, 1.95)
+    door = (1.0, 1.98, B_FLOOR, 1.95)
     win_s = (3.2, 3.85, 1.12, 1.68)
     win_e = (1.6, 2.3, 1.2, 1.78)
     hatch = (2.15, 2.85, 2.05, 2.62)
-    S = wall(k, 'south', (-B_W2, -B_D2), (B_W2, -B_D2), gable, [door, win_s], t, 0., rows=rows, itint=it)
-    E = wall(k, 'east', (B_W2, -B_D2), (B_W2, B_D2), B_EAVE + .08, [win_e], t, 0., rows=rows, itint=it)
-    N = wall(k, 'north', (B_W2, B_D2), (-B_W2, B_D2), gable, [hatch], t, 0., rows=rows, itint=it)
-    Wst = wall(k, 'west', (-B_W2, B_D2), (-B_W2, -B_D2), B_EAVE + .08, [], t, 0., rows=rows, itint=it)
-    # Lav betongsokkel, støpt i omganger, varm av jord.
-    rough_skirt(k, S, -.05, door[0], -.5, .17, .05)
-    rough_skirt(k, S, door[1], 2 * B_W2 + .05, -.5, .17, .05)
-    rough_skirt(k, E, .05, 2 * B_D2 - .05, -.5, .17, .05)
-    rough_skirt(k, N, -.05, 2 * B_W2 + .05, -.5, .17, .05)
-    rough_skirt(k, Wst, .05, 2 * B_D2 - .05, -.5, .17, .05)
-    k.bx('doorStone', door[0] - B_W2 - .15, door[1] - B_W2 + .1, -B_D2 - .5, -B_D2 + .02, -.4, .1, 'Concrete', 0, skip=((2, -1),))
+    S = wall(k, 'south', (-B_W2, -B_D2), (B_W2, -B_D2), gable, [door, win_s], t, WALL_BASE, itint=it)
+    E = wall(k, 'east', (B_W2, -B_D2), (B_W2, B_D2), B_EAVE + .08, [win_e], t, WALL_BASE, itint=it)
+    N = wall(k, 'north', (B_W2, B_D2), (-B_W2, B_D2), gable, [hatch], t, WALL_BASE, itint=it)
+    Wst = wall(k, 'west', (-B_W2, B_D2), (-B_W2, -B_D2), B_EAVE + .08, [], t, WALL_BASE, itint=it)
+    # Dørstein som ligger i bakken, bare så vidt over.
+    k.bx('doorStone', door[0] - B_W2 - .15, door[1] - B_W2 + .1, -B_D2 - .5, -B_D2 + .02, WALL_BASE, .05, 'Concrete', 0, skip=((2, -1),))
     if lod < 2:
         step = .5 if lod == 0 else 1.4
-        battens(k, S, 'batten', 0, 2 * B_W2, step, gable, [door, win_s], .17)
-        battens(k, E, 'batten', 0, 2 * B_D2, step, B_EAVE, [win_e], .17)
-        battens(k, N, 'batten', 0, 2 * B_W2, step, gable, [hatch], .17)
-        battens(k, Wst, 'batten', 0, 2 * B_D2, step, B_EAVE, [], .17)
+        battens(k, S, 'batten', 0, 2 * B_W2, step, gable, [door, win_s], WALL_BASE)
+        battens(k, E, 'batten', 0, 2 * B_D2, step, B_EAVE, [win_e], WALL_BASE)
+        battens(k, N, 'batten', 0, 2 * B_W2, step, gable, [hatch], WALL_BASE)
+        battens(k, Wst, 'batten', 0, 2 * B_D2, step, B_EAVE, [], WALL_BASE)
         for x, sx in ((-B_W2, -1), (B_W2, 1)):
             for y, sy in ((-B_D2, -1), (B_D2, 1)):
-                k.bx('corner', min(x, x - sx * .15), max(x, x - sx * .15), min(y, y + sy * .03), max(y, y + sy * .03), .17, B_EAVE - .02, 'Wood')
-                k.bx('corner', min(x, x + sx * .03), max(x, x + sx * .03), min(y - sy * .15, y), max(y - sy * .15, y), .17, B_EAVE - .02, 'Wood')
+                k.bx('corner', min(x, x - sx * .15), max(x, x - sx * .15), min(y, y + sy * .03), max(y, y + sy * .03), WALL_BASE, B_EAVE - .02, 'Wood')
+                k.bx('corner', min(x, x + sx * .03), max(x, x + sx * .03), min(y - sy * .15, y), max(y - sy * .15, y), WALL_BASE, B_EAVE - .02, 'Wood')
     # Dør med rester av samme turkise maling som huset. Står åpen ut, holdt av en kloss.
     if lod < 2:
-        frame(S, 'doorFrame', door[0], door[1], .05, door[3], .1, 'Paint', False)
+        frame(S, 'doorFrame', door[0], door[1], door[2], door[3], .1, 'Paint', False)
     a = math.radians(-68)
     hinge = S.P(door[0] + .01, 0, .01)
     ln = door[1] - door[0] - .02
@@ -261,7 +255,7 @@ def build_shed_b(lod=0):
         k.beam('eave', (s * xe, -ry, ze - .07), (s * xe, ry, ze - .07), .04, .13, 'Wood', (0, 0, 1))
     # Innvendig: jordgulv, sperrer, hylle.
     k.ambient = .95
-    k.bx('floor', -B_W2 + .04, B_W2 - .04, -B_D2 + .04, B_D2 - .04, -.1, .03, 'Dirt', skip=((2, -1),))
+    k.bx('floor', -B_W2 + .04, B_W2 - .04, -B_D2 + .04, B_D2 - .04, -.1, B_FLOOR, 'Dirt', skip=((2, -1),))
     k.ambient = .6
     if lod < 2:
         y = -1.5

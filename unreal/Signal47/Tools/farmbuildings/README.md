@@ -9,7 +9,7 @@ Originale prosedyrale `bpy`-modeller, uten nedlastede modeller og uten uttrekk. 
 | Fil | Innhold |
 |---|---|
 | `spec.py` | Bestilte mål og trekantbudsjett, fastsatt før bygging. |
-| `fbkit.py` | Vegg med ekte hull, tak i plater, bokser, bjelker, skitt per hjørne. |
+| `fbkit.py` | Vegg med ekte hull, tak i plater, bokser, bjelker, skittstripe mot bakken. |
 | `barn.py`, `house.py`, `sheds.py` | Selve byggene. `build(lod)` og `collision()`. |
 | `textures.py` | Egne kart, 1024 px, sømløse. BC, N (DirectX) og R, pluss E for lysende vindu. |
 | `run_blender.py` | Bygger LOD 0, 1 og 2 og UCX, eksporterer FBX, rendrer `clay`, `mat`, `back` (baksider røde) og `wire`, og leser FBX tilbake i `verify`. |
@@ -58,6 +58,12 @@ Materialene ganger BC med vertex color. Uten den mister byggene skitten nederst 
 ## Valg som avviker fra dagens gård
 
 Dagens spill har bare to bokser i `g910`, `g911` og `g912`: hus 12 x 8 m ved (108, 192) og låve 16 x 11 m ved (136, 170), begge yaw 0,12 rad. Skjulene er nye og plassert etter driften: maskinskjulet ved (116,5, 170) mellom hus og låve, åpent mot tunet, og fôrskjulet ved (84,5, 206,5) med døra mot beiteporten. Huset er flyttet til (108, 190), fordi portalens sørvestre hjørne ellers står 1,2 m inn i veistripen. Låven er 6,85 m høy mot dagens 7,5 m, med ett bredt tak og ett lavt sideskip. Plasseringene er ikke prøvd i spillet.
+
+## Mot bakken
+
+Ingen sokkel: veggkledningen går rett ned til `fbkit.WALL_BASE` (-0,5 m). `fbkit.finish` kutter alle flater ved z 0, 0,13 og 0,75, så vegg, list og stolpe får samme skittstripe fra `grime` og `earth`. `S47FarmBuildings::FSite::Sink` senker hvert bygg 2 til 3 cm, og gulvene i `Floors` må følge `FLOOR`, `A_FLOOR` og `B_FLOOR` og ligge over høyeste terreng i fotavtrykket: selvtesten sjekker det. Terrenget varierer -0,08 til +0,14 m rundt ankeret, målt med `S47RoadTerrain::SurfaceY`.
+
+Øst for road x 107,66 er SARO-ringen eneste bakke i SARO-området, og den ligger opptil 0,79 m under `SurfaceY`. `S47FarmWorld::MakeYardGround` legger derfor samme ørkengitter videre over tunet i Freeform.
 
 ## Kritikerrunder
 

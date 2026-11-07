@@ -124,7 +124,8 @@ def to_mesh(k, name, order):
             uv.data[li].uv = t
             v = k.v[mesh.loops[li].vertex_index]
             g = fbkit.grime(mat, v)
-            c = (min(1, tint[0] * g), min(1, tint[1] * g), min(1, tint[2] * g), 1)
+            e = fbkit.earth(g)
+            c = (min(1, tint[0] * e[0]), min(1, tint[1] * e[1]), min(1, tint[2] * e[2]), 1)
             col.data[li].color_srgb = c
     mesh.validate(clean_customdata=False)
     ob = bpy.data.objects.new(name, mesh)

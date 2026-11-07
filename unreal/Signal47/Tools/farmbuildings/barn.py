@@ -4,7 +4,7 @@ sideskip mot vest. Skjevheten er med vilje: referansene fra New Mexico er ikke s
 Stående bord, bølgeblikk, skyvedører på skinne, høyluke med bjelke. Rom å gå inn i: bred midtgang,
 stolperekker, båser mot øst og i sideskipet, høyloft over bakre halvdel, stige, jordgulv.
 """
-from fbkit import Kit, wall, battens, roof, lamp, finish, ucx_box, rough_skirt
+from fbkit import Kit, wall, battens, roof, lamp, finish, ucx_box, WALL_BASE
 
 W2, D2 = 8.0, 5.5          # Halv bredde og dybde.
 MX, MW = 1.8, 6.2          # Hovedskipets midtlinje og halve bredde: x -4,4 til 8.
@@ -15,7 +15,7 @@ LEAN_OUT, LEAN_IN = 2.5, 3.4
 LS = (LEAN_IN - LEAN_OUT) / 3.6
 XW = MX - MW               # Skillet mellom hovedskip og sideskip.
 LIFT = .13
-BASE = .28                 # Bordkledning starter over sokkelen.
+FLOOR = .11                # Gulvet, over høyeste terreng i fotavtrykket: S47FarmBuildings.cpp Floors.
 DOOR = (MX - 1.9, MX + 1.9, 3.4)
 FREE = (DOOR[0], MX + .9)  # Åpningen skyvedøra faktisk lar stå fri.
 POSTS = [-3.65, -1.15, 1.35, 3.85]
@@ -55,7 +55,6 @@ def build(lod=0):
     k = Kit('SM_FarmBarn', lod, 910)
     t = .1
     it = (.82, .82, .82)
-    rows = (BASE, .7)
     w = 2 * MW
     door = (DOOR[0] - XW, DOOR[1] - XW, 0, DOOR[2])
     hay = (MW - .75, MW + .75, 4.2, 5.25)
@@ -63,34 +62,26 @@ def build(lod=0):
     gable = [(0, EAVE + .1), (MW, RIDGE + .1), (w, EAVE + .1)]
     # Glipper mellom bord: små, ekte hull lavt i veggen som slipper lys inn.
     gaps = [(2.05, 2.17, .42, 1.12)] if lod == 0 else []
-    S = wall(k, 'south', (XW, -D2), (W2, -D2), gable, [door, hay, win_s] + gaps, t, 0., rows=rows, itint=it)
+    S = wall(k, 'south', (XW, -D2), (W2, -D2), gable, [door, hay, win_s] + gaps, t, WALL_BASE, itint=it)
     lean_s = [(0, LEAN_OUT + .08), (3.6, LEAN_IN + .08)]
     pass_door = (1.25, 2.2, 0, 2.1)
-    SW = wall(k, 'southLean', (-W2, -D2), (XW, -D2), lean_s, [pass_door], t, 0., rows=rows, itint=it)
+    SW = wall(k, 'southLean', (-W2, -D2), (XW, -D2), lean_s, [pass_door], t, WALL_BASE, itint=it)
     east_h = [(1.0, 1.8, 1.35, 2.1), (4.5, 5.7, 1.2, 2.4), (8.3, 9.1, 1.35, 2.1), (3.0, 3.35, .38, .54), (7.2, 7.55, .38, .54)]
     if lod == 0:
         east_h += [(6.35, 6.47, .5, 1.05), (10.1, 10.2, .34, .9)]
-    E = wall(k, 'east', (W2, -D2), (W2, D2), EAVE + .08, east_h, t, 0., rows=rows, itint=it)
+    E = wall(k, 'east', (W2, -D2), (W2, D2), EAVE + .08, east_h, t, WALL_BASE, itint=it)
     rear = (MW - .6, MW + .6, 0, 2.15)
     hay2 = (MW - .55, MW + .55, 4.0, 4.95)
-    N = wall(k, 'north', (W2, D2), (XW, D2), gable, [rear, hay2], t, 0., rows=rows, itint=it)
+    N = wall(k, 'north', (W2, D2), (XW, D2), gable, [rear, hay2], t, WALL_BASE, itint=it)
     lean_n = [(0, LEAN_IN + .08), (3.6, LEAN_OUT + .08)]
-    NW = wall(k, 'northLean', (XW, D2), (-W2, D2), lean_n, [(1.5, 2.2, 1.2, 1.85)], t, 0., rows=rows, itint=it)
+    NW = wall(k, 'northLean', (XW, D2), (-W2, D2), lean_n, [(1.5, 2.2, 1.2, 1.85)], t, WALL_BASE, itint=it)
     west_h = [(1.4, 2.15, 1.2, 1.9), (6.4, 7.2, 1.15, 1.9)]
     if lod == 0:
         west_h += [(4.1, 4.2, .38, .95)]
-    Wst = wall(k, 'west', (-W2, D2), (-W2, -D2), LEAN_OUT + .08, west_h, t, 0., rows=rows, itint=it)
+    Wst = wall(k, 'west', (-W2, D2), (-W2, -D2), LEAN_OUT + .08, west_h, t, WALL_BASE, itint=it)
     # Veggstykket over sideskipstaket.
     up = wall(k, 'upperWest', (XW, D2), (XW, -D2), EAVE + .08, [], .08, LEAN_IN - .12, rows=(), itint=it)
 
-    # Sokkel: grov betong støpt i omganger, varm av jord. Går ned i bakken.
-    rough_skirt(k, S, -.045, door[0], -.6, BASE, .05)
-    rough_skirt(k, S, door[1], w + .045, -.6, BASE, .05)
-    rough_skirt(k, SW, -.045, 3.6, -.6, BASE, .05)
-    rough_skirt(k, N, -.045, w + .045, -.6, BASE, .05)
-    rough_skirt(k, NW, 0, 3.645, -.6, BASE, .05)
-    rough_skirt(k, E, .05, 2 * D2 - .05, -.6, BASE, .05)
-    rough_skirt(k, Wst, .05, 2 * D2 - .05, -.6, BASE, .05)
     if lod == 0:
         # Noen eldre, utskiftede bordfelt i annen tone.
         for F, u, z, wd, hd, tone in ((N, 2.2, .35, 1.3, .95, .84), (Wst, 3.4, .35, .9, 1.1, .86)):
@@ -99,23 +90,23 @@ def build(lod=0):
     # Dekklister. Skyvedør og karm ligger utenpå.
     if lod < 2:
         step = .62 if lod == 0 else 1.5
-        battens(k, S, 'batten', 0, w, step, gable, [door, hay, win_s] + gaps, BASE)
-        battens(k, SW, 'batten', 0, 3.6, step, lean_s, [pass_door], BASE)
-        battens(k, E, 'batten', 0, 2 * D2, step, EAVE, east_h, BASE)
-        battens(k, Wst, 'batten', 0, 2 * D2, step, LEAN_OUT, west_h, BASE)
-        battens(k, N, 'batten', 0, w, step, gable, [rear, hay2], BASE)
-        battens(k, NW, 'batten', 0, 3.6, step, lean_n, [(1.5, 2.2, 1.2, 1.85)], BASE)
+        battens(k, S, 'batten', 0, w, step, gable, [door, hay, win_s] + gaps, WALL_BASE)
+        battens(k, SW, 'batten', 0, 3.6, step, lean_s, [pass_door], WALL_BASE)
+        battens(k, E, 'batten', 0, 2 * D2, step, EAVE, east_h, WALL_BASE)
+        battens(k, Wst, 'batten', 0, 2 * D2, step, LEAN_OUT, west_h, WALL_BASE)
+        battens(k, N, 'batten', 0, w, step, gable, [rear, hay2], WALL_BASE)
+        battens(k, NW, 'batten', 0, 3.6, step, lean_n, [(1.5, 2.2, 1.2, 1.85)], WALL_BASE)
         battens(k, up, 'batten', 0, 2 * D2, step * 1.6, EAVE, [], LEAN_IN - .1)
         # Hjørnebord i to lag rundt alle ytterhjørner. Lean-to får egne.
         for x, y, sx, sy, z1 in ((-W2, -D2, -1, -1, LEAN_OUT), (W2, -D2, 1, -1, EAVE), (W2, D2, 1, 1, EAVE), (-W2, D2, -1, 1, LEAN_OUT)):
             a, b = (x, x + .16 * -sx) if sx > 0 else (x + .16 * -sx, x)
-            k.bx('cornerA', min(x - .0, x - sx * .16), max(x, x - sx * .16), y, y + sy * .035, BASE, z1, 'Wood') if sy > 0 else \
-                k.bx('cornerA', min(x, x - sx * .16), max(x, x - sx * .16), y + sy * .035, y, BASE, z1, 'Wood')
-            k.bx('cornerB', x, x + sx * .035, min(y, y - sy * .16), max(y, y - sy * .16), BASE, z1, 'Wood') if sx > 0 else \
-                k.bx('cornerB', x + sx * .035, x, min(y, y - sy * .16), max(y, y - sy * .16), BASE, z1, 'Wood')
+            k.bx('cornerA', min(x - .0, x - sx * .16), max(x, x - sx * .16), y, y + sy * .035, WALL_BASE, z1, 'Wood') if sy > 0 else \
+                k.bx('cornerA', min(x, x - sx * .16), max(x, x - sx * .16), y + sy * .035, y, WALL_BASE, z1, 'Wood')
+            k.bx('cornerB', x, x + sx * .035, min(y, y - sy * .16), max(y, y - sy * .16), WALL_BASE, z1, 'Wood') if sx > 0 else \
+                k.bx('cornerB', x + sx * .035, x, min(y, y - sy * .16), max(y, y - sy * .16), WALL_BASE, z1, 'Wood')
         # Skjøtelist mellom hovedskip og sideskip på begge gavler.
-        S.box('seam', -.08, .08, BASE, EAVE, 0, .03, 'Wood')
-        N.box('seam', w - .08, w + .0, BASE, EAVE, 0, .03, 'Wood')
+        S.box('seam', -.08, .08, WALL_BASE, EAVE, 0, .03, 'Wood')
+        N.box('seam', w - .08, w + .0, WALL_BASE, EAVE, 0, .03, 'Wood')
 
     # Skyvedører. Vestre står helt åpen, østre står halvveis igjen. Skinne langt forbi åpningen.
     track_z = DOOR[2] + .2
@@ -134,7 +125,7 @@ def build(lod=0):
                 k.pipe('roller', S.P(u, track_z + .03, .1), S.P(u, track_z + .03, .165), .05, 'Steel', 8)
         for u, sgn in ((door[0], -1), (door[1], 1)):
             a, b = sorted((u, u + sgn * .16))
-            S.box('doorPost', a, b, .0, DOOR[2], -.04, .05, 'Wood')
+            S.box('doorPost', a, b, WALL_BASE, DOOR[2], -.04, .05, 'Wood')
         S.box('doorHead', door[0] - .16, door[1] + .16, DOOR[2], DOOR[2] + .13, -.04, .045, 'Wood', 0)
     # Høyluke: lem som er slått til siden og henger litt skjevt, bjelke og trinse under mønet.
     start = len(k.v)
@@ -213,9 +204,9 @@ def build(lod=0):
 
     # --- Innvendig ---
     k.ambient = .95
-    k.bx('floor', -W2 + .1, W2 - .1, -D2 + .1, D2 - .1, -.1, .03, 'Dirt', skip=((2, -1),))
+    k.bx('floor', -W2 + .1, W2 - .1, -D2 + .1, D2 - .1, -.1, FLOOR, 'Dirt', skip=((2, -1),))
     k.ambient = .85
-    k.bx('sill', DOOR[0], DOOR[1], -D2 - .12, -D2 + .12, -.1, .08, 'Concrete', 0, skip=((2, -1),))
+    k.bx('sill', DOOR[0], DOOR[1], -D2 - .12, -D2 + .12, WALL_BASE, FLOOR, 'Concrete', 0, skip=((2, -1),))
     k.ambient = .85
     for x in ROWS + [XW]:
         for y in POSTS:

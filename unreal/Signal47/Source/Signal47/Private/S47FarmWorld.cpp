@@ -12,6 +12,8 @@
 #include "S47Web.h"
 #include "S47Geo.h"
 #include "S47RoadTerrain.h"
+#include "S47RoadShape.h"
+#include "StaticMeshResources.h"
 #include "S47HighwayLandscape.h"
 #include "S47Three.h"
 #include "S47TownLayer.h"
@@ -97,14 +99,129 @@ namespace
   }
   for(auto* C:Touched){C->MarkRenderStateDirty();if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);}
  }
- // The farm road's strip lies 3 to 8 cm over the land with a visible edge, which reads as floating. Sunk this
- // far its edge meets the ground instead; the walking floor is the terrain's and does not move.
+ // The farm stands where the road's piece of ground ends. In SARO's terms that piece (node 953) stops at road x 107.66; east
+ // of it only SARO's ring (node 7) is left: cells some 30 m across, sunk .7 m under the piece up to x 118, and .79 to .25
+ // under the surface everything here stands on. Hence the strip in the air, the shed on stilts and the walker over nothing.
+ // Freeform gets the same desert grid on over the yard, in the ring's material; flat ground ends in a 1 m dive under the ring.
+ struct FGroundGrid{int32 Rows=0,Cols=0;TArray<FVector> Pos,Normal;TArray<FVector2f> UV;TArray<FColor> Color;};
+ UStaticMesh* GroundMesh(AS47Web* W,const FName Name,const FGroundGrid& G,UMaterialInterface* Material)
+ {
+  const uint32 Count=G.Pos.Num();if(G.Rows<2||G.Cols<2||Count!=uint32(G.Rows*G.Cols))return nullptr;
+  auto Data=MakeUnique<FStaticMeshRenderData>();Data->AllocateLODResources(1);Data->ScreenSize[0].Default=1;Data->NumInlinedLODs=1;
+  auto& L=Data->LODResources[0];L.VertexBuffers.PositionVertexBuffer.Init(Count,true);
+  auto& T=L.VertexBuffers.StaticMeshVertexBuffer;T.SetUseFullPrecisionUVs(true);T.Init(Count,1,true);
+  FBox Bounds(ForceInit);
+  for(uint32 I=0;I<Count;++I)
+  {
+   const FVector At=S47Three::ToUE(G.Pos[I]);Bounds+=At;L.VertexBuffers.PositionVertexBuffer.VertexPosition(I)=FVector3f(At);
+   const FVector N=S47Three::DirToUE(G.Normal[I]);const FVector Tangent=FVector::CrossProduct(FVector::RightVector,N).GetSafeNormal();
+   T.SetVertexTangents(I,FVector3f(Tangent),FVector3f(FVector::CrossProduct(N,Tangent)),FVector3f(N));T.SetVertexUV(I,0,G.UV[I]);
+  }
+  L.VertexBuffers.ColorVertexBuffer.InitFromColorArray(G.Color);
+  // Rows run along X and columns along Z. Three's up-facing order; its swap to UE already makes it UE's (S47SaroOverlays).
+  TArray<uint32> Indices;Indices.Reserve((G.Rows-1)*(G.Cols-1)*6);
+  for(int32 R=0;R+1<G.Rows;++R)for(int32 C=0;C+1<G.Cols;++C)
+  {
+   const uint32 A=R*G.Cols+C,Next=A+1,Over=A+G.Cols,Far=Over+1;
+   Indices.Append({A,Next,Over,Over,Next,Far});
+  }
+  FStaticMeshSection S;S.MaterialIndex=0;S.FirstIndex=0;S.NumTriangles=Indices.Num()/3;S.MinVertexIndex=0;S.MaxVertexIndex=Count-1;S.bEnableCollision=false;S.bCastShadow=false;L.Sections.Add(S);
+  L.bHasColorVertexData=true;L.bBuffersInlined=true;L.bIsOptionalLOD=false;L.MaxDeviation=0;L.SourceMeshBounds=FBoxSphereBounds(Bounds);
+  L.IndexBuffer.TrySetAllowCPUAccess(true);L.IndexBuffer.SetIndices(Indices,EIndexBufferStride::Force32Bit);
+  auto* Mesh=NewObject<UStaticMesh>(W,Name,RF_Transient);Mesh->bAllowCPUAccess=true;Mesh->NeverStream=true;Mesh->bSupportRayTracing=false;
+  FStaticMaterial Slot(Material);Slot.UVChannelData=FMeshUVChannelInfo(1.f);Mesh->GetStaticMaterials().Add(Slot);
+  Data->Bounds=FBoxSphereBounds(Bounds);Data->CurrentFirstLODIdx=0;Data->bReadyForStreaming=false;
+  Mesh->SetRenderData(MoveTemp(Data));Mesh->SetExtendedBounds(FBoxSphereBounds(Bounds));Mesh->InitResources();return Mesh;
+ }
+ FVector LandNormal(double X,double Z,double H)
+ {
+  return FVector(S47RoadTerrain::SurfaceY(X-H,Z)-S47RoadTerrain::SurfaceY(X+H,Z),2*H,S47RoadTerrain::SurfaceY(X,Z-H)-S47RoadTerrain::SurfaceY(X,Z+H)).GetSafeNormal();
+ }
+ UStaticMeshComponent* NewGroundPart(AS47Web* W,UStaticMesh* Mesh,const TCHAR* Name)
+ {
+  auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->GetRootComponent());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Mesh);
+  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);C->RegisterComponent();W->AdoptNode(C,INDEX_NONE,FString(Name));return C;
+ }
+ constexpr double YardX0=107,YardX1=201,YardZ0=130,YardZ1=290,YardFlatX=163,YardFlatZ0=140,YardFlatZ1=280,YardDive=1;
+ UStaticMesh* MakeYardGround(AS47Web* W,UMaterialInterface* Material)
+ {
+  TArray<double> Xs,Zs;
+  for(const double X:S47RoadTerrain::GX())if(X>=YardX0&&X<=YardX1)Xs.Add(X);
+  for(const double Z:S47RoadTerrain::GZ())if(Z>=YardZ0&&Z<=YardZ1)Zs.Add(Z);
+  FGroundGrid G;G.Rows=Xs.Num();G.Cols=Zs.Num();
+  for(const double X:Xs)for(const double Z:Zs)
+  {
+   // The first column is the road piece's own last column, so the two share every point.
+   const bool bDive=X>YardX0+1&&(X>YardFlatX||Z<YardFlatZ0||Z>YardFlatZ1);
+   G.Pos.Add(FVector(X,S47RoadTerrain::SurfaceY(X,Z)-(bDive?YardDive:0),Z));G.Normal.Add(LandNormal(X,Z,1));
+   // Exterior.ts ground: the ring's own colour and UV in the site's terms, so the dive under it shows no join.
+   const double Sx=X-24,Sz=Z+300,Shade=.81+.25*FMath::Sin(Sx*.013)*FMath::Cos(Sz*.011);
+   G.UV.Add(FVector2f(Sx/5,Sz/5));const float Grey=float(Shade);G.Color.Add(FLinearColor(Grey,Grey,Grey,1.f).ToFColor(false));
+  }
+  return GroundMesh(W,TEXT("S47FarmYardGround"),G,Material);
+ }
+ // roadProps.ts ranchRoad, rowed every metre instead of every four so it follows the land with no daylight under it, and
+ // ending at the yard: the last 8 m and the outer metre go over to the desert's own colour, as a track's edges do.
+ constexpr double FarmRoadX0=6,FarmRoadX1=118,FarmRoadFade=8,FarmRoadHalf=2.5;
+ UStaticMesh* MakeFarmRoad(AS47Web* W,UMaterialInterface* Material)
+ {
+  FGroundGrid G;G.Rows=int32(FarmRoadX1-FarmRoadX0)+1;G.Cols=5;
+  for(int32 Row=0;Row<G.Rows;++Row)
+  {
+   const double X=FarmRoadX0+Row,Along=(S47RoadTerrain::RanchZ(X+1)-S47RoadTerrain::RanchZ(X-1))/2,Len=FMath::Sqrt(1+Along*Along);
+   const double End=FMath::Clamp((X-(FarmRoadX1-FarmRoadFade))/FarmRoadFade,0.,1.);
+   for(const double Out:{-FarmRoadHalf,-FarmRoadHalf/2,0.,FarmRoadHalf/2,FarmRoadHalf})
+   {
+    const double Px=X-Along/Len*Out,Pz=S47RoadTerrain::RanchZ(X)+Out/Len;const bool bEdge=FMath::Abs(Out)>=FarmRoadHalf;
+    // 1.5 cm over the land, its edge .5 cm: the same rule as the ground under it, row for row.
+    G.Pos.Add(FVector(Px,S47RoadTerrain::SurfaceY(Px,Pz)+(bEdge?.005:.015),Pz));G.Normal.Add(LandNormal(Px,Pz,.5));
+    G.UV.Add(FVector2f(.5+Out/(2*FarmRoadHalf),X/8));
+    // roadTerrain.ts tint and edgeColour; washAt is nothing out here.
+    const double F=FMath::Max(End,bEdge?1.:Out!=0?.2:0.),N=.8+.12*FMath::Sin(Px*.013)*FMath::Cos(Pz*.011)+.16*(S47RoadShape::Hash(FMath::RoundToDouble(Px),FMath::RoundToDouble(Pz))-.5);
+    G.Color.Add(FLinearColor(float(1+(N*.909-1)*F),float(1+(N*.98*.855-1)*F),float(1+(N*.95*.776-1)*F),1.f).ToFColor(false));
+   }
+  }
+  return GroundMesh(W,TEXT("S47FarmRoadRibbon"),G,Material);
+ }
+ TWeakObjectPtr<AS47Web> GroundWorld;TWeakObjectPtr<UStaticMeshComponent> YardGround,FarmRoad;bool bGroundTried=false;
+ UMaterialInterface* NodeMaterial(const AS47Web* W,int32 Node)
+ {
+  const auto* N=W->Node(Node);const auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;return C?C->GetMaterial(0):nullptr;
+ }
+ void ReconcileGround(AS47Web* W,bool On)
+ {
+  if(GroundWorld.Get()!=W){GroundWorld=W;YardGround.Reset();FarmRoad.Reset();bGroundTried=false;}
+  if(On&&!bGroundTried&&W->HighwayLandscapeReady())
+  {
+   UMaterialInterface* Ring=NodeMaterial(W,7);UMaterialInterface* Gravel=NodeMaterial(W,959);
+   if(Ring&&Gravel)
+   {
+    bGroundTried=true;
+    if(auto* Mesh=MakeYardGround(W,Ring))YardGround=NewGroundPart(W,Mesh,TEXT("farm:yardGround"));
+    if(auto* Mesh=MakeFarmRoad(W,Gravel))FarmRoad=NewGroundPart(W,Mesh,TEXT("farm:road"));
+    UE_LOG(LogTemp,Display,TEXT("S47: farm ground: yard %s, road %s"),YardGround.IsValid()?TEXT("built"):TEXT("FAILED"),FarmRoad.IsValid()?TEXT("built"):TEXT("FAILED"));
+   }
+  }
+  const FString Area=W->Area();const bool bRoadArea=Area==TEXT("road")||Area==TEXT("diner");
+  const auto Show=[&](UStaticMeshComponent* C,bool bHere,UMaterialInterface* Material)
+  {
+   if(!C)return;bHere&=On;
+   if(C->IsVisible()!=bHere||C->bHiddenInGame==bHere){C->SetVisibility(bHere);C->SetHiddenInGame(!bHere);}
+   if(!bHere)return;
+   const FVector At=S47Three::ToUE(S47FarmWorld::RoadToArea(Area,FVector::ZeroVector));if(!C->GetComponentLocation().Equals(At,.01))C->SetWorldLocation(At);
+   if(Material&&C->GetMaterial(0)!=Material)C->SetMaterial(0,Material);
+  };
+  // The road area draws this land itself; only SARO's terms lack it. The ring's and each strip's own material: their day tones follow.
+  Show(YardGround.Get(),Area==TEXT("saro"),NodeMaterial(W,7));
+  Show(FarmRoad.Get(),Area==TEXT("saro")||bRoadArea,NodeMaterial(W,bRoadArea?1250:959));
+ }
+ // The exported strip lies 3.5 cm over the land at rows 4 m apart, -.9 to 6.7 cm between them, with a shadow under its edge.
+ // FarmRoad replaces it in Freeform: sunk this far it stays out of sight, and the walking floor is the terrain's and does not move.
  TWeakObjectPtr<AS47Web> SunkWorld;FVector SunkFrom[2]={FVector::ZeroVector,FVector::ZeroVector};bool bSunk[2]={false,false};
  void SinkRanchRoad(AS47Web* W,bool On)
  {
   if(SunkWorld.Get()!=W){SunkWorld=W;bSunk[0]=bSunk[1]=false;}
-  // 959 is the SARO corridor's strip, 1250 the road area's own: the farm may stand in either, and only the first was
-  // sunk. The pale plate in the yard on 7 November is most likely the second, still over the land with its edge in the air.
+  // 959 is the SARO corridor's strip, 1250 the road area's own: the farm may stand in either.
   const int32 Strips[2]={959,1250};
   for(int32 K=0;K<2;++K)
   {
@@ -262,7 +379,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileWindow(M,W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);
   if(On)KeepPlayerOutOfWalls(M,W);
   if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
