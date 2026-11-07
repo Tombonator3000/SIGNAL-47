@@ -65,8 +65,8 @@ const TArray<FDocDef>& Docs()
    TEXT("Reyes heard steps on the roof too, and kept it off the sheet. The note says the roof can be seen from the cairn."),TEXT("cairn")},
   // ---- wagon 23
   {TEXT("callout"),TEXT("Call-out sheet, from wagon 23's clipboard"),TEXT("typed"),TEXT("DISTRICT MAINT."),
-   TEXT("DISTRICT MAINTENANCE / UNIT 23\nTECH: M. ORTIZ\n\nCALL-OUT: NIGHT OF 04/13/86\nFROM: SARO, NIGHT OPERATOR\nAUTH: WARD\nTO: CALICHE, THEN SARO\n\n~ took the big thermos\n~ back by 6"),
-   TEXT("Unit 23's call-out sheet. Mara Ortiz, sent on Ward's authority, the night of April 13, at the night operator's call. Her note says back by six."),nullptr},
+   TEXT("DISTRICT MAINTENANCE / UNIT 23\nTECH: M. ORTIZ\n\nCALL-OUT: NIGHT OF 04/13/86\nFROM: DISTRICT DISPATCH\nAUTH: WARD\nTO: CALICHE, THEN SARO\n\n~ took the big thermos\n~ back by 6"),
+   TEXT("Unit 23's call-out sheet. Mara Ortiz, sent on Ward's authority, the night of April 13. Her note says back by six."),nullptr},
  };
  return Table;
 }

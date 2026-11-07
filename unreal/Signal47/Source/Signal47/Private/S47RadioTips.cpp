@@ -78,7 +78,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am19"),TEXT("man"),TEXT("That young fella from the station asked me about the balloon. It's just a balloon. I told him it's just a balloon."),TEXT("And what did he say?"),nullptr,TEXT("place_balloon"),0},
   {TEXT("am20"),TEXT("woman"),TEXT("Somebody ought to check on whoever's working nights at SARO. I saw their truck sitting out with the door open and nobody in it."),TEXT("I'm sure they know about it."),nullptr,TEXT("lost_clock"),0},
   {TEXT("am21"),TEXT("man"),TEXT("I'll say it on the air: the deputy's been out by the station every other night, and I'd like to know what for."),TEXT("You could ask him."),nullptr,nullptr,1},
-  {TEXT("am22"),TEXT("old"),TEXT("Since you've got that station people listening. There was a survey party out here in forty-seven. They never did say what for. Same bearing as those dishes now."),TEXT("Thank you, Pete. Go to bed."),TEXT("stake"),nullptr,2},
+  {TEXT("am22"),TEXT("old"),TEXT("Since you've got that station people listening. There was a survey party out here when I was a boy. They never did say what for. Same bearing as those dishes now."),TEXT("Thank you, Pete. Go to bed."),TEXT("stake"),nullptr,2},
   {TEXT("am30"),TEXT("old"),TEXT("Earl, the one who was out at the dishes before this one, the quiet one. Anybody hear anything?"),TEXT("Not that I've heard, and I hear most."),nullptr,TEXT("reyes_locker"),0},
   {TEXT("am31"),TEXT("woman"),TEXT("That girl from the district, with the wagon. They ever find her?"),TEXT("No, ma'am. Next caller."),nullptr,TEXT("reyes_locker"),0},
  };
