@@ -80,7 +80,7 @@ ROUGH_ROWS, ROUGH_COLS = 430, 1500        # the map's rough north, in 10 m cells
 TALUS_DEG = 46.0
 BENCH_M, BENCH_NEAR = 34.0, .20           # rock benches: their height, and how much of a step is taken
 FOOT_SCALE, FOOT_BIAS = .125, -2.0        # range_foot.bin: a step and where its 0 stands
-FOOT_STOP_M = .45                         # (for the report) how far a hill stands over the ground before it stops the player
+FOOT_STOP_M = 5.0                         # (for the report: S47Relief::HillWalkTopM) how far up a fan the player can climb at most
 HAZE_NOTE = 'the haze is in the material (M_S47_FreeformRange), by distance from the camera'
 
 
@@ -708,7 +708,7 @@ def shape(dem, off, rj):
     near = resample(near, n)
     hard_f = resample(hard, n)
     # what the half grid cannot hold: a share of the hill's own height, nothing where it is low
-    near += np.minimum(near * .10, 11.0) * smooth(4, 30, near) * (.55 * np.clip(rf, -2.4, 2.8) + .35 * np.clip(rr, -3, 3))
+    near += np.minimum(near * .12, 13.0) * smooth(4, 30, near) * (.55 * np.clip(rf, -2.4, 2.8) + .60 * np.clip(rr, -3, 3))
     log('rills')
     near, _ = gullied(near, D_f, rng)
     near = near * (1 - .85 * smooth(FAR_IN[0] + 2000, FAR_IN[1] + 3500, D_f))
@@ -816,7 +816,8 @@ def masks(R, G, inside, D, flow):
     ao = 1 - np.clip(cav, 0, 1) * .75
     # and the rills and small crests, which is all the shape a slope has when the sun is behind it
     fine = (gauss(R, 1.4) - R) / 2.6 + (gauss(R, 4.0) - R) / 7.0
-    ao = resample(ao, R.shape[0]) * (1 - np.clip(fine, 0, 1) * .62)
+    spur = (gauss(R, 9.0) - R) / 16.0 + (gauss(R, 18.0) - R) / 34.0
+    ao = resample(ao, R.shape[0]) * (1 - np.clip(fine, 0, 1) * .62) * (1 - np.clip(spur, 0, 1) * .72)
     gully = smooth(4.3, 6.0, flow)
     # shrubs: dense in the washes and low on the slopes, a little on the fans, almost none on the rock
     above = R - G
@@ -833,7 +834,9 @@ def masks(R, G, inside, D, flow):
     # rock: where the slope bares it, with the broad shape of the land deciding which side first
     rock_noise = gauss(rng.standard_normal((1025, 1025)).astype(np.float32), 3)
     rock_noise /= rock_noise.std()
-    rock = smooth(26, 40, deg + 6 * resample(rock_noise, R.shape[0])) * (1 - .35 * gully) * (1 - foot)
+    outcrop = gauss(rng.standard_normal((2049, 2049)).astype(np.float32), 1.3)
+    outcrop = resample(outcrop / outcrop.std(), R.shape[0]) + .7 * resample(rock_noise, R.shape[0])
+    rock = smooth(.05, .55, outcrop + (deg - 32) / 14) * (1 - .35 * gully) * (1 - foot)
     # rock comes out on what stands up, the crests and noses, and scrub gathers in what is cut in
     crest = gauss(R, 2.0) - R
     rock = np.maximum(rock, smooth(.5, 3.0, -crest) * (1 - smooth(4, 10, -deg + 18)) * (1 - foot) * smooth(-1.2, .6, resample(rock_noise, R.shape[0])))

@@ -233,11 +233,24 @@ namespace S47Relief
 	void SetActive(bool bOn) { bReliefActive = bOn && Ready(); }
 	bool Active() { return bReliefActive; }
 	double HillAbove(double RoadX, double RoadZ) { return bReliefActive ? SampleFoot(FootTable, RoadX, RoadZ) : 0; }
+	double HillLift(double RoadX, double RoadZ)
+	{
+		if (!bReliefActive || !FootTable.bValid) return 0;
+		const double Above = SampleFoot(FootTable, RoadX, RoadZ);
+		return Above >= PastTheTable ? 0 : FMath::Max(Above, 0.);
+	}
 	bool HillStops(double RoadX, double RoadZ, double Reach)
 	{
 		if (!bReliefActive || !FootTable.bValid) return false;
+		const double Step = 1 / FootTable.InvCell;
 		for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-Reach, -Reach), FVector2D(Reach, -Reach), FVector2D(-Reach, Reach), FVector2D(Reach, Reach) })
-			if (SampleFoot(FootTable, RoadX + D.X, RoadZ + D.Y) > FootStopM) return true;
+		{
+			const double X = RoadX + D.X, Z = RoadZ + D.Y, Above = SampleFoot(FootTable, X, Z);
+			if (Above <= 0) continue;
+			if (Above > HillWalkTopM) return true;
+			const double Dx = SampleFoot(FootTable, X + Step, Z) - SampleFoot(FootTable, X - Step, Z), Dz = SampleFoot(FootTable, X, Z + Step) - SampleFoot(FootTable, X, Z - Step);
+			if (Dx * Dx + Dz * Dz > FMath::Square(HillWalkSlope * 2 * Step)) return true;
+		}
 		return false;
 	}
 	FSuspend::FSuspend() : bWas(bReliefActive) { bReliefActive = false; }
@@ -437,9 +450,13 @@ namespace S47Relief
 			bReliefActive = true;
 			Check(FMath::IsNearlyEqual(HillAbove(100, 205), -2., 1e-6) && FMath::IsNearlyEqual(HillAbove(110, 205), 8., 1e-6) && FMath::IsNearlyEqual(HillAbove(105, 205), 3., 1e-6), TEXT("the foot reads across a cell"));
 			Check(HillAbove(90, 205) == PastTheTable, TEXT("past the foot table the hills go on"));
-			Check(!HillStops(100.5, 205, .1) && HillStops(109, 205, .1) && HillStops(100.5, 205, 8), TEXT("a footprint stops by whichever corner meets the foot"));
+			Check(!HillStops(100.5, 205, .1) && HillStops(109, 205, .1) && HillStops(100.5, 205, 8), TEXT("a footprint stops by whichever corner is on the steep"));
+			Check(FMath::IsNearlyEqual(HillLift(105, 205), 3., 1e-6) && HillLift(100, 205) == 0 && HillLift(90, 205) == 0, TEXT("the ground gains what stands over it, and nothing past the table"));
+			TArray<uint8> GentleBytes = { 16, 32, 16, 32 };   // 0 to 2 m over 10 m: a fan
+			Check(ParseFootTable(FootJson, GentleBytes, FootTable, FootWhy), TEXT("a second foot table parses"));
+			Check(!HillStops(105, 205, .1), TEXT("a fan is climbed"));
 			bReliefActive = false;
-			Check(HillAbove(110, 205) == 0 && !HillStops(109, 205, .1), TEXT("off, the hills stop nothing"));
+			Check(HillAbove(110, 205) == 0 && !HillStops(109, 205, .1) && HillLift(109, 205) == 0, TEXT("off, the hills stop nothing and lift nothing"));
 			bReliefActive = bWasActive;
 			FootTable = MoveTemp(SavedFoot);
 		}

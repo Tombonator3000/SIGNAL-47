@@ -139,10 +139,11 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out
     p1 = sample(mat, macro, turned(613., 23., -2500, -400), -2200, -400)
     p2 = sample(mat, macro, turned(1717., -37., -2500, -320), -2200, -320)
     p3 = sample(mat, macro, turned(211., 61., -2500, -240), -2200, -240)
-    # the shrubs' dots, about 4 m: T_FF_Noise's fine channels at two sizes that share nothing, gone to an even tone with distance
+    # the shrubs' dots, about 2 m: T_FF_Noise's fine channels at two sizes that share nothing, gone to an even tone with distance.
+    # (at 300 and 413 m they ran together into camouflage: 15 m smears)
     gray_linear = unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR
-    d1 = sample(mat, fine_noise, turned(300., 17., -2500, -60), -2200, 20, gray_linear)
-    d2 = sample(mat, fine_noise, turned(413., -52., -2500, 20), -2200, 100, gray_linear)
+    d1 = sample(mat, fine_noise, turned(97., 17., -2500, -60), -2200, 20, gray_linear)
+    d2 = sample(mat, fine_noise, turned(131., -52., -2500, 20), -2200, 100, gray_linear)
     mean_sand = mean_of(tex['Sand', 'D'], -2200, -160)
     mean_gravel = mean_of(tex['Gravel', 'D'], -2200, -80)
     crust_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -300, parameter_name='CrustAmount', default_value=.75)
@@ -195,7 +196,7 @@ return c * (0.88 + 0.24 * small);
 """, dict(Z=(t430, 'R'), M=(t47, 'R')), F3, -950, -760)
     tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -650, parameter_name='GroundTint', default_value=G.DEFAULT_TINT)
     vc = node(mat, unreal.MaterialExpressionVectorParameter, -950, -560, parameter_name='FootVertexColor', default_value=unreal.LinearColor(.82, .80, .76, 1))
-    rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(.74, .70, .68, 1))
+    rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(.50, .50, .54, 1))
     scrub = node(mat, unreal.MaterialExpressionVectorParameter, -950, -380, parameter_name='ShrubColor', default_value=unreal.LinearColor(.050, .055, .030, 1))
     dry = node(mat, unreal.MaterialExpressionVectorParameter, -950, -200, parameter_name='DryScrub', default_value=unreal.LinearColor(.135, .110, .070, 1))
     haze_col = node(mat, unreal.MaterialExpressionVectorParameter, -950, -290, parameter_name='HazeColor', default_value=unreal.LinearColor(.12, .19, .34, 1))
@@ -213,7 +214,7 @@ soil *= lerp(1.0, 0.90 + 0.20 * saturate((P3 - 0.22) / 0.33), up * (1.0 - satura
 float band = M.a * (1.0 - M.a) * 4.0;
 soil = lerp(soil, Dry, band * 0.42);
 // bare rock: the map's and the slope's together, cut with the stone's pattern, a little greyer than the land's soil
-float rock = saturate(max(M.g, smoothstep(30.0, 44.0, Deg)) * up);
+float rock = saturate(max(M.g, smoothstep(40.0, 52.0, Deg)) * up);
 rock *= smoothstep(0.15, 0.55, rock + (dot(Stone, float3(0.3, 0.6, 0.1)) * 3.0 - 0.45) * 0.5);
 float3 stone = mean * RockTint * clamp(Stone / float3(0.183, 0.132, 0.109), 0.35, 1.5);
 // its beds: they dip one way over the whole map and wander with the patches, about 16 and 54 m through the rock
@@ -226,9 +227,9 @@ float3 c = lerp(soil, stone, rock);
 // shrubs as a dark speckle
 float near = saturate((length(Camera - World) * 0.01 - 120.0) / 200.0);
 float dotsAt = D1 * 0.55 + D2 * 0.45;
-float want = lerp(0.635, 0.47, saturate(M.r * 0.8 + 0.2 * broad));
-float shrub = smoothstep(want, want + 0.05, dotsAt) * (1.0 - rock);
-c = lerp(c, Shrub, shrub * near * lerp(0.80, 0.45, saturate(Haze * 2.0)));
+float want = lerp(0.66, 0.52, saturate(M.r * 0.8 + 0.2 * broad));
+float shrub = smoothstep(want, want + 0.07, dotsAt) * (1.0 - rock);
+c = lerp(c, Shrub, shrub * near * lerp(0.62, 0.35, saturate(Haze * 2.0)));
 // and where they crowd, in what is cut in, the ground under them darker too
 c = lerp(c, Shrub, M.r * (1.0 - rock) * 0.18);
 return c * lerp(0.48, 1.0, M.b);

@@ -103,6 +103,12 @@ namespace
 	{
 		FReliefRun& R = ReliefRun;
 		++R.Samples;
+		{
+			// (a floor on a fan stands over the ground mesh by the fan: the fan is the range's, which has no collision)
+			double LiftX = 0, LiftZ = 0;
+			ProbeRoadXZ(M->Web->Area(), At.X, At.Z, LiftX, LiftZ);
+			if (M->Web->Area() == TEXT("diner") || M->Web->Area() == TEXT("road")) Floor -= S47Relief::HillLift(LiftX, LiftZ);
+		}
 		FHitResult Hit;
 		const FCollisionQueryParams Query(SCENE_QUERY_STAT(S47ReliefProbe), true);
 		UWorld* World = M->Web->GetWorld();
@@ -201,7 +207,7 @@ namespace
 		{
 			const double X = Random.FRandRange(-2900.f, 2200.f), Z = Random.FRandRange(-2600.f, 4300.f);
 			if (FMath::Abs(S47Relief::Sample(X, Z)) < ReliefProbeLive) return false;
-			At = FVector(X + 8000, 0, Z); Floor = S47RoadTerrain::SurfaceY(X, Z);
+			At = FVector(X + 8000, 0, Z); Floor = S47RoadTerrain::SurfaceY(X, Z) - S47Relief::HillLift(X, Z);
 			return true;
 		});
 		UStaticMeshComponent* SaroComp = SaroNode ? Cast<UStaticMeshComponent>(SaroNode->Comp.Get()) : nullptr;
@@ -295,7 +301,7 @@ namespace S47ReliefProbe
 			if (Life->Area != TEXT("diner")) { Life->Enter(TEXT("diner")); R.Since = R.Now; return true; }
 			if (R.Now - R.Since < .5) return true;
 			R.FootX = 0;
-			for (double X = -400; X > -2800 && !R.FootX; X -= 2) if (S47Relief::HillAbove(X, ReliefFootZ) > S47Relief::FootStopM) R.FootX = X;
+			for (double X = -400; X > -2800 && !R.FootX; X -= 2) if (S47Relief::HillStops(X, ReliefFootZ, P->Radius)) R.FootX = X;
 			if (!R.FootX) { ProbeCheck(false, TEXT("no hill's foot on the line: is range_foot.bin installed?")); R.FootX = -1000; R.Phase = 3; R.Since = R.Now; return true; }
 			const FVector Start = S47FarmWorld::RoadToArea(TEXT("diner"), FVector(R.FootX + 20, 0, ReliefFootZ));
 			P->Place(Start.X, Start.Z, UE_DOUBLE_PI / 2);
@@ -308,7 +314,7 @@ namespace S47ReliefProbe
 			if (R.Now - R.Since < 12) return true;
 			P->TestMove.Reset(); P->bTestRun = false;
 			const double Rx = P->Pos.X - 8000, Above = S47Relief::HillAbove(Rx, P->Pos.Z);
-			ProbeCheck(Above <= S47Relief::FootStopM && Rx >= R.FootX - 1 && Rx <= R.FootX + 6, FString::Printf(TEXT("the foot stops the walk: foot at road x %.1f, stood at %.1f, %.2f m of hill under the feet"), R.FootX, Rx, Above));
+			ProbeCheck(!S47Relief::HillStops(Rx, P->Pos.Z, P->Radius) && Rx >= R.FootX - 1 && Rx <= R.FootX + 6, FString::Printf(TEXT("the foot stops the walk: first it cannot climb at road x %.1f, stood at %.1f, %.2f m up the fan, floor %.2f"), R.FootX, Rx, Above, P->FloorY));
 			R.Phase = 3; R.Since = R.Now;
 			return true;
 		}
@@ -368,7 +374,7 @@ namespace S47ReliefProbe
 			}
 			{
 				const double Rx = Cab->Pos.X - 8000;
-				ProbeCheck(Rx >= R.FootX - 1 && Rx <= R.FootX + 12, FString::Printf(TEXT("the foot stops the truck: foot at road x %.1f, its centre at %.1f, %.2f m of hill there"), R.FootX, Rx, S47Relief::HillAbove(Rx, Cab->Pos.Z)));
+				ProbeCheck(Rx >= R.FootX - 1 && Rx <= R.FootX + 12, FString::Printf(TEXT("the foot stops the truck: first the walker cannot climb at road x %.1f, its centre at %.1f, %.2f m up the fan"), R.FootX, Rx, S47Relief::HillAbove(Rx, Cab->Pos.Z)));
 			}
 			ProbeCheck(R.Void == 0 && !R.bOver && R.Seen >= ReliefProbeLive && R.DriveTravel > 40,
 				FString::Printf(TEXT("trip: %.0f m, %d samples, void %d, floor off the land mesh at most %.3f m at road %.1f %.1f, largest relief under it %.2f m (for reading only: truck's pose off the floor at most %.3f m; the world's ray from 2 m up meets %s at %.3f m over the floor)"), R.DriveTravel, R.Samples, R.Void, R.Worst, R.WorstX, R.WorstZ, R.Seen, R.TruckOff, *R.TopWhat, R.TopOver));
