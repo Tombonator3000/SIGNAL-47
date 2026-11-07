@@ -23,7 +23,8 @@ namespace
 {
 	const TCHAR* const EdgeMaterialPackage = TEXT("/Game/RoadEdge/M_S47_RoadEdge");
 	const TCHAR* const EdgeMaterialPath = TEXT("/Game/RoadEdge/M_S47_RoadEdge.M_S47_RoadEdge");
-	constexpr int32 EdgeSitePlate = 19;          // the highway through SARO's site: an 8 m plate, geometry 14
+	// The highway's own strips: SARO's 8 m plate (geometry 14), the corridor's and the road's. Flat sheets with nothing under their edges.
+	const int32 EdgeStrips[] = { 19, 954, 1243 };
 	constexpr int32 EdgeCorridorNode = 952;      // saroCorridor (S47FreeformTerrain ReliefCorridorNode), road-local z SARO_FROM..600
 	constexpr double EdgeLiftRoad = .02, EdgeLiftLand = .03;   // over what it lies on, in metres: the depth test keeps it there and nowhere else
 	constexpr double EdgeSiteX = -24, EdgeSiteY = -.58, EdgeSiteHalf = 4, EdgeSiteZ0 = -480, EdgeSiteZ1 = 36, EdgeSiteToRoadZ = -300;
@@ -85,16 +86,60 @@ namespace
 			M.Indices.Append({ A, Over, Next, Next, Over, Far });
 		}
 	}
-	// Both sides of a stretch of the highway, in road-local metres. Columns run outwards; on the west side they are mirrored so x still rises across each grid.
-	void EdgeAddHighway(FEdgeMesh& M, const TArray<double>& Rows)
+	// The exported rows, with one between each two 8 m apart. Y is how far to the next exported row (0 on an exported row).
+	TArray<FVector2D> EdgeSpaced(const TArray<double>& Rows)
 	{
-		const int32 Cols = UE_ARRAY_COUNT(EdgeCols);
-		TArray<FVector2D> Spaced;   // z, and how far to the next exported row (0 on an exported row)
+		TArray<FVector2D> Spaced;
 		for (int32 I = 0; I < Rows.Num(); ++I)
 		{
 			Spaced.Add(FVector2D(Rows[I], 0));
 			if (I + 1 < Rows.Num() && Rows[I + 1] - Rows[I] >= 8) Spaced.Add(FVector2D((Rows[I] + Rows[I + 1]) / 2, Rows[I + 1] - Rows[I]));
 		}
+		return Spaced;
+	}
+	// Tom's black line. The strip's edge and the verge meet at the same height (read from g873 and g874: 0 mm, but for the old road's mouth), but the ground stands
+	// displaced some 3.5 cm up and down, so from the land's side one looks in under a sheet with no sides. A lip of the same soil lies over the join: on the strip at
+	// its inner edge, and under the land at its outer, so the land's own bumps are where it ends. Where a lot or a road meets the highway it goes down out of sight.
+	constexpr double EdgeLipSink = .5;
+	void EdgeAddLip(FEdgeMesh& M, const TArray<double>& Rows)
+	{
+		const TArray<FVector2D> Spaced = EdgeSpaced(Rows);
+		const double Cols[] = { 5.7, 6, 6.6 };
+		const auto LipY = [](double X, double Z)
+		{
+			const double Ax = FMath::Abs(X);
+			return S47RoadShape::HLow(X, Z) + (Ax < 5.9 ? S47RoadShape::HwyLift(Ax) + .008 : Ax < 6.1 ? .012 : -.06);
+		};
+		for (const double Side : { -1., 1. })
+		{
+			EdgeAddGrid(M, Spaced.Num(), UE_ARRAY_COUNT(Cols), [&](int32 R, int32 C) -> FEdgeVertex
+			{
+				const double X = Side * Cols[Side < 0 ? UE_ARRAY_COUNT(Cols) - 1 - C : C], Z = Spaced[R].X, Half = Spaced[R].Y / 2;
+				const double Y = (Half > 0 ? (LipY(X, Z - Half) + LipY(X, Z + Half)) / 2 : LipY(X, Z)) - (EdgeKeepRoad(X, Z) ? 0 : EdgeLipSink);
+				const FLinearColor Tint = Half > 0 ? (EdgeTint(X, Z - Half) + EdgeTint(X, Z + Half)) * .5f : EdgeTint(X, Z);
+				return { FVector(X, Y, Z), FVector2f(float(X), float(Z)), Tint };
+			});
+		}
+	}
+	void EdgeAddSiteLip(FEdgeMesh& M)
+	{
+		const double Cols[] = { 3.7, 4, 4.6 }, Heights[] = { .008, .012, -.12 };
+		const int32 RowCount = int32((EdgeSiteZ1 - EdgeSiteZ0) / 4) + 1;
+		for (const double Side : { -1., 1. })
+		{
+			EdgeAddGrid(M, RowCount, UE_ARRAY_COUNT(Cols), [&](int32 R, int32 C) -> FEdgeVertex
+			{
+				const int32 K = Side < 0 ? UE_ARRAY_COUNT(Cols) - 1 - C : C;
+				const double Dx = Side * Cols[K], Z = EdgeSiteZ0 + R * 4.;
+				return { FVector(EdgeSiteX + Dx, EdgeSiteY + Heights[K] - (EdgeKeepSite(Dx, Z) ? 0 : EdgeLipSink), Z), FVector2f(float(Dx), float(Z)), FLinearColor(.81f, .81f, .81f, 1.f) };
+			});
+		}
+	}
+	// Both sides of a stretch of the highway, in road-local metres. Columns run outwards; on the west side they are mirrored so x still rises across each grid.
+	void EdgeAddHighway(FEdgeMesh& M, const TArray<double>& Rows)
+	{
+		const int32 Cols = UE_ARRAY_COUNT(EdgeCols);
+		const TArray<FVector2D> Spaced = EdgeSpaced(Rows);
 		for (const double Side : { -1., 1. })
 		{
 			EdgeAddGrid(M, Spaced.Num(), Cols, [&](int32 R, int32 C) -> FEdgeVertex
@@ -256,12 +301,25 @@ namespace
 			EdgeAddHighway(M, EdgeHighwayRows(-2000, 3400));
 			EdgeAddRibbon(W, RoadRoot, TEXT("S47RoadEdgeRoad"), M, EdgeRun.Land.Get());
 		}
+		UMaterialInstanceDynamic* Ground = S47FreeformTerrain::GroundMid(W);
+		if (Ground)
+		{
+			FEdgeMesh M;
+			EdgeAddLip(M, EdgeHighwayRows(-2000, 3400));
+			EdgeAddRibbon(W, RoadRoot, TEXT("S47RoadEdgeRoadLip"), M, Ground);
+		}
 		EdgeAddStones(W, RoadRoot, TEXT("road"), -2000, 3396);
 		if (W->Node(EdgeCorridorNode))
 		{
 			FEdgeMesh M;
 			EdgeAddHighway(M, EdgeHighwayRows(S47RoadTerrain::SARO_FROM, 600));
 			EdgeAddRibbon(W, EdgeCorridorNode, TEXT("S47RoadEdgeCorridor"), M, EdgeRun.Corridor.Get());
+			if (Ground)
+			{
+				FEdgeMesh Lip;
+				EdgeAddLip(Lip, EdgeHighwayRows(S47RoadTerrain::SARO_FROM, 600));
+				EdgeAddRibbon(W, EdgeCorridorNode, TEXT("S47RoadEdgeCorridorLip"), Lip, Ground);
+			}
 			EdgeAddStones(W, EdgeCorridorNode, TEXT("corridor"), S47RoadTerrain::SARO_FROM, 600);
 		}
 		if (Site >= 0)
@@ -269,6 +327,12 @@ namespace
 			FEdgeMesh M;
 			EdgeAddSite(M);
 			EdgeAddRibbon(W, Site, TEXT("S47RoadEdgeSite"), M, EdgeRun.Land.Get());
+			if (Ground)
+			{
+				FEdgeMesh Lip;
+				EdgeAddSiteLip(Lip);
+				EdgeAddRibbon(W, Site, TEXT("S47RoadEdgeSiteLip"), Lip, Ground);
+			}
 		}
 		UE_LOG(LogS47RoadEdge, Display, TEXT("S47: road edge built in %.1f ms: %d vertices, %d triangles, %d instances, %d parts"), (FPlatformTime::Seconds() - Started) * 1000, EdgeRun.Vertices, EdgeRun.Triangles, EdgeRun.Instances, EdgeRun.Nodes.Num());
 	}
@@ -308,8 +372,8 @@ namespace S47RoadEdge
 		{
 			EdgeRun.bShown = bOn;
 			for (const int32 Node : EdgeRun.Nodes) W->SetVisible(Node, bOn);
-			// The site's plate lies 4-9 cm over its ground and draws a black line along itself with its own shadow, however the soil meets it. Back in Story.
-			if (const FS47WebNode* Plate = W->Node(EdgeSitePlate)) if (auto* C = Cast<UPrimitiveComponent>(Plate->Comp.Get())) C->SetCastShadow(!bOn);
+			// A flat sheet needs no shadow, and over the land's bumps its edge draws one. Back in Story.
+			for (const int32 Strip : EdgeStrips) if (const FS47WebNode* N = W->Node(Strip)) if (auto* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCastShadow(!bOn);
 		}
 		if (bOn) EdgeTone(W);
 	}
