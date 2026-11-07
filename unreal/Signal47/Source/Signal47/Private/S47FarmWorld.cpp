@@ -113,13 +113,15 @@ namespace
   const uint32 Count=G.Pos.Num();if(G.Rows<2||G.Cols<2||Count!=uint32(G.Rows*G.Cols))return nullptr;
   auto Data=MakeUnique<FStaticMeshRenderData>();Data->AllocateLODResources(1);Data->ScreenSize[0].Default=1;Data->NumInlinedLODs=1;
   auto& L=Data->LODResources[0];L.VertexBuffers.PositionVertexBuffer.Init(Count,true);
-  auto& T=L.VertexBuffers.StaticMeshVertexBuffer;T.SetUseFullPrecisionUVs(true);T.Init(Count,1,true);
+  // A second UV of 0: the relief's material reads sediment and stone from UV1, and a mesh without one gives it UV0, tens of
+  // metres over its scale: the whole yard read as the pale sand of an arroyo's bed. No sediment and no stone here.
+  auto& T=L.VertexBuffers.StaticMeshVertexBuffer;T.SetUseFullPrecisionUVs(true);T.Init(Count,2,true);
   FBox Bounds(ForceInit);
   for(uint32 I=0;I<Count;++I)
   {
    const FVector At=S47Three::ToUE(G.Pos[I]);Bounds+=At;L.VertexBuffers.PositionVertexBuffer.VertexPosition(I)=FVector3f(At);
    const FVector N=S47Three::DirToUE(G.Normal[I]);const FVector Tangent=FVector::CrossProduct(FVector::RightVector,N).GetSafeNormal();
-   T.SetVertexTangents(I,FVector3f(Tangent),FVector3f(FVector::CrossProduct(N,Tangent)),FVector3f(N));T.SetVertexUV(I,0,G.UV[I]);
+   T.SetVertexTangents(I,FVector3f(Tangent),FVector3f(FVector::CrossProduct(N,Tangent)),FVector3f(N));T.SetVertexUV(I,0,G.UV[I]);T.SetVertexUV(I,1,FVector2f(0.f,0.f));
   }
   L.VertexBuffers.ColorVertexBuffer.InitFromColorArray(G.Color);
   // Rows run along X and columns along Z. Three's up-facing order; its swap to UE already makes it UE's (S47SaroOverlays).

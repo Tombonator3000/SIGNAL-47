@@ -311,7 +311,7 @@ namespace
 		C->SetStaticMesh(Mesh);
 		for (int32 Slot = 0; Slot < Materials.Num(); ++Slot) C->SetMaterial(Slot, Materials[Slot]);
 	}
-	// Caliche's tiles of mineral soil lie flat on the old ground: under the new land they show as grey lumps.
+	// Caliche's tiles of mineral soil lie 16 mm over the old ground: where the table is live they float or sink under the new land.
 	void HideOldSoil(const AS47Web* W, bool bOn)
 	{
 		for (int32 Tile = 0; const FS47WebNode* TileNode = W->Node(Tile); ++Tile)
