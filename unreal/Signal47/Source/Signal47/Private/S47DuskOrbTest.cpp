@@ -1,3 +1,6 @@
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "Modules/ModuleManager.h"
 #include "S47FreeformTest.h"
 #include "S47DuskOrb.h"
 #include "S47Freeform.h"
@@ -120,13 +123,15 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  auto OrbNow=[&]{return FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());};
  auto OrbSchedule=[&]{return S47J::Obj(F.Director->Save(),TEXT("duskOrb"));};
  // Mean brightness of what the player sees in the lower middle of the picture, from the actual back buffer. -1 if it cannot be read.
- auto ViewMean=[]
+ // The picture as written: reading the viewport back on the game thread gives only black on Vulkan.
+ auto PictureMean=[](const FString& Path)
  {
-  TArray<FColor> Pixels;FViewport* View=GEngine&&GEngine->GameViewport?GEngine->GameViewport->Viewport:nullptr;
-  if(!View||!GetViewportScreenShot(View,Pixels))return -1.;
-  const FIntPoint Size=View->GetSizeXY();if(Pixels.Num()!=Size.X*Size.Y||Size.Y<4)return -1.;
+  TArray<uint8> Bytes,Raw;if(!FFileHelper::LoadFileToArray(Bytes,*Path))return -1.;
+  auto Wrapper=FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper")).CreateImageWrapper(EImageFormat::PNG);
+  if(!Wrapper.IsValid()||!Wrapper->SetCompressed(Bytes.GetData(),Bytes.Num())||!Wrapper->GetRaw(ERGBFormat::BGRA,8,Raw))return -1.;
+  const int64 Wd=Wrapper->GetWidth(),Ht=Wrapper->GetHeight();if(Wd<1||Ht<4||Raw.Num()<Wd*Ht*4)return -1.;
   double Sum=0;int64 Samples=0;
-  for(int32 Y=Size.Y*35/100;Y<Size.Y*85/100;++Y)for(int32 X=0;X<Size.X;++X){const FColor& Pixel=Pixels[Y*Size.X+X];Sum+=.2126*Pixel.R+.7152*Pixel.G+.0722*Pixel.B;++Samples;}
+  for(int64 Y=Ht*35/100;Y<Ht*85/100;++Y)for(int64 X=0;X<Wd;++X){const uint8* Px=&Raw[(Y*Wd+X)*4];Sum+=.0722*Px[0]+.7152*Px[1]+.2126*Px[2];++Samples;}
   return Samples?Sum/Samples:-1.;
  };
  if(Stage==0)
@@ -630,11 +635,13 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9907){F.Director->TestOrbLightProbe(1);Go(9908,.35);return;}
  if(Stage==9908)
  {
-  S47J::Set(Snapshot,TEXT("lightOn"),ViewMean());F.Director->TestOrbLightProbe(2);Go(9909,.35);return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("orb-night-probe-lit.png"),false,false);Go(99081,.7);return;
  }
+ if(Stage==99081){F.Director->TestOrbLightProbe(2);Go(99082,.35);return;}
+ if(Stage==99082){FScreenshotRequest::RequestScreenshot(Root/TEXT("orb-night-probe-unlit.png"),false,false);Go(9909,.7);return;}
  if(Stage==9909)
  {
-  const double LitMean=S47J::Num(Snapshot,TEXT("lightOn"),-1),DarkMean=ViewMean();F.Director->TestOrbLightProbe(0);
+  const double LitMean=PictureMean(Root/TEXT("orb-night-probe-lit.png")),DarkMean=PictureMean(Root/TEXT("orb-night-probe-unlit.png"));F.Director->TestOrbLightProbe(0);
   UE_LOG(LogTemp,Display,TEXT("S47 orb light probe: lit=%.2f unlit=%.2f of 255"),LitMean,DarkMean);
   if(!Check(LitMean>=0&&DarkMean>=0&&LitMean-DarkMean>=.5,TEXT("with the effect hidden, the orbs' lights alone brighten the ground and equipment in the picture")))return;
   AimAt(OrbNow());Go(9910,.12);return;
