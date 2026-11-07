@@ -1547,7 +1547,7 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 	const double K = R + LAND_KEEP;
 	for (const FS47Box2& B : L->Out) if (!(Farm&&A==TEXT("saro")&&B.MinX==-3&&B.MaxX==-3&&FMath::Abs(Z-(S47RoadTerrain::RanchZ(21)+300))<3.0)) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
 	if (L->Closed && L->Closed(X, Z)) return false;
-	// Freeform's hills stop at their foot (S47Relief, table from build_range.py; SARO's and the station's walks have none in them).
+	// Freeform's hills stop where they turn steep (S47Relief, table from build_range.py; SARO's and the station's walks have none in them).
 	// One who already stands inside one, an old save on what was open land, walks out.
 	if (A == TEXT("diner") && S47Relief::HillStops(X - ROAD_ORIGIN.X, Z, R) && !S47Relief::HillStops(M->Player->MoveFrom.X - ROAD_ORIGIN.X, M->Player->MoveFrom.Z, R)) return false;
 	if (const FLegRec* G = Legs.Find(L->Leg))

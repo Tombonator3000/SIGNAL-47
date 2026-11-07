@@ -25,9 +25,13 @@ namespace S47Relief
 	 *  0 where they lie under it. 0 while the relief is off or no table is installed; past the table's edge the hills go on, and it says
 	 *  so with a large number. The range has no collision: this is what a hill is to whatever moves over the land. */
 	SIGNAL47_API double HillAbove(double RoadX, double RoadZ);
-	/** A person's or a truck's footprint, as a square this far each way, meets the foot of a hill: over FootStopM there. */
+	/** What the ground under a walker, a truck or a plant gains from the range: HillAbove from 0 up to where the table ends, 0 past its
+	 *  edge. A fan is climbed, not a wall in front of a slope one can see. The range has no collision. Only SurfaceY's desert uses this. */
+	SIGNAL47_API double HillLift(double RoadX, double RoadZ);
+	/** A person's or a truck's footprint, as a square this far each way, is on what cannot be climbed: steeper than HillWalkSlope, or
+	 *  more than HillWalkTopM up (US47World::GroundUnder finds the mesh only within 6 m under the floor). */
 	SIGNAL47_API bool HillStops(double RoadX, double RoadZ, double Reach);
-	inline constexpr double FootStopM = .45;
+	inline constexpr double HillWalkSlope = .27, HillWalkTopM = 5;
 
 	/** Off for as long as this lives, for a check that compares against fixed web numbers while a game may be running. */
 	struct SIGNAL47_API FSuspend
