@@ -26,7 +26,7 @@ struct FS47RoswellGroup::FImpl
   double Refresh=0,Life=120;
  };
  US47Main* M=nullptr; FS47RoswellWorld World;
- TOptional<FVector> HoldLook; double HoldBack=0; bool bHoldHeard=false;
+ TOptional<FVector> HoldLook; double HoldBack=0; bool bHoldHeard=false; int32 HoldId=INDEX_NONE;
  TArray<TUniquePtr<FIndividual>> Actors;
  FVector LastPlayer=FVector::ZeroVector;
  bool bLastPlayer=false,bDev=false,bControlled=false; FString Scene;
@@ -98,9 +98,9 @@ void FS47RoswellGroup::Clear()
 {
  for (auto& A:P->Actors) P->Hide(*A);
  P->bDev=false; P->bControlled=false; P->bLastPlayer=false; P->PendingRestore.Reset(); P->Wait=120+FMath::FRand()*180;
- P->HoldLook.Reset(); P->HoldBack=0; P->bHoldHeard=false;
+ P->HoldLook.Reset(); P->HoldBack=0; P->bHoldHeard=false; P->HoldId=INDEX_NONE;
 }
-void FS47RoswellGroup::SetAttention(const TOptional<FVector>& Look,double Back,bool bHeard){P->HoldLook=Look;P->HoldBack=Back;P->bHoldHeard=bHeard;}
+void FS47RoswellGroup::SetAttention(const TOptional<FVector>& Look,double Back,bool bHeard,int32 OnlyId){P->HoldLook=Look;P->HoldBack=Back;P->bHoldHeard=bHeard;P->HoldId=OnlyId;}
 void FS47RoswellGroup::SetMode(FS47RoswellBrain::EMode Mode)
 {
  for (auto& A:P->Actors) if (A->bActive && !A->bNatural) A->Brain.SetMode(Mode);
@@ -222,7 +222,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   W.Occupancy=[this,&A](const FVector& At){return P->Occupied(At,&A);};
   FS47RoswellBrain::FInput In; In.bHeld=Held; In.bCanContact=!(M->World&&M->World->bDriving); In.PlayerFeet=Feet; In.PlayerEye=Input.Cam.Pos;
   In.PlayerForward=Input.Cam.Forward; In.PlayerSpeed=Speed; In.bFlashlight=Input.bFlashlight;
-  In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard;
+  if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));
   A.Root->SetWorldRotation(FRotationMatrix::MakeFromX(S47Three::DirToUE(FVector(FMath::Sin(A.Brain.Yaw),0,FMath::Cos(A.Brain.Yaw)))).Rotator());

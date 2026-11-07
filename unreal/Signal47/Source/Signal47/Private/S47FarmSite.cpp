@@ -24,6 +24,7 @@
 #include "S47Web.h"
 #include "S47Flashlight.h"
 #include "S47FieldRadio.h"
+#include "S47IndoorDread.h"
 #include "S47Ambience.h"
 #include "S47Flow.h"
 #include "Components/LocalFogVolumeComponent.h"
@@ -344,7 +345,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
   const bool bDark=M->Life&&M->Life->Sky.IsValid()&&M->Life->Sky->Daylight()<.1;
-  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy();
+  // Something at a door indoors counts too: it goes first, and this waits its turn.
+  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy()&&!(M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorActive());
   const double Clock=M->Freeform->Clock();
   VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&TheirHours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
@@ -356,7 +358,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  if(M->ModalOpen())return;
  const ES47Taker Who=VisitWho==1?ES47Taker::Crab:VisitWho==2?ES47Taker::Tall:ES47Taker::Roswell;
  // Taken: all else waits, and when they are back, it is over.
- if(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away){bVisitTaken=true;HideBody();if(!G->Individuals().IsEmpty())G->DevClear();return;}
+ if(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away){bVisitTaken=true;HideBody();LetAttentionGo();if(!G->Individuals().IsEmpty())G->DevClear();return;}
  if(bVisitTaken){EndVisit(true);return;}
  const bool bFirst=VisitAge<=0;VisitAge+=Dt;
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
@@ -364,7 +366,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  // Twice at most: when the light has given up on one window, it tries another.
  if(bFirst)
  {
-  VisitRounds=0;VisitHunt=0;VisitPatience=120;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;
+  VisitRounds=0;VisitHunt=0;VisitPatience=120;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
   RadioSeen=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
   RadioIn=!bTestHoldHunt&&FMath::FRand()<.35f?FMath::FRandRange(10.f,30.f):-1.;
@@ -443,8 +445,11 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  // The body out now: the small one's own, or the moved one's.
  TOptional<FVector> Eye=VisitBodyEye();
  if(VisitWho==0){const auto V=G->Individuals();if(V.IsEmpty())Eye.Reset();else Eye=V[0].Eye;}
- if(!Eye.IsSet())return;
+ // No body now, nothing to hold: the lamp is not left flickering for it.
+ if(!Eye.IsSet()){LetAttentionGo();return;}
+ const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
  FS47VisitAttention::FIn See;
+ See.bCalm=bCalm;
  See.bLampOn=bLampOn;See.Lamp=In.Cam.Pos;See.BodyDist=FVector::Dist(*Eye,Feet);
  const FVector ToBody=*Eye-In.Cam.Pos;const double Reach=ToBody.Size();
  if(bLampOn&&Reach<FS47VisitAttention::BeamReach&&Reach>.1&&FVector::DotProduct(In.Cam.Forward,ToBody/Reach)>.9&&M->Web&&M->Web->GetWorld())
@@ -458,11 +463,12 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  const int32 RadioNow=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
  if(bRunning&&!bWasRunning&&See.BodyDist<40){See.bNoise=true;See.Sound=Feet;}
  if(bDriving&&!bWasDriving&&See.BodyDist<60){See.bNoise=true;See.Sound=Feet;}
- if(RadioNow!=RadioSeen&&See.BodyDist<30){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
+ // The set is the player's to carry, but not their noise: nobody chose that voice.
+ const bool bSetSpoke=RadioNow!=RadioSeen&&See.BodyDist<30;
+ if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
  bWasRunning=bRunning;bWasDriving=bDriving;RadioSeen=RadioNow;
  const auto Before=Attention.Doing();
  Attention.Step(Dt,See,AttentionRoll>=0?AttentionRoll:FMath::FRand());
- const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
  Lamp->Flicker(Attention.BlinkLevel(bCalm),TEXT("attention"));
  if(Attention.Doing()!=Before)
  {
@@ -476,12 +482,14 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
   {
    bool bRendered=bBodyOut&&VisitBody&&VisitBody->Rendered();
    if(VisitWho==0){const auto V=G->Individuals();bRendered=!V.IsEmpty()&&V[0].bRendered;}
-   bSawTurn|=bRendered;
+   if(bSetSpoke)bSawSetTurn|=bRendered;else bSawTurn|=bRendered;
   }
  }
  if(VisitWho==0)
  {
-  if(Attention.Holding())G->HoldAttention(Attention.LookAt(),Attention.BackSpeed(),Attention.Heard());
+  // A lamp is on the one it found; a noise is for all of them to hear.
+  const auto Bodies=G->Individuals();
+  if(Attention.Holding())G->HoldAttention(Attention.LookAt(),Attention.BackSpeed(),Attention.Heard(),Attention.Heard()||Bodies.IsEmpty()?int32(INDEX_NONE):Bodies[0].Id);
   else if(Before!=FS47VisitAttention::EDo::None)G->HoldAttention({},0,false);
  }
  // The set speaks up by itself; what that does is above, next time round.
@@ -511,6 +519,7 @@ void FS47FarmSite::EndVisit(bool bTaken)
   if(Attention.bDidBack)Did+=TEXT(" It stopped when my lamp found it, looked back along the beam and drew away.");
   if(Attention.bDidBlink)Did+=TEXT(" My lamp went out for a moment while it looked at me.");
   if(bSawTurn)Did+=TEXT(" It turned toward a noise I made.");
+  if(bSawSetTurn)Did+=TEXT(" It turned toward my field set when a voice came over it.");
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. Something came toward me until I left.%s This records what I saw, not what it was."),*Title,*Did));
  }
  M->RequestAutosave();

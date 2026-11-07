@@ -123,6 +123,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 		if (Dark <= 0 && FMath::FRand() < Flick * Dt * 1.2) Dark = 0.05 + FMath::FRand() * 0.25 * Flick;
 		K = Dark > 0 ? 0.08 : 1 - Flick * 0.25 * (0.5 + 0.5 * FMath::Sin(T * 37) * FMath::Sin(T * 11.3));
 	}
+	// A moment out belongs to the flicker that asked for it: it does not wait for the next one.
+	else Dark = 0;
 	ThreeIntensity = Level < 0.01 ? 0 : 40 * FLASH_GAIN * Level * K;
 	USpotLightComponent* L = Spot.Get();
 	if (!L) return;
@@ -167,6 +169,8 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 	Check(F.Intensity() == 0, TEXT("off in the truck"));
 	F.Flicker(0.3, TEXT("glimpse")); F.Flicker(0.85, TEXT("curve")); F.Flicker(0, TEXT("curve"));
 	Check(FMath::IsNearlyEqual(F.Flick, 0.3), TEXT("the strongest flicker counts, each by its source"));
+	F.Flicker(0, TEXT("glimpse")); F.FlickerOut(5); F.Update(1.0 / 60, 0, Cam, false);
+	Check(F.Dark == 0, TEXT("a moment out ends with the flicker, and does not hang on for the next source"));
 	Check(NearGain(-1) == 1 && NearGain(3.5) == 1 && NearGain(8) == 1, TEXT("no surface or ordinary range retains the full native beam"));
 	bool bNearLux = true;
 	for (double D : { .5, 1.0, 2.0 }) bNearLux &= FMath::IsNearlyEqual(PEAK_CANDELAS * NearGain(D) / (D * D), PEAK_CANDELAS / (NEAR_METRES * NEAR_METRES), .00001);

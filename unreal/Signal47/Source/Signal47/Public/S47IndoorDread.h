@@ -63,6 +63,7 @@ public:
  bool DoorPressed(const FString& DoorKey){return DoorVisit->Pressed(DoorKey);}
  FString DoorLabel(const FString& DoorKey) const{return DoorVisit->LabelFor(DoorKey);}
  bool DoorQuiet() const{return Quiet();}
+ bool DoorActive() const{return DoorVisit->Active();}
  void ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock);
  void HideDoorBody();
  bool DoorBodyRendered() const;

@@ -13,6 +13,7 @@ public:
   bool bBeam=false;    // a lit lamp is pointed at it, in reach, in a clear line
   bool bLampOn=false;
   bool bNoise=false;   // something it can hear began just now
+  bool bCalm=false;    // calm flashes chosen: its blink only unsettles the lamp
   double BodyDist=100; // from the player
   FVector Lamp=FVector::ZeroVector,Sound=FVector::ZeroVector;
  };
@@ -27,7 +28,7 @@ public:
  double BackSpeed() const{return Do==EDo::Back?BackSpeedMps:0.;}
  // For FS47Flashlight::Flicker. With calm flashes chosen it only unsettles the lamp.
  double BlinkLevel(bool bCalm) const{return Do==EDo::Blink?(bCalm?.3:1.):0.;}
- // What has happened this visit, for the field record.
+ // What has happened this visit, for the field record. A blink counts only if a lit lamp really went out.
  bool bDidBack=false,bDidBlink=false,bDidTurn=false;
  static const TCHAR* Name(EDo Value);
  static bool SelfTest(TArray<FString>& Lines);

@@ -81,7 +81,7 @@ public:
 	void DevMode(FS47RoswellBrain::EMode Mode);
 	void DevClear();
 	// A visit's attention on the small ones: stop and face this, easing back. Unset lets go.
-	void HoldAttention(const TOptional<FVector>& Look, double Back, bool bHeard);
+	void HoldAttention(const TOptional<FVector>& Look, double Back, bool bHeard, int32 OnlyId = INDEX_NONE);
 	void DevStep(double Dt,const FS47GlimpsesIn& Input);
 	TArray<FS47RoswellGroup::FView> Individuals() const;
  UPrimitiveComponent* ControlledPhotoBody(int32 Id) const;

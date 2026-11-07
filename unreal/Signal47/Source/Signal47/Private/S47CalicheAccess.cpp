@@ -72,7 +72,7 @@ namespace
 bool MoveNearestDoor(const FVector& At,double Range)
 {
  FRoom* Best=nullptr;double Near=Range;
- for(FRoom& R:Rooms)if(auto* C=R.Leaf.Get())
+ for(FRoom& R:Rooms)if(auto* C=R.Leaf.Get();C&&!R.bOpen)
  {
   const FVector P=S47Three::ToThree(C->GetComponentLocation());
   const double D=FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(At.X,At.Z));

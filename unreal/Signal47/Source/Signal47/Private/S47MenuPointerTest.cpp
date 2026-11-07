@@ -154,7 +154,7 @@ namespace
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
-  double DoorHeld=0,DoorFirst=0;FVector DoorBodyFrom=FVector::ZeroVector;
+  double DoorHeld=0,DoorFirst=0;int32 DoorStep=0;FVector DoorBodyFrom=FVector::ZeroVector;
   double AfterAt=0,AfterPc=0;FString AfterLine;
   S47J::FObj MysteryBefore;FString MysteryBoard;int32 MysteryTruth=0,MysterySub=0,MysteryFuses=0,MysteryCash=0;double MysteryHeld=0;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
@@ -787,7 +787,11 @@ namespace
   // the marks can be looked at; the next night nothing comes, the night after it does; left alone the door opens by itself,
   // something stands there, stays while not looked at and goes when looked at, with its own record and two marks; a save
   // in the middle gives a quiet room and spends that night; E while it waits opens the door on nothing, with its own record
-  // and one mark. Nobody is taken, and nothing hunts.
+  // and one mark; pushed from the doorway the door does not shut and that is no holding, from clear of it it shuts and it is;
+  // something bigger (set up: a Dread begun by hand) at the handle leaves the door shut, no record, the night handed back, and
+  // it comes again that night; the same with the door opening behind the player's back shuts the door again and does not come
+  // back that night, but the next; the same in plain view leaves the door open, and the body goes, with a record and two marks.
+  // Nobody is taken, and nothing hunts.
   bool StepDoor(US47Main* M)
   {
    StageAt=Elapsed;
@@ -832,7 +836,7 @@ namespace
     if(!FS47FarmSite::TheirHours(F.Clock()))return Fail(TEXT("not before two"));
     if(Visit.LastDayOf()!=F.Day()||Visit.StageNow()!=EV::Trying)return Fail(TEXT("it starts at the handle, and the night's one is spent"));
     UE_LOG(LogTemp,Display,TEXT("S47: door: round %d, %s, after %.0f s indoors"),DreadRound,*Visit.DoorKeyNow(),Elapsed-DreadAt);
-    DreadAt=Elapsed;Stage=DreadRound==0?543:DreadRound==1?548:DreadRound==2?552:554;return true;
+    DoorStep=0;DreadAt=Elapsed;Stage=DreadRound==0?543:DreadRound==1?548:DreadRound==2?552:DreadRound==3?554:DreadRound==4?557:DreadRound==5?558:559;return true;
    }
    // Round 0: hold it.
    if(Stage==543)
@@ -969,7 +973,75 @@ namespace
    {
     if(Elapsed-DreadAt<.5)return true;
     if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
-    UE_LOG(LogTemp,Display,TEXT("S47: door PASS in %s: held, left alone and looked at, saved in the middle, opened"),*DreadPlace);
+    // Shut it again, for the rounds below.
+    M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.DoorOpenNow())return Fail(TEXT("with nothing there, E is the door's own again"));
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=4;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 4: pushed from the doorway, then from clear of it.
+   if(Stage==557)
+   {
+    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    if(Visit.StageNow()!=EV::Opening){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+    StandBy(0);M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.StageNow()!=EV::Opening||!Visit.DoorOpenNow())return Fail(TEXT("from the doorway it cannot be pushed shut, and it goes on"));
+    if(Finding(TEXT("door-visit-")))return Fail(TEXT("a door that did not shut is no holding it"));
+    StandBy(1.7);M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.Active()||Visit.DoorOpenNow())return Fail(TEXT("from clear of it, it shuts"));
+    if(!Finding(TEXT("door-visit-"))||Visit.TraceKind()!=FS47DoorVisit::EEnding::Held)return Fail(TEXT("that one is holding it"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door: the doorway refuses, and clear of it it shuts"));
+    DoorFirst=Visit.LastDayOf();
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=5;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 5: something bigger, while the handle moves.
+   if(Stage==558)
+   {
+    if(DoorStep==0)
+    {
+     if(!F.Taken->Begin(ES47Taker::Roswell,TEXT("the door test")))return Fail(TEXT("the test needs something bigger"));
+     DoorStep=1;DreadAt=Elapsed;return true;
+    }
+    if(Visit.Active()){if(Elapsed-DreadAt>2)return Fail(TEXT("it gives way at once"));return true;}
+    F.Taken->GiveUp();
+    if(Visit.DoorOpenNow())return Fail(TEXT("the door stays shut"));
+    if(Finding(TEXT("door-visit-"))||Visit.MarksOut()!=0)return Fail(TEXT("this one was never here: no record, no marks"));
+    if(Visit.LastDayOf()!=int32(DoorFirst)||!Visit.DrawnTonight())return Fail(TEXT("and the night is handed back"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door: gave way at the handle, the night handed back"));
+    DreadRound=6;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Rounds 6 and 7: something bigger with the door coming open, first behind the player's back, then in plain view.
+   if(Stage==559)
+   {
+    const bool bSeen=DreadRound==7;
+    if(DoorStep==0)
+    {
+     if(bSeen){StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));}
+     else{StandBy(4.5);DreadLookAt(M,Visit.DoorMiddle()-Visit.DoorOutward()*30+FVector(0,1.6,0));}
+     if(Visit.StageNow()!=EV::Opening){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+     if(bSeen&&!Visit.SawItOpen())return true;
+     if(!bSeen&&Visit.SawItOpen())return Fail(TEXT("behind the player's back nobody saw it"));
+     if(!F.Taken->Begin(ES47Taker::Roswell,TEXT("the door test")))return Fail(TEXT("the test needs something bigger"));
+     DoorStep=1;DreadAt=Elapsed;return true;
+    }
+    if(Visit.Active()){if(Elapsed-DreadAt>(bSeen?8:2))return Fail(TEXT("it must be over soon"));return true;}
+    F.Taken->GiveUp();
+    if(!bSeen)
+    {
+     if(Visit.DoorOpenNow())return Fail(TEXT("nobody saw it open, so it is shut again"));
+     if(Finding(TEXT("door-visit-")))return Fail(TEXT("this one was never here: no record"));
+     if(Visit.LastDayOf()!=int32(DoorFirst)||Visit.DrawnTonight())return Fail(TEXT("the night is handed back, but it comes back only once a night"));
+     UE_LOG(LogTemp,Display,TEXT("S47: door: gave way unseen, the door shut again"));
+     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+     DreadRound=7;DreadAt=Elapsed;Stage=542;return true;
+    }
+    if(!Visit.DoorOpenNow())return Fail(TEXT("seen open, it stays open"));
+    if(!Finding(TEXT("door-visit-")))return Fail(TEXT("what was seen must be in the field records"));
+    if(Visit.MarksOut()!=2||Visit.TraceKind()!=FS47DoorVisit::EEnding::Walked)return Fail(TEXT("two marks, from leaving it"));
+    if(Visit.BodyEye().IsSet())return Fail(TEXT("and nothing is left standing there"));
+    if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door PASS in %s: held, left alone and looked at, saved in the middle, opened, doorway, given way three ways"),*DreadPlace);
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    return Fail(TEXT("no such door stage"));

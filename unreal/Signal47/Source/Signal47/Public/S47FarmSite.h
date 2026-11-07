@@ -95,7 +95,7 @@ private:
  // Hunt clock and how long it stays interested. Both slow or quicken with what the player gives it to go on.
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;
- bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false;
+ bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false,bSawSetTurn=false;
  int32 RadioSeen=0;
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);

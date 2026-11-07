@@ -54,6 +54,11 @@ namespace S47FarmHouse
   return X>=OriginX-Width-Margin&&X<=OriginX+Margin&&Z>=OriginZ-VerandaDepth-Margin&&Z<=OriginZ+Depth+Margin;
  }
 
+ bool Inside(double X,double Z)
+ {
+  return X>=OriginX-Width&&X<=OriginX&&Z>=OriginZ&&Z<=OriginZ+Depth;
+ }
+
  double PadY()
  {
   // A level floor just over the highest ground under it.
@@ -151,7 +156,7 @@ namespace S47FarmHouse
   // Walls that are not doors stay solid, windows included.
   const auto Blocked=[&](double X,double Y){const FVector P=Point(X,Y);for(const FBox2D& B:Solid)if(B.IsInside(FVector2D(P.X,P.Z)))return true;return false;};
   const bool bClosed=Blocked(2.5,.15)&&Blocked(5.17,4)&&Blocked(.15,6.5);
-  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Pieces().Num()>30&&DoorPlans().Num()==7;
+  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Inside(Point(6,4).X,Point(6,4).Z)&&OnPad(Point(6,10).X,Point(6,10).Z)&&!Inside(Point(6,10).X,Point(6,10).Z)&&Pieces().Num()>30&&DoorPlans().Num()==7;
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farmhouse plan: hall runs clear front to back, rooms open off it, walls and windows are solid"));
   return bGood;
  }

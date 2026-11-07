@@ -29,7 +29,8 @@ public:
  void ReleaseControlled();
  void SetMode(FS47RoswellBrain::EMode Mode);
  // A visit's attention, passed to every brain until changed. Unset lets go.
- void SetAttention(const TOptional<FVector>& Look,double Back,bool bHeard);
+ // OnlyId: the one this is about; INDEX_NONE: all of them.
+ void SetAttention(const TOptional<FVector>& Look,double Back,bool bHeard,int32 OnlyId=INDEX_NONE);
  bool Developer() const;
  void Clear();
  TArray<FView> Views() const;

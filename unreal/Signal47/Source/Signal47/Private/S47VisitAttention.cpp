@@ -24,15 +24,21 @@ void FS47VisitAttention::Step(double Dt,const FIn& In,float Roll)
   if(bLampNow){Do=EDo::Watch;T=0;Look=In.Lamp;bWillBack=Roll<.65f;break;}
   if(Do==EDo::Turn)
   {
-   if(T>=(In.bLampOn?TurnSeconds:TurnSeconds*.6))Let(0,6);
+   if(T>=(In.bLampOn?TurnSeconds:TurnSeconds*.6)||In.BodyDist<TooNear)Let(0,6);
    break;
   }
-  if(In.bNoise&&SoundWait<=0){Do=EDo::Turn;T=0;Look=In.Sound;bDidTurn=true;}
+  // On top of them, a noise stops nothing either: it is what they are making as it reaches them.
+  if(In.bNoise&&SoundWait<=0&&In.BodyDist>TooNear){Do=EDo::Turn;T=0;Look=In.Sound;bDidTurn=true;}
   break;
  case EDo::Watch:
   if(In.bBeam)Look=In.Lamp;
-  if(BeamOff>Forget){Let(4,0);break;}
-  if(T>=WatchSeconds){Do=bWillBack?EDo::Back:EDo::Blink;T=0;(bWillBack?bDidBack:bDidBlink)=true;}
+  if(BeamOff>Forget||In.BodyDist<TooNear){Let(4,0);break;}
+  if(T>=WatchSeconds)
+  {
+   Do=bWillBack?EDo::Back:EDo::Blink;T=0;
+   // A lamp already out, or one that only dips under calm flashes, did not go out because of it.
+   if(bWillBack)bDidBack=true;else bDidBlink|=In.bLampOn&&!In.bCalm;
+  }
   break;
  case EDo::Back:
   if(In.bBeam)Look=In.Lamp;
@@ -81,6 +87,16 @@ bool FS47VisitAttention::SelfTest(TArray<FString>& Lines)
  Check(!Listener.Holding(),TEXT("the next noise right after it does not hold it again"));
  Listener.Step(.05,Lit,.1f);
  Check(Listener.Doing()==EDo::Watch,TEXT("a lamp outranks a noise"));
+ FIn MildLit=Lit;MildLit.bCalm=true;
+ FS47VisitAttention Mild;Mild.Step(.05,MildLit,.9f);Run(Mild,MildLit,WatchSeconds+.1,.9f);
+ Check(Mild.Doing()==EDo::Blink&&!Mild.bDidBlink,TEXT("under calm flashes the lamp never goes out, so the record does not say it did"));
+ FS47VisitAttention Own;Own.Step(.05,Lit,.9f);Run(Own,Lit,WatchSeconds-.2,.9f);Run(Own,Dark,.3,.9f);
+ Check(Own.Doing()==EDo::Blink&&!Own.bDidBlink,TEXT("a lamp the player put out themselves is not one it put out"));
+ FIn Close=Noise;Close.BodyDist=1.5;
+ FS47VisitAttention Reached;Reached.Step(.05,Close,0);
+ Check(!Reached.Holding(),TEXT("a noise does not stop what is already on top of them"));
+ FS47VisitAttention Turning;Turning.Step(.05,Noise,0);FIn CloseQuiet;CloseQuiet.BodyDist=1.5;Turning.Step(.05,CloseQuiet,0);
+ Check(!Turning.Holding(),TEXT("and a player who walks up to it while it looks away is not protected by that"));
  FS47VisitAttention Calm;Run(Calm,Still,30.,0);
  Check(!Calm.Holding()&&!Calm.bDidBack&&!Calm.bDidBlink&&!Calm.bDidTurn,TEXT("no lamp and no noise: nothing happens and nothing is recorded"));
  return OK;

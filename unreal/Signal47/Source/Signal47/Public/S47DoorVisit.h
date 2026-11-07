@@ -47,6 +47,7 @@ public:
  int32 LastDayOf() const{return LastDay;}
  int32 RollDayOf() const{return RollDay;}
  bool DrawnTonight() const{return bTonight;}
+ bool SawItOpen() const{return bSawOpen;}
  void TestDice(float Roll){TestRoll=Roll;}
  TOptional<FVector> BodyEye() const{return bBodyOut?TOptional<FVector>(BodyFeet+FVector(0,1.05,0)):TOptional<FVector>();}
  int32 MarksOut() const{return TraceAt.Num();}
@@ -72,11 +73,14 @@ private:
  double T=0,AllT=0,SoundIn=0,HushIn=0,Noticed=0,Shake=0;
  int32 Beat=0;
  bool bBodyOut=false,bSawBody=false,bLightComes=false;
+ // bSawOpen: the door has been in the player's sight since it moved. bCutShort: something bigger ended it in full view.
+ bool bSawOpen=false,bCutShort=false;
  FVector BodyFeet=FVector::ZeroVector;
  double BodyYaw=0;
 
  // The night's draw for it.
  int32 RollDay=0,LastDay=0;
+ int32 LastBefore=0,RetryDay=0; // not saved: only for handing back one nobody saw
  bool bTonight=false;
  double InsideFor=0,WaitFor=0;
  float TestRoll=-1;
@@ -104,7 +108,10 @@ private:
  void StepVisit(double Dt);
  void BeginOpening();
  void PoseDoor(double K);
- void OpenDoorQuietly();
+ void SetDoorQuietly(bool bOpen);
+ void PutBodyOut();
+ bool DoorInSight() const;
+ void GiveWay();
  void Handle(float Gain);
  void Finish(EEnding Ending);
  void LetGo();

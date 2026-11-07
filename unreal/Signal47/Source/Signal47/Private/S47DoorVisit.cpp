@@ -50,6 +50,8 @@ namespace S47DoorVisitLocal
   default:return TEXT("Two pale marks side by side just inside the threshold, facing the room. None outside the door.");
   }
  }
+ // The way out of the old house: the inner doors have a room behind them, not the outside.
+ bool Outer(const FString& Name){return Name.StartsWith(TEXT("north"))||Name.StartsWith(TEXT("south"));}
  FString Upper(FString Text){if(!Text.IsEmpty())Text[0]=FChar::ToUpper(Text[0]);return Text;}
 }
 
@@ -57,7 +59,7 @@ void FS47DoorVisit::Begin(const S47J::FObj& Saved)
 {
  Stop();
  RollDay=S47J::Int(Saved,TEXT("rollDay"));LastDay=S47J::Int(Saved,TEXT("lastDay"));bTonight=S47J::Bool(Saved,TEXT("tonight"));
- InsideFor=0;WaitFor=bTonight?20:0;TestRoll=-1;
+ InsideFor=0;WaitFor=bTonight?20:0;TestRoll=-1;LastBefore=LastDay;RetryDay=0;
  Trace=EEnding::None;TraceAt.Reset();TraceArea.Empty();TraceTitle.Empty();TraceDay=0;TraceUntil=0;
  const S47J::FObj Left=S47J::Obj(Saved,TEXT("trace"));
  const TArray<double> Spots3=S47J::Nums(Left,TEXT("at"));
@@ -232,9 +234,11 @@ bool FS47DoorVisit::FindDoor(FTarget& Out) const
  {
   const FVector Frame=S47DoorVisitLocal::HouseFrame;
   const auto Doors=M->Freeform->HouseDoors;
-  if(!Doors||!S47FarmHouse::OnPad(Feet.X-Frame.X,Feet.Z-Frame.Z))return false;
+  // Within the walls, and at a door to the outside: what comes through it comes from out there. The veranda has a roof, but
+  // from there the far side of the door is the inside of the house.
+  if(!Doors||!S47FarmHouse::Inside(Feet.X-Frame.X,Feet.Z-Frame.Z))return false;
   double Best=12;bool bFound=false;
-  for(int32 I=0;I<Doors->Num();++I)if(!Doors->IsOpen(I))
+  for(int32 I=0;I<Doors->Num();++I)if(!Doors->IsOpen(I)&&S47DoorVisitLocal::Outer(Doors->NameOf(I)))
   {
    const FVector Middle=Doors->Middle(I);
    const double D=FVector2D::Distance(FVector2D(Middle.X,Middle.Z),FVector2D(Feet.X,Feet.Z));
@@ -274,8 +278,8 @@ void FS47DoorVisit::StepDraw(double Dt)
   M->RequestAutosave();
  }
  if(!bTonight||InsideFor<WaitFor)return;
- bTonight=false;LastDay=Day;
- Target=Found;Now=EStage::Trying;T=AllT=0;SoundIn=0;HushIn=0;Noticed=0;Shake=0;Beat=0;bBodyOut=bSawBody=bLightComes=false;
+ bTonight=false;LastBefore=LastDay;LastDay=Day;
+ Target=Found;Now=EStage::Trying;T=AllT=0;SoundIn=0;HushIn=0;Noticed=0;Shake=0;Beat=0;bBodyOut=bSawBody=bLightComes=bSawOpen=bCutShort=false;
  if(M->Web)Sight.Init(M);
  UE_LOG(LogTemp,Display,TEXT("S47: door visit starts at %s, door %s, %.1f m off, at clock %.0f"),*Target.Title,*Target.Key,FVector::Dist(Target.Middle,FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z)),M->Freeform->Clock());
  M->RequestAutosave();
@@ -293,10 +297,10 @@ void FS47DoorVisit::PoseDoor(double K)
  else S47CalicheAccess::PoseDoor(Target.Name,K);
 }
 
-void FS47DoorVisit::OpenDoorQuietly()
+void FS47DoorVisit::SetDoorQuietly(bool bOpen)
 {
- if(Target.bHouse){if(M->Freeform->HouseDoors)M->Freeform->HouseDoors->SetOpenQuietly(Target.Index,true);}
- else S47CalicheAccess::SetOpenQuietly(Target.Name,true);
+ if(Target.bHouse){if(M->Freeform->HouseDoors)M->Freeform->HouseDoors->SetOpenQuietly(Target.Index,bOpen);}
+ else S47CalicheAccess::SetOpenQuietly(Target.Name,bOpen);
 }
 
 void FS47DoorVisit::Handle(float Gain)
@@ -308,16 +312,58 @@ void FS47DoorVisit::Handle(float Gain)
 void FS47DoorVisit::BeginOpening()
 {
  Now=EStage::Opening;T=0;
- OpenDoorQuietly();
+ SetDoorQuietly(true);
  if(M->Audio)M->Audio->Sfx(TEXT("doorCreak0"),FS47Sound{.Gain=.85f,.Rate=.6f,.At=Target.Middle+FVector(0,1,0)});
  // A night that has already lit a room may light this one, and it has its own way out. Under a roof only, so it warns.
  const double Clock=M->Freeform->Clock();
  bLightComes=Owner&&Owner->HasFloodRoom()&&Clock-Owner->FloodRoomClock()<6*3600.&&M->Freeform->Taken&&M->Freeform->Taken->Indoors();
- if(bLightComes)return;
+ if(!bLightComes)PutBodyOut();
+}
+
+void FS47DoorVisit::PutBodyOut()
+{
  BodyFeet=Target.Middle+Target.Out*.62;BodyFeet.Y=GroundNear(BodyFeet);bBodyOut=true;
- const auto In=M->Night->GlimpseIn(true);
- BodyYaw=FMath::Atan2(In.Cam.Pos.X-BodyFeet.X,In.Cam.Pos.Z-BodyFeet.Z);
+ if(M->Night)
+ {
+  const auto In=M->Night->GlimpseIn(true);
+  BodyYaw=FMath::Atan2(In.Cam.Pos.X-BodyFeet.X,In.Cam.Pos.Z-BodyFeet.Z);
+ }
  if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT);
+}
+
+bool FS47DoorVisit::DoorInSight() const
+{
+ if(!M||!M->Night)return false;
+ const auto In=M->Night->GlimpseIn(true);
+ // A little on the player's side of the leaf, so that the door itself does not count as what hides it.
+ const FVector Spot=Target.Middle-Target.Out*.25+FVector(0,1.1,0);
+ const FVector N=In.Cam.Project(Spot);
+ return N.Z<1&&FMath::Abs(N.X)<.96&&FMath::Abs(N.Y)<.96&&Sight.ClearSight(In.Cam.Pos,Spot);
+}
+
+// Something bigger came first. Never seen open: it was never here, the door is shut as it was, and the night is handed back.
+// Seen open, it cannot have been nothing: the door stays, what stands there goes by itself, and the record says how little was seen.
+void FS47DoorVisit::GiveWay()
+{
+ const FVector2D Feet2D(M->Player->Pos.X,M->Player->Pos.Z);
+ const bool bInWay=FVector2D::Distance(Feet2D,FVector2D(Target.Middle.X,Target.Middle.Z))<1.4;
+ if(DoorOpenNow()&&(bSawOpen||bInWay))
+ {
+  UE_LOG(LogTemp,Display,TEXT("S47: door visit cut short in view, the door stays open"));
+  bCutShort=true;bLightComes=false;
+  PoseDoor(-1); // the rest of its swing, by itself
+  if(bBodyOut){Now=EStage::Leaving;T=0;}
+  else Finish(EEnding::Walked);
+  return;
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: door visit given up for something bigger, nobody saw the door move"));
+ if(DoorOpenNow())SetDoorQuietly(false);
+ LetGo();Now=EStage::None;bLightComes=false;
+ LastDay=LastBefore;
+ // It may try once more tonight, when things are quiet again.
+ const int32 Day=M->Freeform->Day();
+ if(RetryDay!=Day){RetryDay=Day;bTonight=true;WaitFor=FMath::FRandRange(40.f,90.f);}
+ M->RequestAutosave();
 }
 
 void FS47DoorVisit::StepVisit(double Dt)
@@ -329,16 +375,17 @@ void FS47DoorVisit::StepVisit(double Dt)
  // Gone from there: it has the door to itself, and nobody is left to see it. The door is found open, later.
  if(bGone)
  {
-  if(Now==EStage::Trying||Now==EStage::Waiting)OpenDoorQuietly();
+  if(Now==EStage::Trying||Now==EStage::Waiting)SetDoorQuietly(true);
+  bLightComes=false; // nobody there for it to come to
   if(Now!=EStage::Holding)Finish(EEnding::Walked);else Finish(EEnding::Held);
   return;
  }
- // Something bigger came first: this one was never here.
- if(Owner&&!Owner->DoorQuiet())
+ if(Now==EStage::Opening||Now==EStage::Standing||Now==EStage::Leaving)bSawOpen|=DoorInSight();
+ // Already going is going: that is over in a moment whatever else has come.
+ if(Owner&&!Owner->DoorQuiet()&&Now!=EStage::Leaving)
  {
-  UE_LOG(LogTemp,Display,TEXT("S47: door visit given up for something bigger"));
-  LetGo();Now=EStage::None;M->RequestAutosave();
-  return;
+  GiveWay();
+  if(Now==EStage::None)return;
  }
  T+=Dt;AllT+=Dt;
  Shake=FMath::Max(0.,Shake-Dt*3.5);
@@ -390,10 +437,9 @@ void FS47DoorVisit::StepVisit(double Dt)
   {
    if(bLightComes)
    {
-    const FString Place=Target.Title;
-    Finish(EEnding::Walked);
-    if(M->Freeform->Taken)M->Freeform->Taken->Begin(ES47Taker::Roswell,Place);
-    return;
+    // Begun first, so that the record says a light came only if one is coming. If not, the door has what any other has.
+    if(M->Freeform->Taken&&M->Freeform->Taken->Begin(ES47Taker::Roswell,Target.Title)){Finish(EEnding::Walked);return;}
+    bLightComes=false;PutBodyOut();
    }
    PoseDoor(1);Now=EStage::Standing;T=0;Noticed=0;
   }
@@ -403,7 +449,7 @@ void FS47DoorVisit::StepVisit(double Dt)
  case EStage::Leaving:
  {
   // Shut on it: what is behind a shut door is nobody's business.
-  if(!DoorOpenNow()){Finish(EEnding::Walked);return;}
+  if(!DoorOpenNow()||!M->Night){Finish(EEnding::Walked);return;}
   const auto In=M->Night->GlimpseIn(true);
   const FVector Eye=BodyFeet+FVector(0,1.05,0);
   const FVector N=In.Cam.Project(Eye);
@@ -451,10 +497,12 @@ bool FS47DoorVisit::Pressed(const FString& DoorKey)
   Finish(EEnding::Opened);
   return true;
  case EStage::Opening:
-  // Pushed shut before it got any further: that counts as holding it.
-  LetGo();bLightComes=false;
+  // Pushed shut before it got any further: that counts as holding it. Someone in the doorway cannot shut it: the door says
+  // so, and this goes on as if nothing had been pressed.
   if(Target.bHouse){if(M->Freeform->HouseDoors)M->Freeform->HouseDoors->Use(Target.Index);}
   else S47CalicheAccess::UseDoor(Target.Name);
+  if(DoorOpenNow())return true;
+  bLightComes=false;
   Finish(EEnding::Held);
   return true;
  default:
@@ -486,7 +534,12 @@ void FS47DoorVisit::Finish(EEnding Ending)
  FString What;
  if(Ending==EEnding::Held)What=TEXT("Something tried the handle of a shut door and waited. I held the door and it stopped, and steps went away along the wall. This records what I heard, not what it was.");
  else if(Ending==EEnding::Opened)What=TEXT("Something tried the handle of a shut door and waited. I opened it. Nobody on the threshold, and the sound stopped as the door moved. This records what I found, not what it was.");
- else if(bLightComes)What=TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and a light came after it. This records what I saw, not what it was.");
+ else if(bLightComes)What=M->Freeform->Taken&&M->Freeform->Taken->Stage()==FS47Taken::EStage::Flood
+  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and a light came after it. This records what I saw, not what it was.")
+  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there was someone on the roof. This records what I heard, not what it was.");
+ else if(bCutShort)What=bSawBody
+  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and something stood there, and then there was too much else going on and it was gone. This records what I saw, not what it was.")
+  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there was too much else going on to see what it did. This records what I saw, not what it was.");
  else if(bSawBody)What=TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, slowly, and something stood there until I looked straight at it. This records what I saw, not what it was.");
  else What=TEXT("Something tried the handle of a shut door. I did not hold it and I did not stay to see what it did. This records what I heard, not what it was.");
  if(!M->Freeform->HasFinding(Key))M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("%s, in the small hours. %s"),*Where,*What));
@@ -526,6 +579,8 @@ bool FS47DoorVisit::SelfTest(TArray<FString>& Lines)
  Check(Copy.MarksOut()==3&&Copy.TraceKind()==EEnding::Held&&Copy.LastDayOf()==4&&Copy.RollDayOf()==4,TEXT("the marks and the draw survive Continue"));
  FS47DoorVisit Again(nullptr,nullptr);Again.Begin(Copy.Save());
  Check(S47J::Write(Copy.Save())==S47J::Write(Again.Save()),TEXT("saving again changes nothing"));
+ int32 OuterDoors=0;for(const auto& Plan:S47FarmHouse::DoorPlans())if(S47DoorVisitLocal::Outer(Plan.Name))++OuterDoors;
+ Check(OuterDoors==2&&!S47DoorVisitLocal::Outer(TEXT("hallW0"))&&!S47DoorVisitLocal::Outer(TEXT("bath0")),TEXT("in the old house it comes only to the two doors to the outside"));
  Check(S47DoorVisitLocal::MarksText(EEnding::Held)!=S47DoorVisitLocal::MarksText(EEnding::Opened)&&S47DoorVisitLocal::MarksText(EEnding::Opened)!=S47DoorVisitLocal::MarksText(EEnding::Walked),TEXT("each ending has its own marks and its own text"));
  return OK;
 }

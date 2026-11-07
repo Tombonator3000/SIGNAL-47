@@ -14,6 +14,8 @@ namespace S47FarmHouse
  // Footprints that block walking: walls, with doors left open and windows closed.
  TArray<FBox2D> Solids();
  bool OnPad(double RoadX,double RoadZ,double Margin=0);
+ // Within the outer walls: the pad less its veranda, which has a roof but is outdoors.
+ bool Inside(double RoadX,double RoadZ);
  double PadY();
  // Road-local points in the plan's own rooms, for tests and later events.
  FVector Point(double PlanX,double PlanY);
