@@ -155,6 +155,7 @@ public:
  void RecordEvidence(const FString& Id,const FString& Text);
  void RegisterFinding(const FString& Id,const FString& Text) { RecordEvidence(Id,Text); }
  bool HasFinding(const FString& Id) const { return Findings.Contains(Id); }
+ FString FindingText(const FString& Id) const { return Findings.FindRef(Id); }
  bool InTutorial() const { return Tutorial>0; }
  void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }
@@ -256,6 +257,7 @@ private:
  FS47FreeformCases Cases;
  void OpenCaseFor(const FString& FindingId);
  void RecordCaseResult(FJob& J);
+ void StepCaseReplies();
  bool StationSealed() const;
  bool CaseObserved(const FJob& J) const;
  FString CasePrecondition(const FJob& J) const;

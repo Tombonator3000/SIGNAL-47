@@ -423,6 +423,7 @@ void FS47FreeformSession::Step(double Dt)
   if(NowDay!=DayNumber){DayNumber=NowDay;AddDay(DayNumber);Changed(TEXT("New daily observing jobs are on the operations terminal. Unfinished work remains available."));}
   M->Story->SetClock(FMath::Fmod(WorldClock,86400.));
   AutosaveAt+=D;if(AutosaveAt>=30){AutosaveAt=0;Changed();}
+  StepCaseReplies();
  }
  if(!ArrayMotionHeld())StepWork(D);
  if(AudioDesk)AudioDesk->Step(D);
@@ -1013,11 +1014,13 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  {
   FS47Doc D;D.Id=TEXT("freeform-")+Id;D.Title=TEXT("Field record: ")+Id;D.Kind=TEXT("fieldnote");D.Stamp=FString::Printf(TEXT("SARO / DAY %d / %s"),DayNumber,*Id);
   // Out in the world: named by what it says, not by its key, and not stamped as if it were at the site.
-  if(Id.StartsWith(TEXT("taken-"))||Id.Contains(TEXT("_visit"))||Id.Contains(TEXT("_trace")))
+  const bool bTrace=FS47FreeformCases::LineForFinding(Id)==FS47FreeformCases::MysteryLine;
+  if(bTrace||Id.StartsWith(TEXT("taken-"))||Id.Contains(TEXT("_visit"))||Id.Contains(TEXT("_trace")))
   {
    int32 Stop=INDEX_NONE;Text.FindChar(TEXT('.'),Stop);
    D.Title=TEXT("Field record: ")+(Stop>0?Text.Left(FMath::Min(Stop,60)):Text.Left(60));
-   D.Stamp=FString::Printf(TEXT("IN THE FIELD / DAY %d"),DayNumber);
+   if(!bTrace||Id!=TEXT("carrier_saro"))D.Stamp=FString::Printf(TEXT("IN THE FIELD / DAY %d"),DayNumber);
+   else D.Stamp=FString::Printf(TEXT("SARO / DAY %d"),DayNumber);
   }
   D.Page=D.Stamp+TEXT("\n\nOBSERVATION\n")+Text+TEXT("\n\nInterpretation remains separate from the retained observation. Compare independent sources before assigning an origin.");D.Transcript=D.Page;
   M->Story->AddDoc(D);
@@ -1598,7 +1601,7 @@ void FS47FreeformSession::OpenArchive()
  TArray<FString> Keys;Findings.GetKeys(Keys);Keys.Sort([this](const FString& A,const FString& B){const int32 X=FindingDays.FindRef(A),Y=FindingDays.FindRef(B);return X!=Y?X>Y:A<B;});
  for(const FString& K:Keys)
  {
-  const bool Investigate=K.StartsWith(TEXT("extra_pulse"))||K.StartsWith(TEXT("feeder_fault"))||K.StartsWith(TEXT("wrong_source"))||K.StartsWith(TEXT("roof_steps"))||K.StartsWith(TEXT("observer"))||K.StartsWith(TEXT("peek-"))||K.StartsWith(TEXT("flood-room-"))||K.StartsWith(TEXT("landing_trace"))||K.StartsWith(TEXT("time_disagreement"))||K.StartsWith(TEXT("duplicate_print"));
+  const bool Investigate=K.StartsWith(TEXT("extra_pulse"))||K.StartsWith(TEXT("feeder_fault"))||K.StartsWith(TEXT("wrong_source"))||K.StartsWith(TEXT("roof_steps"))||K.StartsWith(TEXT("observer"))||K.StartsWith(TEXT("peek-"))||K.StartsWith(TEXT("flood-room-"))||K.StartsWith(TEXT("landing_trace"))||K.StartsWith(TEXT("time_disagreement"))||K.StartsWith(TEXT("duplicate_print"))||K.StartsWith(TEXT("carrier_"));
   const FString Record=Findings.FindRef(K);const bool Bench=K.StartsWith(TEXT("service"))||K.StartsWith(TEXT("workshop"))||K.StartsWith(TEXT("donor"))||K.StartsWith(TEXT("feeder-repair"))||K.StartsWith(TEXT("sample"));
   // The record's own first sentence names it; internal keys stay internal.
   int32 Stop=INDEX_NONE;Record.FindChar(TEXT('.'),Stop);FString Title=Stop>0?Record.Left(Stop):Record;if(Title.Len()>58)Title=Title.Left(55)+TEXT("...");
@@ -1888,6 +1891,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
   if(Def.Access&&!Cases.HasAccess(Def.Access)){Feedback=TEXT("This test needs the field logger on loan. Conclude THE REPEATED INTERVAL to have one approved.");return false;}
   const FString Unavailable=FS47FreeformCases::UnavailableReason(Line,Test);
   if(!Unavailable.IsEmpty()){Feedback=Unavailable;return false;}
+  if(Cases.TrailCold(Line,DayNumber)){Feedback=TEXT("The trail has gone cold: a fresh control would no longer show anything about that night. You can still file your assessment.");Changed(Feedback);return false;}
   if(Def.Condition==ECaseCondition::FieldWork)
   {
    const FString Id=FString::Printf(TEXT("FIELD-D%04d-CASE%d-T%d"),DayNumber,Line+1,Test+1);
@@ -1921,11 +1925,58 @@ void FS47FreeformSession::RecordCaseResult(FJob& J)
  if(Cases.Remaining(Line)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
  Changed(Text);
 }
+void FS47FreeformSession::StepCaseReplies()
+{
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+ {
+  if(!Cases.ReplyDue(Line,DayNumber))continue;
+  const auto* Answer=Cases.Reply(Line);const auto* Y=FS47FreeformCases::Def(Line).Mystery;
+  // Spent first: what follows happens once, and a Continue finds it done.
+  Cases.MarkReplied(Line);if(!Answer||!Y)continue;
+  const FString Page=Answer->Text;
+  RecordEvidence(FString::Printf(TEXT("case%d-reply"),Line+1),Page);
+  if(M&&M->Story)
+  {
+   FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-reply"),Line+1);Doc.Title=Y->ReplyTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
+   Doc.Page=Page;Doc.Transcript=Page;M->Story->AddDoc(Doc);
+  }
+  FString Note=FString(Y->ReplyTitle)+TEXT(" has come in at the telex.");
+  switch(Answer->Effect)
+  {
+   case FS47FreeformCases::EReply::Spare:AddItem(TEXT("fuse"),1);break;
+   case FS47FreeformCases::EReply::CallOut:
+   {
+    // Never into debt over this: what is there goes, and that is the end of it.
+    const int32 Charge=FMath::Min(Cash,int32(FS47FreeformCases::CallOutCharge));
+    if(Charge>0&&Spend(Charge))Note+=FString::Printf(TEXT(" $%d charged."),Charge);
+    break;
+   }
+   case FS47FreeformCases::EReply::FeederFault:SetPowerFault(true);break;
+   default:break;
+  }
+  Changed(Note);
+ }
+}
 bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 {
- FString Why;if(!Cases.Conclude(Line,Cause,Why)){Feedback=Why;Changed(Why);return false;}
+ FString Why;if(!Cases.Conclude(Line,Cause,Why,DayNumber)){Feedback=Why;Changed(Why);return false;}
  if(FieldFocus==Line)FieldFocus=-1;
  const auto& D=FS47FreeformCases::Def(Line);const FString Name=D.Causes[Cause];
+ if(D.Mystery)
+ {
+  // A test recording not yet started no longer tests anything: it goes back to being a day's ordinary paid work. One
+  // already under way runs out as routine, since the case no longer has a plan for it to report to.
+  for(FJob& J:Work)if(J.CaseLine==Line&&!J.bCaseRecorded&&J.Stage<=EJobStage::Pointed)
+  {J.CaseLine=-1;J.CaseTest=-1;J.Stage=EJobStage::New;J.Elapsed=0;J.Card=FS47FreeformJobs::Make(JobSeed,J.Day,J.Slot,J.Source);}
+  Settle=0;
+  RecordEvidence(FString::Printf(TEXT("case%d-conclusion"),Line+1),FString::Printf(TEXT("ASSESSMENT FILED / %s\nYOUR ASSESSMENT / %s\nDAY %d. It rests on the retained traces and tests and has not been checked."),D.Title,*Name,DayNumber));
+  if(M&&M->Story)
+  {
+   FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-records"),Line+1);Doc.Title=D.TelexTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO STATION LOG / DAY %d"),DayNumber);
+   Doc.Page=Cases.ConclusionText(Line);Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);
+  }
+  Feedback=TEXT("Assessment filed: ")+Name+TEXT(". The reply comes in the morning.");Changed(Feedback);return true;
+ }
  RecordEvidence(FString::Printf(TEXT("case%d-conclusion"),Line+1),FString::Printf(TEXT("CASE CONCLUDED / %s\nSUPPORTED EXPLANATION / %s\nThe retained tests exclude the other explanations. Interpretation beyond this remains open."),D.Title,*Name));
  if(M&&M->Story)
  {
@@ -1940,7 +1991,7 @@ FString FS47FreeformSession::TonightPlan()const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
  {
   const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;const auto& D=FS47FreeformCases::Def(Line);
-  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. Open the case board and choose the next test."),D.Title,Cases.Remaining(Line)));continue;}
+  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. %s"),D.Title,Cases.Remaining(Line),D.Mystery?TEXT("Open the case board: choose a control or file your assessment."):TEXT("Open the case board and choose the next test.")));continue;}
   const auto& T=D.Tests[C->Planned];
   FString Plan=TEXT("TONIGHT'S PLAN / ")+FString(D.Title)+TEXT(" / CASE TEST: ")+FString(T.Name).ToUpper()+TEXT(" / JOB ")+C->PlannedJob+TEXT("\n")+T.Instruction;
   switch(T.Condition)
@@ -1982,7 +2033,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
   {
    const bool Out=Cases.Excluded(Line,I);
-   const FString State=C->bConcluded?(C->Conclusion==I?TEXT("CONCLUDED / SUPPORTED BY YOUR TESTS"):TEXT("RULED OUT")):Out?TEXT("RULED OUT"):TEXT("STILL POSSIBLE");
+   const FString State=C->bConcluded&&D.Mystery?(C->Conclusion==I?TEXT("FILED AS YOUR ASSESSMENT"):Out?TEXT("RULED OUT"):TEXT("NOT FILED")):C->bConcluded?(C->Conclusion==I?TEXT("CONCLUDED / SUPPORTED BY YOUR TESTS"):TEXT("RULED OUT")):Out?TEXT("RULED OUT"):TEXT("STILL POSSIBLE");
    Rows.Add(S47FreeformTerminal::Small(TEXT("EXPLANATION / ")+FString(D.Causes[I])+TEXT(" / ")+State));
   }
   if(!C->bConcluded)
@@ -1993,6 +2044,17 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    Rows.Add(S47Kit::Row(Hunches));
   }
   TSharedRef<SScrollBox> List=SNew(SScrollBox);
+  if(const auto* Y=D.Mystery)
+  {
+   FString Trail=TEXT("TRACES / what each place showed. They need not agree.");
+   for(const auto& Clue:Y->Clues)
+   {
+    const bool bKept=Findings.Contains(Clue.Finding);
+    Trail+=FString::Printf(TEXT("\n%s: %s"),Clue.Place,bKept?*Findings.FindRef(Clue.Finding):Director&&Director->MysteryTrailOpen()?TEXT("not looked at yet. Whatever is there will not last past noon."):TEXT("nothing retained."));
+   }
+   List->AddSlot()[S47FreeformTerminal::Paper(Trail)];
+  }
+  const bool bCold=Cases.TrailCold(Line,DayNumber);
   if(!C->Leads.IsEmpty()&&Director)
   {
    FString Leads=TEXT("LEADS / retained observations, not yet one cause");
@@ -2008,8 +2070,9 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    else if(!Unavailable.IsEmpty())Card+=TEXT("\nUNAVAILABLE / ")+Unavailable+(C->Planned==T?TEXT(" Cancel this retained plan to choose another control."):TEXT(""));
    else if(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access))Card+=TEXT("\nNEEDS / the loan field logger (conclude THE REPEATED INTERVAL)");
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / ")+C->PlannedJob+TEXT("\n")+CaseWindowText(Line);
+   else if(bCold&&!C->bConcluded)Card+=TEXT("\nTRAIL COLD / Too long since that night for a fresh control to show anything.");
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
-   if(Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
+   if(!bCold&&Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
   }
   if(PlannedFieldTest(Line)>=0)
   {
@@ -2019,7 +2082,15 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   }
   double WaitTarget=0;if(CaseWaitTarget(Line,WaitTarget))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Wait until five minutes before this window / review consequences"),[this,WaitTarget]{OpenWaitConfirmation(WaitTarget);},true)];
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
-  if(!C->bConcluded)
+  if(!C->bConcluded&&D.Mystery)
+  {
+   Rows.Add(S47FreeformTerminal::Small(TEXT("FILE / What you file is acted on. Nothing here checks it first, and it cannot be taken back. Only your own retained tests can close an explanation.")));
+   TArray<S47Kit::FW> Filings;
+   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Filings.Add(S47FreeformTerminal::Button(FString(TEXT("File assessment: "))+D.Short[I],[this,Line,I]{ConcludeCase(Line,I);OpenCaseBoard(Line);},true));
+   Rows.Add(S47Kit::Row(Filings));
+  }
+  else if(C->bConcluded&&D.Mystery)Rows.Add(S47FreeformTerminal::Small(C->bReplied?TEXT("ASSESSMENT FILED / The reply is in your documents."):TEXT("ASSESSMENT FILED / The reply comes in the morning.")));
+  else if(!C->bConcluded)
   {
    Rows.Add(S47FreeformTerminal::Small(TEXT("CONCLUDE / A conclusion is accepted only when your retained tests exclude the other explanations. Guessing right is not enough.")));
    TArray<S47Kit::FW> Choices;
@@ -2206,7 +2277,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": choose a test on the OPS case board"),false});
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(FS47FreeformCases::Def(Line).Mystery?TEXT(": choose a control or file your assessment on the OPS case board"):TEXT(": choose a test on the OPS case board")),false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
  return Result;
@@ -2421,6 +2492,42 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FieldAgain.Stop();MissingAgain.Stop();
   const bool bTrace=Case.FieldTestExpectsPresent(2,1);
   Check(!Case.ReportFieldTest(2,0,true,true,TEXT("x"))&&Case.ReportFieldTest(2,1,true,bTrace,TEXT("seal and strips inspected"))&&Case.CaseFile().Get(2)->Results[1].bDone&&Case.PlannedFieldTest(2)==-1&&!Case.FieldTestExpectsPresent(2,1),TEXT("Only the planned field test is answered and reported; the hidden cause is not readable afterwards"));
+ }
+ {
+  // The night's mystery through the session. A trace opens it, an assessment goes in on that alone, and the next day's
+  // reply follows what it was, not what was filed, and comes once. Under every cause, right and wrong.
+  const int32 MLine=FS47FreeformCases::MysteryLine;
+  for(int32 MWas=0;MWas<FS47FreeformCases::CauseCount;++MWas)
+  {
+   int32 MSeed=1;for(FS47FreeformCases MProbe;MSeed<512;++MSeed){MProbe.Reset(MSeed);if(MProbe.Get(MLine)->Truth==MWas)break;}
+   FS47FreeformSession MBase(nullptr);MBase.Begin(nullptr);auto MState=MBase.Save();MBase.Stop();S47J::Set(MState,TEXT("jobSeed"),MSeed);S47J::Set(MState,TEXT("tutorial"),0);
+   FS47FreeformSession MRight(nullptr);MRight.Begin(MState);
+   Check(!MRight.CaseFile().Get(MLine)->bOpen&&MRight.CaseFile().Get(MLine)->Truth==MWas,TEXT("Mystery: closed until something is found, its cause set by the seed"));
+   MRight.RecordEvidence(TEXT("carrier_saro"),MRight.CaseFile().ClueText(MLine,0));
+   Check(MRight.CaseFile().Get(MLine)->bOpen&&MRight.FindingText(TEXT("carrier_saro"))==MRight.CaseFile().ClueText(MLine,0)&&MRight.TonightPlan().Contains(TEXT("file your assessment")),TEXT("Mystery: a kept trace opens the case and says what can be done"));
+   const int32 MFuses=MRight.InventoryCount(TEXT("fuse"));const int32 MCash=MRight.Budget();
+   Check(MRight.ConcludeCase(MLine,MWas)&&MRight.FeedbackText().Contains(TEXT("in the morning"))&&!MRight.FeedbackText().Contains(TEXT("right")),TEXT("Mystery: filing the right answer says nothing about being right"));
+   MRight.StepCaseReplies();Check(!MRight.HasFinding(TEXT("case4-reply")),TEXT("Mystery: no reply the same day"));
+   MRight.TestAdvance(86400.);MRight.StepCaseReplies();
+   Check(MRight.HasFinding(TEXT("case4-reply"))&&!MRight.PowerFault()&&MRight.Budget()==MCash&&MRight.InventoryCount(TEXT("fuse"))==MFuses+(MWas==2?0:1),TEXT("Mystery: filed right, the next day brings no cost, a spare fuse, and nothing at all for the unexplained"));
+   FS47FreeformSession MAgain(nullptr);MAgain.Begin(MRight.Save());MAgain.StepCaseReplies();
+   Check(MAgain.CaseFile().Get(MLine)->bReplied&&MAgain.InventoryCount(TEXT("fuse"))==MRight.InventoryCount(TEXT("fuse")),TEXT("Mystery: the reply comes once, also after Continue"));
+   MRight.Stop();MAgain.Stop();
+   const int32 MFiled=(MWas+1)%FS47FreeformCases::CauseCount;
+   FS47FreeformSession MWrong(nullptr);MWrong.Begin(MState);MWrong.RecordEvidence(TEXT("carrier_feeder"),MWrong.CaseFile().ClueText(MLine,1));
+   // A plan not yet started goes back to ordinary work when the filing goes in.
+   const int32 MJobs=MWrong.Jobs().Num();
+   Check(MWrong.PlanCaseTest(MLine,1)&&MWrong.Jobs().Num()==MJobs+1&&MWrong.Jobs().Last().CaseTest==1,TEXT("Mystery: a control is one dedicated job"));
+   Check(MWrong.ConcludeCase(MLine,MFiled)&&MWrong.Jobs().Last().CaseTest==-1&&MWrong.CaseFile().Get(MLine)->Planned<0&&MWrong.CaseFile().Get(MLine)->bConcluded,TEXT("Mystery: an assessment can be filed against the truth, and frees the planned job"));
+   MWrong.TestAdvance(86400.);MWrong.StepCaseReplies();
+   Check(MWrong.HasFinding(TEXT("case4-reply"))&&MWrong.InventoryCount(TEXT("fuse"))==MFuses,TEXT("Mystery: filed wrong, the next day never pays"));
+   Check(!MWrong.ConcludeCase(MLine,MWas)&&MWrong.Active()&&MWrong.CaseFile().Get(MLine)->Conclusion==MFiled,TEXT("Mystery: a wrong filing stands, and the session goes on"));
+   MWrong.Stop();
+   // Nothing filed: the controls close after a while, the filing does not.
+   FS47FreeformSession MLate(nullptr);MLate.Begin(MState);MLate.RecordEvidence(TEXT("carrier_saro"),MLate.CaseFile().ClueText(MLine,0));MLate.TestAdvance(3*86400.);
+   Check(!MLate.PlanCaseTest(MLine,0)&&MLate.FeedbackText().Contains(TEXT("gone cold"))&&MLate.ConcludeCase(MLine,MWas),TEXT("Mystery: a cold trail refuses a new control and still takes the filing"));
+   MLate.Stop();
+  }
  }
  Case.Stop();
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));

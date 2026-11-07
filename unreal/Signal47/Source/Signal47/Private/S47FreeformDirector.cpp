@@ -2,6 +2,7 @@
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FarmSite.h"
+#include "S47IndoorDread.h"
 #include "S47Inter.h"
 #include "S47UfoPresentation.h"
 #include "S47HighwayUfo.h"
@@ -289,6 +290,7 @@ FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
@@ -327,6 +329,14 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   ObserverRollDay=FMath::Max(0,S47J::Int(O,TEXT("observerRollDay")));PendingObserverNight=FMath::Max(0,S47J::Int(O,TEXT("pendingObserverNight")));
   SiteRollDay=FMath::Max(0,S47J::Int(O,TEXT("siteRollDay")));PendingSiteNight=FMath::Max(0,S47J::Int(O,TEXT("pendingSiteNight")));
   PendingMajorNight=FMath::Max(0,S47J::Int(O,TEXT("pendingMajorNight")));
+  // Older saves have none: a mystery still to come, nothing waiting.
+  if(const auto Y=S47J::Obj(O,TEXT("mystery")))
+  {
+   const auto Finite=[&Y](const TCHAR* K,double Max){const double V=S47J::Num(Y,K);return FMath::IsFinite(V)?FMath::Clamp(V,0.,Max):0.;};
+   MysteryRollDay=FMath::Max(0,S47J::Int(Y,TEXT("rollDay")));PendingMysteryNight=FMath::Max(0,S47J::Int(Y,TEXT("pendingNight")));
+   MysterySeen=FMath::Clamp(S47J::Int(Y,TEXT("seen")),0,(1<<FS47FreeformCases::ClueCount)-1);MysteryClue=FMath::Clamp(S47J::Int(Y,TEXT("clue"),-1),-1,FS47FreeformCases::ClueCount-1);
+   MysteryAfter=Finite(TEXT("after"),26.5);MysteryClearAt=Finite(TEXT("clearAt"),3153600000.);MysteryAge=Finite(TEXT("age"),MysteryNoticeSeconds);
+  }
   if(PendingThreatNight!=ThreatRollDay||Event==TEXT("service_presence"))PendingThreatNight=0;
   if(PendingMajorNight!=MajorRollDay||Event==TEXT("close_pass"))PendingMajorNight=0;
   auto Time=[&](const TCHAR* K,double Max=1e9){const double V=S47J::Num(O,K);return FMath::IsFinite(V)?FMath::Clamp(V,0.,Max):0.;};
@@ -378,6 +388,11 @@ S47J::FObj FS47FreeformDirector::Save()const
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
+ if(MysteryRollDay>0)
+ {
+  auto Y=S47J::New();S47J::Set(Y,TEXT("rollDay"),MysteryRollDay);S47J::Set(Y,TEXT("pendingNight"),PendingMysteryNight);S47J::Set(Y,TEXT("seen"),MysterySeen);S47J::Set(Y,TEXT("clue"),MysteryClue);
+  S47J::Set(Y,TEXT("after"),MysteryAfter);S47J::Set(Y,TEXT("clearAt"),MysteryClearAt);S47J::Set(Y,TEXT("age"),MysteryAge);S47J::Set(O,TEXT("mystery"),Y);
+ }
  S47J::Set(O,TEXT("age"),Age);S47J::Set(O,TEXT("activeTime"),ActiveTime);S47J::Set(O,TEXT("nextAt"),NextAt);S47J::Set(O,TEXT("restUntil"),RestUntil);S47J::Set(O,TEXT("soundAt"),SoundAt);S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
  S47J::Set(O,TEXT("effectsApplied"),bEffectsApplied);
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
@@ -735,7 +750,7 @@ bool FS47FreeformDirector::RollNightChoice(int32 Day,int32 FirstDay,float Chance
 bool FS47FreeformDirector::ExpireNightChoices(int32 Day,bool bNight)
 {
  bool ChangedChoice=false;
- for(int32* Pending:{&PendingThreatNight,&PendingMajorNight,&PendingLightNight,&PendingObserverNight,&PendingSiteNight})
+ for(int32* Pending:{&PendingThreatNight,&PendingMajorNight,&PendingLightNight,&PendingObserverNight,&PendingSiteNight,&PendingMysteryNight})
   if(*Pending>0&&(!bNight||*Pending!=Day)){*Pending=0;ChangedChoice=true;}
  return ChangedChoice;
 }
@@ -763,6 +778,14 @@ void FS47FreeformDirector::RollTonight(int32 Day)
  const int32* Figure=LastDays.Find(TEXT("observer"));
  if(!Figure||Day-*Figure>=3)bAny|=RollNightChoice(Day,1,Chance(.5f),ObserverRollDay,PendingObserverNight);
  bAny|=RollNightChoice(Day,2,Chance(.4f),SiteRollDay,PendingSiteNight);
+ // Its own dice, so that the night's other draws are not moved by it. Over once its case has opened.
+ const auto* MysteryCase=M&&M->Freeform?M->Freeform->CaseFile().Get(FS47FreeformCases::MysteryLine):nullptr;
+ if(MysteryCase&&!MysteryCase->bOpen&&(MysteryDice>=0||(M->Flow&&!M->Flow->bDevRun))&&RollNightChoice(Day,2,MysteryDice>=0?MysteryDice:.3f,MysteryRollDay,PendingMysteryNight))
+ {
+  // As the lights have an hour: some nights while there is still work on, some late.
+  if(PendingMysteryNight==Day)MysteryAfter=Random.FRandRange(20.f,26.5f);
+  bAny=true;
+ }
  if(bAny)Changed();
 }
 bool FS47FreeformDirector::DrawForNight(int32 Night)
@@ -773,6 +796,60 @@ bool FS47FreeformDirector::DrawForNight(int32 Night)
  const bool bDue=PendingThreatNight==Night||PendingMajorNight==Night||PendingLightNight==Night||PendingObserverNight==Night;
  if(bDue){NextAt=ActiveTime+8;RestUntil=FMath::Min(RestUntil,ActiveTime+8);Changed();}
  return bDue;
+}
+int32 FS47FreeformDirector::MysteryClueHere() const
+{
+ if(!M||!M->Web||!M->Freeform||!M->Player||!M->World||M->World->bDriving)return -1;
+ const FString Here=M->Web->Area();
+ // At the station, not out at the farm, which shares its area.
+ if(Here==TEXT("saro"))return Near(FVector(-3,1,1),45)?0:-1;
+ // The evening keeps to small hints: a kick of a meter. Nothing is there to be found at the feeder before midnight.
+ const double Hour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;
+ if(Here==TEXT("road")&&Hour<12&&M->Freeform->Field&&Near(M->Freeform->Field->InteractionPoint(TEXT("ff:feeder")),12))return 1;
+ return -1;
+}
+bool FS47FreeformDirector::MysteryQuiet() const
+{
+ if(!M||!M->Freeform||!Event.IsEmpty()||ActiveTime<RestUntil||M->Freeform->InTutorial())return false;
+ if(M->HighwayUfo&&M->HighwayUfo->Busy())return false;
+ const auto& Session=*M->Freeform;
+ if((Session.Taken&&Session.Taken->Busy())||(Session.FarmSite&&Session.FarmSite->VisitWantsGround())||(Session.IndoorDread&&Session.IndoorDread->PeekActive()))return false;
+ return !M->Night||!M->Night->Glimpses||M->Night->Glimpses->Individuals().IsEmpty();
+}
+void FS47FreeformDirector::NoticeMystery(int32 Clue,bool bFirst)
+{
+ // The same sound and the same words under every cause: nothing here depends on what it was.
+ if(Clue==0)
+ {
+  if(bFirst&&M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
+  if(M->UI)M->UI->Toast(bFirst?TEXT("The receiver meter kicks and settles. A second of hash from the rack."):TEXT("The receiver chart has a burst on it from the same night. You keep the strip."),5);
+  return;
+ }
+ if(M->Audio&&M->Freeform->Field)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.25f,.At=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"))});
+ if(M->UI)M->UI->Toast(TEXT("The feeder panel buzzes once as you come up to it. You look it over."),5);
+}
+void FS47FreeformDirector::StepMystery(double Dt)
+{
+ const FS47FreeformCases::FMysteryDef* Y=FS47FreeformCases::Def(FS47FreeformCases::MysteryLine).Mystery;if(!Y)return;
+ auto& Session=*M->Freeform;const double Now=Session.Clock();
+ if(MysteryClue>=0)
+ {
+  // The notice is out. A Continue in here picks up the count with no second sound.
+  MysteryAge+=Dt;if(MysteryAge<MysteryNoticeSeconds)return;
+  const int32 Found=MysteryClue;MysteryClue=-1;MysteryAge=0;MysterySeen|=1<<Found;
+  if(MysteryClearAt<=0)MysteryClearAt=(FMath::FloorToDouble((Now-12*3600.)/86400.)+1)*86400.+12*3600.; // the next noon
+  Session.RecordEvidence(Y->Clues[Found].Finding,Session.CaseFile().ClueText(FS47FreeformCases::MysteryLine,Found));
+  Changed();return;
+ }
+ if(MysteryClearAt>0&&Now>=MysteryClearAt){MysteryClearAt=0;Changed();return;}
+ const double Hour=FMath::Fmod(Now,86400.)/3600.;
+ const bool bDrawn=PendingMysteryNight>0&&PendingMysteryNight==Session.Day()&&(Hour<12?Hour+24:Hour)>=MysteryAfter;
+ if(!bDrawn&&MysteryClearAt<=0)return;
+ const int32 Here=MysteryClueHere();
+ if(Here<0||(MysterySeen&(1<<Here))||!MysteryQuiet())return;
+ const bool bFirst=MysterySeen==0;
+ MysteryClue=Here;MysteryAge=0;PendingMysteryNight=0;Changed();
+ NoticeMystery(Here,bFirst);
 }
 void FS47FreeformDirector::Step(double Dt)
 {
@@ -785,6 +862,7 @@ void FS47FreeformDirector::Step(double Dt)
  if(SeenDay!=Day){SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
  if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
+ StepMystery(Dt);
  if(Event.IsEmpty())
  {
   if(!M->Freeform->InTutorial()&&DuskOrb.Ready(M->Freeform->Clock())&&Start(TEXT("dusk_orb"),false))return;
@@ -1312,6 +1390,13 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  auto OldSchedule=Schedule.Save();OldSchedule->RemoveField(TEXT("pendingThreatNight"));OldSchedule->RemoveField(TEXT("pendingMajorNight"));
  PendingCopy.Begin(OldSchedule);const int32 LegacySeed=PendingCopy.Random.GetCurrentSeed();
  Check(PendingCopy.PendingThreatNight==0&&PendingCopy.PendingMajorNight==0&&!PendingCopy.RollNightChoice(4,4,1.f,PendingCopy.MajorRollDay,PendingCopy.PendingMajorNight)&&PendingCopy.Random.GetCurrentSeed()==LegacySeed,TEXT("A spent legacy roll is retained without inventing or rerolling its unknown outcome"));
+ Check(!S47J::Obj(Saved,TEXT("mystery")),TEXT("An idle director writes nothing for the night's mystery"));
+ FS47FreeformDirector MysteryModel(nullptr);MysteryModel.Begin(nullptr);MysteryModel.RollNightChoice(2,2,1.f,MysteryModel.MysteryRollDay,MysteryModel.PendingMysteryNight);
+ MysteryModel.MysteryAfter=23.5;MysteryModel.MysterySeen=1;MysteryModel.MysteryClue=1;MysteryModel.MysteryAge=2.5;MysteryModel.MysteryClearAt=200000;
+ FS47FreeformDirector MysteryCopy(nullptr);MysteryCopy.Begin(S47J::Read(S47J::Write(MysteryModel.Save())));
+ Check(MysteryCopy.MysteryRollDay==2&&MysteryCopy.PendingMysteryNight==2&&MysteryCopy.MysteryAfter==23.5&&MysteryCopy.MysterySeen==1&&MysteryCopy.MysteryNoticeClue()==1&&MysteryCopy.MysteryNoticeAge()==2.5&&MysteryCopy.MysteryTrailOpen(),TEXT("The night's mystery, its hour, what has been seen and a notice under way survive Continue"));
+ Check(MysteryCopy.ExpireNightChoices(2,false)&&MysteryCopy.PendingMysteryNight==0&&MysteryCopy.MysteryTrailOpen()&&MysteryCopy.MysteryRollDay==2,TEXT("Morning ends a drawn mystery not yet met, and does not touch a trail already found"));
+ MysteryCopy.Begin(Saved);Check(MysteryCopy.MysteryRollDay==0&&MysteryCopy.MysteryNoticeClue()==-1&&!MysteryCopy.MysteryTrailOpen(),TEXT("A save from before the mystery has it still to come"));
  FS47FreeformDirector Photos(nullptr);Photos.Begin(nullptr);Photos.IncidentSerial=7;Photos.IncidentId=TEXT("observer.day3.7");
  FPhotoClaim Claim;Claim.Id=Photos.IncidentId;Claim.PhotoId=TEXT("album7");Claim.Title=TEXT("observer");Claim.Quality=.18;Photos.Claims.Add(Claim);
  FS47FreeformDirector PhotoCopy(nullptr);PhotoCopy.Begin(S47J::Read(S47J::Write(Photos.Save())));

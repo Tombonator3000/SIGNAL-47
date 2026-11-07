@@ -42,6 +42,10 @@
 #include "S47Walker.h"
 #include "S47UI.h"
 #include "S47Json.h"
+#include "S47HUD.h"
+#include "Framework/Application/SlateUser.h"
+#include "Misc/FileHelper.h"
+#include "Widgets/Input/SButton.h"
 #include "ImageUtils.h"
 #include "Misc/Base64.h"
 #include "Misc/Paths.h"
@@ -100,6 +104,43 @@ namespace
   return true;
  }
 
+ // The case board is on the station's glass, in its own virtual window: found from the focused widget, as the case-field
+ // test finds it. Buttons take a simulated click there; the pointer route above needs the viewport's own window.
+ TArray<TSharedRef<SWidget>> MysteryRoots(US47Main* M)
+ {
+  TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
+  if(FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& U)
+  {auto W=U.GetFocusedWidget();if(!W)return;while(auto Parent=W->GetParentWidget())W=Parent;if(!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);
+  if(Out.IsEmpty()&&M&&M->Hud)if(auto Modal=M->Hud->ModalWidget())Out.Add(Modal.ToSharedRef());
+  return Out;
+ }
+ void MysteryTexts(const TSharedRef<SWidget>& W,TArray<FString>& Out)
+ {
+  if(!W->GetVisibility().IsVisible())return;
+  if(W->GetType()==FName(TEXT("STextBlock")))Out.Add(StaticCastSharedRef<STextBlock>(W)->GetText().ToString());
+  if(FChildren* Children=W->GetChildren())for(int32 I=0;I<Children->Num();++I)MysteryTexts(Children->GetChildAt(I),Out);
+ }
+ void MysteryButtons(const TSharedRef<SWidget>& W,const FString& Label,TArray<TSharedRef<SButton>>& Out)
+ {
+  if(!W->GetVisibility().IsVisible())return;
+  if(W->GetType()==FName(TEXT("SButton")))
+  {
+   TArray<FString> Words;MysteryTexts(W,Words);
+   if(Words.Contains(Label))Out.AddUnique(StaticCastSharedRef<SButton>(W));
+  }
+  if(FChildren* Children=W->GetChildren())for(int32 I=0;I<Children->Num();++I)MysteryButtons(Children->GetChildAt(I),Label,Out);
+ }
+ bool MysteryClick(US47Main* M,const FString& Label)
+ {
+  TArray<TSharedRef<SButton>> Buttons;for(const auto& Root:MysteryRoots(M))MysteryButtons(Root,Label,Buttons);
+  if(Buttons.Num()!=1||!Buttons[0]->IsEnabled())return false;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();return true;
+#else
+  return false;
+#endif
+ }
+
  struct FRun
  {
   TWeakObjectPtr<US47Main> Main;
@@ -109,6 +150,7 @@ namespace
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
+  S47J::FObj MysteryBefore;FString MysteryBoard;int32 MysteryTruth=0,MysterySub=0,MysteryFuses=0,MysteryCash=0;double MysteryHeld=0;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
@@ -177,6 +219,282 @@ namespace
   {
    const double Today=FMath::Fmod(M->Freeform->Clock(),86400.);
    return M->Freeform->TestAdvance(ExtraDays*86400.+FMath::Fmod(Hours*3600.-Today+86400.,86400.));
+  }
+  // -S47MenuPointerMystery: one night's mystery from the planner's own draw, with the cause as the seed makes it (so it
+  // differs from run to run; the selftests go through every cause). Set up: night two at 19:30 in the control room; the
+  // mystery's own dice set to yes (its hour is still the planner's); every other draw set to no and any other event
+  // cancelled as it starts; scheduler clock 40 times over, world clock 560 times over until the notice comes and real time
+  // after; the player moved to the feeder and to OPS; the clock skipped to midnight and to morning; the control's receiver
+  // settings set as the other tests set them. Natural: the draw, its hour, the start at the station, the record, the case
+  // opening, the job, its recording and result, the filing by the board's own buttons, the reply and its effect.
+  // PASS only if: no body before two; the notice waits for its hour; a menu holds the notice and the morning's reply; a
+  // disk Continue in the notice neither loses nor repeats it; nothing is at the feeder before midnight and something is
+  // after; the two places read differently; what the player can read on the board, the plan and the tasks is word for word
+  // the same under another cause; a real control closes what it should and the board stops offering it; filed right, the
+  // morning brings what the table says for it, once, also after a disk Continue; back from before the control, filed wrong,
+  // it is accepted, survives a Continue before the reply, is answered next morning with no gain, and Rest still goes on.
+  void MysteryBoardOpen(US47Main* M)
+  {
+   M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
+   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine);
+  }
+  // What the player can read about it, less the running clock.
+  FString MysteryShown(US47Main* M) const
+  {
+   TArray<FString> Out;for(const auto& Root:MysteryRoots(M))MysteryTexts(Root,Out);
+   Out.RemoveAll([](const FString& Word){return Word.Contains(TEXT("  |  "));});
+   Out.Add(M->Freeform->TonightPlan());
+   for(const auto& Task:M->Freeform->Tasks())if(Task.Text.StartsWith(TEXT("CASE /")))Out.Add(Task.Text);
+   Out.Sort();return FString::Join(Out,TEXT("\n"));
+  }
+  // The ordinary way back: the whole state to disk and in again through Flow. The test's own settings are not saved.
+  bool MysteryRestore(US47Main* M,const S47J::FObj& State)
+  {
+   const FString File=FPaths::ProjectSavedDir()/TEXT("MysteryTest")/TEXT("state.json");FString Disk;
+   if(!FFileHelper::SaveStringToFile(S47J::Write(State),*File)||!FFileHelper::LoadFileToString(Disk,*File))return Fail(TEXT("the state must reach the disk and come back"));
+   US47Flow::FStart Start;Start.bDev=true;Start.State=S47J::Read(Disk);M->Flow->StartGame(Start);
+   if(!M->IsFreeform()||!M->Freeform||!M->Freeform->Active()||!M->Freeform->Director)return Fail(TEXT("Continue must start Freeform"));
+   M->Freeform->Director->TestSchedule(0.f,-1,40.);M->Freeform->Director->TestMysteryDice(1.f);
+   DreadAt=Elapsed;return true;
+  }
+  // Next morning's reply against the table, for what was filed and what it was.
+  bool MysteryReplyHolds(US47Main* M)
+  {
+   auto& F=*M->Freeform;const auto* C=F.CaseFile().Get(FS47FreeformCases::MysteryLine);const auto* Reply=F.CaseFile().Reply(FS47FreeformCases::MysteryLine);
+   if(!C||!Reply||!C->bReplied||F.FindingText(TEXT("case4-reply"))!=FString(Reply->Text))return Fail(TEXT("the reply must be the table's, and on file"));
+   const int32 Fuses=F.InventoryCount(TEXT("fuse"));const int32 Cash=F.Budget();
+   using ER=FS47FreeformCases::EReply;
+   if(Fuses!=MysteryFuses+(Reply->Effect==ER::Spare?1:0))return Fail(TEXT("a spare comes only with the table's say"));
+   if(Reply->Effect==ER::Spare&&C->Conclusion!=C->Truth)return Fail(TEXT("a wrong filing must not pay"));
+   if(Cash!=MysteryCash-(Reply->Effect==ER::CallOut?FMath::Min(MysteryCash,int32(FS47FreeformCases::CallOutCharge)):0))return Fail(TEXT("the call-out is what it says, and no debt"));
+   if(F.Debt()!=0)return Fail(TEXT("no debt from a reply"));
+   if(F.PowerFault()!=(Reply->Effect==ER::FeederFault))return Fail(TEXT("the feeder fails only with the table's say"));
+   if(Reply->Effect==ER::FeederFault&&!F.Objective().Contains(TEXT("FEEDER")))return Fail(TEXT("a feeder fault must say where to go"));
+   UE_LOG(LogTemp,Display,TEXT("S47: mystery: filed %d, it was %d, effect %d, fuses %d, cash %d"),C->Conclusion,C->Truth,int32(Reply->Effect),Fuses,Cash);
+   return true;
+  }
+  bool StepMystery(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& D=*F.Director;
+   const int32 L=FS47FreeformCases::MysteryLine;const auto& Def=FS47FreeformCases::Def(L);const auto* C=F.CaseFile().Get(L);
+   if(!Def.Mystery||!C)return Fail(TEXT("the mystery's line must be there"));
+   const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.,Late=Hour<12?Hour+24:Hour;
+   if(!FS47FarmSite::TheirHours(F.Clock())&&(!M->Night->Glimpses->Individuals().IsEmpty()||F.IndoorDread->PeekActive()))return Fail(TEXT("no body before two in the morning"));
+   // Nothing else crowds it. An event stopped this soon has not touched anything, but a fault must not hide the reply's.
+   if(!D.ActiveEvent().IsEmpty())
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery: %s started at %.2f, stopped"),*D.ActiveEvent(),Hour);
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+   }
+   if(!C->bReplied&&F.PowerFault())F.SetPowerFault(false);
+   const FString SaroClue=Def.Mystery->Clues[0].Finding,FeederClue=Def.Mystery->Clues[1].Finding;
+   if(Stage==490)
+   {
+    if(D.MysteryNoticeClue()<0)
+    {
+     if(Late>=29)return Fail(TEXT("the drawn mystery must come by itself to a player at the station"));
+     if(D.MysteryDrawnNight()>0&&MysterySub==0){UE_LOG(LogTemp,Display,TEXT("S47: mystery: the planner drew it at %.2f"),Hour);MysterySub=1;}
+     if(!F.TestAdvance(FMath::Min(Elapsed-DreadAt,.25)*560.))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;return true;
+    }
+    if(MysterySub==0)return Fail(TEXT("the notice must follow the planner's draw"));
+    if(D.MysteryNoticeClue()!=0||Late<20||C->bOpen||F.HasFinding(SaroClue))return Fail(TEXT("the first notice at the station, after its hour, before any record"));
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery: the notice came at %.2f"),Hour);
+    M->bPausedByMenu=true;MysteryHeld=D.MysteryNoticeAge();VisitClock=F.Clock();DreadAt=Elapsed;Stage=491;return true;
+   }
+   if(Stage==491)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    if(D.MysteryNoticeAge()!=MysteryHeld||F.Clock()!=VisitClock||F.HasFinding(SaroClue))return Fail(TEXT("a menu holds the notice and the clock"));
+    M->bPausedByMenu=false;
+    const auto State=M->Flow->GameState();
+    if(!MysteryRestore(M,State))return false;
+    Stage=492;return true;
+   }
+   if(Stage==492)
+   {
+    if(F.HasFinding(SaroClue))
+    {
+     if(!C->bOpen||F.FindingText(SaroClue)!=F.CaseFile().ClueText(L,0)||!D.MysteryTrailOpen()||D.MysteryDrawnNight()!=0)return Fail(TEXT("the record opens the case, and leaves the other place worth a look"));
+     MysteryTruth=C->Truth;M->World->Enter(TEXT("road"));DreadAt=Elapsed;MysterySub=0;Stage=493;return true;
+    }
+    if(Elapsed-DreadAt>.5&&D.MysteryNoticeClue()!=0)return Fail(TEXT("a Continue must keep the notice under way"));
+    if(Elapsed-DreadAt>15)return Fail(TEXT("the notice must end in a record"));
+    return true;
+   }
+   if(Stage==493)
+   {
+    if(MysterySub==0)
+    {
+     if(M->Web->Area()!=TEXT("road")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("the road must load")):true;
+     if(M->World->bDriving)return Fail(TEXT("the test walks up to the feeder"));
+     const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X,P.Z+4.,0);DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     // In the evening there is nothing here to find, however long.
+     if(Hour>=12)
+     {
+      if(D.MysteryNoticeClue()>=0||F.HasFinding(FeederClue))return Fail(TEXT("nothing at the feeder before midnight"));
+      if(Elapsed-DreadAt<8)return true;
+      UE_LOG(LogTemp,Display,TEXT("S47: mystery: 8 s at the feeder at %.2f, nothing"),Hour);
+      if(!DreadToClock(M,.5))return Fail(TEXT("no clock"));
+     }
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(!F.HasFinding(FeederClue))return Elapsed-DreadAt>30?Fail(TEXT("after midnight the feeder has something to find")):true;
+    const int32 A=F.CaseFile().ClueReading(L,0),B=F.CaseFile().ClueReading(L,1);
+    if(A==B||(A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("the two places must read differently, one of them straight"));
+    M->World->Enter(TEXT("saro"));DreadAt=Elapsed;MysterySub=0;Stage=494;return true;
+   }
+   if(Stage==494)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(M->Web->Area()!=TEXT("saro"))return Elapsed-DreadAt>15?Fail(TEXT("SARO must load")):true;
+    // Word for word the same under another cause. Both from a Continue, so that neither carries the last message.
+    if(MysterySub==0)
+    {
+     M->UI->Close(true);M->Player->Place(0,-1.2,0);MysteryBefore=M->Flow->GameState();
+     if(!MysteryRestore(M,MysteryBefore))return false;
+     MysterySub=1;return true;
+    }
+    if(MysterySub==1){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=2;return true;}
+    if(MysterySub==2)
+    {
+     MysteryBoard=MysteryShown(M);
+     if(!MysteryBoard.Contains(F.FindingText(SaroClue))||!MysteryBoard.Contains(F.FindingText(FeederClue)))return Fail(TEXT("the board shows both traces"));
+     for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!MysteryBoard.Contains(FString(TEXT("File assessment: "))+Def.Short[I]))return Fail(TEXT("with no test run, any explanation can be filed"));
+     int32 Other=1;for(FS47FreeformCases Probe;Other<512;++Other){Probe.Reset(Other);if(Probe.Get(L)->Truth!=MysteryTruth)break;}
+     const auto Swapped=S47J::Clone(MysteryBefore);S47J::Set(S47J::Obj(Swapped,TEXT("freeform")),TEXT("jobSeed"),Other);
+     M->UI->Close(true);if(!MysteryRestore(M,Swapped))return false;
+     MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     if(C->Truth==MysteryTruth)return Fail(TEXT("the other seed must mean another cause"));
+     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    if(MysterySub==4)
+    {
+     const FString Shown=MysteryShown(M);
+     if(Shown!=MysteryBoard){UE_LOG(LogTemp,Error,TEXT("S47: mystery: one cause reads\n%s\nand another\n%s"),*MysteryBoard,*Shown);return Fail(TEXT("nothing the player can read may depend on the cause"));}
+     M->UI->Close(true);if(!MysteryRestore(M,MysteryBefore))return false;
+     MysterySub=5;return true;
+    }
+    if(C->Truth!=MysteryTruth)return Fail(TEXT("Continue must bring back the same cause"));
+    MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=0;Stage=495;return true;
+   }
+   if(Stage==495)
+   {
+    // A real control, on the real job. Off the beam needs no fuel and no second night.
+    if(Elapsed-DreadAt<.6)return true;
+    if(MysterySub==0)
+    {
+     if(!MysteryClick(M,FString(TEXT("Plan this test: "))+Def.Tests[1].Name))return Fail(TEXT("the board offers the control"));
+     DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     if(C->Planned!=1)return Fail(TEXT("the control is planned"));
+     M->UI->Close(true);
+     if(!F.SelectJob(F.Jobs().Num()-1)||F.CurrentJob()->CaseLine!=L)return Fail(TEXT("the control is its own job"));
+     const auto* Card=F.ConsoleProfile();if(!Card)return Fail(TEXT("the job has a card"));
+     auto& Rx=M->Story->Rx;Rx.Frequency=Card->F;Rx.Gain=(Card->Gain[0]+Card->Gain[1])/2;Rx.Bandwidth=(Card->Bw[0]+Card->Bw[1])/2;Rx.Azimuth=(Card->Az[0]+Card->Az[1])/2;
+     if(!F.PointSelected())return Fail(TEXT("the array takes the command"));
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!F.StartAcquisition())return Elapsed-DreadAt>40?Fail(TEXT("the recording must start once the dishes settle")):true;
+     DreadAt=Elapsed;MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     if(!F.CurrentJob()||F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return Elapsed-DreadAt>40?Fail(TEXT("the recording must print")):true;
+     M->UI->Close(true);if(!F.CollectChart())return Fail(TEXT("the chart must come off the printer"));
+     M->UI->Close(true);if(!F.RegisterComparison(TEXT("normal")))return Fail(TEXT("the control must register"));
+     const auto& Result=C->Results[1];
+     if(!Result.bDone||Result.bPresent!=FS47FreeformCases::PresentFor(L,MysteryTruth,1))return Fail(TEXT("the control shows what the cause makes it show"));
+     if(F.CaseFile().Remaining(L)>=FS47FreeformCases::CauseCount)return Fail(TEXT("the control must close something"));
+     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    // Filed right. What the control ruled out is no longer offered, on the board or behind it.
+    const FString Shown=MysteryShown(M);
+    for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
+    {
+     const bool bOffered=Shown.Contains(FString(TEXT("File assessment: "))+Def.Short[I]);
+     if(bOffered==F.CaseFile().Excluded(L,I))return Fail(TEXT("the board offers exactly what the tests leave"));
+     if(F.CaseFile().Excluded(L,I)&&F.ConcludeCase(L,I))return Fail(TEXT("a ruled-out explanation cannot be filed"));
+    }
+    MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+    if(!MysteryClick(M,FString(TEXT("File assessment: "))+Def.Short[MysteryTruth]))return Fail(TEXT("the board takes the filing"));
+    DreadAt=Elapsed;MysterySub=0;Stage=496;return true;
+   }
+   if(Stage==496)
+   {
+    if(Elapsed-DreadAt<.6)return true;
+    if(MysterySub==0)
+    {
+     const auto* Reply=F.CaseFile().Reply(L);
+     if(!C->bConcluded||C->Conclusion!=MysteryTruth||!Reply||C->bReplied)return Fail(TEXT("the filing stands, with its reply still to come"));
+     const FString Shown=MysteryShown(M)+F.FeedbackText()+F.FindingText(TEXT("case4-conclusion"));
+     if(Shown.Contains(Reply->Text)||F.HasFinding(TEXT("case4-reply")))return Fail(TEXT("nothing is known of it before the morning"));
+     // The menu holds the morning too.
+     M->UI->Close(true);M->bPausedByMenu=true;if(!DreadToClock(M,8.5))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     if(Elapsed-DreadAt<2)return true;
+     if(C->bReplied||F.Day()<=C->ConcludeDay)return Fail(TEXT("a menu holds the reply, and the morning must be a new day"));
+     M->bPausedByMenu=false;DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!C->bReplied)return Elapsed-DreadAt>5?Fail(TEXT("the morning brings the reply")):true;
+     if(!MysteryReplyHolds(M))return false;
+     MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+     const auto State=M->Flow->GameState();if(!MysteryRestore(M,State))return false;
+     MysterySub=3;return true;
+    }
+    if(!C->bReplied||!C->bConcluded||F.InventoryCount(TEXT("fuse"))!=MysteryFuses||F.Budget()!=MysteryCash)return Fail(TEXT("after a Continue the reply stands and does not come again"));
+    // Back from before the control: this time the wrong answer, with nothing but the traces.
+    if(!MysteryRestore(M,MysteryBefore))return false;
+    MysterySub=0;Stage=497;return true;
+   }
+   if(Stage==497)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(MysterySub==0){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=1;return true;}
+    if(MysterySub==1)
+    {
+     MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+     const int32 Wrong=(MysteryTruth+1)%FS47FreeformCases::CauseCount;
+     if(C->Truth!=MysteryTruth||C->bConcluded||!MysteryClick(M,FString(TEXT("File assessment: "))+Def.Short[Wrong]))return Fail(TEXT("the wrong answer can be filed with no test run"));
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!C->bConcluded||C->Conclusion==MysteryTruth||!F.FeedbackText().Contains(TEXT("in the morning")))return Fail(TEXT("the wrong filing stands, and it says only that the reply will come"));
+     M->UI->Close(true);const auto State=M->Flow->GameState();if(!MysteryRestore(M,State))return false;
+     MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     if(!C->bConcluded||C->bReplied||C->Conclusion==MysteryTruth)return Fail(TEXT("a Continue keeps the filing and its reply still to come"));
+     if(!DreadToClock(M,8.5))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    if(!C->bReplied)return Elapsed-DreadAt>5?Fail(TEXT("the morning brings the reply")):true;
+    if(!MysteryReplyHolds(M))return false;
+    // Nothing locks: the next day comes as any other.
+    const int32 Today=F.Day();
+    if(!F.Rest()||F.Day()!=Today+1)return Fail(TEXT("after a wrong filing the days go on"));
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery PASS: both ways, under cause %d"),MysteryTruth);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such mystery stage"));
   }
   // -S47MenuPointerKinds: from the visit's own dice (a set roll, through PickWho) at the marks. PASS only if: nothing at
   // all in 25 s of standing there at 21:00; at 03:30 each kind comes on its own after the wait; the tall one stands 25 m
@@ -328,6 +646,7 @@ namespace
   bool StepDread(US47Main* M)
   {
    if(Stage>=460&&Stage<=489)return StepNight(M);
+   if(Stage>=490&&Stage<=499)return StepMystery(M);
    StageAt=Elapsed;
    auto& Site=*M->Freeform->FarmSite;auto& Tk=*M->Freeform->Taken;auto& Dread=*M->Freeform->IndoorDread;
    const FVector Marks=Site.Centre();
@@ -771,6 +1090,15 @@ namespace
      M->Freeform->Director->TestSchedule(0.f,-1,1);
      M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());M->Freeform->FarmSite->TestReadyVisit();
      DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerMystery")))
+    {
+     // The Director stays on, its own draws set to no but for the mystery's. 19:30 of night two, in the control room.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(35.5*3600.))return Fail(TEXT("the mystery needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(0.f,-1,40.);M->Freeform->Director->TestMysteryDice(1.f);
+     DreadFrom=DreadAt=Elapsed;Stage=490;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerReflood")))
     {

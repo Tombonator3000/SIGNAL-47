@@ -2097,3 +2097,6 @@ Skrevet i egen worktree, ikke bygget eller kjørt, bare `S47Flora.cpp` bak `bNat
 ## 7. november 2026 kl.03:57, natt, PLAY-31-16: spor og isolert prøve
 
 Rotårsak ikke funnet, ingen kodefeil å rette. Kildespor: stansen begynte ca. 10:41:01 UTC, 49 bilder etter AUTO HOLD, RHI-tråden etter vellykket present, ingen Xid eller DEVICE_LOST, KWin og Codex tegnet videre. Tåkevolumene fantes ikke i `f32d4553`. GspRmAlloc-linjene er ikke følge av krasjet: de startet 28. oktober etter OOM-bursten, kom også 11:35:11, og er borte etter omstart 3. november. Skrevet, ikke kjørt mot motor: `Tools/gameplay_audit/saro_hold_soak.py` med `test_saro_hold_soak.py` (14 prøver OK, gir FAIL på den ekte krasjloggen). Grunnprøven lukker ikke punktet.
+## 7. november 2026 kl.04:06, natt, første del av mysteriemotoren (FF-MYSTERY-SYSTEM-01)
+
+Skrevet i egen worktree, ikke bygget eller kjørt. Saksmotoren har fått en fjerde linje, «The same minute», med `FMysteryDef`: nattens hendelse (egen trekning i `RollTonight`) gir spor ved mottakeren og ved feederen som peker ulikt, spilleren kan arkivere en vurdering på hvilket som helst grunnlag, og svaret neste morgen følger den skjulte årsaken (reservedel, utrykningsgebyr, feederfeil eller ingenting). Valgfrie lagringsfelt, ingen nye hendelser i katalogen. Prøve: `-S47MenuPointerMystery`.
