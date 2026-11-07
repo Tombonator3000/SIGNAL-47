@@ -40,6 +40,8 @@ public:
  // The air. bRoom: a thin haze that a shaft shows in; otherwise the low thick mist of the open ground.
  void SetAir(double K,const FVector& At,const FLinearColor& Albedo,bool bRoom);
  bool Shown() const{return bShown;}
+ // One is up somewhere and holds the renderer's values.
+ static bool AnyShown(){return ShownNow>0;}
 
  // From, drifting slowly side to side and up and down: the patches on the floor and the window bars' shadows travel, while
  // the place it stands in the game does not change.
@@ -47,6 +49,7 @@ public:
  // A place out in the open from which a straight line reaches Chest, through a window or a door. False: nothing does.
  static bool FindWayIn(US47Main* Main,const FVector& Chest,FVector& OutFrom);
 private:
+ static int32 ShownNow;
  US47Main* M=nullptr;
  TWeakObjectPtr<USpotLightComponent> Spot;
  TWeakObjectPtr<ULocalFogVolumeComponent> Air;
@@ -56,6 +59,8 @@ private:
  TArray<TWeakObjectPtr<ULightComponent>> Doused;
  TArray<FVector> DustSeed;
  TArray<FTransform> DustMoved;
+ TArray<float> DustLit;
+ int32 DustNext=0;
  struct FHeld{FString Name;float Was=0;};
  TArray<FHeld> HeldCvars;
  bool bShown=false,bPowerCut=false,bFogAsked=false;

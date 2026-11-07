@@ -1,6 +1,9 @@
 #include "S47FloodProbe.h"
 #include "S47CalicheAccess.h"
+#include "S47EastWing.h"
 #include "S47FarmHouse.h"
+#include "S47Freeform.h"
+#include "S47Taken.h"
 #include "S47Main.h"
 #include "S47OutsideLight.h"
 #include "S47Three.h"
@@ -8,6 +11,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/Paths.h"
@@ -15,6 +19,8 @@
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FloodProbe,Log,All);
+
+static TAutoConsoleVariable<float> CvProbeHeight(TEXT("s47.flood.ProbeHeight"),0.f,TEXT("The probe's source this high over the room's floor, in metres. 0: each room's own."));
 
 namespace
 {
@@ -28,22 +34,22 @@ namespace
  // The windows in question: the control room's two in its north wall; the old house's in its north wall (plan x 1.6..3.4, S47FarmHouse);
  // the garage's roll-up door in its south wall, x 33.2..37.6; the cinema's three glazed bays on the street, under the marquee.
  const FFloodRoom Rooms[]={
-  {TEXT("control"),TEXT("saro"),TEXT("SARO control room"),FVector2D(3.6,3.3),FVector(-1.5,9.5,-25),FVector(-1.5,1,-1),{
+  {TEXT("control"),TEXT("saro"),TEXT("SARO control room"),FVector2D(3.6,3.3),FVector(-1.5,5.5,-25),FVector(-1.5,1,-1),{
    {TEXT("A"),FVector(3.6,1.62,3.3),FVector(-2,1.5,-4.2)},
    {TEXT("B"),FVector(-5.1,1.62,.8),FVector(5,1.1,-1)},
    {TEXT("C"),FVector(.5,2,2.6),FVector(-1,0,-2.2)},
    {TEXT("D"),FVector(-12,2.2,-14),FVector(-2,1.5,-4)}}},
-  {TEXT("house"),TEXT("saro"),TEXT("the old house"),FVector2D(75.4,521),FVector(77.5,7,542),FVector(77.5,1,522),{
+  {TEXT("house"),TEXT("saro"),TEXT("the old house"),FVector2D(75.4,521),FVector(77.5,4.5,542),FVector(77.5,1,522),{
    {TEXT("A"),FVector(75.4,1.62,521),FVector(77.5,1.5,525)},
    {TEXT("B"),FVector(79.4,1.62,522.4),FVector(75.1,1.1,522.8)},
    {TEXT("C"),FVector(76.5,2,521.4),FVector(77.6,0,523.6)},
    {TEXT("D"),FVector(83,2,534),FVector(76,1.5,525)}}},
-  {TEXT("garage"),TEXT("saro"),TEXT("the garage"),FVector2D(33.2,-4),FVector(35.4,8.5,30),FVector(35.4,1,0),{
+  {TEXT("garage"),TEXT("saro"),TEXT("the garage"),FVector2D(33.2,-4),FVector(35.4,5.5,30),FVector(35.4,1,0),{
    {TEXT("A"),FVector(33.2,1.62,-4),FVector(35.4,1.6,5.5)},
    {TEXT("B"),FVector(32.2,1.62,.5),FVector(38,1,.5)},
    {TEXT("C"),FVector(37.4,2.2,-1.5),FVector(35,0,2.5)},
    {TEXT("D"),FVector(30,2,18),FVector(35.4,1.5,5)}}},
-  {TEXT("cinema"),TEXT("diner"),TEXT("the Plaza cinema"),FVector2D(7980.4,2158),FVector(8013,8,2161),FVector(7982,1,2161),{
+  {TEXT("cinema"),TEXT("diner"),TEXT("the Plaza cinema"),FVector2D(7980.4,2158),FVector(8013,5.5,2161),FVector(7982,1,2161),{
    {TEXT("A"),FVector(7980.2,1.62,2158),FVector(7985,1.4,2160)},
    {TEXT("B"),FVector(7982,1.62,2170.5),FVector(7982,1,2154)},
    {TEXT("C"),FVector(7981,2.2,2161),FVector(7983,0,2160)},
@@ -138,7 +144,8 @@ namespace
   if(!Run.Rig)return;
   const FVector Up(0,Run.Floor,0);
   FS47OutsideLight::FFrame F;
-  F.Aim=R.Aim+Up;F.From=FS47OutsideLight::Swept(R.From+Up,F.Aim,Seconds);F.Color=ProbeColor;F.K=K;F.Seconds=Seconds;
+  const float Height=CvProbeHeight.GetValueOnGameThread();
+  F.Aim=R.Aim+Up;F.From=FS47OutsideLight::Swept(FVector(R.From.X,Height>0.f?double(Height):R.From.Y,R.From.Z)+Up,F.Aim,Seconds);F.Color=ProbeColor;F.K=K;F.Seconds=Seconds;
   Run.Rig->Show(F);
   Run.Rig->SetAir(FMath::Min(1.,Seconds/.8),R.Aim+Up+FVector(0,.1,0),FLinearColor(.9f,.9f,.92f),true);
  }
@@ -194,6 +201,7 @@ namespace
    if(Run.Since<0)return true;
    const FFloodRoom& R=Rooms[Run.Queue[Run.At]];
    const double Floor=FloorOf(R);
+   if(M->EastWing&&FCString::Strcmp(R.Name,TEXT("garage"))==0)M->EastWing->TestDoorUp();
    M->Player->Place(R.Stand.X,R.Stand.Y,0);Look(M,R.Views[0],Floor);
    UE_LOG(LogS47FloodProbe,Display,TEXT("S47: flood probe: %s, floor %.2f, the walker's floor %.2f, area %s"),R.Name,Floor,M->Player->FloorY,*M->Web->Area());
    Run.Since=0;Run.FrameSum=Run.FrameMost=Run.GpuSum=0;Run.FrameCount=0;
@@ -277,6 +285,7 @@ namespace S47FloodProbe
  bool BeginLive(US47Main* Main,const FString& Room,FString& OutWhy)
  {
   if(!Main||!Main->Player||!Main->Web){OutWhy=TEXT("no world");return false;}
+  if(Main->Freeform&&Main->Freeform->Taken&&Main->Freeform->Taken->Busy()){OutWhy=TEXT("the real one is going on");return false;}
   EndTest(Main);
   Run=FFloodRun();
   Run.Mode=FFloodRun::EMode::Live;Run.Main=Main;Run.Rig=MakeShared<FS47OutsideLight>(Main);Run.At=INDEX_NONE;

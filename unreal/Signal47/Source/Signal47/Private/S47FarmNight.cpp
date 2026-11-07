@@ -11,7 +11,10 @@
 #include "S47WebAudio.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "HAL/IConsoleManager.h"
+#include "S47OutsideLight.h"
 #include "S47RoomLights.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "S47Audio.h"
 #include "S47FarmHouse.h"
 #include "S47FarmWorld.h"
@@ -147,6 +150,7 @@ void FS47FarmNight::Stop()
   if(auto* S=L.Light.Get()){S->SetIntensity(0);S->SetVisibility(false);}
  }
  LastArea.Empty();bOn=false;
+ HazeNear(false);HazeGlow=0;
  // Back to the Story's air, when Freeform ends with the scene still up.
  if(!IsEngineExitRequested()&&!IsGarbageCollecting())for(const auto& H:Hazes)if(auto* F=H.Get())F->DestroyComponent();
  Hazes.Reset();
@@ -255,6 +259,7 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
 
 static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.03f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
 static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.12f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
+static TAutoConsoleVariable<float> CvHazeStart(TEXT("s47.haze.Start"),150.f,TEXT("r.LocalFogVolume.GlobalStartDistance in cm for someone out in the yard at night."));
 static TAutoConsoleVariable<float> CvHazeIndoors(TEXT("s47.haze.Indoors"),.2f,TEXT("SARO's rooms at night: how much of the glow is left for someone inside."));
 
 void FS47FarmNight::BuildHaze()
@@ -277,6 +282,13 @@ void FS47FarmNight::BuildHaze()
  }
 }
 
+void FS47FarmNight::HazeNear(bool bNear)
+{
+ if(bNear==bHazeNear)return;
+ bHazeNear=bNear;
+ if(IConsoleVariable* V=IConsoleManager::Get().FindConsoleVariable(TEXT("r.LocalFogVolume.GlobalStartDistance")))V->Set(bNear?CvHazeStart.GetValueOnGameThread():1000.f,ECVF_SetByGameOverride);
+}
+
 void FS47FarmNight::StepHaze(double Dt,bool bNight)
 {
  // Tom, T16-13: a little more haze in SARO seen from outside at night, so the light indoors stands in the air. The lamps
@@ -287,11 +299,13 @@ void FS47FarmNight::StepHaze(double Dt,bool bNight)
  if(HazeIn>0||!M->Freeform||!M->Web)return;
  HazeIn=.25;
  const FS47Taken* Tk=M->Freeform->Taken.Get();
- const bool bHere=bNight&&!(Tk&&Tk->Busy())&&M->Freeform->HasPowerForReactiveLight();
+ const bool bHere=bNight&&!(Tk&&Tk->Busy())&&M->Freeform->HasPowerForReactiveLight()&&!(M->SaroNight&&M->SaroNight->Power&&M->SaroNight->Power->Out());
  const double Want=!bHere?0.:Tk&&Tk->Indoors()?CvHazeIndoors.GetValueOnGameThread():1.;
  HazeGlow=FMath::FInterpConstantTo(HazeGlow,Want,.25,.6);
- if(FMath::Abs(HazeGlow-HazeApplied)<.004)return;
- HazeApplied=HazeGlow;
+ // Each time round, for new volumes and for a switch thrown; the setters do nothing when nothing changes.
+ // The engine holds local fog 10 m off the eye: from the yard the room behind the glass would have no air in it. Only for
+ // someone outside, where none of it is round them; indoors a room's extinction would be a black fog over its own lamps.
+ if(!FS47OutsideLight::AnyShown())HazeNear(bNight&&Tk&&!Tk->Busy()&&!Tk->Indoors());
  const FLinearColor Colour=FLinearColor(1.f,.9f,.72f)*float(HazeGlow*CvHazeGlow.GetValueOnGameThread());
  const float Thicker=float(HazeGlow*CvHazeExtra.GetValueOnGameThread());
  TInlineComponentArray<ULocalFogVolumeComponent*> Fogs(M->Web.Get());

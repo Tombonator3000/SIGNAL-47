@@ -26,32 +26,37 @@ float GS47FloodFogPhase=-1.f;
 
 namespace
 {
- TAutoConsoleVariable<float> CvCandelas(TEXT("s47.flood.Candelas"),22000.f,TEXT("Massive light: candelas at full."));
- TAutoConsoleVariable<float> CvScatter(TEXT("s47.flood.Scatter"),3.f,TEXT("Massive light: VolumetricScatteringIntensity. 0 takes it out of the volumetric fog."));
- TAutoConsoleVariable<float> CvIndirect(TEXT("s47.flood.Indirect"),2.f,TEXT("Massive light: Lumen bounce, the only thing that lifts the rest of the room."));
+ TAutoConsoleVariable<float> CvCandelas(TEXT("s47.flood.Candelas"),30000.f,TEXT("Massive light: candelas at full."));
+ TAutoConsoleVariable<float> CvScatter(TEXT("s47.flood.Scatter"),.45f,TEXT("Massive light: VolumetricScatteringIntensity. 0 takes it out of the volumetric fog."));
+ TAutoConsoleVariable<float> CvIndirect(TEXT("s47.flood.Indirect"),.5f,TEXT("Massive light: Lumen bounce, the only thing that lifts the rest of the room."));
  TAutoConsoleVariable<float> CvSource(TEXT("s47.flood.Source"),9.f,TEXT("Massive light: source radius in cm. Small: a window's edge stays an edge."));
  TAutoConsoleVariable<float> CvCone(TEXT("s47.flood.Cone"),36.f,TEXT("Massive light: outer half angle in degrees. The inner is two thirds of it."));
  TAutoConsoleVariable<float> CvSweep(TEXT("s47.flood.Sweep"),.17f,TEXT("Massive light: how far the source drifts, as a share of its distance."));
  TAutoConsoleVariable<float> CvCore(TEXT("s47.flood.Core"),2.4f,TEXT("Massive light: radius in m of what can be seen out there. 0: nothing to see."));
  TAutoConsoleVariable<float> CvCoreGlow(TEXT("s47.flood.CoreGlow"),60.f,TEXT("Massive light: emissive power of the source itself."));
  TAutoConsoleVariable<float> CvHalo(TEXT("s47.flood.Halo"),1.4f,TEXT("Massive light: brightness of the glare round the source."));
- TAutoConsoleVariable<float> CvAirRadial(TEXT("s47.flood.AirRadial"),.22f,TEXT("Room air under the light: extinction per metre at the middle. Rooms with their own haze add theirs."));
- TAutoConsoleVariable<float> CvAirHeight(TEXT("s47.flood.AirHeight"),.1f,TEXT("Room air under the light: extinction per metre low down."));
+ TAutoConsoleVariable<float> CvAirRadial(TEXT("s47.flood.AirRadial"),.15f,TEXT("Room air under the light: extinction per metre at the middle. Rooms with their own haze add theirs."));
+ TAutoConsoleVariable<float> CvAirTown(TEXT("s47.flood.AirTown"),.45f,TEXT("The same, where no room has any haze of its own: everywhere but SARO's area."));
+ TAutoConsoleVariable<float> CvAirHeight(TEXT("s47.flood.AirHeight"),.03f,TEXT("Room air under the light: extinction per metre low down."));
+ TAutoConsoleVariable<float> CvAirStart(TEXT("s47.flood.AirStart"),10.f,TEXT("r.LocalFogVolume.GlobalStartDistance in cm while it lasts. The engine's 1000 keeps a room's air 10 m from the eye, so no shaft shows from inside."));
  TAutoConsoleVariable<float> CvFogDistance(TEXT("s47.flood.FogDistance"),5000.f,TEXT("Volumetric fog reach in cm while it lasts. The grid's slices go into the rooms. 0: as the night has it."));
- TAutoConsoleVariable<float> CvFogPhase(TEXT("s47.flood.FogPhase"),.6f,TEXT("Volumetric fog scattering distribution while it lasts. Forward: shafts burn when looked along. Below 0: as the night has it."));
- TAutoConsoleVariable<int32> CvGridPixel(TEXT("s47.flood.GridPixel"),0,TEXT("r.VolumetricFog.GridPixelSize while it lasts. 0: as the graphics tier has it."));
- TAutoConsoleVariable<int32> CvGridZ(TEXT("s47.flood.GridZ"),0,TEXT("r.VolumetricFog.GridSizeZ while it lasts. 0: as the graphics tier has it."));
+ TAutoConsoleVariable<float> CvFogPhase(TEXT("s47.flood.FogPhase"),.3f,TEXT("Volumetric fog scattering distribution while it lasts. Forward: shafts burn when looked along. Below 0: as the night has it."));
+ TAutoConsoleVariable<int32> CvGridPixel(TEXT("s47.flood.GridPixel"),4,TEXT("r.VolumetricFog.GridPixelSize while it lasts. 0: as the graphics tier has it."));
+ TAutoConsoleVariable<int32> CvGridZ(TEXT("s47.flood.GridZ"),128,TEXT("r.VolumetricFog.GridSizeZ while it lasts. 0: as the graphics tier has it."));
  TAutoConsoleVariable<float> CvHistory(TEXT("s47.flood.History"),.7f,TEXT("r.VolumetricFog.HistoryWeight while it lasts: the sweep leaves no trail. Below 0: as it is."));
  TAutoConsoleVariable<int32> CvDust(TEXT("s47.flood.Dust"),420,TEXT("Motes in the air round the eye. Lit by the same light, so they only show in the shafts. 0: none."));
  TAutoConsoleVariable<float> CvDustSize(TEXT("s47.flood.DustSize"),.9f,TEXT("A mote's side in cm."));
  TAutoConsoleVariable<int32> CvDouse(TEXT("s47.flood.Douse"),1,TEXT("The room's own lamps go out while it lasts."));
 
  constexpr double DustHalfX=5.5,DustHalfY=1.5,DustHalfZ=5.5;
- constexpr double LampReachM=20;
+ constexpr double LampReachM=14,DustRoomM=14;
+ constexpr int32 DustTracesPerFrame=40;
 
  double Wrap(double V,double Half){const double Span=Half*2;return V-Span*FMath::FloorToDouble((V+Half)/Span);}
  bool LiveEnough(US47Main* Main){return !IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(Main)&&!Main->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);}
 }
+
+int32 FS47OutsideLight::ShownNow=0;
 
 FS47OutsideLight::~FS47OutsideLight(){Stop();}
 
@@ -76,6 +81,7 @@ bool FS47OutsideLight::FindWayIn(US47Main* Main,const FVector& Chest,FVector& Ou
   const FVector Start=S47Three::ToUE(Try),End=S47Three::ToUE(Chest);
   FHitResult Hit;
   if(World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Query)&&Hit.Distance<FVector::Dist(Start,End)-30.)continue;
+  if(World->LineTraceSingleByChannel(Hit,End,Start,ECC_Visibility,Query)&&Hit.Distance<FVector::Dist(Start,End)-30.)continue;
   OutFrom=Try;
   return true;
  }
@@ -93,8 +99,13 @@ void FS47OutsideLight::Hold(const TCHAR* Name,float Want)
 
 void FS47OutsideLight::Acquire(const FVector& Aim)
 {
- if(CvGridPixel.GetValueOnGameThread()>0)Hold(TEXT("r.VolumetricFog.GridPixelSize"),float(CvGridPixel.GetValueOnGameThread()));
- if(CvGridZ.GetValueOnGameThread()>0)Hold(TEXT("r.VolumetricFog.GridSizeZ"),float(CvGridZ.GetValueOnGameThread()));
+ ++ShownNow;
+ Hold(TEXT("r.LocalFogVolume.GlobalStartDistance"),CvAirStart.GetValueOnGameThread());
+ if(M->Web&&M->Web->GetGraphicsSettings().Fog==2)
+ {
+  if(CvGridPixel.GetValueOnGameThread()>0)Hold(TEXT("r.VolumetricFog.GridPixelSize"),float(CvGridPixel.GetValueOnGameThread()));
+  if(CvGridZ.GetValueOnGameThread()>0)Hold(TEXT("r.VolumetricFog.GridSizeZ"),float(CvGridZ.GetValueOnGameThread()));
+ }
  if(CvHistory.GetValueOnGameThread()>=0)Hold(TEXT("r.VolumetricFog.HistoryWeight"),CvHistory.GetValueOnGameThread());
  GS47FloodFogDistance=CvFogDistance.GetValueOnGameThread();GS47FloodFogPhase=CvFogPhase.GetValueOnGameThread();bFogAsked=true;
  if(M->Web)M->Web->RefreshFog();
@@ -118,6 +129,7 @@ void FS47OutsideLight::Release()
 {
  for(const FHeld& H:HeldCvars)if(IConsoleVariable* V=IConsoleManager::Get().FindConsoleVariable(*H.Name))V->Set(H.Was,ECVF_SetByGameOverride);
  HeldCvars.Reset();
+ ShownNow=FMath::Max(0,ShownNow-1);
  if(bFogAsked){GS47FloodFogDistance=-1.f;GS47FloodFogPhase=-1.f;bFogAsked=false;if(M&&M->Web)M->Web->RefreshFog();}
  for(const auto& Weak:Doused)if(ULightComponent* L=Weak.Get()){L->bAffectsWorld=true;L->MarkRenderStateDirty();}
  Doused.Reset();
@@ -133,7 +145,7 @@ bool FS47OutsideLight::EnsureParts()
  if(!Spot.IsValid())
  {
   // A new world: nothing of the last one's is left.
-  bPartsTried=false;DustSeed.Reset();
+  bPartsTried=false;DustSeed.Reset();DustLit.Reset();
   auto* L=NewObject<USpotLightComponent>(W,TEXT("S47OutsideLight"));
   L->SetupAttachment(W->GetRootComponent());L->SetMobility(EComponentMobility::Movable);
   L->SetIntensityUnits(ELightUnits::Candelas);L->SetUseInverseSquaredFalloff(true);
@@ -223,20 +235,33 @@ void FS47OutsideLight::StepDust(const FFrame& Frame)
  auto* C=Dust.Get();
  if(!C)return;
  const int32 Count=FMath::Clamp(CvDust.GetValueOnGameThread(),0,4000);
- const bool bOn=Count>0&&Frame.K>.001;
+ // Air round someone at the room: out in the yard it would be specks a metre from the eye.
+ FVector Eye=S47Three::ToUE(Frame.Aim);
+ if(UWorld* World=M->Web->GetWorld())if(auto* PC=World->GetFirstPlayerController())if(PC->PlayerCameraManager)Eye=PC->PlayerCameraManager->GetCameraLocation();
+ const bool bOn=Count>0&&Frame.K>.001&&FVector::Dist(Eye,S47Three::ToUE(Frame.Aim))<DustRoomM*100.;
  C->SetVisibility(bOn);
  if(!bOn)return;
  if(DustSeed.Num()!=Count)
  {
   FRandomStream Rand(4711);
-  DustSeed.SetNum(Count);DustMoved.SetNum(Count);
+  DustSeed.SetNum(Count);DustMoved.SetNum(Count);DustLit.Init(0.f,Count);DustNext=0;
   C->ClearInstances();
   for(FVector& Seed:DustSeed)Seed=FVector(Rand.FRandRange(-1.f,1.f),Rand.FRandRange(-1.f,1.f),Rand.FRandRange(-1.f,1.f));
   for(int32 I=0;I<Count;++I)C->AddInstance(FTransform::Identity,true);
  }
- FVector Eye=S47Three::ToUE(Frame.Aim);
- if(UWorld* World=M->Web->GetWorld())if(auto* PC=World->GetFirstPlayerController())if(PC->PlayerCameraManager)Eye=PC->PlayerCameraManager->GetCameraLocation();
  const FVector EyeThree=S47Three::ToThree(Eye);
+ // A few each frame: is this one in the light? It shows only there, and comes and goes softly as the shadows pass.
+ if(UWorld* World=M->Web->GetWorld())
+ {
+  const FCollisionQueryParams Query(SCENE_QUERY_STAT(S47OutsideLightDust),true);
+  const FVector Source=S47Three::ToUE(Frame.From);
+  for(int32 N=0;N<DustTracesPerFrame&&N<Count;++N)
+  {
+   DustNext=(DustNext+1)%Count;
+   FHitResult Hit;
+   DustLit[DustNext]=World->LineTraceSingleByChannel(Hit,DustMoved[DustNext].GetLocation(),Source,ECC_Visibility,Query)?0.f:1.f;
+  }
+ }
  const double Side=CvDustSize.GetValueOnGameThread()*.01,T=Frame.Seconds;
  for(int32 I=0;I<Count;++I)
  {
@@ -245,7 +270,7 @@ void FS47OutsideLight::StepDust(const FFrame& Frame)
   const double P=I*.61;
   const FVector Place(S.X*DustHalfX+T*.03*S.Z+.16*FMath::Sin(T*.37+P),S.Y*DustHalfY+T*.018+.08*FMath::Sin(T*.53+P*1.3),S.Z*DustHalfZ-T*.025*S.X+.16*FMath::Cos(T*.31+P*.7));
   const FVector Three(EyeThree.X+Wrap(Place.X-EyeThree.X,DustHalfX),EyeThree.Y+Wrap(Place.Y-EyeThree.Y+.2,DustHalfY),EyeThree.Z+Wrap(Place.Z-EyeThree.Z,DustHalfZ));
-  DustMoved[I]=FTransform(FRotator(T*37.+I*11.,T*23.+I*7.,T*29.+I*3.).Quaternion(),S47Three::ToUE(Three),FVector(Side*(.6+.4*FMath::Abs(S.Y))));
+  DustMoved[I]=FTransform(FRotator(T*37.+I*11.,T*23.+I*7.,T*29.+I*3.).Quaternion(),S47Three::ToUE(Three),FVector(Side*(.6+.4*FMath::Abs(S.Y))*DustLit[I]));
  }
  C->BatchUpdateInstancesTransforms(0,DustMoved,true,true,true);
 }
@@ -298,7 +323,8 @@ void FS47OutsideLight::SetAir(double K,const FVector& At,const FLinearColor& Alb
  F->SetWorldLocation(S47Three::ToUE(At));
  // A room's own measure: wide enough for any room a player stands in, and no higher than a ceiling and a little.
  F->SetWorldScale3D(bRoom?FVector(2.4,2.4,.72):FVector(1.5,1.5,.5));
- F->SetRadialFogExtinction(float(K*(bRoom?CvAirRadial.GetValueOnGameThread():1.1f)));
+ const bool bOwnHaze=M->Web->Area()==TEXT("saro");
+ F->SetRadialFogExtinction(float(K*(!bRoom?1.1f:bOwnHaze?CvAirRadial.GetValueOnGameThread():CvAirTown.GetValueOnGameThread())));
  F->SetHeightFogExtinction(float(K*(bRoom?CvAirHeight.GetValueOnGameThread():.7f)));
  F->SetFogAlbedo(Albedo);
  F->SetVisibility(K>.002);
@@ -318,5 +344,5 @@ void FS47OutsideLight::Stop()
  }
  else{bShown=false;GS47FloodFogDistance=-1.f;GS47FloodFogPhase=-1.f;}
  Spot.Reset();Air.Reset();Core.Reset();Halo.Reset();Dust.Reset();CoreMid.Reset();HaloMid.Reset();DustMid.Reset();
- DustSeed.Reset();DustMoved.Reset();HeldCvars.Reset();Doused.Reset();bPartsTried=false;bPowerCut=false;bFogAsked=false;
+ DustSeed.Reset();DustMoved.Reset();DustLit.Reset();HeldCvars.Reset();Doused.Reset();bPartsTried=false;bPowerCut=false;bFogAsked=false;
 }

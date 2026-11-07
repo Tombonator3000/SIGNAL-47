@@ -22,6 +22,7 @@
 #include "S47Flashlight.h"
 #include "S47UfoPresentation.h"
 #include "S47OutsideLight.h"
+#include "S47FloodProbe.h"
 #include "SS47AwayOverlay.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -213,6 +214,11 @@ void FS47Taken::ShowLight(double K)
  if(!M||!M->Web)return;
  if(!bOutdoors)
  {
+  // Gone under a roof from an open-air flood: what was shining there stops.
+  if(auto* OldSpot=Spot.Get())OldSpot->SetVisibility(false);
+  if(auto* OldFill=Fill.Get())OldFill->SetVisibility(false);
+  if(Ufo)Ufo->Hide();
+  S47FloodProbe::StopLive(M);
   // One real source out there and nothing else: it cannot come through a wall, and it moves, so what it throws moves.
   if(!Rig)Rig=MakeShared<FS47OutsideLight>(M);
   FS47OutsideLight::FFrame Frame;
@@ -467,7 +473,11 @@ void FS47Taken::Step(double Dt)
   const FVector Chest=Feet()+FVector(0,1.25,0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
   S47CalicheAccess::SetLampLevel(0);
+  // From where it stands just now: under a roof it drifts, and being in the light is being in what is seen.
+  const FVector Base=From;
+  if(!bOutdoors)From=FS47OutsideLight::Swept(From,Aim,Age);
   const bool bReach=LightReaches(Chest);
+  From=Base;
   if(Lit>=0&&(bReach||!bSpill))Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
   ShowLight(K);
   const bool bCaught=Lit>=0&&FVector::Dist(Aim,Chest)<1.6&&bReach;
