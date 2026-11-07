@@ -474,6 +474,7 @@ namespace
     {
      if(Elapsed-WalkFrom<4)return true;
      Shot(*FString::Printf(TEXT("nature-%s.png"),V[I].Name));ShotPending=false;
+     UE_LOG(LogTemp,Display,TEXT("S47: nature frame %s: %.1f ms over the last frames"),V[I].Name,FApp::GetDeltaTime()*1000.);
      {
       // Which surface is underfoot, by name, since a shared look can hide which mesh actually shows.
       const FVector Foot=S47Three::ToUE(M->Player->Pos);FHitResult Hit;FCollisionQueryParams Q;Q.bTraceComplex=true;

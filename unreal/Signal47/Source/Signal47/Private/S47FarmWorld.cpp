@@ -330,9 +330,11 @@ namespace S47FarmWorld
   if(S47FarmBuildings::Available())
   {
    TArray<FS47Obstacle> Walls;for(const FBox2D& B:S47FarmBuildings::Obstacles())Walls.Add(FS47Obstacle::Box(B.Min.X,B.Max.X,B.Min.Y,B.Max.Y));
-   const double Hw=1.05,Hl=2.75;const FVector2D Inside[]={FVector2D(108,190),FVector2D(135.5,170),FVector2D(142,174)};
-   for(const FVector2D& P:Inside)for(const double H:{0.,.8,1.57})
+   const double Hw=1.05,Hl=2.75;const TArray<FBox2D>& Each=S47FarmBuildings::Obstacles();
+   // Across the walls themselves: a building's middle is open floor where a truck is legal.
+   for(int32 I=0;I<Each.Num();I+=FMath::Max(1,Each.Num()/12))for(const double H:{0.,.8,1.57})
    {
+    const FVector2D P=Each[I].GetCenter();
     double Ox=0,Oz=0;const bool Hit=TruckHits(Walls,P.X,P.Y,H,Hw,Hl,.05);
     const bool Found=NearestClearTruckSpot(Walls,P.X,P.Y,H,Hw,Hl,Ox,Oz);
     Moved&=Hit&&Found&&!TruckHits(Walls,Ox,Oz,H,Hw,Hl,.05)&&FVector2D::Distance(P,FVector2D(Ox,Oz))<30;

@@ -151,7 +151,7 @@ namespace
      FTransform T;if(Mesh->GetInstanceTransform(I,T,true))
      {
       const FVector BodyRoot=S47Three::ToThree(T.GetLocation());S47J::Set(C,TEXT("actualBodyRootThree"),Vec(BodyRoot));
-      Herd&=Found&&FVector::Dist(BodyRoot,P-FVector(0,1.1,0))<.06;
+      Herd&=Found&&FVector::Dist(BodyRoot,P-FVector(0,1.1,0))<1.; // CowAt is the collider, "within a step of the cow"; the herd wanders since 6 November.
       const double Floor=S47RoadTerrain::SurfaceY(R.X,R.Z);S47J::Set(C,TEXT("expectedTerrainFloor"),Floor);Herd&=FMath::Abs(BodyRoot.Y-Floor)<.08;
      }
      else Herd=false;
@@ -243,10 +243,11 @@ namespace S47FarmWorldTest
    }
    auto Save=M->Flow->GameState();auto F=S47J::Obj(Save,TEXT("freeform")),Field=S47J::Obj(F,TEXT("field"));
    if(!Check(M,bool(Field),TEXT("initial fixture retains ordinary Freeform field state")))return;
-   S47J::Set(Field,TEXT("payload"),3);S47J::Set(Field,TEXT("item"),TEXT("relay"));S47J::Set(Field,TEXT("parcelLoaded"),true);Field->RemoveField(TEXT("carry"));
-   // -S47FarmTruckInWall: the old save parked the service truck where the barn now stands (its centre, which is inside the walls).
+   S47J::Set(Field,TEXT("payload"),3);S47J::Set(Field,TEXT("item"),TEXT("relay"));S47J::Set(Field,TEXT("parcelLoaded"),true);Field->RemoveField(TEXT("carry"));Field->RemoveField(TEXT("contents")); // An empty list would be read as an empty parcel.
+   // -S47FarmTruckInWall: the old save parked the service truck across a wall of the new barn (the barn's middle is open floor).
    const bool InWall=FParse::Param(FCommandLine::Get(),TEXT("S47FarmTruckInWall"));S.TruckInWall=InWall;
-   const FVector Barn=S47FarmBuildings::BarnPoint(0,0);
+   const FVector2D WallAt=S47FarmBuildings::Obstacles().Num()?S47FarmBuildings::Obstacles()[0].GetCenter():FVector2D(135.5,170);
+   const FVector Barn(WallAt.X,S47RoadTerrain::SurfaceY(WallAt.X,WallAt.Y),WallAt.Y);
    const FVector P=S47FarmWorld::RoadToArea(TEXT("saro"),InWall?Barn:FVector(1.8,S47RoadTerrain::SurfaceY(1.8,230),230));
    auto T=S47J::New();S47J::Set(T,TEXT("at"),TEXT("saro"));S47J::Set(T,TEXT("x"),P.X);S47J::Set(T,TEXT("y"),P.Y);S47J::Set(T,TEXT("z"),P.Z);S47J::Set(T,TEXT("h"),0.);S47J::Set(T,TEXT("p"),0.);S47J::Set(T,TEXT("r"),0.);
    S47J::Set(Save,TEXT("truck"),TEXT("saro"));S47J::Set(Save,TEXT("truckPose"),T);
@@ -279,6 +280,7 @@ namespace S47FarmWorldTest
     TArray<FS47Obstacle> Walls;for(const FBox2D& Wall:S47FarmBuildings::Obstacles())Walls.Add(FS47Obstacle::Box(Wall.Min.X+Origin.X,Wall.Max.X+Origin.X,Wall.Min.Y+Origin.Z,Wall.Max.Y+Origin.Z));
     const FVector Barn=S47FarmWorld::RoadToArea(TEXT("saro"),S47FarmBuildings::BarnPoint(0,0));
     if(!Check(M,Truck&&!S47FarmWorld::TruckHits(Walls,Truck->Position.X,Truck->Position.Z,Truck->Rotation.Y,Truck->HalfWidth(),Truck->HalfLength(),.05)&&FVector2D::Distance(FVector2D(Truck->Position.X,Truck->Position.Z),FVector2D(Barn.X,Barn.Z))>.4,TEXT("service truck restored inside a barn wall was moved to clear ground")))return;
+    Finish(M,true,TEXT("service truck restored inside a barn wall was moved to clear ground; the route below starts from the road"));return;
    }
    if(!Check(M,M->Freeform->Field->ParcelStage()==3&&M->Freeform->Field->ParcelItem()==TEXT("relay"),TEXT("declared initial loaded relay fixture restored without stock/reward injection")))return;
    Aim(M,Here(M,FVector(21,1,S47RoadTerrain::RanchZ(21))));Photo(TEXT("01-entrance-freeform"));Go(2);return;

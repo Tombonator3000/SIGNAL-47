@@ -2068,3 +2068,7 @@ Bare `S47Flora`, bak `bNatural`. Kreosot står i tette bestand med nesten bare f
 ## 7. november 2026, tre avgrensede rettelser (uprøvd, kan ikke bygge her)
 
 Gren `worktree-agent-a7338ffb973ce40ec`. (1) Tunlampens glød og glorie ved veilokalt (432.9, 204) skjules i Freeform via billboard-synlighet i `ReconcileWindow`. (2) Parkert tjenestebil i ny vegg flyttes til nærmeste frie plass (`US47World::KeepParkedOutOfFarmWalls`, `S47FarmWorld::NearestClearTruckSpot`), selvtestlinje og `-S47FarmTruckInWall` i `S47FarmWorldTest`. (3) `Tools/sound-workshop/alien_transmission.py` lager original radiotransmisjon `radio_transmission_original.wav`; `S47EncounterSound` laster den før filmklippet. Ikke bygget, ikke kjørt i motor.
+
+## 7. november 2026 kl.02:05, natt, bygg og natur
+
+Fire egne gårdsbygg er importert (LFS, 45 filer) og står i Freeform. Bakken: kritikerne og målinger viste 230 mot 150 i foto, så `S47MesaRock` gir bakken ny farge og mer grus bare i Freeform om dagen; natt og Story er uendret. Kreosot i bestand, fot og strø, olivengrå tone, småstein. Den gamle `-S47FarmWorldTest` hadde ikke vært kjørt siden 2. november, og skriptet mitt `farm.py` kjørte en annen prøve; den er oppdatert og består igjen (249 m kjøring, 124 m gange, last, Fortsett, Story). Bildetid i naturprøven 10-18 ms.
