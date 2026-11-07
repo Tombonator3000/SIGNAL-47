@@ -31,6 +31,15 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HighwayUfo,Log,All);
 namespace
 {
  constexpr double EndTime=44,QuietTime=45,CarHalfW=1.1,CarHalfL=2.65;
+ // Tom, 7 November: both ways along the highway. Road metres, and Along is +1 south (towards Caliche), -1 north (towards SARO).
+ // The patrol's own stretch: past the motel's lot at the north end, short of the diner at the south.
+ constexpr double PatrolNorth=320,PatrolSouth=1860,PatrolLead=180;
+ // Where a developer's encounter has room ahead for the patrol to start and run on.
+ bool RoomAhead(double Z,double Along){return Along>0?Z>=300&&Z<=1500:Z>=500&&Z<=1900;}
+ // The stretch where it starts by itself: south-bound past the motel and the survey track, north-bound past the town's edge.
+ // Either way the patrol's whole run stays on the open road, clear of the survey track at 430 to 610.
+ bool OpenStretch(double Z,double Along){return Along>0?Z>=650&&Z<=900:Z>=1350&&Z<=1650;}
+ const TCHAR* Bound(double Along){return Along>0?TEXT("south"):TEXT("north");}
  const FString ColliderId=TEXT("highway-ufo-patrol");
  double Smooth(double A,double B,double X){const double T=FMath::Clamp((X-A)/(B-A),0.,1.);return T*T*(3-2*T);}
  FVector RoadOrigin(){return S47Legs::ORIGINS(TEXT("road"));}
@@ -241,26 +250,29 @@ bool FS47HighwayUfo::CanStart(bool Forced)const
  else if(M->OneAtATime())return false;
  // The finale and authored car encounter never borrow this highway event.
  if(!M->IsFreeform()&&M->Story&&M->Story->ChapterKey==TEXT("ch6"))return false;
- if(Forced)return P.Z>300&&P.Z<1900;
+ const double Along=-FMath::Cos(D->Heading);const double Way=Along>=0?1:-1;
+ if(Forced)return RoomAhead(P.Z,Way);
  double Hour=FMath::Fmod(Clock(),86400.)/3600.;if(Hour<0)Hour+=24;
  if(Hour>=6&&Hour<19)return false;
  // A full hull beside the truck is not an evening's small hint: in Freeform it waits as a body does.
  if(M->IsFreeform()&&!FS47FarmSite::TheirHours(Clock()))return false;
  if(M->IsFreeform()?NightId()-LastNight<3:LastNight>=0)return false;
- return -FMath::Cos(D->Heading)>.85&&P.Z>=650&&P.Z<=900;
+ // Story keeps the one south-bound stretch it was written with.
+ if(Way<0&&!M->IsFreeform())return false;
+ return FMath::Abs(Along)>.85&&OpenStretch(P.Z,Way);
 }
 bool FS47HighwayUfo::Start(bool Forced,bool Follow)
 {
  if(!CanStart(Forced)||!Visual->Prepare(!Follow))return false;
  Visual->ReleaseCollision();Visual->BindCollision();
  const auto D=M->World->CabDrive();const FVector O=RoadOrigin();Sign=-FMath::Cos(D->Heading)>=0?1:-1;
- StartZ=FMath::Clamp(D->Pos.Z-O.Z+Sign*180.,450.,1850.);
+ StartZ=FMath::Clamp(D->Pos.Z-O.Z+Sign*PatrolLead,PatrolNorth,PatrolSouth);
  CarAt=Ground(O.X-Sign*1.8,O.Z+StartZ);
  if(!Follow&&!Visual->Clear(CarAt)){Visual->ReleaseCollision();return false;}
  bActive=true;bFollow=Follow;bSeen=bSawCar=bSawPass=bLogged=bEscaped=false;bCarRetained=!Follow;bResumePending=false;
  Age=Rest=HiddenFor=SoundAt=0;CarSpeed=14;LastNight=NightId();Serial=FMath::Min(1000000,Serial+1);Outcome.Empty();
  UfoAt=Follow?Ground(D->Pos.X-Sign*2,D->Pos.Z-Sign*55)+FVector(0,12,0):Ground(CarAt.X,CarAt.Z+Sign*85)+FVector(0,15,0);PassStart=PassTarget=FVector::ZeroVector;
- Draw();Changed();UE_LOG(LogS47HighwayUfo,Display,TEXT("S47: highway UFO %s started at road %.1fm, incident %d"),Follow?TEXT("follow"):TEXT("patrol"),StartZ,Serial);return true;
+ Draw();Changed();UE_LOG(LogS47HighwayUfo,Display,TEXT("S47: highway UFO %s started at road %.1fm going %s, player at %.1fm, %s, incident %d"),Follow?TEXT("follow"):TEXT("patrol"),StartZ,Bound(Sign),D->Pos.Z-O.Z,Forced?TEXT("asked for"):TEXT("by itself"),Serial);return true;
 }
 bool FS47HighwayUfo::Force(bool Follow){return Start(true,Follow);}
 FString FS47HighwayUfo::PhotoIncidentId()const
@@ -315,13 +327,15 @@ void FS47HighwayUfo::Advance(double Dt)
  const double Before=Age;Age=FMath::Min(EndTime,Age+Dt);const FVector O=RoadOrigin();
  if(!bFollow)
  {
-  const double Desired=14*(1-Smooth(28,40,Age));double Speed=FMath::Min(Desired,CarSpeed+2.5*Dt);
+  // It slows for the end of its stretch rather than stopping dead at it, on whichever way it is going.
+  const double Room=Sign>0?PatrolSouth-(CarAt.Z-O.Z):(CarAt.Z-O.Z)-PatrolNorth;
+  const double Desired=FMath::Min(14*(1-Smooth(28,40,Age)),FMath::Max(0.,Room)*.35);double Speed=FMath::Min(Desired,CarSpeed+2.5*Dt);
   // Braking checks the swept stopping corridor, not just the destination.
   const double Brake=Speed*Speed/8+5;bool Clear=true;
   for(double S=1;S<=Brake;S+=1)if(!Visual->Clear(CarAt+FVector(0,0,Sign*S))){Clear=false;break;}
   if(!Clear)Speed=FMath::Max(0.,CarSpeed-5*Dt);
   FVector Next=Ground(FMath::Lerp(O.X-Sign*1.8,O.X-Sign*7.7,Smooth(31,40,Age)),CarAt.Z+Sign*Speed*Dt);
-  if(Next.Z-O.Z<320||Next.Z-O.Z>1650){Speed=0;Next=CarAt;}
+  if(Next.Z-O.Z<PatrolNorth||Next.Z-O.Z>PatrolSouth){Speed=0;Next=CarAt;}
   if(!Visual->Clear(Next)){Speed=0;Next=CarAt;}
   CarAt=Next;CarSpeed=Speed;
   if(Age<24)UfoAt=Ground(O.X-Sign*1.3,CarAt.Z+Sign*FMath::Lerp(85.,48.,Smooth(8,24,Age)))+FVector(0,FMath::Lerp(15.,9.,Smooth(0,24,Age)),0);
@@ -418,5 +432,18 @@ bool FS47HighwayUfo::SelfTest(TArray<FString>& Lines)
  S47J::Set(S,TEXT("car"),TArray<double>{0,0,0});H.Begin(S);Check(!S47J::Bool(H.Save(),TEXT("active"))&&!S47J::Bool(H.Save(),TEXT("carRetained")),TEXT("malformed positions cannot materialize a car in another area"));
  H.Begin(nullptr);H.bActive=true;H.Age=24;H.PassStart=FVector(8000,12,1200);H.PassTarget=FVector(8005,10,1000);H.CarAt=Ground(7998.2,1100);H.StartZ=850;H.bFollow=true;H.Advance(4);Check(H.UfoAt.Z<1200&&H.UfoAt.Z>1000&&H.Age==28,TEXT("near pass travels a fixed world route without moving the player"));
  Check(FootprintHits(FVector(0,0,0),FS47Obstacle::Box(1,2,-1,1))&&!FootprintHits(FVector(0,0,0),FS47Obstacle::Box(2,3,-1,1))&&FootprintHits(FVector(0,0,0),FS47Obstacle::Circle(0,3,.5)),TEXT("vehicle clearance handles wall and circular road obstacles"));
+ Check(RoomAhead(650,1)&&RoomAhead(1400,-1)&&!RoomAhead(1700,1)&&!RoomAhead(400,-1),TEXT("a developer's encounter asks for room ahead in the direction driven"));
+ bool Runs=true;for(const double Way:{1.,-1.})for(double Z=0;Z<2400;Z+=10)if(OpenStretch(Z,Way))
+ {
+  // Fourteen metres a second for the half minute before it pulls over: its whole run on the patrol's stretch, clear of the survey track.
+  const double From=Z+Way*PatrolLead,To=From+Way*14*30;
+  Runs&=RoomAhead(Z,Way)&&From>PatrolNorth&&From<PatrolSouth&&To>PatrolNorth&&To<PatrolSouth&&FMath::Min(From,To)>610&&Way*(From-Z)>0;
+ }
+ Check(Runs&&OpenStretch(800,1)&&OpenStretch(1500,-1)&&!OpenStretch(800,-1)&&!OpenStretch(1500,1),TEXT("it starts by itself going north or going south, each on open road ahead of the driver"));
+ // North-bound: the same stages mirrored, the patrol on its own side of the road and the light ahead of it.
+ H.Begin(nullptr);H.bActive=true;H.Sign=-1;H.StartZ=1200;H.CarSpeed=14;H.CarAt=Ground(RoadOrigin().X+1.8,RoadOrigin().Z+1200);
+ const FVector NorthFrom=H.CarAt;H.Advance(.25);H.Advance(.25);
+ Check(H.CarAt.Z<NorthFrom.Z&&H.UfoAt.Z<H.CarAt.Z&&H.CarAt.X>RoadOrigin().X,TEXT("north-bound the patrol runs north in its own lane, behind the light"));
+ S47J::Set(S,TEXT("direction"),-1.);S47J::Set(S,TEXT("car"),Vector(Ground(8001.8,1100)));H.Begin(S);Check(S47J::Num(H.Save(),TEXT("direction"))==-1.,TEXT("the direction survives Continue"));
  H.Stop();Check(!H.Busy(),TEXT("leave-play releases both active encounter and quiet reservation"));return Ok;
 }

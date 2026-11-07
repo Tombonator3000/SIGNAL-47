@@ -28,11 +28,24 @@ private:
  TArray<FEvent> List;
  double ShowerLeft = 0, ShowerNext = 0;
  FS47PaleBody Pale;
- // Tall and crab, coming from a distance so their gait can be judged.
+ // Tall, crab and Pale One, coming from a distance so their gait can be judged. The Pale One is Pale above, one body.
+ enum EGait : int32 { GaitTall, GaitCrab, GaitPale, GaitCount };
  FS47PaleBody TallBody, CrabBody;
- struct FGaitTest { double Left=0,Clock=0,Yaw=0,Fold=0;FVector At=FVector::ZeroVector; } TallTest,CrabTest;
- void SpawnGait(bool bCrab);
- void StepGait(bool bCrab,double Dt);
+ struct FGaitTest { double Left=0,Clock=0,Yaw=0,Fold=0;FVector At=FVector::ZeroVector; } Gaits[GaitCount];
+ FS47PaleBody& GaitBody(int32 Kind){return Kind==GaitCrab?CrabBody:Kind==GaitPale?Pale:TallBody;}
+ bool BuildPale();
+ void SpawnGait(int32 Kind);
+ void StepGait(int32 Kind,double Dt);
+ // The feet, not Pos: the walker's Pos.Y stays 0 whatever the ground does, and its FloorY is the ground.
+ FVector PlayerFeet() const;
+ int32 FormationPace=0;
+ // -S47DevProof=/tmp/dir: what this menu offers, tried outdoors and from the natural schedule, with what is really drawn read back.
+ FString ProofDir; int32 ProofStage=0,ProofChecks=0,ProofIndex=0; double ProofT=0,ProofAt=0; bool bProofInit=false,bProofDone=false; FString ProofShot; FVector ProofMean=FVector::ZeroVector;
+ bool ProofTest(double Dt);
+ bool ProofCheck(bool bGood,const FString& What);
+ void ProofFinish(bool bGood,const FString& Why);
+ bool ProofUse(const FString& Label);
+ void ProofAim(const FVector& At);
  double PaleLeft = 0, PaleClock = 0;
  FVector PaleAt = FVector::ZeroVector;
  double PaleYaw = 0;

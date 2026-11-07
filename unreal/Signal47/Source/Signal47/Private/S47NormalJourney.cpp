@@ -418,7 +418,7 @@ namespace
      if(F.Director->EventId()!=TEXT("dusk_orb"))
      {if(F.Director->Busy()||Age-At>65)return Finish(false,TEXT("natural dusk invitation blocked or missed; no Force/retry state injection"));return true;}
      if(!Check(!F.PowerFault()||W.GeneratorRunning(),TEXT("power still available after real wait fuel consequences")))return false;
-     M->UI->Close(true);const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+9,0);Aim(P);Go(406);break; // outside the 7 m at which the lights leave
+     M->UI->Close(true);const FVector P=F.Director->OrbAt();M->Player->Place(P.X,P.Z+9,0);Aim(P);Go(406);break; // outside the 7 m at which the lights leave
     }
     case 406:
     {

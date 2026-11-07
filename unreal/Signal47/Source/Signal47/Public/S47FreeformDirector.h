@@ -30,6 +30,10 @@ public:
  void TestCarDice(float Dice){CarDice=Dice;}
  // The low lights' visits in the dark. A developer run keeps to the dusk unless a test asks, as with the dice above.
  void TestOrbNight(bool bOn){bTestOrbNight=bOn;}
+ // Where one low light is on this visit's flight, and the stop it is holding at (-1 between them).
+ FVector OrbAt(int32 Index=0)const{return FS47DuskOrb::Position(Anchor,Age,Index,DuskOrb.VisitSeed());}
+ int32 OrbStopNow(int32 Index=0)const{return FS47DuskOrb::StopAt(Age,Index,DuskOrb.VisitSeed());}
+ const FS47DuskOrb& DuskOrbState()const{return DuskOrb;}
  // Test: 0 as played; 1 the effect hidden, so that only the lights' own effect on the world shows; 2 that with the lights out.
  void TestOrbLightProbe(int32 Mode){OrbLightProbe=Mode;}
  // Test: how many of the orbs' point lights are on now, and how many of those cast shadows.

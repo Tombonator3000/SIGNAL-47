@@ -524,7 +524,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
   // From SARO it is a drive away, so they last that much longer before they are gone.
   if(M->Web->Area()==TEXT("saro")){Age=-170;Scene=TEXT("diner");}
  }
- if(Id==TEXT("dusk_orb")){Anchor=FVector(FS47DuskOrb::HomeX,US47Night::SaroFloorAt(M->Web,FS47DuskOrb::HomeX,FS47DuskOrb::HomeZ)+FS47DuskOrb::HomeUp,FS47DuskOrb::HomeZ);DuskOrb.Started(M->Freeform->Clock());}
+ if(Id==TEXT("dusk_orb")){Anchor=FVector(FS47DuskOrb::HomeX,US47Night::SaroFloorAt(M->Web,FS47DuskOrb::HomeX,FS47DuskOrb::HomeZ)+FS47DuskOrb::HomeUp,FS47DuskOrb::HomeZ);DuskOrb.Started(M->Freeform->Clock());UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
  if(Id==TEXT("close_pass")&&M->Player)Anchor=M->Player->Pos+FVector(-70,24,-38);
@@ -629,28 +629,31 @@ void FS47FreeformDirector::Draw()
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  if(auto* Orb=Effects->Orb.Get())
  {
-  const double V=Event==TEXT("dusk_orb")?FS47DuskOrb::Visibility(Age):0;
+  const int32 OrbSeed=DuskOrb.VisitSeed();const double OrbSeconds=DuskOrb.VisitSeconds();
+  const double V=Event==TEXT("dusk_orb")?FS47DuskOrb::Visibility(Age,OrbSeconds):0;
   const bool Here=V>0&&M->Web->Area()==Scene;
   Orb->SetVisibility(Here);Orb->SetWorldScale3D(FVector(.85*V));
-  if(V>0)Orb->SetWorldLocation(S47Three::ToUE(FS47DuskOrb::Position(Anchor,Age)+FVector(0,OrbFleeAge>=0?FS47DuskOrb::FleeRise(OrbFleeAge):0.,0)));
+  if(V>0)Orb->SetWorldLocation(S47Three::ToUE(OrbAt()+FVector(0,OrbFleeAge>=0?FS47DuskOrb::FleeRise(OrbFleeAge):0.,0)));
   const bool Low=M->Flow&&M->Flow->Graphics.Effects==0;
   for(int32 I=0;I<FS47DuskOrb::Count;++I)
   {
    auto* Fx=Effects->OrbFx[I].Get();auto* L=Effects->OrbLight[I].Get();if(!Fx||!L)continue;
-   const bool Use=Here&&(!Low||I==0);
+   const double Own=FS47DuskOrb::Presence(Age,I,OrbSeed,OrbSeconds);
+   const bool Use=Here&&I<DuskOrb.VisitLights()&&Own>0&&(!Low||I==0);
    auto* Film=Effects->OrbFilm[I].Get();
    if(!Use){if(Fx->IsActive())Fx->DeactivateImmediate();L->SetVisibility(false);if(Film&&I>0)Film->SetVisibility(false,false);continue;}
    if(!Fx->IsActive())Fx->Activate(true);
    Fx->SetVisibility(OrbLightProbe==0);
    // A startled orb goes first; the others follow a beat apart.
    const double Flee=OrbFleeAge>=0?FMath::Max(0.,OrbFleeAge-I*.12):-1;
-   const FVector At=FS47DuskOrb::Position(Anchor,Age,I)+FVector(0,Flee>=0?FS47DuskOrb::FleeRise(Flee):0.,0);
+   const FVector At=OrbAt(I)+FVector(0,Flee>=0?FS47DuskOrb::FleeRise(Flee):0.,0);
+   const double Looking=Flee>=0?0.:FS47DuskOrb::ScanLevel(Age,I,OrbSeed);
    const double Pulse=.86+.14*FMath::Sin(Age*3.1+I)*FMath::Sin(Age*1.3+I*.7);
-   const double Show=V*(I==0?1.:.7)*(Flee>=0?FMath::Clamp(1.-Flee/FS47DuskOrb::FleeSeconds,0.,1.):1.);
+   const double Show=Own*(I==0?1.:.7)*(Flee>=0?FMath::Clamp(1.-Flee/FS47DuskOrb::FleeSeconds,0.,1.):1.);
    Fx->SetWorldLocation(S47Three::ToUE(At));
    if(Film&&I>0){Film->SetWorldLocation(S47Three::ToUE(At));Film->SetWorldScale3D(FVector(.6*Show));Film->SetVisibility(Show>0,false);}
-   Fx->SetVariableFloat(TEXT("User.Phase"),float(Age+I*2.));Fx->SetVariableFloat(TEXT("User.Brightness"),float(Show));Fx->SetVariableFloat(TEXT("User.Size"),I==0?90.f:62.f);
-   L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse));L->SetVisibility(Show>0&&OrbLightProbe!=2);
+   Fx->SetVariableFloat(TEXT("User.Phase"),float(Age+I*2.));Fx->SetVariableFloat(TEXT("User.Brightness"),float(Show*(1.+.3*Looking)));Fx->SetVariableFloat(TEXT("User.Size"),I==0?90.f:62.f);
+   L->SetWorldLocation(S47Three::ToUE(At+(Flee>=0?FVector::ZeroVector:FS47DuskOrb::LightOffset(Age,I,OrbSeed))));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse*(1.+.6*Looking)));L->SetVisibility(Show>0&&OrbLightProbe!=2);
   }
  }
  const bool Farm=Event==TEXT("farm_lights")||Event==TEXT("town_lights");
@@ -1013,9 +1016,9 @@ void FS47FreeformDirector::Step(double Dt)
  }
  if(Event==TEXT("dusk_orb")&&M->Player)
  {
-  if(OrbFleeAge<0)for(int32 I=0;I<FS47DuskOrb::Count;++I)
+  if(OrbFleeAge<0)for(int32 I=0;I<DuskOrb.VisitLights();++I)
   {
-   const int32 StopNow=FS47DuskOrb::StopAt(Age,I);if(StopNow==OrbStopLogged[I])continue;
+   const int32 StopNow=OrbStopNow(I);if(StopNow==OrbStopLogged[I])continue;
    OrbStopLogged[I]=StopNow;if(StopNow>=0){UE_LOG(LogTemp,Display,TEXT("S47: dusk orb %d stops at %s at %.1f s"),I,FS47DuskOrb::Stops()[StopNow].Name,Age);}
   }
   if(OrbFleeAge>=0)
@@ -1023,10 +1026,10 @@ void FS47FreeformDirector::Step(double Dt)
    OrbFleeAge+=Dt;
    if(OrbFleeAge>=FS47DuskOrb::FleeSeconds+.3){Finish(bPhoto,TEXT("The lights rose straight up the moment someone came close. Any retained photograph records the observation, not its origin."));return;}
   }
-  else if(FS47DuskOrb::Visibility(Age)>.5)for(int32 I=0;I<FS47DuskOrb::Count;++I)if(FVector::Dist(M->Player->Pos,FS47DuskOrb::Position(Anchor,Age,I))<FS47DuskOrb::FleeRange)
+  else for(int32 I=0;I<DuskOrb.VisitLights();++I)if(FS47DuskOrb::Presence(Age,I,DuskOrb.VisitSeed(),DuskOrb.VisitSeconds())>.5&&FVector::Dist(M->Player->Pos,OrbAt(I))<FS47DuskOrb::FleeRange)
   {
    OrbFleeAge=0;UE_LOG(LogTemp,Display,TEXT("S47: dusk orb %d startled at %.1f s"),I,Age);
-   if(M->Audio){FS47Sound O;O.Gain=.2f;O.At=FS47DuskOrb::Position(Anchor,Age,I);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+.8);}
+   if(M->Audio){FS47Sound O;O.Gain=.2f;O.At=OrbAt(I);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+.8);}
    break;
   }
  }
@@ -1082,7 +1085,8 @@ void FS47FreeformDirector::Step(double Dt)
  {const bool Inside=Near(Anchor,5);M->Audio->HoldRoomTone(Inside?.15f:1.f);if(Stage==0&&Inside){Stage=1;Changed();}else if(Stage==1&&!Inside){Stage=2;Changed();}}
  if(Event==TEXT("roof_steps")&&Age>=6&&Near(FVector(9,0,0),8)&&!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))
  {bSeen=true;Stage=1;}
- if(Age>Def->Duration&&Event!=TEXT("observer")&&Event!=TEXT("service_presence")&&Event!=TEXT("feeder_presence")&&Event!=TEXT("array_presence"))
+ // The low lights' visits are of uneven length, written with each one.
+ if(Age>(Event==TEXT("dusk_orb")?FMath::Min(Def->Duration,DuskOrb.VisitSeconds()):Def->Duration)&&Event!=TEXT("observer")&&Event!=TEXT("service_presence")&&Event!=TEXT("feeder_presence")&&Event!=TEXT("array_presence"))
  {
   if(Def->Action==TEXT("service")||Def->Action==TEXT("feeder")){Finish(false);return;} // leave actual unresolved hardware state intact
   if(Event==TEXT("roof_steps")){Finish(bSeen);return;}

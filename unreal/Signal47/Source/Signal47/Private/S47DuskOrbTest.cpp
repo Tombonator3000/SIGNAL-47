@@ -120,7 +120,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  auto Original=[&]()->const FS47AlbumShot*{return M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});};
  auto Ops=[&]{const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X+1.,P.Z,PI/2);}; // OPS is on the west wall, facing +X into the room.
  auto AimAt=[&](const FVector& Point){const FVector D=Point-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());};
- auto OrbNow=[&]{return FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());};
+ auto OrbNow=[&]{return F.Director->OrbAt();};
  auto OrbSchedule=[&]{return S47J::Obj(F.Director->Save(),TEXT("duskOrb"));};
  // Mean brightness of what the player sees in the lower middle of the picture, from the actual back buffer. -1 if it cannot be read.
  // The picture as written: reading the viewport back on the game thread gives only black on Vulkan.
@@ -164,7 +164,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   // Existing native array-shot window position, inside the control room.
   // Only the viewer is placed; the orb continues its saved world-space path.
   M->Player->Place(-.9,-3.55,0);
-  const FVector WindowTarget=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());
+  const FVector WindowTarget=F.Director->OrbAt();
   const FVector WindowD=WindowTarget-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-WindowD.X,-WindowD.Z);M->Player->Pitch=FMath::Atan2(WindowD.Y,FVector2D(WindowD.X,WindowD.Z).Size());
   M->UI->ClearToasts();Go(95011,2.4);return;
@@ -176,13 +176,13 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==95012)
  {
-  const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+9,0);
+  const FVector P=F.Director->OrbAt();M->Player->Place(P.X,P.Z+9,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());M->UI->ClearToasts();Go(9502,2.3);return;
  }
  if(Stage==9502)
  {
   // The orb has moved on since the placement: aim at where it is now, as a person would.
-  const FVector Live=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());const FVector LiveD=Live-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  const FVector Live=F.Director->OrbAt();const FVector LiveD=Live-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-LiveD.X,-LiveD.Z);M->Player->Pitch=FMath::Atan2(LiveD.Y,FVector2D(LiveD.X,LiveD.Z).Size());
   Go(95020,.12);return;
  }
@@ -555,7 +555,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9801)
  {
   if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb"),TEXT("orb lights stay while nobody is near")))return;
-  const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+3,0);
+  const FVector P=F.Director->OrbAt();M->Player->Place(P.X,P.Z+3,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   M->UI->ClearToasts();Go(9802,.5);return;
  }
@@ -587,7 +587,16 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb")&&F.Director->PhysicalObjectPresented(),TEXT("night visit has a presented native component after gradual appearance")))return;
   int32 On=0,Shadowed=0;float Lumens=0,Radius=0;F.Director->OrbLightCount(On,Shadowed,Lumens,Radius);
   UE_LOG(LogTemp,Display,TEXT("S47 orb lights on=%d shadowed=%d lumens=%.0f radius=%.0f cm"),On,Shadowed,Lumens,Radius);
-  if(!Check(On>=1&&On<=FS47DuskOrb::Count&&Shadowed==0&&Lumens>0&&Radius>0,TEXT("one unshadowed point light per orb, within the cap")))return;
+  // Tom, 7 November: one to three, sporadic, flying as drones. What this visit is, and what each of its orbs will do.
+  const FS47DuskOrb& Visit=F.Director->DuskOrbState();
+  UE_LOG(LogTemp,Display,TEXT("S47 orb visit: %d lights, %.0f s, seed %d; %d lights on now"),Visit.VisitLights(),Visit.VisitSeconds(),Visit.VisitSeed(),On);
+  for(int32 I=0;I<Visit.VisitLights();++I)
+  {
+   const FS47DuskOrb::FFlight Fl=FS47DuskOrb::Flight(I,Visit.VisitSeed(),Visit.VisitSeconds());
+   UE_LOG(LogTemp,Display,TEXT("S47 orb flight %d: %d hops, stops %.1f to %.1f s, longest hop %.1f m, fastest %.1f m/s, first hop at %.1f s"),I,Fl.Hops,Fl.ShortestHold,Fl.LongestHold,Fl.LongestHop,Fl.Fastest,Fl.FirstHopAt);
+   if(!Check(Fl.Hops>=4&&Fl.LongestHold>Fl.ShortestHold*1.6&&Fl.Fastest>4.,FString::Printf(TEXT("orb %d hops in its own time: stops of uneven length, quick between them"),I)))return;
+  }
+  if(!Check(Visit.VisitLights()>=1&&Visit.VisitLights()<=FS47DuskOrb::Count&&On>=1&&On<=Visit.VisitLights()&&Shadowed==0&&Lumens>0&&Radius>0,TEXT("one unshadowed point light per orb of this visit, one to three")))return;
   const FVector Home=F.Director->EventAnchor();
   for(const auto& Hover:FS47DuskOrb::Stops())
   {
@@ -625,13 +634,21 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==9905)
  {
-  const int32 StopIndex=FS47DuskOrb::StopAt(F.Director->EventAge());
+  const int32 StopIndex=F.Director->OrbStopNow();
   if(StopIndex<0){if(Age-At>30){Finish(false,TEXT("the first orb never reached a piece of equipment"));}return;}
   const FVector P=OrbNow();UE_LOG(LogTemp,Display,TEXT("S47 orb night: first orb holding at %s, %s"),FS47DuskOrb::Stops()[StopIndex].Name,*P.ToString());
+  // It hovers at the thing rather than standing still: sampled from what is drawn, a moment apart.
+  S47J::Set(Snapshot,TEXT("hoverFrom"),TArray<double>{P.X,P.Y,P.Z});S47J::Set(Snapshot,TEXT("hoverStop"),StopIndex);
   // Only the viewer moves. Nine metres off, looking at the ground under it.
   M->UI->Close(true);M->Player->Place(P.X,P.Z+9,0);AimAt(FVector(P.X,US47Night::SaroFloorAt(M->Web.Get(),P.X,P.Z)+.4,P.Z));M->UI->ClearToasts();Go(9906,.9);return;
  }
- if(Stage==9906){Shot(TEXT("orb-night-at-equipment"));Go(9907,.2);return;}
+ if(Stage==9906)
+ {
+  const auto Was=S47J::Nums(Snapshot,TEXT("hoverFrom"));const FVector Now=OrbNow();const double Moved=Was.Num()==3?FVector::Dist(FVector(Was[0],Was[1],Was[2]),Now):-1;
+  UE_LOG(LogTemp,Display,TEXT("S47 orb hover: %.2f m in .9 s, at stop %d, looking %.2f"),Moved,F.Director->OrbStopNow(),FS47DuskOrb::ScanLevel(F.Director->EventAge(),0,F.Director->DuskOrbState().VisitSeed()));
+  if(!Check(Moved>.02,TEXT("the first light keeps correcting itself while it hovers")))return;
+  Shot(TEXT("orb-night-at-equipment"));Go(9907,.2);return;
+ }
  if(Stage==9907){F.Director->TestOrbLightProbe(1);Go(9908,.35);return;}
  if(Stage==9908)
  {
