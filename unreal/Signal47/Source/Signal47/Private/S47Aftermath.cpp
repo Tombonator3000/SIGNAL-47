@@ -24,7 +24,7 @@ FString FS47Aftermath::NoteFor(int32 Kind,double SafeClock,float InRoll,const TA
  if((Kind!=1&&Kind!=2)||InRoll>=NoteChance)return FString();
  // In the player's own hand, and each one tidies away something their field record says cannot be explained.
  TArray<FString> Pool;
- if(Kind==1)Pool={TEXT("Fell on the way back. Nothing broken."),TEXT("Walked it off. Did not need the truck."),TEXT("Stay off the soft ground.")};
+ if(Kind==1)Pool={TEXT("Fell on the way back. Nothing broken."),TEXT("Walked it off. Did not need the jeep."),TEXT("Stay off the soft ground.")};
  else
  {
   const int32 S=int32(FMath::Fmod(FMath::Max(0.,SafeClock),AftermathDay));
