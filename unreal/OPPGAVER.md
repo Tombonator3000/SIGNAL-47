@@ -4,6 +4,8 @@
 
 ## Dagskift 7. november, Claude Code
 
+Etter Toms test ca. 16:30: T16-punktene i TODO. Kopier: `~/SIGNAL-47` (Claude, `claude/day-d-20261107`, koordinator), `~/SIGNAL-47-cosmic` (Codex), og to worktrees: verden og grenser, UFO og lyskuler. Øvrige agenter leverer patcher. Én tung motorjobb om gangen.
+
 Tom ca. 16: skal teste, fortsetter med utvikling etterpå. Agentene er ferdige, og alle ekstra kopier er avviklet. Tom ca. 12: fortsett, så mange agenter som trengs; Freeform går foran Story, som tilpasses senere. Grensen på fire arbeidskopier står. Kopier: `~/SIGNAL-47` (Claude, `claude/day-a-20261107`, koordinator, bygg og prøver), `~/SIGNAL-47-cosmic` (Codex, urørt), `agent-a4f4def065b108336` (fjell, `SM_FF_Range`), ett nytt worktree (figurer og prøver: Crab, kinodør). Andre agenter leser bare, eller skriver bare `Tools/freeformterrain/import_ground_relief.py` og bakkens assets i hovedkopien. Én tung motorjobb om gangen via `production_lease`.
 
 ## Samlet game bible, Codex 6. november

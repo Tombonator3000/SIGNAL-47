@@ -5,6 +5,25 @@
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
 
+## Toms test av installasjonen 7. november kl. 16
+
+Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri sjekket om man stoppes mot dem da det er usynlige vegger rundt hele spillet så får bare kjørt litt rundt gården. Bakke: ser bra ut, noen feil rundt gården med store flater med overlapp mellom to forskjellige teksturer? Motorvei: ser bra ut! Lyskuler skal være sporadisk, alt fra en til tre, svever rundt og undersøker (som droner). Føles bra kjøring.»
+
+- [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
+- [ ] **T16-02: fjellteksturer.** Bedre, ekte New Mexico-utseende på `SM_FF_Range`.
+- [ ] **T16-03: bakken rundt gården.** Store flater med overlapp mellom to teksturer.
+- [ ] **T16-04: lyskuler.** Sporadisk, én til tre, svever rundt og undersøker som droner.
+- [ ] **T16-05: UFO på himmelen.** Forhåndsvisningen i utviklermenyen virker ikke. De skal komme i ulike formasjoner med jevne mellomrom.
+- [ ] **T16-06: UFO-møter på motorveien** skal kunne gå både nord og sør.
+- [ ] **T16-07: Pale One** virker ikke i utviklermenyen.
+- [ ] **T16-08: kalenderen** i vestfløyen, som viser spillets dag, skal også henge i kontrollrommet i SARO.
+- [ ] **T16-09: modemlyd** følger spilleren ut av kontrollrommet etter at en jobb er sendt.
+- [ ] **T16-10: sidedøra** på garasjen i SARO kan ikke brukes.
+- [ ] **T16-11: takplaten.** Oppdraget sier «fasten plate at the ladder», men det finnes ingen stige å klatre opp på taket med.
+- [ ] **T16-12: walkie-talkie** skriker for mye og for sterkt når Roswell dukker opp. Roes kraftig ned.
+- [ ] **T16-13: tåke.** Litt mer tåke inne i SARO sett utenfra om natten.
+- [ ] **T16-14: massivt lys utenfra.** Prøver innendørs der enormt lys kommer inn utenfra, med tåke og lyssøyler.
+
 ## Lommelykt og reservebatteri, idé 6. november
 
 - [ ] **FLASHLIGHT-BATTERY-01 / P2:** Toms bestilling: lommelykten trenger batteri, spilleren kan bære én reserve, og lyset begynner å blafre når batteriet nærmer seg tomt. Dette er et designforslag til senere implementering, ikke en levert funksjon. Én batteripakke sitter i lykten og høyst én bæres som reserve; ekstra pakker kan ligge i bil eller SARO-lager og må hentes fysisk. Behold restlading ved bytte og Continue; ingen gratis fullading ved av/på, lasting eller flytting til lager.
