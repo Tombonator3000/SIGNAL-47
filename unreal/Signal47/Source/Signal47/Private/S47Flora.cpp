@@ -196,10 +196,12 @@ namespace
 				// 7 November, relief-11-road at 11:01: the sunlit blades of a yucca read 233,212,146 to 244,225,178 (linear about .9 .75 .45), cream and
 				// flat on the ground, where the creosote beside them reads olive 95,105,62. The multipliers above made the plant's average right but its lit
 				// side clips; they go down to .55 of themselves (linear), so the lit side comes to about 188,178,130 and the shaded blades stay dark olive.
-				// YUCCA_SUN is the one number to retune from a new capture.
-				constexpr double YUCCA_SUN = 0.55;
+				// YUCCA_SUN is the one number to retune from a new capture. 7 November, later: those yellow plants were not yucca (each kind painted its own colour in a capture), and .55 only took the true ones
+				// too dark. Its own green back, a little under the first numbers.
+				constexpr double YUCCA_SUN = 0.9;
 				Pn[8] = { Lin(0.58, 0.7, 0.77) * YUCCA_SUN, Lin(0.55, 0.68, 0.74) * YUCCA_SUN, Lin(0.6, 0.7, 0.75) * YUCCA_SUN };
-				Pn[9] = { Lin(1.9, 1.6, 1.45), Lin(1.8, 1.55, 1.4), Lin(1.95, 1.6, 1.4) };
+				// Cholla. These were 1.8-1.95: linear 3 to 4.3, over 1 at any atlas, so its sunlit side clipped near white and it glowed against the low sun. Pale tan to the eye, but below 1 in the end.
+				Pn[9] = { Lin(1.15, 1.02, 0.86), Lin(1.08, 0.98, 0.84), Lin(1.2, 1.04, 0.86) };
 				Pn[10] = { Lin(0.78, 0.82, 0.82), Lin(0.74, 0.78, 0.76), Lin(0.8, 0.82, 0.78) };
 			}
 			return Pn[int32(K)];

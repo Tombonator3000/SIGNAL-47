@@ -354,7 +354,7 @@ namespace
 				if (UMaterialInstanceDynamic* CorridorMid = UMaterialInstanceDynamic::Create(Material, GetTransientPackage()))
 				{
 					CorridorMid->SetScalarParameterValue(TEXT("PlainMesh"), 1.f);
-					CorridorMid->SetForceMipLevelsToBeResident(true, true, -1.f);
+					CorridorMid->SetForceMipLevelsToBeResident(true, true, -1.f, 0, true);
 					S.CorridorMid.Reset(CorridorMid);
 					S.Corridor = CorridorComp;
 				}
