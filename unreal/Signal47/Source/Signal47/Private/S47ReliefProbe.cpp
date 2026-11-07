@@ -673,7 +673,13 @@ namespace S47ReliefProbe
 		// foot over a line and back, in the game's own time, with what the frame cost at the crossing.
 		if (R.Phase == 31)
 		{
-			if (Life->Area != TEXT("saro")) { Life->Enter(TEXT("saro")); R.Since = R.Now; return true; }
+			if (Life->Area != TEXT("saro"))
+			{
+				// The walker with it: left standing on the road's numbers it is far outside SARO's land and goes straight back over the line.
+				const FVector Yard = S47OpenLand::FromRoad(TEXT("saro"), 175, 235);
+				M->Player->Place(Yard.X, Yard.Z, M->Player->Yaw);
+				Life->Enter(TEXT("saro")); R.Since = R.Now; return true;
+			}
 			if (R.Now - R.Since < .5) return true;
 			FS47TripOpts Opts;
 			const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 175, 235);

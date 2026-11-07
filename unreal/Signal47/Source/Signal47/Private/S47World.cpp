@@ -2028,6 +2028,8 @@ void US47World::WalkOver()
 	const FString From = Area == TEXT("diner") ? FString(TEXT("road")) : Area;
 	double Rx = 0, Rz = 0;
 	if (!S47OpenLand::RoadOf(From, P->Pos.X, P->Pos.Z, Rx, Rz)) return;
+	// Nobody walks past the rim. Numbers out there mean the walker and the area do not belong together: moving it would add up frame by frame.
+	if (Rx < S47OpenLand::RimX0 - 200 || Rx > S47OpenLand::RimX1 + 200 || Rz < S47OpenLand::RimZ0 - 200 || Rz > S47OpenLand::RimZ1 + 200) return;
 	const FString To = S47OpenLand::LegFor(From, Rx, Rz);
 	if (To == From || !Legs.Contains(To)) return;
 	const FVector Across = S47OpenLand::FromRoad(To, Rx, Rz);
