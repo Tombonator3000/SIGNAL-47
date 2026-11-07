@@ -563,6 +563,12 @@ bool US47CaseBoard::SelfTest(TArray<FString>& Lines)
 	Check(DocCard(D, TEXT("ns")).Text == FString::ChrN(112, TEXT('a')) + TEXT("..."), TEXT("long first line shortened on last word boundary"));
 	D.Title = TEXT("SAME"); D.Stamp = TEXT("SAME"); D.Transcript.Reset();
 	Check(DocCard(D, TEXT("ns")).Title.IsEmpty() && DocCard(D, TEXT("ns")).Text.IsEmpty(), TEXT("repeated stamp suppressed and empty transcript supported"));
+	// CRASH-20261107-01: a Freeform original printout ends in a newline; opening the board hung and crashed.
+	const TArray<FString> SplitParts = S47Text::Split(TEXT("a\n"), TEXT("\n"));
+	Check(SplitParts.Num() == 2 && SplitParts[0] == TEXT("a") && SplitParts[1].IsEmpty(), TEXT("split ends at a final separator"));
+	D.Transcript = TEXT("Printout\nLast line\n"); D.Page = D.Transcript;
+	Doc = DocCard(D, TEXT("ns"));
+	Check(Doc.Text == TEXT("Printout") && Doc.Full.EndsWith(TEXT("Last line\n")), TEXT("paper ending in a newline becomes a card"));
 	bOk &= SS47Board::SelfTest(Lines);
 	return bOk;
 }
