@@ -221,7 +221,10 @@ void FS47Herd::Pose(int32 I, double T)
 		const FVector Wander = WanderAt(I, T, bWalk, Heading);
 		const FVector Fear = Fled.IsValidIndex(I) ? Fled[I] : FVector::ZeroVector;
 		const bool bStare = I == Stare && Alarm <= .05 && Offsets.IsValidIndex(I);
-		const FVector Off = bStare ? StareHold : Wander + Fear;
+		FVector Off = bStare ? StareHold : Wander + Fear;
+		// The highway has no fence left in Freeform: whatever frightens it, a cow stays in the farm's own pen (S47FarmWorld Fence, x 30..80, z 215..265).
+		Off.X = FMath::Clamp(Off.X, FMath::Min(0., 31 - (X + ModeOffset.X)), FMath::Max(0., 79 - (X + ModeOffset.X)));
+		Off.Z = FMath::Clamp(Off.Z, FMath::Min(0., 216 - (Z + ModeOffset.Z)), FMath::Max(0., 264 - (Z + ModeOffset.Z)));
 		const double Base = S47FarmWorld::FloorRoad(X + ModeOffset.X, Z + ModeOffset.Z);
 		const double Here = S47FarmWorld::FloorRoad(X + ModeOffset.X + Off.X, Z + ModeOffset.Z + Off.Z);
 		BodyP = FVector(X + Off.X, Ys[I] + (Here - Base), Z + Off.Z);
