@@ -36,21 +36,25 @@ float t = lerp(a.r, b.r, smoothstep(0.35, 0.65, c.g));
 float width = 0.55 + 0.9 * c.r;
 float p = saturate((a.g + b.g) * 0.8 - 0.3);
 
-float reach = (0.1 + 2.0 * pow(t, 3.0)) * width;
-float inner = saturate((ax - (4.8 - reach)) / (0.2 + 0.6 * reach));
-float onRoad = smoothstep(0.0, 1.0, inner) * (0.2 + 0.72 * inner) * smoothstep(0.12, 0.7, p + 0.3 * inner);
+float fine = d.g;
+float reach = (0.3 + 2.3 * pow(t, 2.2)) * width;
+float dIn = ax - (4.8 - reach) + ((p - 0.5) * 0.8 + (fine - 0.5) * 0.35) * (0.25 + 0.3 * reach);
+float inner = saturate(dIn / (0.12 + 0.4 * reach));
+float onRoad = smoothstep(0.0, 1.0, inner) * lerp(0.25, 0.95, saturate(dIn / max(reach, 0.05))) * smoothstep(0.15, 0.6, p * 0.7 + fine * 0.3 + 0.35 * inner);
+float flecks = smoothstep(0.7, 0.88, a.g * 0.5 + b.r * 0.5) * smoothstep(2.7, 4.2, ax) * smoothstep(0.35, 0.7, fine) * 0.4;
+onRoad = max(onRoad, flecks);
 float s = saturate((ax - 4.8) / 1.2);
-float shoulder = 0.6 + 0.38 * smoothstep(0.2, 0.72, p + 0.45 * s);
+float shoulder = 0.68 + 0.32 * smoothstep(0.2, 0.72, p + 0.45 * s);
 float cover = lerp(onRoad, shoulder, smoothstep(4.55, 5.05, ax + (p - 0.5) * 0.5));
 float far = 6.6 + (1.2 + 7.5 * t) * width;
 float fadeOut = (1.0 - smoothstep(6.3, far, ax + (p - 0.5) * 1.6)) * (1.0 - smoothstep(14.6, 16.3, ax));
 float opacity = cover * fadeOut;
 
-float amount = saturate(1.0 - (ax - 6.0) / (1.5 + 6.0 * t * width)) * (0.5 + 0.5 * p);
+float amount = saturate(1.0 - (ax - 6.0 + (p - 0.5) * 2.5) / (1.0 + 6.5 * t * width)) * smoothstep(0.15, 0.7, p + 0.25 * s);
 float3 tone = lerp(float3(1.0, 1.0, 1.0), Dust, amount);
 float speck = smoothstep(0.74, 0.86, d.a) * smoothstep(4.5, 5.4, ax) * (1.0 - smoothstep(6.5 + 3.0 * t, 8.5 + 4.0 * t, ax));
-float ruts = a.b * smoothstep(0.42, 0.55, c.b);
-float3 colour = Soil * Gain * tone * (1.0 - 0.24 * speck) * (1.0 - 0.22 * ruts);
+float ruts = a.b * smoothstep(0.35, 0.5, c.b);
+float3 colour = Soil * Gain * tone * (1.0 - 0.24 * speck) * (1.0 - 0.3 * ruts);
 opacity = max(opacity, ruts * 0.9 * smoothstep(4.2, 4.8, ax));
 return float4(colour, opacity * Keep);
 """
@@ -133,7 +137,7 @@ def build_material(tex, out):
     uv = node(mat, unreal.MaterialExpressionTextureCoordinate, 200, -500, coordinate_index=0)
     vc = node(mat, unreal.MaterialExpressionVertexColor, 200, -400)
     obj = node(mat, unreal.MaterialExpressionTextureObject, 200, -300, texture=tex, sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
-    dust = node(mat, unreal.MaterialExpressionVectorParameter, 200, -200, parameter_name='Dust', default_value=unreal.LinearColor(1.17, 1.16, 1.14, 1))
+    dust = node(mat, unreal.MaterialExpressionVectorParameter, 200, -200, parameter_name='Dust', default_value=unreal.LinearColor(1.13, 1.12, 1.1, 1))
     gain = node(mat, unreal.MaterialExpressionVectorParameter, 200, -100, parameter_name='Gain', default_value=unreal.LinearColor(1, 1, 1, 1))
     edge = node(mat, unreal.MaterialExpressionCustom, 500, -300)
     edge.set_editor_property('code', EDGE_HLSL)
