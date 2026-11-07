@@ -9,6 +9,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "S47FreeformTerrain.h"
 #include "S47Fx.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -1051,5 +1052,8 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		// A partial import must keep the painted horizon, even with the new sky material present.
 		D->SetScalarParameterValue(TEXT("BackdropReady"), bBackdropReady ? 1.f : 0.f);
 	}
-	if (BandComp.IsValid() && BandComp->IsVisible() != BandVisible) BandComp->SetVisibility(BandVisible);
+	// The painted horizon's flat dark mesas (backdrop.ts) only fade near town, by ConceptBlend. With Freeform's real range up
+	// they would stand black behind it everywhere else.
+	const bool bBandNow = BandVisible && !S47FreeformTerrain::RangeMid(W);
+	if (BandComp.IsValid() && BandComp->IsVisible() != bBandNow) BandComp->SetVisibility(bBandNow);
 }

@@ -43,7 +43,7 @@ Raw: uint16 little-endian, rad 0 = nord, meter = `zmin_m + v/65535*(zmax_m-zmin_
 
 ## SM_FF_Range (7. november 2026, `build_range.py`)
 Samme kilde og kartplassering som relieffet: `dem/far_24km_10m_h16`, kartsenter på veilokal x -1100, z -200. Dekker hele 24 x 24 km.
-- **Målt:** form og plassering av fjellene utenfor ca. 5 km. Høyden over sletta (1419 m o.h.) er ganget med **2,2** (`FAR_GAIN`), under sletta med 0,3.
-- **Målt plassering, laget høyde:** nære åser 0,3 til 8 km ut står der kartet har egne svelninger (båndene 40-150, 150-600 og 600-2400 m), normalisert lokalt. Høyden er tabellene `AMP_*` og `BIAS`, ikke kartets: den virkelige sletta har bare 3 m rms her.
-- **Laget:** strømkrafterosjon og rasvinkel (`erode`, `talus`) over de nære åsene, samt masker for busker og stein. Ingen trinn eller lagdeling.
-- Foten er `GridY + Off` minus 1 m: bygges på nytt hvis relieffet bakes på nytt.
+- **Målt:** form og plassering av fjellene utenfor ca. 5 km. Høyden er ganget etter størrelse: brede former (over ca. 4 km bølgelengde, over 1419 m o.h.) **2,2** (`FAR_GAIN`), rygger (1-4 km) 1,7, mindre former 1,1. Under sletta 0,3.
+- **Målt form, flyttet plass, laget høyde:** nære åser 0,3 til 8 km ut. Spillets strekning er kartets laveste basseng, så alle kartets bånd sier «lavt» her. Massene, ryggene og kløftene er derfor kartets ruglete nord (`ROUGH_*`, de 4,3 km nordligste), speilet utover landet med en langsom vandring. De står altså ikke der de står i virkeligheten. Høyden er tabellene `AMP_*`, `BIAS` og `CAP`.
+- **Laget:** strømkrafterosjon og rasvinkel (`erode`, `talus`), steinbenker (`benches`) og masker for busker og stein.
+- Sletta under: laveste av veiens land, SARO-landet og stasjonens land (de skiller seg med opptil 29 m på samme sted), minus 1,5 m (`SINK`), glattet. Der ingen ås står, ligger flaten aldri over noen bakke. Bygges på nytt hvis relieffet bakes på nytt.

@@ -47,6 +47,8 @@ namespace
 		{ TEXT("array"), TEXT("saro"), -320, -500, 0, -520, 6 },
 		{ TEXT("farm"), TEXT("saro"), 25, 300, 100, 215, 2 },
 		{ TEXT("mesa"), TEXT("diner"), -1300, 1000, -2600, 1000, 30 },
+		{ TEXT("highway"), TEXT("diner"), -14, 700, 6, 1500, 8 },
+		{ TEXT("station"), TEXT("station01"), -560, 560, -1400, 700, 8 },
 	};
 	const double ReliefHours[] = { 11, 18.6, 23.5 };
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
@@ -400,7 +402,8 @@ namespace S47ReliefProbe
 			double GroundY = 0;
 			const bool bGround = ProbeGroundY(W, P->Pos, P->FloorY, GroundY);
 			ProbeLine(FString::Printf(TEXT("%s: frame %.1f ms on average, %.1f ms at worst over %d frames; Off under the eye %.2f m, floor %.3f, ground mesh %.3f, eye %.2f m over it"), *Shot, R.FrameCount ? R.FrameSum / R.FrameCount * 1000 : 0., R.FrameMost * 1000, R.FrameCount, S47Relief::Off(Rx, Rz), P->FloorY, GroundY, P->FloorY + P->Eye - GroundY));
-			if (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
+			// (the station's own ground is none of the meshes this looks in)
+			if (Life->Area != TEXT("station01") && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
 			if (R.HourAt == 0) ProbeUnder(W, Shot, P->Pos, P->FloorY);
 			R.Phase = 10; R.Since = R.Now;
 			return true;

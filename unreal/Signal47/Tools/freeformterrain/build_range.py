@@ -7,12 +7,16 @@ stands on the ground that is actually drawn; if the relief is baked again, run t
     python3 build_range.py --terrain <terreng-2026-11-07> [--preview-only]
 
 What is real and what is made:
-- Beyond about 5 km the shape is the map itself: FAR_GAIN times the true height above the plain (2.2, none of it added).
-- Near hills, 0.3-8 km out, stand where the map has its own swells, at the same place: the real 150-600 m and 40-150 m
-  bands, normalised and given a height by the tables below. Their position and direction are measured; their size is not.
-- Stream-power erosion (ERODE_*) is added on top, so the drainage cuts them as it cuts real hills. It is made, not measured.
-- The foot is GridY + Off itself, less a metre: the surface comes out of the ground where the hills first rise above it,
-  so the foot line is a contour and has no edge of its own. Under it a skirt.
+- Beyond about 5 km the shape is the map itself, by size: its broad land times FAR_GAIN (2.2), its ridges (150-600 m) times
+  RIDGE_GAIN, its rills times RILL_GAIN. The same 2.2 on everything turned every rill into a vertical stripe and every small
+  knob of the plain into a cone.
+- Near hills, 0.3-8 km out, are moved, not measured where they stand: the game's stretch of the map is its lowest basin, and
+  every band of the map says "low" there, so their masses, ridges and gullies come from the map's rough north (ROUGH_*), mirrored
+  over the land, with a height from the tables below. Only their second size also listens to the map's swells in their own place.
+- Stream-power erosion (ERODE_*) and rock benches (BENCH_*) go on top. They are made, not measured.
+- Nothing lies over any ground the game draws. Where there is no hill the surface is the plain, under the lowest of the road's
+  land, SARO's and the station's (they differ by up to 25 m in the same place), less SINK. A hill comes up through that; the
+  foot line is a contour of two surfaces and has no edge of its own. Where every area has its own ground the sheet is left out.
 
 Out: mesh/SM_FF_Range.glb, range/T_FF_Range_N.png, range/T_FF_Range_M.png, report/build_range.json, cache/range_*.npy
 """
@@ -39,22 +43,28 @@ PLACE_X, PLACE_Z = -1100.0, -200.0        # map centre in road-local metres: bak
 X0, Z0 = PLACE_X - EXTENT / 2, PLACE_Z - EXTENT / 2
 GROUND = (-3000.0, 2300.0, -2700.0, 4400.0)   # the rim of SM_FF_Ground_Road: x0, x1, z0, z1
 MESA_Z = 2060.0                           # the mesh goes on prop:streetGroundMesas, which stands at road-local (0, 0, 2060)
+SARO_RIM = (-1876.0, 1924.0, -2200.0, 1600.0)  # the rim of SM_FF_Ground_Saro in road terms (site -1900..1900, + SARO_IN_ROAD)
+STATION_REACH = 2600.0                    # S47Legs FStationTerrain: its axis, each way from the station's origin
 PLAIN_M = 1419.0                          # real height of the road's own stretch of the map
-FAR_GAIN = 2.2                            # the vertical factor on the real mountains
-FOOT_SINK = 1.0
+FAR_GAIN, RIDGE_GAIN, RILL_GAIN = 2.2, 1.7, 1.1   # the vertical factor on the real mountains, by the size of the shape
+SINK = 1.5                                # the plain under the lowest ground; the meshes are up to .7 m off their tables
+FOOT_ROUND = 4.0                          # metres of hill over which the foot comes out of the plain
 SKIRT_M = 25.0
-BUDGET = 1300000
+BUDGET = 2000000
 SEED = 4747
 
 # metres (rms, so the tops are about 2.5 times this) by distance from what must stay put
-AMP_MASS = [(280, 0), (450, 4), (800, 14), (1400, 30), (2500, 42), (5000, 32), (8000, 12), (12000, 4)]
-AMP_WIDE = [(280, 0), (450, 5), (800, 18), (1300, 36), (2200, 48), (4000, 46), (6000, 30), (8000, 12), (11000, 4)]
-AMP_NARROW = [(280, 0), (500, .6), (900, 4), (1500, 10), (2500, 16), (4000, 18), (6000, 13), (9000, 4)]
-AMP_FINE = [(280, 0), (700, .3), (1500, 2.0), (3000, 4.0), (6000, 4.5), (10000, 2.5)]
-BIAS = [(280, -8), (500, -3), (800, 2), (1200, 6), (2000, 12), (3000, 18), (5000, 20), (8000, 12), (12000, 5)]
+AMP_MASS = [(280, 0), (400, 5), (700, 18), (1300, 36), (2500, 52), (5000, 42), (8000, 14), (12000, 4)]
+AMP_WIDE = [(280, 0), (400, 6), (700, 20), (1300, 36), (2200, 48), (4000, 46), (6000, 30), (8000, 12), (11000, 4)]
+BIAS = [(280, -6), (380, -2), (520, 4), (800, 11), (1200, 15), (2000, 12), (3000, 18), (5000, 20), (8000, 12), (12000, 5)]
+CAP = [(400, 30), (800, 70), (1500, 120), (3000, 190), (6000, 300), (10000, 400)]   # how tall a near hill gets: a soft ceiling, in metres
 FAR_IN = (2500.0, 7000.0)
-ERODE_STEPS, ERODE_K = 16, .017
-TALUS_DEG = 36.0
+ROUGH_ROWS, ROUGH_COLS = 430, 1500        # the map's rough north, in 10 m cells: row 0 is north
+RIDGE_SHARES = (.30, .20)                 # knife edges: where the 250-950 m and the 75-250 m bands cross zero a crest runs, as on real spurs
+ROUGH_SHARES = (.34, .22, .14, .06)       # of a hill's own height, in rms, for shapes of 1-4 km, 250-950 m, 75-250 m and under 75 m
+ERODE_STEPS, ERODE_K = 8, .012
+TALUS_DEG = 38.0
+BENCH_M, BENCH_NEAR = 38.0, .13           # rock benches: their height, and how much of a step is taken
 HAZE_NOTE = 'the haze is in the material (M_S47_FreeformRange), by distance from the camera'
 
 
@@ -118,7 +128,7 @@ def distance_field(n):
 
 
 def ground_field(off, rj, n):
-    """GridY + Off, the drawn ground, on the fine grid; beyond the rim its nearest value, fading into the plain."""
+    """GridY + Off, the road's drawn ground, on the fine grid; beyond the rim its nearest value, fading into the plain."""
     t = np.arange(n) * EXTENT / (n - 1)
     # only the rim's rectangle has ground, so only that is worth the port's time
     xs, zs = X0 + t, Z0 + t
@@ -126,9 +136,7 @@ def ground_field(off, rj, n):
     z_in = np.nonzero((zs >= GROUND[2] - CELL) & (zs <= GROUND[3] + CELL))[0]
     XX, ZZ = np.meshgrid(xs[x_in], zs[z_in])
     base = B.grid_y(XX, ZZ).astype(np.float32)
-    c = np.clip((XX - rj['origin_x']) / rj['cell_m'], 0, rj['width'] - 1.001)
-    r = np.clip((ZZ - rj['origin_z']) / rj['cell_m'], 0, rj['height'] - 1.001)
-    Off = ndi.map_coordinates(off, [r, c], order=1)
+    Off = off_at(off, rj, XX, ZZ)
     G = np.full((n, n), np.nan, np.float32)
     G[np.ix_(z_in, x_in)] = base + Off
     inside = ~np.isnan(G)
@@ -144,6 +152,124 @@ def ground_field(off, rj, n):
     ext = resample(filled, n)
     G2 = np.where(inside, G, ext)
     return G2, inside
+
+
+def off_at(off, rj, XX, ZZ):
+    c = np.clip((XX - rj['origin_x']) / rj['cell_m'], 0, rj['width'] - 1.001)
+    r = np.clip((ZZ - rj['origin_z']) / rj['cell_m'], 0, rj['height'] - 1.001)
+    return ndi.map_coordinates(off, [r, c], order=1).astype(np.float32)
+
+
+def station_land(XX, ZZ):
+    """S47Legs FStationTerrain in the road's terms: its height less STATION_DY, as the shared landscape stands in station01. No Off:
+    the relief does not reach the station's own ground. Its far triangles are long, so the grid is ported too."""
+    v = [0.0]
+    x, step = 0.0, 4.0
+    while x < STATION_REACH:
+        if x >= 60:
+            step *= 1.2
+        x += step
+        v.append(round(x, 2))
+    axis = np.array([-a for a in v[:0:-1]] + v)
+    ground = -.15                                        # S47Geo STATION_GROUND
+    at_end = float(B.hlow(np.array(B.END[0]), np.array(B.END[1])))
+    dy = ground - at_end
+    truck = (-19.25, 31.4)                               # S47Geo STATION_TRUCK
+    pad = (-27.6, -12.2, 26.3, 39.8)                     # S47Geo STATION_PAD
+    NX, NZ = np.meshgrid(axis, axis)
+    rx, rz = B.END[0] + (NZ - truck[1]), B.END[1] - (NX - truck[0])
+    h = B.hlow(rx, rz)
+    bend = (h - at_end) * (1 - smooth(-600, -560, rx)) * (1 - smooth(60, 160, np.hypot(rx - B.END[0], rz - B.END[1])))
+    land = h + dy - bend
+    flat = np.maximum(1 - smooth(70, 130, np.hypot(NX, NZ - 8)), 1 - smooth(0, 8, MG.outside(pad, NX, NZ)))
+    H = land + (ground - land) * flat
+    patch = (rx >= -594) & (rx <= -188) & (rz >= 428) & (rz <= 612)
+    H = np.where(patch, land - .7, H)
+    sx, sz = truck[0] - (ZZ - B.END[1]), truck[1] + (XX - B.END[0])
+    ci = np.clip(np.searchsorted(axis, sx) - 1, 0, len(axis) - 2)
+    ri = np.clip(np.searchsorted(axis, sz) - 1, 0, len(axis) - 2)
+    u = np.clip((sx - axis[ci]) / (axis[ci + 1] - axis[ci]), 0, 1)
+    w = np.clip((sz - axis[ri]) / (axis[ri + 1] - axis[ri]), 0, 1)
+    y = (H[ri, ci] * (1 - u) + H[ri, ci + 1] * u) * (1 - w) + (H[ri + 1, ci] * (1 - u) + H[ri + 1, ci + 1] * u) * w
+    # (each cell's two triangles can lie below this bilinear value by a quarter of the cell's twist)
+    twist = np.abs(H[ri, ci] + H[ri + 1, ci + 1] - H[ri, ci + 1] - H[ri + 1, ci]) * .25
+    return (y - twist - dy).astype(np.float32), (np.abs(sx) <= axis[-1]) & (np.abs(sz) <= axis[-1])
+
+
+def beyond(delta, have, reach):
+    """What a ground asks of the plain, carried on past its rim and fading there, so that the plain has no cliff at the rim."""
+    idx = ndi.distance_transform_edt(~have, return_distances=False, return_indices=True)
+    dist = ndi.distance_transform_edt(~have).astype(np.float32) * CELL * 4
+    return delta[idx[0], idx[1]] * (1 - smooth(0, reach, dist))
+
+
+def plain_field(G, off, rj, n):
+    """The surface where there is no hill: smooth, so few triangles carry it, and SINK under every ground drawn over it.
+    The shared sheet is the same in all areas; only the ground under it differs (road: G. SARO: SaroLand + Off. Station: its own).
+    Out: P, the lowest ground U on the fine grid, and the land where all three have their own ground (the sheet can go there)."""
+    k = 4
+    Gc = G[::k, ::k]
+    t = X0 + np.arange(n)[::k] * CELL, Z0 + np.arange(n)[::k] * CELL
+    XX, ZZ = np.meshgrid(t[0], t[1])
+    in_saro = (XX >= SARO_RIM[0]) & (XX <= SARO_RIM[1]) & (ZZ >= SARO_RIM[2]) & (ZZ <= SARO_RIM[3])
+    d_saro = np.where(in_saro, B.saro_land(XX - MG.SARO_IN_ROAD[0], ZZ - MG.SARO_IN_ROAD[1]) + off_at(off, rj, XX, ZZ) - Gc, 0).astype(np.float32)
+    d_saro = np.minimum(d_saro, 0)
+    Y_st, in_st = station_land(XX, ZZ)
+    d_st = np.where(in_st, np.minimum(Y_st - Gc, 0), 0).astype(np.float32)
+    # the road itself runs on HLow, not on the grid
+    near_road = np.abs(XX) < 60
+    d_road = np.where(near_road, np.minimum(B.hlow(XX, ZZ) - .7 - Gc, 0), 0).astype(np.float32)
+    lack = np.minimum.reduce([beyond(d_saro, in_saro, 900), beyond(d_st, in_st, 900), d_road])
+    U = Gc + lack
+    log('plain: SaroLand under the road by', float(d_saro.min()), 'the station by', float(d_st.min()), 'the road deck by', float(d_road.min()))
+    low = ndi.grey_erosion(U, size=(7, 7))
+    Pc = gauss(low, 2.0)
+    Uf = G + resample(lack, n)
+    P = resample(Pc, n) - SINK
+    P = np.minimum(P, Uf - SINK)
+    in_rim = (XX >= GROUND[0]) & (XX <= GROUND[1]) & (ZZ >= GROUND[2]) & (ZZ <= GROUND[3])
+    covered = resample((in_saro & in_st & in_rim).astype(np.float32), n) > .999
+    return P.astype(np.float32), Uf.astype(np.float32), covered
+
+
+def rough_bands(dem, n):
+    """The bands of the map's rough north, each normalised, mirrored over the whole land with a slow wander: real ridges and real
+    gullies for the near hills, which have only a plain's slight swells in their own place."""
+    g12, g40, g150, g600, g2400 = (gauss_fft(dem, s) for s in (1.2, 4, 15, 60, 240))
+    rng = np.random.default_rng(SEED + 3)
+    grid = np.linspace(0, dem.shape[0] - 1, n)
+    wx = gauss(rng.standard_normal((n // 8 + 1, n // 8 + 1)).astype(np.float32), 9)
+    wz = gauss(rng.standard_normal((n // 8 + 1, n // 8 + 1)).astype(np.float32), 9)
+    wx, wz = resample(wx / wx.std(), n) * 16, resample(wz / wz.std(), n) * 16
+    UU = grid[None, :] + wx
+    VV = grid[:, None] + wz
+
+    def mirror(v, top):
+        return top - np.abs(np.mod(v, 2 * top) - top)
+    U, V = mirror(UU, ROUGH_COLS - 1), mirror(VV, ROUGH_ROWS - 1)
+    out = []
+    for a, b, sig, eps in ((g600, g2400, 200, 1.0), (g150, g600, 90, .4), (g40, g150, 60, .15), (g12, g40, 30, .05), (dem, g12, 20, .03)):
+        band = (a - b)[:ROUGH_ROWS, :ROUGH_COLS]
+        norm = band / np.sqrt(gauss_fft(band * band, sig) + eps ** 2)
+        out.append(ndi.map_coordinates(norm, [V, U], order=1).astype(np.float32))
+    return out
+
+
+def benches(A, n):
+    """Harder beds that stand out as ledges across the slope, so that the eye meets something other than what runs downhill.
+    They dip and wander; a step takes the slope behind it, a riser the rock in front."""
+    rng = np.random.default_rng(SEED + 4)
+    warp = gauss(rng.standard_normal((n // 8 + 1, n // 8 + 1)).astype(np.float32), 22)
+    warp = resample(warp / warp.std(), n) * 16
+    patches = gauss(rng.standard_normal((n // 8 + 1, n // 8 + 1)).astype(np.float32), 12)
+    patches = smooth(-.1, 1.0, resample(patches / patches.std(), n))
+    jj, ii = np.meshgrid(np.arange(n, dtype=np.float32) * CELL, np.arange(n, dtype=np.float32) * CELL)
+    h = A + warp + .018 * jj + .011 * ii
+    q = h / BENCH_M + .22 * np.sin(h / BENCH_M * 1.7)   # no two beds the same
+    f = q - np.floor(q)
+    stair = np.floor(q) + smooth(.45, .95, f)
+    k = BENCH_NEAR * smooth(8, 45, A) * patches
+    return A + k * (stair * BENCH_M - h)
 
 
 def priority_flood(z):
@@ -246,80 +372,79 @@ def shape(dem, off, rj):
     D_c = distance_field(1025)
     log('real bands')
     g12 = gauss_fft(dem, 1.2)
-    g40 = gauss_fft(dem, 4)
     g150 = gauss_fft(dem, 15)
     g600 = gauss_fft(dem, 60)
-    g2400 = gauss_fft(dem, 240)
-    mass = g600 - g2400
     wide = g150 - g600
-    narrow = g40 - g150
-    fine = g12 - g40
-    # normalised over about a kilometre and a half: on the plain the swells are slight, but they are the swells that are there
-    wide_n = wide / np.sqrt(gauss_fft(wide * wide, 150) + .4 ** 2)
-    narrow_n = narrow / np.sqrt(gauss_fft(narrow * narrow, 100) + .15 ** 2)
-    fine_n = fine / np.sqrt(gauss_fft(fine * fine, 60) + .05 ** 2)
-    mass_n = mass / np.sqrt(gauss_fft(mass * mass, 300) + 1.0 ** 2)
-    log('rms', float(mass.std()), float(wide.std()), float(narrow.std()))
+    # normalised over about a kilometre: on the plain the swells are slight, but they are the swells that are there. Over three
+    # kilometres the mountains in the sum left the plain with nothing
+    wide_n = wide / np.sqrt(gauss_fft(wide * wide, 70) + .25 ** 2)
+    log('rms', float(wide.std()))
     rng = np.random.default_rng(SEED)
     # the foot wanders, so that it is not an offset of the road
     wander = gauss(rng.standard_normal((1025, 1025)).astype(np.float32), 18)
     wander /= wander.std()
-    D_w = D_c + 130 * np.clip(wander, -1.6, 1.6) * smooth(200, 700, D_c)
+    spur = gauss(rng.standard_normal((1025, 1025)).astype(np.float32), 6)
+    wander = np.clip(wander + .5 * spur / spur.std(), -1.8, 1.8)
+    # (only outward: the order is 280 at the nearest; at its nearest the foot would otherwise be an offset of the road for kilometres)
+    D_w = D_c - 240 * (1 + wander) * smooth(280, 620, D_c)
     D_f = resample(D_w, n)
     wide_f = resample(wide_n, n)
-    narrow_f = resample(narrow_n, n)
-    mass_f = resample(mass_n, n)
-    fine_f = resample(fine_n, n)
-    dem_f = resample(gauss_fft(dem, 1.2), n)
     log('ground')
     G, inside = ground_field(off, rj, n)
-    real = dem_f - PLAIN_M
-    real = np.where(real > 0, real * FAR_GAIN, real * .3)
-    # sharper tops than floors: a slope steepens towards its crest and runs out long at its foot, the way these ranges do
-    crest = lambda v: np.where(v > 0, 1.15 * np.abs(v) ** 1.45, .55 * v)
-    broad = table(D_f, AMP_MASS) * crest(mass_f) + table(D_f, AMP_WIDE) * crest(wide_f) + table(D_f, BIAS)
-    # not every hill the same height: the map's own broadest swells (5-20 km) pick a few to be tall and leave the rest at half
-    sway = gauss_fft(dem, 240) - gauss_fft(dem, 900)
+    P, U, covered = plain_field(G, off, rj, n)
+    # the real land, by the size of the shape: a rill times 2.2 is a vertical stripe, and a knob of the plain a cone
+    broad_real = g600 - PLAIN_M
+    real = np.where(broad_real > 0, broad_real * FAR_GAIN, broad_real * .3) + (g150 - g600) * RIDGE_GAIN + (g12 - g150) * RILL_GAIN
+    real = resample(real, n)
+    # sharper tops than floors
+    crest = lambda v: np.where(v > 0, 1.1 * np.abs(v) ** 1.2, .55 * v)
+    log('rough')
+    rm, rw, rn, rf, rr = (resample(b, n) for b in rough_bands(dem, 2049))
+    broad = table(D_f, AMP_MASS) * crest(rm) + table(D_f, AMP_WIDE) * crest(.45 * wide_f + .65 * rw) + table(D_f, BIAS)
+    # not every hill the same height: a few tall, the rest at half
+    sway = gauss(rng.standard_normal((257, 257)).astype(np.float32), 7)
     sway = resample(sway / sway.std(), n)
-    broad = np.where(broad > 0, broad * np.clip(.85 + .55 * sway, .42, 1.6), broad)
-    # aprons: what comes down off a hill lies round it, long and low, so a foot runs out instead of stopping in a line
-    k_a = 8
-    apron = gauss(np.maximum(broad[::k_a, ::k_a], 0), 13)
-    broad = broad + .42 * resample(apron, n) * smooth(350, 900, D_f)
-    del sway, apron
-    # the smaller the shape the more it belongs to the tops: rough above, long smooth aprons at the foot
-    rough = smooth(5, 90, broad)
-    hills = broad + (table(D_f, AMP_NARROW) * narrow_f + table(D_f, AMP_FINE) * fine_f) * (.2 + .8 * rough)
-    del broad, rough, fine_f
+    broad = np.where(broad > 0, broad * np.clip(1.0 + .5 * sway, .45, 1.7), broad)
+    # they are hills, not spires: past their ceiling they widen instead of rising
+    cap = table(D_f, CAP)
+    broad = np.where(broad > 0, cap * (1 - np.exp(-np.maximum(broad, 0) / cap)), broad)
+    del cap
+    del sway, wide_f, rm
+    env = np.maximum(broad, 0)
+    rough = smooth(3, 35, env)
+    # what a hill is made of: a share of its own height, so a low hill has low ridges and its foot stays quiet
+    shares = ROUGH_SHARES
+    ridged = RIDGE_SHARES[0] * (.7 - np.minimum(np.abs(rn), 2.2)) + RIDGE_SHARES[1] * (.7 - np.minimum(np.abs(rf), 2.2))
+    hills = broad + env * (shares[0] * np.clip(rw, -1.5, 2.4) + (shares[1] * np.clip(rn, -2, 2.6) + shares[2] * np.clip(rf, -2.4, 2.8) + shares[3] * np.clip(rr, -3, 3) + ridged) * (.25 + .75 * rough))
+    del ridged
+    del broad, env, rough, rw, rn, rf, rr
     hills = hills * (1 - .85 * smooth(FAR_IN[0] + 2000, FAR_IN[1] + 3500, D_f))
-    A = hills * smooth(250, 520, D_f) + real * smooth(FAR_IN[0], FAR_IN[1], D_f)
-    del wide_f, narrow_f, mass_f, real, dem_f
-    # the rim of the ground must never be seen from behind
-    xs, zs = X0 + np.arange(n) * CELL, Z0 + np.arange(n) * CELL
-    ax = np.maximum(np.maximum(GROUND[0] - xs, xs - GROUND[1]), -1e9)[None, :]
-    az = np.maximum(np.maximum(GROUND[2] - zs, zs - GROUND[3]), -1e9)[:, None]
-    past = np.maximum(ax, az).astype(np.float32)       # > 0 outside the rim, < 0 inside it, in metres
-    floor = 4.0 * smooth(-160, -20, past) + 10 * smooth(0, 700, past)
-    A = .5 * (A + floor + np.sqrt((A - floor) ** 2 + 16))
+    A = hills * smooth(250, 480, D_f) + real * smooth(FAR_IN[0], FAR_IN[1], D_f)
+    del hills, real
     log('erosion')
     k = 2
-    A2 = A[::k, ::k]
+    A2 = np.maximum(A[::k, ::k], -8)
     w = smooth(3, 40, A2).astype(np.float64)
     eroded, acc = erode(A2, w, CELL * k, ERODE_STEPS, ERODE_K)
     eroded = talus(eroded, CELL * k, TALUS_DEG)
     delta = resample(eroded - A2, n)
     flow = resample(np.log10(np.maximum(acc, 1)).astype(np.float32), n)
-    A = A + delta
+    A = A + delta * (A > -8)
     del delta, A2, w, eroded, acc
-    # where the land follows the ground: every hollow of it at the foot, only its broad lie higher up
+    A = benches(A, n)
+    # the rim of the ground must never be seen from behind: over it just past the rim, not before
+    xs, zs = X0 + np.arange(n) * CELL, Z0 + np.arange(n) * CELL
+    ax = np.maximum(GROUND[0] - xs, xs - GROUND[1])[None, :]
+    az = np.maximum(GROUND[2] - zs, zs - GROUND[3])[:, None]
+    past = np.maximum(ax, az).astype(np.float32)       # > 0 outside the rim, < 0 inside it, in metres
+    A = np.maximum(A, (SINK + 3) * smooth(0, 120, past) + 10 * smooth(120, 900, past))
+    # the foot comes out of the plain round, not on an edge; no hill at all leaves the plain exactly as it was
+    A = np.where(A <= 0, 0, np.where(A < FOOT_ROUND, A * A / (2 * FOOT_ROUND), A - FOOT_ROUND / 2))
+    A = np.where(A > 0, gauss(A, .7), 0).astype(np.float32)
+    # as a hill rises its base goes from the plain to the broad lie of the road's land, so that the road sees it rise as well as SARO
     Gs = resample(gauss(G[::4, ::4], 12), n)
-    k_foot = 1 - smooth(1, 30, A)
-    R = Gs + (G - Gs) * k_foot + A - FOOT_SINK * (1 - smooth(1, 6, A))
-    # a last, light smoothing of what the map's 10 m cells leave on the amplified land: no steps
-    R = gauss(R, .7)
-    # (that smoothing may not lift the foot out of a hollow of the ground)
-    R = np.where(A < 1, np.minimum(R, G - .4), R)
-    return R.astype(np.float32), G.astype(np.float32), inside, D_f, flow
+    R = P + (Gs - P) * smooth(.5, 18, A) + A
+    return R.astype(np.float32), G.astype(np.float32), inside, D_f, flow, U, A, covered
 
 
 def rtin(R, tol):
@@ -400,7 +525,7 @@ def masks(R, G, inside, D, flow):
     gully = smooth(4.3, 6.0, flow)
     # shrubs: dense in the washes and low on the slopes, a little on the fans, almost none on the rock
     above = R - G
-    foot = (1 - smooth(0, 40, above)).astype(np.float32)
+    foot = (1 - smooth(0, 30, above)).astype(np.float32)
     k = 2
     noise = gauss(rng.standard_normal((R.shape[0] // k + 1, R.shape[0] // k + 1)).astype(np.float32), .9)
     noise /= noise.std()
@@ -427,13 +552,13 @@ def write_textures(out, N, M):
     Image.fromarray((np.clip(M[:-1, :-1], 0, 1) * 255 + .5).astype(np.uint8), 'RGBA').save(tex / 'T_FF_Range_M.png', compress_level=4)
 
 
-def build_mesh(R, G, inside, D, budget):
+def build_mesh(R, U, covered, D, budget):
     n = R.shape[0]
     # tolerance by how far from anywhere one looks out: an angle, a good half metre at a kilometre and a half
     tol = (.28 * np.maximum(D / 700, 1)).astype(np.float32)
-    # under the ground nothing is seen: triangles there go, so no detail need be spent on them
-    above = R - G
-    under = inside & (above < -.3)
+    # under ground in every area nothing is seen: triangles there go, so no detail need be spent on them. Only there: past
+    # SARO's rim the road's land is not drawn in SARO, and this sheet is the land.
+    under = covered & (R - U < -.3)
     hide = ndi.binary_erosion(under, iterations=3, border_value=0)
     deep = ndi.binary_erosion(hide, iterations=6, border_value=0)
     tol = np.where(deep, 1e6, tol).astype(np.float32)
@@ -479,7 +604,7 @@ def build_mesh(R, G, inside, D, budget):
     return Pall, Nall, uv_all, tris_all, report
 
 
-def measures(R, G, inside, D):
+def measures(R, G, inside, D, U, A):
     """What the road sees, and where the foot lies."""
     n = R.shape[0]
     above = R - G
@@ -489,8 +614,14 @@ def measures(R, G, inside, D):
     seen = (above > 0)
     near = D[seen].min() if seen.any() else None
     out['range_above_ground_nearest_to_masks_m'] = float(near)
+    plain = A <= 0
+    in_map = (xs >= -3040) & (xs <= 3040), (zs >= -2740) & (zs <= 4444)
+    rim = np.ix_(in_map[1], in_map[0])
+    out['plain_share_of_the_map'] = float(plain[rim].mean())
+    out['plain_R_minus_lowest_ground_m'] = {'max': float((R - U)[plain & inside].max()), 'median': float(np.median((R - U)[plain & inside][::37]))}
+    out['R_over_road_ground_share'] = {'at_all': float((above[inside] > 0).mean()), 'over_3m': float((above[inside] > 3).mean()),
+                                       'near_lt_250m': float((above[inside & (D < 250)] > -1).mean())}
     tall = above > 3
-    rows = np.nonzero(tall.any(axis=1))[0]
     x_of = np.broadcast_to(xs[None, :], R.shape)
     z_in = (zs >= -1700) & (zs <= 3910)
     west = np.where(x_of < 0, -x_of, 1e9)
@@ -498,14 +629,13 @@ def measures(R, G, inside, D):
     out['foot_more_than_3m_up_from_highway_m'] = {'west_min': float(west[z_in][tall[z_in]].min()), 'east_min': float(east[z_in][tall[z_in]].min()),
                                                   'west_median_by_row': float(np.median(np.where(tall[z_in] & (x_of[z_in] < 0), west[z_in], 1e9).min(axis=1))),
                                                   'east_median_by_row': float(np.median(np.where(tall[z_in] & (x_of[z_in] > 0), east[z_in], 1e9).min(axis=1)))}
-    del rows
     out['range_height_m'] = [float(R.min()), float(R.max())]
     gz, gx = np.gradient(R, CELL)
     deg = np.degrees(np.arctan(np.hypot(gx, gz)))
     out['slope_deg_percentiles_above_ground'] = {str(p): float(np.percentile(deg[seen][::37], p)) for p in (50, 90, 99, 99.9)}
     road = {}
     for name, ex, ez in (('road_z1000', 0, 1000), ('saro_24_-300', 24, -300), ('town_0_2100', 0, 2100), ('road_z-1500', 0, -1500), ('road_z3500', 0, 3500)):
-        ey = float(R[int((ez - Z0) / CELL), int((ex - X0) / CELL)]) + FOOT_SINK + 1.7
+        ey = float(G[int((ez - Z0) / CELL), int((ex - X0) / CELL)]) + 1.7
         row = {}
         for b in range(0, 360, 45):
             s, c = np.sin(np.radians(b)), -np.cos(np.radians(b))
@@ -528,22 +658,23 @@ def main():
     ap.add_argument('--preview-only', action='store_true', help='fields and measures only, no mesh')
     args = ap.parse_args()
     dem, off, rj, root = load_inputs(args.terrain)
-    R, G, inside, D, flow = shape(dem, off, rj)
+    R, G, inside, D, flow, U, A, covered = shape(dem, off, rj)
     cache = root / 'cache'
     np.save(cache / 'range_R.npy', R)
     np.save(cache / 'range_G.npy', G)
     np.save(cache / 'range_D.npy', D[::4, ::4])
-    report = {'vertical_factor_far': FAR_GAIN, 'plain_m': PLAIN_M, 'amp_wide': AMP_WIDE, 'amp_narrow': AMP_NARROW, 'bias': BIAS, 'far_in': FAR_IN, 'erode': [ERODE_STEPS, ERODE_K],
+    np.save(cache / 'range_U.npy', U)
+    report = {'vertical_factor_far': [FAR_GAIN, RIDGE_GAIN, RILL_GAIN], 'plain_m': PLAIN_M, 'sink_m': SINK, 'amp_mass': AMP_MASS, 'amp_wide': AMP_WIDE, 'bias': BIAS, 'rough': [ROUGH_ROWS, ROUGH_COLS, ROUGH_SHARES, RIDGE_SHARES], 'bench': [BENCH_M, BENCH_NEAR], 'far_in': FAR_IN, 'erode': [ERODE_STEPS, ERODE_K],
                'cell_m': CELL, 'extent_m': EXTENT, 'x0': X0, 'z0': Z0, 'ground_rim': GROUND, 'relief_sha256': rj.get('sha256'), 'haze': HAZE_NOTE}
-    report.update(measures(R, G, inside, D))
-    log(json.dumps({k: report[k] for k in ('range_above_ground_nearest_to_masks_m', 'range_height_m', 'slope_deg_percentiles_above_ground')}))
+    report.update(measures(R, G, inside, D, U, A))
+    log(json.dumps({k: report[k] for k in ('range_above_ground_nearest_to_masks_m', 'plain_share_of_the_map', 'plain_R_minus_lowest_ground_m', 'R_over_road_ground_share', 'foot_more_than_3m_up_from_highway_m', 'range_height_m', 'slope_deg_percentiles_above_ground')}))
     log('masks')
     N, M, deg = masks(R, G, inside, D, flow)
     np.save(cache / 'range_M.npy', (np.clip(M[::2, ::2], 0, 1) * 255 + .5).astype(np.uint8))
     if not args.preview_only:
         write_textures(root, N, M)
         del N, M, deg
-        P, Nv, uv, tris, mesh_report = build_mesh(R, G, inside, D, args.budget)
+        P, Nv, uv, tris, mesh_report = build_mesh(R, U, covered, D, args.budget)
         report['mesh'] = mesh_report
         # the node's own frame: prop:streetGroundMesas stands at road-local z = 2060
         Pl = P.copy()
