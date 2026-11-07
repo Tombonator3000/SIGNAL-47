@@ -26,6 +26,8 @@ Story: Tom 7. november: «Flat verden i Story utgår.» Story går over til samm
 
 Freeforms motivasjon, Tom 7. november: «Forrige nattvakt: Reyes fra Story mode.» Freeform foregår etter Story: Reyes og Ortiz er borte, og spilleren er ny nattevakt. Røde tråd er hva som skjedde med forgjengeren. Forslag fra Claude, gjelder til Tom sier annet: start mandag 28. april 1986; spilleren er ikke Reyes; Freeform viser bare utsiden (at han var nattevakt, forsvant 14. april, at Ortiz også er borte, at originalene er borte), aldri 47 sekunder, 1947-bildet, C eller den tredje silhuetten. SARO skal legges ned med mindre stasjonen virker; vurdering etter ca. 30 dager med ulike utfall, og spilleren kan dra og få egen slutt. Bibelens setning om at spilleren er Reyes gjelder bare Story.
 
+Dale, Tom 7. november: Dale er en sint tysker, og temperamentet er inspirert av Klaus Kinski. Han er en oppdiktet kontaktperson via telefon og walkie-talkie og møtes aldri fysisk. Temperamentet er inspirasjon: ikke navn, ekte sitater eller etterligning av den virkelige personen.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
