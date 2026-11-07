@@ -282,7 +282,9 @@ namespace
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerBuildings")))
     {
-     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();Stage=200;StageAt=Elapsed;return true;
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     int32 At=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47BuildingsHour="),At)&&!M->Freeform->TestAdvance(FMath::Fmod(At*3600.-FMath::Fmod(M->Freeform->Clock(),86400.)+86400.,86400.)))return Fail(TEXT("the buildings test could not set the hour"));
+     Stage=200;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerHouse")))
     {
@@ -331,6 +333,12 @@ namespace
     if(ShotPending)
     {
      if(I==4&&!FMath::IsNearlyEqual(M->Player->FloorY,S47FarmBuildings::BarnPoint(0,0).Y,.01))return Fail(TEXT("the barn's floor must be level"));
+     {
+      const FVector Foot=S47Three::ToUE(M->Player->Pos);FCollisionQueryParams Q;Q.bTraceComplex=true;TArray<FHitResult> Hits;
+      M->Web->GetWorld()->LineTraceMultiByChannel(Hits,Foot+FVector(0,0,120),Foot-FVector(0,0,800),ECC_Visibility,Q);
+      for(const FHitResult& H:Hits){const auto* C=Cast<UPrimitiveComponent>(H.GetComponent());const auto* SM=Cast<UStaticMeshComponent>(C);const auto* Mat=C?C->GetMaterial(0):nullptr;
+       UE_LOG(LogTemp,Display,TEXT("S47: buildings underfoot %s: %s mesh %s material %s"),Views[I].Name,C?*C->GetName():TEXT("none"),SM&&SM->GetStaticMesh()?*SM->GetStaticMesh()->GetName():TEXT("-"),Mat?*Mat->GetName():TEXT("-"));}
+     }
      Shot(*FString::Printf(TEXT("buildings-%s-%s.png"),bNight?TEXT("night"):TEXT("day"),Views[I].Name));ShotPending=false;Stage=Stage==210?211:Stage+1;StageAt=Elapsed;return true;
     }
     const FVector O(-24,0,300);const FVector2D D(Views[I].LookX-Views[I].X,Views[I].LookZ-Views[I].Z);
@@ -455,7 +463,7 @@ namespace
    }
    // The nature: the pasture, the roadside south of SARO, flat desert towards the mountains, the antenna field, the edge of Caliche and
    // STATION 01 by day, then the pasture at night. Each view waits for the plants to fill in before its picture.
-   if(Stage>=300&&Stage<=306)
+   if(Stage>=300&&Stage<=312)
    {
     struct FN{const TCHAR* Name;const TCHAR* Area;double X,Z,LX,LZ,Lift;};
     const auto Saro=[](double X,double Z){return S47FarmWorld::RoadToArea(TEXT("saro"),FVector(X,0,Z));};
@@ -467,8 +475,11 @@ namespace
      {TEXT("antenna-field"),TEXT("saro"),-1,-30,-1,-110,0},
      {TEXT("caliche-edge"),TEXT("diner"),7995,Edge-50,7995,Edge+30,0},
      {TEXT("station01"),TEXT("station01"),-4,8014,-11,8003,0},
-     {TEXT("pasture-night"),TEXT("saro"),Past0.X,Past0.Z,Past1.X,Past1.Z,0}};
-    const int32 I=Stage-300;
+     {TEXT("pasture-night"),TEXT("saro"),Past0.X,Past0.Z,Past1.X,Past1.Z,0},
+     {TEXT("yard"),TEXT("saro"),Saro(125,195).X,Saro(125,195).Z,Saro(110,190).X,Saro(110,190).Z,0},
+     {TEXT("east-shed"),TEXT("saro"),Saro(155,174).X,Saro(155,174).Z,Saro(142,174).X,Saro(142,174).Z,0},
+     {TEXT("saro-yard"),TEXT("saro"),-6,20,-30,20,0}};
+    const int32 I=Stage>=310?Stage-303:Stage-300;
     StageAt=Elapsed;
     if(ShotPending)
     {
@@ -483,7 +494,8 @@ namespace
       UE_LOG(LogTemp,Display,TEXT("S47: nature underfoot %s: %s mesh %s material %s"),V[I].Name,C?*C->GetName():TEXT("none"),SM&&SM->GetStaticMesh()?*SM->GetStaticMesh()->GetName():TEXT("-"),Mat?*Mat->GetName():TEXT("-"));
      }
      if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=306;}
-     else Stage=I==6?307:Stage+1;
+     else if(I==6){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the morning"));Stage=310;}
+     else Stage=I==9?320:Stage+1;
      return true;
     }
     if(M->Web->Area()!=V[I].Area){M->World->Enter(V[I].Area);return true;}
@@ -492,7 +504,7 @@ namespace
     ShotPending=true;WalkFrom=Elapsed;
     return true;
    }
-   if(Stage==307)
+   if(Stage==320)
    {
     UE_LOG(LogTemp,Display,TEXT("S47: nature shown"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
