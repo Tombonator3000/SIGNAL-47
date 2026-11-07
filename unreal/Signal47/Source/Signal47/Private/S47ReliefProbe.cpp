@@ -6,8 +6,13 @@
 #include "S47FreeformTerrain.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
+#include "S47Legs.h"
 #include "S47Main.h"
+<<<<<<< HEAD
 #include "S47Night.h"
+=======
+#include "S47OpenLand.h"
+>>>>>>> worktree-agent-ab1a799e642f9f55e
 #include "S47Relief.h"
 #include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
@@ -21,6 +26,7 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "HAL/PlatformMisc.h"
+#include "HAL/PlatformTime.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
@@ -74,6 +80,35 @@ namespace
 		{ TEXT("edge-farm"), TEXT("saro"), 9, 170, 16, 200, 0 },
 	};
 	const double EdgeHours[] = { 11, 17.6 };
+	// -S47OpenLandProbe: the foot of the hills, the rim, the highway's ends, and each line between two areas from both of its sides.
+	const FReliefView OpenViews[] = {
+		{ TEXT("open-foot-e"), TEXT("diner"), 1120, 200, 1400, 200, 6 },
+		{ TEXT("open-foot-nw"), TEXT("diner"), -600, -500, -800, -700, 8 },
+		{ TEXT("open-foot-sw"), TEXT("diner"), -1000, 1300, -1200, 1500, 8 },
+		{ TEXT("open-foot-w"), TEXT("diner"), -2290, 200, -2600, 200, 8 },
+		{ TEXT("open-rim-n"), TEXT("diner"), 100, -2600, 100, -2900, 2 },
+		{ TEXT("open-rim-s"), TEXT("diner"), 100, 4300, 100, 4600, 2 },
+		{ TEXT("open-hw-n"), TEXT("diner"), 6, -1900, 2, -2400, 0 },
+		{ TEXT("open-hw-s"), TEXT("diner"), 6, 3300, 2, 3800, 0 },
+		{ TEXT("open-seam-e-saro"), TEXT("saro"), 345, 0, 100, 0, 4 },
+		{ TEXT("open-seam-e-road"), TEXT("diner"), 365, 0, 100, 0, 4 },
+		{ TEXT("open-seam-n-saro"), TEXT("saro"), -50, -855, 0, -400, 6 },
+		{ TEXT("open-seam-n-road"), TEXT("diner"), -50, -875, 0, -400, 6 },
+		{ TEXT("open-seam-st-station"), TEXT("station01"), -530, 513, -634, 513, 3 },
+		{ TEXT("open-seam-st-road"), TEXT("diner"), -510, 513, -634, 513, 3 },
+		{ TEXT("open-farm-saro"), TEXT("saro"), 340, 210, 120, 205, 3 },
+		{ TEXT("open-farm-road"), TEXT("diner"), 370, 210, 120, 205, 3 },
+	};
+	const double OpenHours[] = { 11, 18.6 };
+	struct FReachStart { const TCHAR* Name; const TCHAR* Area; double WalkX, WalkZ, DriveX, DriveZ; };
+	const FReachStart ReachStarts[] = {
+		{ TEXT("farm"), TEXT("saro"), 90, 197, 90, 197 },
+		{ TEXT("road"), TEXT("diner"), -8, 1000, 1.8, 1000 },
+		{ TEXT("saro"), TEXT("saro"), 40, -291, -1.8, -240 },
+		{ TEXT("town"), TEXT("diner"), 3, 2100, 1.8, 2100 },
+		{ TEXT("station"), TEXT("station01"), -603, 532, -603, 532 },
+	};
+	const TCHAR* const ReachDirs[] = { TEXT("N"), TEXT("NE"), TEXT("E"), TEXT("SE"), TEXT("S"), TEXT("SW"), TEXT("W"), TEXT("NW") };
 	// -S47DuskRamp: only dusk and dawn, every ten minutes, in three of the views and with none of the walks: relief-1840-road.png.
 	const FReliefView RampViews[] = {
 		{ TEXT("road"), TEXT("diner"), -40, 900, -400, 880, 2 },
@@ -144,7 +179,7 @@ namespace
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
 	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
 	struct FReliefWalk { const TCHAR* Area; double X, Z, Bearing; bool bNeedRelief; };
-	const FReliefWalk ReliefWalks[] = { { TEXT("diner"), -300, 1000, 0, true }, { TEXT("diner"), -700, 1400, 1.2, true }, { TEXT("saro"), -426, -400, 0, false } };
+	const FReliefWalk ReliefWalks[] = { { TEXT("diner"), -300, 1000, 0, true }, { TEXT("diner"), -700, 1400, 1.2, true }, { TEXT("saro"), -280, -400, 0, false } };
 
 	struct FReliefRun
 	{
@@ -158,7 +193,15 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
+<<<<<<< HEAD
 		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bFile = false;
+=======
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bOpen = false;
+		int32 ReachAt = 0;
+		FString AreaWas;                            // the real crossing's: the area in the last sample
+		double CrossFrameMost = 0, FloorWas = 0;
+		bool CheckedOut = false;                    // a line has been crossed
+>>>>>>> worktree-agent-ab1a799e642f9f55e
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -314,6 +357,7 @@ namespace
 	}
 	int32 ProbeHourCount()
 	{
+<<<<<<< HEAD
 		if (ReliefRun.bFile) return 1;
 		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
 	}
@@ -331,6 +375,162 @@ namespace
 	{
 		if (ReliefRun.bFile) return FileViews[At].View;
 		return ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
+=======
+		return int32(ReliefRun.bOpen ? UE_ARRAY_COUNT(OpenHours) : ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
+	}
+	double ProbeHourAt(int32 At)
+	{
+		return ReliefRun.bOpen ? OpenHours[At] : ReliefRun.bRamp ? RampMinutes[At] / 60. : ReliefRun.bEdgeOnly ? EdgeHours[At] : ReliefHours[At];
+	}
+	int32 ProbeViewCount()
+	{
+		return int32(ReliefRun.bOpen ? UE_ARRAY_COUNT(OpenViews) : ReliefRun.bRamp ? UE_ARRAY_COUNT(RampViews) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews));
+	}
+	const FReliefView& ProbeViewAt(int32 At)
+	{
+		return ReliefRun.bOpen ? OpenViews[At] : ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
+	}
+
+	// How far one gets: from a place, straight out in a direction, on foot and at the wheel, until something stops it, and what. The
+	// game's own walker and a controller of the game's own class on the leg's real area, as fast as the machine goes, not in its time.
+	// With -S47OpenLandOff it says what it was. Road-local, all of it.
+	bool ReachEndIsNatural(const FString& Why) { return Why.StartsWith(TEXT("hill")) || Why.StartsWith(TEXT("the rim")); }
+	void ReachWalk(US47Main* M, const FReachStart& Start, int32 DirAt)
+	{
+		US47World* Life = M->World;
+		AS47Walker* P = M->Player;
+		const double Angle = DirAt * UE_DOUBLE_PI / 4, Dx = FMath::Sin(Angle), Dz = -FMath::Cos(Angle), Step = .5;
+		Life->Enter(Start.Area);
+		const FVector At = S47OpenLand::FromRoad(Start.Area, Start.WalkX, Start.WalkZ);
+		P->Place(At.X, At.Z, 0);
+		double Rx = Start.WalkX, Rz = Start.WalkZ, CheckAt = 0;
+		int32 Crossed = 0, NoGround = 0, Steps = 0;
+		FString AreaHere = Life->Area;
+		const double Limit = 9000;
+		FString Why = TEXT("walked to the probe's limit");
+		for (; Steps * Step < Limit * 1.5; ++Steps)
+		{
+			const FVector A = S47OpenLand::FromRoad(Life->Area, Rx, Rz), B = S47OpenLand::FromRoad(Life->Area, Rx + Dx * Step, Rz + Dz * Step);
+			P->MoveBy(B.X - A.X, B.Z - A.Z);
+			Life->WalkOver();
+			if (Life->Area != AreaHere) { AreaHere = Life->Area; ++Crossed; }
+			S47OpenLand::RoadOf(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
+			if (Steps % 40 == 0 && Life->Area != TEXT("station01"))
+			{
+				double GroundY = 0;
+				if (!ProbeGroundY(M->Web.Get(), P->Pos, S47RoadTerrain::SurfaceY(Rx, Rz), GroundY)) ++NoGround;
+			}
+			if (Steps % 16 != 15) continue;
+			const double Along = (Rx - Start.WalkX) * Dx + (Rz - Start.WalkZ) * Dz;
+			if (Along - CheckAt < 1)
+			{
+				const FVector Next = S47OpenLand::FromRoad(Life->Area, Rx + Dx * 1, Rz + Dz * 1);
+				Why = Life->WhyNotLand(Next.X, Next.Z);
+				break;
+			}
+			CheckAt = Along;
+		}
+		const double Along = (Rx - Start.WalkX) * Dx + (Rz - Start.WalkZ) * Dz;
+		const bool bEnd = ReachEndIsNatural(Why);
+		const FString Line = FString::Printf(TEXT("reach walk %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, %d points with no ground mesh"), Start.Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, NoGround);
+		// (the measure of how it was only says what it was)
+		if (S47OpenLand::Live()) ProbeCheck(bEnd && NoGround == 0, Line); else ProbeLine(Line);
+	}
+	void ReachDrive(US47Main* M, const FReachStart& Start, int32 DirAt)
+	{
+		US47World* Life = M->World;
+		const double Angle = DirAt * UE_DOUBLE_PI / 4, Dx = FMath::Sin(Angle), Dz = -FMath::Cos(Angle);
+		FString Leg = FString(Start.Area) == TEXT("diner") ? FString(TEXT("road")) : FString(Start.Area);
+		IS47DriveArea* Area = Life->LegArea(Leg);
+		if (!Area) { ProbeCheck(false, FString::Printf(TEXT("no leg %s"), *Leg)); return; }
+		double Rx = Start.DriveX, Rz = Start.DriveZ;
+		const auto HeadingIn = [&](const FString& InLeg, double Fx, double Fz, double Ax, double Az)
+		{
+			const FVector A = S47OpenLand::FromRoad(InLeg, Ax, Az), B = S47OpenLand::FromRoad(InLeg, Ax + Fx, Az + Fz);
+			return FMath::Atan2(-(B.X - A.X), -(B.Z - A.Z));
+		};
+		TUniquePtr<FS47DriveController> D = MakeUnique<FS47DriveController>(nullptr, Area);
+		{
+			const FVector At = S47OpenLand::FromRoad(Leg, Rx, Rz);
+			D->Place(FVector(At.X, 0, At.Z), HeadingIn(Leg, Dx, Dz, Rx, Rz));
+		}
+		FS47DriveIn In; In.Throttle = 1;
+		const double H = 1. / 30;
+		int32 Crossed = 0, Detours = 0, NoGround = 0;
+		double Top = 0, Along = 0, CheckAt = 0, CheckTime = 0, Time = 0, MostFromLine = 0;
+		FString Why = TEXT("drove to the probe's limit");
+		for (int32 Frame = 0; Frame < 60 * 60 * 8; ++Frame)
+		{
+			D->Update(H, In, FVector2D::ZeroVector);
+			Time += H;
+			Top = FMath::Max(Top, FMath::Abs(D->Speed));
+			if (S47OpenLand::RoadOf(Leg, D->Pos.X, D->Pos.Z, Rx, Rz))
+			{
+				const TOptional<S47Legs::FExit> Ex = S47OpenLand::Live() ? S47OpenLand::Exit(Leg, D->Pos.X, D->Pos.Z, D->Heading) : S47Legs::ExitFrom(Leg, D->Pos.X, D->Pos.Z, D->Heading);
+				if (Ex)
+				{
+					IS47DriveArea* Next = Life->LegArea(Ex->To);
+					if (Next)
+					{
+						const double HereY = Area->Height(D->Pos.X, D->Pos.Z), ThereY = Next->Height(Ex->X, Ex->Z);
+						MostFromLine = FMath::Max(MostFromLine, FMath::Abs(ThereY - HereY));
+						TUniquePtr<FS47DriveController> N = MakeUnique<FS47DriveController>(nullptr, Next);
+						N->Adopt(*D, Ex->X, Ex->Z, Ex->Heading);
+						D = MoveTemp(N); Area = Next; Leg = Ex->To; ++Crossed;
+					}
+				}
+			}
+			S47OpenLand::RoadOf(Leg, D->Pos.X, D->Pos.Z, Rx, Rz);
+			if (Frame % 60 == 0 && Leg == TEXT("road"))
+			{
+				double GroundY = 0;
+				if (!ProbeGroundY(M->Web.Get(), D->Pos, S47RoadTerrain::SurfaceY(Rx, Rz), GroundY)) ++NoGround;
+			}
+			Along = (Rx - Start.DriveX) * Dx + (Rz - Start.DriveZ) * Dz;
+			if (Time - CheckTime < 3) continue;
+			const double Gained = Along - CheckAt;
+			CheckAt = Along; CheckTime = Time;
+			if (Gained >= 3) continue;
+			// Stopped. The way it is going: the area's own limit, or something standing there.
+			const FVector Pos = D->Pos;
+			const double Fx = -FMath::Sin(D->Heading), Fz = -FMath::Cos(D->Heading);
+			FString Found;
+			if (Area->Blocked(Pos.X + Fx * 3.5, Pos.Z + Fz * 3.5) || Area->Blocked(Pos.X, Pos.Z))
+			{
+				if (S47OpenLand::Live() && !S47OpenLand::InRim(Rx + Dx * 4, Rz + Dz * 4, 3.2)) Found = TEXT("the rim's fence");
+				else if (S47Relief::HillStops(Rx + Dx * 3.5, Rz + Dz * 3.5, 3.2)) Found = TEXT("hill (HillStops)");
+				else Found = FString::Printf(TEXT("the area's own limit (%s Blocked)"), *Leg);
+			}
+			else
+			{
+				double Nearest = 12, Size = 0;
+				for (const FS47Obstacle& O : Area->Obstacles)
+				{
+					const double Ox = O.bCircle ? O.X : FMath::Clamp(Pos.X, O.MinX, O.MaxX), Oz = O.bCircle ? O.Z : FMath::Clamp(Pos.Z, O.MinZ, O.MaxZ);
+					const double Dist = FVector2D::Distance(FVector2D(Pos.X, Pos.Z), FVector2D(Ox, Oz)) - (O.bCircle ? O.R : 0);
+					if (Dist >= Nearest) continue;
+					Nearest = Dist;
+					Size = O.bCircle ? O.R * 2 : FMath::Max(O.MaxX - O.MinX, O.MaxZ - O.MinZ);
+					Found = O.bCircle ? FString::Printf(TEXT("post or rock r %.2f at %.1f %.1f"), O.R, O.X, O.Z) : FString::Printf(TEXT("box %.1f..%.1f, %.1f..%.1f"), O.MinX, O.MaxX, O.MinZ, O.MaxZ);
+				}
+				// A thing to drive round, not an end: past it, and on.
+				if (!Found.IsEmpty() && Size < 70 && Detours < 16)
+				{
+					++Detours;
+					const double Aside = Size + 8;
+					const FVector At = S47OpenLand::FromRoad(Leg, Rx - Dz * Aside, Rz + Dx * Aside);
+					D->Place(FVector(At.X, 0, At.Z), HeadingIn(Leg, Dx, Dz, Rx, Rz));
+					D->Speed = 0;
+					continue;
+				}
+				if (Found.IsEmpty()) Found = TEXT("nothing near: a slope, or the wheels");
+			}
+			Why = Found;
+			break;
+		}
+		const FString Line = FString::Printf(TEXT("reach drive %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, most %.2f m of floor at one, %d things driven round, %d points with no ground mesh, top %.0f m/s"), Start.Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, MostFromLine, Detours, NoGround, Top);
+		if (S47OpenLand::Live()) ProbeCheck(ReachEndIsNatural(Why) && NoGround == 0, Line); else ProbeLine(Line);
+>>>>>>> worktree-agent-ab1a799e642f9f55e
 	}
 	void ProbeSetHour(US47Main* M, double Hour)
 	{
@@ -349,12 +549,16 @@ namespace S47ReliefProbe
 		ReliefRun = FReliefRun();
 		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
 		ReliefRun.bRamp = FParse::Param(FCommandLine::Get(), TEXT("S47DuskRamp"));
+<<<<<<< HEAD
 		FString ViewsFile;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47ViewsFile="), ViewsFile))
 		{
 			ReadFileViews(ViewsFile);
 			ReliefRun.bFile = FileViews.Num() > 0;
 		}
+=======
+		ReliefRun.bOpen = FParse::Param(FCommandLine::Get(), TEXT("S47OpenLandProbe"));
+>>>>>>> worktree-agent-ab1a799e642f9f55e
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -380,9 +584,126 @@ namespace S47ReliefProbe
 			Lines.Reset();
 			S47RoadEdge::Report(W, Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
+<<<<<<< HEAD
 			if (R.bEdgeOnly || R.bRamp || R.bFile) { R.Phase = 7; R.Since = R.Now; return true; }
+=======
+			if (R.bEdgeOnly || R.bRamp) { R.Phase = 7; R.Since = R.Now; return true; }
+			if (R.bOpen)
+			{
+				// Each way between the road's terms and an area's, and the line's own rule, whatever a game does.
+				bool bBack = true;
+				for (const TCHAR* Leg : { TEXT("saro"), TEXT("road"), TEXT("station01") })
+				{
+					const FVector At = S47OpenLand::FromRoad(Leg, -412.5, 930.25);
+					double Bx = 0, Bz = 0;
+					bBack &= S47OpenLand::RoadOf(Leg, At.X, At.Z, Bx, Bz) && FMath::Abs(Bx + 412.5) < 1e-6 && FMath::Abs(Bz - 930.25) < 1e-6;
+				}
+				const FString StayRoad = S47OpenLand::LegFor(TEXT("road"), 200, -200), LeaveSaro = S47OpenLand::LegFor(TEXT("saro"), 360, 0), StaySaro = S47OpenLand::LegFor(TEXT("saro"), 355, 0), StayOut = S47OpenLand::LegFor(TEXT("road"), 345, 0);
+				ProbeCheck(bBack && StayRoad == TEXT("saro") && LeaveSaro == TEXT("road") && StaySaro == TEXT("saro") && StayOut == TEXT("road") && FMath::Abs(S47OpenLand::Turned(TEXT("station01"), TEXT("road"), S47OpenLand::Turned(TEXT("road"), TEXT("station01"), .7)) - .7) < 1e-9, TEXT("the road's terms and the areas' agree, each way, and a line has its 8 m either way"));
+				if (!S47OpenLand::Live() && !S47OpenLand::Off()) return ProbeFinish(TEXT("the open land is not live in this game"));
+				ProbeLine(FString::Printf(TEXT("open land: live %d, the rim's fence %d posts"), S47OpenLand::Live() ? 1 : 0, S47OpenLand::FencePosts()));
+				R.ReachAt = 0; R.Phase = 30; R.Since = R.Now;
+				return true;
+			}
+>>>>>>> worktree-agent-ab1a799e642f9f55e
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
+			return true;
+		}
+
+		if (R.Phase == 30) // how far one gets, every start each of eight ways, one a frame so the log keeps up
+		{
+			const int32 Each = UE_ARRAY_COUNT(ReachDirs), All = UE_ARRAY_COUNT(ReachStarts) * Each;
+			if (R.ReachAt >= All * 2)
+			{
+				if (!S47OpenLand::Live()) return ProbeFinish();
+				R.Phase = 31; R.Since = R.Now;
+				return true;
+			}
+			const bool bDrive = R.ReachAt >= All;
+			const int32 At = R.ReachAt % All;
+			const double Started = FPlatformTime::Seconds();
+			if (bDrive) ReachDrive(M, ReachStarts[At / Each], At % Each);
+			else ReachWalk(M, ReachStarts[At / Each], At % Each);
+			UE_LOG(LogS47ReliefProbe, Display, TEXT("S47: relief probe: (that one took %.2f s)"), FPlatformTime::Seconds() - Started);
+			++R.ReachAt;
+			return true;
+		}
+		// The real thing, once each: in the truck from the farm's yard straight east over the line and on to the foot of the hills, and on
+		// foot over a line and back, in the game's own time, with what the frame cost at the crossing.
+		if (R.Phase == 31)
+		{
+			if (Life->Area != TEXT("saro")) { Life->Enter(TEXT("saro")); R.Since = R.Now; return true; }
+			if (R.Now - R.Since < .5) return true;
+			FS47TripOpts Opts;
+			const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 175, 235);
+			Opts.AtPos = FVector(At.X, S47RoadTerrain::SurfaceY(175, 235), At.Z); Opts.AtHeading = UE_DOUBLE_PI / 2 * -1; Opts.Leg = TEXT("saro");
+			Life->StartTrip(TEXT("saro"), TEXT("diner"), Opts);
+			Life->TestInput = [Life] { FS47DriveIn In; const FS47DriveController* D = Life->CabDrive(); In.Throttle = D && D->Speed < 24 ? 1 : 0; return In; };
+			ProbeReset();
+			R.DriveTravel = 0; R.LastTruck = FVector::ZeroVector; R.AreaWas = TEXT("saro"); R.CrossFrameMost = 0; R.FrameMost = 0;
+			R.Phase = 32; R.Since = R.Now; R.CheckedOut = false;
+			return true;
+		}
+		if (R.Phase == 32)
+		{
+			const FS47DriveController* Cab = Life->CabDrive();
+			if (!Cab) { if (R.Now - R.Since > 15) { Life->TestInput = nullptr; ProbeCheck(false, TEXT("the trip east did not start")); R.Phase = 34; R.Since = R.Now; } return true; }
+			if (Life->bBusy) { R.Since = R.Now; return true; }
+			if (Life->Area != R.AreaWas)
+			{
+				ProbeLine(FString::Printf(TEXT("in the truck over the line from %s to %s at %.1f m/s: the frame %.1f ms, the worst of the 2 s before %.1f ms"), *R.AreaWas, *Life->Area, Cab->Speed, Dt * 1000., R.FrameMost * 1000));
+				R.AreaWas = Life->Area; R.CheckedOut = true; R.FrameMost = 0;
+			}
+			else R.FrameMost = FMath::Max(R.FrameMost * (1 - Dt / 2), double(Dt));
+			double Rx = 0, Rz = 0;
+			S47OpenLand::RoadOf(Life->Area, Cab->Pos.X, Cab->Pos.Z, Rx, Rz);
+			R.FrameSum += Dt; ++R.FrameCount;
+			if (FMath::Abs(Cab->Speed) < .6 && R.Now - R.Since > 8)
+			{
+				ProbeCheck(R.CheckedOut && S47Relief::HillStops(Rx + 4, Rz, 3.2) && Rx > 900, FString::Printf(TEXT("in the truck from the farm: stopped at road %.0f %.0f, %.2f m up a fan, after %.0f s; %.1f ms a frame on average"), Rx, Rz, S47Relief::HillAbove(Rx, Rz), R.Now - R.Since, R.FrameCount ? R.FrameSum / R.FrameCount * 1000 : 0.));
+				Life->TestInput = [Life] { FS47DriveIn In; const double V = Life->DrivingSpeed(); In.Throttle = V > .15 ? -1 : V < -.15 ? 1 : 0; return In; };
+				R.Phase = 33; R.Since = R.Now;
+				return true;
+			}
+			if (R.Now - R.Since > 150) { Life->TestInput = nullptr; ProbeCheck(false, FString::Printf(TEXT("the truck did not stop within 150 s, at road %.0f %.0f"), Rx, Rz)); R.Phase = 33; R.Since = R.Now; }
+			return true;
+		}
+		if (R.Phase == 33)
+		{
+			if (Life->bDriving && !Life->CanGetOut()) { if (R.Now - R.Since > 10) { Life->TestInput = nullptr; ProbeCheck(false, TEXT("could not get out at the foot")); R.Phase = 34; R.Since = R.Now; } return true; }
+			if (Life->bDriving) { Life->TestInput = nullptr; Life->GetOutHere(); R.Since = R.Now; return true; }
+			if (Life->bBusy || R.Now - R.Since < 1) return true;
+			ProbeLine(FString::Printf(TEXT("out at the foot: truck at %s, player in %s at %.1f %.1f, floor %.2f"), *Life->TruckAt, *Life->Area, P->Pos.X, P->Pos.Z, P->FloorY));
+			R.Phase = 34; R.Since = R.Now;
+			return true;
+		}
+		if (R.Phase == 34) // on foot, over the farm's line both ways
+		{
+			if (Life->Area != TEXT("diner")) { Life->Enter(TEXT("diner")); R.Since = R.Now; return true; }
+			if (R.Now - R.Since < .5) return true;
+			const FVector At = S47OpenLand::FromRoad(TEXT("road"), 375, 100);
+			P->Place(At.X, At.Z, UE_DOUBLE_PI / 2);
+			P->Pitch = -.06; P->TestMove = FVector2D(0, -1); P->bTestRun = true;
+			ProbeReset();
+			R.AreaWas = Life->Area; R.CheckedOut = false; R.FloorWas = P->FloorY; R.FrameMost = 0;
+			R.Phase = 35; R.Since = R.Now;
+			return true;
+		}
+		if (R.Phase == 35)
+		{
+			if (Life->Area != R.AreaWas)
+			{
+				ProbeLine(FString::Printf(TEXT("on foot over the line from %s to %s: the frame %.1f ms, the worst before %.1f ms; floor %.3f to %.3f, the truck now at %s"), *R.AreaWas, *Life->Area, Dt * 1000., R.FrameMost * 1000, R.FloorWas, P->FloorY, *Life->TruckAt));
+				if (!R.CheckedOut) { R.CheckedOut = true; R.AreaWas = Life->Area; R.Since = R.Now; P->Yaw = -UE_DOUBLE_PI / 2; R.FrameMost = 0; return true; }
+				P->TestMove.Reset(); P->bTestRun = false;
+				ProbeCheck(Life->Area == TEXT("diner"), TEXT("on foot over the line and back: both ways"));
+				R.Phase = 7; R.Since = R.Now;
+				return true;
+			}
+			R.FloorWas = P->FloorY;
+			R.FrameMost = FMath::Max(R.FrameMost * (1 - Dt / 2), double(Dt));
+			if (R.Now - R.Since > 25) { P->TestMove.Reset(); P->bTestRun = false; ProbeCheck(false, FString::Printf(TEXT("on foot, no line in 25 s, at %.1f %.1f in %s"), P->Pos.X, P->Pos.Z, *Life->Area)); R.Phase = 7; R.Since = R.Now; }
 			return true;
 		}
 

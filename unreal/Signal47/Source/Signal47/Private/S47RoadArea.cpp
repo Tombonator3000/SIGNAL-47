@@ -1,5 +1,6 @@
 #include "S47RoadArea.h"
 
+#include "S47OpenLand.h"
 #include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47RoadShape.h"
@@ -99,6 +100,8 @@ double FS47RoadArea::Height(double X, double Z) const
 
 bool FS47RoadArea::Blocked(double X, double Z)
 {
+	// Freeform's open land ends at the rim's fence, in reach of the truck's nose.
+	if (S47OpenLand::Live() && !S47OpenLand::InRim(X - Origin.X, Z - Origin.Z, HILL_REACH)) return true;
 	return !bInHill && S47Relief::HillStops(X - Origin.X, Z - Origin.Z, HILL_REACH);
 }
 

@@ -39,6 +39,7 @@
 #include "S47Night.h"
 #include "S47Obj.h"
 #include "S47OldRoad.h"
+#include "S47OpenLand.h"
 #include "S47RoadArea.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
@@ -1141,7 +1142,7 @@ void US47World::TripStep(double Dt)
 	if (!L) return;
 	FS47DriveController& D = *L->Drive;
 	// (chapter six's old road is not a trip: there are no ways out of it)
-	const TOptional<S47Legs::FExit> Ex = S47Legs::ExitFrom(Id, D.Pos.X, D.Pos.Z, D.Heading);
+	const TOptional<S47Legs::FExit> Ex = S47OpenLand::Live() ? S47OpenLand::Exit(Id, D.Pos.X, D.Pos.Z, D.Heading) : S47Legs::ExitFrom(Id, D.Pos.X, D.Pos.Z, D.Heading);
 	if (Ex && Legs.Contains(Ex->To)) { Transfer(*Ex); return; }
 	if (!Trip) return;
 	FTrip& T = *Trip;
@@ -1396,6 +1397,8 @@ void US47World::MakeLands()
 		L.Leg = TEXT("saro");
 		L.In = [](double X, double Z)
 		{
+			// Freeform's open land: up to where the walker goes on over the road's (WalkOver), and a little past it for the frame between.
+			if (S47OpenLand::Live()) return S47OpenLand::InSaroCore(X + S47Geo::SARO_IN_ROAD.X, Z + S47Geo::SARO_IN_ROAD.Z, S47OpenLand::HandOverM + 4);
 			// Exterior.ts ground: SARO's own land, a ring 1900 m out (flat to 300 m, rolling beyond, the
 			// array graded flat: arrayLayout.ts ARRAY_FLAT), walked within 600 m. South of the site the
 			// road's piece of ground lies over it (corridors.ts saroCorridorGround, site x -144..83.66,
@@ -1447,12 +1450,15 @@ void US47World::MakeLands()
 			// North of z 450 this area shows SARO's stretch with its motel and site as far views (their own
 			// area has them), and the pasture's west end the far view of STATION 01 (roadPlaces.ts)
 			const double Lx = X - ROAD_ORIGIN.X;
+			// Freeform's open land: all of it, to the rim's fence (the same grid, its northern half as well).
+			if (S47OpenLand::Live()) return S47OpenLand::InRim(Lx, Z);
 			if (Lx < -2950 || Lx > 2250 || Z < 450 || Z > 4350) return false;
 			return !(Lx < -560 && Z < 730);
 		};
 		// the barricades across the old road's mouth, until chapter five sends the truck out on it
 		// (roadProps.ts roadClosed: their posts at road x 25.5; the wall behind them at x 30 holds always)
-		L.Closed = [this](double X, double Z) { return Road && Road->RoadClosed() && X - ROAD_ORIGIN.X > 24.5 && Z > 1981.95 && Z < 2017.95; };
+		// (Freeform's open land: the barricades themselves, as one can go round them)
+		L.Closed = [this](double X, double Z) { return Road && Road->RoadClosed() && X - ROAD_ORIGIN.X > 24.5 && (!S47OpenLand::Live() || X - ROAD_ORIGIN.X < 27) && Z > 1981.95 && Z < 2017.95; };
 		Lands.Add(TEXT("diner"), MoveTemp(L));
 	}
 	// ---- STATION 01 (station terms are world z - 8000) ----
@@ -1465,6 +1471,11 @@ void US47World::MakeLands()
 			// (corridors.ts stationCorridorGround); walked within 600 m of the station (the highway, 630 m
 			// off, is not drawn here)
 			const double Lz = Z - STATION_ORIGIN.Z;
+			if (S47OpenLand::Live())
+			{
+				const S47Geo::FXZ Across = S47Geo::StationToRoad(X, Lz);
+				return S47OpenLand::InStationCore(Across.X, Across.Z, S47OpenLand::HandOverM + 4);
+			}
 			return X * X + Lz * Lz <= 600.0 * 600.0;
 		};
 		// the compound's fence (stationLayout.ts STATION_FENCE: posts and wire, no colliders): its zones
@@ -1545,7 +1556,9 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 		if (!(Farm&&S47FarmWorld::InRoadAccess(X+D.X-FarmOrigin.X,Z+D.Y-FarmOrigin.Z))&&!L->In(X + D.X, Z + D.Y)) return false;
 	}
 	const double K = R + LAND_KEEP;
-	for (const FS47Box2& B : L->Out) if (!(Farm&&A==TEXT("saro")&&B.MinX==-3&&B.MaxX==-3&&FMath::Abs(Z-(S47RoadTerrain::RanchZ(21)+300))<3.0)) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
+	// Freeform's open land: the highway's fences and the pasture's (SARO's list, from site z 100 south) are stepped through, as the road's are.
+	const bool bFencesOpen = S47OpenLand::Live() && A == TEXT("saro");
+	for (const FS47Box2& B : L->Out) if (!(bFencesOpen && B.MinZ >= 100 && (B.MinX == B.MaxX || B.MinZ == B.MaxZ))) if (!(Farm&&A==TEXT("saro")&&B.MinX==-3&&B.MaxX==-3&&FMath::Abs(Z-(S47RoadTerrain::RanchZ(21)+300))<3.0)) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
 	if (L->Closed && L->Closed(X, Z)) return false;
 	// Freeform's hills stop where they turn steep (S47Relief, table from build_range.py; SARO's and the station's walks have none in them).
 	// One who already stands inside one, an old save on what was open land, walks out.
@@ -1843,7 +1856,8 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 	FS47Truck* T = TruckOf(At);
 	auto Ok = [&Pose](const TCHAR* K) { double V = 0; return Pose.IsValid() && Pose->TryGetNumberField(K, V) && FMath::IsFinite(V); };
 	if (T && Pose.IsValid() && S47J::Str(Pose, TEXT("at")) == At && Ok(TEXT("x")) && Ok(TEXT("y")) && Ok(TEXT("z")) && Ok(TEXT("h"))
-		&& FMath::Sqrt(FMath::Square(S47J::Num(Pose, TEXT("x")) - T->Position.X) + FMath::Square(S47J::Num(Pose, TEXT("z")) - T->Position.Z)) < 2600)
+		// (Freeform's open land reaches past that from the diner: 5.6 km to the rim's far corner, and still less than to the next area)
+		&& FMath::Sqrt(FMath::Square(S47J::Num(Pose, TEXT("x")) - T->Position.X) + FMath::Square(S47J::Num(Pose, TEXT("z")) - T->Position.Z)) < (At == TEXT("diner") && M && M->IsFreeform() && !S47OpenLand::Off() ? 6000 : 2600))
 	{
 		T->SetPose(FVector(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("y")), S47J::Num(Pose, TEXT("z"))),
 			FVector(Ok(TEXT("p")) ? S47J::Num(Pose, TEXT("p")) : 0, S47J::Num(Pose, TEXT("h")), Ok(TEXT("r")) ? S47J::Num(Pose, TEXT("r")) : 0));
@@ -2000,7 +2014,90 @@ bool US47World::CabRadio()
 
 // ---------- per frame ----------
 
-void US47World::Update(double Dt, double T) { (void)Dt; (void)T; S47FarmWorld::Reconcile(M);VehicleChoices(); }
+void US47World::Update(double Dt, double T) { (void)Dt; (void)T; S47FarmWorld::Reconcile(M);VehicleChoices();WalkOver(); }
+
+// ---------- Freeform's open land, on foot: over a line between two areas as the truck goes over (TripStep) ----------
+
+void US47World::WalkOver()
+{
+	if (!S47OpenLand::Live() || bDriving || bBusy || Trip || !bLegsMade || !M || !M->Player || !M->Web || M->ModalOpen()) return;
+	if (M->Story && M->Story->IsCinematic()) return;
+	if (Area != TEXT("saro") && Area != TEXT("diner") && Area != TEXT("station01")) return;
+	AS47Walker* P = M->Player;
+	if (!P->IsActive()) return;
+	const FString From = Area == TEXT("diner") ? FString(TEXT("road")) : Area;
+	double Rx = 0, Rz = 0;
+	if (!S47OpenLand::RoadOf(From, P->Pos.X, P->Pos.Z, Rx, Rz)) return;
+	const FString To = S47OpenLand::LegFor(From, Rx, Rz);
+	if (To == From || !Legs.Contains(To)) return;
+	const FVector Across = S47OpenLand::FromRoad(To, Rx, Rz);
+	P->Pos.X = Across.X; P->Pos.Z = Across.Z; P->MoveFrom = P->Pos;
+	P->Yaw = S47OpenLand::Turned(From, To, P->Yaw);
+	BringTruckOver(To);
+	Enter(To == TEXT("road") ? FString(TEXT("diner")) : To);
+	// Both areas draw their own land under the eye: on the new floor at once, not risen to it, or the eye is in the ground for a moment.
+	P->SettleOnFloor();
+	SetGround(TruckAt);
+	UE_LOG(LogS47World, Display, TEXT("S47: on foot from %s to %s at road %.1f %.1f, floor %.3f"), *From, *To, Rx, Rz, P->FloorY);
+}
+
+// Each area has its own copy of the truck. Left somewhere and walked away from, it is seen from the next area as well: the same spot, on that area's ground.
+void US47World::BringTruckOver(const FString& ToLeg)
+{
+	if (TruckAt.IsEmpty() || bCommuteVehicle) return;
+	const FString FromLeg = S47Legs::LegOf(TruckAt);
+	if (FromLeg == ToLeg) return;
+	const FLegRec* FromRec = Legs.Find(FromLeg), * ToRec = Legs.Find(ToLeg);
+	const FString NewAt = PlaceOfLeg(ToLeg);
+	FS47Truck* A = TruckOf(TruckAt), * B = TruckOf(NewAt);
+	double Rx = 0, Rz = 0;
+	if (!FromRec || !ToRec || !A || !B || NewAt.IsEmpty() || !S47OpenLand::RoadOf(FromLeg, A->Position.X, A->Position.Z, Rx, Rz)) return;
+	const FVector Pos = S47OpenLand::FromRoad(ToLeg, Rx, Rz);
+	const double Y = A->Position.Y - FromRec->Area->Height(A->Position.X, A->Position.Z) + ToRec->Area->Height(Pos.X, Pos.Z);
+	B->CopyCab(*A);
+	B->SetPose(FVector(Pos.X, Y, Pos.Z), FVector(A->Rotation.X, S47OpenLand::Turned(FromLeg, ToLeg, A->Rotation.Y), A->Rotation.Z));
+	TruckAt = NewAt;
+	for (const TCHAR* Id : TRUCKS) ParkAt(Id);
+	if (bPersonalTransport) PersonalVehicle = TruckSave();
+	else if (PersonalVehicle) ServiceVehicle = TruckSave();
+}
+
+IS47DriveArea* US47World::LegArea(const FString& Id) const
+{
+	const FLegRec* L = Legs.Find(Id);
+	return L ? L->Area.Get() : nullptr;
+}
+
+// What OnLand would say no to here, by name, for the probe of how far one gets (S47ReliefProbe).
+FString US47World::WhyNotLand(double X, double Z)
+{
+	if (!M || !M->Player || !bLegsMade) return TEXT("no game");
+	if (Lands.IsEmpty()) MakeLands();
+	const FLand* L = Lands.Find(Area);
+	if (!L || !L->In) return TEXT("no land in this area");
+	const double R = M->Player->Radius, K = R + LAND_KEEP;
+	double Rx = 0, Rz = 0;
+	S47OpenLand::RoadOf(Area, X, Z, Rx, Rz);
+	if (S47OpenLand::Live() && !S47OpenLand::InRim(Rx, Rz, R)) return TEXT("the rim's fence");
+	for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-R, -R), FVector2D(R, -R), FVector2D(-R, R), FVector2D(R, R) })
+		if (!L->In(X + D.X, Z + D.Y)) return TEXT("the area's land ends (MakeLands In)");
+	if (Area == TEXT("diner") && S47Relief::HillStops(Rx, Rz, R)) return TEXT("hill (HillStops)");
+	for (const FS47Box2& B : L->Out) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return FString::Printf(TEXT("out of bounds box %.1f..%.1f, %.1f..%.1f (MakeLands Out)"), B.MinX, B.MaxX, B.MinZ, B.MaxZ);
+	if (L->Closed && L->Closed(X, Z)) return TEXT("the barricades");
+	if (const FLegRec* G = Legs.Find(L->Leg))
+	{
+		for (const FS47Obstacle& O : G->Area->Obstacles)
+		{
+			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R)
+				return O.bCircle ? FString::Printf(TEXT("post or rock r %.2f at %.1f %.1f"), O.R, O.X, O.Z) : FString::Printf(TEXT("obstacle box %.1f..%.1f, %.1f..%.1f"), O.MinX, O.MaxX, O.MinZ, O.MaxZ);
+		}
+	}
+	for (const FS47Rect& C : M->Web->Colliders())
+		if (C.bEnabled && C.Id != TEXT("truck") && C.Id != TEXT("personalCar") && X > C.MinX - R && X < C.MaxX + R && Z > C.MinZ - R && Z < C.MaxZ + R)
+			return FString::Printf(TEXT("collider %s %.1f..%.1f, %.1f..%.1f"), *C.Id, C.MinX, C.MaxX, C.MinZ, C.MaxZ);
+	if (!GroundUnder(Area, *L, X, Z)) return TEXT("no ground under it (GroundUnder)");
+	return TEXT("nothing says no here");
+}
 
 bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out)
 {
@@ -2341,6 +2438,8 @@ void US47World::ReconcileFarm(bool bEnabled)
 {
  EnsureLegs();if(!bLegsMade)return;
  if(auto* L=Legs.Find(TEXT("saro")))static_cast<FS47SaroDrive*>(L->Area.Get())->bFreeformFarm=bEnabled;
+ S47OpenLand::SetLive(bEnabled);
+ if(M&&M->Web)S47OpenLand::ReconcileFence(M->Web,S47OpenLand::Live(),Area);
  if(!bFarmObstaclesReady)
  {
   for(const FString& Id:{FString(TEXT("saro")),FString(TEXT("road"))})if(auto* L=Legs.Find(Id))
@@ -2350,6 +2449,8 @@ void US47World::ReconcileFarm(bool bEnabled)
    auto Add=[&](FS47Obstacle B){const int32 Index=Obs.Add(B);Controlled.Add({-Index-1,B});};
    for(int32 I=0;I<Num;++I)
    {
+    // Freeform's open land: nothing long and thin holds the truck (the highway's fences, their caps across it at z -120 and 2700, the pasture's, the unseen walls behind the town).
+    if(!S47OpenLand::Off()&&!Obs[I].bCircle&&S47OpenLand::IsBoundaryLine(Obs[I].MinX,Obs[I].MaxX,Obs[I].MinZ,Obs[I].MaxZ)){Controlled.Add({I,Obs[I]});continue;}
     const auto B=Obs[I];if(B.bCircle||FMath::Abs((B.MinX+B.MaxX)*.5-(21+O.X))>.2||B.MaxX-B.MinX>.5||B.MinZ>=G1||B.MaxZ<=G0)continue;
     Controlled.Add({I,B}); // Retire only this exact gate/fence span in Freeform; preserve its outside spans.
     if(B.MinZ<G0)Add(FS47Obstacle::Box(B.MinX,B.MaxX,B.MinZ,G0));
@@ -2362,10 +2463,33 @@ void US47World::ReconcileFarm(bool bEnabled)
    if(S47FarmBuildings::Available())for(const FBox2D& Solid:S47FarmBuildings::Obstacles())Box(Solid.Min.X,Solid.Max.X,Solid.Min.Y,Solid.Max.Y);
    else{Box(101,115,187,197);Box(126,146,164,177);}
    Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
+   // The truck has only ever been able to reach what stood by its roads, and its lists hold no more than that. Off them, all that holds a walker holds it too.
+   if(!S47OpenLand::Off()&&M&&M->Web)
+   {
+    auto Solid=[&](double X0,double X1,double Z0,double Z1)
+    {
+     for(const FS47Obstacle& Have:Obs)if(!Have.bCircle&&FMath::Abs(Have.MinX-X0)<.01&&FMath::Abs(Have.MaxX-X1)<.01&&FMath::Abs(Have.MinZ-Z0)<.01&&FMath::Abs(Have.MaxZ-Z1)<.01)return;
+     Add(FS47Obstacle::Box(X0,X1,Z0,Z1));
+    };
+    for(const FS47Rect& C:M->Web->CollidersMutable(Id))
+    {
+     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue;
+     Solid(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
+    }
+    if(Id==TEXT("saro"))
+    {
+     // MakeLands' walls with no collider of their own (the zones keep the walker from them), its slabs, the array's and the site's fences; the pad is reached by its ramp only.
+     for(const FS47Box2& Wall:TArray<FS47Box2>{{-6.7,6.7,-5.9,5.9},{-6.6,2.6,5.8,11.1},{-7.75,-6.0,4.75,6.65},{12.6,19.2,-6.0,1.0},{6.3,11.0,-.6,3.4},{8.0,11.0,-19.6,-.6},{11.0,12.6,-13.4,-8.6},{11.0,12.6,-1.9,-.6},
+      {-80,-28.6,-20,-20},{-19.4,60,-20,-20},{-18.6,46.5,34.5,34.5},{46.5,46.5,-19.9,34.5},{6.6,6.6,3.4,16.6},{13,13,3.4,16.6},{6.6,13,3.4,3.4}})
+      Solid(Wall.MinX,Wall.MaxX,Wall.MinZ,Wall.MaxZ);
+    }
+   }
   }
   bFarmObstaclesReady=true;
  }
  const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
+ // The road's walk has the same long fences as colliders of its own. Story needs them back.
+ if(Changed&&!S47OpenLand::Off()&&M&&M->Web)for(FS47Rect& C:M->Web->CollidersMutable(TEXT("road")))if(S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))C.bEnabled=!bEnabled;
  for(const auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))for(const auto& Entry:Pair.Value)
  {
   const bool Added=Entry.Key<0;const int32 I=Added?-Entry.Key-1:Entry.Key;if(!L->Area->Obstacles.IsValidIndex(I))continue;

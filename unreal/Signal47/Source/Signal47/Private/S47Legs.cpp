@@ -2,6 +2,9 @@
 #include "S47SaroSeam.h"
 #include "S47Web.h"
 #include "S47FarmWorld.h"
+#include "S47GroundCover.h"
+#include "S47OpenLand.h"
+#include "S47RoadShape.h"
 
 #include "S47Geo.h"
 #include "S47RoadTerrain.h"
@@ -361,6 +364,17 @@ double FS47SaroDrive::Height(double X, double Z) const
 	using namespace S47Legs;
 	if (InBox(SARO_PAD, X, Z) || (X >= SARO_RAMP.MinX && X <= SARO_RAMP.MaxX && Z >= SARO_RAMP.Top && Z <= SARO_RAMP.Foot)) return SaroFloorAt(X, Z);
 	if (InRect(MOTEL_RECT(), X, Z)) return MOTEL_AT().Y;
+	// Freeform's open land: the ground the walker has here (US47World::MakeLands), the ring where the road's piece does not reach.
+	if (S47OpenLand::Live())
+	{
+		const double Rx = X + SARO_IN_ROAD.X, Rz = Z + SARO_IN_ROAD.Z;
+		if (!(Rz >= -200 && InRect(SARO_PATCH, Rx, Rz)) && !S47FarmWorld::InRoadAccess(Rx, Rz) && (FMath::Abs(X - SARO_HWY.X) > SARO_HWY.Half + 2 || Z < SARO_HWY.Z0))
+		{
+			double Y = S47GroundCover::SaroLand(X, Z);
+			if (Z > 36 && FMath::Abs(Rx) < HWY.Flat) Y = FMath::Max(Y, S47RoadShape::HLow(Rx, Rz));
+			return Y;
+		}
+	}
 	// south of the site's own highway, the road's land (corridors.ts)
 	if (Z > SARO_ROAD_FROM) return SurfaceY(X + SARO_IN_ROAD.X, Z + SARO_IN_ROAD.Z);
 	if (FMath::Abs(X - SARO_HWY.X) <= SARO_HWY.Half + 2) return -0.58;
@@ -369,6 +383,7 @@ double FS47SaroDrive::Height(double X, double Z) const
 
 bool FS47SaroDrive::Blocked(double X, double Z)
 {
+	if (S47OpenLand::Live()) return false;   // what stands here stops it; past the line it is on the road's land
 	if(bFreeformFarm&&S47FarmWorld::InRoadAccess(X+SARO_IN_ROAD.X,Z+SARO_IN_ROAD.Z))return false;
 	return !SARO_WAY().ContainsByPredicate([&](const FS47Box2& W) { return InBox(W, X, Z); });
 }
@@ -412,6 +427,7 @@ double FS47StationDrive::Height(double X, double Z) const
 bool FS47StationDrive::Blocked(double X, double Z)
 {
 	const double Lx = X - O.X, Lz = Z - O.Z;
+	if (S47OpenLand::Live()) return Lx > STATION_FENCE.X0 - 1 && Lx < STATION_FENCE.X1 + 1 && Lz > STATION_FENCE.Z0 - 1 && Lz < 26.2;   // only the compound
 	if (Lz < 26.2) return true;
 	return !InRect(STATION_PAD, Lx, Lz) && TrackAt(STATION_TRACK(), Lx, Lz).D > 14;
 }
