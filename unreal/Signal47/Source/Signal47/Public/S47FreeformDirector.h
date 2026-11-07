@@ -86,6 +86,7 @@ public:
  const FString& EventId() const { return Event; }
  FString StageName() const { return FString::Printf(TEXT("phase%d"),Stage); }
  bool CancelForTest();
+ void TestKeepGroup(){bTestKeepGroup=true;}
  int32 EventStage() const { return Stage; }
  double EventAge() const { return Age; }
  FVector EventAnchor() const { return Anchor; }
@@ -175,4 +176,5 @@ private:
  bool InView(const FVector& At,double Range=120) const;
  bool Night() const;
  void StepGroup(double Dt);
+ bool bTestKeepGroup=false; // A test that stops the planner still needs the bodies to walk.
 };

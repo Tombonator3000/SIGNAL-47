@@ -937,6 +937,7 @@ void FS47FreeformDirector::StepMystery(double Dt)
 }
 void FS47FreeformDirector::Step(double Dt)
 {
+ if(!bEnabled&&bTestKeepGroup&&M&&M->Freeform&&M->Freeform->Active()&&FMath::IsFinite(Dt)&&Dt>0){Effects->Build(this);StepGroup(Dt);return;}
  if(!bEnabled||!M||!M->Freeform||!M->Freeform->Active()||!FMath::IsFinite(Dt)||Dt<=0)return;
  Effects->Build(this);StepGroup(Dt);if(M->Freeform->Held())return;
  Dt=FMath::Min(Dt,.25);ActiveTime+=Dt*TestScale;StepReactive(Dt);StepOwed();

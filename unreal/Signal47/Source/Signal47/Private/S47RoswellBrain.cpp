@@ -282,7 +282,6 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
      Velocity=(Pos-Before)/FMath::Max(Dt,1e-6);
      break;
     }
-    if (Turn==0.&&FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAttention"))) UE_LOG(LogTemp,Display,TEXT("S47: attention: back blocked step %d stand %d move %d free %d"),bStep?1:0,bStand?1:0,bMove?1:0,bFree?1:0);
    }
   }
   return;

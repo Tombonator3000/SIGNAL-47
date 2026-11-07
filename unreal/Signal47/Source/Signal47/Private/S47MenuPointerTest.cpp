@@ -855,10 +855,14 @@ namespace
    }
    if(Stage==545)
    {
-    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    StandBy(1.1);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
     if(M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE())!=Visit.DoorKeyNow())
     {
-     if(Elapsed-DreadAt>3)return Fail(TEXT("looking at the door from beside it must offer it"));
+     if(Elapsed-DreadAt>3)
+     {
+      UE_LOG(LogTemp,Display,TEXT("S47: door: inter says '%s', door key '%s', door %.1f m off, at %s"),*M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE()),*Visit.DoorKeyNow(),FVector::Dist(M->Player->Pos,Visit.DoorMiddle()),*M->Player->Pos.ToCompactString());
+      return Fail(TEXT("looking at the door from beside it must offer it"));
+     }
      return true;
     }
     if(Visit.StageNow()!=EV::Trying)return Fail(TEXT("the test must press while the handle moves"));
@@ -1848,7 +1852,7 @@ namespace
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerDoor")))
     {
      // Night two at 21:00, indoors with a shut door near. See StepDoor for what is set up and what is not.
-     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     M->Flow->bDevRun=true;if(M->Freeform->Director){M->Freeform->Director->Stop();M->Freeform->Director->TestKeepGroup();}M->Freeform->TestEndFirstShift();
      if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the door test needs night two"));
      M->FieldRadio->TestOwn();DreadPlace=TEXT("house");FParse::Value(FCommandLine::Get(),TEXT("S47DoorPlace="),DreadPlace);
      if(DreadPlace!=TEXT("house")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
@@ -1857,7 +1861,7 @@ namespace
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAttention")))
     {
      // Night two at 02:30, on foot at marks the lights left. See StepAttention for what is set up and what is not.
-     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     M->Flow->bDevRun=true;if(M->Freeform->Director){M->Freeform->Director->Stop();M->Freeform->Director->TestKeepGroup();}M->Freeform->TestEndFirstShift();
      if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the attention test needs night two"));
      M->FieldRadio->TestOwn();auto& Site=*M->Freeform->FarmSite;Site.ArmFarm(M->Freeform->Clock());Site.TestRollWho(.9f);Site.TestHoldHunt();Site.TestReadyVisit();
      const FVector Marks=Site.Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
