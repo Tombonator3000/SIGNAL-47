@@ -2474,6 +2474,29 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  FS47FreeformSession Workflow(nullptr);Workflow.Begin(nullptr);auto* WJ=Workflow.Job();
  WJ->Stage=EJobStage::Recorded;WJ->bPrinted=true;
  Check(Workflow.NextAction().Contains(TEXT("REGISTER THE ROUTINE"))&&!Workflow.NextAction().Contains(TEXT("PRINTER")),TEXT("Collected routine original directs to OPS, never back to printer"));
+ Check(TerminalNextLine(Workflow.NextAction(),3)==TEXT("NEXT / USE THIS PC")&&TerminalNextLine(Workflow.NextAction(),2)==TEXT("NEXT / OPS (CORNER PC)"),TEXT("A workstation's NEXT line is the HUD's own step: this PC on the one that owns it, the place on the others"));
+ {
+  bool NextFits=true;const EJobStage NextWas=WJ->Stage;
+  for(const EJobStage NextStage:{EJobStage::New,EJobStage::Pointed,EJobStage::Integrating,EJobStage::Chart,EJobStage::Recorded,EJobStage::Registered,EJobStage::Packet})
+  {
+   WJ->Stage=NextStage;
+   for(int32 NextScreen=0;NextScreen<4;++NextScreen){const FString NextShown=TerminalNextLine(Workflow.JobNextAction(*WJ),NextScreen);NextFits&=NextShown.StartsWith(TEXT("NEXT / "))&&NextShown.Len()<=38;}
+  }
+  WJ->Stage=NextWas;
+  Check(NextFits,TEXT("Every stage of a job gives every workstation a NEXT line that fits the glass"));
+ }
+ Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
+ Check(TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),0)==TEXT("NEXT / USE THIS PC")&&TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),1)==TEXT("NEXT / ARRAY STATUS (LEFT-HAND PC)"),TEXT("A blocked array sends every workstation to the status PC"));
+ Check(TerminalNextLine(TEXT("EVENING OBSERVATION / 3C 286 IS UP FROM 19:20. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),2)==TEXT("NEXT / 3C 286 IS UP FROM 19:20")&&TerminalNextLine(Workflow.EveningLine(*WJ),2).Contains(TEXT("IS UP FROM")),TEXT("An evening observation shows its time, and a clock's colon does not cut the line"));
+ Check(TerminalNextLine(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),1)==TEXT("NEXT / S-03 CABLE JUNCTION / LOCAL BOX")&&TerminalNextLine(TEXT("A very long sentence with no station in it that cannot fit on the glass at all"),1).IsEmpty()&&TerminalNextLine(TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),3).IsEmpty()&&TerminalNextLine(FString(),3).IsEmpty(),TEXT("NEXT line keeps a place that fits and says nothing rather than half a sentence"));
+ {
+  FS47FreeformSession Older(nullptr);Older.Begin(nullptr);
+  Check(Older.MeasurementRecord().Contains(TEXT("0 FILED ORIGINALS / 0 REFERENCE BASELINES"))&&Older.MeasurementRecord().Contains(TEXT("No reference baseline")),TEXT("The bench's measurement record starts empty and says where a baseline comes from"));
+  Older.Work[0].Stage=EJobStage::Filed;Older.Work[0].Id=TEXT("FF-D0002-REFERENCE-0005");const int32 OlderCash=Older.Budget();
+  const FString OlderRecord=Older.MeasurementRecord();
+  Check(OlderRecord.Contains(TEXT("1 FILED ORIGINALS / 1 REFERENCE BASELINES"))&&OlderRecord.Contains(TEXT("FF-D0002-REFERENCE-0005"))&&OlderRecord.Contains(TEXT("/ BASELINE"))&&!OlderRecord.Contains(TEXT("No reference baseline"))&&Older.Budget()==OlderCash,TEXT("The bench's measurement record lists a filed baseline and pays nothing"));
+  Older.Stop();
+ }
  Workflow.ServiceGuide=1;Workflow.bGuideFocus=true;
  Check(Workflow.ServiceGuideFocused()&&Workflow.SelectedJob()==0,TEXT("service focus is explicit without changing selected receiver job identity"));
  Workflow.FieldFocus=2;Check(!Workflow.ServiceGuideFocused()&&Workflow.SelectedJob()==-1,TEXT("field focus retains priority over legacy simultaneous service-focus flag"));

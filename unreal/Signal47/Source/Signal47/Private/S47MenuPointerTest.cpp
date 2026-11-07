@@ -1296,6 +1296,14 @@ namespace
      M->Freeform->Field->AddItem(TEXT("relay"),3);M->Freeform->Field->AddItem(TEXT("fuse"),2);
      Stage=180;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerScreens")))
+    {
+     // PC-WORLD-DISPLAY-20261105-04 and MODE-03B, from the real first shift. PASS only if: all four screens fit the glass and
+     // carry the NEXT line the HUD's objective gives; OPS owns the first step, tracking the next. Shots: screens-ops.png,
+     // screens-tracking.png, panel-bench-record.png. Legibility across the room is for the eye.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     Stage=620;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerStare")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -2000,6 +2008,40 @@ namespace
      case 605:M->Freeform->OpenTapePanel();if(!M->Freeform->TapePanelOpen())return Fail(TEXT("the reel deck panel did not open"));break;
      case 606:Shot(TEXT("panel-reeldeck.png"));break;
      case 607:Close();UE_LOG(LogTemp,Display,TEXT("S47: panels shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    ++Stage;StageAt=Elapsed;return true;
+   }
+   // What the four workstations say from across the room, and the record at the bench.
+   if(Stage>=620&&Stage<=626)
+   {
+    if(Elapsed-StageAt<.9)return true;
+    const auto ScreensAgree=[&](int32 OwnScreen)
+    {
+     const FString Objective=M->Freeform->Objective();
+     for(int32 ScreenId=0;ScreenId<4;++ScreenId)
+     {
+      const TArray<FString> ScreenLines=M->Freeform->TerminalLines(ScreenId);
+      const FString Want=FS47FreeformSession::TerminalNextLine(Objective,ScreenId);
+      for(const FString& ScreenLine:ScreenLines)UE_LOG(LogTemp,Display,TEXT("S47: screen %d: %s"),ScreenId,*ScreenLine);
+      if(ScreenLines.Num()>9||Want.IsEmpty()||Want.Len()>38||!ScreenLines.Contains(Want))return false;
+      if((Want==TEXT("NEXT / USE THIS PC"))!=(ScreenId==OwnScreen))return false;
+     }
+     return true;
+    };
+    const auto ScreenAt=[&](const TCHAR* PropId,double OffX,double OffZ)
+    {
+     const FVector Prop=S47Three::ToThree(M->Web->PropLocation(PropId));M->Player->Place(Prop.X+OffX,Prop.Z+OffZ,0);
+     const FVector Look=Prop-S47Three::ToThree(M->Player->EyeUE());M->Player->Yaw=FMath::Atan2(-Look.X,-Look.Z);M->Player->Pitch=FMath::Atan2(Look.Y,FVector2D(Look.X,Look.Z).Size());
+    };
+    switch(Stage)
+    {
+     case 620:ScreenAt(TEXT("opsTerminal"),1.1,0);if(!ScreensAgree(3))return Fail(TEXT("the first shift's step must stand on all four screens, with OPS as this PC"));break;
+     case 621:Shot(TEXT("screens-ops.png"));break;
+     case 622:M->Freeform->AcceptTutorialJob();ScreenAt(TEXT("crtRight"),0,-1.1);if(!ScreensAgree(2))return Fail(TEXT("after accepting the job, tracking must be this PC and the others must send the player to it"));break;
+     case 623:Shot(TEXT("screens-tracking.png"));break;
+     case 624:{const FVector B=M->Freeform->Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(B.X,B.Z-1,0);M->Freeform->Field->OpenWorkbench();if(!M->ModalOpen())return Fail(TEXT("the workbench did not open"));break;}
+     case 625:Shot(TEXT("panel-bench-record.png"));break;
+     case 626:if(M->UI)M->UI->Close(true);UE_LOG(LogTemp,Display,TEXT("S47: screens and bench record shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
     }
     ++Stage;StageAt=Elapsed;return true;
    }
