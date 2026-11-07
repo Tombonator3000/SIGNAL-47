@@ -8,11 +8,8 @@
 #include "S47GroundCover.h"
 #include "S47Legs.h"
 #include "S47Main.h"
-<<<<<<< HEAD
 #include "S47Night.h"
-=======
 #include "S47OpenLand.h"
->>>>>>> worktree-agent-ab1a799e642f9f55e
 #include "S47Relief.h"
 #include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
@@ -193,15 +190,11 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
-<<<<<<< HEAD
-		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bFile = false;
-=======
-		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bOpen = false;
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false, bRamp = false, bOpen = false, bFile = false;
 		int32 ReachAt = 0;
 		FString AreaWas;                            // the real crossing's: the area in the last sample
 		double CrossFrameMost = 0, FloorWas = 0;
 		bool CheckedOut = false;                    // a line has been crossed
->>>>>>> worktree-agent-ab1a799e642f9f55e
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -357,37 +350,22 @@ namespace
 	}
 	int32 ProbeHourCount()
 	{
-<<<<<<< HEAD
 		if (ReliefRun.bFile) return 1;
-		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
-	}
-	double ProbeHourAt(int32 At)
-	{
-		if (ReliefRun.bFile) return FileViews.IsValidIndex(ReliefRun.ViewAt) ? FileViews[ReliefRun.ViewAt].Hour : 12.;
-		return ReliefRun.bRamp ? RampMinutes[At] / 60. : ReliefRun.bEdgeOnly ? EdgeHours[At] : ReliefHours[At];
-	}
-	int32 ProbeViewCount()
-	{
-		if (ReliefRun.bFile) return FileViews.Num();
-		return int32(ReliefRun.bRamp ? UE_ARRAY_COUNT(RampViews) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews));
-	}
-	const FReliefView& ProbeViewAt(int32 At)
-	{
-		if (ReliefRun.bFile) return FileViews[At].View;
-		return ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
-=======
 		return int32(ReliefRun.bOpen ? UE_ARRAY_COUNT(OpenHours) : ReliefRun.bRamp ? UE_ARRAY_COUNT(RampMinutes) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours));
 	}
 	double ProbeHourAt(int32 At)
 	{
+		if (ReliefRun.bFile) return FileViews.IsValidIndex(ReliefRun.ViewAt) ? FileViews[ReliefRun.ViewAt].Hour : 12.;
 		return ReliefRun.bOpen ? OpenHours[At] : ReliefRun.bRamp ? RampMinutes[At] / 60. : ReliefRun.bEdgeOnly ? EdgeHours[At] : ReliefHours[At];
 	}
 	int32 ProbeViewCount()
 	{
+		if (ReliefRun.bFile) return FileViews.Num();
 		return int32(ReliefRun.bOpen ? UE_ARRAY_COUNT(OpenViews) : ReliefRun.bRamp ? UE_ARRAY_COUNT(RampViews) : ReliefRun.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews));
 	}
 	const FReliefView& ProbeViewAt(int32 At)
 	{
+		if (ReliefRun.bFile) return FileViews[At].View;
 		return ReliefRun.bOpen ? OpenViews[At] : ReliefRun.bRamp ? RampViews[At] : ReliefRun.bEdgeOnly ? EdgeViews[At] : ReliefViews[At];
 	}
 
@@ -530,7 +508,6 @@ namespace
 		}
 		const FString Line = FString::Printf(TEXT("reach drive %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, most %.2f m of floor at one, %d things driven round, %d points with no ground mesh, top %.0f m/s"), Start.Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, MostFromLine, Detours, NoGround, Top);
 		if (S47OpenLand::Live()) ProbeCheck(ReachEndIsNatural(Why) && NoGround == 0, Line); else ProbeLine(Line);
->>>>>>> worktree-agent-ab1a799e642f9f55e
 	}
 	void ProbeSetHour(US47Main* M, double Hour)
 	{
@@ -549,16 +526,13 @@ namespace S47ReliefProbe
 		ReliefRun = FReliefRun();
 		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
 		ReliefRun.bRamp = FParse::Param(FCommandLine::Get(), TEXT("S47DuskRamp"));
-<<<<<<< HEAD
 		FString ViewsFile;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47ViewsFile="), ViewsFile))
 		{
 			ReadFileViews(ViewsFile);
 			ReliefRun.bFile = FileViews.Num() > 0;
 		}
-=======
 		ReliefRun.bOpen = FParse::Param(FCommandLine::Get(), TEXT("S47OpenLandProbe"));
->>>>>>> worktree-agent-ab1a799e642f9f55e
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -584,10 +558,7 @@ namespace S47ReliefProbe
 			Lines.Reset();
 			S47RoadEdge::Report(W, Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
-<<<<<<< HEAD
 			if (R.bEdgeOnly || R.bRamp || R.bFile) { R.Phase = 7; R.Since = R.Now; return true; }
-=======
-			if (R.bEdgeOnly || R.bRamp) { R.Phase = 7; R.Since = R.Now; return true; }
 			if (R.bOpen)
 			{
 				// Each way between the road's terms and an area's, and the line's own rule, whatever a game does.
@@ -605,7 +576,6 @@ namespace S47ReliefProbe
 				R.ReachAt = 0; R.Phase = 30; R.Since = R.Now;
 				return true;
 			}
->>>>>>> worktree-agent-ab1a799e642f9f55e
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
 			return true;
