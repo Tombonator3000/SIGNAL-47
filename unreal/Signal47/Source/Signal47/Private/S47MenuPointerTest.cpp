@@ -591,7 +591,11 @@ namespace
    if(Stage==463)
    {
     if(Site.VisitStage()>=1){UE_LOG(LogTemp,Display,TEXT("S47: night: visit began at %.2f, kind %d"),Hour,Site.VisitKind());M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=464;return true;}
-    if(Elapsed-DreadAt>25)return Fail(TEXT("standing at the marks in the small hours must bring the visit"));
+    if(Elapsed-DreadAt>25)
+    {
+     UE_LOG(LogTemp,Display,TEXT("S47: night: no visit: stage %d, event '%s', bodies %d, taken busy %d, at %s, marks %s, %.1f m"),Site.VisitStage(),*M->Freeform->Director->ActiveEvent(),M->Night->Glimpses->Individuals().Num(),M->Freeform->Taken&&M->Freeform->Taken->Busy()?1:0,*M->Player->Pos.ToCompactString(),*Marks.ToCompactString(),FVector::Dist2D(FVector(M->Player->Pos.X,M->Player->Pos.Z,0),FVector(Marks.X,Marks.Z,0)));
+     return Fail(TEXT("standing at the marks in the small hours must bring the visit"));
+    }
     return true;
    }
    if(Stage==464)
@@ -1467,7 +1471,7 @@ namespace
     if(Kind==2)
     {
      const double To=Site.VisitBodyDistance();
-     if(Elapsed-DreadAt<10&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still"));
+     if(Elapsed-DreadAt<10&&!Site.VisitAttention().Holding()&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still")); // A lamp on it may send it back.
      if(DreadSample==0&&Elapsed-DreadAt>1&&Site.VisitHeadHeight()<1.4){UE_LOG(LogTemp,Error,TEXT("S47: kinds: tall head %.2f m"),Site.VisitHeadHeight());return Fail(TEXT("the tall one must stand tall"));}
      // Further in, louder: three readings of what the set is actually playing.
      const double Base=FMath::Min(DreadFirst,44.)-2,Spacing=FMath::Clamp((DreadFirst-27)/2.5,.5,6.);
