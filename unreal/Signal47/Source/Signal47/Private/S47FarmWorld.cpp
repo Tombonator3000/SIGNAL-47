@@ -1,4 +1,5 @@
 #include "Components/PointLightComponent.h"
+#include "Components/MaterialBillboardComponent.h"
 #include "S47FarmWorld.h"
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
@@ -141,14 +142,20 @@ namespace
  // terms at the Story ranch. It stayed there, 310 m east of the Freeform farm. Follow the house, lit at night only.
  struct FWindowGlow{int32 Node=INDEX_NONE,Index=INDEX_NONE;FVector Story=FVector::ZeroVector;};
  TArray<FWindowGlow> WindowGlows;TWeakObjectPtr<AS47Web> WindowWorld;int32 WindowState=-1;
+ // web/src ranchLights: the yard light's glow and halo, on a pole at road-local (432.9, 204) with the Story ranch.
+ // The Freeform farm has no pole there, so the sprites are hidden (visibility, not scale: ExteriorLighting owns the scale).
+ TArray<FWindowGlow> YardGlows;
  void ReconcileWindow(US47Main* M,AS47Web* W,bool On)
  {
   if(!S47FarmBuildings::Available())return;
   if(WindowWorld.Get()!=W)
   {
-   WindowWorld=W;WindowGlows.Reset();WindowState=-1;
+   WindowWorld=W;WindowGlows.Reset();YardGlows.Reset();WindowState=-1;
    for(const int32 Node:{991,1125,1312})if(const FS47GlowPoints* G=W->Glow(Node))for(int32 I=0;I<G->Num();++I)
+   {
     if(FMath::Abs(G->Pos[I].X-424.05)<.05&&FMath::Abs(G->Pos[I].Z-193)<.05)WindowGlows.Add({Node,I,G->Pos[I]});
+    else if(FMath::Abs(G->Pos[I].X-432.9)<.05&&FMath::Abs(G->Pos[I].Z-204)<.05)YardGlows.Add({Node,I,G->Pos[I]});
+   }
    if(WindowGlows.Num()!=3)UE_LOG(LogTemp,Warning,TEXT("S47: farm window glow: found %d of 3 exported points"),WindowGlows.Num());
   }
   const double Hour=On&&M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:0;
@@ -159,6 +166,7 @@ namespace
    G->SetPosition(Row.Index,On?S47FarmBuildings::EastWindow():Row.Story);
    G->SetOutputScale(Row.Index,State==1?0.f:1.f);
   }
+  for(const FWindowGlow& Row:YardGlows)if(FS47GlowPoints* G=W->Glow(Row.Node))if(G->Bill.IsValidIndex(Row.Index)&&G->Bill[Row.Index].IsValid())G->Bill[Row.Index]->SetVisibility(!On);
   if(auto* Mid=WindowMid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),State==2?WindowLit:FLinearColor::Black);
   if(auto* L=BarnDay.Get())L->SetIntensity(State==1?5200.f:0.f);
  }
@@ -251,6 +259,7 @@ namespace S47FarmWorld
  {
   if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileWindow(M,W,On);
   if(On)KeepPlayerOutOfWalls(M,W);
+  if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
   if(Apply)for(auto& P:Parts)if(auto* C=P.C.Get())
   {
@@ -278,12 +287,60 @@ namespace S47FarmWorld
  {
   const bool Good=M&&GateReady(M)&&RoadClearance(M,Lines)&&(!Enabled(M)||Ready(M));Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm exact gate partitions, native housegroup and mode-derived physical access"));return Good;
  }
+ bool TruckHits(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double Shrink)
+ {
+  const double Hw=HalfWidth-Shrink,Hl=HalfLength-Shrink*2,C=FMath::Cos(Heading),Sn=FMath::Sin(Heading);
+  for(const FS47Obstacle& O:Obstacles)
+  {
+   if(O.bCircle)
+   {
+    const double Dx=O.X-X,Dz=O.Z-Z;if(Dx*Dx+Dz*Dz>FMath::Square(O.R+FMath::Sqrt(Hw*Hw+Hl*Hl)))continue;
+    const double Lx=Dx*C-Dz*Sn,Lz=Dx*Sn+Dz*C,Qx=Lx-FMath::Clamp(Lx,-Hw,Hw),Qz=Lz-FMath::Clamp(Lz,-Hl,Hl);
+    if(Qx*Qx+Qz*Qz<O.R*O.R)return true;
+    continue;
+   }
+   const double Bx=(O.MinX+O.MaxX)/2,Bz=(O.MinZ+O.MaxZ)/2,Hx=(O.MaxX-O.MinX)/2,Hz=(O.MaxZ-O.MinZ)/2,Ac=FMath::Abs(C),As=FMath::Abs(Sn),Dx=Bx-X,Dz=Bz-Z;
+   if(FMath::Abs(Dx)>Hx+Hw*Ac+Hl*As||FMath::Abs(Dz)>Hz+Hw*As+Hl*Ac)continue;
+   if(FMath::Abs(Dx*C-Dz*Sn)>Hw+Hx*Ac+Hz*As||FMath::Abs(Dx*Sn+Dz*C)>Hl+Hx*As+Hz*Ac)continue;
+   return true;
+  }
+  return false;
+ }
+ bool NearestClearTruckSpot(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double& OutX,double& OutZ)
+ {
+  OutX=X;OutZ=Z;
+  if(!TruckHits(Obstacles,X,Z,Heading,HalfWidth,HalfLength,.05))return true; // a legal park stays where it is
+  for(double D=.5;D<=30;D+=.5)for(int32 I=0;I<24;++I)
+  {
+   const double A=2*UE_DOUBLE_PI*I/24,Px=X+FMath::Cos(A)*D,Pz=Z+FMath::Sin(A)*D;
+   if(TruckHits(Obstacles,Px,Pz,Heading,HalfWidth+.15,HalfLength+.15,0))continue;
+   OutX=Px;OutZ=Pz;return true;
+  }
+  return false;
+ }
  bool SelfTest(TArray<FString>& Lines)
  {
   const FBox Edge(FVector(10,0,S47RoadTerrain::RanchZ(11)+3.3),FVector(12,2,S47RoadTerrain::RanchZ(11)+6));
   const FBox Verge(FVector(10,0,S47RoadTerrain::RanchZ(11)-20),FVector(12,2,S47RoadTerrain::RanchZ(11)-10));
   S47FarmHouse::SelfTest(Lines);S47FarmBuildings::SelfTest(Lines);
   const bool Good=OverlapsLane(Edge)&&!OverlapsLane(Verge)&&InRoadAccess(21,S47RoadTerrain::RanchZ(21))&&InRoadAccess(96,196.8)&&InRoadAccess(55,240)&&!InRoadAccess(200,196)&&RoadToArea(TEXT("saro"),{21,0,196}).Equals({-3,0,496},.00001);
-  Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));return Good;
+  Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));
+  // A save from before the buildings can park the truck inside a wall: it must come out on clear ground, and a truck on the road must stay.
+  bool Moved=true;
+  if(S47FarmBuildings::Available())
+  {
+   TArray<FS47Obstacle> Walls;for(const FBox2D& B:S47FarmBuildings::Obstacles())Walls.Add(FS47Obstacle::Box(B.Min.X,B.Max.X,B.Min.Y,B.Max.Y));
+   const double Hw=1.05,Hl=2.75;const FVector2D Inside[]={FVector2D(108,190),FVector2D(135.5,170),FVector2D(142,174)};
+   for(const FVector2D& P:Inside)for(const double H:{0.,.8,1.57})
+   {
+    double Ox=0,Oz=0;const bool Hit=TruckHits(Walls,P.X,P.Y,H,Hw,Hl,.05);
+    const bool Found=NearestClearTruckSpot(Walls,P.X,P.Y,H,Hw,Hl,Ox,Oz);
+    Moved&=Hit&&Found&&!TruckHits(Walls,Ox,Oz,H,Hw,Hl,.05)&&FVector2D::Distance(P,FVector2D(Ox,Oz))<30;
+   }
+   double Kx=0,Kz=0;const double RoadZ=S47RoadTerrain::RanchZ(60);
+   Moved&=NearestClearTruckSpot(Walls,60,RoadZ,0,Hw,Hl,Kx,Kz)&&Kx==60&&Kz==RoadZ;
+  }
+  Lines.Add(FString(Moved?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: a truck parked in a wall by an old save is moved to the nearest clear ground, one on the road is left alone"));
+  return Good&&Moved;
  }
 }

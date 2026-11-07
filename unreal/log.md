@@ -2064,3 +2064,7 @@ Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skre
 ## 7. november 2026 kl.00:45, natur i Freeform, runde 2
 
 Bare `S47Flora`, bak `bNatural`. Kreosot står i tette bestand med nesten bare felt mellom, gress og sage i egne felt, høyst 2 m busk. Fargene var nesten svarte og oransje fordi de multipliseres med atlaset, og er rettet. Frie flekker er borte; hver busk har en myk mørk fot og strø. Småstein i klynger, og noen få Sandstone_A på 0,3 til 0,6 m. Tallene er prøvd i Python-kopi av støyen. Ikke kompilert eller sett i spillet; koordinatoren bygger og tar bilder.
+
+## 7. november 2026, tre avgrensede rettelser (uprøvd, kan ikke bygge her)
+
+Gren `worktree-agent-a7338ffb973ce40ec`. (1) Tunlampens glød og glorie ved veilokalt (432.9, 204) skjules i Freeform via billboard-synlighet i `ReconcileWindow`. (2) Parkert tjenestebil i ny vegg flyttes til nærmeste frie plass (`US47World::KeepParkedOutOfFarmWalls`, `S47FarmWorld::NearestClearTruckSpot`), selvtestlinje og `-S47FarmTruckInWall` i `S47FarmWorldTest`. (3) `Tools/sound-workshop/alien_transmission.py` lager original radiotransmisjon `radio_transmission_original.wav`; `S47EncounterSound` laster den før filmklippet. Ikke bygget, ikke kjørt i motor.

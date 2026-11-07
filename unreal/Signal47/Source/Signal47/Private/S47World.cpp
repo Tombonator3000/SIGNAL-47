@@ -2370,6 +2370,22 @@ void US47World::ReconcileFarm(bool bEnabled)
  if(Changed)Under.Reset();
 }
 
+void US47World::KeepParkedOutOfFarmWalls()
+{
+ FS47Truck* T=SaroTruckP.Get();
+ if(!bFarmMode||bDriving||!T||(TruckAt!=TEXT("saro")&&TruckAt!=TEXT("motel"))||!S47FarmBuildings::Available())return;
+ const FVector Origin(-24,0,300); // the saro frame of S47FarmWorld::RoadToArea
+ const double RoadX=T->Position.X-Origin.X,RoadZ=T->Position.Z-Origin.Z;
+ if(!S47FarmBuildings::OnPlot(RoadX,RoadZ,5))return;
+ const FLegRec* L=Legs.Find(TEXT("saro"));if(!L||!L->Area)return;
+ double Nx=T->Position.X,Nz=T->Position.Z;
+ if(!S47FarmWorld::NearestClearTruckSpot(L->Area->Obstacles,T->Position.X,T->Position.Z,T->Rotation.Y,T->HalfWidth(),T->HalfLength(),Nx,Nz))return;
+ if(FMath::IsNearlyEqual(Nx,T->Position.X)&&FMath::IsNearlyEqual(Nz,T->Position.Z))return;
+ const double Y=T->Position.Y+S47RoadTerrain::SurfaceY(Nx-Origin.X,Nz-Origin.Z)-S47RoadTerrain::SurfaceY(RoadX,RoadZ);
+ UE_LOG(LogTemp,Warning,TEXT("S47: farm buildings: parked truck stood in a wall at road %.2f %.2f, moved to %.2f %.2f"),RoadX,RoadZ,Nx-Origin.X,Nz-Origin.Z);
+ MoveParked(Nx,Nz,T->Rotation.Y,Y);
+}
+
 int32 US47World::RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ)
 {
 	if (Lands.IsEmpty()) MakeLands();

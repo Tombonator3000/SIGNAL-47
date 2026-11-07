@@ -213,6 +213,8 @@ public:
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
  void ReconcileFarm(bool bEnabled);
+ // An old save can leave the parked service truck inside a new farm wall: put it on the nearest clear ground, same heading. No save field changes.
+ void KeepParkedOutOfFarmWalls();
 	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
 	void MoveHerdObstacle(const FString& HerdArea, const FVector& Old, const FVector& New, double Radius);
 	bool HasHerdObstacle(const FString& HerdArea, const FVector& At, double Radius) const;
