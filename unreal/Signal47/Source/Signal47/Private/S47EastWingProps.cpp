@@ -95,6 +95,10 @@ namespace
   {TEXT("SM_EW_NoticeBoard"),TEXT("Extras"),{25.909,1.00,.45},90},
   {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
   {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{27.30,1.22,.422},180},
+  // T16-08: the same calendar (the same mesh, one more instance) on the control room's west wall, between the map and the
+  // filing cabinets (map frame ends z-2.29, cabinets start z-1.48), clear of the windows (north wall) and the bulletin board
+  // (south wall). Yaw-90 faces +x; the wall's front is x-5.975, the pivot sits 3 mm off it as the wing's own calendar does.
+  {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{-5.972,1.40,-1.90},-90},
   // Second stocked rack along the storage west wall.
   {TEXT("SM_EW_ShelvingStocked"),TEXT("Workshop"),{26.34,0,-2.60},-90,true},
   {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,2.45},-90},

@@ -2514,6 +2514,13 @@ void US47World::KeepParkedOutOfFarmWalls()
  MoveParked(Nx,Nz,T->Rotation.Y,Y);
 }
 
+void US47World::RefreshWingObstacles()
+{
+	if (!bLegsMade) return;
+	FLegRec* L = Legs.Find(TEXT("saro"));
+	if (L && L->Area) static_cast<FArrivalSaroDrive*>(L->Area.Get())->SyncWingObstacles();
+}
+
 int32 US47World::RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ)
 {
 	if (Lands.IsEmpty()) MakeLands();
@@ -2586,6 +2593,20 @@ bool US47World::AuditEastWingDrive(TArray<FString>& Lines)
  Check(DriveArea->GarageEnabled(),TEXT("Freeform requires the real native floor and walls"));if(!Good)return false;
  Check(!DriveArea->Blocked(20,20)&&!DriveArea->Blocked(35.4,15)&&!DriveArea->Blocked(35.4,0),TEXT("access strip, forecourt and garage form one open corridor"));
  Check(DriveArea->Blocked(28,0),TEXT("other east-wing rooms remain outside the driving corridor"));
+ // T16-10: a leaf opened after the drive leg last synced its obstacles must free the doorway on foot as well.
+ if(M&&M->Web)
+ {
+  FS47Rect* Lock=M->Web->CollidersMutable(TEXT("saro")).FindByPredicate([](const FS47Rect& R){return R.Id==TEXT("eastwing:lock-service");});
+  if(Lock)
+  {
+   auto InDoorway=[&]{for(const FS47Obstacle& O:DriveArea->Obstacles)if(!O.bCircle&&38.5>O.MinX&&38.5<O.MaxX&&1.75>O.MinZ&&1.75<O.MaxZ)return true;return false;};
+   const bool WasOn=Lock->bEnabled;
+   Lock->bEnabled=true;DriveArea->Blocked(35.4,0);const bool ShutBlocks=InDoorway();
+   Lock->bEnabled=false;RefreshWingObstacles();const bool OpenFrees=!InDoorway();
+   Lock->bEnabled=WasOn;RefreshWingObstacles();
+   Check(ShutBlocks&&OpenFrees,TEXT("the east service doorway is an obstacle while its leaf is shut and clear once the leaf is open, without any driving"));
+  }
+ }
  Check(FMath::IsNearlyEqual(DriveArea->Height(35.4,0),0.,.001)&&FMath::IsNearlyEqual(DriveArea->Height(35.4,5.5),0.,.001)
   &&FMath::IsNearlyEqual(DriveArea->Height(35.4,7.5),-.288,.001)&&FMath::IsNearlyEqual(DriveArea->Height(35.4,9.5),-.576,.001),TEXT("wheel samples follow the garage floor and both ramp ends"));
  // Uses the production controller with its conservative default footprint, no actor or personal save.

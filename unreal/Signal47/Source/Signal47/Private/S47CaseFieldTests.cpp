@@ -20,13 +20,99 @@ namespace
 {
  const FVector LadderAt(5.25,0,-5.12),RoofAnchor(-1.5,3.5,-1),GateAt(-1.0,0,-20.0);
  constexpr double ListenNeed=60;
+ // The ladder climb (seconds): walk to the foot, climb, work at the top, climb down, hand the view back.
+ constexpr double ClimbToFoot=.7,ClimbUp=2.1,ClimbWork=1.5,ClimbDown=1.7,ClimbBack=.6;
+ constexpr double ClimbWorkAt=ClimbToFoot+ClimbUp+.6; // the plate is fastened mid-work
+ constexpr double ClimbEnd=ClimbToFoot+ClimbUp+ClimbWork+ClimbDown+ClimbBack;
+ constexpr double ClimbTop=3.75;                        // the eye at the top: over the plate (3.62), the ladder is 3.3 tall
+ double Smooth(double X){X=FMath::Clamp(X,0.,1.);return X*X*(3-2*X);}
  FString When(double Clock)
  {
   const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Clock-8*3600)/86400.))+1);
   return FString::Printf(TEXT("SHIFT DAY %d / %s"),Day,*FS47FreeformCases::Clock(FMath::Fmod(Clock,86400.)));
  }
 }
-FS47CaseFieldTests::~FS47CaseFieldTests(){Stop();Life.Reset();}
+FS47CaseFieldTests::~FS47CaseFieldTests(){EndClimb();Stop();Life.Reset();}
+void FS47CaseFieldTests::StartClimb()
+{
+ AS47Walker* W=M?M->Player.Get():nullptr;if(!W||ClimbT>=0)return;
+ ClimbFrom=FVector(W->Pos.X,W->FloorY+W->Eye,W->Pos.Z);ClimbYaw=W->Yaw;ClimbPitch=W->Pitch;ClimbRung=0;ClimbT=0;
+ if(!bClimbHooked||ClimbWalker.Get()!=W)
+ {
+  const TWeakPtr<uint8> Guard=Life;TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> Prev=W->CameraOverride;
+  W->CameraOverride=[this,Guard,Prev](double Dt,const FVector2D& Move,const FVector2D& LookIn,FS47View& Out)
+  {
+   if(Guard.IsValid()&&ClimbFrame(Dt,Out))return true;
+   return Prev?Prev(Dt,Move,LookIn,Out):false;
+  };
+  bClimbHooked=true;
+ }
+ ClimbWalker=W;
+ UE_LOG(LogTemp,Display,TEXT("S47: roof plate: the ladder climb begins from the eye at %.2f %.2f %.2f"),ClimbFrom.X,ClimbFrom.Y,ClimbFrom.Z);
+ Present();
+}
+void FS47CaseFieldTests::EndClimb()
+{
+ if(ClimbT>=0){ClimbT=-1;Present();} // the hook stays and answers false
+}
+bool FS47CaseFieldTests::ClimbFrame(double Dt,FS47View& Out)
+{
+ if(ClimbT<0)return false;
+ AS47Walker* W=ClimbWalker.Get();
+ // Anything that takes the player off the ladder's side ends it at once: the preparation is already in the plan.
+ if(!W||!M||M->Mode!=US47Main::EMode::Play||!M->World||M->World->bDriving||!M->Web||M->Web->Area()!=TEXT("saro")){EndClimb();return false;}
+ ClimbT+=FMath::Clamp(Dt,0.,.1);
+ if(ClimbT>=ClimbEnd){EndClimb();return false;}
+ // The climber stands on the north side of the ladder (the wall is south of it) and faces the wall.
+ const double RoofSide=LadderAt.Z-.42,Rail=LadderAt.X;
+ const FVector Foot(Rail,ClimbFrom.Y,RoofSide);
+ const FVector Top(Rail,ClimbTop,RoofSide);
+ const FVector PlateAt(4.7,3.62,-4.6);
+ const double FacingYaw=PI; // towards +z, the wall
+ const double UpPitch=.38,PlatePitch=FMath::Atan2(PlateAt.Y-Top.Y,FVector2D(PlateAt.X-Top.X,PlateAt.Z-Top.Z).Size());
+ const double PlateYaw=FMath::Atan2(-(PlateAt.X-Top.X),-(PlateAt.Z-Top.Z));
+ const double T=ClimbT;
+ FVector Eye=Foot;double Yaw=FacingYaw,Pitch=UpPitch;
+ auto Mix=[](double A,double B,double K){return A+(B-A)*K;};
+ auto Turn=[](double From,double To,double K){double D=FMath::UnwindRadians(To-From);return From+D*K;};
+ if(T<ClimbToFoot)
+ {
+  const double K=Smooth(T/ClimbToFoot);
+  Eye=FMath::Lerp(ClimbFrom,Foot,K);Yaw=Turn(ClimbYaw,FacingYaw,K);Pitch=Mix(ClimbPitch,UpPitch,K);
+ }
+ else if(T<ClimbToFoot+ClimbUp)
+ {
+  const double K=(T-ClimbToFoot)/ClimbUp;
+  Eye=FMath::Lerp(Foot,Top,K)+FVector(0,.012*FMath::Sin(K*40.),0);Pitch=Mix(UpPitch,UpPitch*.6,K);
+ }
+ else if(T<ClimbToFoot+ClimbUp+ClimbWork)
+ {
+  const double K=Smooth((T-ClimbToFoot-ClimbUp)/.5);
+  Eye=Top;Yaw=Turn(FacingYaw,PlateYaw,K);Pitch=Mix(UpPitch*.6,PlatePitch,K);
+ }
+ else if(T<ClimbToFoot+ClimbUp+ClimbWork+ClimbDown)
+ {
+  const double K=(T-ClimbToFoot-ClimbUp-ClimbWork)/ClimbDown;
+  const double Look=Smooth(K*3.);
+  Eye=FMath::Lerp(Top,Foot,K)+FVector(0,.012*FMath::Sin(K*40.),0);Yaw=Turn(PlateYaw,FacingYaw,Look);Pitch=Mix(PlatePitch,UpPitch*.6,Look);
+ }
+ else
+ {
+  const double K=Smooth((T-ClimbToFoot-ClimbUp-ClimbWork-ClimbDown)/ClimbBack);
+  Eye=FMath::Lerp(Foot,ClimbFrom,K);Yaw=Turn(FacingYaw,ClimbYaw,K);Pitch=Mix(UpPitch*.6,ClimbPitch,K);
+ }
+ // a hand on a rung every .32 m of the climb, up and down
+ if(T>=ClimbToFoot&&T<ClimbToFoot+ClimbUp+ClimbWork+ClimbDown&&M->Audio)
+ {
+  const double Rung=FMath::Abs(Eye.Y-Foot.Y)/.32;
+  if(FMath::FloorToDouble(Rung)!=FMath::FloorToDouble(ClimbRung)&&(T<ClimbToFoot+ClimbUp||T>ClimbToFoot+ClimbUp+ClimbWork))
+   M->Audio->Play(TEXT("door_metal"),.12f,S47Three::ToUE(FVector(Rail,Eye.Y-.9,LadderAt.Z)),1.6f);
+  ClimbRung=Rung;
+ }
+ if(ClimbT>=ClimbWorkAt-Dt&&ClimbT<ClimbWorkAt+.2)Present(); // the plate goes flat
+ Out.Eye=Eye;Out.Yaw=Yaw;Out.Pitch=Pitch;Out.Roll=0;
+ return true;
+}
 void FS47CaseFieldTests::PeakAfter(double Prepared,double& Start,double& End)
 {
  const double Day=FMath::FloorToDouble(Prepared/86400.);
@@ -66,7 +152,7 @@ FString FS47CaseFieldTests::Objective()const
  const int32 Test=PlannedTest();if(Test<0||Test>1)return FString();
  double Start=0,End=0;Window(Start,End);
  const FString Times=When(Start)+TEXT(" to ")+When(End)+TEXT(" (after midnight)");
- if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: FASTEN THE ROOF PLATE AT THE LADDER. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
+ if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: CLIMB THE LADDER BY THE CONTROL ROOM WALL AND FASTEN THE ROOF PLATE. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
  if(Test==1&&R.bGateTampered)return TEXT("GATE CONTROL DISTURBED / The numbered seal or strips were disturbed after preparation. Closing the gate does not reseal it. OPS / CASE BOARD: cancel this plan and prepare a new control, or inspect after the window to retain the incomplete result.");
  const double Now=M->Freeform->Clock();
@@ -166,8 +252,8 @@ bool FS47CaseFieldTests::Build()
  auto Add=[&](const TCHAR* Id,FS47Obj O,int32 Test)
  {
   FS47Interactable I;I.Id=Id;I.Object=O;I.Range=2.6;
-  I.Label=[this,Guard,Test]{if(!Guard.IsValid()||!bActive||PlannedTest()!=Test)return FString();if(!Prepared())return FString(Test==0?TEXT("Fasten the roof plate from the ladder / retain wind reference"):TEXT("Seal the gate and lay tracking strips"));return FString(Test==1&&M->Freeform->Clock()>=R.End?TEXT("Inspect numbered gate seal and tracking strips"):TEXT("Inspect prepared field control / observation window"));};
-  I.Use=[this,Guard,Test]{if(!Guard.IsValid()||!bActive)return;if(!Prepared())Prepare(Test);else if(Test==1&&M->Freeform->Clock()>=R.End)InspectGate();else if(Near(Test==0?LadderAt:GateAt,2.6))Changed(Objective());};M->Inter->Add(I);
+  I.Label=[this,Guard,Test]{if(!Guard.IsValid()||!bActive||PlannedTest()!=Test)return FString();if(!Prepared())return FString(Test==0?TEXT("Climb the ladder and fasten the roof plate / retain wind reference"):TEXT("Seal the gate and lay tracking strips"));return FString(Test==1&&M->Freeform->Clock()>=R.End?TEXT("Inspect numbered gate seal and tracking strips"):TEXT("Inspect prepared field control / observation window"));};
+  I.Use=[this,Guard,Test]{if(!Guard.IsValid()||!bActive)return;if(!Prepared()){if(Prepare(Test)&&Test==0)StartClimb();}else if(Test==1&&M->Freeform->Clock()>=R.End)InspectGate();else if(Near(Test==0?LadderAt:GateAt,2.6))Changed(Objective());};M->Inter->Add(I);
  };
  Add(TEXT("case:roof-plate"),Ladder,0);Add(TEXT("case:gate-seal"),Strip,1);
  for(auto O:LadderParts)if(O)M->Web->MarkUsable(O.I,TEXT("case:roof-plate"));
@@ -184,7 +270,7 @@ void FS47CaseFieldTests::Present()
  const bool Here=bActive&&M->IsFreeform()&&M->Web->Area()==TEXT("saro");
  const bool Roof=Here&&PlannedTest()==0,Gate=Here&&PlannedTest()==1;
  Show(Ladder,Roof);Show(Plate,Roof);Show(Ribbon,Roof);for(auto O:LadderParts)Show(O,Roof);
- if(Roof&&Plate)Plate.SetRotZ(Prepared()?0:.055);
+ if(Roof&&Plate)Plate.SetRotZ(Prepared()&&!(ClimbT>=0&&ClimbT<ClimbWorkAt)?0:.055); // the plate lies flat when the hands are on it
  if(Roof&&Ribbon){const auto& W=S47Wind::Wind();Ribbon.SetRotY(FMath::Atan2(W.Dir.X,W.Dir.Y));Ribbon.SetRotX(-.5+W.Strength*6+FMath::Sin(W.Time*3)*W.Strength);}
  Show(Strip,Gate);Show(StripBack,Gate);Show(Seal,Gate&&Prepared()&&!R.bGateCrossed&&!R.bGateTampered);Show(SealBroken,Gate&&Prepared()&&(R.bGateCrossed||R.bGateTampered));
  for(auto O:Tracks)Show(O,Gate&&Prepared()&&R.bGateCrossed);

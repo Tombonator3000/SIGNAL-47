@@ -6,6 +6,8 @@
 #include "S47ReceiverSound.h"
 #include "S47Rx.h"
 #include "S47Observing.h"
+#include "S47Web.h"
+#include "S47Three.h"
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -122,18 +124,55 @@ void US47Audio::StopSoundMix(const FString& Key, float Fade)
 	if (auto* Mix = SoundMixes.Find(Key)) { (*Mix)->Stop(Fade); SoundMixes.Remove(Key); }
 }
 
-void US47Audio::PcTransfer(double Seconds)
+void US47Audio::PcTransfer(double Seconds, TOptional<FVector> At)
 {
 	if (!Ctx || !FMath::IsFinite(Seconds) || Seconds <= 0) return;
 	TArray<FString> Errors;
-	if (!PlaySoundMix(TEXT("pc_transfer"),TEXT("pc_transfer"),ES47SoundUse::PcTransfer,Errors)) return;
+	TSharedPtr<FS47AudioNode> Dest;
+	TransferWalls.Reset(); TransferLp.Reset(); bTransferHere = false;
+	if (At.IsSet())
+	{
+		// T16-09: the modem is the OPS PC's, in the room. Panner (distance) -> walls gain -> dull filter -> mix.
+		FS47AudioContext::FBatch Batch(*Ctx);
+		TransferLp = Ctx->CreateBiquadFilter(); TransferLp->SetType(TEXT("lowpass")); TransferLp->Frequency.SetValue(18000);
+		TransferWalls = Ctx->CreateGain(); TransferWalls->Gain.SetValue(1);
+		TransferLp->Connect(TransferWalls);
+		TransferWalls->Connect(Panner(At.GetValue(), 2.5));
+		Dest = TransferLp;
+		bTransferHere = true;
+	}
+	if (!PlaySoundMix(TEXT("pc_transfer"),TEXT("pc_transfer"),ES47SoundUse::PcTransfer,Errors,Dest)) { TransferWalls.Reset(); TransferLp.Reset(); bTransferHere = false; return; }
 	SoundMixFrame(TEXT("pc_transfer"),1,0,1,Ctx->CurrentTime());
 	const uint64 Token = ++TransferSerial;
 	TWeakObjectPtr<US47Audio> Self(this);
 	Ctx->SetTimeout(FMath::Clamp(Seconds,0.2,27.0),[Self,Token]
 	{
-		if (Self.IsValid() && Self->TransferSerial == Token) Self->StopSoundMix(TEXT("pc_transfer"),0.08f);
+		if (Self.IsValid() && Self->TransferSerial == Token) { Self->StopSoundMix(TEXT("pc_transfer"),0.08f); Self->bTransferHere = false; }
 	});
+}
+
+void US47Audio::PcTransferAtOps(AS47Web* Web, double Seconds)
+{
+	TOptional<FVector> At;
+	if (Web && Web->IsLoaded())
+		if (const FS47WebItem* Item = Web->Item(TEXT("opsTerminal")); Item && (Item->bBox || Web->ObjAt(Item->Node)))
+		{
+			const FVector P = S47Three::ToThree(Web->PropLocation(TEXT("opsTerminal")));
+			if (!P.ContainsNaN()) At = P;
+		}
+	PcTransfer(Seconds, At);
+}
+
+// Control room bounds (ControlRoom.ts: x +-6, z +-4.5, walls .3 thick). Out of it the modem comes through a wall and a door:
+// a third of the level and nothing above a few hundred hertz. Eased, so a step through the door is not a click.
+void US47Audio::StepTransferWalls(const FVector& Eye)
+{
+	if (!bTransferHere || !Ctx.IsValid() || !TransferWalls.IsValid() || !TransferLp.IsValid()) return;
+	const bool bIn = Eye.X > -6.f && Eye.X < 6.f && Eye.Z > -4.5f && Eye.Z < 4.5f;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	const double T = Ctx->CurrentTime();
+	TransferWalls->Gain.SetTargetAtTime(bIn ? 1.0 : 0.3, T, 0.12);
+	TransferLp->Frequency.SetTargetAtTime(bIn ? 18000.0 : 450.0, T, 0.12);
 }
 
 bool US47Audio::RenderSoundWorkshop(const FString& BankPath)

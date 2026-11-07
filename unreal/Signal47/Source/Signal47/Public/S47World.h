@@ -230,6 +230,9 @@ public:
 
 	/** A native building that replaces an exported one opens its footprint to walking (S47EastWing). Returns how many exclusion boxes were removed. */
 	int32 RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ);
+	/** T16-10: the SARO drive leg keeps a copy of the east wing's enabled colliders as obstacles (OnLand reads it on foot) and
+	 *  refreshed it only when something drove. A door leaf that opens afterwards must refresh it (S47EastWing::Step). */
+	void RefreshWingObstacles();
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	UPROPERTY() TArray<TObjectPtr<UObject>> Keep;

@@ -168,7 +168,9 @@ void US47Audio::Tick(float DeltaSeconds)
 	APlayerController* PC = World->GetFirstPlayerController();
 	if (!PC || !PC->PlayerCameraManager) return;
 	const FRotator R = PC->PlayerCameraManager->GetCameraRotation();
-	Listener(S47Three::ToThree(PC->PlayerCameraManager->GetCameraLocation()), S47Three::DirToUE(R.Vector()), S47Three::DirToUE(R.RotateVector(FVector::UpVector)));
+	const FVector Eye = S47Three::ToThree(PC->PlayerCameraManager->GetCameraLocation());
+	Listener(Eye, S47Three::DirToUE(R.Vector()), S47Three::DirToUE(R.RotateVector(FVector::UpVector)));
+	StepTransferWalls(Eye);
 }
 
 // ---------- the prologue's names: Unreal positions, file names ----------

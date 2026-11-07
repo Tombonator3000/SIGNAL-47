@@ -933,7 +933,7 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  J->Stage=EJobStage::Registered;
  // The OPS computer has accepted an actual result; opening its screen alone is silent.
  // The whole modem recording: nothing in the panel transition cuts it short.
- if(M&&M->Audio)M->Audio->PcTransfer(27.);
+ if(M&&M->Audio)M->Audio->PcTransferAtOps(M->Web,27.);
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);ClearCompletedSelection();return true;}
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();

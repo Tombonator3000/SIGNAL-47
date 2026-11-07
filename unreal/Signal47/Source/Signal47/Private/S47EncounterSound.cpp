@@ -6,6 +6,9 @@
 namespace
 {
  constexpr int32 Rate=48000;
+ // T16-12 levels. The transmission's peak after levelling and its largest playback gain: at full radio level its peak is
+ // .42*.62=.26 (-12 dBFS) and its rms about .07, 7 dB over the hiss, where it had been -3 dBFS rms.
+ constexpr float TransmissionPeak=.42f,TransmissionGainMax=.62f;
  double Smooth(double X) { X=FMath::Clamp(X,0.,1.); return X*X*(3.-2.*X); }
  int32 Index(FS47EncounterSound::EKind K) { return FMath::Clamp(int32(K),0,2); }
  double Duration(int32 K) { return K==0?.95:K==1?1.35:1.9; }
@@ -129,24 +132,32 @@ bool FS47EncounterSound::Bind(US47Audio* A)
  // The original synthesised transmission (Tools/sound-workshop/alien_transmission.py) first; the private film clip
  // alien_interference.wav is only a fallback for local trials and is what keeps distribute-linux.py from packaging.
  const TCHAR* const Names[]={TEXT("radio_transmission_original.wav"),TEXT("alien_interference.wav")};
+ bool bOriginal=false;
  for (const TCHAR* Name : Names)
  {
   if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design")/Name)))
    TransmissionBuffer=S47Wa::DecodeWav(Bytes);
-  if (TransmissionBuffer) break;
+  if (TransmissionBuffer) { bOriginal=Name==Names[0]; break; }
  }
  if (TransmissionBuffer)
  {
-  // A clip with quiet speech and rare peaks would vanish under a small radio's level: lift it evenly and
-  // round the peaks, as a cheap set's limiter would, so the voice reads through the hiss.
+  // T16-12: only the quiet film clip (rms .004) needs lifting and squashing. The original synthesis is already
+  // levelled and soft-clipped (peak .62, rms .18); squashing it again with drive 10 made it a near full-scale square-ish
+  // screech (rms .70, 12 dB up), 25 dB over the hiss. It is only brought to a fixed low peak, and played low (below).
   float Peak=0;
   for (int32 Ch=0;Ch<TransmissionBuffer->NumberOfChannels();++Ch){const float* P=TransmissionBuffer->GetChannelData(Ch);for (int32 I=0;I<TransmissionBuffer->Length();++I)Peak=FMath::Max(Peak,FMath::Abs(P[I]));}
   if (Peak>.0001f)
   {
    static constexpr float Drive=10.f;const float Lift=1.f/Peak,Top=FMath::Atan(Drive);
-   for (int32 Ch=0;Ch<TransmissionBuffer->NumberOfChannels();++Ch){float* P=TransmissionBuffer->GetChannelData(Ch);for (int32 I=0;I<TransmissionBuffer->Length();++I)P[I]=FMath::Atan(P[I]*Lift*Drive)/Top;}
+   for (int32 Ch=0;Ch<TransmissionBuffer->NumberOfChannels();++Ch)
+   {
+    float* P=TransmissionBuffer->GetChannelData(Ch);
+    for (int32 I=0;I<TransmissionBuffer->Length();++I)P[I]=(bOriginal?P[I]*Lift:FMath::Atan(P[I]*Lift*Drive)/Top)*TransmissionPeak;
+   }
   }
-  UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording loaded, %.1f s, peak %.3f before levelling"),TransmissionBuffer->Duration(),Peak);
+  UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording loaded (%s), %.1f s, peak %.3f before levelling, %.2f after, played at most x%.2f"),bOriginal?TEXT("original synthesis"):TEXT("fallback clip"),TransmissionBuffer->Duration(),Peak,TransmissionPeak,TransmissionGainMax);
+  // The first one comes well after the first contact, not with it.
+  NextTransmission=Context->CurrentTime()+FMath::FRandRange(12.f,25.f);
  }
  else UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording absent, radio hiss only"));
  return true;
@@ -274,18 +285,21 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
  const double Now=Context->CurrentTime();
  if (Transmission && (RadioLevel<=.015 || bHeld))
  { StopTransmission(); }
- if (TransmissionBuffer && RadioGain && !bHeld && RadioLevel>.12 && Now>=NextTransmission
+ if (TransmissionBuffer && RadioGain && !bHeld && RadioLevel>.2 && Now>=NextTransmission
      && (!Transmission || Transmission->Ended()))
  {
   Transmission=Context->CreateBufferSource(); Transmission->Buffer=TransmissionBuffer;
-  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValue(.95*FMath::Sqrt(RadioLevel));
-  auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(4200.);
+  // In and out over a third of a second, so it comes up through the hiss and leaves without a cut.
+  const double Peak=TransmissionGainMax*RadioLevel,Len=TransmissionBuffer->Duration();
+  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValueAtTime(0,Now).LinearRampToValueAtTime(Peak,Now+.35)
+   .SetValueAtTime(Peak,FMath::Max(Now+.35,Now+Len-.45)).LinearRampToValueAtTime(0,Now+Len);
+  auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(3000.);
   Transmission->Connect(Band); Band->Connect(TransmissionGain);
   // Past the hiss's own low level, still under the player's radio slider and placed with the set.
   if (bRadioPlaced&&RadioPan) TransmissionGain->Connect(RadioPan); else TransmissionGain->Connect(RadioVolume);
   Transmission->Start(Now);
-  UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f"),RadioLevel);
-  NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(13.f,25.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f, gain peak %.3f, next not before %.0f s"),RadioLevel,Peak,TransmissionBuffer->Duration()+55.);
+  NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(55.f,110.f);
  }
  RadioMix();
 }

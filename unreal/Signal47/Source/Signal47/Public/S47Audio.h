@@ -7,6 +7,7 @@
 #include "S47Audio.generated.h"
 
 class AActor;
+class AS47Web;
 class UAudioComponent;
 class USoundBase;
 class US47Synth;
@@ -218,7 +219,10 @@ public:
 		TArray<FString>& Errors, TSharedPtr<FS47AudioNode> Destination = nullptr);
 	void SoundMixFrame(const FString& Key, double Clarity, double Interference, double Activity, double T);
 	void StopSoundMix(const FString& Key, float Fade = 0.1f);
-	void PcTransfer(double Seconds = 2.2);
+	// The modem sits at a place (the OPS PC): positioned there, and held down by the walls once the listener is out of that room.
+	// Without a place it is the old room-less sound.
+	void PcTransfer(double Seconds = 2.2, TOptional<FVector> At = TOptional<FVector>());
+	void PcTransferAtOps(AS47Web* Web, double Seconds = 2.2);
 	static bool RenderSoundWorkshop(const FString& BankPath);
 	// Menu tape texture is independent of music and follows the SFX/menu level.
 	void TitleTexture(bool bOn);
@@ -270,6 +274,10 @@ private:
 	TMap<FString, FS47MixRecipe> SoundRecipes;
 	TMap<FString, TSharedPtr<FS47SoundMixer>> SoundMixes;
 	uint64 TransferSerial = 0;
+	TSharedPtr<FS47GainNode> TransferWalls;        // quieter when the listener is not in the control room
+	TSharedPtr<FS47BiquadFilterNode> TransferLp;   // and duller
+	bool bTransferHere = false;
+	void StepTransferWalls(const FVector& Eye);
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;
