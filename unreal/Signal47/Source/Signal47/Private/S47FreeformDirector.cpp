@@ -435,7 +435,9 @@ namespace
   const uint32 V=FCrc::StrCrc32(*Id)^(uint32(Last)*2654435761u);
   return 2+int32(((V>>7)^V)%3u);
  }
- const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")}};
+ const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")},
+  // Out on the land (FS47Places). Their marks and a second look work as in town.
+  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")}};
 }
 FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
 {
@@ -589,7 +591,7 @@ void FS47FreeformDirector::Apply()
   // Only now is the choice on disk: a tip that goes out here always has an event behind it.
   if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))
   {
-   const FString Tip=Event==TEXT("farm_lights")?FString(TEXT("A caller on the county road reports lights low over the Alderete place, south of the station.")):FString(TEXT("Somebody in town reports lights low over "))+LightPlaceTitle(LightPlace)+TEXT(".");
+   const FString Tip=Event==TEXT("farm_lights")?FString(TEXT("A caller on the county road reports lights low over the Alderete place, south of the station.")):FString(LightPlace==TEXT("cinema")||LightPlace==TEXT("feed")||LightPlace==TEXT("church")||LightPlace==TEXT("gas")?TEXT("Somebody in town reports lights low over "):TEXT("A rancher on the county road reports lights low over "))+LightPlaceTitle(LightPlace)+TEXT(".");
    if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
   }
   // Woken for this, or simply there: a figure out at the array makes itself known at least this much.
@@ -1333,6 +1335,9 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
 }
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
 {
+ // A body in the frame, however the picture comes out: the stores' offer of better film waits on this and nothing else.
+ if(M&&M->Freeform&&M->Freeform->FarmSite&&!Shot.bUnavailable&&M->Freeform->FarmSite->VisitBodyDistance()>=0&&M->Freeform->FarmSite->VisitBodyDistance()<60&&!M->Freeform->HasFinding(TEXT("body_photo")))
+  M->Freeform->RecordEvidence(TEXT("body_photo"),TEXT("A frame on the roll with something standing in it. It is on the film, whatever it comes out as."));
  if(TaggedShot!=Shot.Id||TaggedQuality<.025||Shot.bUnavailable||Shot.Url.IsEmpty()||TaggedIncident.IsEmpty())return;
  // Read the exact retained image, not a later capture or a whole-frame brightness
  // proxy. Emissive airborne lamps retain their existing three-visible-lamp rule.
@@ -1342,7 +1347,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
   TArray<FColor> Pixels;int32 W=0,H=0;
   const double Mean=S47Image::DecodePixels(Shot.Url,Pixels,W,H)?SubjectMean(Pixels,W,H,TaggedRegion):-1;
   PhotoSubjectMean=Mean;
-  if(Mean<15){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("The photographed subject is too dark or too small to register. Retain it as a lead; seek a clearer, better-lit view."),4);return;}
+  if(Mean<(M->Freeform&&M->Freeform->HasKit(TEXT("film"))?8:15)){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("The photographed subject is too dark or too small to register. Retain it as a lead; seek a clearer, better-lit view."),4);return;}
  }
 
  TaggedShot.Empty();LastPhotoAt=ActiveTime;
@@ -1369,7 +1374,7 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
   if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: Develop the photograph before submitting it"), 5);
   return false;
  }
- C->bPaid=true;M->Freeform->Earn(C->Reward);
+ C->bPaid=true;M->Freeform->Earn(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0));
  M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe captured subject met framing and visibility checks. Registration documents the observation; its origin and intent remain unconfirmed. This incident cannot be paid twice."),*C->Title,*C->PhotoId,C->Reward));Changed();
  if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit. This records an observation, not a confirmed origin."),5);
  return true;

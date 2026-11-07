@@ -26,6 +26,7 @@ public:
  bool OwnsRoofWindow() const;
  bool Prepare(int32 Test); // Same guarded action as the physical ladder/strip interaction.
  bool InspectGate();
+ bool ReadPost(); // The second logger's post, once its window is over.
  bool Climbing() const{return ClimbT>=0;}
  static void PeakAfter(double Prepared,double& Start,double& End);
  static bool ComparableWind(double Reference,const FVector2D& Direction,double Strength,const FVector2D& Current);
@@ -45,7 +46,7 @@ private:
  TSharedPtr<uint8> Life=MakeShared<uint8>(0);
  TArray<FS47Obj> Objects,LadderParts;
  TMap<int32,TWeakObjectPtr<USceneComponent>> Components;
- FS47Obj Ladder,Plate,Seal,SealBroken,Strip,StripBack,Ribbon,Tracks[6];
+ FS47Obj Ladder,Plate,Seal,SealBroken,Strip,StripBack,Ribbon,Tracks[6],Post;
  // T16-11: the roof plate is fastened from the top of the ladder. The preparation is committed when the use is made
  // (the plan, the sounds and the saves do not wait for a camera); the eye then climbs, works and climbs down.
  double ClimbT=-1;

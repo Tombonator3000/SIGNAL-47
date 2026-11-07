@@ -16,6 +16,15 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47World.h"
+#include "S47Openings.h"
+#include "S47Places.h"
+#include "S47NightRhythm.h"
+#include "S47FreeformWorld.h"
+#include "S47Legs.h"
+#include "S47Three.h"
+#include "UnrealClient.h"
+#include "Misc/Paths.h"
 
 // -S47Freeform -S47FreeformTest -S47FreeLifeTest: the chain as a player meets it, with the live rules on. A field visit from its
 // own draw and dwell, taken, the gear left behind, the case, the note, going back for the gear, and the originals untouched.
@@ -83,6 +92,86 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   UE_LOG(LogTemp,Display,TEXT("S47: free life: %s"),*F.Taken->LastNote());
   Stage=40;At=Age;return;
  }
+ static int32 PlaceIndex=0;
+ if(Stage==50)
+ {
+  // Each place by daylight, on its own ground, seen from a few metres, with a picture for a person to judge.
+  const double Noon=(FMath::FloorToDouble(F.Clock()/86400.)+1)*86400.+11*3600;
+  if(!Check(F.TestAdvance(Noon-F.Clock()),TEXT("daylight for the places")))return;
+  F.TestGiveKit(TEXT("magnetometer"));F.TestGiveKit(TEXT("cot"));F.TestGiveKit(TEXT("alarm"));
+  M->World->Enter(TEXT("road"));PlaceIndex=0;Stage=51;At=Age;return;
+ }
+ if(Stage==51)
+ {
+  const auto& Defs=FS47Places::Defs();
+  while(PlaceIndex<Defs.Num()&&FString(Defs[PlaceIndex].Id)==TEXT("motel"))++PlaceIndex;
+  if(PlaceIndex>=Defs.Num()){Stage=60;At=Age;return;}
+  double X=0,Z=0;if(!Check(F.Places->Spot(Defs[PlaceIndex].Id,X,Z),TEXT("the place has a spot")))return;
+  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+  M->Player->Place(Road.X+X,Road.Z+Z+9,0);M->Player->Pitch=-.05;
+  Stage=52;At=Age;return;
+ }
+ if(Stage==52)
+ {
+  if(Age-At<3)return;
+  const auto& D=FS47Places::Defs()[PlaceIndex];
+  double X=0,Z=0;F.Places->Spot(D.Id,X,Z);const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+  // A place may be under foot of the land's own rise: aim at it, not at a compass point.
+  const FVector To(Road.X+X,M->Player->FloorY+1.2,Road.Z+Z);const FVector Eye=S47Three::ToThree(M->Player->EyeUE());const FVector Way=To-Eye;
+  M->Player->Yaw=FMath::Atan2(-Way.X,-Way.Z);M->Player->Pitch=FMath::Atan2(Way.Y,FVector2D(Way.X,Way.Z).Size());
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("FreeformTest")/FString::Printf(TEXT("place-%s.png"),D.Id),false,false);
+  Stage=53;At=Age;return;
+ }
+ if(Stage==53)
+ {
+  if(Age-At<.6)return;
+  const auto& D=FS47Places::Defs()[PlaceIndex];
+  const FString Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+  UE_LOG(LogTemp,Display,TEXT("S47: free life: at %s the eye picks '%s', floor %.2f"),D.Id,*Pick,M->Player->FloorY);
+  if(!Check(F.Places->Use(D.Id)&&F.HasFinding(FString(TEXT("place_"))+D.Id)&&F.HasFinding(FString(TEXT("place_"))+D.Id+TEXT("_needle")),TEXT("each place has its one thing to find, and the needle reads it")))return;
+  M->UI->Close(true);++PlaceIndex;Stage=51;At=Age;return;
+ }
+ if(Stage==60)
+ {
+  FS47MapView V;F.Places->FillMap(V);
+  if(!Check(V.Pins.Num()>=9,TEXT("all of them are on the map now")))return;
+  if(!Check(F.TownTrust()>=1,TEXT("Caliche has noticed")))return;
+  // The alarm: trips, gets a few seconds out, is put out, wants a fuse.
+  M->World->Enter(TEXT("saro"));M->Player->Place(9.2,1.2,0);F.AddItem(TEXT("fuse"),1);
+  F.YardAlarm->TestTrip(0.f);Stage=61;At=Age;return;
+ }
+ if(Stage==61)
+ {
+  if(Age-At<1)return;
+  if(!Check(F.YardAlarm->Ringing()&&F.YardAlarm->Dead()&&F.HasFinding(FString::Printf(TEXT("alarm-day%d"),F.Day())),TEXT("the alarm goes off and is on record, and this one is being put out")))return;
+  Stage=62;At=Age;return;
+ }
+ if(Stage==62)
+ {
+  if(Age-At<6)return;
+  if(!Check(!F.YardAlarm->Ringing(),TEXT("it has stopped")))return;
+  const int32 Fuses=F.InventoryCount(TEXT("fuse"));M->Inter->UseId(TEXT("ff:alarm"));
+  if(!Check(!F.YardAlarm->Dead()&&F.InventoryCount(TEXT("fuse"))==Fuses-1,TEXT("a fuse at its box mends it")))return;
+  Stage=70;At=Age;return;
+ }
+ if(Stage==70)
+ {
+  // A motel door keeps out the night: no wake, and the price paid.
+  int32 N=F.Day();while(F.QuietNight(N)||N<2)++N;
+  const double Evening=double(N-1)*86400.+22*3600.;
+  if(!Check(F.TestAdvance(FMath::Max(0.,Evening-F.Clock())),TEXT("the evening")))return;
+  F.Earn(50);const int32 Cash=F.Budget();
+  const double Morning=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+8*3600;
+  if(!Check(F.RestAt(Morning,FS47FreeformSession::ERest::Motel)&&F.Clock()==Morning&&F.Budget()==Cash-FS47FreeformSession::MotelRoom,TEXT("a night at the motel: to morning, unbroken, for the price of a room")))return;
+  // A cot out on the land: on a night that is not calm, something comes by.
+  int32 C=F.Day();while(F.QuietNight(C)||C<2)++C;
+  const double Late=double(C-1)*86400.+22*3600.;
+  F.TestAdvance(FMath::Max(0.,Late-F.Clock()));
+  const double Next=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+8*3600;const int32 Cots=F.Budget();
+  if(!Check(F.RestAt(Next,FS47FreeformSession::ERest::Field)&&F.Clock()<Next&&F.LastWakeClock()==F.Clock()&&F.TheirHoursNow(F.Clock())&&F.Budget()==Cots,TEXT("a cot out on the land: woken in their hours, at no charge")))return;
+  UE_LOG(LogTemp,Display,TEXT("S47: free life: stores, places, alarm, motel and cot PASS"));
+  Finish(true,TEXT("field visit, taken, gear, case, places, stores, alarm and rests as played"));return;
+ }
  if(Stage==40)
  {
   // Back to it on foot, or as good as: it is the player's hands that pick it up.
@@ -91,7 +180,8 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   {
    if(!Check(M->FieldRadio->Owned()&&M->FieldCamera->bHave&&!F.CameraLeftOut(),TEXT("both are back in hand")))return;
    if(!Check(F.HasFinding(TEXT("lost_ground")),TEXT("going back gave the case its trace")))return;
-   Finish(true,TEXT("field visit, taken, left gear, case and fetch all as played"));return;
+   UE_LOG(LogTemp,Display,TEXT("S47: free life: field visit, taken, gear, case and fetch PASS"));
+   Stage=50;At=Age;return;
   }
   const FVector Where=Items[0].At;
   if(Age-At<1)return;At=Age;

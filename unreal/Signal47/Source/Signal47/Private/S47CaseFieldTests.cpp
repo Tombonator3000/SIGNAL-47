@@ -1,5 +1,6 @@
 #include "S47CaseFieldTests.h"
 #include "S47Main.h"
+#include "S47Night.h"
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformWorld.h"
@@ -19,6 +20,8 @@
 namespace
 {
  const FVector LadderAt(5.25,0,-5.12),RoofAnchor(-1.5,3.5,-1),GateAt(-1.0,0,-20.0);
+ // The second logger's field post, out on the east array edge; on whatever the ground is there.
+ FVector PostPoint(const US47Main* Main){return FVector(30,Main?US47Night::SaroFloorAt(Main->Web.Get(),30,-26):0.,-26);}
  constexpr double ListenNeed=60;
  // The ladder climb (seconds): walk to the foot, climb, work at the top, climb down, hand the view back.
  constexpr double ClimbToFoot=.7,ClimbUp=2.1,ClimbWork=1.5,ClimbDown=1.7,ClimbBack=.6;
@@ -141,7 +144,7 @@ void FS47CaseFieldTests::SyncPlan()
 }
 bool FS47CaseFieldTests::Window(double& Start,double& End)const
 {
- const int32 Test=PlannedTest();if(Test<0||Test>1)return false;
+ const int32 Test=PlannedTest();if(Test<0||Test>2)return false;
  if(Prepared()){Start=R.Start;End=R.End;}else PeakAfter(M->Freeform->Clock(),Start,End);
  return true;
 }
@@ -149,9 +152,16 @@ bool FS47CaseFieldTests::OwnsRoofWindow()const
 {return Prepared()&&R.Test==0&&M->Freeform->Clock()>=R.Start&&M->Freeform->Clock()<R.End;}
 FString FS47CaseFieldTests::Objective()const
 {
- const int32 Test=PlannedTest();if(Test<0||Test>1)return FString();
+ const int32 Test=PlannedTest();if(Test<0||Test>2)return FString();
  double Start=0,End=0;Window(Start,End);
  const FString Times=When(Start)+TEXT(" to ")+When(End)+TEXT(" (after midnight)");
+ if(Test==2)
+ {
+  if(!Prepared())return TEXT("FIELD POST, EAST ARRAY EDGE: SET THE CONTACT PICKUPS. If set now: ")+Times+TEXT(". They need two hours before the window; set later, it moves to the following night.");
+  const double At=M->Freeform->Clock();
+  if(At<R.End)return TEXT("FIELD POST SET / ")+Times+TEXT(". Do other work; a window slept through records nothing.");
+  return R.Gaps>0?FString(TEXT("FIELD POST: COLLECT THE PICKUPS. Part of the window went by unattended, so this records no comparison.")):FString(TEXT("FIELD POST, EAST ARRAY EDGE: COLLECT THE PICKUPS AND READ THEM."));
+ }
  if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: CLIMB THE LADDER BY THE CONTROL ROOM WALL AND FASTEN THE ROOF PLATE. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
  if(Test==1&&R.bGateTampered)return TEXT("GATE CONTROL DISTURBED / The numbered seal or strips were disturbed after preparation. Closing the gate does not reseal it. OPS / CASE BOARD: cancel this plan and prepare a new control, or inspect after the window to retain the incomplete result.");
@@ -173,14 +183,24 @@ void FS47CaseFieldTests::Changed(const FString& Message)
 {if(M){if(!Message.IsEmpty()&&M->UI)M->UI->Toast(Message,6);M->RequestAutosave();}Present();}
 bool FS47CaseFieldTests::Prepare(int32 Test)
 {
- if(!bActive||Test<0||Test>1||Test!=PlannedTest()||!Near(Test==0?LadderAt:GateAt,2.6))return false;
+ if(!bActive||Test<0||Test>2||Test!=PlannedTest()||!Near(Test==0?LadderAt:Test==2?PostPoint(M):GateAt,2.6))return false;
  SyncPlan();if(Prepared())return false;
  if(Test==1)M->Web->SetDoorOpen(TEXT("gate"),false,true); // sealing includes closing the existing physical leaf
  R.Prepared=M->Freeform->Clock();PeakAfter(R.Prepared,R.Start,R.End);R.LastClock=R.Prepared;
  const auto& Wind=S47Wind::Wind();R.WindReference=Wind.Strength;R.WindDirection=Wind.Dir;
  R.LastPlayer=FVector2D(M->Player->Pos.X,M->Player->Pos.Z);R.bHavePlayer=true;
- if(M->Audio)M->Audio->Play(Test==0?TEXT("rack_switch"):TEXT("small_switch"),.6f,S47Three::ToUE(Test==0?LadderAt:GateAt));
+ if(M->Audio)M->Audio->Play(Test==0?TEXT("rack_switch"):TEXT("small_switch"),.6f,S47Three::ToUE(Test==0?LadderAt:Test==2?PostPoint(M):GateAt));
  Changed(Objective());return true;
+}
+bool FS47CaseFieldTests::ReadPost()
+{
+ if(!Prepared()||R.Test!=2||M->Freeform->Clock()<R.End||!Near(PostPoint(M),2.6))return false;
+ const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001;
+ const bool bBoth=M->Freeform->FieldTestExpectsPresent(Line,2);
+ const FString Evidence=!Valid?TEXT("Part of the window went by unattended. The pickups' roll is not continuous, so this establishes nothing; repeat the control."):
+  bBoth?TEXT("Both pickups' rolls for the full window: the roof and the field post moved at the same minute, three times, a hundred and forty yards apart. Nothing on the road or the wind record accounts for that minute."):
+  TEXT("Both pickups' rolls for the full window: the roof moved and the field post did not, at any minute. This excludes a simultaneous disturbance in this window only.");
+ const bool Result=M->Freeform->ReportFieldTest(Line,2,Valid,bBoth,Evidence);if(Result)Changed();return Result;
 }
 bool FS47CaseFieldTests::InspectGate()
 {
@@ -206,7 +226,7 @@ void FS47CaseFieldTests::ForgetScene()
 {
  // Rebuilds can reuse a node index. Never hide or rotate through an old handle.
  bBuilt=false;Objects.Reset();LadderParts.Reset();Components.Reset();
- Ladder=Plate=Seal=SealBroken=Strip=StripBack=Ribbon=FS47Obj();for(auto& O:Tracks)O=FS47Obj();
+ Ladder=Plate=Seal=SealBroken=Strip=StripBack=Ribbon=Post=FS47Obj();for(auto& O:Tracks)O=FS47Obj();
 }
 bool FS47CaseFieldTests::Build()
 {
@@ -248,6 +268,7 @@ bool FS47CaseFieldTests::Build()
   const double Y=FMath::Max(Surface(X,Z),StripTop[Side]);
   Tracks[I]=Box(*FString::Printf(TEXT("CaseGateTrack%d"),I),FVector(X,Y+.005,Z),FVector(.11,.006,.16),0x57452f);
  }
+ Post=Box(TEXT("CaseFieldPost"),PostPoint(M)+FVector(0,.6,0),FVector(.14,1.2,.14),0x8a7a5e);
  const TWeakPtr<uint8> Guard=Life;
  auto Add=[&](const TCHAR* Id,FS47Obj O,int32 Test)
  {
@@ -256,6 +277,11 @@ bool FS47CaseFieldTests::Build()
   I.Use=[this,Guard,Test]{if(!Guard.IsValid()||!bActive)return;if(!Prepared()){if(Prepare(Test)&&Test==0)StartClimb();}else if(Test==1&&M->Freeform->Clock()>=R.End)InspectGate();else if(Near(Test==0?LadderAt:GateAt,2.6))Changed(Objective());};M->Inter->Add(I);
  };
  Add(TEXT("case:roof-plate"),Ladder,0);Add(TEXT("case:gate-seal"),Strip,1);
+ {
+  FS47Interactable I;I.Id=TEXT("case:field-post");I.Object=Post;I.Range=2.6;
+  I.Label=[this,Guard]{if(!Guard.IsValid()||!bActive||PlannedTest()!=2)return FString();if(!Prepared())return FString(TEXT("Set the contact pickups on this post"));return FString(M->Freeform->Clock()>=R.End?TEXT("Collect the pickups and read the rolls"):TEXT("Inspect the pickups / observation window"));};
+  I.Use=[this,Guard]{if(!Guard.IsValid()||!bActive)return;if(!Prepared())Prepare(2);else if(M->Freeform->Clock()>=R.End)ReadPost();else if(Near(PostPoint(M),2.6))Changed(Objective());};M->Inter->Add(I);
+ }
  for(auto O:LadderParts)if(O)M->Web->MarkUsable(O.I,TEXT("case:roof-plate"));
  if(StripBack)M->Web->MarkUsable(StripBack.I,TEXT("case:gate-seal"));
  if(Seal)M->Web->MarkUsable(Seal.I,TEXT("case:gate-seal"));if(SealBroken)M->Web->MarkUsable(SealBroken.I,TEXT("case:gate-seal"));
@@ -274,6 +300,7 @@ void FS47CaseFieldTests::Present()
  if(Roof&&Ribbon){const auto& W=S47Wind::Wind();Ribbon.SetRotY(FMath::Atan2(W.Dir.X,W.Dir.Y));Ribbon.SetRotX(-.5+W.Strength*6+FMath::Sin(W.Time*3)*W.Strength);}
  Show(Strip,Gate);Show(StripBack,Gate);Show(Seal,Gate&&Prepared()&&!R.bGateCrossed&&!R.bGateTampered);Show(SealBroken,Gate&&Prepared()&&(R.bGateCrossed||R.bGateTampered));
  for(auto O:Tracks)Show(O,Gate&&Prepared()&&R.bGateCrossed);
+ Show(Post,Here&&PlannedTest()==2);
 }
 void FS47CaseFieldTests::Stop(){bActive=false;Present();}
 void FS47CaseFieldTests::AdvanceUnobservedTo(double Clock)
@@ -308,6 +335,7 @@ void FS47CaseFieldTests::Step(double Dt)
  if(Delta>3.||M->Freeform->Held()){AdvanceUnobservedTo(Now);return;}
  if(Delta<=0)return;R.LastClock=Now;
  const double Covered=Overlap(From,Now,R.Start,R.End);
+ if(R.Test==2){R.Coverage+=Covered;return;}
  if(R.Test==1)
  {
   R.Coverage+=Covered;
@@ -349,7 +377,7 @@ void FS47CaseFieldTests::Load(const S47J::FObj& O)
 {
  Stop();R=FRun();bActive=true;if(!O||S47J::Int(O,TEXT("v"))!=1)return;
  auto N=[&](const TCHAR* Key,double Min,double Max,double Default=0.){const double V=S47J::Num(O,Key,Default);return FMath::IsFinite(V)?FMath::Clamp(V,Min,Max):Default;};
- R.Job=S47J::Str(O,TEXT("job")).Left(128);R.Test=int32(N(TEXT("test"),-1,1,-1));R.Prepared=N(TEXT("prepared"),-1,3153600000.,-1);
+ R.Job=S47J::Str(O,TEXT("job")).Left(128);R.Test=int32(N(TEXT("test"),-1,2,-1));R.Prepared=N(TEXT("prepared"),-1,3153600000.,-1);
  if(R.Job.IsEmpty()||R.Test<0||R.Prepared<0){R=FRun();return;}
  PeakAfter(R.Prepared,R.Start,R.End);R.LastClock=N(TEXT("lastClock"),R.Prepared,3153600000.,R.Prepared);
  R.Listened=N(TEXT("listened"),0,ListenNeed);R.Coverage=N(TEXT("coverage"),0,R.End-R.Start);R.Gaps=N(TEXT("gaps"),0,R.End-R.Start);R.Impacts=int32(N(TEXT("impacts"),0,4));

@@ -91,7 +91,7 @@ public:
  bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
  // Empty when the current world implements this test; saved legacy results remain valid.
- static FString UnavailableReason(int32 Line,int32 Test);
+ static FString UnavailableReason(int32 Line,int32 Test,bool bSecondLogger=false);
  static FString Prediction(int32 Line,int32 Test);
  static FString ResultText(int32 Line,bool bPresent);
  static FString TestResultText(int32 Line,int32 Test,bool bPresent);
