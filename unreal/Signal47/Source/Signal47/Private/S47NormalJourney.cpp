@@ -390,7 +390,7 @@ namespace
      if(!Check(W.ParcelStage()==0&&W.ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&W.DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&W.CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1&&F.Budget()==S47J::Num(Base,TEXT("cash"))-15,TEXT("actual transport and one delivery preserve exact economy"))||!Retained())return false;SaveMenu();break;
     case 399:
     {
-     if(F.Director->EventId()==TEXT("dusk_orb")){M->UI->Close(true);Go(405);break;}
+     if(F.Director->EventId()==TEXT("dusk_orb")&&F.Director->EventAge()<20){M->UI->Close(true);Go(405);break;} // one long under way (a night's visit) is waited out below: nine metres south is only clear of them early on
      const auto D=F.Director->Save();
      if(F.Director->Busy()||S47J::Num(D,TEXT("activeTime"))<S47J::Num(D,TEXT("restUntil")))
      {if(Age-At>600)return Finish(false,TEXT("natural encounter/cooldown did not finish during bounded active wait"));return true;}
@@ -400,7 +400,7 @@ namespace
      if(!Check(!F.PowerFault()||W.GeneratorRunning(),TEXT("station power available; harness never repairs or supplies power"))||!Use(TEXT("opsTerminal")))return false;Go(401);break;
     case 401:
     {
-     if(F.Director->EventId()==TEXT("dusk_orb")){M->UI->Close(true);Go(405);break;}
+     if(F.Director->EventId()==TEXT("dusk_orb")&&F.Director->EventAge()<20){M->UI->Close(true);Go(405);break;} // one long under way (a night's visit) is waited out below: nine metres south is only clear of them early on
      const auto D=F.Director->Save();const auto Orb=S47J::Obj(D,TEXT("duskOrb"));
      if(F.Director->Busy()||S47J::Num(D,TEXT("activeTime"))<S47J::Num(D,TEXT("restUntil")))
      {M->UI->Close(true);Go(399);break;}

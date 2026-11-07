@@ -17,6 +17,9 @@
 #include "UnrealClient.h"
 #include "S47Image.h"
 #include "Components/MeshComponent.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/World.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Misc/Base64.h"
@@ -113,6 +116,19 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Age>(FParse::Param(FCommandLine::Get(),TEXT("S47NotebookFocusTest"))?190:150)){RestoreNotebook();RestoreFocusFixture();Finish(false,TEXT("bounded dusk-orb native test timeout"));return;}
  auto Original=[&]()->const FS47AlbumShot*{return M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});};
  auto Ops=[&]{const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X+1.,P.Z,PI/2);}; // OPS is on the west wall, facing +X into the room.
+ auto AimAt=[&](const FVector& Point){const FVector D=Point-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());};
+ auto OrbNow=[&]{return FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());};
+ auto OrbSchedule=[&]{return S47J::Obj(F.Director->Save(),TEXT("duskOrb"));};
+ // Mean brightness of what the player sees in the lower middle of the picture, from the actual back buffer. -1 if it cannot be read.
+ auto ViewMean=[]
+ {
+  TArray<FColor> Pixels;FViewport* View=GEngine&&GEngine->GameViewport?GEngine->GameViewport->Viewport:nullptr;
+  if(!View||!GetViewportScreenShot(View,Pixels))return -1.;
+  const FIntPoint Size=View->GetSizeXY();if(Pixels.Num()!=Size.X*Size.Y||Size.Y<4)return -1.;
+  double Sum=0;int64 Samples=0;
+  for(int32 Y=Size.Y*35/100;Y<Size.Y*85/100;++Y)for(int32 X=0;X<Size.X;++X){const FColor& Pixel=Pixels[Y*Size.X+X];Sum+=.2126*Pixel.R+.7152*Pixel.G+.0722*Pixel.B;++Samples;}
+  return Samples?Sum/Samples:-1.;
+ };
  if(Stage==0)
  {
   if(Age<3)return;
@@ -120,6 +136,12 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   M->UI->Close(true);
   if(!M->FieldCamera->bHave){M->Player->Place(17.25,-1.9,0);M->Inter->UseId(TEXT("fieldCamera"));}
   if(!Check(M->FieldCamera->bHave,TEXT("orb fixture collects camera through physical lab callback")))return;
+  // -S47DuskOrbNight: the lights outside the dusk window, from the scheduler's own clock. Never Force.
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbNight")))
+  {
+   F.Director->CancelForTest();F.TestEndFirstShift();F.Director->TestOrbNight(true);M->UI->ClearToasts();
+   Snapshot=S47J::New();PhotoBudget=F.Budget();Go(9900,.4);return;
+  }
   F.Director->CancelForTest();const double Hour=FMath::Fmod(F.Clock(),86400.);
   if(!Check(F.TestAdvance(FMath::Fmod(18.75*3600.-Hour+86400.,86400.))&&F.Director->Force(TEXT("dusk_orb")),TEXT("explicit dusk clock and Force start native orb; natural scheduling is covered separately")))return;
   PhotoBudget=F.Budget();Go(9500,4);return;
@@ -537,6 +559,116 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!Check(F.Director->ActiveEvent().IsEmpty(),TEXT("a person coming close sends the lights straight up and ends the appearance")))return;
   Finish(true,TEXT("PHOTO04 real-original journey and optional local-noise idea; explicit synthetic two-plan Follow wiring restores real history. No logger measurement, second natural event or additional payment claimed."));return;
+ }
+
+ // The visit in the dark: nothing below forces the event; the clock is only moved to the hour the schedule itself holds.
+ if(Stage==9900)
+ {
+  const double Due=S47J::Num(OrbSchedule(),TEXT("nightDue"),-1);
+  if(Due<0){if(Age-At>20){Finish(false,TEXT("no night visit was scheduled after the first shift"));}return;}
+  const double Hour=FMath::Fmod(Due,86400.)/3600.;
+  if(!Check(Hour>=20&&Hour<24.5&&F.Director->ActiveEvent().IsEmpty()&&F.TestAdvance(FMath::Max(0.,Due-F.Clock()-1.)),TEXT("schedule holds its own hour in the dark; clock moved to one second before it, past the dusk window")))return;
+  Go(9901);return;
+ }
+ if(Stage==9901)
+ {
+  if(F.Director->ActiveEvent().IsEmpty()){if(Age-At>60){Finish(false,TEXT("the schedule's night visit never started"));}return;}
+  const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;
+  if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb")&&Hour>=20&&Hour<24.5,TEXT("the lights start in the dark, from the scheduler and outside the dusk window")))return;
+  Go(9902,4.);return;
+ }
+ if(Stage==9902)
+ {
+  if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb")&&F.Director->PhysicalObjectPresented(),TEXT("night visit has a presented native component after gradual appearance")))return;
+  int32 On=0,Shadowed=0;float Lumens=0,Radius=0;F.Director->OrbLightCount(On,Shadowed,Lumens,Radius);
+  UE_LOG(LogTemp,Display,TEXT("S47 orb lights on=%d shadowed=%d lumens=%.0f radius=%.0f cm"),On,Shadowed,Lumens,Radius);
+  if(!Check(On>=1&&On<=FS47DuskOrb::Count&&Shadowed==0&&Lumens>0&&Radius>0,TEXT("one unshadowed point light per orb, within the cap")))return;
+  const FVector Home=F.Director->EventAnchor();
+  for(const auto& Hover:FS47DuskOrb::Stops())
+  {
+   const auto* Thing=M->Web->Item(Hover.Item);
+   if(!Check(Thing!=nullptr,FString::Printf(TEXT("the world has %s"),Hover.Item)))return;
+   const double DX=FMath::Max3(Thing->Min.X-Hover.X,0.,Hover.X-Thing->Max.X),DZ=FMath::Max3(Thing->Min.Z-Hover.Z,0.,Hover.Z-Thing->Max.Z);
+   const double Gap=FMath::Sqrt(DX*DX+DZ*DZ),Above=Home.Y+Hover.Up-FS47DuskOrb::HomeUp-US47Night::SaroFloorAt(M->Web.Get(),Hover.X,Hover.Z);
+   UE_LOG(LogTemp,Display,TEXT("S47 orb stop %s: %.2f m from %s, %.2f m above the ground"),Hover.Name,Gap,Hover.Item,Above);
+   if(!Check(Gap>0&&Gap<4.5&&Above>=.9&&Above<=5.5,FString::Printf(TEXT("%s is beside the world's own %s and above its actual ground"),Hover.Name,Hover.Item)))return;
+  }
+  S47J::Set(Snapshot,TEXT("age"),F.Director->EventAge());S47J::Set(Snapshot,TEXT("anchor"),TArray<double>{Home.X,Home.Y,Home.Z});
+  if(!Restore(TEXT("orb-night-active")))return;Go(9903,.5);return;
+ }
+ if(Stage==9903)
+ {
+  const auto A=S47J::Nums(Snapshot,TEXT("anchor"));const double Before=S47J::Num(Snapshot,TEXT("age"));const auto Sched=OrbSchedule();
+  if(!Check(A.Num()==3&&F.Director->ActiveEvent()==TEXT("dusk_orb")&&F.Director->EventAnchor().Equals(FVector(A[0],A[1],A[2]),.001)&&F.Director->EventAge()>=Before&&F.Director->EventAge()<Before+3&&S47J::Int(Sched,TEXT("nightVisits"))==1&&S47J::Num(Sched,TEXT("nightDue"))>F.Clock()+3600.,TEXT("Continue retains the night visit's path and its consumed schedule")))return;
+  M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));
+  if(!Check(Bench&&bool(Bench->Object),TEXT("windowless photo lab exists for the sight check")))return;
+  const FVector P=Bench->Object.WorldPosition();M->Player->Place(P.X,P.Z+1,0);AimAt(F.Director->OrbRecordAt());M->UI->ClearToasts();Go(9904,.4);return;
+ }
+ if(Stage==9904)
+ {
+  // Indoors, aimed straight at where it is: the walls are between, and neither a line of sight nor a record exists.
+  FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(OrbNightWalls),true);Params.AddIgnoredActor(M->Player);
+  const FVector Orb=S47Three::ToUE(F.Director->OrbRecordAt());
+  const bool bBlocked=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),Orb,ECC_Visibility,Params);
+  UE_LOG(LogTemp,Display,TEXT("S47 orb sight from the lab: blocked=%d by %s, %.1f m short of it"),bBlocked,Hit.Component.IsValid()?*Hit.Component->GetName():TEXT("nothing"),bBlocked?FVector::Dist(Hit.Location,Orb)*.01:0.);
+  if(!Check(bBlocked&&FVector::Dist(Hit.Location,Orb)>200.,TEXT("a building stands between the lab and the lights")))return;
+  if(!Check(M->Night->Album->Left()>=2,TEXT("film for the hidden and the clear exposure")))return;
+  M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Hidden=M->Night->Album->Expose();M->FieldCamera->Raise(false);M->UI->Viewfinder(false);
+  const bool bTagged=Hidden.Targets.ContainsByPredicate([](const TPair<FString,FVector2D>& Target){return Target.Key.StartsWith(TEXT("freeform:"));});
+  if(!Check(!bTagged&&F.Director->PhotoClaims().IsEmpty(),TEXT("an exposure with the building in the way registers nothing")))return;
+  Go(9905);return;
+ }
+ if(Stage==9905)
+ {
+  const int32 StopIndex=FS47DuskOrb::StopAt(F.Director->EventAge());
+  if(StopIndex<0){if(Age-At>30){Finish(false,TEXT("the first orb never reached a piece of equipment"));}return;}
+  const FVector P=OrbNow();UE_LOG(LogTemp,Display,TEXT("S47 orb night: first orb holding at %s, %s"),FS47DuskOrb::Stops()[StopIndex].Name,*P.ToString());
+  // Only the viewer moves. Nine metres off, looking at the ground under it.
+  M->UI->Close(true);M->Player->Place(P.X,P.Z+9,0);AimAt(FVector(P.X,US47Night::SaroFloorAt(M->Web.Get(),P.X,P.Z)+.4,P.Z));M->UI->ClearToasts();Go(9906,.9);return;
+ }
+ if(Stage==9906){Shot(TEXT("orb-night-at-equipment"));Go(9907,.2);return;}
+ if(Stage==9907){F.Director->TestOrbLightProbe(1);Go(9908,.35);return;}
+ if(Stage==9908)
+ {
+  S47J::Set(Snapshot,TEXT("lightOn"),ViewMean());F.Director->TestOrbLightProbe(2);Go(9909,.35);return;
+ }
+ if(Stage==9909)
+ {
+  const double LitMean=S47J::Num(Snapshot,TEXT("lightOn"),-1),DarkMean=ViewMean();F.Director->TestOrbLightProbe(0);
+  UE_LOG(LogTemp,Display,TEXT("S47 orb light probe: lit=%.2f unlit=%.2f of 255"),LitMean,DarkMean);
+  if(!Check(LitMean>=0&&DarkMean>=0&&LitMean-DarkMean>=.5,TEXT("with the effect hidden, the orbs' lights alone brighten the ground and equipment in the picture")))return;
+  AimAt(OrbNow());Go(9910,.12);return;
+ }
+ if(Stage==9910)
+ {
+  M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);M->UI->Viewfinder(false);
+  if(!Check(!Photo.bUnavailable&&!Photo.Url.IsEmpty()&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id.StartsWith(TEXT("dusk_orb."))&&F.Budget()==PhotoBudget&&Photo.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& Target){return Target.Key==TEXT("freeform:")+F.Director->PhotoClaims()[0].Id;}),TEXT("actual exposure of the night visit qualifies one unpaid claim, as at dusk")))return;
+  PhotoClaimId=F.Director->PhotoClaims()[0].Id;RetainedPhotoId=Photo.Id;RetainedPhotoUrl=Photo.Url;
+  if(!Restore(TEXT("orb-night-photo")))return;Go(9911,.5);return;
+ }
+ if(Stage==9911)
+ {
+  const auto Sched=OrbSchedule();
+  if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb")&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id==PhotoClaimId&&Original()&&Original()->Url==RetainedPhotoUrl&&S47J::Bool(Sched,TEXT("photographed"))&&S47J::Int(Sched,TEXT("nightVisits"))==1,TEXT("Continue retains the night photograph, its one claim and the record")))return;
+  M->Player->Place(-.9,-3.55,0);AimAt(OrbNow());M->UI->ClearToasts();Go(9912,1.8);return;
+ }
+ if(Stage==9912){Shot(TEXT("orb-night-control-room-window"));Go(9913,.3);return;}
+ if(Stage==9913)
+ {
+  const FVector P=OrbNow();M->Player->Place(P.X,P.Z+3,0);AimAt(P);M->UI->ClearToasts();Go(9914,.7);return;
+ }
+ if(Stage==9914)
+ {
+  Shot(TEXT("orb-night-startled"));
+  const FVector Seen=F.Director->OrbRecordAt(),Route=OrbNow();
+  UE_LOG(LogTemp,Display,TEXT("S47 orb night flight: %.1f m above its route, %.1f m aside"),Seen.Y-Route.Y,FVector2D::Distance(FVector2D(Seen.X,Seen.Z),FVector2D(Route.X,Route.Z)));
+  if(!Check(F.Director->ActiveEvent()==TEXT("dusk_orb")&&Seen.Y-Route.Y>15&&FVector2D::Distance(FVector2D(Seen.X,Seen.Z),FVector2D(Route.X,Route.Z))<3,TEXT("a person coming close sends the first light straight up from where it was")))return;
+  Go(9915,1.6);return;
+ }
+ if(Stage==9915)
+ {
+  if(!Check(F.Director->ActiveEvent().IsEmpty()&&F.Budget()==PhotoBudget,TEXT("the night visit ends when they have gone, with nothing paid")))return;
+  Finish(true,TEXT("Night visit from the scheduler's own hour, no Force; clock and player placement are declared fixtures. Building sight, light on the world, photograph, two Continues and flight checked. Whether it looks right is Tom's to judge."));return;
  }
 
  if(Stage==9700)

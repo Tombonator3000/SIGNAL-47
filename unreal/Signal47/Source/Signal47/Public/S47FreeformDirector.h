@@ -28,6 +28,14 @@ public:
  // The empty car, rarely and only after two: a light stands over it (FF-RESEARCH-08). Test: its own dice, -1 for the
  // usual; a developer run draws none unless a test asks.
  void TestCarDice(float Dice){CarDice=Dice;}
+ // The low lights' visits in the dark. A developer run keeps to the dusk unless a test asks, as with the dice above.
+ void TestOrbNight(bool bOn){bTestOrbNight=bOn;}
+ // Test: 0 as played; 1 the effect hidden, so that only the lights' own effect on the world shows; 2 that with the lights out.
+ void TestOrbLightProbe(int32 Mode){OrbLightProbe=Mode;}
+ // Test: how many of the orbs' point lights are on now, and how many of those cast shadows.
+ void OrbLightCount(int32& On,int32& Shadowed,float& Lumens,float& Radius) const;
+ // Where the photographic record of the first orb is now.
+ FVector OrbRecordAt() const;
  bool CarLightDrawn() const{return bCarLight;}
  int32 CarLightStage() const{return CarStage;}
  int32 MysteryDrawnNight() const{return PendingMysteryNight;}
@@ -150,6 +158,9 @@ private:
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them
+ bool bTestOrbNight=false;
+ int32 OrbLightProbe=0;
+ int32 OrbStopLogged[FS47DuskOrb::Count]={-1,-1,-1};
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
  FVector Anchor=FVector::ZeroVector;
  FRandomStream Random;
