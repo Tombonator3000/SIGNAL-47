@@ -2149,6 +2149,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
 	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), TEXT("Portable SARO field set. Listen in the field; a sound alone is not a filed observation."), TEXT("Carried"), FString(), FString() });
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
 	{
 		const auto F = M->Freeform->Field;

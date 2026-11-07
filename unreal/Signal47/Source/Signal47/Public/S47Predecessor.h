@@ -14,6 +14,7 @@ struct FS47MapView;
 // the flat; and a board by the lockers where you can hang your keys and go. Everything is the outside of what happened: text in
 // S47PredecessorText.cpp, and its self-test refuses the far side. Saved under "predecessor"; a save from before it picks it up
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
+namespace S47PredecessorText{struct FBark;}
 class FS47Predecessor
 {
 public:
@@ -62,7 +63,8 @@ public:
  void OpenKeys();
  void OpenAssessment();
  void OpenLeft();
- void ReadDoc(const FString& Id);
+ // Back: "locker" or "wagon" to come back to it when the page is put down.
+ void ReadDoc(const FString& Id,const FString& Back=FString());
  void FillMap(FS47MapView& View) const;
  // World position (x,z) of a thing out on the land or at the station, for the developer's menu and the tests.
  bool WorldSpot(const FString& Id,FString& OutArea,double& OutX,double& OutZ) const;
@@ -72,6 +74,8 @@ public:
  void TestLetter();
  void TestWeek();
  void TestRing();
+ // Dale's next due line over the walkie, whatever the day. False: none is due.
+ bool TestBark();
  void TestOutcome(EOutcome O);
  void TestLeave();
  void TestNextDay();
@@ -81,6 +85,8 @@ public:
  bool TestRadioOff();
  void TestReset(){Outcome=EOutcome::None;}
  void TestTakeBack(){TakeKeysBack();}
+ // A topic's or a bark's condition: a thing found, or how far things have gone. Public for the self-test.
+ bool Meets(const TCHAR* Needs) const;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
@@ -88,12 +94,13 @@ private:
  TWeakObjectPtr<AS47Web> Scene;
  TSet<FString> Seen,HeardOf;
  TArray<FString> Tray;
- int32 OpensDay=1,AssessDay=FirstAssess,WeekNoted=0,RadioOffDay=-1,NoraState=0;
+ int32 OpensDay=1,AssessDay=FirstAssess,WeekNoted=0,RadioOffDay=-1,NoraState=0,DaleDay=0;
  EOutcome Outcome=EOutcome::None;
  bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false;
  int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
  bool bLetterTold=false,bRinging=false,bRadioLoop=false;
+ FString BackTo; // reopened on the next tick: not from inside the panel's own closing
  // In the world.
  struct FSpot
  {
@@ -117,13 +124,16 @@ private:
  void StepNews(double Dt);
  void StepRing(double Dt);
  void Hear(const FString& Id);
+ // Dale's next line that is due, if any; marked said by whoever delivers it.
+ const S47PredecessorText::FBark* NextBark() const;
+ void StepDale();
  void Mark(const FString& Id,const FString& Summary);
  FString DateText(int32 Day) const;
  FString LetterText() const;
  FString OutcomeLetter(EOutcome O) const;
  FString AssessKey() const{return FString::Printf(TEXT("ward-assessment-%d"),AssessDay);}
  void Decided();
- void ShowDoc(const FS47Doc& Doc);
+ void ShowDoc(const FS47Doc& Doc,const FString& Back);
  FS47Doc MakeDoc(const FString& Id) const;
  void ShowTalk(const FString& Who,const FString& TopicId);
  void Leave();

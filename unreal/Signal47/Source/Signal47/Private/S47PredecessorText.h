@@ -19,6 +19,9 @@ namespace S47PredecessorText
  const TArray<FTagDef>& Tags();
  const TArray<FCaseNote>& CaseNotes();
  const TArray<FPerson>& People();
+ // What Dale says over the walkie, unasked. Each once, at most one a day. Needs as for a topic; empty: from the day given.
+ struct FBark{const TCHAR* Id;const TCHAR* Needs;int32 FromDay;const TCHAR* Line;};
+ const TArray<FBark>& Barks();
  const FPerson* Person(const FString& Id);
  FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess);
  FString WeekNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,int32 DaysLeft,const FString& Assess,double Pace);

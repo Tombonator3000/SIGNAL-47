@@ -1013,11 +1013,13 @@ void FS47DevFreeform::AddReyes(FS47DevEvents& E)
   const FString Doc=N.Doc,Case=N.CaseTitle;
   E.AddFreeform(G,FString::Printf(TEXT("Read: Reyes's note in %s"),*Case),TEXT("turns up in the tray in play, when that case opens"),[Pred,Doc]{if(auto* P=Pred())P->TestFound(Doc);});
  }
- for(const TCHAR* Who:{TEXT("attendant"),TEXT("deputy"),TEXT("host"),TEXT("radio_woman"),TEXT("souvenir_man"),TEXT("ward")})
+ for(const TCHAR* Who:{TEXT("dale"),TEXT("attendant"),TEXT("deputy"),TEXT("host"),TEXT("radio_woman"),TEXT("souvenir_man"),TEXT("ward")})
  {
   const FString Id=Who;
   E.AddFreeform(G,FString::Printf(TEXT("Talk: %s"),S47PredecessorText::Person(Id)->Title),TEXT("the words they have for the new operator"),[Pred,Id]{if(auto* P=Pred())P->Talk(Id);});
  }
+ E.AddFreeform(G,TEXT("Dale on the walkie: the next line that is due"),TEXT("each once, at most one a day in play; gives you the set"),[Pred,this]{if(auto* P=Pred()){if(!P->TestBark())Tell(false,TEXT("Nothing is due from Dale yet: read the letter, open the locker, read a tag or file a job."));}});
+ E.AddFreeform(G,TEXT("Phone: who to call"),TEXT("the same panel as the control room phone; Dale or Ward, and his slip if the walkie was not with you"),[Pred]{if(auto* P=Pred())P->UsePhone();});
  E.AddFreeform(G,TEXT("The phone rings: Nora"),TEXT("once, in play, after five finds; pick up the control room phone"),[Pred,this]{if(auto* P=Pred()){P->TestRing();Tell(true,TEXT("It rings for 45 seconds. The control room phone answers it."),5);}});
  E.AddFreeform(W,TEXT("Ward's first letter"),TEXT("in play it lies in the OPS tray on the first day; the date of a new game is day 1 = Monday April 28"),[Pred]{if(auto* P=Pred())P->TestLetter();});
  E.AddFreeform(W,TEXT("Ward's Monday note"),TEXT("as it would be this week, by what you have filed"),[Pred]{if(auto* P=Pred())P->TestWeek();});

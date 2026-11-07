@@ -7,10 +7,10 @@ const TArray<FDocDef>& Docs()
  static const TArray<FDocDef> Table={
   // ---- the locker
   {TEXT("note"),TEXT("A note to self, on the back of a fuel slip"),TEXT("hand"),TEXT("REYES"),
-   TEXT("~ MONDAY\n~ call Dale re truck (brakes. not urgent. urgent by June)\n~ coffee filters. the real ones\n~ pay Danny back $20\n~ do NOT sign the fuel sheet till they fix the total\n~ type up RFI list\n~ ask Ward re a Sunday off in May"),
+   TEXT("~ MONDAY\n~ call Dale re truck (brakes. he'll yell. call anyway)\n~ coffee filters. the real ones\n~ pay Danny back $20\n~ do NOT sign the fuel sheet till they fix the total\n~ type up RFI list\n~ ask Ward re a Sunday off in May"),
    TEXT("Reyes's list for a Monday. Dale, coffee filters, twenty dollars owed, a list to type up. The Monday was April 14."),nullptr},
   {TEXT("list"),TEXT("Dale's interference list, on a clipboard"),TEXT("typed"),TEXT("SARO / FIELD"),
-   TEXT("FROM: DALE, FIELD MAINT.\nTO: REYES\n\nRFI SOURCE LIST. Anything out there with a motor, a charger or a bad ground, inside ten miles. Go and look, tag it, date it, initial it. Daylight only and no overtime, sorry.\n\n~ start with the windmill on the Baca lease\n~ then whatever turns up. I'll work it out as I go - R."),
+   TEXT("FROM: DALE, FIELD MAINT.\nTO: REYES\n\nRFI SOURCE LIST. YES, ANOTHER ONE.\n\nSomebody's pump is in my receiver and I will find it if I have to dig up New Mexico with my hands. Every motor, every fence charger, every bad ground inside ten miles. You go and you look. You tag it, you date it, you initial it. Daylight only and no overtime, Ward will have my head and I am using it.\n\nDo not be clever. Clever I can get anywhere.\n\n~ start with the windmill on the Baca lease\n~ he underlined \"look\" three times. I'll work it out as I go - R."),
    TEXT("Dale had Reyes driving the land for interference sources, tagging each stop. Reyes's list starts with the windmill on the Baca lease."),TEXT("windmill")},
   {TEXT("home"),TEXT("A letter, stamped, not mailed"),TEXT("hand"),TEXT("NOT SENT"),
    TEXT("April 10\n\nDear Mom,\n\nThe job's fine. It's mostly paper. You sit up all night with the machines and write down what they say, and in the morning somebody you never meet tells you to write it down a different way.\n\nIt's very quiet. You'd like the sky. You'd hate the coffee.\n\nThe money is what they said it would be. I can send something at the end of the month and I will, so stop telling Aunt Lupe I won't.\n\nI drive around some when I get off. Nobody out here minds.\n\nI'll call Sunday before I go on.\n\nLove,\nme"),
@@ -27,7 +27,7 @@ const TArray<FDocDef>& Docs()
    TEXT("The originals of the night of April 13 are gone from the binder. Receiver log, strip chart, shift journal, feeder journal. Ward's note says not to reconstruct them."),nullptr},
   // ---- the survey tags, out on the land, in the order Reyes went
   {TEXT("tag_windmill"),TEXT("Survey tag at the windmill"),TEXT("hand"),TEXT("SARO RFI / 1"),
-   TEXT("SARO RFI SURVEY   POINT 1\nDATE 3-24-86   OPR REYES\nSOURCE: no motor. Brake on. Nothing.\n\n~ This is what I'm doing with my mornings.\n~ Somebody wired the vane round. Not a rancher's knot. Not Dale's either, I asked.\n~ Next: the stock tank on the old grade."),
+   TEXT("SARO RFI SURVEY   POINT 1\nDATE 3-24-86   OPR REYES\nSOURCE: no motor. Brake on. Nothing.\n\n~ This is what I'm doing with my mornings.\n~ Somebody wired the vane round. Not a rancher's knot. Not Dale's either. I asked, and got ten minutes on whether I know what a knot is.\n~ Next: the stock tank on the old grade."),
    TEXT("Reyes's first tag, March 24, at the windmill. The wired vane was not Dale's. Next, the tank on the old grade."),TEXT("tank")},
   {TEXT("tag_tank"),TEXT("Survey tag at the water tank"),TEXT("hand"),TEXT("SARO RFI / 2"),
    TEXT("SARO RFI SURVEY   POINT 2\nDATE 3-27-86   OPR REYES\nSOURCE: none. No pump. No charger.\n\n~ Ate my sandwich here to see if anything would come and drink. Nothing did.\n~ Not a complaint. For the file.\n~ Next: the line camp east of the highway. Bring water this time."),
@@ -51,7 +51,7 @@ const TArray<FDocDef>& Docs()
    TEXT("SARO RFI SURVEY   POINT 8\nDATE 4-11-86   OPR REYES\nSOURCE: none.\n\n~ Called the county road office. No survey on this track. Called the BLM. No survey. The woman at the BLM asked why I cared.\n~ Copied down what's on it. Did not think about it.\n~ Last one on my list is the mine on the west side. Saturday, in daylight."),
    TEXT("Reyes at the stake, April 11. Neither the county nor the BLM had a survey there. Last, the mine on the west side."),TEXT("mine")},
   {TEXT("tag_mine"),TEXT("Survey tag at the mine"),TEXT("hand"),TEXT("SARO RFI / 9"),
-   TEXT("SARO RFI SURVEY   POINT 9\nDATE 4-12-86   OPR REYES\nSOURCE: none at the mouth. Did not go in.\n\n~ Cold air coming out steady as a fan. Boards stacked neat. I'm not going in there by myself for an RFI list.\n~ Dale says regional keeps a tech for the back-country jobs. White wagon, number 23. If this goes any further I'll ask.\n~ List's done. I'll type it up Monday."),
+   TEXT("SARO RFI SURVEY   POINT 9\nDATE 4-12-86   OPR REYES\nSOURCE: none at the mouth. Did not go in.\n\n~ Cold air coming out steady as a fan. Boards stacked neat. I'm not going in there by myself for an RFI list.\n~ Told Dale. Dale called me several things and then said regional keeps a tech for the back-country jobs. White wagon, number 23. If this goes any further I'll ask.\n~ List's done. I'll type it up Monday."),
    TEXT("Reyes's last tag, Saturday April 12, at the mine. Reyes did not go in. It mentions a regional tech in a white wagon, number 23."),nullptr},
   // ---- among the sheets of a case
   {TEXT("case_interval"),TEXT("Note in Reyes's hand, among the interval sheets"),TEXT("hand"),TEXT("REYES"),
@@ -94,6 +94,7 @@ const TArray<FPerson>& People()
  static const TCHAR* const Man=TEXT("THE SHOP MAN");
  static const TCHAR* const Ward=TEXT("DR. WARD");
  static const TCHAR* const Nora=TEXT("THE VOICE");
+ static const TCHAR* const Dale=TEXT("DALE");
  static const TArray<FPerson> Table={
   {TEXT("attendant"),TEXT("GAS STATION / THE ATTENDANT"),
    {{TEXT(""),TEXT("He slides the night window open a hand's width and looks at you over his book.")},{Att,TEXT("You're the new one up at the dishes.")},{TEXT(""),TEXT("It isn't a question.")}},
@@ -154,6 +155,28 @@ const TArray<FPerson>& People()
     {TEXT("leave"),TEXT("Ask what happens if you quit"),nullptr,nullptr,TEXT("Ward says that if you want out, you hang your keys on the board by the lockers."),
      {{You,TEXT("And if I quit?")},{Ward,TEXT("The board's by the lockers. Hang your keys on it. You needn't call me first.")}}},
    }},
+  {TEXT("dale"),TEXT("SERVICE LINE / DALE"),
+   {{TEXT(""),TEXT("It picks up before it has finished ringing. Somewhere behind him a bench fan, and something being dropped on purpose.")},{Dale,TEXT("What. No, wait, I know this breathing. You are the new one. You have four minutes. I am holding a hot iron and I am not putting it down for you.")}},
+   {
+    {TEXT("work"),TEXT("Ask what you should be doing"),nullptr,nullptr,TEXT("Dale on the work: do what is on the card, write down what the instrument says, and do not have a feeling about the amber lamps."),
+     {{You,TEXT("What should I be doing?")},{Dale,TEXT("What is on the card! It is printed! Somebody typed it so that I would not have to say it to you on the telephone!")},{Dale,TEXT("Point, tune, record, register, file. Amber is normal. If the amber changes you write it down. You do not have a feeling about it. Nobody has ever fixed a receiver with a feeling.")}}},
+    {TEXT("array"),TEXT("Ask about the array"),nullptr,nullptr,TEXT("Dale wants the outer branches mended in the order on the sheet, and his tools put back."),
+     {{You,TEXT("Half the outer array is down.")},{Dale,TEXT("Half! You went and counted, or you are guessing? No. Do not tell me. Count them. Then the outer branches, in the order on the sheet, not in the order you like.")},{Dale,TEXT("And when you finish you put my tools back where they were. Himmel. Where they were. I will know.")}}},
+    {TEXT("reyes"),TEXT("Ask about Reyes"),nullptr,nullptr,TEXT("Dale will not talk about Reyes."),
+     {{You,TEXT("Did you work with Reyes?")},{Dale,TEXT("No.")},{You,TEXT("You sent Reyes out on that list.")},{Dale,TEXT("I said no. Nein. Is this the service line? Then ask me about service.")}}},
+    {TEXT("list"),TEXT("Ask about the interference list"),TEXT("list"),nullptr,TEXT("Dale says the list was only ever about a pump. He wants Reyes's tags left where they are."),
+     {{You,TEXT("I found your list, in the locker.")},{Dale,TEXT("It is a list! I sent somebody to look for a pump in somebody's fence! That is what that was. A pump.")},{You,TEXT("The tags are still out there.")},{Dale,TEXT("Then you leave them wired where they are. They are good tags. Dated, initialled, one to a stop. Do you know how rare that is, in this county? Do you?")},{TEXT(""),TEXT("The fan runs for a while.")},{Dale,TEXT("Leave them.")}}},
+    {TEXT("wagon"),TEXT("Tell him you went out to wagon 23"),TEXT("wagon"),nullptr,TEXT("Dale was angry that you went out to wagon 23 alone, and told you to leave it alone."),
+     {{You,TEXT("I went out to wagon 23.")},{Dale,TEXT("Alone. In that truck, with those brakes. And at what hour? Dummkopf. Did you touch it?")},{You,TEXT("I switched the radio off.")},{Dale,TEXT("Then you have learned nothing, and it cost you a tank of gas. Stay off that flat. I do not need another form to fill in.")}}},
+    {TEXT("message"),TEXT("Ask if Reyes ever called you"),TEXT("known6"),nullptr,TEXT("Reyes used to call Dale on the service line at night. There is one message Dale has played once and will not discuss."),
+     {{You,TEXT("Did Reyes ever call you, on this line?")},{Dale,TEXT("Every night. About the coffee. About a lamp. Reyes would read me the same number twice because it was funny, and it was not funny.")},{You,TEXT("And that last night?")},{Dale,TEXT("There is a message on my machine. I have played it one time.")},{You,TEXT("What did it say?")},{Dale,TEXT("It said what it said. You are not going to hear it. Go and point your antennas.")}}},
+    {TEXT("hours"),TEXT("Tell him about the hours you can't account for"),TEXT("taken"),nullptr,TEXT("Dale's answer about the lost hours: write the time down, and stay in the building tonight."),
+     {{You,TEXT("I've got a hole in my log. Hours. I don't know where they went.")},{Dale,TEXT("You wrote down when it starts? When it stops? Then you have two numbers, which is two more than you had. Nein. I do not want to hear what you think it was.")},{TEXT(""),TEXT("Nothing on the line for a moment, not even the fan.")},{Dale,TEXT("Sleep in the building tonight. Door shut. That is not an order. Nobody here can give you an order, apparently.")}}},
+    {TEXT("eat"),TEXT("Ask why he keeps picking up"),TEXT("known6"),nullptr,TEXT("Dale keeps picking up because somebody has to. There are crackers in the bottom drawer."),
+     {{You,TEXT("Why do you keep answering, if I'm so much trouble?")},{Dale,TEXT("Because the telephone rings! What kind of question is that? Somebody at that station calls, at night, and somebody picks up. That is how it is supposed to work.")},{TEXT(""),TEXT("Something is set down, gently, for once.")},{Dale,TEXT("Have you eaten? There are crackers in the bottom drawer. Still in the wrapper. You did not hear it from me.")}}},
+    {TEXT("quit"),TEXT("Tell him you're thinking of quitting"),nullptr,nullptr,TEXT("Dale told you to quit if you want to, and to use any hook but the first."),
+     {{You,TEXT("I've been thinking about hanging up the keys.")},{Dale,TEXT("So hang them! Go! Everybody goes! I have worked with people who could not find their own feet with both hands and they all had somewhere better to be!")},{Dale,TEXT("Not on hook one. Any other hook. Hook one you leave.")}}},
+   }},
   {TEXT("nora"),TEXT("SARO OPERATIONS LINE / INCOMING"),
    {{TEXT(""),TEXT("A woman, not young, unhurried. There is a television on somewhere behind her, with the sound down.")},{Nora,TEXT("Is this the night operator?")},{You,TEXT("Who's calling?")},{Nora,TEXT("Nora. I'm at the Sierra Motor Court, and I have been for some time. Don't come by. You've been going through Reyes's things.")}},
    {
@@ -167,12 +190,27 @@ const TArray<FPerson>& People()
  };
  return Table;
 }
+const TArray<FBark>& Barks()
+{
+ static const TArray<FBark> Table={
+  {TEXT("hello"),TEXT("letter"),1,TEXT("Dale, field maintenance. You are the new one. Amber is NORMAL. Do not touch Bank Three. I do not care who you are. Dale out.")},
+  {TEXT("filed1"),TEXT("filed1"),1,TEXT("One job filed. I will alert the newspapers. Now the next one.")},
+  {TEXT("locker"),TEXT("locker"),1,TEXT("Who told you to go in that locker? Nobody. That is who. Leave the mug where it is.")},
+  {TEXT("tag"),TEXT("tag_windmill"),1,TEXT("You are out on my survey now? Nobody asked you. You read the tags, you do not add to them. Dale out.")},
+  {TEXT("late"),TEXT("late"),3,TEXT("It is after two. Are you in the building? Do not tell me about the sky. Be in the building.")},
+  {TEXT("branch"),TEXT("branch1"),1,TEXT("You mended a branch. I looked at the line from here. It is a clean joint. Genau. That is the first thing anyone has done right out there since April. Do not get used to me saying it.")},
+  {TEXT("filed10"),TEXT("filed10"),1,TEXT("Ten jobs. Ward told me, I did not ask her to. It is almost competent. Keep going.")},
+  {TEXT("hole"),TEXT("taken"),1,TEXT("Your log has a hole in it. You write down when it started. You write down when it stopped. Then you call me. In that order, Mensch.")},
+  {TEXT("near"),TEXT("assess3"),1,TEXT("Three days to Ward's assessment. She reads numbers. I have seen your numbers. Stop looking out of the window and file something.")},
+ };
+ return Table;
+}
 const FPerson* Person(const FString& Id){return People().FindByPredicate([&](const FPerson& P){return Id==P.Id;});}
 
 FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess)
 {
- if(bOlderGame)return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nYou were put on nights in a hurry and nobody sat you down, so I will be plain now.\n\nReyes, who had those nights before you, has not been seen since the morning of April 14. The county has the file and I can't add to it. Since then my office has been asked why the county and the district should keep paying for 27 antennas.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nNothing about your pay or the work you've done so far changes. Keep your originals. You'll have a word from me each Monday.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers.\n\nWard"),*Dated,*Assess);
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nWelcome. I will be plain, since nobody else will have been.\n\nThe station has had no night operator since April 14. Reyes, who had the job, has not been seen since that morning. The county has the file and I can't add to it. My office has been asked why the county and the district should keep paying for 27 antennas that nobody is looking after, and I don't have a good answer yet. You are meant to give me one.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nYou should know you got this job because nobody else wanted it. You wrote on your application that you need the money. So you'll understand that I need the numbers. Three jobs come up on the OPS terminal each morning at 08:00. Register what you measure, file what you register, and keep your originals. You'll have a word from me each Monday.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers. It has been done before.\n\nWard"),*Dated,*Assess);
+ if(bOlderGame)return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nYou were put on nights in a hurry and nobody sat you down, so I will be plain now.\n\nReyes, who had those nights before you, has not been seen since the morning of April 14. The county has the file and I can't add to it. Since then my office has been asked why the county and the district should keep paying for 27 antennas.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nNothing about your pay or the work you've done so far changes. Keep your originals. You'll have a word from me each Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers.\n\nWard"),*Dated,*Assess);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nWelcome. I will be plain, since nobody else will have been.\n\nThe station has had no night operator since April 14. Reyes, who had the job, has not been seen since that morning. The county has the file and I can't add to it. My office has been asked why the county and the district should keep paying for 27 antennas that nobody is looking after, and I don't have a good answer yet. You are meant to give me one.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nYou should know you got this job because nobody else wanted it. You wrote on your application that you need the money. So you'll understand that I need the numbers. Three jobs come up on the OPS terminal each morning at 08:00. Register what you measure, file what you register, and keep your originals. You'll have a word from me each Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers. It has been done before.\n\nWard"),*Dated,*Assess);
 }
 FString WeekNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,int32 DaysLeft,const FString& Assess,double Pace)
 {

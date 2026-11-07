@@ -104,6 +104,11 @@ void FS47FreeformTest::StepReyes(double Dt)
  {
   if(!Check(P.Talk(TEXT("deputy")),TEXT("the deputy has words for the new operator")))return;
   M->UI->Close(true);
+  if(!Check(P.Talk(TEXT("dale")),TEXT("Dale picks up")))return;
+  M->UI->Close(true);
+  if(!Check(P.UsePhone(),TEXT("the control room phone offers Dale and Ward")))return;
+  M->UI->Close(true);
+  if(!Check(P.TestBark(),TEXT("Dale comes over the walkie: the locker, a tag or a letter has given him cause")))return;
   if(!Check(P.Talk(TEXT("attendant"))&&P.Talk(TEXT("host"))&&P.Talk(TEXT("radio_woman"))&&P.Talk(TEXT("souvenir_man"))&&P.Talk(TEXT("ward")),TEXT("so does everyone else")))return;
   M->UI->Close(true);
   P.TestFound(TEXT("gap"));M->UI->Close(true);

@@ -2,6 +2,7 @@
 #include "S47Album.h"
 #include "S47Audio.h"
 #include "S47Docs.h"
+#include "S47FieldRadio.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
@@ -111,14 +112,14 @@ int32 FS47Predecessor::Known() const
 void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 {
  Stop();Life=MakeShared<uint8>(0);
- Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=false;LeftDay=0;LeftClock=0;NewsIn=8;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;bBound=bBoundLand=false;
+ Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=false;LeftDay=0;LeftClock=0;NewsIn=8;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
   bOlder=S47J::Bool(Saved,TEXT("older"));OpensDay=FMath::Max(1,S47J::Int(Saved,TEXT("opens"),1));AssessDay=FMath::Max(OpensDay,S47J::Int(Saved,TEXT("assess"),FirstAssess));WeekNoted=FMath::Max(0,S47J::Int(Saved,TEXT("weekNoted")));
   for(const FString& Id:S47J::Strs(Saved,TEXT("seen")))Seen.Add(Id);
   for(const FString& Id:S47J::Strs(Saved,TEXT("heard")))HeardOf.Add(Id);
   Tray=S47J::Strs(Saved,TEXT("tray"));
-  Outcome=OutcomeOf(S47J::Str(Saved,TEXT("outcome")));RadioOffDay=S47J::Int(Saved,TEXT("radioOff"),-1);NoraState=FMath::Clamp(S47J::Int(Saved,TEXT("nora")),0,2);bPayReturned=S47J::Bool(Saved,TEXT("payReturned"));
+  Outcome=OutcomeOf(S47J::Str(Saved,TEXT("outcome")));RadioOffDay=S47J::Int(Saved,TEXT("radioOff"),-1);NoraState=FMath::Clamp(S47J::Int(Saved,TEXT("nora")),0,2);bPayReturned=S47J::Bool(Saved,TEXT("payReturned"));DaleDay=S47J::Int(Saved,TEXT("daleDay"));
   bLeft=S47J::Bool(Saved,TEXT("left"));LeftDay=S47J::Int(Saved,TEXT("leftDay"));LeftClock=S47J::Num(Saved,TEXT("leftClock"));
   // Reading one's own letter again after a Continue is fine; being told it is there, is not.
   bLetterTold=Seen.Contains(TEXT("letter"));
@@ -136,11 +137,13 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 void FS47Predecessor::Stop()
 {
  Life.Reset();bRinging=false;bBound=bBoundLand=false;
- if(IsEngineExitRequested()||IsGarbageCollecting())return;
- if(M&&IsValid(M->Audio)){if(bRadioLoop)M->Audio->Stop(RadioKey,.2f);M->Audio->Stop(RingKey,.1f);}
+ BackTo.Empty();
+ // The UObject purge may have taken the scene before this plain C++ object goes, as in FS47FreeformSession::Stop.
+ if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return;
+ if(IsValid(M->Audio)){if(bRadioLoop)M->Audio->Stop(RadioKey,.2f);M->Audio->Stop(RingKey,.1f);}
  bRadioLoop=false;
  for(auto& P:Shown)if(auto* C=P.Get())C->SetVisibility(false);
- if(M&&IsValid(M->Web.Get()))
+ if(IsValid(M->Web.Get()))
  {
   for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==TEXT("ff:reyes-lockers"))R.bEnabled=false;
   for(const TCHAR* A:{TEXT("road"),TEXT("diner")})if(M->Web->HasWalkArea(A))for(auto& R:M->Web->CollidersMutable(A))if(R.Id==TEXT("ff:wagon23"))R.bEnabled=false;
@@ -158,6 +161,7 @@ S47J::FObj FS47Predecessor::Save() const
  if(RadioOffDay>=0)S47J::Set(O,TEXT("radioOff"),RadioOffDay);
  if(NoraState>0)S47J::Set(O,TEXT("nora"),NoraState);
  if(bPayReturned)S47J::Set(O,TEXT("payReturned"),true);
+ if(DaleDay>0)S47J::Set(O,TEXT("daleDay"),DaleDay);
  if(bLeft){S47J::Set(O,TEXT("left"),true);S47J::Set(O,TEXT("leftDay"),LeftDay);S47J::Set(O,TEXT("leftClock"),LeftClock);}
  return O;
 }
@@ -175,6 +179,11 @@ void FS47Predecessor::Step(double Dt)
   if(!WagonSpot.bSeated&&!WagonSpot.Parts.IsEmpty()&&Close(WagonSpot))SeatWagon();
  }
  StepRadio();
+ if(!BackTo.IsEmpty()&&!M->ModalOpen())
+ {
+  const FString Where=BackTo;BackTo.Empty();
+  if(Where==TEXT("locker"))OpenLocker();else if(Where==TEXT("wagon"))OpenWagon();
+ }
  if(bLeft)
  {
   // Gone, and the save with it, until the keys are taken back: a click beside the page does not put you back in the room.
@@ -241,12 +250,44 @@ void FS47Predecessor::StepNews(double Dt)
    UE_LOG(LogTemp,Display,TEXT("S47: predecessor: the phone rings: %d known"),Known());
   }
  }
+ StepDale();
  // The assessment. It costs nothing that was secured; it only reads it.
  if(Today>=AssessDay&&Outcome==EOutcome::None&&!F.InTutorial()&&!M->OneAtATime()&&!(M->World&&M->World->bDriving))
  {
   Outcome=Decide(Count());Decided();
   M->RequestAutosave(true);
  }
+}
+bool FS47Predecessor::Meets(const TCHAR* Needs) const
+{
+ if(!Needs)return true;
+ const FString Need=Needs;
+ if(Need==TEXT("known6"))return Known()>=6;
+ if(!M||!M->Freeform)return Seen.Contains(Need);
+ const auto& F=*M->Freeform;
+ if(Need==TEXT("taken"))return F.TimesTaken()>0;
+ if(Need==TEXT("filed1")||Need==TEXT("filed10"))return Count().Filed>=(Need==TEXT("filed1")?1:10);
+ if(Need==TEXT("branch1"))return F.Field&&F.Field->ArrayWear().bActive&&F.Field->ArrayWear().Restored.Num()>0;
+ if(Need==TEXT("assess3"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=3&&AssessDay>=F.Day();
+ if(Need==TEXT("late")){const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;return Hour>=2&&Hour<4.5;}
+ return Seen.Contains(Need);
+}
+const S47PredecessorText::FBark* FS47Predecessor::NextBark() const
+{
+ const int32 Today=M&&M->Freeform?M->Freeform->Day():1;
+ for(const X::FBark& B:X::Barks())if(!Seen.Contains(FString(TEXT("bark_"))+B.Id)&&Today>=B.FromDay&&Meets(B.Needs))return &B;
+ return nullptr;
+}
+void FS47Predecessor::StepDale()
+{
+ auto& F=*M->Freeform;
+ if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio)return;
+ const X::FBark* B=NextBark();if(!B)return;
+ // No set in hand: it waits, and is on a message slip by the phone (UsePhone).
+ if(!M->FieldRadio->Message(FString(TEXT("DALE: "))+B->Line))return;
+ Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=F.Day();
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: %s, day %d"),B->Id,DaleDay);
+ M->RequestAutosave();
 }
 void FS47Predecessor::StepRing(double Dt)
 {
@@ -307,11 +348,13 @@ FS47Doc FS47Predecessor::MakeDoc(const FString& Id) const
  D.Transcript=D.Page;
  return D;
 }
-void FS47Predecessor::ShowDoc(const FS47Doc& Doc)
+void FS47Predecessor::ShowDoc(const FS47Doc& Doc,const FString& Back)
 {
  if(!M||!M->UI)return;
  if(M->Story)M->Story->AddDoc(Doc);
- M->UI->Document(Doc);
+ if(Back.IsEmpty()){M->UI->Document(Doc);return;}
+ const TWeakPtr<uint8> Guard=Life;
+ M->UI->Document(Doc,[this,Guard,Back]{if(Guard.IsValid())BackTo=Back;});
 }
 void FS47Predecessor::Mark(const FString& Id,const FString& Summary)
 {
@@ -331,13 +374,13 @@ void FS47Predecessor::Hear(const FString& Id)
  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: points to %s"),*Id);
  if(M)M->RequestAutosave();
 }
-void FS47Predecessor::ReadDoc(const FString& Id)
+void FS47Predecessor::ReadDoc(const FString& Id,const FString& Back)
 {
  Tray.Remove(Id);
  const X::FDocDef* Def=X::Doc(Id);
  Mark(Id,Def?Def->Summary:TEXT(""));
  if(Def&&Def->Next)Hear(Def->Next);
- ShowDoc(MakeDoc(Id));
+ ShowDoc(MakeDoc(Id),Back);
 }
 void FS47Predecessor::OpenGap(){ReadDoc(TEXT("gap"));}
 FString FS47Predecessor::ArchiveLabel() const{return Live()?FString(TEXT("April's shift binder / the night of the 13th")):FString();}
@@ -398,7 +441,22 @@ bool FS47Predecessor::UsePhone()
   ShowTalk(TEXT("nora"),FString());
   return true;
  }
- ShowTalk(TEXT("ward"),FString());
+ // Who to call: the duty officer, or the service line. Whatever Dale meant to say over a walkie you did not have is on a slip.
+ TArray<S47Kit::FW> Rows;
+ const TWeakPtr<uint8> Guard=Life;
+ if(const X::FBark* B=NextBark())
+ {
+  Rows.Add(S47Kit::Small(TEXT("A message slip by the phone, in capitals, pressed hard enough to go through:")));
+  Rows.Add(S47Kit::Paper(FString(B->Line).ToUpper()));
+  Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=M->Freeform?M->Freeform->Day():DaleDay;
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale's slip by the phone: %s"),B->Id);
+  M->RequestAutosave();
+ }
+ Rows.Add(S47Kit::Text(TEXT("The operations line. Two numbers on a card taped to the phone.")));
+ Rows.Add(S47Kit::Button(TEXT("Dale, field maintenance / the service line"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("dale"),FString());},true));
+ Rows.Add(S47Kit::Button(TEXT("Dr. Ward, duty officer"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("ward"),FString());}));
+ Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
+ M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO OPERATIONS LINE"),S47Kit::Col(Rows),760));
  return true;
 }
 
@@ -447,7 +505,7 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
  const TWeakPtr<uint8> Guard=Life;
  for(const X::FTopic& Q:P->Topics)
  {
-  if(Q.Needs&&!Seen.Contains(Q.Needs))continue;
+  if(!Meets(Q.Needs))continue;
   if(TopicId==Q.Id)continue;
   const FString Id=Q.Id,Name=Who;
   Rows.Add(S47Kit::Button(Q.Label,[this,Guard,Name,Id]{if(Guard.IsValid())ShowTalk(Name,Id);}));
@@ -468,7 +526,7 @@ void FS47Predecessor::OpenLocker()
  const auto Read=[&](const TCHAR* Id,const TCHAR* Label)
  {
   const FString Doc=Id;
-  Rows.Add(S47Kit::Button(FString(Label)+(Seen.Contains(Doc)?TEXT(" (read)"):TEXT("")),[this,Guard,Doc]{if(Guard.IsValid())ReadDoc(Doc);}));
+  Rows.Add(S47Kit::Button(FString(Label)+(Seen.Contains(Doc)?TEXT(" (read)"):TEXT("")),[this,Guard,Doc]{if(Guard.IsValid())ReadDoc(Doc,TEXT("locker"));}));
  };
  Read(TEXT("note"),TEXT("A fuel slip with a list on the back"));
  Read(TEXT("list"),TEXT("A clipboard from Dale, field maintenance"));
@@ -477,9 +535,9 @@ void FS47Predecessor::OpenLocker()
  if(!Seen.Contains(TEXT("mail")))
  {
   Rows.Add(S47Kit::Small(TEXT("Post has been pushed through the vent since. An insurance notice, an overdue card from the Socorro library, and a letter with a hand-written address, sealed.")));
-  Rows.Add(S47Kit::Button(TEXT("Open the sealed letter. It isn't yours"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"));}));
+  Rows.Add(S47Kit::Button(TEXT("Open the sealed letter. It isn't yours"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
  }
- else Rows.Add(S47Kit::Button(TEXT("The letter you opened"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"));}));
+ else Rows.Add(S47Kit::Button(TEXT("The letter you opened"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
  if(Seen.Contains(TEXT("pay")))
  {
   if(bPayReturned)Rows.Add(S47Kit::Small(TEXT("The pay envelope has gone to Ward's office, with your initials on the routing slip.")));
@@ -521,7 +579,7 @@ void FS47Predecessor::OpenWagon()
   }));
  }
  else Rows.Add(S47Kit::Small(TEXT("You switched the radio off. It clicks as it cools.")));
- Rows.Add(S47Kit::Button(FString(TEXT("The clipboard on the passenger seat"))+(Seen.Contains(TEXT("callout"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("callout"));}));
+ Rows.Add(S47Kit::Button(FString(TEXT("The clipboard on the passenger seat"))+(Seen.Contains(TEXT("callout"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("callout"),TEXT("wagon"));}));
  Rows.Add(S47Kit::Button(TEXT("Leave it how you found it"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("WAGON 23"),S47Kit::Col(Rows),860));
  if(bFirst&&F.Day()>0)UE_LOG(LogTemp,Display,TEXT("S47: predecessor: wagon 23 found on day %d"),F.Day());
@@ -925,6 +983,16 @@ void FS47Predecessor::TestRing()
  if(M&&M->Audio){FS47Sound O;O.Gain=.45f;O.bLoop=true;M->Audio->LoopSfx(RingKey,TEXT("phoneRing"),O);}
  if(M&&M->UI)M->UI->Toast(TEXT("The control room phone is ringing."),5);
 }
+bool FS47Predecessor::TestBark()
+{
+ TestOn();if(!M||!M->FieldRadio||!M->Freeform)return false;
+ M->FieldRadio->TestOwn();
+ const X::FBark* B=NextBark();if(!B)return false;
+ const bool bSaid=M->FieldRadio->Message(FString(TEXT("DALE: "))+B->Line);
+ if(bSaid)Seen.Add(FString(TEXT("bark_"))+B->Id);
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: test: Dale on the walkie: %s"),B->Id);
+ return bSaid;
+}
 void FS47Predecessor::TestOutcome(EOutcome O)
 {
  TestOn();if(!M||!M->Freeform)return;
@@ -958,6 +1026,7 @@ TArray<FString> FS47Predecessor::AllText()
   for(const X::FSay& L:P.First)Out.Add(L.Line);
   for(const X::FTopic& Q:P.Topics){Out.Add(Q.Label);if(Q.Note)Out.Add(Q.Note);for(const X::FSay& L:Q.Says)Out.Add(L.Line);}
  }
+ for(const X::FBark& B:X::Barks())Out.Add(B.Line);
  const FString D=TEXT("MONDAY, JUNE 2");
  Out.Add(X::Letter(false,D,D));Out.Add(X::Letter(true,D,D));Out.Add(X::WeekNote(1,3,20,5,20,D,.2));Out.Add(X::WeekNote(2,9,21,0,13,D,.9));
  Out.Add(X::Stays(D,30,2,25,0,true));Out.Add(X::KnowsEnough(D,3,0,20,5));Out.Add(X::WhatYouKnow());Out.Add(X::ClosedOriginals(D,3,0,20,5,6,2));Out.Add(X::ClosedNothing(D,0,0,20,5));Out.Add(X::NextOperator(D,D,6,2,3));
@@ -968,7 +1037,7 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s predecessor: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  // The line: the outside only. Nothing from Story's far side, in any paper or any mouth.
- static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event")};
+ static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event")};
  bool bClean=true;FString Offender;
  for(const FString& Text:AllText())
  {
@@ -1000,6 +1069,13 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  Check(bAllDocs,TEXT("each paper has its text, its note for the records, and a real place if it points to one"));
  bool bCases=true;for(const X::FCaseNote& N:X::CaseNotes()){bool bFound=false;for(int32 L=0;L<FS47FreeformCases::CaseCount;++L)bFound|=FString(FS47FreeformCases::Def(L).Title)==N.CaseTitle;bCases&=bFound&&X::Doc(N.Doc);}
  Check(bCases,TEXT("the notes among a case's sheets are tied to cases that exist"));
+ // Dale.
+ FS47Predecessor Quiet(nullptr);Quiet.Begin(nullptr,false,1);
+ TSet<FString> BarkIds;bool bBarks=true;for(const X::FBark& B:X::Barks()){BarkIds.Add(B.Id);bBarks&=FCString::Strlen(B.Line)>10&&FCString::Strlen(B.Line)<190;}
+ Check(bBarks&&BarkIds.Num()==X::Barks().Num()&&!Quiet.Meets(TEXT("letter"))&&Quiet.Meets(nullptr),TEXT("Dale's lines fit a toast, each once, and each waits for what it answers"));
+ const X::FPerson* DalePerson=X::Person(TEXT("dale"));
+ bool bBack=false;for(const X::FTopic& Q:DalePerson?DalePerson->Topics:TArray<X::FTopic>())bBack|=Q.Needs&&FString(Q.Needs)==TEXT("known6");
+ Check(DalePerson&&DalePerson->Topics.Num()>=6&&bBack,TEXT("Dale has several talks, and what he lets slip waits until you have gone far enough"));
  // The assessment.
  FTally Good;Good.Filed=FiledEnough;Check(Decide(Good)==EOutcome::Stays,TEXT("work done: SARO stays"));
  FTally Few;Few.Filed=FiledWithCases;Few.Concluded=CasesEnough;Check(Decide(Few)==EOutcome::Stays,TEXT("less work and concluded cases: SARO stays too"));
