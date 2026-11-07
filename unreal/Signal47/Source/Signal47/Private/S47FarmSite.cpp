@@ -286,6 +286,11 @@ bool FS47FarmSite::PutBody(const FVector& Near)
  return false;
 }
 
+ES47Clip FS47FarmSite::VisitClipNow() const
+{
+ return bBodyOut&&VisitBody&&VisitBody->Creature.ClipMotion?VisitBody->Creature.ClipMotion->Playing():ES47Clip::Num;
+}
+
 double FS47FarmSite::VisitHeadHeight() const
 {
  if(!bBodyOut||!VisitBody)return -1;
@@ -310,13 +315,28 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
   // may once a visit, and not often, put a finger to its mouth. It stands for as long as that takes.
   const double Turn=FMath::Fmod(BodyClock,34.);
   VisitBody->Stand=Turn<13?ES47Clip::Observe:Turn<26?ES47Clip::LookAround:ES47Clip::Idle;
+  // Some visits it sits while it lets itself be found, facing the player, too far off for a lamp to show there is nothing
+  // under it. Once up it stays up, however far the player then goes.
+  bSitsFar=bSitsFar&&Speed<=0&&FVector::Dist(BodyAt,Feet)>=SitBeyond;
+  if(bSitsFar)
+  {
+   VisitBody->Stand=ES47Clip::Sit;
+   if(!bSatLogged){bSatLogged=true;UE_LOG(LogTemp,Display,TEXT("S47: site visit: the tall one sits, %.0f m off"),FVector::Dist(BodyAt,Feet));}
+  }
+  // The first time a lamp finds it, it stops dead for the length of that, whatever it was doing.
+  FreezeLeft=FMath::Max(0.,FreezeLeft-Dt);
+  if(!bFreezeTried&&ShhLeft<=0&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Freeze))
+  {
+   bFreezeTried=true;FreezeLeft=VisitBody->Creature.Clips->Seconds(ES47Clip::Freeze);
+   UE_LOG(LogTemp,Display,TEXT("S47: site visit: the tall one freezes in the lamp, %.0f m off"),FVector::Dist(BodyAt,Feet));
+  }
   ShhLeft=FMath::Max(0.,ShhLeft-Dt);
-  if(!bShhTried&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&FVector::Dist(BodyAt,Feet)<ShhWithin&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Shh))
+  if(!bShhTried&&FreezeLeft<=0&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&FVector::Dist(BodyAt,Feet)<ShhWithin&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Shh))
   {
    bShhTried=true;
    if(FMath::FRand()<.4f)ShhLeft=VisitBody->Creature.Clips->Seconds(ES47Clip::Shh);
   }
-  if(ShhLeft>0)Speed=0;
+  if(ShhLeft>0||FreezeLeft>0)Speed=0;
  }
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodyWay),true);
  for(const auto& Part:VisitBody->All)if(auto* C=Part.Get())Q.AddIgnoredComponent(C);
@@ -332,7 +352,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  FHitResult Floor;
  if(M->Web->GetWorld()->LineTraceSingleByChannel(Floor,S47Three::ToUE(BodyAt+FVector(0,1.5,0)),S47Three::ToUE(BodyAt-FVector(0,3,0)),ECC_Visibility,Q))
   BodyAt.Y=FMath::FInterpTo(BodyAt.Y,S47Three::ToThree(Floor.ImpactPoint).Y,Dt,12.);
- VisitBody->Act=ShhLeft>0?ES47Clip::Shh:ES47Clip::Num;
+ VisitBody->Act=ShhLeft>0?ES47Clip::Shh:FreezeLeft>0?ES47Clip::Freeze:ES47Clip::Num;
  if(VisitWho==1)VisitBody->ApplyCrab(true,BodyAt,BodyYaw,Face,BodyClock,BodyClock/1.6,Speed>2.);
  else VisitBody->Apply(true,BodyAt,BodyYaw,Face,Speed>0?.85:0.,BodyClock*3,BodyClock,FS47PaleBody::EPose::Walk);
  bVisitSeen|=VisitBody->Rendered();
@@ -381,7 +401,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  // Twice at most: when the light has given up on one window, it tries another.
  if(bFirst)
  {
-  bShhTried=false;ShhLeft=0;
+  bShhTried=false;ShhLeft=0;bFreezeTried=false;FreezeLeft=0;bSatLogged=false;
+  bSitsFar=(SitRoll>=0?SitRoll:FMath::FRand())<SitChance;SitRoll=-1;
   VisitRounds=0;VisitHunt=0;VisitPatience=120;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
   RadioSeen=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
@@ -484,7 +505,8 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
  bWasRunning=bRunning;bWasDriving=bDriving;RadioSeen=RadioNow;
  const auto Before=Attention.Doing();
- Attention.Step(Dt,See,AttentionRoll>=0?AttentionRoll:FMath::FRand());
+ // Frozen, it is still only looking: what comes after the look waits until it can move again.
+ if(FreezeLeft<=0)Attention.Step(Dt,See,AttentionRoll>=0?AttentionRoll:FMath::FRand());
  Lamp->Flicker(Attention.BlinkLevel(bCalm),TEXT("attention"));
  if(Attention.Doing()!=Before)
  {
