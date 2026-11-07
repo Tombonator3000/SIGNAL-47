@@ -2093,3 +2093,7 @@ Skrevet, ikke bygget eller kjørt. Fotofremkalling (Freeform og Story) bruker `S
 ## 7. november 2026 kl.03:35, natt, variasjon i ørkenen
 
 Skrevet i egen worktree, ikke bygget eller kjørt, bare `S47Flora.cpp` bak `bNatural`. Kreosot: skala 0,5 til 1,3 med vekt mot små, rutenettet brutt opp (stripeskår 0,24 til 0,03 i Python-kopi), 15 % døde står som grå `SM_DP_Mesquite_B`, mindre innen 7 m fra vei. Lavt dekke: 1,4 til 2,7 ganger mer gress, 2,5 ganger stilker, sage ut til 235 m som teppe, 20 % grå tuer. Yucca var bleik i alle fire variantene, ikke bare to, og FBX-en er riktig; rettet med instansfarge og egen skygge nær, ingen ny eksport. Fargesoner med `Stain` er ikke gjort: de hører hjemme i bakkematerialet.
+
+## 7. november 2026 kl.04:06, natt, første del av mysteriemotoren (FF-MYSTERY-SYSTEM-01)
+
+Skrevet i egen worktree, ikke bygget eller kjørt. Saksmotoren har fått en fjerde linje, «The same minute», med `FMysteryDef`: nattens hendelse (egen trekning i `RollTonight`) gir spor ved mottakeren og ved feederen som peker ulikt, spilleren kan arkivere en vurdering på hvilket som helst grunnlag, og svaret neste morgen følger den skjulte årsaken (reservedel, utrykningsgebyr, feederfeil eller ingenting). Valgfrie lagringsfelt, ingen nye hendelser i katalogen. Prøve: `-S47MenuPointerMystery`.

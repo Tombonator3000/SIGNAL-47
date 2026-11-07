@@ -17,6 +17,14 @@ public:
  // Test: tonight is a night for lights, at the next scheduler tick.
  void TestLightsTonight();
  void TestSchedule(float Dice,double LightHour,double Scale){TestDice=Dice;TestLightAfter=LightHour;TestScale=Scale;}
+ // The night's mystery (FS47FreeformCases::MysteryLine). Test: its own dice, -1 for the usual. A developer run draws none
+ // unless a test asks, so that the fixtures built on other events stay as they were.
+ void TestMysteryDice(float Dice){MysteryDice=Dice;}
+ int32 MysteryDrawnNight() const{return PendingMysteryNight;}
+ int32 MysteryNoticeClue() const{return MysteryClue;}
+ double MysteryNoticeAge() const{return MysteryAge;}
+ // Whatever is at the other place can still be found.
+ bool MysteryTrailOpen() const{return MysteryClearAt>0;}
  // A long rest crosses this night: its dice, as the scheduler would throw them. True if anything is now due, in which
  // case the scheduler looks again soon after waking.
  bool DrawForNight(int32 Night);
@@ -95,6 +103,16 @@ private:
  // the player to come to that place, however long the night lasts.
  int32 ObserverRollDay=0,PendingObserverNight=0,SiteRollDay=0,PendingSiteNight=0;
  double SiteCheckAt=0;
+ // A night's mystery: one draw a night until its case has opened. Started by the player being at either place once the
+ // drawn hour has passed. A short notice, then what was found is kept, and the other place stays worth a look until noon.
+ int32 MysteryRollDay=0,PendingMysteryNight=0,MysterySeen=0,MysteryClue=-1;
+ double MysteryAfter=0,MysteryClearAt=0,MysteryAge=0;
+ float MysteryDice=-1;
+ static constexpr double MysteryNoticeSeconds=6;
+ void StepMystery(double Dt);
+ int32 MysteryClueHere() const;
+ bool MysteryQuiet() const;
+ void NoticeMystery(int32 Clue,bool bFirst);
  // Tests: override the dice for every night's draw (-1: none), force the lights' draw and its hour (-1: none), and run
  // the scheduler's active-time clock faster to match a test's faster world clock (1: none).
  float TestDice=-1;
