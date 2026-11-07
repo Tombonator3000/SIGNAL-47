@@ -955,6 +955,13 @@ namespace
      {TEXT("yard"),TEXT("saro"),Saro(125,195).X,Saro(125,195).Z,Saro(110,190).X,Saro(110,190).Z,0},
      {TEXT("east-shed"),TEXT("saro"),Saro(155,174).X,Saro(155,174).Z,Saro(142,174).X,Saro(142,174).Z,0},
      {TEXT("saro-yard"),TEXT("saro"),-6,20,-30,20,0}};
+    static double NatureJumpAt=-1;
+    if(NatureJumpAt>=0)
+    {
+     if(Elapsed<NatureJumpAt)return true;
+     NatureJumpAt=-1;if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs twelve more hours"));
+     StageAt=Elapsed;return true;
+    }
     const int32 I=Stage>=310?Stage-303:Stage-300;
     StageAt=Elapsed;
     if(ShotPending)
@@ -969,8 +976,9 @@ namespace
       const auto* C=bHit?Cast<UPrimitiveComponent>(Hit.GetComponent()):nullptr;const auto* Mat=C?C->GetMaterial(0):nullptr;const auto* SM=Cast<UStaticMeshComponent>(C);
       UE_LOG(LogTemp,Display,TEXT("S47: nature underfoot %s: %s mesh %s material %s"),V[I].Name,C?*C->GetName():TEXT("none"),SM&&SM->GetStaticMesh()?*SM->GetStaticMesh()->GetName():TEXT("-"),Mat?*Mat->GetName():TEXT("-"));
      }
-     if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=306;}
-     else if(I==6){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the morning"));Stage=310;}
+     // A shot is taken at the end of the frame after this one: the clock waits for it, or the picture shows the next hour.
+     if(I==5){NatureJumpAt=Elapsed+1;Stage=306;}
+     else if(I==6){NatureJumpAt=Elapsed+1;Stage=310;}
      else Stage=I==9?320:Stage+1;
      return true;
     }

@@ -179,7 +179,7 @@ namespace
 				// green to about (110, 118, 75) and the dead to grey-tan; the flowers stay cream (they were over 1, clipped).
 				Pn[8] = { Lin(0.58, 0.7, 0.77), Lin(0.55, 0.68, 0.74), Lin(0.6, 0.7, 0.75) };
 				Pn[9] = { Lin(1.9, 1.6, 1.45), Lin(1.8, 1.55, 1.4), Lin(1.95, 1.6, 1.4) };
-				Pn[10] = { Lin(1, 1, 1), Lin(0.93, 0.96, 0.9), Lin(1.03, 1.02, 0.95) };
+				Pn[10] = { Lin(0.78, 0.82, 0.82), Lin(0.74, 0.78, 0.76), Lin(0.8, 0.82, 0.78) };
 			}
 			return Pn[int32(K)];
 		}
@@ -207,7 +207,7 @@ namespace
 	/** A pale caliche stone now and then among the dark ones. */
 	const FVector& CALICHE() { static const FVector V = Lin(1.55, 1.48, 1.32); return V; }
 	/** Freeform: a dead creosote's bare twigs (they multiply Mesquite_B's atlas, whose thin twigs show dark here), grey as reference 10's. */
-	const FVector& DEAD_TWIGS(int32 I) { static const FVector V[2] = { Lin(1.85, 1.8, 1.8), Lin(1.7, 1.68, 1.7) }; return V[I]; }
+	const FVector& DEAD_TWIGS(int32 I) { static const FVector V[2] = { Lin(0.8, 0.77, 0.75), Lin(0.7, 0.68, 0.67) }; return V[I]; }
 	/** Freeform: the dead creosote when the desert meshes are not there: its own shape, grey and dark. */
 	const FVector& DEAD_CREOSOTE() { static const FVector V = Lin(0.55, 0.55, 0.56); return V; }
 	/** Freeform: an old tuft of grass, multiplying the kind's colour: grey-brown and darker. */
