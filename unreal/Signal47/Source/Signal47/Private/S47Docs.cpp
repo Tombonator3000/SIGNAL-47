@@ -29,7 +29,9 @@ namespace S47Text
 		int32 Start = 0;
 		for (;;)
 		{
-			const int32 At = S.Find(Sep, ESearchCase::CaseSensitive, ESearchDir::FromStart, Start);
+			// FString::Find clamps its start to Len-1: past the end it would find a final
+			// one-character separator again, forever, until the array outgrew the allocator.
+			const int32 At = Start < S.Len() ? S.Find(Sep, ESearchCase::CaseSensitive, ESearchDir::FromStart, Start) : INDEX_NONE;
 			if (At == INDEX_NONE) { Out.Add(S.Mid(Start)); return Out; }
 			Out.Add(S.Mid(Start, At - Start));
 			Start = At + Sep.Len();
