@@ -97,6 +97,9 @@ public:
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  int32 OperationsSection() const { return OpsSection; }
  TArray<FString> TerminalLines(int32 Screen) const;
+ // One line for screen 0 to 3 from the HUD's objective: "NEXT / USE THIS PC", "NEXT / <place>", or empty if it will not fit.
+ static FString TerminalNextLine(const FString& Text,int32 Screen);
+ FString MeasurementRecord() const;
  bool ArrayBlocked() const; // too few antennas to measure at all
  void OpenArchive();
  int32 ArchiveTab=0;FString ArchivePick; // presentation only, never saved

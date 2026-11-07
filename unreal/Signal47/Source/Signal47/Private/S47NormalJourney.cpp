@@ -112,6 +112,11 @@ namespace
   bool Click(const FString& Label)
   {
    TArray<TSharedRef<SButton>> Found;for(auto W:Roots())Buttons(W,Label,Found);
+   if(Found.Num()!=1||!Found[0]->IsEnabled()){
+    UE_LOG(LogTemp,Warning,TEXT("S47 normal journey: button '%s': %d found, first enabled %d"),*Label,Found.Num(),Found.Num()&&Found[0]->IsEnabled()?1:0);
+    if(const auto* J=Main->Freeform->CurrentJob()){UE_LOG(LogTemp,Warning,TEXT("S47 normal journey: job %s stage %d slot %d day %d aim %s on %d gated %d"),*J->Id,int32(J->Stage),J->Slot,J->Day,*Main->Freeform->AimAzEl().ToString(),Main->Freeform->AimOnTarget()?1:0,Main->Freeform->EveningGated(*J)?1:0);}
+    else {UE_LOG(LogTemp,Warning,TEXT("S47 normal journey: no current job"));}
+   }
    if(!Check(Found.Num()==1&&Found[0]->IsEnabled(),TEXT("unique enabled native button: ")+Label))return false;
 #if !UE_BUILD_SHIPPING
    Found[0]->SimulateClick();return true;
@@ -322,7 +327,7 @@ namespace
     case 11:if(!Click(TEXT("DAILY WORK")))return false;Go(12);break;
     case 12:if(!Click(TEXT("Accept this job and start the shift"))||!Place(TEXT("crtRight")))return false;Go(13);break;
     case 13:if(!Use(TEXT("crtRight")))return false;Go(14);break;
-    case 14:if(FParse::Param(FCommandLine::Get(),TEXT("S47JourneyTrackingDrag"))){if(!DragMarker())return true;}else Main->Freeform->AimAtSource();if(!Click(TEXT("POINT ARRAY"))||!Place(TEXT("crtCenter")))return false;Go(15);break;
+    case 14:if(FParse::Param(FCommandLine::Get(),TEXT("S47JourneyTrackingDrag"))){if(!DragMarker())return true;}else Main->Freeform->AimAtSource();if(!Enabled(TEXT("POINT ARRAY")))return true;/* A button's state follows on the next frame. */if(!Click(TEXT("POINT ARRAY"))||!Place(TEXT("crtCenter")))return false;Go(15);break;
     case 15:if(!Use(TEXT("crtCenter")))return false;Go(16);break;
     case 16:if(Tune())Go(17);break;
     case 17:if(!Enabled(TEXT("START RECORDING")))return true;if(!Click(TEXT("START RECORDING")))return false;M->UI->Close(true);Go(18);break;

@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november kl. 04:42, krasj på tavla rettet
+## Installert 7. november kl. 05:54, rettet spillerreise, første mysterium og etterspor
+
+`0086c91d` etter PR479 er nå standard, med rask installasjon: rettelser etter gjennomgang av reisen (hendelser under kjøring, hvile, vekking, kveldsjobb fra dag 2, HUD mot neste gren), sak 4 «The same minute», etterspor etter bortføring, lys over tom bil etter kl. 02 og reel-dekket etter konseptet. Selvtest 2582, 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d24/candidate/Linux`.
+
+## Tidligere installert 7. november kl. 04:42, krasj på tavla rettet
 
 `0f120225` etter PR478 er nå standard, med rask installasjon: tavla i Freeform henger og krasjer ikke lenger etter at du har hentet en original, og to starter på samme profil lukker den andre selv. Selvtest 2535, 144 uendrede Saved-filer, dobbel start prøvd på pakken. Tavla er ikke prøvd med en ekte original i spill. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d23/candidate/Linux`.
 
