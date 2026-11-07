@@ -2117,3 +2117,7 @@ Skrevet i egen worktree, ikke bygget eller kjørt. `OpenTapePanel` har lys strip
 ## 7. november 2026 kl.05:05, natt, etterspor etter bortføring og FF-RESEARCH-08
 
 Skrevet i egen worktree, ikke bygget eller kjørt. Ny `FS47Aftermath` (bare Freeform, valgfritt lagringsfelt `aftermath`): arbeidsstasjonens klokke står på bortføringstiden til OPS har vært åpen 6 s eller et døgn er gått, ingen beregning endret; ku 25 mangler fra neste morgen i 2,5 til 4,5 døgn etter ekte besøk på gården (50 %, høyst to per spill), og telling på stedet gir et funn; krabbe og høy kan gi en stille linje i spillerens notater (40 %, hver linje én gang). Skitne klær og neseblod utelatt: feltnotatet har dem, og speil viser ingen spillerkropp. `empty_car` manglet varsel og lyskontakt: nå sjeldent (35 %, bare 02 til 06) lys over bilen med 8 s varsel, med retrett, foto og egen inspeksjon. Prøver: `-S47MenuPointerAfter`, `-S47MenuPointerCarLight`, selvtest for ettersporet og flokken. Tom må vurdere lys, ring og ordlyd.
+
+## 7. november 2026 kl.07:35, natt, kreosot som egne modeller
+
+Kilde bygd i Blender, FBX lest tilbake; ikke importert, kompilert eller sett i spillet. `SM_DP_Creosote_A`, `_B`, `_C` (`Tools/desertplants/creosote.py`, eget 1024-atlas): LOD0 2876/2716/2180 trekanter, høyde 1,64/1,45/1,18 m. `FS47Flora::EnsureCreosote` bytter Freeforms kreosot til dem når alle tre finnes, ellers står kortene; fordeling, størrelser og døde busker er de samme tallene. Importen kjøres med `S47_DESERT_ONLY=creosote`. Kritikerrunden ble ikke kjørt: køen tok fristen.

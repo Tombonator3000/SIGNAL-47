@@ -542,7 +542,7 @@ def creosote(out):
             rgb = rgb * .86
         # Bladene er voksaktige og litt blanke, kvistene matte.
         leafy = np.clip((rgb[..., 1] - rgb[..., 2]) * 6, 0, 1)
-        rough = (.8 - .28 * leafy) * (al > .3) + .9 * (al <= .3)
+        rough = (.85 - .2 * leafy) * (al > .3) + .9 * (al <= .3)
         put(arr, name, sp, rgb, al, rough, R)
     save(out, 'Creosote', arr, R, masked=True)
 

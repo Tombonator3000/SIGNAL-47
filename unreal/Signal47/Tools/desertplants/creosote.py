@@ -19,7 +19,9 @@ VAR = {
     'c': dict(seed=63, height=1.1, reach=.76, stems=9, el=(.16, .82), arc=.12, gens=(3, 2), l0=.74, cards=430, sparse=.14),
 }
 SWAY_MAX = .85
-LOD_CARDS = (None, 270, 64)  # LOD1, LOD2: resten av budsjettet går til rørene.
+LOD_CARDS = (None, 240, 54)  # LOD1, LOD2: resten av budsjettet går til rørene.
+# Større kort på avstand, med samme flate ganger dekning som LOD0 (målt: blad 0,36, far 0,58 av kortet), så LOD-byttet ikke tetter busken.
+LOD_GROW = (1.0, 1.45, 2.2)
 
 
 class Seg:
@@ -108,12 +110,14 @@ def kept(segs, lod):
     if lod == 1:
         keep, out = set(), []
         for s in segs:  # Foreldre står foran barna.
-            if s.gen == 0 or (s.gen == 1 and s.order % 2 == 0 and s.parent in keep):
+            # (den siste grenen fortsetter stengelen fra toppen: uten den blir planten lavere på avstand)
+            if s.gen == 0 or (s.gen == 1 and s.parent in keep and (s.order % 2 == 0 or s.parent.kids[-1] is s)):
                 keep.add(s)
                 out.append(s)
         return out
-    # LOD2: de åtte lengste stenglene, som rør med ett ledd.
-    return sorted((s for s in segs if s.gen == 0), key=lambda s: -s.path[-1][2])[:8]
+    # LOD2: de seks lengste stenglene med grenen som fortsetter dem, som rør med ett ledd. Barn etter foreldre.
+    stems = sorted((s for s in segs if s.gen == 0), key=lambda s: -s.path[-1][2])[:6]
+    return stems + [s.kids[-1] for s in stems if s.kids]
 
 
 def build(variant, lod):
@@ -139,17 +143,24 @@ def build(variant, lod):
         rr = random.Random(s.order * 3 + 1)
         cols = [tint((1.0, .98, .95), .72 + .28 * min(1.0, max(0.0, p[2]) / (H * .7))) for p in path]
         k.tube(path, rads, sides, 'bark' if s.gen < 2 else 'twig', sway, cols, v0=rr.random() * .3, vscale=.42, cap=False, flat=lod > 0)
-    _cards(k, cfg, segs, H, lod)
+    _cards(k, cfg, segs, use, H, lod)
     return k
 
 
-def _cards(k, cfg, segs, H, lod):
-    """Korte blad- og kvistkort ytterst på greinene. Roten sitter på en grein, og kortet peker utover og opp."""
+def _cards(k, cfg, segs, use, H, lod):
+    """Korte blad- og kvistkort ytterst på greinene. Roten sitter på en grein, og kortet peker utover og opp.
+
+    På LOD1 og LOD2 sitter kortene bare på greiner som er med der, så ingenting svever.
+    """
     r2 = random.Random(cfg['seed'] * 13 + 7)
-    outer = [s for s in segs if s.gen >= 1]
-    tips = [s for s in segs if not s.kids]
+    if lod == 0:
+        outer = [s for s in segs if s.gen >= 1]
+    else:
+        outer = list(use)
+    kept_set = set(use)
+    tips = [s for s in use if not any(c in kept_set for c in s.kids)]
     n = cfg['cards'] if lod == 0 else LOD_CARDS[lod]
-    grow = (1.0, 2.2, 4.4)[lod]
+    grow = LOD_GROW[lod]
     for i in range(n):
         # Først ett kort i hver greinende, resten fordelt på den ytre delen av greinene.
         if i < len(tips):
@@ -164,7 +175,7 @@ def _cards(k, cfg, segs, H, lod):
         if lod == 2:
             reg = ('far_a', 'far_b', 'far_c')[int(pick * 3)]
         elif lod == 1:
-            reg = ('far_a', 'far_b', 'leaf_a', 'leaf_b')[int(pick * 4)]
+            reg = ('leaf_a', 'leaf_b', 'leaf_c', 'tip_a')[int(pick * 4)]
         elif high < .36 or pick < cfg['sparse']:
             reg = 'bare_a'
         elif t > .85 and pick < .45:
@@ -188,7 +199,8 @@ def _cards(k, cfg, segs, H, lod):
         if out > .05:
             h = max(.08, min(h, max(.0, room) / out))
         wid = h * .75
-        nrm = norm(add(radial, (0, 0, 1.4)))
+        # Mest opp og lite utover: med mer utover blir klynger på skyggesiden nesten svarte ved siden av lysende klynger.
+        nrm = norm(add(mul(radial, .4), (0, 0, 1.4)))
         # Lineær tone: mørkere inne og lavt, lysere og litt gulere ytterst; noen kvister mer gule.
         lit = .72 + .28 * min(1.0, high / .8)
         warm = (.9 + tone * .14, .92 + tone * .08, .8 + (1 - tone) * .12)
