@@ -7,7 +7,7 @@
 // Freeform only. An older empty house on the property; the Alderete house itself stays lived in.
 namespace S47FarmHouse
 {
- enum class EMat : uint8 { Wall, Trim, Roof, Floor };
+ enum class EMat : uint8 { Wall, Trim, Roof, Floor, Paint };
  struct FPiece { FString Name; FVector Centre, Size; EMat Mat; };
  // Everything visible: walls cut by their doors and windows, floor, ceiling, roof and veranda.
  TArray<FPiece> Pieces();

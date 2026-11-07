@@ -432,7 +432,21 @@ namespace
   };
   Fence(30,215,30,265,0);Fence(80,215,80,265,1);Fence(30,265,80,265,2);Fence(30,215,66,215,3);Fence(75,215,80,215,4);
   auto* Plaster=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_ChurchWhiteBoard.M_Town_ChurchWhiteBoard"));
-  for(const auto& Piece:S47FarmHouse::Pieces())Box(Piece.Name,Piece.Centre,Piece.Size,Piece.Mat==S47FarmHouse::EMat::Wall?Plaster:Wood);
+  // A cube's UV stretches any map over a wall: these read the farm's own maps from where they stand (Tools/farmbuildings/import_oldhouse.py). The old ones if those are not imported.
+  const auto ByPlace=[](const TCHAR* Name,UMaterialInterface* Else)->UMaterialInterface*
+  {
+   const FString Path=FString::Printf(TEXT("/Game/FarmBuildings/Materials/%s"),Name);
+   auto* Found=FPackageName::DoesPackageExist(Path)?LoadObject<UMaterialInterface>(nullptr,*FString::Printf(TEXT("%s.%s"),*Path,Name)):nullptr;
+   return Found?Found:Else;
+  };
+  UMaterialInterface* Stucco=ByPlace(TEXT("M_Farm_WorldStucco"),Plaster);UMaterialInterface* Board=ByPlace(TEXT("M_Farm_WorldWood"),Wood);UMaterialInterface* Paint=ByPlace(TEXT("M_Farm_WorldPaint"),Wood);UMaterialInterface* Top=ByPlace(TEXT("M_Farm_WorldRoof"),Wood);
+  if(Stucco!=Plaster)if(auto* Worn=UMaterialInstanceDynamic::Create(Stucco,W)){Worn->SetScalarParameterValue(TEXT("FootCm"),float(S47FarmHouse::PadY()*100));Stucco=Worn;}
+  for(const auto& Piece:S47FarmHouse::Pieces())
+  {
+   UMaterialInterface* Mat=Board;
+   switch(Piece.Mat){case S47FarmHouse::EMat::Wall:Mat=Stucco;break;case S47FarmHouse::EMat::Paint:Mat=Paint;break;case S47FarmHouse::EMat::Roof:Mat=Top;break;default:break;}
+   Box(Piece.Name,Piece.Centre,Piece.Size,Mat);
+  }
   const double Y=S47FarmWorld::FloorRoad(76,251);Box(TEXT("farm:trough:bottom"),{76,Y+.15,251},{2,.16,.9},Metal);
   for(double DX:{-1.,1.})Box(TEXT("farm:trough:end"),{76+DX,Y+.40,251},{.10,.6,.9},Metal);
   for(double DZ:{-.45,.45})Box(TEXT("farm:trough:side"),{76,Y+.40,251+DZ},{2,.6,.08},Metal);
