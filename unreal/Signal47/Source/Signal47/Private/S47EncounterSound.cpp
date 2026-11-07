@@ -73,6 +73,27 @@ namespace
   for (int32 I=0;I<B->Length();++I) B->GetChannelData(0)[I]=R.FRandRange(-.65f,.65f);
   return B;
  }
+ // Dry pops on a small speaker, a few to a burst, none alike.
+ TSharedPtr<FS47AudioBuffer> CrackleBuffer(int32 Seed)
+ {
+  const double Dur=.42;
+  auto B=MakeShared<FS47AudioBuffer>(1,FMath::RoundToInt(Rate*Dur),Rate);FRandomStream R(47611+Seed*37);
+  float* Out=B->GetChannelData(0);const int32 N=B->Length();
+  for(int32 I=0;I<N;++I)Out[I]=0.f;
+  const int32 Pops=R.RandRange(4,9);
+  for(int32 P=0;P<Pops;++P)
+  {
+   const int32 At=R.RandRange(0,N-1);const double Peak=R.FRandRange(.25f,1.f),Fall=R.FRandRange(900.f,3400.f);
+   const int32 Len=FMath::Min(N-At,int32(Rate*.006));double Last=0;
+   for(int32 I=0;I<Len;++I)
+   {
+    // Noise that dies at once, differenced so that it has no thump in it.
+    const double Now=(R.FRand()*2.f-1.f)*Peak*FMath::Exp(-double(I)/Rate*Fall);
+    Out[At+I]=FMath::Clamp(Out[At+I]+float(Now-Last*.6),-1.f,1.f);Last=Now;
+   }
+  }
+  return B;
+ }
  US47Audio* OfflineAudio()
  {
   auto* A=NewObject<US47Audio>(GetTransientPackage()); A->AddToRoot();
@@ -154,6 +175,22 @@ bool FS47EncounterSound::Talk(US47Audio* Audio,const FVector& At)
  auto Pan=Context->CreatePanner();Pan->RefDistance=2.;Pan->RolloffFactor=.6;Pan->MaxDistance=30.;Pan->SetPosition(At.X,At.Y,At.Z);
  Src->Connect(Level);Level->Connect(Pan);Pan->Connect(Owner->SfxBus);Src->Start(Context->CurrentTime());
  TalkSource=Src;
+ return true;
+}
+
+bool FS47EncounterSound::Crackle(US47Audio* Audio,double Strength)
+{
+ if(!Bind(Audio)||bHeld||!RadioVolume||!FMath::IsFinite(Strength)||Strength<=0)return false;
+ if(Crackles.IsEmpty())for(int32 I=0;I<4;++I)Crackles.Add(CrackleBuffer(I));
+ FS47AudioContext::FBatch Batch(*Context);
+ Voices.RemoveAll([](const FVoice& V){ return !V.Source || V.Source->Ended(); });
+ const double Now=Context->CurrentTime();
+ auto Src=Context->CreateBufferSource();Src->Buffer=Crackles[FMath::RandRange(0,Crackles.Num()-1)];
+ Src->PlaybackRate.SetValue(FMath::FRandRange(.8f,1.3f));
+ auto Gain=Context->CreateGain();Gain->Gain.SetValue(.06+.42*FMath::Clamp(Strength,0.,1.));
+ // Under the player's radio slider, as the hiss is.
+ Src->Connect(Gain);Gain->Connect(RadioVolume);Src->Start(Now);
+ Voices.Add({Src,Gain,Now+.6});
  return true;
 }
 

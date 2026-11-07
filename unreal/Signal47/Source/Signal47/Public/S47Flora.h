@@ -16,7 +16,9 @@ class UMaterialInstanceDynamic;
 // distance fade and the sway are the flora materials' (import_web.py FLORA_WPO). Each outdoor area
 // has one patch (S47GroundCover.h says where it grows and how thick).
 // Rock: Freeform only, a real stone mesh of its own (S47Flora.cpp EnsureRocks); no copy of it in the web version's rules.
-enum class ES47FloraKind : uint8 { Grass, Sage, Creosote, Stalks, Succulent, Stones, Stain, Rock };
+// Yucca, Cholla, Mesquite: Freeform only, the plants of /Game/DesertPlants, one kind to a species and one mesh to each of its
+// variants (S47Flora.cpp EnsureDesert). They take the old succulent copies' place; without their assets the succulents stay.
+enum class ES47FloraKind : uint8 { Grass, Sage, Creosote, Stalks, Succulent, Stones, Stain, Rock, Yucca, Cholla, Mesquite };
 
 struct FS47FloraRect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; };
 
@@ -56,7 +58,7 @@ class SIGNAL47_API FS47Flora
 public:
 	struct FKind;
 	/** A kind's copies made in a cell: matrices (three's, sixteen floats each), colours, ranks, seams. */
-	struct FKindCell { TArray<float> M, C, Rank; TArray<uint8> Seam; int32 N = 0; };
+	struct FKindCell { TArray<float> M, C, Rank; TArray<uint8> Seam, Part; int32 N = 0; };
 
 	FS47FloraSpec Spec;
 	FS47Flora(const FS47FloraSpec& InSpec);
@@ -82,6 +84,10 @@ public:
 	/** A cell's copies of a kind (tests): made as the web version makes them. */
 	const FKindCell& CellOf(int32 I, int32 J, int32 Ki) { return Cell(I, J, Ki); }
 	bool Shown() const;
+	/** Tests: how many of the eight desert meshes this patch has in use (0 until it has first been shown in Freeform; then 8 or 0). */
+	int32 DesertInUse() const { return bDesertOn ? DesertMeshes() : 0; }
+	/** Tests: one copy of each desert plant on an arc before an eye (world terms, three's); how many stand. They stay until the end of the run. */
+	int32 TestDesertArc(const FVector& Eye, const FVector& Look, double Radius);
 
 private:
 	TMap<int64, TArray<TOptional<FKindCell>>> Cells;
@@ -99,6 +105,12 @@ private:
 	// Freeform's rocks: whether their mesh was looked for, its scale for a metre across and where its foot is (metres per unit of scale)
 	bool bRockTried = false;
 	double RockUnit = 0, RockFoot = 0;
+	// Freeform's desert plants: whether their meshes were looked for, and whether they are in use (all eight, or the old succulents stay)
+	bool bDesertTried = false, bDesertOn = false;
+	static int32 DesertMeshes();
+	/** Tests only: copies put in with a kind's own at each fill (TestDesertArc). */
+	struct FTestCopy { int32 Ki = 0; uint8 Part = 0; float M[16] = {}; float Cl[3] = {}; };
+	TArray<FTestCopy> TestCopies;
 
 	int64 Key(int32 I, int32 J) const { return int64(I + 40000) * 80000 + int64(J + 40000); }
 	double NoiseAt(double X, double Z, int32 Ki, double Terrain = 1) const;
@@ -113,9 +125,13 @@ private:
 	TWeakObjectPtr<AS47Web> Web;
 	int32 Group = -1;
 	/** a kind's mesh: the export's for the first of a pair, one of its own for the second */
-	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; };
+	struct FLayerPart { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; };
+	/** Parts: a desert species' meshes, one to a variant, under one Mid; its copies go to them by FKindCell::Part. */
+	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; TArray<FLayerPart> Parts; };
 	TArray<FLayer> Layers;
-	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
+	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, const TArray<uint8>& Pt, int32 N);
+	void PutMesh(const FLayer& L, UInstancedStaticMeshComponent* I, UInstancedStaticMeshComponent* Sh, int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
 	void DropShadows();
 	void EnsureRocks();
+	void EnsureDesert();
 };

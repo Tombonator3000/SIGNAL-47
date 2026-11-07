@@ -108,6 +108,11 @@ public:
  bool CaseWaitTarget(int32 Line,double& Target) const;
  FString WaitConsequences(double Target) const;
  bool WaitUntil(double Target);
+ // A long wait that crosses two in the morning, on a night when something is due, stops between 02:05 and 03:00 and
+ // something wakes the player. Once a night: the next rest goes straight through. Developer runs sleep through it
+ // (their fixtures count on Rest reaching the morning) unless a test asks.
+ void TestAllowWake(){bTestWake=true;}
+ double LastWakeClock() const{return WakeClock;}
  int32 FocusedFieldCase() const { return FieldFocus; }
  FString FieldNextAction(int32 Line) const;
  FString AvailableActivities() const;
@@ -187,6 +192,7 @@ public:
  void TestEndFirstShift(){Tutorial=0;}
  TSharedPtr<class FS47FarmNight> FarmNight;
  TSharedPtr<class FS47FarmHouseDoors> HouseDoors;
+ TSharedPtr<class FS47IndoorDread> IndoorDread;
  // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
  FVector2D AimAzEl();
  bool AimOnTarget() const;
@@ -238,6 +244,10 @@ private:
  bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
+ int32 WokenNight=0;
+ double WakeClock=0;
+ bool bTestWake=false;
+ bool WakeBefore(double Target,double& Out);
  int32 CrossPoint=0; double CrossSample=0;
  bool bCrossRunning=false,bShowEarlierJobs=false;
  TArray<FJob> Work;

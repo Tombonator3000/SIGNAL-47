@@ -275,7 +275,7 @@ void FS47FarmNight::StepSound(double Dt,bool bNight,const FString& Area)
  if(!M->Audio||!M->Player)return;
  const double Dist=Area==TEXT("saro")?FVector2D(M->Player->Pos.X-FarmX,M->Player->Pos.Z-FarmZ).Size():1e9;
  // Everything out here goes quiet before it starts. That is the warning.
- const bool bHush=(M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround())||(M->Freeform->Taken&&M->Freeform->Taken->Busy());
+ const bool bHush=(M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitHushed())||(M->Freeform->Taken&&M->Freeform->Taken->Busy());
  const bool bAt=Dist<FarmReach&&!bHush;
  if(bAt!=bWind)
  {

@@ -9,8 +9,39 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47MesaRock,Log,All);
 
+namespace
+{
+ TWeakObjectPtr<UMaterialInstanceDynamic> GroundMid,SeamMid;
+ // Measured against photographs of this desert (7 November): the bare ground read 230 where the photographs read
+ // 150, so in Freeform it comes down to real soil and shows more of its gravel. Story keeps the look it was approved in.
+ // Each frame, since it must be right the moment a game opens; it only writes when the answer changes.
+ void ApplyGround(AS47Web* Web)
+ {
+  auto* Mid=GroundMid.Get();if(!Mid)return;
+  static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor StoryTint;static float StoryGravel,StoryCrust,LastDay=-1;static bool bLastReal=false;
+  if(Read.Get()!=Mid){Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),StoryTint);Mid->GetScalarParameterValue(TEXT("GravelAmount"),StoryGravel);Mid->GetScalarParameterValue(TEXT("CrustAmount"),StoryCrust);LastDay=-1;}
+  const US47Main* Main=US47Main::Get(Web);const bool bReal=S47FarmWorld::Enabled(Main);
+  // Only the day changes: a darker soil would take the moonlit ground, already at the edge of sight, down to black.
+  const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
+  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  if(bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
+  bLastReal=bReal;LastDay=Day;
+  const auto Tint=[&](const FLinearColor& Real){return bReal?FMath::Lerp(StoryTint,Real,Day):StoryTint;};
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.20f,.24f,.265f)));
+  Mid->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
+  Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
+  if(auto* Seam=SeamMid.Get())
+  {
+   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.20f*.525f,.24f*.35f,.265f*.28f)));
+   Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
+   Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
+  }
+ }
+}
+
 void S47MesaRock::Step(AS47Web* Web,double Dt)
 {
+ if(Web)ApplyGround(Web);
  static double Wait=0;static TWeakObjectPtr<UMaterialInterface> Rock;static bool bMissing=false;
  static TSet<TWeakObjectPtr<UStaticMeshComponent>> Done;
  if(!Web||bMissing||(Wait-=Dt)>0)return;
@@ -20,7 +51,7 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   Rock=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Licensed/Backdrop/M_S47_MesaRock.M_S47_MesaRock"));
   if(!Rock.IsValid()){bMissing=true;UE_LOG(LogS47MesaRock,Display,TEXT("S47: mesa rock material not installed; exported mesa colours kept"));return;}
  }
- static TWeakObjectPtr<UMaterialInterface> Ground;static bool bNoGround=false;static TWeakObjectPtr<UMaterialInstanceDynamic> GroundMid,SeamMid;
+ static TWeakObjectPtr<UMaterialInterface> Ground;static bool bNoGround=false;
  if(!Ground.IsValid()&&!bNoGround){Ground=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Backdrop/M_S47_DesertGround.M_S47_DesertGround"));bNoGround=!Ground.IsValid();}
  for(int32 I=0;const FS47WebNode* N=Web->Node(I);++I)
  {
@@ -32,7 +63,12 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
     // The corridor's seam mesh has no vertex colours, so the same tint lands much brighter on it: its own instance.
     const bool bSeam=N->Name==TEXT("saroCorridorGround");
     TWeakObjectPtr<UMaterialInstanceDynamic>& Mine=bSeam?SeamMid:GroundMid;
-    if(!Mine.IsValid())Mine=UMaterialInstanceDynamic::Create(Ground.Get(),GetTransientPackage());
+    if(!Mine.IsValid())
+    {
+     Mine=UMaterialInstanceDynamic::Create(Ground.Get(),GetTransientPackage());
+     // The low mips of these sets read far paler than the full texture: a game opened to a white yard for seconds.
+     if(Mine.IsValid())Mine->SetForceMipLevelsToBeResident(true,true,-1.f);
+    }
     G->SetMaterial(0,Mine.IsValid()?(UMaterialInterface*)Mine.Get():Ground.Get());Done.Add(G);UE_LOG(LogS47MesaRock,Display,TEXT("S47: desert ground material on node %d (%s)"),I,*N->Name);}
    continue;
   }
@@ -52,28 +88,5 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   }
   Done.Add(C);
   UE_LOG(LogS47MesaRock,Display,TEXT("S47: mesa rock applied to %s (node %d, %d slots)"),*N->Name,I,C->GetNumMaterials());
- }
- // Measured against photographs of this desert (7 November): the bare ground read 230 where the photographs read
- // 150, so in Freeform it comes down to real soil and shows more of its gravel. Story keeps the look it was approved in.
- if(auto* Mid=GroundMid.Get())
- {
-  // The components hold it; the first look reads the material's own values, which Story goes on using.
-  static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor StoryTint;static float StoryGravel,StoryCrust;
-  if(Read.Get()!=Mid){Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),StoryTint);Mid->GetScalarParameterValue(TEXT("GravelAmount"),StoryGravel);Mid->GetScalarParameterValue(TEXT("CrustAmount"),StoryCrust);}
-  const bool bReal=S47FarmWorld::Enabled(US47Main::Get(Web));
-  // Only the day changes: a darker soil would take the moonlit ground, already at the edge of sight, down to black.
-  const US47Main* Main=US47Main::Get(Web);
-  const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
-  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
-  const auto Tint=[&](const FLinearColor& Real){return bReal?FMath::Lerp(StoryTint,Real,Day):StoryTint;};
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f,.265f,.275f)));
-  Mid->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
-  Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
-  if(auto* Seam=SeamMid.Get())
-  {
-   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f*.525f,.265f*.35f,.275f*.28f)));
-   Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
-   Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
-  }
  }
 }

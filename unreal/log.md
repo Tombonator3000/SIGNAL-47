@@ -2072,3 +2072,18 @@ Gren `worktree-agent-a7338ffb973ce40ec`. (1) Tunlampens glød og glorie ved veil
 ## 7. november 2026 kl.02:05, natt, bygg og natur
 
 Fire egne gårdsbygg er importert (LFS, 45 filer) og står i Freeform. Bakken: kritikerne og målinger viste 230 mot 150 i foto, så `S47MesaRock` gir bakken ny farge og mer grus bare i Freeform om dagen; natt og Story er uendret. Kreosot i bestand, fot og strø, olivengrå tone, småstein. Den gamle `-S47FarmWorldTest` hadde ikke vært kjørt siden 2. november, og skriptet mitt `farm.py` kjørte en annen prøve; den er oppdatert og består igjen (249 m kjøring, 124 m gange, last, Fortsett, Story). Bildetid i naturprøven 10-18 ms.
+## 7. november 2026, natt, Freeform-skrekk som faktisk skjer
+
+Skrevet i egen worktree, ikke bygget eller kjørt. Crab og Tall var alt koblet til lysstedene; det som manglet er rettet: ingen kropp før kl. 02 (`FS47FarmSite::TheirHours`), og nattens lys kommer nå oftest sent, med en ny melding om steder merket tidlig på kvelden. Tall står langt unna og kommer etter hvert, Crab langs bakken, hvem som kommer avhenger av sted og time, og modellvalget står i `S47KindBody`. Nytt `FS47IndoorDread`: Roswell ved vindu eller dørkant målt med sikt fra spillerens øye, og et rom man kom seg ut av flomlyset i kan lyses igjen etter minst tre dager. Radioen hører 48 m unna og knitrer tettere jo nærmere. Stillhet også utenfor gården, lykt som svikter under besøket. Gjemme seg er hoppet over: ingen huking, ingen skjulinteraksjon. Prøver: `-S47MenuPointerKinds`, `-S47MenuPointerPeek`, `-S47MenuPointerReflood`, og `-S47MenuPointerChain` går nå til 02:30. Lyd ikke hørt.
+
+## 7. november 2026, natt, gjennomgang av Freeform-skrekken
+
+Skrevet, ikke bygget. En uavhengig gjennomgang fant hull, og de er kontrollert i kilden og rettet. Hvile som krysser kl. 02 trekker nattens valg og vekker spilleren 02:05 til 03:00 hvis noe er trukket eller merker står, én gang per natt. Vindu i SARO-bygget, kontrollrommet først; rom 6 er fjernet fordi Freeform aldri åpner det. `observer`, og `feeder_presence` eller `array_presence`, har egne nattrekninger som venter. `peek-N` og `flood-room-...` teller i saken om besøkende. `close_pass` og motorveihendelsen venter til kl. 02 i Freeform. Nye prøver: `-S47MenuPointerNight`, `-S47MenuPointerRest`.
+
+## 7. november 2026 kl.03:00, natt, ørkenplantene i Freeform
+
+Skrevet i egen worktree, ikke bygget, importert eller kjørt. `Tools/desertplants/import_assets.py` gir `/Game/DesertPlants` (kokes alltid). Yucca, cholla og mesquite er nye flora-arter med egne mesher per variant, bare i Freeform, og erstatter de gamle sukkulentene der; mangler ett av de åtte meshene, står de gamle. `-S47MenuPointerNature` logger `S47: desert plants N of 8 loaded`, tar tre nye bilder (`nature-desert-*.png`) og feiler hvis planleggeren ikke trekker alle tre artene selv. Tettheter er anslag.
+
+## 7. november 2026 kl.03:30, natt, aliens i ekte hendelser og egne planter
+
+Regelen «ingen kropp før ca. kl. 02» håndheves nå, og uavhengig gjennomgang fant at hvile da hoppet over alt: hvile vekker nå spilleren kl. 02:05-03:00 hvis noe er på gang, høyst én gang per natt. Kikking i kontrollrommet, gårdshuset og byens rom. Radio knitrer nærmere dem. Rom kan flombelyses igjen etter tre døgn. Kinoen har ikke noe sted å kikke fra i prøvens rom, så der skjer det ingenting. Egne modeller av cholla, yucca og mesquite er importert (17 filer i LFS). Kjent feil: yucca med stengel har for blek rosett. Bleke flater rett etter lasting var lave mipnivåer, ikke farge; bakketeksturene holdes lastet.

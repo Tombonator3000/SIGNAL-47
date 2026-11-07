@@ -1,10 +1,14 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 6. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 7. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 6. november, stolpelampe og øyeglimt
+## Installert 7. november, gårdsbygg og natur
+
+`5a68c650` etter PR475 er nå standard, med rask installasjon: fire egne gårdsbygg i Freeform, bakke i jordfarge om dagen, kreosot i bestand og feilretting for tunlampe og lagret bil. Før dette samme natt: ekte bortføring og stedsbesøk (`421b8d43`) og blikk i øynene, kua som stirrer og bilde på filmen (`20d9d513`). Selvtest 2523 og 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-07_gardsbygg-natur.md).
+
+## Tidligere installert 6. november, stolpelampe og øyeglimt
 
 `d1923eed` etter PR465 er nå standard, med rask installasjon: bil og gange i hele array-feltet i Freeform, servicedør på alle antenner, dører i gårdshuset, øyeglimt bare i mørke innen 50 m, ny Roswell-lusking, og Tall og Crab i utviklermenyen. Pakken har et privat filmklipp og skal ikke deles. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-06_d1923eed.md).
 

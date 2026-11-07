@@ -1,6 +1,6 @@
+#include "S47FarmWorld.h"
 #include "Components/PointLightComponent.h"
 #include "Components/MaterialBillboardComponent.h"
-#include "S47FarmWorld.h"
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
 #include "S47Freeform.h"
@@ -168,7 +168,7 @@ namespace
   }
   for(const FWindowGlow& Row:YardGlows)if(FS47GlowPoints* G=W->Glow(Row.Node))if(G->Bill.IsValidIndex(Row.Index)&&G->Bill[Row.Index].IsValid())G->Bill[Row.Index]->SetVisibility(!On);
   if(auto* Mid=WindowMid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),State==2?WindowLit:FLinearColor::Black);
-  if(auto* L=BarnDay.Get())L->SetIntensity(State==1?5200.f:0.f);
+  if(auto* L=BarnDay.Get())L->SetIntensity(State==1?1100.f:0.f);
  }
  // A save from before the buildings can stand where a wall is now. The walker never enters one by itself, and it
  // could not leave one either: walk it out to the nearest clear ground. No save field changes.

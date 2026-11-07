@@ -1,6 +1,8 @@
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47FarmSite.h"
+#include "S47IndoorDread.h"
+#include "S47Taken.h"
 #include "S47Main.h"
 #include "S47Audio.h"
 #include "S47Inter.h"
@@ -43,7 +45,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=0; LastCue=-1; bAvailable=false;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false;
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -120,12 +122,12 @@ void FS47FieldRadio::Take()
  if(M->UI) M->UI->Toast(TEXT("FIELD RADIO TAKEN // I'll keep it with me."),3);
  M->RequestAutosave();
 }
-double FS47FieldRadio::Proximity(const FVector& Eye,const FPresence& In)
+double FS47FieldRadio::Proximity(const FVector& Eye,const FPresence& In,double Reach)
 {
  if(!In.bActive) return 0;
  const double D=FVector::Distance(Eye,In.At);
- // Broad, smooth uncertainty, not a rangefinder. Quiet above eighteen metres.
- const double K=FMath::Clamp((18.-D)/15.,0.,1.);
+ // Broad, smooth uncertainty, not a rangefinder. Full three metres off, quiet at its reach.
+ const double K=FMath::Clamp((Reach-D)/(Reach-3.),0.,1.);
  return K*K*(3.-2.*K);
 }
 bool FS47FieldRadio::InView(const FVector& At) const
@@ -167,7 +169,17 @@ TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
    Add(A.EyePosition(),A.State()==FS47HorrorThreat::EState::Chase || A.State()==FS47HorrorThreat::EState::Capture);
  }
  if(M->DevEvents) if(auto At=M->DevEvents->PalePresence()) Add(*At,false);
- if(M->Freeform&&M->Freeform->FarmSite) if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,true);
+ if(M->IsFreeform()&&M->Freeform)
+ {
+  if(M->Freeform->FarmSite)
+  {
+   if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,true);
+   // No body yet: it breaks up on the place itself. Heard, never seen.
+   if(auto At=M->Freeform->FarmSite->VisitWarningAt()) Add(*At,false,false);
+  }
+  if(M->Freeform->Taken) if(auto At=M->Freeform->Taken->RadioAt()) Add(*At,false,false);
+  if(M->Freeform->IndoorDread) if(auto At=M->Freeform->IndoorDread->PeekEye()) Add(*At,false);
+ }
  return Out;
 }
 double FS47FieldRadio::ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible)
@@ -194,10 +206,13 @@ void FS47FieldRadio::Step(double Dt)
  Sound.Hold(Held);
  if(Held || !M->Player) return;
  const FVector Eye=S47Three::ToThree(M->Player->EyeUE());
- double Level=0; bool Visible=false,Hunting=false;
+ double Level=0,Heard=0; bool Visible=false,Hunting=false;
+ // The cues and the music keep to the short range. In Freeform the set itself hears them from further off.
+ const double Reach=M->IsFreeform()?FreeformReach:18.;
  for(const auto& A:Nearby())
  {
   const double K=Proximity(Eye,A); Level=FMath::Max(Level,K);
+  Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
   Visible|=K>.04 && A.bVisible; Hunting|=K>.04 && A.bHunting;
  }
  LastLevel=Level;
@@ -213,7 +228,19 @@ void FS47FieldRadio::Step(double Dt)
  bool Listening=bOwned || (M->Audio && M->Audio->ReceiverMonitorOn());
  if(!Listening && M->Audio && M->Audio->RadioOn())
  { Listening=true; Speaker=M->Audio->AmRadioPosition(); }
- Sound.UpdateRadio(M->Audio,Listening?Level:0,Speaker,false);
+ LastRadio=Listening?Heard:0;
+ Sound.UpdateRadio(M->Audio,LastRadio,Speaker,false);
+ // Freeform: it crackles, seldom at the edge of its reach, near enough all the time close by.
+ if(M->IsFreeform()&&LastRadio>.01)
+ {
+  CrackleIn-=Dt;
+  if(CrackleIn<=0)
+  {
+   CrackleIn=FMath::Lerp(2.6,.09,FMath::Sqrt(LastRadio))*FMath::FRandRange(.55f,1.45f);
+   if(Sound.Crackle(M->Audio,LastRadio))++Crackled;
+  }
+ }
+ else CrackleIn=0;
  ControlTest(Dt);
 }
 void FS47FieldRadio::ControlTest(double Dt)
@@ -281,6 +308,13 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  const double Near=Proximity(FVector::ZeroVector,A); A.At.Z=12;
  C(Near>Proximity(FVector::ZeroVector,A) && Near<1,TEXT("smooth proximity strengthens towards a real creature"));
  A.At.Z=19; C(Proximity(FVector::ZeroVector,A)==0,TEXT("distant presence is silent"));
+ C(Proximity(FVector::ZeroVector,A,FreeformReach)>0,TEXT("the Freeform set hears it from further off"));
+ {
+  double Last=-1;bool Rising=true;
+  for(double D=FreeformReach;D>=3;D-=3){A.At.Z=D;const double K=Proximity(FVector::ZeroVector,A,FreeformReach);Rising&=K>=Last;Last=K;}
+  C(Rising&&Last==1,TEXT("stronger all the way in, and full close by"));
+  A.At.Z=FreeformReach;C(Proximity(FVector::ZeroVector,A,FreeformReach)==0,TEXT("silent at its reach"));
+ }
  A.At.Z=4; A.bHunting=true;
  C(ObservedThreat(FVector::ZeroVector,{A})==0,TEXT("off-screen threat does not reveal itself through music"));
  A.bVisible=true;
