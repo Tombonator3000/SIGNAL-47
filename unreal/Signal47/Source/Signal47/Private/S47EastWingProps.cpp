@@ -2,6 +2,13 @@
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47Three.h"
+#include "S47Canvas.h"
+#include "S47Freeform.h"
+#include "S47Story.h"
+#include "S47GameStyle.h"
+#include "Engine/Texture2D.h"
+#include "Math/RotationMatrix.h"
+#include "TextureResource.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -124,6 +131,62 @@ namespace
  // SM_EW_RollUpDoorSegment is deliberately not a decorative duplicate of the shell's actual door.
 }
 
+namespace
+{
+ // The printed month under SM_EW_Calendar1986's picture, redrawn for the game's date. The blade is 0.30 x 0.45 m; its
+ // dark month bar starts 46.9% of the way down, so the overlay covers the lower 53.1% (0.30 x 0.239 m) at 1024 x 816 px
+ // (3413 px/m). Same print: cream paper, dark green bar, condensed caps, red Sundays, a red ballpoint ring on today.
+ // No notes, no Story text: the month, the year, the weekdays and the dates only.
+ constexpr int32 CalW=1024,CalH=816;
+ constexpr double CalBladeW=.298,CalBladeH=.238; // overlay size in metres (CalW:CalH)
+ void DrawCalendar(const FDateTime& Today,TArray<FColor>& Out)
+ {
+  static const TCHAR* Months[]={TEXT("JANUARY"),TEXT("FEBRUARY"),TEXT("MARCH"),TEXT("APRIL"),TEXT("MAY"),TEXT("JUNE"),TEXT("JULY"),TEXT("AUGUST"),TEXT("SEPTEMBER"),TEXT("OCTOBER"),TEXT("NOVEMBER"),TEXT("DECEMBER")};
+  static const TCHAR* Days[]={TEXT("SUN"),TEXT("MON"),TEXT("TUE"),TEXT("WED"),TEXT("THU"),TEXT("FRI"),TEXT("SAT")};
+  const uint32 Ink=0x22221e,Red=0x78281e,Rule=0x96928a;
+  int32 First=0,Count=0,Rows=0;S47Game::MonthGrid(Today.GetYear(),Today.GetMonth(),First,Count,Rows);
+  FS47Canvas G(CalW,CalH);
+  G.SetFill(0xf0ece0);G.FillRect(0,0,CalW,CalH);
+  G.SetFill(0x1e2822);G.FillRect(0,0,CalW,92);
+  G.SetFont(TEXT("Oswald-Medium.ttf"),58);G.TextAlign=FS47Canvas::EAlign::Center;
+  G.SetFill(0xecE6d2);G.FillText(FString::Printf(TEXT("%s %d"),Months[Today.GetMonth()-1],Today.GetYear()),CalW/2,70);
+  const double X0=41,CW=(CalW-82)/7.,Top=170,Bottom=695,CH=(Bottom-Top)/Rows;
+  G.SetFont(TEXT("Oswald-Regular.ttf"),30);
+  for(int32 C=0;C<7;++C){G.SetFill(C==0?Red:Ink);G.FillText(Days[C],X0+C*CW+CW/2,150);}
+  G.SetStroke(Rule);G.LineWidth=2;
+  const int32 Size=Rows>=6?36:42;
+  for(int32 Cell=0;Cell<Rows*7;++Cell)
+  {
+   const int32 R=Cell/7,C=Cell%7,Day=Cell-First+1;
+   const double X=X0+C*CW,Y=Top+R*CH;
+   G.StrokeRect(X,Y,CW,CH);
+   if(Day<1||Day>Count)continue;
+   G.SetFont(TEXT("Oswald-Medium.ttf"),Size);G.TextAlign=FS47Canvas::EAlign::Left;
+   G.SetFill(C==0?Red:Ink);G.FillText(FString::FromInt(Day),X+12,Y+Size+8);
+   if(Day==Today.GetDay())
+   {
+    // the day ringed in red ballpoint, drawn twice a little off true
+    G.SetStroke(0xa01e1a,.9);G.LineWidth=5;
+    const double Rad=FMath::Min(CW,CH)*.46,Cx=X+CW/2,Cy=Y+CH/2;
+    G.BeginPath();G.Arc(Cx,Cy,Rad,.2,2*PI+.35);G.Stroke();
+    G.BeginPath();G.Arc(Cx+2,Cy-1.5,Rad+1.5,2.5,2*PI+2.9);G.Stroke();
+    G.SetStroke(Rule);G.LineWidth=2;
+   }
+  }
+  G.SetFont(TEXT("Oswald-Regular.ttf"),30);G.TextAlign=FS47Canvas::EAlign::Center;
+  G.SetFill(0x3c3830);G.FillText(TEXT("CALICHE FEED & SUPPLY  \u00b7  ROUTE 47"),CalW/2,CalH-30);
+  Out=MoveTemp(G.Px);
+  // the print's aged edge: a soft darkening over the outer 40 px
+  for(int32 Y=0;Y<CalH;++Y)for(int32 X=0;X<CalW;++X)
+  {
+   const double E=FMath::Min(FMath::Min(X,CalW-1-X),FMath::Min(Y,CalH-1-Y));
+   if(E>=40)continue;
+   const double K=1.-.16*FMath::Square(1.-E/40.);
+   FColor& P=Out[Y*CalW+X];P.R=uint8(P.R*K);P.G=uint8(P.G*K);P.B=uint8(P.B*K);
+  }
+ }
+}
+
 bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneComponent>>& Parts)
 {
  if(bBuilt)return true;
@@ -140,6 +203,7 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
   Meshes.Add(Path,Mesh);
  }
  if(!Complete)return false; // private RM565 is required for this complete local arrangement too.
+ TArray<UStaticMeshComponent*> Blades;
  TArray<FS47Rect>& Colliders=Web->CollidersMutable(TEXT("saro"));
  for(int32 Index=0;Index<UE_ARRAY_COUNT(Layout);++Index)
  {
@@ -153,6 +217,7 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
   C->SetupAttachment(Web->GetRootComponent());C->RegisterComponent();
   const FTransform Transform(FRotator(0,P.Yaw,0),S47Three::ToUE(P.At),FVector::OneVector);
   C->SetWorldTransform(Transform);Parts.Add(C);
+  if(FCString::Strcmp(P.Asset,TEXT("SM_EW_Calendar1986"))==0)Blades.Add(C);
   if(P.bFoot)
   {
    const FBox WorldBox=Mesh->GetBoundingBox().TransformBy(Transform);
@@ -172,6 +237,7 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
    C->SetMaterial(Slot,Dynamic);Emission.Add({Dynamic,Glow});
   }
  }
+ BuildCalendars(Web,Blades,Parts);
  bBuilt=true;
  UE_LOG(LogS47EastWingProps,Display,TEXT("S47: east wing furnishing: %d instances, %d distinct imported models, %d powered emissive slots; actual roll-up door supplied by shell"),UE_ARRAY_COUNT(Layout),Meshes.Num(),Emission.Num());
  return true;
@@ -180,4 +246,51 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
 void FS47EastWingProps::SetLevel(float Level)
 {
  for(const FEmission& E:Emission)if(UMaterialInstanceDynamic* M=E.Material.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),E.Powered*Level);
+}
+
+void FS47EastWingProps::BuildCalendars(AS47Web* Web,const TArray<UStaticMeshComponent*>& Blades,TArray<TWeakObjectPtr<USceneComponent>>& Parts)
+{
+ UStaticMesh* Plane=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Plane.Plane"));
+ UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ UTexture2D* Tex=UTexture2D::CreateTransient(CalW,CalH,PF_B8G8R8A8);
+ if(!Plane||!Base||!Tex||Blades.IsEmpty()){UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendars keep their printed sheet (plane %d, material %d, texture %d, blades %d)"),Plane!=nullptr,Base!=nullptr,Tex!=nullptr,Blades.Num());return;}
+ Tex->SRGB=true;Tex->Filter=TF_Bilinear;
+ UMaterialInstanceDynamic* Mat=UMaterialInstanceDynamic::Create(Base,Web);
+ Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.86f,.86f,.86f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
+ Mat->SetScalarParameterValue(TEXT("Roughness"),.86f);Mat->SetScalarParameterValue(TEXT("Metalness"),0);Mat->SetScalarParameterValue(TEXT("EmissivePower"),0);
+ Mat->SetScalarParameterValue(TEXT("UseMap"),1);Mat->SetScalarParameterValue(TEXT("MapIsLinear"),0);Mat->SetTextureParameterValue(TEXT("Map"),Tex);
+ // Engine plane (100 cm, normal +Z, u=(x+50)/100, v=(y+50)/100). Turned so its normal is the blade's front (the mesh's local +Y,
+ // where Blender -Y lands) with plane +X to the reader's right and plane +Y down: the image reads upright with u'=u, v'=v.
+ Mat->SetVectorParameterValue(TEXT("MapU"),FLinearColor(1,0,0,0));Mat->SetVectorParameterValue(TEXT("MapV"),FLinearColor(0,1,0,0));
+ const FQuat Face=FRotationMatrix::MakeFromXZ(FVector(1,0,0),FVector(0,1,0)).ToQuat();
+ int32 N=0;
+ for(UStaticMeshComponent* Blade:Blades)
+ {
+  UStaticMeshComponent* Sheet=NewObject<UStaticMeshComponent>(Web,*FString::Printf(TEXT("EastWingCalendarSheet_%d"),N++));
+  Sheet->SetMobility(EComponentMobility::Movable);Sheet->SetStaticMesh(Plane);Sheet->SetMaterial(0,Mat);
+  Sheet->SetCollisionEnabled(ECollisionEnabled::NoCollision);Sheet->SetCastShadow(false);
+  Sheet->SetupAttachment(Blade);Sheet->RegisterComponent();
+  // blade z 0..45 cm, print face 0.04 cm in front of the mesh origin plane; the overlay sits 0.14 cm out, flush with the blade's bottom
+  Sheet->SetRelativeTransform(FTransform(Face,FVector(0,.14,CalBladeH*50.),FVector(CalBladeW,CalBladeH,1)));
+  Parts.Add(Sheet);CalendarSheets.Add(Sheet);
+ }
+ CalendarTexture=Tex;
+}
+
+void FS47EastWingProps::UpdateCalendar(US47Main* Main)
+{
+ UTexture2D* Tex=CalendarTexture.Get();
+ if(!Main||!Tex||CalendarSheets.IsEmpty())return;
+ const bool Free=Main->IsFreeform();
+ const FDateTime Date=S47Game::GameDate(Free,Free&&Main->Freeform?Main->Freeform->Day():1,Main->Story?Main->Story->Clock():12*3600.);
+ const int32 Key=Date.GetYear()*10000+Date.GetMonth()*100+Date.GetDay();
+ if(Key==CalendarKey)return; // the sheet changes with the day, not with the frame
+ TArray<FColor> Px;DrawCalendar(Date,Px);
+ if(Px.Num()!=CalW*CalH)return;
+ void* Data=Tex->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+ FMemory::Memcpy(Data,Px.GetData(),Px.Num()*sizeof(FColor));
+ Tex->GetPlatformData()->Mips[0].BulkData.Unlock();
+ Tex->UpdateResource();
+ CalendarKey=Key;
+ UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*Date.ToString(TEXT("%a %b %d %Y")).ToUpper(),CalendarSheets.Num(),CalW,CalH);
 }

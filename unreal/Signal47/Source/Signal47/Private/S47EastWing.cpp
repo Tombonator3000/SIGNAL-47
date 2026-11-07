@@ -492,7 +492,7 @@ bool FS47EastWing::Step(float Dt)
    const float Target=Shown&&Powered?1.f:0.f;float Sum=0;int32 N=0;
    for(int32 I=0;I<Tubes.Num();++I)if(URectLightComponent* L=Tubes[I].Get())
    {const float K=TubeFlicker[I].Apply(Now,Target,uint32(I+11));L->SetIntensity(TubeLumens[I]*K);L->SetVisibility(Shown&&K>1e-4f);Sum+=K;++N;}
-   if(PropsHelper)PropsHelper->SetLevel(N?Sum/N:Target);
+   if(PropsHelper){PropsHelper->SetLevel(N?Sum/N:Target);if(Shown)PropsHelper->UpdateCalendar(M);}
   }
   for(const auto& P:Parts)if(USceneComponent* C=P.Get())
   {

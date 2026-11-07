@@ -260,6 +260,20 @@ namespace S47Game
 		return D >= 12 * 3600 ? TEXT("SUN APR 13") : TEXT("MON APR 14");
 	}
 
+	FDateTime GameDate(bool bFreeform, int32 FreeformDay, double StoryClock)
+	{
+		if (bFreeform) return FDateTime(1986, 4, 13) + FTimespan::FromDays(FMath::Max(0, FreeformDay - 1));
+		const double D = FMath::Fmod(FMath::Fmod(StoryClock, 86400.0) + 86400.0, 86400.0);
+		return FDateTime(1986, 4, D >= 12 * 3600 ? 13 : 14);
+	}
+
+	void MonthGrid(int32 Year, int32 Month, int32& FirstColumn, int32& Days, int32& Rows)
+	{
+		FirstColumn = (int32(FDateTime(Year, Month, 1).GetDayOfWeek()) + 1) % 7; // EDayOfWeek counts from Monday
+		Days = FDateTime::DaysInMonth(Year, Month);
+		Rows = (FirstColumn + Days + 6) / 7;
+	}
+
 	FString OsdLine(double Clock)
 	{
 		const double D = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
@@ -313,6 +327,17 @@ namespace S47Game
 		};
 		Check(TEXT("day before midnight"), DayLine(23 * 3600 + 41 * 60) == TEXT("SUN APR 13"));
 		Check(TEXT("day after midnight"), DayLine(2 * 3600 + 13 * 60) == TEXT("MON APR 14") && DayLine(86400 + 600) == TEXT("MON APR 14"));
+		{
+			// the wall calendars follow the game's date; the weekday comes from the date, not from a table
+			const FDateTime Eve = GameDate(false, 0, 23 * 3600 + 41 * 60), Dawn = GameDate(false, 0, 2 * 3600 + 13 * 60), Day3 = GameDate(true, 3, 0), Day1 = GameDate(true, 1, 0);
+			Check(TEXT("calendar story dates"), Eve.GetDay() == 13 && Eve.GetDayOfWeek() == EDayOfWeek::Sunday && Dawn.GetDay() == 14 && Dawn.GetDayOfWeek() == EDayOfWeek::Monday);
+			Check(TEXT("calendar freeform dates"), Day1.GetDay() == 13 && Day3.GetDay() == 15 && Day3.GetDayOfWeek() == EDayOfWeek::Tuesday && GameDate(true, 19, 0).GetMonth() == 5);
+			int32 Col = 0, Days = 0, Rows = 0;
+			MonthGrid(1986, 4, Col, Days, Rows);
+			Check(TEXT("calendar april 1986 grid"), Col == 2 && Days == 30 && Rows == 5 && (Col + 13 - 1) % 7 == 0, FString::Printf(TEXT("%d %d %d"), Col, Days, Rows));
+			MonthGrid(1986, 11, Col, Days, Rows);
+			Check(TEXT("calendar november 1986 grid"), Col == 6 && Days == 30 && Rows == 6, FString::Printf(TEXT("%d %d %d"), Col, Days, Rows));
+		}
 		Check(TEXT("osd line"), OsdLine(23 * 3600 + 58 * 60 + 30) == TEXT("APR.13 1986  23:58"), OsdLine(23 * 3600 + 58 * 60 + 30));
 		FString Who, Line;
 		SplitCaption(TEXT("N. VEGA: \"Sierra Motor Court.\""), Who, Line);
