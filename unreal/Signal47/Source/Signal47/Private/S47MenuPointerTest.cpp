@@ -925,7 +925,11 @@ namespace
    {
     if(Visit.StageNow()==EV::Standing||Visit.StageNow()==EV::Leaving)
     {
-     if(Elapsed-DreadAt>10)return Fail(TEXT("looked at, it must go"));
+     if(Elapsed-DreadAt>10)
+     {
+      UE_LOG(LogTemp,Display,TEXT("S47: door: looked at from eye %s, floor %.2f, body %s, door %s"),*M->Player->EyeUE().ToString(),M->Player->FloorY,Visit.BodyEye().IsSet()?*Visit.BodyEye()->ToString():TEXT("none"),*Visit.DoorMiddle().ToString());
+      return Fail(TEXT("looked at, it must go"));
+     }
      if(Visit.BodyEye().IsSet()){StandBy(2.2);DreadLookAt(M,*Visit.BodyEye());}
      if(Elapsed-DreadAt>.3&&DoorFirst==0){DoorFirst=1;Shot(TEXT("door-standing.png"));}
      return true;

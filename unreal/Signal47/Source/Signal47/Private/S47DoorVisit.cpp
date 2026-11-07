@@ -457,7 +457,8 @@ void FS47DoorVisit::StepVisit(double Dt)
   const FVector N=In.Cam.Project(Eye);
   const bool bInView=N.Z<1&&FMath::Abs(N.X)<.96&&FMath::Abs(N.Y)<.96;
   const double Off=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(In.Cam.Forward,(Eye-In.Cam.Pos).GetSafeNormal()),-1.,1.)));
-  const bool bClear=Sight.ClearSight(In.Cam.Pos,Eye);
+  // Through an open door its own frame and leaf do not count as what hides the one standing in it (the cinema's glass doors keep their collision shut).
+  const bool bClear=Sight.ClearSight(In.Cam.Pos,Eye)||(DoorOpenNow()&&Sight.ClearSight(In.Cam.Pos,Target.Middle-Target.Out*.25+FVector(0,1.1,0)));
   if(Owner)bSawBody|=bInView&&bClear&&Owner->DoorBodyRendered();
   if(Now==EStage::Standing)
   {
