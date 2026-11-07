@@ -37,6 +37,10 @@ public:
  bool Busy() const{return Now!=EStage::None;}
  // From the first sign. Under a roof it begins overhead; in the open the light comes straight away.
  bool Begin(ES47Taker Who,const FString& Title,bool bOnlyDread=false);
+ // In the open, for someone on foot: the light stands over that place, faint, long enough to read and to leave, and only
+ // then starts walking toward them. The same way out as ever: distance, a wall, or waiting it out.
+ bool BeginOver(ES47Taker Who,const FString& Title,const FVector& Over);
+ static constexpr double OverWarnSeconds=8;
  // Reached by a body: past the warning.
  bool TakeNow(ES47Taker Who,const FString& Title);
  void GiveUp();
@@ -61,7 +65,7 @@ private:
  FVector FloodFeet=FVector::ZeroVector;
  FString FloodArea;
  double HushIn=0;
- bool bOutdoors=false,bHooked=false,bOverlay=false,bSpill=false,bDoorDone=false;
+ bool bOutdoors=false,bHooked=false,bOverlay=false,bSpill=false,bDoorDone=false,bOverPlace=false;
  double StartYaw=0,StartPitch=0;
  TSharedPtr<SS47AwayOverlay> Overlay;
  TWeakObjectPtr<USpotLightComponent> Spot;

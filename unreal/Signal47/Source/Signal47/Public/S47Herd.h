@@ -51,6 +51,9 @@ public:
 	// One cow (or -1 for none) stands quite still, head up, facing this place, instead of grazing or wandering.
 	void SetStare(int32 Cow, const FVector& TowardWorld);
 	int32 Starer() const { return Stare; }
+	// Freeform: one cow away for now (S47Herd::MISSING, the one with the machinery for it), -1 for all nine. Story's own
+	// count is never touched, and without this call Freeform's herd is whole, as it always was.
+	void SetAway(int32 Cow);
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
@@ -64,7 +67,7 @@ private:
  TArray<FVector> LookBases;
  FVector GroupBase=FVector::ZeroVector,RingBase=FVector::ZeroVector,ModeOffset=FVector::ZeroVector;
  bool bModeKnown=false,bStoryStill=false,bStoryRing=false;
- int32 StoryMissing=-1;
+ int32 StoryMissing=-1,Away=-1;
  void MoveObstacle(const FVector& Old,const FVector& New,double Radius);
 	bool bEyesLit = false;
 	bool bNativeModels = false;

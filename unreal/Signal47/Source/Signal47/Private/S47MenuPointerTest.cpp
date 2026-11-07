@@ -5,6 +5,7 @@
 #include "S47TownLayer.h"
 #include "S47Herd.h"
 #include "S47Taken.h"
+#include "S47Aftermath.h"
 #include "S47FieldRadio.h"
 #include "S47IndoorDread.h"
 #include "S47RoswellWorld.h"
@@ -151,6 +152,7 @@ namespace
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
+  double AfterAt=0,AfterPc=0;FString AfterLine;
   S47J::FObj MysteryBefore;FString MysteryBoard;int32 MysteryTruth=0,MysterySub=0,MysteryFuses=0,MysteryCash=0;double MysteryHeld=0;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
@@ -757,6 +759,182 @@ namespace
    }
    return Fail(TEXT("no such night stage"));
   }
+  // -S47MenuPointerAfter: taken for real, by the crab at the marks at 02:30, from the visit's own dice (only the dice of
+  // the line and the cow are set to yes). PASS only if: before it, nothing is wrong and nothing is saved; after it the
+  // workstation shows the time they were taken and the watch does not, the line is in the notes, and the cow is planned;
+  // both survive a disk Continue; next morning the ninth is gone from both herds, out of sight, and stays gone through a
+  // Continue; counting them on the spot keeps one record; OPS shows the old time for a moment and then the right one, and
+  // that survives a Continue; days later the cow is back, also after a Continue; a clock nobody logs on to is right
+  // after a day. Pictures: after-cow-gone, after-pc-stuck, after-pc-right.
+  // -S47MenuPointerCarLight: the empty car at 03:00 with its own dice set to yes. PASS only if: the light begins with a
+  // warning; walking off costs no time and leaves no taking; going up to the car afterwards keeps its own record; a second
+  // time, staying beside it, they are taken and the event ends. Picture: after-car-warning.
+  bool AfterContinue(US47Main* M,int32 Next)
+  {
+   M->UI->Close(true);const auto State=M->Flow->GameState();
+   if(!MysteryRestore(M,State))return false;
+   if(M->Freeform->Director)M->Freeform->Director->Stop();
+   Stage=Next;AfterAt=Elapsed;return true;
+  }
+  bool StepAfter(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& Af=*F.Aftermath;auto& Tk=*F.Taken;auto& Site=*F.FarmSite;
+   if(!M->TownLayer||M->TownLayer->Herds.Num()<2)return Fail(TEXT("no herds"));
+   FS47Herd& H0=*M->TownLayer->Herds[0];FS47Herd& H1=*M->TownLayer->Herds[1];
+   const FString Real=FS47FreeformCases::Clock(FMath::Fmod(F.Clock(),86400.));
+   const FVector Room(0,0,-1.2);
+   if(Stage==500)
+   {
+    if(Tk.LastNote().IsEmpty()||Tk.Busy()||Site.VisitStage()!=4){if(Elapsed-AfterAt>150)return Fail(TEXT("the crab must take a player who stays"));return true;}
+    AfterAt=Elapsed;Stage=501;return true;
+   }
+   if(Stage==501)
+   {
+    if(Elapsed-AfterAt<1.5)return true;
+    UE_LOG(LogTemp,Display,TEXT("S47: after: watch %s, workstation %s, line '%s', cow planned %d. %s"),*Real,*F.TerminalClock(),*Af.LastLine(),Af.CowPlanned(),*Tk.LastNote());
+    if(!Af.PcStuck()||F.Clock()-Af.PcShown()<100*60)return Fail(TEXT("the workstation must stand at the time they were taken"));
+    if(F.TerminalClock().EndsWith(Real))return Fail(TEXT("the workstation and the watch must disagree"));
+    if(!F.TerminalLines(3).Contains(FString(TEXT("SYSTEM CLOCK "))+FS47FreeformCases::Clock(FMath::Fmod(Af.PcShown(),86400.))))return Fail(TEXT("the wrong time must be on the OPS glass"));
+    if(Af.LastLine().IsEmpty()||!M->Story->Notes().Contains(Af.LastLine()))return Fail(TEXT("the line must be in the player's notes"));
+    if(!Af.CowPlanned())return Fail(TEXT("a night with a visit at the farm must be able to cost a cow"));
+    AfterPc=Af.PcShown();AfterLine=Af.LastLine();
+    M->Player->Place(Room.X,Room.Z,0);
+    return AfterContinue(M,502);
+   }
+   if(Stage==502)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(!Af.PcStuck()||!FMath::IsNearlyEqual(Af.PcShown(),AfterPc))return Fail(TEXT("a Continue must keep the clock standing where it stood"));
+    if(M->Story->Notes().FilterByPredicate([&](const FString& Text){return Text==AfterLine;}).Num()!=1)return Fail(TEXT("a Continue must keep the line, once"));
+    if(!Af.CowPlanned())return Fail(TEXT("a Continue must keep the cow's morning"));
+    if(!DreadToClock(M,9.))return Fail(TEXT("the morning must come"));
+    AfterAt=Elapsed;Stage=503;return true;
+   }
+   if(Stage==503)
+   {
+    if(!Af.CowOut()||H0.Missing!=S47Herd::MISSING||H1.Missing!=S47Herd::MISSING){if(Elapsed-AfterAt>10)return Fail(TEXT("the ninth must be gone in the morning, from both herds"));return true;}
+    FVector Where;if(H0.CowAt(S47Herd::MISSING,Where))return Fail(TEXT("nothing may stand where she stood"));
+    return AfterContinue(M,504);
+   }
+   if(Stage==504)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(!Af.CowOut()||H0.Missing!=S47Herd::MISSING)return Fail(TEXT("a Continue must not bring her back"));
+    if(!Af.PcStuck())return Fail(TEXT("nobody has logged on yet"));
+    const FVector Mid=H0.Middle();M->Player->Place(Mid.X+6,Mid.Z+6,0);M->Player->Pitch=-.05;
+    AfterAt=Elapsed;Stage=505;return true;
+   }
+   if(Stage==505)
+   {
+    if(!F.HasFinding(Af.CowFindingId())){if(Elapsed-AfterAt>8)return Fail(TEXT("counting them on the spot must keep a record"));return true;}
+    if(Elapsed-AfterAt<1.5)return true;
+    Shot(TEXT("after-cow-gone.png"));
+    const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
+    M->Player->Place(P.X,P.Z+1.1,0);AfterAt=Elapsed;Stage=506;return true;
+   }
+   if(Stage==506)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!F.OpsOnGlass()&&!M->ModalOpen())F.Use(TEXT("opsTerminal"));
+    if(!F.OpsOnGlass()){if(Elapsed-AfterAt>6)return Fail(TEXT("OPS must open"));return true;}
+    if(!F.TerminalClock().EndsWith(FS47FreeformCases::Clock(FMath::Fmod(AfterPc,86400.))))return Fail(TEXT("logging on must first show the old time"));
+    Shot(TEXT("after-pc-stuck.png"));AfterAt=Elapsed;Stage=507;return true;
+   }
+   if(Stage==507)
+   {
+    if(Af.PcStuck()){if(Elapsed-AfterAt>FS47Aftermath::LogOnSeconds+30)return Fail(TEXT("logging on must put the clock right"));return true;}
+    if(Elapsed-AfterAt<FS47Aftermath::LogOnSeconds-1.5)return Fail(TEXT("it must be seen wrong for a moment first"));
+    if(!F.TerminalClock().EndsWith(Real))return Fail(TEXT("the workstation must now agree with the watch"));
+    Shot(TEXT("after-pc-right.png"));AfterAt=Elapsed;Stage=508;return true;
+   }
+   if(Stage==508)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    M->UI->Close(true);M->Player->Place(Room.X,Room.Z,0);
+    return AfterContinue(M,509);
+   }
+   if(Stage==509)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(Af.PcStuck()||!F.TerminalClock().EndsWith(Real))return Fail(TEXT("once right, a Continue must leave it right"));
+    if(!DreadToClock(M,9.,5.))return Fail(TEXT("the days must pass"));
+    AfterAt=Elapsed;Stage=510;return true;
+   }
+   if(Stage==510)
+   {
+    FVector Where;
+    if(Af.CowOut()||H0.Missing!=-1||H1.Missing!=-1||!H0.CowAt(S47Herd::MISSING,Where)){if(Elapsed-AfterAt>10)return Fail(TEXT("she must be back after some days"));return true;}
+    return AfterContinue(M,511);
+   }
+   if(Stage==511)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(Af.CowOut()||Af.CowPlanned()||H0.Missing!=-1)return Fail(TEXT("back is back, also after a Continue"));
+    // Nobody logs on: the clock puts itself right after a day. A second taking, without its long way round.
+    Af.AfterTaken(0,F.Clock());
+    if(!Af.PcStuck()||!F.TestAdvance(86400.+60.))return Fail(TEXT("the clock's day must be able to pass"));
+    AfterAt=Elapsed;Stage=512;return true;
+   }
+   if(Stage==512)
+   {
+    if(Af.PcStuck()){if(Elapsed-AfterAt>3)return Fail(TEXT("a day must put the clock right with nobody at it"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: after PASS: line '%s'"),*AfterLine);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // The empty car, once walked away from, once stood beside.
+   auto& D=*F.Director;
+   const auto TakenFor=[&]{return F.Clock()-AfterPc;};
+   if(Stage==519)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.TestBegin(TEXT("empty_car"))||!D.CarLightDrawn())return Fail(TEXT("the car must start, with its light drawn"));
+    AfterAt=Elapsed;Stage=520;return true;
+   }
+   if(Stage==520)
+   {
+    if(!Tk.Busy()){if(Elapsed-AfterAt>5)return Fail(TEXT("the light must start for someone near in the open"));return true;}
+    if(Tk.Stage()!=FS47Taken::EStage::Flood)return Fail(TEXT("it must be the light, not the steps overhead"));
+    AfterPc=F.Clock();AfterAt=Elapsed;Stage=521;return true;
+   }
+   if(Stage==521)
+   {
+    // The warning: faint, and it has not begun to look yet. Turn and see it; then go.
+    const FVector A=D.EventAnchor();const FVector Eye(M->Player->Pos.X,M->Player->FloorY+1.6,M->Player->Pos.Z);
+    M->Player->Yaw=FMath::Atan2(Eye.X-A.X,Eye.Z-A.Z);M->Player->Pitch=.1;
+    if(Tk.LightOn()>0)return Fail(TEXT("the warning must not count as being in the light"));
+    if(Elapsed-AfterAt<3)return true;
+    Shot(TEXT("after-car-warning.png"));M->Player->Place(A.X,A.Z+80,0);AfterAt=Elapsed;Stage=522;return true;
+   }
+   if(Stage==522)
+   {
+    if(Tk.Busy()){if(Elapsed-AfterAt>90)return Fail(TEXT("the light must give up on someone who left"));return true;}
+    if(TakenFor()>10*60||!Tk.LastNote().IsEmpty())return Fail(TEXT("walking off must cost nothing"));
+    if(D.ActiveEvent()!=TEXT("empty_car")||D.CarLightStage()!=2){if(Elapsed-AfterAt>92)return Fail(TEXT("the car must still be there to go up to"));return true;}
+    const FVector A=D.EventAnchor();M->Player->Place(A.X+2.5,A.Z,0);AfterAt=Elapsed;Stage=523;return true;
+   }
+   if(Stage==523)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.Use(TEXT("ff:event-check"))||!D.ActiveEvent().IsEmpty())return Fail(TEXT("the car must be there to inspect"));
+    if(!F.FindingText(TEXT("empty_car")).Contains(TEXT("stopped at")))return Fail(TEXT("going up to it must keep its own record"));
+    M->Player->Place(27,24,PI);AfterAt=Elapsed;Stage=524;return true;
+   }
+   if(Stage==524)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.TestBegin(TEXT("empty_car"))||!D.CarLightDrawn())return Fail(TEXT("the car must start a second time"));
+    const FVector A=D.EventAnchor();M->Player->Place(A.X+5,A.Z+5,0);AfterAt=Elapsed;Stage=525;return true;
+   }
+   if(Stage==525)
+   {
+    if(Tk.LastNote().IsEmpty()||Tk.Busy()){if(Elapsed-AfterAt>120)return Fail(TEXT("the light must reach someone who stays"));return true;}
+    if(!D.ActiveEvent().IsEmpty()){if(Elapsed-AfterAt>125)return Fail(TEXT("being taken must end the event"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: car light PASS: %s"),*Tk.LastNote());
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such after stage"));
+  }
   bool StepDread(US47Main* M)
   {
    if(Stage>=460&&Stage<=489)return StepNight(M);
@@ -1023,8 +1201,9 @@ namespace
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<500)&&Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&Elapsed-StageAt<1) return true;
    if(Stage>=400&&Stage<500)return StepDread(M);
+   if(Stage>=500&&Stage<530)return StepAfter(M);
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -1220,6 +1399,27 @@ namespace
      M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
      M->Freeform->Director->TestSchedule(0.f,22.,40.);
      DreadFrom=DreadAt=Elapsed;Stage=470;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAfter")))
+    {
+     // Night two at 02:30, on foot at marks the lights left. The crab comes by the visit's own dice.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     if(M->Freeform->Aftermath->Save()->Values.Num()>0||M->Freeform->Aftermath->PcStuck())return Fail(TEXT("nothing has happened yet, so nothing may be wrong"));
+     if(M->TownLayer&&!M->TownLayer->Herds.IsEmpty()&&M->TownLayer->Herds[0]->Missing!=-1)return Fail(TEXT("the herd is whole until something happens"));
+     if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the aftermath test needs night two"));
+     M->Freeform->Aftermath->TestDice(0.f,0.f);
+     auto& Site=*M->Freeform->FarmSite;Site.ArmFarm(M->Freeform->Clock());Site.TestRollWho(.05f);Site.TestReadyVisit();
+     const FVector Marks=Site.Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+     AfterAt=Elapsed;Stage=500;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerCarLight")))
+    {
+     // 03:00, in the open with the car behind them, so that it may appear. Everything else the Director could draw is off.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(43.*3600.))return Fail(TEXT("the car test needs the small hours"));
+     auto& D=*M->Freeform->Director;D.TestSchedule(0.f,-1,1.);D.TestCarDice(0.f);
+     M->Player->Place(27,24,PI);
+     AfterAt=Elapsed;Stage=519;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerMystery")))
     {

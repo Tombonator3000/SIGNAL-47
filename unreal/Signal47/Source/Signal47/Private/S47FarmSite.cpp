@@ -1,5 +1,6 @@
 #include "S47FarmSite.h"
 #include "S47Taken.h"
+#include "S47Aftermath.h"
 #include "S47PaleBody.h"
 #include "S47Three.h"
 #include "CoreGlobals.h"
@@ -416,6 +417,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
  if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
  if(!M||!M->Freeform)return;
  UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, taken %d, seen %d"),*Place,bTaken,bVisitSeen);
+ // Something really came, at the farm: the herd may be one short in the morning.
+ if((bWas||bTaken)&&Place==TEXT("farm")&&M->Freeform->Aftermath)M->Freeform->Aftermath->AfterFarmVisit(M->Freeform->Clock());
  if(bVisitSeen&&!bTaken&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. Something came toward me until I left. This records what I saw, not what it was."),*Title));
  M->RequestAutosave();
