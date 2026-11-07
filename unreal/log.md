@@ -2058,3 +2058,17 @@ Agenter i egne worktrees. GAMEPLAY-03 fant at Jeepen kunne bli innelåst ved str
 ## 6. november 2026 kl.23:40, natt, runde 3
 
 Roswell-øynene har små sprang og blink innenfor 12 m. Én ku står stille og ser mot sporene om natten. Ekstra bilde på filmen etter bortføring, uten at spilleren tok det. Installasjon d19 stoppet på en vakt mot agentens uferdige mappe; vakten godtar nå bare den mappen. Kuprøven fant at ku 4, som ikke vandrer, kunne bli valgt. Egen køhjelper gjentok regresjonen i rundt 20 minutter før feilen ble funnet.
+## 6. november 2026 kl.23:50, natt, gårdsbyggene
+
+Importskript `Tools/farmbuildings/import_assets.py` og Freeform-integrasjon skrevet i egen worktree (`S47FarmBuildings`): låve, hus og to skjul erstatter boksene, ekte hindringer med åpen låvedør og flatt gulv, plantefrie tomter, gløden fra østvinduet flyttet til huset (den sto igjen 310 m øst i Freeform). Prøve: `-S47MenuPointerBuildings`. Ikke kompilert, importert eller kjørt ennå; koordinatoren kjører det.
+## 7. november 2026 kl.00:45, natur i Freeform, runde 2
+
+Bare `S47Flora`, bak `bNatural`. Kreosot står i tette bestand med nesten bare felt mellom, gress og sage i egne felt, høyst 2 m busk. Fargene var nesten svarte og oransje fordi de multipliseres med atlaset, og er rettet. Frie flekker er borte; hver busk har en myk mørk fot og strø. Småstein i klynger, og noen få Sandstone_A på 0,3 til 0,6 m. Tallene er prøvd i Python-kopi av støyen. Ikke kompilert eller sett i spillet; koordinatoren bygger og tar bilder.
+
+## 7. november 2026, tre avgrensede rettelser (uprøvd, kan ikke bygge her)
+
+Gren `worktree-agent-a7338ffb973ce40ec`. (1) Tunlampens glød og glorie ved veilokalt (432.9, 204) skjules i Freeform via billboard-synlighet i `ReconcileWindow`. (2) Parkert tjenestebil i ny vegg flyttes til nærmeste frie plass (`US47World::KeepParkedOutOfFarmWalls`, `S47FarmWorld::NearestClearTruckSpot`), selvtestlinje og `-S47FarmTruckInWall` i `S47FarmWorldTest`. (3) `Tools/sound-workshop/alien_transmission.py` lager original radiotransmisjon `radio_transmission_original.wav`; `S47EncounterSound` laster den før filmklippet. Ikke bygget, ikke kjørt i motor.
+
+## 7. november 2026 kl.02:05, natt, bygg og natur
+
+Fire egne gårdsbygg er importert (LFS, 45 filer) og står i Freeform. Bakken: kritikerne og målinger viste 230 mot 150 i foto, så `S47MesaRock` gir bakken ny farge og mer grus bare i Freeform om dagen; natt og Story er uendret. Kreosot i bestand, fot og strø, olivengrå tone, småstein. Den gamle `-S47FarmWorldTest` hadde ikke vært kjørt siden 2. november, og skriptet mitt `farm.py` kjørte en annen prøve; den er oppdatert og består igjen (249 m kjøring, 124 m gange, last, Fortsett, Story). Bildetid i naturprøven 10-18 ms.

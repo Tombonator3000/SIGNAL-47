@@ -1,5 +1,6 @@
 #include "S47World.h"
 #include "S47FarmHouse.h"
+#include "S47FarmBuildings.h"
 #include "S47SaroSeam.h"
 #include "S47SaroSite.h"
 #include "S47EastWing.h"
@@ -2353,7 +2354,10 @@ void US47World::ReconcileFarm(bool bEnabled)
    auto Box=[&](double X0,double X1,double Z0,double Z1){Add(FS47Obstacle::Box(X0+O.X,X1+O.X,Z0+O.Z,Z1+O.Z));};
    // Solid exteriors stay solid. This delivery opens the farm grounds, not the background shed interiors.
    for(const FBox2D& Wall:S47FarmHouse::Solids())Box(Wall.Min.X,Wall.Max.X,Wall.Min.Y,Wall.Max.Y);
-   Box(101,115,187,197);Box(126,146,164,177);Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
+   // The new buildings' real walls with the barn's door left open, or the two old boxes when their meshes are missing.
+   if(S47FarmBuildings::Available())for(const FBox2D& Solid:S47FarmBuildings::Obstacles())Box(Solid.Min.X,Solid.Max.X,Solid.Min.Y,Solid.Max.Y);
+   else{Box(101,115,187,197);Box(126,146,164,177);}
+   Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
   }
   bFarmObstaclesReady=true;
  }
@@ -2364,6 +2368,22 @@ void US47World::ReconcileFarm(bool bEnabled)
   auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;}L->Area->Obstacles[I]=B;
  }
  if(Changed)Under.Reset();
+}
+
+void US47World::KeepParkedOutOfFarmWalls()
+{
+ FS47Truck* T=SaroTruckP.Get();
+ if(!bFarmMode||bDriving||!T||(TruckAt!=TEXT("saro")&&TruckAt!=TEXT("motel"))||!S47FarmBuildings::Available())return;
+ const FVector Origin(-24,0,300); // the saro frame of S47FarmWorld::RoadToArea
+ const double RoadX=T->Position.X-Origin.X,RoadZ=T->Position.Z-Origin.Z;
+ if(!S47FarmBuildings::OnPlot(RoadX,RoadZ,5))return;
+ const FLegRec* L=Legs.Find(TEXT("saro"));if(!L||!L->Area)return;
+ double Nx=T->Position.X,Nz=T->Position.Z;
+ if(!S47FarmWorld::NearestClearTruckSpot(L->Area->Obstacles,T->Position.X,T->Position.Z,T->Rotation.Y,T->HalfWidth(),T->HalfLength(),Nx,Nz))return;
+ if(FMath::IsNearlyEqual(Nx,T->Position.X)&&FMath::IsNearlyEqual(Nz,T->Position.Z))return;
+ const double Y=T->Position.Y+S47RoadTerrain::SurfaceY(Nx-Origin.X,Nz-Origin.Z)-S47RoadTerrain::SurfaceY(RoadX,RoadZ);
+ UE_LOG(LogTemp,Warning,TEXT("S47: farm buildings: parked truck stood in a wall at road %.2f %.2f, moved to %.2f %.2f"),RoadX,RoadZ,Nx-Origin.X,Nz-Origin.Z);
+ MoveParked(Nx,Nz,T->Rotation.Y,Y);
 }
 
 int32 US47World::RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ)

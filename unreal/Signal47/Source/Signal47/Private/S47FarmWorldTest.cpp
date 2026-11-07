@@ -1,5 +1,7 @@
 #include "S47FarmWorldTest.h"
 #include "S47FarmWorld.h"
+#include "S47FarmBuildings.h"
+#include "S47Truck.h"
 #include "S47Main.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
@@ -31,7 +33,7 @@ namespace
 {
  struct FRun
  {
-  bool Started=false,Done=false,PathDone=false,Reverse=false,HaveLast=false,CargoProbe=false;
+  bool Started=false,Done=false,PathDone=false,Reverse=false,HaveLast=false,CargoProbe=false,TruckInWall=false;
   int32 Stage=0,Checks=0,Cursor=0,Restores=0,Bumps=0;
   double Began=0,At=0,LastAt=0,ProgressAt=0,MaxSpeed=3,DriveMetres=0,WalkMetres=0;
   FVector Last=FVector::ZeroVector,Progress=FVector::ZeroVector,Park=FVector::ZeroVector,SavedFoot=FVector::ZeroVector,EgressRoad=FVector::ZeroVector;
@@ -149,7 +151,7 @@ namespace
      FTransform T;if(Mesh->GetInstanceTransform(I,T,true))
      {
       const FVector BodyRoot=S47Three::ToThree(T.GetLocation());S47J::Set(C,TEXT("actualBodyRootThree"),Vec(BodyRoot));
-      Herd&=Found&&FVector::Dist(BodyRoot,P-FVector(0,1.1,0))<.06;
+      Herd&=Found&&FVector::Dist(BodyRoot,P-FVector(0,1.1,0))<1.; // CowAt is the collider, "within a step of the cow"; the herd wanders since 6 November.
       const double Floor=S47RoadTerrain::SurfaceY(R.X,R.Z);S47J::Set(C,TEXT("expectedTerrainFloor"),Floor);Herd&=FMath::Abs(BodyRoot.Y-Floor)<.08;
      }
      else Herd=false;
@@ -241,8 +243,12 @@ namespace S47FarmWorldTest
    }
    auto Save=M->Flow->GameState();auto F=S47J::Obj(Save,TEXT("freeform")),Field=S47J::Obj(F,TEXT("field"));
    if(!Check(M,bool(Field),TEXT("initial fixture retains ordinary Freeform field state")))return;
-   S47J::Set(Field,TEXT("payload"),3);S47J::Set(Field,TEXT("item"),TEXT("relay"));S47J::Set(Field,TEXT("parcelLoaded"),true);Field->RemoveField(TEXT("carry"));
-   const FVector P=S47FarmWorld::RoadToArea(TEXT("saro"),FVector(1.8,S47RoadTerrain::SurfaceY(1.8,230),230));
+   S47J::Set(Field,TEXT("payload"),3);S47J::Set(Field,TEXT("item"),TEXT("relay"));S47J::Set(Field,TEXT("parcelLoaded"),true);Field->RemoveField(TEXT("carry"));Field->RemoveField(TEXT("contents")); // An empty list would be read as an empty parcel.
+   // -S47FarmTruckInWall: the old save parked the service truck across a wall of the new barn (the barn's middle is open floor).
+   const bool InWall=FParse::Param(FCommandLine::Get(),TEXT("S47FarmTruckInWall"));S.TruckInWall=InWall;
+   const FVector2D WallAt=S47FarmBuildings::Obstacles().Num()?S47FarmBuildings::Obstacles()[0].GetCenter():FVector2D(135.5,170);
+   const FVector Barn(WallAt.X,S47RoadTerrain::SurfaceY(WallAt.X,WallAt.Y),WallAt.Y);
+   const FVector P=S47FarmWorld::RoadToArea(TEXT("saro"),InWall?Barn:FVector(1.8,S47RoadTerrain::SurfaceY(1.8,230),230));
    auto T=S47J::New();S47J::Set(T,TEXT("at"),TEXT("saro"));S47J::Set(T,TEXT("x"),P.X);S47J::Set(T,TEXT("y"),P.Y);S47J::Set(T,TEXT("z"),P.Z);S47J::Set(T,TEXT("h"),0.);S47J::Set(T,TEXT("p"),0.);S47J::Set(T,TEXT("r"),0.);
    S47J::Set(Save,TEXT("truck"),TEXT("saro"));S47J::Set(Save,TEXT("truckPose"),T);
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("x"),P.X-2.);S47J::Set(Pose,TEXT("z"),P.Z);S47J::Set(Pose,TEXT("yaw"),0.);S47J::Set(Save,TEXT("pose"),Pose);
@@ -268,6 +274,14 @@ namespace S47FarmWorldTest
   if(S.Stage==1)
   {
    if(!Audit(M,true))return;
+   if(S.TruckInWall)
+   {
+    const auto* Truck=M->World->SaroTruck();const FVector Origin=S47FarmWorld::RoadToArea(TEXT("saro"),FVector::ZeroVector);
+    TArray<FS47Obstacle> Walls;for(const FBox2D& Wall:S47FarmBuildings::Obstacles())Walls.Add(FS47Obstacle::Box(Wall.Min.X+Origin.X,Wall.Max.X+Origin.X,Wall.Min.Y+Origin.Z,Wall.Max.Y+Origin.Z));
+    const FVector Barn=S47FarmWorld::RoadToArea(TEXT("saro"),S47FarmBuildings::BarnPoint(0,0));
+    if(!Check(M,Truck&&!S47FarmWorld::TruckHits(Walls,Truck->Position.X,Truck->Position.Z,Truck->Rotation.Y,Truck->HalfWidth(),Truck->HalfLength(),.05)&&FVector2D::Distance(FVector2D(Truck->Position.X,Truck->Position.Z),FVector2D(Barn.X,Barn.Z))>.4,TEXT("service truck restored inside a barn wall was moved to clear ground")))return;
+    Finish(M,true,TEXT("service truck restored inside a barn wall was moved to clear ground; the route below starts from the road"));return;
+   }
    if(!Check(M,M->Freeform->Field->ParcelStage()==3&&M->Freeform->Field->ParcelItem()==TEXT("relay"),TEXT("declared initial loaded relay fixture restored without stock/reward injection")))return;
    Aim(M,Here(M,FVector(21,1,S47RoadTerrain::RanchZ(21))));Photo(TEXT("01-entrance-freeform"));Go(2);return;
   }
@@ -303,7 +317,7 @@ namespace S47FarmWorldTest
   if(S.Stage==8)
   {
    if(!Check(M,!M->World->bDriving&&FVector::Dist(M->World->ServicePosition(),S.Park)<.1,TEXT("actual own parked vehicle remains at the farm")))return;
-   S.EgressRoad=Road(M->Player->Pos,M->World->Area);WalkPath({FVector(85,0,205),FVector(70,0,212),FVector(70,0,220),FVector(55,0,240)});Go(9);return;
+   S.EgressRoad=Road(M->Player->Pos,M->World->Area);WalkPath({FVector(79,0,203),FVector(70,0,212),FVector(70,0,220),FVector(55,0,240)});Go(9);return;
   }
   if(S.Stage==9)
   {
@@ -315,7 +329,7 @@ namespace S47FarmWorldTest
   {
    M->Freeform->Director->Stop();
    if(!Check(M,M->IsFreeform()&&FVector::Dist(M->Player->Pos,S.SavedFoot)<.05&&FVector::Dist(M->World->ServicePosition(),S.Park)<.1&&M->Freeform->Field->ParcelStage()==3&&M->Freeform->Field->ParcelItem()==TEXT("relay"),TEXT("disk/full Flow Continue retains pasture pose, actual parked Jeep and loaded parcel")))return;
-   Photo(TEXT("05-continued-pasture"));WalkPath({FVector(70,0,220),FVector(70,0,212),FVector(85,0,205),FVector(91,0,200)});Go(12);return;
+   Photo(TEXT("05-continued-pasture"));WalkPath({FVector(70,0,220),FVector(70,0,212),FVector(79,0,203),FVector(91,0,200)});Go(12);return;
   }
   if(S.Stage==12)
   {

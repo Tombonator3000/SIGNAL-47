@@ -1,5 +1,11 @@
+#include "Components/PointLightComponent.h"
+#include "Components/MaterialBillboardComponent.h"
 #include "S47FarmWorld.h"
 #include "S47FarmHouse.h"
+#include "S47FarmBuildings.h"
+#include "S47Freeform.h"
+#include "S47Glow.h"
+#include "S47Walker.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -13,6 +19,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 namespace
 {
@@ -76,10 +83,10 @@ namespace
    {
     FTransform Local,World;if(!C->GetInstanceTransform(I,Local,false)||!C->GetInstanceTransform(I,World,true))continue;
     FVector Road=W->HighwayMapEye(S47Three::ToThree(World.GetLocation()));Road.X-=8000;
-    if(!S47FarmHouse::OnPad(Road.X,Road.Z,1.2))continue;
+    if(!S47FarmHouse::OnPad(Road.X,Road.Z,1.2)&&!S47FarmBuildings::OnPlot(Road.X,Road.Z,1.2))continue;
     PadPlants.Add({C,I,Local});
    }
-   UE_LOG(LogTemp,Display,TEXT("S47 farmhouse pad: %d scattered instances inside its footprint"),PadPlants.Num());
+   UE_LOG(LogTemp,Display,TEXT("S47 farmhouse pad: %d scattered instances inside its footprint and the four building plots"),PadPlants.Num());
   }
   if(bPadOn==On)return;bPadOn=On;
   TSet<UInstancedStaticMeshComponent*> Touched;
@@ -101,6 +108,84 @@ namespace
   if(On){SunkFrom=C->GetRelativeLocation();C->SetRelativeLocation(SunkFrom+FVector(0,0,-9));}
   else C->SetRelativeLocation(SunkFrom);
   bSunk=On;
+ }
+ // The original barn, house and sheds. Freeform only; each is a whole mesh turned on the spot, as the plan has it.
+ struct FBuilding{TWeakObjectPtr<UStaticMeshComponent> C;FVector Road;double Degrees=0;};
+ TArray<FBuilding> Buildings;TWeakObjectPtr<AS47Web> BuildingWorld;bool bBuildingsTried=false;
+ TWeakObjectPtr<UMaterialInstanceDynamic> WindowMid;FLinearColor WindowLit=FLinearColor::Black;
+ TWeakObjectPtr<UPointLightComponent> BarnDay;
+ void BuildBuildings(AS47Web* W,bool On)
+ {
+  if(BuildingWorld.Get()!=W){BuildingWorld=W;Buildings.Reset();WindowMid.Reset();bBuildingsTried=false;}
+  if(!On||bBuildingsTried||!S47FarmBuildings::Available())return;bBuildingsTried=true;
+  for(const S47FarmBuildings::FSite& Site:S47FarmBuildings::Sites())
+  {
+   auto* Mesh=LoadObject<UStaticMesh>(nullptr,Site.Mesh);
+   if(!Mesh){UE_LOG(LogTemp,Error,TEXT("S47: farm building %s did not load"),Site.Mesh);continue;}
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->GetRootComponent());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Mesh);
+   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
+   C->SetCastShadow(true);C->RegisterComponent();W->AdoptNode(C,INDEX_NONE,FString(TEXT("farm:building:"))+Site.Name);
+   Buildings.Add({C,S47FarmBuildings::Anchor(Site),FMath::RadiansToDegrees(-Site.Yaw)});
+   // The daylight that gets in through the big doors and the gaps in the boards. Off after dark.
+   if(FCString::Stristr(Site.Mesh,TEXT("Barn")))
+   {
+    auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(C);L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);
+    L->SetLightColor(FLinearColor(1.f,.93f,.82f));L->SetAttenuationRadius(1100.f);L->SetCastShadows(false);L->SetVolumetricScatteringIntensity(0.f);L->RegisterComponent();L->SetRelativeLocation(FVector(0,0,330));
+    BarnDay=L;
+   }
+   const int32 Slot=C->GetMaterialIndex(TEXT("M_Farm_WindowLit"));
+   if(Slot!=INDEX_NONE)if(auto* Mid=C->CreateDynamicMaterialInstance(Slot)){WindowMid=Mid;WindowLit=Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));}
+  }
+  UE_LOG(LogTemp,Display,TEXT("S47: farm buildings: %d of %d shown in Freeform, old boxes retired"),Buildings.Num(),S47FarmBuildings::Sites().Num());
+ }
+ // web/src ranchLights: the lit window is a glow sprite in the road, SARO and station corridors, in road-local
+ // terms at the Story ranch. It stayed there, 310 m east of the Freeform farm. Follow the house, lit at night only.
+ struct FWindowGlow{int32 Node=INDEX_NONE,Index=INDEX_NONE;FVector Story=FVector::ZeroVector;};
+ TArray<FWindowGlow> WindowGlows;TWeakObjectPtr<AS47Web> WindowWorld;int32 WindowState=-1;
+ // web/src ranchLights: the yard light's glow and halo, on a pole at road-local (432.9, 204) with the Story ranch.
+ // The Freeform farm has no pole there, so the sprites are hidden (visibility, not scale: ExteriorLighting owns the scale).
+ TArray<FWindowGlow> YardGlows;
+ void ReconcileWindow(US47Main* M,AS47Web* W,bool On)
+ {
+  if(!S47FarmBuildings::Available())return;
+  if(WindowWorld.Get()!=W)
+  {
+   WindowWorld=W;WindowGlows.Reset();YardGlows.Reset();WindowState=-1;
+   for(const int32 Node:{991,1125,1312})if(const FS47GlowPoints* G=W->Glow(Node))for(int32 I=0;I<G->Num();++I)
+   {
+    if(FMath::Abs(G->Pos[I].X-424.05)<.05&&FMath::Abs(G->Pos[I].Z-193)<.05)WindowGlows.Add({Node,I,G->Pos[I]});
+    else if(FMath::Abs(G->Pos[I].X-432.9)<.05&&FMath::Abs(G->Pos[I].Z-204)<.05)YardGlows.Add({Node,I,G->Pos[I]});
+   }
+   if(WindowGlows.Num()!=3)UE_LOG(LogTemp,Warning,TEXT("S47: farm window glow: found %d of 3 exported points"),WindowGlows.Num());
+  }
+  const double Hour=On&&M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:0;
+  const int32 State=!On?0:(Hour>=18.75||Hour<6.25)?2:1; // Same night as S47FarmNight.
+  if(State==WindowState)return;WindowState=State;
+  for(const FWindowGlow& Row:WindowGlows)if(FS47GlowPoints* G=W->Glow(Row.Node))
+  {
+   G->SetPosition(Row.Index,On?S47FarmBuildings::EastWindow():Row.Story);
+   G->SetOutputScale(Row.Index,State==1?0.f:1.f);
+  }
+  for(const FWindowGlow& Row:YardGlows)if(FS47GlowPoints* G=W->Glow(Row.Node))if(G->Bill.IsValidIndex(Row.Index)&&G->Bill[Row.Index].IsValid())G->Bill[Row.Index]->SetVisibility(!On);
+  if(auto* Mid=WindowMid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),State==2?WindowLit:FLinearColor::Black);
+  if(auto* L=BarnDay.Get())L->SetIntensity(State==1?5200.f:0.f);
+ }
+ // A save from before the buildings can stand where a wall is now. The walker never enters one by itself, and it
+ // could not leave one either: walk it out to the nearest clear ground. No save field changes.
+ void KeepPlayerOutOfWalls(US47Main* M,AS47Web* W)
+ {
+  if(!M->Player||M->World->bDriving||!S47FarmBuildings::Available())return;
+  const FString Area=W->Area();if(Area!=TEXT("saro")&&Area!=TEXT("road")&&Area!=TEXT("diner"))return;
+  const FVector Origin=S47FarmWorld::RoadToArea(Area,FVector::ZeroVector);const double X=M->Player->Pos.X-Origin.X,Z=M->Player->Pos.Z-Origin.Z,R=M->Player->Radius;
+  if(!S47FarmBuildings::OnPlot(X,Z,1)||!S47FarmBuildings::Blocked(X,Z,R-.02))return;
+  for(double D=.5;D<16;D+=.5)for(int32 I=0;I<16;++I)
+  {
+   const double A=2*UE_DOUBLE_PI*I/16,Px=X+FMath::Cos(A)*D,Pz=Z+FMath::Sin(A)*D;
+   if(S47FarmBuildings::Blocked(Px,Pz,R+.05))continue;
+   M->Player->Pos.X=Px+Origin.X;M->Player->Pos.Z=Pz+Origin.Z;
+   UE_LOG(LogTemp,Warning,TEXT("S47: farm buildings: player stood in a wall at road %.2f %.2f, moved %.1f m out"),X,Z,D);
+   return;
+  }
  }
  void Build(AS47Web* W)
  {
@@ -141,23 +226,50 @@ namespace S47FarmWorld
  {
   return (X>=6&&X<=116&&FMath::Abs(Z-S47RoadTerrain::RanchZ(X))<=3.1)||(X>=27&&X<=161&&Z>=150&&Z<=268);
  }
- double FloorRoad(double X,double Z){return S47FarmHouse::OnPad(X,Z)?S47FarmHouse::PadY():S47RoadTerrain::SurfaceY(X,Z);}
+ double FloorRoad(double X,double Z)
+ {
+  double Y=0;if(S47FarmBuildings::FloorAt(X,Z,Y))return Y;
+  return S47FarmHouse::OnPad(X,Z)?S47FarmHouse::PadY():S47RoadTerrain::SurfaceY(X,Z);
+ }
+ bool BuildingsShown(const US47Main* M)
+ {
+  if(!M||!M->Web||BuildingWorld.Get()!=M->Web.Get()||Buildings.Num()!=S47FarmBuildings::Sites().Num())return false;
+  for(const auto& B:Buildings){const auto* C=B.C.Get();if(!C||!C->GetStaticMesh()||!C->IsVisible()||C->bHiddenInGame)return false;}
+  return true;
+ }
+ int32 WindowGlowsAtHouse(const US47Main* M)
+ {
+  if(!M||!M->Web||WindowWorld.Get()!=M->Web.Get())return 0;int32 Count=0;
+  for(const auto& Row:WindowGlows)if(const FS47GlowPoints* G=M->Web->Glow(Row.Node))Count+=G->Pos.IsValidIndex(Row.Index)&&FVector::Dist(G->Pos[Row.Index],S47FarmBuildings::EastWindow())<.01;
+  return Count;
+ }
  bool HouseVisible(const US47Main* M)
  {
+  if(BuildingsShown(M))return true;
   if(!M||!M->Web)return false;int32 Count=0;for(int32 I=0;;++I){const auto* N=M->Web->Node(I);if(!N)break;if(N->Name.StartsWith(TEXT("highway:ranch:g")))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))if(C->IsVisible()&&!C->bHiddenInGame)++Count;}return Count==3;
  }
  FVector HousePhotoPoint(const US47Main* M)
  {
-  if(!M||!M->Web)return FVector::ZeroVector;FBox Bounds(ForceInit);for(int32 I=0;;++I){const auto* N=M->Web->Node(I);if(!N)break;if(N->Name.StartsWith(TEXT("highway:ranch:g")))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))Bounds+=C->Bounds.GetBox();}return Bounds.IsValid?S47Three::ToThree(Bounds.GetCenter()):FVector::ZeroVector;
+  if(!M||!M->Web)return FVector::ZeroVector;FBox Bounds(ForceInit);
+  // Between the house and the barn: the yard, not a point inside a wall. Without them, the middle of the old group.
+  if(BuildingsShown(M)){for(int32 I=0;I<2;++I)Bounds+=Buildings[I].C->Bounds.GetBox();return S47Three::ToThree(Bounds.GetCenter());}
+  for(int32 I=0;;++I){const auto* N=M->Web->Node(I);if(!N)break;if(N->Name.StartsWith(TEXT("highway:ranch:g")))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))Bounds+=C->Bounds.GetBox();}return Bounds.IsValid?S47Three::ToThree(Bounds.GetCenter()):FVector::ZeroVector;
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileWindow(M,W,On);
+  if(On)KeepPlayerOutOfWalls(M,W);
+  if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
   if(Apply)for(auto& P:Parts)if(auto* C=P.C.Get())
   {
    C->SetWorldLocation(S47Three::ToUE(RoadToArea(W->Area(),P.Road)));C->SetWorldRotation(W->Area()==TEXT("station01")?FRotator(0,90,0):FRotator::ZeroRotator);
    C->SetWorldScale3D(FVector(P.Size.X,P.Size.Z,P.Size.Y));C->SetVisibility(On&&S47HighwayLandscape::Exterior(W->Area()));C->SetHiddenInGame(!On);C->SetCollisionEnabled(On?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
+  }
+  if(Apply)for(const auto& B:Buildings)if(auto* C=B.C.Get())
+  {
+   C->SetWorldLocation(S47Three::ToUE(RoadToArea(W->Area(),B.Road)));C->SetWorldRotation(FRotator(0,B.Degrees+(W->Area()==TEXT("station01")?90:0),0));
+   C->SetVisibility(On&&S47HighwayLandscape::Exterior(W->Area()));C->SetHiddenInGame(!On);C->SetCollisionEnabled(On?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
   AppliedWorld=W;AppliedArea=W->Area();AppliedOn=On;
   if(M->TownLayer)for(const auto& H:M->TownLayer->Herds)if(H){H->ReconcileMode();if(Enabled(M)){H->Set(false,-1,false);H->Update(M->T);}}
@@ -175,12 +287,62 @@ namespace S47FarmWorld
  {
   const bool Good=M&&GateReady(M)&&RoadClearance(M,Lines)&&(!Enabled(M)||Ready(M));Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm exact gate partitions, native housegroup and mode-derived physical access"));return Good;
  }
+ bool TruckHits(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double Shrink)
+ {
+  const double Hw=HalfWidth-Shrink,Hl=HalfLength-Shrink*2,C=FMath::Cos(Heading),Sn=FMath::Sin(Heading);
+  for(const FS47Obstacle& O:Obstacles)
+  {
+   if(O.bCircle)
+   {
+    const double Dx=O.X-X,Dz=O.Z-Z;if(Dx*Dx+Dz*Dz>FMath::Square(O.R+FMath::Sqrt(Hw*Hw+Hl*Hl)))continue;
+    const double Lx=Dx*C-Dz*Sn,Lz=Dx*Sn+Dz*C,Qx=Lx-FMath::Clamp(Lx,-Hw,Hw),Qz=Lz-FMath::Clamp(Lz,-Hl,Hl);
+    if(Qx*Qx+Qz*Qz<O.R*O.R)return true;
+    continue;
+   }
+   const double Bx=(O.MinX+O.MaxX)/2,Bz=(O.MinZ+O.MaxZ)/2,Hx=(O.MaxX-O.MinX)/2,Hz=(O.MaxZ-O.MinZ)/2,Ac=FMath::Abs(C),As=FMath::Abs(Sn),Dx=Bx-X,Dz=Bz-Z;
+   if(FMath::Abs(Dx)>Hx+Hw*Ac+Hl*As||FMath::Abs(Dz)>Hz+Hw*As+Hl*Ac)continue;
+   if(FMath::Abs(Dx*C-Dz*Sn)>Hw+Hx*Ac+Hz*As||FMath::Abs(Dx*Sn+Dz*C)>Hl+Hx*As+Hz*Ac)continue;
+   return true;
+  }
+  return false;
+ }
+ bool NearestClearTruckSpot(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double& OutX,double& OutZ)
+ {
+  OutX=X;OutZ=Z;
+  if(!TruckHits(Obstacles,X,Z,Heading,HalfWidth,HalfLength,.05))return true; // a legal park stays where it is
+  for(double D=.5;D<=30;D+=.5)for(int32 I=0;I<24;++I)
+  {
+   const double A=2*UE_DOUBLE_PI*I/24,Px=X+FMath::Cos(A)*D,Pz=Z+FMath::Sin(A)*D;
+   if(TruckHits(Obstacles,Px,Pz,Heading,HalfWidth+.15,HalfLength+.15,0))continue;
+   OutX=Px;OutZ=Pz;return true;
+  }
+  return false;
+ }
  bool SelfTest(TArray<FString>& Lines)
  {
   const FBox Edge(FVector(10,0,S47RoadTerrain::RanchZ(11)+3.3),FVector(12,2,S47RoadTerrain::RanchZ(11)+6));
   const FBox Verge(FVector(10,0,S47RoadTerrain::RanchZ(11)-20),FVector(12,2,S47RoadTerrain::RanchZ(11)-10));
-  S47FarmHouse::SelfTest(Lines);
+  S47FarmHouse::SelfTest(Lines);S47FarmBuildings::SelfTest(Lines);
   const bool Good=OverlapsLane(Edge)&&!OverlapsLane(Verge)&&InRoadAccess(21,S47RoadTerrain::RanchZ(21))&&InRoadAccess(96,196.8)&&InRoadAccess(55,240)&&!InRoadAccess(200,196)&&RoadToArea(TEXT("saro"),{21,0,196}).Equals({-3,0,496},.00001);
-  Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));return Good;
+  Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));
+  // A save from before the buildings can park the truck inside a wall: it must come out on clear ground, and a truck on the road must stay.
+  bool Moved=true;
+  if(S47FarmBuildings::Available())
+  {
+   TArray<FS47Obstacle> Walls;for(const FBox2D& B:S47FarmBuildings::Obstacles())Walls.Add(FS47Obstacle::Box(B.Min.X,B.Max.X,B.Min.Y,B.Max.Y));
+   const double Hw=1.05,Hl=2.75;const TArray<FBox2D>& Each=S47FarmBuildings::Obstacles();
+   // Across the walls themselves: a building's middle is open floor where a truck is legal.
+   for(int32 I=0;I<Each.Num();I+=FMath::Max(1,Each.Num()/12))for(const double H:{0.,.8,1.57})
+   {
+    const FVector2D P=Each[I].GetCenter();
+    double Ox=0,Oz=0;const bool Hit=TruckHits(Walls,P.X,P.Y,H,Hw,Hl,.05);
+    const bool Found=NearestClearTruckSpot(Walls,P.X,P.Y,H,Hw,Hl,Ox,Oz);
+    Moved&=Hit&&Found&&!TruckHits(Walls,Ox,Oz,H,Hw,Hl,.05)&&FVector2D::Distance(P,FVector2D(Ox,Oz))<30;
+   }
+   double Kx=0,Kz=0;const double RoadZ=S47RoadTerrain::RanchZ(60);
+   Moved&=NearestClearTruckSpot(Walls,60,RoadZ,0,Hw,Hl,Kx,Kz)&&Kx==60&&Kz==RoadZ;
+  }
+  Lines.Add(FString(Moved?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: a truck parked in a wall by an old save is moved to the nearest clear ground, one on the road is left alone"));
+  return Good&&Moved;
  }
 }

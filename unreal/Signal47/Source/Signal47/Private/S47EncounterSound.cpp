@@ -105,8 +105,15 @@ bool FS47EncounterSound::Bind(US47Audio* A)
  Reset(); Context=A->Ctx; Owner=A;
  // Optional private recording. Decode once, never from the audio callback.
  TArray<uint8> Bytes;
- if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design/alien_interference.wav"))))
-  TransmissionBuffer=S47Wa::DecodeWav(Bytes);
+ // The original synthesised transmission (Tools/sound-workshop/alien_transmission.py) first; the private film clip
+ // alien_interference.wav is only a fallback for local trials and is what keeps distribute-linux.py from packaging.
+ const TCHAR* const Names[]={TEXT("radio_transmission_original.wav"),TEXT("alien_interference.wav")};
+ for (const TCHAR* Name : Names)
+ {
+  if (FFileHelper::LoadFileToArray(Bytes,*(FPaths::ProjectContentDir()/TEXT("Audio/Raw/sound_design")/Name)))
+   TransmissionBuffer=S47Wa::DecodeWav(Bytes);
+  if (TransmissionBuffer) break;
+ }
  if (TransmissionBuffer)
  {
   // A clip with quiet speech and rare peaks would vanish under a small radio's level: lift it evenly and
