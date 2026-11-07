@@ -15,6 +15,7 @@
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47UI.h"
+#include "S47FieldLife.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -39,11 +40,11 @@ namespace
  TArray<FPart> PartsOf(const FString& Kind)
  {
   const uint32 Steel=0x8b8e8a,Rust=0x7a4b2e,Wood=0x5b4733,Dark=0x151311,Pale=0xd8d4c6,Flag=0xd0641e,Stone=0x8f8778,Dirt=0x7c6348;
-  if(Kind==TEXT("windmill"))return {{Cube,{-1.1,4.5,-1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,-1.1},{.09,9,.09},Steel,0,-7},{Cube,{-1.1,4.5,1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,1.1},{.09,9,.09},Steel,0,-7},{Cube,{0,9,0},{.9,.08,.9},Wood,0,0},{Cyl,{0,9.9,-.2},{2.6,.1,2.6},Rust,0,90},{Cube,{0,9.9,.9},{.05,.7,1.5},Steel,0,0},{Cyl,{2.8,.4,1.2},{1.8,.8,1.8},Rust,0,0}};
+  if(Kind==TEXT("windmill"))return {{Cyl,{2.8,.4,1.2},{1.8,.8,1.8},Rust,0,0},{Cube,{-1.1,4.5,-1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,-1.1},{.09,9,.09},Steel,0,-7},{Cube,{-1.1,4.5,1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,1.1},{.09,9,.09},Steel,0,-7},{Cube,{0,9,0},{.9,.08,.9},Wood,0,0},{Cyl,{0,9.9,-.2},{2.6,.1,2.6},Rust,0,90},{Cube,{0,9.9,.9},{.05,.7,1.5},Steel,0,0}};
   if(Kind==TEXT("tank"))return {{Cyl,{0,1.3,0},{7,2.6,7},Steel,0,0},{Cube,{4,.3,0},{1.4,.6,.5},Rust,0,0},{Cube,{0,2.7,0},{7.2,.05,.3},Rust,30,0}};
-  if(Kind==TEXT("mine"))return {{Cube,{-1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{0,2.45,0},{2.5,.28,.28},Wood,0,0},{Cube,{0,1.1,.5},{1.8,2.2,1},Dark,0,0},{Cone,{-5,1.1,3},{9,2.4,8},Dirt,0,0},{Cone,{5,1.8,2},{10,3.6,9},Dirt,0,0},{Cube,{0,.1,-1.5},{.9,.1,3},Rust,0,0}};
+  if(Kind==TEXT("mine"))return {{Cube,{-1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{0,2.45,0},{2.5,.28,.28},Wood,0,0},{Cube,{0,1.1,.5},{1.8,2.2,1},Dark,0,0},{Cone,{-4.5,.7,2.5},{6.5,1.4,5},Dirt,0,0},{Cone,{4.5,.9,2},{7.5,1.8,6},Dirt,0,0},{Cube,{0,.1,-1.5},{.9,.1,3},Rust,0,0}};
   if(Kind==TEXT("balloon"))return {{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-1.6,.12,-1.3},{.2,.22,.14},Pale,15,8},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
-  if(Kind==TEXT("cow"))return {{CowBody,{0,.55,0},{1,1,1},0,30,88},{CowHead,{1.3,.4,.5},{1,1,1},0,30,88}};
+  if(Kind==TEXT("cow"))return {{CowBody,{0,.42,0},{1,1,1},0,30,86},{CowHead,{0,.42,0},{1,1,1},0,30,86}};
   if(Kind==TEXT("stake"))return {{Cube,{0,.65,0},{.05,1.3,.05},Wood,0,2},{Cube,{.13,1.15,0},{.26,.13,.012},Flag,0,0},{Cube,{.6,.04,.3},{.04,.08,.04},Wood,0,0}};
   if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
   if(Kind==TEXT("trough"))return {{Cube,{0,.32,0},{3.2,.64,.9},Rust,0,0},{Cube,{0,.62,0},{3,.03,.7},Dark,0,0},{Cube,{2.6,.2,.8},{.4,.4,.4},Pale,12,0},{Cube,{-3,.6,-1},{.1,1.2,.1},Wood,0,5}};
@@ -168,7 +169,9 @@ bool FS47Places::Build()
     auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),Tone(P.Colour));Mat->SetScalarParameterValue(TEXT("Roughness"),.92f);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);C->SetMaterial(0,Mat);
    }
    // The cow's own meshes are metres already, in Unreal's terms; basic shapes are a metre to a side.
-   C->SetWorldScale3D(FVector(P.Size.X,P.Size.Z,P.Size.Y));C->SetWorldRotation(FRotator(0,P.Yaw,P.Roll));
+   C->SetWorldScale3D(FVector(P.Size.X,P.Size.Z,P.Size.Y));
+   // The cow is on her side about her own length, which in those meshes is the y axis.
+   C->SetWorldRotation(FString(D.Kind)==TEXT("cow")?FRotator(P.Roll,P.Yaw,0):FRotator(0,P.Yaw,P.Roll));
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
    if(bFirst)
    {
@@ -202,25 +205,51 @@ void FS47Places::Seat(FBuilt& B)
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
  const FVector World=bMotel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
  double Y=bMotel?S47Legs::SaroFloorAt(B.X,B.Z):Road.Y+S47RoadTerrain::SurfaceY(B.X,B.Z);
- // What the player will really stand on, once it is there to be measured.
- if(UWorld* W=M->Web->GetWorld())
+ // What the player will really stand on, once they are near enough for it to be measured. Not a line trace: that finds the top
+ // of a bush as readily as the ground, and the place then hangs in the air.
+ const bool bSameLand=M->Player&&M->Player->Floor&&M->Web->Area()==(bMotel?FString(TEXT("saro")):M->Web->Area())&&(bMotel||M->Web->Area()!=TEXT("saro"));
+ if(bSameLand)
  {
-  FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47PlaceGround),true);
-  for(const auto& P:B.Parts)if(auto* C=P.Get())Q.AddIgnoredComponent(C);
-  if(W->LineTraceSingleByChannel(Hit,S47Three::ToUE(FVector(World.X,Y+30,World.Z)),S47Three::ToUE(FVector(World.X,Y-30,World.Z)),ECC_Visibility,Q)){Y=S47Three::ToThree(Hit.ImpactPoint).Y;B.bSeated=true;}
+  const double Floor=M->Player->Floor(World.X,World.Z);
+  if(FMath::IsFinite(Floor)){Y=Floor;B.bSeated=true;}
  }
  B.Y=Y;
  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(World.X,Y,World.Z)+B.Local[I]));
+}
+bool FS47Places::Drifts(const FString& Id){return Id==TEXT("stake")||Id==TEXT("cairn")||Id==TEXT("trough");}
+FVector2D FS47Places::DriftOf(const FString& Id,int32 Seed,int32 Day)
+{
+ if(!Drifts(Id))return FVector2D::ZeroVector;
+ FVector2D Sum=FVector2D::ZeroVector;const uint32 Salt=FCrc::StrCrc32(*Id);
+ // Every few days, a few metres. It never wanders far from where it stood.
+ for(int32 D=2;D<=Day;++D)if(FS47NightRhythm::Roll(Seed,D,Salt)<.2f)
+ {
+  const float A=FS47NightRhythm::Roll(Seed,D,Salt+1)*6.2831853f,R=2.f+5.f*FS47NightRhythm::Roll(Seed,D,Salt+2);
+  Sum+=FVector2D(FMath::Cos(A),FMath::Sin(A))*double(R);
+ }
+ return Sum.ClampAxes(-18.,18.);
 }
 void FS47Places::Step(double Dt)
 {
  if(!M||!M->Freeform||!M->Player||!M->Web)return;
  if(!bBuilt&&!Build())return;
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
- for(FBuilt& B:Built)if(!B.bSeated)
+ for(FBuilt& B:Built)
  {
   const FVector World=B.Id==Motel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
-  if(FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size()<300)Seat(B);
+  const double Away=FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size();
+  if(!B.bSeated&&Away<300)Seat(B);
+  // Not while anyone is near enough to see it go.
+  if(Drifts(B.Id)&&B.ShiftDay!=M->Freeform->Day()&&Away>200)
+  {
+   const FVector2D Then=B.Shift,Now=DriftOf(B.Id,M->Freeform->Seed(),M->Freeform->Day());
+   B.ShiftDay=M->Freeform->Day();
+   if(!Now.Equals(Then,.01))
+   {
+    B.Shift=Now;B.X+=Now.X-Then.X;B.Z+=Now.Y-Then.Y;B.bSeated=false;
+    UE_LOG(LogTemp,Display,TEXT("S47: place %s has shifted %.1f m since it first stood there"),*B.Id,Now.Size());
+   }
+  }
  }
  StepNeedle(Dt);
 }
@@ -265,6 +294,11 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   Rows.Add(S47Kit::Small(TEXT("The cot is in the truck. Out here there is nothing between you and whatever comes by; it will wake you.")));
   Rows.Add(S47Kit::Button(TEXT("Put up the cot here until morning"),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Field);},true));
  }
+ if(F->TripCamera&&F->TripCamera->CanSet()&&FString(D.Id)!=Motel)
+ {
+  const FString Where=D.Title;
+  Rows.Add(S47Kit::Button(TEXT("Leave the trip camera here until morning"),[this,F,Where]{F->TripCamera->SetHere(Where,false);if(M->UI)M->UI->Close(true);}));
+ }
  M->UI->Open(S47Kit::Shell(M->UI,FString(D.Title).ToUpper(),S47Kit::Col(Rows),760));
 }
 bool FS47Places::Use(const FString& Id)
@@ -275,13 +309,20 @@ bool FS47Places::Use(const FString& Id)
  {
   FString Page=FString(D->Finding);if(!Page.Contains(TEXT("records")))Page+=TEXT(" This records what is here.");
   F.RecordEvidence(Key,Page);
-  UE_LOG(LogTemp,Display,TEXT("S47: place found: %s, %d of %d"),*Id,1,Defs().Num());
+  UE_LOG(LogTemp,Display,TEXT("S47: place found: %s"),*Id);
   M->RequestAutosave();
  }
  FString Extra;
+ if(!bFirst&&Drifts(Id)&&!DriftOf(Id,F.Seed(),F.Day()).IsNearlyZero(.5))
+ {
+  // A second visit: it is the player's own record that says it was somewhere else.
+  const FString Moved=FString::Printf(TEXT("%s_moved_d%d"),*Key,F.Day());
+  Extra=TEXT("It is not where you noted it. Your record has it some paces from here. There are no marks of its having been moved.");
+  F.RecordEvidence(Moved,FString::Printf(TEXT("%s is not where I recorded it. Some paces off, and no drag marks. This records what I can compare."),D->Title));
+ }
  if(F.HasKit(TEXT("magnetometer")))
  {
-  Extra=TEXT("MAGNETOMETER / ")+FString(D->Needle);
+  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+FString(D->Needle);
   F.RecordEvidence(Key+TEXT("_needle"),FString::Printf(TEXT("Magnetometer at %s. %s"),D->Title,D->Needle));
  }
  Panel(*D,bFirst,Extra);return true;
@@ -341,6 +382,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  Check(bWords&&bParts,TEXT("each has a prop and one thing to find, and none says what it is"));
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
  Check(SpreadFor(0)==0&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("every mended branch narrows the sector, and none is exact"));
+ {
+  bool bStable=true,bNear=true,bMoves=false,bStill=true;
+  for(int32 Day=1;Day<=120;++Day)
+  {
+   const FVector2D A=DriftOf(TEXT("stake"),47,Day);bStable&=A==DriftOf(TEXT("stake"),47,Day);bNear&=FMath::Abs(A.X)<=18&&FMath::Abs(A.Y)<=18;bMoves|=A.Size()>1;
+   bStill&=DriftOf(TEXT("tank"),47,Day).IsZero()&&DriftOf(TEXT("mine"),47,Day).IsZero();
+  }
+  Check(bStable&&bNear&&bMoves&&bStill,TEXT("small things shift a little over the days, the same way in any Continue; what could not be carried stays"));
+ }
  FS47Places None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0&&None.Bearings().IsEmpty(),TEXT("an older save has none of it and writes nothing"));
  auto O=S47J::New();S47J::Set(O,TEXT("heard"),TArray<FString>{TEXT("mine"),TEXT("nowhere")});
  auto Fix=S47J::New();S47J::Set(Fix,TEXT("day"),3);S47J::Set(Fix,TEXT("az"),31.);S47J::Set(Fix,TEXT("spread"),12.);S47J::Set(Fix,TEXT("target"),TEXT("mine"));

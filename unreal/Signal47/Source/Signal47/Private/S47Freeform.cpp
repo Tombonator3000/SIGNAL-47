@@ -10,6 +10,7 @@
 #include "S47Places.h"
 #include "S47Predecessor.h"
 #include "S47RadioTips.h"
+#include "S47FieldLife.h"
 #include "S47NightRhythm.h"
 #include "S47Aftermath.h"
 #include "S47FarmNight.h"
@@ -244,6 +245,10 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Tips)Tips=MakeShared<FS47RadioTips>(M);Tips->Begin(S47J::Obj(Saved,TEXT("tips")));
  if(!TruckLamp)TruckLamp=MakeShared<FS47TruckLamp>(M);
  if(!YardAlarm)YardAlarm=MakeShared<FS47YardAlarm>(M);YardAlarm->Begin(S47J::Obj(Saved,TEXT("alarm")));
+ if(!Care)Care=MakeShared<FS47TruckCare>(M);Care->Begin(S47J::Obj(Saved,TEXT("care")));
+ if(!TripCamera)TripCamera=MakeShared<FS47TripCamera>(M);TripCamera->Begin(S47J::Obj(Saved,TEXT("tripCamera")));
+ if(!Round)Round=MakeShared<FS47DayRound>(M);Round->Begin(S47J::Obj(Saved,TEXT("round")));
+ if(!RoadCar)RoadCar=MakeShared<FS47RoadsideCar>(M);RoadCar->Begin(S47J::Obj(Saved,TEXT("roadCar")));
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
  if(!IndoorDread)IndoorDread=MakeShared<FS47IndoorDread>(M);IndoorDread->Begin(S47J::Obj(Saved,TEXT("indoorDread")));
@@ -265,7 +270,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
+ if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
@@ -464,6 +469,10 @@ void FS47FreeformSession::Step(double Dt)
  if(Tips&&!Held())Tips->Step(D);
  if(TruckLamp)TruckLamp->Step(D);
  if(YardAlarm)YardAlarm->Step(D);
+ if(Care&&!Held())Care->Step(D);
+ if(TripCamera)TripCamera->Step(D);
+ if(Round&&!Held())Round->Step(D);
+ if(RoadCar)RoadCar->Step(D);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -2062,6 +2071,15 @@ bool FS47FreeformSession::NightStarted(double AtClock)const
 }
 bool FS47FreeformSession::TheirHoursNow(double AtClock)const{return !QuietNight(NightOf(AtClock))&&NightStarted(AtClock);}
 float FS47FreeformSession::SiteVisitChance()const{return RulesLive()?FS47NightRhythm::VisitChance(DayNumber):.6f;}
+bool FS47FreeformSession::FaultDueLater()const
+{
+ const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
+ return RulesLive()&&FS47NightRhythm::FaultDay(JobSeed,DayNumber,HasUpgrade(0))&&Hour<FS47NightRhythm::FaultHour(JobSeed,DayNumber);
+}
+int32 FS47FreeformSession::RecordsOnDay(int32 OnDay)const
+{
+ int32 Count=0;for(const auto& Kept:FindingDays)Count+=Kept.Value==OnDay?1:0;return Count;
+}
 bool FS47FreeformSession::FaultDue()const
 {
  const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
@@ -2565,6 +2583,8 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
+ if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
+ if(Care&&!Care->StatusLine().IsEmpty())Result.Add({TEXT("TRUCK / ")+Care->StatusLine(),false});
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
@@ -2606,7 +2626,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
- if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto Round=Deputy->Save();if(Round->Values.Num()>0)S47J::Set(O,TEXT("deputy"),Round);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
+ if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto Round=Deputy->Save();if(Round->Values.Num()>0)S47J::Set(O,TEXT("deputy"),Round);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {

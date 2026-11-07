@@ -173,6 +173,13 @@ public:
  TSharedPtr<class FS47RadioTips> Tips;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
+ TSharedPtr<class FS47TruckCare> Care;
+ TSharedPtr<class FS47TripCamera> TripCamera;
+ TSharedPtr<class FS47DayRound> Round;
+ TSharedPtr<class FS47RoadsideCar> RoadCar;
+ // A fault is drawn for today and has not yet come: what a round can still catch.
+ bool FaultDueLater() const;
+ int32 RecordsOnDay(int32 OnDay) const;
  // What the station has got hold of (FS47Openings). Saved by name; an older save has none.
  bool HasKit(const FString& Id) const{return Kit.Contains(Id);}
  // Empty when it is on offer; otherwise, what it is waiting for.
