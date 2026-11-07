@@ -1,6 +1,6 @@
 # Forslag: samlet director for hendelser
 
-**Status:** Forslag, ikke vedtatt. **Gjelder:** Freeform først, Story bare som lesevisning. **Sist kontrollert:** 7. november 2026 mot `d70555a8`. Grunnlag: [HENDELSER.md](HENDELSER.md).
+**Status:** Godkjent av Tom 7. november, se DECISIONS. **Gjelder:** Freeform først, Story bare som lesevisning. **Sist kontrollert:** 7. november 2026 mot `d70555a8`. Grunnlag: [HENDELSER.md](HENDELSER.md).
 
 ## Svar til Tom
 

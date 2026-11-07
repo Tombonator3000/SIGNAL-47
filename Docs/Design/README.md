@@ -12,4 +12,4 @@ Den inneholder også et fullstendig kildekart til bevarte detaljplaner, historis
 
 ## Director og editor, forslag 7. november 2026
 
-[Oversikt over alle hendelser](Director/HENDELSER.md), [forslag til samlet director](Director/DIRECTOR-FORSLAG.md) og [forslag til visuell editor](Director/EDITOR-FORSLAG.md). Ikke vedtatt; venter på Toms svar.
+[Oversikt over alle hendelser](Director/HENDELSER.md), [forslag til samlet director](Director/DIRECTOR-FORSLAG.md) og [forslag til visuell editor](Director/EDITOR-FORSLAG.md). Godkjent av Tom 7. november, se [beslutningene](../Active/DECISIONS.md).
