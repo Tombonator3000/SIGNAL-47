@@ -494,6 +494,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   if(D->Family==TEXT("major")&&(Today-LastMajorDay<3||Clock<3*86400.+19*3600.))return false;
  }
  if(Id==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow())return false;
+ // The inspector's letter says that was the last loose sheet, and so it was.
+ if(Id==TEXT("roof_steps")){const auto* Visitors=M->Freeform->CaseFile().Get(2);if(Visitors&&Visitors->bConcluded&&Visitors->Conclusion==0)return false;}
  if(Id==TEXT("array_presence")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:service")),12)))return false;
  if(Id==TEXT("roomlight_return")&&!ReactiveReady())return false;
  if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;

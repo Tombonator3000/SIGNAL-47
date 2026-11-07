@@ -63,7 +63,7 @@ FS47FreeformJobs::FCard FS47FreeformJobs::Make(int32 Seed,int32 Day,int32 Slot,i
  const int32 Minute=Rule.StartMinute+Random.RandRange(-Rule.MinuteSpread/5,Rule.MinuteSpread/5)*5;
  Out.SuggestedClock=Minute*60.;
  P.Stage=FString::Printf(TEXT("FREEFORM D%02d / JOB %d"),Out.Day,Out.Slot+1);P.Action=TEXT("START ACQUISITION");
- P.Card=FString::Printf(TEXT("SARO / D%02d OBSERVATION %d / %s\nSUGGESTED %02d:%02d / FLEXIBLE ORDER, NO EXPIRY\nF %.3f MHz / AZ %.1f / EL %.1f\nGAIN %.0f-%.0f / BW %.0f-%.0f kHz\nINTEGRATION %.0f s\n%s"),Out.Day,Out.Slot+1,Run.Source,Minute/60,Minute%60,P.F,Az,Out.El,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],Out.Seconds,*ControlText(Out.Control));
+ P.Card=FString::Printf(TEXT("SARO / D%02d OBSERVATION %d / %s\nSUGGESTED %02d:%02d\nF %.3f MHz / AZ %.1f / EL %.1f\nGAIN %.0f-%.0f / BW %.0f-%.0f kHz\nINTEGRATION %.0f s\n%s"),Out.Day,Out.Slot+1,Run.Source,Minute/60,Minute%60,P.F,Az,Out.El,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],Out.Seconds,*ControlText(Out.Control));
  P.Note=TEXT("Observation card retains its original settings and source identity. Normal measurements remain valid; an anomaly requires independent control before interpretation.");
  return Out;
 }

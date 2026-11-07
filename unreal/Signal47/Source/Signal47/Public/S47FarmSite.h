@@ -69,6 +69,12 @@ public:
  void TestReadyVisit(){Visit=0;VisitDwell=0;}
  FVector Centre() const{return Middle;}
  FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
+ // The second look the note asks for: what the marks are by daylight, the morning after. 0 ordinary, 1 undecided, 2 strange;
+ // fixed by the game, the place and the day, so looking again never changes it.
+ FString DaylightId() const;
+ static int32 DaylightRead(int32 Seed,const FString& InPlace,int32 Day);
+ static FString DaylightText(int32 Read,bool bFarm);
+ static bool ByDaylight(double Clock);
  FString PlaceId() const{return Place;}
  FString PlaceTitle() const{return Title;}
 private:
@@ -94,6 +100,8 @@ private:
  FVector BodyAt=FVector::ZeroVector;
  double BodyYaw=0,BodyClock=0;
  static constexpr double ShhWithin=12;
+ // The tall one stands where it is for this long, to be found. Nothing comes of it before that: not walking, not its light.
+ static constexpr double TallStands=12;
  double ShhLeft=0;
  bool bShhTried=false;
  // The tall one. Stopped dead the first time a lamp finds it; sitting, some visits, while it is too far off for any lamp.

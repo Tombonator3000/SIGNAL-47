@@ -1,5 +1,6 @@
 #include "S47FarmSite.h"
 #include "S47Taken.h"
+#include "S47NightRhythm.h"
 #include "S47Aftermath.h"
 #include "S47PaleBody.h"
 #include "S47Three.h"
@@ -452,11 +453,11 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   const double To=FVector::Dist(BodyAt,Feet);
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
-  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<12?0.:To>30?1.35:.75);
+  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75);
   StepBody(Dt,Speed);
   // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
   const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
-  if(VisitWho==2&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&FreezeLeft<=0&&To<(VisitRounds==0?(bLampFirst?14.:26.):10.)&&Tk->Begin(Who,Title))++VisitRounds;
+  if(VisitWho==2&&BodyClock>=TallStands&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&FreezeLeft<=0&&To<(VisitRounds==0?(bLampFirst?14.:26.):10.)&&Tk->Begin(Who,Title))++VisitRounds;
   if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
  }
  // Away from the place, it lets go.
@@ -565,9 +566,32 @@ void FS47FarmSite::EndVisit(bool bTaken)
  M->RequestAutosave();
 }
 
+bool FS47FarmSite::ByDaylight(double Clock){const double H=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return H>=6&&H<19;}
+int32 FS47FarmSite::DaylightRead(int32 Seed,const FString& InPlace,int32 Day)
+{
+ const float R=FS47NightRhythm::Roll(Seed,Day,FCrc::StrCrc32(*InPlace));
+ return R<.4f?0:R<.75f?1:2;
+}
+FString FS47FarmSite::DaylightId() const{return FString::Printf(TEXT("%s_daylight_d%d"),*FindingId(),M&&M->Freeform?M->Freeform->Day():0);}
+FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
+{
+ if(bFarm)switch(Read)
+ {
+  case 0:return TEXT("Pasture at the Alderete place, by daylight. Hoof prints through most of the ring, and a length of baling wire dragged across it. Cattle would do this. All nine marks still lie the same way round. This records what is on the ground.");
+  case 1:return TEXT("Pasture at the Alderete place, by daylight. Nine shallow saucers, the same depth to a finger, the dirt pressed rather than dug. No tracks lead up to the ring, and there are plenty beside it. This records what is on the ground.");
+  default:return TEXT("Pasture at the Alderete place, by daylight. The soil in each mark has a crust that breaks like sugar. Under the middle one a sliver of something, light as foil and cold. Kept for the test bench. This records what is on the ground.");
+ }
+ switch(Read)
+ {
+  case 0:return TEXT("The marks by daylight. Oil and a tyre scuff in two of them; a delivery truck could have stood here. The other seven are only dark. This records what is on the ground.");
+  case 1:return TEXT("The marks by daylight. They have not faded and they do not wash off with a wet boot. Nobody on the street saw them made. This records what is on the ground.");
+  default:return TEXT("The marks by daylight. The surface in each has gone glassy and lifts in flakes. One flake did not break, light as foil and cold. Kept for the test bench. This records what is on the ground.");
+ }
+}
 FString FS47FarmSite::Label() const
 {
  if(!bActive||!Armed())return FString();
+ if(M&&M->Freeform&&ByDaylight(M->Freeform->Clock()))return M->Freeform->HasFinding(DaylightId())?TEXT("Pressed ground / already looked at by daylight"):TEXT("Pressed ground / look again by daylight");
  return M&&M->Freeform&&M->Freeform->HasFinding(FindingId())?TEXT("Pressed ground / already noted"):TEXT("Pressed ground / look closer");
 }
 
@@ -576,6 +600,20 @@ bool FS47FarmSite::Use()
  if(!bActive||!Armed()||!M||!M->UI||!M->Freeform)return false;
  const bool bNew=!M->Freeform->HasFinding(FindingId());
  const bool bFarm=Place==TEXT("farm");
+ if(ByDaylight(M->Freeform->Clock()))
+ {
+  const FString Id=DaylightId();const int32 Read=DaylightRead(M->Freeform->Seed(),Place,M->Freeform->Day());
+  const bool bFirst=!M->Freeform->HasFinding(Id);const FString Page=DaylightText(Read,bFarm);
+  if(bFirst)
+  {
+   M->Freeform->RecordEvidence(Id,Page);
+   if(Read==2)M->Freeform->AddItem(TEXT("fragment"),1);
+   UE_LOG(LogTemp,Display,TEXT("S47: daylight look at %s: reading %d"),*Place,Read);
+   M->RequestAutosave();
+  }
+  M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col({S47Kit::Text(Page),S47Kit::Small(bFirst?TEXT("Kept as a field record. Gone by noon."):TEXT("Already in your field records."))}),760));
+  return true;
+ }
  if(bNew)M->Freeform->RecordEvidence(FindingId(),bFarm
   ?FString(TEXT("Pasture at the Alderete place, the night of the lights. Nine pressed marks in a ring about nine metres across, the grass darkened and laid flat. Cattle, a vehicle or a prank have not been ruled out. Worth a second look by daylight."))
   :FString::Printf(TEXT("Open ground outside %s, the night of the lights. Nine dark marks in a ring about five metres across. A vehicle, a spill or a prank have not been ruled out. Worth a second look by daylight."),*Title));

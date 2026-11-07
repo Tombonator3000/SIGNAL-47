@@ -149,6 +149,8 @@ public:
  bool ChooseThird(bool bVirgo);
  bool PointSelected();
  bool StartAcquisition();
+ bool FirstPulseDue(const FJob& Candidate) const;
+ void TestFirstPulse(){bTestFirstPulse=true;}
  bool CollectChart();
  static constexpr double PrinterSeconds=5.2;
  FString PrinterJobId() const;
@@ -204,6 +206,11 @@ public:
  TSharedPtr<class FS47Taken> Taken;
  // What stays a little wrong for a while after being taken, or after a night with them at the farm.
  TSharedPtr<class FS47Aftermath> Aftermath;
+ // The county's night patrol, once a letter has said it would come by.
+ TSharedPtr<class FS47DeputyRound> Deputy;
+ bool DeputyOnRoute() const;
+ int32 SheriffTrust() const;
+ int32 Seed() const{return JobSeed;}
  // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
  FString TerminalClock() const;
  bool OpsOnGlass() const { return ActiveTerminal==3&&TerminalOnGlass(); }
@@ -268,7 +275,7 @@ private:
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 WokenNight=0;
  int32 RousedNight=0; // the last night a rest was really broken: never two running
- bool bTestEvening=false;
+ bool bTestEvening=false,bTestFirstPulse=false;
  double WakeClock=0;
  bool bTestWake=false;
  bool WakeBefore(double Target,double& Out);
