@@ -269,13 +269,20 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
   if (In.HoldBack>0)
   {
    const FVector Away=FVector(Pos.X-LookTarget.X,0,Pos.Z-LookTarget.Z).GetSafeNormal();
-   FVector To=Pos+Away*In.HoldBack*Dt;
-   bool bStep=true;
-   if (World.GroundedStep) { const auto Grounded=World.GroundedStep(Pos,To); bStep=Grounded.IsSet()&&Finite(Grounded.GetValue()); if (bStep) To=Grounded.GetValue(); }
-   if (bStep && World.CanStand && World.CanMove && World.CanStand(To) && World.CanMove(Pos,To) && !(World.Occupancy && World.Occupancy(To)>=1.))
+   // Straight back from it, or off to either side when something stands behind.
+   for (const double Turn : {0.,.7,-.7,1.4,-1.4})
    {
-    const FVector Before=Pos; Pos=To; DistanceTravelled+=FVector::Dist(Pos,Before);
-    Velocity=(Pos-Before)/FMath::Max(Dt,1e-6);
+    FVector To=Pos+Away.RotateAngleAxisRad(Turn,FVector(0,1,0))*In.HoldBack*Dt;
+    bool bStep=true;
+    if (World.GroundedStep) { const auto Grounded=World.GroundedStep(Pos,To); bStep=Grounded.IsSet()&&Finite(Grounded.GetValue()); if (bStep) To=Grounded.GetValue(); }
+    const bool bStand=bStep&&World.CanStand&&World.CanStand(To),bMove=bStand&&World.CanMove&&World.CanMove(Pos,To),bFree=bMove&&!(World.Occupancy&&World.Occupancy(To)>=1.);
+    if (bFree)
+    {
+     const FVector Before=Pos; Pos=To; DistanceTravelled+=FVector::Dist(Pos,Before);
+     Velocity=(Pos-Before)/FMath::Max(Dt,1e-6);
+     break;
+    }
+    if (Turn==0.&&FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAttention"))) UE_LOG(LogTemp,Display,TEXT("S47: attention: back blocked step %d stand %d move %d free %d"),bStep?1:0,bStand?1:0,bMove?1:0,bFree?1:0);
    }
   }
   return;

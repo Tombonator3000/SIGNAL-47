@@ -854,7 +854,7 @@ namespace
    }
    if(Stage==545)
    {
-    DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
     if(M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE())!=Visit.DoorKeyNow())
     {
      if(Elapsed-DreadAt>3)return Fail(TEXT("looking at the door from beside it must offer it"));
