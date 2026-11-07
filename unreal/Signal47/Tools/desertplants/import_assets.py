@@ -20,9 +20,14 @@ ROOT = Path(os.environ.get('S47_DESERT_SOURCE', str(Path.home() / 'Documents/Cha
 REPORT = Path(os.environ['S47_DESERT_REPORT'])
 DEST = '/Game/DesertPlants'
 MASTERS = '/Game/Web/Base/'
-PLANTS = ['SM_DP_Cholla_A', 'SM_DP_Cholla_B', 'SM_DP_Yucca_A', 'SM_DP_Yucca_B', 'SM_DP_Yucca_Bloom', 'SM_DP_Yucca_DryStalk', 'SM_DP_Mesquite_A', 'SM_DP_Mesquite_B']
-# flora.ts floraMaterial: Back slipper lampelys gjennom kort. Yucca og cholla er tette, mesquiten er løv.
-BACK = {'M_DP_Yucca': 0., 'M_DP_Cholla': 0., 'M_DP_Mesquite': 1.}
+PLANTS = ['SM_DP_Cholla_A', 'SM_DP_Cholla_B', 'SM_DP_Yucca_A', 'SM_DP_Yucca_B', 'SM_DP_Yucca_Bloom', 'SM_DP_Yucca_DryStalk', 'SM_DP_Mesquite_A', 'SM_DP_Mesquite_B',
+          'SM_DP_Creosote_A', 'SM_DP_Creosote_B', 'SM_DP_Creosote_C']
+# S47_DESERT_ONLY=creosote: bare de artene (komma mellom). Da røres ikke de andres ferdige .uasset.
+ONLY = [x.strip().capitalize() for x in os.environ.get('S47_DESERT_ONLY', '').split(',') if x.strip()]
+if ONLY:
+    PLANTS = [name for name in PLANTS if name.split('_')[2] in ONLY]
+# flora.ts floraMaterial: Back slipper lampelys gjennom kort. Yucca og cholla er tette, mesquiten og kreosoten er løv.
+BACK = {'M_DP_Yucca': 0., 'M_DP_Cholla': 0., 'M_DP_Mesquite': 1., 'M_DP_Creosote': 1.}
 SCREEN_SIZES = [1., .12, .025]  # Som Tools/calichenature.
 BOUNDS_TOLERANCE_CM = 1.
 SWAY_TOLERANCE = .01
@@ -210,7 +215,7 @@ def check_lods(mesh, name, wanted):
 def main():
     wanted = json.loads((ROOT / 'reimport.json').read_text())
     rows = json.loads((ROOT / 'materials.json').read_text())
-    mats = {name: material(name, row) for name, row in rows.items()}
+    mats = {name: material(name, row) for name, row in rows.items() if not ONLY or name[len('M_DP_'):] in ONLY}
     for name in PLANTS:
         asset = DEST + '/' + name
         if E.does_asset_exist(asset):
