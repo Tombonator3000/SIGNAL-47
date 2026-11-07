@@ -311,6 +311,13 @@ namespace
 		C->SetStaticMesh(Mesh);
 		for (int32 Slot = 0; Slot < Materials.Num(); ++Slot) C->SetMaterial(Slot, Materials[Slot]);
 	}
+	// Caliche's tiles of mineral soil lie flat on the old ground: under the new land they show as grey lumps.
+	void HideOldSoil(const AS47Web* W, bool bOn)
+	{
+		for (int32 Tile = 0; const FS47WebNode* TileNode = W->Node(Tile); ++Tile)
+			if (TileNode->Name.StartsWith(TEXT("prop:streetGroundNature")))
+				if (UPrimitiveComponent* TileMesh = Cast<UPrimitiveComponent>(TileNode->Comp.Get())) TileMesh->SetHiddenInGame(bOn);
+	}
 	void ApplyRelief(FS47FreeformTerrainState& S, bool bOn)
 	{
 		const double Started = FPlatformTime::Seconds();
@@ -374,7 +381,7 @@ namespace S47FreeformTerrain
 		const bool bWant = S47FarmWorld::Enabled(Main) && W->HighwayLandscapeReady();
 		if (bWant && !S.bPrepared && !S.bFailed) PrepareRelief(W, S);
 		const bool bNext = bWant && S.bPrepared;
-		if (bNext != S.bOn) ApplyRelief(S, bNext);
+		if (bNext != S.bOn) { ApplyRelief(S, bNext); HideOldSoil(W, bNext); }
 		else if (S.bOn)
 		{
 			// Whoever sets a material on the ground later must not take it back to the flat land's.

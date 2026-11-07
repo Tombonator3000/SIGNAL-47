@@ -65,7 +65,7 @@ namespace
    Mid->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Mid->SetScalarParameterValue(TEXT("CrustAmount"),.75f);
   }
   const float Day=DayAt(US47Main::Get(Web));if(FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),FMath::Lerp(NightTint,FLinearColor(.42f,.34f,.28f),Day));
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),FMath::Lerp(NightTint,FLinearColor(.50f,.42f,.36f),Day));
  }
  // The other ground the player stands on keeps its own exported MI_W* material (the station's sand, its gravel, the gravel
  // tracks and the farm road). Measured at 11:00 in Freeform against the new soil, which reads 170,134,110: the station's sand
