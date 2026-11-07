@@ -1,8 +1,18 @@
 # Hendelser i Freeform og Story
 
-**Status:** Referanse, kildekontroll. **Gjelder:** `claude/day-d-20261107` på `d70555a8`. **Sist kontrollert:** 7. november 2026.
+**Status:** Referanse, kildekontroll. **Gjelder:** `claude/day-d-20261107` på `d70555a8`. **Sist kontrollert:** 7. november 2026, tillegg om director-1 til -5 samme kveld.
 
 Bare det som er lest i kode. Filer er under `unreal/Signal47/Source/Signal47/Private/` hvis ikke annet står. Linjenumre kan flytte seg: en annen agent endrer nå `S47FreeformDirector.cpp` og `S47FarmSite.cpp`. «Beregnet» betyr regnet ut fra koden, ikke målt i spill.
+
+## Etter director-1 til -5, 7. november
+
+Punktene under «Viktigst» beskriver koden før disse patchene. Bare F10-delen er kjørt i spill; resten er skrevet og syntakssjekket.
+
+- **F10 (director-1, -2c, -3b, kjørt):** Alle 22 Director-hendelser, dør, titting, lysrom, stedsbesøk og feltbesøk, motorvei nord og sør, lys over hvert sted, lyskuler, formasjoner, høyt himmelspor, bortføring på fire måter per skapning, etterspill, mysterium, oppvåkning, feltprøver, stedene ute på land, utstyr, alarm, CB og 1420. Hver linje setter klokke og sted og sier på skjermen hva den gjør, eller hvorfor den ikke startet. Grupper på forsiden, `/` søker. Gjennomgangen `-S47DevSweep` startet 153 av 162 linjer. De 9 som ble avvist, var rekkefølgefeil fra linjen før eller manglende forutsetninger, og er rettet eller forklart i director-3b. Gjennomgangen er ikke kjørt på nytt etter rettingen.
+- **Naturlig rytme (director-1, kjørt):** F10, Run the night, slår på det utviklerkjøring ellers slår av, med fart x1 til x60 og x1 mens noe skjer. `-S47NaturalNight=30` starter slik. Frøet er fast i utviklerkjøring, så nettene blir like fra gang til gang.
+- **Rytmefil og panel (director-2 og -3):** `Content/Director/director.json` speiler dagens tall. Panelet viser hva som kan skje nå, hva som er neste, og hvorfor noe ikke skjer. Skyggeloggen (`S47: rhythm`) sa i én natt på x30 at regelen ville stoppet tre ting: én formasjon rett etter en hendelses ro, og to artefakter av for gammelt øyeblikksbilde, som er rettet i director-3b.
+- **Mer skjer (director-4, ikke bygget):** 8 nye små hendelser og spredning over natten. Beregnet: 3,0 små per dag mot 1,6 i dag. Netter uten noe smått etter midnatt går fra 94 % til 29 % (`Tools/director/simulate.py`, bare en skisse).
+- **Ro og én fare per natt (director-5a til -5e, ikke bygget):** ett system per patch: inne, sted, motorvei, himmel, så `danger_per_night: 1`.
 
 ## Viktigst
 

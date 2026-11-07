@@ -136,7 +136,7 @@ private:
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 SkyLeft=0; // the day's lights in the distance and quiet ground: their own pot, not spent by the day's instruments
- int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
+ int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,MinorBudget=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0,LightRollDay=0,PendingLightNight=0;
  int32 DangerNight=0,DangerCount=0;
  // When tonight's lights are due, in hours from the night's own midday (25.5 is 01:30). 0: as soon as they can.

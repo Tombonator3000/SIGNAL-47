@@ -1,4 +1,5 @@
 #include "S47FreeformTest.h"
+#include "S47SmallHints.h"
 #include "S47CaseFieldTest.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47Freeform.h"
@@ -1768,13 +1769,14 @@ void FS47FreeformTest::Step(double Dt)
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
   const auto Events=FS47FreeformDirector::EventIds();
-  if(!Check(Events.Num()==22&&Events.Contains(TEXT("farm_lights"))&&Events.Contains(TEXT("town_lights"))&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes nineteen authored events, the room-light incident and both physical service-site encounters")))return;
+  if(!Check(Events.Num()==30&&Events.Contains(TEXT("farm_lights"))&&Events.Contains(TEXT("town_lights"))&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes twenty-seven authored events, the room-light incident and both physical service-site encounters")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)
  {
   auto Ids=FS47FreeformDirector::EventIds();
   Ids.Remove(TEXT("dusk_orb")); // S47DuskOrbTest owns the native photographic journey.
+  Ids.RemoveAll([](const FString& Id){return S47SmallHints::Is(Id);}); // Foley with no state of their own, and one opens a door the later fixtures expect shut. F10's sweep starts them.
   Ids.Remove(TEXT("roomlight_return")); // Requires a real OFF input and departure; S47ReactiveLightTest owns that journey.
   // array_presence needs a healthy array; s03_failure leaves a fault, so stage the encounter first.
   Ids.Remove(TEXT("array_presence"));Ids.Insert(TEXT("array_presence"),FMath::Max(0,Ids.IndexOfByKey(FString(TEXT("s03_failure")))));

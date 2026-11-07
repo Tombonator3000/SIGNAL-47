@@ -126,6 +126,8 @@ Lagring: Trinn 1 til 4 legger ikke noe i lagringen. Trinn 5 får et valgfritt fe
 
 Valgfritt, lite tillegg: `Tools/director/simulate.py` kaster dagens tall over 30 netter med en valgt spillertype (innendørs på SARO, ute, på veien) og viser hva som ville skjedd. Ingen motorjobb. Verden modelleres ikke, så det er en rytmeskisse, ikke bevis.
 
+**Status for trinnene, 7. november kveld:** 0 er gjort. 1 er flettet som director-1 og -2: F10 og rytmefil, uten endret oppførsel. 2 til 4 er flettet som director-3: grunn i panelet, tall fra JSON og skyggelogg i alle systemer. Grunnen i panelet leses ved siden av `Eligible`, ikke fra den. Nedkjølingens 2 til 4 dager og `their_hours` står fortsatt i koden. 5 og 6 ligger som director-5a til -5e og er ikke bygget. Det samme gjelder de små hendelsene i director-4. Override virker bare med `-S47DirectorOverride` eller F10 i en testkjøring.
+
 ## 5. Hva som blir i kode
 
 - Hva hendelsene gjør: faser, kropper, sikt, lys, lyd, `FS47Taken`, dørenes logikk.

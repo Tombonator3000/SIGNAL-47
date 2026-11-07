@@ -15,6 +15,7 @@
 #include "S47Night.h"
 #include "S47NightRhythm.h"
 #include "S47SkyVisitors.h"
+#include "S47SmallHints.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -322,7 +323,7 @@ void FS47Rhythm::Observe(double Dt)
  auto& F=*M->Freeform;
  const int32 Night=FS47FreeformSession::NightOf(F.Clock());
  if(Night!=Tally.Night)CloseNight(Night);
- // Each second what the rules are looking at, and always the state from before anything starts.
+ // What the rules were looking at a frame ago: at speed a second is minutes of the night, and a stale look blames the wrong thing.
  Since+=Dt;
  const auto Look=[&]{Before=ReadNow();Since=0;};
  if(!bWatchInit){bWatchInit=true;Look();}
@@ -344,7 +345,7 @@ void FS47Rhythm::Observe(double Dt)
  On(TEXT("sky_formation"),M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&!M->SkyVisitors->FormationData().bDev);
  On(TEXT("sky_high"),M->SkyVisitors&&M->SkyVisitors->HighTrackOn());
  On(TEXT("mystery"),F.Director&&F.Director->MysteryNoticeClue()>=0);
- if(Since>=1)Look();
+ Look();
 }
 
 FString FS47Rhythm::PanelText(bool bFull) const
@@ -440,6 +441,7 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   Check(L.May(TEXT("peek"),A).bMay,TEXT("looking in at a window does not count as danger"));
   Check(L.May(TEXT("sky_formation"),A).bMay||InWindow(HourOf(A.Clock),21.5,5.5)==false,TEXT("nor do lights"));
  }
+ OK&=S47SmallHints::SelfTest(Lines);
  Check(CoolDays(TEXT("flyover"),3)>=2&&CoolDays(TEXT("flyover"),3)<=4&&CoolDays(TEXT("flyover"),3)==CoolDays(TEXT("flyover"),3),TEXT("cooldown two to four days, the same each time"));
  return OK;
 }

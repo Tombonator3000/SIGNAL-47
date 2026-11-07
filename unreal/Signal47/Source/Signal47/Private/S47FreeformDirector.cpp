@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include "S47SmallHints.h"
 #include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
@@ -291,7 +292,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
@@ -324,7 +325,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   LightPlace=S47J::Str(O,TEXT("lightPlace"));PhotoId=S47J::Str(O,TEXT("photo"));Scene=S47J::Str(O,TEXT("scene"),TEXT("saro"));Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,3);Variant=FMath::Clamp(S47J::Int(O,TEXT("variant")),0,2);
   // Older saves have none of these: no pot until the next day, no finding owed.
   SkyLeft=FMath::Clamp(S47J::Int(O,TEXT("skyLeft")),0,1);bOwedArray=S47J::Bool(O,TEXT("owedArray"));bOwedFeeder=S47J::Bool(O,TEXT("owedFeeder"));bForcedEvent=S47J::Bool(O,TEXT("forced"));
-  SeenDay=S47J::Int(O,TEXT("seenDay"));DangerNight=FMath::Max(0,S47J::Int(O,TEXT("dangerNight")));DangerCount=FMath::Max(0,S47J::Int(O,TEXT("danger")));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
+  SeenDay=S47J::Int(O,TEXT("seenDay"));DangerNight=FMath::Max(0,S47J::Int(O,TEXT("dangerNight")));DangerCount=FMath::Max(0,S47J::Int(O,TEXT("danger")));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);MinorBudget=FMath::Clamp(S47J::Int(O,TEXT("minorBudget"),MinorLeft),MinorLeft,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
   // Old saves know that a roll was spent, but not whether an unavailable
   // event was chosen. Never reroll it or invent a pending event on migration.
   PendingThreatNight=FMath::Max(0,S47J::Int(O,TEXT("pendingThreatNight")));
@@ -392,7 +393,7 @@ void FS47FreeformDirector::Stop()
 S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
- S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
+ S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
  if(SkyLeft>0)S47J::Set(O,TEXT("skyLeft"),SkyLeft);if(bOwedArray)S47J::Set(O,TEXT("owedArray"),true);if(bOwedFeeder)S47J::Set(O,TEXT("owedFeeder"),true);if(bForcedEvent)S47J::Set(O,TEXT("forced"),true);
@@ -477,7 +478,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   // Heard about from SARO too: the point is to drive there.
   if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||PickLightPlace().IsEmpty())return false;
  }
- else if(M->Web->Area()!=TEXT("saro"))return false;
+ else if(M->Web->Area()!=TEXT("saro")&&!(S47SmallHints::Is(Id)&&S47SmallHints::Anywhere(Id)))return false;
  if(!Forced)
  {
   // Every event begins with a save, and there is no saving at the wheel. What was drawn waits until the player has parked.
@@ -489,6 +490,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   // An instrumental anomaly needs an actually completed normal reference first.
   if(Instrument(Id)&&!M->Freeform->Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& J){return J.Source==0&&J.Stage==FS47FreeformSession::EJobStage::Filed;}))return false;
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;
+  // Noticed at all from where the player is, and the world as it needs it (FS47SmallHints).
+  if(S47SmallHints::Is(Id)&&M->Player&&!S47SmallHints::Fits(M,Id,M->Player->Pos,[this](const FVector& At){return InView(At);}))return false;
   if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&ActiveTime<RestUntil))return false;
   // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
   // The close pass is a hull beside the player, not a far light: it waits too.
@@ -533,6 +536,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
   if(M->Web->Area()==TEXT("saro")){Age=-170;Scene=TEXT("diner");}
  }
  if(Id==TEXT("dusk_orb")){Anchor=FVector(FS47DuskOrb::HomeX,US47Night::SaroFloorAt(M->Web,FS47DuskOrb::HomeX,FS47DuskOrb::HomeZ)+FS47DuskOrb::HomeUp,FS47DuskOrb::HomeZ);DuskOrb.Started(M->Freeform->Clock());UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed());}
+ if(S47SmallHints::Is(Id))Anchor=S47SmallHints::AnchorOf(M,Id);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
  if(Id==TEXT("close_pass")&&M->Player)Anchor=M->Player->Pos+FVector(-70,24,-38);
@@ -622,6 +626,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("service_presence")&&Stage==0)
   {if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.At=Anchor});if(M->UI)M->UI->Toast(TEXT("A heavy scrape beyond the service door. Something moves against the yard fence."),5);}
   if(Event==TEXT("unsigned_telex")&&M->Audio)M->Audio->Sfx(TEXT("printer"),FS47Sound{.Gain=.25f,.At=FVector(-4,1,2)});
+  if(S47SmallHints::Is(Event))S47SmallHints::Play(M,Event,Anchor);
   Changed();
  }
  // Rehydrate only presentation. Existing encounter brains, field originals,
@@ -978,7 +983,7 @@ void FS47FreeformDirector::Step(double Dt)
  if(M->SkyVisitors)M->SkyVisitors->Step(Dt);
  const int32 Day=M->Freeform->Day();
  const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
- if(SeenDay!=Day){SeenDay=Day;{const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;MinorLeft=FMath::Min(Random.RandRange(R.MinorMin,R.MinorMax),4);InvestLeft=FMath::Min(Random.RandRange(R.InvestMin,R.InvestMax),2);}SkyLeft=(Random.GetCurrentSeed()>>3)&1;NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
+ if(SeenDay!=Day){SeenDay=Day;{const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;MinorLeft=MinorBudget=FMath::Min(Random.RandRange(R.MinorMin,R.MinorMax),4);InvestLeft=FMath::Min(Random.RandRange(R.InvestMin,R.InvestMax),2);}SkyLeft=(Random.GetCurrentSeed()>>3)&1;NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
  if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
  StepMystery(Dt);
@@ -1013,8 +1018,12 @@ void FS47FreeformDirector::Step(double Dt)
    }
   }
   TArray<FString> Choices;
-  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&(!D.bNight||!bNight||!M->Freeform->QuietNight(Day))&&Eligible(D.Id,false))
-  {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");const bool bFar=D.Id==TEXT("response_lights")||D.Id==TEXT("quiet_zone");if((Minor&&MinorLeft>0)||(bFar&&SkyLeft>0)||(!Minor&&!bFar&&InvestLeft>0))Choices.Add(D.Id);}
+  // The small things are spread over the dark, not spent in its first hours: a night should feel as if something is going on all through it.
+  // A developer run's fixtures keep the fixed night they were written for: the same list, in the same order, spent as it comes.
+  const bool bLiveNight=M->Freeform->RulesLive();
+  const bool bMinorDue=!bLiveNight||!bNight||S47SmallHints::PaceAllows(MinorBudget-MinorLeft,MinorBudget,FMath::Fmod(M->Freeform->Clock(),86400.)/3600.,FMath::FRand());
+  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&(!D.bNight||!bNight||!M->Freeform->QuietNight(Day))&&(bLiveNight||!S47SmallHints::Is(D.Id))&&Eligible(D.Id,false))
+  {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");const bool bFar=D.Id==TEXT("response_lights")||D.Id==TEXT("quiet_zone");if((Minor&&MinorLeft>0&&bMinorDue)||(bFar&&SkyLeft>0)||(!Minor&&!bFar&&InvestLeft>0))Choices.Add(D.Id);}
   if(Choices.IsEmpty()){Changed();return;}
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
   if(Start(Id,false)){const auto* D=Definition(Id);if(D->Family==TEXT("minor")||D->Family==TEXT("maintenance"))--MinorLeft;else if(Id==TEXT("response_lights")||Id==TEXT("quiet_zone"))--SkyLeft;else --InvestLeft;Changed();}return;

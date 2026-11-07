@@ -28,6 +28,7 @@
 #include "S47RoadTerrain.h"
 #include "S47RoomLights.h"
 #include "S47SkyVisitors.h"
+#include "S47SmallHints.h"
 #include "S47Taken.h"
 #include "S47Theme.h"
 #include "S47UI.h"
@@ -148,7 +149,8 @@ void FS47DevFreeform::ClearRunning()
   // Over for this site, as a Continue would find it: the marks as they stand.
   const auto Saved=F->FarmSite->Save();F->FarmSite->Stop();F->FarmSite->Begin(Saved);
  }
- if(M->HighwayUfo)M->HighwayUfo->CancelForTest();
+ // Its quiet time after it counts as busy for everything else: a cancelled one is gone altogether in a test run.
+ if(M->HighwayUfo&&M->HighwayUfo->Busy()){M->HighwayUfo->CancelForTest();if(DevRun())M->HighwayUfo->Begin(nullptr);}
  if(M->SkyVisitors)M->SkyVisitors->DevFormationStop();
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  S47FloodProbe::StopLive(M);
@@ -259,6 +261,18 @@ void FS47DevFreeform::AddDirector(FS47DevEvents& E)
    StartDirector(Id,Stage,true,bFeeder?TEXT("A figure comes to the feeder in six seconds. Stay within 12 m or it does not."):TEXT("A figure comes to the cabinet in six seconds. Stay within 12 m or it does not."));
   });
  }
+ // The small things: where each can be noticed, at 22:00, and with the screen saying so, since some are easy to miss.
+ for(const FString& Id:S47SmallHints::Ids())
+ {
+  E.AddFreeform(Small,S47SmallHints::TitleOf(Id),S47SmallHints::NoteOf(Id),[this,Id]
+  {
+   FStage Stage;Stage.From=EveningFrom;Stage.To=EveningTo;Stage.Area=TEXT("saro");Stage.Yaw=UE_DOUBLE_PI;
+   const bool bOut=Id==TEXT("antenna_creak")||Id==TEXT("fence_tap")||Id==TEXT("night_hush");
+   const bool bFar=Id==TEXT("service_door_open");
+   Stage.Where=[bOut,bFar]{return bFar?FVector2D(7,48):bOut?Yard():ControlRoom();};
+   StartDirector(Id,Stage,false,S47SmallHints::NoteOf(Id));
+  });
+ }
  // The car with the light over it.
  E.AddFreeform(Small,TEXT("Empty car: light over it, can take you"),TEXT("03:12, yard, the car behind you within 32 m"),[this]
  {
@@ -315,6 +329,8 @@ void FS47DevFreeform::StartRoomLight()
 {
  auto* F=Session();
  if(!F||!M->RoomLights||!M->Player||!M->Inter){Tell(false,TEXT("Freeform only"));return;}
+ // A light needs its supply: a fault left by an earlier line would make it a minute's wait for nothing.
+ if(F->PowerFault()){Tell(false,TEXT("the power is out. Time and place, Mend the power, then try again"));return;}
  FStage Stage;Stage.From=EveningFrom;Stage.To=EveningTo;Stage.Area=TEXT("saro");
  Stage.Where=[this]{const FVector P=M->RoomLights->ApproachPoint(TEXT("control"));return FVector2D(P.X,P.Z);};
  Go(Stage,[this]
@@ -357,6 +373,9 @@ void FS47DevFreeform::PlaceRoom(const FString& Place,TFunction<void()> Then)
   FVector Room;if(!S47CalicheAccess::RoomMiddle(Place,Room)){Tell(false,FString::Printf(TEXT("no room %s in this scene"),*Place));return;}
   if(S47CalicheAccess::IsOpen(Place))S47CalicheAccess::UseDoor(Place);
   Stage.Area=TEXT("diner");Stage.Where=[Room]{return FVector2D(Room.X,Room.Z);};
+  // Facing its own street door: the glass and the frame the room has are that way.
+  FVector Door,Normal;
+  if(S47CalicheAccess::DoorAt(Place,Door,Normal))Stage.Yaw=FMath::Atan2(-(Door.X-Room.X),-(Door.Z-Room.Z));
  }
  Go(Stage,MoveTemp(Then));
 }
@@ -666,7 +685,7 @@ void FS47DevFreeform::AddAfter(FS47DevEvents& E)
    auto* S=Session();if(!S||!S->Director)return;
    auto& D=*S->Director;
    D.TestMysteryDice(1.f);D.TestSchedule(0.f,-1,40.);ScheduleHeld=20;
-   WaitFor([&D]{return D.MysteryNoticeClue()>=0||D.MysteryTrailOpen();},20,[this]
+   WaitFor([&D]{return D.MysteryNoticeClue()>=0||D.MysteryTrailOpen();},45,[this]
    {
     auto* T=Session();if(T&&T->Director){T->Director->TestMysteryDice(bNatural?.3f:-1.f);T->Director->TestSchedule(-1.f,-1,1.);}
     ScheduleHeld=0;
@@ -675,7 +694,7 @@ void FS47DevFreeform::AddAfter(FS47DevEvents& E)
    {
     auto* T=Session();if(T&&T->Director){T->Director->TestMysteryDice(bNatural?.3f:-1.f);T->Director->TestSchedule(-1.f,-1,1.);}
     ScheduleHeld=0;
-    Tell(false,TEXT("the draw came but nothing showed: another event had the moment, try again"));
+    Tell(false,TEXT("nothing showed in 45 seconds: another event or its rest had the moment. Stop everything, then try again"));
    });
   });
  });
@@ -745,7 +764,7 @@ FString FS47DevFreeform::HoldFor() const
  {
   // What has nothing to see runs on: an instrument waits for the next reading, a fault for its repair.
   const FString& Id=F->Director->ActiveEvent();
-  static const TCHAR* const Quiet[]={TEXT("extra_pulse"),TEXT("wrong_source"),TEXT("time_disagreement"),TEXT("duplicate_print"),TEXT("unsigned_telex"),TEXT("s03_failure"),TEXT("feeder_fault"),TEXT("landing_trace"),TEXT("empty_car"),TEXT("roomlight_return")};
+  static const TCHAR* const Quiet[]={TEXT("extra_pulse"),TEXT("wrong_source"),TEXT("time_disagreement"),TEXT("duplicate_print"),TEXT("unsigned_telex"),TEXT("s03_failure"),TEXT("feeder_fault"),TEXT("landing_trace"),TEXT("empty_car"),TEXT("roomlight_return"),TEXT("service_door_open")};
   for(const TCHAR* Q:Quiet)if(Id==Q)return FString();
   return Id;
  }
@@ -884,6 +903,11 @@ void FS47DevFreeform::AddTimePlace(FS47DevEvents& E)
    ToHour(Hour,Hour+.01);Tell(true,FString::Printf(TEXT("Day %d, %s."),F->Day(),*ClockText(F->Clock())),3);
   });
  }
+ E.AddFreeform(G,TEXT("Mend the power"),TEXT("a feeder fault left by an earlier line, as if repaired; the array's own fault wants its repair"),[this]
+ {
+  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
+  F->SetPowerFault(false);Tell(true,TEXT("The power is back."),3);
+ });
  E.AddFreeform(G,TEXT("Clock: +1 hour"),TEXT("forward"),[this]{auto* F=Session();if(!F)return;F->TestAdvance(3600);Tell(true,FString::Printf(TEXT("Day %d, %s."),F->Day(),*ClockText(F->Clock())),3);});
  E.AddFreeform(G,TEXT("Next day, same hour"),TEXT("new day cards, new draws"),[this]{auto* F=Session();if(!F)return;F->TestAdvance(86400);Tell(true,FString::Printf(TEXT("Day %d, %s."),F->Day(),*ClockText(F->Clock())),3);});
  struct FPlace{const TCHAR* Label;const TCHAR* Area;double X,Z,Yaw;};
@@ -924,7 +948,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
    ToLandPlace(Id,110,EveningFrom,EveningTo,[this,Id,Title](double,double)
    {
     auto* F=Session();if(!F||!F->Director)return;
-    if(!F->Director->ForceLights(Id)){Tell(false,F->Director->LightPlacePoint(Id).IsZero()?FString::Printf(TEXT("%s is not in this scene yet"),*Title):WhyRefused(TEXT("town_lights")));return;}
+    if(!F->Director->ForceLights(Id)){Tell(false,F->Director->LightPlacePoint(Id).IsZero()?FString::Printf(TEXT("lights do not come to %s: it is not among the Director's places for them"),*Title):WhyRefused(TEXT("town_lights")));return;}
     AimAt(F->Director->EventAnchor());
     Tell(true,FString::Printf(TEXT("Lights low over %s. They go when you come within 70 m, and leave marks."),*Title));
    });
@@ -935,7 +959,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
    {
     auto* F=Session();if(!F||!F->FarmSite||!F->Director)return;
     const FVector Point=F->Director->LightPlacePoint(Id);
-    if(Point.IsZero()){Tell(false,FString::Printf(TEXT("%s is not in this scene yet"),*Title));return;}
+    if(Point.IsZero()){Tell(false,FString::Printf(TEXT("no marks at %s: it is not among the Director's places for lights"),*Title));return;}
     F->FarmSite->Arm(F->Clock(),Id,Title,M->Web->Area(),Point);F->FarmSite->TestReadyVisit();
     const FVector C=F->FarmSite->Centre();M->Player->Place(C.X+6,C.Z+6,0);M->Player->Pitch=0;AimAt(C);
     Tell(true,FString::Printf(TEXT("Marks at %s. Stay 12 seconds on foot, in the dark, and something comes."),*Title),7);
@@ -969,7 +993,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  E.AddFreeform(K,TEXT("1420: the next caller"),TEXT("the next that fits; each once in a game"),[this]
  {
   auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevAm();
-  if(!bSaid)Tell(false,TEXT("no caller left that fits this game"));else{bLastOk=true;LastText=TEXT("a caller on 1420");}
+  if(!bSaid)Tell(false,TEXT("it needs the truck's radio on 1420 (R in the cab), and a caller left that fits this game"));else{bLastOk=true;LastText=TEXT("a caller on 1420");}
  });
  const auto SleepUntilMorning=[this](FS47FreeformSession::ERest Where,const TCHAR* Say)
  {
