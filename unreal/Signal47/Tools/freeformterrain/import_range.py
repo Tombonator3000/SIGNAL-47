@@ -99,9 +99,9 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     to_world.set_editor_property('transform_type', unreal.MaterialVectorCoordTransform.TRANSFORM_WORLD)
     wire(n_map, 'RGB', to_world, '')
 
-    haze_start = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1900, parameter_name='HazeStartM', default_value=1500.)
-    haze_scale = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1820, parameter_name='HazeScaleM', default_value=7000.)
-    haze_most = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1740, parameter_name='HazeMost', default_value=.86)
+    haze_start = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1900, parameter_name='HazeStartM', default_value=900.)
+    haze_scale = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1820, parameter_name='HazeScaleM', default_value=3800.)
+    haze_most = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1740, parameter_name='HazeMost', default_value=.88)
     haze = custom(mat, 'float d = length(Camera - World) * 0.01; return Most * (1.0 - exp(-max(d - Start, 0.0) / Scale));',
                   dict(Camera=cam, World=wp, Start=haze_start, Scale=haze_scale, Most=haze_most), F1, -2700, -1850)
 
@@ -171,7 +171,7 @@ return c * (0.88 + 0.24 * small);
     vc = node(mat, unreal.MaterialExpressionVectorParameter, -950, -560, parameter_name='FootVertexColor', default_value=unreal.LinearColor(.82, .80, .76, 1))
     rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(.74, .70, .68, 1))
     scrub = node(mat, unreal.MaterialExpressionVectorParameter, -950, -380, parameter_name='ShrubColor', default_value=unreal.LinearColor(.050, .055, .030, 1))
-    haze_col = node(mat, unreal.MaterialExpressionVectorParameter, -950, -290, parameter_name='HazeColor', default_value=unreal.LinearColor(.20, .25, .34, 1))
+    haze_col = node(mat, unreal.MaterialExpressionVectorParameter, -950, -290, parameter_name='HazeColor', default_value=unreal.LinearColor(.12, .19, .34, 1))
     land = custom(mat, """
 float3 soil = Soil * Tint * Vc * Macro;
 // the slope and the map's rock together; the local rock is the land's own colour, cut with the stone's pattern, a little greyer
@@ -185,7 +185,7 @@ c *= lerp(1.0, lerp(float3(1.06, 1.0, 0.94), float3(0.90, 0.92, 0.95), broad), 1
 // shrubs as a dark speckle
 float shrub = M.r * (1.0 - rock);
 c = lerp(c, Shrub, shrub * lerp(0.82, 0.55, saturate(Haze * 2.0)));
-return c * lerp(0.62, 1.0, M.b);
+return c * lerp(0.48, 1.0, M.b);
 """, dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, Far=(t13, 'R'), Shrub=scrub, Haze=haze), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 
@@ -194,7 +194,7 @@ float3 n = normalize(N);
 // farther off the shading evens out: air, not a change in the land. The far side of a range still goes darker against a low sun.
 float3 toEye = normalize(Camera - World);
 float3 flat_ = normalize(float3(0, 0, 1) * 0.7 + toEye * 0.7);
-return normalize(lerp(n, flat_, saturate(Haze * 0.75)));
+return normalize(lerp(n, flat_, saturate(Haze * 0.45)));
 """, dict(N=(to_world, ''), Camera=cam, World=wp, Haze=haze), F3, -300, -300)
     rough = node(mat, unreal.MaterialExpressionConstant, -300, -150, r=.92)
     spec = node(mat, unreal.MaterialExpressionConstant, -300, -60, r=.25)
