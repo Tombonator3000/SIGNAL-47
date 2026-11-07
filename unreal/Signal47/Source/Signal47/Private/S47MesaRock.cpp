@@ -27,12 +27,12 @@ namespace
   if(bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
   bLastReal=bReal;LastDay=Day;
   const auto Tint=[&](const FLinearColor& Real){return bReal?FMath::Lerp(StoryTint,Real,Day):StoryTint;};
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f,.265f,.275f)));
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.20f,.24f,.265f)));
   Mid->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
   Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   if(auto* Seam=SeamMid.Get())
   {
-   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.24f*.525f,.265f*.35f,.275f*.28f)));
+   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.20f*.525f,.24f*.35f,.265f*.28f)));
    Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
    Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   }
@@ -63,7 +63,12 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
     // The corridor's seam mesh has no vertex colours, so the same tint lands much brighter on it: its own instance.
     const bool bSeam=N->Name==TEXT("saroCorridorGround");
     TWeakObjectPtr<UMaterialInstanceDynamic>& Mine=bSeam?SeamMid:GroundMid;
-    if(!Mine.IsValid())Mine=UMaterialInstanceDynamic::Create(Ground.Get(),GetTransientPackage());
+    if(!Mine.IsValid())
+    {
+     Mine=UMaterialInstanceDynamic::Create(Ground.Get(),GetTransientPackage());
+     // The low mips of these sets read far paler than the full texture: a game opened to a white yard for seconds.
+     if(Mine.IsValid())Mine->SetForceMipLevelsToBeResident(true,true,-1.f);
+    }
     G->SetMaterial(0,Mine.IsValid()?(UMaterialInterface*)Mine.Get():Ground.Get());Done.Add(G);UE_LOG(LogS47MesaRock,Display,TEXT("S47: desert ground material on node %d (%s)"),I,*N->Name);}
    continue;
   }

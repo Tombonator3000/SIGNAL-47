@@ -704,6 +704,9 @@ namespace
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
      int32 At=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47BuildingsHour="),At)&&!M->Freeform->TestAdvance(FMath::Fmod(At*3600.-FMath::Fmod(M->Freeform->Clock(),86400.)+86400.,86400.)))return Fail(TEXT("the buildings test could not set the hour"));
+     // Experiments on the ground's colour: a second day, or a trip to another area first.
+     if(FParse::Param(FCommandLine::Get(),TEXT("S47BuildingsDay2"))&&!M->Freeform->TestAdvance(86400.))return Fail(TEXT("the buildings test could not reach the second day"));
+     if(FParse::Param(FCommandLine::Get(),TEXT("S47BuildingsTrip"))){M->World->Enter(TEXT("road"));Stage=199;StageAt=Elapsed;return true;}
      Stage=200;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerHouse")))
@@ -781,6 +784,12 @@ namespace
    }
    // The new farm buildings, in the saro frame: a look at each from the yard by day and by night and one inside the
    // barn, then in through its door on foot and on until the back wall stops the walk.
+   if(Stage==199)
+   {
+    if(Elapsed-StageAt<5)return true;
+    if(M->Web->Area()!=TEXT("saro")){M->World->Enter(TEXT("saro"));return true;}
+    Stage=200;StageAt=Elapsed;return true;
+   }
    if(Stage==205)
    {
     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the buildings test needs the night"));
