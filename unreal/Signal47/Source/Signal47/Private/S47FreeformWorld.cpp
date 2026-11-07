@@ -970,6 +970,7 @@ void FS47FreeformWorld::OpenWorkbench()
  R.Add(S47Kit::Button(TEXT("Test donor controller and harvest compatible relay"),[this]{DonorTest();},true,InventoryCount(TEXT("donor"))>0&&BenchJob.IsEmpty()));
  R.Add(S47Kit::Button(TEXT("Open workshop / donors, parts and recipes"),[this]{OpenWorkshop();},false));
  R.Add(S47Kit::Small(TEXT("TEST LAB: Analyze field fragments. PARTS STORAGE: Inspect spare stock. PHOTO LAB: Load photographic film. GARAGE RECEIVING: Unpack carried supplies.")));
+ R.Add(S47Kit::Paper(M->Freeform->MeasurementRecord()));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / CALIBRATION AND REPAIR"),S47Kit::Col(R),880));
 }
 FString FS47FreeformWorld::WorkshopBlock(const FString& Action,const FString& Arg) const
