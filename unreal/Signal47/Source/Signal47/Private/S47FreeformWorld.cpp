@@ -1435,7 +1435,7 @@ void FS47FreeformWorld::Step(double Dt)
  if(!M->Freeform->PowerFault()&&Feeder>0&&Feeder<5){Feeder=0;FeederSeconds=0;}
  if(Feeder==4&&FeederSeconds>0){FeederSeconds+=FMath::Min(Dt,.1);if(FeederSeconds>=3){Feeder=5;FeederSeconds=0;M->Freeform->SetPowerFault(false);TrackPowerFault(false);M->Freeform->RecordEvidence(TEXT("feeder-repair"),TEXT("Feeder supply measured, isolated, control fuse replaced and enclosed test passed."));Change(TEXT("SERVICE BAY FEEDER: Test passed; mains restored. ")+M->Freeform->Objective());}}
  // A bounded ordinary service need, not a constant global wear drain.
- if(M->Freeform->Day()>1&&M->Freeform->Day()%(M->Freeform->HasUpgrade(0)?6:3)==2&&LastFaultDay!=M->Freeform->Day()&&DayClock(Now)>=10*3600&&!HasArrayFault()&&!M->Freeform->PowerFault())TriggerServiceFault();
+ if(LastFaultDay!=M->Freeform->Day()&&M->Freeform->FaultDue()&&!HasArrayFault()&&!M->Freeform->PowerFault())TriggerServiceFault();
  Apply();
 }
 

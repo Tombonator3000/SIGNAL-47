@@ -36,10 +36,14 @@ public:
  void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
  // Marks that will still be there at this clock, with a visit still to come.
- bool WillStandAt(double Clock) const{return Visit==0&&ClearAt>Clock&&Clock>=CalmUntil;}
+ bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
  // The second report, on the set if the player has it. False: no marks to report.
  bool WakeCall();
  bool Nudged() const{return bNudged;}
+ // Some second calls lead nowhere: the marks have nothing coming, or on a calm night there are no marks at all.
+ bool FalseCall() const{return bFalseCall;}
+ static FString SecondCallLine(int32 Index,const FString& About);
+ static constexpr int32 SecondCallLines=4;
  // Test: how high the moved body's head is over its feet, -1 when it is not out.
  double VisitHeadHeight() const;
  // Test: the next visit's draw, in place of the dice. Goes through PickWho like any other.
@@ -110,7 +114,10 @@ private:
  bool bFreezeTried=false,bSitsFar=false,bSatLogged=false;
  float SitRoll=-1;
  bool bBodyOut=false;
- bool bStallSet=false,bNudged=false;
+ bool bStallSet=false,bNudged=false,bFalseCall=false;
+ int32 EmptyTipNight=0;
+ bool Hours(double Clock) const;
+ void StepEmptyTip();
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;
  FS47VisitAttention Attention;

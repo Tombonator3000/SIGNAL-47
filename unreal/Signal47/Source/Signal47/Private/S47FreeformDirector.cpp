@@ -2,6 +2,7 @@
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FarmSite.h"
+#include "S47NightRhythm.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
 #include "S47UfoPresentation.h"
@@ -488,7 +489,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&ActiveTime<RestUntil))return false;
   // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
   // The close pass is a hull beside the player, not a far light: it waits too.
-  if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!FS47FarmSite::TheirHours(Clock))return false;
+  if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!M->Freeform->TheirHoursNow(Clock))return false;
   if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(Today-*Last<CoolDays(Id,*Last))return false;
   if(D->Family==TEXT("threat")&&(LastThreatDay==Today||Clock<86400.+19*3600.))return false;
   if(D->Family==TEXT("major")&&(Today-LastMajorDay<3||Clock<3*86400.+19*3600.))return false;
@@ -512,7 +513,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  for(int32& Logged:OrbStopLogged)Logged=-1;
  bForcedEvent=Forced;OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  bCarTaken=false;CarStage=0;CarLightClock=-1;
- bCarLight=Id==TEXT("empty_car")&&FS47FarmSite::TheirHours(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
+ bCarLight=Id==TEXT("empty_car")&&M->Freeform->TheirHoursNow(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("farm_lights"))
  {
@@ -800,9 +801,12 @@ bool FS47FreeformDirector::StartPendingNightChoice(const FString& Id,int32 Day,i
 }
 void FS47FreeformDirector::RollTonight(int32 Day)
 {
- const auto Chance=[this](float Usual){return TestDice>=0?TestDice:Usual;};
- bool bAny=RollNightChoice(Day,2,Chance(.35f),ThreatRollDay,PendingThreatNight);
- bAny|=RollNightChoice(Day,4,Chance(.10f),MajorRollDay,PendingMajorNight);
+ // A calm night draws nothing at all. The rest grow slowly with the nights played; lights stay as they were.
+ const bool bCalm=M&&M->Freeform&&M->Freeform->QuietNight(Day);
+ const double Growing=M&&M->Freeform&&M->Freeform->RulesLive()?FS47NightRhythm::Threat(Day):1.;
+ const auto Chance=[this,bCalm](float Usual){return TestDice>=0?TestDice:bCalm?0.f:Usual;};
+ bool bAny=RollNightChoice(Day,2,Chance(.35f*float(Growing)),ThreatRollDay,PendingThreatNight);
+ bAny|=RollNightChoice(Day,4,Chance(.10f*float(Growing)),MajorRollDay,PendingMajorNight);
  if(RollNightChoice(Day,2,TestLightAfter>=0?1.f:Chance(.45f),LightRollDay,PendingLightNight))
  {
   // Some nights while there is still work on, most nights late, when going out to them can come to something. Never
@@ -813,11 +817,11 @@ void FS47FreeformDirector::RollTonight(int32 Day)
  // Not an investigation among others, spent out of the day's budget: its own night, as the lights have. A figure two
  // nights running would be a different game, so it keeps the usual three days.
  const int32* Figure=LastDays.Find(TEXT("observer"));
- if(!Figure||Day-*Figure>=3)bAny|=RollNightChoice(Day,1,Chance(.5f),ObserverRollDay,PendingObserverNight);
- bAny|=RollNightChoice(Day,2,Chance(.4f),SiteRollDay,PendingSiteNight);
+ if(!Figure||Day-*Figure>=3)bAny|=RollNightChoice(Day,1,Chance(.5f*float(Growing)),ObserverRollDay,PendingObserverNight);
+ bAny|=RollNightChoice(Day,2,Chance(.4f*float(Growing)),SiteRollDay,PendingSiteNight);
  // Its own dice, so that the night's other draws are not moved by it. Over once its case has opened.
  const auto* MysteryCase=M&&M->Freeform?M->Freeform->CaseFile().Get(FS47FreeformCases::MysteryLine):nullptr;
- if(MysteryCase&&!MysteryCase->bOpen&&(MysteryDice>=0||(M->Flow&&!M->Flow->bDevRun))&&RollNightChoice(Day,2,MysteryDice>=0?MysteryDice:.3f,MysteryRollDay,PendingMysteryNight))
+ if(MysteryCase&&!MysteryCase->bOpen&&(MysteryDice>=0||(M->Flow&&!M->Flow->bDevRun))&&RollNightChoice(Day,2,MysteryDice>=0?MysteryDice:bCalm?0.f:.3f,MysteryRollDay,PendingMysteryNight))
  {
   // As the lights have an hour: some nights while there is still work on, some late.
   if(PendingMysteryNight==Day)MysteryAfter=Random.FRandRange(20.f,26.5f);
@@ -965,7 +969,7 @@ void FS47FreeformDirector::Step(double Dt)
    if(StartPendingNightChoice(TEXT("feeder_presence"),Day,PendingSiteNight)||StartPendingNightChoice(TEXT("array_presence"),Day,PendingSiteNight))return;
   }
   // Not only at dusk: the low lights keep their own hour in the dark. The same event, the same path, the same photograph.
-  if(!M->Freeform->InTutorial()&&(bTestOrbNight||(M->Flow&&!M->Flow->bDevRun))&&DuskOrb.ReadyNight(M->Freeform->Clock())&&Start(TEXT("dusk_orb"),false))
+  if(!M->Freeform->InTutorial()&&(bTestOrbNight||(M->Flow&&!M->Flow->bDevRun&&!M->Freeform->QuietNight(Day)))&&DuskOrb.ReadyNight(M->Freeform->Clock())&&Start(TEXT("dusk_orb"),false))
   {UE_LOG(LogTemp,Display,TEXT("S47: dusk orb night visit %d starts at %.2f h, from the schedule"),DuskOrb.NightVisitCount(),FMath::Fmod(M->Freeform->Clock(),86400.)/3600.);return;}
   if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+Random.FRandRange(240,420);
   if(bNight)
@@ -986,7 +990,7 @@ void FS47FreeformDirector::Step(double Dt)
    }
   }
   TArray<FString> Choices;
-  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&Eligible(D.Id,false))
+  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&(!D.bNight||!bNight||!M->Freeform->QuietNight(Day))&&Eligible(D.Id,false))
   {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");const bool bFar=D.Id==TEXT("response_lights")||D.Id==TEXT("quiet_zone");if((Minor&&MinorLeft>0)||(bFar&&SkyLeft>0)||(!Minor&&!bFar&&InvestLeft>0))Choices.Add(D.Id);}
   if(Choices.IsEmpty()){Changed();return;}
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
@@ -1102,7 +1106,7 @@ bool FS47FreeformDirector::StepCarLight(double Duration)
  if(CarStage==0)
  {
   const bool bVisit=M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround();
-  if(!FS47FarmSite::TheirHours(M->Freeform->Clock())||!Near(EmptyCarReference,32)||bVisit||M->ModalOpen())return false;
+  if(!M->Freeform->TheirHoursNow(M->Freeform->Clock())||!Near(EmptyCarReference,32)||bVisit||M->ModalOpen())return false;
   if(!Tk->BeginOver(ES47Taker::Roswell,TEXT("the car in the staff bay"),EmptyCarFoot))return false;
   CarStage=1;CarLightClock=M->Freeform->Clock();Changed();return true;
  }

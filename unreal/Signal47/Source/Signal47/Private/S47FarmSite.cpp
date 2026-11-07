@@ -50,6 +50,33 @@ bool FS47FarmSite::TheirHours(double Clock)
  return Hour>=2&&Hour<6;
 }
 
+bool FS47FarmSite::Hours(double Clock) const{return M&&M->Freeform?M->Freeform->TheirHoursNow(Clock):TheirHours(Clock);}
+FString FS47FarmSite::SecondCallLine(int32 Index,const FString& About)
+{
+ // Written as dispatch would pass them on: nobody at the other end knows anything.
+ switch(FMath::Clamp(Index,0,SecondCallLines-1))
+ {
+  case 0:return FString::Printf(TEXT("A second call about %s. The caller says the lights have not gone, and won't go out to look."),*About);
+  case 1:return FString::Printf(TEXT("Another call about %s. Same man. He says they are lower now."),*About);
+  case 2:return FString::Printf(TEXT("Somebody else has rung about %s. She wants to know who is working out there at this hour."),*About);
+  default:return FString::Printf(TEXT("A call about %s. Could be nothing. The man had been drinking and said so."),*About);
+ }
+}
+void FS47FarmSite::StepEmptyTip()
+{
+ // A calm night, no marks anywhere, and somebody rings anyway. Drive out and there is nothing there.
+ auto& F=*M->Freeform;
+ const double Clock=F.Clock();const int32 Night=FS47FreeformSession::NightOf(Clock);
+ if(EmptyTipNight==Night||!F.RulesLive()||!F.QuietNight(Night)||!F.NightStarted(Clock))return;
+ EmptyTipNight=Night;
+ if(FS47NightRhythm::Roll(F.Seed(),Night,0x54495053u)>=.4f)return;
+ static const TCHAR* Places[]={TEXT("the Alderete place"),TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station")};
+ const int32 Pick=int32(FS47NightRhythm::Roll(F.Seed(),Night,0x50494b45u)*UE_ARRAY_COUNT(Places))%UE_ARRAY_COUNT(Places);
+ const FString Tip=SecondCallLine(int32(FS47NightRhythm::Roll(F.Seed(),Night,0x4c494e45u)*SecondCallLines)%SecondCallLines,Places[Pick]);
+ if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+ UE_LOG(LogTemp,Display,TEXT("S47: a call on a calm night, about %s: nothing there"),Places[Pick]);
+ M->RequestAutosave();
+}
 int32 FS47FarmSite::PickWho(const FString& InPlace,double Hour,float Roll)
 {
  const bool bFarm=InPlace==TEXT("farm");
@@ -126,7 +153,7 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();VisitBody.Reset();CrabBody.Reset();TallBody.Reset();bBodyOut=false;SpotSaro={};SpotRoad={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
- Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bStallSet=false;HushIn=0;
+ Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bFalseCall=S47J::Bool(Saved,TEXT("falseCall"));EmptyTipNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("emptyTip"))):0;bStallSet=false;HushIn=0;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -162,6 +189,8 @@ void FS47FarmSite::Stop()
 S47J::FObj FS47FarmSite::Save() const
 {
  const auto O=S47J::New();
+ if(EmptyTipNight>0)S47J::Set(O,TEXT("emptyTip"),EmptyTipNight);
+ if(bFalseCall&&ClearAt>0)S47J::Set(O,TEXT("falseCall"),true);
  if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),Visit==0?0:4);S47J::Set(O,TEXT("place"),Place);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("area"),AreaId);S47J::Set(O,TEXT("at"),TArray<double>{Middle.X,Middle.Y,Middle.Z});S47J::Set(O,TEXT("nudged"),bNudged);}
  return O;
 }
@@ -176,9 +205,12 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  ClearAt=FMath::FloorToDouble((Clock-Morning)/Day+1)*Day+Morning;
  Place=InPlace;Title=InTitle;AreaId=InArea;Middle=Point;
  // Not every night's lights leave something behind that comes back for you.
- Visit=FMath::FRand()<.6f&&Clock>=CalmUntil?0:4;VisitDwell=0;
+ const float Comes=M&&M->Freeform?M->Freeform->SiteVisitChance():.6f;
+ Visit=FMath::FRand()<Comes&&Clock>=CalmUntil?0:4;VisitDwell=0;
+ // A second call means nothing by itself: about half the sites with nothing coming get one too.
+ bFalseCall=Visit==4&&M&&M->Freeform&&M->Freeform->RulesLive()&&FMath::FRand()<.5f;
  // Marks made in the evening get word later, when something can come of it; made now, the tip was word enough.
- bNudged=TheirHours(Clock);
+ bNudged=Hours(Clock);
  if(Place!=TEXT("farm")&&M&&M->Web&&M->Web->GetWorld())
  {
   // The longest clear way out from the front, and a few metres along it.
@@ -201,7 +233,7 @@ void FS47FarmSite::SayNudge()
 {
  bNudged=true;
  if(!M)return;
- const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says the lights have not gone, and won't go out to look."),*Title);
+ const FString Tip=SecondCallLine(FMath::RandRange(0,SecondCallLines-1),Title);
  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
  M->RequestAutosave();
 }
@@ -219,7 +251,8 @@ void FS47FarmSite::Step(double Dt)
  // A menu holds all of it: no sound starts, no second counts.
  if(M->bPausedByMenu||M->ModalOpen())return;
  // Evening's marks, and now the hour they can come: a second report of the same place, for whoever went home.
- if(Visit==0&&!bNudged&&Armed()&&TheirHours(M->Freeform->Clock())&&M->Player&&(!Here()||FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()>100))
+ if(!Armed())StepEmptyTip();
+ if((Visit==0||bFalseCall)&&!bNudged&&Armed()&&M->Freeform->NightStarted(M->Freeform->Clock())&&M->Player&&(!Here()||FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()>100))
  {
   SayNudge();
  }
@@ -384,7 +417,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // Something at a door indoors counts too: it goes first, and this waits its turn.
   const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy()&&!(M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorActive());
   const double Clock=M->Freeform->Clock();
-  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&TheirHours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
+  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&Hours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
   Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,Roll);

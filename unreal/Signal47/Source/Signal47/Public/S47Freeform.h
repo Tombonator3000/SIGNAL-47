@@ -127,8 +127,26 @@ public:
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.
- static constexpr double EveningLead=30*60.;
+ static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.;
+ // The clock of day this card's source comes up: never before seven in the evening.
+ static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,Job.Card.SuggestedClock-EveningLead);}
+ // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
+ const FJob* NextEveningCard(double& Up) const;
+ // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
+ bool RulesLive() const{return bTestRules||(M&&LiveFlow());}
+ void TestLiveRules(){bTestRules=true;}
+ // Whose night a clock falls in: the shift day it belongs to. Bodies keep to their own start each night (S47NightRhythm.h).
+ static int32 NightOf(double AtClock){return FMath::Max(1,int32(FMath::FloorToDouble((AtClock-8*3600.)/SecondsInDay))+1);}
+ double BodyStartHour(int32 Night) const;
+ bool QuietNight(int32 Night) const;
+ bool TheirHoursNow(double AtClock) const;
+ // Past the night's start, calm or not: a call can come on a calm night too. Leads nowhere then.
+ bool NightStarted(double AtClock) const;
+ int32 TimesTaken() const{return TakenCount;}
+ bool FaultDue() const;
+ float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
+ static constexpr double SecondsInDay=86400.;
  bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
@@ -275,7 +293,9 @@ private:
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 WokenNight=0;
  int32 RousedNight=0; // the last night a rest was really broken: never two running
- bool bTestEvening=false,bTestFirstPulse=false;
+ bool bTestEvening=false,bTestFirstPulse=false,bTestRules=false;
+ int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
+ bool LiveFlow() const;
  double WakeClock=0;
  bool bTestWake=false;
  bool WakeBefore(double Target,double& Out);

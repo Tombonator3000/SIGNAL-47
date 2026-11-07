@@ -255,7 +255,7 @@ bool FS47HighwayUfo::CanStart(bool Forced)const
  double Hour=FMath::Fmod(Clock(),86400.)/3600.;if(Hour<0)Hour+=24;
  if(Hour>=6&&Hour<19)return false;
  // A full hull beside the truck is not an evening's small hint: in Freeform it waits as a body does.
- if(M->IsFreeform()&&!FS47FarmSite::TheirHours(Clock()))return false;
+ if(M->IsFreeform()&&(!M->Freeform||!M->Freeform->TheirHoursNow(Clock())))return false;
  if(M->IsFreeform()?NightId()-LastNight<3:LastNight>=0)return false;
  // Story keeps the one south-bound stretch it was written with.
  if(Way<0&&!M->IsFreeform())return false;

@@ -264,7 +264,7 @@ bool FS47DoorVisit::FindDoor(FTarget& Out) const
 void FS47DoorVisit::StepDraw(double Dt)
 {
  FTarget Found;
- const bool bHere=FS47FarmSite::TheirHours(M->Freeform->Clock())&&Owner&&Owner->DoorQuiet()&&M->Freeform->Taken&&M->Freeform->Taken->Indoors()&&FindDoor(Found);
+ const bool bHere=M->Freeform->TheirHoursNow(M->Freeform->Clock())&&Owner&&Owner->DoorQuiet()&&M->Freeform->Taken&&M->Freeform->Taken->Indoors()&&FindDoor(Found);
  InsideFor=bHere?InsideFor+Dt:0;
  if(!bHere)return;
  const int32 Day=M->Freeform->Day();

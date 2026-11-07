@@ -198,6 +198,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   }
  }
  Cases.Load(S47J::Obj(Saved,TEXT("cases")),JobSeed);
+ TakenCount=0;for(const auto& Kept:Findings)TakenCount+=Kept.Key.StartsWith(TEXT("taken-"))?1:0;
  // Older saves: an already retained discrepancy opens its case retroactively.
  for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0)Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);}
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0)
@@ -1031,7 +1032,7 @@ void FS47FreeformSession::SetAnomaly(bool bValue)
 void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
  if(Id.IsEmpty()||Findings.Contains(Id))return;
- Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);
+ Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
  if(M&&M->Story)
  {
   // Named by what it says, never by its key, and stamped with where the player is, not always the station.
@@ -1236,7 +1237,7 @@ void FS47FreeformSession::OpenOperations()
  for(const auto& X:Work)if(X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected){++Remaining;if(X.Day==DayNumber)++TodayRemaining;else if(X.Day<DayNumber)++EarlierRemaining;}
  const FString QueueExplanation=Remaining==0
   ?FString(Rejected>0?TEXT("NO ACTIONABLE OBSERVATIONS REMAIN / Unverifiable legacy originals remain retained without completion, finding or payment. "):TEXT("ALL OBSERVING WORK COMPLETE / Results are retained in EARLIER WORK and CASE ARCHIVE. "))+AvailableActivities()
-  :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK includes completed results immediately and untouched older jobs. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
+  :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs for that evening, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK includes completed results immediately and untouched older jobs. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
  const FJob* J=CurrentJob();
  auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
   T::Value(TEXT("OPERATING BUDGET"),FString::Printf(TEXT("$%d"),Cash)),T::Value(TEXT("REQUISITION"),FString::Printf(TEXT("$%d"),Loan)),
@@ -1281,10 +1282,10 @@ void FS47FreeformSession::OpenOperations()
   if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
   const double Dusk=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay+19*3600.;
   if(Dusk>WorldClock+60)Rows.Add(T::Button(TEXT("Wait until dusk / review time and equipment first"),[this,Dusk]{OpenWaitConfirmation(Dusk);}));
-  if(const FJob* Later=Work.FindByPredicate([this](const FJob& X){return EveningGated(X);}))
+  double Up=0;
+  if(const FJob* Later=NextEveningCard(Up))
   {
-   const double Up=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay+Later->Card.SuggestedClock-EveningLead;
-   Rows.Add(T::Button(FString::Printf(TEXT("Wait until %s is up at %s / review time and equipment first"),FS47Observing::Runs()[Later->Source].Source,*FS47FreeformCases::Clock(Up)),[this,Up]{OpenWaitConfirmation(Up);},true));
+   Rows.Add(T::Button(FString::Printf(TEXT("Wait until %s is up at %s / review time and equipment first"),FS47Observing::Runs()[Later->Source].Source,*FS47FreeformCases::Clock(Up)),[this,At=Up]{OpenWaitConfirmation(At);},true));
   }
   const int32 PlanLine=FieldFocus>=0?FieldFocus:J?J->CaseLine:-1;double Target=0;
   if(CaseWaitTarget(PlanLine,Target))Rows.Add(T::Button(TEXT("Wait until five minutes before this test / review consequences"),[this,Target]{OpenWaitConfirmation(Target);},true));
@@ -1778,12 +1779,14 @@ FString FS47FreeformSession::WaitConsequences(double Target) const
 bool FS47FreeformSession::WakeBefore(double Target,double& Out)
 {
  if(Tutorial>0||!Director||!FarmSite||!M||!M->Flow||(M->Flow->bDevRun&&!bTestWake))return false;
- double Two=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay+2*3600.;
- if(Two<=WorldClock)Two+=SecondsPerDay;
- for(;Two<Target;Two+=SecondsPerDay)
+ // Each night's own start, not a fixed two in the morning. A calm night wakes nobody: its dice are not even thrown.
+ for(double Midnight=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;Midnight<Target;Midnight+=SecondsPerDay)
  {
-  const int32 Night=FMath::Max(1,int32(FMath::FloorToDouble((Two-8*3600.)/SecondsPerDay))+1);
-  if(Night<2||Night==WokenNight)continue;
+  const int32 Night=NightOf(Midnight);
+  const double Two=Midnight+BodyStartHour(Night)*3600.;
+  if(Two<=WorldClock)continue;
+  if(Two>=Target)break;
+  if(Night<2||Night==WokenNight||QuietNight(Night))continue;
   // The night's own dice, thrown here because the scheduler would have slept through them. Spent whatever they say.
   WokenNight=Night;
   // Never two nights running: a night that always ends the same way is no longer a night.
@@ -1876,14 +1879,42 @@ FString FS47FreeformSession::StationGoalLine()const
 }
 bool FS47FreeformSession::EveningGated(const FJob& J)const
 {
- if(J.Slot!=2||!J.bGenerated||J.Stage!=EJobStage::New||J.Day<2||J.Day!=DayNumber||J.CaseTest>=0||Tutorial>0)return false;
+ // From day two every card is the evening's, and one not begun by half past eleven waits for the next evening. Day one is the
+ // first shift's. Once begun a card runs out whenever it was begun, and a case test keeps its own window.
+ if(!J.bGenerated||J.Stage!=EJobStage::New||J.Day<2||J.CaseTest>=0||Tutorial>0)return false;
  if(M&&M->Flow&&M->Flow->bDevRun&&!bTestEvening)return false;
  const double Now=FMath::Fmod(WorldClock,SecondsPerDay);
- return Now>=8*3600.&&Now<J.Card.SuggestedClock-EveningLead;
+ return Now<EveningUp(J)||Now>=EveningCloses;
+}
+const FS47FreeformSession::FJob* FS47FreeformSession::NextEveningCard(double& Up)const
+{
+ const FJob* Best=nullptr;Up=0;const double Base=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;
+ for(const FJob& J:Work)if(EveningGated(J))
+ {
+  double At=Base+EveningUp(J);if(At<=WorldClock)At+=SecondsPerDay;
+  if(!Best||At<Up){Best=&J;Up=At;}
+ }
+ return Best;
+}
+bool FS47FreeformSession::LiveFlow()const{return M&&M->Flow&&!M->Flow->bDevRun;}
+double FS47FreeformSession::BodyStartHour(int32 Night)const{return RulesLive()?FS47NightRhythm::StartHour(JobSeed,Night,TakenCount):2.;}
+bool FS47FreeformSession::QuietNight(int32 Night)const{return RulesLive()&&FS47NightRhythm::Quiet(JobSeed,Night);}
+bool FS47FreeformSession::NightStarted(double AtClock)const
+{
+ const double Hour=FMath::Fmod(FMath::Max(0.,AtClock),SecondsPerDay)/3600.;
+ return Hour>=BodyStartHour(NightOf(AtClock))&&Hour<FS47NightRhythm::EndHour;
+}
+bool FS47FreeformSession::TheirHoursNow(double AtClock)const{return !QuietNight(NightOf(AtClock))&&NightStarted(AtClock);}
+float FS47FreeformSession::SiteVisitChance()const{return RulesLive()?FS47NightRhythm::VisitChance(DayNumber):.6f;}
+bool FS47FreeformSession::FaultDue()const
+{
+ const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
+ if(!RulesLive())return DayNumber>1&&DayNumber%(HasUpgrade(0)?6:3)==2&&Hour>=10;
+ return FS47NightRhythm::FaultDay(JobSeed,DayNumber,HasUpgrade(0))&&Hour>=FS47NightRhythm::FaultHour(JobSeed,DayNumber);
 }
 FString FS47FreeformSession::EveningLine(const FJob& J)const
 {
- return FString::Printf(TEXT("EVENING OBSERVATION / %s IS UP FROM %s. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(J.Card.SuggestedClock-EveningLead));
+ return FString::Printf(TEXT("EVENING OBSERVATION / %s IS UP FROM %s. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)));
 }
 FString FS47FreeformSession::AvailableActivities()const
 {
@@ -2347,7 +2378,7 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  }
 
  if(M&&M->Web&&ArrayBlocked()&&(J.Stage<=EJobStage::Integrating||(J.Stage==EJobStage::Recorded&&J.Phenomenon==TEXT("wrong_source")&&(!J.bControl||J.ControlAt<8))))return TEXT("ARRAY STATUS / left-hand PC / inspect isolated antennas");
- if(EveningGated(J))return TEXT("Tracking PC / right-hand screen, from ")+FS47FreeformCases::Clock(J.Card.SuggestedClock-EveningLead);
+ if(EveningGated(J))return TEXT("Tracking PC / right-hand screen, from ")+FS47FreeformCases::Clock(EveningUp(J));
  if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Pointed)return &J==CurrentJob()&&PointReady()&&Settle>=1?TEXT("Receiver / centre screen"):TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
@@ -2661,6 +2692,41 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FS47FreeformSession Dev(nullptr);Dev.Begin(nullptr);Dev.Tutorial=0;Check(!Dev.FirstPulseDue(Dev.Work[1]),TEXT("Discrepancy: developer fixtures keep their own"));
   Pulse.Stop();Dev.Stop();
  }
+ {
+  // The evening's cards, from the planner's own rules, for every source and slot.
+  FS47FreeformSession Eve(nullptr);Eve.Begin(nullptr);Eve.TestAdvance(86400);
+  TArray<const FJob*> Day2;for(const FJob& J:Eve.Work)if(J.Day==2)Day2.Add(&J);
+  bool bAll=Day2.Num()==3,bRange=true;for(const auto* J:Day2){bAll&=Eve.EveningGated(*J);const double Up=EveningUp(*J);bRange&=Up>=EveningOpens&&Up<EveningCloses;}
+  Check(bAll&&bRange,TEXT("Day: from day two all three cards wait for the evening, and come up between 19:00 and 23:30"));
+  Check(!Eve.EveningGated(Eve.Work[0]),TEXT("Day: the first day's own cards are not held back"));
+  double UpAt=0;const FJob* Soonest=Eve.NextEveningCard(UpAt);
+  Check(Soonest&&UpAt==86400+EveningUp(*Soonest)&&UpAt>Eve.Clock(),TEXT("Day: OPS can name the soonest source and when"));
+  Eve.TestAdvance(FMath::Fmod(86400.*2+22*3600.-Eve.Clock(),86400.));
+  Check(!Eve.EveningGated(*Day2[0])&&!Eve.EveningGated(*Day2[1]),TEXT("Day: at ten in the evening the sources are up"));
+  Eve.TestAdvance(2*3600.);
+  Check(Eve.EveningGated(*Day2[0]),TEXT("Day: a card not begun by half past eleven waits for the next evening"));
+  auto* Begun=const_cast<FJob*>(Day2[0]);Begun->Stage=EJobStage::Pointed;
+  Check(!Eve.EveningGated(*Begun),TEXT("Day: a card already begun runs out whenever it was begun"));
+  Eve.Stop();
+  FS47FreeformSession Hours(nullptr);Hours.Begin(nullptr);
+  const double Night5=4*86400.+24*3600.;
+  Check(Hours.TheirHoursNow(Night5+2.5*3600.)&&!Hours.TheirHoursNow(Night5+1.5*3600.)&&!Hours.QuietNight(5),TEXT("Hours: a developer run keeps the fixed two in the morning"));
+  Hours.TestLiveRules();
+  int32 Started=0,Calm=0;bool bNever=true;
+  for(int32 N=2;N<=40;++N)
+  {
+   const double Mid=(N-1)*86400.+24*3600.;
+   Check(FS47FreeformSession::NightOf(Mid+3600.)==N,TEXT("Hours: one in the morning belongs to the evening before"));
+   bNever&=!Hours.TheirHoursNow(Mid-3600.)&&!Hours.TheirHoursNow(Mid+.5*3600.)&&!Hours.TheirHoursNow(Mid+7*3600.);
+   Started+=Hours.NightStarted(Mid+3.01*3600.)?1:0;Calm+=Hours.QuietNight(N)?1:0;
+   if(Hours.QuietNight(N))bNever&=!Hours.TheirHoursNow(Mid+3.5*3600.);
+  }
+  Check(bNever&&Started==39&&Calm>0,TEXT("Hours: no body before one in the morning, none after six, none on a calm night, and every night has begun by three"));
+  const int32 Before=Hours.TimesTaken();Hours.RecordEvidence(TEXT("taken-3-100"),TEXT("gap"));
+  Check(Hours.TimesTaken()==Before+1&&Hours.BodyStartHour(9)<=FS47NightRhythm::StartHour(Hours.JobSeed,9,0),TEXT("Hours: they come earlier to someone they have taken"));
+  FS47FreeformSession Reread(nullptr);Reread.Begin(S47J::Read(S47J::Write(Hours.Save())));Check(Reread.TimesTaken()==Before+1,TEXT("Hours: that follows from the findings after a Continue, with nothing new saved"));
+  Hours.Stop();Reread.Stop();
+ }
  Check(FS47FarmSite::ByDaylight(7*3600.)&&!FS47FarmSite::ByDaylight(2*3600.)&&!FS47FarmSite::ByDaylight(21*3600.),TEXT("Marks: daylight is the morning after"));
  {
   int32 Reads[3]={0,0,0};bool bStable=true;
@@ -2669,6 +2735,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   bool bWords=true;for(int32 R0=0;R0<3;++R0)for(bool bFarmSite:{true,false}){const FString T0=FS47FarmSite::DaylightText(R0,bFarmSite);bWords&=T0.Contains(TEXT("by daylight"))&&T0.Contains(TEXT("what is on the ground"));}
   Check(bWords,TEXT("Marks: every daylight record says what is there and no more"));
  }
+ {bool bNamed=true;for(int32 L0=0;L0<FS47FarmSite::SecondCallLines;++L0)bNamed&=FS47FarmSite::SecondCallLine(L0,TEXT("the church")).Contains(TEXT("the church"));Check(bNamed,TEXT("Calls: every second call names the place and says nothing about what it is"));}
  Check(FS47FreeformCases::LineForFinding(TEXT("farm_trace_daylight_d3"))==2,TEXT("Marks: a daylight record goes to the visitors' case"));
  {
   FS47FreeformSession Trust(nullptr);Trust.Begin(nullptr);
