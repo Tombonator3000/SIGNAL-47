@@ -291,7 +291,7 @@ void FS47EastWingProps::UpdateCalendar(US47Main* Main)
  UTexture2D* Tex=CalendarTexture.Get();
  if(!Main||!Tex||CalendarSheets.IsEmpty())return;
  const bool Free=Main->IsFreeform();
- const FDateTime Date=S47Game::GameDate(Free,Free&&Main->Freeform?Main->Freeform->Day():1,Main->Story?Main->Story->Clock():12*3600.);
+ const FDateTime Date=Free&&Main->Freeform?Main->Freeform->Date():S47Game::GameDate(Free,1,Main->Story?Main->Story->Clock():12*3600.);
  const int32 Key=Date.GetYear()*10000+Date.GetMonth()*100+Date.GetDay();
  if(Key==CalendarKey)return; // the sheet changes with the day, not with the frame
  TArray<FColor> Px;DrawCalendar(Date,Px);

@@ -268,9 +268,10 @@ namespace S47Game
 		return FString::Printf(TEXT("%s %s %d"), Days[int32(Date.GetDayOfWeek())], Months[Date.GetMonth() - 1], Date.GetDay());
 	}
 
-	FDateTime GameDate(bool bFreeform, int32 FreeformDay, double StoryClock)
+	FDateTime GameDate(bool bFreeform, int32 FreeformDay, double StoryClock, bool bOldCalendar)
 	{
-		if (bFreeform) return FDateTime(1986, 4, 13) + FTimespan::FromDays(FMath::Max(0, FreeformDay - 1));
+		// Tom, 7 November: Freeform comes after Story and starts on Monday 28 April. A game begun before that keeps the calendar it has.
+		if (bFreeform) return FDateTime(1986, 4, bOldCalendar ? 13 : 28) + FTimespan::FromDays(FMath::Max(0, FreeformDay - 1));
 		const double D = FMath::Fmod(FMath::Fmod(StoryClock, 86400.0) + 86400.0, 86400.0);
 		return FDateTime(1986, 4, D >= 12 * 3600 ? 13 : 14);
 	}
@@ -280,6 +281,13 @@ namespace S47Game
 		FirstColumn = (int32(FDateTime(Year, Month, 1).GetDayOfWeek()) + 1) % 7; // EDayOfWeek counts from Monday
 		Days = FDateTime::DaysInMonth(Year, Month);
 		Rows = (FirstColumn + Days + 6) / 7;
+	}
+
+	FString OsdLine(const FDateTime& Date, double Clock)
+	{
+		static const TCHAR* Months[] = { TEXT("JAN"), TEXT("FEB"), TEXT("MAR"), TEXT("APR"), TEXT("MAY"), TEXT("JUN"), TEXT("JUL"), TEXT("AUG"), TEXT("SEP"), TEXT("OCT"), TEXT("NOV"), TEXT("DEC") };
+		const double D = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+		return FString::Printf(TEXT("%s.%d 1986  %02d:%02d"), Months[Date.GetMonth() - 1], Date.GetDay(), int32(D / 3600), int32(FMath::Fmod(D, 3600.0) / 60));
 	}
 
 	FString OsdLine(double Clock)
@@ -340,7 +348,9 @@ namespace S47Game
 			// the wall calendars follow the game's date; the weekday comes from the date, not from a table
 			const FDateTime Eve = GameDate(false, 0, 23 * 3600 + 41 * 60), Dawn = GameDate(false, 0, 2 * 3600 + 13 * 60), Day3 = GameDate(true, 3, 0), Day1 = GameDate(true, 1, 0);
 			Check(TEXT("calendar story dates"), Eve.GetDay() == 13 && Eve.GetDayOfWeek() == EDayOfWeek::Sunday && Dawn.GetDay() == 14 && Dawn.GetDayOfWeek() == EDayOfWeek::Monday);
-			Check(TEXT("calendar freeform dates"), Day1.GetDay() == 13 && Day3.GetDay() == 15 && Day3.GetDayOfWeek() == EDayOfWeek::Tuesday && GameDate(true, 19, 0).GetMonth() == 5);
+			Check(TEXT("calendar freeform dates"), Day1.GetDay() == 28 && Day1.GetMonth() == 4 && Day1.GetDayOfWeek() == EDayOfWeek::Monday && Day3.GetDay() == 30 && Day3.GetDayOfWeek() == EDayOfWeek::Wednesday && GameDate(true, 19, 0).GetMonth() == 5 && GameDate(true, 30, 0).GetDay() == 27);
+			Check(TEXT("calendar of a game begun before the new date"), GameDate(true, 1, 0, true).GetDay() == 13 && GameDate(true, 3, 0, true).GetDayOfWeek() == EDayOfWeek::Tuesday && GameDate(true, 19, 0, true).GetMonth() == 5);
+			Check(TEXT("osd line by date"), OsdLine(FDateTime(1986, 5, 2), 2 * 3600 + 5 * 60) == TEXT("MAY.2 1986  02:05"), OsdLine(FDateTime(1986, 5, 2), 2 * 3600 + 5 * 60));
 			int32 Col = 0, Days = 0, Rows = 0;
 			MonthGrid(1986, 4, Col, Days, Rows);
 			Check(TEXT("calendar april 1986 grid"), Col == 2 && Days == 30 && Rows == 5 && (Col + 13 - 1) % 7 == 0, FString::Printf(TEXT("%d %d %d"), Col, Days, Rows));

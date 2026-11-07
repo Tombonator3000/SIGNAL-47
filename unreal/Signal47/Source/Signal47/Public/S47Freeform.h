@@ -62,6 +62,11 @@ public:
  int32 ActiveServiceGuide() const { return ServiceGuide; }
  bool ServiceGuideFocused() const { return ServiceGuide==1&&bGuideFocus&&FieldFocus<0; }
  int32 Day() const { return DayNumber; }
+ // The shift's date. New games start on Monday 28 April 1986; a save from before that keeps the calendar it began on (OldCalendar),
+ // so the date never moves under a game in progress. The field "calendar" says which: an older save does not have it.
+ FDateTime Date() const { return DateOfDay(DayNumber); }
+ FDateTime DateOfDay(int32 ShiftDay) const;
+ bool OldCalendar() const { return bOldCalendar; }
  double Clock() const { return WorldClock; }
  // Daylight 06–19 takes 30 active minutes; night 19–06 takes 45.
  // Pure conversion also handles a step crossing midnight or either phase boundary.
@@ -163,6 +168,8 @@ public:
  bool CameraLeftOut() const;
  TSharedPtr<class FS47LeftGear> Gear;
  TSharedPtr<class FS47Places> Places;
+ // The operator before you, Ward's review, and the keys (Tom, 7 November).
+ TSharedPtr<class FS47Predecessor> Predecessor;
  TSharedPtr<class FS47RadioTips> Tips;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
@@ -299,7 +306,7 @@ private:
  bool ValidJournalHint(const FString& Id) const;
  bool ValidJournalEntry(const FString& Id) const;
  US47Main* M=nullptr;
- bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
+ bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false,bOldCalendar=false;
  FString ArchiveNote;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
  bool bPowerApplied=false,bLastPower=true;

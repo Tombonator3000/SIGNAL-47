@@ -1,6 +1,8 @@
 // story/caliche.ts: Caliche's street, its people and the copies in Reyes's notebook.
 #include "S47Caliche.h"
 #include "S47CalicheAccess.h"
+#include "S47Freeform.h"
+#include "S47Predecessor.h"
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Props.h"
@@ -335,6 +337,8 @@ bool FS47Caliche::Available(const FString& W, const FString& Id) const
 }
 void FS47Caliche::Talk(const FString& W)
 {
+	// Freeform: the new operator, not Reyes. Its own short talks, and none of Story's (FS47Predecessor). Story is unchanged.
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Talk(W)) return;
 	const FPerson* P = Person(W); if (!P) return;
 	StopSpeech(); ShownLines.Reset();
 	const bool bFirst = !M->TownSeen.Contains(TEXT("met:") + W); Who = W; M->TownSeen.Add(TEXT("met:") + W);

@@ -8,6 +8,7 @@
 #include "S47LeftGear.h"
 #include "S47Openings.h"
 #include "S47Places.h"
+#include "S47Predecessor.h"
 #include "S47RadioTips.h"
 #include "S47NightRhythm.h"
 #include "S47Aftermath.h"
@@ -16,6 +17,7 @@
 #include "S47FarmHouse.h"
 #include "SS47TapeScope.h"
 #include "S47FreeformTerminal.h"
+#include "S47GameStyle.h"
 #include "S47ReceiverReadout.h"
 #include "SS47ScreenView.h"
 #include "CoreGlobals.h"
@@ -105,6 +107,7 @@ FS47FreeformSession::~FS47FreeformSession() { Stop(); }
 void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 {
  Stop();
+ bOldCalendar=Saved.IsValid()&&!Saved->HasField(TEXT("calendar"));
  bActive=true;bDeadly=bLethal;bDead=bPowerFault=bAnomaly=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;
  ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
@@ -237,6 +240,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Gear)Gear=MakeShared<FS47LeftGear>(M);Gear->Begin(S47J::Obj(Saved,TEXT("gear")));
  Kit.Reset();for(const FString& Have:S47J::Strs(Saved,TEXT("kit")))if(FS47Openings::Def(Have))Kit.Add(Have);
  if(!Places)Places=MakeShared<FS47Places>(M);Places->Begin(S47J::Obj(Saved,TEXT("places")));
+ if(!Predecessor)Predecessor=MakeShared<FS47Predecessor>(M);Predecessor->Begin(S47J::Obj(Saved,TEXT("predecessor")),Saved.IsValid(),DayNumber);
  if(!Tips)Tips=MakeShared<FS47RadioTips>(M);Tips->Begin(S47J::Obj(Saved,TEXT("tips")));
  if(!TruckLamp)TruckLamp=MakeShared<FS47TruckLamp>(M);
  if(!YardAlarm)YardAlarm=MakeShared<FS47YardAlarm>(M);YardAlarm->Begin(S47J::Obj(Saved,TEXT("alarm")));
@@ -248,7 +252,9 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(M&&M->Story){M->Story->SetClock(FMath::Fmod(WorldClock,86400.));M->Story->Rx.bPowered=true;}
  StepTutorial();ClearCompletedSelection();
  UpdateMysteries();
+ UE_LOG(LogTemp,Display,TEXT("S47: freeform calendar: day %d is %s (%s)"),DayNumber,*S47Game::DateLine(Date()),bOldCalendar?TEXT("a game begun on 13 April keeps that calendar"):TEXT("began 28 April"));
 }
+FDateTime FS47FreeformSession::DateOfDay(int32 ShiftDay)const{return S47Game::GameDate(true,ShiftDay,0,bOldCalendar);}
 void FS47FreeformSession::Stop()
 {
  LiveCapture.Reset();TapeCapture.Reset();CaptureStartStage=0;
@@ -259,7 +265,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
+ if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
@@ -454,6 +460,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Deputy)Deputy->Step(D);
  if(Gear)Gear->Step(D);
  if(Places)Places->Step(D);
+ if(Predecessor)Predecessor->Step(D);
  if(Tips&&!Held())Tips->Step(D);
  if(TruckLamp)TruckLamp->Step(D);
  if(YardAlarm)YardAlarm->Step(D);
@@ -1261,11 +1268,13 @@ void FS47FreeformSession::OpenOperations()
  const FJob* J=CurrentJob();
  auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
   T::Value(TEXT("OPERATING BUDGET"),FString::Printf(TEXT("$%d"),Cash)),T::Value(TEXT("REQUISITION"),FString::Printf(TEXT("$%d"),Loan)),
+  T::Value(TEXT("SARO"),Predecessor?Predecessor->AccountLine():FString(TEXT("IN SERVICE"))),
   T::Value(TEXT("NEXT REVIEW"),NextReviewText()),
   T::Value(TEXT("SELECTED JOB"),FieldFocus>=0?FString(TEXT("FIELD CASE: "))+FS47FreeformCases::Def(FieldFocus).Title:J?FString(FS47Observing::Runs()[J->Source].Source):FString(TEXT("NONE")),true),
   T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true)}));
  if(Section==0)
  {
+  if(Predecessor)Predecessor->OpsRows(Rows);
   if(Tutorial==0)
   {
    TArray<S47Kit::FW> Continue;
@@ -1312,6 +1321,7 @@ void FS47FreeformSession::OpenOperations()
   const int32 PlanLine=FieldFocus>=0?FieldFocus:J?J->CaseLine:-1;double Target=0;
   if(CaseWaitTarget(PlanLine,Target))Rows.Add(T::Button(TEXT("Wait until five minutes before this test / review consequences"),[this,Target]{OpenWaitConfirmation(Target);},true));
   Rows.Add(T::Columns({{.5f,T::Big(FString(TEXT("REST UNTIL MORNING")),[this]{OpenWaitConfirmation((FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay)+1)*SecondsPerDay+8*3600);})},{.5f,T::Big(FString(TEXT("SERVICE ORDER")),[this]{OpenServiceGuide();})}},10));
+  if(Predecessor)Predecessor->OpsKeys(Rows);
   OpenTerminal(3,TEXT("OPS / MAIN MENU"),OpsShell(0,S47Kit::Col(Rows)));
   return;
  }
@@ -1663,6 +1673,11 @@ void FS47FreeformSession::OpenArchive()
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
  TArray<FString> CaseLines;for(int32 I=0;I<3;++I)if(MysterySteps[I]>0)CaseLines.Add(FString::Printf(TEXT("%s %d/3%s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT(" READY TO COMPARE"):TEXT("")));
  if(!CaseLines.IsEmpty())Rows.Add(Plain(FString::Join(CaseLines,TEXT("   |   "))));
+ if(const FString Gap=Predecessor?Predecessor->ArchiveLabel():FString();!Gap.IsEmpty())
+ {
+  const auto Open=[this]{if(Predecessor)Predecessor->OpenGap();};
+  Rows.Add(Computer?S47FreeformTerminal::Button(Gap,Open):S47Kit::Button(Gap,Open));
+ }
  struct FEntry{FString Key,Title,Tag,Detail;};
  TArray<FEntry> Tabs[3];
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
@@ -1968,7 +1983,7 @@ void FS47FreeformSession::StepWeeklyReview()
   const int32 Before=Carried,Bill=ReviewPower+ReviewFuel+Before;
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
-  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off."),ReviewWeek,ReviewPower,ReviewFuel,Before,Paid,Carried));
+  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
   UE_LOG(LogTemp,Display,TEXT("S47: weekly review %d: bill %d, paid %d, carried %d, cash %d"),ReviewWeek,Bill,Paid,Carried,Cash);
  }
@@ -2395,7 +2410,7 @@ bool FS47FreeformSession::Use(const FString& Id)
  }
  if(Id==TEXT("printer")){Feedback.Empty();if(!CollectChart())Changed(Feedback.IsEmpty()?TEXT("No paper waiting. ")+NextAction():Feedback);return true;}
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord")){OpenArchive();return true;}
- if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(Director)Director->Use(TEXT("ff:phone"));Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
+ if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(Director&&Director->Use(TEXT("ff:phone")))return true;if(Predecessor&&Predecessor->UsePhone())return true;Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
  return Director&&Director->Use(Id);
 }
 FString FS47FreeformSession::Label(const FString& Id)const
@@ -2549,6 +2564,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,false});}
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
+ if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
@@ -2587,6 +2603,8 @@ S47J::FObj FS47FreeformSession::Save()const
  TArray<double> U,Q;for(bool V:Upgrades)U.Add(V?1:0);for(int32 V:MysterySteps)Q.Add(V);S47J::Set(O,TEXT("upgrades"),U);S47J::Set(O,TEXT("mysteries"),Q);
  TArray<double> Angles=SavedAngles;if(!bRestoreAngles&&M&&M->Web&&M->Web->IsLoaded()){Angles.Reset();for(int32 I=0;I<M->Web->DishCount();++I)Angles.Append({M->Web->DishAz(I),M->Web->DishEl(I),M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)});}S47J::Set(O,TEXT("angles"),Angles);
  S47J::Set(O,TEXT("cases"),Cases.Save());
+ if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
+ if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
  if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto Round=Deputy->Save();if(Round->Values.Num()>0)S47J::Set(O,TEXT("deputy"),Round);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }

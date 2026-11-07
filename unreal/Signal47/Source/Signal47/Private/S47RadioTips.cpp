@@ -46,6 +46,9 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   {TEXT("cb30"),TEXT("Heard somebody from the antennas went looking at that cow. Well? ... No, I guess you wouldn't say."),nullptr,TEXT("place_cow"),0},
   {TEXT("cb31"),TEXT("Saw you walking out past the fence the other night with no truck anywhere near. You all right?"),nullptr,TEXT("lost_ground"),0},
   {TEXT("cb32"),TEXT("Deputy says you people at SARO write a good letter. He's been driving out your way. Thought you'd want to know."),nullptr,nullptr,1},
+  // Once you have opened the locker next to yours, the air has more to say about who had it (FS47Predecessor).
+  {TEXT("cb33"),TEXT("Anybody else getting a carrier on the service band out off the old grade? Been sitting there for weeks. Not my business. Just saying."),nullptr,TEXT("reyes_locker"),0},
+  {TEXT("cb34"),TEXT("That white district wagon's still out on the flat, county tag on the mirror. I slowed down. I didn't get out."),nullptr,TEXT("reyes_locker"),0},
   {TEXT("cb33"),TEXT("You got a friend at the sheriff's now? Ask him who else has been asking about that survey track."),TEXT("stake"),nullptr,1},
   {TEXT("cb34"),TEXT("Between you and me, that tank's not on the county's plat. Nobody knows who put it there. Ask anybody over sixty."),TEXT("tank"),nullptr,2},
  };
@@ -76,6 +79,8 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am20"),TEXT("woman"),TEXT("Somebody ought to check on whoever's working nights at SARO. I saw their truck sitting out with the door open and nobody in it."),TEXT("I'm sure they know about it."),nullptr,TEXT("lost_clock"),0},
   {TEXT("am21"),TEXT("man"),TEXT("I'll say it on the air: the deputy's been out by the station every other night, and I'd like to know what for."),TEXT("You could ask him."),nullptr,nullptr,1},
   {TEXT("am22"),TEXT("old"),TEXT("Since you've got that station people listening. There was a survey party out here in forty-seven. They never did say what for. Same bearing as those dishes now."),TEXT("Thank you, Pete. Go to bed."),TEXT("stake"),nullptr,2},
+  {TEXT("am30"),TEXT("old"),TEXT("Earl, the one who was out at the dishes before this one, the quiet one. Anybody hear anything?"),TEXT("Not that I've heard, and I hear most."),nullptr,TEXT("reyes_locker"),0},
+  {TEXT("am31"),TEXT("woman"),TEXT("That girl from the district, with the wagon. They ever find her?"),TEXT("No, ma'am. Next caller."),nullptr,TEXT("reyes_locker"),0},
  };
  return L;
 }

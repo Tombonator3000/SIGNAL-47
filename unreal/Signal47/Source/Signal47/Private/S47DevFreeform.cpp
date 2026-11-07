@@ -22,6 +22,8 @@
 #include "S47Night.h"
 #include "S47Openings.h"
 #include "S47Places.h"
+#include "S47Predecessor.h"
+#include "S47PredecessorText.h"
 #include "S47RadioTips.h"
 #include "S47RoadTerrain.h"
 #include "S47RoomLights.h"
@@ -980,6 +982,64 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  E.AddFreeform(K,TEXT("Sleep on a cot, where you are"),TEXT("until morning; whatever comes by wakes you"),[SleepUntilMorning]{SleepUntilMorning(FS47FreeformSession::ERest::Field,TEXT("A night on the cot."));});
 }
 
+// ---- Reyes, Ward's review, and the keys ----
+void FS47DevFreeform::GoReyes(const FString& Id,const FString& Say)
+{
+ auto* F=Session();if(!F||!F->Predecessor){Tell(false,TEXT("Freeform only"));return;}
+ F->Predecessor->TestOn();
+ FString Area;double X=0,Z=0;
+ if(!F->Predecessor->WorldSpot(Id,Area,X,Z)){Tell(false,FString::Printf(TEXT("%s is not in this scene yet"),*Id));return;}
+ FStage Stage;Stage.Area=Area;
+ const bool bStation=Area==TEXT("saro");
+ const double OffZ=bStation?0:3.5;
+ Stage.Where=[X,Z,OffZ]{return FVector2D(X,Z+OffZ);};Stage.Yaw=bStation?UE_DOUBLE_HALF_PI:0;
+ Go(Stage,[this,Say]{Tell(true,Say,6);});
+}
+void FS47DevFreeform::AddReyes(FS47DevEvents& E)
+{
+ static const TCHAR* const G=TEXT("Reyes: the trail");
+ static const TCHAR* const W=TEXT("Ward: the review and how it ends");
+ const auto Pred=[this]()->FS47Predecessor*{auto* F=Session();if(!F||!F->Predecessor){Tell(false,TEXT("Freeform only"));return nullptr;}F->Predecessor->TestOn();return F->Predecessor.Get();};
+ E.AddFreeform(G,TEXT("Go: Reyes's locker"),TEXT("the east wing's storage room; E opens it"),[this]{GoReyes(TEXT("locker"),TEXT("Reyes's locker, in front of you. E opens it."));});
+ E.AddFreeform(G,TEXT("Go: wagon 23"),TEXT("on the flat, on foot, as it stands; E on it, the radio is on"),[this]{GoReyes(TEXT("wagon"),TEXT("Wagon 23. E on it. Its radio is on, and comes back on the next day if you switch it off."));});
+ for(const S47PredecessorText::FTagDef& D:S47PredecessorText::Tags())
+ {
+  const FString Doc=D.Doc,Place=D.Place;
+  E.AddFreeform(G,FString::Printf(TEXT("Go: Reyes's tag at the %s"),*Place),TEXT("on foot, in front of it; E reads it, and it points on"),[this,Doc,Place]{GoReyes(Doc,FString::Printf(TEXT("Reyes's survey tag at the %s. E reads it."),*Place));});
+ }
+ E.AddFreeform(G,TEXT("Read: April's binder, and its gap"),TEXT("the page opens here; records room's binder or OPS archive in play"),[Pred]{if(auto* P=Pred())P->TestFound(TEXT("gap"));});
+ for(const S47PredecessorText::FCaseNote& N:S47PredecessorText::CaseNotes())
+ {
+  const FString Doc=N.Doc,Case=N.CaseTitle;
+  E.AddFreeform(G,FString::Printf(TEXT("Read: Reyes's note in %s"),*Case),TEXT("turns up in the tray in play, when that case opens"),[Pred,Doc]{if(auto* P=Pred())P->TestFound(Doc);});
+ }
+ for(const TCHAR* Who:{TEXT("attendant"),TEXT("deputy"),TEXT("host"),TEXT("radio_woman"),TEXT("souvenir_man"),TEXT("ward")})
+ {
+  const FString Id=Who;
+  E.AddFreeform(G,FString::Printf(TEXT("Talk: %s"),S47PredecessorText::Person(Id)->Title),TEXT("the words they have for the new operator"),[Pred,Id]{if(auto* P=Pred())P->Talk(Id);});
+ }
+ E.AddFreeform(G,TEXT("The phone rings: Nora"),TEXT("once, in play, after five finds; pick up the control room phone"),[Pred,this]{if(auto* P=Pred()){P->TestRing();Tell(true,TEXT("It rings for 45 seconds. The control room phone answers it."),5);}});
+ E.AddFreeform(W,TEXT("Ward's first letter"),TEXT("in play it lies in the OPS tray on the first day; the date of a new game is day 1 = Monday April 28"),[Pred]{if(auto* P=Pred())P->TestLetter();});
+ E.AddFreeform(W,TEXT("Ward's Monday note"),TEXT("as it would be this week, by what you have filed"),[Pred]{if(auto* P=Pred())P->TestWeek();});
+ E.AddFreeform(W,TEXT("Run to the assessment"),TEXT("the clock jumps to the assessment day; the outcome is what this game's numbers give"),[Pred,this]{if(auto* P=Pred()){P->TestAssessNow();Tell(true,TEXT("Assessed by what is really there. The letter is in the OPS tray."),6);}});
+ struct FResult{const TCHAR* Label;const TCHAR* Note;FS47Predecessor::EOutcome Outcome;};
+ static const FResult Results[]={
+  {TEXT("Outcome: SARO stays open"),TEXT("you play on; nothing removed"),FS47Predecessor::EOutcome::Stays},
+  {TEXT("Outcome: closes, and you know what can be known"),TEXT("knowing, not solving; you can stay out the notice"),FS47Predecessor::EOutcome::KnowsEnough},
+  {TEXT("Outcome: closes, and you have your originals"),TEXT("nothing removed; you can stay out the notice"),FS47Predecessor::EOutcome::ClosedOriginals},
+  {TEXT("Outcome: closes, with nothing to show"),TEXT("you can stay out the notice"),FS47Predecessor::EOutcome::ClosedNothing},
+  {TEXT("Outcome: you are gone, and someone else starts"),TEXT("the letter to the next operator; go back, or start as them"),FS47Predecessor::EOutcome::Gone},
+ };
+ for(const FResult& R:Results)
+ {
+  const FS47Predecessor::EOutcome Outcome=R.Outcome;
+  E.AddFreeform(W,R.Label,R.Note,[Pred,Outcome]{if(auto* P=Pred())P->TestOutcome(Outcome);});
+ }
+ E.AddFreeform(W,TEXT("Go: the key board"),TEXT("by the lockers; E hangs up your keys, and asks first"),[this]{GoReyes(TEXT("keys"),TEXT("The key board beside the lockers. E, and it asks you first."));});
+ E.AddFreeform(W,TEXT("Keys: the question"),TEXT("the same panel as at OPS and at the board"),[Pred]{if(auto* P=Pred())P->OpenKeys();});
+ E.AddFreeform(W,TEXT("Keys: leave, as things stand"),TEXT("the ending, from this game's real state; take them back, or go to the title"),[Pred]{if(auto* P=Pred())P->TestLeave();});
+}
+
 void FS47DevFreeform::AddEntries(FS47DevEvents& E)
 {
  Menu=&E;
@@ -992,6 +1052,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddTaken(E);
  AddAfter(E);
  AddLand(E);
+ AddReyes(E);
 }
 
 void FS47DevFreeform::Stop()

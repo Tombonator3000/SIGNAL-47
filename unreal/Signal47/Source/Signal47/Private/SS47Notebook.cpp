@@ -10,6 +10,7 @@
 #include "Rendering/DrawElements.h"
 #include "Rendering/SlateRenderer.h"
 #include "S47GameStyle.h"
+#include "S47Freeform.h"
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -517,7 +518,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 					]
 					+ SCanvas::Slot().Position(P2(1100, 842)).Size(P2(444, 36))
 					[
-						SNew(SBox).HAlign(HAlign_Right)[Osd(TAttribute<FText>::CreateLambda([] { const US47Main* M = US47Main::Get(nullptr); return FText::FromString(M && M->Story ? OsdLine(M->Story->Clock()) : FString()); }), 26.f)]
+						SNew(SBox).HAlign(HAlign_Right)[Osd(TAttribute<FText>::CreateLambda([] { const US47Main* M = US47Main::Get(nullptr); if (M && M->IsFreeform() && M->Freeform) return FText::FromString(S47Game::OsdLine(M->Freeform->Date(), M->Freeform->Clock())); return FText::FromString(M && M->Story ? OsdLine(M->Story->Clock()) : FString()); }), 26.f)]
 					])
 				])
 			])
