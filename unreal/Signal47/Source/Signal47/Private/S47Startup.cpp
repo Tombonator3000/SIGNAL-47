@@ -1,4 +1,10 @@
 #include "S47Startup.h"
+#if PLATFORM_LINUX && !WITH_EDITOR
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+#endif
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/Engine.h"
@@ -8,6 +14,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameUserSettings.h"
 #include "HAL/FileManager.h"
+#include "Misc/Paths.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/App.h"
@@ -251,9 +258,34 @@ namespace
 	}
 }
 
+#if PLATFORM_LINUX && !WITH_EDITOR
+namespace
+{
+	// A double click started two games on one profile. Both asked for all the video memory, and twice the machine
+	// froze with them (28 October, 5 November). One game per Saved folder; a test with its own -UserDir has its own.
+	bool SecondInstance()
+	{
+		const FString Dir = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+		IFileManager::Get().MakeDirectory(*Dir, true);
+		const FString Path = Dir / TEXT("s47-instance.lock");
+		const int Handle = open(TCHAR_TO_UTF8(*Path), O_CREAT | O_RDWR | O_CLOEXEC, 0600);
+		if (Handle < 0) return false; // Never refuse a game over a file that cannot be opened.
+		return flock(Handle, LOCK_EX | LOCK_NB) != 0 && errno == EWOULDBLOCK; // Held until the process ends.
+	}
+}
+#endif
+
 void S47Startup::Initialize()
 {
 	if (IsRunningCommandlet() || IsRunningDedicatedServer()) return;
+#if PLATFORM_LINUX && !WITH_EDITOR
+	if (SecondInstance())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("S47: this profile already has a running game; the second start closes"));
+		FPlatformMisc::RequestExit(true, TEXT("S47SecondInstance"));
+		return;
+	}
+#endif
 	PreserveWindowedStartupSize();
 	// MoviePlayer keeps the same terminal visible during synchronous world construction. The
 	// viewport copy then covers the rendered warmup, so no unfinished world frame is exposed.
