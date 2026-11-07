@@ -257,6 +257,35 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
  HeadYaw=Facing(Eye(),LookTarget);
 
  DesiredSpeed=DesiredCrouch=0;
+ // Held by a lamp or a sound for a moment, from the visit: whatever it was doing waits, in either mode.
+ if (In.HoldLook.IsSet() && Finite(*In.HoldLook) && Mode!=EMode::Stand)
+ {
+  LookTarget=*In.HoldLook; HeadYaw=Facing(Eye(),LookTarget);
+  if (In.bHoldHeard) { LastKnownPlayer=*In.HoldLook; LastPlayerEye=*In.HoldLook+FVector(0,1.5,0); bHasPlayerMemory=true; MemoryAge=0; HeardAge=0; }
+  Path.Reset(); NextPoint=0; bAtGoal=true; Velocity=FVector::ZeroVector;
+  Enter(EState::Listen); DecisionAt=Age+1.; RepathAt=Age;
+  Yaw=Wrap(Yaw+FMath::Clamp(Wrap(Facing(Pos,LookTarget)-Yaw),-Dt*2.4,Dt*2.4));
+  Crouch+=FMath::Clamp(.22-Crouch,-Dt*.9,Dt*.9);
+  if (In.HoldBack>0)
+  {
+   const FVector Away=FVector(Pos.X-LookTarget.X,0,Pos.Z-LookTarget.Z).GetSafeNormal();
+   // Straight back from it, or off to either side when something stands behind.
+   for (const double Turn : {0.,.7,-.7,1.4,-1.4})
+   {
+    FVector To=Pos+Away.RotateAngleAxisRad(Turn,FVector(0,1,0))*In.HoldBack*Dt;
+    bool bStep=true;
+    if (World.GroundedStep) { const auto Grounded=World.GroundedStep(Pos,To); bStep=Grounded.IsSet()&&Finite(Grounded.GetValue()); if (bStep) To=Grounded.GetValue(); }
+    const bool bStand=bStep&&World.CanStand&&World.CanStand(To),bMove=bStand&&World.CanMove&&World.CanMove(Pos,To),bFree=bMove&&!(World.Occupancy&&World.Occupancy(To)>=1.);
+    if (bFree)
+    {
+     const FVector Before=Pos; Pos=To; DistanceTravelled+=FVector::Dist(Pos,Before);
+     Velocity=(Pos-Before)/FMath::Max(Dt,1e-6);
+     break;
+    }
+   }
+  }
+  return;
+ }
  if (Mode==EMode::Stand)
  {
   Velocity=FVector::ZeroVector; Path.Reset(); NextPoint=0; bAtGoal=true;
@@ -489,6 +518,22 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
  Ramp.Move(.05,World);
  Check(Ramp.Pos.Equals(SupportedAt) && Ramp.Velocity.IsNearlyZero() && !Ramp.bAtGoal,
   TEXT("a rejected grounded step stops movement without snapping across unsupported ground"));
+ {
+  // Hold from a visit: stops, faces, eases back; no mode change, and letting go leaves it as it was.
+  FWorld Open; Open.CanStand=[](const FVector& P){return Finite(P);};Open.CanMove=[](const FVector&,const FVector&){return true;};
+  Open.FindPath=[](const FVector&,const FVector& To){return TArray<FVector>{To};};Open.Sight=[](const FVector&,const FVector&){return true;};
+  FInput Lit; Lit.PlayerFeet=FVector(0,0,10); Lit.PlayerEye=FVector(0,1.62,10); Lit.PlayerForward=FVector(0,0,-1); Lit.bFlashlight=true;
+  Lit.HoldLook=Lit.PlayerEye; Lit.HoldBack=.5;
+  FS47RoswellBrain Held; Held.Start(EMode::Hunt,FVector::ZeroVector,0,4);
+  for (int32 I=0; I<20; ++I) Held.Tick(.1,Lit,Open);
+  Check(Held.Pos.Z<-.5 && Held.Pos.Z>-1.5 && Held.Mode==EMode::Hunt && !Held.bContact && Held.State==EState::Listen,
+   TEXT("a hold stops even a hunter and eases it back from the lamp, slowly, without changing its mode"));
+  FInput Noisy=Lit; Noisy.bFlashlight=false; Noisy.HoldBack=0; Noisy.HoldLook=FVector(9,0,0); Noisy.bHoldHeard=true;
+  FS47RoswellBrain Turner; Turner.Start(EMode::Curious,FVector::ZeroVector,0,5);
+  for (int32 I=0; I<10; ++I) Turner.Tick(.1,Noisy,Open);
+  Check(Turner.Pos.IsNearlyZero() && Turner.LastKnownPlayer.Equals(FVector(9,0,0)) && Turner.Mode==EMode::Curious && FMath::Abs(Wrap(Turner.Yaw-Facing(FVector::ZeroVector,FVector(9,0,0))))<.2,
+   TEXT("a heard sound turns it to that place and that is what it then knows"));
+ }
  return bOk;
 }
 

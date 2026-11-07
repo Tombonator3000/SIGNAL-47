@@ -11,6 +11,7 @@
 #include "S47Gamepad.h"
 #include "S47Web.h"
 #include "S47Props.h"
+#include "S47Relief.h"
 #include "S47SubstationDetail.h"
 #include "S47Startup.h"
 #include "S47Main.h"
@@ -242,6 +243,10 @@ double AS47Walker::FloorAt(double X, double Z) const
 	FCollisionQueryParams P(SCENE_QUERY_STAT(S47Floor), true, this);
 	const FVector From = ToUE(X, FloorY + 0.3, Z), To = ToUE(X, FloorY - 4.0, Z);
 	if (GetWorld() && GetWorld()->LineTraceSingleByChannel(Hit, From, To, ECC_Visibility, P)) return Hit.ImpactPoint.Z / 100.0;
+	// (Unreal only) Only a test stands in the drive's own area: it has no land and no floor of its own. On Freeform's relief one Place
+	// can be metres from the last floor, past this reach, and the floor would stay where it was: the eye 9 cm off the ground or under it.
+	if (S47Relief::Active() && Web.IsValid() && Web->Area() == TEXT("road") && GetWorld()
+		&& GetWorld()->LineTraceSingleByChannel(Hit, ToUE(X, FloorY + 50.0, Z), ToUE(X, FloorY - 50.0, Z), ECC_Visibility, P)) return Hit.ImpactPoint.Z / 100.0;
 	return FloorY;
 }
 

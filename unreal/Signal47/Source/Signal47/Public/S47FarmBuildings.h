@@ -5,12 +5,18 @@
 // the truck, and the flat floors under them. Road-local metres, as S47FarmWorld. Story never shows them.
 namespace S47FarmBuildings
 {
- struct FSite { const TCHAR* Name; const TCHAR* Mesh; double X,Z,Yaw; };
+ // Sink: how far under the land at its middle the building's z=0 lies, so its walls meet the ground on the low side too.
+ struct FSite { const TCHAR* Name; const TCHAR* Mesh; double X,Z,Yaw,Sink; };
  // The cooked meshes are there. Without them the farm keeps its old boxes and their collision.
  bool Available();
  // Barn, house, machine shed, feed shed. Yaw is the three.js turn in radians; the UE rotation is -Yaw.
  const TArray<FSite>& Sites();
  FVector Anchor(const FSite& Site);
+ // A point in a building's own metres (x east, y north) as road-local X and Z.
+ FVector2D LocalToRoad(const FSite& Site,double LocalX,double LocalY);
+ // The walls and slab edges that meet the ground, in the building's metres: where the dark soil lies against them.
+ struct FWallFoot { int32 Site; double X0,Y0,X1,Y1; };
+ const TArray<FWallFoot>& WallFeet();
  // obstacles_road_local from placement.json, as (MinX,MinZ)-(MaxX,MaxZ).
  const TArray<FBox2D>& Obstacles();
  bool Blocked(double RoadX,double RoadZ,double Radius);

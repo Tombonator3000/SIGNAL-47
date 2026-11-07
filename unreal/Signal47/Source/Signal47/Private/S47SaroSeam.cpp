@@ -1,4 +1,5 @@
 #include "S47SaroSeam.h"
+#include "S47FreeformTerrain.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
@@ -290,7 +291,8 @@ namespace
  {
   for(int32 K=0;K<3;++K)
   {
-   if(!I.C[K].IsValid()||I.C[K]->GetOwner()!=W||I.C[K]->GetStaticMesh()!=I.Mesh[K].Get()||
+   // Freeform's relief stands in for the retained ring: it has the same triangles in the seam's band, where its table is 0.
+   if(!I.C[K].IsValid()||I.C[K]->GetOwner()!=W||(I.C[K]->GetStaticMesh()!=I.Mesh[K].Get()&&!(K==2&&S47FreeformTerrain::IsRelief(W,I.C[K]->GetStaticMesh())))||
       !I.C[K]->GetComponentTransform().Equals(I.Transform[K],.0001))return false;
   }
   return true;

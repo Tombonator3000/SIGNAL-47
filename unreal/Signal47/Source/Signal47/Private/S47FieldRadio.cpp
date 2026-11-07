@@ -105,6 +105,7 @@ bool FS47FieldRadio::Build()
 bool FS47FieldRadio::Message(const FString& Text)
 {
  if(!bOwned||!M)return false;
+ ++MessageCount;
  const bool bHeard=M->Audio&&Sound.Message(M->Audio);
  if(M->UI)M->UI->Toast(TEXT("WALKIE: ")+Text,7);
  UE_LOG(LogTemp,Display,TEXT("S47: walkie message, sound %d: %s"),bHeard,*Text);

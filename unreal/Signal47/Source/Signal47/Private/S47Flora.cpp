@@ -105,6 +105,22 @@ namespace
 		}
 		return End - 1;
 	}
+	// Freeform's creosote from the models of /Game/DesertPlants (EnsureCreosote), a mesh to each variant with its share of the kind. Where and
+	// how big stay the kind's (NATURAL, Make): the copies' matrices are the same as with the old cards, so the feet, the nursing, the fade and
+	// the dead bushes read the same numbers. Heights at scale 1: A 1.6 m, B 1.38 m, C 1.1 m (spec.py); the cards stood 1.6 m.
+	struct FCreosotePart { const TCHAR* Name; double Share; };
+	const FCreosotePart CREOSOTE_PARTS[] = { { TEXT("SM_DP_Creosote_A"), 0.4 }, { TEXT("SM_DP_Creosote_B"), 0.35 }, { TEXT("SM_DP_Creosote_C"), 0.25 } };
+	constexpr int32 CREOSOTE_N = UE_ARRAY_COUNT(CREOSOTE_PARTS);
+	int32 CreosotePartOf(double Pick)
+	{
+		double Sum = 0;
+		for (int32 Pa = 0; Pa < CREOSOTE_N - 1; ++Pa)
+		{
+			Sum += CREOSOTE_PARTS[Pa].Share;
+			if (Pick < Sum) return Pa;
+		}
+		return CREOSOTE_N - 1;
+	}
 	// Freeform: how much of the stain's colour shows, so that a foot darkens the ground by about a third whatever its colour
 	constexpr float FOOT_OPACITY = 0.6f;
 	// Freeform: no creosote over 2 m (its shape stands 1.6 m at scale 1); as wide as the references', less of a vase
@@ -195,6 +211,14 @@ namespace
 			P[6] = { Lin(0.34, 0.28, 0.22), Lin(0.7, 0.66, 0.58), Lin(0.6, 0.45, 0.34), Lin(0.5, 0.48, 0.44), Lin(0.28, 0.24, 0.19) };
 		}
 		return P[int32(K)];
+	}
+	/** Freeform: the creosote's models, in place of Pn[2], which stays for the old cards when the models are not there. Those multiply a dark atlas
+	 *  up to olive; this atlas has the olive already and the game's sun lights it strongly, so these start where the mesquite's do (Pn[10]). */
+	const TArray<FVector>& CREOSOTE_MODEL_PAL()
+	{
+		// Lime yellow at 11:31: the lit leaves read 170,143,74. Each row scaled alike toward olive grey, 95,105,62 in the sun (linear .28 .51 .68). The variation stays.
+		static const TArray<FVector> V = { Lin(0.448, 0.602, 0.653), Lin(0.426, 0.587, 0.619), Lin(0.47, 0.617, 0.636), Lin(0.437, 0.602, 0.686) };
+		return V;
 	}
 	/** Broom snakeweed, the commonest little shrub of the grassland: a sage copy, smaller, yellow-green. */
 	const FVector& SNAKEWEED() { static const FVector V = Lin(0.98, 1.04, 0.66); return V; }
@@ -464,7 +488,9 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	struct FOut { float M[16]; float Cl[3]; double Rank; bool bSeam; uint8 Part; };
 	uint8 PartNow = 0;
 	TArray<FOut> Out;
-	const TArray<FVector>& Pal = PAL(K.Id, bNat);
+	// Freeform's creosote from its models: which of them, from N2 (no other use for it in this kind), and their own colours
+	const bool bCreosoteModel = bGrid && bCreosoteOn;
+	const TArray<FVector>& Pal = bCreosoteModel ? CREOSOTE_MODEL_PAL() : PAL(K.Id, bNat);
 	const TFunction<double(double, double)>& G = Spec.Ground;
 	auto Gy = [&G](double X, double Z) { return G ? G(X, Z) : 0.0; };
 	const TArray<int32>& NurseKinds = NurseOf(K.Id);
@@ -554,6 +580,7 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			const FDesertPart& Dp = DESERT_PARTS[PartNow];
 			S = Dp.Size[0] + FMath::Pow(B, 1.2) * (Dp.Size[1] - Dp.Size[0]);
 		}
+		if (bCreosoteModel) PartNow = uint8(CreosotePartOf(N2));
 		if (bWalked) { if (K.Walk <= 0 || Fmod1(CB * 7.31) > K.Walk) continue; S = FMath::Min(S, K.WalkMax); }
 		// in a seam tiny grass and pebbles; the gravel spilt off a way small
 		if (bSeamed) S = K.Id == ES47FloraKind::Grass ? 0.25 + B * 0.2 : 0.3 + B * 0.2;
@@ -760,14 +787,15 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	bool bAnySeam = false;
 	for (const FOut& O : Out) bAnySeam |= O.bSeam;
 	if (bAnySeam) Made.Seam.SetNumZeroed(Out.Num());
-	if (bDesert) Made.Part.SetNumUninitialized(Out.Num());
+	const bool bParted = bDesert || bCreosoteModel;
+	if (bParted) Made.Part.SetNumUninitialized(Out.Num());
 	for (int32 T = 0; T < Out.Num(); ++T)
 	{
 		FMemory::Memcpy(Made.M.GetData() + T * 16, Out[T].M, sizeof(float) * 16);
 		FMemory::Memcpy(Made.C.GetData() + T * 3, Out[T].Cl, sizeof(float) * 3);
 		Made.Rank[T] = float(Out[T].Rank);
 		if (bAnySeam && Out[T].bSeam) Made.Seam[T] = 1;
-		if (bDesert) Made.Part[T] = Out[T].Part;
+		if (bParted) Made.Part[T] = Out[T].Part;
 	}
 	return Made;
 }
@@ -783,6 +811,7 @@ void FS47Flora::Follow(const FVector& CamPos, bool bLow)
 	if (!Shown()) { DropShadows(); return; }
 	if (Spec.bNatural && !bRockTried) EnsureRocks();
 	if (Spec.bNatural && !bDesertTried) EnsureDesert();
+	if (Spec.bNatural && !bCreosoteTried) EnsureCreosote();
 	AS47Web* W = Web.Get();
 	const FS47Obj G(W, Group);
 	const FVector P = G.WorldToLocal(CamPos);
@@ -944,11 +973,12 @@ void FS47Flora::AuditDrawCounts(TArray<FString>& Lines) const
 	{
 		const FLayer& L = Layers[Ki];
 		// (the desert plants only where they are in use; Story's lines are as they were)
-		if (Ki >= DESERT_KI && L.Parts.Num() == 0) continue;
-		const UInstancedStaticMeshComponent* Mesh = L.Parts.Num() ? L.Parts[0].Mesh.Get() : L.Mesh.Get();
+		const bool bParts = UsesParts(Ki);
+		if (Ki >= DESERT_KI && !bParts) continue;
+		const UInstancedStaticMeshComponent* Mesh = bParts ? L.Parts[0].Mesh.Get() : L.Mesh.Get();
 		int32 Start = 0, End = 0, Actual = Mesh ? Mesh->GetInstanceCount() : 0;
 		if (Mesh) Mesh->GetCullDistances(Start, End);
-		for (int32 Pi = 1; Pi < L.Parts.Num(); ++Pi) if (const UInstancedStaticMeshComponent* Other = L.Parts[Pi].Mesh.Get()) Actual += Other->GetInstanceCount();
+		if (bParts) for (int32 Pi = 1; Pi < L.Parts.Num(); ++Pi) if (const UInstancedStaticMeshComponent* Other = L.Parts[Pi].Mesh.Get()) Actual += Other->GetInstanceCount();
 		Lines.Add(FString::Printf(TEXT("flora %s kind=%d shown=%d eligible_examined=%d invisible_omitted=%d uploaded=%d actual_instances=%d cull_cm=%d,%d"),
 			*Spec.Name, Ki, Shown(), L.Candidates, L.Omitted, L.N, Actual, Start, End));
 	}
@@ -1051,11 +1081,21 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, c
 	FLayer& L = Layers[Ki];
 	L.N = N;
 	if (UMaterialInstanceDynamic* D = L.Mid.Get()) D->SetScalarParameterValue(TEXT("Reach"), float(L.Reach));
-	if (L.Parts.Num() == 0) { PutMesh(L, L.Mesh.Get(), L.Shadow.Get(), Ki, M, Cc, N); return; }
-	// a desert species: each copy to its variant's mesh
+	if (UMaterialInstanceDynamic* D = L.PartMid.Get()) D->SetScalarParameterValue(TEXT("Reach"), float(L.Reach));
+	// the creosote's models and its old cards never both: whichever is out of use (Story gets the cards back) is left with nothing
+	const TArray<float> Nothing;
+	if (!UsesParts(Ki))
+	{
+		PutMesh(L, L.Mesh.Get(), L.Shadow.Get(), Ki, M, Cc, N);
+		for (const FLayerPart& Pa : L.Parts) PutMesh(L, Pa.Mesh.Get(), Pa.Shadow.Get(), Ki, Nothing, Nothing, 0);
+		return;
+	}
+	if (Ki == CREOSOTE_KI) PutMesh(L, L.Mesh.Get(), L.Shadow.Get(), Ki, Nothing, Nothing, 0);
+	// a species with variants: each copy to its variant's mesh
+	const int32 FirstPart = Ki == CREOSOTE_KI ? 0 : DESERT_FIRST[Ki - DESERT_KI];
 	for (int32 Pi = 0; Pi < L.Parts.Num(); ++Pi)
 	{
-		const int32 Wanted = DESERT_FIRST[Ki - DESERT_KI] + Pi;
+		const int32 Wanted = FirstPart + Pi;
 		TArray<float> Mp, Cp;
 		int32 Np = 0;
 		for (int32 k = 0; k < N; ++k)
@@ -1226,6 +1266,60 @@ void FS47Flora::EnsureDesert()
 	bDesertOn = true;
 }
 
+bool FS47Flora::UsesParts(int32 Ki) const
+{
+	return Layers.IsValidIndex(Ki) && Layers[Ki].Parts.Num() > 0 && (Ki != CREOSOTE_KI || Spec.bNatural);
+}
+
+void FS47Flora::EnsureCreosote()
+{
+	// Freeform's creosote from its own models, by itself and apart from the other desert plants: made when Freeform first needs them, so Story has
+	// no such component at all. All three or none: with one missing (not imported, or a material without its master) the old cards stay, the same copies.
+	bCreosoteTried = true;
+	AS47Web* W = Web.Get();
+	UInstancedStaticMeshComponent* Src = Layers.IsValidIndex(CREOSOTE_KI) ? Layers[CREOSOTE_KI].Mesh.Get() : nullptr;
+	if (!W || !Src) return;
+	UStaticMesh* Meshes[CREOSOTE_N] = {};
+	int32 Loaded = 0;
+	for (int32 Pi = 0; Pi < CREOSOTE_N; ++Pi)
+	{
+		const FString Path = FString::Printf(TEXT("/Game/DesertPlants/%s.%s"), CREOSOTE_PARTS[Pi].Name, CREOSOTE_PARTS[Pi].Name);
+		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet);
+		UMaterialInterface* Paint = Mesh ? Mesh->GetMaterial(0) : nullptr;
+		const UMaterial* Master = Paint ? Paint->GetMaterial() : nullptr;
+		if (Master && Master->GetName().StartsWith(TEXT("M_WebFlora"))) { Meshes[Pi] = Mesh; ++Loaded; }
+	}
+	UE_LOG(LogS47Flora, Display, TEXT("S47: creosote models %d of %d loaded (patch %s)"), Loaded, CREOSOTE_N, *Spec.Name);
+	if (Loaded < CREOSOTE_N) return;
+	FLayer& L = Layers[CREOSOTE_KI];
+	UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Meshes[0]->GetMaterial(0), W);
+	// (as EnsureDesert: the atlas's small mips would average the leaves and the air between them)
+	if (D) D->SetForceMipLevelsToBeResident(true, true, -1.f);
+	L.PartMid = D;
+	for (int32 Pi = 0; Pi < CREOSOTE_N; ++Pi)
+	{
+		UInstancedStaticMeshComponent* P = NewObject<UInstancedStaticMeshComponent>(W);
+		P->SetMobility(EComponentMobility::Movable);
+		P->SetupAttachment(Src);
+		P->SetStaticMesh(Meshes[Pi]);
+		P->NumCustomDataFloats = 4;
+		P->SetCastShadow(false);
+		P->SetVisibleInRayTracing(false);
+		P->bAffectDistanceFieldLighting = false;
+		P->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		P->SetMaterial(0, D);
+		P->RegisterComponent();
+		P->SetVisibility(Src->IsVisible());
+		FLayerPart NewPart;
+		NewPart.Mesh = P;
+		NewPart.Shadow = MakeShadow(W, P, D);   // (the same near ones as the cards' proxy: SHADOW_CREOSOTE)
+		L.Parts.Add(NewPart);
+	}
+	bCreosoteOn = true;
+	// (any cell made before this has the cards' colours and no variants)
+	Cells.Empty(); Next = FNext(); bPending = false; bDirty = true;
+}
+
 int32 FS47Flora::TestDesertArc(const FVector& Eye, const FVector& Look, double Radius)
 {
 	AS47Web* W = Web.Get();
@@ -1250,6 +1344,20 @@ int32 FS47Flora::TestDesertArc(const FVector& Eye, const FVector& Look, double R
 			Tc.Cl[0] = Tc.Cl[1] = Tc.Cl[2] = 1.f;
 			TestCopies.Add(Tc);
 		}
+	}
+	// the creosote's models a little nearer, between the eye and the middle of that arc, in their own colours
+	if (bCreosoteOn) for (int32 Pi = 0; Pi < CREOSOTE_N; ++Pi)
+	{
+		const double Ang = Ahead0 + FMath::DegreesToRadians((Pi - (CREOSOTE_N - 1) / 2.0) * 10.0), Near = Radius * 0.8;
+		const double X = Ep.X + FMath::Cos(Ang) * Near, Z = Ep.Z + FMath::Sin(Ang) * Near;
+		double E[16];
+		S47Three::Compose(FVector(X, (Gd ? Gd(X, Z) : 0.0) - 0.035, Z), QAxisAngle(UpV, Pi * 0.7), FVector(1, 1, 1), E);
+		FTestCopy Tc;
+		Tc.Ki = CREOSOTE_KI; Tc.Part = uint8(Pi);
+		for (int32 k = 0; k < 16; ++k) Tc.M[k] = float(E[k]);
+		const FVector Cl = CREOSOTE_MODEL_PAL()[0];
+		Tc.Cl[0] = float(Cl.X); Tc.Cl[1] = float(Cl.Y); Tc.Cl[2] = float(Cl.Z);
+		TestCopies.Add(Tc);
 	}
 	bDirty = true;
 	return TestCopies.Num();
@@ -1276,6 +1384,11 @@ void FS47Flora::SyncVisibility()
 			for (const FLayerPart& Pa : Layers[Ki].Parts)
 				if (UInstancedStaticMeshComponent* Pm = Pa.Mesh.Get()) if (Pm->IsVisible() != Old->IsVisible()) Pm->SetVisibility(Old->IsVisible());
 	}
+	// (the creosote's models with the old cards' draw)
+	const UInstancedStaticMeshComponent* Cards = Layers.IsValidIndex(CREOSOTE_KI) ? Layers[CREOSOTE_KI].Mesh.Get() : nullptr;
+	if (bCreosoteOn && Cards)
+		for (const FLayerPart& Pa : Layers[CREOSOTE_KI].Parts)
+			if (UInstancedStaticMeshComponent* Pm = Pa.Mesh.Get()) if (Pm->IsVisible() != Cards->IsVisible()) Pm->SetVisibility(Cards->IsVisible());
 }
 
 void FS47Flora::SetWind(const FVector2D& Dir)
@@ -1290,5 +1403,6 @@ void FS47Flora::SetWind(const FVector2D& Dir)
 		const double Sc = Spec.bNatural && Ki < NK ? WIND_OF[Ki] : 1.0;
 		const FLinearColor V(float(Wd.X * Sc), float(Wd.Z * Sc), 0.f, 0.f);
 		if (UMaterialInstanceDynamic* D = Layers[Ki].Mid.Get()) D->SetVectorParameterValue(TEXT("WindDir"), V);
+		if (UMaterialInstanceDynamic* D = Layers[Ki].PartMid.Get()) D->SetVectorParameterValue(TEXT("WindDir"), V);
 	}
 }

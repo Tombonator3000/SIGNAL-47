@@ -18,6 +18,7 @@ class UMaterialInstanceDynamic;
 // Rock: Freeform only, a real stone mesh of its own (S47Flora.cpp EnsureRocks); no copy of it in the web version's rules.
 // Yucca, Cholla, Mesquite: Freeform only, the plants of /Game/DesertPlants, one kind to a species and one mesh to each of its
 // variants (S47Flora.cpp EnsureDesert). They take the old succulent copies' place; without their assets the succulents stay.
+// Creosote: in Freeform the same copies stand in the models SM_DP_Creosote_A, _B, _C (EnsureCreosote); without them, in the old cards.
 enum class ES47FloraKind : uint8 { Grass, Sage, Creosote, Stalks, Succulent, Stones, Stain, Rock, Yucca, Cholla, Mesquite };
 
 struct FS47FloraRect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; };
@@ -86,7 +87,9 @@ public:
 	bool Shown() const;
 	/** Tests: how many of the eight desert meshes this patch has in use (0 until it has first been shown in Freeform; then 8 or 0). */
 	int32 DesertInUse() const { return bDesertOn ? DesertMeshes() : 0; }
-	/** Tests: one copy of each desert plant on an arc before an eye (world terms, three's); how many stand. They stay until the end of the run. */
+	/** Tests: whether the creosote stands in its models (only once it has first been shown in Freeform). */
+	bool CreosoteModelsInUse() const { return bCreosoteOn; }
+	/** Tests: one copy of each desert plant, and of each creosote model, on an arc before an eye (world terms, three's); how many stand. They stay until the end of the run. */
 	int32 TestDesertArc(const FVector& Eye, const FVector& Look, double Radius);
 
 private:
@@ -107,6 +110,8 @@ private:
 	double RockUnit = 0, RockFoot = 0;
 	// Freeform's desert plants: whether their meshes were looked for, and whether they are in use (all eight, or the old succulents stay)
 	bool bDesertTried = false, bDesertOn = false;
+	// Freeform's creosote: the same, for its three models apart from the eight (with one of them missing the old cards stay)
+	bool bCreosoteTried = false, bCreosoteOn = false;
 	static int32 DesertMeshes();
 	/** Tests only: copies put in with a kind's own at each fill (TestDesertArc). */
 	struct FTestCopy { int32 Ki = 0; uint8 Part = 0; float M[16] = {}; float Cl[3] = {}; };
@@ -126,12 +131,16 @@ private:
 	int32 Group = -1;
 	/** a kind's mesh: the export's for the first of a pair, one of its own for the second */
 	struct FLayerPart { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; };
-	/** Parts: a desert species' meshes, one to a variant, under one Mid; its copies go to them by FKindCell::Part. */
-	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; TArray<FLayerPart> Parts; };
+	/** Parts: a desert species' meshes, one to a variant, under one Mid; its copies go to them by FKindCell::Part.
+	 *  PartMid: the creosote's models' one, beside Mid, which stays the old cards' (Story's). */
+	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh, Shadow; TWeakObjectPtr<UMaterialInstanceDynamic> Mid, PartMid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; TArray<FLayerPart> Parts; };
 	TArray<FLayer> Layers;
 	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, const TArray<uint8>& Pt, int32 N);
 	void PutMesh(const FLayer& L, UInstancedStaticMeshComponent* I, UInstancedStaticMeshComponent* Sh, int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
 	void DropShadows();
 	void EnsureRocks();
 	void EnsureDesert();
+	void EnsureCreosote();
+	/** Whether a kind's copies go to its Parts now, not its Mesh. */
+	bool UsesParts(int32 Ki) const;
 };

@@ -390,6 +390,163 @@ def mesquite(out):
     save(out, 'Mesquite', arr, R, masked=True)
 
 
+# ---------- creosote ----------
+
+LEAF_DARK = ((72, 82, 30), (80, 88, 32), (66, 76, 32))
+LEAF_MID = ((108, 116, 40), (122, 126, 44), (100, 110, 42), (132, 130, 48))
+LEAF_LIGHT = ((146, 148, 56), (158, 154, 54), (136, 142, 58), (170, 160, 60))
+
+
+class CreosoteSpray:
+    """En kvist med motsatte, små tolappede blad, tettest ytterst. Roten nederst på midten av kortet.
+
+    Bladene er rundt 5 % av kortets høyde, altså omtrent 1 cm på en 20 cm kvist. De tegnes i tre lag, mørke bakerst, så
+    klyngene er tette nok til at alpha holder seg over klippet i mipkartene.
+    """
+
+    def __init__(self, seed, w, h, leaf=1.0, flowers=0, far=False):
+        self.r = random.Random(seed)
+        self.w, self.h = w, h
+        self.leaf, self.flowers, self.far = leaf, flowers, far
+        self.im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        self.d = ImageDraw.Draw(self.im)
+        self.nodes = []
+
+    def twig(self, p, a, ln, width, gen, t0=0.0):
+        r = self.r
+        n = max(3, int(ln / (self.h * .04)))
+        step = ln / n
+        sign = r.choice((-1, 1))
+        for i in range(n):
+            a2 = a + sign * r.uniform(.1, .3)
+            sign = -sign
+            q = (p[0] + math.sin(a2) * step, p[1] - math.cos(a2) * step)
+            # En kvist som når kanten av kortet, stopper: ellers klippes den rett av i bildet.
+            if not self.inside(q, .1):
+                return
+            shade = lc((48, 40, 34), (112, 100, 78), min(1.0, gen * .3 + i / n * .4))
+            line(self.d, p, q, max(SS * 1.1, width * (1 - i / n * .5)), shade)
+            # Mørk ring i knekken, som på referansene.
+            ring = max(SS * 1.4, width * 1.15)
+            self.d.ellipse((q[0] - ring / 2, q[1] - ring / 2, q[0] + ring / 2, q[1] + ring / 2), fill=(38, 32, 28, 255))
+            self.nodes.append((q, a2, min(1.0, t0 + (i + 1) / n * (1 - t0))))
+            if gen < 2 and i >= n // 4 and r.random() < .7 - gen * .12:
+                s = r.choice((-1, 1))
+                self.twig(q, a2 + s * r.uniform(.5, .95), ln * r.uniform(.42, .62), width * .66, gen + 1, t0 + (i + 1) / n * .5)
+            p = q
+
+    def inside(self, q, margin):
+        return margin * self.w < q[0] < (1 - margin) * self.w and margin * self.h * .75 < q[1]
+
+    def leaflet(self, q, a, size, fill, spot=None):
+        """To smale lapper som sprer seg fra samme feste."""
+        w = size * (.3 if self.far else .2)
+        if not self.inside((q[0] + math.sin(a) * size * 1.1, q[1] - math.cos(a) * size * 1.1), .02):
+            return
+        for side in (-.24, .24):
+            b = a + side
+            pts = []
+            for k in range(9):
+                t = k / 8
+                # Bred midt på, spiss i enden, bue på én side.
+                half = w * math.sin(min(1.0, t * 1.08) * math.pi) ** .7
+                px = q[0] + math.sin(b) * size * t
+                py = q[1] - math.cos(b) * size * t
+                pts.append((px + math.cos(b) * half, py + math.sin(b) * half))
+            for k in range(8, -1, -1):
+                t = k / 8
+                half = w * .8 * math.sin(min(1.0, t * 1.08) * math.pi) ** .7
+                px = q[0] + math.sin(b) * size * t
+                py = q[1] - math.cos(b) * size * t
+                pts.append((px - math.cos(b) * half, py - math.sin(b) * half))
+            self.d.polygon(pts, fill=fill + (255,))
+            if spot:
+                self.d.line((q[0] + math.sin(b) * size * .2, q[1] - math.cos(b) * size * .2, q[0] + math.sin(b) * size * .8, q[1] - math.cos(b) * size * .8), fill=spot + (255,), width=max(1, SS // 2))
+
+    def foliage(self):
+        r = self.r
+        size0 = self.h * (.085 if self.far else .04)
+        nodes = [n for n in self.nodes if n[2] > .22]
+        for colours, keep, sc in ((LEAF_DARK, 1.0, 1.08), (LEAF_MID, .9, 1.0), (LEAF_LIGHT, .42, .9)):
+            order = list(nodes)
+            r.shuffle(order)
+            for (q, a, t) in order:
+                # Tettere ytterst på kvisten.
+                if r.random() > keep * self.leaf * (.45 + .75 * t):
+                    continue
+                for side in (-1, 1):
+                    b = a + side * r.uniform(.5, 1.25)
+                    size = size0 * sc * r.uniform(.8, 1.2)
+                    # Lagene forskyves litt, så de ikke dekker hverandre helt.
+                    shift = size * r.uniform(-.25, .35)
+                    at = (q[0] + math.sin(b) * shift, q[1] - math.cos(b) * shift)
+                    fill = r.choice(colours)
+                    spot = None if self.far else tuple(max(0, c - 30) for c in fill)
+                    self.leaflet(at, b, size, fill, spot)
+        # Noen få små gule blomster og ulne frøkuler, våren 1986.
+        for (q, a, t) in r.sample(nodes, min(self.flowers, len(nodes))):
+            rad = self.h * .011
+            c = r.choice(((206, 186, 66), (190, 170, 60), (212, 204, 170)))
+            self.d.ellipse((q[0] - rad, q[1] - rad, q[0] + rad, q[1] + rad), fill=c + (255,))
+
+    def finish(self, root_w, length):
+        self.twig((self.w / 2, self.h * .995), self.r.uniform(-.12, .12), length, root_w, 0)
+        if self.leaf > 0:
+            self.foliage()
+        return supersample(self.im)
+
+
+def creosote(out):
+    sp = 'creosote'
+    N = ATLAS[sp]['size']
+    rng = np.random.default_rng(831)
+    arr = np.zeros((N, N, 4), np.float32)
+    R = np.full((N, N), .85, np.float32)
+
+    # Stammen: mørk grå-brun, lysere flekker og tette mørke ringer på tvers (v går langs stammen).
+    x0, y0, x1, y1 = box('bark', sp)
+    h, w = y1 - y0, x1 - x0
+    fib = fbm(rng, h, w, 8, 6, 4)
+    big = fbm(rng, h, w, 3, 10, 3)
+    # (ringene følger bare v, og brytes av flekker: de går ikke helt rundt)
+    ring = 1 - (1 - sst(.006, .03, np.abs(fbm(rng, h, 1, 1, 30, 2) - .5))) * sst(.42, .58, fbm(rng, h, w, 4, 12, 2))
+    rgb = mix(col(44, 38, 34), col(118, 108, 96), sst(.28, .72, fib * .55 + big * .45))
+    rgb = rgb * (.45 + .55 * ring[..., None])
+    put(arr, 'bark', sp, rgb, None, .92, R)
+
+    x0, y0, x1, y1 = box('twig', sp)
+    h, w = y1 - y0, x1 - x0
+    fib = fbm(rng, h, w, 5, 8, 3)
+    ring = 1 - (1 - sst(.006, .03, np.abs(fbm(rng, h, 1, 1, 40, 2) - .5))) * sst(.42, .58, fbm(rng, h, w, 4, 16, 2))
+    rgb = mix(col(60, 52, 44), col(128, 116, 96), sst(.3, .72, fib))
+    put(arr, 'twig', sp, rgb * (.55 + .45 * ring[..., None]), None, .88, R)
+
+    cards = {
+        'leaf_a': dict(seed=11, leaf=1.0, flowers=2, root=.016, length=.72),
+        'leaf_b': dict(seed=12, leaf=1.0, flowers=0, root=.018, length=.76),
+        'leaf_c': dict(seed=13, leaf=.86, flowers=4, root=.015, length=.7),
+        'tip_a': dict(seed=14, leaf=.95, flowers=0, root=.012, length=.56),
+        'tip_b': dict(seed=15, leaf=.8, flowers=3, root=.012, length=.6),
+        'bare_a': dict(seed=16, leaf=.2, flowers=0, root=.016, length=.8),
+        'far_a': dict(seed=17, leaf=1.0, flowers=0, root=.03, length=.72, far=True),
+        'far_b': dict(seed=18, leaf=.9, flowers=0, root=.03, length=.7, far=True),
+        'far_c': dict(seed=19, leaf=.72, flowers=0, root=.034, length=.74, far=True),
+    }
+    for name, cfg in cards.items():
+        x0, y0, x1, y1 = box(name, sp)
+        W, H = (x1 - x0) * SS, (y1 - y0) * SS
+        s = CreosoteSpray(cfg['seed'] * 37, W, H, cfg['leaf'], cfg['flowers'], cfg.get('far', False))
+        rgb, al = s.finish(H * cfg['root'], H * cfg['length'])
+        # De store flekkene på avstand har mindre mørkt mellom bladene: samme snittfarge som nærkortene (målt), så LOD-byttet ikke lyser opp.
+        if cfg.get('far'):
+            rgb = rgb * .86
+        # Bladene er voksaktige og litt blanke, kvistene matte.
+        leafy = np.clip((rgb[..., 1] - rgb[..., 2]) * 6, 0, 1)
+        rough = (.85 - .2 * leafy) * (al > .3) + .9 * (al <= .3)
+        put(arr, name, sp, rgb, al, rough, R)
+    save(out, 'Creosote', arr, R, masked=True)
+
+
 def save(out, name, arr, R, masked):
     a = np.clip(arr, 0, 1)
     if masked:
@@ -403,6 +560,6 @@ def save(out, name, arr, R, masked):
 if __name__ == '__main__':
     root = Path(sys.argv[1] if len(sys.argv) > 1 else 'textures')
     root.mkdir(parents=True, exist_ok=True)
-    which = sys.argv[2:] or ['cholla', 'yucca', 'mesquite']
+    which = sys.argv[2:] or ['cholla', 'yucca', 'mesquite', 'creosote']
     for fn in which:
-        {'cholla': cholla, 'yucca': yucca, 'mesquite': mesquite}[fn](root)
+        {'cholla': cholla, 'yucca': yucca, 'mesquite': mesquite, 'creosote': creosote}[fn](root)

@@ -419,7 +419,7 @@ void FS47Taken::Step(double Dt)
    TalkIn=FMath::FRandRange(5.f,8.f);
    if(M->FieldRadio)M->FieldRadio->Talk(StepAt+FVector(1.5,-1,1));
   }
-  // A door in the house moves, with nobody at it.
+  // A door in the house moves, with nobody at it. A shut one comes open: one standing open may be the one a visit just left.
   if(!bDoorDone&&Age>=6.5)
   {
    bDoorDone=true;
@@ -428,7 +428,7 @@ void FS47Taken::Step(double Dt)
     double Best=11;int32 Door=INDEX_NONE;
     for(const auto& Plan:S47FarmHouse::DoorPlans())
     {
-     const int32 I=M->Freeform->HouseDoors->IndexOf(Plan.Name);if(I==INDEX_NONE)continue;
+     const int32 I=M->Freeform->HouseDoors->IndexOf(Plan.Name);if(I==INDEX_NONE||M->Freeform->HouseDoors->IsOpen(I))continue;
      const FVector P=Plan.From+FVector(-24,0,300);
      const double D=FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(M->Player->Pos.X,M->Player->Pos.Z));
      if(D<Best&&D>1.4){Best=D;Door=I;}

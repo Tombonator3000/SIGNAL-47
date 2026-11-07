@@ -1,4 +1,5 @@
 #include "S47MenuPointerTest.h"
+#include "S47ReliefProbe.h"
 #include "S47Main.h"
 #include "S47ArrayWear.h"
 #include "S47CalicheAccess.h"
@@ -30,6 +31,8 @@
 #include "S47World.h"
 #include "S47Inter.h"
 #include "S47FreeformDirector.h"
+#include "S47FreeformCases.h"
+#include "S47Flashlight.h"
 #include "S47FarmSite.h"
 #include "S47FarmNight.h"
 #include "S47Flora.h"
@@ -152,6 +155,7 @@ namespace
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
+  double DoorHeld=0,DoorFirst=0;int32 DoorStep=0;FVector DoorBodyFrom=FVector::ZeroVector;
   double AfterAt=0,AfterPc=0;FString AfterLine;
   S47J::FObj MysteryBefore;FString MysteryBoard;int32 MysteryTruth=0,MysterySub=0,MysteryFuses=0,MysteryCash=0;double MysteryHeld=0;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
@@ -587,7 +591,11 @@ namespace
    if(Stage==463)
    {
     if(Site.VisitStage()>=1){UE_LOG(LogTemp,Display,TEXT("S47: night: visit began at %.2f, kind %d"),Hour,Site.VisitKind());M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=464;return true;}
-    if(Elapsed-DreadAt>25)return Fail(TEXT("standing at the marks in the small hours must bring the visit"));
+    if(Elapsed-DreadAt>25)
+    {
+     UE_LOG(LogTemp,Display,TEXT("S47: night: no visit: stage %d, event '%s', bodies %d, taken busy %d, at %s, marks %s, %.1f m"),Site.VisitStage(),*M->Freeform->Director->ActiveEvent(),M->Night->Glimpses->Individuals().Num(),M->Freeform->Taken&&M->Freeform->Taken->Busy()?1:0,*M->Player->Pos.ToCompactString(),*Marks.ToCompactString(),FVector::Dist2D(FVector(M->Player->Pos.X,M->Player->Pos.Z,0),FVector(Marks.X,Marks.Z,0)));
+     return Fail(TEXT("standing at the marks in the small hours must bring the visit"));
+    }
     return true;
    }
    if(Stage==464)
@@ -775,6 +783,470 @@ namespace
    if(!MysteryRestore(M,State))return false;
    if(M->Freeform->Director)M->Freeform->Director->Stop();
    Stage=Next;AfterAt=Elapsed;return true;
+  }
+  // -S47MenuPointerDoor [-S47DoorPlace=house|cinema|feed|church]: something at a shut door, by the draw's own rule. Set up:
+  // the Director off, the draw's dice set to yes, the player put beside the door it chose, the clock moved on between rounds,
+  // and in town the room's door shut for them (it stands open as built). Natural: the wait indoors, the choice of door, the
+  // whole visit, the E through the interactable. PASS only if: nothing in 32 s at 21:00; at 02:30 it comes by itself; a menu
+  // holds it; E while the handle moves holds the door, it goes, the door stays shut, a record and three marks are left and
+  // the marks can be looked at; the next night nothing comes, the night after it does; left alone the door opens by itself,
+  // something stands there, stays while not looked at and goes when looked at, with its own record and two marks; a save
+  // in the middle gives a quiet room and spends that night; E while it waits opens the door on nothing, with its own record
+  // and one mark; pushed from the doorway the door does not shut and that is no holding, from clear of it it shuts and it is;
+  // something bigger (set up: a Dread begun by hand) at the handle leaves the door shut, no record, the night handed back, and
+  // it comes again that night; the same with the door opening behind the player's back shuts the door again and does not come
+  // back that night, but the next; the same in plain view leaves the door open, and the body goes, with a record and two marks.
+  // Nobody is taken, and nothing hunts.
+  bool StepDoor(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& Dread=*F.IndoorDread;auto& Visit=Dread.Door();
+   using EV=FS47DoorVisit::EStage;
+   const FString Today=FString::FromInt(F.Day());
+   const auto NobodyHarmed=[&]
+   {
+    if(F.Taken->Busy())return false;
+    for(const auto& I:M->Night->Glimpses->Individuals())if(I.Mode==FS47RoswellBrain::EMode::Hunt)return false;
+    return true;
+   };
+   const auto StandBy=[&](double Off)
+   {
+    const FVector Spot=Visit.DoorMiddle()-Visit.DoorOutward()*Off;
+    M->Player->Place(Spot.X,Spot.Z,M->Player->Yaw);
+   };
+   const auto Finding=[&](const TCHAR* Prefix){return F.HasFinding(FString(Prefix)+Today);};
+   if(Stage==540)
+   {
+    if(Elapsed-DreadFrom<3)return true;
+    FVector Room=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
+    if(DreadPlace!=TEXT("house"))
+    {
+     if(!S47CalicheAccess::RoomMiddle(DreadPlace,Room))return Fail(TEXT("no such room"));
+     if(S47CalicheAccess::IsOpen(DreadPlace))S47CalicheAccess::UseDoor(DreadPlace);
+    }
+    M->Player->Place(Room.X,Room.Z,0);M->Player->Pitch=0;Visit.TestDice(0.f);
+    DreadAt=Elapsed;Stage=541;return true;
+   }
+   if(Stage==541)
+   {
+    if(Visit.Active())return Fail(TEXT("nothing may come to a door at 21:00"));
+    if(Elapsed-DreadAt<32)return true;
+    UE_LOG(LogTemp,Display,TEXT("S47: door: 32 s indoors at 21:00 in %s, nothing"),*DreadPlace);
+    if(!DreadToClock(M,2.5))return Fail(TEXT("the door test needs the small hours"));
+    DreadRound=0;DreadAt=Elapsed;Stage=542;return true;
+   }
+   if(Stage==542)
+   {
+    if(!Visit.Active()){if(Elapsed-DreadAt>110)return Fail(TEXT("it must come by itself: a shut door, indoors, in their hours"));return true;}
+    if(!FS47FarmSite::TheirHours(F.Clock()))return Fail(TEXT("not before two"));
+    if(Visit.LastDayOf()!=F.Day()||Visit.StageNow()!=EV::Trying)return Fail(TEXT("it starts at the handle, and the night's one is spent"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door: round %d, %s, after %.0f s indoors"),DreadRound,*Visit.DoorKeyNow(),Elapsed-DreadAt);
+    DoorStep=0;DreadAt=Elapsed;Stage=DreadRound==0?543:DreadRound==1?548:DreadRound==2?552:DreadRound==3?554:DreadRound==4?557:DreadRound==5?558:559;return true;
+   }
+   // Round 0: hold it.
+   if(Stage==543)
+   {
+    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    if(Elapsed-DreadAt<1)return true;
+    Shot(TEXT("door-trying.png"));M->bPausedByMenu=true;DoorHeld=Visit.VisitClock();DreadAt=Elapsed;Stage=544;return true;
+   }
+   if(Stage==544)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    M->bPausedByMenu=false;
+    if(FMath::Abs(Visit.VisitClock()-DoorHeld)>.001)return Fail(TEXT("a menu must hold it"));
+    DreadAt=Elapsed;Stage=545;return true;
+   }
+   if(Stage==545)
+   {
+    StandBy(1.1);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    if(M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE())!=Visit.DoorKeyNow())
+    {
+     if(Elapsed-DreadAt>3)
+     {
+      UE_LOG(LogTemp,Display,TEXT("S47: door: inter says '%s', door key '%s', door %.1f m off, at %s"),*M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE()),*Visit.DoorKeyNow(),FVector::Dist(M->Player->Pos,Visit.DoorMiddle()),*M->Player->Pos.ToCompactString());
+      return Fail(TEXT("looking at the door from beside it must offer it"));
+     }
+     return true;
+    }
+    if(Visit.StageNow()!=EV::Trying)return Fail(TEXT("the test must press while the handle moves"));
+    if(M->Inter->LabelOf(Visit.DoorKeyNow())!=TEXT("Hold the door"))return Fail(TEXT("the prompt must say what E does now"));
+    M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.StageNow()!=EV::Holding)return Fail(TEXT("E while the handle moves must hold it"));
+    DreadAt=Elapsed;Stage=546;return true;
+   }
+   if(Stage==546)
+   {
+    if(Visit.Active()){if(Elapsed-DreadAt>10)return Fail(TEXT("held, it must go"));return true;}
+    if(Visit.DoorOpenNow())return Fail(TEXT("a held door stays shut"));
+    if(!Finding(TEXT("door-visit-")))return Fail(TEXT("holding it must leave a record"));
+    if(Visit.MarksOut()!=3||Visit.TraceKind()!=FS47DoorVisit::EEnding::Held)return Fail(TEXT("three marks, from holding it"));
+    if(FS47FreeformCases::LineForFinding(TEXT("door-visit-")+Today)!=2)return Fail(TEXT("it belongs with the visitors around the base"));
+    if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
+    if(!Visit.UseMarks())return Fail(TEXT("the marks must be there to look at"));
+    if(!Finding(TEXT("door-marks-")))return Fail(TEXT("looking at the marks must keep a record"));
+    M->UI->Close(true);
+    UE_LOG(LogTemp,Display,TEXT("S47: door: held, %d marks looked at"),Visit.MarksOut());
+    if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+    DreadAt=Elapsed;Stage=547;return true;
+   }
+   if(Stage==547)
+   {
+    if(Visit.Active())return Fail(TEXT("at most one in two nights"));
+    if(Elapsed-DreadAt<34)return true;
+    if(Visit.RollDayOf()!=F.Day()||Visit.DrawnTonight())return Fail(TEXT("the night after may not draw it, with the dice at yes"));
+    if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+    DreadRound=1;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 1: walk off into the room and leave it.
+   if(Stage==548)
+   {
+    StandBy(4.5);
+    // Back to it, so that it can be there and not be looked at.
+    DreadLookAt(M,Visit.DoorMiddle()-Visit.DoorOutward()*30+FVector(0,1.6,0));
+    if(Visit.StageNow()==EV::Opening&&!Visit.DoorOpenNow())return Fail(TEXT("opening means the door no longer holds"));
+    if(Visit.StageNow()==EV::Holding)return Fail(TEXT("nobody pressed anything"));
+    if(Visit.StageNow()!=EV::Standing){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+    if(!Visit.BodyEye().IsSet())return Fail(TEXT("something must stand there"));
+    DreadAt=Elapsed;Stage=549;return true;
+   }
+   if(Stage==549)
+   {
+    if(Visit.StageNow()!=EV::Standing)return Fail(TEXT("not looked at, it stays"));
+    if(Elapsed-DreadAt<3)return true;
+    StandBy(2.2);DreadLookAt(M,*Visit.BodyEye());DreadAt=Elapsed;Stage=550;return true;
+   }
+   if(Stage==550)
+   {
+    if(Visit.StageNow()==EV::Standing||Visit.StageNow()==EV::Leaving)
+    {
+     if(Elapsed-DreadAt>10)return Fail(TEXT("looked at, it must go"));
+     if(Visit.BodyEye().IsSet()){StandBy(2.2);DreadLookAt(M,*Visit.BodyEye());}
+     if(Elapsed-DreadAt>.3&&DoorFirst==0){DoorFirst=1;Shot(TEXT("door-standing.png"));}
+     return true;
+    }
+    if(Visit.Active())return Fail(TEXT("it can only go from there"));
+    if(!Visit.DoorOpenNow())return Fail(TEXT("the door is left open"));
+    if(!Finding(TEXT("door-visit-")))return Fail(TEXT("what was seen must be in the field records"));
+    if(Visit.MarksOut()!=2||Visit.TraceKind()!=FS47DoorVisit::EEnding::Walked)return Fail(TEXT("two marks, from leaving it"));
+    if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
+    // Shut it again, the ordinary way: it is an ordinary door now.
+    M->Inter->UseId(Visit.DoorKeyNow());DreadAt=Elapsed;Stage=551;return true;
+   }
+   if(Stage==551)
+   {
+    if(Elapsed-DreadAt<1.2)return true;
+    if(Visit.DoorOpenNow())return Fail(TEXT("with nothing there, E is the door's own again"));
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=2;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 2: a save in the middle of it.
+   if(Stage==552)
+   {
+    const FString Key=Visit.DoorKeyNow();const int32 Spent=Visit.LastDayOf();
+    Dread.Begin(Dread.Save());
+    if(Visit.Active()||Visit.LastDayOf()!=Spent)return Fail(TEXT("Continue finds a quiet room, and the night's one spent"));
+    if(Dread.DoorLabel(Key).Len()>0)return Fail(TEXT("after Continue it is an ordinary door"));
+    Visit.TestDice(0.f);DreadAt=Elapsed;Stage=553;return true;
+   }
+   if(Stage==553)
+   {
+    if(Visit.Active())return Fail(TEXT("the night's one must not come again after Continue"));
+    if(Elapsed-DreadAt<30)return true;
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=3;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 3: open it yourself.
+   if(Stage==554)
+   {
+    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    if(Visit.StageNow()==EV::Trying)return true;
+    if(Visit.StageNow()!=EV::Waiting)return Fail(TEXT("after the handle, it waits"));
+    if(M->Inter->LabelOf(Visit.DoorKeyNow())!=TEXT("Open the door"))return Fail(TEXT("the prompt must say what E does now"));
+    if(M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE())!=Visit.DoorKeyNow())return true;
+    M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.Active())return Fail(TEXT("opened, it is over at once, and the sound with it"));
+    if(!Visit.DoorOpenNow())return Fail(TEXT("the door must be open"));
+    if(Visit.BodyEye().IsSet())return Fail(TEXT("an empty threshold"));
+    if(!Finding(TEXT("door-visit-")))return Fail(TEXT("opening it must leave a record"));
+    if(Visit.MarksOut()!=1||Visit.TraceKind()!=FS47DoorVisit::EEnding::Opened)return Fail(TEXT("one mark, from opening it"));
+    DreadAt=Elapsed;Stage=555;return true;
+   }
+   if(Stage==555)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    DreadLookAt(M,Visit.DoorMiddle()+Visit.DoorOutward()*.55);
+    Shot(TEXT("door-threshold.png"));DreadAt=Elapsed;Stage=556;return true;
+   }
+   if(Stage==556)
+   {
+    if(Elapsed-DreadAt<.5)return true;
+    if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
+    // Shut it again, for the rounds below.
+    M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.DoorOpenNow())return Fail(TEXT("with nothing there, E is the door's own again"));
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=4;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 4: pushed from the doorway, then from clear of it.
+   if(Stage==557)
+   {
+    StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));
+    if(Visit.StageNow()!=EV::Opening){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+    StandBy(0);M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.StageNow()!=EV::Opening||!Visit.DoorOpenNow())return Fail(TEXT("from the doorway it cannot be pushed shut, and it goes on"));
+    if(Finding(TEXT("door-visit-")))return Fail(TEXT("a door that did not shut is no holding it"));
+    StandBy(1.7);M->Inter->UseId(Visit.DoorKeyNow());
+    if(Visit.Active()||Visit.DoorOpenNow())return Fail(TEXT("from clear of it, it shuts"));
+    if(!Finding(TEXT("door-visit-"))||Visit.TraceKind()!=FS47DoorVisit::EEnding::Held)return Fail(TEXT("that one is holding it"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door: the doorway refuses, and clear of it it shuts"));
+    DoorFirst=Visit.LastDayOf();
+    if(!F.TestAdvance(2*86400.))return Fail(TEXT("no next night"));
+    DreadRound=5;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Round 5: something bigger, while the handle moves.
+   if(Stage==558)
+   {
+    if(DoorStep==0)
+    {
+     if(!F.Taken->Begin(ES47Taker::Roswell,TEXT("the door test")))return Fail(TEXT("the test needs something bigger"));
+     DoorStep=1;DreadAt=Elapsed;return true;
+    }
+    if(Visit.Active()){if(Elapsed-DreadAt>2)return Fail(TEXT("it gives way at once"));return true;}
+    F.Taken->GiveUp();
+    if(Visit.DoorOpenNow())return Fail(TEXT("the door stays shut"));
+    if(Finding(TEXT("door-visit-"))||Visit.MarksOut()!=0)return Fail(TEXT("this one was never here: no record, no marks"));
+    if(Visit.LastDayOf()!=int32(DoorFirst)||!Visit.DrawnTonight())return Fail(TEXT("and the night is handed back"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door: gave way at the handle, the night handed back"));
+    DreadRound=6;DreadAt=Elapsed;Stage=542;return true;
+   }
+   // Rounds 6 and 7: something bigger with the door coming open, first behind the player's back, then in plain view.
+   if(Stage==559)
+   {
+    const bool bSeen=DreadRound==7;
+    if(DoorStep==0)
+    {
+     if(bSeen){StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));}
+     else{StandBy(4.5);DreadLookAt(M,Visit.DoorMiddle()-Visit.DoorOutward()*30+FVector(0,1.6,0));}
+     if(Visit.StageNow()!=EV::Opening){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+     if(bSeen&&!Visit.SawItOpen())return true;
+     if(!bSeen&&Visit.SawItOpen())return Fail(TEXT("behind the player's back nobody saw it"));
+     if(!F.Taken->Begin(ES47Taker::Roswell,TEXT("the door test")))return Fail(TEXT("the test needs something bigger"));
+     DoorStep=1;DreadAt=Elapsed;return true;
+    }
+    if(Visit.Active()){if(Elapsed-DreadAt>(bSeen?8:2))return Fail(TEXT("it must be over soon"));return true;}
+    F.Taken->GiveUp();
+    if(!bSeen)
+    {
+     if(Visit.DoorOpenNow())return Fail(TEXT("nobody saw it open, so it is shut again"));
+     if(Finding(TEXT("door-visit-")))return Fail(TEXT("this one was never here: no record"));
+     if(Visit.LastDayOf()!=int32(DoorFirst)||Visit.DrawnTonight())return Fail(TEXT("the night is handed back, but it comes back only once a night"));
+     UE_LOG(LogTemp,Display,TEXT("S47: door: gave way unseen, the door shut again"));
+     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+     DreadRound=7;DreadAt=Elapsed;Stage=542;return true;
+    }
+    if(!Visit.DoorOpenNow())return Fail(TEXT("seen open, it stays open"));
+    if(!Finding(TEXT("door-visit-")))return Fail(TEXT("what was seen must be in the field records"));
+    if(Visit.MarksOut()!=2||Visit.TraceKind()!=FS47DoorVisit::EEnding::Walked)return Fail(TEXT("two marks, from leaving it"));
+    if(Visit.BodyEye().IsSet())return Fail(TEXT("and nothing is left standing there"));
+    if(!NobodyHarmed())return Fail(TEXT("nothing may follow a door visit"));
+    UE_LOG(LogTemp,Display,TEXT("S47: door PASS in %s: held, left alone and looked at, saved in the middle, opened, doorway, given way three ways"),*DreadPlace);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such door stage"));
+  }
+  // -S47MenuPointerAttention: what a body on a visit does about the lamp and noise. Set up: the visit's dice (a small one,
+  // then the crab), the lamp in hand, the lamp's dice, the player put near it, the hunt clock stopped so that the reactions
+  // can be looked at one by one (its rule is read off the clock above, not here). Natural: when it notices, what it does,
+  // the sight line, the patience. PASS only if: a lamp on it stops it and it draws back slowly, the mode unchanged; a lamp
+  // on it later blinks instead, and comes back; with the lamp out and the player still its patience runs at double rate, and
+  // with the lamp on at the plain rate; a run turns it; a voice on the set turns it; a menu holds all of it; leaving ends it
+  // with nothing left over; and the crab, moved by the site itself, stops and draws back too.
+  bool StepAttention(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& Site=*M->Freeform->FarmSite;auto& Lamp=*M->Night->Flashlight;
+   using EA=FS47VisitAttention::EDo;
+   const auto Views=M->Night->Glimpses->Individuals();
+   const auto AimAtBody=[&]
+   {
+    TOptional<FVector> Eye=Site.VisitBodyEye();
+    if(!Eye.IsSet()&&!Views.IsEmpty())Eye=Views[0].Eye;
+    if(Eye.IsSet())DreadLookAt(M,*Eye);
+    return Eye;
+   };
+   const FVector Marks=Site.Centre();
+   if(Stage==560)
+   {
+    if(Site.VisitStage()==4)return Fail(TEXT("the visit ended with no body"));
+    if(Site.VisitStage()<2){if(Elapsed-DreadAt>40)return Fail(TEXT("a body must come"));return true;}
+    if(Views.IsEmpty())return Fail(TEXT("the small one's visit has no body"));
+    Site.TestAttentionRoll(0.f);Lamp.bHave=true;if(!Lamp.bOn)Lamp.Toggle();
+    DreadAt=DreadFirst=Elapsed;Stage=561;return true;
+   }
+   if(Stage==561)
+   {
+    // Near it, in the open if the land allows; it may have gone to cover, so go on trying.
+    if(Views.IsEmpty())return Fail(TEXT("the small one must stay while the player does"));
+    if(Elapsed>=DreadFirst){DreadFirst=Elapsed+5;const FVector To=Views[0].Pos+(FVector(Marks.X+6,Views[0].Pos.Y,Marks.Z+6)-Views[0].Pos).GetSafeNormal()*10;M->Player->Place(To.X,To.Z,0);}
+    AimAtBody();
+    if(Site.VisitAttention().Doing()==EA::Watch)
+    {
+     UE_LOG(LogTemp,Display,TEXT("S47: attention: the lamp found it after %.1f s, state %d"),Elapsed-DreadAt,int32(Views[0].State));
+     DoorBodyFrom=Views[0].Pos;DreadAt=Elapsed;Stage=562;return true;
+    }
+    if(Elapsed-DreadAt>40)return Fail(TEXT("a lit lamp on it in a clear line must be noticed"));
+    return true;
+   }
+   if(Stage==562)
+   {
+    AimAtBody();
+    if(Views.IsEmpty())return Fail(TEXT("the body must stay"));
+    const EA Do=Site.VisitAttention().Doing();
+    if(Do==EA::Watch)
+    {
+     if(FVector::Dist(Views[0].Pos,DoorBodyFrom)>.3)return Fail(TEXT("it must stop while it looks"));
+     if(Elapsed-DreadAt>4)return Fail(TEXT("it looks for a moment, no more"));
+     return true;
+    }
+    if(Do!=EA::Back)return Fail(TEXT("with this draw it must draw back"));
+    DreadAt=Elapsed;Stage=563;return true;
+   }
+   if(Stage==563)
+   {
+    AimAtBody();
+    if(Views.IsEmpty())return Fail(TEXT("the body must stay"));
+    if(Views[0].Speed>1.)return Fail(TEXT("it draws back slowly"));
+    if(Views[0].Mode!=FS47RoswellBrain::EMode::Curious)return Fail(TEXT("no lamp may turn it into a hunter"));
+    if(Site.VisitAttention().Holding()){if(Elapsed-DreadAt>8)return Fail(TEXT("the moment must end"));return true;}
+    const double Moved=FVector::Dist(Views[0].Pos,DoorBodyFrom);
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: it drew back %.1f m in %.1f s"),Moved,Elapsed-DreadAt);
+    if(Moved<.2)return Fail(TEXT("it must really have moved back"));
+    Site.TestAttentionRoll(1.f);DreadAt=DreadFirst=Elapsed;DoorHeld=1e9;Stage=564;return true;
+   }
+   if(Stage==564)
+   {
+    if(Views.IsEmpty())return Fail(TEXT("the body must stay"));
+    if(Elapsed>=DreadFirst){DreadFirst=Elapsed+5;const FVector To=Views[0].Pos+(FVector(Marks.X+6,Views[0].Pos.Y,Marks.Z+6)-Views[0].Pos).GetSafeNormal()*10;M->Player->Place(To.X,To.Z,0);}
+    AimAtBody();
+    if(Site.VisitAttention().Doing()!=EA::Blink){if(Elapsed-DreadAt>40)return Fail(TEXT("the lamp must count again after the pause, and this draw blinks it"));return true;}
+    DreadAt=Elapsed;DoorHeld=1e9;Stage=565;return true;
+   }
+   if(Stage==565)
+   {
+    AimAtBody();
+    DoorHeld=FMath::Min(DoorHeld,Lamp.Intensity());
+    if(Site.VisitAttention().Doing()==EA::Blink){if(Elapsed-DreadAt>3)return Fail(TEXT("it comes back on its own"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: lamp low %.2f during the blink, %.2f after"),DoorHeld,Lamp.Intensity());
+    if(DoorHeld>20)return Fail(TEXT("the lamp must really go out for a moment")); // 64 when steady, about 5 when out
+    // Lamp out, standing still.
+    Lamp.Toggle();Site.TestFreshPatience();DreadAt=Elapsed;Stage=566;return true;
+   }
+   if(Stage==566)
+   {
+    if(Elapsed-DreadAt<1.5)return true;
+    DoorHeld=Site.VisitPatienceLeft();DreadAt=Elapsed;Stage=567;return true;
+   }
+   if(Stage==567)
+   {
+    if(Elapsed-DreadAt<4)return true;
+    const double Rate=(DoorHeld-Site.VisitPatienceLeft())/(Elapsed-DreadAt);
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: lamp out and still, its patience runs at %.2f"),Rate);
+    if(Rate<1.6)return Fail(TEXT("a dark, still player must be given up on sooner"));
+    Lamp.Toggle();DoorHeld=Site.VisitPatienceLeft();DreadAt=Elapsed;Stage=568;return true;
+   }
+   if(Stage==568)
+   {
+    if(Elapsed-DreadAt<4)return true;
+    const double Rate=(DoorHeld-Site.VisitPatienceLeft())/(Elapsed-DreadAt);
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: lamp on, its patience runs at %.2f"),Rate);
+    if(Rate>1.4)return Fail(TEXT("with the lamp on it stays interested for the ordinary time"));
+    // Out again and off at a run. Looking away, so that the lamp plays no part.
+    Lamp.Toggle();M->Player->Yaw+=PI;M->Player->TestMove=FVector2D(0,-.9);M->Player->bTestRun=true;DreadAt=Elapsed;Stage=569;return true;
+   }
+   if(Stage==569)
+   {
+    if(Site.VisitAttention().Doing()!=EA::Turn){if(Elapsed-DreadAt>12)return Fail(TEXT("running must be heard"));return true;}
+    M->Player->TestMove.Reset();M->Player->bTestRun=false;
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: it turned at the run"));
+    M->bPausedByMenu=true;DoorHeld=Site.VisitPatienceLeft();DreadAt=Elapsed;Stage=570;return true;
+   }
+   if(Stage==570)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    M->bPausedByMenu=false;
+    if(FMath::Abs(Site.VisitPatienceLeft()-DoorHeld)>.001)return Fail(TEXT("a menu must hold it"));
+    DreadAt=Elapsed;Stage=571;return true;
+   }
+   if(Stage==571)
+   {
+    // Long enough for the turn to end and the ear to come back. Then a voice on the set.
+    if(Elapsed-DreadAt<9)return true;
+    if(Site.VisitAttention().Holding())return Fail(TEXT("the turn must end by itself"));
+    if(Views.IsEmpty())return Fail(TEXT("the body must stay"));
+    const FVector To=Views[0].Pos+(FVector(Marks.X+6,Views[0].Pos.Y,Marks.Z+6)-Views[0].Pos).GetSafeNormal()*12;M->Player->Place(To.X,To.Z,0);
+    Site.TestFreshPatience();DreadAt=Elapsed;Stage=572;return true;
+   }
+   if(Stage==572)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    M->FieldRadio->Message(TEXT("A voice on the set, too broken to make out."));
+    DreadAt=Elapsed;Stage=573;return true;
+   }
+   if(Stage==573)
+   {
+    if(Site.VisitAttention().Doing()!=EA::Turn){if(Elapsed-DreadAt>2)return Fail(TEXT("a voice on the set must be heard"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: it turned at the set"));
+    M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=574;return true;
+   }
+   if(Stage==574)
+   {
+    if(Site.VisitStage()!=4){if(Elapsed-DreadAt>6)return Fail(TEXT("leaving must end the visit"));return true;}
+    if(!Views.IsEmpty())return Fail(TEXT("leaving must clear the body"));
+    // Now the crab, whom the site moves itself.
+    Site.TestAttentionRoll(0.f);Site.TestVisit(1);M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;if(!Lamp.bOn)Lamp.Toggle();
+    DreadAt=Elapsed;Stage=575;return true;
+   }
+   if(Stage==575)
+   {
+    if(Site.VisitStage()==4)return Fail(TEXT("the crab's visit ended with no body"));
+    if(Site.VisitStage()<2){if(Elapsed-DreadAt>35)return Fail(TEXT("the crab must come"));return true;}
+    AimAtBody();
+    if(Site.VisitAttention().Holding())
+    {
+     DoorFirst=Site.VisitBodyDistance();DreadAt=Elapsed;Stage=576;return true;
+    }
+    if(Elapsed-DreadAt>30)return Fail(TEXT("a lamp on the crab must stop it"));
+    return true;
+   }
+   if(Stage==576)
+   {
+    AimAtBody();
+    const EA Do=Site.VisitAttention().Doing();
+    if(Do==EA::Watch)
+    {
+     if(FMath::Abs(Site.VisitBodyDistance()-DoorFirst)>.25)return Fail(TEXT("the crab must stop while it looks"));
+     return true;
+    }
+    if(Do!=EA::Back)return Fail(TEXT("with this draw the crab must draw back"));
+    DreadAt=Elapsed;Stage=577;return true;
+   }
+   if(Stage==577)
+   {
+    AimAtBody();
+    if(Elapsed-DreadAt<2)return true;
+    UE_LOG(LogTemp,Display,TEXT("S47: attention: the crab from %.1f m to %.1f m"),DoorFirst,Site.VisitBodyDistance());
+    if(Site.VisitBodyDistance()<=DoorFirst)return Fail(TEXT("the crab must really draw back"));
+    Shot(TEXT("attention-crab.png"));M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=578;return true;
+   }
+   if(Stage==578)
+   {
+    if(Site.VisitStage()!=4){if(Elapsed-DreadAt>6)return Fail(TEXT("leaving must end the visit"));return true;}
+    if(M->Freeform->Taken->Busy())return Fail(TEXT("a lamp and a noise take nobody"));
+    UE_LOG(LogTemp,Display,TEXT("S47: attention PASS: lamp back, lamp blink, dark patience, run, set, menu, leaving, crab"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such attention stage"));
   }
   bool StepAfter(US47Main* M)
   {
@@ -999,7 +1471,7 @@ namespace
     if(Kind==2)
     {
      const double To=Site.VisitBodyDistance();
-     if(Elapsed-DreadAt<10&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still"));
+     if(Elapsed-DreadAt<10&&!Site.VisitAttention().Holding()&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still")); // A lamp on it may send it back.
      if(DreadSample==0&&Elapsed-DreadAt>1&&Site.VisitHeadHeight()<1.4){UE_LOG(LogTemp,Error,TEXT("S47: kinds: tall head %.2f m"),Site.VisitHeadHeight());return Fail(TEXT("the tall one must stand tall"));}
      // Further in, louder: three readings of what the set is actually playing.
      const double Base=FMath::Min(DreadFirst,44.)-2,Spacing=FMath::Clamp((DreadFirst-27)/2.5,.5,6.);
@@ -1200,10 +1672,13 @@ namespace
    Elapsed+=Dt;
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
+   if(Stage==720)return S47ReliefProbe::Step(M,Dt);
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&!(Stage>=540&&Stage<600&&Stage!=599)&&Elapsed-StageAt<1) return true;
    if(Stage>=400&&Stage<500)return StepDread(M);
    if(Stage>=500&&Stage<530)return StepAfter(M);
+   if(Stage>=540&&Stage<560)return StepDoor(M);
+   if(Stage>=560&&Stage<590)return StepAttention(M);
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -1240,6 +1715,12 @@ namespace
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
+    // -S47MenuPointerRelief: Freeform's rolling land from an ordinary game (S47ReliefProbe.h says what it does and when it passes).
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerRelief")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     S47ReliefProbe::Begin(M);Stage=720;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerEyes")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -1372,9 +1853,28 @@ namespace
      const FVector Marks=M->Freeform->FarmSite->Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
      DreadFrom=Elapsed;Stage=400;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerDoor")))
+    {
+     // Night two at 21:00, indoors with a shut door near. See StepDoor for what is set up and what is not.
+     M->Flow->bDevRun=true;if(M->Freeform->Director){M->Freeform->Director->Stop();M->Freeform->Director->TestKeepGroup();}M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the door test needs night two"));
+     M->FieldRadio->TestOwn();DreadPlace=TEXT("house");FParse::Value(FCommandLine::Get(),TEXT("S47DoorPlace="),DreadPlace);
+     if(DreadPlace!=TEXT("house")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
+     DreadFrom=Elapsed;Stage=540;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAttention")))
+    {
+     // Night two at 02:30, on foot at marks the lights left. See StepAttention for what is set up and what is not.
+     M->Flow->bDevRun=true;if(M->Freeform->Director){M->Freeform->Director->Stop();M->Freeform->Director->TestKeepGroup();}M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the attention test needs night two"));
+     M->FieldRadio->TestOwn();auto& Site=*M->Freeform->FarmSite;Site.ArmFarm(M->Freeform->Clock());Site.TestRollWho(.9f);Site.TestHoldHunt();Site.TestReadyVisit();
+     const FVector Marks=Site.Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+     DreadAt=Elapsed;Stage=560;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerPeek")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     M->Freeform->IndoorDread->Door().TestDice(1.f); // This test is about the look-in: no door visit in the way.
      if(!M->Freeform->TestAdvance(37.*3600.))return Fail(TEXT("the peek test needs night two"));
      M->FieldRadio->TestOwn();DreadPlace=TEXT("house");FParse::Value(FCommandLine::Get(),TEXT("S47PeekPlace="),DreadPlace);
      if(DreadPlace!=TEXT("house")&&DreadPlace!=TEXT("saro")){M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));}
@@ -1442,6 +1942,7 @@ namespace
     {
      // Night two at 02:30, in a room of the old house. The first light is set up; what comes back afterwards is not.
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     M->Freeform->IndoorDread->Door().TestDice(1.f); // This test is about the light: no door visit in the way.
      if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the reflood test needs night two"));
      const FVector Room=S47FarmHouse::Point(2.5,2.4)+FVector(-24,0,300);M->Player->Place(Room.X,Room.Z,0);M->Player->Pitch=0;
      DreadFrom=Elapsed;Stage=440;StageAt=Elapsed;return true;

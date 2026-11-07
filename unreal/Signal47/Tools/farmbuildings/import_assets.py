@@ -21,6 +21,12 @@ BUILDS = {'barn': 'SM_FarmBarn', 'house': 'SM_FarmHouse', 'shed_a': 'SM_FarmShed
 # (spekulær, metallisk) fra material() i run_blender.py. Ruhet og normal kommer fra kartene.
 MATERIALS = {'Board': (.2, 0), 'Tin': (.35, .12), 'Stucco': (.35, 0), 'Wood': (.35, 0), 'Paint': (.35, 0), 'Concrete': (.35, 0),
              'Steel': (.35, .55), 'Glass': (.6, 0), 'WindowLit': (.35, 0), 'Dirt': (.35, 0)}
+# Lineær faktor på BC, samme tall som fbkit.ALBEDO: låven leste sRGB 205 til 225 i sol mot målet 150 til 170, gulvene 220 mot 150,
+# og glasset var nesten svart. Justeres uten ny FBX med parameteren AlbedoFactor.
+ALBEDO = {'Board': (.58, .58, .58), 'Tin': (.66, .66, .66), 'Stucco': (.88, .88, .88), 'Wood': (.9, .9, .9), 'Paint': (.8, .8, .8), 'Concrete': (.62, .62, .62),
+          'Steel': (.8, .8, .8), 'Glass': (7.5, 7.8, 8.4), 'WindowLit': (1, 1, 1), 'Dirt': (.48, .46, .44)}
+EARTH_COLOR = (.069, .032, .016)  # fbkit.EARTH_COLOR: jorden nederst på veggene, der vertex alpha sier det.
+GROUND_DECALS = ('RoadDecal', 'RoadEnd', 'TrackDecal', 'GroundBand', 'WornField')  # ground_decals.py. S47FarmWorld legger dem ut.
 WINDOW_EMISSION = 2.5  # Blenders Emission Strength. S47FarmWorld slukker vinduet om dagen via denne parameteren.
 # run_blender.py eksporterer sRGB-koder (colors_type='SRGB'), og VertexColor-noden i Unreal leser bytene uten å
 # dekode dem. Eksponenten gir samme lineære faktor som Blender-renderen. Sett 1.0 hvis bildene viser noe annet.
@@ -102,7 +108,19 @@ def material(short):
     multiply = expression(mat, unreal.MaterialExpressionMultiply)
     check(name + ' multiply texture', M.connect_material_expressions(base, 'RGB', multiply, 'A'))
     check(name + ' multiply vertex', M.connect_material_expressions(gamma, '', multiply, 'B'))
-    check(name + ' base colour', M.connect_material_property(multiply, '', unreal.MaterialProperty.MP_BASE_COLOR))
+    # Faktoren per materiale, så jorden nederst: 1 - vertex alpha er hvor mye (fbkit.earth_mix).
+    factor = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='AlbedoFactor', default_value=unreal.LinearColor(*ALBEDO[short], 1))
+    scaled = expression(mat, unreal.MaterialExpressionMultiply)
+    check(name + ' factor a', M.connect_material_expressions(multiply, '', scaled, 'A'))
+    check(name + ' factor b', M.connect_material_expressions(factor, '', scaled, 'B'))
+    soil = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='EarthColor', default_value=unreal.LinearColor(*EARTH_COLOR, 1))
+    amount = expression(mat, unreal.MaterialExpressionOneMinus)
+    check(name + ' earth amount', M.connect_material_expressions(vertex, 'A', amount, ''))
+    blend = expression(mat, unreal.MaterialExpressionLinearInterpolate)
+    check(name + ' earth a', M.connect_material_expressions(scaled, '', blend, 'A'))
+    check(name + ' earth b', M.connect_material_expressions(soil, '', blend, 'B'))
+    check(name + ' earth alpha', M.connect_material_expressions(amount, '', blend, 'Alpha'))
+    check(name + ' base colour', M.connect_material_property(blend, '', unreal.MaterialProperty.MP_BASE_COLOR))
     roughness = sample(mat, 'T_Farm_' + short + '_R', 'roughness')
     check(name + ' roughness', M.connect_material_property(roughness, 'R', unreal.MaterialProperty.MP_ROUGHNESS))
     normal = sample(mat, 'T_Farm_' + short + '_N', 'normal')
@@ -119,6 +137,38 @@ def material(short):
         check(name + ' emissive map', M.connect_material_expressions(glow, 'RGB', lit, 'A'))
         check(name + ' emissive factor', M.connect_material_expressions(factor, 'RGB', lit, 'B'))
         check(name + ' emissive', M.connect_material_property(lit, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR))
+    errors = list(M.recompile_material(mat))
+    check(name + ' compiles', not errors, errors)
+    E.save_loaded_asset(mat)
+    return mat
+
+
+def decal_material(short):
+    """Deferred decal som i ArtSource/EastWing/Decals/import_decals.py, med Tint og Opacity som S47FarmWorld setter."""
+    name = 'M_Farm_' + short
+    path = DEST + '/Materials/' + name
+    tex = texture('T_Farm_' + short, 'base_color')
+    # Dekalen følger ikke strømmingens avstand: uten dette kan den bli stående på et blekt lavt mipnivå.
+    tex.set_editor_property('never_stream', True)
+    E.save_loaded_asset(tex)
+    mat = E.load_asset(path) if E.does_asset_exist(path) else T.create_asset(name, DEST + '/Materials', unreal.Material, unreal.MaterialFactoryNew())
+    for previous in list(M.get_material_expressions(mat)):
+        M.delete_material_expression(mat, previous)
+    mat.set_editor_property('material_domain', unreal.MaterialDomain.MD_DEFERRED_DECAL)
+    mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
+    base = expression(mat, unreal.MaterialExpressionTextureSample, texture=tex, sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR)
+    tint = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='Tint', default_value=unreal.LinearColor(1, 1, 1, 1))
+    colour = expression(mat, unreal.MaterialExpressionMultiply)
+    check(name + ' colour a', M.connect_material_expressions(base, 'RGB', colour, 'A'))
+    check(name + ' colour b', M.connect_material_expressions(tint, '', colour, 'B'))
+    check(name + ' base colour', M.connect_material_property(colour, '', unreal.MaterialProperty.MP_BASE_COLOR))
+    opacity = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='Opacity', default_value=1.0)
+    cover = expression(mat, unreal.MaterialExpressionMultiply)
+    check(name + ' cover a', M.connect_material_expressions(base, 'A', cover, 'A'))
+    check(name + ' cover b', M.connect_material_expressions(opacity, '', cover, 'B'))
+    check(name + ' opacity', M.connect_material_property(cover, '', unreal.MaterialProperty.MP_OPACITY))
+    rough = expression(mat, unreal.MaterialExpressionConstant, r=.95)
+    check(name + ' roughness', M.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS))
     errors = list(M.recompile_material(mat))
     check(name + ' compiles', not errors, errors)
     E.save_loaded_asset(mat)
@@ -211,6 +261,8 @@ def check_lods(mesh, rows):
 
 def main():
     mats = {'M_Farm_' + short: material(short) for short in MATERIALS}
+    for short in GROUND_DECALS:
+        decal_material(short)
     for build, name in BUILDS.items():
         wanted = json.loads((ROOT / f'reimport_{build}.json').read_text())
         stats = json.loads((ROOT / f'stats_{build}.json').read_text())

@@ -1,4 +1,5 @@
 #include "S47MesaRock.h"
+#include "S47FreeformTerrain.h"
 #include "S47Web.h"
 #include "S47FarmWorld.h"
 #include "S47Main.h"
@@ -41,24 +42,45 @@ namespace
   if(bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
   bLastReal=bReal;LastDay=Day;
   const auto Tint=[&](const FLinearColor& Real){return bReal?FMath::Lerp(StoryTint,Real,Day):StoryTint;};
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.175f,.225f,.265f)));
+  // (Where the relief is on this is only the old road's ground. .175 .225 .265 read 170,134,110; now toward the one soil, see SoilDay.)
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.164f,.211f,.240f)));
   Mid->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
   Mid->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   if(auto* Seam=SeamMid.Get())
   {
-   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.175f*.525f,.225f*.35f,.265f*.28f)));
+   // Beside the ring in one picture at 11:18, the old .525 .35 .28 read 134,89,71 to its 176,141,118: linear 1.83 2.66 2.87 too dark.
+   // .168 .209 .212 read 168,130,103 in relief-11-farm (7 November): this is that against the one soil, 165,130,105.
+   Seam->SetVectorParameterValue(TEXT("GroundTint"),Tint(FLinearColor(.161f,.209f,.220f)));
    Seam->SetScalarParameterValue(TEXT("GravelAmount"),bReal?.85f:StoryGravel);
    Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   }
  }
+ // Freeform's relief meshes have their own material (S47FreeformTerrain) with the same parameters: the same soil by day and
+ // the same gravel and crust. By night it keeps the tint it was authored with, as the old ground keeps Story's.
+ void ApplyFreeformGround(AS47Web* Web)
+ {
+  auto* Mid=S47FreeformTerrain::GroundMid(Web);if(!Mid)return;
+  static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor NightTint;static float LastDay=-1;
+  if(Read.Get()!=Mid)
+  {
+   Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),NightTint);LastDay=-1;
+   Mid->SetForceMipLevelsToBeResident(true,true,-1.f);
+   Mid->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Mid->SetScalarParameterValue(TEXT("CrustAmount"),.75f);
+  }
+  const float Day=DayAt(US47Main::Get(Web));if(FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
+  // SoilDay: one bare soil in the sun over the whole of Freeform's land, sRGB 165,130,105 (Tom, 7 November). .50 .42 .36 read about
+  // 214,156,116 at 11:00 in relief-11-road and -array (218,160,116 and 209,152,114 medians): against the target, linear .55 .67 .83,
+  // and a little more in red, whose 214 lay on the tone curve's shoulder. Set from the ratio, not yet read back in a capture.
+  Mid->SetVectorParameterValue(TEXT("GroundTint"),FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day));
+ }
  // The other ground the player stands on keeps its own exported MI_W* material (the station's sand, its gravel, the gravel
- // tracks and the farm road). Measured at 11:00 in Freeform against the new soil, which reads 170,134,110: the station's sand
+ // tracks and the farm road). Measured at 11:00 in Freeform against the soil of the time, 170,134,110: the station's sand
  // 215,172,130, the farm road 221,188,156, the antenna path 223,199,175, the roadside gravel 208,199,189. Each one's own
  // "Color" is scaled toward the soil by day; at night and in Story the scale is 1, so those keep the look they had.
- // Scales are linear, from the sRGB ratios against the soil (.79 .78 .85 for the sand, 0.80 for the farm road in red),
- // and are the only numbers to retune if a new capture still shows a difference.
+ // Scales are linear, from the sRGB ratios against the soil (.79 .78 .85 for the sand, 0.80 for the farm road in red), then
+ // .936 .937 .904 for 170,134,110 to SoilDay's 165,130,105. They are the only numbers to retune if a new capture still shows a difference.
  struct FUnder{int32 Node,Mat;FLinearColor Scale;};
- const FLinearColor SandScale(.60f,.58f,.70f),RoadScale(.70f,.62f,.58f),GravelScale(.86f,.82f,.78f);
+ const FLinearColor SandScale(.562f,.543f,.633f),RoadScale(.655f,.581f,.524f),GravelScale(.805f,.768f,.705f);
  const FUnder UnderTable[]={
   {1103,484,SandScale},{1120,496,SandScale},{1104,485,SandScale},      // station ground, its corridor, the station's gravel
   {959,418,RoadScale},{1250,576,RoadScale},                              // the farm road in the SARO corridor and in the road area
@@ -94,7 +116,7 @@ namespace
 
 void S47MesaRock::Step(AS47Web* Web,double Dt)
 {
- if(Web){ApplyGround(Web);TickUnderfoot(Web,Dt);}
+ if(Web){ApplyGround(Web);ApplyFreeformGround(Web);TickUnderfoot(Web,Dt);}
  static double Wait=0;static TWeakObjectPtr<UMaterialInterface> Rock;static bool bMissing=false;
  static TSet<TWeakObjectPtr<UStaticMeshComponent>> Done;
  if(!Web||bMissing||(Wait-=Dt)>0)return;
@@ -112,7 +134,8 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   if(Ground.IsValid()&&N->Mats.Num()==1&&(N->Mats[0]==5||N->Mats[0]==416||N->Mats[0]==574||N->Mats[0]==774))
   {
    UStaticMeshComponent* G=Cast<UStaticMeshComponent>(N->Comp.Get());
-   if(G&&!Done.Contains(G)){
+   // (not while the relief holds it: S47FreeformTerrain gives it back to this as it was, and this picks it up then)
+   if(G&&!Done.Contains(G)&&!S47FreeformTerrain::HoldsMaterial(Web,G)){
     // The corridor's seam mesh has no vertex colours, so the same tint lands much brighter on it: its own instance.
     const bool bSeam=N->Name==TEXT("saroCorridorGround");
     TWeakObjectPtr<UMaterialInstanceDynamic>& Mine=bSeam?SeamMid:GroundMid;
