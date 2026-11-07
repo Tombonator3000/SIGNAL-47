@@ -1530,9 +1530,10 @@ void FS47FreeformSession::OpenTapePanel()
  auto Pick=[this](int32 Index){return TAttribute<bool>::CreateLambda([this,Index]{return AudioSourceIndex==Index;});};
  TArray<S47Kit::FW> Rows;
  auto Ready=[this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);};
- Rows.Add(T::Panel(TEXT("WHAT TO DO HERE"),S47Kit::Col({
-  T::Small(TEXT("HERE you compare two recordings of the same job. ORIGINAL: what the antennas recorded. CONTROL: the station's own reference, antennas out of the path. If the odd sound is on both, the equipment makes it. If it is only on the original, it came from outside.")),
-  T::Text(TAttribute<FString>::CreateLambda([this]
+ // Light strip first (concept 08): the one sentence of what to do, then the two recordings explained.
+ Rows.Add(S47Kit::Banner(TEXT("WHAT TO DO HERE"),TEXT("Listen to the whole original and the whole control. Mark the extra ticks on the original, then retain."),
+  TEXT("HERE you compare two recordings of the same job. ORIGINAL: what the antennas recorded. CONTROL: the station's own reference, antennas out of the path. If the odd sound is on both, the equipment makes it. If it is only on the original, it came from outside."),TEXT("COMPARE"),0));
+  const S47Kit::FW Steps=T::Text(TAttribute<FString>::CreateLambda([this]
   {
    const auto* J=CurrentJob();
    if(!J||!J->bAnomaly||J->Stage<EJobStage::Recorded)return FString(TEXT("Nothing to compare yet. An unusual observation needs its original chart from the printer first."));
@@ -1549,27 +1550,30 @@ void FS47FreeformSession::OpenTapePanel()
     +Line(2,Mark)
     +Line(3,FString::Printf(TEXT("LISTEN TO THE WHOLE CONTROL: %.0f / 8 s heard. Are the ticks there?"),J->ControlCovered))
     +Line(4,TEXT("PRESS RETAIN, then register the conclusion at OPS (corner PC)"));
-  }),TAttribute<int32>(0))})));
+  }),TAttribute<int32>(0));
  const auto Scope=SNew(SS47TapeScope)
   .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
   .Control_Lambda([this]{return AudioSourceIndex!=0;}).Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;})
   .MarkIn_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkStart:-1.;}).MarkOut_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkEnd:-1.;})
   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
   .CanMark(Marking).OnMark([this](double At){MarkAudioAt(At);});
+ auto Mark=[this](bool bIn){return TAttribute<FString>::CreateLambda([this,bIn]{const auto* J=CurrentJob();const double At=!J?-1.:bIn?J->MarkStart:J->MarkEnd;return At<0?FString(TEXT("--")):FString::Printf(TEXT("%.1f s"),At);});};
  const S47Kit::FW Tape=T::Panel(TEXT("TAPE"),S47Kit::Col({
   T::Columns({{1.f,T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare)},{1.f,T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare)}}),
-  T::Value(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]
-  {
-   return FString::Printf(TEXT("%04.1f / %.0f s  %s"),AudioCursor,AudioSourceIndex==0?18.:8.,CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));
-  }),true),
-  T::Value(TEXT("HEARD"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ORIGINAL %.1f / 18   CONTROL %.1f / 8"),J->OriginalCovered,J->ControlCovered):FString();}),true),
-  T::Value(TEXT("MARK"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("NOT SET"));return J->MarkEnd<0?FString::Printf(TEXT("%.1f s TO ..."),J->MarkStart):FString::Printf(TEXT("%.1f s TO %.1f s  %s"),J->MarkStart,J->MarkEnd,MarkCoversTicks(J->MarkStart,J->MarkEnd)?TEXT("COVERS THE TICKS"):TEXT("MISSES TICKS"));}),true),
+  T::Display(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%04.1f / %.0f s"),AudioCursor,AudioSourceIndex==0?18.:8.);}),
+   TAttribute<FString>::CreateLambda([this]{return FString(CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));})),
+  T::Heading(TEXT("LISTENED"),24),
+  T::Meter(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 18 s"),J?J->OriginalCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->OriginalCovered/18.,0.,1.)):0.f;})),
+  T::Meter(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 8 s"),J?J->ControlCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->ControlCovered/8.,0.,1.)):0.f;})),
+  T::Split({{1.f,T::Text(FString(TEXT("MARKED ON ORIGINAL")),0)},{1.f,S47Kit::Col({T::Value(TEXT("IN"),Mark(true),true),T::Value(TEXT("OUT"),Mark(false),true)},0.f)}}),
+  T::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK: NOT SET"));if(J->MarkEnd<0)return FString(TEXT("MARK: the end is still missing"));return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString(TEXT("MARK COVERS THE TICKS")):FString(TEXT("MARK MISSES TICKS"));}),TAttribute<int32>(0)),
   T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
   T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);}))}}),
   T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
- Rows.Add(T::Columns({{1.45f,T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(430)[Scope])},{1.f,Tape}}));
- Rows.Add(T::Panel(TEXT("LISTENING REFERENCES / FOR YOUR EAR, NOT EVIDENCE"),S47Kit::Col({
-  T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0)),
+ Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,Tape}}));
+ // The chip says what the references are for: a listening aid, never proof.
+ Rows.Add(T::Panel(TEXT("LISTENING REFERENCES"),S47Kit::Col({
+  T::Columns({{1.f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("FOR YOUR EAR, NOT EVIDENCE"),-1)]},{1.4f,T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0))}}),
   T::Columns({{1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)}})})));
  auto Leave=[this]{if(M&&M->UI)M->UI->Close();};
  SetPanel(SNew(SS47TapePanel).OnLeave(Leave)[T::Frame(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows),T::Button(TEXT("ESC / RETURN TO ROOM"),Leave))],false,true);bTapePanel=true;
