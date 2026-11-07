@@ -24,6 +24,8 @@ Bygg: gårdshusets gamle boks og SARO utvendig må bli troverdige, og kontrollro
 
 Story: Tom 7. november: «Flat verden i Story utgår.» Story går over til samme verden som Freeform (relieff, fjell, veikant, gårdsbygg, bakke). Tom 7. november, retning for Story: enklere og med mer hvorfor. Kjernen er at Reyes ringer etter hjelp og Ortiz blir tatt, fordi han ringte. Story går over 3-5 kvelder og netter og ender i den faste finalen 14. april. Se [forslaget](../Design/Proposals/STORY_ENKLERE_2026-11-07.md), som går foran scenerekkefølgen og «én natt» i bibelen. Figur per jakt, åpent land under jakt og Earl er ikke avgjort.
 
+Freeforms motivasjon, Tom 7. november: «Forrige nattvakt: Reyes fra Story mode.» Freeform foregår etter Story: Reyes og Ortiz er borte, og spilleren er ny nattevakt. Røde tråd er hva som skjedde med forgjengeren. Forslag fra Claude, gjelder til Tom sier annet: start mandag 28. april 1986; spilleren er ikke Reyes; Freeform viser bare utsiden (at han var nattevakt, forsvant 14. april, at Ortiz også er borte, at originalene er borte), aldri 47 sekunder, 1947-bildet, C eller den tredje silhuetten. SARO skal legges ned med mindre stasjonen virker; vurdering etter ca. 30 dager med ulike utfall, og spilleren kan dra og få egen slutt. Bibelens setning om at spilleren er Reyes gjelder bare Story.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
