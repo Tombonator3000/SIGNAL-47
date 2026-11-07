@@ -285,27 +285,27 @@ def emit_columns(k, F, cols, mat, u0, u1, z, t0, t1, poly, d=0., off=(0, 0), wea
             k.tag = 'boardGap'
             w = .006
             ps = [F.P(b - w, max(z, -.02), d + .003), F.P(b + w, max(z, -.02), d + .003), F.P(b + w, tb, d + .003), F.P(b - w, tb, d + .003)]
-            k.face(ps, mat, [(.1, 0), (.105, 0), (.105, 1), (.1, 1)], False, (.2, .18, .16), F.dd)
+            k.face(ps, mat, [(.1, 0), (.105, 0), (.105, 1), (.1, 1)], False, (.24, .21, .18), F.dd)
 
 
 def broken_boards(k, F, cols, holes, poly):
     """To til tre ødelagte bord per vegg: mørkt hull med skrå brudd, helt nede eller litt oppe."""
     if k.lod or F.L < 1.2:
         return
-    want = 2 + (k.rng.random() < .5) if F.L > 2.5 else 1
+    want = (2 + (k.rng.random() < .5)) if F.L > 7 else (1 + (k.rng.random() < .5))
     tries, done = 0, 0
     k.tag = 'boardGap'
     while done < want and tries < 30:
         tries += 1
         c = cols[k.rng.randrange(len(cols))]
-        z0 = (-.02 if k.rng.random() < .7 else .15 + k.rng.random() * .7)
-        h = .16 + k.rng.random() * .34
+        z0 = (-.02 if k.rng.random() < .85 else .15 + k.rng.random() * .7)
+        h = .1 + k.rng.random() * .26
         top = min(_ztop(poly, c.u0), _ztop(poly, c.u1))
         if z0 + h > top - .3 or any(c.u1 > a - .05 and c.u0 < b + .05 and z0 + h > e - .05 and z0 < f + .05 for a, b, e, f in holes):
             continue
-        a, b = c.u0 + .01, c.u1 - .01
+        a, b = c.u0 + .01, c.u0 + (c.u1 - c.u0) * (.5 + k.rng.random() * .45)
         ps = [F.P(a, z0, .004), F.P(b, z0 + k.rng.random() * .05, .004), F.P(b, z0 + h, .004), F.P(a, z0 + h - .04 - k.rng.random() * .14, .004)]
-        k.face(ps, 'Board', [(.2, .1), (.25, .1), (.25, .3), (.2, .3)], False, (.2, .18, .16), F.dd)
+        k.face(ps, 'Board', [(.2, .1), (.25, .1), (.25, .3), (.2, .3)], False, (.24, .21, .18), F.dd)
         done += 1
 
 

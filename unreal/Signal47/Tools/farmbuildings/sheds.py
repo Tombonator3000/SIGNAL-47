@@ -78,7 +78,7 @@ def tin_ribs(k, F, u0, u1, top, base, step=.8, holes=()):
 def build_shed_a(lod=0):
     k = Kit('SM_FarmShedA', lod, 912)
     # Maskinskjulet er eldre og rustnere enn fôrskjulet, med varmere treverk.
-    k.tone = {'Tin': (.96, .88, .78), 'Wood': (1, .94, .86)}
+    k.tone = {'Tin': (.92, .88, .82), 'Wood': (1, .94, .86)}
     it = (1, 1, 1)
     base = WALL_BASE
     win_n = (6.3, 7.1, 1.25, 1.85)
