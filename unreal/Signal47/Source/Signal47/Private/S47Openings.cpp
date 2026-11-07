@@ -19,9 +19,9 @@
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 
-const TArray<FS47Opening>& FS47Openings::Defs()
+const TArray<FS47KitOffer>& FS47Openings::Defs()
 {
- static const TArray<FS47Opening> Table={
+ static const TArray<FS47KitOffer> Table={
   {TEXT("spotlight"),TEXT("Roof spotlight for the truck"),35,TEXT("one branch of the array back in service, so the stores will talk to you"),TEXT("F in the cab. It reaches far and it can be seen from far. Whatever is out there sees the truck too.")},
   {TEXT("cot"),TEXT("Field cot in the truck"),20,TEXT("any field record kept"),TEXT("Sleep where you are, at any place on your map. Nothing between you and what comes by: it will wake you, and it may still be there.")},
   {TEXT("magnetometer"),TEXT("Survey magnetometer, used"),40,TEXT("an assessment filed on THE LOST HOURS"),TEXT("On foot it leans toward marks, gear and places you have not looked at, and it reads what you find. It says nothing about what they are.")},
@@ -31,7 +31,7 @@ const TArray<FS47Opening>& FS47Openings::Defs()
  };
  return Table;
 }
-const FS47Opening* FS47Openings::Def(const FString& Id){return Defs().FindByPredicate([&](const FS47Opening& O){return Id==O.Id;});}
+const FS47KitOffer* FS47Openings::Def(const FString& Id){return Defs().FindByPredicate([&](const FS47KitOffer& O){return Id==O.Id;});}
 bool FS47Openings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;

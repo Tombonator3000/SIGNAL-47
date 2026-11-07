@@ -9,14 +9,14 @@ class UPointLightComponent;
 
 // Freeform only: what the station can get hold of as it goes on (Tom, 7 November). Each stands at OPS with its price and what it
 // waits for, is saved by name, and an older save simply has none. Prices are low against $60 a day, on purpose.
-struct FS47Opening
+struct FS47KitOffer
 {
  const TCHAR* Id;const TCHAR* Title;int32 Price;const TCHAR* Waits;const TCHAR* What;
 };
 struct SIGNAL47_API FS47Openings
 {
- static const TArray<FS47Opening>& Defs();
- static const FS47Opening* Def(const FString& Id);
+ static const TArray<FS47KitOffer>& Defs();
+ static const FS47KitOffer* Def(const FString& Id);
  static bool SelfTest(TArray<FString>& Lines);
 };
 
