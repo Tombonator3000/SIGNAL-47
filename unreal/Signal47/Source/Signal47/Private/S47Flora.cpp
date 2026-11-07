@@ -48,13 +48,16 @@ namespace
 	// fields between (NoiseAt: Stand; Make: a jittered grid, nine to a cell); grass in small tufts, drifts
 	// and bands in its own wide meadows; stones in clusters, small in the middle distance (Make), a few
 	// rocks of 0.3-0.6 m (Rock: Sandstone_A); no stain of its own: a soft dark foot under each shrub.
-	// What differs from KINDS: grass (size, count, nursing), sage (rate), creosote (grid, size, cap, far),
-	// stalks (nursing), stones (rate, reach), stain (reach, far), rock.
+	// What differs from KINDS: grass (size, count, nursing), sage (rate, reach, far: the carpet out to about
+	// 200 m), creosote (grid, size, cap, far), stalks (rate, nursing), stones (rate, reach), stain (reach, far), rock.
+	// Tried outside the engine with these numbers (open desert, three places; 7 Nov 2026): grass 490-1080 before,
+	// 1340-1480 now; sage 210-410, now 1560-2170 (1110-1380 of them past 70 m); stalks about 100, now about 260;
+	// creosote 1140-1400 at its old cap, now 1220-2000; the dead ones 190-370 more (Mesquite's cap).
 	const FKind NATURAL[] = {
-		{ ES47FloraKind::Grass, 0.46, 3.8, 65, 0.45, 0.85, 1.0, { 0.3, 0.8 }, 26, 5200, 3.5, 0.3, 3.6, { 0, 0 }, false },
-		{ ES47FloraKind::Sage, 0.02, 2.2, 110, 0.7, 0.35, 0.5, { 0.45, 1.2 }, 38, 1600, 0, 0, 0, { 0, 0 }, false },
-		{ ES47FloraKind::Creosote, 0.0625, 1.0, 240, 0.8, 0, 0, { 0.6, 1.15 }, 60, 1400, 0, 0, 0, { 40, 0.22 }, true },
-		{ ES47FloraKind::Stalks, 0.012, 3.4, 70, 0.4, 0.5, 0.75, { 0.6, 1.3 }, 30, 1500, 4, 0.45, 0, { 0, 0 }, false },
+		{ ES47FloraKind::Grass, 0.46, 3.8, 65, 0.45, 0.85, 1.0, { 0.3, 0.8 }, 26, 5200, 3.5, 0.5, 3.6, { 0, 0 }, false },
+		{ ES47FloraKind::Sage, 0.045, 2.2, 235, 0.7, 0.35, 0.5, { 0.45, 1.2 }, 38, 2600, 0, 0, 0, { 90, 0.45 }, true },
+		{ ES47FloraKind::Creosote, 0.0625, 1.0, 240, 0.8, 0, 0, { 0.5, 1.3 }, 60, 2000, 0, 0, 0, { 55, 0.3 }, true },
+		{ ES47FloraKind::Stalks, 0.03, 3.4, 70, 0.4, 0.5, 0.75, { 0.6, 1.3 }, 30, 1500, 4, 0.45, 0, { 0, 0 }, false },
 		{ ES47FloraKind::Succulent, 0.0027, 1.1, 260, 1, 0, 0, { 0.62, 1.28 }, 60, 520, 0, 0, 0, { 130, 0.14 }, true },
 		{ ES47FloraKind::Stones, 0.14, 1.6, 90, 0.35, 0.8, 0.9, { 0.3, 2.1 }, 18, 3000, 0, 0, 1.4, { 0, 0 }, false },
 		{ ES47FloraKind::Stain, 0.0045, 1.2, 110, 0, 1, 1.4, { 0.9, 2.6 }, 1, 1100, 0, 0, 0, { 70, 0.5 }, true },
@@ -63,7 +66,8 @@ namespace
 		// Most 2.2: the density is still Rate * D, but no longer clipped at 1.1, so the patches, the areas' mix and the farm's FarmMul tell
 		{ ES47FloraKind::Yucca, 0.0016, 2.2, 260, 1, 0, 0, { 0.72, 1.3 }, 60, 320, 0, 0, 0, { 130, 0.14 }, true },
 		{ ES47FloraKind::Cholla, 0.0008, 2.2, 240, 1, 0, 0, { 0.86, 1.15 }, 60, 160, 0, 0, 0, { 130, 0.14 }, true },
-		{ ES47FloraKind::Mesquite, 0.0012, 2.2, 240, 0.8, 0, 0, { 0.62, 1.35 }, 90, 240, 0, 0, 0, { 110, 0.2 }, true },
+		// (cap: its own and the dead creosote, which stands in this kind's meshes: Make)
+		{ ES47FloraKind::Mesquite, 0.0012, 2.2, 240, 0.8, 0, 0, { 0.62, 1.35 }, 90, 640, 0, 0, 0, { 110, 0.2 }, true },
 	};
 	const FKind& KindFor(bool bNat, int32 Ki) { return bNat ? NATURAL[Ki] : KINDS[Ki]; }
 	// the sway of each kind in Freeform: the grass and the stalks most, the woody shrubs less, stones and stains none
@@ -71,7 +75,7 @@ namespace
 	// the shrubs that cast a shadow: within this many metres of the eye (the stands are denser now)
 	constexpr double SHADOW_CREOSOTE = 24, SHADOW_SAGE = 22, SHADOW_MESQUITE = 30;
 	constexpr int32 NK = 11;
-	constexpr int32 SUCCULENT_KI = 4, STONES_KI = 5, STAIN_KI = 6, ROCK_KI = 7, DESERT_KI = 8, MESQUITE_KI = 10;
+	constexpr int32 CREOSOTE_KI = 2, SUCCULENT_KI = 4, STONES_KI = 5, STAIN_KI = 6, ROCK_KI = 7, DESERT_KI = 8, MESQUITE_KI = 10;
 	// Freeform's desert plants: a species is one kind (how many, how far: NATURAL), each variant a mesh of /Game/DesertPlants with
 	// its share of the species, its sizes, how far it spreads at scale 1 in metres (from its FBX's bounds: none of it
 	// may hang over a way or a plot) and the width of its foot (as FFoot's; the stain's rim is about 0.85 at scale 1).
@@ -105,6 +109,16 @@ namespace
 	constexpr float FOOT_OPACITY = 0.6f;
 	// Freeform: no creosote over 2 m (its shape stands 1.6 m at scale 1); as wide as the references', less of a vase
 	constexpr double CREOSOTE_TALLEST = 1.25, CREOSOTE_SPREAD = 1.15;
+	// Freeform: mostly small and a few big (the sizes' power), smaller still within 7 m of a way, where the eye comes near its cards
+	constexpr double CREOSOTE_SMALLS = 2.4, CREOSOTE_BY_WAY = 0.7, CREOSOTE_WAY_LOOK = 7, WAY_COVER = 0.31;
+	// Freeform: this share of the creosote is dead: grey and nearly bare. SM_DP_Mesquite_B (68 % of its cards bare, 16 % in leaf,
+	// 1.36 m at scale 1) stands in the kind Mesquite, at these sizes, no new mesh; the creosote's own shape can not lose its leaves.
+	constexpr double DEAD_CREOSOTE_SHARE = 0.15, DEAD_SIZE[2] = { 0.5, 0.95 };
+	constexpr int32 DEAD_PART = 7;
+	// Freeform: of the grass this share is old tufts, grey and dark, 10-40 cm (the card is 0.5 m high at scale 1, Sy 0.8-1.25 of it)
+	constexpr double GREY_TUFT_SHARE = 0.2, GREY_TUFT_SIZE[2] = { 0.25, 0.65 };
+	// Freeform: what stands round a shrub keeps to it; the grass thickly (the small tufts round the shrubs), the rest as it was
+	constexpr double NURSED_GRASS = 1.1, NURSED_REST = 0.5;
 	constexpr double CLUMP_K = 4.5;   // the drifts' noise raised to 2.5 averages about 1/4.5
 	// NURSE: the grass and the stalks stand round the sage and the creosote
 	const TArray<int32>& NurseOf(ES47FloraKind K)
@@ -160,9 +174,12 @@ namespace
 				Pn[6] = Stain;
 				Pn[7] = { FVector(1, 1, 1) };   // (the rock's own material takes no colour from the copy)
 				// (the atlases and the shapes' corners have the plants' colours already: only a little from one plant to the next)
-				Pn[8] = { Lin(1, 1, 1), Lin(0.96, 0.98, 0.93), Lin(1.02, 1, 0.96) };
+				// Yucca: its FBX has the green of the Blender pictures, but AgX, a dimmer sun and its own shadow made those dark.
+				// By day here all four variants' blades came out at sRGB (193, 170, 100), dead ones (229, 195, 149). These bring the
+				// green to about (110, 118, 75) and the dead to grey-tan; the flowers stay cream (they were over 1, clipped).
+				Pn[8] = { Lin(0.58, 0.7, 0.77), Lin(0.55, 0.68, 0.74), Lin(0.6, 0.7, 0.75) };
 				Pn[9] = { Lin(1.9, 1.6, 1.45), Lin(1.8, 1.55, 1.4), Lin(1.95, 1.6, 1.4) };
-				Pn[10] = { Lin(1, 1, 1), Lin(0.93, 0.96, 0.9), Lin(1.03, 1.02, 0.95) };
+				Pn[10] = { Lin(0.78, 0.82, 0.82), Lin(0.74, 0.78, 0.76), Lin(0.8, 0.82, 0.78) };
 			}
 			return Pn[int32(K)];
 		}
@@ -189,6 +206,12 @@ namespace
 	const FVector& FOOT(int32 I) { static const FVector V[2] = { Lin(0.38, 0.32, 0.26), Lin(0.33, 0.28, 0.23) }; return V[I]; }
 	/** A pale caliche stone now and then among the dark ones. */
 	const FVector& CALICHE() { static const FVector V = Lin(1.55, 1.48, 1.32); return V; }
+	/** Freeform: a dead creosote's bare twigs (they multiply Mesquite_B's atlas, whose thin twigs show dark here), grey as reference 10's. */
+	const FVector& DEAD_TWIGS(int32 I) { static const FVector V[2] = { Lin(0.8, 0.77, 0.75), Lin(0.7, 0.68, 0.67) }; return V[I]; }
+	/** Freeform: the dead creosote when the desert meshes are not there: its own shape, grey and dark. */
+	const FVector& DEAD_CREOSOTE() { static const FVector V = Lin(0.55, 0.55, 0.56); return V; }
+	/** Freeform: an old tuft of grass, multiplying the kind's colour: grey-brown and darker. */
+	const FVector& GREY_TUFT(int32 I) { static const FVector V[2] = { Lin(0.68, 0.65, 0.62), Lin(0.6, 0.58, 0.56) }; return V[I]; }
 
 	bool Inside(const FS47FloraRect& B, double X, double Z, double M = 0) { return X >= B.MinX - M && X <= B.MaxX + M && Z >= B.MinZ - M && Z <= B.MaxZ + M; }
 	double Fmod1(double V) { return V - FMath::FloorToDouble(V); } // (a % 1 of a non-negative number)
@@ -261,7 +284,7 @@ using namespace S47Flora;
 // ---------- Freeform's wide fields ----------
 // Two sizes of noise through a narrow threshold: a clear edge between where a kind stands and where it
 // nearly does not. Tried outside the engine on 480 m of open desert: the stands cover about 31 % of it, the
-// bushes in them are 1.3-2.9 m from the nearest, at most about 1050 drawn (cap 1400); the meadows about 58 %.
+// bushes in them are 0.5-3.3 m from the nearest (CreosoteSpot); the meadows about 58 %.
 namespace
 {
 	/** Where the creosote stands, 0 bare, 1 a stand: patches a hundred metres across, torn at the edges. */
@@ -278,6 +301,15 @@ namespace
 	double StoneField(double X, double Z, int32 Seed)
 	{
 		return FMath::SmoothStep(0.5, 0.62, 0.6 * VNoise(X, Z, 34, Seed + 41) + 0.4 * VNoise(X, Z, 7, Seed + 43));
+	}
+	/** Where candidate T of a cell's nine creosote stands: its 2.7 m square, jittered past the square's edges, then the whole
+	 *  pulled about by a noise of 17 m, so no line of them runs through the cells. Outside the engine: the candidates' pull to
+	 *  the old 2.67 m lines fell from 0.24 to 0.03, Clark-Evans from 1.30 to 1.13 (1 is random), the nearest bush at the median 2.07 to 1.80 m. */
+	void CreosoteSpot(int32 I, int32 J, int32 T, double U, double V, int32 Seed, double& X, double& Z)
+	{
+		const double X0 = (I + ((T % 3) + 0.5 + 1.25 * (U - 0.5)) / 3) * C, Z0 = (J + ((T / 3) + 0.5 + 1.25 * (V - 0.5)) / 3) * C;
+		X = X0 + 5 * (VNoise(X0, Z0, 17, Seed + 61) - 0.5);
+		Z = Z0 + 5 * (VNoise(X0, Z0, 17, Seed + 67) - 0.5);
 	}
 }
 
@@ -332,7 +364,7 @@ double FS47Flora::NoiseAt(double X, double Z, int32 Ki, double Terrain) const
 		double Mead = Meadow(X, Z, Spec.Seed);
 		if (Spec.Farm && Mead < 1) { const double F = Spec.Farm(X, Z, K.Id); if (F > 1) Mead = FMath::Max(Mead, 0.8 * FMath::Min(1.0, (F - 1) / 1.3)); }
 		const double* Mx = Spec.Mix.Find(K.Id);
-		return 6.0 * Live * Live * Terrain * (0.05 + 0.95 * Mead) * (1 - 0.7 * Stand(X, Z, Spec.Seed)) * (Mx ? *Mx : 1);
+		return 6.0 * Live * Live * Terrain * (0.05 + 0.95 * Mead) * (1 - 0.35 * Stand(X, Z, Spec.Seed)) * (Mx ? *Mx : 1);
 	}
 	if (Spec.bNatural && K.Id == ES47FloraKind::Rock)
 	{
@@ -422,9 +454,8 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	FMulberry R(Hash4(I, J, Ki, Spec.Seed));
 	const double Want = K.Rate * C * C * K.Most;
 	const bool bStones = K.Id == ES47FloraKind::Stones, bStain = K.Id == ES47FloraKind::Stain, bRock = K.Id == ES47FloraKind::Rock;
-	// Freeform's creosote: nine candidates in a cell, one in each 2.7 m square at a place jittered far enough
-	// not to read as rows, then thinned by the stands; no stain of its own (only the feet, below), no
-	// rock when its mesh is not there; the rest as before
+	// Freeform's creosote: nine candidates in a cell (CreosoteSpot), then thinned by the stands; no stain of its own
+	// (only the feet, below), no rock when its mesh is not there; the rest as before
 	const bool bGrid = bNat && K.Id == ES47FloraKind::Creosote;
 	// Freeform's desert plants: only when all their meshes are there, and then instead of the old succulent copies (never both)
 	const bool bDesert = Ki >= DESERT_KI;
@@ -470,7 +501,7 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	{
 		const double U = R(), V = R(), A = R(), B = R(), CA = R(), CB = R(), Ry = R(), L1 = R(), L2 = R(), Rank = R(), N1 = R(), N2 = R(), N3 = R();
 		double X = (I + U) * C, Z = (J + V) * C;
-		if (bGrid) { X = (I + ((T % 3) + 0.1 + 0.8 * U) / 3) * C; Z = (J + ((T / 3) + 0.1 + 0.8 * V) / 3) * C; }
+		if (bGrid) CreosoteSpot(I, J, T, U, V, Spec.Seed, X, Z);
 		// most of the grass and the stalks stand 0.4 to 1.5 m from a shrub of the cell
 		const bool bNursed = Nn && N1 < K.Nurse;
 		if (bNursed)
@@ -488,7 +519,7 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		}
 		double Noise = NoiseAt(X, Z, Ki, Terrain);
 		// Freeform: what stands round a shrub keeps to it, also in the bare fields between the meadows
-		if (bNat && bNursed) Noise = FMath::Max(Noise, 0.5);
+		if (bNat && bNursed) Noise = FMath::Max(Noise, K.Id == ES47FloraKind::Grass ? NURSED_GRASS : NURSED_REST);
 		if (A * K.Most >= Noise * 4.2) continue;   // (the cover is at most about that much, near a wall in a ditch)
 		double D = CoverAt(X, Z, Ki, Noise);
 		// Freeform's stones: gravel thickens with the slope (over 6 m) and lies in clusters with little between
@@ -500,11 +531,22 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			D *= (0.3 + 3.0 * SlopeF) * (0.1 + 2.4 * StoneField(X, Z, Spec.Seed));
 		}
 		if (A * K.Most >= FMath::Min(D, K.Most)) continue;
+		// Freeform: a dead creosote stands in Mesquite's cell instead (Make, below), from these same numbers
+		const bool bDeadBush = bGrid && N1 < DEAD_CREOSOTE_SHARE;
+		if (bDeadBush && bDesertOn) continue;
 		// big where it is thick, small and mostly tiny in the open
 		const double Dens = FMath::Min(1.0, D / K.Most);
 		double S = K.Size[0] + FMath::Pow(B, 2.5 - 1.7 * Dens + (bStones ? 1.3 : 0)) * (K.Size[1] - K.Size[0]);
-		// Freeform's creosote: mostly middling, whatever the density (the stands' density made them all big)
-		if (bNat && K.Id == ES47FloraKind::Creosote) S = K.Size[0] + FMath::Pow(B, 1.6) * (K.Size[1] - K.Size[0]);
+		// Freeform's creosote: whatever the density (the stands' density made them all big), mostly small, smaller by a way
+		if (bNat && K.Id == ES47FloraKind::Creosote)
+		{
+			S = K.Size[0] + FMath::Pow(B, CREOSOTE_SMALLS) * (K.Size[1] - K.Size[0]);
+			if (Spec.Cover && S > CREOSOTE_BY_WAY && (Spec.Cover(X + CREOSOTE_WAY_LOOK, Z) <= WAY_COVER || Spec.Cover(X - CREOSOTE_WAY_LOOK, Z) <= WAY_COVER
+				|| Spec.Cover(X, Z + CREOSOTE_WAY_LOOK) <= WAY_COVER || Spec.Cover(X, Z - CREOSOTE_WAY_LOOK) <= WAY_COVER)) S = CREOSOTE_BY_WAY;
+		}
+		// Freeform's old tufts among the grass
+		const bool bGreyTuft = bNat && K.Id == ES47FloraKind::Grass && Fmod1(Ry * 17.3) < GREY_TUFT_SHARE;
+		if (bGreyTuft) S = GREY_TUFT_SIZE[0] + B * (GREY_TUFT_SIZE[1] - GREY_TUFT_SIZE[0]);
 		// Freeform's desert plants: which of the species (N2 has no other use for them), in that variant's sizes, whatever the density
 		if (bDesert)
 		{
@@ -544,6 +586,8 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			const double Dry = VNoise(X, Z, 160, Spec.Seed + 57);
 			Col = Col * FVector(0.93 + 0.14 * Dry, 1.0, 1.07 - 0.14 * Dry);
 		}
+		if (bDeadBush) Col = DEAD_CREOSOTE();
+		if (bGreyTuft) Col = Col * GREY_TUFT(L2 < 0.5 ? 0 : 1);
 		if (bRock)
 		{
 			// Freeform's rock: Sandstone_A S metres across, flat on the ground's slope, its foot in the dirt
@@ -679,6 +723,36 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			}
 		}
 	}
+	// Freeform: the dead creosote, in Mesquite's meshes: the creosote's own candidates of this cell over again, from the same
+	// random numbers, so a bush is live or dead and never both. Ranked 1 and up: Fill thins them as the creosote, not as the mesquite.
+	if (bNat && K.Id == ES47FloraKind::Mesquite && bDesertOn)
+	{
+		const FKind& Cr = KindFor(true, CREOSOTE_KI);
+		FMulberry Rc(Hash4(I, J, CREOSOTE_KI, Spec.Seed));
+		for (int32 T = 0; T < 9; ++T)
+		{
+			const double U = Rc(), V = Rc(), A = Rc(), B = Rc(), CA = Rc(), CB = Rc(), Ry = Rc(), L1 = Rc(), L2 = Rc(), Rank = Rc(), N1 = Rc(), N2 = Rc(), N3 = Rc();
+			(void)CA; (void)CB; (void)N2; (void)N3;
+			double X = 0, Z = 0;
+			CreosoteSpot(I, J, T, U, V, Spec.Seed, X, Z);
+			const double Noise = NoiseAt(X, Z, CREOSOTE_KI);
+			if (N1 >= DEAD_CREOSOTE_SHARE || A * Cr.Most >= Noise * 4.2) continue;
+			if (A * Cr.Most >= FMath::Min(CoverAt(X, Z, CREOSOTE_KI, Noise), Cr.Most) || bWalked) continue;
+			const double S = DEAD_SIZE[0] + B * (DEAD_SIZE[1] - DEAD_SIZE[0]), Spread = DESERT_PARTS[DEAD_PART].Radius * S;
+			// (all of it off every way, plot, pad and walk, as a desert plant's)
+			bool bClear = true;
+			for (int32 Round = 0; Round < 8 && bClear; ++Round)
+			{
+				const double Turn = Round * UE_DOUBLE_PI / 4;
+				bClear = CoverAt(X + FMath::Cos(Turn) * Spread, Z + FMath::Sin(Turn) * Spread, CREOSOTE_KI, 1.0) > 0 && !bWalked && !bSeamed;
+			}
+			if (!bClear) continue;
+			PartNow = uint8(DEAD_PART);
+			Qt = S47Three::Euler((L1 - 0.5) * 0.16, Ry * UE_DOUBLE_PI * 2, (L2 - 0.5) * 0.16, TEXT("YXZ"));
+			Sc = FVector(S, S * (0.94 + L1 * 0.12), S);
+			PutOne(X, Gy(X, Z) - 0.035 * S, Z, DEAD_TWIGS(L2 < 0.5 ? 0 : 1), 1 + Rank, false);
+		}
+	}
 	Algo::StableSort(Out, [](const FOut& P, const FOut& Qo) { return P.Rank < Qo.Rank; });
 	FKindCell Made;
 	Made.N = Out.Num();
@@ -803,9 +877,18 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 				// past far[0] only the first share of it by rank, easing down over three cells
 				const double Share = bFar && Of.Dist > K.Far[0] ? 1 + (K.Far[1] - 1) * FMath::Min(1.0, (Of.Dist - K.Far[0]) / (3 * C)) : 1;
 				int32 Mn = Cell0->N;
-				if (Keep * Share < 1) { Mn = 0; while (Mn < Cell0->N && Cell0->Rank[Mn] < Keep * Share) Mn++; }
+				// Freeform's Mesquite holds the dead creosote too (rank 1 and up), and that goes thin where the creosote does
+				const bool bDeadToo = Spec.bNatural && Ki == MESQUITE_KI;
+				const FKind& Cr = KindFor(Spec.bNatural, CREOSOTE_KI);
+				const double DeadShare = bDeadToo && !bLow && Of.Dist > Cr.Far[0] ? 1 + (Cr.Far[1] - 1) * FMath::Min(1.0, (Of.Dist - Cr.Far[0]) / (3 * C)) : 1;
+				if (Keep * Share < 1 && !bDeadToo) { Mn = 0; while (Mn < Cell0->N && Cell0->Rank[Mn] < Keep * Share) Mn++; }
 				for (int32 Instance = 0; Instance < Mn && N < K.Cap; ++Instance)
 				{
+					if (bDeadToo)
+					{
+						const double Rk = Cell0->Rank[Instance];
+						if (Rk < 1 ? Rk >= Keep * Share : Rk - 1 >= Keep * DeadShare) continue;
+					}
 					const float* Matrix = Cell0->M.GetData() + Instance * 16;
 					++Candidates;
 					if (bTrimInvisible && Layers.IsValidIndex(Ki) && Layers[Ki].Mid.IsValid())
@@ -1135,7 +1218,8 @@ void FS47Flora::EnsureDesert()
 			P->SetVisibility(Src->IsVisible());
 			FLayerPart NewPart;
 			NewPart.Mesh = P;
-			if (Ki == MESQUITE_KI) NewPart.Shadow = MakeShadow(W, P, D);
+			// (the yucca as well: its blades shade each other, and without a shadow of its own it stands lit all through, pale, and off the ground)
+			if (Ki == MESQUITE_KI || Ki == DESERT_KI) NewPart.Shadow = MakeShadow(W, P, D);
 			L.Parts.Add(NewPart);
 		}
 	}

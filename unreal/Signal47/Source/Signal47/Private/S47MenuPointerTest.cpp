@@ -12,6 +12,7 @@
 #include "S47Story.h"
 #include "S47TripoCreature.h"
 #include "S47Freeform.h"
+#include "S47FreeformAudioDesk.h"
 #include "S47Album.h"
 #include "S47Flow.h"
 #include "S47Night.h"
@@ -954,6 +955,13 @@ namespace
      {TEXT("yard"),TEXT("saro"),Saro(125,195).X,Saro(125,195).Z,Saro(110,190).X,Saro(110,190).Z,0},
      {TEXT("east-shed"),TEXT("saro"),Saro(155,174).X,Saro(155,174).Z,Saro(142,174).X,Saro(142,174).Z,0},
      {TEXT("saro-yard"),TEXT("saro"),-6,20,-30,20,0}};
+    static double NatureJumpAt=-1;
+    if(NatureJumpAt>=0)
+    {
+     if(Elapsed<NatureJumpAt)return true;
+     NatureJumpAt=-1;if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs twelve more hours"));
+     StageAt=Elapsed;return true;
+    }
     const int32 I=Stage>=310?Stage-303:Stage-300;
     StageAt=Elapsed;
     if(ShotPending)
@@ -968,8 +976,9 @@ namespace
       const auto* C=bHit?Cast<UPrimitiveComponent>(Hit.GetComponent()):nullptr;const auto* Mat=C?C->GetMaterial(0):nullptr;const auto* SM=Cast<UStaticMeshComponent>(C);
       UE_LOG(LogTemp,Display,TEXT("S47: nature underfoot %s: %s mesh %s material %s"),V[I].Name,C?*C->GetName():TEXT("none"),SM&&SM->GetStaticMesh()?*SM->GetStaticMesh()->GetName():TEXT("-"),Mat?*Mat->GetName():TEXT("-"));
      }
-     if(I==5){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the night"));Stage=306;}
-     else if(I==6){if(!M->Freeform->TestAdvance(12*3600.))return Fail(TEXT("the nature test needs the morning"));Stage=310;}
+     // A shot is taken at the end of the frame after this one: the clock waits for it, or the picture shows the next hour.
+     if(I==5){NatureJumpAt=Elapsed+1;Stage=306;}
+     else if(I==6){NatureJumpAt=Elapsed+1;Stage=310;}
      else Stage=I==9?320:Stage+1;
      return true;
     }
@@ -1267,11 +1276,37 @@ namespace
      case 181:Shot(TEXT("panel-workshop.png"));break;
      case 182:Close();F.OpenBranch(FS47ArrayWear::Branches()[0].Id);break;
      case 183:Shot(TEXT("panel-branch.png"));break;
-     case 184:Close();M->Freeform->OpenArchive();break;
+     // Two retained records so the archive shows its tabs, rows and state column.
+     case 184:Close();M->Freeform->RegisterFinding(TEXT("service-paneltest"),TEXT("Logger battery pack built at the SARO bench from tested donor parts."));M->Freeform->RegisterFinding(TEXT("wrong_source-paneltest"),TEXT("The odd sound was only on the original."));M->Freeform->OpenArchive();break;
      case 185:Shot(TEXT("panel-archive.png"));break;
      case 186:Close();{const FVector T=F.TruckPointForTest();M->Player->Place(T.X,T.Z+3,0);}F.Use(TEXT("ff:cargo"));break;
      case 187:Shot(TEXT("panel-cargo.png"));break;
-     case 188:Close();UE_LOG(LogTemp,Display,TEXT("S47: panels shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
+     // The photo lab and the reel deck follow in stages 600 and up.
+     case 188:Close();Stage=599;break;
+    }
+    ++Stage;StageAt=Elapsed;return true;
+   }
+   // The photo lab (all three step states, then the empty bench) and the reel deck at its listening place.
+   if(Stage>=600&&Stage<=607)
+   {
+    if(Elapsed-StageAt<.9)return true;
+    const auto Close=[&]{if(M->UI)M->UI->Close(true);};
+    switch(Stage)
+    {
+     case 600:Close();S47Panels::WetBench(M->UI,TEXT("SARO / PHOTO LAB  |  FILM: free1067653  |  Control room"),2,FString(),[]{});break;
+     case 601:Shot(TEXT("panel-wetbench.png"));break;
+     case 602:Close();S47Panels::WetBench(M->UI,FString(),0,TEXT("The tank is empty.\nExpose a frame from the S-03 apron before loading film."),[]{});break;
+     case 603:Shot(TEXT("panel-wetbench-empty.png"));break;
+     case 604:
+     {
+      Close();
+      if(!M->Freeform->AudioDesk||!M->Freeform->AudioDesk->Ready())return Fail(TEXT("the reel deck is not built"));
+      const FVector T=M->Freeform->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(T.X,T.Z-1.45,PI);
+      break;
+     }
+     case 605:M->Freeform->OpenTapePanel();if(!M->Freeform->TapePanelOpen())return Fail(TEXT("the reel deck panel did not open"));break;
+     case 606:Shot(TEXT("panel-reeldeck.png"));break;
+     case 607:Close();UE_LOG(LogTemp,Display,TEXT("S47: panels shown"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
     }
     ++Stage;StageAt=Elapsed;return true;
    }
