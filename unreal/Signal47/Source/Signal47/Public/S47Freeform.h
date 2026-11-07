@@ -162,6 +162,21 @@ public:
  void LostTimeTrace(int32 Clue);
  bool CameraLeftOut() const;
  TSharedPtr<class FS47LeftGear> Gear;
+ TSharedPtr<class FS47Places> Places;
+ TSharedPtr<class FS47RadioTips> Tips;
+ TSharedPtr<class FS47TruckLamp> TruckLamp;
+ TSharedPtr<class FS47YardAlarm> YardAlarm;
+ // What the station has got hold of (FS47Openings). Saved by name; an older save has none.
+ bool HasKit(const FString& Id) const{return Kit.Contains(Id);}
+ // Empty when it is on offer; otherwise, what it is waiting for.
+ FString KitWaits(const FString& Id) const;
+ bool BuyKit(const FString& Id);
+ void TestGiveKit(const FString& Id){Kit.Add(Id);}
+ // Sleeping away from the station. At a motel nothing wakes you; on a cot out on the land whatever comes by does.
+ enum class ERest:uint8{Station,Motel,Field};
+ static constexpr int32 MotelRoom=8;
+ bool RestAt(double Target,ERest Where);
+ ERest LastRest() const{return RestPlace;}
  float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
  static constexpr double SecondsInDay=86400.;
@@ -246,6 +261,8 @@ public:
  TSharedPtr<class FS47DeputyRound> Deputy;
  bool DeputyOnRoute() const;
  int32 SheriffTrust() const;
+ // The county, plus Caliche: someone seen out at a few places gets told more on the air.
+ int32 TownTrust() const;
  int32 Seed() const{return JobSeed;}
  // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
  FString TerminalClock() const;
@@ -313,6 +330,8 @@ private:
  int32 RousedNight=0; // the last night a rest was really broken: never two running
  bool bTestEvening=false,bTestFirstPulse=false,bTestRules=false;
  int32 ReviewWeek=0,Carried=0,StandbyTotal=0,LastPay=20;
+ TSet<FString> Kit;
+ ERest RestPlace=ERest::Station;
  int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
  bool LiveFlow() const;
  double WakeClock=0;

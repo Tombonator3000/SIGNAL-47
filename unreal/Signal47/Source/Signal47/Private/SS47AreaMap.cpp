@@ -276,6 +276,23 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 	}
 	// the times in town, in a row under its name
 	if (InTown.Num()) P.Text(FString::Join(InTown, TEXT(", ")), 226, 734, 20);
+	// Freeform: what has been found or heard of, and which way the array said. Pencil, from memory, not to scale.
+	for (const FS47MapPin& Pin : View.Pins)
+	{
+		const float Px = FMath::Clamp(HX + float(Pin.East) * .26f, 30.f, 1120.f), Py = FMath::Clamp(HwyY(FMath::Max(0., Pin.South)), 40.f, 770.f);
+		P.Stroke1(P.Arc(Px, Py, 5), 1.6f, PENCIL);
+		P.Text(Pin.bHeard ? Pin.Label + TEXT("?") : Pin.Label, Px + 8, Py + 7, 18);
+	}
+	for (const FS47MapSector& Sector : View.Sectors)
+	{
+		const auto Ray = [&](double Deg) { const double R = FMath::DegreesToRadians(Deg); return SARO + FVector2f(float(FMath::Sin(R)), -float(FMath::Cos(R))) * 480.f; };
+		P.Dash = { 5, 8 };
+		P.Line({ SARO, Ray(Sector.Az - Sector.Spread) }, 1.2f);
+		P.Line({ SARO, Ray(Sector.Az + Sector.Spread) }, 1.2f);
+		P.Dash.Reset();
+		const FVector2f Tag = Ray(Sector.Az);
+		P.Text(Sector.Label, FMath::Clamp(Tag.X, 30.f, 1120.f), FMath::Clamp(Tag.Y, 30.f, 770.f), 18);
+	}
 	// where the player is
 	if (View.At)
 	{

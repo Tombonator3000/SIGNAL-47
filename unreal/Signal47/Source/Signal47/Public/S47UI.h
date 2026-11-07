@@ -83,7 +83,10 @@ struct FS47ChapterCardOpts { FString Closed, Recap, Next, Title, Clock; };
 // the notebook's map (ui/areaMap.ts MapView), kit (KitItem) and people (PersonCard)
 struct FS47MapAt { FString Spot; double T = 0, M = 0, Mi = 0; bool bT = false, bM = false, bMi = false; };
 struct FS47MapMark { FString Kind; double Clock = 0; FString Line; TOptional<FS47MapAt> At; };
-struct FS47MapView { TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; };
+// Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres.
+struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false; };
+struct FS47MapSector { double Az = 0, Spread = 0; FString Label; };
+struct FS47MapView { TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors; };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
 struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none
 // the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far

@@ -4,6 +4,7 @@
 #include "S47Audio.h"
 #include "S47Flow.h"
 #include "S47Glimpses.h"
+#include "S47Openings.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Legs.h"
@@ -256,7 +257,9 @@ bool FS47HighwayUfo::CanStart(bool Forced)const
  if(Hour>=6&&Hour<19)return false;
  // A full hull beside the truck is not an evening's small hint: in Freeform it waits as a body does.
  if(M->IsFreeform()&&(!M->Freeform||!M->Freeform->TheirHoursNow(Clock())))return false;
- if(M->IsFreeform()?NightId()-LastNight<3:LastNight>=0)return false;
+ // A lit roof spotlight is seen from a long way off: that night it need not wait its usual turn.
+ const bool bSeen=M->IsFreeform()&&M->Freeform&&M->Freeform->TruckLamp&&M->Freeform->TruckLamp->LitTonight(NightId());
+ if(M->IsFreeform()?NightId()-LastNight<(bSeen?1:3):LastNight>=0)return false;
  // Story keeps the one south-bound stretch it was written with.
  if(Way<0&&!M->IsFreeform())return false;
  return FMath::Abs(Along)>.85&&OpenStretch(P.Z,Way);

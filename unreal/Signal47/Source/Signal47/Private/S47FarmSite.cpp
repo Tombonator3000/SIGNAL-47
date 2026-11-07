@@ -1,6 +1,7 @@
 #include "S47FarmSite.h"
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
+#include "S47Openings.h"
 #include "S47Aftermath.h"
 #include "S47PaleBody.h"
 #include "S47Three.h"
@@ -24,6 +25,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47Flashlight.h"
+#include "S47Drive.h"
 #include "S47FieldRadio.h"
 #include "S47IndoorDread.h"
 #include "S47Ambience.h"
@@ -76,7 +78,8 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  FieldNight=Night;FieldDwell=0;
  const float Roll=FieldRoll>=0?FieldRoll:FS47NightRhythm::Roll(F.Seed(),Night,0x4649454cu);FieldRoll=-1;
  M->RequestAutosave();
- if(Roll>=FS47NightRhythm::FieldChance(Night)){UE_LOG(LogTemp,Display,TEXT("S47: field visit: nothing comes tonight, night %d"),Night);return;}
+ const bool bLit=F.TruckLamp&&F.TruckLamp->LitTonight(Night);
+ if(Roll>=FS47NightRhythm::FieldChance(Night)+(bLit?.25f:0.f)){UE_LOG(LogTemp,Display,TEXT("S47: field visit: nothing comes tonight, night %d"),Night);return;}
  Home={Place,Title,AreaId,Middle,Visit};bField=true;
  const FString Area=M->Web->Area();
  Place=TEXT("field");AreaId=Area;Middle=FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
@@ -110,7 +113,7 @@ void FS47FarmSite::StepEmptyTip()
  if(EmptyTipNight==Night||!F.RulesLive()||!F.QuietNight(Night)||!F.NightStarted(Clock))return;
  EmptyTipNight=Night;
  if(FS47NightRhythm::Roll(F.Seed(),Night,0x54495053u)>=.4f)return;
- static const TCHAR* Places[]={TEXT("the Alderete place"),TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station")};
+ static const TCHAR* Places[]={TEXT("the Alderete place"),TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station"),TEXT("the windmill on the Baca lease"),TEXT("the old mine on the west side"),TEXT("the line shack")};
  const int32 Pick=int32(FS47NightRhythm::Roll(F.Seed(),Night,0x50494b45u)*UE_ARRAY_COUNT(Places))%UE_ARRAY_COUNT(Places);
  const FString Tip=SecondCallLine(int32(FS47NightRhythm::Roll(F.Seed(),Night,0x4c494e45u)*SecondCallLines)%SecondCallLines,Places[Pick]);
  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
@@ -463,7 +466,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // Something at a door indoors counts too: it goes first, and this waits its turn.
   const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy()&&!(M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorActive());
   const double Clock=M->Freeform->Clock();
-  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&Hours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
+  // Parked with a spotlight on, they know about it from further off.
+  const bool bLampOut=bDriving&&M->Freeform->TruckLamp&&M->Freeform->TruckLamp->On()&&M->World->CabDrive()&&FMath::Abs(M->World->CabDrive()->Speed)<.5;
+  VisitDwell=(bLampOut?Dist<130:Dist<55&&!bDriving)&&bDark&&bQuiet&&Hours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
   Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,Roll);

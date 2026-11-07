@@ -93,6 +93,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "SS47AreaMap.h"
+#include "S47Places.h"
 #include "SS47Ending.h"
 #include "SS47Notebook.h"
 #include "SS47SaveMenu.h"
@@ -2064,6 +2065,7 @@ FS47MapView US47Flow::MapView() const
 	const AS47Story* S = M->Story;
 	FS47MapView V;
 	V.At = MapAt();
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Places) M->Freeform->Places->FillMap(V);
 	if (M->IsFreeform()) { V.bStation = true; return V; } // Freeform has no Story chapter clues.
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;

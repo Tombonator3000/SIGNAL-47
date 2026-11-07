@@ -98,7 +98,7 @@ namespace
   {TEXT("Wind"),TEXT("People"),TEXT("Unexplained")},
   {{TEXT("Secure the roof fitting"),EC::FieldWork,TEXT("Mark and fasten the loose roof plate, then listen from the same reference point on a comparably windy night."),TEXT("impacts continue"),TEXT("impacts stop")},
    {TEXT("Controlled access"),EC::FieldWork,TEXT("Seal the service gate and lay tracking strips before the same observation window; inspect both afterwards."),TEXT("seal broken and a continuous track"),TEXT("seal intact, no continuous track")},
-   {TEXT("Two simultaneous sites"),EC::FieldWork,TEXT("Calibrate the loan field logger, keep simultaneous originals from the roof reference and a field post, then compare time and direction."),TEXT("simultaneous disturbance at both sites"),TEXT("no simultaneous disturbance"),TEXT("access.fieldlogger")}},
+   {TEXT("Two simultaneous sites"),EC::FieldWork,TEXT("Set the second logger's contact pickups at the field post on the east array edge. It compares what shakes there with what shakes on the roof, over one night's window. Inspect it afterwards."),TEXT("simultaneous disturbance at both sites"),TEXT("no simultaneous disturbance"),TEXT("access.fieldlogger")}},
   // Roof, Access, TwoSites (present = Yes)
   {{false,false,false},  // wind: the fastened plate stops it, nobody crosses, only the roof reference moves
    {true,true,false},    // people: impacts continue, the seal is broken, the sequence follows one path
@@ -170,9 +170,9 @@ bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
 {
  if(Line<0||Line>=CaseCount||Cause<0||Cause>=CauseCount||Test<0||Test>=TestCount)return true;return Defs[Line].Present[Cause][Test];
 }
-FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test)
+FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test,bool bSecondLogger)
 {
- return Line==2&&Test==2?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
+ return Line==2&&Test==2&&!bSecondLogger?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
 }
 void FS47FreeformCases::Reset(int32 Seed)
 {
