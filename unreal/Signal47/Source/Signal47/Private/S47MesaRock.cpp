@@ -26,11 +26,12 @@ namespace
   // Only the day changes: a darker soil would take the moonlit ground, already at the edge of sight, down to black.
   const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
   const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
-  // The backdrop's palette read as Monument Valley beside photographs of this country: drier and further away in Freeform.
+  // The backdrop's palette read as Monument Valley beside photographs of this country: drier and further away in Freeform,
+  // with its beds much closer together, since their contrast drew the steps and the dark squares.
   if(bMesaFresh||bReal!=bLastReal)
   {
    bMesaFresh=false;MesaSlots.RemoveAll([](const FMesaSlot& S){return !S.Mid.IsValid();});
-   for(const FMesaSlot& S:MesaSlots)S.Mid->SetVectorParameterValue(TEXT("Tint"),bReal?S.Story*FLinearColor(.66f,.76f,.90f):S.Story);
+   for(const FMesaSlot& S:MesaSlots)S.Mid->SetVectorParameterValue(TEXT("Tint"),bReal?FMath::Lerp(S.Story,FLinearColor(1.07f,.92f,.84f),.7f)*FLinearColor(.66f,.76f,.90f):S.Story);
   }
   if(bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
   bLastReal=bReal;LastDay=Day;

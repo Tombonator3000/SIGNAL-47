@@ -638,7 +638,7 @@ namespace
     const double Before=F.Clock();
     if(F.WaitUntil(Before+1800.)||F.Clock()!=Before||!F.FeedbackText().Contains(TEXT("service yard")))return Fail(TEXT("a rest under what is close is refused, and says what stops it"));
     if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
-    if(!D.TestBegin(TEXT("s03_failure")))return Fail(TEXT("the fault must start for this"));
+    if(!F.Field->HasArrayFault()&&!D.TestBegin(TEXT("s03_failure")))return Fail(TEXT("the fault must start for this")); // The planner may have brought one already.
     DreadAt=Elapsed;Stage=475;return true;
    }
    if(Stage==475)
@@ -1692,7 +1692,7 @@ namespace
    {
     StageAt=Elapsed;
     auto& D=*M->Freeform->Director;auto& Site=*M->Freeform->FarmSite;
-    if(Elapsed-ChainFrom>150)return Fail(TEXT("the chain stopped"));
+    if(Elapsed-ChainFrom>270)return Fail(TEXT("the chain stopped")); // Lights in town wait about 184 s for someone driving there from SARO.
     if(Stage==170)
     {
      if(D.ActiveEvent().IsEmpty())return true;
