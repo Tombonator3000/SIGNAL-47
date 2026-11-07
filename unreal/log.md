@@ -2083,3 +2083,7 @@ Skrevet, ikke bygget. En uavhengig gjennomgang fant hull, og de er kontrollert i
 ## 7. november 2026 kl.03:00, natt, ørkenplantene i Freeform
 
 Skrevet i egen worktree, ikke bygget, importert eller kjørt. `Tools/desertplants/import_assets.py` gir `/Game/DesertPlants` (kokes alltid). Yucca, cholla og mesquite er nye flora-arter med egne mesher per variant, bare i Freeform, og erstatter de gamle sukkulentene der; mangler ett av de åtte meshene, står de gamle. `-S47MenuPointerNature` logger `S47: desert plants N of 8 loaded`, tar tre nye bilder (`nature-desert-*.png`) og feiler hvis planleggeren ikke trekker alle tre artene selv. Tettheter er anslag.
+
+## 7. november 2026 kl.03:30, natt, aliens i ekte hendelser og egne planter
+
+Regelen «ingen kropp før ca. kl. 02» håndheves nå, og uavhengig gjennomgang fant at hvile da hoppet over alt: hvile vekker nå spilleren kl. 02:05-03:00 hvis noe er på gang, høyst én gang per natt. Kikking i kontrollrommet, gårdshuset og byens rom. Radio knitrer nærmere dem. Rom kan flombelyses igjen etter tre døgn. Kinoen har ikke noe sted å kikke fra i prøvens rom, så der skjer det ingenting. Egne modeller av cholla, yucca og mesquite er importert (17 filer i LFS). Kjent feil: yucca med stengel har for blek rosett. Bleke flater rett etter lasting var lave mipnivåer, ikke farge; bakketeksturene holdes lastet.
