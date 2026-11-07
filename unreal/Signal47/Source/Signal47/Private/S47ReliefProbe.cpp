@@ -416,6 +416,73 @@ namespace
 		// (the measure of how it was only says what it was)
 		if (S47OpenLand::Live()) ProbeCheck(bEnd && NoGround == 0, Line); else ProbeLine(Line);
 	}
+	// Out from the road on both sides, all along it (Tom, 7 November 2026): from the crown of the highway, square to it, on foot and at the wheel, 40 m past its fence's line.
+	void ReachOffRoad(US47Main* M)
+	{
+		US47World* Life = M->World;
+		AS47Walker* P = M->Player;
+		int32 WalkOut = 0, WalkHeld = 0, DriveOut = 0, DriveHeld = 0;
+		FString Held;
+		for (double Z = -2400; Z <= 4200; Z += 150) for (const double Side : { -1., 1. })
+		{
+			// On foot, from where the area it is in puts it.
+			{
+				const FString Leg = S47OpenLand::InSaroCore(0, Z, 0) ? FString(TEXT("saro")) : FString(TEXT("road"));
+				Life->Enter(Leg == TEXT("road") ? FString(TEXT("diner")) : Leg);
+				const FVector At = S47OpenLand::FromRoad(Leg, Side * 2, Z);
+				P->Place(At.X, At.Z, 0);
+				double Rx = Side * 2, Rz = Z;
+				for (int32 I = 0; I < 160 && FMath::Abs(Rx) < 61; ++I)
+				{
+					const FVector A = S47OpenLand::FromRoad(Life->Area, Rx, Rz), B = S47OpenLand::FromRoad(Life->Area, Rx + Side * .5, Rz);
+					P->MoveBy(B.X - A.X, B.Z - A.Z);
+					Life->WalkOver();
+					S47OpenLand::RoadOf(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
+				}
+				if (FMath::Abs(Rx) >= 60) ++WalkOut;
+				else
+				{
+					++WalkHeld;
+					const FVector Next = S47OpenLand::FromRoad(Life->Area, Rx + Side, Rz);
+					if (Held.Len() < 1400) Held += FString::Printf(TEXT(" [walk road %.0f %.0f: %s]"), Rx, Rz, *Life->WhyNotLand(Next.X, Next.Z));
+				}
+			}
+			// At the wheel, the same from a rolling start.
+			{
+				FString Leg = S47OpenLand::InSaroCore(0, Z, 0) ? FString(TEXT("saro")) : FString(TEXT("road"));
+				IS47DriveArea* Area = Life->LegArea(Leg);
+				if (!Area) continue;
+				TUniquePtr<FS47DriveController> D = MakeUnique<FS47DriveController>(nullptr, Area);
+				const FVector At = S47OpenLand::FromRoad(Leg, Side * 2, Z);
+				D->Place(FVector(At.X, 0, At.Z), -Side * UE_DOUBLE_PI / 2);
+				FS47DriveIn In; In.Throttle = 1;
+				double Rx = Side * 2, Rz = Z;
+				for (int32 I = 0; I < 900 && FMath::Abs(Rx) < 61; ++I)
+				{
+					D->Update(1. / 30, In, FVector2D::ZeroVector);
+					if (const TOptional<S47Legs::FExit> Ex = S47OpenLand::Live() ? S47OpenLand::Exit(Leg, D->Pos.X, D->Pos.Z, D->Heading) : S47Legs::ExitFrom(Leg, D->Pos.X, D->Pos.Z, D->Heading))
+					{
+						if (IS47DriveArea* Next = Life->LegArea(Ex->To))
+						{
+							TUniquePtr<FS47DriveController> N = MakeUnique<FS47DriveController>(nullptr, Next);
+							N->Adopt(*D, Ex->X, Ex->Z, Ex->Heading);
+							D = MoveTemp(N); Area = Next; Leg = Ex->To;
+						}
+					}
+					S47OpenLand::RoadOf(Leg, D->Pos.X, D->Pos.Z, Rx, Rz);
+				}
+				if (FMath::Abs(Rx) >= 60) ++DriveOut;
+				else
+				{
+					++DriveHeld;
+					if (Held.Len() < 1400) Held += FString::Printf(TEXT(" [drive road %.0f %.0f, %s]"), Rx, Rz, *Leg);
+				}
+			}
+		}
+		const FString Line = FString::Printf(TEXT("out from the road, both sides, z -2400 to 4200 every 150 m: on foot %d out, %d held; at the wheel %d out, %d held.%s"), WalkOut, WalkHeld, DriveOut, DriveHeld, *Held);
+		// (a building or a post in the way is no fence: nine in ten, and the log has the rest by name)
+		if (S47OpenLand::Live()) ProbeCheck(WalkHeld * 10 <= WalkOut && DriveHeld * 10 <= DriveOut, Line); else ProbeLine(Line);
+	}
 	void ReachDrive(US47Main* M, const FReachStart& Start, int32 DirAt)
 	{
 		US47World* Life = M->World;
@@ -588,6 +655,7 @@ namespace S47ReliefProbe
 			const int32 Each = UE_ARRAY_COUNT(ReachDirs), All = UE_ARRAY_COUNT(ReachStarts) * Each;
 			if (R.ReachAt >= All * 2)
 			{
+				ReachOffRoad(M);
 				if (!S47OpenLand::Live()) return ProbeFinish();
 				R.Phase = 31; R.Since = R.Now;
 				return true;

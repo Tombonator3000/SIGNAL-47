@@ -2,6 +2,7 @@
 #include "S47FarmWorld.h"
 #include "S47Geo.h"
 #include "S47Main.h"
+#include "S47OpenLand.h"
 #include "S47Relief.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -193,9 +194,31 @@ namespace
 			Lifted.Add(FVector3f(Raised));
 			Bounds += Raised;
 		}
-		if (!Moved) return nullptr;
+		TArray<uint32> Source3;
+		From.IndexBuffer.GetCopy(Source3);
+		// Freeform's open land (S47OpenLand): of the highway's and the pasture's fences only a short stretch here and there keeps its wire.
 		TArray<uint32> Indices;
-		From.IndexBuffer.GetCopy(Indices);
+		Indices.Reserve(Source3.Num());
+		TArray<FStaticMeshSection> Sections;
+		int32 Cut = 0;
+		const auto ThreeOf = [&](uint32 V) { return S47Three::ToThree(FVector(B.PositionVertexBuffer.VertexPosition(V))); };
+		for (const FStaticMeshSection& Section : From.Sections)
+		{
+			FStaticMeshSection Part = Section;
+			Part.FirstIndex = Indices.Num(); Part.NumTriangles = 0;
+			for (uint32 I = Section.FirstIndex; I + 2 < uint32(Source3.Num()) && I < Section.FirstIndex + Section.NumTriangles * 3; I += 3)
+			{
+				const FVector P0 = ThreeOf(Source3[I]), P1 = ThreeOf(Source3[I + 1]), P2 = ThreeOf(Source3[I + 2]);
+				const bool bOnFence = S47OpenLand::OnRoadFence(P0.X, P0.Z) && S47OpenLand::OnRoadFence(P1.X, P1.Z) && S47OpenLand::OnRoadFence(P2.X, P2.Z);
+				if (!S47OpenLand::Off() && bOnFence && !(S47OpenLand::FenceWireStays(P0.X, P0.Z) && S47OpenLand::FenceWireStays(P1.X, P1.Z) && S47OpenLand::FenceWireStays(P2.X, P2.Z))) { ++Cut; continue; }
+				Indices.Append({ Source3[I], Source3[I + 1], Source3[I + 2] });
+				++Part.NumTriangles;
+			}
+			if (Part.NumTriangles) Sections.Add(Part);
+		}
+		if (!Moved && !Cut) return nullptr;
+		if (Indices.IsEmpty()) return nullptr;
+		UE_LOG(LogS47FreeformTerrain, Display, TEXT("S47: wires: %d triangles of the old fences cut, %d left"), Cut, Indices.Num() / 3);
 		UStaticMesh* Copy = NewObject<UStaticMesh>(W, NAME_None, RF_Transient);
 		Copy->bAllowCPUAccess = true; Copy->NeverStream = true; Copy->bSupportRayTracing = false;
 		Copy->GetStaticMaterials() = Source->GetStaticMaterials();
@@ -203,7 +226,7 @@ namespace
 		Data->AllocateLODResources(1);
 		Data->Bounds = FBoxSphereBounds(Bounds); Data->ScreenSize[0].Default = 1; Data->NumInlinedLODs = 1; Data->CurrentFirstLODIdx = 0; Data->bReadyForStreaming = false;
 		FStaticMeshLODResources& To = Data->LODResources[0];
-		To.Sections.Append(From.Sections);
+		To.Sections.Append(Sections);
 		To.VertexBuffers.PositionVertexBuffer.Init(Lifted, true);
 		auto& Tangents = To.VertexBuffers.StaticMeshVertexBuffer;
 		Tangents.SetUseHighPrecisionTangentBasis(B.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());

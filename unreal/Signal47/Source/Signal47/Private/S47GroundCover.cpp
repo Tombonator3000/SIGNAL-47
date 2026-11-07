@@ -7,6 +7,7 @@
 #include "S47Geo.h"
 #include "S47Legs.h"
 #include "S47OldRoadLayout.h"
+#include "S47OpenLand.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
 
@@ -245,7 +246,8 @@ double RoadCover(double X, double Z)
 		{
 			const double Fx = FMath::Abs(Ax - HWY.Fence);
 			const bool bGap = X > 0 ? Z > EAST_GAP0() && Z < TOWN().Z1 : (Z > MOTEL_GAP0() && Z < MOTEL_GAP1()) || (Z > GUARD.Z0 - 0.6 && Z < GUARD.Z1 + 0.6) || (Z > DINER_GAP0() && Z < TOWN().Z1);
-			if (!bGap) D *= Fence(Fx);
+			// (Freeform has almost no fence left to grow along: no ruled line of bushes down the land)
+			if (!bGap && !S47OpenLand::Live()) D *= Fence(Fx);
 		}
 		if (bTown) for (const FRect& Rc : PAVED()) if (Within(Rc, X, Z, 0.15)) return 0;
 	}
@@ -260,7 +262,7 @@ double RoadCover(double X, double Z)
 	// the pasture south of the motel: grazed grass; the fences round it
 	if (X < -HWY.Fence && X > PASTURE.West - 2 && Z > PASTURE.North - 2 && Z < PASTURE.South + 2)
 	{
-		D *= FMath::Min3(Fence(FMath::Abs(Z - PASTURE.North)), Fence(FMath::Abs(Z - PASTURE.South)), Fence(FMath::Abs(X - PASTURE.West))) * 1.25;
+		D *= (S47OpenLand::Live() ? 1. : FMath::Min3(Fence(FMath::Abs(Z - PASTURE.North)), Fence(FMath::Abs(Z - PASTURE.South)), Fence(FMath::Abs(X - PASTURE.West)))) * 1.25;
 	}
 	// Sierra Motor Court's lot, walk and rooms: none, thick round them
 	if (Within(MOTEL_ROAD(), X, Z, 0.3)) return 0;
