@@ -99,15 +99,20 @@ namespace
  }
  // The farm road's strip lies 3 to 8 cm over the land with a visible edge, which reads as floating. Sunk this
  // far its edge meets the ground instead; the walking floor is the terrain's and does not move.
- TWeakObjectPtr<AS47Web> SunkWorld;FVector SunkFrom=FVector::ZeroVector;bool bSunk=false;
+ TWeakObjectPtr<AS47Web> SunkWorld;FVector SunkFrom[2]={FVector::ZeroVector,FVector::ZeroVector};bool bSunk[2]={false,false};
  void SinkRanchRoad(AS47Web* W,bool On)
  {
-  if(SunkWorld.Get()!=W){SunkWorld=W;bSunk=false;}
-  const auto* N=W->Node(959);auto* C=N?N->Comp.Get():nullptr;if(!C)return;
-  if(On==bSunk)return;
-  if(On){SunkFrom=C->GetRelativeLocation();C->SetRelativeLocation(SunkFrom+FVector(0,0,-9));}
-  else C->SetRelativeLocation(SunkFrom);
-  bSunk=On;
+  if(SunkWorld.Get()!=W){SunkWorld=W;bSunk[0]=bSunk[1]=false;}
+  // 959 is the SARO corridor's strip, 1250 the road area's own: the farm may stand in either, and only the first was
+  // sunk. The pale plate in the yard on 7 November is most likely the second, still over the land with its edge in the air.
+  const int32 Strips[2]={959,1250};
+  for(int32 K=0;K<2;++K)
+  {
+   const auto* N=W->Node(Strips[K]);auto* C=N?N->Comp.Get():nullptr;if(!C||On==bSunk[K])continue;
+   if(On){SunkFrom[K]=C->GetRelativeLocation();C->SetRelativeLocation(SunkFrom[K]+FVector(0,0,-9));}
+   else C->SetRelativeLocation(SunkFrom[K]);
+   bSunk[K]=On;
+  }
  }
  // The original barn, house and sheds. Freeform only; each is a whole mesh turned on the spot, as the plan has it.
  struct FBuilding{TWeakObjectPtr<UStaticMeshComponent> C;FVector Road;double Degrees=0;};

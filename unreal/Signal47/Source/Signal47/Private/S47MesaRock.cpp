@@ -14,6 +14,12 @@ namespace
  TWeakObjectPtr<UMaterialInstanceDynamic> GroundMid,SeamMid;
  struct FMesaSlot{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Story=FLinearColor::White;};
  TArray<FMesaSlot> MesaSlots;bool bMesaFresh=false;
+ // 0 at night, 1 in full day, with an hour and a quarter of dawn and dusk; 1 outside Freeform's clock.
+ float DayAt(const US47Main* Main)
+ {
+  const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
+  return float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+ }
  // Measured against photographs of this desert (7 November): the bare ground read 230 where the photographs read
  // 150, so in Freeform it comes down to real soil and shows more of its gravel. Story keeps the look it was approved in.
  // Each frame, since it must be right the moment a game opens; it only writes when the answer changes.
@@ -24,8 +30,7 @@ namespace
   if(Read.Get()!=Mid){Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),StoryTint);Mid->GetScalarParameterValue(TEXT("GravelAmount"),StoryGravel);Mid->GetScalarParameterValue(TEXT("CrustAmount"),StoryCrust);LastDay=-1;}
   const US47Main* Main=US47Main::Get(Web);const bool bReal=S47FarmWorld::Enabled(Main);
   // Only the day changes: a darker soil would take the moonlit ground, already at the edge of sight, down to black.
-  const double Hour=Main&&Main->Freeform?FMath::Fmod(Main->Freeform->Clock(),86400.)/3600.:12.;
-  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  const float Day=DayAt(Main);
   // The backdrop's palette read as Monument Valley beside photographs of this country: drier and further away in Freeform,
   // with its beds much closer together, since their contrast drew the steps and the dark squares.
   if(bMesaFresh||bReal!=bLastReal)
@@ -46,11 +51,50 @@ namespace
    Seam->SetScalarParameterValue(TEXT("CrustAmount"),bReal?.75f:StoryCrust);
   }
  }
+ // The other ground the player stands on keeps its own exported MI_W* material (the station's sand, its gravel, the gravel
+ // tracks and the farm road). Measured at 11:00 in Freeform against the new soil, which reads 170,134,110: the station's sand
+ // 215,172,130, the farm road 221,188,156, the antenna path 223,199,175, the roadside gravel 208,199,189. Each one's own
+ // "Color" is scaled toward the soil by day; at night and in Story the scale is 1, so those keep the look they had.
+ // Scales are linear, from the sRGB ratios against the soil (.79 .78 .85 for the sand, 0.80 for the farm road in red),
+ // and are the only numbers to retune if a new capture still shows a difference.
+ struct FUnder{int32 Node,Mat;FLinearColor Scale;};
+ const FLinearColor SandScale(.60f,.58f,.70f),RoadScale(.70f,.62f,.58f),GravelScale(.86f,.82f,.78f);
+ const FUnder UnderTable[]={
+  {1103,484,SandScale},{1120,496,SandScale},{1104,485,SandScale},      // station ground, its corridor, the station's gravel
+  {959,418,RoadScale},{1250,576,RoadScale},                              // the farm road in the SARO corridor and in the road area
+  {955,418,GravelScale},{1244,576,GravelScale},{1121,497,GravelScale},   // gravel tracks
+  {801,353,GravelScale}};                                                // the pebble paths among the antennas
+ struct FUnderSlot{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Story=FLinearColor::White,Scale=FLinearColor::White;};
+ TArray<FUnderSlot> UnderSlots;TSet<TWeakObjectPtr<UStaticMeshComponent>> UnderDone;bool bUnderFresh=false;
+ void TickUnderfoot(AS47Web* Web,double Dt)
+ {
+  static double Wait=0;static float LastDay=-1;static bool bLastReal=false;
+  if((Wait-=Dt)<=0)
+  {
+   Wait=2.0;
+   for(const FUnder& U:UnderTable)
+   {
+    const FS47WebNode* N=Web->Node(U.Node);if(!N||N->Mats.Num()!=1||N->Mats[0]!=U.Mat)continue;
+    UStaticMeshComponent* G=Cast<UStaticMeshComponent>(N->Comp.Get());if(!G||G->GetNumMaterials()<1||UnderDone.Contains(G))continue;
+    // An existing dynamic instance is reused, so whoever made it keeps it.
+    UMaterialInstanceDynamic* Mid=G->CreateDynamicMaterialInstance(0,nullptr);FLinearColor Story;
+    UnderDone.Add(G);if(!Mid||!Mid->GetVectorParameterValue(TEXT("Color"),Story))continue;
+    UnderSlots.Add({Mid,Story,U.Scale});bUnderFresh=true;
+    UE_LOG(LogS47MesaRock,Display,TEXT("S47: underfoot tone on node %d (%s, material %d)"),U.Node,*N->Name,U.Mat);
+   }
+  }
+  if(UnderSlots.IsEmpty())return;
+  const US47Main* Main=US47Main::Get(Web);const bool bReal=S47FarmWorld::Enabled(Main);const float Day=bReal?DayAt(Main):0.f;
+  if(!bUnderFresh&&bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
+  bUnderFresh=false;bLastReal=bReal;LastDay=Day;
+  UnderSlots.RemoveAll([](const FUnderSlot& S){return !S.Mid.IsValid();});
+  for(const FUnderSlot& S:UnderSlots)S.Mid->SetVectorParameterValue(TEXT("Color"),FMath::Lerp(S.Story,S.Story*S.Scale,Day));
+ }
 }
 
 void S47MesaRock::Step(AS47Web* Web,double Dt)
 {
- if(Web)ApplyGround(Web);
+ if(Web){ApplyGround(Web);TickUnderfoot(Web,Dt);}
  static double Wait=0;static TWeakObjectPtr<UMaterialInterface> Rock;static bool bMissing=false;
  static TSet<TWeakObjectPtr<UStaticMeshComponent>> Done;
  if(!Web||bMissing||(Wait-=Dt)>0)return;
