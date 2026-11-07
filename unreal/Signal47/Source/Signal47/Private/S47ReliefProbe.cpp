@@ -7,6 +7,7 @@
 #include "S47GroundCover.h"
 #include "S47Main.h"
 #include "S47Relief.h"
+#include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Truck.h"
@@ -17,6 +18,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "HAL/PlatformMisc.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
@@ -51,6 +54,22 @@ namespace
 		{ TEXT("station"), TEXT("station01"), -560, 560, -1400, 700, 8 },
 	};
 	const double ReliefHours[] = { 11, 18.6, 23.5 };
+	// -S47RoadEdgeViews: only the highway's edge, by day and in the low sun, and none of the walks: Tom's picture, and from the shoulder, the road and afar.
+	// Road-local, as above; the SARO views stand in its own stretches.
+	const FReliefView EdgeViews[] = {
+		{ TEXT("edge-along"), TEXT("diner"), 8.5, 900, 3, 1500, 0 },
+		{ TEXT("edge-tom"), TEXT("diner"), 16, 700, 2, 1100, 2 },
+		{ TEXT("edge-down"), TEXT("diner"), 6.6, 1210, 4.2, 1214.5, -1.2 },
+		{ TEXT("edge-shoulder"), TEXT("diner"), 5.4, 1300, 4.8, 1400, 0 },
+		{ TEXT("edge-car"), TEXT("diner"), 2.2, 1100, 2.2, 1700, 0 },
+		{ TEXT("edge-west"), TEXT("diner"), -7.5, 1500, -5, 1000, 0 },
+		{ TEXT("edge-far"), TEXT("diner"), -14, 700, 6, 1500, 8 },
+		{ TEXT("edge-town"), TEXT("diner"), 9, 1880, 2, 2150, 0 },
+		{ TEXT("edge-corridor"), TEXT("saro"), 9, 150, 3, 560, 0 },
+		{ TEXT("edge-site"), TEXT("saro"), 7, -500, 2, -900, 0 },
+		{ TEXT("edge-farm"), TEXT("saro"), 9, 170, 16, 200, 0 },
+	};
+	const double EdgeHours[] = { 11, 18.6 };
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
 	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
@@ -69,7 +88,7 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
-		bool bAllGood = true, bHolding = false, bLookDone = false;
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false;
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -231,6 +250,7 @@ namespace S47ReliefProbe
 	{
 		(void)Main;
 		ReliefRun = FReliefRun();
+		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -253,6 +273,10 @@ namespace S47ReliefProbe
 			const bool bZones = S47Relief::CheckZones(Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
 			ProbeCheck(bZones, TEXT("the table is 0 where nothing follows it"));
+			Lines.Reset();
+			S47RoadEdge::Report(W, Lines);
+			for (const FString& Line : Lines) ProbeLine(Line);
+			if (R.bEdgeOnly) { R.Phase = 7; R.Since = R.Now; return true; }
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
 			return true;
@@ -397,15 +421,15 @@ namespace S47ReliefProbe
 		// The views. A place, then two and a half seconds for the textures, and the picture the frame after it is asked for.
 		if (R.Phase == 7)
 		{
-			if (R.HourAt >= UE_ARRAY_COUNT(ReliefHours)) return ProbeFinish();
-			ProbeSetHour(M, ReliefHours[R.HourAt]);
+			if (R.HourAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours))) return ProbeFinish();
+			ProbeSetHour(M, R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
 			R.ViewAt = 0; R.Phase = 8; R.Since = R.Now;
 			return true;
 		}
 		if (R.Phase == 8)
 		{
-			if (R.ViewAt >= UE_ARRAY_COUNT(ReliefViews)) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
-			const FReliefView& View = ReliefViews[R.ViewAt];
+			if (R.ViewAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews))) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
+			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
 			if (Life->Area != View.Area) { Life->Enter(View.Area); R.Since = R.Now; return true; }
 			const FVector Eye = S47FarmWorld::RoadToArea(View.Area, FVector(View.X, 0, View.Z)), Look = S47FarmWorld::RoadToArea(View.Area, FVector(View.LookX, 0, View.LookZ));
 			const FVector Along(Look.X - Eye.X, View.Lift, Look.Z - Eye.Z);
@@ -420,8 +444,8 @@ namespace S47ReliefProbe
 			// Over the settled second and a half only: the first second carries the jump's own streaming.
 			if (R.Now - R.Since > 1) { R.FrameSum += Dt; R.FrameMost = FMath::Max(R.FrameMost, double(Dt)); ++R.FrameCount; }
 			if (R.Now - R.Since < 2.5) return true;
-			const FReliefView& View = ReliefViews[R.ViewAt];
-			const int32 Hour = FMath::FloorToInt(ReliefHours[R.HourAt]);
+			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
+			const int32 Hour = FMath::FloorToInt(R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
 			const FString Shot = FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("AlbumTest") / Shot, true, false);
 			double Rx = 0, Rz = 0;
