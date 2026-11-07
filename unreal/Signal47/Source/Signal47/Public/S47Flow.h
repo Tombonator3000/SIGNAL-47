@@ -51,6 +51,7 @@ public:
 	bool AutosaveNow(FString* OutError = nullptr);
 	TOptional<FS47SaveMeta> WriteSave(const FString& Kind, int32 Slot, FString& OutError);
 	FString SaveBlock() const;                 // why the game cannot be saved now; empty when it can
+	FString FreeformSaveBlock() const;         // Freeform's own reasons, for developer runs too: SaveBlock says a developer run never saves
 	FString PlaceName() const;                 // the place on a save's card
 	FString PlaceName(const FVector& P) const; // placeName(p): the place of a point (the truck's, in the cab)
 	FString CaptureThumb();                    // 192 x 108 JPEG of the player's view

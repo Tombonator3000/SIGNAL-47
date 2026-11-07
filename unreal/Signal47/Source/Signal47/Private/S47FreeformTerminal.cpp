@@ -51,9 +51,11 @@ namespace S47FreeformTerminal
   const FButtonStyle& ReelFilled(){static const FButtonStyle S=MakeStyle(S47Kit::Css(0xa4d890),S47Kit::Css(0xb8e6a6),S47Kit::Css(0x90c67c),S47Kit::Css(0xa4d890),2.f);return S;}
   const FButtonStyle& OutlineStyle(){if(bReel)return ReelOutline();static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),Green,2.f);return S;}
   const FButtonStyle& PrimaryStyle(){if(bReel)return ReelPrimary();static const FButtonStyle S=MakeStyle(Black,S47Kit::Css(0x2a1c05),S47Kit::Css(0x4a3008),Amber,3.f);return S;}
-  const FButtonStyle& FilledStyle(){static const FButtonStyle S=MakeStyle(Green,S47Kit::Css(0xb4ffc4),S47Kit::Css(0x6fdc88),Green,2.f);return S;}
+  // Every style that reads the palette has one copy per look; a single static would keep whichever look asked first for the whole session.
+  const FButtonStyle& ReelSelected(){static const FButtonStyle S=MakeStyle(S47Kit::Css(0xf0b040),S47Kit::Css(0xffcc73),S47Kit::Css(0xe09a30),S47Kit::Css(0xf0b040),2.f);return S;}
+  const FButtonStyle& FilledStyle(){if(bReel)return ReelFilled();static const FButtonStyle S=MakeStyle(Green,S47Kit::Css(0xb4ffc4),S47Kit::Css(0x6fdc88),Green,2.f);return S;}
   const FButtonStyle& PlainStyle(){static const FButtonStyle S=MakeStyle(FLinearColor::Transparent,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),FLinearColor::Transparent,0.f);return S;}
-  const FButtonStyle& SelectedStyle(){static const FButtonStyle S=MakeStyle(Amber,S47Kit::Css(0xffcc73),S47Kit::Css(0xe09a30),Amber,2.f);return S;}
+  const FButtonStyle& SelectedStyle(){if(bReel)return ReelSelected();static const FButtonStyle S=MakeStyle(Amber,S47Kit::Css(0xffcc73),S47Kit::Css(0xe09a30),Amber,2.f);return S;}
   FW Rule(FLinearColor C=Line,float H=2){return SNew(SBox).HeightOverride(H)[SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(C)];}
   FW Label(TAttribute<FString> V,int32 Size,FLinearColor C)
   {return SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(Size)).ColorAndOpacity(C);}
@@ -245,15 +247,33 @@ namespace S47FreeformTerminal
  {
  public:
   SLATE_BEGIN_ARGS(SBar){} SLATE_ATTRIBUTE(float,Amount) SLATE_END_ARGS()
-  void Construct(const FArguments& A){Amount=A._Amount;ForceVolatile(true);}
+  void Construct(const FArguments& A){Amount=A._Amount;LineNow=Line;DoneNow=bReel?S47Kit::Css(0xa4d890):Green;ActiveNow=Amber;ForceVolatile(true);}
   virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(200,12);}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    const float V=Amount.Get();if(V<0)return L;const FVector2f S(G.GetLocalSize());
-   Rect(Out,L,G,FVector2f(0,0),S,Line,false);Rect(Out,L+1,G,FVector2f(2,2),FVector2f((S.X-4)*FMath::Clamp(V,0.f,1.f),S.Y-4),V>=.999f?Green:Amber,true);return L+2;
+   Rect(Out,L,G,FVector2f(0,0),S,LineNow,false);Rect(Out,L+1,G,FVector2f(2,2),FVector2f((S.X-4)*FMath::Clamp(V,0.f,1.f),S.Y-4),V>=.999f?DoneNow:ActiveNow,true);return L+2;
   }
- private:TAttribute<float> Amount;
+ private:TAttribute<float> Amount;FLinearColor LineNow,DoneNow,ActiveNow; // copied when built, so a reel deck keeps its own colours
  };
+ FW Meter(const FString& Name,TAttribute<FString> Shown,TAttribute<float> FillAmount)
+ {
+  return SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().FillWidth(1)[Label(Name,24,Green)]
+     +SHorizontalBox::Slot().AutoWidth().Padding(12,0,0,0)[Label(Shown,24,Amber)]]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,6)[SNew(SBar).Amount(FillAmount)];
+ }
+ FW Display(const FString& Name,TAttribute<FString> Value,TAttribute<FString> State)
+ {
+  return SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().FillWidth(1)[Label(Name,26,Green)]
+     +SHorizontalBox::Slot().AutoWidth().Padding(12,0,0,0)[Label(State,26,Amber)]]
+   +SVerticalBox::Slot().AutoHeight()[Label(Value,44,Amber)];
+ }
  FW Readout(const FString& Name,TAttribute<FString> Shown,TAttribute<float> FillAmount)
  {
   return SNew(SVerticalBox)

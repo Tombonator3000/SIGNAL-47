@@ -5,6 +5,7 @@
 #include "S47TownLayer.h"
 #include "S47Herd.h"
 #include "S47Taken.h"
+#include "S47Aftermath.h"
 #include "S47FieldRadio.h"
 #include "S47IndoorDread.h"
 #include "S47RoswellWorld.h"
@@ -24,6 +25,7 @@
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
 #include "S47FarmWorld.h"
+#include "S47MotelProbe.h"
 #include "S47RoadShape.h"
 #include "S47World.h"
 #include "S47Inter.h"
@@ -42,6 +44,10 @@
 #include "S47Walker.h"
 #include "S47UI.h"
 #include "S47Json.h"
+#include "S47HUD.h"
+#include "Framework/Application/SlateUser.h"
+#include "Misc/FileHelper.h"
+#include "Widgets/Input/SButton.h"
 #include "ImageUtils.h"
 #include "Misc/Base64.h"
 #include "Misc/Paths.h"
@@ -100,6 +106,43 @@ namespace
   return true;
  }
 
+ // The case board is on the station's glass, in its own virtual window: found from the focused widget, as the case-field
+ // test finds it. Buttons take a simulated click there; the pointer route above needs the viewport's own window.
+ TArray<TSharedRef<SWidget>> MysteryRoots(US47Main* M)
+ {
+  TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
+  if(FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& U)
+  {auto W=U.GetFocusedWidget();if(!W)return;while(auto Parent=W->GetParentWidget())W=Parent;if(!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);
+  if(Out.IsEmpty()&&M&&M->Hud)if(auto Modal=M->Hud->ModalWidget())Out.Add(Modal.ToSharedRef());
+  return Out;
+ }
+ void MysteryTexts(const TSharedRef<SWidget>& W,TArray<FString>& Out)
+ {
+  if(!W->GetVisibility().IsVisible())return;
+  if(W->GetType()==FName(TEXT("STextBlock")))Out.Add(StaticCastSharedRef<STextBlock>(W)->GetText().ToString());
+  if(FChildren* Children=W->GetChildren())for(int32 I=0;I<Children->Num();++I)MysteryTexts(Children->GetChildAt(I),Out);
+ }
+ void MysteryButtons(const TSharedRef<SWidget>& W,const FString& Label,TArray<TSharedRef<SButton>>& Out)
+ {
+  if(!W->GetVisibility().IsVisible())return;
+  if(W->GetType()==FName(TEXT("SButton")))
+  {
+   TArray<FString> Words;MysteryTexts(W,Words);
+   if(Words.Contains(Label))Out.AddUnique(StaticCastSharedRef<SButton>(W));
+  }
+  if(FChildren* Children=W->GetChildren())for(int32 I=0;I<Children->Num();++I)MysteryButtons(Children->GetChildAt(I),Label,Out);
+ }
+ bool MysteryClick(US47Main* M,const FString& Label)
+ {
+  TArray<TSharedRef<SButton>> Buttons;for(const auto& Root:MysteryRoots(M))MysteryButtons(Root,Label,Buttons);
+  if(Buttons.Num()!=1||!Buttons[0]->IsEnabled())return false;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();return true;
+#else
+  return false;
+#endif
+ }
+
  struct FRun
  {
   TWeakObjectPtr<US47Main> Main;
@@ -109,6 +152,8 @@ namespace
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
+  double AfterAt=0,AfterPc=0;FString AfterLine;
+  S47J::FObj MysteryBefore;FString MysteryBoard;int32 MysteryTruth=0,MysterySub=0,MysteryFuses=0,MysteryCash=0;double MysteryHeld=0;
   double VisitClock=0,VisitFrom=0;double ChainFrom=0,ChainAt=0,ChainAge=0;bool ChainPaused=false;FString ChainEvent;double CowFrom=0;FVector CowA=FVector::ZeroVector,CowB=FVector::ZeroVector;int32 CowCalls=0;FString TakenPlace;bool TakenRoom=false,TakenEscape=false;int32 TakenKind=0;FVector TakenPos=FVector::ZeroVector;double TakenAt=0;bool TakenShot[5]={false,false,false,false,false};FVector FieldFrom=FVector::ZeroVector;int32 FieldShot=0;bool BlockTest=false;bool ShotPending=false;TArray<FVector> WalkTo;int32 WalkAt=0;double WalkFrom=0;
   // From the yard, at the farm: the lights' clear line of sight, measured on 6 November.
   void FaceFarm(US47Main* M)
@@ -178,6 +223,284 @@ namespace
    const double Today=FMath::Fmod(M->Freeform->Clock(),86400.);
    return M->Freeform->TestAdvance(ExtraDays*86400.+FMath::Fmod(Hours*3600.-Today+86400.,86400.));
   }
+  // -S47MenuPointerMystery: one night's mystery from the planner's own draw, with the cause as the seed makes it (so it
+  // differs from run to run; the selftests go through every cause). Set up: night two at 19:30 in the control room; the
+  // mystery's own dice set to yes (its hour is still the planner's); every other draw set to no and any other event
+  // cancelled as it starts; scheduler clock 40 times over, world clock 560 times over until the notice comes and real time
+  // after; the player moved to the feeder and to OPS; the clock skipped to midnight and to morning; the control's receiver
+  // settings set as the other tests set them. Natural: the draw, its hour, the start at the station, the record, the case
+  // opening, the job, its recording and result, the filing by the board's own buttons, the reply and its effect.
+  // PASS only if: no body before two; the notice waits for its hour; a menu holds the notice and the morning's reply; a
+  // disk Continue in the notice neither loses nor repeats it; nothing is at the feeder before midnight and something is
+  // after; the two places read differently; what the player can read on the board, the plan and the tasks is word for word
+  // the same under another cause; a real control closes what it should and the board stops offering it; filed right, the
+  // morning brings what the table says for it, once, also after a disk Continue; back from before the control, filed wrong,
+  // it is accepted, survives a Continue before the reply, is answered next morning with no gain, and Rest still goes on.
+  void MysteryBoardOpen(US47Main* M)
+  {
+   M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
+   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine);
+  }
+  // What the player can read about it, less the running clock.
+  FString MysteryShown(US47Main* M) const
+  {
+   TArray<FString> Out;for(const auto& Root:MysteryRoots(M))MysteryTexts(Root,Out);
+   Out.RemoveAll([](const FString& Word){return Word.Contains(TEXT("  |  "));});
+   Out.Add(M->Freeform->TonightPlan());
+   for(const auto& Task:M->Freeform->Tasks())if(Task.Text.StartsWith(TEXT("CASE /")))Out.Add(Task.Text);
+   Out.Sort();return FString::Join(Out,TEXT("\n"));
+  }
+  // The ordinary way back: the whole state to disk and in again through Flow. The test's own settings are not saved.
+  bool MysteryRestore(US47Main* M,const S47J::FObj& State)
+  {
+   const FString File=FPaths::ProjectSavedDir()/TEXT("MysteryTest")/TEXT("state.json");FString Disk;
+   if(!FFileHelper::SaveStringToFile(S47J::Write(State),*File)||!FFileHelper::LoadFileToString(Disk,*File))return Fail(TEXT("the state must reach the disk and come back"));
+   US47Flow::FStart Start;Start.bDev=true;Start.State=S47J::Read(Disk);M->Flow->StartGame(Start);
+   if(!M->IsFreeform()||!M->Freeform||!M->Freeform->Active()||!M->Freeform->Director)return Fail(TEXT("Continue must start Freeform"));
+   M->Freeform->Director->TestSchedule(0.f,-1,40.);M->Freeform->Director->TestMysteryDice(1.f);
+   DreadAt=Elapsed;return true;
+  }
+  // Next morning's reply against the table, for what was filed and what it was.
+  bool MysteryReplyHolds(US47Main* M)
+  {
+   auto& F=*M->Freeform;const auto* C=F.CaseFile().Get(FS47FreeformCases::MysteryLine);const auto* Reply=F.CaseFile().Reply(FS47FreeformCases::MysteryLine);
+   if(!C||!Reply||!C->bReplied||F.FindingText(TEXT("case4-reply"))!=FString(Reply->Text))return Fail(TEXT("the reply must be the table's, and on file"));
+   const int32 Fuses=F.InventoryCount(TEXT("fuse"));const int32 Cash=F.Budget();
+   using ER=FS47FreeformCases::EReply;
+   if(Fuses!=MysteryFuses+(Reply->Effect==ER::Spare?1:0))return Fail(TEXT("a spare comes only with the table's say"));
+   if(Reply->Effect==ER::Spare&&C->Conclusion!=C->Truth)return Fail(TEXT("a wrong filing must not pay"));
+   if(Cash!=MysteryCash-(Reply->Effect==ER::CallOut?FMath::Min(MysteryCash,int32(FS47FreeformCases::CallOutCharge)):0))return Fail(TEXT("the call-out is what it says, and no debt"));
+   if(F.Debt()!=0)return Fail(TEXT("no debt from a reply"));
+   if(F.PowerFault()!=(Reply->Effect==ER::FeederFault))return Fail(TEXT("the feeder fails only with the table's say"));
+   if(Reply->Effect==ER::FeederFault&&!F.Objective().Contains(TEXT("FEEDER")))return Fail(TEXT("a feeder fault must say where to go"));
+   UE_LOG(LogTemp,Display,TEXT("S47: mystery: filed %d, it was %d, effect %d, fuses %d, cash %d"),C->Conclusion,C->Truth,int32(Reply->Effect),Fuses,Cash);
+   return true;
+  }
+  bool StepMystery(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& D=*F.Director;
+   const int32 L=FS47FreeformCases::MysteryLine;const auto& Def=FS47FreeformCases::Def(L);const auto* C=F.CaseFile().Get(L);
+   if(!Def.Mystery||!C)return Fail(TEXT("the mystery's line must be there"));
+   const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.,Late=Hour<12?Hour+24:Hour;
+   if(!FS47FarmSite::TheirHours(F.Clock())&&(!M->Night->Glimpses->Individuals().IsEmpty()||F.IndoorDread->PeekActive()))return Fail(TEXT("no body before two in the morning"));
+   // Nothing else crowds it. An event stopped this soon has not touched anything, but a fault must not hide the reply's.
+   if(!D.ActiveEvent().IsEmpty())
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery: %s started at %.2f, stopped"),*D.ActiveEvent(),Hour);
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+   }
+   if(!C->bReplied&&F.PowerFault())F.SetPowerFault(false);
+   const FString SaroClue=Def.Mystery->Clues[0].Finding,FeederClue=Def.Mystery->Clues[1].Finding;
+   if(Stage==490)
+   {
+    if(D.MysteryNoticeClue()<0)
+    {
+     if(Late>=29)return Fail(TEXT("the drawn mystery must come by itself to a player at the station"));
+     if(D.MysteryDrawnNight()>0&&MysterySub==0){UE_LOG(LogTemp,Display,TEXT("S47: mystery: the planner drew it at %.2f"),Hour);MysterySub=1;}
+     if(!F.TestAdvance(FMath::Min(Elapsed-DreadAt,.25)*560.))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;return true;
+    }
+    if(MysterySub==0)return Fail(TEXT("the notice must follow the planner's draw"));
+    if(D.MysteryNoticeClue()!=0||Late<20||C->bOpen||F.HasFinding(SaroClue))return Fail(TEXT("the first notice at the station, after its hour, before any record"));
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery: the notice came at %.2f"),Hour);
+    M->bPausedByMenu=true;MysteryHeld=D.MysteryNoticeAge();VisitClock=F.Clock();DreadAt=Elapsed;Stage=491;return true;
+   }
+   if(Stage==491)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    if(D.MysteryNoticeAge()!=MysteryHeld||F.Clock()!=VisitClock||F.HasFinding(SaroClue))return Fail(TEXT("a menu holds the notice and the clock"));
+    M->bPausedByMenu=false;
+    const auto State=M->Flow->GameState();
+    if(!MysteryRestore(M,State))return false;
+    Stage=492;return true;
+   }
+   if(Stage==492)
+   {
+    if(F.HasFinding(SaroClue))
+    {
+     if(!C->bOpen||F.FindingText(SaroClue)!=F.CaseFile().ClueText(L,0)||!D.MysteryTrailOpen()||D.MysteryDrawnNight()!=0)return Fail(TEXT("the record opens the case, and leaves the other place worth a look"));
+     MysteryTruth=C->Truth;M->World->Enter(TEXT("road"));DreadAt=Elapsed;MysterySub=0;Stage=493;return true;
+    }
+    if(Elapsed-DreadAt>.5&&D.MysteryNoticeClue()!=0)return Fail(TEXT("a Continue must keep the notice under way"));
+    if(Elapsed-DreadAt>15)return Fail(TEXT("the notice must end in a record"));
+    return true;
+   }
+   if(Stage==493)
+   {
+    if(MysterySub==0)
+    {
+     if(M->Web->Area()!=TEXT("road")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("the road must load")):true;
+     if(M->World->bDriving)return Fail(TEXT("the test walks up to the feeder"));
+     const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X,P.Z+4.,0);DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     // In the evening there is nothing here to find, however long.
+     if(Hour>=12)
+     {
+      if(D.MysteryNoticeClue()>=0||F.HasFinding(FeederClue))return Fail(TEXT("nothing at the feeder before midnight"));
+      if(Elapsed-DreadAt<8)return true;
+      UE_LOG(LogTemp,Display,TEXT("S47: mystery: 8 s at the feeder at %.2f, nothing"),Hour);
+      if(!DreadToClock(M,.5))return Fail(TEXT("no clock"));
+     }
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(!F.HasFinding(FeederClue))return Elapsed-DreadAt>30?Fail(TEXT("after midnight the feeder has something to find")):true;
+    const int32 A=F.CaseFile().ClueReading(L,0),B=F.CaseFile().ClueReading(L,1);
+    if(A==B||(A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("the two places must read differently, one of them straight"));
+    M->World->Enter(TEXT("saro"));DreadAt=Elapsed;MysterySub=0;Stage=494;return true;
+   }
+   if(Stage==494)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(M->Web->Area()!=TEXT("saro"))return Elapsed-DreadAt>15?Fail(TEXT("SARO must load")):true;
+    // Word for word the same under another cause. Both from a Continue, so that neither carries the last message.
+    if(MysterySub==0)
+    {
+     M->UI->Close(true);M->Player->Place(0,-1.2,0);MysteryBefore=M->Flow->GameState();
+     if(!MysteryRestore(M,MysteryBefore))return false;
+     MysterySub=1;return true;
+    }
+    if(MysterySub==1){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=2;return true;}
+    if(MysterySub==2)
+    {
+     MysteryBoard=MysteryShown(M);
+     if(!MysteryBoard.Contains(F.FindingText(SaroClue))||!MysteryBoard.Contains(F.FindingText(FeederClue)))return Fail(TEXT("the board shows both traces"));
+     for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!MysteryBoard.Contains(FString(TEXT("File assessment: "))+Def.Short[I]))return Fail(TEXT("with no test run, any explanation can be filed"));
+     int32 Other=1;for(FS47FreeformCases Probe;Other<512;++Other){Probe.Reset(Other);if(Probe.Get(L)->Truth!=MysteryTruth)break;}
+     const auto Swapped=S47J::Clone(MysteryBefore);S47J::Set(S47J::Obj(Swapped,TEXT("freeform")),TEXT("jobSeed"),Other);
+     M->UI->Close(true);if(!MysteryRestore(M,Swapped))return false;
+     MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     if(C->Truth==MysteryTruth)return Fail(TEXT("the other seed must mean another cause"));
+     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    if(MysterySub==4)
+    {
+     const FString Shown=MysteryShown(M);
+     if(Shown!=MysteryBoard){UE_LOG(LogTemp,Error,TEXT("S47: mystery: one cause reads\n%s\nand another\n%s"),*MysteryBoard,*Shown);return Fail(TEXT("nothing the player can read may depend on the cause"));}
+     M->UI->Close(true);if(!MysteryRestore(M,MysteryBefore))return false;
+     MysterySub=5;return true;
+    }
+    if(C->Truth!=MysteryTruth)return Fail(TEXT("Continue must bring back the same cause"));
+    MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=0;Stage=495;return true;
+   }
+   if(Stage==495)
+   {
+    // A real control, on the real job. Off the beam needs no fuel and no second night.
+    if(Elapsed-DreadAt<.6)return true;
+    if(MysterySub==0)
+    {
+     if(!MysteryClick(M,FString(TEXT("Plan this test: "))+Def.Tests[1].Name))return Fail(TEXT("the board offers the control"));
+     DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     if(C->Planned!=1)return Fail(TEXT("the control is planned"));
+     M->UI->Close(true);
+     if(!F.SelectJob(F.Jobs().Num()-1)||F.CurrentJob()->CaseLine!=L)return Fail(TEXT("the control is its own job"));
+     const auto* Card=F.ConsoleProfile();if(!Card)return Fail(TEXT("the job has a card"));
+     auto& Rx=M->Story->Rx;Rx.Frequency=Card->F;Rx.Gain=(Card->Gain[0]+Card->Gain[1])/2;Rx.Bandwidth=(Card->Bw[0]+Card->Bw[1])/2;Rx.Azimuth=(Card->Az[0]+Card->Az[1])/2;
+     if(!F.PointSelected())return Fail(TEXT("the array takes the command"));
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!F.StartAcquisition())return Elapsed-DreadAt>40?Fail(TEXT("the recording must start once the dishes settle")):true;
+     DreadAt=Elapsed;MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     // At twelve of twenty-seven antennas the eighteen seconds of the pulsar take 42 s at 43 percent, the chart 5.2 s more,
+     // and a frame slower than a tenth of a second counts as a tenth. The array is the worn one here, on purpose.
+     if(!F.CurrentJob()||F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return Elapsed-DreadAt>30.+3.*18./FMath::Max(.05,F.ArrayMeasurementRate())?Fail(TEXT("the recording must print")):true;
+     M->UI->Close(true);if(!F.CollectChart())return Fail(TEXT("the chart must come off the printer"));
+     M->UI->Close(true);if(!F.RegisterComparison(TEXT("normal")))return Fail(TEXT("the control must register"));
+     const auto& Result=C->Results[1];
+     if(!Result.bDone||Result.bPresent!=FS47FreeformCases::PresentFor(L,MysteryTruth,1))return Fail(TEXT("the control shows what the cause makes it show"));
+     if(F.CaseFile().Remaining(L)>=FS47FreeformCases::CauseCount)return Fail(TEXT("the control must close something"));
+     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    // Filed right. What the control ruled out is no longer offered, on the board or behind it.
+    const FString Shown=MysteryShown(M);
+    for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
+    {
+     const bool bOffered=Shown.Contains(FString(TEXT("File assessment: "))+Def.Short[I]);
+     if(bOffered==F.CaseFile().Excluded(L,I))return Fail(TEXT("the board offers exactly what the tests leave"));
+     if(F.CaseFile().Excluded(L,I)&&F.ConcludeCase(L,I))return Fail(TEXT("a ruled-out explanation cannot be filed"));
+    }
+    MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+    if(!MysteryClick(M,FString(TEXT("File assessment: "))+Def.Short[MysteryTruth]))return Fail(TEXT("the board takes the filing"));
+    DreadAt=Elapsed;MysterySub=0;Stage=496;return true;
+   }
+   if(Stage==496)
+   {
+    if(Elapsed-DreadAt<.6)return true;
+    if(MysterySub==0)
+    {
+     const auto* Reply=F.CaseFile().Reply(L);
+     if(!C->bConcluded||C->Conclusion!=MysteryTruth||!Reply||C->bReplied)return Fail(TEXT("the filing stands, with its reply still to come"));
+     const FString Shown=MysteryShown(M)+F.FeedbackText()+F.FindingText(TEXT("case4-conclusion"));
+     if(Shown.Contains(Reply->Text)||F.HasFinding(TEXT("case4-reply")))return Fail(TEXT("nothing is known of it before the morning"));
+     // The menu holds the morning too.
+     M->UI->Close(true);M->bPausedByMenu=true;if(!DreadToClock(M,8.5))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;MysterySub=1;return true;
+    }
+    if(MysterySub==1)
+    {
+     if(Elapsed-DreadAt<2)return true;
+     if(C->bReplied||F.Day()<=C->ConcludeDay)return Fail(TEXT("a menu holds the reply, and the morning must be a new day"));
+     M->bPausedByMenu=false;DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!C->bReplied)return Elapsed-DreadAt>5?Fail(TEXT("the morning brings the reply")):true;
+     if(!MysteryReplyHolds(M))return false;
+     MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+     const auto State=M->Flow->GameState();if(!MysteryRestore(M,State))return false;
+     MysterySub=3;return true;
+    }
+    if(!C->bReplied||!C->bConcluded||F.InventoryCount(TEXT("fuse"))!=MysteryFuses||F.Budget()!=MysteryCash)return Fail(TEXT("after a Continue the reply stands and does not come again"));
+    // Back from before the control: this time the wrong answer, with nothing but the traces.
+    if(!MysteryRestore(M,MysteryBefore))return false;
+    MysterySub=0;Stage=497;return true;
+   }
+   if(Stage==497)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(MysterySub==0){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=1;return true;}
+    if(MysterySub==1)
+    {
+     MysteryFuses=F.InventoryCount(TEXT("fuse"));MysteryCash=F.Budget();
+     const int32 Wrong=(MysteryTruth+1)%FS47FreeformCases::CauseCount;
+     if(C->Truth!=MysteryTruth||C->bConcluded||!MysteryClick(M,FString(TEXT("File assessment: "))+Def.Short[Wrong]))return Fail(TEXT("the wrong answer can be filed with no test run"));
+     DreadAt=Elapsed;MysterySub=2;return true;
+    }
+    if(MysterySub==2)
+    {
+     if(!C->bConcluded||C->Conclusion==MysteryTruth||!F.FeedbackText().Contains(TEXT("in the morning")))return Fail(TEXT("the wrong filing stands, and it says only that the reply will come"));
+     M->UI->Close(true);const auto State=M->Flow->GameState();if(!MysteryRestore(M,State))return false;
+     MysterySub=3;return true;
+    }
+    if(MysterySub==3)
+    {
+     if(!C->bConcluded||C->bReplied||C->Conclusion==MysteryTruth)return Fail(TEXT("a Continue keeps the filing and its reply still to come"));
+     if(!DreadToClock(M,8.5))return Fail(TEXT("no clock"));
+     DreadAt=Elapsed;MysterySub=4;return true;
+    }
+    if(!C->bReplied)return Elapsed-DreadAt>5?Fail(TEXT("the morning brings the reply")):true;
+    if(!MysteryReplyHolds(M))return false;
+    // Nothing locks: the next day comes as any other.
+    const int32 Today=F.Day();
+    if(!F.Rest()||F.Day()!=Today+1)return Fail(TEXT("after a wrong filing the days go on"));
+    UE_LOG(LogTemp,Display,TEXT("S47: mystery PASS: both ways, under cause %d"),MysteryTruth);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such mystery stage"));
+  }
   // -S47MenuPointerKinds: from the visit's own dice (a set roll, through PickWho) at the marks. PASS only if: nothing at
   // all in 25 s of standing there at 21:00; at 03:30 each kind comes on its own after the wait; the tall one stands 25 m
   // or more off in a clear line, stays put at first, has its head up; the radio rises as it nears and crackles; leaving
@@ -197,8 +520,16 @@ namespace
   // body-event before 02:00; the lights start past midnight, not before their hour; a visit at the marks waits for 02:00.
   // -S47MenuPointerRest: the real Rest with the Director running. Set up: armed marks, then dice forced to yes, then to
   // no, in that order. PASS only if: rest over marks stops 02:05 to 03:00 with the call given; the next goes to morning;
-  // dice yes stops it again and an event starts by itself; rest is refused while it runs and goes through once over;
-  // dice no sleeps straight through.
+  // the next night, dice yes or not, sleeps through (never two running); the night after, dice yes stops it again and an
+  // event starts by itself; rest is refused, with the reason, only if what started is close, and goes through once over;
+  // dice no sleeps straight through two nights.
+  // -S47MenuPointerPlanner: what the planner does around the player. Set up: night two at 22:00, every draw no but the
+  // lights' at 22:00, scheduler clock 40 times over; the real jeep and getting out. Natural: the draw, the wait, the start,
+  // the tip, the task row. PASS only if: nothing starts at the wheel and the draw is not spent; parked, the lights start by
+  // themselves; a rest under them is accepted and ends them, leaving their marks and the task row; a rest under
+  // service_presence is refused with its reason; s03_failure (TestBegin: its dice not awaited, the rest of its life natural)
+  // leaves the fault in the equipment and no event; empty_car ends when the player leaves; a failed save starts nothing;
+  // the third card of a day is not up in the morning, says when, and can be pointed at that evening.
   bool StepNight(US47Main* M)
   {
    StageAt=Elapsed;
@@ -264,6 +595,97 @@ namespace
     if(Site.VisitStage()!=4){if(Elapsed-DreadAt>8)return Fail(TEXT("leaving must end it"));return true;}
     D.TestSchedule(-1.f,25.2,40.);DreadAt=Elapsed;Stage=460;return true;
    }
+   // What the planner does around the player.
+   if(Stage==470)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    const auto Choice=M->World->TruckChoice(TEXT("saro"));
+    if(!Choice.Use)return Fail(TEXT("the jeep must offer the drive"));
+    Choice.Use();DreadAt=Elapsed;Stage=471;return true;
+   }
+   if(Stage==471)
+   {
+    if(M->World->bBusy||!M->World->bDriving){if(Elapsed-DreadAt>15)return Fail(TEXT("the player must be at the wheel"));DreadAt=M->World->bDriving?Elapsed:DreadAt;return true;}
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("nothing may start at the wheel"));
+    if(Elapsed-DreadAt<14)return true;
+    if(D.LightsDrawnNight()!=F.Day())return Fail(TEXT("the night's draw must wait for the player to park"));
+    if(!M->World->GetOutHere())return Fail(TEXT("the player must be able to get out"));
+    DreadAt=Elapsed;Stage=472;return true;
+   }
+   if(Stage==472)
+   {
+    const FString Id=D.ActiveEvent();
+    if(Id.IsEmpty())return Elapsed-DreadAt>30?Fail(TEXT("parked, the night's lights must start by themselves")):true;
+    if(Id!=TEXT("farm_lights")&&Id!=TEXT("town_lights"))return Fail(TEXT("the lights come first in the night's order"));
+    UE_LOG(LogTemp,Display,TEXT("S47: planner: %s started by itself after parking"),*Id);
+    // The scheduler back to its own pace: the next tick is minutes off, and the fixtures below have the night to themselves.
+    D.TestSchedule(0.f,-1,1);
+    DreadAt=Elapsed;Stage=473;return true;
+   }
+   const auto Reported=[&F]{for(const auto& Task:F.Tasks())if(Task.Text.StartsWith(TEXT("Reported: lights at")))return true;return false;};
+   if(Stage==473)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    if(!F.Objective().Contains(TEXT("RADIO TIP"))||!Reported())return Fail(TEXT("the tip stands on the objective line and in the task list"));
+    if(!D.RestBlock().IsEmpty())return Fail(TEXT("lights in the distance do not stop a rest"));
+    const double Before=F.Clock();
+    if(!F.WaitUntil(Before+1800.)||F.Clock()<=Before)return Fail(TEXT("a rest under far lights must be accepted"));
+    if(!D.ActiveEvent().IsEmpty()||!Site.Armed()||!Reported())return Fail(TEXT("sleeping ends them and leaves their marks and the task row"));
+    DreadAt=Elapsed;Stage=474;return true;
+   }
+   if(Stage==474)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(!D.TestBegin(TEXT("service_presence")))return Fail(TEXT("the presence must start for this"));
+    const double Before=F.Clock();
+    if(F.WaitUntil(Before+1800.)||F.Clock()!=Before||!F.FeedbackText().Contains(TEXT("service yard")))return Fail(TEXT("a rest under what is close is refused, and says what stops it"));
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+    if(!F.Field->HasArrayFault()&&!D.TestBegin(TEXT("s03_failure")))return Fail(TEXT("the fault must start for this")); // The planner may have brought one already.
+    DreadAt=Elapsed;Stage=475;return true;
+   }
+   if(Stage==475)
+   {
+    if(Elapsed-DreadAt<1.5)return true;
+    if(!D.ActiveEvent().IsEmpty()||!F.Field->HasArrayFault())return Fail(TEXT("a fault stays in the equipment, not in the event"));
+    if(!D.TestBegin(TEXT("empty_car")))return Fail(TEXT("the empty car must start for this"));
+    DreadAt=Elapsed;Stage=476;return true;
+   }
+   if(Stage==476)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(D.ActiveEvent()!=TEXT("empty_car"))return Fail(TEXT("the empty car stands while the player is here"));
+    M->World->Enter(TEXT("road"));DreadAt=Elapsed;Stage=477;return true;
+   }
+   if(Stage==477)
+   {
+    if(M->Web->Area()!=TEXT("road")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("the road must load")):true;
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("leaving ends what has no hardware behind it"));
+    M->World->Enter(TEXT("saro"));DreadAt=Elapsed;Stage=478;return true;
+   }
+   if(Stage==478)
+   {
+    if(M->Web->Area()!=TEXT("saro")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("SARO must load")):true;
+    M->Player->Place(0,-1.2,0);
+    D.TestSaveFails(true);if(!D.TestBegin(TEXT("flyover")))return Fail(TEXT("the flyover must start for this"));
+    DreadAt=Elapsed;Stage=479;return true;
+   }
+   if(Stage==479)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    D.TestSaveFails(false);
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("no save, no event"));
+    // The evening's work. Only the card is in question: no power would hide it.
+    F.TestEveningGate();if(!DreadToClock(M,9.))return Fail(TEXT("no clock"));
+    const int32 Today=F.Day();const int32 Index=F.Jobs().IndexOfByPredicate([Today](const FS47FreeformSession::FJob& J){return J.Day==Today&&J.Slot==2;});
+    if(Index==INDEX_NONE||!F.SelectJob(Index))return Fail(TEXT("the day has a third card"));
+    if(F.PointSelected())return Fail(TEXT("the evening's source is not up in the morning"));
+    if(!F.JobNextAction(*F.CurrentJob()).Contains(TEXT("EVENING OBSERVATION")))return Fail(TEXT("it says when"));
+    if(F.PowerFault())F.SetPowerFault(false);
+    if(!DreadToClock(M,23.))return Fail(TEXT("no clock"));
+    if(!F.PointSelected())return Fail(TEXT("in the evening it can be pointed at"));
+    UE_LOG(LogTemp,Display,TEXT("S47: planner PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
    // The rest.
    if(Stage==480)
    {
@@ -287,6 +709,15 @@ namespace
    }
    if(Stage==482)
    {
+    // The night after a broken night, whatever is drawn.
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest must be accepted"));
+    if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("never two broken nights running"));
+    DreadAt=Elapsed;Stage=486;return true;
+   }
+   if(Stage==486)
+   {
     if(Elapsed-DreadAt<2)return true;
     const int32 Day=F.Day();
     if(!F.Rest())return Fail(TEXT("rest must be accepted"));
@@ -301,7 +732,8 @@ namespace
     if(Id.IsEmpty()){if(Elapsed-DreadAt>30)return Fail(TEXT("what woke them must follow by itself"));return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: rest: %s started by itself after waking"),*Id);
     const double Before=F.Clock();
-    if(F.WaitUntil(F.Clock()+3600.)||F.Clock()!=Before)return Fail(TEXT("no sleeping through an active encounter"));
+    const bool bClose=!D.RestBlock().IsEmpty();
+    if(F.WaitUntil(F.Clock()+60.)==bClose||(bClose&&F.Clock()!=Before))return Fail(TEXT("no sleeping through what is close, and nothing else stops it"));
     if(M->UI)M->UI->Close(true);
     if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
     D.TestSchedule(0.f,-1,1);DreadAt=Elapsed;Stage=484;return true;
@@ -320,14 +752,193 @@ namespace
     const int32 Day=F.Day();
     if(!F.Rest())return Fail(TEXT("rest must be accepted"));
     if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("a night with nothing drawn sleeps straight through"));
+    // The first of these is the night after the broken one, which proves nothing about the dice. The second does.
+    if(++DreadRound<2){DreadAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: rest PASS"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    return Fail(TEXT("no such night stage"));
   }
+  // -S47MenuPointerAfter: taken for real, by the crab at the marks at 02:30, from the visit's own dice (only the dice of
+  // the line and the cow are set to yes). PASS only if: before it, nothing is wrong and nothing is saved; after it the
+  // workstation shows the time they were taken and the watch does not, the line is in the notes, and the cow is planned;
+  // both survive a disk Continue; next morning the ninth is gone from both herds, out of sight, and stays gone through a
+  // Continue; counting them on the spot keeps one record; OPS shows the old time for a moment and then the right one, and
+  // that survives a Continue; days later the cow is back, also after a Continue; a clock nobody logs on to is right
+  // after a day. Pictures: after-cow-gone, after-pc-stuck, after-pc-right.
+  // -S47MenuPointerCarLight: the empty car at 03:00 with its own dice set to yes. PASS only if: the light begins with a
+  // warning; walking off costs no time and leaves no taking; going up to the car afterwards keeps its own record; a second
+  // time, staying beside it, they are taken and the event ends. Picture: after-car-warning.
+  bool AfterContinue(US47Main* M,int32 Next)
+  {
+   M->UI->Close(true);const auto State=M->Flow->GameState();
+   if(!MysteryRestore(M,State))return false;
+   if(M->Freeform->Director)M->Freeform->Director->Stop();
+   Stage=Next;AfterAt=Elapsed;return true;
+  }
+  bool StepAfter(US47Main* M)
+  {
+   StageAt=Elapsed;
+   auto& F=*M->Freeform;auto& Af=*F.Aftermath;auto& Tk=*F.Taken;auto& Site=*F.FarmSite;
+   if(!M->TownLayer||M->TownLayer->Herds.Num()<2)return Fail(TEXT("no herds"));
+   FS47Herd& H0=*M->TownLayer->Herds[0];FS47Herd& H1=*M->TownLayer->Herds[1];
+   const FString Real=FS47FreeformCases::Clock(FMath::Fmod(F.Clock(),86400.));
+   const FVector Room(0,0,-1.2);
+   if(Stage==500)
+   {
+    if(Tk.LastNote().IsEmpty()||Tk.Busy()||Site.VisitStage()!=4){if(Elapsed-AfterAt>150)return Fail(TEXT("the crab must take a player who stays"));return true;}
+    AfterAt=Elapsed;Stage=501;return true;
+   }
+   if(Stage==501)
+   {
+    if(Elapsed-AfterAt<1.5)return true;
+    UE_LOG(LogTemp,Display,TEXT("S47: after: watch %s, workstation %s, line '%s', cow planned %d. %s"),*Real,*F.TerminalClock(),*Af.LastLine(),Af.CowPlanned(),*Tk.LastNote());
+    if(!Af.PcStuck()||F.Clock()-Af.PcShown()<100*60)return Fail(TEXT("the workstation must stand at the time they were taken"));
+    if(F.TerminalClock().EndsWith(Real))return Fail(TEXT("the workstation and the watch must disagree"));
+    if(!F.TerminalLines(3).Contains(FString(TEXT("SYSTEM CLOCK "))+FS47FreeformCases::Clock(FMath::Fmod(Af.PcShown(),86400.))))return Fail(TEXT("the wrong time must be on the OPS glass"));
+    if(Af.LastLine().IsEmpty()||!M->Story->Notes().Contains(Af.LastLine()))return Fail(TEXT("the line must be in the player's notes"));
+    if(!Af.CowPlanned())return Fail(TEXT("a night with a visit at the farm must be able to cost a cow"));
+    AfterPc=Af.PcShown();AfterLine=Af.LastLine();
+    M->Player->Place(Room.X,Room.Z,0);
+    return AfterContinue(M,502);
+   }
+   if(Stage==502)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(!Af.PcStuck()||!FMath::IsNearlyEqual(Af.PcShown(),AfterPc))return Fail(TEXT("a Continue must keep the clock standing where it stood"));
+    if(M->Story->Notes().FilterByPredicate([&](const FString& Text){return Text==AfterLine;}).Num()!=1)return Fail(TEXT("a Continue must keep the line, once"));
+    if(!Af.CowPlanned())return Fail(TEXT("a Continue must keep the cow's morning"));
+    if(!DreadToClock(M,9.))return Fail(TEXT("the morning must come"));
+    AfterAt=Elapsed;Stage=503;return true;
+   }
+   if(Stage==503)
+   {
+    if(!Af.CowOut()||H0.Missing!=S47Herd::MISSING||H1.Missing!=S47Herd::MISSING){if(Elapsed-AfterAt>10)return Fail(TEXT("the ninth must be gone in the morning, from both herds"));return true;}
+    FVector Where;if(H0.CowAt(S47Herd::MISSING,Where))return Fail(TEXT("nothing may stand where she stood"));
+    return AfterContinue(M,504);
+   }
+   if(Stage==504)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(!Af.CowOut()||H0.Missing!=S47Herd::MISSING)return Fail(TEXT("a Continue must not bring her back"));
+    if(!Af.PcStuck())return Fail(TEXT("nobody has logged on yet"));
+    const FVector Mid=H0.Middle();M->Player->Place(Mid.X+6,Mid.Z+6,0);M->Player->Pitch=-.05;
+    AfterAt=Elapsed;Stage=505;return true;
+   }
+   if(Stage==505)
+   {
+    if(!F.HasFinding(Af.CowFindingId())){if(Elapsed-AfterAt>8)return Fail(TEXT("counting them on the spot must keep a record"));return true;}
+    if(Elapsed-AfterAt<1.5)return true;
+    Shot(TEXT("after-cow-gone.png"));
+    const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
+    M->Player->Place(P.X,P.Z+1.1,0);AfterAt=Elapsed;Stage=506;return true;
+   }
+   if(Stage==506)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!F.OpsOnGlass()&&!M->ModalOpen())F.Use(TEXT("opsTerminal"));
+    if(!F.OpsOnGlass()){if(Elapsed-AfterAt>6)return Fail(TEXT("OPS must open"));return true;}
+    if(!F.TerminalClock().EndsWith(FS47FreeformCases::Clock(FMath::Fmod(AfterPc,86400.))))return Fail(TEXT("logging on must first show the old time"));
+    Shot(TEXT("after-pc-stuck.png"));AfterAt=Elapsed;Stage=507;return true;
+   }
+   if(Stage==507)
+   {
+    if(Af.PcStuck()){if(Elapsed-AfterAt>FS47Aftermath::LogOnSeconds+30)return Fail(TEXT("logging on must put the clock right"));return true;}
+    if(Elapsed-AfterAt<FS47Aftermath::LogOnSeconds-1.5)return Fail(TEXT("it must be seen wrong for a moment first"));
+    if(!F.TerminalClock().EndsWith(Real))return Fail(TEXT("the workstation must now agree with the watch"));
+    Shot(TEXT("after-pc-right.png"));AfterAt=Elapsed;Stage=508;return true;
+   }
+   if(Stage==508)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    M->UI->Close(true);M->Player->Place(Room.X,Room.Z,0);
+    return AfterContinue(M,509);
+   }
+   if(Stage==509)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(Af.PcStuck()||!F.TerminalClock().EndsWith(Real))return Fail(TEXT("once right, a Continue must leave it right"));
+    if(!DreadToClock(M,9.,5.))return Fail(TEXT("the days must pass"));
+    AfterAt=Elapsed;Stage=510;return true;
+   }
+   if(Stage==510)
+   {
+    FVector Where;
+    if(Af.CowOut()||H0.Missing!=-1||H1.Missing!=-1||!H0.CowAt(S47Herd::MISSING,Where)){if(Elapsed-AfterAt>10)return Fail(TEXT("she must be back after some days"));return true;}
+    return AfterContinue(M,511);
+   }
+   if(Stage==511)
+   {
+    if(Elapsed-AfterAt<2.5)return true;
+    if(Af.CowOut()||Af.CowPlanned()||H0.Missing!=-1)return Fail(TEXT("back is back, also after a Continue"));
+    // Nobody logs on: the clock puts itself right after a day. A second taking, without its long way round.
+    Af.AfterTaken(0,F.Clock());
+    if(!Af.PcStuck()||!F.TestAdvance(86400.+60.))return Fail(TEXT("the clock's day must be able to pass"));
+    AfterAt=Elapsed;Stage=512;return true;
+   }
+   if(Stage==512)
+   {
+    if(Af.PcStuck()){if(Elapsed-AfterAt>3)return Fail(TEXT("a day must put the clock right with nobody at it"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: after PASS: line '%s'"),*AfterLine);
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   // The empty car, once walked away from, once stood beside.
+   auto& D=*F.Director;
+   const auto TakenFor=[&]{return F.Clock()-AfterPc;};
+   if(Stage==519)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.TestBegin(TEXT("empty_car"))||!D.CarLightDrawn())return Fail(TEXT("the car must start, with its light drawn"));
+    AfterAt=Elapsed;Stage=520;return true;
+   }
+   if(Stage==520)
+   {
+    if(!Tk.Busy()){if(Elapsed-AfterAt>5)return Fail(TEXT("the light must start for someone near in the open"));return true;}
+    if(Tk.Stage()!=FS47Taken::EStage::Flood)return Fail(TEXT("it must be the light, not the steps overhead"));
+    AfterPc=F.Clock();AfterAt=Elapsed;Stage=521;return true;
+   }
+   if(Stage==521)
+   {
+    // The warning: faint, and it has not begun to look yet. Turn and see it; then go.
+    const FVector A=D.EventAnchor();const FVector Eye(M->Player->Pos.X,M->Player->FloorY+1.6,M->Player->Pos.Z);
+    M->Player->Yaw=FMath::Atan2(Eye.X-A.X,Eye.Z-A.Z);M->Player->Pitch=.1;
+    if(Tk.LightOn()>0)return Fail(TEXT("the warning must not count as being in the light"));
+    if(Elapsed-AfterAt<3)return true;
+    Shot(TEXT("after-car-warning.png"));M->Player->Place(A.X,A.Z+80,0);AfterAt=Elapsed;Stage=522;return true;
+   }
+   if(Stage==522)
+   {
+    if(Tk.Busy()){if(Elapsed-AfterAt>90)return Fail(TEXT("the light must give up on someone who left"));return true;}
+    if(TakenFor()>10*60||!Tk.LastNote().IsEmpty())return Fail(TEXT("walking off must cost nothing"));
+    if(D.ActiveEvent()!=TEXT("empty_car")||D.CarLightStage()!=2){if(Elapsed-AfterAt>92)return Fail(TEXT("the car must still be there to go up to"));return true;}
+    const FVector A=D.EventAnchor();M->Player->Place(A.X+2.5,A.Z,0);AfterAt=Elapsed;Stage=523;return true;
+   }
+   if(Stage==523)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.Use(TEXT("ff:event-check"))||!D.ActiveEvent().IsEmpty())return Fail(TEXT("the car must be there to inspect"));
+    if(!F.FindingText(TEXT("empty_car")).Contains(TEXT("stopped at")))return Fail(TEXT("going up to it must keep its own record"));
+    M->Player->Place(27,24,PI);AfterAt=Elapsed;Stage=524;return true;
+   }
+   if(Stage==524)
+   {
+    if(Elapsed-AfterAt<1)return true;
+    if(!D.TestBegin(TEXT("empty_car"))||!D.CarLightDrawn())return Fail(TEXT("the car must start a second time"));
+    const FVector A=D.EventAnchor();M->Player->Place(A.X+5,A.Z+5,0);AfterAt=Elapsed;Stage=525;return true;
+   }
+   if(Stage==525)
+   {
+    if(Tk.LastNote().IsEmpty()||Tk.Busy()){if(Elapsed-AfterAt>120)return Fail(TEXT("the light must reach someone who stays"));return true;}
+    if(!D.ActiveEvent().IsEmpty()){if(Elapsed-AfterAt>125)return Fail(TEXT("being taken must end the event"));return true;}
+    UE_LOG(LogTemp,Display,TEXT("S47: car light PASS: %s"),*Tk.LastNote());
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
+   return Fail(TEXT("no such after stage"));
+  }
   bool StepDread(US47Main* M)
   {
    if(Stage>=460&&Stage<=489)return StepNight(M);
+   if(Stage>=490&&Stage<=499)return StepMystery(M);
    StageAt=Elapsed;
    auto& Site=*M->Freeform->FarmSite;auto& Tk=*M->Freeform->Taken;auto& Dread=*M->Freeform->IndoorDread;
    const FVector Marks=Site.Centre();
@@ -590,8 +1201,9 @@ namespace
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
-   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<500)&&Elapsed-StageAt<1) return true;
+   if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&Elapsed-StageAt<1) return true;
    if(Stage>=400&&Stage<500)return StepDread(M);
+   if(Stage>=500&&Stage<530)return StepAfter(M);
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
@@ -703,6 +1315,13 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the road test needs the night"));
      M->World->Enter(TEXT("road"));Stage=80;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerOffice")))
+    {
+     // PLAY-31-01 / FIX-04: read-only look at the motel office from inside and out, and at the pool fence. -S47OfficeHour=N sets the hour (default: as it starts).
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     int32 At=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47OfficeHour="),At)&&!M->Freeform->TestAdvance(FMath::Fmod(At*3600.-FMath::Fmod(M->Freeform->Clock(),86400.)+86400.,86400.)))return Fail(TEXT("the office test could not set the hour"));
+     M->World->Enter(TEXT("saro"));Stage=699;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerBuildings")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -770,7 +1389,46 @@ namespace
      M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
      M->Freeform->Director->TestSchedule(0.f,-1,1);
      M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());M->Freeform->FarmSite->TestReadyVisit();
-     DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
+     DreadRound=0;DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerPlanner")))
+    {
+     // The Director stays on. 22:00 of night two, in the control room, the lights drawn for 22:00 and nothing else.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(38.*3600.))return Fail(TEXT("the planner test needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(0.f,22.,40.);
+     DreadFrom=DreadAt=Elapsed;Stage=470;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAfter")))
+    {
+     // Night two at 02:30, on foot at marks the lights left. The crab comes by the visit's own dice.
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();M->Freeform->TestEndFirstShift();
+     if(M->Freeform->Aftermath->Save()->Values.Num()>0||M->Freeform->Aftermath->PcStuck())return Fail(TEXT("nothing has happened yet, so nothing may be wrong"));
+     if(M->TownLayer&&!M->TownLayer->Herds.IsEmpty()&&M->TownLayer->Herds[0]->Missing!=-1)return Fail(TEXT("the herd is whole until something happens"));
+     if(!M->Freeform->TestAdvance(42.5*3600.))return Fail(TEXT("the aftermath test needs night two"));
+     M->Freeform->Aftermath->TestDice(0.f,0.f);
+     auto& Site=*M->Freeform->FarmSite;Site.ArmFarm(M->Freeform->Clock());Site.TestRollWho(.05f);Site.TestReadyVisit();
+     const FVector Marks=Site.Centre();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+     AfterAt=Elapsed;Stage=500;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerCarLight")))
+    {
+     // 03:00, in the open with the car behind them, so that it may appear. Everything else the Director could draw is off.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(43.*3600.))return Fail(TEXT("the car test needs the small hours"));
+     auto& D=*M->Freeform->Director;D.TestSchedule(0.f,-1,1.);D.TestCarDice(0.f);
+     M->Player->Place(27,24,PI);
+     AfterAt=Elapsed;Stage=519;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerMystery")))
+    {
+     // The Director stays on, its own draws set to no but for the mystery's. 19:30 of night two, in the control room.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(35.5*3600.))return Fail(TEXT("the mystery needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(0.f,-1,40.);M->Freeform->Director->TestMysteryDice(1.f);
+     DreadFrom=DreadAt=Elapsed;Stage=490;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerReflood")))
     {
@@ -784,6 +1442,41 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
+   }
+   // The motel office (PLAY-31-01) and the pool fence (FIX-04), in the saro frame. Floors are the assembly's: reception tiles x -48.1..-43.7, z 672.3..677.5, door at x -43.7, z about 674.1.
+   if(Stage==699)
+   {
+    if(Elapsed-StageAt<5)return true;
+    if(M->Web->Area()!=TEXT("saro")){M->World->Enter(TEXT("saro"));return true;}
+    S47MotelProbe::LogOffice(M);Stage=700;StageAt=Elapsed;return true;
+   }
+   if(Stage>=700&&Stage<740)
+   {
+    struct FOfficeView{const TCHAR* Name;double X,Z,LookX,LookHeight,LookZ;bool bRays;};
+    static const FOfficeView Views[]={
+     {TEXT("in-west"),-44.6,674.1,-48.0,1.5,674.1,true},{TEXT("in-north"),-44.6,674.1,-44.6,1.5,677.4,true},{TEXT("in-south"),-44.6,674.1,-44.6,1.5,672.4,true},
+     {TEXT("in-door"),-44.6,674.1,-41.0,1.4,674.1,true},{TEXT("in-corner-nw"),-47.3,676.5,-44.0,1.3,673.0,true},{TEXT("in-corner-sw"),-47.3,672.9,-44.0,1.3,676.6,true},
+     {TEXT("in-ceiling"),-46.0,674.9,-45.0,3.0,674.9,false},{TEXT("in-floor"),-45.5,674.9,-44.8,0.1,674.9,false},
+     {TEXT("out-door"),-41.0,674.1,-45.0,1.4,674.1,false},{TEXT("out-door-close"),-43.0,674.1,-46.0,1.4,674.1,false},
+     {TEXT("out-oblique-south"),-41.0,672.0,-43.8,1.5,674.1,false},{TEXT("out-oblique-north"),-41.5,677.0,-44.0,1.3,673.0,false},{TEXT("out-wall"),-41.5,672.3,-44.0,1.3,675.5,false},
+     {TEXT("pool-approach"),-50.5,684.0,-56.0,1.0,700.0,false},{TEXT("pool-fence-south"),-50.0,689.0,-65.0,0.4,691.0,false},{TEXT("pool-fence-corner"),-52.0,696.0,-54.5,0.5,706.0,false}};
+    const int32 I=Stage-700;
+    if(I>=int32(UE_ARRAY_COUNT(Views)))
+    {
+     S47MotelProbe::LogPool(M);
+     UE_LOG(LogTemp,Display,TEXT("S47: office PASS: %d views in Saved/AlbumTest/office-*.png; read the S47 office and S47 pool log lines (a diagnostic, not a verdict)"),int32(UE_ARRAY_COUNT(Views)));
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    if(ShotPending)
+    {
+     if(Elapsed-StageAt<.8)return true;
+     if(Views[I].bRays)S47MotelProbe::LogRays(M,Views[I].Name);
+     Shot(*FString::Printf(TEXT("office-%02d-%s.png"),I,Views[I].Name));ShotPending=false;Stage=Stage+1;StageAt=Elapsed;return true;
+    }
+    if(Elapsed-StageAt<.4)return true;
+    const FVector2D D(Views[I].LookX-Views[I].X,Views[I].LookZ-Views[I].Z);
+    M->Player->Place(Views[I].X,Views[I].Z,FMath::Atan2(-D.X,-D.Y));M->Player->Pitch=FMath::Atan2(Views[I].LookHeight-1.62,D.Size());ShotPending=true;
+    StageAt=Elapsed;return true;
    }
    // The new farm buildings, in the saro frame: a look at each from the yard by day and by night and one inside the
    // barn, then in through its door on foot and on until the back wall stops the walk.
@@ -1199,7 +1892,7 @@ namespace
    {
     StageAt=Elapsed;
     auto& D=*M->Freeform->Director;auto& Site=*M->Freeform->FarmSite;
-    if(Elapsed-ChainFrom>150)return Fail(TEXT("the chain stopped"));
+    if(Elapsed-ChainFrom>270)return Fail(TEXT("the chain stopped")); // Lights in town wait about 184 s for someone driving there from SARO.
     if(Stage==170)
     {
      if(D.ActiveEvent().IsEmpty())return true;

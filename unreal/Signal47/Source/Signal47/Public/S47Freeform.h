@@ -78,6 +78,8 @@ public:
  void MarkJournalEntryRead(const FString& Id);
  FString NextAction() const;
  FString JobNextAction(const FJob& J) const;
+ bool EveningGated(const FJob& Job) const;
+ FString EveningLine(const FJob& Job) const;
  FString JobLocation(const FJob& J) const;
  bool ChargeEmergencyFeederFuse();
  bool CanRegisterPhotoEvidence() const;
@@ -112,10 +114,18 @@ public:
  // something wakes the player. Once a night: the next rest goes straight through. Developer runs sleep through it
  // (their fixtures count on Rest reaching the morning) unless a test asks.
  void TestAllowWake(){bTestWake=true;}
+ int32 LastRousedNight() const{return RousedNight;}
  double LastWakeClock() const{return WakeClock;}
  int32 FocusedFieldCase() const { return FieldFocus; }
  FString FieldNextAction(int32 Line) const;
  FString AvailableActivities() const;
+ // The next branch of a worn array, on one line for the HUD; empty once it is whole, or in a save without wear.
+ FString StationGoalLine() const;
+ // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
+ // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
+ // open (their fixtures run all three cards in one sitting) unless a test asks.
+ static constexpr double EveningLead=30*60.;
+ void TestEveningGate(){bTestEvening=true;}
  bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
@@ -155,6 +165,7 @@ public:
  void RecordEvidence(const FString& Id,const FString& Text);
  void RegisterFinding(const FString& Id,const FString& Text) { RecordEvidence(Id,Text); }
  bool HasFinding(const FString& Id) const { return Findings.Contains(Id); }
+ FString FindingText(const FString& Id) const { return Findings.FindRef(Id); }
  bool InTutorial() const { return Tutorial>0; }
  void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }
@@ -187,6 +198,11 @@ public:
  TSharedPtr<class FS47RoomDecor> Decor;
  TSharedPtr<class FS47FarmSite> FarmSite;
  TSharedPtr<class FS47Taken> Taken;
+ // What stays a little wrong for a while after being taken, or after a night with them at the farm.
+ TSharedPtr<class FS47Aftermath> Aftermath;
+ // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
+ FString TerminalClock() const;
+ bool OpsOnGlass() const { return ActiveTerminal==3&&TerminalOnGlass(); }
  // Gone for this long: the clock moves, and work under way is broken off as after contact. Nothing secured is lost.
  void TakenAway(double WorldSeconds);
  void TestEndFirstShift(){Tutorial=0;}
@@ -245,6 +261,8 @@ private:
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 WokenNight=0;
+ int32 RousedNight=0; // the last night a rest was really broken: never two running
+ bool bTestEvening=false;
  double WakeClock=0;
  bool bTestWake=false;
  bool WakeBefore(double Target,double& Out);
@@ -256,6 +274,7 @@ private:
  FS47FreeformCases Cases;
  void OpenCaseFor(const FString& FindingId);
  void RecordCaseResult(FJob& J);
+ void StepCaseReplies();
  bool StationSealed() const;
  bool CaseObserved(const FJob& J) const;
  FString CasePrecondition(const FJob& J) const;

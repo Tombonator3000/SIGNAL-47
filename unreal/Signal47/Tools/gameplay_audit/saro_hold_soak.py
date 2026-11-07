@@ -177,6 +177,7 @@ def parse_pmon(text, pid):
 
 
 def parse_frames(path):
+    csv.field_size_limit(1 << 30)  # Unreal skriver svært lange metadatafelt i CSV-profilene.
     with path.open(newline='', errors='replace') as stream:
         reader = csv.reader(stream)
         header = next(reader, [])

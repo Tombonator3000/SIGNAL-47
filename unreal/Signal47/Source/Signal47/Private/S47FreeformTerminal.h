@@ -38,6 +38,8 @@ namespace S47FreeformTerminal
  FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows);
  FW Value(const FString& Label,TAttribute<FString> Shown,bool bAmber=false); // label left, value right
  FW Readout(const FString& Label,TAttribute<FString> Shown,TAttribute<float> Fill=-1.f); // big number, optional bar
+ FW Meter(const FString& Label,TAttribute<FString> Shown,TAttribute<float> Fill); // one line (name left, value right) over a thin progress bar
+ FW Display(const FString& Label,TAttribute<FString> Value,TAttribute<FString> State); // name and state on one line, the value large beneath
  FW Control(const FString& Label,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange);
  FW Spectrum(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
  FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source,TFunction<void(FVector2D)> OnAim=nullptr,TFunction<bool()> OnTarget=nullptr);

@@ -13,7 +13,7 @@ public:
  bool Update(double Clock,bool bTutorial); // true when the schedule needs saving
  bool Ready(double Clock) const;
  void Started(double Clock); // consume this opportunity before presenting it
- void Photographed() { bPhotographed=true; }
+ void Photographed(); // the first photograph spaces out the evenings to come: about one in three from here on
  bool WasPhotographed() const { return bPhotographed; } // one paid record; the lights themselves keep coming
  // Index 0 owns the photographic record; 1 and 2 keep it company. All stop, sniff at a
  // spot and dart on to the next; still pure functions of age, never of the player's view.

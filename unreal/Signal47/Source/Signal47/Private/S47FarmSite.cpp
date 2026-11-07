@@ -1,5 +1,6 @@
 #include "S47FarmSite.h"
 #include "S47Taken.h"
+#include "S47Aftermath.h"
 #include "S47PaleBody.h"
 #include "S47Three.h"
 #include "CoreGlobals.h"
@@ -196,7 +197,7 @@ void FS47FarmSite::SayNudge()
 {
  bNudged=true;
  if(!M)return;
- const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says it has not gone away, and will not go out to look."),*Title);
+ const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says the lights have not gone, and won't go out to look."),*Title);
  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
  M->RequestAutosave();
 }
@@ -416,8 +417,10 @@ void FS47FarmSite::EndVisit(bool bTaken)
  if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
  if(!M||!M->Freeform)return;
  UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, taken %d, seen %d"),*Place,bTaken,bVisitSeen);
+ // Something really came, at the farm: the herd may be one short in the morning.
+ if((bWas||bTaken)&&Place==TEXT("farm")&&M->Freeform->Aftermath)M->Freeform->Aftermath->AfterFarmVisit(M->Freeform->Clock());
  if(bVisitSeen&&!bTaken&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
-  M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. Something came toward me until I left. It says what I saw, not what it was."),*Title));
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),FString::Printf(TEXT("%s, after dark, the night of the lights. Something came toward me until I left. This records what I saw, not what it was."),*Title));
  M->RequestAutosave();
 }
 
