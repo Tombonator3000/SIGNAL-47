@@ -120,6 +120,38 @@ def main():
                 row['%d-%d' % (lo, min(hi, 99999))] = {'n': int(m.sum()), 'p50': float(np.percentile(e[m], 50)), 'p99': float(np.percentile(e[m], 99)), 'p999': float(np.percentile(e[m], 99.9)), 'max': float(e[m].max())}
         out.setdefault('mesh_against_floor', {})[name] = row
         print(name, 'against floor', json.dumps({k: {a: round(b, 3) for a, b in v.items()} for k, v in row.items()}), flush=True)
+    # the belt north of the antenna field: every point of the drawn and collision ring against SaroLand + Off,
+    # at the probe's own worst points and all over x -333..313, z -580..-116 where the table is live or next to it
+    worst = [(-233.9, -522.2), (-115.5, -522.7), (-58.0, -556.3), (105.1, -522.6), (9.5, -554.7), (215.8, -523.9), (278.7, -511.4), (299.5, -186.0)]
+    for name in ('SM_FF_Ground_Saro', 'SM_FF_Ground_Saro_Col'):
+        A, T = glb(root / 'mesh' / (name + '.glb'), name)
+        P = A['POSITION'].astype(np.float64)
+        fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]])
+        keep = (fn[:, 1] / np.maximum(np.linalg.norm(fn, axis=1), 1e-9)) > .7
+        Tg = T[keep]
+        cx = P[Tg].mean(axis=1)
+        box = (cx[:, 0] > -340) & (cx[:, 0] < 320) & (cx[:, 2] > -590) & (cx[:, 2] < -110)
+        Tb = Tg[box]
+        w = rs.dirichlet((1, 1, 1), len(Tb) * 8 // 4 + 1)
+        pick = rs.integers(0, len(Tb), len(w))
+        tp = Tb[pick]
+        sx, sy, sz = (P[tp, 0] * w).sum(1), (P[tp, 1] * w).sum(1), (P[tp, 2] * w).sum(1)
+        off = field.off(sx + 24, sz - 300)
+        e = sy - B.saro_land(sx, sz) - off
+        live = field.sample(field.weight.astype(np.float64), sx + 24, sz - 300) > 0
+        in_box = (sx > -333) & (sx < 313) & (sz > -580) & (sz < -116)
+        m = live & in_box
+        row = {'belt_points': int(m.sum()), 'belt_p99': float(np.percentile(np.abs(e[m]), 99)), 'belt_p999': float(np.percentile(np.abs(e[m]), 99.9)), 'belt_max': float(np.abs(e[m]).max())}
+        far = np.abs(e[m]) > .1
+        row['belt_over_10cm'] = int(far.sum())
+        row['worst_at'] = [round(float(v), 1) for v in (sx[m][np.argmax(np.abs(e[m]))], sz[m][np.argmax(np.abs(e[m]))])]
+        pts = []
+        for wx, wz in worst:
+            n = np.argmin((sx - wx) ** 2 + (sz - wz) ** 2)
+            pts.append(round(float(e[n]), 3))
+        row['probe_points_nearest'] = pts
+        out.setdefault('saro_belt', {})[name] = row
+        print(name, 'belt', json.dumps(row), flush=True)
     # the self-test's zones, ported
     def zone(x0, x1, z0, z1):
         xs = np.arange(x0, x1 + .5, 1.0)

@@ -311,12 +311,24 @@ namespace
 		C->SetStaticMesh(Mesh);
 		for (int32 Slot = 0; Slot < Materials.Num(); ++Slot) C->SetMaterial(Slot, Materials[Slot]);
 	}
-	// Caliche's tiles of mineral soil lie 16 mm over the old ground: where the table is live they float or sink under the new land.
-	void HideOldSoil(const AS47Web* W, bool bOn)
+	// Caliche's tiles of mineral soil lie 16 mm over the old ground: where the land has moved they float or sink under it, so
+	// those keep out of the way. In town, where it has not moved, they stay.
+	void HideOldSoil(AS47Web* W, bool bOn)
 	{
 		for (int32 Tile = 0; const FS47WebNode* TileNode = W->Node(Tile); ++Tile)
-			if (TileNode->Name.StartsWith(TEXT("prop:streetGroundNature")))
-				if (UPrimitiveComponent* TileMesh = Cast<UPrimitiveComponent>(TileNode->Comp.Get())) TileMesh->SetHiddenInGame(bOn);
+		{
+			if (!TileNode->Name.StartsWith(TEXT("prop:streetGroundNature"))) continue;
+			UPrimitiveComponent* TileMesh = Cast<UPrimitiveComponent>(TileNode->Comp.Get());
+			if (!TileMesh) continue;
+			double Rx = 0, Rz = 0;
+			const bool bKnown = ReliefRoadXZ(W, ReliefFrameOf(W, Tile), TileMesh->Bounds.Origin, Rx, Rz);
+			TileMesh->SetHiddenInGame(bOn && (!bKnown || FMath::Abs(S47Relief::Sample(Rx, Rz)) > .03));
+		}
+		// The finale's ground stands hidden here, its collision on: a ray in Freeform must not find land nobody sees.
+		for (int32 Finale : {1820, 1821})
+			if (const FS47WebNode* FinaleNode = W->Node(Finale))
+				if (UPrimitiveComponent* FinaleMesh = Cast<UPrimitiveComponent>(FinaleNode->Comp.Get()))
+					FinaleMesh->SetCollisionEnabled(bOn ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryOnly);
 	}
 	void ApplyRelief(FS47FreeformTerrainState& S, bool bOn)
 	{

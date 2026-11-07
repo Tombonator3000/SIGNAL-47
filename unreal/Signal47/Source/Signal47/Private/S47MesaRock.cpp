@@ -64,6 +64,7 @@ namespace
   if(Read.Get()!=Mid)
   {
    Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),NightTint);LastDay=-1;
+   Mid->SetForceMipLevelsToBeResident(true,true,-1.f);
    Mid->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Mid->SetScalarParameterValue(TEXT("CrustAmount"),.75f);
   }
   const float Day=DayAt(US47Main::Get(Web));if(FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;

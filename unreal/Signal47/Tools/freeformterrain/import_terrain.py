@@ -176,9 +176,13 @@ def main():
     path = Path(os.environ['S47_FF_REPORT'])
     report = {'status': 'RUNNING'}
     try:
-        mat = MAT.main(report)
+        only = os.environ.get('S47_FF_ONLY', '')
+        # (with S47_FF_ONLY the material stands as it is, and so does everything without that word in its name)
+        mat = E.load_asset(MAT.DEST + '/' + MAT.NAME) if only else MAT.main(report)
         report['meshes'] = {}
         for name, old in MESHES.items():
+            if only and only not in name:
+                continue
             out = report['meshes'].setdefault(name, {})
             col_out = report['meshes'].setdefault(COLLISION[name], {})
             collision_mesh = import_one(root, COLLISION[name], mat, col_out)

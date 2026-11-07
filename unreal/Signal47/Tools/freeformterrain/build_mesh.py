@@ -73,6 +73,12 @@ class Field:
         self.stone = f['stone'].astype(np.float32) / 255
         self.dist = f['dist']
         self.weight = f['w']
+        # SARO's mesh goes from the old ring to the floor by distance, not by the relief's weight: it lies on the floor
+        # wherever the table is live, and the step between the two is taken inside the 8 m kept at 0 outside the masks.
+        from bake_relief import jfa
+        dist, _, _ = jfa(self.weight > 0, passes=4)
+        t = np.clip((dist * self.cell - 4.5) / 3.5, 0, 1)
+        self.to_floor = (1 - t * t * (3 - 2 * t)).astype(np.float32)
 
     def sample(self, a, x, z):
         """Off's own rule: bilinear in the cell, 0 (or a's edge) outside the map."""
@@ -168,7 +174,7 @@ def zone_table(d, values):
     return np.interp(d, [100, 350, 1000], values)
 
 
-def make_want(field, to_road, l_max, tol, l_min, budget):
+def make_want(field, to_road, l_max, tol, l_min, budget, land=None):
     dx, dz = to_road
 
     def want(x, z, a, b, c, longest):
@@ -182,8 +188,25 @@ def make_want(field, to_road, l_max, tol, l_min, budget):
         fce = field.off(cx, cz)
         any_off = (fa != 0) | (fb != 0) | (fc != 0) | (fm0 != 0) | (fm1 != 0) | (fm2 != 0) | (fce != 0)
         d = field.sample(field.dist.astype(np.float64), cx, cz)
-        size = longest > np.interp(d, [100, 100.01, 350, 350.01, 1000, 1000.01], [l_max[0], l_max[1], l_max[1], l_max[2], l_max[2], l_max[3]])
+        belt = np.zeros(len(a), bool)
+        chord = 0.0
+        if land is not None:
+            # the band where the mesh leaves the old ring needs its own triangles, Off or no Off
+            ka = field.sample(field.to_floor.astype(np.float64), rx[a], rz[a])
+            kb = field.sample(field.to_floor.astype(np.float64), rx[b], rz[b])
+            kc = field.sample(field.to_floor.astype(np.float64), rx[c], rz[c])
+            kce = field.sample(field.to_floor.astype(np.float64), cx, cz)
+            k_any = (ka > 0) | (kb > 0) | (kc > 0) | (kce > 0)
+            any_off = any_off | k_any
+            belt = k_any & ((np.minimum.reduce([ka, kb, kc]) < 1) | (kce < 1)) & (longest > 2.9)
+            la, lb, lc = land(x[a], z[a]), land(x[b], z[b]), land(x[c], z[c])
+            lm = land((x[a] + x[b]) / 2, (z[a] + z[b]) / 2)
+            lm2 = land((x[b] + x[c]) / 2, (z[b] + z[c]) / 2)
+            lm3 = land((x[c] + x[a]) / 2, (z[c] + z[a]) / 2)
+            chord = np.maximum.reduce([np.abs(lm - (la + lb) * .5), np.abs(lm2 - (lb + lc) * .5), np.abs(lm3 - (lc + la) * .5)]) * k_any
+        size = belt | (longest > np.interp(d, [100, 100.01, 350, 350.01, 1000, 1000.01], [l_max[0], l_max[1], l_max[1], l_max[2], l_max[2], l_max[3]]))
         err = np.maximum.reduce([np.abs(fm0 - (fa + fb) * .5), np.abs(fm1 - (fb + fc) * .5), np.abs(fm2 - (fc + fa) * .5), np.abs(fce - (fa + fb + fc) / 3)])
+        err = err + chord
         rough = (err > np.interp(d, [100, 350, 1000], tol)) & (longest > np.interp(d, [100, 350, 1000], l_min))
         marked = any_off & (size | rough)
         # each mark adds about two triangles with what it drags along. Over budget: the worst first.
@@ -308,6 +331,8 @@ def finish(name, field, to_road, grid_T, V, src_pos, src_T, src, static, out_dir
         e = np.concatenate(errs)
         check['max_error_vs_source_where_off_0_mm'] = float(e.max() * 1000)
         strict = field.sample(field.weight.astype(np.float64), x + dx, z + dz) <= 0
+        if dx or dz:
+            strict = field.sample(field.to_floor.astype(np.float64), x + dx, z + dz) <= 0
         errs = []
         for col in range(3):
             v = grid_T[:, col]
@@ -429,13 +454,11 @@ def build_saro(field, trim_g4, budget, l_max, tol, l_min, collision=False):
     mT = mT[~bad]
     V = {'x': Vp[:, 0].copy(), 'z': Vp[:, 2].copy(), 'ybase': Vp[:, 1].copy(), 'uv0': UV[first].copy(), 'col': C[first].copy()}
     to_road = (24.0, -300.0)
-    want = make_want(field, to_road, l_max, tol, l_min, budget)
+    want = make_want(field, to_road, l_max, tol, l_min, budget, B.saro_land)
     V, gt2, src = refine(V, mT.copy(), want)
     # the floor here is SaroLand, which the exported ring only approximates (up to a metre out in its long triangles).
     # Where the relief is live the mesh lies on the floor; in the masks it stays the ring as it was.
-    live = field.sample(field.weight.astype(np.float64), V['x'] + to_road[0], V['z'] + to_road[1])
-    k = np.clip(live / .02, 0, 1)   # at the very edge of the overgang: Off is live from there on
-    k = k * k * (3 - 2 * k)
+    k = field.sample(field.to_floor.astype(np.float64), V['x'] + to_road[0], V['z'] + to_road[1])
     V['ybase'] = V['ybase'] + (B.saro_land(V['x'], V['z']) - V['ybase']) * k
     keep = np.zeros(len(V['x']), bool)
     keep[:len(Vp)] = True
@@ -471,15 +494,20 @@ def main():
     ap.add_argument('--saro-budget', type=int, default=800000)
     ap.add_argument('--col-road-budget', type=int, default=650000)
     ap.add_argument('--col-saro-budget', type=int, default=250000)
+    ap.add_argument('--only', default='', help="a word in the names to build, for instance Saro; the rest stay as they are")
     args = ap.parse_args()
     field = Field(args.root)
     (args.root / 'mesh').mkdir(exist_ok=True)
-    report = {}
+    old_report = args.root / 'report/build_mesh.json'
+    report = json.loads(old_report.read_text()) if args.only and old_report.exists() else {}
+    report.pop('total_triangles_drawn', None)
     for name, fn in (('SM_FF_Ground_Road', lambda: build_road(field, args.web_geo, args.road_budget, L_MAX, TOL, L_MIN)),
                      ('SM_FF_Ground_Saro', lambda: build_saro(field, args.trim_g4, args.saro_budget, L_MAX, TOL, L_MIN)),
                      # plain meshes for complex collision: exact where one walks and drives, coarser than the drawn ones
                      ('SM_FF_Ground_Road_Col', lambda: build_road(field, args.web_geo, args.col_road_budget, COL_L_MAX, COL_TOL, COL_L_MIN, True)),
                      ('SM_FF_Ground_Saro_Col', lambda: build_saro(field, args.trim_g4, args.col_saro_budget, COL_L_MAX, COL_TOL, COL_L_MIN, True))):
+        if args.only and args.only not in name:
+            continue
         Q, attrs, tr, check = fn()
         path = args.root / 'mesh' / (name + '.glb')
         write_glb(path, name, Q, attrs['n'], attrs['uv0'], attrs['uv1'], attrs['col'], tr)

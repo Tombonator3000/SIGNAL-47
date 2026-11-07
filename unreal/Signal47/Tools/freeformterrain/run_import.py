@@ -19,6 +19,7 @@ def main():
     ap.add_argument('--root', type=Path, required=True)
     ap.add_argument('--project', type=Path, default=Path.home() / 'SIGNAL-47/unreal/Signal47')
     ap.add_argument('--apply', action='store_true')
+    ap.add_argument('--only', default='', help='a word in the mesh names to import; material, table and other meshes stay')
     args = ap.parse_args()
     project = args.project.resolve()
     sys.path.insert(0, str(project / 'Scripts'))
@@ -43,11 +44,11 @@ def main():
         env.pop('S47_INSTALLED_GAME_GRACE', None)
         env.update(lease.environment())
         os.environ.update(lease.environment())
-        env.update(S47_FF_APPLY='1', S47_FF_ROOT=str(root), S47_FF_REPORT=str(report))
+        env.update(S47_FF_APPLY='1', S47_FF_ROOT=str(root), S47_FF_REPORT=str(report), S47_FF_ONLY=args.only)
         result = run_owned(command, output / 'editor.log', timeout=5400, env=env, cwd=project)
         (output / 'process.json').write_text(json.dumps(result, indent=1) + '\n')
         data = json.loads(report.read_text()) if report.exists() else {}
-        if result['returncode'] == 0 and not result['stop_reason'] and data.get('status') == 'PASS_FREEFORM_TERRAIN':
+        if not args.only and result['returncode'] == 0 and not result['stop_reason'] and data.get('status') == 'PASS_FREEFORM_TERRAIN':
             # the table and the meshes belong together: to the game's folder in the same reservation
             dest = project / 'Content/FreeformTerrain'
             for name in ('relief.bin', 'relief.json'):
