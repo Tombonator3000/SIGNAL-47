@@ -1031,9 +1031,17 @@ namespace
     const bool bSeen=DreadRound==7;
     if(DoorStep==0)
     {
-     if(bSeen){StandBy(1.7);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));}
+     if(bSeen){StandBy(1.25);DreadLookAt(M,Visit.DoorMiddle()+FVector(0,1.1,0));}
      else{StandBy(4.5);DreadLookAt(M,Visit.DoorMiddle()-Visit.DoorOutward()*30+FVector(0,1.6,0));}
-     if(Visit.StageNow()!=EV::Opening){if(Elapsed-DreadAt>25)return Fail(TEXT("left alone, the door must come open"));return true;}
+     if(Visit.StageNow()!=EV::Opening)
+     {
+      if(Elapsed-DreadAt>25)
+      {
+       UE_LOG(LogTemp,Display,TEXT("S47: door: at round %d the stage is %d, seen open %d, door %.1f m off"),DreadRound,int32(Visit.StageNow()),Visit.SawItOpen()?1:0,FVector::Dist(M->Player->Pos,Visit.DoorMiddle()));
+       return Fail(TEXT("left alone, the door must come open"));
+      }
+      return true;
+     }
      if(bSeen&&!Visit.SawItOpen())return true;
      if(!bSeen&&Visit.SawItOpen())return Fail(TEXT("behind the player's back nobody saw it"));
      if(!F.Taken->Begin(ES47Taker::Roswell,TEXT("the door test")))return Fail(TEXT("the test needs something bigger"));
