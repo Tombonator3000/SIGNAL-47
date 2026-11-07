@@ -35,10 +35,10 @@ struct FS47DeputyRound::FCar
  TSharedPtr<FS47PannerNode> Pan;
  FS47Play Engine;
  bool bReady=false;
- bool Prepare(US47Main* M)
+ bool Prepare(US47Main* Main)
  {
-  if(bReady&&Web.Get()==M->Web.Get()&&Root.IsValid())return true;
-  bReady=false;Web=M->Web;Parts.Reset();Lamps.Reset();
+  if(bReady&&Web.Get()==Main->Web.Get()&&Root.IsValid())return true;
+  bReady=false;Web=Main->Web;Parts.Reset();Lamps.Reset();
   auto* Body=Mesh(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCar.SM_TripoFleet_PoliceCar"));
   auto* Door=Mesh(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCarDoor.SM_TripoFleet_PoliceCarDoor"));
   const bool bTripo=Body&&Door;
@@ -47,25 +47,25 @@ struct FS47DeputyRound::FCar
    Body=Mesh(TEXT("/Game/Free/Vehicles/fairheaven_lt80_cop/StaticMeshes/fairheaven_lt80_cop.fairheaven_lt80_cop"));
    Door=Mesh(TEXT("/Game/Free/Vehicles/fairheaven_lt80_cop/StaticMeshes/fairheaven_lt80_cop_door_driver.fairheaven_lt80_cop_door_driver"));
   }
-  if(!Body||!Door||!IsValid(M->Web.Get()))return false;
-  auto* R=NewObject<USceneComponent>(M->Web.Get());R->SetupAttachment(M->Web->GetRootComponent());R->SetMobility(EComponentMobility::Movable);R->RegisterComponent();Root=R;Parts.Add(R);
+  if(!Body||!Door||!IsValid(Main->Web.Get()))return false;
+  auto* R=NewObject<USceneComponent>(Main->Web.Get());R->SetupAttachment(Main->Web->GetRootComponent());R->SetMobility(EComponentMobility::Movable);R->RegisterComponent();Root=R;Parts.Add(R);
   const auto Part=[&](UStaticMesh* Asset,const FVector& Where,double Heading)
   {
-   auto* C=NewObject<UStaticMeshComponent>(M->Web.Get());C->SetupAttachment(R);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Asset);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);
+   auto* C=NewObject<UStaticMeshComponent>(Main->Web.Get());C->SetupAttachment(R);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Asset);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);
    double Mat[16];S47Three::Compose(Where,S47Three::Euler(0,Heading,0),FVector::OneVector,Mat);C->SetRelativeTransform(S47Three::MatToUE(Mat));C->RegisterComponent();Parts.Add(C);
   };
   Part(Body,FVector::ZeroVector,bTripo?0:UE_DOUBLE_HALF_PI);
   Part(Door,bTripo?FVector(-.99,.83,-1):FVector::ZeroVector,bTripo?0:UE_DOUBLE_HALF_PI);
   for(int32 I=0;I<2;++I)
   {
-   auto* L=NewObject<USpotLightComponent>(M->Web.Get());L->SetupAttachment(R);L->SetMobility(EComponentMobility::Movable);L->SetRelativeLocation(S47Three::ToUE(I==0?-.78:.78,.72,-2.15));L->SetRelativeRotation(FVector(0,-1,-.035).Rotation());
+   auto* L=NewObject<USpotLightComponent>(Main->Web.Get());L->SetupAttachment(R);L->SetMobility(EComponentMobility::Movable);L->SetRelativeLocation(S47Three::ToUE(I==0?-.78:.78,.72,-2.15));L->SetRelativeRotation(FVector(0,-1,-.035).Rotation());
    L->SetLightColor(FLinearColor(1,.8,.52));L->SetInnerConeAngle(12);L->SetOuterConeAngle(28);L->SetAttenuationRadius(7000);L->SetIntensity(0);L->SetCastShadows(false);L->SetVolumetricScatteringIntensity(0);L->RegisterComponent();Parts.Add(L);Lamps.Add(L);
   }
   bReady=true;return true;
  }
- void Sound(US47Main* M,const FVector& Where,bool bOn)
+ void Sound(US47Main* Main,const FVector& Where,bool bOn)
  {
-  if(!bOn||!IsValid(M->Audio.Get())||!M->Audio->Ctx)
+  if(!bOn||!IsValid(Main->Audio.Get())||!Main->Audio->Ctx)
   {
    if(Engine.Src)Engine.Src->Stop();
    Engine={};if(Pan)Pan->Disconnect();
@@ -73,8 +73,8 @@ struct FS47DeputyRound::FCar
   }
   if(!Pan)
   {
-   Pan=M->Audio->Ctx->CreatePanner();Pan->RefDistance=14;Pan->Connect(M->Audio->SfxBus);
-   FS47Sound S;S.Gain=.3f;S.Rate=.9f;S.bLoop=true;S.DestNode=Pan;S.Lp=1600;Engine=M->Audio->Sfx(TEXT("engineDrive"),S);
+   Pan=Main->Audio->Ctx->CreatePanner();Pan->RefDistance=14;Pan->Connect(Main->Audio->SfxBus);
+   FS47Sound S;S.Gain=.3f;S.Rate=.9f;S.bLoop=true;S.DestNode=Pan;S.Lp=1600;Engine=Main->Audio->Sfx(TEXT("engineDrive"),S);
   }
   Pan->SetPosition(Where.X,Where.Y+1,Where.Z);
  }
