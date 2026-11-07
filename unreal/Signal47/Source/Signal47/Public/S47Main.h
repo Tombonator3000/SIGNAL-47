@@ -71,6 +71,7 @@ public:
 	TSharedPtr<class FS47Spine> Spine; // SC01 to SC13 order and the marked placeholders (S47Spine.h)
 	TSharedPtr<class FS47FieldRadio> FieldRadio; // carried SARO radio and shared encounter sound
 	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
+	TSharedPtr<class FS47Rhythm> Rhythm; // the rhythm of a Freeform night, as data (S47Rhythm.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;
 	TSharedPtr<class FS47FreeformInWorldTest> FreeformInWorldTest;
 	TSharedPtr<class FS47FreeformTest> FreeformTest;

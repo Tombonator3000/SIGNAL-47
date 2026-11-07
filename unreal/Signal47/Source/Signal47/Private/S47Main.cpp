@@ -15,6 +15,7 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47DevEvents.h"
+#include "S47Rhythm.h"
 #include "S47HorrorTest.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
@@ -110,6 +111,7 @@ void US47Main::Step(double Dt)
 	if (HighwayUfoTest) HighwayUfoTest->Step(Dt);
 	if (UfoVisualTest) UfoVisualTest->Step(Dt);
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
+	if (Rhythm) Rhythm->Observe(Dt);
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
 	if (FreeformInWorldTest) FreeformInWorldTest->Step(Dt);

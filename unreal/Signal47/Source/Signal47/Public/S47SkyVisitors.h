@@ -103,6 +103,9 @@ public:
  // Nothing saved, no observation, the night's own schedule untouched. False: nowhere to show it from here.
  bool DevFormation(ES47SkyForm Form,int32 Pace);
  void DevFormationStop();
+ // The lone high track, the night's 22 percent, now and from where you stand. Only time is asked of it. False: not outdoors in Freeform.
+ bool DevHighTrack();
+ bool HighTrackOn() const { return FreeformState.Active(); }
  const FS47SkyFormationState& FormationData() const { return Formation; }
  // What is actually drawn: the registered, visible points' places, in three's metres.
  TArray<FVector> ShownPoints() const;

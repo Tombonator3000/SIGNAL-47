@@ -14,6 +14,7 @@
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -278,13 +279,47 @@ void FS47DoorVisit::StepDraw(double Dt)
   M->RequestAutosave();
  }
  if(!bTonight||InsideFor<WaitFor)return;
+ // The draw stands: it waits its turn, and a night's rule that stops it for good ends with the night.
+ if(M->Rhythm&&!M->Rhythm->Allow(TEXT("door_visit")))return;
  bTonight=false;LastBefore=LastDay;LastDay=Day;
+ BeginAt(Found);
+}
+
+void FS47DoorVisit::BeginAt(const FTarget& Found)
+{
  Target=Found;Now=EStage::Trying;T=AllT=0;SoundIn=0;HushIn=0;Noticed=0;Shake=0;Beat=0;bBodyOut=bSawBody=bLightComes=bSawOpen=bCutShort=false;
  if(M->Web)Sight.Init(M);
  // A door in town gives its height in the street's terms; the room can stand well above that.
  if(M->Player&&FMath::Abs(Target.Middle.Y-M->Player->FloorY)>1.5)Target.Middle.Y=M->Player->FloorY;
+ if(M->Rhythm)M->Rhythm->Began(TEXT("door_visit"));
  UE_LOG(LogTemp,Display,TEXT("S47: door visit starts at %s, door %s, %.1f m off, at clock %.0f"),*Target.Title,*Target.Key,FVector::Dist(Target.Middle,FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z)),M->Freeform->Clock());
  M->RequestAutosave();
+}
+
+bool FS47DoorVisit::DoorHere() const
+{
+ FTarget Found;
+ return M&&M->Player&&M->Web&&M->Freeform&&FindDoor(Found);
+}
+
+FString FS47DoorVisit::DevStart()
+{
+ if(!M||!M->Freeform||!M->Player||!M->Web)return TEXT("no Freeform world");
+ if(Active())return TEXT("one is under way");
+ if(!Owner||!Owner->DoorQuiet())return TEXT("something else is going on");
+ if(!M->Freeform->Taken||!M->Freeform->Taken->Indoors())return TEXT("it needs a roof over you");
+ FTarget Found;
+ if(!FindDoor(Found))return TEXT("no shut outside door within 12 m in a room it knows: the old house, or a room in town");
+ LastBefore=LastDay;LastDay=M->Freeform->Day();bTonight=false;
+ BeginAt(Found);
+ return FString();
+}
+
+void FS47DoorVisit::DevEnd()
+{
+ if(!Active())return;
+ if(DoorOpenNow())SetDoorQuietly(false);
+ LetGo();Now=EStage::None;bLightComes=false;
 }
 
 bool FS47DoorVisit::DoorOpenNow() const
@@ -543,6 +578,7 @@ void FS47DoorVisit::Finish(EEnding Ending)
 {
  LetGo();
  Now=EStage::None;
+ if(M&&M->Rhythm)M->Rhythm->Ended(TEXT("door_visit"));
  PutMarks(Ending);
  if(!M||!M->Freeform)return;
  const FString Key=FString::Printf(TEXT("door-visit-%d"),M->Freeform->Day());

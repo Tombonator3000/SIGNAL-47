@@ -1,4 +1,5 @@
 #include "S47SkyVisitors.h"
+#include "S47Rhythm.h"
 
 #include "S47Chapter6.h"
 #include "S47Freeform.h"
@@ -441,7 +442,8 @@ void FS47SkyVisitors::StepFreeform(double Dt)
  }
  // These nine points are one set: while a formation is up the single high track keeps its time and is not drawn.
  if(Formation.bActive){if(Outdoor)DrawFormation(Dt,Area);else{HidePoints();Formation.Looking=0;}FreeformState.Looking=0;return;}
- if(!FreeformState.Active()||!Outdoor){Hide();FreeformState.Looking=0;return;}
+ // Its time keeps going, and when the rules say it does not go under something else it is simply not drawn for that part.
+ if(!FreeformState.Active()||!Outdoor||(M->Rhythm&&!M->Rhythm->Allow(TEXT("sky_high")))){Hide();FreeformState.Looking=0;return;}
  Build();if(!bBuilt){FreeformState.Looking=0;return;}
  const auto Cam=FS47Cam::Of(M->Player,30000);
  const double Fade=FMath::Clamp(FreeformState.Elapsed/4.,0.,1.)*FMath::Clamp((FS47FreeformSkyState::Duration-FreeformState.Elapsed)/8.,0.,1.);
@@ -582,6 +584,17 @@ void FS47SkyVisitors::DevFormationStop()
 {
  if (Formation.bActive && Formation.bDev) { Formation.bActive = false; HidePoints(); }
 }
+
+bool FS47SkyVisitors::DevHighTrack()
+{
+ auto* Session = M ? M->Freeform.Get() : nullptr;
+ if (!bFreeform || !Session || !Session->Active()) return false;
+ ClearPreview(); DevFormationStop();
+ // Its day first, so that the next Advance does not draw over what is set here; Elapsed follows from Start on the next step.
+ FreeformState.Advance(Session->Day(), Session->Clock());
+ FreeformState.bChosen = true; FreeformState.Start = Session->Clock(); FreeformState.Elapsed = 0; FreeformState.ObservedPlaces.Reset();
+ return true;
+}
 TArray<FVector> FS47SkyVisitors::ShownPoints() const
 {
  TArray<FVector> Out;
@@ -603,6 +616,7 @@ bool FS47SkyVisitors::FormationQuiet() const
  if (Session->Taken && Session->Taken->Busy()) return false;
  if (Session->FarmSite && Session->FarmSite->VisitWantsGround()) return false;
  if (Session->IndoorDread && Session->IndoorDread->PeekActive()) return false;
+ if (M->Rhythm && !M->Rhythm->Allow(TEXT("sky_formation"))) return false;
  return true;
 }
 void FS47SkyVisitors::StepFormation(double Dt)

@@ -1,4 +1,5 @@
 #include "S47Taken.h"
+#include "S47Rhythm.h"
 #include "S47CalicheAccess.h"
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
@@ -63,6 +64,7 @@ bool FS47Taken::Indoors() const
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
+ if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=!Indoors();
  UE_LOG(LogTemp,Display,TEXT("S47: taken begins, %s, %s"),bOutdoors?TEXT("in the open"):TEXT("under a roof"),*Title);
@@ -77,6 +79,7 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
+ if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=true;bSpill=false;bOverPlace=true;
  From=Over+FVector(0,26,0);Aim=Over+FVector(0,.6,0);
@@ -95,7 +98,7 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  if(!M||!M->Player||!M->Freeform)return false;
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;
- if(Now==EStage::None)SafeClock=M->Freeform->Clock();
+ if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));}
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
  // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.
