@@ -2100,3 +2100,7 @@ Rotårsak ikke funnet, ingen kodefeil å rette. Kildespor: stansen begynte ca. 1
 ## 7. november 2026 kl.04:06, natt, første del av mysteriemotoren (FF-MYSTERY-SYSTEM-01)
 
 Skrevet i egen worktree, ikke bygget eller kjørt. Saksmotoren har fått en fjerde linje, «The same minute», med `FMysteryDef`: nattens hendelse (egen trekning i `RollTonight`) gir spor ved mottakeren og ved feederen som peker ulikt, spilleren kan arkivere en vurdering på hvilket som helst grunnlag, og svaret neste morgen følger den skjulte årsaken (reservedel, utrykningsgebyr, feederfeil eller ingenting). Valgfrie lagringsfelt, ingen nye hendelser i katalogen. Prøve: `-S47MenuPointerMystery`.
+
+## 7. november 2026 kl.04:20, natt, CRASH-20261107-01: krasjmappene gått gjennom
+
+Skrevet, ikke bygget. `Invalid Malloc size`: `S47Text::Split` løp uendelig på tekst som slutter på ett-tegns skille, fordi `FString::Find` klemmer start til Len-1; Freeform-originaler slutter på `\n`, så tavla fra notatboka hengte 84 s og krasjet. Rettet i `S47Docs.cpp`, selvtest lagt til i `S47CaseBoard.cpp`. `DEVICE_LOST`/Xid 109: 16 siden 30. oktober, 15 av 15 med kjent kommandolinje har `-RenderOffscreen`, ingen fra Toms start; rotårsak ikke funnet, ingen motorkonfig endret. `Out Of Memory` 5. november 18:00: VRAM (6511 av 6542 MB budsjett), ingen motorjobb samtidig. 5. november 16:53: to spillprosesser startet samtidig, uren omstart; Xid 56 kom før spillet.
