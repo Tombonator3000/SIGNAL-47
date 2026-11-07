@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "ContentStreaming.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47MesaRock,Log,All);
 
@@ -15,6 +16,14 @@ namespace
  TWeakObjectPtr<UMaterialInstanceDynamic> GroundMid,SeamMid;
  struct FMesaSlot{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Story=FLinearColor::White;};
  TArray<FMesaSlot> MesaSlots;bool bMesaFresh=false;
+ // The low mips of the ground's sets read far paler than the full texture, so a game opened to a white yard for seconds. All mips stay resident for
+ // good; the fast response lets them past the streaming pool's mip bias, and a new set of ground waits up to a second for them (once, at the start).
+ void HoldResident(UMaterialInterface* M,bool bWait)
+ {
+  if(!M)return;
+  M->SetForceMipLevelsToBeResident(true,true,-1.f,0,true);
+  if(bWait)IStreamingManager::Get().StreamAllResources(1.f);
+ }
  // 0 at night, 1 in full day, with an hour and a quarter of dawn and dusk; 1 outside Freeform's clock.
  float DayAt(const US47Main* Main)
  {
@@ -60,11 +69,12 @@ namespace
  void ApplyFreeformGround(AS47Web* Web)
  {
   auto* Mid=S47FreeformTerrain::GroundMid(Web);if(!Mid)return;
-  static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor NightTint;static float LastDay=-1;
+  static TWeakObjectPtr<UMaterialInstanceDynamic> Read;static FLinearColor NightTint,NightCrust(.94f,.94f,.94f,1.f),NightGravel(.94f,.94f,.94f,1.f);static float LastDay=-1;
   if(Read.Get()!=Mid)
   {
    Read=Mid;Mid->GetVectorParameterValue(TEXT("GroundTint"),NightTint);LastDay=-1;
-   Mid->SetForceMipLevelsToBeResident(true,true,-1.f);
+   Mid->GetVectorParameterValue(TEXT("CrustTint"),NightCrust);Mid->GetVectorParameterValue(TEXT("GravelTint"),NightGravel);
+   HoldResident(Mid,true);
    Mid->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Mid->SetScalarParameterValue(TEXT("CrustAmount"),.75f);
   }
   // The range's foot is this same soil, so it takes the same tint and amounts the moment it appears.
@@ -73,9 +83,22 @@ namespace
   if(bRangeNew){RangeRead=Range;Range->SetScalarParameterValue(TEXT("GravelAmount"),.85f);Range->SetScalarParameterValue(TEXT("CrustAmount"),.75f);}
   const float Day=DayAt(US47Main::Get(Web));if(!bRangeNew&&FMath::Abs(Day-LastDay)<.002f)return;LastDay=Day;
   // SoilDay: one bare soil in the sun over the whole of Freeform's land, sRGB 165,130,105 (Tom, 7 November), measured in captures.
-  const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day);
-  Mid->SetVectorParameterValue(TEXT("GroundTint"),Tint);
-  if(Range)Range->SetVectorParameterValue(TEXT("GroundTint"),Tint);
+  // One soil, not three (Tom, 7 November: "ett jordfarge"). The crust layer is a pale grey cream, linear mean .726 .581 .431 against the sand's
+  // .617 .387 .272 and the gravel's .581 .425 .306 (T_Ground*_D, 2048 maps measured). Where the 1100 m noise field turns the crust on (the town,
+  // 1.6 to 2 km down the road, relief-11-town) the land read 175,164,147 against 165,130,105, and where it is mostly sand (the farm's yard, 11:18)
+  // it read 193,149,120. Every layer's mean is brought to the sand's, and the sand's to the mixture mean the tint was reckoned for (.482 .304 .208,
+  // import_ground_relief.py DEFAULT_TINT): CrustTint = sand / crust = .850 .666 .631, GravelTint = sand / gravel = 1.062 .911 .889, and the sand,
+  // which has no tint of its own, is .781 .785 .765 (mix / sand) through GroundTint. By the day only, so night keeps what it had. Patterns, cracks,
+  // stones and gravel stay; only their mean colour is the same. Expect the town at about 151,125,108 and the yard at about 175,131,105 by the
+  // measured means: these are the numbers to retune if a capture still shows a layer.
+  const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.850f,.666f,.631f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
+  const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day)*FMath::Lerp(FLinearColor::White,SandToMix,Day);
+  const FLinearColor Crust=FMath::Lerp(NightCrust,CrustDay,Day),Gravel=FMath::Lerp(NightGravel,GravelDay,Day);
+  for(UMaterialInstanceDynamic* M:{Mid,Range})
+  {
+   if(!M)continue;
+   M->SetVectorParameterValue(TEXT("GroundTint"),Tint);M->SetVectorParameterValue(TEXT("CrustTint"),Crust);M->SetVectorParameterValue(TEXT("GravelTint"),Gravel);
+  }
  }
  // The other ground the player stands on keeps its own exported MI_W* material (the station's sand, its gravel, the gravel
  // tracks and the farm road). Measured at 11:00 in Freeform against the soil of the time, 170,134,110: the station's sand
@@ -147,7 +170,7 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
     {
      Mine=UMaterialInstanceDynamic::Create(Ground.Get(),GetTransientPackage());
      // The low mips of these sets read far paler than the full texture: a game opened to a white yard for seconds.
-     if(Mine.IsValid())Mine->SetForceMipLevelsToBeResident(true,true,-1.f);
+     if(Mine.IsValid())HoldResident(Mine.Get(),false);
     }
     G->SetMaterial(0,Mine.IsValid()?(UMaterialInterface*)Mine.Get():Ground.Get());Done.Add(G);UE_LOG(LogS47MesaRock,Display,TEXT("S47: desert ground material on node %d (%s)"),I,*N->Name);}
    continue;
