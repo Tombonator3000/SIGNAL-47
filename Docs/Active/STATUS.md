@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november kl. 04, mer variert natur
+## Installert 7. november kl. 04:42, krasj på tavla rettet
+
+`0f120225` etter PR478 er nå standard, med rask installasjon: tavla i Freeform henger og krasjer ikke lenger etter at du har hentet en original, og to starter på samme profil lukker den andre selv. Selvtest 2535, 144 uendrede Saved-filer, dobbel start prøvd på pakken. Tavla er ikke prøvd med en ekte original i spill. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d23/candidate/Linux`.
+
+## Tidligere installert 7. november kl. 04, mer variert natur
 
 `55080249` er nå standard, med rask installasjon: kreosot uten rutenett, døde grå busker, flere tuer, tørrere fjell og bakke, og ryddigere fotobenk. Selvtest OK, 144 Saved-filer uendret. Ikke spilt av et menneske. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d22/candidate/Linux`.
 
