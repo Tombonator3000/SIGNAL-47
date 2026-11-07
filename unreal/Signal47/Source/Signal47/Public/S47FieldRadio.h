@@ -25,6 +25,10 @@ public:
  // How many have come over the set, for whatever may hear it there too.
  int32 MessagesHeard() const { return MessageCount; }
  void TestOwn() { bOwned=true; }
+ // Left on the ground where the player was taken (FS47LeftGear). Not on the desk either until it is fetched or handed in.
+ void Lose() { bOwned=false; bLeftOut=true; }
+ void Recover(bool bToHand) { bLeftOut=false; bOwned=bToHand; }
+ bool LeftOut() const { return bLeftOut; }
  // Something said, out of the air at this place, with no radio involved.
  void Talk(const FVector& At);
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };
@@ -44,7 +48,7 @@ private:
  TWeakObjectPtr<UBoxComponent> Hit;
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Copies;
  FS47EncounterSound Sound;
- bool bOwned=false,bUnsupported=false,bAvailable=false;
+ bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
  S47J::FObj Unknown;
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0;
  int32 Crackled=0,MessageCount=0;

@@ -21,6 +21,7 @@ struct FS47TakenTerms
  double WakeMin=0,WakeMax=0; // metres from where they stood; 0: the same place
  bool bHome=false;      // comes to at SARO with the truck on its pad
  FLinearColor Light=FLinearColor::White;
+ int32 Leaves=0;        // how much of what they carry stays behind on the ground: the set, then the camera
 };
 
 // A flood of light into the place, and being taken in it (GAME_BIBLE, Freeform-bortføring og tapt tid): a warning that

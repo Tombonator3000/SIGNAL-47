@@ -41,6 +41,7 @@ public:
   // Case test job (FS47FreeformCases); -1 for ordinary work.
   int32 CaseLine=-1,CaseTest=-1;
   bool bCaseValid=true,bCaseRecorded=false;
+  bool bDocked=false; // the day the player was taken: this card pays half (TakenCosts)
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -144,6 +145,23 @@ public:
  bool NightStarted(double AtClock) const;
  int32 TimesTaken() const{return TakenCount;}
  bool FaultDue() const;
+ // Time has a price (Tom, 7 November), low enough not to rush anyone. A card pays in full on its day and the next, then less.
+ // Waiting costs a little in standby. Each week the station's review takes power and fuel. Nothing here can lock the game:
+ // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
+ static int32 PayAfterDays(int32 Days){return Days<=1?20:Days==2?15:Days==3?10:5;}
+ int32 JobPay(const FJob& Job) const;
+ static constexpr int32 ReviewPower=25,ReviewFuel=15,ArrearsCap=80;
+ static int32 StandbyFor(double WaitSeconds){return FMath::Clamp(FMath::CeilToInt(WaitSeconds/(3*3600.)),0,4);}
+ int32 StandbyPaid() const{return StandbyTotal;}
+ int32 Arrears() const{return Carried;}
+ int32 NextReviewDay() const{return (ReviewWeek+1)*7+1;}
+ FString NextReviewText() const;
+ void StepWeeklyReview();
+ // Being taken costs (Tom, 7 November): cards docked, windows gone by, a case of its own. Secured work, money earned, film and originals stay.
+ FString TakenCosts(double SafeClock);
+ void LostTimeTrace(int32 Clue);
+ bool CameraLeftOut() const;
+ TSharedPtr<class FS47LeftGear> Gear;
  float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
  static constexpr double SecondsInDay=86400.;
@@ -294,6 +312,7 @@ private:
  int32 WokenNight=0;
  int32 RousedNight=0; // the last night a rest was really broken: never two running
  bool bTestEvening=false,bTestFirstPulse=false,bTestRules=false;
+ int32 ReviewWeek=0,Carried=0,StandbyTotal=0,LastPay=20;
  int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
  bool LiveFlow() const;
  double WakeClock=0;

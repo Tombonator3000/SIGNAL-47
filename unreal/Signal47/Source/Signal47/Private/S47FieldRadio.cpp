@@ -41,6 +41,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
  bUnsupported=Saved && S47J::Num(Saved,TEXT("v"))!=1;
  Unknown=bUnsupported?S47J::Clone(Saved):nullptr;
  bOwned=!bUnsupported && S47J::Bool(Saved,TEXT("owned"));
+ bLeftOut=!bUnsupported && S47J::Bool(Saved,TEXT("leftOut"));
  bAvailable=true;
 }
 void FS47FieldRadio::Stop()
@@ -52,7 +53,7 @@ void FS47FieldRadio::Stop()
 S47J::FObj FS47FieldRadio::Save() const
 {
  if(bUnsupported) return S47J::Clone(Unknown);
- auto O=S47J::New(); S47J::Set(O,TEXT("v"),1); S47J::Set(O,TEXT("owned"),bOwned); return O;
+ auto O=S47J::New(); S47J::Set(O,TEXT("v"),1); S47J::Set(O,TEXT("owned"),bOwned); if(bLeftOut) S47J::Set(O,TEXT("leftOut"),true); return O;
 }
 bool FS47FieldRadio::Build()
 {
@@ -95,7 +96,7 @@ bool FS47FieldRadio::Build()
  }
  TWeakObjectPtr<US47Main> Weak=M;
  FS47Interactable It; It.Id=Pickup; It.Object=Root; It.Range=2.2;
- It.Label=[Weak]{return Weak.IsValid() && Weak->FieldRadio && !Weak->FieldRadio->Owned()?TEXT("TAKE FIELD RADIO"):FString();};
+ It.Label=[Weak]{return Weak.IsValid() && Weak->FieldRadio && !Weak->FieldRadio->Owned() && !Weak->FieldRadio->LeftOut()?TEXT("TAKE FIELD RADIO"):FString();};
  It.Use=[Weak]{if(Weak.IsValid() && Weak->FieldRadio) Weak->FieldRadio->Take();};
  It.Examine=[] {return TEXT("SARO field set. Battery fitted, channel marked. Small enough to keep with me.");};
  M->Inter->Add(It);
@@ -116,7 +117,7 @@ void FS47FieldRadio::Talk(const FVector& At){if(M&&M->Audio)Sound.Talk(M->Audio,
 
 void FS47FieldRadio::Take()
 {
- if(bOwned || !bAvailable || bUnsupported || !Root || !Root.Shown() || !M || !M->Player) return;
+ if(bOwned || bLeftOut || !bAvailable || bUnsupported || !Root || !Root.Shown() || !M || !M->Player) return;
  if(FVector::Distance(M->Player->Pos,Root.WorldPosition())>2.4) return;
  bOwned=true; Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -200,7 +201,7 @@ void FS47FieldRadio::Step(double Dt)
  if(!M) return;
  Build();
  const bool Play=bAvailable && !bUnsupported && M->Mode==US47Main::EMode::Play;
- const bool Shown=Play && !bOwned && M->Web && M->Web->Area()==TEXT("saro");
+ const bool Shown=Play && !bOwned && !bLeftOut && M->Web && M->Web->Area()==TEXT("saro");
  if(Root) Root.SetVisible(Shown);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(Shown?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  const bool Held=!Play || M->bPausedByMenu || (M->ModalOpen() && !(M->Audio && M->Audio->ReceiverMonitorOn())) || !M->Story || M->Story->IsPaused() || M->Story->IsCinematic();

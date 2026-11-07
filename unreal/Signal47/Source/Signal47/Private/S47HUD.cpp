@@ -36,6 +36,7 @@
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
 #include "S47DeputyRound.h"
+#include "S47LeftGear.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -223,6 +224,7 @@ void AS47HUD::Start()
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
 		bOk &= FS47DeputyRound::SelfTest(Lines);
+		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);
 		bOk &= S47FarmWorld::SelfTest(Lines);

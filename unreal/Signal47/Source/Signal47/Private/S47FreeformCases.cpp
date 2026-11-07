@@ -33,6 +33,26 @@ namespace
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. The top insulator on the feeder let go this morning.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Nothing further has happened.\n\nA rancher on US-60 rang the office to ask whether we had noticed anything at that minute. He did not say why."),ER::None}}}
  };
+ const FS47FreeformCases::FMysteryDef LostTime={
+  4,TEXT("Personnel: the lost hours"),
+  {{TEXT("lost_clock"),TEXT("The OPS clock"),
+    {TEXT("The workstation clock stuck at the hour I lost and then corrected itself in one step, as a counter does when its relay catches up. My watch has never done that."),
+     TEXT("The workstation clock put itself right as soon as I logged on. It was the only thing that disagreed with my watch, and my watch is the one I would not swear to."),
+     TEXT("The workstation clock and my watch agree now. The log shows nobody on shift for the whole gap and the door contact never opened. Whatever else was going on, the clock kept running.")}},
+   {TEXT("lost_ground"),TEXT("Where it happened"),
+    {TEXT("At the place itself nothing shows but my own tracks. Going by the sun they are hours older than I remember them being, if the clock I went by was right."),
+     TEXT("At the place itself my tracks go in a small circle and stop. It is the kind of track somebody leaves who is not paying attention to where they are walking."),
+     TEXT("At the place itself my tracks stop in the open. They do not start again anywhere I could find.")}}},
+  {{{TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nWe pulled the timing relay on your report. The contacts were pitted and it was slipping under load.\n\nA spare has gone into your depot. That accounts for the clock. It does not account for your whereabouts, which are not our department."),ER::Spare},
+    {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nWe bench-tested the timing path on your report and it holds to a tenth of a second over a week. We cannot find your fault.\n\nThe call-out is charged to your station."),ER::CallOut},
+    {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nThe timing path holds. The station log for that night is complete and shows no operator for the period you list.\n\nThe call-out is charged to your station."),ER::CallOut}},
+   {{TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nBlood pressure and reflexes unremarkable. Nothing here suggests a lapse. Your own form says the station clock was out.\n\nThe visit is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nNight shifts, irregular meals, long drives alone. It happens to people in your line. Sleep more and do not drive tired.\n\nNo charge to the station for the first visit."),ER::None},
+    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nUnremarkable. There are some small marks you did not mention and could not account for. Probably nothing. Come back if they change.\n\nThe visit is charged to your station."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Field service has since found the timing relay slipping and charged nothing for it.\n\nThe note stands as you wrote it."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. A portable magnetometer from the old survey is on the stores list if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
+ };
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
  {
   TEXT("THE REPEATED INTERVAL"),
@@ -103,6 +123,22 @@ namespace
    {true,false,true}},  // what arrives through the beam goes when the beam moves
   {TEXT(""),TEXT(""),TEXT("")},
   TEXT("Station log: the same minute"),TEXT("access.sameminute"),&SameMinute
+ },
+ {
+  TEXT("THE LOST HOURS"),
+  TEXT("There is a stretch of night you cannot account for. The station's clocks say one thing and your memory says nothing at all. It may be the clocks, or you, or neither. Log on at OPS and go back to where it happened; test recordings compare the receiver's counter with the independent one. File what you think it was. The reply comes the next morning, and whichever you file, someone is going to act on it."),
+  FS47FreeformCases::EObservable::ClockDelta,
+  {TEXT("The station clocks were wrong"),TEXT("A lapse of my own"),TEXT("Not accounted for")},
+  {TEXT("Clocks"),TEXT("A lapse"),TEXT("Unaccounted")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+  // RelaySwap, Generator, DoorsSealed
+  {{false,true,true},    // a slipping relay: gone with the relay, whatever else is done
+   {false,false,false},  // the clocks were never wrong
+   {true,true,false}},   // not the clocks and not the power: it keeps time only with nobody else able to reach it
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: the lost hours"),TEXT("access.lostHours"),&LostTime
  }};
 }
 
