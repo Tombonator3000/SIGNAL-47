@@ -199,11 +199,17 @@ namespace
 			FString FootJson, FootWhy;
 			TArray<uint8> FootBytes;
 			if (!FFileHelper::LoadFileToString(FootJson, *(Dir / TEXT("range_foot.json"))) || !FFileHelper::LoadFileToArray(FootBytes, *(Dir / TEXT("range_foot.bin")), FILEREAD_Silent))
+			{
 				UE_LOG(LogS47Relief, Display, TEXT("S47: no table of the hills' foot: they stop nothing"));
+			}
 			else if (!ParseFootTable(FootJson, FootBytes, FootTable, FootWhy))
+			{
 				UE_LOG(LogS47Relief, Error, TEXT("S47: table of the hills' foot rejected: %s; they stop nothing"), *FootWhy);
+			}
 			else
+			{
 				UE_LOG(LogS47Relief, Display, TEXT("S47: table of the hills' foot %dx%d, %.2f m cells"), FootTable.Width, FootTable.Height, 1 / FootTable.InvCell);
+			}
 		}
 		if (!FFileHelper::LoadFileToString(Json, *(Dir / TEXT("relief.json"))) || !FFileHelper::LoadFileToArray(Bytes, *(Dir / TEXT("relief.bin")), FILEREAD_Silent))
 		{
