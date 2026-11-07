@@ -100,6 +100,7 @@ private:
  int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
  bool bLetterTold=false,bRinging=false,bRadioLoop=false;
+ FString ToastSeen;double ToastAt=0;
  FString BackTo; // reopened on the next tick: not from inside the panel's own closing
  // In the world.
  struct FSpot

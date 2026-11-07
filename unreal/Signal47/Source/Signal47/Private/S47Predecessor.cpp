@@ -26,6 +26,8 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "SS47Widgets.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "CoreGlobals.h"
@@ -78,6 +80,15 @@ namespace
    C->SetMaterial(I,Mat);++Painted;
   }
   return Painted;
+ }
+ // Text that wraps at the panel's own width from the first frame. S47Kit's AutoWrapText learns its width a frame late, and with
+ // several paragraphs in a column the rows below it were laid out over the lines it had not yet found room for.
+ constexpr float CssPx=1.25f; // the CSS pixel, as S47Kit has it
+ S47Kit::FW Para(const FString& S,float PanelWidth,bool bSmall=false)
+ {
+  const float Wrap=(PanelWidth-44.f)*CssPx;
+  return S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(S47Style::Body((bSmall?13.5f:15.5f)*CssPx)).WrapTextAt(Wrap).LineHeightPercentage(1.15f)
+   .ColorAndOpacity(bSmall?S47Kit::Css(0xa59e90):S47Kit::Css(0xddd5c2)).Margin(FMargin(0,bSmall?8.f:6.f,0,bSmall?2.f:6.f)));
  }
  void Pickable(UStaticMeshComponent* C)
  {
@@ -297,7 +308,10 @@ const S47PredecessorText::FBark* FS47Predecessor::NextBark() const
 void FS47Predecessor::StepDale()
 {
  auto& F=*M->Freeform;
- if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio)return;
+ if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio||M->ModalOpen())return;
+ // Not on top of another message: wait until the last one has had its time on the screen.
+ if(M->UI){const FString Last=M->UI->LastDescription();if(Last!=ToastSeen){ToastSeen=Last;ToastAt=FPlatformTime::Seconds();}}
+ if(FPlatformTime::Seconds()-ToastAt<9)return;
  const X::FBark* B=NextBark();if(!B)return;
  // No set in hand: it waits, and is on a message slip by the phone (UsePhone).
  if(!M->FieldRadio->Message(FString(TEXT("DALE: "))+B->Line))return;
@@ -462,13 +476,13 @@ bool FS47Predecessor::UsePhone()
  const TWeakPtr<uint8> Guard=Life;
  if(const X::FBark* B=NextBark())
  {
-  Rows.Add(S47Kit::Small(TEXT("A message slip by the phone, in capitals, pressed hard enough to go through:")));
+  Rows.Add(Para(TEXT("A message slip by the phone, in capitals, pressed hard enough to go through:"),760.f,true));
   Rows.Add(S47Kit::Paper(FString(B->Line).ToUpper()));
   Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=M->Freeform?M->Freeform->Day():DaleDay;
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale's slip by the phone: %s"),B->Id);
   M->RequestAutosave();
  }
- Rows.Add(S47Kit::Text(TEXT("The operations line. Two numbers on a card taped to the phone.")));
+ Rows.Add(Para(TEXT("The operations line. Two numbers on a card taped to the phone."),760.f));
  Rows.Add(S47Kit::Button(TEXT("Dale, field maintenance / the service line"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("dale"),FString());},true));
  Rows.Add(S47Kit::Button(TEXT("Dr. Ward, duty officer"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("ward"),FString());}));
  Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
@@ -496,15 +510,15 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
  const auto Say=[&Rows](const X::FSay& L)
  {
   const FString Line(L.Line);
-  if(FCString::Strlen(L.Who)==0)Rows.Add(S47Kit::Small(Line));
-  else Rows.Add(S47Kit::Text(FString(L.Who)+TEXT(": ")+Line));
+  if(FCString::Strlen(L.Who)==0)Rows.Add(Para(Line,860.f,true));
+  else Rows.Add(Para(FString(L.Who)+TEXT(": ")+Line,860.f));
  };
  const X::FTopic* Topic=TopicId.IsEmpty()?nullptr:P->Topics.FindByPredicate([&](const X::FTopic& Q){return TopicId==Q.Id;});
  if(!Topic)for(const X::FSay& L:P->First)Say(L);
  else if(Who==TEXT("ward")&&TopicId==TEXT("review"))
  {
   const FTally C=Count();
-  const auto Line=[&Rows](const FString& Text){Rows.Add(S47Kit::Text(Text));};
+  const auto Line=[&Rows](const FString& Text){Rows.Add(Para(Text,860.f));};
   Line(TEXT("YOU: Where does the review stand?"));
   if(Outcome==EOutcome::None)Line(FString::Printf(TEXT("DR. WARD: %d filed, the array at %d of 27, $%d carried. I assess on %s. I need something I can put in front of the county, and it has to be true."),C.Filed,C.Dishes,C.Arrears,*DateText(AssessDay)));
   else Line(TEXT("DR. WARD: You've had my letter."));
@@ -537,8 +551,8 @@ void FS47Predecessor::OpenLocker()
  Mark(TEXT("locker"),TEXT("Reyes's locker at SARO. A mug, half a pack of cigarettes, a list for a Monday, a letter not sent, and post nobody has opened."));
  TArray<S47Kit::FW> Rows;
  const TWeakPtr<uint8> Guard=Life;
- Rows.Add(S47Kit::Text(TEXT("A strip of label tape on the door: REYES. It isn't locked. It smells of old coffee and machine oil, and of nothing else.")));
- Rows.Add(S47Kit::Small(TEXT("A white mug with a chip in the rim and a ring of coffee gone to varnish. Half a soft pack of cigarettes, gone square from a jacket pocket, and matches from the Mesa Diner. A spare work shirt on the hook. No jacket.")));
+ Rows.Add(Para(TEXT("A strip of label tape on the door: REYES. It isn't locked. It smells of old coffee and machine oil, and of nothing else."),860.f));
+ Rows.Add(Para(TEXT("A white mug with a chip in the rim and a ring of coffee gone to varnish. Half a soft pack of cigarettes, gone square from a jacket pocket, and matches from the Mesa Diner. A spare work shirt on the hook. No jacket."),860.f,true));
  const auto Read=[&](const TCHAR* Id,const TCHAR* Label)
  {
   const FString Doc=Id;
@@ -550,13 +564,13 @@ void FS47Predecessor::OpenLocker()
  Read(TEXT("pay"),TEXT("A pay envelope: FINAL, NOT CALLED FOR"));
  if(!Seen.Contains(TEXT("mail")))
  {
-  Rows.Add(S47Kit::Small(TEXT("Post has been pushed through the vent since. An insurance notice, an overdue card from the Socorro library, and a letter with a hand-written address, sealed.")));
+  Rows.Add(Para(TEXT("Post has been pushed through the vent since. An insurance notice, an overdue card from the Socorro library, and a letter with a hand-written address, sealed."),860.f,true));
   Rows.Add(S47Kit::Button(TEXT("Open the sealed letter. It isn't yours"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
  }
  else Rows.Add(S47Kit::Button(TEXT("The letter you opened"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
  if(Seen.Contains(TEXT("pay")))
  {
-  if(bPayReturned)Rows.Add(S47Kit::Small(TEXT("The pay envelope has gone to Ward's office, with your initials on the routing slip.")));
+  if(bPayReturned)Rows.Add(Para(TEXT("The pay envelope has gone to Ward's office, with your initials on the routing slip."),860.f,true));
   else Rows.Add(S47Kit::Button(TEXT("Route the pay envelope back to Ward's office"),[this,Guard]
   {
    if(!Guard.IsValid())return;
@@ -580,11 +594,11 @@ void FS47Predecessor::OpenWagon()
  auto& F=*M->Freeform;
  TArray<S47Kit::FW> Rows;
  const TWeakPtr<uint8> Guard=Life;
- Rows.Add(S47Kit::Text(TEXT("A white station wagon with an amber bar on the roof and DISTRICT MAINTENANCE 23 on the doors. It stands nose out into nothing, on the flat, and you can't make out a track leading to it. The driver's door is open. Dust on the seat, and the seat run well forward.")));
- Rows.Add(S47Kit::Small(TEXT("A county tag wired to the mirror: S.O. HOLD. DO NOT MOVE. In the dust on the dash, a clean ring where something round has stood.")));
+ Rows.Add(Para(TEXT("A white station wagon with an amber bar on the roof and DISTRICT MAINTENANCE 23 on the doors. It stands nose out into nothing, on the flat, and you can't make out a track leading to it. The driver's door is open. Dust on the seat, and the seat run well forward."),860.f));
+ Rows.Add(Para(TEXT("A county tag wired to the mirror: S.O. HOLD. DO NOT MOVE. In the dust on the dash, a clean ring where something round has stood."),860.f,true));
  if(RadioOn())
  {
-  Rows.Add(S47Kit::Text(RadioOffDay>=0?FString::Printf(TEXT("The radio is on again. You switched it off yourself, on %s. Service band, squelch open, nothing on it but a carrier."),*DateText(RadioOffDay)):FString(TEXT("The radio is on. Service band, squelch open, nothing on it but a carrier. The dome light is dead. The battery ought to be."))));
+  Rows.Add(Para(RadioOffDay>=0?FString::Printf(TEXT("The radio is on again. You switched it off yourself, on %s. Service band, squelch open, nothing on it but a carrier."),*DateText(RadioOffDay)):FString(TEXT("The radio is on. Service band, squelch open, nothing on it but a carrier. The dome light is dead. The battery ought to be.")),860.f));
   Rows.Add(S47Kit::Button(TEXT("Switch the radio off"),[this,Guard]
   {
    if(!Guard.IsValid()||!M->Freeform)return;
@@ -594,7 +608,7 @@ void FS47Predecessor::OpenWagon()
    M->RequestAutosave();OpenWagon();
   }));
  }
- else Rows.Add(S47Kit::Small(TEXT("You switched the radio off. It clicks as it cools.")));
+ else Rows.Add(Para(TEXT("You switched the radio off. It clicks as it cools."),860.f,true));
  Rows.Add(S47Kit::Button(FString(TEXT("The clipboard on the passenger seat"))+(Seen.Contains(TEXT("callout"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("callout"),TEXT("wagon"));}));
  Rows.Add(S47Kit::Button(TEXT("Leave it how you found it"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("WAGON 23"),S47Kit::Col(Rows),860));
@@ -623,12 +637,12 @@ void FS47Predecessor::OpenAssessment()
  case EOutcome::Stays:
   Rows.Add(Back(TEXT("Back to work"),true));Rows.Add(Keys());break;
  case EOutcome::KnowsEnough:
-  Rows.Add(S47Kit::Text(X::WhatYouKnow()));
+  Rows.Add(Para(X::WhatYouKnow(),900.f));
   Rows.Add(Back(TEXT("Stay out the notice"),true));Rows.Add(Keys());break;
  case EOutcome::ClosedOriginals:case EOutcome::ClosedNothing:
   Rows.Add(Back(TEXT("Stay out the notice"),true));Rows.Add(Keys());break;
  case EOutcome::Gone:
-  Rows.Add(S47Kit::Small(TEXT("You read this over someone's shoulder. It was opened on the desk you sat at, by the operator who starts tonight. Nobody at the station expects you back. Your originals and photographs are where you left them.")));
+  Rows.Add(Para(TEXT("You read this over someone's shoulder. It was opened on the desk you sat at, by the operator who starts tonight. Nobody at the station expects you back. Your originals and photographs are where you left them."),900.f,true));
   Rows.Add(S47Kit::Button(TEXT("Start the shift as the new operator"),[this,Guard]{if(Guard.IsValid())ToTitle(true);},true));
   Rows.Add(S47Kit::Button(TEXT("Return to the title. This save stays"),[this,Guard]{if(Guard.IsValid())ToTitle(false);}));
   Rows.Add(S47Kit::Button(TEXT("Not yet. Go back to the station, and Ward's review with it"),[this,Guard]
@@ -652,9 +666,9 @@ void FS47Predecessor::OpenKeys()
  if(!M||!M->UI||!M->Freeform)return;
  TArray<S47Kit::FW> Rows;
  const TWeakPtr<uint8> Guard=Life;
- Rows.Add(S47Kit::Text(TEXT("A plywood board with six brass hooks, three of them numbered. Hook 1 has nothing on it, and hasn't for some time. Your keys are in your hand.")));
- Rows.Add(S47Kit::Text(TEXT("You don't owe anybody a phone call. If you hang them up, your shift here is over, and you get in your own car and go.")));
- Rows.Add(S47Kit::Small(TEXT("This ends the game here, with what you have done so far. Your save stays, and you can take the keys back.")));
+ Rows.Add(Para(TEXT("A plywood board with six brass hooks, three of them numbered. Hook 1 has nothing on it, and hasn't for some time. Your keys are in your hand."),760.f));
+ Rows.Add(Para(TEXT("You don't owe anybody a phone call. If you hang them up, your shift here is over, and you get in your own car and go."),760.f));
+ Rows.Add(Para(TEXT("This ends the game here, with what you have done so far. Your save stays, and you can take the keys back."),760.f,true));
  Rows.Add(S47Kit::Button(TEXT("Hang your keys on the hook and leave SARO"),[this,Guard]{if(Guard.IsValid())Leave();},true));
  Rows.Add(S47Kit::Button(TEXT("Keep the keys"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("THE KEY BOARD"),S47Kit::Col(Rows),760));
@@ -677,7 +691,7 @@ void FS47Predecessor::OpenLeft()
  const int32 Day=LeftDay>0?LeftDay:F.Day();
  const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,LeftClock),86400.));
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47Kit::Text(FString::Printf(TEXT("%s, 1986. %02d:%02d. The keys swing a little on the hook, and stop."),*DateText(Day),Seconds/3600,(Seconds/60)%60)));
+ Rows.Add(Para(FString::Printf(TEXT("%s, 1986. %02d:%02d. The keys swing a little on the hook, and stop."),*DateText(Day),Seconds/3600,(Seconds/60)%60),940.f));
  // What you leave behind: only what is really so.
  TArray<FString> Open;int32 Unfiled=0;
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bOpen&&!K->bConcluded)Open.Add(FS47FreeformCases::Def(Line).Title);
@@ -686,7 +700,7 @@ void FS47Predecessor::OpenLeft()
  Behind+=C.Originals+C.Photos>0?FString::Printf(TEXT(" %d originals in the binder and %d photographs in the album, all of them where they belong."),C.Originals,C.Photos):FString(TEXT(" No originals in the binder and no photographs in the album."));
  Behind+=FString::Printf(TEXT(" The array stands at %d of 27. The budget is $%d, and $%d is carried on the sheet."),C.Dishes,F.Budget(),C.Arrears);
  if(!Open.IsEmpty())Behind+=FString::Printf(TEXT(" Still open on the case board: %s."),*FString::Join(Open,TEXT(", ")));
- Rows.Add(S47Kit::Text(Behind));
+ Rows.Add(Para(Behind,940.f));
  // Reyes: what you did and did not go into.
  int32 Tags=0;for(const X::FTagDef& D:X::Tags())if(Seen.Contains(D.Doc))++Tags;
  FString About;
@@ -698,17 +712,17 @@ void FS47Predecessor::OpenLeft()
  }
  if(Tags>0)About+=FString::Printf(TEXT(" You read %d of Reyes's survey tags%s."),Tags,Tags<X::Tags().Num()?TEXT(", and the rest are still wired where they were left"):TEXT(""));
  if(Seen.Contains(WagonId))About+=RadioOn()?TEXT(" Wagon 23 is still on the flat, with its radio on."):TEXT(" Wagon 23 is still on the flat. You switched its radio off. You know how much that's worth.");
- Rows.Add(S47Kit::Text(About));
+ Rows.Add(Para(About,940.f));
  // What becomes of SARO, from the numbers you leave.
  FString Saro;
  const EOutcome Would=Outcome!=EOutcome::None?Outcome:Decide(C);
  if(Outcome==EOutcome::Stays||(Outcome==EOutcome::None&&Would==EOutcome::Stays))Saro=TEXT("Ward reads the sheet you left and hires a relief operator out of Albuquerque. SARO stays open through the summer. Somebody else's name goes on the door next to Reyes's.");
  else if(Outcome==EOutcome::None)Saro=FString::Printf(TEXT("With nobody on nights, the assessment doesn't take long. On %s Dr. Ward signs the closing order. The dishes are stowed, the power is cut at the county line, and the binder goes in a box with your originals in it."),*DateText(AssessDay));
  else Saro=TEXT("The closing order was already signed. The dishes are stowed a little early, the power is cut at the county line, and the binder goes in a box with your originals in it.");
- Rows.Add(S47Kit::Text(Saro));
- Rows.Add(S47Kit::Small(C.Taken>0?FString::Printf(TEXT("It's a long way to anywhere. You drive it with the radio off. When they ask, you don't mention the hours you can't account for. %s."),C.Taken==1?TEXT("There were some"):TEXT("There were more than a few")):FString(TEXT("It's a long way to anywhere. You drive it with the radio off. Nobody stops you. In the first town with a phone, you think about it, and you buy a coffee instead."))));
+ Rows.Add(Para(Saro,940.f));
+ Rows.Add(Para(C.Taken>0?FString::Printf(TEXT("It's a long way to anywhere. You drive it with the radio off. When they ask, you don't mention the hours you can't account for. %s."),C.Taken==1?TEXT("There were some"):TEXT("There were more than a few")):FString(TEXT("It's a long way to anywhere. You drive it with the radio off. Nobody stops you. In the first town with a phone, you think about it, and you buy a coffee instead.")),940.f,true));
  const TWeakPtr<uint8> Guard=Life;
- Rows.Add(S47Kit::Small(TEXT("Your save stays. You can take the keys back and go on from where you left.")));
+ Rows.Add(Para(TEXT("Your save stays. You can take the keys back and go on from where you left."),940.f,true));
  Rows.Add(S47Kit::Button(TEXT("Take the keys back"),[this,Guard]{if(Guard.IsValid())TakeKeysBack();},true));
  Rows.Add(S47Kit::Button(TEXT("Return to the title"),[this,Guard]{if(Guard.IsValid())ToTitle(false);}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("YOU LEFT SARO"),S47Kit::Col(Rows),940));
