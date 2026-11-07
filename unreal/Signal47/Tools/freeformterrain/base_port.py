@@ -315,7 +315,9 @@ def fake_y(x, z):
     return out[0], out[1]
 
 
-ARRAY_FLAT = (-290.0, 270.0, -515.0, 0.0)    # SARO's terms: dishes -230..210, -420..-42, plus 60 and 95 (S47Relief.cpp, S47GroundCover.cpp)
+# SARO's terms: S47GroundCover ARRAY_FLAT, which is the field's walk zones plus 60 and 95, and they reach -236..216, -426..: the same
+# rectangle as US47World::MakeLands' walk. -290, 270, -515 (from the dishes) left the mesh .7 m under the floor north of the array.
+ARRAY_FLAT = (-296.0, 276.0, -521.0, 0.0)
 SARO_PATCH = (-120.0, 120.0, -200.0, 600.0)
 SIR = (24.0, -300.0)
 

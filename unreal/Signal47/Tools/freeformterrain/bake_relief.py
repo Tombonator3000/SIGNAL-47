@@ -417,6 +417,7 @@ def main():
     ap.add_argument('--project', type=Path, default=Path.home() / 'SIGNAL-47/unreal/Signal47')
     ap.add_argument('--place', type=float, nargs=2, default=None, help='road-local x, z of the map centre; searched when left out')
     ap.add_argument('--cache', type=Path, default=None)
+    ap.add_argument('--no-mesa-floor', action='store_true', help='SM_FF_Range stands in Freeform: no lift to stay above the mesas foot, arroyos cut in full (the mesas, if they ever stand on this table, then float over its hollows)')
     args = ap.parse_args()
     out = args.out
     for d in ('masks', 'preview', 'report'):
@@ -605,7 +606,7 @@ def main():
     Zs = smooth(70, 240, D) * (1 - smooth(1100, 1700, D) * .5)
     mesa, mesa_info = mesa_footprint(args.project, xs, zs)
     from_mesa, _, _ = jfa(mesa, passes=16)
-    mesa_near = (from_mesa <= 2.5)
+    mesa_near = (from_mesa <= 2.5) & (not args.no_mesa_floor)
     mesa_w = bilinear(gauss(mesa_near.astype(np.float32), 1.0), *np.meshgrid(np.linspace(0, mesa.shape[1] - 1, W), np.linspace(0, mesa.shape[0] - 1, H)))
     # the straight wash and the sine stripes out wherever we may; the hills' lobes only far from the road, which rides on them
     fake_near, fake_lobes = B.fake_y(XX, ZZ)
@@ -641,7 +642,7 @@ def main():
 
     # ---------- limits ----------
     h = base + off
-    under = float(np.maximum(-3.5 - h, 0)[mesa_w > .05].max())
+    under = float(np.maximum(-3.5 - h, 0)[mesa_w > .05].max(initial=0))
     report['mesa']['deepest_below_minus_3_5_m'] = under
 
     # slope limit: 12 % within reach of the road, walkable (30 deg) from a distance
@@ -672,7 +673,7 @@ def main():
             env = np.maximum(lack, gauss(env, 5, 20))
         h = h + gauss(env, 1.5, 8) * w_mask
     h = np.where(mesa_w > .05, np.maximum(h, -3.5), h)
-    report['mesa']['deepest_below_minus_3_5_m'] = float(np.maximum(-3.5 - h, 0)[mesa_w > .05].max())
+    report['mesa']['deepest_below_minus_3_5_m'] = float(np.maximum(-3.5 - h, 0)[mesa_w > .05].max(initial=0))
     off = h - base
     off[locked] = 0
 

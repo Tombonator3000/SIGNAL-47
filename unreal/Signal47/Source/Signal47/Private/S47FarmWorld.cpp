@@ -1,6 +1,7 @@
 #include "S47FarmWorld.h"
 #include "S47FreeformTerrain.h"
 #include "S47Relief.h"
+#include "S47RoadEdge.h"
 #include "Components/PointLightComponent.h"
 #include "Components/MaterialBillboardComponent.h"
 #include "S47FarmHouse.h"
@@ -193,11 +194,16 @@ namespace
  // road, the yard and the soil at the walls have no edge, and they follow the land by themselves (Tools/farmbuildings/ground_decals.py).
  // A decal's U runs along its local Z and V along Y (DeferredDecal.usf); the road's and the band's maps are alike on both sides.
  struct FFarmDecal{TWeakObjectPtr<UDecalComponent> C;FVector Road=FVector::ZeroVector;double Degrees=0;};
- struct FDecalTone{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Tint=FLinearColor::White;};
+ struct FDecalTone{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Tint=FLinearColor::White,ByDay=FLinearColor::White;};
  TArray<FFarmDecal> FarmDecals;TArray<FDecalTone> DecalTones;TWeakObjectPtr<AS47Web> DecalWorld;bool bDecalsTried=false;float DecalDay=-1.f;
  constexpr double DecalRoadHalf=3.8,DecalBandHalf=.9,DecalMargin=.5; // Half widths of ground_decals.py's maps; how far past the land a box reaches.
  // The only numbers to retune from a capture: the maps' albedo is reckoned for the sun, sRGB 180,140,105 on the road.
  const FLinearColor DecalRoadTint(.62f,.56f,.5f),DecalBandTint(.6f,.62f,.66f),DecalFieldTint(.8f,.74f,.68f),DecalCornerTint(.5f,.46f,.44f);
+ // Freeform's ground came down by day to one soil (S47MesaRock::ApplyFreeformGround: the sand layer by .781 .785 .765), so every decal follows by the same
+ // factor, or it would stand bright on it. The ruts and the road are tinted from a capture at 11:18 (nature-yard): a rut read 175,114,79 on soil that read
+ // 186,142,113, redder and darker by .87 .62 .47 (linear); against the soil of the day (that by .78) they come to .85 of it with the same hue by
+ // .76 1.07 1.37 of what they were. The yard's, the door's, the wall band's and the corners' patches only follow the ground. The numbers to retune from a capture.
+ const FLinearColor DecalSoilByDay(.781f,.785f,.765f,1.f),DecalRoadByDay(.76f,1.07f,1.37f,1.f);
  constexpr float DecalBandOpacity=.7f,DecalYardOpacity=.32f,DecalDoorOpacity=.6f,DecalCornerOpacity=.9f;
  void BuildFarmDecals(AS47Web* W,bool On)
  {
@@ -211,9 +217,11 @@ namespace
   UMaterialInterface* RoadAsset=Load(TEXT("M_Farm_RoadDecal"));UMaterialInterface* EndAsset=Load(TEXT("M_Farm_RoadEnd"));UMaterialInterface* TrackAsset=Load(TEXT("M_Farm_TrackDecal"));
   UMaterialInterface* BandAsset=Load(TEXT("M_Farm_GroundBand"));UMaterialInterface* FieldAsset=Load(TEXT("M_Farm_WornField"));
   if(!RoadAsset||!EndAsset||!TrackAsset||!BandAsset||!FieldAsset){UE_LOG(LogTemp,Display,TEXT("S47: farm ground decals are not imported, keeping the road ribbon"));return;}
-  const auto Tone=[&](UMaterialInterface* Asset,const FLinearColor& Tint,float Opacity)->UMaterialInterface*
+  const auto Tone=[&](UMaterialInterface* Asset,const FLinearColor& Tint,float Opacity,const FLinearColor& ByDay=DecalSoilByDay)->UMaterialInterface*
   {
-   auto* Mid=UMaterialInstanceDynamic::Create(Asset,W);Mid->SetVectorParameterValue(TEXT("Tint"),Tint);Mid->SetScalarParameterValue(TEXT("Opacity"),Opacity);DecalTones.Add({Mid,Tint});return Mid;
+   auto* Mid=UMaterialInstanceDynamic::Create(Asset,W);Mid->SetVectorParameterValue(TEXT("Tint"),Tint);Mid->SetScalarParameterValue(TEXT("Opacity"),Opacity);DecalTones.Add({Mid,Tint,ByDay});
+   // The decals' low mips average the soil with the clear texels round it: a yard pale for the first seconds. All mips stay resident (as the ground's, S47MesaRock).
+   Mid->SetForceMipLevelsToBeResident(true,true,-1.f,0,true);return Mid;
   };
   // From A to B along the map's U, centred between them. The box reaches just past the land under it, so a truck on the road is only dusty at the wheels.
   const auto Piece=[&](UMaterialInterface* Mat,double Ax,double Az,double Bx,double Bz,double HalfAcross)
@@ -245,14 +253,14 @@ namespace
   Field(Door,Local(2,0,-5.4),Over,3.2,5.5);                  // the machine shed's open front
   Field(Door,Local(3,-1,-4),Over,2.4,2.8);                   // the feed shed's door
   // The road: 16 m to a map from the yard back to the highway, its first piece shorter.
-  UMaterialInterface* RoadMat=Tone(RoadAsset,DecalRoadTint,1.f);
+  UMaterialInterface* RoadMat=Tone(RoadAsset,DecalRoadTint,1.f,DecalRoadByDay);
   Piece(RoadMat,6,Rz(6),14,Rz(14),DecalRoadHalf);
   for(double X=14;X<110;X+=16)Piece(RoadMat,X,Rz(X),X+16,Rz(X+16),DecalRoadHalf);
   // At x 110 the road goes over to two ruts by 118 and to nothing by 126. U=0 is the road's side.
-  Piece(Tone(EndAsset,DecalRoadTint,1.f),110,Rz(110),126,Rz(126),DecalRoadHalf);
+  Piece(Tone(EndAsset,DecalRoadTint,1.f,DecalRoadByDay),110,Rz(110),126,Rz(126),DecalRoadHalf);
   // Two ruts on across the yard to the barn's doors.
   const FVector2D BarnDoor=Local(0,1.8,-6.5);
-  Piece(Tone(TrackAsset,DecalRoadTint,1.f),114,Rz(114)-.6,BarnDoor.X,BarnDoor.Y,DecalRoadHalf);
+  Piece(Tone(TrackAsset,DecalRoadTint,1.f,DecalRoadByDay),114,Rz(114)-.6,BarnDoor.X,BarnDoor.Y,DecalRoadHalf);
   // The soil against the walls and in their corners.
   UMaterialInterface* Band=Tone(BandAsset,DecalBandTint,DecalBandOpacity);UMaterialInterface* Corner=Tone(FieldAsset,DecalCornerTint,DecalCornerOpacity);
   for(const S47FarmBuildings::FWallFoot& Foot:S47FarmBuildings::WallFeet())
@@ -271,8 +279,8 @@ namespace
   const double Hour=M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:12.;
   const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
   if(FMath::Abs(Day-DecalDay)<.01f)return;DecalDay=Day;
-  const FLinearColor Scale=FMath::Lerp(FLinearColor(2.2f,1.4f,1.05f),FLinearColor::White,Day);
-  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*Scale);
+  const FLinearColor Night(2.2f,1.4f,1.05f,1.f);
+  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*FMath::Lerp(Night,Row.ByDay,Day));
  }
  TWeakObjectPtr<AS47Web> GroundWorld;TWeakObjectPtr<UStaticMeshComponent> YardGround,FarmRoad;bool bGroundTried=false;
  UMaterialInterface* NodeMaterial(const AS47Web* W,int32 Node)
@@ -473,7 +481,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);BuildFarmDecals(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);if(On)ToneFarmDecals(M);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);S47RoadEdge::Reconcile(W,Enabled(M));ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);BuildFarmDecals(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);if(On)ToneFarmDecals(M);
   if(On)KeepPlayerOutOfWalls(M,W);
   if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;

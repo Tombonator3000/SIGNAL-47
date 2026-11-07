@@ -192,6 +192,7 @@ public:
  double AudioPosition() const { return AudioCursor; }
  bool AudioPlaying() const { return bAudioPlaying; }
  bool AudioPreparing() const { return CaptureStartStage!=0; }
+ const FString& AudioStopReason() const { return AudioStopWhy; } // why the reel transport last stopped; a toast does not reach FeedbackText
  int32 AudioSource() const { return AudioSourceIndex; }
  double AudioLevel() const;
  FString AudioDisplay() const;
@@ -229,6 +230,8 @@ private:
  TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
  bool UsesCapturedAudio() const;
  int32 CaptureStartStage=0; // 1 prepare; 2 discard build frame; 3 start on stable frame
+ FString AudioStopWhy;
+ void NoteAudioStop(const TCHAR* Why,double Dt);
  bool QueueCapture(S47CaptureSound::FTrack& Track,double From,double To,double Dt,double Rate,const S47CaptureSound::FFrame& Input);
  void InterruptCapture(const FString& Why);
 

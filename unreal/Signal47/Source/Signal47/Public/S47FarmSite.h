@@ -7,6 +7,7 @@ class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
 class ULocalFogVolumeComponent;
+enum class ES47Clip : uint8;
 
 // Freeform only: what the lights leave behind until the next morning, at the farm or a place in town. Pressed
 // ground, a low local haze and an occasional sound from that spot; looking closer keeps a field record.
@@ -52,6 +53,11 @@ public:
  // Tests: what the body is doing about the lamp and noise, its next lamp draw in place of the dice, and the visit's two clocks.
  const FS47VisitAttention& VisitAttention() const{return Attention;}
  void TestAttentionRoll(float Roll){AttentionRoll=Roll;}
+ // Just out of the lamp's reach (FS47VisitAttention::BeamReach): nearer than this the tall one is on its feet.
+ static constexpr double SitBeyond=26;
+ // Tests: the next tall visit's draw to sit far off, in place of the dice, and the clip the body out now is playing.
+ void TestSitRoll(float Roll){SitRoll=Roll;}
+ ES47Clip VisitClipNow() const;
  // Test: no hunt and no surprise from the set, so that each reaction can be looked at by itself.
  void TestHoldHunt(){bTestHoldHunt=true;}
  void TestFreshPatience(){VisitPatience=120;}
@@ -87,6 +93,14 @@ private:
  TSharedPtr<struct FS47PaleBody> VisitBody,CrabBody,TallBody;
  FVector BodyAt=FVector::ZeroVector;
  double BodyYaw=0,BodyClock=0;
+ static constexpr double ShhWithin=12;
+ double ShhLeft=0;
+ bool bShhTried=false;
+ // The tall one. Stopped dead the first time a lamp finds it; sitting, some visits, while it is too far off for any lamp.
+ static constexpr double SitChance=.5;
+ double FreezeLeft=0;
+ bool bFreezeTried=false,bSitsFar=false,bSatLogged=false;
+ float SitRoll=-1;
  bool bBodyOut=false;
  bool bStallSet=false,bNudged=false;
  double HushIn=0;

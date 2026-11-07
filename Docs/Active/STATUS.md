@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november kl. 05:54, rettet spillerreise, første mysterium og etterspor
+## Installert 7. november kl. 11:18, ekte terreng og gården på bakken
+
+`51fedcb0` etter PR480 er nå standard, med rask installasjon: bakke fra USGS-data med relieff bare i Freeform, gårdsbygg uten sokler med Codex-teksturer, tun og vei som følger bakken, ny kreosot, dørmøte og lykt som påvirker kroppene. Selvtest 2647, regresjon 251 og normalreisen i editor; 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. `-S47MenuPointerRelief` har 17 av 3000 punkter over grensen nord for antennefeltet, og fase 7 i normalreisen feilet én gang av tre. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d26/candidate/Linux`.
+
+## Tidligere installert 7. november kl. 05:54, rettet spillerreise, første mysterium og etterspor
 
 `0086c91d` etter PR479 er nå standard, med rask installasjon: rettelser etter gjennomgang av reisen (hendelser under kjøring, hvile, vekking, kveldsjobb fra dag 2, HUD mot neste gren), sak 4 «The same minute», etterspor etter bortføring, lys over tom bil etter kl. 02 og reel-dekket etter konseptet. Selvtest 2582, 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d24/candidate/Linux`.
 

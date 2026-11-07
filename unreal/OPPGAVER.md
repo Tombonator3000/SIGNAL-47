@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Dagskift 7. november, Claude Code
+
+Tom ca. 16: skal teste, fortsetter med utvikling etterpå. Agentene er ferdige, og alle ekstra kopier er avviklet. Tom ca. 12: fortsett, så mange agenter som trengs; Freeform går foran Story, som tilpasses senere. Grensen på fire arbeidskopier står. Kopier: `~/SIGNAL-47` (Claude, `claude/day-a-20261107`, koordinator, bygg og prøver), `~/SIGNAL-47-cosmic` (Codex, urørt), `agent-a4f4def065b108336` (fjell, `SM_FF_Range`), ett nytt worktree (figurer og prøver: Crab, kinodør). Andre agenter leser bare, eller skriver bare `Tools/freeformterrain/import_ground_relief.py` og bakkens assets i hovedkopien. Én tung motorjobb om gangen via `production_lease`.
+
 ## Samlet game bible, Codex 6. november
 
 Ferdig: PR444 flettet til main som `2a77e219`. Hovedbibel: Docs/Design/GAME_BIBLE.md, med gameplay, verden, SC01-SC13, UFO-feltundersøkelser og gårdshorror/tapt tid i Freeform. 62 detaljkilder er registrert og gamle planer peker til bibelen. Ingen nye lenkefeil mot førtilstanden; ingen motorjobb, installasjon eller runtimeendring. Eksisterende cosmic-kopi på `codex/game-bible-20261106` er ferdig og kan gjenbrukes eller avvikles ved neste samlede kjøring; privat lydgrunnlag bevares. Totalt to kopier. Hovedkopiens lokale UI/TODO-arbeid er urørt; ikke overskriv dette ved innhenting av main.

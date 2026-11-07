@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47CreatureClips.h"
 
 struct FS47TripoCreature;
 
@@ -11,6 +12,7 @@ struct FS47RoswellPose
  bool bVisible=true, bHeld=false;
  // Distance is the controller's cumulative, collision-resolved travel in metres.
  double SpeedMps=0, DistanceTravelled=0, Crouch=0, HeadYaw=0, HeadPitch=0;
+ ES47Clip Act=ES47Clip::Num; // only for a body with its own clips
 };
 
 struct FS47RoswellContacts
@@ -35,7 +37,7 @@ private:
   double Previous=0;
   bool bSwing=false;
  } Feet[2];
- bool bInit=false;
+ bool bInit=false,bOnClips=false;
  double Distance=0, Phase=0, Clock=0, Duck=0, HeadYaw=0, HeadPitch=0, Motion=0, Reach=0, SneakK=0;
  FVector LastRoot=FVector::ZeroVector;
 };

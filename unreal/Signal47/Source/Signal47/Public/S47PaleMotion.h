@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47CreatureClips.h"
 
 struct FS47TripoCreature;
 enum class ES47PaleMotion : uint8 { Idle, Listen, Walk, Run, Grab };
@@ -15,6 +16,7 @@ struct FS47PalePose
  // Actual player chest target in Unreal cm, supplied only by a live controller/explicit preview.
  TOptional<FVector> GrabTargetUE;
  double LegacyGait=0, LegacyPhase=0; // unchanged fallback when the actual rig is unsupported
+ ES47Clip Act=ES47Clip::Num,Stand=ES47Clip::Num; // only for a body with its own clips
 };
 struct FS47PaleContacts
 {

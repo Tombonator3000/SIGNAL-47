@@ -14,6 +14,7 @@ Utgang 0 PASS, 1 FAIL (renderfeil), 2 INVALID (prøven sa ingenting om renderfei
 
 --focus-cycles åpner og lukker et eget Spectacle-vindu i holdvinduet, for det krasjøkten hadde og
 den rene prøven mangler: fokus bort og tilbake med ny swapchain. Bruk det bare når Tom ikke sitter ved maskinen.
+Pausemenyen fra fokustap åpnes ikke her: -S47SmokeTest slår av US47Flow::Activation. Pausene kommer fra testens fire runder.
 """
 import argparse
 import contextlib
@@ -284,8 +285,6 @@ def verdict(meta, log, result, gpu, frames, kernel, crashes):
             invalid.append(f'testen sa PASS med bare {after:.0f} s etter AUTO HOLD')
         if code != 0:
             invalid.append(f'testen sa PASS, men prosessen endte med kode {code}')
-    elif focus and status == 'FAIL' and after >= HOLD_SECONDS and 'remains interactive' in reason:
-        warn.append('testens sluttsjekk feilet som ventet: fokustap åpner pausemenyen (S47Flow::Activation)')
     elif not fail:
         invalid.append(f"testen ga {status or 'ingen result.json'}: {reason or 'uten grunn'}")
     if focus and len(meta.get('focus_events', [])) < focus:
@@ -479,8 +478,10 @@ def plan(args):
     if not session.is_relative_to('/tmp') or session.exists() or any(p.is_symlink() for p in session.parents):
         raise ValueError('Økten må være en ny mappe under /tmp uten symlenker')
     profile = session / 'profile'
-    command = [str(executable), 'Signal47', '-UserDir=' + str(profile), '-S47Title', '-S47Open=continue',
-               '-S47SaroResumeTest', '-S47Quality=high', '-log', '-NoSplash', '-csvCaptureFrames=20000', '-csvCompression=0',
+    # -S47Open= leses bare under -S47SmokeTest (AS47HUD::StartTests). -S47Seconds er smoke-prøvens egen slutt, så den
+    # må ligge bak --timeout: det er -S47SaroResumeTest som avslutter, ellers stanser run_owned ved grensen.
+    command = [str(executable), 'Signal47', '-UserDir=' + str(profile), '-S47Title', '-S47SmokeTest',
+               f'-S47Seconds={int(args.timeout) + 60}', '-S47Open=continue', '-S47SaroResumeTest', '-S47Quality=high', '-log', '-NoSplash', '-csvCaptureFrames=20000', '-csvCompression=0',
                '-LogCmds=LogVulkanRHI Verbose']
     if args.windowed:
         width, height = args.windowed.split('x')

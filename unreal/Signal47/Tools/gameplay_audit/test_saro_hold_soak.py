@@ -80,13 +80,15 @@ class Verdict(unittest.TestCase):
         stopped = dict(META, run=dict(returncode=-15, stop_reason='contention: another Unreal process started; evidence invalid'))
         self.assertEqual(self.decide(meta=stopped)[0], 'INVALID')
 
-    def test_focus_run_needs_new_swapchains_and_accepts_expected_pause(self):
-        paused = dict(RESULT, status='FAIL', reason='same ordinary case remains interactive after the bounded observation')
-        meta = dict(META, focus_cycles=2, focus_events=[{}, {}], hold_began=1793500010.0, run=dict(returncode=1, stop_reason=None))
-        self.assertEqual(self.decide(result=paused, meta=meta)[0], 'INVALID')
+    def test_focus_run_needs_new_swapchains_and_no_pause_failure_is_expected(self):
+        # -S47SmokeTest slår av US47Flow::Activation: et fokustap åpner ingen pausemeny, og en sluttsjekk som feiler er ikke ventet.
+        meta = dict(META, focus_cycles=2, focus_events=[{}, {}], hold_began=1793500010.0, run=dict(returncode=0, stop_reason=None))
+        self.assertEqual(self.decide(meta=meta)[0], 'INVALID')
         at = datetime.fromtimestamp(1793500040.0, timezone.utc).strftime('%Y.%m.%d-%H.%M.%S') + ':000'
         fresh = GOOD + f'[{at}][  1]LogVulkanRHI: Creating new VK swapchain with X\n'
-        self.assertEqual(self.decide(fresh, result=paused, meta=meta)[0], 'PASS')
+        self.assertEqual(self.decide(fresh, meta=meta)[0], 'PASS')
+        failed = dict(RESULT, status='FAIL', reason='same ordinary case remains interactive after the bounded observation')
+        self.assertEqual(self.decide(fresh, result=failed, meta=dict(meta, run=dict(returncode=1, stop_reason=None)))[0], 'INVALID')
 
     def test_a_failed_run_does_not_trigger_the_queue_retry(self):
         # q.py starter på nytt hvis et av disse ordene står i utskriften fra en kjøring som feilet.
@@ -140,6 +142,27 @@ class Measures(unittest.TestCase):
         if (Args.build / 'Signal47/Binaries/Linux/Signal47').is_file():
             with self.assertRaisesRegex(ValueError, 'installerte'):
                 soak.plan(Args)
+
+    def test_command_reaches_continue(self):
+        with tempfile.TemporaryDirectory() as folder:
+            class Args:
+                build = Path(folder)
+                out = None
+                allow_installed = False
+                windowed = None
+                video_driver = 'wayland'
+                fixture = soak.FIXTURE
+                focus_cycles = 0
+                timeout = 480
+            binary = Args.build / 'Signal47/Binaries/Linux/Signal47'
+            binary.parent.mkdir(parents=True)
+            binary.touch()
+            command = soak.plan(Args)['command']
+        # AS47HUD::StartTests leser -S47Open= bare under -S47SmokeTest; uten det står spillet på tittelen til testen gir opp.
+        for flag in ('-S47Title', '-S47SmokeTest', '-S47Open=continue', '-S47SaroResumeTest'):
+            self.assertIn(flag, command)
+        seconds = next(int(item.split('=')[1]) for item in command if item.startswith('-S47Seconds='))
+        self.assertGreater(seconds, Args.timeout)
 
     def test_fixture_shape(self):
         with tempfile.TemporaryDirectory() as folder:

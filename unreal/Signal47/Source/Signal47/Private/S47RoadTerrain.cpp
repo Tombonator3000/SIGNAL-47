@@ -270,7 +270,8 @@ double SurfaceY(double X, double Z)
 	if (O.D <= OLD.Shoulder) return OldBase(X, Z) + OldLift(O.D);
 	// (Unreal only) Freeform's rolling land goes on the desert's own branch alone: the strips above, GridY, HLow and everything
 	// worked out from them (STATION_DY, the diner, the motel, the road meshes) stay as they were. 0 outside Freeform.
-	double Y = GridY(X, Z) + S47Relief::Off(X, Z);
+	// The range's fans and aprons the same way (S47Relief::HillLift): what walks, drives or grows there stands on them.
+	double Y = GridY(X, Z) + S47Relief::Off(X, Z) + S47Relief::HillLift(X, Z);
 	if (Ax <= HWY.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(Ax, HWY.Flat, HWY.Margin));
 	if (T.D <= TRK.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(T.D, TRK.Flat, TRK.Margin));
 	return Y;

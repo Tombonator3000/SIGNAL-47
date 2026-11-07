@@ -507,6 +507,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
 {
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
  IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
+ for(int32& Logged:OrbStopLogged)Logged=-1;
  bForcedEvent=Forced;OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  bCarTaken=false;CarStage=0;CarLightClock=-1;
  bCarLight=Id==TEXT("empty_car")&&FS47FarmSite::TheirHours(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
@@ -523,7 +524,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
   // From SARO it is a drive away, so they last that much longer before they are gone.
   if(M->Web->Area()==TEXT("saro")){Age=-170;Scene=TEXT("diner");}
  }
- if(Id==TEXT("dusk_orb")){Anchor=FVector(-3.25,US47Night::SaroFloorAt(M->Web,-3.25,-47)+2.2,-47);DuskOrb.Started(M->Freeform->Clock());}
+ if(Id==TEXT("dusk_orb")){Anchor=FVector(FS47DuskOrb::HomeX,US47Night::SaroFloorAt(M->Web,FS47DuskOrb::HomeX,FS47DuskOrb::HomeZ)+FS47DuskOrb::HomeUp,FS47DuskOrb::HomeZ);DuskOrb.Started(M->Freeform->Clock());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
  if(Id==TEXT("close_pass")&&M->Player)Anchor=M->Player->Pos+FVector(-70,24,-38);
@@ -640,6 +641,7 @@ void FS47FreeformDirector::Draw()
    auto* Film=Effects->OrbFilm[I].Get();
    if(!Use){if(Fx->IsActive())Fx->DeactivateImmediate();L->SetVisibility(false);if(Film&&I>0)Film->SetVisibility(false,false);continue;}
    if(!Fx->IsActive())Fx->Activate(true);
+   Fx->SetVisibility(OrbLightProbe==0);
    // A startled orb goes first; the others follow a beat apart.
    const double Flee=OrbFleeAge>=0?FMath::Max(0.,OrbFleeAge-I*.12):-1;
    const FVector At=FS47DuskOrb::Position(Anchor,Age,I)+FVector(0,Flee>=0?FS47DuskOrb::FleeRise(Flee):0.,0);
@@ -648,7 +650,7 @@ void FS47FreeformDirector::Draw()
    Fx->SetWorldLocation(S47Three::ToUE(At));
    if(Film&&I>0){Film->SetWorldLocation(S47Three::ToUE(At));Film->SetWorldScale3D(FVector(.6*Show));Film->SetVisibility(Show>0,false);}
    Fx->SetVariableFloat(TEXT("User.Phase"),float(Age+I*2.));Fx->SetVariableFloat(TEXT("User.Brightness"),float(Show));Fx->SetVariableFloat(TEXT("User.Size"),I==0?90.f:62.f);
-   L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse));L->SetVisibility(Show>0);
+   L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse));L->SetVisibility(Show>0&&OrbLightProbe!=2);
   }
  }
  const bool Farm=Event==TEXT("farm_lights")||Event==TEXT("town_lights");
@@ -957,6 +959,9 @@ void FS47FreeformDirector::Step(double Dt)
    SiteCheckAt=ActiveTime+TestScale;
    if(StartPendingNightChoice(TEXT("feeder_presence"),Day,PendingSiteNight)||StartPendingNightChoice(TEXT("array_presence"),Day,PendingSiteNight))return;
   }
+  // Not only at dusk: the low lights keep their own hour in the dark. The same event, the same path, the same photograph.
+  if(!M->Freeform->InTutorial()&&(bTestOrbNight||(M->Flow&&!M->Flow->bDevRun))&&DuskOrb.ReadyNight(M->Freeform->Clock())&&Start(TEXT("dusk_orb"),false))
+  {UE_LOG(LogTemp,Display,TEXT("S47: dusk orb night visit %d starts at %.2f h, from the schedule"),DuskOrb.NightVisitCount(),FMath::Fmod(M->Freeform->Clock(),86400.)/3600.);return;}
   if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+Random.FRandRange(240,420);
   if(bNight)
   {
@@ -1008,6 +1013,11 @@ void FS47FreeformDirector::Step(double Dt)
  }
  if(Event==TEXT("dusk_orb")&&M->Player)
  {
+  if(OrbFleeAge<0)for(int32 I=0;I<FS47DuskOrb::Count;++I)
+  {
+   const int32 StopNow=FS47DuskOrb::StopAt(Age,I);if(StopNow==OrbStopLogged[I])continue;
+   OrbStopLogged[I]=StopNow;if(StopNow>=0){UE_LOG(LogTemp,Display,TEXT("S47: dusk orb %d stops at %s at %.1f s"),I,FS47DuskOrb::Stops()[StopNow].Name,Age);}
+  }
   if(OrbFleeAge>=0)
   {
    OrbFleeAge+=Dt;
@@ -1193,6 +1203,16 @@ bool FS47FreeformDirector::Use(const FString& Id)
  if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&Near(Anchor,2.7))
  {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Keep its position as evidence first: photograph the marked surface before lifting the fragment."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}
  return false;
+}
+void FS47FreeformDirector::OrbLightCount(int32& On,int32& Shadowed,float& Lumens,float& Radius)const
+{
+ On=Shadowed=0;Lumens=Radius=0;if(!Effects)return;
+ for(const auto& W:Effects->OrbLight)if(const auto* L=W.Get())if(L->IsVisible())
+ {++On;Shadowed+=L->CastShadows?1:0;Lumens=FMath::Max(Lumens,L->Intensity);Radius=FMath::Max(Radius,L->AttenuationRadius);}
+}
+FVector FS47FreeformDirector::OrbRecordAt()const
+{
+ const auto* C=Effects?Effects->Orb.Get():nullptr;return C?S47Three::ToThree(C->Bounds.Origin):FVector::ZeroVector;
 }
 bool FS47FreeformDirector::PhysicalObjectPresented()const
 {

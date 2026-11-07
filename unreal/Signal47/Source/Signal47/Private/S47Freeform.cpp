@@ -401,8 +401,8 @@ void FS47FreeformSession::Step(double Dt)
  const bool Powered=HasPower();
  if(Dt>.100001||ArrayMotionHeld()||!Powered)InterruptCapture(TEXT("Continuous receiver capture interrupted; retained measurements use compatible reference sound."));
  if(CaptureStartStage&&(!Powered||Held()||!bAudioOpen||!AudioDesk||!AudioDesk->ListeningPosition()))
- {CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;}
- if(Dt>.100001&&UsesCapturedAudio()&&TapeCapture&&bAudioPlaying){TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));}
+ {NoteAudioStop(TEXT("start cancelled: held, unpowered or away from the deck"),Dt);CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;}
+ if(Dt>.100001&&UsesCapturedAudio()&&TapeCapture&&bAudioPlaying){NoteAudioStop(TEXT("timing: frame over 100 ms"),Dt);TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));}
  if(TapeCapture&&(!Powered||Held()||!bAudioOpen||!AudioDesk||!AudioDesk->ListeningPosition()||(!bAudioPlaying&&AudioCursor<(AudioSourceIndex==0?18.:8.)-.001)))TapeCapture->Stop();
  if(!bPowerApplied||Powered!=bLastPower)
  {
@@ -842,7 +842,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
  else if(Action==TEXT("play"))
  {
   if(!bAudioOpen)return false;if(AudioCursor>=(AudioSourceIndex==0?18.:8.))AudioCursor=0;
-  if(UsesCapturedAudio()){if(!bAudioPlaying&&!CaptureStartStage)CaptureStartStage=1;}
+  if(UsesCapturedAudio()){if(!bAudioPlaying&&!CaptureStartStage){CaptureStartStage=1;AudioStopWhy.Empty();}}
   else bAudioPlaying=true;
  }
  else if(Action==TEXT("pause"))bAudioPlaying=false;
@@ -865,32 +865,36 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
  else return false;
  Changed();return true;
 }
+void FS47FreeformSession::NoteAudioStop(const TCHAR* Why,double Dt)
+{
+ AudioStopWhy=Why;UE_LOG(LogTemp,Display,TEXT("S47 capture playback stopped: %s cursor=%.3f source=%d dt=%.3f"),Why,AudioCursor,AudioSourceIndex,Dt);
+}
 void FS47FreeformSession::StepAudio(double Dt)
 {
- if(!HasPower()){bAudioPlaying=false;return;}
+ if(!HasPower()){if(bAudioPlaying)NoteAudioStop(TEXT("no power"),Dt);bAudioPlaying=false;return;}
  FJob* J=Job();if(!J||!bAudioOpen||!M||!AudioDesk)return;
  if(CaptureStartStage)
  {
   const auto& Capture=AudioSourceIndex==0?J->CaptureOriginal:J->CaptureControl;
   if(!AudioDesk->ListeningPosition()||!UsesCapturedAudio()||!M->Audio||!M->Audio->Ctx||!M->Audio->SfxBus)
-  {CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;return;}
+  {NoteAudioStop(TEXT("start cancelled: away from the deck or no audio"),Dt);CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;return;}
   if(CaptureStartStage==1)
   {
    if(!TapeCapture)TapeCapture=MakeShared<FS47CapturePlayer>(M->Audio->Ctx.ToSharedRef(),M->Audio->SfxBus);
-   if(!TapeCapture->Prepare(Capture)){CaptureStartStage=0;Changed(TEXT("Tape preparation failed. Press PLAY to try again."));return;}
+   if(!TapeCapture->Prepare(Capture)){NoteAudioStop(TEXT("tape preparation failed"),Dt);CaptureStartStage=0;Changed(TEXT("Tape preparation failed. Press PLAY to try again."));return;}
    CaptureStartStage=2;return;
   }
   if(CaptureStartStage==2){CaptureStartStage=3;return;}
   if(Dt>.100001)return;
   CaptureStartStage=0;bAudioPlaying=TapeCapture&&TapeCapture->Ready(Capture)&&TapeCapture->Play(Capture,AudioCursor);
   if(bAudioPlaying){TapeCapture->Audible(true);M->Audio->ReceiverRecordingOff();}
-  else Changed(TEXT("Playback could not start. Press PLAY to try again."));
+  else{NoteAudioStop(TEXT("start failed: audio context not running or tape not ready"),Dt);Changed(TEXT("Playback could not start. Press PLAY to try again."));}
   return;
  }
  if(!bAudioPlaying)return;
- if(!AudioDesk->ListeningPosition()){bAudioPlaying=false;Changed(TEXT("Playback paused because you left the reel deck. Return and press PLAY to resume."));return;}
+ if(!AudioDesk->ListeningPosition()){NoteAudioStop(TEXT("left the deck"),Dt);bAudioPlaying=false;Changed(TEXT("Playback paused because you left the reel deck. Return and press PLAY to resume."));return;}
  if(UsesCapturedAudio()&&TapeCapture&&!TapeCapture->Aligned(FMath::Min(AudioSourceIndex==0?18.:8.,AudioCursor+Dt)))
- {TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));return;}
+ {NoteAudioStop(TEXT("timing: audio clock drifted from the cursor"),Dt);TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));return;}
  const double Was=AudioCursor,Duration=AudioSourceIndex==0?18.:8.;AudioCursor=FMath::Min(Duration,Was+Dt);
  const bool Listening=AudioDesk->ListeningPosition();
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Listening&&Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);

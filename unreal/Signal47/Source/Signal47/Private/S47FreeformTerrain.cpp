@@ -27,11 +27,14 @@ struct FS47FreeformTerrainState
 	struct FInstanceRow { TWeakObjectPtr<UInstancedStaticMeshComponent> C; TArray<int32> Index; TArray<FTransform> Flat, Lifted; };
 	struct FPropLift { TWeakObjectPtr<UStaticMeshComponent> C; FTransform Flat; double Dy = 0; };
 	struct FWireSwap { TWeakObjectPtr<UStaticMeshComponent> C; TStrongObjectPtr<UStaticMesh> Flat, Lifted; };
+	// The mesas' own component takes the range: S47Sky, S47HighwayLandscape and its transform stay as they are.
+	struct FRangeSwap { bool bMesaShadow=true; TWeakObjectPtr<UStaticMeshComponent> C; TStrongObjectPtr<UStaticMesh> Mesas, Range; TArray<TStrongObjectPtr<UMaterialInterface>> MesaMaterials; };
 	TArray<FGroundSwap> Grounds;
 	TArray<FInstanceRow> Rows;
 	TArray<FPropLift> Props;
 	TArray<FWireSwap> Wires;
-	TStrongObjectPtr<UMaterialInstanceDynamic> Mid;
+	FRangeSwap Range;
+	TStrongObjectPtr<UMaterialInstanceDynamic> Mid, RangeMid;
 	TArray<FString> Notes;
 	int32 Instances = 0, Segments = 0;
 	bool bPrepared = false, bFailed = false, bOn = false;
@@ -42,6 +45,8 @@ namespace
 	const TCHAR* const ReliefRoadPath = TEXT("/Game/FreeformTerrain/SM_FF_Ground_Road.SM_FF_Ground_Road");
 	const TCHAR* const ReliefSaroPath = TEXT("/Game/FreeformTerrain/SM_FF_Ground_Saro.SM_FF_Ground_Saro");
 	const TCHAR* const ReliefMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformGround.M_S47_FreeformGround");
+	const TCHAR* const RangeMeshPath = TEXT("/Game/FreeformTerrain/SM_FF_Range.SM_FF_Range");
+	const TCHAR* const RangeMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformRange.M_S47_FreeformRange");
 	const int32 ReliefRoadNode = 1242, ReliefRoadGeo = 873, ReliefSaroNode = 7, ReliefSaroGeo = 4, ReliefCorridorNode = 952;
 	constexpr double ReliefMinMove = .002;   // less than this is not worth the update: 0 in the mask, and nothing to see
 
@@ -262,6 +267,51 @@ namespace
 			}
 		}
 	}
+	// The real hills in place of the mesas, if they are installed. Without them the mesas stay, with one line in the log.
+	void PrepareRange(AS47Web* W, FS47FreeformTerrainState& S)
+	{
+		if (FParse::Param(FCommandLine::Get(), TEXT("S47RangeOff"))) { S.Notes.Add(TEXT("-S47RangeOff: the mesas stay")); return; }
+		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, RangeMeshPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+		UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr, RangeMaterialPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+		if (!Mesh || !Material) { S.Notes.Add(TEXT("the range is not installed: the mesas stay")); return; }
+		for (int32 I = 0; I < W->PartCount(); ++I)
+		{
+			const FS47WebNode* N = W->Node(I);
+			if (!N || N->Name != TEXT("prop:streetGroundMesas")) continue;
+			auto* C = Cast<UStaticMeshComponent>(N->Comp.Get());
+			if (!C || !C->GetStaticMesh()) continue;
+			UMaterialInstanceDynamic* Mid = UMaterialInstanceDynamic::Create(Material, GetTransientPackage());
+			if (!Mid) { S.Notes.Add(TEXT("the range's material would not instance: the mesas stay")); return; }
+			Mid->SetForceMipLevelsToBeResident(true, true, -1.f);
+			S.RangeMid.Reset(Mid);
+			S.Range.C = C; S.Range.Mesas.Reset(C->GetStaticMesh()); S.Range.Range.Reset(Mesh);
+			return;
+		}
+		S.Notes.Add(TEXT("no prop:streetGroundMesas in this world: no range"));
+	}
+	void ApplyRange(FS47FreeformTerrainState& S, bool bOn)
+	{
+		FS47FreeformTerrainState::FRangeSwap& R = S.Range;
+		UStaticMeshComponent* C = R.C.Get();
+		if (!C) return;
+		if (bOn)
+		{
+			// What S47MesaRock has given the mesas so far comes back in Story.
+			R.MesaMaterials.Reset();
+			for (int32 Slot = 0; Slot < C->GetNumMaterials(); ++Slot) R.MesaMaterials.Emplace(C->GetMaterial(Slot));
+			C->SetStaticMesh(R.Range.Get());
+			C->SetMaterial(0, S.RangeMid.Get());
+			// A 24 km range would throw its shadow across the whole plain; hills keep their shading, and the land its sun.
+			R.bMesaShadow = C->CastShadow;
+			C->SetCastShadow(false);
+		}
+		else
+		{
+			C->SetStaticMesh(R.Mesas.Get());
+			C->SetCastShadow(R.bMesaShadow);
+			for (int32 Slot = 0; Slot < R.MesaMaterials.Num(); ++Slot) C->SetMaterial(Slot, R.MesaMaterials[Slot].Get());
+		}
+	}
 	bool PrepareRelief(AS47Web* W, FS47FreeformTerrainState& S)
 	{
 		const auto Fail = [&](const FString& Why)
@@ -298,6 +348,7 @@ namespace
 		ScanInstances(W, S);
 		ScanProps(W, S);
 		ScanWires(W, S);
+		PrepareRange(W, S);
 		TArray<FString> Zones;
 		if (!S47Relief::CheckZones(Zones)) for (const FString& Line : Zones) if (Line.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47FreeformTerrain, Warning, TEXT("S47: %s"), *Line);
 		UE_LOG(LogS47FreeformTerrain, Display, TEXT("S47: Freeform's land ready: %d instances (%d wire pieces) and %d props to lift, measured in %.1f ms"), S.Instances, S.Segments, S.Props.Num(), (FPlatformTime::Seconds() - Started) * 1000);
@@ -372,6 +423,7 @@ namespace
 			else C->SetRelativeTransform(Lift.Flat);
 		}
 		for (const auto& Wire : S.Wires) if (UStaticMeshComponent* C = Wire.C.Get()) SwapMeshKeepingMaterials(C, bOn ? Wire.Lifted.Get() : Wire.Flat.Get());
+		ApplyRange(S, bOn);
 		S.bOn = bOn;
 		UE_LOG(LogS47FreeformTerrain, Display, TEXT("S47: Freeform's land %s in %.1f ms"), bOn ? TEXT("on") : TEXT("off"), (FPlatformTime::Seconds() - Started) * 1000);
 	}
@@ -398,6 +450,7 @@ namespace S47FreeformTerrain
 		{
 			// Whoever sets a material on the ground later must not take it back to the flat land's.
 			for (const auto& G : S.Grounds) if (UStaticMeshComponent* C = G.C.Get()) if (C->GetMaterial(0) != S.Mid.Get()) C->SetMaterial(0, S.Mid.Get());
+			if (UStaticMeshComponent* C = S.Range.C.Get()) if (C->GetMaterial(0) != S.RangeMid.Get()) C->SetMaterial(0, S.RangeMid.Get());
 		}
 		return S.bOn;
 	}
@@ -413,14 +466,17 @@ namespace S47FreeformTerrain
 	{
 		if (!IsOn(Web)) return false;
 		for (const auto& G : Web->FreeformTerrain->Grounds) if (G.C.Get() == Component) return true;
-		return false;
+		return Component && Web->FreeformTerrain->Range.C.Get() == Component;
 	}
 	UMaterialInstanceDynamic* GroundMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->Mid.Get() : nullptr; }
+	UMaterialInstanceDynamic* RangeMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->RangeMid.Get() : nullptr; }
 	void Report(const AS47Web* Web, TArray<FString>& Lines)
 	{
 		if (!Web || !Web->FreeformTerrain.IsValid()) { Lines.Add(TEXT("relief: not prepared")); return; }
 		const FS47FreeformTerrainState& S = *Web->FreeformTerrain;
 		Lines.Add(FString::Printf(TEXT("relief: on %d, %d grounds, %d instances (%d wire pieces), %d props, %d wire meshes"), S.bOn, S.Grounds.Num(), S.Instances, S.Segments, S.Props.Num(), S.Wires.Num()));
+		const UStaticMeshComponent* RangeC = S.Range.C.Get();
+		Lines.Add(FString::Printf(TEXT("range: %s, on the mesas' node: %s"), RangeC ? TEXT("installed") : TEXT("not in use"), RangeC && RangeC->GetStaticMesh() ? *RangeC->GetStaticMesh()->GetName() : TEXT("-")));
 		Lines.Append(S.Notes);
 	}
 }

@@ -7,6 +7,7 @@
 #include "S47GroundCover.h"
 #include "S47Main.h"
 #include "S47Relief.h"
+#include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Truck.h"
@@ -17,6 +18,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "HAL/PlatformMisc.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
@@ -47,17 +50,36 @@ namespace
 		{ TEXT("array"), TEXT("saro"), -320, -500, 0, -520, 6 },
 		{ TEXT("farm"), TEXT("saro"), 25, 300, 100, 215, 2 },
 		{ TEXT("mesa"), TEXT("diner"), -1300, 1000, -2600, 1000, 30 },
+		{ TEXT("highway"), TEXT("diner"), -14, 700, 6, 1500, 8 },
+		{ TEXT("station"), TEXT("station01"), -560, 560, -1400, 700, 8 },
 	};
 	const double ReliefHours[] = { 11, 18.6, 23.5 };
+	// -S47RoadEdgeViews: only the highway's edge, by day and in the low sun, and none of the walks: Tom's picture, and from the shoulder, the road and afar.
+	// Road-local, as above; the SARO views stand in its own stretches.
+	const FReliefView EdgeViews[] = {
+		{ TEXT("edge-along"), TEXT("diner"), 8.5, 900, 3, 1500, 0 },
+		{ TEXT("edge-tom"), TEXT("diner"), 16, 700, 2, 1100, 2 },
+		{ TEXT("edge-down"), TEXT("diner"), 6.6, 1210, 4.2, 1214.5, -1.2 },
+		{ TEXT("edge-shoulder"), TEXT("diner"), 5.4, 1300, 4.8, 1400, 0 },
+		{ TEXT("edge-car"), TEXT("diner"), 2.2, 1100, 2.2, 1700, 0 },
+		{ TEXT("edge-west"), TEXT("diner"), -7.5, 1500, -5, 1000, 0 },
+		{ TEXT("edge-far"), TEXT("diner"), -14, 700, 6, 1500, 8 },
+		{ TEXT("edge-town"), TEXT("diner"), 9, 1880, 2, 2150, 0 },
+		{ TEXT("edge-corridor"), TEXT("saro"), 9, 150, 3, 560, 0 },
+		{ TEXT("edge-site"), TEXT("saro"), 7, -500, 2, -900, 0 },
+		{ TEXT("edge-farm"), TEXT("saro"), 9, 170, 16, 200, 0 },
+	};
+	const double EdgeHours[] = { 11, 17.6 };
 	// Road-local again. The road's land is walked over z 450; SARO's within 600 m of the site, where the table may well be 0 all the
 	// way (its mask): that walk proves the ring is under the feet and need not have met any relief.
+	constexpr double ReliefFootZ = 1400;   // the line along which the foot of a hill is tried, road-local
 	struct FReliefWalk { const TCHAR* Area; double X, Z, Bearing; bool bNeedRelief; };
 	const FReliefWalk ReliefWalks[] = { { TEXT("diner"), -300, 1000, 0, true }, { TEXT("diner"), -700, 1400, 1.2, true }, { TEXT("saro"), -426, -400, 0, false } };
 
 	struct FReliefRun
 	{
 		int32 Phase = 0, WalkAt = 0, HourAt = 0, ViewAt = 0;
-		double Now = 0, Since = 0, SampleAt = 0;
+		double Now = 0, Since = 0, SampleAt = 0, FootX = -1000;
 		int32 Void = 0, Samples = 0;
 		double Worst = 0, Seen = 0;                 // the current walk or trip
 		double WorstX = 0, WorstZ = 0;              // where, road-local
@@ -66,7 +88,7 @@ namespace
 		double TopOver = 0;
 		double DriveTravel = 0, TruckOff = 0;
 		FVector LastTruck = FVector::ZeroVector;
-		bool bAllGood = true, bHolding = false, bLookDone = false;
+		bool bAllGood = true, bHolding = false, bLookDone = false, bEdgeOnly = false;
 		double FrameSum = 0, FrameMost = 0; int32 FrameCount = 0;
 		TArray<FString> Lines;
 	};
@@ -100,6 +122,12 @@ namespace
 	{
 		FReliefRun& R = ReliefRun;
 		++R.Samples;
+		{
+			// (a floor on a fan stands over the ground mesh by the fan: the fan is the range's, which has no collision)
+			double LiftX = 0, LiftZ = 0;
+			ProbeRoadXZ(M->Web->Area(), At.X, At.Z, LiftX, LiftZ);
+			if (M->Web->Area() == TEXT("diner") || M->Web->Area() == TEXT("road")) Floor -= S47Relief::HillLift(LiftX, LiftZ);
+		}
 		FHitResult Hit;
 		const FCollisionQueryParams Query(SCENE_QUERY_STAT(S47ReliefProbe), true);
 		UWorld* World = M->Web->GetWorld();
@@ -198,7 +226,7 @@ namespace
 		{
 			const double X = Random.FRandRange(-2900.f, 2200.f), Z = Random.FRandRange(-2600.f, 4300.f);
 			if (FMath::Abs(S47Relief::Sample(X, Z)) < ReliefProbeLive) return false;
-			At = FVector(X + 8000, 0, Z); Floor = S47RoadTerrain::SurfaceY(X, Z);
+			At = FVector(X + 8000, 0, Z); Floor = S47RoadTerrain::SurfaceY(X, Z) - S47Relief::HillLift(X, Z);
 			return true;
 		});
 		UStaticMeshComponent* SaroComp = SaroNode ? Cast<UStaticMeshComponent>(SaroNode->Comp.Get()) : nullptr;
@@ -228,6 +256,7 @@ namespace S47ReliefProbe
 	{
 		(void)Main;
 		ReliefRun = FReliefRun();
+		ReliefRun.bEdgeOnly = FParse::Param(FCommandLine::Get(), TEXT("S47RoadEdgeViews"));
 	}
 
 	bool Step(US47Main* M, float Dt)
@@ -250,6 +279,10 @@ namespace S47ReliefProbe
 			const bool bZones = S47Relief::CheckZones(Lines);
 			for (const FString& Line : Lines) ProbeLine(Line);
 			ProbeCheck(bZones, TEXT("the table is 0 where nothing follows it"));
+			Lines.Reset();
+			S47RoadEdge::Report(W, Lines);
+			for (const FString& Line : Lines) ProbeLine(Line);
+			if (R.bEdgeOnly) { R.Phase = 7; R.Since = R.Now; return true; }
 			ProbeMeshes(M);
 			R.Phase = 1; R.Since = R.Now;
 			return true;
@@ -257,7 +290,7 @@ namespace S47ReliefProbe
 
 		if (R.Phase == 1) // a walk: into its area, stood at its start
 		{
-			if (R.WalkAt >= UE_ARRAY_COUNT(ReliefWalks)) { R.Phase = 3; R.Since = R.Now; return true; }
+			if (R.WalkAt >= UE_ARRAY_COUNT(ReliefWalks)) { R.Phase = 20; R.Since = R.Now; return true; }
 			const FReliefWalk& Walk = ReliefWalks[R.WalkAt];
 			if (Life->Area != Walk.Area) { Life->Enter(Walk.Area); R.Since = R.Now; return true; }
 			if (R.Now - R.Since < .5) return true;
@@ -287,11 +320,34 @@ namespace S47ReliefProbe
 			return true;
 		}
 
-		if (R.Phase == 3) // the trip: out on the open land, straight on at a moderate speed
+		if (R.Phase == 20) // the foot of a hill, the first west of the road on this line: run at it from 20 m out. The range has no collision.
+		{
+			if (Life->Area != TEXT("diner")) { Life->Enter(TEXT("diner")); R.Since = R.Now; return true; }
+			if (R.Now - R.Since < .5) return true;
+			R.FootX = 0;
+			for (double X = -400; X > -2800 && !R.FootX; X -= 2) if (S47Relief::HillStops(X, ReliefFootZ, P->Radius)) R.FootX = X;
+			if (!R.FootX) { ProbeCheck(false, TEXT("no hill's foot on the line: is range_foot.bin installed?")); R.FootX = -1000; R.Phase = 3; R.Since = R.Now; return true; }
+			const FVector Start = S47FarmWorld::RoadToArea(TEXT("diner"), FVector(R.FootX + 20, 0, ReliefFootZ));
+			P->Place(Start.X, Start.Z, UE_DOUBLE_PI / 2);
+			P->Pitch = -.06; P->TestMove = FVector2D(0, -1); P->bTestRun = true;
+			R.Phase = 21; R.Since = R.Now;
+			return true;
+		}
+		if (R.Phase == 21)
+		{
+			if (R.Now - R.Since < 12) return true;
+			P->TestMove.Reset(); P->bTestRun = false;
+			const double Rx = P->Pos.X - 8000, Above = S47Relief::HillAbove(Rx, P->Pos.Z);
+			ProbeCheck(!S47Relief::HillStops(Rx, P->Pos.Z, P->Radius) && Rx >= R.FootX - 1 && Rx <= R.FootX + 6, FString::Printf(TEXT("the foot stops the walk: first it cannot climb at road x %.1f, stood at %.1f, %.2f m up the fan, floor %.2f"), R.FootX, Rx, Above, P->FloorY));
+			R.Phase = 3; R.Since = R.Now;
+			return true;
+		}
+
+		if (R.Phase == 3) // the trip: out on the open land, straight at the same foot at a moderate speed, where it must stop
 		{
 			FS47TripOpts Opts;
-			const double Sx = -900, Sz = 1500;
-			Opts.AtPos = FVector(8000 + Sx, S47RoadTerrain::SurfaceY(Sx, Sz), Sz); Opts.AtHeading = UE_DOUBLE_PI; Opts.Leg = TEXT("road");
+			const double Sx = R.FootX + 70, Sz = ReliefFootZ;
+			Opts.AtPos = FVector(8000 + Sx, S47RoadTerrain::SurfaceY(Sx, Sz), Sz); Opts.AtHeading = UE_DOUBLE_PI / 2; Opts.Leg = TEXT("road");
 			Life->StartTrip(TEXT("road"), TEXT("diner"), Opts);
 			Life->TestInput = [Life] { FS47DriveIn In; const FS47DriveController* D = Life->CabDrive(); In.Throttle = D && D->Speed < 11 ? 1 : 0; return In; };
 			ProbeReset();
@@ -328,7 +384,8 @@ namespace S47ReliefProbe
 			}
 			if (R.Phase == 4)
 			{
-				if (R.Now - R.Since < 16) return true;
+				// By samples, a quarter of a second of driving each: the first drive's loading has eaten the whole 16 s of a clock, frames of 14 s.
+				if (R.Samples < 64 && R.Now - R.Since < 120) return true;
 				// braked to a stop, as -S47GetOut does
 				Life->TestInput = [Life] { FS47DriveIn In; const double V = Life->DrivingSpeed(); In.Throttle = V > .15 ? -1 : V < -.15 ? 1 : 0; return In; };
 				R.Phase = 5; R.Since = R.Now;
@@ -338,6 +395,10 @@ namespace S47ReliefProbe
 			{
 				if (R.Now - R.Since > 10) { Life->TestInput = nullptr; ProbeCheck(false, TEXT("could not get out of the truck")); R.Phase = 7; R.Since = R.Now; }
 				return true;
+			}
+			{
+				const double Rx = Cab->Pos.X - 8000;
+				ProbeCheck(Rx >= R.FootX - 1 && Rx <= R.FootX + 12, FString::Printf(TEXT("the foot stops the truck: first the walker cannot climb at road x %.1f, its centre at %.1f, %.2f m up the fan"), R.FootX, Rx, S47Relief::HillAbove(Rx, Cab->Pos.Z)));
 			}
 			ProbeCheck(R.Void == 0 && !R.bOver && R.Seen >= ReliefProbeLive && R.DriveTravel > 40,
 				FString::Printf(TEXT("trip: %.0f m, %d samples, void %d, floor off the land mesh at most %.3f m at road %.1f %.1f, largest relief under it %.2f m (for reading only: truck's pose off the floor at most %.3f m; the world's ray from 2 m up meets %s at %.3f m over the floor)"), R.DriveTravel, R.Samples, R.Void, R.Worst, R.WorstX, R.WorstZ, R.Seen, R.TruckOff, *R.TopWhat, R.TopOver));
@@ -367,15 +428,15 @@ namespace S47ReliefProbe
 		// The views. A place, then two and a half seconds for the textures, and the picture the frame after it is asked for.
 		if (R.Phase == 7)
 		{
-			if (R.HourAt >= UE_ARRAY_COUNT(ReliefHours)) return ProbeFinish();
-			ProbeSetHour(M, ReliefHours[R.HourAt]);
+			if (R.HourAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeHours) : UE_ARRAY_COUNT(ReliefHours))) return ProbeFinish();
+			ProbeSetHour(M, R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
 			R.ViewAt = 0; R.Phase = 8; R.Since = R.Now;
 			return true;
 		}
 		if (R.Phase == 8)
 		{
-			if (R.ViewAt >= UE_ARRAY_COUNT(ReliefViews)) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
-			const FReliefView& View = ReliefViews[R.ViewAt];
+			if (R.ViewAt >= (R.bEdgeOnly ? UE_ARRAY_COUNT(EdgeViews) : UE_ARRAY_COUNT(ReliefViews))) { ++R.HourAt; R.Phase = 7; R.Since = R.Now; return true; }
+			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
 			if (Life->Area != View.Area) { Life->Enter(View.Area); R.Since = R.Now; return true; }
 			const FVector Eye = S47FarmWorld::RoadToArea(View.Area, FVector(View.X, 0, View.Z)), Look = S47FarmWorld::RoadToArea(View.Area, FVector(View.LookX, 0, View.LookZ));
 			const FVector Along(Look.X - Eye.X, View.Lift, Look.Z - Eye.Z);
@@ -390,8 +451,8 @@ namespace S47ReliefProbe
 			// Over the settled second and a half only: the first second carries the jump's own streaming.
 			if (R.Now - R.Since > 1) { R.FrameSum += Dt; R.FrameMost = FMath::Max(R.FrameMost, double(Dt)); ++R.FrameCount; }
 			if (R.Now - R.Since < 2.5) return true;
-			const FReliefView& View = ReliefViews[R.ViewAt];
-			const int32 Hour = FMath::FloorToInt(ReliefHours[R.HourAt]);
+			const FReliefView& View = R.bEdgeOnly ? EdgeViews[R.ViewAt] : ReliefViews[R.ViewAt];
+			const int32 Hour = FMath::FloorToInt(R.bEdgeOnly ? EdgeHours[R.HourAt] : ReliefHours[R.HourAt]);
 			const FString Shot = FString::Printf(TEXT("relief-%02d-%s.png"), Hour, View.Name);
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("AlbumTest") / Shot, true, false);
 			double Rx = 0, Rz = 0;
@@ -400,7 +461,9 @@ namespace S47ReliefProbe
 			double GroundY = 0;
 			const bool bGround = ProbeGroundY(W, P->Pos, P->FloorY, GroundY);
 			ProbeLine(FString::Printf(TEXT("%s: frame %.1f ms on average, %.1f ms at worst over %d frames; Off under the eye %.2f m, floor %.3f, ground mesh %.3f, eye %.2f m over it"), *Shot, R.FrameCount ? R.FrameSum / R.FrameCount * 1000 : 0., R.FrameMost * 1000, R.FrameCount, S47Relief::Off(Rx, Rz), P->FloorY, GroundY, P->FloorY + P->Eye - GroundY));
-			if (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
+			// (the station's own ground is none of the meshes this looks in)
+			// (nor is the highway: the land's own ground lies .45 m under its strip)
+			if (Life->Area != TEXT("station01") && !(FMath::Abs(Rx) < S47RoadTerrain::HWY.Flat) && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
 			if (R.HourAt == 0) ProbeUnder(W, Shot, P->Pos, P->FloorY);
 			R.Phase = 10; R.Since = R.Now;
 			return true;

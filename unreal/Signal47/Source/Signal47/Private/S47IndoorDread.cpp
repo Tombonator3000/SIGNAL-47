@@ -1,4 +1,6 @@
 #include "S47IndoorDread.h"
+#include "S47PaleBody.h"
+#include "Engine/SkeletalMesh.h"
 #include "S47Audio.h"
 #include "S47DoorVisit.h"
 #include "S47FarmHouse.h"
@@ -27,7 +29,7 @@
 
 namespace
 {
- const TCHAR* const PeekAsset=TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell");
+ const TCHAR* const PeekAsset=S47KindBody::Roswell;
  constexpr double RiseSeconds=1.25,DuckSeconds=1.1,PeekMax=10;
  constexpr double PeekChance=.5,FloodChance=.4;
  constexpr int32 Bearings=36,Rings=7;
@@ -39,19 +41,36 @@ namespace
 
 FS47IndoorDread::FS47IndoorDread(US47Main* Main):M(Main),DoorVisit(MakeShared<FS47DoorVisit>(Main,this)){}
 
-void FS47IndoorDread::ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock)
+void FS47IndoorDread::ShowDoorBody(const FVector& Feet,double Yaw,bool bWalk,double Clock,ES47Clip Act)
 {
  if(!BuildBody())return;
  auto* R=Root.Get();if(!R||!Body.Ready())return;
  R->SetWorldLocation(S47Three::ToUE(Feet));
  R->SetWorldRotation(FRotationMatrix::MakeFromX(S47Three::DirToUE(FVector(FMath::Sin(Yaw),0,FMath::Cos(Yaw)))).Rotator());
+ // Tom's Pale One at the door if this build has it, tall enough that the lintel may hide its face.
+ if(!bDoorPaleTried)
+ {
+  bDoorPaleTried=true;
+  if(LoadObject<USkeletalMesh>(nullptr,S47KindBody::Pale,nullptr,LOAD_NoWarn|LOAD_Quiet))DoorPale.Build(M->Web.Get(),R,TEXT("S47DoorPaleBody"),S47KindBody::Pale);
+ }
+ if(DoorPale.Ready()&&DoorPale.Clips)
+ {
+  Body.Peek(false,1,0,0);
+  FS47ClipPose Pose;Pose.Clock=Clock;Pose.HeadYaw=bWalk||Act<ES47Clip::Num?0.:.2*FMath::Sin(Clock*.85);Pose.Act=bWalk?ES47Clip::Num:Act;
+  DoorPale.PlayClips(Pose);
+  return;
+ }
  if(bWalk)Body.Apply(true,0,.9,Clock*6.,Clock,false,false);
  else Body.Peek(true,1.,.2*FMath::Sin(Clock*.85),Clock);
 }
 
-void FS47IndoorDread::HideDoorBody(){if(Body.Ready())Body.Peek(false,1,0,0);}
+void FS47IndoorDread::HideDoorBody()
+{
+ if(Body.Ready())Body.Peek(false,1,0,0);
+ if(DoorPale.Clips){FS47ClipPose Gone;Gone.bVisible=false;DoorPale.PlayClips(Gone);}
+}
 
-bool FS47IndoorDread::DoorBodyRendered() const{return Body.Ready()&&Body.Rendered();}
+bool FS47IndoorDread::DoorBodyRendered() const{return DoorPale.Clips?DoorPale.Rendered():Body.Ready()&&Body.Rendered();}
 
 void FS47IndoorDread::Begin(const S47J::FObj& Saved)
 {
@@ -160,7 +179,7 @@ bool FS47IndoorDread::Quiet() const
 bool FS47IndoorDread::BuildBody()
 {
  if(!M||!IsValid(M->Web.Get())||(bBodyFailed&&Scene.Get()==M->Web.Get()))return false;
- if(Scene.Get()!=M->Web.Get()){Scene=M->Web.Get();Root.Reset();Body=FS47TripoCreature();bBodyFailed=false;Sight.Init(M);}
+ if(Scene.Get()!=M->Web.Get()){Scene=M->Web.Get();Root.Reset();Body=FS47TripoCreature();DoorPale=FS47TripoCreature();bDoorPaleTried=false;bBodyFailed=false;Sight.Init(M);}
  if(Body.Ready())return true;
  AS47Web* W=M->Web.Get();
  auto* R=NewObject<USceneComponent>(W,TEXT("S47PeekRoot"));

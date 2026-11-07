@@ -457,20 +457,27 @@ void FS47DoorVisit::StepVisit(double Dt)
   const FVector N=In.Cam.Project(Eye);
   const bool bInView=N.Z<1&&FMath::Abs(N.X)<.96&&FMath::Abs(N.Y)<.96;
   const double Off=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(In.Cam.Forward,(Eye-In.Cam.Pos).GetSafeNormal()),-1.,1.)));
-  const bool bClear=Sight.ClearSight(In.Cam.Pos,Eye);
+  // Through an open door its own frame and leaf do not count as what hides the one standing in it (the cinema's glass doors keep their collision shut).
+  const bool bClear=Sight.ClearSight(In.Cam.Pos,Eye)||(DoorOpenNow()&&Sight.ClearSight(In.Cam.Pos,Target.Middle-Target.Out*.25+FVector(0,1.1,0)));
   if(Owner)bSawBody|=bInView&&bClear&&Owner->DoorBodyRendered();
   if(Now==EStage::Standing)
   {
-   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT);
+   // Restless while it waits to be seen.
+   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT,ES47Clip::Frustrated);
    Noticed=bInView&&bClear&&Off<20?Noticed+Dt:FMath::Max(0.,Noticed-Dt*.4);
    // Looked at, it goes. Never looked at, it goes when nobody can see it go.
    if(Noticed>.45||T>30){Now=EStage::Leaving;T=0;if(M->Audio)M->Audio->Sfx(TEXT("stepConcrete0"),FS47Sound{.Gain=.25f,.Rate=.8f,.At=BodyFeet});}
   }
   else
   {
-   BodyFeet+=Target.Out*(1.9*Dt);BodyFeet.Y=FMath::FInterpTo(BodyFeet.Y,GroundNear(BodyFeet),Dt,10.);
-   BodyYaw=FMath::Atan2(Target.Out.X,Target.Out.Z);
-   if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,true,AllT);
+   // A body with clips takes being seen badly, for a moment, facing the one who looked. Then it goes like the other.
+   if(Owner&&Owner->DoorBodyHasClips()&&T<LookedBackSeconds)Owner->ShowDoorBody(BodyFeet,BodyYaw,false,AllT,ES47Clip::Angry);
+   else
+   {
+    BodyFeet+=Target.Out*(1.9*Dt);BodyFeet.Y=FMath::FInterpTo(BodyFeet.Y,GroundNear(BodyFeet),Dt,10.);
+    BodyYaw=FMath::Atan2(Target.Out.X,Target.Out.Z);
+    if(Owner)Owner->ShowDoorBody(BodyFeet,BodyYaw,true,AllT);
+   }
    if(!bInView||!bClear||T>6)Finish(EEnding::Walked);
   }
   break;

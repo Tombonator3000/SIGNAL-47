@@ -1,5 +1,6 @@
 #include "S47RoadArea.h"
 
+#include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47RoadShape.h"
 
@@ -7,6 +8,7 @@ using namespace S47RoadTerrain;
 
 namespace
 {
+	constexpr double HILL_REACH = 3.2;   // the truck, long way: its nose meets the foot before its centre would
 	FS47Surface S(ES47SurfaceKind Kind, double Grip, double Top, double Rough) { FS47Surface O; O.Kind = Kind; O.Grip = Grip; O.Top = Top; O.Rough = Rough; return O; }
 	struct FSurf { FS47Surface Asphalt, Shoulder, Gravel, Guard, Verge, Dirt; };
 	const FSurf& SURF()
@@ -95,9 +97,15 @@ double FS47RoadArea::Height(double X, double Z) const
 	return Origin.Y + SurfaceY(X - Origin.X, Z - Origin.Z);
 }
 
+bool FS47RoadArea::Blocked(double X, double Z)
+{
+	return !bInHill && S47Relief::HillStops(X - Origin.X, Z - Origin.Z, HILL_REACH);
+}
+
 void FS47RoadArea::Update(double Dt, double T, const FVector& TruckPos)
 {
 	(void)T;
+	bInHill = S47Relief::HillStops(TruckPos.X - Origin.X, TruckPos.Z - Origin.Z, HILL_REACH);
 	// (the reflectors' glints in the headlights are the road's glow points: drawn as they were exported)
 	// the cattle guard rattles while the front axle is on it, from either side
 	const double Lx = TruckPos.X - Origin.X, Lz = TruckPos.Z - Origin.Z;

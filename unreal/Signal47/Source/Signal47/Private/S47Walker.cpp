@@ -86,6 +86,7 @@ void AS47Walker::Place(double X, double Z, double InYaw)
 {
 	// Player.place: the eye level drops onto the floor at once
 	Pos = FVector(X, 0, Z);
+	MoveFrom = Pos;
 	Yaw = InYaw;
 	Pitch = -0.06;
 	FloorY = FloorAt(X, Z);
@@ -217,6 +218,7 @@ void AS47Walker::MoveBy(double DeltaX,double DeltaZ)
 {
 	if (!FMath::IsFinite(DeltaX)||!FMath::IsFinite(DeltaZ)) return;
 	const FVector Before=Pos;
+	MoveFrom=Before;
 	Pos.X+=DeltaX; Resolve(true,Before.X);
 	Pos.Z+=DeltaZ; Resolve(false,Before.Z);
 }

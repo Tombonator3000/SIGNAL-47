@@ -95,7 +95,19 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  if (Ready()) return true;
  if (!W || !Parent || FParse::Param(FCommandLine::Get(), TEXT("S47TripoNpcsOff"))) return false;
  auto* Asset = LoadObject<USkeletalMesh>(nullptr, AssetPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+ // Licensed lies outside Git: without the new body, the old one in its place.
+ if (!Asset)
+ {
+  const TCHAR* const Fallback=FCString::Stristr(AssetPath,TEXT("SK_Tripo_PaleOne"))||FCString::Stristr(AssetPath,TEXT("SK_Tripo_TallOne"))?S47KindBody::Old:FCString::Stristr(AssetPath,TEXT("SK_Tripo_Roswell2"))?S47KindBody::OldRoswell:nullptr;
+  if(Fallback)
+  {
+   static TSet<FString> Said;
+   if(!Said.Contains(FString(AssetPath))){Said.Add(FString(AssetPath));UE_LOG(LogTemp,Display,TEXT("S47: %s is not in this build, wearing %s"),AssetPath,Fallback);}
+   Asset = LoadObject<USkeletalMesh>(nullptr, Fallback, nullptr, LOAD_NoWarn | LOAD_Quiet);
+  }
+ }
  if (!Asset) return false;
+ const FString Worn = Asset->GetName();
  const FReferenceSkeleton& Skeleton = Asset->GetRefSkeleton();
  for (const TCHAR* Bone : {TEXT("pelvis"), TEXT("head"), TEXT("upperarm_l"), TEXT("upperarm_r"), TEXT("thigh_l"), TEXT("thigh_r")})
   if (Skeleton.FindBoneIndex(Bone) == INDEX_NONE) return false;
@@ -109,7 +121,15 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetGenerateOverlapEvents(false);
  C->SetCanEverAffectNavigation(false); C->SetCastShadow(true); C->BoundsScale=1.35f;
  C->SetVisibility(false); C->RegisterComponent(); Mesh=C;
- if (FCString::Stristr(AssetPath,TEXT("Roswell"))) AddEyeGlints(W,C);
+ if (Worn==TEXT("SK_Tripo_Roswell")) AddEyeGlints(W,C);
+ else if (Worn==TEXT("SK_Tripo_PaleOne")||Worn==TEXT("SK_Tripo_TallOne")||Worn==TEXT("SK_Tripo_Roswell2"))
+ {
+  const bool bPale=Worn==TEXT("SK_Tripo_PaleOne"),bTall=Worn==TEXT("SK_Tripo_TallOne");
+  EyeAt=bPale?S47KindBody::PaleOneEyeAt:bTall?S47KindBody::TallOneEyeAt:S47KindBody::RoswellEyeAt;AddEyeGlints(W,C);
+  // The climb and the jump take the bones far from the root.
+  C->BoundsScale=2.f;
+  Clips=FS47ClipBank::For(Asset,*this,bPale?S47KindBody::PaleOneClips:bTall?S47KindBody::TallOneClips:S47KindBody::RoswellClips);
+ }
  UE_LOG(LogTemp,Display,TEXT("S47: animated Tripo body %s ready, %d original skin bones, %s"), *Name, Rest.Num(), AssetPath);
  return true;
 }
@@ -242,10 +262,58 @@ void FS47TripoCreature::Apply(bool bShow, double HeadTurn, double Gait, double P
  C->MarkRefreshTransformDirty(); C->RefreshBoneTransforms();
 }
 
+void FS47TripoCreature::PlayClips(const FS47ClipPose& Pose)
+{
+ if(!Clips)return;
+ if(!ClipMotion)ClipMotion=MakeShared<FS47ClipMotion>();
+ Contacts=FS47PaleContacts();
+ ClipMotion->Apply(*this,*Clips,Pose,Contacts);
+}
+
 void FS47TripoCreature::ApplyPale(const FS47PalePose& Pose)
 {
+ auto* C=Mesh.Get();
+ const bool bRunClip=Clips.IsValid()&&Pose.Mode==ES47PaleMotion::Run&&Clips->Has(ES47Clip::Run);
+ const bool bClip=Clips.IsValid()&&Pose.bVisible&&(Pose.Mode!=ES47PaleMotion::Run||bRunClip)&&Pose.Mode!=ES47PaleMotion::Grab;
+ if(bClip)
+ {
+  if(!ClipMotion)ClipMotion=MakeShared<FS47ClipMotion>();
+  if(bOnProcedural){bOnProcedural=false;PaleMotion.Reset();ClipMotion->FadeFromShown(C);}
+  // A body with a run of its own goes at this mode's pace (under 2 m/s) on its walk: its run was made for 6 m/s.
+  FS47ClipPose Clip;Clip.Clock=Pose.Clock;Clip.HeadYaw=Pose.HeadYaw;Clip.Act=Pose.Act;Clip.Stand=Pose.Stand;
+  PlayClips(Clip);
+  if(Contacts.bValid)return;
+ }
+ else if(Clips.IsValid()&&C)
+ {
+  if(!Pose.bVisible){bOnProcedural=false;ProcFadeLeft=0;if(ClipMotion)*ClipMotion=FS47ClipMotion();}
+  // Out of the clips and into a run or a grab: from the pose it was in.
+  else if(!bOnProcedural)BeginProcFade(Pose.Clock);
+ }
  if(!PaleMotion)PaleMotion=MakeShared<FS47PaleMotion>();
  Contacts=PaleMotion->Apply(*this,Pose);
  if(!Contacts.bValid)Apply(Pose.bVisible,Pose.HeadYaw,Pose.LegacyGait,Pose.LegacyPhase,Pose.Clock,
   Pose.Mode==ES47PaleMotion::Grab,Pose.Mode==ES47PaleMotion::Listen);
+ if(Pose.bVisible)StepProcFade(Pose.Clock);
+}
+
+void FS47TripoCreature::BeginProcFade(double Clock)
+{
+ auto* C=Mesh.Get();if(!C)return;
+ bOnProcedural=true;ProcFadeFrom=C->BoneSpaceTransforms;ProcFadeLeft=.3;ProcFadeClock=Clock;
+}
+
+void FS47TripoCreature::StepProcFade(double Clock)
+{
+ auto* C=Mesh.Get();
+ if(ProcFadeLeft<=0||!C||ProcFadeFrom.Num()!=C->BoneSpaceTransforms.Num())return;
+ ProcFadeLeft=FMath::Max(0.,ProcFadeLeft-FMath::Clamp(Clock-ProcFadeClock,0.,.1));ProcFadeClock=Clock;
+ const double Keep=ProcFadeLeft/.3;
+ for(int32 I=0;I<ProcFadeFrom.Num();++I)
+ {
+  FTransform& To=C->BoneSpaceTransforms[I];const FTransform& From=ProcFadeFrom[I];
+  To.SetRotation(FQuat::Slerp(To.GetRotation(),From.GetRotation(),Keep).GetNormalized());
+  To.SetTranslation(FMath::Lerp(To.GetTranslation(),From.GetTranslation(),Keep));
+ }
+ C->MarkRefreshTransformDirty();C->RefreshBoneTransforms();
 }
