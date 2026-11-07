@@ -454,7 +454,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
   const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<12?0.:To>30?1.35:.75);
   StepBody(Dt,Speed);
-  if(VisitWho==2&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&To<(VisitRounds==0?26.:10.)&&Tk->Begin(Who,Title))++VisitRounds;
+  // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
+  const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
+  if(VisitWho==2&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&FreezeLeft<=0&&To<(VisitRounds==0?(bLampFirst?14.:26.):10.)&&Tk->Begin(Who,Title))++VisitRounds;
   if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
  }
  // Away from the place, it lets go.
