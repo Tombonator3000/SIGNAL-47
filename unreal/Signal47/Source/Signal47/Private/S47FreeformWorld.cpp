@@ -772,7 +772,7 @@ void FS47FreeformWorld::Apply()
  if(Carry)Carry->Step(0,bActive?Payload:0,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  for(auto Pair:TArray<TPair<FS47Obj,bool>>{{CargoSaro,!Road},{CargoRoad,Road}})if(Pair.Key)
  {
-  const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}Pair.Key.SetVisible(Show);
+  const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetRenderInMainPass(false);C->SetRenderInDepthPass(false);C->SetCastShadow(false);C->SetVisibleInRayTracing(false);}Pair.Key.SetVisible(Show);
  }
 }
 

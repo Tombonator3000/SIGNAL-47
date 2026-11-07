@@ -48,29 +48,34 @@ void FS47FreeformTest::StepReyes(double Dt)
    return;
   }
   if(!Check(P.TaskLine().Contains(TEXT("letter")),TEXT("the letter stands on the list of things to do")))return;
-  F.OpenOperations();Shot(TEXT("reyes-ops-tray"));Stage=11;Hold=1;return;
+  F.OpenOperations();Stage=11;At=Age;Hold=2.5;return;
  }
- if(Stage==11)
+ if(Stage==11){Shot(TEXT("reyes-ops-tray"));Stage=12;Hold=.4;return;}
+ if(Stage==12)
  {
   M->UI->Close(true);
   P.ReadDoc(TEXT("letter"));
   if(!Check(!M->Story->Docs().FindByPredicate([](const FS47Doc& D){return D.Id==TEXT("reyes_letter")&&!D.Page.Contains(TEXT("MAY 27"));}),TEXT("the letter names the date of the assessment")))return;
   if(!Check(!M->Story->Docs().FindByPredicate([](const FS47Doc& D){return D.Id==TEXT("reyes_letter")&&!D.Page.Contains(TEXT("nobody else wanted it"));}),TEXT("and says why you got the job")))return;
-  Shot(TEXT("reyes-letter"));Stage=20;Hold=.3;return;
+  Stage=13;Hold=.4;return;
+ }
+ if(Stage==13){Shot(TEXT("reyes-letter"));Stage=20;Hold=.4;return;
  }
  if(Stage==20)
  {
   M->UI->Close(true);
   Findings=F.FindingCount();Photos=PhotoCount();
-  M->Player->Place(26.31+1.2,-.75,0);
-  Stage=21;Hold=.5;return;
+  M->Player->Place(26.31+1.7,-.5,UE_DOUBLE_HALF_PI);M->Player->Pitch=0;
+  Stage=19;Hold=1.5;return;
  }
+ if(Stage==19){Shot(TEXT("reyes-locker-bank"));Stage=21;Hold=.5;return;}
  if(Stage==21)
  {
   M->Inter->UseId(TEXT("ff:reyes:locker"));
   if(!Check(P.Found(TEXT("locker")),TEXT("the locker opens where it stands")))return;
-  Shot(TEXT("reyes-locker"));Stage=22;Hold=.3;return;
+  Stage=23;Hold=.4;return;
  }
+ if(Stage==23){Shot(TEXT("reyes-locker"));Stage=22;Hold=.4;return;}
  if(Stage==22)
  {
   M->UI->Close(true);
@@ -96,10 +101,11 @@ void FS47FreeformTest::StepReyes(double Dt)
   M->Inter->UseId(FString(TEXT("ff:reyes:"))+Tag.Doc);
   if(!Check(P.Found(Tag.Doc),TEXT("the tag reads")))return;
   if(Doc->Next&&!Check(P.Heard(Doc->Next)&&F.Places->Heard(Doc->Next),TEXT("and points on to the next place")))return;
-  if(TagAt==0)Shot(TEXT("reyes-tag"));
-  ++TagAt;Stage=32;Hold=.2;return;
+  ++TagAt;Stage=32;Hold=.4;return;
  }
- if(Stage==32){M->UI->Close(true);Stage=30;return;}
+ if(Stage==32){if(TagAt==1)Shot(TEXT("reyes-tag"));Stage=33;Hold=.2;return;}
+ if(Stage==33){M->UI->Close(true);if(TagAt==1){Stage=34;Hold=1;return;}Stage=30;return;}
+ if(Stage==34){Shot(TEXT("reyes-tag-marker"));Stage=30;Hold=.3;return;}
  if(Stage==40)
  {
   if(!Check(P.Talk(TEXT("deputy")),TEXT("the deputy has words for the new operator")))return;
@@ -115,14 +121,16 @@ void FS47FreeformTest::StepReyes(double Dt)
   P.TestHear(TEXT("wagon"));
   FString Area;double X=0,Z=0;
   if(!Check(P.WorldSpot(TEXT("wagon"),Area,X,Z)&&Area==TEXT("road"),TEXT("the wagon is on the land")))return;
-  M->Player->Place(X,Z+4,0);Stage=41;Hold=1;return;
+  M->Player->Place(X,Z+9,0);M->Player->Pitch=0;Stage=44;Hold=2;return;
  }
+ if(Stage==44){Shot(TEXT("reyes-wagon-world"));Stage=41;Hold=.4;return;}
  if(Stage==41)
  {
   M->Inter->UseId(TEXT("ff:reyes:wagon"));
   if(!Check(P.Found(TEXT("wagon"))&&P.RadioOn(),TEXT("wagon 23 stands there, with its radio on")))return;
-  Shot(TEXT("reyes-wagon"));Stage=42;Hold=.4;return;
+  Stage=45;Hold=.4;return;
  }
+ if(Stage==45){Shot(TEXT("reyes-wagon"));Stage=42;Hold=.4;return;}
  if(Stage==42)
  {
   M->UI->Close(true);
@@ -139,10 +147,10 @@ void FS47FreeformTest::StepReyes(double Dt)
   const auto Outcome=FS47Predecessor::EOutcome(OutcomeAt);
   P.TestOutcome(Outcome);
   if(!Check(P.Result()==Outcome,TEXT("the outcome stands")))return;
-  Shot(FString::Printf(TEXT("reyes-outcome-%s"),FS47Predecessor::NameOf(Outcome)));
   if(!Check(F.FindingCount()>=Findings&&PhotoCount()>=Photos,TEXT("no finding and no photograph has gone")))return;
-  ++OutcomeAt;Hold=.4;Stage=51;return;
+  Hold=.4;Stage=52;return;
  }
+ if(Stage==52){Shot(FString::Printf(TEXT("reyes-outcome-%s"),FS47Predecessor::NameOf(FS47Predecessor::EOutcome(OutcomeAt))));++OutcomeAt;Hold=.4;Stage=51;return;}
  if(Stage==51){M->UI->Close(true);Stage=50;return;}
  if(Stage==60)
  {
@@ -165,14 +173,16 @@ void FS47FreeformTest::StepReyes(double Dt)
  {
   M->Inter->UseId(TEXT("ff:reyes:keys"));
   if(!Check(!P.HasLeft(),TEXT("the board asks first")))return;
-  Shot(TEXT("reyes-keys-question"));Stage=72;Hold=.4;return;
+  Stage=74;Hold=.4;return;
  }
+ if(Stage==74){Shot(TEXT("reyes-keys-question"));Stage=72;Hold=.4;return;}
  if(Stage==72)
  {
   P.TestLeave();
   if(!Check(P.HasLeft()&&S47J::Bool(S47J::Obj(F.Save(),TEXT("predecessor")),TEXT("left")),TEXT("the keys are on the hook, and the save knows")))return;
-  Shot(TEXT("reyes-left"));Stage=73;Hold=.4;return;
+  Stage=75;Hold=.4;return;
  }
+ if(Stage==75){Shot(TEXT("reyes-left"));Stage=73;Hold=.4;return;}
  if(Stage==73)
  {
   P.TestTakeBack();

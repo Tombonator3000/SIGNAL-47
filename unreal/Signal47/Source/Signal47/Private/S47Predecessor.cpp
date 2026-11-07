@@ -63,6 +63,22 @@ namespace
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
   return C;
  }
+ // Wagon 23 is white (the bible). The model's paint has no colour of its own to set, so the body's slots get a plain white of the
+ // project's; glass, trim, tyres and badges keep their own. Story's wagon is not touched.
+ int32 PaintWhite(AS47Web* Web,UStaticMeshComponent* C)
+ {
+  auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+  if(!C||!Web||!Base)return 0;
+  int32 Painted=0;
+  for(int32 I=0;I<C->GetNumMaterials();++I)
+  {
+   const UMaterialInterface* Was=C->GetMaterial(I);
+   if(!Was||!Was->GetName().Contains(TEXT("Bodymat")))continue;
+   auto* Mat=UMaterialInstanceDynamic::Create(Base,Web);Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xd9d7cf));Mat->SetScalarParameterValue(TEXT("Roughness"),.5f);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
+   C->SetMaterial(I,Mat);++Painted;
+  }
+  return Painted;
+ }
  void Pickable(UStaticMeshComponent* C)
  {
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
@@ -666,7 +682,9 @@ void FS47Predecessor::OpenLeft()
  TArray<FString> Open;int32 Unfiled=0;
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bOpen&&!K->bConcluded)Open.Add(FS47FreeformCases::Def(Line).Title);
  for(const auto& J:F.Jobs())if(J.CaseTest<0&&J.Stage>FS47FreeformSession::EJobStage::New&&J.Stage<FS47FreeformSession::EJobStage::Filed)++Unfiled;
- FString Behind=FString::Printf(TEXT("You leave %d jobs filed and %d begun and not finished. %d originals in the binder and %d photographs in the album, all of them where they belong. The array stands at %d of 27. The budget is $%d, and $%d is carried on the sheet."),C.Filed,Unfiled,C.Originals,C.Photos,C.Dishes,F.Budget(),C.Arrears);
+ FString Behind=C.Filed>0?FString::Printf(TEXT("You leave %d jobs filed and %d begun and not finished."),C.Filed,Unfiled):FString(TEXT("You leave nothing filed."));
+ Behind+=C.Originals+C.Photos>0?FString::Printf(TEXT(" %d originals in the binder and %d photographs in the album, all of them where they belong."),C.Originals,C.Photos):FString(TEXT(" No originals in the binder and no photographs in the album."));
+ Behind+=FString::Printf(TEXT(" The array stands at %d of 27. The budget is $%d, and $%d is carried on the sheet."),C.Dishes,F.Budget(),C.Arrears);
  if(!Open.IsEmpty())Behind+=FString::Printf(TEXT(" Still open on the case board: %s."),*FString::Join(Open,TEXT(", ")));
  Rows.Add(S47Kit::Text(Behind));
  // Reyes: what you did and did not go into.
@@ -804,8 +822,9 @@ bool FS47Predecessor::BuildLand()
  WagonSpot=FSpot();WagonSpot.Id=WagonId;WagonSpot.X=WX;WagonSpot.Z=WZ;
  if(auto* Body=Piece(Web,WagonBody,TEXT("S47Wagon23"),0))
  {
-  WagonSpot.Parts.Add(Body);Shown.Add(Body);
-  if(auto* Door=Piece(Web,WagonDoor,TEXT("S47Wagon23Door"),0)){WagonSpot.Parts.Add(Door);Shown.Add(Door);}
+  WagonSpot.Parts.Add(Body);Shown.Add(Body);int32 Painted=PaintWhite(Web,Body);
+  if(auto* Door=Piece(Web,WagonDoor,TEXT("S47Wagon23Door"),0)){WagonSpot.Parts.Add(Door);Shown.Add(Door);Painted+=PaintWhite(Web,Door);}
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: wagon 23 painted white: %d slots"),Painted);
   for(int32 I=0;I<3;++I)if(auto* Bar=Piece(Web,Cube,FString::Printf(TEXT("S47Wagon23Bar%d"),I),I==1?0x9aa3a6:0xc9862a)){WagonSpot.Parts.Add(Bar);Shown.Add(Bar);}
   for(int32 Side=0;Side<2;++Side)
   {

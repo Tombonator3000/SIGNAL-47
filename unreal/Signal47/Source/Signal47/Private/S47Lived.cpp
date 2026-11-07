@@ -32,6 +32,12 @@ namespace
   {TEXT("LivedStatusWall"),FVector(-4.35,1.75,4.16),.7f,240.f,FLinearColor(.72f,1.f,.55f),false,false},
   {TEXT("LivedHotplate"),FVector(4.38,1.02,4.02),1.1f,190.f,FLinearColor(1.f,.42f,.14f),false,false},
   {TEXT("LivedOldCabinet"),FVector(-5.28,1.84,-4.05),.5f,190.f,FLinearColor(.75f,1.f,.6f),false,false},
+  // What the screens and the racks give off at night: faint, so the room reads and stays dark.
+  {TEXT("LivedScreenSpillLeft"),FVector(-2.15,1.05,-3.55),.45f,230.f,FLinearColor(.55f,1.f,.7f),false,false},
+  {TEXT("LivedScreenSpillMiddle"),FVector(0,1.05,-3.55),.45f,230.f,FLinearColor(.55f,1.f,.7f),false,false},
+  {TEXT("LivedScreenSpillRight"),FVector(2.15,1.05,-3.55),.45f,230.f,FLinearColor(.55f,1.f,.7f),false,false},
+  {TEXT("LivedRackGlow"),FVector(5.05,1.35,-2.4),.35f,200.f,FLinearColor(1.f,.55f,.45f),false,false},
+  {TEXT("LivedConsoleEndGlow"),FVector(3.2,1.0,-4.0),.25f,160.f,FLinearColor(.6f,1.f,.6f),false,false},
  };
  // What the walker cannot go through: only things that stand out in the room.
  struct FLivedSolid{const TCHAR* Id;double X0,X1,Z0,Z1;};
