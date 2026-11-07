@@ -24,7 +24,7 @@ void S47CreaturePreview::Start(US47Main* M)
  FPaths::NormalizeDirectoryName(UserDir);
  if (!HasCase || Case!=0 || !UserDir.StartsWith(TEXT("/tmp/")))
  { UE_LOG(LogTemp,Error,TEXT("S47: creature preview refused: explicit Case0 and /tmp UserDir required")); return; }
- struct FPreview { FS47PaleBody Body; bool bReported=false; FS47RoswellMotion RoswellMotion; double Travelled=0; double StageError=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
+ struct FPreview { FS47PaleBody Body; bool bReported=false; FS47RoswellMotion RoswellMotion; double Travelled=0; double StageError=0; double StagePlanted=0; int32 StageFrames=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
  auto Fixture=MakeShared<FPreview>(); TWeakObjectPtr<US47Main> Weak=M;
  FString Style;FParse::Value(FCommandLine::Get(),TEXT("S47CreatureStyle="),Style);
  Fixture->Style=Style==TEXT("pale")?4:Style==TEXT("roswell")?3:Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
@@ -146,6 +146,7 @@ void S47CreaturePreview::Start(US47Main* M)
     Fixture->Body.ApplyCrab(true,At,Fixture->Yaw,Fixture->Yaw+.3*FMath::Sin(T*.7),T,T/3.,St==4);
     Fixture->MaxPlantError=FMath::Max(Fixture->MaxPlantError,Fixture->Body.Creature.CrabContacts.MaxPlantErrorCm);
     for(bool bStep:Fixture->Body.Creature.CrabContacts.bStep)Fixture->Contacts+=int32(bStep);
+    Fixture->StagePlanted+=Fixture->Body.Creature.CrabContacts.PlantedLimbs;++Fixture->StageFrames;
    }
    else
    {
@@ -174,7 +175,12 @@ void S47CreaturePreview::Start(US47Main* M)
    const FVector D=To-Eye;
    Main->Player->Place(Eye.X,Eye.Z,FMath::Atan2(-D.X,-D.Z));Main->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
    const TCHAR* const Who=bCrab?TEXT("crab"):bPale?TEXT("pale"):TEXT("tall");
-   if(St!=Fixture->Last){UE_LOG(LogTemp,Display,TEXT("S47: creature preview %s stage %d done, worst planted %.2f cm"),Who,Fixture->Last,Fixture->StageError);Fixture->StageError=0;Fixture->Last=St;}
+   if(St!=Fixture->Last)
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: creature preview %s stage %d done, worst planted %.2f cm"),Who,Fixture->Last,Fixture->StageError);
+    if(bCrab&&Fixture->StageFrames>0)UE_LOG(LogTemp,Display,TEXT("S47: creature preview crab stage %d: on average %.2f of 4 limbs on the ground"),Fixture->Last,Fixture->StagePlanted/Fixture->StageFrames);
+    Fixture->StageError=Fixture->StagePlanted=0;Fixture->StageFrames=0;Fixture->Last=St;
+   }
    if(T>=(bPale?29.4:bTallClips?55.4:17.4)&&!Fixture->bReported)
    {
     Fixture->bReported=true;

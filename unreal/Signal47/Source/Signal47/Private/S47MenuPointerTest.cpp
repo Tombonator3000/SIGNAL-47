@@ -1,4 +1,5 @@
 #include "S47MenuPointerTest.h"
+#include "S47CreatureClips.h"
 #include "S47ReliefProbe.h"
 #include "S47Main.h"
 #include "S47ArrayWear.h"
@@ -507,8 +508,8 @@ namespace
   }
   // -S47MenuPointerKinds: from the visit's own dice (a set roll, through PickWho) at the marks. PASS only if: nothing at
   // all in 25 s of standing there at 21:00; at 03:30 each kind comes on its own after the wait; the tall one stands 25 m
-  // or more off in a clear line, stays put at first, has its head up; the radio rises as it nears and crackles; leaving
-  // ends each with the light out and the body gone; the crab's head is down near the ground, and if it reaches the
+  // or more off in a clear line, stays put at first, has its head up, sits there with the draw at yes and walks on its feet;
+  // the radio rises as it nears and crackles; a lamp on it freezes it, the look held until that ends; leaving ends each with the light out and the body gone; the crab's head is down near the ground, and if it reaches the
   // player they lose its hours and wake 150 m or more away.
   // -S47MenuPointerPeek [-S47PeekPlace=house|saro|cinema|feed|church|gas]: PASS only if: nothing in 30 s indoors at
   // 21:00; at 02:30 the night's draw alone brings it (a lost draw moves on a night, at most 14); its start pose is hidden
@@ -888,13 +889,17 @@ namespace
     M->UI->Close(true);
     UE_LOG(LogTemp,Display,TEXT("S47: door: held, %d marks looked at"),Visit.MarksOut());
     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
+    // Back from the door: right beside it nothing is drawn (the draw wants the player clear of it), and a room in town has
+    // only the one door, so the night would prove nothing. In the old house there was another outer door to find.
+    StandBy(4.5);
     DreadAt=Elapsed;Stage=547;return true;
    }
    if(Stage==547)
    {
     if(Visit.Active())return Fail(TEXT("at most one in two nights"));
     if(Elapsed-DreadAt<34)return true;
-    if(Visit.RollDayOf()!=F.Day()||Visit.DrawnTonight())return Fail(TEXT("the night after may not draw it, with the dice at yes"));
+    if(Visit.RollDayOf()!=F.Day())return Fail(TEXT("the draw must have been made the night after, or this proves nothing"));
+    if(Visit.DrawnTonight())return Fail(TEXT("the night after may not draw it, with the dice at yes"));
     if(!F.TestAdvance(86400.))return Fail(TEXT("no next night"));
     DreadRound=1;DreadAt=Elapsed;Stage=542;return true;
    }
@@ -1419,7 +1424,7 @@ namespace
    static const float Rolls[3]={.35f,.9f,.05f};static const int32 Kinds[3]={2,0,1};
    const auto NextRound=[&]
    {
-    Site.TestRollWho(Rolls[DreadRound]);Site.TestReadyVisit();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
+    Site.TestRollWho(Rolls[DreadRound]);Site.TestSitRoll(0.f);Site.TestReadyVisit();M->Player->Place(Marks.X+6,Marks.Z+6,0);M->Player->Pitch=0;
     DreadAt=Elapsed;DreadSample=0;Stage=402;
    };
    if(Stage==400)
@@ -1473,6 +1478,9 @@ namespace
      const double To=Site.VisitBodyDistance();
      if(Elapsed-DreadAt<10&&!Site.VisitAttention().Holding()&&FMath::Abs(To-DreadFirst)>1)return Fail(TEXT("the tall one must first stand still")); // A lamp on it may send it back.
      if(DreadSample==0&&Elapsed-DreadAt>1&&Site.VisitHeadHeight()<1.4){UE_LOG(LogTemp,Error,TEXT("S47: kinds: tall head %.2f m"),Site.VisitHeadHeight());return Fail(TEXT("the tall one must stand tall"));}
+     // With the draw at yes, far off and not yet walking it sits; walking it does not.
+     if(Elapsed-DreadAt>1&&Elapsed-DreadAt<9&&To>FS47FarmSite::SitBeyond+1&&Site.VisitClipNow()!=ES47Clip::Sit)return Fail(TEXT("with the draw at yes the tall one first sits, far off"));
+     if(DreadSample>0&&Site.VisitClipNow()==ES47Clip::Sit)return Fail(TEXT("it does not walk sitting"));
      // Further in, louder: three readings of what the set is actually playing.
      const double Base=FMath::Min(DreadFirst,44.)-2,Spacing=FMath::Clamp((DreadFirst-27)/2.5,.5,6.);
      if(DreadSample<3&&To<=Base-Spacing*DreadSample)
@@ -1485,7 +1493,7 @@ namespace
      {
       if(!(DreadLevels[0]>0&&DreadLevels[0]<DreadLevels[1]&&DreadLevels[1]<DreadLevels[2]))return Fail(TEXT("the radio must rise as it nears"));
       if(M->FieldRadio->CrackleCount()<=0)return Fail(TEXT("the radio must crackle"));
-      M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=405;return true;
+      DoorStep=0;DreadAt=Elapsed;Stage=407;return true;
      }
      if(Elapsed-DreadAt>80)return Fail(TEXT("the tall one must come on"));
      return true;
@@ -1502,6 +1510,42 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: kinds: crab head %.2f m over its feet"),Head);
     if(Head<0||Head>1.1)return Fail(TEXT("the crab must go along the ground"));
     DreadClock=M->Freeform->Clock();DreadPos=Feet;DreadAt=Elapsed;Stage=406;return true;
+   }
+   // The tall one, the first time a lamp finds it: stopped dead for the length of its freeze, the look held until then.
+   if(Stage==407)
+   {
+    const auto TallEye=Site.VisitBodyEye();
+    if(!TallEye.IsSet())return Fail(TEXT("the tall one must still be out"));
+    auto& Lamp=*M->Night->Flashlight;
+    if(DoorStep==0)
+    {
+     // Within the beam's reach, on the clear line it has just come along.
+     const FVector Near=*TallEye+(FVector(Feet.X,TallEye->Y,Feet.Z)-*TallEye).GetSafeNormal()*18;
+     M->Player->Place(Near.X,Near.Z,0);Lamp.bHave=true;if(!Lamp.bOn)Lamp.Toggle();Site.TestAttentionRoll(0.f);
+     DoorStep=1;DreadAt=Elapsed;return true;
+    }
+    DreadLookAt(M,*TallEye);
+    if(DoorStep==1)
+    {
+     if(Site.VisitClipNow()!=ES47Clip::Freeze){if(Elapsed-DreadAt>10)return Fail(TEXT("a lamp on the tall one must freeze it"));return true;}
+     DoorBodyFrom=*TallEye;DreadAt=Elapsed;DoorStep=2;return true;
+    }
+    if(DoorStep==2)
+    {
+     if(Elapsed-DreadAt<1.5)return true;
+     Shot(TEXT("tall-freeze.png"));DoorStep=3;return true;
+    }
+    if(Site.VisitClipNow()==ES47Clip::Freeze)
+    {
+     if(Site.VisitAttention().Doing()!=FS47VisitAttention::EDo::Watch)return Fail(TEXT("frozen, it is still only looking"));
+     if(FVector::Dist(*TallEye,DoorBodyFrom)>.2)return Fail(TEXT("frozen, it does not move"));
+     if(Elapsed-DreadAt>8)return Fail(TEXT("the freeze must come to an end"));
+     return true;
+    }
+    UE_LOG(LogTemp,Display,TEXT("S47: kinds: the tall one froze for %.1f s in the lamp, then went on"),Elapsed-DreadAt);
+    if(Lamp.bOn)Lamp.Toggle();
+    Site.TestAttentionRoll(-1.f);
+    M->Player->Place(Marks.X+90,Marks.Z,0);DreadAt=Elapsed;Stage=405;return true;
    }
    if(Stage==405)
    {

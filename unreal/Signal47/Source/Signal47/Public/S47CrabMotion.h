@@ -22,6 +22,8 @@ struct FS47CrabContacts
  bool bStep[4]={false,false,false,false};
  FVector AtUE[4]={FVector::ZeroVector,FVector::ZeroVector,FVector::ZeroVector,FVector::ZeroVector};
  double MaxPlantErrorCm=0;
+ // How many limbs that error was measured on. A limb in the air counts for nothing, so a low error alone proves little.
+ int32 PlantedLimbs=0;
 };
 
 // A tall body folded down on all fours, chest to the ground with elbows and knees above its back. It goes wherever
