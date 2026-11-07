@@ -213,6 +213,11 @@ public:
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
  void ReconcileFarm(bool bEnabled);
+ /** Freeform's open land (S47OpenLand): the player on foot past the line of the area's land goes on in the next area. Every frame. */
+ void WalkOver();
+ /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */
+ IS47DriveArea* LegArea(const FString& Id) const;
+ FString WhyNotLand(double X, double Z);
  // An old save can leave the parked service truck inside a new farm wall: put it on the nearest clear ground, same heading. No save field changes.
  void KeepParkedOutOfFarmWalls();
 	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
@@ -318,6 +323,7 @@ private:
 	bool bHaveView = false;
 
 	void ParkAt(FString Id);
+	void BringTruckOver(const FString& ToLeg);
 	void LightsOn(FS47Truck& T);
 	void TripStep(double Dt);
 	TOptional<FS47Box2> ParkBox(const FString& Place) const;
