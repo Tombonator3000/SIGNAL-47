@@ -42,6 +42,8 @@ public:
 	virtual FS47Surface Surface(double X, double Z) const override;
 	virtual bool HasHeight() const override { return true; }
 	virtual double Height(double X, double Z) const override;
+	/** Freeform's hills stop the truck at their foot (S47Relief). One already in them, parked on what was open land, drives out. */
+	virtual bool Blocked(double X, double Z) override;
 	/** Every frame while the area is shown: the cattle guard rattles while the front axle is on it. */
 	void Update(double Dt, double T, const FVector& TruckPos);
 
@@ -54,5 +56,6 @@ private:
 	bool bHaveLast = false;
 	bool bOnGuard = false;
 	bool bClosedOn = true;
+	bool bInHill = false;
 	const FLot* LotAt(double X, double Z) const;
 };

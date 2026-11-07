@@ -21,6 +21,14 @@ namespace S47Relief
 	SIGNAL47_API bool CheckZones(TArray<FString>& Lines);
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 
+	/** How far Freeform's hills (SM_FF_Range, range_foot.bin) stand over the road's land at this road-local point, in metres, less than
+	 *  0 where they lie under it. 0 while the relief is off or no table is installed; past the table's edge the hills go on, and it says
+	 *  so with a large number. The range has no collision: this is what a hill is to whatever moves over the land. */
+	SIGNAL47_API double HillAbove(double RoadX, double RoadZ);
+	/** A person's or a truck's footprint, as a square this far each way, meets the foot of a hill: over FootStopM there. */
+	SIGNAL47_API bool HillStops(double RoadX, double RoadZ, double Reach);
+	inline constexpr double FootStopM = .45;
+
 	/** Off for as long as this lives, for a check that compares against fixed web numbers while a game may be running. */
 	struct SIGNAL47_API FSuspend
 	{
