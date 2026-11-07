@@ -326,7 +326,7 @@ FVector FS47SkyFormationState::MapPosition(int32 Light)const
  const FVector Ahead(FMath::Sin(Heading),0,FMath::Cos(Heading)),Side(FMath::Cos(Heading),0,-FMath::Sin(Heading));
  const FVector2D O=Slot(Form,Light,Lights,Age);
  // The plane of it leans towards whoever is under it, so a shape is a shape from the ground and not a line along the horizon.
- const double Lift=O.Y*(Lateral>=0?1.:-1.)*.45+(Form==ES47SkyForm::Scatter?80.*FMath::Sin(Light*2.1):0.);
+ const double Lift=O.Y*(Lateral>=0?1.:-1.)*1.1+(Form==ES47SkyForm::Scatter?80.*FMath::Sin(Light*2.1):0.);
  return FVector(AnchorX,Height+Lift,AnchorZ)+Ahead*((P-.5)*Along+O.X)+Side*(Lateral+O.Y);
 }
 double FS47SkyFormationState::Level(int32 Light)const
