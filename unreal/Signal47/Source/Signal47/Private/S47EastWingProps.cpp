@@ -301,5 +301,5 @@ void FS47EastWingProps::UpdateCalendar(US47Main* Main)
  uint8* Copy=(uint8*)FMemory::Malloc(Px.Num()*sizeof(FColor));FMemory::Memcpy(Copy,Px.GetData(),Px.Num()*sizeof(FColor));
  Tex->UpdateTextureRegions(0,1,Region,CalW*sizeof(FColor),sizeof(FColor),Copy,[](uint8* Src,const FUpdateTextureRegion2D* R){FMemory::Free(Src);delete R;});
  CalendarKey=Key;
- UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*S47Game::DateLine(Date)).ToUpper(),CalendarSheets.Num(),CalW,CalH);
+ UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*S47Game::DateLine(Date),CalendarSheets.Num(),CalW,CalH);
 }
