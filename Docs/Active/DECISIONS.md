@@ -18,6 +18,10 @@ Tom bestemte at alt til Freeform fullføres først. Story fortsetter når han er
 
 Tom 7. november: Freeform går foran Story, og Freeform skal brukes til Story-elementer. Story tilpasses Freeform senere, så endringer i modeller, terreng og oppførsel skjermes ikke for Story.
 
+## Toms avgjørelser etter kritikerrundene, 7. november 2026
+
+Bygg: gårdshusets gamle boks og SARO utvendig må bli troverdige, og kontrollrommet mangler følelsen av et sted der folk har levd. Jeepen byttes til en generisk bil. **Sekskantgulvet i SARO byttes;** dette går foran `SARO_1986.md`. Spill: Tom er enig i kritikerens funn om hva som løfter spillet: dag til forberedelse, kveld til jobb, natt til fare, grunn til å dra ut og retning i uke to. Noe kan komme før kl. 01, så kl. 02 er ikke lenger en fast grense, men kvelden skal fortsatt være vanlig jobb. Tid skal ha en pris, og bortføring skal koste. Forslag til fremgang fra Claude venter på Toms kommentar.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
