@@ -2,6 +2,7 @@
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
 #include "S47Openings.h"
+#include "S47FieldLife.h"
 #include "S47Aftermath.h"
 #include "S47PaleBody.h"
 #include "S47Three.h"
@@ -705,9 +706,15 @@ bool FS47FarmSite::Use()
  if(bNew)M->Freeform->RecordEvidence(FindingId(),bFarm
   ?FString(TEXT("Pasture at the Alderete place, the night of the lights. Nine pressed marks in a ring about nine metres across, the grass darkened and laid flat. Cattle, a vehicle or a prank have not been ruled out. Worth a second look by daylight."))
   :FString::Printf(TEXT("Open ground outside %s, the night of the lights. Nine dark marks in a ring about five metres across. A vehicle, a spill or a prank have not been ruled out. Worth a second look by daylight."),*Title));
- M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col({
+ TArray<S47Kit::FW> Rows={
   S47Kit::Text(bFarm?TEXT("Nine marks in a ring, about nine metres across. The grass is laid flat and darkened, and it is dry here when the ground beside it is not."):TEXT("Nine dark marks in a ring, about five metres across. They do not smear when you scuff one, and the ground feels warm.")),
-  S47Kit::Small(bNew?TEXT("Kept as a field record. It says where and what, not who or why."):TEXT("Already in your field records."))}),760));
+  S47Kit::Small(bNew?TEXT("Kept as a field record. It says where and what, not who or why."):TEXT("Already in your field records."))};
+ if(M->Freeform->TripCamera&&M->Freeform->TripCamera->CanSet())
+ {
+  const FString Where=Title;
+  Rows.Add(S47Kit::Button(TEXT("Leave the trip camera by the marks until morning"),[this,Where]{M->Freeform->TripCamera->SetHere(Where,true);if(M->UI)M->UI->Close(true);}));
+ }
+ M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col(Rows),760));
  if(bNew)M->RequestAutosave();
  return true;
 }

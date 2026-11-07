@@ -36,12 +36,16 @@ public:
  const TArray<FBearing>& Bearings() const{return Fixes;}
  static double SpreadFor(int32 Branches){return Branches<=0?0.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
  static double AzimuthOf(double FromX,double FromZ,double ToX,double ToZ); // Degrees, north 0, east 90. Road-local: z runs south.
+ // Some small things are not where they were: metres from where they first stood, following from the game and the day, so a
+ // Continue changes nothing. Only what could be carried. Only moved while nobody is near.
+ static FVector2D DriftOf(const FString& Id,int32 Seed,int32 Day);
+ static bool Drifts(const FString& Id);
  // Where the place really stands, road-local, after the land has had its say.
  bool Spot(const FString& Id,double& OutX,double& OutZ) const;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;};
+ struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;};
  TArray<FBuilt> Built;
  TSet<FString> HeardOf;
  TArray<FBearing> Fixes;

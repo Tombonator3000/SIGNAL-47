@@ -15,6 +15,7 @@
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47UI.h"
+#include "S47FieldLife.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -212,15 +213,40 @@ void FS47Places::Seat(FBuilt& B)
  B.Y=Y;
  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(World.X,Y,World.Z)+B.Local[I]));
 }
+bool FS47Places::Drifts(const FString& Id){return Id==TEXT("stake")||Id==TEXT("cairn")||Id==TEXT("trough");}
+FVector2D FS47Places::DriftOf(const FString& Id,int32 Seed,int32 Day)
+{
+ if(!Drifts(Id))return FVector2D::ZeroVector;
+ FVector2D Sum=FVector2D::ZeroVector;const uint32 Salt=FCrc::StrCrc32(*Id);
+ // Every few days, a few metres. It never wanders far from where it stood.
+ for(int32 D=2;D<=Day;++D)if(FS47NightRhythm::Roll(Seed,D,Salt)<.2f)
+ {
+  const float A=FS47NightRhythm::Roll(Seed,D,Salt+1)*6.2831853f,R=2.f+5.f*FS47NightRhythm::Roll(Seed,D,Salt+2);
+  Sum+=FVector2D(FMath::Cos(A),FMath::Sin(A))*double(R);
+ }
+ return Sum.ClampAxes(-18.,18.);
+}
 void FS47Places::Step(double Dt)
 {
  if(!M||!M->Freeform||!M->Player||!M->Web)return;
  if(!bBuilt&&!Build())return;
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
- for(FBuilt& B:Built)if(!B.bSeated)
+ for(FBuilt& B:Built)
  {
   const FVector World=B.Id==Motel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
-  if(FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size()<300)Seat(B);
+  const double Away=FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size();
+  if(!B.bSeated&&Away<300)Seat(B);
+  // Not while anyone is near enough to see it go.
+  if(Drifts(B.Id)&&B.ShiftDay!=M->Freeform->Day()&&Away>200)
+  {
+   const FVector2D Then=B.Shift,Now=DriftOf(B.Id,M->Freeform->Seed(),M->Freeform->Day());
+   B.ShiftDay=M->Freeform->Day();
+   if(!Now.Equals(Then,.01))
+   {
+    B.Shift=Now;B.X+=Now.X-Then.X;B.Z+=Now.Y-Then.Y;B.bSeated=false;
+    UE_LOG(LogTemp,Display,TEXT("S47: place %s has shifted %.1f m since it first stood there"),*B.Id,Now.Size());
+   }
+  }
  }
  StepNeedle(Dt);
 }
@@ -265,6 +291,11 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   Rows.Add(S47Kit::Small(TEXT("The cot is in the truck. Out here there is nothing between you and whatever comes by; it will wake you.")));
   Rows.Add(S47Kit::Button(TEXT("Put up the cot here until morning"),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Field);},true));
  }
+ if(F->TripCamera&&F->TripCamera->CanSet()&&FString(D.Id)!=Motel)
+ {
+  const FString Where=D.Title;
+  Rows.Add(S47Kit::Button(TEXT("Leave the trip camera here until morning"),[this,F,Where]{F->TripCamera->SetHere(Where,false);if(M->UI)M->UI->Close(true);}));
+ }
  M->UI->Open(S47Kit::Shell(M->UI,FString(D.Title).ToUpper(),S47Kit::Col(Rows),760));
 }
 bool FS47Places::Use(const FString& Id)
@@ -279,9 +310,16 @@ bool FS47Places::Use(const FString& Id)
   M->RequestAutosave();
  }
  FString Extra;
+ if(!bFirst&&Drifts(Id)&&!DriftOf(Id,F.Seed(),F.Day()).IsNearlyZero(.5))
+ {
+  // A second visit: it is the player's own record that says it was somewhere else.
+  const FString Moved=FString::Printf(TEXT("%s_moved_d%d"),*Key,F.Day());
+  Extra=TEXT("It is not where you noted it. Your record has it some paces from here. There are no marks of its having been moved.");
+  F.RecordEvidence(Moved,FString::Printf(TEXT("%s is not where I recorded it. Some paces off, and no drag marks. This records what I can compare."),D->Title));
+ }
  if(F.HasKit(TEXT("magnetometer")))
  {
-  Extra=TEXT("MAGNETOMETER / ")+FString(D->Needle);
+  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+FString(D->Needle);
   F.RecordEvidence(Key+TEXT("_needle"),FString::Printf(TEXT("Magnetometer at %s. %s"),D->Title,D->Needle));
  }
  Panel(*D,bFirst,Extra);return true;
@@ -341,6 +379,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  Check(bWords&&bParts,TEXT("each has a prop and one thing to find, and none says what it is"));
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
  Check(SpreadFor(0)==0&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("every mended branch narrows the sector, and none is exact"));
+ {
+  bool bStable=true,bNear=true,bMoves=false,bStill=true;
+  for(int32 Day=1;Day<=120;++Day)
+  {
+   const FVector2D A=DriftOf(TEXT("stake"),47,Day);bStable&=A==DriftOf(TEXT("stake"),47,Day);bNear&=FMath::Abs(A.X)<=18&&FMath::Abs(A.Y)<=18;bMoves|=A.Size()>1;
+   bStill&=DriftOf(TEXT("tank"),47,Day).IsZero()&&DriftOf(TEXT("mine"),47,Day).IsZero();
+  }
+  Check(bStable&&bNear&&bMoves&&bStill,TEXT("small things shift a little over the days, the same way in any Continue; what could not be carried stays"));
+ }
  FS47Places None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0&&None.Bearings().IsEmpty(),TEXT("an older save has none of it and writes nothing"));
  auto O=S47J::New();S47J::Set(O,TEXT("heard"),TArray<FString>{TEXT("mine"),TEXT("nowhere")});
  auto Fix=S47J::New();S47J::Set(Fix,TEXT("day"),3);S47J::Set(Fix,TEXT("az"),31.);S47J::Set(Fix,TEXT("spread"),12.);S47J::Set(Fix,TEXT("target"),TEXT("mine"));

@@ -149,7 +149,7 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
  if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
- if(Id.Contains(TEXT("_daylight_d"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
+ if(Id.Contains(TEXT("_daylight_d"))||Id.Contains(TEXT("_moved_d"))||Id.StartsWith(TEXT("tripcam_d"))||Id.StartsWith(TEXT("roadcar_b"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
  return -1;
 }
 int32 FS47FreeformCases::LineForObservation(const FString& Event)

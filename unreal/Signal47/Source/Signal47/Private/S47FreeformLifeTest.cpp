@@ -18,6 +18,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Openings.h"
+#include "S47FieldLife.h"
 #include "S47Places.h"
 #include "S47NightRhythm.h"
 #include "S47FreeformWorld.h"
@@ -92,7 +93,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   UE_LOG(LogTemp,Display,TEXT("S47: free life: %s"),*F.Taken->LastNote());
   Stage=40;At=Age;return;
  }
- static int32 PlaceIndex=0;
+ static int32 PlaceIndex=0,RoundIndex=0,RoundPay=0;
  if(Stage==50)
  {
   // Each place by daylight, on its own ground, seen from a few metres, with a picture for a person to judge.
@@ -170,7 +171,50 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   const double Next=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+8*3600;const int32 Cots=F.Budget();
   if(!Check(F.RestAt(Next,FS47FreeformSession::ERest::Field)&&F.Clock()<Next&&F.LastWakeClock()==F.Clock()&&F.TheirHoursNow(F.Clock())&&F.Budget()==Cots,TEXT("a cot out on the land: woken in their hours, at no charge")))return;
   UE_LOG(LogTemp,Display,TEXT("S47: free life: stores, places, alarm, motel and cot PASS"));
-  Finish(true,TEXT("field visit, taken, gear, case, places, stores, alarm and rests as played"));return;
+  // The truck: each kind of trouble has its own way out, and the county is there for all of them.
+  auto& Care=*F.Care;const int32 Spare=F.InventoryCount(TEXT("spare")),Water=F.InventoryCount(TEXT("water"));const double Before=F.Clock();
+  if(!Check(Spare==1&&Water==2,TEXT("the truck starts with a spare and two cans of water")))return;
+  Care.TestStick();Care.TestFlat();Care.TestWater(0);
+  if(!Check(Care.NeedsRescue()&&Care.DigOut()&&Care.ChangeWheel()&&Care.TopUp()&&!Care.NeedsRescue()&&F.Clock()>Before&&F.InventoryCount(TEXT("spare"))==Spare-1&&F.InventoryCount(TEXT("water"))==Water-1,TEXT("spade, jack and can each get the player going again, in time and stock")))return;
+  Care.TestStick();Care.TestFlat();
+  if(!Check(!Care.ChangeWheel()&&Care.Flat(),TEXT("no spare left: the wheel stays flat, and says so")))return;
+  const double Rescue=F.Clock();F.Field->TestRoadside();
+  if(!Check(!Care.NeedsRescue()&&F.Clock()>=Rescue+15*60,TEXT("roadside service gets the player out of all of it, for time")))return;
+  UE_LOG(LogTemp,Display,TEXT("S47: free life: truck care PASS"));
+  // The trip camera, left at a place, read in the morning.
+  F.Field->TestBuiltTripCamera();
+  if(!Check(F.TripCamera->CanSet()&&F.TripCamera->SetHere(TEXT("the old mine on the west side"),false)&&F.TripCamera->Out()&&!F.TripCamera->CanSet(),TEXT("set once, out until read")))return;
+  Stage=80;At=Age;return;
+ }
+ if(Stage==80)
+ {
+  const double Morning=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+9*3600;
+  if(!Check(F.TestAdvance(Morning-F.Clock()),TEXT("the next morning")))return;
+  const int32 Records=F.FindingCount();
+  if(!Check(F.TripCamera->Collect()&&!F.TripCamera->Out()&&F.FindingCount()==Records+1,TEXT("read in the morning: one record, for the night it stood out")))return;
+  M->UI->Close(true);
+  // The round: its three stops, by daylight, on foot.
+  F.Earn(0);const int32 Pay=F.Budget();
+  const auto Stops=FS47DayRound::StopsFor(F.Seed(),F.Day());
+  for(const FString& S:Stops)if(!Check(F.Field->InteractionPoint(S).X!=0||F.Field->InteractionPoint(S).Z!=0,TEXT("each stop of the round has a place in the world")))return;
+  UE_LOG(LogTemp,Display,TEXT("S47: free life: trip camera PASS, round stops %s"),*FString::Join(Stops,TEXT(",")));
+  RoundIndex=0;RoundPay=Pay;Stage=81;At=Age;return;
+ }
+ if(Stage==81)
+ {
+  const auto Stops=FS47DayRound::StopsFor(F.Seed(),F.Day());
+  if(RoundIndex>=Stops.Num())
+  {
+   if(!Check(F.Round->DoneToday()&&F.Budget()>=RoundPay+FS47DayRound::RoundPay&&F.HasFinding(FString::Printf(TEXT("round-d%d"),F.Day())),TEXT("three stops make a round, paid and on record")))return;
+   UE_LOG(LogTemp,Display,TEXT("S47: free life: round PASS"));
+   Finish(true,TEXT("field visit, taken, gear, case, places, stores, alarm, rests, truck, trip camera and round as played"));return;
+  }
+  if(Age-At<1.2)return;At=Age;
+  const FString Stop=Stops[RoundIndex++];
+  // The feeder stands out on the road; the rest are at the station.
+  M->World->Enter(Stop==TEXT("ff:feeder")?TEXT("road"):TEXT("saro"));
+  const FVector P=F.Field->InteractionPoint(Stop);M->Player->Place(P.X+1,P.Z,0);
+  return;
  }
  if(Stage==40)
  {

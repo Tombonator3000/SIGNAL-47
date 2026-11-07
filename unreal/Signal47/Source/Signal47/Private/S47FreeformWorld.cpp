@@ -1,4 +1,5 @@
 #include "S47FreeformWorld.h"
+#include "S47FieldLife.h"
 #include "S47Legs.h"
 #include "S47Freeform.h"
 #include "S47Observing.h"
@@ -69,9 +70,9 @@ namespace
  const FVector GeneratorAt(5.93,1.35,.65);
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
- const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor") };
- int32 Price(const FString& Id) { return Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:0; }
- FString ItemTitle(const FString& Id) { return Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
+ const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };
+ int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:0; }
+ FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
@@ -123,7 +124,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
  Delivered=DeliveredByTruck=ServiceDeliveries=DonorTests=ServiceTests=0;bParcelWasLoaded=false;
  bPumping=false;PumpRemaining=PumpElapsed=PumpVolume=0;PumpPaid=0;LastPumpDisplay.Empty();
- Stock.Reset();Stock.Add(TEXT("fuse"),3);Stock.Add(TEXT("relay"),1);Stock.Add(TEXT("fuel"),2);Stock.Add(TEXT("donor"),0);Stock.Add(TEXT("battery"),0);Stock.Add(TEXT("film"),O?0:1);Stock.Add(TEXT("fragment"),0);Stock.Add(TEXT("archived_fragment"),0);
+ Stock.Reset();Stock.Add(TEXT("water"),2);Stock.Add(TEXT("spare"),1);Stock.Add(TEXT("fuse"),3);Stock.Add(TEXT("relay"),1);Stock.Add(TEXT("fuel"),2);Stock.Add(TEXT("donor"),0);Stock.Add(TEXT("battery"),0);Stock.Add(TEXT("film"),O?0:1);Stock.Add(TEXT("fragment"),0);Stock.Add(TEXT("archived_fragment"),0);
  if(O && S47J::Int(O,TEXT("v"))==1)
  {
   const FString SavedTarget=S47J::Str(O,TEXT("serviceDish"));if(ValidServiceDish(SavedTarget))ServiceTarget=SavedTarget;
@@ -163,7 +164,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
-  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("splice_kit")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
+  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
  if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  // Old saves already carrying the device retain their physical loan. New loans
@@ -229,7 +230,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
- S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("splice_kit")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
+ S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
 }
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
@@ -876,7 +877,7 @@ bool FS47FreeformWorld::CargoUse()
  if(!M||!M->World||M->World->bDriving||!Near(M->World->ServicePosition(),4.8)){Change(TEXT("Move closer to your parked service jeep to load or unload its cargo."));return true;}
  const auto Unload=[this]{Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));};
  if(Payload==2){Payload=3;bParcelWasLoaded=true;Change(TEXT("Parcel secured in the service-jeep cargo rack. It travels with the jeep."));}
- else if(Payload==3&&Fuel>.001)Unload();
+ else if(Payload==3&&Fuel>.001&&!(M->Freeform->Care&&M->Freeform->Care->NeedsRescue()))Unload();
  else
  {
   // A loaded rack on an empty tank still opens this menu: roadside return carries the truck and its cargo.
@@ -890,9 +891,20 @@ bool FS47FreeformWorld::CargoUse()
    if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
   }
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
-  R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001));
+  // The truck's own trouble: what the player can do about it, and the county if not.
+  const auto* Care=M->Freeform->Care.Get();const bool bCare=Care&&Care->NeedsRescue();
+  if(Care)
+  {
+   R.Add(S47Kit::Section(TEXT("RADIATOR"),FString::Printf(TEXT("%.0f%%"),Care->Water()*100)));
+   R.Add(S47Kit::Section(TEXT("SPARE WHEEL"),FString::Printf(TEXT("%d"),InventoryCount(TEXT("spare")))));
+   if(!Care->StatusLine().IsEmpty())R.Add(S47Kit::Small(Care->StatusLine()));
+   if(Care->Stuck())R.Add(S47Kit::Button(FString::Printf(TEXT("Dig it out with the spade / about %.0f minutes"),FS47TruckCare::DigMinutes),[this]{M->Freeform->Care->DigOut();M->UI->Close();},true));
+   if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));
+   if(Care->Water()<1)R.Add(S47Kit::Button(TEXT("Fill the radiator from a can"),[this]{M->Freeform->Care->TopUp();M->UI->Close();},Care->Hot(),InventoryCount(TEXT("water"))>0));
+  }
+  R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
   if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
-  R.Add(S47Kit::Small(Fuel>.001?TEXT("Roadside return is available when the fuel is empty."):TEXT("TANK EMPTY: County roadside service brings you, the jeep and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
+  R.Add(S47Kit::Small(bCare?TEXT("County roadside service brings you, the truck and its cargo back to SARO and leaves it sound. It costs time, not money."):Fuel>.001?TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck."):TEXT("TANK EMPTY: County roadside service brings you, the jeep and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE JEEP / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -1227,17 +1239,20 @@ void FS47FreeformWorld::OpenDepot()
 void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<3.99&&Consume(TEXT("fuel"))){Fuel=FMath::Min(4.,Fuel+2.);Change(TEXT("Fuel can transferred to the service jeep."));}}
 void FS47FreeformWorld::RoadsideAssist()
 {
- if(!Ready()||!M->World||Fuel>.001)return;
+ const bool bTrouble=M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue();
+ if(!Ready()||!M->World||(Fuel>.001&&!bTrouble))return;
  if(M->World->bDriving)M->World->GetOutHere(true);
+ if(M->Freeform->Care)M->Freeform->Care->Clear();
  M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);
  // Two reserve units cover 24 km at the normal 1/12000-m consumption. SARO
  // and Caliche use separate scene origins; their 8-km rendering offset is
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
- Fuel=2.;M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned jeep and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
+ Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned jeep and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),TEXT("Roadside return used; the interrupted trip and cargo were retained."));
 }
 
+void FS47FreeformWorld::SkipFaultToday(){if(M&&M->Freeform)LastFaultDay=M->Freeform->Day();}
 bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& RequestedDish)
 {
  if(!Ready()||HasArrayFault()||M->Freeform->PowerFault()||(Service==9&&M->Freeform->ActiveServiceGuide()==1))return false;
