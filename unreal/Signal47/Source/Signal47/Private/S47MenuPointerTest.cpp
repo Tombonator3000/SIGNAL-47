@@ -24,6 +24,7 @@
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
 #include "S47FarmWorld.h"
+#include "S47MotelProbe.h"
 #include "S47RoadShape.h"
 #include "S47World.h"
 #include "S47Inter.h"
@@ -1022,6 +1023,13 @@ namespace
      if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the road test needs the night"));
      M->World->Enter(TEXT("road"));Stage=80;StageAt=Elapsed;return true;
     }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerOffice")))
+    {
+     // PLAY-31-01 / FIX-04: read-only look at the motel office from inside and out, and at the pool fence. -S47OfficeHour=N sets the hour (default: as it starts).
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     int32 At=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47OfficeHour="),At)&&!M->Freeform->TestAdvance(FMath::Fmod(At*3600.-FMath::Fmod(M->Freeform->Clock(),86400.)+86400.,86400.)))return Fail(TEXT("the office test could not set the hour"));
+     M->World->Enter(TEXT("saro"));Stage=699;StageAt=Elapsed;return true;
+    }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerBuildings")))
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
@@ -1112,6 +1120,41 @@ namespace
     UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
+   }
+   // The motel office (PLAY-31-01) and the pool fence (FIX-04), in the saro frame. Floors are the assembly's: reception tiles x -48.1..-43.7, z 672.3..677.5, door at x -43.7, z about 674.1.
+   if(Stage==699)
+   {
+    if(Elapsed-StageAt<5)return true;
+    if(M->Web->Area()!=TEXT("saro")){M->World->Enter(TEXT("saro"));return true;}
+    S47MotelProbe::LogOffice(M);Stage=700;StageAt=Elapsed;return true;
+   }
+   if(Stage>=700&&Stage<740)
+   {
+    struct FOfficeView{const TCHAR* Name;double X,Z,LookX,LookHeight,LookZ;bool bRays;};
+    static const FOfficeView Views[]={
+     {TEXT("in-west"),-44.6,674.1,-48.0,1.5,674.1,true},{TEXT("in-north"),-44.6,674.1,-44.6,1.5,677.4,true},{TEXT("in-south"),-44.6,674.1,-44.6,1.5,672.4,true},
+     {TEXT("in-door"),-44.6,674.1,-41.0,1.4,674.1,true},{TEXT("in-corner-nw"),-47.3,676.5,-44.0,1.3,673.0,true},{TEXT("in-corner-sw"),-47.3,672.9,-44.0,1.3,676.6,true},
+     {TEXT("in-ceiling"),-46.0,674.9,-45.0,3.0,674.9,false},{TEXT("in-floor"),-45.5,674.9,-44.8,0.1,674.9,false},
+     {TEXT("out-door"),-41.0,674.1,-45.0,1.4,674.1,false},{TEXT("out-door-close"),-43.0,674.1,-46.0,1.4,674.1,false},
+     {TEXT("out-oblique-south"),-41.0,672.0,-43.8,1.5,674.1,false},{TEXT("out-oblique-north"),-41.5,677.0,-44.0,1.3,673.0,false},{TEXT("out-wall"),-41.5,672.3,-44.0,1.3,675.5,false},
+     {TEXT("pool-approach"),-50.5,684.0,-56.0,1.0,700.0,false},{TEXT("pool-fence-south"),-50.0,689.0,-65.0,0.4,691.0,false},{TEXT("pool-fence-corner"),-52.0,696.0,-54.5,0.5,706.0,false}};
+    const int32 I=Stage-700;
+    if(I>=int32(UE_ARRAY_COUNT(Views)))
+    {
+     S47MotelProbe::LogPool(M);
+     UE_LOG(LogTemp,Display,TEXT("S47: office PASS: %d views in Saved/AlbumTest/office-*.png; read the S47 office and S47 pool log lines (a diagnostic, not a verdict)"),int32(UE_ARRAY_COUNT(Views)));
+     FPlatformMisc::RequestExitWithStatus(false,0);return false;
+    }
+    if(ShotPending)
+    {
+     if(Elapsed-StageAt<.8)return true;
+     if(Views[I].bRays)S47MotelProbe::LogRays(M,Views[I].Name);
+     Shot(*FString::Printf(TEXT("office-%02d-%s.png"),I,Views[I].Name));ShotPending=false;Stage=Stage+1;StageAt=Elapsed;return true;
+    }
+    if(Elapsed-StageAt<.4)return true;
+    const FVector2D D(Views[I].LookX-Views[I].X,Views[I].LookZ-Views[I].Z);
+    M->Player->Place(Views[I].X,Views[I].Z,FMath::Atan2(-D.X,-D.Y));M->Player->Pitch=FMath::Atan2(Views[I].LookHeight-1.62,D.Size());ShotPending=true;
+    StageAt=Elapsed;return true;
    }
    // The new farm buildings, in the saro frame: a look at each from the yard by day and by night and one inside the
    // barn, then in through its door on foot and on until the back wall stops the walk.
