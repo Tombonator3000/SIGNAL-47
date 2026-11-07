@@ -107,6 +107,7 @@ void FS47Aftermath::Step(double Dt)
   if(bDone)
   {
    if(LogOn>=LogOnSeconds&&M->Audio)M->Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.4f});
+   if(LogOn>=LogOnSeconds)M->Freeform->LostTimeTrace(0);
    PcAt=-1;PcUntil=LogOn=0;M->RequestAutosave();
    UE_LOG(LogTemp,Display,TEXT("S47: aftermath: the workstation clock is right again"));
   }

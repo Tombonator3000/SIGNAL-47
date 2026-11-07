@@ -586,12 +586,12 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("fieldCamera"); It.Object = Web->Obj(TEXT("room.objs.fieldCamera")); It.Range = 2.6;
-		It.Label = [this] { if(M&&M->IsFreeform())return Fcam()&&!Fcam()->bHave?FString(TEXT("Collect field camera / PHOTO LAB")):FString(); const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
+		It.Label = [this] { if(M&&M->IsFreeform())return Fcam()&&!Fcam()->bHave&&!(M->Freeform&&M->Freeform->CameraLeftOut())?FString(TEXT("Collect field camera / PHOTO LAB")):FString(); const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
 		It.Use = [this]
 		{
    if(M&&M->IsFreeform())
    {
-    if(!Fcam()||Fcam()->bHave)return;
+    if(!Fcam()||Fcam()->bHave||(M->Freeform&&M->Freeform->CameraLeftOut()))return;
     const FS47Obj Cam=M->Web->Obj(TEXT("room.fieldCamera"));
     if(!Cam||!M->World||M->World->Area!=TEXT("saro")||!M->Player||FVector::Distance(M->Player->Pos,Cam.WorldPosition())>2.6)
     {Toast(TEXT("PHOTO LAB: Approach the field camera on the archive bench to collect it."));return;}
@@ -1299,7 +1299,7 @@ void US47Chapter1::ToggleCamera()
 {
 	US47FieldCamera* F = Fcam();
 	US47UI* U = Ui();
-	if(M&&M->IsFreeform()&&F&&!F->bHave){Toast(TEXT("PHOTO LAB: Collect the field camera from the archive bench."));return;}
+	if(M&&M->IsFreeform()&&F&&!F->bHave){Toast(M->Freeform&&M->Freeform->CameraLeftOut()?TEXT("Your camera is where you were taken."):TEXT("PHOTO LAB: Collect the field camera from the archive bench."));return;}
 	if ((!Active && !EarlyCamera()) || !F || !F->bHave) return;
 	if (U && U->Modal()) return;
 	F->Raise(!F->bRaised);

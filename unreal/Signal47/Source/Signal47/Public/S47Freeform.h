@@ -41,6 +41,7 @@ public:
   // Case test job (FS47FreeformCases); -1 for ordinary work.
   int32 CaseLine=-1,CaseTest=-1;
   bool bCaseValid=true,bCaseRecorded=false;
+  bool bDocked=false; // the day the player was taken: this card pays half (TakenCosts)
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -127,8 +128,43 @@ public:
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.
- static constexpr double EveningLead=30*60.;
+ static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.;
+ // The clock of day this card's source comes up: never before seven in the evening.
+ static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,Job.Card.SuggestedClock-EveningLead);}
+ // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
+ const FJob* NextEveningCard(double& Up) const;
+ // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
+ bool RulesLive() const{return bTestRules||(M&&LiveFlow());}
+ void TestLiveRules(){bTestRules=true;}
+ // Whose night a clock falls in: the shift day it belongs to. Bodies keep to their own start each night (S47NightRhythm.h).
+ static int32 NightOf(double AtClock){return FMath::Max(1,int32(FMath::FloorToDouble((AtClock-8*3600.)/SecondsInDay))+1);}
+ double BodyStartHour(int32 Night) const;
+ bool QuietNight(int32 Night) const;
+ bool TheirHoursNow(double AtClock) const;
+ // Past the night's start, calm or not: a call can come on a calm night too. Leads nowhere then.
+ bool NightStarted(double AtClock) const;
+ int32 TimesTaken() const{return TakenCount;}
+ bool FaultDue() const;
+ // Time has a price (Tom, 7 November), low enough not to rush anyone. A card pays in full on its day and the next, then less.
+ // Waiting costs a little in standby. Each week the station's review takes power and fuel. Nothing here can lock the game:
+ // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
+ static int32 PayAfterDays(int32 Days){return Days<=1?20:Days==2?15:Days==3?10:5;}
+ int32 JobPay(const FJob& Job) const;
+ static constexpr int32 ReviewPower=25,ReviewFuel=15,ArrearsCap=80;
+ static int32 StandbyFor(double WaitSeconds){return FMath::Clamp(FMath::CeilToInt(WaitSeconds/(3*3600.)),0,4);}
+ int32 StandbyPaid() const{return StandbyTotal;}
+ int32 Arrears() const{return Carried;}
+ int32 NextReviewDay() const{return (ReviewWeek+1)*7+1;}
+ FString NextReviewText() const;
+ void StepWeeklyReview();
+ // Being taken costs (Tom, 7 November): cards docked, windows gone by, a case of its own. Secured work, money earned, film and originals stay.
+ FString TakenCosts(double SafeClock);
+ void LostTimeTrace(int32 Clue);
+ bool CameraLeftOut() const;
+ TSharedPtr<class FS47LeftGear> Gear;
+ float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
+ static constexpr double SecondsInDay=86400.;
  bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
@@ -149,6 +185,8 @@ public:
  bool ChooseThird(bool bVirgo);
  bool PointSelected();
  bool StartAcquisition();
+ bool FirstPulseDue(const FJob& Candidate) const;
+ void TestFirstPulse(){bTestFirstPulse=true;}
  bool CollectChart();
  static constexpr double PrinterSeconds=5.2;
  FString PrinterJobId() const;
@@ -204,6 +242,11 @@ public:
  TSharedPtr<class FS47Taken> Taken;
  // What stays a little wrong for a while after being taken, or after a night with them at the farm.
  TSharedPtr<class FS47Aftermath> Aftermath;
+ // The county's night patrol, once a letter has said it would come by.
+ TSharedPtr<class FS47DeputyRound> Deputy;
+ bool DeputyOnRoute() const;
+ int32 SheriffTrust() const;
+ int32 Seed() const{return JobSeed;}
  // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
  FString TerminalClock() const;
  bool OpsOnGlass() const { return ActiveTerminal==3&&TerminalOnGlass(); }
@@ -268,7 +311,10 @@ private:
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 WokenNight=0;
  int32 RousedNight=0; // the last night a rest was really broken: never two running
- bool bTestEvening=false;
+ bool bTestEvening=false,bTestFirstPulse=false,bTestRules=false;
+ int32 ReviewWeek=0,Carried=0,StandbyTotal=0,LastPay=20;
+ int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
+ bool LiveFlow() const;
  double WakeClock=0;
  bool bTestWake=false;
  bool WakeBefore(double Target,double& Out);

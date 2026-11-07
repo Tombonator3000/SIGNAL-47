@@ -157,6 +157,7 @@ void FS47FieldLogger::Load(const S47J::FObj& O)
 bool FS47FieldLogger::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto C=[&](bool B,const TCHAR* Text){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("field logger: ")+Text);};
+ {FS47FieldLogger Idle;C(!Idle.Pressing(),TEXT("an unissued logger stands in front of nothing"));Idle.Site=1;C(Idle.Pressing(),TEXT("a deployed logger is under way"));Idle.Site=-1;FTape Open;Idle.Tapes.Add(Open);C(Idle.Pressing(),TEXT("a tape still to compare is under way"));Idle.Tapes[0].bCompared=true;C(!Idle.Pressing(),TEXT("with every tape compared the idle logger is only an option"));}
  FS47FieldLogger Guide;C(Guide.NextAction().Contains(TEXT("PARTS STORAGE")),TEXT("unissued guide points to first checkout"));
  Guide.bLoanIssued=true;Guide.bCheckedOut=true;C(Guide.NextAction().Contains(TEXT("BRING BACK")),TEXT("unassembled issued kit points to physical bench return"));
  Guide.bCheckedOut=false;Guide.Connect();Guide.Connect();Guide.Connect();Guide.Calibrate(3);Guide.bCheckedOut=true;

@@ -27,6 +27,8 @@ public:
  TArray<FTape> Tapes;
  static constexpr double Capacity=6*3600., Window=2*3600.;
  FString NextAction() const; // guidance follows retained equipment state, never implies evidence
+ // Out in the field or with a tape still to compare: something is under way. An idle logger is only an option.
+ bool Pressing() const { return Site>=0||(!Tapes.IsEmpty()&&!Tapes.Last().bCompared); }
  bool bOwned=false,bBatteryPack=false,bShieldedLead=false; // fitted by the bench workshop
  double MaxBattery() const { return bBatteryPack?Capacity*2:Capacity; }
  bool Connect();
