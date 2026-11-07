@@ -26,7 +26,12 @@ public:
  // Something said, out of the air at this place, with no radio involved.
  void Talk(const FVector& At);
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };
- static double Proximity(const FVector& Eye,const FPresence& In);
+ // Reach: nothing at or beyond this many metres. Story's set hears them at the default; the Freeform set further off.
+ static double Proximity(const FVector& Eye,const FPresence& In,double Reach=18.);
+ static constexpr double FreeformReach=48.;
+ // Test: what the set is playing, 0 to 1, and how many bursts of crackle since the session began.
+ double RadioLevelNow() const { return LastRadio; }
+ int32 CrackleCount() const { return Crackled; }
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
@@ -39,7 +44,8 @@ private:
  FS47EncounterSound Sound;
  bool bOwned=false,bUnsupported=false,bAvailable=false;
  S47J::FObj Unknown;
- double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0;
+ double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0;
+ int32 Crackled=0;
  int32 LastCue=-1,TestStage=0;
  bool Build();
  TArray<FPresence> Nearby() const;

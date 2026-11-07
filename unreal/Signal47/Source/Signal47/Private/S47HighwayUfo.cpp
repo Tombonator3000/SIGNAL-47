@@ -1,4 +1,5 @@
 #include "S47HighwayUfo.h"
+#include "S47FarmSite.h"
 
 #include "S47Audio.h"
 #include "S47Flow.h"
@@ -243,6 +244,8 @@ bool FS47HighwayUfo::CanStart(bool Forced)const
  if(Forced)return P.Z>300&&P.Z<1900;
  double Hour=FMath::Fmod(Clock(),86400.)/3600.;if(Hour<0)Hour+=24;
  if(Hour>=6&&Hour<19)return false;
+ // A full hull beside the truck is not an evening's small hint: in Freeform it waits as a body does.
+ if(M->IsFreeform()&&!FS47FarmSite::TheirHours(Clock()))return false;
  if(M->IsFreeform()?NightId()-LastNight<3:LastNight>=0)return false;
  return -FMath::Cos(D->Heading)>.85&&P.Z>=650&&P.Z<=900;
 }

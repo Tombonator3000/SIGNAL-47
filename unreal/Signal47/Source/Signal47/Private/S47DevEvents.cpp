@@ -1,6 +1,7 @@
 #include "S47DevEvents.h"
 #include "S47Freeform.h"
 #include "S47FarmSite.h"
+#include "S47IndoorDread.h"
 #include "S47HighwayUfo.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -51,7 +52,7 @@ void FS47DevEvents::AddBuiltIn()
  for(int32 Kind=0;Kind<3;++Kind)
  {
   static const TCHAR* const Names[3]={TEXT("Visit and taken: small Roswell"),TEXT("Visit and taken: crab"),TEXT("Visit and taken: tall one")};
-  static const TCHAR* const Notes[3]={TEXT("roof steps indoors, flood; about an hour gone, where you stood"),TEXT("along the ground; hours gone, far from here"),TEXT("silhouette in the light; most of a night gone, at SARO")};
+  static const TCHAR* const Notes[3]={TEXT("roof steps indoors, flood; about an hour gone, where you stood"),TEXT("along the ground; hours gone, far from here"),TEXT("stands far off, comes on, its light first; most of a night gone, at SARO")};
   Add(TEXT("Aliens"),Names[Kind],Notes[Kind],[this,Say,Kind]
   {
    if(!M||!M->Freeform||!M->Freeform->FarmSite||!M->Player||!M->Web)return;
@@ -60,6 +61,11 @@ void FS47DevEvents::AddBuiltIn()
    Site.TestVisit(Kind);Say(TEXT("visit"));
   });
  }
+ Add(TEXT("Aliens"),TEXT("At the window: small Roswell"),TEXT("indoors at night: rises at a window or door you can see; finds none, says so"),[this,Say]
+ {
+  const bool bStarted=M&&M->Freeform&&M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DevPeek();
+  Say(bStarted?TEXT("looking for a window"):TEXT("no indoors Freeform night here"));
+ });
  Add(TEXT("Roswell aliens"),TEXT("Number: 1"),TEXT("cycle 1, 2, 3 or 6 individuals"),[this]
  {
   RoswellNumber=RoswellNumber==1?2:RoswellNumber==2?3:RoswellNumber==3?6:1;
@@ -188,7 +194,7 @@ void FS47DevEvents::SpawnGait(bool bCrab)
 {
  if (!M || !M->Web || !M->Player) return;
  FS47PaleBody& Body=bCrab?CrabBody:TallBody;
- if (!Body.bBuilt){if(!bCrab)Body.Style=ES47PaleStyle::Tall;if(!Body.Build(M->Web.Get(),TEXT("#root"),bCrab?TEXT("DevCrab"):TEXT("DevTall")))return;}
+ if (!Body.bBuilt){Body.CreatureAsset=bCrab?S47KindBody::Crab:S47KindBody::Tall;if(!bCrab)Body.Style=ES47PaleStyle::Tall;if(!Body.Build(M->Web.Get(),TEXT("#root"),bCrab?TEXT("DevCrab"):TEXT("DevTall")))return;}
  if(!Body.Creature.Ready()){if(M->UI)M->UI->Toast(TEXT("Developer event: this body needs the private skinned model."),3);return;}
  const FVector P=M->Player->Pos;
  const FVector Eye(P.X,P.Y+1.62,P.Z);

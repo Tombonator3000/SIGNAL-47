@@ -7,6 +7,14 @@ class AS47Web;
 class UStaticMeshComponent;
 class UBoxComponent;
 
+// Which skinned body the crab and the tall one wear in Freeform, at their visits and in the developer menu. Both are
+// today's Tall One until the new Pale is imported: change these two lines, then its eyes (FS47TripoCreature::EyeAt).
+namespace S47KindBody
+{
+ inline constexpr const TCHAR* Crab=TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale");
+ inline constexpr const TCHAR* Tall=TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale");
+}
+
 // The SC02 pale body (Content/Signal47/HorrorSC02, six original meshes, ten parts) for a meeting
 // outside the Caliche road group: the same parts and the same stop-motion pose as FS47HorrorThreat,
 // hung under another scene group. Positions are three.js metres (x, feet y, z); yaws are UE yaws.

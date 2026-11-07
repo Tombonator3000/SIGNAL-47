@@ -16,6 +16,10 @@ public:
  FString TipLine() const;
  // Test: tonight is a night for lights, at the next scheduler tick.
  void TestLightsTonight();
+ void TestSchedule(float Dice,double LightHour,double Scale){TestDice=Dice;TestLightAfter=LightHour;TestScale=Scale;}
+ // A long rest crosses this night: its dice, as the scheduler would throw them. True if anything is now due, in which
+ // case the scheduler looks again soon after waking.
+ bool DrawForNight(int32 Night);
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);
@@ -85,6 +89,17 @@ private:
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0,LightRollDay=0,PendingLightNight=0;
+ // When tonight's lights are due, in hours from the night's own midday (25.5 is 01:30). 0: as soon as they can.
+ double LightAfter=0;
+ // A figure at the base, and one at the remote feeder or array cabinet: each its own night's draw. The second waits for
+ // the player to come to that place, however long the night lasts.
+ int32 ObserverRollDay=0,PendingObserverNight=0,SiteRollDay=0,PendingSiteNight=0;
+ double SiteCheckAt=0;
+ // Tests: override the dice for every night's draw (-1: none), force the lights' draw and its hour (-1: none), and run
+ // the scheduler's active-time clock faster to match a test's faster world clock (1: none).
+ float TestDice=-1;
+ double TestLightAfter=-1,TestScale=1;
+ void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;

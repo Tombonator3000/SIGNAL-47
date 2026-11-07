@@ -21,7 +21,11 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47Flashlight.h"
+#include "S47FieldRadio.h"
+#include "S47Ambience.h"
 #include "Components/LocalFogVolumeComponent.h"
+#include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -34,6 +38,19 @@ namespace
  constexpr int32 MarkCount=9;
  FVector Size(double X,double Y,double Z){const FVector V=S47Three::DirToUE(FVector(X,Y,Z));return FVector(FMath::Abs(V.X),FMath::Abs(V.Y),FMath::Abs(V.Z));}
  FVector FarmCentre(){return S47FarmWorld::RoadToArea(TEXT("saro"),FVector(CentreX,S47FarmWorld::FloorRoad(CentreX,CentreZ),CentreZ));}
+}
+
+bool FS47FarmSite::TheirHours(double Clock)
+{
+ const double Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
+ return Hour>=2&&Hour<6;
+}
+
+int32 FS47FarmSite::PickWho(const FString& InPlace,double Hour,float Roll)
+{
+ const bool bFarm=InPlace==TEXT("farm");
+ const float Crab=bFarm?.30f:.12f,Tall=Hour>=3?(bFarm?.20f:.15f):0.f;
+ return Roll<Crab?1:Roll<Crab+Tall?2:0;
 }
 
 bool FS47FarmSite::Here() const{return M&&M->Web&&(M->Web->Area()==AreaId||(AreaId==TEXT("road")&&M->Web->Area()==TEXT("diner"))||(AreaId==TEXT("diner")&&M->Web->Area()==TEXT("road")));}
@@ -102,10 +119,10 @@ void FS47FarmSite::Show(bool bShow)
 void FS47FarmSite::Begin(const S47J::FObj& Saved)
 {
  Stop();if(!M||!IsValid(M->Web))return;
- if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();VisitBody.Reset();bBodyOut=false;SpotSaro={};SpotRoad={};}
+ if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();VisitBody.Reset();CrabBody.Reset();TallBody.Reset();bBodyOut=false;SpotSaro={};SpotRoad={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
- Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;
+ Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bStallSet=false;HushIn=0;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -129,6 +146,9 @@ void FS47FarmSite::Stop()
  // Not while the engine or the owner is going away: the scene the body hangs in may already be gone.
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Web.Get());
  if(Visit>=2&&Visit<=3&&bLive&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
+ if(bLive&&Visit>=1&&Visit<=3&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,TEXT("visit"));
+ if(bLive&&bStallSet&&M->World)M->World->bKeyStall=false;
+ bStallSet=false;
  if(bLive)HideBody();
  bBodyOut=false;
  Visit=4;bActive=false;Life.Reset();Show(false);
@@ -137,7 +157,7 @@ void FS47FarmSite::Stop()
 S47J::FObj FS47FarmSite::Save() const
 {
  const auto O=S47J::New();
- if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),Visit==0?0:4);S47J::Set(O,TEXT("place"),Place);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("area"),AreaId);S47J::Set(O,TEXT("at"),TArray<double>{Middle.X,Middle.Y,Middle.Z});}
+ if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),Visit==0?0:4);S47J::Set(O,TEXT("place"),Place);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("area"),AreaId);S47J::Set(O,TEXT("at"),TArray<double>{Middle.X,Middle.Y,Middle.Z});S47J::Set(O,TEXT("nudged"),bNudged);}
  return O;
 }
 
@@ -152,6 +172,8 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  Place=InPlace;Title=InTitle;AreaId=InArea;Middle=Point;
  // Not every night's lights leave something behind that comes back for you.
  Visit=FMath::FRand()<.6f&&Clock>=CalmUntil?0:4;VisitDwell=0;
+ // Marks made in the evening get word later, when something can come of it; made now, the tip was word enough.
+ bNudged=TheirHours(Clock);
  if(Place!=TEXT("farm")&&M&&M->Web&&M->Web->GetWorld())
  {
   // The longest clear way out from the front, and a few metres along it.
@@ -170,14 +192,45 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  UE_LOG(LogTemp,Display,TEXT("S47: lights site %s armed in %s at %.1f %.1f %.1f until clock %.0f"),*Place,*AreaId,Middle.X,Middle.Y,Middle.Z,ClearAt);
 }
 
+void FS47FarmSite::SayNudge()
+{
+ bNudged=true;
+ if(!M)return;
+ const FString Tip=FString::Printf(TEXT("A second call about %s. The caller says it has not gone away, and will not go out to look."),*Title);
+ if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+ M->RequestAutosave();
+}
+
+bool FS47FarmSite::WakeCall()
+{
+ if(!M||!M->Freeform||!WillStandAt(M->Freeform->Clock()))return false;
+ SayNudge();return true;
+}
+
 void FS47FarmSite::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform)return;
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
+ // A menu holds all of it: no sound starts, no second counts.
+ if(M->bPausedByMenu||M->ModalOpen())return;
+ // Evening's marks, and now the hour they can come: a second report of the same place, for whoever went home.
+ if(Visit==0&&!bNudged&&Armed()&&TheirHours(M->Freeform->Clock())&&M->Player&&(!Here()||FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()>100))
+ {
+  SayNudge();
+ }
  if(Visit>=1&&Visit<=3&&(!Armed()||!M->Web||!Here()||!M->Player)){EndVisit(bVisitTaken||(M->Freeform->Taken&&M->Freeform->Taken->Busy()));return;}
  if(!Armed()||!M->Audio||!M->Player||!M->Web||!Here())return;
  const double Dist=FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size();
  StepVisit(Dt,Dist);
+ // Everything out here goes quiet first; a stretch at a time, so that it comes back on its own whatever ends this.
+ if(VisitHushed())
+ {
+  HushIn-=Dt;
+  if(HushIn<=0&&M->Audio->Night.IsValid()){HushIn=3;M->Audio->Night->Hush(5,.05,.8,3);}
+ }
+ else HushIn=0;
+ // A lamp with a weak contact, while it lasts.
+ if(Visit>=1&&Visit<=3&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(.25+.3*FMath::Abs(FMath::Sin(VisitAge*1.3)),TEXT("visit"));
  if(Dist>140)return;
  SoundIn-=Dt;if(SoundIn>0)return;
  SoundIn=FMath::FRandRange(22.f,48.f);
@@ -195,24 +248,45 @@ double FS47FarmSite::VisitBodyDistance() const
  return -1;
 }
 
-bool FS47FarmSite::PutBody(const FVector& Near,double Dist)
+bool FS47FarmSite::PutBody(const FVector& Near)
 {
  if(!M||!M->Web||!M->Player)return false;
- if(!VisitBody)VisitBody=MakeShared<FS47PaleBody>();
- if(VisitWho==2)VisitBody->Style=ES47PaleStyle::Tall;
- if(!VisitBody->bBuilt&&!VisitBody->Build(M->Web.Get(),TEXT("#root"),TEXT("SiteVisit")))return false;
- if(!VisitBody->Creature.Ready())return false;
- // Out of view if it can be, and with the way clear to the player.
+ const bool bTall=VisitWho==2;
+ TSharedPtr<FS47PaleBody>& Own=bTall?TallBody:CrabBody;
+ if(!Own)
+ {
+  Own=MakeShared<FS47PaleBody>();Own->CreatureAsset=bTall?S47KindBody::Tall:S47KindBody::Crab;
+  if(bTall)Own->Style=ES47PaleStyle::Tall;
+ }
+ if(!Own->bBuilt&&!Own->Build(M->Web.Get(),TEXT("#root"),bTall?TEXT("SiteVisitTall"):TEXT("SiteVisitCrab")))return false;
+ if(!Own->Creature.Ready())return false;
+ // Whatever was out goes first, by its own kind, before this one takes over.
+ HideBody();
+ VisitBody=Own;BodyKind=VisitWho;
+ // Always out of the view, so nothing pops in, and with a clear line once the player turns. The tall one stands far
+ // off in the open, to be seen across the ground; the crab starts nearer, low. As far as the land allows.
  const FVector Eye=Near+FVector(0,1.6,0);
- for(const double Turn:{double(PI),2.4,-2.4,1.7,-1.7,1.,-1.})
+ const double Head=bTall?1.7:.5;
+ const TArray<double> Far=bTall?TArray<double>{58.,44.,30.,18.}:TArray<double>{20.,14.,10.};
+ for(const double Dist:Far)for(const double Turn:{double(PI),2.4,-2.4,1.7,-1.7})
  {
   const double Yaw=M->Player->Yaw+Turn;
-  const FVector At=Near+FVector(-FMath::Sin(Yaw)*Dist,0,-FMath::Cos(Yaw)*Dist);
+  FVector At=Near+FVector(-FMath::Sin(Yaw)*Dist,0,-FMath::Cos(Yaw)*Dist);
+  // On the ground there, not on a roof over it.
+  At.Y=GroundAt(At.X,Near.Y,At.Z);
+  if(At.Y>Near.Y+3||At.Y<Near.Y-5)continue;
   FHitResult Block;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodySight),true);
-  if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,S47Three::ToUE(Eye),S47Three::ToUE(At+FVector(0,.8,0)),ECC_Visibility,Q))continue;
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,S47Three::ToUE(Eye),S47Three::ToUE(At+FVector(0,Head,0)),ECC_Visibility,Q))continue;
   BodyAt=At;BodyYaw=FMath::Atan2(Near.Z-At.Z,Near.X-At.X);BodyClock=0;bBodyOut=true;return true;
  }
  return false;
+}
+
+double FS47FarmSite::VisitHeadHeight() const
+{
+ if(!bBodyOut||!VisitBody)return -1;
+ auto* Skin=VisitBody->Creature.Mesh.Get();if(!Skin)return -1;
+ return S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace)).Y-BodyAt.Y;
 }
 
 void FS47FarmSite::StepBody(double Dt,double Speed)
@@ -245,7 +319,7 @@ void FS47FarmSite::HideBody()
 {
  if(VisitBody&&VisitBody->bBuilt&&bBodyOut)
  {
-  if(VisitWho==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
+  if(BodyKind==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
   else VisitBody->Apply(false,BodyAt,BodyYaw,BodyYaw,0,0,BodyClock,FS47PaleBody::EPose::Walk);
  }
  bBodyOut=false;
@@ -256,17 +330,19 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G||!M->World)return;
  auto Tk=M->Freeform->Taken;if(!Tk)return;
  const bool bDriving=M->World->bDriving;
- // In the truck with the engine dead is not away. That is the worst place to be.
+ // In the truck with the engine dead is not away: the visit goes on round it until the key turns. Nothing reaches into
+ // the cab, though, so a stalled truck is frightening, and safe.
  const bool bAway=bDriving&&!M->World->Trouble.WantsKey();
  if(Visit==0)
  {
   // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
   const bool bDark=M->Life&&M->Life->Sky.IsValid()&&M->Life->Sky->Daylight()<.1;
-  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty();
-  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&!M->ModalOpen()?VisitDwell+Dt:0;
+  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy();
+  const double Clock=M->Freeform->Clock();
+  VisitDwell=Dist<55&&!bDriving&&bDark&&bQuiet&&TheirHours(Clock)&&Clock>=CalmUntil&&!M->ModalOpen()?VisitDwell+Dt:0;
   if(VisitDwell<12)return;
-  const float Roll=FMath::FRand();
-  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Roll<.6f?0:Roll<.85f?1:2;
+  const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
+  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,Roll);
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
  }
  if(Visit<1||Visit>3)return;
@@ -288,9 +364,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   {
    M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
    // The truck will not start now, the first time it is tried.
-   M->World->bKeyStall=true;
-   // The tall one's light is how it comes at all.
-   if(VisitWho==2&&VisitRounds<2&&Tk->Begin(Who,Title))++VisitRounds;
+   M->World->bKeyStall=true;bStallSet=true;
   }
   if(VisitAge<6)return;
   if(bAway||Dist>80){EndVisit(false);return;}
@@ -301,9 +375,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
    else if(VisitAge>25){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no cover to come from here"));EndVisit(false);}
    return;
   }
-  // The tall one stands off and comes slowly; the crab comes from further, along the ground.
+  // The tall one stands off, to be seen; the crab comes along the ground.
   if(FMath::Fmod(VisitAge,1.)>Dt)return;
-  if(PutBody(Feet,VisitWho==1?20.:11.)){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: kind %d is here"),VisitWho);}
+  if(PutBody(Feet)){Visit=2;VisitAge=.001;UE_LOG(LogTemp,Display,TEXT("S47: site visit: kind %d is here, %.0f m off"),VisitWho,FVector::Dist(BodyAt,Feet));}
   else if(VisitAge>25){EndVisit(false);}
   return;
  }
@@ -319,8 +393,10 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  else
  {
   const double To=FVector::Dist(BodyAt,Feet);
-  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):.75;
+  // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
+  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<12?0.:To>30?1.35:.75);
   StepBody(Dt,Speed);
+  if(VisitWho==2&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&To<(VisitRounds==0?26.:10.)&&Tk->Begin(Who,Title))++VisitRounds;
   if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
  }
  // Away from the place, it lets go.
@@ -331,6 +407,10 @@ void FS47FarmSite::EndVisit(bool bTaken)
 {
  const bool bWas=Visit>=2;
  Visit=4;VisitDwell=0;bVisitTaken=false;
+ // Over: the lamp steadies, and a truck not yet tried starts again.
+ if(M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,TEXT("visit"));
+ if(bStallSet&&M&&M->World)M->World->bKeyStall=false;
+ bStallSet=false;
  if(M&&M->Freeform&&M->Freeform->Taken&&!bTaken)M->Freeform->Taken->GiveUp();
  HideBody();
  if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
