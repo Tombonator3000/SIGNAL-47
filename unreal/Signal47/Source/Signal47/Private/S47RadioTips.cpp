@@ -47,8 +47,8 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   {TEXT("cb31"),TEXT("Saw you walking out past the fence the other night with no truck anywhere near. You all right?"),nullptr,TEXT("lost_ground"),0},
   {TEXT("cb32"),TEXT("Deputy says you people at SARO write a good letter. He's been driving out your way. Thought you'd want to know."),nullptr,nullptr,1},
   // Once you have opened the locker next to yours, the air has more to say about who had it (FS47Predecessor).
-  {TEXT("cb33"),TEXT("Anybody else getting a carrier on the service band out off the old grade? Been sitting there for weeks. Not my business. Just saying."),nullptr,TEXT("reyes_locker"),0},
-  {TEXT("cb34"),TEXT("That white district wagon's still out on the flat, county tag on the mirror. I slowed down. I didn't get out."),nullptr,TEXT("reyes_locker"),0},
+  {TEXT("cb35"),TEXT("Anybody else getting a carrier on the service band out off the old grade? Been sitting there for weeks. Not my business. Just saying."),nullptr,TEXT("reyes_locker"),0},
+  {TEXT("cb36"),TEXT("That white district wagon's still out on the flat, county tag on the mirror. I slowed down. I didn't get out."),nullptr,TEXT("reyes_locker"),0},
   {TEXT("cb33"),TEXT("You got a friend at the sheriff's now? Ask him who else has been asking about that survey track."),TEXT("stake"),nullptr,1},
   {TEXT("cb34"),TEXT("Between you and me, that tank's not on the county's plat. Nobody knows who put it there. Ask anybody over sixty."),TEXT("tank"),nullptr,2},
  };
