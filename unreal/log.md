@@ -2087,3 +2087,6 @@ Skrevet i egen worktree, ikke bygget, importert eller kjørt. `Tools/desertplant
 ## 7. november 2026 kl.03:30, natt, aliens i ekte hendelser og egne planter
 
 Regelen «ingen kropp før ca. kl. 02» håndheves nå, og uavhengig gjennomgang fant at hvile da hoppet over alt: hvile vekker nå spilleren kl. 02:05-03:00 hvis noe er på gang, høyst én gang per natt. Kikking i kontrollrommet, gårdshuset og byens rom. Radio knitrer nærmere dem. Rom kan flombelyses igjen etter tre døgn. Kinoen har ikke noe sted å kikke fra i prøvens rom, så der skjer det ingenting. Egne modeller av cholla, yucca og mesquite er importert (17 filer i LFS). Kjent feil: yucca med stengel har for blek rosett. Bleke flater rett etter lasting var lave mipnivåer, ikke farge; bakketeksturene holdes lastet.
+## 7. november 2026, natt, UI-polish: fotofremkalling og prøvebilder
+
+Skrevet, ikke bygget eller kjørt. Fotofremkalling (Freeform og Story) bruker `Section` for «SARO / PHOTO LAB» med film og sted til høyre, den ferdige skjermen viser alle tre trinn som DONE, og tom benk er et `Banner`. `Small` er litt større og lysere (kontrast 4,7 til 6,4). `-S47MenuPointerPanels` tar nå også `panel-wetbench.png`, `panel-wetbench-empty.png` og `panel-reeldeck.png`, og arkivet har to oppdiktede funn. Reel-deck og arkiv ligger i `S47Freeform.cpp` og er ikke endret.

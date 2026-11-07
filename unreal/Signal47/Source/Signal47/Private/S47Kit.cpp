@@ -233,7 +233,7 @@ S47Kit::FW S47Kit::Sub(const FString& S)
 
 S47Kit::FW S47Kit::Small(const FString& S)
 {
-	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(12.5f)).ColorAndOpacity(Css(0x8e877a)).AutoWrapText(true).Margin(FMargin(0, 12, 0, 0)));
+	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(13.5f)).ColorAndOpacity(Css(0xa59e90)).AutoWrapText(true).Margin(FMargin(0, 12, 0, 0)));
 }
 
 S47Kit::FW S47Kit::Question(const FString& S)
