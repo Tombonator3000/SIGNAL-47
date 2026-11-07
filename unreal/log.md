@@ -2135,3 +2135,6 @@ Skrevet i egen worktree, ikke bygget eller kjørt. Beviset sier bare at et lys k
 ## 2026-11-07 (gårdsbakken)
 
 - 07:20 Gren `worktree-agent-a3317d7cbd65119c2`: låve, hus og skjul uten sokkel, kledning ned i bakken med 13 cm skittstripe, FBX eksportert og lest tilbake (alle fire PASS). Årsaken til svevet: øst for road x 107,66 er bare SARO-ringen igjen, 0,25 til 0,79 m under flaten alt står på. Freeform får eget bakkegitter over tunet, en vei med rader per meter som ender mykt, og ny tone på node 953 (.96 .93 .80). Skrevet, ikke bygget eller sett i spillet.
+## 7. november 2026 kl.07:35, natt, kreosot som egne modeller
+
+Kilde bygd i Blender, FBX lest tilbake; ikke importert, kompilert eller sett i spillet. `SM_DP_Creosote_A`, `_B`, `_C` (`Tools/desertplants/creosote.py`, eget 1024-atlas): LOD0 2876/2716/2180 trekanter, høyde 1,64/1,45/1,18 m. `FS47Flora::EnsureCreosote` bytter Freeforms kreosot til dem når alle tre finnes, ellers står kortene; fordeling, størrelser og døde busker er de samme tallene. Importen kjøres med `S47_DESERT_ONLY=creosote`. Kritikerrunden ble ikke kjørt: køen tok fristen.
