@@ -42,9 +42,9 @@ namespace
   const uint32 Steel=0x8b8e8a,Rust=0x7a4b2e,Wood=0x5b4733,Dark=0x151311,Pale=0xd8d4c6,Flag=0xd0641e,Stone=0x8f8778,Dirt=0x7c6348;
   if(Kind==TEXT("windmill"))return {{Cube,{-1.1,4.5,-1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,-1.1},{.09,9,.09},Steel,0,-7},{Cube,{-1.1,4.5,1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,1.1},{.09,9,.09},Steel,0,-7},{Cube,{0,9,0},{.9,.08,.9},Wood,0,0},{Cyl,{0,9.9,-.2},{2.6,.1,2.6},Rust,0,90},{Cube,{0,9.9,.9},{.05,.7,1.5},Steel,0,0},{Cyl,{2.8,.4,1.2},{1.8,.8,1.8},Rust,0,0}};
   if(Kind==TEXT("tank"))return {{Cyl,{0,1.3,0},{7,2.6,7},Steel,0,0},{Cube,{4,.3,0},{1.4,.6,.5},Rust,0,0},{Cube,{0,2.7,0},{7.2,.05,.3},Rust,30,0}};
-  if(Kind==TEXT("mine"))return {{Cube,{-1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{0,2.45,0},{2.5,.28,.28},Wood,0,0},{Cube,{0,1.1,.5},{1.8,2.2,1},Dark,0,0},{Cone,{-5,1.1,3},{9,2.4,8},Dirt,0,0},{Cone,{5,1.8,2},{10,3.6,9},Dirt,0,0},{Cube,{0,.1,-1.5},{.9,.1,3},Rust,0,0}};
+  if(Kind==TEXT("mine"))return {{Cube,{-1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{0,2.45,0},{2.5,.28,.28},Wood,0,0},{Cube,{0,1.1,.5},{1.8,2.2,1},Dark,0,0},{Cone,{-4.5,.7,2.5},{6.5,1.4,5},Dirt,0,0},{Cone,{4.5,.9,2},{7.5,1.8,6},Dirt,0,0},{Cube,{0,.1,-1.5},{.9,.1,3},Rust,0,0}};
   if(Kind==TEXT("balloon"))return {{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-1.6,.12,-1.3},{.2,.22,.14},Pale,15,8},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
-  if(Kind==TEXT("cow"))return {{CowBody,{0,.55,0},{1,1,1},0,30,88},{CowHead,{1.3,.4,.5},{1,1,1},0,30,88}};
+  if(Kind==TEXT("cow"))return {{CowBody,{0,.42,0},{1,1,1},0,30,86},{CowHead,{0,.42,0},{1,1,1},0,30,86}};
   if(Kind==TEXT("stake"))return {{Cube,{0,.65,0},{.05,1.3,.05},Wood,0,2},{Cube,{.13,1.15,0},{.26,.13,.012},Flag,0,0},{Cube,{.6,.04,.3},{.04,.08,.04},Wood,0,0}};
   if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
   if(Kind==TEXT("trough"))return {{Cube,{0,.32,0},{3.2,.64,.9},Rust,0,0},{Cube,{0,.62,0},{3,.03,.7},Dark,0,0},{Cube,{2.6,.2,.8},{.4,.4,.4},Pale,12,0},{Cube,{-3,.6,-1},{.1,1.2,.1},Wood,0,5}};
@@ -169,7 +169,9 @@ bool FS47Places::Build()
     auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),Tone(P.Colour));Mat->SetScalarParameterValue(TEXT("Roughness"),.92f);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);C->SetMaterial(0,Mat);
    }
    // The cow's own meshes are metres already, in Unreal's terms; basic shapes are a metre to a side.
-   C->SetWorldScale3D(FVector(P.Size.X,P.Size.Z,P.Size.Y));C->SetWorldRotation(FRotator(0,P.Yaw,P.Roll));
+   C->SetWorldScale3D(FVector(P.Size.X,P.Size.Z,P.Size.Y));
+   // The cow is on her side about her own length, which in those meshes is the y axis.
+   C->SetWorldRotation(FString(D.Kind)==TEXT("cow")?FRotator(P.Roll,P.Yaw,0):FRotator(0,P.Yaw,P.Roll));
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
    if(bFirst)
    {
@@ -203,12 +205,13 @@ void FS47Places::Seat(FBuilt& B)
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
  const FVector World=bMotel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
  double Y=bMotel?S47Legs::SaroFloorAt(B.X,B.Z):Road.Y+S47RoadTerrain::SurfaceY(B.X,B.Z);
- // What the player will really stand on, once it is there to be measured.
- if(UWorld* W=M->Web->GetWorld())
+ // What the player will really stand on, once they are near enough for it to be measured. Not a line trace: that finds the top
+ // of a bush as readily as the ground, and the place then hangs in the air.
+ const bool bSameLand=M->Player&&M->Player->Floor&&M->Web->Area()==(bMotel?FString(TEXT("saro")):M->Web->Area())&&(bMotel||M->Web->Area()!=TEXT("saro"));
+ if(bSameLand)
  {
-  FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47PlaceGround),true);
-  for(const auto& P:B.Parts)if(auto* C=P.Get())Q.AddIgnoredComponent(C);
-  if(W->LineTraceSingleByChannel(Hit,S47Three::ToUE(FVector(World.X,Y+30,World.Z)),S47Three::ToUE(FVector(World.X,Y-30,World.Z)),ECC_Visibility,Q)){Y=S47Three::ToThree(Hit.ImpactPoint).Y;B.bSeated=true;}
+  const double Floor=M->Player->Floor(World.X,World.Z);
+  if(FMath::IsFinite(Floor)){Y=Floor;B.bSeated=true;}
  }
  B.Y=Y;
  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(World.X,Y,World.Z)+B.Local[I]));
@@ -306,7 +309,7 @@ bool FS47Places::Use(const FString& Id)
  {
   FString Page=FString(D->Finding);if(!Page.Contains(TEXT("records")))Page+=TEXT(" This records what is here.");
   F.RecordEvidence(Key,Page);
-  UE_LOG(LogTemp,Display,TEXT("S47: place found: %s, %d of %d"),*Id,1,Defs().Num());
+  UE_LOG(LogTemp,Display,TEXT("S47: place found: %s"),*Id);
   M->RequestAutosave();
  }
  FString Extra;

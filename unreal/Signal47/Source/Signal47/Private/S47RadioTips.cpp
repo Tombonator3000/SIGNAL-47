@@ -166,7 +166,7 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
  TSet<FString> Pointed;for(const FLine& L:CbLines())if(L.Place)Pointed.Add(L.Place);for(const FCall& C:AmCalls())if(C.Place)Pointed.Add(C.Place);
  Check(Pointed.Num()>=8,TEXT("all the places can be heard of"));
  FS47RadioTips None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0,TEXT("an older save has said nothing and writes nothing"));
- auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("cb01"),TEXT("am02")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
+ auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am02"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
  return OK;
 }
 

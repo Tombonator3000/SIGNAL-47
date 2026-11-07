@@ -109,7 +109,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   if(PlaceIndex>=Defs.Num()){Stage=60;At=Age;return;}
   double X=0,Z=0;if(!Check(F.Places->Spot(Defs[PlaceIndex].Id,X,Z),TEXT("the place has a spot")))return;
   const FVector Road=S47Legs::ORIGINS(TEXT("road"));
-  M->Player->Place(Road.X+X,Road.Z+Z+9,0);M->Player->Pitch=-.05;
+  M->Player->Place(Road.X+X,Road.Z+Z+5,0);M->Player->Pitch=-.05;
   Stage=52;At=Age;return;
  }
  if(Stage==52)
@@ -118,7 +118,8 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   const auto& D=FS47Places::Defs()[PlaceIndex];
   double X=0,Z=0;F.Places->Spot(D.Id,X,Z);const FVector Road=S47Legs::ORIGINS(TEXT("road"));
   // A place may be under foot of the land's own rise: aim at it, not at a compass point.
-  const FVector To(Road.X+X,M->Player->FloorY+1.2,Road.Z+Z);const FVector Eye=S47Three::ToThree(M->Player->EyeUE());const FVector Way=To-Eye;
+  const auto* Thing=M->Inter->Get(FS47Places::UseId(D.Id));
+  const FVector To=Thing&&Thing->Object?Thing->Object.WorldBox().GetCenter():FVector(Road.X+X,M->Player->FloorY+1.2,Road.Z+Z);const FVector Eye=S47Three::ToThree(M->Player->EyeUE());const FVector Way=To-Eye;
   M->Player->Yaw=FMath::Atan2(-Way.X,-Way.Z);M->Player->Pitch=FMath::Atan2(Way.Y,FVector2D(Way.X,Way.Z).Size());
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("FreeformTest")/FString::Printf(TEXT("place-%s.png"),D.Id),false,false);
   Stage=53;At=Age;return;
@@ -129,6 +130,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   const auto& D=FS47Places::Defs()[PlaceIndex];
   const FString Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
   UE_LOG(LogTemp,Display,TEXT("S47: free life: at %s the eye picks '%s', floor %.2f"),D.Id,*Pick,M->Player->FloorY);
+  if(!Check(Pick==FS47Places::UseId(D.Id),FString::Printf(TEXT("the eye can pick %s from a few steps off, got '%s'"),D.Id,*Pick)))return;
   if(!Check(F.Places->Use(D.Id)&&F.HasFinding(FString(TEXT("place_"))+D.Id)&&F.HasFinding(FString(TEXT("place_"))+D.Id+TEXT("_needle")),TEXT("each place has its one thing to find, and the needle reads it")))return;
   M->UI->Close(true);++PlaceIndex;Stage=51;At=Age;return;
  }
