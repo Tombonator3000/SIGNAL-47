@@ -4,6 +4,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "HAL/PlatformTime.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -37,6 +38,10 @@ namespace
 		{ ES47FloraKind::Stain, 0.0045, 1.2, 90, 0, 1, 1.4, { 0.9, 2.6 }, 1, 1100, 0, 0, 0, { 42, 0.5 }, true },
 		// (Freeform's rocks only: nothing of it in the web version's rules; Ahead and Fill pass it by)
 		{ ES47FloraKind::Rock, 0, 0, 0, 0, 0, 0, { 0, 0 }, 0, 0, 0, 0, 0, { 0, 0 }, false },
+		// (Freeform's desert plants only, the same)
+		{ ES47FloraKind::Yucca, 0, 0, 0, 0, 0, 0, { 0, 0 }, 0, 0, 0, 0, 0, { 0, 0 }, false },
+		{ ES47FloraKind::Cholla, 0, 0, 0, 0, 0, 0, { 0, 0 }, 0, 0, 0, 0, 0, { 0, 0 }, false },
+		{ ES47FloraKind::Mesquite, 0, 0, 0, 0, 0, 0, { 0, 0 }, 0, 0, 0, 0, 0, { 0, 0 }, false },
 	};
 	// Freeform's rules of nature (FS47FloraSpec::bNatural), measured by eye from the references
 	// of southern New Mexico (7 Nov 2026): creosote in dense stands 1-3 m apart with wide, nearly bare
@@ -54,14 +59,48 @@ namespace
 		{ ES47FloraKind::Stones, 0.14, 1.6, 90, 0.35, 0.8, 0.9, { 0.3, 2.1 }, 18, 3000, 0, 0, 1.4, { 0, 0 }, false },
 		{ ES47FloraKind::Stain, 0.0045, 1.2, 110, 0, 1, 1.4, { 0.9, 2.6 }, 1, 1100, 0, 0, 0, { 70, 0.5 }, true },
 		{ ES47FloraKind::Rock, 0.005, 1.0, 80, 0.5, 0, 0, { 0.3, 0.6 }, 1, 240, 0, 0, 0, { 0, 0 }, false },
+		// the desert plants (estimates from the models' sizes, not measured in the game); the sizes are the variants' (DESERT_PARTS).
+		// Most 2.2: the density is still Rate * D, but no longer clipped at 1.1, so the patches, the areas' mix and the farm's FarmMul tell
+		{ ES47FloraKind::Yucca, 0.0016, 2.2, 260, 1, 0, 0, { 0.72, 1.3 }, 60, 320, 0, 0, 0, { 130, 0.14 }, true },
+		{ ES47FloraKind::Cholla, 0.0008, 2.2, 240, 1, 0, 0, { 0.86, 1.15 }, 60, 160, 0, 0, 0, { 130, 0.14 }, true },
+		{ ES47FloraKind::Mesquite, 0.0012, 2.2, 240, 0.8, 0, 0, { 0.62, 1.35 }, 90, 240, 0, 0, 0, { 110, 0.2 }, true },
 	};
 	const FKind& KindFor(bool bNat, int32 Ki) { return bNat ? NATURAL[Ki] : KINDS[Ki]; }
 	// the sway of each kind in Freeform: the grass and the stalks most, the woody shrubs less, stones and stains none
-	constexpr double WIND_OF[] = { 1.0, 0.6, 0.4, 1.2, 0.15, 0, 0, 0 };
+	constexpr double WIND_OF[] = { 1.0, 0.6, 0.4, 1.2, 0.15, 0, 0, 0, 0.5, 1.0, 0.7 };
 	// the shrubs that cast a shadow: within this many metres of the eye (the stands are denser now)
-	constexpr double SHADOW_CREOSOTE = 24, SHADOW_SAGE = 22;
-	constexpr int32 NK = 8;
-	constexpr int32 STONES_KI = 5, STAIN_KI = 6, ROCK_KI = 7;
+	constexpr double SHADOW_CREOSOTE = 24, SHADOW_SAGE = 22, SHADOW_MESQUITE = 30;
+	constexpr int32 NK = 11;
+	constexpr int32 SUCCULENT_KI = 4, STONES_KI = 5, STAIN_KI = 6, ROCK_KI = 7, DESERT_KI = 8, MESQUITE_KI = 10;
+	// Freeform's desert plants: a species is one kind (how many, how far: NATURAL), each variant a mesh of /Game/DesertPlants with
+	// its share of the species, its sizes, how far it spreads at scale 1 in metres (from its FBX's bounds: none of it
+	// may hang over a way or a plot) and the width of its foot (as FFoot's; the stain's rim is about 0.85 at scale 1).
+	// Tools/desertplants/import_assets.py imports them. In DESERT_FIRST's order: FKindCell::Part is an index into this.
+	struct FDesertPart { const TCHAR* Name; double Share; double Size[2]; double Radius; double Foot; };
+	const FDesertPart DESERT_PARTS[] = {
+		{ TEXT("SM_DP_Yucca_A"), 0.45, { 0.72, 1.0 }, 0.9, 0.7 },
+		{ TEXT("SM_DP_Yucca_B"), 0.30, { 0.95, 1.3 }, 0.85, 0.7 },
+		{ TEXT("SM_DP_Yucca_DryStalk"), 0.20, { 0.9, 1.2 }, 0.82, 0.7 },
+		{ TEXT("SM_DP_Yucca_Bloom"), 0.05, { 0.78, 1.04 }, 0.85, 0.7 },   // (spring 1986: a few in flower)
+		{ TEXT("SM_DP_Cholla_A"), 0.55, { 0.86, 1.0 }, 0.7, 0.5 },
+		{ TEXT("SM_DP_Cholla_B"), 0.45, { 1.0, 1.15 }, 0.72, 0.5 },
+		{ TEXT("SM_DP_Mesquite_A"), 0.40, { 0.62, 1.0 }, 1.68, 1.2 },
+		{ TEXT("SM_DP_Mesquite_B"), 0.60, { 0.76, 1.35 }, 1.3, 1.0 },
+	};
+	constexpr int32 DESERT_N = UE_ARRAY_COUNT(DESERT_PARTS);
+	constexpr int32 DESERT_FIRST[] = { 0, 4, 6, 8 };
+	/** Which of a species' variants a number from 0 to 1 picks, by their shares. */
+	int32 DesertPartOf(int32 Ki, double Pick)
+	{
+		const int32 First = DESERT_FIRST[Ki - DESERT_KI], End = DESERT_FIRST[Ki - DESERT_KI + 1];
+		double Sum = 0;
+		for (int32 Pa = First; Pa < End - 1; ++Pa)
+		{
+			Sum += DESERT_PARTS[Pa].Share;
+			if (Pick < Sum) return Pa;
+		}
+		return End - 1;
+	}
 	// Freeform: how much of the stain's colour shows, so that a foot darkens the ground by about a third whatever its colour
 	constexpr float FOOT_OPACITY = 0.6f;
 	// Freeform: no creosote over 2 m (its shape stands 1.6 m at scale 1); as wide as the references', less of a vase
@@ -120,6 +159,10 @@ namespace
 				Pn[5] = { Lin(1.7, 1.62, 1.55), Lin(1.55, 1.55, 1.6), Lin(1.6, 1.42, 1.3), Lin(1.15, 1.1, 1.05) };
 				Pn[6] = Stain;
 				Pn[7] = { FVector(1, 1, 1) };   // (the rock's own material takes no colour from the copy)
+				// (the atlases and the shapes' corners have the plants' colours already: only a little from one plant to the next)
+				Pn[8] = { Lin(1, 1, 1), Lin(0.96, 0.98, 0.93), Lin(1.02, 1, 0.96) };
+				Pn[9] = { Lin(1, 1, 1), Lin(0.95, 0.97, 0.95), Lin(1.03, 1, 0.95) };
+				Pn[10] = { Lin(1, 1, 1), Lin(0.93, 0.96, 0.9), Lin(1.03, 1.02, 0.95) };
 			}
 			return Pn[int32(K)];
 		}
@@ -296,7 +339,9 @@ double FS47Flora::NoiseAt(double X, double Z, int32 Ki, double Terrain) const
 		const double* Mx = Spec.Mix.Find(K.Id);
 		return (0.04 + 1.1 * StoneField(X, Z, Spec.Seed)) * (Mx ? *Mx : 1);
 	}
-	double N = K.Patch > 1 ? 0.3 + 1.4 * VNoise(X, Z, K.Patch, Spec.Seed + int32(K.Patch)) : 1;
+	// (each desert species its own patches, not those of the kinds with its size of patch)
+	const int32 Salt = Ki >= DESERT_KI ? 100 * (Ki - DESERT_KI + 1) : 0;
+	double N = K.Patch > 1 ? 0.3 + 1.4 * VNoise(X, Z, K.Patch, Spec.Seed + int32(K.Patch) + Salt) : 1;
 	// drifts a few metres across with bare dirt between (raised to a power: most of it thin, some thick)
 	if (K.Clump > 0) N *= CLUMP_K * FMath::Pow(VNoise(X, Z, K.Clump, Spec.Seed + 911), 2.5);
 	// Freeform: the sage in its own wide patches, the dead weeds where the grass is
@@ -381,8 +426,12 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	// not to read as rows, then thinned by the stands; no stain of its own (only the feet, below), no
 	// rock when its mesh is not there; the rest as before
 	const bool bGrid = bNat && K.Id == ES47FloraKind::Creosote;
-	const int32 N = bGrid ? 9 : bNat && (bStain || (bRock && RockUnit <= 0)) ? 0 : int32(FMath::FloorToDouble(Want)) + (R() < FMath::Fmod(Want, 1.0) ? 1 : 0);
-	struct FOut { float M[16]; float Cl[3]; double Rank; bool bSeam; };
+	// Freeform's desert plants: only when all their meshes are there, and then instead of the old succulent copies (never both)
+	const bool bDesert = Ki >= DESERT_KI;
+	const bool bNone = bNat && (bStain || (bRock && RockUnit <= 0) || (bDesert && !bDesertOn) || (K.Id == ES47FloraKind::Succulent && bDesertOn));
+	const int32 N = bGrid ? 9 : bNone ? 0 : int32(FMath::FloorToDouble(Want)) + (R() < FMath::Fmod(Want, 1.0) ? 1 : 0);
+	struct FOut { float M[16]; float Cl[3]; double Rank; bool bSeam; uint8 Part; };
+	uint8 PartNow = 0;
 	TArray<FOut> Out;
 	const TArray<FVector>& Pal = PAL(K.Id, bNat);
 	const TFunction<double(double, double)>& G = Spec.Ground;
@@ -399,7 +448,7 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		FOut O;
 		for (int32 k = 0; k < 16; ++k) O.M[k] = float(E[k]);
 		O.Cl[0] = float(Cl.X); O.Cl[1] = float(Cl.Y); O.Cl[2] = float(Cl.Z);
-		O.Rank = Rank; O.bSeam = bSeam;
+		O.Rank = Rank; O.bSeam = bSeam; O.Part = PartNow;
 		Out.Add(O);
 	};
 	auto Tint = [&Pal](double CA, double CB, double F)
@@ -456,6 +505,13 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		double S = K.Size[0] + FMath::Pow(B, 2.5 - 1.7 * Dens + (bStones ? 1.3 : 0)) * (K.Size[1] - K.Size[0]);
 		// Freeform's creosote: mostly middling, whatever the density (the stands' density made them all big)
 		if (bNat && K.Id == ES47FloraKind::Creosote) S = K.Size[0] + FMath::Pow(B, 1.6) * (K.Size[1] - K.Size[0]);
+		// Freeform's desert plants: which of the species (N2 has no other use for them), in that variant's sizes, whatever the density
+		if (bDesert)
+		{
+			PartNow = uint8(DesertPartOf(Ki, N2));
+			const FDesertPart& Dp = DESERT_PARTS[PartNow];
+			S = Dp.Size[0] + FMath::Pow(B, 1.2) * (Dp.Size[1] - Dp.Size[0]);
+		}
 		if (bWalked) { if (K.Walk <= 0 || Fmod1(CB * 7.31) > K.Walk) continue; S = FMath::Min(S, K.WalkMax); }
 		// in a seam tiny grass and pebbles; the gravel spilt off a way small
 		if (bSeamed) S = K.Id == ES47FloraKind::Grass ? 0.25 + B * 0.2 : 0.3 + B * 0.2;
@@ -466,6 +522,18 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 		{
 			S = 0.12 + (0.33 + 1.7 * SlopeF) * FMath::Pow(B, 1.5);
 			if (bWalked) S = FMath::Min(S, K.WalkMax);
+		}
+		// the whole of a desert plant off every way, plot, pad and walk, not only its root
+		if (bDesert)
+		{
+			const double Spread = DESERT_PARTS[PartNow].Radius * S;
+			bool bClear = true;
+			for (int32 Round = 0; Round < 8 && bClear; ++Round)
+			{
+				const double Turn = Round * UE_DOUBLE_PI / 4;
+				bClear = CoverAt(X + FMath::Cos(Turn) * Spread, Z + FMath::Sin(Turn) * Spread, Ki, 1.0) > 0 && !bWalked && !bSeamed;
+			}
+			if (!bClear) continue;
 		}
 		const double Y = Gy(X, Z);
 		double Sy = S;
@@ -513,6 +581,8 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 			// two in five succulents are cholla: their copies are mirrored (succulentShape)
 			Sc = FVector(K.Id == ES47FloraKind::Succulent && Fmod1(CA * 13.7) < 0.4 ? -S : S, Sy, S);
 			if (bNat && K.Id == ES47FloraKind::Creosote) Sc = FVector(S * CREOSOTE_SPREAD, FMath::Min(Sy, CREOSOTE_TALLEST), S * CREOSOTE_SPREAD);
+			// (the models have their own shapes: little more height from one to the next, and never mirrored)
+			if (bDesert) { Sy = S * (0.94 + L1 * 0.12); Sc = FVector(S, Sy, S); }
 			PutOne(X, Y - 0.035 * S, Z, Col, Rank, bSeamed);
 		}
 	}
@@ -521,22 +591,28 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	// A shadow proxy cannot do this: its shadow goes with the sun and is gone at noon and in the shade.
 	if (bStain && bNat)
 	{
+		auto PutFoot = [&](const float* Cm, double Big, double Width, double Share)
+		{
+			const double S = FMath::Sqrt(double(Cm[0]) * Cm[0] + double(Cm[1]) * Cm[1] + double(Cm[2]) * Cm[2]), H1 = R(), H2 = R(), H3 = R();
+			if (S < Big || H1 >= Share) return;
+			const double X = Cm[12] + (H2 - 0.5) * 0.15 * S, Z = Cm[14] + (H3 - 0.5) * 0.15 * S, Y = Gy(X, Z), Sz = S * Width * (0.7 + 0.6 * H2);
+			if (FMath::Abs(Gy(X + Sz, Z) + Gy(X - Sz, Z) - 2 * Y) + FMath::Abs(Gy(X, Z + Sz) + Gy(X, Z - Sz) - 2 * Y) > 0.05) return;
+			const FVector Nrm = Normalize(FVector(-(Gy(X + Sz, Z) - Gy(X - Sz, Z)) / (2 * Sz), 1, -(Gy(X, Z + Sz) - Gy(X, Z - Sz)) / (2 * Sz)));
+			Qt = QMul(QUnitVectors(UpV, Nrm), QAxisAngle(UpV, H3 * UE_DOUBLE_PI * 2));
+			Sc = FVector(Sz * (0.85 + 0.3 * H1), Sz, Sz);
+			PutOne(X, Y + 0.018, Z, FOOT(H2 < 0.5 ? 0 : 1), H3, false);
+		};
 		struct FFoot { int32 Kind; double Big, Width, Share; };
 		for (const FFoot& L : { FFoot{ 0, 0.55, 0.5, 0.4 }, FFoot{ 1, 0.3, 0.57, 1.0 }, FFoot{ 2, 0.0, 0.62, 1.0 } })
 		{
 			const FKindCell Cc = Cell(I, J, L.Kind);
-			for (int32 T = 0; T < Cc.N; ++T)
-			{
-				const float* M = Cc.M.GetData() + T * 16;
-				const double S = FMath::Sqrt(double(M[0]) * M[0] + double(M[1]) * M[1] + double(M[2]) * M[2]), H1 = R(), H2 = R(), H3 = R();
-				if (S < L.Big || H1 >= L.Share) continue;
-				const double X = M[12] + (H2 - 0.5) * 0.15 * S, Z = M[14] + (H3 - 0.5) * 0.15 * S, Y = Gy(X, Z), Sz = S * L.Width * (0.7 + 0.6 * H2);
-				if (FMath::Abs(Gy(X + Sz, Z) + Gy(X - Sz, Z) - 2 * Y) + FMath::Abs(Gy(X, Z + Sz) + Gy(X, Z - Sz) - 2 * Y) > 0.05) continue;
-				const FVector Nrm = Normalize(FVector(-(Gy(X + Sz, Z) - Gy(X - Sz, Z)) / (2 * Sz), 1, -(Gy(X, Z + Sz) - Gy(X, Z - Sz)) / (2 * Sz)));
-				Qt = QMul(QUnitVectors(UpV, Nrm), QAxisAngle(UpV, H3 * UE_DOUBLE_PI * 2));
-				Sc = FVector(Sz * (0.85 + 0.3 * H1), Sz, Sz);
-				PutOne(X, Y + 0.018, Z, FOOT(H2 < 0.5 ? 0 : 1), H3, false);
-			}
+			for (int32 T = 0; T < Cc.N; ++T) PutFoot(Cc.M.GetData() + T * 16, L.Big, L.Width, L.Share);
+		}
+		// (no copy of a desert plant when their meshes are not there, so nothing changes then)
+		for (int32 Dk = DESERT_KI; Dk < NK; ++Dk)
+		{
+			const FKindCell Cc = Cell(I, J, Dk);
+			for (int32 T = 0; T < Cc.N; ++T) PutFoot(Cc.M.GetData() + T * 16, 0.0, DESERT_PARTS[Cc.Part[T]].Foot, 1.0);
 		}
 	}
 	// the litter under one in four of the big tufts and the shrubs: a small dark stain, ranked after
@@ -610,12 +686,14 @@ FS47Flora::FKindCell FS47Flora::Make(int32 I, int32 J, int32 Ki)
 	bool bAnySeam = false;
 	for (const FOut& O : Out) bAnySeam |= O.bSeam;
 	if (bAnySeam) Made.Seam.SetNumZeroed(Out.Num());
+	if (bDesert) Made.Part.SetNumUninitialized(Out.Num());
 	for (int32 T = 0; T < Out.Num(); ++T)
 	{
 		FMemory::Memcpy(Made.M.GetData() + T * 16, Out[T].M, sizeof(float) * 16);
 		FMemory::Memcpy(Made.C.GetData() + T * 3, Out[T].Cl, sizeof(float) * 3);
 		Made.Rank[T] = float(Out[T].Rank);
 		if (bAnySeam && Out[T].bSeam) Made.Seam[T] = 1;
+		if (bDesert) Made.Part[T] = Out[T].Part;
 	}
 	return Made;
 }
@@ -630,6 +708,7 @@ void FS47Flora::Follow(const FVector& CamPos, bool bLow)
 {
 	if (!Shown()) { DropShadows(); return; }
 	if (Spec.bNatural && !bRockTried) EnsureRocks();
+	if (Spec.bNatural && !bDesertTried) EnsureDesert();
 	AS47Web* W = Web.Get();
 	const FS47Obj G(W, Group);
 	const FVector P = G.WorldToLocal(CamPos);
@@ -659,7 +738,8 @@ bool FS47Flora::Ahead(double Px, double Pz)
 	for (; Next.Kind < NK; Next.Kind++, Next.At = 0)
 	{
 		const int32 Ki = Next.Kind;
-		if (Ki == ROCK_KI && !Spec.bNatural) continue;   // (the web version's rules have no rocks)
+		if (Ki >= ROCK_KI && !Spec.bNatural) continue;   // (the web version's rules have no rocks and no desert plants)
+		if (Ki >= DESERT_KI && !bDesertOn) continue;
 		const double R = KindFor(Spec.bNatural, Ki).Reach + 3 * STEP;
 		for (; Next.At < OFF.Num(); Next.At++)
 		{
@@ -700,7 +780,8 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 		const double Reach = bLow ? (K.bFar ? K.Far[0] : K.Reach) * LOW_REACH : K.Reach;
 		int32 N = 0, Candidates = 0, Omitted = 0;
 		TArray<float> M, Cc;
-		if (Keep > 0 && (Ki != ROCK_KI || Spec.bNatural))
+		TArray<uint8> Pt;
+		if (Keep > 0 && (Ki < ROCK_KI || (Spec.bNatural && (Ki == ROCK_KI || bDesertOn))))
 		{
 			const double R = Reach + STEP;
 			// after a jump, everything out to the near reach at once (the far ring a picture or two later)
@@ -738,6 +819,7 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 					}
 					M.Append(Matrix, 16);
 					Cc.Append(Cell0->C.GetData() + Instance * 3, 3);
+					if (Cell0->Part.Num()) Pt.Add(Cell0->Part[Instance]);
 					++N;
 				}
 				if (N >= K.Cap) break;
@@ -750,7 +832,8 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 			Layers[Ki].Omitted = Omitted;
 			Layers[Ki].EndCull = bTrimInvisible ? FMath::CeilToInt((Reach + STEP + 4) * 100) : 0;
 		}
-		Put(Ki, M, Cc, N);
+		for (const FTestCopy& Tc : TestCopies) if (Tc.Ki == Ki) { M.Append(Tc.M, 16); Cc.Append(Tc.Cl, 3); Pt.Add(Tc.Part); ++N; }
+		Put(Ki, M, Cc, Pt, N);
 	}
 	// forget the cells far behind
 	if (Cells.Num() > 2500)
@@ -777,27 +860,23 @@ void FS47Flora::AuditDrawCounts(TArray<FString>& Lines) const
 	for (int32 Ki = 0; Ki < Layers.Num(); ++Ki)
 	{
 		const FLayer& L = Layers[Ki];
-		const UInstancedStaticMeshComponent* Mesh = L.Mesh.Get();
-		int32 Start = 0, End = 0;
+		// (the desert plants only where they are in use; Story's lines are as they were)
+		if (Ki >= DESERT_KI && L.Parts.Num() == 0) continue;
+		const UInstancedStaticMeshComponent* Mesh = L.Parts.Num() ? L.Parts[0].Mesh.Get() : L.Mesh.Get();
+		int32 Start = 0, End = 0, Actual = Mesh ? Mesh->GetInstanceCount() : 0;
 		if (Mesh) Mesh->GetCullDistances(Start, End);
+		for (int32 Pi = 1; Pi < L.Parts.Num(); ++Pi) if (const UInstancedStaticMeshComponent* Other = L.Parts[Pi].Mesh.Get()) Actual += Other->GetInstanceCount();
 		Lines.Add(FString::Printf(TEXT("flora %s kind=%d shown=%d eligible_examined=%d invisible_omitted=%d uploaded=%d actual_instances=%d cull_cm=%d,%d"),
-			*Spec.Name, Ki, Shown(), L.Candidates, L.Omitted, L.N, Mesh ? Mesh->GetInstanceCount() : 0, Start, End));
+			*Spec.Name, Ki, Shown(), L.Candidates, L.Omitted, L.N, Actual, Start, End));
 	}
 }
 
 // ---------- Unreal ----------
 
-bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
+namespace
 {
-	Web = W; Group = GroupNode;
-	Layers.SetNum(NK);
-	const FS47WebNode* G = W ? W->Node(GroupNode) : nullptr;
-	if (!G) return false;
-	// the meshes the patch has (flora.ts: one per kind, the second of a pair in the first's), by name
-	const TPair<const TCHAR*, int32> Draws[] = { { TEXT("flora-grass+sage"), 0 }, { TEXT("flora-creosote+stalks"), 2 }, { TEXT("flora-succulent"), 4 }, { TEXT("flora-stones"), 5 }, { TEXT("flora-stain"), 6 } };
-	int32 Bound = 0, ActivatedEmptyDraws = 0;
-	// a shadow proxy (Freeform only fills it: Put): the same mesh and material, hidden but casting its shadow
-	auto MakeShadow = [W](UInstancedStaticMeshComponent* Src, UMaterialInstanceDynamic* Mid)
+	/** A shadow proxy (Freeform only fills it: Put): the same mesh and material, hidden but casting its shadow. */
+	TWeakObjectPtr<UInstancedStaticMeshComponent> MakeShadow(AS47Web* W, UInstancedStaticMeshComponent* Src, UMaterialInstanceDynamic* Mid)
 	{
 		UInstancedStaticMeshComponent* P = NewObject<UInstancedStaticMeshComponent>(W);
 		P->SetMobility(EComponentMobility::Movable);
@@ -813,7 +892,18 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 		P->RegisterComponent();
 		P->SetHiddenInGame(true);
 		return TWeakObjectPtr<UInstancedStaticMeshComponent>(P);
-	};
+	}
+}
+
+bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
+{
+	Web = W; Group = GroupNode;
+	Layers.SetNum(NK);
+	const FS47WebNode* G = W ? W->Node(GroupNode) : nullptr;
+	if (!G) return false;
+	// the meshes the patch has (flora.ts: one per kind, the second of a pair in the first's), by name
+	const TPair<const TCHAR*, int32> Draws[] = { { TEXT("flora-grass+sage"), 0 }, { TEXT("flora-creosote+stalks"), 2 }, { TEXT("flora-succulent"), 4 }, { TEXT("flora-stones"), 5 }, { TEXT("flora-stain"), 6 } };
+	int32 Bound = 0, ActivatedEmptyDraws = 0;
 	for (int32 Ch : G->Children)
 	{
 		const FS47WebNode* N = W->Node(Ch);
@@ -845,7 +935,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			UMaterialInstanceDynamic* Da = Mids.Num() ? Mids[0] : nullptr;
 			if (Da) Da->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
 			Layers[Dw.Value].Mesh = A; Layers[Dw.Value].Mid = Da;
-			if (Dw.Value == 2) Layers[2].Shadow = MakeShadow(A, Da);
+			if (Dw.Value == 2) Layers[2].Shadow = MakeShadow(W, A, Da);
 			++Bound;
 			// the second of a pair: its own shape (export.js pairGeo) beside the first's, its own reach
 			if (N->GeoB >= 0 && Dw.Value + 1 < NK)
@@ -864,7 +954,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 				B->RegisterComponent();
 				B->SetVisibility(A->IsVisible());
 				Layers[Dw.Value + 1].Mesh = B; Layers[Dw.Value + 1].Mid = Db;
-				if (Dw.Value == 0) Layers[1].Shadow = MakeShadow(B, Db);
+				if (Dw.Value == 0) Layers[1].Shadow = MakeShadow(W, B, Db);
 			}
 		}
 	}
@@ -872,24 +962,42 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 	return Bound > 0;
 }
 
-void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, int32 N)
+void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, const TArray<uint8>& Pt, int32 N)
 {
 	if (!Layers.IsValidIndex(Ki)) return;
 	FLayer& L = Layers[Ki];
 	L.N = N;
-	UInstancedStaticMeshComponent* I = L.Mesh.Get();
+	if (UMaterialInstanceDynamic* D = L.Mid.Get()) D->SetScalarParameterValue(TEXT("Reach"), float(L.Reach));
+	if (L.Parts.Num() == 0) { PutMesh(L, L.Mesh.Get(), L.Shadow.Get(), Ki, M, Cc, N); return; }
+	// a desert species: each copy to its variant's mesh
+	for (int32 Pi = 0; Pi < L.Parts.Num(); ++Pi)
+	{
+		const int32 Wanted = DESERT_FIRST[Ki - DESERT_KI] + Pi;
+		TArray<float> Mp, Cp;
+		int32 Np = 0;
+		for (int32 k = 0; k < N; ++k)
+		{
+			if (!Pt.IsValidIndex(k) || Pt[k] != Wanted) continue;
+			Mp.Append(M.GetData() + k * 16, 16);
+			Cp.Append(Cc.GetData() + k * 3, 3);
+			++Np;
+		}
+		PutMesh(L, L.Parts[Pi].Mesh.Get(), L.Parts[Pi].Shadow.Get(), Ki, Mp, Cp, Np);
+	}
+}
+
+void FS47Flora::PutMesh(const FLayer& L, UInstancedStaticMeshComponent* I, UInstancedStaticMeshComponent* Sh, int32 Ki, const TArray<float>& M, const TArray<float>& Cc, int32 N)
+{
 	if (!I) return;
 	// FLORA_WPO has fully collapsed every kind by Reach. Native culling also
 	// discards its remaining vertex work outside that radius (plus refill/bounds margin).
 	const int32 EndCull = L.EndCull;
 	if (I->InstanceEndCullDistance != EndCull) I->SetCullDistances(EndCull, EndCull);
-	if (UMaterialInstanceDynamic* D = L.Mid.Get()) D->SetScalarParameterValue(TEXT("Reach"), float(L.Reach));
 	TArray<FTransform> T;
 	TArray<float> Cd;
 	T.Reserve(N); Cd.Reserve(N * 4);
-	// Freeform: the near creosote and sage also cast shadows, from a proxy mesh holding only those near the eye
-	UInstancedStaticMeshComponent* Sh = L.Shadow.Get();
-	const double ShadowR = Ki == 2 ? SHADOW_CREOSOTE : SHADOW_SAGE;
+	// Freeform: the near creosote, sage and mesquite also cast shadows, from a proxy mesh holding only those near the eye
+	const double ShadowR = Ki == 2 ? SHADOW_CREOSOTE : Ki == MESQUITE_KI ? SHADOW_MESQUITE : SHADOW_SAGE;
 	const bool bShadows = Sh && Spec.bNatural && bShadowNear;
 	TArray<FTransform> ShT;
 	TArray<float> ShCd;
@@ -925,8 +1033,12 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, i
 
 void FS47Flora::DropShadows()
 {
+	auto Drop = [](UInstancedStaticMeshComponent* Sh) { if (Sh && Sh->GetInstanceCount() > 0) { Sh->ClearInstances(); Sh->MarkRenderStateDirty(); } };
 	for (FLayer& L : Layers)
-		if (UInstancedStaticMeshComponent* Sh = L.Shadow.Get()) if (Sh->GetInstanceCount() > 0) { Sh->ClearInstances(); Sh->MarkRenderStateDirty(); }
+	{
+		Drop(L.Shadow.Get());
+		for (const FLayerPart& Pa : L.Parts) Drop(Pa.Shadow.Get());
+	}
 }
 
 void FS47Flora::SetNatural(bool bOn)
@@ -970,6 +1082,93 @@ void FS47Flora::EnsureRocks()
 	UE_LOG(LogS47Flora, Display, TEXT("S47: flora %s: rocks from %s, %.0f cm across as made"), *Spec.Name, *Rock->GetName(), Across);
 }
 
+int32 FS47Flora::DesertMeshes() { return DESERT_N; }
+
+void FS47Flora::EnsureDesert()
+{
+	// Freeform's desert plants, made when Freeform first needs them, so Story has no such component at all. All eight or
+	// none: with one missing (not imported, or a material without its master) the old succulent copies stay.
+	bDesertTried = true;
+	AS47Web* W = Web.Get();
+	if (!W || !Layers.IsValidIndex(NK - 1)) return;
+	UStaticMesh* Meshes[DESERT_N] = {};
+	int32 Loaded = 0;
+	for (int32 Pi = 0; Pi < DESERT_N; ++Pi)
+	{
+		const FString Path = FString::Printf(TEXT("/Game/DesertPlants/%s.%s"), DESERT_PARTS[Pi].Name, DESERT_PARTS[Pi].Name);
+		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet);
+		UMaterialInterface* Paint = Mesh ? Mesh->GetMaterial(0) : nullptr;
+		const UMaterial* Master = Paint ? Paint->GetMaterial() : nullptr;
+		if (Master && Master->GetName().StartsWith(TEXT("M_WebFlora"))) { Meshes[Pi] = Mesh; ++Loaded; }
+	}
+	UE_LOG(LogS47Flora, Display, TEXT("S47: desert plants %d of %d loaded (patch %s)"), Loaded, DESERT_N, *Spec.Name);
+	// shown and hidden with the old succulents' draw, or the stones' if the patch has none
+	UInstancedStaticMeshComponent* Src = Layers[SUCCULENT_KI].Mesh.Get();
+	if (!Src) Src = Layers[STONES_KI].Mesh.Get();
+	if (Loaded < DESERT_N || !Src)
+	{
+		UE_LOG(LogS47Flora, Warning, TEXT("S47: flora %s: no desert plants (Tools/desertplants/import_assets.py not run?), the old succulents stay"), *Spec.Name);
+		return;
+	}
+	for (int32 Ki = DESERT_KI; Ki < NK; ++Ki)
+	{
+		FLayer& L = Layers[Ki];
+		const int32 First = DESERT_FIRST[Ki - DESERT_KI], End = DESERT_FIRST[Ki - DESERT_KI + 1];
+		// one material to a species: one set of what the flora's material takes at run time (Reach, WindDir)
+		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Meshes[First]->GetMaterial(0), W);
+		L.Mid = D;
+		for (int32 Pi = First; Pi < End; ++Pi)
+		{
+			UInstancedStaticMeshComponent* P = NewObject<UInstancedStaticMeshComponent>(W);
+			P->SetMobility(EComponentMobility::Movable);
+			P->SetupAttachment(Src);
+			P->SetStaticMesh(Meshes[Pi]);
+			P->NumCustomDataFloats = 4;
+			P->SetCastShadow(false);
+			P->SetVisibleInRayTracing(false);
+			P->bAffectDistanceFieldLighting = false;
+			P->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			P->SetMaterial(0, D);
+			P->RegisterComponent();
+			P->SetVisibility(Src->IsVisible());
+			FLayerPart NewPart;
+			NewPart.Mesh = P;
+			if (Ki == MESQUITE_KI) NewPart.Shadow = MakeShadow(W, P, D);
+			L.Parts.Add(NewPart);
+		}
+	}
+	bDesertOn = true;
+}
+
+int32 FS47Flora::TestDesertArc(const FVector& Eye, const FVector& Look, double Radius)
+{
+	AS47Web* W = Web.Get();
+	if (!W || !bDesertOn) return 0;
+	const FS47Obj G(W, Group);
+	const FVector Ep = G.WorldToLocal(Eye), Lp = G.WorldToLocal(Look);
+	const double Ahead0 = FMath::Atan2(Lp.Z - Ep.Z, Lp.X - Ep.X);
+	const TFunction<double(double, double)>& Gd = Spec.Ground;
+	TestCopies.Reset();
+	for (int32 Ki = DESERT_KI; Ki < NK; ++Ki)
+	{
+		for (int32 Pi = DESERT_FIRST[Ki - DESERT_KI]; Pi < DESERT_FIRST[Ki - DESERT_KI + 1]; ++Pi)
+		{
+			// at scale 1, side by side over 84 degrees
+			const double Ang = Ahead0 + FMath::DegreesToRadians((Pi - (DESERT_N - 1) / 2.0) * 12.0);
+			const double X = Ep.X + FMath::Cos(Ang) * Radius, Z = Ep.Z + FMath::Sin(Ang) * Radius;
+			double E[16];
+			S47Three::Compose(FVector(X, (Gd ? Gd(X, Z) : 0.0) - 0.035, Z), QAxisAngle(UpV, Pi * 0.7), FVector(1, 1, 1), E);
+			FTestCopy Tc;
+			Tc.Ki = Ki; Tc.Part = uint8(Pi);
+			for (int32 k = 0; k < 16; ++k) Tc.M[k] = float(E[k]);
+			Tc.Cl[0] = Tc.Cl[1] = Tc.Cl[2] = 1.f;
+			TestCopies.Add(Tc);
+		}
+	}
+	bDirty = true;
+	return TestCopies.Num();
+}
+
 void FS47Flora::SyncVisibility()
 {
 	for (int32 Ki : { 1, 3 })
@@ -982,6 +1181,15 @@ void FS47Flora::SyncVisibility()
 	UInstancedStaticMeshComponent* Stones = Layers.IsValidIndex(STONES_KI) ? Layers[STONES_KI].Mesh.Get() : nullptr;
 	UInstancedStaticMeshComponent* Rocks = Layers.IsValidIndex(ROCK_KI) ? Layers[ROCK_KI].Mesh.Get() : nullptr;
 	if (Stones && Rocks && Rocks->IsVisible() != Stones->IsVisible()) Rocks->SetVisibility(Stones->IsVisible());
+	// (and the desert plants with what EnsureDesert put them under)
+	if (bDesertOn)
+	{
+		const UInstancedStaticMeshComponent* Old = Layers[SUCCULENT_KI].Mesh.Get();
+		if (!Old) Old = Stones;
+		for (int32 Ki = DESERT_KI; Ki < NK && Old; ++Ki)
+			for (const FLayerPart& Pa : Layers[Ki].Parts)
+				if (UInstancedStaticMeshComponent* Pm = Pa.Mesh.Get()) if (Pm->IsVisible() != Old->IsVisible()) Pm->SetVisibility(Old->IsVisible());
+	}
 }
 
 void FS47Flora::SetWind(const FVector2D& Dir)
