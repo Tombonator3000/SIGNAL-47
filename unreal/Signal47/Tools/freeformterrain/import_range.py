@@ -133,7 +133,7 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     stone_d = custom(mat, 'return X * W.x + Y * W.y + Z * W.z;', dict(X=(sx, 'RGB'), Y=(sy, 'RGB'), Z=(sz, 'RGB'), W=weights), F3, -1800, 0)
 
     pins = dict(T150=(t150, 'R'), T40=(t40, 'R'), Crust=crust_amount, Gravel=gravel_amount, Hs=(h['Sand'], 'R'), Hc=(h['Crust'], 'R'), Hg=(h['Gravel'], 'R'),
-                M=m_map, N=(to_world, ''))
+                M=(m_map, 'RGBA'), N=(to_world, ''))
     # the ground's masks; then gravel comes up with the slope, and the shrubs' map and the bare rock decide the rest
     masks = custom(mat, """
 float deg = acos(saturate(normalize(N).z)) * 57.29578;
@@ -186,7 +186,7 @@ c *= lerp(1.0, lerp(float3(1.06, 1.0, 0.94), float3(0.90, 0.92, 0.95), broad), 1
 float shrub = M.r * (1.0 - rock);
 c = lerp(c, Shrub, shrub * lerp(0.82, 0.55, saturate(Haze * 2.0)));
 return c * lerp(0.62, 1.0, M.b);
-""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=m_map, Deg=deg, Stone=stone_d, RockTint=rock_tint, Far=(t13, 'R'), Shrub=scrub, Haze=haze), F3, -600, -700)
+""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, Far=(t13, 'R'), Shrub=scrub, Haze=haze), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 
     normal = custom(mat, """

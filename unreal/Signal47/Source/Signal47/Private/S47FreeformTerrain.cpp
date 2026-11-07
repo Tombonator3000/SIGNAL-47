@@ -28,7 +28,7 @@ struct FS47FreeformTerrainState
 	struct FPropLift { TWeakObjectPtr<UStaticMeshComponent> C; FTransform Flat; double Dy = 0; };
 	struct FWireSwap { TWeakObjectPtr<UStaticMeshComponent> C; TStrongObjectPtr<UStaticMesh> Flat, Lifted; };
 	// The mesas' own component takes the range: S47Sky, S47HighwayLandscape and its transform stay as they are.
-	struct FRangeSwap { TWeakObjectPtr<UStaticMeshComponent> C; TStrongObjectPtr<UStaticMesh> Mesas, Range; TArray<TStrongObjectPtr<UMaterialInterface>> MesaMaterials; };
+	struct FRangeSwap { bool bMesaShadow=true; TWeakObjectPtr<UStaticMeshComponent> C; TStrongObjectPtr<UStaticMesh> Mesas, Range; TArray<TStrongObjectPtr<UMaterialInterface>> MesaMaterials; };
 	TArray<FGroundSwap> Grounds;
 	TArray<FInstanceRow> Rows;
 	TArray<FPropLift> Props;
@@ -301,10 +301,14 @@ namespace
 			for (int32 Slot = 0; Slot < C->GetNumMaterials(); ++Slot) R.MesaMaterials.Emplace(C->GetMaterial(Slot));
 			C->SetStaticMesh(R.Range.Get());
 			C->SetMaterial(0, S.RangeMid.Get());
+			// A 24 km range would throw its shadow across the whole plain; hills keep their shading, and the land its sun.
+			R.bMesaShadow = C->CastShadow;
+			C->SetCastShadow(false);
 		}
 		else
 		{
 			C->SetStaticMesh(R.Mesas.Get());
+			C->SetCastShadow(R.bMesaShadow);
 			for (int32 Slot = 0; Slot < R.MesaMaterials.Num(); ++Slot) C->SetMaterial(Slot, R.MesaMaterials[Slot].Get());
 		}
 	}
