@@ -76,7 +76,7 @@ def import_texture(root, name, srgb, compression, sampler_group):
     return tex
 
 
-def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
+def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out):
     node, wire, lerp, mul, custom, sample, world_uv = G.node, G.wire, G.lerp, G.mul, G.custom, G.sample, G.world_uv
     F1, F3 = unreal.CustomMaterialOutputType.CMOT_FLOAT1, unreal.CustomMaterialOutputType.CMOT_FLOAT3
     F2 = unreal.CustomMaterialOutputType.CMOT_FLOAT2
@@ -119,8 +119,10 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     haze_start = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1900, parameter_name='HazeStartM', default_value=900.)
     haze_scale = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1820, parameter_name='HazeScaleM', default_value=3800.)
     haze_most = node(mat, unreal.MaterialExpressionScalarParameter, -3000, -1740, parameter_name='HazeMost', default_value=.88)
-    haze = custom(mat, 'float d = length(Camera - World) * 0.01; return Most * (1.0 - exp(-max(d - Start, 0.0) / Scale));',
-                  dict(Camera=cam, World=wp, Start=haze_start, Scale=haze_scale, Most=haze_most), F1, -2700, -1850)
+    # (less at the foot, for the first few kilometres: the plain beside it has no haze of its own, and a hill's blue foot on an orange
+    # plain is two layers, not one land)
+    haze = custom(mat, 'float d = length(Camera - World) * 0.01; return Most * (1.0 - exp(-max(d - Start, 0.0) / Scale)) * lerp(1.0, 0.2, M.a * (1.0 - smoothstep(3000.0, 8000.0, d)));',
+                  dict(Camera=cam, World=wp, Start=haze_start, Scale=haze_scale, Most=haze_most, M=(m_map, 'RGBA')), F1, -2700, -1850)
 
     # the layers of the ground's own material, at the same world UVs. No parallax out here.
     uv = {layer: world_uv(mat, wp, color, G.SPAN[layer], -2500, -1400 + i * 200) for i, layer in enumerate(('Sand', 'Crust', 'Gravel'))}
@@ -137,6 +139,10 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     p1 = sample(mat, macro, turned(613., 23., -2500, -400), -2200, -400)
     p2 = sample(mat, macro, turned(1717., -37., -2500, -320), -2200, -320)
     p3 = sample(mat, macro, turned(211., 61., -2500, -240), -2200, -240)
+    # the shrubs' dots, about 4 m: T_FF_Noise's fine channels at two sizes that share nothing, gone to an even tone with distance
+    gray_linear = unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR
+    d1 = sample(mat, fine_noise, turned(300., 17., -2500, -60), -2200, 20, gray_linear)
+    d2 = sample(mat, fine_noise, turned(413., -52., -2500, 20), -2200, 100, gray_linear)
     mean_sand = mean_of(tex['Sand', 'D'], -2200, -160)
     mean_gravel = mean_of(tex['Gravel', 'D'], -2200, -80)
     crust_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -300, parameter_name='CrustAmount', default_value=.75)
@@ -211,16 +217,23 @@ float rock = saturate(max(M.g, smoothstep(30.0, 44.0, Deg)) * up);
 rock *= smoothstep(0.15, 0.55, rock + (dot(Stone, float3(0.3, 0.6, 0.1)) * 3.0 - 0.45) * 0.5);
 float3 stone = mean * RockTint * clamp(Stone / float3(0.183, 0.132, 0.109), 0.35, 1.5);
 // its beds: they dip one way over the whole map and wander with the patches, about 16 and 54 m through the rock
-float bedAt = World.z * 0.01 + UV.x * 480.0 + UV.y * 288.0 + (P1 - 0.4) * 38.0;
+float bedAt = World.z * 0.01 + UV.x * 480.0 + UV.y * 288.0 + (P1 - 0.4) * 46.0 + (P3 - 0.4) * 16.0;
 float bed = 0.62 * (0.5 + 0.5 * sin(bedAt * 0.117 + 1.3)) + 0.38 * (0.5 + 0.5 * sin(bedAt * 0.38));
-stone *= lerp(float3(0.74, 0.72, 0.72), float3(1.20, 1.15, 1.08), smoothstep(0.25, 0.75, bed));
+// (no bed runs round the whole hill: they come and go, as outcrops do)
+float showing = smoothstep(0.30, 0.62, P3 * 0.6 + P2 * 0.4);
+stone *= lerp(float3(1.0, 1.0, 1.0), lerp(float3(0.83, 0.81, 0.81), float3(1.11, 1.08, 1.04), smoothstep(0.25, 0.75, bed)), showing);
 float3 c = lerp(soil, stone, rock);
 // shrubs as a dark speckle
-float shrub = M.r * (1.0 - rock);
-c = lerp(c, Shrub, shrub * lerp(0.82, 0.55, saturate(Haze * 2.0)));
+float near = saturate((length(Camera - World) * 0.01 - 120.0) / 200.0);
+float dotsAt = D1 * 0.55 + D2 * 0.45;
+float want = lerp(0.635, 0.47, saturate(M.r * 0.8 + 0.2 * broad));
+float shrub = smoothstep(want, want + 0.05, dotsAt) * (1.0 - rock);
+c = lerp(c, Shrub, shrub * near * lerp(0.80, 0.45, saturate(Haze * 2.0)));
+// and where they crowd, in what is cut in, the ground under them darker too
+c = lerp(c, Shrub, M.r * (1.0 - rock) * 0.18);
 return c * lerp(0.48, 1.0, M.b);
 """, dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, P1=(p1, 'R'), P2=(p2, 'R'), P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'),
-          Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, UV=uv0), F3, -600, -700)
+          Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, UV=uv0, D1=(d1, 'A'), D2=(d2, 'B')), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 
     normal = custom(mat, """
@@ -270,7 +283,10 @@ def make_material(normal_map, mask_map, report):
         mat = T.create_asset(NAME, DEST, unreal.Material, unreal.MaterialFactoryNew())
     else:
         L.delete_all_material_expressions(mat)
-    build_material(mat, tex, stone, macro, normal_map, mask_map, out)
+    fine_noise = E.load_asset(DEST + '/T_FF_Noise')
+    if fine_noise is None:
+        raise RuntimeError('T_FF_Noise is required for the shrubs: run the ground material first')
+    build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out)
     errors = [str(e) for e in L.recompile_material(mat)]
     out['compile_errors'] = errors
     if errors:

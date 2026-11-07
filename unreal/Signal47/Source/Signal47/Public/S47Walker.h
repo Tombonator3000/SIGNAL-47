@@ -44,6 +44,7 @@ public:
 
 	// three.js terms
 	FVector Pos = FVector::ZeroVector;
+	FVector MoveFrom = FVector::ZeroVector;   // where the move now being tried began: while it is tried, Pos is the place being asked about
 	double Yaw = 0, Pitch = -0.06, Eye = 1.62, Radius = 0.27, Speed = 1.9, Bob = 0, StepDist = 0, Shake = 0, FloorY = 0;
 	float Fov = 70.f; // three's vertical field of view
 	double Sensitivity = 1.0; // Input.sensitivity (Look speed)

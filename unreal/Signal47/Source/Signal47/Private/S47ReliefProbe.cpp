@@ -317,7 +317,7 @@ namespace S47ReliefProbe
 		{
 			FS47TripOpts Opts;
 			const double Sx = R.FootX + 70, Sz = ReliefFootZ;
-			Opts.AtPos = FVector(8000 + Sx, S47RoadTerrain::SurfaceY(Sx, Sz), Sz); Opts.AtHeading = -UE_DOUBLE_PI / 2; Opts.Leg = TEXT("road");
+			Opts.AtPos = FVector(8000 + Sx, S47RoadTerrain::SurfaceY(Sx, Sz), Sz); Opts.AtHeading = UE_DOUBLE_PI / 2; Opts.Leg = TEXT("road");
 			Life->StartTrip(TEXT("road"), TEXT("diner"), Opts);
 			Life->TestInput = [Life] { FS47DriveIn In; const FS47DriveController* D = Life->CabDrive(); In.Throttle = D && D->Speed < 11 ? 1 : 0; return In; };
 			ProbeReset();
@@ -354,7 +354,8 @@ namespace S47ReliefProbe
 			}
 			if (R.Phase == 4)
 			{
-				if (R.Now - R.Since < 16) return true;
+				// By samples, a quarter of a second of driving each: the first drive's loading has eaten the whole 16 s of a clock, frames of 14 s.
+				if (R.Samples < 64 && R.Now - R.Since < 120) return true;
 				// braked to a stop, as -S47GetOut does
 				Life->TestInput = [Life] { FS47DriveIn In; const double V = Life->DrivingSpeed(); In.Throttle = V > .15 ? -1 : V < -.15 ? 1 : 0; return In; };
 				R.Phase = 5; R.Since = R.Now;

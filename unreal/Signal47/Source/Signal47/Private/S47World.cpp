@@ -1549,7 +1549,7 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 	if (L->Closed && L->Closed(X, Z)) return false;
 	// Freeform's hills stop at their foot (S47Relief, table from build_range.py; SARO's and the station's walks have none in them).
 	// One who already stands inside one, an old save on what was open land, walks out.
-	if (A == TEXT("diner") && S47Relief::HillStops(X - ROAD_ORIGIN.X, Z, R) && !S47Relief::HillStops(M->Player->Pos.X - ROAD_ORIGIN.X, M->Player->Pos.Z, R)) return false;
+	if (A == TEXT("diner") && S47Relief::HillStops(X - ROAD_ORIGIN.X, Z, R) && !S47Relief::HillStops(M->Player->MoveFrom.X - ROAD_ORIGIN.X, M->Player->MoveFrom.Z, R)) return false;
 	if (const FLegRec* G = Legs.Find(L->Leg))
 	{
 		for (const FS47Obstacle& O : G->Area->Obstacles)

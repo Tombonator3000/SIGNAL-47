@@ -63,17 +63,18 @@ SEED = 4747
 # from nothing at NEAREST, so that a lobe narrows to a nose there instead of being cut along a line that follows the road.
 NEAREST = 280.0
 SHARE = [(280, 0), (300, .025), (360, .11), (450, .22), (560, .30), (800, .38), (1300, .46), (2500, .56), (5000, .58), (8000, .42), (12000, .10)]
-EAST_MORE, THREAD_M = .55, 85.0
+EAST_MORE, THREAD_M = .85, 85.0
 MIN_HILL_M2 = 90000.0                     # no knob smaller than this: a lone cone on the plain
 # The land's water. Steady state of stream power: slope = uk * area^-m, never over the rest angle.
-SPL_M = .5
-UK = [(280, 26.), (600, 30.), (1200, 42.), (2500, 58.), (5000, 72.), (9000, 80.)]   # metres^(2m) of slope; higher, taller
+SPL_M = .4
+UK = [(280, 11.), (600, 12.5), (1200, 15.), (2500, 18.), (5000, 20.), (9000, 22.)]   # higher, taller; and rest/uk is the size of a channel's head
 REST_DEG = (29.0, 42.0)                   # the angle of rest runs between these, softer and harder ground
 SPL_STEPS = 26
 # what is left too high for its distance is brought down as a whole, keeping its shape: a soft ceiling, in metres
 CAP = [(300, 26), (400, 46), (600, 85), (900, 135), (1500, 210), (3000, 330), (6000, 440), (10000, 500)]
-FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE = 12000.0, .95, .075   # radius = FAN_RADIUS sqrt(area); height = slope * radius, falling as it grows
-GULLY_DEPTH, GULLY_FULL_M2, GULLY_HEAD_M2, GULLY_REACH = 15.0, 22000.0, 500.0, 7000.0   # how deep a slope's rills get, at what area of water
+FAN_MIN_M2, FAN_RADIUS, FAN_SLOPE = 12000.0, .95, .05   # radius = FAN_RADIUS sqrt(area); height = slope * radius, falling as it grows
+GULLY_DEPTH, GULLY_FULL_M2, GULLY_HEAD_M2, GULLY_REACH = 26.0, 14000.0, 300.0, 7000.0   # how deep a slope's rills get, at what area of water
+APRON_SHARE, APRON_M, APRON_SLOPE = .09, (3.5, 11.0), .042   # of the hill behind it, within these, falling at about this much
 FAR_IN = (2500.0, 7000.0)
 ROUGH_ROWS, ROUGH_COLS = 430, 1500        # the map's rough north, in 10 m cells: row 0 is north
 TALUS_DEG = 46.0
@@ -535,7 +536,7 @@ def spread_fans(mask, rec, acc, cell, min_area, radius_k, slope0, warp):
             rad = radius_k * a ** .5
             rad = min(rad, 900.0)
             top = rad * slope0 * (a / 1e5) ** -.14
-            top = min(top, 34.0)
+            top = min(top, 16.0)    # a fan is a long low slope; taller, and from the road it is a cone
             n = int(rad * 1.5 / cell) + 1
             count += 1
             for r2 in range(max(0, r - n), min(H, r + n + 1)):
@@ -627,6 +628,15 @@ def near_hills(dem_bands, D2, rng):
     has_hill[np.unique(labels[mask])] = True
     fan = fan * has_hill[labels]
     log('fans from', mouths, 'valleys; tallest', float(fan.max()))
+    # the apron between the fans, the height of it by the hill behind it: the plain does not meet a hill on a line, it starts to climb
+    # well before it. From the eye a fan alone is a sliver, and the foot is a ruled edge.
+    out = ndi.distance_transform_edt(~mask).astype(np.float32) * c2
+    behind = gauss(ndi.maximum_filter(h, size=41), 18)
+    top = np.clip(behind * APRON_SHARE, APRON_M[0], APRON_M[1])
+    width = top / APRON_SLOPE * np.clip(1 + .34 * noise(rng, n2, 11), .5, 1.6)
+    apron = top * np.maximum(1 - out / width, 0) ** 1.6
+    apron = apron * (1 + .22 * noise(rng, n2, 3) * smooth(0, 60, out))
+    fan = np.maximum(fan, apron * ~mask).astype(np.float32)
     return h, fan, mask, acc, hard
 
 
@@ -698,7 +708,7 @@ def shape(dem, off, rj):
     near = resample(near, n)
     hard_f = resample(hard, n)
     # what the half grid cannot hold: a share of the hill's own height, nothing where it is low
-    near += np.minimum(near * .09, 7.0) * smooth(4, 30, near) * (.5 * np.clip(rf, -2.4, 2.8) + .35 * np.clip(rr, -3, 3))
+    near += np.minimum(near * .10, 11.0) * smooth(4, 30, near) * (.55 * np.clip(rf, -2.4, 2.8) + .35 * np.clip(rr, -3, 3))
     log('rills')
     near, _ = gullied(near, D_f, rng)
     near = near * (1 - .85 * smooth(FAR_IN[0] + 2000, FAR_IN[1] + 3500, D_f))
@@ -804,7 +814,9 @@ def masks(R, G, inside, D, flow):
     # cavity: how far below its surroundings a point lies, at two sizes
     cav = (gauss(R[::4, ::4], 8) - R[::4, ::4]) / 16 + (gauss(R[::4, ::4], 30) - R[::4, ::4]) / 70
     ao = 1 - np.clip(cav, 0, 1) * .75
-    ao = resample(ao, R.shape[0])
+    # and the rills and small crests, which is all the shape a slope has when the sun is behind it
+    fine = (gauss(R, 1.4) - R) / 2.6 + (gauss(R, 4.0) - R) / 7.0
+    ao = resample(ao, R.shape[0]) * (1 - np.clip(fine, 0, 1) * .62)
     gully = smooth(4.3, 6.0, flow)
     # shrubs: dense in the washes and low on the slopes, a little on the fans, almost none on the rock
     above = R - G
@@ -814,13 +826,17 @@ def masks(R, G, inside, D, flow):
     noise /= noise.std()
     patch = gauss(rng.standard_normal((1025, 1025)).astype(np.float32), 14)
     patch /= patch.std()
-    density = np.clip(.30 + .6 * gully, 0, 1) * (1 - smooth(16, 32, deg)) * (.75 + .25 * foot) * np.clip(.7 + .5 * resample(patch, R.shape[0]), .1, 1.3)
-    speck = smooth(1.0, 1.9, resample(noise, R.shape[0]) + 1.5 * (density - .4))
-    veg = np.clip(speck * np.clip(density * 1.9, 0, 1), 0, 1)
+    density = np.clip(.46 + .5 * gully, 0, 1) * (1 - smooth(26, 44, deg)) * (.75 + .25 * foot) * np.clip(.75 + .5 * resample(patch, R.shape[0]), .1, 1.3)
+    speck = smooth(.55, 1.5, resample(noise, R.shape[0]) + 1.6 * (density - .4))
+    veg = np.clip(speck * np.clip(density * 2.2, 0, 1), 0, 1)
+    veg = np.maximum(veg, smooth(.3, 2.2, gauss(R, 2.5) - R) * (.35 + .65 * speck) * (1 - smooth(30, 46, deg)))
     # rock: where the slope bares it, with the broad shape of the land deciding which side first
     rock_noise = gauss(rng.standard_normal((1025, 1025)).astype(np.float32), 3)
     rock_noise /= rock_noise.std()
     rock = smooth(26, 40, deg + 6 * resample(rock_noise, R.shape[0])) * (1 - .35 * gully) * (1 - foot)
+    # rock comes out on what stands up, the crests and noses, and scrub gathers in what is cut in
+    crest = gauss(R, 2.0) - R
+    rock = np.maximum(rock, smooth(.5, 3.0, -crest) * (1 - smooth(4, 10, -deg + 18)) * (1 - foot) * smooth(-1.2, .6, resample(rock_noise, R.shape[0])))
     M = np.dstack([veg, rock, ao, foot])
     return N, M, deg
 
