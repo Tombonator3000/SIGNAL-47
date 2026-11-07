@@ -71,7 +71,22 @@ def material(name):
     mul.inputs[0].default_value = 1
     nt.links.new(bc.outputs['Color'], mul.inputs[1])
     nt.links.new(vc.outputs['Color'], mul.inputs[2])
-    nt.links.new(mul.outputs[0], p.inputs['Base Color'])
+    # Samme graf som import_assets.py: faktor per materiale, og jord nederst der vertex alpha sier det.
+    fac = nt.nodes.new('ShaderNodeMixRGB')
+    fac.blend_type = 'MULTIPLY'
+    fac.inputs[0].default_value = 1
+    fac.inputs[2].default_value = (*fbkit.ALBEDO[short], 1)
+    nt.links.new(mul.outputs[0], fac.inputs[1])
+    inv_a = nt.nodes.new('ShaderNodeMath')
+    inv_a.operation = 'SUBTRACT'
+    inv_a.inputs[0].default_value = 1
+    nt.links.new(vc.outputs['Alpha'], inv_a.inputs[1])
+    soil = nt.nodes.new('ShaderNodeMixRGB')
+    soil.blend_type = 'MIX'
+    soil.inputs[2].default_value = (*fbkit.EARTH_COLOR, 1)
+    nt.links.new(inv_a.outputs[0], soil.inputs[0])
+    nt.links.new(fac.outputs[0], soil.inputs[1])
+    nt.links.new(soil.outputs[0], p.inputs['Base Color'])
     r = nt.nodes.new('ShaderNodeTexImage')
     r.image = bpy.data.images.load(str(TEX / f'T_Farm_{short}_R.png'), check_existing=True)
     r.image.colorspace_settings.name = 'Non-Color'
@@ -117,7 +132,8 @@ def to_mesh(k, name, order):
         mesh.materials.append(material(m))
     uv = mesh.uv_layers.new(name='UVMap')
     col = mesh.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
-    for p, mat, coords, smooth, tint in zip(mesh.polygons, k.mat, k.uv, k.smooth, k.tint):
+    for i, (p, mat, coords, smooth, tint) in enumerate(zip(mesh.polygons, k.mat, k.uv, k.smooth, k.tint)):
+        fx = k.fx.get(i)
         p.material_index = order.index(mat)
         p.use_smooth = smooth
         for li, t in zip(p.loop_indices, coords):
@@ -125,7 +141,8 @@ def to_mesh(k, name, order):
             v = k.v[mesh.loops[li].vertex_index]
             g = fbkit.grime(mat, v)
             e = fbkit.earth(g)
-            c = (min(1, tint[0] * e[0]), min(1, tint[1] * e[1]), min(1, tint[2] * e[2]), 1)
+            w = fbkit.fx_tint(fx, v)
+            c = (min(1, tint[0] * e[0] * w[0]), min(1, tint[1] * e[1] * w[1]), min(1, tint[2] * e[2] * w[2]), 1 - fbkit.earth_mix(mat, v))
             col.data[li].color_srgb = c
     mesh.validate(clean_customdata=False)
     ob = bpy.data.objects.new(name, mesh)
@@ -196,6 +213,9 @@ def verify():
                'bounds_max': [round(v, 3) for v in hi], 'delta_vs_build_m': round(d, 4), 'dotted_names': dotted,
                'slots': [s.material.name if s.material else None for s in render[0].material_slots],
                'has_uv': bool(render[0].data.uv_layers), 'has_col': bool(render[0].data.color_attributes)}
+        if render[0].data.color_attributes:
+            alpha = [c.color[3] for c in render[0].data.color_attributes[0].data]
+            row['earth_alpha'] = [round(min(alpha), 3), round(max(alpha), 3)]
         lim = spec['max']
         good = (kinds == ['MESH'] and tris == want['triangles'] and d < .012 and not dotted and tris <= spec['tris'][lod]
                 and lo[0] >= lim[0] and hi[0] <= lim[1] and lo[1] >= lim[2] and hi[1] <= lim[3] and hi[2] <= lim[4])

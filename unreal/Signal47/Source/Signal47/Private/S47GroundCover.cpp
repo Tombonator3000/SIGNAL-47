@@ -53,6 +53,10 @@ namespace
 	 *  water trough (76, 251) and the pasture gate (66..75, 215), grazed but grassier pasture south of the houses. */
 	double FarmMul(double X, double Z, ES47FloraKind Kind)
 	{
+		// the road and its seams, the ruts on to the barn and the compact ground before the doors: nothing, not even the seams' tiny grass
+		if (X > 6 && X < 118 && FMath::Abs(Z - RanchZ(X)) < 3.6) return 0;
+		if (SegDist(X, Z, 114, RanchZ(114), 137, 176) < 2.2) return 0;
+		for (const FRect& Y : { R(130, 147, 176.5, 185), R(100, 117, 194, 201), R(111, 122, 173.5, 179) }) if (Within(Y, X, Z)) return 0;
 		if (X < 30 || X > 190 || Z < 140 || Z > 320) return 1.0;
 		double Mul = 1.0, Gap = TNumericLimits<double>::Max();
 		for (const FRect& P : FARM_PLOTS()) Gap = FMath::Min(Gap, RectGap(P, X, Z));

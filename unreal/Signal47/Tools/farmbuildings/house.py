@@ -5,7 +5,7 @@ mot sør innenfor fotavtrykket (veien går rett sør for bygget), dype vindusnis
 Tegn på folk: rund kjøler i nordvinduet, TV-antenne, pipe, strømstigerør, dørmatte og vaskesnor-stolpe.
 Vinduet på østveggen lyser, der spillet allerede tegner en varm glød.
 """
-from fbkit import Kit, Frame, wall, roof, lamp, finish, chamfer, WALL_BASE, ucx_box, wall_stains
+from fbkit import Kit, Frame, wall, roof, lamp, finish, chamfer, WALL_BASE, ucx_box, wall_stains, dust_skirt, dust_corner
 
 W2, D2 = 6.0, 4.0
 POSTS = [-5.82, -2.35, 1.15, 5.82]   # Ulik avstand, og døra står ikke midt mellom to stolper.
@@ -110,6 +110,15 @@ def build(lod=0):
 
     for x, y, sx, sy in ((-W2, BODY_S, -1, -1), (W2, BODY_S, 1, -1), (W2, D2, 1, 1), (-W2, D2, -1, 1)):
         chamfer(k, x, y, WALL_BASE, min(zroof(y), 3.0), .09, 'Stucco', sx, sy)
+    # Støv mot veggene og mot portalplatens kanter, ikke foran dører og trinn.
+    dust_skirt(k, E)
+    dust_skirt(k, N, [(bd[0] - .3, bd[1] + .3)])
+    dust_skirt(k, Wst)
+    dust_skirt(k, Frame(k, (-W2 - .02, -D2 - .03), (W2 + .02, -D2 - .03)), [(4.15, 5.9)])
+    dust_skirt(k, Frame(k, (W2 + .02, -D2 - .03), (W2 + .02, BODY_S)))
+    dust_skirt(k, Frame(k, (-W2 - .02, BODY_S), (-W2 - .02, -D2 - .03)))
+    for x, y, sx, sy in ((-W2 - .02, -D2 - .03, -1, -1), (W2 + .02, -D2 - .03, 1, -1), (W2, D2, 1, 1), (-W2, D2, -1, 1)):
+        dust_corner(k, x, y, sx, sy)
 
     if lod == 0:
         # Avrenning under sålbenker og rør, lapper i sement og bart adobe ved hjørner og mot bakken.
@@ -224,13 +233,14 @@ def build(lod=0):
     cx, cy = 2.9, 1.6
     k.bx('chimney', cx - .35, cx + .35, cy - .35, cy + .35, zroof(cy) - .4, 5.7, 'Stucco', 2, skip=((2, -1),))
     k.bx('chimneyCap', cx - .4, cx + .4, cy - .4, cy + .4, 5.7, 5.78, 'Concrete', 0, skip=((2, -1),))
-    k.pipe('flue', (cx, cy, 5.78), (cx, cy, 6.0), .1, 'Steel')
+    k.pipe('flue', (cx, cy, 5.78), (cx, cy, 6.15), .19, 'Steel')
     if lod < 2:
+        # Avtrekket er 0,38 m tvers over: fra bakken skal det leses som et rør, ikke en pinne.
         sx, sy = -2.6, 1.9
-        k.pipe('stove', (sx, sy, zroof(sy) - .1), (sx, sy, 5.2), .075, 'Steel')
-        k.lathe('stoveCap', (sx, sy, 5.2), [(.04, .075), (.1, .18), (.22, .02)], 'Steel', [10, 6, 4][lod], caps=True)
+        k.pipe('stove', (sx, sy, zroof(sy) - .1), (sx, sy, 5.2), .19, 'Steel')
+        k.lathe('stoveCap', (sx, sy, 5.2), [(.04, .19), (.12, .32), (.26, .04)], 'Steel', [10, 6, 4][lod], caps=True)
         # Flens på taket.
-        k.pipe('flash', (sx, sy, zroof(sy) - .02), (sx, sy, zroof(sy) + .05), .16, 'Tin', [10, 6, 4][lod])
+        k.pipe('flash', (sx, sy, zroof(sy) - .02), (sx, sy, zroof(sy) + .05), .29, 'Tin', [10, 6, 4][lod])
 
     # Rund kjøler ("swamp cooler") ved vest-nord-vinduet, på stativ.
     F = N

@@ -97,6 +97,19 @@ namespace S47FarmBuildings
 
  FVector Anchor(const FSite& Site){return FVector(Site.X,S47RoadTerrain::SurfaceY(Site.X,Site.Z)-Site.Sink,Site.Z);}
 
+ FVector2D LocalToRoad(const FSite& Site,double LocalX,double LocalY){return ToRoad(Site,LocalX,LocalY);}
+
+ const TArray<FWallFoot>& WallFeet()
+ {
+  // barn.py and house.py's rectangles, the house with its porch slab; the machine shed has no wall along its open front.
+  static const TArray<FWallFoot> Data={
+   {0,-8.,-5.5,8.,-5.5},{0,8.,-5.5,8.,5.5},{0,8.,5.5,-8.,5.5},{0,-8.,5.5,-8.,-5.5},
+   {1,-6.02,-4.03,6.02,-4.03},{1,6.,-4.03,6.,4.},{1,6.,4.,-6.,4.},{1,-6.,4.,-6.,-4.03},
+   {2,4.5,-2.6,4.5,2.75},{2,4.5,2.75,-4.5,2.75},{2,-4.5,2.75,-4.5,-2.6},
+   {3,-2.5,-2.,2.5,-2.},{3,2.5,-2.,2.5,2.},{3,2.5,2.,-2.5,2.},{3,-2.5,2.,-2.5,-2.}};
+  return Data;
+ }
+
  const TArray<FBox2D>& Obstacles()
  {
   static const TArray<FBox2D> Data=[]
