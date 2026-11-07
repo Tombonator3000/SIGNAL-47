@@ -299,7 +299,7 @@ void FS47Taken::Apply()
   M->World->PlaceTruck(TEXT("saro"));
   if(M->Web->Area()!=TEXT("saro"))M->World->Enter(TEXT("saro"));
   M->Player->Place(9.2,1.2,0);M->Player->Pitch=-.1;
-  Where=TEXT("in the yard at SARO. The truck is on its pad and I did not drive it there");
+  Where=TEXT("in the yard at SARO. The jeep is on its pad and I did not drive it there");
  }
  else if(T.WakeMax>0)
  {
@@ -318,7 +318,7 @@ void FS47Taken::Apply()
  }
  // A frame on the roll that was not taken: no word about it. It is only there in the album, like the others.
  const bool bFrame=M->FieldCamera&&M->FieldCamera->bHave&&M->Night&&M->Night->Album&&M->Night->Album->AddUnbidden(FMath::FRand()<.5f);
- Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them. It says what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"));
+ Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them. This records what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"));
  Note[0]=FChar::ToUpper(Note[0]);
  M->Freeform->RecordEvidence(FString::Printf(TEXT("taken-%d-%d"),M->Freeform->Day(),int32(SafeClock)),Note);
  if(M->Freeform->Director)M->Freeform->Director->RestFor(1800);

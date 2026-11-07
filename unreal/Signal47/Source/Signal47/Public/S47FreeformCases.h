@@ -51,6 +51,7 @@ public:
   bool bOpen=false,bConcluded=false;
   int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0,Hunch=-1; // optional player note, never evidence
   int32 ConcludeDay=0;bool bReplied=false; // mystery lines only
+  bool bBeyondWind=false; // the visitors' case after a taking or a flooded room; follows from the findings, never saved
   double OpenClock=0; // seconds into the day of the retained original
   FString PlannedJob;
   FResult Results[TestCount];
@@ -73,6 +74,9 @@ public:
  // Records a finished test. Returns false if it was not the planned test.
  bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);
  bool Excluded(int32 Line,int32 Cause) const;
+ // Lost time or a room lit up from outside: the visitors' case can no longer be the wind. Never leaves a case with nothing.
+ void RuleOutWind(int32 Line);
+ FString QuestionText(int32 Line) const;
  int32 Remaining(int32 Line) const;
  int32 ValidTestsTotal() const;
  bool Conclude(int32 Line,int32 Cause,FString& Why,int32 Day=0);

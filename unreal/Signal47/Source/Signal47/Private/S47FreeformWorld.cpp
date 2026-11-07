@@ -309,13 +309,13 @@ bool FS47FreeformWorld::StartPump()
 {
  if(!Ready()||M->Freeform->Held()||bPumping)return false;
  if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
- {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
+ {Change(TEXT("Park the SARO service jeep beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
  const double Volume=FMath::Min(1.,4.-Fuel);
- if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
+ if(Volume<.00001){Change(TEXT("Service jeep tank is full."));return false;}
  // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
  if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: No operating budget, so no fuel delivered or charged. OPS: Registered work pays into the budget. An empty tank can call roadside return from the jeep."));return false;}
  bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
- Change(TEXT("REGULAR connected to SARO truck. Each completed two-second interval delivers up to 0.25 tank units for $1. E stops; only delivered fuel is charged."));return true;
+ Change(TEXT("REGULAR connected to SARO jeep. Each completed two-second interval delivers up to 0.25 tank units for $1. E stops; only delivered fuel is charged."));return true;
 }
 void FS47FreeformWorld::StopPump()
 {
@@ -862,20 +862,20 @@ void FS47FreeformWorld::OpenCarryMenu()
  TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(ParcelDescription()+TEXT("\nHeld in both hands. The package remains part of the same paid delivery.")));
  R.Add(S47Kit::Button(TEXT("Set down on a clear surface"),[this]{M->UI->Close();DropParcel(false);},true));
  R.Add(S47Kit::Button(TEXT("Drop from your hands"),[this]{M->UI->Close();DropParcel(true);}));
- R.Add(S47Kit::Small(TEXT("A heavier package slows walking and trails a turn. Walls stop it. Loading the truck secures it for travel.")));
+ R.Add(S47Kit::Small(TEXT("A heavier package slows walking and trails a turn. Walls stop it. Loading the jeep secures it for travel.")));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("CARRIED PARCEL"),S47Kit::Col(R),800));
 }
 
 bool FS47FreeformWorld::ParcelUse()
 {
  if(!Payload||Payload==2)return true;if(Payload==1&&!AtShopCounter())return true;if(!Near(InteractionPoint(TEXT("ff:parcel")),2.8))return true;
- Payload=2;Change(TEXT("Parcel carried. Load it at the truck or unpack at SARO. Use parcel handling to set it down or drop it safely."));return true;
+ Payload=2;Change(TEXT("Parcel carried. Load it at the jeep or unpack at SARO. Use parcel handling to set it down or drop it safely."));return true;
 }
 bool FS47FreeformWorld::CargoUse()
 {
  if(!M||!M->World||M->World->bDriving||!Near(M->World->ServicePosition(),4.8)){Change(TEXT("Move closer to your parked service jeep to load or unload its cargo."));return true;}
  const auto Unload=[this]{Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));};
- if(Payload==2){Payload=3;bParcelWasLoaded=true;Change(TEXT("Parcel secured in the service-truck cargo rack. It travels with the truck."));}
+ if(Payload==2){Payload=3;bParcelWasLoaded=true;Change(TEXT("Parcel secured in the service-jeep cargo rack. It travels with the jeep."));}
  else if(Payload==3&&Fuel>.001)Unload();
  else
  {
@@ -892,7 +892,7 @@ bool FS47FreeformWorld::CargoUse()
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
   R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001));
   if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
-  R.Add(S47Kit::Small(Fuel>.001?TEXT("Roadside return is available when the fuel is empty."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
+  R.Add(S47Kit::Small(Fuel>.001?TEXT("Roadside return is available when the fuel is empty."):TEXT("TANK EMPTY: County roadside service brings you, the jeep and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE JEEP / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -945,7 +945,7 @@ bool FS47FreeformWorld::AnalyzeSample()
 void FS47FreeformWorld::OpenWorkbench()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
- TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / JEEP %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
  R.Add(S47Kit::Small(Logger.bOwned?FString::Printf(TEXT("FIELD LOGGER / operator-built, two field sites, %.0f-hour battery. Measures local electrical noise only."),Logger.MaxBattery()/3600.):LoggerAccess()?TEXT("FIELD LOGGER AUTHORIZED / loan kit, two field sites, six-hour battery. Measures local electrical noise only."):TEXT("FIELD LOGGER LOCKED / complete a supported conclusion in The repeated interval.")));
  if(LoggerAccess()&&!Logger.bLoanIssued)R.Add(S47Kit::Small(TEXT("PARTS STORAGE: Collect the loan kit once at EQUIPMENT CHECKOUT, then carry it to this bench. All later preparation, collection, return and comparison happen here.")));
  if(LoggerAccess()&&Logger.bLoanIssued)
@@ -965,7 +965,7 @@ void FS47FreeformWorld::OpenWorkbench()
  }
  R.Add(S47Kit::Button(TEXT("Take reusable SARO service case"),[this]
  {
-  if(!Ready()||!Near(BenchAt)||Payload!=0)return;Item=TEXT("service_case");Contents.Reset();Payload=2;bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,BenchAt+FVector(0,1.05,0));M->UI->Close();Change(TEXT("SARO service case in hand. Set it down, carry it in the truck, or return it to this bench. It imposes no repair requirement."));
+  if(!Ready()||!Near(BenchAt)||Payload!=0)return;Item=TEXT("service_case");Contents.Reset();Payload=2;bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,BenchAt+FVector(0,1.05,0));M->UI->Close();Change(TEXT("SARO service case in hand. Set it down, carry it in the jeep, or return it to this bench. It imposes no repair requirement."));
  },false,Payload==0));
  R.Add(S47Kit::Button(TEXT("Test donor controller and harvest compatible relay"),[this]{DonorTest();},true,InventoryCount(TEXT("donor"))>0&&BenchJob.IsEmpty()));
  R.Add(S47Kit::Button(TEXT("Open workshop / donors, parts and recipes"),[this]{OpenWorkshop();},false));
@@ -1223,7 +1223,7 @@ void FS47FreeformWorld::OpenDepot()
  R.Add(S47Kit::Small(TEXT("Small spares travel in your service pouch. GARAGE RECEIVING: Unpack purchased parcels. PHOTO LAB: Load the stocked 36-exposure photographic film at the dry bench.")));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / PARTS STORAGE"),S47Kit::Col(R),880));
 }
-void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<3.99&&Consume(TEXT("fuel"))){Fuel=FMath::Min(4.,Fuel+2.);Change(TEXT("Fuel can transferred to the service truck."));}}
+void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<3.99&&Consume(TEXT("fuel"))){Fuel=FMath::Min(4.,Fuel+2.);Change(TEXT("Fuel can transferred to the service jeep."));}}
 void FS47FreeformWorld::RoadsideAssist()
 {
  if(!Ready()||!M->World||Fuel>.001)return;
@@ -1233,7 +1233,7 @@ void FS47FreeformWorld::RoadsideAssist()
  // and Caliche use separate scene origins; their 8-km rendering offset is
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
- Fuel=2.;M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned truck and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
+ Fuel=2.;M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned jeep and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),TEXT("Roadside return used; the interrupted trip and cargo were retained."));
 }
 
@@ -1305,7 +1305,7 @@ bool FS47FreeformWorld::Use(const FString& Id)
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return LoggerAction(Id==TEXT("ff:logger-a")?TEXT("site0"):TEXT("site1"));
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
  {
-  if(AtDiesel()){Change(TEXT("DIESEL is incompatible with the SARO service truck. Use the red REGULAR pump on the same island."));return true;}
+  if(AtDiesel()){Change(TEXT("DIESEL is incompatible with the SARO service jeep. Use the red REGULAR pump on the same island."));return true;}
   if(bPumping)StopPump();else StartPump();return true;
  }
  if(Id==TEXT("ff:carry")){if(Payload!=2)return false;OpenCarryMenu();return true;}
@@ -1333,10 +1333,10 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return !LoggerAccess()?FString():FString(Id==TEXT("ff:logger-a")?TEXT("FIELD SITE A / generator path / "):TEXT("FIELD SITE B / array east / "))+(Logger.Site==(Id==TEXT("ff:logger-a")?0:1)?TEXT("retrieve logger and original tape"):TEXT("place carried logger and start two-hour record"));
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
  {
-  if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
+  if(AtDiesel())return TEXT("DIESEL / service jeep needs the red REGULAR pump");
   if(bTripoPump)return bPumping?TEXT("Stop pump"):TEXT("Use pump");
   if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / 4 / delivered %.2f / $%d"),Fuel,PumpVolume,PumpPaid);
-  const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
+  const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service jeep tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
  }
  if(Id==TEXT("ff:carry"))return Payload==2?TEXT("Handle carried parcel / set down or drop"):FString();
  if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Store counter closed / essential requisition");
@@ -1346,7 +1346,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:depot"))return TEXT("PARTS STORAGE: First logger issue and spare stock");
  if(Id==TEXT("ff:delivery"))return Payload==2?TEXT("GARAGE RECEIVING: Unpack carried supplies into SARO stock"):TEXT("GARAGE RECEIVING: Delivery instructions");
  if(Id==TEXT("ff:parcel"))return Payload>0&&Payload!=2?FString(TEXT("Carry "))+ParcelDescription():FString();
- if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Fuel<=.001?TEXT("Tank empty / roadside return and cargo rack"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
+ if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in jeep"):Fuel<=.001?TEXT("Tank empty / roadside return and cargo rack"):Payload==3?TEXT("Unload parcel from jeep"):TEXT("Jeep fuel / cargo rack");
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return bGenerator?TEXT("Stop backup generator"):TEXT("Start / fuel backup generator");
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return M->Freeform->PowerFault()?Feeder==4&&FeederSeconds>0?TEXT("Feeder test running"):Feeder==4?TEXT("Run feeder replacement-fuse test"):Feeder==3?TEXT("Replace isolated feeder control fuse"):Feeder==2?TEXT("Open enclosed feeder isolation switch"):TEXT("Measure SARO feeder supply"):TEXT("Check normal feeder supply");
  if(Id.StartsWith(TEXT("field:")))

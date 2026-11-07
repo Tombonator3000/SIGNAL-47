@@ -5,6 +5,12 @@ namespace
  constexpr double Day=86400.,Dusk=18.5*3600.,DuskEnd=19.25*3600.,Grace=120.;
  bool ValidClock(double Clock){return FMath::IsFinite(Clock)&&Clock>=0&&Clock<=86400000000.;}
  double DayStart(double Clock){return FMath::FloorToDouble(Clock/Day)*Day;}
+ // Evenings to the next visit once it has been photographed. Written out, not drawn: it has to survive Continue.
+ int32 PhotographedGap(int32 Attempts)
+ {
+  static const int32 Gaps[6]={3,2,4,3,4,2};
+  return Gaps[FMath::Abs(Attempts)%6];
+ }
  double NextOpportunity(double Clock)
  {
   const double Start=DayStart(Clock);
@@ -31,7 +37,7 @@ bool FS47DuskOrb::Update(double Clock,bool bTutorial)
  if(DueClock<0){DueClock=NextOpportunity(Clock);return true;}
  // A skipped dusk is not a witnessed event. Reschedule without inventing an
  // encounter, evidence, warning or payment, including after a sleep/Continue.
- if(Clock>DayStart(DueClock)+DuskEnd){DueClock=NextOpportunity(Clock);return true;}
+ if(Clock>DayStart(DueClock)+DuskEnd){DueClock=NextOpportunity(Clock)+(bPhotographed?(PhotographedGap(Attempts)-1)*Day:0.);return true;}
  return false;
 }
 bool FS47DuskOrb::Ready(double Clock) const
@@ -42,7 +48,14 @@ void FS47DuskOrb::Started(double Clock)
 {
  if(!ValidClock(Clock))return;
  Attempts=FMath::Min(1000000,Attempts+1);
- DueClock=DayStart(Clock)+Day+Dusk;
+ DueClock=DayStart(Clock)+(bPhotographed?PhotographedGap(Attempts):1)*Day+Dusk;
+}
+void FS47DuskOrb::Photographed()
+{
+ if(bPhotographed)return;
+ bPhotographed=true;
+ // This evening's visit has already set tomorrow's: put that one back too.
+ if(DueClock>=0)DueClock+=(PhotographedGap(Attempts)-1)*Day;
 }
 namespace
 {
@@ -87,7 +100,7 @@ bool FS47DuskOrb::SelfTest(TArray<FString>& Lines)
  Check(S.Update(9*3600.,false)&&!S.Ready(Dusk-1)&&S.Ready(Dusk),TEXT("Early tutorial completion schedules the coming dusk"));
  S.Started(Dusk);FS47DuskOrb R;R.Begin(S47J::Read(S47J::Write(S.Save())));
  Check(!R.Ready(Dusk)&&R.Ready(Day+Dusk),TEXT("Consumed dusk survives Continue without restarting or losing next opportunity"));
- R.Photographed();S.Begin(R.Save());Check(S.Ready(Day+Dusk)&&S.WasPhotographed(),TEXT("The lights keep coming back after a photograph; the record of it survives Continue"));
+ R.Photographed();S.Begin(R.Save());Check(!S.Ready(Day+Dusk)&&(S.Ready(2*Day+Dusk)||S.Ready(3*Day+Dusk)||S.Ready(4*Day+Dusk))&&S.WasPhotographed(),TEXT("After a photograph the lights come back every few evenings; the record of it survives Continue"));
  S.Begin(nullptr);S.Update(22*3600.,false);Check(!S.Ready(22*3600.)&&S.Ready(Day+Dusk),TEXT("Late tutorial completion waits for the next dusk"));
  S.Begin(nullptr);S.Update(18.75*3600.,false);Check(!S.Ready(18.75*3600.)&&S.Ready(18.75*3600.+Grace),TEXT("Tutorial completed at dusk gets a short saved grace period"));
  S.Begin(nullptr);S.Update(8*3600.,false);Check(S.Update(Day+8*3600.,false)&&!S.Ready(Day+8*3600.)&&S.Ready(Day+Dusk),TEXT("Sleeping past dusk reschedules without manufacturing an encounter"));

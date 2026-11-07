@@ -54,6 +54,7 @@ public:
  FVector Centre() const{return Middle;}
  FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
  FString PlaceId() const{return Place;}
+ FString PlaceTitle() const{return Title;}
 private:
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;

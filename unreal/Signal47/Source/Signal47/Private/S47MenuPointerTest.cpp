@@ -411,7 +411,9 @@ namespace
     }
     if(MysterySub==3)
     {
-     if(!F.CurrentJob()||F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return Elapsed-DreadAt>40?Fail(TEXT("the recording must print")):true;
+     // At twelve of twenty-seven antennas the eighteen seconds of the pulsar take 42 s at 43 percent, the chart 5.2 s more,
+     // and a frame slower than a tenth of a second counts as a tenth. The array is the worn one here, on purpose.
+     if(!F.CurrentJob()||F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return Elapsed-DreadAt>30.+3.*18./FMath::Max(.05,F.ArrayMeasurementRate())?Fail(TEXT("the recording must print")):true;
      M->UI->Close(true);if(!F.CollectChart())return Fail(TEXT("the chart must come off the printer"));
      M->UI->Close(true);if(!F.RegisterComparison(TEXT("normal")))return Fail(TEXT("the control must register"));
      const auto& Result=C->Results[1];
@@ -515,8 +517,16 @@ namespace
   // body-event before 02:00; the lights start past midnight, not before their hour; a visit at the marks waits for 02:00.
   // -S47MenuPointerRest: the real Rest with the Director running. Set up: armed marks, then dice forced to yes, then to
   // no, in that order. PASS only if: rest over marks stops 02:05 to 03:00 with the call given; the next goes to morning;
-  // dice yes stops it again and an event starts by itself; rest is refused while it runs and goes through once over;
-  // dice no sleeps straight through.
+  // the next night, dice yes or not, sleeps through (never two running); the night after, dice yes stops it again and an
+  // event starts by itself; rest is refused, with the reason, only if what started is close, and goes through once over;
+  // dice no sleeps straight through two nights.
+  // -S47MenuPointerPlanner: what the planner does around the player. Set up: night two at 22:00, every draw no but the
+  // lights' at 22:00, scheduler clock 40 times over; the real jeep and getting out. Natural: the draw, the wait, the start,
+  // the tip, the task row. PASS only if: nothing starts at the wheel and the draw is not spent; parked, the lights start by
+  // themselves; a rest under them is accepted and ends them, leaving their marks and the task row; a rest under
+  // service_presence is refused with its reason; s03_failure (TestBegin: its dice not awaited, the rest of its life natural)
+  // leaves the fault in the equipment and no event; empty_car ends when the player leaves; a failed save starts nothing;
+  // the third card of a day is not up in the morning, says when, and can be pointed at that evening.
   bool StepNight(US47Main* M)
   {
    StageAt=Elapsed;
@@ -582,6 +592,97 @@ namespace
     if(Site.VisitStage()!=4){if(Elapsed-DreadAt>8)return Fail(TEXT("leaving must end it"));return true;}
     D.TestSchedule(-1.f,25.2,40.);DreadAt=Elapsed;Stage=460;return true;
    }
+   // What the planner does around the player.
+   if(Stage==470)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    const auto Choice=M->World->TruckChoice(TEXT("saro"));
+    if(!Choice.Use)return Fail(TEXT("the jeep must offer the drive"));
+    Choice.Use();DreadAt=Elapsed;Stage=471;return true;
+   }
+   if(Stage==471)
+   {
+    if(M->World->bBusy||!M->World->bDriving){if(Elapsed-DreadAt>15)return Fail(TEXT("the player must be at the wheel"));DreadAt=M->World->bDriving?Elapsed:DreadAt;return true;}
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("nothing may start at the wheel"));
+    if(Elapsed-DreadAt<14)return true;
+    if(D.LightsDrawnNight()!=F.Day())return Fail(TEXT("the night's draw must wait for the player to park"));
+    if(!M->World->GetOutHere())return Fail(TEXT("the player must be able to get out"));
+    DreadAt=Elapsed;Stage=472;return true;
+   }
+   if(Stage==472)
+   {
+    const FString Id=D.ActiveEvent();
+    if(Id.IsEmpty())return Elapsed-DreadAt>30?Fail(TEXT("parked, the night's lights must start by themselves")):true;
+    if(Id!=TEXT("farm_lights")&&Id!=TEXT("town_lights"))return Fail(TEXT("the lights come first in the night's order"));
+    UE_LOG(LogTemp,Display,TEXT("S47: planner: %s started by itself after parking"),*Id);
+    // The scheduler back to its own pace: the next tick is minutes off, and the fixtures below have the night to themselves.
+    D.TestSchedule(0.f,-1,1);
+    DreadAt=Elapsed;Stage=473;return true;
+   }
+   const auto Reported=[&F]{for(const auto& Task:F.Tasks())if(Task.Text.StartsWith(TEXT("Reported: lights at")))return true;return false;};
+   if(Stage==473)
+   {
+    if(Elapsed-DreadAt<2)return true;
+    if(!F.Objective().Contains(TEXT("RADIO TIP"))||!Reported())return Fail(TEXT("the tip stands on the objective line and in the task list"));
+    if(!D.RestBlock().IsEmpty())return Fail(TEXT("lights in the distance do not stop a rest"));
+    const double Before=F.Clock();
+    if(!F.WaitUntil(Before+1800.)||F.Clock()<=Before)return Fail(TEXT("a rest under far lights must be accepted"));
+    if(!D.ActiveEvent().IsEmpty()||!Site.Armed()||!Reported())return Fail(TEXT("sleeping ends them and leaves their marks and the task row"));
+    DreadAt=Elapsed;Stage=474;return true;
+   }
+   if(Stage==474)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(!D.TestBegin(TEXT("service_presence")))return Fail(TEXT("the presence must start for this"));
+    const double Before=F.Clock();
+    if(F.WaitUntil(Before+1800.)||F.Clock()!=Before||!F.FeedbackText().Contains(TEXT("service yard")))return Fail(TEXT("a rest under what is close is refused, and says what stops it"));
+    if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
+    if(!D.TestBegin(TEXT("s03_failure")))return Fail(TEXT("the fault must start for this"));
+    DreadAt=Elapsed;Stage=475;return true;
+   }
+   if(Stage==475)
+   {
+    if(Elapsed-DreadAt<1.5)return true;
+    if(!D.ActiveEvent().IsEmpty()||!F.Field->HasArrayFault())return Fail(TEXT("a fault stays in the equipment, not in the event"));
+    if(!D.TestBegin(TEXT("empty_car")))return Fail(TEXT("the empty car must start for this"));
+    DreadAt=Elapsed;Stage=476;return true;
+   }
+   if(Stage==476)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    if(D.ActiveEvent()!=TEXT("empty_car"))return Fail(TEXT("the empty car stands while the player is here"));
+    M->World->Enter(TEXT("road"));DreadAt=Elapsed;Stage=477;return true;
+   }
+   if(Stage==477)
+   {
+    if(M->Web->Area()!=TEXT("road")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("the road must load")):true;
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("leaving ends what has no hardware behind it"));
+    M->World->Enter(TEXT("saro"));DreadAt=Elapsed;Stage=478;return true;
+   }
+   if(Stage==478)
+   {
+    if(M->Web->Area()!=TEXT("saro")||Elapsed-DreadAt<1)return Elapsed-DreadAt>15?Fail(TEXT("SARO must load")):true;
+    M->Player->Place(0,-1.2,0);
+    D.TestSaveFails(true);if(!D.TestBegin(TEXT("flyover")))return Fail(TEXT("the flyover must start for this"));
+    DreadAt=Elapsed;Stage=479;return true;
+   }
+   if(Stage==479)
+   {
+    if(Elapsed-DreadAt<1)return true;
+    D.TestSaveFails(false);
+    if(!D.ActiveEvent().IsEmpty())return Fail(TEXT("no save, no event"));
+    // The evening's work. Only the card is in question: no power would hide it.
+    F.TestEveningGate();if(!DreadToClock(M,9.))return Fail(TEXT("no clock"));
+    const int32 Today=F.Day();const int32 Index=F.Jobs().IndexOfByPredicate([Today](const FS47FreeformSession::FJob& J){return J.Day==Today&&J.Slot==2;});
+    if(Index==INDEX_NONE||!F.SelectJob(Index))return Fail(TEXT("the day has a third card"));
+    if(F.PointSelected())return Fail(TEXT("the evening's source is not up in the morning"));
+    if(!F.JobNextAction(*F.CurrentJob()).Contains(TEXT("EVENING OBSERVATION")))return Fail(TEXT("it says when"));
+    if(F.PowerFault())F.SetPowerFault(false);
+    if(!DreadToClock(M,23.))return Fail(TEXT("no clock"));
+    if(!F.PointSelected())return Fail(TEXT("in the evening it can be pointed at"));
+    UE_LOG(LogTemp,Display,TEXT("S47: planner PASS"));
+    FPlatformMisc::RequestExitWithStatus(false,0);return false;
+   }
    // The rest.
    if(Stage==480)
    {
@@ -605,6 +706,15 @@ namespace
    }
    if(Stage==482)
    {
+    // The night after a broken night, whatever is drawn.
+    if(Elapsed-DreadAt<2)return true;
+    const int32 Day=F.Day();
+    if(!F.Rest())return Fail(TEXT("rest must be accepted"));
+    if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("never two broken nights running"));
+    DreadAt=Elapsed;Stage=486;return true;
+   }
+   if(Stage==486)
+   {
     if(Elapsed-DreadAt<2)return true;
     const int32 Day=F.Day();
     if(!F.Rest())return Fail(TEXT("rest must be accepted"));
@@ -619,7 +729,8 @@ namespace
     if(Id.IsEmpty()){if(Elapsed-DreadAt>30)return Fail(TEXT("what woke them must follow by itself"));return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: rest: %s started by itself after waking"),*Id);
     const double Before=F.Clock();
-    if(F.WaitUntil(F.Clock()+3600.)||F.Clock()!=Before)return Fail(TEXT("no sleeping through an active encounter"));
+    const bool bClose=!D.RestBlock().IsEmpty();
+    if(F.WaitUntil(F.Clock()+60.)==bClose||(bClose&&F.Clock()!=Before))return Fail(TEXT("no sleeping through what is close, and nothing else stops it"));
     if(M->UI)M->UI->Close(true);
     if(!D.CancelForTest())return Fail(TEXT("event would not stop"));
     D.TestSchedule(0.f,-1,1);DreadAt=Elapsed;Stage=484;return true;
@@ -638,6 +749,8 @@ namespace
     const int32 Day=F.Day();
     if(!F.Rest())return Fail(TEXT("rest must be accepted"));
     if(F.Day()!=Day+1||!FMath::IsNearlyEqual(FMath::Fmod(F.Clock(),86400.),8.*3600.,1.))return Fail(TEXT("a night with nothing drawn sleeps straight through"));
+    // The first of these is the night after the broken one, which proves nothing about the dice. The second does.
+    if(++DreadRound<2){DreadAt=Elapsed;return true;}
     UE_LOG(LogTemp,Display,TEXT("S47: rest PASS"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
@@ -1089,7 +1202,16 @@ namespace
      M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
      M->Freeform->Director->TestSchedule(0.f,-1,1);
      M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());M->Freeform->FarmSite->TestReadyVisit();
-     DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
+     DreadRound=0;DreadFrom=DreadAt=Elapsed;Stage=480;StageAt=Elapsed;return true;
+    }
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerPlanner")))
+    {
+     // The Director stays on. 22:00 of night two, in the control room, the lights drawn for 22:00 and nothing else.
+     M->Flow->bDevRun=true;M->Freeform->TestEndFirstShift();
+     if(!M->Freeform->TestAdvance(38.*3600.))return Fail(TEXT("the planner test needs night two"));
+     M->Player->Place(0,-1.2,0);M->Player->Pitch=0;
+     M->Freeform->Director->TestSchedule(0.f,22.,40.);
+     DreadFrom=DreadAt=Elapsed;Stage=470;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerMystery")))
     {
