@@ -20,7 +20,7 @@ Tom 7. november: Freeform går foran Story, og Freeform skal brukes til Story-el
 
 ## Toms avgjørelser etter kritikerrundene, 7. november 2026
 
-Bygg: gårdshusets gamle boks og SARO utvendig må bli troverdige, og kontrollrommet mangler følelsen av et sted der folk har levd. Jeepen byttes til en generisk bil. **Sekskantgulvet i SARO byttes;** dette går foran `SARO_1986.md`. Spill: Tom er enig i kritikerens funn om hva som løfter spillet: dag til forberedelse, kveld til jobb, natt til fare, grunn til å dra ut og retning i uke to. Noe kan komme før kl. 01, så kl. 02 er ikke lenger en fast grense, men kvelden skal fortsatt være vanlig jobb. Tid skal ha en pris, og bortføring skal koste. Forslag til fremgang fra Claude venter på Toms kommentar.
+Bygg: gårdshusets gamle boks og SARO utvendig må bli troverdige, og kontrollrommet mangler følelsen av et sted der folk har levd. Jeepen byttes til en generisk bil. **Sekskantgulvet i SARO byttes;** dette går foran `SARO_1986.md`. Spill: Tom er enig i kritikerens funn om hva som løfter spillet: dag til forberedelse, kveld til jobb, natt til fare, grunn til å dra ut og retning i uke to. Noe kan komme før kl. 01, så kl. 02 er ikke lenger en fast grense, men kvelden skal fortsatt være vanlig jobb. Tid skal ha en pris, og bortføring skal koste. Fremgang, godkjent av Tom: peiling fra antennene, nye steder, CB-radio og 1420 AM, lyskaster på bilen og magnetometer først; deretter feltlogger nr. 2, bedre film og kamera, sikkerhetslys og alarm på SARO, tillit i Caliche og feltseng og motellrom. Tom spør om en samlet director og en visuell editor for oppdrag; oversikt og forslag er under arbeid.
 
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
