@@ -39,6 +39,7 @@
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformProcess.h"
 #include "UnrealClient.h"
 namespace
 {
@@ -57,6 +58,7 @@ namespace
  {if(W->GetTypeAsString()==TEXT("SVerticalBox")&&Text(W,Label)){TArray<TSharedRef<SSlider>> Local;Sliders(W,Local);if(Local.Num()==1)Out.AddUnique(Local[0]);}auto* C=W->GetChildren();for(int I=0;C&&I<C->Num();++I)Knobs(C->GetChildAt(I),Label,Out);}
  struct FRun
  {
+  int TapeRestarts=0;bool bHitchDone=false;
   TWeakObjectPtr<US47Main> Main;int Phase=0,Stage=0,Knob=0,Checks=0;bool Done=false;double Age=0,At=0,SaveAt=0,TravelAt=0;FString Root,User,Photo,Job;TMap<FString,FString> PreservedSaves;int Waits=0;S47J::FObj Base=S47J::New();TArray<TSharedPtr<FJsonValue>> Evidence;TWeakPtr<SSlider> Locked;bool ChangedDials=false;FString CaptureJob,Original,Control,Document;TArray<double> Ticks;int LoadingSeen=-1,LoadingChecked=-1;
   bool Finish(bool Good,const FString& Why)
   {
@@ -484,7 +486,23 @@ namespace
     {
      if(F.AudioPreparing())return true;
      const double Duration=Stage==702?18.:8.;
-     if(!F.AudioPlaying()&&F.AudioPosition()<Duration)return Finish(false,TEXT("restored captured transport stopped before full original/control rendering: ")+F.FeedbackText());
+     if(!F.AudioPlaying()&&F.AudioPosition()<Duration)
+     {
+      // A frame over 100 ms pauses the tape by design and the game says to press PLAY; the retained recipe is untouched.
+      // tapeRendered counts one uninterrupted pass, so the whole source starts over. Bounded, and on the record. Any other stop fails.
+      const FString Why=F.AudioStopReason();
+      if(Why.StartsWith(TEXT("timing"))&&++TapeRestarts<=2)
+      {
+       UE_LOG(LogTemp,Display,TEXT("S47 normal journey phase%d stage%d: tape restart %d after %s at %.3f"),Phase,Stage,TapeRestarts,*Why,F.AudioPosition());
+       auto E=S47J::New();S47J::Set(E,TEXT("tapeRestart"),TapeRestarts);S47J::Set(E,TEXT("why"),Why);S47J::Set(E,TEXT("stage"),Stage);S47J::Set(E,TEXT("position"),F.AudioPosition());Evidence.Add(MakeShared<FJsonValueObject>(E));
+       F.AudioAction(Stage==702?TEXT("original"):TEXT("control"));
+       if(!Check(F.AudioAction(TEXT("play")),TEXT("retained transport restarts after a measured frame interruption")))return false;
+       return true;
+      }
+      return Finish(false,TEXT("restored captured transport stopped before full original/control rendering: ")+(Why.IsEmpty()?FString(TEXT("no noted reason")):Why)+TEXT(" / ")+F.AudioDisplay()+TEXT(" / ")+F.FeedbackText());
+     }
+     // -S47JourneyHitch: one real 200 ms frame during the control, for the stop and the restart above.
+     if(Stage==703&&!bHitchDone&&F.AudioPosition()>2&&FParse::Param(FCommandLine::Get(),TEXT("S47JourneyHitch"))){bHitchDone=true;FPlatformProcess::Sleep(.2f);}
      if(F.AudioPosition()<Duration||S47J::Num(F.CaptureSoundState(),TEXT("tapeRendered"))<Duration*M->Audio->Ctx->SampleRate)return true;
      Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));
      if(!CaptureRetained())return false;

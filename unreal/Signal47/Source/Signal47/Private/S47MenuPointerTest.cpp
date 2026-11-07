@@ -2012,7 +2012,10 @@ namespace
      {TEXT("in-ceiling"),-46.0,674.9,-45.0,3.0,674.9,false},{TEXT("in-floor"),-45.5,674.9,-44.8,0.1,674.9,false},
      {TEXT("out-door"),-41.0,674.1,-45.0,1.4,674.1,false},{TEXT("out-door-close"),-43.0,674.1,-46.0,1.4,674.1,false},
      {TEXT("out-oblique-south"),-41.0,672.0,-43.8,1.5,674.1,false},{TEXT("out-oblique-north"),-41.5,677.0,-44.0,1.3,673.0,false},{TEXT("out-wall"),-41.5,672.3,-44.0,1.3,675.5,false},
-     {TEXT("pool-approach"),-50.5,684.0,-56.0,1.0,700.0,false},{TEXT("pool-fence-south"),-50.0,689.0,-65.0,0.4,691.0,false},{TEXT("pool-fence-corner"),-52.0,696.0,-54.5,0.5,706.0,false}};
+     // The room row's roof covers x -52.65..-40.69, z 671.5..720.5: every view here stands outside it. The pool moved 25 m to behind the row on 31 October, after E04.
+     {TEXT("pool-rear-walk"),-53.3,686.0,-59.4,1.0,699.0,false},{TEXT("pool-fence-post"),-53.3,687.5,-53.9,0.4,690.9,false},{TEXT("pool-fence-west"),-69.0,686.5,-64.9,0.4,690.9,false},
+     // E04's direction and its fence post as they stood on 28 October (old fence z 665.9..682.9), to see what stayed when the kit moved. The post view is ProductionViews' motel-pool-exterior.
+     {TEXT("e04-direction"),-40.5,668.6,-56.0,0.6,667.0,false},{TEXT("e04-old-post"),-49.0,668.8,-53.55,0.15,665.55,false}};
     const int32 I=Stage-700;
     if(I>=int32(UE_ARRAY_COUNT(Views)))
     {

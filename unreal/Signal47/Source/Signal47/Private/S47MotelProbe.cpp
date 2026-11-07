@@ -209,9 +209,11 @@ namespace S47MotelProbe
 		if (!W) return;
 		// Fence rectangle -64.9..-53.9 x 690.9..707.9 widened by 3 m. A lump at a fence post can also be something behind it.
 		constexpr double MinX = -67.9, MaxX = -50.9, MinZ = 687.9, MaxZ = 710.9;
+		// The same widened rectangle before the pool moved 25 m on 31 October: E04's fence post stood here, and what is not part of the pool kit still does.
+		constexpr double OldMinZ = 662.9, OldMaxZ = 685.9;
 		struct FRow { double Size; FString Text; };
 		TArray<FRow> Rows;
-		auto Overlaps = [](const FVector& Lo, const FVector& Hi) { return Hi.X >= MinX && Lo.X <= MaxX && Hi.Z >= MinZ && Lo.Z <= MaxZ && Hi.Y > -2.9 && Lo.Y < 1.5; };
+		auto Overlaps = [](const FVector& Lo, const FVector& Hi) { return Hi.X >= MinX && Lo.X <= MaxX && ((Hi.Z >= MinZ && Lo.Z <= MaxZ) || (Hi.Z >= OldMinZ && Lo.Z <= OldMaxZ)) && Hi.Y > -2.9 && Lo.Y < 1.5; };
 		auto Inside = [](const FVector& C) { return C.X > -64.9 && C.X < -53.9 && C.Z > 690.9 && C.Z < 707.9; };
 		for (int32 I = 0; I < W->PartCount(); ++I)
 		{
@@ -223,9 +225,9 @@ namespace S47MotelProbe
 			const FVector Lo = S47Three::ToThree(Box.Min), Hi = S47Three::ToThree(Box.Max);
 			if (!Overlaps(Lo, Hi)) continue;
 			const UMaterialInterface* M = C->GetNumMaterials() > 0 ? C->GetMaterial(0) : nullptr;
-			Rows.Add({ (Hi - Lo).Size(), FString::Printf(TEXT("mesh node=%d %s geo=%d parent=%d mesh=%s tris=%d mat0=%s size=[%.2f %.2f %.2f] min=[%.2f %.2f %.2f] max=[%.2f %.2f %.2f] centre_inside_fence=%d"),
+			Rows.Add({ (Hi - Lo).Size(), FString::Printf(TEXT("mesh node=%d %s geo=%d parent=%d mesh=%s tris=%d mat0=%s size=[%.2f %.2f %.2f] min=[%.2f %.2f %.2f] max=[%.2f %.2f %.2f] centre_inside_fence=%d e04_site=%d"),
 				I, *N->Name, N->Geo, N->Parent, *C->GetStaticMesh()->GetName(), C->GetStaticMesh()->GetNumTriangles(0), M ? *M->GetName() : TEXT("-"),
-				Hi.X - Lo.X, Hi.Y - Lo.Y, Hi.Z - Lo.Z, Lo.X, Lo.Y, Lo.Z, Hi.X, Hi.Y, Hi.Z, Inside((Lo + Hi) * .5) ? 1 : 0) });
+				Hi.X - Lo.X, Hi.Y - Lo.Y, Hi.Z - Lo.Z, Lo.X, Lo.Y, Lo.Z, Hi.X, Hi.Y, Hi.Z, Inside((Lo + Hi) * .5) ? 1 : 0, Lo.Z <= OldMaxZ ? 1 : 0) });
 		}
 		TMap<FString, int32> PerMesh;
 		TInlineComponentArray<UInstancedStaticMeshComponent*> Isms;
@@ -244,14 +246,14 @@ namespace S47MotelProbe
 				const FVector Lo = S47Three::ToThree(Box.Min), Hi = S47Three::ToThree(Box.Max);
 				if (!Overlaps(Lo, Hi)) continue;
 				++PerMesh.FindOrAdd(C->GetStaticMesh()->GetName() + TEXT(" @ ") + C->GetName());
-				Rows.Add({ (Hi - Lo).Size(), FString::Printf(TEXT("instance %s #%d mesh=%s mat0=%s size=[%.2f %.2f %.2f] min=[%.2f %.2f %.2f] max=[%.2f %.2f %.2f] centre_inside_fence=%d"),
+				Rows.Add({ (Hi - Lo).Size(), FString::Printf(TEXT("instance %s #%d mesh=%s mat0=%s size=[%.2f %.2f %.2f] min=[%.2f %.2f %.2f] max=[%.2f %.2f %.2f] centre_inside_fence=%d e04_site=%d"),
 					*C->GetName(), K, *C->GetStaticMesh()->GetName(), M ? *M->GetName() : TEXT("-"),
-					Hi.X - Lo.X, Hi.Y - Lo.Y, Hi.Z - Lo.Z, Lo.X, Lo.Y, Lo.Z, Hi.X, Hi.Y, Hi.Z, Inside((Lo + Hi) * .5) ? 1 : 0) });
+					Hi.X - Lo.X, Hi.Y - Lo.Y, Hi.Z - Lo.Z, Lo.X, Lo.Y, Lo.Z, Hi.X, Hi.Y, Hi.Z, Inside((Lo + Hi) * .5) ? 1 : 0, Lo.Z <= OldMaxZ ? 1 : 0) });
 			}
 		}
 		Rows.Sort([](const FRow& L, const FRow& R) { return L.Size < R.Size; });
-		UE_LOG(LogTemp, Display, TEXT("S47 pool probe: %d visible meshes/instances with bounds in the pool area (fence widened 3 m); smallest first, up to 120 lines. Flora instances regenerate with camera and quality, so indices are not stable identities."), Rows.Num());
+		UE_LOG(LogTemp, Display, TEXT("S47 pool probe: %d visible meshes/instances with bounds in the pool area (fence widened 3 m); smallest first, up to 400 lines. Flora instances regenerate with camera and quality, so indices are not stable identities."), Rows.Num());
 		for (const auto& Pair : PerMesh) UE_LOG(LogTemp, Display, TEXT("S47 pool probe instances per component: %s = %d"), *Pair.Key, Pair.Value);
-		for (int32 I = 0; I < FMath::Min(120, Rows.Num()); ++I) UE_LOG(LogTemp, Display, TEXT("S47 pool probe row %d diag=%.2f %s"), I, Rows[I].Size, *Rows[I].Text);
+		for (int32 I = 0; I < FMath::Min(400, Rows.Num()); ++I) UE_LOG(LogTemp, Display, TEXT("S47 pool probe row %d diag=%.2f %s"), I, Rows[I].Size, *Rows[I].Text);
 	}
 }
