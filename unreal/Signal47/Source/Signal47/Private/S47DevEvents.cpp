@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47DevFreeform.h"
 #include "S47FloodProbe.h"
 #include "S47Freeform.h"
 #include "S47FarmSite.h"
@@ -46,8 +47,21 @@ void FS47DevEvents::Add(const FString& Group, const FString& Label, const FStrin
  List.Add({ Group, Label, Note, MoveTemp(Fn) });
 }
 
+void FS47DevEvents::AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
+{
+ List.Add({ Group, Label, Note, MoveTemp(Fn), true });
+}
+
+void FS47DevEvents::Relabel(const FString& OldLabel, const FString& NewLabel)
+{
+ for (FEvent& E : List) if (E.Label == OldLabel) E.Label = NewLabel;
+}
+
 void FS47DevEvents::AddBuiltIn()
 {
+ // Freeform's first: in a Freeform night those are the lines asked for, in the order the night has them.
+ FreeformLines = MakeShared<FS47DevFreeform>(M);
+ FreeformLines->AddEntries(*this);
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
  // Pale: the label reads as it did so far (and Label.StartsWith "Pale" keeps its picture in the contract below).
@@ -145,20 +159,31 @@ void FS47DevEvents::AddBuiltIn()
  Add(TEXT("Weather"), TEXT("Fog: medium"), TEXT("about 40 m"), [this, Say] { GS47DevFogDensity = .18f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("medium fog")); });
  Add(TEXT("Weather"), TEXT("Fog: heavy"), TEXT("about 15 m"), [this, Say] { GS47DevFogDensity = 1.5f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("heavy fog")); });
  // ---- time ----
- Add(TEXT("Time"), TEXT("Clock +15 minutes"), TEXT("the night's clock only"), [this, Say] { if (M->Story) M->Story->SetClock(M->Story->Clock() + 15 * 60); Say(TEXT("clock +15 min")); });
+ Add(TEXT("Time"), TEXT("Clock +15 minutes"), TEXT("the night's clock only"), [this, Say]
+ {
+  // Freeform's clock is the session's; Story's is overwritten from it on the next step.
+  if (M->IsFreeform() && M->Freeform) M->Freeform->TestAdvance(15 * 60);
+  else if (M->Story) M->Story->SetClock(M->Story->Clock() + 15 * 60);
+  Say(TEXT("clock +15 min"));
+ });
 }
 
 void FS47DevEvents::Open()
 {
  if (!M || !M->UI || M->Mode != US47Main::EMode::Play || M->UI->Modal()) return;
+ const bool bFree = M->IsFreeform();
  TArray<FS47DevEntry> E;
  for (const FEvent& Ev : List)
  {
+  if (Ev.bFreeform && !bFree) continue;
   const TFunction<void()> Fn = Ev.Fn;
-  E.Add({ Ev.Group, Ev.Label, Ev.Note, [this, Fn] { if (M && M->UI) M->UI->Close(true); if (Fn) Fn(); } });
+  const FString Group = Ev.Group;
+  // A line that opens this menu again (a setting being cycled) comes back to its own group, not the front page.
+  E.Add({ Ev.Group, Ev.Label, Ev.Note, [this, Fn, Group] { if (M && M->UI) M->UI->Close(true); ReopenGroup = Group; if (Fn) Fn(); ReopenGroup.Empty(); } });
  }
- TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS"))
-  .Note(TEXT("Developer previews and live encounter controls. Check each entry before starting. Escape: back to the night."))
+ const FString Line = FreeformLines && bFree ? FreeformLines->MenuNote() : FString(TEXT("Developer previews and live encounter controls. Check each entry before starting."));
+ TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS")).bCategories(true).InitialGroup(ReopenGroup)
+  .Note(Line)
   .OnBack([this] { if (M && M->UI) M->UI->Close(true); });
  M->UI->Open(El);
  FSlateApplication::Get().SetKeyboardFocus(El);
@@ -313,6 +338,7 @@ void FS47DevEvents::StepGait(int32 Kind,double Dt)
 void FS47DevEvents::Step(double Dt)
 {
  if (!M) return;
+ if (FreeformLines) FreeformLines->Step(Dt);
  if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevStep(Dt,M->Night->GlimpseIn(true));
  if (S47FloodProbe::LiveActive()) S47FloodProbe::Step(M,float(Dt));
  const bool bPlay = M->Mode == US47Main::EMode::Play && !M->bPausedByMenu;
@@ -469,7 +495,7 @@ void FS47DevEvents::ControlTest(double Dt)
   ++TestStep; return;
  }
  TArray<const FEvent*> Events;
- for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() || Event.Group==OnlyGroup) Events.Add(&Event);
+ for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() ? !Event.bFreeform : Event.Group==OnlyGroup) Events.Add(&Event);
  TestT += Dt;
  // Measure simultaneous actual components over the short random shower window rather
  // than demand a particular density on one arbitrarily selected frame.
@@ -527,6 +553,7 @@ void FS47DevEvents::ControlTest(double Dt)
 
 void FS47DevEvents::Stop()
 {
+ if (FreeformLines) FreeformLines->Stop();
  if (M && M->SkyVisitors) M->SkyVisitors->DevStage(0);
  S47FloodProbe::StopLive(M);
  if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();

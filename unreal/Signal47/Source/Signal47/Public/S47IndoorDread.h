@@ -56,6 +56,8 @@ public:
  bool PlayerInPeekPlace() const;
  // Developer menu: skip the draw and the wait. The search and every physical rule still apply.
  bool DevPeek();
+ // Developer menu: whatever is at a window or a door now is over, at once.
+ void DevCancel();
  static bool SelfTest(TArray<FString>& Lines);
 
  // Something at a shut door (FS47DoorVisit), which shares the body and goes in turn with the rest of this.

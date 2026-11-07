@@ -6,6 +6,7 @@
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47Rhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
@@ -2232,6 +2233,7 @@ bool US47Flow::OpenTestView(const FString& View)
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
 	bool bOk = S47Picture::SelfTest(Out);
+	bOk &= FS47Rhythm::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{
 		Out.Add(bPass ? FString::Printf(TEXT("ok  flow: %s"), Name) : FString::Printf(TEXT("FAIL flow: %s %s"), Name, *Got));
@@ -2376,6 +2378,8 @@ void US47Flow::OpenDev()
 	const auto Add = [this, &E](const TCHAR* Group, const TCHAR* Label, const TCHAR* Note, const FString& Args)
 	{ E.Add({ Group, Label, Note, [this, Args] { DevRelaunch(Args); } }); };
 	const FString Night = TEXT("-S47EveningTimeline -S47SpineStart=on -S47Jump=");
+	Add(TEXT("Freeform"), TEXT("Test run"), TEXT("a new Freeform game where nothing is saved; F10 starts any event"), TEXT("-S47Freeform"));
+	Add(TEXT("Freeform"), TEXT("Test run, the night by its own rules at x15"), TEXT("what a developer run otherwise switches off is on; F10 changes the speed"), TEXT("-S47Freeform -S47NaturalNight=15"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("The drive to SARO"), TEXT("18:00 on the road"), TEXT("-S47Evening=commute"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("Mesa Diner supper"), TEXT("on the way"), TEXT("-S47Evening=diner"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("SARO parking lot"), TEXT("arrived"), TEXT("-S47Evening=parking"));

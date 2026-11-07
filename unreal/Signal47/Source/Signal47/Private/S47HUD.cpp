@@ -33,6 +33,7 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47DevEvents.h"
+#include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
 #include "S47DeputyRound.h"
@@ -270,6 +271,7 @@ void AS47HUD::Start()
 	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
 	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
 	if (!M->DevEvents) M->DevEvents = MakeShared<FS47DevEvents>(M);
+	if (!M->Rhythm) { M->Rhythm = MakeShared<FS47Rhythm>(M); M->Rhythm->Load(); }
 	if (!M->FieldRadio) M->FieldRadio = MakeShared<FS47FieldRadio>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())

@@ -582,6 +582,17 @@ void FS47SkyVisitors::DevFormationStop()
 {
  if (Formation.bActive && Formation.bDev) { Formation.bActive = false; HidePoints(); }
 }
+
+bool FS47SkyVisitors::DevHighTrack()
+{
+ auto* Session = M ? M->Freeform.Get() : nullptr;
+ if (!bFreeform || !Session || !Session->Active()) return false;
+ ClearPreview(); DevFormationStop();
+ // Its day first, so that the next Advance does not draw over what is set here; Elapsed follows from Start on the next step.
+ FreeformState.Advance(Session->Day(), Session->Clock());
+ FreeformState.bChosen = true; FreeformState.Start = Session->Clock(); FreeformState.Elapsed = 0; FreeformState.ObservedPlaces.Reset();
+ return true;
+}
 TArray<FVector> FS47SkyVisitors::ShownPoints() const
 {
  TArray<FVector> Out;

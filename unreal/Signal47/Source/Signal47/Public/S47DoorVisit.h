@@ -35,6 +35,12 @@ public:
  // While one is under way: the door's key if this thing the ray met is that door, under any of its names. Else empty.
  FString DoorKeyOf(const FString& Usable) const;
  bool Active() const{return Now!=EStage::None;}
+ // Developer menu: past the hour and the dice. The door, the roof and the quiet still have to be there. Empty if it has
+ // started, otherwise why not. DevEnd: over, at once, with nothing left behind.
+ FString DevStart();
+ // A shut door it could come to, from here.
+ bool DoorHere() const;
+ void DevEnd();
  // At most one in two nights: the same night and the next are out.
  static bool MayCome(int32 Day,int32 LastDay){return LastDay<=0||Day>=LastDay+2;}
  static bool SelfTest(TArray<FString>& Lines);
@@ -107,6 +113,7 @@ private:
 
  bool FindDoor(FTarget& Out) const;
  void StepDraw(double Dt);
+ void BeginAt(const FTarget& Found);
  void StepVisit(double Dt);
  void BeginOpening();
  void PoseDoor(double K);

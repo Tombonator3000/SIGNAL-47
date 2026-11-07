@@ -473,6 +473,13 @@ bool FS47IndoorDread::DevPeek()
  return true;
 }
 
+void FS47IndoorDread::DevCancel()
+{
+ bDevWanted=false;
+ if(Stage!=EStage::None)EndPeek();
+ if(DoorVisit)DoorVisit->DevEnd();
+}
+
 bool FS47IndoorDread::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;

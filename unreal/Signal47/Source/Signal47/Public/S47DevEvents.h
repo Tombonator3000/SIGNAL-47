@@ -3,6 +3,7 @@
 #include "S47PaleBody.h"
 
 class US47Main;
+class FS47DevFreeform;
 
 // The fog density a developer event holds over the scene's own (S47Lighting), or below zero: none.
 extern SIGNAL47_API float GS47DevFogDensity;
@@ -14,18 +15,26 @@ extern SIGNAL47_API float GS47DevFogDensity;
 class SIGNAL47_API FS47DevEvents
 {
 public:
- struct FEvent { FString Group, Label, Note; TFunction<void()> Fn; };
+ // bFreeform: only offered in a Freeform night, and left out of the Story contract below.
+ struct FEvent { FString Group, Label, Note; TFunction<void()> Fn; bool bFreeform=false; };
  explicit FS47DevEvents(US47Main* InM);
  void Add(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn);
+ void AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn);
+ // Renames a line in place, for a line that says what it is set to now.
+ void Relabel(const FString& OldLabel, const FString& NewLabel);
  void Open();
  void Step(double Dt);
  void Stop();
  void ControlTest(double Dt);
  const TArray<FEvent>& Events() const { return List; }
+ FS47DevFreeform* FreeformDev() const { return FreeformLines.Get(); }
  TOptional<FVector> PalePresence() const { return PaleLeft>0 && Pale.Rendered()?TOptional<FVector>(PaleAt+FVector(0,1.8,0)):TOptional<FVector>(); }
 private:
  US47Main* M = nullptr;
  TArray<FEvent> List;
+ // Freeform's own lines and the night run at speed (S47DevFreeform.h).
+ TSharedPtr<class FS47DevFreeform> FreeformLines;
+ FString ReopenGroup;
  double ShowerLeft = 0, ShowerNext = 0;
  FS47PaleBody Pale;
  // Tall, crab and Pale One, coming from a distance so their gait can be judged. The Pale One is Pale above, one body.
