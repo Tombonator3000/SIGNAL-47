@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november, gårdsbygg og natur
+## Installert 7. november, aliens i ekte hendelser og egne planter
+
+`65075857` etter PR476 er nå standard, med rask installasjon: ingen kropper før ca. kl. 02, hvile som vekker hvis noe er på gang, Crab og Tall i besøk, kikking i kontrollrommets vindu, radio som knitrer nærmere dem, og egne modeller av cholla, yucca og mesquite. Ikke spilt av et menneske, og lyd er ikke hørt. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-07_aliens-planter.md).
+
+## Tidligere installert 7. november, gårdsbygg og natur
 
 `5a68c650` etter PR475 er nå standard, med rask installasjon: fire egne gårdsbygg i Freeform, bakke i jordfarge om dagen, kreosot i bestand og feilretting for tunlampe og lagret bil. Før dette samme natt: ekte bortføring og stedsbesøk (`421b8d43`) og blikk i øynene, kua som stirrer og bilde på filmen (`20d9d513`). Selvtest 2523 og 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-07_gardsbygg-natur.md).
 
