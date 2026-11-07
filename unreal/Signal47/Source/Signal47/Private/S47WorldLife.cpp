@@ -1,4 +1,5 @@
 #include "S47WorldLife.h"
+#include "S47FreeformTerrain.h"
 #include "S47TownLayer.h"
 
 #include "Components/LightComponent.h"
@@ -185,6 +186,7 @@ void US47WorldLife::BuildFlora(bool bBind)
 {
 	AS47Web* W = M->Web.Get();
 	// Freeform has the newer rules of nature (S47FarmWorld::Enabled); Story keeps the web version's, as the tests have them
+	S47FreeformTerrain::Reconcile(M);
 	const bool bNaturalNow = S47FarmWorld::Enabled(M);
 	bNaturalApplied = bNaturalNow;
 	// arrayLayout.ts FIELD_ZONES: SARO's walk zones of the antenna field
@@ -295,7 +297,9 @@ void US47WorldLife::Step(double Dt)
 	const double Clock = M->Story ? M->Story->Clock() : 0;
 	const FS47Cam Cam = FS47Cam::Of(M->Player, Area == TEXT("roswell") ? 12000 : 5000);
 	TestFlags(Dt);
-	// the world is built before the mode is chosen: the rules of nature follow it (the cells are made again)
+	// the world is built before the mode is chosen: the rules of nature follow it (the cells are made again, on the ground
+	// of the new mode, which is why that comes first)
+	S47FreeformTerrain::Reconcile(M);
 	if (const bool bNat = S47FarmWorld::Enabled(M); bNat != bNaturalApplied)
 	{
 		bNaturalApplied = bNat;

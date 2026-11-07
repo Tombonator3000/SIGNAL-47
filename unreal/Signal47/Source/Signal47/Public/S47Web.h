@@ -33,6 +33,7 @@ class FJsonObject;
 class FS47MotelV2;
 class FS47RouteNature;
 struct FS47HighwayRanch;
+struct FS47FreeformTerrainState;
 class FS47RadioWoman;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
@@ -109,6 +110,8 @@ public:
 	bool HasPath(const FString& Path) const;
 	bool MesaDinerReady() const { return bMesaDinerReady; }
 	bool HighwayLandscapeReady() const { return HighwayLandscapeRoot.IsValid(); }
+	bool IsHighwayShared(int32 InNode) const { return HighwaySharedNodes.Contains(InNode); }
+	TSharedPtr<FS47FreeformTerrainState> FreeformTerrain;   // S47FreeformTerrain: Freeform's rolling land, once it is asked for
 	FVector HighwayMapEye(const FVector& ThreeEye) const;
 	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
 	bool AuditHighwayRanch(TArray<FString>& Lines) const;

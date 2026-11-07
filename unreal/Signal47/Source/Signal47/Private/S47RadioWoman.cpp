@@ -1,5 +1,6 @@
 // HUM-01: preserve the existing lap radio and person owner; replace only old body geometry.
 #include "S47RadioWoman.h"
+#include "S47FreeformTerrain.h"
 #include "S47Web.h"
 #include "S47Three.h"
 #include "S47Json.h"
@@ -383,7 +384,7 @@ namespace
    {
     const auto* M=Cast<UStaticMeshComponent>(C);const FString Path=M?GetPathNameSafe(M->GetStaticMesh().Get()):FString();
     if(!Visible)Role=TEXT("hidden_or_inactive_component_not_support");
-    else if(N->Geo==873&&Index==1242&&Root==1240&&Path==TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873"))Role=TEXT("measured_visible_active_road_desert");
+    else if(N->Geo==873&&Index==1242&&Root==1240&&(Path==TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873")||Path==S47FreeformTerrain::RoadMeshPath()))Role=TEXT("measured_visible_active_road_desert");
     else if(N->Geo==1004&&Index==1453&&Root==1431&&Path==TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004"))Role=TEXT("measured_visible_retained_town_pavement");
     else Role=TEXT("other_visible_surface_without_verified_authored_support_role");
    }
@@ -631,7 +632,7 @@ namespace
   {
    const auto* P=W->Node(Nodes[I]);const auto* Parent=W->Node(Parents[I]);auto* Surface=P?Cast<UStaticMeshComponent>(P->Comp.Get()):nullptr;
    if(!P||P->Parent!=Parents[I]||!Parent||!Parent->Comp.IsValid()||!Surface||!Surface->GetStaticMesh()
-    ||Surface->GetStaticMesh()->GetPathName()!=Paths[I]||!ActiveComponent(W,Nodes[I],Surface)
+    ||(Surface->GetStaticMesh()->GetPathName()!=Paths[I]&&!(Nodes[I]==1242&&Surface->GetStaticMesh()->GetPathName()==S47FreeformTerrain::RoadMeshPath()))||!ActiveComponent(W,Nodes[I],Surface)
     ||Surface->GetAttachParent()!=Parent->Comp.Get()||!Surface->GetRelativeTransform().Equals(FTransform::Identity,.001)
     ||!Surface->GetComponentTransform().Equals(GroundFrame,.001)||(Surface->GetOwner()&&Surface->GetOwner()->IsHidden())
     ||!CollisionEnabledHasQuery(Surface->GetCollisionEnabled())||Surface->GetCollisionResponseToChannel(ECC_Visibility)!=ECR_Block)return false;
@@ -665,7 +666,7 @@ namespace
   {
    auto I=S47J::Obj(Hit,TEXT("surface_identity"));const auto Normal=S47J::Nums(Hit,TEXT("impact_normal_ue"));
    return Normal.Num()==3&&FMath::IsFinite(Normal[0])&&FMath::IsFinite(Normal[1])&&FMath::IsFinite(Normal[2])&&Normal[2]>.7
-    &&!S47J::Bool(Hit,TEXT("start_penetrating"))&&S47J::Bool(Hit,TEXT("hit"))&&S47J::Int(I,TEXT("node"),INDEX_NONE)==Node&&S47J::Str(I,TEXT("mesh"))==Path
+    &&!S47J::Bool(Hit,TEXT("start_penetrating"))&&S47J::Bool(Hit,TEXT("hit"))&&S47J::Int(I,TEXT("node"),INDEX_NONE)==Node&&(S47J::Str(I,TEXT("mesh"))==Path||(Node==1242&&S47J::Str(I,TEXT("mesh"))==S47FreeformTerrain::RoadMeshPath()))
     &&S47J::Bool(I,TEXT("actually_shown_registered"))&&S47J::Bool(I,TEXT("active_area_root"))&&!S47J::Bool(I,TEXT("same_laundry_shell"));
   };
   const auto WorldChainComplete=[&](const TSharedPtr<FJsonObject>& Probe,bool OwnBenchMayBlock)

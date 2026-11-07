@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47Relief.h"
 #include "S47FarmBuildings.h"
 #include "S47MotelV2.h"
 #include "S47SaroSite.h"
@@ -359,7 +360,8 @@ double SaroLand(double X, double Z)
 	const double Rx = X + SIR().X, Rz = Z + SIR().Z;
 	const double W = Smooth(40, 100, Z) * (1 - Smooth(0, 160, S47Geo::Outside(S47Geo::SARO_PATCH, Rx, Rz)));
 	if (W > 0) Y += (S47RoadShape::HLow(Rx, Rz) - (S47Geo::InRect(S47Geo::SARO_PATCH, Rx, Rz, -2) ? 0.7 : 0.05) - Y) * W;
-	return Y;
+	// (Unreal only) Freeform's rolling land, in the road's terms, last of all; 0 outside Freeform and over the site
+	return Y + S47Relief::Off(Rx, Rz);
 }
 
 TArray<FS47FloraRect> PostsOf(const TArray<FObstacle>& Obstacles, double Dx, double Dz)

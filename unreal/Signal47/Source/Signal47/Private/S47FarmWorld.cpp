@@ -1,4 +1,6 @@
 #include "S47FarmWorld.h"
+#include "S47FreeformTerrain.h"
+#include "S47Relief.h"
 #include "Components/PointLightComponent.h"
 #include "Components/MaterialBillboardComponent.h"
 #include "S47FarmHouse.h"
@@ -379,7 +381,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);
   if(On)KeepPlayerOutOfWalls(M,W);
   if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
@@ -465,6 +467,7 @@ namespace S47FarmWorld
    Moved&=NearestClearTruckSpot(Walls,60,RoadZ,0,Hw,Hl,Kx,Kz)&&Kx==60&&Kz==RoadZ;
   }
   Lines.Add(FString(Moved?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: a truck parked in a wall by an old save is moved to the nearest clear ground, one on the road is left alone"));
-  return Good&&Moved;
+  const bool Relief=S47Relief::SelfTest(Lines);
+  return Good&&Moved&&Relief;
  }
 }
