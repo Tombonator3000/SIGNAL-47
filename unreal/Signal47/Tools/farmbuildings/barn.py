@@ -4,7 +4,7 @@ sideskip mot vest. Skjevheten er med vilje: referansene fra New Mexico er ikke s
 Stående bord, bølgeblikk, skyvedører på skinne, høyluke med bjelke. Rom å gå inn i: bred midtgang,
 stolperekker, båser mot øst og i sideskipet, høyloft over bakre halvdel, stige, jordgulv.
 """
-from fbkit import Kit, wall, battens, roof, lamp, finish, ucx_box, WALL_BASE
+from fbkit import Kit, wall, battens, roof, lamp, finish, ucx_box, WALL_BASE, board_rect, dust_skirt, dust_corner, pallet
 
 W2, D2 = 8.0, 5.5          # Halv bredde og dybde.
 MX, MW = 1.8, 6.2          # Hovedskipets midtlinje og halve bredde: x -4,4 til 8.
@@ -26,7 +26,11 @@ LOFT_Z, LOFT_Y = 2.75, .95
 def plank_leaf(F, name, u0, u1, z0, z1, d0, d1, k, brace=True, mat='Board', broken=False):
     """Dør av stående bord med overliggere og skråstag. broken: det ene staget har falt av."""
     tone = 1 + (k.rng.random() - .5) * .14
-    F.box(name, u0, u1, z0, z1, d0, d1, mat, 2, tint=(tone, tone * .97, tone * .94))
+    if k.lod > 1 or mat != 'Board':
+        F.box(name, u0, u1, z0, z1, d0, d1, mat, 2, tint=(tone, tone * .97, tone * .94))
+    else:
+        F.box(name, u0, u1, z0, z1, d0, d1, mat, 2, skip=((1, 1),), tint=(tone, tone * .97, tone * .94))
+        board_rect(k, F, name, u0, u1, z0, z1, d1, tone)
     if k.lod > 1:
         return
     b = .11
@@ -82,6 +86,17 @@ def build(lod=0):
     # Veggstykket over sideskipstaket.
     up = wall(k, 'upperWest', (XW, D2), (XW, -D2), EAVE + .08, [], .08, LEAN_IN - .12, rows=(), itint=it)
 
+    # Støv mot veggene, ikke foran dørene.
+    dust_skirt(k, S, [(door[0] - .2, door[1] + .2)])
+    dust_skirt(k, SW, [(pass_door[0] - .1, pass_door[1] + .1)])
+    dust_skirt(k, E)
+    dust_skirt(k, N, [(rear[0] - .1, rear[1] + .1)])
+    dust_skirt(k, NW)
+    dust_skirt(k, Wst)
+    for x, y, sx, sy in ((-W2, -D2, -1, -1), (W2, -D2, 1, -1), (W2, D2, 1, 1), (-W2, D2, -1, 1)):
+        dust_corner(k, x, y, sx, sy)
+    # Trepall lent mot gavlen, mellom vinduet og hjørnet. Fat og pall er kulisse: spilleren har ikke hindring her.
+    pallet(k, S, 11.05)
     if lod == 0:
         # Noen eldre, utskiftede bordfelt i annen tone.
         for F, u, z, wd, hd, tone in ((N, 2.2, .35, 1.3, .95, .84), (Wst, 3.4, .35, .9, 1.1, .86)):
@@ -89,7 +104,7 @@ def build(lod=0):
         # Mer gliper lavt på veggene: lyset kommer inn.
     # Dekklister. Skyvedør og karm ligger utenpå.
     if lod < 2:
-        step = .62 if lod == 0 else 1.5
+        step = 1.1 if lod == 0 else 2.2
         battens(k, S, 'batten', 0, w, step, gable, [door, hay, win_s] + gaps, WALL_BASE)
         battens(k, SW, 'batten', 0, 3.6, step, lean_s, [pass_door], WALL_BASE)
         battens(k, E, 'batten', 0, 2 * D2, step, EAVE, east_h, WALL_BASE)
@@ -143,7 +158,7 @@ def build(lod=0):
     if lod < 2:
         frame(SW, 'passFrame', pass_door[0], pass_door[1], 0.05, pass_door[3], .08, 'Wood', False)
     # Vindu ved skyvedøra.
-    S.quad('southGlass', win_s[0], win_s[1], win_s[2], win_s[3], -.075, 'Glass')
+    S.quad('southGlass', win_s[0], win_s[1], win_s[2], win_s[3], -.05, 'Glass')
     if lod < 2:
         frame(S, 'southWindow', win_s[0], win_s[1], win_s[2], win_s[3])
         um, zm = (win_s[0] + win_s[1]) / 2, (win_s[2] + win_s[3]) / 2

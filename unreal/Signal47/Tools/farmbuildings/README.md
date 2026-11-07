@@ -12,6 +12,7 @@ Originale prosedyrale `bpy`-modeller, uten nedlastede modeller og uten uttrekk. 
 | `fbkit.py` | Vegg med ekte hull, tak i plater, bokser, bjelker, skittstripe mot bakken. |
 | `barn.py`, `house.py`, `sheds.py` | Selve byggene. `build(lod)` og `collision()`. |
 | `textures.py` | Egne kart, 1024 px, sømløse. BC, N (DirectX) og R, pluss E for lysende vindu. |
+| `ground_decals.py` | Egne RGBA-kart til dekalene på bakken: vei, veiens ende, spor, bånd mot veggen og slitt felt. |
 | `run_blender.py` | Bygger LOD 0, 1 og 2 og UCX, eksporterer FBX, rendrer `clay`, `mat`, `back` (baksider røde) og `wire`, og leser FBX tilbake i `verify`. |
 | `heavy.py` | Kjører `run_blender.py` gjennom `HeavyReservation` og `unreal_guard.run_owned`, venter ved opptatt, stopper aldri andre. |
 | `check.py` | Rask kontroll uten Blender: trekanter, bounds og materialspor mot `spec.py`. |
@@ -24,6 +25,7 @@ Originale prosedyrale `bpy`-modeller, uten nedlastede modeller og uten uttrekk. 
 ```sh
 python3 check.py
 ~/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 textures.py "<utrot>/textures"
+~/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 ground_decals.py "<utrot>/textures"
 python3 heavy.py barn mat + house mat + shed_a mat + shed_b mat
 python3 heavy.py barn wire hero + barn verify
 python3 placement.py
@@ -61,9 +63,15 @@ Dagens spill har bare to bokser i `g910`, `g911` og `g912`: hus 12 x 8 m ved (10
 
 ## Mot bakken
 
-Ingen sokkel: veggkledningen går rett ned til `fbkit.WALL_BASE` (-0,5 m). `fbkit.finish` kutter alle flater ved z 0, 0,13 og 0,75, så vegg, list og stolpe får samme skittstripe fra `grime` og `earth`. `S47FarmBuildings::FSite::Sink` senker hvert bygg 2 til 3 cm, og gulvene i `Floors` må følge `FLOOR`, `A_FLOOR` og `B_FLOOR` og ligge over høyeste terreng i fotavtrykket: selvtesten sjekker det. Terrenget varierer -0,08 til +0,14 m rundt ankeret, målt med `S47RoadTerrain::SurfaceY`.
+Ingen sokkel: veggkledningen går rett ned til `fbkit.WALL_BASE` (-0,5 m). `fbkit.finish` kutter alle flater ved z 0, 0,13, 0,3 og 0,6 (pussen også 0,45), så vegg, list og stolpe får samme skittstripe fra `grime`, `earth` og `earth_mix`. Vertex alpha er jordblandingen: 25 prosent ved bakken, ingenting ved 0,6 m, og materialet blander mot `EarthColor`. Pussen har oppstigende fukt til omtrent 0,3 m. `dust_skirt` og `dust_corner` legger en lav, ujevn jordkant mot veggene som dykker under terrenget. `S47FarmBuildings::FSite::Sink` senker hvert bygg 2 til 3 cm, og gulvene i `Floors` må følge `FLOOR`, `A_FLOOR` og `B_FLOOR` og ligge over høyeste terreng i fotavtrykket: selvtesten sjekker det. Terrenget varierer -0,08 til +0,14 m rundt ankeret, målt med `S47RoadTerrain::SurfaceY`.
 
 Øst for road x 107,66 er SARO-ringen eneste bakke i SARO-området, og den ligger opptil 0,79 m under `SurfaceY`. `S47FarmWorld::MakeYardGround` legger derfor samme ørkengitter videre over tunet i Freeform.
+
+Bakken selv er dekaler fra `S47FarmWorld::BuildFarmDecals`, med ekte alfa over den bakken som ligger der, så de følger relieff av seg selv og har ingen kant: vei, veiens ende til to spor og så ingenting, spor til låveporten, slitte felt foran dørene, mørk jord langs `S47FarmBuildings::WallFeet` og i hjørnene. Bygg tar ikke imot dekaler. Kartene lages av `ground_decals.py`, utenfor Git i `textures/`, og er symmetriske på tvers. Mangler materialene, står det gamle veibåndet i Freeform. Tonene justeres uten ny import med `Decal...Tint` og `Decal...Opacity` øverst i samme kode.
+
+## Skala og tone
+
+Bord er 0,20 til 0,25 m med egen UV-forskyvning, tone (8 prosent) og fuge, og to til tre ødelagte per vegg, alt i `fbkit.columns`, `emit_columns` og `broken_boards`. Blikket har `TILE_U` 0,88 m på tvers (omtrent 8 cm ribbe) og 3,2 m langs. Takene har to til tre partier med ulik alder per flate, skjøt hver 2,4 m nedover og rust fra mønet. Skyggebånd under takskjegget og avrenning fra takkanten regnes per hjørne fra `Kit.fx`. Albedo per materiale står i `fbkit.ALBEDO` og `import_assets.py` `ALBEDO`, som må være like, og kan justeres uten ny FBX med parameteren `AlbedoFactor`.
 
 ## Kritikerrunder
 

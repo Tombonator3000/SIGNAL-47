@@ -25,6 +25,8 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "Components/DecalComponent.h"
+#include "Misc/PackageName.h"
 namespace
 {
  struct FPart {TWeakObjectPtr<UStaticMeshComponent> C;FVector Road,Size;};
@@ -185,6 +187,91 @@ namespace
   }
   return GroundMesh(W,TEXT("S47FarmRoadRibbon"),G,Material);
  }
+ // Tom, 7 November: houses and land must blend into each other. Decals lie over whatever ground is there with real alpha, so the
+ // road, the yard and the soil at the walls have no edge, and they follow the land by themselves (Tools/farmbuildings/ground_decals.py).
+ // A decal's U runs along its local Z and V along Y (DeferredDecal.usf); the road's and the band's maps are alike on both sides.
+ struct FFarmDecal{TWeakObjectPtr<UDecalComponent> C;FVector Road=FVector::ZeroVector;double Degrees=0;};
+ struct FDecalTone{TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Tint=FLinearColor::White;};
+ TArray<FFarmDecal> FarmDecals;TArray<FDecalTone> DecalTones;TWeakObjectPtr<AS47Web> DecalWorld;bool bDecalsTried=false;float DecalDay=-1.f;
+ constexpr double DecalRoadHalf=3.8,DecalBandHalf=.9,DecalMargin=.5; // Half widths of ground_decals.py's maps; how far past the land a box reaches.
+ // The only numbers to retune from a capture: the maps' albedo is reckoned for the sun, sRGB 180,140,105 on the road.
+ const FLinearColor DecalRoadTint(1.f,1.f,1.f),DecalBandTint(1.f,1.f,1.f),DecalFieldTint(1.f,1.f,1.f),DecalCornerTint(.5f,.46f,.44f);
+ constexpr float DecalBandOpacity=.95f,DecalYardOpacity=.5f,DecalDoorOpacity=.85f,DecalCornerOpacity=.9f;
+ void BuildFarmDecals(AS47Web* W,bool On)
+ {
+  if(DecalWorld.Get()!=W){DecalWorld=W;FarmDecals.Reset();DecalTones.Reset();bDecalsTried=false;DecalDay=-1.f;}
+  if(!On||bDecalsTried||!S47FarmBuildings::Available())return;bDecalsTried=true;
+  const auto Load=[](const TCHAR* Name)->UMaterialInterface*
+  {
+   const FString Package=FString::Printf(TEXT("/Game/FarmBuildings/Materials/%s"),Name);
+   return FPackageName::DoesPackageExist(Package)?LoadObject<UMaterialInterface>(nullptr,*FString::Printf(TEXT("%s.%s"),*Package,Name)):nullptr;
+  };
+  UMaterialInterface* RoadAsset=Load(TEXT("M_Farm_RoadDecal"));UMaterialInterface* EndAsset=Load(TEXT("M_Farm_RoadEnd"));UMaterialInterface* TrackAsset=Load(TEXT("M_Farm_TrackDecal"));
+  UMaterialInterface* BandAsset=Load(TEXT("M_Farm_GroundBand"));UMaterialInterface* FieldAsset=Load(TEXT("M_Farm_WornField"));
+  if(!RoadAsset||!EndAsset||!TrackAsset||!BandAsset||!FieldAsset){UE_LOG(LogTemp,Display,TEXT("S47: farm ground decals are not imported, keeping the road ribbon"));return;}
+  const auto Tone=[&](UMaterialInterface* Asset,const FLinearColor& Tint,float Opacity)->UMaterialInterface*
+  {
+   auto* Mid=UMaterialInstanceDynamic::Create(Asset,W);Mid->SetVectorParameterValue(TEXT("Tint"),Tint);Mid->SetScalarParameterValue(TEXT("Opacity"),Opacity);DecalTones.Add({Mid,Tint});return Mid;
+  };
+  // From A to B along the map's U, centred between them. The box reaches just past the land under it, so a truck on the road is only dusty at the wheels.
+  const auto Piece=[&](UMaterialInterface* Mat,double Ax,double Az,double Bx,double Bz,double HalfAcross)
+  {
+   const double Cx=(Ax+Bx)/2,Cz=(Az+Bz)/2,Dx=Bx-Ax,Dz=Bz-Az,Len=FMath::Max(.01,FMath::Sqrt(Dx*Dx+Dz*Dz)),Cy=S47RoadTerrain::SurfaceY(Cx,Cz);
+   double Reach=0;
+   for(int32 I=-4;I<=4;++I)for(int32 J=-2;J<=2;++J)
+   {
+    const double Along=I/8.,Across=J/4.;
+    Reach=FMath::Max(Reach,FMath::Abs(S47RoadTerrain::SurfaceY(Cx+Dx*Along-Dz/Len*HalfAcross*Across,Cz+Dz*Along+Dx/Len*HalfAcross*Across)-Cy));
+   }
+   auto* D=NewObject<UDecalComponent>(W,*FString::Printf(TEXT("FarmGroundDecal_%03d"),FarmDecals.Num()));
+   D->SetDecalMaterial(Mat);D->DecalSize=FVector((Reach+DecalMargin)*100,HalfAcross*100,Len*50);D->SetFadeScreenSize(0.f);D->SortOrder=FarmDecals.Num();
+   D->SetupAttachment(W->GetRootComponent());D->RegisterComponent();
+   FarmDecals.Add({D,FVector(Cx,Cy,Cz),FMath::RadiansToDegrees(FMath::Atan2(Dz,Dx))-90});
+  };
+  const auto Rz=[](double X){return S47RoadTerrain::RanchZ(X);};
+  const auto Local=[](int32 Site,double X,double Y){return S47FarmBuildings::LocalToRoad(S47FarmBuildings::Sites()[Site],X,Y);};
+  // Broad trampled ground first, so the road and the soil at the walls draw over it: SortOrder is the order they are made in.
+  UMaterialInterface* Yard=Tone(FieldAsset,DecalFieldTint,DecalYardOpacity);UMaterialInterface* Door=Tone(FieldAsset,DecalFieldTint,DecalDoorOpacity);
+  const auto Field=[&](UMaterialInterface* Mat,const FVector2D& At,const FVector2D& Along,double HalfAcross,double HalfAlong)
+  {
+   Piece(Mat,At.X-Along.X*HalfAlong,At.Y-Along.Y*HalfAlong,At.X+Along.X*HalfAlong,At.Y+Along.Y*HalfAlong,HalfAcross);
+  };
+  const FVector2D Over=(Local(0,1,0)-Local(0,0,0)).GetSafeNormal();
+  Field(Yard,FVector2D(124,186),Over,16,19);                 // the yard between the barn, the sheds and the house
+  Field(Door,Local(0,1.8,-9.6),Over,5,6.5);                  // in front of the barn's doors
+  Field(Door,Local(1,-1,-6.6),Over,4,8.5);                   // in front of the house's porch
+  Field(Door,Local(2,0,-5.4),Over,3.2,5.5);                  // the machine shed's open front
+  Field(Door,Local(3,-1,-4),Over,2.4,2.8);                   // the feed shed's door
+  // The road: 16 m to a map from the yard back to the highway, its first piece shorter.
+  UMaterialInterface* RoadMat=Tone(RoadAsset,DecalRoadTint,1.f);
+  Piece(RoadMat,6,Rz(6),14,Rz(14),DecalRoadHalf);
+  for(double X=14;X<110;X+=16)Piece(RoadMat,X,Rz(X),X+16,Rz(X+16),DecalRoadHalf);
+  // At x 110 the road goes over to two ruts by 118 and to nothing by 126. U=0 is the road's side.
+  Piece(Tone(EndAsset,DecalRoadTint,1.f),110,Rz(110),126,Rz(126),DecalRoadHalf);
+  // Two ruts on across the yard to the barn's doors.
+  const FVector2D BarnDoor=Local(0,1.8,-6.5);
+  Piece(Tone(TrackAsset,DecalRoadTint,1.f),114,Rz(114)-.6,BarnDoor.X,BarnDoor.Y,DecalRoadHalf);
+  // The soil against the walls and in their corners.
+  UMaterialInterface* Band=Tone(BandAsset,DecalBandTint,DecalBandOpacity);UMaterialInterface* Corner=Tone(FieldAsset,DecalCornerTint,DecalCornerOpacity);
+  for(const S47FarmBuildings::FWallFoot& Foot:S47FarmBuildings::WallFeet())
+  {
+   const FVector2D A=Local(Foot.Site,Foot.X0,Foot.Y0),B=Local(Foot.Site,Foot.X1,Foot.Y1);
+   const int32 Count=FMath::Max(1,FMath::RoundToInt(FVector2D::Distance(A,B)/4));
+   for(int32 I=0;I<Count;++I){const FVector2D P0=FMath::Lerp(A,B,double(I)/Count),P1=FMath::Lerp(A,B,double(I+1)/Count);Piece(Band,P0.X,P0.Y,P1.X,P1.Y,DecalBandHalf);}
+   Field(Corner,A,Over,1.1,1.1);
+  }
+  UE_LOG(LogTemp,Display,TEXT("S47: farm ground decals: %d laid, road ribbon retired"),FarmDecals.Num());
+ }
+ // The soil's tone follows the day (S47MesaRock::ApplyGround): at night the land is much redder than by day, and these would stand out dark on it.
+ void ToneFarmDecals(const US47Main* M)
+ {
+  if(DecalTones.IsEmpty())return;
+  const double Hour=M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:12.;
+  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  if(FMath::Abs(Day-DecalDay)<.01f)return;DecalDay=Day;
+  const FLinearColor Scale=FMath::Lerp(FLinearColor(2.2f,1.4f,1.05f),FLinearColor::White,Day);
+  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*Scale);
+ }
  TWeakObjectPtr<AS47Web> GroundWorld;TWeakObjectPtr<UStaticMeshComponent> YardGround,FarmRoad;bool bGroundTried=false;
  UMaterialInterface* NodeMaterial(const AS47Web* W,int32 Node)
  {
@@ -215,7 +302,8 @@ namespace
   };
   // The road area draws this land itself; only SARO's terms lack it. The ring's and each strip's own material: their day tones follow.
   Show(YardGround.Get(),Area==TEXT("saro"),NodeMaterial(W,7));
-  Show(FarmRoad.Get(),Area==TEXT("saro")||bRoadArea,NodeMaterial(W,bRoadArea?1250:959));
+  // With the decals the ribbon goes: an opaque plate can only ever end in an edge.
+  Show(FarmRoad.Get(),(Area==TEXT("saro")||bRoadArea)&&FarmDecals.IsEmpty(),NodeMaterial(W,bRoadArea?1250:959));
  }
  // The exported strip lies 3.5 cm over the land at rows 4 m apart, -.9 to 6.7 cm between them, with a shadow under its edge.
  // FarmRoad replaces it in Freeform: sunk this far it stays out of sight, and the walking floor is the terrain's and does not move.
@@ -248,6 +336,8 @@ namespace
    if(!Mesh){UE_LOG(LogTemp,Error,TEXT("S47: farm building %s did not load"),Site.Mesh);continue;}
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->GetRootComponent());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Mesh);
    C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
+   // The soil's decals reach past the walls; on the walls themselves they would smear. Those have their own dirt.
+   C->SetReceivesDecals(false);
    C->SetCastShadow(true);C->RegisterComponent();W->AdoptNode(C,INDEX_NONE,FString(TEXT("farm:building:"))+Site.Name);
    Buildings.Add({C,S47FarmBuildings::Anchor(Site),FMath::RadiansToDegrees(-Site.Yaw)});
    // The daylight that gets in through the big doors and the gaps in the boards. Off after dark.
@@ -381,7 +471,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();S47FreeformTerrain::Reconcile(M);ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);BuildBuildings(W,On);BuildFarmDecals(W,On);ClearRoad(W,On);ClearHousePad(W,On);SinkRanchRoad(W,On);ReconcileGround(W,On);ReconcileWindow(M,W,On);if(On)ToneFarmDecals(M);
   if(On)KeepPlayerOutOfWalls(M,W);
   if(On)M->World->KeepParkedOutOfFarmWalls();
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
@@ -394,6 +484,11 @@ namespace S47FarmWorld
   {
    C->SetWorldLocation(S47Three::ToUE(RoadToArea(W->Area(),B.Road)));C->SetWorldRotation(FRotator(0,B.Degrees+(W->Area()==TEXT("station01")?90:0),0));
    C->SetVisibility(On&&S47HighwayLandscape::Exterior(W->Area()));C->SetHiddenInGame(!On);C->SetCollisionEnabled(On?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
+  }
+  if(Apply)for(const auto& D:FarmDecals)if(auto* C=D.C.Get())
+  {
+   C->SetWorldLocationAndRotation(S47Three::ToUE(RoadToArea(W->Area(),D.Road)),FRotator(-90,D.Degrees+(W->Area()==TEXT("station01")?90:0),90));
+   C->SetVisibility(On&&S47HighwayLandscape::Exterior(W->Area()));C->SetHiddenInGame(!On);
   }
   AppliedWorld=W;AppliedArea=W->Area();AppliedOn=On;
   if(M->TownLayer)for(const auto& H:M->TownLayer->Herds)if(H){H->ReconcileMode();if(Enabled(M)){H->Set(false,-1,false);H->Update(M->T);}}

@@ -5,7 +5,7 @@ Skjul B: lite fôr- og redskapsskjul, 5 x 4 m, stående bord og lavt saltak, dø
 """
 import math
 
-from fbkit import Kit, wall, battens, roof, finish, ucx_box, WALL_BASE
+from fbkit import Kit, wall, battens, roof, finish, ucx_box, WALL_BASE, dust_skirt, dust_corner, EAVE_BAND, EAVE_COL, drum
 from barn import plank_leaf, frame
 
 A_W2, A_D2 = 4.5, 2.75
@@ -54,8 +54,12 @@ def tin_ribs(k, F, u0, u1, top, base, step=.8, holes=()):
                 if e > h3:
                     new.append((max(a, h0), min(b, h1), h3, e))
             rects = new
+        k.cur_fx = [(EAVE_COL, 1., zt, EAVE_BAND)]
         for a, b, c, e in rects:
-            F.quad('tinSheet', a, b, c, e, .004, 'Tin', tint, 2, off)
+            # Eget stykke under takskjegget, så skyggebåndet har hjørner å ligge på.
+            for c0, e0 in ([(c, zt - EAVE_BAND), (zt - EAVE_BAND, e)] if c < zt - EAVE_BAND < e else [(c, e)]):
+                F.quad('tinSheet', a, b, c0, e0, .004, 'Tin', tint, 2, off)
+        k.cur_fx = None
         clear = not any(h0 - .1 < un and h1 + .1 > u for h0, h1, _, _ in holes)
         if k.lod == 0 and zt - base > 2.3 and clear and k.rng.random() < .6:
             # Skjøt på høyden: øvre plate ligger over den nedre.
@@ -73,6 +77,8 @@ def tin_ribs(k, F, u0, u1, top, base, step=.8, holes=()):
 
 def build_shed_a(lod=0):
     k = Kit('SM_FarmShedA', lod, 912)
+    # Maskinskjulet er eldre og rustnere enn fôrskjulet, med varmere treverk.
+    k.tone = {'Tin': (.92, .88, .82), 'Wood': (1, .94, .86)}
     it = (1, 1, 1)
     base = WALL_BASE
     win_n = (6.3, 7.1, 1.25, 1.85)
@@ -85,6 +91,15 @@ def build_shed_a(lod=0):
     tin_ribs(k, N, 0, 9, lambda u: A_HB, base, holes=[win_n])
     tin_ribs(k, E, 0, Lq, lambda u: azf(ye + u), base)
     tin_ribs(k, Wst, 0, Lq, lambda u: azf(A_D2 - u), base, holes=[win_w])
+    dust_skirt(k, N)
+    dust_skirt(k, E)
+    dust_skirt(k, Wst)
+    # Tre oljefat mot østveggen, mot tunet: ett rustent, ett blåmalt, ett som står litt ut.
+    drum(k, E, 1.2, tint=(.62, .52, .44))
+    drum(k, E, 1.82, tint=(.42, .5, .58))
+    drum(k, E, 2.62, d=.36, tint=(.56, .5, .42))
+    for x, sx in ((-A_W2, -1), (A_W2, 1)):
+        dust_corner(k, x, A_D2, sx, 1)
     # Hjørnebord lukker skjøtene.
     for x, sx in ((-A_W2, -1), (A_W2, 1)):
         k.bx('corner', min(x, x + sx * .025), max(x, x + sx * .025), A_D2 - .16, A_D2 + .025, base, A_HB - .02, 'Wood', tint=(.85, .83, .8))
@@ -168,6 +183,8 @@ def collision_shed_a():
 
 def build_shed_b(lod=0):
     k = Kit('SM_FarmShedB', lod, 913)
+    # Fôrskjulet er grått og bleket, ikke samme bord som låven.
+    k.tone = {'Board': (.84, .84, .88), 'Wood': (.9, .9, .92)}
     t = .05
     it = (.8, .8, .8)
     gable = [(0, B_EAVE + .08), (B_W2, B_RIDGE + .08), (2 * B_W2, B_EAVE + .08)]
@@ -181,8 +198,14 @@ def build_shed_b(lod=0):
     Wst = wall(k, 'west', (-B_W2, B_D2), (-B_W2, -B_D2), B_EAVE + .08, [], t, WALL_BASE, itint=it)
     # Dørstein som ligger i bakken, bare så vidt over.
     k.bx('doorStone', door[0] - B_W2 - .15, door[1] - B_W2 + .1, -B_D2 - .5, -B_D2 + .02, WALL_BASE, .05, 'Concrete', 0, skip=((2, -1),))
+    dust_skirt(k, S, [(door[0] - .2, door[1] + .15)])
+    dust_skirt(k, E)
+    dust_skirt(k, N)
+    dust_skirt(k, Wst)
+    for x, y, sx, sy in ((-B_W2, -B_D2, -1, -1), (B_W2, -B_D2, 1, -1), (B_W2, B_D2, 1, 1), (-B_W2, B_D2, -1, 1)):
+        dust_corner(k, x, y, sx, sy)
     if lod < 2:
-        step = .5 if lod == 0 else 1.4
+        step = .95 if lod == 0 else 1.9
         battens(k, S, 'batten', 0, 2 * B_W2, step, gable, [door, win_s], WALL_BASE)
         battens(k, E, 'batten', 0, 2 * B_D2, step, B_EAVE, [win_e], WALL_BASE)
         battens(k, N, 'batten', 0, 2 * B_W2, step, gable, [hatch], WALL_BASE)
@@ -219,7 +242,7 @@ def build_shed_b(lod=0):
         k.rotate_since(door_start, (hinge[0], hinge[1], 1.9), nrm, .014)   # Døra henger litt ned i ytterkant.
     # Vinduer: dyp karm og sålbrett.
     for F, h in ((S, win_s), (E, win_e)):
-        F.quad('glass', h[0], h[1], h[2], h[3], -.035, 'Glass')
+        F.quad('glass', h[0], h[1], h[2], h[3], -.045, 'Glass')
         if lod < 2:
             frame(F, 'frame', h[0], h[1], h[2], h[3], .065, 'Paint', True, .035)
             um, zm = (h[0] + h[1]) / 2, (h[2] + h[3]) / 2

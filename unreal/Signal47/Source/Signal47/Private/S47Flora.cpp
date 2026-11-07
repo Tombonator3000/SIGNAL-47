@@ -216,7 +216,8 @@ namespace
 	 *  up to olive; this atlas has the olive already and the game's sun lights it strongly, so these start where the mesquite's do (Pn[10]). */
 	const TArray<FVector>& CREOSOTE_MODEL_PAL()
 	{
-		static const TArray<FVector> V = { Lin(0.8, 0.82, 0.78), Lin(0.76, 0.8, 0.74), Lin(0.84, 0.84, 0.76), Lin(0.78, 0.82, 0.82) };
+		// Lime yellow at 11:31: the lit leaves read 170,143,74. Each row scaled alike toward olive grey, 95,105,62 in the sun (linear .28 .51 .68). The variation stays.
+		static const TArray<FVector> V = { Lin(0.448, 0.602, 0.653), Lin(0.426, 0.587, 0.619), Lin(0.47, 0.617, 0.636), Lin(0.437, 0.602, 0.686) };
 		return V;
 	}
 	/** Broom snakeweed, the commonest little shrub of the grassland: a sage copy, smaller, yellow-green. */
