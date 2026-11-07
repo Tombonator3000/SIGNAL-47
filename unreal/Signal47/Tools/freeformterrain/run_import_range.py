@@ -19,6 +19,7 @@ def main():
     ap.add_argument('--root', type=Path, required=True)
     ap.add_argument('--project', type=Path, default=Path.home() / 'SIGNAL-47/unreal/Signal47')
     ap.add_argument('--apply', action='store_true')
+    ap.add_argument('--material-only', action='store_true', help='the colour maps and the material; the mesh and its normal and mask stand')
     args = ap.parse_args()
     project = args.project.resolve()
     sys.path.insert(0, str(project / 'Scripts'))
@@ -43,7 +44,7 @@ def main():
         env.pop('S47_INSTALLED_GAME_GRACE', None)
         env.update(lease.environment())
         os.environ.update(lease.environment())
-        env.update(S47_FF_APPLY='1', S47_FF_ROOT=str(root), S47_FF_REPORT=str(report))
+        env.update(S47_FF_APPLY='1', S47_FF_ROOT=str(root), S47_FF_REPORT=str(report), S47_FF_MATERIAL_ONLY='1' if args.material_only else '')
         result = run_owned(command, output / 'editor.log', timeout=5400, env=env, cwd=project)
         (output / 'process.json').write_text(json.dumps(result, indent=1) + '\n')
         data = json.loads(report.read_text()) if report.exists() else {}

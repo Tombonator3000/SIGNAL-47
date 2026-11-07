@@ -421,7 +421,9 @@ return lerp(h, 0.5, M.z);
 """, dict(H=(disp_h, 'A'), A=(disp_d, 'A'), P=presence, Hc=(disp_c, 'A'), Hg=(disp_g, 'A'), M=disp_masks), unreal.CustomMaterialOutputType.CMOT_FLOAT1, -1000, 1100)
 
     attrs = node(mat, unreal.MaterialExpressionMakeMaterialAttributes, -100, -100)
-    for out, pin in ((base, 'BaseColor'), (rough, 'Roughness'), (world_n, 'Normal'), (disp, 'Displacement')):
+    # Dry ground, not a wet road: at the open pin's .5 UE's Fresnel reaches 1 at a grazing sun, a white track toward it on the whole plain. F90 is 50 F0, here .6.
+    spec = node(mat, unreal.MaterialExpressionConstant, -300, 200, r=.15)
+    for out, pin in ((base, 'BaseColor'), (rough, 'Roughness'), (spec, 'Specular'), (world_n, 'Normal'), (disp, 'Displacement')):
         if not L.connect_material_expressions(out, '', attrs, pin):
             raise RuntimeError('Could not connect ground attribute ' + pin)
     mat.set_editor_property('tangent_space_normal', False)

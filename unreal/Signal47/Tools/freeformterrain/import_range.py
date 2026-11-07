@@ -9,10 +9,11 @@ The material:
   runs from one mesh to the other without a line. GroundTint, GravelAmount and CrustAmount come from S47MesaRock, as the
   ground's do. FootVertexColor stands in for the ground mesh's vertex colour.
 - above the foot none of that: those layers tile every 1.6 to 150 m, and on a hillside a kilometre off the tiling is a grid of
-  squares. There the soil is the same layers' mean colour (a fixed high mip, so tint and light stay what they were), varied by
-  three large turned samples of the macro map that share no period.
-- stone by slope, with beds that dip and wander through it; shrubs and gravel on the lower slopes (T_FF_Range_M: R shrubs, G bare
-  rock, B cavity, A foot), and a dry scrub tone in a band above the foot
+  squares. There the soil is the same layers' mean colour (a fixed high mip, so tint and light stay what they were) times T_FF_Range_C
+  (bake_range_color.py: USGS NAIP over the measured land, made colour over the made hills), varied by large turned samples of the macro map.
+- bare rock where T_FF_Range_C.a says, in the beds of T_FF_Range_B: red-brown and grey-brown with pale ledges, by a tilted height that wanders, so they dip and carry on
+  across a valley. Shrubs on the lower slopes (T_FF_Range_M: R shrubs, B cavity, A foot), and a dry scrub tone in a band above the foot
+- no specular: at Specular above 0 UE's Fresnel goes to 1 at grazing light, and a low sun drew white stripes down the flanks
 - the normal from T_FF_Range_N, in the mesh's own axes, so no triangle shows however large it is
 - haze by distance from the camera, into the base colour only, with the normal levelling off the same way, so the
   far ranges go blue-grey and flat by day and dark with the rest of the land at night. Nothing here glows.
@@ -38,6 +39,7 @@ T = unreal.AssetToolsHelpers.get_asset_tools()
 S = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem)
 FALLBACK_SHARE = .04
 MEAN_MIP = 9    # of the ground's 2048 layers: 4 x 4 texels to a tile
+BED_TILT, BED_SECTION_M = (5800., 3600.), 512.    # metres of bed height over the map's UV: about 16 degrees; bake_range_color.py SECTION_M
 OLD_MESH = '/Game/CalicheStreet/Backdrop/SM_Caliche_Mesas.SM_Caliche_Mesas'
 
 
@@ -49,7 +51,7 @@ def owned_or_new(path):
             raise RuntimeError('could not replace ' + path)
 
 
-def import_texture(root, name, srgb, compression, sampler_group):
+def import_texture(root, name, srgb, compression, sampler_group, wrap=False):
     path = DEST + '/' + name
     owned_or_new(path)
     task = unreal.AssetImportTask()
@@ -66,8 +68,8 @@ def import_texture(root, name, srgb, compression, sampler_group):
     tex.set_editor_property('srgb', srgb)
     tex.set_editor_property('compression_settings', compression)
     tex.set_editor_property('lod_group', sampler_group)
-    tex.set_editor_property('address_x', unreal.TextureAddress.TA_CLAMP)
-    tex.set_editor_property('address_y', unreal.TextureAddress.TA_CLAMP)
+    tex.set_editor_property('address_x', unreal.TextureAddress.TA_WRAP if wrap else unreal.TextureAddress.TA_CLAMP)
+    tex.set_editor_property('address_y', unreal.TextureAddress.TA_WRAP if wrap else unreal.TextureAddress.TA_CLAMP)
     tex.set_editor_property('virtual_texture_streaming', False)
     tex.set_editor_property('flip_green_channel', False)
     E.set_metadata_tag(tex, 'S47Owner', OWNER)
@@ -76,7 +78,7 @@ def import_texture(root, name, srgb, compression, sampler_group):
     return tex
 
 
-def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out):
+def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, color_map, beds_map, out):
     node, wire, lerp, mul, custom, sample, world_uv = G.node, G.wire, G.lerp, G.mul, G.custom, G.sample, G.world_uv
     F1, F3 = unreal.CustomMaterialOutputType.CMOT_FLOAT1, unreal.CustomMaterialOutputType.CMOT_FLOAT3
     F2 = unreal.CustomMaterialOutputType.CMOT_FLOAT2
@@ -110,6 +112,11 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out
     m_map.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     m_map.set_editor_property('sampler_source', unreal.SamplerSourceMode.SSM_CLAMP_WORLD_GROUP_SETTINGS)
     wire(uv0, '', m_map, 'UVs')
+    c_map = node(mat, unreal.MaterialExpressionTextureSample, -3200, -1100)
+    c_map.set_editor_property('texture', color_map)
+    c_map.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+    c_map.set_editor_property('sampler_source', unreal.SamplerSourceMode.SSM_CLAMP_WORLD_GROUP_SETTINGS)
+    wire(uv0, '', c_map, 'UVs')
     # object space to the world's (the shared landscape can be a quarter-turned)
     to_world = node(mat, unreal.MaterialExpressionTransform, -3000, -1500)
     to_world.set_editor_property('transform_source_type', unreal.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_LOCAL)
@@ -156,6 +163,14 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out
     sx = sample(mat, stone['D'], uvx, -2200, 0)
     sy = sample(mat, stone['D'], uvy, -2200, 100)
     sz = sample(mat, stone['D'], uvz, -2200, 200)
+    # the beds: a height that tilts about 16 degrees over the map, folds over 1.7 km and wanders over less
+    bed_uv = custom(mat, 'float h = World.z * 0.01 + UV.x * %f + UV.y * %f + (P2 - 0.4) * 130.0 + (P1 - 0.4) * 46.0 + (P3 - 0.4) * 14.0; return float2(h / %f, 0.5);' % (BED_TILT[0], BED_TILT[1], BED_SECTION_M),
+                    dict(World=wp, UV=uv0, P1=(p1, 'R'), P2=(p2, 'R'), P3=(p3, 'R')), F2, -2500, 280)
+    beds = node(mat, unreal.MaterialExpressionTextureSample, -2200, 280)
+    beds.set_editor_property('texture', beds_map)
+    beds.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+    G.shared(beds)
+    wire(bed_uv, '', beds, 'UVs')
     weights = custom(mat, 'float3 w = pow(abs(normalize(N)), 5.0); return w / max(w.x + w.y + w.z, 0.0001);', dict(N=(to_world, '')), F3, -2000, 0)
     stone_d = custom(mat, 'return X * W.x + Y * W.y + Z * W.z;', dict(X=(sx, 'RGB'), Y=(sy, 'RGB'), Z=(sz, 'RGB'), W=weights), F3, -1800, 0)
 
@@ -174,7 +189,7 @@ float mg = smoothstep(0.0, 1.0, gravel0 * (1.0 + 2.0 * k) - k + (Hg - under) * k
 return float3(mc, mg, deg);
 """, pins, F3, -1700, -1200)
     pick = lambda name, y: _pick(mat, masks, name, y)
-    mc, mg, deg = pick('r', -1300), pick('g', -1200), pick('b', -1100)
+    mc, mg = pick('r', -1300), pick('g', -1200)
 
     crust_tint = node(mat, unreal.MaterialExpressionVectorParameter, -1500, -1000, parameter_name='CrustTint', default_value=unreal.LinearColor(.94, .94, .94, 1))
     gravel_tint = node(mat, unreal.MaterialExpressionVectorParameter, -1500, -900, parameter_name='GravelTint', default_value=unreal.LinearColor(.94, .94, .94, 1))
@@ -196,7 +211,7 @@ return c * (0.88 + 0.24 * small);
 """, dict(Z=(t430, 'R'), M=(t47, 'R')), F3, -950, -760)
     tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -650, parameter_name='GroundTint', default_value=G.DEFAULT_TINT)
     vc = node(mat, unreal.MaterialExpressionVectorParameter, -950, -560, parameter_name='FootVertexColor', default_value=unreal.LinearColor(.82, .80, .76, 1))
-    rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(.50, .50, .54, 1))
+    rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(1., 1., 1., 1))
     scrub = node(mat, unreal.MaterialExpressionVectorParameter, -950, -380, parameter_name='ShrubColor', default_value=unreal.LinearColor(.050, .055, .030, 1))
     dry = node(mat, unreal.MaterialExpressionVectorParameter, -950, -200, parameter_name='DryScrub', default_value=unreal.LinearColor(.135, .110, .070, 1))
     haze_col = node(mat, unreal.MaterialExpressionVectorParameter, -950, -290, parameter_name='HazeColor', default_value=unreal.LinearColor(.12, .19, .34, 1))
@@ -204,37 +219,33 @@ return c * (0.88 + 0.24 * small);
 // the foot: the ground's own soil, its pattern going with distance, where the plain's own has gone to its mean as well
 float foot = smoothstep(0.15, 0.85, M.a) * (1.0 - saturate((length(Camera - World) * 0.01 - 700.0) / 900.0));
 float3 mean = lerp(MeanSand, MeanGravel, 0.55) * Tint * Vc;
-float3 soil = lerp(mean, Soil * Tint * Vc * Macro, foot);
-// large patches of the hills, soils and sun-baked crust, so no slope is one colour. No two of these have a period in common.
+// (what the land is made of, T_FF_Range_C: the photograph's colour or the made hill's, as a ratio to the plain's soil)
+float3 soil = lerp(mean * Col.rgb * 2.5, Soil * Tint * Vc * Macro, foot);
 float up = 1.0 - M.a;
-float broad = saturate((P1 * 0.55 + P2 * 0.45 - 0.22) / 0.33);
-soil *= lerp(float3(1.0, 1.0, 1.0), lerp(float3(1.07, 1.0, 0.93), float3(0.89, 0.91, 0.95), broad), up);
-soil *= lerp(1.0, 0.90 + 0.20 * saturate((P3 - 0.22) / 0.33), up * (1.0 - saturate(Haze * 3.0)));
+float3 bedRatio = Bed.rgb * 2.5;
+// large patches, so no slope is one colour
+soil *= lerp(1.0, 0.92 + 0.16 * saturate((P3 - 0.22) / 0.33), up * (1.0 - saturate(Haze * 3.0)));
+// the beds through the talus as well, faintly: a bench shows in the soil before the rock does
+soil *= lerp(float3(1.0, 1.0, 1.0), bedRatio / float3(0.92, 0.76, 0.66), 0.22 * up);
 // a dry scrub tone in a band above the foot
 float band = M.a * (1.0 - M.a) * 4.0;
-soil = lerp(soil, Dry, band * 0.42);
-// bare rock: the map's and the slope's together, cut with the stone's pattern, a little greyer than the land's soil
-float rock = saturate(max(M.g, smoothstep(40.0, 52.0, Deg)) * up);
+soil = lerp(soil, Dry, band * 0.2);
+// bare rock, cut with the stone's pattern, in its beds. No rock on the fans or at the foot; the map's mask says where
+float rock = saturate(Col.a * up);
 rock *= smoothstep(0.15, 0.55, rock + (dot(Stone, float3(0.3, 0.6, 0.1)) * 3.0 - 0.45) * 0.5);
-float3 stone = mean * RockTint * clamp(Stone / float3(0.183, 0.132, 0.109), 0.35, 1.5);
-// its beds: they dip one way over the whole map and wander with the patches, about 16 and 54 m through the rock
-float bedAt = World.z * 0.01 + UV.x * 480.0 + UV.y * 288.0 + (P1 - 0.4) * 46.0 + (P3 - 0.4) * 16.0;
-float bed = 0.62 * (0.5 + 0.5 * sin(bedAt * 0.117 + 1.3)) + 0.38 * (0.5 + 0.5 * sin(bedAt * 0.38));
-// (no bed runs round the whole hill: they come and go, as outcrops do)
-float showing = smoothstep(0.30, 0.62, P3 * 0.6 + P2 * 0.4);
-stone *= lerp(float3(1.0, 1.0, 1.0), lerp(float3(0.83, 0.81, 0.81), float3(1.11, 1.08, 1.04), smoothstep(0.25, 0.75, bed)), showing);
+float3 stone = mean * RockTint * bedRatio * clamp(Stone / float3(0.183, 0.132, 0.109), 0.55, 1.4);
 float3 c = lerp(soil, stone, rock);
 // shrubs as a dark speckle
 float near = saturate((length(Camera - World) * 0.01 - 120.0) / 200.0);
 float dotsAt = D1 * 0.55 + D2 * 0.45;
-float want = lerp(0.66, 0.52, saturate(M.r * 0.8 + 0.2 * broad));
+float want = lerp(0.66, 0.52, saturate(M.r * 0.8 + 0.1));
 float shrub = smoothstep(want, want + 0.07, dotsAt) * (1.0 - rock);
 c = lerp(c, Shrub, shrub * near * lerp(0.62, 0.35, saturate(Haze * 2.0)));
 // and where they crowd, in what is cut in, the ground under them darker too
 c = lerp(c, Shrub, M.r * (1.0 - rock) * 0.18);
 return c * lerp(0.48, 1.0, M.b);
-""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, P1=(p1, 'R'), P2=(p2, 'R'), P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'),
-          Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, UV=uv0, D1=(d1, 'A'), D2=(d2, 'B')), F3, -600, -700)
+""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Col=(c_map, 'RGBA'), Bed=(beds, 'RGBA'), Stone=stone_d, RockTint=rock_tint, P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'),
+          Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, D1=(d1, 'A'), D2=(d2, 'B')), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 
     normal = custom(mat, """
@@ -245,7 +256,7 @@ float3 flat_ = normalize(float3(0, 0, 1) * 0.7 + toEye * 0.7);
 return normalize(lerp(n, flat_, saturate(Haze * 0.45)));
 """, dict(N=(to_world, ''), Camera=cam, World=wp, Haze=haze), F3, -300, -300)
     rough = node(mat, unreal.MaterialExpressionConstant, -300, -150, r=.92)
-    spec = node(mat, unreal.MaterialExpressionConstant, -300, -60, r=.25)
+    spec = node(mat, unreal.MaterialExpressionConstant, -300, -60, r=0.)
     L.connect_material_property(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
     L.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
     L.connect_material_property(spec, '', unreal.MaterialProperty.MP_SPECULAR)
@@ -261,7 +272,7 @@ def _pick(mat, source, name, y):
     return m
 
 
-def make_material(normal_map, mask_map, report):
+def make_material(normal_map, mask_map, color_map, beds_map, report):
     out = report.setdefault('material', {'status': 'RUNNING'})
     tex = {}
     for layer in ('Sand', 'Crust', 'Gravel'):
@@ -287,7 +298,7 @@ def make_material(normal_map, mask_map, report):
     fine_noise = E.load_asset(DEST + '/T_FF_Noise')
     if fine_noise is None:
         raise RuntimeError('T_FF_Noise is required for the shrubs: run the ground material first')
-    build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, out)
+    build_material(mat, tex, stone, macro, normal_map, mask_map, fine_noise, color_map, beds_map, out)
     errors = [str(e) for e in L.recompile_material(mat)]
     out['compile_errors'] = errors
     if errors:
@@ -370,13 +381,21 @@ def main():
     path = Path(os.environ['S47_FF_REPORT'])
     report = {'status': 'RUNNING'}
     try:
-        # the normal is BC5: x and y, its z rebuilt; never below the horizon on this land
-        normal_map = import_texture(root, 'T_FF_Range_N', False, unreal.TextureCompressionSettings.TC_NORMALMAP, unreal.TextureGroup.TEXTUREGROUP_WORLD_NORMAL_MAP)
-        mask_map = import_texture(root, 'T_FF_Range_M', False, unreal.TextureCompressionSettings.TC_MASKS, unreal.TextureGroup.TEXTUREGROUP_WORLD)
-        report['textures'] = [normal_map.get_path_name(), mask_map.get_path_name()]
-        mat = make_material(normal_map, mask_map, report)
+        # (S47_FF_MATERIAL_ONLY=1: the colour maps and the material; the mesh and its normal and mask stand as they are)
+        only = os.environ.get('S47_FF_MATERIAL_ONLY') == '1'
+        if only:
+            normal_map, mask_map = E.load_asset(DEST + '/T_FF_Range_N'), E.load_asset(DEST + '/T_FF_Range_M')
+        else:
+            # the normal is BC5: x and y, its z rebuilt; never below the horizon on this land
+            normal_map = import_texture(root, 'T_FF_Range_N', False, unreal.TextureCompressionSettings.TC_NORMALMAP, unreal.TextureGroup.TEXTUREGROUP_WORLD_NORMAL_MAP)
+            mask_map = import_texture(root, 'T_FF_Range_M', False, unreal.TextureCompressionSettings.TC_MASKS, unreal.TextureGroup.TEXTUREGROUP_WORLD)
+        color_map = import_texture(root, 'T_FF_Range_C', False, unreal.TextureCompressionSettings.TC_BC7, unreal.TextureGroup.TEXTUREGROUP_WORLD)
+        beds_map = import_texture(root, 'T_FF_Range_B', False, unreal.TextureCompressionSettings.TC_BC7, unreal.TextureGroup.TEXTUREGROUP_WORLD, wrap=True)
+        report['textures'] = [normal_map.get_path_name(), mask_map.get_path_name(), color_map.get_path_name(), beds_map.get_path_name()]
+        mat = make_material(normal_map, mask_map, color_map, beds_map, report)
         report['mesh'] = {}
-        import_mesh(root, mat, report['mesh'])
+        if not only:
+            import_mesh(root, mat, report['mesh'])
         report['status'] = 'PASS_FREEFORM_RANGE'
     except Exception:
         report['status'] = 'FAIL'

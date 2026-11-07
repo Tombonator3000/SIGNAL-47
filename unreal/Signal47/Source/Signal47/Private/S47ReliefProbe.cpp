@@ -19,8 +19,10 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "HAL/PlatformMisc.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
@@ -564,6 +566,21 @@ namespace S47ReliefProbe
 			// (nor is the highway: the land's own ground lies .45 m under its strip)
 			if (Life->Area != TEXT("station01") && !(FMath::Abs(Rx) < S47RoadTerrain::HWY.Flat) && (!bGround || FMath::Abs(GroundY - P->FloorY) > ReliefProbeEye)) ProbeCheck(false, FString::Printf(TEXT("%s: the eye does not stand on the ground"), *Shot));
 			if (R.HourAt == 0 && !R.bFile) ProbeUnder(W, Shot, P->Pos, P->FloorY);
+			if (R.bFile)
+			{
+				// What the crosshair is on: the name of a thing in the picture.
+				const FVector Toward = S47Three::ToUE(S47FarmWorld::RoadToArea(View.Area, FVector(View.LookX, 0, View.LookZ)));
+				const FVector From = S47Three::ToUE(FVector(P->Pos.X, P->FloorY + P->Eye, P->Pos.Z));
+				FVector Way = Toward - From;
+				Way.Z = FMath::Tan(P->Pitch) * FVector2D(Way.X, Way.Y).Size();
+				FHitResult Hit;
+				const FCollisionQueryParams Query(SCENE_QUERY_STAT(S47ReliefProbeAim), true);
+				if (W->GetWorld() && W->GetWorld()->LineTraceSingleByChannel(Hit, From, From + Way.GetSafeNormal() * 40000, ECC_Visibility, Query) && Hit.GetComponent())
+				{
+					const UStaticMeshComponent* Met = Cast<UStaticMeshComponent>(Hit.GetComponent());
+					ProbeLine(FString::Printf(TEXT("aim %s: %s, mesh %s, material %s, %.1f m off"), *Shot, *Hit.GetComponent()->GetName(), Met && Met->GetStaticMesh() ? *Met->GetStaticMesh()->GetName() : TEXT("-"), Met && Met->GetMaterial(0) ? *Met->GetMaterial(0)->GetName() : TEXT("-"), Hit.Distance / 100));
+				}
+			}
 			R.Phase = 10; R.Since = R.Now;
 			return true;
 		}

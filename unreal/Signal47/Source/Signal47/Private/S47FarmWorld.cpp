@@ -272,15 +272,18 @@ namespace
   }
   UE_LOG(LogTemp,Display,TEXT("S47: farm ground decals: %d laid, road ribbon retired"),FarmDecals.Num());
  }
- // The soil's tone follows the day (S47MesaRock::ApplyGround): at night the land is much redder than by day, and these would stand out dark on it.
+ // The soil's tone follows the day (S47MesaRock::ApplyFreeformGround): at night the land's albedo is much higher than by day, and these would stand out on it.
  void ToneFarmDecals(const US47Main* M)
  {
   if(DecalTones.IsEmpty())return;
   const double Hour=M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:12.;
-  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  // (The same hours as the ground's, S47MesaRock DayAt.)
+  const float Day=float(FMath::Clamp(FMath::Min((Hour-4.72)/1.25,(19.25-Hour)/1.25),0.,1.));
   if(FMath::Abs(Day-DecalDay)<.01f)return;DecalDay=Day;
-  const FLinearColor Night(2.2f,1.4f,1.05f,1.f);
-  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*FMath::Lerp(Night,Row.ByDay,Day));
+  // Tom, 7 November, a pale cracked clay and a red soil with a line between them in the lantern's light. These followed the old road's night (2.2 1.4 1.05, its ground red by night);
+  // the relief's night is the other way: S47MesaRock's tint .78 .734 .68 against .187 .224 .23 by day. So what lay on the soil stood red on a pale land. Now each keeps by night what it is to the soil by day.
+  const FLinearColor Night(4.17f,3.28f,2.96f,1.f);
+  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*Row.ByDay*FMath::Lerp(Night,FLinearColor::White,Day));
  }
  TWeakObjectPtr<AS47Web> GroundWorld;TWeakObjectPtr<UStaticMeshComponent> YardGround,FarmRoad;bool bGroundTried=false;
  UMaterialInterface* NodeMaterial(const AS47Web* W,int32 Node)
