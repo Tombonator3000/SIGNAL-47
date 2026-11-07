@@ -16,7 +16,7 @@ Gården skal også gi skrekk: mange mystiske lys sett fra SARO, tur ut, søkbart
 
 Tom bestemte at alt til Freeform fullføres først. Story fortsetter når han er fornøyd med Freeform, fordi all mekanikk og grafikk da er ferdig. Eksisterende Story skal fortsatt bestå selvtestene, men Story-punkter venter med mindre Tom ber om dem.
 
-Tom 7. november: Freeform kan overkjøre Story. Story tilpasses Freeform senere, så endringer i modeller, terreng og oppførsel skjermes ikke for Story.
+Tom 7. november: Freeform går foran Story, og Freeform skal brukes til Story-elementer. Story tilpasses Freeform senere, så endringer i modeller, terreng og oppførsel skjermes ikke for Story.
 
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
