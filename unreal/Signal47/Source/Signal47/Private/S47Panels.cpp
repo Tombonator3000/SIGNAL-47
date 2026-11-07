@@ -188,11 +188,15 @@ void S47Panels::WetBench(US47UI* UI, const FString& Frame, int32 Step, const FSt
 	const int32 Active = Step == 0 ? 0 : Step == 1 ? 0 : Step == 2 ? 1 : 2;
 	TWeakObjectPtr<US47UI> U = UI;
 	FW Body = SNullWidget::NullWidget;
-	if (!Empty.IsEmpty()) Body = S47Kit::Text(Empty);
+	// "SARO / PHOTO LAB  |  FILM: id  |  place": the kicker as the section heading, film and place in its note (concept 09)
+	TArray<FString> Parts;
+	Frame.ParseIntoArray(Parts, TEXT("  |  "), true);
+	const FW Heading = Parts.Num() > 1 ? S47Kit::Section(Parts[0], FString::Join(TArray<FString>(Parts.GetData() + 1, Parts.Num() - 1), TEXT("  /  "))) : S47Kit::Sub(Frame);
+	if (!Empty.IsEmpty()) Body = S47Kit::Banner(TEXT("SARO / PHOTO LAB"), TEXT("NO FILM TO DEVELOP"), Empty, TEXT("IDLE"));
 	else
 	{
 		Body = S47Kit::Col({
-			S47Kit::Sub(Frame),
+			Heading,
 			S47Kit::Steps(Steps, Active),
 			Step == 1 ? S47Kit::Text(TEXT("The film is in the tank. Wait for the timer."))
 				: S47Kit::Action(Labels[FMath::Clamp(Step, 0, 3)], [U, OnAct] { if (U.IsValid()) U->Close(); if (OnAct) OnAct(); }) }, 0.f);

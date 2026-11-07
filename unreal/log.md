@@ -2083,3 +2083,7 @@ Skrevet, ikke bygget. En uavhengig gjennomgang fant hull, og de er kontrollert i
 ## 7. november 2026 kl.03:00, natt, ørkenplantene i Freeform
 
 Skrevet i egen worktree, ikke bygget, importert eller kjørt. `Tools/desertplants/import_assets.py` gir `/Game/DesertPlants` (kokes alltid). Yucca, cholla og mesquite er nye flora-arter med egne mesher per variant, bare i Freeform, og erstatter de gamle sukkulentene der; mangler ett av de åtte meshene, står de gamle. `-S47MenuPointerNature` logger `S47: desert plants N of 8 loaded`, tar tre nye bilder (`nature-desert-*.png`) og feiler hvis planleggeren ikke trekker alle tre artene selv. Tettheter er anslag.
+
+## 7. november 2026, natt, UI-polish: fotofremkalling og prøvebilder
+
+Skrevet, ikke bygget eller kjørt. Fotofremkalling (Freeform og Story) bruker `Section` for «SARO / PHOTO LAB» med film og sted til høyre, den ferdige skjermen viser alle tre trinn som DONE, og tom benk er et `Banner`. `Small` er litt større og lysere (kontrast 4,7 til 6,4). `-S47MenuPointerPanels` tar nå også `panel-wetbench.png`, `panel-wetbench-empty.png` og `panel-reeldeck.png`, og arkivet har to oppdiktede funn. Reel-deck og arkiv ligger i `S47Freeform.cpp` og er ikke endret.
