@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november, aliens i ekte hendelser og egne planter
+## Installert 7. november kl. 04, mer variert natur
+
+`55080249` er nå standard, med rask installasjon: kreosot uten rutenett, døde grå busker, flere tuer, tørrere fjell og bakke, og ryddigere fotobenk. Selvtest OK, 144 Saved-filer uendret. Ikke spilt av et menneske. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d22/candidate/Linux`.
+
+## Tidligere installert 7. november, aliens i ekte hendelser og egne planter
 
 `65075857` etter PR476 er nå standard, med rask installasjon: ingen kropper før ca. kl. 02, hvile som vekker hvis noe er på gang, Crab og Tall i besøk, kikking i kontrollrommets vindu, radio som knitrer nærmere dem, og egne modeller av cholla, yucca og mesquite. Ikke spilt av et menneske, og lyd er ikke hørt. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-07_aliens-planter.md).
 
