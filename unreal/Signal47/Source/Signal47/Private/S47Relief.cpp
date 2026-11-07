@@ -4,6 +4,7 @@
 #include "S47RoadTerrain.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
+#include "HAL/PlatformTime.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -24,6 +25,29 @@ namespace
 	};
 	FReliefTable ReliefTable;
 	bool bReliefLoaded = false, bReliefActive = false;
+
+	// Tools/freeformterrain/build_range.py foot_table: the range over the road's land, one byte a cell.
+	struct FFootTable
+	{
+		TArray<uint8> Cells;
+		double OriginX = 0, OriginZ = 0, InvCell = 1, ScaleM = 0, BiasM = 0;
+		int32 Width = 0, Height = 0;
+		bool bValid = false;
+	};
+	FFootTable FootTable;
+	constexpr double PastTheTable = 100;   // the hills go on past its edge
+
+	double SampleFoot(const FFootTable& T, double X, double Z)
+	{
+		if (!T.bValid) return 0;
+		const double U = (X - T.OriginX) * T.InvCell, V = (Z - T.OriginZ) * T.InvCell;
+		if (!(U >= 0 && V >= 0 && U <= T.Width - 1 && V <= T.Height - 1)) return PastTheTable;
+		const int32 I = FMath::Min(int32(U), T.Width - 2), J = FMath::Min(int32(V), T.Height - 2);
+		const double Fx = U - I, Fz = V - J;
+		const uint8* Row = T.Cells.GetData() + int64(J) * T.Width + I;
+		const double Near = Row[0] + (double(Row[1]) - Row[0]) * Fx, Far = Row[T.Width] + (double(Row[T.Width + 1]) - Row[T.Width]) * Fx;
+		return (Near + (Far - Near) * Fz) * T.ScaleM + T.BiasM;
+	}
 
 	double SampleTable(const FReliefTable& T, double X, double Z)
 	{
@@ -143,6 +167,26 @@ namespace
 		return true;
 	}
 
+	bool ParseFootTable(const FString& Json, TArray<uint8>& Bytes, FFootTable& Out, FString& Why)
+	{
+		TSharedPtr<FJsonObject> Doc;
+		if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Doc) || !Doc.IsValid()) { Why = TEXT("range_foot.json does not parse"); return false; }
+		FFootTable T;
+		double Cell = 0;
+		if (!Doc->TryGetNumberField(TEXT("origin_x"), T.OriginX) || !Doc->TryGetNumberField(TEXT("origin_z"), T.OriginZ) || !Doc->TryGetNumberField(TEXT("cell_m"), Cell)
+			|| !Doc->TryGetNumberField(TEXT("width"), T.Width) || !Doc->TryGetNumberField(TEXT("height"), T.Height) || !Doc->TryGetNumberField(TEXT("scale_m"), T.ScaleM) || !Doc->TryGetNumberField(TEXT("bias_m"), T.BiasM))
+		{ Why = TEXT("range_foot.json lacks a field of the contract"); return false; }
+		if (Cell <= 0 || T.ScaleM <= 0 || T.Width < 2 || T.Height < 2 || T.Width > 16384 || T.Height > 16384) { Why = TEXT("range_foot.json holds impossible values"); return false; }
+		if (int64(Bytes.Num()) != int64(T.Width) * T.Height) { Why = FString::Printf(TEXT("range_foot.bin is %d bytes, %lld expected"), Bytes.Num(), int64(T.Width) * T.Height); return false; }
+		FString ShaText;
+		if (Doc->TryGetStringField(TEXT("sha256"), ShaText) && !ShaText.Equals(ReliefSha256(Bytes.GetData(), Bytes.Num()), ESearchCase::IgnoreCase)) { Why = TEXT("range_foot.bin fails sha256"); return false; }
+		T.InvCell = 1 / Cell;
+		T.Cells = MoveTemp(Bytes);
+		T.bValid = true;
+		Out = MoveTemp(T);
+		return true;
+	}
+
 	void LoadReliefOnce()
 	{
 		if (bReliefLoaded) return;
@@ -150,6 +194,17 @@ namespace
 		const FString Dir = FPaths::ProjectContentDir() / TEXT("FreeformTerrain");
 		FString Json, Why;
 		TArray<uint8> Bytes;
+		// Whatever becomes of the relief. Without this table the hills stop nothing and the log says so.
+		{
+			FString FootJson, FootWhy;
+			TArray<uint8> FootBytes;
+			if (!FFileHelper::LoadFileToString(FootJson, *(Dir / TEXT("range_foot.json"))) || !FFileHelper::LoadFileToArray(FootBytes, *(Dir / TEXT("range_foot.bin")), FILEREAD_Silent))
+				UE_LOG(LogS47Relief, Display, TEXT("S47: no table of the hills' foot: they stop nothing"));
+			else if (!ParseFootTable(FootJson, FootBytes, FootTable, FootWhy))
+				UE_LOG(LogS47Relief, Error, TEXT("S47: table of the hills' foot rejected: %s; they stop nothing"), *FootWhy);
+			else
+				UE_LOG(LogS47Relief, Display, TEXT("S47: table of the hills' foot %dx%d, %.2f m cells"), FootTable.Width, FootTable.Height, 1 / FootTable.InvCell);
+		}
 		if (!FFileHelper::LoadFileToString(Json, *(Dir / TEXT("relief.json"))) || !FFileHelper::LoadFileToArray(Bytes, *(Dir / TEXT("relief.bin")), FILEREAD_Silent))
 		{
 			UE_LOG(LogS47Relief, Display, TEXT("S47: relief table not installed; the land stays as it was"));
@@ -171,6 +226,14 @@ namespace S47Relief
 	bool Ready() { LoadReliefOnce(); return ReliefTable.bValid; }
 	void SetActive(bool bOn) { bReliefActive = bOn && Ready(); }
 	bool Active() { return bReliefActive; }
+	double HillAbove(double RoadX, double RoadZ) { return bReliefActive ? SampleFoot(FootTable, RoadX, RoadZ) : 0; }
+	bool HillStops(double RoadX, double RoadZ, double Reach)
+	{
+		if (!bReliefActive || !FootTable.bValid) return false;
+		for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-Reach, -Reach), FVector2D(Reach, -Reach), FVector2D(-Reach, Reach), FVector2D(Reach, Reach) })
+			if (SampleFoot(FootTable, RoadX + D.X, RoadZ + D.Y) > FootStopM) return true;
+		return false;
+	}
 	FSuspend::FSuspend() : bWas(bReliefActive) { bReliefActive = false; }
 	FSuspend::~FSuspend() { bReliefActive = bWas; }
 
@@ -356,6 +419,35 @@ namespace S47Relief
 		}
 
 		ReliefTable = MoveTemp(Saved); bReliefActive = bSavedActive; bReliefLoaded = bSavedLoaded;
+
+		// The foot, on a made-up table too: 2 x 2 cells of 10 m, under the ground at one side and 8 m over it at the other.
+		{
+			FFootTable SavedFoot = MoveTemp(FootTable);
+			const bool bWasActive = bReliefActive;
+			const FString FootJson = TEXT("{\"origin_x\":100,\"origin_z\":200,\"cell_m\":10,\"width\":2,\"height\":2,\"scale_m\":0.125,\"bias_m\":-2}");
+			TArray<uint8> FootBytes = { 0, 80, 0, 80 };
+			FString FootWhy;
+			Check(ParseFootTable(FootJson, FootBytes, FootTable, FootWhy), TEXT("a foot table parses"));
+			bReliefActive = true;
+			Check(FMath::IsNearlyEqual(HillAbove(100, 205), -2., 1e-6) && FMath::IsNearlyEqual(HillAbove(110, 205), 8., 1e-6) && FMath::IsNearlyEqual(HillAbove(105, 205), 3., 1e-6), TEXT("the foot reads across a cell"));
+			Check(HillAbove(90, 205) == PastTheTable, TEXT("past the foot table the hills go on"));
+			Check(!HillStops(100.5, 205, .1) && HillStops(109, 205, .1) && HillStops(100.5, 205, 8), TEXT("a footprint stops by whichever corner meets the foot"));
+			bReliefActive = false;
+			Check(HillAbove(110, 205) == 0 && !HillStops(109, 205, .1), TEXT("off, the hills stop nothing"));
+			bReliefActive = bWasActive;
+			FootTable = MoveTemp(SavedFoot);
+		}
+		// What it costs: this is asked a few times a frame.
+		{
+			const bool bWasActive = bReliefActive;
+			bReliefActive = true;
+			const double Started = FPlatformTime::Seconds();
+			double Sum = 0;
+			for (int32 I = 0; I < 200000; ++I) Sum += HillStops(-2900 + I * .025, 500 + I * .019, .35) ? 1 : 0;
+			const double Took = FPlatformTime::Seconds() - Started;
+			bReliefActive = bWasActive;
+			Lines.Add(FString::Printf(TEXT("relief foot: %.0f ns a footprint (%d of 200000 stopped)"), Took / 200000 * 1e9, int32(Sum)));
+		}
 
 		// With the real table on disk, the places that depend on it being 0. Without it there is nothing to say.
 		TArray<FString> Zones;

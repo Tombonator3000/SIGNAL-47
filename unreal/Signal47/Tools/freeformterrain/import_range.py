@@ -8,7 +8,11 @@ The material:
 - the foot uses the ground material's own layers, world UVs, tint and macro colour (M_S47_FreeformGround), so that the land
   runs from one mesh to the other without a line. GroundTint, GravelAmount and CrustAmount come from S47MesaRock, as the
   ground's do. FootVertexColor stands in for the ground mesh's vertex colour.
-- stone by slope, shrubs and gravel on the lower slopes (T_FF_Range_M: R shrubs, G bare rock, B cavity, A foot)
+- above the foot none of that: those layers tile every 1.6 to 150 m, and on a hillside a kilometre off the tiling is a grid of
+  squares. There the soil is the same layers' mean colour (a fixed high mip, so tint and light stay what they were), varied by
+  three large turned samples of the macro map that share no period.
+- stone by slope, with beds that dip and wander through it; shrubs and gravel on the lower slopes (T_FF_Range_M: R shrubs, G bare
+  rock, B cavity, A foot), and a dry scrub tone in a band above the foot
 - the normal from T_FF_Range_N, in the mesh's own axes, so no triangle shows however large it is
 - haze by distance from the camera, into the base colour only, with the normal levelling off the same way, so the
   far ranges go blue-grey and flat by day and dark with the rest of the land at night. Nothing here glows.
@@ -33,6 +37,7 @@ L = unreal.MaterialEditingLibrary
 T = unreal.AssetToolsHelpers.get_asset_tools()
 S = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem)
 FALLBACK_SHARE = .04
+MEAN_MIP = 9    # of the ground's 2048 layers: 4 x 4 texels to a tile
 OLD_MESH = '/Game/CalicheStreet/Backdrop/SM_Caliche_Mesas.SM_Caliche_Mesas'
 
 
@@ -74,7 +79,19 @@ def import_texture(root, name, srgb, compression, sampler_group):
 def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     node, wire, lerp, mul, custom, sample, world_uv = G.node, G.wire, G.lerp, G.mul, G.custom, G.sample, G.world_uv
     F1, F3 = unreal.CustomMaterialOutputType.CMOT_FLOAT1, unreal.CustomMaterialOutputType.CMOT_FLOAT3
-    F4 = unreal.CustomMaterialOutputType.CMOT_FLOAT4
+    F2 = unreal.CustomMaterialOutputType.CMOT_FLOAT2
+
+    def turned(metres, degrees, x, y):
+        """World metres to a macro map's UV at this size, turned, so that no two of them line up and no row runs along an axis."""
+        code = 'float a = %f; float2 p = World.xy * 0.01; return float2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a)) / %f;' % (degrees * .0174533, metres)
+        return custom(mat, code, dict(World=wp), F2, x, y)
+
+    def mean_of(texture, x, y):
+        """The texture's own mean: a fixed high mip, whatever the distance. Same colour as the full layers, none of their pattern."""
+        s = sample(mat, texture, uv['Sand'], x, y)
+        s.set_editor_property('mip_value_mode', unreal.TextureMipValueMode.TMVM_MIP_LEVEL)
+        s.set_editor_property('const_mip_value', MEAN_MIP)
+        return s
     gray = unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE
     color = dict(r=True, g=True, b=False, a=False)
     wp = node(mat, unreal.MaterialExpressionWorldPosition, -3600, -1800)
@@ -113,12 +130,15 @@ def build_material(mat, tex, stone, macro, normal_map, mask_map, out):
     uv40 = world_uv(mat, wp, color, 40., -2500, -700)
     uv47 = world_uv(mat, wp, color, 47., -2500, -600)
     uv430 = world_uv(mat, wp, color, 430., -2500, -500)
-    uv13 = world_uv(mat, wp, color, 1300., -2500, -400)
     t150 = sample(mat, macro, uv150, -2200, -800)
     t40 = sample(mat, macro, uv40, -2200, -700)
     t47 = sample(mat, macro, uv47, -2200, -600)
     t430 = sample(mat, macro, uv430, -2200, -500)
-    t13 = sample(mat, macro, uv13, -2200, -400)
+    p1 = sample(mat, macro, turned(613., 23., -2500, -400), -2200, -400)
+    p2 = sample(mat, macro, turned(1717., -37., -2500, -320), -2200, -320)
+    p3 = sample(mat, macro, turned(211., 61., -2500, -240), -2200, -240)
+    mean_sand = mean_of(tex['Sand', 'D'], -2200, -160)
+    mean_gravel = mean_of(tex['Gravel', 'D'], -2200, -80)
     crust_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -300, parameter_name='CrustAmount', default_value=.75)
     gravel_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -200, parameter_name='GravelAmount', default_value=.85)
 
@@ -171,22 +191,36 @@ return c * (0.88 + 0.24 * small);
     vc = node(mat, unreal.MaterialExpressionVectorParameter, -950, -560, parameter_name='FootVertexColor', default_value=unreal.LinearColor(.82, .80, .76, 1))
     rock_tint = node(mat, unreal.MaterialExpressionVectorParameter, -950, -470, parameter_name='RockTint', default_value=unreal.LinearColor(.74, .70, .68, 1))
     scrub = node(mat, unreal.MaterialExpressionVectorParameter, -950, -380, parameter_name='ShrubColor', default_value=unreal.LinearColor(.050, .055, .030, 1))
+    dry = node(mat, unreal.MaterialExpressionVectorParameter, -950, -200, parameter_name='DryScrub', default_value=unreal.LinearColor(.135, .110, .070, 1))
     haze_col = node(mat, unreal.MaterialExpressionVectorParameter, -950, -290, parameter_name='HazeColor', default_value=unreal.LinearColor(.12, .19, .34, 1))
     land = custom(mat, """
-float3 soil = Soil * Tint * Vc * Macro;
-// the slope and the map's rock together; the local rock is the land's own colour, cut with the stone's pattern, a little greyer
-float rock = saturate(max(M.g, smoothstep(24.0, 38.0, Deg)) * (1.0 - M.a));
+// the foot: the ground's own soil, its pattern going with distance, where the plain's own has gone to its mean as well
+float foot = smoothstep(0.15, 0.85, M.a) * (1.0 - saturate((length(Camera - World) * 0.01 - 700.0) / 900.0));
+float3 mean = lerp(MeanSand, MeanGravel, 0.55) * Tint * Vc;
+float3 soil = lerp(mean, Soil * Tint * Vc * Macro, foot);
+// large patches of the hills, soils and sun-baked crust, so no slope is one colour. No two of these have a period in common.
+float up = 1.0 - M.a;
+float broad = saturate((P1 * 0.55 + P2 * 0.45 - 0.22) / 0.33);
+soil *= lerp(float3(1.0, 1.0, 1.0), lerp(float3(1.07, 1.0, 0.93), float3(0.89, 0.91, 0.95), broad), up);
+soil *= lerp(1.0, 0.90 + 0.20 * saturate((P3 - 0.22) / 0.33), up * (1.0 - saturate(Haze * 3.0)));
+// a dry scrub tone in a band above the foot
+float band = M.a * (1.0 - M.a) * 4.0;
+soil = lerp(soil, Dry, band * 0.42);
+// bare rock: the map's and the slope's together, cut with the stone's pattern, a little greyer than the land's soil
+float rock = saturate(max(M.g, smoothstep(30.0, 44.0, Deg)) * up);
 rock *= smoothstep(0.15, 0.55, rock + (dot(Stone, float3(0.3, 0.6, 0.1)) * 3.0 - 0.45) * 0.5);
-float3 stone = soil * RockTint * clamp(Stone / float3(0.183, 0.132, 0.109), 0.35, 1.5);
+float3 stone = mean * RockTint * clamp(Stone / float3(0.183, 0.132, 0.109), 0.35, 1.5);
+// its beds: they dip one way over the whole map and wander with the patches, about 16 and 54 m through the rock
+float bedAt = World.z * 0.01 + UV.x * 480.0 + UV.y * 288.0 + (P1 - 0.4) * 38.0;
+float bed = 0.62 * (0.5 + 0.5 * sin(bedAt * 0.117 + 1.3)) + 0.38 * (0.5 + 0.5 * sin(bedAt * 0.38));
+stone *= lerp(float3(0.74, 0.72, 0.72), float3(1.20, 1.15, 1.08), smoothstep(0.25, 0.75, bed));
 float3 c = lerp(soil, stone, rock);
-// broad patches of the hills, soils and sun-baked crust, so no slope is one colour
-float broad = saturate((Far - 0.22) / 0.33);
-c *= lerp(1.0, lerp(float3(1.06, 1.0, 0.94), float3(0.90, 0.92, 0.95), broad), 1.0 - M.a);
 // shrubs as a dark speckle
 float shrub = M.r * (1.0 - rock);
 c = lerp(c, Shrub, shrub * lerp(0.82, 0.55, saturate(Haze * 2.0)));
 return c * lerp(0.48, 1.0, M.b);
-""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, Far=(t13, 'R'), Shrub=scrub, Haze=haze), F3, -600, -700)
+""", dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Deg=deg, Stone=stone_d, RockTint=rock_tint, P1=(p1, 'R'), P2=(p2, 'R'), P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'),
+          Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, UV=uv0), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 
     normal = custom(mat, """

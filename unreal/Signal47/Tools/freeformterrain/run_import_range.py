@@ -50,7 +50,13 @@ def main():
     print(json.dumps({'returncode': result.get('returncode'), 'stop_reason': result.get('stop_reason'), 'status': data.get('status'), 'error': data.get('error'), 'mesh': data.get('mesh')}, indent=1))
     if result['returncode'] != 0 or result['stop_reason']:
         return 1
-    return 0 if data.get('status') == 'PASS_FREEFORM_RANGE' else 1
+    if data.get('status') != 'PASS_FREEFORM_RANGE':
+        return 1
+    # beside relief.bin, staged the same way (Signal47.Build.cs): the table that goes with this mesh
+    dest = project / 'Content/FreeformTerrain'
+    for name in ('range_foot.bin', 'range_foot.json'):
+        shutil.copy2(root / name, dest / name)
+    return 0
 
 
 if __name__ == '__main__':
