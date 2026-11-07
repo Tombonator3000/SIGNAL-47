@@ -28,6 +28,8 @@ public:
 	 *  sounds out in the dark and the silence, a figure at the edge of the view, the town's events,
 	 *  the time away, the curve's sign), and the strongest of them counts. */
 	void Flicker(double K, const FString& From = TEXT("event"));
+	/** While it flickers (Flicker above zero): the contact gives way altogether for this long. No battery in it. */
+	void FlickerOut(double Seconds) { Dark = FMath::Max(Dark, Seconds); }
 	/** Every frame: held a little right of and below the eyes, pointing where they look. Off: in the
 	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). */
 	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff);

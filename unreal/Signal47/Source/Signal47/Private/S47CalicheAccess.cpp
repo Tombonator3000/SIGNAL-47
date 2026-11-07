@@ -7,6 +7,8 @@
 #include "S47Inter.h"
 #include "S47Three.h"
 #include "S47Audio.h"
+#include "S47Freeform.h"
+#include "S47IndoorDread.h"
 #include "S47Props.h"
 #include "S47UI.h"
 #include "S47RoadTerrain.h"
@@ -88,6 +90,40 @@ bool RoomMiddle(const FString& Id,FVector& Out)
  Out=R->Root+FVector((R->X0+R->X1)*.5,R->Floor,-(R->Y0+R->Y1)*.5);
  return true;
 }
+bool RoomAt(const FVector& At,FString& OutId)
+{
+ for(const FRoom& R:Rooms)
+ {
+  const double LX=At.X-R.Root.X,LY=R.Root.Z-At.Z;
+  if(LX>=R.X0&&LX<=R.X1&&LY>=R.Y0&&LY<=R.Y1){OutId=R.Id;return true;}
+ }
+ return false;
+}
+bool DoorAt(const FString& Id,FVector& OutMiddle,FVector& OutNormal)
+{
+ const FRoom* R=Find(Id);if(!R)return false;
+ OutMiddle=FVector(R->Root.X+(R->Front>0?R->X1:R->X0),R->Root.Y+R->Floor,R->Root.Z-R->DoorY);
+ OutNormal=FVector(R->Front>0?1:-1,0,0);
+ return true;
+}
+void PoseDoor(const FString& Id,double K)
+{
+ FRoom* R=Find(Id);if(!R)return;
+ if(K<0){Sync(*R);return;}
+ if(auto* C=R->Leaf.Get())
+ {
+  const double A=K*1.67*R->Front;
+  C->SetWorldLocation(S47Three::ToUE(R->Root+FVector(R->Hinge.X,0,-R->Hinge.Y)));C->SetWorldRotation(FRotator(0,-FMath::RadiansToDegrees(A),0));
+ }
+}
+void SetOpenQuietly(const FString& Id,bool bOpen)
+{
+ FRoom* R=Find(Id);if(!R)return;
+ R->bOpen=bOpen;
+ // The collider goes with the state; the leaf stays where the hand has it until it is let go.
+ if(Main.IsValid()&&Main->Web)for(const TCHAR* Area:{TEXT("road"),TEXT("diner")})for(auto& C:Main->Web->CollidersMutable(Area))if(C.Id==TEXT("access:door:")+R->Id)C.bEnabled=!R->bOpen;
+ if(Main.IsValid())Main->RequestAutosave(false);
+}
 bool HasDoor(const FString& Id){return Find(Id)!=nullptr;}
 bool IsOpen(const FString& Id){const auto* R=Find(Id);return R&&R->bOpen;}
 bool UseDoor(const FString& Id)
@@ -147,7 +183,18 @@ void Init(US47Main* M)
    if(Door)
    {
     R.Leaf=C;FS47Interactable It;It.Id=TEXT("access:")+R.Id;It.Object=FS47Obj(W,Node);It.Range=2.7;const FString Id=R.Id;
-    It.Label=[Id]{return IsOpen(Id)?FString(TEXT("Close door")):FString(TEXT("Open door"));};It.Use=[Id]{UseDoor(Id);};M->Inter->Add(It);
+    It.Label=[Id]
+    {
+     const FString Visit=Main.IsValid()&&Main->Freeform&&Main->Freeform->IndoorDread?Main->Freeform->IndoorDread->DoorLabel(TEXT("access:")+Id):FString();
+     return !Visit.IsEmpty()?Visit:IsOpen(Id)?FString(TEXT("Close door")):FString(TEXT("Open door"));
+    };
+    It.Use=[Id]
+    {
+     // Something on the other side of this one just now: E is about that, not the door as such.
+     if(Main.IsValid()&&Main->Freeform&&Main->Freeform->IndoorDread&&Main->Freeform->IndoorDread->DoorPressed(TEXT("access:")+Id))return;
+     UseDoor(Id);
+    };
+    M->Inter->Add(It);
    }
   }
   // Replace the former solid building rectangle with actual perimeter walls and an opening.

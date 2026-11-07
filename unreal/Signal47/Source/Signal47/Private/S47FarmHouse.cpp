@@ -1,6 +1,8 @@
 #include "S47FarmHouse.h"
 #include "S47RoadTerrain.h"
 #include "S47Audio.h"
+#include "S47Freeform.h"
+#include "S47IndoorDread.h"
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47Three.h"
@@ -204,7 +206,7 @@ void FS47FarmHouseDoors::SetCollider(const FDoor& D)
 void FS47FarmHouseDoors::Pose(FDoor& D)
 {
  auto* C=D.Leaf.Get();if(!C)return;
- const double A=FMath::DegreesToRadians(SwingDegrees)*D.K;
+ const double A=FMath::DegreesToRadians(SwingDegrees)*(D.Over>=0?D.Over:D.K);
  const FVector Dir(D.Along.X*FMath::Cos(A)-D.Along.Z*FMath::Sin(A),0,D.Along.X*FMath::Sin(A)+D.Along.Z*FMath::Cos(A));
  C->SetWorldLocationAndRotation(S47Three::ToUE(D.Hinge+Dir*(D.Width*.5)+FVector(0,LeafHeight*.5,0)),S47Three::DirToUE(Dir).Rotation());
 }
@@ -222,14 +224,25 @@ void FS47FarmHouseDoors::Begin(const S47J::FObj& Saved)
   FDoor& D=Doors[I];
   // Left as they were: an empty house's inner doors stand open, its outer doors are shut.
   D.bOpen=Saved.IsValid()&&Saved->HasField(TEXT("open"))?Open.Contains(D.Name):!D.Name.StartsWith(TEXT("north"))&&!D.Name.StartsWith(TEXT("south"));
-  D.K=D.bOpen?1:0;
+  D.K=D.bOpen?1:0;D.Over=-1;
   if(auto* C=D.Leaf.Get()){C->SetVisibility(true);C->SetHiddenInGame(false);}
   Pose(D);SetCollider(D);
   if(IsValid(M->Inter))
   {
    FS47Interactable It;It.Id=D.Id;It.Object=D.Object;It.Range=2.6;
-   It.Label=[this,Guard,I]{return Guard.IsValid()&&Doors.IsValidIndex(I)?FString(Doors[I].bOpen?TEXT("Close the door"):TEXT("Open the door")):FString();};
-   It.Use=[this,Guard,I]{if(Guard.IsValid())Use(I);};
+   It.Label=[this,Guard,I]
+   {
+    if(!Guard.IsValid()||!Doors.IsValidIndex(I))return FString();
+    const FString Visit=M&&M->Freeform&&M->Freeform->IndoorDread?M->Freeform->IndoorDread->DoorLabel(Doors[I].Id):FString();
+    return !Visit.IsEmpty()?Visit:FString(Doors[I].bOpen?TEXT("Close the door"):TEXT("Open the door"));
+   };
+   It.Use=[this,Guard,I]
+   {
+    if(!Guard.IsValid()||!Doors.IsValidIndex(I))return;
+    // Something on the other side of this one just now: E is about that, not the door as such.
+    if(M&&M->Freeform&&M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorPressed(Doors[I].Id))return;
+    Use(I);
+   };
    It.Examine=It.Label;
    M->Inter->Add(It);M->Web->MarkUsable(D.Object.I,D.Id);
   }
@@ -239,7 +252,7 @@ void FS47FarmHouseDoors::Begin(const S47J::FObj& Saved)
 void FS47FarmHouseDoors::Stop()
 {
  bActive=false;Life.Reset();
- for(FDoor& D:Doors){SetCollider(D);if(auto* C=D.Leaf.Get()){C->SetVisibility(false);C->SetHiddenInGame(true);}}
+ for(FDoor& D:Doors){D.Over=-1;SetCollider(D);if(auto* C=D.Leaf.Get()){C->SetVisibility(false);C->SetHiddenInGame(true);}}
 }
 
 S47J::FObj FS47FarmHouseDoors::Save() const
@@ -252,6 +265,31 @@ bool FS47FarmHouseDoors::PlayerIn(const FDoor& D) const
 {
  if(!M||!M->Player)return false;const double R=M->Player->Radius;
  return M->Player->Pos.X+R>D.Closed.Min.X&&M->Player->Pos.X-R<D.Closed.Max.X&&M->Player->Pos.Z+R>D.Closed.Min.Y&&M->Player->Pos.Z-R<D.Closed.Max.Y;
+}
+
+FVector FS47FarmHouseDoors::Middle(int32 Index) const
+{
+ return Doors.IsValidIndex(Index)?Doors[Index].Hinge+Doors[Index].Along*(Doors[Index].Width*.5):FVector::ZeroVector;
+}
+
+FVector FS47FarmHouseDoors::Normal(int32 Index) const
+{
+ return Doors.IsValidIndex(Index)?FVector(-Doors[Index].Along.Z,0,Doors[Index].Along.X):FVector::ForwardVector;
+}
+
+void FS47FarmHouseDoors::PoseOver(int32 Index,double K)
+{
+ if(!Doors.IsValidIndex(Index))return;
+ FDoor& D=Doors[Index];
+ if(K<0){if(D.Over>=0){D.K=D.Over;D.Over=-1;}Pose(D);return;}
+ D.Over=K;Pose(D);
+}
+
+void FS47FarmHouseDoors::SetOpenQuietly(int32 Index,bool bOpen)
+{
+ if(!bActive||!Doors.IsValidIndex(Index))return;
+ Doors[Index].bOpen=bOpen;SetCollider(Doors[Index]);
+ if(M)M->RequestAutosave();
 }
 
 bool FS47FarmHouseDoors::Use(int32 Index)
@@ -270,7 +308,7 @@ void FS47FarmHouseDoors::Step(double Dt)
  if(!bActive)return;
  for(FDoor& D:Doors)
  {
-  const double Want=D.bOpen?1:0;if(D.K==Want)continue;
+  const double Want=D.bOpen?1:0;if(D.Over>=0||D.K==Want)continue;
   D.K=FMath::Clamp(D.K+(Want>D.K?1:-1)*Dt/SwingSeconds,FMath::Min(D.K,Want),FMath::Max(D.K,Want));
   Pose(D);
  }
