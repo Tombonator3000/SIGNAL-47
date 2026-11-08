@@ -3420,9 +3420,15 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   FSite S;S.Kind=TEXT("landing");S.Title=TEXT("the wash");S.Night=4;S.Serial=3;S.X=120;S.Z=-440;S.Az=31;S.Spread=12;S.Until=9e5;A.Sites.Add(S);
   FSite Bad;Bad.Kind=TEXT("nonsense");Bad.Night=2;A.Sites.Add(Bad);
   A.LastDays.Add(TEXT("landing"),4);A.Deeds.Add(TEXT("You walked round the burnt ring out by the wash."));A.bEchoArmed=true;A.EchoFrom=4;A.HumorNight=3;
-  FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
+  // As an older save has it: no word on whether the bearing is known (written since the bearing is set as it comes down).
+  const S47J::FObj Older=A.Save();
+  for(const TSharedPtr<FJsonValue>& V:Older->GetArrayField(TEXT("sites")))if(V.IsValid()&&V->Type==EJson::Object)V->AsObject()->RemoveField(TEXT("known"));
+  FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(Older)));
   Check(B.Sites.Num()==1&&B.Sites[0].Az==31.&&B.Sites[0].Title==TEXT("the wash")&&B.LastDays.FindRef(TEXT("landing"))==4&&B.Deeds.Num()==1&&B.bEchoArmed&&B.EchoFrom==4&&B.HumorNight==3,TEXT("sites, days, deeds and the armed voice survive a Continue, and nonsense is dropped"));
   Check(B.Sites.Num()==1&&B.Sites[0].bKnown,TEXT("an older save's landing with a bearing is known"));
+  // And one saved now keeps what it said: a landing nobody saw stays off the map after a Continue.
+  FS47Happenings Unseen(nullptr);Unseen.Begin(S47J::Read(S47J::Write(A.Save())));
+  Check(Unseen.Sites.Num()==1&&!Unseen.Sites[0].bKnown&&Unseen.Sites[0].Az==31.,TEXT("a landing nobody saw keeps its bearing, off the map, across a Continue"));
   // What is under way when it is saved: a landing coming down carries on with its bearing; the woman by the road may be drawn again.
   FS47Happenings C(nullptr);C.Begin(nullptr);
   C.Now.Id=TEXT("landing");C.Now.Serial=3;C.Now.Age=14;C.Now.Len=36;C.Now.X=120;C.Now.Z=-440;C.Now.Yaw=31;C.Now.Stage=2;
