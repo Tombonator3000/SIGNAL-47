@@ -230,6 +230,83 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   };
   Go(Stage,[Humor]{Humor(TEXT("pump"),TEXT("A small grey man in a shirt and a hat, at the pump. E talks to him."));});
  });
+ // ---- the rest of NATTHENDELSER-31 ----
+ static const TCHAR* const R=TEXT("Night events: the rest");
+ struct FRest{const TCHAR* Id;const TCHAR* Label;const TCHAR* Note;int32 Stage;const TCHAR* Site;};
+ // Stage: 0 out by the windmill on foot, 1 Caliche's street, 2 the control room, 3 the yard by the parked truck, 4 the highway, 5 the motel lot.
+ static const FRest Rest[]={
+  {TEXT("dogs_hush"),TEXT("2. Every dog barks, then all stop"),TEXT("23:00, on foot near the windmill"),0,nullptr},
+  {TEXT("phone_empty"),TEXT("6. A phone rings in an empty building"),TEXT("23:00, Caliche; E on it answers"),1,nullptr},
+  {TEXT("carcass"),TEXT("10. A dead cow with clean cuts: go to it"),TEXT("on foot beside it; E on it"),-1,TEXT("carcass")},
+  {TEXT("house_lit"),TEXT("12. A light in an empty house"),TEXT("22:00, Caliche; it goes out when you come up"),1,TEXT("houselit")},
+  {TEXT("horizon_figure"),TEXT("14. A figure on the rise"),TEXT("23:00, on foot near the windmill; the lamp finds nobody"),0,nullptr},
+  {TEXT("cinema_film"),TEXT("15. The cinema runs a film for nobody"),TEXT("22:00, Caliche, by the Plaza"),1,TEXT("cinema")},
+  {TEXT("room6_tv"),TEXT("16. Room 6: the television on, nobody"),TEXT("23:00, the motel lot"),5,nullptr},
+  {TEXT("town_blackout"),TEXT("17. Caliche goes dark for a minute"),TEXT("22:00, Caliche's street"),1,nullptr},
+  {TEXT("array_burst"),TEXT("18. The array catches a burst: a bearing"),TEXT("23:00, control room; the bearing goes on the map"),2,nullptr},
+  {TEXT("am_caller"),TEXT("19. 1420: a caller tells last night wrong"),TEXT("21:00, in the truck, when it is the caller's turn on the programme"),4,nullptr},
+  {TEXT("hood_warm"),TEXT("20. The truck's hood is warm"),TEXT("23:00, the yard by the truck"),3,nullptr},
+  {TEXT("truck_tracks"),TEXT("21. Prints round the truck that stop"),TEXT("23:00, the yard by the truck"),3,TEXT("tracks")},
+  {TEXT("animals_flee"),TEXT("22. Jackrabbits run past, all one way"),TEXT("23:00, on foot near the windmill"),0,nullptr},
+  {TEXT("car_light"),TEXT("24. A light over the truck; the engine dies (danger)"),TEXT("02:30, the highway; stay in, or get out under it"),4,nullptr},
+  {TEXT("dust_devil"),TEXT("25. A dust devil that stands still"),TEXT("21:00, on foot near the windmill"),0,nullptr},
+  {TEXT("missing_person"),TEXT("26. The missing man's pickup: go to it"),TEXT("the county on the CB, then on foot beside it; E on it"),-1,TEXT("missing")},
+ };
+ for(const FRest& Line:Rest)
+ {
+  const FString Id=Line.Id;const int32 St=Line.Stage;const FString Site=Line.Site?Line.Site:TEXT("");
+  E.AddFreeform(R,Line.Label,Line.Note,[this,Haps,Road,ToSite,Id,St,Site]
+  {
+   const auto Fire=[this,Haps,Id,Site]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(Id,FString(),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    FVector At;
+    if(H->LiveAt(At))AimAt(At+FVector(0,1.2,0));else if(!Site.IsEmpty()&&H->SiteHere(Site,At))AimAt(At+FVector(0,1.6,0));
+    Tell(H->Live(Id)||Id==TEXT("hood_warm")||Id==TEXT("am_caller")||Id==TEXT("town_blackout"),FString::Printf(TEXT("%s: started."),*Id),5);
+   };
+   if(St<0)
+   {
+    // Out there somewhere: start it, then go and stand by it.
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(Id,FString(),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    ToSite(Site,9,FString::Printf(TEXT("%s, ahead of you. E on it."),*Id));
+    return;
+   }
+   if(St==4){Road(Id==TEXT("car_light")?2.5:21,4.5,false,Fire);return;}
+   if(St==0){ToLandPlace(TEXT("windmill"),40,Id==TEXT("dust_devil")?21:23,4.5,[Fire](double,double){Fire();});return;}
+   FStage Stage;Stage.To=4.5;Stage.Yaw=UE_DOUBLE_PI;
+   if(St==1){Stage.From=Id==TEXT("phone_empty")?23:22;Stage.Area=TEXT("diner");Stage.Yaw=0;Stage.Where=[]{return FVector2D(7995,2110);};}
+   else if(St==2){Stage.From=23;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::ControlRoom();};}
+   else if(St==3){Stage.From=23;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::Yard();};}
+   else{Stage.From=23;Stage.Area=TEXT("saro");Stage.Where=[]{const FS47Box2& Park=S47Legs::MOTEL_PARK();return FVector2D(Park.MinX-6,Park.MinZ+6);};}
+   Go(Stage,Fire);
+  });
+ }
+ // ---- unease (URO.md): each of the 25 where it can be noticed; nothing is kept and nothing is explained ----
+ static const TCHAR* const U=TEXT("Unease");
+ for(int32 I=0;I<FS47Happenings::UneaseCount();++I)
+ {
+  // Where it can happen: in the control room, out in the yard, at the wheel, or in Caliche's street.
+  const int32 Where=(I==1||I==5||I==7||I==9||I==11||I==13||I==16||I==19)?0:(I==6||I==14||I==18||I==21||I==23)?2:I==22?3:1;
+  static const TCHAR* const WhereText[]={TEXT("23:00, control room"),TEXT("23:00, the yard, on foot"),TEXT("23:00, in the truck on the highway"),TEXT("21:30, Caliche's street")};
+  const FString Label=FString::Printf(TEXT("%d. %s"),I+1,FS47Happenings::UneaseTitle(I));
+  E.AddFreeform(U,Label,WhereText[Where],[this,Haps,Road,I,Where]
+  {
+   const auto Fire=[this,Haps,I]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevUnease(I,Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    Tell(true,FString::Printf(TEXT("%s. Nothing is kept, nothing is said."),FS47Happenings::UneaseTitle(I)),5);
+   };
+   if(Where==2){Road(23,4.5,false,Fire);return;}
+   FStage Stage;Stage.From=Where==3?21.5:23;Stage.To=4.5;Stage.Yaw=UE_DOUBLE_PI;
+   Stage.Area=Where==3?TEXT("diner"):TEXT("saro");
+   Stage.Where=[Where]{return Where==0?S47HapDev::ControlRoom():Where==1?S47HapDev::Yard():FVector2D(7995,2120);};
+   if(Where==3)Stage.Yaw=0;
+   Go(Stage,Fire);
+  });
+ }
  E.AddFreeform(G,TEXT("Counter: give me one, held up"),TEXT("as if built at the bench; this test run only. It ticks on foot"),[this,Haps]
  {
   FS47Happenings* H=Haps();if(!H){Tell(false,TEXT("Freeform only"));return;}

@@ -74,6 +74,17 @@ public:
  void DevGeiger(bool bGive,bool bHold){bDevGeiger|=bGive;bGeigerHeld=bHold;}
  // The bench's job for the counter (FS47FreeformWorld): empty when the tube is there.
  static FString GeigerBench(const US47Main* M);
+
+ // Unease (Docs/Design/Director/URO.md, TODO UNEASE-20261108, Tom 8 November): 25 small things with no danger, no reward and no
+ // explanation, two or three a night, never two alike in a night, never just before or after a danger. The player is never quite
+ // sure anything happened. Nr. 3 (your name) and nr. 20 (a note in your own hand) come at most once in a game.
+ static int32 UneaseCount();
+ static const TCHAR* UneaseId(int32 I);
+ static const TCHAR* UneaseTitle(int32 I);
+ // F10: this one now, as far as where the player stands allows. Why: what stopped it.
+ bool DevUnease(int32 I,FString& Why);
+ bool UneaseLive() const{return Uneasy.I>=0;}
+ int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
 
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
@@ -134,6 +145,12 @@ private:
  void StepEvent(double Dt);
  void StepSites(double Dt);
  void StepLate();
+ // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
+ uint32 SituationNow() const;
+ static uint32 NeedMask(const FString& Id);
+ TArray<FString> SwapOrder(int32 Night) const;
+ void StepSwap();
+ double SwapTry=0;
  void StepSays(double Dt);
  void Say(const FString& Text,double In=0,float Secs=6);
  void Cb(const TArray<FString>& Lines,const FString& Voice,bool bWrong);
@@ -153,6 +170,11 @@ private:
  void StepLanding(double Dt);
  void StepHitcher(double Dt);
  void StepHumor(double Dt);
+ // The rest of the 31 (S47Happenings.cpp, "the rest of NATTHENDELSER-31").
+ bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
+ bool StepMore(double Dt);
+ void UsePhone();
+ int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too
  void UseSite(const FString& Kind);
  void UseCattle();
  void UseHitcher();
@@ -176,10 +198,27 @@ private:
  // ---- what is drawn ----
  FProp* Prop(const FString& Kind);
  FProp* FindProp(const FString& Kind) const;
- void PoseProp(FProp& P,const FVector& Foot,double Yaw);
+ // Tilt: laid on the slope it stands on (the ring), identity for what stands upright.
+ void PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQuat& Tilt=FQuat::Identity);
  void ShowProp(FProp& P,bool bOn);
  void HideAll();
  void PlaceSites();
+ // ---- unease ----
+ struct FUneasy{int32 I=-1,Stage=0;double Age=0,Len=0,Clock=0,X=0,Z=0,Yaw=0,Next=0;FVector At=FVector::ZeroVector,Dir=FVector::ZeroVector;bool bForced=false;};
+ FUneasy Uneasy;
+ TArray<FString> UneaseOnce;  // 3 and 20: never twice in a game (saved)
+ TArray<int32> UneaseDone;    // tonight's, never two alike (saved with UneaseNight)
+ TArray<int32> UneasePool;    // tonight's draw, in order; the first ones wanted, the rest stand by
+ TArray<double> UneaseAt;     // hour of the night (19 to 30) each of the wanted ones may come from
+ int32 UneaseNight=0,UneaseWant=0,DangerSeen=0;
+ double DangerClock=-1e9,UneaseTry=0,OutsideSince=-1,TruckAwaySince=-1;
+ bool bWasDriving=false,bWasIndoors=false,bChairUp=false;
+ TFunction<FString()> ClockSay;double ClockRange=-1;bool bClockHeld=false;
+ void PlanUnease(int32 Night);
+ void StepUnease(double Dt);
+ bool FireUnease(int32 I,bool bForced,FString& Why);
+ void StepUneasy(double Dt);
+ void EndUneasy();
  // ---- the counter ----
  void StepGeiger(double Dt);
  float DoseAt(const FVector& Foot,FString& Near,double& NearM) const;
