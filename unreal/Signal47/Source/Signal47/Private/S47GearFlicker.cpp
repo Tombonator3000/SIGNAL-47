@@ -242,7 +242,10 @@ bool FS47GearFlicker::SelfTest(TArray<FString>& Lines)
 		PrevSag = LampSag(Lv); PrevFlick = LampFlicker(Lv); PrevRadio = RadioBreak(Lv); PrevDim = TruckDim(Lv); PrevBand = Band(Lv);
 	}
 	Check(bGrows, TEXT("nearer and worse is always more: the lamp sags and blinks more, the radio breaks more, the truck dims more, everything comes oftener"));
-	Check(LampSag(1) <= 0.55 && LampFlicker(1) <= 0.95 && TruckDim(1) >= 0.35 && CoughEvery(1) >= 2 && ClockJumpEvery(1) >= 2, TEXT("even on top of it there is something left to see by, and a moment between coughs"));
+	// (a hair of rounding: 0.15 + 0.8 is 0.9500000000000001 in doubles)
+	constexpr double Eps = 1e-9;
+	Check(LampSag(1) <= 0.55 + Eps && LampFlicker(1) <= 0.95 + Eps && TruckDim(1) >= 0.35 - Eps && CoughEvery(1) >= 2 && ClockJumpEvery(1) >= 2,
+		TEXT("even on top of it there is something left to see by, and a moment between coughs"));
 	Check(Band(0.1) == 1 && Band(0.4) == 2 && Band(0.7) == 3 && Band(0.9) == 4, TEXT("four bands a player can learn"));
 	Check(ShiftClock(TEXT("23:50"), 15) == TEXT("00:05") && ShiftClock(TEXT("00:03"), -5) == TEXT("23:58") && ShiftClock(TEXT("02:14:30"), 7) == TEXT("02:21:30"), TEXT("a jumped clock wraps the day and keeps its seconds"));
 	Check(ShiftClock(TEXT("LATE AFTERNOON"), 5) == TEXT("LATE AFTERNOON") && ShiftClock(FString(), 5).IsEmpty(), TEXT("what is not a clock is left alone"));
