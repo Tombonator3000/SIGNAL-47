@@ -21,18 +21,18 @@ namespace
     TEXT("Receiver chart, the minute of the burst. The hash rides on mains hum and grows as the station load comes up, then fades. It looks like the line. A generator close by would look much the same."),
     TEXT("Receiver chart, the minute of the burst. The hash rises and falls as slowly as a source crossing the beam, and the reference channel stays flat. It looks as if it came in through the dishes. A drifting gain stage can do the same.")}},
    {TEXT("carrier_feeder"),TEXT("Remote feeder on the county road"),{
-    TEXT("Remote feeder, after the burst. Fresh tyre marks on the shoulder and one cut strand in the fence by the panel. A rancher after a stray could have done as much."),
+    TEXT("Remote feeder, after the burst. Fresh tire tracks on the shoulder and one cut strand in the fence by the panel. A rancher after a stray could have done as much."),
     TEXT("Remote feeder, after the burst. A scorched smell at the panel and a dark streak down the top insulator. They all darken with age."),
-    TEXT("Remote feeder, after the burst. No marks at all in the soft dirt round the panel, and the fence wire ticks when you touch it. Dry air does that out here.")}}},
+    TEXT("Remote feeder, after the burst. No marks at all in the soft dirt around the panel, and the fence wire ticks when you touch it. Dry air does that out here.")}}},
   {{{TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REMOTE FEEDER\n\nA deputy sat on the county road at the hour you gave. He turned back two men with a pickup and a portable generator, stripping ground wire from the feeder run.\n\nThe co-op sends a spare control fuse with its thanks. It is in your depot."),ER::Spare},
-    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REMOTE FEEDER\n\nThe deputy found no one and no tracks worth the name. He did think the top insulator looked burnt and passed that to the co-op, who have it on a list.\n\nIt let go before they got there. Measure the feeder at the service bay."),ER::FeederFault},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REMOTE FEEDER\n\nThe deputy found no one and no tracks worth the name. He did think the top insulator looked burnt and passed that to the co-op, who put it on their list.\n\nIt let go before they got there. Measure the feeder at the service bay."),ER::FeederFault},
     {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REMOTE FEEDER\n\nA deputy sat on the county road from midnight. Nobody came, no vehicle, no tracks.\n\nHe says the fence was ticking, and he would rather not make that drive again for this."),ER::None}},
-   {{TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO FEEDER CALL-OUT\n\nOur crew climbed the pole. The insulators are sound. They did find a cut fence strand and fresh tyre marks at the panel and have told the sheriff.\n\nThe call-out is charged to your station."),ER::CallOut},
+   {{TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO FEEDER CALL-OUT\n\nOur crew climbed the pole. The insulators are sound. They did find a cut fence strand and fresh tire tracks at the panel and have told the sheriff.\n\nThe call-out is charged to your station."),ER::CallOut},
     {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO FEEDER CALL-OUT\n\nOur crew found the top insulator cracked and tracking, and replaced it before it failed. No charge.\n\nA spare control fuse for the panel is in your depot."),ER::Spare},
     {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO FEEDER CALL-OUT\n\nOur crew climbed the pole. Insulators sound, line balanced, nothing on the recorder at the hour you gave. We cannot find your fault.\n\nThe call-out is charged to your station."),ER::CallOut}},
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Overnight someone took the ground lead off the feeder panel.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. The top insulator on the feeder let go this morning.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
-    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Nothing further has happened.\n\nA rancher on US-60 rang the office to ask whether we had noticed anything at that minute. He did not say why."),ER::None}}}
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Nothing further has happened.\n\nA rancher on US-60 called the office to ask whether we had noticed anything at that minute. He did not say why."),ER::None}}}
  };
  const FS47FreeformCases::FMysteryDef LostTime={
   4,TEXT("Personnel: the lost hours"),
@@ -48,7 +48,7 @@ namespace
     {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nWe bench-tested the timing path on your report and it holds to a tenth of a second over a week. We cannot find your fault.\n\nThe call-out is charged to your station."),ER::CallOut},
     {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nThe timing path holds. The station log for that night is complete and shows no operator for the period you list.\n\nThe call-out is charged to your station."),ER::CallOut}},
    {{TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nBlood pressure and reflexes unremarkable. Nothing here suggests a lapse. Your own form says the station clock was out.\n\nThe visit is charged to your station."),ER::CallOut},
-    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nNight shifts, irregular meals, long drives alone. It happens to people in your line. Sleep more and do not drive tired.\n\nNo charge to the station for the first visit."),ER::None},
+    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nNight shifts, irregular meals, long drives alone. It happens to people in your line of work. Sleep more and do not drive tired.\n\nNo charge to the station for the first visit."),ER::None},
     {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nUnremarkable. There are some small marks you did not mention and could not account for. Probably nothing. Come back if they change.\n\nThe visit is charged to your station."),ER::CallOut}},
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Field service has since found the timing relay slipping and charged nothing for it.\n\nThe note stands as you wrote it."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
@@ -61,7 +61,7 @@ namespace
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Feeder interference"),TEXT("Local intermittent transmitter"),TEXT("Follows the sky source")},
   {TEXT("Feeder"),TEXT("Transmitter"),TEXT("Sky")},
-  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power. One fuel can runs six game-hours.")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time of the first original.")}},
   // Generator, OffSource, Repeat
@@ -105,7 +105,7 @@ namespace
    {true,true,false},    // people: impacts continue, the seal is broken, the sequence follows one path
    {true,false,true}},   // unexplained: impacts continue, no crossing, both sites at once
   {TEXT("COUNTY BUILDING INSPECTOR / SOCORRO\nRE: SARO ANNEX ROOF\n\nThe roof plate you fastened was the last unsecured sheet on the 1962 annex. Wind loading on that roof is noted in the 1979 inspection.\n\nNo further action. Your sealed-gate record shows nothing crossing to the station."),
-   TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO SERVICE GATE\n\nYour broken seal and the track along the service road match reports of people taking copper and scrap from remote sites this autumn.\n\nA deputy will drive past SARO on night patrol. Keep the gate sealed and photograph any vehicle."),
+   TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO SERVICE GATE\n\nYour broken seal and the track along the service road match reports of people taking copper and scrap from remote sites this spring.\n\nA deputy will drive past SARO on night patrol. Keep the gate sealed and photograph any vehicle."),
    TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts and the sealed gate stayed intact.\n\nNo person, vehicle or animal accounts for it. The observation is retained without an identity. Do not approach it alone.")},
   TEXT("Records reply: visitors around the base"),TEXT("access.visitors")
  },
@@ -115,7 +115,7 @@ namespace
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
-  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power, off the feeder. One fuel can runs six game-hours.")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time of the first original.")}},
   // Generator, OffSource, Repeat
@@ -279,7 +279,7 @@ void FS47FreeformCases::RuleOutWind(int32 Line)
 FString FS47FreeformCases::QuestionText(int32 Line) const
 {
  const FCase* C=Get(Line);
- if(C&&C->bBeyondWind)return TEXT("What came for you out there, and is it what moves around SARO at night? Wind does not take time from anyone or light up a room. Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation that is left.");
+ if(C&&C->bBeyondWind)return TEXT("What is moving around SARO at night? Wind does not account for lost time or a room full of light. Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation that is left.");
  return Def(Line).Question;
 }
 int32 FS47FreeformCases::Remaining(int32 Line) const{int32 N=0;for(int32 I=0;I<CauseCount;++I)N+=Excluded(Line,I)?0:1;return N;}

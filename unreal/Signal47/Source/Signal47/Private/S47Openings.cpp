@@ -22,14 +22,14 @@
 const TArray<FS47KitOffer>& FS47Openings::Defs()
 {
  static const TArray<FS47KitOffer> Table={
-  {TEXT("spotlight"),TEXT("Roof spotlight for the truck"),35,TEXT("one branch of the array back in service, so the stores will talk to you"),TEXT("F in the cab. It reaches far and it can be seen from far. Whatever is out there sees the truck too.")},
-  {TEXT("cot"),TEXT("Field cot in the truck"),20,TEXT("any field record kept"),TEXT("Sleep where you are, at any place on your map. Nothing between you and what comes by: it will wake you, and it may still be there.")},
+  {TEXT("spotlight"),TEXT("Roof spotlight for the truck"),35,TEXT("one branch of the array back in service, so the stores will talk to you"),TEXT("F in the cab. It throws light a long way, and it can be seen from a long way off.")},
+  {TEXT("cot"),TEXT("Field cot in the truck"),20,TEXT("any field record kept"),TEXT("Sleep out at any place on your map. There is no door out there, and you will not sleep through much.")},
   {TEXT("magnetometer"),TEXT("Survey magnetometer, used"),40,TEXT("a place found out on the land, or marks at a site kept as a record"),TEXT("On foot it leans toward marks, gear and places you have not looked at, and it reads what you find. It says nothing about what they are.")},
   {TEXT("logger2"),TEXT("Second field logger and contact pickups"),45,TEXT("THE REPEATED INTERVAL concluded, with the first logger on loan"),TEXT("Makes the two-site test on VISITORS AROUND THE BASE possible: the roof and a field post at the same minute.")},
-  {TEXT("film"),TEXT("Fast film and a better lens"),30,TEXT("a photograph with a body in it"),TEXT("A full extra roll, frames that keep their subject in worse light, and $5 more on each registered incident.")},
+  {TEXT("film"),TEXT("Fast film and a better lens"),30,TEXT("a photograph with a figure in it"),TEXT("One extra roll, fast enough for poor light, and $5 more for each registered incident.")},
   // GEIGER-20261108: not a counter yet, a part of one. The player builds it at the bench (FS47Workshop "geiger", S47Happenings.h).
-  {TEXT("geiger_tube"),TEXT("Geiger-Muller tube and a meter movement"),25,TEXT("any field record kept: a place, marks, or scorched ground"),TEXT("Parts, not a counter. Build one at the CALIBRATION / REPAIR bench round a recorder housing and a lead, on a dry cell. On foot it ticks; where something has burnt or pressed the ground it ticks faster.")},
-  {TEXT("alarm"),TEXT("Yard lights and klaxon"),60,TEXT("the county on speaking terms with the station"),TEXT("Goes off at what comes within fifty yards of the station. Tells you, and stops nothing. What sets it off may put it out; a fuse at its box mends it.")},
+  {TEXT("geiger_tube"),TEXT("Geiger-Muller tube and a meter movement"),25,TEXT("any field record kept: a place, marks, or scorched ground"),TEXT("Parts, not a counter. Build one at the CALIBRATION / REPAIR bench: a recorder housing, a lead and a dry cell. On foot it ticks; over burned or pressed ground it ticks faster.")},
+  {TEXT("alarm"),TEXT("Yard lights and alarm horn"),60,TEXT("the county on speaking terms with the station"),TEXT("Goes off when anything comes within fifty yards of the station. It warns you and stops nothing. Sometimes it goes dead in the middle of an alarm; a fuse at its box fixes it.")},
  };
  return Table;
 }
@@ -121,7 +121,7 @@ bool FS47YardAlarm::Build()
 void FS47YardAlarm::Mend()
 {
  if(!bDead||!M||!M->Freeform)return;
- if(!M->Freeform->Consume(TEXT("fuse"))){if(M->UI)M->UI->Toast(TEXT("It wants a fuse, and you have none on you."),4);return;}
+ if(!M->Freeform->Consume(TEXT("fuse"))){if(M->UI)M->UI->Toast(TEXT("It needs a fuse, and you have none on you."),4);return;}
  bDead=false;if(M->Audio)M->Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.5f});
  if(M->UI)M->UI->Toast(TEXT("New fuse. The yard alarm's lamp comes back on."),4);
  UE_LOG(LogTemp,Display,TEXT("S47: yard alarm mended"));M->RequestAutosave();
@@ -168,7 +168,7 @@ void FS47YardAlarm::Step(double Dt)
   RingLeft-=Dt;HornIn-=Dt;
   if(HornIn<=0&&M->Audio){HornIn=1.1;M->Audio->Beep(420.f,.5f,.16f);M->Audio->Beep(560.f,.4f,.12f,.5f);}
   for(auto& L:Lamps)if(auto* C=L.Get()){C->SetVisibility(true);C->SetIntensity(6000.f);}
-  if(RingLeft<=0){if(bDead&&M->UI)M->UI->Toast(TEXT("The klaxon stops in the middle of a note. The yard lights are out."),5);Show();}
+  if(RingLeft<=0){if(bDead&&M->UI)M->UI->Toast(TEXT("The horn stops in the middle of a note. The yard lights are out."),5);Show();}
  }
 }
 bool FS47YardAlarm::SelfTest(TArray<FString>& Lines)

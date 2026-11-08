@@ -155,7 +155,7 @@ bool FS47FieldRadio::Build()
  FS47Interactable It; It.Id=Pickup; It.Object=Root; It.Range=2.2;
  It.Label=[Weak]{return Weak.IsValid() && Weak->FieldRadio && !Weak->FieldRadio->Owned() && !Weak->FieldRadio->LeftOut()?TEXT("TAKE FIELD RADIO"):FString();};
  It.Use=[Weak]{if(Weak.IsValid() && Weak->FieldRadio) Weak->FieldRadio->Take();};
- It.Examine=[] {return TEXT("SARO field set. Battery fitted, channel marked. Small enough to keep with me.");};
+ It.Examine=[] {return TEXT("SARO field set. Battery in, channel marked. Small enough to keep on me.");};
  M->Inter->Add(It);
  for(auto C:Copies) if(C.IsValid()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  return true;
@@ -230,7 +230,7 @@ bool FS47FieldRadio::PressTalk()
  if(M->Story&&(M->Story->IsPaused()||M->Story->IsCinematic()))return false;
  if(!bOwned||bLeftOut)
  {
-  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie is not on you. It is out there somewhere, where the hours went."):TEXT("No walkie on you. SARO's field set is on the desk in the control room."),4);
+  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie isn't on you. It's out there somewhere."):TEXT("No walkie on you. SARO's field set is on the desk in the control room."),4);
   return true;
  }
  if(HailLeft>0){Answer();return true;}
@@ -251,7 +251,7 @@ void FS47FieldRadio::Reply()
  {
   ++MessageCount;SinceLoud=0;
   if(M->Audio)Sound.Message(M->Audio);
-  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (something comes back on the channel: not Dale, and not words)"),6);
+  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (something comes back under the hiss. Not words.)"),6);
   UE_LOG(LogTemp,Display,TEXT("S47: walkie called on channel %d with a presence near: not Dale"),Chan);
   return;
  }

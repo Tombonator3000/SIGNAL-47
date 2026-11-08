@@ -60,13 +60,13 @@ namespace
 const TArray<FS47Places::FDef>& FS47Places::Defs()
 {
  static const TArray<FDef> Table={
-  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("windmill"),170,720,TEXT("A stock windmill with its brake on and no stock near it. Someone has wired the tail vane so the wheel faces a little east of north-northeast. The wire is new. The pump rod is rusted solid."),TEXT("Steel all round; the needle follows the tower and nothing else.")},
-  {TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("tank"),-190,1010,TEXT("A corrugated stock tank, a third full. The water has a skin on it and nothing drinks here: no prints at the rim in any direction, and it is the only water for miles."),TEXT("The needle swings as you walk round the tank, as it should. It takes longer to settle on the far side.")},
-  {TEXT("mine"),TEXT("the old mine on the west side"),TEXT("mine"),-560,1340,TEXT("An adit with its boards pulled off and laid in a neat stack. Cold air comes out of it at a steady rate. Old survey tags on the timbers, the dates gone grey. Nobody has mined anything here since well before that."),TEXT("Ore in the tailings pulls the needle; the heading wanders. It wanders less at the mouth than it should.")},
+  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("windmill"),170,720,TEXT("A stock windmill with its brake on and no stock near it. Someone has wired the tail vane so the wheel faces a little east of north-northeast. The wire is new. The pump rod is rusted solid."),TEXT("All steel; the needle follows the tower and nothing else.")},
+  {TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("tank"),-190,1010,TEXT("A corrugated stock tank, a third full. The water has a skin on it and nothing drinks here: no prints at the rim in any direction, and it is the only water for miles."),TEXT("The needle swings as you walk around the tank, as it should. It takes longer to settle on the far side.")},
+  {TEXT("mine"),TEXT("the old mine on the west side"),TEXT("mine"),-560,1340,TEXT("An adit with its boards pulled off and laid in a neat stack. Cold air comes out of it at a steady rate. Old survey tags on the timbers, the dates weathered off. Nobody has mined anything here since well before that."),TEXT("Ore in the tailings pulls the needle; the heading wanders. It wanders less at the mouth than it should.")},
   {TEXT("balloon"),TEXT("the balloon remains east of the highway"),TEXT("balloon"),300,1270,TEXT("Neoprene and a parachute of orange cloth, and a cardboard instrument box with a weather service return label. It has been out here a while. Ordinary, as far as it goes. The label asks the finder to mail it in, and the box is empty."),TEXT("Nothing. A cardboard box, a wire and some rubber.")},
   {TEXT("cow"),TEXT("the dead cow by the fence"),TEXT("cow"),110,1590,TEXT("A dead cow with a brand from the Alderete place, a long way from it. No scavengers have touched her and the flies have not found her. She has been dead a few days by the smell. The ground under her is dry."),TEXT("The needle dips over her, about as much as for a belt buckle. There is a tag in her ear and that may be all it is.")},
   {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("stake"),-130,650,TEXT("A hub stake with orange flagging, freshly driven, and a witness stake beside it. Written on it in grease pencil: an arrow, and a bearing of 026. There is no line of stakes. There is just this one."),TEXT("A nail in the hub moves the needle a hair. Nothing else.")},
-  {TEXT("shack"),TEXT("the line shack"),TEXT("shack"),440,930,TEXT("A line camp, one room, with a cot frame and a calendar for 1971. Coffee in a can, gone solid. Someone has been keeping a tally on the door frame in pencil, in fours and a stroke. It stops at forty-seven."),TEXT("Stove, nails, a bed frame. The needle has plenty to say and none of it is anything.")},
+  {TEXT("shack"),TEXT("the line shack"),TEXT("shack"),440,930,TEXT("A line camp, one room, with a cot frame and a calendar for 1971. Coffee in a can, gone solid. Someone has been keeping a tally on the door frame in pencil, in fours and a stroke. The last group stops at three."),TEXT("Stove, nails, a bed frame. The needle has plenty to say and none of it is anything.")},
   {TEXT("trough"),TEXT("the salt lick and trough"),TEXT("trough"),240,1740,TEXT("A rusted trough and a block of stock salt, licked hollow on one side only. The hoof prints all stop about ten feet short of the trough, and go back the way they came."),TEXT("Iron in the trough. The needle settles on it from any side.")},
   {TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("cairn"),-320,430,TEXT("A stack of stones with a post in the top, the kind a survey party leaves. From here you can see SARO and the farm both. The stones are newer than the post. Someone has rebuilt it recently, carefully, facing the array."),TEXT("A steady reading, nothing to speak of. It stays steady for longer than you would think a needle could.")},
   {Motel,TEXT("the Sierra Motor Court"),Motel,0,0,TEXT("Sierra Motor Court office. The night bell works and the key rack has more keys than the lot has cars. The card on the counter says rooms are eight dollars, and quiet."),TEXT("Nothing but the bell.")},
@@ -286,12 +286,12 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
  {
-  Rows.Add(S47Kit::Small(TEXT("Nothing out here comes through a motel door. Whatever went on during the night, you will hear about it in the morning.")));
+  Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. If anything goes on out there tonight, you will hear about it in the morning.")));
   Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),FS47FreeformSession::MotelRoom),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Motel);},true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=FS47FreeformSession::MotelRoom;})));
  }
  else if(F->HasKit(TEXT("cot")))
  {
-  Rows.Add(S47Kit::Small(TEXT("The cot is in the truck. Out here there is nothing between you and whatever comes by; it will wake you.")));
+  Rows.Add(S47Kit::Small(TEXT("The cot is in the truck. Out here, anything close by will wake you.")));
   Rows.Add(S47Kit::Button(TEXT("Put up the cot here until morning"),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Field);},true));
  }
  if(F->TripCamera&&F->TripCamera->CanSet()&&FString(D.Id)!=Motel)
@@ -317,8 +317,8 @@ bool FS47Places::Use(const FString& Id)
  {
   // A second visit: it is the player's own record that says it was somewhere else.
   const FString Moved=FString::Printf(TEXT("%s_moved_d%d"),*Key,F.Day());
-  Extra=TEXT("It is not where you noted it. Your record has it some paces from here. There are no marks of its having been moved.");
-  F.RecordEvidence(Moved,FString::Printf(TEXT("%s is not where I recorded it. Some paces off, and no drag marks. This records what I can compare."),D->Title));
+  Extra=TEXT("It is not where you noted it. Your record puts it some paces from here, and nothing shows it was dragged.");
+  F.RecordEvidence(Moved,FString::Printf(TEXT("Not where I recorded it: %s, some paces off. No drag marks that I can see."),D->Title));
  }
  if(F.HasKit(TEXT("magnetometer")))
  {
@@ -366,7 +366,7 @@ bool FS47Places::AfterRegistered()
  double Az=FMath::Fmod(AzimuthOf(SaroX,SaroZ,ToX,ToZ)+Err+360.,360.);
  FBearing B;B.Day=F.Day();B.Az=Az;B.Spread=Spread;B.Target=Target;Fixes.Add(B);if(Fixes.Num()>12)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight: about %03.0f degrees from SARO, within %.0f. Pencilled on the map. It says which way, not how far and not what."),Branches,Branches==1?TEXT("branch"):TEXT("branches"),Az,Spread));
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight: about %03.0f degrees from SARO, within %.0f. Penciled in on the map. It says which way, not how far and not what."),Branches,Branches==1?TEXT("branch"):TEXT("branches"),Az,Spread));
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("Something off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),Az,Spread),6);
  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.1f within %.0f toward %s, %d branches"),Az,Spread,*Target,Branches);
  M->RequestAutosave();

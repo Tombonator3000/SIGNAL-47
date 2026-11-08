@@ -55,8 +55,8 @@ S47J::FObj FS47TruckCare::Save() const
 }
 FString FS47TruckCare::StatusLine() const
 {
- if(bStuck)return TEXT("Bogged to the axle. The spade is behind the seat.");
- if(bFlat)return TEXT("Flat tyre. Jack and wheel brace behind the seat.");
+ if(bStuck)return TEXT("Sunk to the axle in sand. The spade is behind the seat.");
+ if(bFlat)return TEXT("Flat tire. Jack and lug wrench behind the seat.");
  if(Hot())return TEXT("The radiator is dry and the needle is in the red. It will crawl, no more.");
  return WaterLeft<.25?TEXT("The temperature needle is climbing. It wants water soon."):FString();
 }
@@ -72,8 +72,8 @@ FString FS47TruckCare::Steps(int32 Spares,int32 Waters) const
  }
  if(bFlat)
  {
-  T+=Spares>0?TEXT("FLAT TYRE. Jack and wheel brace are behind the seat; the spare wheel is in your pouch (you have it).\n")
-              :TEXT("FLAT TYRE, AND NO SPARE WHEEL. The jack is no use without one. Buy a spare at the Caliche gas station ($15), or call the county tow.\n");
+  T+=Spares>0?TEXT("FLAT TIRE. Jack and lug wrench are behind the seat; the spare wheel is in your pouch (you have it).\n")
+              :TEXT("FLAT TIRE, AND NO SPARE WHEEL. The jack is no use without one. Buy a spare at the Caliche gas station ($15), or call the county tow.\n");
   T+=FString::Printf(TEXT("%sGet out, use the cargo rack on the truck and choose \"Jack it up and change the wheel\" (about %.0f minutes).\n"),bStuck?TEXT("Then: "):TEXT("1. "),WheelMinutes);
  }
  if(Hot())
@@ -140,7 +140,7 @@ bool FS47TruckCare::ChangeWheel()
  if(!bFlat||!M||!M->Freeform)return false;
  if(!M->Freeform->Consume(TEXT("spare"))){if(M->UI)M->UI->Toast(TEXT("The spare is already on. The gas station sells them, or call the county."),5);return false;}
  bFlat=false;M->Freeform->SpendTime(WheelMinutes*60);
- if(M->UI)M->UI->Toast(TEXT("Jack, brace, spare. The flat goes in the back."),5);
+ if(M->UI)M->UI->Toast(TEXT("Jack, lug wrench, spare. The flat goes in the back."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: wheel changed"));M->RequestAutosave();return true;
 }
 bool FS47TruckCare::TopUp()

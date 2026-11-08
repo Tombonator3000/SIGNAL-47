@@ -1313,7 +1313,7 @@ void FS47FreeformSession::OpenOperations()
    FString Photo;
    const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
    if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS.");
-   else if(CameraLeftOut())Photo=TEXT("YOUR CAMERA is where you were taken. Your film and prints are safe here; go and get it.");
+   else if(CameraLeftOut())Photo=TEXT("YOUR CAMERA is still out where you stood before the gap. Your film and prints are safe here; go and get it.");
    else if(M&&M->FieldCamera&&!M->FieldCamera->bHave)Photo=TEXT("PHOTO LAB / ARCHIVE BENCH: collect the camera before going out. The reserve-film carton is beside it; prepare for an observation whenever you choose.");
    else if(Album&&Album->Left()<=0)Photo=InventoryCount(TEXT("film"))>0?TEXT("PHOTO LAB / RESERVE-FILM CARTON: load one stock roll into your camera; retained photographs remain unchanged."):TEXT("CALICHE STORE: buy a film roll and deliver it to GARAGE RECEIVING; then load it at PHOTO LAB. Your existing photographs remain retained.");
    else if(Album)Photo=FString::Printf(TEXT("CAMERA READY / %d exposures remain. You can take a field photograph now; return to PHOTO LAB to develop it before OPS registration. A photograph does not guarantee a paid finding."),Album->Left());
@@ -1834,7 +1834,7 @@ FString FS47FreeformSession::WaitConsequences(double Target) const
 {
  const double Hours=FMath::Max(0.,Target-WorldClock)/3600.;
  const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Target-8*3600.)/SecondsPerDay))+1);
- FString Text=FString::Printf(TEXT("WAIT %.2f GAME HOURS / UNTIL SHIFT DAY %02d, %s\nNo observing, listening, printing or physical test work is performed during this interval. Unfinished work and original records stay intact."),Hours,Day,*FS47FreeformCases::Clock(Target));
+ FString Text=FString::Printf(TEXT("WAIT %.2f HOURS / UNTIL SHIFT DAY %02d, %s\nNo observing, listening, printing or physical test work is performed during this interval. Unfinished work and original records stay intact."),Hours,Day,*FS47FreeformCases::Clock(Target));
  const bool Recording=Work.ContainsByPredicate([](const FJob& J){return J.Stage==EJobStage::Integrating||(J.bControl&&J.ControlAt<8);});
  if(Recording)Text+=TEXT("\nBLOCKED / Finish the active observation or internal control before waiting.");
  const FString Block=Director?Director->RestBlock():FString();
@@ -1912,7 +1912,7 @@ bool FS47FreeformSession::WaitUntil(double Target)
   const bool bCalled=FarmSite&&FarmSite->WakeCall();
   if(!bCalled&&M&&M->Audio&&M->Player)M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.45f,.Rate=.8f,.At=FVector(M->Player->Pos.X-6,M->Player->FloorY+2,M->Player->Pos.Z-9)});
   const int32 Secs=int32(FMath::Fmod(WorldClock,SecondsPerDay));
-  Feedback=RestPlace==ERest::Field?FString::Printf(TEXT("%02d:%02d. Something is walking round the truck."),Secs/3600,(Secs/60)%60):FString::Printf(TEXT("%02d:%02d. Something woke you. Wait again when you are ready to go on."),Secs/3600,(Secs/60)%60);
+  Feedback=RestPlace==ERest::Field?FString::Printf(TEXT("%02d:%02d. Wide awake. Nothing by the truck that you can see."),Secs/3600,(Secs/60)%60):FString::Printf(TEXT("%02d:%02d. Something woke you. Wait again when you are ready to go on."),Secs/3600,(Secs/60)%60);
   UE_LOG(LogTemp,Display,TEXT("S47: rest broken at clock %.0f, day %d, call %d"),WorldClock,DayNumber,bCalled);
   Changed(Feedback);return true;
  }
@@ -2024,7 +2024,7 @@ void FS47FreeformSession::StepWeeklyReview()
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
   if(Care)Care->WeekBilled();
-  FString Running=FString::Printf(TEXT("\nTRUCK: TYRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
+  FString Running=FString::Printf(TEXT("\nTRUCK: TIRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
   if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
   RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
@@ -2233,7 +2233,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
   if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
  }
  else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
- Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". This was not the wind. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
+ Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
@@ -2443,7 +2443,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   }
   // What the night's events left out on the land, as the field records have it: its first sentence and its day.
   {
-   FString Land=TEXT("OUT ON THE LAND / night records, not yet one cause");int32 Shown=0;
+   FString Land=TEXT("OUT ON THE LAND / your field records, night by night");int32 Shown=0;
    for(const FString& L:C->Leads)if(const FString* Text=Findings.Find(L))
    {
     FString First=*Text;int32 Stop=INDEX_NONE;
