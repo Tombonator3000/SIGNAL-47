@@ -957,7 +957,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		const FVector2f Ctr = OnPage(View.TruckX, View.TruckZ);
 		Pen.Lines({ Ctr + Fwd * Lg + Side * Wd, Ctr + Fwd * Lg - Side * Wd, Ctr - Fwd * Lg - Side * Wd, Ctr - Fwd * Lg + Side * Wd, Ctr + Fwd * Lg + Side * Wd }, Lead, 1.8f, LPencil);
 		Pen.Lines({ Ctr + Fwd * (Lg * .45f) + Side * Wd, Ctr + Fwd * (Lg * .45f) - Side * Wd }, Lead, 1.4f, LPencil);
-		Pen.Text(TEXT("truck"), Ctr + FVector2f(Lg + 8, 4), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
+		Pen.Text(TEXT("truck"), Ctr + FVector2f(0, Lg + 6), Pencil(24), Lead, LPencilWords, .5f, 0.f, true);
 	}
 
 	// ---- you ----
@@ -972,7 +972,8 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Triangle(Ctr + Fwd * 22.f, Ctr + Fwd * 6.f + Side * 8.f, Ctr + Fwd * 6.f - Side * 8.f, YouRed(1.f), LYou);
 			// The exact spot: a dot in the middle of the ring.
 			Pen.Fill(Ctr - FVector2f(1.6f, 1.6f), FVector2f(3.2f, 3.2f), YouRed(1.f), LYou);
-			Pen.Text(TEXT("you"), Ctr + FVector2f(16, 14), Pencil(26), YouRed(1.f), LYou, 0.f, .5f, true);
+			// Down and to the left of the arrow: the places' names stand to the right of what they name.
+			Pen.Text(TEXT("you"), Ctr + FVector2f(-15, 16), Pencil(26), YouRed(1.f), LYou, 1.f, .5f, true);
 		}
 		else
 		{
@@ -1004,7 +1005,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const float X = OnPage(Ek * 1000.0, 0).X;
 			Pen.Lines({ FVector2f(X, T0f), FVector2f(X, T0f + 9) }, Ink(), 1.f, LMargin);
 			Pen.Lines({ FVector2f(X, B0f), FVector2f(X, B0f - 9) }, Ink(), 1.f, LMargin);
-			Pen.Text(FString::Printf(TEXT("%d"), int32((EastingOrigin + Ek * 1000.0) / 1000.0)), FVector2f(X, T0f - 6), Small(10), Ink(), LMargin, .5f, 1.f);
+			if (X > L0 + 40 && X < R0f - 40) Pen.Text(FString::Printf(TEXT("%d"), int32((EastingOrigin + Ek * 1000.0) / 1000.0)), FVector2f(X, T0f + 11), Small(10), Ink(), LMargin, .5f, 0.f, true);
 		}
 		const int32 N0 = FMath::CeilToInt(Shown.Min.Y / 1000.0), N1 = FMath::FloorToInt(Shown.Max.Y / 1000.0);
 		for (int32 Nk = N0; Nk <= N1; ++Nk)
@@ -1012,7 +1013,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const float Y = OnPage(0, Nk * 1000.0).Y;
 			Pen.Lines({ FVector2f(L0, Y), FVector2f(L0 + 9, Y) }, Ink(), 1.f, LMargin);
 			Pen.Lines({ FVector2f(R0f, Y), FVector2f(R0f - 9, Y) }, Ink(), 1.f, LMargin);
-			Pen.Text(FString::Printf(TEXT("%d"), int32((NorthingOrigin - Nk * 1000.0) / 1000.0)), FVector2f(R0f + 4, Y), Small(10), Ink(), LMargin, 0.f, .5f);
+			if (Y > T0f + 30 && Y < B0f - 30) Pen.Text(FString::Printf(TEXT("%d"), int32((NorthingOrigin - Nk * 1000.0) / 1000.0)), FVector2f(R0f - 12, Y), Small(10), Ink(), LMargin, 1.f, .5f, true);
 		}
 	}
 	// The scale, in feet and in metres or miles, for the zoom it is at.
