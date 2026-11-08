@@ -176,7 +176,8 @@ private:
  // ---- what is drawn ----
  FProp* Prop(const FString& Kind);
  FProp* FindProp(const FString& Kind) const;
- void PoseProp(FProp& P,const FVector& Foot,double Yaw);
+ // Tilt: laid on the slope it stands on (the ring), identity for what stands upright.
+ void PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQuat& Tilt=FQuat::Identity);
  void ShowProp(FProp& P,bool bOn);
  void HideAll();
  void PlaceSites();

@@ -66,7 +66,8 @@ namespace S47Hap
  const TCHAR* const HairyModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Bigfoot.SM_Tripo_Bigfoot");
  const TCHAR* const HairyStandIn=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_shadow_man.SM_Tripo_shadow_man"); // brown, a head taller
  const TCHAR* const ZetModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Zet.SM_Tripo_Zet"); // stand-in: basic shapes (ZetParts)
- const TCHAR* const HitcherModel=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_radio_woman.SM_Tripo_radio_woman");
+ // Standing, in one muted tone in the headlights (the radio woman sits, so she would not do).
+ const TCHAR* const HitcherModel=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_waitress.SM_Tripo_waitress");
  const TCHAR* const DriverModel=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_patron.SM_Tripo_patron");
  const TCHAR* const RigModel=TEXT("/Game/Licensed/TripoFleet/heavy_truck/SM_TripoFleet_HeavyTruck.SM_TripoFleet_HeavyTruck");
  const TCHAR* const RigStandIn=TEXT("/Game/Free/Vehicles/muteki_taiga/StaticMeshes/muteki_taiga.muteki_taiga");
@@ -115,7 +116,8 @@ namespace S47Hap
  // Scorched ground about nine yards across, four marks pressed into it, dead beetles and a lizard inside, and the brush burnt brown.
  TArray<FPiece> RingParts()
  {
-  const uint32 Burnt=0x1b1712,Ash=0x5a544a,Pale=0xb8ad94,Bug=0x16140f,Dry=0x6b4a2a;
+  // Seen 8 November: a pale inner disc read as a white platform and the brush as traffic cones. Ground tones, and brush as low clumps.
+  const uint32 Burnt=0x15110e,Ash=0x332f2b,Pale=0x6a604f,Bug=0x16140f,Dry=0x3a2e22;
   TArray<FPiece> Out={
    {Cyl,FVector(0,.012,0),FVector(8.6,.02,8.6),0,0,0,Burnt,0,true},
    {Cyl,FVector(0,.018,0),FVector(6.4,.02,6.4),0,0,0,Pale,0,true},
@@ -125,7 +127,7 @@ namespace S47Hap
   for(int32 I=0;I<4;++I)Out.Add({Cube,Feet[I]+FVector(0,.02,0),FVector(.55,.03,.75),.15*I,0,0,Burnt,0,true});
   for(int32 I=0;I<9;++I){const double A=I*.83+.4,R=.9+(I%4)*.55;Out.Add({Ball,FVector(FMath::Cos(A)*R,.03,FMath::Sin(A)*R),FVector(.045,.025,.06),A,0,0,Bug,0,false});}
   Out.Add({Cube,FVector(1.3,.03,.6),FVector(.05,.03,.22),.7,0,0,Bug,0,false});
-  for(int32 I=0;I<6;++I){const double A=I*1.05+.2,R=3.3+(I%2)*.4;Out.Add({Cone,FVector(FMath::Cos(A)*R,.25,FMath::Sin(A)*R),FVector(.6,.5,.6),A,0,.12,Dry,0,false});}
+  for(int32 I=0;I<6;++I){const double A=I*1.05+.2,R=3.3+(I%2)*.4;Out.Add({Ball,FVector(FMath::Cos(A)*R,.12,FMath::Sin(A)*R),FVector(.8,.3,.7),A,0,0,Dry,0,false});}
   return Out;
  }
  // An old camper from basic shapes until Tom's model is in: cream with a brown stripe, its windows lit from inside.
@@ -474,7 +476,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  }
  else if(Kind==TEXT("driver")){if(!Exists(DriverModel))return nullptr;Spec.Add({DriverModel,FVector::ZeroVector,FVector(1),0,0,0,0,0,true});UseId=TEXT("ff:hap:truck");}
  else if(Kind==TEXT("handset")){Spec=HandsetParts();UseId=TEXT("ff:hap:truck");}
- else if(Kind==TEXT("hitcher")){if(!Exists(HitcherModel))return nullptr;Spec.Add({HitcherModel,FVector::ZeroVector,FVector(1),0,0,0,0,0,true});UseId=TEXT("ff:hap:hitcher");}
+ else if(Kind==TEXT("hitcher")){if(!Exists(HitcherModel))return nullptr;Spec.Add({HitcherModel,FVector::ZeroVector,FVector(1),0,0,0,0x6a6672u,0,true});UseId=TEXT("ff:hap:hitcher");}
  else if(Kind==TEXT("passer")){Spec=GlowParts(3.2,1,0,0xe8f4ea,40.f);Spec.Add({Cyl,FVector(0,-.4,0),FVector(9,.35,9),0,0,0,0x2a2d2e,0,false});Lamps.Add({FVector(0,-3,0),0xd9f2e4,1500000.f,16000.f});}
  else if(Kind==TEXT("lander")){Spec=GlowParts(7,3,7,0xfff1d6,60.f);Lamps.Add({FVector(0,-2,0),0xffe6c2,3000000.f,30000.f});}
  else if(Kind==TEXT("car"))
@@ -485,7 +487,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("singer"))
  {
   const TCHAR* Man=Either(SingerModel,SingerStandIn);if(!Man)return nullptr;
-  Spec.Add({Man,FVector::ZeroVector,FVector(1),0,0,0,Man==SingerModel?0u:0xeeeae0u,0,true});UseId=TEXT("ff:hap:humor");
+  Spec.Add({Man,FVector::ZeroVector,FVector(1),0,0,0,Man==SingerModel?0u:0xb9b2a4u,0,true});UseId=TEXT("ff:hap:humor");
  }
  else if(Kind==TEXT("hairy"))
  {
@@ -586,11 +588,11 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  Props.Add(MoveTemp(Made));
  return Props.Last().Get();
 }
-void FS47Happenings::PoseProp(FProp& P,const FVector& Foot,double Yaw)
+void FS47Happenings::PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQuat& Tilt)
 {
- if(P.bPosed&&P.Foot.Equals(Foot,.01)&&FMath::IsNearlyEqual(P.Yaw,Yaw,.001))return;
+ if(P.bPosed&&P.Foot.Equals(Foot,.01)&&FMath::IsNearlyEqual(P.Yaw,Yaw,.001)&&Tilt.Equals(FQuat::Identity,1e-4))return;
  P.Foot=Foot;P.Yaw=Yaw;P.bPosed=true;
- const FQuat Turn=S47Three::Euler(0,Yaw,0);
+ const FQuat Turn=Tilt*S47Three::Euler(0,Yaw,0);
  for(FProp::FPart& Pt:P.Parts)
  {
   UStaticMeshComponent* C=Pt.C.Get();if(!IsValid(C))continue;
@@ -887,7 +889,18 @@ void FS47Happenings::PlaceSites()
   }
   if(!bSameLand||Away>900)continue;
   const auto Show=[&](const TCHAR* Kind,const FVector& Foot,double Yaw){if(FProp* P=Prop(Kind)){PoseProp(*P,Foot,Yaw);ShowProp(*P,true);Want.Add(Kind);}};
-  if(S.Kind==TEXT("landing"))Show(TEXT("ring"),At,S.Yaw);
+  if(S.Kind==TEXT("landing"))
+  {
+   // Laid on the slope, not a flat plate half in the air (seen 8 November): the ground's fall across the ring, measured near.
+   FQuat Tilt=FQuat::Identity;
+   if(M->Player&&M->Player->Floor&&Away<300)
+   {
+    const double Ev=M->Player->Floor(At.X+3,At.Z),Wv=M->Player->Floor(At.X-3,At.Z),Sv=M->Player->Floor(At.X,At.Z+3),Nv=M->Player->Floor(At.X,At.Z-3);
+    if(FMath::IsFinite(Ev)&&FMath::IsFinite(Wv)&&FMath::IsFinite(Sv)&&FMath::IsFinite(Nv))
+     Tilt=FQuat::FindBetweenNormals(FVector(0,1,0),FVector(-(Ev-Wv)/6.,1.,-(Sv-Nv)/6.).GetSafeNormal());
+   }
+   if(FProp* Ring=Prop(TEXT("ring"))){PoseProp(*Ring,At,S.Yaw,Tilt);ShowProp(*Ring,true);Want.Add(TEXT("ring"));}
+  }
   else if(S.Kind==TEXT("cattle"))Show(TEXT("cattle"),At,S.Yaw);
   else if(S.Kind==TEXT("truck")&&!S.bDone)
   {
