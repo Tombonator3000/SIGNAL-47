@@ -39,7 +39,7 @@ namespace S47MailLocal
  TMap<FString,int32> GoodsOf(const S47J::FObj& O)
  {
   TMap<FString,int32> Got;if(!O.IsValid())return Got;
-  for(const auto& Pair:O->Values){double Cnt=0;if(Pair.Value.IsValid()&&Pair.Value->TryGetNumber(Cnt)&&FMath::IsFinite(Cnt)&&Cnt>=1&&Cnt<=99)Got.Add(Pair.Key,int32(Cnt));}
+  for(const auto& Pair:O->Values){double Cnt=0;if(Pair.Value.IsValid()&&Pair.Value->TryGetNumber(Cnt)&&FMath::IsFinite(Cnt)&&Cnt>=1&&Cnt<=99)Got.Add(FString(*Pair.Key),int32(Cnt));}
   return Got;
  }
  S47J::FObj PieceJson(const FS47Mail::FPiece& Pc)
