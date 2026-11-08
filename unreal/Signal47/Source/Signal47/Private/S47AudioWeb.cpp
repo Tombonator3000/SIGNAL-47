@@ -85,6 +85,7 @@ FS47Play US47Audio::Sfx(const FString& Name, const FS47Sound& O)
 {
 	const TSharedPtr<FS47AudioBuffer> B = Buf.FindRef(Name);
 	if (!Ctx.IsValid() || !B.IsValid()) return {};
+	if (Tap) Tap(Name, O);
 	FBatch Batch(*Ctx);
 	auto Src = Ctx->CreateBufferSource(); Src->Buffer = B; Src->PlaybackRate.SetValue(O.Rate); Src->bLoop = O.bLoop;
 	auto G = Ctx->CreateGain(); G->Gain.SetValue(O.Gain * LicGain(Name));

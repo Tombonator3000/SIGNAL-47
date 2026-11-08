@@ -96,6 +96,10 @@ public:
 	/** The floor a prop lays down there (its "floors": a building one walks into, its steps), NaN
 	 *  where it has none (AS47Walker::FloorAt asks first). Three's world terms. */
 	static double FloorAt(double X, double Z);
+	/** A placed prop by its id (Config/Props): its mesh and its node, for a system that uses it (FS47Tape: the recorder on the
+	 *  desk by the array's PC). Null and -1: not placed. */
+	static UStaticMeshComponent* PlacedMesh(const FString& Id);
+	static int32 PlacedNode(const FString& Id);
 	/** A native building's own floor or ramp (S47EastWing); bFirst takes precedence over existing floors. */
 	static void AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst);
 

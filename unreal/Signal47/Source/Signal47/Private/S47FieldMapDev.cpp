@@ -7,7 +7,11 @@
 #include "S47Main.h"
 #include "S47NightLog.h"
 #include "S47Keys.h"
+#include "S47FarmWorld.h"
+#include "S47Omen.h"
 #include "S47OpenLand.h"
+#include "S47Story.h"
+#include "S47Tape.h"
 #include "S47Places.h"
 #include "S47RoadShape.h"
 #include "S47World.h"
@@ -181,6 +185,67 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 	E.AddFreeform(MapGroup, TEXT("Map: the station, the farm and the motel at once"), TEXT("from the county road turnoff, the scale a driver reads"), [this, Stand, Sheet]
 	{
 		Stand(TEXT("road:turnoff"), 2, [this, Sheet](const FVector2D&, double) { Sheet(.25); Tell(true, TEXT("Map at about a mile and a half across")); });
+	});
+
+	// ---- the field recorder (TAPE-20261108) ----
+	static const TCHAR* const TapeGroup = TEXT("Tape (M3)");
+	// In the control room by the desk, facing it.
+	const auto AtDesk = [this](TFunction<void()> Then)
+	{
+		FStage Stage; Stage.Area = TEXT("saro"); Stage.Where = [] { return FVector2D(-2.2, -2.6); }; Stage.Yaw = 0.9;
+		Go(Stage, MoveTemp(Then));
+	};
+	E.AddFreeform(TapeGroup, TEXT("Tape: record at the windmill with something out there, play it back on the desk"), TEXT("23:00 at the windmill with the recorder; something stands 170 m off, too far to feel; 14 s on tape; then on the desk at SARO it is there"), [this, AtDesk, Pictured]
+	{
+		FS47FreeformSession* Fs = Session();
+		const FS47EventPlace* Mill = Fs && Fs->EventPlaces ? Fs->EventPlaces->Find(TEXT("windmill")) : nullptr;
+		if (!Fs || !Fs->Tape || !Mill || !M || !M->Omen) { Tell(false, TEXT("no recorder, windmill or omen in this run")); return; }
+		Fs->Tape->DevGive();
+		const FString Area = FS47EventPlaces::AreaOf(*Mill);
+		const FVector Stood = S47OpenLand::FromRoad(Area, Mill->X, Mill->Z);
+		FVector Far = S47OpenLand::FromRoad(Area, Mill->X + 170, Mill->Z);
+		Far.Y = S47FarmWorld::FloorRoad(Mill->X + 170, Mill->Z) + 1.5;
+		FStage Stage; Stage.From = 23; Stage.To = 4.5; Stage.Area = Area; Stage.Where = [Stood] { return FVector2D(Stood.X, Stood.Z); };
+		Go(Stage, [this, Far, AtDesk, Pictured]
+		{
+			FS47FreeformSession* Fs1 = Session(); if (!Fs1 || !Fs1->Tape || !M || !M->Omen) return;
+			M->Omen->DevPresence(Far, .6, 40, false);
+			Fs1->Tape->ToggleRecord();
+			After(14, [this, AtDesk, Pictured]
+			{
+				FS47FreeformSession* Fs2 = Session(); if (!Fs2 || !Fs2->Tape) return;
+				Fs2->Tape->ToggleRecord();
+				if (M && M->Omen) M->Omen->DevClear();
+				const bool bCaught = Fs2->Tape->Takes().Num() && !Fs2->Tape->Takes().Last().Odd.IsEmpty();
+				AtDesk([this, bCaught, Pictured]
+				{
+					FS47FreeformSession* Fs3 = Session(); if (!Fs3 || !Fs3->Tape || Fs3->Tape->Takes().IsEmpty()) { Tell(false, TEXT("no tape was made")); return; }
+					Fs3->Tape->UseDesk(); // the recorder back on the desk
+					Fs3->Tape->PlayTake(Fs3->Tape->Takes().Num() - 1);
+					const float Len = Fs3->Tape->Takes().Last().Seconds;
+					After(Len + 1.5, [this, bCaught, Pictured]
+					{
+						FS47FreeformSession* Fs4 = Session(); if (!Fs4 || !Fs4->Tape || Fs4->Tape->Takes().IsEmpty()) return;
+						const FS47Tape::FTake& Tk = Fs4->Tape->Takes().Last();
+						const bool bOk = bCaught && Tk.bOddHeard && Fs4->HasFinding(FString::Printf(TEXT("tape_%d"), Tk.N));
+						if (M && M->Story && M->UI) for (const FS47Doc& D : M->Story->Docs()) if (D.Id == FString::Printf(TEXT("freeform-tape_%d"), Tk.N)) { M->UI->Document(D); break; }
+						Pictured(TEXT("tape"));
+						Tell(bOk, FString::Printf(TEXT("Tape %d: %d sounds, %s at %.1f s, %s"), Tk.N, Tk.Sounds.Num(), Tk.Odd.IsEmpty() ? TEXT("nothing else") : *Tk.Odd, Tk.OddAt, Tk.bOddHeard ? TEXT("heard on the desk and kept") : TEXT("not heard")));
+					});
+				});
+			});
+		});
+	});
+	E.AddFreeform(TapeGroup, TEXT("Tape: the desk at SARO"), TEXT("the field recorder's panel, with its cassettes"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->Tape) { Tell(false, TEXT("no recorder in this run")); return; }
+			if (Fs->Tape->Carried()) Fs->Tape->UseDesk();
+			Fs->Tape->UseDesk();
+			Pictured(TEXT("tape"));
+			Tell(true, FString::Printf(TEXT("The desk: %d cassettes"), Fs->Tape->Takes().Num()));
+		});
 	});
 
 	// ---- the night's log ----
