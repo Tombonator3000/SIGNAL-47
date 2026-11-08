@@ -456,7 +456,11 @@ FString FS47FreeformDirector::LightPlaceTitle(const FString& Place)const
 FString FS47FreeformDirector::PickLightPlace()const
 {
  TArray<FString> Ready;for(const auto& P:LightPlaces)if(!LightPlacePoint(P.Id).IsZero())Ready.Add(P.Id);
- return Ready.IsEmpty()?FString():Ready[FMath::RandRange(0,Ready.Num()-1)];
+ if(Ready.IsEmpty())return FString();
+ // From the game's own seed, the day and the incident count (all saved): loading again before they come gives the same place, not
+ // a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
+ const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47,Today=M&&M->Freeform?M->Freeform->Day():1;
+ return Ready[int32(FS47NightRhythm::Roll(Seed,Today,0x4c504c43u^uint32(IncidentSerial))*Ready.Num())%Ready.Num()];
 }
 bool FS47FreeformDirector::ForceLights(const FString& Place)
 {
