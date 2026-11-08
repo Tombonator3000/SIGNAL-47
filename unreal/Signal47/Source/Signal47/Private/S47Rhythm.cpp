@@ -462,5 +462,21 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   Check(R.May(TEXT("roof_tick"),A).bMay,TEXT("the roof can tick twice in one night"));
   A.LastDays.Add(TEXT("flyover"),5);Check(Says(TEXT("flyover"),A)==TEXT("cooldown"),TEXT("a light in the sky keeps its days"));
  }
+ {
+  // Tom, 8 November: someone out on open ground every night meets something about every second or third night, never the first.
+  // The game's own field roll (FS47FarmSite::StepFieldDraw) over thirty nights and many games; calm nights draw nothing.
+  int32 Visits=0,Nights=0;
+  for(int32 Seed=1;Seed<=200;++Seed)
+  {
+   int32 Misses=0;
+   for(int32 Night=2;Night<=31;++Night)
+   {
+    ++Nights;if(FS47NightRhythm::Quiet(Seed,Night))continue;
+    if(FS47NightRhythm::Roll(Seed,Night,0x4649454cu)<FS47FarmSite::FieldChanceFor(Night,Misses,false)){++Visits;Misses=0;}else ++Misses;
+   }
+  }
+  const double Per=Visits>0?double(Nights)/Visits:99.;
+  Check(FS47FarmSite::FieldChanceFor(1,9,true)==0.f&&Per>=1.8&&Per<=3.,FString::Printf(TEXT("out in the open a visit every %.2f nights, none the first"),Per));
+ }
  return OK;
 }
