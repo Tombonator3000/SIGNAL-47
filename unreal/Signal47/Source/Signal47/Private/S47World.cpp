@@ -32,6 +32,7 @@
 #include "S47Geo.h"
 #include "S47GroundCover.h"
 #include "S47HUD.h"
+#include "S47Happenings.h"
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Substation.h"
@@ -2161,7 +2162,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (DashT <= 0)
 	{
 		DashT = 0.1;
-		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? M->Story->ClockText(false) : FString(), M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? FS47Happenings::DashClock(M, M->Story->ClockText(false)) : FString(), M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
 		N->Truck->SetOdometer(Odometer());
 	}
 	// main.ts: the compass on the dash of the truck being driven reads the sky's north here

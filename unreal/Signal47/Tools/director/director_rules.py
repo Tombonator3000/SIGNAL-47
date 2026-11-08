@@ -2,7 +2,7 @@
 """The one check of Content/Director/director.json: used by generate.py now, and by the editor when it comes.
 Keep NEEDS and the reasons in step with S47Rhythm.cpp; S47Rhythm's self-test reads the same file."""
 import json
-SYSTEMS = {'director', 'indoor', 'site', 'taken', 'highway', 'sky'}
+SYSTEMS = {'director', 'indoor', 'site', 'taken', 'highway', 'sky', 'night'}
 SLOTS = {'ground', 'background'}
 LEVELS = {'hint', 'observation', 'presence', 'danger'}
 BUDGETS = {'minor', 'invest', 'sky'}

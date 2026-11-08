@@ -3,6 +3,7 @@
 #include "S47Legs.h"
 #include "S47Freeform.h"
 #include "S47Observing.h"
+#include "S47Happenings.h"
 #include "S47FreeformCarry.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -1005,7 +1006,8 @@ FString FS47FreeformWorld::WorkshopBlock(const FString& Action,const FString& Ar
  const bool LoggerOut=Logger.Site>=0||Logger.bCheckedOut;
  if(Action==TEXT("build"))
  {
-  const FString Missing=Crafting.Missing(*R,InventoryCount(TEXT("cell")),InventoryCount(TEXT("foil")));
+  FString Missing=Crafting.Missing(*R,InventoryCount(TEXT("cell")),InventoryCount(TEXT("foil")));
+  if(Arg==TEXT("geiger")&&!Crafting.IsBuilt(Arg)){const FString Tube=FS47Happenings::GeigerBench(M);if(!Tube.IsEmpty())Missing+=(Missing.IsEmpty()?FString():TEXT(", "))+Tube;}
   if(!Missing.IsEmpty())return TEXT("Needs: ")+Missing+TEXT(".");
   return LoggerOut?TEXT("Return the logger to this bench first."):TEXT("");
  }
@@ -1105,7 +1107,7 @@ void FS47FreeformWorld::OpenWorkshop()
  for(const auto& Recipe:FS47Workshop::Recipes())if(Crafting.Known(Recipe))
  {
   if(!Pick)Pick=&Recipe;const FString Id(Recipe.Id);
-  const FString State=Crafting.IsBuilt(Id)?TEXT("BUILT"):Crafting.Missing(Recipe,Cells,Foil).IsEmpty()?TEXT("READY"):TEXT("NEEDS PARTS");
+  const FString State=Crafting.IsBuilt(Id)?TEXT("BUILT"):Crafting.Missing(Recipe,Cells,Foil).IsEmpty()&&(Id!=TEXT("geiger")||FS47Happenings::GeigerBench(M).IsEmpty())?TEXT("READY"):TEXT("NEEDS PARTS");
   // the recipe name left, its state in the right-hand column, as the parts list
   R.Add(S47Kit::Choice(FString(Recipe.Title),Pick==&Recipe,[this,Id]{WorkshopPick=Id;OpenWorkshop();},false,State));
  }
@@ -1131,6 +1133,7 @@ void FS47FreeformWorld::OpenWorkshop()
    }
    if(Pick->Cells>0)R.Add(S47Kit::Status(TEXT("Dry cell"),FString::Printf(TEXT("NEED %d / HAVE %d"),Pick->Cells,Cells),Cells>=Pick->Cells?1:-1));
    if(Pick->Foil>0)R.Add(S47Kit::Status(TEXT("Shielding foil"),FString::Printf(TEXT("NEED %d / HAVE %d"),Pick->Foil,Foil),Foil>=Pick->Foil?1:-1));
+   if(Id==TEXT("geiger")){const bool bTube=FS47Happenings::GeigerBench(M).IsEmpty();R.Add(S47Kit::Status(TEXT("Geiger-Muller tube"),bTube?TEXT("HAVE"):TEXT("FROM THE STORES (OPS)"),bTube?1:-1));}
    const FString Block=WorkshopBlock(TEXT("build"),Id);
    if(Block.IsEmpty())R.Add(S47Kit::Action(TEXT("Build"),[Act,Id]{Act(TEXT("build"),Id);}));else R.Add(S47Kit::Button(TEXT("Build"),[]{},false,false));
    if(Crafting.Missing(*Pick,Cells,Foil).IsEmpty()&&!Block.IsEmpty())R.Add(S47Kit::Small(Block));

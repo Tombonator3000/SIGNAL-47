@@ -52,6 +52,8 @@ private:
  void AddTimePlace(FS47DevEvents& E);
  void AddLand(FS47DevEvents& E);
  void AddReyes(FS47DevEvents& E);
+ // Night events (S47Happenings.h), each from its own line; S47HappeningsDev.cpp.
+ void AddHappenings(FS47DevEvents& E);
  void GoReyes(const FString& Id,const FString& Say);
  void ToLandPlace(const FString& Id,double Off,double From,double To,TFunction<void(double,double)> Then);
  void StartHighway(bool bNorth,bool bFollow);

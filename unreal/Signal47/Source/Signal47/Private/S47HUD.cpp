@@ -42,6 +42,7 @@
 #include "S47Predecessor.h"
 #include "S47RadioTips.h"
 #include "S47Openings.h"
+#include "S47Happenings.h"
 #include "S47FieldLife.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
@@ -236,6 +237,7 @@ void AS47HUD::Start()
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
+		bOk &= FS47Happenings::SelfTest(Lines);
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);

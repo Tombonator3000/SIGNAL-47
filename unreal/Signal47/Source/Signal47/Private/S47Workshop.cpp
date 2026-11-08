@@ -15,7 +15,9 @@ const TArray<FS47Workshop::FRecipe>& FS47Workshop::Recipes()
   {TEXT("trip_camera"),TEXT("Trip camera, operator-built"),TEXT("A timer and a wire on a recorder housing, with a cheap camera in it. Leave it at marks or a place overnight and read it in the morning. It records only what crosses its wire."),{TEXT("housing"),TEXT("timer")},1,0},
   {TEXT("battery_pack"),TEXT("Logger battery pack"),TEXT("Doubles logger running time from six to twelve hours."),{TEXT("housing")},2,0},
   {TEXT("shielded_lead"),TEXT("Foil-shielded antenna lead"),TEXT("Reduces local electrical pickup on the logger by three quarters."),{TEXT("lead")},0,1},
-  {TEXT("cable_splice"),TEXT("Feed-cable splice"),TEXT("Made up from two good leads and foil. Mends the wet feed cable on the array's centre branch."),{TEXT("lead"),TEXT("lead")},0,1,TEXT("splice_kit")}};
+  {TEXT("cable_splice"),TEXT("Feed-cable splice"),TEXT("Made up from two good leads and foil. Mends the wet feed cable on the array's centre branch."),{TEXT("lead"),TEXT("lead")},0,1,TEXT("splice_kit")},
+  // GEIGER-20261108: also wants the tube from the stores (FS47FreeformWorld::WorkshopBlock asks FS47Happenings::GeigerBench).
+  {TEXT("geiger"),TEXT("Geiger counter, operator-built"),TEXT("A recorder housing, a lead and the tube from the stores, on a dry cell. On foot it ticks; near what has burnt or pressed the ground it ticks faster, and it pegs where something stood. Its dial comes up in your hand when it climbs. It does not say what."),{TEXT("housing"),TEXT("lead")},1,0}};
  return R;
 }
 const FS47Workshop::FRecipe* FS47Workshop::Recipe(const FString& Id){return Recipes().FindByPredicate([&](const FRecipe& R){return Id==R.Id;});}

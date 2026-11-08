@@ -14,6 +14,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Glimpses.h"
+#include "S47Happenings.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -154,6 +155,7 @@ void FS47DevFreeform::ClearRunning()
  if(M->SkyVisitors)M->SkyVisitors->DevFormationStop();
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  S47FloodProbe::StopLive(M);
+ if(F->Happenings)F->Happenings->DevClear(false);
 }
 
 void FS47DevFreeform::Go(const FStage& Stage,TFunction<void()> Then)
@@ -1106,6 +1108,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddAfter(E);
  AddLand(E);
  AddReyes(E);
+ AddHappenings(E);
 }
 
 void FS47DevFreeform::Stop()

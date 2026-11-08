@@ -36,6 +36,8 @@ struct FS47RhythmData
 struct FS47RhythmNow
 {
  bool bFreeform=true,bTutorial=false,bTheirHours=false,bQuiet=false;
+ // Something humorous came tonight (FS47Happenings): Tom, 8 November, never on the same night as a danger.
+ bool bHumorTonight=false;
  int32 Day=1,MinorLeft=0,InvestLeft=0,SkyLeft=0,DangerTonight=0;
  double Clock=0,RestLeft=0;
  FString Area;
@@ -61,7 +63,7 @@ public:
  // Director asks this too (FS47FreeformDirector::CoolFor), so that the panel and the night agree.
  static int32 CoolDays(const FString& Id,int32 Last,int32 Min=2,int32 Max=4);
  // Fixed order, so that the panel and the log say the same: off, tutorial, too_early_day, outside_hours, cooldown, slot_taken:<id>, rest,
- // budget, danger_night, not_here, needs:<name>, not_drawn_tonight. Need answers for a name; unset: every need holds.
+ // budget, danger_night, humor_night, not_here, needs:<name>, not_drawn_tonight. Need answers for a name; unset: every need holds.
  FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr) const;
  // The world's answers, from what each system lets be read.
  FS47RhythmNow ReadNow() const;
