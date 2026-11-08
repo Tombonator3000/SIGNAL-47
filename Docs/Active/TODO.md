@@ -16,7 +16,7 @@ Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvor
 - [ ] **M1 Verden som lever (hendelser hvor som helst).** ANYWHERE, ARRAY-ORBS, NIGHT31 (alle 31), forslag 1-8, GEIGER, UNEASE (uro). Prøve: naturlig flernatt med hendelser på minst fire steder og noe hver natt.
 - [ ] **M2 Ute i natta.** TRUCK-STRAND (dekk, sand, berging koster), HUD (batteri, frekvens), WALKIE-USE, CB-WALKIE, WARD-PHONE, SNEAK, STRESS, GEAR-FLICKER, SOUNDSCAPE, ANIMALS.
 - [ ] **M3 Etterforskning.** TAPE, CASEBOARD, ENLARGE, NIGHTLOG, WARD-REPORT, MAILBOX, MAP (zoom og posisjon), ANSWER.
-- [ ] **M4 Folk og steder.** TOWNSFOLK, NEIGHBOR, ENTHUSIASTS, MILITARY, MOTEL-SLEEP, nye Tripo-figurer (TRIPO-NEW), humorhendelser.
+- [ ] **M4 Folk og steder.** TOWNSFOLK, TOWN-USE (funksjon i byggene), NEIGHBOR, ENTHUSIASTS, MILITARY, MOTEL-SLEEP, nye Tripo-figurer (TRIPO-NEW), humorhendelser.
 - [ ] **M5 Verden og vær.** WEATHER, MOON, FATIGUE, PHYSICS, SAVE-SARO (Tom avgjør).
 - [ ] **M6 Utseende.** MOTEL-REAL, CALICHE-REAL, STREETLAMPS, FENCES-INVISIBLE og trafo, DALE-WINDOW, SARO-CLIP, JEEP-FORM, gjenstående fra T16-15 (hekkbelte, plasser, forbakker).
 - [ ] **M7 Freeform 1.0.** 30 dager spillbart fra start til vurdering, uten døde netter; Tom spiller gjennom; installert og testet.
@@ -69,6 +69,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **CASEBOARD-20261108: sporbok/kart som fylles selv** med notater, bilder og peilinger, og tråd mellom funn på SARO.
 - [ ] **FATIGUE-20261108: søvn og tretthet.** Sliten gir raskere stress og flimrende syn; kaffe på SARO hjelper.
 - [ ] **TOWNSFOLK-20261108: noen faste folk i Caliche om dagen** (bensinstasjonen, dineren, sheriffen) som husker hva du har gjort og sladrer, og merkes når noen forsvinner.
+- [ ] **TOWN-USE-20261108: byggene i Caliche skal ha en funksjon, med noe å kjøpe eller gjøre.** Toms ord: «bygningene i byen som må ha noe mere funksjon, kjøpe noe der e.l.: radiostasjon, Feed & Seed, tourist tours souvenirsjappa». Forslag: **radiostasjonen (1420 AM)**: ring inn eller kom innom, gi tips på lufta (rykter kommer tilbake), kjøp brukte radiodeler og batterier, verten forteller om innringere; **Feed & Seed**: verktøy, spade, jekk, reservehjul, vann, tau, salt, lykt og tørrceller, gjerdetråd og deler til feller og geigerteller, fôr og saltslikk som lokker dyr (dyr som varsel); **turistturer og suvenirsjappa**: kart over «UFO-steder» (noen ekte, noen tull), turistturer som kan gi rykter om nye steder, kjøp film, postkort og alien-suvenirer, selg egne bilder for penger (bedre bilder gir mer). Gjenbruk butikkflyten (handlekurv, lager) og interiørmodeller. Hører til M4.
 - [ ] **SOUNDSCAPE-20261108: lydrom om natta:** fjerne, tydelige lyder (coyote, tog, vindhjul som knirker); brå stillhet som varsel.
 - [ ] **GEAR-FLICKER-20261108: utstyr svikter nær hendelser** (lykt, radio, bil), som indikator uten HUD.
 - [ ] **SAVE-SARO-20261108: lagring bare på SARO eller i senga.** Tom vurderer; foreslått 8. november.
