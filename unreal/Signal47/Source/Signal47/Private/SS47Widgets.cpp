@@ -24,6 +24,8 @@
 #include "S47GameStyle.h"
 #include "S47Image.h"
 #include "S47Night.h"
+#include "S47Sky.h"
+#include "S47WorldLife.h"
 #include "S47ReadAloud.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -161,6 +163,29 @@ namespace
 		const FVector2f TextSize = FVector2f(Meter->Measure(Words, Font));
 		const float Ascent = float(Meter->GetMaxCharacterHeight(Font)) + float(Meter->GetBaseline(Font));
 		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(TextSize + FVector2f(4.f, 0.f), FSlateLayoutTransform(FVector2f(Baseline.X - TextSize.X * Align, Baseline.Y - Ascent))), Words, Font, ESlateDrawEffect::None, Col);
+	}
+
+	// HUD-D2-20261109: words with a dark rim round them (eight shifts of the words in black under them), for the clock's AM, PM and day
+	// against a bright sky; Rim 0 is the plain words
+	void HudTextRimmed(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FString& Words, const FSlateFontInfo& Font, FVector2f Baseline, float Align, const FLinearColor& Col, float Rim)
+	{
+		if (Rim > 0.01f && Col.A > 0.002f)
+		{
+			const float Step = FMath::Max(1.f, S47Game::P(0.9f));
+			const FLinearColor Dark(0.f, 0.f, 0.f, FMath::Min(1.f, 0.5f * Rim * Col.A / 0.59f));
+			for (int32 Ix = -1; Ix <= 1; ++Ix)
+				for (int32 Iy = -1; Iy <= 1; ++Iy)
+					if (Ix || Iy) HudTextAt(Out, Layer, G, Words, Font, Baseline + FVector2f(Ix * Step, Iy * Step), Align, Dark);
+		}
+		HudTextAt(Out, Layer + 1, G, Words, Font, Baseline, Align, Col);
+	}
+
+	// HUD-D2-20261109: the sky's daylight for the HUD's dark rim (S47HudGauges::BackingStrength); night when there is no sky
+	float HudBacking()
+	{
+		const US47Main* Mn = US47Main::Get(nullptr);
+		const double SkyLight = Mn && Mn->Life && Mn->Life->Sky.IsValid() ? Mn->Life->Sky->Daylight() : 0.0;
+		return float(S47HudGauges::BackingStrength(SkyLight));
 	}
 
 	// HUD-D-20261109: the task on a cassette's J-card, written by hand (mock/hud_D_task.png, scratchpad hud_D_color.py jcard): the
@@ -650,9 +675,24 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 		const float LitA = (bLow ? Pal.LowOn : Pal.BatteryOn) * Gauges.BatteryA * Pulse, GhostA = (bLow ? Pal.LowGhost : Pal.BatteryGhost) * Gauges.BatteryA;
 		const float Line = FMath::Max(1.f, P(Scale * 1.3f));
 		const FVector2f FrameLo = Q(0, 0), FrameHi = Q(FrameW, FrameH);
+		// HUD-D2-20261109: a dark rim hugging the frame's lines, the nub and each stroke, strong only against a bright sky (no box)
+		const float Rim = HudBacking() * Gauges.BatteryA;
+		FHudVerts RimV(G);
+		auto Ring = [&](float X0, float Y0, float X1, float Y1, float Alpha)
+		{
+			const float Wide = P(1.2f);
+			const FVector2f Corners[4] = { FVector2f(X0 - Wide, Y0 - Wide), FVector2f(X1 + Wide, Y0 - Wide), FVector2f(X1 + Wide, Y1 + Wide), FVector2f(X0 - Wide, Y1 + Wide) };
+			RimV.Poly(Corners, FLinearColor(0, 0, 0, Alpha * Rim));
+		};
+		if (Rim > 0.01f)
+		{
+			Ring(FrameLo.X, FrameLo.Y, FrameHi.X, FrameLo.Y + Line, 0.4f); Ring(FrameLo.X, FrameHi.Y - Line, FrameHi.X, FrameHi.Y, 0.4f);
+			Ring(FrameLo.X, FrameLo.Y + Line, FrameLo.X + Line, FrameHi.Y - Line, 0.4f); Ring(FrameHi.X - Line, FrameLo.Y + Line, FrameHi.X, FrameHi.Y - Line, 0.4f);
+		}
 		Fill(FrameLo.X, FrameLo.Y, FrameHi.X - FrameLo.X, Line, C(Tone, FrameA)); Fill(FrameLo.X, FrameHi.Y - Line, FrameHi.X - FrameLo.X, Line, C(Tone, FrameA));
 		Fill(FrameLo.X, FrameLo.Y + Line, Line, FrameHi.Y - FrameLo.Y - 2.f * Line, C(Tone, FrameA)); Fill(FrameHi.X - Line, FrameLo.Y + Line, Line, FrameHi.Y - FrameLo.Y - 2.f * Line, C(Tone, FrameA));
 		const FVector2f N0 = Q(FrameW - 0.6f + 1.3f, FrameH * 0.5f - 4.2f), N1 = Q(FrameW + 3.4f, FrameH * 0.5f + 4.2f);
+		if (Rim > 0.01f) Ring(N0.X, N0.Y, N1.X, N1.Y, 0.4f);
 		Fill(N0.X, N0.Y, N1.X - N0.X, N1.Y - N0.Y, C(Tone, FrameA));
 		FHudVerts Glow(G), Strokes(G);
 		constexpr float SegW = 5.4f, SegGap = 1.75f, Skew = 1.6f, SegTop = 3.4f, SegBot = FrameH - 3.4f;
@@ -662,12 +702,18 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 			const bool bLit = I < Gauges.Strokes;
 			const FVector2f Pts[4] = { Q(X + Skew, SegTop), Q(X + Skew + SegW, SegTop), Q(X + SegW, SegBot), Q(X, SegBot) };
 			Strokes.Poly(Pts, C(Tone, bLit ? LitA : GhostA));
+			if (Rim > 0.01f)
+			{
+				const FVector2f Dim4[4] = { Q(X + Skew - 1.f, SegTop - 1.f), Q(X + Skew + SegW + 1.f, SegTop - 1.f), Q(X + SegW + 1.f, SegBot + 1.f), Q(X - 1.f, SegBot + 1.f) };
+				RimV.Poly(Dim4, FLinearColor(0, 0, 0, (bLit ? 0.4f : 0.12f) * Rim));
+			}
 			if (bLit)
 			{
 				const FVector2f Halo[4] = { Q(X + Skew - 0.7f, SegTop - 0.7f), Q(X + Skew + SegW + 0.7f, SegTop - 0.7f), Q(X + SegW + 0.7f, SegBot + 0.7f), Q(X - 0.7f, SegBot + 0.7f) };
 				Glow.Poly(Halo, C(Tone, 0.22f * LitA));
 			}
 		}
+		RimV.Draw(Out, Layer - 1);   // (OnPaint leaves a layer under the gauges for it)
 		Glow.Draw(Out, Layer);
 		Strokes.Draw(Out, Layer);
 	}
@@ -743,7 +789,9 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 	const float SecondsW = Shown.Second >= 0 ? 22.f : 0.f;
 	const FVector2f Corner(RightEdge - P(80.f + SecondsW), P(34.f));
 	auto Pf = [](float Mx, float My) { return FVector2f(P(Mx), P(My)); };
-	FHudVerts ShadeV(G), Glow(G), Ghosts(G), Lit(G);
+	FHudVerts ShadeV(G), Glow(G), Ghosts(G), Lit(G), RimV(G);
+	// HUD-D2-20261109: a dark rim round every segment, faint at night and full against a bright sky (no box)
+	const float Rim = HudBacking();
 	// a figure's segments (mockup pixels from the clock's corner): the ones present in dark, the lit ones over them with a soft
 	// glow and a little shadow under
 	auto Figure = [&](float X0, float Y0, float Size, uint8 Present, uint8 LitMask)
@@ -776,12 +824,14 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 			TArray<FVector2f, TInlineAllocator<6>> Pts;
 			if (LitMask & (1 << I))
 			{
+				HexPts(1.4f, FVector2f::ZeroVector, Pts); RimV.Poly(Pts, FLinearColor(0, 0, 0, 0.42f * Rim));
 				HexPts(0.f, FVector2f(P(0.5f), P(1.2f)), Pts); ShadeV.Poly(Pts, FLinearColor(0, 0, 0, 0.45f * Pal.ClockOn));
 				HexPts(0.9f, FVector2f::ZeroVector, Pts); Glow.Poly(Pts, C(Pal.Clock, 0.2f * Pal.ClockOn));
 				HexPts(0.f, FVector2f::ZeroVector, Pts); Lit.Poly(Pts, OnInk);
 			}
 			else
 			{
+				HexPts(1.f, FVector2f::ZeroVector, Pts); RimV.Poly(Pts, FLinearColor(0, 0, 0, 0.12f * Rim));
 				HexPts(0.f, FVector2f::ZeroVector, Pts); Ghosts.Poly(Pts, Ghost);
 			}
 		}
@@ -792,6 +842,8 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 		{
 			const float DotY = Y0 + FigH * Fy, SkewX = X0 + (Y0 + FigH - DotY) * Slant;
 			const FVector2f Sq[4] = { Corner + Pf(SkewX - Dot / 2, DotY - Dot / 2), Corner + Pf(SkewX + Dot / 2, DotY - Dot / 2), Corner + Pf(SkewX + Dot / 2, DotY + Dot / 2), Corner + Pf(SkewX - Dot / 2, DotY + Dot / 2) };
+			const FVector2f Ring[4] = { Sq[0] + Pf(-1.2f, -1.2f), Sq[1] + Pf(1.2f, -1.2f), Sq[2] + Pf(1.2f, 1.2f), Sq[3] + Pf(-1.2f, 1.2f) };
+			RimV.Poly(Ring, FLinearColor(0, 0, 0, 0.42f * Rim));
 			Lit.Poly(Sq, OnInk);
 		}
 	};
@@ -809,14 +861,16 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 		Figure(158.f * Kc, DigitH * (1.f - Small), Small, All, S47HudGauges::Segments(Shown.Second / 10));
 		Figure(158.f * Kc + 36.f * Kc * Small, DigitH * (1.f - Small), Small, All, S47HudGauges::Segments(Shown.Second % 10));
 	}
+	RimV.Draw(Out, Layer);
 	ShadeV.Draw(Out, Layer);
 	Ghosts.Draw(Out, Layer + 1);
 	Glow.Draw(Out, Layer + 1);
 	Lit.Draw(Out, Layer + 2);
 	const float Mark = 158.f * Kc + SecondsW;
-	HudTextAt(Out, Layer + 2, G, TEXT("AM"), Term(11.f, 0.8f), Corner + Pf(Mark, 7.5f), 0.f, Shown.bAll || !Shown.bPm ? DimInk : Ghost);
-	HudTextAt(Out, Layer + 2, G, TEXT("PM"), Term(11.f, 0.8f), Corner + Pf(Mark, 17.5f), 0.f, Shown.bAll || Shown.bPm ? DimInk : Ghost);
-	HudTextAt(Out, Layer + 2, G, DayWords(), Term(12.f, 0.9f), Corner + Pf(4.f, DigitH + 13.f), 0.f, C(Pal.Clock, Pal.ClockOn * 0.6f));
+	const bool bAmLit = Shown.bAll || !Shown.bPm, bPmLit = Shown.bAll || Shown.bPm;
+	HudTextRimmed(Out, Layer + 1, G, TEXT("AM"), Term(11.f, 0.8f), Corner + Pf(Mark, 7.5f), 0.f, bAmLit ? DimInk : Ghost, bAmLit ? Rim : 0.f);
+	HudTextRimmed(Out, Layer + 1, G, TEXT("PM"), Term(11.f, 0.8f), Corner + Pf(Mark, 17.5f), 0.f, bPmLit ? DimInk : Ghost, bPmLit ? Rim : 0.f);
+	HudTextRimmed(Out, Layer + 1, G, DayWords(), Term(12.f, 0.9f), Corner + Pf(4.f, DigitH + 13.f), 0.f, C(Pal.Clock, Pal.ClockOn * 0.6f), Rim);
 }
 
 void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
@@ -890,8 +944,8 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 	}
 	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f || (Gauges.bShown && Gauges.FiledT >= 0.f))
 	{
-		PaintGauges(G, Out, Top + 1);
-		Top += 1;
+		PaintGauges(G, Out, Top + 2);
+		Top += 2;
 	}
 	if (FlashT > 0.f)
 	{

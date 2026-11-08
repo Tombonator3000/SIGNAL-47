@@ -241,6 +241,12 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 	return Out;
 }
 
+double S47HudGauges::BackingStrength(double Daylight)
+{
+	const double Lit = FMath::IsFinite(Daylight) ? FMath::Clamp(Daylight, 0.0, 1.0) : 0.0;
+	return 0.15 + 0.85 * FMath::SmoothStep(0.05, 0.6, Lit);
+}
+
 bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -363,5 +369,8 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		&& Handwritten(TEXT("back to the truck - on foot"), false) == TEXT("back to the truck - on foot") && Handwritten(TEXT("CALL DALE'S DESK"), false) == TEXT("Call Dale's desk")
 		&& Handwritten(TEXT("ROAD TO THE MESA"), true) == TEXT("Road to the Mesa"),
 		TEXT("the task is written by hand: the place in title case, the task as a sentence, the station's capitals and the figures kept"));
+	Check(BackingStrength(0) <= 0.15 && BackingStrength(0.05) <= 0.15 && BackingStrength(1) == 1.0 && BackingStrength(0.6) == 1.0 && BackingStrength(0.3) > BackingStrength(0.1)
+		&& BackingStrength(std::numeric_limits<double>::quiet_NaN()) <= 0.15 && BackingStrength(-2) <= 0.15 && BackingStrength(5) == 1.0,
+		TEXT("the dark rim under the clock and the battery is faint at night and full against a bright day sky"));
 	return bOk;
 }

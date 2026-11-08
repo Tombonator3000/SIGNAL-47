@@ -88,6 +88,10 @@ namespace S47HudGauges
 	 *  the task ("Back to the truck. Keep the record"). Figures and the station's capitals (SARO, CB, MHz) stay as they are; words
 	 *  already written in small letters are left alone. */
 	SIGNAL47_API FString Handwritten(const FString& Text, bool bTitle);
+	/** HUD-D2-20261109: how strong the dark rim under the clock, the day and the battery is, 0 to 1, from the sky's daylight (0 night,
+	 *  1 full day). Faint at night, where the dark sky is backing enough and the HUD looks as Tom chose it; full against a bright sky,
+	 *  where the teal would wash out. */
+	SIGNAL47_API double BackingStrength(double Daylight);
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }
