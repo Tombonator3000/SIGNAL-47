@@ -231,7 +231,7 @@ void FS47Tape::OpenDesk()
 	using namespace S47TapeLocal;
 	TArray<S47Kit::FW> Offer;
 	const TWeakPtr<uint8> Guard = Life;
-	Offer.Add(S47Kit::Paper(TEXT("Sony TC-D5. The station's field recorder, a C-60 in it, a stick microphone on a cord. Press RECORD out there, play it back here.")));
+	Offer.Add(S47Kit::Paper(TEXT("A portable cassette recorder. The station's field recorder, a C-60 in it, a stick microphone on a cord. Press RECORD out there, play it back here.")));
 	for (int32 I = Kept.Num() - 1, Shown = 0; I >= 0 && Shown < 6; --I, ++Shown)
 	{
 		const FTake& Tk = Kept[I];
