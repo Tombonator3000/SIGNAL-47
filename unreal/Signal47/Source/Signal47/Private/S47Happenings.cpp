@@ -968,7 +968,9 @@ bool FS47Happenings::BeginCattle(bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
  const FString Area=M->Web->Area();
- if(Area!=TEXT("road")&&Area!=TEXT("diner")&&!bForced){Why=TEXT("not out on the land");return false;}
+ // Out on the land: the road's ground, or SARO's own past the fence (the farm lies in SARO's area).
+ const bool bLand=Area==TEXT("road")||Area==TEXT("diner")||(Area==TEXT("saro")&&FS47FarmSite::OutOnFoot(Area,FVector2D(M->Player->Pos.X,M->Player->Pos.Z).Size(),Driving(),!Outdoors()));
+ if(!bLand&&!bForced){Why=TEXT("not out on the land");return false;}
  if(!Outdoors()&&!bForced){Why=TEXT("indoors");return false;}
  if(SiteOf(TEXT("cattle"))){Why=TEXT("a ring is standing already");return false;}
  using S47Hap::Bit;
