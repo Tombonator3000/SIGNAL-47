@@ -164,3 +164,5 @@ Bensin skal kunne kjøpes fra bensinstasjonens faktiske REGULAR-pumpe til den pa
 Tilfeldig variasjon bygger på eksisterende kontekststyrte hendelsesregissør og en avgrenset dagskortgenerator. Generatoren varierer støttede kilder og faktiske måleinnstillinger, bevarer oppgaven gjennom lagring og lager ingen ubegrensede tekstoppdrag uten tilhørende spillhandling. Vedlikehold følger faktisk utstyrstilstand. Flere hendelsesfamilier og langsiktig balanse føres videre i TODO.
 
 Tripo-bilen, Tom 8. november: git-historikken skrives ikke om. Modellen ble laget på betalt Tripo-plan. Bilen skal ligne mer på en jeep og være mindre kantete, uten varemerker eller kopiert design.
+
+Hendelser hvor som helst, Tom 8. november: gårdens hendelser skal kunne komme ved nesten alle bygg i verden, som landing i ørkenen eller som noen som sitter fast langt ute og ber om hjelp. Stedet trekkes tilfeldig (med frø), ikke fast på gården hver gang.
