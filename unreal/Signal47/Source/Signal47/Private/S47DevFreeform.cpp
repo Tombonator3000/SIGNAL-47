@@ -1305,6 +1305,13 @@ void FS47DevFreeform::Step(double Dt)
     UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night from day %d %s"),F0->Day(),*ClockText(F0->Clock()));
    }
    FParse::Value(FCommandLine::Get(),TEXT("S47NaturalStand="),StandPlace);
+   // -S47NaturalHold=0: nothing drops the speed to x1, for a run over many nights where what matters is what comes and where.
+   int32 HoldFlag=1;
+   if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalHold="),HoldFlag)&&HoldFlag==0)
+   {
+    bHold=false;
+    if(Menu)Menu->Relabel(TEXT("Back to x1 for events: on"),TEXT("Back to x1 for events: off"));
+   }
   }
  }
  if(bNatural){StepNatural(Dt);StepStand();}

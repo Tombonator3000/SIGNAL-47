@@ -492,7 +492,7 @@ FString FS47FreeformDirector::LightPlaceTitle(const FString& Place)const
  if(Place==TEXT("farm"))return TEXT("the Alderete place");
  return TEXT("town");
 }
-FString FS47FreeformDirector::PickLightPlace(const FString& Id)const
+FString FS47FreeformDirector::PickLightPlace(const FString& Id,bool bFixture)const
 {
  const FS47EventPlaces* Places=PlacesOf(M);if(!Places)return FString();
  // Seen from here (farm_lights): a few hundred metres off, across the ground the player is on. Heard of (town_lights): somewhere
@@ -500,6 +500,7 @@ FString FS47FreeformDirector::PickLightPlace(const FString& Id)const
  // they come gives the same place, not a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
  FS47PlaceNeed Need;Need.Kind=Id;Need.Any=ES47PlaceTrait::Open|ES47PlaceTrait::Town|ES47PlaceTrait::Farm|ES47PlaceTrait::Array|ES47PlaceTrait::Lot;
  if(Id==TEXT("farm_lights")){Need.MinM=250;Need.MaxM=1600;Need.FarShare=0;Need.bSameArea=true;}
+ else if(bFixture){Need.FarShare=0;Need.bSameArea=true;} // a test's own street: seen from where it stands, as before the list
  else{Need.MinM=150;Need.FarShare=.35f;Need.bOtherArea=true;}
  return Places->Pick(Need,uint32(IncidentSerial)).Id;
 }
@@ -533,8 +534,8 @@ FString FS47FreeformDirector::PreviewPlace(const FString& Id)const
 }
 void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair)const
 {
- // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna,
- // and best where a second stands about where S-02 stands from S-03, so that both of them have something to look over.
+ // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna;
+ // where a second stands about where S-02 stands from S-03, that one is named with it, and both have something to look over.
  OutShift=FVector2D::ZeroVector;
  if(!M||!M->Web||M->Web->DishCount()<3)return;
  const AS47Web& W=*M->Web;
@@ -550,9 +551,12 @@ void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPa
   for(int32 J=0;J<W.DishCount();++J)if(J!=I){const double D=FVector2D::Distance(FVector2D(W.DishX(J),W.DishZ(J)),At+Beside);if(D<Best){Best=D;Partner=J;}}
   (Partner!=INDEX_NONE?Good:Any).Add(TPair<int32,int32>(I,Partner));
  }
- const TArray<TPair<int32,int32>>& From2=Good.IsEmpty()?Any:Good;
+ // Any antenna on the array, not only where a second stands just so: on this array that is one pair, and every visit came to it.
+ TArray<TPair<int32,int32>> From2=Good;From2.Append(Any);
  if(From2.IsEmpty())return;
- const TPair<int32,int32>& Pick=From2[int32((uint32(Seed)*2654435761u>>8)%uint32(From2.Num()))];
+ // The game's own seed with the visit's: another game sends them elsewhere, and a Continue keeps them where they are.
+ const int32 Game=M->Freeform?M->Freeform->Seed():47;
+ const TPair<int32,int32>& Pick=From2[FMath::Min(From2.Num()-1,int32(FS47NightRhythm::Roll(Game,Seed,0x4f524253u)*From2.Num()))];
  OutShift=FVector2D(W.DishX(Pick.Key),W.DishZ(Pick.Key))-From;
  OutPair=Pick.Value!=INDEX_NONE?FString::Printf(TEXT("%s and %s"),*W.DishId(Pick.Value),*W.DishId(Pick.Key)):FString::Printf(TEXT("the antennas round %s"),*W.DishId(Pick.Key));
 }
@@ -583,7 +587,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  else if(Id==TEXT("town_lights")||Id==TEXT("farm_lights"))
  {
   // Heard about from SARO too: the point is to drive there. Seen from wherever the player is on the land, the farm among the rest.
-  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||(NextLightPlace.IsEmpty()&&PickLightPlace(Id).IsEmpty()))return false;
+  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||(NextLightPlace.IsEmpty()&&PickLightPlace(Id,Forced&&NextPlace.IsEmpty()).IsEmpty()))return false;
  }
  else if(Id==TEXT("landing_trace"))
  {if(M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))return false;}
@@ -647,9 +651,11 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  if(Id==TEXT("farm_lights")||Id==TEXT("town_lights"))
  {
   // Over a place from the list: the farm, a building in Caliche, the motel, SARO itself, a wash out on the land (Tom, 8 November).
-  // A fixture started by Force alone from SARO keeps the farm it was written for; F10 and the night draw.
-  const bool bFixture=Forced&&NextPlace.IsEmpty()&&NextLightPlace.IsEmpty()&&Id==TEXT("farm_lights")&&M->Web->Area()==TEXT("saro");
-  LightPlace=!NextLightPlace.IsEmpty()?NextLightPlace:bFixture?FString(TEXT("farm")):PickLightPlace(Id);NextLightPlace.Empty();PlaceId=LightPlace;
+  // A fixture started by Force alone keeps what it was written for: the farm from SARO, lights it can see from a street in town.
+  // F10 (ForceAt) and the night draw from the whole list.
+  const bool bFixture=Forced&&NextPlace.IsEmpty()&&NextLightPlace.IsEmpty();
+  const bool bFarmFixture=bFixture&&Id==TEXT("farm_lights")&&M->Web->Area()==TEXT("saro");
+  LightPlace=!NextLightPlace.IsEmpty()?NextLightPlace:bFarmFixture?FString(TEXT("farm")):PickLightPlace(Id,bFixture);NextLightPlace.Empty();PlaceId=LightPlace;
   const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
   Anchor=LightPlacePoint(LightPlace)+FVector(0,P?P->Up:28,0);
   if(P)Scene=FS47EventPlaces::AreaOf(*P);
@@ -670,6 +676,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
   const double X=FS47DuskOrb::HomeX+Shift.X,Z=FS47DuskOrb::HomeZ+Shift.Y;
   Anchor=FVector(X,US47Night::SaroFloorAt(M->Web,X,Z)+FS47DuskOrb::HomeUp,Z);
   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d, between %s (%.0f %.0f)%s"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed(),*OrbPair,X,Z,bHome?TEXT(", the first spot"):TEXT(""));
+  if(Places)FS47EventPlaces::LogPick(Id,Places->Find(TEXT("array")),FString::Printf(TEXT("over %s"),*OrbPair));
  }
  if(S47SmallHints::Is(Id))Anchor=S47SmallHints::AnchorOf(M,Id);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);

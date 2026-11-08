@@ -145,7 +145,8 @@ private:
  // The event's place from the list, saved; and the one F10 asked for next, not saved.
  FString PlaceId,NextPlace;
  // Lights seen from here (farm_lights) or heard of (town_lights): one draw from the list for either (Tom, 8 November).
- FString PickLightPlace(const FString& Id) const;
+ // bFixture: started by Force alone, as the older tests are: on the ground the player is on, where they can be seen.
+ FString PickLightPlace(const FString& Id,bool bFixture=false) const;
  // Marked ground and a fragment: open ground within reach, in the area the player is in. False: none.
  bool PickTrace(FString& OutPlace,FVector& OutAt,bool bForced=false) const;
  bool bTracePlaced=false;
