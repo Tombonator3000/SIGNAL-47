@@ -7,6 +7,7 @@
 #include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
+#include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
@@ -1019,9 +1020,10 @@ bool FS47Happenings::BeginCattle(bool bForced,FString& Why)
  if(S.bSet){X+=FMath::Cos(A)*30;Z+=FMath::Sin(A)*30;}
  if(bForced)
  {
-  // F10: forty metres ahead of the player, so that the line can be seen at once.
+  // F10: fourteen metres ahead of the player, inside the lamp's reach, so that the line can be seen at once (45 m was too dark to see).
+  if(M->Night&&M->Night->Flashlight){M->Night->Flashlight->bHave=true;M->Night->Flashlight->bOn=true;}
   double Px=0,Pz=0;
-  if(PlayerRoad(Px,Pz)&&M->Player){X=Px-FMath::Sin(M->Player->Yaw)*45;Z=Pz-FMath::Cos(M->Player->Yaw)*45;}
+  if(PlayerRoad(Px,Pz)&&M->Player){X=Px-FMath::Sin(M->Player->Yaw)*14;Z=Pz-FMath::Cos(M->Player->Yaw)*14;}
  }
  if(!bForced&&!MayStart(TEXT("cattle_ring"))){Why=TEXT("the rhythm says not now");return false;}
  if(!Prop(TEXT("cattle"))){Why=TEXT("no cow models");return false;}
