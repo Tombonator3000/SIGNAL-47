@@ -291,6 +291,14 @@ void FS47Rhythm::Observed(FName Id,const FS47RhythmNow& At)
  const auto* E=Rules.Find(Id);
  // What the rules would have said just before it: the ground it is itself on does not count against it.
  FS47RhythmNow Asked=At;if(Asked.Busy==Id)Asked.Busy=NAME_None;
+ // Taken at the end of a visit, at a door or by the yard's presence is that meeting's end, not a second one (as Began counts it):
+ // krit10field night 3 said "danger 2" and "would stop" for one crab that took the player.
+ const bool bSameMeeting=Id==TEXT("taken")&&(Asked.Busy==TEXT("field_visit")||Asked.Busy==TEXT("site_visit")||Asked.Busy==TEXT("door_visit")||Asked.Busy==TEXT("service_presence")||Asked.Busy==TEXT("empty_car"));
+ if(bSameMeeting)
+ {
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm start taken day %d %s, the end of %s, not another meeting"),At.Day,*ClockText(M&&M->Freeform?M->Freeform->Clock():0),*Asked.Busy.ToString());
+  return;
+ }
  // A frame's worth of rest is the frame the Director's own rest ran out in, not a start inside it.
  if(Asked.RestLeft<1)Asked.RestLeft=0;
  const FS47Verdict V=May(Id,Asked);
