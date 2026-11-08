@@ -16,7 +16,7 @@
 
 namespace
 {
-	TAutoConsoleVariable<float> CvDuskCloudAmb(TEXT("s47.dusk.CloudAmb"), 1.f, TEXT("Twilight: the sky's mauve light on the clouds' bodies, times. 0: as before (dark blots with lit rims)."));
+	TAutoConsoleVariable<float> CvDuskCloudAmb(TEXT("s47.dusk.CloudAmb"), .7f, TEXT("Twilight: the sky's mauve light on the clouds' bodies, times. 0: as before (dark blots with lit rims)."));
 }
 
 // SKY.md: one VolumetricCloud layer over every outdoor area, without a SkyAtmosphere. The living
