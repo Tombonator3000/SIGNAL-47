@@ -8,6 +8,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47OpenLand.h"
+#include "S47Radio.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Taken.h"
@@ -294,7 +295,9 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    {
     Road(21,4.5,false,[this,Haps]
     {
-     WaitFor([Haps]{FS47Happenings* Hw=Haps();FString Why;return Hw&&Hw->DevStart(TEXT("am_caller"),FString(),Why);},40,[this]{Tell(true,TEXT("am_caller: started, when the program gave the caller her turn."),5);},[this]{Tell(false,TEXT("the program never gave the caller her turn"));});
+     // On 1420, so that the program runs where it can give her the turn.
+     if(M->CarRadio.IsValid())M->CarRadio->Set(true,TEXT("caliche"));
+     WaitFor([Haps]{FS47Happenings* Hw=Haps();FString Why;return Hw&&Hw->DevStart(TEXT("am_caller"),FString(),Why);},75,[this]{Tell(true,TEXT("am_caller: started, when the program gave the caller her turn."),5);},[this]{Tell(false,TEXT("the program never gave the caller her turn"));});
     });
     return;
    }
@@ -312,25 +315,6 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
  }
  // Without F10's shortcut: the light over the truck takes a player who gets out under it, in the real game's rules, and the hood is
  // warm for one who walks away from the truck and comes back.
- E.AddFreeform(R,TEXT("24b. The light over the truck: get out under it"),TEXT("02:30, the highway, in the real game's rules; the light comes down over you (this test run keeps those rules on)"),[this,Haps,Road]
- {
-  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
-  F->TestLiveRules();
-  Road(2.5,4.5,false,[this,Haps]
-  {
-   FS47Happenings* H=Haps();FString Why;
-   if(!H||!H->DevStart(TEXT("car_light"),FString(),Why)){Tell(false,Why);return;}
-   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},14,[this]
-   {
-    if(!M->World||!(M->World->GetOutHere(true)||M->World->GetOutHere())){Tell(false,TEXT("could not get out under the light"));return;}
-    WaitFor([this]{auto* Fs=Session();return Fs&&Fs->Taken&&Fs->Taken->Busy();},18,[this]
-    {
-     UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 car_light: out under the light, taken"));
-     Tell(true,TEXT("Out under the light: it came down over you. Taken."),6);
-    },[this]{Tell(false,TEXT("out under the light, and it did not come down"));});
-   },[this]{Tell(false,TEXT("the truck never stopped under the light"));});
-  });
- });
  E.AddFreeform(R,TEXT("20b. The hood, walked back to"),TEXT("the truck parked on the road; away fifty metres for twenty-five minutes, back to it, and the night itself asked"),[this,Haps,OutOfTruck]
  {
   OutOfTruck(23,[this,Haps]
@@ -355,6 +339,28 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
      });
     });
    });
+  });
+ });
+ E.AddFreeform(R,TEXT("24b. The light over the truck: get out under it"),TEXT("02:30, the highway, in the real game's rules; the light comes down over you (this test run keeps those rules on)"),[this,Haps,Road]
+ {
+  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
+  F->TestLiveRules();
+  Road(2.5,4.5,false,[this,Haps]
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("car_light"),FString(),Why)){Tell(false,Why);return;}
+   // The engine is dead under it: on the brake to a stop, then out.
+   if(M->World)M->World->TestInput=[this]{FS47DriveIn Pedal;auto* D=M&&M->World?M->World->CabDrive():nullptr;Pedal.Throttle=D&&D->Speed>.3?-1:0;return Pedal;};
+   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},18,[this]
+   {
+    if(M->World)M->World->TestInput=nullptr;
+    if(!M->World||!(M->World->GetOutHere(true)||M->World->GetOutHere())){Tell(false,TEXT("could not get out under the light"));return;}
+    WaitFor([this]{auto* Fs=Session();return Fs&&Fs->Taken&&Fs->Taken->Busy();},18,[this]
+    {
+     UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 car_light: out under the light, taken"));
+     Tell(true,TEXT("Out under the light: it came down over you. Taken."),6);
+    },[this]{Tell(false,TEXT("out under the light, and it did not come down"));});
+   },[this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck never stopped under the light"));});
   });
  });
  // ---- unease (URO.md): each of the 25 where it can be noticed; nothing is kept and nothing is explained ----

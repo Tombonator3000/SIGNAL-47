@@ -158,11 +158,18 @@ namespace S47Figures
 			double Dist = (FMath::Sqrt(Nx * Nx + Ny * Ny) - 1.0) * 14.0;
 			for (int32 Fi = 0; Fi < 4; ++Fi) Dist = FMath::Min(Dist, ToStroke(X, Y, CX + FingerX[Fi], CY - 12, CX + FingerX[Fi] * 1.35, CY - 12 - FingerLen[Fi], 3.2));
 			Dist = FMath::Min(Dist, ToStroke(X, Y, CX - 12, CY + 2, CX - 25, CY - 10, 3.6));
-			if (Dist < 2.5)
+			if (Dist < 26)
 			{
+				// Thick rime round it, as where a warm hand was pressed and the glass froze again about it, so that the hand reads
+				// against it wherever on the glass it is; the hand itself clear.
 				FColor& Pix = Px[Y * W + X];
-				const double Soft = FMath::Clamp(Dist / 2.5, 0.0, 1.0);
-				Pix.A = uint8(FMath::RoundToInt(Pix.A * (0.08 + 0.92 * Soft * Soft)));
+				const double Rime = FMath::Clamp((26 - Dist) / 12.0, 0.0, 1.0);
+				Pix.A = uint8(FMath::Max(double(Pix.A), 215.0 * Rime));
+				if (Dist < 2.5)
+				{
+					const double Soft = FMath::Clamp(Dist / 2.5, 0.0, 1.0);
+					Pix.A = uint8(FMath::RoundToInt(Pix.A * (0.06 + 0.94 * Soft * Soft)));
+				}
 			}
 		}
 		return Px;
