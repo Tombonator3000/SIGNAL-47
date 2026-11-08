@@ -299,7 +299,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
 		FVector2D Size(16, 9);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-		Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));
+		Camera->SetFieldOfView(HorizontalFov(Fov * FovScale, float(Size.X / FMath::Max(1.0, Size.Y))));
 		if (Web.IsValid()) Web->SetPlayerEye(ToUE(View.Eye));
 		return;
 	}
@@ -352,7 +352,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-	Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));
+	Camera->SetFieldOfView(HorizontalFov(Fov * FovScale, float(Size.X / FMath::Max(1.0, Size.Y))));
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
 	// Interaction.update: what the line of sight picks, within its range, with something to offer

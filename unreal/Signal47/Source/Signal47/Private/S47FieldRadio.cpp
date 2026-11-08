@@ -46,7 +46,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -106,7 +106,7 @@ bool FS47FieldRadio::Build()
 bool FS47FieldRadio::Message(const FString& Text)
 {
  if(!bOwned||!M)return false;
- ++MessageCount;
+ ++MessageCount; SinceMessage=0;
  const bool bHeard=M->Audio&&Sound.Message(M->Audio);
  if(M->UI)M->UI->Toast(TEXT("WALKIE: ")+Text,7);
  UE_LOG(LogTemp,Display,TEXT("S47: walkie message, sound %d: %s"),bHeard,*Text);
@@ -199,6 +199,7 @@ double FS47FieldRadio::ObservedThreat() const
 void FS47FieldRadio::Step(double Dt)
 {
  if(!M) return;
+ SinceMessage+=Dt;
  Build();
  const bool Play=bAvailable && !bUnsupported && M->Mode==US47Main::EMode::Play;
  const bool Shown=Play && !bOwned && !bLeftOut && M->Web && M->Web->Area()==TEXT("saro");
@@ -217,7 +218,7 @@ void FS47FieldRadio::Step(double Dt)
   Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
   Visible|=K>.04 && A.bVisible; Hunting|=K>.04 && A.bHunting;
  }
- LastLevel=Level;
+ LastLevel=Level; LastSeen=Visible; LastHunt=Hunting;
  // Require stable changes and a genuine quiet gap before another presence cue.
  QuietFor=Level<.015?QuietFor+Dt:0;
  SeenFor=Visible?SeenFor+Dt:0; ThreatFor=Level>.04?ThreatFor+Dt:0;
@@ -326,5 +327,9 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  FS47FieldRadio R(nullptr); R.Begin(nullptr); C(!R.Owned(),TEXT("old and new cases leave pickup available"));
  auto S=R.Save();S47J::Set(S,TEXT("owned"),true);R.Begin(S);C(R.Owned(),TEXT("ownership survives serialize/restore"));
  S47J::Set(S,TEXT("v"),99); R.Begin(S); C(!R.Owned() && S47J::Write(R.Save())==S47J::Write(S),TEXT("unknown future version is preserved and inactive"));
+ {
+  FS47FieldRadio Q(nullptr); Q.TestOwn();
+  C(!Q.InUse() && Q.Strength()==1 && Q.PresenceLevel()==0 && !Q.PresenceSeen() && !Q.PresenceHunting(),TEXT("a carried set that has heard nothing is not in use on the HUD, at full strength"));
+ }
  return Ok;
 }
