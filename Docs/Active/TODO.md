@@ -11,7 +11,7 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 
 ## Milepæler for Freeform (Tom 8. november)
 
-Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvorlige feil, og prøvene består. Punktene under refererer til TODO-ID-ene nedenfor.
+Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvorlige feil, og prøvene består. **Krav til hver hendelse og hvert system (lærdom fra kritikken 8. november, 4/10 på M1):** spilleren merker det i spill (lyd eller bilde, ikke tekst som forteller fasiten), det har en følge (spor, penger, fare, kart eller tillit) som et annet system leser, og det kan skje der spilleren faktisk er. Færre ting med dybde går foran mange som bare finnes. Kritikerrunde før hver installasjon, og flernatt med rundtur (`-S47NaturalStand=tour`). Punktene under refererer til TODO-ID-ene nedenfor.
 
 - [ ] **M1 Verden som lever (hendelser hvor som helst).** ANYWHERE, ARRAY-ORBS, NIGHT31 (alle 31), forslag 1-8, GEIGER, UNEASE (uro). Prøve: naturlig flernatt med hendelser på minst fire steder og noe hver natt.
 - [ ] **M2 Ute i natta.** TRUCK-STRAND (dekk, sand, berging koster), HUD (batteri, frekvens), WALKIE-USE, CB-WALKIE, WARD-PHONE, SNEAK, STRESS, GEAR-FLICKER, SOUNDSCAPE, ANIMALS.
