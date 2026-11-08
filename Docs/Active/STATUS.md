@@ -4,7 +4,9 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 8. november, Toms testfunn, Reyes-sporet, fremgang og rytme
+## Installert 8. november kl. 04:36, Toms testfunn, Reyes-sporet, fremgang og rytme
+
+`41d5dad9` etter PR485 og PR486, selvtest 2907 i pakken, 146 uendrede Saved-filer. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d28/candidate/Linux`.
 
 Etter Toms test 7. november: åpen slette uten gjerder langs veien, skumring med synlig bakke, fjellfarge fra flyfoto, kanten ved gården borte, UFO-formasjoner og forhåndsvisning, motorvei begge veier, Pale One i F10, lyskuler som droner, kalender med ekte dato, rettet dato under klokka, modemlyd, sidedør, takplate, roligere walkie-talkie, massivt lys utenfra med lyssøyler, levd kontrollrom med nytt gulv, ett gårdshus, ombygd generisk bil og SARO utvendig. Freeform starter 28. april 1986, med Reyes-sporet, Ward, Dale, vurdering etter 30 dager og nøklene; fremgang (peiling, steder, CB og 1420 AM, lyskaster, magnetometer og mer), døgnrytme, pris på tid, bortføring som koster, feltbesøk, bil og feller, F10 for alle hendelser, og ro etter fare med høyst ett farlig møte per natt. Prøvd i editor: selvtest 2907, regresjon 251, `-S47MenuPointerRelief`, normalreisen, `-S47ReyesTest`, `-S47FreeLifeTest`, lyskuler, en naturlig natt. Ikke spilt av et menneske, og lyd er ikke hørt. Kjent: gårdshuset er mørkt inne om dagen, SARO utvendig kan være for skittent, planter mot lav sol er for lyse, garasjeporten er stengt i Freeform, kinoens titting og to steder mangler lys i F10.
 

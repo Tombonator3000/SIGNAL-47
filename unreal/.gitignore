@@ -19,3 +19,6 @@ Signal47/Content/Free/
 # The web game's scene, rebuilt by Tools/webexport (export.py then import_web.py); holds the bought models too.
 Signal47/Content/Web/
 Signal47/Content/WebData/
+
+# Tripo-modellen til bilen er privat så lenge repoet er offentlig (Tom 6. november).
+Signal47/Content/Lived/Truck/
