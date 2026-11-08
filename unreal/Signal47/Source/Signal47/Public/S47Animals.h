@@ -7,6 +7,7 @@ class AS47Web;
 class USceneComponent;
 class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
+class UMaterialInterface;
 class FS47BufferSourceNode;
 
 // ANIMALS-20261108 (Tom, 8 November): animals as warning, Freeform only. They react to what is really near (FS47Omen) and to the
@@ -46,6 +47,9 @@ public:
 	int32 DogStops() const { return StopCount; }
 	bool CoyoteOut() const { return Coyote.Mode != ECoyote::None; }
 	bool CoveyHere() const { return Covey.Mode == ECovey::Sitting; }
+	/** The coyote and the dog are the rigged models (Tools/animals), not the boxes. */
+	bool RiggedCoyote() const { return CoyoteRig.bReady; }
+	bool RiggedDog() const { return DogRig.bReady; }
 	/** F10: a covey here, 14 m ahead; with bThreat, then something behind the player, so it goes up away from it. Why: what stopped it. */
 	bool DevCovey(FString& Why, bool bThreat = true);
 	/** F10: a coyote crossing 32 m ahead; with bThreat, then something to one side, so it stops and stares at it. */
@@ -100,8 +104,28 @@ private:
 	} Coyote;
 
 	// the dogs: where they live, road-local, and what each is doing
-	struct FDog { FVector2D Home = FVector2D::ZeroVector; double Next = 20, Quiet = 0, BarkIn = 0; int32 Left = 0; bool bStopped = false, bFrantic = false; TSharedPtr<FS47BufferSourceNode> Playing; };
+	struct FDog { FVector2D Home = FVector2D::ZeroVector; double Next = 20, Quiet = 0, BarkIn = 0; int32 Left = 0; bool bStopped = false, bFrantic = false; FVector Feared = FVector::ZeroVector; TSharedPtr<FS47BufferSourceNode> Playing; };
 	TArray<FDog> Dogs;
+
+	// The rigged models (Tools/animals, CC0 from Quaternius, imported to /Game/Free/Animals): a coyote and a ranch dog that walk,
+	// run and stand. Without them the coyote is the boxes above and the dog is only heard. Each is scaled to its height and turned
+	// by its own skeleton (Head ahead of Body), whatever axes the import gave it.
+	struct FRig
+	{
+		FString Animal;
+		TWeakObjectPtr<class USkeletalMeshComponent> Mesh;
+		FString Playing;
+		double Scale = 1, YawOffset = 0, Lift = 0, Rate = 1;
+		FName Head;
+		bool bReady = false, bTried = false;
+	};
+	FRig CoyoteRig, DogRig;
+	int32 DogShown = INDEX_NONE;
+	double DogYaw = 0;
+	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark);
+	void PlayRig(FRig& Rig, const TCHAR* Clip, double Rate);
+	void PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg);
+	void StepDogBody(double Dt);
 
 	// F10: what it is to react to once it is in place
 	double DevCoveyIn = -1, DevCoyoteIn = -1, DevDogIn = -1;

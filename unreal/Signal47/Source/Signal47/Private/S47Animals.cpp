@@ -1,7 +1,12 @@
 #include "S47Animals.h"
 
+#include "Animation/AnimSequence.h"
+#include "AnimationRuntime.h"
 #include "Components/SceneComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Misc/PackageName.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -39,8 +44,9 @@ namespace S47AnimalsLocal
 	constexpr double TrotSpeed = 3.2, BoltSpeed = 9.5, CoyoteGone = 120, CoyoteShy = 11, CoyoteCross = 32;
 	constexpr double CoveyRelocate = 90, FlightSeconds = 3.2;
 	constexpr double DogHear = 900, DogClose = 160, DogWhine = 260;
-	// Where the dogs live, road-local: the Alderete yard, the east side of Caliche, the south end of town.
-	const FVector2D DogHomes[] = { FVector2D(95, 205), FVector2D(28, 2140), FVector2D(-22, 2232) };
+	// Where the dogs live, road-local: by the old house on the Alderete place, before the houses on the east side of Caliche, and at
+	// the south end of town (on the ground outside the doors, S47EventPlaces).
+	const FVector2D DogHomes[] = { FVector2D(95, 205), FVector2D(16, 2141), FVector2D(-11, 2231) };
 	// The coyote's parts on its own frame: forward, right, up (metres), and size (forward, across, up).
 	struct FPart { double F, S, U, L, W, H; };
 	constexpr FPart TorsoPart{ 0, 0, .47, .80, .24, .27 }, NeckPart{ .40, 0, .58, .24, .14, .15 }, HeadPart{ .55, 0, .67, .20, .16, .14 },
@@ -183,7 +189,94 @@ bool FS47Animals::Build()
 	Cy.Tail = Make(CubeMesh, Fur.Get(), true);
 	for (int32 I = 0; I < 4; ++I) Cy.Legs[I] = Make(CubeMesh, Fur.Get(), true);
 	Cy.EyeL = Make(BallMesh, Glow, false); Cy.EyeR = Make(BallMesh, Glow, false);
+	// the rigged ones, where this build has them: a dun coyote with a pale belly, a brown ranch dog with a cream chest
+	BuildRig(CoyoteRig, TEXT("Coyote"), 70, Holder, Fur.Get(), Tint(FLinearColor(.62f, .55f, .44f), .9f), Tint(FLinearColor(.03f, .03f, .03f), .6f));
+	BuildRig(DogRig, TEXT("Dog"), 62, Holder, Tint(FLinearColor(.17f, .11f, .07f), .9f), Tint(FLinearColor(.66f, .58f, .47f), .9f), Tint(FLinearColor(.03f, .03f, .03f), .6f));
 	return true;
+}
+
+bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark)
+{
+	Rig.bTried = true; Rig.Animal = Animal; Rig.bReady = false;
+	const FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/SK_%s"), Animal, Animal);
+	if (!FPackageName::DoesPackageExist(Package) || !M || !M->Web || !Holder) return false;
+	USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, *(Package + TEXT(".SK_") + Animal));
+	if (!Body) return false;
+	// which way it faces and how tall it is, from its own skeleton and bounds
+	const FReferenceSkeleton& Ref = Body->GetRefSkeleton();
+	const int32 HeadIndex = Ref.FindBoneIndex(TEXT("Head")), BodyIndex = Ref.FindBoneIndex(TEXT("Body"));
+	const FBoxSphereBounds Bounds = Body->GetBounds();
+	const double Tall = Bounds.BoxExtent.Z * 2;
+	if (HeadIndex == INDEX_NONE || BodyIndex == INDEX_NONE || Tall < 1)
+	{
+		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig unusable (head %d, body %d, height %.1f cm): the boxes stay"), Animal, HeadIndex, BodyIndex, Tall);
+		return false;
+	}
+	const FVector HeadAt = FAnimationRuntime::GetComponentSpaceTransformRefPose(Ref, HeadIndex).GetLocation();
+	const FVector BodyAt = FAnimationRuntime::GetComponentSpaceTransformRefPose(Ref, BodyIndex).GetLocation();
+	const FVector Ahead = FVector(HeadAt.X - BodyAt.X, HeadAt.Y - BodyAt.Y, 0).GetSafeNormal();
+	if (Ahead.IsNearlyZero()) return false;
+	Rig.Scale = HeightCm / Tall;
+	Rig.YawOffset = FMath::RadiansToDegrees(FMath::Atan2(Ahead.Y, Ahead.X));
+	Rig.Lift = -(Bounds.Origin.Z - Bounds.BoxExtent.Z) * Rig.Scale;
+	Rig.Head = TEXT("Head");
+	USkeletalMeshComponent* Part = NewObject<USkeletalMeshComponent>(M->Web.Get(), *FString::Printf(TEXT("S47Animal_%s"), Animal));
+	Part->SetupAttachment(Holder); Part->SetMobility(EComponentMobility::Movable);
+	Part->SetSkinnedAssetAndUpdate(Body);
+	Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetCastShadow(true);
+	Part->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	Part->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	// its colours, by the source's own slots: the coat, the pale under it, a dark nose; the eyes the ones that shine
+	const TArray<FSkeletalMaterial>& Slots = Body->GetMaterials();
+	for (int32 I = 0; I < Slots.Num(); ++I)
+	{
+		const FString Slot = Slots[I].MaterialSlotName.ToString();
+		UMaterialInterface* Mat = Coat;
+		if (Slot.Contains(TEXT("Eye")) || Slot.EndsWith(TEXT("002"))) Mat = EyeGlow.Get();
+		else if (Slot.Contains(TEXT("Light")) || Slot.EndsWith(TEXT("003"))) Mat = Pale;
+		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Dark;
+		else if (Slot.EndsWith(TEXT("001"))) Mat = Pale;
+		if (Mat) Part->SetMaterial(I, Mat);
+	}
+	Part->SetVisibility(false); Part->SetHiddenInGame(true);
+	Part->RegisterComponent();
+	Rig.Mesh = Part; Rig.bReady = true;
+	UE_LOG(LogS47Animals, Display, TEXT("S47: animals %s rigged: %d bones, %.0f cm tall as imported, scale %.3f, faces %.0f deg, %d slots"),
+		Animal, Ref.GetNum(), Tall, Rig.Scale, Rig.YawOffset, Slots.Num());
+	return true;
+}
+
+void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Rate)
+{
+	USkeletalMeshComponent* Part = Rig.Mesh.Get();
+	if (!Rig.bReady || !Part) return;
+	if (Rig.Playing == Clip)
+	{
+		if (!FMath::IsNearlyEqual(Rig.Rate, Rate, 0.02)) { Rig.Rate = Rate; Part->SetPlayRate(float(Rate)); }
+		return;
+	}
+	FString Name = FString::Printf(TEXT("A_%s_%s"), *Rig.Animal, Clip);
+	FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/%s"), *Rig.Animal, *Name);
+	if (!FPackageName::DoesPackageExist(Package))
+	{
+		// a clip this one has not got: it stands
+		Name = FString::Printf(TEXT("A_%s_Idle"), *Rig.Animal);
+		Package = FString::Printf(TEXT("/Game/Free/Animals/%s/%s"), *Rig.Animal, *Name);
+		if (!FPackageName::DoesPackageExist(Package)) return;
+	}
+	UAnimSequence* Seq = LoadObject<UAnimSequence>(nullptr, *(Package + TEXT(".") + Name));
+	if (!Seq) return;
+	Part->PlayAnimation(Seq, true);
+	Part->SetPlayRate(float(Rate));
+	Rig.Playing = Clip; Rig.Rate = Rate;
+}
+
+void FS47Animals::PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg)
+{
+	USkeletalMeshComponent* Part = Rig.Mesh.Get();
+	if (!Rig.bReady || !Part) return;
+	Part->SetWorldLocationAndRotation(S47Three::ToUE(FeetThree) + FVector(0, 0, Rig.Lift), FRotator(0, YawDeg - Rig.YawOffset, 0));
+	Part->SetWorldScale3D(FVector(Rig.Scale));
 }
 
 void FS47Animals::Show(UStaticMeshComponent* Part, bool bOn) const
@@ -206,6 +299,9 @@ void FS47Animals::Reset()
 	FCoyote& Cy = Coyote;
 	for (UStaticMeshComponent* Part : { Cy.Torso.Get(), Cy.Neck.Get(), Cy.Head.Get(), Cy.Snout.Get(), Cy.EarL.Get(), Cy.EarR.Get(), Cy.Tail.Get(), Cy.EyeL.Get(), Cy.EyeR.Get() }) Show(Part, false);
 	for (const TWeakObjectPtr<UStaticMeshComponent>& Leg : Cy.Legs) Show(Leg.Get(), false);
+	for (FRig* Rig : { &CoyoteRig, &DogRig })
+		if (USkeletalMeshComponent* Body = Rig->Mesh.Get()) { Body->SetVisibility(false); Body->SetHiddenInGame(true); }
+	DogShown = INDEX_NONE;
 	Covey.Mode = ECovey::None; Covey.Wait = 20;
 	Cy.Mode = ECoyote::None; Cy.Wait = 90;
 	for (FDog& Dog : Dogs)
@@ -363,9 +459,48 @@ void FS47Animals::PoseCoyote(double Dt)
 	using namespace S47AnimalsLocal;
 	FCoyote& Cy = Coyote;
 	const bool bOut = Cy.Mode != ECoyote::None;
-	for (UStaticMeshComponent* Part : { Cy.Torso.Get(), Cy.Neck.Get(), Cy.Head.Get(), Cy.Snout.Get(), Cy.EarL.Get(), Cy.EarR.Get(), Cy.Tail.Get(), Cy.EyeL.Get(), Cy.EyeR.Get() }) Show(Part, bOut);
-	for (const TWeakObjectPtr<UStaticMeshComponent>& Leg : Cy.Legs) Show(Leg.Get(), bOut);
+	const bool bRigged = CoyoteRig.bReady && CoyoteRig.Mesh.IsValid();
+	for (UStaticMeshComponent* Part : { Cy.Torso.Get(), Cy.Neck.Get(), Cy.Head.Get(), Cy.Snout.Get(), Cy.EarL.Get(), Cy.EarR.Get(), Cy.Tail.Get(), Cy.EyeL.Get(), Cy.EyeR.Get() }) Show(Part, bOut && !bRigged);
+	for (const TWeakObjectPtr<UStaticMeshComponent>& Leg : Cy.Legs) Show(Leg.Get(), bOut && !bRigged);
+	if (bRigged)
+	{
+		USkeletalMeshComponent* Part = CoyoteRig.Mesh.Get();
+		if (Part->IsVisible() != bOut) Part->SetVisibility(bOut);
+		Part->SetHiddenInGame(!bOut);
+	}
 	if (!bOut) return;
+	if (bRigged)
+	{
+		// The model: the whole of it turns to what it stares at; it walks a trot, runs a gallop, stands with its head up.
+		const bool bStill = Cy.Mode == ECoyote::Stare || Cy.Mode == ECoyote::Look;
+		double Want = YawOf(Cy.Dir);
+		if (bStill)
+		{
+			const FVector ToIt(Cy.LookAt.X - Cy.At.X, 0, Cy.LookAt.Z - Cy.At.Z);
+			if (!ToIt.IsNearlyZero()) Want = YawOf(ToIt);
+		}
+		Cy.Yaw += FMath::UnwindDegrees(Want - Cy.Yaw) * FMath::Min(1.0, Dt * (Cy.Mode == ECoyote::Stare ? 8.0 : 4.0));
+		Cy.HeadYaw = 0;
+		if (Cy.Mode == ECoyote::Bolt) PlayRig(CoyoteRig, TEXT("Gallop"), 1.15);
+		else if (Cy.Mode == ECoyote::Trot) PlayRig(CoyoteRig, TEXT("Walk"), 1.7);
+		else if (Cy.Mode == ECoyote::Stare) PlayRig(CoyoteRig, TEXT("Idle"), 1.0);
+		else PlayRig(CoyoteRig, TEXT("Idle2"), 1.0);
+		PlaceRig(CoyoteRig, Cy.At, Cy.Yaw);
+		const double YawRad0 = FMath::DegreesToRadians(Cy.Yaw);
+		const FVector Facing0(FMath::Cos(YawRad0), 0, FMath::Sin(YawRad0));
+		const FVector EyeAt0 = S47Three::ToThree(CoyoteRig.Mesh->GetSocketLocation(CoyoteRig.Head)) + Facing0 * 0.12;
+		const double Shine0 = ShineOf(EyeAt0, Facing0);
+		if (FMath::Abs(Shine0 - Cy.Shine) > 0.01 || (Shine0 <= 0 && Cy.Shine > 0))
+		{
+			Cy.Shine = Shine0;
+			if (UMaterialInstanceDynamic* Glow0 = EyeGlow.Get())
+			{
+				Glow0->SetVectorParameterValue(TEXT("Emissive"), Shine0 > 0.02 ? FLinearColor(.75f, .95f, .4f) * float(90.0 * Shine0) : FLinearColor::Black);
+				Glow0->SetScalarParameterValue(TEXT("EmissivePower"), Shine0 > 0.02 ? 1.f : 0.f);
+			}
+		}
+		return;
+	}
 	// the body turns to where it goes; the head to what it looks at, and the body after it past a quarter turn
 	const bool bHeld = Cy.Mode == ECoyote::Stare || Cy.Mode == ECoyote::Look;
 	double WantYaw = YawOf(Cy.Dir), WantHead = 0;
@@ -538,7 +673,9 @@ void FS47Animals::StepDogs(double Dt)
 		if (Away > DogHear || !bNight) { Dog.Left = 0; continue; }
 		Dog.Quiet = FMath::Max(0.0, Dog.Quiet - Dt);
 		const FVector Home = FromRoad(Dog.Home, 0.6);
-		const double Felt = M->Omen ? M->Omen->SenseAt(Home, DogWiden, nullptr, nullptr) : 0;
+		FVector Fright = FVector::ZeroVector;
+		const double Felt = M->Omen ? M->Omen->SenseAt(Home, DogWiden, &Fright, nullptr) : 0;
+		if (Felt > 0) Dog.Feared = Fright;
 		if (Fear(Felt) >= 1 && !Dog.bStopped)
 		{
 			if (Dog.Left > 0 && !Dog.bFrantic)
@@ -595,6 +732,37 @@ void FS47Animals::StepDogs(double Dt)
 	}
 }
 
+void FS47Animals::StepDogBody(double Dt)
+{
+	// The nearest dog within sight is there to be seen, rigged: it faces you and barks, or, when something has come, stands with its
+	// head low facing it and makes no sound. Only one at a time is near enough to see.
+	FRig& Rig = DogRig;
+	USkeletalMeshComponent* Part = Rig.Mesh.Get();
+	if (!Rig.bReady || !Part) return;
+	FVector2D From;
+	int32 Nearest = INDEX_NONE; double Best = 150;
+	if (RoadOf(EyeNow(), From))
+		for (int32 I = 0; I < Dogs.Num(); ++I) { const double Gap = FVector2D::Distance(From, Dogs[I].Home); if (Gap < Best) { Best = Gap; Nearest = I; } }
+	const bool bShow = Nearest != INDEX_NONE && !(M->World && M->World->bDriving && Best > 60);
+	if (Part->IsVisible() != bShow) Part->SetVisibility(bShow);
+	Part->SetHiddenInGame(!bShow);
+	if (!bShow) { DogShown = INDEX_NONE; return; }
+	const FDog& Dog = Dogs[Nearest];
+	FVector Feet = FromRoad(Dog.Home, 0);
+	Feet.Y = GroundAt(FVector(Feet.X, Feet.Y + 1, Feet.Z));
+	const FVector Eye = EyeNow();
+	const FVector ToYou(Eye.X - Feet.X, 0, Eye.Z - Feet.Z);
+	double Want = DogYaw;
+	if (Dog.bStopped && !Dog.Feared.IsZero()) Want = S47AnimalsLocal::YawOf(FVector(Dog.Feared.X - Feet.X, 0, Dog.Feared.Z - Feet.Z));
+	else if (Best < 80 && !ToYou.IsNearlyZero()) Want = S47AnimalsLocal::YawOf(ToYou);
+	if (DogShown != Nearest) { DogYaw = Want; DogShown = Nearest; }
+	DogYaw += FMath::UnwindDegrees(Want - DogYaw) * FMath::Min(1.0, Dt * 3.0);
+	if (Dog.bStopped) PlayRig(Rig, TEXT("HeadLow"), 1.0);
+	else if (Dog.Left > 0) PlayRig(Rig, TEXT("Attack"), Dog.bFrantic ? 1.4 : 1.0);
+	else PlayRig(Rig, NightNow() ? TEXT("Idle") : TEXT("Idle2"), 1.0);
+	PlaceRig(Rig, Feet, DogYaw);
+}
+
 // ---------- in play ----------
 
 void FS47Animals::Step(double Dt)
@@ -602,7 +770,7 @@ void FS47Animals::Step(double Dt)
 	if (!bLogChecked) { bLogChecked = true; bLog = FParse::Param(FCommandLine::Get(), TEXT("S47AnimalsLog")); }
 	if (!M || !M->IsFreeform() || M->Mode != US47Main::EMode::Play || !M->Player || !M->Web || !M->Freeform)
 	{
-		if (Covey.Mode != ECovey::None || Coyote.Mode != ECoyote::None) Reset();
+		if (Covey.Mode != ECovey::None || Coyote.Mode != ECoyote::None || DogShown != INDEX_NONE) Reset();
 		return;
 	}
 	if (M->bPausedByMenu || M->ModalOpen() || !FMath::IsFinite(Dt) || Dt <= 0) return;
@@ -624,6 +792,7 @@ void FS47Animals::Step(double Dt)
 	StepCovey(Dt);
 	StepCoyote(Dt);
 	StepDogs(Dt);
+	StepDogBody(Dt);
 }
 
 bool FS47Animals::DevCovey(FString& Why, bool bThreat)
