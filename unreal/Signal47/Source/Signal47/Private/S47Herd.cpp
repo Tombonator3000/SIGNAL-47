@@ -229,17 +229,23 @@ void FS47Herd::Pose(int32 I, double T)
 		const double Here = S47FarmWorld::FloorRoad(X + ModeOffset.X + Off.X, Z + ModeOffset.Z + Off.Z);
 		BodyP = FVector(X + Off.X, Ys[I] + (Here - Base), Z + Off.Z);
 		if (Offsets.IsValidIndex(I)) Offsets[I] = Off;
-		const bool bRun = Alarm > .05 && Fear.SizeSquared() < 16 * 16;
+		const bool bMoving = Alarm > .05 && Fear.SizeSquared() < 16 * 16;
+		const bool bRun = bMoving && Alarm >= S47Herd::SCATTER;
 		if (Alarm > .05)
 		{
-			// Head up and turned about, always ready to go; running when it can still get further off.
+			// Head up and turned about, always ready to go; running when it can still get further off. Uneasy: all one way, walking.
 			const FVector FromAlarm = FVector(BodyP.X, 0, BodyP.Z) - FVector(AlarmFrom.X, 0, AlarmFrom.Z);
-			Heading = FromAlarm.GetSafeNormal();
-			Pitch = FMath::Lerp(Pitch, .12, Alarm); Turn = FMath::Lerp(Turn, .55 * FMath::Sin(T * 3.1 + I * 2.), Alarm);
+			Heading = Alarm < S47Herd::SCATTER ? Way : FromAlarm.GetSafeNormal();
+			Pitch = FMath::Lerp(Pitch, .12, FMath::Max(Alarm, .7)); Turn = FMath::Lerp(Turn, (Alarm < S47Herd::SCATTER ? .15 : .55) * FMath::Sin(T * 3.1 + I * 2.), Alarm);
 			if (bRun)
 			{
 				BodyP.Y += .09 * FMath::Abs(FMath::Sin(T * 7.5 + I));
 				BodyPitch = .09 * FMath::Sin(T * 7.5 + I);
+			}
+			else if (bMoving)
+			{
+				BodyP.Y += .022 * FMath::Abs(FMath::Sin(T * 3.4 + I));
+				BodyPitch = .012 * FMath::Sin(T * 3.4 + I);
 			}
 		}
 		else if (bStare)
@@ -350,9 +356,28 @@ void FS47Herd::Update(double T, const TOptional<FS47HerdHeadlights>& Headlights)
 				ColliderAt[I] = Group ? Group.LocalToWorld(P) : P + ModeOffset;
 			}
 		}
+		// ANIMALS-20261108: uneasy, not yet afraid, the herd walks off together, every head the same way: off from it, as seen from
+		// the middle of them. Afraid (S47Herd::SCATTER and over), each runs its own way.
+		const bool bTogether = Alarm > .05 && Alarm < S47Herd::SCATTER;
+		if (bTogether)
+		{
+			FVector Centre = FVector::ZeroVector; int32 Counted = 0;
+			for (int32 I = 0; I < Count(); ++I) if (I != Missing) { Centre += FVector(COWS[I][0] + Fled[I].X, 0, COWS[I][1] + Fled[I].Z); ++Counted; }
+			if (Counted > 0)
+			{
+				const FVector Toward2 = (Centre / Counted - FVector(AlarmFrom.X, 0, AlarmFrom.Z)).GetSafeNormal();
+				if (!Toward2.IsNearlyZero()) Way = Toward2;
+			}
+		}
 		for (int32 I = 0; I < Count(); ++I)
 		{
-			if (Alarm > .05)
+			if (bTogether)
+			{
+				// one way for all, at a walk, a little apart so it is not a parade
+				const FVector Dir = FQuat(FVector::UpVector, .1 * FMath::Sin(I * 2.3)).RotateVector(Way);
+				if (Fled[I].Size() < 16) Fled[I] += Dir * 1.1 * Elapsed;
+			}
+			else if (Alarm > .05)
 			{
 				// Away from it, each its own way; they bunch and scatter rather than march.
 				const FVector Now(COWS[I][0] + Fled[I].X, 0, COWS[I][1] + Fled[I].Z);

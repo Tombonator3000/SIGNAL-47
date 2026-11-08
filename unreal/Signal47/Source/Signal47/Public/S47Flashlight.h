@@ -32,6 +32,11 @@ public:
 	void Flicker(double K, const FString& From = TEXT("event"));
 	/** While it flickers (Flicker above zero): the contact gives way altogether for this long. No battery in it. */
 	void FlickerOut(double Seconds) { Dark = FMath::Max(Dark, Seconds); }
+	/** GEAR-FLICKER-20261108: the share of the beam lost near something (0 to 1), by source as Flicker, the strongest counting.
+	 *  A steady weakening that comes and goes with distance; it spends no battery (FS47GearFlicker). */
+	void Sag(double K, const FString& From = TEXT("event"));
+	double SagNow() const { return SagK; }
+	double FlickerNow() const { return Flick; }
 	/** Every frame: held a little right of and below the eyes, pointing where they look. Off: in the
 	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). bHeld: the game
 	 *  is held (the pause menu, a panel open): the lamp stays as it is, lit or not, and its battery is not used. */
@@ -77,7 +82,8 @@ private:
 	double ThreeIntensity = 0;
 	double NativeNearGain = 1, NextNearLog = 0;
 	bool bNativeNearReady = false, bLogNear = false;
-	TMap<FString, double> Flicks;
+	TMap<FString, double> Flicks, Sags;
+	double SagK = 0;
 	double Battery = 1;
 	bool bSaidLow = false, bSaidDead = false;
 };

@@ -58,13 +58,15 @@ public:
 	int32 Turns = 0;
 	/** Everything electric in the truck, 0..1, on top of whatever the trouble does (story/truckTaken.ts). */
 	double Dim = 1;
+	/** GEAR-FLICKER-20261108: the same, held down by something near (FS47GearFlicker), apart from Dim so that neither undoes the other. */
+	double GearDim = 1;
 
 	/** What is wrong now (None when nothing). */
 	ES47Trouble Kind() const { return A ? A->Kind : ES47Trouble::None; }
 	/** The engine is dead and waits for the player to turn the key (Use). */
 	bool WantsKey() const;
 	/** What the radio gets, 0..1: nothing while the starter turns, a stutter with the lights. */
-	double RadioLevel() const { return Power * Dim; }
+	double RadioLevel() const { return Power * Dim * GearDim; }
 	/** The engine is dead (or being started). */
 	bool Dead() const;
 	/** What a stall is doing now ('dying', 'dead', 'pause', 'cranking', 'catching'), or empty. */

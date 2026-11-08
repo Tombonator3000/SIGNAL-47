@@ -6,6 +6,8 @@
 #include "S47DoorVisit.h"
 #include "S47EventPlaces.h"
 #include "S47OpenLand.h"
+#include "S47Omen.h"
+#include "S47Soundscape.h"
 #include "S47FarmHouse.h"
 #include "S47FarmSite.h"
 #include "S47FieldRadio.h"
@@ -160,6 +162,9 @@ void FS47DevFreeform::ClearRunning()
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  S47FloodProbe::StopLive(M);
  if(F->Happenings)F->Happenings->DevClear(false);
+ // M2's made-up presences and silences (S47OmenDev.cpp)
+ if(M->Omen)M->Omen->DevClear();
+ if(M->Soundscape)M->Soundscape->DevHush(0);
 }
 
 void FS47DevFreeform::Go(const FStage& Stage,TFunction<void()> Then)
@@ -1351,6 +1356,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddAnywhere(E);
  AddReyes(E);
  AddHappenings(E);
+ AddOmens(E);
 }
 
 void FS47DevFreeform::Stop()

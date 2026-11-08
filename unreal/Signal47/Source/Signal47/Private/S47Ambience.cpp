@@ -258,7 +258,8 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	if ((T.Mood -= Dt) <= 0)
 	{
 		T.Mood = Rnd(60, 180);
-		Mood = FMath::FRand() < 0.15 ? 0.08 : Rnd(0.35, 1);          // now and then the night goes quiet
+		// now and then the night goes quiet (not in Freeform: there a silence is a warning, FS47Soundscape)
+		Mood = bQuietSpells && FMath::FRand() < 0.15 ? 0.08 : Rnd(0.35, 1);
 	}
 	const double M = Mood;
 	// ---------- wind ----------
@@ -310,7 +311,15 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 		T.Life = Rnd(25, 70) / Busy;
 		const double R = FMath::FRand();
 		const FString Name = R < 0.35 ? TEXT("owl") : R < 0.6 ? Pick(TArray<FString>{ TEXT("dog0"), TEXT("dog1") }) : TEXT("gust");
-		if (Name != TEXT("owl") || Day.Night >= 0.4) Far(Name, At, Name == TEXT("gust") ? 0.3 : Name == TEXT("owl") ? 0.26 : 0.18, Name == TEXT("owl") ? Rnd(0.9, 1.05) : Rnd(0.95, 1.05));
+		const double FarGain = Name == TEXT("gust") ? 0.3 : Name == TEXT("owl") ? 0.26 : 0.18, FarRate = Name == TEXT("owl") ? Rnd(0.9, 1.05) : Rnd(0.95, 1.05);
+		if (Name != TEXT("owl") || Day.Night >= 0.4)
+		{
+			// Freeform: an owl where there are trees and barns, a dog where somebody keeps one; the wind anywhere.
+			const FString Kind = Name == TEXT("owl") ? TEXT("owl") : Name == TEXT("gust") ? TEXT("gust") : TEXT("dog");
+			FVector Where;
+			if (!PlaceFor || Kind == TEXT("gust")) Far(Name, At, FarGain, FarRate);
+			else if (PlaceFor(Kind, At, Where)) { PlayAt(Name, At, Where, FarGain * 2.2, FarRate, 60); FarCounts.FindOrAdd(Kind)++; }
+		}
 	}
 	if ((T.Poorwill -= Dt) <= 0)
 	{
@@ -322,9 +331,17 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	if ((T.Coyote -= Dt) <= 0)
 	{
 		T.Coyote = Rnd(240, 600) / Busy;
-		if (M > 0.2) Coyotes(At);
+		FVector Where;
+		if (M > 0.2 && !PlaceFor) Coyotes(At);
+		else if (M > 0.2 && PlaceFor(TEXT("coyote"), At, Where)) CoyotesFrom(At, Where);
 	}
-	if ((T.Train -= Dt) <= 0) { T.Train = Rnd(700, 1500); Train(At); }
+	if ((T.Train -= Dt) <= 0)
+	{
+		T.Train = Rnd(700, 1500);
+		FVector Where;
+		if (!PlaceFor) Train(At);
+		else if (PlaceFor(TEXT("train"), At, Where)) { double Bearing = 0, Dist = 0; Toward(At, Where, Bearing, Dist); Train(At, Bearing); FarCounts.FindOrAdd(TEXT("train"))++; }
+	}
 	if ((T.Truck -= Dt) <= 0) { T.Truck = Rnd(200, 520) / Busy; Truck(); }
 	if (Dawn > 0 && (T.Birds -= Dt) <= 0)
 	{
@@ -425,12 +442,14 @@ void FS47Ambience::Poorwill(const FVector& At)
 	}
 }
 
-void FS47Ambience::Coyotes(const FVector& At)
+void FS47Ambience::Coyotes(const FVector& At, TOptional<double> Bearing, TOptional<double> Dist)
 {
-	// Coyotes a long way off: a few voices, yips and a howl or two, with the mesas answering.
+	// Coyotes a long way off: a few voices, yips and a howl or two, with the mesas answering. From a place (Freeform): as far as
+	// it is, louder and brighter nearer.
 	FS47AudioContext& C = *Ctx;
-	const double D = Rnd(250, 700);
-	auto Out2 = Echo(Distant(At, D, 1, 1700), Rnd(0.18, 0.3), 0.32);
+	const double D = Dist.IsSet() ? FMath::Clamp(Dist.GetValue(), 120.0, 1600.0) : Rnd(250, 700);
+	const double Loud = Dist.IsSet() ? FMath::Clamp(450.0 / D, 0.45, 1.6) : 1.0, Cut = Dist.IsSet() ? FMath::Clamp(2600.0 - D * 1.2, 900.0, 2400.0) : 1700.0;
+	auto Out2 = Echo(Distant(At, D, Loud, Cut, Bearing), Rnd(0.18, 0.3), 0.32);
 	const double T0 = C.CurrentTime() + 0.2;
 	const int32 Voices = 2 + int32(FMath::FRand() * 3);
 	for (int32 V = 0; V < Voices; ++V)
@@ -473,11 +492,11 @@ void FS47Ambience::Coyotes(const FVector& At)
 	}
 }
 
-void FS47Ambience::Train(const FVector& At)
+void FS47Ambience::Train(const FVector& At, TOptional<double> Bearing)
 {
-	// A freight train's horn on the line to Roswell, miles off: long, long, short, long.
+	// A freight train's horn on the line to Roswell, miles off: long, long, short, long. Freeform gives the line's own bearing.
 	FS47AudioContext& C = *Ctx;
-	auto Out2 = Echo(Distant(At, 1500, 1, 700, Rnd(0, Pi * 2)), 0.32, 0.45);
+	auto Out2 = Echo(Distant(At, 1500, 1, 700, Bearing.IsSet() ? Bearing : TOptional<double>(Rnd(0, Pi * 2))), 0.32, 0.45);
 	double Tt = C.CurrentTime() + 0.3;
 	for (const double Len : { 1.8, 1.8, 0.7, 2.8 })
 	{
@@ -538,4 +557,182 @@ void FS47Ambience::Lark(const FVector& At)
 	auto G = Distant(At, Rnd(30, 70), 1, 7000, {}, BirdBus);
 	double Tt = Ctx->CurrentTime() + 0.1;
 	for (int32 I = 0, N = 10 + int32(FMath::FRand() * 12); I < N; ++I) { const double A = Rnd(3600, 6000); Note(G, Tt, Rnd(0.03, 0.05), A, A * Rnd(0.9, 1.12), 0.009, 0.05); Tt += Rnd(0.05, 0.13); }
+}
+
+// ---------- Freeform: from real places (SOUNDSCAPE-20261108) ----------
+
+void FS47Ambience::Toward(const FVector& Listener, const FVector& Where, double& OutBearing, double& OutDist)
+{
+	const double Dx = Where.X - Listener.X, Dz = Where.Z - Listener.Z;
+	OutDist = FMath::Sqrt(Dx * Dx + Dz * Dz);
+	OutBearing = FMath::Atan2(Dz, Dx);
+}
+
+TSharedRef<FS47GainNode> FS47Ambience::Placed(const FVector& Listener, const FVector& Where, double Gain, double Near, double Life)
+{
+	// A panner that stays where the thing is, so it turns and fades as the player moves; duller the further it carries.
+	FS47AudioContext& Ac = *Ctx;
+	const double Dist = FVector::Dist(Listener, Where);
+	auto Pan = Ac.CreatePanner();
+	Pan->PanningModel = TEXT("equalpower"); Pan->DistanceModel = ES47DistanceModel::Inverse; Pan->RefDistance = FMath::Max(1.0, Near); Pan->RolloffFactor = 0.5; Pan->MaxDistance = 4000;
+	Pan->SetPosition(Where.X, Where.Y, Where.Z);
+	auto Lpf = Ac.CreateBiquadFilter(); Lpf->SetType(TEXT("lowpass")); Lpf->Frequency.SetValue(FMath::Clamp(9000.0 - Dist * 9.0, 700.0, 9000.0));
+	auto Gn = Ac.CreateGain(); Gn->Gain.SetValue(Gain);
+	Gn->Connect(Lpf); Lpf->Connect(Pan); Pan->Connect(Out);
+	Ctx->SetTimeout(FMath::Max(1.0, Life), [Pan] { Pan->Disconnect(); });
+	return Gn;
+}
+
+TSharedPtr<FS47BufferSourceNode> FS47Ambience::PlayAt(const FString& Name, const FVector& Listener, const FVector& Where, double Gain, double Pitch, double Near, double When)
+{
+	const TSharedPtr<FS47AudioBuffer>* Rec = Buf->Find(Name);
+	if (!Rec || !Rec->IsValid()) return nullptr;
+	return PlayBufferAt(*Rec, Listener, Where, Gain, Pitch, Near, When);
+}
+
+TSharedPtr<FS47BufferSourceNode> FS47Ambience::PlayBufferAt(const TSharedPtr<FS47AudioBuffer>& Rec, const FVector& Listener, const FVector& Where, double Gain, double Pitch, double Near, double When)
+{
+	if (!Rec.IsValid() || Where.ContainsNaN()) return nullptr;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	const double Speed2 = FMath::Clamp(Pitch, 0.1, 4.0), Delay = FMath::Max(0.0, When);
+	auto Into = Placed(Listener, Where, Gain, Near, Rec->Duration() / Speed2 + Delay + 2);
+	auto Src = Ctx->CreateBufferSource(); Src->Buffer = Rec; Src->PlaybackRate.SetValue(Speed2);
+	Src->Connect(Into); Src->Start(Ctx->CurrentTime() + Delay);
+	return Src;
+}
+
+void FS47Ambience::CoyotesFrom(const FVector& Listener, const FVector& Where)
+{
+	double Bearing = 0, Dist = 0;
+	Toward(Listener, Where, Bearing, Dist);
+	FS47AudioContext::FBatch Batch(*Ctx);
+	Coyotes(Listener, Bearing, Dist);
+	FarCounts.FindOrAdd(TEXT("coyote"))++;
+}
+
+void FS47Ambience::TrainAt(const FVector& Listener, const FVector& Where)
+{
+	double Bearing = 0, Dist = 0;
+	Toward(Listener, Where, Bearing, Dist);
+	FS47AudioContext::FBatch Batch(*Ctx);
+	Train(Listener, Bearing);
+	FarCounts.FindOrAdd(TEXT("train"))++;
+}
+
+void FS47Ambience::MillCreak(const FVector& Listener, const FVector& Where, double Strength)
+{
+	FS47AudioContext::FBatch Batch(*Ctx);
+	const double Sk = FMath::Clamp(Strength, 0.1, 1.0);
+	// The head turning on its post in the wind: the old door's creak slowed to a long dry groan, or one made here.
+	if (!PlayAt(FMath::FRand() < 0.5 ? TEXT("doorCreak0") : TEXT("doorCreak1"), Listener, Where, 0.55 * Sk, Rnd(0.38, 0.52), 30).IsValid())
+	{
+		FS47AudioContext& Ac = *Ctx;
+		const double Start0 = Ac.CurrentTime() + 0.05, Len = Rnd(0.7, 1.3);
+		auto Into = Placed(Listener, Where, 1, 30, Len + 2);
+		auto Osc = Ac.CreateOscillator(); Osc->SetType(TEXT("sawtooth"));
+		Osc->Frequency.SetValueAtTime(Rnd(560, 660), Start0); Osc->Frequency.LinearRampToValueAtTime(Rnd(470, 540), Start0 + Len);
+		auto Band = Ac.CreateBiquadFilter(); Band->SetType(TEXT("bandpass")); Band->Frequency.SetValue(900); Band->Q.SetValue(6);
+		auto Env = Ac.CreateGain(); Env->Gain.SetValueAtTime(0, Start0); Env->Gain.LinearRampToValueAtTime(0.05 * Sk, Start0 + 0.15);
+		Env->Gain.SetValueAtTime(0.05 * Sk, Start0 + Len - 0.2); Env->Gain.LinearRampToValueAtTime(0, Start0 + Len);
+		Osc->Connect(Band); Band->Connect(Env); Env->Connect(Into); Osc->Start(Start0); Osc->Stop(Start0 + Len + 0.05);
+	}
+	// and now and then the pump rod knocking in the tower
+	if (FMath::FRand() < 0.55) PlayAt(TEXT("doorMetal"), Listener, Where + FVector(0, -6, 0), 0.24 * Sk, Rnd(0.45, 0.62), 30, Rnd(0.5, 1.4));
+	FarCounts.FindOrAdd(TEXT("windmill"))++;
+}
+
+void FS47Ambience::Whirr(const FVector& Listener, const FVector& Where, double Strength)
+{
+	// A covey of quail going up all at once: stiff wings in a burst that falls away, and a few sharp calls as they go.
+	FS47AudioContext::FBatch Batch(*Ctx);
+	FS47AudioContext& Ac = *Ctx;
+	const double Sk = FMath::Clamp(Strength, 0.2, 1.0), Start0 = Ac.CurrentTime() + 0.02;
+	auto Into = Placed(Listener, Where, 1, 25, 5);
+	auto Src = Ac.CreateBufferSource(); Src->Buffer = Noise; Src->bLoop = true;
+	auto Band = Ac.CreateBiquadFilter(); Band->SetType(TEXT("bandpass")); Band->Frequency.SetValue(Rnd(1500, 2200)); Band->Q.SetValue(0.9);
+	auto Flap = Ac.CreateGain(); Flap->Gain.SetValue(0);
+	Src->Connect(Band); Band->Connect(Flap); Flap->Connect(Into);
+	const int32 Wings = 24 + int32(FMath::FRand() * 14);
+	double Tw = Start0;
+	for (int32 I = 0; I < Wings; ++I)
+	{
+		const double Peak = 0.09 * Sk * FMath::Exp(-I / 14.0) * Rnd(0.6, 1.0);
+		Flap->Gain.SetValueAtTime(0, Tw); Flap->Gain.LinearRampToValueAtTime(Peak, Tw + 0.006); Flap->Gain.LinearRampToValueAtTime(0, Tw + 0.024);
+		Tw += Rnd(0.028, 0.042);
+	}
+	Src->Start(Start0); Src->Stop(Tw + 0.3);
+	for (int32 I = 0, Calls = 2 + int32(FMath::FRand() * 3); I < Calls; ++I)
+	{
+		const double Ta = Start0 + 0.25 + I * Rnd(0.18, 0.4), F0 = Rnd(2400, 3000);
+		Note(Into, Ta, 0.07, F0, F0 * 0.82, 0.02 * Sk, 0.15);
+	}
+	FarCounts.FindOrAdd(TEXT("whirr"))++;
+}
+
+void FS47Ambience::Whine(const FVector& Listener, const FVector& Where)
+{
+	// A dog that has stopped barking, once, low, from where it is.
+	FS47AudioContext::FBatch Batch(*Ctx);
+	FS47AudioContext& Ac = *Ctx;
+	const double Start0 = Ac.CurrentTime() + 0.05, Len = Rnd(0.55, 0.9);
+	auto Into = Placed(Listener, Where, 1, 20, Len + 2);
+	auto Osc = Ac.CreateOscillator(); Osc->Frequency.SetValueAtTime(Rnd(880, 1000), Start0); Osc->Frequency.ExponentialRampToValueAtTime(Rnd(620, 720), Start0 + Len);
+	auto Vib = Ac.CreateOscillator(); Vib->Frequency.SetValue(Rnd(5.5, 7));
+	auto Wobble = Ac.CreateGain(); Wobble->Gain.SetValue(18);
+	Vib->Connect(Wobble); Wobble->Connect(Osc->Frequency);
+	auto Env = Ac.CreateGain(); Env->Gain.SetValueAtTime(0, Start0); Env->Gain.LinearRampToValueAtTime(0.035, Start0 + 0.08);
+	Env->Gain.SetValueAtTime(0.035, Start0 + Len * 0.6); Env->Gain.LinearRampToValueAtTime(0, Start0 + Len);
+	Osc->Connect(Env); Env->Connect(Into);
+	Osc->Start(Start0); Vib->Start(Start0); Osc->Stop(Start0 + Len + 0.05); Vib->Stop(Start0 + Len + 0.05);
+	FarCounts.FindOrAdd(TEXT("whine"))++;
+}
+
+void FS47Ambience::Wires(const FVector& Where, double Level)
+{
+	WireWant = FMath::Clamp(Level, 0.0, 1.0);
+	if (WireWant <= 0 && !WireLoop.IsSet()) return;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	FS47AudioContext& Ac = *Ctx;
+	const double Clock0 = Ac.CurrentTime();
+	if (!WireLoop.IsSet())
+	{
+		// The wind across a span of wire: a low moan of a few tones together, and a thin whistle over it.
+		FWireLoop Loop;
+		Loop.Gain = Ac.CreateGain(); Loop.Gain->Gain.SetValue(0);
+		Loop.Pan = Ac.CreatePanner();
+		Loop.Pan->PanningModel = TEXT("equalpower"); Loop.Pan->DistanceModel = ES47DistanceModel::Inverse; Loop.Pan->RefDistance = 6; Loop.Pan->RolloffFactor = 1; Loop.Pan->MaxDistance = 200;
+		auto Lpf = Ac.CreateBiquadFilter(); Lpf->SetType(TEXT("lowpass")); Lpf->Frequency.SetValue(2400);
+		Loop.Gain->Connect(Lpf); Lpf->Connect(Loop.Pan); Loop.Pan->Connect(Out);
+		const double F0 = Rnd(150, 210);
+		const double Partials[3][2] = { { 1.0, 0.5 }, { 2.01, 0.3 }, { 3.04, 0.16 } };
+		for (const auto& Pt : Partials)
+		{
+			auto Osc = Ac.CreateOscillator(); Osc->Frequency.SetValue(F0 * Pt[0]);
+			auto Gn = Ac.CreateGain(); Gn->Gain.SetValue(Pt[1]);
+			Osc->Connect(Gn); Gn->Connect(Loop.Gain); Osc->Start(Clock0);
+			Loop.Tones.Add(Osc); Loop.Base.Add(F0 * Pt[0]);
+		}
+		Loop.Hiss = Ac.CreateBufferSource(); Loop.Hiss->Buffer = Noise; Loop.Hiss->bLoop = true;
+		Loop.Whistle = Ac.CreateBiquadFilter(); Loop.Whistle->SetType(TEXT("bandpass")); Loop.Whistle->Frequency.SetValue(Rnd(1000, 1400)); Loop.Whistle->Q.SetValue(18);
+		auto Wg = Ac.CreateGain(); Wg->Gain.SetValue(2.2);
+		Loop.Hiss->Connect(Loop.Whistle); Loop.Whistle->Connect(Wg); Wg->Connect(Loop.Gain); Loop.Hiss->Start(Clock0, Rnd(0, 2));
+		WireLoop = MoveTemp(Loop);
+	}
+	FWireLoop& Live = WireLoop.GetValue();
+	if (FMath::IsFinite(Where.X + Where.Y + Where.Z)) Live.Pan->SetPosition(Where.X, Where.Y, Where.Z);
+	// it breathes with the wind: louder in a gust, and the tones slide a little as the wind changes
+	const double Breathe = 0.55 + 0.45 * (Wind.Level ? FMath::Clamp(Wind.Level->Value / 0.16, 0.0, 1.0) : 0.5);
+	Live.Gain->Gain.SetTargetAtTime(0.02 * WireWant * Breathe, Clock0, 1.2);
+	if (Clock0 >= Live.Retune)
+	{
+		Live.Retune = Clock0 + Rnd(4, 11);
+		const double Slide = Rnd(0.96, 1.04);
+		for (int32 I = 0; I < Live.Tones.Num() && I < Live.Base.Num(); ++I) Live.Tones[I]->Frequency.SetTargetAtTime(Live.Base[I] * Slide, Clock0, 2.5);
+		if (Live.Whistle) Live.Whistle->Frequency.SetTargetAtTime(Rnd(950, 1500), Clock0, 3);
+	}
+}
+
+double FS47Ambience::Openness() const
+{
+	return Quiet.IsValid() ? FMath::Clamp(double(Quiet->Gain.Value()), 0.0, 1.0) : 1.0;
 }

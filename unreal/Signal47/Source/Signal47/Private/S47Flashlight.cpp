@@ -182,6 +182,14 @@ void FS47Flashlight::Flicker(double K, const FString& From)
 	Flick = M;
 }
 
+void FS47Flashlight::Sag(double K, const FString& From)
+{
+	Sags.Add(From, FMath::Clamp(K, 0.0, 1.0));
+	double Most = 0;
+	for (const TPair<FString, double>& V : Sags) Most = FMath::Max(Most, V.Value);
+	SagK = Most;
+}
+
 double FS47Flashlight::BatteryGain(double Full)
 {
 	if (Full >= LowLevel) return 1;
@@ -218,6 +226,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	}
 	// A moment out belongs to the flicker that asked for it: it does not wait for the next one.
 	else Dark = 0;
+	// something near takes the beam down steadily (GEAR-FLICKER), with no battery spent on it
+	if (SagK > 0) K *= 1 - SagK;
 	// a weak battery: the beam thins, and near the end the contact stutters
 	if (bDrains && Battery < LowLevel)
 	{
@@ -272,6 +282,17 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 	Check(FMath::IsNearlyEqual(F.Flick, 0.3), TEXT("the strongest flicker counts, each by its source"));
 	F.Flicker(0, TEXT("glimpse")); F.FlickerOut(5); F.Update(1.0 / 60, 0, Cam, false);
 	Check(F.Dark == 0, TEXT("a moment out ends with the flicker, and does not hang on for the next source"));
+	{
+		for (int32 I = 0; I < 60; ++I) F.Update(1.0 / 60, I / 60.0, Cam, false);
+		const double Full = F.Intensity();
+		F.Sag(0.4, TEXT("gear"));
+		F.Update(1.0 / 60, 1, Cam, false);
+		const double Sagged = F.Intensity();
+		F.Sag(0, TEXT("gear"));
+		F.Update(1.0 / 60, 1, Cam, false);
+		Check(Sagged < Full * 0.7 && Sagged > Full * 0.5 && FMath::IsNearlyEqual(F.Intensity(), Full, 0.01) && F.BatteryLevel() == 1,
+			TEXT("something near takes the beam down and gives it back, with no battery spent (GEAR-FLICKER)"));
+	}
 	// the battery (Freeform): none in the Story, runs down while lit, goes out, is filled again
 	{
 		FS47Flashlight B(nullptr);
