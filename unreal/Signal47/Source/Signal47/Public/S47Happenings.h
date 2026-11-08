@@ -154,7 +154,7 @@ private:
  void UseHitcher();
  void UseHumor();
  // ---- the world ----
- FSpot Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt) const;
+ FSpot Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt,bool bSameArea=false) const;
  void UsedPlace(const FString& Place,const FString& Kind) const;
  bool PlayerRoad(double& X,double& Z) const;
  bool WorldOf(double RoadX,double RoadZ,FVector& Out) const;

@@ -87,6 +87,12 @@ public:
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
  bool ForceLights(const FString& Place); // town lights at one named place, same conditions as Force
+ // F10: this event at this place from the list (S47EventPlaces), same conditions as Force. Place empty: the draw, as in play.
+ bool ForceAt(const FString& Id,const FString& Place);
+ // The place from the list the event under way was given; empty for one that has none (the station's own).
+ const FString& EventPlace() const{return PlaceId;}
+ // Where the draw would put this event now, without starting it: for F10 and its panel. Empty: nowhere fits.
+ FString PreviewPlace(const FString& Id) const;
  FVector LightPlacePoint(const FString& Place) const;
  FString LightPlaceTitle(const FString& Place) const;
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
@@ -136,7 +142,16 @@ private:
  bool bOwedArray=false,bOwedFeeder=false;
  void StepOwed();
  FString Event,PhotoId,Scene,IncidentId,TaggedShot,LightPlace,NextLightPlace;
- FString PickLightPlace() const;
+ // The event's place from the list, saved; and the one F10 asked for next, not saved.
+ FString PlaceId,NextPlace;
+ // Lights seen from here (farm_lights) or heard of (town_lights): one draw from the list for either (Tom, 8 November).
+ FString PickLightPlace(const FString& Id) const;
+ // Marked ground and a fragment: open ground within reach, in the area the player is in. False: none.
+ bool PickTrace(FString& OutPlace,FVector& OutAt,bool bForced=false) const;
+ bool bTracePlaced=false;
+ // The low lights' visit: which antennas it is over (ARRAY-ORBS). The shift from the first spot is in Anchor, saved.
+ FString OrbPair;
+ void OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair) const;
  FString TaggedIncident,TaggedTitle;
  bool bTaggedLamps=false;
  int32 IncidentSerial=0;

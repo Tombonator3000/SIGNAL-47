@@ -233,7 +233,12 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  if(Site&&Site->VisitWantsGround()&&Site->PlaceId()==TEXT("farm")){Threat=Site->Centre();Level=1;}
  if(M->Freeform->Taken&&M->Freeform->Taken->Busy()&&Area==TEXT("saro")&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(FarmX,FarmZ))<170)
  {Threat=FVector(M->Player->Pos.X,0,M->Player->Pos.Z);Level=1;}
- if(M->Freeform->Director&&M->Freeform->Director->ActiveEvent()==TEXT("farm_lights")){Threat=M->Freeform->Director->EventAnchor();Level=FMath::Max(Level,.7);}
+ // Lights over the farm, whichever of the two draws put them there (S47EventPlaces): not lights over somewhere else.
+ if(M->Freeform->Director&&Area==TEXT("saro")&&(M->Freeform->Director->ActiveEvent()==TEXT("farm_lights")||M->Freeform->Director->ActiveEvent()==TEXT("town_lights")))
+ {
+  const FVector Over=M->Freeform->Director->EventAnchor();
+  if(FVector2D::Distance(FVector2D(Over.X,Over.Z),FVector2D(FarmX,FarmZ))<FarmReach+120){Threat=Over;Level=FMath::Max(Level,.7);}
+ }
  if(!TestAlarmAt.IsZero()){Threat=TestAlarmAt;Level=1;}
  H->SetAlarm(Level,Threat);
  // A site armed for the night with no visit under way: one cow stands quite still and faces the marks. Morning clears the site.

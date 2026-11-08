@@ -1,6 +1,7 @@
 #include "S47Night.h"
 #include "S47SaroSeam.h"
 #include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47Openings.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
@@ -268,6 +269,21 @@ void US47Night::ToggleLight()
 	// In the cab, with one on the roof: F is that one.
 	if (M->Mode == EMode::Play && !Modal() && !Cinematic() && Driving() && M->IsFreeform() && M->Freeform && M->Freeform->TruckLamp && M->Freeform->TruckLamp->Toggle()) return;
 	if (M->Mode != EMode::Play || Modal() || Cinematic() || Driving()) return;
+	// Freeform: an empty battery is filled with a dry cell from the store (the stock the workbench also uses), or at SARO's charger.
+	if (Flashlight->bHave && !Flashlight->bOn && Flashlight->Dead())
+	{
+		const TSharedPtr<FS47FreeformWorld> Field = M->IsFreeform() && M->Freeform ? M->Freeform->Field : nullptr;
+		if (Field.IsValid() && Field->Consume(TEXT("cell")))
+		{
+			Flashlight->Refill();
+			M->UI->Toast(TEXT("A fresh dry cell goes into the flashlight."), 3);
+		}
+		else
+		{
+			M->UI->Toast(TEXT("The flashlight battery is dead. It charges on the shelf at SARO, or take a dry cell from the store."), 4);
+			return;
+		}
+	}
 	if (!Flashlight->Toggle()) M->UI->Toast(TEXT("No flashlight. There is one on the passenger seat of the truck."), 3);
 }
 
@@ -723,7 +739,18 @@ void US47Night::SeenStep(double Dt)
 
 void US47Night::FlashlightStep(double Dt)
 {
+	// Freeform only: the lamp has a battery. It charges slowly while the lamp is off and the player is indoors at SARO.
+	Flashlight->bDrains = M->IsFreeform();
+	if (Flashlight->bDrains && Flashlight->bHave && !Flashlight->bOn && M->Mode == EMode::Play && !M->bPausedByMenu && !Modal()
+		&& M->Space == TEXT("room") && Area() == TEXT("saro") && Flashlight->BatteryLevel() < 1)
+		Flashlight->Charge(Dt / FS47Flashlight::ChargeSeconds);
 	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic());
+	if (Flashlight->bDrains && M->Mode == EMode::Play && M->UI)
+	{
+		const int32 Notice = Flashlight->TakeNotice();
+		if (Notice == 1) M->UI->Toast(TEXT("The flashlight is getting weak."), 3);
+		else if (Notice == 2) M->UI->Toast(TEXT("The flashlight battery is dead."), 3);
+	}
 }
 
 void US47Night::Step(double Dt)
@@ -810,6 +837,8 @@ void US47Night::Step(double Dt)
 void US47Night::Restore(const S47J::FObj& State)
 {
 	Flashlight->bHave = S47J::Bool(State, TEXT("flashlight")); Flashlight->bOn = false;
+	// (the battery is kept only in Freeform's saves; an older case or the Story's has none and starts full)
+	Flashlight->SetBattery(S47J::Num(State, TEXT("flashlightBattery"), 1.0));
 	// what was seen in that night, and nothing written down while it is put back (story/seen.ts)
 	bSeenQuiet = true;
 	const TArray<TSharedPtr<FJsonValue>>* Seen = nullptr;
@@ -856,6 +885,7 @@ void US47Night::Leave(bool bTitle)
 void US47Night::Save(const S47J::FObj& State) const
 {
 	S47J::Set(State, TEXT("flashlight"), Flashlight->bHave);
+	if (M->IsFreeform()) S47J::Set(State, TEXT("flashlightBattery"), Flashlight->BatteryLevel());
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	State->SetArrayField(TEXT("seen"), SeenLog->Data());
 	S47J::Set(State, TEXT("curve"), Curve->Data());

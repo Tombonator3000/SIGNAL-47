@@ -15,7 +15,11 @@
 #include "Internationalization/Regex.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
+#include "S47CB.h"
+#include "S47FieldRadio.h"
 #include "S47Flashlight.h"
+#include "S47HudGauges.h"
+#include "S47Stress.h"
 #include "S47Flow.h"
 #include "S47GameStyle.h"
 #include "S47Image.h"
@@ -428,6 +432,7 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	}
 	if (bGone) { Toasts.RemoveAll([](const TSharedRef<FToast>& T) { return T->Out >= 0.6f; }); Rebuild(); }
 	FlashT = FMath::Max(0.f, FlashT - Dt);
+	ReadGauges(Dt);
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
@@ -461,8 +466,114 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	}
 }
 
+void SS47Hud::ReadGauges(float Dt)
+{
+	const US47Main* M = Main();
+	const bool bShow = M && M->Mode == US47Main::EMode::Play && !Vf.bOn && !ModalOpen() && !SS47ScreenView::AnyWorldScreenActive();
+	bool bBattery = false;
+	if (bShow && M->Night && M->Night->Flashlight.IsValid())
+	{
+		const FS47Flashlight& Lamp = *M->Night->Flashlight;
+		bBattery = S47HudGauges::BatteryShown(Lamp.bDrains, Lamp.bHave, Lamp.bOn, Lamp.BatteryLevel(), FS47Flashlight::LowLevel);
+		Gauges.Strokes = S47HudGauges::Strokes(Lamp.BatteryLevel());
+		Gauges.bLow = Lamp.Low();
+	}
+	int32 Kind = 0; float Signal = 0.f;
+	if (bShow)
+	{
+		if (M->CB.IsValid() && M->CB->bBusy) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
+		else if (M->FieldRadio.IsValid() && M->FieldRadio->InUse()) { Kind = 2; Signal = float(M->FieldRadio->Strength()); }
+	}
+	// the radio line keeps its words while it fades out
+	if (Kind) { Gauges.Radio = Kind; Gauges.Strength = Signal; }
+	const float Rate = FMath::Min(1.f, Dt * 5.f);
+	Gauges.BatteryA += ((bBattery ? 1.f : 0.f) - Gauges.BatteryA) * Rate;
+	Gauges.RadioA += ((Kind ? 1.f : 0.f) - Gauges.RadioA) * Rate;
+	if (Gauges.BatteryA < 0.004f) Gauges.BatteryA = 0.f;
+	if (Gauges.RadioA < 0.004f) Gauges.RadioA = 0.f;
+}
+
+void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
+{
+	using namespace S47Game;
+	const FVector2f S = FVector2f(G.GetLocalSize());
+	const float Right = S.X - P(44.f), Floor = S.Y - P(30.f);
+	auto Fill = [&](float X0, float Y0, float W, float H, const FLinearColor& Col)
+	{
+		if (W > 0.f && H > 0.f) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(W, H), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, Col);
+	};
+	// the battery: a thin frame with a nub, five small strokes in it (an old battery's mark). Low: the colour turns and the last stroke breathes.
+	if (Gauges.BatteryA > 0.f)
+	{
+		const float StrokeW = P(4.f), StrokeGap = P(3.f), StrokeH = P(14.f), Pad = P(3.f), Line = FMath::Max(1.f, P(1.2f));
+		constexpr int32 Count = S47HudGauges::BatteryStrokes;
+		const float InnerW = Count * StrokeW + (Count - 1) * StrokeGap;
+		const float FrameW = InnerW + 2.f * Pad, FrameH = StrokeH + 2.f * Pad, NubW = P(3.f), NubH = P(8.f);
+		const float Left = Right - NubW - FrameW, Top0 = Floor - FrameH;
+		const FLinearColor Tone = Gauges.bLow ? C(0xe0623f) : Amber();
+		const float Pulse = Gauges.bLow && Gauges.Strokes <= 1 ? 0.55f + 0.45f * FMath::Sin(float(Now) * 5.f) : 1.f;
+		const float A = Gauges.BatteryA * Pulse;
+		const FLinearColor Frame(Tone.R, Tone.G, Tone.B, 0.55f * Gauges.BatteryA);
+		Fill(Left, Top0, FrameW, Line, Frame); Fill(Left, Top0 + FrameH - Line, FrameW, Line, Frame);
+		Fill(Left, Top0, Line, FrameH, Frame); Fill(Left + FrameW - Line, Top0, Line, FrameH, Frame);
+		Fill(Left + FrameW, Top0 + (FrameH - NubH) * 0.5f, NubW, NubH, Frame);
+		for (int32 I = 0; I < Count; ++I)
+		{
+			const bool bLit = I < Gauges.Strokes;
+			Fill(Left + Pad + I * (StrokeW + StrokeGap), Top0 + Pad, StrokeW, StrokeH, FLinearColor(Tone.R, Tone.G, Tone.B, (bLit ? 0.85f * A : 0.12f * Gauges.BatteryA)));
+		}
+	}
+	// the radio line: the channel and the frequency in small type, a thin rule under it and a short wave for the signal; it sits
+	// above the battery when that is showing
+	if (Gauges.RadioA > 0.f && Gauges.Radio != 0)
+	{
+		const FString Words = Gauges.Radio == 1 ? S47HudGauges::CbLine() : S47HudGauges::WalkieLine();
+		const FSlateFontInfo Font = Term(18.f, 1.f);
+		const float WordsW = FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Words, Font).X;
+		const float WaveW = P(64.f), WaveH = P(14.f), Gap = P(10.f);
+		const float LineBottom = Floor - Gauges.BatteryA * P(32.f);
+		const float MidY = LineBottom - P(10.f);
+		const float Left = Right - WaveW - Gap - WordsW;
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(WordsW + P(8.f), P(22.f)), FSlateLayoutTransform(FVector2f(Left, MidY - P(11.f)))), Words, Font, ESlateDrawEffect::None, FLinearColor(0.56f, 0.54f, 0.49f, 0.9f * Gauges.RadioA));
+		Fill(Left, LineBottom, Right - Left, FMath::Max(1.f, P(1.f)), FLinearColor(1.f, 0.69f, 0.32f, 0.22f * Gauges.RadioA));
+		TArray<FVector2f> Points;
+		constexpr int32 Samples = 28;
+		for (int32 I = 0; I <= Samples; ++I)
+		{
+			const double X = double(I) / Samples;
+			Points.Add(FVector2f(Right - WaveW + float(X) * WaveW, MidY - float(S47HudGauges::Wave(X, Now * 6.0, Gauges.Strength)) * WaveH * 0.5f));
+		}
+		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.8f * Gauges.RadioA), true, FMath::Max(1.f, P(1.4f)));
+	}
+}
+
+void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
+{
+	const US47Main* M = Main();
+	if (!M || !M->Stress) return;
+	const float Alpha = float(M->Stress->Vignette()), Reach = float(M->Stress->VignetteReach());
+	if (Alpha < 0.004f || Reach <= 0.f) return;
+	// nested frames, each a little darker toward the edge: a soft dark rim without a texture or a post-process material
+	const FVector2f S = FVector2f(G.GetLocalSize());
+	constexpr int32 Bands = 14;
+	const float Each = 1.f - FMath::Pow(1.f - FMath::Min(Alpha, 0.95f), 1.f / Bands);
+	const FLinearColor Dark(0.02f, 0.f, 0.f, Each);
+	auto Fill = [&](float X0, float Y0, float X1, float Y1)
+	{
+		if (X1 > X0 && Y1 > Y0) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(X1 - X0, Y1 - Y0), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, Dark);
+	};
+	for (int32 I = 1; I <= Bands; ++I)
+	{
+		const float Dx = S.X * Reach * I / Bands, Dy = S.Y * Reach * I / Bands;
+		Fill(0.f, 0.f, S.X, Dy); Fill(0.f, S.Y - Dy, S.X, S.Y);
+		Fill(0.f, Dy, Dx, S.Y - Dy); Fill(S.X - Dx, Dy, S.X, S.Y - Dy);
+	}
+}
+
 int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
 {
+	// the strain's edge goes in first, under the objective, the watch and the captions
+	if (Playing() && !ModalOpen()) PaintEdge(G, Out, Layer);
 	int32 Top = SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer, Style, bParentEnabled);
 	if (Vf.bOn)
 	{
@@ -498,6 +609,11 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		Text(Vf.Status, C.X, R.Bottom - 40 - 26, 19.f * 1.3f, Vf.bFreeOk ? St * FLinearColor(1, 1, 1, 0.5f) : St, true);
 		Text(Vf.Hint, C.X, R.Bottom - 14 - 22, 15.f * 1.3f, Line * FLinearColor(1, 1, 1, 0.75f), true);
 		Top += 4;
+	}
+	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f)
+	{
+		PaintGauges(G, Out, Top + 1);
+		Top += 1;
 	}
 	if (FlashT > 0.f)
 	{

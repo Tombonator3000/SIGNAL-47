@@ -393,13 +393,13 @@ int32 FS47Happenings::Branches() const
 
 // The one door to where a night's thing happens (TODO ANYWHERE-20261108): the place catalogue when it is there, otherwise the land's own
 // places. Same seed, night, kind and salt: the same answer.
-FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt) const
+FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt,bool bSameArea) const
 {
  FSpot S;
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return S;
  if(F->EventPlaces)
  {
-  FS47PlaceNeed N;N.Kind=Kind;N.All=ES47PlaceTrait(All);N.Any=ES47PlaceTrait(Any);N.Not=ES47PlaceTrait(Not);N.MinM=MinM;N.MaxM=MaxM;N.FarShare=FarShare;
+  FS47PlaceNeed N;N.Kind=Kind;N.All=ES47PlaceTrait(All);N.Any=ES47PlaceTrait(Any);N.Not=ES47PlaceTrait(Not);N.MinM=MinM;N.MaxM=MaxM;N.FarShare=FarShare;N.bSameArea=bSameArea;
   const FS47PlacePick P=F->EventPlaces->Pick(N,Salt);
   if(P.IsSet())if(const FS47EventPlace* E=F->EventPlaces->Find(P.Id))
   {
@@ -972,7 +972,7 @@ bool FS47Happenings::BeginCattle(bool bForced,FString& Why)
  if(!Outdoors()&&!bForced){Why=TEXT("indoors");return false;}
  if(SiteOf(TEXT("cattle"))){Why=TEXT("a ring is standing already");return false;}
  using S47Hap::Bit;
- const FSpot S=Where(TEXT("cattle_ring"),0,Bit(ES47PlaceTrait::Farm)|Bit(ES47PlaceTrait::Open),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array),bForced?0:70,bForced?0:420,0.f,Serial);
+ const FSpot S=Where(TEXT("cattle_ring"),0,Bit(ES47PlaceTrait::Farm)|Bit(ES47PlaceTrait::Open),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array),bForced?0:70,bForced?0:420,0.f,Serial,!bForced);
  double X=0,Z=0;
  if(S.bSet){X=S.X;Z=S.Z;}
  else if(bForced&&PlayerRoad(X,Z)){X+=40;}

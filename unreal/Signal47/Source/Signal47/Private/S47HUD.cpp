@@ -10,6 +10,8 @@
 #include "S47TitleEraseSound.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
+#include "S47HudGauges.h"
+#include "S47Stress.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
@@ -39,6 +41,7 @@
 #include "S47DeputyRound.h"
 #include "S47LeftGear.h"
 #include "S47Places.h"
+#include "S47EventPlaces.h"
 #include "S47Predecessor.h"
 #include "S47RadioTips.h"
 #include "S47Openings.h"
@@ -226,6 +229,7 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
@@ -233,6 +237,7 @@ void AS47HUD::Start()
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= FS47Openings::SelfTest(Lines);
