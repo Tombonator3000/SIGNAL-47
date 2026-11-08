@@ -18,6 +18,7 @@
 #include "S47Image.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightRhythm.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47Timeline.h"
@@ -344,6 +345,7 @@ void FS47SkyFormationState::Begin(const S47J::FObj& O)
  if(!O)return;
  const double Next=S47J::Num(O,TEXT("next"),-1);if(FMath::IsFinite(Next)&&Next>=0)NextClock=Next;
  Passes=FMath::Clamp(S47J::Int(O,TEXT("passes")),0,1000000);
+ TonightNight=FMath::Max(0,S47J::Int(O,TEXT("tonight")));TonightShown=FMath::Clamp(S47J::Int(O,TEXT("shown")),0,10);
  const auto Pass=S47J::Obj(O,TEXT("pass"));if(!Pass)return;
  const int32 SavedForm=S47J::Int(Pass,TEXT("form"),-1),SavedLights=S47J::Int(Pass,TEXT("lights"));
  const double Numbers[7]={S47J::Num(Pass,TEXT("age")),S47J::Num(Pass,TEXT("leave"),-1),S47J::Num(Pass,TEXT("heading")),S47J::Num(Pass,TEXT("x")),S47J::Num(Pass,TEXT("z")),S47J::Num(Pass,TEXT("side")),S47J::Num(Pass,TEXT("up"))};
@@ -356,6 +358,7 @@ void FS47SkyFormationState::Begin(const S47J::FObj& O)
 S47J::FObj FS47SkyFormationState::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("next"),NextClock);S47J::Set(O,TEXT("passes"),Passes);
+ if(TonightNight>0){S47J::Set(O,TEXT("tonight"),TonightNight);S47J::Set(O,TEXT("shown"),TonightShown);}
  // A developer's pass is not the night's.
  if(bActive&&!bDev)
  {
@@ -621,6 +624,24 @@ bool FS47SkyVisitors::FormationQuiet() const
  if (M->Rhythm && !M->Rhythm->Allow(TEXT("sky_formation"))) return false;
  return true;
 }
+// The sky is no clock (Tom's critics, 8 November): in a real game's rules a night shows none to two of the schedule's passes, drawn from
+// the seed, none on a calm night, and only to a player who can see the sky; one not shown is gone when its time is (LateBy). A
+// developer's fixed rules keep the schedule as it is, for the proofs.
+bool FS47SkyVisitors::FormationTonight(double Clock)
+{
+ auto* Session = M ? M->Freeform.Get() : nullptr;
+ if (!Session || !Session->RulesLive()) return true;
+ const int32 Night = FS47FreeformSession::NightOf(Clock);
+ if (Formation.TonightNight != Night) { Formation.TonightNight = Night; Formation.TonightShown = 0; }
+ if (Session->QuietNight(Night)) return false;
+ const float Dice = FS47NightRhythm::Roll(Session->Seed(), Night, 0x464f524du);
+ const int32 Want = Dice < .25f ? 0 : Dice < .7f ? 1 : 2;
+ if (Formation.TonightShown >= Want) return false;
+ // Which of the night's passes: about half of them, from the seed, so that the first is not always at half past nine.
+ if (FS47NightRhythm::Roll(Session->Seed(), Night, 0x50415353u + uint32(FMath::Max(0., Formation.NextClock) / 60.)) >= .5f) return false;
+ // Only over a player who can see it: outside, or at the wheel.
+ return !(Session->Taken && Session->Taken->Indoors());
+}
 void FS47SkyVisitors::StepFormation(double Dt)
 {
  auto* Session = M->Freeform.Get();
@@ -632,10 +653,11 @@ void FS47SkyVisitors::StepFormation(double Dt)
   M->RequestAutosave();
  }
  const bool bQuiet = FormationQuiet();
- if (Formation.Due(Clock) && bQuiet && !Session->InTutorial() && !Preview.bEnabled)
+ if (Formation.Due(Clock) && bQuiet && !Session->InTutorial() && !Preview.bEnabled && FormationTonight(Clock))
  {
   const FVector Here = MapPoint(M->Player->Pos, M->World->Area);
   Formation.StartNatural(Clock, Here.X, Here.Z);
+  if (Session->RulesLive()) { ++Formation.TonightShown; if (M->Rhythm) M->Rhythm->Began(TEXT("sky_formation")); }
   UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation %d: %s, %d lights, %s%s, from the schedule at %.2f h on day %d; next at %.2f h"), Formation.Passes, FS47SkyFormationState::Name(Formation.Form), Formation.Lights, Formation.bFast ? TEXT("fast") : TEXT("slow"), Formation.bVanish ? TEXT(", goes out") : TEXT(""), FMath::Fmod(Clock, 86400.) / 3600., Session->Day(), FMath::Fmod(Formation.NextClock, 86400.) / 3600.);
   M->RequestAutosave();
  }

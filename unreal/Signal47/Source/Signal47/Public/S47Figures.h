@@ -105,6 +105,10 @@ namespace S47Figures
 	 *  the rubber). Made once. */
 	SIGNAL47_API class UTexture2D* FrostGlass();
 	SIGNAL47_API TArray<FColor> FrostGlassPixels();
+	/** The same rime with a hand pressed into it from inside, on the passenger's side: clear glass in a hand's shape
+	 *  (FS47Happenings' unease, a handprint in the frost). Made once. */
+	SIGNAL47_API class UTexture2D* FrostGlassHand();
+	SIGNAL47_API TArray<FColor> FrostGlassHandPixels();
 }
 
 // story/recording.ts Walker: someone in a SARO jacket with the reflective band across it, jointed at

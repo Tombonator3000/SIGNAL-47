@@ -32,7 +32,8 @@ namespace S47PredecessorText
  FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess);
  // Ward's Monday sheet. Her remark follows what the assessment will go by (FS47Predecessor::Points), not the count of cards, and it
  // names the hours in the log nobody can account for.
- FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken);
+ // Land: kinds of record kept from the land at night (FS47FreeformSession::NightRecordKinds), which count too.
+ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0);
  FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch);
  FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
  FString WhatYouKnow();

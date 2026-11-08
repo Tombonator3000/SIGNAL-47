@@ -11,6 +11,7 @@
 #include "S47UfoPresentation.h"
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
+#include "S47Happenings.h"
 #include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
@@ -1040,6 +1041,8 @@ FString FS47FreeformDirector::RestBlock() const
  if(Event==TEXT("service_presence"))return TEXT("Something is moving along the service yard fence. Get inside and shut the doors first.");
  if(Event==TEXT("close_pass"))return TEXT("Something is passing low over the station. Nobody sleeps through that.");
  if(Event==TEXT("observer")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))return TEXT("There is a figure out by the antennas. Not while it is still there.");
+ // A night event's danger, once met (the light over the truck, the woman by the road, the voice): stress reads this too.
+ if(Session.Happenings){const FString Night=Session.Happenings->RestBlock();if(!Night.IsEmpty())return Night;}
  return FString();
 }
 void FS47FreeformDirector::EndForRest()

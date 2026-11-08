@@ -45,6 +45,8 @@ namespace S47KeysLocal
 			A(TEXT("crouch"), TEXT("Keep low"), Foot, TEXT("Crouch, or stand up again. Slower and quieter steps and a lower eye: a little less for anything out there to hear or see. Running or jumping stands you up."), EKeys::LeftControl, EKeys::RightControl),
 			A(TEXT("walkie"), TEXT("Walkie-talkie"), Foot, TEXT("Talk on the walkie once you carry it: call Dale on channel 1, or answer him when he calls. In the truck too."), EKeys::T),
 			A(TEXT("channel"), TEXT("Walkie channel"), Foot, TEXT("Turn the walkie to its next channel: 1 is Dale's, 2 the district's service band, 3 nobody's. Off channel 1, Dale cannot reach you."), EKeys::Y),
+			// GEIGER-20261108: the counter in the player's own hand once it is built, as the walkie is
+			A(TEXT("counter"), TEXT("Counter"), Foot, TEXT("Hold the Geiger counter up, or put it away, once you have built it. Put away, it stays down even where it climbs."), EKeys::Z),
 			A(TEXT("radio"), TEXT("Truck radio"), Truck, TEXT("The radio in the cab: on, the next station, off."), EKeys::R),
 			A(TEXT("notebook"), TEXT("Notebook"), Panels, TEXT("The notebook: tonight's tasks, notes, papers and photographs."), EKeys::Tab, EKeys::N),
 			A(TEXT("map"), TEXT("Notebook map"), Panels, TEXT("The notebook, open at its map."), EKeys::M),

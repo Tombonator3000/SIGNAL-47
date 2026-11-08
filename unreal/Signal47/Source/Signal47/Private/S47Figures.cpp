@@ -137,6 +137,42 @@ namespace S47Figures
 		if (!Tex.IsValid()) Tex.Reset(S47Image::FromPixels(FrostGlassPixels(), 512, 256));
 		return Tex.Get();
 	}
+	TArray<FColor> FrostGlassHandPixels()
+	{
+		const int32 W = 512, H = 256;
+		TArray<FColor> Px = FrostGlassPixels();
+		// Distance to a stroke of the given half-width: a finger, the thumb.
+		const auto ToStroke = [](double X, double Y, double AX, double AY, double BX, double BY, double Thick)
+		{
+			const double DX = BX - AX, DY = BY - AY, L2 = DX * DX + DY * DY;
+			const double T = L2 > 0 ? FMath::Clamp(((X - AX) * DX + (Y - AY) * DY) / L2, 0.0, 1.0) : 0.0;
+			const double QX = AX + T * DX - X, QY = AY + T * DY - Y;
+			return FMath::Sqrt(QX * QX + QY * QY) - Thick;
+		};
+		// About a hand's size on 1.74 by 0.7 metres of glass, its fingers up (the picture's top is up), on the passenger's side.
+		const double CX = 0.66 * W, CY = 0.6 * H;
+		const double FingerX[4] = { -9, -3, 3, 9 }, FingerLen[4] = { 22, 27, 25, 19 };
+		for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+		{
+			const double Nx = (X - CX) / 14.0, Ny = (Y - CY) / 18.0;
+			double Dist = (FMath::Sqrt(Nx * Nx + Ny * Ny) - 1.0) * 14.0;
+			for (int32 Fi = 0; Fi < 4; ++Fi) Dist = FMath::Min(Dist, ToStroke(X, Y, CX + FingerX[Fi], CY - 12, CX + FingerX[Fi] * 1.35, CY - 12 - FingerLen[Fi], 3.2));
+			Dist = FMath::Min(Dist, ToStroke(X, Y, CX - 12, CY + 2, CX - 25, CY - 10, 3.6));
+			if (Dist < 2.5)
+			{
+				FColor& Pix = Px[Y * W + X];
+				const double Soft = FMath::Clamp(Dist / 2.5, 0.0, 1.0);
+				Pix.A = uint8(FMath::RoundToInt(Pix.A * (0.08 + 0.92 * Soft * Soft)));
+			}
+		}
+		return Px;
+	}
+	UTexture2D* FrostGlassHand()
+	{
+		static TStrongObjectPtr<UTexture2D> Tex;
+		if (!Tex.IsValid()) Tex.Reset(S47Image::FromPixels(FrostGlassHandPixels(), 512, 256));
+		return Tex.Get();
+	}
 }
 
 FS47Group::FS47Group(AS47Web* InWeb, const FString& InName, USceneComponent* Parent) : Name(InName), Web(InWeb)

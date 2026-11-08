@@ -456,7 +456,7 @@ void FS47Truck::SetFrost(double K)
 		const FS47WebNode* CabN = Web->Node(Cab.I);
 		FrostDecal = MakeShared<FS47Group>(Web, TEXT("truck:frost"), CabN ? CabN->Comp.Get() : nullptr);
 		FrostMat = FrostDecal->Basic(Hex(0x77808b), TEXT("M_Web_Unlit_Trans_2S"));
-		S47Figures::SetMap(FrostMat, S47Figures::FrostGlass());
+		S47Figures::SetMap(FrostMat, bFrostHand ? S47Figures::FrostGlassHand() : S47Figures::FrostGlass());
 		FrostDecal->Plane(&FrostDecal->Root(), 1.74, 0.7, FrostMat, FVector(0, 1.452, -0.604), FVector(0.552, 0, 0));
 		FrostDecal->RenderOrder(4);
 		FrostDecal->AddToScene();
@@ -464,6 +464,13 @@ void FS47Truck::SetFrost(double K)
 	if (!FrostDecal) return;
 	S47Figures::SetOpacity(FrostMat, Frost);
 	FrostDecal->SetVisible(K > 0.001);
+}
+
+void FS47Truck::SetFrostHand(bool bHand)
+{
+	if (bFrostHand == bHand) return;
+	bFrostHand = bHand;
+	if (FrostMat) S47Figures::SetMap(FrostMat, bHand ? S47Figures::FrostGlassHand() : S47Figures::FrostGlass());
 }
 
 void FS47Truck::LightFromAbove(double K) { Above = FMath::Clamp(K, 0.0, 1.0); PlaceFloods(); }

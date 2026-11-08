@@ -60,6 +60,9 @@ public:
  // F10 and tests: start one here and now, past its draw. Variant: real, empty or wrong for cb_stranded; car, singer, crossing or
  // pump for humor. Why: what stopped it.
  bool DevStart(const FString& Id,const FString& Variant,FString& Why);
+ // F10 and tests: as the night itself would start it, with every condition asked (only the rhythm's dice and draws left out).
+ bool DevTry(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
+ int32 DangersMet() const{return MetTotal;}
  // Whatever is on the ground is over at once; with bSites the lasting ones go too. Test runs only.
  void DevClear(bool bSites);
  // Where a lasting one stands in the area the player is in now (Kind: landing, truck, rv). False: none, or not in this area.
@@ -67,8 +70,18 @@ public:
  // Where the one on the ground stands now, in this area (the woman, the car, the singer, the small man, the lights). False: none.
  bool LiveAt(FVector& Out) const;
  bool HasSite(const FString& Kind) const;
+ // A danger the player has met, while it lasts (FS47Stress, the Director's RestBlock): why there is no lying down now. Empty: none.
+ FString RestBlock() const;
+ // The one on the ground is a danger whose light may take the player: being taken is that same meeting (S47Taken, FS47Rhythm).
+ bool HoldsTaking() const;
+ // A record one of these leaves (FS47FreeformCases, FieldRecordKept, the 30-day assessment). Humour and pay are not.
+ static bool IsNightFinding(const FString& Id);
+ // Its kind, for counting kinds: "cattle_ring_d4" -> "cattle_ring".
+ static FString NightFindingKind(const FString& Id);
  // The counter.
  bool GeigerBuilt() const;
+ // Its own key: held up, or put away. False when it is not built.
+ bool ToggleCounter();
  float GeigerReading() const{return Dose;}
  bool GeigerShown() const{return bGeigerUp;}
  void DevGeiger(bool bGive,bool bHold){bDevGeiger|=bGive;bGeigerHeld=bHold;}
@@ -102,6 +115,9 @@ private:
   double Age=0,Len=0,X=0,Z=0,Yaw=0,Clock=0;
   FVector At=FVector::ZeroVector,Dir=FVector::ZeroVector;
   bool bSeen=false,bForced=false,bDone=false,bDanger=false;
+  // A danger counts when the player meets it (MeetDanger), not when it is drawn. Watch: until this age, the player out on foot is
+  // taken (BeginOver), as under the light over the truck.
+  bool bMet=false;double Watch=-1;
  } Now;
  // What stays out on the land after: a landing's ring, a stuck truck, a camper.
  struct FSite
@@ -109,7 +125,8 @@ private:
   FString Kind,Variant,Place,Title;
   int32 Night=0,Serial=0;
   double X=0,Z=0,Yaw=0,Az=-1,Spread=0,Until=0;
-  bool bFound=false,bDone=false,bHeard=false;
+  // bKnown: a landing's bearing may go on the map (seen, logged or found); its Az is set when it comes down, known or not.
+  bool bFound=false,bDone=false,bHeard=false,bKnown=false;
  };
  // For what the interaction list holds on to: lives as long as this does, across every Begin.
  TSharedPtr<uint8> Alive=MakeShared<uint8>(0);
@@ -133,7 +150,7 @@ private:
  // The passing over the truck, and the truck's electrics while it is over them.
  double DimLeft=0;bool bDimmed=false;
  // The counter.
- float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false;
+ float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
@@ -154,7 +171,45 @@ private:
  void StepSays(double Dt);
  void Say(const FString& Text,double In=0,float Secs=6);
  void Cb(const TArray<FString>& Lines,const FString& Voice,bool bWrong);
- void Deed(const FString& Text);
+ // A stranger's word that need not be heard on a CB: on one if one is to hand, otherwise Dale passes Passed on over the walkie.
+ void Tip(const TArray<FString>& Lines,const FString& Voice,const FString& Passed);
+ // Dangers met in this game (saved): humour waits for the first. The humorous ones seen, so that the small man comes last.
+ int32 MetTotal=0;TArray<FString> HumorSeen;
+ // The night a figure was asked for on the next photograph: it is not carried into another night.
+ int32 GhostNight=0;
+ // What a voice may say back to the player (cb_echo): only what they really did, never humour or F10.
+ void Deed(const FString& Text,bool bEcho=true);
+ // The danger on the ground is met: counted now (FS47Rhythm::Began), and shown in stress and the rest it blocks.
+ void MeetDanger();
+ // The watch over a danger: the player out on foot is taken.
+ void StepWatch();
+ // What is drawn for each, put away when it is over or the game stops (and the room's television with it).
+ void PutAway(const FString& Id);
+ // Something near was seen or heard between 23 and 01 (StepLate): only what the player noticed counts.
+ void Noticed();
+ // What the spoken words call a place: never a sign's capitals.
+ static FString Spoken(const FString& Title);
+ // Before a danger that is drawn, one or two small things, closer each time; on other nights now and then the same with nothing after.
+ struct FCue{double Hour=0;int32 Kind=0;bool bDone=false;};
+ TArray<FCue> Cues;
+ void PlanCues(int32 Night);
+ void StepCues();
+ // A small thing that dips the room's hum or the lamp is undone at this (main's seconds); -1: nothing to undo.
+ double ToneBack=-1;
+ // What nobody saw comes back as talk the next evening (StepSites): when that may next be tried (main's seconds).
+ double RumorTry=0;
+ // A draw has its window: an hour and a half from its time, then it is gone (or given to one that fits, StepSwap).
+ static constexpr double DrawWindow=1.5;
+ // Between 23 and 01: tonight's hour for the reserve, and the nights that keep a hush instead.
+ double LateAt=24.5;bool bLateHush=false;
+ // The truck walked back to after a while away (hood_warm, truck_tracks): main's seconds then, and how long away (game seconds).
+ double ReturnedAt=-1e9,ReturnedAway=0;
+ // The missing man's pickup: noted, and called in at the next CB or phone.
+ void StepReport();
+ // Which unease came last on which night: the ones of the last three nights wait at the back.
+ TMap<int32,int32> UneaseLast;
+ // Synthesised sounds the recordings lack: a whisper, a far laugh, many wings, the truck's alarm (made once, kept in the audio).
+ FString Synth(const TCHAR* Name);
  // ---- each one ----
  bool BeginCar(bool bForced,FString& Why);
  bool BeginCattle(bool bForced,FString& Why);

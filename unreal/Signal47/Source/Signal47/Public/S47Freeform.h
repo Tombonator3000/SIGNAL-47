@@ -199,6 +199,8 @@ public:
  int32 KitPrice(const FString& Id) const;
  // A place found out on the land, or marks at a site kept as a record: the first field work away from the station.
  bool FieldRecordKept() const;
+ // Kinds of record the night's events have left (FS47Happenings::IsNightFinding), from that day on: for Ward and the assessment.
+ int32 NightRecordKinds(int32 FromDay=0) const;
  bool BuyKit(const FString& Id);
  void TestGiveKit(const FString& Id){Kit.Add(Id);}
  // Sleeping away from the station. At a motel nothing wakes you; on a cot out on the land whatever comes by does.
