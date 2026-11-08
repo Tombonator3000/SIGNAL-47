@@ -58,6 +58,7 @@
 #include "S47Tape.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
+#include "S47WardReport.h"
 #include "SS47FieldMap.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
@@ -261,7 +262,7 @@ void AS47HUD::Start()
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);
-		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines) & FS47Tape::SelfTest(Lines) & FS47PinBoard::SelfTest(Lines) & FS47Enlarger::SelfTest(Lines); // (NIGHTLOG, MAP and TAPE, 8 November)
+		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines) & FS47Tape::SelfTest(Lines) & FS47PinBoard::SelfTest(Lines) & FS47Enlarger::SelfTest(Lines) & FS47WardReport::SelfTest(Lines); // (NIGHTLOG, MAP and TAPE, 8 November)
 		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);

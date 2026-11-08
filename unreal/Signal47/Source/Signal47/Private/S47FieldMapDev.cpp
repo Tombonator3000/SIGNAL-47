@@ -16,6 +16,7 @@
 #include "S47Places.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
+#include "S47WardReport.h"
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47BoardRules.h"
@@ -359,6 +360,48 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		Fs->Enlarger->Open();
 		Pictured(TEXT("enlarge"), 1.2f);
 		Tell(true, TEXT("The enlarger on the newest print, the middle at 2x"));
+	});
+
+	// ---- the weekly report to Dr. Ward (WARD-REPORT-20261108) ----
+	static const TCHAR* const WardGroup = TEXT("Ward report (M3)");
+	E.AddFreeform(WardGroup, TEXT("Ward report: a week with a light and lost time in it, the form"), TEXT("23:00: a light kept as a record, 95 minutes lost, tonight's night log typed; the week's report made from it, opened"), [this, Pictured]
+	{
+		FStage Stage; Stage.From = 23; Stage.To = 4.5; Stage.Area = TEXT("saro");
+		Stage.Where = [] { const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 36, -312); return FVector2D(At.X, At.Z); };
+		Go(Stage, [this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session();
+			if (!Fs || !Fs->NightLog || !Fs->WardReport) { Tell(false, TEXT("no night log or weekly report in this run")); return; }
+			Fs->TestEndFirstShift();
+			Fs->RecordEvidence(FString::Printf(TEXT("wardreport_light_d%d"), Fs->Day()), TEXT("At 23:12 a light stood over the flat north of the station for about a minute, then went out."));
+			Fs->NightLog->DevLostTime(95);
+			After(.6, [this, Pictured]
+			{
+				FS47FreeformSession* Fs1 = Session(); if (!Fs1 || !Fs1->NightLog || !Fs1->WardReport) return;
+				const bool bTyped = Fs1->NightLog->DevTypeNow();
+				if (M && M->UI) M->UI->Close();
+				const bool bDue = Fs1->WardReport->DevDue();
+				const int32 Week = (Fs1->Day() - 1) / 7 + 1;
+				Fs1->WardReport->Open(Week);
+				Pictured(TEXT("ward"), 1.f);
+				const FS47WardReport::FReport* Rep = Fs1->WardReport->Reports().FindByPredicate([Week](const FS47WardReport::FReport& X) { return X.Week == Week; });
+				Tell(bTyped && bDue && Rep && Rep->Items.Num() >= 2, FString::Printf(TEXT("Week %d: %d items from the night logs"), Week, Rep ? Rep->Items.Num() : 0));
+			});
+		});
+	});
+	E.AddFreeform(WardGroup, TEXT("Ward report: 'no time unaccounted for' over lost time, telexed with the night log, found out"), TEXT("the night log telexed first, then the report with the lost time left out and written as in order; her office reads both; the telex that comes back"), [this, Pictured]
+	{
+		FS47FreeformSession* Fs = Session();
+		if (!Fs || !Fs->NightLog || !Fs->WardReport || Fs->NightLog->Sheets().IsEmpty()) { Tell(false, TEXT("run the line above first")); return; }
+		Fs->NightLog->Send(Fs->NightLog->Sheets().Last().Night);
+		const int32 Week = Fs->WardReport->DevLie(FS47WardReport::ECat::Time);
+		const int32 TrustBefore = Fs->WardReport->Trust();
+		const bool bSent = Week > 0 && Fs->WardReport->Send(Week);
+		Fs->WardReport->DevCatchNow();
+		const int32 TrustAfter = Fs->WardReport->Trust();
+		if (M && M->Story && M->UI) for (const FS47Doc& D : M->Story->Docs()) if (D.Id.StartsWith(FString::Printf(TEXT("ward-query-%d-"), Week))) { M->UI->Document(D); break; }
+		Pictured(TEXT("ward"), 1.f);
+		Tell(bSent && TrustAfter <= TrustBefore - 2, FString::Printf(TEXT("Week %d: trust %d to %d, %d found out"), Week, TrustBefore, TrustAfter, Fs->WardReport->CaughtCount()));
 	});
 
 	// ---- the night's log ----

@@ -148,6 +148,14 @@ void FS47NightLog::Begin(const S47J::FObj& Saved)
 		Sh.Typed = S47J::Num(*O, TEXT("typed"));
 		Sh.Sent = S47J::Num(*O, TEXT("sent"), -1);
 		Sh.Read = S47J::Num(*O, TEXT("read"), -1);
+		for (const auto& Fv : S47J::Arr(*O, TEXT("facts")))
+		{
+			const TArray<TSharedPtr<FJsonValue>>* Four = nullptr;
+			if (Sh.Facts.Num() >= 40 || !Fv.IsValid() || !Fv->TryGetArray(Four) || !Four || Four->Num() < 4) continue;
+			FLine L; L.Clock = (*Four)[0]->AsNumber(); L.Part = EPart(FMath::Clamp(int32((*Four)[1]->AsNumber()), 0, 3));
+			L.At = (*Four)[2]->AsString().Left(80); L.Text = (*Four)[3]->AsString().Left(300);
+			if (FMath::IsFinite(L.Clock) && !L.Text.IsEmpty()) Sh.Facts.Add(L);
+		}
 		if (Sh.Night > 0 && !Sh.Page.IsEmpty() && !Logs.ContainsByPredicate([&Sh](const FSheet& Had) { return Had.Night == Sh.Night; })) Logs.Add(Sh);
 	}
 	if (const S47J::FObj Tn = S47J::Obj(Saved, TEXT("tonight")); Tn.IsValid())
@@ -183,6 +191,13 @@ S47J::FObj FS47NightLog::Save() const
 			auto E = S47J::New();
 			S47J::Set(E, TEXT("night"), Sh.Night); S47J::Set(E, TEXT("title"), Sh.Title); S47J::Set(E, TEXT("page"), Sh.Page); S47J::Set(E, TEXT("remark"), Sh.Remark);
 			S47J::Set(E, TEXT("typed"), Sh.Typed); S47J::Set(E, TEXT("sent"), Sh.Sent); S47J::Set(E, TEXT("read"), Sh.Read);
+			if (Sh.Facts.Num())
+			{
+				TArray<TSharedPtr<FJsonValue>> Facts;
+				for (const FLine& L : Sh.Facts)
+					Facts.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueNumber>(int32(L.Part)), MakeShared<FJsonValueString>(L.At), MakeShared<FJsonValueString>(L.Text) }));
+				E->SetArrayField(TEXT("facts"), Facts);
+			}
 			List.Add(MakeShared<FJsonValueObject>(E));
 		}
 		O->SetArrayField(TEXT("sheets"), List);
@@ -407,6 +422,9 @@ void FS47NightLog::Close(double ClockNow)
 	Sh.Page = Type(Done);
 	Sh.Remark = RemarkFor(Done);
 	Sh.Typed = ClockNow;
+	Sh.Facts = Done.Lines;
+	for (const FString& Job : Done.Work) Sh.Facts.Add({ SixOf(Night), EPart::Work, FString(), Job });
+	if (Sh.Facts.Num() > 40) Sh.Facts.SetNum(40);
 	Logs.Add(Sh);
 	File(Sh);
 	int32 NSeen = 0, NTime = 0, NGear = 0;

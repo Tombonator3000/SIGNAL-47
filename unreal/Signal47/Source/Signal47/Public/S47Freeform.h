@@ -199,6 +199,8 @@ public:
  TSharedPtr<class FS47PinBoard> PinBoard;
  // The photo lab's enlarger, by the wet bench (ENLARGE-20261108): S47Enlarger.h.
  TSharedPtr<class FS47Enlarger> Enlarger;
+ // The weekly report to Dr. Ward, made from the night logs, what goes in the player's choice (WARD-REPORT-20261108): S47WardReport.h.
+ TSharedPtr<class FS47WardReport> WardReport;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;
