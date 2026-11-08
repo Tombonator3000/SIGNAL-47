@@ -168,3 +168,5 @@ Tripo-bilen, Tom 8. november: git-historikken skrives ikke om. Modellen ble lage
 Hendelser hvor som helst, Tom 8. november: gårdens hendelser skal kunne komme ved nesten alle bygg i verden, som landing i ørkenen eller som noen som sitter fast langt ute og ber om hjelp. Stedet trekkes tilfeldig (med frø), ikke fast på gården hver gang.
 
 Prioritet, Tom 8. november: hendelser og elementer som mangler går foran perfekt grafikk. Interiørmodeller kan gjenbrukes flere steder.
+
+Nattskift og tre valg, Tom 8. november ca. 22:30: (1) stemmevalg som viser til ekte personer får navn fra spillets egen verden (Night Narrator, Dale, Earl på 1420 AM); (2) i Freeform kan man bare lagre på SARO, men spillet lagrer alltid automatisk når man drar fra SARO; (3) Tripo3D-modellene kommer fra Tom 9. november. Nattarbeid gjennom TODO til kl. 10:00 9. november.
