@@ -24,7 +24,9 @@ struct SIGNAL47_API FS47NightRhythm
  {return !Quiet(Seed,Night)&&HourOfDay>=StartHour(Seed,Night,TimesTaken)&&HourOfDay<EndHour;}
  // Whatever comes to marks left behind, and to someone on foot in the open: these grow too, slowly.
  static float VisitChance(int32 Night){return float(FMath::Lerp(.45,.8,Growth(Night)));}
- static float FieldChance(int32 Night){return float(FMath::Lerp(.15,.55,Growth(Night)));}
+ // Out on foot in the open (FS47FarmSite::FieldChanceFor adds to it for each night out there that came to nothing): from about
+ // three in ten on the second night. Tom, 8 November: about every second or third night out there, never the first.
+ static float FieldChance(int32 Night){return float(FMath::Lerp(.25,.5,Growth(Night)));}
  static double Threat(int32 Night){return FMath::Lerp(.75,1.25,Growth(Night));}
  // A day the array's ordinary service need comes up: no longer every third. About one day in three, one in seven with the
  // relay reserve; never two running, never the first day. The hour is its own draw, from ten until four.

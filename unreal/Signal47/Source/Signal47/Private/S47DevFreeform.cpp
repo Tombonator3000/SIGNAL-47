@@ -745,7 +745,7 @@ void FS47DevFreeform::SetNatural(bool bOn)
  }
  else
  {
-  D.TestOrbNight(false);D.TestMysteryDice(-1.f);D.TestCarDice(-1.f);D.TestSchedule(-1.f,-1,1.);
+  D.TestOrbNight(false);D.TestMysteryDice(-1.f);D.TestCarDice(-1.f);D.TestSchedule(-1.f,-1,1.);D.TestEventPace(1.);
   if(F->Aftermath)F->Aftermath->TestDice(-1.f,-1.f);
   Speed=1;SpeedUsed=1;Holding.Empty();
  }
@@ -771,6 +771,31 @@ FString FS47DevFreeform::HoldFor() const
  return FString();
 }
 
+void FS47DevFreeform::StepStand()
+{
+ auto* F=Session();
+ if(StandPlace.IsEmpty()||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
+ const double Hour=FMath::Fmod(F->Clock(),86400.)/3600.;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ if(Hour<21||StandNight==Night)return;
+ StandNight=Night;
+ const FVector House=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
+ if(StandPlace==TEXT("house")){M->Player->Place(House.X,House.Z,0);M->Player->Pitch=0;}
+ else
+ {
+  // Out on the open ground past the farm, on foot: somewhere the land lets them stand.
+  bool bPut=false;
+  for(int32 I=0;I<24&&!bPut;++I)
+  {
+   const double A=I*UE_DOUBLE_PI/12,R=45+(I%3)*15;const double X=House.X+FMath::Cos(A)*R,Z=House.Z+FMath::Sin(A)*R;
+   if(!M->Player->Walkable(X,Z)||(M->Player->OpenLand&&!M->Player->OpenLand(X,Z))||M->World->Indoors(FVector(X,M->Player->FloorY+1,Z)))continue;
+   M->Player->Place(X,Z,A+UE_DOUBLE_PI);M->Player->Pitch=0;bPut=true;
+  }
+  if(!bPut)M->Player->Place(House.X+50,House.Z+20,0);
+ }
+ UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night %d: standing at %s, %.0f %.0f, %s"),Night,*StandPlace,M->Player->Pos.X,M->Player->Pos.Z,*ClockText(F->Clock()));
+}
+
 void FS47DevFreeform::StepNatural(double Dt)
 {
  auto* F=Session();if(!F||!F->Director)return;
@@ -789,6 +814,8 @@ void FS47DevFreeform::StepNatural(double Dt)
  if(M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&Use>5)Use=5;
  SpeedUsed=Use;
  if(ScheduleHeld>0)ScheduleHeld-=Dt;else D.TestSchedule(-1.f,-1,Use);
+ // What runs on at speed ages at speed: its minutes are the night's minutes, as they are at the wheel. What is held at x1 is.
+ D.TestEventPace(Why.IsEmpty()?Use:1.);
  if(Use>1&&Dt>0&&Dt<.5&&!F->Held())
  {
   const double Now=F->Clock();
@@ -1127,9 +1154,18 @@ void FS47DevFreeform::Step(double Dt)
   {
    Speed=FMath::Clamp(Flag,1.,60.);SetNatural(true);
    if(Menu)Menu->Relabel(TEXT("Natural rhythm: off"),TEXT("Natural rhythm: ON"));
+   // -S47NaturalDay=2: begin at 17:00 on that day, past the first night's grace, with every rule live. Nothing else is set.
+   int32 FromDay=0;
+   if(auto* F0=Session();F0&&FParse::Value(FCommandLine::Get(),TEXT("S47NaturalDay="),FromDay)&&FromDay>F0->Day())
+   {
+    const double To=(FromDay-1)*86400.+17*3600.;
+    F0->TestAdvance(FMath::Max(0.,To-F0->Clock()));
+    UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night from day %d %s"),F0->Day(),*ClockText(F0->Clock()));
+   }
+   FParse::Value(FCommandLine::Get(),TEXT("S47NaturalStand="),StandPlace);
   }
  }
- if(bNatural)StepNatural(Dt);
+ if(bNatural){StepNatural(Dt);StepStand();}
  StepSweep(Dt);
 }
 

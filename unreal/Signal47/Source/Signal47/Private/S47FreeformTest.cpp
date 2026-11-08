@@ -1769,7 +1769,7 @@ void FS47FreeformTest::Step(double Dt)
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
   const auto Events=FS47FreeformDirector::EventIds();
-  if(!Check(Events.Num()==30&&Events.Contains(TEXT("farm_lights"))&&Events.Contains(TEXT("town_lights"))&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes twenty-seven authored events, the room-light incident and both physical service-site encounters")))return;
+  if(!Check(Events.Num()==31&&Events.Contains(TEXT("farm_lights"))&&Events.Contains(TEXT("town_lights"))&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes twenty-eight authored events, the room-light incident and both physical service-site encounters")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)

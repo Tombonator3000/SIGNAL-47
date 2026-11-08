@@ -149,6 +149,10 @@ public:
 	/** A frame on the roll that the player did not take: dark sky, or ground seen from straight above. Nothing is rendered
 	 *  and nothing is said about it. False when the roll is full. */
 	bool AddUnbidden(bool bGround);
+	/** A frame from a camera that is not the player's (the trip camera, FS47TripCamera): rendered now from Eye toward Look, through the
+	 *  same film, and kept as a print to develop like any other. It comes on its own film, so the player's roll keeps its frames.
+	 *  False when nothing could be rendered. */
+	bool ExposeFrom(const FVector& Eye, const FVector& Look, const FString& Text, const FString& Place, FString& OutId);
 	const FS47AlbumShot* PendingLabPhoto() const;
 	/** Advance exactly one physical bench action; stale UI actions cannot advance twice. */
 	bool AdvanceLabPhoto(const FString& Id, int32 ExpectedStage);

@@ -168,6 +168,8 @@ void S47Theme::Shadow(FSlateWindowElementList& Out, int32 Layer, const FGeometry
 TPair<FString, FString> S47Theme::ChapterLine(const FString& ChapterTitle)
 {
 	FString HeadPart, Title;
+	// Freeform writes "FREEFORM / DAY 3": the mode, then the day, never the mode twice.
+	if (ChapterTitle.Split(TEXT(" / "), &HeadPart, &Title) && HeadPart.Equals(TEXT("FREEFORM"), ESearchCase::IgnoreCase)) return { TEXT("FREEFORM"), Title.ToUpper() };
 	if (!ChapterTitle.Split(TEXT(": "), &HeadPart, &Title)) return { ChapterTitle.ToUpper(), FString() };
 	// Old save metadata retains its original text. Render its story title without
 	// the numbered chapter label, just like newly written saves and pause menus.
@@ -260,6 +262,8 @@ bool S47Theme::SelfTest(TArray<FString>& Out)
 	const auto Plain = ChapterLine(TEXT("The Amended Record"));
 	Check(Plain.Key == L.Key && Plain.Value == L.Value, TEXT("old and new save titles display identically"));
 	Check(ChapterLine(TEXT("Prologue: Night Shift")).Key == TEXT("PROLOGUE"), TEXT("the prologue's line"));
+	const auto Free = ChapterLine(TEXT("FREEFORM / DAY 3"));
+	Check(Free.Key == TEXT("FREEFORM") && Free.Value == TEXT("DAY 3"), TEXT("a Freeform save says FREEFORM once, then the day"), Free.Key + TEXT(" / ") + Free.Value);
 	Check(Stamp(23 * 3600 + 41 * 60 + 7) == TEXT("APR.13 1986  23:41:07"), TEXT("before midnight"), Stamp(23 * 3600 + 41 * 60 + 7));
 	Check(Stamp(86400 + 3 * 3600 + 12 * 60 + 44) == TEXT("APR.14 1986  03:12:44") && Stamp(3 * 3600) == TEXT("APR.14 1986  03:00:00"), TEXT("after midnight"));
 	Check(Played(4320) == TEXT("1 H 12 MIN") && Played(30) == TEXT("UNDER A MINUTE"), TEXT("played"));

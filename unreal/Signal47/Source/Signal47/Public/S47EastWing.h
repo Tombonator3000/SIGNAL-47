@@ -15,6 +15,8 @@ class FS47EastWing
 {
 public:
  void TestDoorUp(){DoorOpen=1;bDoorUp=true;bDoorMoving=bDoorHand=false;} // S47FloodProbe: the big opening, at once
+ // Freeform: the roll-up door is down (or on its way down), so a guide can say to raise it first.
+ bool GarageShut() const{return DoorOpen<.85;}
  explicit FS47EastWing(US47Main* InM);
  ~FS47EastWing();
  void Init();
@@ -45,7 +47,7 @@ private:
  void Grime();
  // Motorised roll-up door (Tom 4 Nov): two control stations (inside / outside), 4.5 s travel.
  double DriveSince=0;
- double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorHand=false,bDoorControls=false;
+ double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorHand=false,bDoorControls=false,bWasFree=false;
  bool bLeafControls=false; bool LeafOpen[2]={true,true}; double LeafAmount[2]={1.,1.};
  bool LeafControls(); void UseLeaf(int32 Index); void DoorTest(); int32 DoorTestStage=0; double DoorTestAt=0;
  bool DoorControls();void StepDoor(float Dt,bool bFree,bool bPowered);

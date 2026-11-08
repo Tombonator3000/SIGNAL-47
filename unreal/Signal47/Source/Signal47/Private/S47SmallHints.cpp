@@ -2,9 +2,11 @@
 #include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47FieldRadio.h"
+#include "S47IndoorDread.h"
 #include "S47Main.h"
 #include "S47Taken.h"
 #include "S47Freeform.h"
+#include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
 
@@ -20,6 +22,9 @@ namespace
   {TEXT("antenna_creak"),TEXT("An antenna creaks"),TEXT("metal, slow, from among the dishes, with no wind to speak of")},
   {TEXT("fence_tap"),TEXT("Taps along the fence"),TEXT("metal on metal, a few, moving off")},
   {TEXT("night_hush"),TEXT("The crickets stop"),TEXT("half a minute of nothing outside, then they come back")},
+  // Indoors anywhere: the farmhouse, a motel room, the control room. Before this a player who kept to the farmhouse had no small
+  // thing that could reach them at all (krit9, 8 November). Tin, not steps: roof_steps is the one that leads somewhere.
+  {TEXT("roof_tick"),TEXT("The roof ticks"),TEXT("tin or timber overhead, a few, as the night cools; nothing up there")},
  };
  const FHint* Find(const FString& Id){for(const FHint& H:Hints)if(Id==H.Id)return &H;return nullptr;}
  const FVector Rack(-3,1,1),Printer(-4,1,2),FenceAt(11.9,1,-11),AntennaAt(-3.25,3,-47);
@@ -32,7 +37,7 @@ bool S47SmallHints::Is(const FString& Id){return Find(Id)!=nullptr;}
 TArray<FString> S47SmallHints::Ids(){TArray<FString> Out;for(const FHint& H:Hints)Out.Add(H.Id);return Out;}
 const TCHAR* S47SmallHints::TitleOf(const FString& Id){const FHint* H=Find(Id);return H?H->Label:TEXT("");}
 const TCHAR* S47SmallHints::NoteOf(const FString& Id){const FHint* H=Find(Id);return H?H->Note:TEXT("");}
-bool S47SmallHints::Anywhere(const FString& Id){return Id==TEXT("night_hush")||Id==TEXT("radio_crackle");}
+bool S47SmallHints::Anywhere(const FString& Id){return Id==TEXT("night_hush")||Id==TEXT("radio_crackle")||Id==TEXT("roof_tick");}
 
 FVector S47SmallHints::AnchorOf(US47Main* M,const FString& Id)
 {
@@ -47,6 +52,8 @@ FVector S47SmallHints::AnchorOf(US47Main* M,const FString& Id)
  if(Id==TEXT("service_door_open"))return FVector(9,1,0);
  if(Id==TEXT("antenna_creak"))return AntennaAt;
  if(Id==TEXT("fence_tap"))return FenceAt;
+ // Overhead and a little to one side of where the player stands: placed once, as the others are, so it does not follow them.
+ if(Id==TEXT("roof_tick")&&M&&M->Player)return M->Player->Pos+FVector(1.4,2.6,-.9);
  return Rack;
 }
 
@@ -61,6 +68,8 @@ bool S47SmallHints::Fits(US47Main* M,const FString& Id,const FVector& PlayerAt,T
  if(Id==TEXT("antenna_creak"))return OutOfDoors(M)&&Near(PlayerAt,A,70);
  if(Id==TEXT("fence_tap"))return OutOfDoors(M)&&Near(PlayerAt,A,45);
  if(Id==TEXT("night_hush"))return OutOfDoors(M);
+ // Not on top of something at the door or the window: that one has the house to itself.
+ if(Id==TEXT("roof_tick"))return M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Indoors()&&!(M->World&&M->World->bDriving)&&!(M->Freeform->IndoorDread&&(M->Freeform->IndoorDread->DoorActive()||M->Freeform->IndoorDread->PeekActive()));
  return false;
 }
 
@@ -108,6 +117,17 @@ void S47SmallHints::Play(US47Main* M,const FString& Id,const FVector& Anchor)
  {
   if(A.Night)A.Night->Hush(30,.05,.8,3.);
  }
+ else if(Id==TEXT("roof_tick"))
+ {
+  // Three to five ticks of tin, slowing, then the timber gives once. Not the farm's own creaks (FS47FarmNight): those are its doors.
+  const int32 Ticks=FMath::RandRange(3,5);float When=0.f;
+  for(int32 I=0;I<Ticks;++I)
+  {
+   FS47Sound O;O.At=Anchor+FVector(I*.35,0,0);O.Gain=.16f-.025f*I;O.Rate=FMath::FRandRange(.8f,.95f);O.Lp=1800;O.When=When;A.Sfx(TEXT("metalTap"),O);
+   When+=FMath::FRandRange(.6f,1.4f)+.2f*I;
+  }
+  FS47Sound T;T.At=Anchor;T.Gain=.14f;T.Rate=.4f;T.Lp=900;T.When=When+.8f;A.Sfx(TEXT("doorCreak1"),T);
+ }
 }
 
 bool S47SmallHints::PaceAllows(int32 Spent,int32 Budget,double Hour,double Jitter)
@@ -124,6 +144,7 @@ bool S47SmallHints::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s small hints: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  Check(Ids().Num()==UE_ARRAY_COUNT(Hints)&&Is(TEXT("night_hush"))&&!Is(TEXT("flyover")),TEXT("the list knows its own"));
+ Check(Is(TEXT("roof_tick"))&&Anywhere(TEXT("roof_tick"))&&!Is(TEXT("roof_steps")),TEXT("indoors anywhere there is a roof that ticks, and it is not the steps"));
  Check(PaceAllows(0,3,19.5,1)&&!PaceAllows(0,3,19.,0),TEXT("with a good draw the first can come early, and not at nineteen with a bad one"));
  Check(!PaceAllows(2,3,20,.5),TEXT("the third of three is not spent in the first hour"));
  Check(PaceAllows(2,3,4.,0),TEXT("but by four in the morning it may be"));
