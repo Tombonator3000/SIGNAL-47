@@ -88,6 +88,8 @@ namespace S47Hap
   return Names[int32(FMath::FloorToDouble((FMath::Fmod(Az+360.,360.)+22.5)/45.))%8];
  }
  uint32 SaltOf(const FString& Id){return FCrc::StrCrc32(*Id);}
+ // Where the player is, as an event asks for it (FS47Happenings::SituationNow, NeedMask).
+ constexpr uint32 NeedDrive=1,NeedFoot=2,NeedIndoors=4,NeedSaro=8,NeedTown=16,NeedMotel=32,NeedSmall=64;
  // What does not hold the ground: lasting things out on the land, the clock, a word on the radio.
  bool Background(const FString& Id)
  {
@@ -853,7 +855,7 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  else bOk=BeginMore(Id,Variant,bForced,Why);
  if(!bOk)return false;
  LastDays.Add(Id,F->Day());++Serial;TryAt.Remove(Id);
- if(const double HN=HourOfNight(F->Clock());HN>=23&&HN<25)bLate=true;
+ if(const double HN=HourOfNight(F->Clock());HN>=23&&HN<25&&Id!=TEXT("landing"))bLate=true;
  if(M->Rhythm)M->Rhythm->Began(FName(*Id));
  // Where it is: the place it stands at or was heard of, for the log (the catalogue logs its own draws).
  const FSite* Made=Sites.Num()>SitesBefore?&Sites.Last():nullptr;
@@ -895,6 +897,7 @@ void FS47Happenings::Step(double Dt)
  // The night by its own rules: only where a real game is played (or a test asks for them), never in the first shift.
  if(F->RulesLive()&&!F->InTutorial())
  {
+  StepSwap();
   static const TCHAR* const Order[]={TEXT("car_light"),TEXT("hitchhiker"),TEXT("car_dies"),TEXT("cb_echo"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
    TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
    TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller")};
@@ -922,22 +925,111 @@ void FS47Happenings::StepLate()
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  const double H=HourOfNight(F->Clock());
  if(H<23||H>=25||LateNight==Night)return;
- // Anything on the ground between eleven and one, of this or any other system, or in the sky.
- if(!bLate)bLate=(F->Director&&F->Director->Busy())||(M->Rhythm&&!M->Rhythm->ReadNow().Busy.IsNone())||(M->SkyVisitors&&M->SkyVisitors->FormationData().bActive)||!Now.Id.IsEmpty();
+ // Something near the ground between eleven and one, of this or any other system, or a piece of unease. Lights in the sky or far
+ // off do not count (Tom's coordinator, 8 November): the watch is for what comes close.
+ if(!bLate)
+ {
+  static const TCHAR* const Sky[]={TEXT("flyover"),TEXT("response_lights"),TEXT("farm_lights"),TEXT("town_lights"),TEXT("dusk_orb"),TEXT("sky_formation"),TEXT("sky_high")};
+  FName Busy=NAME_None;if(M->Rhythm)Busy=M->Rhythm->ReadNow().Busy;
+  if(F->Director&&F->Director->Busy()&&Busy.IsNone())Busy=FName(*F->Director->ActiveEvent());
+  bool bSky=false;for(const TCHAR* S:Sky)bSky|=Busy==FName(S);
+  bLate=(!Busy.IsNone()&&!bSky)||(!Now.Id.IsEmpty()&&Now.Id!=TEXT("landing"))||Uneasy.I>=0;
+ }
  if(bLate){LateNight=Night;return;}
- // From half past twelve, the best that fits where the player is, tried again every ten minutes until one o'clock.
+ // From half past twelve, the first that fits where the player is now, in tonight's order, tried again every ten minutes until one.
  if(H<24.5||F->Clock()<LateTryClock)return;
  LateTryClock=F->Clock()+600;
  // A calm night (FS47NightRhythm::Quiet) has no lights and no calls that lead anywhere: only the small ones then.
  const bool bQuiet=F->QuietNight(Night);
- for(const TCHAR* Id:{TEXT("car_dies"),TEXT("cattle_ring"),TEXT("landing"),TEXT("cb_stranded"),TEXT("stranded_rv")})
+ const uint32 Sit=SituationNow();
+ for(const FString& Id:SwapOrder(Night))
  {
-  if(LastDays.FindRef(Id)==F->Day())continue;
-  if(bQuiet&&FString(Id)!=TEXT("car_dies")&&FString(Id)!=TEXT("cattle_ring"))continue;
+  if(LastDays.FindRef(Id)==F->Day()||!(NeedMask(Id)&Sit))continue;
+  if(bQuiet&&!(NeedMask(Id)&S47Hap::NeedSmall))continue;
   FString Why;
-  if(StartEvent(Id,FString(),false,Why)){LateNight=Night;UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing between 23:00 and 00:30 on night %d, so %s"),Night,Id);return;}
+  if(StartEvent(Id,FString(),false,Why)){LateNight=Night;UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing near between 23:00 and 00:30 on night %d, so %s"),Night,*Id);return;}
  }
- if(H>=24.8)UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing between 23:00 and 01:00 on night %d, and nothing of these fits here"),Night);
+ // Or a piece of unease, which needs no more than the player being somewhere.
+ if(Uneasy.I<0&&!UneasePool.IsEmpty())for(const int32 I:UneasePool)
+ {
+  if(UneaseDone.Contains(I)||I==11||I==12||I==14)continue;
+  FString Why;
+  if(FireUnease(I,false,Why)){LateNight=Night;UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing near between 23:00 and 00:30 on night %d, so unease %d"),Night,I+1);return;}
+ }
+ if(H>=24.8)UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing between 23:00 and 01:00 on night %d, and nothing fits here"),Night);
+}
+// Where the player is, as the events ask for it: at the wheel, on foot outside, under a roof, at SARO, in Caliche, at the motel.
+uint32 FS47Happenings::SituationNow() const
+{
+ using S47Hap::NeedDrive;using S47Hap::NeedFoot;using S47Hap::NeedIndoors;using S47Hap::NeedSaro;using S47Hap::NeedTown;using S47Hap::NeedMotel;using S47Hap::NeedSmall;
+ uint32 Sit=0;
+ if(Driving())Sit|=NeedDrive;else if(Outdoors())Sit|=NeedFoot;else Sit|=NeedIndoors;
+ const FString Area=M&&M->Web?M->Web->Area():FString();
+ if(Area==TEXT("saro"))Sit|=NeedSaro;
+ double X=0,Z=0;
+ if(PlayerRoad(X,Z))
+ {
+  if((Area==TEXT("road")||Area==TEXT("diner"))&&Z>1800&&Z<2450&&FMath::Abs(X)<320&&!Driving())Sit|=NeedTown;
+  if(M->Freeform&&M->Freeform->EventPlaces)if(const FS47EventPlace* Mo=M->Freeform->EventPlaces->Find(TEXT("motel")))if(FVector2D::Distance(FVector2D(Mo->X,Mo->Z),FVector2D(X,Z))<160&&!Driving())Sit|=NeedMotel;
+ }
+ return Sit;
+}
+// What each of them needs of where the player is (SituationNow), any one of these bits. Small: it may come on a calm night.
+uint32 FS47Happenings::NeedMask(const FString& Id)
+{
+ using S47Hap::NeedDrive;using S47Hap::NeedFoot;using S47Hap::NeedIndoors;using S47Hap::NeedSaro;using S47Hap::NeedTown;using S47Hap::NeedMotel;using S47Hap::NeedSmall;
+ if(Id==TEXT("car_dies")||Id==TEXT("hitchhiker")||Id==TEXT("car_light")||Id==TEXT("am_caller"))return NeedDrive|(Id==TEXT("car_dies")?NeedSmall:0u);
+ if(Id==TEXT("cattle_ring")||Id==TEXT("animals_flee")||Id==TEXT("dust_devil"))return NeedFoot|NeedSmall;
+ if(Id==TEXT("dogs_hush"))return NeedFoot|NeedTown|NeedSmall;
+ if(Id==TEXT("horizon_figure"))return NeedFoot;
+ if(Id==TEXT("landing"))return NeedFoot|NeedDrive|NeedSaro;
+ if(Id==TEXT("cb_stranded")||Id==TEXT("missing_person"))return NeedDrive|NeedSaro;
+ if(Id==TEXT("cb_echo"))return NeedDrive|NeedSaro;
+ if(Id==TEXT("stranded_rv")||Id==TEXT("carcass")||Id==TEXT("cinema_film"))return NeedFoot|NeedDrive|NeedIndoors|NeedSaro|NeedTown;
+ if(Id==TEXT("house_lit"))return NeedFoot|NeedDrive|NeedTown;
+ if(Id==TEXT("phone_empty")||Id==TEXT("town_blackout"))return NeedTown|(Id==TEXT("town_blackout")?NeedSmall:0u);
+ if(Id==TEXT("room6_tv"))return NeedMotel;
+ if(Id==TEXT("array_burst"))return NeedSaro;
+ if(Id==TEXT("humor"))return NeedTown|NeedMotel|NeedDrive;
+ // What follows from something else (the clock, the hood, the tracks) is never drawn in another's place.
+ return 0;
+}
+// Tonight's order for whatever stands in for a draw that cannot happen where the player is: from the seed, the same in any Continue.
+TArray<FString> FS47Happenings::SwapOrder(int32 Night) const
+{
+ TArray<FString> Out;
+ for(const FString& Id:Ids())if(NeedMask(Id)!=0&&!IsDanger(Id)&&Id!=TEXT("humor"))Out.Add(Id);
+ const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47;
+ Out.Sort([Seed,Night](const FString& A,const FString& B){return FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(A)^0x53574150u)<FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(B)^0x53574150u);});
+ return Out;
+}
+// A draw that cannot happen where the player is waits for its own turn; one that has waited an hour past its time, with the player
+// still somewhere it cannot happen, gives its place to one that can. Same number of things in the night either way.
+void FS47Happenings::StepSwap()
+{
+ auto* F=M->Freeform.Get();
+ if(M->T<SwapTry)return;
+ SwapTry=M->T+5;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ const double H=HourOfNight(F->Clock());
+ const uint32 Sit=SituationNow();
+ FString Stale;
+ for(const auto& KV:Plan)
+ {
+  const uint32 Need=NeedMask(KV.Key);
+  if(Need==0||IsDanger(KV.Key)||LastDays.FindRef(KV.Key)==F->Day()||H<KV.Value+1.||(Need&Sit))continue;
+  Stale=KV.Key;break;
+ }
+ if(Stale.IsEmpty())return;
+ const bool bQuiet=F->QuietNight(Night);
+ for(const FString& Alt:SwapOrder(Night))
+ {
+  if(Plan.Contains(Alt)||LastDays.FindRef(Alt)==F->Day()||!(NeedMask(Alt)&Sit))continue;
+  if(bQuiet&&!(NeedMask(Alt)&S47Hap::NeedSmall))continue;
+  Plan.Remove(Stale);Plan.Add(Alt,H);
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: %s cannot happen where the player is, so %s instead"),Night,*Stale,*Alt);
+  return;
+ }
 }
 
 void FS47Happenings::StepEvent(double Dt)
@@ -2451,7 +2543,7 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
  default:return No(TEXT("no such thing"));
  }
  if(bLasting)Uneasy=U;
- if(!bForced){UneaseDone.AddUnique(I);if(I==2||I==19)UneaseOnce.AddUnique(Id);}
+ if(!bForced){UneaseDone.AddUnique(I);if(I==2||I==19)UneaseOnce.AddUnique(Id);if(const double HN=HourOfNight(Clock);HN>=23&&HN<25)bLate=true;}
  if(M->Rhythm)M->Rhythm->Began(TEXT("unease"));
  UE_LOG(LogS47Happen,Display,TEXT("S47: unease %d %s day %d %s in %s%s, %d tonight"),I+1,*Id,F->Day(),*S47Hap::ClockText(Clock),*M->Web->Area(),bForced?TEXT(", F10"):TEXT(""),UneaseDone.Num());
  M->RequestAutosave();

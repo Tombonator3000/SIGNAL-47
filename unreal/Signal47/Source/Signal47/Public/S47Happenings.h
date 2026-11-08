@@ -145,6 +145,12 @@ private:
  void StepEvent(double Dt);
  void StepSites(double Dt);
  void StepLate();
+ // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
+ uint32 SituationNow() const;
+ static uint32 NeedMask(const FString& Id);
+ TArray<FString> SwapOrder(int32 Night) const;
+ void StepSwap();
+ double SwapTry=0;
  void StepSays(double Dt);
  void Say(const FString& Text,double In=0,float Secs=6);
  void Cb(const TArray<FString>& Lines,const FString& Voice,bool bWrong);
