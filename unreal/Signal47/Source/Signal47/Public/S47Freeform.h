@@ -155,7 +155,7 @@ public:
  // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
  static int32 PayAfterDays(int32 Days){return Days<=1?20:Days==2?15:Days==3?10:5;}
  int32 JobPay(const FJob& Job) const;
- static constexpr int32 ReviewPower=25,ReviewFuel=15,ArrearsCap=80;
+ static constexpr int32 ReviewPower=25,ReviewFuel=15,ArrearsCap=80,LostHoursDiscount=15;
  static int32 StandbyFor(double WaitSeconds){return FMath::Clamp(FMath::CeilToInt(WaitSeconds/(3*3600.)),0,4);}
  int32 StandbyPaid() const{return StandbyTotal;}
  int32 Arrears() const{return Carried;}
@@ -184,6 +184,10 @@ public:
  bool HasKit(const FString& Id) const{return Kit.Contains(Id);}
  // Empty when it is on offer; otherwise, what it is waiting for.
  FString KitWaits(const FString& Id) const;
+ // What it costs now: an assessment on THE LOST HOURS takes something off the magnetometer.
+ int32 KitPrice(const FString& Id) const;
+ // A place found out on the land, or marks at a site kept as a record: the first field work away from the station.
+ bool FieldRecordKept() const;
  bool BuyKit(const FString& Id);
  void TestGiveKit(const FString& Id){Kit.Add(Id);}
  // Sleeping away from the station. At a motel nothing wakes you; on a cot out on the land whatever comes by does.

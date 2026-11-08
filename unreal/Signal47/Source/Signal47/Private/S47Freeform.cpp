@@ -1373,11 +1373,12 @@ void FS47FreeformSession::OpenOperations()
   {
    const FString Id=Offer.Id,Waits=KitWaits(Id);
    if(HasKit(Id))Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / IN HAND. %s"),Offer.Title,Offer.What))];
-   else if(!Waits.IsEmpty())Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),Offer.Title,Offer.Price,*Waits))];
+   else if(!Waits.IsEmpty())Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),Offer.Title,KitPrice(Id),*Waits))];
    else
    {
+    const int32 Price=KitPrice(Id);
     Offers->AddSlot()[T::Small(Offer.What)];
-    Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),Offer.Title,Offer.Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=Offer.Price)];
+    Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),Offer.Title,Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=Price)];
    }
   }
   Rows.Add(T::Panel(TEXT("STORES LIST"),SNew(SBox).HeightOverride(150)[Offers]));
@@ -2036,20 +2037,38 @@ FString FS47FreeformSession::KitWaits(const FString& Id)const
  const auto* O=FS47Openings::Def(Id);if(!O)return TEXT("nothing");
  const bool bOpen=Id==TEXT("spotlight")?(!Field||!Field->ArrayWear().bActive||!Field->ArrayWear().Restored.IsEmpty())
   :Id==TEXT("cot")?FindingCount()>0
-  :Id==TEXT("magnetometer")?Cases.HasAccess(TEXT("access.lostHours"))
+  // The first field work away from the station opens it; being taken is not the way in (critic, 8 November). An assessment on
+  // THE LOST HOURS still opens it, and makes it cheaper (KitPrice).
+  :Id==TEXT("magnetometer")?(FieldRecordKept()||Cases.HasAccess(TEXT("access.lostHours")))
   :Id==TEXT("logger2")?Cases.HasAccess(TEXT("access.fieldlogger"))
   :Id==TEXT("film")?HasFinding(TEXT("body_photo"))
   :Id==TEXT("alarm")?SheriffTrust()>0:false;
  return bOpen?FString():FString(O->Waits);
 }
+bool FS47FreeformSession::FieldRecordKept()const
+{
+ for(const auto& Kept:Findings)
+ {
+  const FString& K=Kept.Key;
+  if((K.StartsWith(TEXT("place_"))&&!K.EndsWith(TEXT("_needle")))||K.StartsWith(TEXT("farm_trace"))||K.StartsWith(TEXT("lights_trace_"))||K.StartsWith(TEXT("field_night")))return true;
+ }
+ return false;
+}
+int32 FS47FreeformSession::KitPrice(const FString& Id)const
+{
+ const auto* O=FS47Openings::Def(Id);if(!O)return 0;
+ if(Id==TEXT("magnetometer")&&Cases.HasAccess(TEXT("access.lostHours")))return FMath::Max(5,O->Price-LostHoursDiscount);
+ return O->Price;
+}
 bool FS47FreeformSession::BuyKit(const FString& Id)
 {
  const auto* O=FS47Openings::Def(Id);if(!O||Kit.Contains(Id)||!KitWaits(Id).IsEmpty())return false;
- if(Cash<O->Price){Feedback=FString::Printf(TEXT("%s costs $%d. The budget has $%d."),O->Title,O->Price,Cash);Changed(Feedback);return false;}
- Cash-=O->Price;Kit.Add(Id);
+ const int32 Price=KitPrice(Id);
+ if(Cash<Price){Feedback=FString::Printf(TEXT("%s costs $%d. The budget has $%d."),O->Title,Price,Cash);Changed(Feedback);return false;}
+ Cash-=Price;Kit.Add(Id);
  if(Id==TEXT("film")&&M&&M->Night&&M->Night->Album)M->Night->Album->AddFilm();
- Feedback=FString::Printf(TEXT("%s: delivered and signed for, $%d. %s"),O->Title,O->Price,O->What);
- UE_LOG(LogTemp,Display,TEXT("S47: opening bought: %s for $%d, cash %d"),*Id,O->Price,Cash);
+ Feedback=FString::Printf(TEXT("%s: delivered and signed for, $%d. %s"),O->Title,Price,O->What);
+ UE_LOG(LogTemp,Display,TEXT("S47: opening bought: %s for $%d, cash %d"),*Id,Price,Cash);
  Changed(Feedback);return true;
 }
 bool FS47FreeformSession::RestAt(double Target,ERest Where)
@@ -2951,6 +2970,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(!Shop.KitWaits(TEXT("logger2")).IsEmpty()&&!Shop.KitWaits(TEXT("film")).IsEmpty()&&!Shop.KitWaits(TEXT("alarm")).IsEmpty()&&!Shop.BuyKit(TEXT("nonsense")),TEXT("Stores: each waits for its own thing"));
   Shop.RecordEvidence(TEXT("anything"),TEXT("a record"));
   Check(Shop.KitWaits(TEXT("cot")).IsEmpty()&&Shop.BuyKit(TEXT("cot"))&&Shop.HasKit(TEXT("cot"))&&Shop.Budget()==100&&!Shop.BuyKit(TEXT("cot")),TEXT("Stores: paid for once, at the price it says"));
+  Check(!Shop.KitWaits(TEXT("magnetometer")).IsEmpty(),TEXT("Stores: a record at the station does not open the magnetometer"));
+  Shop.RecordEvidence(TEXT("place_windmill"),TEXT("a place"));
+  Check(Shop.KitWaits(TEXT("magnetometer")).IsEmpty()&&Shop.KitPrice(TEXT("magnetometer"))==40,TEXT("Stores: the first place found opens the magnetometer, at full price, without being taken"));
   Shop.Cash=5;Shop.TestGiveKit(TEXT("alarm"));Check(!Shop.BuyKit(TEXT("alarm"))&&Shop.Budget()==5,TEXT("Stores: what is in hand is not sold again"));
   FS47FreeformSession ShopAgain(nullptr);ShopAgain.Begin(S47J::Read(S47J::Write(Shop.Save())));Check(ShopAgain.HasKit(TEXT("cot"))&&ShopAgain.HasKit(TEXT("alarm")),TEXT("Stores: what was bought survives a Continue"));
   auto Oldest=Shop.Save();Oldest->RemoveField(TEXT("kit"));FS47FreeformSession OldShop(nullptr);OldShop.Begin(Oldest);Check(!OldShop.HasKit(TEXT("cot")),TEXT("Stores: an older save has none, and reads without complaint"));
