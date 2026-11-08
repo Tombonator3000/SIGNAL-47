@@ -300,7 +300,7 @@ void SS47Settings::BuildRows()
 		break;
 	case 3: // VOICES (UI.pause's notes)
 		AddToggle(TEXT("Character voices"), &FS47PauseOpts::bCharacters, &FS47PauseOpts::OnCharacters, true,
-			TEXT("Synthetic parody voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
+			TEXT("Character voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
 		AddToggle(TEXT("The Night Narrator"), &FS47PauseOpts::bSerling, &FS47PauseOpts::OnSerling, true,
 			TEXT("The Night Narrator reads descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description."));
 		AddToggle(TEXT("Dale's voice (read-aloud)"), &FS47PauseOpts::bKinski, &FS47PauseOpts::OnKinski, false,
