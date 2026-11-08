@@ -113,9 +113,11 @@ namespace
  // Scales are linear, from the sRGB ratios against the soil (.79 .78 .85 for the sand, 0.80 for the farm road in red), then
  // .936 .937 .904 for 170,134,110 to SoilDay's 165,130,105. They are the only numbers to retune if a new capture still shows a difference.
  struct FUnder{int32 Node,Mat;FLinearColor Scale;};
- const FLinearColor SandScale(.562f,.543f,.633f),RoadScale(.655f,.581f,.524f),GravelScale(.805f,.768f,.705f);
+ // 8 November: the station's sand still read 202,152,111 (d-st-a-11) against 165,130,105, orange beside the soil round it: its scale
+ // times the linear ratio (.641 .708 .885). Its gravel pad keeps the old scale, so it stays a little apart from the sand, not a stain.
+ const FLinearColor SandScale(.360f,.384f,.560f),StationGravelScale(.562f,.543f,.633f),RoadScale(.655f,.581f,.524f),GravelScale(.805f,.768f,.705f);
  const FUnder UnderTable[]={
-  {1103,484,SandScale},{1120,496,SandScale},{1104,485,SandScale},      // station ground, its corridor, the station's gravel
+  {1103,484,SandScale},{1120,496,SandScale},{1104,485,StationGravelScale},      // station ground, its corridor, the station's gravel
   {959,418,RoadScale},{1250,576,RoadScale},                              // the farm road in the SARO corridor and in the road area
   {955,418,GravelScale},{1244,576,GravelScale},{1121,497,GravelScale},   // gravel tracks
   {801,353,GravelScale}};                                                // the pebble paths among the antennas
