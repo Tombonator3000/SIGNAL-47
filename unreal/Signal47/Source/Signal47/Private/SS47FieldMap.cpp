@@ -631,6 +631,17 @@ void SS47FieldMap::SurveyWorld() const
 	for (const auto& W4 : SaroWalls) { const FBox2D B = Block(TEXT("saro"), W4[0], W4[1], W4[2], W4[3]); if (B.bIsValid) Blocks.Add({ B }); }
 	// Mesa Diner is walls too (the diner area's colliders, road-local).
 	Blocks.Add({ FBox2D(FVector2D(-28.05, 1990.95), FVector2D(-18.05, 2008.95)) });
+	// Caliche's buildings, road-local, as the web export's town stood them (its colliders) and the native town and CalicheAccess
+	// rebuilt them in place (the sheriff's room, for one: root -16 2106, footprint -10..0 by -6..6). Once a building can be walked
+	// into, what stops a walker is only its walls, so the town is not left to the colliders below.
+	static const double TownBlocks[][4] = {
+		{ -27, -17, 2066, 2078 }, { -27, -17.4, 2078, 2088 },   // the gas station
+		{ -26, -16, 2100, 2112 }, { -25, -15, 2126, 2140 },     // the sheriff, the laundromat
+		{ -29, -15, 2152, 2172 }, { -31, -15, 2190, 2214 },     // the Plaza, the feed store
+		{ 20, 30, 2030, 2042 }, { 20.5, 29.5, 2058, 2070 },     // 1420 AM, the souvenir shop
+		{ 21, 35, 2091, 2100 },                                 // the church
+		{ 24, 33, 2128, 2138 }, { 24.5, 32, 2152, 2161 }, { 25, 34, 2180, 2190 }, { -28, -19, 2236, 2246 } }; // the four houses
+	for (const auto& T4 : TownBlocks) Blocks.Add({ FBox2D(FVector2D(T4[0], T4[2]), FVector2D(T4[1], T4[3])) });
 	if (S47FarmBuildings::Available()) for (const FBox2D& Plot : S47FarmBuildings::Plots()) Blocks.Add({ Plot });
 	US47Main* Mn = US47Main::Get(nullptr);
 	AS47Web* Web = Mn ? Mn->Web.Get() : nullptr;
