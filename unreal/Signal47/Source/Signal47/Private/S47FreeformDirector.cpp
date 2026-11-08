@@ -439,7 +439,8 @@ namespace
  }
  const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")},
   // Out on the land (FS47Places). Their marks and a second look work as in town.
-  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")}};
+  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")},
+  {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("ff:place:stake")},{TEXT("trough"),TEXT("the salt lick and trough"),TEXT("ff:place:trough")}};
 }
 FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
 {

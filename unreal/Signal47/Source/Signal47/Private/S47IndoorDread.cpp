@@ -3,6 +3,7 @@
 #include "S47PaleBody.h"
 #include "Engine/SkeletalMesh.h"
 #include "S47Audio.h"
+#include "S47CalicheAccess.h"
 #include "S47DoorVisit.h"
 #include "S47FarmHouse.h"
 #include "S47FarmSite.h"
@@ -280,6 +281,19 @@ void FS47IndoorDread::SearchStep(const FS47Cam& Cam)
    if(C.Score>Best.Score)Best=C;
   }
  }
+ // A room in town: all along the outside of its own walls, however far the walls are. The Plaza is deep, and from the middle of
+ // the house no ring below reaches its front, under the marquee, where the open-sky test would refuse it anyway.
+ FString RoomId;
+ if(ProbeAt==0&&M->Web&&(M->Web->Area()==TEXT("road")||M->Web->Area()==TEXT("diner"))&&S47CalicheAccess::RoomAt(FVector(Cam.Pos.X,M->Player->FloorY,Cam.Pos.Z),RoomId))
+  for(const FVector& Spot:S47CalicheAccess::OutsideWalls(RoomId))
+  {
+   FCandidate C;
+   if(TryWindow(Cam,FVector(Spot.X,Cam.Pos.Y,Spot.Z),C,true))
+   {
+    ScoreOf(Cam,C);C.Score+=.4;
+    if(C.Score>Best.Score)Best=C;
+   }
+  }
  for(int32 N=0;N<10&&ProbeAt<Bearings*Rings;++N)
  {
   const int32 Index=ProbeAt++;
