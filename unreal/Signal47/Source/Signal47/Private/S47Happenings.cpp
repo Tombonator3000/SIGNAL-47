@@ -2922,13 +2922,22 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
  }
  case 13: // the strip of light under the door goes dark a moment, with two steps beyond it
  {
-  FVector At;if(!bIn&&!bForced)return No(TEXT("not indoors"));
-  const FS47Obj East=bSaro?M->Web->Obj(TEXT("room.objs.doorEast")):FS47Obj();
-  if(East)At=East.WorldPosition();else if(!Door(15,At))return No(TEXT("no door near"));
+  FVector At;FVector In=FVector::ZeroVector;if(!bIn&&!bForced)return No(TEXT("not indoors"));
+  // In the control room, the corridor's door (seen 8 November: the east door leads out into the dark, with no light behind it):
+  // the room's edge nearest the door's zone, and inward from it.
+  const FS47Area RoomBox=bSaro?M->Web->Rect(TEXT("room.bounds")):FS47Area(),DoorZone=bSaro?M->Web->Rect(TEXT("annex.zone.southDoor")):FS47Area();
+  if(RoomBox.bValid&&DoorZone.bValid)
+  {
+   const double Mx=FMath::Clamp((DoorZone.MinX+DoorZone.MaxX)*.5,RoomBox.MinX,RoomBox.MaxX),Mz=FMath::Clamp((DoorZone.MinZ+DoorZone.MaxZ)*.5,RoomBox.MinZ,RoomBox.MaxZ);
+   const double ToW=Mx-RoomBox.MinX,ToE=RoomBox.MaxX-Mx,ToN=Mz-RoomBox.MinZ,ToS=RoomBox.MaxZ-Mz,Least=FMath::Min(FMath::Min(ToW,ToE),FMath::Min(ToN,ToS));
+   In=Least==ToW?FVector(1,0,0):Least==ToE?FVector(-1,0,0):Least==ToN?FVector(0,0,1):FVector(0,0,-1);
+   At=FVector(Least==ToW?RoomBox.MinX:Least==ToE?RoomBox.MaxX:Mx,0,Least==ToN?RoomBox.MinZ:Least==ToS?RoomBox.MaxZ:Mz);
+  }
+  else if(!Door(15,At))return No(TEXT("no door near"));
+  if(In.IsZero())In=FVector(Feet.X-At.X,0,Feet.Z-At.Z).GetSafeNormal();
   if(M->Player->Floor){const double Fl=M->Player->Floor(At.X,At.Z);At.Y=FMath::IsFinite(Fl)?Fl:Feet.Y;}else At.Y=Feet.Y;
   if(!Prop(TEXT("strip")))return No(TEXT("nothing to draw it with"));
   // Across the foot of the door, on the room's side of it.
-  const FVector In=FVector(Feet.X-At.X,0,Feet.Z-At.Z).GetSafeNormal();
   U.At=At+In*.04;U.Yaw=FMath::Atan2(In.X,In.Z);U.Len=7;bLasting=true;
   if(A)for(int32 K=0;K<2;++K){FS47Sound O;O.At=At-In*.6+FVector(0,.2,0);O.Gain=.14f;O.When=1.f+.55f*K;O.Lp=1400;A->Sfx(K?TEXT("stepConcrete2"):TEXT("stepConcrete1"),O);}
   break;
