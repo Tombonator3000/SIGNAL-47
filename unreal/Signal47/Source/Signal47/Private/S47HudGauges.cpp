@@ -1,3 +1,4 @@
+#include <limits>
 #include "S47HudGauges.h"
 
 namespace
@@ -46,7 +47,7 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s hud gauges: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), What)); bOk &= bCond; };
 	Check(Strokes(1) == 5 && Strokes(0.81) == 5 && Strokes(0.8) == 4 && Strokes(0.21) == 2 && Strokes(0.2) == 1 && Strokes(0.0001) == 1 && Strokes(0) == 0,
 		TEXT("five strokes: full shows five, anything left shows one, empty none"));
-	Check(Strokes(-1) == 0 && Strokes(2) == 5 && Strokes(TNumericLimits<double>::QuietNaN()) == 0, TEXT("a level out of range or not a number still gives a stroke count in 0 to 5"));
+	Check(Strokes(-1) == 0 && Strokes(2) == 5 && Strokes(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("a level out of range or not a number still gives a stroke count in 0 to 5"));
 	bool bSteps = true; int32 Last = 0;
 	for (int32 I = 0; I <= 100; ++I) { const int32 N = Strokes(I / 100.0); bSteps &= N >= Last; Last = N; }
 	Check(bSteps, TEXT("the strokes only ever grow with the level"));
