@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 7. november kl. 16:04, fjell, ny bakke, veikant, nye figurer og lyskuler
+## Installert 8. november, Toms testfunn, Reyes-sporet, fremgang og rytme
+
+Etter Toms test 7. november: åpen slette uten gjerder langs veien, skumring med synlig bakke, fjellfarge fra flyfoto, kanten ved gården borte, UFO-formasjoner og forhåndsvisning, motorvei begge veier, Pale One i F10, lyskuler som droner, kalender med ekte dato, rettet dato under klokka, modemlyd, sidedør, takplate, roligere walkie-talkie, massivt lys utenfra med lyssøyler, levd kontrollrom med nytt gulv, ett gårdshus, ombygd generisk bil og SARO utvendig. Freeform starter 28. april 1986, med Reyes-sporet, Ward, Dale, vurdering etter 30 dager og nøklene; fremgang (peiling, steder, CB og 1420 AM, lyskaster, magnetometer og mer), døgnrytme, pris på tid, bortføring som koster, feltbesøk, bil og feller, F10 for alle hendelser, og ro etter fare med høyst ett farlig møte per natt. Prøvd i editor: selvtest 2907, regresjon 251, `-S47MenuPointerRelief`, normalreisen, `-S47ReyesTest`, `-S47FreeLifeTest`, lyskuler, en naturlig natt. Ikke spilt av et menneske, og lyd er ikke hørt. Kjent: gårdshuset er mørkt inne om dagen, SARO utvendig kan være for skittent, planter mot lav sol er for lyse, garasjeporten er stengt i Freeform, kinoens titting og to steder mangler lys i F10.
+
+## Tidligere installert 7. november kl. 16:04, fjell, ny bakke, veikant, nye figurer og lyskuler
 
 `d150d75d` etter PR482 er nå standard, med rask installasjon: `SM_FF_Range` fra dreneringsnett med stans ved foten, bakke med CC0-skanninger og variasjon, `S47RoadEdge` med jord og støv over veikanten, Pale One, Tall One og Roswell 2 med klipp, Crab med plantede lemmer, og lyskuler om natten ved ekte utstyr. Selvtest 2663 i pakken, regresjon 251, `-S47MenuPointerRelief` og normalreisen i editor; 144 uendrede Saved-filer. Ikke spilt av et menneske, og lyd er ikke hørt. Kjent: bakken er svart ved skumring, gul `DryGrass` ved dineren og E ved kinodøra (DUSK-20261107-03, patcher skrevet), fjellfoten er en rett linje fra øyehøyde, bleik by, svake sandtunger, og relieffkartet har et trinn på 53 m ved kanten. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d27/candidate/Linux`.
 

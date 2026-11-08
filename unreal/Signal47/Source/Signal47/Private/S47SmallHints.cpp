@@ -126,7 +126,7 @@ bool S47SmallHints::SelfTest(TArray<FString>& Lines)
  Check(Ids().Num()==UE_ARRAY_COUNT(Hints)&&Is(TEXT("night_hush"))&&!Is(TEXT("flyover")),TEXT("the list knows its own"));
  Check(PaceAllows(0,3,19.5,1)&&!PaceAllows(0,3,19.,0),TEXT("with a good draw the first can come early, and not at nineteen with a bad one"));
  Check(!PaceAllows(2,3,20,.5),TEXT("the third of three is not spent in the first hour"));
- Check(PaceAllows(2,3,2.,0),TEXT("but by two in the morning it may be"));
+ Check(PaceAllows(2,3,4.,0),TEXT("but by four in the morning it may be"));
  Check(!PaceAllows(3,3,5,1),TEXT("never past the budget"));
  return OK;
 }

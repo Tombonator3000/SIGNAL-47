@@ -305,8 +305,9 @@ def skirts(V_pos, attrs, T, on_rim, drop=80.0):
     return new_pos, new_attrs, np.concatenate([T, new_t]), len(new_t)
 
 
-def finish(name, field, to_road, grid_T, V, src_pos, src_T, src, static, out_dir, keep_normals=None):
-    """Vertex heights, attributes, checks; writes the GLB. static: (P, N, UV, C, T) carried over."""
+def finish(name, field, to_road, grid_T, V, src_pos, src_T, src, static, out_dir, keep_normals=None, eased=None):
+    """Vertex heights, attributes, checks; writes the GLB. static: (P, N, UV, C, T) carried over. eased: vertices
+    deliberately off the source in the masks (SARO's walked land on SaroLand), left out of the masks' check."""
     dx, dz = to_road
     x, z, ybase = V['x'], V['z'], V['ybase']
     off = field.off(x + dx, z + dz)
@@ -333,6 +334,8 @@ def finish(name, field, to_road, grid_T, V, src_pos, src_T, src, static, out_dir
         strict = field.sample(field.weight.astype(np.float64), x + dx, z + dz) <= 0
         if dx or dz:
             strict = field.sample(field.to_floor.astype(np.float64), x + dx, z + dz) <= 0
+        if eased is not None:
+            strict = strict & ~eased
         errs = []
         for col in range(3):
             v = grid_T[:, col]
@@ -440,7 +443,47 @@ def build_road(field, web_geo, budget, l_max, tol, l_min, collision=False):
     return Q, attrs, tr, check
 
 
-def build_saro(field, trim_g4, budget, l_max, tol, l_min, collision=False):
+def saro_open(x, z):
+    """Where SARO's walker stands on SaroLand in the relief's masks too, in SARO's terms, 0..1.
+
+    The exported ring has SaroLand at its vertices, but its triangles are up to 31 m long, and SaroLand bends between
+    them in the 40 m round the graded array (ARRAY_FLAT): the walker's floor stood 0.22 m over the drawn ground 8 m
+    west of the array (road -280 -426, -S47MenuPointerRelief walk 2) and a metre over it north of the array. Here the
+    mesh follows SaroLand as the walker does: north of the site's south line, over the land walked in SARO (the open
+    land's core, US47World::MakeLands' disc). Not at SaroLand's own step at 300 m, which stays the ring's ramp."""
+    x = np.asarray(x, dtype=np.float64)
+    z = np.asarray(z, dtype=np.float64)
+    far = np.hypot(x, z)
+    walked = np.maximum(1 - B.smooth(0, 40, B._outside((-339.0, 326.0, -561.0, 550.0), x, z)), 1 - B.smooth(600, 640, far))
+    return walked * (1 - B.smooth(0, 20, z)) * B.smooth(6, 16, np.abs(far - 300))
+
+
+def make_open_want(V, tol, l_min, budget, land, open_k):
+    """A second pass for SARO: split where the chord of the target (the ring, eased to SaroLand by open_k) is off it."""
+    def target(x, z, yb):
+        return yb + (land(x, z) - yb) * open_k(x, z)
+
+    def want(x, z, a, b, c, longest):
+        yb = V['ybase']
+        ta, tb, tc = target(x[a], z[a], yb[a]), target(x[b], z[b], yb[b]), target(x[c], z[c], yb[c])
+        mids = [((x[a] + x[b]) / 2, (z[a] + z[b]) / 2, (yb[a] + yb[b]) / 2, (ta + tb) / 2),
+                ((x[b] + x[c]) / 2, (z[b] + z[c]) / 2, (yb[b] + yb[c]) / 2, (tb + tc) / 2),
+                ((x[c] + x[a]) / 2, (z[c] + z[a]) / 2, (yb[c] + yb[a]) / 2, (tc + ta) / 2),
+                ((x[a] + x[b] + x[c]) / 3, (z[a] + z[b] + z[c]) / 3, (yb[a] + yb[b] + yb[c]) / 3, (ta + tb + tc) / 3)]
+        # (the source surface is plane over each source triangle, so a midpoint's ring height is the mean of its ends')
+        err = np.maximum.reduce([np.abs(target(mx, mz, my) - mt) for mx, mz, my, mt in mids])
+        marked = (err > tol) & (longest > l_min)
+        room = max(0, budget - len(a)) // 2
+        if marked.sum() > room:
+            if room == 0:
+                return np.zeros(len(a), bool)
+            worst = np.where(marked, err, -1.0)
+            marked = marked & (worst >= np.partition(worst, len(worst) - room)[len(worst) - room])
+        return marked
+    return want
+
+
+def build_saro(field, trim_g4, budget, l_max, tol, l_min, collision=False, open_budget=0):
     log('saro: read g4 (the game uses the trimmed one)')
     P, N, UV, C, T = read_glb_mesh(trim_g4, 'g4')
     # the ring closes on duplicate vertices: one position, one vertex, or a split would open a crack
@@ -457,14 +500,23 @@ def build_saro(field, trim_g4, budget, l_max, tol, l_min, collision=False):
     want = make_want(field, to_road, l_max, tol, l_min, budget, B.saro_land)
     V, gt2, src = refine(V, mT.copy(), want)
     # the floor here is SaroLand, which the exported ring only approximates (up to a metre out in its long triangles).
-    # Where the relief is live the mesh lies on the floor; in the masks it stays the ring as it was.
+    # Where the relief is live the mesh lies on the floor; in the masks it stays the ring as it was, except on the land
+    # walked round the array (saro_open), which gets triangles of its own in a second pass with a budget of its own.
+    t_first = len(gt2)
+    open_tol, open_min = tol[0], l_min[0]
+    if open_budget > 0:
+        V, gt2, src2 = refine(V, gt2, make_open_want(V, open_tol, open_min, t_first + open_budget, B.saro_land, saro_open))
+        src = src[src2]
     k = field.sample(field.to_floor.astype(np.float64), V['x'] + to_road[0], V['z'] + to_road[1])
-    V['ybase'] = V['ybase'] + (B.saro_land(V['x'], V['z']) - V['ybase']) * k
+    open_v = saro_open(V['x'], V['z']) if open_budget > 0 else np.zeros(len(V['x']))
+    V['ybase'] = V['ybase'] + (B.saro_land(V['x'], V['z']) - V['ybase']) * np.maximum(k, open_v)
     keep = np.zeros(len(V['x']), bool)
     keep[:len(Vp)] = True
     n_keep = np.zeros((len(V['x']), 3))
     n_keep[:len(Vp)] = N[first]
-    Q, attrs, tr, check = finish('SM_FF_Ground_Saro', field, to_road, gt2, V, Vp, mT, src, None, None, (keep, n_keep))
+    Q, attrs, tr, check = finish('SM_FF_Ground_Saro', field, to_road, gt2, V, Vp, mT, src, None, None, (keep, n_keep), open_v > 0)
+    check['open_land_pass'] = {'triangles_added': int(len(gt2) - t_first), 'budget': int(open_budget), 'tolerance_m': open_tol, 'smallest_edge_m': open_min,
+                               'vertices_eased_to_saro_land': int((open_v > 0).sum())}
     r = np.hypot(Vp[:, 0], Vp[:, 2]).max()
 
     def rim(p):
@@ -494,6 +546,8 @@ def main():
     ap.add_argument('--saro-budget', type=int, default=800000)
     ap.add_argument('--col-road-budget', type=int, default=650000)
     ap.add_argument('--col-saro-budget', type=int, default=250000)
+    ap.add_argument('--saro-open-budget', type=int, default=4000, help='triangles more for SARO\'s walked land in the masks (saro_open); 0 for the ring as it was')
+    ap.add_argument('--col-saro-open-budget', type=int, default=2000)
     ap.add_argument('--only', default='', help="a word in the names to build, for instance Saro; the rest stay as they are")
     args = ap.parse_args()
     field = Field(args.root)
@@ -502,10 +556,10 @@ def main():
     report = json.loads(old_report.read_text()) if args.only and old_report.exists() else {}
     report.pop('total_triangles_drawn', None)
     for name, fn in (('SM_FF_Ground_Road', lambda: build_road(field, args.web_geo, args.road_budget, L_MAX, TOL, L_MIN)),
-                     ('SM_FF_Ground_Saro', lambda: build_saro(field, args.trim_g4, args.saro_budget, L_MAX, TOL, L_MIN)),
+                     ('SM_FF_Ground_Saro', lambda: build_saro(field, args.trim_g4, args.saro_budget, L_MAX, TOL, L_MIN, open_budget=args.saro_open_budget)),
                      # plain meshes for complex collision: exact where one walks and drives, coarser than the drawn ones
                      ('SM_FF_Ground_Road_Col', lambda: build_road(field, args.web_geo, args.col_road_budget, COL_L_MAX, COL_TOL, COL_L_MIN, True)),
-                     ('SM_FF_Ground_Saro_Col', lambda: build_saro(field, args.trim_g4, args.col_saro_budget, COL_L_MAX, COL_TOL, COL_L_MIN, True))):
+                     ('SM_FF_Ground_Saro_Col', lambda: build_saro(field, args.trim_g4, args.col_saro_budget, COL_L_MAX, COL_TOL, COL_L_MIN, True, args.col_saro_open_budget))):
         if args.only and args.only not in name:
             continue
         Q, attrs, tr, check = fn()
