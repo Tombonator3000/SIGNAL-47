@@ -50,6 +50,15 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 - [ ] **SNEAK-20261108: snike** (huke seg, roligere skritt, mindre lyd og synlighet for det som leter).
 - [ ] **STRESS-20261108: stressindikator for spillerfiguren:** tyngre pust, mørkere kant og smalere syn ved panikk, roligere når faren går over. Ingen tall på skjermen.
 - [ ] **WEATHER-20261108: væreffekter:** vind og støvstorm, torden og regnbyger (sjeldent, vårt i New Mexico), dis om morgenen; påvirker sikt, lyd, kjøring og fare.
+- [ ] **TAPE-20261108: kassettspiller og opptak.** Ta opp lyd ute og spill av på SARO; noen ganger er det noe på båndet du ikke hørte. Det finnes allerede en kassettspillermodell ved array-PC-en på SARO: gjenbruk den.
+- [ ] **CASEBOARD-20261108: sporbok/kart som fylles selv** med notater, bilder og peilinger, og tråd mellom funn på SARO.
+- [ ] **FATIGUE-20261108: søvn og tretthet.** Sliten gir raskere stress og flimrende syn; kaffe på SARO hjelper.
+- [ ] **TOWNSFOLK-20261108: noen faste folk i Caliche om dagen** (bensinstasjonen, dineren, sheriffen) som husker hva du har gjort og sladrer, og merkes når noen forsvinner.
+- [ ] **SOUNDSCAPE-20261108: lydrom om natta:** fjerne, tydelige lyder (coyote, tog, vindhjul som knirker); brå stillhet som varsel.
+- [ ] **GEAR-FLICKER-20261108: utstyr svikter nær hendelser** (lykt, radio, bil), som indikator uten HUD.
+- [ ] **SAVE-SARO-20261108: lagring bare på SARO eller i senga.** Tom vurderer; foreslått 8. november.
+- [ ] **WARD-REPORT-20261108: ukerapport til Ward** der spilleren velger hva som rapporteres; påvirker tillit og vurdering, og løgn kan slå tilbake.
+- [ ] **SARO-CLIP-20261108: objekter på SARO som går inn i vegger** må flyttes. Finn dem med en kollisjonsprøve, ikke bare øyemål.
 - [ ] **GEIGER-20261108: spilleren kan lage en geigerteller eller lignende måler** som slår ut der UFO-er har landet (svidd ring, landingsspor, steder fra peiling). Del av fremgangen, laget av deler.
 - [ ] **MOTEL-REAL-20261108: realisme for motellet,** særlig kontoret: inverterte vegger og tv som ikke virker. Gjenbruk interiørmodeller fra andre steder der det passer.
 
