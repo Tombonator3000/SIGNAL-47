@@ -124,6 +124,8 @@ public:
  int32 EventStage() const { return Stage; }
  double EventAge() const { return Age; }
  FVector EventAnchor() const { return Anchor; }
+ // The event's anchor is in the area the player is in now (its scene, the town's two as one).
+ bool AnchorHere() const { return SameScene(); }
  bool PhysicalObjectPresented() const; // actual component visibility: physical props/sky, including scene and adopted ancestors
  FString ObservationNote() const;
  FString Status() const;
@@ -193,6 +195,8 @@ private:
  float TestDice=-1;
  double TestLightAfter=-1,TestScale=1,TestPace=1;
  bool bTestHush=false;
+ // The first shift was on at the last tick (Step): its end gives the scheduler an ordinary interval before its first draw.
+ bool bWasFirstShift=false;
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

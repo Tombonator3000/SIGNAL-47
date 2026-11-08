@@ -2,11 +2,14 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Places.h"
+#include "S47CB.h"
+#include "S47FieldRadio.h"
 #include "S47Radio.h"
 #include "S47RadioVoice.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "Misc/Crc.h"
 
 // Written for April 1986: drivers, ranch hands and night callers in Socorro County. Nobody real. Short, dry, and most of it about
 // nothing. A place id means it points somewhere; Needs is a finding the player must already hold, for the ones that talk about
@@ -109,6 +112,8 @@ void FS47RadioTips::Step(double Dt)
 }
 void FS47RadioTips::StepCb()
 {
+ // Only where there is a CB: the truck, or the base set in the SARO building. Never on foot.
+ if(!FS47FieldRadio::CbAtHand(M))return;
  // Several that mean nothing for each that does; each line once in a game, until there are none left.
  TArray<const FLine*> Plain,Telling;
  for(const FLine& L:CbLines())
@@ -120,8 +125,23 @@ void FS47RadioTips::StepCb()
  const bool bTell=!Telling.IsEmpty()&&(Plain.IsEmpty()||FMath::FRand()<.2f+.1f*M->Freeform->TownTrust());
  const auto& Pool=bTell?Telling:Plain;if(Pool.IsEmpty())return;
  const FLine* L=Pool[FMath::RandRange(0,Pool.Num()-1)];
- Used.Add(L->Id);
+ // CB-WALKIE-20261108: out of the CB's own speaker and on its HUD line, in a driver's voice, and said once it has really begun: a
+ // call cut off before its first word can come again. Busy with another call: soon again.
+ static const TCHAR* const Drivers[]={TEXT("man"),TEXT("old"),TEXT("man"),TEXT("woman")};
+ const FString SaidId=L->Id;const TWeakObjectPtr<US47Main> WeakMain=M;
+ const auto Begun=[WeakMain,SaidId]{if(WeakMain.IsValid()&&WeakMain->Freeform&&WeakMain->Freeform->Tips)WeakMain->Freeform->Tips->MarkSaid(SaidId);};
+ if(FS47FieldRadio::CbSay(M,{FString(L->Text)},Drivers[FCrc::StrCrc32(L->Id)%4],Begun))return;
+ if(M->CB.IsValid()&&M->CB->bBusy){CbIn=FMath::Min(CbIn,12.);return;}
+ // No sound to play it with: the words.
  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
+ MarkSaid(SaidId);
+}
+void FS47RadioTips::MarkSaid(const FString& Id)
+{
+ if(!M||!M->Freeform||Used.Contains(Id))return;
+ const FLine* L=CbLines().FindByPredicate([&Id](const FLine& Each){return Id==Each.Id;});
+ if(!L)return;
+ Used.Add(Id);
  if(L->Place&&M->Freeform->Places)M->Freeform->Places->Hear(L->Place);
  UE_LOG(LogTemp,Display,TEXT("S47: CB %s%s"),L->Id,L->Place?TEXT(" (points somewhere)"):TEXT(""));
  M->RequestAutosave();
@@ -153,17 +173,34 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s radio tips: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
- int32 Plain=0,Telling=0;TSet<FString> Ids;bool bPlaces=true,bClean=true;
- const auto Look=[&](const TCHAR* Id,const TCHAR* Text,const TCHAR* Place,const TCHAR* Needs)
+ int32 Plain=0,Telling=0;TSet<FString> Ids;bool bPlaces=true,bClean=true,bPlainWords=true;FString Offender;
+ // The text critic, 8 November: every word of the lines as they are said, the callers' and Earl's answers too. No make of car or
+ // drink, and the county's own American spelling.
+ static const TCHAR* const NotSaid[]={TEXT("chevy"),TEXT("chevrolet"),TEXT("ford"),TEXT("dodge"),TEXT("gmc"),TEXT("jeep"),TEXT("winnebago"),TEXT("cadillac"),TEXT("coke"),TEXT("pepsi"),TEXT("kinski"),TEXT("tyre"),TEXT("tyres"),TEXT("windscreen"),TEXT("grey"),TEXT("programme"),TEXT("colour"),TEXT("kerb"),TEXT("petrol"),TEXT("lorry")};
+ const auto Words=[](const FString& Said)
+ {
+  TArray<FString> Out;FString Word;
+  for(const TCHAR Ch:Said.ToLower()){if(FChar::IsAlpha(Ch))Word.AppendChar(Ch);else if(!Word.IsEmpty()){Out.Add(Word);Word.Reset();}}
+  if(!Word.IsEmpty())Out.Add(Word);
+  return Out;
+ };
+ const auto Look=[&](const TCHAR* Id,const TCHAR* Text,const TCHAR* Answer,const TCHAR* Place,const TCHAR* Needs)
  {
   Ids.Add(Id);(Place||Needs?Telling:Plain)+=1;
   if(Place)bPlaces&=FS47Places::Def(Place)!=nullptr;
-  const FString T=FString(Text).ToLower();
-  for(const TCHAR* W:{TEXT("alien"),TEXT("ufo"),TEXT("flying saucer"),TEXT("abduct")})bClean&=!T.Contains(W);
-  bClean&=T.Len()<190;
+  for(const TCHAR* Said:{Text,Answer})
+  {
+   if(!Said)continue;
+   const FString T=FString(Said).ToLower();
+   for(const TCHAR* W:{TEXT("alien"),TEXT("ufo"),TEXT("flying saucer"),TEXT("abduct")})bClean&=!T.Contains(W);
+   bClean&=T.Len()<190;
+   for(const FString& Word:Words(T))for(const TCHAR* Bad:NotSaid)if(Word==Bad){bPlainWords=false;Offender=FString(Bad)+TEXT(" in ")+Id;}
+  }
  };
- for(const FLine& L:CbLines())Look(L.Id,L.Text,L.Place,L.Needs);
- for(const FCall& C:AmCalls())Look(C.Id,C.Text,C.Place,C.Needs);
+ for(const FLine& L:CbLines())Look(L.Id,L.Text,nullptr,L.Place,L.Needs);
+ for(const FCall& C:AmCalls())Look(C.Id,C.Text,C.Answer,C.Place,C.Needs);
+ Check(bPlainWords,TEXT("no make of car or drink, and no British spelling, in anything said on the CB or on 1420"));
+ if(!bPlainWords)Lines.Add(FString(TEXT("FAIL radio tips: "))+Offender);
  Check(Ids.Num()==CbLines().Num()+AmCalls().Num(),TEXT("every line has its own id, so that it comes once"));
  Check(Plain>Telling,TEXT("more of them mean nothing than something"));
  Check(bPlaces,TEXT("what points somewhere points at a place that exists"));
@@ -177,9 +214,10 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
 
 bool FS47RadioTips::DevCb()
 {
- const int32 Before=Used.Num();
+ // Said at once with no sound, or begun on the CB (marked said as its first word comes).
+ const int32 Before=Used.Num();const bool bWasBusy=M&&M->CB.IsValid()&&M->CB->bBusy;
  if(M&&M->Freeform)StepCb();
- return Used.Num()>Before;
+ return Used.Num()>Before||(!bWasBusy&&M&&M->CB.IsValid()&&M->CB->bBusy);
 }
 
 bool FS47RadioTips::DevAm()

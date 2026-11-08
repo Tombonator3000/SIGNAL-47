@@ -11,6 +11,7 @@
 #include "S47UfoPresentation.h"
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
+#include "S47Happenings.h"
 #include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
@@ -323,7 +324,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
- Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
+ Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
   if(S47J::Num(O,TEXT("v"))!=1){bEnabled=false;return;}
@@ -534,8 +535,8 @@ FString FS47FreeformDirector::PreviewPlace(const FString& Id)const
 }
 void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair)const
 {
- // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna,
- // and best where a second stands about where S-02 stands from S-03, so that both of them have something to look over.
+ // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna;
+ // where a second stands about where S-02 stands from S-03, that one is named with it, and both have something to look over.
  OutShift=FVector2D::ZeroVector;
  if(!M||!M->Web||M->Web->DishCount()<3)return;
  const AS47Web& W=*M->Web;
@@ -551,7 +552,8 @@ void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPa
   for(int32 J=0;J<W.DishCount();++J)if(J!=I){const double D=FVector2D::Distance(FVector2D(W.DishX(J),W.DishZ(J)),At+Beside);if(D<Best){Best=D;Partner=J;}}
   (Partner!=INDEX_NONE?Good:Any).Add(TPair<int32,int32>(I,Partner));
  }
- const TArray<TPair<int32,int32>>& From2=Good.IsEmpty()?Any:Good;
+ // Any antenna on the array, not only where a second stands just so: on this array that is one pair, and every visit came to it.
+ TArray<TPair<int32,int32>> From2=Good;From2.Append(Any);
  if(From2.IsEmpty())return;
  // The game's own seed with the visit's: another game sends them elsewhere, and a Continue keeps them where they are.
  const int32 Game=M->Freeform?M->Freeform->Seed():47;
@@ -744,7 +746,7 @@ void FS47FreeformDirector::Apply()
    const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
    const FString Region=P?P->Region:FString(TEXT("land"));
    const FString Tip=Region==TEXT("motel")?FString(TEXT("The night clerk at the Sierra Motor Court reports lights low over the lot.")):FString::Printf(TEXT("%s reports lights low over %s."),Region==TEXT("caliche")||Region==TEXT("diner")?TEXT("Somebody in town"):Region==TEXT("saro")?TEXT("A trucker on the highway"):Region==TEXT("farm")?TEXT("A caller on the county road"):TEXT("A rancher on the county road"),*LightPlaceTitle(LightPlace));
-   if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+   FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
   }
   // Woken for this, or simply there: a figure out at the array makes itself known at least this much.
   if(Event==TEXT("observer"))
@@ -764,7 +766,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))
   {
    const FString Tip=FString::Printf(TEXT("A rancher says something came down near %s a while ago, a flash and no sound. He would rather not go and look."),*LightPlaceTitle(PlaceId));
-   if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+   FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
   }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)
@@ -1039,6 +1041,8 @@ FString FS47FreeformDirector::RestBlock() const
  if(Event==TEXT("service_presence"))return TEXT("Something is moving along the service yard fence. Get inside and shut the doors first.");
  if(Event==TEXT("close_pass"))return TEXT("Something is passing low over the station. Nobody sleeps through that.");
  if(Event==TEXT("observer")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))return TEXT("There is a figure out by the antennas. Not while it is still there.");
+ // A night event's danger, once met (the light over the truck, the woman by the road, the voice): stress reads this too.
+ if(Session.Happenings){const FString Night=Session.Happenings->RestBlock();if(!Night.IsEmpty())return Night;}
  return FString();
 }
 void FS47FreeformDirector::EndForRest()
@@ -1140,6 +1144,19 @@ void FS47FreeformDirector::Step(double Dt)
  const int32 Day=M->Freeform->Day();
  const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
  if(SeenDay!=Day){SeenDay=Day;{const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;MinorLeft=MinorBudget=FMath::Min(Random.RandRange(R.MinorMin,R.MinorMax),4);InvestLeft=FMath::Min(Random.RandRange(R.InvestMin,R.InvestMax),2);}SkyLeft=(Random.GetCurrentSeed()>>3)&1;NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
+ // The first shift's end is not a cue: what comes first after the routine job waits an ordinary interval from then, so that it does
+ // not land in the same second as the payment, and does not race whatever the shift's last minute held (the normal journey's
+ // S-03). A run whose fixture has just reset the scheduler (NextAt 0, TestLightsTonight) or a developer run is left as it is.
+ {
+  const bool bFirstShift=M->Freeform->InTutorial();
+  if(bWasFirstShift&&!bFirstShift&&NextAt>0&&M->Flow&&!M->Flow->bDevRun)
+  {
+   const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;
+   NextAt=FMath::Max(NextAt,ActiveTime+R.TickMin);Changed();
+   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: first shift over: the first draw waits until %.0f s (now %.0f)"),NextAt,ActiveTime);
+  }
+  bWasFirstShift=bFirstShift;
+ }
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
  if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
  StepMystery(Dt);

@@ -16,6 +16,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Rhythm.h"
+#include "S47Sneak.h"
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -297,6 +298,7 @@ void FS47DoorVisit::StepDraw(double Dt)
 void FS47DoorVisit::BeginAt(const FTarget& Found)
 {
  Target=Found;Now=EStage::Trying;T=AllT=0;SoundIn=0;HushIn=0;Noticed=0;Shake=0;Beat=0;bBodyOut=bSawBody=bLightComes=bSawOpen=bCutShort=false;
+ StillFor=0;bStillFeet=false;bHid=false;
  if(M->Web)Sight.Init(M);
  // A door in town gives its height in the street's terms; the room can stand well above that.
  if(M->Player&&FMath::Abs(Target.Middle.Y-M->Player->FloorY)>1.5)Target.Middle.Y=M->Player->FloorY;
@@ -459,7 +461,24 @@ void FS47DoorVisit::StepVisit(double Dt)
   // Nothing moves. Something small against the other side, over and over, until the door does something.
   SoundIn-=Dt;
   if(SoundIn<=0&&M->Audio){SoundIn=FMath::FRandRange(1.1f,1.7f);M->Audio->Sfx(TEXT("stepConcrete0"),FS47Sound{.Gain=.3f,.Rate=.55f,.At=Target.Middle+Target.Out*.4+FVector(0,.3,0)});}
-  if(T>=WaitSeconds)BeginOpening();
+  {
+   // SNEAK-20261108: a room where nobody moves, low and dark, may be given up on (S47Sneak.h). Steps go away along the wall and
+   // the door stays shut, as when it is held. Not always: half the time it opens all the same.
+   const bool bLampLit=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->Intensity()>0;
+   const double MovedPace=bStillFeet&&Dt>0?FVector::Dist(Feet,StillFeet)/Dt:0.;
+   StillFeet=Feet;bStillFeet=true;
+   StillFor=S47Sneak::StillInRoom(M->Player->Sneak(),bLampLit,MovedPace)?StillFor+Dt:0.;
+  }
+  if(T>=WaitSeconds)
+  {
+   const double HideRoll=TestHideRoll>=0?double(TestHideRoll):double(FMath::FRand());TestHideRoll=-1;
+   if(S47Sneak::DoorGoesAway(StillFor,HideRoll))
+   {
+    bHid=true;Now=EStage::Holding;T=1.6;Beat=0;SoundIn=0;PoseDoor(0);
+    UE_LOG(LogTemp,Display,TEXT("S47: door visit: nobody moved in there for %.1f s, low and dark; it goes away"),StillFor);
+   }
+   else BeginOpening();
+  }
   break;
  case EStage::Holding:
   // It tries harder for a moment, then stops, and steps go away along the wall.
@@ -575,7 +594,7 @@ FString FS47DoorVisit::LabelFor(const FString& DoorKey) const
  switch(Now)
  {
  case EStage::Trying:return TEXT("Hold the door");
- case EStage::Holding:return TEXT("Holding the door");
+ case EStage::Holding:return bHid?TEXT("Keep still"):TEXT("Holding the door");
  case EStage::Waiting:return TEXT("Open the door");
  case EStage::Opening:return TEXT("Push it shut");
  default:return FString();
@@ -599,7 +618,8 @@ void FS47DoorVisit::Finish(EEnding Ending)
  const FString Key=FString::Printf(TEXT("door-visit-%d"),M->Freeform->Day());
  const FString Where=S47DoorVisitLocal::Upper(Target.Title);
  FString What;
- if(Ending==EEnding::Held)What=TEXT("Something tried the handle of a shut door and waited. I held the door and it stopped, and steps went away along the wall. This records what I heard, not what it was.");
+ if(Ending==EEnding::Held&&bHid)What=TEXT("Something tried the handle of a shut door and waited. I kept low and still in the dark, and after a while steps went away along the wall. The door stayed shut. This records what I heard, not what it was.");
+ else if(Ending==EEnding::Held)What=TEXT("Something tried the handle of a shut door and waited. I held the door and it stopped, and steps went away along the wall. This records what I heard, not what it was.");
  else if(Ending==EEnding::Opened)What=TEXT("Something tried the handle of a shut door and waited. I opened it. Nobody on the threshold, and the sound stopped as the door moved. This records what I found, not what it was.");
  else if(bLightComes)What=M->Freeform->Taken&&M->Freeform->Taken->Stage()==FS47Taken::EStage::Flood
   ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and a light came after it. This records what I saw, not what it was.")

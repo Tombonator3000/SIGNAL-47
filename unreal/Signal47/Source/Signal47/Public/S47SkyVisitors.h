@@ -59,6 +59,8 @@ struct FS47SkyFormationState
  ES47SkyForm Form=ES47SkyForm::V;
  int32 Lights=0;
  double Age=0,From=0,LeaveAt=-1,Heading=0,AnchorX=0,AnchorZ=0,Lateral=2400,Height=1700,Looking=0;
+ // In a real game's rules (FS47SkyVisitors::FormationTonight): the night these were counted for, and how many it has shown.
+ int32 TonightNight=0,TonightShown=0;
  void Begin(const S47J::FObj& Saved);
  S47J::FObj Save() const;
  // True when the schedule moved (something to save). A pass slept through or missed is rescheduled, never made up for.
@@ -123,6 +125,7 @@ private:
  FVector PreviewShift=FVector::ZeroVector; // Freeform: the preview's track, moved to where this player can see it
  FS47SkyFormationState Formation;
  void StepFormation(double Dt);
+ bool FormationTonight(double Clock);
  void DrawFormation(double Dt,const FString& Area);
  bool FormationQuiet() const;
  double DevBoost() const;

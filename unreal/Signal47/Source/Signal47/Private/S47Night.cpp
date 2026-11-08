@@ -744,7 +744,8 @@ void US47Night::FlashlightStep(double Dt)
 	if (Flashlight->bDrains && Flashlight->bHave && !Flashlight->bOn && M->Mode == EMode::Play && !M->bPausedByMenu && !Modal()
 		&& M->Space == TEXT("room") && Area() == TEXT("saro") && Flashlight->BatteryLevel() < 1)
 		Flashlight->Charge(Dt / FS47Flashlight::ChargeSeconds);
-	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic());
+	// (held: the pause menu or a panel open; the battery is not used then, as the charger above does not charge)
+	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic(), M->bPausedByMenu || Modal());
 	if (Flashlight->bDrains && M->Mode == EMode::Play && M->UI)
 	{
 		const int32 Notice = Flashlight->TakeNotice();

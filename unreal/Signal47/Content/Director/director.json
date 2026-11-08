@@ -3,7 +3,7 @@
   "globals": {
     "their_hours": { "earliest": 1, "latest": 3, "end": 6, "dev_fixed": 2 },
     "tick_seconds": [240, 420],
-    "rest_after": { "danger": 480, "other": 45, "taken": 1800 },
+    "rest_after": { "danger": 170, "other": 45, "taken": 1800 },
     "budget_per_day": { "minor": [2, 4], "invest": [0, 2], "sky": [0, 1] },
     "danger_per_night": 1
   },
@@ -57,6 +57,23 @@
     { "id": "landing", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [21.5, 4.5], "draw": { "per_night": 0.24 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "hitchhiker", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.2 }, "min_nights_between": 5, "needs": ["driving"], "enforce": true },
     { "id": "stranded_rv", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.14 }, "min_nights_between": 6, "needs": [], "enforce": true },
-    { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 3, "hours": [20, 2], "draw": { "per_night": 0.5 }, "min_nights_between": 7, "needs": [], "enforce": true }
+    { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 7, "hours": [5, 6.5], "draw": { "per_night": 0.5 }, "min_nights_between": 7, "needs": [], "enforce": true },
+    { "id": "dogs_hush", "system": "night", "slot": "ground", "level": "hint", "from_day": 1, "hours": "night", "draw": { "per_night": 0.3 }, "cooldown_days": [1, 3], "needs": ["outdoors"], "enforce": true },
+    { "id": "phone_empty", "system": "night", "slot": "ground", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.2 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "carcass", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.12 }, "cooldown_days": [4, 7], "needs": [], "enforce": true },
+    { "id": "house_lit", "system": "night", "slot": "background", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.25 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "horizon_figure", "system": "night", "slot": "ground", "level": "presence", "from_day": 2, "hours": [22, 4.5], "draw": { "per_night": 0.2 }, "cooldown_days": [2, 4], "needs": ["outdoors"], "enforce": true },
+    { "id": "cinema_film", "system": "night", "slot": "background", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.15 }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
+    { "id": "room6_tv", "system": "night", "slot": "ground", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.1 }, "cooldown_days": [4, 7], "needs": [], "enforce": true },
+    { "id": "town_blackout", "system": "night", "slot": "ground", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.12 }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
+    { "id": "array_burst", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.25 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "am_caller", "system": "night", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 3], "draw": { "per_night": 0.25 }, "cooldown_days": [2, 4], "needs": ["driving"], "enforce": true },
+    { "id": "hood_warm", "system": "night", "slot": "background", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.3 }, "cooldown_days": [2, 4], "needs": ["on_foot"], "enforce": true },
+    { "id": "truck_tracks", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.15 }, "cooldown_days": [3, 6], "needs": ["on_foot"], "enforce": true },
+    { "id": "animals_flee", "system": "night", "slot": "ground", "level": "hint", "from_day": 1, "hours": "night", "draw": { "per_night": 0.25 }, "cooldown_days": [1, 3], "needs": ["outdoors"], "enforce": true },
+    { "id": "car_light", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.12 }, "min_nights_between": 4, "needs": ["driving"], "enforce": true },
+    { "id": "dust_devil", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [20, 23.5], "draw": { "per_night": 0.15 }, "cooldown_days": [3, 6], "needs": ["outdoors"], "enforce": true },
+    { "id": "missing_person", "system": "night", "slot": "background", "level": "observation", "from_day": 4, "hours": "night", "draw": { "per_night": 0.1 }, "cooldown_days": [5, 9], "needs": [], "enforce": true },
+    { "id": "unease", "system": "night", "slot": "background", "level": "hint", "from_day": 1, "hours": "night", "cooldown_days": [0, 0], "needs": [], "enforce": true }
   ]
 }

@@ -164,6 +164,8 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  }
  if(E->bGround&&!Now.Busy.IsNone())return No(FString::Printf(TEXT("slot_taken:%s"),*Now.Busy.ToString()));
  if(Now.RestLeft>0)return No(TEXT("rest"),FString::Printf(TEXT("%.0f s"),Now.RestLeft));
+ // A moment after anything else began: not on top of it. Being taken and the dash clock after a passing are part of what began.
+ if(Now.SinceStart<Now.StartGap&&Id!=TEXT("taken")&&Id!=TEXT("clock_ahead"))return No(TEXT("spacing"),FString::Printf(TEXT("%.0f s of the clock"),Now.StartGap-Now.SinceStart));
  if(E->Budget==TEXT("minor")&&Now.MinorLeft<=0)return No(TEXT("budget"),TEXT("small"));
  if(E->Budget==TEXT("invest")&&Now.InvestLeft<=0)return No(TEXT("budget"),TEXT("investigation"));
  if(E->Budget==TEXT("sky")&&Now.SkyLeft<=0)return No(TEXT("budget"),TEXT("sky"));
@@ -181,6 +183,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
  if(!F){N.bFreeform=false;return N;}
  N.Clock=F->Clock();N.Day=F->Day();N.bTutorial=F->InTutorial();
+ N.SinceStart=N.Clock-LastStartClock;N.StartGap=StartGap;
  N.bQuiet=F->QuietNight(FS47FreeformSession::NightOf(N.Clock));N.bTheirHours=F->TheirHoursNow(N.Clock);
  N.Area=M->Web?M->Web->Area():FString();
  if(F->Director)F->Director->FillRhythm(N);
@@ -225,8 +228,10 @@ void FS47Rhythm::Began(FName Id)
  auto* F=M&&M->Freeform?M->Freeform.Get():nullptr;
  const auto* E=Rules.Find(Id);
  if(!F||!F->Director||!E)return;
- // Being taken at the end of a visit or at a door is the same meeting, not another one.
- if(Id==TEXT("taken")&&((F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||F->Director->ActiveEvent()==TEXT("service_presence")))return;
+ // Being taken at the end of a visit, at a door or under a night event's light (FS47Happenings::HoldsTaking) is the same meeting.
+ if(Id==TEXT("taken")&&((F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||F->Director->ActiveEvent()==TEXT("service_presence")||(F->Happenings&&F->Happenings->HoldsTaking())))return;
+ // The common log of starts: the next, of anything, waits two to six minutes of the clock (May, "spacing").
+ LastStartClock=F->Clock();StartGap=120.+240.*FS47NightRhythm::Roll(F->Seed(),int32(LastStartClock/60.),0x53504143u);
  if(E->Level==ES47RhythmLevel::Danger)
  {
   F->Director->NoteDanger();
@@ -234,12 +239,12 @@ void FS47Rhythm::Began(FName Id)
  }
 }
 
-void FS47Rhythm::Ended(FName Id)
+void FS47Rhythm::Ended(FName Id,bool bMet)
 {
  auto* F=M&&M->Freeform?M->Freeform.Get():nullptr;
  const auto* E=Rules.Find(Id);
  if(!F||!F->Director||!E||!E->bEnforce||!F->RulesLive())return;
- F->Director->RestFor(E->Level==ES47RhythmLevel::Danger?Rules.RestDanger:Rules.RestOther);
+ F->Director->RestFor(E->Level==ES47RhythmLevel::Danger&&bMet?Rules.RestDanger:Rules.RestOther);
 }
 
 float FS47Rhythm::PerNight(FName Id,float Otherwise) const
@@ -296,7 +301,7 @@ void FS47Rhythm::Observed(FName Id,const FS47RhythmNow& At)
  FS47RhythmNow Asked=At;if(Asked.Busy==Id)Asked.Busy=NAME_None;
  // Taken at the end of a visit, at a door or by the yard's presence is that meeting's end, not a second one (as Began counts it):
  // krit10field night 3 said "danger 2" and "would stop" for one crab that took the player.
- const bool bSameMeeting=Id==TEXT("taken")&&(Asked.Busy==TEXT("field_visit")||Asked.Busy==TEXT("site_visit")||Asked.Busy==TEXT("door_visit")||Asked.Busy==TEXT("service_presence")||Asked.Busy==TEXT("empty_car"));
+ const bool bSameMeeting=Id==TEXT("taken")&&(Asked.Busy==TEXT("field_visit")||Asked.Busy==TEXT("site_visit")||Asked.Busy==TEXT("door_visit")||Asked.Busy==TEXT("service_presence")||Asked.Busy==TEXT("empty_car")||FS47Happenings::IsDanger(Asked.Busy.ToString()));
  if(bSameMeeting)
  {
   UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm start taken day %d %s, the end of %s, not another meeting"),At.Day,*ClockText(M&&M->Freeform?M->Freeform->Clock():0),*Asked.Busy.ToString());
@@ -425,7 +430,7 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  Check(D.Earliest==FS47NightRhythm::EarliestHour&&D.Latest==FS47NightRhythm::LatestHour&&D.End==FS47NightRhythm::EndHour,TEXT("their hours as FS47NightRhythm has them"));
  const auto Chance=[&](const TCHAR* Id){const auto* E=D.Find(Id);return E?E->PerNight:-1.;};
  Check(FMath::IsNearlyEqual(float(Chance(TEXT("door_visit"))),float(FS47DoorVisit::ComeChance),.001f),TEXT("door visit's chance as FS47DoorVisit has it"));
- Check(D.TickMin==240&&D.TickMax==420&&D.RestDanger==480&&D.RestOther==45&&D.RestTaken==1800&&D.MinorMin==2&&D.MinorMax==4&&D.InvestMin==0&&D.InvestMax==2&&D.SkyMin==0&&D.SkyMax==1,TEXT("ticks, rest and budgets as the Director has them"));
+ Check(D.TickMin==240&&D.TickMax==420&&D.RestDanger==170&&D.RestOther==45&&D.RestTaken==1800&&D.MinorMin==2&&D.MinorMax==4&&D.InvestMin==0&&D.InvestMax==2&&D.SkyMin==0&&D.SkyMax==1,TEXT("ticks, rest and budgets as the Director has them"));
  // Every event a save can name.
  bool bAll=true;FString Missing;
  for(const FString& Id:FS47FreeformDirector::EventIds())if(!D.Find(FName(*Id))){bAll=false;Missing+=Id+TEXT(" ");}

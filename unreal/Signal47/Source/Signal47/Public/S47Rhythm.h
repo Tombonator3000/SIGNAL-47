@@ -26,7 +26,8 @@ struct FS47RhythmEvent
 };
 struct FS47RhythmData
 {
- double Earliest=1,Latest=3,End=6,DevFixed=2,TickMin=240,TickMax=420,RestDanger=480,RestOther=45,RestTaken=1800;
+ // RestDanger: a pause after a danger, not the rest of the night (Tom's critics, 8 November: was 480 s, two hours of the clock).
+ double Earliest=1,Latest=3,End=6,DevFixed=2,TickMin=240,TickMax=420,RestDanger=170,RestOther=45,RestTaken=1800;
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
  TArray<FS47RhythmEvent> Events;
  const FS47RhythmEvent* Find(FName Id) const{return Events.FindByPredicate([Id](const FS47RhythmEvent& E){return E.Id==Id;});}
@@ -40,6 +41,8 @@ struct FS47RhythmNow
  bool bHumorTonight=false;
  int32 Day=1,MinorLeft=0,InvestLeft=0,SkyLeft=0,DangerTonight=0;
  double Clock=0,RestLeft=0;
+ // Since the last start of anything, and how long the one after it waits (FS47Rhythm::Began).
+ double SinceStart=1e9,StartGap=0;
  FString Area;
  FName Busy=NAME_None; // what holds the ground now
  TMap<FName,int32> LastDays;
@@ -72,8 +75,12 @@ public:
  // Within: the event that this one is part of (the car whose light it is), whose ground does not count against it either.
  bool Allow(FName Id,FName Within=NAME_None);
  // It has started, or is over: a danger is counted for the night, and the rest after it runs for everyone.
+ // Every start is also the one common log of starts (Tom's critics, 8 November): after one, the next waits two to six minutes of the
+ // clock, whatever system it is, so that nothing comes in a heap when a rest lets go. bMet false: a danger nobody met, the short rest.
  void Began(FName Id);
- void Ended(FName Id);
+ void Ended(FName Id,bool bMet=true);
+ // The clock of the last start of anything, for those that keep their own distance from it too (FS47Happenings' unease).
+ double LastStart() const{return LastStartClock;}
  // The night's chance from the file, with the code's own number if the file does not have it.
  float PerNight(FName Id,float Otherwise) const;
  bool NeedHolds(FName Name) const;
@@ -99,4 +106,5 @@ private:
  void Observed(FName Id,const FS47RhythmNow& At);
  TMap<FName,FName> ShadowSaid;
  void CloseNight(int32 NewNight);
+ double LastStartClock=-1e9,StartGap=0;
 };

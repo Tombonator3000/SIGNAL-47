@@ -355,7 +355,14 @@ void SS47Hud::Rebuild()
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
 		TSharedRef<SVerticalBox> In = SNew(SVerticalBox);
-		if (!T->Who.IsEmpty()) In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(T->Who.ToUpper())).Font(Term(22, 3)).ColorAndOpacity(Amber())];
+		if (!T->Who.IsEmpty())
+		{
+			// CB-WALKIE-20261108: what came over the CB under its channel, in amber; the walkie's (Dale's) in the set's own green
+			FString WhoShown = T->Who.ToUpper();
+			const bool bWalkieHead = WhoShown.StartsWith(TEXT("WALKIE"));
+			if (WhoShown == TEXT("CB") || WhoShown.StartsWith(TEXT("CB,"))) WhoShown = FString(TEXT("CB 19")) + WhoShown.Mid(2);
+			In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(22, 3)).ColorAndOpacity(bWalkieHead ? S47HudGauges::WalkieTint() : Amber())];
+		}
 		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
 		[
 			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(T->Line.Len() > 42).WrapTextAt(P(676)).Justification(ETextJustify::Center)
@@ -481,8 +488,15 @@ void SS47Hud::ReadGauges(float Dt)
 	int32 Kind = 0; float Signal = 0.f;
 	if (bShow)
 	{
-		if (M->CB.IsValid() && M->CB->bBusy) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
-		else if (M->FieldRadio.IsValid() && M->FieldRadio->InUse()) { Kind = 2; Signal = float(M->FieldRadio->Strength()); }
+		// CB-WALKIE-20261108: the CB's line only where a CB is (the truck, the SARO building): never on foot with the walkie
+		if (M->CB.IsValid() && M->CB->bBusy && FS47FieldRadio::CbAtHand(M)) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
+		else if (M->FieldRadio.IsValid() && M->FieldRadio->InUse())
+		{
+			Kind = 2; Signal = float(M->FieldRadio->Strength());
+			// WALKIE-USE-20261108: the channel it is on, and whether the player is keyed or Dale is calling
+			Gauges.Channel = M->FieldRadio->Channel();
+			Gauges.Mode = M->FieldRadio->Hailing() ? 2 : M->FieldRadio->Transmitting() ? 1 : 0;
+		}
 	}
 	// the radio line keeps its words while it fades out
 	if (Kind) { Gauges.Radio = Kind; Gauges.Strength = Signal; }
@@ -527,15 +541,20 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 	// above the battery when that is showing
 	if (Gauges.RadioA > 0.f && Gauges.Radio != 0)
 	{
-		const FString Words = Gauges.Radio == 1 ? S47HudGauges::CbLine() : S47HudGauges::WalkieLine();
+		// CB-WALKIE-20261108: the CB in its amber, the walkie (Dale's) in a green of its own, with its channel and TX or CALL
+		const bool bWalkie = Gauges.Radio != 1;
+		const FString Words = bWalkie ? S47HudGauges::WalkieLine(Gauges.Channel, Gauges.Mode) : S47HudGauges::CbLine();
+		const FLinearColor Tint = bWalkie ? S47HudGauges::WalkieTint() : FLinearColor(1.f, 0.69f, 0.32f, 1.f);
+		const FLinearColor TextTint = bWalkie ? FLinearColor(0.62f, 0.78f, 0.66f, 1.f) : FLinearColor(0.56f, 0.54f, 0.49f, 1.f);
+		const float Calling = bWalkie && Gauges.Mode == 2 ? 0.6f + 0.4f * FMath::Abs(FMath::Sin(float(Now) * 4.f)) : 1.f;
 		const FSlateFontInfo Font = Term(18.f, 1.f);
 		const float WordsW = FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Words, Font).X;
 		const float WaveW = P(64.f), WaveH = P(14.f), Gap = P(10.f);
 		const float LineBottom = Floor - Gauges.BatteryA * P(32.f);
 		const float MidY = LineBottom - P(10.f);
 		const float Left = Right - WaveW - Gap - WordsW;
-		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(WordsW + P(8.f), P(22.f)), FSlateLayoutTransform(FVector2f(Left, MidY - P(11.f)))), Words, Font, ESlateDrawEffect::None, FLinearColor(0.56f, 0.54f, 0.49f, 0.9f * Gauges.RadioA));
-		Fill(Left, LineBottom, Right - Left, FMath::Max(1.f, P(1.f)), FLinearColor(1.f, 0.69f, 0.32f, 0.22f * Gauges.RadioA));
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(WordsW + P(8.f), P(22.f)), FSlateLayoutTransform(FVector2f(Left, MidY - P(11.f)))), Words, Font, ESlateDrawEffect::None, FLinearColor(TextTint.R, TextTint.G, TextTint.B, 0.9f * Gauges.RadioA * Calling));
+		Fill(Left, LineBottom, Right - Left, FMath::Max(1.f, P(1.f)), FLinearColor(Tint.R, Tint.G, Tint.B, 0.22f * Gauges.RadioA));
 		TArray<FVector2f> Points;
 		constexpr int32 Samples = 28;
 		for (int32 I = 0; I <= Samples; ++I)
@@ -543,7 +562,7 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 			const double X = double(I) / Samples;
 			Points.Add(FVector2f(Right - WaveW + float(X) * WaveW, MidY - float(S47HudGauges::Wave(X, Now * 6.0, Gauges.Strength)) * WaveH * 0.5f));
 		}
-		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.8f * Gauges.RadioA), true, FMath::Max(1.f, P(1.4f)));
+		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, FLinearColor(Tint.R, Tint.G, Tint.B, 0.8f * Gauges.RadioA), true, FMath::Max(1.f, P(1.4f)));
 	}
 }
 

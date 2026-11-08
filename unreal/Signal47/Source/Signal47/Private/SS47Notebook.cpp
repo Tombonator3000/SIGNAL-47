@@ -208,7 +208,8 @@ namespace
 				{ TEXT("A / B"), TEXT("Use / secondary choice or takeaway management.") },
 				{ TEXT("X / RT"), TEXT("Raise or lower the camera / shutter while raised.") },
 				{ TEXT("LT / Y"), TEXT("Hold to look closer / jump.") },
-				{ TEXT("D-pad Up / Down"), TEXT("Flashlight / radio.") },
+				{ TEXT("D-pad Up / Down"), TEXT("Flashlight / the walkie: call Dale, or answer him. In the truck, Down is the radio.") },
+				{ TEXT("RS click"), TEXT("Keep low, or stand up again.") },
 				{ TEXT("D-pad Left / Right"), TEXT("Map / spoken description.") },
 				{ TEXT("LB / View"), TEXT("The notebook. View has two overlapping rectangles.") },
 				{ TEXT("RB / Menu"), TEXT("The case board / pause, settings, save and load.") } } },
@@ -253,7 +254,12 @@ namespace
 				{ TEXT("Mouse"), TEXT("Look round the cab.") },
 				{ KeysSaid(TEXT("radio")) + TEXT(", or click the radio"), TEXT("The radio: on, the next station, off.") },
 				{ First(TEXT("use")) + TEXT(", stopped"), TEXT("Get out. When the engine has died: turn the key.") } } };
-			return { TEXT("Keyboard and mouse"), { Foot, Truck } };
+			// SNEAK-20261108 and WALKIE-USE-20261108
+			FCtlGroup Low = { TEXT("Walkie and keeping low"), {
+				{ KeysSaid(TEXT("crouch")), TEXT("Keep low, or stand up again: slower and quieter, a little harder to see and hear.") },
+				{ KeysSaid(TEXT("walkie")), TEXT("The walkie, once you carry it: call Dale, or answer him when he calls.") },
+				{ KeysSaid(TEXT("channel")), TEXT("The walkie's channel: 1 is Dale's, 2 the service band, 3 nobody's.") } } };
+			return { TEXT("Keyboard and mouse"), { Foot, Truck, Low } };
 		}
 		static const FCtlPage Phone = { TEXT("Phone and tablet"), {
 			{ TEXT("On foot"), {

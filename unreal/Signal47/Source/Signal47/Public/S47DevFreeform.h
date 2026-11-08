@@ -84,6 +84,10 @@ private:
  void StepStand();
  FString StandPlace;
  int32 StandNight=0;
+ // -S47NaturalStand=tour: through each night the player goes where a player would be (control room, Caliche, the wheel, the farm,
+ // the open land), so that what fits each place can come by itself. Nothing is started or cleared.
+ void StepTour();
+ int32 TourNight=0,TourLeg=-1;
  double ScheduleHeld=0; // a line has set the Director's schedule by itself for this long
  FString Holding;
  TSharedPtr<SWidget> Panel;

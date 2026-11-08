@@ -9,6 +9,8 @@
 #include "S47FarmHouse.h"
 #include "S47FarmSite.h"
 #include "S47FieldRadio.h"
+#include "S47Keys.h"
+#include "S47Flashlight.h"
 #include "S47FloodProbe.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
@@ -427,6 +429,21 @@ void FS47DevFreeform::AddIndoors(FS47DevEvents& E)
   const FString Why=F->IndoorDread->Door().DevStart();
   if(!Why.IsEmpty())Tell(false,Why);else Tell(true,TEXT("The handle moves."));
  });
+ // SNEAK-20261108: low, dark and still while it waits, and it gives up on the room. Forced here; in play half the time.
+ E.AddFreeform(G,TEXT("Door: keep low and still, the old house"),TEXT("03:12, crouched with the lamp off; stay still while it waits and it goes away, the door shut"),[this]
+ {
+  PlaceRoom(TEXT("house"),[this]
+  {
+   auto* F=Session();if(!F||!F->IndoorDread||!M->Player)return;
+   if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn)M->Night->Flashlight->Toggle();
+   M->Player->SetCrouch(true);
+   F->IndoorDread->Door().TestHide(0.f);
+   const FString Why=F->IndoorDread->Door().DevStart();
+   if(!Why.IsEmpty()){F->IndoorDread->Door().TestHide(-1.f);Tell(false,Why);return;}
+   AimAt(F->IndoorDread->Door().DoorMiddle()+FVector(0,1.1,0));
+   Tell(true,TEXT("The handle moves. Stay low with the lamp off and do not move: when it has waited, steps go away along the wall."),8);
+  });
+ });
  static const FRoom Peeks[]={{TEXT("saro"),TEXT("SARO control room")},{TEXT("house"),TEXT("the old house")},{TEXT("cinema"),TEXT("the Plaza cinema")}};
  for(const FRoom& R:Peeks)
  {
@@ -778,7 +795,7 @@ FString FS47DevFreeform::HoldFor() const
 void FS47DevFreeform::StepStand()
 {
  auto* F=Session();
- if(StandPlace.IsEmpty()||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
+ if(StandPlace.IsEmpty()||StandPlace==TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
  const double Hour=FMath::Fmod(F->Clock(),86400.)/3600.;
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  if(Hour<21||StandNight==Night)return;
@@ -798,6 +815,58 @@ void FS47DevFreeform::StepStand()
   if(!bPut)M->Player->Place(House.X+50,House.Z+20,0);
  }
  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night %d: standing at %s, %.0f %.0f, %s"),Night,*StandPlace,M->Player->Pos.X,M->Player->Pos.Z,*ClockText(F->Clock()));
+}
+
+void FS47DevFreeform::StepTour()
+{
+ auto* F=Session();
+ if(StandPlace!=TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bBusy||M->ModalOpen()||!HoldFor().IsEmpty())return;
+ if(F->Taken&&F->Taken->Busy())return;
+ const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
+ if(H<19.9||H>=29.9)return;
+ // 0 the control room, 1 Caliche's street, 2 at the wheel on the highway, 3 the farm yard, 4 the open land past the farm.
+ static const double Hours[]={20.,21.5,23.,24.5,26.,27.3,28.6,29.4};
+ static const int32 Legs[]={0,1,2,3,0,4,2,1};
+ int32 Leg=-1;for(int32 I=0;I<8;++I)if(H>=Hours[I])Leg=I;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ if(Leg<0||(TourNight==Night&&TourLeg==Leg))return;
+ TourNight=Night;TourLeg=Leg;
+ const int32 To=Legs[Leg];
+ static const TCHAR* const Names[]={TEXT("the control room"),TEXT("Caliche's street"),TEXT("the wheel on the highway"),TEXT("the farm yard"),TEXT("the open land past the farm")};
+ UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural tour night %d: to %s, %s"),Night,Names[To],*ClockText(F->Clock()));
+ if(M->World->bDriving){M->World->TestInput=nullptr;M->World->StopDriving();}
+ if(To==2)
+ {
+  const double StartX=1.8,StartZ=1500.;
+  FS47TripOpts O;O.AtPos=FVector(8000+StartX,S47RoadTerrain::SurfaceY(StartX,StartZ),StartZ);O.AtHeading=0.;O.Leg=TEXT("road");
+  M->World->StartTrip(TEXT("road"),TEXT("diner"),O);
+  M->World->TestInput=[this]{FS47DriveIn Pedal;auto* D=M&&M->World?M->World->CabDrive():nullptr;if(D)Pedal.Throttle=D->Speed<10?1:0;return Pedal;};
+  return;
+ }
+ const FVector House=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
+ const FString Area=To==1?TEXT("diner"):TEXT("saro");
+ const auto Stand=[this,To,House]
+ {
+  if(!M||!M->Player)return;
+  if(To==0)M->Player->Place(0,-1.2,UE_DOUBLE_PI);
+  else if(To==1)M->Player->Place(7995,2110,0);
+  else if(To==3)M->Player->Place(House.X+8,House.Z+10,0);
+  else
+  {
+   // Out on the open ground past the farm, on foot: somewhere the land lets them stand (as StepStand has it).
+   bool bPut=false;
+   for(int32 I=0;I<24&&!bPut;++I)
+   {
+    const double A=I*UE_DOUBLE_PI/12,R=60+(I%3)*20;const double X=House.X+FMath::Cos(A)*R,Z=House.Z+FMath::Sin(A)*R;
+    if(!M->Player->Walkable(X,Z)||(M->Player->OpenLand&&!M->Player->OpenLand(X,Z))||M->World->Indoors(FVector(X,M->Player->FloorY+1,Z)))continue;
+    M->Player->Place(X,Z,A+UE_DOUBLE_PI);bPut=true;
+   }
+   if(!bPut)M->Player->Place(House.X+60,House.Z+25,0);
+  }
+  M->Player->Pitch=0;
+ };
+ if(M->Web->Area()!=Area){if(Area==TEXT("diner"))M->World->PlaceTruck(TEXT("diner"));M->World->Enter(Area);After(.7,Stand);}
+ else Stand();
 }
 
 void FS47DevFreeform::StepNatural(double Dt)
@@ -1019,7 +1088,41 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  E.AddFreeform(K,TEXT("CB: the next line"),TEXT("the next that fits; each once in a game, and most mean nothing"),[this]
  {
   auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevCb();
-  if(!bSaid)Tell(false,TEXT("no CB line left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
+  if(!bSaid)Tell(false,TEXT("no CB here (the truck or the SARO building), the CB is busy with another call, or no line is left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
+ });
+ // WALKIE-USE-20261108, CB-WALKIE-20261108 and SNEAK-20261108: the walkie in your own hand, the CB apart from it, keeping low.
+ E.AddFreeform(K,TEXT("Walkie: Dale calls you"),TEXT("gives you the set on channel 1; T answers within 18 s, or he gives up and it goes on the slip by the phone"),[this]
+ {
+  auto* F=Session();if(!F||!F->Predecessor){Tell(false,TEXT("Freeform only"));return;}
+  if(!F->Predecessor->TestHail())Tell(false,TEXT("the set cannot take it now: a call of his is already out"));
+  else Tell(true,FString::Printf(TEXT("Dale is calling on channel 1. %s answers."),*S47Keys::Label(TEXT("walkie"))),6);
+ });
+ E.AddFreeform(K,TEXT("Walkie: call Dale, as T does"),TEXT("his answer follows the hour and what you are doing; asleep 03:30 to 07:30 and on his way home 17 to 18"),[this]
+ {
+  if(!M||!M->FieldRadio.IsValid()){Tell(false,TEXT("no set"));return;}
+  if(!M->FieldRadio->Owned())M->FieldRadio->TestOwn();
+  Tell(true,TEXT("Keyed on the walkie. What comes back depends on the hour, where you are, and the channel."),5);
+  After(.4,[this]{if(M&&M->FieldRadio.IsValid())M->FieldRadio->PressTalk();});
+ });
+ E.AddFreeform(K,TEXT("Walkie: next channel, as Y does"),TEXT("1 Dale's, 2 the district's service band (wagon 23's carrier, out by the old grade), 3 nobody's"),[this]
+ {
+  if(!M||!M->FieldRadio.IsValid()){Tell(false,TEXT("no set"));return;}
+  if(!M->FieldRadio->Owned())M->FieldRadio->TestOwn();
+  M->FieldRadio->NextChannel();
+  Tell(true,FString::Printf(TEXT("The walkie is on channel %d."),M->FieldRadio->Channel()),4);
+ });
+ E.AddFreeform(K,TEXT("A stranger's report: CB or walkie"),TEXT("in the truck or the SARO building it comes over the CB; elsewhere Dale passes it on over the walkie"),[this]
+ {
+  if(!M){return;}
+  const bool bCb=FS47FieldRadio::CbAtHand(M);
+  FS47FieldRadio::Report(M,TEXT("A rancher on the county road reports lights low over the Baca lease. He says he will not go and look."));
+  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie if you carry it on channel 1 (green, WALKIE 1); otherwise it waits for the truck or the SARO building."),6);
+ });
+ E.AddFreeform(K,TEXT("Keep low, as Ctrl does"),TEXT("crouched or up again: half pace, softer steps, the eye 60 cm lower; seen and heard a little less"),[this]
+ {
+  if(!M||!M->Player){Tell(false,TEXT("no player"));return;}
+  M->Player->SetCrouch(!M->Player->bCrouch);
+  Tell(true,M->Player->bCrouch?TEXT("Keeping low."):TEXT("Standing."),3);
  });
  E.AddFreeform(K,TEXT("1420: the next caller"),TEXT("the next that fits; each once in a game"),[this]
  {
@@ -1314,7 +1417,7 @@ void FS47DevFreeform::Step(double Dt)
    }
   }
  }
- if(bNatural){StepNatural(Dt);StepStand();}
+ if(bNatural){StepNatural(Dt);StepStand();StepTour();}
  StepSweep(Dt);
 }
 

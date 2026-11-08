@@ -60,6 +60,9 @@ public:
  // F10 and tests: start one here and now, past its draw. Variant: real, empty or wrong for cb_stranded; car, singer, crossing or
  // pump for humor. Why: what stopped it.
  bool DevStart(const FString& Id,const FString& Variant,FString& Why);
+ // F10 and tests: as the night itself would start it, with every condition asked (only the rhythm's dice and draws left out).
+ bool DevTry(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
+ int32 DangersMet() const{return MetTotal;}
  // Whatever is on the ground is over at once; with bSites the lasting ones go too. Test runs only.
  void DevClear(bool bSites);
  // Where a lasting one stands in the area the player is in now (Kind: landing, truck, rv). False: none, or not in this area.
@@ -67,13 +70,34 @@ public:
  // Where the one on the ground stands now, in this area (the woman, the car, the singer, the small man, the lights). False: none.
  bool LiveAt(FVector& Out) const;
  bool HasSite(const FString& Kind) const;
+ // A danger the player has met, while it lasts (FS47Stress, the Director's RestBlock): why there is no lying down now. Empty: none.
+ FString RestBlock() const;
+ // The one on the ground is a danger whose light may take the player: being taken is that same meeting (S47Taken, FS47Rhythm).
+ bool HoldsTaking() const;
+ // A record one of these leaves (FS47FreeformCases, FieldRecordKept, the 30-day assessment). Humour and pay are not.
+ static bool IsNightFinding(const FString& Id);
+ // Its kind, for counting kinds: "cattle_ring_d4" -> "cattle_ring".
+ static FString NightFindingKind(const FString& Id);
  // The counter.
  bool GeigerBuilt() const;
+ // Its own key: held up, or put away. False when it is not built.
+ bool ToggleCounter();
  float GeigerReading() const{return Dose;}
  bool GeigerShown() const{return bGeigerUp;}
  void DevGeiger(bool bGive,bool bHold){bDevGeiger|=bGive;bGeigerHeld=bHold;}
  // The bench's job for the counter (FS47FreeformWorld): empty when the tube is there.
  static FString GeigerBench(const US47Main* M);
+
+ // Unease (Docs/Design/Director/URO.md, TODO UNEASE-20261108, Tom 8 November): 25 small things with no danger, no reward and no
+ // explanation, two or three a night, never two alike in a night, never just before or after a danger. The player is never quite
+ // sure anything happened. Nr. 3 (your name) and nr. 20 (a note in your own hand) come at most once in a game.
+ static int32 UneaseCount();
+ static const TCHAR* UneaseId(int32 I);
+ static const TCHAR* UneaseTitle(int32 I);
+ // F10: this one now, as far as where the player stands allows. Why: what stopped it.
+ bool DevUnease(int32 I,FString& Why);
+ bool UneaseLive() const{return Uneasy.I>=0;}
+ int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
 
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
@@ -91,6 +115,9 @@ private:
   double Age=0,Len=0,X=0,Z=0,Yaw=0,Clock=0;
   FVector At=FVector::ZeroVector,Dir=FVector::ZeroVector;
   bool bSeen=false,bForced=false,bDone=false,bDanger=false;
+  // A danger counts when the player meets it (MeetDanger), not when it is drawn. Watch: until this age, the player out on foot is
+  // taken (BeginOver), as under the light over the truck.
+  bool bMet=false;double Watch=-1;
  } Now;
  // What stays out on the land after: a landing's ring, a stuck truck, a camper.
  struct FSite
@@ -98,7 +125,8 @@ private:
   FString Kind,Variant,Place,Title;
   int32 Night=0,Serial=0;
   double X=0,Z=0,Yaw=0,Az=-1,Spread=0,Until=0;
-  bool bFound=false,bDone=false,bHeard=false;
+  // bKnown: a landing's bearing may go on the map (seen, logged or found); its Az is set when it comes down, known or not.
+  bool bFound=false,bDone=false,bHeard=false,bKnown=false;
  };
  // For what the interaction list holds on to: lives as long as this does, across every Begin.
  TSharedPtr<uint8> Alive=MakeShared<uint8>(0);
@@ -122,7 +150,7 @@ private:
  // The passing over the truck, and the truck's electrics while it is over them.
  double DimLeft=0;bool bDimmed=false;
  // The counter.
- float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false;
+ float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
@@ -134,10 +162,54 @@ private:
  void StepEvent(double Dt);
  void StepSites(double Dt);
  void StepLate();
+ // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
+ uint32 SituationNow() const;
+ static uint32 NeedMask(const FString& Id);
+ TArray<FString> SwapOrder(int32 Night) const;
+ void StepSwap();
+ double SwapTry=0;
  void StepSays(double Dt);
  void Say(const FString& Text,double In=0,float Secs=6);
  void Cb(const TArray<FString>& Lines,const FString& Voice,bool bWrong);
- void Deed(const FString& Text);
+ // A stranger's word that need not be heard on a CB: on one if one is to hand, otherwise Dale passes Passed on over the walkie.
+ void Tip(const TArray<FString>& Lines,const FString& Voice,const FString& Passed);
+ // Dangers met in this game (saved): humour waits for the first. The humorous ones seen, so that the small man comes last.
+ int32 MetTotal=0;TArray<FString> HumorSeen;
+ // The night a figure was asked for on the next photograph: it is not carried into another night.
+ int32 GhostNight=0;
+ // What a voice may say back to the player (cb_echo): only what they really did, never humour or F10.
+ void Deed(const FString& Text,bool bEcho=true);
+ // The danger on the ground is met: counted now (FS47Rhythm::Began), and shown in stress and the rest it blocks.
+ void MeetDanger();
+ // The watch over a danger: the player out on foot is taken.
+ void StepWatch();
+ // What is drawn for each, put away when it is over or the game stops (and the room's television with it).
+ void PutAway(const FString& Id);
+ // Something near was seen or heard between 23 and 01 (StepLate): only what the player noticed counts.
+ void Noticed();
+ // What the spoken words call a place: never a sign's capitals.
+ static FString Spoken(const FString& Title);
+ // Before a danger that is drawn, one or two small things, closer each time; on other nights now and then the same with nothing after.
+ struct FCue{double Hour=0;int32 Kind=0;bool bDone=false;};
+ TArray<FCue> Cues;
+ void PlanCues(int32 Night);
+ void StepCues();
+ // A small thing that dips the room's hum or the lamp is undone at this (main's seconds); -1: nothing to undo.
+ double ToneBack=-1;
+ // What nobody saw comes back as talk the next evening (StepSites): when that may next be tried (main's seconds).
+ double RumorTry=0;
+ // A draw has its window: an hour and a half from its time, then it is gone (or given to one that fits, StepSwap).
+ static constexpr double DrawWindow=1.5;
+ // Between 23 and 01: tonight's hour for the reserve, and the nights that keep a hush instead.
+ double LateAt=24.5;bool bLateHush=false;
+ // The truck walked back to after a while away (hood_warm, truck_tracks): main's seconds then, and how long away (game seconds).
+ double ReturnedAt=-1e9,ReturnedAway=0;
+ // The missing man's pickup: noted, and called in at the next CB or phone.
+ void StepReport();
+ // Which unease came last on which night: the ones of the last three nights wait at the back.
+ TMap<int32,int32> UneaseLast;
+ // Synthesised sounds the recordings lack: a whisper, a far laugh, many wings, the truck's alarm (made once, kept in the audio).
+ FString Synth(const TCHAR* Name);
  // ---- each one ----
  bool BeginCar(bool bForced,FString& Why);
  bool BeginCattle(bool bForced,FString& Why);
@@ -153,6 +225,11 @@ private:
  void StepLanding(double Dt);
  void StepHitcher(double Dt);
  void StepHumor(double Dt);
+ // The rest of the 31 (S47Happenings.cpp, "the rest of NATTHENDELSER-31").
+ bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
+ bool StepMore(double Dt);
+ void UsePhone();
+ int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too
  void UseSite(const FString& Kind);
  void UseCattle();
  void UseHitcher();
@@ -176,10 +253,27 @@ private:
  // ---- what is drawn ----
  FProp* Prop(const FString& Kind);
  FProp* FindProp(const FString& Kind) const;
- void PoseProp(FProp& P,const FVector& Foot,double Yaw);
+ // Tilt: laid on the slope it stands on (the ring), identity for what stands upright.
+ void PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQuat& Tilt=FQuat::Identity);
  void ShowProp(FProp& P,bool bOn);
  void HideAll();
  void PlaceSites();
+ // ---- unease ----
+ struct FUneasy{int32 I=-1,Stage=0;double Age=0,Len=0,Clock=0,X=0,Z=0,Yaw=0,Next=0;FVector At=FVector::ZeroVector,Dir=FVector::ZeroVector;bool bForced=false;};
+ FUneasy Uneasy;
+ TArray<FString> UneaseOnce;  // 3 and 20: never twice in a game (saved)
+ TArray<int32> UneaseDone;    // tonight's, never two alike (saved with UneaseNight)
+ TArray<int32> UneasePool;    // tonight's draw, in order; the first ones wanted, the rest stand by
+ TArray<double> UneaseAt;     // hour of the night (19 to 30) each of the wanted ones may come from
+ int32 UneaseNight=0,UneaseWant=0,DangerSeen=0;
+ double DangerClock=-1e9,UneaseTry=0,OutsideSince=-1,TruckAwaySince=-1;
+ bool bWasDriving=false,bWasIndoors=false,bChairUp=false;
+ TFunction<FString()> ClockSay;double ClockRange=-1;bool bClockHeld=false;
+ void PlanUnease(int32 Night);
+ void StepUnease(double Dt);
+ bool FireUnease(int32 I,bool bForced,FString& Why);
+ void StepUneasy(double Dt);
+ void EndUneasy();
  // ---- the counter ----
  void StepGeiger(double Dt);
  float DoseAt(const FVector& Foot,FString& Near,double& NearM) const;

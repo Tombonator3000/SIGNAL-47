@@ -21,6 +21,7 @@
 #include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
+#include "S47Taken.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -104,6 +105,8 @@ int32 FS47Predecessor::Points(const FTally& C)
  // Records that can be read: most of what is filed, or at least half of it.
  if(C.Filed>0)P+=C.Clean*10>=C.Filed*7?2:C.Clean*2>=C.Filed?1:0;
  P+=C.Photos>=3?1:0;
+ // What the land gave at night, kept as records of different kinds.
+ P+=C.Land>=8?2:C.Land>=4?1:0;
  P+=C.Filed>=20?1:0;
  return P;
 }
@@ -138,7 +141,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
   if(J.bPrinted||!J.OriginalPage.IsEmpty())++C.Originals;
  }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)++C.Concluded;
- C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();
+ C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped())++C.Photos;
  return C;
 }
@@ -155,6 +158,7 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 {
  Stop();Life=MakeShared<uint8>(0);
  Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=bClosed=bStowed=false;CloseDay=0;LeftDay=0;LeftClock=0;NewsIn=8;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
+ DaleAnswered=DaleAnsweredDay=DaleMisses=DaleMissDay=DaleHoursTold=0;DaleLastClock=-1e9;DaleRetryClock=0;bDaleMissed=false;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
   bOlder=S47J::Bool(Saved,TEXT("older"));OpensDay=FMath::Max(1,S47J::Int(Saved,TEXT("opens"),1));AssessDay=FMath::Max(OpensDay,S47J::Int(Saved,TEXT("assess"),FirstAssess));WeekNoted=FMath::Max(0,S47J::Int(Saved,TEXT("weekNoted")));
@@ -267,7 +271,7 @@ void FS47Predecessor::StepNews(double Dt)
   WeekNoted=Week;const FString Id=FString::Printf(TEXT("week-%d"),Week);
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
-  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
+  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land));
   Tray.AddUnique(Id);
   if(M->UI)M->UI->Toast(TEXT("Dr. Ward has answered the weekly sheet. It is in the OPS tray."),5);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: week %d note, filed %d, pace %.2f, points %d of %d, taken %d"),Week,C.Filed,Pace,Points(C),PointsToStay,C.Taken);
@@ -335,15 +339,121 @@ void FS47Predecessor::StepDale()
 {
  auto& F=*M->Freeform;
  if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio||M->ModalOpen())return;
+ // One hail out at a time, and after one that nobody answered, a while before the next.
+ if(M->FieldRadio->Hailing()||F.Clock()<DaleRetryClock)return;
+ // Not into the middle of something: an event under way, a light that is taking someone, or something near enough to break up the
+ // set. His call is a noise of its own, and the player did not choose it.
+ if(M->OneAtATime()||(F.Taken&&F.Taken->Busy())||M->FieldRadio->PresenceLevel()>.01)return;
  // Not on top of another message: wait until the last one has had its time on the screen.
  if(M->UI){const FString Last=M->UI->LastDescription();if(Last!=ToastSeen){ToastSeen=Last;ToastAt=FPlatformTime::Seconds();}}
  if(FPlatformTime::Seconds()-ToastAt<9)return;
  const X::FBark* B=NextBark();if(!B)return;
- // No set in hand: it waits, and is on a message slip by the phone (UsePhone).
- if(!M->FieldRadio->Message(FString(TEXT("DALE: "))+B->Line))return;
- Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=F.Day();
- UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: %s, day %d"),B->Id,DaleDay);
+ // WALKIE-USE-20261108: he hails first, and says it only to somebody who answers (T). No set in hand, or the set on another
+ // channel: it waits, and is on a message slip by the phone (UsePhone).
+ const FString Id=B->Id;const TWeakPtr<uint8> Guard=Life;
+ FS47FieldRadio::FHail Words;Words.First=X::WalkieLine(TEXT("hail"));Words.Again=X::WalkieLine(TEXT("hail_again"));Words.GiveUp=X::WalkieLine(TEXT("hail_gone"));
+ if(!M->FieldRadio->Hail(Words,[this,Guard,Id]{if(Guard.IsValid())SayBark(Id);},[this,Guard]{if(Guard.IsValid())MissedHail();}))return;
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale hails on the walkie for %s, day %d"),*Id,F.Day());
+}
+void FS47Predecessor::SayBark(const FString& Id)
+{
+ if(!M||!M->FieldRadio||!M->Freeform)return;
+ const X::FBark* B=nullptr;for(const X::FBark& Each:X::Barks())if(Id==Each.Id)B=&Each;
+ // Already on the slip by the phone, or no longer his to say: a word of his own instead.
+ FString Line=B&&!Seen.Contains(FString(TEXT("bark_"))+B->Id)?FString(B->Line):X::WalkieLine(TEXT("evening"));
+ if(bDaleMissed)Line=X::WalkieLine(TEXT("finally"))+TEXT(" ")+Line;
+ if(!M->FieldRadio->Message(FString(TEXT("DALE: "))+Line))return;
+ bDaleMissed=false;DaleMisses=0;
+ if(B){Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=M->Freeform->Day();}
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: %s, day %d"),*Id,M->Freeform->Day());
  M->RequestAutosave();
+}
+void FS47Predecessor::MissedHail()
+{
+ if(!M||!M->Freeform)return;
+ auto& F=*M->Freeform;
+ if(DaleMissDay!=F.Day()){DaleMissDay=F.Day();DaleMisses=0;}
+ ++DaleMisses;bDaleMissed=true;
+ // He tries again in a while; twice unanswered and it waits for the slip by the phone, or tomorrow.
+ DaleRetryClock=F.Clock()+45*60.;
+ if(DaleMisses>=2)DaleDay=F.Day();
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale's hail went unanswered (%d today)"),DaleMisses);
+}
+const TCHAR* FS47Predecessor::DaleReply(const FDaleCall& C)
+{
+ const double HourNow=FMath::IsFinite(C.Hour)?FMath::Fmod(FMath::Max(0.,C.Hour),24.):20.;
+ // Asleep, or on the road home: nobody at his bench, and nothing comes back.
+ if((HourNow>=3.5&&HourNow<7.5)||(HourNow>=17.&&HourNow<18.))return nullptr;
+ if(C.Answered>=4)return nullptr;
+ if(C.Answered==3)return TEXT("enough");
+ if(C.SinceLast<20*60.)return TEXT("again");
+ if(C.bMissed)return TEXT("missed");
+ if(C.bDriving)return TEXT("driving");
+ if(C.bLostTime)return TEXT("hours");
+ if(HourNow>=2.&&HourNow<3.5)return C.bInside?TEXT("late_in"):TEXT("late_out");
+ if(HourNow<2.)return TEXT("midnight");
+ if(HourNow<17.)return TEXT("day");
+ if(C.bAtStation)return TEXT("station");
+ if(C.bArrayDown)return TEXT("array");
+ if(C.bFarOut)return TEXT("far");
+ return TEXT("evening");
+}
+FString FS47Predecessor::AnswerWalkie()
+{
+ if(!Live()||!M||!M->Freeform||bLeft)return FString();
+ auto& F=*M->Freeform;
+ const double ClockNow=F.Clock();const int32 Today=F.Day();
+ if(DaleAnsweredDay!=Today){DaleAnsweredDay=Today;DaleAnswered=0;}
+ FDaleCall C;
+ C.Hour=FMath::Fmod(FMath::Max(0.,ClockNow),86400.)/3600.;
+ C.bDriving=M->World&&M->World->bDriving;
+ C.bAtStation=!C.bDriving&&FS47FieldRadio::CbAtHand(M);
+ C.bInside=F.Taken&&F.Taken->Indoors();
+ C.bFarOut=!C.bInside&&!C.bDriving&&M->Web&&M->Web->Area()!=TEXT("saro");
+ C.bMissed=bDaleMissed;C.bLostTime=F.TimesTaken()>DaleHoursTold;C.bArrayDown=F.AvailableDishCount()<24;
+ C.SinceLast=ClockNow-DaleLastClock;C.Answered=DaleAnswered;
+ const TCHAR* Id=DaleReply(C);
+ if(!Id)
+ {
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale does not answer the walkie at %.1f h (%d today)"),C.Hour,DaleAnswered);
+  return FString();
+ }
+ ++DaleAnswered;DaleLastClock=ClockNow;
+ // A line of his that is due he says now, in place of the grumble: he was going to call anyway. Not to a call he has had enough of.
+ const X::FBark* Due=FCString::Strcmp(Id,TEXT("again"))!=0&&FCString::Strcmp(Id,TEXT("enough"))!=0&&DaleDay!=Today&&!F.InTutorial()?NextBark():nullptr;
+ if(Due)
+ {
+  Seen.Add(FString(TEXT("bark_"))+Due->Id);DaleDay=Today;bDaleMissed=false;DaleMisses=0;
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: called on the walkie, Dale says his due line %s"),Due->Id);
+  M->RequestAutosave();
+  return FString(TEXT("DALE: "))+Due->Line;
+ }
+ if(FCString::Strcmp(Id,TEXT("missed"))==0){bDaleMissed=false;DaleMisses=0;}
+ if(FCString::Strcmp(Id,TEXT("hours"))==0)DaleHoursTold=F.TimesTaken();
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale answers the walkie: %s at %.1f h"),Id,C.Hour);
+ return FString(TEXT("DALE: "))+X::WalkieLine(Id);
+}
+FString FS47Predecessor::RelayLine(const FString& Tip) const
+{
+ if(!Live()||Tip.IsEmpty()||bLeft)return FString();
+ return FString::Printf(TEXT("DALE: %s %s %s"),*X::WalkieLine(TEXT("relay_pre")),*Tip,*X::WalkieLine(TEXT("relay_post")));
+}
+FString FS47Predecessor::ServiceBand()
+{
+ if(!Live()||!M||!M->Player||!M->World||!RadioOn()||bLeft)return FString();
+ if(M->World->Area!=TEXT("road")&&M->World->Area!=TEXT("diner"))return FString();
+ const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+ const double SpotX=WagonSpot.Parts.IsEmpty()?WagonX:WagonSpot.X,SpotZ=WagonSpot.Parts.IsEmpty()?WagonZ:WagonSpot.Z;
+ // x east, z south: north is -z.
+ const double ToEast=Road.X+SpotX-M->Player->Pos.X,ToNorth=-(Road.Z+SpotZ-M->Player->Pos.Z);
+ const double CarrierDist=FMath::Sqrt(ToEast*ToEast+ToNorth*ToNorth);
+ if(CarrierDist>1500)return FString();
+ static const TCHAR* const Ways[]={TEXT("north"),TEXT("northeast"),TEXT("east"),TEXT("southeast"),TEXT("south"),TEXT("southwest"),TEXT("west"),TEXT("northwest")};
+ const int32 Way=((FMath::RoundToInt(FMath::Atan2(ToEast,ToNorth)/(UE_DOUBLE_PI/4))%8)+8)%8;
+ const bool bFirst=!HeardOf.Contains(WagonId);
+ if(bFirst)Hear(WagonId);
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: wagon 23's carrier on the walkie's service band, %.0f m, to the %s%s"),CarrierDist,Ways[Way],bFirst?TEXT(", first time"):TEXT(""));
+ return FString::Printf(TEXT("An open carrier on the service band, nobody on it. Strongest towards the %s.%s"),Ways[Way],bFirst?TEXT(" Somebody's set, keyed open and left."):TEXT(""));
 }
 void FS47Predecessor::StepWarnings()
 {
@@ -1084,7 +1194,7 @@ void FS47Predecessor::TestWeek()
  TestOn();if(!M||!M->Freeform)return;
  const int32 Week=++WeekNoted;const FString Id=FString::Printf(TEXT("week-%d"),Week);
  const FTally C=Count();
- M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
+ M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land));
  ReadDoc(Id);
 }
 void FS47Predecessor::TestRing()
@@ -1102,6 +1212,17 @@ bool FS47Predecessor::TestBark()
  if(bSaid)Seen.Add(FString(TEXT("bark_"))+B->Id);
  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: test: Dale on the walkie: %s"),B->Id);
  return bSaid;
+}
+bool FS47Predecessor::TestHail()
+{
+ TestOn();if(!M||!M->FieldRadio||!M->Freeform)return false;
+ M->FieldRadio->TestOwn();
+ const X::FBark* B=NextBark();
+ const FString Id=B?FString(B->Id):FString();const TWeakPtr<uint8> Guard=Life;
+ FS47FieldRadio::FHail Words;Words.First=X::WalkieLine(TEXT("hail"));Words.Again=X::WalkieLine(TEXT("hail_again"));Words.GiveUp=X::WalkieLine(TEXT("hail_gone"));
+ const bool bOut=M->FieldRadio->Hail(Words,[this,Guard,Id]{if(Guard.IsValid())SayBark(Id);},[this,Guard]{if(Guard.IsValid())MissedHail();});
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: test: Dale hails%s, %s"),bOut?TEXT(""):TEXT(" (not heard)"),Id.IsEmpty()?TEXT("nothing due"):*Id);
+ return bOut;
 }
 void FS47Predecessor::TestOutcome(EOutcome O)
 {
@@ -1137,6 +1258,7 @@ TArray<FString> FS47Predecessor::AllText()
   for(const X::FTopic& Q:P.Topics){Out.Add(Q.Label);if(Q.Note)Out.Add(Q.Note);for(const X::FSay& L:Q.Says)Out.Add(L.Line);}
  }
  for(const X::FBark& B:X::Barks())Out.Add(B.Line);
+ for(const X::FWalkieLine& L:X::WalkieLines())Out.Add(L.Line);
  const FString D=TEXT("MONDAY, JUNE 2");
  Out.Add(X::Letter(false,D,D));Out.Add(X::Letter(true,D,D));Out.Add(X::WeekNote(1,3,0,20,3,5,20,D,1,PointsToStay,0));Out.Add(X::WeekNote(2,9,2,21,9,0,13,D,7,PointsToStay,1));Out.Add(X::WeekNote(3,9,2,21,9,0,6,D,4,PointsToStay,2));
  Out.Add(X::Stays(D,30,2,25,0,true));Out.Add(X::KnowsEnough(D,3,0,20,5,D));Out.Add(X::WhatYouKnow());Out.Add(X::ClosedOriginals(D,3,0,20,5,6,2,D));Out.Add(X::ClosedNothing(D,0,0,20,5,D));Out.Add(X::NextOperator(D,D,6,2,3));
@@ -1148,7 +1270,7 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s predecessor: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  // The line: the outside only. Nothing from Story's far side, in any paper or any mouth.
- static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event")};
+ static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event"),TEXT("chevy"),TEXT("chevrolet"),TEXT("winnebago"),TEXT("cadillac"),TEXT("pepsi"),TEXT("tyre"),TEXT("windscreen"),TEXT("grey"),TEXT("programme")};
  bool bClean=true;FString Offender;
  for(const FString& Text:AllText())
  {
@@ -1187,6 +1309,21 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  const X::FPerson* DalePerson=X::Person(TEXT("dale"));
  bool bBack=false;for(const X::FTopic& Q:DalePerson?DalePerson->Topics:TArray<X::FTopic>())bBack|=Q.Needs&&FString(Q.Needs)==TEXT("known6");
  Check(DalePerson&&DalePerson->Topics.Num()>=6&&bBack,TEXT("Dale has several talks, and what he lets slip waits until you have gone far enough"));
+ {
+  // WALKIE-USE-20261108: called on the walkie, he answers by the hour and by what the player is doing, or not at all.
+  const auto Reply=[](double Hour,TFunction<void(FDaleCall&)> Set){FDaleCall Call;Call.Hour=Hour;if(Set)Set(Call);const TCHAR* R=DaleReply(Call);return FString(R?R:TEXT("-"));};
+  const TFunction<void(FDaleCall&)> Plain=[](FDaleCall&){};
+  Check(Reply(4.,Plain)==TEXT("-")&&Reply(6.9,Plain)==TEXT("-")&&Reply(17.5,Plain)==TEXT("-")&&Reply(20.,[](FDaleCall& Call){Call.Answered=4;})==TEXT("-"),TEXT("asleep, on his way home, or had enough: Dale does not answer the walkie"));
+  Check(Reply(20.,[](FDaleCall& Call){Call.bAtStation=true;})==TEXT("station")&&Reply(20.,[](FDaleCall& Call){Call.bDriving=true;})==TEXT("driving")&&Reply(21.,[](FDaleCall& Call){Call.bFarOut=true;})==TEXT("far")&&Reply(22.,Plain)==TEXT("evening"),TEXT("in the evening his answer follows where the player is and what they are doing"));
+  Check(Reply(2.5,[](FDaleCall& Call){Call.bInside=true;})==TEXT("late_in")&&Reply(2.5,Plain)==TEXT("late_out")&&Reply(.5,Plain)==TEXT("midnight")&&Reply(10.,Plain)==TEXT("day"),TEXT("after two, around midnight and in the day he says something else"));
+  Check(Reply(20.,[](FDaleCall& Call){Call.SinceLast=300;})==TEXT("again")&&Reply(20.,[](FDaleCall& Call){Call.Answered=3;})==TEXT("enough")&&Reply(20.,[](FDaleCall& Call){Call.bMissed=true;Call.bDriving=true;})==TEXT("missed")&&Reply(23.,[](FDaleCall& Call){Call.bLostTime=true;})==TEXT("hours"),TEXT("called again too soon, too often, after his own call went unanswered, or after lost hours"));
+  bool bLines=true;TSet<FString> LineIds;
+  for(const X::FWalkieLine& L:X::WalkieLines()){LineIds.Add(L.Id);bLines&=FCString::Strlen(L.Line)>10&&FCString::Strlen(L.Line)<190;}
+  for(const TCHAR* Want:{TEXT("hail"),TEXT("hail_again"),TEXT("hail_gone"),TEXT("finally"),TEXT("again"),TEXT("enough"),TEXT("missed"),TEXT("driving"),TEXT("hours"),TEXT("late_in"),TEXT("late_out"),TEXT("midnight"),TEXT("day"),TEXT("station"),TEXT("array"),TEXT("far"),TEXT("evening"),TEXT("relay_pre"),TEXT("relay_post")})bLines&=!X::WalkieLine(Want).IsEmpty();
+  Check(bLines&&LineIds.Num()==X::WalkieLines().Num(),TEXT("every walkie reply has its words, each id once, and they fit a toast"));
+  FS47Predecessor NoGame(nullptr);
+  Check(NoGame.AnswerWalkie().IsEmpty()&&NoGame.RelayLine(TEXT("A rancher reports lights.")).IsEmpty()&&NoGame.ServiceBand().IsEmpty(),TEXT("without a Freeform game there is no Dale on the walkie and no carrier on the band"));
+ }
  // The assessment.
  FTally Grind;Grind.Filed=60;Grind.Clean=60;Grind.Photos=5;Grind.Dishes=14;
  Check(Decide(Grind)!=EOutcome::Stays,TEXT("sixty cards and nothing else carried through is not enough to stay"));

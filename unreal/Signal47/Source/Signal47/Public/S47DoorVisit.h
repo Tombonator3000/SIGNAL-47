@@ -59,6 +59,9 @@ public:
  bool DrawnTonight() const{return bTonight;}
  bool SawItOpen() const{return bSawOpen;}
  void TestDice(float Roll){TestRoll=Roll;}
+ // SNEAK-20261108: the roll for giving up on a room where nobody moves; below .5 it goes (S47Sneak::DoorGiveUp). -1: the dice.
+ void TestHide(float Roll){TestHideRoll=Roll;}
+ bool HidFrom() const{return bHid;}
  TOptional<FVector> BodyEye() const{return bBodyOut?TOptional<FVector>(BodyFeet+FVector(0,1.05,0)):TOptional<FVector>();}
  int32 MarksOut() const{return TraceAt.Num();}
  EEnding TraceKind() const{return Trace;}
@@ -94,6 +97,8 @@ private:
  bool bTonight=false;
  double InsideFor=0,WaitFor=0;
  float TestRoll=-1;
+ // Low, dark and still while it waits (SNEAK-20261108): how long, and where the feet were last frame. bHid: it gave up on the room.
+ double StillFor=0;FVector StillFeet=FVector::ZeroVector;bool bStillFeet=false,bHid=false;float TestHideRoll=-1;
 
  // What it left. Gone by the next noon.
  EEnding Trace=EEnding::None;

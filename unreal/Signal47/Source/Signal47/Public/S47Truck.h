@@ -94,6 +94,8 @@ struct SIGNAL47_API FS47Truck
 	 *  run time in the web version and is not in the export: built here, S47Figures). */
 	void SetFrost(double K);
 	double Frosted() const { return Frost; }
+	/** The frost with a hand pressed into it from inside (FS47Happenings' unease), or the plain rime again. */
+	void SetFrostHand(bool bHand);
 	/** A white light from straight over the truck, 0..1 (story/abduction.ts): the cab's sky slot. */
 	void LightFromAbove(double K);
 	/** -1 (full left) to 1 (full right). Turns the steering wheel. */
@@ -160,6 +162,7 @@ private:
 	FString RadioShown = TEXT("214:false");
 	int32 OdoShown = 0;
 	double Frost = 0, Above = 0;
+	bool bFrostHand = false;
 	/** The frost's decal on the windshield, made the first time it is wanted (story/truckTaken.ts). */
 	TSharedPtr<class FS47Group> FrostDecal;
 	class UMaterialInstanceDynamic* FrostMat = nullptr;

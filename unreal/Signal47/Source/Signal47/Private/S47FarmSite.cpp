@@ -14,6 +14,7 @@
 #include "S47FreeformDirector.h"
 #include "S47World.h"
 #include "S47Sky.h"
+#include "S47Sneak.h"
 #include "S47WorldLife.h"
 #include "S47Glimpses.h"
 #include "S47Night.h"
@@ -140,7 +141,7 @@ void FS47FarmSite::StepEmptyTip()
  const FS47PlacePick Pick=F.EventPlaces?F.EventPlaces->Pick(Need):FS47PlacePick();
  const FString About=Pick.IsSet()?F.EventPlaces->TitleOf(Pick.Id):FString(TEXT("the Alderete place"));
  const FString Tip=SecondCallLine(int32(FS47NightRhythm::Roll(F.Seed(),Night,0x4c494e45u)*SecondCallLines)%SecondCallLines,About);
- if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+ FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
  FS47EventPlaces::LogPick(TEXT("empty_tip"),F.EventPlaces&&Pick.IsSet()?F.EventPlaces->Find(Pick.Id):nullptr,TEXT("a call on a calm night: nothing there"));
  M->RequestAutosave();
 }
@@ -332,7 +333,7 @@ void FS47FarmSite::SayNudge()
  bNudged=true;
  if(!M)return;
  const FString Tip=SecondCallLine(FMath::RandRange(0,SecondCallLines-1),Title);
- if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+ FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
  M->RequestAutosave();
 }
 
@@ -577,7 +578,10 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  StepAttention(Dt,bDriving,bNothingToGoOn);
  // A lamp on it buys a moment. A player with the lamp out, standing still, gives it nothing to go on: no hunt comes of
  // that, and it lets go in half the time. Moving, or with the lamp on, it goes as it always has.
- VisitHunt+=Attention.Holding()||bTestHoldHunt||bNothingToGoOn?0.:Dt;
+ // SNEAK-20261108: low, with the lamp out, it has less to go on while the player moves too (S47Sneak.h): slower, not stopped.
+ const bool bLampLit=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->Intensity()>0;
+ const double LowK=M->Player?M->Player->Sneak():0.;
+ VisitHunt+=Attention.Holding()||bTestHoldHunt||bNothingToGoOn?0.:Dt*S47Sneak::HuntPace(LowK,bLampLit);
  VisitPatience-=Dt*(bNothingToGoOn&&!Tk->Busy()?2.:1.);
  if(VisitWho==0)
  {
@@ -592,7 +596,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   const double To=FVector::Dist(BodyAt,Feet);
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
-  const double Speed=VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75);
+  const double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);
   StepBody(Dt,Speed);
   // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
   const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
