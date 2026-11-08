@@ -115,6 +115,14 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		};
 		(*Next)(0);
 	});
+	E.AddFreeform(MapGroup, TEXT("Map: SARO, all the way in"), TEXT("on the station's yard, the sheet at its closest"), [this, Stand, Sheet]
+	{
+		Stand(TEXT("saro_yard"), 1, [this, Sheet](const FVector2D&, double) { Sheet(9); Tell(true, TEXT("Map at SARO, all the way in")); });
+	});
+	E.AddFreeform(MapGroup, TEXT("Map: SARO, all the way out"), TEXT("on the station's yard, the whole sheet"), [this, Stand, Sheet]
+	{
+		Stand(TEXT("saro_yard"), 1, [this, Sheet](const FVector2D&, double) { Sheet(.1); Tell(true, TEXT("Map at SARO, all the way out")); });
+	});
 	E.AddFreeform(MapGroup, TEXT("Map: the whole sheet"), TEXT("the map zoomed all the way out, on you"), [Sheet] { Sheet(.1); });
 	E.AddFreeform(MapGroup, TEXT("Map: the station, the farm and the motel at once"), TEXT("from the county road turnoff, the scale a driver reads"), [this, Stand, Sheet]
 	{
