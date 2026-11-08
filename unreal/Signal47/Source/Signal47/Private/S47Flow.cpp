@@ -2096,6 +2096,7 @@ FS47MapView US47Flow::MapView() const
 		if (S47FieldMap::Truck(M, X, Z, Heading)) { V.bTruck = true; V.TruckX = X; V.TruckZ = Z; V.TruckHeading = Heading; }
 		if (M->Freeform && M->Freeform->Places)
 			for (int32 I = 0; I < M->Freeform->Places->MapMarks().Num(); ++I) { const FVector2D& Mk = M->Freeform->Places->MapMarks()[I]; FS47MapNote Note; Note.X = Mk.X; Note.Z = Mk.Y; Note.N = I + 1; V.Notes.Add(Note); }
+		S47FieldMap::GatherJobs(M, V);
 		return V;
 	}
 	V.bStation = ChapterNo(S) >= 3;

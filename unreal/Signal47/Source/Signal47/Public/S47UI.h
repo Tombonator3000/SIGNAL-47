@@ -88,6 +88,8 @@ struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = fal
 struct FS47MapSector { double Az = 0, Spread = 0; FString Label; };
 // Freeform's survey sheet (SS47FieldMap, MAP-20261108): a pencil mark of the player's own, road-local metres (x east, z south).
 struct FS47MapNote { double X = 0, Z = 0; int32 N = 0; };
+// Freeform's sheet: work the player has now, written in by the place in ink ("S-05 drive fault", "fix the feeder"), road-local.
+struct FS47MapJob { double X = 0, Z = 0; FString Text; };
 struct FS47MapView
 {
 	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors;
@@ -97,6 +99,7 @@ struct FS47MapView
 	double MeX = 0, MeZ = 0, MeHeading = 0, TruckX = 0, TruckZ = 0, TruckHeading = 0;
 	FString MeArea;
 	TArray<FS47MapNote> Notes;
+	TArray<FS47MapJob> Jobs;
 };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
 struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none

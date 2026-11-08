@@ -4,6 +4,7 @@
 #include "S47FieldLife.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47Main.h"
 #include "S47NightLog.h"
 #include "S47Keys.h"
@@ -180,6 +181,25 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 				return false;
 			}), 1.6f);
 		});
+	});
+	// Work and leads on the sheet (Tom, 8 November): a dish down, the feeder out, places heard of and one looked into, then the sheet.
+	const auto Leads = [this]
+	{
+		FS47FreeformSession* Fs = Session(); if (!Fs) return;
+		if (Fs->Field && !Fs->Field->HasArrayFault()) Fs->Field->TriggerServiceFault(false, TEXT("S-05"));
+		Fs->SetPowerFault(true);
+		if (Fs->Places) { Fs->Places->Hear(TEXT("windmill")); Fs->Places->Hear(TEXT("tank")); Fs->Places->Hear(TEXT("cairn")); }
+		if (!Fs->HasFinding(TEXT("place_cairn"))) Fs->RecordEvidence(TEXT("place_cairn"), TEXT("A stack of stones with a post in the top, the kind a survey party leaves."));
+	};
+	E.AddFreeform(MapGroup, TEXT("Map: work and leads written in, close up at SARO"), TEXT("a dish down, the feeder out, places heard of; the dishes' numbers; the sheet close in at the array"), [this, Stand, Sheet, Leads]
+	{
+		Leads();
+		Stand(TEXT("saro_yard"), 0, [this, Sheet](const FVector2D&, double) { Sheet(1.1); Tell(true, TEXT("Map: work and leads, close up")); });
+	});
+	E.AddFreeform(MapGroup, TEXT("Map: work and leads written in, the land around"), TEXT("the same, at the scale a driver reads"), [this, Stand, Sheet, Leads]
+	{
+		Leads();
+		Stand(TEXT("saro_yard"), 0, [this, Sheet](const FVector2D&, double) { Sheet(.22); Tell(true, TEXT("Map: work and leads, the land around")); });
 	});
 	E.AddFreeform(MapGroup, TEXT("Map: the whole sheet"), TEXT("the map zoomed all the way out, on you"), [Sheet] { Sheet(.1); });
 	E.AddFreeform(MapGroup, TEXT("Map: the station, the farm and the motel at once"), TEXT("from the county road turnoff, the scale a driver reads"), [this, Stand, Sheet]
