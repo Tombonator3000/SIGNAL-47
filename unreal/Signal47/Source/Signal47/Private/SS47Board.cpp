@@ -545,7 +545,7 @@ TSharedRef<SWidget> FS47BoardImpl::CardHtml(const FS47BoardCard& C, const TShare
 	TSharedRef<SVerticalBox> Body = SNew(SVerticalBox);
 	TSharedRef<SHorizontalBox> Head = SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 8, 0)[Text(C.Stamp, 20, Sealed ? 0xffb09a : 0x8f2a1d, true, 0, 1.35f)]
-		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Text(C.Title, 17, Ink, true, FMath::Max(40.0, Width - 85 - (C.Full.IsEmpty() ? 0 : 44)), 1.35f)];
+		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Text(C.Title, 17, Ink, true, FMath::Max(40.0, Width - 85 - (C.Full.IsEmpty() ? 0 : 44) - (C.OnAction ? 62 : 0)), 1.35f)];
 	if (C.bHave && !C.Full.IsEmpty()) Head->AddSlot().AutoWidth().VAlign(VAlign_Center)
 		[Button(TEXT("TEXT"), [this, Id = C.Id] {
 			// The DOM toggles only this card: other open cards keep their reading position.
@@ -555,6 +555,8 @@ TSharedRef<SWidget> FS47BoardImpl::CardHtml(const FS47BoardCard& C, const TShare
 			bTextToggleRender = true; Render(); bTextToggleRender = false;
 			for (const TSharedPtr<FBox>& Card : Boxes) if (Card->Full && TextScrolls.Contains(Card->Id)) Card->Full->SetScrollOffset(TextScrolls[Card->Id]);
 		}, 16, Sealed ? 0x9fb4ff : 0x233a7a, 44, 30, false, true)];
+	if (C.bHave && C.OnAction) Head->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(4, 0, 0, 0)
+		[Button(C.Action.IsEmpty() ? FString(TEXT("OPEN")) : C.Action, [Act = C.OnAction] { Act(); }, 16, 0x233a7a, 58, 30, false, true)];
 	Body->AddSlot().AutoHeight()[SNew(SBorder).BorderImage(Box(0, 0x1e2430, 0, 0.18f)).Padding(FMargin(10, 6))[Head]];
 	if (!C.bHave)
 	{

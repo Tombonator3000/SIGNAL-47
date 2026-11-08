@@ -171,6 +171,9 @@ TArray<FS47BoardCard> US47CaseBoard::Cards()
 	{
 		FRegexMatcher IsFinding(Finding, D.Id);
 		if (IsFinding.FindNext() || Claimed.Contains(D.Id)) continue;
+		// Freeform (CASEBOARD-20261108): the board holds the field's material only; every other paper lies in the tray by it
+		// (FS47PinBoard's PAPERS card), so the board does not turn into a list of the archive.
+		if (M && M->IsFreeform()) continue;
 		const FString* G = Group.Find(D.Id);
 		FString Region;
 		if (G && !Seen.Contains(D.Id) && RegionIndex(*G) <= Now) Region = *G;
@@ -230,8 +233,10 @@ FString US47CaseBoard::Status() const
 TArray<FS47BoardRegion> US47CaseBoard::Regions(int32 Now) const
 {
 	TArray<FS47BoardRegion> Out;
+	// Freeform's one patch is the field's: what the player brought back to SARO (FS47PinBoard).
+	const bool bField = M && M->IsFreeform();
 	for (int32 I = 0; I < UE_ARRAY_COUNT(RegionIds); ++I)
-		Out.Add({ RegionIds[I], I <= Now ? RegionLabels[I] : TEXT(""), Margin + (I % 3) * (RW + GAP), Margin + LABEL + (I / 3) * (RH + GAP + LABEL), RW, RH + (I >= 3 ? MORE : 0) });
+		Out.Add({ RegionIds[I], I <= Now ? (I == 0 && bField ? TEXT("SARO / FROM THE FIELD") : RegionLabels[I]) : TEXT(""), Margin + (I % 3) * (RW + GAP), Margin + LABEL + (I / 3) * (RH + GAP + LABEL), RW, RH + (I >= 3 ? MORE : 0) });
 	return Out;
 }
 

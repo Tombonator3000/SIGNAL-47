@@ -7,6 +7,7 @@
 #include "S47DeputyRound.h"
 #include "S47NightLog.h"
 #include "S47Tape.h"
+#include "S47PinBoard.h"
 #include "S47LeftGear.h"
 #include "S47Openings.h"
 #include "S47Places.h"
@@ -258,6 +259,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Happenings)Happenings=MakeShared<FS47Happenings>(M);Happenings->Begin(S47J::Obj(Saved,TEXT("happenings")));
  if(!NightLog)NightLog=MakeShared<FS47NightLog>(M);NightLog->Begin(S47J::Obj(Saved,TEXT("nightLog")));
  if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
+ if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -284,6 +286,7 @@ void FS47FreeformSession::Stop()
  if(Happenings)Happenings->Stop();
  if(NightLog)NightLog->Stop();
  if(Tape)Tape->Stop();
+ if(PinBoard)PinBoard->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -496,6 +499,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Happenings)Happenings->Step(D);
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
+ if(PinBoard)PinBoard->Step(Dt);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -1092,6 +1096,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
  if(Id.IsEmpty()||Findings.Contains(Id))return;
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ if(PinBoard)PinBoard->Kept(Id);
  if(M&&M->Story)
  {
   // Named by what it says, never by its key, and stamped with where the player is, not always the station.
@@ -2753,6 +2758,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
+ if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());

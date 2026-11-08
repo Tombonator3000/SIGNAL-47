@@ -933,17 +933,20 @@ void SS47Notebook::Build()
 		{
 			TSharedRef<SVerticalBox> Card = SNew(SVerticalBox);
 			const FLinearColor Lead = C(0x3a3a40);
-			const auto CardLine = [&Card](const TCHAR* Words, const FLinearColor& Col, float Px)
+			// A ruled index card: a red rule under its heading, pale blue ones under each line.
+			const auto CardLine = [&Card](const TCHAR* Words, const FLinearColor& Col, float Size, const FLinearColor& Rule)
 			{
-				Card->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Words)).Font(Hand(Px)).ColorAndOpacity(Col)];
+				Card->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Words)).Font(Hand(Size)).ColorAndOpacity(Col)];
+				Card->AddSlot().AutoHeight().Padding(FMargin(0, 0, 0, P(3)))[SNew(SBox).HeightOverride(P(1.5f))[SNew(SBorder).BorderImage(Box(Rule))]];
 			};
-			CardLine(TEXT("my marks"), InkBlue(), 28);
-			CardLine(TEXT("x 1   my own, with X"), Lead, 22);
-			CardLine(TEXT("(?)   heard of, not found"), Lead, 22);
-			CardLine(TEXT("struck out: looked into"), Lead, 22);
-			CardLine(TEXT("- - -   bearing from SARO"), Lead, 22);
-			CardLine(TEXT("blue ink: work to do"), InkBlue(), 22);
-			Spread->AddSlot().Position(P2(-34, 452)).Size(P2(196, 196))[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf7f3e6))).Padding(FMargin(P(10), P(6)))[Card], 8.f, FVector2D(0, 3), 0.3f), -3.f)];
+			const FLinearColor BlueRule = C(0x9fb6d3), RedRule = C(0xc0504d);
+			CardLine(TEXT("my marks"), InkBlue(), 28, RedRule);
+			CardLine(TEXT("x 1    marked it myself"), Lead, 21, BlueRule);
+			CardLine(TEXT("(?)    heard of, not found"), Lead, 21, BlueRule);
+			CardLine(TEXT("struck out: looked into"), Lead, 21, BlueRule);
+			CardLine(TEXT("- - -  bearing from SARO"), Lead, 21, BlueRule);
+			CardLine(TEXT("blue ink: work to do"), InkBlue(), 21, BlueRule);
+			Spread->AddSlot().Position(P2(-74, 428)).Size(P2(256, 228))[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf7f3e6))).Padding(FMargin(P(12), P(8)))[Card], 8.f, FVector2D(0, 3), 0.3f), -3.f)];
 		}
 		SpreadSlot->SetContent(Spread);
 		Read = X.MapDescription;

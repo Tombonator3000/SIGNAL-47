@@ -13,13 +13,14 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "SS47FieldMap.h"
 #include "Components/StaticMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Tape, Log, All);
 
 namespace S47TapeLocal
 {
-	const TCHAR* const DeskProp = TEXT("cassette");   // Config/Props/saro.json: the TC-D5 by the array's PC
+	const TCHAR* const DeskProp = TEXT("cassette");   // Config/Props/saro.json: the portable recorder by the array's PC
 	const TCHAR* const DeskUse = TEXT("ff:tape:desk");
 	const TCHAR* const HissKey = TEXT("tape-hiss"), * const BedKey = TEXT("tape-bed");
 	// A cassette's sound: the top end gone, the level down a little.
@@ -91,6 +92,8 @@ void FS47Tape::Begin(const S47J::FObj& Saved)
 			FTake Tk;
 			Tk.N = S47J::Int(*O, TEXT("n")); Tk.Day = S47J::Int(*O, TEXT("day")); Tk.Clock = S47J::Num(*O, TEXT("clock"));
 			Tk.Where = S47J::Str(*O, TEXT("where")).Left(120); Tk.bOutdoors = S47J::Bool(*O, TEXT("out"), true);
+			Tk.RoadX = S47J::Num(*O, TEXT("x"), 0); Tk.RoadZ = S47J::Num(*O, TEXT("z"), 0);
+			Tk.bPlaced = (*O)->HasField(TEXT("x")) && FMath::IsFinite(Tk.RoadX) && FMath::IsFinite(Tk.RoadZ) && FMath::Abs(Tk.RoadX) < 1e6 && FMath::Abs(Tk.RoadZ) < 1e6;
 			Tk.Seconds = FMath::Clamp(float(S47J::Num(*O, TEXT("seconds"))), 0.f, SideSeconds);
 			Tk.Odd = S47J::Str(*O, TEXT("odd")).Left(40); Tk.OddAt = float(S47J::Num(*O, TEXT("oddAt"), -1)); Tk.OddGain = FMath::Clamp(float(S47J::Num(*O, TEXT("oddGain"))), 0.f, 1.f);
 			Tk.bPlayed = S47J::Bool(*O, TEXT("played")); Tk.bOddHeard = S47J::Bool(*O, TEXT("oddHeard"));
@@ -134,6 +137,7 @@ S47J::FObj FS47Tape::Save() const
 		auto E = S47J::New();
 		S47J::Set(E, TEXT("n"), Tk.N); S47J::Set(E, TEXT("day"), Tk.Day); S47J::Set(E, TEXT("clock"), Tk.Clock); S47J::Set(E, TEXT("where"), Tk.Where);
 		S47J::Set(E, TEXT("out"), Tk.bOutdoors); S47J::Set(E, TEXT("seconds"), double(Tk.Seconds));
+		if (Tk.bPlaced) { S47J::Set(E, TEXT("x"), FMath::RoundToDouble(Tk.RoadX * 10) / 10); S47J::Set(E, TEXT("z"), FMath::RoundToDouble(Tk.RoadZ * 10) / 10); }
 		if (!Tk.Odd.IsEmpty()) { S47J::Set(E, TEXT("odd"), Tk.Odd); S47J::Set(E, TEXT("oddAt"), double(Tk.OddAt)); S47J::Set(E, TEXT("oddGain"), double(Tk.OddGain)); }
 		S47J::Set(E, TEXT("played"), Tk.bPlayed); S47J::Set(E, TEXT("oddHeard"), Tk.bOddHeard);
 		TArray<TSharedPtr<FJsonValue>> Snds;
@@ -267,6 +271,10 @@ bool FS47Tape::ToggleRecord()
 	Rec = FTake();
 	Rec.N = Next; Rec.Day = M->Freeform->Day(); Rec.Clock = M->Freeform->Clock(); Rec.Where = PlaceTitle();
 	Rec.bOutdoors = !(M->World && M->World->Indoors(Ear()));
+	{
+		double Facing = 0; FString OnLeg; bool bInCab = false;
+		Rec.bPlaced = S47FieldMap::Me(M, Rec.RoadX, Rec.RoadZ, Facing, OnLeg, bInCab);
+	}
 	const TWeakPtr<uint8> Guard = Life;
 	M->Audio->Tap = [this, Guard](const FString& Name, const FS47Sound& O) { if (Guard.IsValid()) Heard(Name, O); };
 	M->Audio->Play(TEXT("click"), .45f);
