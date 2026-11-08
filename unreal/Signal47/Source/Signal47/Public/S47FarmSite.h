@@ -85,6 +85,10 @@ public:
  // draw once a night, once they have been out there a while. The marks somewhere else, if any, stand as they were.
  bool FieldVisit() const{return bField;}
  static constexpr double FieldDwellSeconds=60;
+ // Tom, 8 November: out on open ground a dangerous meeting about every second or third night, never the first. The night's
+ // chance (FS47NightRhythm::FieldChance) and this much more for each draw out there that came to nothing since the last.
+ static constexpr float FieldMissBonus=.15f;
+ static float FieldChanceFor(int32 Night,int32 Misses,bool bLit);
  static bool OutOnFoot(const FString& Area,double FromStation,bool bDriving,bool bRoof);
  int32 FieldDrawnNight() const{return FieldNight;}
  // Test: the next field draw, in place of the game's own.
@@ -129,6 +133,8 @@ private:
  FHome Home;
  bool bField=false;
  int32 FieldNight=0;
+ // Draws out on foot since the last field visit came, saved: each one that came to nothing makes the next likelier.
+ int32 FieldMisses=0;
  double FieldDwell=0;
  float FieldRoll=-1;
  void StepFieldDraw(double Dt);
