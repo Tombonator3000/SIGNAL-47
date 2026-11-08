@@ -150,8 +150,9 @@ const TArray<FS47EventPlace>& FS47EventPlaces::All() const
 
 void FS47EventPlaces::Refine() const
 {
- // The land's hills are read from a file: until then the open points stand where they were planned.
- if(!bLandSeated&&S47Relief::Ready())
+ // The land's hills are read from a file: until the world has switched them on, the open points stand where they were planned.
+ // Asked, never loaded from here (Active, not Ready): loading them is the world's, and a self-test without one must leave no tables behind.
+ if(!bLandSeated&&M&&S47Relief::Active())
  {
   bLandSeated=true;
   for(FS47EventPlace& P:List)if(P.Id.StartsWith(TEXT("land:"))||P.Id.StartsWith(TEXT("road:")))
