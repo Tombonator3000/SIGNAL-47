@@ -100,7 +100,9 @@ namespace
   // 8 November: the town still read pale cream, 194,183,165 looking down by the church at 11:00 (w2 g-church-11), against 169,136,110 on
   // SARO's sand. Its crust is warmed and darkened by most of that ratio (sRGB .87 .74 .66, linear about .85 .72 .62), not all of it:
   // caliche is a pale soil, and the crust's patches out in the desert should stay a little lighter than the sand round them.
-  const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.723f,.480f,.391f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
+  // Round 3 (w2r3): the town still 192,179,158 by the church: most of the rest of the way to the sand (85 % of it in linear, .78 .59 .51),
+  // so the town reads as the same soil, a shade paler where it is trodden, not cream.
+  const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.562f,.283f,.199f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
   const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day)*FMath::Lerp(FLinearColor::White,SandToMix,Day);
   const FLinearColor Crust=FMath::Lerp(NightCrust,CrustDay,Day),Gravel=FMath::Lerp(NightGravel,GravelDay,Day);
   for(UMaterialInstanceDynamic* M:{Mid,Range,Corridor})

@@ -16,7 +16,7 @@
 
 namespace
 {
-	TAutoConsoleVariable<float> CvDuskCloudAmb(TEXT("s47.dusk.CloudAmb"), 1.f, TEXT("Twilight: the sky's mauve light on the clouds' bodies, times. 0: as before (dark blots with lit rims)."));
+	TAutoConsoleVariable<float> CvDuskCloudAmb(TEXT("s47.dusk.CloudAmb"), .7f, TEXT("Twilight: the sky's mauve light on the clouds' bodies, times. 0: as before (dark blots with lit rims)."));
 }
 
 // SKY.md: one VolumetricCloud layer over every outdoor area, without a SkyAtmosphere. The living
@@ -232,7 +232,8 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	// Critic 8 November: through the twilight the clouds read as dark blots with hard bright rims, only their edges lit by the glow (ambient
 	// about .06 .03 .03 at 18:40). After sunset the sky round them still lights them: a soft mauve-grey on their bodies while the twilight
 	// lasts (the land's own curve), so they are lit through and the glow on their edges reads as colour, not a cut. s47.dusk.CloudAmb, 0 as before.
-	Amb += FLinearColor(.20f, .14f, .19f) * (FMath::Clamp(SkyTwilight, 0.f, 1.f) * FMath::Max(0.f, CvDuskCloudAmb.GetValueOnGameThread()));
+	// (w2r3: with 0 the bodies were still teal-grey; .20 .14 .19 only lifted that grey. Red and blue with little green turns them lilac.)
+	Amb += FLinearColor(.22f, .05f, .20f) * (FMath::Clamp(SkyTwilight, 0.f, 1.f) * FMath::Max(0.f, CvDuskCloudAmb.GetValueOnGameThread()));
 	CloudMid->SetVectorParameterValue(TEXT("Ambient"), Amb * AmbScale);
 	CloudMid->SetScalarParameterValue(TEXT("Cover"), Cover);
 	CloudMid->SetScalarParameterValue(TEXT("Cirrus"), Cirrus);

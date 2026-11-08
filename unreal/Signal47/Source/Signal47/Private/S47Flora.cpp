@@ -56,7 +56,9 @@ namespace
 	const FKind NATURAL[] = {
 		{ ES47FloraKind::Grass, 0.46, 3.8, 65, 0.45, 0.85, 1.0, { 0.3, 0.8 }, 26, 5200, 3.5, 0.5, 3.6, { 0, 0 }, false },
 		{ ES47FloraKind::Sage, 0.045, 2.2, 235, 0.7, 0.35, 0.5, { 0.45, 1.2 }, 38, 2600, 0, 0, 0, { 90, 0.45 }, true },
-		{ ES47FloraKind::Creosote, 0.0625, 1.0, 240, 0.8, 0, 0, { 0.5, 1.3 }, 60, 2000, 0, 0, 0, { 55, 0.3 }, true },
+		// (8 November: out to 400 m, not 240. Seen level, a field of bushes packs into one green band near the horizon, and where it stopped at
+		//  240 m it read as a hedge with bare land behind (critic, b-mtnw-11). Thinner again past 160 m (Fill: CREOSOTE_TAIL); LOD2 is 200 triangles.)
+		{ ES47FloraKind::Creosote, 0.0625, 1.0, 400, 0.8, 0, 0, { 0.5, 1.3 }, 60, 3400, 0, 0, 0, { 55, 0.3 }, true },
 		{ ES47FloraKind::Stalks, 0.03, 3.4, 70, 0.4, 0.5, 0.75, { 0.6, 1.3 }, 30, 1500, 4, 0.45, 0, { 0, 0 }, false },
 		{ ES47FloraKind::Succulent, 0.0027, 1.1, 260, 1, 0, 0, { 0.62, 1.28 }, 60, 520, 0, 0, 0, { 130, 0.14 }, true },
 		{ ES47FloraKind::Stones, 0.14, 1.6, 90, 0.35, 0.8, 0.9, { 0.3, 2.1 }, 18, 3000, 0, 0, 1.4, { 0, 0 }, false },
@@ -148,7 +150,8 @@ namespace
 	constexpr double AHEAD_MS = 1.2;    // this long in a picture at the most
 	constexpr double JUMP = 40;         // moved further than this between two pictures: everything at once
 	constexpr double LOW_REACH = 0.7;   // Low draws this much as far
-	constexpr double MAX_R = 260 + STEP;
+	constexpr double MAX_R = 400 + STEP;
+	constexpr double CREOSOTE_TAIL = 160;
 
 	/** The cells round the camera's, nearest first: [dx, dz, distance]. */
 	struct FOff { int32 Dx, Dz; double Dist; };
@@ -932,7 +935,9 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 				else if (D2 < Now * Now) Cell0 = &Cell(I, J, Ki);
 				if (!Cell0) { bPending = true; continue; }
 				// past far[0] only the first share of it by rank, easing down over three cells
-				const double Share = bFar && Of.Dist > K.Far[0] ? 1 + (K.Far[1] - 1) * FMath::Min(1.0, (Of.Dist - K.Far[0]) / (3 * C)) : 1;
+				double Share = bFar && Of.Dist > K.Far[0] ? 1 + (K.Far[1] - 1) * FMath::Min(1.0, (Of.Dist - K.Far[0]) / (3 * C)) : 1;
+				// Freeform's creosote out past 160 m: about half of that again by 240, so the far land keeps a thin scatter, not a wall
+				if (bFar && Spec.bNatural && K.Id == ES47FloraKind::Creosote && Of.Dist > CREOSOTE_TAIL) Share *= 1 - .45 * FMath::Min(1.0, (Of.Dist - CREOSOTE_TAIL) / 80);
 				int32 Mn = Cell0->N;
 				// Freeform's Mesquite holds the dead creosote too (rank 1 and up), and that goes thin where the creosote does
 				const bool bDeadToo = Spec.bNatural && Ki == MESQUITE_KI;
