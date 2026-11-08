@@ -9,6 +9,7 @@
 #include "S47Places.h"
 #include "S47Docs.h"
 #include "S47Predecessor.h"
+#include "S47FieldRadio.h"
 #include "S47PredecessorText.h"
 #include "S47Startup.h"
 #include "S47Story.h"
@@ -27,7 +28,7 @@ void FS47FreeformTest::StepReyes(double Dt)
  if(Age>600){Finish(false,TEXT("Reyes journey exceeded its time"));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI||!M->Inter)return;
  auto& F=*M->Freeform;if(!F.Predecessor||!F.Places)return;auto& P=*F.Predecessor;
- static int32 Findings=0,Photos=0,TagAt=0,OutcomeAt=1;
+ static int32 Findings=0,Photos=0,TagAt=0,OutcomeAt=1,WalkieHeard=0;
  const auto PhotoCount=[this]{return M->Night&&M->Night->Album?M->Night->Album->Shots().Num():0;};
  if(Stage==0)
  {
@@ -119,6 +120,18 @@ void FS47FreeformTest::StepReyes(double Dt)
   if(!Check(P.UsePhone(),TEXT("the control room phone offers Dale and Ward")))return;
   M->UI->Close(true);
   if(!Check(P.TestBark(),TEXT("Dale comes over the walkie: the locker, a tag or a letter has given him cause")))return;
+  // WALKIE-USE-20261108: the set in the player's own hand. Round its channels and back to Dale's, then his hail answered with the
+  // walkie key, as T does it. What he says once answered is looked for on the next stage.
+  if(M->FieldRadio.IsValid())
+  {
+   auto& Set=*M->FieldRadio;
+   Set.NextChannel();const bool bTwo=Set.Channel()==2;Set.NextChannel();Set.NextChannel();
+   if(!Check(bTwo&&Set.Channel()==1&&Set.InUse(),TEXT("the walkie turns through its channels and back to Dale's")))return;
+   if(!Check(P.TestHail()&&Set.Hailing(),TEXT("Dale hails on channel 1")))return;
+   if(!Check(Set.PressTalk()&&!Set.Hailing()&&Set.Transmitting(),TEXT("the walkie key answers him")))return;
+   // (keying up counts as the set being heard; what is looked for is his answer after it)
+   WalkieHeard=Set.MessagesHeard();
+  }
   if(!Check(P.Talk(TEXT("attendant"))&&P.Talk(TEXT("host"))&&P.Talk(TEXT("radio_woman"))&&P.Talk(TEXT("souvenir_man"))&&P.Talk(TEXT("ward")),TEXT("so does everyone else")))return;
   M->UI->Close(true);
   P.TestFound(TEXT("gap"));M->UI->Close(true);
@@ -127,7 +140,11 @@ void FS47FreeformTest::StepReyes(double Dt)
   if(!Check(P.WorldSpot(TEXT("wagon"),Area,X,Z)&&Area==TEXT("road"),TEXT("the wagon is on the land")))return;
   M->Player->Place(X,Z+9,0);M->Player->Pitch=0;Stage=44;Hold=2;return;
  }
- if(Stage==44){Shot(TEXT("reyes-wagon-world"));Stage=41;Hold=.4;return;}
+ if(Stage==44)
+ {
+  if(M->FieldRadio.IsValid()&&!Check(M->FieldRadio->MessagesHeard()>WalkieHeard,TEXT("and once answered, Dale says his piece")))return;
+  Shot(TEXT("reyes-wagon-world"));Stage=41;Hold=.4;return;
+ }
  if(Stage==41)
  {
   M->Inter->UseId(TEXT("ff:reyes:wagon"));
