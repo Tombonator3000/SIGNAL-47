@@ -929,6 +929,22 @@ void SS47Notebook::Build()
 				? TEXT("LT / RT zoom   left stick or D-pad move   A back to me   R3 mark it")
 				: TEXT("wheel or + / - zoom   drag or arrows move   Home back to me   X or right click: mark it"));
 		})];
+		// The index card tucked under the sheet's corner: what the pencil and the ink on it mean (Tom, 8 November: "my marks").
+		{
+			TSharedRef<SVerticalBox> Card = SNew(SVerticalBox);
+			const FLinearColor Lead = C(0x3a3a40);
+			const auto CardLine = [&Card](const TCHAR* Words, const FLinearColor& Col, float Px)
+			{
+				Card->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Words)).Font(Hand(Px)).ColorAndOpacity(Col)];
+			};
+			CardLine(TEXT("my marks"), InkBlue(), 28);
+			CardLine(TEXT("x 1   my own, with X"), Lead, 22);
+			CardLine(TEXT("(?)   heard of, not found"), Lead, 22);
+			CardLine(TEXT("struck out: looked into"), Lead, 22);
+			CardLine(TEXT("- - -   bearing from SARO"), Lead, 22);
+			CardLine(TEXT("blue ink: work to do"), InkBlue(), 22);
+			Spread->AddSlot().Position(P2(-34, 452)).Size(P2(196, 196))[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf7f3e6))).Padding(FMargin(P(10), P(6)))[Card], 8.f, FVector2D(0, 3), 0.3f), -3.f)];
+		}
 		SpreadSlot->SetContent(Spread);
 		Read = X.MapDescription;
 	}

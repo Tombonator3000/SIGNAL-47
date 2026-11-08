@@ -38,7 +38,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47FieldMap, Log, All);
 // declination, as a quadrangle's has.
 namespace S47FieldMapLocal
 {
-	constexpr double FrameL = 36, FrameT = 66, FrameR = 1164, FrameB = 734;
+	constexpr double FrameL = 30, FrameT = 34, FrameR = 852, FrameB = 772;
+	// The legend's column, right of the neat line: the title, the scale, the road classification, the revision note, the desk's stamp.
+	constexpr float PanelL = 872, PanelR = 1180;
 	constexpr double FrameMidX = (FrameL + FrameR) * .5, FrameMidY = (FrameT + FrameB) * .5;
 	constexpr double ScaleLeast = .1, ScaleMost = 9, ScaleFirst = .55;
 	constexpr double MileM = 1609.344, FootM = .3048;
@@ -1031,6 +1033,29 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines({ Crest - FVector2f(4, 7), Crest - FVector2f(-4, 7) }, Ink(), 1.4f, LBuilt);
 		}
 	}
+	// The land's own names (the catalogue's: the west mesa, the east rim, the playa), and bench marks along the highway.
+	if (Sc >= .1)
+	{
+		if (Visible(-1350, 1000, 400)) Pen.Text(TEXT("W E S T   M E S A"), OnPage(-1350, 1000), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, -14.f);
+		if (Visible(1750, 1900, 400)) Pen.Text(TEXT("E A S T   R I M"), OnPage(1750, 1900), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, 90.f);
+		if (Visible(900, 500, 120))
+		{
+			const FVector2f Pc = OnPage(900, 500);
+			const float Rx = FMath::Max(16.f, float(70 * Sc)), Rz = FMath::Max(9.f, float(38 * Sc));
+			TArray<FVector2f> Shore;
+			for (int32 I = 0; I <= 28; ++I) { const float A = 2.f * PI * I / 28; Shore.Add(Pc + FVector2f(FMath::Cos(A) * Rx, FMath::Sin(A) * Rz)); }
+			Pen.Dashed(Shore, Water(.85f), 1.3f, LRoad, { 5, 3 });
+			Pen.Text(TEXT("Playa"), Pc, Italic(16), Water(1.f), LWords, .5f, .5f);
+		}
+	}
+	if (Sc >= .16)
+		for (double Bz = -1500; Bz <= 3000; Bz += 1000)
+		{
+			if (!Visible(0, Bz, 0)) continue;
+			const FVector2f B = OnPage(10, Bz);
+			Pen.Lines({ B + FVector2f(FMath::Max(6.f, float(5 * Sc)), -3), B + FVector2f(FMath::Max(6.f, float(5 * Sc)), 3) }, Ink(), 1.f, LWords);
+			Pen.Text(FString::Printf(TEXT("BM %d"), FMath::RoundToInt(S47FieldMap::Feet(S47FieldMap::LandHeight(0, Bz)))), B + FVector2f(FMath::Max(10.f, float(5 * Sc)) + 4, 0), Small(12), Ink(), LWords, 0.f, .5f, true);
+		}
 	// The features' names go on after the places' names, wherever they are clear of them.
 	struct FLater { FString Words; FVector2f At; FLinearColor Col; };
 	TArray<FLater> Later;
@@ -1058,7 +1083,16 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines({ Ctr + FVector2f(8, -3), Ctr + FVector2f(3, -8) }, Ink(), 1.5f, LBuilt);
 			if (Sc >= .2) Later.Add({ TEXT("Mine"), Ctr, Ink() });
 		}
-		else if (Feature.Kind == TEXT("shack")) Pen.Fill(Ctr - FVector2f(2, 2), FVector2f(FMath::Max(4.f, float(4.5 * Sc)), FMath::Max(4.f, float(3.2 * Sc))), Ink(), LBuilt);
+		else if (Feature.Kind == TEXT("shack"))
+		{
+			Pen.Fill(Ctr - FVector2f(2, 2), FVector2f(FMath::Max(4.f, float(4.5 * Sc)), FMath::Max(4.f, float(3.2 * Sc))), Ink(), LBuilt);
+			if (Sc >= .2) Later.Add({ TEXT("Line Camp"), Ctr, Ink() });
+		}
+		else if (Feature.Kind == TEXT("trough"))
+		{
+			Pen.Lines({ Ctr + FVector2f(-4, 0), Ctr + FVector2f(4, 0) }, Ink(), 2.f, LBuilt);
+			if (Sc >= .2) Later.Add({ TEXT("Trough"), Ctr, Ink() });
+		}
 		else if (Feature.Kind == TEXT("feeder"))
 		{
 			Pen.Lines({ Ctr + FVector2f(-3, -3), Ctr + FVector2f(3, -3), Ctr + FVector2f(3, 3), Ctr + FVector2f(-3, 3), Ctr + FVector2f(-3, -3) }, Ink(), 1.2f, LBuilt);
@@ -1221,12 +1255,12 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	{
 		const float L0 = float(FrameL), T0f = float(FrameT), R0f = float(FrameR), B0f = float(FrameB);
 		Pen.Lines({ FVector2f(L0, T0f), FVector2f(R0f, T0f), FVector2f(R0f, B0f), FVector2f(L0, B0f), FVector2f(L0, T0f) }, Ink(), 1.6f, LMargin);
-		Pen.Text(TEXT("CALICHE QUADRANGLE"), FVector2f(40, 24), Printed(26), Ink(), LMargin, 0.f, .5f);
-		Pen.Text(TEXT("NEW MEXICO"), FVector2f(40, 50), Printed(15), Ink(), LMargin, 0.f, .5f);
-		Pen.Text(TEXT("7.5 MINUTE SERIES (TOPOGRAPHIC)"), FVector2f(1160, 24), Printed(16), Ink(), LMargin, 1.f, .5f);
-		Pen.Text(TEXT("PHOTOREVISED 1984: SARO IN PURPLE   SARO FIELD COPY"), FVector2f(1160, 48), Small(11), Revised(), LMargin, 1.f, .5f);
-		Pen.Text(TEXT("R. 24 E."), FVector2f(600, 52), Printed(14), Survey(.85f), LMargin, .5f, .5f);
-		Pen.Text(TEXT("T. 9 S."), FVector2f(18, 400), Printed(14), Survey(.85f), LMargin, .5f, .5f, false, -90.f);
+		// The corners' latitude and longitude, as a quadrangle prints them (this sheet's own).
+		Pen.Text(TEXT("33\u00B022'30\""), FVector2f(L0 - 2, T0f - 4), Small(11), Ink(), LMargin, 0.f, 1.f);
+		Pen.Text(TEXT("104\u00B037'30\""), FVector2f(R0f, T0f - 4), Small(11), Ink(), LMargin, 1.f, 1.f);
+		Pen.Text(TEXT("33\u00B015'"), FVector2f(L0 - 2, B0f + 4), Small(11), Ink(), LMargin, 0.f, 0.f);
+		Pen.Text(TEXT("R. 24 E."), FVector2f((L0 + R0f) * .5f, B0f + 4), Printed(14), Survey(.85f), LMargin, .5f, 0.f);
+		Pen.Text(TEXT("T. 9 S."), FVector2f(14, (T0f + B0f) * .5f), Printed(14), Survey(.85f), LMargin, .5f, .5f, false, -90.f);
 		// Ticks a kilometre apart, with their eastings and northings.
 		const int32 E0 = FMath::CeilToInt(Shown.Min.X / 1000.0), E1 = FMath::FloorToInt(Shown.Max.X / 1000.0);
 		for (int32 Ek = E0; Ek <= E1; ++Ek)
@@ -1234,7 +1268,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const float X = OnPage(Ek * 1000.0, 0).X;
 			Pen.Lines({ FVector2f(X, T0f), FVector2f(X, T0f + 9) }, Ink(), 1.f, LMargin);
 			Pen.Lines({ FVector2f(X, B0f), FVector2f(X, B0f - 9) }, Ink(), 1.f, LMargin);
-			if (X > L0 + 40 && X < R0f - 40) Pen.Text(FString::Printf(TEXT("%d"), int32((EastingOrigin + Ek * 1000.0) / 1000.0)), FVector2f(X, T0f + 11), Small(10), Ink(), LMargin, .5f, 0.f, true);
+			if (X > L0 + 40 && X < R0f - 40) Pen.Text(FString::Printf(TEXT("%d"), int32((EastingOrigin + Ek * 1000.0) / 1000.0)), FVector2f(X, T0f + 11), Small(11), Ink(), LMargin, .5f, 0.f, true);
 		}
 		const int32 N0 = FMath::CeilToInt(Shown.Min.Y / 1000.0), N1 = FMath::FloorToInt(Shown.Max.Y / 1000.0);
 		for (int32 Nk = N0; Nk <= N1; ++Nk)
@@ -1242,45 +1276,105 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const float Y = OnPage(0, Nk * 1000.0).Y;
 			Pen.Lines({ FVector2f(L0, Y), FVector2f(L0 + 9, Y) }, Ink(), 1.f, LMargin);
 			Pen.Lines({ FVector2f(R0f, Y), FVector2f(R0f - 9, Y) }, Ink(), 1.f, LMargin);
-			if (Y > T0f + 30 && Y < B0f - 30) Pen.Text(FString::Printf(TEXT("%d"), int32((NorthingOrigin - Nk * 1000.0) / 1000.0)), FVector2f(R0f - 12, Y), Small(10), Ink(), LMargin, 1.f, .5f, true);
+			if (Y > T0f + 30 && Y < B0f - 30) Pen.Text(FString::Printf(TEXT("%d"), int32((NorthingOrigin - Nk * 1000.0) / 1000.0)), FVector2f(R0f - 12, Y), Small(11), Ink(), LMargin, 1.f, .5f, true);
 		}
 	}
-	// The scale, in feet and in metres or miles, for the zoom it is at.
+	// ---- the legend's column ----
 	{
-		const double ScNow = Sc;
-		const auto Bar = [&Pen, LMargin, ScNow](float From, float Y, double Metres, double PerUnit, int32 Cuts, const FString& Unit)
+		const float Px = PanelL;
+		Pen.Text(TEXT("CALICHE QUADRANGLE"), FVector2f(Px, 50), Printed(28), Ink(), LMargin, 0.f, .5f);
+		Pen.Text(TEXT("NEW MEXICO / CALICHE CO."), FVector2f(Px, 76), Printed(16), Ink(), LMargin, 0.f, .5f);
+		Pen.Text(TEXT("7.5 MINUTE SERIES (TOPOGRAPHIC)"), FVector2f(Px, 96), Small(12), Ink(), LMargin, 0.f, .5f);
+		Pen.Lines({ FVector2f(Px, 110), FVector2f(PanelR, 110) }, Ink(), 1.f, LMargin);
+		// The scale, for the zoom it is at: feet, and metres or a mile.
 		{
-			const float Len = float(Metres * ScNow);
-			for (int32 I = 0; I < Cuts; ++I)
+			const double ScNow = Sc;
+			const auto Bar = [&Pen, LMargin, ScNow](float From, float Y, double Metres, double PerUnit, int32 Cuts, const FString& Unit)
 			{
-				const float A = From + Len * I / Cuts, B = From + Len * (I + 1) / Cuts;
-				if (I % 2 == 0) Pen.Fill(FVector2f(A, Y - 2.5f), FVector2f(B - A, 5.f), Ink(), LMargin);
-				Pen.Text(FString::Printf(TEXT("%g"), FMath::RoundToDouble(Metres / PerUnit * I / Cuts * 100) / 100), FVector2f(A, Y - 6), Small(10), Ink(), LMargin, .5f, 1.f);
+				const float Len = float(Metres * ScNow);
+				for (int32 I = 0; I < Cuts; ++I)
+				{
+					const float A = From + Len * I / Cuts, B = From + Len * (I + 1) / Cuts;
+					if (I % 2 == 0) Pen.Fill(FVector2f(A, Y - 2.5f), FVector2f(B - A, 5.f), Ink(), LMargin);
+					Pen.Text(FString::Printf(TEXT("%g"), FMath::RoundToDouble(Metres / PerUnit * I / Cuts * 100) / 100), FVector2f(A, Y - 6), Small(10), Ink(), LMargin, .5f, 1.f);
+				}
+				Pen.Lines({ FVector2f(From, Y - 2.5f), FVector2f(From + Len, Y - 2.5f), FVector2f(From + Len, Y + 2.5f), FVector2f(From, Y + 2.5f), FVector2f(From, Y - 2.5f) }, Ink(), 1.f, LMargin);
+				Pen.Text(FString::Printf(TEXT("%g %s"), FMath::RoundToDouble(Metres / PerUnit * 100) / 100, *Unit), FVector2f(From + Len + 6, Y), Small(11), Ink(), LMargin, 0.f, .5f);
+			};
+			// About 200 page units long, in round numbers.
+			const auto Nice = [](double Want, const TArray<double>& Steps) { double Best = Steps[0]; for (const double Step1 : Steps) if (Step1 <= Want) Best = Step1; return Best; };
+			Pen.Text(TEXT("SCALE"), FVector2f((Px + PanelR) * .5f, 124), Printed(14), Ink(), LMargin, .5f, .5f);
+			const double FeetLen = Nice(200 / Sc / FootM, { 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000 });
+			Bar(Px + 8, 152, FeetLen * FootM, FootM, 4, TEXT("FEET"));
+			const double MetreLen = Nice(200 / Sc, { 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000 });
+			const bool bMiles = MetreLen >= 1000;
+			Bar(Px + 8, 180, bMiles ? MileM * FMath::Max(.5, FMath::RoundToDouble(MetreLen / MileM * 2) / 2) : MetreLen, bMiles ? MileM : 1.0, 4, bMiles ? TEXT("MILE") : TEXT("METERS"));
+		}
+		Pen.Text(TEXT("CONTOUR INTERVAL 20 FEET"), FVector2f((Px + PanelR) * .5f, 206), Printed(15), Ink(), LMargin, .5f, .5f);
+		Pen.Text(TEXT("DATUM IS MEAN SEA LEVEL"), FVector2f((Px + PanelR) * .5f, 224), Small(11), Ink(), LMargin, .5f, .5f);
+		// True north and magnetic north, 1984.
+		{
+			const FVector2f Stem(Px + 30, 300);
+			Pen.Lines({ Stem, Stem - FVector2f(0, 50) }, Ink(), 1.2f, LMargin);
+			Pen.Text(TEXT("*"), Stem - FVector2f(0, 52), Printed(16), Ink(), LMargin, .5f, 1.f);
+			const float A = FMath::DegreesToRadians(float(DeclinationDeg));
+			const FVector2f Tip = Stem + FVector2f(FMath::Sin(A), -FMath::Cos(A)) * 46.f;
+			Pen.Lines({ Stem, Tip }, Ink(), 1.2f, LMargin);
+			Pen.Triangle(Tip, Tip + FVector2f(-3.5f, 8), Tip + FVector2f(3.5f, 8), Ink(), LMargin);
+			Pen.Text(TEXT("MN"), Tip + FVector2f(4, -2), Small(11), Ink(), LMargin, 0.f, 1.f);
+			Pen.Text(TEXT("11\u00BD\u00B0"), Stem + FVector2f(10, -12), Small(11), Ink(), LMargin, 0.f, .5f);
+			Pen.Text(TEXT("UTM GRID AND 1984 MAGNETIC NORTH"), FVector2f(Px + 70, 268), Small(10), Ink(), LMargin, 0.f, .5f);
+			Pen.Text(TEXT("DECLINATION AT CENTER OF SHEET"), FVector2f(Px + 70, 282), Small(10), Ink(), LMargin, 0.f, .5f);
+		}
+		// Road classification and the other symbols, each drawn as the sheet draws it.
+		{
+			float Y = 334;
+			Pen.Text(TEXT("ROAD CLASSIFICATION"), FVector2f(Px, Y), Printed(15), Ink(), LMargin, 0.f, .5f);
+			const auto Row = [&Pen, &Y, Px, LMargin](const TCHAR* Words, TFunction<void(const FVector2f&, const FVector2f&)> Symbol)
+			{
+				Y += 22;
+				Symbol(FVector2f(Px, Y), FVector2f(Px + 46, Y));
+				Pen.Text(Words, FVector2f(Px + 56, Y), Small(12), Ink(), LMargin, 0.f, .5f);
+			};
+			Row(TEXT("Primary highway, hard surface"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Lines({ A, B }, Ink(), 6.f, LMargin); Pen.Lines({ A, B }, Survey(1.f), 3.8f, LMargin + 1); });
+			Row(TEXT("Light-duty road, gravel"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Lines({ A, B }, Ink(), 4.2f, LMargin); Pen.Lines({ A, B }, Paper(), 2.f, LMargin + 1); });
+			Row(TEXT("Unimproved road, dirt"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.5f, LMargin, { 9, 5 }); });
+			Row(TEXT("Fence line"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.f, LMargin, { 7, 4 }); });
+			Row(TEXT("Intermittent stream"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Water(.9f), 1.6f, LMargin, { 14, 4, 2, 4, 2, 4 }); });
+			Row(TEXT("Building"), [&Pen, LMargin](const FVector2f& A, const FVector2f&) { Pen.Fill(A + FVector2f(20, -3), FVector2f(6, 6), Ink(), LMargin); });
+			Row(TEXT("Radio telescope"), [&Pen, LMargin](const FVector2f& A, const FVector2f&) { Pen.Lines(Pen.Circle(A + FVector2f(23, 0), 4, 14), Revised(), 1.3f, LMargin); });
+			Y += 30;
+			for (const TCHAR* Line : { TEXT("Revisions shown in purple compiled from aerial"), TEXT("photographs taken 1984. This information not"), TEXT("field checked.") }) { Pen.Text(Line, FVector2f(Px, Y), Small(11), Revised(), LMargin, 0.f, .5f); Y += 15; }
+			Y += 6;
+			Pen.Text(TEXT("Red lines: Public Land Survey, sections 1 mile square."), FVector2f(Px, Y), Small(11), Survey(.9f), LMargin, 0.f, .5f);
+			Y += 22;
+			for (const TCHAR* Line : { TEXT("Topography by photogrammetric methods from aerial"), TEXT("photographs taken 1977. Field checked 1979.") }) { Pen.Text(Line, FVector2f(Px, Y), Small(11), Ink(), LMargin, 0.f, .5f); Y += 15; }
+		}
+		// The night desk's stamp, in the same purple, a little crooked; and a ring where a cup stood on the sheet.
+		{
+			const FVector2f StampAt(Px + 150, 668);
+			// Its frame, turned with it: two rules round the words.
+			const float Tw = FMath::DegreesToRadians(-4.f);
+			const FVector2f Ux(FMath::Cos(Tw), FMath::Sin(Tw)), Uy(-FMath::Sin(Tw), FMath::Cos(Tw));
+			for (const float Grow : { 0.f, 4.f })
+			{
+				const float Hw = 125 + Grow, Hh = 33 + Grow;
+				Pen.Lines({ StampAt - Ux * Hw - Uy * Hh, StampAt + Ux * Hw - Uy * Hh, StampAt + Ux * Hw + Uy * Hh, StampAt - Ux * Hw + Uy * Hh, StampAt - Ux * Hw - Uy * Hh }, Revised(.65f), Grow > 0 ? 2.2f : 1.2f, LMargin);
 			}
-			Pen.Lines({ FVector2f(From, Y - 2.5f), FVector2f(From + Len, Y - 2.5f), FVector2f(From + Len, Y + 2.5f), FVector2f(From, Y + 2.5f), FVector2f(From, Y - 2.5f) }, Ink(), 1.f, LMargin);
-			Pen.Text(FString::Printf(TEXT("%g %s"), FMath::RoundToDouble(Metres / PerUnit * 100) / 100, *Unit), FVector2f(From + Len + 6, Y), Small(11), Ink(), LMargin, 0.f, .5f);
-		};
-		// About 220 page units long, in round numbers.
-		const auto Nice = [](double Want, const TArray<double>& Steps) { double Best = Steps[0]; for (const double Step1 : Steps) if (Step1 <= Want) Best = Step1; return Best; };
-		const double FeetLen = Nice(220 / Sc / FootM, { 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000 });
-		Bar(48, 758, FeetLen * FootM, FootM, 4, TEXT("FEET"));
-		const double MetreLen = Nice(220 / Sc, { 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000 });
-		const bool bMiles = MetreLen >= 1000;
-		Bar(48, 784, bMiles ? MileM * FMath::Max(.5, FMath::RoundToDouble(MetreLen / MileM * 2) / 2) : MetreLen, bMiles ? MileM : 1.0, 4, bMiles ? TEXT("MILE") : TEXT("METERS"));
-	}
-	Pen.Text(TEXT("CONTOUR INTERVAL 20 FEET"), FVector2f(640, 756), Printed(15), Ink(), LMargin, .5f, .5f);
-	Pen.Text(TEXT("DATUM IS MEAN SEA LEVEL"), FVector2f(640, 778), Small(10), Ink(), LMargin, .5f, .5f);
-	// True north and magnetic north (1986).
-	{
-		const FVector2f Stem(1110, 790);
-		Pen.Lines({ Stem, Stem - FVector2f(0, 46) }, Ink(), 1.2f, LMargin);
-		Pen.Text(TEXT("TN"), Stem - FVector2f(0, 48), Small(10), Ink(), LMargin, .5f, 1.f);
-		const float A = FMath::DegreesToRadians(float(DeclinationDeg));
-		const FVector2f Tip = Stem + FVector2f(FMath::Sin(A), -FMath::Cos(A)) * 42.f;
-		Pen.Lines({ Stem, Tip }, Ink(), 1.2f, LMargin);
-		Pen.Triangle(Tip, Tip + FVector2f(-3.5f, 8), Tip + FVector2f(3.5f, 8), Ink(), LMargin);
-		Pen.Text(TEXT("MN"), Tip + FVector2f(4, -2), Small(10), Ink(), LMargin, 0.f, 1.f);
-		Pen.Text(TEXT("11½°"), Stem + FVector2f(12, -14), Small(10), Ink(), LMargin, 0.f, .5f);
+			Pen.Text(TEXT("S A R O  /  N I G H T   D E S K"), StampAt - FVector2f(0, 12), Printed(16), Revised(.75f), LMargin, .5f, .5f, false, -4.f);
+			Pen.Text(TEXT("NOT TO LEAVE THE BUILDING"), StampAt + FVector2f(0, 13), Printed(13), Revised(.7f), LMargin, .5f, .5f, false, -4.f);
+			const FVector2f Cup(Px + 236, 548);
+			for (int32 Ring = 0; Ring < 3; ++Ring)
+			{
+				TArray<FVector2f> Arc;
+				const float R0 = 44.f + Ring * 2.2f, From = .3f + Ring * 1.1f, Span = 4.2f - Ring * .7f;
+				for (int32 K = 0; K <= 30; ++K) { const float A = From + Span * K / 30; Arc.Add(Cup + FVector2f(FMath::Cos(A), FMath::Sin(A)) * R0); }
+				Pen.Lines(Arc, Hue(0x7a5230, .12f + .04f * Ring), 3.f - Ring * .8f, LMargin);
+			}
+		}
+		Pen.Text(TEXT("CALICHE, N. MEX."), FVector2f(PanelR, 744), Printed(18), Ink(), LMargin, 1.f, .5f);
+		Pen.Text(TEXT("1979"), FVector2f(PanelR, 762), Small(11), Ink(), LMargin, 1.f, .5f);
+		Pen.Text(TEXT("PHOTOREVISED 1984"), FVector2f(PanelR, 777), Small(11), Revised(), LMargin, 1.f, .5f);
 	}
 	// Out in the night, read by a flashlight: the sheet at about two thirds. Under the lamps at SARO, full.
 	if (NightDim > 0) Pen.Fill(FVector2f(0, 0), FVector2f(1200, 800), FLinearColor(.02f, .015f, .03f, NightDim), LMargin + 2);
