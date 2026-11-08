@@ -42,9 +42,9 @@ namespace
 	TAutoConsoleVariable<float> CvDuskWarm(TEXT("s47.dusk.Warm"), 1.f, TEXT("Twilight: 1 the glow's warm rose to violet colour, 0 the moon's cold blue as before."));
 	TAutoConsoleVariable<float> CvDuskBlue(TEXT("s47.dusk.Blue"), .9f, TEXT("Twilight: the soft blue from high over the other side, on what is turned from the glow. 0: none."));
 	TAutoConsoleVariable<float> CvDuskBlueEl(TEXT("s47.dusk.BlueEl"), 40.f, TEXT("Twilight: height in degrees of the blue light."));
-	// 8 November: with the approved 0.055 the land past the lamp was black, sRGB 1 (a-farm-23). 1.8 leaves it about 2-4: the hills and the
-	// ground can just be made out against the stars. 1 is the night Tom approved on 7 November.
-	TAutoConsoleVariable<float> CvNightBase(TEXT("s47.night.Base"), 1.8f, TEXT("Night: the moon and sky fill out in the land, times the approved 0.055. 1: as approved 7 November."));
+	// 8 November: with the approved 0.055 the land past the lamp is black, sRGB 1 (a-farm-23). 1.8 leaves it about 2-4: the hills and the
+	// ground can just be made out against the stars. 1, the default, is the night Tom approved on 7 November; 1.8 waits for his word.
+	TAutoConsoleVariable<float> CvNightBase(TEXT("s47.night.Base"), 1.f, TEXT("Night: the moon and sky fill out in the land, times the approved 0.055. 1: as approved 7 November."));
 	// The glow's colour with the sun's depth under the horizon: peach and rose at sunset, mauve at 4-6 degrees, violet-blue at the end of civil twilight.
 	FLinearColor DuskGlowColor(float Depth)
 	{
