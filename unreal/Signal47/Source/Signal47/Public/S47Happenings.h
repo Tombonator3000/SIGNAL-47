@@ -164,6 +164,11 @@ private:
  void StepLanding(double Dt);
  void StepHitcher(double Dt);
  void StepHumor(double Dt);
+ // The rest of the 31 (S47Happenings.cpp, "the rest of NATTHENDELSER-31").
+ bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
+ bool StepMore(double Dt);
+ void UsePhone();
+ int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too
  void UseSite(const FString& Kind);
  void UseCattle();
  void UseHitcher();
