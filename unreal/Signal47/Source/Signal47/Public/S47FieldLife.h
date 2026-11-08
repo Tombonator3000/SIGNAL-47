@@ -23,6 +23,15 @@ public:
  bool Hot() const{return WaterLeft<=0;}
  bool NeedsRescue() const{return bStuck||bFlat||Hot();}
  FString StatusLine() const;
+ // What is wrong, what it takes and where it is, step by step (empty when the truck is sound). Shown when the truck strands,
+ // on the task list and in the truck menu. The spade, jack and wheel brace ride behind the seat; the spare wheel is in the pouch.
+ FString Steps(int32 Spares,int32 Waters) const;
+ // The county tow when it cannot be mended: $35 to $60 by the distance driven from SARO, 45 to 90 minutes. Never refused: what
+ // cash cannot cover goes on the weekly sheet.
+ int32 TowFee() const{return TowFeeFor(LegMetres);}
+ double TowMinutes() const{return TowMinutesFor(LegMetres);}
+ static int32 TowFeeFor(double Metres){return FMath::Clamp(35+FMath::RoundToInt(FMath::Max(0.,Metres)/1000.*2.5),35,60);}
+ static double TowMinutesFor(double Metres){return FMath::Clamp(45.+FMath::Max(0.,Metres)/1000.*3.,45.,90.);}
  // Each takes game time and says so. The spade and jack ride in the truck.
  bool DigOut();
  bool ChangeWheel();
@@ -38,10 +47,11 @@ public:
  void TestStick(){bStuck=true;}
  void TestFlat(){bFlat=true;}
  void TestWater(double Value){WaterLeft=Value;}
+ void TestLeg(double Metres){LegMetres=Metres;}
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- double WaterLeft=1,Metres=0,WeekMetres=0;
+ double WaterLeft=1,Metres=0,WeekMetres=0,LegMetres=0; // LegMetres: driven since the truck was last at SARO
  bool bStuck=false,bFlat=false,bWarned=false,bPowerSet=false,bHeldSet=false;
  void Hold();
 };

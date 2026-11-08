@@ -2025,6 +2025,12 @@ void FS47FreeformSession::StepWeeklyReview()
   UE_LOG(LogTemp,Display,TEXT("S47: weekly review %d: bill %d, paid %d, carried %d, cash %d"),ReviewWeek,Bill,Paid,Carried,Cash);
  }
 }
+bool FS47FreeformSession::BillTow(int32 Fee)
+{
+ Fee=FMath::Max(0,Fee);
+ if(Cash>=Fee){Cash-=Fee;return true;}
+ Carried=FMath::Min(int32(ArrearsCap),Carried+Fee);return false;
+}
 bool FS47FreeformSession::CameraLeftOut()const{return Gear&&Gear->IsLeft(TEXT("camera"));}
 FString FS47FreeformSession::TakenCosts(double SafeClock)
 {
@@ -2632,7 +2638,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
- if(Care&&!Care->StatusLine().IsEmpty())Result.Add({TEXT("TRUCK / ")+Care->StatusLine(),false});
+ if(Care&&!Care->StatusLine().IsEmpty()){const FString Steps=Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")));Result.Add({TEXT("TRUCK / ")+(Steps.IsEmpty()?Care->StatusLine():Steps),false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
