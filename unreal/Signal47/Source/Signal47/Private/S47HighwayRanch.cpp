@@ -2,6 +2,7 @@
 #include "S47Web.h"
 #include "S47FarmWorld.h"
 #include "S47FarmBuildings.h"
+#include "S47FarmWindmill.h"
 #include "S47Main.h"
 #include "S47RoadTerrain.h"
 #include "S47HighwayLandscape.h"
@@ -436,6 +437,17 @@ void AS47Web::ReconcileFarmRanch(bool bFreeform)
      UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch g%d: %d box triangles under the new buildings, expected %d; keeping them"),Part.Source.Geo,FoldedTriangles,WantTriangles);
      Folded.Reset();
     }
+   }
+   // The old windmill (four rods, a disc and a tail) and the plain drum of a tank go the same way: S47FarmWindmill stands there instead.
+   if(S47FarmWindmill::Available())
+   {
+    const TArray<uint32>& All=Part.FarmSelection.Indices;int32 Gone=0;
+    for(int32 Tri=0;Tri+2<All.Num();Tri+=3)
+    {
+     bool Inside=true;for(int32 Corner=0;Corner<3;++Corner)Inside&=S47FarmWindmill::Retired(S47Three::ToThree(FVector(Positions.VertexPosition(All[Tri+Corner]))));
+     if(!Inside)continue;++Gone;for(int32 Corner=0;Corner<3;++Corner)Folded.Add(All[Tri+Corner]);
+    }
+    if(Gone)UE_LOG(LogS47HighwayRanch,Display,TEXT("S47: highway ranch g%d: %d triangles of the old windmill and tank retired"),Part.Source.Geo,Gone);
    }
    for(uint32 I:Part.FarmSelection.Indices)if(!Used.Contains(I))
    {

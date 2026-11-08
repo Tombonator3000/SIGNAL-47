@@ -377,7 +377,8 @@ bool FS47FreeformWorld::InstallPumpModel(int32 RoadParent)
   // Ground pivot, preserved island anchor; normalized front +Y becomes +X
   // after the measured FBX conversion and a native 90-degree placement yaw.
   const FVector Base=PumpPoint()-FVector(0,1.59,0);
-  const double Width=Mesh->GetBounds().BoxExtent.X*.02;
+  // Critic 8 November: fitted to 2.10 m it stood over the island like a cabinet. A 1980s pump is about 1.6-1.7 m; 0.8 of the fit, on the same foot.
+  const double Width=Mesh->GetBounds().BoxExtent.X*.02*.8;
   PumpModel=Model(TEXT("FreeformTripoRegularPump"),TEXT("/Game/Licensed/TripoPump/caliche_regular_pump/SM_Tripo_CalicheRegularPump.SM_Tripo_CalicheRegularPump"),Base,Width,RoadParent);
   if(!PumpModel)return false;
   if(const auto* N=M->Web->Node(PumpModel.I))if(auto* C=N->Comp.Get())C->SetWorldRotation(FRotator(0,90,0));
