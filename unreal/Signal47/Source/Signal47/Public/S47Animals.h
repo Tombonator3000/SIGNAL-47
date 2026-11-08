@@ -116,6 +116,9 @@ private:
 		TWeakObjectPtr<class USkeletalMeshComponent> Mesh;
 		FString Playing;
 		double Scale = 1, YawOffset = 0, Lift = 0, Rate = 1;
+		// from the model's own frame (whatever the import's axes) to standing up, facing +X; and its feet, in that frame
+		FQuat Fix = FQuat::Identity;
+		FVector Feet = FVector::ZeroVector;
 		FName Head;
 		bool bReady = false, bTried = false;
 	};
