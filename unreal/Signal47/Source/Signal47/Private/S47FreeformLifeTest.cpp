@@ -40,7 +40,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
  {
   if(Age<3)return;
   M->UI->Close(true);F.TestLiveRules();F.TestEndFirstShift();
-  if(F.Director)F.Director->RestFor(100000);
+  if(F.Director)F.Director->TestHush(true);
   if(M->FieldRadio)M->FieldRadio->TestOwn();
   if(M->FieldCamera)M->FieldCamera->bHave=true;
   ShotsBefore=M->Night&&M->Night->Album?M->Night->Album->Shots().Num():0;

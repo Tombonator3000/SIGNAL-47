@@ -505,7 +505,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;
   // Noticed at all from where the player is, and the world as it needs it (FS47SmallHints).
   if(S47SmallHints::Is(Id)&&M->Player&&!S47SmallHints::Fits(M,Id,M->Player->Pos,[this](const FVector& At){return InView(At);}))return false;
-  if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&ActiveTime<RestUntil))return false;
+  if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&(ActiveTime<RestUntil||bTestHush)))return false;
   // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
   // The close pass is a hull beside the player, not a far light: it waits too.
   if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!M->Freeform->TheirHoursNow(Clock))return false;
@@ -946,7 +946,7 @@ int32 FS47FreeformDirector::MysteryClueHere() const
 }
 bool FS47FreeformDirector::MysteryQuiet() const
 {
- if(!M||!M->Freeform||!Event.IsEmpty()||ActiveTime<RestUntil||M->Freeform->InTutorial())return false;
+ if(!M||!M->Freeform||!Event.IsEmpty()||ActiveTime<RestUntil||bTestHush||M->Freeform->InTutorial())return false;
  if(M->HighwayUfo&&M->HighwayUfo->Busy())return false;
  const auto& Session=*M->Freeform;
  if((Session.Taken&&Session.Taken->Busy())||(Session.FarmSite&&Session.FarmSite->VisitWantsGround())||(Session.IndoorDread&&Session.IndoorDread->PeekActive()))return false;
