@@ -248,7 +248,7 @@ namespace
    D->SetupAttachment(TN->Comp.Get());D->SetDecalMaterial(Mat);D->SetFadeScreenSize(0.f);D->SortOrder=-1;
    // Projected straight down; local Y runs along the frontage (three z), local Z out to the road (three x). V of the picture is 0 at the building.
    D->DecalSize=FVector(250.f,float(Half*100+60),float(Out*50+40));
-   D->SetWorldLocation(S47Three::ToUE(FVector(XM,Ground(XM,ZM),ZM)));D->SetWorldRotation(FRotator(-90.f,0.f,Front>0?-90.f:90.f));
+   D->SetWorldLocation(S47Three::ToUE(FVector(XM,Ground(XM,ZM),ZM)));D->SetWorldRotation(FRotator(-90.f,0.f,Front>0?0.f:180.f)); // seen 8 Nov: a quarter turn put the long side across the highway
    W->AddInstanceComponent(D);D->RegisterComponent();++Lots;
    // A concrete curb down each side, from the steps out to the shoulder, sitting on the land a segment at a time.
    if(!bHouse&&Concrete)for(const double Side:{-1.,1.})
