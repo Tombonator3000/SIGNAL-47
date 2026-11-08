@@ -253,7 +253,7 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	const FLinearColor GlowColor = FMath::Lerp(FLinearColor(1.f, .20f, .07f), FLinearColor(1.f, .42f, .15f), FMath::SmoothStep(-6.f, -1.f, El));
 	FVector MoonDir = FVector::ZeroVector;
 	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
-		if (R.Base > 0 && (MoonDir.IsZero() || Moon->IsVisible())) { MoonDir = Moon->GetForwardVector(); if (Moon->IsVisible()) break; }
+		if (R.Base > 0 && (MoonDir.IsZero() || Moon->IsVisible())) { MoonDir = R.Rest.GetForwardVector(); if (Moon->IsVisible()) break; }   // its own direction, not the dusk's it lends
 	const float Night = 1.f - FMath::Clamp(Daylight / 0.2f, 0.f, 1.f);
 	const float MoonI = MoonDir.IsZero() ? 0.f : 0.3f * Night;
 	static const float GlowScale = Tune(TEXT("S47CloudGlow="), 1.8f), GlowEl = Tune(TEXT("S47CloudGlowEl="), 1.5f);

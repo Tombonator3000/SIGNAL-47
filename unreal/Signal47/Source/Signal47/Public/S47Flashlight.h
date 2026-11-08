@@ -5,6 +5,7 @@
 
 class AActor;
 class USpotLightComponent;
+class UTextureLightProfile;
 
 // web/src/core/Flashlight.ts. The flashlight has no battery and is taken from the truck's
 // passenger seat. F switches it; story events may make its electrical contact flicker. Its warm
@@ -41,7 +42,12 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	/** The beam's shape from the s47.flash.* settings (profile, cone, reach), set again only when they change. */
+	void ApplyBeam();
 	TWeakObjectPtr<USpotLightComponent> Spot;
+	TWeakObjectPtr<UTextureLightProfile> Profile;   // held by the light while it is used
+	bool bBeamProfile = false;
+	float BeamCone = 0, BeamRange = 0;
 	double Level = 0;
 	double Flick = 0;
 	double Dark = 0;
