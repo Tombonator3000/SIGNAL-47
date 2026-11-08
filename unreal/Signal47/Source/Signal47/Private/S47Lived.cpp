@@ -53,7 +53,7 @@ namespace
  struct FState
  {
   TWeakObjectPtr<AS47Web> Web;
-  int32 FloorNode=-1,DressNode=-1,OutNode=-1;
+  int32 FloorNode=-1,DressNode=-1,OutNode=-1,CorridorNode=-1;
   TWeakObjectPtr<UMaterialInstanceDynamic> Green,Amber,Red,Bulb;
   FLinearColor GreenOn=FLinearColor::Black,AmberOn=FLinearColor::Black,RedOn=FLinearColor::Black,BulbOn=FLinearColor::Black;
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
@@ -100,6 +100,13 @@ namespace
     S.Green=LitMid(C,TEXT("M_Lived_LampGreen"),S.GreenOn);S.Amber=LitMid(C,TEXT("M_Lived_LampAmber"),S.AmberOn);
     S.Red=LitMid(C,TEXT("M_Lived_LampRed"),S.RedOn);S.Bulb=LitMid(C,TEXT("M_Lived_BulbWarm"),S.BulbOn);
    }
+  }
+  // The corridor's own dressing hangs off the annex's inside, so it shows and hides with the corridor, not the room.
+  if(S.CorridorNode<0)if(UStaticMesh* Corr=OptionalMesh(TEXT("/Game/Lived/Control/SM_Lived_CorridorDressing")))
+  {
+   const int32 Annex=W->Handle(TEXT("annex.interior"));
+   UStaticMeshComponent* C=nullptr;
+   if(Annex>=0)S.CorridorNode=PlaceRoomMesh(W,Annex,Corr,TEXT("LivedCorridorDressing"),true,C);
   }
   if(S.DressNode<0)
   {
@@ -219,6 +226,11 @@ namespace
   const bool bVisible=M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Room&&Room.Shown();
   if(S.FloorNode>=0)W->ObjAt(S.FloorNode).SetVisible(bVisible);
   if(S.DressNode>=0)W->ObjAt(S.DressNode).SetVisible(bVisible);
+  if(S.CorridorNode>=0)
+  {
+   const FS47Obj Annex=W->ObjAt(W->Handle(TEXT("annex.interior")));
+   W->ObjAt(S.CorridorNode).SetVisible(M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Annex&&Annex.Shown());
+  }
   if(S.OutNode>=0)
   {
    const FS47Obj Ext=W->ObjAt(W->Handle(TEXT("ext.group")));
@@ -256,7 +268,7 @@ void S47Lived::Update(US47Main* Main,double Dt)
  S.Retry-=FMath::Max(0.,Dt);
  if(S.Retry<=0)
  {
-  if((S.DressNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
+  if((S.DressNode<0||S.CorridorNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
   BuildOutside(S,W);
   BuildHouseDay(S,W);
   S.Retry=1;
