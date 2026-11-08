@@ -121,11 +121,11 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    });
   });
  }
- E.AddFreeform(G,TEXT("Go: the stuck driver's rig"),TEXT("on foot beside it, at night; E on it. Starts a real call first if there is none"),[this,Haps,ToSite]
+ E.AddFreeform(G,TEXT("Go: the stuck driver's rig"),TEXT("on foot beside it, at night; E on it. A new real call first, so there is someone to help"),[this,Haps,ToSite]
  {
   FS47Happenings* H=Haps();FString Why;
-  if(H&&!H->HasSite(TEXT("truck"))&&!H->DevStart(TEXT("cb_stranded"),TEXT("real"),Why)){Tell(false,Why);return;}
-  ToSite(TEXT("truck"),10,TEXT("His rig, ahead of you. E on it."));
+  if(!H||!H->DevStart(TEXT("cb_stranded"),TEXT("real"),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+  ToSite(TEXT("truck"),10,TEXT("His rig, ahead of you, and him beside it. E on it."));
  });
  E.AddFreeform(G,TEXT("CB: the voice says what you did"),TEXT("02:30, control room; a danger, after a voice that was not right"),[this,Haps]
  {
