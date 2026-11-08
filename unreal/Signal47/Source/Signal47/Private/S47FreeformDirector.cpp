@@ -534,8 +534,8 @@ FString FS47FreeformDirector::PreviewPlace(const FString& Id)const
 }
 void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair)const
 {
- // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna,
- // and best where a second stands about where S-02 stands from S-03, so that both of them have something to look over.
+ // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna;
+ // where a second stands about where S-02 stands from S-03, that one is named with it, and both have something to look over.
  OutShift=FVector2D::ZeroVector;
  if(!M||!M->Web||M->Web->DishCount()<3)return;
  const AS47Web& W=*M->Web;
@@ -551,7 +551,8 @@ void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPa
   for(int32 J=0;J<W.DishCount();++J)if(J!=I){const double D=FVector2D::Distance(FVector2D(W.DishX(J),W.DishZ(J)),At+Beside);if(D<Best){Best=D;Partner=J;}}
   (Partner!=INDEX_NONE?Good:Any).Add(TPair<int32,int32>(I,Partner));
  }
- const TArray<TPair<int32,int32>>& From2=Good.IsEmpty()?Any:Good;
+ // Any antenna on the array, not only where a second stands just so: on this array that is one pair, and every visit came to it.
+ TArray<TPair<int32,int32>> From2=Good;From2.Append(Any);
  if(From2.IsEmpty())return;
  // The game's own seed with the visit's: another game sends them elsewhere, and a Continue keeps them where they are.
  const int32 Game=M->Freeform?M->Freeform->Seed():47;
