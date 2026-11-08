@@ -31,6 +31,8 @@ public:
  void TestEventPace(double Scale){TestPace=FMath::Clamp(Scale,1.,60.);}
  // How many active seconds a real one is just now (1 outside that run): for whatever else counts a while out in the night.
  double TestPaceNow() const{return TestPace;}
+ // Tests: the director starts nothing of its own, without that counting as the rhythm's rest (which would also stop draws like the field visit).
+ void TestHush(bool bOn){bTestHush=bOn;}
  // The event on the ground leaves the sky to the formations: nothing of it is up there or out in the dark. An instrument, a
  // fault, the fragment, the parked car (its light is FS47Taken's and asks for itself), the room light, a small thing.
  bool LeavesSkyFree() const;
@@ -85,6 +87,12 @@ public:
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
  bool ForceLights(const FString& Place); // town lights at one named place, same conditions as Force
+ // F10: this event at this place from the list (S47EventPlaces), same conditions as Force. Place empty: the draw, as in play.
+ bool ForceAt(const FString& Id,const FString& Place);
+ // The place from the list the event under way was given; empty for one that has none (the station's own).
+ const FString& EventPlace() const{return PlaceId;}
+ // Where the draw would put this event now, without starting it: for F10 and its panel. Empty: nowhere fits.
+ FString PreviewPlace(const FString& Id) const;
  FVector LightPlacePoint(const FString& Place) const;
  FString LightPlaceTitle(const FString& Place) const;
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
@@ -134,7 +142,17 @@ private:
  bool bOwedArray=false,bOwedFeeder=false;
  void StepOwed();
  FString Event,PhotoId,Scene,IncidentId,TaggedShot,LightPlace,NextLightPlace;
- FString PickLightPlace() const;
+ // The event's place from the list, saved; and the one F10 asked for next, not saved.
+ FString PlaceId,NextPlace;
+ // Lights seen from here (farm_lights) or heard of (town_lights): one draw from the list for either (Tom, 8 November).
+ // bFixture: started by Force alone, as the older tests are: on the ground the player is on, where they can be seen.
+ FString PickLightPlace(const FString& Id,bool bFixture=false) const;
+ // Marked ground and a fragment: open ground within reach, in the area the player is in. False: none.
+ bool PickTrace(FString& OutPlace,FVector& OutAt,bool bForced=false) const;
+ bool bTracePlaced=false;
+ // The low lights' visit: which antennas it is over (ARRAY-ORBS). The shift from the first spot is in Anchor, saved.
+ FString OrbPair;
+ void OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair) const;
  FString TaggedIncident,TaggedTitle;
  bool bTaggedLamps=false;
  int32 IncidentSerial=0;
@@ -174,6 +192,7 @@ private:
  // the scheduler's active-time clock faster to match a test's faster world clock (1: none).
  float TestDice=-1;
  double TestLightAfter=-1,TestScale=1,TestPace=1;
+ bool bTestHush=false;
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

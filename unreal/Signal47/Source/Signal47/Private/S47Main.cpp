@@ -3,6 +3,7 @@
 #include "S47Sky.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
+#include "S47Stress.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
@@ -154,6 +155,9 @@ void US47Main::Step(double Dt)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
+	// the player's strain (after the flashlight: a lit lamp is one thing it reads)
+	if (!Stress) Stress = MakeShared<FS47Stress>(this);
+	Stress->Step(Dt);
 	// main.ts radioStep: the car's and the diner's receivers, the radio, the trip's radio
 	if (Mode == EMode::Play && !bOpening) RadioStep(Dt);
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands

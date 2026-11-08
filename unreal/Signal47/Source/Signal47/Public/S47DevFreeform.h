@@ -5,6 +5,7 @@ class US47Main;
 class FS47DevEvents;
 class FS47FreeformSession;
 class SWidget;
+struct FS47PlaceNeed;
 
 // F10 in Freeform (Tom, 7 November: "F10 must be able to test everything"). Every event starts from its own line: the clock and the
 // place are set so that it can be seen, the screen says what it does, and a refusal says why. Natural() runs the night by its own
@@ -52,6 +53,14 @@ private:
  void AddTimePlace(FS47DevEvents& E);
  void AddLand(FS47DevEvents& E);
  void AddReyes(FS47DevEvents& E);
+ // Night events (S47Happenings.h), each from its own line; S47HappeningsDev.cpp.
+ void AddHappenings(FS47DevEvents& E);
+ // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
+ void AddAnywhere(FS47DevEvents& E);
+ void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);
+ // The chosen place if it fits this need, else where the game's own draw puts it from here. Empty: nothing fits.
+ FString ChoosePlace(const FS47PlaceNeed& Need) const;
+ FString ChosenPlace;
  void GoReyes(const FString& Id,const FString& Say);
  void ToLandPlace(const FString& Id,double Off,double From,double To,TFunction<void(double,double)> Then);
  void StartHighway(bool bNorth,bool bFollow);

@@ -38,6 +38,15 @@ public:
  // Test: what the set is playing, 0 to 1, and how many bursts of crackle since the session began.
  double RadioLevelNow() const { return LastRadio; }
  int32 CrackleCount() const { return Crackled; }
+ // For the HUD and the stress model (read only): how near a real presence is, 0 to 1 (the same smooth reach as the interference),
+ // whether one is in view, whether one is hunting, and what the carried set is doing just now.
+ double PresenceLevel() const { return LastLevel; }
+ bool PresenceSeen() const { return LastSeen; }
+ bool PresenceHunting() const { return LastHunt; }
+ // The walkie is in use: it is carried and something has just come over it, or it is breaking up with a presence near.
+ bool InUse() const { return bOwned && !bLeftOut && (SinceMessage<20. || LastRadio>.02); }
+ // Signal strength for the HUD, 0 to 1: full in a quiet place, thinner the nearer a presence is.
+ double Strength() const { return FMath::Clamp(1.-.8*LastRadio,.1,1.); }
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
@@ -52,6 +61,8 @@ private:
  S47J::FObj Unknown;
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0;
  int32 Crackled=0,MessageCount=0;
+ double SinceMessage=1e9;
+ bool LastSeen=false,LastHunt=false;
  int32 LastCue=-1,TestStage=0;
  bool Build();
  TArray<FPresence> Nearby() const;

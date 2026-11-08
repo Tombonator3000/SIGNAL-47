@@ -182,8 +182,29 @@ void FS47Flashlight::Flicker(double K, const FString& From)
 	Flick = M;
 }
 
+double FS47Flashlight::BatteryGain(double Full)
+{
+	if (Full >= LowLevel) return 1;
+	if (Full <= 0) return 0;
+	return FMath::Lerp(0.18, 1.0, FMath::SmoothStep(0.0, LowLevel, Full));
+}
+
+int32 FS47Flashlight::TakeNotice()
+{
+	if (!bDrains) return 0;
+	if (Battery <= 0 && !bSaidDead) { bSaidDead = bSaidLow = true; return 2; }
+	if (Battery < LowLevel && Battery > 0 && !bSaidLow) { bSaidLow = true; return 1; }
+	return 0;
+}
+
 void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 {
+	// The battery runs down only while the lamp is lit (Freeform); when it is empty the lamp goes out and stays out until it is filled.
+	if (bDrains && bHave && bOn && !bOff && FMath::IsFinite(Dt) && Dt > 0)
+	{
+		Battery = FMath::Max(0.0, Battery - Dt / RunSeconds);
+		if (Battery <= 0) bOn = false;
+	}
 	const double Want = bHave && bOn && !bOff ? 1 : 0;
 	Level += (Want - Level) * FMath::Min(1.0, Dt * 14);
 	// a weak contact now and then when something is near: a dip, sometimes out for a moment
@@ -196,6 +217,12 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 	}
 	// A moment out belongs to the flicker that asked for it: it does not wait for the next one.
 	else Dark = 0;
+	// a weak battery: the beam thins, and near the end the contact stutters
+	if (bDrains && Battery < LowLevel)
+	{
+		K *= BatteryGain(Battery);
+		if (Battery < LowLevel * 0.4) K *= 0.75 + 0.25 * FMath::Sin(T * 23) * FMath::Sin(T * 7.1);
+	}
 	ThreeIntensity = Level < 0.01 ? 0 : 40 * FLASH_GAIN * Level * K;
 	USpotLightComponent* L = Spot.Get();
 	if (!L) return;
@@ -244,6 +271,36 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 	Check(FMath::IsNearlyEqual(F.Flick, 0.3), TEXT("the strongest flicker counts, each by its source"));
 	F.Flicker(0, TEXT("glimpse")); F.FlickerOut(5); F.Update(1.0 / 60, 0, Cam, false);
 	Check(F.Dark == 0, TEXT("a moment out ends with the flicker, and does not hang on for the next source"));
+	// the battery (Freeform): none in the Story, runs down while lit, goes out, is filled again
+	{
+		FS47Flashlight B(nullptr);
+		B.bHave = true; B.Toggle();
+		for (int32 I = 0; I < 3000; ++I) B.Update(1.0, I, Cam, false);
+		Check(B.BatteryLevel() == 1 && B.bOn && !B.Dead(), TEXT("Story: the lamp has no battery and never runs down"));
+		B.bDrains = true;
+		for (int32 I = 0; I < 1350; ++I) B.Update(1.0, I, Cam, false);
+		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 0.5, 0.001) && B.Intensity() > 60, TEXT("Freeform: half the lit time takes half the battery, the beam still full"));
+		B.Update(1.0, 0, Cam, true);
+		const double Held = B.BatteryLevel();
+		for (int32 I = 0; I < 600; ++I) B.Update(1.0, I, Cam, true);
+		Check(B.BatteryLevel() == Held, TEXT("Freeform: nothing is used while the lamp is off or held"));
+		B.SetBattery(0.1);
+		Check(B.TakeNotice() == 0 && B.Low(), TEXT("a set battery level does not announce itself"));
+		B.SetBattery(0.5); B.Update(1.0, 0, Cam, false);
+		for (int32 I = 0; I < 1400; ++I) B.Update(1.0, I, Cam, false);
+		Check(B.Dead() && !B.bOn && B.Intensity() == 0 && B.BatteryLevel() == 0, TEXT("an empty battery puts the lamp out"));
+		Check(B.TakeNotice() == 2 && B.TakeNotice() == 0, TEXT("the empty lamp says so once"));
+		B.bOn = false; B.Refill();
+		Check(B.BatteryLevel() == 1 && !B.Dead() && B.TakeNotice() == 0, TEXT("a dry cell fills it"));
+		B.SetBattery(0); B.Charge(1.0 / 3.0); B.Charge(1.0 / 3.0);
+		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 2.0 / 3.0, 0.0001) && !B.Dead(), TEXT("SARO's charger fills it by degrees"));
+		B.Charge(5); Check(B.BatteryLevel() == 1, TEXT("charging stops at full"));
+		B.bOn = true;
+		B.SetBattery(0.15); B.bSaidLow = false;
+		Check(B.TakeNotice() == 1 && B.TakeNotice() == 0, TEXT("a weak battery says so once"));
+		Check(FS47Flashlight::BatteryGain(1) == 1 && FS47Flashlight::BatteryGain(0.2) == 1 && FS47Flashlight::BatteryGain(0) == 0
+			&& FS47Flashlight::BatteryGain(0.1) < 1 && FS47Flashlight::BatteryGain(0.1) > FS47Flashlight::BatteryGain(0.05), TEXT("the beam thins steadily below the low mark"));
+	}
 	Check(TorchProfile(0, 0) > .9f && TorchProfile(0, 0) < 1.01f && TorchProfile(4.5f, 1) < .6f && TorchProfile(12, 2) < .3f && TorchProfile(20, 3) < .15f && TorchProfile(30, 0) < .005f,
 		TEXT("the reflector's profile: full on the axis, half by 4.5 degrees, a dim spill gone by 30"));
 	Check(NearGain(-1) == 1 && NearGain(3.5) == 1 && NearGain(8) == 1, TEXT("no surface or ordinary range retains the full native beam"));

@@ -175,6 +175,8 @@ public:
  bool CameraLeftOut() const;
  TSharedPtr<class FS47LeftGear> Gear;
  TSharedPtr<class FS47Places> Places;
+ // Where a night's event happens: one list for the whole land, the farm one place on it (S47EventPlaces.h).
+ TSharedPtr<class FS47EventPlaces> EventPlaces;
  // The operator before you, Ward's review, and the keys (Tom, 7 November).
  TSharedPtr<class FS47Predecessor> Predecessor;
  TSharedPtr<class FS47RadioTips> Tips;
@@ -184,6 +186,8 @@ public:
  TSharedPtr<class FS47TripCamera> TripCamera;
  TSharedPtr<class FS47DayRound> Round;
  TSharedPtr<class FS47RoadsideCar> RoadCar;
+ // What can happen out in the night (TODO NIGHT31-20261108 proposals 1 to 8), and the counter (GEIGER-20261108): S47Happenings.h.
+ TSharedPtr<class FS47Happenings> Happenings;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;
@@ -252,6 +256,9 @@ public:
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);
  bool Spend(int32 Amount,bool bEmergency=false);
+ // The county's tow for a truck that cannot be mended: cash if the budget covers it (true), otherwise the whole fee goes on the
+ // weekly sheet as carried arrears (false, capped like any carried bill). Never refused and never touches the requisition.
+ bool BillTow(int32 Fee);
  void Earn(int32 Amount);
  int32 InventoryCount(const FString& Id) const;
  void AddItem(const FString& Id,int32 Count);

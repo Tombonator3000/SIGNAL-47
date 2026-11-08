@@ -4,6 +4,7 @@
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FarmSite.h"
+#include "S47EventPlaces.h"
 #include "S47NightRhythm.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -134,7 +135,8 @@ struct FS47FreeformDirector::FEffects
  TArray<TWeakObjectPtr<UStaticMeshComponent>> FarmExtra;
  TArray<FVector> LampScale;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
- FS47Obj Sample,Car;
+ // The fragment has one for each ground it can lie on: SARO's, and the road's for the rest of the land (Tom, 8 November).
+ FS47Obj Sample,SampleRoad,Car;
  TWeakObjectPtr<UStaticMeshComponent> Orb;
  // The mesh stays as the physical record for sight and photographs; these are what is seen.
  TWeakObjectPtr<UNiagaraComponent> OrbFx[FS47DuskOrb::Count];
@@ -234,6 +236,16 @@ struct FS47FreeformDirector::FEffects
    M->Inter->Add(It);
   };
   Register(Mesh(TEXT("FreeformTrace"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(12,.025,-12),FVector(.34,.035,.34),0x9f9c7b),TEXT("FreeformTrace"),TEXT("ff:event-sample"),Sample);
+  // The same fragment on the road's ground, for marked ground anywhere else on the land. One interactable: its ray finds whichever is shown.
+  if(auto* RoadTrace=Mesh(TEXT("FreeformTraceRoad"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(12,.025,-12),FVector(.34,.035,.34),0x9f9c7b))
+  {
+   const int32 RoadRoot=M->Web->Handle(TEXT("world.legs.road.area.group"));
+   if(RoadRoot>=0)
+   {
+    SampleRoad=M->Web->ObjAt(M->Web->AdoptNode(RoadTrace,RoadRoot,TEXT("FreeformTraceRoad")));
+    SampleRoad.SetVisible(false);RoadTrace->SetVisibility(false,false);RoadTrace->SetCollisionEnabled(ECollisionEnabled::NoCollision);M->Web->MarkUsable(SampleRoad.I,TEXT("ff:event-sample"));
+   }
+  }
   auto* Sedan=Mesh(TEXT("FreeformEmptyCar"),TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Sedan.SM_SaroPark_Sedan"),EmptyCarFoot,FVector(1),0xffffff,true);
   if(Sedan)
   {
@@ -250,9 +262,25 @@ struct FS47FreeformDirector::FEffects
   if(!CanTouchWorld())return;
   if(Ufo)Ufo->Hide();
   for(int32 I=0;I<FS47DuskOrb::Count;++I){if(auto* Fx=OrbFx[I].Get())Fx->DeactivateImmediate();if(auto* L=OrbLight[I].Get())L->SetVisibility(false);}
-  for(const FS47Obj O:{Sample,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
+  for(const FS47Obj O:{Sample,SampleRoad,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
   for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false,false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
   for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);
+ }
+ // Shown only where its own ground is: the road's fragment in town and on the land, the rest at SARO.
+ bool IsRoadSample(FS47Obj O)const{return SampleRoad&&O.W==SampleRoad.W&&O.I==SampleRoad.I;}
+ bool OwnArea(FS47Obj O)const
+ {
+  const FString Here=M->Web->Area();
+  return IsRoadSample(O)?Here==TEXT("road")||Here==TEXT("diner"):Here==TEXT("saro");
+ }
+ FS47Obj SampleFor(const FString& Area)const{return (Area==TEXT("road")||Area==TEXT("diner"))&&SampleRoad?SampleRoad:Sample;}
+ // Both fragments where it lies, on whatever is under it there.
+ void PlaceSample(const FVector& At)
+ {
+  if(!CanTouchWorld())return;
+  FVector Foot=At;FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(FreeformTraceGround),true);if(M->Player)Query.AddIgnoredActor(M->Player);
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(At+FVector(0,20,0)),S47Three::ToUE(At-FVector(0,20,0)),ECC_Visibility,Query))Foot.Y=S47Three::ToThree(Hit.ImpactPoint).Y;
+  for(const FS47Obj O:{Sample,SampleRoad})if(O.W==M->Web.Get()&&O)if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))C->SetWorldLocation(S47Three::ToUE(Foot+FVector(0,.025,0)));
  }
  void Physical(FS47Obj O,bool bVisible)
  {
@@ -260,7 +288,7 @@ struct FS47FreeformDirector::FEffects
   // Unconditional node update repairs stale presentation too. A hidden scene
   // or ancestor still wins; component visibility never bypasses its parent.
   M->Web->SetVisible(O.I,bVisible);
-  const bool Presented=bVisible&&O.Shown()&&M->Web->Area()==TEXT("saro");
+  const bool Presented=bVisible&&O.Shown()&&OwnArea(O);
   if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
   {C->SetVisibility(Presented,false);C->SetCollisionEnabled(Presented?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);}
  }
@@ -273,7 +301,7 @@ struct FS47FreeformDirector::FEffects
  }
  UStaticMeshComponent* PresentedComponent(FS47Obj O)const
  {
-  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O||!O.Shown()||M->Web->Area()!=TEXT("saro"))return nullptr;
+  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O||!O.Shown()||!OwnArea(O))return nullptr;
   if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
    if(IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&C->GetOwner()&&!C->GetOwner()->IsHidden())return C;
   return nullptr;
@@ -292,7 +320,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
@@ -322,7 +350,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const S47J::FObj* Entry=nullptr;FS47FreeformObservation Observation;
    if(V.IsValid()&&V->TryGetObject(Entry)&&Entry&&FS47FreeformObservation::Read(*Entry,Observation)&&!FieldObservations.ContainsByPredicate([&](const FS47FreeformObservation& P){return P.Id==Observation.Id;}))FieldObservations.Add(Observation);
   }
-  LightPlace=S47J::Str(O,TEXT("lightPlace"));PhotoId=S47J::Str(O,TEXT("photo"));Scene=S47J::Str(O,TEXT("scene"),TEXT("saro"));Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,3);Variant=FMath::Clamp(S47J::Int(O,TEXT("variant")),0,2);
+  LightPlace=S47J::Str(O,TEXT("lightPlace"));PlaceId=S47J::Str(O,TEXT("place")).Left(64);PhotoId=S47J::Str(O,TEXT("photo"));Scene=S47J::Str(O,TEXT("scene"),TEXT("saro"));Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,3);Variant=FMath::Clamp(S47J::Int(O,TEXT("variant")),0,2);
   // Older saves have none of these: no pot until the next day, no finding owed.
   SkyLeft=FMath::Clamp(S47J::Int(O,TEXT("skyLeft")),0,1);bOwedArray=S47J::Bool(O,TEXT("owedArray"));bOwedFeeder=S47J::Bool(O,TEXT("owedFeeder"));bForcedEvent=S47J::Bool(O,TEXT("forced"));
   SeenDay=S47J::Int(O,TEXT("seenDay"));DangerNight=FMath::Max(0,S47J::Int(O,TEXT("dangerNight")));DangerCount=FMath::Max(0,S47J::Int(O,TEXT("danger")));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);MinorBudget=FMath::Clamp(S47J::Int(O,TEXT("minorBudget"),MinorLeft),MinorLeft,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
@@ -392,7 +420,7 @@ void FS47FreeformDirector::Stop()
 }
 S47J::FObj FS47FreeformDirector::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
+ auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);if(!PlaceId.IsEmpty())S47J::Set(O,TEXT("place"),PlaceId);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
@@ -443,32 +471,93 @@ void FS47FreeformDirector::Changed(){if(M)M->RequestAutosave();}
 TArray<FString> FS47FreeformDirector::EventIds(){TArray<FString> Out;for(const auto& D:Catalog())Out.Add(D.Id);return Out;}
 namespace
 {
- struct FLightPlace{const TCHAR* Id;const TCHAR* Title;const TCHAR* Prop;};
- // Existing Caliche fronts. The farm has its own event; add a place here and it can be visited.
- const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")},
-  // Out on the land (FS47Places). Their marks and a second look work as in town.
-  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")},
-  {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("ff:place:stake")},{TEXT("trough"),TEXT("the salt lick and trough"),TEXT("ff:place:trough")}};
+ const FS47EventPlaces* PlacesOf(const US47Main* M){return M&&M->Freeform?M->Freeform->EventPlaces.Get():nullptr;}
+ // F10's "the draw, as in play": where Force alone keeps a fixture's old spot.
+ const TCHAR* const DrawHere=TEXT("*");
 }
 FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
 {
- if(M&&M->Inter)for(const auto& P:LightPlaces)if(Place==P.Id)if(auto* It=M->Inter->Get(P.Prop))if(It->Object)return It->Object.WorldBox().GetCenter();
- return FVector::ZeroVector;
+ // One list for the whole land (S47EventPlaces): the farm is a place on it like any other (Tom, 8 November).
+ const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(Place):nullptr;
+ if(!P)return FVector::ZeroVector;
+ // A place with a front of its own (a door, a find) is measured off it, as it always was; the rest off the land itself.
+ if(!P->Prop.IsEmpty()&&M->Inter)if(auto* It=M->Inter->Get(P->Prop))if(It->Object)return It->Object.WorldBox().GetCenter();
+ FVector At;Places->AtNow(Place,At);
+ return At;
 }
 FString FS47FreeformDirector::LightPlaceTitle(const FString& Place)const
 {
+ const FS47EventPlaces* Places=PlacesOf(M);
+ if(const FS47EventPlace* P=Places?Places->Find(Place):nullptr)return P->Title;
  if(Place==TEXT("farm"))return TEXT("the Alderete place");
- for(const auto& P:LightPlaces)if(Place==P.Id)return P.Title;
  return TEXT("town");
 }
-FString FS47FreeformDirector::PickLightPlace()const
+FString FS47FreeformDirector::PickLightPlace(const FString& Id,bool bFixture)const
 {
- TArray<FString> Ready;for(const auto& P:LightPlaces)if(!LightPlacePoint(P.Id).IsZero())Ready.Add(P.Id);
- if(Ready.IsEmpty())return FString();
- // From the game's own seed, the day and the incident count (all saved): loading again before they come gives the same place, not
- // a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
- const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47,Today=M&&M->Freeform?M->Freeform->Day():1;
- return Ready[int32(FS47NightRhythm::Roll(Seed,Today,0x4c504c43u^uint32(IncidentSerial))*Ready.Num())%Ready.Num()];
+ const FS47EventPlaces* Places=PlacesOf(M);if(!Places)return FString();
+ // Seen from here (farm_lights): a few hundred metres off, across the ground the player is on. Heard of (town_lights): somewhere
+ // off that ground, a drive away, and now and then a long way off. From the game's own seed, the night and the incident count (all saved): loading again before
+ // they come gives the same place, not a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
+ FS47PlaceNeed Need;Need.Kind=Id;Need.Any=ES47PlaceTrait::Open|ES47PlaceTrait::Town|ES47PlaceTrait::Farm|ES47PlaceTrait::Array|ES47PlaceTrait::Lot;
+ if(Id==TEXT("farm_lights")){Need.MinM=250;Need.MaxM=1600;Need.FarShare=0;Need.bSameArea=true;}
+ else if(bFixture){Need.FarShare=0;Need.bSameArea=true;} // a test's own street: seen from where it stands, as before the list
+ else{Need.MinM=150;Need.FarShare=.35f;Need.bOtherArea=true;}
+ return Places->Pick(Need,uint32(IncidentSerial)).Id;
+}
+bool FS47FreeformDirector::PickTrace(FString& OutPlace,FVector& OutAt,bool bForced)const
+{
+ const FS47EventPlaces* Places=PlacesOf(M);if(!Places||!M->Web)return false;
+ FString Want=NextPlace==DrawHere?FString():NextPlace;
+ // A fixture started by Force alone keeps the east yard it was written for.
+ if(Want.IsEmpty()&&bForced&&NextPlace.IsEmpty()&&M->Web->Area()==TEXT("saro"))Want=TEXT("saro_yard");
+ if(Want.IsEmpty())
+ {
+  // Open ground within reach of where the player is, on the ground they are on: found by walking, or told of on the set.
+  FS47PlaceNeed Need;Need.Kind=TEXT("landing_trace");Need.All=ES47PlaceTrait::Open;Need.MaxM=700;Need.FarShare=0;Need.bSameArea=true;
+  Want=Places->Pick(Need,uint32(IncidentSerial)).Id;
+ }
+ FVector At;
+ if(Want.IsEmpty()||!Places->AtNow(Want,At))return false;
+ // A few metres off the place's own middle, never under whatever names it. Fixed by the game and the incident, not the frame.
+ const FS47EventPlace* P=Places->Find(Want);
+ const int32 Seed=M->Freeform?M->Freeform->Seed():47;
+ const double Turn=FS47NightRhythm::Roll(Seed,IncidentSerial+1,0x54524143u)*2*UE_DOUBLE_PI,Off=P?FMath::Min(P->Radius*.4,10.):3.;
+ OutPlace=Want;OutAt=At+FVector(FMath::Cos(Turn)*Off,.08,FMath::Sin(Turn)*Off);
+ return true;
+}
+FString FS47FreeformDirector::PreviewPlace(const FString& Id)const
+{
+ if(Id==TEXT("farm_lights")||Id==TEXT("town_lights"))return PickLightPlace(Id);
+ FString Place;FVector At;
+ if(Id==TEXT("landing_trace")&&PickTrace(Place,At))return Place;
+ return FString();
+}
+void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair)const
+{
+ // The flight is written round S-03 with S-02 beside it. Somewhere else on the array it is the same flight round another antenna,
+ // and best where a second stands about where S-02 stands from S-03, so that both of them have something to look over.
+ OutShift=FVector2D::ZeroVector;
+ if(!M||!M->Web||M->Web->DishCount()<3)return;
+ const AS47Web& W=*M->Web;
+ int32 S02=INDEX_NONE,S03=INDEX_NONE;
+ for(int32 I=0;I<W.DishCount();++I){if(W.DishId(I)==TEXT("S-02"))S02=I;if(W.DishId(I)==TEXT("S-03"))S03=I;}
+ if(S02==INDEX_NONE||S03==INDEX_NONE)return;
+ const FVector2D From(W.DishX(S03),W.DishZ(S03)),Beside=FVector2D(W.DishX(S02),W.DishZ(S02))-From;
+ TArray<TPair<int32,int32>> Good,Any;
+ for(int32 I=0;I<W.DishCount();++I)
+ {
+  if(I==S03)continue;
+  const FVector2D At(W.DishX(I),W.DishZ(I));int32 Partner=INDEX_NONE;double Best=8;
+  for(int32 J=0;J<W.DishCount();++J)if(J!=I){const double D=FVector2D::Distance(FVector2D(W.DishX(J),W.DishZ(J)),At+Beside);if(D<Best){Best=D;Partner=J;}}
+  (Partner!=INDEX_NONE?Good:Any).Add(TPair<int32,int32>(I,Partner));
+ }
+ const TArray<TPair<int32,int32>>& From2=Good.IsEmpty()?Any:Good;
+ if(From2.IsEmpty())return;
+ // The game's own seed with the visit's: another game sends them elsewhere, and a Continue keeps them where they are.
+ const int32 Game=M->Freeform?M->Freeform->Seed():47;
+ const TPair<int32,int32>& Pick=From2[FMath::Min(From2.Num()-1,int32(FS47NightRhythm::Roll(Game,Seed,0x4f524253u)*From2.Num()))];
+ OutShift=FVector2D(W.DishX(Pick.Key),W.DishZ(Pick.Key))-From;
+ OutPair=Pick.Value!=INDEX_NONE?FString::Printf(TEXT("%s and %s"),*W.DishId(Pick.Value),*W.DishId(Pick.Key)):FString::Printf(TEXT("the antennas round %s"),*W.DishId(Pick.Key));
 }
 bool FS47FreeformDirector::ForceLights(const FString& Place)
 {
@@ -476,6 +565,14 @@ bool FS47FreeformDirector::ForceLights(const FString& Place)
  NextLightPlace=Place;
  if(Force(TEXT("town_lights")))return true;
  NextLightPlace.Empty();return false;
+}
+bool FS47FreeformDirector::ForceAt(const FString& Id,const FString& Place)
+{
+ NextPlace=Place.IsEmpty()?FString(DrawHere):Place;
+ if(Id==TEXT("farm_lights")||Id==TEXT("town_lights"))NextLightPlace=Place;
+ const bool bGood=Force(Id);
+ NextPlace.Empty();NextLightPlace.Empty();
+ return bGood;
 }
 bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)const
 {
@@ -486,11 +583,13 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  // The initial catalogue is anchored to the actual SARO yard and apparatus.
  if(Id==TEXT("feeder_presence"))
  {if(M->Web->Area()!=TEXT("road")||!M->Freeform->Field||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:feeder")),12))return false;}
- else if(Id==TEXT("town_lights"))
+ else if(Id==TEXT("town_lights")||Id==TEXT("farm_lights"))
  {
-  // Heard about from SARO too: the point is to drive there.
-  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||PickLightPlace().IsEmpty())return false;
+  // Heard about from SARO too: the point is to drive there. Seen from wherever the player is on the land, the farm among the rest.
+  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||(NextLightPlace.IsEmpty()&&PickLightPlace(Id,Forced&&NextPlace.IsEmpty()).IsEmpty()))return false;
  }
+ else if(Id==TEXT("landing_trace"))
+ {if(M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))return false;}
  else if(M->Web->Area()!=TEXT("saro")&&!(S47SmallHints::Is(Id)&&S47SmallHints::Anywhere(Id)))return false;
  if(!Forced)
  {
@@ -505,7 +604,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;
   // Noticed at all from where the player is, and the world as it needs it (FS47SmallHints).
   if(S47SmallHints::Is(Id)&&M->Player&&!S47SmallHints::Fits(M,Id,M->Player->Pos,[this](const FVector& At){return InView(At);}))return false;
-  if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&ActiveTime<RestUntil))return false;
+  if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&(ActiveTime<RestUntil||bTestHush)))return false;
   // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
   // The close pass is a hull beside the player, not a far light: it waits too.
   if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!M->Freeform->TheirHoursNow(Clock))return false;
@@ -524,7 +623,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||M->Freeform->PowerFault()))return false;
  if(Id==TEXT("feeder_fault")&&M->Freeform->PowerFault())return false;
  if(Id==TEXT("empty_car")&&(!Effects->Car||InView(EmptyCarReference)))return false;
- if(Id==TEXT("landing_trace")&&InView(FVector(12,.1,-12),40))return false;
+ if(Id==TEXT("landing_trace")){FString Place;FVector Trace;if(!PickTrace(Place,Trace,Forced)||InView(Trace,40))return false;}
  return true;
 }
 bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
@@ -535,20 +634,49 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  bForcedEvent=Forced;OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  bCarTaken=false;CarStage=0;CarLightClock=-1;
  bCarLight=Id==TEXT("empty_car")&&M->Freeform->TheirHoursNow(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
- Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
- if(Id==TEXT("farm_lights"))
+ Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
+ PlaceId.Empty();bTracePlaced=false;
+ FS47EventPlaces* Places=M->Freeform->EventPlaces.Get();
+ if(Id==TEXT("landing_trace"))
  {
-  Anchor=FVector(84,20,492); // Over the Alderete house; a clear line from the yard south of the station.
-  LightPlace=TEXT("farm");
+  FString Place;FVector Trace;
+  if(PickTrace(Place,Trace,Forced))
+  {
+   Anchor=Trace;PlaceId=Place;
+   if(Places){const FS47EventPlace* P=Places->Find(Place);Places->Used(Place,Id);FS47EventPlaces::LogPick(Id,P,FString::Printf(TEXT("%.0f m from the player"),P?Places->DistanceFromPlayer(*P):-1.));}
+  }
+  else Anchor=FVector(12,.08,-12);
  }
- if(Id==TEXT("town_lights"))
+ if(Id==TEXT("farm_lights")||Id==TEXT("town_lights"))
  {
-  LightPlace=NextLightPlace.IsEmpty()?PickLightPlace():NextLightPlace;NextLightPlace.Empty();
-  Anchor=LightPlacePoint(LightPlace)+FVector(0,28,0);
-  // From SARO it is a drive away, so they last that much longer before they are gone.
-  if(M->Web->Area()==TEXT("saro")){Age=-170;Scene=TEXT("diner");}
+  // Over a place from the list: the farm, a building in Caliche, the motel, SARO itself, a wash out on the land (Tom, 8 November).
+  // A fixture started by Force alone keeps what it was written for: the farm from SARO, lights it can see from a street in town.
+  // F10 (ForceAt) and the night draw from the whole list.
+  const bool bFixture=Forced&&NextPlace.IsEmpty()&&NextLightPlace.IsEmpty();
+  const bool bFarmFixture=bFixture&&Id==TEXT("farm_lights")&&M->Web->Area()==TEXT("saro");
+  LightPlace=!NextLightPlace.IsEmpty()?NextLightPlace:bFarmFixture?FString(TEXT("farm")):PickLightPlace(Id,bFixture);NextLightPlace.Empty();PlaceId=LightPlace;
+  const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
+  Anchor=LightPlacePoint(LightPlace)+FVector(0,P?P->Up:28,0);
+  if(P)Scene=FS47EventPlaces::AreaOf(*P);
+  // Out of this area, or a long way across it: a drive, so they last that much longer before they are gone.
+  const double Away=P&&Places?Places->DistanceFromPlayer(*P):0;
+  if(!SameScene())Age=-170;
+  else if(Away>700)Age=-FMath::Min(170.,(Away-700)/5.);
+  if(Places&&P){Places->Used(LightPlace,Id);FS47EventPlaces::LogPick(Id,P,FString::Printf(TEXT("%.0f m from the player, %s"),Away,SameScene()?TEXT("on this ground"):TEXT("a drive away")));}
  }
- if(Id==TEXT("dusk_orb")){Anchor=FVector(FS47DuskOrb::HomeX,US47Night::SaroFloorAt(M->Web,FS47DuskOrb::HomeX,FS47DuskOrb::HomeZ)+FS47DuskOrb::HomeUp,FS47DuskOrb::HomeZ);DuskOrb.Started(M->Freeform->Clock());UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed());}
+ if(Id==TEXT("dusk_orb"))
+ {
+  // ARRAY-ORBS (Tom, 8 November): the first time where they have always come, in front, so that they are seen; after that
+  // anywhere over the array, by the visit's own seed. A fixture started by Force alone keeps the first spot.
+  const bool bHome=!NextPlace.IsEmpty()?(NextPlace==TEXT("home")):(DuskOrb.VisitsSoFar()==0||Forced);
+  DuskOrb.Started(M->Freeform->Clock());
+  FVector2D Shift=FVector2D::ZeroVector;OrbPair=TEXT("S-02 and S-03");
+  if(!bHome)OrbSite(DuskOrb.VisitSeed(),Shift,OrbPair);
+  const double X=FS47DuskOrb::HomeX+Shift.X,Z=FS47DuskOrb::HomeZ+Shift.Y;
+  Anchor=FVector(X,US47Night::SaroFloorAt(M->Web,X,Z)+FS47DuskOrb::HomeUp,Z);
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d, between %s (%.0f %.0f)%s"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed(),*OrbPair,X,Z,bHome?TEXT(", the first spot"):TEXT(""));
+  if(Places)FS47EventPlaces::LogPick(Id,Places->Find(TEXT("array")),FString::Printf(TEXT("over %s"),*OrbPair));
+ }
  if(S47SmallHints::Is(Id))Anchor=S47SmallHints::AnchorOf(M,Id);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
@@ -612,7 +740,10 @@ void FS47FreeformDirector::Apply()
   // Only now is the choice on disk: a tip that goes out here always has an event behind it.
   if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))
   {
-   const FString Tip=Event==TEXT("farm_lights")?FString(TEXT("A caller on the county road reports lights low over the Alderete place, south of the station.")):FString(LightPlace==TEXT("cinema")||LightPlace==TEXT("feed")||LightPlace==TEXT("church")||LightPlace==TEXT("gas")?TEXT("Somebody in town reports lights low over "):TEXT("A rancher on the county road reports lights low over "))+LightPlaceTitle(LightPlace)+TEXT(".");
+   // Who rings it in follows where it is, not which of the two it was.
+   const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
+   const FString Region=P?P->Region:FString(TEXT("land"));
+   const FString Tip=Region==TEXT("motel")?FString(TEXT("The night clerk at the Sierra Motor Court reports lights low over the lot.")):FString::Printf(TEXT("%s reports lights low over %s."),Region==TEXT("caliche")||Region==TEXT("diner")?TEXT("Somebody in town"):Region==TEXT("saro")?TEXT("A trucker on the highway"):Region==TEXT("farm")?TEXT("A caller on the county road"):TEXT("A rancher on the county road"),*LightPlaceTitle(LightPlace));
    if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
   }
   // Woken for this, or simply there: a figure out at the array makes itself known at least this much.
@@ -627,7 +758,13 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("dusk_orb"))
   {
    if(M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
-   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?TEXT("The low lights are back among the antennas."):TEXT("A low light moves between S-02 and S-03. The PHOTO LAB camera can retain a field observation."),6);
+   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?FString(TEXT("The low lights are back among the antennas.")):FString::Printf(TEXT("A low light moves between %s. The PHOTO LAB camera can retain a field observation."),*OrbPair),6);
+  }
+  // Marked ground somewhere the player is not looking: somebody saw it come down, and says so.
+  if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))
+  {
+   const FString Tip=FString::Printf(TEXT("A rancher says something came down near %s a while ago, a flash and no sound. He would rather not go and look."),*LightPlaceTitle(PlaceId));
+   if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
   }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)
@@ -652,7 +789,12 @@ void FS47FreeformDirector::Draw()
  // Scene visibility can change after the one-shot Apply (including a save
  // restored on the road). Reconcile both native render and query collision
  // whenever the active incident is presented; no gameplay effect is replayed.
- if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
+ if(Event==TEXT("landing_trace"))
+ {
+  if(!bTracePlaced){Effects->PlaceSample(Anchor);bTracePlaced=true;}
+  const FS47Obj Here=Effects->SampleFor(Scene);
+  Effects->Physical(Effects->IsRoadSample(Here)?Effects->Sample:Effects->SampleRoad,false);Effects->Physical(Here,true);
+ }
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  if(auto* Orb=Effects->Orb.Get())
  {
@@ -910,6 +1052,7 @@ FString FS47FreeformDirector::ReportedLine() const
 {
  FString Where;
  if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))Where=LightPlaceTitle(LightPlace);
+ else if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))return FString::Printf(TEXT("Reported: something came down near %s"),*LightPlaceTitle(PlaceId));
  else if(M&&M->Freeform&&M->Freeform->FarmSite&&M->Freeform->FarmSite->Armed())Where=M->Freeform->FarmSite->PlaceTitle();
  return Where.IsEmpty()?FString():FString::Printf(TEXT("Reported: lights at %s (until noon)"),*Where);
 }
@@ -946,7 +1089,7 @@ int32 FS47FreeformDirector::MysteryClueHere() const
 }
 bool FS47FreeformDirector::MysteryQuiet() const
 {
- if(!M||!M->Freeform||!Event.IsEmpty()||ActiveTime<RestUntil||M->Freeform->InTutorial())return false;
+ if(!M||!M->Freeform||!Event.IsEmpty()||ActiveTime<RestUntil||bTestHush||M->Freeform->InTutorial())return false;
  if(M->HighwayUfo&&M->HighwayUfo->Busy())return false;
  const auto& Session=*M->Freeform;
  if((Session.Taken&&Session.Taken->Busy())||(Session.FarmSite&&Session.FarmSite->VisitWantsGround())||(Session.IndoorDread&&Session.IndoorDread->PeekActive()))return false;
@@ -1024,8 +1167,8 @@ void FS47FreeformDirector::Step(double Dt)
    const double LightHour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;
    if(PendingLightNight==Day&&(LightHour<12?LightHour+24:LightHour)>=LightAfter)
    {
-    const bool bAtSaro=M->Web->Area()==TEXT("saro");
-    const FString First=bAtSaro&&FMath::RandBool()?TEXT("farm_lights"):TEXT("town_lights");
+    // Seen from here or heard of: either, wherever the player is on the land.
+    const FString First=FMath::RandBool()?TEXT("farm_lights"):TEXT("town_lights");
     const FString Other=First==TEXT("farm_lights")?TEXT("town_lights"):TEXT("farm_lights");
     if(StartPendingNightChoice(First,Day,PendingLightNight)||StartPendingNightChoice(Other,Day,PendingLightNight))return;
    }
@@ -1133,7 +1276,7 @@ void FS47FreeformDirector::Step(double Dt)
    if(Event==TEXT("roof_steps")&&Near(O.At.GetValue(),12))ObserveVisitor(O.At.GetValue(),true);
   }
  }
- if(Event==TEXT("landing_trace")&&Effects->PresentedComponent(Effects->Sample)&&InView(Anchor,8))ObserveVisitor(Anchor);
+ if(Event==TEXT("landing_trace")&&Effects->PresentedComponent(Effects->SampleFor(Scene))&&InView(Anchor,8))ObserveVisitor(Anchor);
  if(Event==TEXT("quiet_zone")&&M->Audio)
  {const bool Inside=Near(Anchor,5);M->Audio->HoldRoomTone(Inside?.15f:1.f);if(Stage==0&&Inside){Stage=1;Changed();}else if(Stage==1&&!Inside){Stage=2;Changed();}}
  if(Event==TEXT("roof_steps")&&Age>=6&&Near(FVector(9,0,0),8)&&!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))
@@ -1209,8 +1352,9 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  if(Event.IsEmpty())return;const auto* D=Definition(Event);const bool Threat=D&&D->Family==TEXT("threat");
  if((Event==TEXT("farm_lights")||Event==TEXT("town_lights"))&&M&&M->Freeform&&M->Freeform->FarmSite)
  {
-  if(LightPlace==TEXT("farm"))M->Freeform->FarmSite->ArmFarm(M->Freeform->Clock());
-  else M->Freeform->FarmSite->Arm(M->Freeform->Clock(),LightPlace,LightPlaceTitle(LightPlace),Scene,LightPlacePoint(LightPlace));
+  // Their marks where they were, at whichever place that was: the farm's pasture as any other.
+  const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
+  M->Freeform->FarmSite->Arm(M->Freeform->Clock(),LightPlace,LightPlaceTitle(LightPlace),P?FS47EventPlaces::AreaOf(*P):Scene,LightPlacePoint(LightPlace));
  }
  if(Evidence&&M&&M->Freeform&&D)
  {
@@ -1225,7 +1369,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  Effects->Hide();if(M&&M->Audio){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s ended evidence=%d"),*Event,Evidence);
  {const FS47RhythmData Plain;const FS47RhythmData& R=M&&M->Rhythm?M->Rhythm->Data():Plain;RestUntil=FMath::Max(RestUntil,ActiveTime+(Threat?R.RestDanger:R.RestOther));}
- Event.Empty();Stage=0;bApplied=bEffectsApplied=false;NextAt=FMath::Max(NextAt,RestUntil);Changed();
+ Event.Empty();PlaceId.Empty();Stage=0;bApplied=bEffectsApplied=false;NextAt=FMath::Max(NextAt,RestUntil);Changed();
 }
 FString FS47FreeformDirector::Label(const FString& Id)const
 {
@@ -1279,7 +1423,7 @@ bool FS47FreeformDirector::PhysicalObjectPresented()const
  if(Event==TEXT("close_pass"))return M&&M->Web&&M->Web->Area()==Scene&&Effects->Ufo&&Effects->Ufo->Presented();
  if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("farm_lights")||Event==TEXT("town_lights"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
- const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
+ const FS47Obj Object=Event==TEXT("landing_trace")?Effects->SampleFor(Scene):Event==TEXT("empty_car")?Effects->Car:FS47Obj();
  const auto* C=Effects->PresentedComponent(Object);
  return C&&(C->GetCollisionEnabled()==ECollisionEnabled::QueryOnly||C->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics)&&C->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;
 }
@@ -1314,7 +1458,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  }
  const FString RoadIncident=M->HighwayUfo?M->HighwayUfo->PhotoIncidentId():FString();
  const bool RoadPhoto=!RoadIncident.IsEmpty();
- if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||M->Web->Area()!=Scene))return;
+ if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||!SameScene()))return;
  auto* Camera=M->FieldCamera.Get();
  auto Qualify=[&](const FVector& At,double Height,const UPrimitiveComponent* Target,double Minimum=.025)->double
  {
@@ -1347,7 +1491,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  }
  else if(!RoadPhoto&&Event==TEXT("landing_trace"))
  {
-  if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
+  if(const auto* C=Effects->PresentedComponent(Effects->SampleFor(Scene)))TaggedQuality=Qualify(Anchor,.35,C);
  }
  else if(!RoadPhoto&&Event==TEXT("empty_car")&&bCarLight&&CarStage>=1)
  {

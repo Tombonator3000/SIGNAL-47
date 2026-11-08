@@ -15,7 +15,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "duplicate_print", "system": "director", "slot": "ground", "level": "hint", "budget": "invest", "from_day": 3, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["reference_filed"], "enforce": true },
     { "id": "unsigned_telex", "system": "director", "slot": "ground", "level": "hint", "budget": "invest", "from_day": 3, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["has_finding"], "enforce": true },
     { "id": "feeder_fault", "system": "director", "slot": "ground", "level": "hint", "budget": "invest", "from_day": 2, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["no_power_fault"], "enforce": true },
-    { "id": "landing_trace", "system": "director", "slot": "ground", "level": "observation", "budget": "invest", "from_day": 3, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "landing_trace", "system": "director", "slot": "ground", "level": "observation", "budget": "invest", "from_day": 3, "hours": "any", "areas": ["saro", "road", "diner"], "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "s03_failure", "system": "director", "slot": "ground", "level": "hint", "budget": "minor", "from_day": 1, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["no_array_fault", "no_power_fault"], "enforce": true },
     { "id": "roof_steps", "system": "director", "slot": "ground", "level": "hint", "budget": "minor", "from_day": 1, "hours": "night", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["roof_window_free"], "enforce": true },
     { "id": "empty_car", "system": "director", "slot": "ground", "level": "hint", "budget": "minor", "from_day": 2, "hours": "night", "areas": ["saro"], "cooldown_days": [2, 4], "needs": [], "enforce": true },
@@ -37,7 +37,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "close_pass", "system": "director", "slot": "ground", "level": "presence", "from_day": 4, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.1, "state": "pendingMajorNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "feeder_presence", "system": "director", "slot": "ground", "level": "presence", "from_day": 2, "hours": "their_hours", "areas": ["road"], "draw": { "per_night": 0.4, "state": "pendingSiteNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out", "near_feeder"], "enforce": true },
     { "id": "array_presence", "system": "director", "slot": "ground", "level": "presence", "from_day": 3, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.4, "state": "pendingSiteNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out", "near_service", "no_array_fault"], "enforce": true },
-    { "id": "farm_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "farm_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro", "road", "diner"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "town_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro", "road", "diner"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "dusk_orb", "system": "director", "slot": "ground", "level": "observation", "from_day": 1, "hours": [18.5, 23.25], "areas": ["saro"], "schedule": "fixed_table", "needs": [], "enforce": true },
     { "id": "door_visit", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "draw": { "per_night": 0.45, "state": "door" }, "min_nights_between": 2, "needs": ["indoors", "door_found"], "enforce": true },
@@ -49,7 +49,16 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "highway_ufo", "system": "highway", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "min_nights_between": 3, "needs": ["driving"], "enforce": true },
     { "id": "sky_formation", "system": "sky", "slot": "background", "level": "observation", "from_day": 1, "hours": [21.5, 5.5], "schedule": "fixed_table", "needs": ["outdoors"], "enforce": true },
     { "id": "sky_high", "system": "sky", "slot": "background", "level": "observation", "from_day": 2, "hours": [21, 4], "draw": { "per_night": 0.22 }, "needs": ["outdoors"], "enforce": true },
-    { "id": "mystery", "system": "director", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 2.5], "draw": { "per_night": 0.3, "state": "mystery" }, "needs": ["not_driving"], "enforce": false }
+    { "id": "mystery", "system": "director", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 2.5], "draw": { "per_night": 0.3, "state": "mystery" }, "needs": ["not_driving"], "enforce": false },
+    { "id": "car_dies", "system": "night", "slot": "ground", "level": "hint", "from_day": 1, "hours": "night", "draw": { "per_night": 0.45 }, "cooldown_days": [1, 2], "needs": ["driving"], "enforce": true },
+    { "id": "clock_ahead", "system": "night", "slot": "background", "level": "hint", "from_day": 1, "hours": "night", "cooldown_days": [2, 4], "needs": ["driving"], "enforce": true },
+    { "id": "cattle_ring", "system": "night", "slot": "background", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.32 }, "cooldown_days": [1, 3], "needs": ["outdoors"], "enforce": true },
+    { "id": "cb_stranded", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [19.5, 4], "draw": { "per_night": 0.28 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "cb_echo", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.4 }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
+    { "id": "landing", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [21.5, 4.5], "draw": { "per_night": 0.24 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "hitchhiker", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.2 }, "min_nights_between": 5, "needs": ["driving"], "enforce": true },
+    { "id": "stranded_rv", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.14 }, "min_nights_between": 6, "needs": [], "enforce": true },
+    { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 3, "hours": [20, 2], "draw": { "per_night": 0.5 }, "min_nights_between": 7, "needs": [], "enforce": true }
   ]
 }
 )S47JSON");

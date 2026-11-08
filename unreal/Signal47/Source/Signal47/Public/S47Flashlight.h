@@ -7,8 +7,9 @@ class AActor;
 class USpotLightComponent;
 class UTextureLightProfile;
 
-// web/src/core/Flashlight.ts. The flashlight has no battery and is taken from the truck's
-// passenger seat. F switches it; story events may make its electrical contact flicker. Its warm
+// web/src/core/Flashlight.ts. In the Story the flashlight has no battery; in Freeform it has one (bDrains,
+// set by the night layer): it runs down while lit, is filled again at SARO and by a dry cell from the store.
+// It is taken from the truck's passenger seat. F switches it; story events may make its electrical contact flicker. Its warm
 // reflector beam is a movable Unreal spot with a finite source, shadows and volumetric scattering
 // on every quality tier. The light is kept at zero intensity when off. The story-facing intensity
 // retains its original range so saves and deterministic behavioural tests remain compatible.
@@ -35,6 +36,27 @@ public:
 	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). */
 	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff);
 
+	// ---------- the battery (Freeform only; Unreal addition, HUD-20261108) ----------
+	/** Freeform: the lamp runs down. Story: it never does (the web version's lamp has no battery). */
+	bool bDrains = false;
+	/** Lit time from full to empty, and from empty to full when charged at SARO (seconds). */
+	static constexpr double RunSeconds = 2700, ChargeSeconds = 360;
+	/** Below this the beam is weak and the HUD shows the last stroke. */
+	static constexpr double LowLevel = 0.2;
+	/** 0 (empty) to 1 (full). */
+	double BatteryLevel() const { return Battery; }
+	bool Dead() const { return bDrains && Battery <= 0; }
+	bool Low() const { return bDrains && Battery < LowLevel; }
+	/** A fresh dry cell. */
+	void Refill() { Battery = 1; bSaidLow = bSaidDead = false; }
+	/** SARO's charger: K is a share of a full charge. */
+	void Charge(double K) { Battery = FMath::Clamp(Battery + K, 0.0, 1.0); if (Battery >= LowLevel) bSaidLow = false; if (Battery > 0) bSaidDead = false; }
+	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
+	/** 0 nothing new, 1 it has just grown weak, 2 it has just gone out: each once (for the caption). */
+	int32 TakeNotice();
+	/** The beam's share of full for this battery level: 1 down to LowLevel, then falling to a faint glow. */
+	static double BatteryGain(double Full);
+
 	/** three's intensity now (the tests): 0 when off. */
 	double Intensity() const { return ThreeIntensity; }
 	USpotLightComponent* Light() const { return Spot.Get(); }
@@ -55,4 +77,6 @@ private:
 	double NativeNearGain = 1, NextNearLog = 0;
 	bool bNativeNearReady = false, bLogNear = false;
 	TMap<FString, double> Flicks;
+	double Battery = 1;
+	bool bSaidLow = false, bSaidDead = false;
 };
