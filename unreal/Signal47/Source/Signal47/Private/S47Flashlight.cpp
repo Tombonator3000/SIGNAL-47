@@ -4,13 +4,16 @@
 #include "CollisionQueryParams.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Engine/TextureLightProfile.h"
 #include "Engine/World.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformTime.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "GameFramework/Actor.h"
 #include "S47Three.h"
+#include "TextureResource.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Flashlight, Log, All);
 
@@ -21,6 +24,56 @@ namespace
 	// A reflector torch: 420 cd gives about 26 lux at four metres before surface response.
 	constexpr double PEAK_CANDELAS = 420;
 	constexpr double NEAR_METRES = 3.5, MIN_NEAR_GAIN = .0025;
+
+	// The beam (critic 8 November: a hard half disc cut flat at the top). The flat top was the end of its reach, 30 m, where a beam held level
+	// still met the ground; and the edge was hard because the whole cone was lit alike. Now a reflector torch's own profile: a bright core
+	// that falls off gradually, a faint ring from the reflector, a dim wide spill and a little unevenness round it, with a reach long enough
+	// for the ground far out to fade by distance alone. The peak is the axis's; 420 cd lit the whole old cone, so the core is set higher.
+	TAutoConsoleVariable<int32> CvFlashProfile(TEXT("s47.flash.Profile"), 1, TEXT("Flashlight: 1 the reflector's profile (core, ring, spill), 0 the even cone with a soft edge."));
+	TAutoConsoleVariable<float> CvFlashCd(TEXT("s47.flash.Cd"), 700.f, TEXT("Flashlight: candelas on the axis."));
+	TAutoConsoleVariable<float> CvFlashRange(TEXT("s47.flash.Range"), 80.f, TEXT("Flashlight: reach in metres (where the light is cut off)."));
+	TAutoConsoleVariable<float> CvFlashCone(TEXT("s47.flash.Cone"), 30.f, TEXT("Flashlight: outer half angle in degrees, the spill's edge."));
+	// Held level with the eyes, the core went to the horizon and the near ground had only the spill, which then ended in a line where the
+	// distance took it (the d^-3 of grazing light). Held as one walks with it, a little down, the core lies on the ground some ten metres on
+	// and the light thins out gradually beyond it.
+	TAutoConsoleVariable<float> CvFlashTilt(TEXT("s47.flash.Tilt"), 7.f, TEXT("Flashlight: degrees under the line of sight it points."));
+
+	// The profile over the angle off the axis (degrees) and round it (radians), 1 on the axis.
+	float TorchProfile(float Deg, float Round)
+	{
+		const float Core = .78f * FMath::Exp(-FMath::Square(Deg / 4.5f)) * (1.f - .08f * FMath::Exp(-FMath::Square(Deg / 1.2f)));
+		const float Ring = .10f * FMath::Exp(-FMath::Square((Deg - 7.5f) / 1.2f));
+		const float Spill = .22f * (1.f - FMath::SmoothStep(10.f, 30.f, Deg));
+		// the reflector's dents and the lens's dust: a few per cent, out of the core
+		const float Uneven = 1.f + FMath::SmoothStep(2.f, 6.f, Deg) * (.035f * FMath::Sin(5.f * Round + Deg * .9f) + .025f * FMath::Sin(11.f * Round - Deg * 1.7f) + .02f * FMath::Sin(Deg * 2.3f));
+		return FMath::Max(0.f, (Core + Ring + Spill) * Uneven);
+	}
+
+	// An IES-like light profile made here, so there is no asset to import: 256 steps from the axis (U = angle / 180) by 64 round it.
+	UTextureLightProfile* MakeTorchProfile()
+	{
+		constexpr int32 W = 256, H = 64;
+		UTextureLightProfile* T = NewObject<UTextureLightProfile>(GetTransientPackage(), NAME_None, RF_Transient);
+		FTexturePlatformData* Data = new FTexturePlatformData();
+		Data->SizeX = W; Data->SizeY = H; Data->SetNumSlices(1); Data->PixelFormat = PF_R32_FLOAT;
+		T->SetPlatformData(Data);
+		T->bNotOfflineProcessed = true;
+		FTexture2DMipMap* Mip = new FTexture2DMipMap(W, H, 1);
+		Data->Mips.Add(Mip);
+		Mip->BulkData.Lock(LOCK_READ_WRITE);
+		float* Px = reinterpret_cast<float*>(Mip->BulkData.Realloc(int64(W) * H * sizeof(float)));
+		for (int32 Y = 0; Y < H; ++Y)
+			for (int32 X = 0; X < W; ++X)
+				Px[Y * W + X] = TorchProfile((X + .5f) / W * 180.f, ((Y + .5f) / H - .5f) * 2.f * UE_PI);
+		Mip->BulkData.Unlock();
+		T->SRGB = false;
+		T->Filter = TF_Bilinear;
+		T->AddressX = TA_Clamp; T->AddressY = TA_Wrap;
+		T->TextureMultiplier = 1.f;
+		T->Brightness = -1.f;
+		T->UpdateResource();
+		return T;
+	}
 
 	// Perceptual near-field compensation for the fixed-exposure picture, not an electrical effect.
 	double NearGain(double Distance)
@@ -81,9 +134,10 @@ FS47Flashlight::FS47Flashlight(AActor* Owner)
 	L->SetIntensityUnits(ELightUnits::Candelas);
 	L->SetIntensity(0.f);
 	L->SetLightColor(S47Three::Hex(0xffe6c0));
+	// (three's cone was FLASH_ANGLE with a 0.12 penumbra and 30 m; the beam's shape is now set in Update, ApplyBeam)
 	L->SetAttenuationRadius(30.f * 100.f);
 	L->SetOuterConeAngle(float(FMath::RadiansToDegrees(FLASH_ANGLE)));
-	L->SetInnerConeAngle(float(FMath::RadiansToDegrees(FLASH_ANGLE * (1 - 0.12)))); // penumbra 0.12
+	L->SetInnerConeAngle(float(FMath::RadiansToDegrees(FLASH_ANGLE * (1 - 0.12))));
 	L->SetSourceRadius(1.4f);
 	L->SetSoftSourceRadius(2.5f);
 	L->SetCastShadows(true);
@@ -94,6 +148,23 @@ FS47Flashlight::FS47Flashlight(AActor* Owner)
 	L->SetVolumetricScatteringIntensity(0.8f);
 	L->RegisterComponent();
 	Spot = L;
+	ApplyBeam();
+}
+
+void FS47Flashlight::ApplyBeam()
+{
+	USpotLightComponent* L = Spot.Get();
+	if (!L) return;
+	const bool bProfile = CvFlashProfile.GetValueOnGameThread() != 0;
+	const float Cone = FMath::Clamp(CvFlashCone.GetValueOnGameThread(), 10.f, 60.f), Range = FMath::Clamp(CvFlashRange.GetValueOnGameThread(), 10.f, 200.f);
+	if (bProfile == bBeamProfile && Cone == BeamCone && Range == BeamRange) return;
+	bBeamProfile = bProfile; BeamCone = Cone; BeamRange = Range;
+	if (bProfile && !Profile.IsValid()) Profile = MakeTorchProfile();
+	L->SetIESTexture(bProfile ? Profile.Get() : nullptr);
+	L->SetAttenuationRadius(Range * 100.f);
+	L->SetOuterConeAngle(Cone);
+	// with the profile the cone only closes the spill; without it the edge is soft over most of the cone
+	L->SetInnerConeAngle(Cone * (bProfile ? .85f : .3f));
 }
 
 bool FS47Flashlight::Toggle()
@@ -132,7 +203,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 	if (L->IsVisible() != (ThreeIntensity > 0)) L->SetVisibility(ThreeIntensity > 0);
 	// held a little right of and below the eyes, pointing 10 m out where they look
 	FVector P = Cam.Pos + Cam.Right * 0.22; P.Y -= 0.18;
-	const FVector Target = Cam.Pos + Cam.Forward * 10;
+	FVector Target = Cam.Pos + Cam.Forward * 10;
+	Target.Y -= 10 * FMath::Tan(FMath::DegreesToRadians(FMath::Clamp(double(CvFlashTilt.GetValueOnGameThread()), 0.0, 30.0)));
 	const FVector From = S47Three::ToUE(P), Direction = (S47Three::ToUE(Target) - From).GetSafeNormal();
 	L->SetWorldLocationAndRotation(From, Direction.Rotation());
 	UPrimitiveComponent* Surface = nullptr;
@@ -141,7 +213,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 	if (ThreeIntensity <= 0) { NativeNearGain = 1; bNativeNearReady = false; }
 	else if (!bNativeNearReady) { NativeNearGain = TargetGain; bNativeNearReady = true; }
 	else NativeNearGain = FilterGain(NativeNearGain, TargetGain, Dt);
-	L->SetIntensity(ThreeIntensity > 0 ? float(PEAK_CANDELAS * Level * K * NativeNearGain) : 0.f);
+	if (ThreeIntensity > 0) ApplyBeam();
+	L->SetIntensity(ThreeIntensity > 0 ? float(FMath::Max(0.f, CvFlashCd.GetValueOnGameThread()) * Level * K * NativeNearGain) : 0.f);
 	if (bLogNear)
 	{
 		const double Now = FPlatformTime::Seconds();
@@ -171,6 +244,8 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 	Check(FMath::IsNearlyEqual(F.Flick, 0.3), TEXT("the strongest flicker counts, each by its source"));
 	F.Flicker(0, TEXT("glimpse")); F.FlickerOut(5); F.Update(1.0 / 60, 0, Cam, false);
 	Check(F.Dark == 0, TEXT("a moment out ends with the flicker, and does not hang on for the next source"));
+	Check(TorchProfile(0, 0) > .9f && TorchProfile(0, 0) < 1.01f && TorchProfile(4.5f, 1) < .6f && TorchProfile(12, 2) < .3f && TorchProfile(20, 3) < .15f && TorchProfile(30, 0) < .005f,
+		TEXT("the reflector's profile: full on the axis, half by 4.5 degrees, a dim spill gone by 30"));
 	Check(NearGain(-1) == 1 && NearGain(3.5) == 1 && NearGain(8) == 1, TEXT("no surface or ordinary range retains the full native beam"));
 	bool bNearLux = true;
 	for (double D : { .5, 1.0, 2.0 }) bNearLux &= FMath::IsNearlyEqual(PEAK_CANDELAS * NearGain(D) / (D * D), PEAK_CANDELAS / (NEAR_METRES * NEAR_METRES), .00001);

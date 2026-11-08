@@ -46,6 +46,21 @@ namespace
   const int32 S=int32(FMath::Fmod(Seconds,86400.));
   return FString::Printf(TEXT("%02d:%02d"),S/3600,(S/60)%60);
  }
+ // Being taken at the end of a door visit, a site visit or a presence in the yard is that meeting, already counted and asked for
+ // (FS47Rhythm::Began). Anything else that would begin a taking asks the night's rules first: one dangerous meeting a night.
+ bool SameMeeting(US47Main* M)
+ {
+  auto* F=M?M->Freeform.Get():nullptr;if(!F)return false;
+  return (F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||(F->Director&&F->Director->ActiveEvent()==TEXT("service_presence"));
+ }
+ // A Director event that brings the light (the empty car) holds the ground for it: that is its own, not another meeting's.
+ bool RulesAllow(US47Main* M)
+ {
+  if(!M||!M->Rhythm||SameMeeting(M))return true;
+  const auto* F=M->Freeform.Get();
+  const FName Within=F&&F->Director&&!F->Director->ActiveEvent().IsEmpty()?FName(*F->Director->ActiveEvent()):FName();
+  return M->Rhythm->Allow(TEXT("taken"),Within);
+ }
 }
 
 const FS47TakenTerms& FS47Taken::Terms(ES47Taker Who){return Who==ES47Taker::Crab?CrabTerms:Who==ES47Taker::Tall?TallTerms:RoswellTerms;}
@@ -64,6 +79,7 @@ bool FS47Taken::Indoors() const
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
+ if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=!Indoors();
@@ -79,6 +95,7 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
+ if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=true;bSpill=false;bOverPlace=true;
@@ -98,6 +115,7 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  if(!M||!M->Player||!M->Freeform)return false;
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;
+ // Reached by a body: the end of a meeting the rules already let begin (a site or field visit), so it is not asked again.
  if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));}
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
@@ -337,7 +355,7 @@ void FS47Taken::Apply()
   M->World->PlaceTruck(TEXT("saro"));
   if(M->Web->Area()!=TEXT("saro"))M->World->Enter(TEXT("saro"));
   M->Player->Place(9.2,1.2,0);M->Player->Pitch=-.1;
-  Where=TEXT("in the yard at SARO. The jeep is on its pad and I did not drive it there");
+  Where=TEXT("in the yard at SARO. The truck is on its pad and I did not drive it there");
  }
  else if(T.WakeMax>0)
  {
@@ -367,7 +385,8 @@ void FS47Taken::Apply()
  Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s This records what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
  Note[0]=FChar::ToUpper(Note[0]);
  M->Freeform->RecordEvidence(FString::Printf(TEXT("taken-%d-%d"),M->Freeform->Day(),int32(SafeClock)),Note);
- if(M->Freeform->Director)M->Freeform->Director->RestFor(1800);
+ // The rest after it is the data file's (rest_after.taken), not a number of its own.
+ if(M->Freeform->Director)M->Freeform->Director->RestFor(M->Rhythm?M->Rhythm->Data().RestTaken:1800.);
  UE_LOG(LogTemp,Display,TEXT("S47: taken away for %.0f minutes, %s"),Minutes,*Where);
 }
 

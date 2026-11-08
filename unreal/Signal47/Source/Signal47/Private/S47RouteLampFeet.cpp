@@ -5,6 +5,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
 #include "Misc/CommandLine.h"
@@ -163,6 +164,37 @@ namespace
   }
   UE_LOG(LogTemp,Display,TEXT("S47: %s lamp feet installed: %d foundations, %d instances; original poles, heads, light anchors and power retained"),*Family,Feet.Num(),Feet.Num()*11);return true;
  }
+ // web/src/world/Exterior.ts: each of these poles has an arm (1.8 m at 7.3 m) and only a glow sprite for its lamp, so by day
+ // the arm ended in nothing (critic 8 November). A cobra head on the arm's end, as on the highway's lamps of the time: a grey
+ // housing tipped a little down and its glass bowl under, round the sprite's point (-20.1, 7.1). The light itself is unchanged.
+ void Heads(AS47Web* W,int32 Parent,const TArray<FFoot>& Feet)
+ {
+  const auto* N=W->Node(Parent);if(!N||!N->Comp.IsValid())return;
+  auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+  auto* Metal=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/SubstationDetail/Materials/M_SubstationDetail_GalvanizedSteel.M_SubstationDetail_GalvanizedSteel"));
+  auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+  if(!Cube||!Metal||!Base)return;
+  auto* Glass=UMaterialInstanceDynamic::Create(Base,W);
+  Glass->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xcfcabb));Glass->SetScalarParameterValue(TEXT("Roughness"),.25f);Glass->SetScalarParameterValue(TEXT("NativeLighting"),1);
+  int32 Made=0;
+  for(int32 I=0;I<Feet.Num();++I)
+  {
+   const double Z=Feet[I].P.Z;
+   // (x along the arm, out to the west; a 4 degree droop of the nose)
+   const FQuat Tip=FQuat(FVector(0,1,0),FMath::DegreesToRadians(-4.));
+   auto AddPiece=[&](const TCHAR* What,const FVector& At,const FVector& Size,UMaterialInterface* Mat)
+   {
+    auto* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(N->Comp.Get());C->SetStaticMesh(Cube);C->SetMaterial(0,Mat);
+    C->SetWorldTransform(FTransform(Tip,S47Three::ToUE(At),S47Three::DirToUE(Size)));
+    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->bCastContactShadow=false;C->RegisterComponent();
+    W->AdoptNode(C,Parent,FString::Printf(TEXT("routeLampHead:road:%d:%s"),I,What));++Made;
+   };
+   AddPiece(TEXT("housing"),{-20.22,7.235,Z},{.74,.17,.34},Metal);
+   AddPiece(TEXT("neck"),{-19.78,7.30,Z},{.22,.10,.16},Metal);
+   AddPiece(TEXT("bowl"),{-20.28,7.135,Z},{.46,.05,.26},Glass);
+  }
+  UE_LOG(LogTemp,Display,TEXT("S47: road lamp heads: %d parts on %d poles"),Made,Feet.Num());
+ }
  bool Road(AS47Web* W)
  {
   auto* Pole=Part(W,35,26,TEXT("/Game/Web/Geo/geo_000/StaticMeshes/g26.g26"));
@@ -172,7 +204,9 @@ namespace
   if(!RigidAt(Pole,FVector::ZeroVector)||Pole->GetStaticMesh()->GetNumTriangles(0)!=992||!RigidAt(Land,FVector::ZeroVector)||
      !RigidAt(Road,{-24,0,300})||!RigidAt(Verge,{-24,0,300}))return Skip(TEXT("road"),TEXT("active original pole / composed road ground differs"));
   TArray<FFoot> Feet;for(double Z:{70.,36.,2.,-32.,-66.,-100.,-134.,-168.})Feet.Add(FFoot{{-18.5,-.6,Z}});
-  return Install(W,W->Handle(TEXT("ext.group")),TEXT("road"),Pole,{Land,Road,Verge},Feet);
+  const bool bFeet=Install(W,W->Handle(TEXT("ext.group")),TEXT("road"),Pole,{Land,Road,Verge},Feet);
+  Heads(W,W->Handle(TEXT("ext.group")),Feet);
+  return bFeet;
  }
 
  bool MotelNorth(AS47Web* W)

@@ -7,6 +7,7 @@
 #include "S47EastWing.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47Predecessor.h"
 #include "S47FreeformWorld.h"
 #include "S47Spine.h"
 #include "S47Gamepad.h"
@@ -233,6 +234,9 @@ void US47World::Init(US47Main* InM)
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
 			if (M && M->IsFreeform())
 			{
+				// SARO closed: the district has tagged the truck for its flatbed and has the keys (FS47Predecessor::Close).
+				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->StationClosed())
+					return { TEXT("District tag on the windscreen / the keys went back with the closing order"), [this] { Toast(TEXT("The district has the keys. A tag on the windscreen says the flatbed will come for it."), 5); } };
 				// The parked service vehicle itself accepts a held parcel before offering a drive.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
 					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
@@ -975,7 +979,7 @@ void US47World::Roam(const FString& From)
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		const bool bFreeform = M && M->IsFreeform();
-		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: Drive south past the motel; the station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential requisitions after hours. GARAGE RECEIVING: Return north to SARO, unload the Jeep and carry supplies to the labelled table inside the east-wing garage. The notebook map marks both stops."));
+		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: Drive south past the motel; the station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential requisitions after hours. GARAGE RECEIVING: Return north to SARO, unload the truck and carry supplies to the labelled table inside the east-wing garage. The notebook map marks both stops."));
 		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
 		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
 	};
@@ -1081,7 +1085,7 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 {
 	if (bBusy || bDriving || !M || !M->Story) return;
 	if (M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2)
-	{Toast(TEXT("Hold the parcel and use the parked jeep to load it before driving."),6);return;}
+	{Toast(TEXT("Hold the parcel and use the parked truck to load it before driving."),6);return;}
 	EnsureLegs();
 	bBusy = true;
 	Hold(true);

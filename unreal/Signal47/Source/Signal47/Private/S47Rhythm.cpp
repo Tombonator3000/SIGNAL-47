@@ -97,10 +97,11 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  return true;
 }
 
-int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last)
+int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last,int32 Min,int32 Max)
 {
  const uint32 V=FCrc::StrCrc32(*Id)^(uint32(Last)*2654435761u);
- return 2+int32(((V>>7)^V)%3u);
+ Min=FMath::Max(0,Min);Max=FMath::Max(Min,Max);
+ return Min+int32(((V>>7)^V)%uint32(Max-Min+1));
 }
 
 void FS47Rhythm::Load()
@@ -157,7 +158,7 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  {
   // As the Director has it now: the day-to-day answer from the id, so that the panel tells the truth about its own numbers.
   if(E->CoolMin>=0)
-  {const int32 Cool=FS47Rhythm::CoolDays(IdText,*Last);if(Now.Day-*Last<Cool)return No(TEXT("cooldown"),FString::Printf(TEXT("%d days"),*Last+Cool-Now.Day));}
+  {const int32 Cool=FS47Rhythm::CoolDays(IdText,*Last,E->CoolMin,E->CoolMax);if(Now.Day-*Last<Cool)return No(TEXT("cooldown"),FString::Printf(TEXT("%d days"),*Last+Cool-Now.Day));}
   if(E->MinNights>0&&Now.Day-*Last<E->MinNights)return No(TEXT("cooldown"),FString::Printf(TEXT("%d nights"),*Last+E->MinNights-Now.Day));
  }
  if(E->bGround&&!Now.Busy.IsNone())return No(FString::Printf(TEXT("slot_taken:%s"),*Now.Busy.ToString()));
@@ -195,7 +196,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  return N;
 }
 
-bool FS47Rhythm::Allow(FName Id)
+bool FS47Rhythm::Allow(FName Id,FName Within)
 {
  auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
  if(!F||!F->RulesLive())return true;
@@ -203,7 +204,7 @@ bool FS47Rhythm::Allow(FName Id)
  if(!E)return true;
  // Its own ground does not count against it, and its own needs it has just answered itself.
  FS47RhythmNow Now=ReadNow();
- if(Now.Busy==Id)Now.Busy=NAME_None;
+ if(Now.Busy==Id||(!Within.IsNone()&&Now.Busy==Within))Now.Busy=NAME_None;
  const FS47Verdict V=May(Id,Now);
  if(V.bMay){ShadowSaid.Remove(Id);return true;}
  // Once each time the answer changes: this is asked every frame while it waits.
@@ -290,6 +291,14 @@ void FS47Rhythm::Observed(FName Id,const FS47RhythmNow& At)
  const auto* E=Rules.Find(Id);
  // What the rules would have said just before it: the ground it is itself on does not count against it.
  FS47RhythmNow Asked=At;if(Asked.Busy==Id)Asked.Busy=NAME_None;
+ // Taken at the end of a visit, at a door or by the yard's presence is that meeting's end, not a second one (as Began counts it):
+ // krit10field night 3 said "danger 2" and "would stop" for one crab that took the player.
+ const bool bSameMeeting=Id==TEXT("taken")&&(Asked.Busy==TEXT("field_visit")||Asked.Busy==TEXT("site_visit")||Asked.Busy==TEXT("door_visit")||Asked.Busy==TEXT("service_presence")||Asked.Busy==TEXT("empty_car"));
+ if(bSameMeeting)
+ {
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm start taken day %d %s, the end of %s, not another meeting"),At.Day,*ClockText(M&&M->Freeform?M->Freeform->Clock():0),*Asked.Busy.ToString());
+  return;
+ }
  // A frame's worth of rest is the frame the Director's own rest ran out in, not a start inside it.
  if(Asked.RestLeft<1)Asked.RestLeft=0;
  const FS47Verdict V=May(Id,Asked);
@@ -427,6 +436,11 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  {FS47RhythmNow A=N;A.bFreeform=false;Check(Says(TEXT("service_presence"),A)==TEXT("off"),TEXT("off outside Freeform"));}
  {FS47RhythmNow A=N;A.bTutorial=true;Check(Says(TEXT("service_presence"),A)==TEXT("tutorial"),TEXT("not in the first shift"));}
  {FS47RhythmNow A=N;A.Day=1;Check(Says(TEXT("service_presence"),A)==TEXT("too_early_day"),TEXT("not before its day"));}
+ {
+  // GAME_BIBLE: the first day has no dangerous hunt. Every danger in the file waits for day two.
+  bool bFree=true;FString Early;for(const FS47RhythmEvent& E:D.Events)if(E.Level==ES47RhythmLevel::Danger&&E.FromDay<2){bFree=false;Early+=E.Id.ToString()+TEXT(" ");}
+  Check(bFree,TEXT("no danger on the first night ")+Early);
+ }
  {FS47RhythmNow A=N;A.bTheirHours=false;Check(Says(TEXT("service_presence"),A)==TEXT("outside_hours"),TEXT("not outside their hours"));}
  {FS47RhythmNow A=N;A.Clock=4*86400.+12*3600.;Check(Says(TEXT("flyover"),A)==TEXT("outside_hours"),TEXT("a night event not by day"));A.Clock=4*86400.+23*3600.;Check(R.May(TEXT("flyover"),A).bMay,TEXT("and may at 23:00"));}
  {FS47RhythmNow A=N;A.LastDays.Add(TEXT("service_presence"),5);Check(Says(TEXT("service_presence"),A)==TEXT("cooldown"),TEXT("not on the day it was last"));A.LastDays.Add(TEXT("service_presence"),1);Check(R.May(TEXT("service_presence"),A).bMay,TEXT("and may four days on"));}
@@ -445,5 +459,32 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  }
  OK&=S47SmallHints::SelfTest(Lines);
  Check(CoolDays(TEXT("flyover"),3)>=2&&CoolDays(TEXT("flyover"),3)<=4&&CoolDays(TEXT("flyover"),3)==CoolDays(TEXT("flyover"),3),TEXT("cooldown two to four days, the same each time"));
+ Check(CoolDays(TEXT("roof_tick"),3,0,0)==0&&CoolDays(TEXT("night_hush"),3,1,1)==1&&CoolDays(TEXT("x"),3,5,2)==5,TEXT("cooldown from the file's own range"));
+ {
+  // Tom, 7 November, "more must happen": a small deniable thing may come back the next night, so that a player who keeps to one
+  // place still has a night around them (krit9: three of six nights at the farmhouse had nothing small at all).
+  bool bShort=true;FString Long;
+  for(const FString& Id:S47SmallHints::Ids()){const auto* E=D.Find(FName(*Id));if(!E||E->CoolMin<0||E->CoolMax>2){bShort=false;Long+=Id+TEXT(" ");}}
+  Check(bShort,TEXT("every small thing comes back within two days ")+Long);
+  FS47RhythmNow A=N;A.Clock=4*86400.+23*3600.;A.LastDays.Add(TEXT("roof_tick"),5);
+  Check(R.May(TEXT("roof_tick"),A).bMay,TEXT("the roof can tick twice in one night"));
+  A.LastDays.Add(TEXT("flyover"),5);Check(Says(TEXT("flyover"),A)==TEXT("cooldown"),TEXT("a light in the sky keeps its days"));
+ }
+ {
+  // Tom, 8 November: someone out on open ground every night meets something about every second or third night, never the first.
+  // The game's own field roll (FS47FarmSite::StepFieldDraw) over thirty nights and many games; calm nights draw nothing.
+  int32 Visits=0,Nights=0;
+  for(int32 Seed=1;Seed<=200;++Seed)
+  {
+   int32 Misses=0;
+   for(int32 Night=2;Night<=31;++Night)
+   {
+    ++Nights;if(FS47NightRhythm::Quiet(Seed,Night))continue;
+    if(FS47NightRhythm::Roll(Seed,Night,0x4649454cu)<FS47FarmSite::FieldChanceFor(Night,Misses,false)){++Visits;Misses=0;}else ++Misses;
+   }
+  }
+  const double Per=Visits>0?double(Nights)/Visits:99.;
+  Check(FS47FarmSite::FieldChanceFor(1,9,true)==0.f&&Per>=1.8&&Per<=3.,FString::Printf(TEXT("out in the open a visit every %.2f nights, none the first"),Per));
+ }
  return OK;
 }

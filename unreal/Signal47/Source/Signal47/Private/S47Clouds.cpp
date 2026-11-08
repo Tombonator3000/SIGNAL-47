@@ -14,6 +14,11 @@
 #include "Misc/CommandLine.h"
 #include "S47Three.h"
 
+namespace
+{
+	TAutoConsoleVariable<float> CvDuskCloudAmb(TEXT("s47.dusk.CloudAmb"), 1.f, TEXT("Twilight: the sky's mauve light on the clouds' bodies, times. 0: as before (dark blots with lit rims)."));
+}
+
 // SKY.md: one VolumetricCloud layer over every outdoor area, without a SkyAtmosphere. The living
 // sky (S47Sky, the painted dome at 30 km) stays the sky; the clouds are composited in front of it.
 // Coverage comes from the story clock (FS47Sky::SetClock), the cloud-only light gives the set sun's
@@ -224,6 +229,10 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	Amb *= FMath::Lerp(FLinearColor::White, FLinearColor(.95f, .78f, 1.05f), FMath::Clamp(Dusk, 0.f, 1.f));
 	const float Amber = 4.f * FMath::Clamp(SkyEvening, 0.f, 1.f) * (1.f - FMath::Clamp(SkyEvening, 0.f, 1.f));
 	Amb = FMath::Lerp(Amb, FLinearColor(.46f, .17f, .055f) * FMath::Pow(D, .8f), Amber * .75f);
+	// Critic 8 November: through the twilight the clouds read as dark blots with hard bright rims, only their edges lit by the glow (ambient
+	// about .06 .03 .03 at 18:40). After sunset the sky round them still lights them: a soft mauve-grey on their bodies while the twilight
+	// lasts (the land's own curve), so they are lit through and the glow on their edges reads as colour, not a cut. s47.dusk.CloudAmb, 0 as before.
+	Amb += FLinearColor(.20f, .14f, .19f) * (FMath::Clamp(SkyTwilight, 0.f, 1.f) * FMath::Max(0.f, CvDuskCloudAmb.GetValueOnGameThread()));
 	CloudMid->SetVectorParameterValue(TEXT("Ambient"), Amb * AmbScale);
 	CloudMid->SetScalarParameterValue(TEXT("Cover"), Cover);
 	CloudMid->SetScalarParameterValue(TEXT("Cirrus"), Cirrus);
@@ -253,7 +262,7 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	const FLinearColor GlowColor = FMath::Lerp(FLinearColor(1.f, .20f, .07f), FLinearColor(1.f, .42f, .15f), FMath::SmoothStep(-6.f, -1.f, El));
 	FVector MoonDir = FVector::ZeroVector;
 	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
-		if (R.Base > 0 && (MoonDir.IsZero() || Moon->IsVisible())) { MoonDir = Moon->GetForwardVector(); if (Moon->IsVisible()) break; }
+		if (R.Base > 0 && (MoonDir.IsZero() || Moon->IsVisible())) { MoonDir = R.Rest.GetForwardVector(); if (Moon->IsVisible()) break; }   // its own direction, not the dusk's it lends
 	const float Night = 1.f - FMath::Clamp(Daylight / 0.2f, 0.f, 1.f);
 	const float MoonI = MoonDir.IsZero() ? 0.f : 0.3f * Night;
 	static const float GlowScale = Tune(TEXT("S47CloudGlow="), 1.8f), GlowEl = Tune(TEXT("S47CloudGlowEl="), 1.5f);

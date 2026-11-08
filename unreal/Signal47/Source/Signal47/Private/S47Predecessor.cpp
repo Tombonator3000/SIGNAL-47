@@ -97,10 +97,20 @@ namespace
 }
 
 // ---------- what the assessment goes by ----------
+int32 FS47Predecessor::Points(const FTally& C)
+{
+ int32 P=2*FMath::Min(C.Concluded,3);
+ P+=C.Dishes>=24?2:C.Dishes>=20?1:0;
+ // Records that can be read: most of what is filed, or at least half of it.
+ if(C.Filed>0)P+=C.Clean*10>=C.Filed*7?2:C.Clean*2>=C.Filed?1:0;
+ P+=C.Photos>=3?1:0;
+ P+=C.Filed>=20?1:0;
+ return P;
+}
 FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
 {
  if(C.Taken>=TakenTooOften)return EOutcome::Gone;
- const bool bWorks=C.Arrears<FS47FreeformSession::ArrearsCap&&(C.Filed>=FiledEnough||(C.Filed>=FiledWithCases&&C.Concluded>=CasesEnough));
+ const bool bWorks=C.Arrears<FS47FreeformSession::ArrearsCap&&C.Filed>=FiledFloor&&Points(C)>=PointsToStay;
  if(bWorks)return EOutcome::Stays;
  if(C.Known>=KnownEnough&&C.bWagon&&C.bGap)return EOutcome::KnowsEnough;
  if(C.Originals>0||C.Photos>0)return EOutcome::ClosedOriginals;
@@ -119,7 +129,12 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  const auto& F=*M->Freeform;
  for(const auto& J:F.Jobs())
  {
-  if(J.CaseTest<0&&J.Stage==FS47FreeformSession::EJobStage::Filed)++C.Filed;
+  if(J.CaseTest<0&&J.Stage==FS47FreeformSession::EJobStage::Filed)
+  {
+   ++C.Filed;
+   // A recording from before its quality was kept is given the benefit of the doubt.
+   if(J.RecordingSoundVersion<2||J.RecordingQuality>=CleanQuality)++C.Clean;
+  }
   if(J.bPrinted||!J.OriginalPage.IsEmpty())++C.Originals;
  }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)++C.Concluded;
@@ -139,7 +154,7 @@ int32 FS47Predecessor::Known() const
 void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 {
  Stop();Life=MakeShared<uint8>(0);
- Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=false;LeftDay=0;LeftClock=0;NewsIn=8;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
+ Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=bClosed=bStowed=false;CloseDay=0;LeftDay=0;LeftClock=0;NewsIn=8;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
   bOlder=S47J::Bool(Saved,TEXT("older"));OpensDay=FMath::Max(1,S47J::Int(Saved,TEXT("opens"),1));AssessDay=FMath::Max(OpensDay,S47J::Int(Saved,TEXT("assess"),FirstAssess));WeekNoted=FMath::Max(0,S47J::Int(Saved,TEXT("weekNoted")));
@@ -148,6 +163,9 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
   Tray=S47J::Strs(Saved,TEXT("tray"));
   Outcome=OutcomeOf(S47J::Str(Saved,TEXT("outcome")));RadioOffDay=S47J::Int(Saved,TEXT("radioOff"),-1);NoraState=FMath::Clamp(S47J::Int(Saved,TEXT("nora")),0,2);bPayReturned=S47J::Bool(Saved,TEXT("payReturned"));DaleDay=S47J::Int(Saved,TEXT("daleDay"));
   bLeft=S47J::Bool(Saved,TEXT("left"));LeftDay=S47J::Int(Saved,TEXT("leftDay"));LeftClock=S47J::Num(Saved,TEXT("leftClock"));
+  CloseDay=FMath::Max(0,S47J::Int(Saved,TEXT("closeDay")));bClosed=S47J::Bool(Saved,TEXT("closed"));
+  // A closing outcome from before the notice was kept: the notice runs from the assessment.
+  if(CloseDay==0&&(Outcome==EOutcome::KnowsEnough||Outcome==EOutcome::ClosedOriginals||Outcome==EOutcome::ClosedNothing))CloseDay=AssessDay+NoticeDays;
   // Reading one's own letter again after a Continue is fine; being told it is there, is not.
   bLetterTold=Seen.Contains(TEXT("letter"));
  }
@@ -190,6 +208,8 @@ S47J::FObj FS47Predecessor::Save() const
  if(bPayReturned)S47J::Set(O,TEXT("payReturned"),true);
  if(DaleDay>0)S47J::Set(O,TEXT("daleDay"),DaleDay);
  if(bLeft){S47J::Set(O,TEXT("left"),true);S47J::Set(O,TEXT("leftDay"),LeftDay);S47J::Set(O,TEXT("leftClock"),LeftClock);}
+ if(CloseDay>0)S47J::Set(O,TEXT("closeDay"),CloseDay);
+ if(bClosed)S47J::Set(O,TEXT("closed"),true);
  return O;
 }
 bool FS47Predecessor::Live() const{return M&&M->Freeform&&(bTest||M->Freeform->RulesLive());}
@@ -218,6 +238,7 @@ void FS47Predecessor::Step(double Dt)
   return;
  }
  StepRing(Dt);
+ StepClosing();
  if(F.Held())return;
  StepNews(Dt);
 }
@@ -244,12 +265,13 @@ void FS47Predecessor::StepNews(double Dt)
   WeekNoted=Week;const FString Id=FString::Printf(TEXT("week-%d"),Week);
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
-  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Dishes,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Pace));
+  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
   Tray.AddUnique(Id);
   if(M->UI)M->UI->Toast(TEXT("Dr. Ward has answered the weekly sheet. It is in the OPS tray."),5);
-  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: week %d note, filed %d, pace %.2f"),Week,C.Filed,Pace);
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: week %d note, filed %d, pace %.2f, points %d of %d, taken %d"),Week,C.Filed,Pace,Points(C),PointsToStay,C.Taken);
   M->RequestAutosave();
  }
+ StepWarnings();
  // The case's sheets turn up Reyes's note, once it is open.
  for(const X::FCaseNote& N:X::CaseNotes())
  {
@@ -264,7 +286,8 @@ void FS47Predecessor::StepNews(double Dt)
    }
  }
  // What the air has said.
- if(F.Tips&&F.Tips->Said().Contains(TEXT("cb33")))Hear(WagonId);
+ // The CB lines about the carrier off the old grade and the white wagon on the flat (S47RadioTips.cpp, cb35 and cb36).
+ if(F.Tips&&(F.Tips->Said().Contains(TEXT("cb35"))||F.Tips->Said().Contains(TEXT("cb36"))))Hear(WagonId);
  // Somebody who knows a little more than the rest telephones, once, when the player has gone far enough to be noticed.
  if(NoraState==0&&Known()>=5&&!bRinging)
  {
@@ -293,6 +316,7 @@ bool FS47Predecessor::Meets(const TCHAR* Needs) const
  if(!M||!M->Freeform)return Seen.Contains(Need);
  const auto& F=*M->Freeform;
  if(Need==TEXT("taken"))return F.TimesTaken()>0;
+ if(Need==TEXT("taken2"))return F.TimesTaken()>=TakenTooOften-1;
  if(Need==TEXT("filed1")||Need==TEXT("filed10"))return Count().Filed>=(Need==TEXT("filed1")?1:10);
  if(Need==TEXT("branch1"))return F.Field&&F.Field->ArrayWear().bActive&&F.Field->ArrayWear().Restored.Num()>0;
  if(Need==TEXT("assess3"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=3&&AssessDay>=F.Day();
@@ -319,6 +343,49 @@ void FS47Predecessor::StepDale()
  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: %s, day %d"),B->Id,DaleDay);
  M->RequestAutosave();
 }
+void FS47Predecessor::StepWarnings()
+{
+ // Two stretches of lost time: Ward says in writing what a third does, before it can (TakenTooOften). Dale says it over the walkie
+ // (the "twice" bark).
+ auto& F=*M->Freeform;
+ if(F.TimesTaken()>=TakenTooOften-1&&!Seen.Contains(TEXT("ward-taken"))&&Outcome==EOutcome::None)
+ {
+  Seen.Add(TEXT("ward-taken"));
+  F.RecordEvidence(TEXT("ward-taken"),X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
+  Tray.AddUnique(TEXT("ward-taken"));
+  if(M->UI)M->UI->Toast(TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: warned after %d takings"),F.TimesTaken());
+  M->RequestAutosave();
+ }
+}
+void FS47Predecessor::StepClosing()
+{
+ auto& F=*M->Freeform;
+ const bool bClosing=Outcome==EOutcome::KnowsEnough||Outcome==EOutcome::ClosedOriginals||Outcome==EOutcome::ClosedNothing;
+ if(!bClosed&&bClosing&&CloseDay>0&&F.Day()>=CloseDay&&!F.InTutorial()&&!M->OneAtATime()&&!(M->World&&M->World->bDriving)&&!(M->Flow&&M->Flow->bStarting))Close();
+ if(!bClosed||!M->Web||M->Web->Area()!=TEXT("saro"))return;
+ // Stowed and off remote, every frame it is loaded: nothing at the station can point it again.
+ for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))M->Web->SetDishRemoteAvailable(I,false);
+ if(!bStowed){bStowed=true;M->Web->PointDishes(0,90,2);}
+}
+void FS47Predecessor::Close()
+{
+ auto& F=*M->Freeform;
+ bClosed=true;bStowed=false;
+ const FString Page=X::ClosedNow(DateText(F.Day()));
+ F.RecordEvidence(TEXT("saro-closed"),Page);
+ Tray.AddUnique(TEXT("closed"));
+ if(M->Audio)M->Audio->Sfx(TEXT("rack_switch"),FS47Sound{.Gain=.8f});
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: SARO closed on day %d: county power off, array stowed, truck tagged for the district"),F.Day());
+ M->RequestAutosave(true);
+ if(!M->UI)return;
+ const TWeakPtr<uint8> Guard=Life;
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Paper(Page));
+ Rows.Add(S47Kit::Button(TEXT("Walk the station one more time"),[this,Guard]{if(Guard.IsValid()&&M&&M->UI)M->UI->Close();},true));
+ Rows.Add(S47Kit::Button(TEXT("Return to the title. This save stays"),[this,Guard]{if(Guard.IsValid())ToTitle(false);}));
+ M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO IS CLOSED"),S47Kit::Col(Rows),900));
+}
 void FS47Predecessor::StepRing(double Dt)
 {
  if(!bRinging)return;
@@ -329,6 +396,8 @@ void FS47Predecessor::Decided()
 {
  auto& F=*M->Freeform;const FTally C=Count();
  const bool bMutedOutcome=Outcome==EOutcome::Gone;
+ // A closing outcome gives a week's notice, and then it happens (StepClosing).
+ if(Outcome==EOutcome::KnowsEnough||Outcome==EOutcome::ClosedOriginals||Outcome==EOutcome::ClosedNothing)CloseDay=F.Day()+NoticeDays;
  const FString Text=OutcomeLetter(Outcome);
  F.RecordEvidence(AssessKey(),Text);
  Tray.AddUnique(TEXT("assessment"));
@@ -358,12 +427,13 @@ FString FS47Predecessor::OutcomeLetter(EOutcome O) const
 {
  const FTally C=Count();
  const FString Dated=DateText(M&&M->Freeform?M->Freeform->Day():AssessDay);
+ const FString CloseOn=DateText(CloseDay>0?CloseDay:(M&&M->Freeform?M->Freeform->Day():AssessDay)+NoticeDays);
  switch(O)
  {
   case EOutcome::Stays:return X::Stays(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Known>=KnownEnough);
-  case EOutcome::KnowsEnough:return X::KnowsEnough(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears);
-  case EOutcome::ClosedOriginals:return X::ClosedOriginals(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos);
-  case EOutcome::ClosedNothing:return X::ClosedNothing(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears);
+  case EOutcome::KnowsEnough:return X::KnowsEnough(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
+  case EOutcome::ClosedOriginals:return X::ClosedOriginals(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos,CloseOn);
+  case EOutcome::ClosedNothing:return X::ClosedNothing(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
   case EOutcome::Gone:return X::NextOperator(DateText((M&&M->Freeform?M->Freeform->Day():AssessDay)+3),Dated,C.Originals,C.Photos,C.Filed);
   default:return FString();
  }
@@ -374,6 +444,8 @@ FS47Doc FS47Predecessor::MakeDoc(const FString& Id) const
  if(Id==TEXT("letter")){D.Title=TEXT("Letter from Dr. Ward");D.Page=LetterText();}
  else if(Id.StartsWith(TEXT("week-"))&&M&&M->Freeform){D.Title=FString::Printf(TEXT("Dr. Ward, %s"),*Id.Replace(TEXT("week-"),TEXT("week ")));D.Page=M->Freeform->FindingText(TEXT("ward-")+Id);}
  else if(Id==TEXT("assessment")&&M&&M->Freeform){D.Title=TEXT("Dr. Ward's assessment");D.Page=M->Freeform->FindingText(AssessKey());}
+ else if(Id==TEXT("ward-taken")&&M&&M->Freeform){D.Title=TEXT("Dr. Ward, about the lost hours");D.Page=M->Freeform->FindingText(TEXT("ward-taken"));}
+ else if(Id==TEXT("closed")&&M&&M->Freeform){D.Title=TEXT("Closing order in effect");D.Stamp=TEXT("SARO / COUNTY");D.Page=M->Freeform->FindingText(TEXT("saro-closed"));}
  else if(const X::FDocDef* Def=X::Doc(Id)){D.Title=Def->Title;D.Kind=Def->Kind;D.Stamp=Def->Stamp;D.Page=Def->Page;}
  D.Transcript=D.Page;
  return D;
@@ -441,7 +513,7 @@ FString FS47Predecessor::StatusLine() const
  switch(Outcome)
  {
   case EOutcome::Stays:return TEXT("KEPT OPEN");
-  case EOutcome::KnowsEnough:case EOutcome::ClosedOriginals:case EOutcome::ClosedNothing:return FString::Printf(TEXT("CLOSING %s"),X::WardClose).ToUpper();
+  case EOutcome::KnowsEnough:case EOutcome::ClosedOriginals:case EOutcome::ClosedNothing:return bClosed?FString(TEXT("CLOSED")):FString::Printf(TEXT("CLOSING %s"),*DateText(CloseDay)).ToUpper();
   default:break;
  }
  if(!M||!M->Freeform)return TEXT("UNDER REVIEW");
@@ -1007,7 +1079,7 @@ void FS47Predecessor::TestWeek()
  TestOn();if(!M||!M->Freeform)return;
  const int32 Week=++WeekNoted;const FString Id=FString::Printf(TEXT("week-%d"),Week);
  const FTally C=Count();
- M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Dishes,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),.5));
+ M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
  ReadDoc(Id);
 }
 void FS47Predecessor::TestRing()
@@ -1061,8 +1133,9 @@ TArray<FString> FS47Predecessor::AllText()
  }
  for(const X::FBark& B:X::Barks())Out.Add(B.Line);
  const FString D=TEXT("MONDAY, JUNE 2");
- Out.Add(X::Letter(false,D,D));Out.Add(X::Letter(true,D,D));Out.Add(X::WeekNote(1,3,20,5,20,D,.2));Out.Add(X::WeekNote(2,9,21,0,13,D,.9));
- Out.Add(X::Stays(D,30,2,25,0,true));Out.Add(X::KnowsEnough(D,3,0,20,5));Out.Add(X::WhatYouKnow());Out.Add(X::ClosedOriginals(D,3,0,20,5,6,2));Out.Add(X::ClosedNothing(D,0,0,20,5));Out.Add(X::NextOperator(D,D,6,2,3));
+ Out.Add(X::Letter(false,D,D));Out.Add(X::Letter(true,D,D));Out.Add(X::WeekNote(1,3,0,20,3,5,20,D,1,PointsToStay,0));Out.Add(X::WeekNote(2,9,2,21,9,0,13,D,7,PointsToStay,1));Out.Add(X::WeekNote(3,9,2,21,9,0,6,D,4,PointsToStay,2));
+ Out.Add(X::Stays(D,30,2,25,0,true));Out.Add(X::KnowsEnough(D,3,0,20,5,D));Out.Add(X::WhatYouKnow());Out.Add(X::ClosedOriginals(D,3,0,20,5,6,2,D));Out.Add(X::ClosedNothing(D,0,0,20,5,D));Out.Add(X::NextOperator(D,D,6,2,3));
+ Out.Add(X::TakenWarning(D,2));Out.Add(X::ClosedNow(D));
  return Out;
 }
 bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
@@ -1110,8 +1183,26 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  bool bBack=false;for(const X::FTopic& Q:DalePerson?DalePerson->Topics:TArray<X::FTopic>())bBack|=Q.Needs&&FString(Q.Needs)==TEXT("known6");
  Check(DalePerson&&DalePerson->Topics.Num()>=6&&bBack,TEXT("Dale has several talks, and what he lets slip waits until you have gone far enough"));
  // The assessment.
- FTally Good;Good.Filed=FiledEnough;Check(Decide(Good)==EOutcome::Stays,TEXT("work done: SARO stays"));
- FTally Few;Few.Filed=FiledWithCases;Few.Concluded=CasesEnough;Check(Decide(Few)==EOutcome::Stays,TEXT("less work and concluded cases: SARO stays too"));
+ FTally Grind;Grind.Filed=60;Grind.Clean=60;Grind.Photos=5;Grind.Dishes=14;
+ Check(Decide(Grind)!=EOutcome::Stays,TEXT("sixty cards and nothing else carried through is not enough to stay"));
+ FTally Good;Good.Filed=FiledFloor;Good.Clean=FiledFloor;Good.Concluded=2;Good.Dishes=14;
+ Check(Decide(Good)==EOutcome::Stays,TEXT("two cases carried through and readable records: SARO stays"));
+ FTally Mended;Mended.Filed=FiledFloor;Mended.Clean=FiledFloor;Mended.Concluded=1;Mended.Dishes=25;
+ Check(Decide(Mended)==EOutcome::Stays,TEXT("one case and a mended array: SARO stays too"));
+ FTally Sloppy=Good;Sloppy.Clean=2;Check(Decide(Sloppy)!=EOutcome::Stays,TEXT("not on records nobody can read"));
+ FTally Idle=Good;Idle.Filed=FiledFloor-1;Idle.Clean=Idle.Filed;Check(Decide(Idle)!=EOutcome::Stays,TEXT("not without the work itself"));
+ {
+  // Ward's Monday remark promises what the assessment will do.
+  bool bTrue=true;
+  for(const FTally& Ty:{Grind,Good,Mended,Sloppy})
+  {
+   const FString W=X::WeekNote(2,Ty.Filed,Ty.Concluded,Ty.Dishes,Ty.Clean,0,10,TEXT("MONDAY"),Points(Ty),PointsToStay,0);
+   const bool bPraise=W.Contains(TEXT("I could defend it"));
+   bTrue&=bPraise==(Points(Ty)>=PointsToStay);
+  }
+  Check(bTrue,TEXT("Ward praises the week only when it would pass the assessment"));
+  Check(X::WeekNote(2,5,0,14,5,0,10,TEXT("MONDAY"),0,PointsToStay,2).Contains(TEXT("somebody else on nights")),TEXT("the Monday sheet names the lost hours, and what a third would do"));
+ }
  FTally Owing=Good;Owing.Arrears=FS47FreeformSession::ArrearsCap;Check(Decide(Owing)!=EOutcome::Stays,TEXT("not with the sheet at its limit"));
  FTally Knows;Knows.Known=KnownEnough;Knows.bWagon=Knows.bGap=true;Check(Decide(Knows)==EOutcome::KnowsEnough,TEXT("closed, but knowing what can be known"));
  FTally NoWagon=Knows;NoWagon.bWagon=false;NoWagon.Originals=1;Check(Decide(NoWagon)==EOutcome::ClosedOriginals,TEXT("without the wagon it is not enough; the originals remain"));
@@ -1130,5 +1221,9 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  FS47Predecessor Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)),true,20);
  Check(Back.Known()==4&&Back.Found(TEXT("tag_mine"))&&Back.Result()==EOutcome::ClosedOriginals&&Back.HasLeft(),TEXT("what was found, the outcome and leaving survive a Continue"));
  const auto Again=Back.Save();Check(S47J::Bool(Again,TEXT("left"))&&S47J::Str(Again,TEXT("outcome"))==TEXT("closed-originals"),TEXT("and are written again"));
+ Check(Back.ClosingDay()==30+NoticeDays&&!Back.StationClosed(),TEXT("an older closing outcome gets its week's notice, not a date that has gone by"));
+ S47J::Set(O,TEXT("closeDay"),37);S47J::Set(O,TEXT("closed"),true);
+ FS47Predecessor Shut(nullptr);Shut.Begin(S47J::Read(S47J::Write(O)),true,40);
+ Check(Shut.StationClosed()&&Shut.ClosingDay()==37&&S47J::Bool(Shut.Save(),TEXT("closed")),TEXT("a closed station stays closed after a Continue"));
  return OK;
 }

@@ -106,6 +106,16 @@ bool DoorAt(const FString& Id,FVector& OutMiddle,FVector& OutNormal)
  OutNormal=FVector(R->Front>0?1:-1,0,0);
  return true;
 }
+TArray<FVector> OutsideWalls(const FString& Id,double Out,double Step)
+{
+ TArray<FVector> Spots;const FRoom* R=Find(Id);if(!R||Step<=.05)return Spots;
+ const double Y=R->Root.Y+R->Floor;
+ // Room-local x runs east, y runs north (Root.Z minus world z), as in RoomAt.
+ const auto At=[&](double LX,double LY){Spots.Add(FVector(R->Root.X+LX,Y,R->Root.Z-LY));};
+ for(double LY=R->Y0+Step*.5;LY<R->Y1;LY+=Step){At(R->X0-Out,LY);At(R->X1+Out,LY);}
+ for(double LX=R->X0+Step*.5;LX<R->X1;LX+=Step){At(LX,R->Y0-Out);At(LX,R->Y1+Out);}
+ return Spots;
+}
 void PoseDoor(const FString& Id,double K)
 {
  FRoom* R=Find(Id);if(!R)return;

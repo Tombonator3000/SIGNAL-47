@@ -51,7 +51,7 @@ namespace
     {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nUnremarkable. There are some small marks you did not mention and could not account for. Probably nothing. Come back if they change.\n\nThe visit is charged to your station."),ER::CallOut}},
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Field service has since found the timing relay slipping and charged nothing for it.\n\nThe note stands as you wrote it."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
-    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. A portable magnetometer from the old survey is on the stores list if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. The survey office will let the portable magnetometer go for $25 if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
  };
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
  {

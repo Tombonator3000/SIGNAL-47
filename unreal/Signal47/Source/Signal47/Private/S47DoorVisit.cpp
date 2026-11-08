@@ -269,6 +269,8 @@ void FS47DoorVisit::StepDraw(double Dt)
  InsideFor=bHere?InsideFor+Dt:0;
  if(!bHere)return;
  const int32 Day=M->Freeform->Day();
+ // The first night is not drawn at all: nothing is spent of it, and nothing comes.
+ if(Day<FirstDay)return;
  if(RollDay!=Day)
  {
   if(InsideFor<25)return;
@@ -620,6 +622,7 @@ bool FS47DoorVisit::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s door visit: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  Check(MayCome(5,0),TEXT("a case that has never had one may have one"));
+ Check(!MayCome(1,0)&&MayCome(2,0),TEXT("nothing at the door on the first night"));
  Check(!MayCome(5,5)&&!MayCome(6,5)&&MayCome(7,5),TEXT("at most one in two nights"));
  FS47DoorVisit Old(nullptr,nullptr);Old.Begin(nullptr);
  Check(!Old.Active()&&Old.Save()->Values.Num()==0&&Old.MarksOut()==0,TEXT("an older case has none under way and nothing to save"));

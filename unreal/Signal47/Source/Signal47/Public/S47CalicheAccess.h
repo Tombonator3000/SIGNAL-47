@@ -26,6 +26,9 @@ namespace S47CalicheAccess
  bool RoomAt(const FVector& At,FString& OutId);
  // The middle of a room's door at floor height, and square to it.
  bool DoorAt(const FString& Id,FVector& OutMiddle,FVector& OutNormal);
+ // Points just outside a room's four walls, a step apart, at floor height: where a window or the door glass can be looked in
+ // at from. Three-space metres. Empty: no such room.
+ TArray<FVector> OutsideWalls(const FString& Id,double Out=.75,double Step=1.);
  // A hand on it from the other side (FS47DoorVisit): this fraction of the full swing, drawn over what the door says it is.
  // Negative lets go.
  void PoseDoor(const FString& Id,double K);

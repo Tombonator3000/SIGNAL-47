@@ -97,7 +97,10 @@ namespace
   // which has no tint of its own, is .781 .785 .765 (mix / sand) through GroundTint. By the day only, so night keeps what it had. Patterns, cracks,
   // stones and gravel stay; only their mean colour is the same. Expect the town at about 151,125,108 and the yard at about 175,131,105 by the
   // measured means: these are the numbers to retune if a capture still shows a layer.
-  const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.850f,.666f,.631f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
+  // 8 November: the town still read pale cream, 194,183,165 looking down by the church at 11:00 (w2 g-church-11), against 169,136,110 on
+  // SARO's sand. Its crust is warmed and darkened by most of that ratio (sRGB .87 .74 .66, linear about .85 .72 .62), not all of it:
+  // caliche is a pale soil, and the crust's patches out in the desert should stay a little lighter than the sand round them.
+  const FLinearColor SandToMix(.781f,.785f,.765f,1.f),CrustDay(.723f,.480f,.391f,1.f),GravelDay(1.062f,.911f,.889f,1.f);
   const FLinearColor Tint=FMath::Lerp(NightTint,FLinearColor(.24f,.285f,.30f),Day)*FMath::Lerp(FLinearColor::White,SandToMix,Day);
   const FLinearColor Crust=FMath::Lerp(NightCrust,CrustDay,Day),Gravel=FMath::Lerp(NightGravel,GravelDay,Day);
   for(UMaterialInstanceDynamic* M:{Mid,Range,Corridor})
@@ -113,9 +116,11 @@ namespace
  // Scales are linear, from the sRGB ratios against the soil (.79 .78 .85 for the sand, 0.80 for the farm road in red), then
  // .936 .937 .904 for 170,134,110 to SoilDay's 165,130,105. They are the only numbers to retune if a new capture still shows a difference.
  struct FUnder{int32 Node,Mat;FLinearColor Scale;};
- const FLinearColor SandScale(.562f,.543f,.633f),RoadScale(.655f,.581f,.524f),GravelScale(.805f,.768f,.705f);
+ // 8 November: the station's sand still read 202,152,111 (d-st-a-11) against 165,130,105, orange beside the soil round it: its scale
+ // times the linear ratio (.641 .708 .885). Its gravel pad keeps the old scale, so it stays a little apart from the sand, not a stain.
+ const FLinearColor SandScale(.360f,.384f,.560f),StationGravelScale(.562f,.543f,.633f),RoadScale(.655f,.581f,.524f),GravelScale(.805f,.768f,.705f);
  const FUnder UnderTable[]={
-  {1103,484,SandScale},{1120,496,SandScale},{1104,485,SandScale},      // station ground, its corridor, the station's gravel
+  {1103,484,SandScale},{1120,496,SandScale},{1104,485,StationGravelScale},      // station ground, its corridor, the station's gravel
   {959,418,RoadScale},{1250,576,RoadScale},                              // the farm road in the SARO corridor and in the road area
   {955,418,GravelScale},{1244,576,GravelScale},{1121,497,GravelScale},   // gravel tracks
   {801,353,GravelScale}};                                                // the pebble paths among the antennas

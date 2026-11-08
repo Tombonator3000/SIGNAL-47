@@ -331,6 +331,15 @@ namespace
 	{
 		return FMath::SmoothStep(0.51, 0.62, 0.68 * VNoise(X, Z, 90, Seed + 31) + 0.32 * VNoise(X, Z, 26, Seed + 37));
 	}
+	/** The dry washes: long winding lines down the fall of the land (here 30 degrees), some 80 m apart and 5-9 m wide, where the
+	 *  runoff keeps more creosote. A level line of a noise stretched four times along the fall, its course pulled about by another,
+	 *  so they run on rather than close into rings; 1 in the wash. */
+	double CreosoteWash(double X, double Z, int32 Seed)
+	{
+		const double U = X * 0.8660 + Z * 0.5, V = -X * 0.5 + Z * 0.8660;
+		const double Wu = U / 4 + 12 * (VNoise(X, Z, 60, Seed + 75) - 0.5), Wv = V + 30 * (VNoise(X, Z, 60, Seed + 77) - 0.5);
+		return FMath::SmoothStep(0.86, 0.97, 1 - FMath::Abs(2 * VNoise(Wu, Wv, 70, Seed + 73) - 1));
+	}
 	/** Where the grass and the dead weeds grow, 0 bare, 1 a meadow. */
 	double Meadow(double X, double Z, int32 Seed)
 	{
@@ -384,11 +393,15 @@ double FS47Flora::NoiseAt(double X, double Z, int32 Ki, double Terrain) const
 	const FKind& K = KindFor(Spec.bNatural, Ki);
 	if (Spec.bNatural && K.Id == ES47FloraKind::Creosote)
 	{
-		// dense stands, thinner here and there inside; between them a bush some tens of metres apart
+		// Stands, thinner here and there inside, but no longer walls: seen level from a hundred metres a dense stand's edge read as a
+		// hedge round the eye (critic 8 November). Now, as on a bajada: bushes spread over all of it about ten metres apart, thicker
+		// in looser stands, and in lines along the dry washes that wind across the land (CreosoteWash). Tools: make_ground_textures.py
+		// creosote() keeps the same, so the soil's darker feet stay under the bushes.
 		const double St = Stand(X, Z, Spec.Seed);
 		const double Field = St > 0 ? St * (0.5 + 0.5 * VNoise(X, Z, 11, Spec.Seed + 39)) : 0;
+		const double Spread = 0.06 * (0.6 + 0.8 * VNoise(X, Z, 45, Spec.Seed + 71));
 		const double* Mx = Spec.Mix.Find(K.Id);
-		return (0.012 + 0.95 * Field) * (Mx ? *Mx : 1);
+		return (Spread + 0.55 * Field + 0.55 * CreosoteWash(X, Z, Spec.Seed)) * (Mx ? *Mx : 1);
 	}
 	if (Spec.bNatural && K.Id == ES47FloraKind::Grass)
 	{

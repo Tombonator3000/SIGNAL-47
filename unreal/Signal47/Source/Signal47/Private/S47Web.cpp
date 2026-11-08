@@ -621,7 +621,7 @@ void AS47Web::BuildLights(const TArray<TSharedPtr<FJsonValue>>& JL)
 			L->LightSourceAngle = 1.2f;
 			L->SetAtmosphereSunLight(false);
 			L->RegisterComponent();
-			Lights.Add({ L, Area, I, Uuid });
+			Lights.Add({ L, Area, I, Uuid, DirToUE(To - Pos).Rotation().Quaternion(), C });
 		}
 	}
 }

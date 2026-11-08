@@ -244,6 +244,17 @@ void AS47Web::BuildHighwayPower()
     Span(A,S[K+1]+FVector(0,Top,Ports[Phase]),.7);
    }
  }
+ // Critic 8 November: the branch poles' arms ended bare where the wires met them. A pin insulator of old green glass under each
+ // wire's end on every branch pole (the main poles' crossarms keep what their model has).
+ auto* Glass=Batch(Cylinder,TEXT("HighwayPowerInsulators"),true);
+ UMaterialInstanceDynamic* GlassMat=UMaterialInstanceDynamic::Create(WireBase,this);
+ GlassMat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.16f,.27f,.24f));GlassMat->SetScalarParameterValue(TEXT("Roughness"),.15f);Glass->SetMaterial(0,GlassMat);
+ for(int32 Si=0;Si<Spurs.Num();++Si)
+ {
+  const TArray<FVector>& S=Spurs[Si];const bool Sub=bSubstation&&Si==Spurs.Num()-1;
+  for(int32 K=1;K<S.Num();++K)for(const double Port:Sub?TArray<double>{-1.95,0,1.95}:TArray<double>{-1.95,1.95})
+   Glass->AddInstance(FTransform(FQuat::Identity,S47Three::ToUE(S[K]+FVector(0,Top-.075,Port)),FVector(.085,.085,.13)),false);
+ }
  // Two short primary jumpers and a three-wire service to the existing annex weatherhead.
  const FVector Transformer(27.6,-.6,-281.4);
  Span(Transformer+FVector(0,Top,-1.95),Transformer+FVector(-.53,8.20,.16),.12);
@@ -275,7 +286,7 @@ void AS47Web::BuildHighwayPower()
   OutsideWires->RemoveInstances(OutsidePower);
  }
  for(int32 I:Hide) {SetVisible(I,false);if(auto* C=Cast<UPrimitiveComponent>(Nodes[I].Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
- AdoptNode(Poles,Parent,TEXT("highway:power:main"));AdoptNode(Branch,Parent,TEXT("highway:power:spurs"));AdoptNode(Wires,Parent,TEXT("highway:power:wires"));
+ AdoptNode(Poles,Parent,TEXT("highway:power:main"));AdoptNode(Branch,Parent,TEXT("highway:power:spurs"));AdoptNode(Wires,Parent,TEXT("highway:power:wires"));AdoptNode(Glass,Parent,TEXT("highway:power:insulators"));
  // Match exact old small stem footprints, not signs, fences, trees, wreck or whole row AABBs.
  for(const FString& Area:{FString(TEXT("saro")),FString(TEXT("road"))})
  {

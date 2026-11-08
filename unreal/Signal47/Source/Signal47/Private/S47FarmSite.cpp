@@ -64,6 +64,11 @@ bool FS47FarmSite::OutOnFoot(const FString& Area,double FromStation,bool bDrivin
  if(bDriving||bRoof)return false;
  return Area==TEXT("road")||Area==TEXT("diner")||(Area==TEXT("saro")&&FromStation>=220); // As RecordEvidence tells the station's ground from the rest.
 }
+float FS47FarmSite::FieldChanceFor(int32 Night,int32 Misses,bool bLit)
+{
+ if(Night<2)return 0.f;
+ return FMath::Min(.9f,FS47NightRhythm::FieldChance(Night)+FieldMissBonus*float(FMath::Max(0,Misses))+(bLit?.25f:0.f));
+}
 void FS47FarmSite::StepFieldDraw(double Dt)
 {
  auto& F=*M->Freeform;
@@ -75,7 +80,9 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const bool bAtMarks=Armed()&&Here()&&FVector2D(Foot.X-Middle.X,Foot.Y-Middle.Z).Size()<140; // Those marks have their own visit.
  const bool bQuiet=G&&F.Director&&F.Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!F.Taken->Busy()&&!(F.IndoorDread&&F.IndoorDread->DoorActive());
  if(bAtMarks||!bQuiet||M->ModalOpen()||!OutOnFoot(M->Web->Area(),Foot.Size(),M->World->bDriving,F.Taken->Indoors())){FieldDwell=0;return;}
- FieldDwell+=Dt;if(FieldDwell<FieldDwellSeconds)return;
+ // Active seconds, as their hours are: F10's natural night at x30 runs the hours by in forty real seconds, and a real-time minute
+ // of standing out there never came (krit9field: nine nights in the open, no draw at all).
+ FieldDwell+=Dt*(F.Director?F.Director->TestPaceNow():1.);if(FieldDwell<FieldDwellSeconds)return;
  // Before the draw: a night's one is not spent on a moment the rules would not let it come.
  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("field_visit")))return;
  // One draw a night, the game's own: going indoors and out again does not throw it twice.
@@ -83,7 +90,9 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const float Roll=FieldRoll>=0?FieldRoll:FS47NightRhythm::Roll(F.Seed(),Night,0x4649454cu);FieldRoll=-1;
  M->RequestAutosave();
  const bool bLit=F.TruckLamp&&F.TruckLamp->LitTonight(Night);
- if(Roll>=FS47NightRhythm::FieldChance(Night)+(bLit?.25f:0.f)){UE_LOG(LogTemp,Display,TEXT("S47: field visit: nothing comes tonight, night %d"),Night);return;}
+ const float Chance=FieldChanceFor(Night,FieldMisses,bLit);
+ if(Roll>=Chance){++FieldMisses;UE_LOG(LogTemp,Display,TEXT("S47: field visit: nothing comes tonight, night %d (roll %.2f of %.2f, %d out since the last)"),Night,Roll,Chance,FieldMisses);return;}
+ FieldMisses=0;
  if(M->Rhythm)M->Rhythm->Began(TEXT("field_visit"));
  Home={Place,Title,AreaId,Middle,Visit};bField=true;
  const FString Area=M->Web->Area();
@@ -198,6 +207,7 @@ void FS47FarmSite::Show(bool bShow)
 void FS47FarmSite::Begin(const S47J::FObj& Saved)
 {
  Stop();FieldNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("fieldNight"))):0;FieldDwell=0;
+ FieldMisses=Saved.IsValid()?FMath::Clamp(S47J::Int(Saved,TEXT("fieldMisses")),0,20):0;
  if(!M||!IsValid(M->Web))return;
  if(Scene.Get()!=M->Web){bBuilt=false;bBound=false;Marks.Reset();Spots.Reset();Haze.Reset();VisitBody.Reset();CrabBody.Reset();TallBody.Reset();bBodyOut=false;SpotSaro={};SpotRoad={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
@@ -242,6 +252,7 @@ S47J::FObj FS47FarmSite::Save() const
  if(EmptyTipNight>0)S47J::Set(O,TEXT("emptyTip"),EmptyTipNight);
  if(bFalseCall&&ClearAt>0)S47J::Set(O,TEXT("falseCall"),true);
  if(FieldNight>0)S47J::Set(O,TEXT("fieldNight"),FieldNight);
+ if(FieldMisses>0)S47J::Set(O,TEXT("fieldMisses"),FieldMisses);
  // Saved in the middle of a field visit: the marks as they stand, and the visit is over on Continue.
  const FVector SavedAt=bField?Home.Middle:Middle;
  if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),(bField?Home.Visit:Visit)==0?0:4);S47J::Set(O,TEXT("place"),bField?Home.Place:Place);S47J::Set(O,TEXT("title"),bField?Home.Title:Title);S47J::Set(O,TEXT("area"),bField?Home.Area:AreaId);S47J::Set(O,TEXT("at"),TArray<double>{SavedAt.X,SavedAt.Y,SavedAt.Z});S47J::Set(O,TEXT("nudged"),bNudged);}

@@ -26,6 +26,16 @@ public:
  void TestSaveFails(bool bFails){bTestSaveFails=bFails;}
  int32 LightsDrawnNight() const{return PendingLightNight;}
  void TestSchedule(float Dice,double LightHour,double Scale){TestDice=Dice;TestLightAfter=LightHour;TestScale=Scale;}
+ // Test: an event's own age runs this much faster too (1: none). F10's natural night, which keeps its speed under an event with
+ // nothing to see: without it a five-minute fragment in the yard lasted two days and closed both nights (krit9, 8 November).
+ void TestEventPace(double Scale){TestPace=FMath::Clamp(Scale,1.,60.);}
+ // How many active seconds a real one is just now (1 outside that run): for whatever else counts a while out in the night.
+ double TestPaceNow() const{return TestPace;}
+ // The event on the ground leaves the sky to the formations: nothing of it is up there or out in the dark. An instrument, a
+ // fault, the fragment, the parked car (its light is FS47Taken's and asks for itself), the room light, a small thing.
+ bool LeavesSkyFree() const;
+ // Days before an event can come again, from the rhythm file's cooldown_days (two to four where it has none).
+ int32 CoolFor(const FString& Id,int32 Last) const;
  // The night's mystery (FS47FreeformCases::MysteryLine). Test: its own dice, -1 for the usual. A developer run draws none
  // unless a test asks, so that the fixtures built on other events stay as they were.
  void TestMysteryDice(float Dice){MysteryDice=Dice;}
@@ -163,7 +173,7 @@ private:
  // Tests: override the dice for every night's draw (-1: none), force the lights' draw and its hour (-1: none), and run
  // the scheduler's active-time clock faster to match a test's faster world clock (1: none).
  float TestDice=-1;
- double TestLightAfter=-1,TestScale=1;
+ double TestLightAfter=-1,TestScale=1,TestPace=1;
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

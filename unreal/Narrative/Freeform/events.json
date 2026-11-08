@@ -27,6 +27,7 @@
     {"id":"service_door_open","family":"minor","day":1,"night":true,"duration":12,"action":"field","finding":"The service door stood open after it had been shut."},
     {"id":"antenna_creak","family":"minor","day":1,"night":true,"duration":10,"action":"field","finding":"Metal creaked among the dishes with no wind to speak of."},
     {"id":"fence_tap","family":"minor","day":1,"night":true,"duration":10,"action":"field","finding":"Something tapped along the fence and went off."},
-    {"id":"night_hush","family":"minor","day":1,"night":true,"duration":30,"action":"field","finding":"The crickets stopped for half a minute, then came back."}
+    {"id":"night_hush","family":"minor","day":1,"night":true,"duration":30,"action":"field","finding":"The crickets stopped for half a minute, then came back."},
+    {"id":"roof_tick","family":"minor","day":1,"night":true,"duration":10,"action":"field","finding":"The roof ticked overhead a few times as the night cooled. Nothing was up there to see."}
   ]
 }

@@ -32,6 +32,26 @@
 
 namespace
 {
+	// Dusk and dawn with the sun down (critic 8 November: the land read blue-white like snow, and the houses black). After sunset the land is
+	// lit by the whole sky: a warm, rosy glow from the low sky over the sun, and the deep blue of the rest in everything turned from it.
+	// The glow goes through the moons (UpdateNativeLighting), the blue through the sky light (SetSkyLighting). Night is as it was from 19:30.
+	TAutoConsoleVariable<float> CvDuskFill(TEXT("s47.dusk.Fill"), 2.2f, TEXT("Twilight: strength of the glow from the low sky over the set sun. 0: none."));
+	TAutoConsoleVariable<float> CvDuskSky(TEXT("s47.dusk.Sky"), 2.f, TEXT("Twilight: extra sky light, times the twilight (the blue in what is turned from the glow). 0: as before."));
+	TAutoConsoleVariable<float> CvDuskEl(TEXT("s47.dusk.El"), 16.f, TEXT("Twilight: height in degrees of the glow's light over the horizon."));
+	TAutoConsoleVariable<float> CvDuskSoft(TEXT("s47.dusk.Soft"), 10.f, TEXT("Twilight: source angle in degrees of the glow's light (its shadows' softness)."));
+	TAutoConsoleVariable<float> CvDuskWarm(TEXT("s47.dusk.Warm"), 1.f, TEXT("Twilight: 1 the glow's warm rose to violet colour, 0 the moon's cold blue as before."));
+	TAutoConsoleVariable<float> CvDuskBlue(TEXT("s47.dusk.Blue"), .9f, TEXT("Twilight: the soft blue from high over the other side, on what is turned from the glow. 0: none."));
+	TAutoConsoleVariable<float> CvDuskBlueEl(TEXT("s47.dusk.BlueEl"), 40.f, TEXT("Twilight: height in degrees of the blue light."));
+	// 8 November: with the approved 0.055 the land past the lamp is black, sRGB 1 (a-farm-23). 1.8 leaves it about 2-4: the hills and the
+	// ground can just be made out against the stars. 1, the default, is the night Tom approved on 7 November; 1.8 waits for his word.
+	TAutoConsoleVariable<float> CvNightBase(TEXT("s47.night.Base"), 1.f, TEXT("Night: the moon and sky fill out in the land, times the approved 0.055. 1: as approved 7 November."));
+	// The glow's colour with the sun's depth under the horizon: peach and rose at sunset, mauve at 4-6 degrees, violet-blue at the end of civil twilight.
+	FLinearColor DuskGlowColor(float Depth)
+	{
+		const FLinearColor Peach(1.f, .60f, .44f), Rose(.92f, .56f, .60f), Violet(.50f, .50f, .88f);
+		const float D = FMath::Clamp(Depth, 0.f, 12.f);
+		return D < 4.f ? FMath::Lerp(Peach, Rose, FMath::SmoothStep(0.f, 4.f, D)) : FMath::Lerp(Rose, Violet, FMath::SmoothStep(4.f, 10.f, D));
+	}
 	uint64 PoolId(int32 Set, int32 Index) { return (uint64(uint32(Set)) << 32) | uint32(Index); }
 	// Exterior.ts's five sodium floods share their posts with ext.glow points 0..4.
 	// The old y=3 coordinates describe material pools, not the 6.5 m fixture heads.
@@ -63,7 +83,8 @@ namespace
 	}
 	// Diagnostic A/B uses the previous night fill with identical geometry and materials.
 	bool PreviousNight() { return FParse::Param(FCommandLine::Get(), TEXT("S47PreviousNight")); }
-	float NightSkyIntensity(float Dawn) { return FMath::Lerp(PreviousNight() ? 0.18f : 0.055f, 1.98f, FMath::Clamp(Dawn, 0.f, 1.f)); }
+	float NightBase() { return FMath::Max(0.f, CvNightBase.GetValueOnGameThread()); }
+	float NightSkyIntensity(float Dawn) { return FMath::Lerp(PreviousNight() ? 0.18f : 0.055f * NightBase(), 1.98f, FMath::Clamp(Dawn, 0.f, 1.f)); }
 }
 
 void AS47Web::LoadLookdevEnvironment()
@@ -566,7 +587,9 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// This compensates visible native cloud bases. The cleared finale needs no
 		// extra fill when its own banks replace that weather, regardless of capability.
 		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) * CloudFinaleWeatherWeight : 1.f;
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden));
+		// Twilight: the sky lights what the glow does not reach, blue and soft (CvDuskSky; Caliche's own sky is lit already).
+		const float DuskSky = 1.f + FMath::Max(0.f, CvDuskSky.GetValueOnGameThread()) * (CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(Twilight, 0.f, 1.f)) * (1.f - .6f * Caliche);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
@@ -703,24 +726,74 @@ void AS47Web::UpdateNativeLighting()
 	// grazing, the sky light's capture gives next to nothing under the real-time clouds, and the moon's 0.055 falls in the tone curve's toe. The fill goes
 	// through the moon's own lights, since they cast shadows already, stay out of the rooms and do not light the clouds. Blue and soft while it lasts.
 	// The sky's curves are not touched, and it is exactly nothing from 19:30 (FS47Sky::TwilightAt). -S47TwilightFill= retunes it, 0 is as before.
-	static const float TwilightGain = [] { float V = 1.8f; FParse::Value(FCommandLine::Get(), TEXT("S47TwilightFill="), V); return V; }();
+	// (8 November: the fill is now the glow of the low sky over the set sun, warm and from there, and no longer the moon's cold blue from the moon's
+	// side; see CvDuskFill. -S47TwilightFill= still sets its strength.)
+	static const float TwilightGainLine = [] { float V = -1.f; FParse::Value(FCommandLine::Get(), TEXT("S47TwilightFill="), V); return V; }();
+	const float TwilightGain = TwilightGainLine >= 0.f ? TwilightGainLine : FMath::Max(0.f, CvDuskFill.GetValueOnGameThread());
 	const float Twilight = CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(SkyTwilight, 0.f, 1.f);
 	int32 MoonsUp = 0;   // (the road's and the diner's stand together: the fill must not count twice there)
 	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get())) MoonsUp += R.Base > 0 && Moon->IsVisible();
 	const float TwilightEach = Twilight * TwilightGain * FMath::Lerp(1.f, .4f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))))) / float(FMath::Max(MoonsUp, 1));
+	// Where the glow comes from: over the set sun (azimuth 281 at dusk, 79 at dawn), CvDuskEl degrees up. In UE terms, the way its light travels.
+	const FQuat GlowRot = S47Three::DirToUE(-S47SkyDir(bTwilightWest ? 281 : 79, FMath::Clamp(CvDuskEl.GetValueOnGameThread(), 2.f, 70.f))).Rotation().Quaternion();
+	const FLinearColor MoonBlue(0.40f, 0.55f, 1.f);
+	const FLinearColor DuskGlow = FMath::Lerp(MoonBlue, DuskGlowColor(TwilightDepth), FMath::Clamp(CvDuskWarm.GetValueOnGameThread(), 0.f, 1.f));
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
+		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f * NightBase(), 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
 		// Lightning keeps its authored brightness; only the moon baseline receives the gain.
 		const float MoonOwn = LocalMoon * (1.f - SkyDawn) * Look.MoonGain + SkyFlash * 0.8f;
 		Moon->SetIntensity(R.Base > 0 ? (MoonOwn + TwilightEach) * FinaleLight : 0.f);
 		// The air and the volumetric fog see what they saw: the fill is for the land, and the sky stays as it was.
 		Moon->SetVolumetricScatteringIntensity(TwilightEach > 0.f ? MoonOwn / (MoonOwn + TwilightEach) : 1.f);
-		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
+		// The glow's share of the light: its colour by that share, and its direction once it is most of it. The turn back to the moon's own is
+		// made while the glow fades out, and it is the moon's own again, exactly, from 19:30. Turned only when it moves, which keeps the shadow cache.
+		const float Share = TwilightEach > 0.f ? TwilightEach / FMath::Max(MoonOwn + TwilightEach, 1e-6f) : 0.f;
+		const FLinearColor Own = PreviousNight() ? R.Color : MoonBlue;
+		Moon->SetLightColor(Share > 0.f ? Own * (1.f - Share) + DuskGlow * Share : Own);
+		const FQuat Want = Share > 0.f ? FQuat::Slerp(R.Rest, GlowRot, FMath::SmoothStep(.3f, .85f, Share)) : R.Rest;
+		if (Moon->GetComponentQuat().AngularDistance(Want) > FMath::DegreesToRadians(.05f) || (Share <= 0.f && !Moon->GetComponentQuat().Equals(R.Rest, 1e-6f)))
+			Moon->SetWorldRotation(Want);
 		Bounce(Moon);
-		Moon->SetLightSourceAngle(FMath::Lerp(0.52f, 4.f, Twilight));
+		Moon->SetLightSourceAngle(FMath::Lerp(0.52f, FMath::Max(.52f, CvDuskSoft.GetValueOnGameThread()), Twilight));
 		Moon->SetLightSourceSoftAngle(0.08f);
+		// A sky, not a lamp: no bright sheen down the ground toward the glow.
+		Moon->SetSpecularScale(FMath::Lerp(1.f, .3f, Share));
+	}
+	// The blue of the rest of the sky: what is turned from the glow, the houses' shaded walls and the shadows of the bushes, gets a deep,
+	// soft blue from high over the other side. Shadowed, so it stays out of the rooms as the moons do; there only while the twilight lasts.
+	{
+		const float BlueEach = Twilight * FMath::Max(0.f, CvDuskBlue.GetValueOnGameThread()) * FMath::Lerp(1.f, .4f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
+		const bool bBlue = BlueEach > .002f && MoonsUp > 0;
+		UDirectionalLightComponent* B = DuskBlue.Get();
+		if (bBlue && !B)
+		{
+			B = NewObject<UDirectionalLightComponent>(this, TEXT("S47DuskBlue"));
+			B->SetupAttachment(GetRootComponent());
+			B->SetMobility(EComponentMobility::Movable);
+			B->SetCastShadows(true);
+			B->SetAtmosphereSunLight(false);
+			B->SetForwardShadingPriority(-1);
+			B->SetVolumetricScatteringIntensity(0.f);
+			B->SetSpecularScale(.25f);
+			B->SetLightSourceSoftAngle(0.f);
+			B->RegisterComponent();
+			DuskBlue = B;
+		}
+		if (B)
+		{
+			if (B->IsVisible() != bBlue) B->SetVisibility(bBlue);
+			if (bBlue)
+			{
+				const FQuat Want = S47Three::DirToUE(-S47SkyDir(bTwilightWest ? 101 : 259, FMath::Clamp(CvDuskBlueEl.GetValueOnGameThread(), 5.f, 85.f))).Rotation().Quaternion();
+				if (B->GetComponentQuat().AngularDistance(Want) > FMath::DegreesToRadians(.05f)) B->SetWorldRotation(Want);
+				B->SetIntensity(BlueEach * FinaleLight);
+				B->SetLightColor(FLinearColor(.40f, .50f, 1.f));
+				B->SetLightSourceAngle(FMath::Max(1.f, CvDuskSoft.GetValueOnGameThread() * 2.5f));
+				Bounce(B);
+			}
+		}
 	}
 	// Keep nearby C6 geometry inside the existing 15km exclusion. Recapture remains throttled below.
 	UpdateFinaleSkyCapture();

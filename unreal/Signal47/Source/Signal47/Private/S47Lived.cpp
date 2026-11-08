@@ -1,17 +1,28 @@
 #include "S47Lived.h"
 
+#include "S47FarmHouse.h"
+#include "S47RoadTerrain.h"
 #include "S47Main.h"
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
+#include "S47Sky.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
+#include "Components/DecalComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Dom/JsonObject.h"
 #include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 #include "UObject/WeakObjectPtrTemplates.h"
@@ -49,11 +60,13 @@ namespace
  struct FState
  {
   TWeakObjectPtr<AS47Web> Web;
-  int32 FloorNode=-1,DressNode=-1,OutNode=-1;
+  int32 FloorNode=-1,DressNode=-1,OutNode=-1,CorridorNode=-1;
   TWeakObjectPtr<UMaterialInstanceDynamic> Green,Amber,Red,Bulb;
   FLinearColor GreenOn=FLinearColor::Black,AmberOn=FLinearColor::Black,RedOn=FLinearColor::Black,BulbOn=FLinearColor::Black;
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
-  bool bColliders=false,bMissingSaid=false;
+  TArray<TWeakObjectPtr<URectLightComponent>> HouseDay;
+  TArray<TWeakObjectPtr<UPointLightComponent>> HouseFill;
+  bool bColliders=false,bMissingSaid=false,bTownTried=false;
   double T=0,Retry=0,RedNext=0;float RedLevel=1;
  };
  UMaterialInstanceDynamic* LitMid(UStaticMeshComponent* C,const TCHAR* Slot,FLinearColor& On)
@@ -95,6 +108,13 @@ namespace
     S.Red=LitMid(C,TEXT("M_Lived_LampRed"),S.RedOn);S.Bulb=LitMid(C,TEXT("M_Lived_BulbWarm"),S.BulbOn);
    }
   }
+  // The corridor's own dressing hangs off the annex's inside, so it shows and hides with the corridor, not the room.
+  if(S.CorridorNode<0)if(UStaticMesh* Corr=OptionalMesh(TEXT("/Game/Lived/Control/SM_Lived_CorridorDressing")))
+  {
+   const int32 Annex=W->Handle(TEXT("annex.interior"));
+   UStaticMeshComponent* C=nullptr;
+   if(Annex>=0)S.CorridorNode=PlaceRoomMesh(W,Annex,Corr,TEXT("LivedCorridorDressing"),true,C);
+  }
   if(S.DressNode<0)
   {
    if(!S.bMissingSaid)UE_LOG(LogS47Lived,Display,TEXT("S47: lived-in control room: no assets under /Game/Lived/Control; the room as it was"));
@@ -134,6 +154,118 @@ namespace
    UE_LOG(LogS47Lived,Display,TEXT("S47: lived-in control room up: floor %s, dressing %s, %d small lamps, %d solids"),S.FloorNode>=0?TEXT("yes"):TEXT("no"),S.DressNode>=0?TEXT("yes"):TEXT("no"),S.Lights.Num(),int32(UE_ARRAY_COUNT(Solids)));
   }
  }
+ // The one farmhouse by day (T16-15): its small deep windows let in too little for Lumen alone, so the sky comes in through each, as the control room's
+ // windows do (S47SaroRooms WindowSky). Plan metres (S47FarmHouse.cpp Walls): the opening's middle on the inner face, and which way is in.
+ struct FHouseWindow{double PlanX,PlanY,Width;FVector In;};
+ const FHouseWindow HouseWindows[]={
+  {2.5,.3,1.8,FVector(0,0,-1)},{8.,.3,1.2,FVector(0,0,-1)},{10.9,.3,.8,FVector(0,0,-1)},
+  {2.2,8.7,1.8,FVector(0,0,1)},{8.9,8.7,1.8,FVector(0,0,1)},
+  {.3,6.45,1.3,FVector(-1,0,0)},{11.7,6.85,1.3,FVector(1,0,0)},
+ };
+ constexpr float HouseWindowLumens=34.f;
+ // What a room's walls and floor give back by day, which Lumen alone misses in rooms this small and closed: one soft fill under each ceiling,
+ // the hall's too (it has no window of its own). Plan metres. Keeps the room readable to sunset without lighting it like a shop.
+ const FVector2D HouseRooms[]={{2.7,2.35},{2.7,6.6},{6.,2.6},{6.,6.6},{8.35,2.35},{10.8,2.35},{9.3,6.6}};
+ constexpr float HouseFillLumens=5.f;
+ void BuildHouseDay(FState& S,AS47Web* W)
+ {
+  if(S.HouseDay.Num()||!S47FarmHouse::HasModel())return;
+  for(int32 I=0;I<UE_ARRAY_COUNT(HouseWindows);++I)
+  {
+   const FHouseWindow& H=HouseWindows[I];
+   // Road-local to the SARO area, as S47FarmHouseDoors puts its leaves.
+   const FVector At=S47FarmHouse::Point(H.PlanX,H.PlanY)+FVector(-24,1.5,300)+H.In*.06;
+   auto* L=NewObject<URectLightComponent>(W,*FString::Printf(TEXT("LivedHouseDay%d"),I));
+   L->SetupAttachment(W->GetRootComponent());L->SetMobility(EComponentMobility::Movable);
+   L->SetWorldLocation(S47Three::ToUE(At));L->SetWorldRotation(S47Three::DirToUE(H.In).Rotation());
+   L->SetSourceWidth(float(H.Width*100));L->SetSourceHeight(115.f);L->SetBarnDoorAngle(70.f);L->SetBarnDoorLength(25.f);
+   L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetAttenuationRadius(900.f);L->SetCastShadows(true);L->SetVolumetricScatteringIntensity(0);
+   L->SetVisibility(false);W->AddInstanceComponent(L);L->RegisterComponent();
+   S.HouseDay.Add(L);
+  }
+  for(int32 I=0;I<UE_ARRAY_COUNT(HouseRooms);++I)
+  {
+   auto* F=NewObject<UPointLightComponent>(W,*FString::Printf(TEXT("LivedHouseFill%d"),I));
+   F->SetupAttachment(W->GetRootComponent());F->SetMobility(EComponentMobility::Movable);
+   F->SetWorldLocation(S47Three::ToUE(S47FarmHouse::Point(HouseRooms[I].X,HouseRooms[I].Y)+FVector(-24,2.25,300)));
+   F->SetIntensityUnits(ELightUnits::Lumens);F->SetIntensity(0);F->SetAttenuationRadius(430.f);F->SetSourceRadius(60.f);F->SetSoftSourceRadius(120.f);
+   F->SetCastShadows(false);F->SetVolumetricScatteringIntensity(0);F->SetVisibility(false);W->AddInstanceComponent(F);F->RegisterComponent();
+   S.HouseFill.Add(F);
+  }
+ }
+ void ShowHouseDay(FState& S,US47Main* M)
+ {
+  if(!S.HouseDay.Num()&&!S.HouseFill.Num())return;
+  const bool bArea=M->Mode==US47Main::EMode::Play&&M->IsFreeform()&&M->World&&M->World->Area==TEXT("saro");
+  // Only near the house: seven shadowed rect lights cost nothing when they are off.
+  const FVector Middle=S47FarmHouse::Point(6,4.5)+FVector(-24,0,300);
+  const bool bNear=bArea&&M->Player&&FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()<45;
+  const FS47Sky* Sky=M->Life&&M->Life->Sky.IsValid()?M->Life->Sky.Get():nullptr;
+  // Full from morning to the late afternoon, then down with the light outside: Daylight() leans on the low sun, so lift it until it really fades.
+  const float Day=Sky?float(FMath::Clamp(FMath::Sqrt(FMath::Clamp(Sky->Daylight(),0.,1.))*1.15,0.,1.)):0.f;
+  const FLinearColor Tint=FMath::Lerp(FLinearColor(.92f,.96f,1.f),FLinearColor(1.f,.84f,.66f),Sky?float(Sky->Evening):0.f);
+  for(auto& P:S.HouseDay)if(auto* L=P.Get())
+  {
+   const bool bOn=bNear&&Day>.002f;
+   L->SetIntensity(bOn?HouseWindowLumens*Day:0.f);L->SetLightColor(Tint);L->SetVisibility(bOn);
+  }
+  for(auto& P:S.HouseFill)if(auto* F=P.Get())
+  {
+   const bool bOn=bNear&&Day>.002f;
+   F->SetIntensity(bOn?HouseFillLumens*Day:0.f);F->SetLightColor(Tint*FLinearColor(1.f,.93f,.82f));F->SetVisibility(bOn);
+  }
+ }
+ // Caliche (T16-15): each building on the street gets ground in front of it, gravel or old asphalt, from its door out to the highway's
+ // shoulder, as a decal on whatever ground the land has there; and a concrete curb down each side of it. Buildings from CalicheAccess/assembly.json.
+ void BuildTown(FState& S,AS47Web* W)
+ {
+  if(S.bTownTried)return;
+  UMaterialInterface* Gravel=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Town/Materials/M_Lived_LotGravel"))?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Lived/Town/Materials/M_Lived_LotGravel.M_Lived_LotGravel")):nullptr;
+  UMaterialInterface* Asphalt=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Town/Materials/M_Lived_LotAsphalt"))?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Lived/Town/Materials/M_Lived_LotAsphalt.M_Lived_LotAsphalt")):nullptr;
+  UMaterialInterface* Concrete=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/FarmBuildings/Materials/M_Farm_Concrete.M_Farm_Concrete"));
+  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+  FString Text;TSharedPtr<FJsonObject> J;
+  if(!Gravel||!Asphalt||!Cube||!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
+  const int32 Town=W->Handle(TEXT("world.town.group"));const FS47WebNode* TN=W->Node(Town);
+  if(!TN||!TN->Comp.IsValid())return;
+  const FVector O=W->Obj(TEXT("world.town.group")).WorldPosition();
+  const auto Ground=[&](double X,double Z){return O.Y+S47RoadTerrain::SurfaceY(X-O.X,Z-O.Z);};
+  int32 Lots=0;
+  for(const auto& V:J->GetArrayField(TEXT("buildings")))
+  {
+   const auto B=V->AsObject();const FString Id=B->GetStringField(TEXT("id"));
+   const auto& Root=B->GetArrayField(TEXT("root"));const auto& Foot=B->GetArrayField(TEXT("footprint"));
+   const double RX=Root[0]->AsNumber(),RZ=Root[2]->AsNumber(),Front=B->GetNumberField(TEXT("front"));
+   const double X0=Foot[0]->AsNumber(),X1=Foot[1]->AsNumber(),Y0=Foot[2]->AsNumber(),Y1=Foot[3]->AsNumber();
+   // The facade, and the shoulder's edge (the highway's centre line is x 8000 in this area, its shoulder 6 m out).
+   const double FX=RX+(Front>0?X1:X0),Edge=8000-Front*6.;
+   const double Out=(Edge-FX)*Front;if(Out<1.5||Out>40)continue;
+   const bool bHouse=Id.StartsWith(TEXT("H"));
+   const double ZA=RZ-Y1,ZB=RZ-Y0,Half=(ZB-ZA)*.5*(bHouse?.55:1.),ZM=bHouse?RZ-B->GetArrayField(TEXT("door"))[1]->AsNumber():(ZA+ZB)*.5;
+   const double XM=FX+Front*Out*.5;
+   UMaterialInterface* Mat=Id==TEXT("Cinema")||Id==TEXT("Laundry")||Id==TEXT("Sheriff")?Asphalt:Gravel;
+   auto* D=NewObject<UDecalComponent>(W,*FString::Printf(TEXT("LivedLot_%s"),*Id));
+   D->SetupAttachment(TN->Comp.Get());D->SetDecalMaterial(Mat);D->SetFadeScreenSize(0.f);D->SortOrder=-1;
+   // Projected straight down; local Y runs along the frontage (three z), local Z out to the road (three x). V of the picture is 0 at the building.
+   D->DecalSize=FVector(250.f,float(Half*100+60),float(Out*50+40));
+   D->SetWorldLocation(S47Three::ToUE(FVector(XM,Ground(XM,ZM),ZM)));D->SetWorldRotation(FRotator(-90.f,0.f,Front>0?0.f:180.f)); // seen 8 Nov: a quarter turn put the long side across the highway
+   W->AddInstanceComponent(D);D->RegisterComponent();++Lots;
+   // A concrete curb down each side, from the steps out to the shoulder, sitting on the land a segment at a time.
+   if(!bHouse&&Concrete)for(const double Side:{-1.,1.})
+   {
+    const double Z=ZM+Side*(Half+.08);
+    for(double T=2.2;T<Out-.6;T+=1.)
+    {
+     const double X=FX+Front*(T+.5);
+     auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(TN->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Concrete);
+     C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+     C->SetWorldLocation(S47Three::ToUE(FVector(X,Ground(X,Z)+.05,Z)));C->SetWorldScale3D(FVector(.98,.15,.2));
+    }
+   }
+  }
+  S.bTownTried=true;
+  UE_LOG(LogS47Lived,Display,TEXT("S47: Caliche frontages: %d lots with their curbs"),Lots);
+ }
  // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
  void BuildOutside(FState& S,AS47Web* W)
  {
@@ -152,6 +284,11 @@ namespace
   const bool bVisible=M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Room&&Room.Shown();
   if(S.FloorNode>=0)W->ObjAt(S.FloorNode).SetVisible(bVisible);
   if(S.DressNode>=0)W->ObjAt(S.DressNode).SetVisible(bVisible);
+  if(S.CorridorNode>=0)
+  {
+   const FS47Obj Annex=W->ObjAt(W->Handle(TEXT("annex.interior")));
+   W->ObjAt(S.CorridorNode).SetVisible(M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&Annex&&Annex.Shown());
+  }
   if(S.OutNode>=0)
   {
    const FS47Obj Ext=W->ObjAt(W->Handle(TEXT("ext.group")));
@@ -189,9 +326,12 @@ void S47Lived::Update(US47Main* Main,double Dt)
  S.Retry-=FMath::Max(0.,Dt);
  if(S.Retry<=0)
  {
-  if((S.DressNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
+  if((S.DressNode<0||S.CorridorNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
   BuildOutside(S,W);
+  BuildHouseDay(S,W);
+  BuildTown(S,W);
   S.Retry=1;
  }
  Show(S,Main,W,Dt);
+ ShowHouseDay(S,Main);
 }
