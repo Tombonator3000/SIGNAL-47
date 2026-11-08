@@ -71,6 +71,12 @@ public:
 	TSharedPtr<class FS47Spine> Spine; // SC01 to SC13 order and the marked placeholders (S47Spine.h)
 	TSharedPtr<class FS47FieldRadio> FieldRadio; // carried SARO radio and shared encounter sound
 	TSharedPtr<class FS47Stress> Stress; // the player's strain, 0 to 1, shown as a darker edge, a narrower view and heavier breathing (S47Stress.h)
+	// M2, Freeform only: what is out there near the player (S47Omen.h), and the three things that read it: the gear that fails
+	// (S47GearFlicker.h), the night's sounds and their silence (S47Soundscape.h), the animals (S47Animals.h).
+	TSharedPtr<class FS47Omen> Omen;
+	TSharedPtr<class FS47GearFlicker> Gear;
+	TSharedPtr<class FS47Soundscape> Soundscape;
+	TSharedPtr<class FS47Animals> Animals;
 	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
 	TSharedPtr<class FS47Rhythm> Rhythm; // the rhythm of a Freeform night, as data (S47Rhythm.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;

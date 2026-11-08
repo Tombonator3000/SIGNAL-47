@@ -1,5 +1,6 @@
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47GearFlicker.h"
 #include "S47FarmSite.h"
 #include "S47IndoorDread.h"
 #include "S47Taken.h"
@@ -98,7 +99,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
  HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
  if(Root) Root.SetVisible(false);
@@ -167,6 +168,12 @@ bool FS47FieldRadio::Message(const FString& Text)
  FString Who,Said=Text;
  if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);}
  ++MessageCount; SinceMessage=0; SinceLoud=0;
+ // GEAR-FLICKER-20261108: near something, words of his are lost in the noise, and the set crackles over them.
+ if(!Who.IsEmpty()&&M->IsFreeform()&&M->Gear.IsValid())
+ {
+  const FString Whole=Said;Said=M->Gear->Broken(Said,MessageCount);
+  if(Said!=Whole&&M->Audio&&Sound.Crackle(M->Audio,FMath::Max(.4,GearNoise)))++Crackled;
+ }
  const bool bHeard=M->Audio&&Sound.Message(M->Audio);
  if(bHeard)S47FieldRadioSet::Roger(M->Audio,S47FieldRadioSet::MessageSeconds);
  // Anything but Dale is the set itself breaking up, told as a sound in brackets: nobody else talks on the walkie.
@@ -486,6 +493,8 @@ void FS47FieldRadio::Step(double Dt)
   Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
   Visible|=K>.04 && A.bVisible; Hunting|=K>.04 && A.bHunting;
  }
+ // Freeform: the set hears everything near the way it hears a body (GEAR-FLICKER-20261108), not only the bodies above.
+ if(M->IsFreeform()) Heard=FMath::Max(Heard,GearNoise);
  LastLevel=Level; LastSeen=Visible; LastHunt=Hunting;
  // Require stable changes and a genuine quiet gap before another presence cue.
  QuietFor=Level<.015?QuietFor+Dt:0;

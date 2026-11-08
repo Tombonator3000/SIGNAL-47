@@ -10,6 +10,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Soundscape.h"
 #include "S47Sky.h"
 #include "S47Story.h"
 #include "S47Taken.h"
@@ -38,6 +39,8 @@ double FS47Stress::Target(const FS47StressIn& In)
 	const double Near = FMath::Clamp(In.Presence, 0.0, 1.0);
 	if (Near > 0) Worry(0.95 * Near * (In.bHunting ? 1.0 : In.bSeen ? 0.85 : 0.6));
 	if (In.bDark && !In.bSafe) Worry(0.3 + 0.2 * FMath::Clamp(In.Darkness, 0.0, 1.0));
+	// the silence before something (SOUNDSCAPE-20261108): felt a little, even with nothing to see
+	if (In.bHush) Worry(0.25);
 	if (In.bTaken) Worry(1.0);
 	else if (In.SinceTaken < AfterTakenSeconds) Worry(AfterTakenLevel * (1.0 - FMath::Max(0.0, In.SinceTaken) / AfterTakenSeconds));
 	return 1.0 - Calm;
@@ -106,6 +109,7 @@ FS47StressIn FS47Stress::Read()
 	if (bOutdoors && Daylight < 0.25 && !bLamp) { R.bDark = true; R.Darkness = 1.0 - Daylight / 0.25; }
 	const FString Area = M->World ? M->World->Area : FString(TEXT("saro"));
 	R.bSafe = M->Space == TEXT("room") && Area == TEXT("saro");
+	R.bHush = M->IsFreeform() && M->Soundscape.IsValid() && M->Soundscape->Hushed();
 	return R;
 }
 
@@ -181,6 +185,8 @@ bool FS47Stress::SelfTest(TArray<FString>& Lines)
 	In.Darkness = 0.1; const double Dusk = Target(In);
 	Check(Dark > Dusk && Dusk > 0.25 && Dark < 0.6, TEXT("the dark outside without a lamp is a steady unease, less than any danger"));
 	In.bSafe = true; Check(Target(In) == 0, TEXT("indoors at SARO the dark is no worry"));
+	In = FS47StressIn(); In.bHush = true; const double Hush = Target(In);
+	Check(Hush > 0.2 && Hush < Dusk && Hush < Event, TEXT("the night going quiet is a small unease, less than the dark or a danger"));
 	In = FS47StressIn(); In.bEvent = true; In.Presence = 0.8; In.bDark = true; In.bTaken = true;
 	Check(Target(In) <= 1.0 && Target(In) >= Event, TEXT("worries add up as chances do and never pass 1"));
 	In = FS47StressIn(); In.bTaken = true; Check(Target(In) == 1.0, TEXT("being taken is the most there is"));

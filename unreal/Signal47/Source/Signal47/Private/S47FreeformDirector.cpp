@@ -470,6 +470,7 @@ bool FS47FreeformDirector::InView(const FVector& At,double Range)const
  {return M&&M->Night&&FVector::Dist(M->Night->GlimpseIn(true).Cam.Pos,At)<=Range&&Effects->Visible(At);}
 void FS47FreeformDirector::Changed(){if(M)M->RequestAutosave();}
 TArray<FString> FS47FreeformDirector::EventIds(){TArray<FString> Out;for(const auto& D:Catalog())Out.Add(D.Id);return Out;}
+FVector FS47FreeformDirector::ClosePassNow() const{return ClosePassAt(Anchor,Age);}
 namespace
 {
  const FS47EventPlaces* PlacesOf(const US47Main* M){return M&&M->Freeform?M->Freeform->EventPlaces.Get():nullptr;}

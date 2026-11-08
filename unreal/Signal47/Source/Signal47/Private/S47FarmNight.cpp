@@ -4,6 +4,7 @@
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 #include "S47Herd.h"
+#include "S47Animals.h"
 #include "S47TownLayer.h"
 #include "S47FarmSite.h"
 #include "S47Taken.h"
@@ -240,6 +241,9 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
   if(FVector2D::Distance(FVector2D(Over.X,Over.Z),FVector2D(FarmX,FarmZ))<FarmReach+120){Threat=Over;Level=FMath::Max(Level,.7);}
  }
  if(!TestAlarmAt.IsZero()){Threat=TestAlarmAt;Level=1;}
+ // ANIMALS-20261108: anything else near them (a figure, a light, a craft, FS47Omen): some way off they walk off together, all one
+ // way; close by they run. Only on the herd's own ground.
+ if(M->Animals&&Area==TEXT("saro")){FVector Felt;const double Fear=M->Animals->HerdFear(H->Middle(),Felt);if(Fear>Level){Level=Fear;Threat=Felt;}}
  H->SetAlarm(Level,Threat);
  // A site armed for the night with no visit under way: one cow stands quite still and faces the marks. Morning clears the site.
  bool bStare=Level<=0&&Site&&Site->Armed()&&Site->PlaceId()==TEXT("farm")&&!Site->VisitWantsGround();

@@ -50,6 +50,8 @@ if [ -d "$evening_dir" ] || [ "${S47_AUDIO_EVENING_ONLY:-0}" = 1 ]; then
   raw_options+=(--evening-wav-dir "$evening_dir")
 fi
 python3 "$SCRIPTS/audio-raw.py" --web "$ROOT/web/src" --content "$D/Content" "${raw_options[@]}"
+# Freeform's recorded night (CC0, Tools/nightsounds/KILDER.md): Raw/night, read by the game at run time
+python3 -I "$D/Tools/nightsounds/prepare.py" --stage "$D/Content"
 [ "${S47_AUDIO_RAW_ONLY:-0}" != 1 ] || exit 0
 rm -rf "${STAGE:?}/wav"
 mkdir -p "$STAGE/wav"

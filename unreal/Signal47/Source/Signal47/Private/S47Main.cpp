@@ -4,6 +4,10 @@
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
 #include "S47Stress.h"
+#include "S47Omen.h"
+#include "S47GearFlicker.h"
+#include "S47Soundscape.h"
+#include "S47Animals.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
@@ -153,6 +157,16 @@ void US47Main::Step(double Dt)
 	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
+	// M2: what is out there near the player, then what reads it: the gear (before the flashlight's own update, which shows it),
+	// the night's sounds, the animals. Each does nothing outside Freeform and gives back what it touched.
+	if (!Omen) Omen = MakeShared<FS47Omen>(this);
+	if (!Gear) Gear = MakeShared<FS47GearFlicker>(this);
+	if (!Soundscape) Soundscape = MakeShared<FS47Soundscape>(this);
+	if (!Animals) Animals = MakeShared<FS47Animals>(this);
+	Omen->Step(Dt);
+	Gear->Step(Dt);
+	Soundscape->Step(Dt);
+	Animals->Step(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// the player's strain (after the flashlight: a lit lamp is one thing it reads)

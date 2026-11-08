@@ -13,6 +13,10 @@
 #include "S47HudGauges.h"
 #include "S47Stress.h"
 #include "S47Sneak.h"
+#include "S47Omen.h"
+#include "S47GearFlicker.h"
+#include "S47Soundscape.h"
+#include "S47Animals.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
@@ -231,6 +235,7 @@ void AS47HUD::Start()
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
@@ -311,7 +316,9 @@ void AS47HUD::Start()
 				if (const auto* C = Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))); C && C->bActive
 					&& (C->Stage == TEXT("pullout") || C->Stage == TEXT("end"))) return FText::GetEmpty();
 			// The watch leaves the picture with the driver; captions and pause controls retain their own widgets.
-			return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString());
+			const FString Watch = Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString();
+			// GEAR-FLICKER-20261108: close to something, the watch jumps for a moment
+			return FText::FromString(M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(Watch) : Watch);
 		})
 		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);

@@ -81,6 +81,10 @@ public:
  bool InUse() const { return bOwned && !bLeftOut && (SinceMessage<20. || LastRadio>.02 || HailLeft>0 || TxLeft>0 || SinceTouch<8.); }
  // Signal strength for the HUD, 0 to 1: full in a quiet place, thinner the nearer a presence is.
  double Strength() const { return FMath::Clamp(1.-.8*LastRadio,.1,1.); }
+ // GEAR-FLICKER-20261108: what FS47Omen feels of everything near (lights, a craft, being taken, a door), 0 to 1, heard on the set
+ // as on any body: hiss, crackle and the HUD's signal falling. Set every frame by FS47GearFlicker; 0 outside Freeform.
+ void SetGearNoise(double K){GearNoise=FMath::Clamp(K,0.,1.);}
+ double GearNoiseNow() const{return GearNoise;}
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
@@ -93,7 +97,7 @@ private:
  FS47EncounterSound Sound;
  bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
  S47J::FObj Unknown;
- double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0;
+ double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0;
  int32 Crackled=0,MessageCount=0;
  double SinceMessage=1e9;
  bool LastSeen=false,LastHunt=false;

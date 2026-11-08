@@ -118,7 +118,8 @@ void FS47TruckTrouble::Step(double Dt, FS47DriveController& Drive, FS47Truck& Tr
 	{
 		Power = 1;
 		// (nothing wrong with the truck itself, but its electrics held down from outside)
-		if (Dim < 1) { bTouched = true; Truck.SetLightLevel(Dim); Truck.SetDashLevel(Dim); Truck.SetWarnings({}); return; }
+		const double Held = Dim * GearDim;
+		if (Held < 1) { bTouched = true; Truck.SetLightLevel(Held); Truck.SetDashLevel(Held); Truck.SetWarnings({}); return; }
 		if (bTouched) Reset(&Truck, &Drive);
 		return;
 	}
@@ -181,11 +182,12 @@ void FS47TruckTrouble::Step(double Dt, FS47DriveController& Drive, FS47Truck& Tr
 	if (bDone) A.Reset();
 
 	Power = A && A->Kind == ES47Trouble::Stall && A->Stage == EStage::Cranking ? 0.04 : A && (A->Kind == ES47Trouble::Flicker || A->Kind == ES47Trouble::Blink) ? Light : 1;
-	Truck.SetLightLevel(Light * Dim);
-	Truck.SetDashLevel(Dash * Dim);
+	const double Outside = Dim * GearDim;
+	Truck.SetLightLevel(Light * Outside);
+	Truck.SetDashLevel(Dash * Outside);
 	Truck.SetGaugePower(Gauges);
 	// (the warning lamps go with every other light when the battery has gone)
-	Truck.SetWarnings(Dim < 0.12 ? FS47Truck::FWarn() : Warn);
+	Truck.SetWarnings(Outside < 0.12 ? FS47Truck::FWarn() : Warn);
 }
 
 FS47TruckTrouble::FOut FS47TruckTrouble::StallStep(double Dt, FActive& Act, FS47DriveController& Drive, FS47EngineSound* Sound)

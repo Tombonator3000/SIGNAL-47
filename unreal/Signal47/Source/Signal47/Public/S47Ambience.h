@@ -77,6 +77,36 @@ public:
 	/** A recording far off in a random direction: panned, quiet and dull with distance. */
 	void Far(const FString& Name, const FVector& At, double Gain, double Rate = 1);
 
+	// ---------- Freeform: sounds from real places (SOUNDSCAPE-20261108, FS47Soundscape and FS47Animals) ----------
+	/** The night's own deep quiet spells (a mood of 0.08 now and then). Freeform leaves them out, so that a silence means something. */
+	bool bQuietSpells = true;
+	/** Where the far-off ones come from, asked as each falls due ("coyote", "dog", "owl", "train"). Unset: from anywhere, as in the
+	 *  Story. Set and false: none of that kind can be heard from here now, and it is left out. OutAt is three-space. */
+	TFunction<bool(const FString& Kind, const FVector& Listener, FVector& OutAt)> PlaceFor;
+	/** A recording from a place out in the desert, through everything the night's own sounds go through (the hush, the walls'
+	 *  low-pass, the morning's stillness). Gain is as heard Near metres off; further away it falls off and grows duller as it goes.
+	 *  The source, to cut it short (a dog that stops in the middle of a bark); null when there is no such recording. */
+	TSharedPtr<FS47BufferSourceNode> PlayAt(const FString& Name, const FVector& Listener, const FVector& Where, double Gain, double Pitch = 1, double Near = 40, double When = 0);
+	TSharedPtr<FS47BufferSourceNode> PlayBufferAt(const TSharedPtr<FS47AudioBuffer>& Rec, const FVector& Listener, const FVector& Where, double Gain, double Pitch = 1, double Near = 40, double When = 0);
+	/** Made here, from a place: coyotes; the windmill's slow creak and the pump rod's knock; a covey of quail going up; a dog's whine. */
+	void CoyotesFrom(const FVector& Listener, const FVector& Where);
+	void TrainAt(const FVector& Listener, const FVector& Where);
+	void MillCreak(const FVector& Listener, const FVector& Where, double Strength);
+	void Whirr(const FVector& Listener, const FVector& Where, double Strength);
+	void Whine(const FVector& Listener, const FVector& Where);
+	/** The wind in the wires, at the nearest point of a line: a held loop, Level 0 to 1 (0: none). Every frame while it is wanted. */
+	void Wires(const FVector& Where, double Level);
+	double WiresLevel() const { return WireWant; }
+	/** 1 while the night is open, near 0 under a hush (the animals, the tests). */
+	double Openness() const;
+	/** Freeform's recorded night (Tools/nightsounds, CC0 from Freesound, KILDER.md there): one of Content/Audio/Raw/night/
+	 *  <Prefix>0.wav, <Prefix>1.wav ... at random ("coyote", "train", "mill", "wires", "flush"). Null when this build has none:
+	 *  the sound is then made here, as before. Read once and kept. */
+	static TSharedPtr<FS47AudioBuffer> NightClip(const FString& Prefix);
+	static int32 NightClips(const FString& Prefix);
+	/** How many of the far-off ones have been heard, by kind, since the night began (tests, F10). */
+	int32 FarHeard(const FString& Kind) const { return FarCounts.FindRef(Kind); }
+
 private:
 	/** A value that wanders: now and then it picks a new target and an AudioParam drifts there. */
 	struct FDrift
@@ -137,8 +167,17 @@ private:
 	void Note(const TSharedPtr<FS47AudioNode>& Dest, double At, double Len, double F0, double F1, double Peak, double Harm = 0.12);
 	void Gust();
 	void Poorwill(const FVector& At);
-	void Coyotes(const FVector& At);
-	void Train(const FVector& At);
+	void Coyotes(const FVector& At, TOptional<double> Bearing = {}, TOptional<double> Dist = {});
+	void Train(const FVector& At, TOptional<double> Bearing = {});
+	/** Bearing and flat distance from the listener to a place, in Distant's terms. */
+	static void Toward(const FVector& Listener, const FVector& Where, double& OutBearing, double& OutDist);
+	/** A placed node into the night's own path: gain, a low-pass by distance, a panner at Where. */
+	TSharedRef<FS47GainNode> Placed(const FVector& Listener, const FVector& Where, double Gain, double Near, double Life);
+	TMap<FString, int32> FarCounts;
+	// the wires' loop
+	struct FWireLoop { TSharedPtr<FS47GainNode> Gain; TSharedPtr<FS47PannerNode> Pan; TArray<TSharedPtr<FS47OscillatorNode>> Tones; TArray<double> Base; TSharedPtr<FS47BiquadFilterNode> Whistle; TSharedPtr<FS47BufferSourceNode> Hiss; double Retune = 0; };
+	TOptional<FWireLoop> WireLoop;
+	double WireWant = 0;
 	void Truck();
 	void Meadowlark(const FVector& At);
 	void Lark(const FVector& At);

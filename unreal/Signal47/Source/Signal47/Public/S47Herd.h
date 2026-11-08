@@ -16,6 +16,9 @@ namespace S47Herd
 	SIGNAL47_API const TArray<FString>& Tags();
 	inline constexpr int32 MISSING = 4;
 	inline constexpr double COW_R = 1.15;
+	// ANIMALS-20261108: an alarm below this is unease, not fright: the herd walks off together, all the same way, heads up. At it
+	// and above they run, each its own way.
+	inline constexpr double SCATTER = 0.5;
 	inline const FVector NECK(0, 1.12, -0.74);
 	inline const FVector EYE[2] = { FVector(-0.17, 0.11, -0.66), FVector(0.17, 0.11, -0.66) };
 }
@@ -48,6 +51,9 @@ public:
 	// Something near that animals can feel: 0 calm, 1 run from this place.
 	void SetAlarm(double K, const FVector& FromWorld);
 	double AlarmLevel() const { return Alarm; }
+	/** Uneasy: all walking the same way (S47Herd::SCATTER). The way, flat, herd-local, while it lasts (tests). */
+	bool Together() const { return Alarm > .05 && Alarm < S47Herd::SCATTER; }
+	FVector TogetherWay() const { return Way; }
 	// One cow (or -1 for none) stands quite still, head up, facing this place, instead of grazing or wandering.
 	void SetStare(int32 Cow, const FVector& TowardWorld);
 	int32 Starer() const { return Stare; }
@@ -77,6 +83,7 @@ private:
 	// Freeform: where each has wandered to, what fear has added to that, and which way it faces.
 	double Alarm = 0;
 	FVector AlarmFrom = FVector::ZeroVector; // herd-local
+	FVector Way = FVector(0, 0, 1);         // herd-local: the one way they all walk while uneasy
 	double StepDt = 0;
 	int32 Stare = -1;
 	FVector StareAt = FVector::ZeroVector, StareHold = FVector::ZeroVector; // herd-local
