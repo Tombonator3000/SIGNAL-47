@@ -26,6 +26,7 @@
 #include "Misc/Paths.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
+#include "S47Flow.h"
 #include "S47TripoFleet.h"
 #include "S47FreeModels.h"
 #include "S47Props.h"
@@ -1093,6 +1094,8 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 	if (bBusy || bDriving || !M || !M->Story) return;
 	if (M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2)
 	{Toast(TEXT("Hold the parcel and use the parked truck to load it before driving."),6);return;}
+	// SAVE-SARO-20261108: setting off from the station files the log first, while nothing is moving yet (S47SaroSave.h)
+	if (M->IsFreeform() && M->Flow) M->Flow->DepartingByTruck();
 	EnsureLegs();
 	bBusy = true;
 	Hold(true);

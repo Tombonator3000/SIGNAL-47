@@ -48,6 +48,19 @@ double S47HudGauges::Wave(double X, double Phase, double Strength)
 	return FMath::Clamp((Clean * (0.25 + 0.75 * K) + Torn * (1 - K) * 0.6) * Ends * (0.2 + 0.8 * K), -1.0, 1.0);
 }
 
+FString S47HudGauges::FiledLine(const FString& Clock)
+{
+	const FString C = Clock.TrimStartAndEnd();
+	return C.IsEmpty() ? FString(TEXT("LOG FILED")) : TEXT("LOG FILED  ") + C;
+}
+
+double S47HudGauges::FiledAlpha(double T)
+{
+	if (!FMath::IsFinite(T) || T < 0 || T >= FiledFor) return 0;
+	if (T < 0.25) return T / 0.25;
+	return FMath::Clamp((FiledFor - T) / 0.8, 0.0, 1.0);
+}
+
 bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -79,5 +92,8 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(bEnds && bBounded, TEXT("the wave starts and ends on the line and stays within it"));
 	auto Swing = [](double K) { double M = 0; for (int32 P = 0; P < 40; ++P) for (int32 I = 0; I <= 48; ++I) M = FMath::Max(M, FMath::Abs(Wave(I / 48.0, P * 0.3, K))); return M; };
 	Check(Swing(1.0) > Swing(0.5) && Swing(0.5) > Swing(0.1) && Swing(1.0) > 0.9, TEXT("a stronger signal swings wider"));
+	Check(FiledLine(TEXT("08:27")) == TEXT("LOG FILED  08:27") && FiledLine(FString()) == TEXT("LOG FILED"), TEXT("the departure stamp says LOG FILED and the save's clock"));
+	Check(FiledAlpha(-1) == 0 && FiledAlpha(0) == 0 && FMath::IsNearlyEqual(FiledAlpha(0.125), 0.5, 1e-9) && FiledAlpha(1) == 1 && FMath::IsNearlyEqual(FiledAlpha(FiledFor - 0.4), 0.5, 1e-9) && FiledAlpha(FiledFor) == 0
+		&& FiledAlpha(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("the stamp comes in, holds and is gone after a few seconds"));
 	return bOk;
 }
