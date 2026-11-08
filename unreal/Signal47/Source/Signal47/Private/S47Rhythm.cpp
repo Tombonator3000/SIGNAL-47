@@ -290,6 +290,8 @@ void FS47Rhythm::Observed(FName Id,const FS47RhythmNow& At)
  const auto* E=Rules.Find(Id);
  // What the rules would have said just before it: the ground it is itself on does not count against it.
  FS47RhythmNow Asked=At;if(Asked.Busy==Id)Asked.Busy=NAME_None;
+ // A frame's worth of rest is the frame the Director's own rest ran out in, not a start inside it.
+ if(Asked.RestLeft<1)Asked.RestLeft=0;
  const FS47Verdict V=May(Id,Asked);
  if(E)
  {

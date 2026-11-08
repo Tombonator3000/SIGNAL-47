@@ -6,7 +6,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     "tick_seconds": [240, 420],
     "rest_after": { "danger": 480, "other": 45, "taken": 1800 },
     "budget_per_day": { "minor": [2, 4], "invest": [0, 2], "sky": [0, 1] },
-    "danger_per_night": null
+    "danger_per_night": 1
   },
   "events": [
     { "id": "extra_pulse", "system": "director", "slot": "ground", "level": "hint", "budget": "invest", "from_day": 1, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["reference_filed"], "enforce": true },
@@ -39,15 +39,15 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "farm_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "town_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro", "road", "diner"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "dusk_orb", "system": "director", "slot": "ground", "level": "observation", "from_day": 1, "hours": [18.5, 23.25], "areas": ["saro"], "schedule": "fixed_table", "needs": [], "enforce": true },
-    { "id": "door_visit", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.45, "state": "door" }, "min_nights_between": 2, "needs": ["indoors", "door_found"], "enforce": false },
-    { "id": "peek", "system": "indoor", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.5, "state": "peek" }, "needs": ["indoors", "peek_place"], "enforce": false },
-    { "id": "lit_room", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.4 }, "needs": ["indoors", "flood_room"], "enforce": false },
-    { "id": "site_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["site_waiting", "on_foot"], "enforce": false },
-    { "id": "field_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["on_foot", "past_fence"], "enforce": false },
-    { "id": "taken", "system": "taken", "slot": "ground", "level": "danger", "from_day": 1, "hours": "any", "needs": [], "enforce": false },
-    { "id": "highway_ufo", "system": "highway", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "min_nights_between": 3, "needs": ["driving"], "enforce": false },
-    { "id": "sky_formation", "system": "sky", "slot": "background", "level": "observation", "from_day": 1, "hours": [21.5, 5.5], "schedule": "fixed_table", "needs": ["outdoors"], "enforce": false },
-    { "id": "sky_high", "system": "sky", "slot": "background", "level": "observation", "from_day": 2, "hours": [21, 4], "draw": { "per_night": 0.22 }, "needs": ["outdoors"], "enforce": false },
+    { "id": "door_visit", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.45, "state": "door" }, "min_nights_between": 2, "needs": ["indoors", "door_found"], "enforce": true },
+    { "id": "peek", "system": "indoor", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.5, "state": "peek" }, "needs": ["indoors", "peek_place"], "enforce": true },
+    { "id": "lit_room", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.4 }, "needs": ["indoors", "flood_room"], "enforce": true },
+    { "id": "site_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["site_waiting", "on_foot"], "enforce": true },
+    { "id": "field_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["on_foot", "past_fence"], "enforce": true },
+    { "id": "taken", "system": "taken", "slot": "ground", "level": "danger", "from_day": 1, "hours": "any", "needs": [], "enforce": true },
+    { "id": "highway_ufo", "system": "highway", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "min_nights_between": 3, "needs": ["driving"], "enforce": true },
+    { "id": "sky_formation", "system": "sky", "slot": "background", "level": "observation", "from_day": 1, "hours": [21.5, 5.5], "schedule": "fixed_table", "needs": ["outdoors"], "enforce": true },
+    { "id": "sky_high", "system": "sky", "slot": "background", "level": "observation", "from_day": 2, "hours": [21, 4], "draw": { "per_night": 0.22 }, "needs": ["outdoors"], "enforce": true },
     { "id": "mystery", "system": "director", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 2.5], "draw": { "per_night": 0.3, "state": "mystery" }, "needs": ["not_driving"], "enforce": false }
   ]
 }
