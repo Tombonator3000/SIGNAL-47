@@ -58,6 +58,7 @@ namespace
   FLinearColor GreenOn=FLinearColor::Black,AmberOn=FLinearColor::Black,RedOn=FLinearColor::Black,BulbOn=FLinearColor::Black;
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
   TArray<TWeakObjectPtr<URectLightComponent>> HouseDay;
+  TArray<TWeakObjectPtr<UPointLightComponent>> HouseFill;
   bool bColliders=false,bMissingSaid=false;
   double T=0,Retry=0,RedNext=0;float RedLevel=1;
  };
@@ -148,6 +149,10 @@ namespace
   {.3,6.45,1.3,FVector(-1,0,0)},{11.7,6.85,1.3,FVector(1,0,0)},
  };
  constexpr float HouseWindowLumens=34.f;
+ // What a room's walls and floor give back by day, which Lumen alone misses in rooms this small and closed: one soft fill under each ceiling,
+ // the hall's too (it has no window of its own). Plan metres. Keeps the room readable to sunset without lighting it like a shop.
+ const FVector2D HouseRooms[]={{2.7,2.35},{2.7,6.6},{6.,2.6},{6.,6.6},{8.35,2.35},{10.8,2.35},{9.3,6.6}};
+ constexpr float HouseFillLumens=5.f;
  void BuildHouseDay(FState& S,AS47Web* W)
  {
   if(S.HouseDay.Num()||!S47FarmHouse::HasModel())return;
@@ -164,21 +169,36 @@ namespace
    L->SetVisibility(false);W->AddInstanceComponent(L);L->RegisterComponent();
    S.HouseDay.Add(L);
   }
+  for(int32 I=0;I<UE_ARRAY_COUNT(HouseRooms);++I)
+  {
+   auto* F=NewObject<UPointLightComponent>(W,*FString::Printf(TEXT("LivedHouseFill%d"),I));
+   F->SetupAttachment(W->GetRootComponent());F->SetMobility(EComponentMobility::Movable);
+   F->SetWorldLocation(S47Three::ToUE(S47FarmHouse::Point(HouseRooms[I].X,HouseRooms[I].Y)+FVector(-24,2.25,300)));
+   F->SetIntensityUnits(ELightUnits::Lumens);F->SetIntensity(0);F->SetAttenuationRadius(430.f);F->SetSourceRadius(60.f);F->SetSoftSourceRadius(120.f);
+   F->SetCastShadows(false);F->SetVolumetricScatteringIntensity(0);F->SetVisibility(false);W->AddInstanceComponent(F);F->RegisterComponent();
+   S.HouseFill.Add(F);
+  }
  }
  void ShowHouseDay(FState& S,US47Main* M)
  {
-  if(!S.HouseDay.Num())return;
+  if(!S.HouseDay.Num()&&!S.HouseFill.Num())return;
   const bool bArea=M->Mode==US47Main::EMode::Play&&M->IsFreeform()&&M->World&&M->World->Area==TEXT("saro");
   // Only near the house: seven shadowed rect lights cost nothing when they are off.
   const FVector Middle=S47FarmHouse::Point(6,4.5)+FVector(-24,0,300);
   const bool bNear=bArea&&M->Player&&FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()<45;
   const FS47Sky* Sky=M->Life&&M->Life->Sky.IsValid()?M->Life->Sky.Get():nullptr;
-  const float Day=Sky?float(FMath::Clamp(Sky->Daylight(),0.,1.)):0.f;
+  // Full from morning to the late afternoon, then down with the light outside: Daylight() leans on the low sun, so lift it until it really fades.
+  const float Day=Sky?float(FMath::Clamp(FMath::Sqrt(FMath::Clamp(Sky->Daylight(),0.,1.))*1.15,0.,1.)):0.f;
   const FLinearColor Tint=FMath::Lerp(FLinearColor(.92f,.96f,1.f),FLinearColor(1.f,.84f,.66f),Sky?float(Sky->Evening):0.f);
   for(auto& P:S.HouseDay)if(auto* L=P.Get())
   {
    const bool bOn=bNear&&Day>.002f;
    L->SetIntensity(bOn?HouseWindowLumens*Day:0.f);L->SetLightColor(Tint);L->SetVisibility(bOn);
+  }
+  for(auto& P:S.HouseFill)if(auto* F=P.Get())
+  {
+   const bool bOn=bNear&&Day>.002f;
+   F->SetIntensity(bOn?HouseFillLumens*Day:0.f);F->SetLightColor(Tint*FLinearColor(1.f,.93f,.82f));F->SetVisibility(bOn);
   }
  }
  // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
