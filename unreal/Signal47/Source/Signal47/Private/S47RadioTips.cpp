@@ -43,11 +43,11 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   {TEXT("cb16"),TEXT("Radio's picking up a station out of Juarez clear as a bell tonight. Must be the air."),nullptr,nullptr,0},
   {TEXT("cb17"),TEXT("Next time you pass that yellow house at the junction, wave. She's up all night and she waves back."),nullptr,nullptr,0},
   {TEXT("cb18"),TEXT("I'm parked, I'm eating a sandwich. That's the report."),nullptr,nullptr,0},
-  {TEXT("cb37"),TEXT("Did the whole channel just drop out for everybody, or just me? Not static. Nothing."),nullptr,nullptr,0},
-  {TEXT("cb38"),TEXT("Passed a pickup on the shoulder way back, lights on, doors shut. Didn't stop. Somebody else can stop."),nullptr,nullptr,0},
-  {TEXT("cb39"),TEXT("Coyotes are quiet tonight. Most nights they carry on till sunup."),nullptr,nullptr,0},
-  {TEXT("cb40"),TEXT("What time's everybody got? My watch says one thing and the dash clock says another."),nullptr,nullptr,0},
-  {TEXT("cb41"),TEXT("There's a bear taking pictures southbound past Lemitar. Back it down, drivers."),nullptr,nullptr,0},
+  {TEXT("cb52"),TEXT("Did the whole channel just drop out for everybody, or just me? Not static. Nothing."),nullptr,nullptr,0},
+  {TEXT("cb53"),TEXT("Passed a pickup on the shoulder way back, lights on, doors shut. Didn't stop. Somebody else can stop."),nullptr,nullptr,0},
+  {TEXT("cb54"),TEXT("Coyotes are quiet tonight. Most nights they carry on till sunup."),nullptr,nullptr,0},
+  {TEXT("cb55"),TEXT("What time's everybody got? My watch says one thing and the dash clock says another."),nullptr,nullptr,0},
+  {TEXT("cb56"),TEXT("There's a bear taking pictures southbound past Lemitar. Back it down, drivers."),nullptr,nullptr,0},
   {TEXT("cb19"),TEXT("Somebody's wired the tail on the Baca windmill so she won't turn. Why would a man do that?"),TEXT("windmill"),nullptr,0},
   {TEXT("cb20"),TEXT("Went by the old mine road. Somebody took the boards off. Stacked them real nice."),TEXT("mine"),nullptr,0},
   {TEXT("cb21"),TEXT("There's a dead cow up against the fence south of the turnoff and nothing's been at her. Been three days I've been looking at that cow."),TEXT("cow"),nullptr,0},
@@ -119,9 +119,9 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am33"),TEXT("old"),TEXT("Not a breath of wind out here, and the porch swing's going. Slow. I watched it a good while."),TEXT("Go on back in the house, Pete."),nullptr,nullptr,0},
   {TEXT("am34"),TEXT("man"),TEXT("Anybody know a farrier this side of Magdalena? Mine moved to Belen."),TEXT("Anybody? Phones are open."),nullptr,nullptr,0},
   // What the night left behind, as the callers have it. Hearsay; Earl believes none of it out loud.
-  {TEXT("am32"),TEXT("man"),TEXT("Went out to check heifers about four. Every one of them on her feet, all looking off the same way. The dog wouldn't go out to them."),TEXT("What were they looking at?"),nullptr,nullptr,0},
-  {TEXT("am33"),TEXT("old"),TEXT("There's water running in the arroyo out past the Y. Hasn't rained since March. I'd like to know where it's coming from."),TEXT("Snowmelt off the high country, Pete. Most likely."),nullptr,nullptr,0},
-  {TEXT("am34"),TEXT("woman"),TEXT("Father says whoever keeps calling the church at night can come by in daylight. He picks up and there's nobody, just that long-distance hiss."),TEXT("Father's a patient man."),nullptr,nullptr,0},
+  {TEXT("am40"),TEXT("man"),TEXT("Went out to check heifers about four. Every one of them on her feet, all looking off the same way. The dog wouldn't go out to them."),TEXT("What were they looking at?"),nullptr,nullptr,0},
+  {TEXT("am41"),TEXT("old"),TEXT("There's water running in the arroyo out past the Y. Hasn't rained since March. I'd like to know where it's coming from."),TEXT("Snowmelt off the high country, Pete. Most likely."),nullptr,nullptr,0},
+  {TEXT("am42"),TEXT("woman"),TEXT("Father says whoever keeps calling the church at night can come by in daylight. He picks up and there's nobody, just that long-distance hiss."),TEXT("Father's a patient man."),nullptr,nullptr,0},
   {TEXT("am35"),TEXT("old"),TEXT("Coyotes out under the east rim have quit. Three nights now. I didn't know I listened for them."),nullptr,nullptr,nullptr,0},
   {TEXT("am36"),TEXT("old"),TEXT("That man they were looking for out on the flats. Anybody hear if he turned up?"),TEXT("If he did, he hasn't called me."),nullptr,nullptr,0},
   {TEXT("am37"),TEXT("old"),TEXT("My dad used to say, when the cattle all stand and face one way, you go in the house and you don't look out. He never said why."),TEXT("Thank you. I think."),nullptr,nullptr,2},
@@ -251,7 +251,7 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
  TSet<FString> Pointed;for(const FLine& L:CbLines())if(L.Place)Pointed.Add(L.Place);for(const FCall& C:AmCalls())if(C.Place)Pointed.Add(C.Place);
  Check(Pointed.Num()>=8,TEXT("all the places can be heard of"));
  FS47RadioTips None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0,TEXT("an older save has said nothing and writes nothing"));
- auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am02"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
+ auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am43"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
  return OK;
 }
 

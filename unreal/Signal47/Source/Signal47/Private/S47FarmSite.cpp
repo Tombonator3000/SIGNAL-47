@@ -723,7 +723,7 @@ FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
 {
  if(bFarm)switch(Read)
  {
-  case 0:return TEXT("Pasture at the Alderete place, by daylight. Hoof prints through most of the ring, and a length of baling wire dragged across it. Cattle would do this. All nine marks still lie the same way round. This records what is on the ground.");
+  case 0:return TEXT("Pasture at the Alderete place, by daylight. Hoof prints through most of the ring, and a length of baling wire dragged across it. Cattle would do this. All nine marks still lie the same way around.");
   case 1:return TEXT("Pasture at the Alderete place, by daylight. Nine shallow saucers, the same depth to a finger, the dirt pressed rather than dug. No tracks lead up to the ring, and there are plenty beside it.");
   default:return TEXT("Pasture at the Alderete place, by daylight. The soil in each mark has a thin crust that glitters like sugar. Under the middle one, a sliver of something, light as foil and cold. Kept for the test bench.");
  }
