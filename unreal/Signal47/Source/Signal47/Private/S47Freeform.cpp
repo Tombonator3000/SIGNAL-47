@@ -2259,9 +2259,11 @@ void FS47FreeformSession::StepCaseReplies()
 }
 int32 FS47FreeformSession::SheriffTrust() const
 {
- // Follows from what has been filed with the county, so an older save has it too. Nothing is stored.
- const auto Filed=[this](int32 Line,int32 Cause){const auto* C=Cases.Get(Line);return C&&C->bConcluded&&C->Conclusion==Cause;};
- return (Filed(1,2)?1:0)+(Filed(2,1)?1:0);
+ // Follows from what has been filed, so an older save has it too. Nothing is stored. Any case carried to a conclusion and filed
+ // counts, whatever it concluded: the county trusts a station that finishes what it starts, not one that says what it wants to hear.
+ int32 Trust=0;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bConcluded)++Trust;
+ return Trust;
 }
 bool FS47FreeformSession::DeputyOnRoute() const{return SheriffTrust()>0;}
 int32 FS47FreeformSession::TownTrust() const
@@ -2993,6 +2995,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  {
   FS47FreeformSession Trust(nullptr);Trust.Begin(nullptr);
   Check(!Trust.DeputyOnRoute()&&Trust.SheriffTrust()==0,TEXT("Patrol: nobody has written to the county yet"));
+  Trust.TestLiveRules();Trust.TestAdvance(86400);Trust.TakenAway(3600);Trust.TakenCosts(Trust.Clock()-3600);
+  Check(Trust.ConcludeCase(FS47FreeformCases::LostLine,1)&&Trust.SheriffTrust()==1&&Trust.DeputyOnRoute(),TEXT("Patrol: any case carried to a conclusion and filed earns the county's trust, whatever it says"));
   Trust.Stop();
  }
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
