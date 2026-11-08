@@ -4,7 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 8. november kl. 04:36, Toms testfunn, Reyes-sporet, fremgang og rytme
+## Installert 8. november kl. 10:40, kritikerrunden: spillbarhet, nattrytme, lys, gårdshus og Caliche
+
+`ca0822e5` etter PR488 og PR489. Selvtest 2931 i pakken, regresjon 251, normalreisen alle faser, 146 uendrede Saved-filer. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d30/candidate/Linux` (`e128479f`) og `d29` (`41d5dad9`).
+
+To nye kritikere ga Freeform og verden 5/10. Rettet: magnetometer uten bortføring, én fare per natt også for lyset over bilen, fredet første natt, feltkamera som fanger det som skjer, vurdering etter poeng med ekte nedleggelse, ukesutgifter, varsel etter to bortføringer, «truck», lagringskort. Nattrytme: ingen tomme netter, feltfare omtrent annenhver natt ute, ny `roof_tick`. Verden: varm skumring, myk lommelykt, vindmølle og tank, lampehoder og isolatorer, kreosot langs tørrløp, lilla skumringsskyer, byens bakke mot sanden. Bygg: gårdshuset med dagslys, kalkpuss, panel, portal og nisjer; kontrollrom og korridor; plasser foran Caliche-byggene. Natt-standarden er Toms godkjente. Ikke spilt av menneske; lyden (særlig `roof_tick`) er ikke hørt; skyene og bybakken i siste runde er ikke sett i bilde.
+
+## Tidligere installert 8. november kl. 04:36, Toms testfunn, Reyes-sporet, fremgang og rytme
 
 `41d5dad9` etter PR485 og PR486, selvtest 2907 i pakken, 146 uendrede Saved-filer. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d28/candidate/Linux`.
 
