@@ -251,9 +251,9 @@ namespace S47FieldMapLocal
 		void Dashed(const TArray<FVector2f>& Pts, const FLinearColor& Col, float Thick, int32 Layer, const TArray<float>& Pattern) const
 		{
 			if (Pts.Num() < 2 || Pattern.Num() < 2) { Lines(Pts, Col, Thick, Layer); return; }
-			float Period = 0;
-			for (const float Piece : Pattern) Period += Piece;
-			if (Period <= 0) { Lines(Pts, Col, Thick, Layer); return; }
+			float Cycle = 0;
+			for (const float Piece : Pattern) Cycle += Piece;
+			if (Cycle <= 0) { Lines(Pts, Col, Thick, Layer); return; }
 			float Phase = 0;
 			for (int32 I = 1; I < Pts.Num(); ++I)
 			{
@@ -261,8 +261,8 @@ namespace S47FieldMapLocal
 				const float Seg = FVector2f::Distance(A, B);
 				if (Seg <= 0) continue;
 				const FVector2f Dir = (B - A) / Seg;
-				// Liang-Barsky against the frame grown by 10: [T0, T1] along this stretch is what shows.
-				float T0 = 0, T1 = Seg;
+				// Liang-Barsky against the frame grown by 10: [Tin, Tout] along this stretch is what shows.
+				float Tin = 0, Tout = Seg;
 				const float Pd[4] = { -Dir.X, Dir.X, -Dir.Y, Dir.Y };
 				const float Qd[4] = { A.X - float(FrameL - 10), float(FrameR + 10) - A.X, A.Y - float(FrameT - 10), float(FrameB + 10) - A.Y };
 				bool bShows = true;
@@ -270,24 +270,24 @@ namespace S47FieldMapLocal
 				{
 					if (FMath::IsNearlyZero(Pd[K])) { bShows = Qd[K] >= 0; continue; }
 					const float Cut = Qd[K] / Pd[K];
-					if (Pd[K] < 0) T0 = FMath::Max(T0, Cut); else T1 = FMath::Min(T1, Cut);
-					bShows = T0 < T1;
+					if (Pd[K] < 0) Tin = FMath::Max(Tin, Cut); else Tout = FMath::Min(Tout, Cut);
+					bShows = Tin < Tout;
 				}
 				if (bShows)
 				{
-					float Pos = T0, Ph = FMath::Fmod(Phase + T0, Period);
+					float Pos = Tin, Ph = FMath::Fmod(Phase + Tin, Cycle);
 					int32 Guard = 0;
-					while (Pos < T1 && ++Guard < 4000)
+					while (Pos < Tout && ++Guard < 4000)
 					{
 						// Which piece of the pattern this is, and how much of it is left.
 						float Acc = 0; int32 K = 0;
 						while (K < Pattern.Num() - 1 && Acc + Pattern[K] <= Ph) { Acc += Pattern[K]; ++K; }
-						const float Step = FMath::Max(.01f, FMath::Min(Acc + Pattern[K] - Ph, T1 - Pos));
+						const float Step = FMath::Max(.01f, FMath::Min(Acc + Pattern[K] - Ph, Tout - Pos));
 						if (K % 2 == 0) FSlateDrawElement::MakeLines(Out, Layer, Page.ToPaintGeometry(), TArray<FVector2f>{ A + Dir * Pos, A + Dir * (Pos + Step) }, ESlateDrawEffect::None, Col, true, Thick);
-						Pos += Step; Ph = FMath::Fmod(Ph + Step, Period);
+						Pos += Step; Ph = FMath::Fmod(Ph + Step, Cycle);
 					}
 				}
-				Phase = FMath::Fmod(Phase + Seg, Period);
+				Phase = FMath::Fmod(Phase + Seg, Cycle);
 			}
 		}
 		void Fill(const FVector2f& Min, const FVector2f& Size, const FLinearColor& Col, int32 Layer) const
