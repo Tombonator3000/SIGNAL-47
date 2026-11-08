@@ -90,6 +90,10 @@ namespace S47FieldMapLocal
 		bool bBuilt = false, bWithHills = false; TArray<FContour> Lines; TArray<FContourLabel> Labels; TArray<FHeightSpot> Spots; float Low = 0, High = 0; double Millis = 0;
 		TArray<float> Shade; int32 GridW = 0, GridH = 0; double GridX = 0, GridZ = 0, GridCell = 25;
 		TArray<FContour> Streams;
+		// Where the land's names go, found in the heights themselves: the highest block of land each side of the highway (and
+		// which way it runs), and the largest closed basin, where water stands after a storm: the playa.
+		bool bHighWest = false, bHighEast = false; FVector2f HighWest, HighEast; float HighWestDeg = 0, HighEastDeg = 0;
+		FVector2f Playa; float PlayaR = 0;
 	};
 	FReliefSheet& ReliefSheet() { static FReliefSheet Kept; return Kept; }
 
@@ -265,6 +269,27 @@ namespace S47FieldMapLocal
 			const int32 Enough = 260; // cells: about 16 hectares draining through it
 			TArray<int32> Ups; Ups.Init(0, NX * NZ);
 			for (int32 K = 0; K < NX * NZ; ++K) if (Flow[K] >= Enough && Down[K] != INDEX_NONE && Flow[Down[K]] >= Enough) ++Ups[Down[K]];
+			// The playa: the sink (no lower neighbour, off the grid's edge) the most land drains into, and its flat floor.
+			int32 Sink = INDEX_NONE;
+			for (int32 K = 0; K < NX * NZ; ++K)
+			{
+				const int32 Si = K % NX, Sj = K / NX;
+				if (Down[K] != INDEX_NONE || Si < 2 || Sj < 2 || Si > NX - 3 || Sj > NZ - 3) continue;
+				if (Sink == INDEX_NONE || Flow[K] > Flow[Sink]) Sink = K;
+			}
+			if (Sink != INDEX_NONE && Flow[Sink] >= 400)
+			{
+				const int32 Si = Sink % NX, Sj = Sink / NX;
+				int32 Floor = 0; FVector2f Sum(0, 0);
+				for (int32 Dj = -12; Dj <= 12; ++Dj) for (int32 Di = -12; Di <= 12; ++Di)
+				{
+					const int32 Fi = Si + Di, Fj = Sj + Dj;
+					if (Fi < 0 || Fj < 0 || Fi >= NX || Fj >= NZ || Hat(Fi, Fj) > Hat(Si, Sj) + 1.f) continue;
+					++Floor; Sum += Corner(Fi, Fj);
+				}
+				Sheet.Playa = Sum / float(FMath::Max(1, Floor));
+				Sheet.PlayaR = float(FMath::Clamp(FMath::Sqrt(Floor / PI) * Cell, 30.0, 220.0));
+			}
 			TBitArray<> Drawn(false, NX * NZ);
 			for (int32 K = 0; K < NX * NZ; ++K)
 			{
@@ -281,6 +306,47 @@ namespace S47FieldMapLocal
 				if (Wash.P.Num() >= 4) { Wash.Box = FBox2f(Wash.P); Sheet.Streams.Add(MoveTemp(Wash)); }
 			}
 		}
+		// The high ground each side of the highway: the 250 m block highest on average, if it stands well above that side's land,
+		// and the way the high cells around it run (their long axis), for the name to follow.
+		{
+			const int32 Bin = FMath::Max(1, int32(250 / Cell));
+			for (int32 Side = 0; Side < 2; ++Side)
+			{
+				double BestMean = -1e9, SideSum = 0; int32 SideN = 0, BestI = -1, BestJ = -1;
+				for (int32 Bj = 0; Bj + Bin <= NZ; Bj += Bin) for (int32 Bi = 0; Bi + Bin <= NX; Bi += Bin)
+				{
+					const double Cx = MinX + (Bi + Bin * .5) * Cell;
+					if (Side == 0 ? Cx > -400 : Cx < 400) continue;
+					double Mean = 0;
+					for (int32 J = Bj; J < Bj + Bin; ++J) for (int32 I = Bi; I < Bi + Bin; ++I) Mean += Hat(I, J);
+					Mean /= Bin * Bin; SideSum += Mean; ++SideN;
+					if (Mean > BestMean) { BestMean = Mean; BestI = Bi; BestJ = Bj; }
+				}
+				if (BestI < 0 || SideN < 4 || BestMean - SideSum / SideN < 12) continue;
+				// The long axis of the high cells within a kilometre.
+				const double Ax = MinX + (BestI + Bin * .5) * Cell, Az = MinZ + (BestJ + Bin * .5) * Cell;
+				double Sx = 0, Sz = 0, Sxx = 0, Szz = 0, Sxz = 0; int32 Hn = 0;
+				const int32 Reach1 = int32(1000 / Cell);
+				for (int32 J = FMath::Max(0, BestJ - Reach1); J < FMath::Min(NZ, BestJ + Reach1); ++J) for (int32 I = FMath::Max(0, BestI - Reach1); I < FMath::Min(NX, BestI + Reach1); ++I)
+				{
+					if (Hat(I, J) < BestMean - 8) continue;
+					const double Hx = MinX + I * Cell - Ax, Hz = MinZ + J * Cell - Az;
+					Sx += Hx; Sz += Hz; Sxx += Hx * Hx; Szz += Hz * Hz; Sxz += Hx * Hz; ++Hn;
+				}
+				float Deg = 0;
+				FVector2f Mid2(float(Ax), float(Az));
+				if (Hn > 8)
+				{
+					const double Mx = Sx / Hn, Mz = Sz / Hn, Cxx = Sxx / Hn - Mx * Mx, Czz = Szz / Hn - Mz * Mz, Cxz = Sxz / Hn - Mx * Mz;
+					Deg = float(FMath::RadiansToDegrees(.5 * FMath::Atan2(2 * Cxz, Cxx - Czz)));
+					Mid2 += FVector2f(float(Mx), float(Mz));
+				}
+				if (Deg > 90) Deg -= 180; else if (Deg <= -90) Deg += 180;
+				(Side == 0 ? Sheet.HighWest : Sheet.HighEast) = Mid2;
+				(Side == 0 ? Sheet.HighWestDeg : Sheet.HighEastDeg) = Deg;
+				(Side == 0 ? Sheet.bHighWest : Sheet.bHighEast) = true;
+			}
+		}
 		Sheet.Millis = (FPlatformTime::Seconds() - Began) * 1000.0;
 		Sheet.bBuilt = true;
 	}
@@ -293,8 +359,8 @@ namespace S47FieldMapLocal
 		{
 			Sheet.bWithHills = bHills;
 			BuildRelief(Sheet, [](double X, double Z) { return S47FieldMap::LandHeight(X, Z); }, S47OpenLand::RimX0, S47OpenLand::RimZ0, S47OpenLand::RimX1, S47OpenLand::RimZ1, ReliefCell);
-			UE_LOG(LogS47FieldMap, Display, TEXT("S47: survey map contours: %d lines, %d labels, %d spot heights, %d washes, %.0f to %.0f ft, %.0f ms (relief %s)"),
-				Sheet.Lines.Num(), Sheet.Labels.Num(), Sheet.Spots.Num(), Sheet.Streams.Num(), FeetOf(Sheet.Low), FeetOf(Sheet.High), Sheet.Millis, bHills ? TEXT("on") : TEXT("off"));
+			UE_LOG(LogS47FieldMap, Display, TEXT("S47: survey map contours: %d lines, %d labels, %d spot heights, %d washes, playa %.0f m, high ground %s%s, %.0f to %.0f ft, %.0f ms (relief %s)"),
+				Sheet.Lines.Num(), Sheet.Labels.Num(), Sheet.Spots.Num(), Sheet.Streams.Num(), Sheet.PlayaR, Sheet.bHighWest ? TEXT("west ") : TEXT(""), Sheet.bHighEast ? TEXT("east") : TEXT(""), FeetOf(Sheet.Low), FeetOf(Sheet.High), Sheet.Millis, bHills ? TEXT("on") : TEXT("off"));
 		}
 		return Sheet;
 	}
@@ -817,7 +883,7 @@ void SS47FieldMap::SurveyWorld() const
 	// What a survey party would have put on the sheet years ago: the windmill, the stock tank, the mine and the line shack. Not
 	// what anyone has found there since.
 	const FS47Places* Land = Mn && Mn->Freeform ? Mn->Freeform->Places.Get() : nullptr;
-	for (const TCHAR* Id : { TEXT("windmill"), TEXT("tank"), TEXT("mine"), TEXT("shack") })
+	for (const TCHAR* Id : { TEXT("windmill"), TEXT("tank"), TEXT("mine"), TEXT("shack"), TEXT("trough") })
 	{
 		double X = 0, Z = 0;
 		if (Land && Land->Spot(Id, X, Z)) Features.Add({ FVector2D(X, Z), Id });
@@ -1036,12 +1102,12 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	// The land's own names (the catalogue's: the west mesa, the east rim, the playa), and bench marks along the highway.
 	if (Sc >= .1)
 	{
-		if (Visible(-1350, 1000, 400)) Pen.Text(TEXT("W E S T   M E S A"), OnPage(-1350, 1000), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, -14.f);
-		if (Visible(1750, 1900, 400)) Pen.Text(TEXT("E A S T   R I M"), OnPage(1750, 1900), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, 90.f);
-		if (Visible(900, 500, 120))
+		if (Hills.bHighWest && Visible(Hills.HighWest.X, Hills.HighWest.Y, 400)) Pen.Text(TEXT("W E S T   M E S A"), OnPage(Hills.HighWest.X, Hills.HighWest.Y), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, Hills.HighWestDeg);
+		if (Hills.bHighEast && Visible(Hills.HighEast.X, Hills.HighEast.Y, 400)) Pen.Text(TEXT("E A S T   R I M"), OnPage(Hills.HighEast.X, Hills.HighEast.Y), Printed(20), Hue(0x1d1c1a, .85f), LWords, .5f, .5f, false, Hills.HighEastDeg);
+		if (Hills.PlayaR > 0 && Visible(Hills.Playa.X, Hills.Playa.Y, Hills.PlayaR))
 		{
-			const FVector2f Pc = OnPage(900, 500);
-			const float Rx = FMath::Max(16.f, float(70 * Sc)), Rz = FMath::Max(9.f, float(38 * Sc));
+			const FVector2f Pc = OnPage(Hills.Playa.X, Hills.Playa.Y);
+			const float Rx = FMath::Max(16.f, float(Hills.PlayaR * 1.3 * Sc)), Rz = FMath::Max(9.f, float(Hills.PlayaR * .8 * Sc));
 			TArray<FVector2f> Shore;
 			for (int32 I = 0; I <= 28; ++I) { const float A = 2.f * PI * I / 28; Shore.Add(Pc + FVector2f(FMath::Cos(A) * Rx, FMath::Sin(A) * Rz)); }
 			Pen.Dashed(Shore, Water(.85f), 1.3f, LRoad, { 5, 3 });
