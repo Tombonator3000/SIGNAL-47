@@ -174,3 +174,5 @@ Nattskift og tre valg, Tom 8. november ca. 22:30: (1) stemmevalg som viser til e
 HUD og kart, Tom 8. november ca. 23:10 etter mockupene: kartet skal være det detaljerte USGS-kartet fra mockupen. HUD: batteri med fem streker; LCD-klokke som i C, men mindre og svakere; pågående oppdrag ikke som digital tekst, men håndskrevet som i C; ikke bilradiolooken fra C; oppgavelinja toner ut etter seks sekunder; walkie-bølgen vises bare når noen sender. Ny mockup (D) før bygging.
 
 HUD D valgt, Tom 8. november ca. 23:40: LCD-klokke fra C (mindre og svakere), håndskrevet oppdragslapp på kassettomslag som toner ut etter seks sekunder, batteri med fem streker, walkie-linje bare ved sending. Fargevalg for batteri og walkie vurderes i en egen kritikkrunde før bygging.
+
+HUD-farge, Tom 8. november ca. 23:55: V4. Klokke og batteri i samme turkis (VFD/LCD), walkie- og CB-linja i ravgult, CB og walkie skilles på teksten; lavt batteri skifter til rødt. Spilleren kan velge HUD-farge selv i innstillingene (Station teal som standard, Amber, Phosphor green, Paper white, Red night).
