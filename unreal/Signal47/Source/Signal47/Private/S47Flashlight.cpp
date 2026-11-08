@@ -33,6 +33,10 @@ namespace
 	TAutoConsoleVariable<float> CvFlashCd(TEXT("s47.flash.Cd"), 700.f, TEXT("Flashlight: candelas on the axis."));
 	TAutoConsoleVariable<float> CvFlashRange(TEXT("s47.flash.Range"), 80.f, TEXT("Flashlight: reach in metres (where the light is cut off)."));
 	TAutoConsoleVariable<float> CvFlashCone(TEXT("s47.flash.Cone"), 30.f, TEXT("Flashlight: outer half angle in degrees, the spill's edge."));
+	// Held level with the eyes, the core went to the horizon and the near ground had only the spill, which then ended in a line where the
+	// distance took it (the d^-3 of grazing light). Held as one walks with it, a little down, the core lies on the ground some ten metres on
+	// and the light thins out gradually beyond it.
+	TAutoConsoleVariable<float> CvFlashTilt(TEXT("s47.flash.Tilt"), 7.f, TEXT("Flashlight: degrees under the line of sight it points."));
 
 	// The profile over the angle off the axis (degrees) and round it (radians), 1 on the axis.
 	float TorchProfile(float Deg, float Round)
@@ -199,7 +203,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 	if (L->IsVisible() != (ThreeIntensity > 0)) L->SetVisibility(ThreeIntensity > 0);
 	// held a little right of and below the eyes, pointing 10 m out where they look
 	FVector P = Cam.Pos + Cam.Right * 0.22; P.Y -= 0.18;
-	const FVector Target = Cam.Pos + Cam.Forward * 10;
+	FVector Target = Cam.Pos + Cam.Forward * 10;
+	Target.Y -= 10 * FMath::Tan(FMath::DegreesToRadians(FMath::Clamp(double(CvFlashTilt.GetValueOnGameThread()), 0.0, 30.0)));
 	const FVector From = S47Three::ToUE(P), Direction = (S47Three::ToUE(Target) - From).GetSafeNormal();
 	L->SetWorldLocationAndRotation(From, Direction.Rotation());
 	UPrimitiveComponent* Surface = nullptr;
