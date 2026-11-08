@@ -193,6 +193,8 @@ private:
  float TestDice=-1;
  double TestLightAfter=-1,TestScale=1,TestPace=1;
  bool bTestHush=false;
+ // The first shift was on at the last tick (Step): its end gives the scheduler an ordinary interval before its first draw.
+ bool bWasFirstShift=false;
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

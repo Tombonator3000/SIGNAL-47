@@ -323,7 +323,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
- Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
+ Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
   if(S47J::Num(O,TEXT("v"))!=1){bEnabled=false;return;}
@@ -1141,6 +1141,19 @@ void FS47FreeformDirector::Step(double Dt)
  const int32 Day=M->Freeform->Day();
  const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
  if(SeenDay!=Day){SeenDay=Day;{const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;MinorLeft=MinorBudget=FMath::Min(Random.RandRange(R.MinorMin,R.MinorMax),4);InvestLeft=FMath::Min(Random.RandRange(R.InvestMin,R.InvestMax),2);}SkyLeft=(Random.GetCurrentSeed()>>3)&1;NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
+ // The first shift's end is not a cue: what comes first after the routine job waits an ordinary interval from then, so that it does
+ // not land in the same second as the payment, and does not race whatever the shift's last minute held (the normal journey's
+ // S-03). A run whose fixture has just reset the scheduler (NextAt 0, TestLightsTonight) or a developer run is left as it is.
+ {
+  const bool bFirstShift=M->Freeform->InTutorial();
+  if(bWasFirstShift&&!bFirstShift&&NextAt>0&&M->Flow&&!M->Flow->bDevRun)
+  {
+   const FS47RhythmData Plain;const FS47RhythmData& R=M->Rhythm?M->Rhythm->Data():Plain;
+   NextAt=FMath::Max(NextAt,ActiveTime+R.TickMin);Changed();
+   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: first shift over: the first draw waits until %.0f s (now %.0f)"),NextAt,ActiveTime);
+  }
+  bWasFirstShift=bFirstShift;
+ }
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
  if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
  StepMystery(Dt);
