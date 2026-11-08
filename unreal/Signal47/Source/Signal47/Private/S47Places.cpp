@@ -82,8 +82,13 @@ double FS47Places::AzimuthOf(double FromX,double FromZ,double ToX,double ToZ)
 }
 void FS47Places::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);HeardOf.Reset();Fixes.Reset();LastFixDay=0;NeedleIn=0;
+ Stop();Life=MakeShared<uint8>(0);HeardOf.Reset();Fixes.Reset();LastFixDay=0;NeedleIn=0;Marks.Reset();
  for(const FString& H:S47J::Strs(Saved,TEXT("heard")))if(Def(H))HeardOf.Add(H);
+ {
+  // The player's own marks on the map: x and z, two numbers each, inside the rim.
+  const TArray<double> Xz=S47J::Nums(Saved,TEXT("marks"));
+  for(int32 I=0;I+1<Xz.Num()&&Marks.Num()<MaxMarks;I+=2)if(FMath::IsFinite(Xz[I])&&FMath::IsFinite(Xz[I+1])&&S47OpenLand::InRim(Xz[I],Xz[I+1]))Marks.Add(FVector2D(Xz[I],Xz[I+1]));
+ }
  for(const auto& V:S47J::Arr(Saved,TEXT("fixes")))
  {
   if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();FBearing B;
@@ -108,7 +113,23 @@ S47J::FObj FS47Places::Save() const
   for(const FBearing& B:Fixes){auto X=S47J::New();S47J::Set(X,TEXT("day"),B.Day);S47J::Set(X,TEXT("az"),B.Az);S47J::Set(X,TEXT("spread"),B.Spread);S47J::Set(X,TEXT("target"),B.Target);List.Add(MakeShared<FJsonValueObject>(X));}
   O->SetArrayField(TEXT("fixes"),List);
  }
+ if(!Marks.IsEmpty()){TArray<double> Xz;for(const FVector2D& Mk:Marks){Xz.Add(FMath::RoundToDouble(Mk.X*10)/10);Xz.Add(FMath::RoundToDouble(Mk.Y*10)/10);}S47J::Set(O,TEXT("marks"),Xz);}
  return O;
+}
+bool FS47Places::ToggleMark(double X,double Z,double Within)
+{
+ if(!FMath::IsFinite(X)||!FMath::IsFinite(Z)||!S47OpenLand::InRim(X,Z))return false;
+ // On one already there: rubbed out. Otherwise a new one, the last number.
+ int32 Near=INDEX_NONE;double Best=FMath::Max(1.,Within);
+ for(int32 I=0;I<Marks.Num();++I){const double D=FVector2D::Distance(Marks[I],FVector2D(X,Z));if(D<=Best){Best=D;Near=I;}}
+ if(Near!=INDEX_NONE){Marks.RemoveAt(Near);UE_LOG(LogTemp,Display,TEXT("S47: map mark rubbed out at %.0f %.0f, %d left"),X,Z,Marks.Num());}
+ else
+ {
+  if(Marks.Num()>=MaxMarks)return false;
+  Marks.Add(FVector2D(X,Z));UE_LOG(LogTemp,Display,TEXT("S47: map mark %d at %.0f %.0f"),Marks.Num(),X,Z);
+ }
+ if(M)M->RequestAutosave();
+ return true;
 }
 void FS47Places::Hear(const FString& Id)
 {
@@ -397,5 +418,14 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  TArray<TSharedPtr<FJsonValue>> List;List.Add(MakeShared<FJsonValueObject>(Fix));O->SetArrayField(TEXT("fixes"),List);
  FS47Places Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));
  Check(Back.Heard(TEXT("mine"))&&!Back.Heard(TEXT("nowhere"))&&Back.Bearings().Num()==1&&Back.Bearings()[0].Az==31.,TEXT("heard and bearings survive a Continue, and nonsense is dropped"));
+ {
+  // The player's own marks on the map: one down, another, the first rubbed out by a touch near it, and the rest kept over a Continue.
+  FS47Places Pencil(nullptr);Pencil.Begin(nullptr);
+  const bool bDown=Pencil.ToggleMark(120,640,10)&&Pencil.ToggleMark(-300,900,10)&&Pencil.MapMarks().Num()==2;
+  const bool bRubbed=Pencil.ToggleMark(124,643,10)&&Pencil.MapMarks().Num()==1&&Pencil.MapMarks()[0].Equals(FVector2D(-300,900));
+  const bool bOff=!Pencil.ToggleMark(99999,0,10);
+  FS47Places Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Pencil.Save())));
+  Check(bDown&&bRubbed&&bOff&&Kept.MapMarks().Num()==1&&Kept.MapMarks()[0].Equals(FVector2D(-300,900),.11),TEXT("pencil marks go down, rub out where they are touched, stay on the land and survive a Continue"));
+ }
  return OK;
 }

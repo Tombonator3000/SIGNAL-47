@@ -14,6 +14,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightLog.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47PredecessorText.h"
@@ -108,6 +109,8 @@ int32 FS47Predecessor::Points(const FTally& C)
  // What the land gave at night, kept as records of different kinds.
  P+=C.Land>=8?2:C.Land>=4?1:0;
  P+=C.Filed>=20?1:0;
+ // Night logs her office has had and initialed.
+ P+=C.Logs>=20?2:C.Logs>=10?1:0;
  return P;
 }
 FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
@@ -142,6 +145,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)++C.Concluded;
  C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();
+ if(F.NightLog)C.Logs=F.NightLog->ReadCount();
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped())++C.Photos;
  return C;
 }
@@ -1278,6 +1282,12 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   for(const TCHAR* W:Far)if(Low.Contains(W)){bClean=false;Offender=FString(W)+TEXT(" in: ")+Text.Left(60);}
  }
  Check(bClean,TEXT("no paper and no person says anything from Story's far side"));
+ {
+  // Night logs her office has initialed count a little: one point at ten, two at twenty, nothing before.
+  FTally Usual;Usual.Filed=12;Usual.Clean=10;
+  FTally Ten=Usual;Ten.Logs=10;FTally Twenty=Usual;Twenty.Logs=25;FTally Few=Usual;Few.Logs=9;
+  Check(Points(Few)==Points(Usual)&&Points(Ten)==Points(Usual)+1&&Points(Twenty)==Points(Usual)+2,TEXT("initialed night logs count toward the assessment: one point at ten, two at twenty"));
+ }
  if(!bClean)Lines.Add(FString(TEXT("FAIL predecessor: "))+Offender);
  // Reyes is only ever Reyes.
  bool bNeutral=true;
