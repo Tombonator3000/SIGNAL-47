@@ -35,12 +35,16 @@ namespace
 	// Dusk and dawn with the sun down (critic 8 November: the land read blue-white like snow, and the houses black). After sunset the land is
 	// lit by the whole sky: a warm, rosy glow from the low sky over the sun, and the deep blue of the rest in everything turned from it.
 	// The glow goes through the moons (UpdateNativeLighting), the blue through the sky light (SetSkyLighting). Night is as it was from 19:30.
-	TAutoConsoleVariable<float> CvDuskFill(TEXT("s47.dusk.Fill"), 1.6f, TEXT("Twilight: strength of the glow from the low sky over the set sun. 0: none."));
+	TAutoConsoleVariable<float> CvDuskFill(TEXT("s47.dusk.Fill"), 2.2f, TEXT("Twilight: strength of the glow from the low sky over the set sun. 0: none."));
 	TAutoConsoleVariable<float> CvDuskSky(TEXT("s47.dusk.Sky"), 2.f, TEXT("Twilight: extra sky light, times the twilight (the blue in what is turned from the glow). 0: as before."));
 	TAutoConsoleVariable<float> CvDuskEl(TEXT("s47.dusk.El"), 16.f, TEXT("Twilight: height in degrees of the glow's light over the horizon."));
 	TAutoConsoleVariable<float> CvDuskSoft(TEXT("s47.dusk.Soft"), 10.f, TEXT("Twilight: source angle in degrees of the glow's light (its shadows' softness)."));
 	TAutoConsoleVariable<float> CvDuskWarm(TEXT("s47.dusk.Warm"), 1.f, TEXT("Twilight: 1 the glow's warm rose to violet colour, 0 the moon's cold blue as before."));
-	TAutoConsoleVariable<float> CvNightBase(TEXT("s47.night.Base"), 1.f, TEXT("Night: the moon and sky fill out in the land, times the approved 0.055. 1: as approved."));
+	TAutoConsoleVariable<float> CvDuskBlue(TEXT("s47.dusk.Blue"), .9f, TEXT("Twilight: the soft blue from high over the other side, on what is turned from the glow. 0: none."));
+	TAutoConsoleVariable<float> CvDuskBlueEl(TEXT("s47.dusk.BlueEl"), 40.f, TEXT("Twilight: height in degrees of the blue light."));
+	// 8 November: with the approved 0.055 the land past the lamp was black, sRGB 1 (a-farm-23). 1.8 leaves it about 2-4: the hills and the
+	// ground can just be made out against the stars. 1 is the night Tom approved on 7 November.
+	TAutoConsoleVariable<float> CvNightBase(TEXT("s47.night.Base"), 1.8f, TEXT("Night: the moon and sky fill out in the land, times the approved 0.055. 1: as approved 7 November."));
 	// The glow's colour with the sun's depth under the horizon: peach and rose at sunset, mauve at 4-6 degrees, violet-blue at the end of civil twilight.
 	FLinearColor DuskGlowColor(float Depth)
 	{
@@ -754,6 +758,42 @@ void AS47Web::UpdateNativeLighting()
 		Bounce(Moon);
 		Moon->SetLightSourceAngle(FMath::Lerp(0.52f, FMath::Max(.52f, CvDuskSoft.GetValueOnGameThread()), Twilight));
 		Moon->SetLightSourceSoftAngle(0.08f);
+		// A sky, not a lamp: no bright sheen down the ground toward the glow.
+		Moon->SetSpecularScale(FMath::Lerp(1.f, .3f, Share));
+	}
+	// The blue of the rest of the sky: what is turned from the glow, the houses' shaded walls and the shadows of the bushes, gets a deep,
+	// soft blue from high over the other side. Shadowed, so it stays out of the rooms as the moons do; there only while the twilight lasts.
+	{
+		const float BlueEach = Twilight * FMath::Max(0.f, CvDuskBlue.GetValueOnGameThread()) * FMath::Lerp(1.f, .4f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
+		const bool bBlue = BlueEach > .002f && MoonsUp > 0;
+		UDirectionalLightComponent* B = DuskBlue.Get();
+		if (bBlue && !B)
+		{
+			B = NewObject<UDirectionalLightComponent>(this, TEXT("S47DuskBlue"));
+			B->SetupAttachment(GetRootComponent());
+			B->SetMobility(EComponentMobility::Movable);
+			B->SetCastShadows(true);
+			B->SetAtmosphereSunLight(false);
+			B->SetForwardShadingPriority(-1);
+			B->SetVolumetricScatteringIntensity(0.f);
+			B->SetSpecularScale(.25f);
+			B->SetLightSourceSoftAngle(0.f);
+			B->RegisterComponent();
+			DuskBlue = B;
+		}
+		if (B)
+		{
+			if (B->IsVisible() != bBlue) B->SetVisibility(bBlue);
+			if (bBlue)
+			{
+				const FQuat Want = S47Three::DirToUE(-S47SkyDir(bTwilightWest ? 101 : 259, FMath::Clamp(CvDuskBlueEl.GetValueOnGameThread(), 5.f, 85.f))).Rotation().Quaternion();
+				if (B->GetComponentQuat().AngularDistance(Want) > FMath::DegreesToRadians(.05f)) B->SetWorldRotation(Want);
+				B->SetIntensity(BlueEach * FinaleLight);
+				B->SetLightColor(FLinearColor(.40f, .50f, 1.f));
+				B->SetLightSourceAngle(FMath::Max(1.f, CvDuskSoft.GetValueOnGameThread() * 2.5f));
+				Bounce(B);
+			}
+		}
 	}
 	// Keep nearby C6 geometry inside the existing 15km exclusion. Recapture remains throttled below.
 	UpdateFinaleSkyCapture();

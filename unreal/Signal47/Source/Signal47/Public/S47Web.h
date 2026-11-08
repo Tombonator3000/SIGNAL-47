@@ -508,6 +508,7 @@ private:
 	FS47GraphicsSettings Graphics;
 	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0, SkyTwilight = 0;
 	bool bTwilightWest = true; float TwilightDepth = 0;
+	TWeakObjectPtr<class UDirectionalLightComponent> DuskBlue;   // the rest of the twilight sky's light, made when first wanted (S47Lighting.cpp)
 	float FinaleGroundShade = 0;
 	TOptional<FVector> FinaleSkyCaptureRestore;
 	// Authored lookdev modifies the existing time-driven rig only near SARO and its motel.
