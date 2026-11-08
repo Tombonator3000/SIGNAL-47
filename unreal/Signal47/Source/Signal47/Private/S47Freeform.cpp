@@ -9,6 +9,7 @@
 #include "S47Tape.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
+#include "S47WardReport.h"
 #include "S47LeftGear.h"
 #include "S47Openings.h"
 #include "S47Places.h"
@@ -262,6 +263,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
  if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
  if(!Enlarger)Enlarger=MakeShared<FS47Enlarger>(M);
+ if(!WardReport)WardReport=MakeShared<FS47WardReport>(M);WardReport->Begin(S47J::Obj(Saved,TEXT("wardReport")));
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -289,6 +291,7 @@ void FS47FreeformSession::Stop()
  if(NightLog)NightLog->Stop();
  if(Tape)Tape->Stop();
  if(PinBoard)PinBoard->Stop();
+ if(WardReport)WardReport->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -502,6 +505,7 @@ void FS47FreeformSession::Step(double Dt)
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
  if(PinBoard)PinBoard->Step(Dt);
+ if(WardReport)WardReport->Step(Dt);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -1315,6 +1319,7 @@ void FS47FreeformSession::OpenOperations()
  {
   if(Predecessor)Predecessor->OpsRows(Rows);
   if(NightLog)NightLog->OpsRows(Rows);
+  if(WardReport)WardReport->OpsRows(Rows);
   if(Tutorial==0)
   {
    TArray<S47Kit::FW> Continue;
@@ -2761,6 +2766,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
+ if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());

@@ -41,7 +41,8 @@ public:
  // A field record's words, as the sheet has them: the first sentence, no longer than a line, its own time taken off the front.
  static FString Lead(const FString& Record,FString& OutAt);
 
- struct FSheet{int32 Night=0;FString Title,Page,Remark;double Typed=0,Sent=-1,Read=-1;};
+ // Facts: the sheet's lines as they were typed (the work's too, as Work lines), for the weekly report (FS47WardReport).
+ struct FSheet{int32 Night=0;FString Title,Page,Remark;double Typed=0,Sent=-1,Read=-1;TArray<FLine> Facts;};
  const TArray<FSheet>& Sheets() const{return Logs;}
  // Sheets Dr. Ward's office has initialed: what the assessment counts.
  int32 ReadCount() const;

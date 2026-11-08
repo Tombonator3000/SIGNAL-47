@@ -17,6 +17,7 @@
 #include "S47Night.h"
 #include "S47NightLog.h"
 #include "S47Tape.h"
+#include "S47WardReport.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47PredecessorText.h"
@@ -115,6 +116,7 @@ int32 FS47Predecessor::Points(const FTally& C)
  P+=C.Logs>=20?2:C.Logs>=10?1:0;
  // Tapes with something on them nobody heard: a recording is a record she can send on.
  P+=C.Tapes>=2?1:0;
+ P+=FS47WardReport::PointsFor(C.Trust);
  return P;
 }
 FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
@@ -151,6 +153,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();
  if(F.NightLog)C.Logs=F.NightLog->ReadCount();
  if(F.Tape)C.Tapes=F.Tape->OddHeardCount();
+ if(F.WardReport)C.Trust=F.WardReport->Trust();
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped())++C.Photos;
  return C;
 }
