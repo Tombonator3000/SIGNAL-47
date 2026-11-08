@@ -2091,8 +2091,16 @@ bool FS47FreeformSession::FieldRecordKept()const
  {
   const FString& K=Kept.Key;
   if((K.StartsWith(TEXT("place_"))&&!K.EndsWith(TEXT("_needle")))||K.StartsWith(TEXT("farm_trace"))||K.StartsWith(TEXT("lights_trace_"))||K.StartsWith(TEXT("field_night")))return true;
+  // What the night's events left out on the land: the cattle, the cow, the camper, the pickup, the rig, the ring.
+  if(FS47Happenings::IsNightFinding(K))return true;
  }
  return false;
+}
+int32 FS47FreeformSession::NightRecordKinds(int32 FromDay)const
+{
+ TSet<FString> Sorts;
+ for(const auto& Kept:Findings)if(FS47Happenings::IsNightFinding(Kept.Key)&&FindingDays.FindRef(Kept.Key)>=FromDay)Sorts.Add(FS47Happenings::NightFindingKind(Kept.Key));
+ return Sorts.Num();
 }
 int32 FS47FreeformSession::KitPrice(const FString& Id)const
 {
@@ -2216,7 +2224,15 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
  // Whether the case is new or not, the wind no longer covers it.
  const bool bBeyondWind=FindingId.StartsWith(TEXT("taken-"))||FindingId.StartsWith(TEXT("flood-room-"));
  if(bBeyondWind)Cases.RuleOutWind(Line);
- if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
+ // A night's record out on the land is a lead in the case it belongs to (FS47Happenings), and opens it if it is the first.
+ if(Line>=0&&FS47Happenings::IsNightFinding(FindingId))
+ {
+  const auto* Was=Cases.Get(Line);const bool bNew=!(Was&&Was->bOpen);
+  Cases.AddLead(Line,FindingId,DayNumber,FMath::Fmod(WorldClock,86400.));
+  const auto* CaseNow=Cases.Get(Line);
+  if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
+ }
+ else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
  Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". This was not the wind. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
@@ -2303,13 +2319,16 @@ int32 FS47FreeformSession::SheriffTrust() const
  // counts, whatever it concluded: the county trusts a station that finishes what it starts, not one that says what it wants to hear.
  int32 Trust=0;
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bConcluded)++Trust;
+ // And a missing man's truck called in (FS47Happenings): the county remembers who rang.
+ for(const auto& Kept:Findings)Trust+=Kept.Key.StartsWith(TEXT("missing_reported_"))?1:0;
  return Trust;
 }
 bool FS47FreeformSession::DeputyOnRoute() const{return SheriffTrust()>0;}
 int32 FS47FreeformSession::TownTrust() const
 {
+ // Places seen, and kinds of thing seen out on the land at night (FS47Happenings): somebody who is out there and says what is there.
  int32 Seen=0;for(const auto& Kept:Findings)Seen+=Kept.Key.StartsWith(TEXT("place_"))&&!Kept.Key.EndsWith(TEXT("_needle"))?1:0;
- return SheriffTrust()+(Seen>=4?1:0);
+ return SheriffTrust()+(Seen+NightRecordKinds()>=4?1:0);
 }
 bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 {
@@ -2418,9 +2437,20 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   const bool bCold=Cases.TrailCold(Line,DayNumber);
   if(!C->Leads.IsEmpty()&&Director)
   {
-   FString Leads=TEXT("LEADS / retained observations, not yet one cause");
-   for(const auto& O:Director->Observations())if(C->Leads.Contains(O.Id))Leads+=FString::Printf(TEXT("\nD%d %s / %s / bearing %s / %s%s"),O.Day,*FS47FreeformCases::Clock(O.Clock),*O.Place,*O.Bearing,O.bHeard?TEXT("heard"):TEXT("seen"),O.PhotoId.IsEmpty()?TEXT(""):TEXT(" / photographed"));
-   List->AddSlot()[S47FreeformTerminal::Paper(Leads)];
+   FString Leads=TEXT("LEADS / retained observations, not yet one cause");int32 Shown=0;
+   for(const auto& O:Director->Observations())if(C->Leads.Contains(O.Id)){++Shown;Leads+=FString::Printf(TEXT("\nD%d %s / %s / bearing %s / %s%s"),O.Day,*FS47FreeformCases::Clock(O.Clock),*O.Place,*O.Bearing,O.bHeard?TEXT("heard"):TEXT("seen"),O.PhotoId.IsEmpty()?TEXT(""):TEXT(" / photographed"));}
+   if(Shown>0)List->AddSlot()[S47FreeformTerminal::Paper(Leads)];
+  }
+  // What the night's events left out on the land, as the field records have it: its first sentence and its day.
+  {
+   FString Land=TEXT("OUT ON THE LAND / night records, not yet one cause");int32 Shown=0;
+   for(const FString& L:C->Leads)if(const FString* Text=Findings.Find(L))
+   {
+    FString First=*Text;int32 Stop=INDEX_NONE;
+    if(First.FindChar(TEXT('.'),Stop)&&Stop>0)First=First.Left(Stop+1);
+    Land+=FString::Printf(TEXT("\nD%d %s"),FindingDays.FindRef(L),*First.Left(150));++Shown;
+   }
+   if(Shown>0)List->AddSlot()[S47FreeformTerminal::Paper(Land)];
   }
   for(int32 T=0;T<FS47FreeformCases::TestCount;++T)
   {

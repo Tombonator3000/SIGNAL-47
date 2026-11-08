@@ -105,6 +105,8 @@ int32 FS47Predecessor::Points(const FTally& C)
  // Records that can be read: most of what is filed, or at least half of it.
  if(C.Filed>0)P+=C.Clean*10>=C.Filed*7?2:C.Clean*2>=C.Filed?1:0;
  P+=C.Photos>=3?1:0;
+ // What the land gave at night, kept as records of different kinds.
+ P+=C.Land>=8?2:C.Land>=4?1:0;
  P+=C.Filed>=20?1:0;
  return P;
 }
@@ -139,7 +141,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
   if(J.bPrinted||!J.OriginalPage.IsEmpty())++C.Originals;
  }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)++C.Concluded;
- C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();
+ C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped())++C.Photos;
  return C;
 }
@@ -269,7 +271,7 @@ void FS47Predecessor::StepNews(double Dt)
   WeekNoted=Week;const FString Id=FString::Printf(TEXT("week-%d"),Week);
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
-  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
+  F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land));
   Tray.AddUnique(Id);
   if(M->UI)M->UI->Toast(TEXT("Dr. Ward has answered the weekly sheet. It is in the OPS tray."),5);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: week %d note, filed %d, pace %.2f, points %d of %d, taken %d"),Week,C.Filed,Pace,Points(C),PointsToStay,C.Taken);
@@ -1192,7 +1194,7 @@ void FS47Predecessor::TestWeek()
  TestOn();if(!M||!M->Freeform)return;
  const int32 Week=++WeekNoted;const FString Id=FString::Printf(TEXT("week-%d"),Week);
  const FTally C=Count();
- M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken));
+ M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land));
  ReadDoc(Id);
 }
 void FS47Predecessor::TestRing()

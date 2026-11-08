@@ -10,6 +10,8 @@
 #include "S47OpenLand.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
+#include "S47Taken.h"
+#include "S47Truck.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -53,6 +55,20 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return D&&M->World->bDriving&&!M->World->bBusy&&D->Speed>9;},14,
    [this,bKeep,Then]{if(!bKeep&&M->World)M->World->TestInput=nullptr;Then();},
    [this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck did not get going on the road"));});
+ };
+ // In the truck on the highway, then stopped and out on foot beside it (the truck parked on the road), then Then.
+ const auto OutOfTruck=[this,Road](double From,TFunction<void()> Then)
+ {
+  Road(From,4.5,false,[this,Then]
+  {
+   if(M->World)M->World->TestInput=[this]{FS47DriveIn I;auto* D=M&&M->World?M->World->CabDrive():nullptr;I.Throttle=D&&D->Speed>.5?-1:0;return I;};
+   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},14,[this,Then]
+   {
+    if(M->World)M->World->TestInput=nullptr;
+    if(!M->World||!(M->World->GetOutHere()||M->World->GetOutHere(true))){Tell(false,TEXT("could not get out of the truck here"));return;}
+    WaitFor([this]{return M->World&&!M->World->bDriving&&!M->World->bBusy&&M->World->TruckHere();},10,Then,[this]{Tell(false,TEXT("the truck did not let the player out"));});
+   },[this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck did not stop"));});
+  });
  };
  // To a lasting one out on the land, on foot, a few metres off it, looking at it.
  const auto ToSite=[this,Haps](const FString& Kind,double Off,const FString& Say)
@@ -145,8 +161,8 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    FS47Happenings* H=Haps();FString Why;
    if(!H||!H->DevStart(TEXT("landing"),FString(),Why)||!H->Live(TEXT("landing"))){Tell(false,Why);return;}
    FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,90,0));
-   Tell(true,TEXT("Lights coming down far out. Keep looking: in twenty seconds they are on the ground and the bearing is on your map."),7);
-   After(28,[this,Haps]
+   Tell(true,TEXT("Keep looking out there: first the crickets stop, then lights come down, and in half a minute the bearing is on your map."),7);
+   After(38,[this,Haps]
    {
     auto* F=Session();FS47Happenings* Ha=Haps();
     const bool bKept=F&&F->HasFinding(FString::Printf(TEXT("landing_seen_d%d"),F->Day()));
@@ -228,7 +244,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    const FVector Gas=F&&F->Director?F->Director->LightPlacePoint(TEXT("gas")):FVector::ZeroVector;
    return S47HapDev::CatalogSpot(M,TEXT("__none"),TEXT("gas"),TEXT("diner"),Gas.IsZero()?FVector2D(7995,2250):FVector2D(Gas.X,Gas.Z+8),8);
   };
-  Go(Stage,[Humor]{Humor(TEXT("pump"),TEXT("A small grey man in a shirt and a hat, at the pump. E talks to him."));});
+  Go(Stage,[Humor]{Humor(TEXT("pump"),TEXT("A small gray man in a shirt and a hat, at the pump. E talks to him."));});
  });
  // ---- the rest of NATTHENDELSER-31 ----
  static const TCHAR* const R=TEXT("Night events: the rest");
@@ -244,7 +260,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   {TEXT("room6_tv"),TEXT("16. Room 6: the television on, nobody"),TEXT("23:00, the motel lot"),5,nullptr},
   {TEXT("town_blackout"),TEXT("17. Caliche goes dark for a minute"),TEXT("22:00, Caliche's street"),1,nullptr},
   {TEXT("array_burst"),TEXT("18. The array catches a burst: a bearing"),TEXT("23:00, control room; the bearing goes on the map"),2,nullptr},
-  {TEXT("am_caller"),TEXT("19. 1420: a caller tells last night wrong"),TEXT("21:00, in the truck, when it is the caller's turn on the programme"),4,nullptr},
+  {TEXT("am_caller"),TEXT("19. 1420: a caller tells last night wrong"),TEXT("21:00, in the truck, when it is the caller's turn on the program"),4,nullptr},
   {TEXT("hood_warm"),TEXT("20. The truck's hood is warm"),TEXT("23:00, the yard by the truck"),3,nullptr},
   {TEXT("truck_tracks"),TEXT("21. Prints round the truck that stop"),TEXT("23:00, the yard by the truck"),3,TEXT("tracks")},
   {TEXT("animals_flee"),TEXT("22. Jackrabbits run past, all one way"),TEXT("23:00, on foot near the windmill"),0,nullptr},
@@ -255,7 +271,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
  for(const FRest& Line:Rest)
  {
   const FString Id=Line.Id;const int32 St=Line.Stage;const FString Site=Line.Site?Line.Site:TEXT("");
-  E.AddFreeform(R,Line.Label,Line.Note,[this,Haps,Road,ToSite,Id,St,Site]
+  E.AddFreeform(R,Line.Label,Line.Note,[this,Haps,Road,OutOfTruck,ToSite,Id,St,Site]
   {
    const auto Fire=[this,Haps,Id,Site]
    {
@@ -273,7 +289,18 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
     ToSite(Site,9,FString::Printf(TEXT("%s, ahead of you. E on it."),*Id));
     return;
    }
+   // The caller waits for the program's turn: asked again until it comes, for half a minute.
+   if(Id==TEXT("am_caller"))
+   {
+    Road(21,4.5,false,[this,Haps]
+    {
+     WaitFor([Haps]{FS47Happenings* Hw=Haps();FString Why;return Hw&&Hw->DevStart(TEXT("am_caller"),FString(),Why);},40,[this]{Tell(true,TEXT("am_caller: started, when the program gave the caller her turn."),5);},[this]{Tell(false,TEXT("the program never gave the caller her turn"));});
+    });
+    return;
+   }
    if(St==4){Road(Id==TEXT("car_light")?2.5:21,4.5,false,Fire);return;}
+   // By the truck: parked out on the road and the player out of it.
+   if(St==3){OutOfTruck(23,Fire);return;}
    if(St==0){ToLandPlace(TEXT("windmill"),40,Id==TEXT("dust_devil")?21:23,4.5,[Fire](double,double){Fire();});return;}
    FStage Stage;Stage.To=4.5;Stage.Yaw=UE_DOUBLE_PI;
    if(St==1){Stage.From=Id==TEXT("phone_empty")?23:22;Stage.Area=TEXT("diner");Stage.Yaw=0;Stage.Where=[]{return FVector2D(7995,2110);};}
@@ -283,6 +310,53 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    Go(Stage,Fire);
   });
  }
+ // Without F10's shortcut: the light over the truck takes a player who gets out under it, in the real game's rules, and the hood is
+ // warm for one who walks away from the truck and comes back.
+ E.AddFreeform(R,TEXT("24b. The light over the truck: get out under it"),TEXT("02:30, the highway, in the real game's rules; the light comes down over you (this test run keeps those rules on)"),[this,Haps,Road]
+ {
+  auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
+  F->TestLiveRules();
+  Road(2.5,4.5,false,[this,Haps]
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("car_light"),FString(),Why)){Tell(false,Why);return;}
+   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},14,[this]
+   {
+    if(!M->World||!(M->World->GetOutHere(true)||M->World->GetOutHere())){Tell(false,TEXT("could not get out under the light"));return;}
+    WaitFor([this]{auto* Fs=Session();return Fs&&Fs->Taken&&Fs->Taken->Busy();},18,[this]
+    {
+     UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 car_light: out under the light, taken"));
+     Tell(true,TEXT("Out under the light: it came down over you. Taken."),6);
+    },[this]{Tell(false,TEXT("out under the light, and it did not come down"));});
+   },[this]{Tell(false,TEXT("the truck never stopped under the light"));});
+  });
+ });
+ E.AddFreeform(R,TEXT("20b. The hood, walked back to"),TEXT("the truck parked on the road; away fifty metres for twenty-five minutes, back to it, and the night itself asked"),[this,Haps,OutOfTruck]
+ {
+  OutOfTruck(23,[this,Haps]
+  {
+   auto* F=Session();FS47Truck* T=M->World?M->World->TruckHere():nullptr;
+   if(!F||!T||!M->Player){Tell(false,TEXT("no truck parked here"));return;}
+   const FVector At=T->Position;
+   M->Player->Place(At.X+50,At.Z,0);
+   After(2,[this,Haps,At]
+   {
+    auto* Fa=Session();if(!Fa){Tell(false,TEXT("Freeform only"));return;}
+    Fa->TestAdvance(25*60.);
+    After(2,[this,Haps,At]
+    {
+     M->Player->Place(At.X+3,At.Z,UE_DOUBLE_PI/2);
+     After(3,[this,Haps]
+     {
+      FS47Happenings* H=Haps();FString Why;
+      const bool bOk=H&&H->DevTry(TEXT("hood_warm"),Why);
+      UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 hood_warm walked back to: %s"),bOk?TEXT("warm"):*Why);
+      Tell(bOk,bOk?FString(TEXT("Back at the truck after twenty-five minutes away: the hood is warm.")):Why,6);
+     });
+    });
+   });
+  });
+ });
  // ---- unease (URO.md): each of the 25 where it can be noticed; nothing is kept and nothing is explained ----
  static const TCHAR* const U=TEXT("Unease");
  for(int32 I=0;I<FS47Happenings::UneaseCount();++I)

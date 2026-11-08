@@ -18,6 +18,7 @@
 #include "S47Three.h"
 #include "S47Story.h"
 #include "S47Freeform.h"
+#include "S47Happenings.h"
 #include "S47FreeformDirector.h"
 #include "S47FieldRadio.h"
 #include "S47Night.h"
@@ -52,7 +53,8 @@ namespace
  bool SameMeeting(US47Main* M)
  {
   auto* F=M?M->Freeform.Get():nullptr;if(!F)return false;
-  return (F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||(F->Director&&F->Director->ActiveEvent()==TEXT("service_presence"));
+  // And a night event's light watching over the player (the light over the truck, FS47Happenings::HoldsTaking).
+  return (F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||(F->Director&&F->Director->ActiveEvent()==TEXT("service_presence"))||(F->Happenings&&F->Happenings->HoldsTaking());
  }
  // A Director event that brings the light (the empty car) holds the ground for it: that is its own, not another meeting's.
  bool RulesAllow(US47Main* M)

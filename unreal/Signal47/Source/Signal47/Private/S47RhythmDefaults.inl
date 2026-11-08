@@ -4,7 +4,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
   "globals": {
     "their_hours": { "earliest": 1, "latest": 3, "end": 6, "dev_fixed": 2 },
     "tick_seconds": [240, 420],
-    "rest_after": { "danger": 480, "other": 45, "taken": 1800 },
+    "rest_after": { "danger": 170, "other": 45, "taken": 1800 },
     "budget_per_day": { "minor": [2, 4], "invest": [0, 2], "sky": [0, 1] },
     "danger_per_night": 1
   },
@@ -58,7 +58,7 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "landing", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [21.5, 4.5], "draw": { "per_night": 0.24 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "hitchhiker", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.2 }, "min_nights_between": 5, "needs": ["driving"], "enforce": true },
     { "id": "stranded_rv", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.14 }, "min_nights_between": 6, "needs": [], "enforce": true },
-    { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 3, "hours": [20, 2], "draw": { "per_night": 0.5 }, "min_nights_between": 7, "needs": [], "enforce": true },
+    { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 7, "hours": [5, 6.5], "draw": { "per_night": 0.5 }, "min_nights_between": 7, "needs": [], "enforce": true },
     { "id": "dogs_hush", "system": "night", "slot": "ground", "level": "hint", "from_day": 1, "hours": "night", "draw": { "per_night": 0.3 }, "cooldown_days": [1, 3], "needs": ["outdoors"], "enforce": true },
     { "id": "phone_empty", "system": "night", "slot": "ground", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.2 }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "carcass", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.12 }, "cooldown_days": [4, 7], "needs": [], "enforce": true },
