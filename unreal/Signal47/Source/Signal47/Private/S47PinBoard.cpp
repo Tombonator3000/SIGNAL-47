@@ -181,7 +181,7 @@ void FS47PinBoard::Begin(const S47J::FObj& Saved)
 				const TArray<TSharedPtr<FJsonValue>>* Nums = nullptr;
 				if (Where.Num() >= MostKept || !Entry.Value.IsValid() || !Entry.Value->TryGetArray(Nums) || !Nums || Nums->Num() < 3) continue;
 				FWhere Wh; Wh.X = (*Nums)[0]->AsNumber(); Wh.Z = (*Nums)[1]->AsNumber(); Wh.Clock = (*Nums)[2]->AsNumber();
-				if (FMath::IsFinite(Wh.X) && FMath::IsFinite(Wh.Z) && FMath::IsFinite(Wh.Clock) && FMath::Abs(Wh.X) < 1e6 && FMath::Abs(Wh.Z) < 1e6) Where.Add(Entry.Key.Left(80), Wh);
+				if (FMath::IsFinite(Wh.X) && FMath::IsFinite(Wh.Z) && FMath::IsFinite(Wh.Clock) && FMath::Abs(Wh.X) < 1e6 && FMath::Abs(Wh.Z) < 1e6) Where.Add(FString(*Entry.Key).Left(80), Wh);
 			}
 		for (const FString& Id : S47J::Strs(Saved, TEXT("up"))) if (Up.Num() < MostKept && Id.StartsWith(TEXT("ff:"))) Up.Add(Id.Left(120));
 		for (const FString& Id : S47J::Strs(Saved, TEXT("clips"))) if (Clips.Num() < MostClips && !Id.IsEmpty()) Clips.AddUnique(Id.Left(120));
