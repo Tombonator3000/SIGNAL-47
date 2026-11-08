@@ -492,7 +492,7 @@ FString FS47FreeformDirector::LightPlaceTitle(const FString& Place)const
  if(Place==TEXT("farm"))return TEXT("the Alderete place");
  return TEXT("town");
 }
-FString FS47FreeformDirector::PickLightPlace(const FString& Id)const
+FString FS47FreeformDirector::PickLightPlace(const FString& Id,bool bFixture)const
 {
  const FS47EventPlaces* Places=PlacesOf(M);if(!Places)return FString();
  // Seen from here (farm_lights): a few hundred metres off, across the ground the player is on. Heard of (town_lights): somewhere
@@ -500,6 +500,7 @@ FString FS47FreeformDirector::PickLightPlace(const FString& Id)const
  // they come gives the same place, not a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
  FS47PlaceNeed Need;Need.Kind=Id;Need.Any=ES47PlaceTrait::Open|ES47PlaceTrait::Town|ES47PlaceTrait::Farm|ES47PlaceTrait::Array|ES47PlaceTrait::Lot;
  if(Id==TEXT("farm_lights")){Need.MinM=250;Need.MaxM=1600;Need.FarShare=0;Need.bSameArea=true;}
+ else if(bFixture){Need.FarShare=0;Need.bSameArea=true;} // a test's own street: seen from where it stands, as before the list
  else{Need.MinM=150;Need.FarShare=.35f;Need.bOtherArea=true;}
  return Places->Pick(Need,uint32(IncidentSerial)).Id;
 }
@@ -583,7 +584,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  else if(Id==TEXT("town_lights")||Id==TEXT("farm_lights"))
  {
   // Heard about from SARO too: the point is to drive there. Seen from wherever the player is on the land, the farm among the rest.
-  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||(NextLightPlace.IsEmpty()&&PickLightPlace(Id).IsEmpty()))return false;
+  if((M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))||(NextLightPlace.IsEmpty()&&PickLightPlace(Id,Forced&&NextPlace.IsEmpty()).IsEmpty()))return false;
  }
  else if(Id==TEXT("landing_trace"))
  {if(M->Web->Area()!=TEXT("road")&&M->Web->Area()!=TEXT("diner")&&M->Web->Area()!=TEXT("saro"))return false;}
@@ -647,9 +648,11 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  if(Id==TEXT("farm_lights")||Id==TEXT("town_lights"))
  {
   // Over a place from the list: the farm, a building in Caliche, the motel, SARO itself, a wash out on the land (Tom, 8 November).
-  // A fixture started by Force alone from SARO keeps the farm it was written for; F10 and the night draw.
-  const bool bFixture=Forced&&NextPlace.IsEmpty()&&NextLightPlace.IsEmpty()&&Id==TEXT("farm_lights")&&M->Web->Area()==TEXT("saro");
-  LightPlace=!NextLightPlace.IsEmpty()?NextLightPlace:bFixture?FString(TEXT("farm")):PickLightPlace(Id);NextLightPlace.Empty();PlaceId=LightPlace;
+  // A fixture started by Force alone keeps what it was written for: the farm from SARO, lights it can see from a street in town.
+  // F10 (ForceAt) and the night draw from the whole list.
+  const bool bFixture=Forced&&NextPlace.IsEmpty()&&NextLightPlace.IsEmpty();
+  const bool bFarmFixture=bFixture&&Id==TEXT("farm_lights")&&M->Web->Area()==TEXT("saro");
+  LightPlace=!NextLightPlace.IsEmpty()?NextLightPlace:bFarmFixture?FString(TEXT("farm")):PickLightPlace(Id,bFixture);NextLightPlace.Empty();PlaceId=LightPlace;
   const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
   Anchor=LightPlacePoint(LightPlace)+FVector(0,P?P->Up:28,0);
   if(P)Scene=FS47EventPlaces::AreaOf(*P);
