@@ -34,7 +34,7 @@ public:
 	void FlickerOut(double Seconds) { Dark = FMath::Max(Dark, Seconds); }
 	/** GEAR-FLICKER-20261108: the share of the beam lost near something (0 to 1), by source as Flicker, the strongest counting.
 	 *  A steady weakening that comes and goes with distance; it spends no battery (FS47GearFlicker). */
-	void Sag(double K, const FString& From = TEXT("event"));
+	void Sag(double Share, const FString& From = TEXT("event"));
 	double SagNow() const { return SagK; }
 	double FlickerNow() const { return Flick; }
 	/** Every frame: held a little right of and below the eyes, pointing where they look. Off: in the

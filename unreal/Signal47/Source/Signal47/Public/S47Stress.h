@@ -38,7 +38,7 @@ public:
 	/** A new night, the title, a save opened: calm again. */
 	void Reset();
 	/** A start, at once (a covey going up from under the feet in the dark, FS47Animals): at least this much, falling as usual. */
-	void Startle(double K) { S = FMath::Max(S, FMath::Clamp(K, 0.0, 1.0)); }
+	void Startle(double Jolt) { S = FMath::Max(S, FMath::Clamp(Jolt, 0.0, 1.0)); }
 
 	/** 0 to 1. */
 	double Level() const { return S; }
