@@ -219,7 +219,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 	{
 		FS47FreeformSession* Fs = Session();
 		const FS47EventPlace* Mill = Fs && Fs->EventPlaces ? Fs->EventPlaces->Find(TEXT("windmill")) : nullptr;
-		if (!Fs || !Fs->Tape || !Mill || !M || !M->Omen) { Tell(false, TEXT("no recorder, windmill or omen in this run")); return; }
+		// (The first line of a sweep starts on the first frame, before the omen exists: it is asked for when the place is reached.)
+		if (!Fs || !Fs->Tape || !Mill || !M) { Tell(false, TEXT("no recorder or windmill in this run")); return; }
 		Fs->Tape->DevGive();
 		const FString Area = FS47EventPlaces::AreaOf(*Mill);
 		const FVector Stood = S47OpenLand::FromRoad(Area, Mill->X, Mill->Z);
@@ -228,7 +229,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		FStage Stage; Stage.From = 23; Stage.To = 4.5; Stage.Area = Area; Stage.Where = [Stood] { return FVector2D(Stood.X, Stood.Z); };
 		Go(Stage, [this, Far, AtDesk, Pictured]
 		{
-			FS47FreeformSession* Fs1 = Session(); if (!Fs1 || !Fs1->Tape || !M || !M->Omen) return;
+			FS47FreeformSession* Fs1 = Session(); if (!Fs1 || !Fs1->Tape || !M) return;
+			if (!M->Omen) { Tell(false, TEXT("no omen in this run")); return; }
 			M->Omen->DevPresence(Far, .6, 40, false);
 			Fs1->Tape->ToggleRecord();
 			After(14, [this, AtDesk, Pictured]
