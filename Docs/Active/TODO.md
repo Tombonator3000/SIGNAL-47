@@ -42,6 +42,14 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 - [ ] **CB-WALKIE-20261108: CB og walkie-talkie er ulike i koden** (CB er varsler fra radioen i bilen og på SARO, walkie er Dales håndradio), men spilleren ser ikke forskjellen. Gjør det tydelig: CB = fremmede, sjåfører og rop om hjelp; walkie = Dale.
 - [ ] **NIGHT31-20261108: natthendelser, prioritert foran grafikk.** Tom 8. november: forslag 1-8 i svaret skal inn (bilen dør under noe som passerer, kveg i ring, CB-rop om hjelp og gjentatt stemme neste natt, landing med svidd ring funnet med peiling, klokka i bilen 40 min foran, haikeren som er borte i speilet, den strandede bobilen, humor høyst én gang i uka). Resten av listen i `Docs/Design/Director/NATTHENDELSER-31.md` etter hvert. Nye hendelser og elementer går foran perfekt grafikk. Rekkefølge, Tom 8. november: (1) stedskatalogen (ANYWHERE), så alle natthendelsene i `NATTHENDELSER-31.md`, (2) forslag 1-8 og geigertelleren, (3) motellet, (4) ny kritiker for spillbarhet.
 - [ ] **ARRAY-ORBS-20261108: dronelysene ved SARO-arrayen kan dukke opp hvor som helst på array-området.** Første gang skal de komme foran, der de kommer i dag, så spilleren ser dem; senere tilfeldig over hele området (med frø).
+- [ ] **HUD-20261108: batteri for lommelykta på HUD,** diskret (streker nede i hjørnet), og radiofrekvens/stabilitet når radio eller walkie er i bruk. Toms referansebilder 8. november er fra et annet spill: bare som idé, ikke kopier.
+- [ ] **TRUCK-STRAND-20261108: tydelig forklaring når bilen strander:** hvordan bytte dekk, grave ut av sand osv. Tom fikk «grind axle»-melding uten å få reparert. Rett feilen og gi steg-for-steg-hint. Henting av bilen skal koste (veivesenet/bergingsbil, trekk fra lønna).
+- [ ] **WARD-PHONE-20261108: telefon til og fra Ward bare innenfor rimelig tid,** ikke etter kl. ni om kvelden.
+- [ ] **WALKIE-USE-20261108: spilleren skal kunne bruke walkie-talkien selv** (rope Dale, svare, bytte kanal), ikke bare ta imot.
+- [ ] **PHYSICS-20261108: bedre fysikk for å plukke opp, bære og kaste ting.**
+- [ ] **SNEAK-20261108: snike** (huke seg, roligere skritt, mindre lyd og synlighet for det som leter).
+- [ ] **STRESS-20261108: stressindikator for spillerfiguren:** tyngre pust, mørkere kant og smalere syn ved panikk, roligere når faren går over. Ingen tall på skjermen.
+- [ ] **WEATHER-20261108: væreffekter:** vind og støvstorm, torden og regnbyger (sjeldent, vårt i New Mexico), dis om morgenen; påvirker sikt, lyd, kjøring og fare.
 - [ ] **GEIGER-20261108: spilleren kan lage en geigerteller eller lignende måler** som slår ut der UFO-er har landet (svidd ring, landingsspor, steder fra peiling). Del av fremgangen, laget av deler.
 - [ ] **MOTEL-REAL-20261108: realisme for motellet,** særlig kontoret: inverterte vegger og tv som ikke virker. Gjenbruk interiørmodeller fra andre steder der det passer.
 
