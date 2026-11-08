@@ -206,6 +206,40 @@ const TArray<FBark>& Barks()
  };
  return Table;
 }
+const TArray<FWalkieLine>& WalkieLines()
+{
+ static const TArray<FWalkieLine> Table={
+  // He calls.
+  {TEXT("hail"),TEXT("Night operator. Dale. Pick up. Come in.")},
+  {TEXT("hail_again"),TEXT("Night operator! I know you have the set. Come in!")},
+  {TEXT("hail_gone"),TEXT("Nothing. Wunderbar. Then it goes on a slip by the phone. Dale out.")},
+  {TEXT("finally"),TEXT("Finally. Next time you answer the first time.")},
+  // He is called: by the hour, and by what the player is doing.
+  {TEXT("again"),TEXT("Again? What. Nothing? Then take your thumb off the button. Dale out.")},
+  {TEXT("enough"),TEXT("That is four times today. Four! I am turning my set to the wall. Call the service line in the morning. Dale out.")},
+  {TEXT("missed"),TEXT("Now you call! I called you before. Channel one. ONE. You keep it on one, Mensch. Dale out.")},
+  {TEXT("driving"),TEXT("You are driving and talking on my channel? Both hands on the wheel. Dale out.")},
+  {TEXT("hours"),TEXT("You sound wrong. You wrote down when it started and when it stopped? Good. Tonight you stay in the building. Dale out.")},
+  {TEXT("late_in"),TEXT("It is after two. You are in the building? Good. Stay in it. You do not open the door to look at anything. Dale out.")},
+  {TEXT("late_out"),TEXT("After two and you are outside? Nein. I do not want to know why. Go in. Now. Dale out.")},
+  {TEXT("midnight"),TEXT("Do you know what time it is? I know what time it is. Is something on fire? No? Then write it in the log. Dale out.")},
+  {TEXT("day"),TEXT("I am up a pole in the sun with a meter in my teeth. Call the service line like a person. Dale out.")},
+  {TEXT("station"),TEXT("You are standing next to a telephone. A telephone! Use the card, use the telephone, and leave my channel alone. Dale out.")},
+  {TEXT("array"),TEXT("Antennas down, and you call me? The sheet has the order. Read the sheet, then mend them. Dale out.")},
+  {TEXT("far"),TEXT("Where are you, out there with my truck? You bring it back with four tires and gas in it. Dale out.")},
+  {TEXT("evening"),TEXT("What. Is it the amber lamps? The amber is normal. Do the card. Dale out.")},
+  // What a stranger rang in, passed on.
+  {TEXT("relay_pre"),TEXT("The county put a call through to my bench, so now it is your problem.")},
+  {TEXT("relay_post"),TEXT("I am not driving out there. Dale out.")},
+ };
+ return Table;
+}
+FString WalkieLine(const TCHAR* Id)
+{
+ if(!Id)return FString();
+ for(const FWalkieLine& L:WalkieLines())if(FCString::Strcmp(L.Id,Id)==0)return L.Line;
+ return FString();
+}
 const FPerson* Person(const FString& Id){return People().FindByPredicate([&](const FPerson& P){return Id==P.Id;});}
 
 FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess)

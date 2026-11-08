@@ -2,11 +2,14 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Places.h"
+#include "S47CB.h"
+#include "S47FieldRadio.h"
 #include "S47Radio.h"
 #include "S47RadioVoice.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "Misc/Crc.h"
 
 // Written for April 1986: drivers, ranch hands and night callers in Socorro County. Nobody real. Short, dry, and most of it about
 // nothing. A place id means it points somewhere; Needs is a finding the player must already hold, for the ones that talk about
@@ -120,8 +123,14 @@ void FS47RadioTips::StepCb()
  const bool bTell=!Telling.IsEmpty()&&(Plain.IsEmpty()||FMath::FRand()<.2f+.1f*M->Freeform->TownTrust());
  const auto& Pool=bTell?Telling:Plain;if(Pool.IsEmpty())return;
  const FLine* L=Pool[FMath::RandRange(0,Pool.Num()-1)];
+ // CB-WALKIE-20261108: out of the CB's own speaker and on its HUD line, in a driver's voice. Busy with another call: soon again.
+ static const TCHAR* const Drivers[]={TEXT("man"),TEXT("old"),TEXT("man"),TEXT("woman")};
+ if(!FS47FieldRadio::CbSay(M,{FString(L->Text)},Drivers[FCrc::StrCrc32(L->Id)%4]))
+ {
+  if(M->CB.IsValid()&&M->CB->bBusy){CbIn=FMath::Min(CbIn,12.);return;}
+  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
+ }
  Used.Add(L->Id);
- if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
  if(L->Place&&M->Freeform->Places)M->Freeform->Places->Hear(L->Place);
  UE_LOG(LogTemp,Display,TEXT("S47: CB %s%s"),L->Id,L->Place?TEXT(" (points somewhere)"):TEXT(""));
  M->RequestAutosave();

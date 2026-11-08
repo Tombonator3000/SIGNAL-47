@@ -2150,7 +2150,8 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 		Kit.Add({ TEXT("Reel 047"), TEXT("A reel of tape in a grey box, from the fire drawer behind the STATION 01 box. NOT FOR CATALOGUE, in pencil. It fits the deck on the signal processor."),
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
-	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), TEXT("Portable SARO field set. Listen in the field; a sound alone is not a filed observation."), TEXT("Carried"), FString(), FString() });
+	// WALKIE-USE-20261108: the set in the player's own hand, and its channel
+	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. A sound alone is not a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
 	{

@@ -24,7 +24,14 @@ bool S47HudGauges::BatteryShown(bool bDrains, bool bHave, bool bOn, double Level
 }
 
 FString S47HudGauges::CbLine() { return TEXT("CB 19  27.185"); }
-FString S47HudGauges::WalkieLine() { return TEXT("WALKIE 1  49.830"); }
+FString S47HudGauges::WalkieLine(int32 Channel, int32 Mode)
+{
+	const int32 Ch = FMath::Clamp(Channel, 1, 3);
+	const FString Line = FString::Printf(TEXT("WALKIE %d  %.3f"), Ch, 49.830 + 0.015 * (Ch - 1));
+	return Mode == 1 ? Line + TEXT("  TX") : Mode == 2 ? Line + TEXT("  CALL") : Line;
+}
+
+FLinearColor S47HudGauges::WalkieTint() { return FLinearColor(0.58f, 0.86f, 0.64f, 1.f); }
 
 double S47HudGauges::CbStrength(double T)
 {
@@ -55,6 +62,10 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		TEXT("shown while the lamp is on, or when it is low; hidden when it is off and well charged"));
 	Check(!BatteryShown(false, true, true, 0.1, 0.2) && !BatteryShown(true, false, true, 0.1, 0.2), TEXT("not shown in the Story, nor before the lamp is taken"));
 	Check(CbLine().Contains(TEXT("19")) && WalkieLine().Contains(TEXT("49.830")) && !CbLine().IsEmpty(), TEXT("the radio line names the channel and the frequency"));
+	Check(WalkieLine(2).Contains(TEXT("WALKIE 2")) && WalkieLine(2).Contains(TEXT("49.845")) && WalkieLine(3).Contains(TEXT("49.860")) && WalkieLine(7) == WalkieLine(3)
+		&& WalkieLine(1, 1).EndsWith(TEXT("TX")) && WalkieLine(1, 2).EndsWith(TEXT("CALL")) && !WalkieLine(1).Contains(TEXT("CB")) && !CbLine().Contains(TEXT("WALKIE")),
+		TEXT("the walkie's line says its channel and whether it is keyed or calling, and never reads as the CB's"));
+	Check(WalkieTint().G > WalkieTint().R && WalkieTint().G > WalkieTint().B, TEXT("the walkie has a tint of its own, apart from the CB's amber"));
 	bool bCb = true;
 	for (int32 I = 0; I < 200; ++I) { const double S = CbStrength(I * 0.37); bCb &= S > 0.6 && S <= 1.0; }
 	Check(bCb, TEXT("the CB's signal during a call stays strong and steady"));

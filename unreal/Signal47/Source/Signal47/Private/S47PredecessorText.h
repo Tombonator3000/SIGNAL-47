@@ -22,6 +22,12 @@ namespace S47PredecessorText
  // What Dale says over the walkie, unasked. Each once, at most one a day. Needs as for a topic; empty: from the day given.
  struct FBark{const TCHAR* Id;const TCHAR* Needs;int32 FromDay;const TCHAR* Line;};
  const TArray<FBark>& Barks();
+ // WALKIE-USE-20261108: what Dale says on the walkie when the player calls him, his hail when he calls the player, and how he passes
+ // on what the county rang through to his bench (CB-WALKIE-20261108). Short and angry, his own words: fiction, nobody's quotes.
+ struct FWalkieLine{const TCHAR* Id;const TCHAR* Line;};
+ const TArray<FWalkieLine>& WalkieLines();
+ // The line with that id; empty if there is none.
+ FString WalkieLine(const TCHAR* Id);
  const FPerson* Person(const FString& Id);
  FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess);
  // Ward's Monday sheet. Her remark follows what the assessment will go by (FS47Predecessor::Points), not the count of cards, and it

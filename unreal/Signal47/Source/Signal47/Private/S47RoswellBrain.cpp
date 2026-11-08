@@ -1,5 +1,6 @@
 #include "S47RoswellBrain.h"
 #include "S47TripoCreature.h"
+#include "S47Sneak.h"
 
 namespace
 {
@@ -67,7 +68,9 @@ bool FS47RoswellBrain::Seen(const FInput& In,const FWorld& World) const
 {
  if (!In.bPlayerValid || !Finite(In.PlayerFeet) || !Finite(In.PlayerEye) || !World.Sight) return false;
  const FVector D=In.PlayerEye-Eye();
- if (D.SizeSquared()>24.*24.) return false;
+ // 24 m, less for a player keeping low (SNEAK-20261108); the lower eye is also more often behind something.
+ const double SeesFar=S47Sneak::SightReach(In.PlayerQuiet);
+ if (D.SizeSquared()>SeesFar*SeesFar) return false;
  if (D.SizeSquared()<1e-6) return World.Sight(Eye(),In.PlayerEye);
  // The eyes follow the same limited head turn as the skin, not a 360 degree sensor.
  const double ViewYaw=Yaw+FMath::Clamp(Wrap(HeadYaw-Yaw),-.65,.65);
@@ -91,9 +94,11 @@ TOptional<FVector> FS47RoswellBrain::Heard(const FInput& In,const FWorld& World)
   if (!Finite(Source->At) || !FMath::IsFinite(Source->Loudness) || Source->Loudness<=0) return {};
   Reach=FMath::Clamp(Source->Loudness,0.,2.)*10.;
  }
- else if (In.bPlayerValid && Finite(In.PlayerFeet) && In.PlayerSpeed>.35 && In.PlayerSpeed<12.)
+ else if (In.bPlayerValid && Finite(In.PlayerFeet))
  {
-  Source=FNoise{In.PlayerFeet,1.}; Reach=In.PlayerSpeed>2.5?18.:9.;
+  // 9 m walking, 18 running; a crouching walk carries much less far (S47Sneak.h).
+  const double StepsCarry=S47Sneak::StepReach(In.PlayerSpeed,In.PlayerQuiet);
+  if (StepsCarry>0) { Source=FNoise{In.PlayerFeet,1.}; Reach=StepsCarry; }
  }
  if (!Source) return {};
  // A roof/wall muffles sound instead of granting a perfect through-wall view.

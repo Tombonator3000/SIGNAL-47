@@ -1,5 +1,6 @@
 #include "S47Taken.h"
 #include "S47Rhythm.h"
+#include "S47Sneak.h"
 #include "S47CalicheAccess.h"
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
@@ -492,7 +493,9 @@ void FS47Taken::Step(double Dt)
   // Over a place first (BeginOver): faint and standing still, for as long as the warning takes. Otherwise Lit is Age.
   const double Lit=Age-(bOverPlace?OverWarnSeconds:0.);
   const double K=Lit<0?.05:Pulse(Lit)*FMath::Clamp(Lit/.18,0.,1.)*(1-FMath::SmoothStep(FloodSeconds-1.2,FloodSeconds,Lit));
-  const FVector Chest=Feet()+FVector(0,1.25,0);
+  // SNEAK-20261108: a crouching chest is lower, under a sill sooner, and the light comes on to it a little slower (S47Sneak.h).
+  const double LowK=M->Player?M->Player->Sneak():0.;
+  const FVector Chest=Feet()+FVector(0,S47Sneak::ChestHeight(LowK),0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
   S47CalicheAccess::SetLampLevel(0);
   // From where it stands just now: under a roof it drifts, and being in the light is being in what is seen.
@@ -500,7 +503,7 @@ void FS47Taken::Step(double Dt)
   if(!bOutdoors)From=FS47OutsideLight::Swept(From,Aim,Age);
   const bool bReach=LightReaches(Chest);
   From=Base;
-  if(Lit>=0&&(bReach||!bSpill))Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
+  if(Lit>=0&&(bReach||!bSpill))Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5*S47Sneak::TrackPace(LowK));
   ShowLight(K);
   const bool bCaught=Lit>=0&&FVector::Dist(Aim,Chest)<1.6&&bReach;
   InLight=bCaught?InLight+Dt:FMath::Max(0.,InLight-Dt*.6);

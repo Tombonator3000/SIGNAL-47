@@ -10,6 +10,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47FieldRadio.h"
 #include "S47Three.h"
 #include "Components/PoseableMeshComponent.h"
 
@@ -222,6 +223,9 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   A.Brain.bSteadySneak=A.Body->Clips.IsValid();
   FS47RoswellBrain::FInput In; In.bHeld=Held; In.bCanContact=!(M->World&&M->World->bDriving); In.PlayerFeet=Feet; In.PlayerEye=Input.Cam.Pos;
   In.PlayerForward=Input.Cam.Forward; In.PlayerSpeed=Speed; In.bFlashlight=Input.bFlashlight;
+  // SNEAK-20261108: a crouching player is seen and heard from less far; the walkie in their hand is a noise of its own.
+  In.PlayerQuiet=M->Player->Sneak();
+  if (M->FieldRadio && M->FieldRadio->LoudNow()) In.Noise=FS47RoswellBrain::FNoise{Feet+FVector(0,1.,0),1.2};
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));

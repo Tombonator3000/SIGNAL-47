@@ -242,7 +242,8 @@ FKey S47Gamepad::Key(FName A)
  {TEXT("shutter"),EKeys::Gamepad_RightTrigger},{TEXT("light"),EKeys::Gamepad_DPad_Up},
  {TEXT("radio"),EKeys::Gamepad_DPad_Down},{TEXT("map"),EKeys::Gamepad_DPad_Left},
  {TEXT("describe"),EKeys::Gamepad_DPad_Right},{TEXT("notebook"),EKeys::Gamepad_Special_Left},
- {TEXT("board"),EKeys::Gamepad_RightShoulder},{TEXT("pause"),EKeys::Gamepad_Special_Right}};
+ {TEXT("board"),EKeys::Gamepad_RightShoulder},{TEXT("pause"),EKeys::Gamepad_Special_Right},
+ {TEXT("crouch"),EKeys::Gamepad_RightThumbstick}};
  const FKey* K=Map.Find(A);return K?*K:EKeys::Invalid;
 }
 FString S47Gamepad::Label(FName A)
@@ -252,7 +253,7 @@ FString S47Gamepad::Label(FName A)
  {TEXT("use"),TEXT("A")},{TEXT("alt"),TEXT("B")},{TEXT("camera"),TEXT("X")},{TEXT("jump"),TEXT("Y")},
  {TEXT("run"),TEXT("LS CLICK")},{TEXT("zoom"),TEXT("LT")},{TEXT("shutter"),TEXT("RT")},{TEXT("light"),TEXT("DPAD UP")},
  {TEXT("radio"),TEXT("DPAD DOWN")},{TEXT("map"),TEXT("DPAD LEFT")},{TEXT("describe"),TEXT("DPAD RIGHT")},
- {TEXT("notebook"),TEXT("VIEW / LB")},{TEXT("board"),TEXT("RB")},{TEXT("pause"),TEXT("MENU")}};
+ {TEXT("notebook"),TEXT("VIEW / LB")},{TEXT("board"),TEXT("RB")},{TEXT("pause"),TEXT("MENU")},{TEXT("crouch"),TEXT("RS CLICK")}};
  const FString* S=Map.Find(A);return S?*S:FString();
 }
 bool S47Gamepad::Down(const FKey& K){if(!Pad.IsValid()||!Pad->AcceptInput())return false;Pad->SyncMenu(FSlateApplication::Get());return !Pad->Suppressed.Contains(K)&&!Pad->TriggerBlocked(K)&&Pad->Held.Contains(K);}

@@ -12,6 +12,7 @@
 #include "S47FieldRadio.h"
 #include "S47HudGauges.h"
 #include "S47Stress.h"
+#include "S47Sneak.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
@@ -229,7 +230,7 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
-		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines);
+		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
