@@ -90,9 +90,9 @@ namespace S47EventPlacesLocal
  }
  bool SameLand(const FString& A,const FString& B)
  {
-  const auto Town=[](const FString& X){return X==TEXT("road")||X==TEXT("diner");};
+  const auto InTown=[](const FString& X){return X==TEXT("road")||X==TEXT("diner");};
   const auto Station=[](const FString& X){return X==TEXT("saro")||X==TEXT("motel");};
-  return A==B||(Town(A)&&Town(B))||(Station(A)&&Station(B));
+  return A==B||(InTown(A)&&InTown(B))||(Station(A)&&Station(B));
  }
  uint32 Salted(const FString& Kind,uint32 Salt){return FCrc::StrCrc32(*Kind)^(Salt*0x9e3779b1u);}
  // Nearer than this is somewhere the player is or is going; past it, somewhere they hear of.
@@ -349,7 +349,7 @@ FS47PlacePick FS47EventPlaces::PickFor(const FS47PlaceNeed& Need,int32 Seed,int3
  FS47PlacePick Out;
  const FString Here=M&&M->Web?M->Web->Area():FString();
  const bool bPlayer=!Player.ContainsNaN();
- TArray<const FS47EventPlace*> Near,Far;
+ TArray<const FS47EventPlace*> Near,Away;
  for(const FS47EventPlace& P:All())
  {
   if(!Fits(P,Need))continue;
@@ -357,13 +357,13 @@ FS47PlacePick FS47EventPlaces::PickFor(const FS47PlaceNeed& Need,int32 Seed,int3
   if(Need.bOtherArea&&!Here.IsEmpty()&&SameLand(Here,AreaOf(P)))continue;
   const double D=bPlayer?FVector2D::Distance(Player,FVector2D(P.X,P.Z)):0;
   if(bPlayer&&((Need.MinM>0&&D<Need.MinM)||(Need.MaxM>0&&D>Need.MaxM)))continue;
-  (bPlayer&&D>=FarFrom?Far:Near).Add(&P);
+  (bPlayer&&D>=FarFrom?Away:Near).Add(&P);
  }
- if(Near.IsEmpty()&&Far.IsEmpty())return Out;
+ if(Near.IsEmpty()&&Away.IsEmpty())return Out;
  const uint32 Key=Salted(Need.Kind,Salt);
  const float FarRoll=FS47NightRhythm::Roll(Seed,Night,Key^0x46415252u);
- const bool bFar=!Far.IsEmpty()&&(Near.IsEmpty()||FarRoll<Need.FarShare);
- const TArray<const FS47EventPlace*>& Pool=bFar?Far:Near;
+ const bool bFar=!Away.IsEmpty()&&(Near.IsEmpty()||FarRoll<Need.FarShare);
+ const TArray<const FS47EventPlace*>& Pool=bFar?Away:Near;
  TArray<float> Weights;float Sum=0;
  for(const FS47EventPlace* P:Pool){const float W=FMath::Max(1e-4f,Weight(*P,Need,Night,bPlayer?Player:FVector2D(S47EventPlacesLocal::Nan,S47EventPlacesLocal::Nan),Heading,bFar));Weights.Add(W);Sum+=W;}
  const float Roll=FS47NightRhythm::Roll(Seed,Night,Key);
