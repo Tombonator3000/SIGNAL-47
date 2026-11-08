@@ -192,6 +192,7 @@ public:
 	struct FStepPick { FString Name; float Gain = 0.f; };
 	FStepPick StepPick(const FString& Surface) const;
 	void Step(const FString& Surface);       // a footstep on a surface ('tile' | 'concrete' | 'dirt' | 'wood' | 'carpet')
+	float StepScale = 1.f;                   // SNEAK-20261108: softer while the player keeps low (AS47Walker::StepLoudness)
 	void NightLife(float Dt, const FVector& At, double Clock = 0.0);
 	void Far(const FString& Name, const FVector& At, float Gain, float Rate = 1.f);
 	void DuckAll(float Seconds);

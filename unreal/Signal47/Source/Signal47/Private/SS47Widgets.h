@@ -102,7 +102,7 @@ private:
 	TSharedPtr<class SBox> SlipSlot;
 	// HUD-20261108: the small gauges bottom right, the flashlight's battery as five strokes and the radio line with its wave, each
 	// fading in and out; read from the game a few times a frame, painted over everything but the fade (S47HudGauges.h)
-	struct FGauges { float BatteryA = 0.f, RadioA = 0.f; int32 Strokes = 0, Radio = 0; bool bLow = false; float Strength = 0.f; } Gauges;
+	struct FGauges { float BatteryA = 0.f, RadioA = 0.f; int32 Strokes = 0, Radio = 0, Channel = 1, Mode = 0; bool bLow = false; float Strength = 0.f; } Gauges;
 	void ReadGauges(float Dt);
 	void PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	// STRESS-20261108: the darker edge, painted under the rest of the HUD (S47Stress.h)

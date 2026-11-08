@@ -1027,7 +1027,7 @@ void US47Audio::Step(const FString& Surface)
 	FString Name = S.Names[FMath::Min(Len - 1, int32(FMath::FRand() * Len))];
 	if (Name == LastStep) Name = S.Names[(S.Names.IndexOfByKey(Name) + 1 + int32(FMath::FRand() * (Len - 1))) % Len];
 	LastStep = Name;
-	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f); O.Rate = S.Rate * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
+	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f) * FMath::Clamp(StepScale, 0.f, 1.f); O.Rate = S.Rate * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
 	Sfx(Name, O);
 }
 

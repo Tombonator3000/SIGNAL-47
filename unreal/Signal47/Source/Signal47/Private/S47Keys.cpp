@@ -41,6 +41,10 @@ namespace S47KeysLocal
 			A(TEXT("light"), TEXT("Flashlight"), Foot, TEXT("The flashlight, once you have it."), EKeys::F),
 			A(TEXT("camera"), TEXT("Field camera"), Foot, TEXT("Raise or lower the field camera."), EKeys::C),
 			A(TEXT("shutter"), TEXT("Shutter"), Foot, TEXT("Take the picture, with the camera raised."), EKeys::SpaceBar),
+			// SNEAK-20261108 and WALKIE-USE-20261108 (Tom, 8 November): keep low, and the walkie in the player's own hand
+			A(TEXT("crouch"), TEXT("Keep low"), Foot, TEXT("Crouch, or stand up again. Slower and quieter steps and a lower eye: a little less for anything out there to hear or see. Running or jumping stands you up."), EKeys::LeftControl, EKeys::RightControl),
+			A(TEXT("walkie"), TEXT("Walkie-talkie"), Foot, TEXT("Talk on the walkie once you carry it: call Dale on channel 1, or answer him when he calls. In the truck too."), EKeys::T),
+			A(TEXT("channel"), TEXT("Walkie channel"), Foot, TEXT("Turn the walkie to its next channel: 1 is Dale's, 2 the district's service band, 3 nobody's. Off channel 1, Dale cannot reach you."), EKeys::Y),
 			A(TEXT("radio"), TEXT("Truck radio"), Truck, TEXT("The radio in the cab: on, the next station, off."), EKeys::R),
 			A(TEXT("notebook"), TEXT("Notebook"), Panels, TEXT("The notebook: tonight's tasks, notes, papers and photographs."), EKeys::Tab, EKeys::N),
 			A(TEXT("map"), TEXT("Notebook map"), Panels, TEXT("The notebook, open at its map."), EKeys::M),

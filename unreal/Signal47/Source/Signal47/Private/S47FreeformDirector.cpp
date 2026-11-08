@@ -745,7 +745,7 @@ void FS47FreeformDirector::Apply()
    const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
    const FString Region=P?P->Region:FString(TEXT("land"));
    const FString Tip=Region==TEXT("motel")?FString(TEXT("The night clerk at the Sierra Motor Court reports lights low over the lot.")):FString::Printf(TEXT("%s reports lights low over %s."),Region==TEXT("caliche")||Region==TEXT("diner")?TEXT("Somebody in town"):Region==TEXT("saro")?TEXT("A trucker on the highway"):Region==TEXT("farm")?TEXT("A caller on the county road"):TEXT("A rancher on the county road"),*LightPlaceTitle(LightPlace));
-   if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+   FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
   }
   // Woken for this, or simply there: a figure out at the array makes itself known at least this much.
   if(Event==TEXT("observer"))
@@ -765,7 +765,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))
   {
    const FString Tip=FString::Printf(TEXT("A rancher says something came down near %s a while ago, a flash and no sound. He would rather not go and look."),*LightPlaceTitle(PlaceId));
-   if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
+   FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
   }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)

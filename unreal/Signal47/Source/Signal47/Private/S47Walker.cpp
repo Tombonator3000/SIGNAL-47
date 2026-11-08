@@ -17,6 +17,8 @@
 #include "S47Main.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
+#include "S47Audio.h"
+#include "S47Sneak.h"
 
 using namespace S47Three;
 
@@ -91,9 +93,19 @@ void AS47Walker::Place(double X, double Z, double InYaw)
 	Pitch = -0.06;
 	FloorY = FloorAt(X, Z);
 	Settle = 0.5f;
-	// (put down somewhere: on its feet, not in the air)
+	// (put down somewhere: on its feet, not in the air, and standing)
 	bAir = false; Lift = LiftV = 0; LandT = -1;
+	bCrouch = false; CrouchK = 0;
 }
+
+void AS47Walker::SetCrouch(bool bOn)
+{
+	if (bOn == bCrouch || (bOn && bAir)) return;
+	bCrouch = bOn;
+	UE_LOG(LogS47Walker, Display, TEXT("S47: %s at %.2f %.2f"), bOn ? TEXT("keeping low") : TEXT("standing up"), Pos.X, Pos.Z);
+}
+
+double AS47Walker::StepLoudness() const { return FMath::Lerp(1.0, S47Sneak::StepGain, FMath::Clamp(CrouchK, 0.0, 1.0)); }
 
 void AS47Walker::Jump()
 {
@@ -296,6 +308,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 	if (CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View))
 	{
 		if (bAir) Land(true); // (no jump goes on in the truck)
+		bCrouch = false; CrouchK = 0; // (nor keeping low)
+		if (US47Main* CabMain = US47Main::Get(this); CabMain && CabMain->Audio) CabMain->Audio->StepScale = 1.f;
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
 		FVector2D Size(16, 9);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
@@ -307,8 +321,11 @@ void AS47Walker::Tick(float DeltaSeconds)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
+		// SNEAK-20261108: the Crouch key keeps low, or stands up again; setting off at a run stands up first
+		if (S47Keys::Pressed(PC, TEXT("crouch"))) SetCrouch(!bCrouch);
+		if (bCrouch && bRun && Mx * Mx + Mz * Mz > 0.01) SetCrouch(false);
 		// Player.update
-		const double Sp = Speed * (bRun ? 1.6 : 1.0) * MoveScale;
+		const double Sp = Speed * (bRun && !bCrouch ? 1.6 : 1.0) * MoveScale * FMath::Lerp(1.0, S47Sneak::Pace, CrouchK);
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
 		const double Vx = (Mx * C + Mz * S) * Sp * Dt, Vz = (-Mx * S + Mz * C) * Sp * Dt;
 		const FVector Before = Pos;
@@ -319,13 +336,21 @@ void AS47Walker::Tick(float DeltaSeconds)
 		{
 			Bob += Moved * 7.2;
 			StepDist += Moved;
-			if (StepDist > 0.8) { StepDist = 0; if (OnStep) OnStep(); }
+			// (low, the steps are shorter and softer: US47Audio::StepScale)
+			if (StepDist > FMath::Lerp(0.8, S47Sneak::StepEvery, CrouchK)) { StepDist = 0; if (OnStep) OnStep(); }
 		}
 		else if (!bAir) Bob *= 0.9;
 		// the Jump key as bound (Space unless changed); with the camera raised Space is the shutter
-		// and CanJump says no
-		if (S47Keys::Pressed(PC, TEXT("jump"))) Jump();
+		// and CanJump says no. Kept low, it stands the player up instead.
+		if (S47Keys::Pressed(PC, TEXT("jump"))) { if (bCrouch) SetCrouch(false); else Jump(); }
 	}
+	// down or up over a moment, as a body does it
+	{
+		const double Want = bCrouch ? 1.0 : 0.0;
+		CrouchK += (Want - CrouchK) * FMath::Min(1.0, Dt * 7.0);
+		if (FMath::Abs(Want - CrouchK) < 0.002) CrouchK = Want;
+	}
+	if (US47Main* StepMain = US47Main::Get(this); StepMain && StepMain->Audio) StepMain->Audio->StepScale = float(StepLoudness());
 	const double Fy = FloorAt(Pos.X, Pos.Z);
 	FloorY += (Fy - FloorY) * FMath::Min(1.0, Dt * 14.0);
 	// the jump's arc over the floor (the floor under the player as on the ground: a step up or down
@@ -348,7 +373,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	}
 	Shake = FMath::Max(0.0, Shake - Dt * 1.4);
 	const double Sh = bHeadMotion ? Shake * Shake : 0;
-	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
+	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye - S47Sneak::EyeDrop * CrouchK + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 * (1.0 - 0.5 * CrouchK) : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
 	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
@@ -365,4 +390,26 @@ void AS47Walker::Tick(float DeltaSeconds)
 	{
 		OnUse(Focused);
 	}
+}
+
+bool S47Sneak::SelfTest(TArray<FString>& Lines)
+{
+	bool bOk = true;
+	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s sneak: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), What)); bOk &= bCond; };
+	Check(SightReach(0) == 24.0 && SightReach(1) > 12.0 && SightReach(1) < 16.0 && SightReach(-3) == 24.0 && SightReach(7) == SightReach(1),
+		TEXT("the small ones see a crouching player from less far, and still from well over ten metres"));
+	Check(StepReach(1.9, 0) == 9.0 && StepReach(4.0, 0) == 18.0 && StepReach(0.2, 0) == 0.0 && StepReach(1.9 * Pace, 1) > 2.5 && StepReach(1.9 * Pace, 1) < 4.5,
+		TEXT("feet: nine metres walking, eighteen running, under five crouching, and still heard close by"));
+	Check(HuntPace(1, true) == 1.0 && HuntPace(0, false) == 1.0 && HuntPace(1, false) > 0.3 && HuntPace(1, false) < 1.0,
+		TEXT("a visit's interest grows slower while low and dark, never not at all; a lamp gives the player away"));
+	Check(ApproachPace(1, false) >= 0.7 && ApproachPace(1, false) < 1.0 && ApproachPace(1, true) == 1.0, TEXT("a visitor comes on only a little slower"));
+	Check(ChestHeight(0) == 1.25 && ChestHeight(1) > 0.6 && ChestHeight(1) < 1.0 && TrackPace(1) >= 0.75 && TrackPace(0) == 1.0,
+		TEXT("the light looks lower for a crouching chest, and only a little slower"));
+	Check(!DoorGoesAway(DoorStillSeconds - 0.1, 0) && DoorGoesAway(DoorStillSeconds, 0) && !DoorGoesAway(60, 0.99) && DoorGiveUp < 1.0,
+		TEXT("a door is given up on only after the room has kept still a while, and not always"));
+	Check(StillInRoom(1, false, 0) && !StillInRoom(1, true, 0) && !StillInRoom(0.2, false, 0) && !StillInRoom(1, false, 1.0),
+		TEXT("still is low, dark and not walking"));
+	Check(EyeDrop > 0.4 && EyeDrop < 0.8 && Pace > 0.3 && Pace < 0.8 && StepGain > 0.1 && StepGain < 0.6 && StepEvery < 0.8,
+		TEXT("low: the eye about sixty centimetres down, half pace, softer and shorter steps"));
+	return bOk;
 }

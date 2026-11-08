@@ -9,6 +9,8 @@
 #include "S47FarmHouse.h"
 #include "S47FarmSite.h"
 #include "S47FieldRadio.h"
+#include "S47Keys.h"
+#include "S47Flashlight.h"
 #include "S47FloodProbe.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
@@ -426,6 +428,21 @@ void FS47DevFreeform::AddIndoors(FS47DevEvents& E)
   auto* F=Session();if(!F||!F->IndoorDread){Tell(false,TEXT("Freeform only"));return;}
   const FString Why=F->IndoorDread->Door().DevStart();
   if(!Why.IsEmpty())Tell(false,Why);else Tell(true,TEXT("The handle moves."));
+ });
+ // SNEAK-20261108: low, dark and still while it waits, and it gives up on the room. Forced here; in play half the time.
+ E.AddFreeform(G,TEXT("Door: keep low and still, the old house"),TEXT("03:12, crouched with the lamp off; stay still while it waits and it goes away, the door shut"),[this]
+ {
+  PlaceRoom(TEXT("house"),[this]
+  {
+   auto* F=Session();if(!F||!F->IndoorDread||!M->Player)return;
+   if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn)M->Night->Flashlight->Toggle();
+   M->Player->SetCrouch(true);
+   F->IndoorDread->Door().TestHide(0.f);
+   const FString Why=F->IndoorDread->Door().DevStart();
+   if(!Why.IsEmpty()){F->IndoorDread->Door().TestHide(-1.f);Tell(false,Why);return;}
+   AimAt(F->IndoorDread->Door().DoorMiddle()+FVector(0,1.1,0));
+   Tell(true,TEXT("The handle moves. Stay low with the lamp off and do not move: when it has waited, steps go away along the wall."),8);
+  });
  });
  static const FRoom Peeks[]={{TEXT("saro"),TEXT("SARO control room")},{TEXT("house"),TEXT("the old house")},{TEXT("cinema"),TEXT("the Plaza cinema")}};
  for(const FRoom& R:Peeks)
@@ -1020,6 +1037,40 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  {
   auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevCb();
   if(!bSaid)Tell(false,TEXT("no CB line left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
+ });
+ // WALKIE-USE-20261108, CB-WALKIE-20261108 and SNEAK-20261108: the walkie in your own hand, the CB apart from it, keeping low.
+ E.AddFreeform(K,TEXT("Walkie: Dale calls you"),TEXT("gives you the set on channel 1; T answers within 18 s, or he gives up and it goes on the slip by the phone"),[this]
+ {
+  auto* F=Session();if(!F||!F->Predecessor){Tell(false,TEXT("Freeform only"));return;}
+  if(!F->Predecessor->TestHail())Tell(false,TEXT("the set cannot take it now: a call of his is already out"));
+  else Tell(true,FString::Printf(TEXT("Dale is calling on channel 1. %s answers."),*S47Keys::Label(TEXT("walkie"))),6);
+ });
+ E.AddFreeform(K,TEXT("Walkie: call Dale, as T does"),TEXT("his answer follows the hour and what you are doing; asleep 03:30 to 07:30 and on his way home 17 to 18"),[this]
+ {
+  if(!M||!M->FieldRadio.IsValid()){Tell(false,TEXT("no set"));return;}
+  if(!M->FieldRadio->Owned())M->FieldRadio->TestOwn();
+  Tell(true,TEXT("Keyed on the walkie. What comes back depends on the hour, where you are, and the channel."),5);
+  After(.4,[this]{if(M&&M->FieldRadio.IsValid())M->FieldRadio->PressTalk();});
+ });
+ E.AddFreeform(K,TEXT("Walkie: next channel, as Y does"),TEXT("1 Dale's, 2 the district's service band (wagon 23's carrier, out by the old grade), 3 nobody's"),[this]
+ {
+  if(!M||!M->FieldRadio.IsValid()){Tell(false,TEXT("no set"));return;}
+  if(!M->FieldRadio->Owned())M->FieldRadio->TestOwn();
+  M->FieldRadio->NextChannel();
+  Tell(true,FString::Printf(TEXT("The walkie is on channel %d."),M->FieldRadio->Channel()),4);
+ });
+ E.AddFreeform(K,TEXT("A stranger's report: CB or walkie"),TEXT("in the truck or the SARO building it comes over the CB; elsewhere Dale passes it on over the walkie"),[this]
+ {
+  if(!M){return;}
+  const bool bCb=FS47FieldRadio::CbAtHand(M);
+  FS47FieldRadio::Report(M,TEXT("A rancher on the county road reports lights low over the Baca lease. He says he will not go and look."));
+  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie, if you carry it on channel 1: green, WALKIE 1."),5);
+ });
+ E.AddFreeform(K,TEXT("Keep low, as Ctrl does"),TEXT("crouched or up again: half pace, softer steps, the eye 60 cm lower; seen and heard a little less"),[this]
+ {
+  if(!M||!M->Player){Tell(false,TEXT("no player"));return;}
+  M->Player->SetCrouch(!M->Player->bCrouch);
+  Tell(true,M->Player->bCrouch?TEXT("Keeping low."):TEXT("Standing."),3);
  });
  E.AddFreeform(K,TEXT("1420: the next caller"),TEXT("the next that fits; each once in a game"),[this]
  {

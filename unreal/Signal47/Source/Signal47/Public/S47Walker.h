@@ -95,6 +95,16 @@ public:
 	bool InAir() const { return bAir; }
 	double Lift = 0; // the feet over the floor in a jump, metres
 
+	// SNEAK-20261108: keep low (the Crouch key; the numbers are S47Sneak.h's). bCrouch is what was asked for, CrouchK the body
+	// getting there, 0 standing to 1 down. Not in the truck or in the air; running or jumping stands the player up, and so does
+	// being put somewhere (Place). Nothing of it is saved.
+	bool bCrouch = false;
+	double CrouchK = 0;
+	void SetCrouch(bool bOn);
+	double Sneak() const { return CrouchK; }
+	/** A footstep's loudness now, 1 standing (US47Audio::StepScale is set from it). */
+	double StepLoudness() const;
+
 	// tests: walk as if these keys were held (x right, z back: main.ts input.move), or unset; and run
 	TOptional<FVector2D> TestMove;
 	double MoveScale = 1; // legs going heavy: held in the light

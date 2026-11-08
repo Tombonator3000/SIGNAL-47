@@ -88,6 +88,21 @@ public:
  void TestRing();
  // Dale's next due line over the walkie, whatever the day. False: none is due.
  bool TestBark();
+ // Dale hails on the walkie now, with his next due line or a word of his own once it is answered. False: no set, or not on 1.
+ bool TestHail();
+
+ // WALKIE-USE-20261108: Dale on the walkie when the player calls him on channel 1. What comes back ("DALE: ..."), or empty: he
+ // does not answer. Angry and short, by the hour and by what the player is doing; a line of his that is due comes first.
+ FString AnswerWalkie();
+ // CB-WALKIE-20261108: a stranger's report as Dale passes it on over the walkie ("DALE: ..."). Empty when there is no Dale here.
+ FString RelayLine(const FString& Tip) const;
+ // The district's service band (the walkie's channel 2): wagon 23's open carrier, while its radio is on, in its part of the
+ // land. Empty: nothing on it. The first time it puts the wagon on the map, as the CB's talk of it does.
+ FString ServiceBand();
+ // What Dale's answer goes by. Hour: the Freeform clock's, 0 to 24. SinceLast: world-clock seconds since he last answered.
+ struct FDaleCall{double Hour=20;bool bDriving=false,bInside=false,bAtStation=false,bFarOut=false,bMissed=false,bLostTime=false,bArrayDown=false;double SinceLast=1e9;int32 Answered=0;};
+ // The id of his reply in S47PredecessorText::WalkieLines(), or null: nobody at his bench, or he has had enough.
+ static const TCHAR* DaleReply(const FDaleCall& C);
  void TestOutcome(EOutcome O);
  void TestLeave();
  void TestNextDay();
@@ -144,6 +159,13 @@ private:
  // Dale's next line that is due, if any; marked said by whoever delivers it.
  const S47PredecessorText::FBark* NextBark() const;
  void StepDale();
+ // The walkie (not saved: after a Continue he simply calls again). How often he has answered today, when he last did, whether
+ // a hail of his went unanswered, when he tries again, and which stretch of lost time he has already said something about.
+ int32 DaleAnswered=0,DaleAnsweredDay=0,DaleMisses=0,DaleMissDay=0,DaleHoursTold=0;
+ double DaleLastClock=-1e9,DaleRetryClock=0;
+ bool bDaleMissed=false;
+ void SayBark(const FString& Id);
+ void MissedHail();
  void Mark(const FString& Id,const FString& Summary);
  FString DateText(int32 Day) const;
  FString LetterText() const;
