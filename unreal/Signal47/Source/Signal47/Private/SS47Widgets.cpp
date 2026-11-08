@@ -505,6 +505,13 @@ void SS47Hud::ReadGauges(float Dt)
 	Gauges.RadioA += ((Kind ? 1.f : 0.f) - Gauges.RadioA) * Rate;
 	if (Gauges.BatteryA < 0.004f) Gauges.BatteryA = 0.f;
 	if (Gauges.RadioA < 0.004f) Gauges.RadioA = 0.f;
+	// SAVE-SARO-20261108: the LOG FILED stamp runs its few seconds whether or not it can be seen
+	Gauges.bShown = bShow;
+	if (Gauges.FiledT >= 0.f)
+	{
+		Gauges.FiledT += Dt;
+		if (Gauges.FiledT >= float(S47HudGauges::FiledFor)) Gauges.FiledT = -1.f;
+	}
 }
 
 void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
@@ -563,6 +570,21 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 			Points.Add(FVector2f(Right - WaveW + float(X) * WaveW, MidY - float(S47HudGauges::Wave(X, Now * 6.0, Gauges.Strength)) * WaveH * 0.5f));
 		}
 		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, FLinearColor(Tint.R, Tint.G, Tint.B, 0.8f * Gauges.RadioA), true, FMath::Max(1.f, P(1.4f)));
+	}
+	// SAVE-SARO-20261108: LOG FILED when the autosave on leaving SARO is written, in the CB's amber in a thin stamped frame, over the
+	// radio line and the battery when they are showing; a few seconds, then gone (S47HudGauges::FiledAlpha)
+	const float StampA = Gauges.bShown && Gauges.FiledT >= 0.f ? float(S47HudGauges::FiledAlpha(Gauges.FiledT)) : 0.f;
+	if (StampA > 0.f && !Gauges.Filed.IsEmpty())
+	{
+		const FSlateFontInfo StampFont = Term(20.f, 2.f);
+		const float StampTextW = FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Gauges.Filed, StampFont).X;
+		const float StampPad = P(8.f), StampH = P(26.f), StampEdge = FMath::Max(1.f, P(1.2f));
+		const float StampBottom = Floor - Gauges.BatteryA * P(32.f) - Gauges.RadioA * P(36.f) - P(4.f);
+		const float StampW = StampTextW + 2.f * StampPad, StampLeft = Right - StampW, StampTop = StampBottom - StampH;
+		const FLinearColor StampInk(1.f, 0.69f, 0.32f, 0.6f * StampA);
+		Fill(StampLeft, StampTop, StampW, StampEdge, StampInk); Fill(StampLeft, StampBottom - StampEdge, StampW, StampEdge, StampInk);
+		Fill(StampLeft, StampTop, StampEdge, StampH, StampInk); Fill(Right - StampEdge, StampTop, StampEdge, StampH, StampInk);
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.92f * StampA));
 	}
 }
 
@@ -629,7 +651,7 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		Text(Vf.Hint, C.X, R.Bottom - 14 - 22, 15.f * 1.3f, Line * FLinearColor(1, 1, 1, 0.75f), true);
 		Top += 4;
 	}
-	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f)
+	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f || (Gauges.bShown && Gauges.FiledT >= 0.f))
 	{
 		PaintGauges(G, Out, Top + 1);
 		Top += 1;

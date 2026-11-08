@@ -58,6 +58,7 @@
 #include "S47Chapter6.h"
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
+#include "S47HudGauges.h"
 #include "S47Image.h"
 #include "S47Keys.h"
 #include "S47Mirrors.h"
@@ -515,6 +516,8 @@ void US47Flow::Step(double Dt)
  }
  // Never replace the pre-contact save with a dead session.
  if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return;
+	// SAVE-SARO-20261108: leaving the station files the log once (before the routine autosave, which it then stands in for)
+	StepDeparture(Dt);
  // frame(): right after the frame, so the save's picture is this frame
 	FlushAutosave();
 }
@@ -1291,7 +1294,10 @@ void US47Flow::OpenPause()
 	O.OnSave = [this]
 	{
 		FS47SaveMenuOpts S;
-		S.Mode = TEXT("save"); S.Metas = Saves.List(); S.ActiveCase = CaseId; S.Block = SaveBlock(); S.bFallback = Saves.bFallback;
+		S.Mode = TEXT("save"); S.Metas = Saves.List(); S.ActiveCase = CaseId; S.Block = ManualSaveBlock(); S.bFallback = Saves.bFallback;
+		// SAVE-SARO-20261108: in Freeform the log is filed at the station; elsewhere the menu says so and offers no save
+		S.bFreeform = M->IsFreeform();
+		if (S.bFreeform) S.Note = FString::Printf(TEXT("Case %d. The log is filed here at the station, and an autosave is made each time you leave SARO. Manual saves stay until you overwrite them."), CaseId ? CaseId : 1);
 		S.OnSave = [this](int32 Slot, FString& Err) { return WriteSave(TEXT("manual"), Slot, Err); };
 		S.OnBack = [this] { M->bPausedByMenu = false; OpenPause(); };
 		S47SaveMenu::Open(M->UI, S);
@@ -1527,8 +1533,136 @@ FString US47Flow::FreeformSaveBlock() const
 {
  if(bStarting || (M->World && M->World->bBusy))return TEXT("Let the journey finish before saving.");
  if(M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Busy())return TEXT("Not now.");
+ // SAVE-SARO-20261108: what no save can carry (a visit on the ground, one at a door or a window, the wrong voice): a save in the
+ // middle of it would be a way out of it, so the autosaves, the save on quitting and a manual save all wait until it is over.
+ if(const FString Out=S47SaroSave::Unsaved(M);!Out.IsEmpty())return Out;
  if(M->World && M->World->bDriving)return TEXT("Park and get out before saving the current supply trip.");
  return FString();
+}
+
+FString US47Flow::ManualSaveBlock() const
+{
+	// Freeform files the log at the station: anywhere else the menu says so (a developer run's, a dead session's own words first)
+	if (M->IsFreeform() && M->Mode == EMode::Play && CaseId && !bDevRun && !(M->Freeform && M->Freeform->Dead()) && !S47SaroSave::InStation(M)) return S47SaroSave::StationOnly();
+	return SaveBlock();
+}
+
+// ---------- the departure from SARO (SAVE-SARO-20261108) ----------
+
+bool US47Flow::DepartureLive() const
+{
+	return M->IsFreeform() && M->Mode == EMode::Play && M->Freeform && M->Freeform->Active() && !bStarting && !bRestoringNow && M->Web && M->Player && M->World;
+}
+
+FS47SaroDeparture::FIn US47Flow::DepartureIn(double Dt) const
+{
+	FS47SaroDeparture::FIn In;
+	In.bInside = S47SaroSave::InStation(M);
+	In.bDriving = M->World && M->World->bDriving;
+	In.Area = M->Web ? M->Web->Area() : FString();
+	if (M->Player) In.At = FVector2D(M->Player->Pos.X, M->Player->Pos.Z);
+	// the truck left at the station, and the player beside it: arrived (the farm and the motel share SARO's scene and its place name)
+	In.bTruckAtSaro = M->World && M->World->TruckAt == TEXT("saro") && In.Area == TEXT("saro") && S47SaroSave::OnStationGround(In.At.X, In.At.Y);
+	In.Dt = Dt;
+	return In;
+}
+
+void US47Flow::StepDeparture(double Dt)
+{
+	// a new game, a Continue or the title: nothing armed, nothing waiting
+	const void* Session = M->IsFreeform() && M->Freeform ? static_cast<const void*>(M->Freeform.Get()) : nullptr;
+	if (!DepartureLive() || Session != DepartureSession) { Departure.Reset(); DepartureSession = Session; DepartureWaitSaid.Empty(); return; }
+	if (M->bPausedByMenu) return;
+	const FS47SaroDeparture::FIn In = DepartureIn(Dt);
+	const FS47SaroDeparture::EHow How = Departure.Look(In);
+	if (How != FS47SaroDeparture::EHow::None)
+	{
+		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure, %s, at %s (%s %.1f %.1f)"), FS47SaroDeparture::Name(How), *PlaceName(), *In.Area, In.At.X, In.At.Y);
+	}
+	else if (Departure.TakeSpaced())
+	{
+		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure within a minute of the last: not filed again"));
+		DepartureText = TEXT("not filed: within a minute of the last departure");
+	}
+	if (!Departure.Pending()) return;
+	if (Departure.Expired(In))
+	{
+		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure not filed: no safe moment (%s)"), DepartureWaitSaid.IsEmpty() ? TEXT("gone on") : *DepartureWaitSaid);
+		DepartureText = TEXT("not filed: ") + (DepartureWaitSaid.IsEmpty() ? FString(TEXT("the player went on")) : DepartureWaitSaid);
+		Departure.Drop(); DepartureWaitSaid.Empty();
+		return;
+	}
+	FileDeparture(false);
+}
+
+void US47Flow::DepartingByTruck()
+{
+	if (!DepartureLive()) return;
+	const FS47SaroDeparture::FIn In = DepartureIn(0);
+	const FS47SaroDeparture::EHow How = Departure.Drive(In);
+	if (How == FS47SaroDeparture::EHow::None) return;
+	UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure, %s, at %s"), FS47SaroDeparture::Name(How), *PlaceName());
+	// at the wheel nothing is saved: this is its moment, or none
+	FileDeparture(true);
+}
+
+void US47Flow::DevDeparture()
+{
+	Departure.Arm(); bDepartureShow = true;
+	DepartureText = TEXT("armed: not left yet");
+}
+
+bool US47Flow::FileDeparture(bool bLastChance)
+{
+	const FString How = FS47SaroDeparture::Name(Departure.PendingHow());
+	if (bDevRun || !CaseId)
+	{
+		// a developer run is never saved: the departure is seen, and its mark shown when F10 asked for it
+		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s): developer run, nothing is saved"), *How);
+		DepartureText = TEXT("seen: developer run, nothing is saved");
+		if (bDepartureShow && M->UI) M->UI->Filed(TEXT("LOG FILED  DEV RUN, NOT SAVED"));
+		bDepartureShow = false; Departure.Drop(); DepartureWaitSaid.Empty();
+		return false;
+	}
+	FString Why = S47SaroSave::Danger(M);
+	if (Why.IsEmpty()) Why = SaveBlock();
+	if (!Why.IsEmpty())
+	{
+		if (bLastChance)
+		{
+			UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s) not filed: %s"), *How, *Why);
+			DepartureText = TEXT("not filed: ") + Why;
+			Departure.Drop(); DepartureWaitSaid.Empty(); bDepartureShow = false;
+			return false;
+		}
+		if (DepartureWaitSaid != Why)
+		{
+			UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s) waits: %s"), *How, *Why);
+			DepartureWaitSaid = Why; DepartureText = TEXT("waiting: ") + Why;
+		}
+		return false;
+	}
+	// The case's own autosave slots, never a manual one. A slot of its own (a new generation, as a chapter's), and the next routine
+	// autosave starts another, so the moment of leaving is kept until the slots have turned round.
+	Saves.NewGeneration(CaseId);
+	bPendingAuto = false;
+	FString Err;
+	const TOptional<FS47SaveMeta> Meta = WriteSave(TEXT("auto"), -1, Err);
+	DepartureWaitSaid.Empty(); bDepartureShow = false;
+	if (!Meta)
+	{
+		UE_LOG(LogS47Flow, Warning, TEXT("S47: SARO departure (%s): autosave failed: %s"), *How, *Err);
+		DepartureText = TEXT("not filed: ") + Err;
+		if (M->UI) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
+		Departure.Drop();
+		return false;
+	}
+	Saves.NewGeneration(CaseId);
+	Departure.Filed();
+	UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s) filed as %s (%s, %s)"), *How, *Meta->Id, *Meta->Place, *Meta->Clock);
+	DepartureText = FString::Printf(TEXT("filed as %s (%s, %s)"), *Meta->Id, *Meta->Place, *Meta->Clock);
+	if (M->UI) M->UI->Filed(S47HudGauges::FiledLine(Meta->Clock));
+	return true;
 }
 
 FString US47Flow::SaveBlock() const
@@ -2216,7 +2350,8 @@ bool US47Flow::OpenTestView(const FString& View)
 	if (View == TEXT("save") || View == TEXT("load"))
 	{
 		FS47SaveMenuOpts S;
-		S.Mode = View; S.Metas = Saves.List(); S.ActiveCase = M->Mode == EMode::Title ? Saves.Active() : CaseId; S.Block = SaveBlock(); S.bFallback = Saves.bFallback;
+		S.Mode = View; S.Metas = Saves.List(); S.ActiveCase = M->Mode == EMode::Title ? Saves.Active() : CaseId; S.Block = ManualSaveBlock(); S.bFallback = Saves.bFallback;
+		S.bFreeform = M->IsFreeform() && M->Mode == EMode::Play;
 		S.OnSave = [this](int32 Slot, FString& Err) { return WriteSave(TEXT("manual"), Slot, Err); };
 		S.OnLoad = [this](const FS47SaveMeta& Mt) { OpenSave(Mt); };
 		S.OnDelete = [this](const FS47SaveMeta& Mt, FString& Err) { return Saves.Remove(Mt.Id, Err); };

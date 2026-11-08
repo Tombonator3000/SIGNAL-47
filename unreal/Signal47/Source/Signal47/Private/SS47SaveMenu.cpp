@@ -88,7 +88,7 @@ void SS47SaveMenu::Construct(const FArguments& InArgs)
 		if (!CardMetas(Card).Num()) for (int32 C = 0; C < 3; ++C) if (CardMetas(C).Num()) { Card = C; break; }
 	}
 	if (Saving() && !O.Block.IsEmpty()) { Status = O.Block; bStatusWarn = true; }
-	else if (Saving()) Status = FString::Printf(TEXT("Case %d. Autosaves are made at each new chapter, area and finding. Manual saves stay until you overwrite them."), SaveCase());
+	else if (Saving()) Status = !O.Note.IsEmpty() ? O.Note : FString::Printf(TEXT("Case %d. Autosaves are made at each new chapter, area and finding. Manual saves stay until you overwrite them."), SaveCase());
 	else if (O.bFallback) Status = TEXT("This browser blocks the photo store, so saves are kept in a smaller space and may not all fit.");
 	Render();
 }
@@ -245,7 +245,9 @@ void SS47SaveMenu::Render()
 	const FString TitleText = Saving() ? TEXT("SAVE CASE") : O.Mode == TEXT("new") ? (O.bNewFreeform ? TEXT("NEW FREEFORM / CHOOSE CASE") : TEXT("NEW NIGHT")) : TEXT("LOAD CASE");
 	const FString Id = Saving() ? FString::Printf(TEXT("CASE %d // MANUAL SAVES"), SaveCase()) : O.Mode == TEXT("new") ? TEXT("EVERY CASE IS IN USE // CHOOSE ONE TO REPLACE") : TEXT("CASE FILES // SARO ARCHIVE");
 	TArray<S47Theme::FHint> Keys;
-	if (Saving()) Keys = { { TEXT("LEFT RIGHT"), TEXT("SLOT"), nullptr }, { TEXT("ENTER"), TEXT("SAVE"), [this] { Activate(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Close(); } } };
+	// SAVE-SARO-20261108: a Freeform menu that cannot save offers no SAVE (the station rule); the Story's keeps its keys as they were
+	if (Saving() && O.bFreeform && !O.Block.IsEmpty()) Keys.Add(S47Theme::FHint{ TEXT("ESC"), TEXT("BACK"), [this] { Close(); } });
+	else if (Saving()) Keys = { { TEXT("LEFT RIGHT"), TEXT("SLOT"), nullptr }, { TEXT("ENTER"), TEXT("SAVE"), [this] { Activate(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Close(); } } };
 	else if (O.Mode == TEXT("new")) Keys = { { TEXT("LEFT RIGHT"), TEXT("CASE"), nullptr }, { TEXT("ENTER"), TEXT("REPLACE"), [this] { Activate(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Close(); } } };
 	else Keys = { { TEXT("LEFT RIGHT"), TEXT("CASE"), nullptr }, { TEXT("UP DOWN"), TEXT("SAVE"), nullptr }, { TEXT("ENTER"), TEXT("LOAD"), [this] { Activate(); } },
 		{ TEXT("DEL"), TEXT("ERASE"), [this] { Erase(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Close(); } } };

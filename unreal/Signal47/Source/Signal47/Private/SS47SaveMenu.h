@@ -23,6 +23,10 @@ struct FS47SaveMenuOpts
 	TArray<FS47SaveMeta> Metas;
 	int32 ActiveCase = 0;                            // 0: null
 	FString Block;                                   // save mode: why saving is not possible right now
+	// SAVE-SARO-20261108: a Freeform save menu. Blocked, it offers no save at all (the station rule, S47SaroSave.h); Note is the line
+	// under the cards when it can save (empty: the Story's own line)
+	bool bFreeform = false;
+	FString Note;
 	bool bFallback = false;                          // the photo store could not be used
 	TFunction<void(const FS47SaveMeta&)> OnLoad;
 	TFunction<TOptional<FS47SaveMeta>(int32 Slot, FString& OutError)> OnSave;

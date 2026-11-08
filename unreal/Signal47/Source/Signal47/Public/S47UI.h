@@ -250,6 +250,8 @@ public:
 	/** A line written into the notebook (AS47Story::Note): the HUD's NOTED slip (not while a case is
 	 *  being opened, when its old lines come back). */
 	void Noted(const FString& Text);
+	/** SAVE-SARO-20261108: the small LOG FILED stamp over the HUD's gauges, when the autosave on leaving SARO is written. */
+	void Filed(const FString& Line);
 
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;
