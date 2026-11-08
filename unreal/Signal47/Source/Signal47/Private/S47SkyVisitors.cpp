@@ -611,7 +611,9 @@ bool FS47SkyVisitors::FormationQuiet() const
 {
  const auto* Session = M ? M->Freeform.Get() : nullptr;
  if (!Session) return false;
- if (Session->Director && Session->Director->Busy()) return false;
+ // The sky is the background slot (director.json): it runs under a ground event with nothing up there. Held to every
+ // Director event, a parked car or a fragment in the yard took the night's formations with it (krit9, 8 November).
+ if (Session->Director && !Session->Director->LeavesSkyFree()) return false;
  if (M->HighwayUfo && M->HighwayUfo->Busy()) return false;
  if (Session->Taken && Session->Taken->Busy()) return false;
  if (Session->FarmSite && Session->FarmSite->VisitWantsGround()) return false;

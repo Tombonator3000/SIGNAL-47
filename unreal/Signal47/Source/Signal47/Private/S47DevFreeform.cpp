@@ -745,7 +745,7 @@ void FS47DevFreeform::SetNatural(bool bOn)
  }
  else
  {
-  D.TestOrbNight(false);D.TestMysteryDice(-1.f);D.TestCarDice(-1.f);D.TestSchedule(-1.f,-1,1.);
+  D.TestOrbNight(false);D.TestMysteryDice(-1.f);D.TestCarDice(-1.f);D.TestSchedule(-1.f,-1,1.);D.TestEventPace(1.);
   if(F->Aftermath)F->Aftermath->TestDice(-1.f,-1.f);
   Speed=1;SpeedUsed=1;Holding.Empty();
  }
@@ -814,6 +814,8 @@ void FS47DevFreeform::StepNatural(double Dt)
  if(M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&Use>5)Use=5;
  SpeedUsed=Use;
  if(ScheduleHeld>0)ScheduleHeld-=Dt;else D.TestSchedule(-1.f,-1,Use);
+ // What runs on at speed ages at speed: its minutes are the night's minutes, as they are at the wheel. What is held at x1 is.
+ D.TestEventPace(Why.IsEmpty()?Use:1.);
  if(Use>1&&Dt>0&&Dt<.5&&!F->Held())
  {
   const double Now=F->Clock();

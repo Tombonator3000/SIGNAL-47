@@ -57,8 +57,9 @@ public:
  const FString& Source() const{return SourceName;}
  const FS47RhythmData& Data() const{return Rules;}
  static bool Parse(const FString& Json,FS47RhythmData& Out,FString& Why);
- // Same answer for one event's one last day as the Director's own (S47FreeformDirector.cpp, CoolDays), which this will replace.
- static int32 CoolDays(const FString& Id,int32 Last);
+ // Days before an event comes again: from Min to Max (cooldown_days), always the same answer for one event's one last day. The
+ // Director asks this too (FS47FreeformDirector::CoolFor), so that the panel and the night agree.
+ static int32 CoolDays(const FString& Id,int32 Last,int32 Min=2,int32 Max=4);
  // Fixed order, so that the panel and the log say the same: off, tutorial, too_early_day, outside_hours, cooldown, slot_taken:<id>, rest,
  // budget, danger_night, not_here, needs:<name>, not_drawn_tonight. Need answers for a name; unset: every need holds.
  FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr) const;

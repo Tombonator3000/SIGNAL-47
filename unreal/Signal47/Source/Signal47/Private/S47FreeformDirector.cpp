@@ -419,6 +419,20 @@ S47J::FObj FS47FreeformDirector::Save()const
  return O;
 }
 bool FS47FreeformDirector::Busy()const{return bEnabled&&!Event.IsEmpty();}
+bool FS47FreeformDirector::LeavesSkyFree()const
+{
+ if(!Busy())return true;
+ if(Instrument(Event)||S47SmallHints::Is(Event))return true;
+ if(Event==TEXT("empty_car"))return !(bCarLight&&CarStage==1);
+ return Event==TEXT("s03_failure")||Event==TEXT("feeder_fault")||Event==TEXT("landing_trace")||Event==TEXT("unsigned_telex")||Event==TEXT("roomlight_return");
+}
+int32 FS47FreeformDirector::CoolFor(const FString& Id,int32 Last)const
+{
+ // Always the same answer for one event's one last day. The small things may come back the next night, some the same one.
+ int32 Min=2,Max=4;
+ if(M&&M->Rhythm)if(const FS47RhythmEvent* E=M->Rhythm->Data().Find(FName(*Id)))if(E->CoolMin>=0){Min=E->CoolMin;Max=FMath::Max(E->CoolMin,E->CoolMax);}
+ return FS47Rhythm::CoolDays(Id,Last,Min,Max);
+}
 bool FS47FreeformDirector::Night()const
  {if(!M||!M->Freeform)return false;const double H=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;return H>=19||H<6;}
 bool FS47FreeformDirector::Near(const FVector& At,double Range)const
@@ -431,12 +445,6 @@ namespace
 {
  struct FLightPlace{const TCHAR* Id;const TCHAR* Title;const TCHAR* Prop;};
  // Existing Caliche fronts. The farm has its own event; add a place here and it can be visited.
- // Two to four days before an event can come again: always the same answer for one event's one last day.
- int32 CoolDays(const FString& Id,int32 Last)
- {
-  const uint32 V=FCrc::StrCrc32(*Id)^(uint32(Last)*2654435761u);
-  return 2+int32(((V>>7)^V)%3u);
- }
  const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")},
   // Out on the land (FS47Places). Their marks and a second look work as in town.
   {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")},
@@ -501,7 +509,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
   // The close pass is a hull beside the player, not a far light: it waits too.
   if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!M->Freeform->TheirHoursNow(Clock))return false;
-  if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(Today-*Last<CoolDays(Id,*Last))return false;
+  if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(Today-*Last<CoolFor(Id,*Last))return false;
   if(D->Family==TEXT("threat")&&(LastThreatDay==Today||Clock<86400.+19*3600.))return false;
   // Asked at the moment it would start: one dangerous meeting a night, across every system (Tom, 7 November).
   if(At<0&&D->Family==TEXT("threat")&&M->Rhythm&&!M->Rhythm->Allow(FName(*Id)))return false;
@@ -1027,13 +1035,15 @@ void FS47FreeformDirector::Step(double Dt)
   // A developer run's fixtures keep the fixed night they were written for: the same list, in the same order, spent as it comes.
   const bool bLiveNight=M->Freeform->RulesLive();
   const bool bMinorDue=!bLiveNight||!bNight||S47SmallHints::PaceAllows(MinorBudget-MinorLeft,MinorBudget,FMath::Fmod(M->Freeform->Clock(),86400.)/3600.,FMath::FRand());
-  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&(!D.bNight||!bNight||!M->Freeform->QuietNight(Day))&&(bLiveNight||!S47SmallHints::Is(D.Id))&&Eligible(D.Id,false))
+  // A calm night (FS47NightRhythm::Quiet) has no bodies, no lights and nothing that leads anywhere, but it is not an empty
+  // one: the small deniable things still come (Tom, 7 November: "more must happen"; krit9 night 5 had none at all).
+  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Id!=TEXT("farm_lights")&&D.Id!=TEXT("town_lights")&&D.Id!=TEXT("observer")&&D.Id!=TEXT("feeder_presence")&&D.Id!=TEXT("array_presence")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&(!D.bNight||!bNight||!M->Freeform->QuietNight(Day)||S47SmallHints::Is(D.Id))&&(bLiveNight||!S47SmallHints::Is(D.Id))&&Eligible(D.Id,false))
   {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");const bool bFar=D.Id==TEXT("response_lights")||D.Id==TEXT("quiet_zone");if((Minor&&MinorLeft>0&&bMinorDue)||(bFar&&SkyLeft>0)||(!Minor&&!bFar&&InvestLeft>0))Choices.Add(D.Id);}
   if(Choices.IsEmpty()){Changed();return;}
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
   if(Start(Id,false)){const auto* D=Definition(Id);if(D->Family==TEXT("minor")||D->Family==TEXT("maintenance"))--MinorLeft;else if(Id==TEXT("response_lights")||Id==TEXT("quiet_zone"))--SkyLeft;else --InvestLeft;Changed();}return;
  }
- Apply();if(!bApplied||Event.IsEmpty())return;Age+=Dt;Draw();const auto* Def=Definition(Event);if(!Def){Finish(false);return;}
+ Apply();if(!bApplied||Event.IsEmpty())return;Age+=Dt*TestPace;Draw();const auto* Def=Definition(Event);if(!Def){Finish(false);return;}
  // Hardware can be repaired at a separate physical site (the feeder is on the
  // road). Complete against its saved authority before applying scene-local rules.
  if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}

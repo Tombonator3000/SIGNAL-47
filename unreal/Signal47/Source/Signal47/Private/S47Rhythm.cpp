@@ -97,10 +97,11 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  return true;
 }
 
-int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last)
+int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last,int32 Min,int32 Max)
 {
  const uint32 V=FCrc::StrCrc32(*Id)^(uint32(Last)*2654435761u);
- return 2+int32(((V>>7)^V)%3u);
+ Min=FMath::Max(0,Min);Max=FMath::Max(Min,Max);
+ return Min+int32(((V>>7)^V)%uint32(Max-Min+1));
 }
 
 void FS47Rhythm::Load()
@@ -157,7 +158,7 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  {
   // As the Director has it now: the day-to-day answer from the id, so that the panel tells the truth about its own numbers.
   if(E->CoolMin>=0)
-  {const int32 Cool=FS47Rhythm::CoolDays(IdText,*Last);if(Now.Day-*Last<Cool)return No(TEXT("cooldown"),FString::Printf(TEXT("%d days"),*Last+Cool-Now.Day));}
+  {const int32 Cool=FS47Rhythm::CoolDays(IdText,*Last,E->CoolMin,E->CoolMax);if(Now.Day-*Last<Cool)return No(TEXT("cooldown"),FString::Printf(TEXT("%d days"),*Last+Cool-Now.Day));}
   if(E->MinNights>0&&Now.Day-*Last<E->MinNights)return No(TEXT("cooldown"),FString::Printf(TEXT("%d nights"),*Last+E->MinNights-Now.Day));
  }
  if(E->bGround&&!Now.Busy.IsNone())return No(FString::Printf(TEXT("slot_taken:%s"),*Now.Busy.ToString()));
@@ -450,5 +451,16 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  }
  OK&=S47SmallHints::SelfTest(Lines);
  Check(CoolDays(TEXT("flyover"),3)>=2&&CoolDays(TEXT("flyover"),3)<=4&&CoolDays(TEXT("flyover"),3)==CoolDays(TEXT("flyover"),3),TEXT("cooldown two to four days, the same each time"));
+ Check(CoolDays(TEXT("roof_tick"),3,0,0)==0&&CoolDays(TEXT("night_hush"),3,1,1)==1&&CoolDays(TEXT("x"),3,5,2)==5,TEXT("cooldown from the file's own range"));
+ {
+  // Tom, 7 November, "more must happen": a small deniable thing may come back the next night, so that a player who keeps to one
+  // place still has a night around them (krit9: three of six nights at the farmhouse had nothing small at all).
+  bool bShort=true;FString Long;
+  for(const FString& Id:S47SmallHints::Ids()){const auto* E=D.Find(FName(*Id));if(!E||E->CoolMin<0||E->CoolMax>2){bShort=false;Long+=Id+TEXT(" ");}}
+  Check(bShort,TEXT("every small thing comes back within two days ")+Long);
+  FS47RhythmNow A=N;A.Clock=4*86400.+23*3600.;A.LastDays.Add(TEXT("roof_tick"),5);
+  Check(R.May(TEXT("roof_tick"),A).bMay,TEXT("the roof can tick twice in one night"));
+  A.LastDays.Add(TEXT("flyover"),5);Check(Says(TEXT("flyover"),A)==TEXT("cooldown"),TEXT("a light in the sky keeps its days"));
+ }
  return OK;
 }
