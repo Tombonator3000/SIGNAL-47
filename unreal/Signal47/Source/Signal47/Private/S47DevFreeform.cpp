@@ -1166,7 +1166,7 @@ void FS47DevFreeform::AddAnywhere(FS47DevEvents& E)
  {
   auto* F=Session();if(!F||!F->Director||!F->EventPlaces){Tell(false,TEXT("Freeform only"));return;}
   const FString Seen=F->Director->PreviewPlace(TEXT("farm_lights")),Heard=F->Director->PreviewPlace(TEXT("town_lights")),Trace=F->Director->PreviewPlace(TEXT("landing_trace"));
-  for(const FS47EventPlace& P:F->EventPlaces->All())UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 place %s: %s, %s, %.0f m, last night %d, used %d"),*P.Id,*P.Title,*FS47EventPlaces::AreaOf(P),F->EventPlaces->DistanceFromPlayer(P),F->EventPlaces->LastNight(P.Id),F->EventPlaces->TimesUsed(P.Id));
+  for(const FS47EventPlace& P:F->EventPlaces->All()){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 place %s: %s, %s, %.0f m, last night %d, used %d"),*P.Id,*P.Title,*FS47EventPlaces::AreaOf(P),F->EventPlaces->DistanceFromPlayer(P),F->EventPlaces->LastNight(P.Id),F->EventPlaces->TimesUsed(P.Id));}
   Tell(true,FString::Printf(TEXT("Lights seen from here: %s. Heard of: %s. Marked ground: %s. %d places on the list."),Seen.IsEmpty()?TEXT("none"):*Name(Seen),Heard.IsEmpty()?TEXT("none"):*Name(Heard),Trace.IsEmpty()?TEXT("none"):*Name(Trace),F->EventPlaces->All().Num()),9);
  });
 }

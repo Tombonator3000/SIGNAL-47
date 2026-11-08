@@ -663,7 +663,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  {
   // ARRAY-ORBS (Tom, 8 November): the first time where they have always come, in front, so that they are seen; after that
   // anywhere over the array, by the visit's own seed. A fixture started by Force alone keeps the first spot.
-  const bool bHome=DuskOrb.VisitsSoFar()==0||(Forced&&NextPlace.IsEmpty())||NextPlace==TEXT("home");
+  const bool bHome=!NextPlace.IsEmpty()?(NextPlace==TEXT("home")):(DuskOrb.VisitsSoFar()==0||Forced);
   DuskOrb.Started(M->Freeform->Clock());
   FVector2D Shift=FVector2D::ZeroVector;OrbPair=TEXT("S-02 and S-03");
   if(!bHome)OrbSite(DuskOrb.VisitSeed(),Shift,OrbPair);
