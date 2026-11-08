@@ -251,7 +251,9 @@ void FS47Predecessor::StepNews(double Dt)
  if(Today<OpensDay)return;
  const FString Letter=TEXT("letter");
  if(!Seen.Contains(Letter)&&!Tray.Contains(Letter))Tray.Add(Letter);
- if(!bLetterTold&&Tray.Contains(Letter))
+ // Ward's office is shut from 21:00 to 08:00: his letter and his answers wait in the tray and are told the next morning.
+ const bool bWardOpen=WardAvailable();
+ if(bWardOpen&&!bLetterTold&&Tray.Contains(Letter))
  {
   bLetterTold=true;
   if(M->UI)M->UI->Toast(TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
@@ -260,7 +262,7 @@ void FS47Predecessor::StepNews(double Dt)
  }
  // The Monday sheet.
  const int32 Week=(Today-1)/7;
- if(Week>WeekNoted&&Today>=OpensDay&&Outcome==EOutcome::None)
+ if(bWardOpen&&Week>WeekNoted&&Today>=OpensDay&&Outcome==EOutcome::None)
  {
   WeekNoted=Week;const FString Id=FString::Printf(TEXT("week-%d"),Week);
   const FTally C=Count();
@@ -533,6 +535,7 @@ FString FS47Predecessor::ReviewLine() const
  if(!Live()||Outcome!=EOutcome::None)return FString();
  return FString::Printf(TEXT("\nSARO UNDER REVIEW. ASSESSMENT %s."),*DateText(AssessDay));
 }
+bool FS47Predecessor::WardAvailable() const{return !M||!M->Freeform||WardHours(M->Freeform->Clock());}
 bool FS47Predecessor::UsePhone()
 {
  if(!Live()||!M||!M->UI)return false;
@@ -556,7 +559,9 @@ bool FS47Predecessor::UsePhone()
  }
  Rows.Add(Para(TEXT("The operations line. Two numbers on a card taped to the phone."),760.f));
  Rows.Add(S47Kit::Button(TEXT("Dale, field maintenance / the service line"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("dale"),FString());},true));
- Rows.Add(S47Kit::Button(TEXT("Dr. Ward, duty officer"),[this,Guard]{if(Guard.IsValid())ShowTalk(TEXT("ward"),FString());}));
+ const bool bWard=WardAvailable();
+ if(!bWard)Rows.Add(Para(TEXT("A note under the card: \"Dr. Ward's office takes calls from 08:00 to 21:00. Anything urgent goes on the slip and waits for the morning.\""),760.f,true));
+ Rows.Add(S47Kit::Button(bWard?FString(TEXT("Dr. Ward, duty officer")):FString(TEXT("Dr. Ward, duty officer / office closed until 08:00")),[this,Guard]{if(Guard.IsValid()&&WardAvailable())ShowTalk(TEXT("ward"),FString());},false,bWard));
  Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO OPERATIONS LINE"),S47Kit::Col(Rows),760));
  return true;
@@ -1225,5 +1230,10 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  S47J::Set(O,TEXT("closeDay"),37);S47J::Set(O,TEXT("closed"),true);
  FS47Predecessor Shut(nullptr);Shut.Begin(S47J::Read(S47J::Write(O)),true,40);
  Check(Shut.StationClosed()&&Shut.ClosingDay()==37&&S47J::Bool(Shut.Save(),TEXT("closed")),TEXT("a closed station stays closed after a Continue"));
+
+ // Dr. Ward takes calls from 08:00 until 21:00 and never at night (WARD-PHONE-20261108); the clock runs on past midnight.
+ const auto Stamp=[](int32 Day,double Hour){return double(Day)*86400.+Hour*3600.;};
+ Check(WardHours(Stamp(0,8))&&WardHours(Stamp(3,12))&&WardHours(Stamp(3,20.99))&&!WardHours(Stamp(3,21))&&!WardHours(Stamp(3,23.5))&&!WardHours(Stamp(4,0))&&!WardHours(Stamp(4,7.99))&&WardHours(Stamp(4,8)),TEXT("Dr. Ward is on the phone from 08:00 to 21:00 and not at night, on any day"));
+ Check(Shut.WardAvailable(),TEXT("without a game running the office is not claimed to be shut"));
  return OK;
 }

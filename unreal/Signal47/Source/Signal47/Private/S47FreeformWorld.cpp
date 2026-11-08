@@ -875,6 +875,7 @@ bool FS47FreeformWorld::ParcelUse()
 }
 bool FS47FreeformWorld::CargoUse()
 {
+ if(M&&M->World&&M->World->bDriving&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue()){Change(TEXT("The truck is in trouble. Get out first (the exit key), then use the cargo rack on the back: the spade, the jack and the county tow are all there."));return true;}
  if(!M||!M->World||M->World->bDriving||!Near(M->World->ServicePosition(),4.8)){Change(TEXT("Move closer to your parked service truck to load or unload its cargo."));return true;}
  const auto Unload=[this]{Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));};
  if(Payload==2){Payload=3;bParcelWasLoaded=true;Change(TEXT("Parcel secured in the service-truck cargo rack. It travels with the truck."));}
@@ -894,6 +895,7 @@ bool FS47FreeformWorld::CargoUse()
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
   // The truck's own trouble: what the player can do about it, and the county if not.
   const auto* Care=M->Freeform->Care.Get();const bool bCare=Care&&Care->NeedsRescue();
+  if(bCare)R.Add(S47Kit::Paper(Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")))));
   if(Care)
   {
    R.Add(S47Kit::Section(TEXT("RADIATOR"),FString::Printf(TEXT("%.0f%%"),Care->Water()*100)));
@@ -903,9 +905,9 @@ bool FS47FreeformWorld::CargoUse()
    if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));
    if(Care->Water()<1)R.Add(S47Kit::Button(TEXT("Fill the radiator from a can"),[this]{M->Freeform->Care->TopUp();M->UI->Close();},Care->Hot(),InventoryCount(TEXT("water"))>0));
   }
-  R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
+  R.Add(S47Kit::Button(bCare?FString::Printf(TEXT("Call the county tow to SARO / $%d / about %.0f minutes"),Care->TowFee(),Care->TowMinutes()):FString(TEXT("Request roadside return to SARO")),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
   if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
-  R.Add(S47Kit::Small(bCare?TEXT("County roadside service brings you, the truck and its cargo back to SARO and leaves it sound. It costs time, not money."):Fuel>.001?TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
+  R.Add(S47Kit::Small(bCare?FString::Printf(TEXT("The county tow brings you, the truck and its cargo back to SARO and leaves it sound. $%d, paid from the budget if it covers it, otherwise on the weekly sheet; it takes about %.0f minutes. Mending it yourself costs only time."),Care->TowFee(),Care->TowMinutes()):Fuel>.001?TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE TRUCK / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -1242,6 +1244,9 @@ void FS47FreeformWorld::RoadsideAssist()
 {
  const bool bTrouble=M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue();
  if(!Ready()||!M->World||(Fuel>.001&&!bTrouble))return;
+ // A truck that cannot be mended is towed for money and a longer wait; an empty tank alone is still only time (the safety net).
+ const int32 Fee=bTrouble?M->Freeform->Care->TowFee():0;const double Minutes=bTrouble?M->Freeform->Care->TowMinutes():15.;
+ bool bCash=true;if(bTrouble)bCash=M->Freeform->BillTow(Fee);
  if(M->World->bDriving)M->World->GetOutHere(true);
  if(M->Freeform->Care)M->Freeform->Care->Clear();
  M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);
@@ -1249,8 +1254,10 @@ void FS47FreeformWorld::RoadsideAssist()
  // and Caliche use separate scene origins; their 8-km rendering offset is
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
- Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned truck and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
- M->Freeform->RecordEvidence(TEXT("roadside"),TEXT("Roadside return used; the interrupted trip and cargo were retained."));
+ Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Minutes*60);
+ const FString Billed=!bTrouble?FString():bCash?FString::Printf(TEXT(" Tow $%d paid in cash."),Fee):FString::Printf(TEXT(" Tow $%d is on the weekly sheet."),Fee);
+ Change(FString(TEXT("County roadside service returned truck and cargo to SARO with a 24-km emergency fuel reserve."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
+ M->Freeform->RecordEvidence(TEXT("roadside"),FString(TEXT("Roadside return used; the interrupted trip and cargo were retained."))+Billed);
 }
 
 void FS47FreeformWorld::SkipFaultToday(){if(M&&M->Freeform)LastFaultDay=M->Freeform->Day();}
@@ -1363,7 +1370,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:depot"))return TEXT("PARTS STORAGE: First logger issue and spare stock");
  if(Id==TEXT("ff:delivery"))return Payload==2?TEXT("GARAGE RECEIVING: Unpack carried supplies into SARO stock"):TEXT("GARAGE RECEIVING: Delivery instructions");
  if(Id==TEXT("ff:parcel"))return Payload>0&&Payload!=2?FString(TEXT("Carry "))+ParcelDescription():FString();
- if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Fuel<=.001?TEXT("Tank empty / roadside return and cargo rack"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
+ if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):(M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue())?TEXT("Truck in trouble / dig out, change the wheel or call the tow"):Fuel<=.001?TEXT("Tank empty / roadside return and cargo rack"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return bGenerator?TEXT("Stop backup generator"):TEXT("Start / fuel backup generator");
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return M->Freeform->PowerFault()?Feeder==4&&FeederSeconds>0?TEXT("Feeder test running"):Feeder==4?TEXT("Run feeder replacement-fuse test"):Feeder==3?TEXT("Replace isolated feeder control fuse"):Feeder==2?TEXT("Open enclosed feeder isolation switch"):TEXT("Measure SARO feeder supply"):TEXT("Check normal feeder supply");
  if(Id.StartsWith(TEXT("field:")))
