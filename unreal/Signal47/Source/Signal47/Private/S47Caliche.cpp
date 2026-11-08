@@ -396,7 +396,7 @@ void FS47Caliche::Refresh()
 		const bool bActive = Reader->Loading() || Reader->Playing();
 		const FString Label = bEarl ? bActive ? TEXT("Stop Earl") : TEXT("Replay Earl") : bActive ? TEXT("Stop voice") : TEXT("Replay voice");
 		const FString Loading = bEarl ? TEXT("Loading Earl…") : TEXT("Loading voice…");
-		const FString Parody = bEarl ? TEXT("Synthetic Art Bell parody") : TEXT("Synthetic ") + FS47NpcDialogue::CharacterLabels().FindRef(Voice) + TEXT(" parody");
+		const FString Parody = bEarl ? TEXT("Earl, 1420 AM (radio host)") : TEXT("Synthetic ") + FS47NpcDialogue::CharacterLabels().FindRef(Voice) + TEXT(" parody");
 		const FString Status = Reader->Loading() ? Loading : Reader->State() == TEXT("error") ? FString(TEXT("Recording could not be played. Try again."))
 			: !bAvailable ? FString(TEXT("No recording for this reply.")) : Parody;
 		Body->AddSlot().AutoHeight().Padding(0, 4)[S47Kit::Row({ S47Kit::Button(Label, [this, bEarl, Voice, Speech]

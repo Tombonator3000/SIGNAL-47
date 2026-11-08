@@ -243,7 +243,7 @@ const FS47ReadingBank& S47Reading::KinskiBank()
 	static const FS47ReadingBank B = []
 	{
 		FS47ReadingBank K;
-		K.Label = TEXT("Synthetic Kinski parody");
+		K.Label = TEXT("Dale's voice (read-aloud)");
 		LoadBank(TEXT("kinski"), K);
 		return K;
 	}();
@@ -256,7 +256,7 @@ const FS47ReadingBank& S47Reading::SerlingBank()
 	static const FS47ReadingBank B = []
 	{
 		FS47ReadingBank S;
-		S.Label = TEXT("Synthetic Rod Serling parody");
+		S.Label = TEXT("The Night Narrator");
 		LoadBank(TEXT("serling"), S);
 		LoadBank(TEXT("serling-intro"), S);
 		return S;
