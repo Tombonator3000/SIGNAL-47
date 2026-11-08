@@ -539,6 +539,9 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 	TArray<FString> Fixes;
 	for (const FS47MapSector& Sec : V.Sectors) Fixes.Add(FString::Printf(TEXT("%s about %03.0f degrees"), *Sec.Label, Sec.Az));
 	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT(", ")) + TEXT("."));
+	TArray<FString> Work;
+	for (const FS47MapJob& Job : V.Jobs) Work.Add(Job.Text);
+	if (Work.Num()) Said.Add(TEXT("Written in by the places: ") + FString::Join(Work, TEXT("; ")) + TEXT("."));
 	if (V.Notes.Num()) Said.Add(FString::Printf(TEXT("Your own marks: %d."), V.Notes.Num()));
 	return Said;
 }
