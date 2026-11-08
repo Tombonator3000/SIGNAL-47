@@ -11,6 +11,7 @@
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
 #include "S47HudGauges.h"
+#include "S47SaroSave.h"
 #include "S47Stress.h"
 #include "S47Sneak.h"
 #include "S47Omen.h"
@@ -239,6 +240,7 @@ void AS47HUD::Start()
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);

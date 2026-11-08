@@ -28,5 +28,12 @@ namespace S47HudGauges
 	 *  small and ragged, a strong one is a clean wave. Zero at both ends. */
 	SIGNAL47_API double Wave(double X, double Phase, double Strength);
 
+	/** SAVE-SARO-20261108: the small stamp over the gauges when the autosave on leaving SARO is written. LOG FILED and the clock the
+	 *  save's card has (S47SaroSave.h). */
+	SIGNAL47_API FString FiledLine(const FString& Clock);
+	/** How long the stamp shows, and its strength T seconds after the save: in over a quarter second, held, out over the last 0.8. */
+	constexpr double FiledFor = 4.5;
+	SIGNAL47_API double FiledAlpha(double T);
+
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

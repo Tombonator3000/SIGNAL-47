@@ -4,6 +4,7 @@
 #include "S47DuskOrb.h"
 #include "S47RoadShape.h"
 #include "S47Saves.h"
+#include "S47SaroSave.h"
 #include "Input/Events.h"
 #include "HAL/PlatformMisc.h"
 #include "S47Main.h"
@@ -63,7 +64,7 @@ namespace
   bool Finish(bool Good,const FString& Why)
   {
    auto R=S47J::New();S47J::Set(R,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(R,TEXT("reason"),Why);S47J::Set(R,TEXT("phase"),Phase);S47J::Set(R,TEXT("stage"),Stage);S47J::Set(R,TEXT("checks"),Checks);
-   S47J::Set(R,TEXT("method"),TEXT("Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state."));if(Phase>=6)S47J::Set(R,TEXT("method"),TEXT("Ordinary case1, title Continue and manual Save Case across separate processes. Explicit existing pulsar selection/anomaly/dial/approach fixtures; actual pointing, acquisition, printer eye ray, control, source rendering and transport. No fabricated job, elapsed, recipe, sample completion or listening coverage; no natural anomaly discovery or human listening claim."));R->SetArrayField(TEXT("evidence"),Evidence);
+   S47J::Set(R,TEXT("method"),TEXT("Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. Phase 2 opens Save Case at the Caliche counter and is refused there (Freeform files the log only inside SARO), drives back and saves at OPS; phase 3 drives out again for the paid basket. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state."));if(Phase>=6)S47J::Set(R,TEXT("method"),TEXT("Ordinary case1, title Continue and manual Save Case across separate processes. Explicit existing pulsar selection/anomaly/dial/approach fixtures; actual pointing, acquisition, printer eye ray, control, source rendering and transport. No fabricated job, elapsed, recipe, sample completion or listening coverage; no natural anomaly discovery or human listening claim."));R->SetArrayField(TEXT("evidence"),Evidence);
    if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(R,true),*(Root/FString::Printf(TEXT("phase-%d.json"),Phase)));
    UE_LOG(LogTemp,Display,TEXT("S47 normal journey %s phase%d stage%d: %s"),Good?TEXT("PASS"):TEXT("FAIL"),Phase,Stage,*Why);Done=true;FPlatformMisc::RequestExitWithStatus(false,Good?0:1);return false;
   }
@@ -245,7 +246,7 @@ namespace
      if(Phase>=5&&!EventRetained(true))return false;
      if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(Phase>=6?(Phase==6?600:700):(Phase==4?400:430));
     }
-    else {Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));if(!Retained()||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+(Phase==2?20:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("restart preserves exact earned/spent cash and not-yet-delivered stock")))return false;if(Phase==2){if(!Check(Shot()->LabStage==1,TEXT("normal Continue retains processed-film stage"))||!Place(TEXT("wetBench")))return false;Go(40);}else {if(!Check(Shot()->IsDeveloped(),TEXT("second process restart retains the actually developed original")))return false;Go(60);}}
+    else {Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));if(!Retained()||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+(Phase==2?20:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("restart preserves exact earned/spent cash and not-yet-delivered stock")))return false;if(Phase==2){if(!Check(Shot()->LabStage==1,TEXT("normal Continue retains processed-film stage"))||!Place(TEXT("wetBench")))return false;Go(40);}else {if(!Check(Shot()->IsDeveloped(),TEXT("second process restart retains the actually developed original")))return false;Go(56);}}
     return true;
    }
    if(M->Flow->bStarting||M->Flow->bRestoringNow||!M->Freeform||!M->Freeform->Active())return true;
@@ -372,7 +373,28 @@ namespace
     case 46:if(!Click(TEXT("control fuse / $5")))return false;Go(47);break;
     case 47:if(!Click(TEXT("drive relay / $25")))return false;Go(48);break;
     case 48:if(!Click(TEXT("control fuse / $5")))return false;Go(49);break;
-    case 49:if(!Check(W.ParcelStage()==1&&W.ParcelContents().Num()==2&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("one paid untouched counter parcel; exact charge, no premature stock")))return false;SaveMenu();break;
+    case 49:if(!Check(W.ParcelStage()==1&&W.ParcelContents().Num()==2&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("one paid untouched counter parcel; exact charge, no premature stock")))return false;Go(50);break;
+    // SAVE-SARO-20261108: the log is filed at the station only. Save Case at the counter is refused, as a player finds it; the basket stays
+    // paid at the counter, the truck goes back, and the phase is saved inside SARO. Phase three drives out again for the parcel.
+    case 50:M->UI->Close(true);SaveAt=S47Saves::NowMs();S47Keys::TestPresses(TEXT("Escape,Wait,Down,Enter"),.5f);Go(51);break;
+    case 51:
+     if(Age-At<3||(!VisibleText(S47SaroSave::StationOnly())&&Age-At<6))return true;
+     if(!Check(VisibleText(S47SaroSave::StationOnly())&&!M->Flow->ManualSaveBlock().IsEmpty(),TEXT("ordinary Save Case away from SARO says the log is filed at the station")))return false;
+     S47Keys::TestPresses(TEXT("Enter"),.5f);Go(52);break;
+    case 52:
+    {
+     if(Age-At<2)return true;
+     const bool Wrote=M->Flow->Saves.List(1).ContainsByPredicate([this](const FS47SaveMeta& S){return S.Kind==TEXT("manual")&&S.SavedAt>=SaveAt;});
+     if(!Check(!Wrote&&VisibleText(S47SaroSave::StationOnly()),TEXT("ENTER away from SARO writes no manual save and keeps the explanation")))return false;
+     S47Keys::TestPresses(TEXT("Escape,Wait,Escape"),.5f);Go(53);break;
+    }
+    case 53:if(M->bPausedByMenu||M->ModalOpen()){if(Age-At>8)return Finish(false,TEXT("menus stay open after the refused save"));return true;}M->World->DriveBack();M->World->Autopilot=12.;TravelAt=Age;Go(54);break;
+    case 54:if(!Travel(TEXT("saro")))return true;if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(55);break;
+    case 55:if(!Check(S47SaroSave::InStation(M)&&M->Flow->ManualSaveBlock().IsEmpty()&&W.ParcelStage()==1,TEXT("back inside SARO the log can be filed; the paid basket still waits at the counter")))return false;SaveMenu();break;
+    case 56:if(!Check(W.ParcelStage()==1&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1,TEXT("normal Continue at SARO retains the paid basket left at the counter")))return false;M->UI->Close(true);M->World->DriveToDiner(nullptr);M->World->Autopilot=12.;TravelAt=Age;Go(57);break;
+    case 57:if(!Travel(TEXT("diner")))return true;if(!AS47Props::IsDoorOpen(TEXT("gasDoor"))){if(!Place(TEXT("town:gasDoor"),FVector(0,0,-1)))return false;Go(570);}else Go(60);break;
+    case 570:if(!Use(TEXT("town:gasDoor")))return false;Go(571);break;
+    case 571:if(!Check(AS47Props::IsDoorOpen(TEXT("gasDoor")),TEXT("actual shop door opened again before the counter")))return false;Go(60);break;
     case 60:if(!Check(W.ParcelStage()==1&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15,TEXT("normal Continue retains paid counter basket")))return false;M->UI->Close(true);M->Player->Place(7981.8,2068.8,0);Aim(W.InteractionPoint(TEXT("ff:parcel")));Go(61);break;
     case 61:if(!Use(TEXT("ff:parcel"))||!Place(TEXT("ff:cargo"),FVector(1.4,0,0)))return false;Go(62);break;
     case 62:

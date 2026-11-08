@@ -1662,7 +1662,7 @@ void FS47FreeformSession::OpenTapePanel()
   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
   .CanMark(Marking).OnMark([this](double At){MarkAudioAt(At);});
  auto Mark=[this](bool bIn){return TAttribute<FString>::CreateLambda([this,bIn]{const auto* J=CurrentJob();const double At=!J?-1.:bIn?J->MarkStart:J->MarkEnd;return At<0?FString(TEXT("--")):FString::Printf(TEXT("%.1f s"),At);});};
- const S47Kit::FW Tape=T::Panel(TEXT("TAPE"),S47Kit::Col({
+ const S47Kit::FW TapeBox=T::Panel(TEXT("TAPE"),S47Kit::Col({
   T::Columns({{1.f,T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare)},{1.f,T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare)}}),
   T::Display(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%04.1f / %.0f s"),AudioCursor,AudioSourceIndex==0?18.:8.);}),
    TAttribute<FString>::CreateLambda([this]{return FString(CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));})),
@@ -1674,7 +1674,7 @@ void FS47FreeformSession::OpenTapePanel()
   T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
   T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);}))}}),
   T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
- Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,Tape}}));
+ Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,TapeBox}}));
  // The chip says what the references are for: a listening aid, never proof.
  Rows.Add(T::Panel(TEXT("LISTENING REFERENCES"),S47Kit::Col({
   T::Columns({{1.f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("FOR YOUR EAR, NOT EVIDENCE"),-1)]},{1.4f,T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0))}}),
