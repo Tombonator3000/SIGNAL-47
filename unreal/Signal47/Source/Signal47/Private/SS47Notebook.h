@@ -8,6 +8,7 @@
 
 class SBox;
 class SScrollBox;
+class SS47FieldMap;
 struct FS47ReadingAction;
 
 // The journal (ui/UI.ts notebook) as the approved mockup has it (mock/notebook.html): a leather
@@ -37,6 +38,9 @@ public:
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
 	// the CONTROLS page built again when a key is bound anew (S47Keys::Changes)
 	virtual void Tick(const FGeometry& G, const double Now, const float Dt) override;
+	// The survey sheet on the MAP tab (Freeform): the left stick moves it, the wheel and LT/RT zoom it.
+	virtual FReply OnAnalogValueChanged(const FGeometry& G, const FAnalogInputEvent& E) override;
+	virtual FReply OnMouseWheel(const FGeometry& G, const FPointerEvent& E) override;
 	void Show(const FString& T);
 
 	// the excerpt a finding shows on its line (UI.ts excerpt), for the tests too
@@ -70,6 +74,7 @@ private:
 	TArray<TSharedPtr<SWidget>> Entries;   // the entries that can be chosen, in order (scrolled into view)
 	TSharedPtr<FS47ReadingAction> Reading; // V: what this spread reads aloud
 	bool bRightIsEntries = false;          // the album's right page holds entries too
+	TSharedPtr<SS47FieldMap> FieldMap;     // Freeform's survey sheet, while the MAP tab shows it
 
 	void Close();
 	void Build();                // the spread for Tab

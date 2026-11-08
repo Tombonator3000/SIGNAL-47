@@ -42,6 +42,11 @@ public:
  static bool Drifts(const FString& Id);
  // Where the place really stands, road-local, after the land has had its say.
  bool Spot(const FString& Id,double& OutX,double& OutZ) const;
+ // The player's own pencil marks on the notebook's map (MAP-20261108): road-local, numbered in the order they were made. One within
+ // Within metres of a mark already there rubs that one out instead. Saved; false when nothing changed.
+ const TArray<FVector2D>& MapMarks() const{return Marks;}
+ bool ToggleMark(double X,double Z,double Within);
+ static constexpr int32 MaxMarks=40;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
@@ -49,6 +54,7 @@ private:
  TArray<FBuilt> Built;
  TSet<FString> HeardOf;
  TArray<FBearing> Fixes;
+ TArray<FVector2D> Marks;
  TSharedPtr<uint8> Life;
  TWeakObjectPtr<AS47Web> Scene;
  bool bBuilt=false;

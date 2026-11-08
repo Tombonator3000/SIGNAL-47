@@ -53,6 +53,8 @@
 #include "S47Openings.h"
 #include "S47Happenings.h"
 #include "S47FieldLife.h"
+#include "S47NightLog.h"
+#include "SS47FieldMap.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -254,6 +256,7 @@ void AS47HUD::Start()
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);
+		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines); // (NIGHTLOG and MAP, 8 November)
 		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);

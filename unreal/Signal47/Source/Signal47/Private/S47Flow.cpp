@@ -94,6 +94,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "SS47AreaMap.h"
+#include "SS47FieldMap.h"
 #include "S47Places.h"
 #include "S47Happenings.h"
 #include "S47Predecessor.h"
@@ -1894,7 +1895,20 @@ FS47NbExtras US47Flow::NotebookExtras() const
 	const bool Free = M->IsFreeform() && M->Freeform; X.bFreeform = Free;
 	const FS47MapView V = MapView();
 	X.Map = V;
-	X.MapDescription = S47AreaMap::Description(V);
+	X.MapDescription = V.bField ? S47FieldMap::Description(V) : S47AreaMap::Description(V);
+	if (V.bField)
+	{
+		TWeakObjectPtr<US47Main> Mw = M;
+		X.OnMapNote = [Mw](double Px, double Pz, double Within)
+		{
+			TArray<FS47MapNote> Notes;
+			if (!Mw.IsValid() || !Mw->Freeform || !Mw->Freeform->Places) return Notes;
+			Mw->Freeform->Places->ToggleMark(Px, Pz, Within);
+			const TArray<FVector2D>& Kept = Mw->Freeform->Places->MapMarks();
+			for (int32 I = 0; I < Kept.Num(); ++I) { FS47MapNote Note; Note.X = Kept[I].X; Note.Z = Kept[I].Y; Note.N = I + 1; Notes.Add(Note); }
+			return Notes;
+		};
+	}
 	if (!Free && S47AreaMap::LinesMeet(V)) X.MapNote = MEET_NOTE;
 	X.Kit = KitItems();
 	X.People = Free ? TArray<FS47PersonCard>() : PeopleItems();
@@ -2071,7 +2085,18 @@ FS47MapView US47Flow::MapView() const
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Places) M->Freeform->Places->FillMap(V);
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor) M->Freeform->Predecessor->FillMap(V);
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Happenings) M->Freeform->Happenings->FillMap(V);
-	if (M->IsFreeform()) { V.bStation = true; return V; } // Freeform has no Story chapter clues.
+	if (M->IsFreeform())
+	{
+		// Freeform has no Story chapter clues. It has the survey sheet (MAP-20261108): where the player and the truck are, exactly,
+		// on the land's one frame, and the player's own marks.
+		V.bStation = true; V.bField = true;
+		double X = 0, Z = 0, Heading = 0; FString Area; bool bDriving = false;
+		if (S47FieldMap::Me(M, X, Z, Heading, Area, bDriving)) { V.bMe = true; V.MeX = X; V.MeZ = Z; V.MeHeading = Heading; V.MeArea = Area; V.bDriving = bDriving; }
+		if (S47FieldMap::Truck(M, X, Z, Heading)) { V.bTruck = true; V.TruckX = X; V.TruckZ = Z; V.TruckHeading = Heading; }
+		if (M->Freeform && M->Freeform->Places)
+			for (int32 I = 0; I < M->Freeform->Places->MapMarks().Num(); ++I) { const FVector2D& Mk = M->Freeform->Places->MapMarks()[I]; FS47MapNote Note; Note.X = Mk.X; Note.Z = Mk.Y; Note.N = I + 1; V.Notes.Add(Note); }
+		return V;
+	}
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;
 	for (const FS47TownMark& Mk : S47TownMarks(M->TownSeen))
