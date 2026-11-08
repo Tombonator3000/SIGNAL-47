@@ -48,6 +48,7 @@
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
+#include "S47Mail.h"
 #include "S47RadioTips.h"
 #include "S47Openings.h"
 #include "S47Happenings.h"
@@ -247,6 +248,7 @@ void AS47HUD::Start()
 		bOk &= FS47Places::SelfTest(Lines);
 		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
+		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);

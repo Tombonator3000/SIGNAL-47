@@ -202,7 +202,7 @@ namespace
 
 	FCtlPage Controls(bool bPhone, bool bPad = false)
 	{
-		if (bPad) return { TEXT("Xbox controller"), {
+		if (bPad) return { TEXT("Controller"), {
 			{ TEXT("On foot"), {
 				{ TEXT("LS / L3"), TEXT("Walk / run.") },
 				{ TEXT("RS"), TEXT("Look around.") },
@@ -1596,7 +1596,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		auto Has = [](const FCtlPage& Pg, const FString& Want) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Key + TEXT(" | ") + R.Value == Want) return true; return false; };
 		const FCtlPage Desk = Controls(false);
 		const FCtlPage Pad = Controls(false, true);
-		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Xbox controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
+		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
 		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
 		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
 		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));

@@ -195,30 +195,53 @@ bool FS47Animals::Build()
 	return true;
 }
 
-bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark)
+bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose)
 {
 	Rig.bTried = true; Rig.Animal = Animal; Rig.bReady = false;
 	const FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/SK_%s"), Animal, Animal);
 	if (!FPackageName::DoesPackageExist(Package) || !M || !M->Web || !Holder) return false;
 	USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, *(Package + TEXT(".SK_") + Animal));
 	if (!Body) return false;
-	// which way it faces and how tall it is, from its own skeleton and bounds
+	// How it stands, from its own skeleton, whatever axes and scale the import gave it (the glTF came in on its side and far too big):
+	// its height is the bounds along its own up, and it is scaled to its real one.
 	const FReferenceSkeleton& Ref = Body->GetRefSkeleton();
-	const int32 HeadIndex = Ref.FindBoneIndex(TEXT("Head")), BodyIndex = Ref.FindBoneIndex(TEXT("Body"));
-	const FBoxSphereBounds Bounds = Body->GetBounds();
-	const double Tall = Bounds.BoxExtent.Z * 2;
-	if (HeadIndex == INDEX_NONE || BodyIndex == INDEX_NONE || Tall < 1)
+	auto BoneAt = [&Ref](const TCHAR* Bone, FVector& Out)
 	{
-		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig unusable (head %d, body %d, height %.1f cm): the boxes stay"), Animal, HeadIndex, BodyIndex, Tall);
+		const int32 Index = Ref.FindBoneIndex(Bone);
+		if (Index == INDEX_NONE) return false;
+		Out = FAnimationRuntime::GetComponentSpaceTransformRefPose(Ref, Index).GetLocation();
+		return true;
+	};
+	// The four paws (the rig's foot targets, else the lower legs) say it: back to front is ahead, right to left is across, and up is
+	// square to both, on the head's side. (The rig's "Body" is its root near the ground, so body to paws would lean.)
+	FVector HeadAt, FrontL, FrontR, BackL, BackR;
+	const bool bPaws = (BoneAt(TEXT("FF.L"), FrontL) && BoneAt(TEXT("FF.R"), FrontR) && BoneAt(TEXT("FFB.L"), BackL) && BoneAt(TEXT("FFB.R"), BackR))
+		|| (BoneAt(TEXT("FrontLowerLeg.L"), FrontL) && BoneAt(TEXT("FrontLowerLeg.R"), FrontR) && BoneAt(TEXT("BackLowerLeg.L"), BackL) && BoneAt(TEXT("BackLowerLeg.R"), BackR));
+	if (!BoneAt(TEXT("Head"), HeadAt) || !bPaws)
+	{
+		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig has no head or paws: the boxes stay"), Animal);
 		return false;
 	}
-	const FVector HeadAt = FAnimationRuntime::GetComponentSpaceTransformRefPose(Ref, HeadIndex).GetLocation();
-	const FVector BodyAt = FAnimationRuntime::GetComponentSpaceTransformRefPose(Ref, BodyIndex).GetLocation();
-	const FVector Ahead = FVector(HeadAt.X - BodyAt.X, HeadAt.Y - BodyAt.Y, 0).GetSafeNormal();
-	if (Ahead.IsNearlyZero()) return false;
+	const FVector PawsAt = (FrontL + FrontR + BackL + BackR) * 0.25;
+	FVector Ahead = ((FrontL + FrontR) - (BackL + BackR)).GetSafeNormal();
+	const FVector Across = ((FrontL + BackL) - (FrontR + BackR)).GetSafeNormal();
+	FVector Up = FVector::CrossProduct(Ahead, Across).GetSafeNormal();
+	if (FVector::DotProduct(Up, HeadAt - PawsAt) < 0) Up = -Up;
+	if (FVector::DotProduct(Ahead, HeadAt - PawsAt) < 0) Ahead = -Ahead;
+	const FBoxSphereBounds Bounds = Body->GetBounds();
+	const FVector Ext = Bounds.BoxExtent;
+	const double Tall = 2.0 * (FMath::Abs(Up.X) * Ext.X + FMath::Abs(Up.Y) * Ext.Y + FMath::Abs(Up.Z) * Ext.Z);
+	if (Up.IsNearlyZero() || Ahead.IsNearlyZero() || Tall < 0.01)
+	{
+		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig unusable (height %.3f): the boxes stay"), Animal, Tall);
+		return false;
+	}
+	Rig.Fix = FRotationMatrix::MakeFromXZ(Ahead, Up).ToQuat().Inverse();
+	// the feet: under the paws, at the bottom of the bounds along up
+	const double Sole = FVector::DotProduct(Bounds.Origin, Up) - 0.5 * Tall;
+	Rig.Feet = PawsAt - Up * (FVector::DotProduct(PawsAt, Up) - Sole);
 	Rig.Scale = HeightCm / Tall;
-	Rig.YawOffset = FMath::RadiansToDegrees(FMath::Atan2(Ahead.Y, Ahead.X));
-	Rig.Lift = -(Bounds.Origin.Z - Bounds.BoxExtent.Z) * Rig.Scale;
+	Rig.YawOffset = 0; Rig.Lift = 0;
 	Rig.Head = TEXT("Head");
 	USkeletalMeshComponent* Part = NewObject<USkeletalMeshComponent>(M->Web.Get(), *FString::Printf(TEXT("S47Animal_%s"), Animal));
 	Part->SetupAttachment(Holder); Part->SetMobility(EComponentMobility::Movable);
@@ -234,27 +257,29 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 		UMaterialInterface* Mat = Coat;
 		if (Slot.Contains(TEXT("Eye")) || Slot.EndsWith(TEXT("002"))) Mat = EyeGlow.Get();
 		else if (Slot.Contains(TEXT("Light")) || Slot.EndsWith(TEXT("003"))) Mat = Pale;
-		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Dark;
+		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Nose;
 		else if (Slot.EndsWith(TEXT("001"))) Mat = Pale;
 		if (Mat) Part->SetMaterial(I, Mat);
 	}
 	Part->SetVisibility(false); Part->SetHiddenInGame(true);
 	Part->RegisterComponent();
 	Rig.Mesh = Part; Rig.bReady = true;
-	UE_LOG(LogS47Animals, Display, TEXT("S47: animals %s rigged: %d bones, %.0f cm tall as imported, scale %.3f, faces %.0f deg, %d slots"),
-		Animal, Ref.GetNum(), Tall, Rig.Scale, Rig.YawOffset, Slots.Num());
+	UE_LOG(LogS47Animals, Display, TEXT("S47: animals %s rigged: %d bones, %.0f units tall as imported, scale %.5f, up (%.2f %.2f %.2f), ahead (%.2f %.2f %.2f), %d slots"),
+		Animal, Ref.GetNum(), Tall, Rig.Scale, Up.X, Up.Y, Up.Z, Ahead.X, Ahead.Y, Ahead.Z, Slots.Num());
 	return true;
 }
 
-void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Rate)
+void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Pace)
 {
 	USkeletalMeshComponent* Part = Rig.Mesh.Get();
 	if (!Rig.bReady || !Part) return;
 	if (Rig.Playing == Clip)
 	{
-		if (!FMath::IsNearlyEqual(Rig.Rate, Rate, 0.02)) { Rig.Rate = Rate; Part->SetPlayRate(float(Rate)); }
+		if (!FMath::IsNearlyEqual(Rig.Rate, Pace, 0.02)) { Rig.Rate = Pace; Part->SetPlayRate(float(Pace)); }
 		return;
 	}
+	// asked once per change of clip: the same one again is the early return above
+	Rig.Playing = Clip; Rig.Rate = Pace;
 	FString Name = FString::Printf(TEXT("A_%s_%s"), *Rig.Animal, Clip);
 	FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/%s"), *Rig.Animal, *Name);
 	if (!FPackageName::DoesPackageExist(Package))
@@ -267,15 +292,16 @@ void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Rate)
 	UAnimSequence* Seq = LoadObject<UAnimSequence>(nullptr, *(Package + TEXT(".") + Name));
 	if (!Seq) return;
 	Part->PlayAnimation(Seq, true);
-	Part->SetPlayRate(float(Rate));
-	Rig.Playing = Clip; Rig.Rate = Rate;
+	Part->SetPlayRate(float(Pace));
 }
 
 void FS47Animals::PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg)
 {
 	USkeletalMeshComponent* Part = Rig.Mesh.Get();
 	if (!Rig.bReady || !Part) return;
-	Part->SetWorldLocationAndRotation(S47Three::ToUE(FeetThree) + FVector(0, 0, Rig.Lift), FRotator(0, YawDeg - Rig.YawOffset, 0));
+	// stood up and turned to its heading, its feet where it stands
+	const FQuat Turn = FQuat(FRotator(0, YawDeg, 0)) * Rig.Fix;
+	Part->SetWorldLocationAndRotation(S47Three::ToUE(FeetThree) - Turn.RotateVector(Rig.Feet * Rig.Scale), Turn);
 	Part->SetWorldScale3D(FVector(Rig.Scale));
 }
 

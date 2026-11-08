@@ -116,14 +116,17 @@ private:
 		TWeakObjectPtr<class USkeletalMeshComponent> Mesh;
 		FString Playing;
 		double Scale = 1, YawOffset = 0, Lift = 0, Rate = 1;
+		// from the model's own frame (whatever the import's axes) to standing up, facing +X; and its feet, in that frame
+		FQuat Fix = FQuat::Identity;
+		FVector Feet = FVector::ZeroVector;
 		FName Head;
 		bool bReady = false, bTried = false;
 	};
 	FRig CoyoteRig, DogRig;
 	int32 DogShown = INDEX_NONE;
 	double DogYaw = 0;
-	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark);
-	void PlayRig(FRig& Rig, const TCHAR* Clip, double Rate);
+	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose);
+	void PlayRig(FRig& Rig, const TCHAR* Clip, double Pace);
 	void PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg);
 	void StepDogBody(double Dt);
 

@@ -308,7 +308,7 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  if(FString(D.Id)==Motel)
  {
   Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. If anything goes on out there tonight, you will hear about it in the morning.")));
-  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),FS47FreeformSession::MotelRoom),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Motel);},true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=FS47FreeformSession::MotelRoom;})));
+  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Motel);},true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))
  {

@@ -220,7 +220,7 @@ void SS47Opening::Construct(const FArguments& InArgs)
 void SS47Opening::SetState(const FString& State)
 {
 	Status = State == TEXT("loading") ? TEXT("Loading narration…")
-		: State == TEXT("playing") ? TEXT("Synthetic Rod Serling parody")
+		: State == TEXT("playing") ? TEXT("The Night Narrator")
 		: State == TEXT("error") ? TEXT("Narration is unavailable. You can begin the night.") : TEXT("");
 }
 

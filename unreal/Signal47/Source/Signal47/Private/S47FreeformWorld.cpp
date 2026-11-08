@@ -1,4 +1,5 @@
 #include "S47FreeformWorld.h"
+#include "S47Mail.h"
 #include "S47FieldLife.h"
 #include "S47Legs.h"
 #include "S47Freeform.h"
@@ -810,13 +811,26 @@ bool FS47FreeformWorld::RequestEmergencyFuse()
  EmergencyFuseFault=PowerFaultSerial;Item=TEXT("fuse");Contents.Reset();Contents.Add(Item,1);Payload=1;bParcelWasLoaded=false;
  Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition debt. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
 }
+int32 FS47FreeformWorld::ShopPrice(const FString& Supply){return Price(Supply);}
+bool FS47FreeformWorld::TakePostedParcel(const TMap<FString,int32>& Posted,const FVector& At)
+{
+ if(!Ready()||Payload!=0||Posted.IsEmpty()||!M->World||M->World->bDriving)return false;
+ for(const auto& Pair:Posted)if(Price(Pair.Key)<=0||Pair.Value<1||Pair.Value>99)return false;
+ Contents=Posted;Item.Empty();
+ for(const TCHAR* Key:Items)if(Contents.Contains(Key)){Item=Key;break;}
+ Payload=2;bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,At);
+ Change(TEXT("Parcel from the mailbox carried. Load it at the truck or unpack it at GARAGE RECEIVING. Use parcel handling to set it down or drop it safely."));
+ return true;
+}
 bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
 {
  if(!AtShopCounter()||Price(Id)<=0||(Emergency?Payload!=0:!CanAddShopItem()))return false;
  if(InventoryCount(Id)+Contents.FindRef(Id)>=99){Change(TEXT("SARO stock plus this paid parcel has reached the 99-item storage limit for that supply."));return false;}
  if(!Emergency&&!ShopOpen()){Change(TEXT("The shop counter sells supplies 08:00–20:00. Essential credit requisitions remain available here after hours."));return false;}
  if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film")||Id==TEXT("recorder_donor")||Id==TEXT("cell")||Id==TEXT("foil")||Id==TEXT("drive_motor"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
- if(!M->Freeform->Spend(Price(Id),Emergency)){Change(M->Freeform->FeedbackText());return false;}
+ // A coupon clipped from this week's Ledger takes something off (FS47Mail); never off an emergency requisition.
+ const int32 Cost=!Emergency&&M->Freeform->Mail?M->Freeform->Mail->CounterPrice(Id,Price(Id)):Price(Id);
+ if(!M->Freeform->Spend(Cost,Emergency)){Change(M->Freeform->FeedbackText());return false;}
  if(Emergency)EmergencyDay=M->Freeform->Day();if(Payload==0){Item=Id;Contents.Reset();}++Contents.FindOrAdd(Id);Payload=1;bParcelWasLoaded=false;Change(TEXT("Paid and added to your counter parcel. Add more supplies or close the list and collect the sealed parcel."));return true;
 }
 bool FS47FreeformWorld::CanAddShopItem() const
@@ -838,7 +852,13 @@ void FS47FreeformWorld::OpenShop()
  if(Payload>0)Rows.Add(S47Kit::Paper(TEXT("PAID PARCEL / ")+ParcelDescription()));
  if(!CanAddShopItem())Rows.Add(S47Kit::Small(TEXT("The counter handles one parcel at a time, and you already have one out. GARAGE RECEIVING: Unpack supplies. CALIBRATION / REPAIR: Return a service case or logger. Then buy here again.")));
  if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Use the truck to call roadside return; it costs time, not money.")));
- for(const TCHAR* Id:Items){const FString Key(Id);Rows.Add(S47Kit::Button(FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key)),[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99));}
+ for(const TCHAR* Id:Items)
+ {
+  const FString Key(Id);
+  const int32 Cost=M->Freeform->Mail?M->Freeform->Mail->CounterPrice(Key,Price(Key)):Price(Key);
+  const FString Tag=Cost<Price(Key)?FString::Printf(TEXT("%s / $%d WITH THE LEDGER'S COUPON (was $%d)"),*ItemTitle(Key),Cost,Price(Key)):FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key));
+  Rows.Add(S47Kit::Button(Tag,[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99));
+ }
  Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work, and only with no requisition balance already standing. Donor controllers require bench testing before harvesting their relay.")));
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
  if(M->Freeform->PowerFault())

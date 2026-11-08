@@ -79,6 +79,16 @@ public:
  void OpenLeft();
  // Back: "locker" or "wagon" to come back to it when the page is put down.
  void ReadDoc(const FString& Id,const FString& Back=FString());
+ // MAILBOX-20261108: Dr. Ward's papers come by post (FS47Mail): her letter, the Monday sheets, the warning and the assessment go into
+ // the box at the road, or straight into the OPS tray where a game has no post. bNow: in the box already (the first letter).
+ void Send(const FString& Id,bool bNow=false);
+ // Taken out of the box: into the OPS tray as before, where TaskLine, OpsRows and the review look for them.
+ void FromMail(const FString& Id);
+ // In the box at the road, not yet taken out.
+ bool InMailbox(const FString& Id) const;
+ FString PaperTitle(const FString& Id) const;
+ // The paper's word of something out on the land (the Ledger's search story: wagon 23).
+ void HearOf(const FString& Id){Hear(Id);}
  void FillMap(FS47MapView& View) const;
  // World position (x,z) of a thing out on the land or at the station, for the developer's menu and the tests.
  bool WorldSpot(const FString& Id,FString& OutArea,double& OutX,double& OutZ) const;
