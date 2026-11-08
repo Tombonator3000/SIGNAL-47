@@ -974,12 +974,16 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	}
 
 	// ---- printed names ----
-	const auto Name = [&Pen, &OnPage, &Visible, LWords](const FString& Words, double X, double Z, const FVector2f& By, const FSlateFontInfo& Font, float AlignX, float AlignY)
+	// What is already written where: the printed names and the player's arrow, which the ink below keeps clear of.
+	TArray<FBox2f> Occupied;
+	const auto Name = [&Pen, &OnPage, &Visible, &Occupied, LWords](const FString& Words, double X, double Z, const FVector2f& By, const FSlateFontInfo& Font, float AlignX, float AlignY)
 	{
 		if (!Visible(X, Z, 200)) return;
 		const FVector2f At = OnPage(X, Z) + By;
 		if (!InFrame(FVector2D(At.X, At.Y), -40)) return;
-		Pen.Text(Words, At, Font, Ink(), LWords, AlignX, AlignY, true);
+		const FVector2f Size = Pen.Text(Words, At, Font, Ink(), LWords, AlignX, AlignY, true);
+		const FVector2f TopLeft = At - FVector2f(Size.X * AlignX, Size.Y * AlignY);
+		Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
 	};
 	{
 		const FVector2f Beside(FMath::Max(14.f, float(36 * Sc)), 0);
@@ -1031,13 +1035,14 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
 	{
 		const FLinearColor Blue = Hue(0x24407f, .95f);
-		TArray<FBox2f> Written;
+		TArray<FBox2f> Written = Occupied;
+		if (View.bMe) { const FVector2f MeAt = OnPage(View.MeX, View.MeZ); Written.Add(FBox2f(MeAt - FVector2f(52, 26), MeAt + FVector2f(26, 30))); }
 		for (const FS47MapJob& Job : View.Jobs)
 		{
 			if (!Visible(Job.X, Job.Z, 600)) continue;
 			const FVector2f Spot = OnPage(Job.X, Job.Z);
 			const FVector2f Size = FPen::Measure(Job.Text, Pencil(26));
-			static const FVector2f Offsets[] = { FVector2f(34, -30), FVector2f(34, 30), FVector2f(-34, -30), FVector2f(-34, 30), FVector2f(34, -64), FVector2f(-34, 64) };
+			static const FVector2f Offsets[] = { FVector2f(34, -30), FVector2f(34, 30), FVector2f(-34, -30), FVector2f(-34, 30), FVector2f(34, -64), FVector2f(-34, -64), FVector2f(34, 64), FVector2f(-34, 64), FVector2f(60, -100), FVector2f(-60, 100) };
 			FVector2f Corner = Spot + Offsets[0]; bool bLeft = false;
 			for (const FVector2f& Off : Offsets)
 			{
