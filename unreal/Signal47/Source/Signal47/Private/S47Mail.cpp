@@ -7,8 +7,10 @@
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Ledger.h"
+#include "S47Legs.h"
 #include "S47MailBox.h"
 #include "S47Main.h"
+#include "S47Night.h"
 #include "S47Openings.h"
 #include "S47Places.h"
 #include "S47Predecessor.h"
@@ -29,12 +31,20 @@ namespace S47MailLocal
  const TCHAR* const BoxRect=TEXT("ff:mailbox");
  const TCHAR* const WeekNames[]={TEXT("Monday"),TEXT("Tuesday"),TEXT("Wednesday"),TEXT("Thursday"),TEXT("Friday"),TEXT("Saturday"),TEXT("Sunday")};
  const TCHAR* const MonthNames[]={TEXT("January"),TEXT("February"),TEXT("March"),TEXT("April"),TEXT("May"),TEXT("June"),TEXT("July"),TEXT("August"),TEXT("September"),TEXT("October"),TEXT("November"),TEXT("December")};
+ const TCHAR* const Points[]={TEXT("north"),TEXT("northeast"),TEXT("east"),TEXT("southeast"),TEXT("south"),TEXT("southwest"),TEXT("west"),TEXT("northwest")};
+ // The carrier's car (FS47MailCarModel): up the highway's northbound lane from the south end of SARO's stretch at a rural carrier's
+ // pace, in to the edge of the road over the last stretch before the box, the driver's window (on the right, a little ahead of
+ // the middle) at the box's door; then on north out of sight. Metres, metres a second, seconds; Lead and Late in the world's clock.
+ constexpr double LaneX=S47Legs::SARO_HWY.X+1.8,CurbX=FS47MailBoxModel::PostX-.38-.42-FS47MailCarModel::Width*.5,StopZ=FS47MailBoxModel::PostZ+.5;
+ constexpr double Cruise=21.,Brake=4.,Pull=2.6,Decide=75.,PullIn=70.,PullOut=40.,Dwell=6.5;
+ constexpr double Lead=15*60.,Late=8*60.,Jumped=45*60.;
  double Draw(int32 Seed,int32 Which,uint32 Salt)
  {
   uint32 Hash=uint32(Seed)*2246822519u^uint32(Which)*3266489917u^(Salt+7u)*668265263u;
   Hash^=Hash>>15;Hash*=2654435761u;Hash^=Hash>>13;Hash*=2246822519u;Hash^=Hash>>16;
   return double(Hash)/4294967296.;
  }
+ double Smooth(double T){const double K=FMath::Clamp(T,0.,1.);return K*K*(3.-2.*K);}
  S47J::FObj GoodsJson(const TMap<FString,int32>& Goods){auto O=S47J::New();for(const auto& G:Goods)S47J::Set(O,*G.Key,G.Value);return O;}
  TMap<FString,int32> GoodsOf(const S47J::FObj& O)
  {
@@ -47,13 +57,14 @@ namespace S47MailLocal
   auto O=S47J::New();S47J::Set(O,TEXT("id"),Pc.Id);S47J::Set(O,TEXT("kind"),Pc.Kind);S47J::Set(O,TEXT("day"),Pc.Day);
   if(!Pc.Ref.IsEmpty())S47J::Set(O,TEXT("ref"),Pc.Ref);
   if(!Pc.Text.IsEmpty())S47J::Set(O,TEXT("text"),Pc.Text);
+  if(!Pc.Place.IsEmpty())S47J::Set(O,TEXT("place"),Pc.Place);
   if(!Pc.Goods.IsEmpty())S47J::Set(O,TEXT("goods"),GoodsJson(Pc.Goods));
   return O;
  }
  bool PieceOf(const TSharedPtr<FJsonValue>& V,FS47Mail::FPiece& Out)
  {
   if(!V.IsValid()||V->Type!=EJson::Object)return false;const auto O=V->AsObject();if(!O.IsValid())return false;
-  Out.Id=S47J::Str(O,TEXT("id"));Out.Kind=S47J::Str(O,TEXT("kind"));Out.Ref=S47J::Str(O,TEXT("ref"));Out.Text=S47J::Str(O,TEXT("text"));
+  Out.Id=S47J::Str(O,TEXT("id"));Out.Kind=S47J::Str(O,TEXT("kind"));Out.Ref=S47J::Str(O,TEXT("ref"));Out.Text=S47J::Str(O,TEXT("text"));Out.Place=S47J::Str(O,TEXT("place"));
   Out.Day=FMath::Clamp(S47J::Int(O,TEXT("day")),0,36500);Out.Goods=GoodsOf(S47J::Obj(O,TEXT("goods")));
   static const TCHAR* const KindNames[]={TEXT("ward"),TEXT("ledger"),TEXT("catalog"),TEXT("parcel"),TEXT("bill"),TEXT("nobody")};
   bool bKind=false;for(const TCHAR* K:KindNames)bKind|=Out.Kind==K;
@@ -61,7 +72,36 @@ namespace S47MailLocal
  }
  // A catalog line's goods id, without "kit:".
  FString KitOf(const FString& Goods){return Goods.StartsWith(TEXT("kit:"))?Goods.Mid(4):FString();}
+ // The findings the town might hear of, by their kind (FS47Happenings, FS47FarmSite), and how the paper files them. The station's
+ // own records (the Director's observations, what only the array logged, the counter's readings) it never hears of.
+ bool TopicOf(const FString& Id,S47Ledger::ETopic& Out)
+ {
+  using S47Ledger::ETopic;
+  struct FKind{const TCHAR* Prefix;ETopic Topic;};
+  static const FKind Kinds[]={
+   {TEXT("missing_reported_d"),ETopic::Called},{TEXT("missing_d"),ETopic::Missing},{TEXT("carcass_d"),ETopic::Carcass},{TEXT("cattle_ring_d"),ETopic::Cattle},
+   {TEXT("lights_trace_"),ETopic::Landing},{TEXT("farm_trace"),ETopic::Landing},{TEXT("landing_seen_d"),ETopic::Lights},{TEXT("house_lit_d"),ETopic::LitHouse},
+   {TEXT("car_dies_d"),ETopic::Stalled},{TEXT("car_light_d"),ETopic::Stalled},{TEXT("cb_empty_d"),ETopic::EmptyRig},{TEXT("rv_d"),ETopic::Camper},
+   {TEXT("hitcher_d"),ETopic::Walker},{TEXT("blackout_d"),ETopic::Outage},{TEXT("animals_flee_d"),ETopic::Fled},{TEXT("clock_ahead_d"),ETopic::ClockFast},
+   {TEXT("cb_helped_d"),ETopic::Helped}};
+  for(const FKind& K:Kinds)if(Id.StartsWith(K.Prefix,ESearchCase::CaseSensitive)){Out=K.Topic;return true;}
+  return false;
+ }
 }
+
+// The car's engine through a panner that follows it down the road.
+struct FS47Mail::FCarSound
+{
+ TSharedPtr<FS47PannerNode> Pan;
+ FS47Play Engine;
+ float Rate=-1.f,Gain=-1.f;
+ void Stop()
+ {
+  if(Engine.Src)Engine.Src->Stop();
+  Engine={};if(Pan)Pan->Disconnect();
+  Pan.Reset();Rate=Gain=-1.f;
+ }
+};
 
 FS47Mail::FS47Mail(US47Main* Main):M(Main){}
 // The scene's parts belong to the scene; nothing is touched on the way out (the session's Stop has put them away).
@@ -92,12 +132,12 @@ void FS47Mail::Begin(const S47J::FObj& Saved,bool bSavedGame)
 {
  namespace L=S47MailLocal;
  Stop();Life=MakeShared<uint8>(0);
- Box.Reset();Pending.Reset();Fetched.Reset();Posted.Reset();ReadIssues.Reset();Orders.Reset();Coupons.Reset();Issues.Reset();Cart.Reset();
- bFlag=bCatalog=bBound=false;LastRound=Rounds=NobodySent=0;NextSerial=1;
+ Box.Reset();Pending.Reset();Fetched.Reset();Posted.Reset();ReadIssues.Reset();Orders.Reset();Coupons.Reset();Issues.Reset();Cart.Reset();Seen.Reset();
+ bFlag=bCatalog=bBound=bPrimed=false;LastRound=Rounds=NobodySent=0;NextSerial=1;SeenCount=-1;Drive=FDrive();
  const int32 Today=M&&M->Freeform?M->Freeform->Day():1;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
-  bFlag=S47J::Bool(Saved,TEXT("flag"));bCatalog=S47J::Bool(Saved,TEXT("catalog"));
+  bCatalog=S47J::Bool(Saved,TEXT("catalog"));
   LastRound=FMath::Clamp(S47J::Int(Saved,TEXT("lastRound")),0,36500);Rounds=FMath::Max(0,S47J::Int(Saved,TEXT("rounds")));
   NextSerial=FMath::Max(1,S47J::Int(Saved,TEXT("serial"),1));NobodySent=FMath::Clamp(S47J::Int(Saved,TEXT("nobody")),0,9);
   for(const auto& V:S47J::Arr(Saved,TEXT("box"))){FPiece Pc;if(L::PieceOf(V,Pc)&&!Box.ContainsByPredicate([&](const FPiece& Q){return Q.Id==Pc.Id;}))Box.Add(Pc);}
@@ -123,26 +163,37 @@ void FS47Mail::Begin(const S47J::FObj& Saved,bool bSavedGame)
   {
    if(!V.IsValid()||V->Type!=EJson::Object)continue;const auto O=V->AsObject();FKept K;
    K.No=FMath::Max(1,S47J::Int(O,TEXT("no"),1));K.Day=FMath::Max(1,S47J::Int(O,TEXT("day"),1));K.bThanks=S47J::Bool(O,TEXT("thanks"));
-   K.Heads=S47J::Strs(O,TEXT("heads"));K.Bodies=S47J::Strs(O,TEXT("bodies"));K.Leads=S47J::Strs(O,TEXT("leads"));
+   K.Heads=S47J::Strs(O,TEXT("heads"));K.Bodies=S47J::Strs(O,TEXT("bodies"));K.Leads=S47J::Strs(O,TEXT("leads"));K.Keys=S47J::Strs(O,TEXT("keys"));
+   K.Log=S47J::Strs(O,TEXT("log"));for(const double Ago:S47J::Nums(O,TEXT("logAgo")))K.LogAgo.Add(FMath::Clamp(int32(Ago),0,14));
+   if(K.Log.Num()!=K.LogAgo.Num()){K.Log.Reset();K.LogAgo.Reset();}
    if(K.Heads.Num()==K.Bodies.Num()&&K.Heads.Num()==K.Leads.Num()&&!Issues.ContainsByPredicate([&](const FKept& Q){return Q.No==K.No;}))Issues.Add(K);
   }
   Issues.Sort([](const FKept& A,const FKept& B){return A.No<B.No;});
+  for(const auto& V:S47J::Arr(Saved,TEXT("seen")))
+  {
+   if(!V.IsValid()||V->Type!=EJson::Object)continue;const auto O=V->AsObject();FSeen Note;
+   Note.Id=S47J::Str(O,TEXT("id"));Note.Day=FMath::Clamp(S47J::Int(O,TEXT("day")),0,36500);Note.Place=S47J::Str(O,TEXT("place")).Left(120);Note.PlaceId=S47J::Str(O,TEXT("placeId")).Left(64);
+   if(!Note.Id.IsEmpty()&&!Seen.ContainsByPredicate([&](const FSeen& Q){return Q.Id==Note.Id;}))Seen.Add(Note);
+  }
  }
  else
  {
-  // A new game, or a save from before the post: the catalog is in the box and the flag is up. A save under way does not get the
-  // rounds it never had: they start from today's.
-  FPiece Pc;Pc.Id=TEXT("catalog");Pc.Kind=TEXT("catalog");Pc.Day=Today;Box.Add(Pc);Posted.Add(Pc.Id);bFlag=true;
+  // A new game, or a save from before the post: the catalog is in the box. A save under way does not get the rounds it never had:
+  // they start from today's.
+  FPiece Pc;Pc.Id=TEXT("catalog");Pc.Kind=TEXT("catalog");Pc.Day=Today;Box.Add(Pc);Posted.Add(Pc.Id);
   if(bSavedGame&&M&&M->Freeform)LastRound=M->Freeform->Clock()>=RoundClock(M->Freeform->Seed(),Today)?Today:Today-1;
  }
+ // The flag is the house's: up only while an order waits for the carrier (older saves had it up for anything in the box).
+ bFlag=Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;});
  // A long time away (an old save) is caught up from two weeks back at most.
  LastRound=FMath::Max(LastRound,Today-14);
- UE_LOG(LogTemp,Display,TEXT("S47: mail: %d in the box, %d on the way, %d orders, flag %s, last round day %d"),Box.Num(),Pending.Num(),Orders.Num(),bFlag?TEXT("up"):TEXT("down"),LastRound);
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: %d in the box, %d on the way, %d orders, flag %s, last round day %d, %d findings noted"),Box.Num(),Pending.Num(),Orders.Num(),bFlag?TEXT("up"):TEXT("down"),LastRound,Seen.Num());
 }
 void FS47Mail::Stop()
 {
  Life.Reset();bBound=false;
- if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return;
+ if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)){Drive=FDrive();return;}
+ EndCar();
  if(Model)Model->Show(false);
  if(IsValid(M->Web.Get())&&M->Web->HasWalkArea(TEXT("saro")))for(auto& Rect:M->Web->CollidersMutable(TEXT("saro")))if(Rect.Id==S47MailLocal::BoxRect)Rect.bEnabled=false;
 }
@@ -150,7 +201,7 @@ S47J::FObj FS47Mail::Save() const
 {
  namespace L=S47MailLocal;
  auto O=S47J::New();
- S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("flag"),bFlag);S47J::Set(O,TEXT("lastRound"),LastRound);S47J::Set(O,TEXT("rounds"),Rounds);S47J::Set(O,TEXT("serial"),NextSerial);
+ S47J::Set(O,TEXT("v"),2);S47J::Set(O,TEXT("flag"),bFlag);S47J::Set(O,TEXT("lastRound"),LastRound);S47J::Set(O,TEXT("rounds"),Rounds);S47J::Set(O,TEXT("serial"),NextSerial);
  if(bCatalog)S47J::Set(O,TEXT("catalog"),true);
  if(NobodySent>0)S47J::Set(O,TEXT("nobody"),NobodySent);
  const auto Pieces=[&](const TCHAR* Key,const TArray<FPiece>& List)
@@ -177,8 +228,20 @@ S47J::FObj FS47Mail::Save() const
  if(!Issues.IsEmpty())
  {
   TArray<TSharedPtr<FJsonValue>> A;
-  for(const FKept& K:Issues){auto V=S47J::New();S47J::Set(V,TEXT("no"),K.No);S47J::Set(V,TEXT("day"),K.Day);if(K.bThanks)S47J::Set(V,TEXT("thanks"),true);S47J::Set(V,TEXT("heads"),K.Heads);S47J::Set(V,TEXT("bodies"),K.Bodies);S47J::Set(V,TEXT("leads"),K.Leads);A.Add(MakeShared<FJsonValueObject>(V));}
+  for(const FKept& K:Issues)
+  {
+   auto V=S47J::New();S47J::Set(V,TEXT("no"),K.No);S47J::Set(V,TEXT("day"),K.Day);if(K.bThanks)S47J::Set(V,TEXT("thanks"),true);
+   S47J::Set(V,TEXT("heads"),K.Heads);S47J::Set(V,TEXT("bodies"),K.Bodies);S47J::Set(V,TEXT("leads"),K.Leads);S47J::Set(V,TEXT("keys"),K.Keys);
+   if(!K.Log.IsEmpty()){TArray<double> Ago;for(const int32 Each:K.LogAgo)Ago.Add(Each);S47J::Set(V,TEXT("log"),K.Log);S47J::Set(V,TEXT("logAgo"),Ago);}
+   A.Add(MakeShared<FJsonValueObject>(V));
+  }
   O->SetArrayField(TEXT("issues"),A);
+ }
+ if(!Seen.IsEmpty())
+ {
+  TArray<TSharedPtr<FJsonValue>> A;
+  for(const FSeen& Note:Seen){auto V=S47J::New();S47J::Set(V,TEXT("id"),Note.Id);S47J::Set(V,TEXT("day"),Note.Day);if(!Note.Place.IsEmpty())S47J::Set(V,TEXT("place"),Note.Place);if(!Note.PlaceId.IsEmpty())S47J::Set(V,TEXT("placeId"),Note.PlaceId);A.Add(MakeShared<FJsonValueObject>(V));}
+  O->SetArrayField(TEXT("seen"),A);
  }
  return O;
 }
@@ -202,7 +265,7 @@ bool FS47Mail::Build()
  I.Examine=[this,Guard]
  {
   if(!Guard.IsValid()||!Live())return FString();
-  return bFlag?FString(TEXT("A rural mailbox on a post, SARO stenciled on the side, the red flag up.")):FString(TEXT("A rural mailbox on a post, SARO stenciled on the side. The flag is down."));
+  return bFlag?FString(TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side, the red flag up for the carrier.")):FString(TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side. The flag is down."));
  };
  M->Inter->Add(I);M->Web->MarkUsable(Model->Pick.I,I.Id);
  // Nobody walks through it.
@@ -214,19 +277,39 @@ bool FS47Mail::Build()
 }
 void FS47Mail::Step(double Dt)
 {
+ namespace L=S47MailLocal;
  if(!Live())return;
  auto& Ses=*M->Freeform;
  if(!Build())return;
  if(!Model->Seated()&&M->Web->Area()==TEXT("saro")&&M->Player&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(FS47MailBoxModel::PostX,FS47MailBoxModel::PostZ))<250)Model->Seat(M->Web.Get());
- Model->SetFlag(bFlag);Model->Step(Dt);
+ Model->SetFlag(bFlag);Model->SetParcel(ParcelOnBox());Model->Step(Dt);
+ // What the nights leave is noted as it is registered, with where the player is then.
+ NoteFindings();
  if(Ses.Held())return;
- // The rounds that are due: today's once its hour has come, and any a long rest went past. No rounds on Sundays or Memorial Day.
+ // A rest or a jump in time while the car was on the road: it does not turn up hours later; its round is made as it would have been.
+ if(Drive.bOn&&Ses.Clock()-Drive.Started>L::Jumped)
+ {
+  const bool bOwed=Drive.bApply&&!Drive.bDone;const int32 OnDay=Drive.OnDay;
+  EndCar();
+  if(bOwed){LastRound=FMath::Max(LastRound,OnDay);Round(OnDay);}
+ }
+ StepCar(Dt);
+ // The rounds that are due. Today's: the car sets out up the highway a little before its hour when the player is at the station to
+ // see it, and the round is made when it reaches the box; otherwise (away, asleep, the hour long past) at its hour without it.
+ // Any a long rest went past are made as they were. No rounds on Sundays or Memorial Day.
  const int32 Today=Ses.Day();
  for(int32 OnDay=LastRound+1;OnDay<=Today;++OnDay)
  {
-  if(OnDay==Today&&Ses.Clock()<RoundClock(Ses.Seed(),OnDay))break;
-  LastRound=OnDay;
-  if(RoundOn(Ses.DateOfDay(OnDay)))Round(OnDay,OnDay==Today);
+  if(!RoundOn(Ses.DateOfDay(OnDay))){LastRound=OnDay;continue;}
+  if(OnDay==Today)
+  {
+   if(Drive.bOn&&Drive.bApply&&Drive.OnDay==OnDay)break;
+   const double Due=RoundClock(Ses.Seed(),OnDay),Now=Ses.Clock();
+   if(Now<Due-L::Lead)break;
+   if(Now<Due+L::Late&&!Drive.bOn&&StartCar(OnDay,true,S47Legs::SARO_HWY.Z1-5,false))break;
+   if(Now<Due)break;
+  }
+  LastRound=OnDay;Round(OnDay);
  }
 }
 
@@ -249,13 +332,23 @@ int32 FS47Mail::NobodyDay(int32 Which) const
  const int32 Seed=M&&M->Freeform?M->Freeform->Seed():0;
  return (Which==0?8:19)+int32(S47MailLocal::Draw(Seed,Which,3)*7.);
 }
-void FS47Mail::Round(int32 OnDay,bool bHere)
+bool FS47Mail::RoundBrings(int32 OnDay) const
+{
+ if(!M||!M->Freeform)return false;
+ const auto& Ses=*M->Freeform;
+ // Something to take (an order with the flag up) or to leave (what was posted, a parcel that is due, Thursday's paper, the rest).
+ if(Orders.ContainsByPredicate([&](const FOrder& O){return O.Picked==0||O.Due<=OnDay;}))return true;
+ if(Pending.ContainsByPredicate([&](const FPiece& Pc){return Pc.Day<=OnDay;}))return true;
+ if(Ses.DateOfDay(OnDay).GetDayOfWeek()==EDayOfWeek::Thursday)return true;
+ return NobodySent<2&&OnDay>=NobodyDay(NobodySent)&&!Ses.InTutorial();
+}
+void FS47Mail::Round(int32 OnDay)
 {
  if(!M||!M->Freeform)return;
  auto& Ses=*M->Freeform;
  ++Rounds;
  int32 Left=0,Picked=0;
- // Out: the orders waiting in the box, with their money orders.
+ // Out: the orders waiting in the box, with their money orders. The carrier puts the flag down.
  for(FOrder& Ord:Orders)if(Ord.Picked==0)
  {
   Ord.Picked=OnDay;int32 Due=OnDay;
@@ -263,7 +356,7 @@ void FS47Mail::Round(int32 OnDay,bool bHere)
   Ord.Due=Due;++Picked;
   UE_LOG(LogTemp,Display,TEXT("S47: mail: the carrier took order %d, due day %d"),Ord.Serial,Due);
  }
- // In: what was posted for today, parcels that are due, Thursday's paper, and now and then what nobody sent.
+ // In: what was posted for today, parcels that are due (on top of the box), Thursday's paper, and now and then what nobody sent.
  for(int32 I=Pending.Num()-1;I>=0;--I)if(Pending[I].Day<=OnDay)
  {
   FPiece Pc=Pending[I];Pc.Day=OnDay;Pending.RemoveAt(I);Box.Insert(Pc,0);++Left;
@@ -273,56 +366,172 @@ void FS47Mail::Round(int32 OnDay,bool bHere)
   const FOrder Ord=Orders[I];Orders.RemoveAt(I);
   FPiece Pc;Pc.Id=FString::Printf(TEXT("parcel:%d"),Ord.Serial);Pc.Kind=TEXT("parcel");Pc.Ref=FString::FromInt(Ord.Serial);Pc.Day=OnDay;Pc.Goods=Ord.Goods;Pc.Text=SlipText(Ord.Serial,Ord.Goods,Ord.Paid);
   Box.Add(Pc);Posted.Add(Pc.Id);++Left;
-  UE_LOG(LogTemp,Display,TEXT("S47: mail: parcel %d in the box, day %d"),Ord.Serial,OnDay);
+  UE_LOG(LogTemp,Display,TEXT("S47: mail: parcel %d on the box, day %d"),Ord.Serial,OnDay);
  }
  if(Ses.DateOfDay(OnDay).GetDayOfWeek()==EDayOfWeek::Thursday){PrintLedger(OnDay);++Left;}
  if(NobodySent<2&&OnDay>=NobodyDay(NobodySent)&&!Ses.InTutorial())
  {
-  const int32 V0=FMath::Abs(Ses.Seed())%3,Variant=NobodySent==0?V0:(V0+1+(FMath::Abs(Ses.Seed())/3)%2)%3;
-  FPiece Pc;Pc.Id=FString::Printf(TEXT("nobody:%d"),NobodySent+1);Pc.Kind=TEXT("nobody");Pc.Ref=FString::FromInt(Variant);Pc.Day=OnDay;
-  Pc.Text=NobodyText(Variant,DayText(OnDay+9).ToUpper());
+  const int32 V0=FMath::Abs(Ses.Seed())%3;
+  int32 Variant=NobodySent==0?V0:(V0+1+(FMath::Abs(Ses.Seed())/3)%2)%3;
+  // The map circles a place the player has not heard of; with none left, it is one of the others.
+  FString Circled;
+  if(Variant==1)
+  {
+   if(Ses.Places){Circled=Ses.Places->NextUnknown(OnDay*7+NobodySent);if(!FS47Places::Def(Circled))Circled.Empty();}
+   // (the second is a map only when the first was the sheet or the postcard: it becomes the other one)
+   if(Circled.IsEmpty())Variant=NobodySent==0?0:2-V0;
+  }
+  FPiece Pc;Pc.Id=FString::Printf(TEXT("nobody:%d"),NobodySent+1);Pc.Kind=TEXT("nobody");Pc.Ref=FString::FromInt(Variant);Pc.Day=OnDay;Pc.Place=Circled;
+  const FS47Places::FDef* D=Circled.IsEmpty()?nullptr:FS47Places::Def(Circled);
+  Pc.Text=NobodyText(Variant,D?FString(D->Title):FString());
   Box.Add(Pc);Posted.Add(Pc.Id);++NobodySent;++Left;
-  UE_LOG(LogTemp,Display,TEXT("S47: mail: something with no sender in the box, day %d"),OnDay);
+  UE_LOG(LogTemp,Display,TEXT("S47: mail: something with no sender in the box, day %d, variant %d"),OnDay,Variant);
  }
- bFlag=!Box.IsEmpty();
+ bFlag=Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;});
  UE_LOG(LogTemp,Display,TEXT("S47: mail: round %d on day %d: left %d, picked up %d, %d in the box, flag %s"),Rounds,OnDay,Left,Picked,Box.Num(),bFlag?TEXT("up"):TEXT("down"));
- if(bHere)Truck(Left+Picked>0);
  M->RequestAutosave();
 }
-void FS47Mail::Truck(bool bStops)
+
+// ---------- the carrier's car ----------
+bool FS47Mail::StartCar(int32 OnDay,bool bApply,double FromZ,bool bForceStop)
 {
- // The carrier's car up the highway from the south: heard, not seen, from the station; it stops at the box only when it has
- // something to leave or to take, the lid clanks twice, and it goes on north. From what the game already has; nothing new recorded.
- if(!M||!IsValid(M->Audio)||!M->Audio->Ctx.IsValid()||!M->Player||!M->Web||M->Web->Area()!=TEXT("saro")||!M->Freeform)return;
- const double Away=FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(FS47MailBoxModel::PostX,FS47MailBoxModel::PostZ));
- if(Away>700)return;
- const bool bIn=M->Freeform->Taken&&M->Freeform->Taken->Indoors();
- const float Near=float(FMath::Clamp(28./(28.+Away),.04,1.))*(bIn?.35f:1.f);
- const double Now=M->Audio->Ctx->CurrentTime();
- FS47Sound Motor;Motor.bLoop=true;Motor.Lp=bIn?900.f:2300.f;Motor.Dur=bStops?21.f:13.f;Motor.Rate=.92f;
- const FS47Play Engine=M->Audio->Sfx(TEXT("engineDrive"),Motor);
- if(Engine.Gain.IsValid())
+ namespace L=S47MailLocal;
+ if(!M||!IsValid(M->Web.Get())||!M->Web->IsLoaded()||M->Web->Area()!=TEXT("saro")||!M->Player||!M->Freeform)return false;
+ if(!Car)Car=MakeUnique<FS47MailCarModel>();
+ if(!Car->Build(M->Web.Get()))return false;
+ EndCar();
+ Drive=FDrive();Drive.bOn=true;Drive.bApply=bApply;Drive.bForceStop=bForceStop;Drive.OnDay=OnDay;Drive.Z=FromZ;Drive.X=L::LaneX;Drive.Speed=L::Cruise;
+ Drive.Started=M->Freeform->Clock();
+ Drive.bStops=bForceStop||RoundBrings(OnDay);
+ Car->Show(true);
+ if(!CarSound)CarSound=MakeUnique<FCarSound>();
+ if(IsValid(M->Audio)&&M->Audio->Ctx.IsValid())
  {
-  auto& G=Engine.Gain->Gain;const double Peak=.5*Near,Faint=.05*Near;
-  G.SetValueAtTime(0.,Now);G.LinearRampToValueAtTime(Faint,Now+1.5);
-  if(bStops){G.LinearRampToValueAtTime(Peak,Now+7.);G.LinearRampToValueAtTime(Peak*.3,Now+8.);G.LinearRampToValueAtTime(Peak*.3,Now+12.5);G.LinearRampToValueAtTime(Peak,Now+14.);G.LinearRampToValueAtTime(0.,Now+21.);}
-  else{G.LinearRampToValueAtTime(Peak,Now+6.);G.LinearRampToValueAtTime(0.,Now+13.);}
+  const bool bIn=M->Freeform->Taken&&M->Freeform->Taken->Indoors();
+  CarSound->Pan=M->Audio->Ctx->CreatePanner();CarSound->Pan->RefDistance=14;CarSound->Pan->Connect(M->Audio->SfxBus);
+  FS47Sound S;S.Gain=0.f;S.Rate=.9f;S.bLoop=true;S.DestNode=CarSound->Pan;S.Lp=bIn?900.f:2400.f;
+  CarSound->Engine=M->Audio->Sfx(TEXT("engineDrive"),S);
  }
- if(bStops)
- {
-  FS47Sound Idle;Idle.bLoop=true;Idle.When=7.5f;Idle.Dur=5.5f;Idle.Gain=.4f*Near;Idle.Lp=Motor.Lp;M->Audio->Sfx(TEXT("engineIdle"),Idle);
-  FS47Sound Clank;Clank.When=9.2f;Clank.Gain=.8f*Near;M->Audio->Sfx(TEXT("metalTap"),Clank);
-  Clank.When=10.9f;Clank.Gain=.55f*Near;M->Audio->Sfx(TEXT("metalTap"),Clank);
- }
- UE_LOG(LogTemp,Display,TEXT("S47: mail: the carrier's car on the highway, %.0f m from the box%s"),Away,bStops?TEXT(", stopping"):TEXT(", going by"));
+ PlaceCar();
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: the carrier's car on the highway, %.0f m south of the box, %s%s"),FromZ-L::StopZ,Drive.bStops?TEXT("stopping"):TEXT("going by"),bApply?TEXT(""):TEXT(" (a test's show)"));
+ return true;
 }
+void FS47Mail::EndCar()
+{
+ Drive.bOn=false;Drive.bStopped=false;
+ if(Car)Car->Show(false);
+ if(CarSound)CarSound->Stop();
+}
+void FS47Mail::PlaceCar()
+{
+ if(!Car||!M||!IsValid(M->Web.Get()))return;
+ const auto Floor=[&](double AtZ){return US47Night::SaroFloorAt(M->Web.Get(),Drive.X,AtZ);};
+ const double Y=Floor(Drive.Z),Front=Floor(Drive.Z-1.45),Back=Floor(Drive.Z+1.45);
+ Car->Place(FVector(Drive.X,Y,Drive.Z),FMath::Atan2(Front-Back,2.9));
+ if(CarSound&&CarSound->Pan)CarSound->Pan->SetPosition(Drive.X,Y+1,Drive.Z);
+}
+void FS47Mail::CarEngine(float Rate,float Gain)
+{
+ if(!CarSound||!CarSound->Engine.Src||!IsValid(M->Audio)||!M->Audio->Ctx.IsValid())return;
+ const double Now=M->Audio->Ctx->CurrentTime();
+ const bool bIn=M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Indoors();
+ const float Want=Gain*(bIn?.4f:1.f);
+ if(FMath::Abs(CarSound->Rate-Rate)>.02f){CarSound->Rate=Rate;CarSound->Engine.Src->PlaybackRate.SetTargetAtTime(Rate,Now,.35);}
+ if(CarSound->Engine.Gain.IsValid()&&FMath::Abs(CarSound->Gain-Want)>.01f){CarSound->Gain=Want;CarSound->Engine.Gain->Gain.SetTargetAtTime(Want,Now,.35);}
+}
+void FS47Mail::Clank(float Gain)
+{
+ if(!M||!IsValid(M->Audio))return;
+ FS47Sound S;S.Gain=Gain;S.At=Model?Model->Lid():FVector(FS47MailBoxModel::PostX,0.7,FS47MailBoxModel::PostZ);
+ M->Audio->Sfx(TEXT("metalTap"),S);
+}
+void FS47Mail::ApplyRound()
+{
+ if(Drive.bDone)return;
+ Drive.bDone=true;
+ if(!Drive.bApply)return;
+ LastRound=FMath::Max(LastRound,Drive.OnDay);
+ Round(Drive.OnDay);
+}
+void FS47Mail::StepCar(double Dt)
+{
+ namespace L=S47MailLocal;
+ if(!Drive.bOn)return;
+ // The player left SARO's stretch: the car is not on this one any more, and its round is made without anyone seeing it.
+ if(!M||!IsValid(M->Web.Get())||M->Web->Area()!=TEXT("saro")||!Car||!Car->Built())
+ {
+  const bool bOwed=Drive.bApply&&!Drive.bDone;const int32 OnDay=Drive.OnDay;
+  EndCar();
+  if(bOwed){LastRound=FMath::Max(LastRound,OnDay);Round(OnDay);}
+  return;
+ }
+ const double Tick=FMath::Clamp(Dt,0.,.1);
+ if(Drive.bStopped)
+ {
+  // At the box, the roof light going: the door down, what there is goes in, an order comes out and the flag comes down, the door up.
+  Drive.Wait+=Tick;
+  if(!Drive.bClank1&&Drive.Wait>1.){Drive.bClank1=true;Clank(.8f);}
+  if(!Drive.bDone&&Drive.Wait>1.8)ApplyRound();
+  if(!Drive.bClank2&&Drive.Wait>4.4){Drive.bClank2=true;Clank(.6f);}
+  Car->Beacon(FMath::Fmod(Drive.Wait,.8)<.4);
+  CarEngine(.62f,.2f);
+  if(Drive.Wait>=L::Dwell){Drive.bStopped=false;Drive.Speed=0;}
+  return;
+ }
+ const double ToBox=Drive.Z-L::StopZ;
+ // Whether it stops is settled at the braking point: an order left in the box while the car was coming is still picked up.
+ if(!Drive.bDone&&ToBox>0&&ToBox<L::Decide)Drive.bStops=Drive.bForceStop||RoundBrings(Drive.OnDay);
+ double Want=L::Cruise;
+ if(!Drive.bDone&&Drive.bStops&&ToBox>0)Want=FMath::Min(Want,FMath::Sqrt(2.*L::Brake*ToBox)+.3);
+ if(!Drive.bDone&&Drive.bStops&&ToBox<=.05)
+ {
+  Drive.Z=L::StopZ;Drive.X=L::CurbX;Drive.Speed=0;Drive.bStopped=true;Drive.Wait=0;Drive.StopAt=Drive.Z;Drive.XAtStop=Drive.X;PlaceCar();
+  UE_LOG(LogTemp,Display,TEXT("S47: mail: the carrier's car stops at the box"));
+  return;
+ }
+ // Somebody standing in the road ahead (on its way back out it swings to the lane, so a player at the box is passed). Somebody at
+ // the box itself: the carrier stops short and hands it out of the window. Anywhere else it waits for them.
+ if(M->Player)
+ {
+  const FVector P=M->Player->Pos;const double Ahead=Drive.Z-P.Z;
+  const double PathX=Drive.bDone?L::LaneX:Drive.X;
+  if(FMath::Abs(P.X-PathX)<1.3&&Ahead>1.6&&Ahead<8.)
+  {
+   if(!Drive.bDone&&Drive.bStops&&ToBox<12.)
+   {
+    Drive.Speed=0;Drive.bStopped=true;Drive.Wait=0;Drive.StopAt=Drive.Z;Drive.XAtStop=Drive.X;PlaceCar();
+    UE_LOG(LogTemp,Display,TEXT("S47: mail: the carrier's car stops short of the box, somebody standing at it"));
+    return;
+   }
+   Want=0;
+  }
+ }
+ const double Acc=Want>Drive.Speed?L::Pull:L::Brake*1.5;
+ Drive.Speed=Want>Drive.Speed?FMath::Min(Want,Drive.Speed+Acc*Tick):FMath::Max(Want,Drive.Speed-Acc*Tick);
+ Drive.Z-=Drive.Speed*Tick;
+ // Going by without stopping: the round is made as it passes, with nothing in it.
+ if(!Drive.bDone&&Drive.Z<=L::StopZ)ApplyRound();
+ // In to the edge of the road for the box, and back out to the lane after it.
+ if(Drive.bDone&&Drive.bStops)Drive.X=FMath::Lerp(Drive.XAtStop,L::LaneX,L::Smooth((Drive.StopAt-Drive.Z)/L::PullOut));
+ else Drive.X=Drive.bStops?FMath::Lerp(L::LaneX,L::CurbX,L::Smooth(1.-(Drive.Z-L::StopZ)/L::PullIn)):L::LaneX;
+ Car->Beacon(!Drive.bDone&&Drive.bStops&&ToBox<L::PullIn&&FMath::Fmod(ToBox,6.)<3.);
+ CarEngine(float(.7+.35*Drive.Speed/L::Cruise),float(.16+.22*Drive.Speed/L::Cruise));
+ PlaceCar();
+ if(Drive.Z<=S47Legs::SARO_HWY.Z0+5)
+ {
+  const bool bOwed=Drive.bApply&&!Drive.bDone;const int32 OnDay=Drive.OnDay;
+  EndCar();
+  if(bOwed){LastRound=FMath::Max(LastRound,OnDay);Round(OnDay);}
+ }
+}
+
 bool FS47Mail::Post(const FPiece& Piece,bool bNow)
 {
  if(Piece.Id.IsEmpty()||Posted.Contains(Piece.Id))return false;
  Posted.Add(Piece.Id);
  FPiece Pc=Piece;
  const int32 Today=M&&M->Freeform?M->Freeform->Day():1;
- if(bNow){Pc.Day=Today;Box.Add(Pc);bFlag=true;}
+ if(bNow){Pc.Day=Today;Box.Add(Pc);}
  else
  {
   // With today's round if it has not come yet, otherwise with the next.
@@ -345,91 +554,156 @@ void FS47Mail::PostWeekStatement(int32 Week)
  FPiece Pc;Pc.Id=FString::Printf(TEXT("bill:week-%d"),Week);Pc.Kind=TEXT("bill");Pc.Ref=FString::Printf(TEXT("week-review-%d"),Week);
  Post(Pc);
 }
+FString FS47Mail::TowText(const FString& Date,int32 Fee,bool bPaidInCash)
+{
+ return FString::Printf(TEXT("SOCORRO COUNTY ROAD DEPARTMENT\nWRECKER SERVICE / STATEMENT\n\nBILL TO: SARO, DISTRICT SERVICE TRUCK\nDATE OF SERVICE: %s\n\nTOW TO THE STATION, HOOK-UP AND MILEAGE   $%d\n\n%s\n\nKeep the truck on the road and we will both be happier."),
+  *Date,Fee,bPaidInCash?TEXT("PAID FROM THE STATION BUDGET. THANK YOU."):TEXT("NOT PAID: CARRIED TO THE STATION'S WEEKLY SHEET."));
+}
 void FS47Mail::PostTowBill(int32 Fee,bool bPaidInCash)
 {
  if(!Live()||!M||!M->Freeform)return;
  const int32 Today=M->Freeform->Day();
  FPiece Pc;Pc.Id=FString::Printf(TEXT("bill:tow-%d-%d"),Today,Rounds);Pc.Kind=TEXT("bill");
- Pc.Text=FString::Printf(TEXT("CALICHE COUNTY ROAD DEPARTMENT\nWRECKER SERVICE / STATEMENT\n\nBILL TO: SARO, DISTRICT SERVICE TRUCK\nDATE OF SERVICE: %s\n\nTOW TO THE STATION, HOOK-UP AND MILEAGE   $%d\n\n%s\n\nKeep the truck on the road and we will both be happier."),
-  *DayText(Today).ToUpper(),Fee,bPaidInCash?TEXT("PAID FROM THE STATION BUDGET. THANK YOU."):TEXT("NOT PAID: CARRIED TO THE STATION'S WEEKLY SHEET."));
+ Pc.Text=TowText(DayText(Today).ToUpper(),Fee,bPaidInCash);
  Post(Pc);
 }
 bool FS47Mail::Holds(const FString& Id) const{return Box.ContainsByPredicate([&](const FPiece& Pc){return Pc.Id==Id;});}
 bool FS47Mail::Coming(const FString& Id) const{return Pending.ContainsByPredicate([&](const FPiece& Pc){return Pc.Id==Id;});}
+bool FS47Mail::ParcelOnBox() const{return Box.ContainsByPredicate([](const FPiece& Pc){return Pc.Kind==TEXT("parcel");});}
 
-// ---------- the paper ----------
+// ---------- what the nights left, for the paper ----------
+bool FS47Mail::PlaceOf(const FString& Id,const FString& Text,bool bHere,FString& OutPlace,FString& OutId) const
+{
+ namespace L=S47MailLocal;
+ OutPlace.Empty();OutId.Empty();
+ if(!M||!M->Freeform)return false;
+ const auto& Ses=*M->Freeform;
+ // Lights seen coming down from the station: where they were is a bearing, and the paper says it as one.
+ if(Id.StartsWith(TEXT("landing_seen_d")))
+ {
+  const int32 At=Text.Find(TEXT("about "));
+  if(At!=INDEX_NONE&&Text.Contains(TEXT(" degrees from SARO")))
+  {
+   const double Az=FCString::Atod(*Text.Mid(At+6));
+   OutPlace=FString::Printf(TEXT("the land %s of the radio station"),L::Points[((FMath::RoundToInt(Az/45.)%8)+8)%8]);
+   return true;
+  }
+  return false;
+ }
+ if(Id.StartsWith(TEXT("blackout_d"))){OutPlace=TEXT("Caliche");return true;}
+ // A place the finding names: the longest title of the land's places found in its words.
+ int32 Best=0;
+ if(Ses.EventPlaces)for(const FS47EventPlace& Pc:Ses.EventPlaces->All())
+  if(Pc.Title.Len()>Best&&Text.Contains(Pc.Title,ESearchCase::CaseSensitive)){Best=Pc.Title.Len();OutPlace=Pc.Title;OutId=FS47Places::Def(Pc.Id)?Pc.Id:FString();}
+ for(const FS47Places::FDef& D:FS47Places::Defs())
+ {
+  const FString Title=D.Title;
+  if(Title.Len()>Best&&Text.Contains(Title,ESearchCase::CaseSensitive)){Best=Title.Len();OutPlace=Title;OutId=D.Id;}
+ }
+ if(Best>0)return true;
+ // What happened where the player was (on the road, rabbits running past, a figure by the highway): the place nearest them then.
+ if(!bHere||!Ses.EventPlaces)return false;
+ const bool bRoad=Id.StartsWith(TEXT("car_"))||Id.StartsWith(TEXT("clock_ahead_d"))||Id.StartsWith(TEXT("hitcher_d"))||Id.StartsWith(TEXT("animals_flee_d"));
+ if(const FS47EventPlace* Near=Ses.EventPlaces->Nearest(bRoad?1500.:400.))
+ {
+  OutPlace=Near->Title;OutId=FS47Places::Def(Near->Id)?Near->Id:FString();
+  return true;
+ }
+ return false;
+}
+void FS47Mail::NoteFindings()
+{
+ namespace L=S47MailLocal;
+ if(!M||!M->Freeform)return;
+ const auto& Ses=*M->Freeform;
+ const int32 Count=Ses.FindingCount();
+ if(Count==SeenCount)return;
+ SeenCount=Count;
+ // The first look after a game is loaded finds what was there before: those are placed by their own words only, never by where the
+ // player happens to stand now.
+ const bool bHere=bPrimed;bPrimed=true;
+ for(const FString& Id:Ses.FindingIdsFrom(FMath::Max(1,Ses.Day()-8)))
+ {
+  S47Ledger::ETopic Topic;
+  if(!L::TopicOf(Id,Topic)||Seen.ContainsByPredicate([&](const FSeen& Q){return Q.Id==Id;}))continue;
+  FSeen Note;Note.Id=Id;Note.Day=Ses.FindingDay(Id);
+  PlaceOf(Id,Ses.FindingText(Id),bHere,Note.Place,Note.PlaceId);
+  Seen.Add(Note);
+  UE_LOG(LogTemp,Display,TEXT("S47: mail: noted %s, day %d, at %s"),*Id,Note.Day,Note.Place.IsEmpty()?TEXT("no place"):*Note.Place);
+ }
+ while(Seen.Num()>80)Seen.RemoveAt(0);
+}
 TArray<S47Ledger::FFact> FS47Mail::WeekFacts(int32 FromDay,int32 ToDay) const
 {
- using S47Ledger::ETopic;
+ namespace L=S47MailLocal;
  TArray<S47Ledger::FFact> Out;
  if(!M||!M->Freeform)return Out;
  const auto& Ses=*M->Freeform;
- // How a record would reach the town: by its kind (FS47Happenings, the Director's observations, the marks left at a place).
- struct FKind{const TCHAR* Prefix;ETopic Topic;};
- static const FKind KindNames[]={
-  {TEXT("missing_reported_d"),ETopic::Called},{TEXT("missing_d"),ETopic::Missing},{TEXT("carcass_d"),ETopic::Carcass},
-  {TEXT("cattle_ring_d"),ETopic::Cattle},{TEXT("animals_flee_d"),ETopic::Cattle},
-  {TEXT("lights_trace_"),ETopic::Landing},{TEXT("farm_trace"),ETopic::Landing},{TEXT("geiger_landing_"),ETopic::Landing},{TEXT("geiger_trace_"),ETopic::Landing},
-  {TEXT("landing_seen_d"),ETopic::Lights},{TEXT("landing_logged_d"),ETopic::Lights},{TEXT("observation."),ETopic::Lights},{TEXT("house_lit_d"),ETopic::Lights},{TEXT("car_light_d"),ETopic::Lights},
-  {TEXT("car_dies_d"),ETopic::Stalled},{TEXT("clock_ahead_d"),ETopic::Stalled},{TEXT("blackout_d"),ETopic::Outage},
-  {TEXT("cb_empty_d"),ETopic::EmptyRig},{TEXT("rv_d"),ETopic::Camper},{TEXT("hitcher_d"),ETopic::Walker},{TEXT("cb_helped_d"),ETopic::Helped}};
- // Where: the place on the night's list something happened at that night, never the station's own ground if there is another.
- const auto PlaceOn=[&](int32 Night,FString& OutTitle,FString& OutId)
+ const auto NightWords=[&](int32 OnDay){return FString(L::WeekNames[int32(Ses.DateOfDay(OnDay).GetDayOfWeek())])+TEXT(" night");};
+ TSet<FString> Told;
+ // What was noted as it happened, at the place it was.
+ for(const FSeen& Note:Seen)
  {
-  OutTitle.Empty();OutId.Empty();if(!Ses.EventPlaces)return;
-  for(const FS47EventPlace& Pc:Ses.EventPlaces->All())if(Ses.EventPlaces->LastNight(Pc.Id)==Night)
-  {
-   const bool bStation=Pc.Region==TEXT("saro");
-   if(!OutTitle.IsEmpty()&&bStation)continue;
-   OutTitle=Pc.Title;OutId=FS47Places::Def(Pc.Id)?Pc.Id:FString();
-   if(!bStation)break;
-  }
- };
- const auto NightWords=[&](int32 OnDay){return FString(S47MailLocal::WeekNames[int32(Ses.DateOfDay(OnDay).GetDayOfWeek())])+TEXT(" night");};
- TSet<int32> NightsTold;
+  S47Ledger::ETopic Topic;
+  if(Note.Day<FromDay||Note.Day>ToDay||!L::TopicOf(Note.Id,Topic))continue;
+  S47Ledger::FFact Fact;Fact.Topic=Topic;Fact.Day=Note.Day;Fact.Night=NightWords(Note.Day);Fact.Place=Note.Place;Fact.PlaceId=Note.PlaceId;Fact.Id=Note.Id;
+  Out.Add(Fact);Told.Add(Note.Id);
+ }
+ // A finding from before the box kept notes (an older save): its place from its own words only.
  for(const FString& Id:Ses.FindingIdsFrom(FromDay))
  {
-  const int32 OnDay=Ses.FindingDay(Id);if(OnDay<FromDay||OnDay>ToDay)continue;
-  const FKind* K=nullptr;for(const FKind& Each:KindNames)if(Id.StartsWith(Each.Prefix)){K=&Each;break;}
-  if(!K)continue;
-  S47Ledger::FFact Fact;Fact.Topic=K->Topic;Fact.Day=OnDay;Fact.Night=NightWords(OnDay);PlaceOn(OnDay,Fact.Place,Fact.PlaceId);
-  Out.Add(Fact);NightsTold.Add(OnDay);
+  S47Ledger::ETopic Topic;
+  const int32 OnDay=Ses.FindingDay(Id);
+  if(Told.Contains(Id)||OnDay<FromDay||OnDay>ToDay||!L::TopicOf(Id,Topic))continue;
+  S47Ledger::FFact Fact;Fact.Topic=Topic;Fact.Day=OnDay;Fact.Night=NightWords(OnDay);Fact.Id=Id;
+  PlaceOf(Id,Ses.FindingText(Id),false,Fact.Place,Fact.PlaceId);
+  Out.Add(Fact);
  }
- // What the town heard of that the player never saw: talk.
- if(Ses.EventPlaces)for(const FS47EventPlace& Pc:Ses.EventPlaces->All())
- {
-  const int32 Night=Ses.EventPlaces->LastNight(Pc.Id);
-  if(Night<FromDay||Night>ToDay||NightsTold.Contains(Night)||Pc.Region==TEXT("saro"))continue;
-  S47Ledger::FFact Fact;Fact.Topic=ETopic::Rumor;Fact.Day=Night;Fact.Night=NightWords(Night);Fact.Place=Pc.Title;Fact.PlaceId=FS47Places::Def(Pc.Id)?Pc.Id:FString();
-  Out.Add(Fact);NightsTold.Add(Night);
- }
+ Out.StableSort([](const S47Ledger::FFact& A,const S47Ledger::FFact& B){return A.Day<B.Day;});
  return Out;
 }
+
+// ---------- the paper ----------
 void FS47Mail::PrintLedger(int32 OnDay)
 {
  if(!M||!M->Freeform)return;
  auto& Ses=*M->Freeform;
  const int32 No=Issues.Num()+1;
+ // The week up to the paper: from the last paper's day through the night before this one, so no night is told twice.
  const int32 FromDay=Issues.IsEmpty()?1:Issues.Last().Day;
- const TArray<S47Ledger::FFact> Facts=WeekFacts(FromDay,OnDay);
+ const TArray<S47Ledger::FFact> Facts=WeekFacts(FromDay,OnDay-1);
  FString UnknownId,UnknownTitle;
  if(Ses.Places){UnknownId=Ses.Places->NextUnknown(No*13+5);if(const FS47Places::FDef* D=FS47Places::Def(UnknownId))UnknownTitle=D->Title;else UnknownId.Empty();}
- const TArray<S47Ledger::FStory> Front=S47Ledger::Front(Ses.Seed(),No,Facts,UnknownId,UnknownTitle);
+ TMap<FString,int32> Used;for(const FKept& Was:Issues)for(const FString& Key:Was.Keys)Used.Add(Key,Was.No);
+ const TArray<S47Ledger::FStory> Front=S47Ledger::Front(Ses.Seed(),No,Ses.DateOfDay(OnDay),Facts,Used,UnknownId,UnknownTitle);
+ const TArray<S47Ledger::FLogLine> Log=S47Ledger::LogLines(Facts,Front,OnDay,2);
  FKept K;K.No=No;K.Day=OnDay;K.bThanks=Facts.ContainsByPredicate([](const S47Ledger::FFact& Fact){return Fact.Topic==S47Ledger::ETopic::Helped;});
- for(const S47Ledger::FStory& St:Front){K.Heads.Add(St.Head);K.Bodies.Add(St.Body);K.Leads.Add(St.Lead);}
+ for(const S47Ledger::FStory& St:Front){K.Heads.Add(St.Head);K.Bodies.Add(St.Body);K.Leads.Add(St.Lead);K.Keys.Add(St.Key);}
+ for(const S47Ledger::FLogLine& Line:Log){K.Log.Add(Line.Text);K.LogAgo.Add(Line.Ago);}
  Issues.Add(K);
  FPiece Pc;Pc.Id=FString::Printf(TEXT("ledger:%d"),No);Pc.Kind=TEXT("ledger");Pc.Ref=FString::FromInt(No);Pc.Day=OnDay;
  Box.Add(Pc);Posted.Add(Pc.Id);
- UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d printed, day %d: %d facts from day %d, front \"%s\" / \"%s\""),No,OnDay,Facts.Num(),FromDay,Front.Num()>0?*Front[0].Head:TEXT(""),Front.Num()>1?*Front[1].Head:TEXT(""));
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d printed, day %d: %d facts from day %d to %d, front \"%s\" / \"%s\", %d in the sheriff's log"),No,OnDay,Facts.Num(),FromDay,OnDay-1,
+  Front.Num()>0?*Front[0].Head:TEXT(""),Front.Num()>1?*Front[1].Head:TEXT(""),Log.Num());
 }
 bool FS47Mail::IssueOf(int32 No,S47Ledger::FIssue& Out) const
 {
  if(!M||!M->Freeform)return false;
  const FKept* K=Issues.FindByPredicate([No](const FKept& Q){return Q.No==No;});if(!K)return false;
  Out=S47Ledger::FIssue();Out.No=K->No;Out.Day=K->Day;Out.Date=M->Freeform->DateOfDay(K->Day);
- for(int32 I=0;I<K->Heads.Num();++I)Out.Front.Add({K->Heads[I],K->Bodies[I],K->Leads[I]});
+ for(int32 I=0;I<K->Heads.Num();++I)
+ {
+  S47Ledger::FStory St;St.Head=K->Heads[I];St.Body=K->Bodies[I];St.Lead=K->Leads[I];St.Key=K->Keys.IsValidIndex(I)?K->Keys[I]:FString();
+  Out.Front.Add(St);
+ }
+ for(int32 I=0;I<K->Log.Num();++I){S47Ledger::FLogLine Line;Line.Text=K->Log[I];Line.Ago=K->LogAgo[I];Out.Log.Add(Line);}
  S47Ledger::Fill(Out,M->Freeform->Seed(),K->bThanks);
  return true;
+}
+FString FS47Mail::IssueText(int32 No) const
+{
+ S47Ledger::FIssue Issue;
+ return IssueOf(No,Issue)?S47Ledger::PlainText(Issue):FString();
 }
 void FS47Mail::OpenLedger(int32 No)
 {
@@ -454,7 +728,7 @@ void FS47Mail::OpenLedger(int32 No)
  }
  if(M->Story)
  {
-  FS47Doc D;D.Id=TEXT("mail-")+ReadKey;D.Title=FString::Printf(TEXT("The Caliche County Ledger, %s"),*DayText(Issue.Day));D.Kind=TEXT("typed");D.Stamp=TEXT("THE LEDGER");
+  FS47Doc D;D.Id=TEXT("mail-")+ReadKey;D.Title=FString::Printf(TEXT("The Caliche Ledger, %s"),*DayText(Issue.Day));D.Kind=TEXT("typed");D.Stamp=TEXT("THE LEDGER");
   D.Page=S47Ledger::PlainText(Issue);D.Transcript=D.Page;M->Story->AddDoc(D);
  }
  TArray<S47Kit::FW> Panel;
@@ -509,7 +783,7 @@ FString FS47Mail::DayText(int32 ShiftDay) const
 FString FS47Mail::PieceTitle(const FPiece& Pc) const
 {
  if(Pc.Kind==TEXT("ward"))return M&&M->Freeform&&M->Freeform->Predecessor?M->Freeform->Predecessor->PaperTitle(Pc.Ref):FString(TEXT("A letter from Dr. Ward's office"));
- if(Pc.Kind==TEXT("ledger"))return FString::Printf(TEXT("The Caliche County Ledger, %s"),*DayText(Pc.Day));
+ if(Pc.Kind==TEXT("ledger"))return FString::Printf(TEXT("The Caliche Ledger, %s"),*DayText(Pc.Day));
  if(Pc.Kind==TEXT("catalog"))return TEXT("Western Surplus & Radio Supply, spring catalog");
  if(Pc.Kind==TEXT("parcel"))return TEXT("A parcel from Western Surplus, Albuquerque");
  if(Pc.Kind==TEXT("bill"))return Pc.Ref.StartsWith(TEXT("week-review-"))?FString::Printf(TEXT("The station's weekly statement, week %s"),*Pc.Ref.Mid(12)):FString(TEXT("A bill from the county road department"));
@@ -535,7 +809,8 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
  TArray<FPiece> Out;
  if(!M||!M->Freeform)return Out;
  auto& Ses=*M->Freeform;
- // Everything but a parcel comes out at once; a parcel wants both hands and waits for them.
+ // Everything but a parcel comes out at once; a parcel wants both hands and waits on top of the box for them.
+ int32 Marked=0;
  for(int32 I=0;I<Box.Num();)
  {
   const FPiece Pc=Box[I];
@@ -543,14 +818,16 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
   Box.RemoveAt(I);Fetched.Add(Pc);Out.Add(Pc);
   if(Pc.Kind==TEXT("ward")&&Ses.Predecessor)Ses.Predecessor->FromMail(Pc.Ref);
   if(Pc.Kind==TEXT("catalog"))bCatalog=true;
+  // The map with a place circled: the circle goes onto the player's own map, as a place heard of.
+  if(Pc.Kind==TEXT("nobody")&&!Pc.Place.IsEmpty()&&Ses.Places&&FS47Places::Def(Pc.Place)&&!Ses.Places->Heard(Pc.Place)&&!Ses.Places->Found(Pc.Place)){Ses.Places->Hear(Pc.Place);++Marked;}
   FileDoc(Pc);
  }
  // Only the last few stay on the desk to be read again; the rest are filed where they belong.
  while(Fetched.Num()>12)Fetched.RemoveAt(0);
- bFlag=!Box.IsEmpty()||Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;});
  if(!Out.IsEmpty())
  {
   if(M->Audio){M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.55f});M->Audio->Sfx(TEXT("paper0"),FS47Sound{.Gain=.45f,.When=.35f});}
+  if(Marked>0&&M->UI)M->UI->Toast(TEXT("You copy the pencil circle onto your map (TAB)."),5);
   UE_LOG(LogTemp,Display,TEXT("S47: mail: %d taken out of the box, day %d"),Out.Num(),Ses.Day());
   M->RequestAutosave();
  }
@@ -579,14 +856,14 @@ bool FS47Mail::LiftParcel(const FString& Id)
  // The supplies in it travel as any parcel does: in both hands, to the truck or GARAGE RECEIVING.
  if(!Stock.IsEmpty()&&!Ses.Field->TakePostedParcel(Stock,Model->Lid()))
  {
-  if(M->UI)M->UI->Toast(TEXT("Your hands are full. The parcel stays in the box until they are free."),5);
+  if(M->UI)M->UI->Toast(TEXT("Your hands are full. The parcel stays on the box until they are free."),5);
   return false;
  }
  for(const FString& Kit:Gear)Ses.ReceiveKit(Kit);
  Box.RemoveAt(At);Fetched.Add(Pc);FileDoc(Pc);
- bFlag=!Box.IsEmpty()||Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;});
+ Model->SetParcel(ParcelOnBox());
  if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.5f});
- UE_LOG(LogTemp,Display,TEXT("S47: mail: parcel %s lifted out: %d supplies in hand, %d pieces of gear signed for"),*Id,Stock.Num(),Gear.Num());
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: parcel %s lifted down: %d supplies in hand, %d pieces of gear signed for"),*Id,Stock.Num(),Gear.Num());
  if(M->UI)
  {
   M->UI->Close();
@@ -601,7 +878,7 @@ void FS47Mail::OpenBox()
  const TArray<FPiece> Came=TakeOut();
  TArray<S47Kit::FW> Panel;
  const TWeakPtr<uint8> Guard=Life;
- Panel.Add(S47Kit::Text(TEXT("A rural box on a weathered four-by-four, galvanized and gone dull, SARO stenciled on the side. The door drops on its hinge.")));
+ Panel.Add(S47Kit::Text(TEXT("A rural box on a weathered four-by-four, the galvanizing gone dull and gray, rust in thin lines at the seams, SARO and BOX 19 painted by hand on the side. The door drops on its hinge.")));
  const auto ReadButton=[&](const FPiece& Pc,bool bPrimary)
  {
   const FPiece Copy=Pc;
@@ -615,10 +892,10 @@ void FS47Mail::OpenBox()
  bool bParcelShown=false;
  for(const FPiece& Pc:Box)if(Pc.Kind==TEXT("parcel"))
  {
-  if(!bParcelShown){Panel.Add(S47Kit::Section(TEXT("IN THE BOX")));bParcelShown=true;}
+  if(!bParcelShown){Panel.Add(S47Kit::Section(TEXT("ON TOP OF THE BOX")));bParcelShown=true;}
   Panel.Add(S47Kit::Paper(Pc.Text));
   const FString Id=Pc.Id;
-  Panel.Add(S47Kit::Button(TEXT("Lift the parcel out"),[this,Guard,Id]{if(Guard.IsValid())LiftParcel(Id);},true));
+  Panel.Add(S47Kit::Button(TEXT("Lift the parcel down"),[this,Guard,Id]{if(Guard.IsValid())LiftParcel(Id);},true));
  }
  if(Came.IsEmpty()&&Box.IsEmpty())Panel.Add(S47Kit::Small(TEXT("Nothing in it. The carrier comes up the highway around noon, Monday through Saturday.")));
  // An order waiting for the carrier, and what is on its way.
@@ -702,8 +979,8 @@ void FS47Mail::TakeOrderBack()
  const int32 At=Orders.IndexOfByPredicate([](const FOrder& O){return O.Picked==0;});if(At<0)return;
  const FOrder Ord=Orders[At];Orders.RemoveAt(At);
  M->Freeform->Earn(Ord.Paid);
- bFlag=!Box.IsEmpty();
- UE_LOG(LogTemp,Display,TEXT("S47: mail: order %d taken back, $%d back"),Ord.Serial,Ord.Paid);
+ bFlag=false;
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: order %d taken back, $%d back, flag down"),Ord.Serial,Ord.Paid);
  M->RequestAutosave();
 }
 void FS47Mail::OpenCatalog()
@@ -748,9 +1025,10 @@ FString FS47Mail::SlipText(int32 Serial,const TMap<FString,int32>& Goods,int32 P
  for(const FLine& Line:Catalog())if(const int32* Cnt=Goods.Find(Line.Id))Lines+=FString::Printf(TEXT("%d x %s\n"),*Cnt,Line.Title);
  return FString::Printf(TEXT("WESTERN SURPLUS & RADIO SUPPLY / PACKING SLIP\nORDER %d / SHIP TO: NIGHT OPERATOR, SARO\n\n%s\nPAID BY MONEY ORDER, $%d. THANK YOU."),Serial,*Lines,Paid);
 }
-FString FS47Mail::NobodyText(int32 Variant,const FString& Stamped)
+FString FS47Mail::NobodyText(int32 Variant,const FString& Place)
 {
- if(Variant==1)return FString::Printf(TEXT("An envelope with no stamp and no postmark. Inside, a black and white print, curled, gone yellow at the edges the way old prints go in a drawer: SARO from the highway, the building, the dishes pointed at the sky, the truck pad empty. Nobody in it.\n\nOn the back, in the purple ink of a photo lab's stamp: PROCESSED %s.\n\nThat date has not come yet."),*Stamped);
+ // Nothing from the past and no date that has not come: a sheet with nothing on it, a postcard of the town, a map of the county.
+ if(Variant==1)return FString::Printf(TEXT("An envelope with no stamp and no postmark. NIGHT OPERATOR, SARO, in pencil.\n\nInside, a county road map from a gas station rack, folded the wrong way. One place on it is circled in pencil, pressed hard enough to dent the paper: %s. Nothing else on the map is marked, and nothing is written on it."),*Place);
  if(Variant==2)return TEXT("A picture postcard of the Plaza in Caliche, the marquee lit, the colors gone soft. No stamp, no postmark. The message side is blank. The address side says SARO, in pencil, and nothing else.");
  return TEXT("A plain white envelope: no stamp, no postmark, no return address. NIGHT OPERATOR, SARO, in pencil, in capitals.\n\nInside, one sheet of typing paper folded in three. Nothing on it. Held up to the light, nothing on it either.");
 }
@@ -759,10 +1037,12 @@ FString FS47Mail::NobodyText(int32 Variant,const FString& Stamped)
 FString FS47Mail::TaskLine() const
 {
  if(!Live())return FString();
- if(Box.ContainsByPredicate([](const FPiece& Pc){return Pc.Kind==TEXT("parcel");}))return TEXT("MAILBOX / A parcel waits in the box at the road. Lift it out and carry it to GARAGE RECEIVING.");
- if(Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;}))return TEXT("MAILBOX / Your order is in the box at the road with the flag up, for the carrier around noon.");
- if(!Orders.IsEmpty())return FString::Printf(TEXT("MAIL ORDER / A parcel from Western Surplus, due about %s."),*DayText(Orders[0].Due));
- return FString();
+ // The player's own order, and when what they sent for is due. Nothing that tells what has come: the box shows that.
+ if(Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;}))return TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier.");
+ int32 Due=0;
+ for(const FOrder& Ord:Orders)Due=Due==0?Ord.Due:FMath::Min(Due,Ord.Due);
+ for(const FPiece& Pc:Box)if(Pc.Kind==TEXT("parcel"))Due=Due==0?Pc.Day:FMath::Min(Due,Pc.Day);
+ return Due>0?FString::Printf(TEXT("MAIL ORDER / A parcel from Western Surplus, due about %s."),*DayText(Due)):FString();
 }
 bool FS47Mail::WorldSpot(FString& OutArea,double& OutX,double& OutZ) const
 {
@@ -774,12 +1054,21 @@ bool FS47Mail::WorldSpot(FString& OutArea,double& OutX,double& OutZ) const
 void FS47Mail::TestOn(){bTest=true;Build();}
 bool FS47Mail::TestRound(FString& Why)
 {
+ namespace L=S47MailLocal;
  TestOn();if(!M||!M->Freeform){Why=TEXT("Freeform only");return false;}
  const int32 Today=M->Freeform->Day(),Before=Box.Num();
  LastRound=FMath::Max(LastRound,Today);
- Round(Today,true);
+ Round(Today);
+ // Shown as it would be seen: the car comes up the last stretch and stands at the box (the round is made already).
+ StartCar(Today,false,L::StopZ+140.,true);
  Why=FString::Printf(TEXT("The carrier came: %d new in the box, %d in it now, the flag %s."),Box.Num()-Before,Box.Num(),bFlag?TEXT("up"):TEXT("down"));
  return true;
+}
+bool FS47Mail::TestCarrier()
+{
+ namespace L=S47MailLocal;
+ TestOn();if(!M||!M->Freeform)return false;
+ return StartCar(M->Freeform->Day(),true,L::StopZ+320.,false);
 }
 void FS47Mail::TestFlag(bool bUp){TestOn();bFlag=bUp;if(Model)Model->SetFlag(bUp);}
 bool FS47Mail::TestFetch(){TestOn();const int32 Before=Box.Num();OpenBox();return Before>0;}
@@ -790,9 +1079,12 @@ void FS47Mail::TestLedger()
  const int32 No=Issues.Num()+1,FromDay=Issues.IsEmpty()?1:Issues.Last().Day;
  FString UnknownId,UnknownTitle;
  if(Ses.Places){UnknownId=Ses.Places->NextUnknown(No*13+5);if(const FS47Places::FDef* D=FS47Places::Def(UnknownId))UnknownTitle=D->Title;else UnknownId.Empty();}
+ NoteFindings();
  const TArray<S47Ledger::FFact> Facts=WeekFacts(FromDay,Ses.Day());
+ TMap<FString,int32> Used;for(const FKept& Was:Issues)for(const FString& Key:Was.Keys)Used.Add(Key,Was.No);
  S47Ledger::FIssue Issue;Issue.No=No;Issue.Day=Ses.Day();Issue.Date=Ses.DateOfDay(Ses.Day());
- Issue.Front=S47Ledger::Front(Ses.Seed(),No,Facts,UnknownId,UnknownTitle);
+ Issue.Front=S47Ledger::Front(Ses.Seed(),No,Issue.Date,Facts,Used,UnknownId,UnknownTitle);
+ Issue.Log=S47Ledger::LogLines(Facts,Issue.Front,Issue.Day,2);
  S47Ledger::Fill(Issue,Ses.Seed(),Facts.ContainsByPredicate([](const S47Ledger::FFact& Fact){return Fact.Topic==S47Ledger::ETopic::Helped;}));
  UE_LOG(LogTemp,Display,TEXT("S47: mail: test: this week's Ledger from %d facts since day %d"),Facts.Num(),FromDay);
  TArray<S47Kit::FW> Panel;Panel.Add(S47Ledger::Page(Issue));Panel.Add(S47Kit::Button(TEXT("Fold the paper"),[this]{if(M&&M->UI)M->UI->Close();},true));
@@ -803,14 +1095,22 @@ void FS47Mail::TestParcel()
  TestOn();
  const int32 Serial=NextSerial++;TMap<FString,int32> Goods;Goods.Add(TEXT("cell"),2);
  FPiece Pc;Pc.Id=FString::Printf(TEXT("parcel:%d"),Serial);Pc.Kind=TEXT("parcel");Pc.Ref=FString::FromInt(Serial);Pc.Goods=Goods;Pc.Text=SlipText(Serial,Goods,8);
- Pc.Day=M&&M->Freeform?M->Freeform->Day():1;Box.Add(Pc);Posted.Add(Pc.Id);bFlag=true;
+ Pc.Day=M&&M->Freeform?M->Freeform->Day():1;Box.Add(Pc);Posted.Add(Pc.Id);
 }
 void FS47Mail::TestNobody(int32 Variant)
 {
  TestOn();
  const int32 V=FMath::Clamp(Variant,0,2),Today=M&&M->Freeform?M->Freeform->Day():1;
- FPiece Pc;Pc.Id=FString::Printf(TEXT("nobody:test-%d-%d"),V,Rounds+Box.Num());Pc.Kind=TEXT("nobody");Pc.Ref=FString::FromInt(V);Pc.Day=Today;Pc.Text=NobodyText(V,DayText(Today+9).ToUpper());
- Box.Add(Pc);Posted.Add(Pc.Id);bFlag=true;
+ FPiece Pc;Pc.Id=FString::Printf(TEXT("nobody:test-%d-%d"),V,Rounds+Box.Num());Pc.Kind=TEXT("nobody");Pc.Ref=FString::FromInt(V);Pc.Day=Today;
+ if(V==1)
+ {
+  // A place the player has not heard of if there is one, else any on the land.
+  if(M&&M->Freeform&&M->Freeform->Places)Pc.Place=M->Freeform->Places->NextUnknown(Today*7);
+  if(!FS47Places::Def(Pc.Place)&&!FS47Places::Defs().IsEmpty())Pc.Place=FS47Places::Defs()[0].Id;
+ }
+ const FS47Places::FDef* D=FS47Places::Def(Pc.Place);
+ Pc.Text=NobodyText(V,D?FString(D->Title):FString(TEXT("the windmill")));
+ Box.Add(Pc);Posted.Add(Pc.Id);
 }
 bool FS47Mail::TestOrder(const TMap<FString,int32>& Lines,FString& Why){TestOn();return WriteOrder(Lines,Why);}
 bool FS47Mail::TestLift()
@@ -824,8 +1124,16 @@ TArray<FString> FS47Mail::AllText()
 {
  TArray<FString> Out;
  for(const FLine& Line:Catalog())Out.Add(Line.Title);
- for(int32 V=0;V<3;++V)Out.Add(NobodyText(V,TEXT("THURSDAY, MAY 15")));
+ for(int32 V=0;V<3;++V)Out.Add(NobodyText(V,TEXT("the windmill on the Baca lease")));
  TMap<FString,int32> Goods;Goods.Add(TEXT("cell"),2);Goods.Add(TEXT("kit:geiger_tube"),1);Out.Add(SlipText(3,Goods,28));
+ Out.Add(TowText(TEXT("THURSDAY, MAY 15"),40,true));Out.Add(TowText(TEXT("THURSDAY, MAY 15"),40,false));
+ // What the box, its panel and the list say (the strings above are kept in step with these by hand).
+ for(const TCHAR* Line:{TEXT("A rural box on a weathered four-by-four, the galvanizing gone dull and gray, rust in thin lines at the seams, SARO and BOX 19 painted by hand on the side. The door drops on its hinge."),
+  TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side, the red flag up for the carrier."),TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side. The flag is down."),
+  TEXT("Nothing in it. The carrier comes up the highway around noon, Monday through Saturday."),TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier."),
+  TEXT("MAIL ORDER / A parcel from Western Surplus, due about Friday, May 2."),TEXT("The Caliche Ledger, Thursday, May 1"),TEXT("A bill from the county road department"),
+  TEXT("Your hands are full. The parcel stays on the box until they are free."),TEXT("You copy the pencil circle onto your map (TAB)."),
+  TEXT("The order is in the box and the flag is up. The carrier takes it around noon.")})Out.Add(Line);
  return Out;
 }
 bool FS47Mail::SelfTest(TArray<FString>& Lines)
@@ -844,6 +1152,14 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
  }
  Check(bNoon,TEXT("the carrier comes between noon and half past one, the same for a seed and a day"));
  Check(bShip,TEXT("a parcel comes one to three rounds after the carrier takes the order"));
+ // The car's road: the northbound lane, in to the box's edge of the pavement, its window at the box, never across the box.
+ {
+  namespace L=S47MailLocal;
+  const bool bLane=L::LaneX>S47Legs::SARO_HWY.X&&L::LaneX<S47Legs::SARO_HWY.X+S47Legs::SARO_HWY.Half;
+  const bool bCurb=L::CurbX+FS47MailCarModel::Width*.5<FS47MailBoxModel::PostX-.38&&L::CurbX>L::LaneX;
+  const bool bTime=L::Lead>0&&L::Late>0&&FMath::Sqrt(2.*L::Brake*L::Decide)>=L::Cruise;
+  Check(bLane&&bCurb&&bTime,TEXT("the carrier drives the northbound lane, pulls in short of the box, and has room to stop from its pace"));
+ }
  // The catalog is cheaper than the counter and OPS, line by line, and sells what the station can use.
  bool bCheaper=true,bKnown=true;
  for(const FLine& Line:Catalog())
@@ -864,29 +1180,49 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   else{const int32 There=FS47FreeformWorld::ShopPrice(What);bCoupons&=There>0&&Cp.Price<There;}
  }
  Check(bCoupons,TEXT("every coupon in the paper takes something off a real price"));
- bool bWords=true;for(const FString& St:AllText()){FString Word;bWords&=S47Ledger::Clean(St,Word);}
- Check(bWords,TEXT("the catalog, the packing slip and what nobody sent say nothing they must not"));
- // A save from before the post finds the catalog in the box with the flag up.
+ {
+  bool bWords=true;FString Bad;for(const FString& St:AllText()){FString Word;if(!S47Ledger::Clean(St,Word)){bWords=false;Bad=Word;}}
+  Check(bWords,TEXT("the catalog, the slip, the tow bill, the box's words and what nobody sent say nothing they must not (Story's far side, brands, British words, the county that is not one)"));
+  bool bNoPast=true;for(int32 V=0;V<3;++V){const FString T=NobodyText(V,TEXT("the cairn")).ToLower();bNoPast&=!T.Contains(TEXT("photo"))&&!T.Contains(TEXT("print"))&&!T.Contains(TEXT("processed"))&&!T.Contains(TEXT("yellow"))&&!T.Contains(TEXT("has not come"));}
+  Check(bNoPast,TEXT("nothing with no sender is an old picture or carries a date that has not come"));
+ }
+ // A new game or a save from before the post finds the catalog in the box, the flag down: the flag is never the carrier's.
  FS47Mail Fresh(nullptr);Fresh.Begin(nullptr,true);
- Check(Fresh.Holds(TEXT("catalog"))&&Fresh.FlagUp()&&Fresh.Ever(TEXT("catalog")),TEXT("a new game or an older save: the catalog is in the box and the flag is up"));
+ Check(Fresh.Holds(TEXT("catalog"))&&!Fresh.FlagUp()&&Fresh.MailIn()&&Fresh.Ever(TEXT("catalog")),TEXT("a new game or an older save: the catalog is in the box and the flag is down"));
  // Everything survives a Continue.
  {
   FS47Mail A(nullptr);A.Begin(nullptr,false);
   FPiece Ward;Ward.Id=TEXT("ward:letter");Ward.Kind=TEXT("ward");Ward.Ref=TEXT("letter");A.Post(Ward,true);
   FPiece Sheet;Sheet.Id=TEXT("bill:week-1");Sheet.Kind=TEXT("bill");Sheet.Ref=TEXT("week-review-1");A.Post(Sheet,false);
   FPiece Box2;Box2.Id=TEXT("parcel:4");Box2.Kind=TEXT("parcel");Box2.Goods.Add(TEXT("cell"),3);Box2.Goods.Add(TEXT("kit:film"),1);Box2.Text=SlipText(4,Box2.Goods,30);A.Post(Box2,true);
-  FOrder Ord;Ord.Serial=5;Ord.Paid=21;Ord.Picked=3;Ord.Due=5;Ord.Goods.Add(TEXT("relay"),1);A.Orders.Add(Ord);A.NextSerial=6;
+  FPiece Map;Map.Id=TEXT("nobody:1");Map.Kind=TEXT("nobody");Map.Ref=TEXT("1");Map.Place=TEXT("cairn");Map.Text=NobodyText(1,TEXT("the cairn"));A.Post(Map,true);
+  FOrder Ord;Ord.Serial=5;Ord.Paid=21;Ord.Picked=3;Ord.Due=5;Ord.Goods.Add(TEXT("relay"),1);A.Orders.Add(Ord);
+  FOrder Waiting;Waiting.Serial=6;Waiting.Paid=8;Waiting.Goods.Add(TEXT("cell"),2);A.Orders.Add(Waiting);A.NextSerial=7;A.bFlag=true;
   FClip Clipping;Clipping.Id=TEXT("cell3");Clipping.What=TEXT("cell");Clipping.Price=3;Clipping.Until=10;A.Coupons.Add(Clipping);
-  FKept K;K.No=1;K.Day=4;K.bThanks=true;K.Heads={TEXT("A")};K.Bodies={TEXT("B")};K.Leads={TEXT("windmill")};A.Issues.Add(K);
+  FKept K;K.No=1;K.Day=4;K.bThanks=true;K.Heads={TEXT("A")};K.Bodies={TEXT("B")};K.Leads={TEXT("windmill")};K.Keys={TEXT("KEY")};K.Log={TEXT("Tuesday night. Something.")};K.LogAgo={2};A.Issues.Add(K);
+  FSeen Note;Note.Id=TEXT("cattle_ring_d3");Note.Day=3;Note.Place=TEXT("the church");A.Seen.Add(Note);
   A.ReadIssues.Add(TEXT("ledger:1"));A.LastRound=4;A.Rounds=3;A.NobodySent=1;
   FS47Mail B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())),true);
-  const bool bBox=B.Holds(TEXT("ward:letter"))&&B.Holds(TEXT("parcel:4"))&&B.Holds(TEXT("catalog"))&&B.Coming(TEXT("bill:week-1"))&&B.FlagUp();
+  const bool bBox=B.Holds(TEXT("ward:letter"))&&B.Holds(TEXT("parcel:4"))&&B.Holds(TEXT("catalog"))&&B.Holds(TEXT("nobody:1"))&&B.Coming(TEXT("bill:week-1"))&&B.FlagUp();
   const FPiece* Back=B.Box.FindByPredicate([](const FPiece& Pc){return Pc.Id==TEXT("parcel:4");});
-  const bool bGoods=Back&&Back->Goods.FindRef(TEXT("cell"))==3&&Back->Goods.FindRef(TEXT("kit:film"))==1&&Back->Text.Contains(TEXT("PACKING SLIP"));
-  const bool bRest=B.Orders.Num()==1&&B.Orders[0].Due==5&&B.Orders[0].Goods.FindRef(TEXT("relay"))==1&&B.NextSerial==6&&B.Coupons.Num()==1&&B.Coupons[0].Until==10
-   &&B.Issues.Num()==1&&B.Issues[0].bThanks&&B.Issues[0].Leads[0]==TEXT("windmill")&&B.ReadIssues.Contains(TEXT("ledger:1"))&&B.LastRound==4&&B.Rounds==3&&B.NobodySent==1;
-  Check(bBox&&bGoods&&bRest,TEXT("the box, the post on its way, orders, coupons, printed papers and the rounds survive a Continue"));
+  const FPiece* Circle=B.Box.FindByPredicate([](const FPiece& Pc){return Pc.Id==TEXT("nobody:1");});
+  const bool bGoods=Back&&Back->Goods.FindRef(TEXT("cell"))==3&&Back->Goods.FindRef(TEXT("kit:film"))==1&&Back->Text.Contains(TEXT("PACKING SLIP"))&&Circle&&Circle->Place==TEXT("cairn");
+  const bool bRest=B.Orders.Num()==2&&B.Orders[0].Due==5&&B.Orders[0].Goods.FindRef(TEXT("relay"))==1&&B.NextSerial==7&&B.Coupons.Num()==1&&B.Coupons[0].Until==10
+   &&B.Issues.Num()==1&&B.Issues[0].bThanks&&B.Issues[0].Leads[0]==TEXT("windmill")&&B.Issues[0].Keys[0]==TEXT("KEY")&&B.Issues[0].Log.Num()==1&&B.Issues[0].LogAgo[0]==2
+   &&B.Seen.Num()==1&&B.Seen[0].Place==TEXT("the church")&&B.ReadIssues.Contains(TEXT("ledger:1"))&&B.LastRound==4&&B.Rounds==3&&B.NobodySent==1;
+  Check(bBox&&bGoods&&bRest,TEXT("the box, the post on its way, orders, coupons, printed papers with their templates and log, the noted findings and the rounds survive a Continue"));
   Check(!B.Post(Ward,true),TEXT("nothing is posted twice, a Continue included"));
+  // The flag follows the orders, not the box: with the waiting order taken back it is down, the box still full.
+  B.Orders.RemoveAll([](const FOrder& O){return O.Picked==0;});B.Begin(S47J::Read(S47J::Write(B.Save())),true);
+  Check(!B.FlagUp()&&B.MailIn(),TEXT("the flag is up only for an order waiting for the carrier, never for what came"));
+ }
+ {
+  // Where the paper puts what the nights left: a finding's own words name the place.
+  S47Ledger::ETopic T=S47Ledger::ETopic::Count;
+  Check(S47MailLocal::TopicOf(TEXT("animals_flee_d4"),T)&&T==S47Ledger::ETopic::Fled&&S47MailLocal::TopicOf(TEXT("house_lit_d4"),T)&&T==S47Ledger::ETopic::LitHouse
+   &&S47MailLocal::TopicOf(TEXT("clock_ahead_d4"),T)&&T==S47Ledger::ETopic::ClockFast&&S47MailLocal::TopicOf(TEXT("missing_reported_d4"),T)&&T==S47Ledger::ETopic::Called
+   &&!S47MailLocal::TopicOf(TEXT("observation.roof"),T)&&!S47MailLocal::TopicOf(TEXT("landing_logged_d4"),T)&&!S47MailLocal::TopicOf(TEXT("geiger_landing_3"),T),
+   TEXT("rabbits running, a lit window and a fast clock each get their own kind of story; the station's own records never reach the paper"));
  }
  return OK;
 }

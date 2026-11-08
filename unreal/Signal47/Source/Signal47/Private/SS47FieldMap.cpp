@@ -587,7 +587,7 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 		if (!Ops.IsEmpty()) Write(TEXT("saro"), 0, 0, Ops);
 	}
 	// The mailbox's flag.
-	if (Fs.Mail && Fs.Mail->FlagUp() && Fs.Mail->Contents().Num())
+	if (Fs.Mail && Fs.Mail->MailIn())
 	{
 		FString Area; double X = 0, Z = 0;
 		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(Area, X, Z, TEXT("mail in the box"));

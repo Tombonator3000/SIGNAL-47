@@ -270,7 +270,7 @@ void FS47Predecessor::StepNews(double Dt)
  if(bWardOpen&&!bLetterTold&&(Tray.Contains(Letter)||InMailbox(Letter)))
  {
   bLetterTold=true;
-  if(M->UI)M->UI->Toast(InMailbox(Letter)?TEXT("The flag is up on the mailbox at the road. There is a letter from Dr. Ward's office in it."):TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
+  if(M->UI&&!InMailbox(Letter))M->UI->Toast(TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Ward's letter %s, day %d, %s"),InMailbox(Letter)?TEXT("in the mailbox"):TEXT("in the tray"),Today,*DateText(Today));
   M->RequestAutosave();
  }
@@ -478,7 +478,7 @@ void FS47Predecessor::StepWarnings()
   F.RecordEvidence(TEXT("ward-taken"),X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(TEXT("ward-taken"));
-  if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the post."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
+  if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the mail."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: warned after %d takings"),F.TimesTaken());
   M->RequestAutosave();
  }
@@ -532,7 +532,7 @@ void FS47Predecessor::Decided()
  if(M->UI)
  {
   if(bMutedOutcome)OpenAssessment();
-  else M->UI->Toast(bByPost?TEXT("Dr. Ward has made her assessment. It comes with the post."):TEXT("Dr. Ward's assessment is in the OPS tray."),6);
+  else M->UI->Toast(bByPost?TEXT("Dr. Ward has made her assessment. It comes in the mail."):TEXT("Dr. Ward's assessment is in the OPS tray."),6);
  }
 }
 
@@ -665,7 +665,7 @@ FString FS47Predecessor::TaskLine() const
 {
  if(!Live())return FString();
  if(Tray.Contains(TEXT("letter")))return TEXT("OPS / There is a letter from Dr. Ward's office in the tray.");
- if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road. The flag is up.");
+ if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
  if(Tray.Contains(TEXT("assessment")))return TEXT("OPS / Dr. Ward's assessment is in the tray.");
  if(InMailbox(TEXT("assessment")))return TEXT("MAILBOX / Dr. Ward's assessment is in the box at the road.");
  if(Outcome==EOutcome::None&&M&&M->Freeform)return FString::Printf(TEXT("SARO under review / Dr. Ward assesses the station on %s."),*DateText(AssessDay));

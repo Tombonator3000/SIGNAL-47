@@ -48,7 +48,7 @@ void FS47FreeformTest::StepReyes(double Dt)
   // is in the OPS tray as before, and the rest of the trail goes on from there.
   if(F.Mail&&F.Mail->Holds(TEXT("ward:letter")))
   {
-   if(!Check(F.Mail->FlagUp()&&P.TaskLine().Contains(TEXT("letter"))&&P.TaskLine().Contains(TEXT("MAILBOX")),TEXT("Ward's letter is in the mailbox at the road, the flag up, and on the list")))return;
+   if(!Check(F.Mail->MailIn()&&P.TaskLine().Contains(TEXT("letter"))&&P.TaskLine().Contains(TEXT("MAILBOX")),TEXT("Ward's letter is in the mailbox at the road, and on the list")))return;
    if(!Check(F.Mail->TestFetch()&&P.TrayCount()>0&&!F.Mail->Holds(TEXT("ward:letter")),TEXT("taken out of the box, the letter goes to the OPS tray")))return;
    M->UI->Close(true);
   }
