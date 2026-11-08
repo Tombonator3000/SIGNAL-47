@@ -220,6 +220,12 @@ void FS47NightLog::Add(double Clock, EPart Part, const FString& Text, const FStr
 	if (Night <= 0 || Text.IsEmpty() || Lines.Num() >= 60) return;
 	// At: the time in the margin; empty for the clock now, "-" for none (the line says its own times).
 	FLine L; L.Clock = Clock; L.Part = Part; L.Text = Text; L.At = At == TEXT("-") ? FString() : At.IsEmpty() ? S47NightLogLocal::ClockOf(Clock) : At;
+	// A record's own time ("02:14") orders the sheet, not when it was noticed by the log: on this night's clock, after midnight the next day.
+	if (L.At.Len() == 5 && L.At[2] == TEXT(':'))
+	{
+		const int32 Hh = FCString::Atoi(*L.At.Left(2)), Mm = FCString::Atoi(*L.At.Mid(3, 2));
+		L.Clock = (Night - 1) * 86400.0 + (Hh < 12 ? Hh + 24 : Hh) * 3600.0 + Mm * 60.0;
+	}
 	Lines.Add(L);
 	UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d: %s %s"), Night, *L.At, *Text);
 }
