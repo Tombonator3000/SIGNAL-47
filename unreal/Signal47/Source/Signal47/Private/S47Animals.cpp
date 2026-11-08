@@ -195,7 +195,7 @@ bool FS47Animals::Build()
 	return true;
 }
 
-bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark)
+bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose)
 {
 	Rig.bTried = true; Rig.Animal = Animal; Rig.bReady = false;
 	const FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/SK_%s"), Animal, Animal);
@@ -234,7 +234,7 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 		UMaterialInterface* Mat = Coat;
 		if (Slot.Contains(TEXT("Eye")) || Slot.EndsWith(TEXT("002"))) Mat = EyeGlow.Get();
 		else if (Slot.Contains(TEXT("Light")) || Slot.EndsWith(TEXT("003"))) Mat = Pale;
-		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Dark;
+		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Nose;
 		else if (Slot.EndsWith(TEXT("001"))) Mat = Pale;
 		if (Mat) Part->SetMaterial(I, Mat);
 	}
@@ -246,15 +246,17 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 	return true;
 }
 
-void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Rate)
+void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Pace)
 {
 	USkeletalMeshComponent* Part = Rig.Mesh.Get();
 	if (!Rig.bReady || !Part) return;
 	if (Rig.Playing == Clip)
 	{
-		if (!FMath::IsNearlyEqual(Rig.Rate, Rate, 0.02)) { Rig.Rate = Rate; Part->SetPlayRate(float(Rate)); }
+		if (!FMath::IsNearlyEqual(Rig.Rate, Pace, 0.02)) { Rig.Rate = Pace; Part->SetPlayRate(float(Pace)); }
 		return;
 	}
+	// asked once per change of clip: the same one again is the early return above
+	Rig.Playing = Clip; Rig.Rate = Pace;
 	FString Name = FString::Printf(TEXT("A_%s_%s"), *Rig.Animal, Clip);
 	FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/%s"), *Rig.Animal, *Name);
 	if (!FPackageName::DoesPackageExist(Package))
@@ -267,8 +269,7 @@ void FS47Animals::PlayRig(FRig& Rig, const TCHAR* Clip, double Rate)
 	UAnimSequence* Seq = LoadObject<UAnimSequence>(nullptr, *(Package + TEXT(".") + Name));
 	if (!Seq) return;
 	Part->PlayAnimation(Seq, true);
-	Part->SetPlayRate(float(Rate));
-	Rig.Playing = Clip; Rig.Rate = Rate;
+	Part->SetPlayRate(float(Pace));
 }
 
 void FS47Animals::PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg)

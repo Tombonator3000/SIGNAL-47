@@ -182,9 +182,9 @@ void FS47Flashlight::Flicker(double K, const FString& From)
 	Flick = M;
 }
 
-void FS47Flashlight::Sag(double K, const FString& From)
+void FS47Flashlight::Sag(double Share, const FString& From)
 {
-	Sags.Add(From, FMath::Clamp(K, 0.0, 1.0));
+	Sags.Add(From, FMath::Clamp(Share, 0.0, 1.0));
 	double Most = 0;
 	for (const TPair<FString, double>& V : Sags) Most = FMath::Max(Most, V.Value);
 	SagK = Most;

@@ -122,8 +122,8 @@ private:
 	FRig CoyoteRig, DogRig;
 	int32 DogShown = INDEX_NONE;
 	double DogYaw = 0;
-	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Dark);
-	void PlayRig(FRig& Rig, const TCHAR* Clip, double Rate);
+	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose);
+	void PlayRig(FRig& Rig, const TCHAR* Clip, double Pace);
 	void PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg);
 	void StepDogBody(double Dt);
 
