@@ -630,12 +630,16 @@ void FS47Happenings::PlanTonight(int32 Night)
  // Numbers for feel, from TODO NIGHT31-20261108 (Tom, 8 November): something most nights, the dangerous ones rare.
  Draw(TEXT("car_dies"),0x43415244u,1,.45f,21.,6.5);
  Draw(TEXT("cattle_ring"),0x4341544cu,2,.32f,21.5,4.);
- Draw(TEXT("cb_stranded"),0x43425354u,2,.28f,20.,4.5);
- Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.,5.,bNoLanding&&Night>=4?.6f:0.f);
- Draw(TEXT("hitchhiker"),0x48495443u,3,.2f,25.,4.);
- Draw(TEXT("stranded_rv"),0x52564e54u,3,.14f,19.5,3.);
  Draw(TEXT("humor"),0x48554d52u,3,.5f,20.5,4.5);
- if(bEchoArmed&&Night>EchoFrom&&Night<=EchoFrom+3)Draw(TEXT("cb_echo"),0x4543484fu,1,.4f,25.,3.);
+ // A calm night has no lights, no bodies and no calls that lead anywhere (FS47NightRhythm::Quiet).
+ if(!F->QuietNight(Night))
+ {
+  Draw(TEXT("cb_stranded"),0x43425354u,2,.28f,20.,4.5);
+  Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.,5.,bNoLanding&&Night>=4?.6f:0.f);
+  Draw(TEXT("hitchhiker"),0x48495443u,3,.2f,25.,4.);
+  Draw(TEXT("stranded_rv"),0x52564e54u,3,.14f,19.5,3.);
+  if(bEchoArmed&&Night>EchoFrom&&Night<=EchoFrom+3)Draw(TEXT("cb_echo"),0x4543484fu,1,.4f,25.,3.);
+ }
  TArray<FString> Parts;for(const auto& KV:Plan)Parts.Add(FString::Printf(TEXT("%s %s"),*KV.Key,*S47Hap::ClockText(FMath::Fmod(KV.Value,24.)*3600.)));
  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d drawn: %s"),Night,Parts.IsEmpty()?TEXT("none"):*FString::Join(Parts,TEXT(", ")));
 }
@@ -760,11 +764,14 @@ void FS47Happenings::StepLate()
   if(bOthers||(bToday&&H>=23))bLate=true;
  }
  if(bLate){LateNight=Night;return;}
- if(H<24.5||F->QuietNight(Night))return;
+ if(H<24.5)return;
  LateNight=Night;
+ // A calm night (FS47NightRhythm::Quiet) has no lights and no calls that lead anywhere: only the small ones then.
+ const bool bQuiet=F->QuietNight(Night);
  for(const TCHAR* Id:{TEXT("car_dies"),TEXT("cattle_ring"),TEXT("landing"),TEXT("cb_stranded"),TEXT("stranded_rv")})
  {
   if(LastDays.FindRef(Id)==F->Day())continue;
+  if(bQuiet&&FString(Id)!=TEXT("car_dies")&&FString(Id)!=TEXT("cattle_ring"))continue;
   FString Why;
   if(StartEvent(Id,FString(),false,Why)){UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing between 23:00 and 00:30 on night %d, so %s"),Night,Id);return;}
  }
