@@ -795,7 +795,7 @@ FString FS47DevFreeform::HoldFor() const
 void FS47DevFreeform::StepStand()
 {
  auto* F=Session();
- if(StandPlace.IsEmpty()||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
+ if(StandPlace.IsEmpty()||StandPlace==TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
  const double Hour=FMath::Fmod(F->Clock(),86400.)/3600.;
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  if(Hour<21||StandNight==Night)return;
@@ -815,6 +815,58 @@ void FS47DevFreeform::StepStand()
   if(!bPut)M->Player->Place(House.X+50,House.Z+20,0);
  }
  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night %d: standing at %s, %.0f %.0f, %s"),Night,*StandPlace,M->Player->Pos.X,M->Player->Pos.Z,*ClockText(F->Clock()));
+}
+
+void FS47DevFreeform::StepTour()
+{
+ auto* F=Session();
+ if(StandPlace!=TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bBusy||M->ModalOpen()||!HoldFor().IsEmpty())return;
+ if(F->Taken&&F->Taken->Busy())return;
+ const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
+ if(H<19.9||H>=29.9)return;
+ // 0 the control room, 1 Caliche's street, 2 at the wheel on the highway, 3 the farm yard, 4 the open land past the farm.
+ static const double Hours[]={20.,21.5,23.,24.5,26.,27.3,28.6,29.4};
+ static const int32 Legs[]={0,1,2,3,0,4,2,1};
+ int32 Leg=-1;for(int32 I=0;I<8;++I)if(H>=Hours[I])Leg=I;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ if(Leg<0||(TourNight==Night&&TourLeg==Leg))return;
+ TourNight=Night;TourLeg=Leg;
+ const int32 To=Legs[Leg];
+ static const TCHAR* const Names[]={TEXT("the control room"),TEXT("Caliche's street"),TEXT("the wheel on the highway"),TEXT("the farm yard"),TEXT("the open land past the farm")};
+ UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural tour night %d: to %s, %s"),Night,Names[To],*ClockText(F->Clock()));
+ if(M->World->bDriving){M->World->TestInput=nullptr;M->World->StopDriving();}
+ if(To==2)
+ {
+  const double StartX=1.8,StartZ=1500.;
+  FS47TripOpts O;O.AtPos=FVector(8000+StartX,S47RoadTerrain::SurfaceY(StartX,StartZ),StartZ);O.AtHeading=0.;O.Leg=TEXT("road");
+  M->World->StartTrip(TEXT("road"),TEXT("diner"),O);
+  M->World->TestInput=[this]{FS47DriveIn Pedal;auto* D=M&&M->World?M->World->CabDrive():nullptr;if(D)Pedal.Throttle=D->Speed<10?1:0;return Pedal;};
+  return;
+ }
+ const FVector House=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
+ const FString Area=To==1?TEXT("diner"):TEXT("saro");
+ const auto Stand=[this,To,House]
+ {
+  if(!M||!M->Player)return;
+  if(To==0)M->Player->Place(0,-1.2,UE_DOUBLE_PI);
+  else if(To==1)M->Player->Place(7995,2110,0);
+  else if(To==3)M->Player->Place(House.X+8,House.Z+10,0);
+  else
+  {
+   // Out on the open ground past the farm, on foot: somewhere the land lets them stand (as StepStand has it).
+   bool bPut=false;
+   for(int32 I=0;I<24&&!bPut;++I)
+   {
+    const double A=I*UE_DOUBLE_PI/12,R=60+(I%3)*20;const double X=House.X+FMath::Cos(A)*R,Z=House.Z+FMath::Sin(A)*R;
+    if(!M->Player->Walkable(X,Z)||(M->Player->OpenLand&&!M->Player->OpenLand(X,Z))||M->World->Indoors(FVector(X,M->Player->FloorY+1,Z)))continue;
+    M->Player->Place(X,Z,A+UE_DOUBLE_PI);bPut=true;
+   }
+   if(!bPut)M->Player->Place(House.X+60,House.Z+25,0);
+  }
+  M->Player->Pitch=0;
+ };
+ if(M->Web->Area()!=Area){if(Area==TEXT("diner"))M->World->PlaceTruck(TEXT("diner"));M->World->Enter(Area);After(.7,Stand);}
+ else Stand();
 }
 
 void FS47DevFreeform::StepNatural(double Dt)
@@ -1365,7 +1417,7 @@ void FS47DevFreeform::Step(double Dt)
    }
   }
  }
- if(bNatural){StepNatural(Dt);StepStand();}
+ if(bNatural){StepNatural(Dt);StepStand();StepTour();}
  StepSweep(Dt);
 }
 
