@@ -9,6 +9,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Glimpses.h"
+#include "S47Happenings.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
@@ -167,6 +168,7 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  if(E->Budget==TEXT("invest")&&Now.InvestLeft<=0)return No(TEXT("budget"),TEXT("investigation"));
  if(E->Budget==TEXT("sky")&&Now.SkyLeft<=0)return No(TEXT("budget"),TEXT("sky"));
  if(E->Level==ES47RhythmLevel::Danger&&Rules.DangerPerNight>=0&&Now.DangerTonight>=Rules.DangerPerNight)return No(TEXT("danger_night"),FString::Printf(TEXT("%d tonight"),Now.DangerTonight));
+ if(E->Level==ES47RhythmLevel::Danger&&Now.bHumorTonight)return No(TEXT("humor_night"));
  if(!E->Areas.IsEmpty()&&!E->Areas.Contains(Now.Area))return No(TEXT("not_here"),E->Areas[0]);
  if(Need)for(const FName N:E->Needs)if(!Need(N))return No(FString::Printf(TEXT("needs:%s"),*N.ToString()));
  if(!E->DrawState.IsEmpty())if(const int32* Drawn=Now.Draws.Find(E->DrawState))if(*Drawn==0)return No(TEXT("not_drawn_tonight"));
@@ -190,6 +192,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
   if(Door.LastDayOf()>0)N.LastDays.Add(TEXT("door_visit"),Door.LastDayOf());
   if(F->IndoorDread->DoorActive())N.Busy=TEXT("door_visit");else if(F->IndoorDread->PeekActive())N.Busy=TEXT("peek");
  }
+ if(F->Happenings)F->Happenings->FillRhythm(N);
  if(F->Taken&&F->Taken->Busy())N.Busy=TEXT("taken");
  if(F->FarmSite&&F->FarmSite->VisitWantsGround())N.Busy=F->FarmSite->FieldVisit()?TEXT("field_visit"):TEXT("site_visit");
  if(M->HighwayUfo&&M->HighwayUfo->StageName()!=TEXT("idle")&&M->HighwayUfo->StageName()!=TEXT("done"))N.Busy=TEXT("highway_ufo");
@@ -356,6 +359,7 @@ void FS47Rhythm::Observe(double Dt)
  On(TEXT("sky_formation"),M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&!M->SkyVisitors->FormationData().bDev);
  On(TEXT("sky_high"),M->SkyVisitors&&M->SkyVisitors->HighTrackOn());
  On(TEXT("mystery"),F.Director&&F.Director->MysteryNoticeClue()>=0);
+ if(F.Happenings)for(const FString& H:FS47Happenings::Ids())On(FName(*H),F.Happenings->Live(H));
  Look();
 }
 
@@ -456,6 +460,12 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   Check(L.May(TEXT("door_visit"),A).Why==TEXT("danger_night"),TEXT("one danger a night stops the next"));
   Check(L.May(TEXT("peek"),A).bMay,TEXT("looking in at a window does not count as danger"));
   Check(L.May(TEXT("sky_formation"),A).bMay||InWindow(HourOf(A.Clock),21.5,5.5)==false,TEXT("nor do lights"));
+ }
+ {
+  // Tom, 8 November: something humorous never shares its night with a danger.
+  FS47RhythmNow A=N;A.bHumorTonight=true;
+  Check(Says(TEXT("door_visit"),A)==TEXT("humor_night"),TEXT("after a humorous one tonight no danger comes"));
+  Check(R.May(TEXT("peek"),A).bMay,TEXT("and a look in at a window still may"));
  }
  OK&=S47SmallHints::SelfTest(Lines);
  Check(CoolDays(TEXT("flyover"),3)>=2&&CoolDays(TEXT("flyover"),3)<=4&&CoolDays(TEXT("flyover"),3)==CoolDays(TEXT("flyover"),3),TEXT("cooldown two to four days, the same each time"));

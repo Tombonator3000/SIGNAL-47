@@ -95,6 +95,7 @@
 #include "S47World.h"
 #include "SS47AreaMap.h"
 #include "S47Places.h"
+#include "S47Happenings.h"
 #include "S47Predecessor.h"
 #include "SS47Ending.h"
 #include "SS47Notebook.h"
@@ -2069,6 +2070,7 @@ FS47MapView US47Flow::MapView() const
 	V.At = MapAt();
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Places) M->Freeform->Places->FillMap(V);
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor) M->Freeform->Predecessor->FillMap(V);
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Happenings) M->Freeform->Happenings->FillMap(V);
 	if (M->IsFreeform()) { V.bStation = true; return V; } // Freeform has no Story chapter clues.
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;

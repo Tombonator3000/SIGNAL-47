@@ -27,6 +27,8 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
   {TEXT("magnetometer"),TEXT("Survey magnetometer, used"),40,TEXT("a place found out on the land, or marks at a site kept as a record"),TEXT("On foot it leans toward marks, gear and places you have not looked at, and it reads what you find. It says nothing about what they are.")},
   {TEXT("logger2"),TEXT("Second field logger and contact pickups"),45,TEXT("THE REPEATED INTERVAL concluded, with the first logger on loan"),TEXT("Makes the two-site test on VISITORS AROUND THE BASE possible: the roof and a field post at the same minute.")},
   {TEXT("film"),TEXT("Fast film and a better lens"),30,TEXT("a photograph with a body in it"),TEXT("A full extra roll, frames that keep their subject in worse light, and $5 more on each registered incident.")},
+  // GEIGER-20261108: not a counter yet, a part of one. The player builds it at the bench (FS47Workshop "geiger", S47Happenings.h).
+  {TEXT("geiger_tube"),TEXT("Geiger-Muller tube and a meter movement"),25,TEXT("any field record kept: a place, marks, or scorched ground"),TEXT("Parts, not a counter. Build one at the CALIBRATION / REPAIR bench round a recorder housing and a lead, on a dry cell. On foot it ticks; where something has burnt or pressed the ground it ticks faster.")},
   {TEXT("alarm"),TEXT("Yard lights and klaxon"),60,TEXT("the county on speaking terms with the station"),TEXT("Goes off at what comes within fifty yards of the station. Tells you, and stops nothing. What sets it off may put it out; a fuse at its box mends it.")},
  };
  return Table;

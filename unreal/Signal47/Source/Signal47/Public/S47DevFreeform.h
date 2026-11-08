@@ -53,6 +53,8 @@ private:
  void AddTimePlace(FS47DevEvents& E);
  void AddLand(FS47DevEvents& E);
  void AddReyes(FS47DevEvents& E);
+ // Night events (S47Happenings.h), each from its own line; S47HappeningsDev.cpp.
+ void AddHappenings(FS47DevEvents& E);
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);
