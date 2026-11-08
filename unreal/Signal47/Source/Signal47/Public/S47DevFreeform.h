@@ -53,6 +53,8 @@ private:
  void AddTimePlace(FS47DevEvents& E);
  void AddLand(FS47DevEvents& E);
  void AddReyes(FS47DevEvents& E);
+ // The mailbox at the road and the post (S47Mail.h): the carrier now, the flag, fetching, the paper, a parcel; S47MailDev.cpp.
+ void AddMail(FS47DevEvents& E);
  // Night events (S47Happenings.h), each from its own line; S47HappeningsDev.cpp.
  void AddHappenings(FS47DevEvents& E);
  // M2: the gear failing, the night's sounds and their silence, the animals (S47Omen.h and its readers); S47OmenDev.cpp.

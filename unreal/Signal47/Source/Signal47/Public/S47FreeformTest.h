@@ -34,6 +34,8 @@ private:
  void StepLoggerJourney(double Dt);
  void StepFreeLife(double Dt);
  void StepReyes(double Dt);
+ // -S47MailTest: the box at the road, an order by mail, its parcel, the Ledger and a Continue (S47MailTest.cpp).
+ void StepMail(double Dt);
  void StepWorkshopJourney(double Dt);
  void StepArrayWear(double Dt);
  void StepRescueJourney(double Dt);

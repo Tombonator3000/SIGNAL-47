@@ -1355,6 +1355,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddLand(E);
  AddAnywhere(E);
  AddReyes(E);
+ AddMail(E);
  AddHappenings(E);
  AddOmens(E);
 }
