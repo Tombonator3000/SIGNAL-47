@@ -59,6 +59,16 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 - [ ] **SAVE-SARO-20261108: lagring bare på SARO eller i senga.** Tom vurderer; foreslått 8. november.
 - [ ] **WARD-REPORT-20261108: ukerapport til Ward** der spilleren velger hva som rapporteres; påvirker tillit og vurdering, og løgn kan slå tilbake.
 - [ ] **SARO-CLIP-20261108: objekter på SARO som går inn i vegger** må flyttes. Finn dem med en kollisjonsprøve, ikke bare øyemål.
+- [ ] **ANSWER-20261108: antennen lokker.** Peker spilleren arrayen mot et punkt på himmelen, kan noe «svare» der ute neste natt.
+- [ ] **NIGHTLOG-20261108: nattens logg kl. 06:** kort maskinskrevet sammendrag av det du så, tapt tid og avvik.
+- [ ] **ENLARGE-20261108: bilder med detaljer som først synes ved forstørring i mørkerommet.**
+- [ ] **ANIMALS-20261108: dyr som varsel:** fugler som letter, coyote som stopper og stirrer, kveg som går samme vei.
+- [ ] **NEIGHBOR-20261108: eldre gårdbruker langt ute** som har sett ting i mange år; upålitelig kilde som kan forsvinne. (Ingen 1947-avsløring i Freeform; se spoilergrensene.)
+- [ ] **MAILBOX-20261108: postkasse på SARO** med brev, avisutklipp og pakker med deler; fremgangen kommer fysisk.
+- [ ] **ENTHUSIASTS-20261108: lokale UFO-entusiaster i en varebil** som vil inn på SARO: humor, dilemma, mulig felle.
+- [ ] **MOON-20261108: månefaser:** fullmåne gir lysere og roligere natt, nymåne mørkere og mer aktivitet.
+- [ ] **MILITARY-20261108: militæret:** sjeldne helikoptre og svarte biler etter store hendelser; noen tar bevis før du kommer.
+- [ ] **MOTEL-SLEEP-20261108: overnatting på motellet** som alternativ til SARO, med andre farer og lyder.
 - [ ] **GEIGER-20261108: spilleren kan lage en geigerteller eller lignende måler** som slår ut der UFO-er har landet (svidd ring, landingsspor, steder fra peiling). Del av fremgangen, laget av deler.
 - [ ] **MOTEL-REAL-20261108: realisme for motellet,** særlig kontoret: inverterte vegger og tv som ikke virker. Gjenbruk interiørmodeller fra andre steder der det passer.
 
