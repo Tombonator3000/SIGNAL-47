@@ -47,7 +47,7 @@ public:
  void TestStick(){bStuck=true;}
  void TestFlat(){bFlat=true;}
  void TestWater(double Value){WaterLeft=Value;}
- void TestLeg(double Metres){LegMetres=Metres;}
+ void TestLeg(double Driven){LegMetres=Driven;}
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
