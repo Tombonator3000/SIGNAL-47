@@ -197,6 +197,8 @@ public:
  // The case board's field material, put up at SARO, with the station's loose threads and the player's own (CASEBOARD-20261108):
  // S47PinBoard.h.
  TSharedPtr<class FS47PinBoard> PinBoard;
+ // The photo lab's enlarger, by the wet bench (ENLARGE-20261108): S47Enlarger.h.
+ TSharedPtr<class FS47Enlarger> Enlarger;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;

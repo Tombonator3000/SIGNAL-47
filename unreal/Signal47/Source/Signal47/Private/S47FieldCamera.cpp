@@ -242,12 +242,31 @@ FS47Snap US47FieldCamera::Snap(const FS47SnapOptions& O)
 	FS47Snap S;
 	S.W = O.W;
 	S.H = FMath::RoundToInt(O.W * double(PHOTO_H) / PHOTO_W);
+	const int32 Up = FMath::Clamp(O.Super, 1, 3);
 	if (O.Before) O.Before();
-	const bool bOk = Render(S.W, S.H, S.Px); S.bRendered=bOk;
+	TArray<FColor> Big;
+	const bool bOk = Up > 1 ? Render(S.W * Up, S.H * Up, Big) : Render(S.W, S.H, S.Px); S.bRendered=bOk;
 	if (O.After) O.After();
 	if (O.Restore) O.Restore();
-	if (!bOk) S.Px.Init(FColor(0, 0, 0, 255), S.W * S.H);
-	if (O.Post) O.Post(S.Px, S.W, S.H);
+	if (bOk && Up > 1 && Big.Num() == S.W * Up * S.H * Up)
+	{
+		// The negative holds what the print is too small to show: the print is its average, Up by Up.
+		if (O.Post) O.Post(Big, S.W * Up, S.H * Up);
+		S.Px.SetNumUninitialized(S.W * S.H);
+		for (int32 Y = 0; Y < S.H; ++Y) for (int32 X = 0; X < S.W; ++X)
+		{
+			int32 R = 0, G = 0, B = 0;
+			for (int32 Dy = 0; Dy < Up; ++Dy) for (int32 Dx = 0; Dx < Up; ++Dx) { const FColor& C = Big[(Y * Up + Dy) * S.W * Up + X * Up + Dx]; R += C.R; G += C.G; B += C.B; }
+			const int32 K = Up * Up;
+			S.Px[Y * S.W + X] = FColor(uint8(R / K), uint8(G / K), uint8(B / K), 255);
+		}
+		S.Neg = MoveTemp(Big); S.NegW = S.W * Up; S.NegH = S.H * Up;
+	}
+	else
+	{
+		if (!bOk || S.Px.Num() != S.W * S.H) S.Px.Init(FColor(0, 0, 0, 255), S.W * S.H);
+		if (O.Post) O.Post(S.Px, S.W, S.H);
+	}
 	S.Mean = FilmLook(S.Px, S.W, S.H, O.Seed);
 	return S;
 }

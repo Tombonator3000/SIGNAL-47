@@ -75,6 +75,9 @@ struct FS47AlbumShot
 	bool bOdd = false;
 	// En lesbar erstatnings-JPEG er ikke det opprinnelige fotografiet.
 	bool bUnavailable = false;
+	/** ENLARGE-20261108: the negative, twice the print's size, as it was rendered (no grain): a data URL, or empty. Only the newest
+	 *  MostNegatives keep theirs. Enlarged: this print is an enlargement of another (its id), made in the darkroom. */
+	FString Neg, Enlarged;
 	/** -1: legacy/Story instant print; 0: exposed, 1: tank processed, 2: fixed, 3: collected. */
 	int32 LabStage = -1;
 	bool IsDeveloped() const { return LabStage < 0 || LabStage == 3; }
@@ -111,6 +114,8 @@ struct FS47AlbumDeps
 	TFunction<void(const FS47AlbumShot&, bool, int32)> Done;
 	/** Attach only features actually framed at exposure time, before persistent storage. */
 	TFunction<void(FS47AlbumShot&)> Tag;
+	/** Keep each exposure's negative at twice the print's size, for the darkroom's enlarger (Freeform). */
+	TFunction<bool()> Negative;
 	/** A free frame taken here and now may keep the face (main.ts: chapter four, out of doors, on foot). */
 	TFunction<bool()> Face;
 	/** The print with the face has been looked at closely for the first time, come up. */
@@ -120,7 +125,10 @@ struct FS47AlbumDeps
 class SIGNAL47_API FS47Album
 {
 public:
-	static constexpr int32 ROLL = 36;
+	static constexpr int32 ROLL = 36, MostNegatives = 12;
+	/** The darkroom's enlarger: a new print made from part of an old one. It uses no film (it is printed on paper); it keeps the
+	 *  first print's time, place and pose. Its id, or empty. */
+	FString AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text);
 	static const TCHAR* NOBODY;
 	/** The caption on the print with the face: the words under the figures far off, now under a face at the lens. */
 	static const TCHAR* FACE_LINE;
