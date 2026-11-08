@@ -92,6 +92,7 @@ private:
 	mutable TArray<FBlock> Blocks;
 	mutable TArray<FVector2D> Dishes;
 	mutable TArray<FString> DishIds; // S-01 to S-27, as the array's PC and the jobs name them
+	float NightDim = 0; // out at night: the sheet as a flashlight shows it
 	mutable TArray<TPair<FVector2D, FVector2D>> Paths; // the array's walks, end to end
 	struct FFeature { FVector2D At; FString Kind; };
 	mutable TArray<FFeature> Features; // windmill, tank, mine, shack, feeder

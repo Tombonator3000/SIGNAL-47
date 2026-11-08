@@ -64,6 +64,7 @@ namespace S47FieldMapLocal
 	FLinearColor Water(float A) { return Hue(0x2a68a6, A); }
 	FLinearColor Graphite(float A) { return Hue(0x3a3a40, A); }
 	FLinearColor YouRed(float A) { return Hue(0xc8231e, A); }
+	FLinearColor Revised(float A = 1.f) { return Hue(0x8a3f9c, A); } // a photorevision's purple: what is newer than the survey
 
 	FVector2f F2(const FVector2D& V) { return FVector2f(float(V.X), float(V.Y)); }
 	FVector2D Project(const FVector2D& Middle, double Scale, double X, double Z) { return FVector2D(FrameMidX + (X - Middle.X) * Scale, FrameMidY + (Z - Middle.Y) * Scale); }
@@ -80,7 +81,14 @@ namespace S47FieldMapLocal
 	struct FContour { TArray<FVector2f> P; FBox2f Box; double Ft = 0; bool bIndex = false; };
 	struct FContourLabel { FVector2f At; float Deg = 0; int32 Ft = 0; };
 	struct FHeightSpot { FVector2f At; int32 Ft = 0; };
-	struct FReliefSheet { bool bBuilt = false, bWithHills = false; TArray<FContour> Lines; TArray<FContourLabel> Labels; TArray<FHeightSpot> Spots; float Low = 0, High = 0; double Millis = 0; };
+	// Shade: the light from the northwest on each cell of the grid (-1 dark side .. 1 lit), a quadrangle's shaded relief. Streams: where
+	// water would gather off the land's own slopes (flow from every cell to its lowest neighbour, enough of it together): dry washes.
+	struct FReliefSheet
+	{
+		bool bBuilt = false, bWithHills = false; TArray<FContour> Lines; TArray<FContourLabel> Labels; TArray<FHeightSpot> Spots; float Low = 0, High = 0; double Millis = 0;
+		TArray<float> Shade; int32 GridW = 0, GridH = 0; double GridX = 0, GridZ = 0, GridCell = 25;
+		TArray<FContour> Streams;
+	};
 	FReliefSheet& ReliefSheet() { static FReliefSheet Kept; return Kept; }
 
 	double FeetOf(double Height) { return (DatumM + Height) / FootM; }
@@ -223,6 +231,54 @@ namespace S47FieldMapLocal
 			if (Sheet.Spots.Num() >= 18) break;
 			if (!Sheet.Spots.ContainsByPredicate([&Peak](const FHeightSpot& Have) { return FVector2f::Distance(Have.At, Peak.At) < 700.f; })) Sheet.Spots.Add(Peak);
 		}
+		// The shaded relief: light from the northwest, 45 degrees up.
+		Sheet.GridW = NX; Sheet.GridH = NZ; Sheet.GridX = MinX; Sheet.GridZ = MinZ; Sheet.GridCell = Cell;
+		Sheet.Shade.SetNumZeroed(NX * NZ);
+		const FVector Sun = FVector(-1, 1.414, -1).GetSafeNormal(); // x east, y up, z south: from the northwest, up
+		for (int32 J = 1; J + 1 < NZ; ++J) for (int32 I = 1; I + 1 < NX; ++I)
+		{
+			const double Dx = (Hat(I + 1, J) - Hat(I - 1, J)) / (2 * Cell), Dz = (Hat(I, J + 1) - Hat(I, J - 1)) / (2 * Cell);
+			const FVector Up = FVector(-Dx, 1, -Dz).GetSafeNormal();
+			Sheet.Shade[J * NX + I] = float(FMath::Clamp((FVector::DotProduct(Up, Sun) - FVector::DotProduct(FVector(0, 1, 0), Sun)) * 3.0, -1.0, 1.0));
+		}
+		// The washes: each cell drains to its lowest neighbour; where enough of the land drains through a cell, a stream runs.
+		{
+			TArray<int32> Down; Down.Init(INDEX_NONE, NX * NZ);
+			for (int32 J = 1; J + 1 < NZ; ++J) for (int32 I = 1; I + 1 < NX; ++I)
+			{
+				float Low = Hat(I, J) - .05f; int32 Best = INDEX_NONE;
+				for (int32 Dj = -1; Dj <= 1; ++Dj) for (int32 Di = -1; Di <= 1; ++Di)
+				{
+					if (!Di && !Dj) continue;
+					const float V = Hat(I + Di, J + Dj) + ((Di && Dj) ? .02f : 0.f);
+					if (V < Low) { Low = V; Best = (J + Dj) * NX + I + Di; }
+				}
+				Down[J * NX + I] = Best;
+			}
+			TArray<int32> Order; Order.Reserve(NX * NZ);
+			for (int32 K = 0; K < NX * NZ; ++K) Order.Add(K);
+			Order.Sort([&Hg](int32 A, int32 B) { return Hg[A] > Hg[B]; });
+			TArray<int32> Flow; Flow.Init(1, NX * NZ);
+			for (const int32 K : Order) if (Down[K] != INDEX_NONE) Flow[Down[K]] += Flow[K];
+			const int32 Enough = 260; // cells: about 16 hectares draining through it
+			TArray<int32> Ups; Ups.Init(0, NX * NZ);
+			for (int32 K = 0; K < NX * NZ; ++K) if (Flow[K] >= Enough && Down[K] != INDEX_NONE && Flow[Down[K]] >= Enough) ++Ups[Down[K]];
+			TBitArray<> Drawn(false, NX * NZ);
+			for (int32 K = 0; K < NX * NZ; ++K)
+			{
+				if (Flow[K] < Enough || Ups[K] > 0) continue; // only from a head
+				FContour Wash;
+				int32 At = K, Guard = 0;
+				while (At != INDEX_NONE && Flow[At] >= Enough && ++Guard < 4000)
+				{
+					Wash.P.Add(Corner(At % NX, At / NX));
+					if (Drawn[At]) break; // joined one already drawn
+					Drawn[At] = true;
+					At = Down[At];
+				}
+				if (Wash.P.Num() >= 4) { Wash.Box = FBox2f(Wash.P); Sheet.Streams.Add(MoveTemp(Wash)); }
+			}
+		}
 		Sheet.Millis = (FPlatformTime::Seconds() - Began) * 1000.0;
 		Sheet.bBuilt = true;
 	}
@@ -235,8 +291,8 @@ namespace S47FieldMapLocal
 		{
 			Sheet.bWithHills = bHills;
 			BuildRelief(Sheet, [](double X, double Z) { return S47FieldMap::LandHeight(X, Z); }, S47OpenLand::RimX0, S47OpenLand::RimZ0, S47OpenLand::RimX1, S47OpenLand::RimZ1, ReliefCell);
-			UE_LOG(LogS47FieldMap, Display, TEXT("S47: survey map contours: %d lines, %d labels, %d spot heights, %.0f to %.0f ft, %.0f ms (relief %s)"),
-				Sheet.Lines.Num(), Sheet.Labels.Num(), Sheet.Spots.Num(), FeetOf(Sheet.Low), FeetOf(Sheet.High), Sheet.Millis, bHills ? TEXT("on") : TEXT("off"));
+			UE_LOG(LogS47FieldMap, Display, TEXT("S47: survey map contours: %d lines, %d labels, %d spot heights, %d washes, %.0f to %.0f ft, %.0f ms (relief %s)"),
+				Sheet.Lines.Num(), Sheet.Labels.Num(), Sheet.Spots.Num(), Sheet.Streams.Num(), FeetOf(Sheet.Low), FeetOf(Sheet.High), Sheet.Millis, bHills ? TEXT("on") : TEXT("off"));
 		}
 		return Sheet;
 	}
@@ -560,6 +616,15 @@ void SS47FieldMap::Construct(const FArguments& InArgs)
 	if (View.bMe && FVector2D::Distance(Kept.LastMe, FVector2D(View.MeX, View.MeZ)) > 1.0) CentreOnMe();
 	Clamp();
 	SurveyWorld();
+	// Out at night the sheet is read by a flashlight; indoors at SARO, under its lamps.
+	if (const US47Main* Mn = US47Main::Get(nullptr); Mn && Mn->IsFreeform() && Mn->Freeform && Mn->Player && Mn->Web)
+	{
+		const double Hour = FMath::Fmod(Mn->Freeform->Clock(), 86400.0) / 3600.0;
+		const bool bNight = Hour >= 20 || Hour < 5.5;
+		const FVector EyeAt(Mn->Player->Pos.X, Mn->Player->FloorY + Mn->Player->Eye, Mn->Player->Pos.Z);
+		const bool bUnderLamps = Mn->Web->Area() == TEXT("saro") && Mn->World && Mn->World->Indoors(EyeAt);
+		NightDim = bNight && !bUnderLamps ? .35f : 0.f;
+	}
 }
 
 FVector2D SS47FieldMap::ToPage(double X, double Z) const { return S47FieldMapLocal::Project(Mid, Sc, X, Z); }
@@ -793,6 +858,23 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 
 	// ---- contours ----
 	const FReliefSheet& Hills = Relief();
+	// The shaded relief: blocks of the grid, at least 12 page units a side, only where the slope turns from or to the light.
+	if (Hills.GridW > 2)
+	{
+		const int32 Coarse = FMath::Max(1, FMath::CeilToInt(12.0 / (Hills.GridCell * Sc)));
+		const double Step = Hills.GridCell * Coarse;
+		const int32 I0 = FMath::Max(0, int32((Shown.Min.X - Hills.GridX) / Hills.GridCell) - Coarse), I1 = FMath::Min(Hills.GridW - 1, int32((Shown.Max.X - Hills.GridX) / Hills.GridCell) + Coarse);
+		const int32 J0 = FMath::Max(0, int32((Shown.Min.Y - Hills.GridZ) / Hills.GridCell) - Coarse), J1 = FMath::Min(Hills.GridH - 1, int32((Shown.Max.Y - Hills.GridZ) / Hills.GridCell) + Coarse);
+		const float Side = float(Step * Sc);
+		for (int32 J = J0 - J0 % Coarse; J <= J1; J += Coarse) for (int32 I = I0 - I0 % Coarse; I <= I1; I += Coarse)
+		{
+			if (!Hills.Shade.IsValidIndex(J * Hills.GridW + I)) continue;
+			const float Lit = Hills.Shade[J * Hills.GridW + I];
+			if (FMath::Abs(Lit) < .06f) continue;
+			const FVector2f Ctr = OnPage(Hills.GridX + I * Hills.GridCell, Hills.GridZ + J * Hills.GridCell);
+			Pen.Fill(Ctr - FVector2f(Side, Side) * .5f, FVector2f(Side, Side), Lit < 0 ? Hue(0x5e4a36, FMath::Min(.22f, -Lit * .28f)) : Hue(0xfffaf0, FMath::Min(.25f, Lit * .3f)), LPaper);
+		}
+	}
 	const bool bAll = Sc >= .24;
 	for (const FContour& Line : Hills.Lines)
 	{
@@ -824,7 +906,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			if (!Visible(Lb.At.X, Lb.At.Y, 0)) continue;
 			const FString Txt = FString::FromInt(Lb.Ft);
 			const FVector2f Ctr = OnPage(Lb.At.X, Lb.At.Y);
-			if (Room(Ctr, FPen::Measure(Txt, Small(11)))) Pen.Text(Txt, Ctr, Small(11), Brown(1.f), LRelief, .5f, .5f, true, Lb.Deg);
+			if (Room(Ctr, FPen::Measure(Txt, Small(13)))) Pen.Text(Txt, Ctr, Small(13), Brown(1.f), LRelief, .5f, .5f, true, Lb.Deg);
 		}
 	if (Sc >= .14)
 		for (const FHeightSpot& Spot : Hills.Spots)
@@ -833,7 +915,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const FVector2f Ctr = OnPage(Spot.At.X, Spot.At.Y);
 			Pen.Lines({ Ctr + FVector2f(-3, -3), Ctr + FVector2f(3, 3) }, Ink(), 1.2f, LRelief);
 			Pen.Lines({ Ctr + FVector2f(-3, 3), Ctr + FVector2f(3, -3) }, Ink(), 1.2f, LRelief);
-			Pen.Text(FString::FromInt(Spot.Ft), Ctr + FVector2f(6, 0), Small(11), Ink(), LRelief);
+			Pen.Text(FString::FromInt(Spot.Ft), Ctr + FVector2f(6, 0), Small(13), Ink(), LRelief);
 		}
 
 	// ---- section lines and their numbers ----
@@ -852,13 +934,21 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			}
 	}
 
-	// ---- water: the dry wash west of the highway, blue, a dash and two dots ----
+	// ---- water: the dry wash west of the highway, blue, a dash and two dots, and the washes the land's slopes gather ----
+	if (Sc >= .1)
+		for (const FContour& Wash : Hills.Streams)
+		{
+			if (Wash.Box.Max.X < Shown.Min.X || Wash.Box.Min.X > Shown.Max.X || Wash.Box.Max.Y < Shown.Min.Y || Wash.Box.Min.Y > Shown.Max.Y) continue;
+			TArray<FVector2f> Way;
+			for (const FVector2f& Q : Wash.P) Way.Add(OnPage(Q.X, Q.Y));
+			Pen.Dashed(Way, Water(.75f), 1.2f, LRoad, { 10, 3, 2, 3 });
+		}
 	{
 		TArray<FVector2f> Wash;
 		for (double Z = -100; Z <= S47OpenLand::RimZ1; Z += 40) Wash.Add(OnPage(-330 - .25 * (Z - 500), Z));
 		Pen.Dashed(Wash, Water(.9f), 1.6f, LRoad, { 14, 4, 2, 4, 2, 4 });
 		const double Lz = FMath::Clamp((Shown.Min.Y + Shown.Max.Y) * .5, 600.0, 3600.0), Lx = -330 - .25 * (Lz - 500);
-		if (Visible(Lx, Lz, 0)) Pen.Text(TEXT("Arroyo Seco"), OnPage(Lx, Lz) + FVector2f(-10, 0), Italic(14), Water(1.f), LWords, 1.f, .5f, true, -76.f);
+		if (Visible(Lx, Lz, 0)) Pen.Text(TEXT("Arroyo Seco"), OnPage(Lx, Lz) + FVector2f(-10, 0), Italic(16), Water(1.f), LWords, 1.f, .5f, true, -76.f);
 	}
 
 	// ---- roads ----
@@ -872,7 +962,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		const double North = FMath::Max(double(S47RoadTerrain::HWY.Z0), double(S47OpenLand::RimZ0)), South = FMath::Min(double(S47RoadTerrain::HWY.Z1), double(S47OpenLand::RimZ1));
 		Cased({ OnPage(0, North), OnPage(0, South) }, FMath::Max(3.2f, float(9.6 * Sc)), Survey(1.f), LRoad);
 		const double LabelZ = FMath::Clamp((Shown.Min.Y + Shown.Max.Y) * .5 + 420 / Sc, North + 100, South - 100);
-		if (Visible(0, LabelZ, 0)) Pen.Text(TEXT("STATE HIGHWAY"), OnPage(0, LabelZ) + FVector2f(-FMath::Max(10.f, float(6 * Sc)) - 8.f, 0), Printed(15), Ink(), LWords, .5f, 1.f, true, -90.f);
+		if (Visible(0, LabelZ, 0)) Pen.Text(TEXT("STATE HIGHWAY"), OnPage(0, LabelZ) + FVector2f(-FMath::Max(10.f, float(6 * Sc)) - 8.f, 0), Printed(17), Ink(), LWords, .5f, 1.f, true, -90.f);
 	}
 	// SARO's service road, off the highway and round to the pad (S47Flow OnRoad, saro-local).
 	{
@@ -914,17 +1004,17 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	}
 
 	// ---- the array, the buildings, the land's own features ----
-	if (Sc >= .8) for (const auto& Trail : Paths) Pen.Dashed({ OnPage(Trail.Key.X, Trail.Key.Y), OnPage(Trail.Value.X, Trail.Value.Y) }, Graphite(.6f), .9f, LRoad, { 4, 3 });
+	if (Sc >= .8) for (const auto& Trail : Paths) Pen.Dashed({ OnPage(Trail.Key.X, Trail.Key.Y), OnPage(Trail.Value.X, Trail.Value.Y) }, Revised(.6f), .9f, LRoad, { 4, 3 });
 	for (int32 Di = 0; Di < Dishes.Num(); ++Di)
 	{
 		const FVector2D& Dish = Dishes[Di];
 		if (!Visible(Dish.X, Dish.Y, 10)) continue;
 		const FVector2f Ctr = OnPage(Dish.X, Dish.Y);
 		const float Rad = FMath::Max(2.2f, float(3.6 * Sc));
-		Pen.Lines(Pen.Circle(Ctr, Rad, 16), Ink(), 1.1f, LBuilt);
-		Pen.Fill(Ctr - FVector2f(1, 1), FVector2f(2, 2), Ink(), LBuilt);
+		Pen.Lines(Pen.Circle(Ctr, Rad, 16), Revised(), 1.2f, LBuilt);
+		Pen.Fill(Ctr - FVector2f(1, 1), FVector2f(2, 2), Revised(), LBuilt);
 		// Close enough in to tell them apart: each its number, as the array's PC and the jobs have it.
-		if (Sc >= .9 && DishIds.IsValidIndex(Di)) Pen.Text(DishIds[Di], Ctr + FVector2f(Rad + 3, -Rad - 1), Small(11), Ink(), LWords, 0.f, .5f, true);
+		if (Sc >= .9 && DishIds.IsValidIndex(Di)) Pen.Text(DishIds[Di], Ctr + FVector2f(Rad + 3, -Rad - 1), Small(14), Revised(), LWords, 0.f, .5f, true);
 	}
 	for (const FBlock& Bk : Blocks)
 	{
@@ -941,6 +1031,9 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines({ Crest - FVector2f(4, 7), Crest - FVector2f(-4, 7) }, Ink(), 1.4f, LBuilt);
 		}
 	}
+	// The features' names go on after the places' names, wherever they are clear of them.
+	struct FLater { FString Words; FVector2f At; FLinearColor Col; };
+	TArray<FLater> Later;
 	for (const FFeature& Feature : Features)
 	{
 		if (!Visible(Feature.At.X, Feature.At.Y, 30)) continue;
@@ -949,12 +1042,12 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		{
 			Pen.Lines(Pen.Circle(Ctr, 2.5f, 10), Ink(), 1.2f, LBuilt);
 			for (int32 I = 0; I < 4; ++I) { const float A = PI * .25f + HALF_PI * I; const FVector2f D(FMath::Cos(A), FMath::Sin(A)); Pen.Lines({ Ctr + D * 2.5f, Ctr + D * 7.f }, Ink(), 1.2f, LBuilt); }
-			if (Sc >= .2) Pen.Text(TEXT("Windmill"), Ctr + FVector2f(10, 0), Italic(12), Ink(), LWords, 0.f, .5f, true);
+			if (Sc >= .2) Later.Add({ TEXT("Windmill"), Ctr, Ink() });
 		}
 		else if (Feature.Kind == TEXT("tank"))
 		{
 			Pen.Lines(Pen.Circle(Ctr, FMath::Max(3.f, float(3.5 * Sc)), 14), Water(1.f), 1.5f, LBuilt);
-			if (Sc >= .2) Pen.Text(TEXT("Tank"), Ctr + FVector2f(9, 0), Italic(12), Water(1.f), LWords, 0.f, .5f, true);
+			if (Sc >= .2) Later.Add({ TEXT("Tank"), Ctr, Water(1.f) });
 		}
 		else if (Feature.Kind == TEXT("mine"))
 		{
@@ -963,42 +1056,60 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines({ Ctr + FVector2f(6, -6), Ctr + FVector2f(-6, 6) }, Ink(), 1.5f, LBuilt);
 			Pen.Lines({ Ctr + FVector2f(-8, -3), Ctr + FVector2f(-3, -8) }, Ink(), 1.5f, LBuilt);
 			Pen.Lines({ Ctr + FVector2f(8, -3), Ctr + FVector2f(3, -8) }, Ink(), 1.5f, LBuilt);
-			if (Sc >= .2) Pen.Text(TEXT("Mine"), Ctr + FVector2f(11, 0), Italic(12), Ink(), LWords, 0.f, .5f, true);
+			if (Sc >= .2) Later.Add({ TEXT("Mine"), Ctr, Ink() });
 		}
 		else if (Feature.Kind == TEXT("shack")) Pen.Fill(Ctr - FVector2f(2, 2), FVector2f(FMath::Max(4.f, float(4.5 * Sc)), FMath::Max(4.f, float(3.2 * Sc))), Ink(), LBuilt);
 		else if (Feature.Kind == TEXT("feeder"))
 		{
 			Pen.Lines({ Ctr + FVector2f(-3, -3), Ctr + FVector2f(3, -3), Ctr + FVector2f(3, 3), Ctr + FVector2f(-3, 3), Ctr + FVector2f(-3, -3) }, Ink(), 1.2f, LBuilt);
-			if (Sc >= .3) Pen.Text(TEXT("Feeder"), Ctr + FVector2f(8, 0), Italic(12), Ink(), LWords, 0.f, .5f, true);
+			if (Sc >= .3) Later.Add({ TEXT("Feeder"), Ctr, Ink() });
 		}
 	}
 
 	// ---- printed names ----
 	// What is already written where: the printed names and the player's arrow, which the ink below keeps clear of.
 	TArray<FBox2f> Occupied;
-	const auto Name = [&Pen, &OnPage, &Visible, &Occupied, LWords](const FString& Words, double X, double Z, const FVector2f& By, const FSlateFontInfo& Font, float AlignX, float AlignY)
+	const auto Name = [&Pen, &OnPage, &Visible, &Occupied, LWords](const FString& Words, double X, double Z, const FVector2f& By, const FSlateFontInfo& Font, float AlignX, float AlignY, const FLinearColor& Col = FLinearColor::Transparent)
 	{
 		if (!Visible(X, Z, 200)) return;
 		const FVector2f At = OnPage(X, Z) + By;
 		if (!InFrame(FVector2D(At.X, At.Y), -40)) return;
-		const FVector2f Size = Pen.Text(Words, At, Font, Ink(), LWords, AlignX, AlignY, true);
+		const FVector2f Size = Pen.Text(Words, At, Font, Col.A > 0 ? Col : Ink(), LWords, AlignX, AlignY, true);
 		const FVector2f TopLeft = At - FVector2f(Size.X * AlignX, Size.Y * AlignY);
 		Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
 	};
 	{
 		const FVector2f Beside(FMath::Max(14.f, float(36 * Sc)), 0);
-		Name(TEXT("SARO"), SaroAt.X, SaroAt.Y, Beside, Printed(22), 0.f, 1.f);
-		Name(TEXT("Radio Observatory"), SaroAt.X, SaroAt.Y, Beside + FVector2f(0, 2), Italic(13), 0.f, 0.f);
-		if (Dishes.Num()) { FVector2D Sum = FVector2D::ZeroVector; for (const FVector2D& Dish : Dishes) Sum += Dish; Sum /= Dishes.Num(); Name(TEXT("Antenna array"), Sum.X, Sum.Y, FVector2f(0, -8), Italic(13), .5f, 1.f); }
+		Name(TEXT("SARO"), SaroAt.X, SaroAt.Y, Beside, Printed(22), 0.f, 1.f, Revised());
+		Name(TEXT("Radio Observatory"), SaroAt.X, SaroAt.Y, Beside + FVector2f(0, 2), Italic(16), 0.f, 0.f, Revised());
+		if (Dishes.Num()) { FVector2D Sum = FVector2D::ZeroVector; for (const FVector2D& Dish : Dishes) Sum += Dish; Sum /= Dishes.Num(); Name(TEXT("Antenna array"), Sum.X, Sum.Y, FVector2f(0, -8), Italic(16), .5f, 1.f, Revised()); }
 		const S47Geo::FRect& Mo = S47Geo::MOTEL_RECT();
 		double Mx = 0, Mz = 0; S47OpenLand::RoadOf(TEXT("saro"), Mo.MinX, (Mo.MinZ + Mo.MaxZ) * .5, Mx, Mz);
-		Name(TEXT("Sierra Motor Court"), Mx, Mz, FVector2f(-10, 0), Printed(15), 1.f, .5f);
-		Name(TEXT("Mesa Diner"), -28, 2000, FVector2f(-10, 0), Printed(15), 1.f, .5f);
+		Name(TEXT("Sierra Motor Court"), Mx, Mz, FVector2f(-10, 0), Printed(17), 1.f, .5f);
+		Name(TEXT("Mesa Diner"), -28, 2000, FVector2f(-10, 0), Printed(17), 1.f, .5f);
 		const auto& Town = S47RoadShape::TOWN();
 		Name(TEXT("C A L I C H E"), Town.East, (Town.Z0 + Town.Z1) * .5, FVector2f(FMath::Max(16.f, float(10 * Sc)), 0), Printed(Sc >= 1.5 ? 30 : 24), 0.f, .5f);
-		Name(TEXT("Alderete Ranch"), 146, 194, FVector2f(FMath::Max(12.f, float(8 * Sc)), 0), Printed(15), 0.f, .5f);
+		Name(TEXT("Alderete Ranch"), 146, 194, FVector2f(FMath::Max(12.f, float(8 * Sc)), 0), Printed(17), 0.f, .5f);
 		const S47Geo::FXZ St = S47Geo::StationToRoad(0, 0);
-		Name(TEXT("STATION 01"), St.X - 32, St.Z, FVector2f(-10, 0), Printed(15), 1.f, .5f);
+		Name(TEXT("STATION 01"), St.X - 32, St.Z, FVector2f(-10, 0), Printed(17), 1.f, .5f);
+	}
+
+	// The features' names: to the right of the symbol, or left, above or below, wherever nothing printed is yet.
+	for (const FLater& Lab : Later)
+	{
+		const FVector2f Size = FPen::Measure(Lab.Words, Italic(16));
+		static const FVector2f Tries[] = { FVector2f(11, 0), FVector2f(-11, 0), FVector2f(0, -16), FVector2f(0, 16) };
+		static const FVector2f Aligns[] = { FVector2f(0, .5f), FVector2f(1, .5f), FVector2f(.5f, 1), FVector2f(.5f, 0) };
+		int32 Pick = 0;
+		for (int32 Ti = 0; Ti < 4; ++Ti)
+		{
+			const FVector2f TopLeft = Lab.At + Tries[Ti] - Size * Aligns[Ti];
+			const FBox2f Want(TopLeft, TopLeft + Size);
+			if (!Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) { Pick = Ti; break; }
+		}
+		const FVector2f TopLeft = Lab.At + Tries[Pick] - Size * Aligns[Pick];
+		Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
+		Pen.Text(Lab.Words, Lab.At + Tries[Pick], Italic(16), Lab.Col, LWords, Aligns[Pick].X, Aligns[Pick].Y, true);
 	}
 
 	// ---- pencil: what the player has found, heard of and marked ----
@@ -1113,7 +1224,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		Pen.Text(TEXT("CALICHE QUADRANGLE"), FVector2f(40, 24), Printed(26), Ink(), LMargin, 0.f, .5f);
 		Pen.Text(TEXT("NEW MEXICO"), FVector2f(40, 50), Printed(15), Ink(), LMargin, 0.f, .5f);
 		Pen.Text(TEXT("7.5 MINUTE SERIES (TOPOGRAPHIC)"), FVector2f(1160, 24), Printed(16), Ink(), LMargin, 1.f, .5f);
-		Pen.Text(TEXT("PHOTOREVISED 1981   SARO FIELD COPY"), FVector2f(1160, 48), Small(11), Ink(), LMargin, 1.f, .5f);
+		Pen.Text(TEXT("PHOTOREVISED 1984: SARO IN PURPLE   SARO FIELD COPY"), FVector2f(1160, 48), Small(11), Revised(), LMargin, 1.f, .5f);
 		Pen.Text(TEXT("R. 24 E."), FVector2f(600, 52), Printed(14), Survey(.85f), LMargin, .5f, .5f);
 		Pen.Text(TEXT("T. 9 S."), FVector2f(18, 400), Printed(14), Survey(.85f), LMargin, .5f, .5f, false, -90.f);
 		// Ticks a kilometre apart, with their eastings and northings.
@@ -1171,7 +1282,9 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		Pen.Text(TEXT("MN"), Tip + FVector2f(4, -2), Small(10), Ink(), LMargin, 0.f, 1.f);
 		Pen.Text(TEXT("11½°"), Stem + FVector2f(12, -14), Small(10), Ink(), LMargin, 0.f, .5f);
 	}
-	return LMargin + 2;
+	// Out in the night, read by a flashlight: the sheet at about two thirds. Under the lamps at SARO, full.
+	if (NightDim > 0) Pen.Fill(FVector2f(0, 0), FVector2f(1200, 800), FLinearColor(.02f, .015f, .03f, NightDim), LMargin + 2);
+	return LMargin + 4;
 }
 
 bool S47FieldMap::SelfTest(TArray<FString>& Lines)
