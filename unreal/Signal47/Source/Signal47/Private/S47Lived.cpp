@@ -1,6 +1,7 @@
 #include "S47Lived.h"
 
 #include "S47FarmHouse.h"
+#include "S47RoadTerrain.h"
 #include "S47Main.h"
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
@@ -9,13 +10,19 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47WorldLife.h"
+#include "Components/DecalComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Dom/JsonObject.h"
 #include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 #include "UObject/WeakObjectPtrTemplates.h"
@@ -59,7 +66,7 @@ namespace
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
   TArray<TWeakObjectPtr<URectLightComponent>> HouseDay;
   TArray<TWeakObjectPtr<UPointLightComponent>> HouseFill;
-  bool bColliders=false,bMissingSaid=false;
+  bool bColliders=false,bMissingSaid=false,bTownTried=false;
   double T=0,Retry=0,RedNext=0;float RedLevel=1;
  };
  UMaterialInstanceDynamic* LitMid(UStaticMeshComponent* C,const TCHAR* Slot,FLinearColor& On)
@@ -208,6 +215,57 @@ namespace
    F->SetIntensity(bOn?HouseFillLumens*Day:0.f);F->SetLightColor(Tint*FLinearColor(1.f,.93f,.82f));F->SetVisibility(bOn);
   }
  }
+ // Caliche (T16-15): each building on the street gets ground in front of it, gravel or old asphalt, from its door out to the highway's
+ // shoulder, as a decal on whatever ground the land has there; and a concrete curb down each side of it. Buildings from CalicheAccess/assembly.json.
+ void BuildTown(FState& S,AS47Web* W)
+ {
+  if(S.bTownTried)return;
+  UMaterialInterface* Gravel=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Town/Materials/M_Lived_LotGravel"))?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Lived/Town/Materials/M_Lived_LotGravel.M_Lived_LotGravel")):nullptr;
+  UMaterialInterface* Asphalt=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Town/Materials/M_Lived_LotAsphalt"))?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Lived/Town/Materials/M_Lived_LotAsphalt.M_Lived_LotAsphalt")):nullptr;
+  UMaterialInterface* Concrete=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/FarmBuildings/Materials/M_Farm_Concrete.M_Farm_Concrete"));
+  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+  FString Text;TSharedPtr<FJsonObject> J;
+  if(!Gravel||!Asphalt||!Cube||!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
+  const int32 Town=W->Handle(TEXT("world.town.group"));const FS47WebNode* TN=W->Node(Town);
+  if(!TN||!TN->Comp.IsValid())return;
+  const FVector O=W->Obj(TEXT("world.town.group")).WorldPosition();
+  const auto Ground=[&](double X,double Z){return O.Y+S47RoadTerrain::SurfaceY(X-O.X,Z-O.Z);};
+  int32 Lots=0;
+  for(const auto& V:J->GetArrayField(TEXT("buildings")))
+  {
+   const auto B=V->AsObject();const FString Id=B->GetStringField(TEXT("id"));
+   const auto& Root=B->GetArrayField(TEXT("root"));const auto& Foot=B->GetArrayField(TEXT("footprint"));
+   const double RX=Root[0]->AsNumber(),RZ=Root[2]->AsNumber(),Front=B->GetNumberField(TEXT("front"));
+   const double X0=Foot[0]->AsNumber(),X1=Foot[1]->AsNumber(),Y0=Foot[2]->AsNumber(),Y1=Foot[3]->AsNumber();
+   // The facade, and the shoulder's edge (the highway's centre line is x 8000 in this area, its shoulder 6 m out).
+   const double FX=RX+(Front>0?X1:X0),Edge=8000-Front*6.;
+   const double Out=(Edge-FX)*Front;if(Out<1.5||Out>40)continue;
+   const bool bHouse=Id.StartsWith(TEXT("H"));
+   const double ZA=RZ-Y1,ZB=RZ-Y0,Half=(ZB-ZA)*.5*(bHouse?.55:1.),ZM=bHouse?RZ-B->GetArrayField(TEXT("door"))[1]->AsNumber():(ZA+ZB)*.5;
+   const double XM=FX+Front*Out*.5;
+   UMaterialInterface* Mat=Id==TEXT("Cinema")||Id==TEXT("Laundry")||Id==TEXT("Sheriff")?Asphalt:Gravel;
+   auto* D=NewObject<UDecalComponent>(W,*FString::Printf(TEXT("LivedLot_%s"),*Id));
+   D->SetupAttachment(TN->Comp.Get());D->SetDecalMaterial(Mat);D->SetFadeScreenSize(0.f);D->SortOrder=-1;
+   // Projected straight down; local Y runs along the frontage (three z), local Z out to the road (three x). V of the picture is 0 at the building.
+   D->DecalSize=FVector(250.f,float(Half*100+60),float(Out*50+40));
+   D->SetWorldLocation(S47Three::ToUE(FVector(XM,Ground(XM,ZM),ZM)));D->SetWorldRotation(FRotator(-90.f,0.f,Front>0?-90.f:90.f));
+   W->AddInstanceComponent(D);D->RegisterComponent();++Lots;
+   // A concrete curb down each side, from the steps out to the shoulder, sitting on the land a segment at a time.
+   if(!bHouse&&Concrete)for(const double Side:{-1.,1.})
+   {
+    const double Z=ZM+Side*(Half+.08);
+    for(double T=2.2;T<Out-.6;T+=1.)
+    {
+     const double X=FX+Front*(T+.5);
+     auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(TN->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Concrete);
+     C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+     C->SetWorldLocation(S47Three::ToUE(FVector(X,Ground(X,Z)+.05,Z)));C->SetWorldScale3D(FVector(.98,.15,.2));
+    }
+   }
+  }
+  S.bTownTried=true;
+  UE_LOG(LogS47Lived,Display,TEXT("S47: Caliche frontages: %d lots with their curbs"),Lots);
+ }
  // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
  void BuildOutside(FState& S,AS47Web* W)
  {
@@ -271,6 +329,7 @@ void S47Lived::Update(US47Main* Main,double Dt)
   if((S.DressNode<0||S.CorridorNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
   BuildOutside(S,W);
   BuildHouseDay(S,W);
+  BuildTown(S,W);
   S.Retry=1;
  }
  Show(S,Main,W,Dt);
