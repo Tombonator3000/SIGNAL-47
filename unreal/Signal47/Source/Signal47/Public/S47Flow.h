@@ -187,7 +187,10 @@ private:
 	void RequestTitle(TFunction<void()> Resume);
 	FDelegateHandle ActivationHandle;
 	FS47NbExtras NotebookExtras() const;
+public:
+	// The case board reads the same view the map draws (bearings, pins).
 	FS47MapView MapView() const;
+private:
 	FS47MapAt MapAt() const;
 	TArray<FS47KitItem> KitItems() const;
 	TArray<FS47PersonCard> PeopleItems() const;

@@ -334,7 +334,7 @@ namespace S47FieldMapLocal
 					Sx += Hx; Sz += Hz; Sxx += Hx * Hx; Szz += Hz * Hz; Sxz += Hx * Hz; ++Hn;
 				}
 				float Deg = 0;
-				FVector2f Mid2(float(Ax), float(Az));
+				FVector2f Mid2{float(Ax), float(Az)};
 				if (Hn > 8)
 				{
 					const double Mx = Sx / Hn, Mz = Sz / Hn, Cxx = Sxx / Hn - Mx * Mx, Czz = Szz / Hn - Mz * Mz, Cxz = Sxz / Hn - Mx * Mz;
