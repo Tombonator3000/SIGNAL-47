@@ -312,7 +312,7 @@ void FS47Animals::StepCovey(double Dt)
 		if (Cv.Age > S47AnimalsLocal::FlightSeconds + 0.6) { Cv.Mode = ECovey::Gone; Cv.Wait = FMath::FRandRange(60.f, 160.f); PoseBirds(); }
 		return;
 	case ECovey::Gone:
-		if ((Cv.Wait -= Dt) <= 0) { Cv.Mode = ECovey::None; Cv.Wait = 0; }
+		if ((Cv.Wait -= Dt) <= 0) { Cv.Mode = ECovey::None; Cv.Wait = FMath::FRandRange(30.f, 120.f); }
 		return;
 	}
 }
