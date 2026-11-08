@@ -11,6 +11,8 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "SS47FieldMap.h"
+#include "Containers/Ticker.h"
+#include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FieldMapDev, Log, All);
 
@@ -68,11 +70,19 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		Said = FString::Printf(TEXT("Map at %s: the arrow is %.1f m off, heading %03.0f for %03.0f"), *Id, Off, Hd, WantHeading);
 		return bOk;
 	};
-	const auto Sheet = [this](double Scale)
+	// The sweep's own picture is the world without the UI: a sweep also takes one with it, once the sheet has been drawn.
+	const auto Pictured = [this](const TCHAR* Kind)
+	{
+		if (SweepDir.IsEmpty()) return;
+		const FString Path = SweepDir / FString::Printf(TEXT("%s-%03d.png"), Kind, SweepIndex);
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Path](float) { FScreenshotRequest::RequestScreenshot(Path, true, false); return false; }), 1.2f);
+	};
+	const auto Sheet = [this, Pictured](double Scale)
 	{
 		S47FieldMap::DevScale(Scale);
 		if (M && M->UI) { M->UI->Close(true); M->UI->NotebookAt(TEXT("map")); }
 		if (M && M->Flow) M->Flow->OpenNotebook();
+		Pictured(TEXT("map"));
 	};
 	for (const FProbeLine& Line : ProbeLines)
 	{
@@ -130,36 +140,37 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 	});
 
 	// ---- the night's log ----
-	E.AddFreeform(MapGroup, TEXT("Night log: a night with things in it, through to 06:00"), TEXT("22:00 at the yard: a light seen, a flat tire, 95 minutes nobody can account for, a rest to six; then the sheet"), [this]
+	E.AddFreeform(MapGroup, TEXT("Night log: a night with things in it, through to 06:00"), TEXT("22:00 at the yard: a light seen, a flat tire, 95 minutes nobody can account for, a rest to six; then the sheet"), [this, Pictured]
 	{
 		// A night of its own: the next day's, so that no line before has typed it already.
 		FStage Stage; Stage.From = 22; Stage.To = 23.5; Stage.Area = TEXT("saro"); Stage.Day = Session() ? Session()->Day() + 1 : 0;
 		Stage.Where = [] { const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 36, -312); return FVector2D(At.X, At.Z); };
-		Go(Stage, [this]
+		Go(Stage, [this, Pictured]
 		{
 			FS47FreeformSession* Fs = Session();
 			if (!Fs || !Fs->NightLog) { Tell(false, TEXT("no night log in this run")); return; }
 			// The sheet keeps no first shift; a developer run may still be in it.
 			Fs->TestEndFirstShift();
-			After(.4, [this]
+			After(.4, [this, Pictured]
 			{
 				FS47FreeformSession* Fs1 = Session(); if (!Fs1) return;
 				Fs1->RecordEvidence(FString::Printf(TEXT("nightlog_check_d%d"), Fs1->Day()), TEXT("At 22:41 a light stood low over the flat north of the station for about a minute, then went out. Nothing on the radio."));
 				if (Fs1->Care) Fs1->Care->TestFlat();
-				After(.4, [this]
+				After(.4, [this, Pictured]
 				{
 					FS47FreeformSession* Fs2 = Session(); if (!Fs2 || !Fs2->NightLog) return;
 					Fs2->NightLog->DevLostTime(95);
-					After(.4, [this]
+					After(.4, [this, Pictured]
 					{
 						FS47FreeformSession* Fs3 = Session(); if (!Fs3 || !Fs3->NightLog) return;
 						const double Six = FS47NightLog::SixOf(FS47FreeformSession::NightOf(Fs3->Clock()));
 						Fs3->TestAdvance(FMath::Max(60.0, Six + 120 - Fs3->Clock()));
-						After(.6, [this]
+						After(.6, [this, Pictured]
 						{
 							FS47FreeformSession* Fs4 = Session(); if (!Fs4 || !Fs4->NightLog) return;
 							if (Fs4->Care) Fs4->Care->Clear();
 							const bool bOk = Fs4->NightLog->DevOpenLast();
+							Pictured(TEXT("log"));
 							Tell(bOk, bOk ? TEXT("The 06:00 night log after a night with things in it") : TEXT("no sheet was typed at 06:00"));
 						});
 					});
@@ -167,28 +178,30 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			});
 		});
 	});
-	E.AddFreeform(MapGroup, TEXT("Night log: type tonight's sheet now"), TEXT("night if it is not; the sheet with what tonight has so far, opened"), [this]
+	E.AddFreeform(MapGroup, TEXT("Night log: type tonight's sheet now"), TEXT("night if it is not; the sheet with what tonight has so far, opened"), [this, Pictured]
 	{
 		FStage Stage; Stage.From = 23; Stage.To = 5.5;
-		Go(Stage, [this]
+		Go(Stage, [this, Pictured]
 		{
 			FS47FreeformSession* Fs = Session();
 			const bool bOk = Fs && Fs->NightLog && Fs->NightLog->DevTypeNow();
+			Pictured(TEXT("log"));
 			Tell(bOk, bOk ? TEXT("Tonight's night log, typed now") : TEXT("no night log in this run"));
 		});
 	});
-	E.AddFreeform(MapGroup, TEXT("Night log: telex the last sheet to Dr. Ward, on to 08:40"), TEXT("sent from OPS, initialed by her office after it opens; the sheet with her line on it"), [this]
+	E.AddFreeform(MapGroup, TEXT("Night log: telex the last sheet to Dr. Ward, on to 08:40"), TEXT("sent from OPS, initialed by her office after it opens; the sheet with her line on it"), [this, Pictured]
 	{
 		FS47FreeformSession* Fs = Session();
 		if (!Fs || !Fs->NightLog || Fs->NightLog->Sheets().IsEmpty()) { Tell(false, TEXT("no night log typed yet: run one of the lines above first")); return; }
 		Fs->NightLog->Send(Fs->NightLog->Sheets().Last().Night);
 		FStage Stage; Stage.From = 8.67; Stage.To = 12;
-		Go(Stage, [this]
+		Go(Stage, [this, Pictured]
 		{
-			After(.6, [this]
+			After(.6, [this, Pictured]
 			{
 				FS47FreeformSession* Fs1 = Session();
 				const bool bOk = Fs1 && Fs1->NightLog && Fs1->NightLog->Sheets().Num() && Fs1->NightLog->Sheets().Last().Read >= 0 && Fs1->NightLog->DevOpenLast();
+				Pictured(TEXT("log"));
 				Tell(bOk, bOk ? FString::Printf(TEXT("Initialed by Dr. Ward's office: %d"), Fs1->NightLog->ReadCount()) : FString(TEXT("not initialed")));
 			});
 		});
