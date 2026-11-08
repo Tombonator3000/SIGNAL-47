@@ -194,6 +194,9 @@ public:
  TSharedPtr<class FS47NightLog> NightLog;
  // The field recorder off the desk by the array's PC, and its cassettes (TAPE-20261108): S47Tape.h.
  TSharedPtr<class FS47Tape> Tape;
+ // The case board's field material, put up at SARO, with the station's loose threads and the player's own (CASEBOARD-20261108):
+ // S47PinBoard.h.
+ TSharedPtr<class FS47PinBoard> PinBoard;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;

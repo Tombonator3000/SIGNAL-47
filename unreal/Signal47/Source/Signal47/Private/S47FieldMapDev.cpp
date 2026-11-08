@@ -14,6 +14,9 @@
 #include "S47Story.h"
 #include "S47Tape.h"
 #include "S47Places.h"
+#include "S47PinBoard.h"
+#include "S47BoardRules.h"
+#include "S47Docs.h"
 #include "S47RoadShape.h"
 #include "S47World.h"
 #include "S47UI.h"
@@ -268,6 +271,59 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			Fs->Tape->UseDesk();
 			Pictured(TEXT("tape"));
 			Tell(true, FString::Printf(TEXT("The desk: %d cassettes"), Fs->Tape->Takes().Num()));
+		});
+	});
+
+	// ---- the case board (CASEBOARD-20261108) ----
+	static const TCHAR* const BoardGroup = TEXT("Case board (M3)");
+	E.AddFreeform(BoardGroup, TEXT("Case board: field records brought back and put up, with threads"), TEXT("two records at the windmill, one behind the church on the same line of inquiry, a Ledger letter naming the windmill pinned from the tray; back at SARO they go up; one thread of your own; the board"), [this, Stand, AtDesk, Pictured]
+	{
+		Stand(TEXT("windmill"), 3, [this, Stand, AtDesk, Pictured](const FVector2D&, double)
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
+			const int32 Dn = Fs->Day();
+			Fs->RecordEvidence(FString::Printf(TEXT("observer.day%d"), Dn), TEXT("F10: small prints in a ring by the windmill, nothing leading in or out."));
+			After(.4, [this, Stand, AtDesk, Pictured, Dn]
+			{
+				FS47FreeformSession* Fs1 = Session(); if (!Fs1) return;
+				Fs1->RecordEvidence(FString::Printf(TEXT("pinboard_mill_d%d"), Dn), TEXT("F10: the brake wire on the windmill, cut and twisted back on itself."));
+				Stand(TEXT("church"), 0, [this, AtDesk, Pictured, Dn](const FVector2D&, double)
+				{
+					FS47FreeformSession* Fs2 = Session(); if (!Fs2 || !M || !M->Story) return;
+					Fs2->RecordEvidence(FString::Printf(TEXT("landing_trace.day%d"), Dn), TEXT("F10: a ring of pressed-down ground behind the church, thirty feet across."));
+					FS47Doc Paper; Paper.Id = FString::Printf(TEXT("dev-ledger-d%d"), Dn); Paper.Kind = TEXT("typed"); Paper.Stamp = TEXT("THE LEDGER");
+					Paper.Title = TEXT("The Caliche County Ledger, letters");
+					Paper.Page = TEXT("LIGHTS AGAIN\nEditor: What sat over the windmill on the Baca lease the other night was not a plane. I would like somebody to tell me what it wasn't. / Baca lease");
+					Paper.Transcript = Paper.Page;
+					M->Story->AddDoc(Paper);
+					const bool bClip = Fs2->PinBoard && Fs2->PinBoard->DevClip(Paper.Id);
+					AtDesk([this, Pictured, Dn, bClip]
+					{
+						After(1.6, [this, Pictured, Dn, bClip]
+						{
+							FS47FreeformSession* Fs3 = Session(); if (!Fs3 || !Fs3->PinBoard || !M) return;
+							FS47PinBoard& Pb = *Fs3->PinBoard;
+							const FString Mine = FString::Printf(TEXT("ff:f:pinboard_mill_d%d"), Dn), Church = FString::Printf(TEXT("ff:f:landing_trace.day%d"), Dn);
+							if (Pb.Book()) Pb.Book()->Connect(Mine, Church, false); // a second time would untie it
+							const int32 Station = Pb.StationThreads().Num();
+							if (M->Board.Open) M->Board.Open(FString(), FString());
+							Pictured(TEXT("board"), 1.5f);
+							const bool bOk = Pb.AtSaro() && Pb.UpCount() >= 4 && Station >= 2 && Pb.ThreadCount() >= 1 && bClip;
+							Tell(bOk, FString::Printf(TEXT("On the board: %d up, %d station threads, %d of your own, clipping %s"), Pb.UpCount(), Station, Pb.ThreadCount(), bClip ? TEXT("up") : TEXT("refused")));
+						});
+					});
+				});
+			});
+		});
+	});
+	E.AddFreeform(BoardGroup, TEXT("Case board: the tray of papers"), TEXT("the papers that are not field material, by the board; one names a place and can be pinned"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
+			Fs->PinBoard->OpenTray();
+			Pictured(TEXT("board"), 1.f);
+			Tell(true, FString::Printf(TEXT("The tray: %d papers"), Fs->PinBoard->Papers().Num()));
 		});
 	});
 

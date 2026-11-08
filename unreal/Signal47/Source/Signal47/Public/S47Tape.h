@@ -4,8 +4,8 @@
 class US47Main;
 struct FS47Sound;
 
-// TAPE-20261108 (Tom, 8 November: "kassettspiller og opptak ... noen ganger er det noe på båndet du ikke hørte"). The Sony TC-D5 on the
-// desk by the array's PC is the station's field recorder. Take it off the desk, record with U (S47Keys "tape") out in the night, bring it back and
+// TAPE-20261108 (Tom, 8 November: "kassettspiller og opptak ... noen ganger er det noe på båndet du ikke hørte"). The portable recorder on
+// the desk by the array's PC is the station's field recorder. Take it off the desk, record with U (S47Keys "tape") out in the night, bring it back and
 // play the cassette on the desk.
 //
 // What is on the tape is what really sounded near the microphone while it ran: every recording the game played there, at its
@@ -27,6 +27,7 @@ public:
  struct FTake
  {
   int32 N=0,Day=0;double Clock=0;FString Where;bool bOutdoors=true;float Seconds=0;
+  double RoadX=0,RoadZ=0;bool bPlaced=false; // where it ran, road-local metres (the case board's place for it)
   TArray<FSound> Sounds;
   FString Odd;float OddAt=-1,OddGain=0; // what is on it that nobody heard: its sound, where on the tape, how loud
   bool bPlayed=false,bOddHeard=false;

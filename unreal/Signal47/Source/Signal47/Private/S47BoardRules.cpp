@@ -45,6 +45,13 @@ TOptional<FS47Result> FS47RuleBook::Connect(const FString& A, const FString& B, 
 	if (!R && !(Owns(A) && Owns(B))) return {};
 	if (bSameCard) return Miss(A, B, { false, S47Board::SAME });
 	TArray<FString>& Links = O.Links();
+	if (!R && O.Free && Owns(A) && Owns(B))
+	{
+		const bool bUntie = Links.Contains(K);
+		if (bUntie) Links.Remove(K); else Links.Add(K);
+		if (O.Save) O.Save();
+		return FS47Result{ true, bUntie ? FString(TEXT("Untied.")) : O.Free(A, B) };
+	}
 	if (Links.Contains(K)) return FS47Result{ true, TEXT("Those two are already connected.") };
 	if (!R) return Miss(A, B, { false, O.Empty.IsEmpty() ? FString(S47Board::EMPTY) : O.Empty });
 	if (!R->Wrong.IsEmpty())
@@ -98,6 +105,11 @@ TArray<FS47BoardThread> FS47RuleBook::Threads() const
 	for (const FString& K : O.Links())
 	{
 		if (const FS47BookRule* R = RuleOf(K)) Out.Add({ R->A, R->B, R->Note.IsEmpty(), false });
+		else if (O.Free)
+		{
+			FString A, B;
+			if (K.Split(TEXT("|"), &A, &B)) Out.Add({ A, B, false, false });
+		}
 	}
 	if (O.Auto) for (const TPair<FString, FString>& T : O.Auto()) Out.Add({ T.Key, T.Value, true, true });
 	return Out;
