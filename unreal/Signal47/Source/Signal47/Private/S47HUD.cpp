@@ -39,6 +39,7 @@
 #include "S47DeputyRound.h"
 #include "S47LeftGear.h"
 #include "S47Places.h"
+#include "S47EventPlaces.h"
 #include "S47Predecessor.h"
 #include "S47RadioTips.h"
 #include "S47Openings.h"
@@ -232,6 +233,7 @@ void AS47HUD::Start()
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= FS47Openings::SelfTest(Lines);

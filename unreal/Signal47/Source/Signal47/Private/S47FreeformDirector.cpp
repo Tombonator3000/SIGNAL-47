@@ -4,6 +4,7 @@
 #include "S47Taken.h"
 #include "S47FieldRadio.h"
 #include "S47FarmSite.h"
+#include "S47EventPlaces.h"
 #include "S47NightRhythm.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -134,7 +135,8 @@ struct FS47FreeformDirector::FEffects
  TArray<TWeakObjectPtr<UStaticMeshComponent>> FarmExtra;
  TArray<FVector> LampScale;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
- FS47Obj Sample,Car;
+ // The fragment has one for each ground it can lie on: SARO's, and the road's for the rest of the land (Tom, 8 November).
+ FS47Obj Sample,SampleRoad,Car;
  TWeakObjectPtr<UStaticMeshComponent> Orb;
  // The mesh stays as the physical record for sight and photographs; these are what is seen.
  TWeakObjectPtr<UNiagaraComponent> OrbFx[FS47DuskOrb::Count];
@@ -234,6 +236,16 @@ struct FS47FreeformDirector::FEffects
    M->Inter->Add(It);
   };
   Register(Mesh(TEXT("FreeformTrace"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(12,.025,-12),FVector(.34,.035,.34),0x9f9c7b),TEXT("FreeformTrace"),TEXT("ff:event-sample"),Sample);
+  // The same fragment on the road's ground, for marked ground anywhere else on the land. One interactable: its ray finds whichever is shown.
+  if(auto* RoadTrace=Mesh(TEXT("FreeformTraceRoad"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(12,.025,-12),FVector(.34,.035,.34),0x9f9c7b))
+  {
+   const int32 RoadRoot=M->Web->Handle(TEXT("world.legs.road.area.group"));
+   if(RoadRoot>=0)
+   {
+    SampleRoad=M->Web->ObjAt(M->Web->AdoptNode(RoadTrace,RoadRoot,TEXT("FreeformTraceRoad")));
+    SampleRoad.SetVisible(false);RoadTrace->SetVisibility(false,false);RoadTrace->SetCollisionEnabled(ECollisionEnabled::NoCollision);M->Web->MarkUsable(SampleRoad.I,TEXT("ff:event-sample"));
+   }
+  }
   auto* Sedan=Mesh(TEXT("FreeformEmptyCar"),TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Sedan.SM_SaroPark_Sedan"),EmptyCarFoot,FVector(1),0xffffff,true);
   if(Sedan)
   {
@@ -250,9 +262,25 @@ struct FS47FreeformDirector::FEffects
   if(!CanTouchWorld())return;
   if(Ufo)Ufo->Hide();
   for(int32 I=0;I<FS47DuskOrb::Count;++I){if(auto* Fx=OrbFx[I].Get())Fx->DeactivateImmediate();if(auto* L=OrbLight[I].Get())L->SetVisibility(false);}
-  for(const FS47Obj O:{Sample,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
+  for(const FS47Obj O:{Sample,SampleRoad,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
   for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false,false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
   for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);
+ }
+ // Shown only where its own ground is: the road's fragment in town and on the land, the rest at SARO.
+ bool IsRoadSample(FS47Obj O)const{return SampleRoad&&O.W==SampleRoad.W&&O.I==SampleRoad.I;}
+ bool OwnArea(FS47Obj O)const
+ {
+  const FString Here=M->Web->Area();
+  return IsRoadSample(O)?Here==TEXT("road")||Here==TEXT("diner"):Here==TEXT("saro");
+ }
+ FS47Obj SampleFor(const FString& Area)const{return (Area==TEXT("road")||Area==TEXT("diner"))&&SampleRoad?SampleRoad:Sample;}
+ // Both fragments where it lies, on whatever is under it there.
+ void PlaceSample(const FVector& At)
+ {
+  if(!CanTouchWorld())return;
+  FVector Foot=At;FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(FreeformTraceGround),true);if(M->Player)Query.AddIgnoredActor(M->Player);
+  if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(At+FVector(0,20,0)),S47Three::ToUE(At-FVector(0,20,0)),ECC_Visibility,Query))Foot.Y=S47Three::ToThree(Hit.ImpactPoint).Y;
+  for(const FS47Obj O:{Sample,SampleRoad})if(O.W==M->Web.Get()&&O)if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))C->SetWorldLocation(S47Three::ToUE(Foot+FVector(0,.025,0)));
  }
  void Physical(FS47Obj O,bool bVisible)
  {
@@ -260,7 +288,7 @@ struct FS47FreeformDirector::FEffects
   // Unconditional node update repairs stale presentation too. A hidden scene
   // or ancestor still wins; component visibility never bypasses its parent.
   M->Web->SetVisible(O.I,bVisible);
-  const bool Presented=bVisible&&O.Shown()&&M->Web->Area()==TEXT("saro");
+  const bool Presented=bVisible&&O.Shown()&&OwnArea(O);
   if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
   {C->SetVisibility(Presented,false);C->SetCollisionEnabled(Presented?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);}
  }
@@ -273,7 +301,7 @@ struct FS47FreeformDirector::FEffects
  }
  UStaticMeshComponent* PresentedComponent(FS47Obj O)const
  {
-  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O||!O.Shown()||M->Web->Area()!=TEXT("saro"))return nullptr;
+  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O||!O.Shown()||!OwnArea(O))return nullptr;
   if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
    if(IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&C->GetOwner()&&!C->GetOwner()->IsHidden())return C;
   return nullptr;
@@ -652,7 +680,12 @@ void FS47FreeformDirector::Draw()
  // Scene visibility can change after the one-shot Apply (including a save
  // restored on the road). Reconcile both native render and query collision
  // whenever the active incident is presented; no gameplay effect is replayed.
- if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
+ if(Event==TEXT("landing_trace"))
+ {
+  if(!bTracePlaced){Effects->PlaceSample(Anchor);bTracePlaced=true;}
+  const FS47Obj Here=Effects->SampleFor(Scene);
+  Effects->Physical(Effects->IsRoadSample(Here)?Effects->Sample:Effects->SampleRoad,false);Effects->Physical(Here,true);
+ }
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  if(auto* Orb=Effects->Orb.Get())
  {
@@ -1133,7 +1166,7 @@ void FS47FreeformDirector::Step(double Dt)
    if(Event==TEXT("roof_steps")&&Near(O.At.GetValue(),12))ObserveVisitor(O.At.GetValue(),true);
   }
  }
- if(Event==TEXT("landing_trace")&&Effects->PresentedComponent(Effects->Sample)&&InView(Anchor,8))ObserveVisitor(Anchor);
+ if(Event==TEXT("landing_trace")&&Effects->PresentedComponent(Effects->SampleFor(Scene))&&InView(Anchor,8))ObserveVisitor(Anchor);
  if(Event==TEXT("quiet_zone")&&M->Audio)
  {const bool Inside=Near(Anchor,5);M->Audio->HoldRoomTone(Inside?.15f:1.f);if(Stage==0&&Inside){Stage=1;Changed();}else if(Stage==1&&!Inside){Stage=2;Changed();}}
  if(Event==TEXT("roof_steps")&&Age>=6&&Near(FVector(9,0,0),8)&&!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))
@@ -1279,7 +1312,7 @@ bool FS47FreeformDirector::PhysicalObjectPresented()const
  if(Event==TEXT("close_pass"))return M&&M->Web&&M->Web->Area()==Scene&&Effects->Ufo&&Effects->Ufo->Presented();
  if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("farm_lights")||Event==TEXT("town_lights"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
- const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
+ const FS47Obj Object=Event==TEXT("landing_trace")?Effects->SampleFor(Scene):Event==TEXT("empty_car")?Effects->Car:FS47Obj();
  const auto* C=Effects->PresentedComponent(Object);
  return C&&(C->GetCollisionEnabled()==ECollisionEnabled::QueryOnly||C->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics)&&C->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;
 }
@@ -1314,7 +1347,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  }
  const FString RoadIncident=M->HighwayUfo?M->HighwayUfo->PhotoIncidentId():FString();
  const bool RoadPhoto=!RoadIncident.IsEmpty();
- if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||M->Web->Area()!=Scene))return;
+ if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||!SameScene()))return;
  auto* Camera=M->FieldCamera.Get();
  auto Qualify=[&](const FVector& At,double Height,const UPrimitiveComponent* Target,double Minimum=.025)->double
  {
@@ -1347,7 +1380,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  }
  else if(!RoadPhoto&&Event==TEXT("landing_trace"))
  {
-  if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
+  if(const auto* C=Effects->PresentedComponent(Effects->SampleFor(Scene)))TaggedQuality=Qualify(Anchor,.35,C);
  }
  else if(!RoadPhoto&&Event==TEXT("empty_car")&&bCarLight&&CarStage>=1)
  {

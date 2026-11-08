@@ -41,7 +41,10 @@ struct FS47EventPlace
  FString DoorKey;  // the door's own name where it has one: a CalicheAccess room id ("Church"), "house:<n>" for the old house
  ES47PlaceTrait Traits=ES47PlaceTrait::None;
  double Radius=12; // about how far it spreads, metres
+ double Up=24;     // how high lights hang over it, metres over the ground
+ FString Prop;     // an interactable at its front ("town:cinema"), measured live where it has one; empty: the land itself
  bool Has(ES47PlaceTrait T) const{return EnumHasAllFlags(Traits,T);}
+ bool HasAny(ES47PlaceTrait T) const{return EnumHasAnyFlags(Traits,T);}
 };
 
 // What an event asks of a place.
@@ -54,6 +57,7 @@ struct FS47PlaceNeed
  double MinM=0;                        // no nearer the player than this, road-local metres (0: any)
  double MaxM=0;                        // no further than this (0: any)
  float FarShare=.2f;                   // how often it may be somewhere far off, seen or heard of, not where the player is going
+ bool bSameArea=false;                 // only where the player is now (its ground is shown): something to be seen from here
  TArray<FString> Only;                 // when not empty: one of these ids
  TArray<FString> Skip;                 // never these
 };
@@ -86,7 +90,7 @@ public:
  // remember the pick: call Used when the event really starts there.
  FS47PlacePick Pick(const FS47PlaceNeed& Need,uint32 Salt=0) const;
  // Pick as above for a given player position, night and seed: no world needed. For tests and the F10 preview.
- FS47PlacePick PickFor(const FS47PlaceNeed& Need,int32 Seed,int32 Night,const FVector2D& PlayerRoad,const FVector2D& HeadingRoad,uint32 Salt=0) const;
+ FS47PlacePick PickFor(const FS47PlaceNeed& Need,int32 Seed,int32 Night,const FVector2D& From,const FVector2D& Ahead,uint32 Salt=0) const;
 
  // Something happened there tonight: the place is weighted down for a few nights, the farm like anywhere else. Saved.
  void Used(const FString& Id,const FString& Kind);
@@ -102,6 +106,15 @@ public:
  // Where the player is, road-local, whatever area they are in. False: no player or no land.
  bool PlayerRoad(FVector2D& Out) const;
 
+ // The place the player is at, or nearest within this many metres that has these traits. Null: none.
+ const FS47EventPlace* Nearest(double WithinM,ES47PlaceTrait Need=ES47PlaceTrait::None) const;
+ const FS47EventPlace* NearestTo(const FVector2D& Road,double WithinM,ES47PlaceTrait Need=ES47PlaceTrait::None) const;
+ // The one whose door this is: a CalicheAccess room id, or "house" for the old house.
+ const FS47EventPlace* WithDoor(const FString& DoorKey) const;
+ FString TitleOf(const FString& Id) const; // "somewhere out there" for an id it does not know
+ // One log line for every event that is given a place: "S47: event place <kind> -> <id> (<title>), <how>".
+ static void LogPick(const FString& Kind,const FS47EventPlace* P,const FString& How);
+
  // F10: an id from the list, or empty for the draw as the game would make it.
  static TArray<FString> Ids();
 
@@ -110,5 +123,10 @@ private:
  US47Main* M=nullptr;
  struct FUse{int32 Night=0;int32 Count=0;FString Kind;};
  TMap<FString,FUse> Uses;
- float Weight(const FS47EventPlace& P,const FS47PlaceNeed& Need,int32 Night,const FVector2D& PlayerRoad,const FVector2D& Heading,bool bFar) const;
+ float Weight(const FS47EventPlace& P,const FS47PlaceNeed& Need,int32 Night,const FVector2D& From,const FVector2D& Ahead,bool bFar) const;
+ // Built once from the table, then seated on the land and measured against the world when it can be.
+ mutable TArray<FS47EventPlace> List;
+ mutable bool bLandSeated=false,bTownMeasured=false,bLiveMeasured=false;
+ void Refine() const;
+ bool Fits(const FS47EventPlace& P,const FS47PlaceNeed& Need) const;
 };
