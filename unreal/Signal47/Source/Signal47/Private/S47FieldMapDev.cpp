@@ -6,7 +6,11 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47NightLog.h"
+#include "S47Keys.h"
 #include "S47OpenLand.h"
+#include "S47Places.h"
+#include "S47RoadShape.h"
+#include "S47World.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -132,6 +136,46 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 	E.AddFreeform(MapGroup, TEXT("Map: SARO, all the way out"), TEXT("on the station's yard, the whole sheet"), [this, Stand, Sheet]
 	{
 		Stand(TEXT("saro_yard"), 1, [this, Sheet](const FVector2D&, double) { Sheet(.1); Tell(true, TEXT("Map at SARO, all the way out")); });
+	});
+	E.AddFreeform(MapGroup, TEXT("Map: at the wheel, southbound on the highway"), TEXT("a free drive from the road's start, the truck driving itself; the arrow must be the cab, in the southbound lane, heading south"), [this, Sheet]
+	{
+		if (!M || !M->World) { Tell(false, TEXT("no world")); return; }
+		M->World->FreeDrive(TEXT("road"));
+		WaitFor([this] { return M && M->World && M->World->bDriving && M->World->CabTruck(); }, 8, [this, Sheet]
+		{
+			M->World->Autopilot = 14.0;
+			After(2.5, [this, Sheet]
+			{
+				double X = 0, Z = 0, Hd = 0; FString Area; bool bDriving = false;
+				const bool bOn = S47FieldMap::Me(M, X, Z, Hd, Area, bDriving);
+				// The road's own lanes: the highway runs north and south along x 0, the southbound lane at x -1.8 (S47RoadShape::START).
+				const double Lane = FMath::Abs(X - S47RoadShape::START.X), Turn = FMath::Abs(FMath::Fmod(Hd - 180.0 + 540.0, 360.0) - 180.0);
+				const bool bOk = bOn && bDriving && Lane <= 2.5 && Turn <= 10;
+				UE_LOG(LogS47FieldMapDev, Display, TEXT("S47: map probe driving %s: area %s, arrow %.1f %.1f, %.1f m off the southbound lane, heading %.1f (south 180)"), bOk ? TEXT("PASS") : TEXT("FAIL"), *Area, X, Z, Lane, Hd);
+				if (M->World) M->World->Autopilot.Reset();
+				Sheet(3);
+				Tell(bOk, FString::Printf(TEXT("Map at the wheel: %.1f m off the southbound lane, heading %03.0f"), Lane, Hd));
+			});
+		}, [this] { Tell(false, TEXT("the free drive did not start")); });
+	});
+	E.AddFreeform(MapGroup, TEXT("Map: a pencil mark of your own, by the keys"), TEXT("at the windmill the sheet opens, X is pressed as from the keyboard: a numbered mark goes down where the sheet is centred, and is kept"), [this, Stand, Sheet]
+	{
+		Stand(TEXT("windmill"), 1, [this, Sheet](const FVector2D&, double)
+		{
+			FS47FreeformSession* Fs = Session();
+			const int32 Before = Fs && Fs->Places ? Fs->Places->MapMarks().Num() : -1;
+			Sheet(4);
+			// The notebook holds the menu's clock while it is open: the keys and the count go on the core ticker.
+			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([](float) { S47Keys::TestPresses(TEXT("X"), .25f); return false; }), .5f);
+			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this, Before](float)
+			{
+				FS47FreeformSession* Fs1 = Session();
+				const int32 After1 = Fs1 && Fs1->Places ? Fs1->Places->MapMarks().Num() : -1;
+				UE_LOG(LogS47FieldMapDev, Display, TEXT("S47: map mark by the keys %s: %d marks before, %d after"), After1 == Before + 1 ? TEXT("PASS") : TEXT("FAIL"), Before, After1);
+				Tell(After1 == Before + 1, FString::Printf(TEXT("Map mark by the keys: %d before, %d after"), Before, After1));
+				return false;
+			}), 1.6f);
+		});
 	});
 	E.AddFreeform(MapGroup, TEXT("Map: the whole sheet"), TEXT("the map zoomed all the way out, on you"), [Sheet] { Sheet(.1); });
 	E.AddFreeform(MapGroup, TEXT("Map: the station, the farm and the motel at once"), TEXT("from the county road turnoff, the scale a driver reads"), [this, Stand, Sheet]
