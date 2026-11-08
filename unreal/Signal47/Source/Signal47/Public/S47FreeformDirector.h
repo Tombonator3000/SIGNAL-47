@@ -31,6 +31,8 @@ public:
  void TestEventPace(double Scale){TestPace=FMath::Clamp(Scale,1.,60.);}
  // How many active seconds a real one is just now (1 outside that run): for whatever else counts a while out in the night.
  double TestPaceNow() const{return TestPace;}
+ // Tests: the director starts nothing of its own, without that counting as the rhythm's rest (which would also stop draws like the field visit).
+ void TestHush(bool bOn){bTestHush=bOn;}
  // The event on the ground leaves the sky to the formations: nothing of it is up there or out in the dark. An instrument, a
  // fault, the fragment, the parked car (its light is FS47Taken's and asks for itself), the room light, a small thing.
  bool LeavesSkyFree() const;
@@ -186,6 +188,7 @@ private:
  // the scheduler's active-time clock faster to match a test's faster world clock (1: none).
  float TestDice=-1;
  double TestLightAfter=-1,TestScale=1,TestPace=1;
+ bool bTestHush=false;
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

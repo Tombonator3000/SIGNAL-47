@@ -36,11 +36,12 @@
 // ---------- the truck
 void FS47TruckCare::Begin(const S47J::FObj& Saved)
 {
- WaterLeft=1;Metres=0;WeekMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;
+ WaterLeft=1;Metres=0;WeekMetres=0;LegMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;
  if(!Saved.IsValid())return;
  const double Week=S47J::Num(Saved,TEXT("weekMetres"));WeekMetres=FMath::IsFinite(Week)?FMath::Clamp(Week,0.,1e7):0;
  const double W=S47J::Num(Saved,TEXT("water"),1);WaterLeft=FMath::IsFinite(W)?FMath::Clamp(W,0.,1.):1;
  bStuck=S47J::Bool(Saved,TEXT("stuck"));bFlat=S47J::Bool(Saved,TEXT("flat"));
+ const double Leg=S47J::Num(Saved,TEXT("legMetres"));LegMetres=FMath::IsFinite(Leg)?FMath::Clamp(Leg,0.,1e6):0;
 }
 S47J::FObj FS47TruckCare::Save() const
 {
@@ -49,6 +50,7 @@ S47J::FObj FS47TruckCare::Save() const
  if(bStuck)S47J::Set(O,TEXT("stuck"),true);
  if(bFlat)S47J::Set(O,TEXT("flat"),true);
  if(WeekMetres>=1)S47J::Set(O,TEXT("weekMetres"),FMath::RoundToDouble(WeekMetres));
+ if(LegMetres>=1)S47J::Set(O,TEXT("legMetres"),FMath::RoundToDouble(LegMetres));
  return O;
 }
 FString FS47TruckCare::StatusLine() const
@@ -57,6 +59,30 @@ FString FS47TruckCare::StatusLine() const
  if(bFlat)return TEXT("Flat tyre. Jack and wheel brace behind the seat.");
  if(Hot())return TEXT("The radiator is dry and the needle is in the red. It will crawl, no more.");
  return WaterLeft<.25?TEXT("The temperature needle is climbing. It wants water soon."):FString();
+}
+FString FS47TruckCare::Steps(int32 Spares,int32 Waters) const
+{
+ if(!NeedsRescue())return FString();
+ FString T;
+ if(bStuck)
+ {
+  T+=TEXT("STUCK IN SAND. The back wheels have dug in; driving only digs deeper.\n");
+  T+=TEXT("1. Get out of the truck (the exit key; the truck cannot move).\n");
+  T+=FString::Printf(TEXT("2. Stand by the truck, look at the cargo rack on the back and use it: SERVICE TRUCK / CARGO opens.\n3. Choose \"Dig it out with the spade\" (the spade is behind the seat, about %.0f minutes).\n"),DigMinutes);
+ }
+ if(bFlat)
+ {
+  T+=Spares>0?TEXT("FLAT TYRE. Jack and wheel brace are behind the seat; the spare wheel is in your pouch (you have it).\n")
+              :TEXT("FLAT TYRE, AND NO SPARE WHEEL. The jack is no use without one. Buy a spare at the Caliche gas station ($15), or call the county tow.\n");
+  T+=FString::Printf(TEXT("%sGet out, use the cargo rack on the truck and choose \"Jack it up and change the wheel\" (about %.0f minutes).\n"),bStuck?TEXT("Then: "):TEXT("1. "),WheelMinutes);
+ }
+ if(Hot())
+ {
+  T+=Waters>0?TEXT("RADIATOR DRY. Get out, use the cargo rack and choose \"Fill the radiator from a can\" (you have water in the pouch). Let it cool first.\n")
+              :TEXT("RADIATOR DRY AND NO WATER. A can of radiator water is $1 at the Caliche gas station. The truck will crawl there, no faster, or call the county tow.\n");
+ }
+ T+=FString::Printf(TEXT("Cannot be mended? Use the cargo rack and choose \"Call the county tow\": $%d (cash, or on the weekly sheet), about %.0f minutes, and the truck is left sound at SARO."),TowFee(),TowMinutes());
+ return T;
 }
 void FS47TruckCare::Hold()
 {
@@ -71,7 +97,7 @@ void FS47TruckCare::Hold()
 void FS47TruckCare::Step(double Dt)
 {
  if(!M||!M->Freeform||!M->World||!M->Freeform->RulesLive())return;
- if(!M->World->bDriving)return;
+ if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;return;} // parked at SARO: the next tow is priced from there
  auto* D=M->World->CabDrive();if(!D)return;
  Hold();
  if(!D->bHandling)return; // The autopilot's road trips have none of this.
@@ -86,18 +112,19 @@ void FS47TruckCare::Step(double Dt)
   if(M->UI)M->UI->Toast(StatusLine(),6);
   UE_LOG(LogTemp,Display,TEXT("S47: truck: radiator dry"));M->RequestAutosave();
  }
+ LegMetres+=Step;
  Metres+=Step;if(Metres<100)return;Metres=0;
  if(bStuck)return;
  const bool bOff=D->Surface.Kind==ES47SurfaceKind::Dirt;
  const float Sand=bOff?SandChance:0.f,Flat=bOff?FlatOffRoad:FlatOnRoad;
  if(FMath::FRand()<Sand)
  {
-  bStuck=true;Hold();if(M->UI)M->UI->Toast(TEXT("The back end sinks and the wheels spin. You are in to the axle."),6);
+  bStuck=true;Hold();if(M->UI)M->UI->Toast(TEXT("The back end sinks and the wheels spin: stuck in sand to the axle. Get out, then use the cargo rack on the truck: \"Dig it out with the spade\". The task list has the steps."),10);
   UE_LOG(LogTemp,Display,TEXT("S47: truck: bogged in sand"));M->RequestAutosave();
  }
  else if(!bFlat&&FMath::FRand()<Flat)
  {
-  bFlat=true;if(M->UI)M->UI->Toast(TEXT("A bang, and the wheel starts to thump. You have a flat."),6);
+  bFlat=true;if(M->UI)M->UI->Toast(TEXT("A bang, and the wheel starts to thump: a flat. Stop and get out, then use the cargo rack on the truck: \"Jack it up and change the wheel\" (needs the spare wheel). The task list has the steps."),10);
   UE_LOG(LogTemp,Display,TEXT("S47: truck: flat tyre"));M->RequestAutosave();
  }
 }
@@ -123,7 +150,7 @@ bool FS47TruckCare::TopUp()
  if(M->UI)M->UI->Toast(TEXT("You fill the radiator from the can and wait for it to stop ticking."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: radiator topped up"));M->RequestAutosave();return true;
 }
-void FS47TruckCare::Clear(){bStuck=bFlat=false;WaterLeft=1;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
+void FS47TruckCare::Clear(){bStuck=bFlat=false;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
 bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
@@ -135,6 +162,17 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
  FS47TruckCare R(nullptr);R.Begin(S47J::Read(S47J::Write(C.Save())));Check(R.Stuck()&&R.Flat()&&R.Water()==0,TEXT("trouble survives a Continue"));
  R.Clear();Check(!R.NeedsRescue()&&R.Water()==1,TEXT("roadside service leaves it sound"));
  auto Bad=S47J::New();S47J::Set(Bad,TEXT("water"),9.);FS47TruckCare X(nullptr);X.Begin(Bad);Check(X.Water()==1,TEXT("nonsense in a save is held in range"));
+ // The strand explains itself and the tow is priced by distance, never above sixty dollars or below thirty-five.
+ FS47TruckCare T(nullptr);T.Begin(nullptr);Check(T.Steps(1,2).IsEmpty(),TEXT("a sound truck has no steps to show"));
+ T.TestStick();T.TestFlat();
+ const FString WithSpare=T.Steps(1,2),NoSpare=T.Steps(0,2);
+ Check(WithSpare.Contains(TEXT("spade"))&&WithSpare.Contains(TEXT("jack"))&&WithSpare.Contains(TEXT("spare wheel"))&&WithSpare.Contains(TEXT("Get out"))&&WithSpare.Contains(TEXT("county tow")),TEXT("a stranded truck says what is wrong, what it needs and where it is"));
+ Check(NoSpare.Contains(TEXT("NO SPARE"))&&NoSpare.Contains(TEXT("$15")),TEXT("a flat with no spare says where to get one"));
+ Check(FS47TruckCare::TowFeeFor(0)==35&&FS47TruckCare::TowFeeFor(4000)==45&&FS47TruckCare::TowFeeFor(1e6)==60&&FS47TruckCare::TowFeeFor(-5)==35,TEXT("the tow costs 35 to 60 dollars by distance"));
+ Check(FS47TruckCare::TowMinutesFor(0)==45.&&FS47TruckCare::TowMinutesFor(1e6)==90.,TEXT("the tow takes 45 to 90 minutes"));
+ T.TestLeg(10000);FS47TruckCare L(nullptr);L.Begin(S47J::Read(S47J::Write(T.Save())));
+ Check(L.TowFee()==60&&FMath::IsNearlyEqual(L.TowMinutes(),75.),TEXT("the distance from SARO survives a Continue"));
+ L.Clear();Check(L.TowFee()==35,TEXT("a truck back at SARO starts the distance again"));
  return OK;
 }
 

@@ -254,6 +254,9 @@ public:
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);
  bool Spend(int32 Amount,bool bEmergency=false);
+ // The county's tow for a truck that cannot be mended: cash if the budget covers it (true), otherwise the whole fee goes on the
+ // weekly sheet as carried arrears (false, capped like any carried bill). Never refused and never touches the requisition.
+ bool BillTow(int32 Fee);
  void Earn(int32 Amount);
  int32 InventoryCount(const FString& Id) const;
  void AddItem(const FString& Id,int32 Count);

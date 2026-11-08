@@ -46,6 +46,10 @@ public:
  EOutcome Result() const{return Outcome;}
  bool HasLeft() const{return bLeft;}
  bool Ringing() const{return bRinging;}
+ // Dr. Ward keeps office hours (WARD-PHONE-20261108): no call to or from him from 21:00 until 08:00. His letters, sheets and
+ // answers wait in the tray and are told the next morning. Clock: the Freeform world clock in seconds.
+ static bool WardHours(double Clock){const double H=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return H>=8.&&H<21.;}
+ bool WardAvailable() const;
  int32 TrayCount() const{return Tray.Num();}
  bool RadioOn() const;
  // The closing order has taken effect: the county power is off, the array stowed, the truck the district's.

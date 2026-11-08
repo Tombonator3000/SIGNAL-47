@@ -7,6 +7,7 @@
 #include "S47EastWing.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47FieldLife.h"
 #include "S47Predecessor.h"
 #include "S47FreeformWorld.h"
 #include "S47Spine.h"
@@ -240,6 +241,10 @@ void US47World::Init(US47Main* InM)
 				// The parked service vehicle itself accepts a held parcel before offering a drive.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
 					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
+				// Bogged, flat or boiling: the handle opens the truck's own help (spade, jack, water, the county tow), not a drive that
+				// would only grind (TRUCK-STRAND-20261108: this menu was reachable only through the cargo rack, which nobody tried).
+				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Care && M->Freeform->Care->NeedsRescue())
+					return { TEXT("Truck in trouble / dig out, change the wheel or call the tow"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
 				// An empty tank offers the way out instead of a drive that cannot move. This is the jeep's
 				// own handle, so it also answers at STATION 01, where the Freeform cargo rack is not drawn.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && !M->Freeform->Field->HasVehicleFuel())

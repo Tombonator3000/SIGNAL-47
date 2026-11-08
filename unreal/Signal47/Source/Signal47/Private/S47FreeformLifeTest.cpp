@@ -40,7 +40,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
  {
   if(Age<3)return;
   M->UI->Close(true);F.TestLiveRules();F.TestEndFirstShift();
-  if(F.Director)F.Director->RestFor(100000);
+  if(F.Director)F.Director->TestHush(true);
   if(M->FieldRadio)M->FieldRadio->TestOwn();
   if(M->FieldCamera)M->FieldCamera->bHave=true;
   ShotsBefore=M->Night&&M->Night->Album?M->Night->Album->Shots().Num():0;
@@ -180,8 +180,12 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   if(!Check(Care.NeedsRescue()&&Care.DigOut()&&Care.ChangeWheel()&&Care.TopUp()&&!Care.NeedsRescue()&&F.Clock()>Before&&F.InventoryCount(TEXT("spare"))==Spare-1&&F.InventoryCount(TEXT("water"))==Water-1,TEXT("spade, jack and can each get the player going again, in time and stock")))return;
   Care.TestStick();Care.TestFlat();
   if(!Check(!Care.ChangeWheel()&&Care.Flat(),TEXT("no spare left: the wheel stays flat, and says so")))return;
-  const double Rescue=F.Clock();F.Field->TestRoadside();
-  if(!Check(!Care.NeedsRescue()&&F.Clock()>=Rescue+15*60,TEXT("roadside service gets the player out of all of it, for time")))return;
+  F.Earn(100);Care.TestLeg(10000);const int32 CashBefore=F.Budget(),FeeDue=Care.TowFee();const double Rescue=F.Clock();F.Field->TestRoadside();
+  if(!Check(!Care.NeedsRescue()&&F.Clock()>=Rescue+75*60-1,TEXT("roadside service gets the player out of all of it, for time (a long way out: 75 minutes)")))return;
+  if(!Check(FeeDue==60&&F.Budget()==CashBefore-FeeDue,TEXT("and the tow is paid in cash: $60 at ten kilometres")))return;
+  Care.TestStick();Care.TestLeg(2000);const int32 OwedBefore=F.Arrears(),FeeShort=Care.TowFee();
+  F.Spend(F.Budget());const int32 Broke=F.Budget();F.Field->TestRoadside();
+  if(!Check(FeeShort==40&&Broke==0&&F.Budget()==0&&F.Arrears()==FMath::Min(int32(FS47FreeformSession::ArrearsCap),OwedBefore+FeeShort)&&!Care.NeedsRescue(),TEXT("with no cash the tow goes on the weekly sheet and is never refused")))return;
   UE_LOG(LogTemp,Display,TEXT("S47: free life: truck care PASS"));
   // The trip camera, left at a place, read in the morning.
   F.Field->TestBuiltTripCamera();
