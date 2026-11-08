@@ -1139,6 +1139,7 @@ bool FS47FreeformDirector::StepCarLight(double Duration)
  {
   const bool bVisit=M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround();
   if(!M->Freeform->TheirHoursNow(M->Freeform->Clock())||!Near(EmptyCarReference,32)||bVisit||M->ModalOpen())return false;
+  // BeginOver asks the night's rules for "taken" (one dangerous meeting a night, the first day free): refused, it is a parked car.
   if(!Tk->BeginOver(ES47Taker::Roswell,TEXT("the car in the staff bay"),EmptyCarFoot))return false;
   CarStage=1;CarLightClock=M->Freeform->Clock();Changed();return true;
  }

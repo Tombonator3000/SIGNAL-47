@@ -195,7 +195,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  return N;
 }
 
-bool FS47Rhythm::Allow(FName Id)
+bool FS47Rhythm::Allow(FName Id,FName Within)
 {
  auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
  if(!F||!F->RulesLive())return true;
@@ -203,7 +203,7 @@ bool FS47Rhythm::Allow(FName Id)
  if(!E)return true;
  // Its own ground does not count against it, and its own needs it has just answered itself.
  FS47RhythmNow Now=ReadNow();
- if(Now.Busy==Id)Now.Busy=NAME_None;
+ if(Now.Busy==Id||(!Within.IsNone()&&Now.Busy==Within))Now.Busy=NAME_None;
  const FS47Verdict V=May(Id,Now);
  if(V.bMay){ShadowSaid.Remove(Id);return true;}
  // Once each time the answer changes: this is asked every frame while it waits.
