@@ -175,6 +175,8 @@ public:
  bool CameraLeftOut() const;
  TSharedPtr<class FS47LeftGear> Gear;
  TSharedPtr<class FS47Places> Places;
+ // Where a night's event happens: one list for the whole land, the farm one place on it (S47EventPlaces.h).
+ TSharedPtr<class FS47EventPlaces> EventPlaces;
  // The operator before you, Ward's review, and the keys (Tom, 7 November).
  TSharedPtr<class FS47Predecessor> Predecessor;
  TSharedPtr<class FS47RadioTips> Tips;

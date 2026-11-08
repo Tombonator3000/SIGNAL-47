@@ -1,4 +1,5 @@
 #include "S47DoorVisit.h"
+#include "S47EventPlaces.h"
 #include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47CalicheAccess.h"
@@ -231,8 +232,12 @@ bool FS47DoorVisit::FindDoor(FTarget& Out) const
  const FString Area=M->Web->Area();
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  const auto Toward=[&](const FVector& Middle,const FVector& Normal){return FVector::DotProduct(FVector(Middle.X-Feet.X,0,Middle.Z-Feet.Z),Normal)>=0?Normal:-Normal;};
+ // Only a door on the list of places (S47EventPlaces) is one it comes to: the old house's, a room in town. The list names it.
+ const FS47EventPlaces* Places=M->Freeform?M->Freeform->EventPlaces.Get():nullptr;
  if(Area==TEXT("saro"))
  {
+  const FS47EventPlace* House=Places?Places->WithDoor(TEXT("house")):nullptr;
+  if(Places&&(!House||!House->Has(ES47PlaceTrait::Door)))return false;
   const FVector Frame=S47DoorVisitLocal::HouseFrame;
   const auto Doors=M->Freeform->HouseDoors;
   // Within the walls, and at a door to the outside: what comes through it comes from out there. The veranda has a roof, but
@@ -245,7 +250,7 @@ bool FS47DoorVisit::FindDoor(FTarget& Out) const
    const double D=FVector2D::Distance(FVector2D(Middle.X,Middle.Z),FVector2D(Feet.X,Feet.Z));
    if(D<1.6||D>=Best)continue;
    Best=D;bFound=true;
-   Out.bHouse=true;Out.Index=I;Out.Name=Doors->NameOf(I);Out.Key=TEXT("ff:olddoor:")+Out.Name;Out.Title=TEXT("the old house");Out.Area=Area;
+   Out.bHouse=true;Out.Index=I;Out.Name=Doors->NameOf(I);Out.Key=TEXT("ff:olddoor:")+Out.Name;Out.Title=House?House->Title:FString(TEXT("the old house"));Out.Area=Area;
    Out.Middle=Middle;Out.Out=Toward(Middle,Doors->Normal(I));
   }
   return bFound;
@@ -255,7 +260,9 @@ bool FS47DoorVisit::FindDoor(FTarget& Out) const
   FString Id;FVector Middle,Normal;
   if(!S47CalicheAccess::RoomAt(Feet,Id)||S47CalicheAccess::IsOpen(Id)||!S47CalicheAccess::DoorAt(Id,Middle,Normal))return false;
   if(FVector2D::Distance(FVector2D(Middle.X,Middle.Z),FVector2D(Feet.X,Feet.Z))<1.2)return false;
-  Out.bHouse=false;Out.Index=INDEX_NONE;Out.Name=Id;Out.Key=TEXT("access:")+Id;Out.Title=S47DoorVisitLocal::TownTitle(Id);Out.Area=Area;
+  const FS47EventPlace* Room=Places?Places->WithDoor(Id):nullptr;
+  if(Places&&(!Room||!Room->Has(ES47PlaceTrait::Door)))return false;
+  Out.bHouse=false;Out.Index=INDEX_NONE;Out.Name=Id;Out.Key=TEXT("access:")+Id;Out.Title=Room?Room->Title:S47DoorVisitLocal::TownTitle(Id);Out.Area=Area;
   Out.Middle=Middle;Out.Out=Toward(Middle,Normal);
   return true;
  }
@@ -294,6 +301,12 @@ void FS47DoorVisit::BeginAt(const FTarget& Found)
  // A door in town gives its height in the street's terms; the room can stand well above that.
  if(M->Player&&FMath::Abs(Target.Middle.Y-M->Player->FloorY)>1.5)Target.Middle.Y=M->Player->FloorY;
  if(M->Rhythm)M->Rhythm->Began(TEXT("door_visit"));
+ if(auto* Places=M->Freeform?M->Freeform->EventPlaces.Get():nullptr)
+ {
+  const FS47EventPlace* P=Places->WithDoor(Target.bHouse?FString(TEXT("house")):Target.Name);
+  if(P)Places->Used(P->Id,TEXT("door_visit"));
+  FS47EventPlaces::LogPick(TEXT("door_visit"),P,FString::Printf(TEXT("the door %s"),*Target.Key));
+ }
  UE_LOG(LogTemp,Display,TEXT("S47: door visit starts at %s, door %s, %.1f m off, at clock %.0f"),*Target.Title,*Target.Key,FVector::Dist(Target.Middle,FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z)),M->Freeform->Clock());
  M->RequestAutosave();
 }

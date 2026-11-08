@@ -1,4 +1,5 @@
 #include "S47IndoorDread.h"
+#include "S47EventPlaces.h"
 #include "S47Rhythm.h"
 #include "S47PaleBody.h"
 #include "Engine/SkeletalMesh.h"
@@ -322,6 +323,13 @@ void FS47IndoorDread::StartPeek(const FS47Cam& Cam,const FCandidate& C)
  Facing=FMath::Atan2(Cam.Pos.X-BasePos.X,Cam.Pos.Z-BasePos.Z);T=Noticed=LeftAt=0;Withdraw=-1;ExposureNow=0;++PeekCount;
  Draw();
  UE_LOG(LogTemp,Display,TEXT("S47: peek starts in %s, %s, %.1f m from the eyes, in view %d, at clock %.0f"),*PeekArea,bWindow?TEXT("window"):TEXT("corner"),FVector::Dist(Cam.Pos,BasePos),C.bInView,M->Freeform->Clock());
+ // Which place on the list it was: the SARO building, the motel, a room in town, the old house.
+ if(auto* Places=M->Freeform->EventPlaces.Get())
+ {
+  const FS47EventPlace* P=Places->Nearest(40,ES47PlaceTrait::Indoors);
+  if(P)Places->Used(P->Id,TEXT("peek"));
+  FS47EventPlaces::LogPick(TEXT("peek"),P,bWindow?TEXT("at a window"):TEXT("round a door"));
+ }
  M->RequestAutosave();
 }
 
@@ -470,7 +478,16 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  const bool bAgain=FMath::FRand()<FloodChance;
  UE_LOG(LogTemp,Display,TEXT("S47: flood room draw for day %d: %d"),Day,bAgain);
  M->RequestAutosave();
- if(bAgain)M->Freeform->Taken->Begin(ES47Taker(FloodWho),FloodTitle);
+ if(bAgain&&M->Freeform->Taken->Begin(ES47Taker(FloodWho),FloodTitle))
+ {
+  // The room once escaped from, wherever it was: the list says which place that is.
+  if(auto* Places=M->Freeform->EventPlaces.Get())
+  {
+   const FS47EventPlace* P=Places->Nearest(40,ES47PlaceTrait::Indoors);
+   if(P)Places->Used(P->Id,TEXT("lit_room"));
+   FS47EventPlaces::LogPick(TEXT("lit_room"),P,FloodTitle);
+  }
+ }
 }
 
 void FS47IndoorDread::Step(double Dt)

@@ -7,6 +7,7 @@ class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
 class ULocalFogVolumeComponent;
+struct FS47EventPlace;
 enum class ES47Clip : uint8;
 
 // Freeform only: what the lights leave behind until the next morning, at the farm or a place in town. Pressed
@@ -129,6 +130,10 @@ private:
  bool bStallSet=false,bNudged=false,bFalseCall=false;
  int32 EmptyTipNight=0;
  bool Hours(double Clock) const;
+ // The place on the list these marks are at (S47EventPlaces), and what its ground is: open, stock, town. Null: not on it.
+ const FS47EventPlace* PlaceOnList() const;
+ bool OpenGround() const;
+ FString GroundKind() const;
  struct FHome{FString Place,Title,Area;FVector Middle=FVector::ZeroVector;int32 Visit=4;};
  FHome Home;
  bool bField=false;
