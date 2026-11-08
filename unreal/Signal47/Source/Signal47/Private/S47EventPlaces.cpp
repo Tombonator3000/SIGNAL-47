@@ -128,6 +128,8 @@ const TArray<FS47EventPlace>& FS47EventPlaces::All() const
  using namespace S47EventPlacesLocal;
  if(List.IsEmpty())
  {
+  // Room for what is measured later (the feeder): pointers handed out stay good.
+  List.Reserve(Seeds().Num()+8);
   for(const FSeed& S:Seeds())List.Add(Make(S));
   // The motel's lot and STATION 01's gate are their own terms' numbers: on the land's here.
   if(FS47EventPlace* Motel=List.FindByPredicate([](const FS47EventPlace& P){return P.Id==TEXT("motel");}))
@@ -186,22 +188,24 @@ void FS47EventPlaces::Refine() const
   }
   bTownMeasured=bAny;
  }
- // The places out on the land and the feeder, as the world put them.
- if(!bLiveMeasured&&M&&M->Freeform&&M->Freeform->Places)
+ // The places out on the land, as the world put them and as some of them drift; now and then, not on every question.
+ const double Now=FPlatformTime::Seconds();
+ if(M&&M->Freeform&&M->Freeform->Places&&Now>=NextMeasure)
  {
-  bLiveMeasured=true;
+  NextMeasure=Now+2;
   for(FS47EventPlace& P:List)if(P.Prop.StartsWith(TEXT("ff:place:")))
   {
    double X=0,Z=0;if(M->Freeform->Places->Spot(P.Id,X,Z)){P.X=P.EntryX=X;P.Z=P.EntryZ=Z;}
   }
-  if(M->Freeform->Field&&!List.ContainsByPredicate([](const FS47EventPlace& P){return P.Id==TEXT("feeder");}))
+ }
+ // The remote feeder, once the station's field has it. Within what was reserved, so nothing handed out moves.
+ if(!bLiveMeasured&&M&&M->Freeform&&M->Freeform->Field&&List.Num()<List.Max())
+ {
+  const FVector At=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));double RX=0,RZ=0;
+  if(!At.IsZero()&&S47OpenLand::RoadOf(TEXT("road"),At.X,At.Z,RX,RZ))
   {
-   const FVector At=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));double RX=0,RZ=0;
-   if(!At.IsZero()&&S47OpenLand::RoadOf(TEXT("road"),At.X,At.Z,RX,RZ))
-   {
-    FS47EventPlace F;F.Id=TEXT("feeder");F.Title=TEXT("the remote feeder on the county road");F.Region=TEXT("station");F.X=F.EntryX=RX;F.Z=F.EntryZ=RZ+6;F.EntryZ=RZ;
-    F.Traits=ES47PlaceTrait::Road|ES47PlaceTrait::Open|ES47PlaceTrait::Far;F.Radius=8;F.Up=20;List.Add(F);
-   }
+   FS47EventPlace F;F.Id=TEXT("feeder");F.Title=TEXT("the remote feeder on the county road");F.Region=TEXT("station");F.X=F.EntryX=RX;F.Z=RZ+6;F.EntryZ=RZ;
+   F.Traits=ES47PlaceTrait::Road|ES47PlaceTrait::Open|ES47PlaceTrait::Far;F.Radius=8;F.Up=20;List.Add(F);bLiveMeasured=true;
   }
  }
 }
@@ -305,6 +309,7 @@ TArray<const FS47EventPlace*> FS47EventPlaces::Matching(const FS47PlaceNeed& Nee
  {
   if(!Fits(P,Need))continue;
   if(Need.bSameArea&&!S47EventPlacesLocal::SameLand(Here,AreaOf(P)))continue;
+  if(Need.bOtherArea&&!Here.IsEmpty()&&S47EventPlacesLocal::SameLand(Here,AreaOf(P)))continue;
   if(bPlayer)
   {
    const double D=FVector2D::Distance(At,FVector2D(P.X,P.Z));
@@ -349,6 +354,7 @@ FS47PlacePick FS47EventPlaces::PickFor(const FS47PlaceNeed& Need,int32 Seed,int3
  {
   if(!Fits(P,Need))continue;
   if(Need.bSameArea&&!SameLand(Here,AreaOf(P)))continue;
+  if(Need.bOtherArea&&!Here.IsEmpty()&&SameLand(Here,AreaOf(P)))continue;
   const double D=bPlayer?FVector2D::Distance(Player,FVector2D(P.X,P.Z)):0;
   if(bPlayer&&((Need.MinM>0&&D<Need.MinM)||(Need.MaxM>0&&D>Need.MaxM)))continue;
   (bPlayer&&D>=FarFrom?Far:Near).Add(&P);

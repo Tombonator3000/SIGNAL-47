@@ -18,6 +18,8 @@ public:
  bool ReadyNight(double Clock) const;
  double NextNightClock() const { return NightClock; }
  int32 NightVisitCount() const { return NightVisits; }
+ // Every visit so far, dusk and night: none yet is the first, which comes where it always has (ARRAY-ORBS).
+ int32 VisitsSoFar() const { return Attempts + NightVisits; }
  // What this visit is, chosen when it starts and saved with it: how many lights come, for how long, and the seed of their flight.
  int32 VisitLights() const { return Lights; }
  double VisitSeconds() const { return Seconds; }

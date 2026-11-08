@@ -149,6 +149,9 @@ private:
  // Marked ground and a fragment: open ground within reach, in the area the player is in. False: none.
  bool PickTrace(FString& OutPlace,FVector& OutAt,bool bForced=false) const;
  bool bTracePlaced=false;
+ // The low lights' visit: which antennas it is over (ARRAY-ORBS). The shift from the first spot is in Anchor, saved.
+ FString OrbPair;
+ void OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPair) const;
  FString TaggedIncident,TaggedTitle;
  bool bTaggedLamps=false;
  int32 IncidentSerial=0;

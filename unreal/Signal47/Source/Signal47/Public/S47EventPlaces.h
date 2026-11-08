@@ -58,6 +58,7 @@ struct FS47PlaceNeed
  double MaxM=0;                        // no further than this (0: any)
  float FarShare=.2f;                   // how often it may be somewhere far off, seen or heard of, not where the player is going
  bool bSameArea=false;                 // only where the player is now (its ground is shown): something to be seen from here
+ bool bOtherArea=false;                // only off the ground the player is on: heard of, a drive away
  TArray<FString> Only;                 // when not empty: one of these ids
  TArray<FString> Skip;                 // never these
 };
@@ -127,6 +128,7 @@ private:
  // Built once from the table, then seated on the land and measured against the world when it can be.
  mutable TArray<FS47EventPlace> List;
  mutable bool bLandSeated=false,bTownMeasured=false,bLiveMeasured=false;
+ mutable double NextMeasure=0;
  void Refine() const;
  bool Fits(const FS47EventPlace& P,const FS47PlaceNeed& Need) const;
 };

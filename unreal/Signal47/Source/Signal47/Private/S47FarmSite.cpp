@@ -1,4 +1,5 @@
 #include "S47FarmSite.h"
+#include "S47EventPlaces.h"
 #include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
@@ -98,8 +99,15 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const FString Area=M->Web->Area();
  Place=TEXT("field");AreaId=Area;Middle=FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  Title=Area==TEXT("saro")?TEXT("the open ground past the SARO fence"):Area==TEXT("diner")?TEXT("the edge of Caliche"):TEXT("the shoulder of the county road");
+ // Wherever the player has walked out to: named for the nearest place on the list, which has had something tonight.
+ if(F.EventPlaces)
+ {
+  const FS47EventPlace* Near=F.EventPlaces->Nearest(500);
+  if(Near){Title=FString::Printf(TEXT("the open ground near %s"),*Near->Title);F.EventPlaces->Used(Near->Id,TEXT("field_visit"));}
+  FS47EventPlaces::LogPick(TEXT("field_visit"),Near,TEXT("where the player is on foot"));
+ }
  Visit=1;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
- VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,FMath::FRand());
+ VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,FMath::FRand());
  UE_LOG(LogTemp,Display,TEXT("S47: field visit begins from the night's own draw, kind %d at %s, night %d"),VisitWho,*Title,Night);
 }
 void FS47FarmSite::RestoreHome()
@@ -127,11 +135,13 @@ void FS47FarmSite::StepEmptyTip()
  if(EmptyTipNight==Night||!F.RulesLive()||!F.QuietNight(Night)||!F.NightStarted(Clock))return;
  EmptyTipNight=Night;
  if(FS47NightRhythm::Roll(F.Seed(),Night,0x54495053u)>=.4f)return;
- static const TCHAR* Places[]={TEXT("the Alderete place"),TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station"),TEXT("the windmill on the Baca lease"),TEXT("the old mine on the west side"),TEXT("the line shack")};
- const int32 Pick=int32(FS47NightRhythm::Roll(F.Seed(),Night,0x50494b45u)*UE_ARRAY_COUNT(Places))%UE_ARRAY_COUNT(Places);
- const FString Tip=SecondCallLine(int32(FS47NightRhythm::Roll(F.Seed(),Night,0x4c494e45u)*SecondCallLines)%SecondCallLines,Places[Pick]);
+ // About somewhere on the list, by the game's seed and the night: the farm no likelier than a wash out on the land.
+ FS47PlaceNeed Need;Need.Kind=TEXT("empty_tip");Need.Any=ES47PlaceTrait::Open|ES47PlaceTrait::Town|ES47PlaceTrait::Farm|ES47PlaceTrait::Lot;Need.MinM=150;Need.FarShare=.5f;
+ const FS47PlacePick Pick=F.EventPlaces?F.EventPlaces->Pick(Need):FS47PlacePick();
+ const FString About=Pick.IsSet()?F.EventPlaces->TitleOf(Pick.Id):FString(TEXT("the Alderete place"));
+ const FString Tip=SecondCallLine(int32(FS47NightRhythm::Roll(F.Seed(),Night,0x4c494e45u)*SecondCallLines)%SecondCallLines,About);
  if(!(M->FieldRadio&&M->FieldRadio->Message(Tip))&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Tip,7);
- UE_LOG(LogTemp,Display,TEXT("S47: a call on a calm night, about %s: nothing there"),Places[Pick]);
+ FS47EventPlaces::LogPick(TEXT("empty_tip"),F.EventPlaces&&Pick.IsSet()?F.EventPlaces->Find(Pick.Id):nullptr,TEXT("a call on a calm night: nothing there"));
  M->RequestAutosave();
 }
 int32 FS47FarmSite::PickWho(const FString& InPlace,double Hour,float Roll)
@@ -141,6 +151,26 @@ int32 FS47FarmSite::PickWho(const FString& InPlace,double Hour,float Roll)
  return Roll<Crab?1:Roll<Crab+Tall?2:0;
 }
 
+const FS47EventPlace* FS47FarmSite::PlaceOnList() const
+{
+ return M&&M->Freeform&&M->Freeform->EventPlaces?M->Freeform->EventPlaces->Find(Place):nullptr;
+}
+bool FS47FarmSite::OpenGround() const
+{
+ if(Place==TEXT("field"))return true;
+ const FS47EventPlace* P=PlaceOnList();
+ return P&&P->Has(ES47PlaceTrait::Open)&&!P->HasAny(ES47PlaceTrait::Town);
+}
+FString FS47FarmSite::GroundKind() const
+{
+ // What the ground is, not which place: far open land is where the crab comes, stock ground next, town least.
+ if(Place==TEXT("field"))return TEXT("field");
+ const FS47EventPlace* P=PlaceOnList();
+ if(!P)return Place;
+ if(P->Has(ES47PlaceTrait::Open)&&P->Has(ES47PlaceTrait::Far)&&!P->HasAny(ES47PlaceTrait::Farm|ES47PlaceTrait::Town))return TEXT("field");
+ if(P->HasAny(ES47PlaceTrait::Farm)||(P->Has(ES47PlaceTrait::Open)&&!P->HasAny(ES47PlaceTrait::Town)))return TEXT("farm");
+ return TEXT("town");
+}
 bool FS47FarmSite::Here() const{return M&&M->Web&&(M->Web->Area()==AreaId||(AreaId==TEXT("road")&&M->Web->Area()==TEXT("diner"))||(AreaId==TEXT("diner")&&M->Web->Area()==TEXT("road")));}
 
 double FS47FarmSite::GroundAt(double X,double Y,double Z) const
@@ -182,8 +212,8 @@ bool FS47FarmSite::Build()
 void FS47FarmSite::Layout()
 {
  if(!bBuilt)return;
- // A tighter ring in town, where the open ground is a street front rather than a pasture.
- const bool bFarm=Place==TEXT("farm");const double Ring=bFarm?4.5:2.4,K=bFarm?1.:.6;
+ // Wide on open ground, as in a pasture; tighter where the open ground is a street front.
+ const bool bWide=OpenGround();const double Ring=bWide?4.5:2.4,K=bWide?1.:.6;
  for(int32 I=0;I<Marks.Num();++I)if(auto* C=Marks[I].Get())
  {
   const double A=2*PI*I/MarkCount,X=Middle.X+FMath::Cos(A)*Ring,Z=Middle.Z+FMath::Sin(A)*Ring;
@@ -275,7 +305,10 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  bFalseCall=Visit==4&&M&&M->Freeform&&M->Freeform->RulesLive()&&FMath::FRand()<.5f;
  // Marks made in the evening get word later, when something can come of it; made now, the tip was word enough.
  bNudged=Hours(Clock);
- if(Place!=TEXT("farm")&&M&&M->Web&&M->Web->GetWorld())
+ // Open ground with nothing built on it takes the marks where the place is; anything with a front of its own, out from it.
+ const FS47EventPlace* OnList=PlaceOnList();
+ const bool bBare=OnList&&OnList->Prop.IsEmpty()&&OnList->Has(ES47PlaceTrait::Open)&&!OnList->HasAny(ES47PlaceTrait::Indoors|ES47PlaceTrait::Town);
+ if(!bBare&&M&&M->Web&&M->Web->GetWorld())
  {
   // The longest clear way out from the front, and a few metres along it.
   double Best=-1;FVector Way=FVector::ForwardVector;
@@ -291,6 +324,7 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  }
  SoundIn=15;Layout();Show(true);
  UE_LOG(LogTemp,Display,TEXT("S47: lights site %s armed in %s at %.1f %.1f %.1f until clock %.0f"),*Place,*AreaId,Middle.X,Middle.Y,Middle.Z,ClearAt);
+ FS47EventPlaces::LogPick(TEXT("marks"),OnList,Visit==0?TEXT("something may come to them"):TEXT("nothing comes to them"));
 }
 
 void FS47FarmSite::SayNudge()
@@ -489,8 +523,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(M->Rhythm&&!M->Rhythm->Allow(TEXT("site_visit")))return;
   if(M->Rhythm)M->Rhythm->Began(TEXT("site_visit"));
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
-  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(Place,FMath::Fmod(Clock,86400.)/3600.,Roll);
+  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
+  if(M->Freeform->EventPlaces){M->Freeform->EventPlaces->Used(Place,TEXT("site_visit"));FS47EventPlaces::LogPick(TEXT("site_visit"),PlaceOnList(),FString::Printf(TEXT("kind %d"),VisitWho));}
  }
  if(Visit<1||Visit>3)return;
  if(M->ModalOpen())return;
@@ -723,9 +758,9 @@ bool FS47FarmSite::Use()
  }
  if(bNew)M->Freeform->RecordEvidence(FindingId(),bFarm
   ?FString(TEXT("Pasture at the Alderete place, the night of the lights. Nine pressed marks in a ring about nine metres across, the grass darkened and laid flat. Cattle, a vehicle or a prank have not been ruled out. Worth a second look by daylight."))
-  :FString::Printf(TEXT("Open ground outside %s, the night of the lights. Nine dark marks in a ring about five metres across. A vehicle, a spill or a prank have not been ruled out. Worth a second look by daylight."),*Title));
+  :FString::Printf(TEXT("Open ground %s %s, the night of the lights. Nine dark marks in a ring about %s metres across. A vehicle, a spill or a prank have not been ruled out. Worth a second look by daylight."),OpenGround()?TEXT("at"):TEXT("outside"),*Title,OpenGround()?TEXT("nine"):TEXT("five")));
  TArray<S47Kit::FW> Rows={
-  S47Kit::Text(bFarm?TEXT("Nine marks in a ring, about nine metres across. The grass is laid flat and darkened, and it is dry here when the ground beside it is not."):TEXT("Nine dark marks in a ring, about five metres across. They do not smear when you scuff one, and the ground feels warm.")),
+  S47Kit::Text(bFarm?TEXT("Nine marks in a ring, about nine metres across. The grass is laid flat and darkened, and it is dry here when the ground beside it is not."):OpenGround()?TEXT("Nine dark marks in a ring, about nine metres across. They do not smear when you scuff one, and the ground feels warm."):TEXT("Nine dark marks in a ring, about five metres across. They do not smear when you scuff one, and the ground feels warm.")),
   S47Kit::Small(bNew?TEXT("Kept as a field record. It says where and what, not who or why."):TEXT("Already in your field records."))};
  if(M->Freeform->TripCamera&&M->Freeform->TripCamera->CanSet())
  {
