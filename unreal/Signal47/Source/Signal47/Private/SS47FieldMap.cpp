@@ -497,7 +497,7 @@ void SS47FieldMap::Construct(const FArguments& InArgs)
 	// Opened after the player has moved: on them. Turned to another tab and back: where it was left.
 	if (View.bMe && FVector2D::Distance(Kept.LastMe, FVector2D(View.MeX, View.MeZ)) > 1.0) CentreOnMe();
 	Clamp();
-	Survey();
+	SurveyWorld();
 }
 
 FVector2D SS47FieldMap::ToPage(double X, double Z) const { return S47FieldMapLocal::Project(Mid, Sc, X, Z); }
@@ -614,7 +614,7 @@ FCursorReply SS47FieldMap::OnCursorQuery(const FGeometry& G, const FPointerEvent
 	return FCursorReply::Cursor(bDrag ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand);
 }
 
-void SS47FieldMap::Survey() const
+void SS47FieldMap::SurveyWorld() const
 {
 	Blocks.Reset(); Dishes.Reset(); Paths.Reset(); Features.Reset();
 	double Sx = 0, Sz = 0;

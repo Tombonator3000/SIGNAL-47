@@ -94,7 +94,7 @@ private:
 	mutable FVector2D SaroAt = FVector2D(33, -300);
 	mutable double SaroZ = -300;
 	// Const: it only fills the drawing caches above, called from painting when the world has changed.
-	void Survey() const;
+	void SurveyWorld() const;
 	void ZoomAbout(double Factor, const FVector2D& Page);
 	void Clamp();
 	void Note(const FVector2D& Road);
