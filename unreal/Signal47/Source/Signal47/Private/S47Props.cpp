@@ -921,6 +921,20 @@ void AS47Props::ApplyTrim(const FString& Model)
 	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s"), *Model, Swapped, Hidden, Stale ? *FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : TEXT(""));
 }
 
+UStaticMeshComponent* AS47Props::PlacedMesh(const FString& Id)
+{
+	if (!Instance.IsValid()) return nullptr;
+	const FPlaced* Found = Instance->Placed.FindByPredicate([&Id](const FPlaced& Pl) { return Pl.Id == Id; });
+	return Found ? Found->Comp.Get() : nullptr;
+}
+
+int32 AS47Props::PlacedNode(const FString& Id)
+{
+	if (!Instance.IsValid()) return -1;
+	const FPlaced* Found = Instance->Placed.FindByPredicate([&Id](const FPlaced& Pl) { return Pl.Id == Id; });
+	return Found ? Found->Node : -1;
+}
+
 double AS47Props::FloorAt(double X, double Z)
 {
 	for (const FFloor& F : Floors)

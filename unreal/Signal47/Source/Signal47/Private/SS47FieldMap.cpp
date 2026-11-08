@@ -1,5 +1,9 @@
 #include "SS47FieldMap.h"
 #include "S47EventPlaces.h"
+#include "S47FieldLife.h"
+#include "S47FreeformWorld.h"
+#include "S47Mail.h"
+#include "S47Predecessor.h"
 #include "S47FarmBuildings.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
@@ -418,6 +422,61 @@ bool S47FieldMap::Truck(const US47Main* M, double& OutX, double& OutZ, double& O
 	return OnSheet(S47J::Str(Kept, TEXT("area")), S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z")), S47J::Num(Pose, TEXT("h")), OutX, OutZ, OutHeading);
 }
 
+void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
+{
+	if (!M || !M->Freeform) return;
+	FS47FreeformSession& Fs = *M->Freeform;
+	const auto Write = [&V](const FString& Area, double X, double Z, const FString& Text)
+	{
+		double Rx = 0, Rz = 0, Hd = 0;
+		if (!OnSheet(Area, X, Z, 0, Rx, Rz, Hd)) return;
+		FS47MapJob Job; Job.X = Rx; Job.Z = Rz; Job.Text = Text;
+		V.Jobs.Add(Job);
+	};
+	// A dish that is down, by its number.
+	if (Fs.Field && Fs.Field->HasArrayFault() && M->Web)
+		for (int32 I = 0; I < M->Web->DishCount(); ++I)
+			if (M->Web->DishId(I) == Fs.Field->ServiceDishId()) { Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Fs.Field->ServiceDishId() + TEXT(" drive fault")); break; }
+	// The feeder, when the station's power is off.
+	if (Fs.PowerFault() && Fs.EventPlaces)
+		if (const FS47EventPlace* Feeder = Fs.EventPlaces->Find(TEXT("feeder"))) { FS47MapJob Job; Job.X = Feeder->EntryX; Job.Z = Feeder->EntryZ; Job.Text = TEXT("fix the feeder"); V.Jobs.Add(Job); }
+	// The round's stops left today.
+	if (Fs.Round && Fs.Field)
+	{
+		const FString Due = Fs.Round->TaskLine();
+		if (!Due.IsEmpty())
+			for (const FString& Stop : FS47DayRound::StopsFor(Fs.Seed(), Fs.Day()))
+			{
+				const FString Name = FS47DayRound::StopName(Stop);
+				if (!Due.Contains(Name)) continue;
+				const FVector At = Fs.Field->InteractionPoint(Stop);
+				if (!At.IsZero()) Write(TEXT("saro"), At.X, At.Z, TEXT("round: ") + Name);
+			}
+	}
+	// Observing work waiting at OPS, and Ward's paper in the tray.
+	{
+		int32 Waiting = 0;
+		for (const auto& J : Fs.Jobs()) Waiting += J.Stage != FS47FreeformSession::EJobStage::Filed && !J.bDuplicateRejected && J.CaseTest < 0 && !Fs.EveningGated(J) ? 1 : 0;
+		FString Ops;
+		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d %s to do"), Waiting, Waiting == 1 ? TEXT("job") : TEXT("jobs"));
+		if (Fs.Predecessor && !Fs.Predecessor->TaskLine().IsEmpty() && Fs.Predecessor->TaskLine().Contains(TEXT("tray"))) Ops += Ops.IsEmpty() ? FString(TEXT("OPS: letter in the tray")) : FString(TEXT(", letter in the tray"));
+		if (!Ops.IsEmpty()) Write(TEXT("saro"), 0, 0, Ops);
+	}
+	// The mailbox's flag.
+	if (Fs.Mail && Fs.Mail->FlagUp() && Fs.Mail->Contents().Num())
+	{
+		FString Area; double X = 0, Z = 0;
+		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(Area, X, Z, TEXT("mail in the box"));
+	}
+	// The truck, when it is in trouble where it stands.
+	if (Fs.Care && Fs.Care->NeedsRescue())
+	{
+		const FString What = Fs.Care->Stuck() ? TEXT("truck: dig it out") : Fs.Care->Flat() ? TEXT("truck: change the wheel") : TEXT("truck: water the radiator");
+		if (V.bTruck) { FS47MapJob Job; Job.X = V.TruckX; Job.Z = V.TruckZ; Job.Text = What; V.Jobs.Add(Job); }
+		else if (V.bDriving && V.bMe) { FS47MapJob Job; Job.X = V.MeX; Job.Z = V.MeZ; Job.Text = What; V.Jobs.Add(Job); }
+	}
+}
+
 FString S47FieldMap::Compass(double Deg)
 {
 	static const TCHAR* const Points[] = { TEXT("north"), TEXT("north-northeast"), TEXT("northeast"), TEXT("east-northeast"), TEXT("east"), TEXT("east-southeast"), TEXT("southeast"), TEXT("south-southeast"),
@@ -616,7 +675,7 @@ FCursorReply SS47FieldMap::OnCursorQuery(const FGeometry& G, const FPointerEvent
 
 void SS47FieldMap::SurveyWorld() const
 {
-	Blocks.Reset(); Dishes.Reset(); Paths.Reset(); Features.Reset();
+	Blocks.Reset(); Dishes.Reset(); DishIds.Reset(); Paths.Reset(); Features.Reset();
 	double Sx = 0, Sz = 0;
 	if (S47OpenLand::RoadOf(TEXT("saro"), 9, 0, Sx, Sz)) { SaroAt = FVector2D(Sx, Sz); SaroZ = Sz; }
 	const auto Block = [](const FString& Area, double XMin, double XMax, double ZMin, double ZMax) -> FBox2D
@@ -650,7 +709,7 @@ void SS47FieldMap::SurveyWorld() const
 		for (int32 I = 0; I < Web->DishCount(); ++I)
 		{
 			double X = 0, Z = 0;
-			if (S47OpenLand::RoadOf(TEXT("saro"), Web->DishX(I), Web->DishZ(I), X, Z)) Dishes.Add(FVector2D(X, Z));
+			if (S47OpenLand::RoadOf(TEXT("saro"), Web->DishX(I), Web->DishZ(I), X, Z)) { Dishes.Add(FVector2D(X, Z)); DishIds.Add(Web->DishId(I)); }
 		}
 		// What stops a walker, where it is the size of a building: the town, the motel, STATION 01's hut, a shed. Not a wall, a
 		// fence, a car or a chair, and not a dish's footing (the dish is drawn as itself).
@@ -853,12 +912,16 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 
 	// ---- the array, the buildings, the land's own features ----
 	if (Sc >= .8) for (const auto& Trail : Paths) Pen.Dashed({ OnPage(Trail.Key.X, Trail.Key.Y), OnPage(Trail.Value.X, Trail.Value.Y) }, Graphite(.6f), .9f, LRoad, { 4, 3 });
-	for (const FVector2D& Dish : Dishes)
+	for (int32 Di = 0; Di < Dishes.Num(); ++Di)
 	{
+		const FVector2D& Dish = Dishes[Di];
 		if (!Visible(Dish.X, Dish.Y, 10)) continue;
 		const FVector2f Ctr = OnPage(Dish.X, Dish.Y);
-		Pen.Lines(Pen.Circle(Ctr, FMath::Max(2.2f, float(3.6 * Sc)), 16), Ink(), 1.1f, LBuilt);
+		const float Rad = FMath::Max(2.2f, float(3.6 * Sc));
+		Pen.Lines(Pen.Circle(Ctr, Rad, 16), Ink(), 1.1f, LBuilt);
 		Pen.Fill(Ctr - FVector2f(1, 1), FVector2f(2, 2), Ink(), LBuilt);
+		// Close enough in to tell them apart: each its number, as the array's PC and the jobs have it.
+		if (Sc >= .9 && DishIds.IsValidIndex(Di)) Pen.Text(DishIds[Di], Ctr + FVector2f(Rad + 3, -Rad - 1), Small(11), Ink(), LWords, 0.f, .5f, true);
 	}
 	for (const FBlock& Bk : Blocks)
 	{
@@ -941,14 +1004,50 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		FVector2D A = From, B = Ray(Sec.Az);
 		if (ClipToFrame(A, B)) Pen.Text(Sec.Label, F2(FMath::Lerp(A, B, .8)), Pencil(24), Lead, LPencilWords, .5f, .5f, true);
 	}
+	// What to look into (heard of on the CB or the radio, in the paper, from Dale or Ward, a bearing's end): a circle with a question
+	// mark and its word. Looked into: the word struck through and ticked. Far out on the sheet only the circles, not the words.
 	for (const FS47MapPin& Pin : View.Pins)
 	{
 		const double X = Pin.East, Z = Pin.South + SaroZ;
 		if (!Visible(X, Z, 40)) continue;
 		const FVector2f Ctr = OnPage(X, Z);
-		if (Pin.bHeard) Pen.Dashed(Pen.Circle(Ctr, 8, 20), Lead, 1.6f, LPencil, { 4, 3 });
-		else Pen.Lines(Pen.Circle(Ctr, 7, 20), Lead, 1.8f, LPencil);
-		Pen.Text(Pin.bHeard ? Pin.Label + TEXT("?") : Pin.Label, Ctr + FVector2f(11, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
+		if (Pin.bHeard)
+		{
+			Pen.Lines(Pen.Circle(Ctr, 9, 22), Lead, 1.7f, LPencil);
+			Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(24), Lead, LPencilWords, .5f, .5f);
+		}
+		else
+		{
+			Pen.Lines(Pen.Circle(Ctr, 6, 18), Lead, 1.5f, LPencil);
+			Pen.Lines({ Ctr + FVector2f(-4, 0), Ctr + FVector2f(-1, 4), Ctr + FVector2f(6, -6) }, Lead, 2.f, LPencil);
+		}
+		if (Sc < .15) continue;
+		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(13, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
+		if (!Pin.bHeard) Pen.Lines({ Ctr + FVector2f(12, 3), Ctr + FVector2f(14 + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2);
+	}
+	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
+	{
+		const FLinearColor Blue = Hue(0x24407f, .95f);
+		TArray<FBox2f> Written;
+		for (const FS47MapJob& Job : View.Jobs)
+		{
+			if (!Visible(Job.X, Job.Z, 600)) continue;
+			const FVector2f Spot = OnPage(Job.X, Job.Z);
+			const FVector2f Size = FPen::Measure(Job.Text, Pencil(26));
+			static const FVector2f Offsets[] = { FVector2f(34, -30), FVector2f(34, 30), FVector2f(-34, -30), FVector2f(-34, 30), FVector2f(34, -64), FVector2f(-34, 64) };
+			FVector2f Corner = Spot + Offsets[0]; bool bLeft = false;
+			for (const FVector2f& Off : Offsets)
+			{
+				const bool bL = Off.X < 0;
+				const FVector2f TopLeft = Spot + Off - FVector2f(bL ? Size.X : 0.f, Size.Y * .5f);
+				const FBox2f Want(TopLeft - FVector2f(4, 2), TopLeft + Size + FVector2f(4, 2));
+				if (!Written.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) { Corner = Spot + Off; bLeft = bL; Written.Add(Want); break; }
+			}
+			Pen.Lines(Pen.Circle(Spot, 5, 16), Blue, 1.8f, LPencil);
+			const FVector2f From = Corner + FVector2f(bLeft ? 4.f : -4.f, 0);
+			Pen.Lines({ From, Spot + (From - Spot).GetSafeNormal() * 7.f }, Blue, 1.6f, LPencil);
+			Pen.Text(Job.Text, Corner, Pencil(26), Blue, LPencilWords, bLeft ? 1.f : 0.f, .5f, true);
+		}
 	}
 	for (const FS47MapNote& Mark : View.Notes)
 	{

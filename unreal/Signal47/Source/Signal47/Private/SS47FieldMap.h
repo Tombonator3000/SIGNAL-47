@@ -30,6 +30,9 @@ namespace S47FieldMap
 	bool Me(const US47Main* M, double& OutX, double& OutZ, double& OutHeading, FString& OutArea, bool& bOutDriving);
 	// Where the truck stands, when the player is not in it.
 	bool Truck(const US47Main* M, double& OutX, double& OutZ, double& OutHeading);
+	// The work the player has now, by its place: a dish that is down, the feeder, the round's stops, the truck in trouble, the tray,
+	// the mailbox's flag, the jobs waiting at OPS. Written on the sheet in ink with a line to the place.
+	void GatherJobs(US47Main* M, FS47MapView& V);
 	// "north-northeast"
 	FString Compass(double Deg);
 	// What V reads on the sheet.
@@ -88,6 +91,7 @@ private:
 	struct FBlock { FBox2D Box; bool bChurch = false; };
 	mutable TArray<FBlock> Blocks;
 	mutable TArray<FVector2D> Dishes;
+	mutable TArray<FString> DishIds; // S-01 to S-27, as the array's PC and the jobs name them
 	mutable TArray<TPair<FVector2D, FVector2D>> Paths; // the array's walks, end to end
 	struct FFeature { FVector2D At; FString Kind; };
 	mutable TArray<FFeature> Features; // windmill, tank, mine, shack, feeder

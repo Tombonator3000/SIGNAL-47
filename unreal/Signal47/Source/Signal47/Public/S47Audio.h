@@ -135,6 +135,8 @@ public:
 	void Listener(const FVector& Pos, const FVector& Forward, const FVector& Up); // listener(cam)
 
 	FS47Play Sfx(const FString& Name, const FS47Sound& O = FS47Sound());   // play(name, o)
+	// (Unreal only) A microphone: told of every recording Sfx plays, with its options, while it is set (FS47Tape records with it).
+	TFunction<void(const FString&, const FS47Sound&)> Tap;
 	FString Or(const FString& Name, const FString& Old = FString()) const; // or(name, old)
 	TSharedPtr<FS47AudioBuffer> Lic(const FString& Name) const;            // lic(name)
 	FS47Play LoopSfx(const FString& Key, const FString& Name, const FS47Sound& O = FS47Sound()); // loop(key, name, o)

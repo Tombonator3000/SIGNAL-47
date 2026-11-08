@@ -96,6 +96,7 @@
 #include "SS47AreaMap.h"
 #include "SS47FieldMap.h"
 #include "S47Places.h"
+#include "S47Tape.h"
 #include "S47Happenings.h"
 #include "S47Predecessor.h"
 #include "SS47Ending.h"
@@ -2095,6 +2096,7 @@ FS47MapView US47Flow::MapView() const
 		if (S47FieldMap::Truck(M, X, Z, Heading)) { V.bTruck = true; V.TruckX = X; V.TruckZ = Z; V.TruckHeading = Heading; }
 		if (M->Freeform && M->Freeform->Places)
 			for (int32 I = 0; I < M->Freeform->Places->MapMarks().Num(); ++I) { const FVector2D& Mk = M->Freeform->Places->MapMarks()[I]; FS47MapNote Note; Note.X = Mk.X; Note.Z = Mk.Y; Note.N = I + 1; V.Notes.Add(Note); }
+		S47FieldMap::GatherJobs(M, V);
 		return V;
 	}
 	V.bStation = ChapterNo(S) >= 3;
@@ -2177,6 +2179,16 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	}
 	// WALKIE-USE-20261108: the set in the player's own hand, and its channel
 	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. A sound alone is not a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
+	// TAPE-20261108: the field recorder, while it is carried; its cassettes either way, once there are any.
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Tape && (M->Freeform->Tape->Carried() || M->Freeform->Tape->Takes().Num()))
+	{
+		const FS47Tape& Tp = *M->Freeform->Tape;
+		Kit.Add({ TEXT("Field recorder"), Tp.Carried()
+			? FString::Printf(TEXT("Sony TC-D5 from the desk by the array's PC, a C-60 in it. %s starts and stops it. Play the cassettes back on that desk."), *S47Keys::Said(TEXT("tape")))
+			: FString(TEXT("On the desk by the array's PC. Its cassettes play back there.")),
+			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the desk / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
+			FString(), FString() });
+	}
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
 	{
