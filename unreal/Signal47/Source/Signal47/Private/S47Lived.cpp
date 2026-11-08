@@ -1,12 +1,16 @@
 #include "S47Lived.h"
 
+#include "S47FarmHouse.h"
 #include "S47Main.h"
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
+#include "S47Sky.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -53,6 +57,7 @@ namespace
   TWeakObjectPtr<UMaterialInstanceDynamic> Green,Amber,Red,Bulb;
   FLinearColor GreenOn=FLinearColor::Black,AmberOn=FLinearColor::Black,RedOn=FLinearColor::Black,BulbOn=FLinearColor::Black;
   TArray<TWeakObjectPtr<ULocalLightComponent>> Lights;
+  TArray<TWeakObjectPtr<URectLightComponent>> HouseDay;
   bool bColliders=false,bMissingSaid=false;
   double T=0,Retry=0,RedNext=0;float RedLevel=1;
  };
@@ -134,6 +139,48 @@ namespace
    UE_LOG(LogS47Lived,Display,TEXT("S47: lived-in control room up: floor %s, dressing %s, %d small lamps, %d solids"),S.FloorNode>=0?TEXT("yes"):TEXT("no"),S.DressNode>=0?TEXT("yes"):TEXT("no"),S.Lights.Num(),int32(UE_ARRAY_COUNT(Solids)));
   }
  }
+ // The one farmhouse by day (T16-15): its small deep windows let in too little for Lumen alone, so the sky comes in through each, as the control room's
+ // windows do (S47SaroRooms WindowSky). Plan metres (S47FarmHouse.cpp Walls): the opening's middle on the inner face, and which way is in.
+ struct FHouseWindow{double PlanX,PlanY,Width;FVector In;};
+ const FHouseWindow HouseWindows[]={
+  {2.5,.3,1.8,FVector(0,0,-1)},{8.,.3,1.2,FVector(0,0,-1)},{10.9,.3,.8,FVector(0,0,-1)},
+  {2.2,8.7,1.8,FVector(0,0,1)},{8.9,8.7,1.8,FVector(0,0,1)},
+  {.3,6.45,1.3,FVector(-1,0,0)},{11.7,6.85,1.3,FVector(1,0,0)},
+ };
+ constexpr float HouseWindowLumens=34.f;
+ void BuildHouseDay(FState& S,AS47Web* W)
+ {
+  if(S.HouseDay.Num()||!S47FarmHouse::HasModel())return;
+  for(int32 I=0;I<UE_ARRAY_COUNT(HouseWindows);++I)
+  {
+   const FHouseWindow& H=HouseWindows[I];
+   // Road-local to the SARO area, as S47FarmHouseDoors puts its leaves.
+   const FVector At=S47FarmHouse::Point(H.PlanX,H.PlanY)+FVector(-24,1.5,300)+H.In*.06;
+   auto* L=NewObject<URectLightComponent>(W,*FString::Printf(TEXT("LivedHouseDay%d"),I));
+   L->SetupAttachment(W->GetRootComponent());L->SetMobility(EComponentMobility::Movable);
+   L->SetWorldLocation(S47Three::ToUE(At));L->SetWorldRotation(S47Three::DirToUE(H.In).Rotation());
+   L->SetSourceWidth(float(H.Width*100));L->SetSourceHeight(115.f);L->SetBarnDoorAngle(70.f);L->SetBarnDoorLength(25.f);
+   L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetAttenuationRadius(900.f);L->SetCastShadows(true);L->SetVolumetricScatteringIntensity(0);
+   L->SetVisibility(false);W->AddInstanceComponent(L);L->RegisterComponent();
+   S.HouseDay.Add(L);
+  }
+ }
+ void ShowHouseDay(FState& S,US47Main* M)
+ {
+  if(!S.HouseDay.Num())return;
+  const bool bArea=M->Mode==US47Main::EMode::Play&&M->IsFreeform()&&M->World&&M->World->Area==TEXT("saro");
+  // Only near the house: seven shadowed rect lights cost nothing when they are off.
+  const FVector Middle=S47FarmHouse::Point(6,4.5)+FVector(-24,0,300);
+  const bool bNear=bArea&&M->Player&&FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()<45;
+  const FS47Sky* Sky=M->Life&&M->Life->Sky.IsValid()?M->Life->Sky.Get():nullptr;
+  const float Day=Sky?float(FMath::Clamp(Sky->Daylight(),0.,1.)):0.f;
+  const FLinearColor Tint=FMath::Lerp(FLinearColor(.92f,.96f,1.f),FLinearColor(1.f,.84f,.66f),Sky?float(Sky->Evening):0.f);
+  for(auto& P:S.HouseDay)if(auto* L=P.Get())
+  {
+   const bool bOn=bNear&&Day>.002f;
+   L->SetIntensity(bOn?HouseWindowLumens*Day:0.f);L->SetLightColor(Tint);L->SetVisibility(bOn);
+  }
+ }
  // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
  void BuildOutside(FState& S,AS47Web* W)
  {
@@ -191,7 +238,9 @@ void S47Lived::Update(US47Main* Main,double Dt)
  {
   if((S.DressNode<0||!S.bColliders)&&!S.bMissingSaid)BuildControl(S,W);
   BuildOutside(S,W);
+  BuildHouseDay(S,W);
   S.Retry=1;
  }
  Show(S,Main,W,Dt);
+ ShowHouseDay(S,Main);
 }
