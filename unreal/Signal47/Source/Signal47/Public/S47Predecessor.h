@@ -21,8 +21,13 @@ public:
  explicit FS47Predecessor(US47Main* Main):M(Main){}
  enum class EOutcome:uint8{None,Stays,KnowsEnough,ClosedOriginals,ClosedNothing,Gone};
  // What the assessment goes by: only what really happened in this game.
- struct FTally{int32 Filed=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0;bool bWagon=false,bGap=false;};
- static constexpr int32 FiledEnough=25,FiledWithCases=15,CasesEnough=2,KnownEnough=10,TakenTooOften=3,FirstAssess=30;
+ // Clean: filed jobs whose recording was tuned well enough to read (critic, 8 November: quality and cases, not a count of cards).
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0;bool bWagon=false,bGap=false;};
+ static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7;
+ static constexpr double CleanQuality=.6;
+ // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
+ // and the work, which counts once it is there and no more for being piled up.
+ static int32 Points(const FTally& T);
  static EOutcome Decide(const FTally& T);
  static const TCHAR* NameOf(EOutcome O);
  static EOutcome OutcomeOf(const FString& Name);
@@ -43,6 +48,9 @@ public:
  bool Ringing() const{return bRinging;}
  int32 TrayCount() const{return Tray.Num();}
  bool RadioOn() const;
+ // The closing order has taken effect: the county power is off, the array stowed, the truck the district's.
+ bool StationClosed() const{return bClosed;}
+ int32 ClosingDay() const{return CloseDay;}
 
  // OPS: what lies in the tray, the keys, and the station's status. SARO: UNDER REVIEW.
  void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
@@ -96,7 +104,11 @@ private:
  TArray<FString> Tray;
  int32 OpensDay=1,AssessDay=FirstAssess,WeekNoted=0,RadioOffDay=-1,NoraState=0,DaleDay=0;
  EOutcome Outcome=EOutcome::None;
- bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false;
+ bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false,bClosed=false,bStowed=false;
+ int32 CloseDay=0;
+ void StepClosing();
+ void Close();
+ void StepWarnings();
  int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
  bool bLetterTold=false,bRinging=false,bRadioLoop=false;

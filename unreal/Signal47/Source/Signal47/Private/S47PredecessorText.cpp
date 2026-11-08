@@ -201,6 +201,7 @@ const TArray<FBark>& Barks()
   {TEXT("branch"),TEXT("branch1"),1,TEXT("You mended a branch. I looked at the line from here. It is a clean joint. Genau. That is the first thing anyone has done right out there since April. Do not get used to me saying it.")},
   {TEXT("filed10"),TEXT("filed10"),1,TEXT("Ten jobs. Ward told me, I did not ask her to. It is almost competent. Keep going.")},
   {TEXT("hole"),TEXT("taken"),1,TEXT("Your log has a hole in it. You write down when it started. You write down when it stopped. Then you call me. In that order, Mensch.")},
+  {TEXT("twice"),TEXT("taken2"),1,TEXT("Twice now. Ward told me. One more and they give your nights to somebody else. After dark you stay in the building. Verstanden?")},
   {TEXT("near"),TEXT("assess3"),1,TEXT("Three days to Ward's assessment. She reads numbers. I have seen your numbers. Stop looking out of the window and file something.")},
  };
  return Table;
@@ -212,30 +213,44 @@ FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess)
  if(bOlderGame)return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nYou were put on nights in a hurry and nobody sat you down, so I will be plain now.\n\nReyes, who had those nights before you, has not been seen since the morning of April 14. The county has the file and I can't add to it. Since then my office has been asked why the county and the district should keep paying for 27 antennas.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nNothing about your pay or the work you've done so far changes. Keep your originals. You'll have a word from me each Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers.\n\nWard"),*Dated,*Assess);
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nWelcome. I will be plain, since nobody else will have been.\n\nThe station has had no night operator since April 14. Reyes, who had the job, has not been seen since that morning. The county has the file and I can't add to it. My office has been asked why the county and the district should keep paying for 27 antennas that nobody is looking after, and I don't have a good answer yet. You are meant to give me one.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nYou should know you got this job because nobody else wanted it. You wrote on your application that you need the money. So you'll understand that I need the numbers. Three jobs come up on the OPS terminal each morning at 08:00. Register what you measure, file what you register, and keep your originals. You'll have a word from me each Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleared. Leave it or clear it as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers. It has been done before.\n\nWard"),*Dated,*Assess);
 }
-FString WeekNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,int32 DaysLeft,const FString& Assess,double Pace)
+FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken)
 {
- const TCHAR* Remark=Pace>=.75?TEXT("That is more than I expected. Keep doing it."):Pace>=.4?TEXT("That is enough to argue with. It is not enough to win."):TEXT("I can't defend that number.");
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\nWEEK %d\n\nFiled so far: %d. Array: %d of 27. Carried on the sheet: $%d.\n\n%s%s\n\nThe assessment is %s, %d days from now.\n\nWard"),Week,Filed,Dishes,Arrears,Remark,Arrears>0?TEXT(" The county will read the carried line first."):TEXT(""),*Assess,DaysLeft);
+ // What she says is what she will assess by: cases carried through, the array, records that can be read. A pile of cards is not it.
+ const TCHAR* Remark=Points>=PointsNeeded?TEXT("If I had to assess today, I could defend it. Keep it that way.")
+  :Points*2>=PointsNeeded?TEXT("That is enough to argue with. It is not enough to win. The county will not count cards: it wants cases carried through, the array mended and records it can read.")
+  :TEXT("I can't defend that. Filing cards is not what I am asked about. Carry a case through, mend the array, keep your records readable.");
+ FString Hours;
+ if(Taken==1)Hours=TEXT("\n\nYour log has a stretch of hours in it that nobody can account for. Write down what you can check. I would rather have that than a story.");
+ else if(Taken>=2)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I have had one operator go missing from this station. I am not going to have another. If it happens again I will put somebody else on nights."),Taken);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\nWEEK %d\n\nFiled so far: %d, of them %d clean enough to read. Cases carried to a conclusion: %d. Array: %d of 27. Carried on the sheet: $%d.\n\n%s%s%s\n\nThe assessment is %s, %d days from now.\n\nWard"),Week,Filed,Clean,Concluded,Dishes,Arrears,Remark,Arrears>0?TEXT(" The county will read the carried line first."):TEXT(""),*Hours,*Assess,DaysLeft);
+}
+FString TakenWarning(const FString& Dated,int32 Taken)
+{
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nThe log has %d stretches in it now where the station has no operator and the operator has no account. I am not asking what happened. I am telling you what I will do.\n\nIf there is another, I will take you off nights and put somebody else on the station, whatever the numbers say. That is not a punishment. It is the only thing I can still do about it.\n\nStay in the building after dark if you can. Keep your originals.\n\nWard"),*Dated,Taken);
+}
+FString ClosedNow(const FString& Dated)
+{
+ return FString::Printf(TEXT("SARO / CLOSING ORDER IN EFFECT\n%s\n\nThe county line was opened at the meter this morning. The array has been driven to stow and left there; nothing points at anything. The district has tagged the truck for its flatbed and has the keys.\n\nThe station's records stay where they are until Dr. Ward signs for them. The building is not locked. There is nobody to lock it.\n\nThe generator still runs if somebody fuels it."),*Dated);
 }
 FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch)
 {
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nI have recommended that the station stay open through the end of the fiscal year, and the county has not argued. That is more than I expected to be writing.\n\nYou are kept on at the same rate. The files on Reyes and on Mara Ortiz stay open and stay with the county.%s\n\nKeep your originals.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,bKnowsMuch?TEXT("\n\nI know how far you've gone into that. I won't ask you to stop. I will ask you to write down what you saw and leave out what you think."):TEXT(""));
 }
-FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears)
+FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn)
 {
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThat isn't enough for me to defend, and I didn't try. SARO closes on %s. You have until then.\n\nThe deputy tells me you found the wagon and went through Reyes's things, and that you keep better notes than the county. It isn't an answer, and I won't pretend it is. It's more than anyone else has.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,WardClose);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThat isn't enough for me to defend, and I didn't try. SARO closes on %s. You have until then.\n\nThe deputy tells me you found the wagon and went through Reyes's things, and that you keep better notes than the county. It isn't an answer, and I won't pretend it is. It's more than anyone else has.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,*CloseOn);
 }
 FString WhatYouKnow()
 {
  return TEXT("What you have, in your hand and in Reyes's: Reyes had the nights at SARO until April 14. Mara Ortiz was called out that same night. The originals of that night are gone from the file. Neither of them has been seen since. Nobody you have spoken to says anything else, and nobody says why.");
 }
-FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos)
+FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos,const FString& CloseOn)
 {
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThat isn't enough. SARO closes on %s, and you'll be paid through the notice.\n\nYour %d originals and %d photographs are the station's record, and nobody is throwing them out. Box them when you're ready and I will sign for them, or keep them until you are sure of me. If anyone asks what they show, tell them what they show.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,WardClose,Originals,Photos);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThat isn't enough. SARO closes on %s, and you'll be paid through the notice.\n\nYour %d originals and %d photographs are the station's record, and nobody is throwing them out. Box them when you're ready and I will sign for them, or keep them until you are sure of me. If anyone asks what they show, tell them what they show.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,*CloseOn,Originals,Photos);
 }
-FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears)
+FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn)
 {
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThere is nothing here I can point to. SARO closes on %s. You'll be paid through the notice, and the county will want the truck back.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,WardClose);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nAssessment. %d jobs filed, %d cases carried to a conclusion, the array at %d of 27, $%d carried on the sheet.\n\nThere is nothing here I can point to. SARO closes on %s. You'll be paid through the notice, and the county will want the truck back.\n\nWard"),*Dated,Filed,Concluded,Dishes,Arrears,*CloseOn);
 }
 FString NextOperator(const FString& Dated,const FString& YourLast,int32 Originals,int32 Photos,int32 Filed)
 {

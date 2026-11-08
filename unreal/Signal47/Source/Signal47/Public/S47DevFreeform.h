@@ -71,6 +71,10 @@ private:
  void ShowPanel(bool bShow);
  bool bNatural=false,bHold=true,bPanelWanted=false,bPanelFull=false,bFlagRead=false;
  double Speed=1,SpeedUsed=1;
+ // -S47NaturalStand=house|field: where the player stands each night from 21:00, as a player might choose to; nothing is started.
+ void StepStand();
+ FString StandPlace;
+ int32 StandNight=0;
  double ScheduleHeld=0; // a line has set the Director's schedule by itself for this long
  FString Holding;
  TSharedPtr<SWidget> Panel;

@@ -189,6 +189,38 @@ FS47AlbumShot FS47Album::Expose()
 	return Shot;
 }
 
+bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FString& Text, const FString& Place, FString& OutId)
+{
+	US47FieldCamera* F = D.Fcam;
+	if (!F || (Look - Eye).IsNearlyZero()) return false;
+	const FVector OldLoc = F->PhotoLoc;
+	const FRotator OldRot = F->PhotoRot;
+	F->PhotoLoc = S47Three::ToUE(Eye);
+	F->PhotoRot = (S47Three::ToUE(Look) - F->PhotoLoc).Rotation();
+	const double Clock = D.Clock ? D.Clock() : 0;
+	const int32 N = Data.Shots.Num();
+	FS47SnapOptions O;
+	O.Before = [this] { if (D.Before) D.Before(); };
+	O.After = [this] { if (D.After) D.After(); };
+	O.Seed = FMath::FloorToDouble(Clock * 1000) + N * 7919 + 13;
+	const bool bSmall = D.Small && D.Small();
+	O.W = bSmall ? 320 : 640;
+	const FS47Snap Snap = F->Snap(O);
+	F->PhotoLoc = OldLoc;
+	F->PhotoRot = OldRot;
+	if (!Snap.bRendered) return false;
+	FS47AlbumShot Shot;
+	Shot.Id = FString::Printf(TEXT("trip%d@%d"), N + 1, int32(FMath::FloorToDouble(Clock + 0.5)));
+	Shot.Url = S47Image::ToDataUrl(Snap.Px, Snap.W, Snap.H, true, bSmall ? 62 : 74);
+	Shot.Clock = Clock; Shot.Place = Place; Shot.Text = Text; Shot.bOdd = true;
+	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
+	// Its own film: one more frame on the books, so Left() is what it was.
+	Data.FilmCapacity += 1;
+	Data.Shots.Add(Shot);
+	OutId = Shot.Id;
+	return true;
+}
+
 bool FS47Album::AddUnbidden(bool bGround)
 {
 	if (Left() <= 0) return false;

@@ -283,7 +283,12 @@ bool FS47FreeformSession::ArrayMotionHeld() const
 {
  return !bActive||bDead||bRecovering||!M||M->bPausedByMenu||(M->World&&M->World->bBusy)||(M->ModalOpen()&&!bTelemetry&&!TerminalOnGlass())||!HasPower();
 }
-bool FS47FreeformSession::HasPower() const {return !bPowerFault||(Field&&Field->HasBackupPower());}
+bool FS47FreeformSession::HasPower() const
+{
+ // Closed: the county line is open at the meter (FS47Predecessor::Close). Only a fuelled generator runs anything.
+ if(Predecessor&&Predecessor->StationClosed())return Field&&Field->HasBackupPower();
+ return !bPowerFault||(Field&&Field->HasBackupPower());
+}
 bool FS47FreeformSession::RequirePower()
 {
  if(HasPower())return true;
@@ -1981,7 +1986,25 @@ int32 FS47FreeformSession::JobPay(const FJob& J)const
 }
 FString FS47FreeformSession::NextReviewText()const
 {
- return FString::Printf(TEXT("DAY %d / $%d"),NextReviewDay(),FMath::Min(ArrearsCap,ReviewPower+ReviewFuel+Carried));
+ const FWeekCosts X=WeekCosts(ReviewWeek+1);
+ return FString::Printf(TEXT("DAY %d / $%d SO FAR"),NextReviewDay(),ReviewPower+ReviewFuel+X.Total()+Carried);
+}
+FS47FreeformSession::FWeekCosts FS47FreeformSession::WeekCosts(int32 Week)const
+{
+ FWeekCosts X;
+ if(!RulesLive()||Week<1)return X;
+ const int32 First=(Week-1)*7+1,Last=Week*7;
+ if(Care){X.Km=Care->WeekDriven()/1000.;X.Wear=FMath::Min(WearCap,int32(X.Km/2.)*WearPerTwoKm);}
+ if(M&&M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())
+ {
+  if(P.LabStage!=3||P.bUnavailable)continue; // developed at the wet bench: the chemicals were used
+  const int32 On=FMath::Max(1,int32(FMath::FloorToDouble((P.Clock-8*3600.)/SecondsPerDay))+1);
+  if(On>=First&&On<=Last)++X.Prints;
+ }
+ X.Film=FMath::Min(FilmCap,X.Prints*FilmPerPrint);
+ for(const FJob& J:Work)if(J.CaseTest<0&&J.Stage==EJobStage::Filed&&J.Day>=First&&J.Day<=Last&&J.RecordingSoundVersion>=2&&J.RecordingQuality<PoorRecordQuality)++X.Poor;
+ X.Fee=FMath::Min(FeeCap,X.Poor*PoorRecordFee);
+ return X;
 }
 void FS47FreeformSession::StepWeeklyReview()
 {
@@ -1990,10 +2013,14 @@ void FS47FreeformSession::StepWeeklyReview()
  while(ReviewWeek<Week)
  {
   ++ReviewWeek;
-  const int32 Before=Carried,Bill=ReviewPower+ReviewFuel+Before;
+  const FWeekCosts X=WeekCosts(ReviewWeek);
+  const int32 Before=Carried,Bill=ReviewPower+ReviewFuel+X.Total()+Before;
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
-  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
+  if(Care)Care->WeekBilled();
+  FString Running=FString::Printf(TEXT("\nTRUCK: TYRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
+  if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
+  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
   UE_LOG(LogTemp,Display,TEXT("S47: weekly review %d: bill %d, paid %d, carried %d, cash %d"),ReviewWeek,Bill,Paid,Carried,Cash);
  }
@@ -2954,6 +2981,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FS47FreeformSession OldGame(nullptr);OldGame.Begin(OldEcon);OldGame.TestLiveRules();OldGame.StepWeeklyReview();
   Check(OldGame.Budget()==60&&OldGame.Arrears()==0,TEXT("Time: an older save on day fifteen is not charged for the weeks behind it"));
   Econ.Stop();EconAgain.Stop();OldGame.Stop();
+  // The running costs: a recording nobody can read costs Ward's re-check on the sheet.
+  FS47FreeformSession Fees(nullptr);Fees.Begin(nullptr);Fees.TestLiveRules();
+  Fees.Work[0].Stage=EJobStage::Filed;Fees.Work[0].CaseTest=-1;Fees.Work[0].Day=1;Fees.Work[0].RecordingSoundVersion=2;Fees.Work[0].RecordingQuality=.1;
+  const int32 FeeStart=Fees.Budget();Fees.TestAdvance(7*86400);Fees.StepWeeklyReview();
+  Check(Fees.Budget()==FeeStart-40-PoorRecordFee&&Fees.FindingText(TEXT("week-review-1")).Contains(TEXT("RE-CHECK")),TEXT("Time: Ward charges for a recording nobody can read, on the sheet, and not much"));
+  Check(WearCap+FilmCap+FeeCap+ReviewPower+ReviewFuel<=100,TEXT("Time: the worst week costs at most $100, under two days' full pay"));
+  Fees.Stop();
   // Being taken, in the session's books.
   FS47FreeformSession Gone(nullptr);Gone.Begin(nullptr);Gone.TestLiveRules();Gone.TestAdvance(86400+17*3600.);
   const double Safe=Gone.Clock();Gone.Work.Last().Stage=EJobStage::Pointed;Gone.TakenAway(5*3600.);const FString Cost=Gone.TakenCosts(Safe);
