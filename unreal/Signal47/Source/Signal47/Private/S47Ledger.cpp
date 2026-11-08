@@ -36,36 +36,50 @@ namespace S47LedgerLocal
   for(int32 K=0;K<Per;++K)Got.Add(Within[((FMath::Max(1,No)-1)*Per+K)%Within.Num()]);
   return Got;
  }
- // A pot's items as the planner sees them: the thread they belong to and the window they may be printed in.
+ // What a paper prints from the pots that tell stories with threads and dates (the county briefs, the plain ads, the letters that
+ // point somewhere and the rest), and the threads they put on the page. Every pot, in this game's own order, gives the first items
+ // that are in their window on the paper's date, were not printed in an earlier paper, and are not on a thread already on the page
+ // (the pots in a fixed order, sharing the page). The earlier papers are played through the same way, all pots together, by their
+ // dates (a paper every Thursday), so what this paper takes is exactly what was not printed before, and a Continue prints the same.
+ // Only the pots decide it: the front page keeps clear of these threads (Front), never the other way round. Only when a pot has run
+ // dry does an item come round again.
  struct FPotItem{FString Thread;int32 First=0,Last=0;};
- // The items of one pot that issue No prints: Per of them, in this game's order, the first that are in their window on the paper's
- // date, were not printed in an earlier issue, and are not on a thread already on this page. The earlier issues are played through
- // by their dates (a paper every Thursday), so a Continue prints the same. Only when a pot has run dry does an item come round again.
- TArray<int32> Plan(const TArray<FPotItem>& Items,int32 Seed,uint32 Salt,int32 No,int32 Per,const FDateTime& Date,TSet<FString>& PageThreads)
+ struct FPlanned{TArray<int32> Locals,PlainAds,LeadLetters,OtherLetters;TSet<FString> Threads;};
+ FPlanned PlanIssue(int32 Seed,int32 No,const FDateTime& Date)
  {
-  const TArray<int32> Ord=Order(Items.Num(),Seed,Salt);
-  TSet<int32> Printed;TArray<int32> Got;
-  for(int32 K=1;K<=FMath::Max(1,No);++K)
+  struct FPot{TArray<FPotItem> Items;TArray<int32> Index,Ord;TSet<int32> Printed;int32 Per=1;TArray<int32> FPlanned::* Into=nullptr;};
+  TArray<FPot> Pots;Pots.SetNum(4);
+  for(int32 I=0;I<X::Locals().Num();++I){const X::FItemDef& D=X::Locals()[I];Pots[0].Items.Add({D.Thread?FString(D.Thread):FString(),D.First,D.Last});Pots[0].Index.Add(I);}
+  for(int32 I=0;I<X::Ads().Num();++I)if(!X::Ads()[I].Coupon){const X::FAdDef& D=X::Ads()[I];Pots[1].Items.Add({FString(),D.First,D.Last});Pots[1].Index.Add(I);}
+  for(int32 I=0;I<X::Letters().Num();++I){const X::FLetterDef& D=X::Letters()[I];FPot& P=Pots[D.Lead?2:3];P.Items.Add({D.Thread?FString(D.Thread):FString(),D.First,D.Last});P.Index.Add(I);}
+  const uint32 Salts[]={101u,104u,106u,107u};const int32 Pers[]={LocalsPer,PlainAdsPer,1,1};
+  TArray<int32> FPlanned::* const Intos[]={&FPlanned::Locals,&FPlanned::PlainAds,&FPlanned::LeadLetters,&FPlanned::OtherLetters};
+  for(int32 P=0;P<4;++P){Pots[P].Ord=Order(Pots[P].Items.Num(),Seed,Salts[P]);Pots[P].Per=Pers[P];Pots[P].Into=Intos[P];}
+  const int32 Last=FMath::Max(1,No);
+  FPlanned Out;
+  for(int32 K=1;K<=Last;++K)
   {
-   const FDateTime On=Date-FTimespan::FromDays(7*(FMath::Max(1,No)-K));
-   const bool bLast=K==FMath::Max(1,No);
-   TSet<FString> Threads=bLast?PageThreads:TSet<FString>();
-   TArray<int32> This;
-   for(const bool bAgain:{false,true})
+   const FDateTime On=Date-FTimespan::FromDays(7*(Last-K));
+   FPlanned Page;
+   for(FPot& Pot:Pots)
    {
-    for(const int32 I:Ord)
+    TArray<int32> This;
+    for(const bool bAgain:{false,true})
     {
-     if(This.Num()>=Per)break;
-     const FPotItem& It=Items[I];
-     if(This.Contains(I)||(!bAgain&&Printed.Contains(I))||!X::InWindow(It.First,It.Last,On)||(!It.Thread.IsEmpty()&&Threads.Contains(It.Thread)))continue;
-     This.Add(I);if(!It.Thread.IsEmpty())Threads.Add(It.Thread);
+     for(const int32 I:Pot.Ord)
+     {
+      if(This.Num()>=Pot.Per)break;
+      const FPotItem& It=Pot.Items[I];
+      if(This.Contains(I)||(!bAgain&&Pot.Printed.Contains(I))||!X::InWindow(It.First,It.Last,On)||(!It.Thread.IsEmpty()&&Page.Threads.Contains(It.Thread)))continue;
+      This.Add(I);if(!It.Thread.IsEmpty())Page.Threads.Add(It.Thread);
+     }
+     if(This.Num()>=Pot.Per)break;
     }
-    if(This.Num()>=Per)break;
+    for(const int32 I:This){Pot.Printed.Add(I);(Page.*Pot.Into).Add(Pot.Index[I]);}
    }
-   for(const int32 I:This)Printed.Add(I);
-   if(bLast){Got=This;PageThreads=Threads;}
+   if(K==Last)Out=MoveTemp(Page);
   }
-  return Got;
+  return Out;
  }
  FString Titled(const FString& St){if(St.IsEmpty())return St;FString Out=St;Out[0]=FChar::ToUpper(Out[0]);return Out;}
  bool NeedsPlace(const TCHAR* Text){return FString(Text).Contains(TEXT("{place}"),ESearchCase::IgnoreCase);}
@@ -169,9 +183,11 @@ TArray<S47Ledger::FStory> S47Ledger::Front(int32 Seed,int32 No,const FDateTime& 
  // The county's own news where the week left room: the search in the first paper; after that the station's review first, then the
  // rest in this game's order, each in its window, one to a thread, and none printed before while another is left.
  const auto& Quiet=X::Quiet();
+ const TSet<FString> PotThreads=L::PlanIssue(Seed,No,Date).Threads;
  const auto OnPage=[&](const X::FFrontDef& D)
  {
   if(!D.Thread)return false;
+  if(PotThreads.Contains(D.Thread))return true;
   for(const FStory& St:Out)if(const X::FFrontDef* Q=L::QuietOf(St.Key))if(Q->Thread&&FCString::Strcmp(Q->Thread,D.Thread)==0)return true;
   return false;
  };
@@ -231,13 +247,9 @@ void S47Ledger::Fill(FIssue& Issue,int32 Seed,bool bHelped)
  namespace L=S47LedgerLocal;namespace X=S47LedgerText;
  const int32 No=FMath::Max(1,Issue.No);
  Issue.Locals.Reset();Issue.Sheriff.Reset();Issue.Ads.Reset();Issue.Letters.Reset();Issue.Week.Reset();
- // The threads already on the front: none of their briefs, letters or ads beside them.
- TSet<FString> Threads;
- for(const FStory& St:Issue.Front)if(const X::FFrontDef* Q=L::QuietOf(St.Key))if(Q->Thread)Threads.Add(Q->Thread);
- {
-  TArray<L::FPotItem> Items;for(const X::FItemDef& D:X::Locals())Items.Add({D.Thread?FString(D.Thread):FString(),D.First,D.Last});
-  for(const int32 I:L::Plan(Items,Seed,101,No,L::LocalsPer,Issue.Date,Threads))Issue.Locals.Add(X::Locals()[I].Text);
- }
+ // The briefs, plain ads and letters, as the pots give them (the front page keeps clear of their threads).
+ const L::FPlanned Plan=L::PlanIssue(Seed,No,Issue.Date);
+ for(const int32 I:Plan.Locals)Issue.Locals.Add(X::Locals()[I].Text);
  // The sheriff's log runs back over the week, a day to an entry: first what the station's nights left that the front had no room
  // for (Issue.Log, kept with the paper), then the usual business.
  {
@@ -255,38 +267,27 @@ void S47Ledger::Fill(FIssue& Issue,int32 Seed,bool bHelped)
   for(const FEntry& E:Entries)Issue.Sheriff.Add(E.Text);
  }
  // Ads: one with a coupon (the catalog's in the first paper, the week the catalog came), two without.
- TArray<int32> WithCoupon,Plain;int32 CatalogAd=-1;
+ TArray<int32> WithCoupon;int32 CatalogAd=-1;
  for(int32 I=0;I<X::Ads().Num();++I)
  {
-  if(!X::Ads()[I].Coupon)Plain.Add(I);
-  else if(FCString::Strcmp(X::Ads()[I].Coupon,TEXT("post0"))==0)CatalogAd=I;
+  if(!X::Ads()[I].Coupon)continue;
+  if(FCString::Strcmp(X::Ads()[I].Coupon,TEXT("post0"))==0)CatalogAd=I;
   else WithCoupon.Add(I);
  }
  TArray<int32> CouponOrder;for(const int32 I:L::Order(WithCoupon.Num(),Seed,103))CouponOrder.Add(WithCoupon[I]);
  const int32 Pick=No==1&&CatalogAd>=0?CatalogAd:CouponOrder.IsEmpty()?-1:L::Take(CouponOrder,No-1,1)[0];
  if(Pick>=0)Issue.Ads.Add({X::Ads()[Pick].Name,X::Ads()[Pick].Body,X::Ads()[Pick].Coupon});
- {
-  TArray<L::FPotItem> Items;for(const int32 I:Plain)Items.Add({FString(),X::Ads()[I].First,X::Ads()[I].Last});
-  for(const int32 K:L::Plan(Items,Seed,104,No,L::PlainAdsPer,Issue.Date,Threads)){const int32 I=Plain[K];Issue.Ads.Add({X::Ads()[I].Name,X::Ads()[I].Body,FString()});}
- }
+ for(const int32 I:Plan.PlainAds)Issue.Ads.Add({X::Ads()[I].Name,X::Ads()[I].Body,FString()});
  {
   const TArray<int32> Films=L::Take(L::Order(X::Films().Num(),Seed,105),No,L::FilmsPer);
   Issue.Showing=FString::Printf(TEXT("%s at 7. %s at 9. Saturday matinee at 2. Adults $2.50, children $1."),X::Films()[Films[0]],X::Films()[Films[1]]);
  }
  // Letters: the trucker's thanks when there is cause for it, one that points somewhere, one that does not.
  if(bHelped)Issue.Letters.Add({X::Thanks().Head,X::Thanks().Body,FString()});
+ for(const TArray<int32>* Group:{&Plan.LeadLetters,&Plan.OtherLetters})for(const int32 I:*Group)
  {
-  TArray<int32> Leads,Others;
-  for(int32 I=0;I<X::Letters().Num();++I)(X::Letters()[I].Lead?Leads:Others).Add(I);
-  for(const TArray<int32>* Group:{&Leads,&Others})
-  {
-   TArray<L::FPotItem> Items;for(const int32 I:*Group){const X::FLetterDef& D=X::Letters()[I];Items.Add({D.Thread?FString(D.Thread):FString(),D.First,D.Last});}
-   for(const int32 K:L::Plan(Items,Seed,Group==&Leads?106u:107u,No,1,Issue.Date,Threads))
-   {
-    const X::FLetterDef& D=X::Letters()[(*Group)[K]];
-    Issue.Letters.Add({D.Head,D.Body,D.Lead?FString(D.Lead):FString()});
-   }
-  }
+  const X::FLetterDef& D=X::Letters()[I];
+  Issue.Letters.Add({D.Head,D.Body,D.Lead?FString(D.Lead):FString()});
  }
  // The weather: what the forecaster says for the five days from the issue, and what the week before was in Caliche: the sky's own.
  for(int32 K=0;K<5;++K)
