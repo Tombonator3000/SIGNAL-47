@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## M1 Verden som lever, Claude Code 8. november ettermiddag
+
+Tom ca. 15: kjør på med milepælene, M1 først. Kopier: `~/SIGNAL-47` (Claude, `claude/m1-20261108`, koordinator, bygger og installerer), `~/SIGNAL-47-cosmic` (Codex), og høyst to agent-worktrees: A stedskatalog og hendelser hvor som helst (ANYWHERE, ARRAY-ORBS), B natthendelser 1-8 og geigerteller (NIGHT31, GEIGER). Én tung motorjobb om gangen via `q.py`.
+
 ## Dagskift 7. november, Claude Code
 
 Etter Toms test ca. 16:30: T16-punktene i TODO. Kopier: `~/SIGNAL-47` (Claude, `claude/day-d-20261107`, koordinator), `~/SIGNAL-47-cosmic` (Codex), og to worktrees: utseende, spillbarhet. Øvrige agenter leverer patcher og assets. Én tung motorjobb om gangen.
