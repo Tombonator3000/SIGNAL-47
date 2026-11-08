@@ -139,6 +139,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		{
 			FS47FreeformSession* Fs = Session();
 			if (!Fs || !Fs->NightLog) { Tell(false, TEXT("no night log in this run")); return; }
+			// The sheet keeps no first shift; a developer run may still be in it.
+			Fs->TestEndFirstShift();
 			After(.4, [this]
 			{
 				FS47FreeformSession* Fs1 = Session(); if (!Fs1) return;
