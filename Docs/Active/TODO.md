@@ -13,7 +13,7 @@ Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri 
 
 Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvorlige feil, og prøvene består. Punktene under refererer til TODO-ID-ene nedenfor.
 
-- [ ] **M1 Verden som lever (hendelser hvor som helst).** ANYWHERE, ARRAY-ORBS, NIGHT31 (alle 31), forslag 1-8, GEIGER. Prøve: naturlig flernatt med hendelser på minst fire steder og noe hver natt.
+- [ ] **M1 Verden som lever (hendelser hvor som helst).** ANYWHERE, ARRAY-ORBS, NIGHT31 (alle 31), forslag 1-8, GEIGER, UNEASE (uro). Prøve: naturlig flernatt med hendelser på minst fire steder og noe hver natt.
 - [ ] **M2 Ute i natta.** TRUCK-STRAND (dekk, sand, berging koster), HUD (batteri, frekvens), WALKIE-USE, CB-WALKIE, WARD-PHONE, SNEAK, STRESS, GEAR-FLICKER, SOUNDSCAPE, ANIMALS.
 - [ ] **M3 Etterforskning.** TAPE, CASEBOARD, ENLARGE, NIGHTLOG, WARD-REPORT, MAILBOX, MAP (zoom og posisjon), ANSWER.
 - [ ] **M4 Folk og steder.** TOWNSFOLK, NEIGHBOR, ENTHUSIASTS, MILITARY, MOTEL-SLEEP, nye Tripo-figurer (TRIPO-NEW), humorhendelser.
@@ -84,6 +84,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **MOON-20261108: månefaser:** fullmåne gir lysere og roligere natt, nymåne mørkere og mer aktivitet.
 - [ ] **MILITARY-20261108: militæret:** sjeldne helikoptre og svarte biler etter store hendelser; noen tar bevis før du kommer.
 - [ ] **MOTEL-SLEEP-20261108: overnatting på motellet** som alternativ til SARO, med andre farer og lyder.
+- [ ] **UNEASE-20261108: uro, små ting som bygger psykologisk skrekk.** Toms ord: «bil alarm som går av, banking på døren men ingen der, sånne ting». 25 forslag og regler i `Docs/Design/Director/URO.md`. Hører til M1.
 - [ ] **GEIGER-20261108: spilleren kan lage en geigerteller eller lignende måler** som slår ut der UFO-er har landet (svidd ring, landingsspor, steder fra peiling). Del av fremgangen, laget av deler.
 - [ ] **MOTEL-REAL-20261108: realisme for motellet,** særlig kontoret: inverterte vegger og tv som ikke virker. Gjenbruk interiørmodeller fra andre steder der det passer.
 
