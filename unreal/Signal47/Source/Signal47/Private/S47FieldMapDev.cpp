@@ -80,11 +80,12 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		return bOk;
 	};
 	// The sweep's own picture is the world without the UI: a sweep also takes one with it, once the sheet has been drawn.
-	const auto Pictured = [this](const TCHAR* Kind)
+	// Delay: after a line's last step the sweep moves on in half a second, so a picture taken as it ends is taken sooner.
+	const auto Pictured = [this](const TCHAR* Kind, float Delay = 1.2f)
 	{
 		if (SweepDir.IsEmpty()) return;
 		const FString Path = SweepDir / FString::Printf(TEXT("%s-%03d.png"), Kind, SweepIndex);
-		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Path](float) { FScreenshotRequest::RequestScreenshot(Path, true, false); return false; }), 1.2f);
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Path](float) { FScreenshotRequest::RequestScreenshot(Path, true, false); return false; }), Delay);
 	};
 	const auto Sheet = [this, Pictured](double Scale)
 	{
@@ -251,7 +252,7 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 						const FS47Tape::FTake& Tk = Fs4->Tape->Takes().Last();
 						const bool bOk = bCaught && Tk.bOddHeard && Fs4->HasFinding(FString::Printf(TEXT("tape_%d"), Tk.N));
 						if (M && M->Story && M->UI) for (const FS47Doc& D : M->Story->Docs()) if (D.Id == FString::Printf(TEXT("freeform-tape_%d"), Tk.N)) { M->UI->Document(D); break; }
-						Pictured(TEXT("tape"));
+						Pictured(TEXT("tape"), .3f);
 						Tell(bOk, FString::Printf(TEXT("Tape %d: %d sounds, %s at %.1f s, %s"), Tk.N, Tk.Sounds.Num(), Tk.Odd.IsEmpty() ? TEXT("nothing else") : *Tk.Odd, Tk.OddAt, Tk.bOddHeard ? TEXT("heard on the desk and kept") : TEXT("not heard")));
 					});
 				});
