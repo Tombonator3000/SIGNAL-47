@@ -23,6 +23,8 @@ public:
  // Developer menu: the next one now, whatever the waiting. False: there is none left that fits.
  bool DevCb();
  bool DevAm();
+ // A CB line as said: once, and what it points at heard of. Called when its first word comes over the CB (CB-WALKIE-20261108).
+ void MarkSaid(const FString& Id);
 private:
  US47Main* M=nullptr;
  TSet<FString> Used;

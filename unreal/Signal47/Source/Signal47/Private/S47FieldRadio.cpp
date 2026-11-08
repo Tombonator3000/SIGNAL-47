@@ -330,7 +330,7 @@ bool FS47FieldRadio::CbAtHand(const US47Main* M)
   if(M->Web->Rect(ZoneName).Contains(M->Player->Pos))return true;
  return false;
 }
-bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FString& Voice)
+bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FString& Voice,TFunction<void()> OnBegun)
 {
  if(!M||Lines.IsEmpty())return false;
  if(!M->CB.IsValid()&&IsValid(M->Audio))M->CB=MakeShared<FS47CB>(M->Audio);
@@ -341,7 +341,12 @@ bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FStrin
  TOptional<FVector> From;
  if(!(M->World&&M->World->bDriving)&&M->Player)From=M->Player->Pos+FVector(.6,1.1,-.4);
  TWeakObjectPtr<US47Main> WeakMain=M;
- const double Took=M->CB->Call(Call,From,[WeakMain](const FS47CBLine& Line,double Secs){if(WeakMain.IsValid()&&WeakMain->UI)WeakMain->UI->Toast(TEXT("CB: ")+Line.Text,float(Secs)+1.5f);});
+ const TSharedRef<bool> bFirst=MakeShared<bool>(true);
+ const double Took=M->CB->Call(Call,From,[WeakMain,OnBegun,bFirst](const FS47CBLine& Line,double Secs)
+ {
+  if(*bFirst){*bFirst=false;if(OnBegun)OnBegun();}
+  if(WeakMain.IsValid()&&WeakMain->UI)WeakMain->UI->Toast(TEXT("CB: ")+Line.Text,float(Secs)+1.5f);
+ });
  return Took>0;
 }
 void FS47FieldRadio::Report(US47Main* M,const FString& Tip)

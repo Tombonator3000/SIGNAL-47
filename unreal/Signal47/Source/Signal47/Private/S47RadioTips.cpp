@@ -112,6 +112,8 @@ void FS47RadioTips::Step(double Dt)
 }
 void FS47RadioTips::StepCb()
 {
+ // Only where there is a CB: the truck, or the base set in the SARO building. Never on foot.
+ if(!FS47FieldRadio::CbAtHand(M))return;
  // Several that mean nothing for each that does; each line once in a game, until there are none left.
  TArray<const FLine*> Plain,Telling;
  for(const FLine& L:CbLines())
@@ -123,14 +125,23 @@ void FS47RadioTips::StepCb()
  const bool bTell=!Telling.IsEmpty()&&(Plain.IsEmpty()||FMath::FRand()<.2f+.1f*M->Freeform->TownTrust());
  const auto& Pool=bTell?Telling:Plain;if(Pool.IsEmpty())return;
  const FLine* L=Pool[FMath::RandRange(0,Pool.Num()-1)];
- // CB-WALKIE-20261108: out of the CB's own speaker and on its HUD line, in a driver's voice. Busy with another call: soon again.
+ // CB-WALKIE-20261108: out of the CB's own speaker and on its HUD line, in a driver's voice, and said once it has really begun: a
+ // call cut off before its first word can come again. Busy with another call: soon again.
  static const TCHAR* const Drivers[]={TEXT("man"),TEXT("old"),TEXT("man"),TEXT("woman")};
- if(!FS47FieldRadio::CbSay(M,{FString(L->Text)},Drivers[FCrc::StrCrc32(L->Id)%4]))
- {
-  if(M->CB.IsValid()&&M->CB->bBusy){CbIn=FMath::Min(CbIn,12.);return;}
-  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
- }
- Used.Add(L->Id);
+ const FString SaidId=L->Id;const TWeakObjectPtr<US47Main> WeakMain=M;
+ const auto Begun=[WeakMain,SaidId]{if(WeakMain.IsValid()&&WeakMain->Freeform&&WeakMain->Freeform->Tips)WeakMain->Freeform->Tips->MarkSaid(SaidId);};
+ if(FS47FieldRadio::CbSay(M,{FString(L->Text)},Drivers[FCrc::StrCrc32(L->Id)%4],Begun))return;
+ if(M->CB.IsValid()&&M->CB->bBusy){CbIn=FMath::Min(CbIn,12.);return;}
+ // No sound to play it with: the words.
+ if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
+ MarkSaid(SaidId);
+}
+void FS47RadioTips::MarkSaid(const FString& Id)
+{
+ if(!M||!M->Freeform||Used.Contains(Id))return;
+ const FLine* L=CbLines().FindByPredicate([&Id](const FLine& Each){return Id==Each.Id;});
+ if(!L)return;
+ Used.Add(Id);
  if(L->Place&&M->Freeform->Places)M->Freeform->Places->Hear(L->Place);
  UE_LOG(LogTemp,Display,TEXT("S47: CB %s%s"),L->Id,L->Place?TEXT(" (points somewhere)"):TEXT(""));
  M->RequestAutosave();
@@ -203,9 +214,10 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
 
 bool FS47RadioTips::DevCb()
 {
- const int32 Before=Used.Num();
+ // Said at once with no sound, or begun on the CB (marked said as its first word comes).
+ const int32 Before=Used.Num();const bool bWasBusy=M&&M->CB.IsValid()&&M->CB->bBusy;
  if(M&&M->Freeform)StepCb();
- return Used.Num()>Before;
+ return Used.Num()>Before||(!bWasBusy&&M&&M->CB.IsValid()&&M->CB->bBusy);
 }
 
 bool FS47RadioTips::DevAm()

@@ -1036,7 +1036,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  E.AddFreeform(K,TEXT("CB: the next line"),TEXT("the next that fits; each once in a game, and most mean nothing"),[this]
  {
   auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevCb();
-  if(!bSaid)Tell(false,TEXT("no CB line left that fits this game, or the CB is busy with another call: try again in a moment"));else{bLastOk=true;LastText=TEXT("a CB line");}
+  if(!bSaid)Tell(false,TEXT("no CB here (the truck or the SARO building), the CB is busy with another call, or no line is left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
  });
  // WALKIE-USE-20261108, CB-WALKIE-20261108 and SNEAK-20261108: the walkie in your own hand, the CB apart from it, keeping low.
  E.AddFreeform(K,TEXT("Walkie: Dale calls you"),TEXT("gives you the set on channel 1; T answers within 18 s, or he gives up and it goes on the slip by the phone"),[this]

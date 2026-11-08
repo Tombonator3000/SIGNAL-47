@@ -53,8 +53,9 @@ public:
  // How long a report waits for a CB or Dale before it is let go, in seconds of play.
  static constexpr double HeldTipSeconds=240;
  int32 TipsWaiting() const { return HeldTips.Num(); }
- // A call on the CB with its sound and the HUD's CB line. False when it is busy or there is no sound: nothing was said.
- static bool CbSay(US47Main* M, const TArray<FString>& Lines, const FString& Voice);
+ // A call on the CB with its sound and the HUD's CB line. False when it is busy or there is no sound: nothing was said. OnBegun:
+ // once, as its first line comes (a call cut off before that never began).
+ static bool CbSay(US47Main* M, const TArray<FString>& Lines, const FString& Voice, TFunction<void()> OnBegun = nullptr);
  // The caption's head for the set: "WALKIE 1", or with who is speaking, "WALKIE 1, DALE".
  static FString Head(int32 Channel, const FString& Who = FString());
  // Left on the ground where the player was taken (FS47LeftGear). Not on the desk either until it is fetched or handed in.
