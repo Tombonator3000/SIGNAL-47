@@ -329,6 +329,12 @@ void US47WorldLife::Step(double Dt)
 	Sky->bPassageLow = M->Flow && M->Flow->Graphics.Effects == 0;
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
 	PassageStep(Dt); // presentation time is independent of story-clock jumps
+	{
+		// The sun under the horizon for the twilight's colour: sunset 18:27, sunrise 05:30, 0.18 degrees a minute (FS47Sky::SetClock).
+		const double Sec = FMath::Fmod(FMath::Fmod(bTitle ? 0 : Clock, 86400.0) + 86400.0, 86400.0);
+		const bool bWest = Sec > 12 * 3600;
+		W->SetTwilightSun(bWest, float(bWest ? .33 + (Sec - (18 * 3600 + 27 * 60)) / 60 * .18 : .33 + ((5 * 3600 + 30 * 60) - Sec) / 60 * .18));
+	}
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening), float(Sky->Twilight));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
