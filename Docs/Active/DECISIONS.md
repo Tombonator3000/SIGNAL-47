@@ -162,3 +162,5 @@ Tom ber om at PC-handlinger utføres på selve maskinene i spillverdenen, med ar
 Bensin skal kunne kjøpes fra bensinstasjonens faktiske REGULAR-pumpe til den parkerte servicebilen. Levering og betaling følger samme måler; lasting skal ikke gjenta en betaling. Eksisterende aggregatkanne og nødvei beholdes.
 
 Tilfeldig variasjon bygger på eksisterende kontekststyrte hendelsesregissør og en avgrenset dagskortgenerator. Generatoren varierer støttede kilder og faktiske måleinnstillinger, bevarer oppgaven gjennom lagring og lager ingen ubegrensede tekstoppdrag uten tilhørende spillhandling. Vedlikehold følger faktisk utstyrstilstand. Flere hendelsesfamilier og langsiktig balanse føres videre i TODO.
+
+Tripo-bilen, Tom 8. november: git-historikken skrives ikke om. Modellen ble laget på betalt Tripo-plan. Bilen skal ligne mer på en jeep og være mindre kantete, uten varemerker eller kopiert design.
