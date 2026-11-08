@@ -5,11 +5,21 @@
 class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
+class UInstancedStaticMeshComponent;
+class FS47DriveController;
+enum class ES47SurfaceKind : uint8;
 
 // Freeform only. The ordinary things that make a day and a drive something: the truck wants water and can bog down or go flat,
 // a trip camera can be left at a place overnight, a round of the station gives the day a shape and a log, and now and then
 // somebody's car stands empty on the shoulder. Nobody starves and nothing here can leave the player stuck: the jack, the
 // spade and the county's roadside service are always there.
+//
+// M2 critic (TRUCK-STRAND): the truck strands where it can be read and with warning, never on a roll of the dice. Sand lies in the
+// dry wash west of the highway (S47RoadShape::WashAt, the trough the land has; pale patches lie in it) and at the washes out on the
+// land. In it the truck drags and the wheel tugs; driven hard and slow the wheels spin, the sand hisses and the engine labours a few
+// seconds before it sinks to the axle, and easing off, keeping way on or backing out in its own tracks saves it. A tyre goes on
+// rough ground driven fast (never on the blacktop): a bang, a thump from the wheel each turn and a pull to one side. The radiator
+// pings and hisses before it boils dry. Short words; the steps are in the cargo rack's menu and the task list.
 class FS47TruckCare
 {
 public:
@@ -42,9 +52,19 @@ public:
  void WeekBilled(){WeekMetres=0;}
  static constexpr double WaterRange=36000; // metres on a full radiator
  static constexpr double DigMinutes=25,WheelMinutes=15;
- // Chance per hundred metres off the road and on it; none on the road for sand.
- static constexpr float SandChance=.02f,FlatOffRoad=.006f,FlatOnRoad=.0004f;
+ // How soft the ground is here, road-local: 0 hard, 1 the deepest of a wash's bed.
+ static double SandAt(double RoadX,double RoadZ);
+ // How fast the wheels dig in (per second, toward 1 = stuck; below 0 they come out): deep, driven hard and slow is worst; way on,
+ // easing off or backing out takes it back.
+ static double BogRate(double Soft,double Load,double Mps,bool bReverse);
+ // The chance of a tyre going in a hundred metres on this ground at this speed (m/s): rocks and ruts taken fast; none on asphalt.
+ static double FlatChance(double Mps,ES47SurfaceKind Kind);
+ // How far the wheels have dug in now (0 to 1: stuck at 1), for the sound and the tests.
+ double Bogging() const{return Bog;}
+ // Where the dash's temperature needle should stand, 0.5 normal to 1 in the red, as the radiator runs low (for the truck's dash).
+ double TempNeedle() const{return .5+.5*(1.-FMath::SmoothStep(0.,.3,WaterLeft));}
  void TestStick(){bStuck=true;}
+ void TestBog(double K){Bog=FMath::Clamp(K,0.,1.);}
  void TestFlat(){bFlat=true;}
  void TestWater(double Value){WaterLeft=Value;}
  void TestLeg(double Driven){LegMetres=Driven;}
@@ -53,7 +73,16 @@ private:
  US47Main* M=nullptr;
  double WaterLeft=1,Metres=0,WeekMetres=0,LegMetres=0; // LegMetres: driven since the truck was last at SARO
  bool bStuck=false,bFlat=false,bWarned=false,bPowerSet=false,bHeldSet=false;
+ // the sand and the wheel as they are driven (not saved: a Continue starts on firm ground)
+ double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1;
+ bool bSandHeld=false,bSandHinted=false,bHissed=false;
  void Hold();
+ void StepGround(double Dt,FS47DriveController& D,double RoadX,double RoadZ);
+ // the pale sand where it lies, near the player
+ TWeakObjectPtr<UInstancedStaticMeshComponent> SandShown;
+ TWeakObjectPtr<AS47Web> SandScene;
+ FString SandArea;FVector2D SandCentre=FVector2D(1e9,1e9);
+ void ShowSand();
 };
 
 // Built at the bench (FS47Workshop "trip_camera"), left at a place or by the marks, read the next morning. It records what really

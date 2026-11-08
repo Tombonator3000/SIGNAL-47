@@ -58,6 +58,11 @@ public:
 	/** SARO's charger: K is a share of a full charge. */
 	void Charge(double K) { Battery = FMath::Clamp(Battery + K, 0.0, 1.0); if (Battery >= LowLevel) bSaidLow = false; if (Battery > 0) bSaidDead = false; }
 	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
+	/** A weak cell (Freeform, M2): now and then the bulb drops out for a moment, oftener the lower it is, like a loose contact or
+	 *  something near (FS47GearFlicker). Times a second; 0 for a good cell. */
+	static double CellDropRate(double Full);
+	/** How many times the lit lamp has gone out for a moment, for whatever reason (a contact, a weak cell, something near). */
+	int32 CutOuts() const { return Cuts; }
 	/** 0 nothing new, 1 it has just grown weak, 2 it has just gone out: each once (for the caption). */
 	int32 TakeNotice();
 	/** The beam's share of full for this battery level: 1 down to LowLevel, then falling to a faint glow. */
@@ -84,6 +89,7 @@ private:
 	bool bNativeNearReady = false, bLogNear = false;
 	TMap<FString, double> Flicks, Sags;
 	double SagK = 0;
-	double Battery = 1;
+	double Battery = 1, CellDark = 0;
+	int32 Cuts = 0;
 	bool bSaidLow = false, bSaidDead = false;
 };

@@ -9,21 +9,29 @@ class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
 class FS47BufferSourceNode;
+class FS47AudioBuffer;
+struct FReferenceSkeleton;
 
-// ANIMALS-20261108 (Tom, 8 November): animals as warning, Freeform only. They react to what is really near (FS47Omen) and to the
-// player, and to nothing else, so that they can be read like a radar:
+// ANIMALS-20261108 (Tom, 8 November): animals as warning, Freeform only. They react to what is really near (FS47Omen), to the
+// player, and to what animals react to anyway (a gust, a sound nobody else heard: FS47Omen's ordinary causes), so that a careful
+// player reads them as a hint and never as an answer:
 //
 //   quail     a covey sits in the scrub near where the player walks. Come too close and it goes up from under the feet, away from
 //             them. When something comes near it goes up with nobody close, and flies away from it: the way they go says where.
-//   a coyote  trots across the open land at night, now and then, and looks round at a lamp (its eyes shine). When something comes
-//             near it stops dead and stares at it, a few seconds, then runs the other way.
+//             A gust can put them up too.
+//   a coyote  is out on the open land at night now and then (every ten to twenty-five minutes, drawn from the seed), off to one
+//             side and some 18 to 30 m away, trotting its own way, stopping to nose the ground; the lamp or the headlights find it
+//             and its eyes shine when it looks round. When something comes near, the one that is out stops where it is, glances
+//             at the light, huffs once and stares off toward it (give or take), then runs the other way. Now and then one stops
+//             and stares at nothing.
 //   the dog   at the farm and in Caliche, barks at night at the player coming and at the coyotes; when something comes near the dog
-//             it stops in the middle of a bark, whines once, and stays quiet until long after it has gone.
+//             it stops in the middle of a bark, whines once, and stays quiet until long after it has gone. Sometimes it just quits.
 //   cattle    the Alderete herd (S47Herd) walks off together, all the same way, from something some way off; close by they scatter
 //             and bellow (FS47FarmNight reads HerdFear).
 //
-// Made of the engine's cube and sphere with the game's lit material (no animal models in the project); small and dark at night,
-// the eyes the one thing that shows.
+// The coyote and the dog are the rigged CC0 models (Tools/animals, /Game/Free/Animals); the quail, and the coyote where a build has
+// no model, are the engine's cube and sphere with the game's lit material. Each reacts on FS47Omen's Animals reader, which now and
+// then misses a real source (FS47Omen::Misses).
 class SIGNAL47_API FS47Animals
 {
 public:
@@ -43,6 +51,9 @@ public:
 	int32 Flushes() const { return FlushCount; }
 	int32 FlushesFromDanger() const { return DangerFlushes; }
 	int32 Stares() const { return StareCount; }
+	/** Of those, the ones at nothing (FS47Omen's ordinary causes), and the coveys a gust put up. */
+	int32 StaresAtNothing() const { return OrdinaryStares; }
+	int32 FlushesFromWind() const { return OrdinaryFlushes; }
 	int32 DogBarks() const { return BarkCount; }
 	int32 DogStops() const { return StopCount; }
 	bool CoyoteOut() const { return Coyote.Mode != ECoyote::None; }
@@ -50,7 +61,8 @@ public:
 	/** The coyote and the dog are the rigged models (Tools/animals), not the boxes. */
 	bool RiggedCoyote() const { return CoyoteRig.bReady; }
 	bool RiggedDog() const { return DogRig.bReady; }
-	/** F10: a covey here, 14 m ahead; with bThreat, then something behind the player, so it goes up away from it. Why: what stopped it. */
+	/** F10: with bThreat a covey 14 m ahead, then something behind the player, so it goes up away from it; without, a covey right
+	 *  in front of the player's feet (and nothing made up near), so it goes up from them. Why: what stopped it. */
 	bool DevCovey(FString& Why, bool bThreat = true);
 	/** F10: a coyote crossing 32 m ahead; with bThreat, then something to one side, so it stops and stares at it. */
 	bool DevCoyote(FString& Why, bool bThreat = true);
@@ -69,6 +81,17 @@ public:
 	static double HerdLevel(double Sense);
 	/** How long the dog keeps quiet after the last of it. */
 	static double DogQuiet(double Sense);
+	/** A rig's bone, as the glTF names it ("FF.L") or as Unreal imported it ("FF_L"): every spelling to look for, in turn. */
+	static TArray<FName> BoneSpellings(const TCHAR* Bone);
+	/** The head and the four paws of a quadruped rig (the IK feet, else the lower legs), in component space of the ref pose. */
+	static bool FindRigBones(const FReferenceSkeleton& Ref, FVector& OutHead, FVector OutPaws[4], FName& OutHeadName);
+	/** Where a coyote stares for something at Source: toward it, off by up to SpreadDeg either way (Roll 0 to 1). */
+	static FVector StareToward(const FVector& CoyoteAt, const FVector& Source, double SpreadDeg, float Roll);
+	/** Seconds until the next coyote is out, drawn from the seed and the night and how many have been out: ten to twenty-five minutes. */
+	static double CoyoteWait(int32 Seed, int32 Night, int32 Count);
+	/** Where a coyote is first seen on foot: off to one side of where the player looks (50 to 130 degrees), 18 to 30 m out. */
+	static FVector CoyoteStart(const FVector& Eye, const FVector& Forward, float RollSide, float RollAngle, float RollDist);
+	static constexpr double StareSpread = 25;
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
@@ -78,7 +101,7 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> Feather, Fur, EyeGlow;
 	bool bBuilt = false, bLog = false, bLogChecked = false;
 	FString LastArea;
-	int32 FlushCount = 0, DangerFlushes = 0, StareCount = 0, BarkCount = 0, StopCount = 0;
+	int32 FlushCount = 0, DangerFlushes = 0, StareCount = 0, BarkCount = 0, StopCount = 0, OrdinaryStares = 0, OrdinaryFlushes = 0, CoyotesOut = 0;
 
 	// the covey
 	enum class ECovey : uint8 { None, Sitting, Flying, Gone };
@@ -93,13 +116,13 @@ private:
 	} Covey;
 
 	// the coyote
-	enum class ECoyote : uint8 { None, Trot, Stare, Bolt, Look };
+	enum class ECoyote : uint8 { None, Trot, Stare, Bolt, Look, Sniff };
 	struct FCoyote
 	{
 		ECoyote Mode = ECoyote::None;
-		FVector At = FVector::ZeroVector, Dir = FVector::ForwardVector, LookAt = FVector::ZeroVector;
-		double Age = 0, Left = 0, Wait = 90, Gait = 0, Ground = 0, GroundIn = 0, Yaw = 0, HeadYaw = 0, Shine = 0;
-		bool bLooked = false;
+		FVector At = FVector::ZeroVector, Dir = FVector::ForwardVector, LookAt = FVector::ZeroVector, StareAt = FVector::ZeroVector;
+		double Age = 0, Left = 0, Wait = -1, Gait = 0, Ground = 0, GroundIn = 0, Yaw = 0, HeadYaw = 0, Shine = 0, Glance = 0, SniffIn = 8, Out = 0;
+		bool bLooked = false, bAtNothing = false;
 		TWeakObjectPtr<UStaticMeshComponent> Torso, Neck, Head, Snout, EarL, EarR, Tail, EyeL, EyeR, Legs[4];
 	} Coyote;
 
@@ -150,13 +173,19 @@ private:
 
 	void StepCovey(double Dt);
 	void PlaceCovey(const FVector& Near, const FVector& Ahead);
-	void Flush(const FVector& From, bool bDanger);
+	enum class EFlush : uint8 { Player, Danger, Wind };
+	void Flush(const FVector& From, EFlush Why);
 	void PoseBirds();
 
 	void StepCoyote(double Dt);
 	bool StartCrossing(bool bAhead, double Dist);
+	bool StartOut();
+	void BeginStare(const FVector& Toward, bool bAtNothing);
 	void PoseCoyote(double Dt);
 	double ShineOf(const FVector& EyeAt, const FVector& Facing) const;
+	// the coyote's one huff as it stops: made here once, from the game's own noise, and played from where it stands
+	TSharedPtr<FS47AudioBuffer> HuffRec;
+	void Huff(const FVector& At);
 
 	void StepDogs(double Dt);
 	void Bark(FDog& Dog, bool bFrantic);

@@ -96,14 +96,47 @@ void FS47DevFreeform::AddOmens(FS47DevEvents& E)
 		Presence(45, 0, 0.95, 30, false);
 		Tell(true, TEXT("Something 45 m ahead of the truck for 30 seconds."), 5);
 	});
-	E.AddFreeform(GearGroup, TEXT("What the gear reads now"), TEXT("the level, its band (0 nothing to 4 on you) and what is out there"), [this]
+	E.AddFreeform(GearGroup, TEXT("What the gear reads now"), TEXT("the level, its band (0 nothing to 4 on you), what is out there and what each piece misses tonight"), [this]
 	{
 		if (!M->Gear || !M->Omen) { Tell(false, TEXT("Freeform only")); return; }
 		FString Seen;
-		for (const FS47OmenSource& Src : M->Omen->Sources()) Seen += (Seen.IsEmpty() ? TEXT("") : TEXT(", ")) + Src.Id;
-		Tell(true, FString::Printf(TEXT("Gear %.2f, band %d; coughs %d, clock jumps %d; out there: %s"), M->Gear->Level(), FS47GearFlicker::Band(M->Gear->Level()),
-			M->Gear->Coughs(), M->Gear->ClockJumps(), Seen.IsEmpty() ? TEXT("nothing") : *Seen), 7);
+		for (const FS47OmenSource& Src : M->Omen->Sources())
+		{
+			FString Missed;
+			static const TCHAR* const Readers[] = { TEXT("lamp"), TEXT("radio"), TEXT("truck"), TEXT("clock"), TEXT("hush"), TEXT("animals") };
+			for (int32 Ch = 0; Ch < int32(ES47OmenChannel::Count); ++Ch) if (M->Omen->Misses(Src.Id, ES47OmenChannel(Ch))) Missed += (Missed.IsEmpty() ? TEXT(" (missed by ") : TEXT(", ")) + FString(Readers[Ch]);
+			Seen += (Seen.IsEmpty() ? TEXT("") : TEXT(", ")) + Src.Id + (Missed.IsEmpty() ? FString() : Missed + TEXT(")"));
+		}
+		Tell(true, FString::Printf(TEXT("Gear %.2f, band %d; lamp out %d, radio lost %d, coughs %d, clock jumps %d; signs felt %d (%d real), notes %d; out there: %s"),
+			M->Gear->Level(), FS47GearFlicker::Band(M->Gear->Level()), M->Gear->Flickers(), M->Gear->RadioDrifts(), M->Gear->Coughs(), M->Gear->ClockJumps(),
+			M->Omen->SignsFelt(), M->Omen->SignsFeltReal(), M->Omen->Notes(), Seen.IsEmpty() ? TEXT("nothing") : *Seen), 9);
 	});
+	// ---- the same signs from nothing (M2 critic: the signs were a radar) ----
+	struct FOrdinaryEntry { ES47Ordinary Kind; const TCHAR* Label; const TCHAR* Note; double Seconds; };
+	static const FOrdinaryEntry Ordinaries[] = {
+		{ ES47Ordinary::Contact, TEXT("Nothing: a loose contact in the lamp"), TEXT("23:00, open land, lamp on; walk or run and it blinks; stand still and it hardly does"), 40 },
+		{ ES47Ordinary::Gust, TEXT("Nothing: a gust stills the crickets"), TEXT("23:00, open land; the night stops at once for eight seconds, from the way the wind is"), 8 },
+		{ ES47Ordinary::Skip, TEXT("Nothing: the walkie in a skip"), TEXT("23:00, open land, with the walkie: the squelch opens on nothing for twenty seconds"), 20 },
+		{ ES47Ordinary::Traffic, TEXT("Nothing: a far car on the channel"), TEXT("23:00, open land, with the walkie or the truck's radio: a burst, then gone"), 5 },
+		{ ES47Ordinary::Shy, TEXT("Nothing: a coyote stares at nothing"), TEXT("23:00, open land, lamp on; a coyote crosses, then stops and stares off at nothing, the dog quits"), 14 } };
+	for (const FOrdinaryEntry& Entry : Ordinaries)
+	{
+		const ES47Ordinary Kind = Entry.Kind;
+		const double Seconds = Entry.Seconds;
+		E.AddFreeform(GearGroup, Entry.Label, Entry.Note, [this, At, Kind, Seconds]
+		{
+			At(TEXT("windmill"), -40, 0, [this, Kind, Seconds]
+			{
+				S47OmenDevLocal::LampOn(M);
+				if (!M->Omen) return;
+				M->Omen->DevClear();
+				FString Why;
+				if (Kind == ES47Ordinary::Shy && M->Animals) M->Animals->DevCoyote(Why, false);
+				After(Kind == ES47Ordinary::Shy ? 4.0 : 2.0, [this, Kind, Seconds] { if (M->Omen) M->Omen->DevOrdinary(Kind, Seconds); });
+				Tell(true, TEXT("Nothing real is out there. Watch and listen: this is how an ordinary night does it."), 5);
+			});
+		});
+	}
 
 	// ---- the night's sounds ----
 	E.AddFreeform(SoundGroup, TEXT("Something comes: the night stops first"), TEXT("23:00, open land; six seconds of its first sign, 80 m off, then it is there for half a minute"), [this, At, Presence]
@@ -153,7 +186,7 @@ void FS47DevFreeform::AddOmens(FS47DevEvents& E)
 	{
 		At(TEXT("windmill"), -40, 0, [this] { FString Why; const bool bOk = M->Animals && M->Animals->DevCovey(Why, true); Tell(bOk, Why, 7); });
 	});
-	E.AddFreeform(AnimalGroup, TEXT("Quail: walk into them"), TEXT("23:00, open land; a covey 14 m ahead and nothing else; walk on, or keep low and slow"), [this, At]
+	E.AddFreeform(AnimalGroup, TEXT("Quail: walk into them"), TEXT("23:00, open land; a covey at your feet and nothing else near: they go up from you"), [this, At]
 	{
 		At(TEXT("windmill"), -40, 0, [this] { FString Why; const bool bOk = M->Animals && M->Animals->DevCovey(Why, false); Tell(bOk, Why, 7); });
 	});
@@ -191,7 +224,8 @@ void FS47DevFreeform::AddOmens(FS47DevEvents& E)
 	{
 		if (!M->Animals) { Tell(false, TEXT("Freeform only")); return; }
 		const FS47Animals& An = *M->Animals;
-		Tell(true, FString::Printf(TEXT("Quail up %d (%d from something), coyote stares %d, barks %d, dogs gone quiet %d; a covey here %d, a coyote out %d"),
-			An.Flushes(), An.FlushesFromDanger(), An.Stares(), An.DogBarks(), An.DogStops(), An.CoveyHere() ? 1 : 0, An.CoyoteOut() ? 1 : 0), 7);
+		Tell(true, FString::Printf(TEXT("Quail up %d (%d from something, %d from a gust), coyote stares %d (%d at nothing), barks %d, dogs gone quiet %d; a covey here %d, a coyote out %d; rigged coyote %d, dog %d"),
+			An.Flushes(), An.FlushesFromDanger(), An.FlushesFromWind(), An.Stares(), An.StaresAtNothing(), An.DogBarks(), An.DogStops(), An.CoveyHere() ? 1 : 0, An.CoyoteOut() ? 1 : 0,
+			An.RiggedCoyote() ? 1 : 0, An.RiggedDog() ? 1 : 0), 8);
 	});
 }

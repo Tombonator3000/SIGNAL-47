@@ -45,12 +45,12 @@ public:
  bool Transmitting() const { return TxLeft>0; }
  // The set made a sound of its own just now: something close by can hear it (FS47RoswellGroup).
  bool LoudNow() const { return bOwned && !bLeftOut && SinceLoud<1.2; }
- // CB-WALKIE-20261108: the CB is strangers, the walkie is Dale. A stranger's report (a caller, a driver, dispatch) comes over the
- // CB if one is to hand (in the truck, or the base set in the SARO building), with the CB's own sound and HUD line. Away from one,
- // Dale passes it on over the walkie, in his own words, on channel 1. With neither, it waits a while for one of them (HeldTips).
+ // CB-WALKIE-20261108: the CB is strangers, the walkie is Dale. A caller's own words go out on the CB (FS47Happenings::Cb, CbSay);
+ // a summary of what somebody rang in (Tip: "a rancher reports lights...") is Dale's to pass on, over the walkie, in his own
+ // words, on channel 1, and never read out on the CB. While he is busy or the set is off his channel it waits for him (HeldTips).
  static void Report(US47Main* M, const FString& Tip);
  static bool CbAtHand(const US47Main* M);
- // How long a report waits for a CB or Dale before it is let go, in seconds of play.
+ // How long a report waits for Dale before it is let go, in seconds of play.
  static constexpr double HeldTipSeconds=240;
  int32 TipsWaiting() const { return HeldTips.Num(); }
  // A call on the CB with its sound and the HUD's CB line. False when it is busy or there is no sound: nothing was said. OnBegun:
@@ -76,15 +76,27 @@ public:
  double PresenceLevel() const { return LastLevel; }
  bool PresenceSeen() const { return LastSeen; }
  bool PresenceHunting() const { return LastHunt; }
- // The walkie is in use: it is carried and something has just come over it, it is breaking up with a presence near, or the player
- // has just used it (a call, an answer, a turn of the channel).
- bool InUse() const { return bOwned && !bLeftOut && (SinceMessage<20. || LastRadio>.02 || HailLeft>0 || TxLeft>0 || SinceTouch<8.); }
- // Signal strength for the HUD, 0 to 1: full in a quiet place, thinner the nearer a presence is.
- double Strength() const { return FMath::Clamp(1.-.8*LastRadio,.1,1.); }
- // GEAR-FLICKER-20261108: what FS47Omen feels of everything near (lights, a craft, being taken, a door), 0 to 1, heard on the set
- // as on any body: hiss, crackle and the HUD's signal falling. Set every frame by FS47GearFlicker; 0 outside Freeform.
+ // The walkie is in use for the HUD's line: it is carried and something has just been said over it, Dale is calling, or the player
+ // has just used it (a call, an answer, a turn of the channel). Never because it is breaking up: that is only heard (M2 critic:
+ // the line was a rangefinder).
+ bool InUse() const { return bOwned && !bLeftOut && (SinceMessage<20. || HailLeft>0 || TxLeft>0 || SinceTouch<8.); }
+ // Signal strength for the HUD's wave while the line is up for its own reason, 0 to 1: what the set is hearing, distance from the
+ // mast and low ground as much as anything near, and never steady, so that it cannot be read as a meter.
+ double Strength() const { return StrengthNow; }
+ // GEAR-FLICKER-20261108: what FS47Omen says the walkie feels of everything real near (lights, a craft, being taken, a door), 0 to
+ // 1, heard on the set as on any body: hiss and crackle. Set every frame by FS47GearFlicker; 0 outside Freeform.
  void SetGearNoise(double K){GearNoise=FMath::Clamp(K,0.,1.);}
  double GearNoiseNow() const{return GearNoise;}
+ // And what any set hears out here (FS47GearFlicker): a spell of open squelch (Hiss), and crackle with distance, low ground, the
+ // wind and a far car on the channel (Crackle). Both 0 to 1.
+ void SetOrdinaryNoise(double Hiss,double Crackle){OrdHiss=FMath::Clamp(Hiss,0.,1.);OrdCrackle=FMath::Clamp(Crackle,0.,1.);}
+ double OrdinaryNoiseNow() const{return FMath::Max(OrdHiss,OrdCrackle);}
+ // How many spells the carried set has broken up for, whatever the cause (the night's log, FS47GearFlicker).
+ int32 Dropouts() const { return DropCount; }
+ // What comes back when the player calls with nobody to answer: mostly the squelch on nothing, now and then a far voice on the
+ // channel (a trucker, somebody's cordless). With something real near, mostly that, now and then nothing. Roll 0 to 1.
+ enum class EBack : uint8 { Squelch, Voice };
+ static EBack BackFor(bool bSomethingNear,float Roll);
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
@@ -97,8 +109,9 @@ private:
  FS47EncounterSound Sound;
  bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
  S47J::FObj Unknown;
- double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0;
- int32 Crackled=0,MessageCount=0;
+ double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0,OrdHiss=0,OrdCrackle=0,RealNear=0;
+ double StrengthNow=1,StrengthWant=1,StrengthIn=0,SinceNoise=1e9,SinceCrackle=1e9;
+ int32 Crackled=0,MessageCount=0,DropCount=0,CrackleRun=0;
  double SinceMessage=1e9;
  bool LastSeen=false,LastHunt=false;
  int32 LastCue=-1,TestStage=0;
@@ -107,7 +120,7 @@ private:
  double SinceLoud=1e9,SinceTouch=1e9,HailLeft=0,HailAgainIn=0,TxLeft=0,ThenIn=-1;
  FHail HailWords;
  TFunction<void()> HailAnswer,HailMissed,Then;
- // Reports nobody could hear yet: no CB to hand, no walkie on Dale's channel. Said by the first of them to come.
+ // Reports Dale could not pass on yet (busy, or no walkie on his channel). Said by him as soon as he can.
  struct FHeldTip { FString Tip; double Age=0; };
  TArray<FHeldTip> HeldTips;
  bool Deliver(const FString& Tip);
@@ -118,6 +131,8 @@ private:
  void Answer();
  void EndHail(bool bHeardGiveUp);
  void KeyUp(const FString& Says);
+ // The service band's open carrier: heard, and the band's own reading of it.
+ void Carrier(const FString& OnBand);
  FString ChannelLine() const;
  bool Build();
  TArray<FPresence> Nearby() const;

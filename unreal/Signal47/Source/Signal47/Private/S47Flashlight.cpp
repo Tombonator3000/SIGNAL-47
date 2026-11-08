@@ -190,6 +190,13 @@ void FS47Flashlight::Sag(double Share, const FString& From)
 	SagK = Most;
 }
 
+double FS47Flashlight::CellDropRate(double Full)
+{
+	// a good cell never; from about a third left, once in a minute and a half, to every ten seconds near the end
+	if (!FMath::IsFinite(Full) || Full >= 0.35 || Full <= 0) return 0;
+	return FMath::Lerp(1.0 / 90.0, 1.0 / 10.0, FMath::Clamp((0.35 - Full) / 0.3, 0.0, 1.0));
+}
+
 double FS47Flashlight::BatteryGain(double Full)
 {
 	if (Full >= LowLevel) return 1;
@@ -221,11 +228,20 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	if (Flick > 0)
 	{
 		Dark -= Dt;
-		if (Dark <= 0 && FMath::FRand() < Flick * Dt * 1.2) Dark = 0.05 + FMath::FRand() * 0.25 * Flick;
+		if (Dark <= 0 && FMath::FRand() < Flick * Dt * 1.2)
+		{
+			Dark = 0.05 + FMath::FRand() * 0.25 * Flick;
+			if (Want > 0) ++Cuts;
+		}
 		K = Dark > 0 ? 0.08 : 1 - Flick * 0.25 * (0.5 + 0.5 * FMath::Sin(T * 37) * FMath::Sin(T * 11.3));
 	}
 	// A moment out belongs to the flicker that asked for it: it does not wait for the next one.
 	else Dark = 0;
+	// A weak cell (Freeform): the bulb drops out a moment now and then by itself, the way a contact does near something.
+	const double CellRate = bDrains && Want > 0 && !bHeld ? CellDropRate(Battery) : 0.0;
+	if (CellDark > 0) CellDark -= FMath::Max(0.0, Dt);
+	else if (CellRate > 0 && FMath::IsFinite(Dt) && Dt > 0 && FMath::FRand() < CellRate * Dt) { CellDark = 0.06 + FMath::FRand() * 0.22; ++Cuts; }
+	if (CellDark > 0) K = FMath::Min(K, 0.1);
 	// something near takes the beam down steadily (GEAR-FLICKER), with no battery spent on it
 	if (SagK > 0) K *= 1 - SagK;
 	// a weak battery: the beam thins, and near the end the contact stutters
@@ -324,6 +340,18 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		B.bOn = true;
 		B.SetBattery(0.15); B.bSaidLow = false;
 		Check(B.TakeNotice() == 1 && B.TakeNotice() == 0, TEXT("a weak battery says so once"));
+		Check(CellDropRate(1) == 0 && CellDropRate(0.36) == 0 && CellDropRate(0.3) > 0 && CellDropRate(0.1) > CellDropRate(0.3) && CellDropRate(0.1) < 0.2 && CellDropRate(0) == 0,
+			TEXT("a weak cell blinks the lamp by itself now and then, oftener near the end; a good one never"));
+		{
+			FS47Flashlight W(nullptr);
+			W.bHave = true; W.bDrains = true; W.Toggle(); W.SetBattery(0.12);
+			for (int32 I = 0; I < 6000; ++I) W.Update(1.0 / 60, I / 60.0, Cam, false);
+			const int32 WeakCuts = W.CutOuts();
+			FS47Flashlight G(nullptr);
+			G.bHave = true; G.bDrains = true; G.Toggle();
+			for (int32 I = 0; I < 6000; ++I) G.Update(1.0 / 60, I / 60.0, Cam, false);
+			Check(WeakCuts > 0 && G.CutOuts() == 0, TEXT("with nothing near, a weak cell still makes the lamp cut out; a good one does not"));
+		}
 		Check(FS47Flashlight::BatteryGain(1) == 1 && FS47Flashlight::BatteryGain(0.2) == 1 && FS47Flashlight::BatteryGain(0) == 0
 			&& FS47Flashlight::BatteryGain(0.1) < 1 && FS47Flashlight::BatteryGain(0.1) > FS47Flashlight::BatteryGain(0.05), TEXT("the beam thins steadily below the low mark"));
 	}
