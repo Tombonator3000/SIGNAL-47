@@ -43,8 +43,10 @@ private:
  void Hold();
 };
 
-// Built at the bench (FS47Workshop "trip_camera"), left at a place or by the marks, read the next morning. It records what it
-// actually covered from where it stood; it is a record of its own, in text, and never adds anything to the album.
+// Built at the bench (FS47Workshop "trip_camera"), left at a place or by the marks, read the next morning. It records what really
+// passed within its reach that night while the world there was going on (GAME_BIBLE: "Ingen venting eller søvn konstruerer
+// observasjoner"): a body near it, or a light standing over its ground. What it caught it also photographed, from where it stood,
+// and that frame is a print in the album to develop. Nothing that did not pass is drawn for it; only an ordinary animal is.
 class FS47TripCamera
 {
 public:
@@ -56,17 +58,26 @@ public:
  bool Out() const{return bOut;}
  bool CanSet() const;
  bool SetHere(const FString& Title,bool bAtMarks);
- static int32 Reading(int32 Seed,int32 Night,bool bAtMarks,bool bCalm);
- static FString ReadingText(int32 Reading,const FString& Title,int32 Seed,int32 Night);
+ // What it caught, strongest first: a body near it, a light over its ground, nothing.
+ enum class ECatch:uint8{None,Light,Body};
+ static constexpr double BodyReach=18,LightReach=60;
+ // 0 nothing, 1 an animal (ordinary life, from the night's seed), 2 a light from above, 3 something standing in the frame.
+ static int32 Reading(ECatch Got,int32 Seed,int32 Night);
+ static FString ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night,double When=-1,bool bFrame=false);
+ ECatch CaughtTonight() const{return Caught;}
  bool Collect();
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
  bool bOut=false,bAtMarksThen=false,bBuilt=false;
- FString Area,Title;
+ FString Area,Title,PhotoId;
  FVector At=FVector::ZeroVector;
- double SetClock=0;
+ double SetClock=0,CaughtClock=-1,LookIn=0;
+ ECatch Caught=ECatch::None;
  TWeakObjectPtr<UStaticMeshComponent> PropSaro,PropRoad;
+ // What is in front of it now, looked for a few times a second while it is out and the world it stands in is the loaded one.
+ void Watch();
+ bool Sees(const FVector& Lens,const FVector& P) const;
  FS47Obj ObjSaro,ObjRoad;
  TWeakObjectPtr<AS47Web> Scene;
  TSharedPtr<uint8> Life;

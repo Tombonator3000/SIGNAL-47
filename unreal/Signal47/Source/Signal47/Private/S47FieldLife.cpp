@@ -1,7 +1,13 @@
 #include "S47FieldLife.h"
 #include "S47Audio.h"
 #include "S47Drive.h"
+#include "S47Album.h"
 #include "S47FarmSite.h"
+#include "S47FreeformDirector.h"
+#include "S47Glimpses.h"
+#include "S47Night.h"
+#include "S47RoswellGroup.h"
+#include "S47Taken.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47Inter.h"
@@ -18,6 +24,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "CollisionQueryParams.h"
 #include "Components/StaticMeshComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
@@ -135,11 +142,15 @@ namespace
 }
 void FS47TripCamera::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);bOut=false;
+ Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
  if(Saved.IsValid()&&S47J::Bool(Saved,TEXT("out")))
  {
   const auto A=S47J::Nums(Saved,TEXT("at"));const double Clock=S47J::Num(Saved,TEXT("clock"));Area=S47J::Str(Saved,TEXT("area"));Title=S47J::Str(Saved,TEXT("title"));
-  if(A.Num()==3&&FMath::IsFinite(Clock)&&!Area.IsEmpty()){At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;}
+  if(A.Num()==3&&FMath::IsFinite(Clock)&&!Area.IsEmpty())
+  {
+   At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;
+   Caught=ECatch(FMath::Clamp(S47J::Int(Saved,TEXT("caught")),0,2));CaughtClock=S47J::Num(Saved,TEXT("caughtClock"),-1);PhotoId=S47J::Str(Saved,TEXT("photo"));
+  }
  }
  if(M&&IsValid(M->Web.Get())&&Scene.Get()!=M->Web.Get()){bBuilt=false;PropSaro.Reset();PropRoad.Reset();}
  if(M&&IsValid(M->Web.Get()))Build();
@@ -150,6 +161,8 @@ S47J::FObj FS47TripCamera::Save() const
 {
  auto O=S47J::New();if(!bOut)return O;
  S47J::Set(O,TEXT("out"),true);S47J::Set(O,TEXT("area"),Area);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("clock"),SetClock);S47J::Set(O,TEXT("marks"),bAtMarksThen);S47J::Set(O,TEXT("at"),TArray<double>{At.X,At.Y,At.Z});
+ if(Caught!=ECatch::None){S47J::Set(O,TEXT("caught"),int32(Caught));S47J::Set(O,TEXT("caughtClock"),CaughtClock);}
+ if(!PhotoId.IsEmpty())S47J::Set(O,TEXT("photo"),PhotoId);
  return O;
 }
 bool FS47TripCamera::Build()
@@ -194,7 +207,7 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
 {
  if(!CanSet()||!M->Player||!M->Web)return false;
  const auto Clock=M->Freeform->Clock();
- bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();
+ bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
  if(Area==TEXT("diner"))Area=TEXT("road");
  At=FVector(M->Player->Pos.X+1.5,M->Player->FloorY,M->Player->Pos.Z);
  if(!bBuilt)Build();
@@ -202,22 +215,68 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
  if(M->UI)M->UI->Toast(TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: trip camera set at %s, marks %d"),*Title,bAtMarks);M->RequestAutosave();return true;
 }
-int32 FS47TripCamera::Reading(int32 Seed,int32 Night,bool bAtMarks,bool bCalm)
+int32 FS47TripCamera::Reading(ECatch Got,int32 Seed,int32 Night)
 {
- if(bCalm)return FS47NightRhythm::Roll(Seed,Night,0x54524950u)<.6f?0:1;
- const float R=FS47NightRhythm::Roll(Seed,Night,0x54524950u);
- const float Something=bAtMarks?.5f:.22f;
- return R<Something?2:R<Something+.35f?1:0;
+ if(Got==ECatch::Body)return 3;
+ if(Got==ECatch::Light)return 2;
+ // Nothing strange passed: now and then an animal did. That is ordinary life, not an observation, and it is all the dice decide.
+ return FS47NightRhythm::Roll(Seed,Night,0x54524950u)<.3f?1:0;
 }
-FString FS47TripCamera::ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night)
+FString FS47TripCamera::ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night,double When,bool bFrame)
 {
- const int32 Hh=1+int32(FS47NightRhythm::Roll(Seed,Night,0x4845u)*4),Mm=int32(FS47NightRhythm::Roll(Seed,Night,0x4d4du)*60)%60;
+ const int32 Secs=When>=0?int32(FMath::Fmod(When,86400.)):int32(3600*(1+FS47NightRhythm::Roll(Seed,Night,0x4845u)*4));
+ const int32 Hh=Secs/3600,Mm=(Secs/60)%60;
+ const FString Print=bFrame?TEXT(" Its frame is on the roll: develop it at the wet bench like any other."):TEXT("");
  switch(Read)
  {
   case 0:return FString::Printf(TEXT("Trip camera at %s, read in the morning. The counter has not moved. The wire is as I set it. Covers only what crossed its wire."),*Place);
   case 1:return FString::Printf(TEXT("Trip camera at %s, read in the morning. Two frames by its clock at %02d:%02d. On the contact strip: a coyote, or most of one, close to the lens. Covers only what crossed its wire."),*Place,Hh,Mm);
-  default:return FString::Printf(TEXT("Trip camera at %s, read in the morning. Six frames by its clock at %02d:%02d, all within a minute. On the contact strip: the same patch of ground lit from above, and in the last two something standing at the edge of the frame, too tall for the fence behind it. The wire was not broken. It was unhooked."),*Place,Hh,Mm);
+  case 2:return FString::Printf(TEXT("Trip camera at %s, read in the morning. Frames by its clock from %02d:%02d. The wire was not touched: the flash cell fired on light. The ground in front of it is lit hard from above, and nothing stands in it.%s"),*Place,Hh,Mm,*Print);
+  default:return FString::Printf(TEXT("Trip camera at %s, read in the morning. Six frames by its clock from %02d:%02d, all within a minute. Something stood at the edge of the frame, the wrong shape for anything that lives out here. The wire was not broken. It was unhooked.%s"),*Place,Hh,Mm,*Print);
  }
+}
+bool FS47TripCamera::Sees(const FVector& Lens,const FVector& P) const
+{
+ if(!M||!M->Web||!M->Web->GetWorld())return false;
+ FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47TripCamera),true);
+ if(auto* C=PropSaro.Get())Q.AddIgnoredComponent(C);
+ if(auto* C=PropRoad.Get())Q.AddIgnoredComponent(C);
+ const FVector A=S47Three::ToUE(Lens),B=S47Three::ToUE(P);
+ return !M->Web->GetWorld()->LineTraceSingleByChannel(Hit,A,B,ECC_Visibility,Q)||Hit.Distance>FVector::Dist(A,B)-60.;
+}
+void FS47TripCamera::Watch()
+{
+ if(!bOut||!M||!M->Freeform||!M->Web||!M->Freeform->RulesLive()||Caught==ECatch::Body)return;
+ // Only the world it stands in, while that world is going on: what is not loaded does not pass, and a sleep does not make it.
+ FString Here=M->Web->Area();if(Here==TEXT("diner"))Here=TEXT("road");
+ if(Here!=Area||M->Freeform->Held())return;
+ auto& F=*M->Freeform;
+ const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;
+ if(!(Hour>=19||Hour<FS47NightRhythm::EndHour)||F.Clock()<SetClock)return;
+ const FVector Lens=At+FVector(0,.9,0);
+ const auto Flat=[&Lens](const FVector& P){return FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(Lens.X,Lens.Z));};
+ TOptional<FVector> Body,Light;
+ if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<BodyReach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
+ if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<BodyReach&&Sees(Lens,*Eye))Body=*Eye;
+ if(!Body)
+ {
+  if(F.Taken&&F.Taken->Stage()==FS47Taken::EStage::Flood&&Flat(F.Taken->LightFrom())<LightReach)Light=F.Taken->LightFrom();
+  static const TCHAR* const Lights[]={TEXT("farm_lights"),TEXT("town_lights"),TEXT("dusk_orb"),TEXT("response_lights"),TEXT("flyover"),TEXT("close_pass")};
+  if(!Light&&F.Director)for(const TCHAR* L:Lights)if(F.Director->ActiveEvent()==L&&Flat(F.Director->EventAnchor())<LightReach&&Sees(Lens,F.Director->EventAnchor())){Light=F.Director->EventAnchor();break;}
+ }
+ const ECatch Got=Body?ECatch::Body:Light?ECatch::Light:ECatch::None;
+ if(int32(Got)<=int32(Caught))return;
+ Caught=Got;CaughtClock=F.Clock();
+ UE_LOG(LogTemp,Display,TEXT("S47: trip camera at %s caught %s at %.0f"),*Title,Got==ECatch::Body?TEXT("a body"):TEXT("a light"),CaughtClock);
+ // The frame it took, from where it stands: one print a night, the best it got.
+ const FVector Look=Body?*Body:FVector(Light->X,At.Y+.6,Light->Z);
+ if(M->Night&&M->Night->Album&&(PhotoId.IsEmpty()||Got==ECatch::Body))
+ {
+  FString Id;
+  const FString Text=Got==ECatch::Body?FString::Printf(TEXT("Trip camera, %s. Something at the edge of the frame."),*Title):FString::Printf(TEXT("Trip camera, %s. The ground lit from above."),*Title);
+  if(M->Night->Album->ExposeFrom(Lens,Look,Text,Title,Id)){PhotoId=Id;UE_LOG(LogTemp,Display,TEXT("S47: trip camera frame %s"),*Id);}
+ }
+ M->RequestAutosave();
 }
 bool FS47TripCamera::Collect()
 {
@@ -231,29 +290,36 @@ bool FS47TripCamera::Collect()
  if(!bANight)Page=TEXT("Too soon. The counter reads nothing yet. Taken up again.");
  else
  {
-  const int32 Read=Reading(F.Seed(),Night,bAtMarksThen,F.QuietNight(Night));
-  Page=ReadingText(Read,Title,F.Seed(),Night);
+  const int32 Read=Reading(Caught,F.Seed(),Night);
+  Page=ReadingText(Read,Title,F.Seed(),Night,CaughtClock,!PhotoId.IsEmpty());
   F.RecordEvidence(FString::Printf(TEXT("tripcam_d%d"),Night),Page);
   UE_LOG(LogTemp,Display,TEXT("S47: trip camera read, reading %d for night %d"),Read,Night);
  }
- bOut=false;Layout();
+ bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();Layout();
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("TRIP CAMERA"),S47Kit::Col({S47Kit::Text(Page),S47Kit::Small(TEXT("Back in your kit. It can be set again."))}),760));
  M->RequestAutosave();return true;
 }
-void FS47TripCamera::Step(double Dt){static_cast<void>(Dt);if(bOut&&bBuilt&&!PropSaro.IsValid()){bBuilt=false;Build();Layout();}}
+void FS47TripCamera::Step(double Dt)
+{
+ if(bOut&&bBuilt&&!PropSaro.IsValid()){bBuilt=false;Build();Layout();}
+ LookIn-=Dt;if(LookIn>0)return;LookIn=.25;
+ Watch();
+}
 bool FS47TripCamera::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s trip camera: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  FS47TripCamera C(nullptr);C.Begin(nullptr);Check(C.Save()->Values.Num()==0&&!C.Out(),TEXT("an older save has none out"));
- int32 Marks[3]={0,0,0},Open[3]={0,0,0},Calm2=0;bool bStable=true;
- for(int32 N=1;N<=400;++N){const int32 M0=Reading(47,N,true,false);++Marks[M0];++Open[Reading(47,N,false,false)];bStable&=M0==Reading(47,N,true,false);Calm2+=Reading(47,N,true,true)==2?1:0;}
- Check(bStable&&Marks[2]>Open[2]&&Marks[0]>0&&Marks[1]>0,TEXT("marks catch something more often than bare ground; a night reads the same each time"));
- Check(Calm2==0,TEXT("a calm night shows nothing strange"));
- bool bRecord=true;for(int32 R=0;R<3;++R){const FString T=ReadingText(R,TEXT("the mine"),47,3);bRecord&=T.Contains(TEXT("the mine"))&&!T.ToLower().Contains(TEXT("alien"));}
+ int32 Strange=0,Animal=0;bool bStable=true;
+ for(int32 N=1;N<=400;++N){const int32 R0=Reading(ECatch::None,47,N);Strange+=R0>=2?1:0;Animal+=R0==1?1:0;bStable&=R0==Reading(ECatch::None,47,N);}
+ Check(bStable&&Strange==0&&Animal>0&&Animal<400,TEXT("nothing strange is drawn for a night that brought nothing past it; an animal sometimes; the same each time"));
+ Check(Reading(ECatch::Light,47,3)==2&&Reading(ECatch::Body,47,3)==3,TEXT("what passed is what it shows"));
+ bool bRecord=true;for(int32 R=0;R<4;++R){const FString T=ReadingText(R,TEXT("the mine"),47,3,2*3600.+7*60,R>=2);bRecord&=T.Contains(TEXT("the mine"))&&!T.ToLower().Contains(TEXT("alien"));if(R>=2)bRecord&=T.Contains(TEXT("02:07"))&&T.Contains(TEXT("develop"));}
  Check(bRecord,TEXT("each reading says where, and does not say what"));
  auto O=S47J::New();S47J::Set(O,TEXT("out"),true);S47J::Set(O,TEXT("area"),TEXT("road"));S47J::Set(O,TEXT("title"),TEXT("the mine"));S47J::Set(O,TEXT("clock"),90000.);S47J::Set(O,TEXT("at"),TArray<double>{1,2,3});
  FS47TripCamera B(nullptr);B.Begin(S47J::Read(S47J::Write(O)));Check(B.Out()&&S47J::Num(B.Save(),TEXT("clock"))==90000.,TEXT("one left out stays out after a Continue"));
+ S47J::Set(O,TEXT("caught"),2);S47J::Set(O,TEXT("caughtClock"),97000.);S47J::Set(O,TEXT("photo"),TEXT("trip4@97000"));
+ FS47TripCamera Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(O)));Check(Kept.CaughtTonight()==ECatch::Body&&S47J::Str(Kept.Save(),TEXT("photo"))==TEXT("trip4@97000"),TEXT("what it caught, and its frame, survive a Continue"));
  return OK;
 }
 
