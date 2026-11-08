@@ -675,6 +675,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
   const double X=FS47DuskOrb::HomeX+Shift.X,Z=FS47DuskOrb::HomeZ+Shift.Y;
   Anchor=FVector(X,US47Night::SaroFloorAt(M->Web,X,Z)+FS47DuskOrb::HomeUp,Z);
   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: dusk orb visit: %d of %d lights, %.0f s, flight seed %d, between %s (%.0f %.0f)%s"),DuskOrb.VisitLights(),FS47DuskOrb::Count,DuskOrb.VisitSeconds(),DuskOrb.VisitSeed(),*OrbPair,X,Z,bHome?TEXT(", the first spot"):TEXT(""));
+  if(Places)FS47EventPlaces::LogPick(Id,Places->Find(TEXT("array")),FString::Printf(TEXT("over %s"),*OrbPair));
  }
  if(S47SmallHints::Is(Id))Anchor=S47SmallHints::AnchorOf(M,Id);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
