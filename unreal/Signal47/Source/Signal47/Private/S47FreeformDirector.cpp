@@ -81,8 +81,8 @@ namespace
    for(const auto& Value:S47J::Arr(Root,TEXT("events")))
    {const auto O=Value->AsObject();Out.Add({S47J::Str(O,TEXT("id")),S47J::Str(O,TEXT("family")),S47J::Str(O,TEXT("action")),S47J::Str(O,TEXT("finding")),S47J::Int(O,TEXT("day"),1),S47J::Bool(O,TEXT("night")),S47J::Num(O,TEXT("duration"),60)});}
    Out.Add({TEXT("roomlight_return"),TEXT("minor"),TEXT("roomlight"),TEXT("A previously switched-off room light was on at return. The original switch operation and a physical readback are retained; no operator identified."),1,false,180});
-   Out.Add({TEXT("feeder_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure was photographed near the remote feeder. Its activity and any connection to equipment faults remain unconfirmed."),2,true,85});
-   Out.Add({TEXT("array_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure was photographed near the array service area. Check the physical cabinet and retained service log; the photograph alone does not establish interference."),3,true,85});
+   Out.Add({TEXT("feeder_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure on film out by the remote feeder on the county road."),2,true,85});
+   Out.Add({TEXT("array_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure on film by the array service cabinet. The cabinet and the service log are worth a look."),3,true,85});
    return Out;
   }();return Data;
  }
@@ -560,7 +560,7 @@ void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPa
  const int32 Game=M->Freeform?M->Freeform->Seed():47;
  const TPair<int32,int32>& Pick=From2[FMath::Min(From2.Num()-1,int32(FS47NightRhythm::Roll(Game,Seed,0x4f524253u)*From2.Num()))];
  OutShift=FVector2D(W.DishX(Pick.Key),W.DishZ(Pick.Key))-From;
- OutPair=Pick.Value!=INDEX_NONE?FString::Printf(TEXT("%s and %s"),*W.DishId(Pick.Value),*W.DishId(Pick.Key)):FString::Printf(TEXT("the antennas round %s"),*W.DishId(Pick.Key));
+ OutPair=Pick.Value!=INDEX_NONE?FString::Printf(TEXT("%s and %s"),*W.DishId(Pick.Value),*W.DishId(Pick.Key)):FString::Printf(TEXT("the antennas around %s"),*W.DishId(Pick.Key));
 }
 bool FS47FreeformDirector::ForceLights(const FString& Place)
 {
@@ -761,7 +761,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("dusk_orb"))
   {
    if(M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
-   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?FString(TEXT("The low lights are back among the antennas.")):FString::Printf(TEXT("A low light moves between %s. The PHOTO LAB camera can retain a field observation."),*OrbPair),6);
+   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?FString(TEXT("The low lights are back among the antennas.")):FString::Printf(TEXT("A low light moves between %s. Worth a photograph."),*OrbPair),6);
   }
   // Marked ground somewhere the player is not looking: somebody saw it come down, and says so.
   if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))
@@ -1051,7 +1051,7 @@ void FS47FreeformDirector::EndForRest()
  if(!bEnabled||Event.IsEmpty()||!RestBlock().IsEmpty())return;
  if(Event==TEXT("s03_failure")&&bEffectsApplied)bOwedArray=true;
  if(Event==TEXT("feeder_fault")&&bEffectsApplied)bOwedFeeder=true;
- Finish(bPhoto,TEXT("I turned in before it was over. Any retained photograph records the observation, not its origin."));
+ Finish(bPhoto,TEXT("I turned in before it was over."));
 }
 FString FS47FreeformDirector::ReportedLine() const
 {
@@ -1218,12 +1218,12 @@ void FS47FreeformDirector::Step(double Dt)
  }
  // Nothing else outlives the player leaving: an event held open out of sight would close the night to everything else.
  if(!SameScene()&&Event!=TEXT("farm_lights")&&Event!=TEXT("town_lights"))
- {if(!bForcedEvent||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("I left before it was over. Any retained photograph records the observation, not its origin."));return;}
+ {if(!bForcedEvent||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("I left before it was over."));return;}
  if(Event==TEXT("empty_car")&&bCarLight&&StepCarLight(Def->Duration))return;
  if((Event==TEXT("farm_lights")||Event==TEXT("town_lights"))&&M->Player)
  {
   const double FarmFleeRange=Event==TEXT("farm_lights")?130:70;static constexpr double FarmFleeSeconds=4;
-  if(OrbFleeAge>=0){OrbFleeAge+=Dt;if(OrbFleeAge>=FarmFleeSeconds){Finish(bPhoto,FString::Printf(TEXT("Several lights hung low over %s, then went straight up as someone came near. A retained photograph records that they were there, not what they were."),*LightPlaceTitle(LightPlace)));return;}}
+  if(OrbFleeAge>=0){OrbFleeAge+=Dt;if(OrbFleeAge>=FarmFleeSeconds){Finish(bPhoto,FString::Printf(TEXT("Several lights hung low over %s, then went straight up as I came near."),*LightPlaceTitle(LightPlace)));return;}}
   // Seen first: however close the tip finds the player, the lights have time to come up.
   else if(Age>=14&&SameScene()&&FVector2D(M->Player->Pos.X-Anchor.X,M->Player->Pos.Z-Anchor.Z).Size()<FarmFleeRange)
   {OrbFleeAge=0;UE_LOG(LogTemp,Display,TEXT("S47: farm lights left at %.1f s"),Age);}
@@ -1238,7 +1238,7 @@ void FS47FreeformDirector::Step(double Dt)
   if(OrbFleeAge>=0)
   {
    OrbFleeAge+=Dt;
-   if(OrbFleeAge>=FS47DuskOrb::FleeSeconds+.3){Finish(bPhoto,TEXT("The lights rose straight up the moment someone came close. Any retained photograph records the observation, not its origin."));return;}
+   if(OrbFleeAge>=FS47DuskOrb::FleeSeconds+.3){Finish(bPhoto,TEXT("The lights rose straight up the moment I came close."));return;}
   }
   else for(int32 I=0;I<DuskOrb.VisitLights();++I)if(FS47DuskOrb::Presence(Age,I,DuskOrb.VisitSeed(),DuskOrb.VisitSeconds())>.5&&FVector::Dist(M->Player->Pos,OrbAt(I))<FS47DuskOrb::FleeRange)
   {
@@ -1270,7 +1270,7 @@ void FS47FreeformDirector::Step(double Dt)
     bControlled=true;M->Freeform->Field->TriggerServiceFault(false,M->Freeform->Field->ServiceDishId());Changed();
    }
    if(Event==TEXT("service_presence")&&Stage==1&&I.State==FS47RoswellBrain::EState::Contact&&!(M->World&&M->World->bDriving))
-   {const FString Why=TEXT("The service-yard presence reached you. The secured work survives; the encounter is over.");Finish(false);if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();M->Freeform->Recover(Why);return;}
+   {const FString Why=TEXT("Something in the service yard got to me. I do not remember coming inside.");Finish(false);if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();M->Freeform->Recover(Why);return;}
   }
   const bool Safe=M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos)&&!M->Web->IsDoorOpen(TEXT("doorSouth"))&&!M->Web->IsDoorOpen(TEXT("doorEast"));
   if(Stage==1&&((Event==TEXT("service_presence")&&Safe&&Age>15)||Age>Def->Duration))
@@ -1329,7 +1329,7 @@ bool FS47FreeformDirector::StepCarLight(double Duration)
   if(bCarTaken){Finish(false);return true;}
   CarStage=2;Changed();return true;
  }
- if(Age>Duration)Finish(bPhoto,TEXT("A light stood over the unoccupied car in the staff bay, then went out. I kept my distance and did not go up to the car. A retained photograph records that it was there, not what it was."));
+ if(Age>Duration)Finish(bPhoto,TEXT("A light stood over the empty car in the staff bay, then went out. I did not go up to the car afterward."));
  return true;
 }
 void FS47FreeformDirector::RetainObservation(const FS47FreeformObservation& Observation)
@@ -1393,7 +1393,7 @@ FString FS47FreeformDirector::Label(const FString& Id)const
 {
  if(!bEnabled||Event.IsEmpty())return {};
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&!(bCarLight&&CarStage==1))return TEXT("Inspect the unoccupied car and dashboard clock");
- if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace"))return bPhoto?TEXT("Inspect and retain the loose fragment"):TEXT("Photograph the marked surface before moving anything");
+ if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace"))return bPhoto?TEXT("Pick up the loose fragment"):TEXT("Photograph the marked surface before moving anything");
  return {};
 }
 bool FS47FreeformDirector::Use(const FString& Id)
@@ -1406,7 +1406,7 @@ bool FS47FreeformDirector::Use(const FString& Id)
  if(Id==TEXT("ff:telex")&&Event==TEXT("unsigned_telex"))
  {
   FS47Doc Doc;Doc.Id=TEXT("ff_unsigned_telex_")+FString::FromInt(M->Freeform->Day());Doc.Kind=TEXT("telex");Doc.Title=TEXT("Unsigned line / retained original");Doc.Stamp=M->Story?M->Story->ClockText(true):FString();
-  Doc.Page=TEXT("RECEIVED / NO VERIFIED SENDER\n\nYOUR PREVIOUS REGISTERED INTERVAL IS STILL PRESENT. RECHECK THE LOCAL TIMING PATH.\n\nThe header carries no originating station. Compare against the original observation; this message is a new source, not a correction to it.");
+  Doc.Page=TEXT("RECEIVED / NO VERIFIED SENDER\n\nTO SARO NIGHT OPERATOR. YOUR LAST LOGGED OBSERVATION IS ON FILE HERE. NO FURTHER REPORT NEEDED.\n\nThe answerback is blank. The line went dead as soon as it finished printing.");
   if(M->Story)M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);Finish(true);return true;
  }
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&bCarLight&&CarStage==1)return true;
@@ -1414,14 +1414,14 @@ bool FS47FreeformDirector::Use(const FString& Id)
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4)&&bCarLight&&CarStage==2)
  {
   const FString Stopped=FS47FreeformCases::Clock(FMath::Fmod(CarLightClock,86400.));
-  Finish(true,FString::Printf(TEXT("The unoccupied car in the staff bay, after a light stood over it. Roof warm, bonnet cold, ignition off, dashboard clock stopped at %s. This records what I checked, not what it was."),*Stopped));
-  if(M->UI)M->UI->Toast(FString::Printf(TEXT("Roof warm. Bonnet cold. Ignition off. The dashboard clock has stopped at %s. No driver in sight."),*Stopped),6);
+  Finish(true,FString::Printf(TEXT("The empty car in the staff bay, after a light stood over it. Roof warm, hood cold, ignition off, dashboard clock stopped at %s."),*Stopped));
+  if(M->UI)M->UI->Toast(FString::Printf(TEXT("Roof warm. Hood cold. Ignition off. The dashboard clock has stopped at %s. No driver in sight."),*Stopped),6);
   return true;
  }
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4))
- {Finish(true);if(M->UI)M->UI->Toast(TEXT("Bonnet warm. Ignition off. The dashboard clock is six minutes behind the retained base reference. No driver in sight."),6);return true;}
+ {Finish(true);if(M->UI)M->UI->Toast(TEXT("Hood warm. Ignition off. The dashboard clock is six minutes behind the station clock. No driver in sight."),6);return true;}
  if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&Near(Anchor,2.7))
- {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Keep its position as evidence first: photograph the marked surface before lifting the fragment."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}
+ {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Photograph it where it lies before you pick it up."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}
  return false;
 }
 void FS47FreeformDirector::OrbLightCount(int32& On,int32& Shadowed,float& Lumens,float& Radius)const
@@ -1555,7 +1555,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
   TArray<FColor> Pixels;int32 W=0,H=0;
   const double Mean=S47Image::DecodePixels(Shot.Url,Pixels,W,H)?SubjectMean(Pixels,W,H,TaggedRegion):-1;
   PhotoSubjectMean=Mean;
-  if(Mean<(M->Freeform&&M->Freeform->HasKit(TEXT("film"))?8:15)){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("The photographed subject is too dark or too small to register. Retain it as a lead; seek a clearer, better-lit view."),4);return;}
+  if(Mean<(M->Freeform&&M->Freeform->HasKit(TEXT("film"))?8:15)){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("Too dark or too small to make out. Try a closer, better-lit frame."),4);return;}
  }
 
  TaggedShot.Empty();LastPhotoAt=ActiveTime;
@@ -1569,7 +1569,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==TaggedIncident;});
  if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;Claims.Add(C);}
  else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;}
- Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("This incident is already registered. The new photograph remains in the album; no additional credit is due."):TEXT("Field photograph retained. PHOTO LAB: Develop, fix and collect this original, then register it at OPS for $20 once per incident. Origin remains unconfirmed."),5);
+ Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("Already registered. The new photograph stays in the album; no extra credit."):TEXT("Photograph taken. Develop it in the PHOTO LAB, then register it at OPS for $20."),5);
 }
 bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 {
@@ -1583,8 +1583,8 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
   return false;
  }
  C->bPaid=true;M->Freeform->Earn(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0));
- M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe captured subject met framing and visibility checks. Registration documents the observation; its origin and intent remain unconfirmed. This incident cannot be paid twice."),*C->Title,*C->PhotoId,C->Reward));Changed();
- if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit. This records an observation, not a confirmed origin."),5);
+ M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,C->Reward));Changed();
+ if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit."),5);
  return true;
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);
@@ -1595,7 +1595,7 @@ bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
  const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->PhotoId;});
  if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Pose.IsSet()||!Shot->Pose->Valid()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+Id;}))return false;
  C->ControlOriginalId=Shot->Id;C->ControlPlannedAt=M->Freeform->Clock();
- M->Freeform->RecordEvidence(TEXT("orb-return-plan.")+Id,FString::Printf(TEXT("PLANNED SAME-PLACE PHOTOGRAPH / %s\nFrozen original: %s / exposure clock %.3f s\n%s\nTake a separate photograph after this passage ends, then develop it and compare both originals at OPS. This plan is not a completed control or an additional paid observation."),*Id,*Shot->Id,Shot->Clock,*PhotoControlHint(Id)));
+ M->Freeform->RecordEvidence(TEXT("orb-return-plan.")+Id,FString::Printf(TEXT("PLANNED SAME-PLACE PHOTOGRAPH / %s\nFrozen original: %s / exposure clock %.3f s\n%s\nWhen this passage ends, take a new photograph from the same place, develop it and compare both originals at OPS. The plan itself pays nothing."),*Id,*Shot->Id,Shot->Clock,*PhotoControlHint(Id)));
  Changed();return true;
 }
 bool FS47FreeformDirector::PlanLocalNoiseCheck(const FString& Id)
@@ -1606,7 +1606,7 @@ bool FS47FreeformDirector::PlanLocalNoiseCheck(const FString& Id)
  if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform:")+Id;}))return false;
  C->LocalNoiseOriginalId=Shot->Id;C->LocalNoisePlannedAt=M->Freeform->Clock();
  const FString Original=Shot->Id,When=LightStamp(Shot->Clock); // copy before journal callbacks
- M->Freeform->RecordEvidence(TEXT("photo-local-noise-plan.")+Id,TEXT("OPTIONAL PLAN / Later local-noise check\nPhotograph ")+Original+TEXT(" / ")+When+TEXT("\nUse a loan logger during a new SARO recording. This plan supplies no measurement, loan access or explanation of the photographed light. The free return photograph remains independent."));
+ M->Freeform->RecordEvidence(TEXT("photo-local-noise-plan.")+Id,TEXT("OPTIONAL PLAN / Later local-noise check\nPhotograph ")+Original+TEXT(" / ")+When+TEXT("\nUse a loan logger during a new SARO recording. The plan itself measures nothing and does not open the loan. The return photograph is a separate check."));
  Changed();return true;
 }
 FString FS47FreeformDirector::LocalNoisePlanHint(const FString& Id) const
@@ -1703,15 +1703,15 @@ bool FS47FreeformDirector::RegisterPhotoControl(const FString& Id,const FString&
  auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});
  const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});const auto* Control=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==ControlPhotoId;});
  C->ControlPhotoId=Control->Id;
- M->Freeform->RecordEvidence(TEXT("orb-photo-comparison.")+Id,FString::Printf(TEXT("RETAINED PHOTOGRAPHIC COMPARISON / %s\nFirst original: %s / exposure clock %.3f s\nLater control: %s / exposure clock %.3f s\nBoth developed originals are retained. The later view matches the original scene, position (within 1.5 m), direction (within 5 degrees) and lens. Lighting and elapsed time can differ. This records a paired visual control, not an automated image interpretation, confirmed identity or shared signal source. No additional payment."),*Id,*Original->Id,Original->Clock,*Control->Id,Control->Clock));
+ M->Freeform->RecordEvidence(TEXT("orb-photo-comparison.")+Id,FString::Printf(TEXT("RETAINED PHOTOGRAPHIC COMPARISON / %s\nFirst original: %s / exposure clock %.3f s\nLater control: %s / exposure clock %.3f s\nBoth developed originals are retained. The later view matches the original scene, position (within 1.5 m), direction (within 5 degrees) and lens. Lighting and elapsed time can differ. No additional payment."),*Id,*Original->Id,Original->Clock,*Control->Id,Control->Clock));
  Changed();return true;
 }
 
 FString FS47FreeformDirector::ObservationNote()const
 {
- if(Event==TEXT("wrong_source"))return TEXT("CONTROL NOTE: extra component persists off the expected source centre. Compare independent antenna groups.");
+ if(Event==TEXT("wrong_source"))return TEXT("CONTROL NOTE: extra component persists off the expected source center. Compare independent antenna groups.");
  if(Event==TEXT("time_disagreement"))return TEXT("CONTROL NOTE: receiver and independent timing path disagree by 3.2 s. Retain both timestamps.");
- if(Event==TEXT("duplicate_print"))return TEXT("PROVENANCE NOTE: a second spool impression has a different interval label. The retained original and source recording are unchanged.");
+ if(Event==TEXT("duplicate_print"))return TEXT("PROVENANCE NOTE: a second spool impression has a different run label. The retained original and source recording are unchanged.");
  if(Event==TEXT("extra_pulse"))return TEXT("CONTROL NOTE: faint extra pulses occur outside the expected period. Test a separate internal reference.");
  return {};
 }

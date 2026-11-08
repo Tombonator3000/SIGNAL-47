@@ -3065,7 +3065,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   int32 Reads[3]={0,0,0};bool bStable=true;
   for(int32 D=1;D<=300;++D){const int32 R0=FS47FarmSite::DaylightRead(47,TEXT("farm"),D);++Reads[R0];bStable&=R0==FS47FarmSite::DaylightRead(47,TEXT("farm"),D);}
   Check(bStable&&Reads[0]>30&&Reads[1]>30&&Reads[2]>30,TEXT("Marks: the second look reads ordinary, undecided or strange, and looking again never changes it"));
-  bool bWords=true;for(int32 R0=0;R0<3;++R0)for(bool bFarmSite:{true,false}){const FString T0=FS47FarmSite::DaylightText(R0,bFarmSite);bWords&=T0.Contains(TEXT("by daylight"))&&T0.Contains(TEXT("what is on the ground"));}
+  bool bWords=true;for(int32 R0=0;R0<3;++R0)for(bool bFarmSite:{true,false}){const FString T0=FS47FarmSite::DaylightText(R0,bFarmSite);bWords&=T0.Contains(TEXT("by daylight"))&&!T0.Contains(TEXT("records"));}
   Check(bWords,TEXT("Marks: every daylight record says what is there and no more"));
  }
  {bool bNamed=true;for(int32 L0=0;L0<FS47FarmSite::SecondCallLines;++L0)bNamed&=FS47FarmSite::SecondCallLine(L0,TEXT("the church")).Contains(TEXT("the church"));Check(bNamed,TEXT("Calls: every second call names the place and says nothing about what it is"));}

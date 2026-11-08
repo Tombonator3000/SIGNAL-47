@@ -68,7 +68,7 @@ namespace
   {{false,true,true},   // feeder-borne ticks vanish on generator power
    {true,true,false},   // the intermittent local carrier does not recur
    {true,false,true}},  // a sky-fixed source vanishes off the beam
-  {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 47-C, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nYour generator comparison has been forwarded to the line crew. A spare control fuse is in your depot."),
+  {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 31-B, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nYour generator comparison has been forwarded to the line crew. A spare control fuse is in your depot."),
    TEXT("FCC FIELD OFFICE / ALBUQUERQUE\nRE: UNLICENSED INTERMITTENT CARRIER\n\nTwo ranchers near US-60 reported an intermittent carrier in 1984. The source was never located.\n\nYour repeat and generator records exclude the station itself. A portable field logger is approved on loan so the carrier can be recorded from a second site."),
    TEXT("NRAO / SOCORRO\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky rises 3 minutes 56 seconds earlier each night; anything on the ground keeps clock time. A field logger is approved on loan for an independent second site.")},
   TEXT("Records reply: the repeated interval"),TEXT("access.fieldlogger")
@@ -106,7 +106,7 @@ namespace
    {true,false,true}},   // unexplained: impacts continue, no crossing, both sites at once
   {TEXT("COUNTY BUILDING INSPECTOR / SOCORRO\nRE: SARO ANNEX ROOF\n\nThe roof plate you fastened was the last unsecured sheet on the 1962 annex. Wind loading on that roof is noted in the 1979 inspection.\n\nNo further action. Your sealed-gate record shows nothing crossing to the station."),
    TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO SERVICE GATE\n\nYour broken seal and the track along the service road match reports of people taking copper and scrap from remote sites this spring.\n\nA deputy will drive past SARO on night patrol. Keep the gate sealed and photograph any vehicle."),
-   TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts and the sealed gate stayed intact.\n\nNo person, vehicle or animal accounts for it. The observation is retained without an identity. Do not approach it alone.")},
+   TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts and the sealed gate stayed intact.\n\nNo person, vehicle or animal accounts for it. Do not approach it alone.")},
   TEXT("Records reply: visitors around the base"),TEXT("access.visitors")
  },
  {
@@ -341,11 +341,11 @@ FString FS47FreeformCases::ConclusionText(int32 Line) const
  }
  Text+=TEXT("\nINTERPRETATION\n");
  if(D.Mystery)
-  Text+=FString::Printf(TEXT("Filed as the station's assessment: %s. It rests on the traces and the tests listed above, and it has not been checked. It does not identify an unobserved source or person."),D.Causes[C->Conclusion]);
+  Text+=FString::Printf(TEXT("Filed as the station's assessment: %s. It rests on the traces and the tests listed above, and it has not been checked."),D.Causes[C->Conclusion]);
  else if(Line==2&&C->Conclusion==2)
-  Text+=TEXT("The retained controls do not support the tested loose-fitting or service-gate explanations. The cause remains unexplained. This does not establish a visitor, an alien, or an identity. An intact gate excludes only a crossing through that gate during the valid control.");
+  Text+=TEXT("The retained controls do not support the tested loose-fitting or service-gate explanations. The cause remains unexplained. An intact gate rules out only a crossing through that gate during the valid control.");
  else
-  Text+=FString::Printf(TEXT("%s is supported among the explanations tested. This is limited to the controls listed above; it does not identify an unobserved source or person."),D.Causes[C->Conclusion]);
+  Text+=FString::Printf(TEXT("%s is supported among the explanations tested, and only by the controls listed above."),D.Causes[C->Conclusion]);
  Text+=TEXT("\n\nKeep the original observations and test records. Tests without a retained valid result establish neither presence nor absence.");
  if(Line==0)Text+=TEXT(" A field logger is approved on loan for an independent comparison; collect it at EQUIPMENT CHECKOUT in the parts store.");
  return Text;

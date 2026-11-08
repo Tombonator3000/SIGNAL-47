@@ -377,11 +377,10 @@ void FS47HighwayUfo::Draw()
 void FS47HighwayUfo::Note()
 {
  if(bLogged||!bSeen||!M)return;bLogged=true;
- FString Text=bFollow?TEXT("A low light followed the road near my vehicle."):TEXT("A low red light moved along the highway.");
+ FString Text=bFollow?TEXT("A low light came up behind the truck and followed it along the highway."):TEXT("A low red light moved along the highway.");
  if(bSawCar&&!bFollow)Text+=TEXT(" A patrol car followed it.");
- if(bSawPass)Text+=TEXT(" The light reversed and passed close to my vehicle, lighting the road.");
- if(bEscaped)Text+=TEXT(" I broke contact. The vehicle remained usable.");
- Text+=TEXT(" Its origin is unconfirmed.");
+ if(bSawPass)Text+=TEXT(" Then the light turned back and came past me low, lighting up the road.");
+ if(bEscaped)Text+=TEXT(" I got clear of it. The truck still ran.");
  if(M->IsFreeform()&&M->Freeform)M->Freeform->RecordEvidence(FString::Printf(TEXT("highway-light-%d"),Serial),TEXT("FIELD OBSERVATION / HIGHWAY\n")+Text);
  else if(M->Story)M->Story->Note(Text);
 }

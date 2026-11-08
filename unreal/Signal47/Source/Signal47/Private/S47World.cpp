@@ -239,7 +239,7 @@ void US47World::Init(US47Main* InM)
 			{
 				// SARO closed: the district has tagged the truck for its flatbed and has the keys (FS47Predecessor::Close).
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->StationClosed())
-					return { TEXT("District tag on the windscreen / the keys went back with the closing order"), [this] { Toast(TEXT("The district has the keys. A tag on the windscreen says the flatbed will come for it."), 5); } };
+					return { TEXT("District tag on the windshield"), [this] { Toast(TEXT("The district has the keys. A tag on the windshield says the flatbed will come for it."), 5); } };
 				// The parked service vehicle itself accepts a held parcel before offering a drive.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
 					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
@@ -986,7 +986,7 @@ void US47World::Roam(const FString& From)
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		const bool bFreeform = M && M->IsFreeform();
-		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: Drive south past the motel; the station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential requisitions after hours. GARAGE RECEIVING: Return north to SARO, unload the truck and carry supplies to the labelled table inside the east-wing garage. The notebook map marks both stops."));
+		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: south past the motel, west side of the highway, just past Mesa Diner. Parts 08:00-20:00, essentials after hours. GARAGE RECEIVING: unload at the labeled table in the SARO garage, east wing. Both are on the notebook map."));
 		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
 		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
 	};
@@ -2242,7 +2242,7 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
  O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
  O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
  O.Hint = TEXT("SARO: stop anywhere in the visitor parking area left of the sign. Supper at Mesa Diner is optional.");
- O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.") : TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
+ O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? FString(TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.")) : FString::Printf(TEXT("%s/%s: throttle and brake. %s/%s: steer. %s: radio. Stop and press %s to get out. SARO is north through town; the diner stop is optional."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))),9); };
  TruckAt = TEXT("saro");
  FString Route;
  const bool bTest=FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route);

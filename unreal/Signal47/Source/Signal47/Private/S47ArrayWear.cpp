@@ -4,8 +4,8 @@ const TArray<FS47ArrayWear::FBranch>& FS47ArrayWear::Branches()
 {
  static const TArray<FBranch> B={
   {TEXT("west"),TEXT("WEST BRANCH"),TEXT("S-13"),TEXT("Blown control fuses in the branch junction."),{TEXT("S-13"),TEXT("S-15"),TEXT("S-21")},{{TEXT("fuse"),2}}},
-  {TEXT("east"),TEXT("EAST BRANCH"),TEXT("S-16"),TEXT("Burnt-out command relays in the branch junction."),{TEXT("S-16"),TEXT("S-20"),TEXT("S-23"),TEXT("S-26")},{{TEXT("relay"),2}}},
-  {TEXT("centre"),TEXT("CENTRE BRANCH"),TEXT("S-14"),TEXT("Water in the feed cable. It needs a made-up splice from the workshop."),{TEXT("S-14"),TEXT("S-18"),TEXT("S-19"),TEXT("S-22")},{{TEXT("splice_kit"),1}}},
+  {TEXT("east"),TEXT("EAST BRANCH"),TEXT("S-16"),TEXT("Burned-out command relays in the branch junction."),{TEXT("S-16"),TEXT("S-20"),TEXT("S-23"),TEXT("S-26")},{{TEXT("relay"),2}}},
+  {TEXT("centre"),TEXT("CENTER BRANCH"),TEXT("S-14"),TEXT("Water in the feed cable. It needs a made-up splice from the workshop."),{TEXT("S-14"),TEXT("S-18"),TEXT("S-19"),TEXT("S-22")},{{TEXT("splice_kit"),1}}},
   {TEXT("far"),TEXT("FAR BRANCH"),TEXT("S-17"),TEXT("Seized drive motor and its relay on the long run out."),{TEXT("S-17"),TEXT("S-24"),TEXT("S-25"),TEXT("S-27")},{{TEXT("drive_motor"),1},{TEXT("relay"),1}}}};
  return B;
 }

@@ -205,7 +205,7 @@ namespace
 			{ TEXT("On foot"), {
 				{ TEXT("LS / L3"), TEXT("Walk / run.") },
 				{ TEXT("RS"), TEXT("Look around.") },
-				{ TEXT("A / B"), TEXT("Use / secondary choice or takeaway management.") },
+				{ TEXT("A / B"), TEXT("Use / the other choice, or the takeout bag.") },
 				{ TEXT("X / RT"), TEXT("Raise or lower the camera / shutter while raised.") },
 				{ TEXT("LT / Y"), TEXT("Hold to look closer / jump.") },
 				{ TEXT("D-pad Up / Down"), TEXT("Flashlight / the walkie: call Dale, or answer him. In the truck, Down is the radio.") },
@@ -244,14 +244,14 @@ namespace
 				Foot.Rows.Add({ KeysSaid(TEXT("shutter")), TEXT("The shutter, with the camera raised.") });
 			}
 			// (the second choice and the case board have rows of their own here; the web's table has neither)
-			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("Manage takeaway: set down, stow, take out or discard. Otherwise, the other choice at a prompt.") });
+			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("The takeout bag: set it down, stow it, take it out or throw it away. At a prompt, the other choice.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
 			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });
 			FCtlGroup Truck = { TEXT("In the truck"), {
 				{ First(TEXT("forward")) + TEXT(", ") + First(TEXT("back")), FString::Printf(TEXT("Throttle and brake. %s at a stop: reverse."), *KeySaid(TEXT("back"))) },
 				{ First(TEXT("left")) + TEXT(", ") + First(TEXT("right")), TEXT("Steer.") },
-				{ TEXT("Mouse"), TEXT("Look round the cab.") },
+				{ TEXT("Mouse"), TEXT("Look around the cab.") },
 				{ KeysSaid(TEXT("radio")) + TEXT(", or click the radio"), TEXT("The radio: on, the next station, off.") },
 				{ First(TEXT("use")) + TEXT(", stopped"), TEXT("Get out. When the engine has died: turn the key.") } } };
 			// SNEAK-20261108 and WALKIE-USE-20261108
@@ -902,8 +902,8 @@ void SS47Notebook::Build()
 			];
 		}
 		LeftSlot->SetContent(Lay(Head(TEXT("Album"), Roll), Photos.Num() ? StaticCastSharedRef<SWidget>(Thumbs)
-			: NShots ? SNullWidget::NullWidget : Empty(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere.")), LeftScroll));
-		if (!Photos.Num() && !NShots) Read.Add(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere."));
+			: NShots ? SNullWidget::NullWidget : Empty(FString::Printf(TEXT("No exposures yet. Once you have the field camera, %s raises it anywhere."), *S47Keys::Said(TEXT("camera")))), LeftScroll));
+		if (!Photos.Num() && !NShots) Read.Add(FString::Printf(TEXT("No exposures yet. Once you have the field camera, %s raises it anywhere."), *S47Keys::Said(TEXT("camera"))));
 		TSharedRef<SWrapBox> Prints = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(P(22), P(24)));
 		for (int32 I = 0; I < NShots; ++I) Prints->AddSlot()[Entry(Photos.Num() + I, SNew(SBox).Padding(P(8))[Print(I, 214.f, false)])];
 		bRightIsEntries = NShots > 0;

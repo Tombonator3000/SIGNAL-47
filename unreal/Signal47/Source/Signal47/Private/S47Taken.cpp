@@ -372,7 +372,7 @@ void FS47Taken::Apply()
    if(M->World&&M->World->Indoors(FVector(X,Before.Y+1,Z)))continue;
    bool bClear=true;
    for(const FS47Rect& R:M->Web->Colliders())if(R.bEnabled&&X>R.MinX-.5&&X<R.MaxX+.5&&Z>R.MinZ-.5&&Z<R.MaxZ+.5){bClear=false;break;}
-   if(bClear){M->Player->Place(X,Z,A);Where=FString::Printf(TEXT("about %d metres from there, on the ground"),FMath::RoundToInt(D/10)*10);break;}
+   if(bClear){M->Player->Place(X,Z,A);Where=FString::Printf(TEXT("about %d yards from there, on the ground"),FMath::RoundToInt(D/10)*10);break;}
   }
  }
  // A frame on the roll that was not taken: no word about it. It is only there in the album, like the others.
@@ -385,7 +385,7 @@ void FS47Taken::Apply()
   if(!Names.IsEmpty())Gone=FString::Printf(TEXT(" My %s %s not on me. It must still be where I stood."),*FString::Join(Names,TEXT(" and ")),Names.Num()>1?TEXT("are"):TEXT("is"));
   else M->Freeform->LostTimeTrace(1); // Nothing to go back for: where they came to is all there is to look at, and they are looking at it.
  }
- Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s This records what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
+ Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s"),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
  Note[0]=FChar::ToUpper(Note[0]);
  M->Freeform->RecordEvidence(FString::Printf(TEXT("taken-%d-%d"),M->Freeform->Day(),int32(SafeClock)),Note);
  // The rest after it is the data file's (rest_after.taken), not a number of its own.
@@ -399,7 +399,7 @@ void FS47Taken::Finish()
  if(M&&M->UI)
  {
   M->UI->Fade(false);
-  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s. Your watch has moved on. It is in your field records (TAB)."),*ClockText(M->Freeform->Clock())),7);
+  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s by your watch. Noted in your field records (TAB)."),*ClockText(M->Freeform->Clock())),7);
  }
  Seconds=0;
  if(M)M->RequestAutosave();

@@ -105,7 +105,7 @@ bool FS47RoomLights::Available(int32 I) const
 FString FS47RoomLights::Label(const FString& Id) const
 {
  const int32 I=IndexOf(Id);if(!Available(I))return FString();
- return FString::Printf(TEXT("%s ceiling light / switch %s%s"),Switches[I].Title,RoomEnabled(Id)?TEXT("OFF"):TEXT("ON"),EventLightMatches(Id,ManualSerial)?TEXT(" / examine retained OFF setting"):TEXT(""));
+ return FString::Printf(TEXT("%s ceiling light / switch %s%s"),Switches[I].Title,RoomEnabled(Id)?TEXT("OFF"):TEXT("ON"),EventLightMatches(Id,ManualSerial)?TEXT(" / the switch is still down"):TEXT(""));
 }
 bool FS47RoomLights::Use(const FString& Id)
 {
@@ -117,7 +117,7 @@ bool FS47RoomLights::Use(const FString& Id)
  ManualInput(I);Apply();
  if(M->IsFreeform()&&M->Freeform&&M->Freeform->Director)M->Freeform->Director->RoomLightInput(Switches[I].Room,ManualSerial,!Enabled[I]);
  if(M->Audio){FS47Sound S;S.At=InteractionPoint(Id);S.Gain=.45f;M->Audio->Sfx(M->Audio->Or(TEXT("small_switch"),TEXT("switch")),S);}
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%s ceiling switch %s.%s"),Switches[I].Title,Enabled[I]?TEXT("ON"):TEXT("OFF"),M->Story&&M->Story->bDark?TEXT(" Supply is off; your switch setting is retained."):TEXT(" Equipment power is unchanged.")),3);
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("%s ceiling switch %s.%s"),Switches[I].Title,Enabled[I]?TEXT("ON"):TEXT("OFF"),M->Story&&M->Story->bDark?TEXT(" No power. The switch stays where you left it."):TEXT(" The equipment stays on.")),3);
  M->RequestAutosave();return true;
 }
 bool FS47RoomLights::Build()
@@ -149,7 +149,7 @@ bool FS47RoomLights::Build()
   Item.Examine=[this,Guard,I]
   {
    if(!Guard.IsValid()||!Available(I))return FString();
-   FString Text=FString::Printf(TEXT("%s wall switch is %s. This controls room lighting only; computers and instruments have separate power."),Switches[I].Title,ManualEnabled(Switches[I].Room)?TEXT("ON"):TEXT("OFF"));
+   FString Text=FString::Printf(TEXT("%s wall switch: %s. Ceiling lights only. The computers and instruments are on their own circuit."),Switches[I].Title,ManualEnabled(Switches[I].Room)?TEXT("ON"):TEXT("OFF"));
    if(M->IsFreeform()&&M->Freeform&&M->Freeform->Director)Text+=M->Freeform->Director->InspectRoomLight(Switches[I].Room);
    return Text;
   };M->Inter->Add(Item);

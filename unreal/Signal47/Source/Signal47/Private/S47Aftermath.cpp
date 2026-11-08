@@ -145,7 +145,7 @@ void FS47Aftermath::StepCow(double Clock)
  for(const auto& H:M->TownLayer->Herds)if(H&&H->Area==Here&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(H->Middle().X,H->Middle().Z))<CowCloseEnough)
  {
   bCowNoted=true;
-  M->Freeform->RecordEvidence(CowFindingId(),TEXT("The Alderete pasture. Eight head where there were nine. Tag 25 is not with them. Cattle stray. This records the count, not where she went."));
+  M->Freeform->RecordEvidence(CowFindingId(),TEXT("The Alderete pasture. Eight head where there were nine. Tag 25 is not with them. Cattle stray."));
   if(M->UI)M->UI->Toast(TEXT("Eight of them. There were nine."),5);
   M->RequestAutosave();
   return;

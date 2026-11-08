@@ -315,14 +315,14 @@ bool FS47FreeformWorld::StartPump()
  const double Volume=FMath::Min(1.,4.-Fuel);
  if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
  // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
- if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: No operating budget, so no fuel delivered or charged. OPS: Registered work pays into the budget. An empty tank can call roadside return from the truck."));return false;}
+ if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: the budget is empty, so the pump stays off. Work registered at OPS pays into it. On a dry tank, you can still call roadside return from the truck."));return false;}
  bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
- Change(TEXT("REGULAR connected to SARO truck. Each completed two-second interval delivers up to 0.25 tank units for $1. E stops; only delivered fuel is charged."));return true;
+ Change(TEXT("REGULAR into the SARO truck: $1 every two seconds while it runs. Use the pump again to stop; you pay only for what went in."));return true;
 }
 void FS47FreeformWorld::StopPump()
 {
  if(!bPumping)return;bPumping=false;PumpRemaining=PumpElapsed=0;
- ApplyPump();Change(FString::Printf(TEXT("Nozzle returned. Delivered %.2f tank units / charged $%d. Tank %.2f / 4."),PumpVolume,PumpPaid,Fuel));
+ ApplyPump();Change(FString::Printf(TEXT("Nozzle back on the pump. Pumped %.2f for $%d; the gauge reads %.2f / 4."),PumpVolume,PumpPaid,Fuel));
 }
 void FS47FreeformWorld::StepPump(double Dt)
 {
@@ -808,7 +808,7 @@ bool FS47FreeformWorld::RequestEmergencyFuse()
  }
  if(!M->Freeform->ChargeEmergencyFeederFuse()){Change(TEXT("The requisition balance cannot cover another $5. No parcel was issued or budget charged."));return false;}
  EmergencyFuseFault=PowerFaultSerial;Item=TEXT("fuse");Contents.Reset();Contents.Add(Item,1);Payload=1;bParcelWasLoaded=false;
- Change(TEXT("One feeder-repair fuse labelled / $5 charged to budget or requisition debt. Collect the parcel, deliver it to SARO stock and repair the isolated feeder. Existing debt does not block this repair."));return true;
+ Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition debt. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
 }
 bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
 {
@@ -922,7 +922,7 @@ bool FS47FreeformWorld::Deposit(const FString& Station)
  if(Payload==2&&Item==TEXT("service_case")&&Station!=TEXT("ff:bench"))
  {Change(TEXT("CALIBRATION / REPAIR: Return the service case at the bench."));return true;}
  if(Payload==2&&Station!=TEXT("ff:delivery")&&Item!=TEXT("fieldlogger")&&Item!=TEXT("service_case"))
- {Change(TEXT("GARAGE RECEIVING: Carry purchased supplies to the labelled receiving table to unpack them."));return true;}
+ {Change(TEXT("GARAGE RECEIVING: Carry purchased supplies to the labeled receiving table to unpack them."));return true;}
  if(Payload==2&&Item==TEXT("fieldlogger")){Payload=0;Item.Empty();Contents.Reset();bParcelWasLoaded=false;Logger.bCheckedOut=false;Logger.Returns=FMath::Min(1000000,Logger.Returns+1);Change(Logger.bOwned?FString(TEXT("CALIBRATION / REPAIR: Logger and any retained original returned to the bench; bench record updated. Prepare, collect or compare here.")):FString(TEXT("CALIBRATION / REPAIR: Logger and any retained original returned to the bench; loan record updated. Prepare, collect or compare here.")));OpenWorkbench();return true;}
  if(Payload==2&&Item==TEXT("service_case")){Payload=0;Item.Empty();bParcelWasLoaded=false;Change(TEXT("Reusable service case returned to the bench. Stock and budget are unchanged."));return true;}
  if(Payload==2)
@@ -935,7 +935,7 @@ bool FS47FreeformWorld::Deposit(const FString& Station)
   // Commit the whole paid contents before one autosave; no partial parcel credit.
   for(const auto& Pair:Contents)Stock.FindOrAdd(Pair.Key)+=Pair.Value;
   Contents.Reset();bParcelWasLoaded=false;Payload=0;Item.Empty();
-  Change(TEXT("Delivered to SARO stock: ")+Description+TEXT(". The labelled parcel is unpacked once."));return true;
+  Change(TEXT("Delivered to SARO stock: ")+Description+TEXT(". Parcel unpacked."));return true;
  }
  if(Station==TEXT("ff:depot"))OpenDepot();
  else if(Station==TEXT("ff:bench"))OpenWorkbench();
@@ -1220,7 +1220,7 @@ void FS47FreeformWorld::OpenSampleLab()
 {
  if(!Ready()||!Near(SampleAt,2.6)||!M->UI)return;
  TArray<S47Kit::FW> R;
- R.Add(S47Kit::Paper(FString::Printf(TEXT("GENERAL TEST LAB\nFIELD FRAGMENTS %d / SEALED ARCHIVED ORIGINALS %d\n%s"),InventoryCount(TEXT("fragment")),InventoryCount(TEXT("archived_fragment")),BenchJob==TEXT("fragment")?TEXT("REFERENCE COMPARISON RUNNING"):TEXT("Originals retain their field provenance; analysis does not identify an origin."))));
+ R.Add(S47Kit::Paper(FString::Printf(TEXT("GENERAL TEST LAB\nFIELD FRAGMENTS %d / SEALED ARCHIVED ORIGINALS %d\n%s"),InventoryCount(TEXT("fragment")),InventoryCount(TEXT("archived_fragment")),BenchJob==TEXT("fragment")?TEXT("REFERENCE COMPARISON RUNNING"):TEXT("Each original keeps the note of where it was found."))));
  R.Add(S47Kit::Button(TEXT("Analyze field fragment and retain sealed original"),[this]{AnalyzeSample();},true,InventoryCount(TEXT("fragment"))>0&&BenchJob.IsEmpty()&&!M->Freeform->HasFinding(TEXT("sample-analysis"))));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / TEST LAB"),S47Kit::Col(R),880));
 }
@@ -1259,7 +1259,7 @@ void FS47FreeformWorld::RoadsideAssist()
  // supply journey and a feeder detour before stock fuel can be unpacked.
  Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Minutes*60);
  const FString Billed=!bTrouble?FString():bCash?FString::Printf(TEXT(" Tow $%d paid in cash."),Fee):FString::Printf(TEXT(" Tow $%d is on the weekly sheet."),Fee);
- Change(FString(TEXT("County roadside service returned truck and cargo to SARO with a 24-km emergency fuel reserve."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
+ Change(FString(TEXT("The county roadside service brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),FString(TEXT("Roadside return used; the interrupted trip and cargo were retained."))+Billed);
 }
 
@@ -1278,14 +1278,14 @@ bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& Reques
  Service=1;Settle=0;LastFaultDay=M->Freeform->Day();M->Web->SetDishRemoteAvailable(Index,false);
  Change(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to diagnose its failed remote link, or inspect the S-03 CABLE JUNCTION cabinet beside the antenna. Other antennas remain available."));return true;
 }
-void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: inspect / isolate and open the hatch, fit one drive relay, then close and run the movement test. Stock parts are carried in your service pouch; no upgrade is needed."));}}
+void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: open the hatch, fit one drive relay, close it and run the movement test. Any relays from stock are in your service pouch."));}}
 FString FS47FreeformWorld::ServiceStatus() const
 {
  const int32 I=ServiceDishIndex();
  const bool Powered=M&&M->Freeform&&(!M->Freeform->PowerFault()||HasBackupPower());
  const bool Moving=I>=0&&(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1);
  const FString State=!Powered?TEXT("NO POWER / movement held"):I<0?TEXT("ENCODER UNAVAILABLE"):Service==1||Service==2?TEXT("FAULT / command relay failed"):Service>=3&&Service<=6?TEXT("LOCAL / remote isolated"):Service==7||Service==8?TEXT("LOCAL TEST / moving and settling"):Moving?TEXT("REMOTE / moving"):TEXT("REMOTE / ready");
- const FString Next=Service==0||Service==9?TEXT("Select a source and command tracking on the tracking PC."):Service==7||Service==8?Powered?TEXT("Watch the antenna turn out and return; REMOTE follows a passed test."):TEXT("Restore feeder power or start the fuelled backup generator; the test resumes."):Label(TEXT("ff:service"));
+ const FString Next=Service==0||Service==9?TEXT("Select a source and command tracking on the tracking PC."):Service==7||Service==8?Powered?TEXT("Watch the antenna turn out and return; REMOTE follows a passed test."):TEXT("Restore feeder power or start the fueled backup generator; the test resumes."):Label(TEXT("ff:service"));
  const FString Encoder=I>=0?FString::Printf(TEXT("ENCODER %.1f / %.1f | TARGET %.1f / %.1f | %s"),M->Web->DishAz(I),M->Web->DishEl(I),M->Web->DishTargetAz(I),M->Web->DishTargetEl(I),M->Web->DishRemoteAvailable(I)?TEXT("REMOTE ENABLED"):TEXT("REMOTE DISABLED")):TEXT("ENCODER UNAVAILABLE");
  return ServiceWords(FString::Printf(TEXT("S-03: %s\n%s\nLOCAL SERVICE: existing S-03 CABLE JUNCTION cabinet at ground level.\nDRIVE RELAYS IN POUCH: %d / required: %d\nNEXT: %s\n%s"),*State,*Encoder,InventoryCount(TEXT("relay")),HasArrayFault()&&Service<5?1:0,*Next,Service>=5?TEXT("Replacement already fitted. No further relay is consumed for closing, testing or Continue."):InventoryCount(TEXT("relay"))>0?TEXT("Stock relays can be fitted directly; no upgrade or service case is required."):TEXT("CALICHE GAS STATION: Buy a drive relay. GARAGE RECEIVING: Unload and unpack its parcel. CALIBRATION / REPAIR: Test donor controllers before use.")));
 }
@@ -1301,7 +1301,7 @@ bool FS47FreeformWorld::ServiceUse()
   case 5:Service=6; // Closing the hatch and requesting the test are one physical action.
    // Retain legacy stage 6 if power or the encoder prevents movement.
    [[fallthrough]];
-  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(ServiceDishIndex()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(ServiceDishIndex());ServiceEl=M->Web->DishEl(ServiceDishIndex());Service=7;Settle=0;M->Web->PointDish(ServiceDishIndex(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
+  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fueled backup generator before the local test. The new relay stays fitted."));return true;}if(ServiceDishIndex()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(ServiceDishIndex());ServiceEl=M->Web->DishEl(ServiceDishIndex());Service=7;Settle=0;M->Web->PointDish(ServiceDishIndex(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
   case 7:case 8:Change(ServiceStatus());break;
  }
  return true;
@@ -1311,7 +1311,7 @@ bool FS47FreeformWorld::GeneratorUse()
  if(!Near(GeneratorAt,2.9))return true;
  if(bGenerator){bGenerator=false;Change(TEXT("Backup generator stopped. Remaining tank fuel is retained."));return true;}
  if(GeneratorSeconds<=0){if(!Consume(TEXT("fuel"))){Change(TEXT("Generator tank empty. Bring a fuel can from the depot or Caliche."));return true;}GeneratorSeconds=6*3600.;}
- bGenerator=true;Change(TEXT("Backup generator running. Its local tank has six game-hours per full can."));return true;
+ bGenerator=true;Change(TEXT("Backup generator running. A full can keeps it going for six hours."));return true;
 }
 bool FS47FreeformWorld::FeederUse()
 {
@@ -1319,7 +1319,7 @@ bool FS47FreeformWorld::FeederUse()
  if(!M->Freeform->PowerFault()){Change(TEXT("SARO feeder voltage and local fuse are normal."));return true;}
  if(Feeder<=1){Feeder=2;Change(TEXT("SERVICE BAY FEEDER: Low supply confirmed. Open the enclosed isolation switch."));}
  else if(Feeder==2){Feeder=3;Change(TEXT("SERVICE BAY FEEDER: Supply isolated. Replace the blown control fuse from your service stock."));}
- else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("CALICHE STORE COUNTER: Request a $5 feeder-repair fuse on credit, including after hours or with existing debt. Collect its parcel; SARO GARAGE RECEIVING: Unpack it before returning to the SERVICE BAY FEEDER."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
+ else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("No spare fuse in stock. The CALICHE STORE COUNTER sells a $5 feeder fuse on credit, any hour, even in debt. Unpack it at GARAGE RECEIVING, then come back here."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
  else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("SERVICE BAY FEEDER: Wait for the automatic three-second test. The indicator settles and mains supply returns when it passes."));}}
  return true;
 }
@@ -1447,7 +1447,7 @@ void FS47FreeformWorld::Step(double Dt)
    else if(Finished==TEXT("fragment"))
    {
     AddItem(TEXT("archived_fragment"));
-    M->Freeform->RecordEvidence(TEXT("sample-analysis"),TEXT("SARO test-lab comparison of the retained field fragment. Provenance: original landing_trace field record and its photograph, where available, remain unchanged in the case archive. The fragment conducts differently from the stock relay/contact reference; this measurement alone does not identify its origin. Original sample sealed and retained in the test-lab archive."));
+    M->Freeform->RecordEvidence(TEXT("sample-analysis"),TEXT("SARO test-lab comparison of the retained field fragment. Provenance: original landing_trace field record and its photograph, where available, remain unchanged in the case archive. The fragment conducts differently from the stock relay and contact reference. Original sample sealed and retained in the test-lab archive."));
     Change(TEXT("TEST LAB: Comparison complete. Measurement retained; original fragment sealed in the archive. Origin remains unassigned."));
    }
    else
@@ -1661,7 +1661,7 @@ bool FS47FreeformWorld::LoggerAction(const FString& Action,const FString& TapeId
  if(Action==TEXT("connect"))
  {
   if(!BenchJob.IsEmpty()||!Logger.Connect())return false;
-  Change(Logger.Assembly==3?TEXT("CALIBRATION / REPAIR: Battery connected; run clock calibration before carrying the logger."):TEXT("CALIBRATION / REPAIR: Connection seated. Continue with the next labelled connection."));
+  Change(Logger.Assembly==3?TEXT("CALIBRATION / REPAIR: Battery connected; run clock calibration before carrying the logger."):TEXT("CALIBRATION / REPAIR: Connection seated. Continue with the next labeled connection."));
  }
  else if(Action==TEXT("calibrate"))
  {
