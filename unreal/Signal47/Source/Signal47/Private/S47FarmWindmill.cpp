@@ -61,7 +61,7 @@ namespace
   // The four legs, angle iron leaning in, their feet a hand into the ground.
   const double Sx[4]={-1,1,1,-1},Sz[4]={-1,-1,1,1};
   for(int32 K=0;K<4;++K)
-   Beam(FVector(Sx[K]*FootHalf,-.25,Sz[K]*FootHalf),FVector(Sx[K]*TopHalf,TowerTop,Sz[K]*TopHalf),.075,.075,FVector(Sx[K],0,-Sz[K]));
+   Beam(FVector(Sx[K]*FootHalf,-.25,Sz[K]*FootHalf),FVector(Sx[K]*TopHalf,TowerTop,Sz[K]*TopHalf),.075,.075,Steel,FVector(Sx[K],0,-Sz[K]));
   // Girts round the tower and crossed rod braces in every panel of every face.
   const double Levels[]={.2,1.7,3.5,5.3,7.1,8.6};
   for(int32 Li=0;Li<UE_ARRAY_COUNT(Levels);++Li)
