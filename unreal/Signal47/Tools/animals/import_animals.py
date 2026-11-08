@@ -114,8 +114,11 @@ def import_one(animal):
     mesh = E.load_asset(target)
     skeleton = mesh.get_editor_property('skeleton')
     require('%s skeleton' % name, skeleton is not None)
-    bounds = mesh.get_bounds()
-    log('%s bounds origin %s extent %s' % (name, bounds.origin, bounds.box_extent))
+    try:
+        bounds = mesh.get_bounds()
+        log('%s bounds origin %s extent %s' % (name, bounds.origin, bounds.box_extent))
+    except Exception as err:
+        log('note: %s bounds not read (%s)' % (name, err))
     # (the bones the game turns by, Head, Body and Tail1, are looked up and logged by S47Animals itself when it loads the mesh)
     for key in CLIPS:
         path = clips.get(key)
