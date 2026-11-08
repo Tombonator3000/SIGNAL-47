@@ -439,7 +439,8 @@ namespace
  }
  const FLightPlace LightPlaces[]={{TEXT("cinema"),TEXT("the Plaza cinema"),TEXT("town:cinema")},{TEXT("feed"),TEXT("the feed store"),TEXT("town:feed")},{TEXT("church"),TEXT("the church"),TEXT("town:churchDoor")},{TEXT("gas"),TEXT("the gas station"),TEXT("town:gasDoor")},
   // Out on the land (FS47Places). Their marks and a second look work as in town.
-  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")}};
+  {TEXT("windmill"),TEXT("the windmill on the Baca lease"),TEXT("ff:place:windmill")},{TEXT("tank"),TEXT("the water tank on the old grade"),TEXT("ff:place:tank")},{TEXT("mine"),TEXT("the old mine on the west side"),TEXT("ff:place:mine")},{TEXT("balloon"),TEXT("the open ground east of the highway"),TEXT("ff:place:balloon")},{TEXT("cow"),TEXT("the fence past the turnoff"),TEXT("ff:place:cow")},{TEXT("shack"),TEXT("the line shack"),TEXT("ff:place:shack")},{TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("ff:place:cairn")},
+  {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("ff:place:stake")},{TEXT("trough"),TEXT("the salt lick and trough"),TEXT("ff:place:trough")}};
 }
 FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
 {
@@ -455,7 +456,11 @@ FString FS47FreeformDirector::LightPlaceTitle(const FString& Place)const
 FString FS47FreeformDirector::PickLightPlace()const
 {
  TArray<FString> Ready;for(const auto& P:LightPlaces)if(!LightPlacePoint(P.Id).IsZero())Ready.Add(P.Id);
- return Ready.IsEmpty()?FString():Ready[FMath::RandRange(0,Ready.Num()-1)];
+ if(Ready.IsEmpty())return FString();
+ // From the game's own seed, the day and the incident count (all saved): loading again before they come gives the same place, not
+ // a new throw (GAME_BIBLE: "Områdebytte eller gjeninnlasting skal ikke produsere nye kast").
+ const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47,Today=M&&M->Freeform?M->Freeform->Day():1;
+ return Ready[int32(FS47NightRhythm::Roll(Seed,Today,0x4c504c43u^uint32(IncidentSerial))*Ready.Num())%Ready.Num()];
 }
 bool FS47FreeformDirector::ForceLights(const FString& Place)
 {
@@ -1139,6 +1144,7 @@ bool FS47FreeformDirector::StepCarLight(double Duration)
  {
   const bool bVisit=M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround();
   if(!M->Freeform->TheirHoursNow(M->Freeform->Clock())||!Near(EmptyCarReference,32)||bVisit||M->ModalOpen())return false;
+  // BeginOver asks the night's rules for "taken" (one dangerous meeting a night, the first day free): refused, it is a parked car.
   if(!Tk->BeginOver(ES47Taker::Roswell,TEXT("the car in the staff bay"),EmptyCarFoot))return false;
   CarStage=1;CarLightClock=M->Freeform->Clock();Changed();return true;
  }

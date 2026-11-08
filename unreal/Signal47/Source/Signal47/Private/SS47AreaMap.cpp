@@ -144,7 +144,7 @@ TArray<FString> S47AreaMap::Description(const FS47MapView& V)
 	{
 		T.Add(TEXT("SARO service bench: outside the building by the SARO sign. Unload supplies and test donor controllers here."));
 		T.Add(TEXT("Caliche gas station: west side of the highway, just south of Mesa Diner. Enter the store and use the counter for parts and donor controllers, 08:00-20:00; essential emergency requisitions are available after hours."));
-		T.Add(TEXT("Drive south from SARO past the motel to Caliche: over a mile. Take the service jeep, which starts outside SERVICE YARD. Return north with the parcel secured in the jeep."));
+		T.Add(TEXT("Drive south from SARO past the motel to Caliche: over a mile. Take the service truck, which starts outside SERVICE YARD. Return north with the parcel secured in the truck."));
 		T.Add(TEXT("The Alderete place: a farm on the east side of the highway, south of SARO."));
 		T.Add(TEXT("Caliche also has the Plaza cinema, the feed store and the church."));
 	}
@@ -221,7 +221,7 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 		// A route note in the empty eastern half, separate from Story clue lines.
 		P.Text(TEXT("SUPPLY RUN"), 650, 365, 32);
 		P.Text(TEXT("Drive south to Caliche - over a mile."), 650, 402, 30);
-		P.Text(TEXT("Take the service jeep."), 650, 438, 32);
+		P.Text(TEXT("Take the service truck."), 650, 438, 32);
 		P.Text(TEXT("It starts outside SERVICE YARD."), 650, 474, 30);
 		P.Text(TEXT("Return north to SARO with supplies."), 650, 510, 30);
 		P.Stroke1(P.Arc(400, 636, 7), 2.f, PENCIL);

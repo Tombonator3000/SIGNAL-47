@@ -1373,11 +1373,12 @@ void FS47FreeformSession::OpenOperations()
   {
    const FString Id=Offer.Id,Waits=KitWaits(Id);
    if(HasKit(Id))Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / IN HAND. %s"),Offer.Title,Offer.What))];
-   else if(!Waits.IsEmpty())Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),Offer.Title,Offer.Price,*Waits))];
+   else if(!Waits.IsEmpty())Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),Offer.Title,KitPrice(Id),*Waits))];
    else
    {
+    const int32 Price=KitPrice(Id);
     Offers->AddSlot()[T::Small(Offer.What)];
-    Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),Offer.Title,Offer.Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=Offer.Price)];
+    Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),Offer.Title,Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=Price)];
    }
   }
   Rows.Add(T::Panel(TEXT("STORES LIST"),SNew(SBox).HeightOverride(150)[Offers]));
@@ -2036,20 +2037,38 @@ FString FS47FreeformSession::KitWaits(const FString& Id)const
  const auto* O=FS47Openings::Def(Id);if(!O)return TEXT("nothing");
  const bool bOpen=Id==TEXT("spotlight")?(!Field||!Field->ArrayWear().bActive||!Field->ArrayWear().Restored.IsEmpty())
   :Id==TEXT("cot")?FindingCount()>0
-  :Id==TEXT("magnetometer")?Cases.HasAccess(TEXT("access.lostHours"))
+  // The first field work away from the station opens it; being taken is not the way in (critic, 8 November). An assessment on
+  // THE LOST HOURS still opens it, and makes it cheaper (KitPrice).
+  :Id==TEXT("magnetometer")?(FieldRecordKept()||Cases.HasAccess(TEXT("access.lostHours")))
   :Id==TEXT("logger2")?Cases.HasAccess(TEXT("access.fieldlogger"))
   :Id==TEXT("film")?HasFinding(TEXT("body_photo"))
   :Id==TEXT("alarm")?SheriffTrust()>0:false;
  return bOpen?FString():FString(O->Waits);
 }
+bool FS47FreeformSession::FieldRecordKept()const
+{
+ for(const auto& Kept:Findings)
+ {
+  const FString& K=Kept.Key;
+  if((K.StartsWith(TEXT("place_"))&&!K.EndsWith(TEXT("_needle")))||K.StartsWith(TEXT("farm_trace"))||K.StartsWith(TEXT("lights_trace_"))||K.StartsWith(TEXT("field_night")))return true;
+ }
+ return false;
+}
+int32 FS47FreeformSession::KitPrice(const FString& Id)const
+{
+ const auto* O=FS47Openings::Def(Id);if(!O)return 0;
+ if(Id==TEXT("magnetometer")&&Cases.HasAccess(TEXT("access.lostHours")))return FMath::Max(5,O->Price-LostHoursDiscount);
+ return O->Price;
+}
 bool FS47FreeformSession::BuyKit(const FString& Id)
 {
  const auto* O=FS47Openings::Def(Id);if(!O||Kit.Contains(Id)||!KitWaits(Id).IsEmpty())return false;
- if(Cash<O->Price){Feedback=FString::Printf(TEXT("%s costs $%d. The budget has $%d."),O->Title,O->Price,Cash);Changed(Feedback);return false;}
- Cash-=O->Price;Kit.Add(Id);
+ const int32 Price=KitPrice(Id);
+ if(Cash<Price){Feedback=FString::Printf(TEXT("%s costs $%d. The budget has $%d."),O->Title,Price,Cash);Changed(Feedback);return false;}
+ Cash-=Price;Kit.Add(Id);
  if(Id==TEXT("film")&&M&&M->Night&&M->Night->Album)M->Night->Album->AddFilm();
- Feedback=FString::Printf(TEXT("%s: delivered and signed for, $%d. %s"),O->Title,O->Price,O->What);
- UE_LOG(LogTemp,Display,TEXT("S47: opening bought: %s for $%d, cash %d"),*Id,O->Price,Cash);
+ Feedback=FString::Printf(TEXT("%s: delivered and signed for, $%d. %s"),O->Title,Price,O->What);
+ UE_LOG(LogTemp,Display,TEXT("S47: opening bought: %s for $%d, cash %d"),*Id,Price,Cash);
  Changed(Feedback);return true;
 }
 bool FS47FreeformSession::RestAt(double Target,ERest Where)
@@ -2240,9 +2259,11 @@ void FS47FreeformSession::StepCaseReplies()
 }
 int32 FS47FreeformSession::SheriffTrust() const
 {
- // Follows from what has been filed with the county, so an older save has it too. Nothing is stored.
- const auto Filed=[this](int32 Line,int32 Cause){const auto* C=Cases.Get(Line);return C&&C->bConcluded&&C->Conclusion==Cause;};
- return (Filed(1,2)?1:0)+(Filed(2,1)?1:0);
+ // Follows from what has been filed, so an older save has it too. Nothing is stored. Any case carried to a conclusion and filed
+ // counts, whatever it concluded: the county trusts a station that finishes what it starts, not one that says what it wants to hear.
+ int32 Trust=0;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bConcluded)++Trust;
+ return Trust;
 }
 bool FS47FreeformSession::DeputyOnRoute() const{return SheriffTrust()>0;}
 int32 FS47FreeformSession::TownTrust() const
@@ -2490,7 +2511,7 @@ FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
- if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE JEEP: TANK EMPTY. GET OUT AND USE THE JEEP TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
+ if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
@@ -2586,7 +2607,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty())Result.Add({TEXT("TRUCK / ")+Care->StatusLine(),false});
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
- if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
+ if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(FS47FreeformCases::Def(Line).Mystery?TEXT(": choose a control or file your assessment on the OPS case board"):TEXT(": choose a test on the OPS case board")),false});
  if(Director){const FString Trail=Director->MysteryTrailHint();if(!Trail.IsEmpty())Result.Add({Trail,false});}
@@ -2951,6 +2972,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(!Shop.KitWaits(TEXT("logger2")).IsEmpty()&&!Shop.KitWaits(TEXT("film")).IsEmpty()&&!Shop.KitWaits(TEXT("alarm")).IsEmpty()&&!Shop.BuyKit(TEXT("nonsense")),TEXT("Stores: each waits for its own thing"));
   Shop.RecordEvidence(TEXT("anything"),TEXT("a record"));
   Check(Shop.KitWaits(TEXT("cot")).IsEmpty()&&Shop.BuyKit(TEXT("cot"))&&Shop.HasKit(TEXT("cot"))&&Shop.Budget()==100&&!Shop.BuyKit(TEXT("cot")),TEXT("Stores: paid for once, at the price it says"));
+  Check(!Shop.KitWaits(TEXT("magnetometer")).IsEmpty(),TEXT("Stores: a record at the station does not open the magnetometer"));
+  Shop.RecordEvidence(TEXT("place_windmill"),TEXT("a place"));
+  Check(Shop.KitWaits(TEXT("magnetometer")).IsEmpty()&&Shop.KitPrice(TEXT("magnetometer"))==40,TEXT("Stores: the first place found opens the magnetometer, at full price, without being taken"));
   Shop.Cash=5;Shop.TestGiveKit(TEXT("alarm"));Check(!Shop.BuyKit(TEXT("alarm"))&&Shop.Budget()==5,TEXT("Stores: what is in hand is not sold again"));
   FS47FreeformSession ShopAgain(nullptr);ShopAgain.Begin(S47J::Read(S47J::Write(Shop.Save())));Check(ShopAgain.HasKit(TEXT("cot"))&&ShopAgain.HasKit(TEXT("alarm")),TEXT("Stores: what was bought survives a Continue"));
   auto Oldest=Shop.Save();Oldest->RemoveField(TEXT("kit"));FS47FreeformSession OldShop(nullptr);OldShop.Begin(Oldest);Check(!OldShop.HasKit(TEXT("cot")),TEXT("Stores: an older save has none, and reads without complaint"));
@@ -2971,6 +2995,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  {
   FS47FreeformSession Trust(nullptr);Trust.Begin(nullptr);
   Check(!Trust.DeputyOnRoute()&&Trust.SheriffTrust()==0,TEXT("Patrol: nobody has written to the county yet"));
+  Trust.TestLiveRules();Trust.TestAdvance(86400);Trust.TakenAway(3600);Trust.TakenCosts(Trust.Clock()-3600);
+  Check(Trust.ConcludeCase(FS47FreeformCases::LostLine,1)&&Trust.SheriffTrust()==1&&Trust.DeputyOnRoute(),TEXT("Patrol: any case carried to a conclusion and filed earns the county's trust, whatever it says"));
   Trust.Stop();
  }
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));

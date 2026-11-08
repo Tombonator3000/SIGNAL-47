@@ -66,7 +66,8 @@ public:
  FS47RhythmNow ReadNow() const;
  // A system's own question, at the moment it would start, after its dice. True when nothing stops it or its "enforce" is off; with it off,
  // what would have stopped it goes to the log. Fixtures on a developer run's fixed rules are not asked.
- bool Allow(FName Id);
+ // Within: the event that this one is part of (the car whose light it is), whose ground does not count against it either.
+ bool Allow(FName Id,FName Within=NAME_None);
  // It has started, or is over: a danger is counted for the night, and the rest after it runs for everyone.
  void Began(FName Id);
  void Ended(FName Id);

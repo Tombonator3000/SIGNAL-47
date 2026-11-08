@@ -264,7 +264,8 @@ void FS47Predecessor::StepNews(double Dt)
    }
  }
  // What the air has said.
- if(F.Tips&&F.Tips->Said().Contains(TEXT("cb33")))Hear(WagonId);
+ // The CB lines about the carrier off the old grade and the white wagon on the flat (S47RadioTips.cpp, cb35 and cb36).
+ if(F.Tips&&(F.Tips->Said().Contains(TEXT("cb35"))||F.Tips->Said().Contains(TEXT("cb36"))))Hear(WagonId);
  // Somebody who knows a little more than the rest telephones, once, when the player has gone far enough to be noticed.
  if(NoraState==0&&Known()>=5&&!bRinging)
  {

@@ -42,7 +42,9 @@ public:
  bool DoorHere() const;
  void DevEnd();
  // At most one in two nights: the same night and the next are out.
- static bool MayCome(int32 Day,int32 LastDay){return LastDay<=0||Day>=LastDay+2;}
+ // Never on the first night (GAME_BIBLE: "Første døgn har ingen farlig jakt"), and at most one in two nights after that.
+ static constexpr int32 FirstDay=2;
+ static bool MayCome(int32 Day,int32 LastDay){return Day>=FirstDay&&(LastDay<=0||Day>=LastDay+2);}
  static bool SelfTest(TArray<FString>& Lines);
 
  // Tests: read only, but for the dice.
