@@ -28,6 +28,9 @@ public:
  bool ChangeWheel();
  bool TopUp();
  void Clear(); // Roadside service leaves the truck as it should be.
+ // Metres the player has driven it since the last weekly review: tyres, oil and wear go on that sheet (FS47FreeformSession).
+ double WeekDriven() const{return WeekMetres;}
+ void WeekBilled(){WeekMetres=0;}
  static constexpr double WaterRange=36000; // metres on a full radiator
  static constexpr double DigMinutes=25,WheelMinutes=15;
  // Chance per hundred metres off the road and on it; none on the road for sand.
@@ -38,7 +41,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- double WaterLeft=1,Metres=0;
+ double WaterLeft=1,Metres=0,WeekMetres=0;
  bool bStuck=false,bFlat=false,bWarned=false,bPowerSet=false,bHeldSet=false;
  void Hold();
 };

@@ -36,8 +36,9 @@
 // ---------- the truck
 void FS47TruckCare::Begin(const S47J::FObj& Saved)
 {
- WaterLeft=1;Metres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;
+ WaterLeft=1;Metres=0;WeekMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;
  if(!Saved.IsValid())return;
+ const double Week=S47J::Num(Saved,TEXT("weekMetres"));WeekMetres=FMath::IsFinite(Week)?FMath::Clamp(Week,0.,1e7):0;
  const double W=S47J::Num(Saved,TEXT("water"),1);WaterLeft=FMath::IsFinite(W)?FMath::Clamp(W,0.,1.):1;
  bStuck=S47J::Bool(Saved,TEXT("stuck"));bFlat=S47J::Bool(Saved,TEXT("flat"));
 }
@@ -47,6 +48,7 @@ S47J::FObj FS47TruckCare::Save() const
  if(WaterLeft<1)S47J::Set(O,TEXT("water"),WaterLeft);
  if(bStuck)S47J::Set(O,TEXT("stuck"),true);
  if(bFlat)S47J::Set(O,TEXT("flat"),true);
+ if(WeekMetres>=1)S47J::Set(O,TEXT("weekMetres"),FMath::RoundToDouble(WeekMetres));
  return O;
 }
 FString FS47TruckCare::StatusLine() const
@@ -77,6 +79,7 @@ void FS47TruckCare::Step(double Dt)
  if(Step<=0)return;
  const bool bWasHot=Hot();
  WaterLeft=FMath::Max(0.,WaterLeft-Step/WaterRange);
+ WeekMetres+=Step;
  if(WaterLeft<.25&&!bWarned){bWarned=true;if(M->UI)M->UI->Toast(StatusLine(),5);}
  if(!bWasHot&&Hot())
  {
