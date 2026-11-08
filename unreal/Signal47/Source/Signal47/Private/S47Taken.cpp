@@ -355,7 +355,7 @@ void FS47Taken::Apply()
   M->World->PlaceTruck(TEXT("saro"));
   if(M->Web->Area()!=TEXT("saro"))M->World->Enter(TEXT("saro"));
   M->Player->Place(9.2,1.2,0);M->Player->Pitch=-.1;
-  Where=TEXT("in the yard at SARO. The jeep is on its pad and I did not drive it there");
+  Where=TEXT("in the yard at SARO. The truck is on its pad and I did not drive it there");
  }
  else if(T.WakeMax>0)
  {

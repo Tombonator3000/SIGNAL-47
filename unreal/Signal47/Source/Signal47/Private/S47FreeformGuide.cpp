@@ -44,8 +44,8 @@ FString FS47FreeformSession::ServiceObjective()const
   switch(Field->ParcelStage())
   {
    case 1:return TEXT("CALICHE GAS STATION: COLLECT THE PAID PARCEL");
-   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: CARRY THE PARCEL TO THE LABELLED TABLE INSIDE THE EAST-WING GARAGE"):TEXT("JEEP CARGO: HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
-   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE RECEIVING TABLE"):TEXT("JEEP: DRIVE NORTH TO SARO AND UNLOAD AT THE EAST-WING GARAGE");
+   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: CARRY THE PARCEL TO THE LABELLED TABLE INSIDE THE EAST-WING GARAGE"):TEXT("TRUCK CARGO: HOLD THE PARCEL AND USE THE PARKED TRUCK TO LOAD IT");
+   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: UNLOAD THE TRUCK, THEN CARRY THE PARCEL TO THE RECEIVING TABLE"):TEXT("TRUCK: DRIVE NORTH TO SARO AND UNLOAD AT THE EAST-WING GARAGE");
    case 4:return TEXT("PARCEL DROP SITE: RETRIEVE THE PARCEL WHERE YOU SET IT DOWN");
    default:return TEXT("CALICHE GAS STATION: DRIVE SOUTH; ENTER THE STORE AND BUY A RELAY OR DONOR AT THE COUNTER");
   }
@@ -77,7 +77,7 @@ bool FS47FreeformSession::CompleteServiceGuide()
  if(Field->ServiceStage()!=9||Field->ServiceCompletions()<=GuideServiceBaseline)
  {Feedback=ServiceObjective();Changed(Feedback);return false;}
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
- {Feedback=TEXT("This route includes a new relay or donor transported in the jeep and delivered at SARO. Existing stock alone does not complete that optional route.");Changed(Feedback);return false;}
+ {Feedback=TEXT("This route includes a new relay or donor transported in the truck and delivered at SARO. Existing stock alone does not complete that optional route.");Changed(Feedback);return false;}
  const int32 Dish=Field->ServiceDishIndex();
  if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish)){Feedback=TEXT("REMOTE is not restored. Inspect the target antenna at ARRAY STATUS.");Changed(Feedback);return false;}
  const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the service vehicle and unpacked at SARO garage receiving during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
@@ -105,7 +105,7 @@ void FS47FreeformSession::OpenServiceGuide()
  {
   if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN CASE ARCHIVE")));
   Rows.Add(S47FreeformTerminal::Text(Field&&Field->HasArrayFault()?FString::Printf(TEXT("%s needs service. Accept the existing fault below; other antennas and observing jobs remain available."),*Dish):ServiceGuide==0?TEXT("FIRST SERVICE / S-03. Learn to diagnose, replace a relay and run its real movement test. Accepting isolates S-03 from remote operation."):TEXT("Optional planned maintenance. The next order selects an antenna from the array; its identity is retained until repaired. Accepting isolates only that antenna.")));
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Use a relay from stock, or choose a new supply trip: buy a relay or donor in Caliche, carry its parcel in the jeep, then unpack at GARAGE RECEIVING. Donors must be tested at CALIBRATION / REPAIR.")));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Use a relay from stock, or choose a new supply trip: buy a relay or donor in Caliche, carry its parcel in the truck, then unpack at GARAGE RECEIVING. Donors must be tested at CALIBRATION / REPAIR.")));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{StartServiceGuide(false);OpenServiceGuide();},true));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / collect and transport new supplies"),[this]{StartServiceGuide(true);OpenServiceGuide();}));
  }

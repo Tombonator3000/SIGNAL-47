@@ -2511,7 +2511,7 @@ FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
- if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE JEEP: TANK EMPTY. GET OUT AND USE THE JEEP TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
+ if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
@@ -2607,7 +2607,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty())Result.Add({TEXT("TRUCK / ")+Care->StatusLine(),false});
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
- if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE JEEP / Tank empty: use the jeep for a stock fuel can or roadside return. It costs time, not money."),false});
+ if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can or roadside return. It costs time, not money."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(FS47FreeformCases::Def(Line).Mystery?TEXT(": choose a control or file your assessment on the OPS case board"):TEXT(": choose a test on the OPS case board")),false});
  if(Director){const FString Trail=Director->MysteryTrailHint();if(!Trail.IsEmpty())Result.Add({Trail,false});}
