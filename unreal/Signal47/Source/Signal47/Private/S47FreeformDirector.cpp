@@ -553,7 +553,9 @@ void FS47FreeformDirector::OrbSite(int32 Seed,FVector2D& OutShift,FString& OutPa
  }
  const TArray<TPair<int32,int32>>& From2=Good.IsEmpty()?Any:Good;
  if(From2.IsEmpty())return;
- const TPair<int32,int32>& Pick=From2[int32((uint32(Seed)*2654435761u>>8)%uint32(From2.Num()))];
+ // The game's own seed with the visit's: another game sends them elsewhere, and a Continue keeps them where they are.
+ const int32 Game=M->Freeform?M->Freeform->Seed():47;
+ const TPair<int32,int32>& Pick=From2[FMath::Min(From2.Num()-1,int32(FS47NightRhythm::Roll(Game,Seed,0x4f524253u)*From2.Num()))];
  OutShift=FVector2D(W.DishX(Pick.Key),W.DishZ(Pick.Key))-From;
  OutPair=Pick.Value!=INDEX_NONE?FString::Printf(TEXT("%s and %s"),*W.DishId(Pick.Value),*W.DishId(Pick.Key)):FString::Printf(TEXT("the antennas round %s"),*W.DishId(Pick.Key));
 }
