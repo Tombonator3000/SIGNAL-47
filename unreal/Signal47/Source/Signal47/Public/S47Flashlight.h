@@ -33,8 +33,9 @@ public:
 	/** While it flickers (Flicker above zero): the contact gives way altogether for this long. No battery in it. */
 	void FlickerOut(double Seconds) { Dark = FMath::Max(Dark, Seconds); }
 	/** Every frame: held a little right of and below the eyes, pointing where they look. Off: in the
-	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). */
-	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff);
+	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). bHeld: the game
+	 *  is held (the pause menu, a panel open): the lamp stays as it is, lit or not, and its battery is not used. */
+	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff, bool bHeld = false);
 
 	// ---------- the battery (Freeform only; Unreal addition, HUD-20261108) ----------
 	/** Freeform: the lamp runs down. Story: it never does (the web version's lamp has no battery). */

@@ -100,7 +100,7 @@ void FS47FieldRadio::Stop()
 {
  Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
- HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9;
+ HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset();
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -169,7 +169,8 @@ bool FS47FieldRadio::Message(const FString& Text)
  ++MessageCount; SinceMessage=0; SinceLoud=0;
  const bool bHeard=M->Audio&&Sound.Message(M->Audio);
  if(bHeard)S47FieldRadioSet::Roger(M->Audio,S47FieldRadioSet::MessageSeconds);
- if(M->UI)M->UI->Toast(Head(Chan,Who)+TEXT(": ")+Said,FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
+ // Anything but Dale is the set itself breaking up, told as a sound in brackets: nobody else talks on the walkie.
+ if(M->UI)M->UI->Toast(Head(Chan,Who)+TEXT(": ")+(Who.IsEmpty()?TEXT("(")+Said+TEXT(")"):Said),FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
  UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d: %s"),Chan,bHeard,*Text);
  return true;
 }
@@ -202,7 +203,7 @@ void FS47FieldRadio::NextChannel()
   {
    if(!M||Chan!=2||!M->Freeform||!M->Freeform->Predecessor)return;
    const FString OnBand=M->Freeform->Predecessor->ServiceBand();
-   if(!OnBand.IsEmpty()&&M->UI){M->UI->Toast(Head(2)+TEXT(": ")+OnBand,8);SinceTouch=0;}
+   if(!OnBand.IsEmpty()&&M->UI){M->UI->Toast(Head(2)+TEXT(": (")+OnBand+TEXT(")"),8);SinceTouch=0;}
   };
   ThenIn=1.4;
  }
@@ -239,7 +240,7 @@ void FS47FieldRadio::Reply()
  {
   ++MessageCount;SinceLoud=0;
   if(M->Audio)Sound.Message(M->Audio);
-  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": Something comes back on the channel. Not Dale, and not words."),6);
+  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (something comes back on the channel: not Dale, and not words)"),6);
   UE_LOG(LogTemp,Display,TEXT("S47: walkie called on channel %d with a presence near: not Dale"),Chan);
   return;
  }
@@ -252,11 +253,11 @@ void FS47FieldRadio::Reply()
  if(Chan==2&&Dale)
  {
   const FString OnBand=Dale->ServiceBand();
-  if(!OnBand.IsEmpty()){if(M->UI)M->UI->Toast(Head(2)+TEXT(": ")+OnBand,8);return;}
+  if(!OnBand.IsEmpty()){if(M->UI)M->UI->Toast(Head(2)+TEXT(": (")+OnBand+TEXT(")"),8);return;}
  }
  // Nobody: the squelch opens on nothing, and shuts again.
  if(M->Audio)S47FieldRadioSet::Squelch(M->Audio,0,.5,.1);
- if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": Nobody comes back. Only the hiss."),4);
+ if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (nobody comes back: only the hiss)"),4);
  UE_LOG(LogTemp,Display,TEXT("S47: walkie called on channel %d: nobody"),Chan);
 }
 bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunction<void()> OnMissed)
@@ -307,10 +308,14 @@ void FS47FieldRadio::StepHand(double Dt)
   ThenIn-=Dt;
   if(ThenIn<0){const TFunction<void()> Do=MoveTemp(Then);Then=nullptr;if(Do)Do();}
  }
+ // A report that waited: said by the first CB or the walkie on Dale's channel, or let go after a while (CB-WALKIE-20261108).
+ for(FHeldTip& Held:HeldTips)Held.Age+=Dt;
+ HeldTips.RemoveAll([](const FHeldTip& Held){return Held.Age>HeldTipSeconds;});
+ if(!HeldTips.IsEmpty()&&ThenIn<0&&TxLeft<=0&&Deliver(HeldTips[0].Tip))HeldTips.RemoveAt(0);
 }
 
 // ---------- the CB and the walkie apart (CB-WALKIE-20261108) ----------
-bool FS47FieldRadio::CbAtHand(US47Main* M)
+bool FS47FieldRadio::CbAtHand(const US47Main* M)
 {
  if(!M)return false;
  if(M->World&&M->World->bDriving)return true;
@@ -337,24 +342,32 @@ bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FStrin
 void FS47FieldRadio::Report(US47Main* M,const FString& Tip)
 {
  if(!M||Tip.IsEmpty())return;
- const bool bCb=CbAtHand(M);
- if(bCb&&!M->ModalOpen()&&CbSay(M,{Tip},TEXT("man")))
+ if(M->FieldRadio.IsValid()&&M->FieldRadio->Deliver(Tip))return;
+ // Nobody to hear it on yet: it waits for the truck's CB, the base set, or Dale on the walkie. A CB is never heard on foot.
+ if(!M->FieldRadio.IsValid())return;
+ auto& Held=M->FieldRadio->HeldTips;
+ if(Held.Num()>=3)Held.RemoveAt(0);
+ Held.Add({Tip,0.});
+ UE_LOG(LogTemp,Display,TEXT("S47: report waits for a CB or the walkie: %s"),*Tip);
+}
+bool FS47FieldRadio::Deliver(const FString& Tip)
+{
+ if(!M||M->ModalOpen())return false;
+ if(CbAtHand(M))
  {
-  UE_LOG(LogTemp,Display,TEXT("S47: report over the CB: %s"),*Tip);
-  return;
+  if(CbSay(M,{Tip},TEXT("man"))){UE_LOG(LogTemp,Display,TEXT("S47: report over the CB: %s"),*Tip);return true;}
+  // Another call on the channel: after it. No sound to play it with: the words, at the CB.
+  if(M->CB.IsValid()&&M->CB->bBusy)return false;
+  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+Tip,7);
+  UE_LOG(LogTemp,Display,TEXT("S47: report over the CB, words only: %s"),*Tip);
+  return true;
  }
- // Away from any CB: the county has rung it through to Dale's bench, and he passes it on.
- if(!bCb&&M->FieldRadio.IsValid()&&M->IsFreeform()&&M->Freeform&&M->Freeform->Predecessor)
- {
-  const FString Relay=M->Freeform->Predecessor->RelayLine(Tip);
-  if(!Relay.IsEmpty()&&M->FieldRadio->Message(Relay))
-  {
-   UE_LOG(LogTemp,Display,TEXT("S47: report passed on by Dale over the walkie: %s"),*Tip);
-   return;
-  }
- }
- if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+Tip,7);
- UE_LOG(LogTemp,Display,TEXT("S47: report as words only: %s"),*Tip);
+ // Away from any CB: the county has rung it through to Dale's bench, and he passes it on in his own words, on his channel.
+ FS47Predecessor* Dale=M->IsFreeform()&&M->Freeform?M->Freeform->Predecessor.Get():nullptr;
+ const FString Relay=Dale?Dale->RelayLine(Tip):FString();
+ if(Relay.IsEmpty()||HailLeft>0||!Message(Relay))return false;
+ UE_LOG(LogTemp,Display,TEXT("S47: report passed on by Dale over the walkie: %s"),*Tip);
+ return true;
 }
 
 void FS47FieldRadio::Talk(const FVector& At){if(M&&M->Audio)Sound.Talk(M->Audio,At);}
@@ -587,7 +600,8 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
   W.NextChannel();W.NextChannel();C(W.Channel()==1&&!W.Save()->HasField(TEXT("ch")),TEXT("round to 1 again, and the save is as it was before channels"));
   C(!W.Message(TEXT("DALE: Dale out."))&&!W.Hail(FHail{TEXT("Come in."),TEXT(""),TEXT("")},nullptr,nullptr)&&!W.LoudNow()&&!W.Hailing(),TEXT("nothing to say it with outside a game: no hail, no message, no noise"));
   C(Head(1,TEXT("DALE"))==TEXT("WALKIE 1, DALE")&&Head(3)==TEXT("WALKIE 3")&&Head(9)==TEXT("WALKIE 3"),TEXT("the caption's head names the set, its channel and who speaks"));
-  C(!CbAtHand(nullptr)&&!CbSay(nullptr,{TEXT("Breaker.")},TEXT("man")),TEXT("no game: no CB at hand"));
+  Report(nullptr,TEXT("A rancher reports lights."));
+  C(!CbAtHand(nullptr)&&!CbSay(nullptr,{TEXT("Breaker.")},TEXT("man"))&&W.TipsWaiting()==0,TEXT("no game: no CB at hand, and nothing held for one"));
  }
  return Ok;
 }

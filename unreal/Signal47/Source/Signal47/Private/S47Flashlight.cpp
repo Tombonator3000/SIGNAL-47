@@ -197,10 +197,11 @@ int32 FS47Flashlight::TakeNotice()
 	return 0;
 }
 
-void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
+void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, bool bHeld)
 {
 	// The battery runs down only while the lamp is lit (Freeform); when it is empty the lamp goes out and stays out until it is filled.
-	if (bDrains && bHave && bOn && !bOff && FMath::IsFinite(Dt) && Dt > 0)
+	// Not while the game is held: the pause menu or a panel open stops the clock, and the battery with it.
+	if (bDrains && bHave && bOn && !bOff && !bHeld && FMath::IsFinite(Dt) && Dt > 0)
 	{
 		Battery = FMath::Max(0.0, Battery - Dt / RunSeconds);
 		if (Battery <= 0) bOn = false;
@@ -284,6 +285,10 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		const double Held = B.BatteryLevel();
 		for (int32 I = 0; I < 600; ++I) B.Update(1.0, I, Cam, true);
 		Check(B.BatteryLevel() == Held, TEXT("Freeform: nothing is used while the lamp is off or held"));
+		B.Update(1.0, 0, Cam, false);
+		const double Paused = B.BatteryLevel();
+		for (int32 I = 0; I < 600; ++I) B.Update(1.0, I, Cam, false, true);
+		Check(B.BatteryLevel() == Paused && B.bOn && B.Intensity() > 0, TEXT("Freeform: lit, but with the game paused or a panel open, the battery is not used and the lamp stays lit"));
 		B.SetBattery(0.1);
 		Check(B.TakeNotice() == 0 && B.Low(), TEXT("a set battery level does not announce itself"));
 		B.SetBattery(0.5); B.Update(1.0, 0, Cam, false);

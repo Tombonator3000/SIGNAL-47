@@ -488,7 +488,8 @@ void SS47Hud::ReadGauges(float Dt)
 	int32 Kind = 0; float Signal = 0.f;
 	if (bShow)
 	{
-		if (M->CB.IsValid() && M->CB->bBusy) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
+		// CB-WALKIE-20261108: the CB's line only where a CB is (the truck, the SARO building): never on foot with the walkie
+		if (M->CB.IsValid() && M->CB->bBusy && FS47FieldRadio::CbAtHand(M)) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
 		else if (M->FieldRadio.IsValid() && M->FieldRadio->InUse())
 		{
 			Kind = 2; Signal = float(M->FieldRadio->Strength());

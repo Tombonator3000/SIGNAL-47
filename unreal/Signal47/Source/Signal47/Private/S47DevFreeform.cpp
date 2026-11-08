@@ -1064,7 +1064,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
   if(!M){return;}
   const bool bCb=FS47FieldRadio::CbAtHand(M);
   FS47FieldRadio::Report(M,TEXT("A rancher on the county road reports lights low over the Baca lease. He says he will not go and look."));
-  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie, if you carry it on channel 1: green, WALKIE 1."),5);
+  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie if you carry it on channel 1 (green, WALKIE 1); otherwise it waits for the truck or the SARO building."),6);
  });
  E.AddFreeform(K,TEXT("Keep low, as Ctrl does"),TEXT("crouched or up again: half pace, softer steps, the eye 60 cm lower; seen and heard a little less"),[this]
  {

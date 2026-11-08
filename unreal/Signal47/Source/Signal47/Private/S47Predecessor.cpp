@@ -1265,7 +1265,7 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s predecessor: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  // The line: the outside only. Nothing from Story's far side, in any paper or any mouth.
- static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event")};
+ static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("vega"),TEXT("silhouette"),TEXT("cable"),TEXT("the cut"),TEXT("sight line"),TEXT("closing point"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("photograph of"),TEXT("8.15"),TEXT("old road"),TEXT("the event"),TEXT("chevy"),TEXT("chevrolet"),TEXT("winnebago"),TEXT("cadillac"),TEXT("pepsi"),TEXT("tyre"),TEXT("windscreen"),TEXT("grey"),TEXT("programme")};
  bool bClean=true;FString Offender;
  for(const FString& Text:AllText())
  {

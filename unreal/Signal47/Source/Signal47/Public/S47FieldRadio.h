@@ -45,11 +45,14 @@ public:
  bool Transmitting() const { return TxLeft>0; }
  // The set made a sound of its own just now: something close by can hear it (FS47RoswellGroup).
  bool LoudNow() const { return bOwned && !bLeftOut && SinceLoud<1.2; }
- // CB-WALKIE-20261108: a stranger's report (a caller, a driver, dispatch). Over the CB if one is to hand (in the truck, or the base
- // set in the SARO building), with the CB's own sound and HUD line; else Dale passes it on over the walkie, on channel 1; with
- // neither, as a plain CB line.
+ // CB-WALKIE-20261108: the CB is strangers, the walkie is Dale. A stranger's report (a caller, a driver, dispatch) comes over the
+ // CB if one is to hand (in the truck, or the base set in the SARO building), with the CB's own sound and HUD line. Away from one,
+ // Dale passes it on over the walkie, in his own words, on channel 1. With neither, it waits a while for one of them (HeldTips).
  static void Report(US47Main* M, const FString& Tip);
- static bool CbAtHand(US47Main* M);
+ static bool CbAtHand(const US47Main* M);
+ // How long a report waits for a CB or Dale before it is let go, in seconds of play.
+ static constexpr double HeldTipSeconds=240;
+ int32 TipsWaiting() const { return HeldTips.Num(); }
  // A call on the CB with its sound and the HUD's CB line. False when it is busy or there is no sound: nothing was said.
  static bool CbSay(US47Main* M, const TArray<FString>& Lines, const FString& Voice);
  // The caption's head for the set: "WALKIE 1", or with who is speaking, "WALKIE 1, DALE".
@@ -99,6 +102,10 @@ private:
  double SinceLoud=1e9,SinceTouch=1e9,HailLeft=0,HailAgainIn=0,TxLeft=0,ThenIn=-1;
  FHail HailWords;
  TFunction<void()> HailAnswer,HailMissed,Then;
+ // Reports nobody could hear yet: no CB to hand, no walkie on Dale's channel. Said by the first of them to come.
+ struct FHeldTip { FString Tip; double Age=0; };
+ TArray<FHeldTip> HeldTips;
+ bool Deliver(const FString& Tip);
  bool bKeysBound=false;
  void BindKeys();
  void StepHand(double Dt);
