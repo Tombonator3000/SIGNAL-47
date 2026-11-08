@@ -5,7 +5,7 @@ class US47Main;
 struct FS47Sound;
 
 // TAPE-20261108 (Tom, 8 November: "kassettspiller og opptak ... noen ganger er det noe på båndet du ikke hørte"). The Sony TC-D5 on the
-// desk by the array's PC is the station's field recorder. Take it off the desk, record with K out in the night, bring it back and
+// desk by the array's PC is the station's field recorder. Take it off the desk, record with U (S47Keys "tape") out in the night, bring it back and
 // play the cassette on the desk.
 //
 // What is on the tape is what really sounded near the microphone while it ran: every recording the game played there, at its
