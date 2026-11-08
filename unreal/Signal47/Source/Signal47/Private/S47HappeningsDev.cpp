@@ -230,6 +230,30 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   };
   Go(Stage,[Humor]{Humor(TEXT("pump"),TEXT("A small grey man in a shirt and a hat, at the pump. E talks to him."));});
  });
+ // ---- unease (URO.md): each of the 25 where it can be noticed; nothing is kept and nothing is explained ----
+ static const TCHAR* const U=TEXT("Unease");
+ for(int32 I=0;I<FS47Happenings::UneaseCount();++I)
+ {
+  // Where it can happen: in the control room, out in the yard, at the wheel, or in Caliche's street.
+  const int32 Where=(I==1||I==5||I==7||I==9||I==11||I==13||I==16||I==19)?0:(I==6||I==14||I==18||I==21||I==23)?2:I==22?3:1;
+  static const TCHAR* const WhereText[]={TEXT("23:00, control room"),TEXT("23:00, the yard, on foot"),TEXT("23:00, in the truck on the highway"),TEXT("21:30, Caliche's street")};
+  const FString Label=FString::Printf(TEXT("%d. %s"),I+1,FS47Happenings::UneaseTitle(I));
+  E.AddFreeform(U,Label,WhereText[Where],[this,Haps,Road,I,Where]
+  {
+   const auto Fire=[this,Haps,I]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevUnease(I,Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    Tell(true,FString::Printf(TEXT("%s. Nothing is kept, nothing is said."),FS47Happenings::UneaseTitle(I)),5);
+   };
+   if(Where==2){Road(23,4.5,false,Fire);return;}
+   FStage Stage;Stage.From=Where==3?21.5:23;Stage.To=4.5;Stage.Yaw=UE_DOUBLE_PI;
+   Stage.Area=Where==3?TEXT("diner"):TEXT("saro");
+   Stage.Where=[Where]{return Where==0?S47HapDev::ControlRoom():Where==1?S47HapDev::Yard():FVector2D(7995,2120);};
+   if(Where==3)Stage.Yaw=0;
+   Go(Stage,Fire);
+  });
+ }
  E.AddFreeform(G,TEXT("Counter: give me one, held up"),TEXT("as if built at the bench; this test run only. It ticks on foot"),[this,Haps]
  {
   FS47Happenings* H=Haps();if(!H){Tell(false,TEXT("Freeform only"));return;}
