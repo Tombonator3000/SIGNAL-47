@@ -1068,7 +1068,7 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 			for (const FVector2D& Q : { FVector2D(33, -300), FVector2D(-603, 532), FVector2D(14, 2095.5), FVector2D(170, 720) })
 			{
 				const FVector A = S47OpenLand::FromRoad(Area, Q.X, Q.Y);
-				const double Yaw = S47OpenLand::Turned(TEXT("road"), Area, -HALF_PI); // facing east on the land
+				const double Yaw = S47OpenLand::Turned(TEXT("road"), Area, -UE_DOUBLE_HALF_PI); // facing east on the land (double: PI and HALF_PI are floats)
 				double X = 0, Z = 0, Hd = 0;
 				bSame &= OnSheet(Area, A.X, A.Z, Yaw, X, Z, Hd) && FMath::IsNearlyEqual(X, Q.X, 1e-6) && FMath::IsNearlyEqual(Z, Q.Y, 1e-6);
 				bHeading &= FMath::IsNearlyEqual(Hd, 90.0, 1e-6);
@@ -1076,7 +1076,7 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 		Check(bSame, TEXT("SARO's, the road's, the diner's and STATION 01's terms put a point at the same place on the sheet"));
 		Check(bHeading, TEXT("facing east is 090 on the sheet in every area, STATION 01's turned terms too"));
 		double X = 0, Z = 0, Hd = 0;
-		Check(OnSheet(TEXT("road"), 8000, 100, 0, X, Z, Hd) && FMath::IsNearlyEqual(Hd, 0.0, 1e-6) && OnSheet(TEXT("road"), 8000, 100, PI, X, Z, Hd) && FMath::IsNearlyEqual(Hd, 180.0, 1e-6), TEXT("yaw 0 is north and yaw pi is south"));
+		Check(OnSheet(TEXT("road"), 8000, 100, 0, X, Z, Hd) && FMath::IsNearlyEqual(Hd, 0.0, 1e-6) && OnSheet(TEXT("road"), 8000, 100, UE_DOUBLE_PI, X, Z, Hd) && FMath::IsNearlyEqual(Hd, 180.0, 1e-6), TEXT("yaw 0 is north and yaw pi is south"));
 		Check(!OnSheet(TEXT("roswell"), 0, 0, 0, X, Z, Hd) && OnSheet(TEXT("room6"), 0, -8000, 0, X, Z, Hd) && FVector2D::Distance(FVector2D(X, Z), FVector2D(-17, 386)) < 30, TEXT("Roswell is off the sheet; room 6 is the motel"));
 	}
 	Check(Compass(0) == TEXT("north") && Compass(90) == TEXT("east") && Compass(202.5) == TEXT("south-southwest") && Compass(-22.5) == TEXT("north-northwest") && Compass(359) == TEXT("north"), TEXT("the sixteen points"));
@@ -1100,16 +1100,20 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 		BuildRelief(Peaked, Slope, -1200, -1200, 1200, 1200, 25);
 		bool bOn = true, bClosed = true;
 		int32 RingCount = 0;
+		double Worst = 0;
 		for (const FContour& L : Peaked.Lines)
 		{
 			const double Want = (100.0 - (L.Ft * FootM)) * 10.0;
 			if (Want <= 0 || Want >= 1150) continue;
 			++RingCount;
 			bClosed &= L.P.Num() > 8 && FVector2f::Distance(L.P[0], L.P.Last()) < 1.f;
-			for (const FVector2f& Q : L.P) bOn &= FMath::Abs(Q.Size() - Want) < 12.5 + Want * .02;
+			for (const FVector2f& Q : L.P) Worst = FMath::Max(Worst, FMath::Abs(Q.Size() - Want));
 		}
-		const int32 Planned = FMath::FloorToInt(100.0 / FootM / ContourFeet);
-		Check(bOn && bClosed && FMath::Abs(RingCount - Planned) <= 1, FString::Printf(TEXT("a cone's contours are %d closed rings where its slope says (%d expected), within half a cell"), RingCount, Planned));
+		bOn = Worst < 15;
+		// Every 20 ft from the foot of what fits on the grid (r 1150 m, 15 m under the datum) to the top (100 m).
+		const int32 Planned = FMath::FloorToInt(100.0 / FootM / ContourFeet) - FMath::CeilToInt(-15.0 / FootM / ContourFeet) + 1;
+		Check(RingCount == Planned, FString::Printf(TEXT("a cone has a contour every 20 feet: %d rings (%d expected)"), RingCount, Planned));
+		Check(bClosed && bOn, FString::Printf(TEXT("each ring is closed and lies where the slope says, within %.1f m on a 25 m grid"), Worst));
 		Check(Peaked.Spots.Num() >= 1 && Peaked.Spots[0].At.Size() < 40 && FMath::Abs(Peaked.Spots[0].Ft - FMath::RoundToInt(100 / FootM)) <= 1, TEXT("its top gets a spot height"));
 		Check(Peaked.Labels.Num() > 0 && Peaked.Labels.ContainsByPredicate([](const FContourLabel& Lb) { return Lb.Ft % 100 == 0; }), TEXT("index lines carry their heights"));
 	}
