@@ -1561,6 +1561,7 @@ FS47SaroDeparture::FIn US47Flow::DepartureIn(double Dt) const
 	FS47SaroDeparture::FIn In;
 	In.bInside = S47SaroSave::InStation(M);
 	In.bDriving = M->World && M->World->bDriving;
+	In.bBusy = M->World && M->World->bBusy;
 	In.Area = M->Web ? M->Web->Area() : FString();
 	if (M->Player) In.At = FVector2D(M->Player->Pos.X, M->Player->Pos.Z);
 	// the truck left at the station, and the player beside it: arrived (the farm and the motel share SARO's scene and its place name)

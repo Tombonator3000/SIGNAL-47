@@ -104,6 +104,8 @@ FS47SaroDeparture::EHow FS47SaroDeparture::Look(const FIn& In)
 	const double Step = FMath::IsFinite(In.Dt) ? FMath::Max(0.0, In.Dt) : 0.0;
 	Since += Step;
 	if (Pending()) Age += Step;
+	// behind the black of a trip being set up the player still stands where they got in: that is no new stay inside
+	if (In.bBusy) return EHow::None;
 	const bool bOnFootIn = In.bInside && !In.bDriving;
 	const bool bLeftArea = bHaveLast && LastArea == TEXT("saro") && In.Area != TEXT("saro");
 	const bool bLeftBuilding = bHaveLast && bWasInside && !bOnFootIn && !In.bDriving;
@@ -198,6 +200,17 @@ bool FS47SaroDeparture::SelfTest(TArray<FString>& Lines)
 		D.Drop();
 		Check(D.Look(At(false, 33, -2, .1, TEXT("saro"), true)) == EHow::None && !D.Armed() && D.Drive(At(false, 40, 0, 0)) == EHow::None, TEXT("driving off is one departure, not one more at each area on the way"));
 		Check(D.Look(At(true, 33, -2, .1, TEXT("saro"), true)) == EHow::None && !D.Armed(), TEXT("at the wheel inside the garage is not inside"));
+	}
+	{
+		// the normal journey, 8 November: the trip set up from the photo lab left the player standing there 0.4 s, which armed it again
+		FS47SaroDeparture D;
+		D.Look(At(true, 15, -2, .1));
+		Check(D.Drive(At(true, 15, -2, 0)) == EHow::Drive, TEXT("setting off from the lab is a departure"));
+		D.Filed();
+		FIn Setup = At(true, 15, -2, .2); Setup.bBusy = true;
+		D.Look(Setup); D.Look(Setup);
+		D.Look(At(false, 9, 8, .1, TEXT("saro"), true)); D.Look(At(false, 7990, 2250, 200, TEXT("diner"), true)); D.Look(At(false, 7990, 2250, 1, TEXT("diner")));
+		Check(!D.Armed() && D.Drive(At(false, 7990, 2250, 0, TEXT("diner"))) == EHow::None, TEXT("behind the trip's black nothing is armed: setting off back from town is no departure from SARO"));
 	}
 	{
 		FS47SaroDeparture D;

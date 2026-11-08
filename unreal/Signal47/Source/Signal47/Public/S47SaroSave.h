@@ -46,6 +46,7 @@ public:
 		bool bInside = false;      // S47SaroSave::InStation
 		bool bDriving = false;
 		bool bTruckAtSaro = false; // the vehicle stands parked at SARO (US47World::TruckAt)
+		bool bBusy = false;        // a trip or a fade is being set up (US47World::bBusy): nothing is armed or left meanwhile
 		FString Area;              // the area loaded now
 		FVector2D At = FVector2D::ZeroVector; // the player's x and z
 		double Dt = 0;             // seconds of play since the last look (none while the menu holds the game)

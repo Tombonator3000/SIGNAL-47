@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Obj.h"
+#include "S47RoswellWorld.h"
 class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
@@ -26,6 +27,15 @@ struct FS47EventPlace;
 //   humor         at most once a week, never on a night with a danger, never in Story: a pink convertible running at the diner, a
 //                 singer by the motel pool, something tall and hairy crossing the road, a small man at the pump who wants water.
 //                 Each skips itself when its model is missing.
+//   figure_near   on foot out in the dark (a danger, from the second week): a figure on the open ground that is gone when it is seen
+//                 and stands nearer the next time, until a light comes down over whoever is still out there (S47Taken).
+//
+// The build-up (Tom's critics, 8 November): director.json's curve says, week by week, what each level is worth, how likely the
+// night's one danger is and how near things come; each night builds toward their hours (draw.at), with the small things first.
+// A night's danger is one slot, at an hour in their hours, taken by whichever danger fits where the player is then.
+//
+// "Seen" is seen (SeenLit): in view and in range, nothing solid between, and light on it. What is far off or in the dark is
+// heard, not told: the words on the screen are what the player does, not what they should make of it.
 //
 // Places come from the place catalogue (FS47EventPlaces, M1-A) through Where(), its one door here; without it, the land's own
 // places (FS47Places). Everything that stands out on the land is kept road-local and drawn in whichever area the player is in.
@@ -74,6 +84,12 @@ public:
  FString RestBlock() const;
  // The one on the ground is a danger whose light may take the player: being taken is that same meeting (S47Taken, FS47Rhythm).
  bool HoldsTaking() const;
+ // What the player has to see something by: its own light, against the sky, or the lamp, the truck's lights or the day on it.
+ // Pure, for the self-test: the hour, and how far off and how far from the middle of each light the thing is.
+ struct FLightOn{double Hour=0;bool bOwn=false,bSky=false,bLamp=false,bHeadlights=false,bTown=false;double LampM=1e9,LampDeg=180,CarM=1e9,CarDeg=180,TownM=1e9;};
+ static bool LitBy(const FLightOn& L);
+ // The night's hour, 8 to 32: from the morning the night is drawn in to the next (FS47FreeformSession::NightOf turns at eight).
+ static double NightHour(double Clock);
  // A record one of these leaves (FS47FreeformCases, FieldRecordKept, the 30-day assessment). Humour and pay are not.
  static bool IsNightFinding(const FString& Id);
  // Its kind, for counting kinds: "cattle_ring_d4" -> "cattle_ring".
@@ -154,6 +170,32 @@ private:
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
+ // The night's own pace: one at x1 in play; F10's natural night runs its minutes at its speed, so what lasts is measured in the
+ // night's minutes and not in seconds of the screen (critics, 8 November: at x30 a figure held the ground for twenty hours).
+ double NightPace() const;
+ double Paced=0; // main's seconds, at the night's pace
+ // This week's row of the curve (director.json): how near things come, and the night's danger slot (an hour of the night; -1 none).
+ double NearK=1,DangerAt=-1;
+ static constexpr double DangerUntil=29.;
+ // Measured for the log (Tom's critics: the run must say what the player met, how far off, and whether they noticed it).
+ struct FTally{int32 Night=0,NStarted=0,NNoticed=0,NNear=0,NMet=0,NRefused=0;double Nearest=1e9;};
+ FTally Tally;
+ TSet<int32> NoticedSerials;
+ TMap<FString,FString> RefusedSaid;
+ mutable TSet<FString> LateDrawSaid;
+ void CloseTally(int32 NewNight);
+ void Refused(const FString& Id,const FString& Why);
+ // Where the player stands, in this area's terms: the cab when driving.
+ FVector PlayerAt() const;
+ double AwayFrom(const FVector& At) const;
+ // From the player to the one on the ground now, or to what it left; -1 when it has no place (a word on the radio).
+ double AwayNow(const FString& Id) const;
+ // Sounds left at a lasting thing (the cattle, the camper's generator, the projector): started near, stopped away.
+ TSet<FString> LoopsOn;
+ double SoundNext=0;
+ void SiteSounds();
+ // Before an observation too, now and then, a far cue: not only before a danger.
+ mutable FS47RoswellWorld Sight;
  double HourOfNight(double Clock) const;
  bool Due(const FString& Id) const;
  bool MayStart(const FString& Id);
@@ -185,8 +227,9 @@ private:
  void StepWatch();
  // What is drawn for each, put away when it is over or the game stops (and the room's television with it).
  void PutAway(const FString& Id);
- // Something near was seen or heard between 23 and 01 (StepLate): only what the player noticed counts.
- void Noticed();
+ // Something was seen or heard (StepLate between 23 and 01: only what the player noticed near them counts; the log and the tally).
+ // Dist: how far off it was, -1 where the player is. How: by sight, sound, the radio, the hand.
+ void Noticed(const FString& Id=FString(),double Dist=-1,const TCHAR* How=TEXT("here"),int32 Ser=0);
  // What the spoken words call a place: never a sign's capitals.
  static FString Spoken(const FString& Title);
  // Before a danger that is drawn, one or two small things, closer each time; on other nights now and then the same with nothing after.
@@ -220,6 +263,11 @@ private:
  bool BeginHitcher(bool bForced,FString& Why);
  bool BeginRv(bool bForced,FString& Why);
  bool BeginHumor(const FString& Variant,bool bForced,FString& Why);
+ bool BeginFigure(bool bForced,FString& Why);
+ void StepFigure(double Dt);
+ // What the figure did, for the one record at the end: each time it stood and was seen, how far and which way.
+ TArray<FString> FigureSeen;
+ double FigureSeenFor=0;int32 FigureStageSeen=-1;
  void StepCar(double Dt);
  void StepCattle(double Dt);
  void StepLanding(double Dt);
@@ -245,6 +293,10 @@ private:
  bool OnHighway(double& RoadX,double& RoadZ,double& TruckSpeed) const;
  bool CanHearCb() const;
  bool Seen(const FVector& At,double Range,double Deg=32) const;
+ // Seen in fact: in view and range (Seen), nothing solid between (FS47RoswellWorld::ClearSight, past the prop itself) and lit (LitBy).
+ // How: what light it can be seen by, LitOwn / LitSky / LitGround. Own: the prop kind that is the thing, not in the way of itself.
+ static constexpr uint32 LitOwn=1,LitSky=2,LitGround=4;
+ bool SeenLit(const FVector& At,double Range,double Deg,uint32 How,const TCHAR* Own=nullptr) const;
  FVector Eye() const;
  const FSite* SiteOf(const FString& Kind) const;
  FSite* SiteOf(const FString& Kind);
@@ -268,11 +320,15 @@ private:
  int32 UneaseNight=0,UneaseWant=0,DangerSeen=0;
  double DangerClock=-1e9,UneaseTry=0,OutsideSince=-1,TruckAwaySince=-1;
  bool bWasDriving=false,bWasIndoors=false,bChairUp=false;
+ // Tips heard by nobody yet, kept until a CB (the stranger's own words) or Dale's walkie (his) is there to hear them.
+ struct FHeldTip{TArray<FString> Lines;FString Voice,Passed;double Until=0;};
+ TArray<FHeldTip> HeldTips;
+ void StepTips();
  TFunction<FString()> ClockSay;double ClockRange=-1;bool bClockHeld=false;
  void PlanUnease(int32 Night);
  void StepUnease(double Dt);
  bool FireUnease(int32 I,bool bForced,FString& Why);
- void StepUneasy(double Dt);
+ void StepUneasy(double Dt,double Pc=1);
  void EndUneasy();
  // ---- the counter ----
  void StepGeiger(double Dt);
