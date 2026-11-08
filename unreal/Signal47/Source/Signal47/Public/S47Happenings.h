@@ -110,6 +110,10 @@ private:
  bool bLate=false,bEchoArmed=false;
  // Tonight's draws: id -> the hour (of the night, 19 to 30) it may start from. Absent: not drawn. Never saved: from the seed.
  TMap<FString,double> Plan;
+ // When each may be tried again after a refusal (main's own seconds), so that a refusal is not asked again every frame.
+ TMap<FString,double> TryAt;
+ // Between 23 and 01: something else came (bLate), and when the fallback may next try (game clock).
+ double LateTryClock=0;
  FString HumorKind;
  FString LastArea;
  struct FSay{FString Text;double In=0;float Secs=6;};
@@ -161,7 +165,7 @@ private:
  bool RoadOfWorld(const FVector& W,double& X,double& Z) const;
  bool Outdoors() const;
  bool Driving() const;
- bool OnHighway(double& RoadX,double& RoadZ,double& Speed) const;
+ bool OnHighway(double& RoadX,double& RoadZ,double& TruckSpeed) const;
  bool CanHearCb() const;
  bool Seen(const FVector& At,double Range,double Deg=32) const;
  FVector Eye() const;
