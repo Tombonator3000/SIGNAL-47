@@ -241,11 +241,11 @@ namespace
     else if(Phase>=4)
     {
      Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));
-     if(!Retained()||!Check(F.Director&&Shot()->IsDeveloped()&&!F.InTutorial()&&F.Budget()==S47J::Num(Base,TEXT("cash"))+(Phase>=5?5:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&F.Field->ParcelStage()==0&&F.Field->DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&F.Field->CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1,TEXT("later restart preserves completed delivery and phase-specific exact economy")))return false;
+     if(!Retained()||!Check(F.Director&&Shot()->IsDeveloped()&&!F.InTutorial()&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+(Phase>=5?5:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&F.Field->ParcelStage()==0&&F.Field->DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&F.Field->CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1,TEXT("later restart preserves completed delivery and phase-specific exact economy")))return false;
      if(Phase>=5&&!EventRetained(true))return false;
      if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(Phase>=6?(Phase==6?600:700):(Phase==4?400:430));
     }
-    else {Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));if(!Retained()||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+(Phase==2?20:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("restart preserves exact earned/spent cash and not-yet-delivered stock")))return false;if(Phase==2){if(!Check(Shot()->LabStage==1,TEXT("normal Continue retains processed-film stage"))||!Place(TEXT("wetBench")))return false;Go(40);}else {if(!Check(Shot()->IsDeveloped(),TEXT("second process restart retains the actually developed original")))return false;Go(60);}}
+    else {Job=S47J::Str(Base,TEXT("job"));Photo=S47J::Str(Base,TEXT("photo"));if(!Retained()||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+(Phase==2?20:-15)&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("restart preserves exact earned/spent cash and not-yet-delivered stock")))return false;if(Phase==2){if(!Check(Shot()->LabStage==1,TEXT("normal Continue retains processed-film stage"))||!Place(TEXT("wetBench")))return false;Go(40);}else {if(!Check(Shot()->IsDeveloped(),TEXT("second process restart retains the actually developed original")))return false;Go(60);}}
     return true;
    }
    if(M->Flow->bStarting||M->Flow->bRestoringNow||!M->Freeform||!M->Freeform->Active())return true;
@@ -318,7 +318,7 @@ namespace
     S47J::Set(Base,TEXT("captureOriginal"),J->CaptureOriginal.Save());S47J::Set(Base,TEXT("captureControl"),J->CaptureControl.Save());
     S47J::Set(Base,TEXT("captureDocumentHash"),Hash(J->OriginalPage));S47J::Set(Base,TEXT("captureStamp"),J->OriginalStamp);S47J::Set(Base,TEXT("captureTicks"),J->TraceTicks);
     S47J::Set(Base,TEXT("captureOriginalCovered"),J->OriginalCovered);S47J::Set(Base,TEXT("captureControlCovered"),J->ControlCovered);
-    if(!CaptureRetained()||!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&!F.AudioPlaying(),TEXT("capture/listening grants no payment and transport has stopped before normal save")))return false;
+    if(!CaptureRetained()||!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!F.AudioPlaying(),TEXT("capture/listening grants no payment and transport has stopped before normal save")))return false;
     SaveMenu();return true;
    }
     return !Done;
@@ -341,7 +341,7 @@ namespace
     case 21:if(!Use(TEXT("opsTerminal")))return false;Go(22);break;
     case 22:if(!Click(TEXT("DAILY WORK")))return false;Go(23);break;
     case 23:if(!Click(TEXT("Register routine result / $20")))return false;Go(24);break;
-    case 24:if(!Check(!F.InTutorial()&&F.Budget()==S47J::Num(Base,TEXT("cash"))+20,TEXT("earned routine payment exactly once"))||!Place(TEXT("fieldCamera"),FVector(-1.3,0,0)))return false;Go(25);break;
+    case 24:if(!Check(!F.InTutorial()&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+20,TEXT("earned routine payment exactly once"))||!Place(TEXT("fieldCamera"),FVector(-1.3,0,0)))return false;Go(25);break;
     case 25:if(!Use(TEXT("fieldCamera")))return false;if(M->Night->Album->Left()<=0){if(!Place(TEXT("ff:film"),FVector(-1.3,0,0)))return false;Go(250);}else Go(26);break;
     case 250:if(!Use(TEXT("ff:film")))return false;Go(26);break;
     case 26:
@@ -360,11 +360,11 @@ namespace
     }
     case 28:if(M->Web->IsDoorOpen(TEXT("labDoor")))return Finish(false,TEXT("lab door open: close through ordinary door input; harness will not force it"));if(!Use(TEXT("wetBench")))return false;Go(29);break;
     case 29:if(!Click(TEXT("LOAD SEALED FILM INTO TANK")))return false;Go(30);break;
-    case 30:if(!Check(Shot()&&Shot()->LabStage==1&&F.Budget()==S47J::Num(Base,TEXT("cash"))+20,TEXT("actual first lab action retained; no photo payment")))return false;SaveMenu();break;
+    case 30:if(!Check(Shot()&&Shot()->LabStage==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+20,TEXT("actual first lab action retained; no photo payment")))return false;SaveMenu();break;
     case 40:if(!Use(TEXT("wetBench")))return false;Go(41);break;
     case 41:if(!Click(TEXT("TRANSFER CONTACT PRINT TO FIXER")))return false;Go(42);break;
     case 42:if(!Check(Shot()&&Shot()->LabStage==2,TEXT("actual fixer action completed"))||!Click(TEXT("COLLECT AND EXAMINE PRINT")))return false;Go(43);break;
-    case 43:if(!Check(Shot()&&Shot()->IsDeveloped()&&F.Budget()==S47J::Num(Base,TEXT("cash"))+20,TEXT("same developed ordinary photo grants no payment")))return false;M->UI->Close(true);M->World->DriveToDiner(nullptr);M->World->Autopilot=12.;TravelAt=Age;Go(44);break;
+    case 43:if(!Check(Shot()&&Shot()->IsDeveloped()&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+20,TEXT("same developed ordinary photo grants no payment")))return false;M->UI->Close(true);M->World->DriveToDiner(nullptr);M->World->Autopilot=12.;TravelAt=Age;Go(44);break;
     case 44:if(!Travel(TEXT("diner")))return true;if(!AS47Props::IsDoorOpen(TEXT("gasDoor"))){if(!Place(TEXT("town:gasDoor"),FVector(0,0,-1)))return false;Go(440);}else Go(441);break;
     case 440:if(!Use(TEXT("town:gasDoor")))return false;Go(441);break;
     case 441:if(!Check(AS47Props::IsDoorOpen(TEXT("gasDoor")),TEXT("actual shop door opened before interior placement")))return false;M->Player->Place(7981.8,2068.8,0);Aim(W.InteractionPoint(TEXT("ff:shop")));Go(45);break;
@@ -372,8 +372,8 @@ namespace
     case 46:if(!Click(TEXT("control fuse / $5")))return false;Go(47);break;
     case 47:if(!Click(TEXT("drive relay / $25")))return false;Go(48);break;
     case 48:if(!Click(TEXT("control fuse / $5")))return false;Go(49);break;
-    case 49:if(!Check(W.ParcelStage()==1&&W.ParcelContents().Num()==2&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()==S47J::Num(Base,TEXT("cash"))-15&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("one paid untouched counter parcel; exact charge, no premature stock")))return false;SaveMenu();break;
-    case 60:if(!Check(W.ParcelStage()==1&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()==S47J::Num(Base,TEXT("cash"))-15,TEXT("normal Continue retains paid counter basket")))return false;M->UI->Close(true);M->Player->Place(7981.8,2068.8,0);Aim(W.InteractionPoint(TEXT("ff:parcel")));Go(61);break;
+    case 49:if(!Check(W.ParcelStage()==1&&W.ParcelContents().Num()==2&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay")),TEXT("one paid untouched counter parcel; exact charge, no premature stock")))return false;SaveMenu();break;
+    case 60:if(!Check(W.ParcelStage()==1&&W.ParcelContents().FindRef(TEXT("fuse"))==2&&W.ParcelContents().FindRef(TEXT("relay"))==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15,TEXT("normal Continue retains paid counter basket")))return false;M->UI->Close(true);M->Player->Place(7981.8,2068.8,0);Aim(W.InteractionPoint(TEXT("ff:parcel")));Go(61);break;
     case 61:if(!Use(TEXT("ff:parcel"))||!Place(TEXT("ff:cargo"),FVector(1.4,0,0)))return false;Go(62);break;
     case 62:
     {
@@ -387,7 +387,7 @@ namespace
     case 64:if(!Use(TEXT("ff:parcel"))||!Check(W.ParcelStage()==2,TEXT("actual loaded parcel pickup unloads the same cargo"))||!Place(TEXT("ff:delivery")))return false;Go(65);break;
     case 65:if(!Use(TEXT("ff:delivery")))return false;Go(66);break;
     case 66:
-     if(!Check(W.ParcelStage()==0&&W.ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&W.DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&W.CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1&&F.Budget()==S47J::Num(Base,TEXT("cash"))-15,TEXT("actual transport and one delivery preserve exact economy"))||!Retained())return false;SaveMenu();break;
+     if(!Check(W.ParcelStage()==0&&W.ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1&&W.DeliveredParcels()==S47J::Int(Base,TEXT("delivered"))+1&&W.CargoDeliveries()==S47J::Int(Base,TEXT("cargo"))+1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15,TEXT("actual transport and one delivery preserve exact economy"))||!Retained())return false;SaveMenu();break;
     case 399:
     {
      if(F.Director->EventId()==TEXT("dusk_orb")&&F.Director->EventAge()<20){M->UI->Close(true);Go(405);break;} // one long under way (a night's visit) is waited out below: nine metres south is only clear of them early on
@@ -418,7 +418,7 @@ namespace
      if(F.Director->EventId()!=TEXT("dusk_orb"))
      {if(F.Director->Busy()||Age-At>65)return Finish(false,TEXT("natural dusk invitation blocked or missed; no Force/retry state injection"));return true;}
      if(!Check(!F.PowerFault()||W.GeneratorRunning(),TEXT("power still available after real wait fuel consequences")))return false;
-     M->UI->Close(true);const FVector P=FS47DuskOrb::Position(F.Director->EventAnchor(),F.Director->EventAge());M->Player->Place(P.X,P.Z+9,0);Aim(P);Go(406);break; // outside the 7 m at which the lights leave
+     M->UI->Close(true);const FVector P=F.Director->OrbAt();M->Player->Place(P.X,P.Z+9,0);Aim(P);Go(406);break; // outside the 7 m at which the lights leave
     }
     case 406:
     {
@@ -439,19 +439,19 @@ namespace
     case 412:if(!Check(EventShot()&&EventShot()->LabStage==1,TEXT("event sealed film processed"))||!Click(TEXT("TRANSFER CONTACT PRINT TO FIXER")))return false;Go(413);break;
     case 413:if(!Check(EventShot()&&EventShot()->LabStage==2,TEXT("event print fixed"))||!Click(TEXT("COLLECT AND EXAMINE PRINT")))return false;Go(414);break;
     case 414:
-     if(!EventRetained(false)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))-15,TEXT("development alone grants no credit")))return false;
+     if(!EventRetained(false)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))-15,TEXT("development alone grants no credit")))return false;
      FScreenshotRequest::RequestScreenshot(Root/TEXT("phase-4-developed-event.png"),true,false);Go(415);break;
     case 415:if(Age-At<1)return true;if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(420);break;
     case 420:if(!Use(TEXT("opsTerminal")))return false;Go(421);break;
     case 421:if(!Click(TEXT("SUPPLIES")))return false;Go(422);break;
     case 422:if(!Click(TEXT("Register photograph / $20 documentation credit")))return false;Go(423);break;
     case 423:
-     if(!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
      if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(430);break;
     case 430:if(!Use(TEXT("opsTerminal")))return false;Go(431);break;
     case 431:if(!Click(TEXT("SUPPLIES")))return false;Go(432);break;
     case 432:
-     if(!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Documentation credit already received."))&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Documentation credit already received."))&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
      SaveMenu();break;
     case 600:
     {
@@ -507,7 +507,7 @@ namespace
      Evidence.Add(MakeShared<FJsonValueObject>(F.CaptureSoundState()));
      if(!CaptureRetained())return false;
      if(Stage==702){F.AudioAction(TEXT("control"));if(!Check(F.AudioAction(TEXT("play")),TEXT("normal retained internal-control transport starts after process restart")))return false;Go(703);break;}
-     if(!EventRetained(true)||!Check(F.Budget()==S47J::Num(Base,TEXT("cash"))+5&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1,TEXT("actual restarted playback preserves older photo/economy and delivered stock")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&F.InventoryCount(TEXT("fuse"))==S47J::Int(Base,TEXT("fuse"))+2&&F.InventoryCount(TEXT("relay"))==S47J::Int(Base,TEXT("relay"))+1,TEXT("actual restarted playback preserves older photo/economy and delivered stock")))return false;
      S47J::Set(Base,TEXT("completedPhase"),7);if(!Check(FFileHelper::SaveStringToFile(S47J::Write(Base,true),*(Root/TEXT("journey.json"))),TEXT("final verification receipt written without an extra manual save")))return false;
      return Finish(true,TEXT("ordinary Save Case, separate process and exact title Continue preserve actual v3 original/control; both render through real transport again"));
     }

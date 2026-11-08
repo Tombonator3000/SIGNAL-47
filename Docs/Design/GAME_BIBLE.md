@@ -116,6 +116,12 @@ Ordinære observasjoner finansierer driften. Det dokumenterte utgangspunktet er 
 
 Kunnskap og penger er ulike former for fremgang. God undersøkelse kan gi en saksmappe, utlån, adgang til et feltsted, en relevant utstyrsfunksjon eller bedre oppfølgingsmulighet. Et ordinært eller negativt resultat kan gi slik fremgang. Det skal ikke være mest lønnsomt å rapportere alien uansett funn.
 
+**Tid har pris, innført 7. november (Toms avgjørelse, tallene er Claudes startverdier):** en jobb betaler $20 på sin dag og dagen etter, deretter $15, $10 og $5. Ukentlig driftsgjennomgang på dag 8, 15 og så videre tar $40 (strøm $25, drivstoff og lager $15); det som ikke kan betales overføres med tak på $80 og rører aldri rekvisisjonen. Venting koster $1 per påbegynte tre timer, høyst $4, og frafalles om pengene mangler. Fra dag 2 ligger alle tre jobbene kl. 19:00-23:30. Kropper starter kl. 01:00-03:00 etter en trekning per spill og natt, tidligere etter hvert og for den som er tatt før; noen netter er helt rolige.
+
+**Bortføring koster:** dagens ubetalte jobber går til halv sats, pekt array må pekes på nytt, sett og kamera kan bli liggende der spilleren ble tatt (hentes der, eller leveres inn etter tre døgn), og saken THE LOST HOURS åpnes. Film, bilder, originaler og opptjente penger røres ikke.
+
+**Åpninger i OPS (SUPPLIES, STORES LIST), hver med pris og krav:** lyskaster på bilen $35, feltseng $20, magnetometer $40 (etter vurdering i THE LOST HOURS), logger nr. 2 $45 (gjør prøven med to målesteder ekte), bedre film $30 (etter første kropp på bilde), gårdsalarm $60 (når fylket kjenner stasjonen; kan slås ut). Motellrom $8 per natt: ingenting vekker deg der; på feltseng gjør det.
+
 Caliche-turen har praktisk mening: diagnostiser feil → velg reserve, reparasjon eller redusert drift → skaff deler → frakt → monter → kontroller. Samle innkjøp. Små reservedelslagre og nødveier hindrer at tom konto eller en enkelt ødelagt del stenger all videre drift. Drivstoff, lager, last og apparattilstand lagres.
 
 ### Saksløkken og frie undersøkelser

@@ -35,6 +35,8 @@ public:
 	// Normal on-foot movement and native scenarios share this exact axis-swept
 	// collision path. Deltas are world X/Z metres, not input or teleportation.
 	void MoveBy(double DeltaX, double DeltaZ);
+	/** On the floor under the walker at once, where it stands; moving, it follows the floor over a moment. */
+	void SettleOnFloor() { FloorY = FloorAt(Pos.X, Pos.Z); }
 	void Look(double DX, double DY);
 	FString FocusedId() const { return Focused; }
 	TFunction<void(const FString&)> OnUse;

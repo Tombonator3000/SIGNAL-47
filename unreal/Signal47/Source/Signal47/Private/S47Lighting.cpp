@@ -1,5 +1,6 @@
 #include "S47Web.h"
 #include "S47DevEvents.h"
+#include "S47OutsideLight.h"
 
 #include "Components/DirectionalLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -517,9 +518,9 @@ void AS47Web::UpdateFinaleSkyCapture()
 	}
 }
 
-void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
+void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening, float Twilight)
 {
-	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening;
+	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening; SkyTwilight = Twilight;
 	const auto Look = LookdevEnvironmentNow();
 	// Only the active Roswell view loses native ground fill; the living sky keeps its own curves.
 	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
@@ -597,7 +598,8 @@ void AS47Web::UpdateNativeFog()
 		LightingFog->FSSSSceneColorScatteringAmountScale = ScatteringAmount;
 		LightingFog->MarkRenderStateDirty();
 	}
-	LightingFog->SetVolumetricFogScatteringDistribution(Look.Scattering);
+	// The massive light (S47OutsideLight.h) holds these while it lasts.
+	LightingFog->SetVolumetricFogScatteringDistribution(GS47FloodFogPhase >= 0.f ? GS47FloodFogPhase : Look.Scattering);
 	LightingFog->SetVolumetricFogAlbedo(Look.FogAlbedo.ToFColor(false));
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
@@ -618,7 +620,7 @@ void AS47Web::UpdateNativeFog()
 	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
 	LightingFog->SetDirectionalInscatteringColor(FMath::Lerp(FLinearColor(.55f, .26f, .10f), FLinearColor(1.f, .43f, .12f), Amber) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * (FMath::Lerp(.15f, .45f, Caliche) + .35f * Amber)));
 	LightingFog->SetStartDistance(7000.f * Caliche);
-	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
+	LightingFog->SetVolumetricFogDistance(GS47FloodFogDistance > 0.f ? GS47FloodFogDistance : FMath::Lerp(14000.f, 120000.f, Caliche));
 }
 
 void AS47Web::SyncFloodLights()
@@ -697,15 +699,27 @@ void AS47Web::UpdateNativeLighting()
 	if (NightSky) NightSky->SetIndirectLightingIntensity(Indirect);
 	Bounce(DawnSun);
 	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
+	// Dusk and dawn with the sun down. At 18:37 the ground read sRGB 0 to 3 under a sky of 65: the sun's ground light is gone with its 0.6 degrees of
+	// grazing, the sky light's capture gives next to nothing under the real-time clouds, and the moon's 0.055 falls in the tone curve's toe. The fill goes
+	// through the moon's own lights, since they cast shadows already, stay out of the rooms and do not light the clouds. Blue and soft while it lasts.
+	// The sky's curves are not touched, and it is exactly nothing from 19:30 (FS47Sky::TwilightAt). -S47TwilightFill= retunes it, 0 is as before.
+	static const float TwilightGain = [] { float V = 1.8f; FParse::Value(FCommandLine::Get(), TEXT("S47TwilightFill="), V); return V; }();
+	const float Twilight = CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(SkyTwilight, 0.f, 1.f);
+	int32 MoonsUp = 0;   // (the road's and the diner's stand together: the fill must not count twice there)
+	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get())) MoonsUp += R.Base > 0 && Moon->IsVisible();
+	const float TwilightEach = Twilight * TwilightGain * FMath::Lerp(1.f, .4f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))))) / float(FMath::Max(MoonsUp, 1));
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
 		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
 		// Lightning keeps its authored brightness; only the moon baseline receives the gain.
-		Moon->SetIntensity(R.Base > 0 ? (LocalMoon * (1.f - SkyDawn) * Look.MoonGain + SkyFlash * 0.8f) * FinaleLight : 0.f);
+		const float MoonOwn = LocalMoon * (1.f - SkyDawn) * Look.MoonGain + SkyFlash * 0.8f;
+		Moon->SetIntensity(R.Base > 0 ? (MoonOwn + TwilightEach) * FinaleLight : 0.f);
+		// The air and the volumetric fog see what they saw: the fill is for the land, and the sky stays as it was.
+		Moon->SetVolumetricScatteringIntensity(TwilightEach > 0.f ? MoonOwn / (MoonOwn + TwilightEach) : 1.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
-		Moon->SetLightSourceAngle(0.52f);
+		Moon->SetLightSourceAngle(FMath::Lerp(0.52f, 4.f, Twilight));
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
 	// Keep nearby C6 geometry inside the existing 15km exclusion. Recapture remains throttled below.

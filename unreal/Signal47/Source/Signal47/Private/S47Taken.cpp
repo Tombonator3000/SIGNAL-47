@@ -1,9 +1,11 @@
 #include "S47Taken.h"
+#include "S47Rhythm.h"
 #include "S47CalicheAccess.h"
 #include "S47FarmSite.h"
 #include "S47FarmHouse.h"
 #include "S47IndoorDread.h"
 #include "S47Aftermath.h"
+#include "S47LeftGear.h"
 #include "S47Ambience.h"
 #include "S47Main.h"
 #include "S47Web.h"
@@ -20,10 +22,11 @@
 #include "S47Night.h"
 #include "S47Flashlight.h"
 #include "S47UfoPresentation.h"
+#include "S47OutsideLight.h"
+#include "S47FloodProbe.h"
 #include "SS47AwayOverlay.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/LocalFogVolumeComponent.h"
 #include "S47Flow.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -35,9 +38,9 @@
 namespace
 {
  constexpr double DreadSeconds=13,FloodSeconds=20,TakenAfter=5,LiftSeconds=6.5;
- const FS47TakenTerms RoswellTerms{35,70,true,0,0,false,FLinearColor(1.f,.60f,.24f)};
- const FS47TakenTerms CrabTerms{120,240,false,150,300,false,FLinearColor(1.f,.36f,.12f)};
- const FS47TakenTerms TallTerms{300,420,true,0,0,true,FLinearColor(.80f,.84f,1.f)};
+ const FS47TakenTerms RoswellTerms{35,70,true,0,0,false,FLinearColor(1.f,.60f,.24f),0};
+ const FS47TakenTerms CrabTerms{120,240,false,150,300,false,FLinearColor(1.f,.36f,.12f),1};
+ const FS47TakenTerms TallTerms{300,420,true,0,0,true,FLinearColor(.80f,.84f,1.f),2};
  FString ClockText(double Seconds)
  {
   const int32 S=int32(FMath::Fmod(Seconds,86400.));
@@ -61,6 +64,7 @@ bool FS47Taken::Indoors() const
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
+ if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=!Indoors();
  UE_LOG(LogTemp,Display,TEXT("S47: taken begins, %s, %s"),bOutdoors?TEXT("in the open"):TEXT("under a roof"),*Title);
@@ -75,6 +79,7 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
 {
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
+ if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=true;bSpill=false;bOverPlace=true;
  From=Over+FVector(0,26,0);Aim=Over+FVector(0,.6,0);
@@ -93,7 +98,7 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  if(!M||!M->Player||!M->Freeform)return false;
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;
- if(Now==EStage::None)SafeClock=M->Freeform->Clock();
+ if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));}
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
  // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.
@@ -146,8 +151,12 @@ bool FS47Taken::LightReaches(const FVector& Chest) const
  if(!M||!M->Web||!M->Web->GetWorld())return false;
  FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47TakenLight),true);
  const FVector A=S47Three::ToUE(From),B=S47Three::ToUE(Chest);
- if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,A,B,ECC_Visibility,Q))return true;
- return Hit.Distance>FVector::Dist(A,B)-30.;
+ UWorld* World=M->Web->GetWorld();
+ if(World->LineTraceSingleByChannel(Hit,A,B,ECC_Visibility,Q)&&Hit.Distance<=FVector::Dist(A,B)-30.)return false;
+ // And back: a ceiling or a roof with one face lets a ray from above go through it. The light then stood in the attic of the
+ // Plaza and lit its whole interior.
+ FHitResult Back;
+ return !World->LineTraceSingleByChannel(Back,B,A,ECC_Visibility,Q)||Back.Distance>FVector::Dist(A,B)-30.;
 }
 
 bool FS47Taken::StartFlood()
@@ -195,25 +204,33 @@ void FS47Taken::StepMist(double Dt)
  if(!M||!M->Web||!M->Player)return;
  const bool bWant=Now==EStage::Dread||Now==EStage::Flood||Now==EStage::Lift;
  MistK=FMath::FInterpConstantTo(MistK,bWant?1.:0.,Dt,bWant?.16:.3);
- auto* F=Mist.Get();
- if(!F)
- {
-  if(MistK<=0)return;
-  F=NewObject<ULocalFogVolumeComponent>(M->Web.Get(),TEXT("S47TakenMist"));
-  F->SetupAttachment(M->Web->GetRootComponent());F->RegisterComponent();
-  F->SetWorldScale3D(FVector(1.5,1.5,.5));F->SetFogPhaseG(.5f);F->SetHeightFogFalloff(320.f);
-  Mist=F;
- }
- // A mist comes in round them, low at first, and it takes the colour of whatever is shining through it.
- F->SetWorldLocation(S47Three::ToUE(Feet()+FVector(0,1.1,0)));
- F->SetRadialFogExtinction(float(MistK*1.1));F->SetHeightFogExtinction(float(MistK*.7));
- F->SetFogAlbedo(Now==EStage::Flood||Now==EStage::Lift?LightColor(Age):FLinearColor(.82f,.8f,.76f));
- F->SetVisibility(MistK>.002);
+ if(MistK<=0&&!Rig)return;
+ if(!Rig)Rig=MakeShared<FS47OutsideLight>(M);
+ // A mist comes in round them, low at first, and it takes the colour of whatever is shining through it. Under a roof it is
+ // thin and pale: the room's own haze is there too, and the shafts take the light's colour from the light.
+ const FLinearColor Albedo=!bOutdoors?FLinearColor(.9f,.9f,.92f):Now==EStage::Flood||Now==EStage::Lift?LightColor(Age):FLinearColor(.82f,.8f,.76f);
+ Rig->SetAir(MistK,Feet()+FVector(0,1.1,0),Albedo,!bOutdoors);
 }
 
 void FS47Taken::ShowLight(double K)
 {
  if(!M||!M->Web)return;
+ if(!bOutdoors)
+ {
+  // Gone under a roof from an open-air flood: what was shining there stops.
+  if(auto* OldSpot=Spot.Get())OldSpot->SetVisibility(false);
+  if(auto* OldFill=Fill.Get())OldFill->SetVisibility(false);
+  if(Ufo)Ufo->Hide();
+  S47FloodProbe::StopLive(M);
+  // One real source out there and nothing else: it cannot come through a wall, and it moves, so what it throws moves.
+  if(!Rig)Rig=MakeShared<FS47OutsideLight>(M);
+  FS47OutsideLight::FFrame Frame;
+  Frame.Aim=Aim;Frame.From=FS47OutsideLight::Swept(From,Aim,Age);Frame.Color=LightColor(Age);Frame.K=K;Frame.Seconds=Age;
+  // Only once they are held, in a room with no way in: it comes down on them all the same (TakeNow).
+  Frame.bThroughRoof=Now==EStage::Lift&&!LightReaches(Feet()+FVector(0,1.25,0));
+  Rig->Show(Frame);
+  return;
+ }
  auto* L=Spot.Get();
  if(!L)
  {
@@ -255,6 +272,7 @@ void FS47Taken::HideLight()
 {
  if(auto* L=Spot.Get()){L->SetIntensity(0);L->SetVisibility(false);}
  if(auto* B=Fill.Get()){B->SetIntensity(0);B->SetVisibility(false);}
+ if(Rig)Rig->Hide();
  if(M&&M->Player)M->Player->MoveScale=1;
  if(M&&M->Audio)M->Audio->HoldRoomTone(1.f,1.2f);
  S47CalicheAccess::SetLampLevel(1);
@@ -305,7 +323,9 @@ void FS47Taken::Apply()
  const double Minutes=FMath::FRandRange(float(T.MinMinutes),float(T.MaxMinutes));
  Seconds=Minutes*60;
  // Once, and whole: the clock, the place and the note together, before anything can be saved in between.
+ const FString WasArea=M->Web?M->Web->Area():FString();
  M->Freeform->TakenAway(Seconds);
+ const FString Costs=M->Freeform->TakenCosts(SafeClock);
  const double WakeClock=M->Freeform->Clock();
  if(M->Freeform->FarmSite)M->Freeform->FarmSite->SetCalm(WakeClock+3600);
  if(M->Freeform->IndoorDread)M->Freeform->IndoorDread->AfterTaken();
@@ -336,7 +356,15 @@ void FS47Taken::Apply()
  }
  // A frame on the roll that was not taken: no word about it. It is only there in the album, like the others.
  const bool bFrame=M->FieldCamera&&M->FieldCamera->bHave&&M->Night&&M->Night->Album&&M->Night->Album->AddUnbidden(FMath::FRand()<.5f);
- Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them. This records what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"));
+ // After the frame: a frame on the roll is only there if the camera was with them when it was taken. Live games only.
+ FString Gone;
+ if(M->Freeform->RulesLive()&&M->Freeform->Gear)
+ {
+  TArray<FString> Names;for(const FString& Item:M->Freeform->Gear->Leave(T.Leaves,WasArea,Before,Place,WakeClock))Names.Add(FS47LeftGear::NameOf(Item));
+  if(!Names.IsEmpty())Gone=FString::Printf(TEXT(" My %s %s not on me. It must still be where I stood."),*FString::Join(Names,TEXT(" and ")),Names.Num()>1?TEXT("are"):TEXT("is"));
+  else M->Freeform->LostTimeTrace(1); // Nothing to go back for: where they came to is all there is to look at, and they are looking at it.
+ }
+ Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s This records what I can check, not what happened."),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
  Note[0]=FChar::ToUpper(Note[0]);
  M->Freeform->RecordEvidence(FString::Printf(TEXT("taken-%d-%d"),M->Freeform->Day(),int32(SafeClock)),Note);
  if(M->Freeform->Director)M->Freeform->Director->RestFor(1800);
@@ -375,11 +403,11 @@ void FS47Taken::Stop()
   Unhook();HideLight();White(TOptional<double>());
   if(auto* L=Spot.Get())L->DestroyComponent();
   if(auto* B=Fill.Get())B->DestroyComponent();
-  if(auto* F=Mist.Get())F->DestroyComponent();
+  if(Rig)Rig->Stop();
   if(Overlay&&GEngine&&GEngine->GameViewport)GEngine->GameViewport->RemoveViewportWidgetContent(Overlay.ToSharedRef());
   if(Ufo)Ufo->Hide();
  }
- Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();Fill.Reset();Mist.Reset();MistK=0;
+ Ufo.Reset();Overlay.Reset();bOverlay=false;Spot.Reset();Fill.Reset();Rig.Reset();MistK=0;
 }
 
 void FS47Taken::Step(double Dt)
@@ -448,7 +476,11 @@ void FS47Taken::Step(double Dt)
   const FVector Chest=Feet()+FVector(0,1.25,0);
   // It looks for them at walking pace, so a shadow or a wall is a real way out.
   S47CalicheAccess::SetLampLevel(0);
+  // From where it stands just now: under a roof it drifts, and being in the light is being in what is seen.
+  const FVector Base=From;
+  if(!bOutdoors)From=FS47OutsideLight::Swept(From,Aim,Age);
   const bool bReach=LightReaches(Chest);
+  From=Base;
   if(Lit>=0&&(bReach||!bSpill))Aim=FMath::VInterpConstantTo(Aim,Chest,Dt,1.5);
   ShowLight(K);
   const bool bCaught=Lit>=0&&FVector::Dist(Aim,Chest)<1.6&&bReach;
@@ -490,6 +522,7 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
  Check(R.MaxMinutes<=C.MinMinutes&&C.MaxMinutes<=T.MinMinutes,TEXT("each kind of taker costs more time than the one before"));
  Check(R.bLift&&!C.bLift&&T.bLift,TEXT("the crab takes in the dark, the others in the light"));
  Check(R.WakeMax==0&&!R.bHome&&C.WakeMin>=100&&!C.bHome&&T.bHome,TEXT("each comes to in its own place"));
+ Check(R.Leaves==0&&C.Leaves==1&&T.Leaves==2,TEXT("the further off they wake, the more stays behind"));
  // Who comes where, from the visit's own dice: each kind can be drawn at each place, only in its hours.
  {
   int32 Farm[3]={0,0,0},Town[3]={0,0,0},Early[3]={0,0,0};
@@ -501,6 +534,11 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
   Check(Farm[0]>0&&Farm[1]>0&&Farm[2]>0&&Town[0]>0&&Town[1]>0&&Town[2]>0,TEXT("all three kinds can come, at the farm and in town"));
   Check(Farm[1]>Town[1]&&Town[0]>Farm[0],TEXT("the crab keeps to open ground, town is mostly the small ones"));
   Check(Early[2]==0&&Early[0]>0&&Early[1]>0,TEXT("the tall one keeps to the last of the night"));
+ }
+ {
+  int32 Open[3]={0,0,0};for(int32 I=0;I<1000;++I)++Open[FS47FarmSite::PickWho(TEXT("field"),4.,(I+.5f)/1000.f)];
+  Check(Open[0]>0&&Open[1]>Open[0]&&Open[2]>0,TEXT("out in the open it is mostly the crab, and the others can come"));
+  Check(FS47FarmSite::OutOnFoot(TEXT("road"),900,false,false)&&FS47FarmSite::OutOnFoot(TEXT("saro"),300,false,false)&&!FS47FarmSite::OutOnFoot(TEXT("saro"),100,false,false)&&!FS47FarmSite::OutOnFoot(TEXT("road"),900,true,false)&&!FS47FarmSite::OutOnFoot(TEXT("road"),900,false,true)&&!FS47FarmSite::OutOnFoot(TEXT("room6"),900,false,false),TEXT("a field visit wants someone on foot, under no roof, away from the station"));
  }
  const double Night2=86400.+19*3600.;
  Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));

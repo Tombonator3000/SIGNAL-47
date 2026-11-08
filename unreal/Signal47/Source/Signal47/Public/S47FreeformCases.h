@@ -17,8 +17,8 @@ public:
  enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap, FieldWork };
  // What the recording shows: the extra pulse group, or the receiver clock offset.
  enum class EObservable : uint8 { ExtraTicks, ClockDelta, FieldTrace };
- static constexpr int32 TestCount=3, CauseCount=3, CaseCount=4, MaxLeads=32;
- static constexpr int32 MysteryLine=3, ClueCount=2, CallOutCharge=10;
+ static constexpr int32 TestCount=3, CauseCount=3, CaseCount=5, MaxLeads=32;
+ static constexpr int32 MysteryLine=3, LostLine=4, ClueCount=2, CallOutCharge=10;
  static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
  // Yes/No name what this test shows when the observable is present/absent; Access gates planning.
  struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; const TCHAR* Yes=nullptr; const TCHAR* No=nullptr; const TCHAR* Access=nullptr; };
@@ -91,7 +91,7 @@ public:
  bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
  // Empty when the current world implements this test; saved legacy results remain valid.
- static FString UnavailableReason(int32 Line,int32 Test);
+ static FString UnavailableReason(int32 Line,int32 Test,bool bSecondLogger=false);
  static FString Prediction(int32 Line,int32 Test);
  static FString ResultText(int32 Line,bool bPresent);
  static FString TestResultText(int32 Line,int32 Test,bool bPresent);

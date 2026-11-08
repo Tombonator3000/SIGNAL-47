@@ -33,6 +33,26 @@ namespace
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. The top insulator on the feeder let go this morning.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Nothing further has happened.\n\nA rancher on US-60 rang the office to ask whether we had noticed anything at that minute. He did not say why."),ER::None}}}
  };
+ const FS47FreeformCases::FMysteryDef LostTime={
+  4,TEXT("Personnel: the lost hours"),
+  {{TEXT("lost_clock"),TEXT("The OPS clock"),
+    {TEXT("The workstation clock stuck at the hour I lost and then corrected itself in one step, as a counter does when its relay catches up. My watch has never done that."),
+     TEXT("The workstation clock put itself right as soon as I logged on. It was the only thing that disagreed with my watch, and my watch is the one I would not swear to."),
+     TEXT("The workstation clock and my watch agree now. The log shows nobody on shift for the whole gap and the door contact never opened. Whatever else was going on, the clock kept running.")}},
+   {TEXT("lost_ground"),TEXT("Where it happened"),
+    {TEXT("At the place itself nothing shows but my own tracks. Going by the sun they are hours older than I remember them being, if the clock I went by was right."),
+     TEXT("At the place itself my tracks go in a small circle and stop. It is the kind of track somebody leaves who is not paying attention to where they are walking."),
+     TEXT("At the place itself my tracks stop in the open. They do not start again anywhere I could find.")}}},
+  {{{TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nWe pulled the timing relay on your report. The contacts were pitted and it was slipping under load.\n\nA spare has gone into your depot. That accounts for the clock. It does not account for your whereabouts, which are not our department."),ER::Spare},
+    {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nWe bench-tested the timing path on your report and it holds to a tenth of a second over a week. We cannot find your fault.\n\nThe call-out is charged to your station."),ER::CallOut},
+    {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO STATION CLOCK\n\nThe timing path holds. The station log for that night is complete and shows no operator for the period you list.\n\nThe call-out is charged to your station."),ER::CallOut}},
+   {{TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nBlood pressure and reflexes unremarkable. Nothing here suggests a lapse. Your own form says the station clock was out.\n\nThe visit is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nNight shifts, irregular meals, long drives alone. It happens to people in your line. Sleep more and do not drive tired.\n\nNo charge to the station for the first visit."),ER::None},
+    {TEXT("SOCORRO GENERAL / OUTPATIENT\nRE: REFERRAL\n\nUnremarkable. There are some small marks you did not mention and could not account for. Probably nothing. Come back if they change.\n\nThe visit is charged to your station."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Field service has since found the timing relay slipping and charged nothing for it.\n\nThe note stands as you wrote it."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. A portable magnetometer from the old survey is on the stores list if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
+ };
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
  {
   TEXT("THE REPEATED INTERVAL"),
@@ -47,9 +67,9 @@ namespace
   {{false,true,true},   // feeder-borne ticks vanish on generator power
    {true,true,false},   // the intermittent local carrier does not recur
    {true,false,true}},  // a sky-fixed source vanishes off the beam
-  {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 47-C, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nThe co-op will inspect on request. Your generator comparison has been forwarded to the line crew."),
+  {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 47-C, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nYour generator comparison has been forwarded to the line crew. A spare control fuse is in your depot."),
    TEXT("FCC FIELD OFFICE / ALBUQUERQUE\nRE: UNLICENSED INTERMITTENT CARRIER\n\nTwo ranchers near US-60 reported an intermittent carrier in 1984. The source was never located.\n\nYour repeat and generator records exclude the station itself. A portable field logger is approved on loan so the carrier can be recorded from a second site."),
-   TEXT("NRAO / SOCORRO\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky rises 3 minutes 56 seconds earlier each night; anything on the ground keeps clock time. Repeat against sidereal time before claiming more. A field logger is approved on loan for an independent second site.")},
+   TEXT("NRAO / SOCORRO\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky rises 3 minutes 56 seconds earlier each night; anything on the ground keeps clock time. A field logger is approved on loan for an independent second site.")},
   TEXT("Records reply: the repeated interval"),TEXT("access.fieldlogger")
  },
  {
@@ -65,9 +85,9 @@ namespace
   {{false,true,true},   // a faulty timing relay is replaced
    {true,false,true},   // a mains-locked clock follows the feeder, not the generator
    {true,true,false}},  // nobody can reach the receiver through shut doors
-  {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO RECEIVER TIMING PATH\n\nTiming relays from the 1983 batch drift when warm. Your swap test isolates the fault exactly as the bulletin describes. Replace the remaining relays at the next service visit.\n\nThe disagreement is an instrument fault. The original papers remain valid with the offset noted."),
-   TEXT("SOCORRO ELECTRIC CO-OP / FREQUENCY LOG\nRE: SARO CLOCK COMPLAINT\n\nThe feeder frequency sagged on the nights you list. Any clock driven from the mains loses time while the line is loaded.\n\nYour generator records show the offset vanish off the mains. Use the generator for timing-critical work until the station clock is replaced."),
-   TEXT("SOCORRO COUNTY SHERIFF / NIGHT LOG\nRE: SARO ANNEX\n\nA deputy on the night patrol noted lights in the SARO annex at 02:40 on two nights when the operator was off shift. No forced entry was found and nothing was reported missing.\n\nYour sealed-station recording shows the receiver keeps time when nobody else can reach it. Keep the doors shut at night. Report anyone you see.")},
+  {TEXT("FIELD SERVICE / ALBUQUERQUE\nRE: SARO RECEIVER TIMING PATH\n\nTiming relays from the 1983 batch drift when warm. Your swap test isolates the fault exactly as the bulletin describes. Two replacements are in your depot.\n\nThe disagreement is an instrument fault. The original papers remain valid with the offset noted."),
+   TEXT("SOCORRO ELECTRIC CO-OP / FREQUENCY LOG\nRE: SARO CLOCK COMPLAINT\n\nThe feeder frequency sagged on the nights you list. Any clock driven from the mains loses time while the line is loaded.\n\nYour generator records show the offset vanish off the mains. Expect it again whenever the line is loaded."),
+   TEXT("SOCORRO COUNTY SHERIFF / NIGHT LOG\nRE: SARO ANNEX\n\nA deputy on the night patrol noted lights in the SARO annex at 02:40 on two nights when the operator was off shift. No forced entry was found and nothing was reported missing.\n\nYour sealed-station recording shows the receiver keeps time when nobody else can reach it. Keep the doors shut at night. The patrol will take in the SARO stretch from now on.")},
   TEXT("Records reply: disagreeing records"),TEXT("access.nightwatch")
  },
  {
@@ -78,14 +98,14 @@ namespace
   {TEXT("Wind"),TEXT("People"),TEXT("Unexplained")},
   {{TEXT("Secure the roof fitting"),EC::FieldWork,TEXT("Mark and fasten the loose roof plate, then listen from the same reference point on a comparably windy night."),TEXT("impacts continue"),TEXT("impacts stop")},
    {TEXT("Controlled access"),EC::FieldWork,TEXT("Seal the service gate and lay tracking strips before the same observation window; inspect both afterwards."),TEXT("seal broken and a continuous track"),TEXT("seal intact, no continuous track")},
-   {TEXT("Two simultaneous sites"),EC::FieldWork,TEXT("Calibrate the loan field logger, keep simultaneous originals from the roof reference and a field post, then compare time and direction."),TEXT("simultaneous disturbance at both sites"),TEXT("no simultaneous disturbance"),TEXT("access.fieldlogger")}},
+   {TEXT("Two simultaneous sites"),EC::FieldWork,TEXT("Set the second logger's contact pickups at the field post on the east array edge. It compares what shakes there with what shakes on the roof, over one night's window. Inspect it afterwards."),TEXT("simultaneous disturbance at both sites"),TEXT("no simultaneous disturbance"),TEXT("access.fieldlogger")}},
   // Roof, Access, TwoSites (present = Yes)
   {{false,false,false},  // wind: the fastened plate stops it, nobody crosses, only the roof reference moves
    {true,true,false},    // people: impacts continue, the seal is broken, the sequence follows one path
    {true,false,true}},   // unexplained: impacts continue, no crossing, both sites at once
-  {TEXT("COUNTY BUILDING INSPECTOR / SOCORRO\nRE: SARO ANNEX ROOF\n\nThe roof plate you fastened was the last unsecured sheet on the 1962 annex. Wind loading on that roof is noted in the 1979 inspection.\n\nNo further action. Your sealed-gate and two-site records show nothing crossing to the station."),
+  {TEXT("COUNTY BUILDING INSPECTOR / SOCORRO\nRE: SARO ANNEX ROOF\n\nThe roof plate you fastened was the last unsecured sheet on the 1962 annex. Wind loading on that roof is noted in the 1979 inspection.\n\nNo further action. Your sealed-gate record shows nothing crossing to the station."),
    TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO SERVICE GATE\n\nYour broken seal and the track along the service road match reports of people taking copper and scrap from remote sites this autumn.\n\nA deputy will drive past SARO on night patrol. Keep the gate sealed and photograph any vehicle."),
-   TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts, the sealed gate stayed intact, and two separate sites recorded the same disturbance at the same minute.\n\nNo person, vehicle or animal accounts for it. The observation is retained without an identity. Do not approach it alone.")},
+   TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts and the sealed gate stayed intact.\n\nNo person, vehicle or animal accounts for it. The observation is retained without an identity. Do not approach it alone.")},
   TEXT("Records reply: visitors around the base"),TEXT("access.visitors")
  },
  {
@@ -103,6 +123,22 @@ namespace
    {true,false,true}},  // what arrives through the beam goes when the beam moves
   {TEXT(""),TEXT(""),TEXT("")},
   TEXT("Station log: the same minute"),TEXT("access.sameminute"),&SameMinute
+ },
+ {
+  TEXT("THE LOST HOURS"),
+  TEXT("There is a stretch of night you cannot account for. The station's clocks say one thing and your memory says nothing at all. It may be the clocks, or you, or neither. Log on at OPS and go back to where it happened; test recordings compare the receiver's counter with the independent one. File what you think it was. The reply comes the next morning, and whichever you file, someone is going to act on it."),
+  FS47FreeformCases::EObservable::ClockDelta,
+  {TEXT("The station clocks were wrong"),TEXT("A lapse of my own"),TEXT("Not accounted for")},
+  {TEXT("Clocks"),TEXT("A lapse"),TEXT("Unaccounted")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+  // RelaySwap, Generator, DoorsSealed
+  {{false,true,true},    // a slipping relay: gone with the relay, whatever else is done
+   {false,false,false},  // the clocks were never wrong
+   {true,true,false}},   // not the clocks and not the power: it keeps time only with nobody else able to reach it
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: the lost hours"),TEXT("access.lostHours"),&LostTime
  }};
 }
 
@@ -113,7 +149,7 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
  if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
- if(Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
+ if(Id.Contains(TEXT("_daylight_d"))||Id.Contains(TEXT("_moved_d"))||Id.StartsWith(TEXT("tripcam_d"))||Id.StartsWith(TEXT("roadcar_b"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
  return -1;
 }
 int32 FS47FreeformCases::LineForObservation(const FString& Event)
@@ -134,9 +170,9 @@ bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
 {
  if(Line<0||Line>=CaseCount||Cause<0||Cause>=CauseCount||Test<0||Test>=TestCount)return true;return Defs[Line].Present[Cause][Test];
 }
-FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test)
+FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test,bool bSecondLogger)
 {
- return Line==2&&Test==2?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
+ return Line==2&&Test==2&&!bSecondLogger?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
 }
 void FS47FreeformCases::Reset(int32 Seed)
 {

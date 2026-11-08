@@ -213,6 +213,11 @@ public:
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
  void ReconcileFarm(bool bEnabled);
+ /** Freeform's open land (S47OpenLand): the player on foot past the line of the area's land goes on in the next area. Every frame. */
+ void WalkOver();
+ /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */
+ IS47DriveArea* LegArea(const FString& Id) const;
+ FString WhyNotLand(double X, double Z);
  // An old save can leave the parked service truck inside a new farm wall: put it on the nearest clear ground, same heading. No save field changes.
  void KeepParkedOutOfFarmWalls();
 	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
@@ -225,6 +230,9 @@ public:
 
 	/** A native building that replaces an exported one opens its footprint to walking (S47EastWing). Returns how many exclusion boxes were removed. */
 	int32 RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ);
+	/** T16-10: the SARO drive leg keeps a copy of the east wing's enabled colliders as obstacles (OnLand reads it on foot) and
+	 *  refreshed it only when something drove. A door leaf that opens afterwards must refresh it (S47EastWing::Step). */
+	void RefreshWingObstacles();
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	UPROPERTY() TArray<TObjectPtr<UObject>> Keep;
@@ -318,6 +326,7 @@ private:
 	bool bHaveView = false;
 
 	void ParkAt(FString Id);
+	void BringTruckOver(const FString& ToLeg);
 	void LightsOn(FS47Truck& T);
 	void TripStep(double Dt);
 	TOptional<FS47Box2> ParkBox(const FString& Place) const;

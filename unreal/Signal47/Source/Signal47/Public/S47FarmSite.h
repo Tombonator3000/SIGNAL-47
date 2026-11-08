@@ -36,10 +36,14 @@ public:
  void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
  // Marks that will still be there at this clock, with a visit still to come.
- bool WillStandAt(double Clock) const{return Visit==0&&ClearAt>Clock&&Clock>=CalmUntil;}
+ bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
  // The second report, on the set if the player has it. False: no marks to report.
  bool WakeCall();
  bool Nudged() const{return bNudged;}
+ // Some second calls lead nowhere: the marks have nothing coming, or on a calm night there are no marks at all.
+ bool FalseCall() const{return bFalseCall;}
+ static FString SecondCallLine(int32 Index,const FString& About);
+ static constexpr int32 SecondCallLines=4;
  // Test: how high the moved body's head is over its feet, -1 when it is not out.
  double VisitHeadHeight() const;
  // Test: the next visit's draw, in place of the dice. Goes through PickWho like any other.
@@ -68,9 +72,23 @@ public:
  void SetCalm(double Until){CalmUntil=Until;}
  void TestReadyVisit(){Visit=0;VisitDwell=0;}
  FVector Centre() const{return Middle;}
- FString FindingId() const{return Place==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+Place;}
- FString PlaceId() const{return Place;}
- FString PlaceTitle() const{return Title;}
+ FString FindingId() const;
+ // The second look the note asks for: what the marks are by daylight, the morning after. 0 ordinary, 1 undecided, 2 strange;
+ // fixed by the game, the place and the day, so looking again never changes it.
+ FString DaylightId() const;
+ static int32 DaylightRead(int32 Seed,const FString& InPlace,int32 Day);
+ static FString DaylightText(int32 Read,bool bFarm);
+ static bool ByDaylight(double Clock);
+ FString PlaceId() const{return bField?Home.Place:Place;}
+ FString PlaceTitle() const{return bField?Home.Title:Title;}
+ // A visit with no marks at all: someone on foot, out from under any roof past the station, in their hours (T16-17, 4). Its own
+ // draw once a night, once they have been out there a while. The marks somewhere else, if any, stand as they were.
+ bool FieldVisit() const{return bField;}
+ static constexpr double FieldDwellSeconds=60;
+ static bool OutOnFoot(const FString& Area,double FromStation,bool bDriving,bool bRoof);
+ int32 FieldDrawnNight() const{return FieldNight;}
+ // Test: the next field draw, in place of the game's own.
+ void TestFieldRoll(float Roll){FieldRoll=Roll;}
 private:
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
@@ -94,6 +112,8 @@ private:
  FVector BodyAt=FVector::ZeroVector;
  double BodyYaw=0,BodyClock=0;
  static constexpr double ShhWithin=12;
+ // The tall one stands where it is for this long, to be found. Nothing comes of it before that: not walking, not its light.
+ static constexpr double TallStands=12;
  double ShhLeft=0;
  bool bShhTried=false;
  // The tall one. Stopped dead the first time a lamp finds it; sitting, some visits, while it is too far off for any lamp.
@@ -102,7 +122,19 @@ private:
  bool bFreezeTried=false,bSitsFar=false,bSatLogged=false;
  float SitRoll=-1;
  bool bBodyOut=false;
- bool bStallSet=false,bNudged=false;
+ bool bStallSet=false,bNudged=false,bFalseCall=false;
+ int32 EmptyTipNight=0;
+ bool Hours(double Clock) const;
+ struct FHome{FString Place,Title,Area;FVector Middle=FVector::ZeroVector;int32 Visit=4;};
+ FHome Home;
+ bool bField=false;
+ int32 FieldNight=0;
+ double FieldDwell=0;
+ float FieldRoll=-1;
+ void StepFieldDraw(double Dt);
+ void RestoreHome();
+ bool Live() const{return Armed()||bField;}
+ void StepEmptyTip();
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;
  FS47VisitAttention Attention;

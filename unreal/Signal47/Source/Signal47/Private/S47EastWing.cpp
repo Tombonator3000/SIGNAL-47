@@ -492,7 +492,7 @@ bool FS47EastWing::Step(float Dt)
    const float Target=Shown&&Powered?1.f:0.f;float Sum=0;int32 N=0;
    for(int32 I=0;I<Tubes.Num();++I)if(URectLightComponent* L=Tubes[I].Get())
    {const float K=TubeFlicker[I].Apply(Now,Target,uint32(I+11));L->SetIntensity(TubeLumens[I]*K);L->SetVisibility(Shown&&K>1e-4f);Sum+=K;++N;}
-   if(PropsHelper)PropsHelper->SetLevel(N?Sum/N:Target);
+   if(PropsHelper){PropsHelper->SetLevel(N?Sum/N:Target);if(Shown)PropsHelper->UpdateCalendar(M);}
   }
   for(const auto& P:Parts)if(USceneComponent* C=P.Get())
   {
@@ -517,8 +517,14 @@ bool FS47EastWing::Step(float Dt)
    // Open leaves remain traceable so either side can close them. Walking uses the doorway rectangles.
    C->SetCollisionEnabled(Shown&&(I!=1||Blocks)?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
+  bool LocksChanged=false;
   for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(TEXT("eastwing:lock-")))
-   R.bEnabled=R.Id==TEXT("eastwing:lock-garage")?(!Free||DoorOpen<.85):(!Free||LeafAmount[R.Id==TEXT("eastwing:lock-personnel")?0:1]<.85);
+  {
+   const bool Want=R.Id==TEXT("eastwing:lock-garage")?(!Free||DoorOpen<.85):(!Free||LeafAmount[R.Id==TEXT("eastwing:lock-personnel")?0:1]<.85);
+   LocksChanged|=R.bEnabled!=Want;R.bEnabled=Want;
+  }
+  // T16-10: the walking obstacles are a copy; a door that opens or shuts is not seen by them until they are refreshed.
+  if(LocksChanged&&M->World)M->World->RefreshWingObstacles();
   DoorTest();
  }
  DriveTest();

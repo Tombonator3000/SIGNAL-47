@@ -30,6 +30,11 @@ private:
  int32 Sounds=0;
  TArray<TWeakObjectPtr<class ULocalFogVolumeComponent>> Hazes;
  void BuildHaze();
+ // T16-13: the rooms' air glows a little with the lamps on, seen from out in the yard.
+ void StepHaze(double Dt,bool bNight);
+ double HazeIn=0,HazeGlow=0;
+ bool bHazeNear=false;
+ void HazeNear(bool bNear);
  void StepCattle(double Dt,const FString& Area);
  double MooIn=9;
  int32 StareCow=-1;

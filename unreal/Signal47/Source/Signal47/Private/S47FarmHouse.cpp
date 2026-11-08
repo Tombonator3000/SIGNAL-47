@@ -11,6 +11,7 @@
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Misc/PackageName.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 
@@ -71,7 +72,14 @@ namespace S47FarmHouse
   return Y;
  }
 
- TArray<FPiece> Pieces()
+ bool HasModel()
+ {
+  // T16-15: one house. With the model, it stands for the cubes below, on the same plan and doors (S47FarmBuildings puts it here).
+  static const bool bHave=FPackageName::DoesPackageExist(TEXT("/Game/Lived/Farm/SM_Lived_FarmHouse"));
+  return bHave;
+ }
+
+ static TArray<FPiece> Blocks()
  {
   TArray<FPiece> Out;
   for(const FWall& W:Walls())
@@ -83,6 +91,11 @@ namespace S47FarmHouse
     if(To-From<.001||Top-Bottom<.001)return;
     if(bAlongX)Add(Out,Name,From,W.Y0,To,W.Y1,Bottom,Top,EMat::Wall);else Add(Out,Name,W.X0,From,W.X1,To,Bottom,Top,EMat::Wall);
    };
+   // Proud of both faces of the wall: the turquoise frames of the concept pictures (Docs/Design/Concepts/Farmhouse), around an opening and never in a door's way.
+   auto Frame=[&](const FString& Name,double From,double To,double Bottom,double Top,double Proud,EMat Mat)
+   {
+    if(bAlongX)Add(Out,Name,From,W.Y0-Proud,To,W.Y1+Proud,Bottom,Top,Mat);else Add(Out,Name,W.X0-Proud,From,W.X1+Proud,To,Bottom,Top,Mat);
+   };
    double At=Start;int32 Index=0;
    for(const FOpening& O:W.Openings)
    {
@@ -91,17 +104,59 @@ namespace S47FarmHouse
     if(!O.bDoor)Run(Base+TEXT(":sill"),O.From,O.To,0,Sill);
     Run(Base+TEXT(":head"),O.From,O.To,O.bDoor?DoorHead:WindowHead,WallHeight);
     At=O.To;
+    const double Foot=O.bDoor?0.:Sill-.07,Head=O.bDoor?DoorHead:WindowHead;
+    Frame(Base+TEXT(":jambA"),O.From-.09,O.From,Foot,Head+.02,.035,EMat::Paint);
+    Frame(Base+TEXT(":jambB"),O.To,O.To+.09,Foot,Head+.02,.035,EMat::Paint);
+    Frame(Base+TEXT(":lintel"),O.From-.14,O.To+.14,Head,Head+.13,.07,EMat::Trim);
+    if(!O.bDoor)
+    {
+     Frame(Base+TEXT(":ledge"),O.From-.05,O.To+.05,Sill-.07,Sill,.09,EMat::Trim);
+     // The sash, its glass long gone.
+     const double Mid=(O.From+O.To)*.5,Half=(Sill+WindowHead)*.5;
+     if(bAlongX){Add(Out,Base+TEXT(":bar"),Mid-.02,W.Y0+.11,Mid+.02,W.Y1-.11,Sill,WindowHead,EMat::Paint);Add(Out,Base+TEXT(":rail"),O.From,W.Y0+.11,O.To,W.Y1-.11,Half-.02,Half+.02,EMat::Paint);}
+     else{Add(Out,Base+TEXT(":bar"),W.X0+.11,Mid-.02,W.X1-.11,Mid+.02,Sill,WindowHead,EMat::Paint);Add(Out,Base+TEXT(":rail"),W.X0+.11,O.From,W.X1-.11,O.To,Half-.02,Half+.02,EMat::Paint);}
+    }
    }
    Run(FString::Printf(TEXT("farm:oldhouse:%s:end"),W.Name),At,End,0,WallHeight);
   }
   Add(Out,TEXT("farm:oldhouse:floor"),0,0,Width,Depth,-.3,0,EMat::Floor);
   Add(Out,TEXT("farm:oldhouse:ceiling"),0,0,Width,Depth,WallHeight,WallHeight+.12,EMat::Trim);
-  Add(Out,TEXT("farm:oldhouse:roof"),-.4,-.4,Width+.4,Depth+.4,WallHeight+.12,WallHeight+.3,EMat::Roof);
-  Add(Out,TEXT("farm:oldhouse:veranda"),0,Depth,Width,Depth+VerandaDepth,-.3,-.04,EMat::Floor);
-  Add(Out,TEXT("farm:oldhouse:verandaRoof"),0,Depth,Width,Depth+VerandaDepth+.2,WallHeight-.14,WallHeight,EMat::Roof);
-  for(const double X:{.3,4.,8.,11.7})Add(Out,FString::Printf(TEXT("farm:oldhouse:post%.0f"),X*10),X-.08,Depth+VerandaDepth-.16,X+.08,Depth+VerandaDepth,-.04,WallHeight-.14,EMat::Trim);
+  // Tom, 7 November: it read as a box, with a thin plate for a roof. A flat roof as this country builds them, behind a parapet with its wooden spouts and a cap, the walls carrying on up into it.
+  const double RoofTop=WallHeight+.3,Parapet=WallHeight+.72;
+  Add(Out,TEXT("farm:oldhouse:roof"),.2,.2,Width-.2,Depth-.2,WallHeight+.12,RoofTop,EMat::Roof);
+  const auto Ring=[&](const TCHAR* What,double Out_,double Bottom,double Top,EMat Mat)
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:n"),What),-Out_,-Out_,Width+Out_,.3+Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:s"),What),-Out_,Depth-.3-Out_,Width+Out_,Depth+Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:w"),What),-Out_,.3+Out_,.3+Out_,Depth-.3-Out_,Bottom,Top,Mat);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:%s:e"),What),Width-.3-Out_,.3+Out_,Width+Out_,Depth-.3-Out_,Bottom,Top,Mat);
+  };
+  Ring(TEXT("parapet"),0,WallHeight,Parapet,EMat::Wall);
+  Ring(TEXT("cap"),.035,Parapet,Parapet+.07,EMat::Trim);
+  for(const double X:{2.2,9.6})Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutN%.0f"),X*10),X-.1,-.62,X+.1,.3,RoofTop+.02,RoofTop+.16,EMat::Trim);
+  for(const double Y:{2.,6.5})
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutW%.0f"),Y*10),-.62,Y-.1,.3,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutE%.0f"),Y*10),Width-.3,Y-.1,Width+.62,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);
+  }
+  Add(Out,TEXT("farm:oldhouse:chimney"),8.5,3.,9.25,3.7,RoofTop,RoofTop+1.3,EMat::Wall);
+  Add(Out,TEXT("farm:oldhouse:chimneyCap"),8.42,2.92,9.33,3.78,RoofTop+1.3,RoofTop+1.38,EMat::Trim);
+  // The veranda on thick beams, the ends of them showing over a header, as the portales here stand.
+  const double BeamUnder=WallHeight-.34,Front=Depth+VerandaDepth;
+  Add(Out,TEXT("farm:oldhouse:veranda"),0,Depth,Width,Front,-.3,-.04,EMat::Floor);
+  Add(Out,TEXT("farm:oldhouse:verandaRoof"),-.06,Depth,Width+.06,Front+.14,WallHeight-.1,WallHeight+.04,EMat::Roof);
+  Add(Out,TEXT("farm:oldhouse:verandaFascia"),-.09,Front+.14,Width+.09,Front+.2,WallHeight-.14,WallHeight+.08,EMat::Trim);
+  Add(Out,TEXT("farm:oldhouse:verandaHeader"),-.02,Front-.24,Width+.02,Front-.02,BeamUnder-.2,BeamUnder,EMat::Trim);
+  for(double X=.35;X<Width;X+=1.1)Add(Out,FString::Printf(TEXT("farm:oldhouse:beam%.0f"),X*100),X-.08,Depth-.02,X+.08,Front+.36,BeamUnder,WallHeight-.1,EMat::Trim);
+  for(const double X:{.3,4.,8.,11.7})
+  {
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:post%.0f"),X*10),X-.11,Front-.24,X+.11,Front-.02,-.04,BeamUnder-.34,EMat::Trim);
+   Add(Out,FString::Printf(TEXT("farm:oldhouse:corbel%.0f"),X*10),X-.34,Front-.22,X+.34,Front-.04,BeamUnder-.34,BeamUnder-.2,EMat::Trim);
+  }
   return Out;
  }
+
+ TArray<FPiece> Pieces(){return HasModel()?TArray<FPiece>():Blocks();}
 
  TArray<FBox2D> Solids()
  {
@@ -119,6 +174,13 @@ namespace S47FarmHouse
    for(const FOpening& O:W.Openings)if(O.bDoor){Run(At,O.From);At=O.To;}
    Run(At,End);
   }
+  // What stands against the walls in the model (build_house.py), all clear of the hall and the door swings.
+  if(HasModel())for(const FBox2D& F:{FBox2D(FVector2D(.5,.42),FVector2D(1.95,2.42)),FBox2D(FVector2D(2.05,.4),FVector2D(2.5,.82)),FBox2D(FVector2D(3.9,.32),FVector2D(5.08,1.35)),FBox2D(FVector2D(.5,3.84),FVector2D(1.75,4.38)),
+   FBox2D(FVector2D(.32,4.57),FVector2D(1.,8.3)),FBox2D(FVector2D(1.,4.57),FVector2D(3.32,5.08)),FBox2D(FVector2D(3.72,4.58),FVector2D(4.45,5.28)),FBox2D(FVector2D(1.55,6.75),FVector2D(2.55,7.75)),
+   FBox2D(FVector2D(8.,4.58),FVector2D(10.2,5.42)),FBox2D(FVector2D(8.5,6.25),FVector2D(9.6,6.85)),FBox2D(FVector2D(10.1,8.06),FVector2D(11.55,8.68)),FBox2D(FVector2D(10.78,4.65),FVector2D(11.42,5.26)),
+   FBox2D(FVector2D(7.,.42),FVector2D(7.45,2.6)),FBox2D(FVector2D(9.2,.42),FVector2D(9.72,2.6)),FBox2D(FVector2D(7.55,3.6),FVector2D(8.05,4.3)),
+   FBox2D(FVector2D(10.,.33),FVector2D(11.65,1.1)),FBox2D(FVector2D(11.2,3.35),FVector2D(11.68,3.75)),FBox2D(FVector2D(11.35,2.),FVector2D(11.68,2.5))})
+   Box(F.Min.X,F.Min.Y,F.Max.X,F.Max.Y);
   return Out;
  }
 
@@ -156,7 +218,7 @@ namespace S47FarmHouse
   // Walls that are not doors stay solid, windows included.
   const auto Blocked=[&](double X,double Y){const FVector P=Point(X,Y);for(const FBox2D& B:Solid)if(B.IsInside(FVector2D(P.X,P.Z)))return true;return false;};
   const bool bClosed=Blocked(2.5,.15)&&Blocked(5.17,4)&&Blocked(.15,6.5);
-  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Inside(Point(6,4).X,Point(6,4).Z)&&OnPad(Point(6,10).X,Point(6,10).Z)&&!Inside(Point(6,10).X,Point(6,10).Z)&&Pieces().Num()>30&&DoorPlans().Num()==7;
+  const bool bGood=bHall&&bDoors&&bClosed&&OnPad(Point(6,4).X,Point(6,4).Z)&&Inside(Point(6,4).X,Point(6,4).Z)&&OnPad(Point(6,10).X,Point(6,10).Z)&&!Inside(Point(6,10).X,Point(6,10).Z)&&Blocks().Num()>30&&DoorPlans().Num()==7;
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farmhouse plan: hall runs clear front to back, rooms open off it, walls and windows are solid"));
   return bGood;
  }
@@ -180,11 +242,13 @@ bool FS47FarmHouseDoors::Build()
  const int32 Saro=M->Web->Handle(TEXT("ext.group"));if(Saro<0)return false;
  auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood"));if(!Cube)return false;
+ // A leaf with its panels and its handle: a metre cube, scaled to each door like the plain one.
+ auto* Leaf=S47FarmHouse::HasModel()&&FPackageName::DoesPackageExist(TEXT("/Game/Lived/Farm/SM_Lived_HouseDoor"))?LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Lived/Farm/SM_Lived_HouseDoor.SM_Lived_HouseDoor")):nullptr;
  for(const auto& Plan:S47FarmHouse::DoorPlans())
  {
   FDoor D;D.Name=Plan.Name;D.Id=TEXT("ff:olddoor:")+Plan.Name;
   D.Hinge=Plan.From+SaroFrame;const FVector Span=Plan.To-Plan.From;D.Width=Span.Size();D.Along=Span.GetSafeNormal();
-  auto* C=NewObject<UStaticMeshComponent>(M->Web,*(TEXT("S47OldDoor")+Plan.Name));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Cube);if(Wood)C->SetMaterial(0,Wood);
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*(TEXT("S47OldDoor")+Plan.Name));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Leaf?Leaf:Cube);if(Wood&&!Leaf)C->SetMaterial(0,Wood);
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
   D.Leaf=C;D.Object=M->Web->ObjAt(M->Web->AdoptNode(C,Saro,D.Id));
   C->SetWorldScale3D(FVector(D.Width,LeafThick,LeafHeight));

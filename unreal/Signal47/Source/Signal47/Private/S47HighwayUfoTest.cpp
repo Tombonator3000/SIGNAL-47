@@ -24,6 +24,7 @@
 FS47HighwayUfoTest::FS47HighwayUfoTest(US47Main* Main):M(Main)
 {
  FString Kind;bEnabled=FParse::Value(FCommandLine::Get(),TEXT("S47HighwayUfoTest="),Kind);bFollow=Kind==TEXT("follow");bKeepDriving=!bFollow&&FParse::Param(FCommandLine::Get(),TEXT("S47HighwayKeepDriving"));
+ bNorth=FParse::Param(FCommandLine::Get(),TEXT("S47HighwayNorth"));
  if(bEnabled&&Kind!=TEXT("chase")&&Kind!=TEXT("follow")){bEnabled=false;UE_LOG(LogTemp,Error,TEXT("S47: highway test expects chase or follow"));}
 }
 FS47HighwayUfoTest::~FS47HighwayUfoTest()=default;
@@ -48,7 +49,7 @@ void FS47HighwayUfoTest::Shot(const TCHAR* Name)
 void FS47HighwayUfoTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskRestores"),Restores);S47J::Set(O,TEXT("variant"),bFollow?TEXT("follow"):TEXT("chase"));S47J::Set(O,TEXT("playerMetres"),Travel);S47J::Set(O,TEXT("keepDriving"),bKeepDriving);O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskRestores"),Restores);S47J::Set(O,TEXT("variant"),bFollow?TEXT("follow"):TEXT("chase"));S47J::Set(O,TEXT("bound"),bNorth?TEXT("north"):TEXT("south"));S47J::Set(O,TEXT("playerMetres"),Travel);S47J::Set(O,TEXT("keepDriving"),bKeepDriving);O->SetArrayField(TEXT("evidence"),Evidence);
  S47J::Set(O,TEXT("method"),TEXT("One explicit road start and nighttime clock fixture in developer Freeform case 0. Existing World StartTrip/vehicle input performs the drive; chase uses the natural trigger, follow uses explicit Force. Actual presentation/collision readback, active pause, fresh disk read of Flow GameState and subsystem Begin restore, then bounded departure. No player relocation after the initial fixture."));
  S47J::Set(O,TEXT("limits"),TEXT("Automated native input, not human play acceptance. Subsystem restore uses the actual saved Flow field but does not claim a full title/Continue journey. Follow probes outrunning; physical building/terrain concealment remains a separate route to inspect."));
  if(M&&M->HighwayUfo)S47J::Set(O,TEXT("final"),M->HighwayUfo->Readback());
@@ -87,9 +88,12 @@ void FS47HighwayUfoTest::Step(double Dt)
   if(Now-Started<3)return;
   if(!Check(M->IsFreeform()&&M->Flow->bDevRun&&M->Flow->CaseId==0,TEXT("isolated Freeform developer case 0")))return;
   if(M->Freeform->Director)M->Freeform->Director->Stop();
-  const double Clock=FMath::Fmod(M->Freeform->Clock(),86400.);if(Clock<21*3600)M->Freeform->TestAdvance(21*3600-Clock);
+  // The natural trigger waits for their hours in Freeform (TheirHours): three in the morning, not the evening it once was.
+  M->Freeform->TestAdvance(FMath::Fmod(3*3600.-FMath::Fmod(M->Freeform->Clock(),86400.)+86400.,86400.));
   H.Begin(nullptr);
-  FS47TripOpts O;O.AtPos=FVector(7998.2,S47RoadTerrain::SurfaceY(-1.8,620),620);O.AtHeading=UE_DOUBLE_PI;O.Leg=TEXT("road");
+  // Its own lane either way, a little before the stretch where the encounter starts by itself.
+  const double StartX=bNorth?1.8:-1.8,StartZ=bNorth?1700.:620.;
+  FS47TripOpts O;O.AtPos=FVector(8000+StartX,S47RoadTerrain::SurfaceY(StartX,StartZ),StartZ);O.AtHeading=bNorth?0.:UE_DOUBLE_PI;O.Leg=TEXT("road");
   M->World->StartTrip(TEXT("road"),TEXT("diner"),O);
   M->World->TestInput=[this]{FS47DriveIn I;auto* D=M&&M->World?M->World->CabDrive():nullptr;if(D)I.Throttle=bFollow?1.:(D->Speed<14?1:0);return I;};
   Stage=1;At=Now;return;
@@ -110,6 +114,11 @@ void FS47HighwayUfoTest::Step(double Dt)
   const auto R=H.Readback();
   if(!Check(H.Busy()&&S47J::Bool(S47J::Obj(R,TEXT("presentation")),TEXT("presented")),TEXT("native road UFO is present after ordinary drive trigger")))return;
   if(!Check(bFollow||S47J::Bool(R,TEXT("carShown")),TEXT("patrol car is visible in the pursuit variant")))return;
+  // Along the road as it is driven: the light and the patrol are ahead of the driver when it starts, and go on the same way.
+  const double Way=bNorth?-1.:1.;
+  UE_LOG(LogTemp,Display,TEXT("S47: highway UFO test bound %s: player at %.0f, patrol at %.0f, light at %.0f (road metres); patrol x %.1f"),bNorth?TEXT("north"):TEXT("south"),D->Pos.Z,H.CarPosition().Z,H.UfoPosition().Z,H.CarPosition().X-8000);
+  if(!Check(FMath::IsNearlyEqual(S47J::Num(R,TEXT("direction")),Way)&&Way*(D->Pos.Z-PlayerStartZ)>0,FString::Printf(TEXT("encounter runs the way the player drives, %s"),bNorth?TEXT("north"):TEXT("south"))))return;
+  if(!Check(bFollow||(Way*(H.UfoPosition().Z-H.CarPosition().Z)>0&&Way*(H.CarPosition().Z-D->Pos.Z)>0&&Way*(H.CarPosition().X-8000)<0),TEXT("the light leads the patrol, the patrol is ahead of the player in its own right-hand lane")))return;
   if(!Check(D->bEngine&&D->Held==0&&D->Speed>1,TEXT("encounter preserves live player engine, steering and propulsion")))return;
   Shot(TEXT("01-approach"));Stage=20;At=Now;return;
  }
@@ -148,7 +157,7 @@ void FS47HighwayUfoTest::Step(double Dt)
   {
    if(bKeepDriving)
    {if(!Check(D->Speed>1&&D->bEngine&&D->Held==0,TEXT("optional kept-driving route retains ordinary propulsion through the pursuit")))return;}
-   else if(!Check(FMath::Abs(D->Speed)<.2&&H.CarPosition().Z>StoppedCarZ+50,TEXT("player can stop while patrol and UFO continue on their own route")))return;
+   else if(!Check(FMath::Abs(D->Speed)<.2&&(bNorth?StoppedCarZ-H.CarPosition().Z:H.CarPosition().Z-StoppedCarZ)>50,TEXT("player can stop while patrol and UFO continue on their own route")))return;
    bStopChecked=true;
   }
   const FVector ToUfo=H.UfoPosition()-D->Pos;

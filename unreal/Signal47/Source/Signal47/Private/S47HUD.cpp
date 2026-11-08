@@ -33,7 +33,16 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47DevEvents.h"
+#include "S47Rhythm.h"
 #include "S47Taken.h"
+#include "S47NightRhythm.h"
+#include "S47DeputyRound.h"
+#include "S47LeftGear.h"
+#include "S47Places.h"
+#include "S47Predecessor.h"
+#include "S47RadioTips.h"
+#include "S47Openings.h"
+#include "S47FieldLife.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -219,6 +228,18 @@ void AS47HUD::Start()
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
+		bOk &= FS47NightRhythm::SelfTest(Lines);
+		bOk &= FS47DeputyRound::SelfTest(Lines);
+		bOk &= FS47LeftGear::SelfTest(Lines);
+		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= FS47Predecessor::SelfTest(Lines);
+		bOk &= FS47RadioTips::SelfTest(Lines);
+		bOk &= FS47Openings::SelfTest(Lines);
+		bOk &= FS47YardAlarm::SelfTest(Lines);
+		bOk &= FS47TruckCare::SelfTest(Lines);
+		bOk &= FS47TripCamera::SelfTest(Lines);
+		bOk &= FS47DayRound::SelfTest(Lines);
+		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);
 		bOk &= S47FarmWorld::SelfTest(Lines);
@@ -257,6 +278,7 @@ void AS47HUD::Start()
 	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
 	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
 	if (!M->DevEvents) M->DevEvents = MakeShared<FS47DevEvents>(M);
+	if (!M->Rhythm) { M->Rhythm = MakeShared<FS47Rhythm>(M); M->Rhythm->Load(); }
 	if (!M->FieldRadio) M->FieldRadio = MakeShared<FS47FieldRadio>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())

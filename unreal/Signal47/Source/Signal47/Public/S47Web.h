@@ -83,7 +83,7 @@ public:
 	const FPostProcessSettings* GetGraphicsPostProcess() const;
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	float ExteriorDaylightMask(int32 Set, int32 Slot) const;
-	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
+	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f, float Twilight = 0.f);
 	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
 	void SetFinaleGroundShade(float Shade);
 	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
@@ -504,7 +504,7 @@ private:
 	TSet<uint64> SuppressedPools;
 	int32 LightingQuality = 1;
 	FS47GraphicsSettings Graphics;
-	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
+	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0, SkyTwilight = 0;
 	float FinaleGroundShade = 0;
 	TOptional<FVector> FinaleSkyCaptureRestore;
 	// Authored lookdev modifies the existing time-driven rig only near SARO and its motel.

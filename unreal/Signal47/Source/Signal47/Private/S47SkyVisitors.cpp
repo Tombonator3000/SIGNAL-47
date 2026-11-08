@@ -1,9 +1,16 @@
 #include "S47SkyVisitors.h"
+#include "S47Rhythm.h"
 
 #include "S47Chapter6.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformObservation.h"
+#include "S47FarmSite.h"
+#include "S47HighwayUfo.h"
+#include "S47IndoorDread.h"
+#include "S47Sky.h"
+#include "S47Taken.h"
+#include "S47WorldLife.h"
 #include "S47Evening.h"
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
@@ -200,6 +207,164 @@ FVector FS47SkyVisitorState::MapPosition(int32 S, int32 I, double Seconds)
   750 + Group * 80 + Member * 22, -850 - Member * 130 - 800 * P);
 }
 
+namespace
+{
+ // Minutes of the clock to the next pass, and the order they come in. At night the clock runs about 15 to 1: a pass every six minutes or so.
+ double FormationGap(int32 Pass){static const double Minutes[7]={95,80,105,75,100,85,110};return Minutes[FMath::Abs(Pass)%7]*60.;}
+ ES47SkyForm FormationAt(int32 Pass,bool bEvening)
+ {
+  // The evening is a normal job first: a row or a loose handful that could still be something else. The rest after midnight.
+  static const ES47SkyForm Late[10]={ES47SkyForm::V,ES47SkyForm::Scatter,ES47SkyForm::Triangle,ES47SkyForm::Line,ES47SkyForm::Circle,ES47SkyForm::V,ES47SkyForm::Triangle,ES47SkyForm::Scatter,ES47SkyForm::Circle,ES47SkyForm::Line};
+  return bEvening?(FMath::Abs(Pass)%2?ES47SkyForm::Scatter:ES47SkyForm::Line):Late[FMath::Abs(Pass)%10];
+ }
+ int32 FormationLights(ES47SkyForm Form,bool bEvening)
+ {
+  switch(Form)
+  {
+   case ES47SkyForm::V: return 7;
+   case ES47SkyForm::Line: return bEvening?3:5;
+   case ES47SkyForm::Triangle: return 6;
+   case ES47SkyForm::Circle: return 8;
+   default: return bEvening?4:6;
+  }
+ }
+ double FormationHour(double Clock){const double Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return Hour;}
+}
+const TCHAR* FS47SkyFormationState::Name(ES47SkyForm InForm)
+{
+ switch(InForm)
+ {
+  case ES47SkyForm::V: return TEXT("V");
+  case ES47SkyForm::Line: return TEXT("line");
+  case ES47SkyForm::Triangle: return TEXT("triangle");
+  case ES47SkyForm::Circle: return TEXT("circle");
+  default: return TEXT("scattered");
+ }
+}
+bool FS47SkyFormationState::Open(double Clock)
+{
+ if(!FMath::IsFinite(Clock)||Clock<0)return false;
+ const double Hour=FormationHour(Clock);
+ // Saved clocks start on day one at eight: the first evening is all "normal job", so its first possible pass is after midnight.
+ if(Clock<86400.+.5*3600.)return false;
+ return Hour>=21.5||Hour<5.5;
+}
+double FS47SkyFormationState::NextOpening(double Clock)
+{
+ if(Open(Clock))return Clock;
+ const double Start=FMath::FloorToDouble(Clock/86400.)*86400.;
+ // First night: half past midnight. Afterwards today's half past nine, or tomorrow's if it has gone by.
+ if(Clock<86400.+.5*3600.)return 86400.+.5*3600.;
+ return Start+21.5*3600.;
+}
+bool FS47SkyFormationState::Update(double Clock)
+{
+ if(!FMath::IsFinite(Clock)||Clock<0)return false;
+ if(NextClock<0||Clock>NextClock+LateBy){NextClock=NextOpening(Clock);return true;}
+ return false;
+}
+void FS47SkyFormationState::StartNatural(double Clock,double X,double Z)
+{
+ const double Hour=FormationHour(Clock);const bool bEvening=Hour>=12;
+ const int32 N=Passes;Passes=FMath::Min(1000000,Passes+1);
+ Form=FormationAt(N,bEvening);Lights=FormationLights(Form,bEvening);
+ bActive=true;bDev=false;Age=From=0;LeaveAt=-1;Looking=0;
+ bFast=!bEvening&&N%3==2;bVanish=!bEvening&&!bFast&&N%4==1;
+ // Each from another quarter and at its own distance: round the sky by the golden angle, off to either side of whoever is out there.
+ Heading=FMath::Fmod(N*2.399963,2.*UE_DOUBLE_PI);AnchorX=X;AnchorZ=Z;
+ Lateral=(N%2?-1.:1.)*(2000.+175.*((N*37)%5));Height=1500.+150.*((N*11)%5);
+ const double After=Clock+FormationGap(N);
+ NextClock=Open(After)?After:NextOpening(After)+((N*7)%4)*600.;
+}
+void FS47SkyFormationState::StartDev(ES47SkyForm InForm,int32 Pace,double X,double Z,double InHeading,double InLateral,double InHeight)
+{
+ Form=InForm;Lights=FormationLights(InForm,false);bActive=bDev=true;bFast=Pace==1;bVanish=Pace==2;LeaveAt=-1;Looking=0;
+ // Already in the view: a slow pass starts part of the way along its crossing, and comes up from nothing where it is.
+ Age=From=Seconds()*(bFast?.33:.25);
+ AnchorX=X;AnchorZ=Z;Heading=InHeading;Lateral=InLateral;Height=InHeight;
+}
+bool FS47SkyFormationState::Finished()const
+{
+ if(!bActive)return false;
+ if(LeaveAt>=0&&Age>=LeaveAt+1.6)return true;
+ if(bVanish&&Age>=Seconds()*.6+Lights*.4+.3)return true;
+ return Age>=Seconds();
+}
+FVector2D FS47SkyFormationState::Slot(ES47SkyForm InForm,int32 Light,int32 Count,double T)
+{
+ // Metres ahead along its way, and to its side. Wide enough to read as a shape from below at three or four kilometres.
+ const double Mid=(Count-1)*.5;
+ switch(InForm)
+ {
+  case ES47SkyForm::V:
+  {
+   if(Light==0)return FVector2D(0,0);
+   const int32 Back=(Light+1)/2;
+   return FVector2D(-Back*135.,(Light%2?1.:-1.)*Back*105.);
+  }
+  case ES47SkyForm::Line: return FVector2D(-(Light-Mid)*170.,(Light-Mid)*120.);
+  case ES47SkyForm::Triangle:
+  {
+   static const double Rows[6][2]={{0,0},{-180,-125},{-180,125},{-360,-250},{-360,0},{-360,250}};
+   return FVector2D(Rows[Light%6][0]+180.,Rows[Light%6][1]);
+  }
+  case ES47SkyForm::Circle:
+  {
+   const double A=2.*UE_DOUBLE_PI*Light/FMath::Max(1,Count)+.2*T;
+   return FVector2D(290.*FMath::Cos(A),290.*FMath::Sin(A));
+  }
+  default:
+  {
+   static const double Loose[8][2]={{120,-340},{-260,-90},{310,160},{-90,330},{-380,260},{40,60},{230,-120},{-210,-300}};
+   const double* L=Loose[Light%8];
+   return FVector2D(L[0]+45.*FMath::Sin(T*.11+Light*1.7),L[1]+45.*FMath::Cos(T*.09+Light*2.3));
+  }
+ }
+}
+FVector FS47SkyFormationState::MapPosition(int32 Light)const
+{
+ const double P=FMath::Clamp(Age/Seconds(),0.,1.),Along=bFast?22000.:7000.;
+ const FVector Ahead(FMath::Sin(Heading),0,FMath::Cos(Heading)),Side(FMath::Cos(Heading),0,-FMath::Sin(Heading));
+ const FVector2D O=Slot(Form,Light,Lights,Age);
+ // The plane of it leans towards whoever is under it, so a shape is a shape from the ground and not a line along the horizon.
+ const double Lift=O.Y*(Lateral>=0?1.:-1.)*1.1+(Form==ES47SkyForm::Scatter?80.*FMath::Sin(Light*2.1):0.);
+ return FVector(AnchorX,Height+Lift,AnchorZ)+Ahead*((P-.5)*Along+O.X)+Side*(Lateral+O.Y);
+}
+double FS47SkyFormationState::Level(int32 Light)const
+{
+ double L=FMath::Clamp((Age-From)/3.,0.,1.)*FMath::Clamp((Seconds()-Age)/4.,0.,1.);
+ // Going out where they are, one after another and quickly.
+ if(bVanish)L*=FMath::Clamp((Seconds()*.6+Light*.4-Age)/.25,0.,1.);
+ if(LeaveAt>=0)L*=FMath::Clamp(1.-(Age-LeaveAt)/1.5,0.,1.);
+ return L*(.82+.18*FMath::Sin(Age*(2.1+Light*.37)+Light*1.9));
+}
+void FS47SkyFormationState::Begin(const S47J::FObj& O)
+{
+ *this={};
+ if(!O)return;
+ const double Next=S47J::Num(O,TEXT("next"),-1);if(FMath::IsFinite(Next)&&Next>=0)NextClock=Next;
+ Passes=FMath::Clamp(S47J::Int(O,TEXT("passes")),0,1000000);
+ const auto Pass=S47J::Obj(O,TEXT("pass"));if(!Pass)return;
+ const int32 SavedForm=S47J::Int(Pass,TEXT("form"),-1),SavedLights=S47J::Int(Pass,TEXT("lights"));
+ const double Numbers[7]={S47J::Num(Pass,TEXT("age")),S47J::Num(Pass,TEXT("leave"),-1),S47J::Num(Pass,TEXT("heading")),S47J::Num(Pass,TEXT("x")),S47J::Num(Pass,TEXT("z")),S47J::Num(Pass,TEXT("side")),S47J::Num(Pass,TEXT("up"))};
+ for(const double V:Numbers)if(!FMath::IsFinite(V)||FMath::Abs(V)>1e6)return;
+ if(SavedForm<0||SavedForm>=int32(ES47SkyForm::Num)||SavedLights<1||SavedLights>MaxLights||Numbers[0]<0)return;
+ Form=ES47SkyForm(SavedForm);Lights=SavedLights;bFast=S47J::Bool(Pass,TEXT("fast"));bVanish=S47J::Bool(Pass,TEXT("vanish"));
+ Age=Numbers[0];LeaveAt=Numbers[1];Heading=Numbers[2];AnchorX=Numbers[3];AnchorZ=Numbers[4];Lateral=Numbers[5];Height=Numbers[6];
+ bActive=Age<Seconds();
+}
+S47J::FObj FS47SkyFormationState::Save()const
+{
+ auto O=S47J::New();S47J::Set(O,TEXT("next"),NextClock);S47J::Set(O,TEXT("passes"),Passes);
+ // A developer's pass is not the night's.
+ if(bActive&&!bDev)
+ {
+  auto Pass=S47J::New();S47J::Set(Pass,TEXT("form"),int32(Form));S47J::Set(Pass,TEXT("lights"),Lights);S47J::Set(Pass,TEXT("fast"),bFast);S47J::Set(Pass,TEXT("vanish"),bVanish);
+  S47J::Set(Pass,TEXT("age"),Age);S47J::Set(Pass,TEXT("leave"),LeaveAt);S47J::Set(Pass,TEXT("heading"),Heading);S47J::Set(Pass,TEXT("x"),AnchorX);S47J::Set(Pass,TEXT("z"),AnchorZ);S47J::Set(Pass,TEXT("side"),Lateral);S47J::Set(Pass,TEXT("up"),Height);
+  S47J::Set(O,TEXT("pass"),Pass);
+ }
+ return O;
+}
 void FS47FreeformSkyState::Begin(const S47J::FObj& O,int32 NewSeed)
 {
  *this={};Seed=NewSeed;
@@ -247,10 +412,15 @@ void FS47SkyVisitors::BeginFreeform(const S47J::FObj& Saved)
 {
  bFreeform=true;ClearPreview();Hide();
  FreeformState.Begin(Saved,M&&M->Flow&&M->Flow->bDevRun?4701986:int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()));
+ Formation.Begin(Saved?S47J::Obj(Saved,TEXT("formation")):S47J::FObj());
+}
+S47J::FObj FS47SkyVisitors::SaveFreeform()const
+{
+ auto O=FreeformState.Save();S47J::Set(O,TEXT("formation"),Formation.Save());return O;
 }
 void FS47SkyVisitors::StopFreeform()
 {
- bFreeform=false;FreeformState.Looking=0;
+ bFreeform=false;FreeformState.Looking=0;Formation.bActive=false;
  if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))Hide();
 }
 void FS47SkyVisitors::StepFreeform(double Dt)
@@ -261,7 +431,19 @@ void FS47SkyVisitors::StepFreeform(double Dt)
  if(FreeformState.Advance(Session->Day(),Session->Clock()))M->RequestAutosave();
  const FString Area=M->World->Area;
  const bool Outdoor=Area==TEXT("saro")||Area==TEXT("road")||Area==TEXT("station01")||Area==TEXT("diner")||Area==TEXT("roswell");
- if(!FreeformState.Active()||!Outdoor){Hide();FreeformState.Looking=0;return;}
+ StepFormation(Dt);
+ // F10's preview draws over everything here: this branch used to return before ever reading it, so in Freeform it showed nothing.
+ if(Preview.bEnabled&&Area!=PreviewArea)ClearPreview();
+ if(Preview.bEnabled)
+ {
+  Preview.Advance(Preview.Stage,Dt,false);
+  if(Preview.Completed[Preview.Stage-1])ClearPreview();
+  else if(Outdoor){double Fade=0;int32 Count=0;Build();DrawTrack(Preview,PreviewShift,DevBoost(),Fade,Count);FreeformState.Looking=0;return;}
+ }
+ // These nine points are one set: while a formation is up the single high track keeps its time and is not drawn.
+ if(Formation.bActive){if(Outdoor)DrawFormation(Dt,Area);else{HidePoints();Formation.Looking=0;}FreeformState.Looking=0;return;}
+ // Its time keeps going, and when the rules say it does not go under something else it is simply not drawn for that part.
+ if(!FreeformState.Active()||!Outdoor||(M->Rhythm&&!M->Rhythm->Allow(TEXT("sky_high")))){Hide();FreeformState.Looking=0;return;}
  Build();if(!bBuilt){FreeformState.Looking=0;return;}
  const auto Cam=FS47Cam::Of(M->Player,30000);
  const double Fade=FMath::Clamp(FreeformState.Elapsed/4.,0.,1.)*FMath::Clamp((FS47FreeformSkyState::Duration-FreeformState.Elapsed)/8.,0.,1.);
@@ -352,12 +534,166 @@ void FS47SkyVisitors::DevStage(int32 Stage)
  ClearPreview();
  Stage = FMath::Clamp(Stage, 0, 5);
  if (!Stage || !M || !M->World || M->Mode != US47Main::EMode::Play) return;
+ DevFormationStop();
  Preview.Begin(nullptr, true);
  Preview.Stage = Stage; Preview.Occurred[Stage - 1] = true;
  PreviewArea = M->World->Area;
  // The natural light is no longer on screen: a partial gaze cannot bridge a preview.
  State.Looking = 0; ObservationStep = 0;
+ PreviewShift = FVector::ZeroVector;
+ // Story's tracks are over SARO's north, where its nights are watched from and its contract holds them. Freeform can be anywhere:
+ // there the middle of the track is brought to high up ahead of the player, or asking for it from elsewhere would show empty sky.
+ if (bFreeform && M->Player)
+ {
+  const int32 N = FS47SkyVisitorState::Count(Stage);
+  FVector Mean = FVector::ZeroVector;
+  for (int32 I = 0; I < N; ++I) Mean += WorldPosition(FS47SkyVisitorState::MapPosition(Stage, I, FS47SkyVisitorState::Duration(Stage) * .25), PreviewArea);
+  // The view's own direction: at the wheel the walker's yaw is not where the driver looks.
+  const FS47Cam Cam = FS47Cam::Of(M->Player, 30000);
+  const FVector Flat = FVector(Cam.Forward.X, 0, Cam.Forward.Z).GetSafeNormal();
+  const FVector Ahead = Flat.IsNearlyZero() ? FVector(-FMath::Sin(M->Player->Yaw), 0, -FMath::Cos(M->Player->Yaw)) : Flat;
+  PreviewShift = Cam.Pos + Ahead * 1500. + FVector(0, 420, 0) - Mean / FMath::Max(1, N);
+ }
  HidePoints();
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky preview stage %d in %s, freeform %d, %d lights, moved %s"), Stage, *PreviewArea, bFreeform ? 1 : 0, FS47SkyVisitorState::Count(Stage), *PreviewShift.ToCompactString());
+}
+double FS47SkyVisitors::DevBoost() const
+{
+ // Asked for in the day: a point of light against the bright sky would look as if nothing happened.
+ const double Day = M && M->Life && M->Life->Sky ? FMath::Clamp(M->Life->Sky->Daylight(), 0., 1.) : 0.;
+ return 1. + 14. * Day;
+}
+bool FS47SkyVisitors::DevFormation(ES47SkyForm InForm, int32 Pace)
+{
+ if (!M || !M->World || !M->Player || !M->Web || M->Mode != US47Main::EMode::Play) return false;
+ const FString Area = M->World->Area;
+ if (Area != TEXT("saro") && Area != TEXT("road") && Area != TEXT("station01") && Area != TEXT("diner") && Area != TEXT("roswell")) return false;
+ ClearPreview();
+ // Across the view, in the map's own terms, so it reads the same from the station's turned ground.
+ const FS47Cam Cam = FS47Cam::Of(M->Player, 30000);
+ const FVector Flat = FVector(Cam.Forward.X, 0, Cam.Forward.Z).GetSafeNormal();
+ const FVector Ahead = Flat.IsNearlyZero() ? FVector(-FMath::Sin(M->Player->Yaw), 0, -FMath::Cos(M->Player->Yaw)) : Flat;
+ const FVector Here = MapPoint(Cam.Pos, Area);
+ const FVector Out = (MapPoint(Cam.Pos + Ahead * 100., Area) - Here).GetSafeNormal();
+ // Side (cos h, -sin h) is out in front of the player, and the way along it crosses from one hand to the other.
+ Formation.StartDev(InForm, Pace, Here.X, Here.Z, FMath::Atan2(-Out.Z, Out.X), 2600., 950.);
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation %s, developer, %s%s, %d lights, in %s"), FS47SkyFormationState::Name(InForm), Formation.bFast ? TEXT("fast") : TEXT("slow"), Formation.bVanish ? TEXT(", goes out") : TEXT(""), Formation.Lights, *Area);
+ return true;
+}
+void FS47SkyVisitors::DevFormationStop()
+{
+ if (Formation.bActive && Formation.bDev) { Formation.bActive = false; HidePoints(); }
+}
+
+bool FS47SkyVisitors::DevHighTrack()
+{
+ auto* Session = M ? M->Freeform.Get() : nullptr;
+ if (!bFreeform || !Session || !Session->Active()) return false;
+ ClearPreview(); DevFormationStop();
+ // Its day first, so that the next Advance does not draw over what is set here; Elapsed follows from Start on the next step.
+ FreeformState.Advance(Session->Day(), Session->Clock());
+ FreeformState.bChosen = true; FreeformState.Start = Session->Clock(); FreeformState.Elapsed = 0; FreeformState.ObservedPlaces.Reset();
+ return true;
+}
+TArray<FVector> FS47SkyVisitors::ShownPoints() const
+{
+ TArray<FVector> Out;
+ for (const auto& W : Points) if (const auto* B = W.Get()) if (B->IsRegistered() && B->IsVisible()) Out.Add(S47Three::ToThree(B->GetComponentLocation()));
+ return Out;
+}
+FVector FS47SkyVisitors::MapPoint(const FVector& W, const FString& Area)
+{
+ if (Area == TEXT("saro")) return W + FVector(S47Geo::SARO_IN_ROAD.X, 0, S47Geo::SARO_IN_ROAD.Z);
+ if (Area == TEXT("station01")) { const auto R = S47Geo::StationToRoad(W.X, W.Z - 8000); return FVector(R.X, W.Y - S47Geo::STATION_DY(), R.Z); }
+ return W - FVector(8000, 0, 0);
+}
+bool FS47SkyVisitors::FormationQuiet() const
+{
+ const auto* Session = M ? M->Freeform.Get() : nullptr;
+ if (!Session) return false;
+ if (Session->Director && Session->Director->Busy()) return false;
+ if (M->HighwayUfo && M->HighwayUfo->Busy()) return false;
+ if (Session->Taken && Session->Taken->Busy()) return false;
+ if (Session->FarmSite && Session->FarmSite->VisitWantsGround()) return false;
+ if (Session->IndoorDread && Session->IndoorDread->PeekActive()) return false;
+ if (M->Rhythm && !M->Rhythm->Allow(TEXT("sky_formation"))) return false;
+ return true;
+}
+void FS47SkyVisitors::StepFormation(double Dt)
+{
+ auto* Session = M->Freeform.Get();
+ const double Clock = Session->Clock();
+ const bool bWasWaiting = Formation.NextClock >= 0 && Clock > Formation.NextClock;
+ if (Formation.Update(Clock))
+ {
+  if (bWasWaiting) UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation not shown: the night had other things at its hour; next at %.2f h"), FMath::Fmod(Formation.NextClock, 86400.) / 3600.);
+  M->RequestAutosave();
+ }
+ const bool bQuiet = FormationQuiet();
+ if (Formation.Due(Clock) && bQuiet && !Session->InTutorial() && !Preview.bEnabled)
+ {
+  const FVector Here = MapPoint(M->Player->Pos, M->World->Area);
+  Formation.StartNatural(Clock, Here.X, Here.Z);
+  UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation %d: %s, %d lights, %s%s, from the schedule at %.2f h on day %d; next at %.2f h"), Formation.Passes, FS47SkyFormationState::Name(Formation.Form), Formation.Lights, Formation.bFast ? TEXT("fast") : TEXT("slow"), Formation.bVanish ? TEXT(", goes out") : TEXT(""), FMath::Fmod(Clock, 86400.) / 3600., Session->Day(), FMath::Fmod(Formation.NextClock, 86400.) / 3600.);
+  M->RequestAutosave();
+ }
+ if (!Formation.bActive) return;
+ Formation.Age += FMath::Max(0., Dt);
+ // Whatever begins out here has the night to itself: they go, and do not stand over it.
+ if (!Formation.bDev && !bQuiet && Formation.LeaveAt < 0)
+ {
+  Formation.LeaveAt = Formation.Age;
+  UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation leaves at %.1f s: something else has started"), Formation.Age);
+ }
+ if (Formation.Finished())
+ {
+  UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation %s over after %.1f s%s"), FS47SkyFormationState::Name(Formation.Form), Formation.Age, Formation.bDev ? TEXT(" (developer)") : TEXT(""));
+  const bool bWasDev = Formation.bDev;
+  Formation.bActive = Formation.bDev = false; HidePoints();
+  if (!bWasDev) M->RequestAutosave();
+ }
+}
+void FS47SkyVisitors::DrawFormation(double Dt, const FString& Area)
+{
+ Build();
+ if (!bBuilt || !M->Web) return;
+ const FS47Cam Cam = FS47Cam::Of(M->Player, 30000);
+ FVector2D Size(1600, 900);
+ if (M->Web->GetWorld() && M->Web->GetWorld()->GetGameViewport()) M->Web->GetWorld()->GetGameViewport()->GetViewportSize(Size);
+ const double DiscPixels = (Formation.bDev ? 10. : 8.5) * FMath::Max(1., Size.Y) / 900.;
+ const double Boost = Formation.bDev ? DevBoost() : 1.;
+ int32 Seen = 0; FVector SeenAt = FVector::ZeroVector;
+ for (int32 I = 0; I < Points.Num(); ++I)
+ {
+  auto* B = Points[I].Get(); if (!B) continue;
+  const double Level = I < Formation.Lights ? Formation.Level(I) : 0.;
+  if (Level <= 0 || B->Elements.IsEmpty()) { B->SetVisibility(false); continue; }
+  const FVector At = WorldPosition(Formation.MapPosition(I), Area);
+  // A developer asked to see it; the night's own stay behind the weather as the single track does.
+  const bool bClearWeather = Formation.bDev || M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos), S47Three::ToUE(At));
+  B->SetVisibility(bClearWeather); if (!bClearWeather) continue;
+  B->SetWorldLocation(S47Three::ToUE(At));
+  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
+  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material)) D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Level * 4. * Boost));
+  B->MarkRenderStateDirty();
+  const FVector P = Cam.Project(At);
+  if (Level >= .5 && P.Z < 1 && FMath::Abs(P.X) < .94 && FMath::Abs(P.Y) < .94 && ClearLine(Cam.Pos, At)) { ++Seen; SeenAt = At; }
+ }
+ // As the high track's: one retained observation a night from each place, however many pass. The same event, the same place words.
+ if (Formation.bDev || !FMath::IsFinite(Dt) || Dt <= 0) { Formation.Looking = 0; return; }
+ auto* Session = M->Freeform.Get();
+ Formation.Looking = Seen >= 2 ? Formation.Looking + FMath::Min(Dt, .2) : 0;
+ if (Formation.Looking < .8 || !Session || !Session->Director) return;
+ Formation.Looking = -1e9; // once for this pass
+ FS47FreeformObservation O;
+ O.Id = FString::Printf(TEXT("high-sky-form.%d.%s"), Session->Day(), *Area); O.Event = TEXT("high_sky_track"); O.Day = Session->Day(); O.Clock = Session->Clock();
+ FVector CompassDelta = SeenAt - Cam.Pos;
+ if (Area == TEXT("station01")) CompassDelta = FVector(CompassDelta.Z, CompassDelta.Y, -CompassDelta.X);
+ O.Bearing = FS47FreeformObservation::Direction(FVector::ZeroVector, CompassDelta);
+ O.Place = Area == TEXT("saro") ? TEXT("SARO / above the distant mesa") : Area == TEXT("road") ? TEXT("Highway / distant horizon") : Area == TEXT("station01") ? TEXT("Station 01 / distant horizon") : TEXT("Caliche / distant horizon");
+ Session->Director->RetainObservation(O); M->RequestAutosave();
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation seen: %d lights in view with clear sight, bearing %s"), Seen, *O.Bearing);
 }
 
 FVector FS47SkyVisitors::WorldPosition(const FVector& P, const FString& Area)
@@ -403,6 +739,13 @@ void FS47SkyVisitors::Step(double Dt)
  if (!M || !M->Story || !M->Player || !M->World || M->Mode != US47Main::EMode::Play)
  { ClearPreview(); Hide(); return; }
  if (Preview.bEnabled && (M->World->Area != PreviewArea || M->World->Area == TEXT("room6"))) ClearPreview();
+ // F10's formation in a Story night: nothing natural comes in formation there.
+ if (Formation.bActive && Formation.bDev)
+ {
+  const bool bHoldDev = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
+  if (!bHoldDev) Formation.Age += FMath::Max(0., Dt);
+  if (Formation.Finished()) DevFormationStop(); else { DrawFormation(Dt, M->World->Area); return; }
+ }
  if (!State.bEnabled && !Preview.bEnabled) { Hide(); return; }
  // The authored final journey owns its sky. Keep an earlier visitor track and its
  // observation clock untouched while C6 is active, including the empty-car pullout.
@@ -426,30 +769,8 @@ void FS47SkyVisitors::Step(double Dt)
  Build();
  if (!bBuilt || Points.Num() != 9) { Hide(); return; }
  const FS47Cam Cam = FS47Cam::Of(M->Player, 12000);
- FVector2D Size(1600, 900);
- if (M->Web && M->Web->GetWorld() && M->Web->GetWorld()->GetGameViewport()) M->Web->GetWorld()->GetGameViewport()->GetViewportSize(Size);
- const double Fade = FMath::Clamp(VisibleState.Elapsed / 3, 0., 1.) * FMath::Clamp((FS47SkyVisitorState::Duration(VisibleState.Stage) - VisibleState.Elapsed) / 8, 0., 1.);
- const int32 Count = FS47SkyVisitorState::Count(VisibleState.Stage);
- // Keep SKY01's original six-pixel introduction. Later groups get a larger
- // angular footprint, referenced to 900p so higher resolutions do not hide them.
- // Only the sprite changes: the world paths, sight and observation rules remain.
- static const double LaterDiscPixels[] = {10., 11., 12., 14.};
- const double DiscPixels = VisibleState.Stage == 1 ? 6.4
-  : LaterDiscPixels[FMath::Clamp(VisibleState.Stage - 2, 0, 3)] * FMath::Max(1., Size.Y) / 900.;
- for (int32 I = 0; I < Points.Num(); ++I)
- {
-  auto* B = Points[I].Get(); if (!B) continue;
-  B->SetVisibility(I < Count && Fade > 0);
-  if (I >= Count || B->Elements.IsEmpty()) continue;
-  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(VisibleState.Stage, I, VisibleState.Elapsed), M->World->Area);
-  B->SetWorldLocation(S47Three::ToUE(At));
-  // World location and depth remain physical; only the distant glow keeps size.
-  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
-  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
-  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
-   D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0));
-  B->MarkRenderStateDirty();
- }
+ double Fade = 0; int32 Count = 0;
+ DrawTrack(VisibleState, FVector::ZeroVector, 1., Fade, Count);
  if (Preview.bEnabled || Held || Dt <= 0) { State.Looking = 0; ObservationStep = 0; return; }
  ObservationStep += Dt;
  if (ObservationStep < .12) return;
@@ -465,6 +786,37 @@ void FS47SkyVisitors::Step(double Dt)
    if (P.Z < 1 && FMath::Abs(P.X) < .94 && FMath::Abs(P.Y) < .94 && ClearLine(Cam.Pos, At)) ++Visible;
   }
  if (State.Observe(Visible, Sample)) RecordObservation(Visible);
+}
+
+void FS47SkyVisitors::DrawTrack(const FS47SkyVisitorState& Track, const FVector& Shift, double Boost, double& Fade, int32& Count)
+{
+ Fade = 0; Count = 0;
+ if (!bBuilt || Points.Num() != 9) return;
+ const FS47Cam Cam = FS47Cam::Of(M->Player, 12000);
+ FVector2D Size(1600, 900);
+ if (M->Web && M->Web->GetWorld() && M->Web->GetWorld()->GetGameViewport()) M->Web->GetWorld()->GetGameViewport()->GetViewportSize(Size);
+ Fade = FMath::Clamp(Track.Elapsed / 3, 0., 1.) * FMath::Clamp((FS47SkyVisitorState::Duration(Track.Stage) - Track.Elapsed) / 8, 0., 1.);
+ Count = FS47SkyVisitorState::Count(Track.Stage);
+ // Keep SKY01's original six-pixel introduction. Later groups get a larger
+ // angular footprint, referenced to 900p so higher resolutions do not hide them.
+ // Only the sprite changes: the world paths, sight and observation rules remain.
+ static const double LaterDiscPixels[] = {10., 11., 12., 14.};
+ const double DiscPixels = Track.Stage == 1 ? 6.4
+  : LaterDiscPixels[FMath::Clamp(Track.Stage - 2, 0, 3)] * FMath::Max(1., Size.Y) / 900.;
+ for (int32 I = 0; I < Points.Num(); ++I)
+ {
+  auto* B = Points[I].Get(); if (!B) continue;
+  B->SetVisibility(I < Count && Fade > 0);
+  if (I >= Count || B->Elements.IsEmpty()) continue;
+  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(Track.Stage, I, Track.Elapsed), M->World->Area) + Shift;
+  B->SetWorldLocation(S47Three::ToUE(At));
+  // World location and depth remain physical; only the distant glow keeps size.
+  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
+  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
+   D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0 * Boost));
+  B->MarkRenderStateDirty();
+ }
 }
 
 bool FS47SkyVisitors::Check(bool Good, const FString& What)
@@ -701,5 +1053,52 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
  FS47FreeformSkyState Quiet;Quiet.Begin(nullptr,4701986);int32 Chosen=0;
  for(int32 Day=2;Day<102;++Day){Quiet.Advance(Day,(Day-1)*86400.+8*3600.);Chosen+=Quiet.bChosen;}
  Check(Chosen>0&&Chosen<40,TEXT("seeded Freeform opportunities remain sparse with many quiet nights"));
+ // Formations: what each one is, when they come, what stops them.
+ using FForm=FS47SkyFormationState;
+ const auto Ahead=[](ES47SkyForm Form,int32 I,int32 N){return FForm::Slot(Form,I,N,0).X;};
+ const auto Across=[](ES47SkyForm Form,int32 I,int32 N){return FForm::Slot(Form,I,N,0).Y;};
+ bool Vee=true;for(int32 I=1;I<7;++I)Vee&=Ahead(ES47SkyForm::V,I,7)<Ahead(ES47SkyForm::V,0,7);
+ Vee&=FMath::IsNearlyEqual(Across(ES47SkyForm::V,1,7),-Across(ES47SkyForm::V,2,7))&&FMath::IsNearlyEqual(Across(ES47SkyForm::V,5,7),-Across(ES47SkyForm::V,6,7))&&FMath::Abs(Across(ES47SkyForm::V,5,7))>FMath::Abs(Across(ES47SkyForm::V,1,7));
+ Check(Vee,TEXT("the V has its point ahead and its two arms spreading back"));
+ bool Row=true;for(int32 I=2;I<5;++I)Row&=FMath::IsNearlyEqual((Ahead(ES47SkyForm::Line,I,5)-Ahead(ES47SkyForm::Line,0,5))*(Across(ES47SkyForm::Line,1,5)-Across(ES47SkyForm::Line,0,5)),(Ahead(ES47SkyForm::Line,1,5)-Ahead(ES47SkyForm::Line,0,5))*(Across(ES47SkyForm::Line,I,5)-Across(ES47SkyForm::Line,0,5)),1.);
+ Check(Row,TEXT("the line is straight"));
+ bool Ring=true;for(int32 I=0;I<8;++I)Ring&=FMath::IsNearlyEqual(FForm::Slot(ES47SkyForm::Circle,I,8,40).Size(),290.,.01);
+ Check(Ring&&!FForm::Slot(ES47SkyForm::Circle,0,8,0).Equals(FForm::Slot(ES47SkyForm::Circle,0,8,40),1.),TEXT("the circle holds its radius and turns"));
+ Check(Ahead(ES47SkyForm::Triangle,0,6)>Ahead(ES47SkyForm::Triangle,1,6)&&Ahead(ES47SkyForm::Triangle,1,6)>Ahead(ES47SkyForm::Triangle,3,6)&&FMath::Abs(Across(ES47SkyForm::Triangle,5,6))>FMath::Abs(Across(ES47SkyForm::Triangle,2,6)),TEXT("the triangle widens row by row"));
+ bool Apart=true;for(int32 I=0;I<8;++I)for(int32 J=I+1;J<8;++J)Apart&=FVector2D::Distance(FForm::Slot(ES47SkyForm::Scatter,I,8,0),FForm::Slot(ES47SkyForm::Scatter,J,8,0))>100;
+ Check(Apart,TEXT("the scattered ones keep apart, no two reading as one"));
+ FForm Fm;Fm.Begin(nullptr);
+ Check(!FForm::Open(9*3600.)&&!FForm::Open(22*3600.)&&FForm::Open(25*3600.)&&!FForm::Open(32*3600.)&&FForm::Open(86400.+22*3600.)&&!FForm::Open(86400.+21*3600.),TEXT("formations keep to the night, and on the first night to after midnight"));
+ // Three whole nights at the clock's own pace, nothing else going on.
+ TArray<double> Starts;bool EveningQuiet=true,FitsPoints=true,High=true;TSet<int32> Forms;int32 Fast=0,Vanish=0;
+ for(double Clock=9*3600.;Clock<3*86400.+7*3600.;Clock+=30)
+ {
+  Fm.Update(Clock);
+  if(!Fm.Due(Clock))continue;
+  const double Hour=FMath::Fmod(Clock,86400.)/3600.;
+  Fm.StartNatural(Clock,0,0);Starts.Add(Clock);Forms.Add(int32(Fm.Form));Fast+=Fm.bFast?1:0;Vanish+=Fm.bVanish?1:0;FitsPoints&=Fm.Lights>=3&&Fm.Lights<=FForm::MaxLights;
+  if(Hour>=12)EveningQuiet&=(Fm.Form==ES47SkyForm::Line||Fm.Form==ES47SkyForm::Scatter)&&!Fm.bFast&&!Fm.bVanish;
+  Fm.Age=Fm.Seconds()*.5;for(int32 I=0;I<Fm.Lights;++I)High&=Fm.MapPosition(I).Y>1000&&Fm.MapPosition(I).Y<4000&&FVector2D(Fm.MapPosition(I).X,Fm.MapPosition(I).Z).Size()>1000;
+  Fm.bActive=false;
+ }
+ bool Even=Starts.Num()>=10;for(int32 I=1;I<Starts.Num();++I){const double Gap=Starts[I]-Starts[I-1];Even&=Gap>=74*60.&&(Gap<=111*60.||Gap>6*3600.);}
+ Lines.Add(FString::Printf(TEXT("sky visitors: %d formations in three nights, %d kinds, %d fast, %d going out"),Starts.Num(),Forms.Num(),Fast,Vanish));
+ Check(Even&&Forms.Num()==5&&Fast>0&&Vanish>0&&FitsPoints,TEXT("formations come at regular intervals through the night, all five kinds, some fast and some going out"));
+ Check(EveningQuiet&&High,TEXT("before midnight only a row or a loose handful; always high, never over the watcher's head"));
+ FForm Late;Late.Begin(nullptr);Late.Update(25*3600.);const double Asked=Late.NextClock;
+ Check(!Late.Due(Asked-1)&&Late.Due(Asked)&&Late.Due(Asked+FForm::LateBy)&&!Late.Update(Asked+FForm::LateBy)&&Late.Update(Asked+FForm::LateBy+1)&&!Late.bActive&&Late.Passes==0,TEXT("a pass missed or kept waiting too long is gone, never made up for"));
+ Late.StartNatural(86400.+23*3600.,5,6);Late.Age=30;FForm Back;Back.Begin(S47J::Read(S47J::Write(Late.Save())));
+ Check(Back.bActive&&Back.Form==Late.Form&&Back.Passes==1&&Back.NextClock==Late.NextClock&&Back.MapPosition(1).Equals(Late.MapPosition(1),.001),TEXT("a pass in the sky and the schedule survive Continue"));
+ Late.bDev=true;Back.Begin(S47J::Read(S47J::Write(Late.Save())));Check(!Back.bActive&&Back.Passes==1,TEXT("a developer's pass is not saved"));
+ FForm Gone;Gone.StartDev(ES47SkyForm::V,2,0,0,0,2600,950);Gone.Age=Gone.Seconds()*.6-1;const double LitAt=Gone.Level(0);Gone.Age=Gone.Seconds()*.6+7*.4;
+ Check(LitAt>.5&&Gone.Level(0)==0&&Gone.Level(6)<=1&&!Gone.Finished(),TEXT("going out is one light after another, in place"));
+ Gone.Age=Gone.Seconds()*.6+7*.4+.4;Check(Gone.Finished(),TEXT("and then the pass is over"));
+ FForm Off;Off.StartDev(ES47SkyForm::Line,0,0,0,0,2600,950);Off.LeaveAt=Off.Age;const double Now=Off.Age;Off.Age=Now+1.7;
+ Check(Off.Level(0)==0&&Off.Finished(),TEXT("something else starting sends them off within two seconds"));
+ FForm Cross;Cross.StartDev(ES47SkyForm::V,0,0,0,0,2600,950);Cross.Age=Cross.Seconds()*.5;
+ Check(Cross.MapPosition(0).X>2000&&FMath::Abs(Cross.MapPosition(0).Z)<1,TEXT("a developer's pass crosses in front of whoever asked"));
+ Cross=FForm();Cross.StartDev(ES47SkyForm::Circle,1,0,0,0,2600,950);Check(Cross.bFast&&Cross.Lights==8&&Cross.Level(0)==0,TEXT("each formation and pace can be asked for, and it comes up from nothing"));
+ for(const TCHAR* Area:{TEXT("saro"),TEXT("road"),TEXT("station01"),TEXT("diner")})
+ {const FVector Map(300,1500,-700);Check(MapPoint(WorldPosition(Map,Area),Area).Equals(Map,1e-6),TEXT("the player's place goes back onto the map from any outdoor area"));}
  return Good;
 }

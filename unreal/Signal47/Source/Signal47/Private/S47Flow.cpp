@@ -6,6 +6,7 @@
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47Rhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
@@ -93,6 +94,8 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "SS47AreaMap.h"
+#include "S47Places.h"
+#include "S47Predecessor.h"
 #include "SS47Ending.h"
 #include "SS47Notebook.h"
 #include "SS47SaveMenu.h"
@@ -2064,6 +2067,8 @@ FS47MapView US47Flow::MapView() const
 	const AS47Story* S = M->Story;
 	FS47MapView V;
 	V.At = MapAt();
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Places) M->Freeform->Places->FillMap(V);
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor) M->Freeform->Predecessor->FillMap(V);
 	if (M->IsFreeform()) { V.bStation = true; return V; } // Freeform has no Story chapter clues.
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;
@@ -2144,6 +2149,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
 	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), TEXT("Portable SARO field set. Listen in the field; a sound alone is not a filed observation."), TEXT("Carried"), FString(), FString() });
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
 	{
 		const auto F = M->Freeform->Field;
@@ -2230,6 +2236,7 @@ bool US47Flow::OpenTestView(const FString& View)
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
 	bool bOk = S47Picture::SelfTest(Out);
+	bOk &= FS47Rhythm::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{
 		Out.Add(bPass ? FString::Printf(TEXT("ok  flow: %s"), Name) : FString::Printf(TEXT("FAIL flow: %s %s"), Name, *Got));
@@ -2374,6 +2381,8 @@ void US47Flow::OpenDev()
 	const auto Add = [this, &E](const TCHAR* Group, const TCHAR* Label, const TCHAR* Note, const FString& Args)
 	{ E.Add({ Group, Label, Note, [this, Args] { DevRelaunch(Args); } }); };
 	const FString Night = TEXT("-S47EveningTimeline -S47SpineStart=on -S47Jump=");
+	Add(TEXT("Freeform"), TEXT("Test run"), TEXT("a new Freeform game where nothing is saved; F10 starts any event"), TEXT("-S47Freeform"));
+	Add(TEXT("Freeform"), TEXT("Test run, the night by its own rules at x15"), TEXT("what a developer run otherwise switches off is on; F10 changes the speed"), TEXT("-S47Freeform -S47NaturalNight=15"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("The drive to SARO"), TEXT("18:00 on the road"), TEXT("-S47Evening=commute"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("Mesa Diner supper"), TEXT("on the way"), TEXT("-S47Evening=diner"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("SARO parking lot"), TEXT("arrived"), TEXT("-S47Evening=parking"));

@@ -15,6 +15,7 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47DevEvents.h"
+#include "S47Rhythm.h"
 #include "S47HorrorTest.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
@@ -33,6 +34,7 @@
 #include "SS47Widgets.h"
 #include "S47TownLayer.h"
 #include "S47TripoNpcs.h"
+#include "S47Lived.h"
 #include "S47SaroRooms.h"
 #include "S47SaroLegacyCleanup.h"
 #include "S47Rx3Detail.h"
@@ -109,6 +111,7 @@ void US47Main::Step(double Dt)
 	if (HighwayUfoTest) HighwayUfoTest->Step(Dt);
 	if (UfoVisualTest) UfoVisualTest->Step(Dt);
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
+	if (Rhythm) Rhythm->Observe(Dt);
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
 	if (FreeformInWorldTest) FreeformInWorldTest->Step(Dt);
@@ -214,6 +217,7 @@ void US47Main::Step(double Dt)
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
 		TripoNpcs->Step();
 		FS47SaroRooms::Update(this, Dt);
+		S47Lived::Update(this, Dt);
 		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);

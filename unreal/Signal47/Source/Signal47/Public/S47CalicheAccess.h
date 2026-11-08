@@ -11,6 +11,8 @@ namespace S47CalicheAccess
  void Save(const S47J::FObj& State);
  void Restore(const S47J::FObj& State);
  bool HasDoor(const FString& Id);
+ // Whether two names (a room's id, its use, town:use, access:id) mean the same room's door.
+ bool SameDoor(const FString& A,const FString& B);
  bool UseDoor(const FString& Id);
  bool IsOpen(const FString& Id);
  double FloorAt(double X,double Z); // NaN outside supported rooms and entry ramps.

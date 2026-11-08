@@ -44,6 +44,9 @@ public:
 	/** Pure Sky is visual only: 06:00-07:00 in, 18:00-18:53 out; original night and dawn stay exact. */
 	double PureSkyWeight = 0;
 	static double PureSkyWeightAt(double Clock);
+	/** Rendering only: how much the land is still lit from the open sky with the sun down, 0 to 1. Never a story gate, never the dome's Daylight(). */
+	double Twilight = 0;
+	static double TwilightAt(double Clock);
 	/** Rendering only (SKY.md): the volumetric layer's cover and the cirrus above it, from the clock.
 	 *  Day and dusk a broken 40-70 % layer; 18:50-21:00 it breaks up to a few night clouds (never
 	 *  overcast); 04:30-06:30 it builds back. Story beats keep open sky locally (Draw: clear directions). */

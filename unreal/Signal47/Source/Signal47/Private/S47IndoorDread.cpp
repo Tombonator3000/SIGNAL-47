@@ -1,4 +1,5 @@
 #include "S47IndoorDread.h"
+#include "S47Rhythm.h"
 #include "S47PaleBody.h"
 #include "Engine/SkeletalMesh.h"
 #include "S47Audio.h"
@@ -324,6 +325,7 @@ void FS47IndoorDread::Draw()
 
 void FS47IndoorDread::EndPeek()
 {
+ if(M&&M->Rhythm)M->Rhythm->Ended(TEXT("peek"));
  if(Body.Ready())Body.Peek(false,1,0,0);
  Stage=EStage::None;ExposureNow=0;Withdraw=-1;
  UE_LOG(LogTemp,Display,TEXT("S47: peek over, seen %d, after %.1f s"),bSeen,T);
@@ -384,7 +386,7 @@ void FS47IndoorDread::StepPeek(double Dt)
 void FS47IndoorDread::StepPeekDraw(double Dt)
 {
  const bool bQuietNow=Quiet();
- const bool bHour=M&&M->Freeform&&FS47FarmSite::TheirHours(M->Freeform->Clock());
+ const bool bHour=M&&M->Freeform&&M->Freeform->TheirHoursNow(M->Freeform->Clock());
  const bool bInside=bQuietNow&&PlayerInPeekPlace();
  InsideFor=bInside?InsideFor+Dt:0;
  if(!bQuietNow)bDevWanted=false;
@@ -407,6 +409,7 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
    if(!bPeekTonight)return;
   }
   if(InsideFor<PeekWait)return;
+  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("peek")))return;
  }
  if(RingPause>0){RingPause-=Dt;return;}
  const auto In=M->Night->GlimpseIn(true);
@@ -444,9 +447,10 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  const bool bHere=Quiet()&&!M->ModalOpen()&&M->Web->Area()==FloodArea&&FVector2D::Distance(FVector2D(Feet.X,Feet.Z),FVector2D(FloodAt.X,FloodAt.Z))<6&&M->Freeform->Taken->Indoors();
  FloodFor=bHere?FloodFor+Dt:0;
- if(!bHere||!FS47FarmSite::TheirHours(Clock)||Clock<FloodClock+FloodRestSeconds)return;
+ if(!bHere||!M->Freeform->TheirHoursNow(Clock)||Clock<FloodClock+FloodRestSeconds)return;
  const int32 Day=M->Freeform->Day();
  if(FloodRollDay==Day||FloodFor<25)return;
+ if(M->Rhythm&&!M->Rhythm->Allow(TEXT("lit_room")))return;
  // A night's own draw, and at most one. The rest is long whatever it says.
  FloodRollDay=Day;
  const bool bAgain=FMath::FRand()<FloodChance;
@@ -471,6 +475,13 @@ bool FS47IndoorDread::DevPeek()
  if(!M||!M->Freeform||!M->Freeform->Active()||Stage!=EStage::None||!PlayerInPeekPlace())return false;
  bDevWanted=true;ProbeAt=0;SearchRings=7;Best=FCandidate();RingPause=0;
  return true;
+}
+
+void FS47IndoorDread::DevCancel()
+{
+ bDevWanted=false;
+ if(Stage!=EStage::None)EndPeek();
+ if(DoorVisit)DoorVisit->DevEnd();
 }
 
 bool FS47IndoorDread::SelfTest(TArray<FString>& Lines)

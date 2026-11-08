@@ -68,6 +68,9 @@ public:
  double GeneratorHours() const { return GeneratorSeconds / 3600.; }
  double VehicleFuel() const { return Fuel; }
  bool HasVehicleFuel() const { return Fuel > .001; }
+ void SkipFaultToday();
+ void TestBuiltTripCamera(){Crafting.Built.AddUnique(TEXT("trip_camera"));}
+ void TestRoadside(){RoadsideAssist();}
  bool StartPump();
  void StopPump();
  bool PumpActive() const { return bPumping; }

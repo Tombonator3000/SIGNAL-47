@@ -12,7 +12,7 @@ public:
  void Step(double Dt);
 private:
  US47Main* M=nullptr;
- bool bEnabled=false,bDone=false,bFollow=false,bKeepDriving=false,bPauseChecked=false,bRestored=false,bPassShot=false,bStopChecked=false;
+ bool bEnabled=false,bDone=false,bFollow=false,bKeepDriving=false,bNorth=false,bPauseChecked=false,bRestored=false,bPassShot=false,bStopChecked=false;
  int32 Stage=0,Checks=0,Restores=0;
  double Started=0,At=0,PausedAge=0,StoppedCarZ=0,PlayerStartZ=0,LastZ=0,Travel=0;
  FVector PausePlayer=FVector::ZeroVector,PauseUfo=FVector::ZeroVector,PauseCar=FVector::ZeroVector;

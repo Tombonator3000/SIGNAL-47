@@ -1,6 +1,7 @@
 #include "S47Night.h"
 #include "S47SaroSeam.h"
 #include "S47Freeform.h"
+#include "S47Openings.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
@@ -264,6 +265,8 @@ void US47Night::Init(US47Main* InM)
 
 void US47Night::ToggleLight()
 {
+	// In the cab, with one on the roof: F is that one.
+	if (M->Mode == EMode::Play && !Modal() && !Cinematic() && Driving() && M->IsFreeform() && M->Freeform && M->Freeform->TruckLamp && M->Freeform->TruckLamp->Toggle()) return;
 	if (M->Mode != EMode::Play || Modal() || Cinematic() || Driving()) return;
 	if (!Flashlight->Toggle()) M->UI->Toast(TEXT("No flashlight. There is one on the passenger seat of the truck."), 3);
 }

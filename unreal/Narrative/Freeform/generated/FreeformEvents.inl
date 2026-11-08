@@ -20,7 +20,15 @@ static const TCHAR* FreeformEventsJson=TEXT(R"S47JSON({
     {"id":"flyover","family":"minor","day":2,"night":true,"duration":36,"action":"photo","finding":"A moving light crossed the sky with a low thud behind it. The receiver's stored observation shows nothing of it."},
     {"id":"quiet_zone","family":"investigation","day":3,"night":true,"duration":150,"action":"field","finding":"The apparent quiet region was checked from both sides of a recorded field boundary."},
     {"id":"close_pass","family":"major","day":4,"night":true,"duration":65,"action":"photo","finding":"A close light-bearing passage produced independent visual and instrument records. No identity is assigned."},
-    {"id":"dusk_orb","family":"investigation","day":1,"night":false,"duration":300,"action":"photo","finding":"A low moving light was photographed between S-02 and S-03. Compare the retained original with a control photograph from the same antenna reference; no identity or common signal source is established."}
+    {"id":"dusk_orb","family":"investigation","day":1,"night":false,"duration":300,"action":"photo","finding":"A low moving light was photographed between S-02 and S-03. Compare the retained original with a control photograph from the same antenna reference; no identity or common signal source is established."},
+    {"id":"phone_one_ring","family":"minor","day":1,"night":true,"duration":6,"action":"field","finding":"The control room phone rang once and stopped. Nobody was on the line to ask."},
+    {"id":"printer_line","family":"minor","day":1,"night":true,"duration":8,"action":"field","finding":"The printer ran for two seconds with nothing queued."},
+    {"id":"rack_click","family":"minor","day":1,"night":true,"duration":8,"action":"field","finding":"Relays clicked in the rack with no one at it."},
+    {"id":"radio_crackle","family":"minor","day":1,"night":true,"duration":6,"action":"field","finding":"The radio opened by itself for a moment."},
+    {"id":"service_door_open","family":"minor","day":1,"night":true,"duration":12,"action":"field","finding":"The service door stood open after it had been shut."},
+    {"id":"antenna_creak","family":"minor","day":1,"night":true,"duration":10,"action":"field","finding":"Metal creaked among the dishes with no wind to speak of."},
+    {"id":"fence_tap","family":"minor","day":1,"night":true,"duration":10,"action":"field","finding":"Something tapped along the fence and went off."},
+    {"id":"night_hush","family":"minor","day":1,"night":true,"duration":30,"action":"field","finding":"The crickets stopped for half a minute, then came back."}
   ]
 }
 )S47JSON");

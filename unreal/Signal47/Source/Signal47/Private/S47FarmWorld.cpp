@@ -272,15 +272,18 @@ namespace
   }
   UE_LOG(LogTemp,Display,TEXT("S47: farm ground decals: %d laid, road ribbon retired"),FarmDecals.Num());
  }
- // The soil's tone follows the day (S47MesaRock::ApplyGround): at night the land is much redder than by day, and these would stand out dark on it.
+ // The soil's tone follows the day (S47MesaRock::ApplyFreeformGround): at night the land's albedo is much higher than by day, and these would stand out on it.
  void ToneFarmDecals(const US47Main* M)
  {
   if(DecalTones.IsEmpty())return;
   const double Hour=M->Freeform?FMath::Fmod(M->Freeform->Clock(),86400.)/3600.:12.;
-  const float Day=float(FMath::Clamp(FMath::Min((Hour-5.75)/1.25,(19.25-Hour)/1.25),0.,1.));
+  // (The same hours as the ground's, S47MesaRock DayAt.)
+  const float Day=float(FMath::Clamp(FMath::Min((Hour-4.72)/1.25,(19.25-Hour)/1.25),0.,1.));
   if(FMath::Abs(Day-DecalDay)<.01f)return;DecalDay=Day;
-  const FLinearColor Night(2.2f,1.4f,1.05f,1.f);
-  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*FMath::Lerp(Night,Row.ByDay,Day));
+  // Tom, 7 November, a pale cracked clay and a red soil with a line between them in the lantern's light. These followed the old road's night (2.2 1.4 1.05, its ground red by night);
+  // the relief's night is the other way: S47MesaRock's tint .78 .734 .68 against .187 .224 .23 by day. So what lay on the soil stood red on a pale land. Now each keeps by night what it is to the soil by day.
+  const FLinearColor Night(4.17f,3.28f,2.96f,1.f);
+  for(const FDecalTone& Row:DecalTones)if(auto* Mid=Row.Mid.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Row.Tint*Row.ByDay*FMath::Lerp(Night,FLinearColor::White,Day));
  }
  TWeakObjectPtr<AS47Web> GroundWorld;TWeakObjectPtr<UStaticMeshComponent> YardGround,FarmRoad;bool bGroundTried=false;
  UMaterialInterface* NodeMaterial(const AS47Web* W,int32 Node)
@@ -429,7 +432,21 @@ namespace
   };
   Fence(30,215,30,265,0);Fence(80,215,80,265,1);Fence(30,265,80,265,2);Fence(30,215,66,215,3);Fence(75,215,80,215,4);
   auto* Plaster=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_ChurchWhiteBoard.M_Town_ChurchWhiteBoard"));
-  for(const auto& Piece:S47FarmHouse::Pieces())Box(Piece.Name,Piece.Centre,Piece.Size,Piece.Mat==S47FarmHouse::EMat::Wall?Plaster:Wood);
+  // A cube's UV stretches any map over a wall: these read the farm's own maps from where they stand (Tools/farmbuildings/import_oldhouse.py). The old ones if those are not imported.
+  const auto ByPlace=[](const TCHAR* Name,UMaterialInterface* Else)->UMaterialInterface*
+  {
+   const FString Path=FString::Printf(TEXT("/Game/FarmBuildings/Materials/%s"),Name);
+   auto* Found=FPackageName::DoesPackageExist(Path)?LoadObject<UMaterialInterface>(nullptr,*FString::Printf(TEXT("%s.%s"),*Path,Name)):nullptr;
+   return Found?Found:Else;
+  };
+  UMaterialInterface* Stucco=ByPlace(TEXT("M_Farm_WorldStucco"),Plaster);UMaterialInterface* Board=ByPlace(TEXT("M_Farm_WorldWood"),Wood);UMaterialInterface* Paint=ByPlace(TEXT("M_Farm_WorldPaint"),Wood);UMaterialInterface* Top=ByPlace(TEXT("M_Farm_WorldRoof"),Wood);
+  if(Stucco!=Plaster)if(auto* Worn=UMaterialInstanceDynamic::Create(Stucco,W)){Worn->SetScalarParameterValue(TEXT("FootCm"),float(S47FarmHouse::PadY()*100));Stucco=Worn;}
+  for(const auto& Piece:S47FarmHouse::Pieces())
+  {
+   UMaterialInterface* Mat=Board;
+   switch(Piece.Mat){case S47FarmHouse::EMat::Wall:Mat=Stucco;break;case S47FarmHouse::EMat::Paint:Mat=Paint;break;case S47FarmHouse::EMat::Roof:Mat=Top;break;default:break;}
+   Box(Piece.Name,Piece.Centre,Piece.Size,Mat);
+  }
   const double Y=S47FarmWorld::FloorRoad(76,251);Box(TEXT("farm:trough:bottom"),{76,Y+.15,251},{2,.16,.9},Metal);
   for(double DX:{-1.,1.})Box(TEXT("farm:trough:end"),{76+DX,Y+.40,251},{.10,.6,.9},Metal);
   for(double DZ:{-.45,.45})Box(TEXT("farm:trough:side"),{76,Y+.40,251+DZ},{2,.6,.08},Metal);

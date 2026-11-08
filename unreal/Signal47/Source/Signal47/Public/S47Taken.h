@@ -7,7 +7,7 @@ class US47Main;
 class SS47AwayOverlay;
 class USpotLightComponent;
 class UPointLightComponent;
-class ULocalFogVolumeComponent;
+class FS47OutsideLight;
 #include "S47UfoPresentation.h"
 
 // Who takes the player decides how: how long is gone, and where they come to. Different bodies are different in kind,
@@ -21,6 +21,7 @@ struct FS47TakenTerms
  double WakeMin=0,WakeMax=0; // metres from where they stood; 0: the same place
  bool bHome=false;      // comes to at SARO with the truck on its pad
  FLinearColor Light=FLinearColor::White;
+ int32 Leaves=0;        // how much of what they carry stays behind on the ground: the set, then the camera
 };
 
 // A flood of light into the place, and being taken in it (GAME_BIBLE, Freeform-bortføring og tapt tid): a warning that
@@ -70,7 +71,8 @@ private:
  TSharedPtr<SS47AwayOverlay> Overlay;
  TWeakObjectPtr<USpotLightComponent> Spot;
  TWeakObjectPtr<UPointLightComponent> Fill;
- TWeakObjectPtr<ULocalFogVolumeComponent> Mist;
+ // Under a roof the light is the massive one from outside (S47OutsideLight.h). The air is its own too, here and in the open.
+ TSharedPtr<FS47OutsideLight> Rig;
  void StepMist(double Dt);
  double MistK=0;
  FLinearColor LightColor(double Time) const;

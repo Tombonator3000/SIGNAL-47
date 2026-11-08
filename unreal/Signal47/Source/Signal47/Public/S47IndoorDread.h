@@ -56,12 +56,15 @@ public:
  bool PlayerInPeekPlace() const;
  // Developer menu: skip the draw and the wait. The search and every physical rule still apply.
  bool DevPeek();
+ // Developer menu: whatever is at a window or a door now is over, at once.
+ void DevCancel();
  static bool SelfTest(TArray<FString>& Lines);
 
  // Something at a shut door (FS47DoorVisit), which shares the body and goes in turn with the rest of this.
  FS47DoorVisit& Door(){return *DoorVisit;}
  bool DoorPressed(const FString& DoorKey){return DoorVisit->Pressed(DoorKey);}
  FString DoorLabel(const FString& DoorKey) const{return DoorVisit->LabelFor(DoorKey);}
+ FString DoorKeyOf(const FString& Usable) const{return DoorVisit->DoorKeyOf(Usable);}
  bool DoorQuiet() const{return Quiet();}
  bool DoorActive() const{return DoorVisit->Active();}
  // Act: what a body with clips does there. Without the Pale One the small one stands at the door, as before.

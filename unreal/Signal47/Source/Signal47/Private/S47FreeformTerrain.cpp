@@ -2,6 +2,7 @@
 #include "S47FarmWorld.h"
 #include "S47Geo.h"
 #include "S47Main.h"
+#include "S47OpenLand.h"
 #include "S47Relief.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -34,7 +35,9 @@ struct FS47FreeformTerrainState
 	TArray<FPropLift> Props;
 	TArray<FWireSwap> Wires;
 	FRangeSwap Range;
-	TStrongObjectPtr<UMaterialInstanceDynamic> Mid, RangeMid;
+	TStrongObjectPtr<UMaterialInstanceDynamic> Mid, RangeMid, CorridorMid;
+	TWeakObjectPtr<UStaticMeshComponent> Corridor;
+	TArray<TStrongObjectPtr<UMaterialInterface>> CorridorFlat;
 	TArray<FString> Notes;
 	int32 Instances = 0, Segments = 0;
 	bool bPrepared = false, bFailed = false, bOn = false;
@@ -47,7 +50,7 @@ namespace
 	const TCHAR* const ReliefMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformGround.M_S47_FreeformGround");
 	const TCHAR* const RangeMeshPath = TEXT("/Game/FreeformTerrain/SM_FF_Range.SM_FF_Range");
 	const TCHAR* const RangeMaterialPath = TEXT("/Game/FreeformTerrain/M_S47_FreeformRange.M_S47_FreeformRange");
-	const int32 ReliefRoadNode = 1242, ReliefRoadGeo = 873, ReliefSaroNode = 7, ReliefSaroGeo = 4, ReliefCorridorNode = 952;
+	const int32 ReliefRoadNode = 1242, ReliefRoadGeo = 873, ReliefSaroNode = 7, ReliefSaroGeo = 4, ReliefCorridorNode = 952, ReliefCorridorGroundNode = 953;
 	constexpr double ReliefMinMove = .002;   // less than this is not worth the update: 0 in the mask, and nothing to see
 
 	// Which set of coordinates a node stands in. The shared landscape follows the area; the others stay where they are.
@@ -191,9 +194,31 @@ namespace
 			Lifted.Add(FVector3f(Raised));
 			Bounds += Raised;
 		}
-		if (!Moved) return nullptr;
+		TArray<uint32> Source3;
+		From.IndexBuffer.GetCopy(Source3);
+		// Freeform's open land (S47OpenLand): of the highway's and the pasture's fences only a short stretch here and there keeps its wire.
 		TArray<uint32> Indices;
-		From.IndexBuffer.GetCopy(Indices);
+		Indices.Reserve(Source3.Num());
+		TArray<FStaticMeshSection> Sections;
+		int32 Cut = 0;
+		const auto ThreeOf = [&](uint32 V) { return S47Three::ToThree(FVector(B.PositionVertexBuffer.VertexPosition(V))); };
+		for (const FStaticMeshSection& Section : From.Sections)
+		{
+			FStaticMeshSection Part = Section;
+			Part.FirstIndex = Indices.Num(); Part.NumTriangles = 0;
+			for (uint32 I = Section.FirstIndex; I + 2 < uint32(Source3.Num()) && I < Section.FirstIndex + Section.NumTriangles * 3; I += 3)
+			{
+				const FVector P0 = ThreeOf(Source3[I]), P1 = ThreeOf(Source3[I + 1]), P2 = ThreeOf(Source3[I + 2]);
+				const bool bOnFence = S47OpenLand::OnRoadFence(P0.X, P0.Z) && S47OpenLand::OnRoadFence(P1.X, P1.Z) && S47OpenLand::OnRoadFence(P2.X, P2.Z);
+				if (!S47OpenLand::Off() && bOnFence && !(S47OpenLand::FenceWireStays(P0.X, P0.Z) && S47OpenLand::FenceWireStays(P1.X, P1.Z) && S47OpenLand::FenceWireStays(P2.X, P2.Z))) { ++Cut; continue; }
+				Indices.Append({ Source3[I], Source3[I + 1], Source3[I + 2] });
+				++Part.NumTriangles;
+			}
+			if (Part.NumTriangles) Sections.Add(Part);
+		}
+		if (!Moved && !Cut) return nullptr;
+		if (Indices.IsEmpty()) return nullptr;
+		UE_LOG(LogS47FreeformTerrain, Display, TEXT("S47: wires: %d triangles of the old fences cut, %d left"), Cut, Indices.Num() / 3);
 		UStaticMesh* Copy = NewObject<UStaticMesh>(W, NAME_None, RF_Transient);
 		Copy->bAllowCPUAccess = true; Copy->NeverStream = true; Copy->bSupportRayTracing = false;
 		Copy->GetStaticMaterials() = Source->GetStaticMaterials();
@@ -201,7 +226,7 @@ namespace
 		Data->AllocateLODResources(1);
 		Data->Bounds = FBoxSphereBounds(Bounds); Data->ScreenSize[0].Default = 1; Data->NumInlinedLODs = 1; Data->CurrentFirstLODIdx = 0; Data->bReadyForStreaming = false;
 		FStaticMeshLODResources& To = Data->LODResources[0];
-		To.Sections.Append(From.Sections);
+		To.Sections.Append(Sections);
 		To.VertexBuffers.PositionVertexBuffer.Init(Lifted, true);
 		auto& Tangents = To.VertexBuffers.StaticMeshVertexBuffer;
 		Tangents.SetUseHighPrecisionTangentBasis(B.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
@@ -344,6 +369,18 @@ namespace
 		Mid->SetForceMipLevelsToBeResident(true, true, -1.f);
 		S.Mid.Reset(Mid);
 		S.Grounds = MoveTemp(Swaps);
+		// Tom, 7 November: "overlapp mellom to forskjellige teksturer". The SARO corridor's flat ground (node 953) is no relief mesh, so it stayed on M_S47_DesertGround, another
+		// set of layers and tints, with a straight edge along the farm at road x 107.66 and along the whole strip. It takes the relief's material now. It has no sediment in its UV1
+		// and no vertex colours: PlainMesh stands for both, with the shade the ring and the yard carry (MakeYardGround).
+		if (const FS47WebNode* CorridorNode = W->Node(ReliefCorridorGroundNode))
+			if (auto* CorridorComp = Cast<UStaticMeshComponent>(CorridorNode->Comp.Get()); CorridorComp && CorridorNode->Name == TEXT("saroCorridorGround"))
+				if (UMaterialInstanceDynamic* CorridorMid = UMaterialInstanceDynamic::Create(Material, GetTransientPackage()))
+				{
+					CorridorMid->SetScalarParameterValue(TEXT("PlainMesh"), 1.f);
+					CorridorMid->SetForceMipLevelsToBeResident(true, true, -1.f, 0, true);
+					S.CorridorMid.Reset(CorridorMid);
+					S.Corridor = CorridorComp;
+				}
 		const double Started = FPlatformTime::Seconds();
 		ScanInstances(W, S);
 		ScanProps(W, S);
@@ -403,6 +440,16 @@ namespace
 				for (int32 Slot = 0; Slot < G.FlatMaterials.Num(); ++Slot) C->SetMaterial(Slot, G.FlatMaterials[Slot].Get());
 			}
 		}
+		if (UStaticMeshComponent* C = S.Corridor.Get())
+		{
+			if (bOn)
+			{
+				S.CorridorFlat.Reset();
+				for (int32 Slot = 0; Slot < C->GetNumMaterials(); ++Slot) S.CorridorFlat.Emplace(C->GetMaterial(Slot));
+				C->SetMaterial(0, S.CorridorMid.Get());
+			}
+			else for (int32 Slot = 0; Slot < S.CorridorFlat.Num(); ++Slot) C->SetMaterial(Slot, S.CorridorFlat[Slot].Get());
+		}
 		for (const auto& Row : S.Rows)
 		{
 			UInstancedStaticMeshComponent* C = Row.C.Get();
@@ -451,6 +498,7 @@ namespace S47FreeformTerrain
 			// Whoever sets a material on the ground later must not take it back to the flat land's.
 			for (const auto& G : S.Grounds) if (UStaticMeshComponent* C = G.C.Get()) if (C->GetMaterial(0) != S.Mid.Get()) C->SetMaterial(0, S.Mid.Get());
 			if (UStaticMeshComponent* C = S.Range.C.Get()) if (C->GetMaterial(0) != S.RangeMid.Get()) C->SetMaterial(0, S.RangeMid.Get());
+			if (UStaticMeshComponent* C = S.Corridor.Get()) if (C->GetMaterial(0) != S.CorridorMid.Get()) C->SetMaterial(0, S.CorridorMid.Get());
 		}
 		return S.bOn;
 	}
@@ -466,10 +514,11 @@ namespace S47FreeformTerrain
 	{
 		if (!IsOn(Web)) return false;
 		for (const auto& G : Web->FreeformTerrain->Grounds) if (G.C.Get() == Component) return true;
-		return Component && Web->FreeformTerrain->Range.C.Get() == Component;
+		return Component && (Web->FreeformTerrain->Range.C.Get() == Component || Web->FreeformTerrain->Corridor.Get() == Component);
 	}
 	UMaterialInstanceDynamic* GroundMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->Mid.Get() : nullptr; }
 	UMaterialInstanceDynamic* RangeMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->RangeMid.Get() : nullptr; }
+	UMaterialInstanceDynamic* CorridorMid(const AS47Web* Web) { return IsOn(Web) ? Web->FreeformTerrain->CorridorMid.Get() : nullptr; }
 	void Report(const AS47Web* Web, TArray<FString>& Lines)
 	{
 		if (!Web || !Web->FreeformTerrain.IsValid()) { Lines.Add(TEXT("relief: not prepared")); return; }

@@ -14,6 +14,7 @@ class UMaterialInterface;
 class FS47EastWing
 {
 public:
+ void TestDoorUp(){DoorOpen=1;bDoorUp=true;bDoorMoving=bDoorHand=false;} // S47FloodProbe: the big opening, at once
  explicit FS47EastWing(US47Main* InM);
  ~FS47EastWing();
  void Init();

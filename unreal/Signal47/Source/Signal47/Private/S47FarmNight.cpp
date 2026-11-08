@@ -10,6 +10,11 @@
 #include "S47FreeformDirector.h"
 #include "S47WebAudio.h"
 #include "Components/LocalFogVolumeComponent.h"
+#include "HAL/IConsoleManager.h"
+#include "S47OutsideLight.h"
+#include "S47RoomLights.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "S47Audio.h"
 #include "S47FarmHouse.h"
 #include "S47FarmWorld.h"
@@ -145,6 +150,7 @@ void FS47FarmNight::Stop()
   if(auto* S=L.Light.Get()){S->SetIntensity(0);S->SetVisibility(false);}
  }
  LastArea.Empty();bOn=false;
+ HazeNear(false);HazeGlow=0;
  // Back to the Story's air, when Freeform ends with the scene still up.
  if(!IsEngineExitRequested()&&!IsGarbageCollecting())for(const auto& H:Hazes)if(auto* F=H.Get())F->DestroyComponent();
  Hazes.Reset();
@@ -161,6 +167,7 @@ void FS47FarmNight::Step(double Dt)
  if(bAreaChanged){Place(Area);LastArea=Area;}
  if(bAreaChanged||bNight!=bOn)SetOn(bNight,Area);
  BuildHaze();
+ StepHaze(Dt,bNight);
  // A menu or a panel holds them: nothing starts in a paused sound context, to all come at once on the way out.
  if(M->bPausedByMenu||M->ModalOpen())return;
  StepCattle(Dt,Area);
@@ -250,6 +257,11 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  PlayMoo(M->Audio,Near,bAfraid);++Moos;
 }
 
+static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.03f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
+static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.12f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
+static TAutoConsoleVariable<float> CvHazeStart(TEXT("s47.haze.Start"),150.f,TEXT("r.LocalFogVolume.GlobalStartDistance in cm for someone out in the yard at night."));
+static TAutoConsoleVariable<float> CvHazeIndoors(TEXT("s47.haze.Indoors"),.2f,TEXT("SARO's rooms at night: how much of the glow is left for someone inside."));
+
 void FS47FarmNight::BuildHaze()
 {
  if(!Hazes.IsEmpty()||!M||!M->Web)return;
@@ -267,6 +279,46 @@ void FS47FarmNight::BuildHaze()
   F->SetRadialFogExtinction(.35f);F->SetHeightFogExtinction(.15f);F->SetHeightFogFalloff(400.f);
   F->SetFogAlbedo(FLinearColor(.85f,.8f,.7f));F->SetFogPhaseG(.55f);
   Hazes.Add(F);
+ }
+}
+
+void FS47FarmNight::HazeNear(bool bNear)
+{
+ if(bNear==bHazeNear)return;
+ bHazeNear=bNear;
+ if(IConsoleVariable* V=IConsoleManager::Get().FindConsoleVariable(TEXT("r.LocalFogVolume.GlobalStartDistance")))V->Set(bNear?CvHazeStart.GetValueOnGameThread():1000.f,ECVF_SetByGameOverride);
+}
+
+void FS47FarmNight::StepHaze(double Dt,bool bNight)
+{
+ // Tom, T16-13: a little more haze in SARO seen from outside at night, so the light indoors stands in the air. The lamps
+ // there do not scatter into the volumetric fog (S47FixtureLighting: their flicker would leave a ghost in it, and each would be
+ // a shadowed pass), so the rooms' volumes carry a faint glow of their own, only while there is power, at night, and most of it
+ // for someone outside: from inside it would be a veil over the room. It is inside the walls, so the night outside is no lighter.
+ HazeIn-=Dt;
+ if(HazeIn>0||!M->Freeform||!M->Web)return;
+ HazeIn=.25;
+ const FS47Taken* Tk=M->Freeform->Taken.Get();
+ const bool bHere=bNight&&!(Tk&&Tk->Busy())&&M->Freeform->HasPowerForReactiveLight()&&!(M->SaroNight&&M->SaroNight->Power&&M->SaroNight->Power->Out());
+ const double Want=!bHere?0.:Tk&&Tk->Indoors()?CvHazeIndoors.GetValueOnGameThread():1.;
+ HazeGlow=FMath::FInterpConstantTo(HazeGlow,Want,.25,.6);
+ // Each time round, for new volumes and for a switch thrown; the setters do nothing when nothing changes.
+ // The engine holds local fog 10 m off the eye: from the yard the room behind the glass would have no air in it. Only for
+ // someone outside, where none of it is round them; indoors a room's extinction would be a black fog over its own lamps.
+ if(!FS47OutsideLight::AnyShown())HazeNear(bNight&&Tk&&!Tk->Busy()&&!Tk->Indoors());
+ const FLinearColor Colour=FLinearColor(1.f,.9f,.72f)*float(HazeGlow*CvHazeGlow.GetValueOnGameThread());
+ const float Thicker=float(HazeGlow*CvHazeExtra.GetValueOnGameThread());
+ TInlineComponentArray<ULocalFogVolumeComponent*> Fogs(M->Web.Get());
+ for(ULocalFogVolumeComponent* F:Fogs)
+ {
+  const FString Name=F->GetName();
+  const bool bOurs=Name.StartsWith(TEXT("EastWingHaze_"))||(Name.StartsWith(TEXT("S47Haze_"))&&!Name.EndsWith(TEXT("OldHouse")));
+  if(!bOurs)continue;
+  // A room with its switch off has nothing to glow with.
+  const TCHAR* Switch=Name.EndsWith(TEXT("_Control"))?TEXT("control"):Name.EndsWith(TEXT("_Corridor"))?TEXT("corridor"):Name.EndsWith(TEXT("_Records"))?TEXT("records"):nullptr;
+  const bool bLit=!Switch||!M->RoomLights||M->RoomLights->RoomEnabled(Switch);
+  F->SetFogEmissive(bLit?Colour:FLinearColor::Black);
+  F->SetRadialFogExtinction(.35f+(bLit?Thicker:0.f));
  }
 }
 

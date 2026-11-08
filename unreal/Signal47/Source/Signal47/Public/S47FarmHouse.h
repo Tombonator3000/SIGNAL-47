@@ -7,7 +7,7 @@
 // Freeform only. An older empty house on the property; the Alderete house itself stays lived in.
 namespace S47FarmHouse
 {
- enum class EMat : uint8 { Wall, Trim, Roof, Floor };
+ enum class EMat : uint8 { Wall, Trim, Roof, Floor, Paint };
  struct FPiece { FString Name; FVector Centre, Size; EMat Mat; };
  // Everything visible: walls cut by their doors and windows, floor, ceiling, roof and veranda.
  TArray<FPiece> Pieces();
@@ -17,6 +17,8 @@ namespace S47FarmHouse
  // Within the outer walls: the pad less its veranda, which has a roof but is outdoors.
  bool Inside(double RoadX,double RoadZ);
  double PadY();
+ // The one house's model is imported (T16-15): it is drawn from that, not from Pieces().
+ bool HasModel();
  // Road-local points in the plan's own rooms, for tests and later events.
  FVector Point(double PlanX,double PlanY);
  bool SelfTest(TArray<FString>& Lines);

@@ -12,6 +12,10 @@ class FS47FreeformDirector
 public:
  // Nothing new for this long of active time: after being taken there is calm.
  void RestFor(double Seconds);
+ // What the rhythm's rules read (S47Rhythm.h), straight, without a Save. And the night's count of dangerous meetings, saved.
+ void FillRhythm(struct FS47RhythmNow& Out) const;
+ void NoteDanger();
+ int32 DangerTonight() const;
  // The hint on the player's objective line while lights are reported somewhere.
  FString TipLine() const;
  // Test: tonight is a night for lights, at the next scheduler tick.
@@ -30,6 +34,10 @@ public:
  void TestCarDice(float Dice){CarDice=Dice;}
  // The low lights' visits in the dark. A developer run keeps to the dusk unless a test asks, as with the dice above.
  void TestOrbNight(bool bOn){bTestOrbNight=bOn;}
+ // Where one low light is on this visit's flight, and the stop it is holding at (-1 between them).
+ FVector OrbAt(int32 Index=0)const{return FS47DuskOrb::Position(Anchor,Age,Index,DuskOrb.VisitSeed());}
+ int32 OrbStopNow(int32 Index=0)const{return FS47DuskOrb::StopAt(Age,Index,DuskOrb.VisitSeed());}
+ const FS47DuskOrb& DuskOrbState()const{return DuskOrb;}
  // Test: 0 as played; 1 the effect hidden, so that only the lights' own effect on the world shows; 2 that with the lights out.
  void TestOrbLightProbe(int32 Mode){OrbLightProbe=Mode;}
  // Test: how many of the orbs' point lights are on now, and how many of those cast shadows.
@@ -128,8 +136,9 @@ private:
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 SkyLeft=0; // the day's lights in the distance and quiet ground: their own pot, not spent by the day's instruments
- int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
+ int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,MinorBudget=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0,LightRollDay=0,PendingLightNight=0;
+ int32 DangerNight=0,DangerCount=0;
  // When tonight's lights are due, in hours from the night's own midday (25.5 is 01:30). 0: as soon as they can.
  double LightAfter=0;
  // A figure at the base, and one at the remote feeder or array cabinet: each its own night's draw. The second waits for

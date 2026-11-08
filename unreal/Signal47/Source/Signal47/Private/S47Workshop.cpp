@@ -12,6 +12,7 @@ const TArray<FS47Workshop::FRecipe>& FS47Workshop::Recipes()
 {
  static const TArray<FRecipe> R={
   {TEXT("own_logger"),TEXT("Field logger, operator-built"),TEXT("Your own local-noise logger. Needs no loan or records approval; still calibrate it at this bench."),{TEXT("housing"),TEXT("recorder"),TEXT("timer")},1,0},
+  {TEXT("trip_camera"),TEXT("Trip camera, operator-built"),TEXT("A timer and a wire on a recorder housing, with a cheap camera in it. Leave it at marks or a place overnight and read it in the morning. It records only what crosses its wire."),{TEXT("housing"),TEXT("timer")},1,0},
   {TEXT("battery_pack"),TEXT("Logger battery pack"),TEXT("Doubles logger running time from six to twelve hours."),{TEXT("housing")},2,0},
   {TEXT("shielded_lead"),TEXT("Foil-shielded antenna lead"),TEXT("Reduces local electrical pickup on the logger by three quarters."),{TEXT("lead")},0,1},
   {TEXT("cable_splice"),TEXT("Feed-cable splice"),TEXT("Made up from two good leads and foil. Mends the wet feed cable on the array's centre branch."),{TEXT("lead"),TEXT("lead")},0,1,TEXT("splice_kit")}};

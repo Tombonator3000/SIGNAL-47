@@ -1,8 +1,11 @@
 #include "S47DevEvents.h"
+#include "S47DevFreeform.h"
+#include "S47FloodProbe.h"
 #include "S47Freeform.h"
 #include "S47FarmSite.h"
 #include "S47IndoorDread.h"
 #include "S47HighwayUfo.h"
+#include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47UI.h"
@@ -21,7 +24,9 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Misc/CommandLine.h"
 #include "UnrealClient.h"
+#include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/SkinnedAsset.h"
 #include "Components/MaterialBillboardComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -42,13 +47,28 @@ void FS47DevEvents::Add(const FString& Group, const FString& Label, const FStrin
  List.Add({ Group, Label, Note, MoveTemp(Fn) });
 }
 
+void FS47DevEvents::AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
+{
+ List.Add({ Group, Label, Note, MoveTemp(Fn), true });
+}
+
+void FS47DevEvents::Relabel(const FString& OldLabel, const FString& NewLabel)
+{
+ for (FEvent& E : List) if (E.Label == OldLabel) E.Label = NewLabel;
+}
+
 void FS47DevEvents::AddBuiltIn()
 {
+ // Freeform's first: in a Freeform night those are the lines asked for, in the order the night has them.
+ FreeformLines = MakeShared<FS47DevFreeform>(M);
+ FreeformLines->AddEntries(*this);
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
- Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
- Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on the Pale One with its clips, if this build has it; 30 seconds"), [this, Say] { SpawnGait(false); Say(TEXT("tall one")); });
- Add(TEXT("Aliens"), TEXT("Crab: folds down and crawls up"), TEXT("then sideways round you and away; 30 seconds"), [this, Say] { SpawnGait(true); Say(TEXT("crab")); });
+ // Pale: the label reads as it did so far (and Label.StartsWith "Pale" keeps its picture in the contract below).
+ Add(TEXT("Aliens"), TEXT("Pale One, here"), TEXT("stands ahead of you and looks at you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("Pale One")); });
+ Add(TEXT("Aliens"), TEXT("Pale One: walks up from afar"), TEXT("on its own walk; 30 seconds"), [this, Say] { SpawnGait(GaitPale); Say(TEXT("Pale One walking")); });
+ Add(TEXT("Aliens"), TEXT("Tall one: walks up from afar"), TEXT("on its own model and clips; 30 seconds"), [this, Say] { SpawnGait(GaitTall); Say(TEXT("tall one")); });
+ Add(TEXT("Aliens"), TEXT("Crab: folds down and crawls up"), TEXT("then sideways round you and away; 30 seconds"), [this, Say] { SpawnGait(GaitCrab); Say(TEXT("crab")); });
  for(int32 Kind=0;Kind<3;++Kind)
  {
   static const TCHAR* const Names[3]={TEXT("Visit and taken: small Roswell"),TEXT("Visit and taken: crab"),TEXT("Visit and taken: tall one")};
@@ -92,38 +112,78 @@ void FS47DevEvents::AddBuiltIn()
   Say(TEXT("meteor shower"));
  });
  for (int32 S = 1; S <= 5; ++S)
-  Add(TEXT("Sky"), FString::Printf(TEXT("Preview sky lights, stage %d"), S), TEXT("visual preview; no natural observation credit"),
+  Add(TEXT("Sky"), FString::Printf(TEXT("Preview sky lights, stage %d"), S), TEXT("high up ahead of you, outdoors; no natural observation credit"),
    [this, Say, S] { if (M->SkyVisitors) M->SkyVisitors->DevStage(S); Say(FString::Printf(TEXT("sky preview stage %d"), S)); });
  Add(TEXT("Sky"), TEXT("Stop sky preview"), TEXT("return to the natural sky"), [this, Say] { if (M->SkyVisitors) M->SkyVisitors->DevStage(0); Say(TEXT("sky preview stopped")); });
+ // Lights in formation (FS47SkyFormationState): the same ones the night sends, across the view from where you stand.
+ for (int32 F = 0; F < int32(ES47SkyForm::Num); ++F)
+  Add(TEXT("UFO formations"), FString::Printf(TEXT("Formation: %s"), FS47SkyFormationState::Name(ES47SkyForm(F))), TEXT("high lights crossing ahead of you, outdoors; nothing saved"), [this, Say, F]
+  {
+   const bool bShown = M->SkyVisitors && M->SkyVisitors->DevFormation(ES47SkyForm(F), FormationPace);
+   Say(bShown ? FString::Printf(TEXT("%s formation: look up ahead"), FS47SkyFormationState::Name(ES47SkyForm(F))) : FString(TEXT("formations need an outdoor place")));
+  });
+ Add(TEXT("UFO formations"), TEXT("Pace: slow"), TEXT("cycle slow, fast, or slow and going out where they are"), [this]
+ {
+  FormationPace = (FormationPace + 1) % 3;
+  static const TCHAR* const Paces[3] = {TEXT("Pace: slow"), TEXT("Pace: fast"), TEXT("Pace: goes out")};
+  for (auto& E : List) if (E.Group == TEXT("UFO formations") && E.Label.StartsWith(TEXT("Pace:"))) E.Label = Paces[FormationPace];
+  Open();
+ });
+ Add(TEXT("UFO formations"), TEXT("Stop formation"), TEXT("return to the night's own sky"), [this, Say] { if (M->SkyVisitors) M->SkyVisitors->DevFormationStop(); Say(TEXT("formation stopped")); });
  Add(TEXT("Tripo craft preview"),TEXT("Triangular craft: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(false);});
  Add(TEXT("Tripo craft preview"),TEXT("Flying saucer: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(true);});
  Add(TEXT("Tripo craft preview"),TEXT("Remove craft preview"),TEXT("remove the temporary model completely"),[this]{if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();});
  for(const bool Follow:{false,true})
-  Add(TEXT("UFO encounters"),Follow?TEXT("Highway: light follows you"):TEXT("Highway: sheriff follows light"),TEXT("live saved encounter; drive south on a clear highway"),[this,Follow]
+  Add(TEXT("UFO encounters"),Follow?TEXT("Highway: light follows you"):TEXT("Highway: sheriff follows light"),TEXT("live saved encounter; drive north or south on a clear highway"),[this,Follow]
   {
    const bool Started=M&&M->HighwayUfo&&M->HighwayUfo->Force(Follow);
-   if(M&&M->UI)M->UI->Toast(Started?TEXT("Highway encounter started. Your steering and brakes remain in control."):TEXT("Drive south on the open highway, clear of junctions and other encounters, then try again."),5);
+   if(M&&M->UI)M->UI->Toast(Started?TEXT("Highway encounter started. Your steering and brakes remain in control."):TEXT("Keep driving north or south on the open highway, between the motel and Caliche with road ahead, clear of other encounters, then try again."),5);
   });
+ // ---- the massive light outside (S47FloodProbe.h) ----
+ {
+  const auto Massive=[this,Say](const FString& Room)
+  {
+   FString Why;
+   Say(S47FloodProbe::BeginLive(M,Room,Why)?FString(TEXT("the light is outside, 40 seconds")):Why);
+  };
+  Add(TEXT("Massive light outside"),TEXT("Here, where you stand"),TEXT("through whatever window or door reaches you; finds none, says so"),[Massive]{Massive(FString());});
+  Add(TEXT("Massive light outside"),TEXT("SARO control room"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("control"));});
+  Add(TEXT("Massive light outside"),TEXT("The old house"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("house"));});
+  Add(TEXT("Massive light outside"),TEXT("The garage"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("garage"));});
+  Add(TEXT("Massive light outside"),TEXT("The Plaza cinema"),TEXT("takes you there; walk about in it"),[Massive]{Massive(TEXT("cinema"));});
+  Add(TEXT("Massive light outside"),TEXT("Put it out"),TEXT("back to the night"),[this,Say]{S47FloodProbe::StopLive(M);Say(TEXT("the light is out"));});
+ }
  // ---- weather ----
  Add(TEXT("Weather"), TEXT("Fog: the night's own"), TEXT("as the scene has it"), [this, Say] { GS47DevFogDensity = -1.f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("fog as the night has it")); });
  Add(TEXT("Weather"), TEXT("Fog: light"), TEXT("about 100 m"), [this, Say] { GS47DevFogDensity = .04f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("light fog")); });
  Add(TEXT("Weather"), TEXT("Fog: medium"), TEXT("about 40 m"), [this, Say] { GS47DevFogDensity = .18f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("medium fog")); });
  Add(TEXT("Weather"), TEXT("Fog: heavy"), TEXT("about 15 m"), [this, Say] { GS47DevFogDensity = 1.5f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("heavy fog")); });
  // ---- time ----
- Add(TEXT("Time"), TEXT("Clock +15 minutes"), TEXT("the night's clock only"), [this, Say] { if (M->Story) M->Story->SetClock(M->Story->Clock() + 15 * 60); Say(TEXT("clock +15 min")); });
+ Add(TEXT("Time"), TEXT("Clock +15 minutes"), TEXT("the night's clock only"), [this, Say]
+ {
+  // Freeform's clock is the session's; Story's is overwritten from it on the next step.
+  if (M->IsFreeform() && M->Freeform) M->Freeform->TestAdvance(15 * 60);
+  else if (M->Story) M->Story->SetClock(M->Story->Clock() + 15 * 60);
+  Say(TEXT("clock +15 min"));
+ });
 }
 
 void FS47DevEvents::Open()
 {
  if (!M || !M->UI || M->Mode != US47Main::EMode::Play || M->UI->Modal()) return;
+ const bool bFree = M->IsFreeform();
  TArray<FS47DevEntry> E;
  for (const FEvent& Ev : List)
  {
+  if (Ev.bFreeform && !bFree) continue;
   const TFunction<void()> Fn = Ev.Fn;
-  E.Add({ Ev.Group, Ev.Label, Ev.Note, [this, Fn] { if (M && M->UI) M->UI->Close(true); if (Fn) Fn(); } });
+  const FString Group = Ev.Group;
+  // A line that opens this menu again (a setting being cycled) comes back to its own group, not the front page.
+  E.Add({ Ev.Group, Ev.Label, Ev.Note, [this, Fn, Group] { if (M && M->UI) M->UI->Close(true); ReopenGroup = Group; if (Fn) Fn(); ReopenGroup.Empty(); } });
  }
- TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS"))
-  .Note(TEXT("Developer previews and live encounter controls. Check each entry before starting. Escape: back to the night."))
+ const FString Line = FreeformLines && bFree ? FreeformLines->MenuNote() : FString(TEXT("Developer previews and live encounter controls. Check each entry before starting."));
+ TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS")).bCategories(true).InitialGroup(ReopenGroup)
+  .Note(Line)
   .OnBack([this] { if (M && M->UI) M->UI->Close(true); });
  M->UI->Open(El);
  FSlateApplication::Get().SetKeyboardFocus(El);
@@ -149,19 +209,33 @@ void FS47DevEvents::SpawnCraft(bool bSaucer)
  if(auto* Previous=CraftPreview.Get())Previous->DestroyComponent();
  auto* C=NewObject<UStaticMeshComponent>(M->Web.Get());C->SetStaticMesh(Mesh);C->SetMobility(EComponentMobility::Movable);
  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
- const FVector P=M->Player->Pos;const double Yaw=M->Player->Yaw;
+ const FVector P=PlayerFeet();const double Yaw=M->Player->Yaw;
  const FVector At(P.X-FMath::Sin(Yaw)*18,P.Y+7.5,P.Z-FMath::Cos(Yaw)*18);
  C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldRotation(FRotator::ZeroRotator);CraftPreview=C;
  if(M->UI)M->UI->Toast(TEXT("Tripo craft preview ahead. View outdoors; F10 removes it. Nothing is saved."),5);
  UE_LOG(LogS47DevEvents,Display,TEXT("S47: temporary Tripo craft preview %s at%s; no story/finale replacement"),Name,*At.ToString());
 }
 
+FVector FS47DevEvents::PlayerFeet() const
+{
+ return M && M->Player ? FVector(M->Player->Pos.X, M->Player->FloorY, M->Player->Pos.Z) : FVector::ZeroVector;
+}
+
+bool FS47DevEvents::BuildPale()
+{
+ // Tom's Pale One, which wears the old pale body by itself in a build without it (FS47TripoCreature::Build). This used to ask
+ // for nothing and so got the old body, and on the Freeform land it looked for its floor at height zero.
+ if (!Pale.bBuilt) { Pale.CreatureAsset = S47KindBody::Pale; Pale.Build(M->Web.Get(), TEXT("#root"), TEXT("DevPale")); }
+ return Pale.bBuilt;
+}
+
 void FS47DevEvents::SpawnPale()
 {
  if (!M || !M->Web || !M->Player) return;
- if (!Pale.bBuilt && !Pale.Build(M->Web.Get(), TEXT("#root"), TEXT("DevPale"))) return;
+ if (!BuildPale()) { if (M->UI) M->UI->Toast(TEXT("Developer event: the pale body could not be built here."), 3); return; }
+ Gaits[GaitPale].Left = 0;
  // Four metres ahead where the walker could stand, else as near as there is room; facing you.
- const FVector P = M->Player->Pos;
+ const FVector P = PlayerFeet();
  // Ahead first, then turning further round, where the walker could stand and you can see it.
  const FVector Eye(P.X, P.Y + 1.62, P.Z);
  TOptional<FVector2D> Found; double FoundY = P.Y;
@@ -172,14 +246,18 @@ void FS47DevEvents::SpawnPale()
    const double Yaw = M->Player->Yaw + Turn;
    const FVector2D C(P.X - FMath::Sin(Yaw) * D, P.Z - FMath::Cos(Yaw) * D);
    if (!M->Player->Walkable(C.X, C.Y)) continue;
-   FHitResult Block; FCollisionQueryParams Sight(SCENE_QUERY_STAT(S47DevPaleSight), true);
-   const FVector A = S47Three::ToUE(Eye), B = S47Three::ToUE(C.X, P.Y + 1.4, C.Y);
-   if (M->Web->GetWorld()->LineTraceSingleByChannel(Block, A, B, ECC_Visibility, Sight) && Block.Distance < FVector::Dist(A, B) - 20) continue;
-   // its floor, not a desk or a cabinet: the ground under it within a step of yours
-   FHitResult Floor; FCollisionQueryParams Under(SCENE_QUERY_STAT(S47DevPaleFloor), true);
-   if (!M->Web->GetWorld()->LineTraceSingleByChannel(Floor, S47Three::ToUE(C.X, P.Y + 2.2, C.Y), S47Three::ToUE(C.X, P.Y - 3, C.Y), ECC_Visibility, Under)) continue;
+   // On rolling land its ground can be well above or below yours at this distance, and the trace has to find it.
+   const double Reach = .45 + D * .3;
+   FCollisionQueryParams Under(SCENE_QUERY_STAT(S47DevPaleFloor), true);
+   for (const auto& Part : Pale.All) if (const auto* Own = Part.Get()) Under.AddIgnoredComponent(Own);
+   FHitResult Floor;
+   if (!M->Web->GetWorld()->LineTraceSingleByChannel(Floor, S47Three::ToUE(C.X, P.Y + Reach + 2.2, C.Y), S47Three::ToUE(C.X, P.Y - Reach - 3, C.Y), ECC_Visibility, Under)) continue;
    const double G = S47Three::ToThree(Floor.ImpactPoint).Y;
-   if (FMath::Abs(G - P.Y) > .45) continue;
+   if (FMath::Abs(G - P.Y) > Reach) continue;
+   FHitResult Block; FCollisionQueryParams Sight(SCENE_QUERY_STAT(S47DevPaleSight), true);
+   for (const auto& Part : Pale.All) if (const auto* Own = Part.Get()) Sight.AddIgnoredComponent(Own);
+   const FVector A = S47Three::ToUE(Eye), B = S47Three::ToUE(C.X, G + 1.4, C.Y);
+   if (M->Web->GetWorld()->LineTraceSingleByChannel(Block, A, B, ECC_Visibility, Sight) && Block.Distance < FVector::Dist(A, B) - 20) continue;
    Found = C; FoundY = G;
   }
  if (!Found) { if (M->UI) M->UI->Toast(TEXT("Developer event: no free floor in sight for the body here."), 3); return; }
@@ -187,34 +265,46 @@ void FS47DevEvents::SpawnPale()
  PaleAt = FVector(At.X, FoundY, At.Y);
  PaleYaw = FMath::Atan2(P.Z - At.Y, P.X - At.X);
  PaleLeft = PaleStand; PaleClock = 0;
+ UE_LOG(LogS47DevEvents, Display, TEXT("S47: Pale One stands at %s, feet of the player at %.2f, wearing %s"), *PaleAt.ToCompactString(), P.Y, Pale.Creature.Mesh.IsValid() && Pale.Creature.Mesh->GetSkinnedAsset() ? *Pale.Creature.Mesh->GetSkinnedAsset()->GetName() : TEXT("the old parts"));
  if (M->Audio) M->Audio->Gasp(M->Audio->Spatial(PaleAt + FVector(0, 1.8, 0), 2.f));
 }
 
-void FS47DevEvents::SpawnGait(bool bCrab)
+void FS47DevEvents::SpawnGait(int32 Kind)
 {
  if (!M || !M->Web || !M->Player) return;
- FS47PaleBody& Body=bCrab?CrabBody:TallBody;
- if (!Body.bBuilt){Body.CreatureAsset=bCrab?S47KindBody::Crab:S47KindBody::Tall;if(!bCrab)Body.Style=ES47PaleStyle::Tall;if(!Body.Build(M->Web.Get(),TEXT("#root"),bCrab?TEXT("DevCrab"):TEXT("DevTall")))return;}
+ const bool bCrab=Kind==GaitCrab;
+ FS47PaleBody& Body=GaitBody(Kind);
+ if(Kind==GaitPale){if(!BuildPale()){if(M->UI)M->UI->Toast(TEXT("Developer event: the pale body could not be built here."),3);return;}PaleLeft=0;}
+ else if(!Body.bBuilt){Body.CreatureAsset=bCrab?S47KindBody::Crab:S47KindBody::Tall;if(!bCrab)Body.Style=ES47PaleStyle::Tall;if(!Body.Build(M->Web.Get(),TEXT("#root"),bCrab?TEXT("DevCrab"):TEXT("DevTall"))){if(M->UI)M->UI->Toast(TEXT("Developer event: this body could not be built here."),3);return;}}
  if(!Body.Creature.Ready()){if(M->UI)M->UI->Toast(TEXT("Developer event: this body needs the private skinned model."),3);return;}
- const FVector P=M->Player->Pos;
+ const FVector P=PlayerFeet();
  const FVector Eye(P.X,P.Y+1.62,P.Z);
  for(const double Turn:{0.,.5,-.5,1.,-1.,1.6,-1.6,double(PI)})for(const double D:{16.,11.,7.})
  {
   const double Yaw=M->Player->Yaw+Turn;
   const FVector2D C(P.X-FMath::Sin(Yaw)*D,P.Z-FMath::Cos(Yaw)*D);
+  // The ground out there first: rolling land is metres above or below yours this far off, and the sight is to where it would stand.
+  FCollisionQueryParams Under(SCENE_QUERY_STAT(S47DevGaitGround),true);
+  for(const auto& Part:Body.All)if(const auto* Own=Part.Get())Under.AddIgnoredComponent(Own);
+  FHitResult Ground;
+  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Ground,S47Three::ToUE(C.X,P.Y+12.,C.Y),S47Three::ToUE(C.X,P.Y-12.,C.Y),ECC_Visibility,Under))continue;
+  const double G=S47Three::ToThree(Ground.ImpactPoint).Y;
   FHitResult Block;FCollisionQueryParams Sight(SCENE_QUERY_STAT(S47DevGaitSight),true);
-  const FVector A=S47Three::ToUE(Eye),B=S47Three::ToUE(C.X,P.Y+1.,C.Y);
+  for(const auto& Part:Body.All)if(const auto* Own=Part.Get())Sight.AddIgnoredComponent(Own);
+  const FVector A=S47Three::ToUE(Eye),B=S47Three::ToUE(C.X,G+1.,C.Y);
   if(M->Web->GetWorld()->LineTraceSingleByChannel(Block,A,B,ECC_Visibility,Sight))continue;
-  FGaitTest& T=bCrab?CrabTest:TallTest;
-  T.At=FVector(C.X,P.Y,C.Y);T.Yaw=FMath::Atan2(P.Z-C.Y,P.X-C.X);T.Left=30;T.Clock=0;
+  FGaitTest& T=Gaits[Kind];
+  T.At=FVector(C.X,G,C.Y);T.Yaw=FMath::Atan2(P.Z-C.Y,P.X-C.X);T.Left=30;T.Clock=0;
+  UE_LOG(LogS47DevEvents,Display,TEXT("S47: gait test %d starts %.0f m off at %s, feet of the player at %.2f"),Kind,D,*T.At.ToCompactString(),P.Y);
   return;
  }
  if(M->UI)M->UI->Toast(TEXT("Developer event: no free ground in sight; try outdoors."),3);
 }
 
-void FS47DevEvents::StepGait(bool bCrab,double Dt)
+void FS47DevEvents::StepGait(int32 Kind,double Dt)
 {
- FGaitTest& T=bCrab?CrabTest:TallTest;FS47PaleBody& Body=bCrab?CrabBody:TallBody;
+ const bool bCrab=Kind==GaitCrab;
+ FGaitTest& T=Gaits[Kind];FS47PaleBody& Body=GaitBody(Kind);
  if(T.Left<=0||!Body.bBuilt||!M||!M->Player||!M->Web)return;
  T.Left-=Dt;T.Clock+=Dt;
  const bool bShow=T.Left>0;
@@ -248,7 +338,9 @@ void FS47DevEvents::StepGait(bool bCrab,double Dt)
 void FS47DevEvents::Step(double Dt)
 {
  if (!M) return;
+ if (FreeformLines) FreeformLines->Step(Dt);
  if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevStep(Dt,M->Night->GlimpseIn(true));
+ if (S47FloodProbe::LiveActive()) S47FloodProbe::Step(M,float(Dt));
  const bool bPlay = M->Mode == US47Main::EMode::Play && !M->bPausedByMenu;
  // The shower's own free-play guard: a menu, an open panel or a held story freezes it (time and image).
  const bool bShowerFree = bPlay && !M->ModalOpen() && !(M->Story && M->Story->IsPaused());
@@ -264,7 +356,7 @@ void FS47DevEvents::Step(double Dt)
   }
   if (ShowerNext <= 0) ShowerNext = FS47Sky::SHOWER_GAP_MIN;
  }
- if (bPlay) { StepGait(false,Dt); StepGait(true,Dt); }
+ if (bPlay) for (int32 Kind = 0; Kind < GaitCount; ++Kind) StepGait(Kind,Dt);
  if (PaleLeft > 0)
  {
   if (bPlay) { PaleLeft -= Dt; PaleClock += Dt; }
@@ -279,6 +371,7 @@ void FS47DevEvents::Step(double Dt)
 // picture of the body and of each fog, then exit. Not a judgement of how they look.
 void FS47DevEvents::ControlTest(double Dt)
 {
+ if (ProofTest(Dt)) return;
  if (!bTestInit) { bTestInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsContract="), TestDir); }
  if (TestDir.IsEmpty() || bTestDone || !M || M->Mode != US47Main::EMode::Play) return;
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
@@ -402,7 +495,7 @@ void FS47DevEvents::ControlTest(double Dt)
   ++TestStep; return;
  }
  TArray<const FEvent*> Events;
- for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() || Event.Group==OnlyGroup) Events.Add(&Event);
+ for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() ? !Event.bFreeform : Event.Group==OnlyGroup) Events.Add(&Event);
  TestT += Dt;
  // Measure simultaneous actual components over the short random shower window rather
  // than demand a particular density on one arbitrarily selected frame.
@@ -460,10 +553,258 @@ void FS47DevEvents::ControlTest(double Dt)
 
 void FS47DevEvents::Stop()
 {
+ if (FreeformLines) FreeformLines->Stop();
  if (M && M->SkyVisitors) M->SkyVisitors->DevStage(0);
+ S47FloodProbe::StopLive(M);
  if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();
  if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
  if (M && M->Life && M->Life->Sky) { M->Life->Sky->ShowerClear(); M->Life->Sky->bShowerHeld = false; }
  ShowerLeft = 0; PaleLeft = 0; GS47DevFogDensity = -1.f;
+ if (M && M->SkyVisitors) M->SkyVisitors->DevFormationStop();
+ for (FGaitTest& T : Gaits) T.Left = 0;
+ // Hidden as a whole, whatever each was last doing: a walk left half done must not stand in the next night.
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
+ TallBody.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
+ CrabBody.ApplyCrab(false, FVector::ZeroVector, 0, 0, 0, 0, false);
+}
+
+bool FS47DevEvents::ProofCheck(bool bGood, const FString& What)
+{
+ ++ProofChecks;
+ UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof %s: %s"), bGood ? TEXT("PASS") : TEXT("FAIL"), *What);
+ if (!bGood) ProofFinish(false, What);
+ return bGood;
+}
+void FS47DevEvents::ProofFinish(bool bGood, const FString& Why)
+{
+ if (bProofDone) return; bProofDone = true;
+ UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof %s COMPLETE after %d checks: %s"), bGood ? TEXT("PASS") : TEXT("FAIL"), ProofChecks, *Why);
+ FPlatformMisc::RequestExitWithStatus(false, bGood ? 0 : 1);
+}
+bool FS47DevEvents::ProofUse(const FString& Label)
+{
+ // The menu's own entry, found by the label the player reads.
+ const FEvent* Event = List.FindByPredicate([&](const FEvent& E) { return E.Label == Label; });
+ UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof menu: %s"), *Label);
+ if (!ProofCheck(Event && Event->Fn, FString::Printf(TEXT("the menu has \"%s\""), *Label))) return false;
+ Event->Fn(); return true;
+}
+void FS47DevEvents::ProofAim(const FVector& At)
+{
+ const FVector D = At - FVector(M->Player->Pos.X, M->Player->FloorY + M->Player->Eye, M->Player->Pos.Z);
+ M->Player->Yaw = FMath::Atan2(-D.X, -D.Z); M->Player->Pitch = FMath::Atan2(D.Y, FVector2D(D.X, D.Z).Size());
+}
+// Run in Freeform on a /tmp profile, never on Tom's: the night's own schedule first, the collision with another event, then each
+// entry through the menu's own function from where a player stands outdoors, reading back what is drawn. How it looks is for the pictures.
+bool FS47DevEvents::ProofTest(double Dt)
+{
+ if (!bProofInit)
+ {
+  bProofInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevProof="), ProofDir);
+  FString User; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), User);
+  if (!ProofDir.IsEmpty() && (!ProofDir.StartsWith(TEXT("/tmp/")) || !User.StartsWith(TEXT("/tmp/")))) { UE_LOG(LogS47DevEvents, Error, TEXT("S47: dev proof needs a /tmp directory and profile")); ProofDir.Empty(); FPlatformMisc::RequestExitWithStatus(false, 1); }
+ }
+ if (ProofDir.IsEmpty()) return false;
+ if (bProofDone || !M || M->Mode != US47Main::EMode::Play || !M->Freeform || !M->Freeform->Active() || !M->SkyVisitors || !M->Player || !M->World || !M->Web) return true;
+ auto& F = *M->Freeform; auto& Sky = *M->SkyVisitors;
+ ProofT += Dt;
+ if (ProofT > 420) { ProofFinish(false, TEXT("timed out")); return true; }
+ if (!ProofShot.IsEmpty()) { FScreenshotRequest::RequestScreenshot(ProofDir / (ProofShot + TEXT(".png")), false, false); UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof picture %s"), *ProofShot); ProofShot.Empty(); return true; }
+ const double Since = ProofT - ProofAt;
+ auto Go = [&](int32 Next) { ProofStage = Next; ProofAt = ProofT; };
+ auto Hour = [&] { return FMath::Fmod(F.Clock(), 86400.) / 3600.; };
+ auto ToHour = [&](double Want) { return F.TestAdvance(FMath::Fmod(Want * 3600. - FMath::Fmod(F.Clock(), 86400.) + 86400., 86400.)); };
+ auto AimAtShown = [&]() -> int32 { const auto Shown = Sky.ShownPoints(); FVector Mean = FVector::ZeroVector; for (const FVector& P : Shown) Mean += P; if (Shown.Num()) { ProofMean = Mean / Shown.Num(); ProofAim(ProofMean); } return Shown.Num(); };
+ static const TCHAR* const Forms[5] = {TEXT("V"), TEXT("line"), TEXT("triangle"), TEXT("circle"), TEXT("scattered")};
+ switch (ProofStage)
+ {
+ case 0:
+  if (Since < 4) return true;
+  if (!ProofCheck(M->Flow && M->Flow->bDevRun && M->Flow->CaseId == 0, TEXT("isolated developer Freeform case"))) return true;
+  M->UI->Close(true); F.TestEndFirstShift(); M->World->Enter(TEXT("saro")); M->Player->Place(7, 19, UE_DOUBLE_PI); M->Player->Pitch = 0;
+  // Night two, a little before the first pass the schedule offers. Nothing is asked of the sky: it comes or it does not.
+  if (!ProofCheck(F.TestAdvance(86400. + 21.3 * 3600. - FMath::Fmod(F.Clock(), 86400.)), TEXT("clock moved to night two"))) return true;
+  if (F.Director) F.Director->CancelForTest();
+  Go(1); return true;
+ case 1:
+ {
+  const auto& Form = Sky.FormationData();
+  if (Form.bActive && !Form.bDev)
+  {
+   if (F.Director && !ProofCheck(!F.Director->Busy() || Form.LeaveAt >= 0, TEXT("the natural pass did not start on top of another event"))) return true;
+   if (!ProofCheck(Hour() >= 21.5 && (Form.Form == ES47SkyForm::Line || Form.Form == ES47SkyForm::Scatter), FString::Printf(TEXT("first pass of the evening from the schedule at %.2f h: %s, %d lights, %s"), Hour(), FS47SkyFormationState::Name(Form.Form), Form.Lights, Form.bFast ? TEXT("fast") : TEXT("slow")))) return true;
+   Go(2); return true;
+  }
+  // Waiting at the clock's own rate would take minutes: up to its hour once, and from there the schedule's own trigger decides.
+  if (Form.NextClock >= 0 && F.Clock() < Form.NextClock - 30) F.TestAdvance(Form.NextClock - 30 - F.Clock());
+  if (F.Director && F.Director->Busy()) F.Director->CancelForTest();
+  if (Since > 40) { ProofFinish(false, FString::Printf(TEXT("no natural pass; next %.0f, clock %.0f"), Form.NextClock, F.Clock())); return true; }
+  return true;
+ }
+ case 2:
+  if (Since < 6) return true;
+  {
+   // The night's own stay behind the weather, a developer's do not.
+   const int32 N = AimAtShown(); const auto& Form = Sky.FormationData();
+   const bool bCloud = !M->Web->CloudSightClear(M->Player->EyeUE(), S47Three::ToUE(FS47SkyVisitors::WorldPosition(Form.MapPosition(0), M->World->Area)));
+   if (!ProofCheck(N == Form.Lights || bCloud, FString::Printf(TEXT("%d of the natural pass's %d lights are drawn, high at %s, cloud %d"), N, Form.Lights, *ProofMean.ToCompactString(), bCloud ? 1 : 0))) return true;
+  }
+  Go(3); return true;
+ case 3:
+  if (Since < .4) return true;
+  ProofShot = TEXT("natural-first-pass"); Go(4); return true;
+ case 4:
+  if (Since < .3) return true;
+  // Something else begins: they go, and do not stand over it.
+  if (!ProofCheck(F.Director && F.Director->Force(TEXT("response_lights")), TEXT("another event starts under the pass"))) return true;
+  Go(5); return true;
+ case 5:
+  if (Since < 2.2) return true;
+  if (!ProofCheck(!Sky.FormationData().bActive && Sky.ShownPoints().IsEmpty(), TEXT("the pass left within two seconds of it"))) return true;
+  // And at its next hour, while that event is still going, none comes.
+  F.TestAdvance(FMath::Max(0., Sky.FormationData().NextClock + 5 - F.Clock()));
+  Go(6); return true;
+ case 6:
+  if (Since < 1.5) return true;
+  if (!ProofCheck(F.Director->Busy() && !Sky.FormationData().bActive && Sky.FormationData().NextClock >= 0, FString::Printf(TEXT("%.2f h, its hour: held back while the event is on"), Hour()))) return true;
+  F.Director->CancelForTest(); Go(7); return true;
+ case 7:
+  if (Sky.FormationData().bActive) { if (!ProofCheck(!Sky.FormationData().bDev, FString::Printf(TEXT("once it is over the waiting pass comes, %s"), FS47SkyFormationState::Name(Sky.FormationData().Form)))) return true; Go(8); return true; }
+  if (F.Director->Busy()) F.Director->CancelForTest();
+  if (Since > 20) { ProofFinish(false, TEXT("the waiting pass never came")); return true; }
+  return true;
+ case 8:
+  // Each menu entry from a standing start, day or night: first the stage previews that showed nothing in Freeform.
+  ToHour(23.); Sky.TestFormationQuiet(F.Clock()); ProofIndex = 1; M->Player->Place(7, 19, UE_DOUBLE_PI); M->Player->Pitch = .25;
+  if (F.Director && F.Director->Busy()) F.Director->CancelForTest();
+  Go(9); return true;
+ case 9:
+  if (Since < .3) return true;
+  if (F.Director && F.Director->Busy()) F.Director->CancelForTest();
+  if (!ProofUse(FString::Printf(TEXT("Preview sky lights, stage %d"), ProofIndex))) return true;
+  Go(10); return true;
+ case 10:
+  if (Since < 3.5) return true;
+  {
+   const int32 N = Sky.ShownPoints().Num(), Want = FS47SkyVisitorState::Count(ProofIndex);
+   if (!ProofCheck(N == Want, FString::Printf(TEXT("preview stage %d draws %d of %d lights in Freeform"), ProofIndex, N, Want))) return true;
+   AimAtShown();
+   // In the sky, not under it, and in front of whoever asked when the camera has not moved.
+   const FS47Cam Cam = FS47Cam::Of(M->Player, 30000); const FVector P = Cam.Project(ProofMean);
+   if (!ProofCheck(ProofMean.Y > M->Player->FloorY + 100 && P.Z < 1, FString::Printf(TEXT("stage %d is high up, mean at %s"), ProofIndex, *ProofMean.ToCompactString()))) return true;
+  }
+  Go(11); return true;
+ case 11:
+  if (Since < .4) return true;
+  ProofShot = FString::Printf(TEXT("preview-stage-%d"), ProofIndex);
+  if (++ProofIndex > 5) { ProofIndex = 0; Go(12); } else Go(9);
+  return true;
+ case 12:
+  if (Since < .2) return true;
+  if (!ProofUse(TEXT("Stop sky preview"))) return true;
+  Go(13); return true;
+ case 13:
+  if (Since < .4) return true;
+  if (!ProofCheck(Sky.ShownPoints().IsEmpty(), TEXT("stop leaves nothing in the sky"))) return true;
+  M->Player->Pitch = .1; Go(14); return true;
+ case 14:
+  if (F.Director && F.Director->Busy()) F.Director->CancelForTest();
+  if (!ProofUse(FString::Printf(TEXT("Formation: %s"), Forms[ProofIndex]))) return true;
+  Go(15); return true;
+ case 15:
+  if (Since < 4) return true;
+  {
+   const auto& Form = Sky.FormationData(); const int32 N = Sky.ShownPoints().Num();
+   if (!ProofCheck(Form.bActive && Form.bDev && int32(Form.Form) == ProofIndex && N == Form.Lights, FString::Printf(TEXT("formation %s draws %d of %d lights"), Forms[ProofIndex], N, Form.Lights))) return true;
+   // Asked for with the camera where it was: the shape's middle is in the picture before anything turns to it.
+   FVector Mean = FVector::ZeroVector; for (const FVector& P : Sky.ShownPoints()) Mean += P; Mean /= FMath::Max(1, N);
+   const FVector Seen = FS47Cam::Of(M->Player, 30000).Project(Mean);
+   if (!ProofCheck(Seen.Z < 1 && FMath::Abs(Seen.X) < 1 && FMath::Abs(Seen.Y) < 1, FString::Printf(TEXT("%s is in view where the player was looking, at %.2f %.2f"), Forms[ProofIndex], Seen.X, Seen.Y))) return true;
+  }
+  ProofShot = FString::Printf(TEXT("formation-%s"), Forms[ProofIndex]); Go(16); return true;
+ case 16:
+  if (Since < .3) return true;
+  if (++ProofIndex < 5) { Go(14); return true; }
+  ProofIndex = 0; Go(17); return true;
+ case 17:
+  // The pace entry, as a person cycles it, and a fast pass that really crosses.
+  if (!ProofUse(TEXT("Pace: slow")) ) return true;
+  M->UI->Close(true);
+  if (!ProofUse(TEXT("Formation: V"))) return true;
+  ProofMean = FS47SkyVisitors::WorldPosition(Sky.FormationData().MapPosition(0), M->World->Area); Go(18); return true;
+ case 18:
+  if (Since < 4) return true;
+  {
+   const auto& Form = Sky.FormationData(); const auto Shown = Sky.ShownPoints();
+   const double Moved = Shown.Num() ? FVector::Dist(Shown[0], ProofMean) : 0;
+   if (!ProofCheck(Form.bFast && Shown.Num() == Form.Lights && Moved > 1000, FString::Printf(TEXT("fast V: %.0f m in the first four seconds"), Moved))) return true;
+  }
+  if (!ProofUse(TEXT("Pace: fast"))) return true;
+  M->UI->Close(true);
+  if (!ProofUse(TEXT("Formation: line"))) return true;
+  Sky.TestFormationAge(Sky.FormationData().Seconds() * .6 - .5); Go(19); return true;
+ case 19:
+  if (Since < 2.2) return true;
+  {
+   const auto& Form = Sky.FormationData(); const int32 N = Sky.ShownPoints().Num();
+   if (!ProofCheck(Form.bVanish && N < Form.Lights, FString::Printf(TEXT("going out: %d of %d left, one after another"), N, Form.Lights))) return true;
+  }
+  Go(20); return true;
+ case 20:
+  if (Since < 3.) return true;
+  if (!ProofCheck(!Sky.FormationData().bActive && Sky.ShownPoints().IsEmpty(), TEXT("and the pass is over, nothing left in the sky"))) return true;
+  // Bodies, by day so the pictures say something. First where the ground is flat, then out on the land: the relief is what broke them.
+  Stop(); FormationPace = 0; ToHour(12.); M->World->Enter(TEXT("saro")); M->Player->Place(7, 19, UE_DOUBLE_PI); M->Player->Pitch = -.05;
+  ProofIndex = 0; Go(21); return true;
+ case 21:
+ {
+  if (Since < 1.5) return true;
+  // Round two: out on the pasture, the highest ground difference from zero near the base.
+  if (ProofIndex == 4) { const FVector C = F.FarmSite ? F.FarmSite->Centre() : FVector(60, 0, 240); M->Player->Place(C.X + 30, C.Z + 30, 0); M->Player->Pitch = -.05; }
+  UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof ground: player at %.1f %.1f, Pos.Y %.2f, FloorY %.2f"), M->Player->Pos.X, M->Player->Pos.Z, M->Player->Pos.Y, M->Player->FloorY);
+  static const TCHAR* const Bodies[4] = {TEXT("Pale One, here"), TEXT("Pale One: walks up from afar"), TEXT("Tall one: walks up from afar"), TEXT("Crab: folds down and crawls up")};
+  if (ProofIndex < 8)
+  {
+   if (F.Director && F.Director->Busy()) F.Director->CancelForTest();
+   if (!ProofUse(Bodies[ProofIndex % 4])) return true;
+  }
+  else if (!ProofUse(TEXT("Stand for 8 seconds"))) return true;
+  Go(22); return true;
+ }
+ case 22:
+  {
+   const int32 Kind = ProofIndex % 4;
+   FString Name; FVector Feet = FVector::ZeroVector; bool bDrawn = false; FString Worn;
+   const auto WornBy = [](const FS47PaleBody& B) { const auto* C = B.Creature.Mesh.Get(); return C && C->GetSkinnedAsset() ? C->GetSkinnedAsset()->GetName() : FString(TEXT("none")); };
+   if (ProofIndex >= 8)
+   {
+    const auto Views = M->Night && M->Night->Glimpses ? M->Night->Glimpses->Individuals() : TArray<FS47RoswellGroup::FView>();
+    Name = TEXT("Roswell"); Worn = TEXT("SK_Tripo_Roswell2");
+    if (!Views.IsEmpty()) { Feet = Views[0].Pos; bDrawn = Views[0].bRendered; }
+   }
+   else if (Kind == 0) { Name = TEXT("Pale One"); Feet = PaleAt; bDrawn = PaleLeft > 0 && Pale.Rendered(); Worn = WornBy(Pale); }
+   else
+   {
+    const int32 Gait = Kind == 1 ? int32(GaitPale) : Kind == 2 ? int32(GaitTall) : int32(GaitCrab);
+    Name = Kind == 1 ? TEXT("Pale One walking") : Kind == 2 ? TEXT("Tall one") : TEXT("Crab");
+    Feet = Gaits[Gait].At; bDrawn = Gaits[Gait].Left > 0 && GaitBody(Gait).Rendered(); Worn = WornBy(GaitBody(Gait));
+   }
+   // As anyone would, turned to it; drawn is what the renderer says it has drawn, which needs it in view.
+   if (!Feet.IsZero()) ProofAim(Feet + FVector(0, 1.1, 0));
+   if (Since < 3.) return true;
+   if (!ProofCheck(bDrawn, FString::Printf(TEXT("%s drawn at %s, wearing %s, player's feet at %.2f"), *Name, *Feet.ToCompactString(), *Worn, M->Player->FloorY))) return true;
+   if (ProofIndex < 8 && !ProofCheck(Kind == 2 ? Worn == TEXT("SK_Tripo_TallOne") : Worn == TEXT("SK_Tripo_PaleOne"), FString::Printf(TEXT("%s wears its own model"), *Name))) return true;
+   FHitResult Under; FCollisionQueryParams Q(SCENE_QUERY_STAT(S47DevProofFeet), true);
+   const bool bHit = M->Web->GetWorld()->LineTraceSingleByChannel(Under, S47Three::ToUE(Feet.X, Feet.Y + 1., Feet.Z), S47Three::ToUE(Feet.X, Feet.Y - 3., Feet.Z), ECC_Visibility, Q);
+   UE_LOG(LogS47DevEvents, Display, TEXT("S47: dev proof feet: %s %.2f m above what the trace finds under it"), *Name, bHit ? Feet.Y - S47Three::ToThree(Under.ImpactPoint).Y : -999.);
+  }
+  ProofShot = FString::Printf(TEXT("body-%02d"), ProofIndex); Go(23); return true;
+ case 23:
+  if (Since < .3) return true;
+  Stop();
+  if (++ProofIndex <= 8) { Go(21); return true; }
+  ProofFinish(true, TEXT("natural schedule, collision, previews, every formation and pace, every body outdoors; how they look is for the pictures"));
+  return true;
+ default: return true;
+ }
 }

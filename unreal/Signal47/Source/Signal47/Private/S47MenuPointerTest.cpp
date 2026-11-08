@@ -1,6 +1,7 @@
 #include "S47MenuPointerTest.h"
 #include "S47CreatureClips.h"
 #include "S47ReliefProbe.h"
+#include "S47FloodProbe.h"
 #include "S47Main.h"
 #include "S47ArrayWear.h"
 #include "S47CalicheAccess.h"
@@ -1729,6 +1730,7 @@ namespace
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
    if(Stage==720)return S47ReliefProbe::Step(M,Dt);
+   if(Stage==730)return S47FloodProbe::Step(M,Dt);
    if(Elapsed-StageAt>45) return Fail(TEXT("menu click did not reach its expected next screen"));
    if(Stage!=77&&Stage!=212&&!(Stage>=400&&Stage<530)&&!(Stage>=540&&Stage<600&&Stage!=599)&&Elapsed-StageAt<1) return true;
    if(Stage>=400&&Stage<500)return StepDread(M);
@@ -1776,6 +1778,14 @@ namespace
     {
      M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
      S47ReliefProbe::Begin(M);Stage=720;StageAt=Elapsed;return true;
+    }
+    // -S47MenuPointerFloodIndoors: the massive light outside, from inside four rooms (S47FloodProbe.h).
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFloodIndoors")))
+    {
+     M->Flow->bDevRun=true;if(M->Freeform->Director)M->Freeform->Director->Stop();
+     if(!M->Freeform->TestAdvance(13.*3600.))return Fail(TEXT("the flood test needs the night"));
+     FString OnlyRoom;FParse::Value(FCommandLine::Get(),TEXT("S47FloodRoom="),OnlyRoom);
+     S47FloodProbe::BeginTest(M,OnlyRoom);Stage=730;StageAt=Elapsed;return true;
     }
     if(FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerEyes")))
     {
