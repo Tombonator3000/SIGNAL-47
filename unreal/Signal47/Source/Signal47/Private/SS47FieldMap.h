@@ -86,14 +86,15 @@ private:
 	float DragMoved = 0;
 	// What the areas have built, read when the sheet is made: black rectangles, road-local.
 	struct FBlock { FBox2D Box; bool bChurch = false; };
-	TArray<FBlock> Blocks;
-	TArray<FVector2D> Dishes;
-	TArray<TPair<FVector2D, FVector2D>> Paths; // the array's walks, end to end
+	mutable TArray<FBlock> Blocks;
+	mutable TArray<FVector2D> Dishes;
+	mutable TArray<TPair<FVector2D, FVector2D>> Paths; // the array's walks, end to end
 	struct FFeature { FVector2D At; FString Kind; };
-	TArray<FFeature> Features; // windmill, tank, mine, shack, feeder
-	FVector2D SaroAt = FVector2D(33, -300);
-	double SaroZ = -300;
-	void Survey();
+	mutable TArray<FFeature> Features; // windmill, tank, mine, shack, feeder
+	mutable FVector2D SaroAt = FVector2D(33, -300);
+	mutable double SaroZ = -300;
+	// Const: it only fills the drawing caches above, called from painting when the world has changed.
+	void Survey() const;
 	void ZoomAbout(double Factor, const FVector2D& Page);
 	void Clamp();
 	void Note(const FVector2D& Road);

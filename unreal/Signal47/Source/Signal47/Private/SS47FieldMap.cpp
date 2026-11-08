@@ -614,7 +614,7 @@ FCursorReply SS47FieldMap::OnCursorQuery(const FGeometry& G, const FPointerEvent
 	return FCursorReply::Cursor(bDrag ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand);
 }
 
-void SS47FieldMap::Survey()
+void SS47FieldMap::Survey() const
 {
 	Blocks.Reset(); Dishes.Reset(); Paths.Reset(); Features.Reset();
 	double Sx = 0, Sz = 0;
