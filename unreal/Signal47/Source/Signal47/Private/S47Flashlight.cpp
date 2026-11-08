@@ -57,7 +57,7 @@ namespace
 		FTexture2DMipMap* Mip = new FTexture2DMipMap(W, H, 1);
 		Data->Mips.Add(Mip);
 		Mip->BulkData.Lock(LOCK_READ_WRITE);
-		float* Px = static_cast<float*>(Mip->BulkData.Realloc(int64(W) * H * sizeof(float)));
+		float* Px = reinterpret_cast<float*>(Mip->BulkData.Realloc(int64(W) * H * sizeof(float)));
 		for (int32 Y = 0; Y < H; ++Y)
 			for (int32 X = 0; X < W; ++X)
 				Px[Y * W + X] = TorchProfile((X + .5f) / W * 180.f, ((Y + .5f) / H - .5f) * 2.f * UE_PI);
