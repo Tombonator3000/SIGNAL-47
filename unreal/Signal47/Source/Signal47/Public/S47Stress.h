@@ -24,6 +24,8 @@ struct FS47StressIn
 	double SinceTaken = 1e9;
 	/** Indoors at SARO: the stress falls faster here. */
 	bool bSafe = false;
+	/** The night has gone quiet round the player (FS47Soundscape: something is coming): a small unease of its own. */
+	bool bHush = false;
 };
 
 class SIGNAL47_API FS47Stress
@@ -35,6 +37,8 @@ public:
 	void Step(double Dt);
 	/** A new night, the title, a save opened: calm again. */
 	void Reset();
+	/** A start, at once (a covey going up from under the feet in the dark, FS47Animals): at least this much, falling as usual. */
+	void Startle(double Jolt) { S = FMath::Max(S, FMath::Clamp(Jolt, 0.0, 1.0)); }
 
 	/** 0 to 1. */
 	double Level() const { return S; }

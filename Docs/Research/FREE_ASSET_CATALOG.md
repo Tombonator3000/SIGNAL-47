@@ -87,3 +87,11 @@ Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og
 | Motell | [Motel, YD92](https://sketchfab.com/3d-models/none-ca86a44635054d9aa43f91b49694c3cc) | 55 292 | CC Attribution |
 | Kirkeinteriør | [Old church modeling - Interior Scene, aurelien_martel](https://sketchfab.com/3d-models/none-eb6cf543aa7d45e3acee49887ae3135c) | 306 300 | CC Attribution |
 | Bensinstasjon | [Gas station, Elbolilloduro](https://sketchfab.com/3d-models/none-eeb913b90b4344ddbd7852f82a7ef160) | 51 967 | CC Attribution |
+
+## Tillegg 8. november 2026: nattens lyder og dyrene
+
+**I bruk, CC0 1.0, i Git:** tjue lydklipp fra tolv Freesound-opptak, alle merket CC0 på egen side. Kildene er coyoter i Santa Fe (buzzatsea 711262), dkaufman 256533 og darcydunes 833772, tre fjerne togfløyter (FunWithSound 591873 og 593082, TRP 574424), en vindmølle i Arizona (felix.blume 131924), en gammel metallmølle (LiftPizzas 611149), vind i luftledninger (bruno.auzet 829000, felix.blume 147599) og duer og en flokk byduer som letter (TRP 574656 og 616623). Klippene, utsnittene og metoden står i [`unreal/Signal47/Tools/nightsounds/KILDER.md`](../../unreal/Signal47/Tools/nightsounds/KILDER.md). Spillet leser dem fra `Content/Audio/Raw/night/`.
+
+**I bruk, CC0 1.0, i Git via LFS:** Wolf og Husky av Quaternius fra Poly Pizza, riggede og animerte. De brukes som coyoten og hundene, farget og skalert i spillet. Se [`unreal/Signal47/Tools/animals/KILDER.md`](../../unreal/Signal47/Tools/animals/KILDER.md). Importert til `/Game/Free/Animals`.
+
+**Vurdert, ikke brukt:** Coyote og Mourning dove fra Poly by Google (CC-BY 3.0, statiske), Pigeon fra Quaternius (CC0, tegneseriefigur uten flygeklipp). Ingen gratis CC0-vaktel med flygeklipp ble funnet.

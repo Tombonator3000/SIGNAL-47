@@ -1928,7 +1928,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				case FS47FreeformSession::EJobStage::Integrating: Why = TEXT("The recording keeps valid seconds. Automatic reference scans move the dishes between samples; wait for them to settle."); break;
 				case FS47FreeformSession::EJobStage::Chart: Why = TEXT("The measurement is finished. Collect its paper original before registering the result."); break;
 				case FS47FreeformSession::EJobStage::Recorded: Why = J.bAnomaly ? TEXT("The original is already retained. Complete the independent comparison requested by this work order.") : TEXT("The original is already retained. A routine result needs no comparison; register it for payment."); break;
-				case FS47FreeformSession::EJobStage::Registered: Why = TEXT("Registration is complete. Collect the labelled paper packet before filing it."); break;
+				case FS47FreeformSession::EJobStage::Registered: Why = TEXT("Registration is complete. Collect the labeled paper packet before filing it."); break;
 				default: Why = TEXT("The packet is already collected. Place it in the records-room binder to finish this order."); break;
 				}
 				W.Hints = { Why, TEXT("Find this station: ") + W.Location, W.NextAction };
@@ -2014,7 +2014,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			Self->OpenNotebook();
 		};
 		X.GuideEntries.Add({ TEXT("guide:observation"), TEXT("An observing shift"), TEXT("OPS assigns work and registers retained results. The tracking PC points the array; requested coordinates and actual encoders must agree. The receiver tunes frequency, gain and bandwidth and records the signal. Wait for the recording to finish, then collect its original at the printer.\n\nRoutine results return to OPS for payment. If the work order asks for comparison, retain the original and complete the requested control or measurement first. The audio desk compares recorded material; a live signal alone is not a completed review. Register the reviewed packet at OPS, collect it from the printer and file it in the archive binder.") });
-		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench: load the tank, transfer to fixer, then collect the print. A qualifying developed incident photograph earns $20 documentation credit when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs or missing image files do not qualify for a claim.\n\nA photograph records what was visible. Payment acknowledges documentation and does not establish an extraordinary cause."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
+		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench: load the tank, transfer to fixer, then collect the print. A qualifying developed incident photograph earns $20 documentation credit when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs do not qualify."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
 		else X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Collect the field camera"), TEXT("The SARO field camera is on the dry archive bench in the PHOTO LAB, in the service yard east of the control room. Follow the PHOTOGRAPHIC LAB sign, enter the lab and look at the south end of the bench along its east wall. Approach the camera and use Collect field camera. It then appears in Kit.\n\nExpose a photograph with the camera, process it at the wet bench in this same lab, then take a qualifying developed incident photograph to the physical OPS terminal for registration.") });
 		X.GuideEntries.Add({ TEXT("guide:transport"), TEXT("Supplies and physical cargo"), TEXT("The service truck starts on its pad outside the SERVICE YARD exit. Check Kit for its current area before setting out. Caliche and its supply counter inside the gas station are south of SARO; the map shows the route and opening hours. Take the truck for the supply trip.\n\nBuy several items at the counter without leaving the shop menu. Paid items are packed together in one parcel beside the counter; collect it when your order is ready. A parcel at the shop, in your hands, in the truck or set down outside is not delivered stock. Carry it to the truck and secure it in the cargo rack. Back at SARO, unload and deliver it at GARAGE RECEIVING. Kit shows the current parcel separately from usable stock. Fuel in the vehicle and generator is separate from spare cans.") });
 		X.GuideEntries.Add({ TEXT("guide:service"), TEXT("Power and array service"), TEXT("Read the status and physical service labels before replacing anything. Backup power can keep the station operating while the feeder is repaired. Repairs require the relevant physical panel, parts and tests. The service bay lists retained supplies and workbench progress. If a feeder fault leaves you without a fuse or purchasing power, check the emergency fuse requisition at Caliche's indoor supply counter.") });
@@ -2130,16 +2130,16 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	const TArray<FString> Town = TownSeen();
 	const bool bCh1 = M->IsFreeform() || ChapterNo(S) >= 1;
 	TArray<FS47KitItem> Kit;
-	Kit.Add({ TEXT("Notebook"), TEXT("Tab opens it. Now, Knowledge, Documents, Kit, Map and Field Guide."), FString(), TEXT("notebook"), FString() });
+	Kit.Add({ TEXT("Notebook"), FString::Printf(TEXT("%s opens it. Now, Knowledge, Documents, Kit, Map and Field Guide."), *S47Keys::Said(TEXT("notebook"))), FString(), TEXT("notebook"), FString() });
 	if (bCh1 && !M->IsFreeform()) Kit.Add({ TEXT("SARO jacket"), TEXT("From the hook by the east door. The reflective band across the back."), TEXT("On"), TEXT("jacket"), FString() });
 	if (HaveCamera && HaveCamera())
 	{
-		Kit.Add({ TEXT("Field camera"), TEXT("The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album."),
+		Kit.Add({ TEXT("Field camera"), FString::Printf(TEXT("The SARO field camera. %s raises it, %s takes the picture: the case frames on sheet film, anything else out of the instant back, into the album."), *S47Keys::Said(TEXT("camera")), *S47Keys::Said(TEXT("shutter"))),
 			FString::Printf(TEXT("%d case frames%s"), Frames, RollText ? *(TEXT(", ") + RollText()) : TEXT("")), TEXT("camera"), FString() });
 	}
 	if (M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)
 	{
-		Kit.Add({ TEXT("Flashlight"), TEXT("From the passenger seat of the truck. F switches it."), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
+		Kit.Add({ TEXT("Flashlight"), FString::Printf(TEXT("From the passenger seat of the truck. %s switches it."), *S47Keys::Said(TEXT("light"))), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
 	}
 	if (bCh1) Kit.Add({ TEXT("Truck keys"), M->IsFreeform() ? TEXT("The service truck starts on the pad outside the SERVICE YARD exit. The keys stay in it. Its current area is recorded below.") : TEXT("The service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SERVICE") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Documents keeps the originals; Knowledge links retained evidence."), FString::FromInt(Papers), TEXT("papers"), FString() });
@@ -2147,7 +2147,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	// (story/archivePhone.ts: from the fire drawer behind the STATION 01 box)
 	if (Town.Contains(TEXT("arc:reel")))
 	{
-		Kit.Add({ TEXT("Reel 047"), TEXT("A reel of tape in a grey box, from the fire drawer behind the STATION 01 box. NOT FOR CATALOGUE, in pencil. It fits the deck on the signal processor."),
+		Kit.Add({ TEXT("Reel 047"), TEXT("A reel of tape in a gray box, from the fire drawer behind the STATION 01 box. NOT FOR CATALOGUE, in pencil. It fits the deck on the signal processor."),
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
 	// WALKIE-USE-20261108: the set in the player's own hand, and its channel

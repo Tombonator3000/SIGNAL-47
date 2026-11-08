@@ -138,7 +138,7 @@ bool S47AreaMap::LinesMeet(const FS47MapView& V)
 TArray<FString> S47AreaMap::Description(const FS47MapView& V)
 {
 	// areaMapDescription: the same facts as the pencil labels
-	TArray<FString> T = { TEXT("A pencil sketch of the area round SARO, from memory."), TEXT("The highway."), TEXT("SARO. 27 dishes, azimuth 026."),
+	TArray<FString> T = { TEXT("A pencil sketch of the area around SARO, from memory."), TEXT("The highway."), TEXT("SARO. 27 dishes, azimuth 026."),
 		(US47Main::Get(nullptr) && US47Main::Get(nullptr)->IsFreeform() ? TEXT("Sierra Motor Court.") : TEXT("Sierra Motor Court. Nora, room 6.")), TEXT("Mesa Diner. Open all night."), TEXT("Caliche, population 412.") };
 	if (US47Main::Get(nullptr)->IsFreeform())
 	{
@@ -146,7 +146,7 @@ TArray<FString> S47AreaMap::Description(const FS47MapView& V)
 		T.Add(TEXT("Caliche gas station: west side of the highway, just south of Mesa Diner. Enter the store and use the counter for parts and donor controllers, 08:00-20:00; essential emergency requisitions are available after hours."));
 		T.Add(TEXT("Drive south from SARO past the motel to Caliche: over a mile. Take the service truck, which starts outside SERVICE YARD. Return north with the parcel secured in the truck."));
 		T.Add(TEXT("The Alderete place: a farm on the east side of the highway, south of SARO."));
-		T.Add(TEXT("Caliche also has the Plaza cinema, the feed store and the church."));
+		T.Add(TEXT("Caliche also has the Plaza movie theater, the feed store and the church."));
 	}
 	if (V.bStation) T.Add(TEXT("STATION 01. 1947."));
 	T.Add(V.bOldRoad ? TEXT("The old road to Roswell.") : TEXT("The old road is closed."));
@@ -185,7 +185,7 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 		P.Stroke1({ FVector2f(70.f, 0.f), FVector2f(70.f, H) }, 1.5f, Margin);
 	}
 	P.Alpha = 0.9f;
-	P.Text(TEXT("the area round SARO, from memory"), 96, 50, 32);
+	P.Text(TEXT("the area around SARO, from memory"), 96, 50, 32);
 	// north
 	P.Line({ { 1120, 740 }, { 1120, 670 } }); P.Line({ { 1110, 690 }, { 1120, 670 }, { 1130, 690 } }); P.Text(TEXT("N"), 1135, 700, 30);
 	// the highway, two lines
@@ -233,7 +233,7 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 		P.Box(446, 240, 470, 256);
 		P.Line({ { HX + 12, 248 }, { 446, 248 } }, 1.4f);
 		P.Text(TEXT("Alderete place"), 476, 276, 24);
-		P.Text(TEXT("Plaza cinema, feed store, church"), 226, 760, 20);
+		P.Text(TEXT("the Plaza, feed store, church"), 226, 760, 20);
 	}
 	// the old road east (open: SERVICE_MAP.road and its mileposts, story/drawings.ts, which is not
 	// ported yet; the road is drawn closed until it is)

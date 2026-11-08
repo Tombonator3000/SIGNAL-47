@@ -51,11 +51,11 @@ namespace
 TArray<TSharedPtr<FS47RadioSeg>> EVENING_LINE()
 {
  return {
-  Talk({ FS47RadioLine(TEXT("Fourteen-twenty, Caliche. Good evening! A little music for the road home. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Talk({ FS47RadioLine(TEXT("Fourteen-twenty, Caliche. Good evening! A little music for the road home."), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
   Music(TEXT("twostep"), 90),
-  Talk({ FS47RadioLine(TEXT("The Mesa Diner is open. Take your time, have something warm, and enjoy the last of the sun. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Talk({ FS47RadioLine(TEXT("The Mesa Diner is open. Take your time, have something warm, and enjoy the last of the sun."), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
   Music(TEXT("waltz"), 85),
-  Talk({ FS47RadioLine(TEXT("Earl brings you the Night Line at midnight. Until then, music from fourteen-twenty. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Talk({ FS47RadioLine(TEXT("Earl brings you the Night Line at midnight. Until then, music from fourteen-twenty."), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
   Music(TEXT("twostep"), 95)
  };
 }
@@ -120,7 +120,7 @@ TArray<TSharedPtr<FS47RadioSeg>> MORNING()
 		Music(TEXT("twostep"), 70),
 		Talk({FS47RadioLine(TEXT("Clear today, high near seventy-four in Roswell, light winds out of the southwest."), TEXT("roswell"))}),
 		Music(TEXT("ballad"), 78),
-		Talk({FS47RadioLine(TEXT("Jack Nicklaus won the Masters yesterday. Forty-six years old, thirty on the back nine. Nobody saw it coming."), TEXT("roswell"))}),
+		Talk({FS47RadioLine(TEXT("The fair board meets Thursday evening at the county extension office. Bring your ideas, and bring a folding chair."), TEXT("roswell"))}),
 		Music(TEXT("waltz"), 64),
 		Talk({FS47RadioLine(TEXT("Road crews on the highway north of town all week, so give yourself a few extra minutes."), TEXT("roswell")),
 		FS47RadioLine(TEXT("If you are out on the county roads this early, watch the low spots. There's deer."), TEXT("roswell"))}),

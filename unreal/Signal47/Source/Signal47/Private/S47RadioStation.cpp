@@ -137,7 +137,7 @@ void AS47Web::BuildRadioStation()
 			M->Inter->Add({ TEXT("radio:lobbyDoor"), ObjAt(DoorNode),
 				[] { return AS47Props::IsDoorOpen(TEXT("radioLobbyDoor")) ? FString(TEXT("Close station lobby door")) : FString(TEXT("Open station lobby door")); },
 				[] { AS47Props::UseDoor(TEXT("radioLobbyDoor")); }, 2.8,
-				[] { return FString(TEXT("1420 AM. A narrow public lobby, a noticeboard and a buzzer beside the entrance.")); }, 5 });
+				[] { return FString(TEXT("1420 AM. A narrow public lobby, a bulletin board and a buzzer beside the entrance.")); }, 5 });
 			GetWorldTimerManager().ClearTimer(*Timer);
 			UE_LOG(LogS47RadioStation, Display, TEXT("S47: 1420 AM public lobby door registered; studio buzzer dialogue retained"));
 		}), 0.1f, true);

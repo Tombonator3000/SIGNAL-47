@@ -471,7 +471,7 @@ void FS47Office::Init()
    if (Id == TEXT("office:desk")) return TEXT("Examine the working desk");
    if (Id == TEXT("office:folder")) return bFieldSheet ? TEXT("Read retained field sheet") : TEXT("Take the field sheet");
    if (Id == TEXT("office:index")) return TEXT("Read the working index");
-   if (Id == TEXT("office:clippings")) return TEXT("Examine the local cuttings");
+   if (Id == TEXT("office:clippings")) return TEXT("Examine the local clippings");
    if (Id == TEXT("office:note")) return TEXT("Read the folded note");
    if (Id == TEXT("office:contact")) return TEXT("Copy the field contact");
    if (Id == TEXT("office:private")) return TEXT("Browse Dale's private notes");

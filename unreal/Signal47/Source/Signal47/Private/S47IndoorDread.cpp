@@ -355,8 +355,8 @@ void FS47IndoorDread::EndPeek()
  {
   const FString Key=FString::Printf(TEXT("peek-%d"),M->Freeform->Day());
   if(!M->Freeform->HasFinding(Key))M->Freeform->RecordEvidence(Key,bWindow
-   ?FString(TEXT("Something small looked in at the window and was gone when I looked properly. No marks on the sill. This records what I saw, not what it was."))
-   :FString(TEXT("Something small leaned round the edge of the doorway and went back. This records what I saw, not what it was.")));
+   ?FString(TEXT("Something small looked in at the window, and then it ducked out of sight."))
+   :FString(TEXT("Something small leaned around the edge of the doorway, and then pulled back.")));
  }
  if(M)M->RequestAutosave();
 }

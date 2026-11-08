@@ -124,7 +124,7 @@ FString FS47FarmSite::SecondCallLine(int32 Index,const FString& About)
  {
   case 0:return FString::Printf(TEXT("A second call about %s. The caller says the lights have not gone, and won't go out to look."),*About);
   case 1:return FString::Printf(TEXT("Another call about %s. Same man. He says they are lower now."),*About);
-  case 2:return FString::Printf(TEXT("Somebody else has rung about %s. She wants to know who is working out there at this hour."),*About);
+  case 2:return FString::Printf(TEXT("Somebody else called about %s. She wants to know who is working out there at this hour."),*About);
   default:return FString::Printf(TEXT("A call about %s. Could be nothing. The man had been drinking and said so."),*About);
  }
 }
@@ -705,7 +705,7 @@ void FS47FarmSite::EndVisit(bool bTaken)
   if(Attention.bDidBlink)Did+=TEXT(" My lamp went out for a moment while it looked at me.");
   if(bSawTurn)Did+=TEXT(" It turned toward a noise I made.");
   if(bSawSetTurn)Did+=TEXT(" It turned toward my field set when a voice came over it.");
-  FString Page=FString::Printf(TEXT("%s, after dark%s. Something came toward me until I left.%s This records what I saw, not what it was."),*Title,bField?TEXT(""):TEXT(", the night of the lights"),*Did);Page[0]=FChar::ToUpper(Page[0]);
+  FString Page=FString::Printf(TEXT("%s, after dark%s. Something came toward me.%s Then it was gone."),*Title,bField?TEXT(""):TEXT(", the night of the lights"),*Did);Page[0]=FChar::ToUpper(Page[0]);
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),Page);
  }
  RestoreHome();
@@ -723,15 +723,15 @@ FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
 {
  if(bFarm)switch(Read)
  {
-  case 0:return TEXT("Pasture at the Alderete place, by daylight. Hoof prints through most of the ring, and a length of baling wire dragged across it. Cattle would do this. All nine marks still lie the same way round. This records what is on the ground.");
-  case 1:return TEXT("Pasture at the Alderete place, by daylight. Nine shallow saucers, the same depth to a finger, the dirt pressed rather than dug. No tracks lead up to the ring, and there are plenty beside it. This records what is on the ground.");
-  default:return TEXT("Pasture at the Alderete place, by daylight. The soil in each mark has a crust that breaks like sugar. Under the middle one a sliver of something, light as foil and cold. Kept for the test bench. This records what is on the ground.");
+  case 0:return TEXT("Pasture at the Alderete place, by daylight. Hoof prints through most of the ring, and a length of baling wire dragged across it. Cattle would do this. All nine marks still lie the same way around.");
+  case 1:return TEXT("Pasture at the Alderete place, by daylight. Nine shallow saucers, the same depth to a finger, the dirt pressed rather than dug. No tracks lead up to the ring, and there are plenty beside it.");
+  default:return TEXT("Pasture at the Alderete place, by daylight. The soil in each mark has a thin crust that glitters like sugar. Under the middle one, a sliver of something, light as foil and cold. Kept for the test bench.");
  }
  switch(Read)
  {
-  case 0:return TEXT("The marks by daylight. Oil and a tyre scuff in two of them; a delivery truck could have stood here. The other seven are only dark. This records what is on the ground.");
-  case 1:return TEXT("The marks by daylight. They have not faded and they do not wash off with a wet boot. Nobody on the street saw them made. This records what is on the ground.");
-  default:return TEXT("The marks by daylight. The surface in each has gone glassy and lifts in flakes. One flake did not break, light as foil and cold. Kept for the test bench. This records what is on the ground.");
+  case 0:return TEXT("The marks by daylight. Oil and a tire scuff in two of them. The other seven are only dark.");
+  case 1:return TEXT("The marks by daylight. No fainter than they were in the night, and the edges still sharp.");
+  default:return TEXT("The marks by daylight. The surface in each has gone glassy and lifts in flakes. One flake is thinner than the rest, light as foil and cold. Kept for the test bench.");
  }
 }
 FString FS47FarmSite::Label() const
@@ -761,11 +761,11 @@ bool FS47FarmSite::Use()
   return true;
  }
  if(bNew)M->Freeform->RecordEvidence(FindingId(),bFarm
-  ?FString(TEXT("Pasture at the Alderete place, the night of the lights. Nine pressed marks in a ring about nine metres across, the grass darkened and laid flat. Cattle, a vehicle or a prank have not been ruled out. Worth a second look by daylight."))
-  :FString::Printf(TEXT("Open ground %s %s, the night of the lights. Nine dark marks in a ring about %s metres across. A vehicle, a spill or a prank have not been ruled out. Worth a second look by daylight."),OpenGround()?TEXT("at"):TEXT("outside"),*Title,OpenGround()?TEXT("nine"):TEXT("five")));
+  ?FString(TEXT("Pasture at the Alderete place, the night of the lights. Nine pressed marks in a ring about thirty feet across, the grass darkened and laid flat. Cattle could do it, or a truck, or kids. Worth a second look by daylight."))
+  :FString::Printf(TEXT("Open ground %s %s, the night of the lights. Nine dark marks in a ring about %s feet across. A truck could have stood here, or something got spilled. Worth a second look by daylight."),OpenGround()?TEXT("at"):TEXT("outside"),*Title,OpenGround()?TEXT("thirty"):TEXT("fifteen")));
  TArray<S47Kit::FW> Rows={
-  S47Kit::Text(bFarm?TEXT("Nine marks in a ring, about nine metres across. The grass is laid flat and darkened, and it is dry here when the ground beside it is not."):OpenGround()?TEXT("Nine dark marks in a ring, about nine metres across. They do not smear when you scuff one, and the ground feels warm."):TEXT("Nine dark marks in a ring, about five metres across. They do not smear when you scuff one, and the ground feels warm.")),
-  S47Kit::Small(bNew?TEXT("Kept as a field record. It says where and what, not who or why."):TEXT("Already in your field records."))};
+  S47Kit::Text(bFarm?TEXT("Nine marks in a ring, about thirty feet across. The grass is laid flat and darkened, and it is dry here when the ground beside it is not."):OpenGround()?TEXT("Nine dark marks in a ring, about thirty feet across. The dirt in each is pressed down smooth and flat."):TEXT("Nine dark marks in a ring, about fifteen feet across. Each one is pressed smooth into the ground.")),
+  S47Kit::Small(bNew?TEXT("Kept as a field record."):TEXT("Already in your field records."))};
  if(M->Freeform->TripCamera&&M->Freeform->TripCamera->CanSet())
  {
   const FString Where=Title;

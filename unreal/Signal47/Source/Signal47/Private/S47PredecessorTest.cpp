@@ -18,6 +18,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Legs.h"
+#include "S47Mail.h"
 
 // -S47Freeform -S47FreeformTest -S47ReyesTest: the trail as a player meets it, with the live rules on. The date, Ward's letter, the
 // locker, every tag at its own place and where it points, wagon 23 and its radio, the people, the review, each way it ends, and the
@@ -43,6 +44,14 @@ void FS47FreeformTest::StepReyes(double Dt)
  }
  if(Stage==10)
  {
+  // MAILBOX-20261108: the letter comes by post. In the box at the road with the flag up, and on the list; taken out of the box it
+  // is in the OPS tray as before, and the rest of the trail goes on from there.
+  if(F.Mail&&F.Mail->Holds(TEXT("ward:letter")))
+  {
+   if(!Check(F.Mail->FlagUp()&&P.TaskLine().Contains(TEXT("letter"))&&P.TaskLine().Contains(TEXT("MAILBOX")),TEXT("Ward's letter is in the mailbox at the road, the flag up, and on the list")))return;
+   if(!Check(F.Mail->TestFetch()&&P.TrayCount()>0&&!F.Mail->Holds(TEXT("ward:letter")),TEXT("taken out of the box, the letter goes to the OPS tray")))return;
+   M->UI->Close(true);
+  }
   if(!P.Found(TEXT("letter"))&&P.TrayCount()==0)
   {
    if(Age-At>30)return Finish(false,TEXT("Ward's letter never came"));

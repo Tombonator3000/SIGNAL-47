@@ -39,7 +39,7 @@ namespace S47DoorVisitLocal
   if(Id==TEXT("Sheriff"))return TEXT("the sheriff's office");
   if(Id==TEXT("Laundry"))return TEXT("the laundromat");
   if(Id==TEXT("Feed"))return TEXT("the feed store");
-  if(Id==TEXT("Cinema"))return TEXT("the cinema");
+  if(Id==TEXT("Cinema"))return TEXT("the Plaza");
   if(Id==TEXT("Church"))return TEXT("the church");
   if(Id==TEXT("Souvenir"))return TEXT("the souvenir shop");
   return Id.StartsWith(TEXT("H0"))?TEXT("an empty house in town"):TEXT("a building in town");
@@ -49,7 +49,7 @@ namespace S47DoorVisitLocal
   switch(Ending)
   {
   case FS47DoorVisit::EEnding::Held:return TEXT("Three pale marks in a row along the wall outside the door, evenly spaced and going away from it. None at the door itself.");
-  case FS47DoorVisit::EEnding::Opened:return TEXT("One pale mark on the ground at the threshold, square to the door. Nothing either side of it.");
+  case FS47DoorVisit::EEnding::Opened:return TEXT("One pale mark on the ground at the threshold, square to the door. Nothing on either side of it.");
   default:return TEXT("Two pale marks side by side just inside the threshold, facing the room. None outside the door.");
   }
  }
@@ -220,10 +220,10 @@ bool FS47DoorVisit::UseMarks()
  const FString Key=FString::Printf(TEXT("door-marks-%d"),TraceDay);
  const FString Text=S47DoorVisitLocal::MarksText(Trace);
  const bool bNew=!M->Freeform->HasFinding(Key);
- if(bNew)M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("%s, by a door that was tried in the night. %s An animal or a prank have not been ruled out."),*S47DoorVisitLocal::Upper(TraceTitle),*Text));
+ if(bNew)M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("%s, by a door that was tried in the night. %s Could be an animal. Could be somebody's idea of a joke."),*S47DoorVisitLocal::Upper(TraceTitle),*Text));
  M->UI->Open(S47Kit::Shell(M->UI,TraceTitle.ToUpper(),S47Kit::Col({
-  S47Kit::Text(Text+TEXT(" They do not smear when you scuff one.")),
-  S47Kit::Small(bNew?TEXT("Kept as a field record. It says where and what, not who or why."):TEXT("Already in your field records."))}),760));
+  S47Kit::Text(Text+TEXT(" Dry and powdery, the color of chalk.")),
+  S47Kit::Small(bNew?TEXT("Kept as a field record."):TEXT("Already in your field records."))}),760));
  if(bNew)M->RequestAutosave();
  return true;
 }
@@ -618,17 +618,17 @@ void FS47DoorVisit::Finish(EEnding Ending)
  const FString Key=FString::Printf(TEXT("door-visit-%d"),M->Freeform->Day());
  const FString Where=S47DoorVisitLocal::Upper(Target.Title);
  FString What;
- if(Ending==EEnding::Held&&bHid)What=TEXT("Something tried the handle of a shut door and waited. I kept low and still in the dark, and after a while steps went away along the wall. The door stayed shut. This records what I heard, not what it was.");
- else if(Ending==EEnding::Held)What=TEXT("Something tried the handle of a shut door and waited. I held the door and it stopped, and steps went away along the wall. This records what I heard, not what it was.");
- else if(Ending==EEnding::Opened)What=TEXT("Something tried the handle of a shut door and waited. I opened it. Nobody on the threshold, and the sound stopped as the door moved. This records what I found, not what it was.");
+ if(Ending==EEnding::Held&&bHid)What=TEXT("Something tried the handle of a shut door and waited. I kept low and still in the dark, and after a while steps went away along the wall. The door stayed shut.");
+ else if(Ending==EEnding::Held)What=TEXT("Something tried the handle of a shut door and waited. I held the door and it stopped, and steps went away along the wall.");
+ else if(Ending==EEnding::Opened)What=TEXT("Something tried the handle of a shut door and waited. I opened it. Nobody on the threshold, and the sound stopped as the door moved.");
  else if(bLightComes)What=M->Freeform->Taken&&M->Freeform->Taken->Stage()==FS47Taken::EStage::Flood
-  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and a light came after it. This records what I saw, not what it was.")
-  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there was someone on the roof. This records what I heard, not what it was.");
+  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and a light came after it.")
+  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there were steps on the roof, over and back.");
  else if(bCutShort)What=bSawBody
-  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and something stood there, and then there was too much else going on and it was gone. This records what I saw, not what it was.")
-  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there was too much else going on to see what it did. This records what I saw, not what it was.");
- else if(bSawBody)What=TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, slowly, and something stood there until I looked straight at it. This records what I saw, not what it was.");
- else What=TEXT("Something tried the handle of a shut door. I did not hold it and I did not stay to see what it did. This records what I heard, not what it was.");
+  ?TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself and something stood there, and then there was too much else going on and it was gone.")
+  :TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, and then there was too much else going on to see what it did.");
+ else if(bSawBody)What=TEXT("Something tried the handle of a shut door. I did not hold it. The door came open by itself, slowly, and something stood there until I looked straight at it.");
+ else What=TEXT("Something tried the handle of a shut door. I did not hold it, and I never saw what came of it.");
  if(!M->Freeform->HasFinding(Key))M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("%s, in the small hours. %s"),*Where,*What));
  UE_LOG(LogTemp,Display,TEXT("S47: door visit over at %s, ending %d, seen %d, %d marks"),*Target.Title,int32(Ending),bSawBody,TraceAt.Num());
  M->RequestAutosave();

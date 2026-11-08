@@ -10,6 +10,7 @@
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
+#include "S47Mail.h"
 #include "S47RadioTips.h"
 #include "S47FieldLife.h"
 #include "S47NightRhythm.h"
@@ -253,6 +254,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Round)Round=MakeShared<FS47DayRound>(M);Round->Begin(S47J::Obj(Saved,TEXT("round")));
  if(!RoadCar)RoadCar=MakeShared<FS47RoadsideCar>(M);RoadCar->Begin(S47J::Obj(Saved,TEXT("roadCar")));
  if(!Happenings)Happenings=MakeShared<FS47Happenings>(M);Happenings->Begin(S47J::Obj(Saved,TEXT("happenings")));
+ if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
  if(!IndoorDread)IndoorDread=MakeShared<FS47IndoorDread>(M);IndoorDread->Begin(S47J::Obj(Saved,TEXT("indoorDread")));
@@ -276,6 +278,7 @@ void FS47FreeformSession::Stop()
  if(CaseField)CaseField->Stop();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
+ if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
@@ -476,6 +479,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Gear)Gear->Step(D);
  if(Places)Places->Step(D);
  if(Predecessor)Predecessor->Step(D);
+ if(Mail)Mail->Step(D);
  if(Tips&&!Held())Tips->Step(D);
  if(TruckLamp)TruckLamp->Step(D);
  if(YardAlarm)YardAlarm->Step(D);
@@ -1313,7 +1317,7 @@ void FS47FreeformSession::OpenOperations()
    FString Photo;
    const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
    if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS.");
-   else if(CameraLeftOut())Photo=TEXT("YOUR CAMERA is where you were taken. Your film and prints are safe here; go and get it.");
+   else if(CameraLeftOut())Photo=TEXT("YOUR CAMERA is still out where you stood before the gap. Your film and prints are safe here; go and get it.");
    else if(M&&M->FieldCamera&&!M->FieldCamera->bHave)Photo=TEXT("PHOTO LAB / ARCHIVE BENCH: collect the camera before going out. The reserve-film carton is beside it; prepare for an observation whenever you choose.");
    else if(Album&&Album->Left()<=0)Photo=InventoryCount(TEXT("film"))>0?TEXT("PHOTO LAB / RESERVE-FILM CARTON: load one stock roll into your camera; retained photographs remain unchanged."):TEXT("CALICHE STORE: buy a film roll and deliver it to GARAGE RECEIVING; then load it at PHOTO LAB. Your existing photographs remain retained.");
    else if(Album)Photo=FString::Printf(TEXT("CAMERA READY / %d exposures remain. You can take a field photograph now; return to PHOTO LAB to develop it before OPS registration. A photograph does not guarantee a paid finding."),Album->Left());
@@ -1834,7 +1838,7 @@ FString FS47FreeformSession::WaitConsequences(double Target) const
 {
  const double Hours=FMath::Max(0.,Target-WorldClock)/3600.;
  const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Target-8*3600.)/SecondsPerDay))+1);
- FString Text=FString::Printf(TEXT("WAIT %.2f GAME HOURS / UNTIL SHIFT DAY %02d, %s\nNo observing, listening, printing or physical test work is performed during this interval. Unfinished work and original records stay intact."),Hours,Day,*FS47FreeformCases::Clock(Target));
+ FString Text=FString::Printf(TEXT("WAIT %.2f HOURS / UNTIL SHIFT DAY %02d, %s\nNo observing, listening, printing or physical test work is performed during this interval. Unfinished work and original records stay intact."),Hours,Day,*FS47FreeformCases::Clock(Target));
  const bool Recording=Work.ContainsByPredicate([](const FJob& J){return J.Stage==EJobStage::Integrating||(J.bControl&&J.ControlAt<8);});
  if(Recording)Text+=TEXT("\nBLOCKED / Finish the active observation or internal control before waiting.");
  const FString Block=Director?Director->RestBlock():FString();
@@ -1912,7 +1916,7 @@ bool FS47FreeformSession::WaitUntil(double Target)
   const bool bCalled=FarmSite&&FarmSite->WakeCall();
   if(!bCalled&&M&&M->Audio&&M->Player)M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.45f,.Rate=.8f,.At=FVector(M->Player->Pos.X-6,M->Player->FloorY+2,M->Player->Pos.Z-9)});
   const int32 Secs=int32(FMath::Fmod(WorldClock,SecondsPerDay));
-  Feedback=RestPlace==ERest::Field?FString::Printf(TEXT("%02d:%02d. Something is walking round the truck."),Secs/3600,(Secs/60)%60):FString::Printf(TEXT("%02d:%02d. Something woke you. Wait again when you are ready to go on."),Secs/3600,(Secs/60)%60);
+  Feedback=RestPlace==ERest::Field?FString::Printf(TEXT("%02d:%02d. Wide awake. Nothing by the truck that you can see."),Secs/3600,(Secs/60)%60):FString::Printf(TEXT("%02d:%02d. Something woke you. Wait again when you are ready to go on."),Secs/3600,(Secs/60)%60);
   UE_LOG(LogTemp,Display,TEXT("S47: rest broken at clock %.0f, day %d, call %d"),WorldClock,DayNumber,bCalled);
   Changed(Feedback);return true;
  }
@@ -2024,9 +2028,11 @@ void FS47FreeformSession::StepWeeklyReview()
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
   if(Care)Care->WeekBilled();
-  FString Running=FString::Printf(TEXT("\nTRUCK: TYRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
+  FString Running=FString::Printf(TEXT("\nTRUCK: TIRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
   if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
   RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
+  // The statement comes by post as well (FS47Mail): the same figures, on paper.
+  if(Mail)Mail->PostWeekStatement(ReviewWeek);
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
   UE_LOG(LogTemp,Display,TEXT("S47: weekly review %d: bill %d, paid %d, carried %d, cash %d"),ReviewWeek,Bill,Paid,Carried,Cash);
  }
@@ -2034,8 +2040,9 @@ void FS47FreeformSession::StepWeeklyReview()
 bool FS47FreeformSession::BillTow(int32 Fee)
 {
  Fee=FMath::Max(0,Fee);
- if(Cash>=Fee){Cash-=Fee;return true;}
- Carried=FMath::Min(int32(ArrearsCap),Carried+Fee);return false;
+ // The county's bill follows by post (FS47Mail): what was charged, and how.
+ if(Cash>=Fee){Cash-=Fee;if(Mail)Mail->PostTowBill(Fee,true);return true;}
+ Carried=FMath::Min(int32(ArrearsCap),Carried+Fee);if(Mail)Mail->PostTowBill(Fee,false);return false;
 }
 bool FS47FreeformSession::CameraLeftOut()const{return Gear&&Gear->IsLeft(TEXT("camera"));}
 FString FS47FreeformSession::TakenCosts(double SafeClock)
@@ -2108,6 +2115,21 @@ int32 FS47FreeformSession::KitPrice(const FString& Id)const
  if(Id==TEXT("magnetometer")&&Cases.HasAccess(TEXT("access.lostHours")))return FMath::Max(5,O->Price-LostHoursDiscount);
  return O->Price;
 }
+bool FS47FreeformSession::ReceiveKit(const FString& Id)
+{
+ if(!FS47Openings::Def(Id)||Kit.Contains(Id))return false;
+ Kit.Add(Id);
+ if(Id==TEXT("film")&&M&&M->Night&&M->Night->Album)M->Night->Album->AddFilm();
+ UE_LOG(LogTemp,Display,TEXT("S47: opening come by post: %s"),*Id);
+ Changed();return true;
+}
+TArray<FString> FS47FreeformSession::FindingIdsFrom(int32 FromDay)const
+{
+ TArray<FString> Ids;
+ for(const auto& Kept:FindingDays)if(Kept.Value>=FromDay)Ids.Add(Kept.Key);
+ Ids.Sort([this](const FString& A,const FString& B){const int32 DA=FindingDays.FindRef(A),DB=FindingDays.FindRef(B);return DA==DB?A<B:DA<DB;});
+ return Ids;
+}
 bool FS47FreeformSession::BuyKit(const FString& Id)
 {
  const auto* O=FS47Openings::Def(Id);if(!O||Kit.Contains(Id)||!KitWaits(Id).IsEmpty())return false;
@@ -2119,12 +2141,15 @@ bool FS47FreeformSession::BuyKit(const FString& Id)
  UE_LOG(LogTemp,Display,TEXT("S47: opening bought: %s for $%d, cash %d"),*Id,Price,Cash);
  Changed(Feedback);return true;
 }
+int32 FS47FreeformSession::MotelPrice()const{return Mail?Mail->MotelPrice(MotelRoom):MotelRoom;}
 bool FS47FreeformSession::RestAt(double Target,ERest Where)
 {
- if(Where==ERest::Motel&&Cash<MotelRoom)return false;
+ // The price is the one at the desk tonight, before the night has gone by and the Ledger's coupon with it.
+ const int32 Room=MotelPrice();
+ if(Where==ERest::Motel&&Cash<Room)return false;
  RestPlace=Where;
  const bool bGood=WaitUntil(Target);
- if(bGood&&Where==ERest::Motel){Cash-=MotelRoom;Changed(FString::Printf(TEXT("A night at the Sierra Motor Court, $%d. Nothing came through the door."),MotelRoom));}
+ if(bGood&&Where==ERest::Motel){Cash-=Room;Changed(FString::Printf(TEXT("A night at the Sierra Motor Court, $%d. Nothing came through the door."),Room));}
  UE_LOG(LogTemp,Display,TEXT("S47: rest away from the station, kind %d: %s"),int32(Where),bGood?TEXT("slept"):TEXT("refused"));
  RestPlace=ERest::Station;return bGood;
 }
@@ -2233,7 +2258,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
   if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
  }
  else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
- Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". This was not the wind. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
+ Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
@@ -2443,7 +2468,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   }
   // What the night's events left out on the land, as the field records have it: its first sentence and its day.
   {
-   FString Land=TEXT("OUT ON THE LAND / night records, not yet one cause");int32 Shown=0;
+   FString Land=TEXT("OUT ON THE LAND / your field records, night by night");int32 Shown=0;
    for(const FString& L:C->Leads)if(const FString* Text=Findings.Find(L))
    {
     FString First=*Text;int32 Stop=INDEX_NONE;
@@ -2674,6 +2699,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
+ if(Mail){const FString Post=Mail->TaskLine();if(!Post.IsEmpty())Result.Add({Post,false});}
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty()){const FString Steps=Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")));Result.Add({TEXT("TRUCK / ")+(Steps.IsEmpty()?Care->StatusLine():Steps),false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
@@ -2717,6 +2743,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
+ if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
  if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
@@ -3065,7 +3092,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   int32 Reads[3]={0,0,0};bool bStable=true;
   for(int32 D=1;D<=300;++D){const int32 R0=FS47FarmSite::DaylightRead(47,TEXT("farm"),D);++Reads[R0];bStable&=R0==FS47FarmSite::DaylightRead(47,TEXT("farm"),D);}
   Check(bStable&&Reads[0]>30&&Reads[1]>30&&Reads[2]>30,TEXT("Marks: the second look reads ordinary, undecided or strange, and looking again never changes it"));
-  bool bWords=true;for(int32 R0=0;R0<3;++R0)for(bool bFarmSite:{true,false}){const FString T0=FS47FarmSite::DaylightText(R0,bFarmSite);bWords&=T0.Contains(TEXT("by daylight"))&&T0.Contains(TEXT("what is on the ground"));}
+  bool bWords=true;for(int32 R0=0;R0<3;++R0)for(bool bFarmSite:{true,false}){const FString T0=FS47FarmSite::DaylightText(R0,bFarmSite);bWords&=T0.Contains(TEXT("by daylight"))&&!T0.Contains(TEXT("records"));}
   Check(bWords,TEXT("Marks: every daylight record says what is there and no more"));
  }
  {bool bNamed=true;for(int32 L0=0;L0<FS47FarmSite::SecondCallLines;++L0)bNamed&=FS47FarmSite::SecondCallLine(L0,TEXT("the church")).Contains(TEXT("the church"));Check(bNamed,TEXT("Calls: every second call names the place and says nothing about what it is"));}

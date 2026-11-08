@@ -179,6 +179,8 @@ public:
  TSharedPtr<class FS47EventPlaces> EventPlaces;
  // The operator before you, Ward's review, and the keys (Tom, 7 November).
  TSharedPtr<class FS47Predecessor> Predecessor;
+ // The box at the road and the post that comes to it: Ward's papers, the Ledger, the catalog and its parcels, bills (S47Mail.h).
+ TSharedPtr<class FS47Mail> Mail;
  TSharedPtr<class FS47RadioTips> Tips;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
@@ -202,10 +204,14 @@ public:
  // Kinds of record the night's events have left (FS47Happenings::IsNightFinding), from that day on: for Ward and the assessment.
  int32 NightRecordKinds(int32 FromDay=0) const;
  bool BuyKit(const FString& Id);
+ // Gear that came by post, already paid for (FS47Mail): the station has it now. False: no such gear, or it has it already.
+ bool ReceiveKit(const FString& Id);
  void TestGiveKit(const FString& Id){Kit.Add(Id);}
  // Sleeping away from the station. At a motel nothing wakes you; on a cot out on the land whatever comes by does.
  enum class ERest:uint8{Station,Motel,Field};
  static constexpr int32 MotelRoom=8;
+ // A room tonight: MotelRoom, or less with the Ledger's coupon clipped (FS47Mail).
+ int32 MotelPrice() const;
  bool RestAt(double Target,ERest Where);
  ERest LastRest() const{return RestPlace;}
  float SiteVisitChance() const;
@@ -253,6 +259,9 @@ public:
  void RegisterFinding(const FString& Id,const FString& Text) { RecordEvidence(Id,Text); }
  bool HasFinding(const FString& Id) const { return Findings.Contains(Id); }
  FString FindingText(const FString& Id) const { return Findings.FindRef(Id); }
+ // The day a finding was kept on (0: never), and every finding kept on or after a day: what the Ledger reads for its front page.
+ int32 FindingDay(const FString& Id) const { return FindingDays.FindRef(Id); }
+ TArray<FString> FindingIdsFrom(int32 FromDay) const;
  bool InTutorial() const { return Tutorial>0; }
  void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }

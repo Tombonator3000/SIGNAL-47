@@ -12,6 +12,7 @@
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Legs.h"
+#include "S47Mail.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47OpenLand.h"
@@ -254,14 +255,15 @@ void FS47Predecessor::StepNews(double Dt)
  const int32 Today=F.Day();
  if(Today<OpensDay)return;
  const FString Letter=TEXT("letter");
- if(!Seen.Contains(Letter)&&!Tray.Contains(Letter))Tray.Add(Letter);
+ // The first letter is in the box at the road when the shift starts, with the flag up (or in the tray, without post).
+ if(!Seen.Contains(Letter)&&!Tray.Contains(Letter)&&!InMailbox(Letter))Send(Letter,true);
  // Ward's office is shut from 21:00 to 08:00: his letter and his answers wait in the tray and are told the next morning.
  const bool bWardOpen=WardAvailable();
- if(bWardOpen&&!bLetterTold&&Tray.Contains(Letter))
+ if(bWardOpen&&!bLetterTold&&(Tray.Contains(Letter)||InMailbox(Letter)))
  {
   bLetterTold=true;
-  if(M->UI)M->UI->Toast(TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
-  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Ward's letter in the tray, day %d, %s"),Today,*DateText(Today));
+  if(M->UI)M->UI->Toast(InMailbox(Letter)?TEXT("The flag is up on the mailbox at the road. There is a letter from Dr. Ward's office in it."):TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
+  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Ward's letter %s, day %d, %s"),InMailbox(Letter)?TEXT("in the mailbox"):TEXT("in the tray"),Today,*DateText(Today));
   M->RequestAutosave();
  }
  // The Monday sheet.
@@ -272,8 +274,10 @@ void FS47Predecessor::StepNews(double Dt)
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
   F.RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land));
-  Tray.AddUnique(Id);
-  if(M->UI)M->UI->Toast(TEXT("Dr. Ward has answered the weekly sheet. It is in the OPS tray."),5);
+  // By post, with the next round (the flag says so), or in the tray where there is none.
+  const bool bByPost=F.Mail&&F.Mail->Live();
+  Send(Id);
+  if(M->UI&&!bByPost)M->UI->Toast(TEXT("Dr. Ward's Monday note is in the OPS tray."),5);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: week %d note, filed %d, pace %.2f, points %d of %d, taken %d"),Week,C.Filed,Pace,Points(C),PointsToStay,C.Taken);
   M->RequestAutosave();
  }
@@ -286,7 +290,7 @@ void FS47Predecessor::StepNews(double Dt)
    if(const auto* K=F.CaseFile().Get(Line);K&&K->bOpen)
    {
     Tray.Add(N.Doc);
-    if(M->UI)M->UI->Toast(TEXT("Going through the old sheets for this case, you find a note in Reyes's hand. It is in the OPS tray."),6);
+    if(M->UI)M->UI->Toast(TEXT("A note in Reyes's hand turned up among the old sheets for this case. It is in the OPS tray."),6);
     UE_LOG(LogTemp,Display,TEXT("S47: predecessor: case %s turned up %s"),N.CaseTitle,N.Doc);
     M->RequestAutosave();
    }
@@ -453,7 +457,7 @@ FString FS47Predecessor::ServiceBand()
  const bool bFirst=!HeardOf.Contains(WagonId);
  if(bFirst)Hear(WagonId);
  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: wagon 23's carrier on the walkie's service band, %.0f m, to the %s%s"),CarrierDist,Ways[Way],bFirst?TEXT(", first time"):TEXT(""));
- return FString::Printf(TEXT("An open carrier on the service band, nobody on it. Strongest towards the %s.%s"),Ways[Way],bFirst?TEXT(" Somebody's set, keyed open and left."):TEXT(""));
+ return FString::Printf(TEXT("An open carrier on the service band, nobody on it. Strongest toward the %s.%s"),Ways[Way],bFirst?TEXT(" Somebody's set, keyed open and left."):TEXT(""));
 }
 void FS47Predecessor::StepWarnings()
 {
@@ -464,8 +468,9 @@ void FS47Predecessor::StepWarnings()
  {
   Seen.Add(TEXT("ward-taken"));
   F.RecordEvidence(TEXT("ward-taken"),X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
-  Tray.AddUnique(TEXT("ward-taken"));
-  if(M->UI)M->UI->Toast(TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
+  const bool bByPost=F.Mail&&F.Mail->Live();
+  Send(TEXT("ward-taken"));
+  if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the post."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: warned after %d takings"),F.TimesTaken());
   M->RequestAutosave();
  }
@@ -512,12 +517,14 @@ void FS47Predecessor::Decided()
  if(Outcome==EOutcome::KnowsEnough||Outcome==EOutcome::ClosedOriginals||Outcome==EOutcome::ClosedNothing)CloseDay=F.Day()+NoticeDays;
  const FString Text=OutcomeLetter(Outcome);
  F.RecordEvidence(AssessKey(),Text);
- Tray.AddUnique(TEXT("assessment"));
- UE_LOG(LogTemp,Display,TEXT("S47: predecessor: assessment day %d: %s (filed %d, concluded %d, dishes %d, arrears %d, originals %d, photos %d, known %d, taken %d); nothing removed"),F.Day(),NameOf(Outcome),C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos,C.Known,C.Taken);
+ // The assessment comes by post like her other letters; the one to the next operator is read at once, as before.
+ const bool bByPost=!bMutedOutcome&&F.Mail&&F.Mail->Live();
+ if(bMutedOutcome)Tray.AddUnique(TEXT("assessment"));else Send(TEXT("assessment"));
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: assessment day %d: %s (filed %d, concluded %d, dishes %d, arrears %d, originals %d, photos %d, known %d, taken %d); nothing removed%s"),F.Day(),NameOf(Outcome),C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos,C.Known,C.Taken,bByPost?TEXT(", by post"):TEXT(""));
  if(M->UI)
  {
   if(bMutedOutcome)OpenAssessment();
-  else M->UI->Toast(TEXT("Dr. Ward's assessment is in the OPS tray."),6);
+  else M->UI->Toast(bByPost?TEXT("Dr. Ward has made her assessment. It comes with the post."):TEXT("Dr. Ward's assessment is in the OPS tray."),6);
  }
 }
 
@@ -597,6 +604,20 @@ void FS47Predecessor::ReadDoc(const FString& Id,const FString& Back)
  ShowDoc(MakeDoc(Id),Back);
 }
 void FS47Predecessor::OpenGap(){ReadDoc(TEXT("gap"));}
+void FS47Predecessor::Send(const FString& Id,bool bNow)
+{
+ if(M&&M->Freeform&&M->Freeform->Mail&&M->Freeform->Mail->PostWard(Id,bNow))return;
+ Tray.AddUnique(Id);
+}
+void FS47Predecessor::FromMail(const FString& Id)
+{
+ if(Id.IsEmpty())return;
+ Tray.AddUnique(Id);
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: %s taken out of the mailbox, into the OPS tray"),*Id);
+ if(M)M->RequestAutosave();
+}
+FString FS47Predecessor::PaperTitle(const FString& Id) const{return MakeDoc(Id).Title;}
+bool FS47Predecessor::InMailbox(const FString& Id) const{return M&&M->Freeform&&M->Freeform->Mail&&M->Freeform->Mail->Holds(TEXT("ward:")+Id);}
 FString FS47Predecessor::ArchiveLabel() const{return Live()?FString(TEXT("April's shift binder / the night of the 13th")):FString();}
 
 // ---------- OPS ----------
@@ -636,7 +657,9 @@ FString FS47Predecessor::TaskLine() const
 {
  if(!Live())return FString();
  if(Tray.Contains(TEXT("letter")))return TEXT("OPS / There is a letter from Dr. Ward's office in the tray.");
+ if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road. The flag is up.");
  if(Tray.Contains(TEXT("assessment")))return TEXT("OPS / Dr. Ward's assessment is in the tray.");
+ if(InMailbox(TEXT("assessment")))return TEXT("MAILBOX / Dr. Ward's assessment is in the box at the road.");
  if(Outcome==EOutcome::None&&M&&M->Freeform)return FString::Printf(TEXT("SARO under review / Dr. Ward assesses the station on %s."),*DateText(AssessDay));
  return FString();
 }
@@ -735,7 +758,7 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
 void FS47Predecessor::OpenLocker()
 {
  if(!M||!M->UI||!M->Freeform)return;
- Mark(TEXT("locker"),TEXT("Reyes's locker at SARO. A mug, half a pack of cigarettes, a list for a Monday, a letter not sent, and post nobody has opened."));
+ Mark(TEXT("locker"),TEXT("Reyes's locker at SARO. A mug, half a pack of cigarettes, a list for a Monday, a letter not sent, and mail nobody has opened."));
  TArray<S47Kit::FW> Rows;
  const TWeakPtr<uint8> Guard=Life;
  Rows.Add(Para(TEXT("A strip of label tape on the door: REYES. It isn't locked. It smells of old coffee and machine oil, and of nothing else."),860.f));
@@ -751,7 +774,7 @@ void FS47Predecessor::OpenLocker()
  Read(TEXT("pay"),TEXT("A pay envelope: FINAL, NOT CALLED FOR"));
  if(!Seen.Contains(TEXT("mail")))
  {
-  Rows.Add(Para(TEXT("Post has been pushed through the vent since. An insurance notice, an overdue card from the Socorro library, and a letter with a hand-written address, sealed."),860.f,true));
+  Rows.Add(Para(TEXT("Mail has been pushed through the vent since. An insurance notice, an overdue card from the Socorro library, and a letter with a handwritten address, sealed."),860.f,true));
   Rows.Add(S47Kit::Button(TEXT("Open the sealed letter. It isn't yours"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
  }
  else Rows.Add(S47Kit::Button(TEXT("The letter you opened"),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("mail"),TEXT("locker"));}));
@@ -894,7 +917,7 @@ void FS47Predecessor::OpenLeft()
  if(!Seen.Contains(TEXT("locker")))About=TEXT("You never opened the locker next to yours. It still has Reyes's name on it.");
  else
  {
-  About=Seen.Contains(TEXT("mail"))?TEXT("The letter you opened is back in Reyes's locker, with the twenty still in it."):TEXT("Reyes's post is still in the locker, sealed.");
+  About=Seen.Contains(TEXT("mail"))?TEXT("The letter you opened is back in Reyes's locker, with the twenty still in it."):TEXT("Reyes's mail is still in the locker, sealed.");
   About+=bPayReturned?TEXT(" The final pay has gone back to Ward, with your initials on the slip."):Seen.Contains(TEXT("pay"))?TEXT(" The final pay is where you found it, not called for."):TEXT("");
  }
  if(Tags>0)About+=FString::Printf(TEXT(" You read %d of Reyes's survey tags%s."),Tags,Tags<X::Tags().Num()?TEXT(", and the rest are still wired where they were left"):TEXT(""));
