@@ -283,7 +283,12 @@ bool FS47FreeformSession::ArrayMotionHeld() const
 {
  return !bActive||bDead||bRecovering||!M||M->bPausedByMenu||(M->World&&M->World->bBusy)||(M->ModalOpen()&&!bTelemetry&&!TerminalOnGlass())||!HasPower();
 }
-bool FS47FreeformSession::HasPower() const {return !bPowerFault||(Field&&Field->HasBackupPower());}
+bool FS47FreeformSession::HasPower() const
+{
+ // Closed: the county line is open at the meter (FS47Predecessor::Close). Only a fuelled generator runs anything.
+ if(Predecessor&&Predecessor->StationClosed())return Field&&Field->HasBackupPower();
+ return !bPowerFault||(Field&&Field->HasBackupPower());
+}
 bool FS47FreeformSession::RequirePower()
 {
  if(HasPower())return true;

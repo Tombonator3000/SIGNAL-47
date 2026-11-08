@@ -24,12 +24,17 @@ namespace S47PredecessorText
  const TArray<FBark>& Barks();
  const FPerson* Person(const FString& Id);
  FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess);
- FString WeekNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,int32 DaysLeft,const FString& Assess,double Pace);
+ // Ward's Monday sheet. Her remark follows what the assessment will go by (FS47Predecessor::Points), not the count of cards, and it
+ // names the hours in the log nobody can account for.
+ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken);
  FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch);
- FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears);
+ FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
  FString WhatYouKnow();
- FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos);
- FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears);
+ FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos,const FString& CloseOn);
+ FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
+ // After the second stretch of lost time: one more, and somebody else has the nights.
+ FString TakenWarning(const FString& Dated,int32 Taken);
+ // The morning the closing order takes effect.
+ FString ClosedNow(const FString& Dated);
  FString NextOperator(const FString& Dated,const FString& YourLast,int32 Originals,int32 Photos,int32 Filed);
- const TCHAR* const WardClose=TEXT("June 30");
 }

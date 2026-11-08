@@ -7,6 +7,7 @@
 #include "S47EastWing.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47Predecessor.h"
 #include "S47FreeformWorld.h"
 #include "S47Spine.h"
 #include "S47Gamepad.h"
@@ -233,6 +234,9 @@ void US47World::Init(US47Main* InM)
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
 			if (M && M->IsFreeform())
 			{
+				// SARO closed: the district has tagged the truck for its flatbed and has the keys (FS47Predecessor::Close).
+				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->StationClosed())
+					return { TEXT("District tag on the windscreen / the keys went back with the closing order"), [this] { Toast(TEXT("The district has the keys. A tag on the windscreen says the flatbed will come for it."), 5); } };
 				// The parked service vehicle itself accepts a held parcel before offering a drive.
 				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
 					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
