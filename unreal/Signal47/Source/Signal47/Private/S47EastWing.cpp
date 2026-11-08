@@ -171,6 +171,9 @@ void FS47EastWing::Begin(const S47J::FObj& Saved)
  for(int32 I=0;I<2;++I){LeafOpen[I]=!Saved||S47J::Bool(Saved,I==0?TEXT("personnel"):TEXT("service"),true);LeafAmount[I]=LeafOpen[I]?1.:0.;}
  DoorOpen=Saved?FMath::Clamp(S47J::Num(Saved,TEXT("garage"),1.),0.,1.):1.;
  bDoorUp=Saved?S47J::Bool(Saved,TEXT("garageUp"),DoorOpen>.5):true;bDoorMoving=bDoorHand=false;
+ // A part-open door in a save is where its last move would have taken it.
+ if(DoorOpen>.001&&DoorOpen<.999)DoorOpen=bDoorUp?1.:0.;
+ bWasFree=M&&M->IsFreeform();
 }
 S47J::FObj FS47EastWing::Save() const
 {
@@ -231,13 +234,16 @@ bool FS47EastWing::DoorControls()
  }
  bDoorControls=true;
  // -S47EastWingDoor=0..1: developer start position for screenshots of a part-open door.
- float Start=1.f;if(FParse::Value(FCommandLine::Get(),TEXT("S47EastWingDoor="),Start)){DoorOpen=FMath::Clamp(Start,0.f,1.f);bDoorUp=DoorOpen>.5;}
+ float Start=1.f;if(FParse::Value(FCommandLine::Get(),TEXT("S47EastWingDoor="),Start)){DoorOpen=FMath::Clamp(Start,0.f,1.f);bDoorUp=DoorOpen>.5;bWasFree=true;}
  return true;
 }
 
 void FS47EastWing::StepDoor(float Dt,bool bFree,bool bPowered)
 {
- if(!bFree){DoorOpen=0;bDoorMoving=bDoorHand=false;return;} // Story: the opener is locked out
+ if(!bFree){DoorOpen=0;bDoorMoving=bDoorHand=false;bWasFree=false;return;} // Story: the opener is locked out
+ // Into Freeform from anything else (the title, a Story frame before the mode is set): the door stands as the save or the new game
+ // left it (Begin), not as the locked Story frame shut it a moment ago.
+ if(!bWasFree){bWasFree=true;DoorOpen=bDoorUp?1.:0.;}
  if(!bDoorMoving)return;
  if(!bPowered&&!bDoorHand)
  {

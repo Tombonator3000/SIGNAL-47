@@ -7,6 +7,7 @@
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Kit.h"
+#include "S47EastWing.h"
 
 namespace
 {
@@ -36,6 +37,10 @@ FString FS47FreeformSession::ServiceObjective()const
  if(S==1)return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"));
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {
+  // The receiving table is inside the garage: with the roll-up door down, that comes first.
+  const bool bAtSaro=M&&M->Web&&M->Web->Area()==TEXT("saro");
+  if(bAtSaro&&(Field->ParcelStage()==2||Field->ParcelStage()==3)&&M->EastWing&&M->EastWing->GarageShut())
+   return TEXT("EAST-WING GARAGE: THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP BUTTON BY THE DOOR (OR USE THE HAND CHAIN), THEN TAKE THE PARCEL TO THE RECEIVING TABLE");
   switch(Field->ParcelStage())
   {
    case 1:return TEXT("CALICHE GAS STATION: COLLECT THE PAID PARCEL");
