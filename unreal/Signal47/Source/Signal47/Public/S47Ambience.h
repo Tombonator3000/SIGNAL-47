@@ -99,6 +99,11 @@ public:
 	double WiresLevel() const { return WireWant; }
 	/** 1 while the night is open, near 0 under a hush (the animals, the tests). */
 	double Openness() const;
+	/** Freeform's recorded night (Tools/nightsounds, CC0 from Freesound, KILDER.md there): one of Content/Audio/Raw/night/
+	 *  <Prefix>0.wav, <Prefix>1.wav ... at random ("coyote", "train", "mill", "wires", "flush"). Null when this build has none:
+	 *  the sound is then made here, as before. Read once and kept. */
+	static TSharedPtr<FS47AudioBuffer> NightClip(const FString& Prefix);
+	static int32 NightClips(const FString& Prefix);
 	/** How many of the far-off ones have been heard, by kind, since the night began (tests, F10). */
 	int32 FarHeard(const FString& Kind) const { return FarCounts.FindRef(Kind); }
 

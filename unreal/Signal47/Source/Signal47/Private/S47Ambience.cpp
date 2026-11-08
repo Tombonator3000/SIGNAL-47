@@ -1,5 +1,7 @@
 // web/src/core/ambience.ts
 #include "S47Ambience.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 namespace
 {
@@ -340,7 +342,7 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 		T.Train = Rnd(700, 1500);
 		FVector Where;
 		if (!PlaceFor) Train(At);
-		else if (PlaceFor(TEXT("train"), At, Where)) { double Bearing = 0, Dist = 0; Toward(At, Where, Bearing, Dist); Train(At, Bearing); FarCounts.FindOrAdd(TEXT("train"))++; }
+		else if (PlaceFor(TEXT("train"), At, Where)) TrainAt(At, Where);
 	}
 	if ((T.Truck -= Dt) <= 0) { T.Truck = Rnd(200, 520) / Busy; Truck(); }
 	if (Dawn > 0 && (T.Birds -= Dt) <= 0)
@@ -601,12 +603,46 @@ TSharedPtr<FS47BufferSourceNode> FS47Ambience::PlayBufferAt(const TSharedPtr<FS4
 	return Src;
 }
 
+TSharedPtr<FS47AudioBuffer> FS47Ambience::NightClip(const FString& Prefix)
+{
+	// Read once per kind, on first asking: the files are small, a few seconds each.
+	static TMap<FString, TArray<TSharedPtr<FS47AudioBuffer>>> Loaded;
+	TArray<TSharedPtr<FS47AudioBuffer>>* Kept = Loaded.Find(Prefix);
+	if (!Kept)
+	{
+		Kept = &Loaded.Add(Prefix);
+		for (int32 I = 0; I < 16; ++I)
+		{
+			TArray<uint8> Bytes;
+			if (!FFileHelper::LoadFileToArray(Bytes, *(FPaths::ProjectContentDir() / FString::Printf(TEXT("Audio/Raw/night/%s%d.wav"), *Prefix, I)), FILEREAD_Silent)) break;
+			if (TSharedPtr<FS47AudioBuffer> Rec = S47Wa::DecodeWav(Bytes)) Kept->Add(Rec);
+		}
+	}
+	if (Kept->IsEmpty()) return nullptr;
+	return (*Kept)[FMath::RandRange(0, Kept->Num() - 1)];
+}
+
+int32 FS47Ambience::NightClips(const FString& Prefix)
+{
+	NightClip(Prefix);
+	int32 Count = 0;
+	for (int32 I = 0; I < 16; ++I)
+	{
+		if (!FPaths::FileExists(FPaths::ProjectContentDir() / FString::Printf(TEXT("Audio/Raw/night/%s%d.wav"), *Prefix, I))) break;
+		++Count;
+	}
+	return Count;
+}
+
 void FS47Ambience::CoyotesFrom(const FVector& Listener, const FVector& Where)
 {
 	double Bearing = 0, Dist = 0;
 	Toward(Listener, Where, Bearing, Dist);
 	FS47AudioContext::FBatch Batch(*Ctx);
-	Coyotes(Listener, Bearing, Dist);
+	// recorded coyotes (Santa Fe and elsewhere) from where they are; louder nearer; made here when there are none
+	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("coyote")))
+		PlayBufferAt(Clip, Listener, Where, FMath::Clamp(380.0 / FMath::Max(Dist, 120.0), 0.3, 1.2), Rnd(0.95, 1.04), 120);
+	else Coyotes(Listener, Bearing, Dist);
 	FarCounts.FindOrAdd(TEXT("coyote"))++;
 }
 
@@ -615,7 +651,10 @@ void FS47Ambience::TrainAt(const FVector& Listener, const FVector& Where)
 	double Bearing = 0, Dist = 0;
 	Toward(Listener, Where, Bearing, Dist);
 	FS47AudioContext::FBatch Batch(*Ctx);
-	Train(Listener, Bearing);
+	// a freight's horn, recorded, miles off on the line: dull with the distance
+	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("train")))
+		PlayBufferAt(Clip, Listener, Where, 0.55, Rnd(0.97, 1.02), 700);
+	else Train(Listener, Bearing);
 	FarCounts.FindOrAdd(TEXT("train"))++;
 }
 
@@ -623,7 +662,14 @@ void FS47Ambience::MillCreak(const FVector& Listener, const FVector& Where, doub
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	const double Sk = FMath::Clamp(Strength, 0.1, 1.0);
-	// The head turning on its post in the wind: the old door's creak slowed to a long dry groan, or one made here.
+	// a desert windmill squeaking as its head turns (recorded in Arizona); else the old door's creak slowed to a long dry groan,
+	// or one made here
+	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("mill")))
+	{
+		PlayBufferAt(Clip, Listener, Where, 0.8 * Sk, Rnd(0.93, 1.05), 30);
+		FarCounts.FindOrAdd(TEXT("windmill"))++;
+		return;
+	}
 	if (!PlayAt(FMath::FRand() < 0.5 ? TEXT("doorCreak0") : TEXT("doorCreak1"), Listener, Where, 0.55 * Sk, Rnd(0.38, 0.52), 30).IsValid())
 	{
 		FS47AudioContext& Ac = *Ctx;
@@ -647,6 +693,13 @@ void FS47Ambience::Whirr(const FVector& Listener, const FVector& Where, double S
 	FS47AudioContext::FBatch Batch(*Ctx);
 	FS47AudioContext& Ac = *Ctx;
 	const double Sk = FMath::Clamp(Strength, 0.2, 1.0), Start0 = Ac.CurrentTime() + 0.02;
+	// recorded wings (doves and pigeons going up all at once) when there are; made here otherwise
+	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("flush")))
+	{
+		PlayBufferAt(Clip, Listener, Where, 1.1 * Sk, Rnd(0.95, 1.1), 15);
+		FarCounts.FindOrAdd(TEXT("whirr"))++;
+		return;
+	}
 	auto Into = Placed(Listener, Where, 1, 25, 5);
 	auto Src = Ac.CreateBufferSource(); Src->Buffer = Noise; Src->bLoop = true;
 	auto Band = Ac.CreateBiquadFilter(); Band->SetType(TEXT("bandpass")); Band->Frequency.SetValue(Rnd(1500, 2200)); Band->Q.SetValue(0.9);
@@ -694,9 +747,25 @@ void FS47Ambience::Wires(const FVector& Where, double Level)
 	FS47AudioContext::FBatch Batch(*Ctx);
 	FS47AudioContext& Ac = *Ctx;
 	const double Clock0 = Ac.CurrentTime();
+	// recorded wind in overhead lines (made to loop by Tools/nightsounds) when there is
+	TSharedPtr<FS47AudioBuffer> WireClip;
+	if (!WireLoop.IsSet()) WireClip = NightClip(TEXT("wires"));
+	if (!WireLoop.IsSet() && WireClip.IsValid())
+	{
+		FWireLoop Loop;
+		Loop.Gain = Ac.CreateGain(); Loop.Gain->Gain.SetValue(0);
+		Loop.Pan = Ac.CreatePanner();
+		Loop.Pan->PanningModel = TEXT("equalpower"); Loop.Pan->DistanceModel = ES47DistanceModel::Inverse; Loop.Pan->RefDistance = 6; Loop.Pan->RolloffFactor = 1; Loop.Pan->MaxDistance = 200;
+		auto Lpf = Ac.CreateBiquadFilter(); Lpf->SetType(TEXT("lowpass")); Lpf->Frequency.SetValue(6000);
+		Loop.Gain->Connect(Lpf); Lpf->Connect(Loop.Pan); Loop.Pan->Connect(Out);
+		Loop.Hiss = Ac.CreateBufferSource(); Loop.Hiss->Buffer = WireClip; Loop.Hiss->bLoop = true;
+		auto Rg = Ac.CreateGain(); Rg->Gain.SetValue(15.0);
+		Loop.Hiss->Connect(Rg); Rg->Connect(Loop.Gain); Loop.Hiss->Start(Clock0, Rnd(0, WireClip->Duration()));
+		WireLoop = MoveTemp(Loop);
+	}
 	if (!WireLoop.IsSet())
 	{
-		// The wind across a span of wire: a low moan of a few tones together, and a thin whistle over it.
+		// Made here: the wind across a span of wire, a low moan of a few tones together, and a thin whistle over it.
 		FWireLoop Loop;
 		Loop.Gain = Ac.CreateGain(); Loop.Gain->Gain.SetValue(0);
 		Loop.Pan = Ac.CreatePanner();

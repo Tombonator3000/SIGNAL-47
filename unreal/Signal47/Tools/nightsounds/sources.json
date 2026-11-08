@@ -1,0 +1,25 @@
+{
+ "note": "SOUNDSCAPE-20261108: the night's far sounds. Every source is CC0 1.0 on its own Freesound page (checked 8 November 2026); the public 128 kbps HQ preview is what was cut, as for the camera shutter and the night sounds before (web/THIRD_PARTY_NOTICES.md). from/to: seconds in the source. loop: a held sound, its tail crossfaded into its head.",
+ "clips": [
+  {"clip": "coyote0", "id": 711262, "author": "buzzatsea", "title": "coyotes howling in santa fe", "from": 3.5, "to": 19.5},
+  {"clip": "coyote1", "id": 711262, "author": "buzzatsea", "title": "coyotes howling in santa fe", "from": 29.5, "to": 40.0},
+  {"clip": "coyote2", "id": 256533, "author": "dkaufman", "title": "coyote barks and howls", "from": 12.0, "to": 21.0},
+  {"clip": "coyote3", "id": 256533, "author": "dkaufman", "title": "coyote barks and howls", "from": 30.5, "to": 38.5},
+  {"clip": "coyote4", "id": 833772, "author": "darcydunes", "title": "Coyote_02", "from": 0.0, "to": 8.7},
+  {"clip": "train0", "id": 591873, "author": "FunWithSound", "title": "Train Horn 71 (Distant, Clean).mp3", "from": 0.0, "to": 21.3, "highpass": 40},
+  {"clip": "train1", "id": 574424, "author": "TRP", "title": "Train horn distant wind Irving Nature Park 190929.flac", "from": 0.0, "to": 18.0, "highpass": 40},
+  {"clip": "train2", "id": 593082, "author": "FunWithSound", "title": "Train Passing By 146 with Engine, Horn (Distant).mp3", "from": 0.0, "to": 25.7, "highpass": 30},
+  {"clip": "mill0", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 4.0, "to": 10.0},
+  {"clip": "mill1", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 30.0, "to": 35.5},
+  {"clip": "mill2", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 41.0, "to": 47.0},
+  {"clip": "mill3", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 60.0, "to": 67.0},
+  {"clip": "mill4", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 75.0, "to": 82.0},
+  {"clip": "mill5", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 91.0, "to": 96.5},
+  {"clip": "mill6", "id": 131924, "author": "felix.blume", "title": "A windmill is squeaking alone in the desert (USA, Arizona)", "from": 108.0, "to": 113.0},
+  {"clip": "mill7", "id": 611149, "author": "LiftPizzas", "title": "Windmill 01.wav", "from": 2.0, "to": 9.8},
+  {"clip": "wires0", "id": 829000, "author": "bruno.auzet", "title": "gusts on overhead power lines", "from": 60.0, "to": 88.0, "loop": true},
+  {"clip": "wires1", "id": 147599, "author": "felix.blume", "title": "Wind blowing and howling in an antenna and its wire on the top of the chilean cliff.", "from": 32.0, "to": 62.0, "loop": true},
+  {"clip": "flush0", "id": 574656, "author": "TRP", "title": "Wing flaps doves fly away NOTL 181225.flac", "from": 0.2, "to": 4.2},
+  {"clip": "flush1", "id": 616623, "author": "TRP", "title": "121003 Pigeon flock fly away, wing flaps, Toronto.wav", "from": 0.0, "to": 6.8}
+ ]
+}

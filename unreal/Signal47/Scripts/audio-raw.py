@@ -139,11 +139,12 @@ if not args.recordings_only:
     channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
     phone_texts = set(normalize(t) for t in PHONE_TEXTS)
 
-    # (Raw/tv is the TVs' programme sound from prepare-tv.py, not from web/src: it stays)
+    # (Raw/tv is the TVs' programme sound from prepare-tv.py, and Raw/night Freeform's recorded night from
+    # Tools/nightsounds, not from web/src: they stay)
     for d in (RAW, LICRAW):
         for name in os.listdir(d) if os.path.isdir(d) else []:
             path = os.path.join(d, name)
-            if d == RAW and name == 'tv':
+            if d == RAW and name in ('tv', 'night'):
                 continue
             if os.path.isdir(path) and not os.path.islink(path):
                 shutil.rmtree(path)
