@@ -15,6 +15,9 @@
 #include "S47Tape.h"
 #include "S47Places.h"
 #include "S47PinBoard.h"
+#include "S47Enlarger.h"
+#include "S47Album.h"
+#include "S47Night.h"
 #include "S47BoardRules.h"
 #include "S47Docs.h"
 #include "S47RoadShape.h"
@@ -325,6 +328,37 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			Pictured(TEXT("board"), 1.f);
 			Tell(true, FString::Printf(TEXT("The tray: %d papers"), Fs->PinBoard->Papers().Num()));
 		});
+	});
+
+	// ---- the enlarger (ENLARGE-20261108) ----
+	static const TCHAR* const EnlargeGroup = TEXT("Enlarger (M3)");
+	E.AddFreeform(EnlargeGroup, TEXT("Enlarger: a frame of the array from the yard, its upper right at 4x"), TEXT("a frame exposed from the yard toward the array, developed; the enlarger on its upper right at four times, from the negative; a print of that in the album"), [this, Stand, Pictured]
+	{
+		Stand(TEXT("saro_yard"), 0, [this, Pictured](const FVector2D&, double)
+		{
+			FS47FreeformSession* Fs = Session();
+			if (!Fs || !Fs->Enlarger || !M || !M->Night || !M->Night->Album || !M->Player) { Tell(false, TEXT("no enlarger or album in this run")); return; }
+			const FVector EyeAt(M->Player->Pos.X, M->Player->FloorY + 1.6, M->Player->Pos.Z);
+			FString ShotId;
+			const bool bShot = M->Night->Album->ExposeFrom(EyeAt, EyeAt + FVector(0, 6, -100), TEXT("F10: the array from the yard."), TEXT("the yard"), ShotId);
+			for (int32 Stage = 0; Stage < 3; ++Stage) M->Night->Album->AdvanceLabPhoto(ShotId, Stage);
+			const FS47AlbumShot* Frame = M->Night->Album->Shots().FindByPredicate([&ShotId](const FS47AlbumShot& X) { return X.Id == ShotId; });
+			const bool bNeg = Frame && !Frame->Neg.IsEmpty();
+			Fs->Enlarger->DevSet(2, 4);
+			Fs->Enlarger->Open(ShotId);
+			const FString Made = Fs->Enlarger->DevMake(ShotId, 2, 4);
+			Pictured(TEXT("enlarge"), 1.2f);
+			Tell(bShot && bNeg && !Made.IsEmpty(), FString::Printf(TEXT("Frame %s: negative %s, enlargement %s"), *ShotId, bNeg ? TEXT("kept") : TEXT("missing"), Made.IsEmpty() ? TEXT("not printed") : *Made));
+		});
+	});
+	E.AddFreeform(EnlargeGroup, TEXT("Enlarger: the same frame, the middle at 2x"), TEXT("the newest developed print, its middle at twice"), [this, Pictured]
+	{
+		FS47FreeformSession* Fs = Session();
+		if (!Fs || !Fs->Enlarger) { Tell(false, TEXT("no enlarger in this run")); return; }
+		Fs->Enlarger->DevSet(4, 2);
+		Fs->Enlarger->Open();
+		Pictured(TEXT("enlarge"), 1.2f);
+		Tell(true, TEXT("The enlarger on the newest print, the middle at 2x"));
 	});
 
 	// ---- the night's log ----

@@ -1,5 +1,6 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
+#include "S47Enlarger.h"
 #include "S47T02Photo.h"
 #include "S47Album.h"
 #include "S47Night.h"
@@ -750,6 +751,7 @@ void US47Chapter1::UseWetBench()
 		if (!M->Night || !M->Night->Album || !M->Freeform || !Yard || !M->Player) return;
 		if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power before processing the photograph.")); return; }
 		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		if (!Shot && M->Freeform->Enlarger) { M->Freeform->Enlarger->Open(); return; } // nothing to develop: the enlarger beside the bench (ENLARGE-20261108)
 		if (!Shot) { S47Panels::WetBench(Ui(), FString(), 0, TEXT("No exposed photographs are waiting. Completed originals remain in the notebook album; submit field evidence at OPS."), [] {}); return; }
 		const FString Id = Shot->Id;
 		const int32 Stage = Shot->LabStage;
@@ -783,6 +785,7 @@ void US47Chapter1::UseWetBench()
 			if (Finished) Done.Add(SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(Finished->Url), 480.f)]);
 			Done.Add(S47Kit::Text(TEXT("Original collected. Register eligible evidence at OPS; the original stays in your album.")));
 			if (M->Night->Album->PendingLabPhoto()) Done.Add(S47Kit::Button(TEXT("DEVELOP NEXT EXPOSED PHOTOGRAPH"), [this] { UseWetBench(); }, true));
+			Done.Add(S47Kit::Button(TEXT("THE ENLARGER: PART OF THIS PRINT, LARGER"), [this, Id] { if (M && M->Freeform && M->Freeform->Enlarger) M->Freeform->Enlarger->Open(Id); }));
 			if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Done)));
 		}));
 		if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Rows)));
