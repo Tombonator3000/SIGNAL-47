@@ -449,7 +449,7 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  FloodFor=bHere?FloodFor+Dt:0;
  if(!bHere||!M->Freeform->TheirHoursNow(Clock)||Clock<FloodClock+FloodRestSeconds)return;
  const int32 Day=M->Freeform->Day();
- if(FloodRollDay==Day||FloodFor<25)return;
+ if(Day<FS47DoorVisit::FirstDay||FloodRollDay==Day||FloodFor<25)return;
  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("lit_room")))return;
  // A night's own draw, and at most one. The rest is long whatever it says.
  FloodRollDay=Day;

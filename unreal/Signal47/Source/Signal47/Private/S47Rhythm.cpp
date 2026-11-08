@@ -427,6 +427,11 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  {FS47RhythmNow A=N;A.bFreeform=false;Check(Says(TEXT("service_presence"),A)==TEXT("off"),TEXT("off outside Freeform"));}
  {FS47RhythmNow A=N;A.bTutorial=true;Check(Says(TEXT("service_presence"),A)==TEXT("tutorial"),TEXT("not in the first shift"));}
  {FS47RhythmNow A=N;A.Day=1;Check(Says(TEXT("service_presence"),A)==TEXT("too_early_day"),TEXT("not before its day"));}
+ {
+  // GAME_BIBLE: the first day has no dangerous hunt. Every danger in the file waits for day two.
+  bool bFree=true;FString Early;for(const FS47RhythmEvent& E:D.Events)if(E.Level==ES47RhythmLevel::Danger&&E.FromDay<2){bFree=false;Early+=E.Id.ToString()+TEXT(" ");}
+  Check(bFree,TEXT("no danger on the first night ")+Early);
+ }
  {FS47RhythmNow A=N;A.bTheirHours=false;Check(Says(TEXT("service_presence"),A)==TEXT("outside_hours"),TEXT("not outside their hours"));}
  {FS47RhythmNow A=N;A.Clock=4*86400.+12*3600.;Check(Says(TEXT("flyover"),A)==TEXT("outside_hours"),TEXT("a night event not by day"));A.Clock=4*86400.+23*3600.;Check(R.May(TEXT("flyover"),A).bMay,TEXT("and may at 23:00"));}
  {FS47RhythmNow A=N;A.LastDays.Add(TEXT("service_presence"),5);Check(Says(TEXT("service_presence"),A)==TEXT("cooldown"),TEXT("not on the day it was last"));A.LastDays.Add(TEXT("service_presence"),1);Check(R.May(TEXT("service_presence"),A).bMay,TEXT("and may four days on"));}
