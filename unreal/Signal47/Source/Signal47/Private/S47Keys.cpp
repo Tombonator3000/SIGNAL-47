@@ -25,6 +25,7 @@ namespace S47KeysLocal
 		const TCHAR* Foot = TEXT("On foot");
 		const TCHAR* Panels = TEXT("Notebook and pause");
 		const TCHAR* Truck = TEXT("In the truck");
+		const TCHAR* Low = TEXT("Walkie and keeping low");
 		return {
 			A(TEXT("forward"), TEXT("Walk forward"), Foot, TEXT("Walk forward. In the truck: the throttle."), EKeys::W, EKeys::Up),
 			A(TEXT("back"), TEXT("Walk back"), Foot, TEXT("Walk back. In the truck: the brake, and reverse once it has stopped."), EKeys::S, EKeys::Down),
@@ -41,10 +42,6 @@ namespace S47KeysLocal
 			A(TEXT("light"), TEXT("Flashlight"), Foot, TEXT("The flashlight, once you have it."), EKeys::F),
 			A(TEXT("camera"), TEXT("Field camera"), Foot, TEXT("Raise or lower the field camera."), EKeys::C),
 			A(TEXT("shutter"), TEXT("Shutter"), Foot, TEXT("Take the picture, with the camera raised."), EKeys::SpaceBar),
-			// SNEAK-20261108 and WALKIE-USE-20261108 (Tom, 8 November): keep low, and the walkie in the player's own hand
-			A(TEXT("crouch"), TEXT("Keep low"), Foot, TEXT("Crouch, or stand up again. Slower and quieter steps and a lower eye: a little less for anything out there to hear or see. Running or jumping stands you up."), EKeys::LeftControl, EKeys::RightControl),
-			A(TEXT("walkie"), TEXT("Walkie-talkie"), Foot, TEXT("Talk on the walkie once you carry it: call Dale on channel 1, or answer him when he calls. In the truck too."), EKeys::T),
-			A(TEXT("channel"), TEXT("Walkie channel"), Foot, TEXT("Turn the walkie to its next channel: 1 is Dale's, 2 the district's service band, 3 nobody's. Off channel 1, Dale cannot reach you."), EKeys::Y),
 			A(TEXT("radio"), TEXT("Truck radio"), Truck, TEXT("The radio in the cab: on, the next station, off."), EKeys::R),
 			A(TEXT("notebook"), TEXT("Notebook"), Panels, TEXT("The notebook: tonight's tasks, notes, papers and photographs."), EKeys::Tab, EKeys::N),
 			A(TEXT("map"), TEXT("Notebook map"), Panels, TEXT("The notebook, open at its map."), EKeys::M),
@@ -54,6 +51,11 @@ namespace S47KeysLocal
 			A(TEXT("devevents"), TEXT("Developer events"), Panels, TEXT("Make something happen now: aliens, sky, weather, time. Nothing is saved."), EKeys::F10),
 			A(TEXT("devstart"), TEXT("Developer start point"), Panels, TEXT("Keep a start point here for the title's Developer screen. Your cases are not touched."), EKeys::F9),
 			A(TEXT("pause"), TEXT("Pause"), Panels, TEXT("Pause: settings, save and load. Escape always pauses, and lowers the camera first when it is raised."), EKeys::Escape, EKeys::P, true),
+			// SNEAK-20261108 and WALKIE-USE-20261108 (Tom, 8 November): keep low, and the walkie in the player's own hand. Last, so that a
+			// key a player has already given to something else stays theirs (Normalize keeps the first).
+			A(TEXT("crouch"), TEXT("Keep low"), Low, TEXT("Crouch, or stand up again. Slower and quieter steps and a lower eye: a little less for anything out there to hear or see. Running or jumping stands you up."), EKeys::LeftControl, EKeys::RightControl),
+			A(TEXT("walkie"), TEXT("Walkie-talkie"), Low, TEXT("Talk on the walkie once you carry it: call Dale on channel 1, or answer him when he calls. In the truck too."), EKeys::T),
+			A(TEXT("channel"), TEXT("Walkie channel"), Low, TEXT("Turn the walkie to its next channel: 1 is Dale's, 2 the district's service band, 3 nobody's. Off channel 1, Dale cannot reach you."), EKeys::Y),
 		};
 	}
 

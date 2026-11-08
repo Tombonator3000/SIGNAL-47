@@ -339,6 +339,9 @@ void FS47Predecessor::StepDale()
  if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio||M->ModalOpen())return;
  // One hail out at a time, and after one that nobody answered, a while before the next.
  if(M->FieldRadio->Hailing()||F.Clock()<DaleRetryClock)return;
+ // Not into the middle of something: an event under way, a light that is taking someone, or something near enough to break up the
+ // set. His call is a noise of its own, and the player did not choose it.
+ if(M->OneAtATime()||(F.Taken&&F.Taken->Busy())||M->FieldRadio->PresenceLevel()>.01)return;
  // Not on top of another message: wait until the last one has had its time on the screen.
  if(M->UI){const FString Last=M->UI->LastDescription();if(Last!=ToastSeen){ToastSeen=Last;ToastAt=FPlatformTime::Seconds();}}
  if(FPlatformTime::Seconds()-ToastAt<9)return;

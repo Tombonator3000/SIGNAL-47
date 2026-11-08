@@ -94,11 +94,11 @@ TOptional<FVector> FS47RoswellBrain::Heard(const FInput& In,const FWorld& World)
   if (!Finite(Source->At) || !FMath::IsFinite(Source->Loudness) || Source->Loudness<=0) return {};
   Reach=FMath::Clamp(Source->Loudness,0.,2.)*10.;
  }
- else if (In.bPlayerValid && Finite(In.PlayerFeet))
+ // The feet as well: 9 m walking, 18 running; a crouching walk carries much less far (S47Sneak.h). Whichever carries further.
+ if (In.bPlayerValid && Finite(In.PlayerFeet))
  {
-  // 9 m walking, 18 running; a crouching walk carries much less far (S47Sneak.h).
   const double StepsCarry=S47Sneak::StepReach(In.PlayerSpeed,In.PlayerQuiet);
-  if (StepsCarry>0) { Source=FNoise{In.PlayerFeet,1.}; Reach=StepsCarry; }
+  if (StepsCarry>Reach) { Source=FNoise{In.PlayerFeet,1.}; Reach=StepsCarry; }
  }
  if (!Source) return {};
  // A roof/wall muffles sound instead of granting a perfect through-wall view.

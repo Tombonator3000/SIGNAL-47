@@ -106,7 +106,7 @@ private:
  struct FHeldTip { FString Tip; double Age=0; };
  TArray<FHeldTip> HeldTips;
  bool Deliver(const FString& Tip);
- bool bKeysBound=false;
+ bool bKeysBound=false,bBandPending=false; // bBandPending: Then is only the look at the service band, and goes if the channel turns on
  void BindKeys();
  void StepHand(double Dt);
  void Reply();

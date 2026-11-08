@@ -100,7 +100,7 @@ void FS47FieldRadio::Stop()
 {
  Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
- HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset();
+ HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -192,6 +192,8 @@ void FS47FieldRadio::NextChannel()
 {
  if(!bOwned||bLeftOut){if(M&&M->UI)M->UI->Toast(TEXT("No walkie on you to turn."),3);return;}
  Chan=Chan%Channels+1;SinceTouch=0;
+ // A look at the service band still to come goes with the turn of the knob; an answer still to come does not.
+ if(bBandPending){Then=nullptr;ThenIn=-1;bBandPending=false;}
  if(!M)return;
  if(M->Audio){S47FieldRadioSet::Click(M->Audio);S47FieldRadioSet::Squelch(M->Audio,.05,.18,.08);}
  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": ")+ChannelLine(),4);
@@ -205,7 +207,7 @@ void FS47FieldRadio::NextChannel()
    const FString OnBand=M->Freeform->Predecessor->ServiceBand();
    if(!OnBand.IsEmpty()&&M->UI){M->UI->Toast(Head(2)+TEXT(": (")+OnBand+TEXT(")"),8);SinceTouch=0;}
   };
-  ThenIn=1.4;
+  ThenIn=1.4;bBandPending=true;
  }
 }
 void FS47FieldRadio::KeyUp(const FString& Says)
@@ -225,6 +227,8 @@ bool FS47FieldRadio::PressTalk()
   return true;
  }
  if(HailLeft>0){Answer();return true;}
+ // (keyed before the look at the service band: the call itself listens there)
+ if(bBandPending){Then=nullptr;ThenIn=-1;bBandPending=false;}
  // Already on the air, or waiting for what comes back.
  if(TxLeft>0||ThenIn>=0)return true;
  KeyUp(Chan==1?TEXT("SARO night to Dale. Come in."):TEXT("Anybody on this channel?"));
@@ -262,7 +266,8 @@ void FS47FieldRadio::Reply()
 }
 bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunction<void()> OnMissed)
 {
- if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||Words.First.IsEmpty())return false;
+ // Not while the player is on the air, or waiting for what comes back: that call gets its answer first.
+ if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||Words.First.IsEmpty())return false;
  HailWords=Words;HailAnswer=MoveTemp(OnAnswer);HailMissed=MoveTemp(OnMissed);
  HailLeft=S47FieldRadioSet::HailSeconds;HailAgainIn=S47FieldRadioSet::HailAgainSeconds;HailCount=1;SinceTouch=0;
  if(M->Audio)S47FieldRadioSet::Call(M->Audio);
@@ -306,7 +311,7 @@ void FS47FieldRadio::StepHand(double Dt)
  if(ThenIn>=0)
  {
   ThenIn-=Dt;
-  if(ThenIn<0){const TFunction<void()> Do=MoveTemp(Then);Then=nullptr;if(Do)Do();}
+  if(ThenIn<0){const TFunction<void()> Do=MoveTemp(Then);Then=nullptr;bBandPending=false;if(Do)Do();}
  }
  // A report that waited: said by the first CB or the walkie on Dale's channel, or let go after a while (CB-WALKIE-20261108).
  for(FHeldTip& Held:HeldTips)Held.Age+=Dt;

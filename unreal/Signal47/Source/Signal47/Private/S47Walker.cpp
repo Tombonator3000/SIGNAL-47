@@ -341,8 +341,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 		}
 		else if (!bAir) Bob *= 0.9;
 		// the Jump key as bound (Space unless changed); with the camera raised Space is the shutter
-		// and CanJump says no. Kept low, it stands the player up instead.
-		if (S47Keys::Pressed(PC, TEXT("jump"))) { if (bCrouch) SetCrouch(false); else Jump(); }
+		// and CanJump says no. Kept low, it stands the player up instead, but not as the shutter.
+		if (S47Keys::Pressed(PC, TEXT("jump"))) { if (!bCrouch) Jump(); else if (!CanJump || CanJump()) SetCrouch(false); }
 	}
 	// down or up over a moment, as a body does it
 	{
