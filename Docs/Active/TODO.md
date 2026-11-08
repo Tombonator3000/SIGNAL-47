@@ -9,6 +9,21 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri sjekket om man stoppes mot dem da det er usynlige vegger rundt hele spillet så får bare kjørt litt rundt gården. Bakke: ser bra ut, noen feil rundt gården med store flater med overlapp mellom to forskjellige teksturer? Motorvei: ser bra ut! Lyskuler skal være sporadisk, alt fra en til tre, svever rundt og undersøker (som droner). Føles bra kjøring.»
 
+## Milepæler for Freeform (Tom 8. november)
+
+Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvorlige feil, og prøvene består. Punktene under refererer til TODO-ID-ene nedenfor.
+
+- [ ] **M1 Verden som lever (hendelser hvor som helst).** ANYWHERE, ARRAY-ORBS, NIGHT31 (alle 31), forslag 1-8, GEIGER. Prøve: naturlig flernatt med hendelser på minst fire steder og noe hver natt.
+- [ ] **M2 Ute i natta.** TRUCK-STRAND (dekk, sand, berging koster), HUD (batteri, frekvens), WALKIE-USE, CB-WALKIE, WARD-PHONE, SNEAK, STRESS, GEAR-FLICKER, SOUNDSCAPE, ANIMALS.
+- [ ] **M3 Etterforskning.** TAPE, CASEBOARD, ENLARGE, NIGHTLOG, WARD-REPORT, MAILBOX, MAP (zoom og posisjon), ANSWER.
+- [ ] **M4 Folk og steder.** TOWNSFOLK, NEIGHBOR, ENTHUSIASTS, MILITARY, MOTEL-SLEEP, nye Tripo-figurer (TRIPO-NEW), humorhendelser.
+- [ ] **M5 Verden og vær.** WEATHER, MOON, FATIGUE, PHYSICS, SAVE-SARO (Tom avgjør).
+- [ ] **M6 Utseende.** MOTEL-REAL, CALICHE-REAL, STREETLAMPS, FENCES-INVISIBLE og trafo, DALE-WINDOW, SARO-CLIP, JEEP-FORM, gjenstående fra T16-15 (hekkbelte, plasser, forbakker).
+- [ ] **M7 Freeform 1.0.** 30 dager spillbart fra start til vurdering, uten døde netter; Tom spiller gjennom; installert og testet.
+- [ ] **M8 Story i samme verden.** T16-18 og forslaget STORY_ENKLERE, bygget av Freeforms elementer.
+
+Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom bestemte.
+
 - [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
 - [ ] **T16-02: fjellteksturer.** Bedre, ekte New Mexico-utseende på `SM_FF_Range`.
 - [ ] **T16-03: bakken rundt gården.** Store flater med overlapp mellom to teksturer.
