@@ -1358,6 +1358,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddMail(E);
  AddHappenings(E);
  AddOmens(E);
+ AddMapLog(E);
 }
 
 void FS47DevFreeform::Stop()
