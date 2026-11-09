@@ -195,7 +195,7 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		if (!F || !F->TownUse || !F->Places || !F->Places->Spot(TEXT("windmill"), X, Z)) { Tell(false, TEXT("Freeform only")); return; }
 		FString Said;
 		if (!F->TownUse->DevLureNight(TEXT("windmill"), false, Said)) { Tell(false, TEXT("the lure could not be set out")); return; }
-		StandAt(FVector2D(X + 7, Z + 6), FVector2D(X + 3, Z + 2), 10, 11, [this, Pictured] { Pictured(TEXT("lure"), 1.5f); bLastOk = true; LastText = TEXT("the salt block, licked"); });
+		StandAt(FVector2D(X + 9, Z + 8), FVector2D(X + 5, Z + 4), 10, 11, [this, Pictured] { Pictured(TEXT("lure"), 1.5f); bLastOk = true; LastText = TEXT("the salt block, licked"); });
 	});
 	E.AddFreeform(Group, TEXT("Souvenirs: your picture in his window"), TEXT("eleven in the morning on the sidewalk: the framed print of lights over the flats inside the shop window, once he has bought a strange one"), [this, StandAt, Pictured]
 	{
@@ -356,8 +356,9 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		const FVector2D Lot(-13 + S47Geo::SARO_IN_ROAD.X, 15.5 + S47Geo::SARO_IN_ROAD.Z);
 		StandIn(TEXT("saro"), Lot + FVector2D(4, 12), Lot, 21.5, -.04, [this, Pictured]
 		{
-			Pictured(TEXT("vangate"), 2.f);
-			After(3.0, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van_saro")); Pictured(TEXT("vangatetalk"), 1.2f); });
+			// The sweep goes on to the next line about four seconds in: both pictures before that.
+			Pictured(TEXT("vangate"), 1.f);
+			After(1.6, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van_saro")); Pictured(TEXT("vangatetalk"), .9f); });
 			bLastOk = true; LastText = TEXT("the Sky Watch at the gate");
 		});
 	});
@@ -370,8 +371,8 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		// From its open side (east), a little behind.
 		StandIn(Area, At + FVector2D(8, 5), At, 11, -.05, [this, Pictured]
 		{
-			Pictured(TEXT("vanempty"), 2.f);
-			After(3.0, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van")); Pictured(TEXT("vanemptytalk"), 1.2f); });
+			Pictured(TEXT("vanempty"), 1.f);
+			After(1.6, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van")); Pictured(TEXT("vanemptytalk"), .9f); });
 			bLastOk = true; LastText = TEXT("the empty van");
 		});
 	});
