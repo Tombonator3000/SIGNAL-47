@@ -38,6 +38,10 @@
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
 #include "S47TownLayer.h"
+#include "S47MotelTv.h"
+#include "S47Seen.h"
+#include "S47Web.h"
+#include "Misc/Parse.h"
 #include "S47TripoNpcs.h"
 #include "S47Lived.h"
 #include "S47SaroRooms.h"
@@ -154,6 +158,14 @@ void US47Main::Step(double Dt)
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
 	if (!bFree && Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	// MOTEL-REAL-20261108: in Freeform the town layer's world step does not run, so the motel office's set never got past the
+	// first frame it was painted with. Its picture (the late programme, or the test card and its snow) and its sound go on here;
+	// none of the story's television event (bOk false). -S47MotelTvFrozen: as before, for a picture before and after.
+	if (bFree && Mode == EMode::Play && TownLayer && TownLayer->MotelTv && Web && !FParse::Param(FCommandLine::Get(), TEXT("S47MotelTvFrozen")))
+	{
+		FS47MotelTvIn Tv; Tv.bSaro = Web->Area() == TEXT("saro"); Tv.Cam = FS47Cam::Of(Player, 5000); Tv.Clock = Freeform ? Freeform->Clock() : 0;
+		TownLayer->MotelTv->Update(Dt, Tv);
+	}
 	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
