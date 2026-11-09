@@ -232,6 +232,11 @@ TArray<FHit> Run(UWorld* World, double Tol, TArray<FString>& Lines, const FStrin
    auto O = MakeShared<FJsonObject>(); O->SetStringField(TEXT("name"), S.Name);
    O->SetArrayField(TEXT("min"), { MakeShared<FJsonValueNumber>(S.Box.Min.X), MakeShared<FJsonValueNumber>(S.Box.Min.Y), MakeShared<FJsonValueNumber>(S.Box.Min.Z) });
    O->SetArrayField(TEXT("max"), { MakeShared<FJsonValueNumber>(S.Box.Max.X), MakeShared<FJsonValueNumber>(S.Box.Max.Y), MakeShared<FJsonValueNumber>(S.Box.Max.Z) });
+   TArray<TSharedPtr<FJsonValue>> Holes;
+   for (const FBox& H : S.Holes)
+    Holes.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(H.Min.X), MakeShared<FJsonValueNumber>(H.Min.Y), MakeShared<FJsonValueNumber>(H.Min.Z),
+     MakeShared<FJsonValueNumber>(H.Max.X), MakeShared<FJsonValueNumber>(H.Max.Y), MakeShared<FJsonValueNumber>(H.Max.Z) }));
+   O->SetArrayField(TEXT("holes"), Holes);
    WallList.Add(MakeShared<FJsonValueObject>(O));
   }
   Root->SetArrayField(TEXT("walls"), WallList);
