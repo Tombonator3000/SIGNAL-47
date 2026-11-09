@@ -93,11 +93,18 @@ private:
  double DesiredCrouch = 0, DesiredSpeed = 0;
  bool bTargetCover = false, bTargetRoof = false, bTargetWindow = false;
  FVector Goal = FVector::ZeroVector, LastPlayerEye = FVector::ZeroVector;
+ // PHYSICS-20261108: the last sound it heard from somewhere other than where the player is (a thrown stone, a can), and how long
+ // ago. Heard while it could see the player, it is taken for them as soon as it no longer does (bLurePending); a curious one also
+ // goes to look there (bGoLook). Not saved: a noise lasts a moment.
+ FVector NoiseAt = FVector::ZeroVector;
+ double NoiseAge = 1e6;
+ bool bLurePending = false, bGoLook = false;
 
  void Step(double Dt, const FInput& In, const FWorld& World);
  void Enter(EState NewState);
  bool Plan(const FVector& To, const FString& Id, const FWorld& World);
  bool Choose(const FInput& In, const FWorld& World, bool bFlee, bool bPreferCover);
+ bool GoLook(const FVector& At, const FWorld& World);
  void Move(double Dt, const FWorld& World);
  bool Seen(const FInput& In, const FWorld& World) const;
  bool Watched(const FInput& In, const FWorld& World) const;

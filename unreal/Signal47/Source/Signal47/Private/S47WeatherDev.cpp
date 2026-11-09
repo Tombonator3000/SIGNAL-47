@@ -7,6 +7,7 @@
 #include "S47Night.h"
 #include "S47Weather.h"
 #include "S47WeatherLive.h"
+#include "S47Walker.h"
 
 // F10, M5 (WEATHER-20261108, FATIGUE-20261108): the day's weather as the paper has it, each kind of weather now over the day's own
 // (out on the open land by the Baca windmill, at an hour it belongs to), the next real sand day or shower, and the hours awake. Nothing
@@ -25,6 +26,14 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 			if (!Wx) { Tell(false, TEXT("Freeform only")); return; }
 			Wx->Dev(Kind, Seconds);
 			if (bLamp && M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave) M->Night->Flashlight->bOn = true;
+			// M5 sweep 3: the shower stands upwind (FS47Sky::DrawCell): the view turned to it, a little up, its cloud and virga in the picture
+			if (Kind == FS47WeatherLive::EDev::Shower && M->Player)
+				if (const FS47FreeformSession* F = Session())
+				{
+					const S47Weather::FNow N = S47Weather::Now(F->Seed(), int32(FMath::FloorToDouble(F->Clock() / 86400.0)) + 1, FMath::Fmod(F->Clock(), 86400.0));
+					FVector2D Dir(N.DirX, N.DirZ); Dir = Dir.SizeSquared() > 1e-6 ? Dir.GetSafeNormal() : FVector2D(.6, -.8);
+					AimAt(FVector(M->Player->Pos.X - Dir.X * 100, M->Player->FloorY + M->Player->Eye + 12, M->Player->Pos.Z - Dir.Y * 100));
+				}
 			Tell(true, Say, 8);
 		});
 	};
@@ -39,8 +48,8 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		[Out] { Out(16, 18, FS47WeatherLive::EDev::Sand, 240, false, TEXT("Blowing sand for four minutes. Look at the far land, walk, get in the truck and drive: the sand drifts onto the track and the wind pushes the truck.")); });
 	E.AddFreeform(Group, TEXT("Blowing sand at night, lamp on"), TEXT("23:00, open land: sand streaming through the lamp's beam and the headlights; the crickets gone under the wind; four minutes"),
 		[Out] { Out(23, 4.5, FS47WeatherLive::EDev::Sand, 240, true, TEXT("Sand at night for four minutes: through the lamp and the headlights. Listen: the wind covers the crickets and your steps.")); });
-	E.AddFreeform(Group, TEXT("A stray shower"), TEXT("17:00, open land: the cloud thickens and the land darkens, drops fall past and tick, thunder far off, the dirt slick after (the tyres hiss on it); two minutes"),
-		[Out] { Out(17, 19.5, FS47WeatherLive::EDev::Shower, 120, false, TEXT("A stray shower for two minutes: a few drops, thunder a long way off. Drive on the dirt after it: less grip.")); });
+	E.AddFreeform(Group, TEXT("A stray shower"), TEXT("17:00, open land, looking upwind: a dark shower cloud with virga under it, the land darkens, drops fall past and tick, thunder far off, the dirt slick after (the tyres hiss on it); two minutes"),
+		[Out] { Out(17, 19.5, FS47WeatherLive::EDev::Shower, 120, false, TEXT("A stray shower for two minutes: the dark cloud upwind with virga under it, a few drops, thunder a long way off. Drive on the dirt after it: less grip.")); });
 	E.AddFreeform(Group, TEXT("Morning haze"), TEXT("06:30, open land: the low haze, the far land pale; four minutes"),
 		[Out] { Out(6.5, 8.5, FS47WeatherLive::EDev::Haze, 240, false, TEXT("Haze for four minutes, as on a still morning or the morning after a shower.")); });
 	E.AddFreeform(Group, TEXT("The day's own weather again"), TEXT("whatever F10 set is gone; in a developer run the day's weather stays on the world until the run ends"), [this, Weather]

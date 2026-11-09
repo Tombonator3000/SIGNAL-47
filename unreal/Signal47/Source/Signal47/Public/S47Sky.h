@@ -226,9 +226,20 @@ private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> VeilMid;
 	bool bVeilTried = false;
 	void DrawVeil(AS47Web* W, const FVector& Eye);
+	// M5 sweep 3: the shower itself. The veil alone only greyed the blue (sweep-003: still a blue sky with white cloud): a painted card on
+	// the side the shower comes from (upwind), CellDistance out and turned to the eye, a dark, heavy cloud with grey virga hanging under
+	// it that dries before it reaches the ground. Drawn over the veil; hidden by night and without a shower.
+	TWeakObjectPtr<UStaticMeshComponent> CellComp;
+	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid;
+	bool bCellTried = false;
+	void DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day);
 public:
 	/** The veil's colour and opacity for the sand (0 to 1), a shower's cloud (0 to 1) and the daylight (tested). */
 	static void VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity);
+	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot. */
+	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out);
+	/** Where the shower stands from the eye and how big its card is (metres). */
+	static constexpr double CellDistance = 7000, CellWidth = 14000, CellHeight = 4000;
 private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
 	bool bMoon = false;

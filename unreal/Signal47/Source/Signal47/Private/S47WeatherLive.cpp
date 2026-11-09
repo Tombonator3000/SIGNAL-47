@@ -209,8 +209,21 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 		// M5 sweep 2: the sky's veil (FS47Sky): brown and thick in the sand by day, grey under a shower, nothing on a plain day
 		FLinearColor SandC, RainC, PlainC; double SandA = 0, RainA = 0, PlainA = 1, NightA = 0; FLinearColor NightC;
 		FS47Sky::VeilOf(1, 0, 1, SandC, SandA); FS47Sky::VeilOf(0, 1, 1, RainC, RainA); FS47Sky::VeilOf(0, 0, 1, PlainC, PlainA); FS47Sky::VeilOf(1, 0, 0, NightC, NightA);
-		Check(SandA > .4 && SandC.R > SandC.G && SandC.G > SandC.B && RainA > .3 && RainC.B >= RainC.R && PlainA == 0 && NightA > .1 && NightC.R < .1f,
-			TEXT("the sky's veil: brown in the sand by day (dark at night), grey under a shower, none on a plain day"));
+		Check(SandA > .4 && SandC.R > SandC.G && SandC.G > SandC.B && RainA > .5 && RainC.B >= RainC.R && RainC.R < .35f && PlainA == 0 && NightA > .1 && NightC.R < .1f,
+			TEXT("the sky's veil: brown in the sand by day (dark at night), a dark grey under a shower, none on a plain day"));
+	}
+	{
+		// M5 sweep 3: the shower's own cloud (FS47Sky::CellPixels): dark and solid high in the middle, darker at its base than its top,
+		// virga hanging under it that thins downward, and nothing at the foot, the top row or the sides (no edge of a card shows)
+		const int32 W = 128, H = 64;
+		TArray<FColor> Px; FS47Sky::CellPixels(W, H, Px);
+		const auto At = [&Px, W](double U, double V) { return Px[FMath::Clamp(int32(V * 63), 0, 63) * W + FMath::Clamp(int32(U * 127), 0, 127)]; };
+		uint8 Edges = 0; double VirgaHigh = 0, VirgaLow = 0;
+		for (int32 X = 0; X < W; ++X) Edges = FMath::Max3(Edges, Px[X].A, Px[(H - 1) * W + X].A);
+		for (int32 Y = 0; Y < H; ++Y) Edges = FMath::Max3(Edges, Px[Y * W].A, Px[Y * W + W - 1].A);
+		for (int32 X = W / 4; X < 3 * W / 4; ++X) { VirgaHigh += Px[int32(.66 * (H - 1)) * W + X].A; VirgaLow += Px[int32(.84 * (H - 1)) * W + X].A; }
+		Check(Px.Num() == W * H && At(.5, .4).A > 150 && At(.5, .54).R < At(.5, .3).R && Edges < 8 && VirgaHigh > 2 * VirgaLow && VirgaHigh > 4 * (W / 2),
+			TEXT("the shower's cloud: dark and solid in the middle, darkest at the base, virga thinning under it, no edge of the card shows"));
 	}
 	return OK;
 }

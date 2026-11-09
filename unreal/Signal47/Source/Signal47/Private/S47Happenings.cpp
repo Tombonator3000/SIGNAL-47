@@ -3727,7 +3727,8 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  // Marks left at a site by a visit, as the magnetometer has them (FS47Places::StepNeedle): in the frame the player stands in.
  if(F->FarmSite&&F->FarmSite->Armed()&&!F->FarmSite->Raked())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
  // The marks a landing_trace left, where the Director put them (its anchor, in its own scene), while they lie there.
- if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere())
+ // Gone over by the military first (S47Visitors::Cleared): nothing there for the counter either.
+ if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere()&&!F->Director->TraceRaked())
  {
   const FVector At=F->Director->EventAnchor();
   Add(At,.45f,5.,FString::Printf(TEXT("trace:%d"),F->Day()));Add(At,.08f,60.,FString::Printf(TEXT("trace:%d"),F->Day()));

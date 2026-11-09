@@ -41,6 +41,7 @@ void FS47RoswellBrain::Start(EMode InMode,const FVector& At,double FacingYaw,int
  LastKnownPlayer=Goal=Pos; LastPlayerEye=LookTarget=Eye()+Forward(Yaw)*3.;
  Path.Reset(); NextPoint=ChoiceCursor=0; bPlanningDeferred=false; TargetId.Reset(); Mode=InMode; State=EState::Idle;
  DecisionAt=Random.FRandRange(1.0f,2.3f); RepathAt=0;
+ NoiseAt=Pos; NoiseAge=1e6; bLurePending=bGoLook=false;
 }
 
 void FS47RoswellBrain::SetMode(EMode InMode)
@@ -50,7 +51,7 @@ void FS47RoswellBrain::SetMode(EMode InMode)
  Mode=InMode; Path.Reset(); NextPoint=0; bAtGoal=true; Velocity=FVector::ZeroVector;
  bContact=bStandDone=false; bHasPlayerMemory=KeepMemory; if (!KeepMemory) MemoryAge=0; Noticed=0;
  bTargetCover=bTargetRoof=bTargetWindow=false; TargetId.Reset();
- LastListenAt=Age-10.; HeardAge=1e6;
+ LastListenAt=Age-10.; HeardAge=1e6; NoiseAge=1e6; bLurePending=bGoLook=false;
  State=EState::Idle; StateAge=0; ChoiceCursor=0; bPlanningDeferred=false; DecisionAt=Age+1.; RepathAt=Age;
 }
 
@@ -87,27 +88,43 @@ bool FS47RoswellBrain::Watched(const FInput& In,const FWorld& World) const
 
 TOptional<FVector> FS47RoswellBrain::Heard(const FInput& In,const FWorld& World) const
 {
- TOptional<FNoise> Source=In.Noise;
- double Reach=0;
- if (Source)
- {
-  if (!Finite(Source->At) || !FMath::IsFinite(Source->Loudness) || Source->Loudness<=0) return {};
-  Reach=FMath::Clamp(Source->Loudness,0.,2.)*10.;
- }
- // The feet as well: 9 m walking, 18 running; a crouching walk carries much less far (S47Sneak.h). Whichever carries further.
- if (In.bPlayerValid && Finite(In.PlayerFeet))
- {
-  const double StepsCarry=S47Sneak::StepReach(In.PlayerSpeed,In.PlayerQuiet);
-  if (StepsCarry>Reach) { Source=FNoise{In.PlayerFeet,1.}; Reach=StepsCarry; }
- }
- if (!Source) return {};
+ if (In.Noise && (!Finite(In.Noise->At) || !FMath::IsFinite(In.Noise->Loudness) || In.Noise->Loudness<=0)) return {};
  // the wind covers what it can (WEATHER-20261108)
- if (FMath::IsFinite(In.HearScale)) Reach*=FMath::Clamp(In.HearScale,.3,1.);
- // A roof/wall muffles sound instead of granting a perfect through-wall view.
+ const double Scale=FMath::IsFinite(In.HearScale)?FMath::Clamp(In.HearScale,.3,1.):1.;
+ TOptional<FVector> Best; double BestMargin=0;
+ // PHYSICS-20261108: of the noise and the feet, the one it hears best where it stands, not the one that carries furthest: a stone
+ // landing beside it is not lost to footsteps that carry nine metres from twelve metres off.
+ const auto Try=[&](const FVector& At,double Reach)
+ {
+  Reach*=Scale;
+  const double D=FVector::Dist(Eye(),At);
+  if (Reach<=0 || D>Reach || FMath::Abs(At.Y-Pos.Y)>6.) return;
+  // A roof/wall muffles sound instead of granting a perfect through-wall view. Sound needs no clear line to a point on the ground:
+  // measured to 0.3 m over where it was made, and round a kerb or a rise in the ground to a metre over it; a wall stops both.
+  if (D>Reach*.42 && (!World.Sight || (!World.Sight(Eye(),At+FVector(0,.3,0)) && !World.Sight(Eye(),At+FVector(0,1.,0))))) return;
+  if (!Best || Reach-D>BestMargin) { Best=At; BestMargin=Reach-D; }
+ };
+ if (In.Noise) Try(In.Noise->At,FMath::Clamp(In.Noise->Loudness,0.,2.)*10.);
+ // The feet as well: 9 m walking, 18 running; a crouching walk carries much less far (S47Sneak.h).
  // Stationary input cannot generate footsteps; the adapter supplies measured speed.
- if (!World.Sight || !World.Sight(Eye(),Source->At+FVector(0,.3,0))) Reach*=.42;
- if (FVector::Dist(Eye(),Source->At)>Reach || FMath::Abs(Source->At.Y-Pos.Y)>6.) return {};
- return Source->At;
+ if (In.bPlayerValid && Finite(In.PlayerFeet)) Try(In.PlayerFeet,S47Sneak::StepReach(In.PlayerSpeed,In.PlayerQuiet));
+ return Best;
+}
+
+bool FS47RoswellBrain::GoLook(const FVector& At,const FWorld& World)
+{
+ // To where it was heard, or as near to it as there is ground to stand on: the spot, then a little short of it on the way.
+ const double Far=Distance(Pos,At);
+ const FVector Back=FVector(Pos.X-At.X,0,Pos.Z-At.Z).GetSafeNormal();
+ for (const double Short : {0.,.8,1.6})
+ {
+  if (Short>0 && Short>Far-.3) break;
+  FVector To=At+Back*Short; To.Y=FMath::Lerp(At.Y,Pos.Y,Far>.1?Short/Far:0.);
+  if (World.GroundedStep) { const auto Grounded=World.GroundedStep(To,To); if (!Grounded.IsSet() || !Finite(Grounded.GetValue())) continue; To=Grounded.GetValue(); }
+  if (Plan(To,TEXT("heard-sound"),World)) { bTargetCover=bTargetRoof=bTargetWindow=false; return true; }
+  if (bPlanningDeferred) return false;
+ }
+ return false;
 }
 
 bool FS47RoswellBrain::Plan(const FVector& To,const FString& Id,const FWorld& World)
@@ -246,9 +263,12 @@ void FS47RoswellBrain::Tick(double Dt,const FInput& In,const FWorld& World)
 
 void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
 {
- Age+=Dt; StateAge+=Dt; MemoryAge+=Dt; HeardAge+=Dt; ContactCool=FMath::Max(0.,ContactCool-Dt);
+ Age+=Dt; StateAge+=Dt; MemoryAge+=Dt; HeardAge+=Dt; NoiseAge+=Dt; ContactCool=FMath::Max(0.,ContactCool-Dt);
  bSeesPlayer=Seen(In,World); bPlayerSeesMe=Watched(In,World);
  const auto Sound=Heard(In,World);
+ // PHYSICS-20261108: a sound from somewhere the player is not (a stone, a can), as against their feet, their breath or the walkie.
+ const bool bLure=Sound && In.Noise && Sound->Equals(In.Noise->At) && (!In.bPlayerValid || !Finite(In.PlayerFeet) || Distance(*Sound,In.PlayerFeet)>2.);
+ if (bLure) { NoiseAt=*Sound; NoiseAge=0; bLurePending=bSeesPlayer; bGoLook=Mode==EMode::Curious && !(TargetId==TEXT("heard-sound") && !bAtGoal && Distance(Goal,NoiseAt)<2.); }
  if (bSeesPlayer)
  {
   LastKnownPlayer=In.PlayerFeet; LastPlayerEye=In.PlayerEye;
@@ -257,11 +277,20 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
  else if (Sound)
  {
   LastKnownPlayer=*Sound; LastPlayerEye=*Sound+FVector(0,1.5,0);
-  bHasPlayerMemory=true; MemoryAge=0; HeardAge=0;
+  bHasPlayerMemory=true; MemoryAge=0; HeardAge=0; bLurePending=false;
  }
+ else if (bLurePending && NoiseAge<3.)
+ {
+  // Heard while it still had the player in view: once it does not, the newer sound wins over what it saw before.
+  LastKnownPlayer=NoiseAt; LastPlayerEye=NoiseAt+FVector(0,1.5,0);
+  bHasPlayerMemory=true; MemoryAge=NoiseAge; bLurePending=false;
+ }
+ if (NoiseAge>=3.) bLurePending=bGoLook=false;
  if (MemoryAge>(Mode==EMode::Hunt?16.:12.)) bHasPlayerMemory=false;
  if (bHasPlayerMemory) LookTarget=LastPlayerEye;
  else LookTarget=Eye()+Forward(Yaw+.35*FMath::Sin(Age*.63))*4.;
+ // A curious one turns its head to a fresh sound, whatever it was watching.
+ if (Mode==EMode::Curious && NoiseAge<1.5) LookTarget=NoiseAt+FVector(0,.3,0);
  HeadYaw=Facing(Eye(),LookTarget);
 
  DesiredSpeed=DesiredCrouch=0;
@@ -347,6 +376,14 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
    Enter(EState::Flee); Path.Reset(); NextPoint=0; bAtGoal=false;
    Choose(In,World,true,true); RepathAt=Age+(bPlanningDeferred?.05:.25);
   }
+  // PHYSICS-20261108: a stone off to the side draws it: it goes, slowly, to look where it landed, from whatever it was doing.
+  // Not out of hiding or flight; it stays put there.
+  if (bGoLook && State!=EState::Flee && State!=EState::Hide)
+  {
+   if (GoLook(NoiseAt,World)) { Enter(EState::Stalk); bGoLook=false; }
+   else if (!bPlanningDeferred) bGoLook=false;
+  }
+  else if (State==EState::Flee || State==EState::Hide) bGoLook=false;
   switch (State)
   {
    case EState::Flee:
@@ -548,6 +585,41 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
   Check(Turner.Pos.IsNearlyZero() && Turner.LastKnownPlayer.Equals(FVector(9,0,0)) && Turner.Mode==EMode::Curious && FMath::Abs(Wrap(Turner.Yaw-Facing(FVector::ZeroVector,FVector(9,0,0))))<.2,
    TEXT("a heard sound turns it to that place and that is what it then knows"));
  }
+ {
+  // PHYSICS-20261108, the F10 lure, curious (the hunt's is in FS47Handling's test): a small one that has had the player in view,
+  // the player low and looking away twelve metres off, a stone landing a few metres to its side and behind it.
+  FWorld Yard; Yard.CanStand=[](const FVector& P){return Finite(P);};Yard.CanMove=[](const FVector&,const FVector&){return true;};
+  Yard.FindPath=[](const FVector&,const FVector& To){return TArray<FVector>{To};};Yard.Sight=[](const FVector&,const FVector&){return true;};
+  Yard.Points={{TEXT("west-cover"),FVector(-5,0,4),true,false,false}};
+  FInput Low; Low.PlayerFeet=FVector(0,0,10); Low.PlayerEye=FVector(0,1.1,10); Low.PlayerForward=FVector(0,0,1); Low.PlayerQuiet=1;
+  const FVector StoneAt(3,0,-1.5);
+  // Watched first in the open, then the stone (loudness .8: a stone on dirt, heard to eight metres), then five seconds in After.
+  const auto Lure=[&](FS47RoswellBrain& Small,double Loud,const FWorld& After,bool& bKnewPlayer,double& OutBefore)
+  {
+   for (int32 I=0; I<12; ++I) Small.Tick(.1,Low,Yard);
+   bKnewPlayer=Small.bHasPlayerMemory && Small.LastKnownPlayer.Equals(Low.PlayerFeet);
+   FInput Thrown=Low; Thrown.Noise=FNoise{StoneAt,Loud};
+   Small.Tick(.1,Thrown,After);
+   OutBefore=Distance(Small.Pos,StoneAt);
+   for (int32 I=0; I<50; ++I) Small.Tick(.1,Low,After);
+  };
+  bool bKnew=false; double Before=0;
+  // The player gone out of its sight as the stone lands: what it hears now wins over what it saw.
+  FWorld Ducked=Yard; Ducked.Sight=[Hide=Low.PlayerEye](const FVector&,const FVector& To){return Distance(To,Hide)>1.;};
+  FS47RoswellBrain Hidden; Hidden.Start(EMode::Curious,FVector::ZeroVector,0,61);
+  Lure(Hidden,.8,Ducked,bKnew,Before);
+  Check(bKnew && Hidden.Mode==EMode::Curious && Hidden.LastKnownPlayer.Equals(StoneAt) && Distance(Hidden.Pos,StoneAt)<Before-1. && Hidden.State!=EState::Flee,
+   TEXT("curious: a stone heard with the player out of sight wins over the old sighting, and it goes slowly to look there"));
+  // Still in view as it lands: it turns to the sound and goes to look, and once the player is behind it the stone is what it knows.
+  FS47RoswellBrain Watching; Watching.Start(EMode::Curious,FVector::ZeroVector,0,61);
+  Lure(Watching,.8,Yard,bKnew,Before);
+  Check(bKnew && !Watching.bSeesPlayer && Watching.LastKnownPlayer.Equals(StoneAt) && Distance(Watching.Pos,StoneAt)<Before-1. && Distance(Watching.Pos,Low.PlayerFeet)>8. && Watching.Mode==EMode::Curious,
+   TEXT("curious: a stone landing while it watches the player draws it off, and when it no longer sees the player it takes them to be there"));
+  // Too faint to carry to where it stands: nothing changes.
+  FS47RoswellBrain Far; Far.Start(EMode::Curious,FVector::ZeroVector,0,61);
+  Lure(Far,.2,Yard,bKnew,Before);
+  Check(bKnew && Far.NoiseAge>1e5 && Far.TargetId!=TEXT("heard-sound") && !Far.LastKnownPlayer.Equals(StoneAt),TEXT("curious: a stone too faint to reach it changes nothing"));
+ }
  return bOk;
 }
 
@@ -581,5 +653,5 @@ bool FS47RoswellBrain::Restore(const S47J::FObj& O)
  bHasPlayerMemory=S47J::Bool(O,TEXT("memory"));bContact=S47J::Bool(O,TEXT("contact"));bStandDone=S47J::Bool(O,TEXT("standDone"));bAtGoal=S47J::Bool(O,TEXT("atGoal"));
  bTargetCover=S47J::Bool(O,TEXT("targetCover"));bTargetRoof=S47J::Bool(O,TEXT("targetRoof"));bTargetWindow=S47J::Bool(O,TEXT("targetWindow"));
  TargetId=S47J::Str(O,TEXT("target"));Path.Reset();for(int32 I=0;I<R.Num();I+=3)Path.Add(FVector(R[I],R[I+1],R[I+2]));NextPoint=FMath::Clamp(S47J::Int(O,TEXT("next")),0,Path.Num());ChoiceCursor=S47J::Int(O,TEXT("choice"));
- bPlanningDeferred=false;bPlayerSeesMe=bSeesPlayer=false;return true;
+ bPlanningDeferred=false;bPlayerSeesMe=bSeesPlayer=false;NoiseAge=1e6;bLurePending=bGoLook=false;return true;
 }

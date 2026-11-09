@@ -558,7 +558,8 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	const float ShowerK = Wx.bOn ? FMath::Max(FMath::Clamp(float(Wx.CloudBias - .06) / .18f, 0.f, 1.f), float(FMath::Clamp(Wx.Rain, 0.0, 1.0))) : 0.f;
 	// (M5 sweep 2: the first values, a sun .6 as strong, read as no change at all on a picture; the sand now takes most of the sun and the
 	// shadows go soft and pale, a shower's overcast nearly half the light)
-	const float WeatherSun = (1.f - .62f * SandK) * (1.f - .55f * ShowerK);
+	// (M5 sweep 3: under the shower's cloud the land still read as sunny: a quarter of the sun, its shadows nearly gone)
+	const float WeatherSun = (1.f - .62f * SandK) * (1.f - .75f * ShowerK);
 	if (DawnSun)
 	{
 		// SKY.md, rendering only (FS47Sky::Sun keeps its story values): the dusk concept keeps a last
@@ -575,7 +576,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
 		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight * Look.SunGain * WeatherSun);
 		// softer shadows in the sand (a wider source, and lighter); set only when it changes enough to matter
-		const float Soft = FMath::Max(SandK, .7f * ShowerK);
+		const float Soft = FMath::Max(SandK, .9f * ShowerK);
 		const float Angle = FMath::RoundToFloat(FMath::Lerp(.545f, 6.f, Soft) * 20.f) / 20.f, Shade = FMath::RoundToFloat(FMath::Lerp(1.f, .5f, Soft) * 50.f) / 50.f;
 		if (!FMath::IsNearlyEqual(DawnSun->LightSourceAngle, Angle, .01f)) DawnSun->SetLightSourceAngle(Angle);
 		if (!FMath::IsNearlyEqual(DawnSun->ShadowAmount, Shade, .005f)) DawnSun->SetShadowAmount(Shade);
@@ -588,6 +589,8 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, .58f, .24f), Golden * .8f));
 		// the sun through the sand: brown-orange, the blue gone out of it
 		if (SandK > 0.f) DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, .7f, .42f), SandK * .7f));
+		// and through the shower's cloud: cool and grey, the evening's gold gone out of it
+		if (ShowerK > 0.f) DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(.82f, .86f, .94f), ShowerK * .6f));
 	}
 	if (NightSky)
 	{
@@ -607,7 +610,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		const float DuskSky = 1.f + FMath::Max(0.f, CvDuskSky.GetValueOnGameThread()) * (CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(Twilight, 0.f, 1.f)) * (1.f - .6f * Caliche);
 		// MOON-20261108: the night sky's own fill follows the moon as the moonlight does (1 at a half moon), the day not at all.
 		// (the sand: the sky's fill does more of the work as the sun dims; under a shower's cloud it is darker too)
-		const float WeatherFill = FMath::Lerp(1.f, 1.25f, SandK * D) * (1.f - .3f * ShowerK);
+		const float WeatherFill = FMath::Lerp(1.f, 1.25f, SandK * D) * (1.f - .45f * ShowerK);
 		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight) * FMath::Lerp(SkyMoon, 1.f, FMath::Clamp(Daylight, 0.f, 1.f)), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky * WeatherFill);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
