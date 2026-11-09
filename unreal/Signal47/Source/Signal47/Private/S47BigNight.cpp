@@ -205,7 +205,7 @@ bool FS47Happenings::BigSite(int32 Night,double Clock)
  auto* F=M->Freeform.Get();
  using T=ES47PlaceTrait;
  // Open land out past the low ground, far enough to be a light on the horizon from SARO and near enough to walk to the next day.
- const uint32 Any=uint32(T::Open)|uint32(T::Wash)|uint32(T::Far),Not=uint32(T::Town)|uint32(T::Saro)|uint32(T::Indoors)|uint32(T::Array)|uint32(T::People);
+ const uint32 Any=uint32(T::Open)|uint32(T::Wash)|uint32(T::Far),Not=uint32(T::Town)|uint32(T::Saro)|uint32(T::Indoors)|uint32(T::Array)|uint32(T::People)|uint32(T::Road);
  FSpot S=Where(TEXT("big_night"),0,Any,Not,900,3600,.4f,0x42494734u^uint32(Night));
  if(!S.bSet)S=Where(TEXT("big_night"),0,Any,Not,0,0,1.f,0x42494735u^uint32(Night));
  if(!S.bSet)return false;
