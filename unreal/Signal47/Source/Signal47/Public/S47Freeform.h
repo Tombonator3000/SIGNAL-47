@@ -143,6 +143,9 @@ public:
  void TestLiveRules(){bTestRules=true;}
  // Whose night a clock falls in: the shift day it belongs to. Bodies keep to their own start each night (S47NightRhythm.h).
  static int32 NightOf(double AtClock){return FMath::Max(1,int32(FMath::FloorToDouble((AtClock-8*3600.)/SecondsInDay))+1);}
+ // The last night that is over: from four in the morning after it. A rest that jumps the clock to 08:00 has slept through it, and
+ // whatever settles a night in the morning (S47Townsfolk, S47Visitors) settles every night up to this one, not only the night of now.
+ static int32 NightsOver(double AtClock){return NightOf(AtClock+4*3600.)-1;}
  double BodyStartHour(int32 Night) const;
  bool QuietNight(int32 Night) const;
  bool TheirHoursNow(double AtClock) const;
@@ -243,7 +246,8 @@ public:
  static constexpr int32 MotelRoom=8;
  // A room tonight: MotelRoom, or less with the Ledger's coupon clipped (FS47Mail).
  int32 MotelPrice() const;
- bool RestAt(double Target,ERest Where);
+ // bPaid: the room was paid for already tonight (back to sleep after the night woke you): nothing is charged again.
+ bool RestAt(double Target,ERest Where,bool bPaid=false);
  ERest LastRest() const{return RestPlace;}
  float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
@@ -302,6 +306,8 @@ public:
  // weekly sheet as carried arrears (false, capped like any carried bill). Never refused and never touches the requisition.
  bool BillTow(int32 Fee);
  void Earn(int32 Amount);
+ // Money handed back for something not had (a parcel that could not be handed over): to cash, never to the requisition.
+ void Refund(int32 Amount);
  int32 InventoryCount(const FString& Id) const;
  void AddItem(const FString& Id,int32 Count);
  bool Consume(const FString& Id);

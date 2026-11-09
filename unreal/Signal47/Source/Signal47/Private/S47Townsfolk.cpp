@@ -30,6 +30,8 @@ namespace S47TownsfolkLocal
 		return FString(Text).Replace(TEXT("{A}"), *Up, ESearchCase::CaseSensitive).Replace(TEXT("{a}"), *A, ESearchCase::CaseSensitive).Replace(TEXT("{b}"), *B).Replace(TEXT("{c}"), *C);
 	}
 	FString Cap(const FString& S) { return S.IsEmpty() ? S : S.Left(1).ToUpper() + S.Mid(1); }
+	// How the town speaks of each of the four: the waitress is she.
+	FString He(const FString& Who) { return Who == TEXT("waitress") ? TEXT("she") : TEXT("he"); }
 	// Each line in four voices: the attendant (dry), the waitress (warm, talks), the deputy (careful, times not stories), the souvenir
 	// man (sells it). {a} {b} {c} as each says.
 	using FFour = const TCHAR* const[4];
@@ -44,15 +46,32 @@ namespace S47TownsfolkLocal
 		TEXT("I was off duty. That's what goes in the file, and that's all I'm saying."),
 		TEXT("Where was I? Socorro. Visiting. ...Don't you put that on the radio.") };
 	FFour BackLines = {
-		TEXT("{a}'s back. Won't say where. Looks like they haven't slept."),
-		TEXT("{a} came back {b}. Sat right there and ate like they hadn't in a week, and never said a word about it."),
+		TEXT("{a}'s back. Won't say where. Looks like {he} hasn't slept."),
+		TEXT("{a} came back {b}. Sat right there and ate like {he} hadn't in a week, and never said a word about it."),
 		TEXT("{a} is accounted for as of {b}. That's the file. I'd leave it there."),
 		TEXT("{a}'s back, and doesn't remember a thing. They never do. I've got a book on it.") };
+	// What is going round about a night's event, by what kind of thing it was (FS47Townsfolk::Talk). Second-hand: a third of the time
+	// it is put at the wrong place (Lines).
 	FFour RumorLines = {
 		TEXT("Fella fueling up this morning said there were lights out by {a} last night. Paid cash and didn't wait for change."),
 		TEXT("The breakfast crowd's all about {a}. Lights, they say. Low, and no sound at all."),
 		TEXT("I've had calls about {a}. Nothing on the ground when I got there. I wrote the times down."),
 		TEXT("{A}. Last night. I'll have a postcard of it by Friday.") };
+	FFour DoorRumorLines = {
+		TEXT("Somebody was trying doors out by {a} last night, they say. Nobody anybody knows. Didn't take a thing."),
+		TEXT("They're saying somebody was at the windows out by {a} last night. Just looking in. I'd have died."),
+		TEXT("Call came in about {a}. Somebody at a door in the night, nobody there when I got out there. I wrote the time down."),
+		TEXT("{A}. Somebody at the door in the night, and no tracks in the morning. That's how it starts.") };
+	FFour FigureRumorLines = {
+		TEXT("Trucker said he saw somebody walking out past {a} last night. No coat, no car. He didn't stop."),
+		TEXT("A man was walking out by {a} in the middle of the night, they say. Just walking. Who does that?"),
+		TEXT("Had a report of somebody on foot out by {a} after midnight. Nobody when I drove by. If it was you, don't."),
+		TEXT("Somebody walking out by {a} at night, and not one of ours. I'd stay in, if I were you.") };
+	FFour StockRumorLines = {
+		TEXT("Rancher in this morning says his cattle were acting up out by {a}. Wouldn't say how."),
+		TEXT("There's talk about the cattle out by {a}. Something about the way they were standing. Eat your eggs."),
+		TEXT("Livestock complaint out by {a}. I don't do livestock. I wrote it down anyway."),
+		TEXT("{A}. The cattle know first. Always have.") };
 	FFour TipLines = {
 		TEXT("Heard Earl read your note about {a}. Everybody did. Half of them are going out there to look."),
 		TEXT("You're the one called Earl about {a}? My sister heard it. She hasn't slept."),
@@ -64,10 +83,10 @@ namespace S47TownsfolkLocal
 		TEXT("You were out at {a}. Somebody always sees. Just so you know that."),
 		TEXT("You've been out to {a}. Find anything? No, you wouldn't say. They never do.") };
 	FFour HelpLines = {
-		TEXT("County says you called in that camper out on the flats. That was decent of you."),
-		TEXT("You called in that poor man's camper. His wife was in here crying. Thank you."),
-		TEXT("Your call on that camper went in the file with your name on it. Appreciated."),
-		TEXT("You found the schoolteacher's camper. See? It's not just me.") };
+		TEXT("County says you called in that blue pickup out on the flats. That was decent of you."),
+		TEXT("You called in that poor man's truck. His wife was in here crying. Thank you."),
+		TEXT("Your call on that pickup went in the file with your name on it. Appreciated."),
+		TEXT("You found the missing man's truck. See? It's not just me.") };
 	FFour TakenLines = {
 		TEXT("You look like you lost a night somewhere. Get some sleep."),
 		TEXT("Honey, you look like you haven't slept since Easter. Sit down."),
@@ -101,7 +120,7 @@ namespace S47TownsfolkLocal
 	const TCHAR* const Chatter[4][2] = {
 		{ TEXT("Regular's down to eighty-nine nine. It's been coming down all spring."), TEXT("Wind'll pick up after four. It always does.") },
 		{ TEXT("Pie's peach today. Tomorrow it's peach too. The cook's got a lot of peaches."), TEXT("You work too much. All you people out there do.") },
-		{ TEXT("Keep it under fifty-five through town. I mean it."), TEXT("Quiet week, mostly. I'd like to keep it that way.") },
+		{ TEXT("Keep it under thirty-five through town. I mean it."), TEXT("Quiet week, mostly. I'd like to keep it that way.") },
 		{ TEXT("Hats are half off. They've been half off since Christmas."), TEXT("Tourists don't come till June. Then they all come at once.") } };
 	FFour GoneMinding = {
 		TEXT("His sister-in-law is minding the counter. \"He didn't come in. His truck's at the house. Don't ask me.\""),
@@ -144,6 +163,21 @@ int32 FS47Townsfolk::DaysAway(int32 Seed, const FString& Who, int32 Day)
 {
 	return 2 + int32(FS47NightRhythm::Roll(Seed, Day, FCrc::StrCrc32(*Who) ^ 0x4241434bu) * 3.f) % 3; // two to four days
 }
+FString FS47Townsfolk::TakenAfter(int32 Seed, int32 Night, TFunctionRef<int32(const FString&)> LastNightOf)
+{
+	for (const FString& Who : People()) if (LastNightOf(WorksAt(Who)) == Night && TakenBy(Seed, Night, Who)) return Who;
+	return FString();
+}
+FString FS47Townsfolk::Talk(const FString& Kind)
+{
+	const auto Any = [&Kind](std::initializer_list<const TCHAR*> Words) { for (const TCHAR* W : Words) if (Kind.Contains(W)) return true; return false; };
+	if (Kind.IsEmpty() || Kind.Contains(TEXT("motel"))) return FString();
+	if (Any({ TEXT("lights"), TEXT("landing"), TEXT("site_visit"), TEXT("field_visit"), TEXT("flyover"), TEXT("close_pass"), TEXT("burst"), TEXT("crash"), TEXT("marks") })) return TEXT("lights");
+	if (Any({ TEXT("door"), TEXT("peek"), TEXT("lit_room"), TEXT("house_lit"), TEXT("knock") })) return TEXT("doors");
+	if (Any({ TEXT("figure"), TEXT("walker"), TEXT("hitch"), TEXT("missing"), TEXT("taken"), TEXT("observer") })) return TEXT("figure");
+	if (Any({ TEXT("cattle"), TEXT("carcass") })) return TEXT("stock");
+	return FString();
+}
 
 // ---------- the session ----------
 
@@ -176,13 +210,17 @@ void FS47Townsfolk::Begin(const S47J::FObj& Saved)
 void FS47Townsfolk::Stop()
 {
 	S47TownsfolkLocal::GAway.Reset();
+	// At process exit the object array may already be gone (as in S47Happenings::Stop): the town's figures are not touched then.
+	if (IsEngineExitRequested() || GExitPurge || IsGarbageCollecting()) return;
 	ShowPosts(true);
 }
+
+void FS47Townsfolk::ResetAway() { S47TownsfolkLocal::GAway.Reset(); }
 
 void FS47Townsfolk::ShowPosts(bool bAll)
 {
 	// Freeform does not run the town's hours (US47TownLayer::WorldStep is Story's), so these stay as they are set here.
-	if (!M || !M->TownLayer || !M->TownLayer->Town) return;
+	if (!IsValid(M) || M->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed) || !IsValid(M->TownLayer.Get()) || !M->TownLayer->Town) return;
 	FS47Town& Town = *M->TownLayer->Town;
 	const bool bDeputy = bAll || !Away(TEXT("deputy")), bSmoker = bAll || !Away(TEXT("souvenir_man"));
 	if (Town.bDeputyIn != bDeputy) Town.SetDeputy(bDeputy);
@@ -220,9 +258,11 @@ bool FS47Townsfolk::Away(const FString& Who) const { return Gone.ContainsByPredi
 
 bool FS47Townsfolk::Has(const FString& Key) const
 {
-	if (!Key.StartsWith(TEXT("away_"))) return false;
+	const bool bAway = Key.StartsWith(TEXT("away_")), bBack = Key.StartsWith(TEXT("back_"));
+	if (!bAway && !bBack) return false;
 	const FString Who = Key.Mid(5);
-	if (Away(Who)) return true;
+	// Away only while they are: the radio does not ask after somebody standing at their post again.
+	if (bAway || Away(Who)) return bAway && Away(Who);
 	const int32 Today = M && M->Freeform ? M->Freeform->Day() : 0;
 	return Returned.ContainsByPredicate([&](const FGone& G) { return G.Who == Who && Today <= G.Back + 3; });
 }
@@ -266,16 +306,21 @@ void FS47Townsfolk::Step(double Dt)
 			UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: %s back on day %d"), *Gone[I].Who, Today);
 			Returned.Add(Gone[I]); Gone.RemoveAt(I); Publish(); M->RequestAutosave();
 		}
-	// Once a night is over (four to eight in the morning): did something come to one of their places tonight? Then perhaps it took them.
-	const int32 Night = FS47FreeformSession::NightOf(F.Clock());
-	if (Hour < 4 || Hour >= 8 || Night == CheckedNight || !F.EventPlaces || !F.RulesLive()) return;
-	CheckedNight = Night;
-	if (!Gone.IsEmpty() || Today - LastVanishDay < RestDays) return;
-	for (const FString& Who : People())
+	// Once a night is over (from four in the morning after it): did something come to one of their places that night? Then perhaps
+	// it took them. Every night over since the last one settled, so that a rest straight to 08:00 does not sleep through it (critics,
+	// round 3: the morning check used to look only between four and eight, and a rest or a motel room jumps past it).
+	if (!F.EventPlaces || !F.RulesLive()) return;
+	const int32 Done = FS47FreeformSession::NightsOver(F.Clock());
+	if (Done <= CheckedNight) return;
+	const int32 From = FMath::Max(CheckedNight + 1, Done - 2);
+	CheckedNight = Done;
+	for (int32 N = From; N <= Done; ++N)
 	{
-		const FString Place = WorksAt(Who);
-		if (F.EventPlaces->LastNight(Place) != Night || !TakenBy(F.Seed(), Night, Who)) continue;
-		Vanish(Who, Place);
+		if (!Gone.IsEmpty() || Today - LastVanishDay < RestDays) break;
+		const FString Who = TakenAfter(F.Seed(), N, [&F](const FString& Id) { return F.EventPlaces->LastNight(Id); });
+		if (Who.IsEmpty()) continue;
+		UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: night %d settled in the morning: %s taken"), N, *Who);
+		Vanish(Who, WorksAt(Who));
 		break;
 	}
 }
@@ -299,15 +344,31 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 	{
 		if (Today > G.Back + 6) continue;
 		if (G.Who == Who) Add(FString::Printf(TEXT("selfback:%d"), G.Day), SelfBackLines[I], 90);
-		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back))), 80);
+		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back)).Replace(TEXT("{he}"), *He(G.Who), ESearchCase::CaseSensitive)), 80);
 	}
-	// What has gone on at places on the catalogue, the last two nights.
+	// What is going round about places on the catalogue, the last two nights: only what somebody could have seen (lights from far off;
+	// at a door, a window or out walking only where people are), told as the kind of thing it was, and second-hand: a third of the time
+	// at the wrong place. Never the motel, whose nights are its own (MOTEL-SLEEP-20261108), nor Baca's (he tells his own).
 	if (F.EventPlaces)
 		for (const FS47EventPlace& P : F.EventPlaces->All())
 		{
 			const int32 Last = F.EventPlaces->LastNight(P.Id);
-			if (Last <= 0 || Last < Night - 2) continue;
-			const FString Text = Fill(RumorLines[I], P.Title).Replace(TEXT("{A}"), *Cap(P.Title));
+			if (Last <= 0 || Last < Night - 2 || P.Id == TEXT("motel") || P.Id == TEXT("baca")) continue;
+			const FString Kind = Talk(F.EventPlaces->LastKind(P.Id));
+			if (Kind.IsEmpty() || (Kind != TEXT("lights") && !P.HasAny(ES47PlaceTrait::People | ES47PlaceTrait::Town | ES47PlaceTrait::Road | ES47PlaceTrait::Farm))) continue;
+			FString Where = P.Title;
+			if (FS47NightRhythm::Roll(F.Seed(), Last, FCrc::StrCrc32(*P.Id) ^ 0x52554d52u) < .33f)
+			{
+				const FS47EventPlace* Near = nullptr; double D = 1e9;
+				for (const FS47EventPlace& Q : F.EventPlaces->All())
+				{
+					const double E = FVector2D::Distance(FVector2D(Q.X, Q.Z), FVector2D(P.X, P.Z));
+					if (Q.Id != P.Id && Q.Id != TEXT("motel") && Q.Id != TEXT("baca") && E < D) { D = E; Near = &Q; }
+				}
+				if (Near) Where = Near->Title;
+			}
+			const TCHAR* Said = Kind == TEXT("doors") ? DoorRumorLines[I] : Kind == TEXT("figure") ? FigureRumorLines[I] : Kind == TEXT("stock") ? StockRumorLines[I] : RumorLines[I];
+			const FString Text = Fill(Said, Where).Replace(TEXT("{A}"), *Cap(Where));
 			Add(FString::Printf(TEXT("rumor:%s:%d"), *P.Id, Last), Cap(Text), 60 + Last);
 		}
 	// What the player has done.
@@ -464,7 +525,7 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 	{
 		bool bClean = true; FString Bad;
 		TArray<const TCHAR*> All;
-		for (const auto* Set : { &GoneLines, &SelfBackLines, &BackLines, &RumorLines, &TipLines, &FoundLines, &HelpLines, &TakenLines, &HearLines, &SpacemanLines, &LureLines, &TourLines, &PrintLines, &GoneMinding, &GonePost })
+		for (const auto* Set : { &GoneLines, &SelfBackLines, &BackLines, &RumorLines, &DoorRumorLines, &FigureRumorLines, &StockRumorLines, &TipLines, &FoundLines, &HelpLines, &TakenLines, &HearLines, &SpacemanLines, &LureLines, &TourLines, &PrintLines, &GoneMinding, &GonePost })
 			for (int32 I = 0; I < 4; ++I) All.Add((*Set)[I]);
 		for (int32 I = 0; I < 4; ++I) { All.Add(Chatter[I][0]); All.Add(Chatter[I][1]); }
 		for (const TCHAR* Said : All)
@@ -482,5 +543,23 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 		Check(bClean, bClean ? FString(TEXT("every line short, in American English, with no brand names, and nobody says what it was")) : TEXT("not said here: ") + Bad);
 	}
 	Check(WeekdayOf(1) == TEXT("Monday") && WeekdayOf(7) == TEXT("Sunday") && WeekdayOf(9) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
+	// Settled in arrears (critics, round 3): a night's event at the substation at two, the player rests to eight; that morning the night is
+	// over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
+	{
+		int32 N = 2;
+		while (N < 400 && !TakenBy(47, N, TEXT("deputy"))) ++N;
+		const double At2 = double(N) * 86400. + 2 * 3600., At8 = double(N) * 86400. + 8 * 3600.;
+		const auto Sheriff = [N](const FString& Id) { return Id == TEXT("sheriff") ? N : 0; };
+		const bool bNotYet = FS47FreeformSession::NightsOver(At2) == N - 1 && FS47FreeformSession::NightOf(At2) == N;
+		const bool bSlept = FS47FreeformSession::NightOf(At8) == N + 1 && FS47FreeformSession::NightsOver(At8) == N && FS47FreeformSession::NightsOver(At8 + 86400.) == N + 1;
+		Check(N < 400 && bNotYet && bSlept && TakenAfter(47, N, Sheriff) == TEXT("deputy") && TakenAfter(47, N + 1, Sheriff).IsEmpty(),
+			FString::Printf(TEXT("night %d's event at the substation, slept through to 08:00: settled that morning, and the deputy is taken"), N));
+	}
+	Check(Talk(TEXT("farm_lights")) == TEXT("lights") && Talk(TEXT("site_visit")) == TEXT("lights") && Talk(TEXT("door_visit")) == TEXT("doors") && Talk(TEXT("figure_near")) == TEXT("figure") && Talk(TEXT("cattle_ring")) == TEXT("stock") && Talk(TEXT("motel_night")).IsEmpty(),
+		TEXT("talk follows what kind of thing it was; a night at the motel is not the town's"));
+	{
+		FS47Townsfolk T(nullptr); FGone R; R.Who = TEXT("deputy"); R.Day = 2; R.Back = 4; T.Returned.Add(R);
+		Check(!T.Has(TEXT("away_deputy")) && T.Has(TEXT("back_deputy")), TEXT("back at his post: the radio no longer asks after him, it says he is back"));
+	}
 	return bAll;
 }

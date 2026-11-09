@@ -26,7 +26,14 @@ FS47MotelNight::EKind FS47MotelNight::KindOf(int32 Seed, int32 Night, bool bCanS
 
 bool FS47MotelNight::CanSteal() const
 {
-	return M && M->Freeform && (M->Freeform->InventoryCount(TEXT("film")) > 0 || M->Freeform->InventoryCount(TEXT("cell")) > 0);
+	// What rides in the truck out on the land (FS47TruckCare takes them from there): the spare wheel and the cans of water.
+	return M && M->Freeform && (M->Freeform->InventoryCount(TEXT("spare")) > 0 || M->Freeform->InventoryCount(TEXT("water")) > 0);
+}
+
+bool FS47MotelNight::SleptTheNight(double SleptFrom, double Until, double Morning)
+{
+	const double Midnight = FMath::FloorToDouble((Morning - 8 * 3600.) / 86400.) * 86400.;
+	return SleptFrom < 0 || (SleptFrom < Midnight + 4 * 3600. && Until > Midnight + .5 * 3600.);
 }
 
 FS47MotelNight::EKind FS47MotelNight::Tonight(int32 Night) const
@@ -46,15 +53,17 @@ double FS47MotelNight::SleepUntil(double Morning) const
 	return At > M->Freeform->Clock() + 1800 && At < Morning ? At : Morning;
 }
 
-void FS47MotelNight::AfterRest(double Morning)
+void FS47MotelNight::AfterRest(double Morning, double SleptFrom)
 {
 	if (!M || !M->Freeform || !M->UI) return;
 	FS47FreeformSession& F = *M->Freeform;
 	bUnfiled = true;
 	const int32 Night = FS47FreeformSession::NightOf(F.Clock() - 3600);
 	if (Night == LastNight && F.Clock() >= Morning - 1) return; // the second half of a woken night: nothing more
-	LastNight = Night;
-	const EKind K = Tonight(Night);
+	// A room taken after four (in from a night out on the land) or for an hour in the day: the night was not slept here, and has none.
+	const bool bNight = SleptTheNight(SleptFrom, F.Clock(), Morning);
+	if (bNight) LastNight = Night;
+	const EKind K = bNight ? Tonight(Night) : EKind::Quiet;
 	ForcedKind = -1;
 	const int32 Secs = int32(FMath::Fmod(F.Clock(), 86400.));
 	const FString Time = FString::Printf(TEXT("%d:%02d"), Secs / 3600, (Secs / 60) % 60);
@@ -79,18 +88,21 @@ void FS47MotelNight::AfterRest(double Morning)
 		break;
 	case EKind::Theft:
 	{
-		const FString What = F.InventoryCount(TEXT("film")) > 0 ? TEXT("film") : TEXT("cell");
-		F.Consume(What);
-		Text = What == TEXT("film") ? TEXT("In the morning the truck's door is open. The glove box is empty: a roll of your film is gone. Nothing else is touched, and nobody at the desk saw a thing.")
-			: TEXT("In the morning the truck's door is open. The glove box is empty: your dry cells are gone. Nothing else is touched, and nobody at the desk saw a thing.");
-		Record = TEXT("Sierra Motor Court: the truck gone through in the night; film or cells taken from the glove box, nothing else.");
+		// From the truck, what the truck carries: the spare off its bracket first, else a can of water out of the bed.
+		const bool bSpare = F.InventoryCount(TEXT("spare")) > 0;
+		F.Consume(bSpare ? TEXT("spare") : TEXT("water"));
+		Text = bSpare ? TEXT("In the morning the truck's tailgate is down and the spare wheel is gone off its bracket. Nothing else is touched, and nobody at the desk saw a thing.")
+			: TEXT("In the morning the truck's tailgate is down and a can of radiator water is gone out of the bed. Nothing else is touched, and nobody at the desk saw a thing.");
+		Record = bSpare ? TEXT("Sierra Motor Court: the truck gone through in the night; the spare wheel taken off its bracket, nothing else.")
+			: TEXT("Sierra Motor Court: the truck gone through in the night; a can of radiator water taken from the bed, nothing else.");
 		break;
 	}
 	case EKind::Party:
 		Text = TEXT("A party next door until three: a radio, laughing, somebody crying in the bathroom. The highway after that. You slept, some.");
 		break;
 	default:
-		Text = TEXT("Trucks on the highway all night, the ice machine, a television through the wall until two. You slept, mostly.");
+		Text = bNight ? TEXT("Trucks on the highway all night, the ice machine, a television through the wall until two. You slept, mostly.")
+			: FString::Printf(TEXT("%s. You sleep a few hours with the curtains drawn against the light. Trucks on the highway, a maid's cart on the walkway. Nothing else."), *Time);
 		break;
 	}
 	TArray<TSharedRef<SWidget>> Rows;
@@ -99,7 +111,6 @@ void FS47MotelNight::AfterRest(double Morning)
 	{
 		const FString Id = FString::Printf(TEXT("motel_%d"), Night);
 		if (!F.HasFinding(Id)) F.RegisterFinding(Id, Record);
-		if (F.EventPlaces) F.EventPlaces->Used(TEXT("motel"), TEXT("motel_night"));
 		Rows.Add(S47Kit::Small(TEXT("Kept as a field record.")));
 	}
 	Rows.Add(S47Kit::Small(TEXT("A night here is not filed. Nothing is saved until you are back at SARO.")));
@@ -107,10 +118,9 @@ void FS47MotelNight::AfterRest(double Morning)
 		Rows.Add(S47Kit::Button(TEXT("Back to sleep until morning"), [this, Morning]
 		{
 			if (!M || !M->Freeform) return;
-			// The room is already paid for: the desk charges it again, so it goes back first.
-			M->Freeform->Earn(M->Freeform->MotelPrice());
+			// The room is already paid for tonight: nothing is charged again (and nothing handed back that a requisition could swallow).
 			if (M->UI) M->UI->Close(true);
-			if (!M->Freeform->RestAt(Morning, FS47FreeformSession::ERest::Motel) && M->UI) M->UI->Toast(TEXT("You lie awake until it is light."), 4);
+			if (!M->Freeform->RestAt(Morning, FS47FreeformSession::ERest::Motel, true) && M->UI) M->UI->Toast(TEXT("You lie awake until it is light."), 4);
 		}, true));
 	Rows.Add(S47Kit::Button(Wakes(K) ? TEXT("Stay up") : TEXT("Check out"), [this] { if (M && M->UI) M->UI->Close(); }));
 	M->UI->Open(S47Kit::Shell(M->UI, Title, S47Kit::Col(Rows), 780));
@@ -159,6 +169,12 @@ bool FS47MotelNight::SelfTest(TArray<FString>& Lines)
 	Check(bSame && Counts[0] > 150 && Counts[0] < 260 && Counts[1] > 20 && Counts[3] > 15 && Counts[4] > 10 && Counts[5] > 5 && bNoTheft,
 		FString::Printf(TEXT("of 400 nights %d quiet, %d the handle, %d a car idling, %d the phone, %d a theft, %d a party; nothing stolen from an empty truck"), Counts[0], Counts[1], Counts[2], Counts[3], Counts[4], Counts[5]));
 	Check(Wakes(EKind::Handle) && Wakes(EKind::Phone) && !Wakes(EKind::Quiet) && !Wakes(EKind::Theft), TEXT("the handle, the car and the phone wake you at their hour; a theft is found in the morning"));
+	{
+		// Night 5 runs to 08:00 on calendar day 5: a room from 22:00 has the night; one from 05:00 or for an hour at 07:00 has none.
+		const double Morning = 5 * 86400. + 8 * 3600.;
+		Check(SleptTheNight(4 * 86400. + 22 * 3600., Morning, Morning) && SleptTheNight(5 * 86400. + 1 * 3600., Morning, Morning) && !SleptTheNight(5 * 86400. + 5 * 3600., Morning, Morning) && !SleptTheNight(5 * 86400. + 7 * 3600., Morning, Morning),
+			TEXT("a nap at the motel after four in the morning has no night in it: no knock, no theft, no record"));
+	}
 	FS47MotelNight A(nullptr); A.LastNight = 6; FS47MotelNight B(nullptr); B.Begin(S47J::Read(S47J::Write(A.Save())));
 	Check(B.LastNight == 6 && !B.Unfiled(), TEXT("a Continue starts with the motel night filed: no save was written during one"));
 	return bAll;

@@ -39,7 +39,8 @@ public:
  FString TakeNotes();
  // Earl's words for a tip, and what a caller says back (a place the player has not heard of, by the game's seed; else nobody saw a thing).
  static FString OnAirLine(const FString& Title);
- FString CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer) const;
+ // OutVoice: whose voice says it ("woman", "man", "old"), bound to the words (a woman's husband, the baby, "ma'am").
+ FString CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer,FString* OutVoice=nullptr) const;
  // F10: the next waiting tip read now, or its call-back now, whatever the hour and the radio. What was said; empty: nothing waiting.
  FString DevNext();
 private:

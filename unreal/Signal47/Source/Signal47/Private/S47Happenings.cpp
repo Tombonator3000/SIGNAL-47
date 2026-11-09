@@ -6,6 +6,7 @@
 #include "S47Docs.h"
 #include "S47Drive.h"
 #include "S47EventPlaces.h"
+#include "S47Visitors.h"
 #include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
@@ -895,6 +896,11 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
  S.Place=FString();S.Title=D->Title;S.X=D->X;S.Z=D->Z;F->Places->Spot(D->Id,S.X,S.Z);S.bSet=true;
  UE_LOG(LogS47Happen,Verbose,TEXT("S47: happening %s: no catalogue answer, the land's own place %s"),*Kind,D->Id);
  return S;
+}
+// MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
+static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
+{
+ return M&&M->Freeform&&M->Freeform->Visitors&&!Place.IsEmpty()&&M->Freeform->Visitors->Cleared(Place,Night);
 }
 void FS47Happenings::UsedPlace(const FString& Place,const FString& Kind) const
 {
@@ -1907,6 +1913,8 @@ void FS47Happenings::PlaceSites()
   }
   if(!bSameLand||Away>900)continue;
   const auto Show=[&](const TCHAR* Kind,const FVector& Foot,double Yaw){if(FProp* P=Prop(Kind)){PoseProp(*P,Foot,Yaw);ShowProp(*P,true);Want.Add(Kind);}};
+  // Gone over by the military: no ring, only their raked circle where it was (drawn by S47Visitors).
+  if(S.Kind==TEXT("landing")&&S47HapRakedSite(M,S.Place,S.Night)){M->Freeform->Visitors->RakeAt(S.Place,S.Night,S.X,S.Z);continue;}
   if(S.Kind==TEXT("landing"))
   {
    // Laid on the slope, not a flat plate half in the air (seen 8 November): the ground's fall across the ring, measured near.
@@ -3711,13 +3719,13 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  const auto Road=[&](double X,double Z){return S47OpenLand::FromRoad(Area,X,Z);};
  // Where something came down: hot in the middle of the ring.
  // Hot in the middle, and faint a long way out, so that walking the right way the ticks come faster: it leads to what nobody saw.
- for(const FSite& S:Sites)if(S.Kind==TEXT("landing")){const FVector At=Road(S.X,S.Z);Add(At,1.1f,5.,FString::Printf(TEXT("landing:%d"),S.Serial));Add(At,.16f,110.,FString::Printf(TEXT("landing:%d"),S.Serial));}
+ for(const FSite& S:Sites)if(S.Kind==TEXT("landing")&&!S47HapRakedSite(M,S.Place,S.Night)){const FVector At=Road(S.X,S.Z);Add(At,1.1f,5.,FString::Printf(TEXT("landing:%d"),S.Serial));Add(At,.16f,110.,FString::Printf(TEXT("landing:%d"),S.Serial));}
  // The dead cow's ring, a little and a little further out; the truck's warm hood, a little, the night it was warm.
  for(const FSite& S:Sites)if(S.Kind==TEXT("carcass")){const FVector At=Road(S.X,S.Z);Add(At,.3f,5.,TEXT("carcass"));Add(At,.07f,70.,TEXT("carcass"));}
  auto* F=M->Freeform.Get();
  if(HoodNight==F->Day()&&M->World)if(FS47Truck* T=M->World->TruckHere())Add(T->Position,.3f,3.,TEXT("hood"));
  // Marks left at a site by a visit, as the magnetometer has them (FS47Places::StepNeedle): in the frame the player stands in.
- if(F->FarmSite&&F->FarmSite->Armed())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
+ if(F->FarmSite&&F->FarmSite->Armed()&&!F->FarmSite->Raked())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
  // The marks a landing_trace left, where the Director put them (its anchor, in its own scene), while they lie there.
  if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere())
  {

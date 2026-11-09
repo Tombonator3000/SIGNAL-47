@@ -21,6 +21,8 @@ public:
 	explicit FS47Townsfolk(US47Main* Main) : M(Main) {}
 	void Begin(const S47J::FObj& Saved);
 	void Stop();
+	// At exit or in the purge (FS47FreeformSession::Stop without bCanRestore): only the plain list of who is away, no figures.
+	void ResetAway();
 	void Step(double Dt);
 	S47J::FObj Save() const;
 
@@ -43,7 +45,8 @@ public:
 	bool Away(const FString& Who) const;
 	// Whoever is gone in the running game (one game at a time).
 	static bool AwayNow(const FString& Who);
-	// What the town has seen, for FS47RadioTips' "town:" lines: "away_deputy" while the deputy is gone and three days after.
+	// What the town has seen, for FS47RadioTips' "town:" lines: "away_deputy" while the deputy is gone, "back_deputy" for three
+	// days after he is back.
 	bool Has(const FString& Key) const;
 	// Their post with nobody at it: the panel instead of a talk. True when Who is gone and the panel was shown.
 	bool ShowAway(const FString& Who);
@@ -56,6 +59,12 @@ public:
 	static bool TakenBy(int32 Seed, int32 Night, const FString& Who);
 	static int32 DaysAway(int32 Seed, const FString& Who, int32 Day);
 	static constexpr int32 RestDays = 7; // at least this many days between one going and the next
+	// Who a night's events took (empty: nobody): the first of the four whose place was used that night and whose roll says so.
+	// LastNightOf: the night a catalogue place was last used (FS47EventPlaces::LastNight).
+	static FString TakenAfter(int32 Seed, int32 Night, TFunctionRef<int32(const FString&)> LastNightOf);
+	// What the town makes of a night's event by its kind (FS47EventPlaces::LastKind), for talk: "lights" (seen from far off),
+	// "doors" (somebody at a door or a window), "figure" (somebody out walking), "stock" (cattle). Empty: nothing anybody talks of.
+	static FString Talk(const FString& Kind);
 
 	// Where someone gone was last seen, pencilled on the survey sheet (US47Flow::MapView).
 	void FillMap(struct FS47MapView& V) const;
