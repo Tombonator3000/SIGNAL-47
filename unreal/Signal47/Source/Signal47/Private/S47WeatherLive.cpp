@@ -2,10 +2,14 @@
 
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "S47Audio.h"
+#include "S47Drive.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Sky.h"
+#include "S47UI.h"
 #include "S47Web.h"
+#include "S47WebAudio.h"
 #include "S47World.h"
 #include "S47WorldLife.h"
 
@@ -17,8 +21,9 @@ namespace S47WeatherLiveLocal
 	constexpr double EaseSeconds = 6, DoorSeconds = 1.5, JumpSeconds = 600;
 	// the most each adds to the native fog out in the open: the light mist of F10's "Fog: light" is .04 (about 100 m)
 	constexpr double SandFog = .022, HazeFog = .010, RainFog = .003;
-	// indoors only a little of it comes in under the doors
-	constexpr double IndoorShare = .15;
+	// indoors most of it stays: the fog is the whole world's, and the land outside the control room's big windows must stay brown in the
+	// sand (M5 critic 3; a small room shows almost no haze at that density)
+	constexpr double IndoorShare = .65;
 }
 
 void FS47WeatherLive::Shown(const S47Weather::FNow& Now, double Daylight, double InOutdoors, S47Weather::FLive& Out)
@@ -76,6 +81,7 @@ void FS47WeatherLive::Stop()
 {
 	S47Weather::Live() = S47Weather::FLive();
 	bHave = false; LastClock = -1; DevLeft = 0; DevWhat = EDev::None;
+	if (Spray.IsValid() && M && M->Audio && M->Audio->Ctx) { FS47AudioContext::FBatch Batch(*M->Audio->Ctx); Spray->Gain.SetTargetAtTime(0, M->Audio->Ctx->CurrentTime(), 0.3); }
 	if (M && M->Life && M->Life->Sky.IsValid()) M->Life->Sky->DayThunder = 0;
 	if (FogApplied > 0 && M && M->Web) M->Web->RefreshFog();
 	FogApplied = -1; TintApplied = -1;
@@ -100,7 +106,7 @@ void FS47WeatherLive::Step(double Dt)
 	if (bJump) Cur = Want;
 	else Ease(Cur, Want, 1 - FMath::Exp(-FMath::Max(0.0, Dt) / EaseSeconds));
 	LastClock = Clock; bHave = true;
-	// out in the open or in the cab it is all there; indoors a little comes in under the doors
+	// out in the open or in the cab it is all there; indoors most of it, seen through the windows (IndoorShare)
 	const double OpenWant = M->Space == TEXT("yard") || (M->World && M->World->bDriving) ? 1.0 : 0.0;
 	Outdoors = bJump ? OpenWant : Outdoors + (OpenWant - Outdoors) * (1 - FMath::Exp(-FMath::Max(0.0, Dt) / DoorSeconds));
 	const double Daylight = M->Life && M->Life->Sky.IsValid() ? M->Life->Sky->Daylight() : 1.0;
@@ -113,10 +119,41 @@ void FS47WeatherLive::Step(double Dt)
 		FogApplied = L.FogAdd; TintApplied = L.TintK;
 		M->Web->RefreshFog();
 	}
+	StepWet();
 	if (LoggedDay != CalDay)
 	{
 		LoggedDay = CalDay;
 		UE_LOG(LogS47WeatherLive, Display, TEXT("S47: weather day %d: %s"), CalDay, *S47Weather::Words(S47Weather::Day(F->Seed(), CalDay)));
+	}
+}
+
+void FS47WeatherLive::StepWet()
+{
+	// M5 critic 3: after a shower the dirt is slick (FS47TruckCare takes the grip); here it is heard, a hiss of wet grit off the tyres
+	// with the speed, and the first slide on it says why, once a day
+	const S47Weather::FLive& L = S47Weather::Live();
+	FS47DriveController* D = M->World && M->World->bDriving ? M->World->CabDrive() : nullptr;
+	const bool bLoose = D && D->Surface.Kind != ES47SurfaceKind::Asphalt;
+	const double Wet = L.bOn && bLoose ? FMath::Clamp(L.Wet, 0.0, 1.0) : 0.0;
+	const double Want = Wet > 0.12 ? 0.055 * Wet * FMath::Clamp(FMath::Abs(D->Speed) / 12.0, 0.0, 1.0) : 0.0;
+	US47Audio* Audio = M->Audio.Get();
+	if (Audio && Audio->Ctx && Audio->SfxBus && Audio->NoiseBuffer())
+	{
+		const TSharedRef<FS47AudioContext> Ctx = Audio->Ctx.ToSharedRef();
+		FS47AudioContext::FBatch Batch(*Ctx);
+		if (!Spray.IsValid() && Want > 0)
+		{
+			auto Src = Ctx->CreateBufferSource(); Src->Buffer = Audio->NoiseBuffer(); Src->bLoop = true;
+			auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(0.6); Bp->Frequency.SetValue(2300);
+			Spray = Ctx->CreateGain(); Spray->Gain.SetValue(0);
+			Src->Connect(Bp); Bp->Connect(Spray); Spray->Connect(Audio->SfxBus); Src->Start(Ctx->CurrentTime(), FMath::FRand());
+		}
+		if (Spray.IsValid()) Spray->Gain.SetTargetAtTime(Want, Ctx->CurrentTime(), 0.25);
+	}
+	if (D && D->bHandling && Wet > 0.25 && D->Slip() > 0.25 && ToldWet != CalDay && M->UI)
+	{
+		ToldWet = CalDay;
+		M->UI->Toast(TEXT("The back end steps out. The shower has turned the dirt to grease."), 4);
 	}
 }
 
@@ -139,7 +176,7 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 	S47Weather::FNow Sand; Sand.Dust = 1; Sand.Wind = 1; Sand.Mph = 34;
 	S47Weather::FLive Open, In, Night;
 	Shown(Sand, 1, 1, Open); Shown(Sand, 1, 0, In); Shown(Sand, 0, 1, Night);
-	Check(Open.FogAdd > .015 && Open.FogAdd <= MaxFog && In.FogAdd < Open.FogAdd * .25, TEXT("sand thickens the air out in the open, only a little indoors, never past a light mist"));
+	Check(Open.FogAdd > .015 && Open.FogAdd <= MaxFog && In.FogAdd < Open.FogAdd && In.FogAdd > Open.FogAdd * .5, TEXT("sand thickens the air out in the open, and the land outside the windows stays in it from indoors, never past a light mist"));
 	Check(Open.Tint.R > Open.Tint.G && Open.Tint.G > Open.Tint.B && Open.TintK > .7 && Night.Tint.R < Open.Tint.R * .2 && Open.HorizonK > .4, TEXT("sand is tan by day and dark at night, and the far land fades in it"));
 	S47Weather::FNow Haze; Haze.Haze = 1; S47Weather::FLive Hz;
 	Shown(Haze, 1, 1, Hz);

@@ -315,7 +315,7 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
   else if (bHasPlayerMemory)
   {
    Enter(bSeesPlayer && (!Path.IsEmpty() || Age>=RepathAt)?EState::Hunt:EState::Search);
-   DesiredSpeed=bSeesPlayer?2.8:1.15; DesiredCrouch=bSeesPlayer?.08:.24;
+   DesiredSpeed=bSeesPlayer?HuntSeenSpeed:HuntSearchSpeed; DesiredCrouch=bSeesPlayer?.08:.24;
    if (Age>=RepathAt && (Path.IsEmpty() || FVector::Dist(Goal,LastKnownPlayer)>.55))
    {
     const bool Planned=Plan(LastKnownPlayer,TEXT("last-perceived-player"),World);

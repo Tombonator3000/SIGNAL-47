@@ -84,9 +84,14 @@ public:
 	// ---------- WEATHER-20261108: the day's weather (S47Weather::Live, Freeform only; read each frame in Update) ----------
 	// A strong wind roars under the night's own and gusts more often, sand hisses in it, a shower ticks a few drops; under a strong wind
 	// the crickets go quiet and the far-off ones come less often and are harder to hear (it covers what would warn you).
-	/** Drops ticked so far (tests, F10). */
-	int32 Drops = 0;
+	// M5 critic 3: indoors and in the cab the weather has its own sounds, not the desert's through the wall: the building's low roar and
+	// a window pane rattling in the gusts, a rush against the cab, sand ticking on the glass, a shower on the roof (the shelter bus, past
+	// the wall's low-pass). Nothing of it in the open, where the desert's own is all there.
+	/** Drops ticked so far, panes rattled, grains on the glass (tests, F10). */
+	int32 Drops = 0, Rattles = 0, Grains = 0;
 	double StormLevel() const { return StormWant; }
+	/** The shelter bus's steady level for a storm (0 to 1) indoors (bCab: the cab or the photo lab, a rush against the body as well). */
+	static double ShelterStorm(double Storm, bool bCab);
 	/** Where the far-off ones come from, asked as each falls due ("coyote", "dog", "owl", "train"). Unset: from anywhere, as in the
 	 *  Story. Set and false: none of that kind can be heard from here now, and it is left out. OutAt is three-space. */
 	TFunction<bool(const FString& Kind, const FVector& Listener, FVector& OutAt)> PlaceFor;
@@ -191,6 +196,12 @@ private:
 	// the weather's: a low roar for a strong wind, a hiss for the sand in it, a drop now and then in a shower
 	TSharedPtr<FS47GainNode> StormGain, SandGain;
 	double StormWant = 0, SandWant = 0, DropIn = 0;
+	// the shelter's: its own way out past the wall's low-pass (0 out in the open), the building's roar and the rush against the cab
+	TSharedPtr<FS47GainNode> Shelter, ShelterRoar, ShelterRush;
+	double RattleIn = 6, GrainIn = 0;
+	FString ShelterSpace;
+	void Rattle(double Now, double K);
+	void Grain(double Now, double K);
 	FVector LastAt = FVector::ZeroVector; // where the listener was last (Update)
 	void StepWeather(double Dt, double Now);
 	void Drop(double Now);

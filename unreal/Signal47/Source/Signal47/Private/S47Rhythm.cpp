@@ -151,10 +151,13 @@ void FS47Rhythm::Load()
   return S47Weather::Moon(M->Freeform->DateOfDay(Day),23*3600.).Lit;
  };
  // The night's wind, from the day's weather (S47Weather::Day: the paper prints the same day). Not in a developer's fixtures.
+ // M5 critic 3: only a night the wind holds into (it blows on through the small hours, S47Weather::Now), so that more comes near
+ // while the wind can be heard; a night whose wind has dropped by one is an ordinary night.
  Rules.StormOf=[this](int32 Day)
  {
   if(!M||!M->Freeform||!M->Freeform->RulesLive())return 0.;
-  return double(S47Weather::Day(M->Freeform->Seed(),Day).NightStorm);
+  const S47Weather::FDay D=S47Weather::Day(M->Freeform->Seed(),Day);
+  return D.NightStorm>.5f?double(D.NightStorm):0.;
  };
 }
 void FS47Rhythm::LoadRules()

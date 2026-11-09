@@ -13,6 +13,8 @@
 #include "S47World.h"
 #include "S47FieldRadio.h"
 #include "S47Stress.h"
+#include "S47Fatigue.h"
+#include "S47Freeform.h"
 #include "S47Three.h"
 #include "S47Weather.h"
 #include "Components/PoseableMeshComponent.h"
@@ -233,6 +235,8 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   else if (M->Stress && M->Stress->HeardWithin()>0) In.Noise=FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Stress->HeardWithin()/10.};
   // PHYSICS-20261108: a stone, a can or a crate landing (S47Noise): heard where it fell, so it goes to look there and not at the player
   else if (const TOptional<S47Noise::FNoise> Fell=S47Noise::Latest(.35)) In.Noise=FS47RoswellBrain::FNoise{Fell->At,Fell->Loudness};
+  // FATIGUE-20261109: a winded run's hard breathing too (FS47Fatigue: tired, the run winds you)
+  else if (M->IsFreeform() && M->Freeform && M->Freeform->Fatigue && M->Freeform->Fatigue->HeardWithin()>0) In.Noise=FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Freeform->Fatigue->HeardWithin()/10.};
   // WEATHER-20261108: a strong wind covers steps and breath
   if (const S47Weather::FLive& Wx=S47Weather::Live(); Wx.bOn) In.HearScale=1.-.5*FMath::Clamp(Wx.Wind,0.,1.);
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }

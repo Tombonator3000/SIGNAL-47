@@ -551,6 +551,12 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	const float Golden = FMath::Clamp(Evening * 4.f, 0.f, 1.f) *
 		(1.f - FMath::SmoothStep(.035f, .18f, float(SunDirection.Y)));
 	UpdateCloudLight(SunDirection, Daylight);
+	// M5 critic 3: the day's weather on the light (S47Weather::Live, Freeform only). Blowing sand dims the sun, browns it and softens its
+	// shadows, the sky's fill taking more of the work and the sand's colour; a shower's cloud darkens the land before and under it.
+	const S47Weather::FLive& Wx = S47Weather::Live();
+	const float SandK = Wx.bOn ? FMath::Clamp(float(Wx.Dust) * 1.2f, 0.f, 1.f) : 0.f;
+	const float ShowerK = Wx.bOn ? FMath::Max(FMath::Clamp(float(Wx.CloudBias - .06) / .18f, 0.f, 1.f), float(FMath::Clamp(Wx.Rain, 0.0, 1.0))) : 0.f;
+	const float WeatherSun = (1.f - .4f * SandK) * (1.f - .42f * ShowerK);
 	if (DawnSun)
 	{
 		// SKY.md, rendering only (FS47Sky::Sun keeps its story values): the dusk concept keeps a last
@@ -565,7 +571,11 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		DawnSun->SetForwardShadingPriority(GroundSun > 0.f ? Lights.Num() + 1 : 0);
 		// The existing fixed exposure is intentionally retained. These are calibrated game
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
-		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight * Look.SunGain);
+		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight * Look.SunGain * WeatherSun);
+		// softer shadows in the sand (a wider source, and lighter); set only when it changes enough to matter
+		const float Angle = FMath::RoundToFloat(FMath::Lerp(.545f, 3.f, SandK) * 20.f) / 20.f, Shade = FMath::RoundToFloat(FMath::Lerp(1.f, .72f, SandK) * 50.f) / 50.f;
+		if (!FMath::IsNearlyEqual(DawnSun->LightSourceAngle, Angle, .01f)) DawnSun->SetLightSourceAngle(Angle);
+		if (!FMath::IsNearlyEqual(DawnSun->ShadowAmount, Shade, .005f)) DawnSun->SetShadowAmount(Shade);
 		DawnSun->SetLightColor(Evening > 0.f
 			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
 			: FLinearColor(1.f, 0.55f, 0.28f));
@@ -573,6 +583,8 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		const float HighSun = Caliche * FMath::Clamp(float((SunDirection.Y - 0.08) / 0.45), 0.f, 1.f);
 		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, 0.94f, 0.83f), HighSun));
 		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, .58f, .24f), Golden * .8f));
+		// the sun through the sand: brown-orange, the blue gone out of it
+		if (SandK > 0.f) DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, .7f, .42f), SandK * .7f));
 	}
 	if (NightSky)
 	{
@@ -591,12 +603,14 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// Twilight: the sky lights what the glow does not reach, blue and soft (CvDuskSky; Caliche's own sky is lit already).
 		const float DuskSky = 1.f + FMath::Max(0.f, CvDuskSky.GetValueOnGameThread()) * (CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(Twilight, 0.f, 1.f)) * (1.f - .6f * Caliche);
 		// MOON-20261108: the night sky's own fill follows the moon as the moonlight does (1 at a half moon), the day not at all.
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight) * FMath::Lerp(SkyMoon, 1.f, FMath::Clamp(Daylight, 0.f, 1.f)), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky);
+		// (the sand: the sky's fill does more of the work as the sun dims; under a shower's cloud it is darker too)
+		const float WeatherFill = FMath::Lerp(1.f, 1.18f, SandK * D) * (1.f - .22f * ShowerK);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight) * FMath::Lerp(SkyMoon, 1.f, FMath::Clamp(Daylight, 0.f, 1.f)), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky * WeatherFill);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
 		const FLinearColor SkyTint = FMath::Lerp(NightTint, FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f));
-		NightSky->SetLightColor(FMath::Lerp(SkyTint, FLinearColor(.72f, .82f, .94f), Golden * .55f));
+		NightSky->SetLightColor(FMath::Lerp(FMath::Lerp(SkyTint, FLinearColor(.72f, .82f, .94f), Golden * .55f), FLinearColor(.86f, .7f, .52f), SandK * D * .45f));
 	}
 }
 
@@ -647,9 +661,12 @@ void AS47Web::UpdateNativeFog()
 		LightingFog->SetFogInscatteringColor(FMath::Lerp(LightingFog->FogInscatteringLuminance, Weather.Tint * .55f, float(Weather.TintK)));
 	// A developer fog is a grey night mist, lit enough to be seen (the night's own inscatter is near black).
 	if (GS47DevFogDensity >= 0.f) LightingFog->SetFogInscatteringColor(FLinearColor(.045f, .05f, .06f));
-	LightingFog->SetDirectionalInscatteringExponent(FMath::Lerp(6.f, 3.f, Amber));
-	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
-	LightingFog->SetDirectionalInscatteringColor(FMath::Lerp(FLinearColor(.55f, .26f, .10f), FLinearColor(1.f, .43f, .12f), Amber) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * (FMath::Lerp(.15f, .45f, Caliche) + .35f * Amber)));
+	// M5 critic 3: blowing sand by day glows brown toward the sun as well, broad (the inscatter was the dusk's alone)
+	const float SandGlow = Weather.bOn && GS47DevFogDensity < 0.f ? FMath::Clamp(float(Weather.Dust) * 1.2f, 0.f, 1.f) * D * FMath::Clamp(SkySun, 0.f, 1.f) : 0.f;
+	LightingFog->SetDirectionalInscatteringExponent(FMath::Lerp(FMath::Lerp(6.f, 3.f, Amber), 2.f, SandGlow));
+	LightingFog->SetDirectionalInscatteringStartDistance(FMath::Lerp(3000.f, 800.f, SandGlow));
+	LightingFog->SetDirectionalInscatteringColor(FMath::Lerp(FMath::Lerp(FLinearColor(.55f, .26f, .10f), FLinearColor(1.f, .43f, .12f), Amber) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * (FMath::Lerp(.15f, .45f, Caliche) + .35f * Amber)),
+		Weather.Tint * .8f, SandGlow * .8f));
 	LightingFog->SetStartDistance(7000.f * Caliche);
 	LightingFog->SetVolumetricFogDistance(GS47FloodFogDistance > 0.f ? GS47FloodFogDistance : FMath::Lerp(14000.f, 120000.f, Caliche));
 }

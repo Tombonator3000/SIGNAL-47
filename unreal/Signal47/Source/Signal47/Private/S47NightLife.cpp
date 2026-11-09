@@ -772,13 +772,16 @@ void FS47NightLife::Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, 
 		D->SetVectorParameterValue(TEXT("Cos"), FLinearColor(-2.f, -1.5f, 0, 0));
 		D->SetScalarParameterValue(TEXT("Fall"), 0.f); D->SetScalarParameterValue(TEXT("Head"), 0.f);
 	};
-	// the sand: streaming past with the wind, a few soft puffs of it low down; by night only a little shows (the beams have theirs)
-	const double SandK = bOn && bOut && Wx.bOn ? FMath::Clamp(Wx.Dust, 0.0, 1.0) : 0.0;
+	// the sand: streaming past with the wind, a few soft puffs of it low down; by night only a little shows (the beams have theirs).
+	// M5 critic 3: indoors it streams past the windows: the box further out and nothing within a few metres of the eye (the walls hide
+	// the rest), no puffs.
+	const bool bIndoors = bOn && !bOut && M->Mode == US47Main::EMode::Play;
+	const double SandK = bOn && (bOut || bIndoors) && Wx.bOn ? FMath::Clamp(Wx.Dust, 0.0, 1.0) : 0.0;
 	Show(Sand, SandK > 0.02);
 	if (SandK > 0.02 && Sand.Mid.IsValid())
 	{
 		UMaterialInstanceDynamic* D = Sand.Mid.Get();
-		FVector Center = Cam.Pos + Cam.Forward * 9; Center.Y = Cam.Pos.Y - 0.6;
+		FVector Center = Cam.Pos + Cam.Forward * (bOut ? 9 : 15); Center.Y = Cam.Pos.Y - 0.6;
 		Sand.Mesh->SetWorldLocation(S47Three::ToUE(Center));
 		Common(D, Center, FMath::Lerp(0.06, 0.55, Day));
 		// at night the lamp lights the sand streaming through its beam (the shader's own cone, as the beam's dust has it)
@@ -794,29 +797,29 @@ void FS47NightLife::Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, 
 			D->SetVectorParameterValue(TEXT("Cos"), FLinearColor(float(FMath::Cos(Beam * 1.15)), float(FMath::Cos(Beam * 0.55)), 0, 0));
 			D->SetScalarParameterValue(TEXT("Fall"), 0.02f);
 		}
-		D->SetScalarParameterValue(TEXT("Near"), 0.35f);
+		D->SetScalarParameterValue(TEXT("Near"), bOut ? 0.35f : 6.f);
 		D->SetScalarParameterValue(TEXT("Size"), 0.02f);
-		D->SetScalarParameterValue(TEXT("Puff"), 0.88f); D->SetScalarParameterValue(TEXT("PuffSize"), 4.f); D->SetScalarParameterValue(TEXT("PuffA"), float(0.12 * SandK));
+		D->SetScalarParameterValue(TEXT("Puff"), 0.88f); D->SetScalarParameterValue(TEXT("PuffSize"), 4.f); D->SetScalarParameterValue(TEXT("PuffA"), float(bOut ? 0.12 * SandK : 0.0));
 		D->SetScalarParameterValue(TEXT("Wobble"), float(0.18 + 0.25 * Wx.Wind));
 		D->SetScalarParameterValue(TEXT("Density"), float(bLow ? SandK * 0.5 : SandK));
 		FVector Dv = Blow; Dv.Y = 0.25 * FMath::Sin(T * 0.7);
 		Sand.Drift(Dt, Dv);
 		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(.95f, .76f, .52f, 0));
 	}
-	// a shower: a few drops falling past, slanting with the wind
-	const double RainK = bOn && bOut && Wx.bOn ? FMath::Clamp(Wx.Rain, 0.0, 1.0) : 0.0;
+	// a shower: drops falling past, slanting with the wind (M5 critic 3: enough to be seen, and past the windows from indoors)
+	const double RainK = bOn && (bOut || bIndoors) && Wx.bOn ? FMath::Clamp(Wx.Rain, 0.0, 1.0) : 0.0;
 	Show(Drops, RainK > 0.02);
 	if (RainK > 0.02 && Drops.Mid.IsValid())
 	{
 		UMaterialInstanceDynamic* D = Drops.Mid.Get();
-		FVector Center = Cam.Pos + Cam.Forward * 4; Center.Y = Cam.Pos.Y + 1.5;
+		FVector Center = Cam.Pos + Cam.Forward * (bOut ? 4 : 11); Center.Y = Cam.Pos.Y + 1.5;
 		Drops.Mesh->SetWorldLocation(S47Three::ToUE(Center));
 		Common(D, Center, FMath::Lerp(0.1, 0.7, Day));
-		D->SetScalarParameterValue(TEXT("Near"), 0.3f);
-		D->SetScalarParameterValue(TEXT("Size"), 0.008f);
+		D->SetScalarParameterValue(TEXT("Near"), bOut ? 0.3f : 5.f);
+		D->SetScalarParameterValue(TEXT("Size"), 0.011f);
 		D->SetScalarParameterValue(TEXT("Puff"), 2.f);
 		D->SetScalarParameterValue(TEXT("Wobble"), 0.01f);
-		D->SetScalarParameterValue(TEXT("Density"), float((bLow ? 0.25 : 0.5) * RainK));
+		D->SetScalarParameterValue(TEXT("Density"), float((bLow ? 0.4 : 0.8) * RainK));
 		FVector Dv = Blow * 0.3; Dv.Y = -7.5;
 		Drops.Drift(Dt, Dv);
 		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(.75f, .8f, .86f, 0));
