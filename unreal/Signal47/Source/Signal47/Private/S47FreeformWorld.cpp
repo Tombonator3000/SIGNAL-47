@@ -4,6 +4,7 @@
 #include "S47FieldLife.h"
 #include "S47Legs.h"
 #include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Observing.h"
 #include "S47Happenings.h"
 #include "S47FreeformCarry.h"
@@ -86,6 +87,21 @@ namespace
  // one quarter of the shared tank unit and costs exactly one operating dollar.
  double PumpIncrement(double Tank,double Remaining) { return FMath::Max(0.,FMath::Min(.25,FMath::Min(4.-Tank,Remaining))); }
  double DayClock(double T) { return FMath::Fmod(FMath::Fmod(T,86400.)+86400.,86400.); }
+ // M7 (C): the pump runs on to a full tank, unless the nozzle is put back or the budget runs out first (StepPump).
+ double PumpVolumeFor(double Tank) { return FMath::Max(0.,4.-Tank); }
+ // M7 (C, TODO "Henting av bilen skal koste"): the county's roadside return. A dry tank is the cheap call-out (no hook-up, a can and
+ // a ride), a truck in trouble the full tow; both take the tow's 45 to 90 minutes by how far out it is, and after dark the one wrecker
+ // on duty is three quarters of an hour longer coming. Nobody is sent while something is close (the Director's RestBlock, as a wait).
+ constexpr int32 EmptyTankFee=20;
+ constexpr double NightTowWait=45;
+ struct FRoadsideTerms { int32 Fee=0; double Minutes=0; bool bRefused=false; };
+ FRoadsideTerms RoadsideTermsFor(bool bTrouble,int32 TowFee,double TowMinutes,double Hour,const FString& Block)
+ {
+  FRoadsideTerms T;T.bRefused=!Block.IsEmpty();
+  T.Fee=bTrouble?FMath::Max(0,TowFee):FMath::Max(EmptyTankFee,TowFee-15);
+  T.Minutes=FMath::Clamp(TowMinutes,45.,90.)+(Hour>=21||Hour<6?NightTowWait:0.);
+  return T;
+ }
 }
 
 FS47FreeformWorld::FS47FreeformWorld(US47Main* InM) : M(InM), Carry(MakeShared<FS47FreeformCarry>(InM)) {}
@@ -319,7 +335,7 @@ bool FS47FreeformWorld::StartPump()
  if(!Ready()||M->Freeform->Held()||bPumping)return false;
  if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
  {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
- const double Volume=FMath::Min(1.,4.-Fuel);
+ const double Volume=PumpVolumeFor(Fuel);
  if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
  // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
  if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: the budget is empty, so the pump stays off. Work registered at OPS pays into it. On a dry tank, you can still call roadside return from the truck."));return false;}
@@ -347,7 +363,7 @@ void FS47FreeformWorld::StepPump(double Dt)
 FString FS47FreeformWorld::PumpDisplay() const
 {
  if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
- const double Volume=FMath::Min(1.,4.-Fuel);return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,Volume,FMath::CeilToInt(Volume/.25-.00001),PumpPaid,PumpVolume);
+ const double Volume=PumpVolumeFor(Fuel);return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,Volume,FMath::CeilToInt(Volume/.25-.00001),PumpPaid,PumpVolume);
 }
 void FS47FreeformWorld::ApplyPump()
 {
@@ -935,9 +951,11 @@ bool FS47FreeformWorld::CargoUse()
    if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));
    if(Care->Water()<1)R.Add(S47Kit::Button(TEXT("Fill the radiator from a can"),[this]{M->Freeform->Care->TopUp();M->UI->Close();},Care->Hot(),InventoryCount(TEXT("water"))>0));
   }
-  R.Add(S47Kit::Button(bCare?FString::Printf(TEXT("Call the county tow to SARO / $%d / about %.0f minutes"),Care->TowFee(),Care->TowMinutes()):FString(TEXT("Request roadside return to SARO")),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
+  // What the county will charge and how long it will be, by how far out and the hour (RoadsideAssist charges the same).
+  const auto Terms=RoadsideTermsFor(bCare,Care?Care->TowFee():FS47TruckCare::TowFeeFor(0),Care?Care->TowMinutes():FS47TruckCare::TowMinutesFor(0),DayClock(M->Freeform->Clock())/3600.,FString());
+  R.Add(S47Kit::Button(bCare?FString::Printf(TEXT("Call the county tow to SARO / $%d / about %.0f minutes"),Terms.Fee,Terms.Minutes):FString::Printf(TEXT("Request roadside return to SARO / $%d / about %.0f minutes"),Terms.Fee,Terms.Minutes),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
   if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
-  R.Add(S47Kit::Small(bCare?FString::Printf(TEXT("The county tow brings you, the truck and its cargo back to SARO and leaves it sound. $%d, paid from the budget if it covers it, otherwise on the weekly sheet; it takes about %.0f minutes. Mending it yourself costs only time."),Care->TowFee(),Care->TowMinutes()):Fuel>.001?TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
+  R.Add(S47Kit::Small(bCare?FString::Printf(TEXT("The county tow brings you, the truck and its cargo back to SARO and leaves it sound. $%d, paid from the budget if it covers it, otherwise on the weekly sheet; it takes about %.0f minutes. Mending it yourself costs only time."),Terms.Fee,Terms.Minutes):Fuel>.001?FString(TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck.")):FString::Printf(TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. $%d for the call-out, paid from the budget if it covers it, otherwise on the weekly sheet; about %.0f minutes. After dark the one wrecker on duty is slow to come. A fuel can from stock costs nothing."),Terms.Fee,Terms.Minutes)));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE TRUCK / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -1276,9 +1294,13 @@ void FS47FreeformWorld::RoadsideAssist()
 {
  const bool bTrouble=M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue();
  if(!Ready()||!M->World||(Fuel>.001&&!bTrouble))return;
- // A truck that cannot be mended is towed for money and a longer wait; an empty tank alone is still only time (the safety net).
- const int32 Fee=bTrouble?M->Freeform->Care->TowFee():0;const double Minutes=bTrouble?M->Freeform->Care->TowMinutes():15.;
- bool bCash=true;if(bTrouble)bCash=M->Freeform->BillTow(Fee);
+ // M7 (C): a dry tank is no longer free, and nobody comes while something is close. A truck that cannot be mended is the full tow.
+ const FS47TruckCare* Care=M->Freeform->Care.Get();
+ const double Hour=DayClock(M->Freeform->Clock())/3600.;
+ const FString Block=M->Freeform->Director?M->Freeform->Director->RestBlock():FString();
+ const FRoadsideTerms Terms=RoadsideTermsFor(bTrouble,Care?Care->TowFee():FS47TruckCare::TowFeeFor(0),Care?Care->TowMinutes():FS47TruckCare::TowMinutesFor(0),Hour,Block);
+ if(Terms.bRefused){Change(TEXT("The county radio answers, and then only static. Nobody is sent out while that is there. ")+Block);return;}
+ const bool bCash=M->Freeform->BillTow(Terms.Fee);
  if(M->World->bDriving)M->World->GetOutHere(true);
  if(M->Freeform->Care)M->Freeform->Care->Clear();
  M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);
@@ -1286,10 +1308,13 @@ void FS47FreeformWorld::RoadsideAssist()
  // and Caliche use separate scene origins; their 8-km rendering offset is
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
- Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Minutes*60);
- const FString Billed=!bTrouble?FString():bCash?FString::Printf(TEXT(" Tow $%d paid in cash."),Fee):FString::Printf(TEXT(" Tow $%d is on the weekly sheet."),Fee);
- Change(FString(TEXT("The county roadside service brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
+ Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Terms.Minutes*60);
+ const FString Billed=bCash?FString::Printf(TEXT(" $%d paid in cash."),Terms.Fee):FString::Printf(TEXT(" $%d is on the weekly sheet."),Terms.Fee);
+ const FString Wait=Hour>=21||Hour<6?FString::Printf(TEXT("You sat in the dark cab for %.0f minutes, the engine ticking as it cooled, before the county's amber light came up the road. "),Terms.Minutes)
+  :FString::Printf(TEXT("The county truck took %.0f minutes to come out. "),Terms.Minutes);
+ Change(Wait+(bTrouble?TEXT("It towed the truck and cargo back to SARO and left it sound, with at least fifteen miles of fuel in the tank."):TEXT("It brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),FString(TEXT("Roadside return used; the interrupted trip and cargo were retained."))+Billed);
+ UE_LOG(LogTemp,Display,TEXT("S47: roadside return: %s, $%d, %.0f minutes (%s)"),bTrouble?TEXT("tow"):TEXT("dry tank"),Terms.Fee,Terms.Minutes,bCash?TEXT("cash"):TEXT("on the sheet"));
 }
 
 void FS47FreeformWorld::SkipFaultToday(){if(M&&M->Freeform)LastFaultDay=M->Freeform->Day();}
@@ -1434,7 +1459,22 @@ void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
  SetFieldZone(true);StepServiceDoor(Dt);
+ const bool bFaultBefore=bTrackedPowerFault;
  TrackPowerFault(M->Freeform->PowerFault());
+ // M7 (C): the transfer switch from OPS (week 3 on, FS47Openings "transfer"): a feeder fault as it starts throws the backup generator
+ // in by itself, from its own tank or a stock can. Heard in the building; what runs on the generator (HasPower) runs on.
+ if(!bFaultBefore&&bTrackedPowerFault&&!bGenerator&&M->Freeform->HasKit(TEXT("transfer")))
+ {
+  if(GeneratorSeconds<=0&&Consume(TEXT("fuel")))GeneratorSeconds=6*3600.;
+  if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
+  if(GeneratorSeconds>0)
+  {
+   bGenerator=true;if(M->Audio)M->Audio->Sfx(TEXT("engineStart"),FS47Sound{.Gain=.45f});
+   Change(TEXT("The lights dip. Down in the service bay the transfer switch clunks over, and the backup generator coughs and takes the load."));
+  }
+  else Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and the generator turns and does not catch: no fuel for it."));
+  UE_LOG(LogTemp,Display,TEXT("S47: transfer switch: generator %s"),bGenerator?TEXT("started"):TEXT("dry"));
+ }
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);
@@ -1448,7 +1488,7 @@ void FS47FreeformWorld::Step(double Dt)
   Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.);
   if(Fuel<=.001)
   {
-   if(!bFuelHeld)Change(TEXT("SERVICE TRUCK: Tank empty; the engine dies. Stop, get out and use the truck to call roadside return. It costs time, not money."));
+   if(!bFuelHeld)Change(TEXT("SERVICE TRUCK: Tank empty; the engine dies. Stop, get out and use the cargo rack: a fuel can from stock, or the county's roadside return, which costs money and a long wait."));
    M->World->HoldTruck(25.);bFuelHeld=true;
   }
   else if(bFuelHeld){M->World->HoldTruck(0);bFuelHeld=false;}
@@ -1629,6 +1669,19 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  C(LoggerOriginalComplete(Original),TEXT("Logger original gate accepts actual complete retained acquisition"));
  Original.Elapsed=4;C(!LoggerOriginalComplete(Original),TEXT("Logger comparison rejects partial acquisition even with recorded stage and document"));Original.Elapsed=12;Original.bLegacyTrace=true;
  C(!LoggerOriginalComplete(Original),TEXT("Logger comparison cannot promote reconstructed legacy trace into measured original"));
+ {
+  // M7 (C): the pump fills the tank in one go; the county's roadside return costs money and a wait, and is refused while something is close.
+  double PTank=.1,PLeft=PumpVolumeFor(PTank);int32 PDollars=0;
+  for(int32 Guard=0;Guard<100;++Guard){const double A=PumpIncrement(PTank,PLeft);if(A<.00001)break;PTank=FMath::Min(4.,PTank+A);PLeft-=A;++PDollars;}
+  C(FMath::IsNearlyEqual(PTank,4.)&&PDollars==16,TEXT("M7: one use of the pump fills a dry tank from 0.1 to 4 for $16"));
+  const FRoadsideTerms RDry=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(0),FS47TruckCare::TowMinutesFor(0),14,FString());
+  const FRoadsideTerms RFar=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(20000),FS47TruckCare::TowMinutesFor(20000),14,FString());
+  const FRoadsideTerms RNight=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(0),FS47TruckCare::TowMinutesFor(0),2.5,FString());
+  const FRoadsideTerms RTow=RoadsideTermsFor(true,FS47TruckCare::TowFeeFor(4000),FS47TruckCare::TowMinutesFor(4000),14,FString());
+  const FRoadsideTerms RNear=RoadsideTermsFor(false,35,45,2.5,TEXT("Not now."));
+  C(RDry.Fee>0&&RDry.Fee==EmptyTankFee&&RDry.Minutes>=45&&RFar.Fee>RDry.Fee&&RFar.Fee<RTow.Fee+20&&RFar.Minutes<=90&&!RDry.bRefused,TEXT("M7: a dry tank's roadside return costs $20 to $45 and 45 to 90 minutes by how far out"));
+  C(RNight.Minutes>=RDry.Minutes+NightTowWait-.001&&RTow.Fee==FS47TruckCare::TowFeeFor(4000)&&RNear.bRefused,TEXT("M7: after dark the wrecker is longer coming; a truck in trouble pays the full tow; nobody comes while something is close (RestBlock)"));
+ }
  OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }

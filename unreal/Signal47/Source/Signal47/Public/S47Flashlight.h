@@ -45,8 +45,9 @@ public:
 	// ---------- the battery (Freeform only; Unreal addition, HUD-20261108) ----------
 	/** Freeform: the lamp runs down. Story: it never does (the web version's lamp has no battery). */
 	bool bDrains = false;
-	/** Lit time from full to empty, and from empty to full when charged at SARO (seconds). */
-	static constexpr double RunSeconds = 2700, ChargeSeconds = 360;
+	/** Lit time from full to empty, and from empty to full when charged at SARO (seconds). M7 (C): about half a night lit (the
+	 *  night is FS47FreeformSession's 2700 s), and a quarter of an hour on the charger, which needs station power (S47Night). */
+	static constexpr double RunSeconds = 1350, ChargeSeconds = 900;
 	/** Below this the beam is weak and the HUD shows the last stroke. */
 	static constexpr double LowLevel = 0.2;
 	/** 0 (empty) to 1 (full). */

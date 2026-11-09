@@ -742,9 +742,10 @@ void US47Night::SeenStep(double Dt)
 void US47Night::FlashlightStep(double Dt)
 {
 	// Freeform only: the lamp has a battery. It charges slowly while the lamp is off and the player is indoors at SARO.
+	// M7 (C): on the station's power: with the feeder down and no generator running, the charger on the shelf is dark too.
 	Flashlight->bDrains = M->IsFreeform();
 	if (Flashlight->bDrains && Flashlight->bHave && !Flashlight->bOn && M->Mode == EMode::Play && !M->bPausedByMenu && !Modal()
-		&& M->Space == TEXT("room") && Area() == TEXT("saro") && Flashlight->BatteryLevel() < 1)
+		&& M->Space == TEXT("room") && Area() == TEXT("saro") && Flashlight->BatteryLevel() < 1 && (!M->Freeform || M->Freeform->HasPowerForReactiveLight()))
 		Flashlight->Charge(Dt / FS47Flashlight::ChargeSeconds);
 	// (held: the pause menu or a panel open; the battery is not used then, as the charger above does not charge)
 	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic(), M->bPausedByMenu || Modal());
@@ -979,6 +980,9 @@ bool US47Night::SelfTest(TArray<FString>& Lines)
 	bOk &= FS47NightCalls::SelfTest(Lines);
 	bOk &= FS47Glimpses::SelfTest(Lines);
 	bOk &= FS47Flashlight::SelfTest(Lines);
+	// M7 (C): the lamp's battery is a pressure: half a night lit (FS47FreeformSession's night is 2700 s), a quarter hour on the charger
+	Check(FS47Flashlight::RunSeconds >= 1200 && FS47Flashlight::RunSeconds <= 1500 && FS47Flashlight::ChargeSeconds >= 600 && FS47Flashlight::ChargeSeconds <= 1200,
+		FString::Printf(TEXT("M7: the flashlight runs %.0f s lit and charges in %.0f s at SARO, on station power"), FS47Flashlight::RunSeconds, FS47Flashlight::ChargeSeconds));
 	bOk &= S47FilmFace::SelfTest(Lines);
 	bOk &= FS47Album::SelfTest(Lines);
 	return bOk;

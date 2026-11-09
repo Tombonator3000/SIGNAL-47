@@ -792,12 +792,19 @@ void FS47TownUse::FillMap(FS47MapView& V) const
 
 // ---------- lures ----------
 
+namespace S47TownUseLocal
+{
+	// M7 (C): the night a lure set out now waits for. The shift's night runs to 08:00 (NightOf), but from 04:00 that night is over
+	// (NightsOver): a block set out at half past six in the morning waits for the coming night, not the one just gone.
+	int32 LureNightAt(double Clock) { return FMath::Max(FS47FreeformSession::NightOf(Clock), FS47FreeformSession::NightsOver(Clock) + 1); }
+}
+
 bool FS47TownUse::SetLure(const FString& Place, const FString& Kind)
 {
 	if (!M || !M->Freeform || (Kind != TEXT("salt") && Kind != TEXT("feed")) || !FS47Places::Def(Place)) return false;
 	if (!M->Freeform->Consume(Kind)) return false;
 	Lures.RemoveAll([&Place](const FLure& L) { return L.Place == Place; });
-	FLure L; L.Place = Place; L.Kind = Kind; L.Night = Night();
+	FLure L; L.Place = Place; L.Kind = Kind; L.Night = S47TownUseLocal::LureNightAt(M->Freeform->Clock());
 	Lures.Add(L);
 	Note(TEXT("lure"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: %s set out at %s, night %d"), *Kind, *Place, L.Night);
@@ -924,6 +931,11 @@ bool FS47TownUse::SelfTest(TArray<FString>& Lines)
 		const auto One = [](double X, double Z, int32 N) { TArray<TPair<FVector2D, int32>> A; A.Emplace(FVector2D(X, Z), N); return A; };
 		Check(Shy(At, 5, One(300, 800, 5)) && Shy(At, 5, One(170, 720, 6)) && !Shy(At, 5, One(170, 720, 4)) && !Shy(At, 5, One(170, 1400, 5)) && !Shy(At, 5, TArray<TPair<FVector2D, int32>>()),
 			TEXT("a lure is shy when something came within 500 m of it that night, and only then"));
+		// M7 (C): a block set out at 06:30 on day 7 waits for night 7: at 08:05 it is still untouched, the next morning it is read
+		const double Day7 = 6 * 86400.0, SetAt = Day7 + 6.5 * 3600, Soon = Day7 + 8 * 3600 + 300, Next = Day7 + 86400 + 8 * 3600 + 300;
+		const int32 Waits = S47TownUseLocal::LureNightAt(SetAt);
+		Check(Waits == 7 && !(FS47FreeformSession::NightOf(Soon) > Waits) && FS47FreeformSession::NightOf(Next) > Waits && S47TownUseLocal::LureNightAt(Day7 + 20 * 3600) == 7 && S47TownUseLocal::LureNightAt(Day7 + 86400 + 2 * 3600) == 7,
+			TEXT("M7: salt set out at 06:30 is not eaten at 08:05; set out in the evening or at two in the morning it waits for that night"));
 	}
 	// Prints: better ones pay more.
 	{

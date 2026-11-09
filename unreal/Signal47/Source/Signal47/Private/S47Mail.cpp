@@ -559,11 +559,21 @@ FString FS47Mail::TowText(const FString& Date,int32 Fee,bool bPaidInCash)
  return FString::Printf(TEXT("SOCORRO COUNTY ROAD DEPARTMENT\nWRECKER SERVICE / STATEMENT\n\nBILL TO: SARO, DISTRICT SERVICE TRUCK\nDATE OF SERVICE: %s\n\nTOW TO THE STATION, HOOK-UP AND MILEAGE   $%d\n\n%s\n\nKeep the truck on the road and we will both be happier."),
   *Date,Fee,bPaidInCash?TEXT("PAID FROM THE STATION BUDGET. THANK YOU."):TEXT("NOT PAID: CARRIED TO THE STATION'S WEEKLY SHEET."));
 }
+namespace S47MailLocal
+{
+ // M7 (C): every tow gets its own statement, two on one day included: the first number not yet posted (Posted is saved already).
+ FString TowBillId(int32 Today,int32 Rounds,const TSet<FString>& Posted)
+ {
+  FString Id;int32 N=0;
+  do{Id=FString::Printf(TEXT("bill:tow-%d-%d-%d"),Today,Rounds,N++);}while(Posted.Contains(Id)&&N<1000);
+  return Id;
+ }
+}
 void FS47Mail::PostTowBill(int32 Fee,bool bPaidInCash)
 {
  if(!Live()||!M||!M->Freeform)return;
  const int32 Today=M->Freeform->Day();
- FPiece Pc;Pc.Id=FString::Printf(TEXT("bill:tow-%d-%d"),Today,Rounds);Pc.Kind=TEXT("bill");
+ FPiece Pc;Pc.Id=S47MailLocal::TowBillId(Today,Rounds,Posted);Pc.Kind=TEXT("bill");
  Pc.Text=TowText(DayText(Today).ToUpper(),Fee,bPaidInCash);
  Post(Pc);
 }
@@ -1215,6 +1225,15 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   // The flag follows the orders, not the box: with the waiting order taken back it is down, the box still full.
   B.Orders.RemoveAll([](const FOrder& O){return O.Picked==0;});B.Begin(S47J::Read(S47J::Write(B.Save())),true);
   Check(!B.FlagUp()&&B.MailIn(),TEXT("the flag is up only for an order waiting for the carrier, never for what came"));
+ }
+ {
+  // M7 (C): two tows on one shift day, before the carrier has been, are two statements in the box.
+  FS47Mail T(nullptr);T.Begin(nullptr,false);
+  FPiece First;First.Id=S47MailLocal::TowBillId(16,3,T.Posted);First.Kind=TEXT("bill");First.Text=T.TowText(TEXT("MAY 13"),60,true);
+  const bool bFirst=T.Post(First,true);
+  FPiece Second;Second.Id=S47MailLocal::TowBillId(16,3,T.Posted);Second.Kind=TEXT("bill");Second.Text=T.TowText(TEXT("MAY 13"),45,false);
+  const bool bSecond=T.Post(Second,true);
+  Check(bFirst&&bSecond&&First.Id!=Second.Id&&T.Holds(First.Id)&&T.Holds(Second.Id),TEXT("M7: two tows on the same day are two statements in the box"));
  }
  {
   // Where the paper puts what the nights left: a finding's own words name the place.

@@ -30,18 +30,36 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
   // GEIGER-20261108: not a counter yet, a part of one. The player builds it at the bench (FS47Workshop "geiger", S47Happenings.h).
   {TEXT("geiger_tube"),TEXT("Geiger-Muller tube and a meter movement"),25,TEXT("any field record kept: a place, marks, or scorched ground"),TEXT("Parts, not a counter. Build one at the CALIBRATION / REPAIR bench: a recorder housing, a lead and a dry cell. On foot it ticks; over burned or pressed ground it ticks faster.")},
   {TEXT("alarm"),TEXT("Yard lights and alarm horn"),60,TEXT("the county on speaking terms with the station"),TEXT("Goes off when anything comes within fifty yards of the station. It warns you and stops nothing. Sometimes it goes dead in the middle of an alarm; a fuse at its box fixes it.")},
+  // M7 (C): two dear ones late in the month (S47OpeningsLocal::Late), so that a careful budget has something worth saving for in weeks 3
+  // and 4. FS47FreeformSession::KitWaits opens them from day 15 (the county's surplus sale).
+  {TEXT("transfer"),TEXT("Automatic transfer switch for the backup generator"),90,TEXT("the county's surplus sale, from day 15"),TEXT("When the feeder fails, it throws the backup generator in by itself, from its own tank or a can in stock. You hear it clunk over from anywhere in the building.")},
+  {TEXT("array_alarm"),TEXT("Trip wires along the antenna field"),110,TEXT("the yard alarm fitted, and the county's surplus sale from day 15"),TEXT("Wires the yard alarm out along the dishes: the horn goes for anything among the antennas, not only at the yard. It still stops nothing, and out there it is easier to put out.")},
  };
  return Table;
 }
 const FS47KitOffer* FS47Openings::Def(const FString& Id){return Defs().FindByPredicate([&](const FS47KitOffer& O){return Id==O.Id;});}
+namespace S47OpeningsLocal
+{
+ // The late, dear ones (from day 15): what a full budget in weeks 3 and 4 can go on.
+ bool Late(const FString& Id){return Id==TEXT("transfer")||Id==TEXT("array_alarm");}
+ // The trip wires along the antenna field: this close to a dish counts as among them.
+ constexpr double DishReach=14;
+ constexpr float ArrayKnockedOutChance=.45f;
+}
 bool FS47Openings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s openings: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
- TSet<FString> Ids;bool bWords=true;int32 Total=0;
- for(const auto& O:Defs()){Ids.Add(O.Id);Total+=O.Price;bWords&=O.Price>0&&FCString::Strlen(O.Waits)>3&&FCString::Strlen(O.What)>10;}
+ TSet<FString> Ids;bool bWords=true;int32 Total=0,LateTotal=0,LateCount=0,Cheapest=1000000;
+ for(const auto& O:Defs())
+ {
+  Ids.Add(O.Id);bWords&=O.Price>0&&FCString::Strlen(O.Waits)>3&&FCString::Strlen(O.What)>10;
+  if(S47OpeningsLocal::Late(O.Id)){LateTotal+=O.Price;++LateCount;Cheapest=FMath::Min(Cheapest,O.Price);}else Total+=O.Price;
+ }
  Check(Ids.Num()==Defs().Num()&&bWords,TEXT("each has a price, what it waits for, and what it does"));
- Check(Total<=300,TEXT("all of them together are about five days' full pay"));
+ Check(Total<=300,TEXT("all the early ones together are about five days' full pay"));
+ // M7 (C): the money model for days 1 to 30 leaves $150 to $300 a week unspent in weeks 3 and 4 on two or three cards an evening.
+ Check(LateCount==2&&Cheapest>=90&&LateTotal>=200&&LateTotal<=Total,TEXT("M7: two dear late ones from day 15, about $200 together, still less than the early ones"));
  return OK;
 }
 
@@ -126,6 +144,17 @@ void FS47YardAlarm::Mend()
  if(M->UI)M->UI->Toast(TEXT("New fuse. The yard alarm's lamp comes back on."),4);
  UE_LOG(LogTemp,Display,TEXT("S47: yard alarm mended"));M->RequestAutosave();
 }
+namespace S47OpeningsLocal
+{
+ // M7 (C): the trip wires along the antenna field ("array_alarm"): a figure this close to any dish.
+ bool AmongDishes(const US47Main* M)
+ {
+  if(!M||!M->Web||M->Web->Area()!=TEXT("saro")||!M->Night||!M->Night->Glimpses)return false;
+  for(const auto& I:M->Night->Glimpses->Individuals())
+   for(int32 D=0;D<M->Web->DishCount();++D)if(FVector2D::Distance(FVector2D(I.Pos.X,I.Pos.Z),FVector2D(M->Web->DishX(D),M->Web->DishZ(D)))<DishReach)return true;
+  return false;
+ }
+}
 bool FS47YardAlarm::BodyNear() const
 {
  if(!M||!M->Web||M->Web->Area()!=TEXT("saro")||!M->Freeform)return false;
@@ -145,17 +174,20 @@ void FS47YardAlarm::Step(double Dt)
  auto& F=*M->Freeform;
  if(!F.HasKit(TEXT("alarm")))return;
  if(!Build())return;
- const bool bHere=BodyNear();
+ const bool bYard=BodyNear();
+ const bool bField=!bYard&&F.HasKit(TEXT("array_alarm"))&&S47OpeningsLocal::AmongDishes(M);
+ const bool bHere=bYard||bField;
  const bool bTrip=(bHere&&!bNear)||bTestTrip;bNear=bHere;bTestTrip=false;
  if(bTrip&&!bDead&&F.HasPowerForReactiveLight())
  {
   RingLeft=RingSeconds;HornIn=0;
   const int32 S=int32(FMath::Fmod(F.Clock(),86400.));
-  F.RecordEvidence(FString::Printf(TEXT("alarm-day%d"),F.Day()),FString::Printf(TEXT("The yard alarm went off at %02d:%02d. Something was within its reach. It does not say what."),S/3600,(S/60)%60));
-  if(M->UI)M->UI->Toast(TEXT("The yard alarm is going off."),5);
-  UE_LOG(LogTemp,Display,TEXT("S47: yard alarm trips at %02d:%02d"),S/3600,(S/60)%60);
+  F.RecordEvidence(FString::Printf(TEXT("alarm-day%d"),F.Day()),bField?FString::Printf(TEXT("The trip wires along the antenna field set the yard alarm off at %02d:%02d. Something was out among the dishes. It does not say what."),S/3600,(S/60)%60)
+   :FString::Printf(TEXT("The yard alarm went off at %02d:%02d. Something was within its reach. It does not say what."),S/3600,(S/60)%60));
+  if(M->UI)M->UI->Toast(bField?TEXT("The yard alarm is going off. The trip wires, out by the dishes."):TEXT("The yard alarm is going off."),5);
+  UE_LOG(LogTemp,Display,TEXT("S47: yard alarm trips at %02d:%02d (%s)"),S/3600,(S/60)%60,bField?TEXT("antenna field"):TEXT("yard"));
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
-  if(Roll<KnockedOutChance)
+  if(Roll<(bField?S47OpeningsLocal::ArrayKnockedOutChance:KnockedOutChance))
   {
    // Not at once: it gets a few seconds out first, which is worse.
    RingLeft=FMath::Min(RingLeft,5.);bDead=true;

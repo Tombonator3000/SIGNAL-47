@@ -2,6 +2,7 @@
 #include "S47EventPlaces.h"
 #include "S47Evening.h"
 #include "S47Freeform.h"
+#include "S47GameStyle.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
@@ -21,8 +22,9 @@ namespace S47TownsfolkLocal
 	// Whoever is gone in the running game (one game at a time).
 	TSet<FString> GAway;
 	const TCHAR* const Weekdays[] = { TEXT("Monday"), TEXT("Tuesday"), TEXT("Wednesday"), TEXT("Thursday"), TEXT("Friday"), TEXT("Saturday"), TEXT("Sunday") };
-	// Freeform's day 1 is Monday, April 28, 1986.
-	FString WeekdayOf(int32 Day) { return Weekdays[((FMath::Max(1, Day) - 1) % 7)]; }
+	// Freeform's day 1 is Monday, April 28, 1986; a game begun on the old calendar (Sunday, April 13) keeps it. M7 (C): the day of the
+	// week comes from the same date the HUD shows (S47Game::GameDate; EDayOfWeek counts from Monday, as the table does).
+	FString WeekdayOf(int32 Day, bool bOldCalendar) { return Weekdays[FMath::Clamp(int32(S47Game::GameDate(true, FMath::Max(1, Day), 0, bOldCalendar).GetDayOfWeek()), 0, 6)]; }
 	int32 Index(const FString& Who) { return Who == TEXT("attendant") ? 0 : Who == TEXT("waitress") ? 1 : Who == TEXT("deputy") ? 2 : Who == TEXT("souvenir_man") ? 3 : -1; }
 	FString Fill(const TCHAR* Text, const FString& A, const FString& B = FString(), const FString& C = FString())
 	{
@@ -339,12 +341,12 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 	const auto Add = [&Out](const FString& Key, const FString& Text, int32 Rank) { FLine L; L.Key = Key; L.Text = Text; L.Rank = Rank; Out.Add(L); };
 	// Someone gone: nothing else.
 	for (const FGone& G : Gone)
-		if (G.Who != Who) Add(FString::Printf(TEXT("gone:%s:%d"), *G.Who, G.Day), Cap(Fill(GoneLines[I], Called(G.Who), WeekdayOf(G.Day), G.Place.IsEmpty() ? FString(TEXT("the edge of town")) : TitleOf(G.Place))), 100);
+		if (G.Who != Who) Add(FString::Printf(TEXT("gone:%s:%d"), *G.Who, G.Day), Cap(Fill(GoneLines[I], Called(G.Who), WeekdayOf(G.Day, F.OldCalendar()), G.Place.IsEmpty() ? FString(TEXT("the edge of town")) : TitleOf(G.Place))), 100);
 	for (const FGone& G : Returned)
 	{
 		if (Today > G.Back + 6) continue;
 		if (G.Who == Who) Add(FString::Printf(TEXT("selfback:%d"), G.Day), SelfBackLines[I], 90);
-		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back)).Replace(TEXT("{he}"), *He(G.Who), ESearchCase::CaseSensitive)), 80);
+		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back, F.OldCalendar())).Replace(TEXT("{he}"), *He(G.Who), ESearchCase::CaseSensitive)), 80);
 	}
 	// What is going round about places on the catalogue, the last two nights: only what somebody could have seen (lights from far off;
 	// at a door, a window or out walking only where people are), told as the kind of thing it was, and second-hand: a third of the time
@@ -449,7 +451,7 @@ bool FS47Townsfolk::ShowAway(const FString& Who)
 	if (I < 0 || !Away(Who) || !M || !M->UI || !M->Freeform) return false;
 	const FGone* G = Gone.FindByPredicate([&Who](const FGone& X) { return X.Who == Who; });
 	TArray<TSharedRef<SWidget>> Rows;
-	Rows.Add(S47Kit::Paper(Fill(GonePost[I], FString(), WeekdayOf(G ? G->Day : 1).ToUpper())));
+	Rows.Add(S47Kit::Paper(Fill(GonePost[I], FString(), WeekdayOf(G ? G->Day : 1, M->Freeform->OldCalendar()).ToUpper())));
 	// Whoever else is about says the rest.
 	for (const FString& Other : People())
 	{
@@ -542,7 +544,8 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 		}
 		Check(bClean, bClean ? FString(TEXT("every line short, in American English, with no brand names, and nobody says what it was")) : TEXT("not said here: ") + Bad);
 	}
-	Check(WeekdayOf(1) == TEXT("Monday") && WeekdayOf(7) == TEXT("Sunday") && WeekdayOf(9) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
+	Check(WeekdayOf(1, false) == TEXT("Monday") && WeekdayOf(7, false) == TEXT("Sunday") && WeekdayOf(9, false) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
+	Check(WeekdayOf(1, true) == TEXT("Sunday") && WeekdayOf(2, true) == TEXT("Monday") && WeekdayOf(5, true) == TEXT("Thursday"), TEXT("M7: on the old calendar day 1 is Sunday, April 13, 1986, as the HUD has it"));
 	// Settled in arrears (critics, round 3): a night's event at the substation at two, the player rests to eight; that morning the night is
 	// over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
 	{

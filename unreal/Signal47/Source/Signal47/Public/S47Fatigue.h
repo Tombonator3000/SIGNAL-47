@@ -58,8 +58,9 @@ public:
 	/** Tiredness from the hours awake, the coffee in you and the hour (the small hours are the worst). */
 	static double LevelOf(double AwakeHours, double Caffeine, double ClockOfDay);
 	/** The hours awake left after SleptHours in this bed: sleep pays off a share of them, the first hours most; under half an hour is
-	 *  no sleep, and a doze under a couple of hours counts for less. The motel bed best, the cot least. */
-	static double AfterSleep(double AwakeHours, double SleptHours, EBed Where);
+	 *  no sleep, and a doze under a couple of hours counts for less. The motel bed best, the cot least. M7 (C): lying down with more
+	 *  than WiredCaffeine in you (three cups close together) is a thin sleep: it pays off less of them. */
+	static double AfterSleep(double AwakeHours, double SleptHours, EBed Where, double CaffeineAtBed = 0);
 	/** How much of the run is left (AS47Walker: the run is 1 + 0.6 times this as fast as the walk), by how tired and how much wind is
 	 *  left (1 fresh, 0 winded). Never under RunFloor: a tired run is still a run, heard as one, faster than a figure hunting. */
 	static double RunScaleOf(double Tired, double Wind = 1);
@@ -74,7 +75,7 @@ public:
 	static double LidsOf(double Tired, double Spell, double Droop, double Waking);
 	/** Seconds from one heavy spell to the next (U a draw 0 to 1): never under MinSpellGap, rarer when only a little tired. */
 	static double SpellGapOf(double Tired, double U);
-	static constexpr double CupCaffeine = 0.6, MostCaffeine = 1.5, CaffeineHalfLife = 3 * 3600.0, RestedAfterArrival = 2;
+	static constexpr double CupCaffeine = 0.6, MostCaffeine = 1.5, CaffeineHalfLife = 3 * 3600.0, RestedAfterArrival = 2, WiredCaffeine = 1.0;
 	static constexpr double RunFloor = 0.9, MinSpellGap = 20, WakeSeconds = 22;
 	static bool SelfTest(TArray<FString>& Lines);
 

@@ -3,6 +3,7 @@
 #include "S47EventPlaces.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47GameStyle.h"
 #include "S47FreeformDirector.h"
 #include "S47Geo.h"
 #include "S47Inter.h"
@@ -34,7 +35,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Visitors, Log, All);
 namespace S47VisitorsLocal
 {
 	const TCHAR* const Weekdays[] = { TEXT("Monday"), TEXT("Tuesday"), TEXT("Wednesday"), TEXT("Thursday"), TEXT("Friday"), TEXT("Saturday"), TEXT("Sunday") };
-	FString WeekdayOf(int32 Day) { return Weekdays[(FMath::Max(1, Day) - 1) % 7]; }
+	// M7 (C): from the date the HUD shows, so that a game on the old calendar (day 1 Sunday, April 13) has the right day too.
+	FString WeekdayOf(int32 Day, bool bOldCalendar) { return Weekdays[FMath::Clamp(int32(S47Game::GameDate(true, FMath::Max(1, Day), 0, bOldCalendar).GetDayOfWeek()), 0, 6)]; }
 	// The van on the Mesa's lot, north of the diner (road-local, clear of its walls and its lot).
 	constexpr double VanX = -40, VanZ = 1982;
 	// SARO's visitors' lot by the gate (SARO's own x -18.2 to -7.8, z 10.5 to 20.5), road-local: where the Sky Watch pulls in.
@@ -862,7 +864,7 @@ FS47Visitors::FTale FS47Visitors::Tale(int32 Day) const
 				if (Near && Roll < .3f) Where = Near->Title; else When = FMath::Max(1, BestNight - 1);
 			}
 			T.Place = Best->Id;
-			T.Text = FString::Printf(TEXT("%s night there were lights down over %s. I watched them from this porch with my coffee. Then they went up, slow, like they had all night."), *WeekdayOf(When), *Where);
+			T.Text = FString::Printf(TEXT("%s night there were lights down over %s. I watched them from this porch with my coffee. Then they went up, slow, like they had all night."), *WeekdayOf(When, F.OldCalendar()), *Where);
 			return T;
 		}
 	}
