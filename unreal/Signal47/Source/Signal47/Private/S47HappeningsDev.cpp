@@ -19,6 +19,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47FieldRadio.h"
+#include "S47Keys.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "UnrealClient.h"
@@ -140,7 +141,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    {
     FS47Happenings* H=Haps();FString Why;
     if(!H||!H->DevStart(TEXT("cb_stranded"),V,Why)){Tell(false,Why);return;}
-    Tell(H->HasSite(TEXT("truck")),FString::Printf(TEXT("The call comes on the CB under the dash. Where he says he is, is on your map (TAB)%s."),V==TEXT("wrong")?TEXT("; a later night the voice may come back"):TEXT("")),7);
+    Tell(H->HasSite(TEXT("truck")),FString::Printf(TEXT("The call comes on the CB under the dash. Where he says he is, is on your map (%s)%s."),*S47Keys::MapSaid(),V==TEXT("wrong")?TEXT("; a later night the voice may come back"):TEXT("")),7);
    });
   });
  }

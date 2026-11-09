@@ -64,6 +64,7 @@
 #include "S47WeatherLive.h"
 #include "S47Observing.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Three.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SBox.h"
@@ -2276,8 +2277,8 @@ bool FS47FreeformSession::QueueBearingSlip(int32 Day,const FString& Line,const F
  if(Line.IsEmpty()||CaseSheets.Num()>=8)return false;
  FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d"),Sh.Day);Sh.Stamp=TEXT("COLD BY NOON");
  if(CaseSheets.ContainsByPredicate([&](const FResultSheet& X){return X.Job==Sh.Job;}))return false;
- Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nFROM SARO, OFF THE MAIN BEAM. WHICH WAY, NOT HOW FAR AND NOT WHAT.\n%s\nPENCILED IN ON THE MAP (TAB)."),
-  *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note);
+ Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nFROM SARO, OFF THE MAIN BEAM. WHICH WAY, NOT HOW FAR AND NOT WHAT.\n%s\nPENCILED IN ON THE MAP (%s)."),
+  *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note,*S47Keys::MapSaid().ToUpper());
  CaseSheets.Add(Sh);Changed();return true;
 }
 bool FS47FreeformSession::CollectResultSheet()
@@ -2292,7 +2293,7 @@ bool FS47FreeformSession::CollectResultSheet()
   if(M&&M->Audio)M->Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.45f});
   if(M&&M->Story)M->Story->AddDoc(Doc);
   if(M&&M->UI)M->UI->Document(Doc);
-  Feedback=TEXT("BEARING SLIP: which way, cold by noon. It is on your map (TAB).");Changed(Feedback);return true;
+  Feedback=FString::Printf(TEXT("BEARING SLIP: which way, cold by noon. It is on your map (%s)."),*S47Keys::MapSaid());Changed(Feedback);return true;
  }
  FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-sheet%d-d%d"),Sh.Line+1,Sh.Test+1,Sh.Day);Doc.Title=FString::Printf(TEXT("Result sheet: %s, test %d"),FS47FreeformCases::Def(Sh.Line).Title,Sh.Test+1);
  Doc.Kind=TEXT("printout");Doc.Stamp=Sh.Stamp;Doc.Page=Sh.Page;Doc.Transcript=Sh.Page;

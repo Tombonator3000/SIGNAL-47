@@ -19,6 +19,7 @@
 #include "S47Glimpses.h"
 #include "S47Herd.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47Legs.h"
 #include "S47Main.h"
@@ -2420,7 +2421,7 @@ bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& 
  Cb(Lines,bWrong?TEXT("roswell"):FS47NightRhythm::Roll(F->Seed(),F->Day(),0x564f4943u)<.5f?TEXT("man"):TEXT("old"),bWrong);
  double Secs=0;for(const FString& L:Lines)Secs+=S47CB::SecsOf(L)+.6;
  Now.Len=Secs+3;
- Say(TEXT("On your map: where the driver said he is (TAB)."),Secs+1,5);
+ Say(FString::Printf(TEXT("On your map: where the driver said he is (%s)."),*S47Keys::MapSaid()),Secs+1,5);
  // His rig is a few metres off the place itself, beside it.
  const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x52494753u)*2*UE_DOUBLE_PI;
  FSite T;T.Kind=TEXT("truck");T.Variant=Kind;T.Place=S.Place;T.Title=S.Title;T.Night=F->Day();T.Serial=Serial+1;T.X=S.X+FMath::Cos(A)*14;T.Z=S.Z+FMath::Sin(A)*14;T.Yaw=A+.4;T.bHeard=true;
@@ -2535,7 +2536,7 @@ void FS47Happenings::StepLanding(double Dt)
    FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=.9f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
    if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
   }
-  if(M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString(TEXT("Bearing on your map (TAB).")):FString(TEXT("ARRAY / A bearing logged, on your map (TAB).")),5);
+  if(M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString::Printf(TEXT("Bearing on your map (%s)."),*S47Keys::MapSaid()):FString::Printf(TEXT("ARRAY / A bearing logged, on your map (%s)."),*S47Keys::MapSaid()),5);
   if(Now.bSeen||Now.bForced)F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d"),R->Night),FString::Printf(TEXT("At %s lights came down out on the land, about %.0f degrees from SARO, give or take %.0f, and went out on the ground."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   else F->RecordEvidence(FString::Printf(TEXT("landing_logged_d%d"),R->Night),FString::Printf(TEXT("At %s the array logged something low on the horizon coming down, about %.0f degrees from SARO, give or take %.0f."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   if(Now.bSeen)Deed(TEXT("You watched the lights come down."));
@@ -3308,7 +3309,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
    FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=1.f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
    if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
   }
-  Say(FString::Printf(TEXT("ARRAY / Off the main beam: about %.0f degrees. On your map (TAB)."),Az),.8,5);
+  Say(FString::Printf(TEXT("ARRAY / Off the main beam: about %.0f degrees. On your map (%s)."),Az,*S47Keys::MapSaid()),.8,5);
   F->RecordEvidence(FString::Printf(TEXT("array_burst_d%d"),F->Day()),FString::Printf(TEXT("At %s the array caught a short burst off the main beam, about %.0f degrees from SARO, give or take %.0f. The printer ran a line by itself."),*S47Hap::ClockText(Clock),Az,Spread));
   Arm(TEXT("array_burst"),5);
   return true;

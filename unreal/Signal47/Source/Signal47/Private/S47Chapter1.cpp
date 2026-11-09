@@ -606,8 +606,8 @@ void US47Chapter1::Interactables()
 			{
 				if (!M->Anomaly || !M->Evening || !M->Evening->Pack.Flag(TEXT("handover_done"))) return;
 				M->Anomaly->Data.bEarlyCamera = true; RestoreEarlyCamera();
-				NoteIt(TEXT("Field camera collected for routine references. C raises it; the instant back keeps the place and exposure time. B-12 sheet film remains sealed."));
-				Toast(TEXT("Field camera. C to raise, Space to expose. Reference prints go in the notebook."),4.5f);
+				NoteIt(FString::Printf(TEXT("Field camera collected for routine references. %s raises it; the instant back keeps the place and exposure time. B-12 sheet film remains sealed."),*S47Keys::Said(TEXT("camera"))));
+				Toast(FString::Printf(TEXT("Field camera. %s to raise, %s to expose. Reference prints go in the notebook."),*S47Keys::Said(TEXT("camera")),*S47Keys::Said(TEXT("shutter"))),4.5f);
 				M->RequestAutosave(); return;
 			}
 			S.bCamera = true;

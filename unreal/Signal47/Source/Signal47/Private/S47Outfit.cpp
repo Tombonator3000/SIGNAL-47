@@ -4,6 +4,7 @@
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47Happenings.h"
+#include "S47Keys.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Omen.h"
@@ -120,7 +121,7 @@ void FS47Outfit::Step(double Dt)
     const double Az=FS47Places::AzimuthOf(Hx,Hz,Tx,Tz)+FMath::FRandRange(-3.,3.);
     const bool bLine=F.Places&&F.Places->AddCarFix(Hx,Hz,Az,Best->Id,F.Clock(),F.Day());
     if(M->Audio){M->Audio->Beep(700.f,.18f,.05f);M->Audio->Beep(700.f,.18f,.03f,.3f);}
-    if(M->UI)M->UI->Toast(RdfLine(BestM,Way)+(bLine?TEXT(" Penciled in from here on your map (TAB)."):TEXT("")),6);
+    if(M->UI)M->UI->Toast(RdfLine(BestM,Way)+(bLine?FString::Printf(TEXT(" Penciled in from here on your map (%s)."),*S47Keys::MapSaid()):FString()),6);
     UE_LOG(LogS47Outfit,Display,TEXT("S47: rdf: %s at %.0f m, toward the %s%s"),*Best->Id,BestM,Way,bLine?TEXT(", a new line on the map"):TEXT(""));
    }
   }

@@ -5,6 +5,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47Ledger.h"
 #include "S47Legs.h"
@@ -738,7 +739,7 @@ void FS47Mail::OpenLedger(int32 No)
    if(Lead==TEXT("wagon")){if(Ses.Predecessor&&!Ses.Predecessor->Heard(Lead)&&!Ses.Predecessor->Found(Lead)){Ses.Predecessor->HearOf(Lead);++Marked;}}
    else if(Ses.Places&&FS47Places::Def(Lead)&&!Ses.Places->Heard(Lead)&&!Ses.Places->Found(Lead)){Ses.Places->Hear(Lead);++Marked;}
   }
-  if(Marked>0)M->UI->Toast(TEXT("You pencil what the paper mentions onto your map (TAB)."),5);
+  if(Marked>0)M->UI->Toast(FString::Printf(TEXT("You pencil what the paper mentions onto your map (%s)."),*S47Keys::MapSaid()),5);
   UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d read, %d places marked"),No,Marked);
   M->RequestAutosave();
  }
@@ -870,7 +871,7 @@ FString FS47Mail::UnreadNote() const
  if(Ward+Other==0)return FString();
  if(Other==0)return TEXT("Not read yet: Dr. Ward's mail, in the OPS tray.");
  const FString Papers=Other==1?FString(TEXT("one paper from the mailbox")):FString::Printf(TEXT("%d papers from the mailbox"),Other);
- return Ward>0?FString::Printf(TEXT("Not read yet: %s, and Dr. Ward's mail in the OPS tray."),*Papers):FString::Printf(TEXT("Not read yet: %s. E at the box."),*Papers);
+ return Ward>0?FString::Printf(TEXT("Not read yet: %s, and Dr. Ward's mail in the OPS tray."),*Papers):FString::Printf(TEXT("Not read yet: %s. %s at the box."),*Papers,*S47Keys::Said(TEXT("use")));
 }
 TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
 {
@@ -891,7 +892,7 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
  if(!Out.IsEmpty())
  {
   if(M->Audio){M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.55f});M->Audio->Sfx(TEXT("paper0"),FS47Sound{.Gain=.45f,.When=.35f});}
-  if(Marked>0&&M->UI)M->UI->Toast(TEXT("You copy the pencil circle onto your map (TAB)."),5);
+  if(Marked>0&&M->UI)M->UI->Toast(FString::Printf(TEXT("You copy the pencil circle onto your map (%s)."),*S47Keys::MapSaid()),5);
   UE_LOG(LogTemp,Display,TEXT("S47: mail: %d taken out of the box, day %d"),Out.Num(),Ses.Day());
   M->RequestAutosave();
  }
@@ -1208,10 +1209,12 @@ TArray<FString> FS47Mail::AllText()
   TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side, the red flag up for the carrier."),TEXT("A rural mailbox on a post, SARO and BOX 19 painted on the side. The flag is down."),
   TEXT("Nothing in it. The carrier comes up the highway around noon, Monday through Saturday."),TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier."),
   TEXT("MAIL ORDER / A parcel from Western Surplus, due about Friday, May 2."),TEXT("The Caliche Ledger, Thursday, May 1"),TEXT("A bill from the county road department"),
-  TEXT("Your hands are full. The parcel stays on the box until they are free."),TEXT("You copy the pencil circle onto your map (TAB)."),
+  TEXT("Your hands are full. The parcel stays on the box until they are free."),
   TEXT("The order is in the box and the flag is up. The carrier takes it around noon."),TEXT("NOT READ YET"),TEXT("Dr. Ward's mail goes to the OPS tray as well, and waits there until it is read."),
-  TEXT("Not read yet: Dr. Ward's mail, in the OPS tray."),TEXT("Not read yet: 2 papers from the mailbox, and Dr. Ward's mail in the OPS tray."),TEXT("Not read yet: one paper from the mailbox. E at the box."),
+  TEXT("Not read yet: Dr. Ward's mail, in the OPS tray."),TEXT("Not read yet: 2 papers from the mailbox, and Dr. Ward's mail in the OPS tray."),
   TEXT("MAILBOX / One paper you took out of the box is not read yet."),TEXT("MAILBOX / 2 papers you took out of the box are not read yet.")})Out.Add(Line);
+ Out.Add(FString::Printf(TEXT("You copy the pencil circle onto your map (%s)."),*S47Keys::MapSaid()));
+ Out.Add(FString::Printf(TEXT("Not read yet: one paper from the mailbox. %s at the box."),*S47Keys::Said(TEXT("use"))));
  return Out;
 }
 bool FS47Mail::SelfTest(TArray<FString>& Lines)

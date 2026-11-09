@@ -5,6 +5,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Main.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -192,7 +193,7 @@ void FS47LeftGear::Step(double Dt)
   if(PlaceLooked(Hour,FVector2D(M->Player->Pos.X-Place.At.X,M->Player->Pos.Z-Place.At.Z).Size(),Clock-Place.Clock))
   {
    bPlace=false;M->Freeform->LostTimeTrace(1);
-   if(M->UI)M->UI->Toast(FString::Printf(TEXT("This is where it happened, at %s. Noted in your field records (TAB)."),*Place.Title),6);
+   if(M->UI)M->UI->Toast(FString::Printf(TEXT("This is where it happened, at %s. Noted in your field records (%s)."),*Place.Title,*S47Keys::Said(TEXT("notebook"))),6);
    UE_LOG(LogTemp,Display,TEXT("S47: left behind: the place gone back to in daylight"));
    M->RequestAutosave();
   }

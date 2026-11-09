@@ -31,6 +31,7 @@
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "S47Flow.h"
+#include "S47Keys.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
@@ -409,7 +410,7 @@ void FS47Taken::Finish()
  if(M&&M->UI)
  {
   M->UI->Fade(false);
-  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s by your watch. Noted in your field records (TAB)."),*ClockText(M->Freeform->Clock())),7);
+  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s by your watch. Noted in your field records (%s)."),*ClockText(M->Freeform->Clock()),*S47Keys::Said(TEXT("notebook"))),7);
  }
  Seconds=0;
  if(M)M->RequestAutosave();

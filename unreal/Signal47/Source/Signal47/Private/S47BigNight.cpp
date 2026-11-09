@@ -9,6 +9,7 @@
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Night.h"
@@ -512,8 +513,8 @@ void FS47Happenings::BigRecordArray(bool bWasThere)
  const FString Key=FString::Printf(TEXT("array_burst_d%d_turn"),BigNight);
  if(!F->HasFinding(Key))
   F->RecordEvidence(Key,FString::Printf(TEXT("At %s every antenna on remote turned by itself, all together, to about %03.0f degrees and %.0f up, low on the horizon, and stayed there. Nothing on the command log. The printer ran one line by itself: ALL CHANNELS OVER RANGE."),*S47Big::Clock(BigClock),BigAz,BigEl));
- if(M->UI)M->UI->Toast(bWasThere?FString::Printf(TEXT("ARRAY / Every antenna on remote has turned by itself to %03.0f, %.0f up. Nothing on the command log. The bearing is on your map (TAB)."),BigAz,BigEl)
-  :FString::Printf(TEXT("ARRAY / Every antenna on remote is pointed at %03.0f, %.0f up. Nobody commanded it. On the printer's strip, one line by itself at %s: ALL CHANNELS OVER RANGE. The bearing is on your map (TAB)."),BigAz,BigEl,*S47Big::Clock(BigClock)),8);
+ if(M->UI)M->UI->Toast(bWasThere?FString::Printf(TEXT("ARRAY / Every antenna on remote has turned by itself to %03.0f, %.0f up. Nothing on the command log. The bearing is on your map (%s)."),BigAz,BigEl,*S47Keys::MapSaid())
+  :FString::Printf(TEXT("ARRAY / Every antenna on remote is pointed at %03.0f, %.0f up. Nobody commanded it. On the printer's strip, one line by itself at %s: ALL CHANNELS OVER RANGE. The bearing is on your map (%s)."),BigAz,BigEl,*S47Big::Clock(BigClock),*S47Keys::MapSaid()),8);
  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: the array's record kept (%s)"),bWasThere?TEXT("there when it turned"):TEXT("found the morning after"));
  M->RequestAutosave();
 }
