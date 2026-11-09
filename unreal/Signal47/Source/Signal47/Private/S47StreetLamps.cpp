@@ -366,6 +366,56 @@ namespace
  }
 }
 
+namespace
+{
+ // ---- the motel's lot: MotelFront.ts lotLamps(), two 6.6 m poles at x -28.4 (court terms) with a 1.3 m arm west and a box head, at
+ // z 18 and 47. MotelV2 kept them in its trims: the pole and arm in the metal batch (node 678, now /Game/MotelV2/Trim/g463), the head
+ // in the black one (676, g461), the lens in the export's lamps batch (685, g470, with the porch lamps). Each becomes a cobra head on a
+ // pole cut to 6.6 m, its arm west as the old one. The three batches need CPU data (prepare_motel_cpu.py for the trims, which are in
+ // Git; prepare_cpu.py for g470); without it the old lamps stay.
+ bool MotelLot(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ {
+  if (FParse::Param(FCommandLine::Get(), TEXT("S47MotelLampsOld"))) return false;
+  static const double Zs[] = { 18., 47. };
+  constexpr double PoleX = -28.4, OldHeight = 6.6;
+  const int32 Parent = W->Handle(TEXT("world.motel.group"));
+  struct FBatch { int32 Node, Geo, Least; UStaticMeshComponent* C = nullptr; UStaticMesh* Without = nullptr; TArray<int32> Counts; };
+  FBatch Batches[] = { { 678, 463, 12 }, { 676, 461, 6 }, { 685, 470, 2 } };
+  if (!W->Node(Parent)) return false;
+  TArray<FBox> Boxes;
+  for (const double Z : Zs) Boxes.Add(FBox(FVector(-29.9, -.3, Z - .3), FVector(-28.15, OldHeight + .15, Z + .3)));
+  for (FBatch& B : Batches)
+  {
+   B.C = NodeMesh(W, B.Node, B.Geo);
+   B.Without = B.C ? Cut(W, B.C, Boxes, B.Counts) : nullptr;
+   bool bAll = B.Without != nullptr;
+   for (const int32 N : B.Counts) bAll &= N >= B.Least;
+   if (!bAll)
+   {
+    UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: the motel lot's old lamps were not all found in node %d g%d (%s; CPU data %d); they stay"), B.Node, B.Geo,
+     *FString::JoinBy(B.Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), B.C && B.C->GetStaticMesh() && B.C->GetStaticMesh()->bAllowCPUAccess ? 1 : 0);
+    return false;
+   }
+  }
+  UWorld* World = W->GetWorld();
+  const FTransform Court = W->NodeWorldThree(Parent);
+  TArray<FVector> Feet;
+  TArray<UPrimitiveComponent*> Ignore; for (const FBatch& B : Batches) Ignore.Add(B.C);
+  for (const double Z : Zs)
+  {
+   const FVector At = Court.TransformPosition(FVector(PoleX, 0, Z));
+   double Y = At.Y; FString What;
+   if (!Down(World, At + FVector(0, 1.5, 0), 4, Ignore, Y, &What, false)) What = TEXT("(nothing; the court's level)");
+   Feet.Add(FVector(At.X, Y, At.Z));
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp motel lot z %.0f stands on %s at y %.3f"), Z, *What, Y);
+  }
+  for (FBatch& B : Batches) { B.Without->InitResources(); B.C->SetStaticMesh(B.Without); }
+  Raise(W, Parent, TEXT("motel"), TEXT("CourtLot"), Feet, FQuat(FVector(0, 1, 0), PI) /* the arm west, as the old one */, {}, PoleMesh, ArmMesh, HeadMesh, Out, {}, OldHeight / PoleHeight);
+  UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the motel lot's two lamps are cobra heads on 6.6 m poles"));
+  return true;
+ }
+}
+
 FLinearColor Sodium() { return S47Three::Hex(0xffa552); }
 
 bool Build(AS47Web* W)
@@ -386,7 +436,8 @@ bool Build(AS47Web* W)
  const bool bRoad = Highway(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
  const bool bTown = Caliche(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
  const bool bYard = Yard(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
- return bRoad || bTown || bYard;
+ const bool bMotel = MotelLot(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
+ return bRoad || bTown || bYard || bMotel;
 }
 
 TMap<FName, S47ExteriorFixtures::FFixture> Fixtures(AS47Web* W)

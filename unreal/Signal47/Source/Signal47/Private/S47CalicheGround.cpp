@@ -123,14 +123,42 @@ void Build(AS47Web* W)
   for (int32 E = 0; E < 4; ++E)
   {
    const FSample& A = S[E]; const FSample& M = S[E + 4]; const FSample& Z = S[(E + 1) % 4];
-   const double Worst = FMath::Max3(Gap(A), Gap(M), Gap(Z));
-   if (Worst < FloatFrom || Worst > StemUpTo || !A.bGround || !M.bGround || !Z.bGround) continue;
-   // Under the wall line, its outer face 3 cm inside it, 20 cm thick; from 20 cm under the lowest ground along the edge up to
-   // 5 cm into the wall's foot.
+   if (FMath::Max3(Gap(A), Gap(M), Gap(Z)) < FloatFrom) continue;
+   // The bounding box is not the wall: an awning, a sign or a step can stand out past it (sweep 1: a stem wall under the bounding
+   // edge stood out in front of the Feed & Seed and past its corner). Find the wall itself: rays at 40 cm over the shell's foot from
+   // outside in, every 25 cm along the edge, against the shell alone. The wall is where most of them stop; the stem wall runs as
+   // far along it as they stop there, its outer face 2 cm behind the wall's face.
    const FVector Along = Z.Local - A.Local, Inward = M.In;
-   const double Length = Along.Size() - 6, Thick = 20;
-   const FVector CentreLocal = (A.Local + Z.Local) * .5 + Inward * (3 + Thick / 2);
-   const double Top = FMath::Max3(A.Bottom, M.Bottom, Z.Bottom) + 5, Bottom = FMath::Min3(A.Ground, M.Ground, Z.Ground) - 20;
+   const double Span = Along.Size();
+   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47CalicheWall), true);
+   TArray<TPair<double, double>> Hits; // along (0..1), depth in from the bounding edge (cm)
+   for (double D = 15; D <= Span - 15; D += 25)
+   {
+    const FVector P = A.Local + Along * (D / Span) + FVector(0, 0, 40);
+    FHitResult H;
+    if (B.C->LineTraceComponent(H, T.TransformPosition(P - Inward * 150), T.TransformPosition(P + Inward * 250), Q))
+     Hits.Add({ D / Span, FVector::DotProduct(T.InverseTransformPosition(H.ImpactPoint) - P, Inward) });
+   }
+   if (Hits.Num() < 3) { UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %s edge %d: the wall is not found by rays (%d); no stem wall"), *B.Name, E, Hits.Num()); continue; }
+   TArray<double> Depths; for (const auto& H : Hits) Depths.Add(H.Value); Depths.Sort();
+   const double Face = Depths[Depths.Num() / 2];
+   double From = 1, To = 0; int32 On = 0;
+   for (const auto& H : Hits) if (FMath::Abs(H.Value - Face) < 20) { From = FMath::Min(From, H.Key); To = FMath::Max(To, H.Key); ++On; }
+   if (On < 3 || Face > 150) continue;
+   // the ground just outside the wall at its two ends and middle, and the gap there
+   const double Foot = FMath::Max3(A.Bottom, M.Bottom, Z.Bottom);
+   double Low = 1e9, Worst = -1e9; int32 Found = 0;
+   for (const double U : { From, (From + To) / 2, To })
+   {
+    const FVector Out = T.TransformPosition(A.Local + Along * U + Inward * (Face - 12));
+    double G = 0; FString What;
+    if (!Ground(World, FVector(Out.X, Out.Y, Foot + 300), 1300, All, G, What)) continue;
+    ++Found; Low = FMath::Min(Low, G); Worst = FMath::Max(Worst, (Foot - G) / 100);
+   }
+   if (Found < 2 || Worst < FloatFrom || Worst > StemUpTo) continue;
+   const double Thick = 20, Length = (To - From) * Span + 20; // (each end ray stands 25 cm short of the next; 10 cm more each way)
+   const FVector CentreLocal = A.Local + Along * ((From + To) / 2) + Inward * (Face + 2 + Thick / 2);
+   const double Top = Foot + 5, Bottom = Low - 20;
    FVector Centre = T.TransformPosition(CentreLocal); Centre.Z = (Top + Bottom) / 2;
    const bool bAlongX = FMath::Abs(Along.X) > FMath::Abs(Along.Y);
    const FVector Scale(bAlongX ? Length / 100 : Thick / 100, bAlongX ? Thick / 100 : Length / 100, (Top - Bottom) / 100);
@@ -141,7 +169,8 @@ void Build(AS47Web* W)
    C->SetWorldTransform(FTransform(T.GetRotation(), Centre, Scale));
    W->AdoptNode(C, B.Parent, Name);
    ++Walls;
-   UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %s edge %d floats up to %.0f mm; a stem wall %.2f m long, %.2f m high"), *B.Name, E, Worst * 1000, Length / 100, (Top - Bottom) / 100);
+   UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %s edge %d: the wall %.0f cm in from the bounding edge along %.0f%%..%.0f%%, floats up to %.0f mm; a stem wall %.2f m long, %.2f m high"),
+    *B.Name, E, Face, From * 100, To * 100, Worst * 1000, Length / 100, (Top - Bottom) / 100);
   }
  }
  UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %d buildings measured at build, %d stem walls set"), All.Num(), Walls);

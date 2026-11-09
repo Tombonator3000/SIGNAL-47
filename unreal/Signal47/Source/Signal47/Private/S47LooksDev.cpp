@@ -226,10 +226,10 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  { View(TEXT("saro"), 11, Saro(-38.5, 662), Saro3(-32.05, 3.2, 668), TEXT("The motel's lot lamp: pole, arm and head")); });
  E.AddFreeform(Group, TEXT("Motel lot lamps at night"), TEXT("22:00 in the motel's lot"), [View, Saro, Saro3]
  { View(TEXT("saro"), 22, Saro(-38.5, 662), Saro3(-32.05, 3.2, 668), TEXT("The motel's lot lamps at night")); });
- E.AddFreeform(Group, TEXT("Farm lamp by day"), TEXT("11:00 at the farm's turn-off from the highway"), [View]
- { View(TEXT("diner"), 11, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The lamp on the pole at the farm's turn-off")); });
+ E.AddFreeform(Group, TEXT("Farm lamp by day"), TEXT("11:00 at the farm's turn-off from the highway (SARO's terms, where the farm is drawn)"), [View]
+ { View(TEXT("saro"), 11, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The lamp on the pole at the farm's turn-off")); });
  E.AddFreeform(Group, TEXT("Farm lamp at night"), TEXT("22:00 at the farm's turn-off"), [View]
- { View(TEXT("diner"), 22, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The farm's turn-off lamp at night")); });
+ { View(TEXT("saro"), 22, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The farm's turn-off lamp at night")); });
  E.AddFreeform(Group, TEXT("Substation track lamp by day"), TEXT("11:00 where the service track leaves the highway"), [View]
  { View(TEXT("diner"), 11, FVector2D(-1, 503), FVector(-10, 4.5, 512), TEXT("The lamp where the substation's track leaves the highway")); });
  E.AddFreeform(Group, TEXT("SARO's yard lamps by day"), TEXT("11:00 in the service yard"), [View]
