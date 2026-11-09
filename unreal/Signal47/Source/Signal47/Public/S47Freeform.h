@@ -691,7 +691,7 @@ private:
  bool bRestoreAngles=false;
  FJob* Job();
  void AddDay(int32 Number);
- void LapseUntakenCards(); // CHAIN-5-20261109: at the turn of the day (not TestAdvance) cards nobody began fall away
+ int32 LapseUntakenCards(); // CHAIN-5-20261109: at the turn of the day (not TestAdvance) cards nobody began fall away
  void Changed(const FString& Text=FString());
  void UpdateMysteries();
  bool PointReady() const;

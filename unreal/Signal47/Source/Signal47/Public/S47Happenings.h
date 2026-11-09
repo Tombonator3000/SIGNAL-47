@@ -179,12 +179,20 @@ public:
  struct FBigPlan{int32 Night=0;double Hour=0;int32 Variant=0;};
  // Pure, from the seed: the night (2 or 3), the hour of the night (26.1 to 27.6, never the 02:20s to 02:40s), the variant.
  static FBigPlan BigPlanFor(int32 Seed);
+ // CHAIN-4-20261109 (SAMMENFLETTING step 4): the same night again in week two (Round 1, nights 9 to 12) and week three (Round 2, 16 to
+ // 19), each in a shape the player has not had (Had: the shapes that came) and somewhere it has not stood. Round 0 is BigPlanFor.
+ static constexpr int32 BigRounds=3;
+ static FBigPlan BigPlanAt(int32 Seed,int32 Round,const TArray<int32>& Had);
  static const TCHAR* BigVariantName(int32 Variant);
  static int32 BigVariantOf(const FString& Name);
- // This game's: from the seed, moved to the other of the two nights when the drawn one is calm and the other is not.
+ // This game's: from the seed, moved to the other of the two nights when the drawn one is calm and the other is not. CHAIN-4: the
+ // round still to come once one has come (BigAhead), the last one's own after the third.
  FBigPlan BigPlan() const;
- // The night it came (or was slept through), 0 not yet, -1 never in this game (a save from after its nights).
- int32 BigHappened() const{return BigNight;}
+ // The night the first one came (or was slept through), 0 not yet, -1 never in this game (a save from after its nights).
+ int32 BigHappened() const{return BigPast.IsEmpty()?BigNight:BigPast[0].Night;}
+ // CHAIN-4: the night the latest round came (its day after: 1420, the night log), 0 while the next waits; the round still to come, -1 none.
+ int32 BigLatest() const{return BigNight;}
+ int32 BigAhead() const{return BigNight==0?BigRound:BigRound+1<BigRounds?BigRound+1:-1;}
  bool BigLive() const{return Now.Id==TEXT("big_night");}
  // A sleeper on this night is woken for it (FS47FreeformDirector::DrawForNight).
  bool BigWakes(int32 Night) const;
@@ -439,6 +447,11 @@ private:
  void EndUneasy();
  // ---- the first big night (S47BigNight.cpp) ----
  int32 BigNight=0,BigVar=-1,BigSerial=0,BigDaleAt=0;
+ // CHAIN-4-20261109: which round the state above is (0 the first), and the rounds put by (saved, optional: an older save has none).
+ int32 BigRound=0;
+ struct FBigPast{int32 Night=0,Var=-1;FString Place,Title;};
+ TArray<FBigPast> BigPast;
+ void BigNextRound();
  double BigClock=0,BigAz=0,BigEl=3,BigX=0,BigZ=0,BigTry=0,BigFollowTry=0,BigFlick=0,BigDaleIn=0;
  FString BigPlace,BigTitle;
  TSet<FString> BigFollow;

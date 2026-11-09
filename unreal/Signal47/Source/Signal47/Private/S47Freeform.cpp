@@ -252,7 +252,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    SavedAngles.Reset();Settle=0;bCrossRunning=false;
    if(FJob* Current=Job())
    {
-    if(Current->Stage==EJobStage::Pointed||Current->Stage==EJobStage::Integrating){Current->Stage=EJobStage::New;Current->Elapsed=0;}
+    if(Current->Stage==EJobStage::Pointed||Current->Stage==EJobStage::Integrating){UnfitCaseRelay(*Current);Current->Stage=EJobStage::New;Current->Elapsed=0;}
     if(Current->Phenomenon==TEXT("wrong_source")&&Current->bControl&&Current->ControlAt<8){Current->bControl=false;Current->ControlAt=0;Current->BeamAz.Reset();Current->BeamEl.Reset();Current->BeamAmplitude.Reset();Current->bBeamVerified=false;}
    }
    Feedback=TEXT("Invalid saved encoder data was discarded. Retained papers are safe; command fresh pointing before resuming unfinished measurements.");
@@ -413,18 +413,19 @@ void FS47FreeformSession::AddDay(int32 Number)
  if(Work.ContainsByPredicate([&](const FJob& J){return J.Day==Number;}))return;
  for(const auto& Card:FS47FreeformJobs::Generate(JobSeed,Number)){FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-J%d"),Number,Card.Slot+1);J.Day=Number;J.Slot=Card.Slot;J.Source=Card.Source;J.Card=Card;J.bGenerated=true;Work.Add(J);}
 }
-void FS47FreeformSession::LapseUntakenCards()
+int32 FS47FreeformSession::LapseUntakenCards()
 {
  // CHAIN-5-20261109: a card nobody began (still New, nothing recorded) does not wait for ever: at the turn of the day it falls away.
  // Kept: case tests (a planned test stays until recorded), the training card, cards begun, paid or already worked, and today's cards.
  // It leaves no mark on Ward's count: she counts filed work and its quality, and a card that lapses was never filed (not taken, not wrong).
- if(!RulesLive()||Tutorial>0)return;
+ if(!RulesLive()||Tutorial>0)return 0;
  const FString Was=Work.IsValidIndex(Selected)?Work[Selected].Id:FString();
  const int32 Gone=Work.RemoveAll([this](const FJob& J){return J.bGenerated&&J.CaseTest<0&&!J.bCaseRecorded&&!TrainingCard(J)&&J.Day<DayNumber&&J.Stage==EJobStage::New&&J.Elapsed<=0&&!J.bPaid&&!J.bPrinted&&J.OriginalPage.IsEmpty();});
- if(Gone<=0)return;
+ if(Gone<=0)return 0;
  const int32 Now=Work.IndexOfByPredicate([&Was](const FJob& J){return J.Id==Was;});
  Selected=Now>=0?Now:FMath::Max(0,Work.IndexOfByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed;}));
  UE_LOG(LogTemp,Display,TEXT("S47: %d untaken cards lapsed at the turn of the day"),Gone);
+ return Gone;
 }
 FS47FreeformSession::FJob* FS47FreeformSession::Job(){return Work.IsValidIndex(Selected)?&Work[Selected]:nullptr;}
 const FS47FreeformSession::FJob* FS47FreeformSession::CurrentJob()const{return Work.IsValidIndex(Selected)?&Work[Selected]:nullptr;}
@@ -582,7 +583,7 @@ void FS47FreeformSession::Step(double Dt)
  if(!Held())
  {
   WorldClock=AdvanceClock(WorldClock,D);int32 NowDay=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
-  if(NowDay!=DayNumber){DayNumber=NowDay;AddDay(DayNumber);LapseUntakenCards();Changed(TEXT("New daily observing jobs are on the operations terminal. Cards nobody began have lapsed; work under way remains available."));}
+  if(NowDay!=DayNumber){DayNumber=NowDay;AddDay(DayNumber);const int32 Lapsed=LapseUntakenCards();Changed(Lapsed>0?FString::Printf(TEXT("New daily observing jobs are on the operations terminal. %d card%s nobody began lapsed at 08:00; work under way remains available."),Lapsed,Lapsed==1?TEXT(""):TEXT("s")):FString(TEXT("New daily observing jobs are on the operations terminal. Work under way remains available.")));}
   M->Story->SetClock(FMath::Fmod(WorldClock,86400.));
   AutosaveAt+=D;if(AutosaveAt>=30){AutosaveAt=0;Changed();}
   StepCaseReplies();
@@ -770,7 +771,7 @@ void FS47FreeformSession::StepWork(double Dt)
   {
    const auto Cond=CaseCondition(J->CaseLine,J->CaseTest);
    // CASETEST-20261109: stopped at once and kept planned (SpoilCaseTest); the same job is recorded again.
-   if(Cond==ECaseCondition::Generator&&!(Field&&Field->GeneratorRunning()))SpoilCaseTest(*J,TEXT("the standby generator stopped, so the recording was no longer off the mains. Refuel or restart it behind the control room,"));
+   if(Cond==ECaseCondition::Generator&&Field&&M&&M->Web&&M->Web->IsLoaded()&&!Field->GeneratorRunning())SpoilCaseTest(*J,TEXT("the standby generator stopped, so the recording was no longer off the mains. Refuel or restart it behind the control room,"));
    // (judged only with SARO loaded and the player in it: a Continue's first frames, before the room is up, spoil nothing)
    else if(Cond==ECaseCondition::DoorsSealed&&M&&M->Web&&M->Web->IsLoaded()&&M->Player&&M->World&&M->World->Area==TEXT("saro")&&!StationSealed())SpoilCaseTest(*J,TEXT("the station was opened, or you left the control room, during the sealed-station test. Shut both doors and stay inside,"));
   }

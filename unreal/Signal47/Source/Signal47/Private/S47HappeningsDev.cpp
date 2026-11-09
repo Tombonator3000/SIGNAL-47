@@ -520,7 +520,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   FString Seeds;
   for(int32 Seed=1;Seed<=8;++Seed){const FS47Happenings::FBigPlan Q=FS47Happenings::BigPlanFor(Seed);Seeds+=FString::Printf(TEXT(" seed %d: night %d %02d:%02d %s;"),Seed,Q.Night,int32(Q.Hour)-24,int32(FMath::Fmod(Q.Hour,1.)*60.),FS47Happenings::BigVariantName(Q.Variant));}
   UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 big night plan: night %d %02d:%02d %s, happened %d;%s"),P.Night,int32(P.Hour)-24,int32(FMath::Fmod(P.Hour,1.)*60.),FS47Happenings::BigVariantName(P.Variant),H->BigHappened(),*Seeds);
-  Tell(P.Night>=2&&P.Night<=3&&P.Hour>=26,FString::Printf(TEXT("This game: night %d from %02d:%02d, the %s. Happened on night %d (0: not yet)."),P.Night,int32(P.Hour)-24,int32(FMath::Fmod(P.Hour,1.)*60.),FS47Happenings::BigVariantName(P.Variant),H->BigHappened()),7);
+  Tell(((P.Night>=2&&P.Night<=3)||(P.Night>=9&&P.Night<=12)||(P.Night>=16&&P.Night<=19))&&P.Hour>=26,FString::Printf(TEXT("This game: night %d from %02d:%02d, the %s. Happened on night %d (0: not yet)."),P.Night,int32(P.Hour)-24,int32(FMath::Fmod(P.Hour,1.)*60.),FS47Happenings::BigVariantName(P.Variant),H->BigHappened()),7);
  });
  E.AddFreeform(B,TEXT("Natural: the planner's own night and hour, from the yard"),TEXT("the clock to this game's night and hour, at SARO's yard; it starts by itself, or says why not"),[this,Haps,Shot,Report,Left]
  {

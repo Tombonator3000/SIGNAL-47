@@ -199,7 +199,7 @@ int32 FS47FreeformSession::RegisterNightPhoto(const FString& ShotId,double ShotC
  // Field money, under the week's cap (EarnSide): Dr. Ward counts the photograph in the album whether or not it is registered here.
  // CHAIN-2-20261109: brought in the same night as tonight's lead (the card off, the slip out there), the best rate, still capped.
  const int32 ShotNight=NightOf(ShotClock);
- const bool bSameNight=!bTrip&&Happenings&&Happenings->Lead().IsSet()&&Happenings->Lead().Night==ShotNight&&NightOf(WorldClock)==ShotNight;
+ const bool bSameNight=!bTrip&&Happenings&&Happenings->Lead().IsSet()&&Happenings->Lead().bPointed&&Happenings->Lead().Night==ShotNight&&NightOf(WorldClock)==ShotNight;
  const int32 Offered=FieldRecordPay+(bSameNight?SameNightPay:0);
  const int32 Paid=EarnSide(Offered,TEXT("field record"));
  const FString SameLine=bSameNight&&Paid>FieldRecordPay?FString::Printf(TEXT("\n%s: brought in the night the station's own work pointed out there, $%d more."),SameNightMark,Paid-FieldRecordPay):FString();

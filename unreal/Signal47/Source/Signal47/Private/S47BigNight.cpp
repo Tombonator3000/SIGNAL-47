@@ -80,6 +80,9 @@ namespace S47Big
  constexpr double Tone=3,Rack=6,Flick=8,Turn=10,Climax=27,ClimaxEnd=36,Back=42,Record=44,Len=110;
  const TCHAR* const Names[]={TEXT("column"),TEXT("fall"),TEXT("rise")};
  constexpr uint32 SaltNight=0x42494731u,SaltHour=0x42494732u,SaltVar=0x42494733u;
+ // CHAIN-4-20261109: the first night of each round's window of four (round 0 is nights 2 to 3), and the salt of its place.
+ constexpr int32 RoundFrom[]={2,9,16},RoundSpan=4;
+ constexpr uint32 SaltPlace=0x42494737u;
  double Smooth(double A,double B,double X){const double T=FMath::Clamp((X-A)/FMath::Max(1e-6,B-A),0.,1.);return T*T*(3-2*T);}
  // Level in three's terms (y up): the way along the ground, x and z (FVector::GetSafeNormal2D keeps x and y, which is wrong here).
  FVector Level(const FVector& V){return FVector(V.X,0,V.Z).GetSafeNormal();}
@@ -215,6 +218,16 @@ namespace S47Big
  FString Fill(const TCHAR* Text,const FString& Place,double Az,const FString& Way=FString(),const FString& Far=FString(),const FString& From=FString())
  {
   return FString(Text).Replace(TEXT("{azwords}"),*AzWords(Az)).Replace(TEXT("{place}"),*Place).Replace(TEXT("{way}"),*Way).Replace(TEXT("{miles}"),*Far).Replace(TEXT("{from}"),*From);
+ }
+ // CHAIN-4-20261109: where a later round stands, from the event places as the happenings draw them (PickFor): the same open land as
+ // the first (BigSite), 900 m to 3600 m from SARO (anywhere when nothing is), by the seed, the night and the round; never one of Before.
+ FString PlaceFor(const FS47EventPlaces& E,int32 Seed,int32 Night,int32 Round,const FVector2D& Saro,const TArray<FString>& Before)
+ {
+  using T=ES47PlaceTrait;
+  FS47PlaceNeed N;N.Kind=TEXT("big_night");N.Any=T::Open|T::Wash|T::Far;N.Not=T::Town|T::Saro|T::Indoors|T::Array|T::People|T::Road;N.MinM=900;N.MaxM=3600;N.FarShare=.4f;N.Skip=Before;
+  FS47PlacePick P=E.PickFor(N,Seed,Night,Saro,FVector2D::ZeroVector,SaltPlace^uint32(Round));
+  if(!P.IsSet()){N.MinM=N.MaxM=0;P=E.PickFor(N,Seed,Night,Saro,FVector2D::ZeroVector,SaltPlace^uint32(Round));}
+  return P.Id;
  }
 }
 
@@ -367,11 +380,36 @@ FS47Happenings::FBigPlan FS47Happenings::BigPlanFor(int32 Seed)
  P.Variant=FMath::Clamp(int32(FS47NightRhythm::Roll(Seed,0,S47Big::SaltVar)*3.f),0,2);
  return P;
 }
+FS47Happenings::FBigPlan FS47Happenings::BigPlanAt(int32 Seed,int32 Round,const TArray<int32>& Had)
+{
+ if(Round<=0)return BigPlanFor(Seed);
+ // CHAIN-4-20261109: weeks two and three, after two as the first (fully met, an authored night), on a night of its window.
+ const int32 R=FMath::Min(Round,BigRounds-1);
+ FBigPlan P;
+ P.Night=S47Big::RoundFrom[R]+FMath::Clamp(int32(FS47NightRhythm::Roll(Seed,R,S47Big::SaltNight)*S47Big::RoundSpan),0,S47Big::RoundSpan-1);
+ P.Hour=26.1+1.5*double(FS47NightRhythm::Roll(Seed,R,S47Big::SaltHour));
+ if(P.Hour>=26.33&&P.Hour<26.67)P.Hour+=.5;
+ // A shape not had yet; all had (F10 ran one twice), any but the last.
+ TArray<int32> Left;for(int32 V=0;V<3;++V)if(!Had.Contains(V))Left.Add(V);
+ if(Left.IsEmpty())for(int32 V=0;V<3;++V)if(V!=Had.Last())Left.Add(V);
+ P.Variant=Left[FMath::Clamp(int32(FS47NightRhythm::Roll(Seed,R,S47Big::SaltVar)*Left.Num()),0,Left.Num()-1)];
+ return P;
+}
 const TCHAR* FS47Happenings::BigVariantName(int32 Variant){return S47Big::Names[FMath::Clamp(Variant,0,2)];}
 int32 FS47Happenings::BigVariantOf(const FString& Name){for(int32 I=0;I<3;++I)if(Name==S47Big::Names[I])return I;return -1;}
 FS47Happenings::FBigPlan FS47Happenings::BigPlan() const
 {
  auto* F=M?M->Freeform.Get():nullptr;
+ // CHAIN-4-20261109: a later round, from the shapes that came; a calm night in its window gives way to the next one that is not.
+ if(const int32 Round=FMath::Max(BigAhead(),BigRound);Round>0)
+ {
+  TArray<int32> Had;for(const FBigPast& Was:BigPast)if(Was.Night>0)Had.Add(Was.Var);
+  if(BigNight>0&&Round>BigRound)Had.Add(BigVar);
+  FBigPlan Q=BigPlanAt(F?F->Seed():47,Round,Had);
+  const int32 From=S47Big::RoundFrom[FMath::Min(Round,BigRounds-1)];
+  for(int32 K=0;K<S47Big::RoundSpan-1&&F&&F->QuietNight(Q.Night);++K)Q.Night=From+(Q.Night-From+1)%S47Big::RoundSpan;
+  return Q;
+ }
  FBigPlan P=BigPlanFor(F?F->Seed():47);
  // A calm night has no lights: the other of the two, when that one is not calm. Both calm, it comes anyway.
  if(F&&F->QuietNight(P.Night)&&!F->QuietNight(P.Night==2?3:2))P.Night=P.Night==2?3:2;
@@ -379,12 +417,14 @@ FS47Happenings::FBigPlan FS47Happenings::BigPlan() const
 }
 bool FS47Happenings::BigWakes(int32 Night) const
 {
- return BigNight==0&&M&&M->Freeform&&!M->Freeform->InTutorial()&&!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural)&&BigPlan().Night==Night;
+ return BigAhead()>=0&&M&&M->Freeform&&!M->Freeform->InTutorial()&&!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural)&&BigPlan().Night==Night;
 }
 bool FS47Happenings::BigOwns(int32 Night) const
 {
  if(!M||!M->Freeform||M->Freeform->InTutorial())return false;
- return BigOwnsNight(Night,BigPlan().Night,BigNight,!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural));
+ const bool bWaits=!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural);
+ // CHAIN-4-20261109: the round that came owns its night, and the next one its own before it comes.
+ return BigOwnsNight(Night,BigPlan().Night,BigNight,bWaits)||(BigNight!=0&&BigAhead()>0&&bWaits&&Night>0&&Night==BigPlan().Night);
 }
 FString FS47Happenings::BigSpoken() const{return Spoken(BigTitle.IsEmpty()?FString(TEXT("the flat")):BigTitle);}
 
@@ -392,7 +432,7 @@ FString FS47Happenings::BigSpoken() const{return Spoken(BigTitle.IsEmpty()?FStri
 void FS47Happenings::ResetBig()
 {
  BigNight=0;BigVar=-1;BigSerial=0;BigDaleAt=0;BigClock=0;BigAz=0;BigEl=3;BigX=BigZ=0;BigTry=BigFollowTry=BigFlick=BigDaleIn=0;
- BigPlace.Empty();BigTitle.Empty();BigFollow.Reset();BigDaleLines.Reset();
+ BigPlace.Empty();BigTitle.Empty();BigFollow.Reset();BigDaleLines.Reset();BigRound=0;BigPast.Reset();
  if(BigNow){BigNow->Says.Reset();BigNow->Hold=S47Big::FHold();BigNow->LastAge=0;}
  bBigSawNight=false;bBigPower=false;bBigMotors=false;bBigDimmed=false;bBigToneOn=false;bBigDevNatural=false;bBigSlept=false;BigSoon=-1;BigLastClock=-1;
 }
@@ -410,10 +450,19 @@ void FS47Happenings::LoadBig(const S47J::FObj& O)
  // A hail out when it was saved is not out any more.
  BigFollow.Remove(TEXT("hail"));
  if(BigNight>0&&BigVar<0)BigVar=0;
+ // CHAIN-4-20261109: the rounds put by, if any (a save from before has none: it is in the first, and the next two are to come).
+ const TArray<double> Ns=S47J::Nums(O,TEXT("past_night")),Vs=S47J::Nums(O,TEXT("past_variant"));
+ const TArray<FString> Ps=S47J::Strs(O,TEXT("past_place")),Ts=S47J::Strs(O,TEXT("past_title"));
+ for(int32 I=0;I<FMath::Min3(Ns.Num(),FMath::Clamp(S47J::Int(O,TEXT("round")),0,BigRounds-1),BigRounds-1);++I)
+ {
+  FBigPast Was;Was.Night=FMath::Clamp(int32(Ns[I]),-1,100000);Was.Var=Vs.IsValidIndex(I)?FMath::Clamp(int32(Vs[I]),-1,2):-1;
+  Was.Place=Ps.IsValidIndex(I)?Ps[I].Left(64):FString();Was.Title=Ts.IsValidIndex(I)?Ts[I].Left(120):FString();BigPast.Add(Was);
+ }
+ BigRound=BigPast.Num();
 }
 S47J::FObj FS47Happenings::SaveBig() const
 {
- if(BigNight==0&&!bBigSawNight)return nullptr;
+ if(BigNight==0&&!bBigSawNight&&BigPast.IsEmpty())return nullptr;
  auto O=S47J::New();
  S47J::Set(O,TEXT("night"),BigNight);S47J::Set(O,TEXT("variant"),BigVar);S47J::Set(O,TEXT("clock"),BigClock);S47J::Set(O,TEXT("az"),BigAz);S47J::Set(O,TEXT("el"),BigEl);
  S47J::Set(O,TEXT("x"),BigX);S47J::Set(O,TEXT("z"),BigZ);
@@ -421,7 +470,23 @@ S47J::FObj FS47Happenings::SaveBig() const
  if(!BigTitle.IsEmpty())S47J::Set(O,TEXT("title"),BigTitle);
  if(bBigSawNight)S47J::Set(O,TEXT("saw"),true);
  if(!BigFollow.IsEmpty())S47J::Set(O,TEXT("follow"),BigFollow.Array());
+ if(!BigPast.IsEmpty())
+ {
+  TArray<double> Ns,Vs;TArray<FString> Ps,Ts;
+  for(const FBigPast& Was:BigPast){Ns.Add(Was.Night);Vs.Add(Was.Var);Ps.Add(Was.Place);Ts.Add(Was.Title);}
+  S47J::Set(O,TEXT("round"),BigRound);S47J::Set(O,TEXT("past_night"),Ns);S47J::Set(O,TEXT("past_variant"),Vs);S47J::Set(O,TEXT("past_place"),Ps);S47J::Set(O,TEXT("past_title"),Ts);
+ }
  return O;
+}
+// CHAIN-4-20261109: the round that came (or never could) is put by once its days after are over; the next waits for its own night.
+// Its mark stays where it is until the next one is made (BigSite) or its week is out.
+void FS47Happenings::BigNextRound()
+{
+ FBigPast Was;Was.Night=BigNight;Was.Var=BigNight>0?BigVar:-1;Was.Place=BigPlace;Was.Title=BigTitle;BigPast.Add(Was);
+ BigRound=BigPast.Num();
+ BigNight=0;BigVar=-1;BigClock=0;BigTry=BigFollowTry=BigDaleIn=0;BigFollow.Reset();BigDaleLines.Reset();
+ bBigSawNight=false;bBigSlept=false;BigSoon=-1;
+ UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: round %d put by (night %d, %s at %s); round %d of %d next"),BigRound-1,Was.Night,Was.Var>=0?BigVariantName(Was.Var):TEXT("none"),*Was.Title,BigRound,BigRounds);
 }
 
 // ---------------------------------------------------------------- the place
@@ -431,7 +496,17 @@ bool FS47Happenings::BigSite(int32 Night,double Clock)
  using T=ES47PlaceTrait;
  // Open land out past the low ground, far enough to be a light on the horizon from SARO and near enough to walk to the next day.
  const uint32 Any=uint32(T::Open)|uint32(T::Wash)|uint32(T::Far),Not=uint32(T::Town)|uint32(T::Saro)|uint32(T::Indoors)|uint32(T::Array)|uint32(T::People)|uint32(T::Road);
- FSpot S=Where(TEXT("big_night"),0,Any,Not,900,3600,.4f,0x42494734u^uint32(Night));
+ FSpot S;
+ // CHAIN-4-20261109: a later round from SARO by the seed (it is a light on SARO's horizon), never where a round stood before.
+ TArray<FString> Before;for(const FBigPast& Was:BigPast)if(!Was.Place.IsEmpty())Before.Add(Was.Place);
+ if(BigRound>0&&F->EventPlaces)
+ {
+  double Sx=0,Sz=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,Sx,Sz);
+  const FString Id=S47Big::PlaceFor(*F->EventPlaces,F->Seed(),Night,BigRound,FVector2D(Sx,Sz),Before);
+  if(const FS47EventPlace* E=Id.IsEmpty()?nullptr:F->EventPlaces->Find(Id)){S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;}
+ }
+ const auto Again=[&](const FSpot& Got){return Got.bSet&&BigPast.ContainsByPredicate([&](const FBigPast& Was){return Was.Title==Got.Title;});};
+ for(uint32 K=0;K<3&&(!S.bSet||Again(S));++K)S=Where(TEXT("big_night"),0,Any,Not,900,3600,.4f,(0x42494734u^uint32(Night))+K*0x101u);
  if(!S.bSet)S=Where(TEXT("big_night"),0,Any,Not,0,0,1.f,0x42494735u^uint32(Night));
  if(!S.bSet)return false;
  // Off the place's own point, on open ground.
@@ -875,10 +950,13 @@ void FS47Happenings::StepBigDue()
 {
  auto* F=M->Freeform.Get();
  const double Was=BigLastClock;BigLastClock=F->Clock();
- if(BigNight!=0)return;
+ // CHAIN-4-20261109: after the last round, or while one is on, nothing more to plan.
+ if(BigNight!=0&&(BigAhead()<0||BigLive()))return;
  // A developer run (the scenario tests among them) has none of its own unless F10's natural line asks: the tests built on other
  // nights stay as they were. A real game, and -S47NormalJourney, have it.
  if(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural)return;
+ // CHAIN-4: the round that came waits out its three days after (1420 talks of it to the third); one that never could, at once.
+ if(BigNight!=0){if(BigNight>0&&F->Day()<=BigNight+3)return;BigNextRound();}
  const FBigPlan P=BigPlan();
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  const double H=HourOfNight(F->Clock());
@@ -1101,6 +1179,64 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   Check(L.BigNight==2&&L.BigVar==1&&FMath::IsNearlyEqual(L.BigAz,132.)&&L.BigHas(TEXT("array"))&&!L.BigHas(TEXT("hail"))&&L.bBigSawNight,TEXT("saved once it has come: a load keeps its night, its shape, the bearing and what followed, and lets a hail that was out go"));
   FS47Happenings E(nullptr);E.ResetBig();
   Check(E.SaveBig()==nullptr&&E.BigHappened()==0,TEXT("a game that has not reached it saves nothing of it"));
+ }
+ // CHAIN-4-20261109: three big nights in a month, one a week for three weeks, in three shapes and at three places.
+ {
+  int32 Bad=0,Close=0,Same=0,Var1[3]={0,0,0},Var2[3]={0,0,0};bool bSameSeed=true;
+  for(int32 Seed=1;Seed<=2000;++Seed)
+  {
+   const FBigPlan A=BigPlanFor(Seed),B=BigPlanAt(Seed,1,{A.Variant}),C=BigPlanAt(Seed,2,{A.Variant,B.Variant});
+   for(const FBigPlan& P:{B,C})
+   {
+    // Its window, after two and never in Story's minute; never a Monday (Ward's sheet, FS47FreeformSession::NextReviewDay: 8, 15,
+    // 22), the week's case (two nights after the first) or the finale's nights before the assessment (day 30 less three).
+    const bool bWindow=(P.Night>=9&&P.Night<=12)||(P.Night>=16&&P.Night<=19);
+    if(!bWindow||P.Hour<26.||P.Hour>=28.||(P.Hour>=26.33&&P.Hour<26.67)||P.Night%7==1||P.Night==FS47WeekCase::CaseNightFor(A.Night)||P.Night>=27)++Bad;
+   }
+   if(B.Night>12||C.Night<16)++Bad;
+   // The days after (1420 to the third) are over before the next.
+   if(B.Night<=A.Night+3||C.Night<=B.Night+3)++Close;
+   if(A.Variant==B.Variant||A.Variant==C.Variant||B.Variant==C.Variant)++Same;
+   ++Var1[FMath::Clamp(B.Variant,0,2)];++Var2[FMath::Clamp(C.Variant,0,2)];
+   const FBigPlan D=BigPlanAt(Seed,1,{A.Variant});bSameSeed&=D.Night==B.Night&&D.Hour==B.Hour&&D.Variant==B.Variant;
+  }
+  Check(Bad==0&&Close==0&&bSameSeed,TEXT("CHAIN-4: three big nights a month: nights 2 to 3, 9 to 12 and 16 to 19, after two, apart by more than their days after, never on Ward's Monday, the week's case or the finale"));
+  Check(Same==0&&Var1[0]>300&&Var1[1]>300&&Var1[2]>300&&Var2[0]>300&&Var2[1]>300&&Var2[2]>300,FString::Printf(TEXT("CHAIN-4: three shapes, never one twice (week two column %d fall %d rise %d, week three %d %d %d of 2000)"),Var1[0],Var1[1],Var1[2],Var2[0],Var2[1],Var2[2]));
+  // The places: from SARO by the seed, the event places' own draw, never one already used.
+  FS47EventPlaces E(nullptr);double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+  int32 Missing=0,Twice=0;
+  for(int32 Seed=1;Seed<=300;++Seed)
+  {
+   const FBigPlan A=BigPlanFor(Seed),B=BigPlanAt(Seed,1,{A.Variant}),C=BigPlanAt(Seed,2,{A.Variant,B.Variant});
+   const FString P0=S47Big::PlaceFor(E,Seed,A.Night,0,FVector2D(SaroX,SaroZ),{});
+   const FString P1=S47Big::PlaceFor(E,Seed,B.Night,1,FVector2D(SaroX,SaroZ),{P0});
+   const FString P2=S47Big::PlaceFor(E,Seed,C.Night,2,FVector2D(SaroX,SaroZ),{P0,P1});
+   Missing+=(P0.IsEmpty()||P1.IsEmpty()||P2.IsEmpty())?1:0;Twice+=(P0==P1||P0==P2||P1==P2)?1:0;
+  }
+  Check(Missing==0&&Twice==0,FString::Printf(TEXT("CHAIN-4: three places, never one twice (300 games: %d without a place, %d with one twice)"),Missing,Twice));
+  // An older save that has had the first: it gets the next two, and the first is still the first (the week's case is planned on it).
+  S47J::FObj Old=S47J::New();S47J::Set(Old,TEXT("night"),2);S47J::Set(Old,TEXT("variant"),1);S47J::Set(Old,TEXT("saw"),true);S47J::Set(Old,TEXT("title"),FString(TEXT("the dry lake")));S47J::Set(Old,TEXT("place"),FString(TEXT("land:dry_lake")));
+  FS47Happenings H(nullptr);H.ResetBig();H.LoadBig(Old);
+  const FBigPlan Next=H.BigPlan();
+  bool bOld=H.BigRound==0&&H.BigPast.IsEmpty()&&H.BigHappened()==2&&H.BigAhead()==1&&Next.Night>=9&&Next.Night<=12&&Next.Variant!=1;
+  H.BigNextRound();
+  const FBigPlan After=H.BigPlan();
+  bOld&=H.BigRound==1&&H.BigNight==0&&H.BigHappened()==2&&H.BigLatest()==0&&H.BigAhead()==1&&After.Night==Next.Night&&After.Variant==Next.Variant;
+  // Its week-two night came: saved and read back, the round and what was put by come with it; then the third, and no more.
+  H.BigNight=After.Night;H.BigVar=After.Variant;H.BigTitle=TEXT("the salt lick");H.BigPlace=TEXT("land:salt_lick");
+  const FBigPlan Third=H.BigPlan();
+  bOld&=H.BigAhead()==2&&Third.Night>=16&&Third.Night<=19&&Third.Variant!=1&&Third.Variant!=After.Variant;
+  H.BigNextRound();
+  FS47Happenings L(nullptr);L.ResetBig();L.LoadBig(S47J::Read(S47J::Write(H.SaveBig())));
+  bOld&=L.BigRound==2&&L.BigPast.Num()==2&&L.BigPast[0].Night==2&&L.BigPast[0].Var==1&&L.BigPast[1].Title==TEXT("the salt lick")&&L.BigHappened()==2&&L.BigPlan().Night==Third.Night&&L.BigPlan().Variant==Third.Variant;
+  L.BigNight=Third.Night;L.BigVar=Third.Variant;
+  bOld&=L.BigAhead()<0&&L.BigHappened()==2&&L.BigLatest()==Third.Night;
+  // One that came in after the first's nights (never): the next two all the same.
+  S47J::FObj Never=S47J::New();S47J::Set(Never,TEXT("night"),-1);
+  FS47Happenings N(nullptr);N.ResetBig();N.LoadBig(Never);
+  bOld&=N.BigAhead()==1&&N.BigHappened()==-1;
+  N.BigNextRound();bOld&=N.BigHappened()==-1&&N.BigAhead()==1&&N.BigPast[0].Var==-1;
+  Check(bOld,TEXT("CHAIN-4: an older save that had the first gets the next two in shapes it has not had; the first stays the first; the rounds survive a save"));
  }
  // The rhythm's file has it, after two, on the night system, never a danger.
  {

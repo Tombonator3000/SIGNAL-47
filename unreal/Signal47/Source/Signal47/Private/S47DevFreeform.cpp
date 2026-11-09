@@ -896,7 +896,15 @@ void FS47DevFreeform::StepCards()
  if(CardsStage==25)
  {
   // The array settles for a second first; a player presses again, so this does too (it gives up at 03:00 with the rest).
-  if(F->StartControl())CardsStage=3;
+  if(F->StartControl()){CardsStage=3;return;}
+  static double TriedFrom=0;static int32 TriedNight=0;
+  if(TriedNight!=Night){TriedNight=Night;TriedFrom=F->Clock();}
+  if(F->Clock()-TriedFrom>=600)
+  {
+   const auto* CJ=F->CurrentJob();
+   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: control never started: job %s (card %s) stage %d, discrepancy %d, control %d, power %d [%s]"),Night,*ClockText(F->Clock()),CJ?*CJ->Id:TEXT("-"),*Card.Id,CJ?int32(CJ->Stage):-1,CJ&&CJ->bAnomaly?1:0,CJ&&CJ->bControl?1:0,F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));
+   Say(TEXT("GAVE UP, the control would not start"));CardsStage=-1;
+  }
   return;
  }
  if(CardsStage==3)

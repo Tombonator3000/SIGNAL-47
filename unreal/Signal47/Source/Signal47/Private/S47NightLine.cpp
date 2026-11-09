@@ -472,7 +472,7 @@ bool S47NightLine::Fill(const US47Main* M,FS47NightLineIn& In)
  const FS47FreeformSession& F=*M->Freeform;
  In=FS47NightLineIn();
  In.Night=FMath::Max(1,F.Day());In.Seed=F.Seed();In.SheriffTrust=F.SheriffTrust();In.TownTrust=F.TownTrust();
- if(F.Happenings.IsValid()){In.BigNight=FMath::Max(0,F.Happenings->BigHappened());In.BigPlace=F.Happenings->BigPlaceTitle();}
+ if(F.Happenings.IsValid()){In.BigNight=FMath::Max(0,F.Happenings->BigLatest());In.BigPlace=F.Happenings->BigPlaceTitle();} // CHAIN-4-20261109: the latest round's
  if(F.Tips.IsValid())for(const FS47RadioTips::FGiven& G:F.Tips->Given())
  {
   if(G.Stage<1||G.ReadDay<=0||G.ReadDay>=In.Night||G.ReadDay<In.TipNight)continue;
