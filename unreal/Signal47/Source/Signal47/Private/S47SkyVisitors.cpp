@@ -125,13 +125,14 @@ namespace
   double Flicker = 1;
   const FVector G = FS47SkyGlint::Gains(GlintTime(M), Light, GlintElevation(Eye, At), &Flicker);
   Swell = FS47SkyGlint::SizeScale * Flicker;
-  return G;
+  return G * FMath::Pow(FS47SkyGlint::SizeScale, -FS47SkyGlint::Core);
  }
 }
 
 double FS47SkyGlint::SizeScale = FS47SkyGlint::DefaultSize;
 double FS47SkyGlint::Twinkle = FS47SkyGlint::DefaultTwinkle;
 double FS47SkyGlint::Chroma = FS47SkyGlint::DefaultChroma;
+double FS47SkyGlint::Core = FS47SkyGlint::DefaultCore;
 double FS47SkyGlint::PlainUntil = -1;
 void FS47SkyGlint::ShowPlain(double Seconds) { PlainUntil = FPlatformTime::Seconds() + FMath::Clamp(Seconds, 0., 30.); }
 bool FS47SkyGlint::Plain() { return PlainUntil >= 0 && FPlatformTime::Seconds() < PlainUntil; }
@@ -173,7 +174,8 @@ void FS47SkyGlint::ReadCommandLine()
  if (Parts.Num() > 0) SizeScale = FMath::Clamp(FCString::Atod(*Parts[0]), .5, 4.);
  if (Parts.Num() > 1) Twinkle = FMath::Clamp(FCString::Atod(*Parts[1]), 0., 3.);
  if (Parts.Num() > 2) Chroma = FMath::Clamp(FCString::Atod(*Parts[2]), 0., 3.);
- UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky glint from the command line: size %.2f, twinkle %.2f, colour %.2f"), SizeScale, Twinkle, Chroma);
+ if (Parts.Num() > 3) Core = FMath::Clamp(FCString::Atod(*Parts[3]), 0., 2.);
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky glint from the command line: size %.2f, twinkle %.2f, colour %.2f, core %.2f"), SizeScale, Twinkle, Chroma, Core);
 }
 
 double FS47SkyVisitorState::Duration(int32 S)

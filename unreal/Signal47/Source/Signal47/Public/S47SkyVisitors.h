@@ -86,19 +86,20 @@ struct FS47SkyFormationState
 // up. Only the sprite's colour and size: nothing is lit, nothing saved, the paths, sight and observation rules are as they were.
 struct FS47SkyGlint
 {
- // On every light's sprite, as against before 9 November.
- static double SizeScale,Twinkle,Chroma;
+ // On every light's sprite, as against before 9 November. Core: a larger sprite is drawn that much dimmer (SizeScale to the power
+ // minus Core), so the bright middle grows less than the glow round it: a light with a halo, not a bigger white ball.
+ static double SizeScale,Twinkle,Chroma,Core;
  // F10's comparison: drawn as before 9 November (old size, steady) for a few seconds of real time, then by itself as now again.
  static double PlainUntil;
  static void ShowPlain(double Seconds);
  static bool Plain();
- static constexpr double DefaultSize=1.7,DefaultTwinkle=1.,DefaultChroma=1.;
+ static constexpr double DefaultSize=1.5,DefaultTwinkle=1.,DefaultChroma=1.,DefaultCore=.8;
  // 0 to 1: how much air the light is seen through, by its height above the horizontal (radians).
  static double Strength(double Elevation);
  // Gains on red, green and blue (one on average; their sum is the brightness), and the sprite's size factor. A pure function of
  // time, the light's own number and its height: two lights, or two moments, never twinkle alike.
  static FVector Gains(double Time,int32 Light,double Elevation,double* Size=nullptr);
- // -S47SkyGlint=size,twinkle,chroma in a developer's run, to set them from the command line without a build.
+ // -S47SkyGlint=size,twinkle,chroma,core in a developer's run, to set them from the command line without a build.
  static void ReadCommandLine();
 };
 
