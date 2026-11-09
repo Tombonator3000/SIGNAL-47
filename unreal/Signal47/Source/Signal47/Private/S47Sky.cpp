@@ -1019,7 +1019,7 @@ void FS47Sky::CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant)
 			// cauliflower at the top, tatters at the base: the edges are torn by the noise in two directions, a band 8 % deep, not a line
 			const double TopV = V + .035 * CellFbm(U * 26.0 + Seed, V * 18.0, 3);
 			const double BaseV = V + .055 * CellFbm(U * 21.0 + Seed + 5.7, V * 26.0, 3);
-			const double Cloud = Smooth(Top, Top + .10, TopV) * (1 - Smooth(Base - .055, Base + .035, BaseV)) * Smooth(0, .35, Edge) * Mottle;
+			const double Cloud = Smooth(Top, Top + .10, TopV) * (1 - Smooth(Base - .055, Base + .035, BaseV)) * Smooth(0, .35, Edge) * (.9 + .1 * Mottle); // (solid: the sky photograph behind must not show through it)
 			// the virga: fibres hanging from the base in its shafts, curling back with the wind the further they fall (the wind is less
 			// under the cloud), each drying at its own height well before the ground
 			const double Below = V - Base;
@@ -1040,11 +1040,11 @@ void FS47Sky::CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant)
 				}
 				Virga = FMath::Clamp(Virga, 0.0, 1.0) * Smooth(.1, .45, Edge);
 			}
-			const double A = FMath::Clamp(1 - (1 - .95 * Cloud) * (1 - Virga), 0.0, 1.0);
+			const double A = FMath::Clamp(1 - (1 - .98 * Cloud) * (1 - Virga), 0.0, 1.0);
 			// sunlit at the top, dark and heavy at the base; the rain a lighter grey than the base it falls from
 			const double CloudLum = FMath::Lerp(.95, .44, Smooth(.12, Base, V)) * (.9 + .1 * Mottle); // (not from Top: its noise would stripe the cloud)
 			const double VirgaLum = FMath::Lerp(.58, .74, Smooth(0, .25, Below));
-			const double Lum = A > 1e-4 ? (CloudLum * .95 * Cloud + VirgaLum * Virga) / FMath::Max(1e-4, .95 * Cloud + Virga) : 0.0;
+			const double Lum = A > 1e-4 ? (CloudLum * .98 * Cloud + VirgaLum * Virga) / FMath::Max(1e-4, .98 * Cloud + Virga) : 0.0;
 			const uint8 G = uint8(FMath::Clamp(FMath::RoundToInt(255 * Lum), 0, 255));
 			Out[Y * Wd + X] = FColor(G, G, uint8(FMath::Min(255, G + 8)), uint8(FMath::Clamp(FMath::RoundToInt(255 * A), 0, 255)));
 		}
