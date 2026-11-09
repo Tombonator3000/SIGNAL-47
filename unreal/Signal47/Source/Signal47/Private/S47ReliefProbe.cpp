@@ -404,7 +404,17 @@ namespace
 			if (Life->Area != AreaHere) { AreaHere = Life->Area; ++R.Crossed; }
 			S47OpenLand::RoadOf(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
 		};
-		const auto FreeAhead = [&](double Ahead) { const FVector N = S47OpenLand::FromRoad(Life->Area, Rx + Dx * Ahead, Rz + Dz * Ahead); return Life->WhyNotLand(N.X, N.Z) == TEXT("nothing says no here"); };
+		// Free ahead: a few real steps on the way get that far along it (WhyNotLand does not see the walk zones' own walls, the barn's
+		// and the cows' pen's: it said free where the walker could not go, sweep 4 of 9 November). Where they do not, back to the side.
+		const auto FreeAhead = [&](double Ahead)
+		{
+			const double Rx0 = Rx, Rz0 = Rz;
+			for (int32 K = 0; K < FMath::CeilToInt(Ahead / Step); ++K) Move(Dx * Step, Dz * Step);
+			const double Got = (Rx - Rx0) * Dx + (Rz - Rz0) * Dz;
+			if (Got >= Ahead * .8) return true;
+			Move(Rx0 - Rx, Rz0 - Rz);
+			return false;
+		};
 		for (; Steps * Step < Limit * 1.5 && Steps < 40000; ++Steps)
 		{
 			Move(Dx * Step, Dz * Step);
@@ -434,7 +444,7 @@ namespace
 							for (int32 K = 0; K < Count && !bPast; ++K)
 							{
 								Move(-Dz * FMath::Sign(Side) * Step, Dx * FMath::Sign(Side) * Step);
-								if (K % 4 == 3) bPast = FreeAhead(1.5);
+								if (K % 4 == 3) bPast = FreeAhead(2.5);
 							}
 							if (bPast) break;
 							// back to the middle before the other side, or the next backing starts 40 m off

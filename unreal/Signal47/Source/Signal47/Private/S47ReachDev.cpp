@@ -130,14 +130,16 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 			M->SkyVisitors->DevFormationStop();
 			// What the night's own schedule sends, read each half hour from the state it keeps (the log has S47SkyVisitors' own lines).
 			TSharedRef<int32> Came = MakeShared<int32>(0), Asked = MakeShared<int32>(0);
+			const int32 PassesBefore = M->SkyVisitors->FormationData().Passes;
 			TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
-			*Next = [this, Came, Asked, Next](int32 Half)
+			*Next = [this, Came, Asked, Next, PassesBefore](int32 Half)
 			{
 				if (Half >= 12)
 				{
-					const FString Line = FString::Printf(TEXT("from 21:00 to 03:00, %d of %d half hours had a formation on"), *Came, *Asked);
-					UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), *Came > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
-					Tell(*Came > 0, Line, 8);
+					const int32 Started = M->SkyVisitors ? M->SkyVisitors->FormationData().Passes - PassesBefore : 0;
+					const FString Line = FString::Printf(TEXT("from 21:00 to 03:00 (clock jumped half an hour at a time; developer rules, so every scheduled pass is let through): %d passes started by the schedule, one up in %d of %d half hours; S47SkyVisitors' log lines say which and when"), Started, *Came, *Asked);
+					UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), Started > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
+					Tell(Started > 0, Line, 8);
 					return;
 				}
 				if (auto* F = Session()) F->TestAdvance(1800);
