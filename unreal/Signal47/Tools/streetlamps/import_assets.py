@@ -42,8 +42,10 @@ def hashes():
 def lods(mesh, path):
     authored = [path.with_stem(path.stem + '_LOD' + str(lod)) for lod in (1, 2)]
     R.check(path.stem + ' complete authored LOD pair', all(item.is_file() for item in authored))
+    # Not S.import_lod: it drops import_mesh's import_rotation, and LOD1/2 came in turned 90 degrees (9 November).
     for lod, lodfile in enumerate(authored, 1):
-        R.check(path.stem + ' authored LOD' + str(lod), S.import_lod(mesh, lod, str(lodfile)) == lod)
+        R.check(path.stem + ' authored LOD' + str(lod), R.import_lod_same_frame(mesh, lod, lodfile, DEST) == lod)
+    R.check_lod_frames(mesh, path.stem)
     return 'authored'
 
 

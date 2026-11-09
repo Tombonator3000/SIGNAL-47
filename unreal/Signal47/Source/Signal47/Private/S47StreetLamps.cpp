@@ -142,12 +142,9 @@ namespace
   auto* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47StreetLamp_%s"), *Name.Replace(TEXT(":"), TEXT("_"))));
   C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(Parent); C->SetStaticMesh(Mesh);
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
-  C->SetCastShadow(true);
-  // M6 sweep 4: the arm's, the head's and the wood arm's LOD1 and LOD2 were imported turned 90 degrees about the pole (S.import_lod
-  // without the base import's yaw: measured, LOD0 along +X, LOD1/2 along +Y), so from afar the head hung beside the arm. LOD0 only
-  // until they are imported again; the pole is round and its LODs agree.
-  if (!Name.EndsWith(TEXT(":pole"))) C->SetForcedLodModel(1);
-  C->RegisterComponent();
+  // (M6 sweep 4: the arm's, head's and wood arm's LOD1/2 had come in turned 90 degrees about the pole; imported again on 9 November
+  // through import_recipe.import_lod_same_frame, every LOD within 0.4 cm of LOD0's frame, so no LOD is forced)
+  C->SetCastShadow(true); C->RegisterComponent();
   double Matrix[16]; S47Three::Compose(At, Q, FVector::OneVector, Matrix); C->SetWorldTransform(S47Three::MatToUE(Matrix));
   // AdoptNode keeps only where it is; the turn goes into the node too, or the next time the node is set the arm swings back to +x
   // (sweep 3: the heads stood over the road, the arms pointed the other way).
