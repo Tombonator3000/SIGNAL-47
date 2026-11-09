@@ -28,6 +28,8 @@ Freeforms motivasjon, Tom 7. november: «Forrige nattvakt: Reyes fra Story mode.
 
 Dale, Tom 7. november: Dale er en sint tysker, og temperamentet er inspirert av Klaus Kinski. Han er en oppdiktet kontaktperson via telefon og walkie-talkie og møtes aldri fysisk. Temperamentet er inspirasjon: ikke navn, ekte sitater eller etterligning av den virkelige personen.
 
+Dales stemme, Tom 9. november: Dale får en egen, oppdiktet stemme i stedet for Kinski-klonen. Tom ba ca. 14:00 om «stemme som du mener er best». Valget er designprofilen `dale_de_design`: en middelaldrende mann med lav stemme, der den tyske aksenten kommer fra modellen via en tysk prøvetekst. Ingen virkelig person ligger bak, og den er ikke en klone av en ekte stemme. Kinski-profilen brukes ikke til nye replikker. De gamle Kinski-takes i Story byttes før spillet deles. Maler med sted eller retning som settes inn under spillet, vises som tekst uten stemme inntil videre. Se `unreal/Narrative/DaleVoice/`.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
