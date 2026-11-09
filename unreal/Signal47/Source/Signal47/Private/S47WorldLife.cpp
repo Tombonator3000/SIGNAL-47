@@ -1,4 +1,6 @@
 #include "S47WorldLife.h"
+#include "S47Freeform.h"
+#include "S47Weather.h"
 #include "S47FreeformTerrain.h"
 #include "S47TownLayer.h"
 
@@ -34,6 +36,13 @@
 #include "S47WindowLight.h"
 #include "S47World.h"
 #include "UObject/UObjectIterator.h"
+
+#include "HAL/IConsoleManager.h"
+namespace S47WorldLifeMoon
+{
+	// MOON-20261108, for before-and-after pictures: 0 the night as it was before the moon (the same light every night, no disc).
+	TAutoConsoleVariable<int32> CvMoon(TEXT("s47.moon"), 1, TEXT("1: the real moon of the date (its phase, light and disc); 0: the night as before, the same every night."));
+}
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Life, Log, All);
 
@@ -335,6 +344,15 @@ void US47WorldLife::Step(double Dt)
 		const bool bWest = Sec > 12 * 3600;
 		W->SetTwilightSun(bWest, float(bWest ? .33 + (Sec - (18 * 3600 + 27 * 60)) / 60 * .18 : .33 + ((5 * 3600 + 30 * 60) - Sec) / 60 * .18));
 	}
+	// MOON-20261108: the real moon of the date in Freeform (its place, phase and light); elsewhere the night as it was tuned, no disc.
+	if (!bTitle && M->IsFreeform() && M->Freeform && S47WorldLifeMoon::CvMoon.GetValueOnGameThread() != 0)
+	{
+		const double MoonClock = M->Freeform->Clock();
+		const S47Weather::FMoon Mo = S47Weather::Moon(M->Freeform->DateOfDay(int32(FMath::FloorToDouble(MoonClock / 86400.0)) + 1), FMath::Fmod(FMath::Fmod(MoonClock, 86400.0) + 86400.0, 86400.0));
+		Sky->SetMoon(true, Mo.Az, Mo.El, Mo.Lit, Mo.SunAz, Mo.SunEl);
+		W->SetMoonLight(S47Weather::MoonLight(Mo));
+	}
+	else { Sky->SetMoon(false, 0, -90, 0, 0, -90); W->SetMoonLight(1.f); }
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening), float(Sky->Twilight));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);

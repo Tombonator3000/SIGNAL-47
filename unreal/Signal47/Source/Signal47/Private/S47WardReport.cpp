@@ -72,7 +72,7 @@ FString FS47WardReport::Type(const FReport& Rep, const TFunction<FString(int32)>
 		{
 			if (It.Cat != Ct) continue;
 			++Had;
-			if (It.bOn) On.Add(Ct == ECat::Money ? It.Text : FString::Printf(TEXT("%s %s  %s"), *DateOf(It.Night), *ClockOf(It.Clock), *It.Text));
+			if (It.bOn) On.Add(Ct == ECat::Money ? It.Text : Ct == ECat::Work ? FString::Printf(TEXT("%s  %s"), *DateOf(It.Night), *It.Text) : FString::Printf(TEXT("%s %s  %s"), *DateOf(It.Night), *ClockOf(It.Clock), *It.Text));
 		}
 		if (On.Num()) Out += FString::Printf(TEXT("\n%s\n%s\n"), CatTitle(Ct), *FString::Join(On, TEXT("\n")));
 		else if ((Rep.Routine & Bit(Ct)) && RoutineLine(Ct)) Out += FString::Printf(TEXT("\n%s\n%s\n"), CatTitle(Ct), RoutineLine(Ct));
@@ -389,7 +389,7 @@ void FS47WardReport::Open(int32 Week)
 			if (It.Cat != Ct) continue;
 			if (!bAny) Form.Add(S47Kit::Section(CatTitle(Ct)));
 			bAny = true; bAllOff &= !It.bOn;
-			const FString Label = FString::Printf(TEXT("%s  %s"), It.bOn ? TEXT("[X]") : TEXT("[  ]"), *(Ct == ECat::Money ? It.Text : FString::Printf(TEXT("%s %s  %s"), *DateOf(It.Night), *ClockOf(It.Clock), *It.Text)));
+			const FString Label = FString::Printf(TEXT("%s  %s"), It.bOn ? TEXT("[X]") : TEXT("[  ]"), *(Ct == ECat::Money ? It.Text : Ct == ECat::Work ? FString::Printf(TEXT("%s  %s"), *DateOf(It.Night), *It.Text) : FString::Printf(TEXT("%s %s  %s"), *DateOf(It.Night), *ClockOf(It.Clock), *It.Text)));
 			Form.Add(S47Kit::Button(Label, [this, Guard, Week, I]
 			{
 				FReport* Rp = Guard.IsValid() ? Find(Week) : nullptr;

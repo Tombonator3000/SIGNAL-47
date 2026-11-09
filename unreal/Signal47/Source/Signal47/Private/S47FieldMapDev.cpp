@@ -17,6 +17,10 @@
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
 #include "S47WardReport.h"
+#include "S47Answer.h"
+#include "S47Weather.h"
+#include "S47Flashlight.h"
+#include "HAL/IConsoleManager.h"
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47BoardRules.h"
@@ -311,7 +315,7 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 							if (Pb.Book()) Pb.Book()->Connect(Mine, Church, false); // a second time would untie it
 							const int32 Station = Pb.StationThreads().Num();
 							if (M->Board.Open) M->Board.Open(FString(), FString());
-							Pictured(TEXT("board"), 1.5f);
+							Pictured(TEXT("board"), .35f); // the next line opens the tray half a second after this one ends
 							const bool bOk = Pb.AtSaro() && Pb.UpCount() >= 4 && Station >= 2 && Pb.ThreadCount() >= 1 && bClip;
 							Tell(bOk, FString::Printf(TEXT("On the board: %d up, %d station threads, %d of your own, clipping %s"), Pb.UpCount(), Station, Pb.ThreadCount(), bClip ? TEXT("up") : TEXT("refused")));
 						});
@@ -327,7 +331,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
 			Fs->PinBoard->OpenTray();
 			Pictured(TEXT("board"), 1.f);
-			Tell(true, FString::Printf(TEXT("The tray: %d papers"), Fs->PinBoard->Papers().Num()));
+			const int32 InTray = Fs->PinBoard->Papers().Num();
+			Tell(true, FString::Printf(TEXT("The tray: %d %s"), InTray, InTray == 1 ? TEXT("paper") : TEXT("papers")));
 		});
 	});
 
@@ -403,6 +408,85 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		Pictured(TEXT("ward"), 1.f);
 		Tell(bSent && TrustAfter <= TrustBefore - 2, FString::Printf(TEXT("Week %d: trust %d to %d, %d found out"), Week, TrustBefore, TrustAfter, Fs->WardReport->CaughtCount()));
 	});
+
+	// ---- the array held off schedule, and the answer (ANSWER-20261108) ----
+	static const TCHAR* const AnswerGroup = TEXT("Answer (M3)");
+	E.AddFreeform(AnswerGroup, TEXT("Answer: the tracking terminal with its off-schedule hold"), TEXT("night, at SARO: the right-hand PC's array control, with HOLD THE ARRAY HERE / OFF SCHEDULE"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->SkyAnswer) { Tell(false, TEXT("no answer in this run")); return; }
+			const bool bOpen = Fs->Use(TEXT("crtRight"));
+			// The terminal comes up after the camera has moved to the screen: the picture then, and the line ends after it.
+			After(2.2, [this, Pictured, bOpen]
+			{
+				Pictured(TEXT("answer"), .05f);
+				After(.4, [this, bOpen] { Tell(bOpen, bOpen ? TEXT("The tracking terminal") : TEXT("the tracking terminal did not open (no job or no power)")); });
+			});
+		});
+	});
+	E.AddFreeform(AnswerGroup, TEXT("Answer: a night after the array was held 31 minutes at AZ 214 EL 38, the printout"), TEXT("at SARO; the call as if made a sidereal day ago, answered now; the printer runs; the printout opened"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->SkyAnswer || !M) { Tell(false, TEXT("no answer in this run")); return; }
+			if (M->UI) M->UI->Close();
+			Fs->SkyAnswer->DevCall(214, 38, 31 * 60);
+			const bool bAnswered = Fs->SkyAnswer->DevAnswerNow();
+			const FS47Doc* Paper = nullptr;
+			if (M->Story) for (const FS47Doc& D : M->Story->Docs()) if (D.Id.StartsWith(TEXT("answer-printout-"))) Paper = &D;
+			if (Paper && M->UI) M->UI->Document(*Paper);
+			Pictured(TEXT("answer"), .35f);
+			Tell(bAnswered && Paper, bAnswered ? TEXT("The printout nobody asked for") : TEXT("no answer was printed"));
+		});
+	});
+
+	// ---- the moon (MOON-20261108) ----
+	// Before and after from the same view: the night as it was (s47.moon 0), then the real moon of the date; 23:00, no flashlight.
+	static const TCHAR* const MoonGroup = TEXT("Moon (M5)");
+	struct FMoonNight { const TCHAR* Name; int32 Day; };
+	static const FMoonNight MoonNights[] = { { TEXT("new moon, May 8"), 11 }, { TEXT("first quarter, May 15"), 18 }, { TEXT("full moon, May 23"), 26 } };
+	for (const FMoonNight& Mn : MoonNights)
+	{
+		const FString Label = FString::Printf(TEXT("Moon: %s, 23:00 out on the land, before and after"), Mn.Name);
+		const int32 OnDay = Mn.Day;
+		E.AddFreeform(MoonGroup, Label, TEXT("the open land west of the highway at 23:00, facing the moon (or south when it is down), no flashlight; a picture with the night as before, then with the moon"), [this, OnDay]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs) { Tell(false, TEXT("no session")); return; }
+			const S47Weather::FMoon Mo = S47Weather::Moon(Fs->DateOfDay(OnDay), 23 * 3600.0);
+			const double Az = Mo.El > 3 ? Mo.Az : 180.0;
+			// Out on the open land west of the highway (the wash), where nothing stands between the moon and the ground.
+			const FS47EventPlace* Wash = Fs->EventPlaces ? Fs->EventPlaces->Find(TEXT("land:wash_west")) : nullptr;
+			if (!Wash) { Tell(false, TEXT("no open land on the list")); return; }
+			const FString Area = FS47EventPlaces::AreaOf(*Wash);
+			const FVector Stood = S47OpenLand::FromRoad(Area, Wash->X, Wash->Z);
+			FStage Stage; Stage.Day = OnDay; Stage.From = 23; Stage.To = 23.2; Stage.Area = Area;
+			Stage.Where = [Stood] { return FVector2D(Stood.X, Stood.Z); };
+			Stage.Yaw = S47OpenLand::Turned(TEXT("road"), Area, -FMath::DegreesToRadians(Az));
+			Stage.Pitch = FMath::DegreesToRadians(FMath::Clamp(Mo.El - 22.0, 0.0, 16.0));
+			Go(Stage, [this, OnDay, Mo]
+			{
+				if (M && M->Night && M->Night->Flashlight) M->Night->Flashlight->bOn = false;
+				IConsoleVariable* Cv = IConsoleManager::Get().FindConsoleVariable(TEXT("s47.moon"));
+				if (Cv) Cv->Set(0);
+				const FString Dir = SweepDir;
+				const auto Shot = [Dir](const FString& Name) { if (!Dir.IsEmpty()) FScreenshotRequest::RequestScreenshot(Dir / Name + TEXT(".png"), false, false); };
+				After(1.6, [this, Shot, OnDay, Mo, Cv]
+				{
+					Shot(FString::Printf(TEXT("moon-d%02d-before"), OnDay));
+					After(.5, [this, Shot, OnDay, Mo, Cv]
+					{
+						if (Cv) Cv->Set(1);
+						After(1.6, [this, Shot, OnDay, Mo]
+						{
+							Shot(FString::Printf(TEXT("moon-d%02d-after"), OnDay));
+							After(.6, [this, OnDay, Mo] { Tell(true, FString::Printf(TEXT("Day %d: %.0f%% lit, AZ %.0f EL %.0f, light x%.2f"), OnDay, Mo.Lit * 100, Mo.Az, Mo.El, S47Weather::MoonLight(Mo))); });
+						});
+					});
+				});
+			});
+		});
+	}
 
 	// ---- the night's log ----
 	E.AddFreeform(MapGroup, TEXT("Night log: a night with things in it, through to 06:00"), TEXT("22:00 at the yard: a light seen, a flat tire, 95 minutes nobody can account for, a rest to six; then the sheet"), [this, Pictured]

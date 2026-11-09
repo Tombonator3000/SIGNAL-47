@@ -87,6 +87,8 @@ public:
 	void SetDawnLift(double K) { DawnLift = K; }
 	/** setCometClock: up from the evening until a little after three. */
 	void SetCometClock(double Clock);
+	/** MOON-20261108: the moon where S47Weather::Moon has it (degrees), the share of it lit, and the sun's place for its lit side. */
+	void SetMoon(bool bShow, double Az, double El, double Lit, double SunAz, double SunEl);
 	/** meteorNow(): a shooting star now, unless one is crossing already. */
 	void MeteorNow();
 	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
@@ -214,7 +216,12 @@ private:
 	int32 ConceptBackdropNode = -1;
 	TArray<TPair<int32, bool>> ConceptLegacyMesas;
 	bool bConceptLegacyMesasHidden = false;
-	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
+	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp, MoonComp;
+	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
+	bool bMoon = false;
+	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;
+	double MoonStarDim = 0; // a bright moon high washes out the faint stars and the Milky Way
+	void PaintMoon();
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
 	// The inactive dome must survive GC while the component holds the other day/night material.
 	TStrongObjectPtr<UMaterialInstanceDynamic> DomeMid, PureSkyMid;

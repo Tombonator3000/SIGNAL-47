@@ -10,6 +10,7 @@
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
 #include "S47WardReport.h"
+#include "S47Answer.h"
 #include "S47LeftGear.h"
 #include "S47Openings.h"
 #include "S47Places.h"
@@ -264,6 +265,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
  if(!Enlarger)Enlarger=MakeShared<FS47Enlarger>(M);
  if(!WardReport)WardReport=MakeShared<FS47WardReport>(M);WardReport->Begin(S47J::Obj(Saved,TEXT("wardReport")));
+ if(!SkyAnswer)SkyAnswer=MakeShared<FS47Answer>(M);SkyAnswer->Begin(S47J::Obj(Saved,TEXT("answer")));
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -292,6 +294,7 @@ void FS47FreeformSession::Stop()
  if(Tape)Tape->Stop();
  if(PinBoard)PinBoard->Stop();
  if(WardReport)WardReport->Stop();
+ if(SkyAnswer)SkyAnswer->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -506,6 +509,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Tape)Tape->Step(Dt);
  if(PinBoard)PinBoard->Step(Dt);
  if(WardReport)WardReport->Step(Dt);
+ if(SkyAnswer)SkyAnswer->Step(Dt);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -1511,6 +1515,8 @@ void FS47FreeformSession::OpenTracking()
   T::Banner(TAttribute<FString>::CreateLambda([this]{if(const FJob* G=CurrentJob();G&&EveningGated(*G))return EveningLine(*G);const FString State=PointReady()?Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING"):CurrentJob()&&CurrentJob()->Stage==EJobStage::Pointed?TEXT("ARRAY MOVING"):TEXT("READY TO POINT");return State+TEXT("\n")+ArrayMeasurementStatus();}),TAttribute<bool>::CreateLambda([this]{return !PointReady();})),
   T::Text(TAttribute<FString>::CreateLambda([this]{AimAzEl();return FString::Printf(TEXT("YELLOW MARKER AZ %.1f° EL %.1f°\n%s"),Aim.X,Aim.Y,AimOnTarget()?TEXT("ON THE SOURCE"):TEXT("DRAG IT ONTO THE SOURCE'S AZ / EL"));}),TAttribute<int32>(0)),
   T::Big(FString(TEXT("POINT ARRAY")),[this]{if(PointSelected())M->UI->Close();},1,TAttribute<bool>::CreateLambda([this]{AimAzEl();const auto* J=CurrentJob();return J&&J->Stage<=EJobStage::Pointed&&AimOnTarget()&&!EveningGated(*J);}))};
+ // ANSWER-20261108: any point of the sky, off schedule, held until the array is pointed elsewhere.
+ Right.Add(T::Button(TEXT("HOLD THE ARRAY HERE / OFF SCHEDULE"),[this]{AimAzEl();if(SkyAnswer&&SkyAnswer->Hold(Aim.X,Aim.Y))M->UI->Close();},false,TAttribute<bool>::CreateLambda([this]{AimAzEl();const auto* J=CurrentJob();return SkyAnswer.IsValid()&&!AimOnTarget()&&Aim.Y>=FS47Answer::MinEl&&!(J&&J->Stage==EJobStage::Integrating);})));
  if(CurrentJob()->Phenomenon==TEXT("wrong_source")&&CurrentJob()->Stage==EJobStage::Recorded)
  {
   Right.Add(T::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ADJACENT CONTROL %d/3 / SETTLE %.1f s / SAMPLE %.1f s"),J->BeamPoint+1,J->BeamSettle,J->BeamSample):FString();}),TAttribute<int32>(0)));
@@ -2767,6 +2773,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
+ if(SkyAnswer){const auto Calls=SkyAnswer->Save();if(Calls->Values.Num()>0)S47J::Set(O,TEXT("answer"),Calls);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());

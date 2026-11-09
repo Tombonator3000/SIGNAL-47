@@ -376,7 +376,8 @@ namespace S47FieldMapLocal
 		}
 		// Dashes along a line, the pattern on, off, on... Only the stretch inside the frame (and a little round it) is drawn: the
 		// rest only moves the pattern on, so a fence many miles long costs nothing where it is off the sheet.
-		void Dashed(const TArray<FVector2f>& Pts, const FLinearColor& Col, float Thick, int32 Layer, const TArray<float>& Pattern) const
+		// bFramed: kept inside the map's frame (the legend's own samples are not).
+		void Dashed(const TArray<FVector2f>& Pts, const FLinearColor& Col, float Thick, int32 Layer, const TArray<float>& Pattern, bool bFramed = true) const
 		{
 			if (Pts.Num() < 2 || Pattern.Num() < 2) { Lines(Pts, Col, Thick, Layer); return; }
 			float Cycle = 0;
@@ -392,7 +393,8 @@ namespace S47FieldMapLocal
 				// Liang-Barsky against the frame grown by 10: [Tin, Tout] along this stretch is what shows.
 				float Tin = 0, Tout = Seg;
 				const float Pd[4] = { -Dir.X, Dir.X, -Dir.Y, Dir.Y };
-				const float Qd[4] = { A.X - float(FrameL - 10), float(FrameR + 10) - A.X, A.Y - float(FrameT - 10), float(FrameB + 10) - A.Y };
+				const float Grow = bFramed ? 10.f : 4000.f;
+				const float Qd[4] = { A.X - (float(FrameL) - Grow), (float(FrameR) + Grow) - A.X, A.Y - (float(FrameT) - Grow), (float(FrameB) + Grow) - A.Y };
 				bool bShows = true;
 				for (int32 K = 0; K < 4 && bShows; ++K)
 				{
@@ -929,7 +931,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	// The shaded relief: blocks of the grid, at least 12 page units a side, only where the slope turns from or to the light.
 	if (Hills.GridW > 2)
 	{
-		const int32 Coarse = FMath::Max(1, FMath::CeilToInt(12.0 / (Hills.GridCell * Sc)));
+		const int32 Coarse = FMath::Max(1, FMath::CeilToInt(7.0 / (Hills.GridCell * Sc)));
 		const double Step = Hills.GridCell * Coarse;
 		const int32 I0 = FMath::Max(0, int32((Shown.Min.X - Hills.GridX) / Hills.GridCell) - Coarse), I1 = FMath::Min(Hills.GridW - 1, int32((Shown.Max.X - Hills.GridX) / Hills.GridCell) + Coarse);
 		const int32 J0 = FMath::Max(0, int32((Shown.Min.Y - Hills.GridZ) / Hills.GridCell) - Coarse), J1 = FMath::Min(Hills.GridH - 1, int32((Shown.Max.Y - Hills.GridZ) / Hills.GridCell) + Coarse);
@@ -940,7 +942,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const float Lit = Hills.Shade[J * Hills.GridW + I];
 			if (FMath::Abs(Lit) < .06f) continue;
 			const FVector2f Ctr = OnPage(Hills.GridX + I * Hills.GridCell, Hills.GridZ + J * Hills.GridCell);
-			Pen.Fill(Ctr - FVector2f(Side, Side) * .5f, FVector2f(Side, Side), Lit < 0 ? Hue(0x5e4a36, FMath::Min(.22f, -Lit * .28f)) : Hue(0xfffaf0, FMath::Min(.25f, Lit * .3f)), LPaper);
+			Pen.Fill(Ctr - FVector2f(Side, Side) * .5f, FVector2f(Side, Side), Lit < 0 ? Hue(0x5e4a36, FMath::Min(.13f, -Lit * .16f)) : Hue(0xfffaf0, FMath::Min(.14f, Lit * .17f)), LPaper);
 		}
 	}
 	const bool bAll = Sc >= .24;
@@ -1389,8 +1391,8 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Triangle(Tip, Tip + FVector2f(-3.5f, 8), Tip + FVector2f(3.5f, 8), Ink(), LMargin);
 			Pen.Text(TEXT("MN"), Tip + FVector2f(4, -2), Small(11), Ink(), LMargin, 0.f, 1.f);
 			Pen.Text(TEXT("11\u00BD\u00B0"), Stem + FVector2f(10, -12), Small(11), Ink(), LMargin, 0.f, .5f);
-			Pen.Text(TEXT("UTM GRID AND 1984 MAGNETIC NORTH"), FVector2f(Px + 70, 268), Small(10), Ink(), LMargin, 0.f, .5f);
-			Pen.Text(TEXT("DECLINATION AT CENTER OF SHEET"), FVector2f(Px + 70, 282), Small(10), Ink(), LMargin, 0.f, .5f);
+			Pen.Text(TEXT("UTM GRID AND 1984 MAGNETIC NORTH"), FVector2f(Px + 92, 262), Small(10), Ink(), LMargin, 0.f, .5f);
+			Pen.Text(TEXT("DECLINATION AT CENTER OF SHEET"), FVector2f(Px + 92, 276), Small(10), Ink(), LMargin, 0.f, .5f);
 		}
 		// Road classification and the other symbols, each drawn as the sheet draws it.
 		{
@@ -1404,9 +1406,9 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			};
 			Row(TEXT("Primary highway, hard surface"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Lines({ A, B }, Ink(), 6.f, LMargin); Pen.Lines({ A, B }, Survey(1.f), 3.8f, LMargin + 1); });
 			Row(TEXT("Light-duty road, gravel"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Lines({ A, B }, Ink(), 4.2f, LMargin); Pen.Lines({ A, B }, Paper(), 2.f, LMargin + 1); });
-			Row(TEXT("Unimproved road, dirt"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.5f, LMargin, { 9, 5 }); });
-			Row(TEXT("Fence line"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.f, LMargin, { 7, 4 }); });
-			Row(TEXT("Intermittent stream"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Water(.9f), 1.6f, LMargin, { 14, 4, 2, 4, 2, 4 }); });
+			Row(TEXT("Unimproved road, dirt"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.5f, LMargin, { 9, 5 }, false); });
+			Row(TEXT("Fence line"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Ink(), 1.f, LMargin, { 7, 4 }, false); });
+			Row(TEXT("Intermittent stream"), [&Pen, LMargin](const FVector2f& A, const FVector2f& B) { Pen.Dashed({ A, B }, Water(.9f), 1.6f, LMargin, { 14, 4, 2, 4, 2, 4 }, false); });
 			Row(TEXT("Building"), [&Pen, LMargin](const FVector2f& A, const FVector2f&) { Pen.Fill(A + FVector2f(20, -3), FVector2f(6, 6), Ink(), LMargin); });
 			Row(TEXT("Radio telescope"), [&Pen, LMargin](const FVector2f& A, const FVector2f&) { Pen.Lines(Pen.Circle(A + FVector2f(23, 0), 4, 14), Revised(), 1.3f, LMargin); });
 			Y += 30;

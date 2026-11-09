@@ -11,6 +11,7 @@
 #include "Misc/Paths.h"
 #include "S47FreeformTerrain.h"
 #include "S47Fx.h"
+#include "S47Image.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -720,6 +721,39 @@ void FS47Sky::SetCometClock(double Clock)
 	bComet = S > 20 * 3600 || S < 3 * 3600 + 5 * 60;
 }
 
+void FS47Sky::SetMoon(bool bShow, double Az, double El, double Lit, double SunAz, double SunEl)
+{
+	bMoon = bShow; MoonAz = Az; MoonEl = El; MoonLit = FMath::Clamp(Lit, 0.0, 1.0); MoonSunAz = SunAz; MoonSunEl = SunEl;
+	MoonStarDim = bShow ? .5 * MoonLit * MoonLit * FMath::SmoothStep(-2.0, 15.0, El) : 0.0;
+}
+
+void FS47Sky::PaintMoon()
+{
+	// The disc lit on its +U side, as much as its phase: the terminator is an ellipse across it. A little earthshine on the rest,
+	// and a few darker seas, the same every night.
+	constexpr int32 Size = 128;
+	const double K = 1 - 2 * MoonLit; // 1 new, 0 half, -1 full
+	TArray<FColor> Px; Px.SetNumZeroed(Size * Size);
+	for (int32 Y = 0; Y < Size; ++Y) for (int32 X = 0; X < Size; ++X)
+	{
+		const double U = (X + .5) / Size * 2 - 1, V = (Y + .5) / Size * 2 - 1, R2 = U * U + V * V;
+		if (R2 > 1) continue;
+		const double Soft = FMath::Clamp((1 - FMath::Sqrt(R2)) * Size * .5, 0.0, 1.0); // a soft rim, one pixel
+		const double Term = K * FMath::Sqrt(FMath::Max(0.0, 1 - V * V));
+		const double Lit = FMath::Clamp((U - Term) * Size * .25 + .5, 0.0, 1.0);
+		const double Sea = .82 + .18 * FMath::Clamp(FMath::Sin(U * 5.1 + 1.3) * FMath::Cos(V * 4.3 - .4) * 1.4 + FMath::Sin(U * 11.7 - V * 9.2) * .35, -1.0, 1.0);
+		const double Shine = (Lit * Sea + (1 - Lit) * .035) * Soft;
+		const uint8 G = uint8(FMath::Clamp(FMath::RoundToInt(Shine * 255), 0, 255));
+		Px[Y * Size + X] = FColor(G, uint8(G * .97), uint8(G * .9), G);
+	}
+	if (UTexture2D* Disc = S47Image::FromPixels(Px, Size, Size); Disc && MoonMid.IsValid())
+	{
+		MoonMid->SetScalarParameterValue(TEXT("UseMap"), 1.f);
+		MoonMid->SetTextureParameterValue(TEXT("Map"), Disc);
+	}
+	MoonPainted = MoonLit;
+}
+
 void FS47Sky::Update(double Dt, double T)
 {
 	Time = T;
@@ -863,6 +897,18 @@ bool FS47Sky::Build(AS47Web* W)
 	{
 		CometComp = Part(W, N->Comp.Get(), W->GeoMesh(N->Geo), N->Mats.Num() ? W->MatAsset(N->Mats[0]) : nullptr, -3);
 	}
+	// the moon (MOON-20261108): a disc turned to the eye, its phase painted, in the sky's own frame at the stars' distance
+	if (UMaterialInterface* MoonBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Unlit_Add.M_Web_Unlit_Add")))
+	{
+		if (Pts && Pts->Num() >= 3) StarRadius = FMath::Max(50.0, FVector((*Pts)[0], (*Pts)[1], (*Pts)[2]).Size());
+		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(MoonBase, W);
+		D->SetVectorParameterValue(TEXT("MapU"), FLinearColor(1, 0, 0, 0));
+		D->SetVectorParameterValue(TEXT("MapV"), FLinearColor(0, 1, 0, 0));
+		MoonMid.Reset(D);
+		MoonComp = Part(W, Under(GroupNode), LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")), D, -3);
+		if (MoonComp.IsValid()) MoonComp->SetVisibility(false);
+		MoonPainted = -1;
+	}
 	// the shooting star's strip
 	if (const FS47WebNode* N = W->Node(int32(Num(TEXT("meteor"), -1))))
 	{
@@ -961,7 +1007,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	Common(StarsMid.Get());
 	if (UMaterialInstanceDynamic* D = StarsMid.Get())
 	{
-		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.))));
+		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max3(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.), MoonStarDim)));
 		D->SetScalarParameterValue(TEXT("PR"), float(FMath::Clamp(FinaleStarScale, .2, 1.)));
 	}
 	// Keep native capability separate from this private material's fallback-weather blend.
@@ -999,6 +1045,25 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 			float(Flash), Turn(FlashDir), Time, DayWeight, WeatherWeight);
 	}
 	if (CometComp.IsValid() && CometComp->IsVisible() != bComet) CometComp->SetVisibility(bComet);
+	// The moon: in the sky's own frame (the group turns with the area's north), turned to the eye, its lit side to the sun.
+	if (MoonComp.IsValid())
+	{
+		const bool bShow = bMoon && MoonEl > -1 && MoonLit > .01;
+		if (MoonComp->IsVisible() != bShow) MoonComp->SetVisibility(bShow);
+		if (bShow)
+		{
+			if (FMath::Abs(MoonLit - MoonPainted) > .01) PaintMoon();
+			const FVector Dir = S47SkyDir(MoonAz, MoonEl);
+			const FVector SunAt = S47SkyDir(MoonSunAz, MoonSunEl);
+			FVector Lit = SunAt - Dir * FVector::DotProduct(SunAt, Dir);
+			if (Lit.SizeSquared() < 1e-6) Lit = FVector(0, 1, 0) - Dir * Dir.Y;
+			const FVector Facing = S47Three::ToUE(-Dir).GetSafeNormal(), Toward = S47Three::ToUE(Lit).GetSafeNormal();
+			MoonComp->SetRelativeLocation(S47Three::ToUE(Dir * StarRadius * .97));
+			MoonComp->SetRelativeRotation(FRotationMatrix::MakeFromZX(Facing, Toward).Rotator());
+			MoonComp->SetRelativeScale3D(FVector(StarRadius * .036)); // about two degrees across: larger than life, as a painter would
+			if (MoonMid.IsValid()) MoonMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .9f) * float(FMath::Lerp(4.0, .5, FMath::Clamp(Daylight(), 0.0, 1.0))));
+		}
+	}
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);
 	if (UMaterialInstanceDynamic* D = MeteorMid.Get(); D && bMetVisible)
 	{

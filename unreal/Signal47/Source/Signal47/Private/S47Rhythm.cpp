@@ -20,6 +20,7 @@
 #include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47Weather.h"
 #include "S47World.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -67,6 +68,12 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  if(!Range(B,TEXT("sky"),A0,A1)||A0<0||A0>A1){Why=TEXT("budget sky");return false;}Out.SkyMin=int32(A0);Out.SkyMax=int32(A1);
  // null, or not there at all: no limit.
  Out.DangerPerNight=G->HasTypedField<EJson::Number>(TEXT("danger_per_night"))?S47J::Int(G,TEXT("danger_per_night")):-1;
+ // The moon: optional, 0.3 to 2 at each end.
+ if(const auto Moon=S47J::Obj(G,TEXT("moon")))
+ {
+  Out.MoonFull=float(S47J::Num(Moon,TEXT("full"),1));Out.MoonNew=float(S47J::Num(Moon,TEXT("new"),1));
+  if(!(Out.MoonFull>=.3f&&Out.MoonFull<=2.f&&Out.MoonNew>=.3f&&Out.MoonNew<=2.f)){Why=TEXT("moon: full and new 0.3 to 2");return false;}
+ }
  // The curve, week by week: optional, but whole when it is there (a week that starts the game, in order, factors in range).
  if(const auto Curve=S47J::Obj(G,TEXT("curve")))
  {
@@ -135,6 +142,16 @@ int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last,int32 Min,int32 Max)
 }
 
 void FS47Rhythm::Load()
+{
+ LoadRules();
+ // The night's moon, from the real date of the shift day at eleven at night (S47Weather::Moon).
+ Rules.LitOf=[this](int32 Day)
+ {
+  if(!M||!M->Freeform)return .5;
+  return S47Weather::Moon(M->Freeform->DateOfDay(Day),23*3600.).Lit;
+ };
+}
+void FS47Rhythm::LoadRules()
 {
  bOverride=false;
  FString Why;
@@ -276,12 +293,19 @@ void FS47Rhythm::Ended(FName Id,bool bMet)
  F->Director->RestFor(E->Level==ES47RhythmLevel::Danger&&bMet?Rules.RestDanger:Rules.RestOther);
 }
 
-const FS47RhythmWeek& FS47RhythmData::Week(int32 Day) const
+float FS47RhythmData::MoonOn(int32 Day) const
 {
- static const FS47RhythmWeek Flat;
- const FS47RhythmWeek* Got=nullptr;
- for(const FS47RhythmWeek& W:Weeks)if(Day>=W.FromDay)Got=&W;
- return Got?*Got:Flat;
+ if(!LitOf||Day<=0||(MoonFull==1.f&&MoonNew==1.f))return 1.f;
+ return FMath::Lerp(MoonNew,MoonFull,float(FMath::Clamp(LitOf(Day),0.,1.)));
+}
+FS47RhythmWeek FS47RhythmData::Week(int32 Day) const
+{
+ FS47RhythmWeek Got;
+ for(const FS47RhythmWeek& W:Weeks)if(Day>=W.FromDay)Got=W;
+ // The moon: a full one brighter and quieter, a new one darker and busier (MOON-20261108). How near things come is the week's.
+ const float K=MoonOn(Day);
+ if(K!=1.f){Got.Hint*=K;Got.Observation*=K;Got.Presence*=K;Got.Danger=FMath::Clamp(Got.Danger*K,0.f,1.f);}
+ return Got;
 }
 float FS47RhythmData::Worth(ES47RhythmLevel Level,int32 Day) const
 {
@@ -538,6 +562,14 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   const FS47RhythmWeek &W1=D.Week(1),&W2=D.Week(9),&W3=D.Week(16),&W4=D.Week(28);
   Check(D.Weeks.Num()>=4&&W1.Danger<=.1f&&W1.Danger<W2.Danger&&W2.Danger<W3.Danger&&W3.Danger<=W4.Danger&&W1.Near>W2.Near&&W2.Near>W3.Near&&W3.Near>=W4.Near&&W1.Presence<W4.Presence,TEXT("the curve: more and nearer week by week, the first week small"));
   FS47Rhythm C(nullptr);FString W;Parse(S47RhythmDefaultJson,C.Rules,W);
+  {
+   // The moon (MOON-20261108): a new moon makes a night's levels and its danger worth more, a full one less; a half one about as the week.
+   FS47RhythmData Mn=D;
+   Mn.LitOf=[](int32 Day){return Day==10?0.:Day==11?1.:.5;};
+   const FS47RhythmWeek NewNight=Mn.Week(10),FullNight=Mn.Week(11),HalfNight=Mn.Week(12),Plain=D.Week(12);
+   Check(D.MoonNew>1.f&&D.MoonFull<1.f&&NewNight.Presence>FullNight.Presence&&NewNight.Danger>FullNight.Danger&&FMath::IsNearlyEqual(HalfNight.Presence,Plain.Presence*FMath::Lerp(D.MoonNew,D.MoonFull,.5f),1e-4f)&&NewNight.Near==FullNight.Near,
+    TEXT("the moon: a new one darker and busier, a full one brighter and quieter, how near things come the week's"));
+  }
   Check(C.PerNight(TEXT("cattle_ring"),0.f,2)<C.PerNight(TEXT("cattle_ring"),0.f,25)&&C.PerNight(TEXT("service_presence"),.35f,2)==C.PerNight(TEXT("service_presence"),.35f),TEXT("a night event's chance follows the curve; the Director's own does not"));
   double A=0,B=0;
   Check(C.DrawHours(TEXT("car_dies"),A,B)&&A>=19&&B<=30&&A<B&&!C.DrawHours(TEXT("service_presence"),A,B),TEXT("a night event is drawn in its own hours of the night"));
