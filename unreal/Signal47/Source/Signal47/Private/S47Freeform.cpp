@@ -1950,8 +1950,24 @@ FString FS47FreeformSession::WaitConsequences(double Target) const
 bool FS47FreeformSession::WakeBefore(double Target,double& Out)
 {
  if(Tutorial>0||!Director||!FarmSite||!M||!M->Flow||(M->Flow->bDevRun&&!bTestWake&&!bTestRules))return false;
- // Behind a motel door nothing does. On a cot out on the land, on any night with anything abroad, it will.
- if(RestPlace==ERest::Motel)return false;
+ // Behind a motel door nothing does, but the first big night (PT-BIGNIGHT-20261109, Tom): it wakes whoever sleeps anywhere on its
+ // night, the motel too, so that it comes while the player is there (FS47Happenings::BigWakes, FS47MotelNight::BigWakeAt). On a cot
+ // out on the land, on any night with anything abroad, it will.
+ if(RestPlace==ERest::Motel)
+ {
+  if(!Happenings)return false;
+  for(double Midnight=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;Midnight<Target;Midnight+=SecondsPerDay)
+  {
+   const int32 Night=NightOf(Midnight);
+   if(Night<2||Night==WokenNight||!Happenings->BigWakes(Night))continue;
+   const double At=FS47MotelNight::BigWakeAt(Midnight,Happenings->BigPlan().Hour,WorldClock,Target,FMath::FRand());
+   if(At<0)continue;
+   WokenNight=Night;RousedNight=Night;Out=At;
+   UE_LOG(LogTemp,Display,TEXT("S47: a night at the motel is broken for the big night %d"),Night);
+   return true;
+  }
+  return false;
+ }
  // Each night's own start, not a fixed two in the morning. A calm night wakes nobody: its dice are not even thrown.
  for(double Midnight=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;Midnight<Target;Midnight+=SecondsPerDay)
  {
@@ -2006,8 +2022,9 @@ bool FS47FreeformSession::WaitUntil(double Target)
  if(bWoken)
  {
   WakeClock=WorldClock;
-  // A call on the set about the marks if there are marks, otherwise only a sound outside that ends the sleep.
-  const bool bCalled=FarmSite&&FarmSite->WakeCall();
+  // A call on the set about the marks if there are marks, otherwise only a sound outside that ends the sleep. (At the motel only the
+  // big night wakes anyone: no call about the farm's marks there.)
+  const bool bCalled=RestPlace!=ERest::Motel&&FarmSite&&FarmSite->WakeCall();
   if(!bCalled&&M&&M->Audio&&M->Player)M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.45f,.Rate=.8f,.At=FVector(M->Player->Pos.X-6,M->Player->FloorY+2,M->Player->Pos.Z-9)});
   const int32 Secs=int32(FMath::Fmod(WorldClock,SecondsPerDay));
   Feedback=RestPlace==ERest::Field?FString::Printf(TEXT("%02d:%02d. Wide awake. Nothing by the truck that you can see."),Secs/3600,(Secs/60)%60):FString::Printf(TEXT("%02d:%02d. Something woke you. Wait again when you are ready to go on."),Secs/3600,(Secs/60)%60);

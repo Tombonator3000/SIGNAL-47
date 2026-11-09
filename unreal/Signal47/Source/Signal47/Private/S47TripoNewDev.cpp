@@ -13,6 +13,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47WorldLife.h"
+#include "Components/MaterialBillboardComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -37,6 +38,8 @@ namespace S47TripoNewDevLocal
  {
   TWeakObjectPtr<UStaticMeshComponent> C;
   TArray<TWeakObjectPtr<UStaticMeshComponent>> Glints;
+  // PT-NORDIC-COSMIC-20261109: the Cosmic one's light, still (as it is drawn here, without the breath)
+  S47TripoNew::FCosmicGlow Cosmic;
   bool bOwn = false, bCube = false;
   int32 Model = -1;
  };
@@ -48,6 +51,7 @@ namespace S47TripoNewDevLocal
    for (FShown& S : Now)
    {
     for (const auto& G : S.Glints) if (UStaticMeshComponent* Gc = G.Get()) Gc->DestroyComponent();
+    for (const auto& G : S.Cosmic.Stars) if (UMaterialBillboardComponent* Gc = G.Get()) Gc->DestroyComponent();
     if (UStaticMeshComponent* C = S.C.Get()) C->DestroyComponent();
    }
    Now.Reset();
@@ -69,14 +73,14 @@ namespace S47TripoNewDevLocal
   default: return FMath::Max(4.5, M.SizeM * 2.6);
   }
  }
- // Its size as built: a figure's or the walkie's height, a vehicle's or the parcel's longest side, metres.
+ // Its size as built: a figure's or the walkie's height, a vehicle's or the counter's longest side, metres.
  double SizeOf(const UStaticMeshComponent* C, const FModel& M)
  {
   const UStaticMesh* Mesh = C ? C->GetStaticMesh() : nullptr;
   if (!Mesh) return 0.;
   const FBox B = Mesh->GetBoundingBox();
   const FVector S = B.GetSize() * C->GetComponentScale() / 100.;
-  return M.Kind == EKind::Vehicle || FString(M.Id) == TEXT("parcel") ? FMath::Max(S.X, S.Y) : S.Z;
+  return M.Kind == EKind::Vehicle || FString(M.Id) == TEXT("geiger") ? FMath::Max(S.X, S.Y) : S.Z;
  }
 }
 
@@ -130,6 +134,7 @@ void FS47DevFreeform::AddTripoNew(FS47DevEvents& E)
   C->SetWorldTransform(S47Three::MatToUE(Ex));
   FShown Sh; Sh.C = C; Sh.bOwn = bOwn; Sh.bCube = bCube; Sh.Model = K;
   if (bOwn) S47EyeGlint::AddStaticIfKnown(W, C, Sh.Glints);
+  if (bOwn) S47TripoNew::AddCosmicGlow(W, C, Sh.Cosmic);
   Fx->Now.Add(Sh);
   return &Fx->Now.Last();
  };

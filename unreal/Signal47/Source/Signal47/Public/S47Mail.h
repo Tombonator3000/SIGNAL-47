@@ -17,6 +17,8 @@ namespace S47Ledger{struct FIssue;struct FFact;}
 // E at the box takes it out. What comes:
 //   ward      Dr. Ward's letter, her Monday sheets, her warning about the lost hours and the assessment (FS47Predecessor::Send).
 //             Taken out, they go to the OPS tray as before, where the review and its tests look for them.
+// What is taken out stays on the box's list as NOT READ YET until it is read (PT-MAIL-20261109, Tom: the letters he took out with
+// the catalog and the parcel were never seen again), and the list of things to do and the parcel's note say where it is.
 //   ledger    THE CALICHE LEDGER on Thursdays (S47Ledger): what the station registered in the nights, at its place, on the front page,
 //             coupons, places to look.
 //   catalog   Western Surplus & Radio Supply's catalog, in the box on the first day: parts and gear by mail, cheaper than Caliche,
@@ -59,6 +61,9 @@ public:
  // Anything in the box (what the flag never says).
  bool MailIn() const{return !Box.IsEmpty();}
  bool ParcelOnBox() const;
+ // Taken out of the box and not read yet, oldest first, the catalog last; and a line that says where they are (empty: none).
+ TArray<FPiece> UnreadPieces() const;
+ FString UnreadNote() const;
  int32 RoundsMade() const{return Rounds;}
  int32 IssuesPrinted() const{return Issues.Num();}
  // The carrier's car on the road past SARO now, and standing at the box.
@@ -132,6 +137,8 @@ private:
  bool bTest=false,bFlag=false,bCatalog=false,bBound=false,bPrimed=false;
  TArray<FPiece> Box,Pending,Fetched;
  TSet<FString> Posted,ReadIssues;
+ // Taken out of the box and not yet read (ids of Fetched): Dr. Ward's is read once it has left the OPS tray.
+ TSet<FString> Unread;
  // An order: written and left in the box (Picked 0), or picked up by the carrier on that day and due at the round on or after Due.
  struct FOrder{int32 Serial=0,Paid=0,Picked=0,Due=0;TMap<FString,int32> Goods;};
  TArray<FOrder> Orders;
@@ -159,6 +166,10 @@ private:
  void PrintLedger(int32 OnDay);
  bool IssueOf(int32 No,S47Ledger::FIssue& Out) const;
  int32 NobodyDay(int32 Which) const;
+ // Everything but a parcel out of the box onto the desk, not read yet (the pure part of TakeOut): letters first, the catalog last.
+ TArray<FPiece> Unbox();
+ bool IsUnread(const FPiece& Piece) const;
+ void MarkRead(const FString& Id);
  TArray<FPiece> TakeOut();
  void ReadPiece(const FPiece& Piece);
  void FileDoc(const FPiece& Piece);

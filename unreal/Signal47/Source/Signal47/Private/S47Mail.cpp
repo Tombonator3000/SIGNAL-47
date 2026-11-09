@@ -132,7 +132,7 @@ void FS47Mail::Begin(const S47J::FObj& Saved,bool bSavedGame)
 {
  namespace L=S47MailLocal;
  Stop();Life=MakeShared<uint8>(0);
- Box.Reset();Pending.Reset();Fetched.Reset();Posted.Reset();ReadIssues.Reset();Orders.Reset();Coupons.Reset();Issues.Reset();Cart.Reset();Seen.Reset();
+ Box.Reset();Pending.Reset();Fetched.Reset();Posted.Reset();ReadIssues.Reset();Orders.Reset();Coupons.Reset();Issues.Reset();Cart.Reset();Seen.Reset();Unread.Reset();
  bFlag=bCatalog=bBound=bPrimed=false;LastRound=Rounds=NobodySent=0;NextSerial=1;SeenCount=-1;Drive=FDrive();
  const int32 Today=M&&M->Freeform?M->Freeform->Day():1;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
@@ -143,6 +143,7 @@ void FS47Mail::Begin(const S47J::FObj& Saved,bool bSavedGame)
   for(const auto& V:S47J::Arr(Saved,TEXT("box"))){FPiece Pc;if(L::PieceOf(V,Pc)&&!Box.ContainsByPredicate([&](const FPiece& Q){return Q.Id==Pc.Id;}))Box.Add(Pc);}
   for(const auto& V:S47J::Arr(Saved,TEXT("pending"))){FPiece Pc;if(L::PieceOf(V,Pc))Pending.Add(Pc);}
   for(const auto& V:S47J::Arr(Saved,TEXT("fetched"))){FPiece Pc;if(L::PieceOf(V,Pc))Fetched.Add(Pc);}
+  for(const FString& Id:S47J::Strs(Saved,TEXT("unread")))if(Fetched.ContainsByPredicate([&](const FPiece& Pc){return Pc.Id==Id;}))Unread.Add(Id);
   for(const FString& Id:S47J::Strs(Saved,TEXT("posted")))Posted.Add(Id);
   for(const FString& Id:S47J::Strs(Saved,TEXT("read")))ReadIssues.Add(Id);
   for(const FPiece& Pc:Box)Posted.Add(Pc.Id);for(const FPiece& Pc:Pending)Posted.Add(Pc.Id);
@@ -213,6 +214,7 @@ S47J::FObj FS47Mail::Save() const
  Pieces(TEXT("box"),Box);Pieces(TEXT("pending"),Pending);Pieces(TEXT("fetched"),Fetched);
  if(!Posted.IsEmpty()){TArray<FString> Ids=Posted.Array();Ids.Sort();S47J::Set(O,TEXT("posted"),Ids);}
  if(!ReadIssues.IsEmpty()){TArray<FString> Ids=ReadIssues.Array();Ids.Sort();S47J::Set(O,TEXT("read"),Ids);}
+ if(!Unread.IsEmpty()){TArray<FString> Ids=Unread.Array();Ids.Sort();S47J::Set(O,TEXT("unread"),Ids);}
  if(!Orders.IsEmpty())
  {
   TArray<TSharedPtr<FJsonValue>> A;
@@ -814,6 +816,56 @@ void FS47Mail::FileDoc(const FPiece& Pc)
  FS47Doc D;D.Id=TEXT("mail-")+Pc.Id;D.Title=PieceTitle(Pc);D.Kind=Pc.Kind==TEXT("nobody")?TEXT("hand"):TEXT("typed");D.Stamp=Pc.Kind==TEXT("nobody")?FString():FString(TEXT("SARO / MAIL"));
  D.Page=PieceText(Pc);D.Transcript=D.Page;M->Story->AddDoc(D);
 }
+// PT-MAIL-20261109 (Tom: the letters in the box were gone once he had opened the mail order, and he never read them). The box was
+// emptied the moment it was opened and what came was listed on that one panel only: the catalog's page, the parcel lifted down or the
+// order sent closed it, and opened again the box listed nothing new and kept Dr. Ward's papers off its KEPT list (they had gone
+// quietly to the OPS tray). Now what is taken out stays NOT READ YET on the box's panel until it is read, and the list of things to do
+// and the parcel's note say so.
+TArray<FS47Mail::FPiece> FS47Mail::Unbox()
+{
+ TArray<FPiece> Out;
+ for(int32 I=0;I<Box.Num();)
+ {
+  const FPiece Pc=Box[I];
+  if(Pc.Kind==TEXT("parcel")){++I;continue;}
+  Box.RemoveAt(I);Fetched.Add(Pc);Out.Add(Pc);Unread.Add(Pc.Id);
+ }
+ // Only the last few stay on the desk to be read again; the rest are filed where they belong. What is not read yet goes last.
+ while(Fetched.Num()>12)
+ {
+  int32 Old=Fetched.IndexOfByPredicate([this](const FPiece& Pc){return !Unread.Contains(Pc.Id);});
+  if(Old<0)Old=0;
+  Unread.Remove(Fetched[Old].Id);Fetched.RemoveAt(Old);
+ }
+ // The letters before the catalog: it is a book to sit down with, they are what came.
+ Out.StableSort([](const FPiece& A,const FPiece& B){return A.Kind!=TEXT("catalog")&&B.Kind==TEXT("catalog");});
+ return Out;
+}
+bool FS47Mail::IsUnread(const FPiece& Pc) const
+{
+ if(!Unread.Contains(Pc.Id))return false;
+ // Dr. Ward's are read at OPS as well: gone from the tray, read. A paper read from elsewhere counts too.
+ if(Pc.Kind==TEXT("ward")&&M&&M->Freeform&&M->Freeform->Predecessor&&!M->Freeform->Predecessor->InTray(Pc.Ref))return false;
+ if(Pc.Kind==TEXT("ledger")&&ReadIssues.Contains(Pc.Id))return false;
+ return true;
+}
+void FS47Mail::MarkRead(const FString& Id){Unread.Remove(Id);}
+TArray<FS47Mail::FPiece> FS47Mail::UnreadPieces() const
+{
+ TArray<FPiece> Out;
+ for(const FPiece& Pc:Fetched)if(Pc.Kind!=TEXT("parcel")&&IsUnread(Pc))Out.Add(Pc);
+ Out.StableSort([](const FPiece& A,const FPiece& B){return A.Kind!=TEXT("catalog")&&B.Kind==TEXT("catalog");});
+ return Out;
+}
+FString FS47Mail::UnreadNote() const
+{
+ int32 Ward=0,Other=0;
+ for(const FPiece& Pc:UnreadPieces())++(Pc.Kind==TEXT("ward")?Ward:Other);
+ if(Ward+Other==0)return FString();
+ if(Other==0)return TEXT("Not read yet: Dr. Ward's mail, in the OPS tray.");
+ const FString Papers=Other==1?FString(TEXT("one paper from the mailbox")):FString::Printf(TEXT("%d papers from the mailbox"),Other);
+ return Ward>0?FString::Printf(TEXT("Not read yet: %s, and Dr. Ward's mail in the OPS tray."),*Papers):FString::Printf(TEXT("Not read yet: %s. E at the box."),*Papers);
+}
 TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
 {
  TArray<FPiece> Out;
@@ -821,19 +873,15 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
  auto& Ses=*M->Freeform;
  // Everything but a parcel comes out at once; a parcel wants both hands and waits on top of the box for them.
  int32 Marked=0;
- for(int32 I=0;I<Box.Num();)
+ Out=Unbox();
+ for(const FPiece& Pc:Out)
  {
-  const FPiece Pc=Box[I];
-  if(Pc.Kind==TEXT("parcel")){++I;continue;}
-  Box.RemoveAt(I);Fetched.Add(Pc);Out.Add(Pc);
   if(Pc.Kind==TEXT("ward")&&Ses.Predecessor)Ses.Predecessor->FromMail(Pc.Ref);
   if(Pc.Kind==TEXT("catalog"))bCatalog=true;
   // The map with a place circled: the circle goes onto the player's own map, as a place heard of.
   if(Pc.Kind==TEXT("nobody")&&!Pc.Place.IsEmpty()&&Ses.Places&&FS47Places::Def(Pc.Place)&&!Ses.Places->Heard(Pc.Place)&&!Ses.Places->Found(Pc.Place)){Ses.Places->Hear(Pc.Place);++Marked;}
   FileDoc(Pc);
  }
- // Only the last few stay on the desk to be read again; the rest are filed where they belong.
- while(Fetched.Num()>12)Fetched.RemoveAt(0);
  if(!Out.IsEmpty())
  {
   if(M->Audio){M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.55f});M->Audio->Sfx(TEXT("paper0"),FS47Sound{.Gain=.45f,.When=.35f});}
@@ -845,6 +893,7 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
 }
 void FS47Mail::ReadPiece(const FPiece& Pc)
 {
+ MarkRead(Pc.Id);
  if(!M||!M->UI||!M->Freeform)return;
  auto& Ses=*M->Freeform;
  if(Pc.Kind==TEXT("ward")){if(Ses.Predecessor){if(Pc.Ref==TEXT("assessment"))Ses.Predecessor->OpenAssessment();else Ses.Predecessor->ReadDoc(Pc.Ref);}return;}
@@ -877,7 +926,9 @@ bool FS47Mail::LiftParcel(const FString& Id)
  if(M->UI)
  {
   M->UI->Close();
-  M->UI->Toast(Stock.IsEmpty()?FString(TEXT("Signed for. The gear is the station's now: see OPS, SUPPLIES.")):FString(TEXT("The parcel is in your hands. GARAGE RECEIVING unpacks it into stock, or load it on the truck.")),6);
+  const FString Note=UnreadNote();
+  M->UI->Toast((Stock.IsEmpty()?FString(TEXT("Signed for. The gear is the station's now: see OPS, SUPPLIES.")):FString(TEXT("The parcel is in your hands. GARAGE RECEIVING unpacks it into stock, or load it on the truck.")))
+   +(Note.IsEmpty()?FString():TEXT(" ")+Note),Note.IsEmpty()?6:9);
  }
  M->RequestAutosave();
  return true;
@@ -894,10 +945,14 @@ void FS47Mail::OpenBox()
   const FPiece Copy=Pc;
   return S47Kit::Button(TEXT("Read: ")+PieceTitle(Pc),[this,Guard,Copy]{if(Guard.IsValid())ReadPiece(Copy);},bPrimary);
  };
- if(!Came.IsEmpty())
+ // What came, and what came before and is not read yet: it stays here until it is (PT-MAIL-20261109).
+ const TArray<FPiece> Unopened=UnreadPieces();
+ if(!Unopened.IsEmpty())
  {
-  Panel.Add(S47Kit::Section(TEXT("WHAT CAME")));
-  for(int32 I=0;I<Came.Num();++I)Panel.Add(ReadButton(Came[I],I==0));
+  Panel.Add(S47Kit::Section(Came.IsEmpty()?TEXT("NOT READ YET"):TEXT("WHAT CAME")));
+  bool bWard=false;
+  for(int32 I=0;I<Unopened.Num();++I){Panel.Add(ReadButton(Unopened[I],I==0));bWard|=Unopened[I].Kind==TEXT("ward");}
+  if(bWard)Panel.Add(S47Kit::Small(TEXT("Dr. Ward's mail goes to the OPS tray as well, and waits there until it is read.")));
  }
  bool bParcelShown=false;
  for(const FPiece& Pc:Box)if(Pc.Kind==TEXT("parcel"))
@@ -918,14 +973,14 @@ void FS47Mail::OpenBox()
   }
   else Panel.Add(S47Kit::Small(FString::Printf(TEXT("On its way from Albuquerque: order %d, due about %s."),Ord.Serial,*DayText(Ord.Due))));
  }
- if(bCatalog)Panel.Add(S47Kit::Button(TEXT("The Western Surplus catalog / order by mail"),[this,Guard]{if(Guard.IsValid())OpenCatalog();}));
+ if(bCatalog&&!Unread.Contains(TEXT("catalog")))Panel.Add(S47Kit::Button(TEXT("The Western Surplus catalog / order by mail"),[this,Guard]{if(Guard.IsValid())OpenCatalog();}));
  // Papers kept from before, to read again: the newest few.
  {
   TArray<S47Kit::FW> Again;
-  for(int32 I=Fetched.Num()-1-Came.Num();I>=0&&Again.Num()<4;--I)
+  for(int32 I=Fetched.Num()-1;I>=0&&Again.Num()<4;--I)
   {
    const FPiece& Pc=Fetched[I];
-   if(Pc.Kind==TEXT("ward")||Pc.Kind==TEXT("catalog")||Pc.Kind==TEXT("parcel"))continue;
+   if(Pc.Kind==TEXT("ward")||Pc.Kind==TEXT("catalog")||Pc.Kind==TEXT("parcel")||IsUnread(Pc))continue;
    Again.Add(ReadButton(Pc,false));
   }
   if(!Again.IsEmpty()){Panel.Add(S47Kit::Section(TEXT("KEPT")));Panel.Append(Again);}
@@ -1022,7 +1077,7 @@ void FS47Mail::OpenCatalog()
  {
   if(!Guard.IsValid())return;
   FString Why;
-  if(WriteOrder(Cart,Why)){if(M&&M->UI){M->UI->Close();M->UI->Toast(TEXT("The order is in the box and the flag is up. The carrier takes it around noon."),5);}}
+  if(WriteOrder(Cart,Why)){if(M&&M->UI){const FString Note=UnreadNote();M->UI->Close();M->UI->Toast(FString(TEXT("The order is in the box and the flag is up. The carrier takes it around noon."))+(Note.IsEmpty()?FString():TEXT(" ")+Note),Note.IsEmpty()?5:8);}}
   else if(M&&M->UI)M->UI->Toast(TEXT("Not sent: ")+Why+TEXT("."),5);
  },true,!Cart.IsEmpty()&&!bWaiting&&Ses.Budget()>=Total));
  Panel.Add(S47Kit::Small(FString::Printf(TEXT("Station budget $%d."),Ses.Budget())));
@@ -1049,6 +1104,11 @@ FString FS47Mail::TaskLine() const
  if(!Live())return FString();
  // The player's own order, and when what they sent for is due. Nothing that tells what has come: the box shows that.
  if(Orders.ContainsByPredicate([](const FOrder& O){return O.Picked==0;}))return TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier.");
+ // Taken out and not read (PT-MAIL-20261109). Dr. Ward's own list line says hers (FS47Predecessor::TaskLine): only the rest here.
+ {
+  int32 Other=0;for(const FPiece& Pc:UnreadPieces())Other+=Pc.Kind!=TEXT("ward")&&Pc.Kind!=TEXT("catalog");
+  if(Other>0)return Other==1?FString(TEXT("MAILBOX / One paper you took out of the box is not read yet.")):FString::Printf(TEXT("MAILBOX / %d papers you took out of the box are not read yet."),Other);
+ }
  int32 Due=0;
  for(const FOrder& Ord:Orders)Due=Due==0?Ord.Due:FMath::Min(Due,Ord.Due);
  for(const FPiece& Pc:Box)if(Pc.Kind==TEXT("parcel"))Due=Due==0?Pc.Day:FMath::Min(Due,Pc.Day);
@@ -1143,7 +1203,9 @@ TArray<FString> FS47Mail::AllText()
   TEXT("Nothing in it. The carrier comes up the highway around noon, Monday through Saturday."),TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier."),
   TEXT("MAIL ORDER / A parcel from Western Surplus, due about Friday, May 2."),TEXT("The Caliche Ledger, Thursday, May 1"),TEXT("A bill from the county road department"),
   TEXT("Your hands are full. The parcel stays on the box until they are free."),TEXT("You copy the pencil circle onto your map (TAB)."),
-  TEXT("The order is in the box and the flag is up. The carrier takes it around noon.")})Out.Add(Line);
+  TEXT("The order is in the box and the flag is up. The carrier takes it around noon."),TEXT("NOT READ YET"),TEXT("Dr. Ward's mail goes to the OPS tray as well, and waits there until it is read."),
+  TEXT("Not read yet: Dr. Ward's mail, in the OPS tray."),TEXT("Not read yet: 2 papers from the mailbox, and Dr. Ward's mail in the OPS tray."),TEXT("Not read yet: one paper from the mailbox. E at the box."),
+  TEXT("MAILBOX / One paper you took out of the box is not read yet."),TEXT("MAILBOX / 2 papers you took out of the box are not read yet.")})Out.Add(Line);
  return Out;
 }
 bool FS47Mail::SelfTest(TArray<FString>& Lines)
@@ -1225,6 +1287,28 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   // The flag follows the orders, not the box: with the waiting order taken back it is down, the box still full.
   B.Orders.RemoveAll([](const FOrder& O){return O.Picked==0;});B.Begin(S47J::Read(S47J::Write(B.Save())),true);
   Check(!B.FlagUp()&&B.MailIn(),TEXT("the flag is up only for an order waiting for the carrier, never for what came"));
+ }
+ {
+  // PT-MAIL-20261109 (Tom): the letters went missing when he opened the mail order first. The box with Dr. Ward's letter, a statement,
+  // the catalog and a parcel on top; opened, the catalog read first and the parcel lifted down (its panel gone with either), then the
+  // box opened again: before, it listed nothing, and her letter had gone to the OPS tray without a word.
+  FS47Mail U(nullptr);U.Begin(nullptr,false);
+  FPiece Ward;Ward.Id=TEXT("ward:letter");Ward.Kind=TEXT("ward");Ward.Ref=TEXT("letter");U.Post(Ward,true);
+  FPiece Sheet;Sheet.Id=TEXT("bill:week-1");Sheet.Kind=TEXT("bill");Sheet.Ref=TEXT("week-review-1");U.Post(Sheet,true);
+  FPiece Crate;Crate.Id=TEXT("parcel:3");Crate.Kind=TEXT("parcel");Crate.Goods.Add(TEXT("cell"),2);Crate.Text=SlipText(3,Crate.Goods,8);U.Post(Crate,true);
+  const TArray<FPiece> Came=U.Unbox();
+  Check(Came.Num()==3&&Came.Last().Kind==TEXT("catalog")&&Came[0].Kind!=TEXT("catalog")&&U.Holds(TEXT("parcel:3"))&&U.UnreadPieces().Num()==3,
+   TEXT("PT-MAIL: opened, the box gives up the letters and the catalog (the letters first) and keeps the parcel on top; all three not read yet"));
+  // The catalog read first, the parcel lifted down (as LiftParcel files it), and the box opened again.
+  U.MarkRead(TEXT("catalog"));
+  U.Box.RemoveAll([](const FPiece& Pc){return Pc.Id==TEXT("parcel:3");});U.Fetched.Add(Crate);
+  const TArray<FPiece> Again=U.Unbox();const TArray<FPiece> Left=U.UnreadPieces();const FString Note=U.UnreadNote();
+  Check(Again.IsEmpty()&&Left.Num()==2&&Left[0].Id==TEXT("ward:letter")&&Left[1].Id==TEXT("bill:week-1")&&Note.Contains(TEXT("OPS tray"))&&Note.Contains(TEXT("one paper")),
+   TEXT("PT-MAIL: opened again after the catalog and the parcel, the box still shows Dr. Ward's letter and the statement as not read, and says hers is in the OPS tray"));
+  FS47Mail V(nullptr);V.Begin(S47J::Read(S47J::Write(U.Save())),true);
+  Check(V.UnreadPieces().Num()==2&&!V.UnreadNote().IsEmpty(),TEXT("PT-MAIL: what is not read yet survives a Continue"));
+  U.MarkRead(TEXT("ward:letter"));U.MarkRead(TEXT("bill:week-1"));
+  Check(U.UnreadPieces().IsEmpty()&&U.UnreadNote().IsEmpty(),TEXT("PT-MAIL: read, nothing is left to point at"));
  }
  {
   // M7 (C): two tows on one shift day, before the carrier has been, are two statements in the box.

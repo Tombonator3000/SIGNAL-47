@@ -36,6 +36,7 @@
 #include "S47Three.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
+#include "S47TripoNew.h"
 #include "S47Truck.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -51,7 +52,9 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
+#include "Misc/Parse.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectGlobals.h"
 #include "Misc/FileHelper.h"
@@ -393,6 +396,8 @@ struct FS47Happenings::FProp
  // The dot in each big black eye, on a part whose mesh has its eyes measured (Zet, S47EyeGlint): children of that part, so that they
  // move and hide with it (ShowProp sets its children too).
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Glints;
+ // PT-NORDIC-COSMIC-20261109: the Cosmic one's light on a part that is its body (S47TripoNew::AddCosmicGlow), stepped while shown.
+ TArray<S47TripoNew::FCosmicGlow> Cosmic;
  FVector Foot=FVector::ZeroVector;double Yaw=0;bool bShown=false,bPosed=false;
 };
 
@@ -1069,7 +1074,8 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("window")){Spec=S47Hap::WindowParts();Lamps.Add({FVector(0,0,.6),0xffc27a,1800.f,700.f});}
  else if(Kind==TEXT("darkcar")){if(!Exists(S47Hap::DarkCarModel))return nullptr;Spec.Add({S47Hap::DarkCarModel,FVector::ZeroVector,FVector(1),0,0,0,0x17171au,0,false});}
  // GLIMPSE-ROAD-20261109: the bodies a glimpse or a figure may have (S47RoadGlimpse::PathOf), each its own prop; the shade's stand-in
- // in its near-black, the rest as they come. Tom's Nordic and Cosmic have no eye's dot (S47EyeGlint::ForStatic).
+ // in its near-black, the rest as they come. Tom's Nordic and Cosmic have no eye's dot (S47EyeGlint::ForStatic); the Cosmic one shines
+ // all over, with stars in it (S47TripoNew::AddCosmicGlow, below where the parts are made).
  else if(Kind.StartsWith(TEXT("glimpse_")))
  {
   const TCHAR* Body=S47RoadGlimpse::PathOf(Kind.Mid(8));if(!Body||!Exists(Body))return nullptr;
@@ -1078,13 +1084,35 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("roadtracks_low")||Kind==TEXT("roadtracks_tall"))Spec=S47Hap::RoadTrackParts(Kind==TEXT("roadtracks_low"));
  else if(Kind==TEXT("geiger"))
  {
-  // Local to the instrument: x right, y up, z toward the eye. The needle is last (PoseGeiger turns it).
+  // Local to the instrument: x right, y up, z toward the eye. The needle is last (PoseGeiger turns it about its At, its pivot).
   const uint32 Olive=0x3c4636,Face=0xe6dfc4,Red=0xa8322a,Black=0x101010,Probe=0x2a2a2a;
-  Spec={{Cube,FVector(0,0,0),FVector(.15,.09,.07),0,0,0,Olive,0,false},{Cube,FVector(0,.008,.0362),FVector(.112,.058,.003),0,0,0,Face,.6f,false},
-   {Cube,FVector(.036,.03,.0378),FVector(.026,.007,.002),0,0,-.7,Red,.4f,false},{Cyl,FVector(-.1,-.02,0),FVector(.026,.13,.026),0,0,UE_DOUBLE_PI/2,Probe,0,false}};
-  for(int32 I=0;I<5;++I){const double A=FMath::Lerp(1.05,-1.05,I/4.);Spec.Add({Cube,FVector(-FMath::Sin(A)*.043,-.018+FMath::Cos(A)*.043,.0378),FVector(.002,.007,.002),0,0,A,Black,0,false});}
-  Spec.Add({Cyl,FVector(0,-.018,.039),FVector(.008,.004,.008),0,UE_DOUBLE_PI/2,0,Black,0,false});
-  Spec.Add({Cube,FVector(0,0,.0392),FVector(.0025,.042,.002),0,0,0,Black,0,false});
+  // PT-WALKIE-20261109 (Tom): his prototype ("pakke tripo3d-1", S47TripoNew::Geiger) is the case when this build has it, standing up
+  // with its face to the eye and the dial on that face; else the drawn case with its probe, as before. -S47TripoNewOff: the drawn one.
+  const S47TripoNew::FModel* Own=S47TripoNew::Geiger();
+  UStaticMesh* Case=Own&&Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff"))?LoadObject<UStaticMesh>(nullptr,Own->Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+  // The middle of the case's face, where the dial goes, and the dial's size against the drawn case's.
+  FVector Front(0,0,.035);double Dial=1;
+  if(Case)
+  {
+   // Its bounds in its own centimetres (x out of its back, y across, z up, the face toward -x), at a hand-held height and turned a
+   // quarter about up so that the face looks at the eye: the face's upper middle, where the dial goes, at the instrument's middle.
+   const FBox B=Case->GetBoundingBox();const FVector C=B.GetCenter(),E=B.GetExtent();
+   const double S=S47TripoNew::GeigerHeightM*100./FMath::Max(1.,E.Z*2.),K=S/100.,Up=E.Z*.22;
+   Spec.Add({Own->Path,FVector(-K*C.Y,-K*(C.Z+Up),K*C.X),FVector(S),UE_DOUBLE_PI/2,0,0,Olive,0,false});
+   Front=FVector(0,0,K*E.X);Dial=FMath::Clamp(K*E.Y*2.*.6/.112,.35,1.);
+  }
+  else
+  {
+   Spec.Add({Cube,FVector(0,0,0),FVector(.15,.09,.07),0,0,0,Olive,0,false});
+   Spec.Add({Cyl,FVector(-.1,-.02,0),FVector(.026,.13,.026),0,0,UE_DOUBLE_PI/2,Probe,0,false});
+  }
+  // The dial as the drawn case has it, Dial of its size: the cream face, its red end, five ticks, the pivot, and the needle last.
+  const auto On=[&Front,Dial](double X,double Y,double Z){return Front+FVector(X*Dial,Y*Dial,Z);};
+  Spec.Add({Cube,On(0,.008,.0012),FVector(.112*Dial,.058*Dial,.003),0,0,0,Face,.6f,false});
+  Spec.Add({Cube,On(.036,.03,.0028),FVector(.026*Dial,.007*Dial,.002),0,0,-.7,Red,.4f,false});
+  for(int32 I=0;I<5;++I){const double A=FMath::Lerp(1.05,-1.05,I/4.);Spec.Add({Cube,On(-FMath::Sin(A)*.043,-.018+FMath::Cos(A)*.043,.0028),FVector(.002,.007*Dial,.002),0,0,A,Black,0,false});}
+  Spec.Add({Cyl,On(0,-.018,.004),FVector(.008*Dial,.004,.008*Dial),0,UE_DOUBLE_PI/2,0,Black,0,false});
+  Spec.Add({Cube,On(0,-.018,.0042),FVector(.0025,.042*Dial,.002),0,0,0,Black,0,false});
  }
  else if(Kind==TEXT("zet"))
  {
@@ -1119,6 +1147,8 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
   C->SetVisibility(false);C->RegisterComponent();
   // Zet's dots (Tom, 9 November): any part whose mesh has its eyes measured gets them, hidden until the part is shown.
   S47EyeGlint::AddStaticIfKnown(W,C,P.Glints);
+  // The Cosmic one's light and stars (PT-NORDIC-COSMIC-20261109), children of its body: hidden with it until it is shown.
+  if(S47TripoNew::IsCosmic(Mesh->GetName())){S47TripoNew::FCosmicGlow Glow;if(S47TripoNew::AddCosmicGlow(W,C,Glow))P.Cosmic.Add(Glow);}
   FProp::FPart Part;Part.C=C;Part.At=Pc.At;Part.Size=Pc.Size;Part.Yaw=Pc.Yaw;Part.Pitch=Pc.Pitch;Part.Roll=Pc.Roll;Part.bHit=Pc.bHit&&!UseId.IsEmpty();
   if(Part.bHit&&Parent>=0)
   {
@@ -1651,6 +1681,8 @@ void FS47Happenings::Step(double Dt)
  auto* F=M?M->Freeform.Get():nullptr;
  if(!F||!F->Active()||!M->IsFreeform()||!M->Web||!M->Player||!M->World||!Life.IsValid())return;
  if(Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;Sight.Init(M);LoopsOn.Reset();}
+ // The Cosmic one breathes and its stars drift while it is out there.
+ for(const auto& P:Props)if(P&&P->bShown)for(S47TripoNew::FCosmicGlow& G:P->Cosmic)S47TripoNew::StepCosmicGlow(G,Dt);
  if(F->Held()){StepGeiger(0);return;}
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  if(Night!=PlanNight)PlanTonight(Night);
@@ -4087,10 +4119,10 @@ void FS47Happenings::PoseGeiger(bool bShow)
   FVector Local=Pt.At;FQuat Turn=S47Three::Euler(Pt.Pitch,Pt.Yaw,Pt.Roll,TEXT("YXZ"));
   if(I==Last)
   {
-   // The needle, about its pivot low on the dial: full left at nothing, full right where it pegs.
+   // The needle, about its pivot low on the dial (its At): full left at nothing, full right where it pegs.
    const double A=FMath::Lerp(1.05,-1.05,double(Needle));
    const FQuat R=S47Three::Euler(0,0,A,TEXT("XYZ"));
-   Local=FVector(0,-.018,.0392)+R.RotateVector(FVector(0,.021,0));Turn=R;
+   Local=Pt.At+R.RotateVector(FVector(0,Pt.Size.Y*.5,0));Turn=R;
   }
   double E[16];S47Three::Compose(Base+Q.RotateVector(Local),Q*Turn,Pt.Size,E);
   C->SetWorldTransform(S47Three::MatToUE(E));

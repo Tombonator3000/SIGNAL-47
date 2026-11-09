@@ -53,11 +53,20 @@ double FS47MotelNight::SleepUntil(double Morning) const
 	return At > M->Freeform->Clock() + 1800 && At < Morning ? At : Morning;
 }
 
-void FS47MotelNight::AfterRest(double Morning, double SleptFrom)
+void FS47MotelNight::AfterRest(double Morning, double SleptFrom, double Until)
 {
 	if (!M || !M->Freeform || !M->UI) return;
 	FS47FreeformSession& F = *M->Freeform;
 	bUnfiled = true;
+	// PT-BIGNIGHT-20261109: woken before the night's own hour by the one thing that wakes a sleeper here (the first big night,
+	// FS47FreeformSession::WakeBefore). The night is not over: nothing of the motel's own is told yet, and no panel stands in the way.
+	if (Until > 0 && F.Clock() < Until - 60)
+	{
+		const int32 Woke = int32(FMath::Fmod(F.Clock(), 86400.));
+		M->UI->Toast(FString::Printf(TEXT("%d:%02d. Awake all at once, and you could not say why. Outside, every dog in town is barking."), Woke / 3600, (Woke / 60) % 60), 9);
+		UE_LOG(LogS47MotelNight, Display, TEXT("S47: motel night: woken at %d:%02d, before the night's own hour"), Woke / 3600, (Woke / 60) % 60);
+		return;
+	}
 	const int32 Night = FS47FreeformSession::NightOf(F.Clock() - 3600);
 	if (Night == LastNight && F.Clock() >= Morning - 1) return; // the second half of a woken night: nothing more
 	// A room taken after four (in from a night out on the land) or for an hour in the day: the night was not slept here, and has none.
@@ -155,6 +164,15 @@ S47J::FObj FS47MotelNight::Save() const
 	return O;
 }
 
+double FS47MotelNight::BigWakeAt(double Midnight, double BigHour, double Now, double Target, float Roll)
+{
+	if (!FMath::IsFinite(Midnight) || !FMath::IsFinite(BigHour) || !FMath::IsFinite(Now) || !FMath::IsFinite(Target)) return -1;
+	const float R = FMath::Clamp(Roll, 0.f, 1.f);
+	const double Want = Midnight + (BigHour - 24.) * 3600. - (120. + 480. * R);
+	const double At = FMath::Max(Want, Now + 300. + 600. * R);
+	return At < Target && At < Midnight + 4.5 * 3600. ? At : -1.;
+}
+
 bool FS47MotelNight::SelfTest(TArray<FString>& Lines)
 {
 	bool bAll = true;
@@ -174,6 +192,17 @@ bool FS47MotelNight::SelfTest(TArray<FString>& Lines)
 		const double Morning = 5 * 86400. + 8 * 3600.;
 		Check(SleptTheNight(4 * 86400. + 22 * 3600., Morning, Morning) && SleptTheNight(5 * 86400. + 1 * 3600., Morning, Morning) && !SleptTheNight(5 * 86400. + 5 * 3600., Morning, Morning) && !SleptTheNight(5 * 86400. + 7 * 3600., Morning, Morning),
 			TEXT("a nap at the motel after four in the morning has no night in it: no knock, no theft, no record"));
+	}
+	{
+		// PT-BIGNIGHT-20261109: the big night wakes a sleeper in a room a few minutes before its hour; one who came in after it, soon;
+		// never after the rest would have ended, and not when the night is nearly over.
+		const double Mid = 3 * 86400.;
+		const double Early = BigWakeAt(Mid, 26.5, Mid - 2 * 3600., Mid + 8 * 3600., .5f);
+		const double Late = BigWakeAt(Mid, 26.5, Mid + 3 * 3600., Mid + 8 * 3600., .5f);
+		Check(Early > Mid - 2 * 3600. && Early < Mid + 2.5 * 3600. && Early >= Mid + 2.5 * 3600. - 601. && Late >= Mid + 3 * 3600. + 300. && Late <= Mid + 3 * 3600. + 900.
+			&& BigWakeAt(Mid, 26.5, Mid - 2 * 3600., Mid + 2 * 3600., .5f) < 0 && BigWakeAt(Mid, 26.5, Mid + 4.45 * 3600., Mid + 8 * 3600., .5f) < 0,
+			FString::Printf(TEXT("the big night wakes a room before its 02:30 (%.0f min before) or soon after a late check-in (%.0f min); not past the rest or the night"),
+				(Mid + 2.5 * 3600. - Early) / 60., (Late - Mid - 3 * 3600.) / 60.));
 	}
 	FS47MotelNight A(nullptr); A.LastNight = 6; FS47MotelNight B(nullptr); B.Begin(S47J::Read(S47J::Write(A.Save())));
 	Check(B.LastNight == 6 && !B.Unfiled(), TEXT("a Continue starts with the motel night filed: no save was written during one"));

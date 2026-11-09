@@ -130,9 +130,10 @@ namespace S47Big
    TEXT("Out past {place} a ring of ground where every stone was turned over, damp side up, and the middle swept bare. Cattle tracks running out of it every way.")},
  };
  static_assert(UE_ARRAY_COUNT(Words)==3,"one set of words for each shape");
- // The same words on every line of Dale's morning, whatever the shape.
+ // The same words on every line of Dale's morning, whatever the shape. PT-BIGNIGHT-20261109 (Tom): Dale says "Herrgott", awake or
+ // slept through; it is his (DECISIONS: an angry German) and no filter takes it out (S47Hap::Clean, the self test below).
  const TCHAR* const DaleFirst=TEXT("Herrgott. Every dish on remote is looking at {az} this morning, {el} degrees up, like dogs at a door. Not on my log. Not on yours? Good. Then nobody did it.");
- const TCHAR* const DaleSlept=TEXT("You slept through it? Good for you. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths. Not on my log.");
+ const TCHAR* const DaleSlept=TEXT("Herrgott. You slept through it? Good for you. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths. Not on my log.");
  const TCHAR* const DaleLast=TEXT("Leave the array where it is until I have read the encoders myself. And if you go out there, you go by daylight, and you take the walkie. Out.");
  const TCHAR* const Slip=TEXT("A slip by the phone, in a hard square hand: \"Array on remote all at {az} this morning, {el} up. Not me. Not you? Leave it so. If you go out to {place}, go by day. D.\"");
 }
@@ -724,6 +725,9 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   for(const TCHAR* T:{S47Big::DaleFirst,S47Big::DaleSlept,S47Big::DaleLast,S47Big::Slip})All.Add(T);
   FString Bad;for(const FString& T:All)if(!S47Hap::Clean(T)&&Bad.Len()<200)Bad+=T.Left(50)+TEXT(" / ");
   Check(Bad.IsEmpty(),TEXT("every line is clean of Story's far side, names and brands ")+Bad);
+  Check(FString(S47Big::DaleFirst).StartsWith(TEXT("Herrgott."))&&FString(S47Big::DaleSlept).StartsWith(TEXT("Herrgott."))&&S47Hap::Clean(S47Big::Dale(S47Big::DaleFirst))
+   &&S47Big::Dale(S47Big::Put(S47Big::DaleSlept,TEXT("the dry lake"),FString(),FString(),132,4)).Contains(TEXT("DALE: Herrgott.")),
+   TEXT("Dale's morning starts \"Herrgott.\" whether the night was seen or slept through, and nothing takes it out"));
   bool bNum=true;for(int32 Az=0;Az<360;++Az){const FString S=FString::Printf(TEXT("%03.0f"),S47Hap::Bearing(Az));bNum&=!S.Contains(TEXT("47"));}
   Check(bNum,TEXT("no bearing it gives reads as Story's number"));
   Check(S47Big::ClimaxEnd-S47Big::Tone!=47&&S47Big::Len!=47&&S47Big::Back-S47Big::Flick!=47,TEXT("nothing in it lasts Story's number of seconds"));

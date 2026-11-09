@@ -37,5 +37,6 @@ Alle fem figurene har Tripo-rigg (80 UE5-bein) med egne klipp (idle, walk, run, 
 
 ## Merknader
 
-- `pakke tripo3d-1.glb` er en grå, teksturløs modell som ligner en håndradio fra 80-tallet, ikke en pakke. Den er importert, men brukes ikke som postpakke før Tom har sett på den.
-- Walkien har LCD og tastatur og ser yngre ut enn 1986. Tom avgjør.
+- Tom 9. november: `pakke tripo3d-1.glb` er en geigerteller-prototype, ikke en pakke. Katalogoppføringen heter `geiger` (`S47TripoNew::Geiger`), og modellen er geigertelleren i hånda (`S47Happenings`, propen `geiger`) med skiva og nåla oppå. Uten modellen brukes den tegnede telleren som før. Asset-navnet `SM_Tripo_Parcel` er beholdt.
+- Tom 9. november: walkien (`SM_Tripo_Walkie`) er hans bedre walkie og står på bordet i kontrollrommet (`S47TripoNew::DeskWalkie`, `S47FieldRadio`).
+- Cosmic lyser i hele kroppen med stjerner i seg (`S47TripoNew::AddCosmicGlow`): et additivt overlegg med et stjernefelt som glir sakte og puster, og noen små stjernepunkter rundt kroppen. Ingen lampe, så omgivelsene lyses ikke opp. Nordic har ingen øyeglimt.

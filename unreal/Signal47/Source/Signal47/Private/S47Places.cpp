@@ -316,7 +316,7 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   {
    if(M->UI)M->UI->Close(true);
    const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next,From=F->Clock();
-   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next,From);
+   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next,From,Until);
   },true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))

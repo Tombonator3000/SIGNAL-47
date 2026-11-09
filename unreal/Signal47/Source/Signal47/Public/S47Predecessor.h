@@ -73,6 +73,8 @@ public:
  static bool WardHours(double Clock){const double H=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return H>=8.&&H<21.;}
  bool WardAvailable() const;
  int32 TrayCount() const{return Tray.Num();}
+ // Whether this paper of hers waits unread in the OPS tray (ReadDoc takes it out).
+ bool InTray(const FString& Id) const{return Tray.Contains(Id);}
  bool RadioOn() const;
  // The closing order has taken effect: the county power is off, the array stowed, the truck the district's.
  bool StationClosed() const{return bClosed;}
