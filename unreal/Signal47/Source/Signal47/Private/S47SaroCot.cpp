@@ -1,6 +1,7 @@
 #include "S47SaroCot.h"
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47Fatigue.h"
 #include "S47Handling.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
@@ -314,8 +315,12 @@ void FS47SaroCot::OpenMenu()
 	TArray<S47Kit::FW> Rows;
 	Rows.Add(S47Kit::Small(FString::Printf(TEXT("%02d:%02d. The cot creaks when you sit on it. The station sleeps with you: the same rest as REST UNTIL MORNING at OPS."), Secs / 3600, (Secs / 60) % 60)));
 	const TWeakPtr<uint8> Guard = Life;
+	// what kind of sleep it will be, in the same words as OPS (FS47Fatigue::BedLine: the cot here is the station's bed)
+	const auto Bed = [F](double Seconds) { return F->Fatigue && F->RulesLive() ? F->Fatigue->BedLine(Seconds, FS47Fatigue::EBed::Station) : FString(); };
 	Rows.Add(S47Kit::Button(TEXT("Sleep until morning"), [this, Guard] { if (Guard.IsValid()) Sleep(0); }, true));
+	if (const FString L = Bed(MorningAfter(F->Clock()) - F->Clock()); !L.IsEmpty()) Rows.Add(S47Kit::Small(L));
 	Rows.Add(S47Kit::Button(TEXT("Sleep for two hours"), [this, Guard] { if (Guard.IsValid()) Sleep(2); }));
+	if (const FString L = Bed(2 * 3600.0); !L.IsEmpty()) Rows.Add(S47Kit::Small(L));
 	Rows.Add(S47Kit::Button(TEXT("Get up again"), [this, Guard] { if (Guard.IsValid() && M->UI) M->UI->Close(); }));
 	M->UI->Open(S47Kit::Shell(M->UI, TEXT("THE COT"), S47Kit::Col(Rows), 640));
 }
