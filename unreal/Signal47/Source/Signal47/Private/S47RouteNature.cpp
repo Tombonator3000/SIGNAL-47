@@ -31,7 +31,12 @@ namespace
  // under the ground to its top edge. A family not listed here stands as authored.
  struct FCut { const TCHAR* Name; double Nx,Ny,Nz,Rise; };
  const FCut Cuts[]={
-  {TEXT(""),0,0,0,0}, // (filled from cut_faces.json; the empty row keeps the array well-formed)
+  // Measured 9 November 13:30 (cut_faces.json, the drawn LOD0 welded; none of the four materials two-sided, their LODs in one frame).
+  // Every one is an open shell: what showed black through the opening was the inside of the far wall.
+  {TEXT("Cliff_A"),.003,-.996,-.094,7.23},   // the whole back open, top to foot: 28 % of the surface
+  {TEXT("Boulder_A"),0,0,-1,.01},            // the underside open, at the base
+  {TEXT("Boulder_B"),.001,-.002,-1,.04},     // the underside open, at the base
+  {TEXT("Outcrop_A"),-.002,-.517,-.856,.76}, // open behind and under, the whole height: turned away, not sunk
  };
  const FCut* CutOf(const TCHAR* Name)
  {
@@ -48,11 +53,11 @@ namespace
   const double Out=Side<0?180.:0.,Cut=FMath::RadiansToDegrees(FMath::Atan2(C->Ny,C->Nx));
   return Out-Cut+(FMath::Fmod(FMath::Abs(Yaw),24.)-12.);
  }
- // How much deeper than the old tenth of a metre: a downward cut to its top edge, and 4 cm more.
+ // How much deeper than the old tenth of a metre: a cut straight down to its top edge, and 4 cm more.
  double CutSink(const FFamily& F,double Scale)
  {
   const FCut* C=CutOf(F.Name);
-  return C&&C->Nz<-.7?(C->Rise+.04)*Scale:0.;
+  return C&&C->Nz<-.95?(C->Rise+.04)*Scale:0.; // (straight down only: the outcrop's open back-and-under is turned; sinking it would bury it)
  }
  struct FCluster { double X,Z,Scale; int32 Seed; };
  // Road-local metres: four distinct outcrops on the SARO approach, two on the
@@ -332,7 +337,7 @@ FString FS47RouteNature::CutNote() const
  for(const FRockSet& S:RockSets)
  {
   const FCut* C=CutOf(*S.Family);
-  Out+=FString::Printf(TEXT("%s%s %s"),Out.IsEmpty()?TEXT(""):TEXT(", "),*S.Family,!C?TEXT("as authored"):C->Nz<-.7?TEXT("sunk"):TEXT("turned away"));
+  Out+=FString::Printf(TEXT("%s%s %s"),Out.IsEmpty()?TEXT(""):TEXT(", "),*S.Family,!C?TEXT("as authored"):C->Nz<-.95?TEXT("sunk"):TEXT("turned away"));
  }
  return Out;
 }
