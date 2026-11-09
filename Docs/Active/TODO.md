@@ -28,6 +28,14 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 
 **M6 natt til 9. november (`claude/m6-20261109`, ikke installert da dette ble skrevet):** originale gatelykter (cobra head, `/Game/Signal47/Art/StreetLamps`, kilde i `unreal/ArtSource/StreetLamps`) på motorveien, i Caliche, ved motellet, SARO-gården og gården; Dales vindu åpnet utenfra; trafoen med piggtråd og transformator nr. 2, kollider på gjerdet; SARO-CLIP-prøve (tre ting flyttet); hinderliste i F10; grunnmur i Caliche (`S47CalicheGround`); motell-tv i Freeform med eget testkort; LOD-importen retter dreiningen (`import_lod_same_frame`). Kritikk 4: 6–7/10, 13 funn rettet. Toms testfunn T16-08, -09, -10 (prøve), -12, -13 og garasjeporten rettet i kilde.
 
+- [ ] **DIRECTOR-TOOL-20261109: regissørmodus i spillet for skriptede hendelser.** Tom 9. november: «Vil ha en regissør-mulighet i spillet så jeg/vi kan lage skriptede hendelser til spillet.» Forslag til første versjon:
+  - **Hvor:** en egen modus i utviklermenyen (F10) i Freeform, aldri synlig for vanlige spillere.
+  - **Utløsere:** tid (dag, klokkeslett, natt nr.), sted (fra stedskatalogen `S47EventPlaces` eller et punkt satt der du står), og betingelser (har funn X, sak åpen, vær, måne, spilleren inne eller ute, avstand).
+  - **Handlinger på en tidslinje:** figur (Pale One, Roswell, Tall One osv.) som går en sti du tegner; lys på himmelen og formasjoner; lyd (plassert eller på radio, CB og walkie); antenner som snur seg; strøm og utstyr som svikter; Dale- eller radiolinje; toast eller lapp; funn og spor til saker; kamera eller blikk mot et punkt.
+  - **Lagring:** som JSON i `Content/Director/scripted/*.json`, lest av Director på linje med `director.json`. Kan spilles av med «Preview» i spillet og slås av med et flagg.
+  - **Gjenbruk:** bygger på systemene som finnes (Happenings, SkyVisitors, Omen, Audio, PointDish, Townsfolk, Visitors) og følger de samme reglene: ingen alien før ca. 02:00 og spoilergrensene.
+  - **Senere:** enkel tidslinje med dra-og-slipp, kopier og lim inn, og deling av skript mellom maskiner.
+
 **Dagskift 9. november, spørsmål til Tom etter M7:**
 - [ ] **ECON-CAP-20261109 (Tom avgjør):** med 2–3 kveldsjobber stiger saldoen fortsatt $150–300 i uka i uke 3–4. Valg: tak på kassa (f.eks. $250–300, resten til fylket ved ukegjennomgangen, Ward kan lese det), lavere lønn, eller la det være.
 - [ ] **STAYS-CASE-20261109 (Tom avgjør):** Stays krever nå minst én sak ført gjennom. Skal Wards første brev nevne det?
