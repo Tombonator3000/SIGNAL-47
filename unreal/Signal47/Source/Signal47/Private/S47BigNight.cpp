@@ -735,7 +735,7 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   Check(Bad.IsEmpty(),TEXT("every line is clean of Story's far side, names and brands ")+Bad);
   Check(FString(S47Big::DaleFirst).StartsWith(TEXT("Herrgott."))&&FString(S47Big::DaleSlept).StartsWith(TEXT("Herrgott."))&&S47Hap::Clean(S47Big::DaleFirst)
    &&S47Big::Dale(S47Big::Put(S47Big::DaleSlept,TEXT("the dry lake"),FString(),FString(),132,4)).Contains(TEXT("DALE: Herrgott.")),
-   TEXT("Dale's morning starts \"Herrgott.\" whether the night was seen or slept through, and nothing takes it out"));
+   TEXT("his morning starts \"Herrgott.\" whether the night was seen or slept through, and nothing takes it out"));
   // CRIT6-20261109: Dale never calls the player Reyes (the one who went missing), in any line of his here.
   FString Named;
   for(const TCHAR* T:{S47Big::DaleFirst,S47Big::DaleSlept,S47Big::DaleLast,S47Big::Slip,S47Big::HailFirst,S47Big::HailAgain,S47Big::HailGiveUp})if(FString(T).Contains(TEXT("Reyes")))Named+=FString(T).Left(40)+TEXT(" / ");
