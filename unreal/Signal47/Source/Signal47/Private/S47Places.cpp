@@ -609,6 +609,19 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
    else{ToX=C.X-Road.X;ToZ=C.Z-Road.Z;bHave=true;}
   }
  }
+ // CHAIN-1-20261109: then what is really out there tonight (FS47Happenings::OutTonight): what has come and nobody has been out to,
+ // or the night's lead at the place drawn for it at dusk, which may be any place on the list of event places. Its tier is asked
+ // the same way. Only with neither, as before: a place on the land nobody has looked at. Nothing is made up for a quiet night.
+ const bool bMarks=bHave;bool bTonight=false,bAhead=false;
+ if(!bHave&&F.Happenings)
+ {
+  FString Event,Title;double X=0,Z=0;
+  if(F.Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!F.Director||F.Director->MayPointAt(Event,Now,Night)))
+  {
+   Target=(Title.IsEmpty()?Event:Title).Left(64);ToX=X;ToZ=Z;bHave=bTonight=true;
+  }
+  else bAhead=false;
+ }
  if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
@@ -616,6 +629,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
  if(F.Director)F.Director->NotePointOut(Night);
+ if(bAhead)F.Happenings->PointedTonight(Night);
  const FString Mended=Branches<=0?FString(TEXT("With no branch mended the array still resolves something off the main beam, broadly"))
   :FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
  F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("%s: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),*Mended,B.Az,Spread,*SlipClock(Now)));
@@ -623,7 +637,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
   :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (%s)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread,*FS47PlacesLocalMapKey()),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, %s, night %d"),B.Az,Spread,*Target,Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night);
  M->RequestAutosave();
  return true;
 }
@@ -738,6 +752,17 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   auto Bad=S47J::Clone(O);auto Car=S47J::Clone(Fix);S47J::Set(Car,TEXT("car"),true);TArray<TSharedPtr<FJsonValue>> L2;L2.Add(MakeShared<FJsonValueObject>(Car));Bad->SetArrayField(TEXT("fixes"),L2);
   FS47Places Dropped(nullptr);Dropped.Begin(S47J::Read(S47J::Write(Bad)));
   Check(Dropped.Bearings().IsEmpty(),TEXT("a bearing from the truck without where it stood is dropped"));
+ }
+ {
+  // CHAIN-1-20261109: what the slip points at: marks first, then what is out there tonight, then a place nobody has looked at.
+  Check(SlipPoints(true,true,true)==1&&SlipPoints(false,true,true)==2&&SlipPoints(false,false,true)==3&&SlipPoints(false,false,false)==0,
+   TEXT("the bearing slip points at tonight's own thing before a place nobody has looked at, and at nothing when there is neither"));
+  // A slip toward an event place is a bearing like any other (its target a title, not one of the ten): it is kept over a Continue,
+  // goes cold by noon, and gives the counter no dose of its own.
+  double Sx=0,Sz=0;SaroRoad(Sx,Sz);
+  const FBearing Out=StationFix(5,19.5*3600.,0,Sx,Sz,Sx+900,Sz-1200,.5f,TEXT("the dry wash"));
+  Check(Out.Target==TEXT("the dry wash")&&InSector(Out,Sx+900,Sz-1200)&&!Dosed(Out,Out.Clock)&&Live(Out,Out.Clock)&&!Live(Out,Out.Until+1),
+   TEXT("a slip toward tonight's place holds the place in its sector, is live until noon, and is not one of the ten for the counter"));
  }
  {
   // The player's own marks on the map: one down, another, the first rubbed out by a touch near it, and the rest kept over a Continue.

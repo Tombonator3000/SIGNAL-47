@@ -899,7 +899,11 @@ bool FS47FreeformSession::StartAcquisition()
  }
  FieldFocus=-1;bGuideFocus=false;
  const bool bFirst=FirstPulseDue(*J);
- J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=(J->Slot==1&&bAnomaly&&J->CaseTest<0)||bFirst;J->Phenomenon=J->bAnomaly&&!(bFirst&&!bAnomaly)?PhenomenonId:FString();
+ // CHAIN-1-20261109: what is out on the land tonight unsettles the pulsar card (no instrument fault of the Director's needed): the
+ // plain discrepancy, extra ticks outside the reference period, with no instrument cause to find.
+ const bool bOut=J->Slot==1&&J->CaseTest<0&&!bAnomaly&&!bFirst&&OutThereTonight();
+ J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=(J->Slot==1&&bAnomaly&&J->CaseTest<0)||bFirst||bOut;J->Phenomenon=J->bAnomaly&&!bOut&&!(bFirst&&!bAnomaly)?PhenomenonId:FString();
+ if(bOut)UE_LOG(LogTemp,Display,TEXT("S47: freeform: the pulsar card %s shows a discrepancy from what is out there tonight"),*J->Id);
  J->TraceTicks.Reset();J->bLegacyTrace=false;if(J->bAnomaly&&!Specialized(J->Phenomenon))for(double At:Ticks)J->TraceTicks.Add(At);
  J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
  // The hidden cause decides what the physical test actually records; the player hears or reads it.
@@ -1173,6 +1177,16 @@ bool FS47FreeformSession::NearBinder() const
  if(!bFound||At.ContainsNaN())return false;
  const FVector P=M->Player->Pos;
  return M->Web->Rect(TEXT("annex.zone.records")).Contains(P)&&FVector2D(P.X-At.X,P.Z-At.Z).Size()<=2.4&&FMath::Abs(M->Player->FloorY-At.Y)<=2.;
+}
+bool FS47FreeformSession::OutThereTonight() const
+{
+ if(!M||!RulesLive()||InTutorial()||!Happenings||!Places)return false;
+ const int32 Night=NightOf(WorldClock);
+ // The same gates as the slip itself (FS47Places::AfterRegistered), so that the card never promises one that cannot print.
+ if(Director&&!Director->MayPointOut(Night))return false;
+ if(Happenings->BigOwns(Night))return false;
+ FString Event,Title;double X=0,Z=0;bool bAhead=false;
+ return Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!Director||Director->MayPointAt(Event,WorldClock,Night));
 }
 bool FS47FreeformSession::FilePacket()
 {

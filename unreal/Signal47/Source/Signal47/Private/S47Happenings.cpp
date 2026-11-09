@@ -714,6 +714,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
+ Tonight=FLead();
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
@@ -740,6 +741,16 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    if(U.IsValid())for(const auto& KV:U->Values){const int32 I=FCString::Atoi(*KV.Key);double N=0;if(I>=0&&I<UneaseCount()&&KV.Value.IsValid()&&KV.Value->TryGetNumber(N)&&N>0&&N<100000)UneaseLast.Add(I,int32(N));}
   }
   for(const double U:S47J::Nums(Saved,TEXT("uneaseDone")))if(U>=0&&U<UneaseCount()&&UneaseDone.Num()<4)UneaseDone.AddUnique(int32(U));
+  // CHAIN-1-20261109: tonight's lead as it was drawn, so that a Continue does not move it. An older save has none: drawn again.
+  {
+   const S47J::FObj L=S47J::Obj(Saved,TEXT("lead"));
+   if(L.IsValid())
+   {
+    FLead T;T.Night=S47J::Int(L,TEXT("night"));T.Kind=S47J::Str(L,TEXT("kind")).Left(32);T.Place=S47J::Str(L,TEXT("place")).Left(64);T.bPointed=S47J::Bool(L,TEXT("pointed"));
+    TMap<FString,double> One;One.Add(T.Kind,0.);
+    if(T.IsSet()&&T.Night<100000&&LeadKindOf(One)==T.Kind)Tonight=T;
+   }
+  }
   // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
   {const TArray<double> P=S47J::Nums(Saved,TEXT("past"));for(int32 I=0;I+2<P.Num()&&Past.Num()<MostPast;I+=3)if(FMath::IsFinite(P[I])&&FMath::IsFinite(P[I+1])&&FMath::Abs(P[I])<1e5&&FMath::Abs(P[I+1])<1e5&&P[I+2]>=1&&P[I+2]<100000)Past.Add({P[I],P[I+1],int32(P[I+2])});}
   for(const auto& V:S47J::Arr(Saved,TEXT("sites")))
@@ -805,6 +816,7 @@ S47J::FObj FS47Happenings::Save() const
  if(GhostNight>0)S47J::Set(O,TEXT("ghostNight"),GhostNight);
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
  if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
+ if(Tonight.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),Tonight.Night);S47J::Set(L,TEXT("kind"),Tonight.Kind);S47J::Set(L,TEXT("place"),Tonight.Place);if(Tonight.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
  if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
@@ -1033,6 +1045,8 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
 {
  FSpot S;
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return S;
+ // CHAIN-1-20261109: tonight's lead starts where it was drawn at dusk, when that still fits where the player is.
+ if(const FSpot L=LeadSpot(Kind,MinM,MaxM);L.bSet)return L;
  if(F->EventPlaces)
  {
   FS47PlaceNeed N;N.Kind=Kind;N.All=ES47PlaceTrait(All);N.Any=ES47PlaceTrait(Any);N.Not=ES47PlaceTrait(Not);N.MinM=MinM;N.MaxM=MaxM;N.FarShare=FarShare;N.bSameArea=bSameArea;
@@ -1062,6 +1076,87 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
  S.Place=FString();S.Title=D->Title;S.X=D->X;S.Z=D->Z;F->Places->Spot(D->Id,S.X,S.Z);S.bSet=true;
  UE_LOG(LogS47Happen,Verbose,TEXT("S47: happening %s: no catalogue answer, the land's own place %s"),*Kind,D->Id);
  return S;
+}
+// ---------------------------------------------------------------- CHAIN-1-20261109: tonight's lead
+FString FS47Happenings::LeadKindOf(const TMap<FString,double>& Drawn)
+{
+ for(const TCHAR* Id:{TEXT("landing"),TEXT("carcass"),TEXT("missing_person"),TEXT("stranded_rv"),TEXT("cb_stranded")})if(Drawn.Contains(Id))return FString(Id);
+ return FString();
+}
+bool FS47Happenings::LeadFits(double Away,double MinM,double MaxM,bool bPointed)
+{
+ if(Away<0)return true;
+ if(MinM>0&&Away<MinM)return false;
+ return bPointed||MaxM<=0||Away<=MaxM;
+}
+// Drawn once the night's plan is known (from 08:00, so long before the evening's cards): each kind's own need, as its Begin asks it,
+// measured from SARO, where the cards are run and the array looks from. No fitting place: no lead, and everything is as before.
+void FS47Happenings::DrawLead(int32 Night)
+{
+ auto* F=M?M->Freeform.Get():nullptr;
+ // Loaded with tonight's: kept as it was drawn (a slip may have pointed there already).
+ if(Tonight.IsSet()&&Tonight.Night==Night&&F&&F->EventPlaces&&F->EventPlaces->Find(Tonight.Place)&&(Tonight.bPointed||Plan.Contains(Tonight.Kind)))return;
+ Tonight=FLead();
+ const FString Kind=LeadKindOf(Plan);
+ if(Kind.IsEmpty()||!F||!F->EventPlaces||F->InTutorial())return;
+ using S47Hap::Bit;
+ FS47PlaceNeed N;N.Kind=Kind;
+ const uint32 Away=Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro);
+ if(Kind==TEXT("landing")){N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array)|Bit(ES47PlaceTrait::People));N.MinM=FMath::Max(180.,350.*NearK);N.MaxM=FMath::Max(900.,2800.*NearK);N.FarShare=.3f*float(NearK);}
+ else if(Kind==TEXT("carcass")){N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Farm)|Bit(ES47PlaceTrait::Open));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors));N.MinM=FMath::Max(100.,250.*NearK);N.FarShare=.5f*float(NearK);}
+ else if(Kind==TEXT("missing_person")){N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away);N.MinM=FMath::Max(250.,500.*NearK);N.FarShare=1.f;}
+ else if(Kind==TEXT("stranded_rv")){N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::People)|Bit(ES47PlaceTrait::Indoors));N.MinM=FMath::Max(250.,600.*NearK);N.FarShare=1.f;}
+ else{N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors));N.MinM=450;N.FarShare=1.f;}
+ double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+ const FS47PlacePick P=F->EventPlaces->PickFor(N,F->Seed(),Night,FVector2D(SaroX,SaroZ),FVector2D::ZeroVector,0x4c454144u);
+ if(!P.IsSet()){UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s: no place fits from SARO, drawn when it starts as before"),Night,*Kind);return;}
+ Tonight.Night=Night;Tonight.Kind=Kind;Tonight.Place=P.Id;
+ const double* At=Plan.Find(Kind);
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead: %s at %s, %.0f m from SARO, from %s"),Night,*Kind,*P.Id,P.DistanceM,At?*S47Hap::ClockText(FMath::Fmod(*At,24.)*3600.):TEXT("no hour"));
+}
+FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,double MaxM) const
+{
+ FSpot S;
+ auto* F=M?M->Freeform.Get():nullptr;
+ // F10 asks with no least distance (a forced one, wanted where the player is): left as it was.
+ if(!F||!F->EventPlaces||MinM<=0||!Tonight.IsSet()||Tonight.Kind!=Kind||Tonight.Night!=FS47FreeformSession::NightOf(F->Clock()))return S;
+ const FS47EventPlace* E=F->EventPlaces->Find(Tonight.Place);if(!E)return S;
+ double Px=0,Pz=0;
+ const double Away=PlayerRoad(Px,Pz)?FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)):-1.;
+ if(!LeadFits(Away,MinM,MaxM,Tonight.bPointed)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
+ S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,Tonight.bPointed?TEXT(", a slip pointed there"):TEXT(""));
+ return S;
+}
+bool FS47Happenings::OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const
+{
+ bAhead=false;
+ auto* F=M?M->Freeform.Get():nullptr;
+ if(!F||Night<=0)return false;
+ // What has come already tonight and nobody has been out to: where it really stands (a landing seen or logged has its own bearing).
+ static const TCHAR* const Left[][2]={{TEXT("landing"),TEXT("landing")},{TEXT("carcass"),TEXT("carcass")},{TEXT("missing"),TEXT("missing_person")},{TEXT("rv"),TEXT("stranded_rv")},{TEXT("truck"),TEXT("cb_stranded")},{TEXT("cattle"),TEXT("cattle_ring")}};
+ for(const auto& K:Left)
+ {
+  const FSite* S=SiteOf(FString(K[0]));
+  if(!S||S->Night!=Night||S->bFound||S->bDone||S->bKnown)continue;
+  Event=K[1];Title=S->Title;X=S->X;Z=S->Z;return true;
+ }
+ // The one still to come, while it still can: its hour and a half, or the rest of the night once a slip has pointed there (Due).
+ if(!Tonight.IsSet()||Tonight.Night!=Night||PlanNight!=Night)return false;
+ const double* From=Plan.Find(Tonight.Kind);if(!From)return false;
+ if(const int32* Last=LastDays.Find(Tonight.Kind);Last&&*Last==F->Day())return false;
+ // It has come (and was found, or it would have been pointed at above): nothing more to say about it.
+ for(const auto& K:Left)if(Tonight.Kind==K[1]){const FSite* S=SiteOf(FString(K[0]));if(S&&S->Night==Night)return false;}
+ if(HourOfNight(F->Clock())>=FMath::Min(30.,Tonight.bPointed?DangerUntil:*From+DrawWindow))return false;
+ const FS47EventPlace* E=F->EventPlaces?F->EventPlaces->Find(Tonight.Place):nullptr;if(!E)return false;
+ Event=Tonight.Kind;Title=E->Title;X=E->X;Z=E->Z;bAhead=true;
+ return true;
+}
+void FS47Happenings::PointedTonight(int32 Night)
+{
+ if(!Tonight.IsSet()||Tonight.Night!=Night||Tonight.bPointed)return;
+ Tonight.bPointed=true;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s at %s: a slip points there, held to its place until morning"),Night,*Tonight.Kind,*Tonight.Place);
 }
 // MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
 static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
@@ -1459,6 +1554,7 @@ void FS47Happenings::PlanTonight(int32 Night)
  }
  TArray<FString> Parts;for(const auto& KV:Plan)Parts.Add(FString::Printf(TEXT("%s %s"),*KV.Key,*S47Hap::ClockText(FMath::Fmod(KV.Value,24.)*3600.)));
  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d drawn: %s; reserve %s%s; week from day %d: danger %.2f, near %.2f%s"),Night,Parts.IsEmpty()?TEXT("none"):*FString::Join(Parts,TEXT(", ")),*S47Hap::ClockText(FMath::Fmod(LateAt,24.)*3600.),bLateHush?TEXT(" (a hush)"):TEXT(""),Week.FromDay,Week.Danger,NearK,DangerAt>0?*FString::Printf(TEXT(", the danger's slot %s"),*S47Hap::ClockText(FMath::Fmod(DangerAt,24.)*3600.)):TEXT(""));
+ DrawLead(Night); // CHAIN-1-20261109
  PlanUnease(Night);
  PlanCues(Night);
 }
@@ -1543,7 +1639,9 @@ bool FS47Happenings::Due(const FString& Id) const
  const double H=HourOfNight(M->Freeform->Clock());
  const int32* Last=LastDays.Find(Id);
  // The night's danger waits in its slot until five for something that fits; the rest have an hour and a half.
- return S47Hap::DueAt(H,*From,IsDanger(Id)?DangerUntil:*From+DrawWindow)&&!(Last&&*Last==M->Freeform->Day());
+ // CHAIN-1-20261109: the lead a slip has pointed at waits as long, so that what the slip said is out there comes to be there.
+ const bool bPromised=Tonight.bPointed&&Tonight.Night==PlanNight&&Tonight.Kind==Id;
+ return S47Hap::DueAt(H,*From,IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow)&&!(Last&&*Last==M->Freeform->Day());
 }
 bool FS47Happenings::MayStart(const FString& Id)
 {
@@ -4346,6 +4444,18 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const FString& Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s happenings: %s"),B?TEXT("PASS"):TEXT("FAIL"),*Why));};
+ // CHAIN-1-20261109: tonight's lead, the rules by themselves.
+ {
+  TMap<FString,double> Drawn;Drawn.Add(TEXT("dogs_hush"),21.);Drawn.Add(TEXT("cattle_ring"),23.);
+  const bool bNone=LeadKindOf(Drawn).IsEmpty();
+  Drawn.Add(TEXT("cb_stranded"),21.);const bool bDriver=LeadKindOf(Drawn)==TEXT("cb_stranded");
+  Drawn.Add(TEXT("carcass"),22.);Drawn.Add(TEXT("landing"),26.);
+  Check(bNone&&bDriver&&LeadKindOf(Drawn)==TEXT("landing"),TEXT("tonight's lead is one of the night's own draws that leaves something (a landing first); a night without one has none"));
+  Check(LeadFits(-1,180,900,false)&&LeadFits(400,180,900,false)&&!LeadFits(100,180,900,false)&&!LeadFits(2000,180,900,false)&&LeadFits(2000,180,900,true)&&!LeadFits(100,180,900,true)&&LeadFits(5000,250,0,false),
+   TEXT("the lead starts at its drawn place when that fits where the player is, never on top of them, and however far once a slip has pointed there"));
+  FS47Happenings Empty(nullptr);FString E,T;double X=0,Z=0;bool bAhead=true;
+  Check(!Empty.Lead().IsSet()&&!Empty.OutTonight(3,E,T,X,Z,bAhead)&&!bAhead,TEXT("with nothing drawn there is nothing out there for a slip to point at"));
+ }
  // Every one of them is in the rhythm's file, under its own system, and the dangerous ones wait past the first night.
  FS47RhythmData D;FString Why;
  FString Text;const bool bFile=FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Director/director.json")));

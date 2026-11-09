@@ -48,6 +48,9 @@ public:
  static double SpreadFor(int32 Branches){return Branches<=0?40.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
  // Whether registered work points out at all: a discrepancy always, routine work with a mended branch.
  static bool Gives(bool bAnomaly,int32 Branches){return bAnomaly||Branches>0;}
+ // CHAIN-1-20261109: what the slip points at, in this order: 1 marks standing at a place, 2 what is out there tonight
+ // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
+ static int32 SlipPoints(bool bMarks,bool bTonight,bool bUnknown){return bMarks?1:bTonight?2:bUnknown?3:0;}
  // A bearing from SARO (From, road-local) toward To, as a registration takes it: the spread by the branches, the line off the true
  // one by up to half of it (Roll 0 to 1), whole degrees, cold by the next noon.
  static FBearing StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target);

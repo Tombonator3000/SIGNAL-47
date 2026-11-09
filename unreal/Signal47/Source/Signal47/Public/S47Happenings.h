@@ -142,6 +142,24 @@ public:
  static bool Stirred(const TArray<FStir>& Near,double X,double Z,int32 Day);
  bool StirredNear(double X,double Z) const;
 
+ // CHAIN-1-20261109: the night's one thing out on the land that the station's own work can lead to. Of what was drawn for tonight
+ // (PlanTonight, from the seed), the first of these that leaves something standing, and its place from the place list, drawn at
+ // dusk from SARO instead of when it starts. What comes, and when, is as before; only where is settled early, so that a card's
+ // discrepancy and the bearing slip (FS47Places::AfterRegistered) are about the same thing. Saved ("lead"; an older save has
+ // none and draws it again). A calm night, or one with none of these drawn, has none: nothing is made up.
+ struct FLead{int32 Night=0;FString Kind,Place;bool bPointed=false;bool IsSet() const{return Night>0&&!Kind.IsEmpty()&&!Place.IsEmpty();}};
+ const FLead& Lead() const{return Tonight;}
+ // Which of a night's draws it is: a landing before a carcass before a missing man's pickup, a camper, a stuck driver. Empty: none.
+ static FString LeadKindOf(const TMap<FString,double>& Drawn);
+ // Whether it may start at its drawn place with the player this far off (road-local metres, under 0: no player). Never on top of
+ // the player; once a slip has pointed there (bPointed) it is held to, however far off that is.
+ static bool LeadFits(double Away,double MinM,double MaxM,bool bPointed);
+ // What is out there tonight for a bearing to point at: what has come already and nobody has been out to (where it stands), or the
+ // one still to come (bAhead; where it will be). Event: its id in director.json, for the tier. False: nothing real tonight.
+ bool OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const;
+ // A slip pointed at the one still to come: it is held to its place, and waits out the night for its chance.
+ void PointedTonight(int32 Night);
+
  // M7, the first big night (Tom, 9 November: «Det må skje noe stort natt to eller tre», S47BigNight.cpp). Once in a game, on the
  // second or third night (the seed's), after two: the whole array turns by itself to one point low on the horizon while the power
  // flickers, every instrument in the rack goes off at once, a low note comes up through the ground, and for a few seconds something
@@ -241,6 +259,9 @@ private:
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
+ // CHAIN-1-20261109: tonight's lead (above), and its draw at the end of PlanTonight.
+ FLead Tonight;
+ void DrawLead(int32 Night);
  // The night's own pace: one at x1 in play; F10's natural night runs its minutes at its speed, so what lasts is measured in the
  // night's minutes and not in seconds of the screen (critics, 8 November: at x30 a figure held the ground for twenty hours).
  double NightPace() const;
@@ -358,6 +379,8 @@ private:
  void UseHumor();
  // ---- the world ----
  FSpot Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt,bool bSameArea=false) const;
+ // CHAIN-1-20261109: the lead's own place for the event that is tonight's lead, when it fits (LeadFits). Not set: draw as before.
+ FSpot LeadSpot(const FString& Kind,double MinM,double MaxM) const;
  void UsedPlace(const FString& Place,const FString& Kind) const;
  bool PlayerRoad(double& X,double& Z) const;
  bool WorldOf(double RoadX,double RoadZ,FVector& Out) const;

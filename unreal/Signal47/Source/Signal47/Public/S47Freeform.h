@@ -488,6 +488,9 @@ public:
  bool HasPowerForReactiveLight() const { return HasPower(); }
  void SetAnomaly(bool bValue);
  bool Anomaly() const { return bAnomaly; }
+ // CHAIN-1-20261109: something is out on the land tonight that a bearing may still point at (FS47Happenings::OutTonight): the
+ // pulsar card run tonight then shows a discrepancy by itself, and registering it prints the slip toward that place.
+ bool OutThereTonight() const;
  void SetPhenomenon(const FString& Id) { PhenomenonId=Id; Changed(); }
  const FString& Phenomenon() const { return PhenomenonId; }
  int32 SelectedJob() const { return FieldFocus>=0?-1:Selected; }
