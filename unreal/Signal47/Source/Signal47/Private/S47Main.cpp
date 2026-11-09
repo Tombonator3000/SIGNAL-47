@@ -1,5 +1,6 @@
 #include "S47Main.h"
 #include "S47TripoCreature.h"
+#include "S47EyeGlint.h"
 #include "S47Sky.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
@@ -201,7 +202,7 @@ void US47Main::Step(double Dt)
 	}
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
-	if (Player) FS47TripoCreature::StepEyeGlints(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
+	if (Player) S47EyeGlint::Step(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
 	if (!bFree && SaroNight && !bOpening) SaroNight->Frame(Dt);
 	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower

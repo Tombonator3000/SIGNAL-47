@@ -7,88 +7,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "ReferenceSkeleton.h"
 #include "Misc/CommandLine.h"
-
-namespace
-{
- TArray<TWeakObjectPtr<UStaticMeshComponent>> AllGlints;
- // Rest position of a dot in the head bone's frame, the bone-frame directions of the body's sideways and up axes, and a
- // seed shared by both eyes of one creature so they look the same way together.
- struct FGlintRest { FVector Base,Side,Up; uint32 Seed; };
- TMap<TWeakObjectPtr<UStaticMeshComponent>,FGlintRest> GlintRest;
- uint32 NextGlintSeed=1;
- // A repeatable 0..1 number from a seed and a time slot.
- double Rand01(uint32 Seed,int64 Slot,uint32 Salt){return double((HashCombineFast(HashCombineFast(Seed,GetTypeHash(Slot)),Salt*2654435761u)>>8)&0xFFFFu)/65536.;}
-}
-bool FS47TripoCreature::bTestGlintsAlways=false;
-void FS47TripoCreature::StepEyeGlints(const FVector& EyeUE, double Daylight)
-{
- // A dot of a fixed size falls under one pixel past a few metres, so it holds a small width on screen. It belongs
- // to the dark and to near distances: gone by day and fully out at 50 m, fading from 30 m.
- static constexpr double PerMetre=.0018,FadeFrom=30.,GoneAt=50.,Glow=3.;
- const double Dark=bTestGlintsAlways?1.:1.-FMath::SmoothStep(.02,.25,Daylight);
- AllGlints.RemoveAll([](const TWeakObjectPtr<UStaticMeshComponent>& G){return !G.IsValid();});
- for(auto It=GlintRest.CreateIterator();It;++It)if(!It.Key().IsValid())It.RemoveCurrent();
- for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())
- {
-  const double Metres=FVector::Dist(EyeUE,G->GetComponentLocation())/100.;
-  const double Level=Dark*(1.-FMath::SmoothStep(FadeFrom,GoneAt,Metres));
-  const bool bShow=Level>.01;
-  if(G->bHiddenInGame==bShow)G->SetHiddenInGame(!bShow);
-  if(!bShow||!G->IsVisible())continue;
-  double Size=FMath::Max(EyeSize,Metres*PerMetre);
-  // A gaze: now and then a sudden small jump of both dots inside the eye, and a rare quick blink. Not needed past 12 m.
-  if(const FGlintRest* R=GlintRest.Find(G))
-  {
-   FVector At=R->Base;
-   if(Metres<12.&&G->GetWorld())
-   {
-    const double T=G->GetWorld()->GetTimeSeconds();
-    const int64 Look=int64(FMath::FloorToDouble(T/(.7+1.3*Rand01(R->Seed,0,1))));
-    const double Reach=.35*(1.-FMath::SmoothStep(8.,12.,Metres));
-    At+=(R->Side*(Rand01(R->Seed,Look,2)*2.-1.)+R->Up*(Rand01(R->Seed,Look,3)*2.-1.))*Reach;
-    const double Gap=7.,InGap=FMath::Fmod(T,Gap);const int64 Round=int64(FMath::FloorToDouble(T/Gap));
-    if(Rand01(R->Seed,Round,4)<.7&&InGap>Gap*.15+Rand01(R->Seed,Round,5)*Gap*.7&&InGap<Gap*.15+Rand01(R->Seed,Round,5)*Gap*.7+.13)Size*=.08;
-   }
-   if(!At.Equals(G->GetRelativeLocation(),KINDA_SMALL_NUMBER))G->SetRelativeLocation(At);
-  }
-  G->SetWorldScale3D(FVector(Size));
-  if(auto* Mat=Cast<UMaterialInstanceDynamic>(G->GetMaterial(0)))Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*float(Glow*Level));
- }
-}
-
-int32 FS47TripoCreature::ShownEyeGlints()
-{
- int32 N=0;
- for(const auto& Weak:AllGlints)if(auto* G=Weak.Get())if(G->IsVisible()&&!G->bHiddenInGame)++N;
- return N;
-}
-
-// A pinprick of light in each big black eye: it reads in the dark before the rest of the face does. Children of the
-// head bone, so they turn with it and hide with the body.
-void FS47TripoCreature::AddEyeGlints(AS47Web* W, UPoseableMeshComponent* C)
-{
- auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
- auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
- if(!Sphere||!Base)return;
- const FTransform Head=C->GetBoneTransform(C->GetBoneIndex(TEXT("head")),FTransform::Identity);
- const uint32 Seed=NextGlintSeed++*7919u;
- for(int32 I=0;I<2;++I)
- {
-  auto* Mat=UMaterialInstanceDynamic::Create(Base,W);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1,1,1)*3.f);Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
-  auto* G=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("%sGlint%d"),*C->GetName(),I));
-  G->SetMobility(EComponentMobility::Movable);G->SetupAttachment(C,TEXT("head"));G->SetStaticMesh(Sphere);G->SetMaterial(0,Mat);
-  G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetCastShadow(false);G->SetVisibility(false);
-  // A point seen, not a lamp: it gives no light to what is around it.
-  G->bAffectDynamicIndirectLighting=false;G->bAffectDistanceFieldLighting=false;G->SetVisibleInRayTracing(false);
-  G->RegisterComponent();
-  // Component space (the body faces +Y, Z up) into the head bone's own frame.
-  const FVector Target=Head.GetLocation()+FVector(I?EyeAt.X:-EyeAt.X,EyeAt.Y,EyeAt.Z);
-  G->SetRelativeLocation(Head.InverseTransformPosition(Target));
-  G->SetWorldScale3D(FVector(EyeSize));
-  Glints.Add(G);AllGlints.Add(G);
-  GlintRest.Add(G,{G->GetRelativeLocation(),Head.InverseTransformVector(FVector(1,0,0)),Head.InverseTransformVector(FVector(0,0,1)),Seed});
- }
-}
+#include "S47EyeGlint.h"
 
 bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString& Name, const TCHAR* AssetPath)
 {
@@ -121,11 +40,11 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetGenerateOverlapEvents(false);
  C->SetCanEverAffectNavigation(false); C->SetCastShadow(true); C->BoundsScale=1.35f;
  C->SetVisibility(false); C->RegisterComponent(); Mesh=C;
- if (Worn==TEXT("SK_Tripo_Roswell")) AddEyeGlints(W,C);
- else if (Worn==TEXT("SK_Tripo_PaleOne")||Worn==TEXT("SK_Tripo_TallOne")||Worn==TEXT("SK_Tripo_Roswell2"))
+ // Every alien body has the faint dot in each eye, where its own eyes were measured (S47EyeGlint).
+ if (const S47EyeGlint::FEyes* Eyes=S47EyeGlint::For(Worn)) S47EyeGlint::Add(W,C,*Eyes,Glints);
+ if (Worn==TEXT("SK_Tripo_PaleOne")||Worn==TEXT("SK_Tripo_TallOne")||Worn==TEXT("SK_Tripo_Roswell2"))
  {
   const bool bPale=Worn==TEXT("SK_Tripo_PaleOne"),bTall=Worn==TEXT("SK_Tripo_TallOne");
-  EyeAt=bPale?S47KindBody::PaleOneEyeAt:bTall?S47KindBody::TallOneEyeAt:S47KindBody::RoswellEyeAt;AddEyeGlints(W,C);
   // The climb and the jump take the bones far from the root.
   C->BoundsScale=2.f;
   Clips=FS47ClipBank::For(Asset,*this,bPale?S47KindBody::PaleOneClips:bTall?S47KindBody::TallOneClips:S47KindBody::RoswellClips);

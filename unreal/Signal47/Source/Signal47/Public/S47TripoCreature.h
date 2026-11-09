@@ -12,22 +12,19 @@ class US47Main;
 namespace S47CreaturePreview { void Start(US47Main* M); }
 
 // Tom's Tripo bodies of 7 November and what they replace. Licensed lies outside Git: FS47TripoCreature::Build wears the old
-// one in a build without the new, with one line in the log. Eyes: component centimetres from the head bone, half the
-// spacing, forward, up, measured on the model (Tools/triponpcs/prepare_pale_one.py). Story's pale is none of these.
+// one in a build without the new, with one line in the log. Where each body's eyes are: S47EyeGlint, measured per body with
+// Tools/triponpcs/measure_eyes.py. Story's pale is none of these.
 namespace S47KindBody
 {
  inline constexpr const TCHAR* Old=TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale");
  inline constexpr const TCHAR* Pale=TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_PaleOne.SK_Tripo_PaleOne");
  inline constexpr const TCHAR* Crab=Pale; // until it has crab clips of its own
  inline constexpr const TCHAR* PaleOneClips=TEXT("/Game/Licensed/TripoNPC/Animated/A_PaleOne_");
- inline const FVector PaleOneEyeAt(5.7,12.3,.8);
  inline constexpr const TCHAR* Tall=TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_TallOne.SK_Tripo_TallOne");
  inline constexpr const TCHAR* TallOneClips=TEXT("/Game/Licensed/TripoNPC/Animated/A_TallOne_");
- inline const FVector TallOneEyeAt(5.65,10.6,4.2);
  inline constexpr const TCHAR* OldRoswell=TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell");
  inline constexpr const TCHAR* Roswell=TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell2.SK_Tripo_Roswell2");
  inline constexpr const TCHAR* RoswellClips=TEXT("/Game/Licensed/TripoNPC/Roswell/A_Roswell2_");
- inline const FVector RoswellEyeAt(6.,10.9,4.4);
 }
 
 namespace S47Roswell
@@ -46,15 +43,8 @@ namespace S47Roswell
 struct FS47TripoCreature
 {
  TWeakObjectPtr<UPoseableMeshComponent> Mesh;
+ // The dot in each eye (S47EyeGlint), children of the head bone: they turn with it and hide with the body.
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Glints;
- // Where the eyes sit on this body, component centimetres from the head bone, and the dot's smallest scale.
- // The default is the Roswell's; Build sets another body's own.
- static constexpr double EyeSize=.0042;
- FVector EyeAt=FVector(4.9,12.3,3.9);
- static bool bTestGlintsAlways;
- void AddEyeGlints(class AS47Web* W, UPoseableMeshComponent* C);
- static void StepEyeGlints(const FVector& EyeUE, double Daylight);
- static int32 ShownEyeGlints();
  TArray<FTransform> Rest;
  TArray<int32> Parents;
  TArray<FName> Names;

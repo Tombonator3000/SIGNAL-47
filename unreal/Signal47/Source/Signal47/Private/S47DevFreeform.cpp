@@ -161,6 +161,7 @@ void FS47DevFreeform::ClearRunning()
  if(M->HighwayUfo&&M->HighwayUfo->Busy()){M->HighwayUfo->CancelForTest();if(DevRun())M->HighwayUfo->Begin(nullptr);}
  if(M->SkyVisitors)M->SkyVisitors->DevFormationStop();
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
+ if(EyeGlintClear)EyeGlintClear();
  S47FloodProbe::StopLive(M);
  if(F->Happenings)F->Happenings->DevClear(false);
  // M2's made-up presences and silences (S47OmenDev.cpp)
@@ -1384,6 +1385,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWeather(E);
  AddPhysics(E);
  AddLooks(E);
+ AddEyeGlint(E);
  AddReach(E);
 }
 
