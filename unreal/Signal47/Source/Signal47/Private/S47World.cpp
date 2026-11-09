@@ -2491,7 +2491,7 @@ void US47World::ReconcileFarm(bool bEnabled)
     };
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
-     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue;
+     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
      Solid(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
     }
     if(Id==TEXT("saro"))

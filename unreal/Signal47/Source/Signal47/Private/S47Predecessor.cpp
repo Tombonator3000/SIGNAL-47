@@ -5,6 +5,7 @@
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47TownUse.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -706,6 +707,8 @@ bool FS47Predecessor::UsePhone()
  const bool bWard=WardAvailable();
  if(!bWard)Rows.Add(Para(TEXT("A note under the card: \"Dr. Ward's office takes calls from 08:00 to 21:00. Anything urgent goes on the slip and waits for the morning.\""),760.f,true));
  Rows.Add(S47Kit::Button(bWard?FString(TEXT("Dr. Ward, duty officer")):FString(TEXT("Dr. Ward, duty officer / office closed until 08:00")),[this,Guard]{if(Guard.IsValid()&&WardAvailable())ShowTalk(TEXT("ward"),FString());},false,bWard));
+ // TOWN-USE-20261108: Caliche's station takes tips on its request line, any hour (S47TownUse, FS47RadioTips).
+ if(M->Freeform&&M->Freeform->TownUse)Rows.Add(S47Kit::Button(TEXT("1420 AM, the request line in Caliche"),[this,Guard]{if(Guard.IsValid()&&M&&M->Freeform&&M->Freeform->TownUse)M->Freeform->TownUse->OpenRadio(true);}));
  Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO OPERATIONS LINE"),S47Kit::Col(Rows),760));
  return true;

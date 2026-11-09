@@ -14,6 +14,7 @@
 #include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
+#include "S47TownUse.h"
 #include "S47UI.h"
 #include "S47FieldLife.h"
 #include "S47Walker.h"
@@ -320,6 +321,8 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   const FString Where=D.Title;
   Rows.Add(S47Kit::Button(TEXT("Leave the trip camera here until morning"),[this,F,Where]{F->TripCamera->SetHere(Where,false);if(M->UI)M->UI->Close(true);}));
  }
+ // Salt or range cubes from the Feed & Seed, set out here, and what came to them (TOWN-USE-20261108, S47TownUse).
+ if(F->TownUse&&FString(D.Id)!=Motel)F->TownUse->LureRows(D.Id,Rows);
  M->UI->Open(S47Kit::Shell(M->UI,FString(D.Title).ToUpper(),S47Kit::Col(Rows),760));
 }
 bool FS47Places::Use(const FString& Id)

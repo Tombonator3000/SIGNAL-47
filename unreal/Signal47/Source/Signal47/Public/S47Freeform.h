@@ -182,6 +182,10 @@ public:
  // The box at the road and the post that comes to it: Ward's papers, the Ledger, the catalog and its parcels, bills (S47Mail.h).
  TSharedPtr<class FS47Mail> Mail;
  TSharedPtr<class FS47RadioTips> Tips;
+ // M4: Caliche's counters (1420 AM's tips and parts, the Feed & Seed, the souvenir shop), TOWN-USE-20261108: S47TownUse.h. And the
+ // temporary boxes where new buildings will stand (the trailer park, the school, the Grange hall), NEW-PLACES-20261108: S47TownSites.h.
+ TSharedPtr<class FS47TownUse> TownUse;
+ TSharedPtr<class FS47TownSites> TownSites;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;
