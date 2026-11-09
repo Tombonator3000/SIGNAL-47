@@ -8,7 +8,8 @@ import unreal
 
 
 ROOT = Path(os.environ.get('S47_TRIPO_STATIC_DIR', str(Path.home() / 'Documents/ChatGPT/Signal 47/modeller/tripo-npc-2026-10-29/unreal-static-2026-10-30')))
-DEST = '/Game/Licensed/TripoNPC'
+# TripoNew (9 November) uses the same importer with its own folder: S47_TRIPO_DEST=/Game/Licensed/TripoNew (Tools/triponew/run.py).
+DEST = os.environ.get('S47_TRIPO_DEST', '/Game/Licensed/TripoNPC')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'fieldintegration'))
 import import_recipe as R
 
