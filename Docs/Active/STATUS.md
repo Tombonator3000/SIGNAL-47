@@ -4,7 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 01:33, nattskift: M1–M3, kritikk 2, HUD D, lagring på SARO
+## Installert 9. november kl. 04:34, nattskift: M4 folk og steder, M5 vær, tretthet og fysikk, kritikk 3
+
+`da2b5ece` på `claude/m4-20261109` (PR #508 åpen, venter på Tom). Selvtest 3389 i pakken og installert; F10: Town 16/16, Townsfolk 7/7, Visitors 8/8, Motel 6/6, Weather 13/13, Physics 10/11. Tilbakerulling: `d32` (`16f33ecd`) og `d31`.
+
+Nytt: midlertidige bokser for trailerpark, skole, Grange-hall og Baca; 1420 AM, Feed & Seed og suvenirsjappa med funksjon; fire byfolk som sladrer og kan forsvinne; Eloy Baca, Sky Watch og militæret (rydder synlig); motellnatt uten lagring; vær etter `S47Weather` (sandstorm, byge, dis) som stemmer med avisa; tretthet med kaffe og søvn; plukke, bære og kaste med støy som lokker; feltseng på SARO. Kritikk 3 (4–6,5/10, 35 funn) rettet. Kjent: steinlokket virker i selvtest, men ikke i F10-prøven; bygen er en første versjon. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 01:33, nattskift: M1–M3, kritikk 2, HUD D, lagring på SARO
 
 `16f33ecd` etter PR506. Selvtest 3275 i pakken, normalreisen, regresjon 251, livsprøve 64, postprøve 35; 154 uendrede Saved-filer. Tilbakerulling: `d31` (`ca0822e5`) og `d30`.
 
