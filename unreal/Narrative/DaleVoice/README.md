@@ -6,7 +6,9 @@ Dale: sint tysker i 50-årene med tung aksent, brå, hes og utålmodig. Temperam
 
 ## Status
 
-Forberedt, ikke generert. Ingen profil er laget i VoiceStudio og ingen take finnes. Alt som bruker GPU, venter til Tom ikke spiller. Lytting, aksent, alder og rolletroverdighet er **UNVERIFIED**.
+Valgt 9. november: `dale_de_design` (VoiceStudio `e19d9024`), festet som `profiles.dale`. Alle 139 replikker er laget og består teknisk (`verification.json` PASS). ASR treffer 123 av 139 eksakt etter normalisering. 8 avvik er godtatt (stedsnavn, homofoner og tyske ord), og 8 er uløste i `asr-review.json`. Navnet Ward høres ofte som «what» eller «towards» fordi aksenten gjør W til V. Lytting, aksent, alder og rolletroverdighet er **UNVERIFIED**.
+
+GPU-arbeid kjøres bare med `session.py`. Den tar motorreservasjonen, starter VoiceStudio, lager og kontrollerer takes, stopper serveren (ca. 5 GB VRAM) og slipper først da reservasjonen.
 
 ## Kandidater
 

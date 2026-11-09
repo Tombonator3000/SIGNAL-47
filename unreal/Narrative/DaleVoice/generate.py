@@ -37,7 +37,6 @@ BASE_PATH = NARRATIVE / 'EveningShift/voice/generate.py'
 CASTING = NARRATIVE / 'EveningShift/voice/casting.json'
 CREATED = HERE / 'profiles.json'
 CACHE = Path.home() / '.cache/signal47-dale-voice'
-BUSY_PROCESSES = ('Signal47', 'UnrealEditor', 'UnrealEditor-Cmd')
 
 
 def take_voice(argv):
@@ -85,13 +84,27 @@ def manifest_cues():
             for e in manifest['lines'] if e['status'] == 'voice']
 
 
+def busy_process():
+    """The game, or a live Unreal editor or commandlet (the kernel cuts names to 15 characters:
+    UnrealEditor-Cmd is seen as UnrealEditor-Cm). Zombies left behind by a finished job do not count."""
+    listing = subprocess.run(['ps', '-eo', 'stat=,comm='], capture_output=True, text=True).stdout
+    for row in listing.splitlines():
+        stat, _, comm = row.strip().partition(' ')
+        comm = comm.strip()
+        if stat.startswith('Z'):
+            continue
+        if comm == 'Signal47' or comm.startswith('UnrealEditor'):
+            return comm
+    return None
+
+
 def refuse_while_busy(argv):
     if '--sync' in argv:
         return
-    for name in BUSY_PROCESSES:
-        if subprocess.run(['pgrep', '-x', name], capture_output=True).returncode == 0:
-            print(f'ReservationBusy: {name} is running; no GPU work while Tom plays or Unreal works', file=sys.stderr)
-            raise SystemExit(75)
+    name = busy_process()
+    if name:
+        print(f'ReservationBusy: {name} is running; no GPU work while Tom plays or Unreal works', file=sys.stderr)
+        raise SystemExit(75)
 
 
 VOICE, sys.argv = take_voice(sys.argv)

@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "note_nb": "Vurderte ASR-avvik for konkrete lydfiler (sha256). Ny lyd for en cue ugyldiggjør vurderingen. Automatisk transkripsjon er ikke menneskelig lytting. Tysk W som V gjør at navnet Ward høres som «what»/«towards» for ASR; det er aksenten, men må lyttes på.",
+  "cues": {
+    "D31_TAPE_002": {
+      "sha256": "0ea3c3f356fe60e29895b5c2223f3d6670169e2ae49e9c4885dd1ee0d097cef8",
+      "verdict": "accepted: homophone pole/poll, as in the Evening pack's D31_TAPE_002; all other words exact."
+    },
+    "D41_FIELD_WALKIE_004": {
+      "sha256": "59c95280752c98fa24511edad17190d0239701af9942ad14b7cff0ac0b5e2f0a",
+      "verdict": "accepted: station name SARO transcribed as 'Zaro'."
+    },
+    "FF_PHONE_hours_1": {
+      "sha256": "69a1e10e8e44928e242874e664890a6454b8372c3b6180ba628573778c85d907",
+      "verdict": "accepted: German 'Nein' transcribed as English 'nine'; all other words exact."
+    },
+    "FF_BARK_hole": {
+      "sha256": "1e27bf1246597f2004e8febd38b8487945b77e26d94528214f7fd5a31562ade6",
+      "verdict": "accepted: German 'Mensch' transcribed as 'Mench'."
+    },
+    "FF_BARK_post": {
+      "sha256": "1d47807c568f1afab5e138824990433b051a5d7145e72ab3b34567e3bab4831b",
+      "verdict": "accepted: place name Caliche transcribed as 'Kallig'."
+    },
+    "FF_BARK_away": {
+      "sha256": "e18e34dafe9dc73b67601a961e2d07bd478a703ae934b3ee0b1ca09d2d89182a",
+      "verdict": "accepted: place name Caliche transcribed as 'Kallich'."
+    },
+    "FF_BARK_copter": {
+      "sha256": "d8e38887f6486585dffe556b0b42af662dd80ea41d445fd2fe3fc0dcb2f9b608",
+      "verdict": "accepted: homophone county's/counties; all other words exact."
+    },
+    "FF_WALKIE_hail": {
+      "sha256": "c4d8897586cd4fa23d083e45802cba17ded562301a9750b676fa2d212d9004db",
+      "verdict": "accepted: homophone night/knight, SARO as 'Saro'."
+    },
+    "D31_WARD_001": {
+      "sha256": "c7b02d32291bec912293aac8cef07f69aca2d345deae115538dfe332c02f4bee",
+      "verdict": "unresolved: 'Ward wants' heard as 'What once' (German W as V); seed 42-44 had one edit, seed 47 three: retake at 42 in the next GPU window, then listen."
+    },
+    "FF_BARK_twice": {
+      "sha256": "e2ccfbf2a544c56e0f9db1a619b17ca98127bd32983846bb10980211d951be20",
+      "verdict": "unresolved: 'Ward told me' heard as 'what told me' (German W), nights/knights; seed 43 had one edit: retake at 43 in the next GPU window, then listen."
+    },
+    "FF_BARK_near": {
+      "sha256": "abf627b1bf3fd8b9c38f81f90c8c8594ea6000b06d03657a16099029da515a33",
+      "verdict": "unresolved: 'to Ward's' heard as 'towards' (German W); every seed 42-47 the same: listen for whether the name is clear."
+    },
+    "FF_BARK_week4": {
+      "sha256": "2e3cdc9bde4f3717222cb7abc17d753a8d154321d809584ff3238bd7f5c6af21",
+      "verdict": "unresolved: 'to Ward's' heard as 'towards' (German W); every seed the same: listen."
+    },
+    "FF_BARK_tag": {
+      "sha256": "cb2ed6e32a0c866f80e98560b246a76c739cc1e98ff3f22083a017d1a3e7c92d",
+      "verdict": "unresolved: 'tags' heard as 'text' in seeds 42-47: listen."
+    },
+    "FF_BARK_halfway": {
+      "sha256": "681ff5694e6d60cafcc8334f09bd61cf0c83d0a6fa528b22ffe6c78586739f80",
+      "verdict": "unresolved: 'Mend something' heard as 'meant something' in seeds 42-47: listen."
+    },
+    "FF_WALKIE_late_out": {
+      "sha256": "3f7828fdc7abb8cdc995d1d7539c7e0fe09d36849d7cab09c6961dba6e41afa6",
+      "verdict": "unresolved: 'Dale out' heard as 'they're loud'; seed 42 had one edit, seed 47 three: retake at 42 in the next GPU window, then listen."
+    },
+    "FF_BIG_HailFirst": {
+      "sha256": "1d6c4d8a137fe483705a429c973dde645dc9c794491eef5901a0931c9b6ad639",
+      "verdict": "unresolved: SARO heard as 'Saddle' (best of seeds 42-47): listen."
+    }
+  }
+}

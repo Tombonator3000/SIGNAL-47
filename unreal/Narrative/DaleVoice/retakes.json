@@ -1,0 +1,720 @@
+{
+  "version": 1,
+  "cues": {
+    "D01_HANDOVER_001": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Ray-Eyes, Dale, the logbook should be in front of you.'",
+          "utc": "2026-11-09T13:23:21.411258+00:00"
+        }
+      ]
+    },
+    "D01_BRIEF_006": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: \"You can reach me on the service line. If something doesn't fit the lock, call before you throw anything away.\"",
+          "utc": "2026-11-09T13:34:05.807755+00:00"
+        }
+      ]
+    },
+    "D11_POWER_PHONE_003": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'The junction station is down the short gravel turn-off. Leave the truck outside the service gate.'",
+          "utc": "2026-11-09T13:34:09.812321+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'The junction station is down the short gravel turn-off. Leave the truck outside the service gate.'",
+          "utc": "2026-11-09T13:34:12.718477+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'The junction station is down the short gravel turn-off. Leave the truck outside the service gate.'",
+          "utc": "2026-11-09T13:34:15.653351+00:00"
+        }
+      ]
+    },
+    "D31_WARD_001": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: \"Ward wants a result somebody else can repeat. She's right too.\"",
+          "utc": "2026-11-09T13:34:19.470799+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"Ward wants a result somebody else can repeat. She's right too.\"",
+          "utc": "2026-11-09T13:34:22.099902+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Ward wants a result somebody else can repeat. She's right too.\"",
+          "utc": "2026-11-09T13:34:24.746728+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: \"What once a result, somebody else can repeat. She's right too.\"",
+          "utc": "2026-11-09T13:34:27.291189+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: \"Ward wants a result somebody else can repeat. She's right too.\"",
+          "utc": "2026-11-09T13:34:29.963506+00:00"
+        }
+      ]
+    },
+    "D31_WARD_002": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'I had clippings, bad frames and people who remember different nights.'",
+          "utc": "2026-11-09T13:34:33.292988+00:00"
+        }
+      ]
+    },
+    "D31_TAPE_002": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'The patch could be a recording fault. The poll gives you a fixed reference.'",
+          "utc": "2026-11-09T13:34:36.675602+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'The patch could be a recording fault. The poll gives you a fixed reference.'",
+          "utc": "2026-11-09T13:34:39.360863+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'The patch could be a recording fault. The poll gives you a fixed reference.'",
+          "utc": "2026-11-09T13:34:42.071158+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'The patch could be a recording fault, the poll gives you a fixed reference.'",
+          "utc": "2026-11-09T13:34:44.740129+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'The patch could be a recording fault. The poll gives you a fixed reference.'",
+          "utc": "2026-11-09T13:34:47.536800+00:00"
+        }
+      ]
+    },
+    "D41_FIELD_WALKIE_002": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You check the ordinary supply, the backup and the indicator.'",
+          "utc": "2026-11-09T13:34:51.243558+00:00"
+        }
+      ]
+    },
+    "D41_FIELD_WALKIE_003": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Good, write down every check you made, keep that separate from what you think cost it.'",
+          "utc": "2026-11-09T13:34:54.622698+00:00"
+        }
+      ]
+    },
+    "D41_FIELD_WALKIE_004": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Bring the record back to sorrow, Ward will need to read it.'",
+          "utc": "2026-11-09T13:34:58.354641+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Bring the record back to sorrow. What will need to read it?'",
+          "utc": "2026-11-09T13:35:01.556788+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Bring the record back to Zaro. What we'll need to read it.\"",
+          "utc": "2026-11-09T13:35:04.600998+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Bring the record back to Zaro. Ward will need to read it.'",
+          "utc": "2026-11-09T13:35:07.269931+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Bring the record back to sorrow, Ward will need to read it.'",
+          "utc": "2026-11-09T13:35:09.898851+00:00"
+        }
+      ]
+    },
+    "D51_LAST_PHONE_001": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: \"Ray Yies, I'm here.\"",
+          "utc": "2026-11-09T13:35:13.374382+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"Ray guys, I'm here.\"",
+          "utc": "2026-11-09T13:35:15.630074+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Rey Yass, I'm here.\"",
+          "utc": "2026-11-09T13:35:17.935468+00:00"
+        }
+      ]
+    },
+    "D51_LAST_PHONE_003": {
+      "seed": 46,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: \"Give word what you've actually checked. Leave the rest marked uncertain.\"",
+          "utc": "2026-11-09T13:35:21.128230+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"Give word what you've actually checked. Leave the rest marked uncertain.\"",
+          "utc": "2026-11-09T13:35:23.850250+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Give word what you've actually checked. Leave the rest marked uncertain.\"",
+          "utc": "2026-11-09T13:35:26.657222+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: \"Give word what you've actually checked. Leave the rest marked uncertain.\"",
+          "utc": "2026-11-09T13:35:29.509301+00:00"
+        }
+      ]
+    },
+    "FF_PHONE_reyes_2": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'I said no. Is this the service line? Then you asked me about service.'",
+          "utc": "2026-11-09T13:35:33.166222+00:00"
+        }
+      ]
+    },
+    "FF_PHONE_list_3": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Leaf them.'",
+          "utc": "2026-11-09T13:35:36.751142+00:00"
+        }
+      ]
+    },
+    "FF_PHONE_hours_1": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You wrote down when it starts, when it stops. Then you have two numbers, which is two more than you had. 9. I do not want to hear what you think it was.'",
+          "utc": "2026-11-09T13:35:39.996120+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'You wrote down when it starts, when it stops. Then you have two numbers, which is two more than you had. Nine. I do not want to hear what you think it was.'",
+          "utc": "2026-11-09T13:35:43.624892+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'You wrote down when it starts, when it stops. Then you have two numbers, which is two more than you had. Nine, I do not want to hear what you think it was.'",
+          "utc": "2026-11-09T13:35:47.249987+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'You wrote down when it starts when it stops then you have two numbers, which is two more than you had nine I do not want to hear what you think it was.'",
+          "utc": "2026-11-09T13:35:50.818934+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'You wrote down when it starts, when it stops, then you have two numbers, which is two more than you had. Nine. I do not want to hear what you think it was.'",
+          "utc": "2026-11-09T13:35:54.427257+00:00"
+        }
+      ]
+    },
+    "FF_PHONE_eat_1": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Because the telephone rings. What kind of question is it? Somebody at that station calls at night and somebody picks up. That is how it is supposed to work.'",
+          "utc": "2026-11-09T13:35:59.134791+00:00"
+        }
+      ]
+    },
+    "FF_BARK_tag": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You are out on my survey now? Nobody asked you. You read the text, you do not add to them. Dale out.'",
+          "utc": "2026-11-09T13:36:03.569314+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'You are out on my survey now? Nobody asked you. You read the text, you do not add to them. Dale out.'",
+          "utc": "2026-11-09T13:36:06.421663+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'You are out on my survey now? Nobody asked you. You read the text, you do not add to them. Dale out.'",
+          "utc": "2026-11-09T13:36:09.278898+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'You are out on my survey now? Nobody asked you. You read the text. You do not add to them. Dale out.'",
+          "utc": "2026-11-09T13:36:12.230866+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'You are out on my survey now? Nobody asked you. You read the text. You do not add to them. Dale out.'",
+          "utc": "2026-11-09T13:36:15.120758+00:00"
+        }
+      ]
+    },
+    "FF_BARK_branch": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You mended a branch. I looked at the line from here. It is a clean joint. That is the first thing anyone has done right out there since April. Do not get used to me saying it.'",
+          "utc": "2026-11-09T13:36:19.012692+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'You mended a branch. I looked at the line from here. It is a clean joint. That is the first thing anyone has done right out there since April. Do not get used to me saying it.'",
+          "utc": "2026-11-09T13:36:22.922983+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'You mended a branch. I looked at the line from here. It is a clean joint. That is the first thing anyone has done right out there since April. Do not get used to me saying it.'",
+          "utc": "2026-11-09T13:36:27.008165+00:00"
+        }
+      ]
+    },
+    "FF_BARK_filed10": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: '10 jobs war told me I did not ask her to, it is almost confident, keep going.'",
+          "utc": "2026-11-09T13:36:31.763412+00:00"
+        }
+      ]
+    },
+    "FF_BARK_hole": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Your log has a hole in it, you put a time on each end of it in ink and then you call me, not before a mensch.'",
+          "utc": "2026-11-09T13:36:35.639034+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Your lock has a hole in it. You put a time on each end of it in ink and then you call me, not before a mensch.'",
+          "utc": "2026-11-09T13:36:38.967370+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Your log has a hole in it. You put a time on each end of it in ink and then you call me. Not before mench.'",
+          "utc": "2026-11-09T13:36:41.997767+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Your lock has a hole in it, you put a time on each end of it in ink and then you call me, not before a mensch.'",
+          "utc": "2026-11-09T13:36:44.996267+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Your log has a hole in it. You put a time on each end of it in ink and then you call me, not before Mench.'",
+          "utc": "2026-11-09T13:36:47.982741+00:00"
+        }
+      ]
+    },
+    "FF_BARK_twice": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Twice now, war told me, one more and they give your knights to somebody else. After dark you stay in the building.'",
+          "utc": "2026-11-09T13:36:51.927091+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Twice now. Ward told me. One more and they give your knights to somebody else. After dark you stay in the building. Verstanden?'",
+          "utc": "2026-11-09T13:36:55.241485+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Twice now, war told me. One more and they give your knights to somebody else, after dark you stay in the building. Verstanden?'",
+          "utc": "2026-11-09T13:36:58.545087+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Twice now, Ward told me. One more and they give your knights to somebody else. After dark you stay in the building. Verstanden?'",
+          "utc": "2026-11-09T13:37:02.002824+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Twice now. Ward told me. One more and they give your knights to somebody else. After dark you stay in the building. Verstanden?'",
+          "utc": "2026-11-09T13:37:05.161643+00:00"
+        }
+      ]
+    },
+    "FF_BARK_near": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Three days towards assessment. She reads numbers. I have seen your numbers. Stop looking out the window and file something.'",
+          "utc": "2026-11-09T13:37:09.746706+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Three days towards assessment. She reads numbers. I have seen your numbers. Stop looking out the window and file something.'",
+          "utc": "2026-11-09T13:37:12.836918+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Three days towards assessment. She reads numbers. I have seen your numbers. Stop looking out the window and file something.'",
+          "utc": "2026-11-09T13:37:15.936512+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Three days towards assessment. She reads numbers. I have senior numbers. Stop looking out the window and file something.'",
+          "utc": "2026-11-09T13:37:19.037854+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Three days towards assessment. She reads numbers. I have seen your numbers. Stop looking out the window and file something.'",
+          "utc": "2026-11-09T13:37:22.134676+00:00"
+        }
+      ]
+    },
+    "FF_BARK_wagon": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'The deputy called my bench, somebody has been out at wagon 23, he says, and he has an idea who leaves that one to the county.'",
+          "utc": "2026-11-09T13:37:26.150220+00:00"
+        }
+      ]
+    },
+    "FF_BARK_post": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You are asking around Kallish after somebody who is not at their post? The county rang my bench. You are the station not the county, write what you saw.'",
+          "utc": "2026-11-09T13:37:30.687951+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'You are asking around Kallish after somebody who is not at their post? The county rang my bench. You are the station, not the county. Write what you saw.'",
+          "utc": "2026-11-09T13:37:34.496290+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'You are asking around Kališ after somebody who is not at their post. The county rang my bench. You are the station, not the county, write what you saw.'",
+          "utc": "2026-11-09T13:37:38.116430+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'You are asking around Kallish after somebody who is not at their post. The county rang my bench. You are the station, not the county. Write what you saw.'",
+          "utc": "2026-11-09T13:37:41.811219+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'You are asking around Kallig after somebody who is not at their post? The county rang my bench. You are the station, not the county. Write what you saw.'",
+          "utc": "2026-11-09T13:37:45.354703+00:00"
+        }
+      ]
+    },
+    "FF_BARK_away": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Somebody in Kallich is not at their post, the county says. People go to Berlin, people come back. You do your card and you lock the door. Dail out.'",
+          "utc": "2026-11-09T13:37:49.914556+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Somebody in Kallich is not at their post, the county says. People go to Bieland. People come back. You do your card and you lock the door. Dale out.'",
+          "utc": "2026-11-09T13:37:53.526025+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Somebody in Kalish is not at their post, the county says. People go to Bailen. People come back. You do your card and you lock the door. Dale out.'",
+          "utc": "2026-11-09T13:37:57.142627+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Somebody in Kališ is not at their post, the county says. People go to Belen, people come back, you do your card and you lock the door. Dale out.'",
+          "utc": "2026-11-09T13:38:00.788397+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Somebody in Kallich is not at their post, the county says. People go to Berlin, people come back. You do your card and you lock the door. Dale out.'",
+          "utc": "2026-11-09T13:38:04.228427+00:00"
+        }
+      ]
+    },
+    "FF_BARK_week4": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'A week towards numbers. I have shut the pool at the district. Nobody would take the other side of it. Do not make me open it again. Dale out.'",
+          "utc": "2026-11-09T13:38:08.925448+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'A week towards numbers. I have shut the pool at the district. Nobody would take the other side of it. Do not make me open it again. Dale out.'",
+          "utc": "2026-11-09T13:38:12.410853+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'A week towards numbers. I have shut the pool at the district. Nobody would take the other side of it. Do not make me open it again. Dail out.'",
+          "utc": "2026-11-09T13:38:15.746437+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'A week towards numbers. I have shut the pool at the district. Nobody would take the other side of it. Do not make me open it again. Dale out!'",
+          "utc": "2026-11-09T13:38:19.108557+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'A week towards numbers. I have shut the pool at the district. Nobody would take the other side of it. Do not make me open it again. Dale out!'",
+          "utc": "2026-11-09T13:38:22.713417+00:00"
+        }
+      ]
+    },
+    "FF_BARK_copter": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Helicopter low over the land this morning and two cars that are not the counties you did not see them. No, you write down that you did with the time.'",
+          "utc": "2026-11-09T13:38:27.031379+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Helicopter low over the land this morning and two cars that are not the counties. You did not see them. No, you write down that you did with the time.'",
+          "utc": "2026-11-09T13:38:30.590248+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Helicopter low over the land this morning and two cars that are not the counties. You did not see them. No. You write down that you did with the time.'",
+          "utc": "2026-11-09T13:38:34.127769+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Helicopter low over the land this morning and two cars that are not the counties. You did not see them. No, you write down that you did with the time.'",
+          "utc": "2026-11-09T13:38:37.788213+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Helicopter low over the land this morning and two cars that are not the counties. You did not see them. No. You write down that you did with the time.'",
+          "utc": "2026-11-09T13:38:41.272843+00:00"
+        }
+      ]
+    },
+    "FF_BARK_halfway": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Two weeks and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning, meant something.'",
+          "utc": "2026-11-09T13:38:45.748137+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Two weeks and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning, meant something.'",
+          "utc": "2026-11-09T13:38:49.308960+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Two weeks and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Men something.'",
+          "utc": "2026-11-09T13:38:53.112392+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Two weeks and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Men something.'",
+          "utc": "2026-11-09T13:38:56.717969+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Two weeks and half my array is still lying on its back. Ward reads that line first, the county second and I read it every morning. Men something.'",
+          "utc": "2026-11-09T13:39:00.208523+00:00"
+        }
+      ]
+    },
+    "FF_WALKIE_hail": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Sorrow night, this is Dale, come in.'",
+          "utc": "2026-11-09T13:39:04.560755+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Soronite, this is Dale, come in.'",
+          "utc": "2026-11-09T13:39:07.041017+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Saro Knight, this is Stale, come in.'",
+          "utc": "2026-11-09T13:39:09.430652+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Sorrow night, this is Dale, come in.'",
+          "utc": "2026-11-09T13:39:11.868527+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Sorrow night, this is Dale, come in.'",
+          "utc": "2026-11-09T13:39:14.307248+00:00"
+        }
+      ]
+    },
+    "FF_WALKIE_hours": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'You sound wrong. Both times are in the lock. Good. Tonight you stay in the building. Dale out.'",
+          "utc": "2026-11-09T13:39:17.592546+00:00"
+        }
+      ]
+    },
+    "FF_WALKIE_late_in": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'At this hour you are inside, good stay in. You do not open the door to look at anything, dail out.'",
+          "utc": "2026-11-09T13:39:21.212852+00:00"
+        }
+      ]
+    },
+    "FF_WALKIE_late_out": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'After 2 and you are outside 9, I do not want to know why. Go in now, Dale out!'",
+          "utc": "2026-11-09T13:39:24.806752+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'After 2 and you are outside? 9. I do not want to know why. Go in now. Day loud.'",
+          "utc": "2026-11-09T13:39:27.647636+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'After two in your outside? Nine. I do not want to know why. Go in now, Dale, out.'",
+          "utc": "2026-11-09T13:39:30.511124+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'After two and you are outside, nine. I do not want to know why. Go in now. Dale out.'",
+          "utc": "2026-11-09T13:39:33.340176+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'After 2 and you are outside, 9. I do not want to know why. Go in now. Dale out.'",
+          "utc": "2026-11-09T13:39:36.171681+00:00"
+        }
+      ]
+    },
+    "FF_WALKIE_array": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: \"Antenna's down and you call me? The sheet has the order. Read the sheet then mend them. Dale out.\"",
+          "utc": "2026-11-09T13:39:39.937238+00:00"
+        }
+      ]
+    },
+    "FF_BIG_DaleLast": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Leave the array where it is until I have read the encoders myself.'",
+          "utc": "2026-11-09T13:39:43.700680+00:00"
+        }
+      ]
+    },
+    "FF_BIG_HailFirst": {
+      "seed": 47,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Saddowdale, pick up.'",
+          "utc": "2026-11-09T13:39:48.026622+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Sarodale. Pick up.'",
+          "utc": "2026-11-09T13:39:50.347014+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Sarrodale. Pick up.'",
+          "utc": "2026-11-09T13:39:52.625591+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Sarrowdale. Pick up.'",
+          "utc": "2026-11-09T13:39:54.937242+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Sorrowdale. Pick up.'",
+          "utc": "2026-11-09T13:39:57.329934+00:00"
+        }
+      ]
+    },
+    "FF_BIG_HailAgain": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Zaro the walkie now.'",
+          "utc": "2026-11-09T13:40:00.570260+00:00"
+        }
+      ]
+    }
+  }
+}
