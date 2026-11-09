@@ -1,6 +1,6 @@
 # Helhetlig design: én løkke, ett designspråk, og 1986 som mekanikk
 
-**Status:** Forslag, ikke vedtatt. **Gjelder:** Freeform (jobb, etterforskning, skrekk, økonomi, ukesaker). **Sist kontrollert:** 9. november 2026.
+**Status:** Avvist av Tom 9. november 2026 (nye mekanikker ødelegger mer enn de hjelper); erstattet av [SAMMENFLETTING](SAMMENFLETTING_2026-11-09.md). **Gjelder:** Freeform (jobb, etterforskning, skrekk, økonomi, ukesaker). **Sist kontrollert:** 9. november 2026.
 
 Tom ba 9. november om en syntese som fletter alt sammen til ett bilde og ett designspråk, og som bruker 1986 mer enn i dag. Dokumentet bygger på [gjennomgangen av d38](GJENNOMGANG_D38_2026-11-09.md), [sammenlignbare spill](SAMMENLIGNBARE_SPILL_2026-11-09.md), [helhetlig løkke](HELHETLIG_LOKKE_2026-11-09.md), [ukesaker](UKESAKER_2026-11-09.md), [saker og OPS](SAKER_OPS_2026-11-09.md), [økonomi](OKONOMI_LOKKE_2026-11-09.md), [notatboka](NOTATBOK_2026-11-09.md), spillbibelen og [DECISIONS](../../Active/DECISIONS.md). Vedtatte føringer er holdt. Koden er lest, ikke kjørt. Toms egne testnotater fra d38 er ikke kommet ennå og må flettes inn.
 
