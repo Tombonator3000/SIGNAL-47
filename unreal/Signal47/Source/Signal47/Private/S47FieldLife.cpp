@@ -164,7 +164,7 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
  {
   // (M7: mud-and-sand tires dig in half as fast, FS47Outfit; coming out is as quick)
   const double Rate=BogRate(Soft,D.Load,D.Speed,D.Reversing());
-  Bog=FMath::Clamp(Bog+Dt*(Rate>0?Rate*FS47Outfit::TuneFor(M->Freeform.Get()).Bog:Rate),0.,1.);
+  Bog=FMath::Clamp(Bog+Dt*(Rate>0?Rate*FS47Outfit::TuneFor(M&&M->Freeform?M->Freeform.Get():nullptr).Bog:Rate),0.,1.);
   if(Soft>.05){D.Held=1.8*Soft;bSandHeld=true;}
   else if(bSandHeld){D.Held=0;bSandHeld=false;}
   // the wheel tugs this way and that in the soft ground
