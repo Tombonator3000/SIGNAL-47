@@ -426,6 +426,7 @@ public:
  // physically, then reports what the player actually secured. -1 when no field test is planned.
  int32 PlannedFieldTest(int32 Line) const;
  bool CancelFieldTest(int32 Line);
+ bool CancelCaseJob(int32 Line); // a planned receiver test, before it is pointed or recorded
  bool FieldTestExpectsPresent(int32 Line,int32 Test) const;
  bool ReportFieldTest(int32 Line,int32 Test,bool bValid,bool bPresent,const FString& Evidence);
  // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND's controls are the kit the player has. What a planned one still needs (empty: it can

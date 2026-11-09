@@ -1383,6 +1383,7 @@ namespace
  FString StatusWord(const FS47FreeformSession::FJob& J,bool bSelected)
  {
   using E=FS47FreeformSession::EJobStage;
+  if(J.CaseTest>=0&&!J.bCaseValid&&J.Stage<E::Filed)return TEXT("TEST SPOILED"); // stays on the row, not only in a toast
   if(J.Stage==E::New)return bSelected?TEXT("READY"):J.Slot==2?TEXT("OPTIONAL"):TEXT("QUEUED");
   if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return TEXT("AT PRINTER");
   if(J.Stage==E::Recorded)return J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
@@ -1416,7 +1417,7 @@ void FS47FreeformSession::OpenOperations()
    for(int32 I=0;I<Work.Num();++I)
    {
     const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
-    const int32 InGroup=J.Stage==EJobStage::Filed?2:Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
+    const int32 InGroup=J.Stage==EJobStage::Filed?2:Active||I==Selected?0:J.Day==DayNumber||(J.CaseTest>=0&&!J.bCaseRecorded)?1:2;if(InGroup!=Group)continue; // a planned case test stays listed on later days (the repeat test always runs on one)
     const int32 Index=I;T::FRow R;R.Cells={J.Id,FS47Observing::Runs()[J.Source].Source,StatusWord(J,I==Selected)};R.bSelected=I==Selected&&FieldFocus<0;
     R.Badge=J.CaseTest>=0?TEXT("CASE"):J.bAnomaly?TEXT("ANOM"):FString::Printf(TEXT("P%d"),J.Slot+1);
     R.Action=[this,Index]{SelectJob(Index);OpenOperations();};Out.Add(R);
@@ -2946,6 +2947,16 @@ bool FS47FreeformSession::CancelFieldTest(int32 Line)
  Cases.CancelPlan(Line);if(Line==2&&CaseField)CaseField->ResetPlan();if(FieldFocus==Line)FieldFocus=-1;
  Changed(TEXT("OPS / CASE BOARD: Field plan cleared, no result recorded. You may plan another field test."));return true;
 }
+bool FS47FreeformSession::CancelCaseJob(int32 Line)
+{
+ // A receiver test that cannot be met (no fuel, no relay, window gone) must not lock the case. Only before anything is pointed or recorded.
+ const auto* C=Cases.Get(Line);if(!C||C->Planned<0||PlannedFieldTest(Line)>=0||C->PlannedJob.IsEmpty())return false;
+ const int32 I=Work.IndexOfByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&!J.bCaseRecorded;});
+ if(Work.IsValidIndex(I)&&Work[I].Stage!=EJobStage::New){Feedback=TEXT("That test is already under way: finish the recording and register it. A spoiled test can be planned again afterwards.");Changed(Feedback);return false;}
+ if(Work.IsValidIndex(I)){Work.RemoveAt(I);if(Selected>I)--Selected;else if(Selected==I)Selected=FMath::Max(0,Work.IndexOfByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed;}));}
+ Cases.CancelPlan(Line);
+ Changed(TEXT("OPS / CASE BOARD: Test plan cleared, no result recorded. You may plan another test."));return true;
+}
 bool FS47FreeformSession::FieldTestExpectsPresent(int32 Line,int32 Test)const
 {
  // Only the planned field test is answered, so world code cannot read the hidden cause freely.
@@ -3034,12 +3045,12 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
  FieldFocus=-1;bGuideFocus=false;
  Work.Add(J);
  const FJob* Current=CurrentJob();if(!Current||Current->Stage==EJobStage::New||Current->Stage==EJobStage::Filed)Selected=Work.Num()-1;
- Feedback=TEXT("Case test planned: ")+FString(T.Name)+TEXT(". Job ")+J.Id+TEXT(" is on the OPS list.");Changed(Feedback);return true;
+ Feedback=TEXT("Case test planned: ")+FString(T.Name)+TEXT(". Job ")+J.Id+(Selected==Work.Num()-1?TEXT(" is selected: carry it out at the tracking PC and receiver."):TEXT(" is on the OPS list, but another job is still selected. Finish that job, or select the CASE row in DAILY WORK, before recording."));Changed(Feedback);return true;
 }
 void FS47FreeformSession::RecordCaseResult(FJob& J)
 {
  J.bCaseRecorded=true;const int32 Line=J.CaseLine,Test=J.CaseTest;const bool bPresent=CaseObserved(J);bool First=false;
- if(!Cases.Record(Line,Test,DayNumber,J.bCaseValid,bPresent,First)){Changed(FString::Printf(TEXT("Routine result registered. $%d credited; the original remains in the notebook."),LastPay));return;}
+ if(!Cases.Record(Line,Test,DayNumber,J.bCaseValid,bPresent,First)){Changed(FString::Printf(TEXT("Recording registered, $%d credited. It was NOT counted as a case test: the case no longer has this test planned. Open OPS / CASE BOARD to see what the case needs."),LastPay));return;}
  if(!J.bCaseValid){Changed(FString::Printf(TEXT("Observation registered, $%d credited. The case test is INVALID because its condition was broken; plan it again on the case board."),LastPay));return;}
  const auto& D=FS47FreeformCases::Def(Line);
  TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent)Out.Add(D.Causes[I]);
@@ -3245,6 +3256,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    List->AddSlot()[S47FreeformTerminal::Small(TEXT("CANCEL / CLEARS THIS FIELD PLAN ONLY / NO RESULT, NO REWARD / RETAINED EVIDENCE UNCHANGED"))];
    List->AddSlot()[S47FreeformTerminal::Button(TEXT("Cancel this field plan"),[this,Line]{CancelFieldTest(Line);OpenCaseBoard(Line);},false)];
   }
+  else if(C->Planned>=0&&!C->bConcluded)List->AddSlot()[S47FreeformTerminal::Button(TEXT("Cancel this planned test / no result, no reward"),[this,Line]{CancelCaseJob(Line);OpenCaseBoard(Line);},false)];
   double WaitTarget=0;if(CaseWaitTarget(Line,WaitTarget))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Wait until five minutes before this window / review consequences"),[this,WaitTarget]{OpenWaitConfirmation(WaitTarget);},true)];
   if(TestCards>0)Rows.Add(S47FreeformTerminal::Panel(TEXT("TESTS"),SNew(SBox).HeightOverride(230)[List]));
   // The kind, how it closes, what closing brings, the source, and A, B, C.
