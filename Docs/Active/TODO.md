@@ -62,7 +62,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [x] **CRIT5-20261109:** rettet i kilde (`85ef8744`), ikke bygget da dette ble skrevet; 16 bekreftede funn fra kritikerrunde 5 (Not yet i ring, Same Minute uten varsel, sporet etter tapte timer gir Supported, månen i siste rad, LOG NOT FILED uten lyd, opplæringskort, brevet sagt tre ganger, salutten, fareplassen ved lasting, eldre lagringer, pekere til postkassen, Wards første brev, månedsprøven uten Stays). Retting skrives under Toms test.
 
 **Oppfølging fra natta:**
-- [ ] **UNARIUS-STORY-20261109:** Story viser fortsatt Unarius-klippet (tredjepart, ekte personer, rettigheter ikke avklart) på motell-tv-en. Freeform viser eget testkort. Tom avgjør; må byttes eller avklares før deling, som `alien_interference.wav`.
+- [ ] **UNARIUS-STORY-20261109:** Story viser fortsatt Unarius-klippet (tredjepart, ekte personer, rettigheter ikke avklart) på motell-tv-en. Freeform viser eget testkort. Tom avgjør; må byttes eller avklares før deling, som `alien_interference.wav`. **Tom 9. november ca. 10:50:** klippet skal vises på flere tv-er i både Freeform og Story, og ligge bare lokalt. Punktet står åpent bare som rettighetssjekk før deling. Klippet må byttes eller klareres før noen andre får spillet. En valgfri patch (testkort i Story, klippet bak `-S47StoryTvFilm`) ligger i scratchpad `misc7-unarius-story.optional.patch`.
 - [ ] **WEB-CPU-20261109:** gatelyktene kutter stolper ut av generert `/Game/Web` (g26, g235, g470) og trenger CPU-data. `Tools/streetlamps/prepare_cpu.py` kjøres nå av `import.sh` etter webimport; kontroller ved neste fulle webimport og pakking.
 - [ ] **MOTEL-FACADE-20261109:** motellkontoret har to fasader oppå hverandre (eksportens plater på x -43,49 foran V2-kontorets flater og vindusrammen i `SM_Sierra_Office`). Ingen inverterte normaler funnet.
 - [ ] **LOD-AUDIT-20261109:** skann av 392 mesher fant dreide LOD-er bare i gatelyktene og `SM_SubstationField_ApronGrade` (begge rettet). Kjør `scratchpad`-skriptet `lodcheck.py` igjen etter nye importer.
@@ -81,7 +81,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [x] **T16-06: UFO-møter på motorveien** skal kunne gå både nord og sør. **9. november:** begge retninger fantes; F10 «sør» startet nordover når man satt i bilen. Rettet (`a80b6d05`), sett i d35-bygg.
 - [ ] **T16-07: Pale One** virker ikke i utviklermenyen.
 - [ ] **T16-08: kalenderen** i vestfløyen, som viser spillets dag, skal også henge i kontrollrommet i SARO.
-- [ ] **T16-09: modemlyd** følger spilleren ut av kontrollrommet etter at en jobb er sendt.
+- [ ] **T16-09: modemlyd** følger spilleren ut av kontrollrommet etter at en jobb er sendt. *Rettet i kilde:* 9cc7cc1e (festet til OPS-PC-en, stopper 1,5 s utenfor rommet) og c5476035 (taket regnes ikke som rommet). Ikke hørt av et menneske ennå.
 - [ ] **T16-10: sidedøra** på garasjen i SARO kan ikke brukes. Tom bekrefter at det er servicedøra på østsiden av vingen: «Service dør ja, kommer ikke igjennom.» Rettet i kilde (`RefreshWingObstacles`), ikke prøvd.
 - [ ] **Garasjeporten i SARO er stengt i Freeform selv om den står som oppe:** `StepDoor` nuller `DoorOpen` før Freeform er aktiv. Funnet av lys-agenten 7. november, ikke rettet.
 - [x] **T16-11: takplaten.** Oppdraget sier «fasten plate at the ladder», men det finnes ingen stige å klatre opp på taket med. **9. november:** fast galvanisert stige på målt bakke ved nordveggen (x 5,85), platen ved stigetoppen; selvtest mot veggtabellen; installert i d35, ikke prøvd av menneske.
