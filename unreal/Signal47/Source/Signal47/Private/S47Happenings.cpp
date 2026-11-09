@@ -49,6 +49,7 @@
 #include "S47Theme.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Components/LocalFogVolumeComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -294,13 +295,18 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   for(int32 I=0;I<12;++I){const double X=(I%4)*1.6-2.4+(I%3)*.4,Z=(I/4)*2.1-2.;Out.Add({Ball,FVector(X,.16,Z),FVector(.2,.22,.42),0,-.2,0,0x5d5040,0,false});Out.Add({Ball,FVector(X,.3,Z-.22),FVector(.12,.14,.14),0,0,0,0x5d5040,0,false});}
   return Out;
  }
- // Dust turning in a column: rings of it, wider and fainter going up.
- TArray<FPiece> DevilParts()
+ // Dust turning in a column, wider going up. D37-LAST-20261109 (Tom, d37 23:16, "jalla lys"): nine flat beige discs stacked one over
+ // another read at night as a tower of lit stripes over the horizon. No meshes now: the dust is the engine's own volumetric air (local
+ // fog volumes, DevilAir), soft-edged spheres that overlap into one funnel, lit only by what lights the land (moon, sky, a lamp) and
+ // dark against the stars. Each: three's metres from the foot (centre), its radius across and its half height.
+ struct FDevilPuff{FVector At;double R,H;};
+ constexpr int32 DevilPuffs=4;
+ FDevilPuff DevilPuff(int32 I,double Turn)
  {
-  TArray<FPiece> Out;
-  for(int32 I=0;I<9;++I){const double Y=.4+I*1.3,R=.9+I*.32;Out.Add({Cyl,FVector(FMath::Sin(I*.9)*.3,Y,FMath::Cos(I*.9)*.3),FVector(R,.5,R*.85),I*.7,.08*FMath::Sin(I*1.3),0,0x8a7a5e,0,false});}
-  return Out;
+  const double Y=1.6+I*2.9,R=1.1+I*.75;
+  return {FVector(FMath::Sin(Turn*.35+I*1.1)*(.25+.18*I),Y,FMath::Cos(Turn*.31+I*1.1)*(.25+.18*I)),R,2.2+.35*I};
  }
+ TArray<FPiece> DevilParts(){return {};}
  // Small bare prints in a ring round the truck, stopping.
  TArray<FPiece> TrackParts()
  {
@@ -405,6 +411,8 @@ struct FS47Happenings::FProp
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Glints;
  // PT-NORDIC-COSMIC-20261109: the Cosmic one's light on a part that is its body (S47TripoNew::AddCosmicGlow), stepped while shown.
  TArray<S47TripoNew::FCosmicGlow> Cosmic;
+ // D37-LAST-20261109: the dust devil's air (S47Hap::DevilPuff), real volumetric fog in place of stacked discs; posed and shown with it.
+ TArray<TWeakObjectPtr<ULocalFogVolumeComponent>> Air;
  FVector Foot=FVector::ZeroVector;double Yaw=0;bool bShown=false,bPosed=false;
 };
 
@@ -1245,7 +1253,17 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
   Sp->SetAffectTranslucentLighting(false);Sp->SetLightColor(FLinearColor(1.f,.9f,.72f));Sp->SetVisibility(false);Sp->RegisterComponent();
   P.FarBeam=Sp;
  }
- if(P.Parts.IsEmpty()&&P.Lamps.IsEmpty()){UE_LOG(LogS47Happen,Warning,TEXT("S47: happening prop %s: nothing could be loaded"),*Kind);return nullptr;}
+ // D37-LAST-20261109: the dust devil is air, not discs. Dust coloured, dense in the middle and soft at the rim, no height fog (so the
+ // puffs keep their own shape), a faint glow of their own like the farm's ground fog so that it reads against the land without a lamp.
+ if(Kind==TEXT("devil"))for(int32 I=0;I<S47Hap::DevilPuffs;++I)
+ {
+  auto* F=NewObject<ULocalFogVolumeComponent>(W,MakeUniqueObjectName(W,ULocalFogVolumeComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapAir_%s_%s"),*Kind,*Here))));
+  F->SetupAttachment(W->GetRootComponent());F->SetMobility(EComponentMobility::Movable);
+  F->SetRadialFogExtinction(1.1f-.15f*I);F->SetHeightFogExtinction(0.f);F->SetFogPhaseG(.35f);
+  F->SetFogAlbedo(FLinearColor(.56f,.47f,.35f));F->SetFogEmissive(FLinearColor(.006f,.005f,.0035f));
+  F->SetVisibility(false);F->RegisterComponent();P.Air.Add(F);
+ }
+ if(P.Parts.IsEmpty()&&P.Lamps.IsEmpty()&&P.Air.IsEmpty()){UE_LOG(LogS47Happen,Warning,TEXT("S47: happening prop %s: nothing could be loaded"),*Kind);return nullptr;}
  if(!UseId.IsEmpty()&&!P.Hits.IsEmpty())
  {
   const TWeakPtr<uint8> Guard=Alive;
@@ -1303,6 +1321,12 @@ void FS47Happenings::PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQua
   C->SetWorldTransform(S47Three::MatToUE(E));
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetWorldLocation(S47Three::ToUE(Foot+Turn.RotateVector(L.At)));
+ // The dust devil's air: each puff on its own slow orbit as the column turns (Yaw), a sphere of 5 m at scale 1 (the engine's unit).
+ for(int32 I=0;I<P.Air.Num();++I)if(ULocalFogVolumeComponent* F=P.Air[I].Get())
+ {
+  const S47Hap::FDevilPuff D=S47Hap::DevilPuff(I,Yaw);
+  F->SetWorldLocation(S47Three::ToUE(Foot+Tilt.RotateVector(D.At)));F->SetWorldScale3D(FVector(D.R/5.,D.R/5.,D.H/5.));
+ }
 }
 void FS47Happenings::ShowProp(FProp& P,bool bOn)
 {
@@ -1318,6 +1342,7 @@ void FS47Happenings::ShowProp(FProp& P,bool bOn)
   C->SetCollisionEnabled(bHere&&Pt.bHit?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get()){Lc->SetVisibility(bHere);Lc->SetIntensity(bHere?L.Lumens:0.f);}
+ for(TWeakObjectPtr<ULocalFogVolumeComponent>& F:P.Air)if(ULocalFogVolumeComponent* C=F.Get())C->SetVisibility(bHere);
  // The far beam is the road glimpse's to turn on (StepMore road_glimpse); it never outlasts the body.
  if(!bHere)if(USpotLightComponent* Sp=P.FarBeam.Get()){Sp->SetIntensity(0);Sp->SetVisibility(false);}
 }
@@ -4411,6 +4436,18 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  // The models: Tom's own paths are one constant each, and every humorous one has a stand-in or skips itself.
  Check(FString(S47Hap::RvModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::ConvertibleModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::SingerModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::HairyModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::ZetModel).StartsWith(TEXT("/Game/Licensed/")),TEXT("Tom's own models stay out of Git, under /Game/Licensed, one path each"));
  Check(S47Hap::RvParts().Num()>8&&S47Hap::ZetParts().Num()>6&&S47Hap::RingParts().Num()>10&&S47Hap::CattleParts().Num()==14,TEXT("what stands in until they come is there"));
+ // D37-LAST-20261109: the dust devil is no stack of flat discs: no mesh parts, only overlapping volumetric puffs, wider going up, each
+ // reaching into the next (no gap to read as a stripe), and none flatter than it is wide.
+ {
+  bool bFunnel=S47Hap::DevilParts().IsEmpty()&&S47Hap::DevilPuffs>=3;
+  for(int32 I=0;I<S47Hap::DevilPuffs;++I)
+  {
+   const S47Hap::FDevilPuff Pf=S47Hap::DevilPuff(I,1.7*I);
+   bFunnel&=Pf.H>=Pf.R*.9;
+   if(I>0){const S47Hap::FDevilPuff B=S47Hap::DevilPuff(I-1,1.7*I);bFunnel&=Pf.R>B.R&&(Pf.At.Y-Pf.H)<(B.At.Y+B.H)-.5;}
+  }
+  Check(bFunnel,TEXT("D37-LAST: the dust devil is volumetric air in overlapping puffs, wider going up, not stacked discs"));
+ }
  // The compass, and a save round trip.
  Check(S47Hap::Bearing(47.2)==48.&&S47Hap::Bearing(146.6)==148.&&S47Hap::Bearing(-1)==359.&&S47Hap::Bearing(359.8)==0.&&S47Hap::Bearing(26)==26.,TEXT("a bearing is whole degrees and never Story's number"));
  Check(S47Hap::Compass(0)==TEXT("north")&&S47Hap::Compass(91)==TEXT("east")&&S47Hap::Compass(181)==TEXT("south")&&S47Hap::Compass(-89)==TEXT("west")&&S47Hap::Compass(359)==TEXT("north"),TEXT("a heading in words"));
@@ -4482,8 +4519,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   for(const FString& Id:Ids())if(IsDanger(Id)){const uint32 Need=NeedMask(Id);bAll&=Need!=0;bFoot|=(Need&S47Hap::NeedFoot)!=0;bDrive|=(Need&S47Hap::NeedDrive)!=0;}
   Check(bAll&&bFoot&&bDrive,TEXT("the night's dangers fit somewhere the player is: one on foot, one at the wheel"));
   // CB-TRUCK-20261109: the CB is under the truck's dash, so its calls are drawn only for a player sitting in the truck.
-  Check(NeedMask(TEXT("cb_stranded"))==S47Hap::NeedDrive&&NeedMask(TEXT("cb_echo"))==S47Hap::NeedDrive&&(NeedMask(TEXT("missing_person"))&S47Hap::NeedSaro),
-   TEXT("the stuck driver and the voice on the CB come only in the truck; the missing man's word can also come over Dale's walkie at SARO"));
+  Check(NeedMask(TEXT("cb_stranded"))==S47Hap::NeedDrive&&NeedMask(TEXT("cb_echo"))==S47Hap::NeedDrive&&(NeedMask(TEXT("missing_person"))&S47Hap::NeedSaro),TEXT("the stuck driver and the voice on the CB come only in the truck; the missing man's word can also come over Dale's walkie at SARO"));
  }
  // The draws are the seed's: the same night draws the same, and something most nights.
  {

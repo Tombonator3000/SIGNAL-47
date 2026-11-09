@@ -245,7 +245,7 @@ bool FS47FreeformSession::MinuteSelfTest(TArray<FString>& Lines)
  Check(ClockIn(TEXT("At 02:14 lights came down."),Sec)&&Sec==2*3600+14*60&&ClockIn(TEXT("An unscheduled printout, TUE APR 29 at 03:08: 31 pulses"),Sec)&&Sec==3*3600+8*60&&!ClockIn(TEXT("Flat 02:14"),Sec)&&!ClockIn(TEXT("nothing"),Sec),
   TEXT("the time in an array record: \"At 02:14\" or \"at 03:08\", nothing else"));
  const double Night4=3*86400.;
- Check(S47FreeformMinuteLocal::OnDay(4,22*3600)==Night4+22*3600.&&S47FreeformMinuteLocal::OnDay(5,2*3600)==4*86400.+2*3600.,TEXT("a time of day kept on day N is that day's evening or the morning after"));
+ Check(S47FreeformMinuteLocal::OnDay(4,22*3600)==Night4+22*3600.&&S47FreeformMinuteLocal::OnDay(4,2*3600)==4*86400.+2*3600.,TEXT("a time of day kept on day N is that day's evening or the morning after"));
  {
   // A landing out on the land at 22:40 (the array's own record), and a photograph taken there at 22:41: the same minute, YES on the
   // telex, a record of OUT ON THE LAND, and Animals and weather struck. Asked once. A photograph an hour later: NO, nothing struck.

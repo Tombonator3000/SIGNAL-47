@@ -231,7 +231,11 @@ void FS47DevFreeform::AddEyeGlint(FS47DevEvents& E)
     {
      const FVector* R = Seen->Rest.Find(G);
      if (!R) R = &Seen->Rest.Add(G, G->GetRelativeLocation());
-     Seen->Most = FMath::Max(Seen->Most, FVector::Dist(*R, G->GetRelativeLocation()));
+     // In centimetres of the world, through the head bone's own scale (100 on the Tripo skins): its units are metres there,
+     // and the drift that threw the dots 40 cm out of the head read here as .4.
+     const USceneComponent* Head = G->GetAttachParent();
+     const FTransform Bone = Head ? Head->GetSocketTransform(G->GetAttachSocketName()) : FTransform::Identity;
+     Seen->Most = FMath::Max(Seen->Most, Bone.TransformVector(G->GetRelativeLocation() - *R).Size());
      bAnyOut |= G->bHiddenInGame;
     }
     if (bAnyOut && !Seen->bWasOut) ++Seen->Out;

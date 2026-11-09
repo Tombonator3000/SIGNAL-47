@@ -80,7 +80,9 @@ double FS47FarmShedDoor::KickGap(int32 InSeed,int32 InNight,int32 Index)
 {
  // Uneven: mostly short, now and then a long wait that is worse than the kicks.
  const double U=FS47NightRhythm::Roll(InSeed,InNight*97+Index,0x4b49434bu);
- return U<.72?1.5+2.2*U/.72:3.9+2.2*(U-.72)/.28;
+ const double G=U<.72?1.5+2.2*U/.72:3.9+2.2*(U-.72)/.28;
+ // Never Story's number: a long wait that would read as 4.7 seconds is a little longer.
+ return FMath::RoundToInt(G*10)==47?G+.15:G;
 }
 FBox2D FS47FarmShedDoor::ClosedBox()
 {

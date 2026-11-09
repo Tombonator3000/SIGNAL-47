@@ -68,7 +68,7 @@ namespace S47Week
   TEXT("The padlock is still on its chain, still locked. And the floor in there has gone hard and shiny, like a pot out of the kiln."),
   TEXT("But you were busy, I am sure. Nobody pays for a door we did not look at. Out.")};
  const TCHAR* const MorningSlipA=TEXT("A slip by the phone, in a hard square hand: \"Alderete feed shed. Door broken OUTWARD. Padlock still locked. Floor gone like glaze. You were busy, I am sure. D.\"");
- const TCHAR* const FindingA=TEXT("The feed shed at the Alderete place, the morning after, as Dale had it: the door broken outward from the inside, the padlock still locked on its chain, and the floor inside gone hard and glossy, like glaze. Nobody from the station was there.");
+ const TCHAR* const FindingA=TEXT("The feed shed at the Alderete place, the morning after, as it was reported to SARO: the door broken outward from the inside, the padlock still locked on its chain, and the floor inside gone hard and glossy, like glaze. Nobody from the station was there.");
  // Patch 3: during the case, his hail on the walkie; answered, the bearing, where to keep out of sight, and the engine.
  const TCHAR* const HailFirst=TEXT("SARO night. You are at the Alderete place, yes? Answer me.");
  const TCHAR* const HailAgain=TEXT("SARO night. Pick up. My needle is doing it again.");
