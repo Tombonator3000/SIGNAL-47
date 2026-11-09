@@ -1,5 +1,6 @@
 #include "SS47Widgets.h"
 #include "SS47ScreenView.h"
+#include "SS47Notebook.h"
 #include "S47Freeform.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
@@ -294,6 +295,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 {
 	using namespace S47Game;
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
+	NotebooksShut = SS47Notebook::Shut();
 	PromptAttr = InArgs._Prompt; AltAttr = InArgs._PromptAlt; ClockAttr = InArgs._Clock;
 	ShowPromptAttr = InArgs._ShowPrompt; ShowAimAttr = InArgs._ShowAim;
 	auto Aim = [this] { return ShowAimAttr.Get(true); };
@@ -566,6 +568,13 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
+	// M7-HUD-20261109: closing the notebook or its map brings the task's card in again, for its six seconds, once nothing else covers it
+	if (NotebooksShut != SS47Notebook::Shut()) { NotebooksShut = SS47Notebook::Shut(); bNoteAgain = true; }
+	if (bNoteAgain && Playing() && !ModalOpen() && !Vf.bOn)
+	{
+		bNoteAgain = false;
+		if (!ObjectiveText.TrimStartAndEnd().IsEmpty()) NoteT = 0.f;
+	}
 	// HUD-D-20261109: the task's card runs its seven seconds only while it can be seen
 	if (NoteT >= 0.f && Playing() && !ModalOpen() && !Vf.bOn)
 	{

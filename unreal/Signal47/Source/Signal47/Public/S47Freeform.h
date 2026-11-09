@@ -127,9 +127,19 @@ public:
  double LastWakeClock() const{return WakeClock;}
  int32 FocusedFieldCase() const { return FieldFocus; }
  FString FieldNextAction(int32 Line) const;
- FString AvailableActivities() const;
- // The next branch of a worn array, on one line for the HUD; empty once it is whole, or in a save without wear.
+ // What there is to do with no job under way. Card: the same in a line the HUD's cassette card has room for (S47HudGauges::CardLine).
+ FString AvailableActivities(FString* Card=nullptr) const;
+ // The next branch of a worn array, on one line for the HUD; empty once it is whole, or in a save without wear. From one in the
+ // morning until daylight it waits (GoalWaits): the antennas are out in the dark, and Dale wants the player in the building.
  FString StationGoalLine() const;
+ static constexpr double GoalWaitFrom=1*3600.,GoalWaitUntil=6*3600.;
+ static bool GoalWaits(double Clock){const double T=FMath::Fmod(Clock,86400.);return T>=GoalWaitFrom&&T<GoalWaitUntil;}
+ // M7-HUD-20261109: the objective as the HUD's card says it, at most S47HudGauges::CardMost characters: the place and the next thing
+ // to do. Objective() stays whole for the pause menu and the notebook.
+ FString HudObjective() const;
+ // Dr. Ward's letter or his assessment waiting (FS47Predecessor::TaskLine "MAILBOX / ...", "OPS / There is a letter ...", "OPS / Dr.
+ // Ward's assessment ..."): the next thing to do once the first shift is done.
+ static bool LetterWaits(const FString& Line);
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.
@@ -158,7 +168,10 @@ public:
  // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
  static int32 PayAfterDays(int32 Days){return Days<=1?20:Days==2?15:Days==3?10:5;}
  int32 JobPay(const FJob& Job) const;
- static constexpr int32 ReviewPower=25,ReviewFuel=15,ArrearsCap=80,LostHoursDiscount=15;
+ // M7 (C's economy model): the county's power line is charged by what the station runs, a base and a dollar for each antenna on
+ // the line, so that repairing the array costs something week by week.
+ static constexpr int32 ReviewPowerBase=10,ReviewPowerPerDish=1,ReviewFuel=15,ArrearsCap=80,LostHoursDiscount=15;
+ int32 ReviewPowerNow() const{return ReviewPowerBase+ReviewPowerPerDish*AvailableDishCount();}
  // The running costs on the weekly sheet besides power and stores (critic, 8 November; Claude's numbers, kept low): truck wear per
  // two kilometres driven, film and darkroom chemicals per print developed, and Ward's re-check of a recording nobody can read.
  static constexpr int32 WearPerTwoKm=1,WearCap=15,FilmPerPrint=2,FilmCap=10,PoorRecordFee=3,FeeCap=15;
@@ -366,6 +379,7 @@ public:
  bool TestAdvance(double WorldSeconds);
  bool SpendTime(double WorldSeconds) { return TestAdvance(WorldSeconds); }
 private:
+ FString WorkActivities(FString* Card) const; // AvailableActivities without the letter
  FVector2D Aim=FVector2D::ZeroVector;FString AimJob;bool bAimLocked=false;
  TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
  bool UsesCapturedAudio() const;

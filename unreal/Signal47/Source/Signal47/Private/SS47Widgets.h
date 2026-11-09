@@ -92,6 +92,8 @@ private:
 	double Now = 0;
 	FString ObjectiveText, ObjectiveHead, ObjectiveBody, ExamineText, SecondsText;
 	float NoteT = -1.f;               // HUD-D-20261109: the task's card, seconds since the task changed (-1: not showing)
+	uint32 NotebooksShut = 0;         // M7-HUD-20261109: SS47Notebook::Shut() when last looked at; the card comes in again once one closes
+	bool bNoteAgain = false;          // a notebook (or its map) closed: bring the card in again as soon as nothing covers it
 	FString Place;                    // where the player is (placeName), for the objective's tag
 	float PlaceT = 0.f;
 	FString HintKey;                  // the key hints shown, to rebuild them when they change

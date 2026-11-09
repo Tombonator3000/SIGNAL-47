@@ -47,6 +47,9 @@ public:
 	static FString Excerpt(const FS47Doc& D);
 	// the keys on a notebook made of sample pages (Q and E, the arrows, Enter)
 	static bool SelfTest(TArray<FString>& Lines);
+	// M7-HUD-20261109: how many notebooks opened in the game have closed since it started, so that the HUD can bring the task's card in
+	// again (SS47Hud). A notebook made for a test has no UI and is not counted.
+	static uint32 Shut();
 
 private:
 	TWeakObjectPtr<US47UI> UI;

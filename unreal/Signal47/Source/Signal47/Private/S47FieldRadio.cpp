@@ -64,6 +64,31 @@ namespace S47FieldRadioSet
   Audio->Beep(1750.f,.05f,.04f,float(After),TEXT("sine"));Audio->Beep(1320.f,.06f,.04f,float(After+.06),TEXT("sine"));
  }
  void Click(US47Audio* Audio){if(Audio)Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.3f});}
+ // M7-WALKIE-20261109: the same two-tone call from the set lying on the desk, placed there and muffled by its own small speaker
+ // face down on the wood, with a breath of squelch after it. Heard through the room's walls as anything placed is.
+ void DeskCall(US47Audio* Audio,const FVector& At)
+ {
+  if(!Audio||!Audio->Ctx.IsValid()||!Audio->SfxBus.IsValid())return;
+  const TSharedPtr<FS47AudioNode> Out=Audio->Spatial(At,1.5f);if(!Out.IsValid())return;
+  FS47AudioContext::FBatch Batch(*Audio->Ctx);
+  const double From=Audio->Ctx->CurrentTime()+.05;
+  auto Lp=Audio->Ctx->CreateBiquadFilter();Lp->SetType(TEXT("lowpass"));Lp->Frequency.SetValue(1700);Lp->Connect(Out);
+  for(const double ToneAt:{0.,.34})for(const double Hz:{1450.,1900.})
+  {
+   const double T=From+ToneAt+(Hz>1500?.1:0);
+   auto O=Audio->Ctx->CreateOscillator();O->SetType(TEXT("square"));O->Frequency.SetValue(Hz);
+   auto G=Audio->Ctx->CreateGain();G->Gain.SetValueAtTime(0,T);G->Gain.LinearRampToValueAtTime(.09,T+.005);G->Gain.SetValueAtTime(.09,T+.07);G->Gain.LinearRampToValueAtTime(0,T+.09);
+   O->Connect(G);G->Connect(Lp);O->Start(T);O->Stop(T+.12);
+  }
+  if(const TSharedPtr<FS47AudioBuffer> Hiss=Audio->NoiseBuffer();Hiss.IsValid())
+  {
+   const double T=From+.62;
+   auto Src=Audio->Ctx->CreateBufferSource();Src->Buffer=Hiss;
+   auto Hp=Audio->Ctx->CreateBiquadFilter();Hp->SetType(TEXT("highpass"));Hp->Frequency.SetValue(900);
+   auto G=Audio->Ctx->CreateGain();G->Gain.SetValueAtTime(0,T);G->Gain.LinearRampToValueAtTime(.05,T+.015);G->Gain.SetValueAtTime(.05,T+.25);G->Gain.LinearRampToValueAtTime(0,T+.45);
+   Src->Connect(Hp);Hp->Connect(G);G->Connect(Lp);Src->Start(T,FMath::FRand()*.5);Src->Stop(T+.5);
+  }
+ }
 }
 
 double FS47FieldRadio::ChannelMHz(int32 Channel){return 49.830+.015*(FMath::Clamp(Channel,1,Channels)-1);}
@@ -290,6 +315,7 @@ void FS47FieldRadio::Reply()
 }
 bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunction<void()> OnMissed)
 {
+ if(!bOwned){DeskCall(Words);return false;}
  // Not while the player is on the air, or waiting for what comes back: that call gets its answer first.
  if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||Words.First.IsEmpty())return false;
  HailWords=Words;HailAnswer=MoveTemp(OnAnswer);HailMissed=MoveTemp(OnMissed);
@@ -300,6 +326,24 @@ bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunctio
  if(HintsShown<3&&M->UI){++HintsShown;M->UI->Toast(FString::Printf(TEXT("%s answers the walkie."),*S47Keys::Label(TEXT("walkie"))),5);}
  UE_LOG(LogTemp,Display,TEXT("S47: walkie: Dale hails on channel 1"));
  return true;
+}
+void FS47FieldRadio::DeskCall(const FHail& Words)
+{
+ // Nothing on the desk to call from: the set is out where the player was taken, or there is no hail at all.
+ if(bLeftOut||Words.First.IsEmpty())return;
+ const int32 Day=M&&M->IsFreeform()&&M->Freeform?M->Freeform->Day():0;
+ if(DeskDay==Day)return;
+ if(M)
+ {
+  // Only where it can be heard: the set is built on the desk and the player is within earshot of it.
+  if(!Root||!M->Player)return;
+  const FVector At=Root.WorldPosition();
+  if(FVector::Distance(S47Three::ToThree(M->Player->EyeUE()),At)>DeskHearing)return;
+  if(M->Audio)S47FieldRadioSet::DeskCall(M->Audio,At);
+  if(DeskHints<3&&M->UI){++DeskHints;M->UI->Toast(TEXT("Something on the control room desk gives two beeps and a hiss."),5);}
+ }
+ DeskDay=Day;++DeskCallCount;
+ UE_LOG(LogTemp,Display,TEXT("S47: walkie: Dale's hail heard from the desk, day %d"),Day);
 }
 void FS47FieldRadio::Answer()
 {
@@ -662,6 +706,16 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
   W.NextChannel();W.NextChannel();C(W.Channel()==1&&!W.Save()->HasField(TEXT("ch")),TEXT("round to 1 again, and the save is as it was before channels"));
   C(!W.Message(TEXT("DALE: Dale out."))&&!W.Hail(FHail{TEXT("Come in."),TEXT(""),TEXT("")},nullptr,nullptr)&&!W.LoudNow()&&!W.Hailing(),TEXT("nothing to say it with outside a game: no hail, no message, no noise"));
   C(Head(1,TEXT("DALE"))==TEXT("WALKIE 1, DALE")&&Head(3)==TEXT("WALKIE 3")&&Head(9)==TEXT("WALKIE 3"),TEXT("the caption's head names the set, its channel and who speaks"));
+  {
+   // M7-WALKIE-20261109: no set in hand yet: the hail is heard from the desk once, and is still no hail
+   FS47FieldRadio D(nullptr);D.Begin(nullptr);
+   const FHail Words{TEXT("SARO, Dale. Pick up."),TEXT(""),TEXT("")};
+   const bool bFirst=D.Hail(Words,nullptr,nullptr);const bool bSecond=D.Hail(Words,nullptr,nullptr);
+   C(!bFirst&&!bSecond&&D.DeskCalls()==1&&!D.Hailing(),TEXT("a hail with the walkie still on the desk is heard from the desk once, and the line waits for the slip"));
+   FS47FieldRadio L(nullptr);L.Begin(nullptr);L.Lose();L.Hail(Words,nullptr,nullptr);
+   FS47FieldRadio H(nullptr);H.Begin(nullptr);H.TestOwn();H.Hail(Words,nullptr,nullptr);
+   C(L.DeskCalls()==0&&H.DeskCalls()==0,TEXT("nothing from the desk once the set is out in the field, or in the player's hand"));
+  }
   Report(nullptr,TEXT("A rancher reports lights."));
   C(!CbAtHand(nullptr)&&!CbSay(nullptr,{TEXT("Breaker.")},TEXT("man"))&&W.TipsWaiting()==0,TEXT("no game: no CB at hand, and nothing held for one"));
  }

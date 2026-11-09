@@ -41,6 +41,11 @@ public:
  // hear it on or it is on another channel.
  struct FHail { FString First, Again, GiveUp; };
  bool Hail(const FHail& Words, TFunction<void()> OnAnswer, TFunction<void()> OnMissed);
+ // M7-WALKIE-20261109: with the set still on the control room desk (never taken, not left out), Dale's hail is heard there instead: his
+ // two-tone call, muffled, from the desk, once for each thing he has to say (one a day), and only while the player is near enough to
+ // hear it. The first few times a line says where. Hail still answers false: what he meant goes on the slip by the phone as before.
+ static constexpr double DeskHearing=14.;
+ int32 DeskCalls() const { return DeskCallCount; }
  bool Hailing() const { return HailLeft>0; }
  bool Transmitting() const { return TxLeft>0; }
  // The set made a sound of its own just now: something close by can hear it (FS47RoswellGroup).
@@ -117,6 +122,8 @@ private:
  int32 LastCue=-1,TestStage=0;
  // The player's hand on it (WALKIE-USE-20261108). Chan is saved; the rest is the moment.
  int32 Chan=1,HailCount=0,HintsShown=0;
+ int32 DeskCallCount=0,DeskHints=0,DeskDay=-1; // M7-WALKIE-20261109: the hail heard from the desk (DeskCall)
+ void DeskCall(const FHail& Words);
  double SinceLoud=1e9,SinceTouch=1e9,HailLeft=0,HailAgainIn=0,TxLeft=0,ThenIn=-1;
  FHail HailWords;
  TFunction<void()> HailAnswer,HailMissed,Then;

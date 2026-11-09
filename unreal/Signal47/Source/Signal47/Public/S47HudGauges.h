@@ -88,6 +88,15 @@ namespace S47HudGauges
 	 *  the task ("Back to the truck. Keep the record"). Figures and the station's capitals (SARO, CB, MHz) stay as they are; words
 	 *  already written in small letters are left alone. */
 	SIGNAL47_API FString Handwritten(const FString& Text, bool bTitle);
+	/** M7-HUD-20261109: what the card has room for. A task as the game words it ("TRACKING (right-hand PC): POINT THE ARRAY ...")
+	 *  made into the place and the next thing to do, "TRACKING PC // POINT THE ARRAY ...", at most CardMost characters: the place is
+	 *  what comes before the first " / " or ": " when it comes early, the screens' own long names shortened, then whole sentences of
+	 *  the task while they fit, and only a sentence that is too long on its own cut short. The whole task stays in the pause menu and
+	 *  the notebook. */
+	constexpr int32 CardMost = 70;
+	SIGNAL47_API FString CardLine(const FString& Task, int32 Most = CardMost);
+	/** CardLine with more said after it (" ARRAY 12 OF 27."), in that order, each only if the line still has room for it. */
+	SIGNAL47_API FString CardWith(const FString& Line, std::initializer_list<FString> Tails, int32 Most = CardMost);
 	/** HUD-D2-20261109: how strong the dark rim under the clock, the day and the battery is, 0 to 1, from the sky's daylight (0 night,
 	 *  1 full day). Faint at night, where the dark sky is backing enough and the HUD looks as Tom chose it; full against a bright sky,
 	 *  where the teal would wash out. */

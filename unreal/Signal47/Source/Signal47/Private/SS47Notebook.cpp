@@ -246,6 +246,8 @@ namespace
 			}
 			// (the second choice and the case board have rows of their own here; the web's table has neither)
 			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("The takeout bag: set it down, stow it, take it out or throw it away. At a prompt, the other choice.") });
+			// M7-HUD-20261109: loose things in the hand, and the stones (PHYSICS-20261108, STONE-POCKET-20261109)
+			Foot.Rows.Add({ KeysSaid(TEXT("throw")), TEXT("Hold to throw what you carry, tap to set it down. A stone goes in your pocket, three fit. Empty-handed: a stone from the pocket, or outdoors one off bare ground.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
 			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });
@@ -259,7 +261,10 @@ namespace
 			FCtlGroup Low = { TEXT("Walkie and keeping low"), {
 				{ KeysSaid(TEXT("crouch")), TEXT("Keep low, or stand up again: slower and quieter, a little harder to see and hear.") },
 				{ KeysSaid(TEXT("walkie")), TEXT("The walkie, once you carry it: call Dale, or answer him when he calls.") },
-				{ KeysSaid(TEXT("channel")), TEXT("The walkie's channel: 1 is Dale's, 2 the service band, 3 nobody's.") } } };
+				{ KeysSaid(TEXT("channel")), TEXT("The walkie's channel: 1 is Dale's, 2 the service band, 3 nobody's.") },
+				// M7-HUD-20261109: the field recorder and the counter, carried as the walkie is (TAPE-20261108, GEIGER-20261108)
+				{ KeysSaid(TEXT("tape")), TEXT("The field recorder, once you carry it: start or stop recording.") },
+				{ KeysSaid(TEXT("counter")), TEXT("The Geiger counter, once you have built it: hold it up, or put it away.") } } };
 			return { TEXT("Keyboard and mouse"), { Foot, Truck, Low } };
 		}
 		static const FCtlPage Phone = { TEXT("Phone and tablet"), {
@@ -537,9 +542,13 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	Show(UI.IsValid() && (Order.Contains(UI->NbTab) || UI->NbTab == TEXT("notes") || UI->NbTab == TEXT("people") || UI->NbTab == TEXT("photos") || UI->NbTab == TEXT("controls")) ? UI->NbTab : FString(TEXT("tasks")));
 }
 
+namespace { uint32 NotebooksShut = 0; }
+uint32 SS47Notebook::Shut() { return NotebooksShut; }
+
 SS47Notebook::~SS47Notebook()
 {
 	if (Reading.IsValid() && Reading->bActive) Reading->Stop();
+	if (UI.IsValid()) ++NotebooksShut;
 }
 
 TSharedRef<SWidget> SS47Notebook::TabStack()
@@ -1619,6 +1628,11 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
 		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
 		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));
+		// M7-HUD-20261109: X throws (and the stones), U the field recorder, Z the counter, as S47Keys binds them
+		auto KeyOf = [](const FCtlPage& Pg, const TCHAR* Starts) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Value.StartsWith(Starts)) return R.Key; return FString(); };
+		Check(TEXT("controls: throw, the stones and the pocket"), KeyOf(Desk, TEXT("Hold to throw")).StartsWith(TEXT("X")) && KeyOf(Desk, TEXT("Hold to throw")).Contains(TEXT("Mouse")), KeyOf(Desk, TEXT("Hold to throw")));
+		Check(TEXT("controls: the field recorder"), KeyOf(Desk, TEXT("The field recorder")) == TEXT("U") && S47Keys::Is(TEXT("tape"), EKeys::U), KeyOf(Desk, TEXT("The field recorder")));
+		Check(TEXT("controls: the counter"), KeyOf(Desk, TEXT("The Geiger counter")) == TEXT("Z") && S47Keys::Is(TEXT("counter"), EKeys::Z), KeyOf(Desk, TEXT("The Geiger counter")));
 		Nb->Show(TEXT("controls"));
 		S47Keys::Bind(TEXT("forward"), 0, EKeys::I);
 		S47Keys::Bind(TEXT("map"), 0, EKeys::K);

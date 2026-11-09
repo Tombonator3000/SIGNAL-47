@@ -40,6 +40,8 @@
 #include "UObject/GarbageCollection.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
+#include "S47FieldRadio.h"
+#include "S47HudGauges.h"
 #include "S47CaseFieldTests.h"
 #include "S47Main.h"
 #include "S47Night.h"
@@ -567,7 +569,8 @@ void FS47FreeformSession::Step(double Dt)
   else if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),ReceiverReception());
   else M->Audio->ReceiverMonitorOff();
  }
- if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(Objective());
+ // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
+ if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(HudObjective());
 }
 int32 FS47FreeformSession::PendingPrint(const FJob& J)
 {
@@ -1117,7 +1120,11 @@ bool FS47FreeformSession::ChargeEmergencyFeederFuse()
 void FS47FreeformSession::Earn(int32 Amount)
 {
  if(Amount<=0||Amount>10000)return;
- const int32 Paid=FMath::Min(Amount,Loan);Loan-=Paid;Cash=FMath::Min(1000080,Cash+Amount-Paid);Changed();
+ // M7: pay clears the requisition, then what is carried on the weekly sheet, and only then goes into the budget, so that work just
+ // before the assessment still counts against the carried line.
+ const int32 Paid=FMath::Min(Amount,Loan);Loan-=Paid;
+ const int32 Sheet=FMath::Min(Amount-Paid,Carried);Carried-=Sheet;
+ Cash=FMath::Min(1000080,Cash+Amount-Paid-Sheet);Changed();
 }
 void FS47FreeformSession::Refund(int32 Amount){if(Amount<=0||Amount>10000)return;Cash=FMath::Min(1000080,Cash+Amount);Changed();}
 int32 FS47FreeformSession::InventoryCount(const FString& Id)const{return Field?Field->InventoryCount(Id):0;}
@@ -2035,7 +2042,10 @@ FString FS47FreeformSession::StationGoalLine()const
  if(!Field||!Field->ArrayWear().bActive)return FString();
  const auto* Next=Field->ArrayWear().NextBranch();if(!Next)return FString();
  const FString Missing=Field->BranchNeeds(*Next);
- return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: REPAIR THE %s AT ANTENNA %s. %s"),27-Field->ArrayWear().DownCount(),Next->Title,Next->Junction,Missing.IsEmpty()?TEXT("YOU HAVE THE PARTS."):*(TEXT("NEEDS ")+Missing.ToUpper()+TEXT(".")));
+ const FString Parts=Missing.IsEmpty()?FString(TEXT("YOU HAVE THE PARTS.")):TEXT("NEEDS ")+Missing.ToUpper()+TEXT(".");
+ // M7-HUD-20261109: not out to the antennas in the small hours (Dale: "after two... be in the building")
+ if(GoalWaits(WorldClock))return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: THE %s AT ANTENNA %s WAITS FOR DAYLIGHT. %s"),27-Field->ArrayWear().DownCount(),Next->Title,Next->Junction,*Parts);
+ return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: REPAIR THE %s AT ANTENNA %s. %s"),27-Field->ArrayWear().DownCount(),Next->Title,Next->Junction,*Parts);
 }
 bool FS47FreeformSession::EveningGated(const FJob& J)const
 {
@@ -2065,7 +2075,7 @@ int32 FS47FreeformSession::JobPay(const FJob& J)const
 FString FS47FreeformSession::NextReviewText()const
 {
  const FWeekCosts X=WeekCosts(ReviewWeek+1);
- return FString::Printf(TEXT("DAY %d / $%d SO FAR"),NextReviewDay(),ReviewPower+ReviewFuel+X.Total()+Carried);
+ return FString::Printf(TEXT("DAY %d / $%d SO FAR"),NextReviewDay(),ReviewPowerNow()+ReviewFuel+X.Total()+Carried);
 }
 FS47FreeformSession::FWeekCosts FS47FreeformSession::WeekCosts(int32 Week)const
 {
@@ -2092,13 +2102,13 @@ void FS47FreeformSession::StepWeeklyReview()
  {
   ++ReviewWeek;
   const FWeekCosts X=WeekCosts(ReviewWeek);
-  const int32 Before=Carried,Bill=ReviewPower+ReviewFuel+X.Total()+Before;
+  const int32 Before=Carried,Bill=ReviewPowerNow()+ReviewFuel+X.Total()+Before;
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
   if(Care)Care->WeekBilled();
   FString Running=FString::Printf(TEXT("\nTRUCK: TIRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
   if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
-  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,ReviewPower,ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
+  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER, %d ANTENNAS ON THE LINE $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,AvailableDishCount(),ReviewPowerNow(),ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
   // The statement comes by post as well (FS47Mail): the same figures, on paper.
   if(Mail)Mail->PostWeekStatement(ReviewWeek);
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
@@ -2157,6 +2167,9 @@ FString FS47FreeformSession::KitWaits(const FString& Id)const
   :Id==TEXT("logger2")?Cases.HasAccess(TEXT("access.fieldlogger"))
   :Id==TEXT("film")?HasFinding(TEXT("body_photo"))
   :Id==TEXT("geiger_tube")?FieldRecordKept()
+  // M7 (C): the dearer kit of weeks three and four, once there is money to spend and a reason to
+  :Id==TEXT("transfer")?DayNumber>=15
+  :Id==TEXT("array_alarm")?(DayNumber>=15&&HasKit(TEXT("alarm")))
   :Id==TEXT("alarm")?SheriffTrust()>0:false;
  return bOpen?FString():FString(O->Waits);
 }
@@ -2250,7 +2263,26 @@ FString FS47FreeformSession::EveningLine(const FJob& J)const
 {
  return FString::Printf(TEXT("EVENING OBSERVATION / %s IS UP FROM %s. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)));
 }
-FString FS47FreeformSession::AvailableActivities()const
+bool FS47FreeformSession::LetterWaits(const FString& Line)
+{
+ return Line.StartsWith(TEXT("MAILBOX / "))||Line.StartsWith(TEXT("OPS / There is a letter"))||Line.StartsWith(TEXT("OPS / Dr. Ward's assessment"));
+}
+FString FS47FreeformSession::AvailableActivities(FString* Card)const
+{
+ // M7-HUD-20261109: Dr. Ward's letter (why the player is here at all) or his assessment, once the first shift is done: that comes
+ // first, and the day's work after it. Not out to the box at the road in the small hours, when it can wait for the morning.
+ if(Predecessor&&Tutorial==0)
+ {
+  const FString Letter=Predecessor->TaskLine();
+  if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock)))
+  {
+   if(Card)*Card=S47HudGauges::CardLine(Letter);
+   return Letter+TEXT(" THEN: ")+WorkActivities(nullptr);
+  }
+ }
+ return WorkActivities(Card);
+}
+FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
  int32 Pending=0;const FJob* Evening=nullptr;
  for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
@@ -2258,23 +2290,49 @@ FString FS47FreeformSession::AvailableActivities()const
  const FString Goal=StationGoalLine();
  const auto* Next=Field&&Field->ArrayWear().bActive?Field->ArrayWear().NextBranch():nullptr;
  const FString Tail=Next?FString::Printf(TEXT(" STATION GOAL: ARRAY %d OF 27."),27-Field->ArrayWear().DownCount()):FString();
- if(Pending>0)return FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending)+Tail;
- // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says.
- if(Next&&Field->BranchNeeds(*Next).IsEmpty())return Goal;
+ // M7-WALKIE-20261109: once the first shift is done, the field radio on the control room desk is Dale's way to the player and the
+ // night's rules; until it is taken every line says where it is. (Out in the field where the player was taken, it is not on the desk.)
+ const bool bOnDesk=Tutorial==0&&M&&M->FieldRadio&&M->FieldRadio->Ready()&&!M->FieldRadio->Owned()&&!M->FieldRadio->LeftOut();
+ const FString Radio=bOnDesk?FString(TEXT(" CONTROL ROOM DESK: TAKE THE FIELD RADIO (DALE, CHANNEL 1).")):FString();
+ // The card: the task in a line it has room for, then the walkie and the array while there is room.
+ const FString RadioCard=bOnDesk?FString(TEXT(" WALKIE: ON THE DESK.")):FString();
+ const FString ArrayCard=Next?FString::Printf(TEXT(" ARRAY %d OF 27."),27-Field->ArrayWear().DownCount()):FString();
+ const bool bDark=GoalWaits(WorldClock);
+ auto Say=[Card,&Radio,&RadioCard,&ArrayCard](const FString& Full,const FString& Short=FString())
+ {
+  if(Card)*Card=S47HudGauges::CardWith(Short.IsEmpty()?Full:Short,{RadioCard,ArrayCard});
+  return Full+Radio;
+ };
+ auto SayGoal=[&]()
+ {
+  const FString Missing=Field->BranchNeeds(*Next);
+  const FString Short=bDark?FString::Printf(TEXT("ANTENNA %s // THE %s WAITS FOR DAYLIGHT."),Next->Junction,Next->Title)
+   :Missing.IsEmpty()?FString::Printf(TEXT("ANTENNA %s // REPAIR THE %s: PARTS IN HAND."),Next->Junction,Next->Title)
+   :FString::Printf(TEXT("ANTENNA %s // THE %s NEEDS %s."),Next->Junction,Next->Title,*Missing.ToUpper());
+  return Say(Goal,Short);
+ };
+ if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending)+Tail,
+  FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")));
+ // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
+ if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark)return SayGoal();
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)
-  return (C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT(".")+Tail;
- if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."))+Tail;
- if(ServiceGuide==1)return ServiceObjective();
- if(Gear&&Gear->AnyLeft())return Gear->TaskLine()+Tail;
+  return Say((C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT(".")+Tail,
+   (C->Planned>=0?TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("CASE BOARD // CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT("."));
+ if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."))+Tail,TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
+ if(ServiceGuide==1)return Say(ServiceObjective());
+ if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine()+Tail,Gear->TaskLine());
  // An idle loan logger is an option, not the next thing to do: it never again stands in front of the goal (T16-17, 10).
- if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Field->FieldLogger().NextAction();
- if(Evening)return Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal;
+ if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Say(Field->FieldLogger().NextAction());
+ if(Evening)return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
+  FString::Printf(TEXT("TRACKING PC // %s IS UP FROM %s. UNTIL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))));
  // Said only when it is true: what stops a rest says so itself.
  const bool bCanRest=!Director||Director->RestBlock().IsEmpty();
  // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
- if(Cash<5||Loan>0)return bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEY CLEAR ANY REQUISITION BALANCE FIRST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEY CLEAR ANY REQUISITION BALANCE FIRST.");
- if(!Goal.IsEmpty())return Goal;
- return bCanRest?TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL."):TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE.");
+ if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEY CLEAR ANY REQUISITION BALANCE FIRST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEY CLEAR ANY REQUISITION BALANCE FIRST."),
+  bCanRest?TEXT("OPS // TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR MORE."):TEXT("OPS // TODAY'S PAID WORK IS DONE. MORE COMES WITH THE MORNING."));
+ if(!Goal.IsEmpty())return SayGoal();
+ return Say(bCanRest?TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL."):TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE."),
+  bCanRest?TEXT("OPS // OPTIONAL: A REFERENCE CHECK, NO PAY. OR REST."):TEXT("OPS // OPTIONAL: A REFERENCE CHECK, NO PAY. OR THE PHOTO LAB."));
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
@@ -2656,7 +2714,9 @@ void FS47FreeformSession::StepTutorial()
  {
   Tutorial=0;RecordEvidence(TEXT("first-shift"),J->PacketFeed>0?TEXT("FIRST SHIFT / legacy training observation: pointed, recorded, original retained, registered and its training packet filed."):TEXT("FIRST SHIFT / one normal routine observation: pointed, recorded, original retained and registered for payment at OPS. Physical case filing is introduced when an unusual result needs controls."));
   if(M&&M->UI)M->UI->ClearToasts();
-  Feedback=TEXT("FIRST SHIFT COMPLETE / Your normal observation is registered and paid. ")+AvailableActivities();Changed(Feedback);
+  // M7-HUD-20261109: the whole next step stays on the OPS screen; the toast says the shift is done, and the HUD's card comes in with
+  // what is next (Ward's letter in the box at the road, then the day's work).
+  Feedback=TEXT("FIRST SHIFT COMPLETE / Your normal observation is registered and paid. ")+AvailableActivities();Changed(TEXT("FIRST SHIFT COMPLETE / Your normal observation is registered and paid."));
   return;
  }
  static const TCHAR* Why[]={nullptr,nullptr,nullptr,
@@ -2678,7 +2738,7 @@ FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
- if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS TIME, NOT MONEY");
+ if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS MONEY AND A LONG WAIT");
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
@@ -2692,6 +2752,15 @@ FString FS47FreeformSession::Objective()const
  // It stands in the task list all the same.
  if(Director&&!Director->TipLine().IsEmpty()&&(!CurrentJob()||CurrentJob()->Stage==EJobStage::New||CurrentJob()->Stage==EJobStage::Filed))return Director->TipLine();
  return NextAction();
+}
+FString FS47FreeformSession::HudObjective()const
+{
+ const FString Full=Objective();
+ FString Card;
+ if(!Full.IsEmpty()&&Full==AvailableActivities(&Card)&&!Card.IsEmpty())return Card;
+ // Stranded with an empty tank: what to do, in the card's words.
+ if(Full.StartsWith(TEXT("SERVICE TRUCK: TANK EMPTY")))return TEXT("TRUCK // TANK EMPTY. GET OUT; USE THE TRUCK TO CALL ROADSIDE RETURN.");
+ return S47HudGauges::CardLine(Full);
 }
 FString FS47FreeformSession::NextAction()const
 {
@@ -2775,7 +2844,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty()){const FString Steps=Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")));Result.Add({TEXT("TRUCK / ")+(Steps.IsEmpty()?Care->StatusLine():Steps),false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
- if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can or roadside return. It costs time, not money."),false});
+ if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can, or the county's roadside return: money on the budget or the weekly sheet, and a long wait."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(FS47FreeformCases::Def(Line).Mystery?TEXT(": choose a control or file your assessment on the OPS case board"):TEXT(": choose a test on the OPS case board")),false});
  if(Director){const FString Trail=Director->MysteryTrailHint();if(!Trail.IsEmpty())Result.Add({Trail,false});}
@@ -2851,6 +2920,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  Check(S.Active()&&S.Day()==1&&S.Clock()==8*3600&&S.Budget()==120&&S.Jobs().Num()==3,TEXT("Freeform starts a separate day with three jobs and operating budget"));
  S.Spend(120);Check(!S.Spend(5)&&S.Spend(5,true)&&S.Debt()==5&&!S.Spend(5,true),TEXT("Freeform emergency requisition is bounded and cannot repeatedly mint stock"));
  S.Earn(20);Check(S.Budget()==15&&S.Debt()==0,TEXT("Freeform job income repays emergency credit before cash"));
+ {FS47FreeformSession P(nullptr);P.Begin(nullptr,false);P.Carried=30;P.Earn(20);Check(P.Arrears()==10&&P.Budget()==120,TEXT("M7: pay clears what is carried on the weekly sheet before the budget"));P.Earn(20);Check(P.Arrears()==0&&P.Budget()==130,TEXT("M7: and the rest goes into the budget"));P.Stop();}
  S.RecordEvidence(TEXT("extra_pulse"),TEXT("retained"));S.RecordEvidence(TEXT("extra_pulse"),TEXT("changed"));Check(S.Findings.FindRef(TEXT("extra_pulse"))==TEXT("retained"),TEXT("Freeform retained original facts are not overwritten by repeats"));
  S.TestAdvance(86400);Check(S.Day()==2&&S.Jobs().Num()==6,TEXT("Freeform new days retain unfinished work and create distinct daily job identities"));
  auto Saved=S.Save();FS47FreeformSession R(nullptr);R.Begin(S47J::Read(S47J::Write(Saved)));Check(R.Day()==2&&R.Budget()==15&&R.HasFinding(TEXT("extra_pulse"))&&R.Jobs().Num()==6&&!R.AudioPlaying(),TEXT("Freeform disk JSON restore retains economy, days, evidence and paused audio"));
@@ -3119,13 +3189,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Econ.TestLiveRules();Econ.TestAdvance(2*86400);
   Check(Econ.JobPay(Econ.Work[0])==15,TEXT("Time: a card two days old pays $15"));
   Econ.Work[0].bDocked=true;Check(Econ.JobPay(Econ.Work[0])==5,TEXT("Time: docked, half that to the nearest five"));Econ.Work[0].bDocked=false;
-  const int32 Start=Econ.Budget();Econ.TestAdvance(5*86400);Econ.StepWeeklyReview();
-  Check(Econ.Day()==8&&Econ.Budget()==Start-40&&Econ.Arrears()==0&&Econ.HasFinding(TEXT("week-review-1"))&&Econ.Debt()==0&&Econ.NextReviewDay()==15,TEXT("Time: the first review falls on day eight, $40 for power and fuel, on a sheet"));
-  Econ.StepWeeklyReview();Check(Econ.Budget()==Start-40,TEXT("Time: a review is paid once"));
+  const int32 Start=Econ.Budget(),Week=Econ.ReviewPowerNow()+ReviewFuel;Econ.TestAdvance(5*86400);Econ.StepWeeklyReview();
+  Check(Econ.Day()==8&&Econ.Budget()==Start-Week&&Econ.Arrears()==0&&Econ.HasFinding(TEXT("week-review-1"))&&Econ.Debt()==0&&Econ.NextReviewDay()==15,TEXT("Time: the first review falls on day eight, power by the antennas on the line and fuel, on a sheet"));
+  Econ.StepWeeklyReview();Check(Econ.Budget()==Start-Week,TEXT("Time: a review is paid once"));
   Econ.Cash=10;Econ.TestAdvance(7*86400);Econ.StepWeeklyReview();
-  Check(Econ.Budget()==0&&Econ.Arrears()==30&&Econ.Debt()==0,TEXT("Time: short of money it takes what is there, carries the rest, and never touches the requisition"));
+  Check(Econ.Budget()==0&&Econ.Arrears()==Week-10&&Econ.Debt()==0,TEXT("Time: short of money it takes what is there, carries the rest, and never touches the requisition"));
   FS47FreeformSession EconAgain(nullptr);EconAgain.Begin(S47J::Read(S47J::Write(Econ.Save())));
-  Check(EconAgain.Arrears()==30&&EconAgain.NextReviewDay()==22,TEXT("Time: what is carried survives a Continue, and is not charged again"));
+  Check(EconAgain.Arrears()==Week-10&&EconAgain.NextReviewDay()==22,TEXT("Time: what is carried survives a Continue, and is not charged again"));
   auto OldEcon=Econ.Save();OldEcon->RemoveField(TEXT("reviewWeek"));OldEcon->RemoveField(TEXT("carried"));S47J::Set(OldEcon,TEXT("cash"),60);
   FS47FreeformSession OldGame(nullptr);OldGame.Begin(OldEcon);OldGame.TestLiveRules();OldGame.StepWeeklyReview();
   Check(OldGame.Budget()==60&&OldGame.Arrears()==0,TEXT("Time: an older save on day fifteen is not charged for the weeks behind it"));
@@ -3134,8 +3204,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FS47FreeformSession Fees(nullptr);Fees.Begin(nullptr);Fees.TestLiveRules();
   Fees.Work[0].Stage=EJobStage::Filed;Fees.Work[0].CaseTest=-1;Fees.Work[0].Day=1;Fees.Work[0].RecordingSoundVersion=2;Fees.Work[0].RecordingQuality=.1;
   const int32 FeeStart=Fees.Budget();Fees.TestAdvance(7*86400);Fees.StepWeeklyReview();
-  Check(Fees.Budget()==FeeStart-40-PoorRecordFee&&Fees.FindingText(TEXT("week-review-1")).Contains(TEXT("RE-CHECK")),TEXT("Time: Ward charges for a recording nobody can read, on the sheet, and not much"));
-  Check(WearCap+FilmCap+FeeCap+ReviewPower+ReviewFuel<=100,TEXT("Time: the worst week costs at most $100, under two days' full pay"));
+  Check(Fees.Budget()==FeeStart-Fees.ReviewPowerNow()-ReviewFuel-PoorRecordFee&&Fees.FindingText(TEXT("week-review-1")).Contains(TEXT("RE-CHECK")),TEXT("Time: Ward charges for a recording nobody can read, on the sheet, and not much"));
+  Check(WearCap+FilmCap+FeeCap+ReviewPowerBase+27*ReviewPowerPerDish+ReviewFuel<=100,TEXT("Time: the worst week costs at most $100, under two days' full pay"));
   Fees.Stop();
   // Being taken, in the session's books.
   FS47FreeformSession Gone(nullptr);Gone.Begin(nullptr);Gone.TestLiveRules();Gone.TestAdvance(86400+17*3600.);
@@ -3181,6 +3251,50 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Trust.TestLiveRules();Trust.TestAdvance(86400);Trust.TakenAway(3600);Trust.TakenCosts(Trust.Clock()-3600);
   Check(Trust.ConcludeCase(FS47FreeformCases::LostLine,1)&&Trust.SheriffTrust()==1&&Trust.DeputyOnRoute(),TEXT("Patrol: any case carried to a conclusion and filed earns the county's trust, whatever it says"));
   Trust.Stop();
+ }
+ {
+  // M7-HUD-20261109: the HUD's card (the place and the next thing, in seventy characters), the station goal by night, the letter first
+  FS47FreeformSession H(nullptr);H.Begin(nullptr);
+  auto Sv=S47J::Read(S47J::Write(H.Save()));H.Stop();
+  if(const auto Fd=S47J::Obj(Sv,TEXT("field"))){FS47ArrayWear Aw;Aw.Start();S47J::Set(Fd,TEXT("arrayWear"),Aw.Save());}
+  FS47FreeformSession G(nullptr);G.Begin(Sv);G.Tutorial=0;G.ServiceGuide=0;G.Cash=50;G.Loan=0;
+  const auto* Next=G.Field&&G.Field->ArrayWear().bActive?G.Field->ArrayWear().NextBranch():nullptr;
+  Check(Next!=nullptr,TEXT("HUD card: the fixture's array is worn and has a next branch"));
+  const double Base=G.WorldClock-FMath::Fmod(G.WorldClock,86400.);
+  if(Next)
+  {
+   FString Card;G.WorldClock=Base+10*3600.;
+   const FString Work=G.AvailableActivities(&Card);
+   Check(Work.Contains(TEXT("UNFINISHED OBSERVATIONS"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Contains(TEXT("OBSERVATIONS WAITING"))&&Card.Contains(TEXT("OF 27"))&&Card.Len()<=S47HudGauges::CardMost,
+    TEXT("HUD card: the day's work in one short line, with the station goal still on it"));
+   Check(G.StationGoalLine().Contains(TEXT("REPAIR THE"))&&!G.StationGoalLine().Contains(TEXT("DAYLIGHT")),TEXT("Station goal: by day, the repair"));
+   G.WorldClock=Base+2.5*3600.;
+   Check(G.StationGoalLine().Contains(TEXT("WAITS FOR DAYLIGHT"))&&!G.StationGoalLine().Contains(TEXT("REPAIR THE")),TEXT("Station goal: at 02:30 it waits for daylight"));
+   G.WorldClock=Base+.5*3600.;const bool bLate=!G.StationGoalLine().Contains(TEXT("DAYLIGHT"));G.WorldClock=Base+6*3600.;
+   Check(bLate&&!G.StationGoalLine().Contains(TEXT("DAYLIGHT"))&&GoalWaits(Base+1*3600.)&&GoalWaits(Base+5.9*3600.)&&!GoalWaits(Base+23*3600.),TEXT("Station goal: it waits from one in the morning until six, not before or after"));
+   for(FJob& J:G.Work)J.Stage=EJobStage::Filed;
+   const bool bParts=G.Field->BranchNeeds(*Next).IsEmpty();
+   G.WorldClock=Base+10*3600.;Card.Reset();G.AvailableActivities(&Card);
+   Check(Card.StartsWith(FString(TEXT("ANTENNA "))+Next->Junction+TEXT(" // "))&&Card.Contains(bParts?TEXT("PARTS IN HAND"):TEXT("NEEDS"))&&Card.Len()<=S47HudGauges::CardMost,TEXT("HUD card: with the day's work done, the antenna and the repair"));
+   G.WorldClock=Base+2.5*3600.;Card.Reset();const FString Night=G.AvailableActivities(&Card);
+   Check(Night.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Card.Contains(TEXT("WAITS FOR DAYLIGHT"))&&!Card.Contains(TEXT("REPAIR"))&&Card.Len()<=S47HudGauges::CardMost
+    &&G.HudObjective()==Card,TEXT("HUD card: at 02:30 the station goal waits for daylight, and that is what the card says"));
+  }
+  // every task the jobs and the first shift can give fits the card
+  bool bFits=true;FString Longest;
+  auto Try=[&](const FString& Task){const FString C=S47HudGauges::CardLine(Task);if(C.Len()>S47HudGauges::CardMost||(C.IsEmpty()&&!Task.IsEmpty())){bFits=false;Longest=C;}};
+  for(int32 Stage=0;Stage<=int32(EJobStage::Filed);++Stage)for(int32 Kind=0;Kind<6;++Kind)
+  {
+   FJob J=G.Work[0];J.Stage=EJobStage(Stage);J.bAnomaly=Kind>0;J.bControl=Kind>1;J.ControlAt=Kind>2?8:0;J.bAudioReviewed=Kind>4;
+   J.Phenomenon=Kind==3?TEXT("wrong_source"):Kind==4?TEXT("duplicate_print"):TEXT("time_disagreement");Try(G.JobNextAction(J));
+  }
+  for(int32 T=1;T<=6;++T){G.Tutorial=T;Try(G.TutorialObjective());}
+  G.Tutorial=0;Try(G.Objective());
+  Check(bFits,*(FString(TEXT("HUD card: every job step and the first shift fit in seventy characters "))+Longest));
+  Check(LetterWaits(TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road."))&&LetterWaits(TEXT("OPS / There is a letter from Dr. Ward's office in the tray."))
+   &&LetterWaits(TEXT("OPS / Dr. Ward's assessment is in the tray."))&&!LetterWaits(TEXT("SARO under review / Dr. Ward assesses the station on May 12."))&&!LetterWaits(FString()),
+   TEXT("HUD card: Ward's letter or his assessment, in the box or the tray, comes before the day's work"));
+  G.Stop();
  }
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
  S.Stop();R.Stop();return OK;

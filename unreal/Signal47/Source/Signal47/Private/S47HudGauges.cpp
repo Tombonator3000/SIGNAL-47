@@ -197,6 +197,8 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 		{ TEXT("NORA"), TEXT("Nora") }, { TEXT("VEGA"), TEXT("Vega") }, { TEXT("CALICHE"), TEXT("Caliche") }, { TEXT("ROSWELL"), TEXT("Roswell") },
 		{ TEXT("SOCORRO"), TEXT("Socorro") }, { TEXT("MAGDALENA"), TEXT("Magdalena") }, { TEXT("ALBUQUERQUE"), TEXT("Albuquerque") }, { TEXT("DATIL"), TEXT("Datil") },
 		{ TEXT("MEXICO"), TEXT("Mexico") }, { TEXT("APRIL"), TEXT("April") },
+		// M7-HUD-20261109: the room's own capitals, and the doctor's title
+		{ TEXT("OPS"), TEXT("OPS") }, { TEXT("PC"), TEXT("PC") }, { TEXT("DR"), TEXT("Dr") },
 	};
 	static const TCHAR* Small[] = { TEXT("a"), TEXT("an"), TEXT("and"), TEXT("the"), TEXT("of"), TEXT("to"), TEXT("in"), TEXT("on"), TEXT("at"), TEXT("by"), TEXT("for"), TEXT("or") };
 	FString Out;
@@ -219,7 +221,9 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 		const FString Word = Text.Mid(I, J - I);
 		const bool bAfterApostrophe = I > 0 && Text[I - 1] == TEXT('\'');
 		FString Written;
-		if (bFigure) Written = Word;
+		// (an antenna's or a tape's name, "S-13", "C-60": its letters stay as they are)
+		const bool bLabel = Word.Len() <= 2 && J + 1 < Text.Len() && Text[J] == TEXT('-') && FChar::IsDigit(Text[J + 1]);
+		if (bFigure || bLabel) Written = Word;
 		else
 		{
 			const FString Up = Word.ToUpper();
@@ -237,6 +241,105 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 		bSentence = false;
 		bFirstWord = false;
 		I = J;
+	}
+	return Out;
+}
+
+FString S47HudGauges::CardLine(const FString& Task, int32 Most)
+{
+	FString T = Task.TrimStartAndEnd();
+	if (T.IsEmpty()) return T;
+	Most = FMath::Max(Most, 12);
+	// the screens and tables as the room's labels have them, without the way to them
+	static const TCHAR* Shorter[][2] = {
+		{ TEXT("TRACKING (right-hand PC)"), TEXT("TRACKING PC") }, { TEXT("RECEIVER (centre PC)"), TEXT("RECEIVER PC") },
+		{ TEXT("OPS (corner PC)"), TEXT("OPS") }, { TEXT("REEL DECK (wall table)"), TEXT("REEL DECK") },
+		{ TEXT("ARRAY STATUS (left-hand PC)"), TEXT("ARRAY STATUS") }, { TEXT(" (corner PC)"), TEXT("") }, { TEXT(" (right-hand PC)"), TEXT("") },
+		{ TEXT(" (centre PC)"), TEXT("") }, { TEXT(" (left-hand PC)"), TEXT("") }, { TEXT(" (wall table)"), TEXT("") },
+	};
+	for (const auto& S : Shorter) T.ReplaceInline(S[0], S[1], ESearchCase::CaseSensitive);
+	while (T.ReplaceInline(TEXT("  "), TEXT(" ")) > 0) {}
+	FString Head, Body;
+	if (!T.Split(TEXT(" // "), &Head, &Body))
+	{
+		// the place: what comes before the first " / " or ": ", if it comes early enough to be one
+		const int32 Slash = T.Find(TEXT(" / ")), Colon = T.Find(TEXT(": "));
+		int32 Cut = INDEX_NONE, Skip = 0;
+		if (Slash >= 0 && (Colon < 0 || Slash < Colon)) { Cut = Slash; Skip = 3; }
+		else if (Colon >= 0) { Cut = Colon; Skip = 2; }
+		if (Cut > 0 && Cut <= 28) { Head = T.Left(Cut).TrimStartAndEnd(); Body = T.Mid(Cut + Skip).TrimStartAndEnd(); }
+		else Body = T;
+	}
+	Head.TrimStartAndEndInline();
+	Body.TrimStartAndEndInline();
+	if (Head.Len() > 28) { Body = Head + TEXT(": ") + Body; Head.Reset(); }
+	// a step of something ("FIRST SHIFT 2/5") with a place of its own under it: the place takes the head, with the step's count,
+	// when the whole would not fit ("OPS 1/5 // OPEN DAILY WORK ...")
+	if (!Head.IsEmpty() && Head.Len() + 4 + Body.Len() > Most)
+	{
+		int32 Space = INDEX_NONE;
+		const FString Count = Head.FindLastChar(TEXT(' '), Space) ? Head.Mid(Space + 1) : FString();
+		const int32 Colon = Body.Find(TEXT(": "));
+		if (Count.Contains(TEXT("/")) && Count.Len() <= 5 && FChar::IsDigit(Count[0]) && Colon > 0 && Colon <= 20 && !Body.Left(Colon).Contains(TEXT(".")))
+		{
+			Head = Body.Left(Colon) + TEXT(" ") + Count;
+			Body = Body.Mid(Colon + 2).TrimStartAndEnd();
+		}
+	}
+	const FString Joint = Head.IsEmpty() ? FString() : Head + TEXT(" // ");
+	const int32 Room = Most - Joint.Len();
+	// the task's sentences (and its clauses after a semicolon), a doctor's "DR." not counted as an end
+	TArray<FString> Said;
+	{
+		FString Piece;
+		for (int32 I = 0; I < Body.Len(); ++I)
+		{
+			const TCHAR Ch = Body[I];
+			Piece.AppendChar(Ch);
+			const bool bEnd = (Ch == TEXT('.') || Ch == TEXT(';') || Ch == TEXT('!') || Ch == TEXT('?')) && (I + 1 == Body.Len() || Body[I + 1] == TEXT(' '));
+			const FString Lower = Piece.ToLower();
+			const bool bTitle = Ch == TEXT('.') && (Lower.EndsWith(TEXT(" dr.")) || Lower == TEXT("dr.") || Lower.EndsWith(TEXT(" mr.")) || Lower.EndsWith(TEXT(" st.")));
+			if (bEnd && !bTitle)
+			{
+				FString Done = Piece.TrimStartAndEnd();
+				if (Done.EndsWith(TEXT(";"))) { Done.LeftChopInline(1); Done += TEXT("."); }
+				if (!Done.IsEmpty()) Said.Add(Done);
+				Piece.Reset();
+			}
+		}
+		Piece.TrimStartAndEndInline();
+		if (!Piece.IsEmpty()) Said.Add(Piece);
+	}
+	// a sentence cut at a word to fit In characters, and saying so
+	auto Cut = [](const FString& S, int32 In)
+	{
+		FString C = S.Left(FMath::Max(0, In - 3));
+		int32 Space = INDEX_NONE;
+		if (C.Len() < S.Len() && C.FindLastChar(TEXT(' '), Space) && Space > 0) C.LeftInline(Space);
+		while (!C.IsEmpty() && (C.EndsWith(TEXT(",")) || C.EndsWith(TEXT(":")) || C.EndsWith(TEXT(";")) || C.EndsWith(TEXT(" ")))) C.LeftChopInline(1);
+		return C + TEXT("...");
+	};
+	FString Out;
+	for (const FString& S : Said)
+	{
+		const FString Try = Out.IsEmpty() ? S : Out + TEXT(" ") + S;
+		if (Try.Len() <= Room) { Out = Try; continue; }
+		// one sentence too long on its own; or, with room left, the start of the next (the thing to do after "TANK EMPTY.")
+		if (Out.IsEmpty()) Out = Cut(S, Room);
+		else if (Room - Out.Len() - 1 >= 20) Out += TEXT(" ") + Cut(S, Room - Out.Len() - 1);
+		break;
+	}
+	if (Out.IsEmpty()) return Head.Left(Most);
+	return Joint + Out;
+}
+
+FString S47HudGauges::CardWith(const FString& Line, std::initializer_list<FString> Tails, int32 Most)
+{
+	FString Out = CardLine(Line, Most);
+	for (const FString& Tail : Tails)
+	{
+		if (Tail.IsEmpty()) continue;
+		if (Out.Len() + Tail.Len() <= Most) Out += Tail;
 	}
 	return Out;
 }
@@ -369,6 +472,40 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		&& Handwritten(TEXT("back to the truck - on foot"), false) == TEXT("back to the truck - on foot") && Handwritten(TEXT("CALL DALE'S DESK"), false) == TEXT("Call Dale's desk")
 		&& Handwritten(TEXT("ROAD TO THE MESA"), true) == TEXT("Road to the Mesa"),
 		TEXT("the task is written by hand: the place in title case, the task as a sentence, the station's capitals and the figures kept"));
+	// M7-HUD-20261109: OPS and PC as the room has them, an antenna's name as it is painted, the doctor's title
+	Check(Handwritten(TEXT("OPS"), true) == TEXT("OPS") && Handwritten(TEXT("TRACKING PC"), true) == TEXT("Tracking PC")
+		&& Handwritten(TEXT("REPAIR THE WEST BRANCH AT ANTENNA S-13"), false) == TEXT("Repair the west branch at antenna S-13")
+		&& Handwritten(TEXT("A LETTER FROM DR. WARD'S OFFICE"), false) == TEXT("A letter from Dr. Ward's office") && Handwritten(TEXT("DALE'S DESK"), true) == TEXT("Dale's Desk"),
+		TEXT("OPS and PC stay in capitals on the card, S-13 keeps its letter, Dr. Ward his title"));
+	{
+		const FString Long = TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF 2 UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK. STATION GOAL: ARRAY 12 OF 27.");
+		const TCHAR* Tasks[] = {
+			TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+			TEXT("RECEIVER (centre PC): KEEP TUNING VALID; COLLECT THE ORIGINAL AT THE PRINTER WHEN RECORDING FINISHES"),
+			TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+			TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN"),
+			TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),
+			TEXT("EAST-WING GARAGE: THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP BUTTON BY THE DOOR (OR USE THE HAND CHAIN), THEN TAKE THE PARCEL TO THE RECEIVING TABLE"),
+			TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road."),
+			TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),
+			TEXT("ANOTHERVERYLONGWORDWITHOUTANYSPACEATALLTHATGOESONANDONANDONFORMORETHANSEVENTYCHARACTERSINALL"),
+		};
+		bool bFits = CardLine(Long).Len() <= CardMost;
+		for (const TCHAR* Task : Tasks) bFits &= CardLine(Task).Len() <= CardMost && !CardLine(Task).IsEmpty();
+		Check(bFits && CardLine(FString()).IsEmpty(), TEXT("every task fits the card in seventy characters, however long it is"));
+		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY TO THE SELECTED SOURCE") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP TUNING VALID. COLLECT THE ORIGINAL AT THE...")
+			&& CardLine(Tasks[3]).StartsWith(TEXT("SERVICE TRUCK // TANK EMPTY. GET OUT AND USE THE TRUCK")) && CardLine(Tasks[3]).EndsWith(TEXT("..."))
+			&& CardLine(Tasks[6]) == TEXT("MAILBOX // A letter from Dr. Ward's office is in the box at the road.")
+			&& CardLine(TEXT("FRAME 01 // INSPECT THE PRINT")) == TEXT("FRAME 01 // INSPECT THE PRINT"),
+			TEXT("the card names the place and then the task in whole sentences; a doctor's title is no end of one"));
+		Check(CardLine(Tasks[2]) == TEXT("FIRST SHIFT 2/5 // TRACKING PC: POINT THE ARRAY TO THE SELECTED SOURCE")
+			&& CardLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB")) == TEXT("OPS 1/5 // OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR...")
+			&& CardLine(TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING")) == TEXT("RECEIVER PC 3/5 // TUNE THE CARD AND PRESS START RECORDING") && CardLine(Tasks[5]) == TEXT("EAST-WING GARAGE // THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP...")
+			&& CardLine(Tasks[8]).EndsWith(TEXT("...")), TEXT("a sentence too long for the card is cut at a word and says so; the rest waits in the notebook and the pause menu"));
+		Check(CardWith(TEXT("OPS // 2 OBSERVATIONS WAITING."), { FString(TEXT(" WALKIE: ON THE DESK.")), FString(TEXT(" ARRAY 12 OF 27.")) }) == TEXT("OPS // 2 OBSERVATIONS WAITING. WALKIE: ON THE DESK. ARRAY 12 OF 27.")
+			&& CardWith(TEXT("ANTENNA S-13 // REPAIR IT."), { FString(TEXT(" THIS ONE IS FAR TOO LONG TO FIT ON THE CARD AT ALL, REALLY NOT.")), FString(TEXT(" ARRAY 12/27.")) }) == TEXT("ANTENNA S-13 // REPAIR IT. ARRAY 12/27."),
+			TEXT("more is said after the task only while the card has room, a tail too long left out"));
+	}
 	Check(BackingStrength(0) <= 0.15 && BackingStrength(0.05) <= 0.15 && BackingStrength(1) == 1.0 && BackingStrength(0.6) == 1.0 && BackingStrength(0.3) > BackingStrength(0.1)
 		&& BackingStrength(std::numeric_limits<double>::quiet_NaN()) <= 0.15 && BackingStrength(-2) <= 0.15 && BackingStrength(5) == 1.0,
 		TEXT("the dark rim under the clock and the battery is faint at night and full against a bright day sky"));
