@@ -91,6 +91,12 @@ public:
 	void SetCometClock(double Clock);
 	/** MOON-20261108: the moon where S47Weather::Moon has it (degrees), the share of it lit, and the sun's place for its lit side. */
 	void SetMoon(bool bShow, double Az, double El, double Lit, double SunAz, double SunEl);
+	/** PT-MOON-20261109, F10 "World fixes (T)": the moon put where a line wants it (degrees, share lit), the sun its elongation away to the
+	 *  west; CloudCover >= 0 holds the sky's cover; Old draws the painted disc of 8 November for a before picture. Off: as the date has it. */
+	struct FDevMoon { bool bOn = false; double Az = 180, El = 40, Lit = .5, CloudCover = -1; bool bOld = false; };
+	static FDevMoon DevMoon;
+	/** The moon's plane uses M_S47_Moon (NASA's near side, its phase shaded, hidden by clouds); false: the painted fallback. */
+	bool MoonTextured() const { return bMoonTex; }
 	/** meteorNow(): a shooting star now, unless one is crossing already. */
 	void MeteorNow();
 	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
@@ -254,8 +260,8 @@ public:
 	 *  (S47Weather::NoShower) it stands CellDistance upwind, as it did. */
 	static void CellPlace(double DirX, double DirZ, double ShowerH, FVector2D& OutOffset, double& OutShow);
 private:
-	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
-	bool bMoon = false;
+	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid, MoonTexMid;
+	bool bMoon = false, bMoonTex = false;
 	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;
 	double MoonStarDim = 0; // a bright moon high washes out the faint stars and the Milky Way
 	void PaintMoon();

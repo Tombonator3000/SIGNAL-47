@@ -5,6 +5,7 @@
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
+#include "HAL/IConsoleManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -27,6 +28,10 @@ namespace
 	double Smooth01(double V) { const double K = Clamp01(V); return K * K * (3 - 2 * K); }
 	double Rand() { return FMath::FRand(); }
 	FLinearColor V4(const FVector& V) { return FLinearColor(float(V.X), float(V.Y), float(V.Z), 0.f); }
+	// PT-MOON-20261109: the textured moon's light (M_S47_Moon's Color, times its albedo: the highlands 1, the seas about .4)
+	TAutoConsoleVariable<float> CvMoonGain(TEXT("s47.moon.Gain"), 1.5f, TEXT("The textured moon's brightness at night (the painted disc of 8 November was 4: one white blot)."));
+	TAutoConsoleVariable<float> CvMoonDayGain(TEXT("s47.moon.DayGain"), .55f, TEXT("The textured moon's brightness by day, over the sky."));
+	TAutoConsoleVariable<float> CvMoonEarth(TEXT("s47.moon.Earth"), .035f, TEXT("Earthshine on the moon's dark side at a new crescent, of its lit side."));
 
 	UStaticMeshComponent* Part(AS47Web* W, USceneComponent* Under, UStaticMesh* Mesh, UMaterialInterface* Mat, int32 SortPriority)
 	{
@@ -44,6 +49,8 @@ namespace
 		return C;
 	}
 }
+
+FS47Sky::FDevMoon FS47Sky::DevMoon;
 
 FVector S47SkyDir(double Az, double El)
 {
@@ -912,7 +919,13 @@ bool FS47Sky::Build(AS47Web* W)
 		D->SetVectorParameterValue(TEXT("MapU"), FLinearColor(1, 0, 0, 0));
 		D->SetVectorParameterValue(TEXT("MapV"), FLinearColor(0, 1, 0, 0));
 		MoonMid.Reset(D);
-		MoonComp = Part(W, Under(GroupNode), LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")), D, -3);
+		// PT-MOON-20261109 (Tom: "månen trenger tekstur", a flat white disc): NASA's near side in its own material, the phase shaded from
+		// the sun, hidden by the clouds in front of it (Tools/sky/import_moon.py). The painted disc stays the fallback without it.
+		bMoonTex = false;
+		if (UMaterialInterface* TexBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Sky/M_S47_Moon.M_S47_Moon")))
+			if (UMaterialInstanceDynamic* T = UMaterialInstanceDynamic::Create(TexBase, W)) { MoonTexMid.Reset(T); bMoonTex = true; }
+		UE_LOG(LogS47Sky, Display, TEXT("S47: moon %s"), bMoonTex ? TEXT("textured (M_S47_Moon)") : TEXT("painted disc (M_S47_Moon missing: Tools/sky/import_moon.sh)"));
+		MoonComp = Part(W, Under(GroupNode), LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")), bMoonTex ? MoonTexMid.Get() : D, -3);
 		if (MoonComp.IsValid()) MoonComp->SetVisibility(false);
 		MoonPainted = -1;
 	}
@@ -1291,16 +1304,52 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		if (MoonComp->IsVisible() != bShow) MoonComp->SetVisibility(bShow);
 		if (bShow)
 		{
-			if (FMath::Abs(MoonLit - MoonPainted) > .01) PaintMoon();
+			const bool bTex = bMoonTex && MoonTexMid.IsValid() && !DevMoon.bOld;
+			UMaterialInterface* Want = bTex ? static_cast<UMaterialInterface*>(MoonTexMid.Get()) : static_cast<UMaterialInterface*>(MoonMid.Get());
+			if (Want && MoonComp->GetMaterial(0) != Want) MoonComp->SetMaterial(0, Want);
 			const FVector Dir = S47SkyDir(MoonAz, MoonEl);
 			const FVector SunAt = S47SkyDir(MoonSunAz, MoonSunEl);
 			FVector Lit = SunAt - Dir * FVector::DotProduct(SunAt, Dir);
 			if (Lit.SizeSquared() < 1e-6) Lit = FVector(0, 1, 0) - Dir * Dir.Y;
 			const FVector Facing = S47Three::ToUE(-Dir).GetSafeNormal(), Toward = S47Three::ToUE(Lit).GetSafeNormal();
 			MoonComp->SetRelativeLocation(S47Three::ToUE(Dir * StarRadius * .97));
-			MoonComp->SetRelativeRotation(FRotationMatrix::MakeFromZX(Facing, Toward).Rotator());
 			MoonComp->SetRelativeScale3D(FVector(StarRadius * .036)); // about two degrees across: larger than life, as a painter would
-			if (MoonMid.IsValid()) MoonMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .9f) * float(FMath::Lerp(4.0, .5, FMath::Clamp(Daylight(), 0.0, 1.0))));
+			const double Day = Clamp01(Daylight());
+			if (!bTex)
+			{
+				if (FMath::Abs(MoonLit - MoonPainted) > .01) PaintMoon();
+				MoonComp->SetRelativeRotation(FRotationMatrix::MakeFromZX(Facing, Toward).Rotator());
+				if (MoonMid.IsValid()) MoonMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .9f) * float(FMath::Lerp(4.0, .5, Day)));
+			}
+			else
+			{
+				// PT-MOON-20261109: the moon's north toward the celestial pole (the valley at 33.3 N), so its seas stand as they are seen and do
+				// not turn with the sun; the sun's side comes in the material from SunL instead.
+				FVector North = S47SkyDir(0, 33.3);
+				North -= Dir * FVector::DotProduct(North, Dir);
+				const FVector Up = S47Three::ToUE(North).GetSafeNormal();
+				MoonComp->SetRelativeRotation(FRotationMatrix::MakeFromZX(Facing, Up).Rotator());
+				// Which of the plane's sides the eye has on its right (Unreal: right = up x forward), read in the world, whatever the frames do.
+				const FTransform& X = MoonComp->GetComponentTransform();
+				const FVector FwdW = (MoonComp->GetComponentLocation() - S47Three::ToUE(Eye)).GetSafeNormal();
+				const FVector UpW = X.TransformVector(FVector::XAxisVector).GetSafeNormal(), YW = X.TransformVector(FVector::YAxisVector).GetSafeNormal();
+				const double Flip = FVector::DotProduct(FVector::CrossProduct(UpW, FwdW), YW) >= 0 ? 1.0 : -1.0;
+				// The sun in the disc's frame (right, up, toward the eye): its side from Toward, how far round from the phase (cos = 2 lit - 1).
+				const FVector Right = FVector::CrossProduct(Facing, Up).GetSafeNormal() * Flip;
+				const double CosP = FMath::Clamp(2 * MoonLit - 1, -1.0, 1.0), SinP = FMath::Sqrt(FMath::Max(0.0, 1 - CosP * CosP));
+				const FVector SunL(SinP * FVector::DotProduct(Toward, Right), SinP * FVector::DotProduct(Toward, Up), CosP);
+				const double Night = 1 - Day;
+				const double Gain = FMath::Lerp(double(CvMoonGain.GetValueOnGameThread()), double(CvMoonDayGain.GetValueOnGameThread()), Day);
+				UMaterialInstanceDynamic* T = MoonTexMid.Get();
+				T->SetScalarParameterValue(TEXT("Flip"), float(Flip));
+				T->SetVectorParameterValue(TEXT("SunL"), FLinearColor(float(SunL.X), float(SunL.Y), float(SunL.Z), 0.f));
+				T->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .91f) * float(Gain));
+				// earthshine: most on a thin crescent, none to speak of past the quarter, and lost in daylight
+				T->SetScalarParameterValue(TEXT("Earth"), float(CvMoonEarth.GetValueOnGameThread() * FMath::Pow(1 - MoonLit, 2.0) * Night));
+				// the disc hides the stars behind it at night, dark side too; by day the sky's blue lies over it
+				T->SetScalarParameterValue(TEXT("OccDark"), float(FMath::Lerp(.92, 0.0, Day)));
+				T->SetScalarParameterValue(TEXT("OccLit"), float(FMath::Lerp(1.0, .35, Day)));
+			}
 		}
 	}
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);

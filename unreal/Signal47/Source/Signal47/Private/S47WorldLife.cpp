@@ -349,14 +349,33 @@ void US47WorldLife::Step(double Dt)
 	{
 		const double MoonClock = M->Freeform->Clock();
 		const S47Weather::FMoon Mo = S47Weather::Moon(M->Freeform->DateOfDay(int32(FMath::FloorToDouble(MoonClock / 86400.0)) + 1), FMath::Fmod(FMath::Fmod(MoonClock, 86400.0) + 86400.0, 86400.0));
-		Sky->SetMoon(true, Mo.Az, Mo.El, Mo.Lit, Mo.SunAz, Mo.SunEl);
-		W->SetMoonLight(S47Weather::MoonLight(Mo));
+		const FS47Sky::FDevMoon& Dev = FS47Sky::DevMoon;
+		if (!Dev.bOn)
+		{
+			Sky->SetMoon(true, Mo.Az, Mo.El, Mo.Lit, Mo.SunAz, Mo.SunEl);
+			W->SetMoonLight(S47Weather::MoonLight(Mo));
+		}
+		else
+		{
+			// PT-MOON-20261109, F10 "World fixes (T)": the moon where the line put it, the sun its elongation (cos = 1 - 2 lit) round to the west
+			const FVector Dir = S47SkyDir(Dev.Az, Dev.El);
+			FVector West = S47SkyDir(270, 0) - Dir * FVector::DotProduct(S47SkyDir(270, 0), Dir);
+			if (West.SizeSquared() < 1e-6) West = FVector(0, -1, 0) - Dir * -Dir.Y;
+			const double CosE = FMath::Clamp(1 - 2 * Dev.Lit, -1.0, 1.0);
+			const FVector Sun = (Dir * CosE + West.GetSafeNormal() * FMath::Sqrt(FMath::Max(0.0, 1 - CosE * CosE))).GetSafeNormal();
+			const double SunEl = FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp(Sun.Y, -1.0, 1.0)));
+			const double SunAz = FMath::Fmod(FMath::RadiansToDegrees(FMath::Atan2(Sun.X, -Sun.Z)) + 360.0, 360.0);
+			const S47Weather::FMoon DevMo{ 14.8 * Dev.Lit, Dev.Lit, Dev.Az, Dev.El };
+			Sky->SetMoon(true, Dev.Az, Dev.El, Dev.Lit, SunAz, SunEl);
+			W->SetMoonLight(S47Weather::MoonLight(DevMo));
+		}
 	}
 	else { Sky->SetMoon(false, 0, -90, 0, 0, -90); W->SetMoonLight(1.f); }
 	// WEATHER-20261108: the day's weather on the sky (FS47WeatherLive writes it in a live Freeform game; elsewhere the sky is its own)
 	if (!M->IsFreeform() || bTitle) S47Weather::Live().bOn = false;
 	const S47Weather::FLive& Weather = S47Weather::Live();
 	if (Weather.bOn) Sky->CloudCover = FMath::Clamp(Sky->CloudCover + Weather.CloudBias, 0.0, 0.9);
+	if (FS47Sky::DevMoon.CloudCover >= 0) Sky->CloudCover = FS47Sky::DevMoon.CloudCover; // PT-MOON-20261109: F10, the moon behind clouds
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening), float(Sky->Twilight));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
