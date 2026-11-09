@@ -1393,6 +1393,7 @@ void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
  Waiting.Reset();bNatural=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
+ if(EyeGlintClear)EyeGlintClear();
  if(Menu)
  {
   Menu->Relabel(TEXT("Natural rhythm: ON"),TEXT("Natural rhythm: off"));

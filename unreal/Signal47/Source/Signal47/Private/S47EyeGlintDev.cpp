@@ -62,7 +62,7 @@ namespace S47EyeGlintDevLocal
   void Pose(int32 K, bool bShow, double Dt)
   {
    FS47PaleBody& B = Bodies[K];
-   if (!B.bBuilt) return;
+   if (!B.bBuilt || !B.Creature.Ready()) return;
    const int32 Style = Kinds[K].Style;
    if (Style == 2) { B.ApplyCrab(bShow, Feet, Yaw, Yaw, Clock, 0., false); return; }
    if (Style == 3)
@@ -83,6 +83,8 @@ namespace S47EyeGlintDevLocal
   {
    const US47Main* Main = M.Get();
    if (Active < 0 || !Main || Main->Mode != US47Main::EMode::Play) return;
+   // A body whose skin has gone with its world (a new game) is let go, not posed.
+   if (!Bodies[Active].Creature.Ready()) { Active = -1; return; }
    Clock += Dt; Pose(Active, true, FMath::Min(Dt, .1));
   }
   // The dots of the body standing now: how many are drawn, and where between them (three metres).
