@@ -9,6 +9,7 @@
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47RadioTips.h"
+#include "S47Script.h"
 #include "S47TownDay.h"
 #include "S47TownUse.h"
 #include "S47Town.h"
@@ -417,6 +418,72 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 	return Out;
 }
 
+// ---------- the notebook's WHO & WHAT (PT-NOTEBOOK-20261109) ----------
+
+FString FS47Townsfolk::RoleOf(const FString& Who)
+{
+	return Who == TEXT("attendant") ? TEXT("Night man at the gas station") : Who == TEXT("waitress") ? TEXT("Waitress at the Mesa Diner") : Who == TEXT("deputy") ? TEXT("Deputy at the substation") : Who == TEXT("souvenir_man") ? TEXT("Runs the souvenir shop") : FString();
+}
+
+FString FS47Townsfolk::CardLine(const FString& Who, const TArray<FString>& Keys, int32 Today, int32 GoneDay, TFunctionRef<FString(const FString&)> TitleOf)
+{
+	using namespace S47TownsfolkLocal;
+	const int32 I = Index(Who);
+	if (I < 0) return FString();
+	// Gone: only that the place is empty, and for how long. Never where they went or why.
+	if (GoneDay > 0)
+	{
+		const int32 N = FMath::Max(1, Today - GoneDay + 1);
+		static const TCHAR* const Empty[4] = { TEXT("Night window shut"), TEXT("Not at the counter"), TEXT("Window dark"), TEXT("Nobody on the stoop") };
+		return FString::Printf(TEXT("%s %d %s. Nobody asks."), Empty[I], N, N == 1 ? (I == 1 ? TEXT("day") : TEXT("night")) : (I == 1 ? TEXT("days") : TEXT("nights")));
+	}
+	// What they have told, the weightiest first (as Lines ranks it): one plain line in the player's pencil.
+	FString Best; int32 Rank = -1;
+	const auto Part = [](const FString& Key, int32 N) { TArray<FString> P; Key.ParseIntoArray(P, TEXT(":"), false); return P.IsValidIndex(N) ? P[N] : FString(); };
+	for (const FString& K : Keys)
+	{
+		FString Say; int32 R = 0;
+		if (K.StartsWith(TEXT("gone:"))) { Say = FString::Printf(TEXT("Talks about %s being gone."), *Called(Part(K, 1))); R = 100; }
+		else if (K.StartsWith(TEXT("selfback:"))) { Say = FString::Printf(TEXT("Back at work. Won't say where %s was."), *He(Who)); R = 90; }
+		else if (K.StartsWith(TEXT("back:"))) { Say = Cap(FString::Printf(TEXT("%s is back, %s says. Nothing more."), *Called(Part(K, 1)), *He(Who))); R = 80; }
+		else if (K.StartsWith(TEXT("rumor:"))) { Say = FString::Printf(TEXT("Passed on talk about %s."), *TitleOf(Part(K, 1))); R = 60 + FMath::Min(FCString::Atoi(*Part(K, 2)), 30); }
+		else if (K.StartsWith(TEXT("help:"))) { Say = TEXT("Knows I called in the blue pickup."); R = 58; }
+		else if (K.StartsWith(TEXT("taken:"))) { Say = TEXT("Says I look like I lost a night."); R = 57; }
+		else if (K.StartsWith(TEXT("tip:"))) { Say = FString::Printf(TEXT("Heard my call to the radio about %s."), *TitleOf(Part(K, 1))); R = 55; }
+		else if (K.StartsWith(TEXT("found:"))) { Say = FString::Printf(TEXT("Knew I had been out to %s."), *TitleOf(Part(K, 1))); R = 50; }
+		else if (K.StartsWith(TEXT("shop:"))) { Say = TEXT("Noticed what I picked up in town."); R = 45; }
+		else if (K.StartsWith(TEXT("hear:"))) { Say = FString::Printf(TEXT("Told me about %s. On my map with a question mark."), *TitleOf(Part(K, 1))); R = 30; }
+		else if (K.StartsWith(TEXT("chat:")))
+		{
+			static const TCHAR* const Small[4] = { TEXT("Talks gas prices and the wind."), TEXT("Talks pie, and how much I work."), TEXT("Talks speed limits. Times, not stories."), TEXT("Talks hats and tourists.") };
+			Say = Small[I]; R = 1;
+		}
+		if (!Say.IsEmpty() && R > Rank) { Rank = R; Best = Say; }
+	}
+	return Best;
+}
+
+TArray<FS47Townsfolk::FCard> FS47Townsfolk::Cards() const
+{
+	TArray<FCard> Out;
+	if (!M || !M->Freeform) return Out;
+	const FS47FreeformSession& F = *M->Freeform;
+	const auto TitleOf = [&F](const FString& Id) { const FString T = F.EventPlaces ? F.EventPlaces->TitleOf(Id) : FString(); return T.IsEmpty() ? FString(TEXT("a place out there")) : T; };
+	for (const FString& Who : People())
+	{
+		TArray<FString> Keys;
+		const FString Mine = Who + TEXT(":");
+		for (const FString& T : Told) if (T.StartsWith(Mine)) Keys.Add(T.Mid(Mine.Len()));
+		Keys.Sort();
+		const FGone* G = Gone.FindByPredicate([&Who](const FGone& X) { return X.Who == Who; });
+		if (Keys.IsEmpty() && !G) continue; // not met, and not missed
+		FCard Cd; Cd.Who = Who; Cd.Name = Speaker(Who); Cd.Role = RoleOf(Who); Cd.bGone = G != nullptr;
+		Cd.Line = CardLine(Who, Keys, F.Day(), G ? FMath::Max(1, G->Day) : 0, TitleOf);
+		Out.Add(Cd);
+	}
+	return Out;
+}
+
 TArray<FString> FS47Townsfolk::Candidates(const FString& Who) const
 {
 	TArray<FString> Out;
@@ -519,6 +586,23 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("townsfolk: ") + What); };
 	Check(People().Num() == 4 && WorksAt(TEXT("deputy")) == TEXT("sheriff") && WorksAt(TEXT("waitress")) == TEXT("diner") && Speaker(TEXT("souvenir_man")) == TEXT("THE SHOP MAN"), TEXT("four regulars, each at a place on the catalogue"));
+	// PT-NOTEBOOK-20261109: WHO & WHAT's boxes: one plain line each, the weightiest thing told; someone gone is only gone.
+	{
+		const auto Title = [](const FString& Id) { return Id == TEXT("church") ? FString(TEXT("the church")) : FString(TEXT("the old mine")); };
+		const TArray<FString> Told3 = { TEXT("chat:1"), TEXT("rumor:church:3"), TEXT("hear:mine") };
+		Check(CardLine(TEXT("attendant"), Told3, 4, 0, Title) == TEXT("Passed on talk about the church.") && CardLine(TEXT("waitress"), { TEXT("chat:0") }, 2, 0, Title) == TEXT("Talks pie, and how much I work."),
+			TEXT("WHO & WHAT: the weightiest thing told is the box's one line"));
+		Check(CardLine(TEXT("deputy"), Told3, 6, 4, Title) == TEXT("Window dark 3 nights. Nobody asks.") && CardLine(TEXT("waitress"), {}, 5, 5, Title) == TEXT("Not at the counter 1 day. Nobody asks."),
+			TEXT("WHO & WHAT: someone gone is only gone, and for how long"));
+		bool bClean = true;
+		const TArray<FString> Every = { TEXT("gone:deputy:3"), TEXT("selfback:2"), TEXT("back:waitress:2"), TEXT("rumor:church:3"), TEXT("help:missing_reported_x"), TEXT("taken:1"), TEXT("tip:church"), TEXT("found:mine"), TEXT("shop:lure"), TEXT("hear:mine"), TEXT("chat:0") };
+		for (const FString& Who : People())
+		{
+			for (const FString& K : Every) { const FString L = CardLine(Who, { K }, 5, 0, Title); bClean &= !L.IsEmpty() && S47Script::LintText(L).IsEmpty(); }
+			bClean &= S47Script::LintText(CardLine(Who, {}, 5, 2, Title) + TEXT(" ") + Speaker(Who) + TEXT(" ") + RoleOf(Who)).IsEmpty();
+		}
+		Check(bClean, TEXT("WHO & WHAT: every line a box can say keeps to Freeform's spoiler limits (S47Script::LintText)"));
+	}
 	// The odds: about a third of nights, the same answer each time; two to four days away.
 	int32 Taken = 0; bool bSame = true, bDays = true;
 	for (int32 N = 1; N <= 300; ++N) { const bool T = TakenBy(47, N, TEXT("deputy")); Taken += T ? 1 : 0; bSame &= T == TakenBy(47, N, TEXT("deputy")); const int32 D = DaysAway(47, TEXT("deputy"), N); bDays &= D >= 2 && D <= 4; }

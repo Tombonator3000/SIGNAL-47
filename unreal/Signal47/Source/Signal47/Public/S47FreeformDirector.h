@@ -99,6 +99,9 @@ public:
  static bool ReportDoneWith(bool bLightsUp,bool bArmed,bool bChecked){return !bLightsUp&&bArmed&&bChecked;}
  // What the night's mystery still has to show, as a task row, while it can be found.
  FString MysteryTrailHint() const;
+ // PT-NOTEBOOK-20261109 (Tom, d37: the feeder looked at, its line gone without a tick): the trail's rows while it can be found
+ // (until MysteryClearAt), each clue's row ticked off once it is seen instead of dropped: the remote feeder, the receiver chart.
+ TArray<TPair<FString,bool>> MysteryTrailRows() const;
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);

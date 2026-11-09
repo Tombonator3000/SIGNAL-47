@@ -121,7 +121,7 @@ struct FS47NbWorkItem
 {
 	FString Id, Title, Status, NextAction, Location;
 	TArray<FString> Hints;
-	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false;
+	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false; bool bCard = false; // bCard: a job card, folded under one line on NOW (PT-NOTEBOOK-20261109)
 };
 struct FS47NbGuideEntry { FString Id, Title, Text; };
 struct FS47NbExtras
@@ -140,7 +140,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	TOptional<FS47AlbumView> Album;      // the free frames (core/album.ts)
+	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TOptional<TArray<FS47Doc>> Papers; // PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
 };
 
 // UI.viewfinder's options
@@ -183,8 +183,6 @@ public:
 	void Init(AS47HUD* InHud) { Hud = InHud; }
 
 	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {});
-	// MSG-ONE-20261109: a line of danger: it goes before any caption in the one queue (FS47MessageQueue), even one on screen.
-	void Alert(const FString& Text, float Secs = 4.f);
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it

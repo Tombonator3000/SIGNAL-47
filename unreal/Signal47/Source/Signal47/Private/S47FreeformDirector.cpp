@@ -1207,10 +1207,17 @@ bool FS47FreeformDirector::ReportDone() const
 }
 FString FS47FreeformDirector::MysteryTrailHint() const
 {
- if(MysteryClearAt<=0)return FString();
- if(!(MysterySeen&2))return TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Gone by noon.");
- if(!(MysterySeen&1))return TEXT("WORTH A LOOK / The receiver chart at the rack. Gone by noon.");
+ for(const TPair<FString,bool>& Row:MysteryTrailRows())if(!Row.Value)return Row.Key;
  return FString();
+}
+TArray<TPair<FString,bool>> FS47FreeformDirector::MysteryTrailRows() const
+{
+ // (the trail opens with the first clue found, so one row is always ticked; the words stay the same done or not, so the note's key holds)
+ TArray<TPair<FString,bool>> Out;
+ if(MysteryClearAt<=0)return Out;
+ Out.Add({TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Gone by noon."),(MysterySeen&2)!=0});
+ Out.Add({TEXT("WORTH A LOOK / The receiver chart at the rack. Gone by noon."),(MysterySeen&1)!=0});
+ return Out;
 }
 void FS47FreeformDirector::StepOwed()
 {
@@ -2002,6 +2009,11 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  MysteryModel.MysteryAfter=23.5;MysteryModel.MysterySeen=1;MysteryModel.MysteryClue=1;MysteryModel.MysteryAge=2.5;MysteryModel.MysteryClearAt=200000;
  FS47FreeformDirector MysteryCopy(nullptr);MysteryCopy.Begin(S47J::Read(S47J::Write(MysteryModel.Save())));
  Check(MysteryCopy.MysteryRollDay==2&&MysteryCopy.PendingMysteryNight==2&&MysteryCopy.MysteryAfter==23.5&&MysteryCopy.MysterySeen==1&&MysteryCopy.MysteryNoticeClue()==1&&MysteryCopy.MysteryNoticeAge()==2.5&&MysteryCopy.MysteryTrailOpen(),TEXT("The night's mystery, its hour, what has been seen and a notice under way survive Continue"));
+ {const TArray<TPair<FString,bool>> Rows=MysteryCopy.MysteryTrailRows();
+  Check(Rows.Num()==2&&Rows[0].Key.Contains(TEXT("remote feeder"))&&!Rows[0].Value&&Rows[1].Value&&MysteryCopy.MysteryTrailHint()==Rows[0].Key,TEXT("PT-NOTEBOOK: the trail's rows: the chart seen is ticked off, the feeder still open"));
+  FS47FreeformDirector Both(nullptr);Both.Begin(nullptr);Both.MysterySeen=3;Both.MysteryClearAt=200000;
+  Check(Both.MysteryTrailRows().Num()==2&&Both.MysteryTrailRows()[0].Value&&Both.MysteryTrailRows()[1].Value&&Both.MysteryTrailHint().IsEmpty(),TEXT("PT-NOTEBOOK: the feeder visited stays on the note ticked off until the trail clears, not gone"));
+  Both.MysteryClearAt=0;Check(Both.MysteryTrailRows().IsEmpty(),TEXT("PT-NOTEBOOK: the trail's rows go with the trail at noon"));}
  Check(MysteryCopy.ExpireNightChoices(2,false)&&MysteryCopy.PendingMysteryNight==0&&MysteryCopy.MysteryTrailOpen()&&MysteryCopy.MysteryRollDay==2,TEXT("Morning ends a drawn mystery not yet met, and does not touch a trail already found"));
  MysteryCopy.Begin(Saved);Check(MysteryCopy.MysteryRollDay==0&&MysteryCopy.MysteryNoticeClue()==-1&&!MysteryCopy.MysteryTrailOpen(),TEXT("A save from before the mystery has it still to come"));
  FS47FreeformDirector Photos(nullptr);Photos.Begin(nullptr);Photos.IncidentSerial=7;Photos.IncidentId=TEXT("observer.day3.7");

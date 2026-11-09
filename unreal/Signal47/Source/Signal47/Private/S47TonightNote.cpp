@@ -143,7 +143,7 @@ FString S47TonightNote::Plain(const FNote& Note)
 
 namespace S47TonightNoteLocal
 {
-FNote BuildNote(const FIn& In)
+FNote BuildNote(const FIn& In, bool bAll)
 {
  FNote N;
  TArray<FWork> All;
@@ -169,6 +169,7 @@ FNote BuildNote(const FIn& In)
   W.L.Mark = bDone ? EMark::Done : EMark::Open;
   W.Order = I;
   W.Key = Key(S47HudGauges::CardLine(Text));
+  W.L.Source = Text;
   Split(Text, W.L.Where, W.L.What);
   for (const FWindow& Wd : In.Windows) if (Wd.Text.TrimStartAndEnd() == Text) { W.Start = Wd.Start; W.End = Wd.End; }
   // the same thing twice (a case's step in the list and its window, the objective's card) is one line
@@ -180,20 +181,40 @@ FNote BuildNote(const FIn& In)
  {
   const FString K = Key(S47HudGauges::CardLine(Wd.Text));
   if (Wd.Text.TrimStartAndEnd().IsEmpty() || All.ContainsByPredicate([&K](const FWork& X) { return X.Key == K; })) continue;
-  FWork W; W.Order = In.Tasks.Num() + 1; W.Key = K; W.Start = Wd.Start; W.End = Wd.End;
+  FWork W; W.Order = In.Tasks.Num() + 1; W.Key = K; W.Start = Wd.Start; W.End = Wd.End; W.L.Source = Wd.Text.TrimStartAndEnd();
   Split(Wd.Text, W.L.Where, W.L.What);
   All.Add(W);
  }
  // tonight's filed cards, ticked off on one line
  if (Filed > 0)
  {
-  FWork W; W.L.Mark = EMark::Done; W.Order = -2; W.L.Where = TEXT("OPS"); W.Key = TEXT("filed cards");
+  FWork W; W.L.Mark = EMark::Done; W.Order = -2; W.L.Where = TEXT("OPS"); W.Key = TEXT("filed cards"); W.L.Source = W.Key;
   W.L.What = Filed == 1 ? FString(TEXT("One job card registered and filed.")) : FString::Printf(TEXT("%d job cards registered and filed."), Filed);
   All.Insert(W, 0);
  }
  for (FWork& W : All) if (W.Windowed()) W.L.When = Window(W.Start, W.End, In.Clock, In.bFreeform);
  // the spoiler limits before anything is chosen, so that what is counted is what could be shown
  All.RemoveAll([&In](const FWork& W) { return !Clean(In, LineText(W.L)); });
+ for (FWork& W : All) W.L.Key = W.Key;
+ // What was done tonight stays struck until 08:00, also when the list has let it go (PT-NOTEBOOK-20261109).
+ if (In.bFreeform && In.Done && In.Clock >= 0)
+ {
+  S47TonightNote::FDone& Mem = *In.Done;
+  const int32 Night = NightOf(In.Clock);
+  if (Night != Mem.Night || In.Clock + 60 < Mem.Last || In.Game != Mem.Game) { Mem.Lines.Reset(); Mem.Order.Reset(); Mem.Night = Night; Mem.Game = In.Game; }
+  Mem.Last = In.Clock;
+  for (const FWork& W : All)
+   if (W.L.Mark == EMark::Done) { if (!Mem.Lines.Contains(W.Key)) Mem.Order.Add(W.Key); FLine L = W.L; L.When.Reset(); Mem.Lines.Add(W.Key, L); }
+  for (int32 I = 0; I < Mem.Order.Num(); ++I)
+  {
+   const FString& K = Mem.Order[I];
+   if (All.ContainsByPredicate([&K](const FWork& X) { return X.Key == K; })) continue;
+   const FLine* L = Mem.Lines.Find(K);
+   if (!L) continue;
+   FWork W; W.L = *L; W.L.Mark = EMark::Done; W.Key = K; W.Order = -100 + I;
+   All.Add(W);
+  }
+ }
 
  // The next step. A window open now comes first: be there for it. Otherwise the objective's own line; in Story, whose list says it
  // in other words, the first thing not done, with the objective's place.
@@ -209,7 +230,7 @@ FNote BuildNote(const FIn& In)
  }
  if (Next == INDEX_NONE && !NextKey.IsEmpty())
  {
-  FWork W; W.Order = -1; W.Key = NextKey;
+  FWork W; W.Order = -1; W.Key = NextKey; W.L.Key = NextKey; W.L.Source = In.Next;
   Split(In.Next, W.L.Where, W.L.What);
   if (!W.L.What.IsEmpty() && Clean(In, LineText(W.L))) { All.Add(W); Next = All.Num() - 1; }
  }
@@ -233,9 +254,9 @@ FNote BuildNote(const FIn& In)
  Done.Sort([](const FWork& A, const FWork& B) { return A.Order < B.Order; });
  const int32 HasNext = Next != INDEX_NONE ? 1 : 0;
  const int32 OpenCount = Windows.Num() + Rest.Num();
- int32 DoneShown = FMath::Min(Done.Num(), MostDone);
- if (HasNext + OpenCount + DoneShown > MostLines) DoneShown = FMath::Min(Done.Num(), 1);
- int32 Room = FMath::Max(0, MostLines - HasNext - DoneShown);
+ int32 DoneShown = bAll ? Done.Num() : FMath::Min(Done.Num(), MostDone);
+ if (!bAll && HasNext + OpenCount + DoneShown > MostLines) DoneShown = FMath::Min(Done.Num(), 1);
+ int32 Room = bAll ? OpenCount : FMath::Max(0, MostLines - HasNext - DoneShown);
  const int32 WindowsShown = FMath::Min(Windows.Num(), Room); Room -= WindowsShown;
  const int32 RestShown = FMath::Min(Rest.Num(), Room);
  N.More = OpenCount - WindowsShown - RestShown;
@@ -247,21 +268,21 @@ FNote BuildNote(const FIn& In)
  if (!In.bFreeform) return N;
 
  // What else is open: the job cards, the cases waiting on evidence, the post.
- TArray<FString> Also;
+ TArray<FString> Also, AlsoKeys;
  if (Open > 0)
  {
   FString Cards = Open == 1 ? FString(TEXT("Job cards: one open at OPS")) : FString::Printf(TEXT("Job cards: %d open at OPS"), Open);
   if (In.EveningUp >= 0 && (Clock < 0 || (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock)))) Cards += TEXT("; the evening's source is up at ") + HourMinute(In.EveningUp);
-  Also.Add(Cards + TEXT("."));
+  Also.Add(Cards + TEXT(".")); AlsoKeys.Add(TEXT("cards"));
  }
  if (In.WaitingCases.Num())
  {
   TArray<FString> Titles;
   for (const FString& T : In.WaitingCases) Titles.Add(S47HudGauges::Handwritten(T, true));
-  Also.Add((Titles.Num() == 1 ? TEXT("Case waiting on evidence: ") : TEXT("Cases waiting on evidence: ")) + FString::Join(Titles, TEXT(", ")) + TEXT("."));
+  Also.Add((Titles.Num() == 1 ? TEXT("Case waiting on evidence: ") : TEXT("Cases waiting on evidence: ")) + FString::Join(Titles, TEXT(", ")) + TEXT(".")); AlsoKeys.Add(TEXT("cases"));
  }
- if (Post.Num()) Also.Add(TEXT("Post: ") + Post[0] + (Post.Num() > 1 ? FString::Printf(TEXT(" (+%d more)"), Post.Num() - 1) : FString()));
- for (const FString& A : Also) if (Clean(In, A)) N.Also.Add(A);
+ if (Post.Num()) { Also.Add(TEXT("Post: ") + Post[0] + (Post.Num() > 1 ? FString::Printf(TEXT(" (+%d more)"), Post.Num() - 1) : FString())); AlsoKeys.Add(TEXT("post")); }
+ for (int32 I = 0; I < Also.Num(); ++I) if (Clean(In, Also[I])) { N.Also.Add(Also[I]); N.AlsoKeys.Add(AlsoKeys[I]); }
 
  // What the clock allows now.
  if (Clock >= 0)
@@ -286,7 +307,9 @@ FNote BuildNote(const FIn& In)
 }
 }
 
-S47TonightNote::FNote S47TonightNote::Build(const FIn& In) { return S47TonightNoteLocal::BuildNote(In); }
+S47TonightNote::FNote S47TonightNote::Gather(const FIn& In, bool bAll) { return S47TonightNoteLocal::BuildNote(In, bAll); }
+S47TonightNote::FNote S47TonightNote::Build(const FIn& In) { return Gather(In, false); }
+S47TonightNote::FDone& S47TonightNote::Tonight() { static FDone Mem; return Mem; }
 
 bool S47TonightNote::SelfTest(TArray<FString>& Lines)
 {
@@ -349,6 +372,44 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  N = Build(Many);
  Check(N.Lines.Num() == MostLines && N.More == 7 - (MostLines - 2) && Plain(N).Contains(FString::Printf(TEXT("+%d more in the notebook"), N.More)), TEXT("a long list keeps to six lines and counts the rest for the notebook"));
  Check(N.Lines[0].Mark == EMark::Done && N.Lines[1].Mark == EMark::Next && N.Lines[1].What.Contains(TEXT("4")), TEXT("with a full note one thing done stays ticked, then the next step"));
+ // PT-NOTEBOOK-20261109: NOW has the same lines with no limit, so the note's "+N more" is exactly what NOW has besides the note.
+ {
+  const FNote Full = Gather(Many, true);
+  int32 FullOpen = 0, NoteOpen = 0, FullDone = 0;
+  for (const FLine& L : Full.Lines) { FullOpen += L.Mark == EMark::Open; FullDone += L.Mark == EMark::Done; }
+  for (const FLine& L : N.Lines) NoteOpen += L.Mark == EMark::Open;
+  bool bAllThere = true;
+  for (const FLine& L : N.Lines) bAllThere &= !L.Key.IsEmpty() && Full.Lines.ContainsByPredicate([&L](const FLine& F) { return F.Key == L.Key && F.Mark == L.Mark; });
+  Check(Full.More == 0 && Full.Lines.Num() == 11 && FullDone == 3 && FullOpen == NoteOpen + N.More && bAllThere,
+   TEXT("NOW gathers every line with no limit: the note's lines are among them, and \"+N more\" counts exactly the open lines only NOW shows"));
+  Check(Full.Lines.ContainsByPredicate([](const FLine& L) { return L.Source == TEXT("SERVICE YARD / Check spare number 11 on the rack."); }), TEXT("each line keeps the task's own words, for FOLLOW and the details"));
+ }
+ // PT-NOTEBOOK-20261109: the remote feeder looked at is ticked off and stays struck through until 08:00, also once the list lets it go.
+ {
+  FDone Mem;
+  const FString Feeder = TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Gone by noon.");
+  FIn Trail; Trail.bFreeform = true; Trail.Done = &Mem; Trail.Clock = Day2 + 86400. + 1.2 * 3600.;
+  Trail.Tasks = { { Feeder, false }, { TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false } };
+  FNote T = Gather(Trail, true);
+  const int32 Open = Find(T, TEXT("remote feeder"));
+  Check(Open != INDEX_NONE && T.Lines[Open].Mark != EMark::Done, TEXT("the feeder worth a look is open before the visit"));
+  Trail.Tasks[0].bDone = true; Trail.Clock += 1800;
+  T = Gather(Trail, true);
+  const int32 Ticked = Find(T, TEXT("remote feeder"));
+  Check(Ticked != INDEX_NONE && T.Lines[Ticked].Mark == EMark::Done, TEXT("after the visit the feeder's line is ticked off and struck"));
+  Trail.Tasks.RemoveAt(0); Trail.Clock += 1800;
+  T = Gather(Trail, true);
+  const FNote Small = Gather(Trail);
+  const int32 Kept = Find(T, TEXT("remote feeder")), KeptNote = Find(Small, TEXT("remote feeder"));
+  Check(Kept != INDEX_NONE && T.Lines[Kept].Mark == EMark::Done && KeptNote != INDEX_NONE && Small.Lines[KeptNote].Mark == EMark::Done, TEXT("a line done tonight stays struck on NOW and on the note when the list lets it go"));
+  Trail.Clock = Day2 + 86400. + 8.5 * 3600.;
+  T = Gather(Trail, true);
+  Check(Find(T, TEXT("remote feeder")) == INDEX_NONE, TEXT("at 08:00 the night's struck lines are let go"));
+  Trail.Clock = Day2 + 86400. + 2 * 3600.; Trail.Tasks.Insert({ Feeder, true }, 0); Gather(Trail, true);
+  Trail.Tasks.RemoveAt(0); Trail.Game = 7; Trail.Clock += 600;
+  Check(Find(Gather(Trail, true), TEXT("remote feeder")) == INDEX_NONE, TEXT("another game loaded the same night forgets what this one did"));
+  Check(S47Script::LintText(Plain(T)).IsEmpty(), TEXT("the remembered lines keep to the spoiler limits"));
+ }
  // Story (chapter 2): the list's own order, the first thing not done is next with the objective's place; Story's words are its own.
  FIn Story;
  Story.Clock = 2 * 3600.;

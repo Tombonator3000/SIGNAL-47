@@ -71,6 +71,14 @@ public:
 	// "doors" (somebody at a door or a window), "figure" (somebody out walking), "stock" (cattle). Empty: nothing anybody talks of.
 	static FString Talk(const FString& Kind);
 
+	// PT-NOTEBOOK-20261109: the notebook's WHO & WHAT, one box for each of them the player has talked to or found gone: who they are,
+	// and one plain line in the player's pencil from what they have told (Told), or how long their place has been empty. It says that
+	// someone is gone and nothing of why.
+	struct FCard { FString Who, Name, Role, Line; bool bGone = false; };
+	TArray<FCard> Cards() const;
+	// The line, from what Who has told (Told's keys without "who:"), the day, and the day they went (0: here). TitleOf names a place.
+	static FString CardLine(const FString& Who, const TArray<FString>& Keys, int32 Today, int32 GoneDay, TFunctionRef<FString(const FString&)> TitleOf);
+	static FString RoleOf(const FString& Who);
 	// Where someone gone was last seen, pencilled on the survey sheet (US47Flow::MapView).
 	void FillMap(struct FS47MapView& V) const;
 	// F10

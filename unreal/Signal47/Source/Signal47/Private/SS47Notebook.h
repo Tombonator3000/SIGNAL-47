@@ -66,6 +66,15 @@ private:
 	bool bShowHistory = false;
 	void FilterDocuments(const FString& Query);
 	void FilterWork();
+	// PT-NOTEBOOK-20261109 (Freeform): NOW's rows, each a line of the note (X.Now) or, under an open fold, one of the work items (the job
+	// cards, the cases waiting); the night each paper belongs to (its "DAY n" stamp, or the one before it), newest night first.
+	struct FNowRow { int32 Line = INDEX_NONE, Item = INDEX_NONE; };
+	TArray<FNowRow> NowRows;
+	TSet<FString> OpenFolds;
+	TMap<FString, int32> DocNight;
+	void FilterNow();
+	bool IsNow() const { return X.bNow && Tab == TEXT("tasks"); }
+	const FS47NbWorkItem* ChosenWork() const; // NOW: the work item of the chosen row, if it has one
 	FS47NbExtras X;
 	TMap<FString, int32> Sel;    // the chosen entry on each tab
 	uint32 KeysShown = 0;        // S47Keys::Changes() when the CONTROLS page was built

@@ -66,6 +66,8 @@
 #include "S47HUD.h"
 #include "S47HudGauges.h"
 #include "S47Script.h"
+#include "S47PinBoard.h"
+#include "S47TonightNote.h"
 #include "S47Image.h"
 #include "S47Keys.h"
 #include "S47Mirrors.h"
@@ -1389,35 +1391,16 @@ void US47Flow::RequestTitle(TFunction<void()> Resume)
 	});
 }
 
-FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
+namespace S47FlowNotebook
 {
-	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
-	AS47Story* S = M->Story;
-	O.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("FREEFORM / DAY %d"), M->Freeform->Day()) : S ? S->ChapterTitle() : FString();
-	O.Clock = S ? FMath::Fmod(S->Clock()+86400.,86400.) : -1;
-	if (M->Evening && M->Evening->Commute()) O.Clock=-1;
-	O.Place = PlaceName();
-	static const TSet<FString> SaroRooms = { TEXT("Control room"), TEXT("Records room"), TEXT("South corridor"), TEXT("Photo lab"), TEXT("Truck pad"), TEXT("Service yard"), TEXT("Service road") };
-	if ((M->Web ? M->Web->Area() : FString(TEXT("saro"))) == TEXT("saro") && SaroRooms.Contains(O.Place)) O.Place += TEXT(", SARO");
-	if (bDevRun || !CaseId) O.CaseLine = TEXT("DEVELOPER RUN \u00B7 NOTHING IS SAVED");
-	else
+	// PT-NOTEBOOK-20261109: the night's plan as the pause menu's note and the notebook's NOW both read it (S47TonightNote::Gather): the
+	// task list, the HUD's objective card and the case windows; in Freeform with what is remembered done tonight.
+	S47TonightNote::FIn TonightIn(US47Main* M, const TArray<FS47Task>& Tasks, const FString& Objective, double Clock)
 	{
-		const TOptional<FS47SaveMeta> Last = Saves.Latest(CaseId);
-		O.CaseLine = FString::Printf(TEXT("CASE %d \u00B7 %s"), CaseId, Last ? *S47Theme::SavedAgo(Last->SavedAt) : TEXT("NOT SAVED YET"));
-	}
-	// tonight's card: the chapter's objective, the tasks not done, the latest note
-	if (S)
-	{
-		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
-		if (M->IsFreeform() && M->Freeform) O.Objective=M->Freeform->Objective();
-		const TArray<FS47Task> Tasks = S->Tasks();
-		for (const FS47Task& T : Tasks) if (!T.bDone) O.OpenTasks.Add(T.Text);
-		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
-		// TONIGHT-NOTE-20261109: the card as the night's plan, from the same list, the HUD's objective card and the case windows
 		S47TonightNote::FIn In;
 		for (const FS47Task& T : Tasks) In.Tasks.Add({ T.Text, T.bDone });
-		In.Next = O.Objective;
-		In.Clock = O.Clock;
+		In.Next = Objective;
+		In.Clock = Clock;
 		if (M->IsFreeform() && M->Freeform)
 		{
 			const FS47FreeformSession& F = *M->Freeform;
@@ -1450,10 +1433,43 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 			double Up = 0;
 			if (F.NextEveningCard(Up)) In.EveningUp = Up;
 			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
-			// the handwritten note keeps to Freeform's limits as the plan does
-			if (!S47Script::LintText(O.LastNote).IsEmpty()) O.LastNote.Reset();
+			In.Done = &S47TonightNote::Tonight();
+			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());
 		}
-		O.Note = S47TonightNote::Build(In);
+		return In;
+	}
+}
+
+FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
+{
+	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
+	AS47Story* S = M->Story;
+	O.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("FREEFORM / DAY %d"), M->Freeform->Day()) : S ? S->ChapterTitle() : FString();
+	O.Clock = S ? FMath::Fmod(S->Clock()+86400.,86400.) : -1;
+	if (M->Evening && M->Evening->Commute()) O.Clock=-1;
+	O.Place = PlaceName();
+	static const TSet<FString> SaroRooms = { TEXT("Control room"), TEXT("Records room"), TEXT("South corridor"), TEXT("Photo lab"), TEXT("Truck pad"), TEXT("Service yard"), TEXT("Service road") };
+	if ((M->Web ? M->Web->Area() : FString(TEXT("saro"))) == TEXT("saro") && SaroRooms.Contains(O.Place)) O.Place += TEXT(", SARO");
+	if (bDevRun || !CaseId) O.CaseLine = TEXT("DEVELOPER RUN \u00B7 NOTHING IS SAVED");
+	else
+	{
+		const TOptional<FS47SaveMeta> Last = Saves.Latest(CaseId);
+		O.CaseLine = FString::Printf(TEXT("CASE %d \u00B7 %s"), CaseId, Last ? *S47Theme::SavedAgo(Last->SavedAt) : TEXT("NOT SAVED YET"));
+	}
+	// tonight's card: the chapter's objective, the tasks not done, the latest note
+	if (S)
+	{
+		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
+		if (M->IsFreeform() && M->Freeform) O.Objective=M->Freeform->Objective();
+		const TArray<FS47Task> Tasks = S->Tasks();
+		for (const FS47Task& T : Tasks) if (!T.bDone) O.OpenTasks.Add(T.Text);
+		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
+		// TONIGHT-NOTE-20261109: the card as the night's plan, from the same list, the HUD's objective card and the case windows;
+		// PT-NOTEBOOK-20261109: built as the notebook's NOW builds it (S47FlowNotebook::TonightIn, S47TonightNote::Gather)
+		const S47TonightNote::FIn In = S47FlowNotebook::TonightIn(M, Tasks, O.Objective, O.Clock);
+		// the handwritten note keeps to Freeform's limits as the plan does
+		if (In.bFreeform && !S47Script::LintText(O.LastNote).IsEmpty()) O.LastNote.Reset();
+		O.Note = S47TonightNote::Gather(In);
 	}
 	return O;
 }
@@ -2115,7 +2131,7 @@ void US47Flow::OpenNotebook()
   }
   if (UI.IsValid()) UI->Document(Doc, [] {});
  },
-		M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("SARO / Day %d"), M->Freeform->Day()) : S->ChapterTitle(), OnBoard, NotebookExtras());
+		M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("SARO / Day %d / %s"), M->Freeform->Day(), *S47TonightNote::HourMinute(M->Freeform->Clock())) : S->ChapterTitle(), OnBoard, NotebookExtras());
 }
 
 FS47NbExtras US47Flow::NotebookExtras() const
@@ -2140,7 +2156,22 @@ FS47NbExtras US47Flow::NotebookExtras() const
 	}
 	if (!Free && S47AreaMap::LinesMeet(V)) X.MapNote = MEET_NOTE;
 	X.Kit = KitItems();
-	X.People = Free ? TArray<FS47PersonCard>() : PeopleItems();
+	if (Free)
+	{
+		// PT-NOTEBOOK-20261109: WHO & WHAT in place of the empty People: Caliche's regulars as the player has met them, one plain line
+		// each from what they have told (FS47Townsfolk::Cards), and only that someone is gone, never why. Freeform's spoiler limits.
+		TArray<FS47PersonCard> Folk;
+		if (M->Freeform->Townsfolk)
+			for (const FS47Townsfolk::FCard& Cd : M->Freeform->Townsfolk->Cards())
+			{
+				FS47PersonCard P; P.Name = Cd.Name; P.Role = Cd.Role; P.Note = S47Script::LintText(Cd.Line).IsEmpty() ? Cd.Line : FString();
+				if (S47Script::LintText(P.Name + TEXT(" / ") + P.Role).IsEmpty()) Folk.Add(P);
+			}
+		X.People = Folk;
+		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
+		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
+	}
+	else X.People = PeopleItems();
 	US47Flow* Self = const_cast<US47Flow*>(this);
 	X.HintLevel = [Self](const FString& Id) { return Self->JournalHintLevel(Id); };
 	X.RevealHint = [Self](const FString& Id) { return Self->RevealJournalHint(Id); };
@@ -2156,6 +2187,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto& J = F->Jobs()[I];
 			FS47NbWorkItem W;
 			W.Id = J.Id + TEXT("/") + FString::FromInt(int32(J.Stage));
+			W.bCard = true; // PT-NOTEBOOK-20261109: folded under NOW's one line for the job cards
 			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day() || J.Stage == FS47FreeformSession::EJobStage::Filed; W.bFollowed = I == F->SelectedJob() && !F->ServiceGuideFocused();
 			W.Status = FString(W.bFollowed ? TEXT("Following / ") : TEXT("")) + Stages[FMath::Clamp(int32(J.Stage), 0, 7)];
 			W.NextAction = W.bFollowed ? F->NextAction() : F->JobNextAction(J); W.Location = F->JobLocation(J);
@@ -2261,6 +2293,63 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			W.Status = Developed ? TEXT("Developed original / awaiting registration") : TEXT("Exposed original / needs developing");
 			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d documentation credit. The image remains in the Album."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
 			W.Location = Developed ? TEXT("OPS / corner PC") : TEXT("PHOTO LAB / wet bench"); X.WorkItems.Add(W);
+		}
+		// PT-NOTEBOOK-20261109: NOW is the pause menu's note at full length (S47TonightNote::Gather with no limit), in the same words:
+		// the next step, by the clock, to do, also open, done tonight. The work items stay for a line's details, hints and FOLLOW; the
+		// job cards fold under one line, and work with no line of its own on the note is a line under ALSO OPEN.
+		if (M->Story)
+		{
+			const S47TonightNote::FNote Note = S47TonightNote::Gather(S47FlowNotebook::TonightIn(M, M->Story->Tasks(), FString(), -1), true);
+			const auto FindItem = [&X](const FString& Prefix)
+			{
+				const FS47NbWorkItem* W = X.WorkItems.FindByPredicate([&Prefix](const FS47NbWorkItem& I) { return I.Id.StartsWith(Prefix); });
+				return W ? W->Id : FString();
+			};
+			const FString Objective = F->HudObjective();
+			const auto ItemFor = [&](const FString& Source) -> FString
+			{
+				if (Source.IsEmpty()) return FString();
+				for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+					if (const FString Step = F->CaseStep(Line).Task; !Step.IsEmpty() && Step == Source)
+					{
+						const FString Plan = FindItem(FString::Printf(TEXT("field-plan/%d"), Line));
+						return Plan.IsEmpty() ? FindItem(FString::Printf(TEXT("case/%d/"), Line)) : Plan;
+					}
+				if (Source == F->StationGoalLine()) return FindItem(TEXT("array/"));
+				if (F->ActiveServiceGuide() > 0 && Source == F->ServiceObjective()) return FindItem(TEXT("service/"));
+				if (F->Director) { bool bReady = false; if (Source == F->Director->PhotoControlFieldHint(bReady)) return FindItem(TEXT("photo-return/") + F->Director->PhotoControlFocusId()); }
+				if (Source == Objective) { const FS47NbWorkItem* W = X.WorkItems.FindByPredicate([](const FS47NbWorkItem& I) { return I.bFollowed; }); return W ? W->Id : FString(); }
+				return FString();
+			};
+			using S47TonightNote::EMark;
+			TSet<FString> Used;
+			const auto Add = [&](const TCHAR* Group, const S47TonightNote::FLine& L)
+			{
+				FS47NbNowLine N; N.Group = Group; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
+				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
+				if (!N.Item.IsEmpty()) Used.Add(N.Item);
+				X.Now.Add(N);
+			};
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Next) Add(TEXT("next"), L);
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && !L.When.IsEmpty()) Add(TEXT("clock"), L);
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.When.IsEmpty()) Add(TEXT("todo"), L);
+			bool bCases = false;
+			for (int32 I = 0; I < Note.Also.Num(); ++I)
+			{
+				FS47NbNowLine N; N.Group = TEXT("also"); N.Text = N.What = N.Why = Note.Also[I]; N.Key = Note.AlsoKeys.IsValidIndex(I) ? Note.AlsoKeys[I] : FString();
+				if (N.Key == TEXT("cards") || N.Key == TEXT("cases")) N.Fold = N.Key;
+				bCases |= N.Key == TEXT("cases");
+				X.Now.Add(N);
+			}
+			for (const FS47NbWorkItem& W : X.WorkItems)
+			{
+				if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || (bCases && W.Id.StartsWith(TEXT("case/")))) continue;
+				if (!S47Script::LintText(W.Title).IsEmpty()) continue;
+				FS47NbNowLine N; N.Group = TEXT("also"); N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; X.Now.Add(N);
+			}
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Done) Add(TEXT("done"), L);
+			X.NowClock = Note.Clock;
+			X.bNow = true;
 		}
 		X.OnFollow = [Self](const FString& Id)
 		{
@@ -2416,7 +2505,9 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	}
 	if (bCh1) Kit.Add({ TEXT("Truck keys"), M->IsFreeform() ? TEXT("The service truck starts on the pad outside the SERVICE YARD exit. The keys stay in it. Its current area is recorded below.") : TEXT("The service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SERVICE") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Documents keeps the originals; Knowledge links retained evidence."), FString::FromInt(Papers), TEXT("papers"), FString() });
-	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), TEXT("1947"), TEXT("nickel"), FString() });
+	// PT-NOTEBOOK-20261109: Freeform's town calls never ring the payphone (its events wait for Story's chapters), but a key kept over from
+	// a Story run in the same session would bring the nickel along: there it shows no year, and not the drawing with the date on it.
+	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), M->IsFreeform() ? FString() : FString(TEXT("1947")), M->IsFreeform() ? FString() : FString(TEXT("nickel")), FString() });
 	// (story/archivePhone.ts: from the fire drawer behind the STATION 01 box)
 	if (Town.Contains(TEXT("arc:reel")))
 	{
