@@ -190,6 +190,8 @@ public:
  TSharedPtr<class FS47Townsfolk> Townsfolk;
  // From outside town: the old neighbor, the sky-watch van, the military after big nights (NEIGHBOR, ENTHUSIASTS, MILITARY): S47Visitors.h.
  TSharedPtr<class FS47Visitors> Visitors;
+ // A night at the Sierra Motor Court, and its own dangers; not filed until back at SARO (MOTEL-SLEEP-20261108): S47MotelNight.h.
+ TSharedPtr<class FS47MotelNight> MotelNight;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;

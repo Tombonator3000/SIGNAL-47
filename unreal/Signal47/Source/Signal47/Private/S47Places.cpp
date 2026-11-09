@@ -15,6 +15,7 @@
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47TownUse.h"
+#include "S47MotelNight.h"
 #include "S47UI.h"
 #include "S47FieldLife.h"
 #include "S47Walker.h"
@@ -308,8 +309,15 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
  {
-  Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. If anything goes on out there tonight, you will hear about it in the morning.")));
-  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Motel);},true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
+  Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. What goes on out on the land, you hear about in the morning. A motel has its own nights.")));
+  Rows.Add(S47Kit::Small(TEXT("A night here is not filed: nothing is saved until you are back at SARO.")));
+  // MOTEL-SLEEP-20261108: the night's own may wake the player at its hour (S47MotelNight).
+  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
+  {
+   if(M->UI)M->UI->Close(true);
+   const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next;
+   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next);
+  },true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))
  {

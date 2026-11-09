@@ -14,6 +14,8 @@
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
+#include "S47MotelNight.h"
+#include "S47Places.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47Predecessor.h"
@@ -273,7 +275,8 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		F->Visitors->DevVan();
 		StandAt(FVector2D(-32, 1990), FVector2D(-40, 1982), 12, 13, [this, Pictured]
 		{
-			After(.6, [this, Pictured] { if (FS47FreeformSession* G = Session()) if (G->Visitors) G->Visitors->OpenVan(); Pictured(TEXT("van"), 1.5f); });
+			Pictured(TEXT("vanworld"), .8f);
+			After(2.0, [this, Pictured] { if (FS47FreeformSession* G = Session()) if (G->Visitors) G->Visitors->OpenVan(); Pictured(TEXT("van"), 1.5f); });
 			bLastOk = true; LastText = TEXT("the Sky Watch");
 		});
 	});
@@ -281,13 +284,42 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 	{
 		FS47FreeformSession* F = Session();
 		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
-		StandAt(FVector2D(30, 180), FVector2D(60, 240), 6, 7, [this, Pictured]
+		StandAt(FVector2D(40, 292), FVector2D(70, 246), 6, 7, [this, Pictured]
 		{
 			FS47FreeformSession* G = Session();
 			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"))) { Tell(false, TEXT("no such place")); return; }
-			Pictured(TEXT("heli"), 12.f);
-			After(30, [this, Pictured] { Pictured(TEXT("cars"), .2f); });
+			// It comes over the place about 40 s in; the cars stand from 20 s.
+			After(34, [this, Pictured] { Pictured(TEXT("heli"), .2f); });
+			After(60, [this, Pictured] { Pictured(TEXT("cars"), .2f); });
 			bLastOk = true; LastText = TEXT("the military's morning");
 		});
 	});
+	// ---- MOTEL-SLEEP-20261108 ----
+	const TCHAR* const Motel = TEXT("Motel (M4)");
+	static const TCHAR* const KindNames[] = { TEXT("a quiet night"), TEXT("the door handle tried"), TEXT("a car idling outside"), TEXT("the phone rings once"), TEXT("the truck gone through"), TEXT("a party next door") };
+	for (int32 K = 0; K < 6; ++K)
+	{
+		E.AddFreeform(Motel, FString::Printf(TEXT("Motel: a night with %s"), KindNames[K]), TEXT("a room at the Sierra Motor Court from 22:00; what the night is, at its hour"), [this, K, Pictured]
+		{
+			FS47FreeformSession* F = Session();
+			if (!F || !F->MotelNight || !F->Places) { Tell(false, TEXT("Freeform only")); return; }
+			if (K == 4 && F->InventoryCount(TEXT("film")) <= 0) F->AddItem(TEXT("film"), 1);
+			FStage Stage; Stage.From = 22; Stage.To = 23; Stage.Area = TEXT("saro");
+			double X = 0, Z = 0; F->Places->Spot(TEXT("motel"), X, Z);
+			Stage.Where = [X, Z] { return FVector2D(X + 1.5, Z); };
+			Go(Stage, [this, K, Pictured]
+			{
+				FS47FreeformSession* G = Session();
+				if (!G || !G->MotelNight) return;
+				if (G->Budget() < G->MotelPrice()) G->Earn(G->MotelPrice());
+				G->MotelNight->DevKind(K);
+				const double Next = (FMath::FloorToDouble((G->Clock() - 8 * 3600.) / 86400.) + 1) * 86400. + 8 * 3600.;
+				const double Until = G->MotelNight->SleepUntil(Next);
+				const bool bSlept = G->RestAt(Until, FS47FreeformSession::ERest::Motel);
+				if (bSlept) G->MotelNight->AfterRest(Next);
+				Pictured(TEXT("motel"), 1.2f);
+				Tell(bSlept && G->MotelNight->Unfiled(), bSlept ? FString::Printf(TEXT("Woken at %s; the night is not filed until SARO"), *FString::Printf(TEXT("%02d:%02d"), int32(FMath::Fmod(G->Clock(), 86400.)) / 3600, (int32(FMath::Fmod(G->Clock(), 86400.)) / 60) % 60)) : FString(TEXT("the rest was refused")), 7);
+			});
+		});
+	}
 }

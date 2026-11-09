@@ -80,6 +80,7 @@ private:
 	TArray<TWeakObjectPtr<UStaticMeshComponent>> VanParts, HeliParts, CarParts;
 	TArray<TWeakObjectPtr<UTextRenderComponent>> VanText;
 	double HeliAge = -1;
+	bool bCarsLogged = false;
 	TWeakObjectPtr<UStaticMeshComponent> Porch;
 	FString CarsArea;
 	bool Build();

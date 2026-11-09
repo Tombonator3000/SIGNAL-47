@@ -8,6 +8,7 @@
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
+#include "S47MotelNight.h"
 #include "S47Night.h"
 #include "S47Office.h"
 #include "S47Rhythm.h"
@@ -59,7 +60,10 @@ FString S47SaroSave::Unsaved(const US47Main* M)
 	const bool bVisit = F->FarmSite && F->FarmSite->VisitWantsGround();
 	const bool bAtDoor = F->IndoorDread && (F->IndoorDread->DoorActive() || F->IndoorDread->PeekActive());
 	const bool bVoice = F->Happenings && !F->Happenings->Ground().IsEmpty() && FS47Happenings::IsDanger(F->Happenings->Ground());
-	return bVisit || bAtDoor || bVoice ? FString(TEXT("Not now. Something is out there.")) : FString();
+	if (bVisit || bAtDoor || bVoice) return FString(TEXT("Not now. Something is out there."));
+	// MOTEL-SLEEP-20261108: a night at the motel is not filed until the player is back at SARO (S47MotelNight).
+	if (F->MotelNight && F->MotelNight->Unfiled()) return FString(TEXT("The log is filed at SARO. A night at the motel is not saved until you are back there."));
+	return FString();
 }
 
 FString S47SaroSave::Danger(const US47Main* M)

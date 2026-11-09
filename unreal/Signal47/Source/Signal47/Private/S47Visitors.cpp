@@ -294,6 +294,7 @@ void FS47Visitors::PlaceCars(const FVisit& V, bool bShow)
 		C->SetCollisionEnabled(bMine ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 		if (!bMine) continue;
 		const double X = P->X + 9 + (I % 2) * 4.5, Z = P->Z + 6;
+		if (C->bHiddenInGame == false && !bCarsLogged) { bCarsLogged = true; UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: black sedans at %s, road %.0f %.0f, area %s"), *V.Place, X, Z, *Area); }
 		const FVector At = S47OpenLand::FromRoad(Area, X, Z);
 		C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(At.X, S47FarmWorld::FloorRoad(X, Z) + (C->GetStaticMesh() && C->GetStaticMesh()->GetName() == TEXT("Cube") ? .7 : 0), At.Z)), FRotator(0, 90 + I * 6, 0));
 		if (C->GetStaticMesh() && C->GetStaticMesh()->GetName() == TEXT("Cube")) C->SetWorldScale3D(FVector(4.8, 1.8, 1.4));
