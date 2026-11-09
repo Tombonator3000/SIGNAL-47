@@ -51,7 +51,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **PT-DALE-LIGHT-20261109:** Dales kontor har ingen lysarmatur der lyset kommer fra.
 - [ ] **PT-RECORDS-20261109:** arkivrommet («records») trenger en realismerunde.
 - [ ] **PT-SWITCH-20261109:** lysbryterne har én bryter som virker og en falsk bryterplate ved siden av.
-- [ ] **PT-LAMPGLOW-20261109:** gatelysene lyser opp området om natta, men lyset kommer ikke fra armaturet. Hodet er mørkt, uten lysende linse eller glorie. Lyskilden skal sitte i hodet (Toms bilde ca. 13:20).
+- [ ] **PT-LAMPGLOW-20261109:** gatelysene lyser opp området om natta, men lyset kommer ikke fra armaturet. Hodet er mørkt, uten lysende linse eller glorie. Lyskilden skal sitte i hodet (Toms bilde ca. 13:20). Samme sak: lyset ved STATION 01 (trafo og mast ved avkjøringen) tennes ikke før man er nesten rett ved siden av, men det må synes på avstand (Toms bilder ca. 13:35).
 - [ ] **PT-FARM-GROUND-20261109:** ved kuene på gården stikker en stor, grå, kantete form uten tekstur opp av bakken, og noe beveger seg rart («noe stort som ikke blir rendret riktig»). Busken foran har blokkete svarte kanter i bladverket. Toms bilde ca. 13:25, natt med lommelykt.
 - [ ] **PT-FARM-LIGHTS-20261109:** Tom ca. 13:30: inne i låven en lyspære som dingler med lys; et utelys på gårdsplassen; ekte lys innenfra gårdshuset.
 
