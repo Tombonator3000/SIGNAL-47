@@ -32,6 +32,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/UObjectIterator.h"
 #include "Engine/StaticMesh.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 namespace
@@ -84,8 +86,40 @@ bool FS47FarmNight::Build()
   }
  }
  UE_LOG(LogTemp,Display,TEXT("S47: farm lamps use pole mesh %s, head at %.1f m"),*GetNameSafe(PoleMesh),PoleTop);
+ // M6 part 2: on a wooden pole the lamp is the street lamps' own wood-pole arm (bolted to the pole's side) and cobra head, as the
+ // highway's and Caliche's are (S47StreetLamps, unreal/ArtSource/StreetLamps). Without the models, or -S47FarmLampsOld, the old boxes.
+ UStaticMesh* WoodArm=FParse::Param(FCommandLine::Get(),TEXT("S47FarmLampsOld"))?nullptr:LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/StreetLamps/SM_StreetLamp_WoodArm.SM_StreetLamp_WoodArm"));
+ UStaticMesh* CobraHead=WoodArm?LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/StreetLamps/SM_StreetLamp_Head.SM_StreetLamp_Head")):nullptr;
+ auto MeshPart=[&](FLamp& L,const FString& Name,UStaticMesh* Mesh,const FVector& At,const FQuat& Q)
+ {
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Mesh);
+  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+  double Mx[16];S47Three::Compose(At,Q,FVector::OneVector,Mx);C->SetWorldTransform(S47Three::MatToUE(Mx));
+  L.Parts.Add(C);L.Offsets.Add(At);return C;
+ };
+ auto WoodLampOn=[&](FLamp& L,const FString& Tag,const FVector& Foot,const FVector& Out,float Candela)
+ {
+  // Out: level, the way the arm reaches. The arm's pivot is the contact point on the pole's side (the pole taken as 13 cm in radius,
+  // as the model is made for), the head on the arm's end (1.2 m), the light 8 mm under the bowl (model_contract.json).
+  const FQuat Q(FVector(0,1,0),FMath::Atan2(-Out.Z,Out.X));
+  const FVector Pivot=Foot+FVector(0,PoleTop,0)+Out*.13,Head=Pivot+Out*1.2;
+  MeshPart(L,TEXT("S47")+Tag+TEXT("WoodArm"),WoodArm,Pivot,Q);
+  UStaticMeshComponent* H=MeshPart(L,TEXT("S47")+Tag+TEXT("Cobra"),CobraHead,Head,Q);
+  const int32 Slot=CobraHead->GetMaterialIndex(TEXT("M_StreetLamp_Lens"));
+  if(Slot>=0&&H->GetMaterial(Slot)){auto* D=UMaterialInstanceDynamic::Create(H->GetMaterial(Slot),M->Web);D->SetVectorParameterValue(TEXT("EmissiveFactor"),FLinearColor::Black);H->SetMaterial(Slot,D);L.Head=D;}
+  L.At=Head+Q.RotateVector(FVector(.42,-.2,0));L.Aim=FVector(Head.X,Foot.Y,Head.Z)+Out*3;L.Candela=Candela;
+  Beam(L,TEXT("S47")+Tag+TEXT("Light"),66,36);
+  UE_LOG(LogTemp,Display,TEXT("S47: %s: wood arm and cobra head at %s, reaching %s"),*Tag,*Head.ToString(),*Out.ToString());
+ };
  auto LampOn=[&](FLamp& L,const FString& Tag,const FVector& Foot,const FVector& Toward,float Candela)
  {
+  if(WoodArm&&CobraHead)
+  {
+   FVector Out=Toward-Foot;Out.Y=0;
+   // (the turn-off's pole stands on the ranch road's line: then the arm reaches over the highway's side of it)
+   if(!Out.Normalize(.25))Out=FVector(-1,0,0);
+   WoodLampOn(L,Tag,Foot,Out,Candela);return;
+  }
   // An arm from the pole's top toward the road, its sodium head at the end.
   const FVector Dir=(Toward-Foot).GetSafeNormal2D();const FVector Top=Foot+FVector(0,PoleTop,0);
   const FVector ArmAt=Top+FVector(Dir.X,0,Dir.Z)*1.2,HeadAt=Top+FVector(Dir.X,-.1,Dir.Z)*2.4;
@@ -153,7 +187,12 @@ void FS47FarmNight::SetOn(bool bNow,const FString& Area)
  {
   const bool bShown=L.bRoadLocal?(bRoadSide||Area==TEXT("saro")):bRoadSide;
   if(auto* S=L.Light.Get()){S->SetIntensity(bNow&&bShown?L.Candela:0);S->SetVisibility(bNow&&bShown);}
-  if(auto* Mat=L.Head.Get()){Mat->SetVectorParameterValue(TEXT("Emissive"),bNow?FLinearColor(1,.68,.34)*40.f:FLinearColor::Black);Mat->SetScalarParameterValue(TEXT("EmissivePower"),bNow?1.f:0.f);}
+  if(auto* Mat=L.Head.Get())
+  {
+   Mat->SetVectorParameterValue(TEXT("Emissive"),bNow?FLinearColor(1,.68,.34)*40.f:FLinearColor::Black);Mat->SetScalarParameterValue(TEXT("EmissivePower"),bNow?1.f:0.f);
+   // a cobra head's bowl (M_StreetLamp_Lens), as bright as the highway's (S47ExteriorLighting: six times the feed)
+   Mat->SetVectorParameterValue(TEXT("EmissiveFactor"),bNow&&bShown?S47StreetLamps::Sodium()*6.f:FLinearColor::Black);
+  }
  }
 }
 
