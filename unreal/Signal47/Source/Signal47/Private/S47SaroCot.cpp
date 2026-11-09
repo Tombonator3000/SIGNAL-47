@@ -29,8 +29,9 @@ namespace
 	const FCotSpot CotSpots[] = {
 		// (The control room has no free wall 1.9 m long: the old cabinet and the tape shelf of S47Lived stand on the west wall, the
 		// racks on the east. The records room is full of its table. The first sweep, 9 November, measured them.)
-		// the east wing's test lab, along its west wall south of the glass cabinet: the quietest room with a door that shuts
-		{ TEXT("the east wing's test lab, by the west wall"), 21.3, 3.4, true },
+		// the east wing's test lab, along its west wall between the glass cabinet and the swing of the personnel door (sweep 4: at z 3.4 its
+		// foot stood in the door leaf's arc): the quietest room with a door that shuts
+		{ TEXT("the east wing's test lab, by the west wall"), 21.3, 2.95, true },
 		// the parts storage, along the partition to calibration
 		{ TEXT("the parts storage, along the partition"), 28.65, -.1, false },
 		// the calibration room, along its partition to storage, east of the bench
