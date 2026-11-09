@@ -781,9 +781,22 @@ void FS47NightLife::Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, 
 		FVector Center = Cam.Pos + Cam.Forward * 9; Center.Y = Cam.Pos.Y - 0.6;
 		Sand.Mesh->SetWorldLocation(S47Three::ToUE(Center));
 		Common(D, Center, FMath::Lerp(0.06, 0.55, Day));
+		// at night the lamp lights the sand streaming through its beam (the shader's own cone, as the beam's dust has it)
+		USpotLightComponent* Lamp = M->Night && M->Night->Flashlight.IsValid() ? M->Night->Flashlight->Light() : nullptr;
+		const double LampK = Lamp ? M->Night->Flashlight->Intensity() / (40 * 1.6) : 0.0;
+		if (Day < 0.3 && LampK > 0.01)
+		{
+			const double Beam = FMath::Atan(0.85 * FMath::Tan(0.4));
+			const FVector Fd = Lamp->GetForwardVector();
+			D->SetVectorParameterValue(TEXT("BeamPos0"), V4(S47Three::ToThree(Lamp->GetComponentLocation())));
+			D->SetVectorParameterValue(TEXT("BeamDir0"), V4(FVector(Fd.X, Fd.Z, Fd.Y)));
+			D->SetVectorParameterValue(TEXT("BeamK"), FLinearColor(float(1.4 * LampK), 0, 0, 0));
+			D->SetVectorParameterValue(TEXT("Cos"), FLinearColor(float(FMath::Cos(Beam * 1.15)), float(FMath::Cos(Beam * 0.55)), 0, 0));
+			D->SetScalarParameterValue(TEXT("Fall"), 0.02f);
+		}
 		D->SetScalarParameterValue(TEXT("Near"), 0.35f);
-		D->SetScalarParameterValue(TEXT("Size"), 0.012f);
-		D->SetScalarParameterValue(TEXT("Puff"), 0.9f); D->SetScalarParameterValue(TEXT("PuffSize"), 2.6f); D->SetScalarParameterValue(TEXT("PuffA"), float(0.05 * SandK));
+		D->SetScalarParameterValue(TEXT("Size"), 0.02f);
+		D->SetScalarParameterValue(TEXT("Puff"), 0.88f); D->SetScalarParameterValue(TEXT("PuffSize"), 4.f); D->SetScalarParameterValue(TEXT("PuffA"), float(0.12 * SandK));
 		D->SetScalarParameterValue(TEXT("Wobble"), float(0.18 + 0.25 * Wx.Wind));
 		D->SetScalarParameterValue(TEXT("Density"), float(bLow ? SandK * 0.5 : SandK));
 		FVector Dv = Blow; Dv.Y = 0.25 * FMath::Sin(T * 0.7);
