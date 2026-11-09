@@ -350,7 +350,9 @@ FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAn
  OutPlace.Empty();OutAnswer.Empty();
  const FString Tip=TitleOf(G.Place);
  const uint32 Salt=FCrc::StrCrc32(*G.Place)+uint32(G.Day);
- if(M&&M->Freeform&&M->Freeform->Places)OutPlace=M->Freeform->Places->NextUnknown(int32(Salt%100000u));
+ // Never back at the place the tip was about (it may itself be one nobody has told the player of yet).
+ if(M&&M->Freeform&&M->Freeform->Places)for(int32 Try=0;Try<8&&(OutPlace.IsEmpty()||OutPlace==G.Place);++Try)OutPlace=M->Freeform->Places->NextUnknown(int32((Salt+uint32(Try)*7919u)%100000u));
+ if(OutPlace==G.Place)OutPlace.Empty();
  const int32 Pick=int32(Salt%3u);
  if(!OutPlace.IsEmpty())
  {

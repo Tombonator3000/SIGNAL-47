@@ -104,26 +104,28 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		Tell(bOk, FString::Printf(TEXT("Walker held at %d of %d boxes, the truck at %d of %d"), Walk, All, Truck, All), 7);
 	});
 	// ---- the counters ----
-	const auto Counter = [this, StandAt](const FVector2D& Road, const FVector2D& Look, double Hour, TFunction<void(FS47TownUse&)> Open)
+	const auto Counter = [this, StandAt, Pictured](const FVector2D& Road, const FVector2D& Look, double Hour, TFunction<void(FS47TownUse&)> Open)
 	{
-		StandAt(Road, Look, Hour, Hour + 1, [this, Open]
+		StandAt(Road, Look, Hour, Hour + 1, [this, Open, Pictured]
 		{
 			FS47FreeformSession* F = Session();
 			if (!F || !F->TownUse) { Tell(false, TEXT("Freeform only")); return; }
 			Open(*F->TownUse);
+			Pictured(TEXT("counter"), 1.5f);
 			bLastOk = true; LastText = TEXT("a counter in Caliche");
 		});
 	};
 	// Road-local: the station's lobby x 19.3 to 21.94, z 2031 to 2038; the Feed & Seed's room x -31 to -15; the souvenir shop x 20.5 to 29.5.
 	E.AddFreeform(Group, TEXT("1420 AM: the lobby board (tips, parts, Earl's notes)"), TEXT("noon, in the lobby, facing the cork board"), [Counter]
 	{
-		Counter(FVector2D(20.4, 2035.4), FVector2D(22, 2035.4), 12, [](FS47TownUse& T) { T.OpenRadio(false); });
+		Counter(FVector2D(20.6, 2033.4), FVector2D(20.6, 2038.3), 12, [](FS47TownUse& T) { T.OpenRadio(false); });
 	});
-	E.AddFreeform(Group, TEXT("1420 AM: the request line from SARO's phone"), TEXT("the same tip line by telephone, wherever you are"), [this]
+	E.AddFreeform(Group, TEXT("1420 AM: the request line from SARO's phone"), TEXT("the same tip line by telephone, wherever you are"), [this, Pictured]
 	{
 		FS47FreeformSession* F = Session();
 		if (!F || !F->TownUse) { Tell(false, TEXT("Freeform only")); return; }
 		F->TownUse->OpenRadio(true);
+		Pictured(TEXT("phone"), 1.5f);
 		Tell(true, TEXT("Earl on the request line."), 4);
 	});
 	E.AddFreeform(Group, TEXT("1420 AM: a tip given, read on the air and called back now"), TEXT("gives a tip for the first place you have found (else the windmill), then Earl reads it and a caller rings back, whatever the radio"), [this]
@@ -155,7 +157,7 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 	});
 	E.AddFreeform(Group, TEXT("Souvenirs: the counter (map, tour, film, prints)"), TEXT("eleven in the morning, inside the shop, facing the counter"), [Counter]
 	{
-		Counter(FVector2D(23.6, 2063), FVector2D(27, 2063), 11, [](FS47TownUse& T) { T.OpenSouvenir(); });
+		Counter(FVector2D(21.15, 2064.4), FVector2D(22.28, 2065.0), 11, [](FS47TownUse& T) { T.OpenSouvenir(); });
 	});
 	E.AddFreeform(Group, TEXT("Souvenirs: the tour now"), TEXT("two hours in his station wagon; a place you had not heard of goes on the map"), [this]
 	{

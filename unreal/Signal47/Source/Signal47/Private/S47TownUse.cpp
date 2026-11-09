@@ -226,17 +226,19 @@ S47J::FObj FS47TownUse::Save() const
 
 FVector FS47TownUse::CounterPoint(const FString& Counter) const
 {
-	// Three-space, the road's land (x + 8000). The lobby's cork board on its inside wall (Config/Props/radio_station.json: the lobby
-	// is x 8019.3 to 8021.94, floor 4.497); a stand on the Feed & Seed's floor by the loading door, clear of its crates (CalicheAccess
-	// Feed: counter x 7981.6 to 7982.33, z 2195.4 to 2200.1); the souvenir shop's new counter (CalicheAccess Souvenir, empty room).
-	if (Counter == S47TownUseLocal::Radio) return FVector(8021.925, 4.497 + 1.55, 2035.4);
+	// Three-space, the road's land (x + 8000). The lobby's cork board on its south end wall, across from the door (Config/Props/
+	// radio_station.json: the lobby is x 8019.3 to 8021.94 and z 2031 to 2038.32, floor 4.497; its east wall is the studio glass); a
+	// stand on the Feed & Seed's floor by the loading door, clear of its crates (CalicheAccess Feed: counter x 7981.6 to 7982.33, z
+	// 2195.4 to 2200.1); a card standing on the souvenir shop's own cash counter (Tools/calichestreet/souvenir/build_souvenir.py:
+	// CashCounterTop at Blender 1.80, -2.72, top 1.20 m; world x = 8025 + Blender y, z = 2064 + Blender x).
+	if (Counter == S47TownUseLocal::Radio) return FVector(8020.6, 4.497 + 1.55, 2038.30);
 	if (Counter == S47TownUseLocal::Feed)
 	{
 		const double F = S47CalicheAccess::FloorAt(7983.9, 2198.6);
 		return FVector(7983.9, (FMath::IsFinite(F) ? F : 11.3256) + 1.38, 2198.6);
 	}
-	const double F = S47CalicheAccess::FloorAt(8026.9, 2063);
-	return FVector(8026.9, (FMath::IsFinite(F) ? F : 4.9528) + .95, 2063);
+	const double F = S47CalicheAccess::FloorAt(8021.6, 2065.2);
+	return FVector(8022.28, (FMath::IsFinite(F) ? F : 4.9528) + 1.2, 2065.0);
 }
 
 bool FS47TownUse::Build()
@@ -278,11 +280,11 @@ bool FS47TownUse::Build()
 		Props.Add(T);
 	};
 	const FColor Ink(30, 28, 26), Chalk(232, 228, 210);
-	// 1420 AM: a cork board on the lobby's inside wall, facing the door's side (west: Unreal yaw 180).
+	// 1420 AM: a cork board on the lobby's south end wall, facing the door (north: Unreal yaw -90).
 	{
 		const FVector At = CounterPoint(Radio);
-		Part(TEXT("S47TownRadioBoard"), At, FVector(.03, .75, .95), 0x9a7a52, Radio);
-		Words(TEXT("S47TownRadioWords"), TEXT("1420 AM\nTIPS & REQUESTS"), At + FVector(-.02, .2, 0), 180, .085, Ink);
+		Part(TEXT("S47TownRadioBoard"), At, FVector(.95, .75, .03), 0x9a7a52, Radio);
+		Words(TEXT("S47TownRadioWords"), TEXT("1420 AM\nTIPS & REQUESTS"), At + FVector(0, .2, -.02), -90, .085, Ink);
 	}
 	// Feed & Seed: a post and a board on the floor between the counter and the front wall, readable from the door and the counter.
 	{
@@ -292,16 +294,11 @@ bool FS47TownUse::Build()
 		Words(TEXT("S47TownFeedWordsE"), TEXT("FEED & SEED\nASK HERE"), Board + FVector(.02, 0, 0), 0, .075, Chalk);
 		Words(TEXT("S47TownFeedWordsW"), TEXT("FEED & SEED\nASK HERE"), Board + FVector(-.02, 0, 0), 180, .075, Chalk);
 	}
-	// Souvenirs: a counter in the empty shop (a grey box until the interior is made), a sign on it, a postcard rack by the wall.
+	// Souvenirs: a card standing on the shop's own cash counter, toward the door and the window (west: Unreal yaw 180).
 	{
 		const FVector Top = CounterPoint(Souvenir);
-		Part(TEXT("S47TownSouvenirCounter"), FVector(Top.X, Top.Y - .475, Top.Z), FVector(.8, .95, 3.2), 0x8e8a82, Souvenir);
-		Part(TEXT("S47TownSouvenirSign"), FVector(Top.X, Top.Y + .3, Top.Z), FVector(.03, .5, 1.1), 0x2b2a27, Souvenir);
-		Words(TEXT("S47TownSouvenirWords"), TEXT("SOUVENIRS\nTOURS - FILM"), FVector(Top.X - .02, Top.Y + .3, Top.Z), 180, .1, Chalk);
-		Part(TEXT("S47TownSouvenirRack"), FVector(8021.6, Top.Y - .95 + .8, 2068.6), FVector(.35, 1.6, .35), 0xc9c5bb, FString());
-		// The counter stands in the walker's way like any counter does (the road's walk list, world terms).
-		FS47Rect R; R.MinX = Top.X - .4; R.MaxX = Top.X + .4; R.MinZ = Top.Z - 1.6; R.MaxZ = Top.Z + 1.6; R.Id = TEXT("townuse:souvenir:counter");
-		W->CollidersMutable(TEXT("road")).Add(R);
+		Part(TEXT("S47TownSouvenirSign"), FVector(Top.X, Top.Y + .19, Top.Z), FVector(.03, .36, .6), 0x2b2a27, Souvenir);
+		Words(TEXT("S47TownSouvenirWords"), TEXT("TOURS - FILM\nWE BUY PHOTOS"), FVector(Top.X - .02, Top.Y + .19, Top.Z), 180, .055, Chalk);
 	}
 	const auto Label = [this, Guard](const FString& Counter) -> FString
 	{
