@@ -15,6 +15,7 @@
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
 #include "S47TripoCreature.h"
+#include "S47EyeGlint.h"
 #include "S47Freeform.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47Album.h"
@@ -2328,7 +2329,7 @@ namespace
      case 105:Look(25);break;
      case 106:Shot(TEXT("eyes-25m.png"));break;
      case 107:
-      if(FS47TripoCreature::ShownEyeGlints()<2)return Fail(TEXT("the eyes must show at 25 m at night"));
+      if(S47EyeGlint::Shown()<2)return Fail(TEXT("the eyes must show at 25 m at night"));
       Look(60);Stage=110;StageAt=Elapsed;return true;
     }
     ++Stage;StageAt=Elapsed;return true;
@@ -2790,7 +2791,7 @@ namespace
    if(Stage==110)
    {
     if(Elapsed-StageAt<.5)return true;
-    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint past 50 m"));
+    if(S47EyeGlint::Shown()!=0)return Fail(TEXT("no eye glint past 50 m"));
     Shot(TEXT("eyes-60m.png"));
     if(M->Story)M->Story->SetClock(12*3600);
     Stage=111;StageAt=Elapsed;return true;
@@ -2798,7 +2799,7 @@ namespace
    if(Stage==111)
    {
     if(Elapsed-StageAt<1.5)return true;
-    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint by day"));
+    if(S47EyeGlint::Shown()!=0)return Fail(TEXT("no eye glint by day"));
     UE_LOG(LogTemp,Display,TEXT("S47: eye test PASS: night 10 and 25 m show, 60 m and daylight do not"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==109)
