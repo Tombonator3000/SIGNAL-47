@@ -194,7 +194,24 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 			if (!G || !G->HasNativeBody()) { Tell(false, TEXT("the Roswell body is not in this build")); return; }
 			M->Player->SetCrouch(true);
 			if (G->DevSpawn(1, FS47RoswellBrain::EMode::Curious) < 1) { Tell(false, TEXT("no small one could come here")); return; }
-			After(2.5, [this, H, G, StoneInHand, Landed, Hands]
+			// STONE-LURE-20261109: it comes up a step or three in front of the view, and one that is stood over (under three metres)
+			// or watched while it sees you bolts and hides (FS47RoswellBrain), and a stone does not draw one out of that. Stood there
+			// looking at it, the line failed every time. So back off to some seven metres from it first, low and looking away, as a
+			// player who has seen it and keeps still: then turn only to aim, and away again as it is thrown.
+			if (const auto Came = G->Individuals(); !Came.IsEmpty())
+			{
+				const FVector Body = Came[0].Pos;
+				const FVector Back = FVector(M->Player->Pos.X - Body.X, 0, M->Player->Pos.Z - Body.Z).GetSafeNormal();
+				for (const double Off : { 7.0, 6.5, 6.0, 5.5, 5.0 })
+				{
+					const double X = Body.X + Back.X * Off, Z = Body.Z + Back.Z * Off;
+					if (Back.IsNearlyZero() || !M->Player->Walkable(X, Z)) continue;
+					M->Player->Place(X, Z, FMath::Atan2(-Back.X, -Back.Z));
+					M->Player->SetCrouch(true);
+					break;
+				}
+			}
+			After(1.5, [this, H, G, StoneInHand, Landed, Hands]
 			{
 				const auto Bodies = G->Individuals();
 				if (Bodies.IsEmpty()) { Tell(false, TEXT("it went")); return; }
@@ -216,14 +233,22 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 					const int32 Stone = H->HeldIndex();
 					const auto AtThrow = G->Individuals();
 					const FVector Was = AtThrow.IsEmpty() ? FVector::ZeroVector : AtThrow[0].Pos;
+					const uint32 Since = S47Noise::Last() ? S47Noise::Last()->Serial : 0;
 					H->ThrowNow(Charge);
 					// and look away at once, still low: one that sees you watching it bolts (FS47RoswellBrain: watched and alarmed)
 					M->Player->Yaw += UE_DOUBLE_PI;
-					WaitFor([Landed, Hands] { return Landed(Hands()); }, 5, [this, H, G, Stone, Was]
+					// where it first came down, loudest: that is where it is heard, and the stone can roll on a few metres from there
+					const TSharedRef<TOptional<S47Noise::FNoise>> Loudest = MakeShared<TOptional<S47Noise::FNoise>>();
+					WaitFor([Landed, Hands, Since, Loudest]
+					{
+						if (const auto N = S47Noise::Last(); N && N->Serial > Since && (!Loudest->IsSet() || N->Loudness > (*Loudest)->Loudness)) *Loudest = N;
+						return Landed(Hands());
+					}, 5, [this, H, G, Stone, Was, Loudest]
 					{
 						const FVector Fell = H->View(Stone).At;
+						const FVector Hit = Loudest->IsSet() ? (*Loudest)->At : Fell;
 						const double From = FVector::Dist2D(FVector(Was.X, Was.Z, 0), FVector(Fell.X, Fell.Z, 0));
-						After(2.5, [this, G, Fell, From, H]
+						After(2.5, [this, G, Fell, Hit, From, H, Was]
 						{
 							const auto Now = G->Individuals();
 							if (Now.IsEmpty()) { Tell(false, TEXT("it went before it could be seen to hear")); return; }
@@ -231,10 +256,12 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 							const double To = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Fell.X, Fell.Z, 0));
 							const double ToMe = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Me.X, Me.Z, 0));
 							const bool bInReach = From <= S47Noise::Reach(H->ThrowLoudness()) + .5;
-							// what it now believes: that you are where the stone fell
-							const double Belief = Now[0].bMemory ? FVector::Dist2D(FVector(Now[0].Memory.X, Now[0].Memory.Z, 0), FVector(Fell.X, Fell.Z, 0)) : -1;
-							const bool bDrawn = bInReach && ((Belief >= 0 && Belief < 2.0) || To < From - 1.0);
-							Tell(bDrawn, FString::Printf(TEXT("The stone fell %.1f m from where it stood (%s). It now takes you to be %s; it is %.1f m from the stone and %.1f m from you, %s."), From, *H->LastImpact(),
+							// what it now believes: that you are where the stone came down (where it first hit, or where it lies)
+							const auto Flat = [](const FVector& A, const FVector& B) { return FVector::Dist2D(FVector(A.X, A.Z, 0), FVector(B.X, B.Z, 0)); };
+							const double Belief = Now[0].bMemory ? FMath::Min(Flat(Now[0].Memory, Fell), Flat(Now[0].Memory, Hit)) : -1;
+							const bool bScared = Now[0].State == FS47RoswellBrain::EState::Flee || Now[0].State == FS47RoswellBrain::EState::Hide;
+							const bool bDrawn = bInReach && !bScared && ((Belief >= 0 && Belief < 2.0) || To < From - 1.0);
+							Tell(bDrawn, FString::Printf(TEXT("The stone fell %.1f m from where it stood, first down %.1f m from it (%s). It now takes you to be %s; it is %.1f m from the stone and %.1f m from you, %s."), From, Flat(Was, Hit), *H->LastImpact(),
 								Belief < 0 ? TEXT("nowhere it knows") : *FString::Printf(TEXT("%.1f m from the stone"), Belief), To, ToMe, FS47RoswellBrain::StateName(Now[0].State)), 10);
 						});
 					}, [this] { Tell(false, TEXT("the stone was still in the air")); });

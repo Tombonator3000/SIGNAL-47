@@ -41,7 +41,7 @@ void FS47RoswellBrain::Start(EMode InMode,const FVector& At,double FacingYaw,int
  LastKnownPlayer=Goal=Pos; LastPlayerEye=LookTarget=Eye()+Forward(Yaw)*3.;
  Path.Reset(); NextPoint=ChoiceCursor=0; bPlanningDeferred=false; TargetId.Reset(); Mode=InMode; State=EState::Idle;
  DecisionAt=Random.FRandRange(1.0f,2.3f); RepathAt=0;
- NoiseAt=Pos; NoiseAge=1e6; bLurePending=bGoLook=false;
+ NoiseAt=Pos; NoiseAge=1e6; bLurePending=bGoLook=false; LookTry=0;
 }
 
 void FS47RoswellBrain::SetMode(EMode InMode)
@@ -51,7 +51,7 @@ void FS47RoswellBrain::SetMode(EMode InMode)
  Mode=InMode; Path.Reset(); NextPoint=0; bAtGoal=true; Velocity=FVector::ZeroVector;
  bContact=bStandDone=false; bHasPlayerMemory=KeepMemory; if (!KeepMemory) MemoryAge=0; Noticed=0;
  bTargetCover=bTargetRoof=bTargetWindow=false; TargetId.Reset();
- LastListenAt=Age-10.; HeardAge=1e6; NoiseAge=1e6; bLurePending=bGoLook=false;
+ LastListenAt=Age-10.; HeardAge=1e6; NoiseAge=1e6; bLurePending=bGoLook=false; LookTry=0;
  State=EState::Idle; StateAge=0; ChoiceCursor=0; bPlanningDeferred=false; DecisionAt=Age+1.; RepathAt=Age;
 }
 
@@ -116,13 +116,17 @@ bool FS47RoswellBrain::GoLook(const FVector& At,const FWorld& World)
  // To where it was heard, or as near to it as there is ground to stand on: the spot, then a little short of it on the way.
  const double Far=Distance(Pos,At);
  const FVector Back=FVector(Pos.X-At.X,0,Pos.Z-At.Z).GetSafeNormal();
- for (const double Short : {0.,.8,1.6})
+ // STONE-LURE-20261109: where it got to is kept (LookTry): one route a tick, so a spot without one gives way to the next on the
+ // following tick. Asked for from the spot again each tick, a stone by a wall had it plan the spot, fail, and wait for the budget.
+ static constexpr double Shorts[]={0.,.8,1.6,2.4};
+ for (; LookTry<int32(UE_ARRAY_COUNT(Shorts)); ++LookTry)
  {
+  const double Short=Shorts[LookTry];
   if (Short>0 && Short>Far-.3) break;
   FVector To=At+Back*Short; To.Y=FMath::Lerp(At.Y,Pos.Y,Far>.1?Short/Far:0.);
   if (World.GroundedStep) { const auto Grounded=World.GroundedStep(To,To); if (!Grounded.IsSet() || !Finite(Grounded.GetValue())) continue; To=Grounded.GetValue(); }
   if (Plan(To,TEXT("heard-sound"),World)) { bTargetCover=bTargetRoof=bTargetWindow=false; return true; }
-  if (bPlanningDeferred) return false;
+  if (bPlanningDeferred) return false; // this same place again on its next turn
  }
  return false;
 }
@@ -268,7 +272,12 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
  const auto Sound=Heard(In,World);
  // PHYSICS-20261108: a sound from somewhere the player is not (a stone, a can), as against their feet, their breath or the walkie.
  const bool bLure=Sound && In.Noise && Sound->Equals(In.Noise->At) && (!In.bPlayerValid || !Finite(In.PlayerFeet) || Distance(*Sound,In.PlayerFeet)>2.);
- if (bLure) { NoiseAt=*Sound; NoiseAge=0; bLurePending=bSeesPlayer; bGoLook=Mode==EMode::Curious && !(TargetId==TEXT("heard-sound") && !bAtGoal && Distance(Goal,NoiseAt)<2.); }
+ if (bLure)
+ {
+  // The same sound heard again the next tick (S47Noise keeps one a third of a second) goes on from the place GoLook got to.
+  if (NoiseAge>1.5 || Distance(NoiseAt,*Sound)>1.) LookTry=0;
+  NoiseAt=*Sound; NoiseAge=0; bLurePending=bSeesPlayer; bGoLook=Mode==EMode::Curious && !(TargetId==TEXT("heard-sound") && !bAtGoal && Distance(Goal,NoiseAt)<2.);
+ }
  if (bSeesPlayer)
  {
   LastKnownPlayer=In.PlayerFeet; LastPlayerEye=In.PlayerEye;
@@ -620,6 +629,62 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
   Lure(Far,.2,Yard,bKnew,Before);
   Check(bKnew && Far.NoiseAge>1e5 && Far.TargetId!=TEXT("heard-sound") && !Far.LastKnownPlayer.Equals(StoneAt),TEXT("curious: a stone too faint to reach it changes nothing"));
  }
+ {
+  // STONE-LURE-20261109: the F10 line "Draw a small one off with a stone" at its own distances (the run of 9 November, 03:23): the
+  // player low, the stone thrown three metres to the small one's side and a metre and a half beyond it, first down loud (a stone on
+  // dirt at 6.6 m/s: .8, heard to eight metres), a softer bounce 1.6 m on (.37), at rest 2.9 m on from where it first hit; the view
+  // turned away as it is thrown, and looked at 3.6 s after it first hit. Where it first hit is by the walk zones' wall: no route
+  // ends on that spot itself, one does half a metre off. One route a tick, as FS47RoswellGroup grants each of them.
+  FVector Wall(1e6,0,1e6);
+  bool bRouted=false;
+  FWorld Lot; Lot.CanStand=[](const FVector& P){return Finite(P);}; Lot.CanMove=[](const FVector&,const FVector&){return true;};
+  Lot.Sight=[](const FVector&,const FVector&){return true;};
+  Lot.PlanningReady=[&bRouted]{return !bRouted;};
+  Lot.FindPath=[&](const FVector&,const FVector& To){ bRouted=true; return Distance(To,Wall)<.5?TArray<FVector>():TArray<FVector>{To}; };
+  const auto Turn=[&](FS47RoswellBrain& Small,const FInput& I){ bRouted=false; Small.Tick(.1,I,Lot); };
+  FInput Low; Low.PlayerFeet=FVector::ZeroVector; Low.PlayerEye=FVector(0,1.1,0); Low.PlayerQuiet=1;
+  struct FLureRun { FVector Was=FVector::ZeroVector, First=FVector::ZeroVector, Second=FVector::ZeroVector, Rest=FVector::ZeroVector; bool bBolted=false; };
+  // Before seconds looking where Look points, .4 s aimed at where the stone will come down, thrown (and the view turned away,
+  // unless bStare), .9 s in the air, the two hits, then on to F10's look.
+  const auto Run=[&](FS47RoswellBrain& Small,double Before,const FVector& Look,bool bStare)
+  {
+   FLureRun R;
+   FInput Pre=Low; Pre.PlayerForward=Look.GetSafeNormal();
+   for (int32 I=0; I<FMath::RoundToInt(Before*10.); ++I) Turn(Small,Pre);
+   const FVector ToBody=FVector(Small.Pos.X,0,Small.Pos.Z).GetSafeNormal(), Side(-ToBody.Z,0,ToBody.X);
+   R.First=Small.Pos+Side*3.+ToBody*1.5; R.First.Y=0;
+   const FVector On=FVector(R.First.X,0,R.First.Z).GetSafeNormal();
+   R.Second=R.First+On*1.6; R.Rest=R.First+On*2.9; Wall=R.First;
+   FInput Aim=Low; Aim.PlayerForward=(R.First+FVector(0,.1,0)-Low.PlayerEye).GetSafeNormal();
+   for (int32 I=0; I<4; ++I) Turn(Small,Aim);
+   R.Was=Small.Pos;
+   FInput After=bStare?Pre:Aim; if (!bStare) After.PlayerForward=FVector(-Aim.PlayerForward.X,Aim.PlayerForward.Y,-Aim.PlayerForward.Z);
+   for (int32 I=0; I<9; ++I) { Turn(Small,After); R.bBolted|=Small.State==EState::Flee || Small.State==EState::Hide; }
+   FInput Hit=After; Hit.Noise=FNoise{R.First,.8};
+   for (int32 I=0; I<4; ++I) Turn(Small,Hit);
+   Hit.Noise=FNoise{R.Second,.37};
+   for (int32 I=0; I<3; ++I) Turn(Small,Hit);
+   for (int32 I=0; I<29; ++I) Turn(Small,After);
+   return R;
+  };
+  // As F10 has it now: the player gone back to seven metres from it, low and looking away, then turning only to aim.
+  FS47RoswellBrain Drawn; Drawn.Start(EMode::Curious,FVector(0,0,-7),0,47);
+  const FLureRun D=Run(Drawn,1.5,FVector(0,0,1),false);
+  const double Belief=FMath::Min(Distance(Drawn.LastKnownPlayer,D.First),Distance(Drawn.LastKnownPlayer,D.Rest));
+  Check(!D.bBolted && Drawn.Mode==EMode::Curious && Drawn.TargetId==TEXT("heard-sound") && Belief<2. && Distance(Drawn.Pos,D.First)<Distance(D.Was,D.First)-.5 &&
+   Drawn.State!=EState::Flee && Drawn.State!=EState::Hide,
+   TEXT("F10 lure at its distances: seven metres off and looking away, a stone by a wall it cannot stand at draws it to a step short of there, and it takes you to be there"));
+  // As F10 ran it: come up 2.8 m in front of the view and looked at for 2.5 s. It bolts first, and a stone does not draw it back.
+  FS47RoswellBrain Near; Near.Start(EMode::Curious,FVector(0,0,-2.8),0,47);
+  const FLureRun N=Run(Near,2.5,FVector(0,0,-1),false);
+  Check(N.bBolted && Near.TargetId!=TEXT("heard-sound") && Near.Mode==EMode::Curious && !Near.bContact,
+   TEXT("F10 lure as it ran: one stood over and watched from 2.8 m bolts, and the stone after does not draw it"));
+  // Standing in front of it five metres off and looking at it all along: no lure works on it.
+  FS47RoswellBrain Stared; Stared.Start(EMode::Curious,FVector(0,0,-5),0,47);
+  const FLureRun S=Run(Stared,1.5,FVector(0,0,-1),true);
+  Check(S.bBolted && Stared.TargetId!=TEXT("heard-sound") && Stared.Mode==EMode::Curious && !Stared.bContact,
+   TEXT("a stone thrown while the player stands in front of it and watches it draws nothing: it bolts"));
+ }
  return bOk;
 }
 
@@ -653,5 +718,5 @@ bool FS47RoswellBrain::Restore(const S47J::FObj& O)
  bHasPlayerMemory=S47J::Bool(O,TEXT("memory"));bContact=S47J::Bool(O,TEXT("contact"));bStandDone=S47J::Bool(O,TEXT("standDone"));bAtGoal=S47J::Bool(O,TEXT("atGoal"));
  bTargetCover=S47J::Bool(O,TEXT("targetCover"));bTargetRoof=S47J::Bool(O,TEXT("targetRoof"));bTargetWindow=S47J::Bool(O,TEXT("targetWindow"));
  TargetId=S47J::Str(O,TEXT("target"));Path.Reset();for(int32 I=0;I<R.Num();I+=3)Path.Add(FVector(R[I],R[I+1],R[I+2]));NextPoint=FMath::Clamp(S47J::Int(O,TEXT("next")),0,Path.Num());ChoiceCursor=S47J::Int(O,TEXT("choice"));
- bPlanningDeferred=false;bPlayerSeesMe=bSeesPlayer=false;NoiseAge=1e6;bLurePending=bGoLook=false;return true;
+ bPlanningDeferred=false;bPlayerSeesMe=bSeesPlayer=false;NoiseAge=1e6;bLurePending=bGoLook=false;LookTry=0;return true;
 }

@@ -657,7 +657,9 @@ void FS47DevFreeform::StartFieldTest(int32 Test)
   F->Begin(State,false);
  }
  FStage Stage;Stage.From=20;Stage.To=23;Stage.Area=TEXT("saro");
- Stage.Where=[Test]{return Test==0?FVector2D(5.25,-5.12):FVector2D(-1.,-20.);};
+ // T16-11: a step out from the roof ladder (S47CaseFieldTests: x 5.85, its rungs at z -4.98), facing it and the wall; no longer in it
+ Stage.Where=[Test]{return Test==0?FVector2D(5.85,-6.1):FVector2D(-1.,-20.);};
+ if(Test==0){Stage.Yaw=PI;Stage.Pitch=.25;}
  Go(Stage,[this,Test]
  {
   auto* S=Session();if(!S||!S->CaseField)return;
@@ -1379,7 +1381,6 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWeather(E);
  AddPhysics(E);
  AddLooks(E);
- AddReach(E);
 }
 
 void FS47DevFreeform::Stop()
