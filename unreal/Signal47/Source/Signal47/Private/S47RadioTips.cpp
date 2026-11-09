@@ -423,7 +423,8 @@ bool FS47RadioTips::StepTipped(FS47Station& Station)
   }
   else continue;
   if(!Station.Slot(Lines,M->Story->Clock()))return true; // Not its turn: it waits, and nothing else takes the turn meant for it.
-  if(G.Stage==0){G.Stage=1;G.ReadDay=Today;UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s read on the air"),*G.Place);M->RequestAutosave();}
+  // M7 (Tom, 9 November): 1420 pays five dollars for a tip it reads, inside the week's cap on side money (FS47FreeformSession::EarnSide)
+  if(G.Stage==0){G.Stage=1;G.ReadDay=Today;const int32 Paid=M->Freeform->EarnSide(TipPay,TEXT("1420 tip"));UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s read on the air, $%d"),*G.Place,Paid);M->RequestAutosave();}
   else Back(G);
   return true;
  }

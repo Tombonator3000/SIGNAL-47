@@ -100,6 +100,15 @@ public:
 	double Held = 0;
 	/** WEATHER-20261108: the surface's grip times this (wet dirt after a shower: FS47TruckCare); 1 normally. */
 	double GripScale = 1;
+	/** M7 (Tom, 9 November): what has been done to the player's own truck (FS47Outfit, bought at OPS): the engine's pull and its top
+	 *  speed, and the tires' grip and top on loose ground (gravel and dirt). 1 normally. */
+	double PullScale = 1, TopScale = 1, LooseGripScale = 1, LooseTopScale = 1;
+	/** The surface as this truck has it: its top by the engine (and on loose ground the tires), its grip on loose ground by the tires. */
+	static FS47Surface Tuned(const FS47Surface& S, double TopScale, double LooseGripScale, double LooseTopScale);
+	/** The pure straight-line run of Update on level ground, full throttle from a stand: the speed it settles at (m/s) and the seconds
+	 *  to ToMps (a large number when it never gets there). For F10 and the self-test: what an upgrade does, in numbers. */
+	static void StraightRun(const FS47Surface& S, double PullScale, double TopScale, double LooseGripScale, double LooseTopScale, double ToMps,
+		double& OutTop, double& OutSeconds);
 	/** The head's look kept within this (radians; the waking in the cab, story/abduction.ts), or unset. */
 	struct FLookBox { double Yaw0, Yaw1, Pitch0, Pitch1; };
 	TOptional<FLookBox> LookBox;

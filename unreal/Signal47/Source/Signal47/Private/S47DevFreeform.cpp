@@ -1386,6 +1386,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWeather(E);
  AddPhysics(E);
  AddLooks(E);
+ AddEconomy(E);
  AddEyeGlint(E);
  AddReach(E);
 }

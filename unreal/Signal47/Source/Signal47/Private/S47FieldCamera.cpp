@@ -11,6 +11,7 @@
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "S47Canvas.h"
+#include "S47Freeform.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Json.h"
@@ -202,7 +203,10 @@ bool US47FieldCamera::Render(int32 RW, int32 RH, TArray<FColor>& Out)
 	{
 		E->GetScalarParameterValue(TEXT("ToneK"), ToneK);
 		E->GetScalarParameterValue(TEXT("Vhs"), Vhs);
-		E->SetScalarParameterValue(TEXT("ToneK"), ToneK * 1.9f); // long exposure: the film sees more than the eye
+		// M7 (Tom, 9 November): the image intensifier on the lens (FS47Openings "night_camera") sees far more in the dark; by day it is off
+		const bool bNightGlass = M && M->IsFreeform() && M->Freeform && M->Freeform->HasKit(TEXT("night_camera"))
+			&& (FMath::Fmod(M->Freeform->Clock(), 86400.0) >= 19 * 3600.0 || FMath::Fmod(M->Freeform->Clock(), 86400.0) < 6 * 3600.0);
+		E->SetScalarParameterValue(TEXT("ToneK"), ToneK * (bNightGlass ? 3.6f : 1.9f)); // long exposure: the film sees more than the eye
 		E->SetScalarParameterValue(TEXT("Vhs"), 0.f);
 	}
 	// (CaptureScene sends the world's pending updates first: the echo shown, the exposure raised)

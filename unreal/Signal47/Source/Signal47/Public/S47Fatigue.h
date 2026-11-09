@@ -31,6 +31,9 @@ public:
 	void Slept(double Seconds, EBed Where);
 	/** Time lost while taken (FS47FreeformSession::TakenAway, after the clock moved): awake, every hour of it. */
 	void Lost(double Seconds);
+	/** M7 (Tom, 9 November): screen work tires more than the clock alone: a card registered at OPS (FS47FreeformSession::DeskWork) adds
+	 *  these hours awake on top of the time it took. Felt in a developer run only when F10 set the fatigue. */
+	void Desk(double Hours);
 	/** The coffee machine and the mug in the control room ("coffeePot", "mug"). */
 	bool Use(const FString& Id);
 	FString Label(const FString& Id) const;

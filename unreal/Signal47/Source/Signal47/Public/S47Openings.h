@@ -9,14 +9,18 @@ class UPointLightComponent;
 
 // Freeform only: what the station can get hold of as it goes on (Tom, 7 November). Each stands at OPS with its price and what it
 // waits for, is saved by name, and an older save simply has none. Prices are low against $60 a day, on purpose.
+// M7 (Tom, 9 November): what is bought opens the land, not only comfort, and the prices step up: the early ones in week 1, the truck's
+// upgrades and the better field gear from week 2 (day 8), the dear ones from week 3 (day 15). Week is the first week it can be had.
 struct FS47KitOffer
 {
- const TCHAR* Id;const TCHAR* Title;int32 Price;const TCHAR* Waits;const TCHAR* What;
+ const TCHAR* Id;const TCHAR* Title;int32 Price;const TCHAR* Waits;const TCHAR* What;int32 Week=1;
 };
 struct SIGNAL47_API FS47Openings
 {
  static const TArray<FS47KitOffer>& Defs();
  static const FS47KitOffer* Def(const FString& Id);
+ // The first day it can be had at all (Week's first day).
+ static int32 FirstDay(const FString& Id);
  static bool SelfTest(TArray<FString>& Lines);
 };
 

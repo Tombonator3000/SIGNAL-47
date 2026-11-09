@@ -15,6 +15,7 @@
 #include "S47Answer.h"
 #include "S47LeftGear.h"
 #include "S47Openings.h"
+#include "S47Outfit.h"
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
@@ -141,7 +142,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
  Tutorial=!Saved&&M&&M->Flow&&(!M->Flow->bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTutorial")))?1:0;
  TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;
- DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;
+ DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;SideWeek=SidePaid=Repairs=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
  Journal.Load(S47J::Obj(Saved,TEXT("journal")));
@@ -156,6 +157,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   WorldClock=FMath::Clamp(SafeNum(Saved,TEXT("clock"),8*3600),0.,3153600000.);
   // Older saves have no review behind them: nothing is charged for weeks already played.
   ReviewWeek=FMath::Max(0,SafeInt(Saved,TEXT("reviewWeek"),-1));Carried=FMath::Clamp(SafeInt(Saved,TEXT("carried")),0,int32(ArrearsCap));StandbyTotal=FMath::Max(0,SafeInt(Saved,TEXT("standbyPaid")));
+  SideWeek=FMath::Max(0,SafeInt(Saved,TEXT("sideWeek")));SidePaid=FMath::Clamp(SafeInt(Saved,TEXT("sidePaid")),0,int32(SideCap));Repairs=FMath::Clamp(SafeInt(Saved,TEXT("repairs")),0,int32(RepairCap));
   WokenNight=FMath::Max(0,SafeInt(Saved,TEXT("wokenNight")));RousedNight=FMath::Max(0,SafeInt(Saved,TEXT("rousedNight")));
   if(!FMath::IsFinite(WorldClock)) {bActive=false;return;}
   DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
@@ -277,6 +279,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Visitors)Visitors=MakeShared<FS47Visitors>(M);Visitors->Begin(S47J::Obj(Saved,TEXT("visitors")));
  if(!MotelNight)MotelNight=MakeShared<FS47MotelNight>(M);MotelNight->Begin(S47J::Obj(Saved,TEXT("motelNight")));
  if(!TruckLamp)TruckLamp=MakeShared<FS47TruckLamp>(M);
+ if(!Outfit)Outfit=MakeShared<FS47Outfit>(M);
  if(!YardAlarm)YardAlarm=MakeShared<FS47YardAlarm>(M);YardAlarm->Begin(S47J::Obj(Saved,TEXT("alarm")));
  if(!Care)Care=MakeShared<FS47TruckCare>(M);Care->Begin(S47J::Obj(Saved,TEXT("care")));
  if(!TripCamera)TripCamera=MakeShared<FS47TripCamera>(M);TripCamera->Begin(S47J::Obj(Saved,TEXT("tripCamera")));
@@ -315,7 +318,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
+ if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(Outfit)Outfit->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
  if(bCanRestore){if(TownUse)TownUse->Stop();if(TownSites)TownSites->Stop();}
  // At exit or in the purge the town's figures may already be gone: only the plain list of who is away is cleared then.
@@ -539,6 +542,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Visitors&&!Held())Visitors->Step(D);
  if(MotelNight)MotelNight->Step(D);
  if(TruckLamp)TruckLamp->Step(D);
+ if(Outfit)Outfit->Step(D);
  if(YardAlarm)YardAlarm->Step(D);
  if(Care&&!Held())Care->Step(D);
  if(TripCamera)TripCamera->Step(D);
@@ -1065,12 +1069,13 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  // The OPS computer has accepted an actual result; opening its screen alone is silent.
  // The whole modem recording: nothing in the panel transition cuts it short.
  if(M&&M->Audio)M->Audio->PcTransferAtOps(M->Web,27.);
- if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);Earn(LastPay);}J->Stage=EJobStage::Filed;}
+ FString PayWhy;
+ if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);JobBonus(*J,&PayWhy);Earn(LastPay);DeskWork(*J);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);ClearCompletedSelection();return true;}
  if(Places)Places->AfterRegistered();
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
  if(WasTutorial&&!InTutorial())return true;
- Feedback=J->Stage==EJobStage::Registered?FString(TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder.")):AlreadyPaid?FString(TEXT("Reference check registered. Original retained; no additional payment is due.")):FString::Printf(TEXT("Routine result registered. $%d credited; the original remains in EARLIER WORK and the notebook."),LastPay);Changed(Feedback);return true;
+ Feedback=J->Stage==EJobStage::Registered?FString(TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder.")):AlreadyPaid?FString(TEXT("Reference check registered. Original retained; no additional payment is due.")):FString::Printf(TEXT("Routine result registered. $%d credited%s; the original remains in EARLIER WORK and the notebook.%s"),LastPay,*PayWhy,*DeskLine);Changed(Feedback);return true;
 }
 bool FS47FreeformSession::NearBinder() const
 {
@@ -1091,7 +1096,7 @@ bool FS47FreeformSession::FilePacket()
  // Another job may have been selected since the packet was collected; its paper still waits here.
  FJob* J=Work.FindByPredicate([](const FJob& X){return X.Stage==EJobStage::Packet;});if(Job()&&Job()->Stage==EJobStage::Packet)J=Job();if(!J)return false;
  if(!NearBinder()){Feedback=TEXT("Take the registered paper packet to the actual records-room binder. The remote archive is read-only.");Changed(Feedback);return false;}
- J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;Earn(JobPay(*J));}
+ J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);Earn(LastPay);DeskWork(*J);}
  if(J->bAnomaly)
  {
   RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
@@ -1439,7 +1444,10 @@ void FS47FreeformSession::OpenOperations()
    D.Add(T::Heading(FS47Observing::Runs()[J->Source].Source,44));
    D.Add(T::Value(TEXT("AZ"),FString::Printf(TEXT("%.1f°"),TargetAz())));D.Add(T::Value(TEXT("EL"),FString::Printf(TEXT("%.1f°"),TargetEl())));
    D.Add(T::Value(TEXT("FREQUENCY"),FString::Printf(TEXT("%.3f MHz"),P.F)));D.Add(T::Value(TEXT("INTEGRATION"),FString::Printf(TEXT("%.0f s"),SourceSeconds())));
-   if(!J->bPaid)D.Add(T::Value(TEXT("PAYS NOW"),FString::Printf(TEXT("$%d%s"),JobPay(*J),J->bDocked?TEXT(" / HALF RATE"):DayNumber-J->Day>1?TEXT(" / LATE"):TEXT(""))));
+   if(!J->bPaid)D.Add(T::Value(TEXT("PAYS NOW"),FString::Printf(TEXT("$%d%s%s"),JobPay(*J),J->bDocked?TEXT(" / HALF RATE"):DayNumber-J->Day>1?TEXT(" / LATE"):TEXT(""),
+    RulesLive()&&J->CaseTest<0&&J->Stage<EJobStage::Recorded?*FString::Printf(TEXT(" / +$%d IF THE RECORDING READS"),CleanBonus):TEXT(""))));
+   // M7: what the evening's cards have taken (time is the second currency)
+   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / SIDE MONEY LEFT THIS WEEK $%d"),CardsFiledOn(DayNumber),SideLeftThisWeek())));
    D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true));
   }
   else D.Add(T::Small(TEXT("Select a job in the queue.")));
@@ -2075,9 +2083,63 @@ const FS47FreeformSession::FJob* FS47FreeformSession::NextEveningCard(double& Up
 }
 int32 FS47FreeformSession::JobPay(const FJob& J)const
 {
- if(!RulesLive())return 20;
- const int32 Pay=PayAfterDays(FMath::Max(0,DayNumber-J.Day));
- return J.bDocked?FMath::Max(5,(Pay/10)*5):Pay;
+ if(!RulesLive()||TrainingCard(J))return 20;
+ const int32 Pay=PayAfterDays(FMath::Max(0,DayNumber-J.Day))+JobBonus(J);
+ // docked (the night the player was taken): half of it, never under the latest card's base
+ return J.bDocked?FMath::Max(PayAfterDays(4),Pay/2):Pay;
+}
+int32 FS47FreeformSession::JobBonus(const FJob& J,FString* Why)const
+{
+ if(!RulesLive()||TrainingCard(J)){if(Why)Why->Empty();return 0;}
+ TArray<FString> For;int32 B=0;
+ if(DayNumber-J.Day<=1){B+=OnTimeBonus;For.Add(TEXT("on time"));}
+ // a recording made with the newer sound (version 2) is judged by its quality; an older one has nothing to judge it by
+ if(J.Stage>=EJobStage::Recorded&&(J.RecordingSoundVersion<2||J.RecordingQuality>=CleanRecordQuality)){B+=CleanBonus;For.Add(TEXT("a clean recording"));}
+ if(J.bAnomaly&&J.bControl){B+=ControlBonus;For.Add(TEXT("the anomaly controlled"));}
+ if(Why)*Why=B>0?FString::Printf(TEXT(" ($%d of it for %s)"),B,*FString::Join(For,TEXT(", "))):FString(TEXT(" (no bonus: late, and the recording does not read)"));
+ return B;
+}
+int32 FS47FreeformSession::CardsFiledOn(int32 OnDay)const
+{
+ int32 N=0;for(const FJob& J:Work)if(J.bPaid&&J.Day==OnDay)++N;return N;
+}
+void FS47FreeformSession::DeskWork(const FJob& J)
+{
+ DeskLine.Empty();
+ if(!RulesLive())return;
+ // the card's time: from the start of the acquisition to now, as the night's clock has it (pointing and walking not counted)
+ const int32 Minutes=FMath::Clamp(int32((WorldClock-J.ReferenceClock)/60.),0,600);
+ const int32 Tonight=CardsFiledOn(DayNumber);
+ const double Hours=Tonight>=3?DeskHoursThirdCard:DeskHoursPerCard;
+ if(Fatigue)Fatigue->Desk(Hours);
+ const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
+ const double Left=FMath::Max(0.,(Hour>=12?30.:6.)-Hour); // to 06:00
+ DeskLine=FString::Printf(TEXT(" That card took %d minutes of the night; %d %s tonight, %.1f hours left to 06:00.%s"),Minutes,Tonight,Tonight==1?TEXT("card"):TEXT("cards"),Left,
+  Tonight>=3?TEXT(" A third card at the screens: your eyes feel it."):TEXT(""));
+ UE_LOG(LogTemp,Display,TEXT("S47: card %s filed: %d min, %d tonight, desk %.2f h"),*J.Id,Minutes,Tonight,Hours);
+}
+int32 FS47FreeformSession::SideLeftThisWeek()const
+{
+ const int32 Week=(DayNumber-1)/7+1;return SideWeek==Week?FMath::Max(0,SideCap-SidePaid):SideCap;
+}
+int32 FS47FreeformSession::EarnSide(int32 Amount,const TCHAR* Kind)
+{
+ if(Amount<=0)return 0;
+ if(!RulesLive()){Earn(Amount);return Amount;}
+ const int32 Week=(DayNumber-1)/7+1;
+ if(SideWeek!=Week){SideWeek=Week;SidePaid=0;}
+ const int32 Pay=FMath::Min(Amount,SideCap-SidePaid);
+ UE_LOG(LogTemp,Display,TEXT("S47: side money %s: $%d offered, $%d paid, $%d of $%d this week"),Kind?Kind:TEXT("?"),Amount,FMath::Max(0,Pay),SidePaid+FMath::Max(0,Pay),int32(SideCap));
+ if(Pay<=0)return 0;
+ SidePaid+=Pay;Earn(Pay);return Pay;
+}
+void FS47FreeformSession::BreakGear(const FString& What,int32 Fee)
+{
+ Fee=FMath::Clamp(Fee,0,int32(RepairCap));if(Fee<=0)return;
+ Repairs=FMath::Min(int32(RepairCap),Repairs+Fee);
+ RecordEvidence(FString::Printf(TEXT("broken-%s-d%d"),*What,DayNumber),FString::Printf(TEXT("Day %d: the %s gave out close to something out there. $%d for the repair goes on the next weekly sheet."),DayNumber,*What,Fee));
+ UE_LOG(LogTemp,Display,TEXT("S47: gear broken near an event: %s, $%d on the sheet (%d due)"),*What,Fee,Repairs);
+ Changed();
 }
 FString FS47FreeformSession::NextReviewText()const
 {
@@ -2099,6 +2161,9 @@ FS47FreeformSession::FWeekCosts FS47FreeformSession::WeekCosts(int32 Week)const
  X.Film=FMath::Min(FilmCap,X.Prints*FilmPerPrint);
  for(const FJob& J:Work)if(J.CaseTest<0&&J.Stage==EJobStage::Filed&&J.Day>=First&&J.Day<=Last&&J.RecordingSoundVersion>=2&&J.RecordingQuality<PoorRecordQuality)++X.Poor;
  X.Fee=FMath::Min(FeeCap,X.Poor*PoorRecordFee);
+ if(Tape)for(const auto& T:Tape->Takes())if(T.Day>=First&&T.Day<=Last)++X.Tapes;
+ X.Tape=FMath::Min(TapeCap,X.Tapes*TapePerTake);
+ X.Repairs=Repairs;
  return X;
 }
 void FS47FreeformSession::StepWeeklyReview()
@@ -2109,13 +2174,16 @@ void FS47FreeformSession::StepWeeklyReview()
  {
   ++ReviewWeek;
   const FWeekCosts X=WeekCosts(ReviewWeek);
-  const int32 Before=Carried,Bill=ReviewPowerNow()+ReviewFuel+X.Total()+Before;
+  const int32 Before=Carried,Bill=ReviewPowerFor(ReviewWeek,AvailableDishCount())+ReviewFuel+X.Total()+Before;
   const int32 Paid=FMath::Min(Cash,Bill);
   Cash-=Paid;Carried=FMath::Min(ArrearsCap,Bill-Paid);
   if(Care)Care->WeekBilled();
+  Repairs=0;
   FString Running=FString::Printf(TEXT("\nTRUCK: TIRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
+  if(X.Tapes>0)Running+=FString::Printf(TEXT("\nCASSETTES, %d %s $%d"),X.Tapes,X.Tapes==1?TEXT("TAKE"):TEXT("TAKES"),X.Tape);
+  if(X.Repairs>0)Running+=FString::Printf(TEXT("\nREPAIRS TO GEAR DAMAGED IN THE FIELD $%d"),X.Repairs);
   if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
-  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE, POWER, %d ANTENNAS IN SERVICE $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,AvailableDishCount(),ReviewPowerNow(),ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
+  RecordEvidence(FString::Printf(TEXT("week-review-%d"),ReviewWeek),FString::Printf(TEXT("SARO OPERATIONS / WEEKLY REVIEW / WEEK %d\nCOUNTY LINE AND UPKEEP, %d ANTENNAS IN SERVICE AT $%d.%02d $%d\nFUEL AND STORES ACCOUNT $%d%s\nCARRIED FROM LAST REVIEW $%d\nPAID FROM THE BUDGET $%d\nCARRIED TO THE NEXT REVIEW $%d\nWhat is carried stays on this sheet. It does not touch the requisition and nothing is cut off.%s"),ReviewWeek,AvailableDishCount(),UpkeepHalves(ReviewWeek)/2,UpkeepHalves(ReviewWeek)%2*50,ReviewPowerFor(ReviewWeek,AvailableDishCount()),ReviewFuel,*Running,Before,Paid,Carried,Predecessor?*Predecessor->ReviewLine():TEXT("")));
   // The statement comes by post as well (FS47Mail): the same figures, on paper.
   if(Mail)Mail->PostWeekStatement(ReviewWeek);
   Changed(FString::Printf(TEXT("Weekly review: $%d paid%s. Next one day %d."),Paid,Carried>0?*FString::Printf(TEXT(", $%d carried"),Carried):TEXT(""),NextReviewDay()));
@@ -2177,7 +2245,13 @@ FString FS47FreeformSession::KitWaits(const FString& Id)const
   // M7 (C): the dearer kit of weeks three and four, once there is money to spend and a reason to
   :Id==TEXT("transfer")?DayNumber>=15
   :Id==TEXT("array_alarm")?(DayNumber>=15&&HasKit(TEXT("alarm")))
-  :Id==TEXT("alarm")?SheriffTrust()>0:false;
+  :Id==TEXT("alarm")?SheriffTrust()>0
+  // M7 (Tom, 9 November): the truck's upgrades and the better field gear from week 2, the direction finder from week 3
+  :Id==TEXT("truck_tires")||Id==TEXT("truck_rack")||Id==TEXT("truck_engine")?DayNumber>=FS47Openings::FirstDay(Id)
+  :Id==TEXT("truck_tank")?(DayNumber>=FS47Openings::FirstDay(Id)&&FieldRecordKept())
+  :Id==TEXT("field_recorder")?(DayNumber>=FS47Openings::FirstDay(Id)&&Tape&&Tape->Takes().ContainsByPredicate([](const FS47Tape::FTake& T){return T.bOutdoors;}))
+  :Id==TEXT("night_camera")?(DayNumber>=FS47Openings::FirstDay(Id)&&HasKit(TEXT("film")))
+  :Id==TEXT("rdf")?DayNumber>=FS47Openings::FirstDay(Id):false;
  return bOpen?FString():FString(O->Waits);
 }
 bool FS47FreeformSession::FieldRecordKept()const
@@ -2893,7 +2967,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 }
 S47J::FObj FS47FreeformSession::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ auto O=S47J::New();S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
@@ -3249,20 +3323,45 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Hours.Stop();Reread.Stop();
  }
  {
-  Check(PayAfterDays(0)==20&&PayAfterDays(1)==20&&PayAfterDays(2)==15&&PayAfterDays(3)==10&&PayAfterDays(4)==5&&PayAfterDays(30)==5,TEXT("Time: a card pays in full on its day and the next, then less, and never nothing"));
+  Check(PayAfterDays(0)==14&&PayAfterDays(1)==14&&PayAfterDays(2)==10&&PayAfterDays(3)==7&&PayAfterDays(4)==4&&PayAfterDays(30)==4,TEXT("M7: a card's base pays in full ($14) on its day and the next, then less, and never nothing"));
+  Check(PayAfterDays(0)+OnTimeBonus+CleanBonus==19&&OnTimeBonus+CleanBonus+ControlBonus>=4&&OnTimeBonus+CleanBonus+ControlBonus<=6&&PayAfterDays(0)>=12&&PayAfterDays(0)<=14,TEXT("M7: base $12 to $14 and $4 to $6 for good work: a good card $19, against the old flat $20"));
   Check(StandbyFor(0)==0&&StandbyFor(3600)==1&&StandbyFor(9*3600.)==3&&StandbyFor(11*3600.)==4&&StandbyFor(40*3600.)==4,TEXT("Time: waiting costs a dollar per three hours, at most four"));
   FS47FreeformSession Econ(nullptr);Econ.Begin(nullptr);
   Check(Econ.JobPay(Econ.Work[0])==20,TEXT("Time: developer runs keep the flat rate"));
   Econ.TestLiveRules();Econ.TestAdvance(2*86400);
-  Check(Econ.JobPay(Econ.Work[0])==15,TEXT("Time: a card two days old pays $15"));
-  Econ.Work[0].bDocked=true;Check(Econ.JobPay(Econ.Work[0])==5,TEXT("Time: docked, half that to the nearest five"));Econ.Work[0].bDocked=false;
+  Check(Econ.JobPay(Econ.Work[0])==10&&Econ.JobBonus(Econ.Work[0])==0,TEXT("M7: a card two days old, not yet recorded, pays its $10 base and no bonus"));
+  Econ.Work[0].bDocked=true;Check(Econ.JobPay(Econ.Work[0])==5,TEXT("Time: docked, half that"));Econ.Work[0].bDocked=false;
+  {
+   // M7: quality pays better than quantity. The same card on its day: clean, on time, the anomaly controlled; or a recording nobody can read.
+   FS47FreeformSession Q(nullptr);Q.Begin(nullptr);Q.TestLiveRules();FJob& C=Q.Work[0];C.Day=Q.Day();C.Stage=EJobStage::Recorded;C.RecordingSoundVersion=2;C.RecordingQuality=.8;
+   FString Why;const int32 Good=Q.JobPay(C);Q.JobBonus(C,&Why);
+   C.bAnomaly=C.bControl=true;const int32 Controlled=Q.JobPay(C);C.bAnomaly=C.bControl=false;
+   C.RecordingQuality=.2;const int32 Muddy=Q.JobPay(C);
+   Q.TestAdvance(3*86400);const int32 LateMuddy=Q.JobPay(C);
+   Check(Good==19&&Controlled==20&&Muddy==16&&LateMuddy==7&&Why.Contains(TEXT("clean recording")),*FString::Printf(TEXT("M7: good card $%d, anomaly controlled $%d, muddy on time $%d, muddy three days late $%d"),Good,Controlled,Muddy,LateMuddy));
+   // two good cards are worth more than three muddy late ones
+   Check(2*Good>3*LateMuddy,TEXT("M7: two good cards pay more than three muddy late ones"));
+   Q.Stop();
+  }
+  {
+   // M7: side money is capped by the week, and the cap comes back the next week.
+   FS47FreeformSession Side(nullptr);Side.Begin(nullptr);Side.TestLiveRules();const int32 Was=Side.Budget();
+   const int32 A=Side.EarnSide(20,TEXT("test")),B=Side.EarnSide(20,TEXT("test")),C2=Side.EarnSide(5,TEXT("test"));
+   Check(A==20&&B==SideCap-20&&C2==0&&Side.Budget()==Was+SideCap&&Side.SideLeftThisWeek()==0,*FString::Printf(TEXT("M7: field-work money is capped at $%d a week (paid %d, %d, %d)"),int32(SideCap),A,B,C2));
+   FS47FreeformSession SideAgain(nullptr);SideAgain.Begin(S47J::Read(S47J::Write(Side.Save())));SideAgain.TestLiveRules();
+   Check(SideAgain.SideLeftThisWeek()==0&&SideAgain.EarnSide(10,TEXT("test"))==0,TEXT("M7: the week's side money survives a Continue"));
+   SideAgain.TestAdvance(7*86400);Check(SideAgain.SideLeftThisWeek()==SideCap&&SideAgain.EarnSide(10,TEXT("test"))==10,TEXT("M7: a new week, a new cap"));
+   Check(SideCap*4<7*2*PayAfterDays(0),TEXT("M7: a month's capped side money is less than one week of two base cards an evening"));
+   Side.Stop();SideAgain.Stop();
+  }
   const int32 Start=Econ.Budget(),Week=Econ.ReviewPowerNow()+ReviewFuel;Econ.TestAdvance(5*86400);Econ.StepWeeklyReview();
   Check(Econ.Day()==8&&Econ.Budget()==Start-Week&&Econ.Arrears()==0&&Econ.HasFinding(TEXT("week-review-1"))&&Econ.Debt()==0&&Econ.NextReviewDay()==15,TEXT("Time: the first review falls on day eight, power by the antennas on the line and fuel, on a sheet"));
   Econ.StepWeeklyReview();Check(Econ.Budget()==Start-Week,TEXT("Time: a review is paid once"));
+  const int32 Week2=ReviewPowerFor(2,Econ.AvailableDishCount())+ReviewFuel;
   Econ.Cash=10;Econ.TestAdvance(7*86400);Econ.StepWeeklyReview();
-  Check(Econ.Budget()==0&&Econ.Arrears()==Week-10&&Econ.Debt()==0,TEXT("Time: short of money it takes what is there, carries the rest, and never touches the requisition"));
+  Check(Econ.Budget()==0&&Econ.Arrears()==Week2-10&&Econ.Debt()==0,TEXT("Time: short of money it takes what is there, carries the rest, and never touches the requisition"));
   FS47FreeformSession EconAgain(nullptr);EconAgain.Begin(S47J::Read(S47J::Write(Econ.Save())));
-  Check(EconAgain.Arrears()==Week-10&&EconAgain.NextReviewDay()==22,TEXT("Time: what is carried survives a Continue, and is not charged again"));
+  Check(EconAgain.Arrears()==Week2-10&&EconAgain.NextReviewDay()==22,TEXT("Time: what is carried survives a Continue, and is not charged again"));
   auto OldEcon=Econ.Save();OldEcon->RemoveField(TEXT("reviewWeek"));OldEcon->RemoveField(TEXT("carried"));S47J::Set(OldEcon,TEXT("cash"),60);
   FS47FreeformSession OldGame(nullptr);OldGame.Begin(OldEcon);OldGame.TestLiveRules();OldGame.StepWeeklyReview();
   Check(OldGame.Budget()==60&&OldGame.Arrears()==0,TEXT("Time: an older save on day fifteen is not charged for the weeks behind it"));
@@ -3271,14 +3370,22 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FS47FreeformSession Fees(nullptr);Fees.Begin(nullptr);Fees.TestLiveRules();
   Fees.Work[0].Stage=EJobStage::Filed;Fees.Work[0].CaseTest=-1;Fees.Work[0].Day=1;Fees.Work[0].RecordingSoundVersion=2;Fees.Work[0].RecordingQuality=.1;
   const int32 FeeStart=Fees.Budget();Fees.TestAdvance(7*86400);Fees.StepWeeklyReview();
-  Check(Fees.Budget()==FeeStart-Fees.ReviewPowerNow()-ReviewFuel-PoorRecordFee&&Fees.FindingText(TEXT("week-review-1")).Contains(TEXT("RE-CHECK")),TEXT("Time: Ward charges for a recording nobody can read, on the sheet, and not much"));
-  Check(WearCap+FilmCap+FeeCap+ReviewPowerBase+27*ReviewPowerPerDish+ReviewFuel<=100,TEXT("Time: the worst week costs at most $100, under two days' full pay"));
+  Check(Fees.Budget()==FeeStart-ReviewPowerFor(1,Fees.AvailableDishCount())-ReviewFuel-PoorRecordFee&&Fees.FindingText(TEXT("week-review-1")).Contains(TEXT("RE-CHECK")),TEXT("Time: Ward charges for a recording nobody can read, on the sheet, and not much"));
+  Check(WearCap+FilmCap+FeeCap+TapeCap+RepairCap+ReviewPowerFor(4,27)+ReviewFuel<=140,TEXT("M7: the worst week (week four, all 27 antennas) costs at most $140, about half a week of two good cards"));
+  Check(ReviewPowerFor(1,27)<ReviewPowerFor(2,27)&&ReviewPowerFor(3,27)<ReviewPowerFor(4,27)&&ReviewPowerFor(1,27)==37&&ReviewPowerFor(4,27)==64,TEXT("M7: the array's upkeep goes up with the weeks, $37 to $64 for all 27"));
+  {
+   // M7: gear broken in the field goes on the next sheet once, then is cleared
+   FS47FreeformSession Br(nullptr);Br.Begin(nullptr);Br.TestLiveRules();Br.BreakGear(TEXT("flashlight"),4);Br.BreakGear(TEXT("flashlight"),40);
+   const int32 B0=Br.Budget(),Due=Br.RepairsDue();Br.TestAdvance(7*86400);Br.StepWeeklyReview();
+   Check(Due==RepairCap&&Br.Budget()==B0-ReviewPowerFor(1,Br.AvailableDishCount())-ReviewFuel-Due&&Br.RepairsDue()==0&&Br.FindingText(TEXT("week-review-1")).Contains(TEXT("REPAIRS")),TEXT("M7: field repairs go on the next sheet, capped, and only once"));
+   Br.Stop();
+  }
   Fees.Stop();
   // Being taken, in the session's books.
   FS47FreeformSession Gone(nullptr);Gone.Begin(nullptr);Gone.TestLiveRules();Gone.TestAdvance(86400+17*3600.);
   const double Safe=Gone.Clock();Gone.Work.Last().Stage=EJobStage::Pointed;Gone.TakenAway(5*3600.);const FString Cost=Gone.TakenCosts(Safe);
   const auto* LostCase=Gone.CaseFile().Get(FS47FreeformCases::LostLine);
-  Check(LostCase&&LostCase->bOpen&&Cost.Contains(TEXT("half rate"))&&Gone.Work.Last().Stage==EJobStage::New&&Gone.Work.Last().bDocked&&Gone.JobPay(Gone.Work.Last())==10,TEXT("Taken: the case opens, today's cards go in at half rate, and a pointed array has to be pointed again"));
+  Check(LostCase&&LostCase->bOpen&&Cost.Contains(TEXT("half rate"))&&Gone.Work.Last().Stage==EJobStage::New&&Gone.Work.Last().bDocked&&Gone.JobPay(Gone.Work.Last())==8,TEXT("Taken: the case opens, today's cards go in at half rate, and a pointed array has to be pointed again"));
   Gone.LostTimeTrace(1);Check(Gone.HasFinding(TEXT("lost_ground"))&&FS47FreeformCases::LineForFinding(TEXT("lost_clock"))==FS47FreeformCases::LostLine,TEXT("Taken: going back gives the case a trace"));
   // Critic round 5: one trace of the lost hours is not a case carried through; the clock at OPS as well is.
   {const bool bOne=Gone.CaseSupported(FS47FreeformCases::LostLine);FS47FreeformSession Both(nullptr);Both.Begin(S47J::Read(S47J::Write(Gone.Save())));Both.TestLiveRules();Both.LostTimeTrace(0);

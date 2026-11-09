@@ -126,6 +126,37 @@ void FS47DriveController::Adopt(const FS47DriveController& O, double X, double Z
 	Pose(0, 0, false);   // drawn as it is, the springs left as they were
 }
 
+FS47Surface FS47DriveController::Tuned(const FS47Surface& S, double TopScale, double LooseGripScale, double LooseTopScale)
+{
+	FS47Surface Out = S;
+	const bool bLoose = S.Kind != ES47SurfaceKind::Asphalt;
+	Out.Top *= FMath::Clamp(TopScale, 0.5, 1.5) * (bLoose ? FMath::Clamp(LooseTopScale, 0.5, 1.6) : 1.0);
+	if (bLoose) Out.Grip = FMath::Min(1.0, Out.Grip * FMath::Clamp(LooseGripScale, 0.5, 1.6));
+	return Out;
+}
+
+void FS47DriveController::StraightRun(const FS47Surface& In, double PullScale, double TopScale, double LooseGripScale, double LooseTopScale, double ToMps,
+	double& OutTop, double& OutSeconds)
+{
+	// the same pull and drag as Update, pulling forward on level ground at full throttle with the engine sound and nothing holding it
+	const FS47Surface S = Tuned(In, TopScale, LooseGripScale, LooseTopScale);
+	const double Rough = RoughOf(S), Dt = 1.0 / 60;
+	double V = 0, Tm = 0;
+	OutSeconds = 1e9;
+	for (int32 I = 0; I < 60 * 120; ++I)
+	{
+		const double Top = S.Top * 1.19;
+		double A = ACCEL * FMath::Clamp(PullScale, 0.5, 2.0) * (0.55 + 0.45 * S.Grip) * FMath::Max(0.0, 1 - FMath::Square(V / Top));
+		double Drag = 0.18 + 0.5 * Rough + 0.0009 * V * V;
+		if (V > S.Top) Drag += (V - S.Top) * 0.45;
+		A -= Drag;
+		V = FMath::Max(0.0, V + A * Dt);
+		Tm += Dt;
+		if (OutSeconds > 1e8 && V >= ToMps) OutSeconds = Tm;
+	}
+	OutTop = V;
+}
+
 void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVector2D& LookIn)
 {
 	T += Dt;
@@ -139,6 +170,7 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	// ---------- longitudinal ----------
 	FS47Surface Under = Area->Surface(Pos.X, Pos.Z);
 	Under.Grip *= FMath::Clamp(GripScale, 0.3, 1.0); // (WEATHER-20261108: wet dirt; 1 normally)
+	Under = Tuned(Under, TopScale, LooseGripScale, LooseTopScale); // (M7: the truck's own upgrades; 1 normally)
 	const FS47Surface S = Surface = Under;
 	const double V = Speed, Dir = bReverse ? -1 : 1;
 	const double Go = Throttle * Dir;                 // > 0: pull in the selected direction (D or R)
@@ -149,7 +181,7 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	{
 		// the pull fades towards 1.19 x top, where it just matches drag at `top`
 		const double Top = (bReverse ? REVERSE : S.Top) * 1.19;
-		A = Dir * ACCEL * Go * Power * (0.55 + 0.45 * S.Grip) * FMath::Max(0.0, 1 - FMath::Square(FMath::Abs(V) / Top));
+		A = Dir * ACCEL * FMath::Clamp(PullScale, 0.5, 2.0) * Go * Power * (0.55 + 0.45 * S.Grip) * FMath::Max(0.0, 1 - FMath::Square(FMath::Abs(V) / Top));
 	}
 	else if (bBraking)
 	{

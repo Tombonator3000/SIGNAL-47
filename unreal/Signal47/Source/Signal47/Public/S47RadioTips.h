@@ -9,6 +9,8 @@ class US47Main;
 class FS47RadioTips
 {
 public:
+ // M7 (Tom, 9 November): what 1420 pays for a tip it reads (capped with the rest of the week's side money).
+ static constexpr int32 TipPay=5;
  explicit FS47RadioTips(US47Main* Main):M(Main){}
  struct FLine{const TCHAR* Id;const TCHAR* Text;const TCHAR* Place;const TCHAR* Needs;int32 Trust;};
  // Two speakers at most: a caller and Earl. Empty answer: he lets it go.

@@ -289,7 +289,9 @@ void FS47Tape::Heard(const FString& Name, const FS47Sound& O)
 	// The score is not in the room; the radio and the walkie are.
 	if (O.Dest == TEXT("music")) return;
 	float G = O.Gain;
-	if (O.At.IsSet()) G *= GainAt(FVector::Distance(*O.At, Ear()));
+	// M7 (Tom, 9 November): the better field recorder's gun microphone (FS47Openings "field_recorder") hears twice as far
+	const bool bGun = M && M->Freeform && M->Freeform->HasKit(TEXT("field_recorder"));
+	if (O.At.IsSet()) G *= GainAt(FVector::Distance(*O.At, Ear()) * (bGun ? 0.5 : 1.0));
 	else G *= O.Dest == TEXT("radio") || O.Dest == TEXT("radioBus") ? .6f : .5f;
 	if (G < .01f) return;
 	FSound Clip; Clip.At = float(RecT + O.When); Clip.Name = Name; Clip.Gain = G; Clip.Rate = O.Rate; Clip.Lp = O.Lp;
@@ -353,7 +355,7 @@ void FS47Tape::Step(double Dt)
 		{
 			SenseTry = .25;
 			FVector From = FVector::ZeroVector; bool bComing = false;
-			const double Sense = M->Omen->SenseAt(Ear(), 2.4, &From, &bComing);
+			const double Sense = M->Omen->SenseAt(Ear(), M->Freeform && M->Freeform->HasKit(TEXT("field_recorder")) ? 3.6 : 2.4, &From, &bComing);
 			if (Unheard(Sense, M->Omen->Level()) && Sense > BestSense)
 			{
 				BestSense = Sense; Rec.OddAt = float(RecT);
