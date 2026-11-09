@@ -10,7 +10,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 Nytt: hendelser hvor som helst (44 steder), alle 31 natthendelser, uro, geigerteller, M2 (walkie, CB, sniking, utstyrssvikt, nattlyder CC0, coyote og hund CC0, stress, batteri, bil som strander), M3 (detaljert USGS-kart med zoom, eksakt pil, antennenumre, oppdrag og hint; nattlogg; kassettspiller; sporbok på saksbrettet; forstørrer; ukerapport til Ward; post med postkasse, postbil, katalog og The Caliche Ledger). Kritikk 2 rettet (M1 rytme og fare til fots, tvetydige varsler, post og avis). HUD D (V4) med fem fargevalg. Lagring bare på SARO, autolagring ved avreise. Stemmenavn uten ekte personer. Tekstrunder: 243 rettinger. Ikke spilt av menneske; lyd ikke hørt.
 
-## Tidligere Installert 8. november kl. 10:40, kritikerrunden: spillbarhet, nattrytme, lys, gårdshus og Caliche
+## Tidligere installert 8. november kl. 10:40, kritikerrunden: spillbarhet, nattrytme, lys, gårdshus og Caliche
 
 `ca0822e5` etter PR488 og PR489. Selvtest 2931 i pakken, regresjon 251, normalreisen alle faser, 146 uendrede Saved-filer. Tilbakerulling: `/home/tom/scratch-bm/Signal47-day-20261106/d30/candidate/Linux` (`e128479f`) og `d29` (`41d5dad9`).
 
