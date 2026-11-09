@@ -13,6 +13,7 @@
 #include "S47TownSites.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47Predecessor.h"
@@ -238,5 +239,55 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		if (!F || !F->Townsfolk) { Tell(false, TEXT("Freeform only")); return; }
 		F->Townsfolk->DevReturnAll();
 		Tell(true, TEXT("All four at their posts."), 4);
+	});
+	// ---- NEIGHBOR, ENTHUSIASTS, MILITARY ----
+	const TCHAR* const Out = TEXT("Visitors (M4)");
+	E.AddFreeform(Out, TEXT("Visitors: Eloy Baca on his porch"), TEXT("ten in the morning at the Baca place under the east rim; today's story, kept as an unconfirmed record"), [this, StandAt, Pictured]
+	{
+		StandAt(FVector2D(812, 1362), FVector2D(812, 1354), 10, 11, [this, Pictured]
+		{
+			FS47FreeformSession* F = Session();
+			if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
+			F->Visitors->OpenBaca(); Pictured(TEXT("baca"), 1.5f); bLastOk = true; LastText = TEXT("Baca's story");
+		});
+	});
+	E.AddFreeform(Out, TEXT("Visitors: Baca after a night's event (his version)"), TEXT("lights over the church last night, then his porch: he may put it somewhere else, or on another night"), [this]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Visitors || !F->EventPlaces) { Tell(false, TEXT("Freeform only")); return; }
+		F->EventPlaces->Used(TEXT("church"), TEXT("dev_lights"));
+		const FS47Visitors::FTale T = F->Visitors->Tale(F->Day());
+		Tell(!T.Text.IsEmpty(), FString::Printf(TEXT("%s (%s)"), *T.Text, T.bTrue ? TEXT("as it was") : TEXT("not as it was")), 9);
+	});
+	E.AddFreeform(Out, TEXT("Visitors: Baca gone"), TEXT("the night's events take him; his door stands open"), [this, StandAt, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
+		F->Visitors->VanishBaca();
+		StandAt(FVector2D(812, 1362), FVector2D(812, 1354), 10, 11, [this, Pictured] { if (FS47FreeformSession* G = Session()) if (G->Visitors) G->Visitors->OpenBaca(); Pictured(TEXT("bacagone"), 1.5f); bLastOk = true; LastText = TEXT("Baca gone"); });
+	});
+	E.AddFreeform(Out, TEXT("Visitors: the Sky Watch van at the Mesa"), TEXT("noon, the van on the lot north of the diner, and what they want"), [this, StandAt, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
+		F->Visitors->DevVan();
+		StandAt(FVector2D(-32, 1990), FVector2D(-40, 1982), 12, 13, [this, Pictured]
+		{
+			After(.6, [this, Pictured] { if (FS47FreeformSession* G = Session()) if (G->Visitors) G->Visitors->OpenVan(); Pictured(TEXT("van"), 1.5f); });
+			bLastOk = true; LastText = TEXT("the Sky Watch");
+		});
+	});
+	E.AddFreeform(Out, TEXT("Visitors: the military's morning at the farm"), TEXT("first light at the Alderete place: a helicopter over it, then two black sedans; walk up and they go, and the ground is gone over"), [this, StandAt, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
+		StandAt(FVector2D(30, 180), FVector2D(60, 240), 6, 7, [this, Pictured]
+		{
+			FS47FreeformSession* G = Session();
+			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"))) { Tell(false, TEXT("no such place")); return; }
+			Pictured(TEXT("heli"), 12.f);
+			After(30, [this, Pictured] { Pictured(TEXT("cars"), .2f); });
+			bLastOk = true; LastText = TEXT("the military's morning");
+		});
 	});
 }

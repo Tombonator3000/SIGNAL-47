@@ -5,6 +5,7 @@
 #include "S47EventPlaces.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47CB.h"
 #include "S47FieldRadio.h"
 #include "S47Radio.h"
@@ -80,6 +81,10 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   {TEXT("cb36"),TEXT("That white district wagon's still out on the flat, county tag on the mirror. I slowed down. I didn't get out."),nullptr,TEXT("reyes_locker"),0},
   // What the town has seen the player buy (S47TownUse): somebody always notices.
   {TEXT("cb57"),TEXT("Somebody's setting out salt blocks on open range, nowhere near a tank. Cattle are walking off the lease after them."),nullptr,TEXT("shop:lure"),0},
+  {TEXT("cb59"),TEXT("Old Baca's dog is out on the county road all by itself. Anybody been up to his place lately?"),nullptr,TEXT("visit:baca_gone"),0},
+  {TEXT("cb60"),TEXT("That painted van with the sky-watch people is out on the flats with all the doors open. Nobody in it. Nobody."),nullptr,TEXT("visit:van_empty"),0},
+  {TEXT("cb61"),TEXT("Two black sedans at first light, government plates, parked off the road like they owned it. Didn't wave."),nullptr,TEXT("visit:military"),0},
+  {TEXT("cb62"),TEXT("Helicopter came over real low at sunup, no markings I could see. Cattle went every which way."),nullptr,TEXT("visit:military_seen"),0},
   {TEXT("cb58"),TEXT("White pickup from the dishes has a little rubber spaceman on the dash. Waved at me. The spaceman, I mean."),nullptr,TEXT("shop:spaceman"),0},
   {TEXT("cb33"),TEXT("You got a friend at the sheriff's now? Ask him who else has been asking about that survey track."),TEXT("stake"),nullptr,1},
   {TEXT("cb34"),TEXT("Between you and me, that tank's not on the county's plat. Nobody knows who put it there. Ask anybody over sixty."),TEXT("tank"),nullptr,2},
@@ -132,6 +137,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am36"),TEXT("old"),TEXT("That man they were looking for out on the flats. Anybody hear if he turned up?"),TEXT("If he did, he hasn't called me."),nullptr,nullptr,0},
   {TEXT("am37"),TEXT("old"),TEXT("My dad used to say the old-timers never built a house facing that flat out past the dishes. He never said why, and I never asked."),TEXT("Thank you. I think."),nullptr,nullptr,2},
   {TEXT("am38"),TEXT("old"),TEXT("Somebody from the dishes found that flag stake, they tell me. So who put it there? You people ought to know."),TEXT("Maybe they don't."),nullptr,TEXT("place_stake"),0},
+  {TEXT("am50"),TEXT("woman"),TEXT("Those sky-watch people were in the Mesa all morning telling everybody what they saw last night. I'd like my booth back."),TEXT("They'll be on next week, I expect."),nullptr,TEXT("visit:van_back"),0},
   {TEXT("am43"),TEXT("man"),TEXT("The souvenir man's got a new picture in his window. Lights over the flats, he says, taken by somebody from the dishes."),TEXT("I'll go look. I won't believe it, but I'll look."),nullptr,TEXT("shop:sold_odd"),0},
   {TEXT("am44"),TEXT("old"),TEXT("Took the souvenir man's tour Sunday. Five dollars to look at a rock. He says it's the rock."),TEXT("It's a nice rock, Pete."),nullptr,TEXT("shop:tour"),0},
   {TEXT("am45"),TEXT("woman"),TEXT("My sister in Belen got a postcard of the dishes from somebody who works out there. She wants to know is it safe."),TEXT("Tell her it's a postcard."),nullptr,TEXT("shop:postcard"),0},
@@ -181,6 +187,8 @@ bool FS47RadioTips::Ready(const TCHAR* Needs,int32 Trust) const
  if(Needs&&FString(Needs).StartsWith(TEXT("shop:")))return F.TownUse&&F.TownUse->Seen(FString(Needs).Mid(5));
  // One of Caliche's regulars gone (S47Townsfolk::Has): "town:away_deputy" and the like.
  if(Needs&&FString(Needs).StartsWith(TEXT("town:")))return F.Townsfolk&&F.Townsfolk->Has(FString(Needs).Mid(5));
+ // From outside town (S47Visitors::Has): "visit:baca_gone", "visit:military" and the like.
+ if(Needs&&FString(Needs).StartsWith(TEXT("visit:")))return F.Visitors&&F.Visitors->Has(FString(Needs).Mid(6));
  return !Needs||F.HasFinding(Needs);
 }
 void FS47RadioTips::Step(double Dt)

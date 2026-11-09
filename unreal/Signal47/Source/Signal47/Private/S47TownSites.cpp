@@ -29,6 +29,7 @@ namespace S47TownSitesLocal
 		{ TEXT("trailers"), -72, 1905, 0 },  // west of the highway, just north of the Mesa Diner: the first thing coming in from SARO
 		{ TEXT("school"), 48, 2245, 0 },     // east side at the south end of town, behind the power line, facing the highway
 		{ TEXT("grange"), -40, 2272, 0 },    // west side at the south end, past the last house, across from the school
+		{ TEXT("baca"), 820, 1350, 0 },      // NEIGHBOR-20261108: the old rancher's place, alone on the flat under the east rim
 	};
 	// Pale grey, as a model maker's grey box is, with the parts a shade apart so the shapes read.
 	constexpr uint32 Grey = 0xb4b0a6, GreyDark = 0x8e8a82, GreyLight = 0xc9c5bb, Board = 0x2b2a27, Steel = 0x8b8e8a, CarA = 0x6f4a3c, CarB = 0x4d5866;
@@ -89,6 +90,19 @@ namespace S47TownSitesLocal
 			{ FPart Pole = Box(-21, 0, .14, .14, 9, Steel, false); Pole.bRound = true; S.Parts.Add(Pole); }
 			S.Words.Add({ S.Sign, -18.06, 0, 3.1, 270, .9 });
 			S.Words.Add({ TEXT("GYM (TEMP)"), -6.94, -2, 6.4, 270, .8 });
+		}
+		else if (S.Id == TEXT("baca"))
+		{
+			// An old homestead a long drive out: a flat-roofed adobe house, a shed, a stock tank, nothing else for a mile. Eloy Baca's
+			// (S47Visitors): he has watched the sky from this porch for forty years, and is not always right about what he saw.
+			S.Sign = TEXT("BACA PLACE (TEMP)"); S.Title = TEXT("the old Baca place under the east rim"); S.MapName = TEXT("Baca Place (temp)");
+			S.Traits = ES47PlaceTrait::Farm | ES47PlaceTrait::Open | ES47PlaceTrait::Far | ES47PlaceTrait::People;
+			S.Radius = 25; S.Up = 24; S.NameSide = 1;
+			S.PlaceX = -8; S.PlaceZ = 12; S.EntryX = -8; S.EntryZ = 4.6;
+			S.Parts.Add(Box(-8, 0, 10, 8, 3.6, Grey));               // the house, its porch side to the south
+			S.Parts.Add(Box(10, -2, 7, 11, 4.2, GreyDark));          // the shed
+			{ FPart Tank = Box(4, 13, 5, 5, 1.2, Steel); Tank.bRound = true; S.Parts.Add(Tank); }
+			S.Words.Add({ S.Sign, -8, 4.06, 2.6, 180, .55 });
 		}
 		else if (S.Id == TEXT("grange"))
 		{
@@ -180,7 +194,7 @@ TArray<FS47EventPlace> S47TownSites::EventPlaces()
 	TArray<FS47EventPlace> Out;
 	for (const FSite& S : Sites())
 	{
-		FS47EventPlace P; P.Id = S.Id; P.Title = S.Title; P.Region = TEXT("caliche");
+		FS47EventPlace P; P.Id = S.Id; P.Title = S.Title; P.Region = S.Id == TEXT("baca") ? TEXT("land") : TEXT("caliche");
 		const FVector2D At = ToRoad(S, S.PlaceX, S.PlaceZ), In = ToRoad(S, S.EntryX, S.EntryZ);
 		P.X = At.X; P.Z = At.Y; P.EntryX = In.X; P.EntryZ = In.Y; P.Traits = S.Traits; P.Radius = S.Radius; P.Up = S.Up;
 		Out.Add(P);
@@ -193,7 +207,7 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 	using namespace S47TownSitesLocal;
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("temp sites: ") + What); };
-	Check(Sites().Num() == 3 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")), TEXT("the trailer park, the school and the Grange hall are in the table"));
+	Check(Sites().Num() == 4 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")) && Find(TEXT("baca")), TEXT("the trailer park, the school, the Grange hall and the Baca place are in the table"));
 	bool bNamed = true, bTitled = true, bInRim = true, bOffRoad = true, bWords = true;
 	int32 Trailers = 0, Cars = 0;
 	for (const FSite& S : Sites())

@@ -97,6 +97,8 @@ public:
  void Used(const FString& Id,const FString& Kind);
  int32 LastNight(const FString& Id) const; // 0: never
  int32 TimesUsed(const FString& Id) const;
+ // What used it last (the event's kind, as Used was told): "site_visit", "landing_trace". Empty: never. (S47Visitors' military)
+ FString LastKind(const FString& Id) const{const FUse* U=Uses.Find(Id);return U?U->Kind:FString();}
 
  // Where it is in the area the player is in now, three-space, on the ground. False when it is in another area: it can still
  // be heard of, or seen as a light from far off (OutAt is then where it would be in that area's terms, Area its name).

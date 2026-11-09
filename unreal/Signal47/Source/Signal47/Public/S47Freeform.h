@@ -188,6 +188,8 @@ public:
  TSharedPtr<class FS47TownSites> TownSites;
  // Caliche's regulars, who remember, talk, and are missed when they are gone (TOWNSFOLK-20261108): S47Townsfolk.h.
  TSharedPtr<class FS47Townsfolk> Townsfolk;
+ // From outside town: the old neighbor, the sky-watch van, the military after big nights (NEIGHBOR, ENTHUSIASTS, MILITARY): S47Visitors.h.
+ TSharedPtr<class FS47Visitors> Visitors;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;
