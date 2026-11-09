@@ -11,7 +11,8 @@ class SWidget;
 //
 // Gone: the night's events take someone through Vanish() (an API for FS47Happenings and the F10 menu; Happenings itself is not
 // changed here), and Step takes one of them of its own accord after a night's event at the place they work, now and then. While
-// someone is gone their place is empty (the deputy's car and the souvenir man on his stoop are not there: FS47Town asks AwayNow),
+// someone is gone their place is empty (the deputy's car and lit window, and the souvenir man on his stoop: FS47Town's own switches,
+// which nothing else moves in Freeform),
 // the others talk of nothing else, callers on 1420 ask after them (FS47RadioTips' "town:" lines), and asking about it keeps a field
 // record. They come back after a few days and will not say where they were.
 class FS47Townsfolk
@@ -40,7 +41,7 @@ public:
 	// The night's events took Who (last seen at a catalogue place, may be empty). False: not one of them, or someone is already gone.
 	bool Vanish(const FString& Who, const FString& Place);
 	bool Away(const FString& Who) const;
-	// Read by FS47Town each frame to keep their figure and car away: whoever is gone in the running game.
+	// Whoever is gone in the running game (one game at a time).
 	static bool AwayNow(const FString& Who);
 	// What the town has seen, for FS47RadioTips' "town:" lines: "away_deputy" while the deputy is gone and three days after.
 	bool Has(const FString& Key) const;
@@ -71,7 +72,9 @@ private:
 	TMap<FString, int32> SaidDay; TMap<FString, FString> LastSaid;
 	int32 LastVanishDay = -100, CheckedNight = 0;
 	double StepIn = 0;
-	void Publish() const;
+	void Publish();
+	// The town's own figures as who is gone says: the deputy's car and window, the man on the stoop. bAll: everyone back (Stop).
+	void ShowPosts(bool bAll);
 	struct FLine { FString Key, Text; int32 Rank = 0; };
 	TArray<FLine> Lines(const FString& Who) const;
 };

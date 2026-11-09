@@ -9,6 +9,8 @@
 #include "S47Places.h"
 #include "S47RadioTips.h"
 #include "S47TownUse.h"
+#include "S47Town.h"
+#include "S47TownLayer.h"
 #include "S47UI.h"
 #include "Misc/Crc.h"
 
@@ -16,7 +18,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Townsfolk, Log, All);
 
 namespace S47TownsfolkLocal
 {
-	// Whoever is gone in the running game, for FS47Town (one game at a time).
+	// Whoever is gone in the running game (one game at a time).
 	TSet<FString> GAway;
 	const TCHAR* const Weekdays[] = { TEXT("Monday"), TEXT("Tuesday"), TEXT("Wednesday"), TEXT("Thursday"), TEXT("Friday"), TEXT("Saturday"), TEXT("Sunday") };
 	// Freeform's day 1 is Monday, April 28, 1986.
@@ -24,7 +26,8 @@ namespace S47TownsfolkLocal
 	int32 Index(const FString& Who) { return Who == TEXT("attendant") ? 0 : Who == TEXT("waitress") ? 1 : Who == TEXT("deputy") ? 2 : Who == TEXT("souvenir_man") ? 3 : -1; }
 	FString Fill(const TCHAR* Text, const FString& A, const FString& B = FString(), const FString& C = FString())
 	{
-		return FString(Text).Replace(TEXT("{a}"), *A).Replace(TEXT("{b}"), *B).Replace(TEXT("{c}"), *C);
+		const FString Up = A.IsEmpty() ? A : A.Left(1).ToUpper() + A.Mid(1);
+		return FString(Text).Replace(TEXT("{A}"), *Up, ESearchCase::CaseSensitive).Replace(TEXT("{a}"), *A, ESearchCase::CaseSensitive).Replace(TEXT("{b}"), *B).Replace(TEXT("{c}"), *C);
 	}
 	FString Cap(const FString& S) { return S.IsEmpty() ? S : S.Left(1).ToUpper() + S.Mid(1); }
 	// Each line in four voices: the attendant (dry), the waitress (warm, talks), the deputy (careful, times not stories), the souvenir
@@ -32,9 +35,9 @@ namespace S47TownsfolkLocal
 	using FFour = const TCHAR* const[4];
 	FFour GoneLines = {
 		TEXT("{a} hasn't been in since {b}. Truck's still at the house. Nobody's saying anything, which is how you know."),
-		TEXT("Have you heard? {a}. Nobody's seen hide nor hair since {b}. I keep looking at the door."),
+		TEXT("Have you heard? {A}. Nobody's seen hide nor hair since {b}. I keep looking at the door."),
 		TEXT("{a} has been missing since {b}, last seen by {c}. If you were out that night I want to hear it. Times, not stories."),
-		TEXT("{a}. Gone, since {b}, out by {c}. You think I don't know what that means? I've been telling people for thirty years.") };
+		TEXT("{A}. Gone since {b}, out by {c}. You think I don't know what that means? I've been telling people for thirty years.") };
 	FFour SelfBackLines = {
 		TEXT("Don't ask me where I was. I don't know, and I don't want to."),
 		TEXT("I'm fine. Everybody keeps asking. I lost a couple of days, is all. Coffee?"),
@@ -173,6 +176,17 @@ void FS47Townsfolk::Begin(const S47J::FObj& Saved)
 void FS47Townsfolk::Stop()
 {
 	S47TownsfolkLocal::GAway.Reset();
+	ShowPosts(true);
+}
+
+void FS47Townsfolk::ShowPosts(bool bAll)
+{
+	// Freeform does not run the town's hours (US47TownLayer::WorldStep is Story's), so these stay as they are set here.
+	if (!M || !M->TownLayer || !M->TownLayer->Town) return;
+	FS47Town& Town = *M->TownLayer->Town;
+	const bool bDeputy = bAll || !Away(TEXT("deputy")), bSmoker = bAll || !Away(TEXT("souvenir_man"));
+	if (Town.bDeputyIn != bDeputy) Town.SetDeputy(bDeputy);
+	if (Town.bSmokerIn != bSmoker) Town.SetPeople(Town.bWomanIn, bSmoker);
 }
 
 S47J::FObj FS47Townsfolk::Save() const
@@ -194,10 +208,11 @@ S47J::FObj FS47Townsfolk::Save() const
 	return O;
 }
 
-void FS47Townsfolk::Publish() const
+void FS47Townsfolk::Publish()
 {
 	S47TownsfolkLocal::GAway.Reset();
 	for (const FGone& G : Gone) S47TownsfolkLocal::GAway.Add(G.Who);
+	ShowPosts(false);
 }
 
 bool FS47Townsfolk::AwayNow(const FString& Who) { return S47TownsfolkLocal::GAway.Contains(Who); }
@@ -349,7 +364,7 @@ FString FS47Townsfolk::Gossip(const FString& Who)
 		if (L.Key.StartsWith(TEXT("gone:")))
 		{
 			const FString Id = FString::Printf(TEXT("townsfolk_%s"), *L.Key.Replace(TEXT(":"), TEXT("_")));
-			if (!M->Freeform->HasFinding(Id)) M->Freeform->RegisterFinding(Id, FString::Printf(TEXT("Caliche: %s says %s"), *Called(Who), *L.Text));
+			if (!M->Freeform->HasFinding(Id)) M->Freeform->RegisterFinding(Id, FString::Printf(TEXT("Caliche, %s: \"%s\""), *Called(Who), *L.Text));
 		}
 		UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: %s says %s"), *Who, *L.Key);
 		M->RequestAutosave();
