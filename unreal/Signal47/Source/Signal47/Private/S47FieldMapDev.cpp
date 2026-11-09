@@ -17,6 +17,7 @@
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
 #include "S47WardReport.h"
+#include "S47Answer.h"
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47BoardRules.h"
@@ -311,7 +312,7 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 							if (Pb.Book()) Pb.Book()->Connect(Mine, Church, false); // a second time would untie it
 							const int32 Station = Pb.StationThreads().Num();
 							if (M->Board.Open) M->Board.Open(FString(), FString());
-							Pictured(TEXT("board"), 1.5f);
+							Pictured(TEXT("board"), .35f); // the next line opens the tray half a second after this one ends
 							const bool bOk = Pb.AtSaro() && Pb.UpCount() >= 4 && Station >= 2 && Pb.ThreadCount() >= 1 && bClip;
 							Tell(bOk, FString::Printf(TEXT("On the board: %d up, %d station threads, %d of your own, clipping %s"), Pb.UpCount(), Station, Pb.ThreadCount(), bClip ? TEXT("up") : TEXT("refused")));
 						});
@@ -327,7 +328,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
 			Fs->PinBoard->OpenTray();
 			Pictured(TEXT("board"), 1.f);
-			Tell(true, FString::Printf(TEXT("The tray: %d papers"), Fs->PinBoard->Papers().Num()));
+			const int32 InTray = Fs->PinBoard->Papers().Num();
+			Tell(true, FString::Printf(TEXT("The tray: %d %s"), InTray, InTray == 1 ? TEXT("paper") : TEXT("papers")));
 		});
 	});
 
@@ -402,6 +404,34 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		if (M && M->Story && M->UI) for (const FS47Doc& D : M->Story->Docs()) if (D.Id.StartsWith(FString::Printf(TEXT("ward-query-%d-"), Week))) { M->UI->Document(D); break; }
 		Pictured(TEXT("ward"), 1.f);
 		Tell(bSent && TrustAfter <= TrustBefore - 2, FString::Printf(TEXT("Week %d: trust %d to %d, %d found out"), Week, TrustBefore, TrustAfter, Fs->WardReport->CaughtCount()));
+	});
+
+	// ---- the array held off schedule, and the answer (ANSWER-20261108) ----
+	static const TCHAR* const AnswerGroup = TEXT("Answer (M3)");
+	E.AddFreeform(AnswerGroup, TEXT("Answer: the tracking terminal with its off-schedule hold"), TEXT("night, at SARO: the right-hand PC's array control, with HOLD THE ARRAY HERE / OFF SCHEDULE"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->SkyAnswer) { Tell(false, TEXT("no answer in this run")); return; }
+			const bool bOpen = Fs->Use(TEXT("crtRight"));
+			Pictured(TEXT("answer"), .35f);
+			Tell(bOpen, bOpen ? TEXT("The tracking terminal") : TEXT("the tracking terminal did not open (no job or no power)"));
+		});
+	});
+	E.AddFreeform(AnswerGroup, TEXT("Answer: a night after the array was held 31 minutes at AZ 214 EL 38, the printout"), TEXT("at SARO; the call as if made a sidereal day ago, answered now; the printer runs; the printout opened"), [this, AtDesk, Pictured]
+	{
+		AtDesk([this, Pictured]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->SkyAnswer || !M) { Tell(false, TEXT("no answer in this run")); return; }
+			if (M->UI) M->UI->Close();
+			Fs->SkyAnswer->DevCall(214, 38, 31 * 60);
+			const bool bAnswered = Fs->SkyAnswer->DevAnswerNow();
+			const FS47Doc* Paper = nullptr;
+			if (M->Story) for (const FS47Doc& D : M->Story->Docs()) if (D.Id.StartsWith(TEXT("answer-printout-"))) Paper = &D;
+			if (Paper && M->UI) M->UI->Document(*Paper);
+			Pictured(TEXT("answer"), .35f);
+			Tell(bAnswered && Paper, bAnswered ? TEXT("The printout nobody asked for") : TEXT("no answer was printed"));
+		});
 	});
 
 	// ---- the night's log ----

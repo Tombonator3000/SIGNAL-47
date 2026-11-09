@@ -201,6 +201,8 @@ public:
  TSharedPtr<class FS47Enlarger> Enlarger;
  // The weekly report to Dr. Ward, made from the night logs, what goes in the player's choice (WARD-REPORT-20261108): S47WardReport.h.
  TSharedPtr<class FS47WardReport> WardReport;
+ // A point of the sky held off schedule, and what may answer from it the next night (ANSWER-20261108): S47Answer.h.
+ TSharedPtr<class FS47Answer> SkyAnswer;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;
