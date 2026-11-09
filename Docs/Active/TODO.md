@@ -60,6 +60,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **DALE-VOICE-20261109:** Tom godkjente ca. 13:50 en egen, oppdiktet Dale-stemme: sint tysk mann i 50-årene med tung aksent, fra CC0-donor eller stemmedesign, ikke en klone av en virkelig person. Alle Dales replikker (kveldspakken 56, Freeform) lages med den. Kinski-klonen (`3cf0d3a5`) brukes ikke til nye replikker. De gamle takes byttes ut før spillet deles. GPU-generering først når Tom ikke spiller.
 - [ ] **PT-STUCK-GRACE-20261109:** Tom: etter at bilen er gravd ut, setter den seg fast igjen med en gang. Gi minst 10–15 sekunders kjøring før den kan sette seg fast på nytt.
 - [ ] **PT-SAUCER-ROCK-20261109:** Tom kom til Saucer Rock, og det var ingenting der.
+- [ ] **PT-TOW-INVISIBLE-20261109:** etter tauing hjem til SARO er bilen usynlig. «DRIVE / SARO SERVICE WORK» svever der den skal stå. En gul kube uten tekstur står ved aggregatet (Toms bilde ca. 14:00).
 - [ ] **SUBSTATION-LOD-20261109:** `Tools/substationfield/import_assets.py` og `relod_apron.py` bruker samme LOD-mønster som ga WorldGrid-slotter i gatelysene (rettet i kode i 3f946c47). Substasjonsmodellene har trolig samme feil.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
