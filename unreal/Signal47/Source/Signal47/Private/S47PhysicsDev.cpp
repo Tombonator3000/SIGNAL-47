@@ -95,7 +95,8 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 				WaitFor([Landed, Hands] { return Landed(Hands()); }, 7, [this, H, Stone]
 				{
 					const FVector P = H->View(Stone).At;
-					const bool bIn = M->Web->Rect(TEXT("room.bounds")).Contains(P, .05);
+					// the walls stand some half a metre outside the walk zone (room.bounds); a stone on the radio table by the south wall is in the room
+					const bool bIn = M->Web->Rect(TEXT("room.bounds")).Contains(P, .55);
 					Tell(bIn, FString::Printf(TEXT("%s, at %.2f %.2f %.2f after %d impacts. Last: %s."), bIn ? TEXT("Still in the control room") : TEXT("OUT OF THE ROOM"), P.X, P.Y, P.Z, H->View(Stone).Impacts, *H->LastImpact()), 10);
 				}, [this] { Tell(false, TEXT("still in the air after seven seconds")); });
 			});
@@ -148,7 +149,7 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 			});
 		});
 	});
-	E.AddFreeform(Group, TEXT("Set the carton down on the bench"), TEXT("10:00 in the garage: the cardboard box set down upright on the mechanic's bench, not dropped"), [this, At, Find]
+	E.AddFreeform(Group, TEXT("Set the carton down"), TEXT("10:00 in the garage: the cardboard box set down upright where you look (the mechanic's bench if its top answers, else the floor in front of it), not dropped"), [this, At, Find]
 	{
 		At(10, 33.4, 1.7, [this, Find](FS47Handling* H)
 		{
@@ -166,6 +167,21 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 					const double Up = P.Y - M->Player->FloorY;
 					Tell(bPut && H->View(Box).bResting, FString::Printf(TEXT("%s; its middle %.2f m over the floor (%s)."), bPut ? TEXT("Set down") : TEXT("No room"), Up, Up > .6 ? TEXT("on the bench") : TEXT("on the floor")), 8);
 				});
+			});
+		});
+	});
+	E.AddFreeform(Group, TEXT("Set a stone down on the radio table"), TEXT("10:00 in the control room: a stone in the hand set down on the radio table by the south wall, steady, where the view meets it"), [this, At, StoneInHand]
+	{
+		At(10, .2, 2.9, [this, StoneInHand](FS47Handling* H)
+		{
+			if (!StoneInHand(H)) { Tell(false, TEXT("no stone in the hand")); return; }
+			const int32 Stone = H->HeldIndex();
+			AimAt(FVector(.15, M->Player->FloorY + .78, 4.2));
+			After(.8, [this, H, Stone]
+			{
+				const bool bPut = H->Put();
+				const double Up = H->View(Stone).At.Y - M->Player->FloorY;
+				Tell(bPut && Up > .6 && H->View(Stone).bResting, FString::Printf(TEXT("%s; %.2f m over the floor (%s)."), bPut ? TEXT("Set down") : TEXT("No room"), Up, Up > .6 ? TEXT("on the table") : TEXT("on the floor")), 8);
 			});
 		});
 	});
@@ -215,8 +231,11 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 							const double To = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Fell.X, Fell.Z, 0));
 							const double ToMe = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Me.X, Me.Z, 0));
 							const bool bInReach = From <= S47Noise::Reach(H->ThrowLoudness()) + .5;
-							const bool bDrawn = bInReach && (To < From - 1.0 || Now[0].State == FS47RoswellBrain::EState::Listen || Now[0].State == FS47RoswellBrain::EState::Search);
-							Tell(bDrawn, FString::Printf(TEXT("The stone fell %.1f m from where it stood (%s). It is now %.1f m from the stone and %.1f m from you, %s."), From, *H->LastImpact(), To, ToMe, FS47RoswellBrain::StateName(Now[0].State)), 10);
+							// what it now believes: that you are where the stone fell
+							const double Belief = Now[0].bMemory ? FVector::Dist2D(FVector(Now[0].Memory.X, Now[0].Memory.Z, 0), FVector(Fell.X, Fell.Z, 0)) : -1;
+							const bool bDrawn = bInReach && ((Belief >= 0 && Belief < 2.0) || To < From - 1.0);
+							Tell(bDrawn, FString::Printf(TEXT("The stone fell %.1f m from where it stood (%s). It now takes you to be %s; it is %.1f m from the stone and %.1f m from you, %s."), From, *H->LastImpact(),
+								Belief < 0 ? TEXT("nowhere it knows") : *FString::Printf(TEXT("%.1f m from the stone"), Belief), To, ToMe, FS47RoswellBrain::StateName(Now[0].State)), 10);
 						});
 					}, [this] { Tell(false, TEXT("the stone was still in the air")); });
 				});

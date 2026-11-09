@@ -274,7 +274,8 @@ TArray<FS47RoswellGroup::FView> FS47RoswellGroup::Views() const
  TArray<FView> Out;
  for (const auto& A:P->Actors) if (A->bActive)
   Out.Add({A->Id,A->Brain.Mode,A->Brain.State,A->Brain.Pos,A->Brain.Eye(),A->Brain.DistanceTravelled,A->Brain.Age,
-   A->Brain.Velocity.Size(),A->Brain.Crouch,A->bRoof,A->Body && A->Body->Rendered(),A->Contacts,A->Foley.Played()});
+   A->Brain.Velocity.Size(),A->Brain.Crouch,A->bRoof,A->Body && A->Body->Rendered(),A->Contacts,A->Foley.Played(),
+   A->Brain.LastKnownPlayer,A->Brain.bHasPlayerMemory});
  return Out;
 }
 

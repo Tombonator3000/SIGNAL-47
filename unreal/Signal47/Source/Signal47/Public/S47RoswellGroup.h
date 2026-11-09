@@ -19,6 +19,8 @@ public:
   FVector Pos=FVector::ZeroVector, Eye=FVector::ZeroVector;
   double Distance=0, Age=0, Speed=0, Crouch=0;
   bool bRoof=false,bRendered=false; int32 Contacts=0, Sounds=0;
+  // Where it believes the player is (what it last saw or heard, PHYSICS-20261108: a thrown stone's landing too), if anywhere.
+  FVector Memory=FVector::ZeroVector; bool bMemory=false;
  };
  FS47RoswellGroup(US47Main* Main,USceneComponent* FirstRoot,FS47TripoCreature* FirstBody);
  ~FS47RoswellGroup();

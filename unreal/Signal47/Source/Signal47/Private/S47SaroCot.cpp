@@ -30,7 +30,7 @@ namespace
 		// (The control room has no free wall 1.9 m long: the old cabinet and the tape shelf of S47Lived stand on the west wall, the
 		// racks on the east. The records room is full of its table. The first sweep, 9 November, measured them.)
 		// the east wing's test lab, along its west wall south of the glass cabinet: the quietest room with a door that shuts
-		{ TEXT("the east wing's test lab, by the west wall"), 21.24, 3.4, true },
+		{ TEXT("the east wing's test lab, by the west wall"), 21.3, 3.4, true },
 		// the parts storage, along the partition to calibration
 		{ TEXT("the parts storage, along the partition"), 28.65, -.1, false },
 		// the calibration room, along its partition to storage, east of the bench
@@ -60,15 +60,15 @@ FString FS47SaroCot::Measure(double X, double Z, bool bAlong) const
 	AS47Web* W = M->Web.Get();
 	UWorld* World = W->GetWorld();
 	const double HX = (bAlong ? Width : Length) / 2, HZ = (bAlong ? Length : Width) / 2;
-	// (a) on the room's own floor: every corner in its walk zones
-	for (const FVector2D C : { FVector2D(X - HX, Z - HZ), FVector2D(X + HX, Z - HZ), FVector2D(X - HX, Z + HZ), FVector2D(X + HX, Z + HZ), FVector2D(X, Z) })
+	// (a) on a floor the player walks: along its middle, as the walker has it (its own width kept off the walls; the cot's corners
+	// may go nearer a wall than the player's shoulders can, and walls and things are measured below)
 	{
-		// the zones themselves, not the walker's test (that keeps the player's own width off every edge)
-		bool bIn = false;
-		for (const FS47Rect& Z0 : W->ZonesMutable(TEXT("saro"))) bIn |= Z0.bEnabled && C.X >= Z0.MinX - 1e-6 && C.X <= Z0.MaxX + 1e-6 && C.Y >= Z0.MinZ - 1e-6 && C.Y <= Z0.MaxZ + 1e-6;
-		// (the east wing is walked as open land once it is built, S47EastWing::Walls, not as zones)
-		if (!bIn && M->Player->OpenLand) bIn = M->Player->OpenLand(C.X, C.Y);
-		if (!bIn) return FString::Printf(TEXT("a corner off the walk zones at %.2f, %.2f"), C.X, C.Y);
+		const double Run = (bAlong ? HZ : HX) - .45;
+		for (const double T : { -1.0, 0.0, 1.0 })
+		{
+			const double PX = X + (bAlong ? 0 : T * Run), PZ = Z + (bAlong ? T * Run : 0);
+			if (!M->Player->Walkable(PX, PZ)) return FString::Printf(TEXT("off the walked floor at %.2f, %.2f"), PX, PZ);
+		}
 	}
 	// (b) clear of everything the player walks round
 	for (const FS47Rect& C : W->CollidersMutable(TEXT("saro")))
