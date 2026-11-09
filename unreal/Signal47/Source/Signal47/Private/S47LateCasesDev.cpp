@@ -37,7 +37,7 @@ void FS47DevFreeform::AddLateCases(FS47DevEvents& E)
  {
   auto* F=Session();if(!F){Tell(false,TEXT("Freeform only"));return;}
   int32 Line=FS47FreeformCases::PostLine;
-  for(int32 I=FS47FreeformCases::LateFirst;I<FS47FreeformCases::CaseCount;++I)if(const auto* C=F->CaseFile().Get(I);C&&C->bOpen){Line=I;break;}
+  for(int32 I=FS47FreeformCases::LateFirst;I<=FS47FreeformCases::RakedLine;++I)if(const auto* C=F->CaseFile().Get(I);C&&C->bOpen){Line=I;break;}
   F->OpenCaseBoard(Line);
  });
 }

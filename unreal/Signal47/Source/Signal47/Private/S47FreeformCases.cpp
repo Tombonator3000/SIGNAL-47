@@ -135,6 +135,33 @@ namespace
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE RAKED GROUND\n\nFiled as not accounted for. Nobody has asked about it. The two cars were seen again on the highway two nights later, going north, slowly, with no lights on."),ER::None}}},
   true
  };
+ // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND. What the night leaves out on the land, things moved at a place, the trip camera, a car
+ // on the road. Its two traces are records of the land itself (the session counts them: one night, then another), never a place
+ // with a reading of its own, so nothing here is drawn on screen from Read. Every reply is something an office would write; none
+ // says what it was. Senders made up, the sheriff as geography only.
+ const FS47FreeformCases::FMysteryDef OutOnTheLand={
+  2,TEXT("Reply: out on the land"),
+  {{TEXT("land_first_night"),TEXT("The night it opened"),{
+    TEXT("The record that opened it. Something out there that a coyote, a dry wind or a loose gate could account for, if you let it."),
+    TEXT("The record that opened it. Something out there that a man with a truck and a reason could account for, if you let him."),
+    TEXT("The record that opened it. Something out there that nothing you can name accounts for yet.")},
+    TEXT("the record the case opened on.")},
+   {TEXT("land_other_night"),TEXT("Another night"),{
+    TEXT("A record from another night: more of the same, and the same plain reasons would cover it."),
+    TEXT("A record from another night: more of the same, at an hour when somebody could have been about."),
+    TEXT("A record from another night: more of the same, and no more explained than the first.")},
+    TEXT("not kept yet. A record from another night out on the land.")}},
+  {{{TEXT("CALICHE VALLEY STOCKMEN'S ASSOCIATION\nRE: YOUR REPORT, THE COUNTY ROAD LEASES\n\nOur brand inspector rode the fence lines on your report. Coyotes have been working the calves since the dry spell set in, and the wind has had two gates off their chains.\n\nPoison bait is out. The association thanks the station."),ER::None},
+    {TEXT("CALICHE VALLEY STOCKMEN'S ASSOCIATION\nRE: YOUR REPORT, THE COUNTY ROAD LEASES\n\nOur brand inspector rode out and found coyote sign and nothing to speak of. The same week the sheriff stopped a stock trailer on the county road with somebody else's cattle in it.\n\nNobody asked the station about that."),ER::None},
+    {TEXT("CALICHE VALLEY STOCKMEN'S ASSOCIATION\nRE: YOUR REPORT, THE COUNTY ROAD LEASES\n\nOur brand inspector rode out. No coyote sign, no tracks worth the name, and the cattle would not be driven near the place. He did not stay.\n\nThe ride is charged to your station."),ER::CallOut}},
+   {{TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, PERSONS ON THE LEASES\n\nA deputy sat out two nights on your report. He saw coyotes, a dust devil and nobody else.\n\nThe patrol is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, PERSONS ON THE LEASES\n\nA deputy found fresh tire tracks off the county road and the man who made them, cutting fence for posts and taking what he liked from the places out there. He has been cited.\n\nThank you for a report that gave us somewhere to look."),ER::None},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, PERSONS ON THE LEASES\n\nA deputy sat out two nights. No vehicle came and there were no tracks but your own. The radio in his car went to static twice, at the same hour both nights.\n\nThe patrol is charged to your station. He will not do a third night."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: OUT ON THE LAND\n\nFiled as not accounted for, so nobody was sent. The Ledger prints a rancher's letter about coyotes on the leases, and a gate the wind took off its chain."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: OUT ON THE LAND\n\nFiled as not accounted for, so nobody was sent. The sheriff has since cited a man for cutting fence and hauling things off the leases, the same week."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: OUT ON THE LAND\n\nFiled as not accounted for. Nobody has asked about it. A rancher stopped at the gate to ask whether the station had noticed anything on those nights, and drove off before anybody could answer."),ER::None}}},
+  true
+ };
  // CASES-OPS-20261109: the senders above and below are made up. Real bodies (the observatory at Socorro, the federal radio regulator,
  // the county's electric cooperative) never sign for anything the story invents; the county sheriff stands as geography only.
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
@@ -271,6 +298,25 @@ namespace
    {true,true,false}},
   {TEXT(""),TEXT(""),TEXT("")},
   TEXT("Station log: the raked ground"),TEXT("access.rakedGround"),&RakedGround
+ },
+ {
+  // LOOP-WHOLE-20261109, step 2. An assessment: nothing out there can be held still for a control the way the roof plate or the gate
+  // can, and nobody will say what it was. The controls use what the player has: the trip camera (whose own frames are the result,
+  // FS47FreeformSession::LandRecord), the magnetometer and the loan field logger.
+  TEXT("OUT ON THE LAND"),
+  TEXT("Things happen out on the land at night, and some of them you have kept: on the ground, at a place, on the road. Nothing yet says they have one cause, and nobody is going to tell you whether they do. A control uses the kit you have; when the records disagree they rule nothing out. File what you think it is: the reply comes the next morning, and the county acts on what you file."),
+  FS47FreeformCases::EObservable::FieldTrace,
+  {TEXT("Animals and weather"),TEXT("People and vehicles"),TEXT("Not accounted for")},
+  {TEXT("Animals"),TEXT("People"),TEXT("Unaccounted")},
+  {{TEXT("Trip camera overnight"),EC::FieldWork,TEXT("Leave the trip camera out on the land, where the last record was kept, and read it in the morning. What its frames show is the result."),TEXT("the ground lit, or a shape on the frames"),TEXT("nothing on the frames but what lives out here")},
+   {TEXT("Magnetometer and the survey"),EC::FieldWork,TEXT("Take the magnetometer to a place out on the land and read it there. OPS sets the reading against the county survey sheet for that ground."),TEXT("a reading off the survey sheet"),TEXT("the reading the survey sheet gives")},
+   {TEXT("Field logger that night"),EC::FieldWork,TEXT("Run the loan field logger at the array through a full window at night, then retrieve its tape. OPS sets the tape against that night out on the land."),TEXT("a carrier on the tape that night"),TEXT("the tape quiet that night"),TEXT("access.fieldlogger")}},
+  // Camera, Needle, Logger (present = Yes)
+  {{false,false,false},  // animals and weather: nothing strange on the frames, no iron left on the ground, nothing on the air
+   {false,true,true},    // people: no lit ground, but iron dropped or dragged (wire, tools, a vehicle), and a set or an engine on the air
+   {true,false,true}},   // not accounted for: the ground lit or a shape, nothing left in the ground, something on the air
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: out on the land"),TEXT("access.land"),&OutOnTheLand
  }};
 }
 
@@ -281,9 +327,11 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
  if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
- if(Id.Contains(TEXT("_daylight_d"))||Id.Contains(TEXT("_moved_d"))||Id.StartsWith(TEXT("tripcam_d"))||Id.StartsWith(TEXT("roadcar_b"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
- // What the night's events leave out on the land (FS47Happenings): leads for the visitors, not yet one cause.
- if(FS47Happenings::IsNightFinding(Id))return 2;
+ // Around the base: the station, its doors and rooms, the farm that shares its ground, a taking.
+ if(Id.Contains(TEXT("_daylight_d"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
+ // LOOP-WHOLE-20261109, step 2: out on the land. What the night's events leave there (FS47Happenings), a thing moved at a place, the
+ // trip camera, a car on the road, Saucer Rock by the hour after midnight (FS47Places). Leads, not yet one cause.
+ if(FS47Happenings::IsNightFinding(Id)||Id.Contains(TEXT("_moved_d"))||Id.StartsWith(TEXT("tripcam_d"))||Id.StartsWith(TEXT("roadcar_b"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_night"))&&(Id.EndsWith(TEXT("_t2"))||Id.EndsWith(TEXT("_t3")))))return LandLine;
  return -1;
 }
 bool FS47FreeformCases::IsCaseRecord(const FString& Key)
@@ -297,10 +345,13 @@ int32 FS47FreeformCases::LineForObservation(const FString& Event)
 bool FS47FreeformCases::AddLead(int32 Line,const FString& ObservationId,int32 Day,double DayClock)
 {
  if(!Cases.IsValidIndex(Line)||ObservationId.IsEmpty()||ObservationId.Len()>160)return false;
- FCase& C=Cases[Line];if(C.Leads.Contains(ObservationId))return false;
+ FCase& C=Cases[Line];if(C.Leads.Contains(ObservationId)){if(C.bOpen)C.LastLeadDay=FMath::Max(C.LastLeadDay,FMath::Clamp(Day,0,36500));return false;}
  const bool Opened=Open(Line,Day,DayClock);
  if(!C.bOpen)return false;
- if(C.Leads.Num()<MaxLeads)C.Leads.Add(ObservationId);
+ // LOOP-WHOLE-20261109: at the cap the oldest folds into a count the case board shows; the newest is always kept. Nothing is thrown
+ // away without a word, and every lead is a record in the notebook whatever the list holds.
+ if(C.Leads.Num()>=LeadCap(Line)){C.Leads.RemoveAt(0);++C.FoldedLeads;}
+ C.Leads.Add(ObservationId);C.LastLeadDay=FMath::Max(C.LastLeadDay,FMath::Clamp(Day,0,36500));
  (void)Opened;return true;
 }
 int32 FS47FreeformCases::Seeded(int32 Seed,int32 Line){return int32(Mix(uint32(Seed)^Mix(0x43415345u+uint32(Line)))%uint32(CauseCount));}
@@ -316,7 +367,7 @@ FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test,bool bSecondL
 }
 void FS47FreeformCases::Reset(int32 Seed)
 {
- Cases.SetNum(CaseCount);Access.Reset();CaseSeed=Seed;
+ Cases.SetNum(CaseCount);Access.Reset();CaseSeed=Seed;bBeforeLand=false;
  for(int32 I=0;I<CaseCount;++I){Cases[I]=FCase();Cases[I].Truth=Seeded(Seed,I);}
 }
 void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
@@ -348,12 +399,14 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
    const auto X=R[T]->AsObject();auto& Out=C.Results[T];Out.bDone=S47J::Bool(X,TEXT("done"));
    Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&S47J::Bool(X,TEXT("present"),PresentFor(I,C.Truth,T));
   }
-  for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)&&C.Leads.Num()<MaxLeads)C.Leads.Add(L);
+  C.FoldedLeads=FMath::Clamp(S47J::Int(O,TEXT("folded")),0,100000);C.LastLeadDay=C.bOpen?FMath::Clamp(S47J::Int(O,TEXT("lastLeadDay")),0,36500):0;
+  for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)){if(C.Leads.Num()>=LeadCap(I)){C.Leads.RemoveAt(0);++C.FoldedLeads;}C.Leads.Add(L);}
   if(C.bConcluded&&C.Conclusion<0)C.bConcluded=false;
   // CASES-OPS-20261109: a save from before the visitors' lock was fixed can hold results that contradict all three explanations
   // (the hidden cause moved after a result was kept). The latest result goes, one at a time, until one explanation survives them:
   // that test can be run again. The count of valid tests stands; the work was done.
-  for(int32 Guard=0;Guard<TestCount&&!C.bConcluded;++Guard)
+  // (The land's records may disagree: that rules nothing out, Excluded, and nothing goes.)
+  for(int32 Guard=0;Guard<TestCount&&!C.bConcluded&&I!=LandLine;++Guard)
   {
    bool bAny=false;
    for(int32 Cause=0;Cause<CauseCount&&!bAny;++Cause){bool bFits=true;for(int32 T=0;T<TestCount;++T)bFits&=!C.Results[T].bDone||PresentFor(I,Cause,T)==C.Results[T].bPresent;bAny|=bFits;}
@@ -363,6 +416,11 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
    C.Results[Latest]=FResult();if(C.Planned==Latest){C.Planned=-1;C.PlannedJob.Empty();}
   }
  }
+ // LOOP-WHOLE-20261109: a save from before the land had its own line (fewer lines than now) kept the land's leads under the visitors.
+ // They move, once, here; a save that has the land's line has nothing to move. The land's hidden cause follows its kept records.
+ bBeforeLand=List.Num()<CaseCount;
+ if(bBeforeLand)MoveLandLeads();
+ FollowLand();
  // A saved conclusion must still be supported by its retained tests.
  // An assessment needs only not to contradict them.
  for(int32 I=0;I<Cases.Num();++I)if(Cases[I].bConcluded&&(Excluded(I,Cases[I].Conclusion)||(!Defs[I].Mystery&&Remaining(I)!=1))){Cases[I].bConcluded=false;Cases[I].Conclusion=-1;Cases[I].ConcludeDay=0;Cases[I].bReplied=false;}
@@ -382,9 +440,41 @@ S47J::FObj FS47FreeformCases::Save() const
   if(C.ConcludeDay>0)S47J::Set(X,TEXT("concludeDay"),C.ConcludeDay);
   if(C.bOpen&&(C.RefDay!=C.OpenDay||C.RefClock!=C.OpenClock)){S47J::Set(X,TEXT("refDay"),C.RefDay);S47J::Set(X,TEXT("refClock"),C.RefClock);}
   if(C.bReplied)S47J::Set(X,TEXT("replied"),true);
+  if(C.FoldedLeads>0)S47J::Set(X,TEXT("folded"),C.FoldedLeads);
+  if(C.bOpen&&C.LastLeadDay>0)S47J::Set(X,TEXT("lastLeadDay"),C.LastLeadDay);
   X->SetArrayField(TEXT("results"),R);List.Add(MakeShared<FJsonValueObject>(X));
  }
  O->SetArrayField(TEXT("cases"),List);return O;
+}
+void FS47FreeformCases::MoveLandLeads()
+{
+ if(!Cases.IsValidIndex(LandLine))return;FCase& V=Cases[2];FCase& L=Cases[LandLine];
+ // Only leads move: they are what was seen, never what a result, a conclusion, a payment or Dr. Ward's review rests on.
+ TArray<FString> Moving;for(const FString& Id:V.Leads)if(LineForFinding(Id)==LandLine)Moving.Add(Id);
+ if(Moving.IsEmpty())return;
+ if(!L.bOpen){L.bOpen=true;L.OpenDay=FMath::Max(1,V.OpenDay);L.OpenClock=V.OpenClock;L.RefDay=L.OpenDay;L.RefClock=L.OpenClock;}
+ for(const FString& Id:Moving){V.Leads.Remove(Id);if(!L.Leads.Contains(Id)){if(L.Leads.Num()>=LeadCap(LandLine)){L.Leads.RemoveAt(0);++L.FoldedLeads;}L.Leads.Add(Id);}}
+ L.LastLeadDay=FMath::Max(L.LastLeadDay,L.OpenDay);
+ // Opened by nothing but the land, and nothing done in it since: the visitors' case closes again, untouched. The session opens it
+ // once more for any record that is the base's own (FS47FreeformSession::Begin), as an older save's cases always were.
+ bool bWork=V.bConcluded||V.Planned>=0||V.ValidTests>0||V.Hunch>=0||!V.Leads.IsEmpty()||V.FoldedLeads>0;
+ for(const FResult& R:V.Results)bWork|=R.bDone;
+ if(!bWork){V=FCase();V.Truth=Seeded(CaseSeed,2);}
+}
+void FS47FreeformCases::FollowLand()
+{
+ if(!Cases.IsValidIndex(LandLine))return;FCase& C=Cases[LandLine];
+ // The trip camera's frames are the world's, not drawn from the cause: the cause goes to the first one, from the seed's own, that
+ // every kept record agrees with, so that the other controls and the reply follow what was seen. A pure function of the seed and
+ // the results, so a Continue finds the same. When no cause fits them all the records disagree, and it stays the seed's.
+ const int32 Own=Seeded(CaseSeed,LandLine);
+ for(int32 K=0;K<CauseCount;++K)
+ {
+  const int32 Cause=(Own+K)%CauseCount;bool bFits=true;
+  for(int32 T=0;T<TestCount;++T)bFits&=!C.Results[T].bDone||PresentFor(LandLine,Cause,T)==C.Results[T].bPresent;
+  if(bFits){C.Truth=Cause;return;}
+ }
+ C.Truth=Own;
 }
 bool FS47FreeformCases::Open(int32 Line,int32 Day,double DayClock)
 {
@@ -417,6 +507,7 @@ bool FS47FreeformCases::Record(int32 Line,int32 Test,int32 Day,bool bValid,bool 
  C.Planned=-1;C.PlannedJob.Empty();
  if(!bValid)return true; // the plan is released so the test can be repeated properly
  C.Results[Test].bDone=true;C.Results[Test].bPresent=bPresent;C.Results[Test].Day=Day;
+ if(Line==LandLine)FollowLand();
  bFirstValid=ValidTestsTotal()==0;++C.ValidTests;return true;
 }
 int32 FS47FreeformCases::ValidTestsTotal() const{int32 N=0;for(const FCase& C:Cases)N+=C.ValidTests;return N;}
@@ -424,7 +515,14 @@ bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
 {
  const FCase* C=Get(Line);if(!C)return false;
  const auto ByTests=[&](int32 Which){for(int32 T=0;T<TestCount;++T)if(C->Results[T].bDone&&PresentFor(Line,Which,T)!=C->Results[T].bPresent)return true;return false;};
- if(ByTests(Cause))return true;
+ // LOOP-WHOLE-20261109: the land's records can disagree (the trip camera's frames are the world's own); when every explanation is
+ // contradicted by one of them, they rule none out.
+ if(ByTests(Cause))
+ {
+  if(Line!=LandLine)return true;
+  for(int32 Other=0;Other<CauseCount;++Other)if(!ByTests(Other))return true;
+  return false;
+ }
  // Unless the retained tests have already closed everything else: no case ends with nothing left to conclude.
  if(C->bBeyondWind&&Cause==0)for(int32 Other=1;Other<CauseCount;++Other)if(!ByTests(Other))return true;
  return false;
@@ -492,7 +590,9 @@ FString FS47FreeformCases::ClueText(int32 Line,int32 Clue) const
 }
 bool FS47FreeformCases::TrailCold(int32 Line,int32 Day) const
 {
- const FCase* C=Get(Line);return C&&C->bOpen&&Def(Line).Mystery&&Day>C->OpenDay+Def(Line).Mystery->FreshDays;
+ // The land gathers records all month: its trail goes cold from the newest of them, not from the night it opened.
+ const FCase* C=Get(Line);if(!C||!C->bOpen||!Def(Line).Mystery)return false;
+ return Day>(Line==LandLine?FMath::Max(C->OpenDay,C->LastLeadDay):C->OpenDay)+Def(Line).Mystery->FreshDays;
 }
 bool FS47FreeformCases::ReplyDue(int32 Line,int32 Day) const
 {
@@ -758,7 +858,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   TSet<FString> Ids;bool bLate=true,bClean=true;FString Offender;
   const auto Clean=[&](const TCHAR* Text){const FString Low=FString(Text).ToLower();for(const TCHAR* W:Far)if(Low.Contains(W)){bClean=false;Offender=FString(W)+TEXT(": ")+FString(Text).Left(50);}};
   for(int32 Line=0;Line<CaseCount;++Line)if(const FMysteryDef* Y=Defs[Line].Mystery)for(const FClueDef& Clue:Y->Clues)Ids.Add(Clue.Finding);
-  for(int32 Line=LateFirst;Line<CaseCount;++Line)
+  for(int32 Line=LateFirst;Line<=RakedLine;++Line)
   {
    const FCaseDef& D=Defs[Line];const FMysteryDef* Y=D.Mystery;
    bLate&=Y&&Y->bOpensOnTrace&&D.Access&&D.Access[0];
@@ -781,12 +881,73 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    K.Open(Line,13,.83*3600);K.Conclude(Line,2,Said,14);
    bLate&=K.Get(Line)->bConcluded&&!K.Supported(Line,One)&&K.Supported(Line,Two)&&!K.ReplyDue(Line,14)&&K.ReplyDue(Line,15)&&K.HasAccess(D.Access);
   }
-  Good&=bLate&&bClean&&Ids.Num()==ClueCount*(CaseCount-3);
+  // LOOP-WHOLE-20261109, step 2: the land's own line. Its words say nothing Freeform must not; its replies keep the rules (a wrong
+  // filing never pays, a right one never charges, the unaccounted filed right pays nothing); every control is on offer and is field
+  // work; a record out there goes to it and not to the visitors, and what is the base's stays the base's.
+  bool bLand=true;
+  {
+   const FCaseDef& D=Defs[LandLine];const FMysteryDef* Y=D.Mystery;bLand&=Y&&Y->bOpensOnTrace&&D.Access&&D.Access[0]&&D.Observable==EObservable::FieldTrace;
+   if(Y)
+   {
+    Clean(D.Title);Clean(D.Question);for(int32 C=0;C<CauseCount;++C){Clean(D.Causes[C]);Clean(D.Short[C]);}
+    for(const FTestDef& T:D.Tests){Clean(T.Name);Clean(T.Instruction);if(T.Yes)Clean(T.Yes);if(T.No)Clean(T.No);bLand&=T.Yes&&T.No&&T.Condition==EC::FieldWork;}
+    for(const FClueDef& Clue:Y->Clues)for(const TCHAR* Read:Clue.Read)Clean(Read);
+    for(int32 Sent=0;Sent<CauseCount;++Sent)for(int32 Was=0;Was<CauseCount;++Was)
+    {
+     const FReplyDef& Answer=Y->Replies[Sent][Was];Clean(Answer.Text);bLand&=Answer.Text&&Answer.Text[0];
+     if(Sent!=Was)bLand&=Answer.Effect!=EReply::Spare;else bLand&=Answer.Effect!=EReply::FeederFault&&Answer.Effect!=EReply::CallOut;
+    }
+    bLand&=Y->Replies[2][2].Effect==EReply::None;
+   }
+   for(int32 T=0;T<TestCount;++T)bLand&=UnavailableReason(LandLine,T).IsEmpty();
+   static const TCHAR* const Out[]={TEXT("cattle_ring_d4"),TEXT("road_tracks_d6"),TEXT("geiger_sample_3"),TEXT("place_windmill_moved_d5"),TEXT("tripcam_d3"),TEXT("roadcar_b2"),TEXT("place_saucer_rock_night4_t3")};
+   static const TCHAR* const Home[]={TEXT("roof_steps"),TEXT("observer.day3"),TEXT("door-visit-5"),TEXT("door-marks-5"),TEXT("peek-4"),TEXT("flood-room-5-2"),TEXT("taken-3"),TEXT("farm_gate_visit"),TEXT("farm_trace_daylight_d3")};
+   for(const TCHAR* Id:Out)bLand&=LineForFinding(Id)==LandLine;
+   for(const TCHAR* Id:Home)bLand&=LineForFinding(Id)==2;
+   bLand&=LineForFinding(TEXT("place_windmill_needle"))==-1&&LineForFinding(TEXT("place_windmill"))==-1&&LineForFinding(TEXT("place_saucer_rock_night4_t1"))==-1;
+   // A record out there opens the land's case, not the visitors'.
+   FS47FreeformCases K;K.Reset(5);K.AddLead(LineForFinding(TEXT("cattle_ring_d4")),TEXT("cattle_ring_d4"),4,23*3600.);
+   bLand&=K.Get(LandLine)->bOpen&&!K.Get(2)->bOpen&&K.Get(LandLine)->Leads.Num()==1&&K.Get(LandLine)->LastLeadDay==4;
+   // No lead goes without a word at the cap: the oldest fold into a count, the newest is kept, and a Continue keeps both.
+   for(int32 I=0;I<LandLeads+7;++I)K.AddLead(LandLine,FString::Printf(TEXT("cattle_ring_d%d"),I+10),5+I/3,0);
+   const FCase* L=K.Get(LandLine);
+   bLand&=L->Leads.Num()==LandLeads&&L->FoldedLeads==8&&L->Leads.Last()==FString::Printf(TEXT("cattle_ring_d%d"),LandLeads+16)&&!L->Leads.Contains(TEXT("cattle_ring_d4"));
+   FS47FreeformCases KR;KR.Load(S47J::Read(S47J::Write(K.Save())),5);
+   bLand&=KR.Get(LandLine)->Leads==L->Leads&&KR.Get(LandLine)->FoldedLeads==8&&KR.Get(LandLine)->LastLeadDay==L->LastLeadDay&&!KR.FromBeforeLand();
+   FS47FreeformCases V;V.Reset(5);for(int32 I=0;I<MaxLeads+3;++I)V.AddLead(2,FString::Printf(TEXT("observer.day%d"),I+1),2,0);
+   bLand&=V.Get(2)->Leads.Num()==MaxLeads&&V.Get(2)->FoldedLeads==3;
+   // The land's trail goes cold from its newest record.
+   FS47FreeformCases T;T.Reset(5);T.AddLead(LandLine,TEXT("cattle_ring_d1"),1,0);T.AddLead(LandLine,TEXT("road_tracks_d9"),9,0);
+   bLand&=!T.TrailCold(LandLine,11)&&T.TrailCold(LandLine,12);
+   // A quiet night on the trip camera: its frames are the world's, and the hidden cause follows them, the same after a Continue.
+   int32 USeed=0;while(Seeded(USeed,LandLine)!=2)++USeed;
+   FS47FreeformCases F;F.Reset(USeed);F.Open(LandLine,3,0);bool bFirst=false;
+   bLand&=F.Plan(LandLine,LandCamera,TEXT("C"))&&F.Record(LandLine,LandCamera,4,true,false,bFirst);
+   bLand&=F.Get(LandLine)->Truth!=2&&F.Excluded(LandLine,2)&&!F.Excluded(LandLine,F.Get(LandLine)->Truth);
+   FS47FreeformCases FR;FR.Load(S47J::Read(S47J::Write(F.Save())),USeed);bLand&=FR.Get(LandLine)->Truth==F.Get(LandLine)->Truth;
+   // Records that no explanation has all of (the ground lit, the needle off the sheet, the tape quiet) rule none out: nothing is
+   // dropped, nothing locks, and any of the three can be filed.
+   FS47FreeformCases G;G.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{},{},{},{},{},{},{},{},{\"open\":true,\"openDay\":3,\"validTests\":3,\"results\":[{\"done\":true,\"present\":true,\"day\":4},{\"done\":true,\"present\":true,\"day\":5},{\"done\":true,\"present\":false,\"day\":6}]}]}")),USeed);
+   FString Why;bLand&=G.Remaining(LandLine)==3&&G.Get(LandLine)->Results[2].bDone&&G.Get(LandLine)->Truth==2&&G.Conclude(LandLine,0,Why,7);
+   // An older save, eight lines: the visitors' land leads move to the land, the base's stay; the land opens on the visitors' day.
+   FS47FreeformCases O1;O1.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{},{},{\"open\":true,\"openDay\":2,\"openClock\":80000,\"leads\":[\"observer.day2\",\"cattle_ring_d3\",\"tripcam_d4\"]},{},{},{},{},{}]}")),5);
+   bLand&=O1.FromBeforeLand()&&O1.Get(2)->bOpen&&O1.Get(2)->Leads.Num()==1&&O1.Get(LandLine)->bOpen&&O1.Get(LandLine)->OpenDay==2&&O1.Get(LandLine)->Leads.Num()==2;
+   // Opened by the land alone and untouched since: the visitors' case closes again. With a result in it, it stays as it was.
+   FS47FreeformCases O2;O2.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{},{},{\"open\":true,\"openDay\":2,\"leads\":[\"cattle_ring_d3\"]},{},{},{},{},{}]}")),5);
+   bLand&=!O2.Get(2)->bOpen&&O2.Get(LandLine)->bOpen&&O2.Get(LandLine)->Leads.Num()==1;
+   FS47FreeformCases O3;O3.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{},{},{\"open\":true,\"openDay\":2,\"validTests\":1,\"results\":[{\"done\":true,\"present\":true,\"day\":3},{},{}],\"leads\":[\"cattle_ring_d3\"]},{},{},{},{},{}]}")),5);
+   bLand&=O3.Get(2)->bOpen&&O3.Get(2)->Results[0].bDone&&O3.Get(2)->ValidTests==1&&O3.Get(2)->Leads.IsEmpty()&&O3.Get(LandLine)->Leads.Num()==1;
+   // A save that has the land's line has nothing to move, and goes round unchanged.
+   FS47FreeformCases N;N.Load(S47J::Read(S47J::Write(O1.Save())),5);
+   bLand&=!N.FromBeforeLand()&&N.Get(2)->Leads==O1.Get(2)->Leads&&N.Get(LandLine)->Leads==O1.Get(LandLine)->Leads&&N.Get(LandLine)->OpenDay==2;
+  }
+  if(!bLand)Lines.Add(TEXT("FAIL Freeform cases: out on the land (routing, cap, cold trail, the camera's own frames, older saves)"));
+  Good&=bLate&&bClean&&bLand&&Ids.Num()==ClueCount*(CaseCount-3);
   if(!bClean)Lines.Add(TEXT("FAIL Freeform cases: a late case says what it must not: ")+Offender);
   // A save from before them has five lines: the three new ones wait, closed.
   FS47FreeformCases Old;Old.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true},{},{},{},{}]}")),3);
   Good&=Old.Get(0)->bOpen&&Old.Get(PostLine)&&!Old.Get(PostLine)->bOpen&&!Old.Get(RakedLine)->bOpen;
  }
- Lines.Add(FString::Printf(TEXT("%s / Freeform cases: eight data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the repeat window from the first original's clock, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
+ Lines.Add(FString::Printf(TEXT("%s / Freeform cases: nine data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground; and OUT ON THE LAND, split from the visitors: the night's records out there go to it, an older save's move over, records that disagree rule nothing out, no lead dropped at the cap), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the repeat window from the first original's clock, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }

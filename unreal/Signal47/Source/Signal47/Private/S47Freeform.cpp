@@ -272,7 +272,10 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  TakenCount=0;for(const auto& Kept:Findings)TakenCount+=Kept.Key.StartsWith(TEXT("taken-"))?1:0;
  // Older saves: an already retained discrepancy opens its case retroactively. The interval case waits for its registration at OPS
  // while a reviewed comparison is still unregistered (Tom, 9 November: FirstCaseHeld).
- for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0&&!(Line==0&&FirstCaseHeld()))Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);}
+ for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0&&!(Line==0&&FirstCaseHeld()))Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);
+  // LOOP-WHOLE-20261109: a save from before OUT ON THE LAND: what it kept out there is the land's (leads moved from the visitors keep
+  // their place; the trip camera, things moved and the road were never leads before). Once: a newer save has them already.
+  if(Line==FS47FreeformCases::LandLine&&Cases.FromBeforeLand())Cases.AddLead(Line,F.Key,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);}
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0)
  {
   // Field work has its own retained plan ID and deliberately creates no receiver job.
@@ -608,6 +611,7 @@ void FS47FreeformSession::Step(double Dt)
  if(M->Audio&&(!bAudioPlaying||!bAudioOpen||Held()||!HasPower()||!AudioDesk||!AudioDesk->ListeningPosition()))M->Audio->ReceiverRecordingOff();
  if(Field)Field->Step(D);
  if(CaseField)CaseField->Step(D);
+ StepLandTest(); // LOOP-WHOLE-20261109
  if(Director)Director->Step(D);
  StepPrinter(D);
  StepSopCard();
@@ -1231,7 +1235,9 @@ void FS47FreeformSession::SetAnomaly(bool bValue)
 }
 void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
- if(Id.IsEmpty()||Findings.Contains(Id))return;
+ if(Id.IsEmpty())return;
+ // (a magnetometer reading at a place already read is kept once, but it is read again: the land's control takes it, LandRecord)
+ if(Findings.Contains(Id)){LandRecord(Id);return;}
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
  // CASES-OPS-20261109: a case's own record (a test result, a conclusion, a reply) is no field record and no card on the board; its
  // telex is its one document and the night log has it under WORK (FS47NightLog, CaseRecordLine).
@@ -1255,6 +1261,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  }
  OpenCaseFor(Id);
  UpdateMysteries();Changed();
+ LandRecord(Id);
 }
 void FS47FreeformSession::UpdateMysteries()
 {
@@ -2147,7 +2154,7 @@ FString FS47FreeformSession::CaseOnClose(int32 Line)const
   if(Line==FS47FreeformCases::LostLine)Parts.Add(FString::Printf(TEXT("MAGNETOMETER $%d OFF"),LostHoursDiscount));
  }
  if(!DeputyOnRoute())Parts.Add(TEXT("COUNTY PATROL TAKES IN SARO"));
- if(Predecessor&&Predecessor->Live())Parts.Add(!D.Mystery||CaseSupported(Line)?TEXT("COUNTS IN DR. WARD'S REVIEW"):TEXT("ONE TRACE: DR. WARD WILL NOT COUNT IT"));
+ if(Predecessor&&Predecessor->Live())Parts.Add(!D.Mystery||CaseSupported(Line)?TEXT("COUNTS IN DR. WARD'S REVIEW"):Line==FS47FreeformCases::LandLine?TEXT("ONE NIGHT: DR. WARD WILL NOT COUNT IT"):TEXT("ONE TRACE: DR. WARD WILL NOT COUNT IT"));
  return TEXT("ON CLOSE: ")+FString::Join(Parts,TEXT(" / "));
 }
 FString FS47FreeformSession::CaseSource(int32 Line)const
@@ -2168,7 +2175,7 @@ FString FS47FreeformSession::CaseStanding(int32 Line,int32 Cause)const
  // The day of the first retained result that rules it out.
  int32 Day=0;
  for(int32 T=0;T<FS47FreeformCases::TestCount;++T)if(C->Results[T].bDone&&FS47FreeformCases::PresentFor(Line,Cause,T)!=C->Results[T].bPresent&&(Day==0||C->Results[T].Day<Day))Day=FMath::Max(1,C->Results[T].Day);
- if(Day>0)return FString::Printf(TEXT("RULED OUT D%02d"),Day);
+ if(Day>0&&Cases.Excluded(Line,Cause))return FString::Printf(TEXT("RULED OUT D%02d"),Day); // (the land's records may disagree)
  if(Cases.Excluded(Line,Cause))return TEXT("RULED OUT / LOST TIME"); // the visitors' wind, after a taking or a room lit from outside
  if(C->bConcluded)return bMystery?TEXT("NOT FILED"):TEXT("RULED OUT");
  return TEXT("STILL POSSIBLE");
@@ -2219,7 +2226,7 @@ FString FS47FreeformSession::CaseSheetHead(int32 Line,int32 MarkTest)const
  for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
  {
   // The explanation the marked test ruled out (a result sheet just collected) says so.
-  const bool bFell=MarkTest>=0&&MarkTest<FS47FreeformCases::TestCount&&C->Results[MarkTest].bDone&&FS47FreeformCases::PresentFor(Line,I,MarkTest)!=C->Results[MarkTest].bPresent;
+  const bool bFell=MarkTest>=0&&MarkTest<FS47FreeformCases::TestCount&&C->Results[MarkTest].bDone&&FS47FreeformCases::PresentFor(Line,I,MarkTest)!=C->Results[MarkTest].bPresent&&Cases.Excluded(Line,I);
   Out.Add(FString::Printf(TEXT(" %s  %-26s %s%s"),Letter[I],*FString(D.Causes[I]).ToUpper().Left(26),*CaseStanding(Line,I),bFell?TEXT("  << THIS RESULT"):TEXT("")));
  }
  return FString::Join(Out,TEXT("\n"));
@@ -2228,7 +2235,7 @@ void FS47FreeformSession::QueueResultSheet(int32 Line,int32 Test,const FString& 
 {
  const auto* C=Cases.Get(Line);if(!C||Test<0||Test>=FS47FreeformCases::TestCount||!C->Results[Test].bDone||CaseSheets.Num()>=8)return;
  const auto& D=FS47FreeformCases::Def(Line);const bool bPresent=C->Results[Test].bPresent;
- int32 Fell=0;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)Fell+=FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent?1:0;
+ int32 Fell=0;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)Fell+=FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent&&Cases.Excluded(Line,I)?1:0;
  FResultSheet Sh;Sh.Line=Line;Sh.Test=Test;Sh.Day=FMath::Max(1,DayNumber);Sh.Job=Job;
  Sh.Stamp=Fell>0?FString::Printf(TEXT("RULED OUT / D%02d"),Sh.Day):FString(TEXT("STILL POSSIBLE"));
  // The sheet as the case stands the moment the result is in; printed later, it does not change.
@@ -2467,6 +2474,56 @@ FString FS47FreeformSession::FieldNextAction(int32 Line)const
  if(Line==2&&CaseField){const FString Actual=CaseField->Objective();if(!Actual.IsEmpty())return Actual;}
  const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
  return TEXT("FIELD TEST / ")+FString(T.Name).ToUpper()+TEXT(": ")+T.Instruction;
+}
+// ---- LOOP-WHOLE-20261109, step 2: OUT ON THE LAND's controls, with the kit there is (FS47FreeformCases::LandLine) -----------------
+FString FS47FreeformSession::LandTestNeeds(int32 Line,int32 Test)const
+{
+ if(Line!=FS47FreeformCases::LandLine)return FString();
+ if(Test==FS47FreeformCases::LandCamera&&!(Field&&Field->Workshop().IsBuilt(TEXT("trip_camera"))))return TEXT("the trip camera, built at the bench");
+ if(Test==FS47FreeformCases::LandNeedle&&!HasKit(TEXT("magnetometer")))return TEXT("the survey magnetometer, from the parts store");
+ return FString();
+}
+void FS47FreeformSession::LandRecord(const FString& Id)
+{
+ constexpr int32 Line=FS47FreeformCases::LandLine;const int32 Test=PlannedFieldTest(Line);
+ if(Test<0||FS47FreeformCases::IsCaseRecord(Id))return;
+ const FString Text=Findings.FindRef(Id);
+ if(Test==FS47FreeformCases::LandCamera)
+ {
+  // Read in the morning (FS47TripCamera::Collect keeps "tripcam_d<night>" while it still knows what it caught). Its frames are the
+  // result, not the hidden cause: a light or a shape is yes, nothing or an animal is no. A night before the plan does not count.
+  if(!Id.StartsWith(TEXT("tripcam_d")))return;
+  const int32 Night=FCString::Atoi(*Id.Mid(9));const auto* C=Cases.Get(Line);
+  const int32 Planned=C?FCString::Atoi(*C->PlannedJob.Mid(7)):0; // FIELD-D0012-...
+  if(Night<Planned)return;
+  const bool bSeen=TripCamera&&TripCamera->CaughtTonight()!=FS47TripCamera::ECatch::None;
+  ReportFieldTest(Line,Test,true,bSeen,Text);return;
+ }
+ if(Test==FS47FreeformCases::LandNeedle)
+ {
+  // A reading at a place out on the land (FS47Places: "place_<id>_needle", kept once, read every time): set against the survey sheet.
+  if(!Id.StartsWith(TEXT("place_"))||!Id.EndsWith(TEXT("_needle"))||Id==TEXT("place_motel_needle"))return;
+  ReportFieldTest(Line,Test,true,FieldTestExpectsPresent(Line,Test),Text);
+ }
+}
+void FS47FreeformSession::StepLandTest()
+{
+ constexpr int32 Line=FS47FreeformCases::LandLine;
+ if(PlannedFieldTest(Line)!=FS47FreeformCases::LandLogger||!Field)return;
+ const auto* C=Cases.Get(Line);int32 From=0;
+ if(int32 At=C?C->PlannedJob.Find(TEXT("-TAPE")):INDEX_NONE;At!=INDEX_NONE)From=FMath::Max(0,FCString::Atoi(*C->PlannedJob.Mid(At+5)));
+ const auto& Tapes=Field->FieldLogger().Tapes;
+ for(int32 I=From;I<Tapes.Num();++I)
+ {
+  const auto& T=Tapes[I];if(!T.bRetrieved)continue;
+  // A full window at night, unbroken: then the tape says something about that night out on the land. Anything less is no result.
+  const double Hour=FMath::Fmod(T.Start,86400.)/3600.;
+  const bool bNight=Hour>=19||Hour<5;
+  const bool bValid=bNight&&T.Seconds>=FS47FieldLogger::Window-.001&&T.GapSeconds==0&&!T.bBatteryEmpty;
+  const FString Evidence=FString::Printf(TEXT("Field logger tape %s, from %s, %.0f minutes%s."),*T.Id,*FS47FreeformCases::Clock(T.Start),T.Seconds/60.,bValid?TEXT(""):TEXT(": not a full window at night"));
+  ReportFieldTest(Line,FS47FreeformCases::LandLogger,bValid,bValid&&FieldTestExpectsPresent(Line,FS47FreeformCases::LandLogger),Evidence);
+  return;
+ }
 }
 bool FS47FreeformSession::SetCaseHunch(int32 Line,int32 Cause)
 {
@@ -2873,11 +2930,11 @@ bool FS47FreeformSession::ReportFieldTest(int32 Line,int32 Test,bool bValid,bool
  if(!Cases.Record(Line,Test,DayNumber,bValid,bPresent,First))return false;
  const auto& D=FS47FreeformCases::Def(Line);
  if(!bValid){Changed(TEXT("Field test INVALID: ")+Evidence.Left(160)+TEXT(" Plan it again on the case board."));return true;}
- TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent)Out.Add(D.Causes[I]);
+ TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent&&Cases.Excluded(Line,I))Out.Add(D.Causes[I]);
  const FString Result=FS47FreeformCases::TestResultText(Line,Test,bPresent);
  QueueResultSheet(Line,Test,Plan); // CASES-OPS-20261109: printed at SARO as the record comes in
  RecordEvidence(FString::Printf(TEXT("case%d-test%d"),Line+1,Test+1),FString::Printf(TEXT("CASE / %s\nFIELD TEST / %s / DAY %d\nRESULT / %s\nPREDICTION / %s\nRULES OUT / %s\nRECORD / %s"),D.Title,*FString(D.Tests[Test].Name).ToUpper(),DayNumber,*Result,*FS47FreeformCases::Prediction(Line,Test),*FString::Join(Out,TEXT(", ")),*Evidence.Left(400)));
- FString Text=FString::Printf(TEXT("Field test retained. %s: rules out %s."),*Result,*FString::Join(Out,TEXT(" and ")));
+ FString Text=Out.IsEmpty()?FString::Printf(TEXT("Field test retained. %s: the records disagree, and rule nothing out."),*Result):FString::Printf(TEXT("Field test retained. %s: rules out %s."),*Result,*FString::Join(Out,TEXT(" and ")));
  if(First){AddItem(TEXT("relay"),1);Text+=TEXT(" Station management credits one service relay to the depot for documented test work.");}
  if(Cases.Remaining(Line)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
  Changed(Text+TEXT(" Its result sheet is at the SARO printer."));return true;
@@ -2889,7 +2946,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
  const bool bBeyondWind=FindingId.StartsWith(TEXT("taken-"))||FindingId.StartsWith(TEXT("flood-room-"));
  if(bBeyondWind)Cases.RuleOutWind(Line);
  // A night's record out on the land is a lead in the case it belongs to (FS47Happenings), and opens it if it is the first.
- if(Line>=0&&FS47Happenings::IsNightFinding(FindingId))
+ if(Line>=0&&(FS47Happenings::IsNightFinding(FindingId)||Line==FS47FreeformCases::LandLine))
  {
   const auto* Was=Cases.Get(Line);const bool bNew=!(Was&&Was->bOpen);
   Cases.AddLead(Line,FindingId,DayNumber,FMath::Fmod(WorldClock,86400.));
@@ -2901,7 +2958,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
  // The reel deck's review says it in its own one message, with the job's next step (CASES-OPS-20261109).
  if(FindingId==TEXT("pulse-review")){Changed();return;}
  // A late line (M7) has no test to choose until there is something to compare: its other place first.
- Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):Line>=FS47FreeformCases::LateFirst?TEXT(". Three explanations fit. The OPS case board says where else to look."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
+ Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):Line==FS47FreeformCases::LandLine?TEXT(". Three explanations fit. A control uses the kit you have; see the OPS case board."):Line>=FS47FreeformCases::LateFirst?TEXT(". Three explanations fit. The OPS case board says where else to look."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
 bool FS47FreeformSession::FirstCaseHeld()const
 {
@@ -2929,9 +2986,12 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
   if(!Unavailable.IsEmpty()){Feedback=Unavailable;return false;}
   if(Cases.Remaining(Line)<=1){Feedback=FS47FreeformCases::Def(Line).Mystery?TEXT("Only one explanation is left: file your assessment on the case board."):TEXT("Only one explanation is left: register the supported conclusion on the case board.");Changed(Feedback);return false;}
   if(Cases.TrailCold(Line,DayNumber)){Feedback=TEXT("The trail has gone cold: a fresh control would no longer show anything about that night. You can still file your assessment.");Changed(Feedback);return false;}
+  if(const FString Need=LandTestNeeds(Line,Test);!Need.IsEmpty()){Feedback=TEXT("This control needs ")+Need+TEXT(".");Changed(Feedback);return false;}
   if(Def.Condition==ECaseCondition::FieldWork)
   {
-   const FString Id=FString::Printf(TEXT("FIELD-D%04d-CASE%d-T%d"),DayNumber,Line+1,Test+1);
+   FString Id=FString::Printf(TEXT("FIELD-D%04d-CASE%d-T%d"),DayNumber,Line+1,Test+1);
+   // The land's logger control takes a tape started after it is planned: the plan says how many there were (StepLandTest).
+   if(Line==FS47FreeformCases::LandLine&&Test==FS47FreeformCases::LandLogger)Id+=FString::Printf(TEXT("-TAPE%d"),Field?Field->FieldLogger().Tapes.Num():0);
    if(!Cases.Plan(Line,Test,Id))return false;
    if(Line==2&&CaseField)CaseField->ResetPlan();
    const bool Focused=FocusFieldTest(Line);
@@ -3019,6 +3079,17 @@ int32 FS47FreeformSession::TownTrust() const
 bool FS47FreeformSession::CaseSupported(int32 Line) const
 {
  bool Kept[FS47FreeformCases::ClueCount]={};
+ if(Line==FS47FreeformCases::LandLine)
+ {
+  // LOOP-WHOLE-20261109: OUT ON THE LAND opens on one record; a filing has something behind it with a record from another night too
+  // (folded ones were many), or with a control.
+  if(const auto* C=Cases.Get(Line))
+  {
+   TSet<int32> Nights;for(const FString& L:C->Leads)if(FindingDays.Contains(L))Nights.Add(FindingDays.FindRef(L));
+   Kept[0]=!C->Leads.IsEmpty()||C->FoldedLeads>0;Kept[1]=Nights.Num()>=2||C->FoldedLeads>0;
+  }
+  return Cases.Supported(Line,Kept);
+ }
  if(const auto* Y=FS47FreeformCases::Def(Line).Mystery)for(int32 I=0;I<FS47FreeformCases::ClueCount;++I)Kept[I]=HasFinding(Y->Clues[I].Finding);
  return Cases.Supported(Line,Kept);
 }
@@ -3134,10 +3205,11 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s%s"),Res.Day,*FS47FreeformCases::TestResultText(Line,T,Res.bPresent),T==Mark?TEXT("  << THIS SHEET"):TEXT(""));
    else if(!Unavailable.IsEmpty())Card+=TEXT("\nUNAVAILABLE / ")+Unavailable+(C->Planned==T?TEXT(" Cancel this retained plan to choose another control."):TEXT(""));
    else if(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access))Card+=TEXT("\nNEEDS / the loan field logger (conclude THE REPEATED INTERVAL)");
+   else if(const FString Need=LandTestNeeds(Line,T);!Need.IsEmpty()&&C->Planned!=T)Card+=TEXT("\nNEEDS / ")+Need; // LOOP-WHOLE-20261109
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / ")+C->PlannedJob+TEXT("\n")+CaseWindowText(Line);
    else if(bCold&&!C->bConcluded)Card+=TEXT("\nTRAIL COLD / too long since that night for a fresh control to show anything");
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];++TestCards;
-   if(!bCold&&Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&Cases.Remaining(Line)>1&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
+   if(!bCold&&Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&Cases.Remaining(Line)>1&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access))&&LandTestNeeds(Line,T).IsEmpty())List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
   }
   if(PlannedFieldTest(Line)>=0)
   {
@@ -3155,6 +3227,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    // again: Dr. Ward does not count it (FS47Predecessor::Count), and the line is closed for good once filed.
    const bool bBacked=CaseSupported(Line);
    Rows.Add(S47FreeformTerminal::Small(bBacked?TEXT("FILE / ACTED ON AS FILED / NOT CHECKED FIRST / CANNOT BE TAKEN BACK / ONLY YOUR TESTS RULE AN EXPLANATION OUT")
+    :Line==FS47FreeformCases::LandLine?TEXT("FILE / ONE NIGHT ONLY: DR. WARD WILL NOT COUNT IT / KEEP A RECORD FROM ANOTHER NIGHT OR RECORD A CONTROL FIRST / CANNOT BE TAKEN BACK")
     :TEXT("FILE / ONE TRACE ONLY: DR. WARD WILL NOT COUNT IT / LOOK AT THE OTHER PLACE OR RECORD A CONTROL FIRST / CANNOT BE TAKEN BACK")));
    TArray<S47Kit::FW> Filings;
    if(!bBacked&&FileAskLine==Line&&FileAskCause>=0&&FileAskCause<FS47FreeformCases::CauseCount&&!Cases.Excluded(Line,FileAskCause))
@@ -3183,7 +3256,8 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents.")));
   // Traces, leads and field records together, at the foot; folded on request (presentation only).
   TArray<FString> Notes;
-  if(const auto* Y=D.Mystery)
+  // (OUT ON THE LAND has no places of its own: its traces are its field records, below)
+  if(const auto* Y=Line==FS47FreeformCases::LandLine?nullptr:D.Mystery)
   {
    FString Trail=TEXT("TRACES / what each place showed. They need not agree.");
    for(int32 Index=0;Index<FS47FreeformCases::ClueCount;++Index)
@@ -3202,14 +3276,20 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   {
    FString Leads=TEXT("LEADS / retained observations, not yet one cause");int32 Shown=0;
    for(const auto& O:Director->Observations())if(C->Leads.Contains(O.Id)){++Shown;Leads+=FString::Printf(TEXT("\nD%d %s / %s / bearing %s / %s%s"),O.Day,*FS47FreeformCases::Clock(O.Clock),*O.Place,*O.Bearing,O.bHeard?TEXT("heard"):TEXT("seen"),O.PhotoId.IsEmpty()?TEXT(""):TEXT(" / photographed"));}
+   // LOOP-WHOLE-20261109: leads folded at the cap are said, not dropped (the land's are counted with its field records, below).
+   if(C->FoldedLeads>0&&Line!=FS47FreeformCases::LandLine){Leads+=FString::Printf(TEXT("\nEARLIER / %d OLDER LEAD%s FOLDED"),C->FoldedLeads,C->FoldedLeads==1?TEXT(""):TEXT("S"));++Shown;}
    if(Shown>0)Notes.Add(Leads);
   }
   {
    // What the night's events left out on the land, as the field records have it: its first sentence and its day.
    FString Land=TEXT("FIELD RECORDS / out on the land, night by night");int32 Shown=0;
-   for(const FString& L:C->Leads)if(const FString* Text=Findings.Find(L))
+   // LOOP-WHOLE-20261109: the newest dozen; the rest, and any folded at the cap, are counted here and kept in the notebook.
+   TArray<FString> Kept;for(const FString& L:C->Leads)if(Findings.Contains(L))Kept.Add(L);
+   const int32 Earlier=FMath::Max(0,Kept.Num()-CaseBoardRecords)+C->FoldedLeads;
+   if(Earlier>0)Land+=FString::Printf(TEXT("\nEARLIER / %d OLDER RECORD%s, EACH STILL IN YOUR NOTEBOOK"),Earlier,Earlier==1?TEXT(""):TEXT("S"));
+   for(int32 I=FMath::Max(0,Kept.Num()-CaseBoardRecords);I<Kept.Num();++I)
    {
-    FString First=*Text;int32 Stop=INDEX_NONE;
+    const FString& L=Kept[I];FString First=Findings.FindRef(L);int32 Stop=INDEX_NONE;
     if(First.FindChar(TEXT('.'),Stop)&&Stop>0)First=First.Left(Stop+1);
     Land+=FString::Printf(TEXT("\nD%d %s"),FindingDays.FindRef(L),*First.Left(150));++Shown;
    }
@@ -3767,6 +3847,53 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   L.TestAdvance(86400.);L.StepCaseReplies();
   Check(L.HasFinding(TEXT("case6-reply"))&&L.CaseFile().Get(Post)->bReplied,TEXT("Late cases: the reply comes the next morning"));
   L.Stop();
+ }
+ {
+  // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND through the session. A record out there opens it and not the visitors'; what is the
+  // base's still opens the visitors'; its controls answer to the kit's own records (a magnetometer reading, also at a place read
+  // before; the trip camera's own frames); CaseStep and the case sheet have it, and the filed case is in RECORDS' terms; an older
+  // save's land leads move over on Continue, once.
+  constexpr int32 Land=FS47FreeformCases::LandLine;
+  int32 LSeed=1;for(FS47FreeformCases Probe;LSeed<512;++LSeed){Probe.Reset(LSeed);if(Probe.Get(Land)->Truth==0)break;}
+  FS47FreeformSession LBase(nullptr);LBase.Begin(nullptr);auto LState=LBase.Save();LBase.Stop();S47J::Set(LState,TEXT("tutorial"),0);S47J::Set(LState,TEXT("jobSeed"),LSeed);
+  FS47FreeformSession L(nullptr);L.Begin(LState);
+  L.RecordEvidence(TEXT("cattle_ring_d1"),TEXT("Seven head of cattle standing close in a ring, all facing in."));
+  const auto* LC=L.CaseFile().Get(Land);
+  Check(LC->bOpen&&!L.CaseFile().Get(2)->bOpen&&LC->Leads.Contains(TEXT("cattle_ring_d1"))&&L.CaseStep(Land).Step!=ECaseStep::Closed,TEXT("Land: a record out there opens OUT ON THE LAND, not the visitors' case, and CaseStep has it"));
+  L.RecordEvidence(TEXT("door-visit-1"),TEXT("By a door that was tried in the night."));
+  Check(L.CaseFile().Get(2)->bOpen&&!L.CaseFile().Get(2)->Leads.Contains(TEXT("cattle_ring_d1")),TEXT("Land: what is the base's still opens the visitors' case"));
+  Check(L.CaseSheetHead(Land).StartsWith(TEXT("ASSESSMENT / CLOSES WHEN YOU FILE"))&&!L.CaseSupported(Land)&&!L.PlanCaseTest(Land,FS47FreeformCases::LandNeedle)&&L.FeedbackText().Contains(TEXT("magnetometer")),
+   TEXT("Land: the case sheet says it is an assessment and how it closes; one night has nothing behind it; a control waits for its kit"));
+  L.TestGiveKit(TEXT("magnetometer"));
+  Check(L.PlanCaseTest(Land,FS47FreeformCases::LandNeedle)&&L.PlannedFieldTest(Land)==FS47FreeformCases::LandNeedle&&L.CaseStep(Land).Step==ECaseStep::RunPlan,TEXT("Land: the magnetometer control is planned as field work"));
+  L.RecordEvidence(TEXT("place_windmill_needle"),TEXT("Magnetometer at the windmill on the Baca lease. All steel."));
+  Check(LC->Results[FS47FreeformCases::LandNeedle].bDone&&!LC->Results[FS47FreeformCases::LandNeedle].bPresent&&L.PlannedFieldTest(Land)<0&&L.HasFinding(TEXT("case9-test2"))&&L.CaseFile().Remaining(Land)==2,
+   TEXT("Land: a magnetometer reading out there is the control's result, set against the survey sheet"));
+  L.Field->TestBuiltTripCamera();
+  Check(L.PlanCaseTest(Land,FS47FreeformCases::LandCamera),TEXT("Land: with the trip camera built, its control is planned"));
+  L.RecordEvidence(TEXT("place_windmill_needle"),TEXT("again"));
+  Check(L.PlannedFieldTest(Land)==FS47FreeformCases::LandCamera&&!LC->Results[FS47FreeformCases::LandCamera].bDone,TEXT("Land: a magnetometer reading does not answer the camera's control"));
+  L.RecordEvidence(TEXT("tripcam_d1"),TEXT("Trip camera at the windmill, read in the morning. The counter has not moved."));
+  Check(LC->Results[FS47FreeformCases::LandCamera].bDone&&!LC->Results[FS47FreeformCases::LandCamera].bPresent&&L.CaseFile().Excluded(Land,2)&&L.CaseFile().Remaining(Land)==1&&LC->Leads.Contains(TEXT("tripcam_d1"))&&L.CaseStep(Land).Step==ECaseStep::File,
+   TEXT("Land: the trip camera's own frames are the result: a quiet night rules out the unaccounted, and it is a field record of the land"));
+  Check(L.CaseSupported(Land)&&L.ConcludeCase(Land,0)&&L.CaseStep(Land).Step==ECaseStep::AwaitReply&&L.CaseSheetHead(Land).Contains(TEXT("FILED AS YOUR ASSESSMENT")),TEXT("Land: with a control behind it the assessment is filed, as RECORDS shows a closed case"));
+  L.TestAdvance(86400.);L.StepCaseReplies();
+  Check(L.HasFinding(TEXT("case9-reply")),TEXT("Land: the reply comes the next morning"));
+  // An older save (eight lines) whose visitors' case holds a land record: Continue moves it to the land, with the trip camera record it
+  // kept, never a lead before; the visitors' case, opened by it alone, closes; the next Continue finds the same.
+  FS47FreeformSession OBase(nullptr);OBase.Begin(LState);
+  OBase.RecordEvidence(TEXT("cattle_ring_d1"),TEXT("Cattle in a ring."));OBase.RecordEvidence(TEXT("tripcam_d1"),TEXT("Trip camera, read in the morning."));
+  auto OState=OBase.Save();OBase.Stop();
+  auto OCases=S47J::Obj(OState,TEXT("cases"));auto OList=S47J::Arr(OCases,TEXT("cases"));
+  auto Visitors=S47J::New();S47J::Set(Visitors,TEXT("open"),true);S47J::Set(Visitors,TEXT("openDay"),1);S47J::Set(Visitors,TEXT("leads"),TArray<FString>{TEXT("cattle_ring_d1")});
+  if(OList.Num()==FS47FreeformCases::CaseCount){OList[2]=MakeShared<FJsonValueObject>(Visitors);OList.SetNum(Land);OCases->SetArrayField(TEXT("cases"),OList);}
+  FS47FreeformSession O(nullptr);O.Begin(S47J::Read(S47J::Write(OState)));
+  const auto* OL=O.CaseFile().Get(Land);
+  Check(OL&&OL->bOpen&&OL->Leads.Contains(TEXT("cattle_ring_d1"))&&OL->Leads.Contains(TEXT("tripcam_d1"))&&!O.CaseFile().Get(2)->bOpen&&O.CaseFile().FromBeforeLand(),
+   TEXT("Land: an older save's land leads move to OUT ON THE LAND on Continue, and the visitors' case, opened by them alone, closes"));
+  FS47FreeformSession O2(nullptr);O2.Begin(S47J::Read(S47J::Write(O.Save())));
+  Check(OL&&O2.CaseFile().Get(Land)->Leads==OL->Leads&&!O2.CaseFile().FromBeforeLand()&&!O2.CaseFile().Get(2)->bOpen,TEXT("Land: the next Continue finds the same"));
+  O.Stop();O2.Stop();L.Stop();
  }
  Case.Stop();
  {

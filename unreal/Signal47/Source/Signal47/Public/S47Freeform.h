@@ -384,6 +384,7 @@ public:
  // What the machine says: "TELEX: A reply is waiting" (printed), "TELEX: printing" (not yet), empty with nothing on it.
  FString TelexLine() const;
  static constexpr int32 MostTelex=8,MostTray=6;
+ static constexpr int32 CaseBoardRecords=12; // LOOP-WHOLE-20261109: field records shown on a case board; the rest are counted
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
@@ -391,6 +392,9 @@ public:
  bool CancelFieldTest(int32 Line);
  bool FieldTestExpectsPresent(int32 Line,int32 Test) const;
  bool ReportFieldTest(int32 Line,int32 Test,bool bValid,bool bPresent,const FString& Evidence);
+ // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND's controls are the kit the player has. What a planned one still needs (empty: it can
+ // be planned): the trip camera built, the magnetometer bought (the field logger's loan is the test's own access).
+ FString LandTestNeeds(int32 Line,int32 Test) const;
  void OpenServiceGuide();
  bool StartServiceGuide(bool bSupplyTrip);
  bool CompleteServiceGuide();
@@ -573,6 +577,10 @@ private:
  TMap<FString,int32> FindingDays;
  FS47FreeformCases Cases;
  void OpenCaseFor(const FString& FindingId);
+ // LOOP-WHOLE-20261109, step 2: a record that answers the land's planned control: the trip camera read in the morning (its own frames
+ // say yes or no), a magnetometer reading at a place out there (also one already kept), the field logger's tape back (StepLandTest).
+ void LandRecord(const FString& Id);
+ void StepLandTest();
  void RecordCaseResult(FJob& J);
  void StepCaseReplies();
  bool StationSealed() const;

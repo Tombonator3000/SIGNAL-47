@@ -17,11 +17,17 @@ public:
  enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap, FieldWork };
  // What the recording shows: the extra pulse group, or the receiver clock offset.
  enum class EObservable : uint8 { ExtraTicks, ClockDelta, FieldTrace };
- static constexpr int32 TestCount=3, CauseCount=3, CaseCount=8, MaxLeads=32;
+ static constexpr int32 TestCount=3, CauseCount=3, CaseCount=9, MaxLeads=32;
  static constexpr int32 MysteryLine=3, LostLine=4, ClueCount=2, CallOutCharge=10;
  // M7, weeks three and four (S47PredecessorLate.cpp finds their traces out in the world): somebody in Caliche gone from their post
  // (FS47Townsfolk), the Sky Watch's printed minute (FS47Visitors, the cairn), and the ground the military raked (FS47Visitors).
  static constexpr int32 PostLine=5, MinuteLine=6, RakedLine=7, LateFirst=5;
+ // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND, split from the visitors' case (2): what the night leaves out on the land (FS47Happenings),
+ // things moved at a place, the trip camera, a car on the road. Last, so that no older save is renumbered (Load moves its leads over).
+ // An assessment whose controls use kit the player already has; its records may disagree, and then they rule nothing out (Excluded).
+ // LandLeads: the land gathers a record most nights, so it keeps more; past any line's cap the oldest fold into a count that the
+ // case board shows (FoldedLeads), never dropped without a word.
+ static constexpr int32 LandLine=8, LandLeads=96, LandCamera=0, LandNeedle=1, LandLogger=2;
  static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
  // Yes/No name what this test shows when the observable is present/absent; Access gates planning.
  struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; const TCHAR* Yes=nullptr; const TCHAR* No=nullptr; const TCHAR* Access=nullptr; };
@@ -66,6 +72,8 @@ public:
   FString PlannedJob;
   FResult Results[TestCount];
   TArray<FString> Leads; // retained observation ids, first-hand facts only
+  int32 FoldedLeads=0; // leads past the cap, oldest first: counted and said on the board, each still a record in the notebook
+  int32 LastLeadDay=0; // the newest lead's day: the land's trail goes cold from it, not from the opening (TrailCold)
  };
  static const FCaseDef& Def(int32 Line);
  static int32 LineForFinding(const FString& FindingId);
@@ -76,6 +84,7 @@ public:
  // Adds a retained observation as a lead; opens the case on its first lead. Idempotent.
  bool AddLead(int32 Line,const FString& ObservationId,int32 Day,double DayClock);
  static int32 LineForObservation(const FString& Event);
+ static int32 LeadCap(int32 Line){return Line==LandLine?LandLeads:MaxLeads;}
  // CASES-OPS-20261109: a finding the case file keeps for itself ("case1-test2", "case4-conclusion", "case4-reply"): a record of the
  // station's own business, not of anything seen. It goes in no field record, on no pin board card and under no SEEN AND HEARD.
  static bool IsCaseRecord(const FString& Key);
@@ -118,10 +127,19 @@ public:
  static FString ResultText(int32 Line,bool bPresent);
  static FString TestResultText(int32 Line,int32 Test,bool bPresent);
  static FString Clock(double DayClock);
+ // LOOP-WHOLE-20261109: the save loaded had fewer lines than now (from before OUT ON THE LAND): the session gives the land the records
+ // it already holds (FS47FreeformSession::Begin). Not saved.
+ bool FromBeforeLand() const { return bBeforeLand; }
  static bool SelfTest(TArray<FString>& Lines);
 private:
  TArray<FCase> Cases;
  TSet<FString> Access;
  int32 CaseSeed=0;
+ bool bBeforeLand=false;
  static int32 Seeded(int32 Seed,int32 Line);
+ // The land: what the trip camera's own frames show is a world record, not drawn from the hidden cause; the cause follows the records
+ // kept (to the next cause they all agree with, from the seed's own), and stays put when they disagree.
+ void FollowLand();
+ // A save from before the land had its own case (eight lines): the visitors' leads that belong out on the land move to it.
+ void MoveLandLeads();
 };
