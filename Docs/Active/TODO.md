@@ -53,6 +53,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **PT-SWITCH-20261109:** lysbryterne har én bryter som virker og en falsk bryterplate ved siden av.
 - [ ] **PT-LAMPGLOW-20261109:** gatelysene lyser opp området om natta, men lyset kommer ikke fra armaturet. Hodet er mørkt, uten lysende linse eller glorie. Lyskilden skal sitte i hodet (Toms bilde ca. 13:20).
 - [ ] **PT-FARM-GROUND-20261109:** ved kuene på gården stikker en stor, grå, kantete form uten tekstur opp av bakken, og noe beveger seg rart («noe stort som ikke blir rendret riktig»). Busken foran har blokkete svarte kanter i bladverket. Toms bilde ca. 13:25, natt med lommelykt.
+- [ ] **PT-FARM-LIGHTS-20261109:** Tom ca. 13:30: inne i låven en lyspære som dingler med lys; et utelys på gårdsplassen; ekte lys innenfra gårdshuset.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
 - [x] **ECON-CAP-20261109:** ny pengeløkke etter Toms seks punkter (grunnlønn $14/10/7/4 + tillegg for godt arbeid, vedlikehold og bensin stiger per uke, kassetter og ødelagt utstyr koster, felles tak $35/uke på feltinntekter, bilen oppgraderes: dekk, lasteramme, ekstratank, motor; feltopptaker, nattkamera, radiopeiler). Modellen gir saldo $18–53 ved ukegjennomgang med to kort per kveld. Se [pengeløkka](../Research/Gameplay/OKONOMI_LOKKE_2026-11-09.md).
