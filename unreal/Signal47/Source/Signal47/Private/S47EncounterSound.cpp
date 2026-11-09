@@ -295,9 +295,9 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
  if (Transmission && (RadioLevel<=.015 || bHeld))
  { StopTransmission(); }
  // How long the set has heard one strongly: a glimpse at the edge of its reach is crackle only.
- if (RadioLevel>TransmissionLevel) { if (LoudSince<0) LoudSince=Now; }
- else if (RadioLevel<.1) LoudSince=-1;
- if (TransmissionBuffer && RadioGain && !bHeld && LoudSince>=0 && Now-LoudSince>=TransmissionAfter && Now>=NextTransmission
+ if (RadioLevel>TransmissionLevel) { if (LoudSince<=NotLoud) LoudSince=Now; }
+ else if (RadioLevel<.1) LoudSince=NotLoud;
+ if (TransmissionBuffer && RadioGain && !bHeld && LoudSince>NotLoud && Now-LoudSince>=TransmissionAfter && Now>=NextTransmission
      && (!Transmission || Transmission->Ended()))
  {
   Transmission=Context->CreateBufferSource(); Transmission->Buffer=TransmissionBuffer;
@@ -352,7 +352,7 @@ void FS47EncounterSound::Reset()
   if (RadioSource) RadioSource->Stop();
   if (Transmission) Transmission->Stop();
  }
- Transmission.Reset(); TransmissionGain.Reset(); TransmissionBuffer.Reset(); NextTransmission=0; LoudSince=-1;
+ Transmission.Reset(); TransmissionGain.Reset(); TransmissionBuffer.Reset(); NextTransmission=0; LoudSince=NotLoud;
  Voices.Reset(); Cues.Reset(); RadioSource.Reset(); RadioGain.Reset(); RadioVolume.Reset(); RadioPan.Reset();
  Context.Reset(); Owner.Reset(); bHeld=bRadioPlaced=false; RadioLevel=NextAny=CueUntil=0; LastKind=-1;
  for (double& T:NextKind) T=0;
@@ -383,7 +383,7 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  // Synthetic fixture proves the optional recording path without publishing private audio.
  Mix.TransmissionBuffer=CueBuffer(0); Mix.NextTransmission=0;
  Mix.UpdateRadio(A,1.);
- Check(!Mix.Transmission && Mix.LoudSince>=0,TEXT("T16-12: a set that has only just heard one gives crackle and hiss, no transmission yet"));
+ Check(!Mix.Transmission && Mix.LoudSince>NotLoud,TEXT("T16-12: a set that has only just heard one gives crackle and hiss, no transmission yet"));
  Mix.LoudSince=A->Ctx->CurrentTime()-TransmissionAfter-.1; Mix.UpdateRadio(A,1.);
  const auto FirstTransmission=Mix.Transmission;
  const double Next=Mix.NextTransmission;
@@ -391,7 +391,7 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  Mix.UpdateRadio(A,1.);
  Check(Mix.Transmission==FirstTransmission && Mix.NextTransmission==Next,TEXT("continuous presence cannot stack or retrigger the recording"));
  Mix.UpdateRadio(A,0.);
- Check(!Mix.Transmission && Mix.LoudSince<0,TEXT("leaving the proximity range stops the recording"));
+ Check(!Mix.Transmission && Mix.LoudSince<=NotLoud,TEXT("leaving the proximity range stops the recording"));
  {
   // T16-12: the loudest the set gets with one right by it: the hiss at full and a transmission as loud as the real one is after
   // levelling (full-scale noise at TransmissionPeak), rendered for a second through the real graph.
