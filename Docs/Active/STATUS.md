@@ -4,9 +4,9 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Ikke installert ennå, kveld 9. november: alt etter d37 ligger i `claude/day-20261109` (HEAD `2010d8e8`)
+## Installert 9. november kl. 20:30 (d38): alt etter d37, `53cfda05` på `claude/day-20261109` (PR #510 mot `main`)
 
-Bygget og selvtestet kl. 19:03 på `d9c7309e` (editor BUILD 0, selvtest 4055/4059; de fire feilene er rettet i `2010d8e8`, men ikke bygget). Syntakssjekk av alle endrede C++-filer er ren. d38 ble pakket (`d38/candidate`, `package.json`), men ble ikke testet og installert før skiftslutt, fordi køen ventet på vakten. Første forsøk ble avvist fordi arbeidskopien endret seg under pakkingen. Installert er fortsatt d37.
+Bygget og selvtestet kl. 19:03 på `d9c7309e` (editor BUILD 0, selvtest 4055/4059; de fire feilene er rettet i `2010d8e8`, men ikke bygget). Syntakssjekk av alle endrede C++-filer er ren. d38 pakket, røyktestet og installert 20:30 etter Toms beskjed (`53cfda05`). For å nå diskreserven ble pakkene fra tre mislykkede kandidater slettet (d34-failed-mem, d34-failed-2 og d38-failed-2); bevisfilene er beholdt. Tilbakerulling: d37 (`2c88bf9f`).
 
 Nytt siden d37 (ikke spilt):
 - Nattradio på 1420 fra 20 til 04, og CB bare i bilen.
@@ -28,7 +28,7 @@ Nytt siden d37 (ikke spilt):
 
 Krever editoren før neste pakke: `Tools/sarofixes/prepare_cpu.py` (g55 og g60 for hylla), Blender og import av døra til fôrskjulet (`Tools/farmbuildings/README.md`), og staging av skjullydene (`prepare.py --stage`).
 
-## Installert 9. november kl. 17:03, dagskift: Toms testfunn fra d36, by med dagsplan og nye hus, saker og telex, spilløkka trinn 1–2, Dales nye stemme
+## Tidligere installert 9. november kl. 17:03, dagskift: Toms testfunn fra d36, by med dagsplan og nye hus, saker og telex, spilløkka trinn 1–2, Dales nye stemme
 
 `2c88bf9f` på `claude/day-20261109` (PR #510 mot `main`). Selvtest 3843 (editor), livsprøve 72, regresjon 251, postprøve 35, månedsprøver routine, investigator, taken og cases PASS. Pakken er testet og installert med røyktest. Bilderunder (F10): Town day 11/11, SARO fixes 28/28, World fixes 19/19, Tripo new 23/23, Farm lights 15/15, First big night 15/15, Looks 39/40 (lyktefot rettet etterpå). Tilbakerulling: `d36` (`5ed456ba`) og `d35`.
 
