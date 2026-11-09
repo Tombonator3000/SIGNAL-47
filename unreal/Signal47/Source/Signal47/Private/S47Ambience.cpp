@@ -1,5 +1,6 @@
 // web/src/core/ambience.ts
 #include "S47Ambience.h"
+#include "S47Weather.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -123,6 +124,20 @@ FS47Ambience::FS47Ambience(const TSharedRef<FS47AudioContext>& InCtx, const TSha
 	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(0.7); Bp->Frequency.SetValue(420);
 	auto Wg = C.CreateGain(); N->Connect(Bp); Bp->Connect(Wg); Wg->Connect(WindIn); N->Start(Now, Rnd(0, 2));
 	Wind.Gain = Wg; Wind.Bp = Bp; Wind.Level = MakeUnique<FDrift>(Wg->Gain, 0.02, 0.16, 6, 20, 2.5, 6); Wind.Colour = MakeUnique<FDrift>(Bp->Frequency, 260, 720, 5, 16, 2, 5);
+	// WEATHER-20261108: a strong wind's low roar and the sand's hiss in it, silent until the day has them (StepWeather)
+	{
+		auto Roar = C.CreateBufferSource(); Roar->Buffer = Brown; Roar->bLoop = true;
+		auto RoarLp = C.CreateBiquadFilter(); RoarLp->SetType(TEXT("lowpass")); RoarLp->Frequency.SetValue(340);
+		StormGain = C.CreateGain(); StormGain->Gain.SetValue(0);
+		Roar->Connect(RoarLp); RoarLp->Connect(StormGain); StormGain->Connect(WindIn); Roar->Start(Now, Rnd(0, 2));
+		if (Noise.IsValid())
+		{
+			auto Hiss = C.CreateBufferSource(); Hiss->Buffer = Noise; Hiss->bLoop = true;
+			auto HissBp = C.CreateBiquadFilter(); HissBp->SetType(TEXT("bandpass")); HissBp->Q.SetValue(0.6); HissBp->Frequency.SetValue(2600);
+			SandGain = C.CreateGain(); SandGain->Gain.SetValue(0);
+			Hiss->Connect(HissBp); HissBp->Connect(SandGain); SandGain->Connect(WindIn); Hiss->Start(Now, Rnd(0, 1));
+		}
+	}
 	// the crickets as recorded: faint, under the single ones
 	if (const TSharedPtr<FS47AudioBuffer>* Cr = Buf->Find(TEXT("crickets")))
 	{
@@ -247,6 +262,7 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	const double Now = Ctx->CurrentTime();
+	LastAt = At;
 	const double Wk = Space == TEXT("room") ? FMath::Clamp(Window, 0.0, 1.0) : 0;
 	if (Wk != WinK)
 	{
@@ -276,9 +292,11 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	}
 	Wind.Level->Step(Dt, Now, 0.3 + 0.7 * M);
 	Wind.Colour->Step(Dt, Now);
-	if ((T.Gust -= Dt) <= 0) { T.Gust = Rnd(14, 55) / (0.4 + M); Gust(); }
-	// ---------- crickets: fewer and slower as it cools, gone by dawn ----------
-	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * Day.Night * (1 - FMath::Clamp(Thin, 0.0, 1.0));
+	// (a windy day gusts far more often: S47Weather::Live)
+	StepWeather(Dt, Now);
+	if ((T.Gust -= Dt) <= 0) { T.Gust = Rnd(14, 55) / (0.4 + M) / (1 + 4 * StormWant); Gust(); }
+	// ---------- crickets: fewer and slower as it cools, gone by dawn; and under a strong wind ----------
+	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * Day.Night * (1 - FMath::Clamp(Thin, 0.0, 1.0)) * (1 - 0.85 * StormWant);
 	const double Rate = FMath::Max(0.2, (Temp - 4) / 7.5);
 	if (BugRec) BugRec->Level->Step(Dt, Now, Active * (0.5 + 0.5 * M));
 	if (Held)
@@ -307,7 +325,7 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	for (const TSharedPtr<FCricket>& C : Crickets) C->Schedule(Rate);
 	// ---------- far off ----------
 	if (Space == TEXT("lab") || bStilled) return;                     // the engine covers it; held still, nothing
-	const double Busy = (0.3 + M) * (1 - 0.7 * FMath::Clamp(Thin, 0.0, 1.0));
+	const double Busy = (0.3 + M) * (1 - 0.7 * FMath::Clamp(Thin, 0.0, 1.0)) * (1 - 0.6 * StormWant);
 	if ((T.Life -= Dt) <= 0)
 	{
 		T.Life = Rnd(25, 70) / Busy;
@@ -411,11 +429,53 @@ void FS47Ambience::Note(const TSharedPtr<FS47AudioNode>& Dest, double At, double
 
 // ---------- the wind gusts ----------
 
+void FS47Ambience::StepWeather(double Dt, double Now)
+{
+	// WEATHER-20261108: what the day's weather is doing (S47Weather::Live; nothing outside a live Freeform game)
+	const S47Weather::FLive& L = S47Weather::Live();
+	const double Storm = L.bOn ? FMath::Clamp(L.Wind, 0.0, 1.0) : 0.0, Sand = L.bOn ? FMath::Clamp(L.Dust, 0.0, 1.0) : 0.0;
+	const double Rain = L.bOn ? FMath::Clamp(L.Rain, 0.0, 1.0) : 0.0;
+	if (FMath::Abs(Storm - StormWant) > 0.01 || (Storm == 0 && StormWant != 0))
+	{
+		StormWant = Storm;
+		if (StormGain.IsValid()) StormGain->Gain.SetTargetAtTime(0.22 * Storm * Storm + 0.06 * Storm, Now, 1.5);
+	}
+	if (FMath::Abs(Sand - SandWant) > 0.01 || (Sand == 0 && SandWant != 0))
+	{
+		SandWant = Sand;
+		if (SandGain.IsValid()) SandGain->Gain.SetTargetAtTime(0.035 * Sand, Now, 1.5);
+	}
+	// a shower: a drop here and there, then a few more, never a downpour (most of it dries before it gets down)
+	if (Rain > 0.02 && (DropIn -= Dt) <= 0)
+	{
+		DropIn = Rnd(0.08, 0.6) / (0.25 + Rain);
+		Drop(Now);
+	}
+}
+
+void FS47Ambience::Drop(double Now)
+{
+	// a big single drop on the dry ground or a leaf: a short tick of noise, high and bright, somewhere about the listener
+	if (!Noise.IsValid()) return;
+	FS47AudioContext& C = *Ctx;
+	auto Src = C.CreateBufferSource(); Src->Buffer = Noise;
+	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(2.5); Bp->Frequency.SetValue(Rnd(1800, 5200));
+	auto G = C.CreateGain(); G->Gain.SetValue(0);
+	auto Pan = C.CreatePanner(); Pan->PanningModel = TEXT("equalpower"); Pan->DistanceModel = ES47DistanceModel::Inverse; Pan->RefDistance = 2; Pan->RolloffFactor = 1; Pan->MaxDistance = 30;
+	const double A = FMath::FRand() * Pi * 2, D = Rnd(0.5, 6);
+	Pan->SetPosition(LastAt.X + FMath::Cos(A) * D, LastAt.Y - 1.2, LastAt.Z + FMath::Sin(A) * D);
+	Src->Connect(Bp); Bp->Connect(G); G->Connect(Pan); Pan->Connect(Out);
+	const double Peak = Rnd(0.05, 0.14);
+	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(Peak, Now + 0.003); G->Gain.SetTargetAtTime(0, Now + 0.006, 0.012);
+	Src->Start(Now, Rnd(0, 0.5)); Src->Stop(Now + 0.09);
+	++Drops;
+}
+
 void FS47Ambience::Gust()
 {
 	const double Now = Ctx->CurrentTime();
 	FWind& W = Wind;
-	const double Up = Rnd(1.2, 3), Hold = Rnd(0.5, 2.5), Down = Rnd(3, 7), Peak = Rnd(0.12, 0.3);
+	const double Up = Rnd(1.2, 3), Hold = Rnd(0.5, 2.5), Down = Rnd(3, 7), Peak = Rnd(0.12, 0.3) * (1 + 1.6 * StormWant);
 	FS47AudioParam& G = W.Gain->Gain;
 	G.CancelScheduledValues(Now); G.SetValueAtTime(G.Value(), Now);
 	G.LinearRampToValueAtTime(Peak, Now + Up); G.SetValueAtTime(Peak, Now + Up + Hold);

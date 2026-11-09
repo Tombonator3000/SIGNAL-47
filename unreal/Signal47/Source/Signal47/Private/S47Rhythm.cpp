@@ -150,6 +150,12 @@ void FS47Rhythm::Load()
   if(!M||!M->Freeform)return .5;
   return S47Weather::Moon(M->Freeform->DateOfDay(Day),23*3600.).Lit;
  };
+ // The night's wind, from the day's weather (S47Weather::Day: the paper prints the same day). Not in a developer's fixtures.
+ Rules.StormOf=[this](int32 Day)
+ {
+  if(!M||!M->Freeform||!M->Freeform->RulesLive())return 0.;
+  return double(S47Weather::Day(M->Freeform->Seed(),Day).NightStorm);
+ };
 }
 void FS47Rhythm::LoadRules()
 {
@@ -305,7 +311,15 @@ FS47RhythmWeek FS47RhythmData::Week(int32 Day) const
  // The moon: a full one brighter and quieter, a new one darker and busier (MOON-20261108). How near things come is the week's.
  const float K=MoonOn(Day);
  if(K!=1.f){Got.Hint*=K;Got.Observation*=K;Got.Presence*=K;Got.Danger=FMath::Clamp(Got.Danger*K,0.f,1.f);}
+ // A night the wind holds into: more comes near under the noise of it (WEATHER-20261108). The small things are the moon's alone.
+ const float St=StormOn(Day);
+ if(St!=1.f){Got.Presence*=St;Got.Danger=FMath::Clamp(Got.Danger*St,0.f,1.f);}
  return Got;
+}
+float FS47RhythmData::StormOn(int32 Day) const
+{
+ if(!StormOf||Day<=0||StormNight==1.f)return 1.f;
+ return FMath::Lerp(1.f,StormNight,float(FMath::Clamp(StormOf(Day),0.,1.)));
 }
 float FS47RhythmData::Worth(ES47RhythmLevel Level,int32 Day) const
 {
@@ -569,6 +583,14 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
    const FS47RhythmWeek NewNight=Mn.Week(10),FullNight=Mn.Week(11),HalfNight=Mn.Week(12),Plain=D.Week(12);
    Check(D.MoonNew>1.f&&D.MoonFull<1.f&&NewNight.Presence>FullNight.Presence&&NewNight.Danger>FullNight.Danger&&FMath::IsNearlyEqual(HalfNight.Presence,Plain.Presence*FMath::Lerp(D.MoonNew,D.MoonFull,.5f),1e-4f)&&NewNight.Near==FullNight.Near,
     TEXT("the moon: a new one darker and busier, a full one brighter and quieter, how near things come the week's"));
+  }
+  {
+   // The night's wind (WEATHER-20261108): a night the storm holds into is a little busier, a still one as the week has it.
+   FS47RhythmData Wx=D;
+   Wx.StormOf=[](int32 Day){return Day==12?1.:0.;};
+   const FS47RhythmWeek Stormy=Wx.Week(12),Still=Wx.Week(13),Plain12=D.Week(12),Plain13=D.Week(13);
+   Check(Stormy.Presence>Plain12.Presence&&Stormy.Danger>=Plain12.Danger&&Stormy.Presence<=Plain12.Presence*1.2f&&Stormy.Hint==Plain12.Hint&&Still.Presence==Plain13.Presence&&Stormy.Near==Plain12.Near,
+    TEXT("a stormy night: more comes near and the danger a little likelier, the small things and how near the week's"));
   }
   Check(C.PerNight(TEXT("cattle_ring"),0.f,2)<C.PerNight(TEXT("cattle_ring"),0.f,25)&&C.PerNight(TEXT("service_presence"),.35f,2)==C.PerNight(TEXT("service_presence"),.35f),TEXT("a night event's chance follows the curve; the Director's own does not"));
   double A=0,B=0;

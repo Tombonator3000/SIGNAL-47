@@ -98,6 +98,10 @@ private:
 		void Drift(double Dt, const FVector& V);
 	};
 	FMotes Flash, Head;
+	// WEATHER-20261108: the blowing sand round the eye (lit by the day; at night only a little, the lamp's and the headlights' own
+	// dust thicken with it instead) and a shower's few drops (S47Weather::Live)
+	FMotes Sand, Drops;
+	void Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, bool bOut, double Dawn);
 
 	TWeakObjectPtr<AS47Web> Web;
 	US47Main* M = nullptr;

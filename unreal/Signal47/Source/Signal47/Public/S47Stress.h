@@ -29,6 +29,8 @@ struct FS47StressIn
 	bool bSafe = false;
 	/** The night has gone quiet round the player (FS47Soundscape: something is coming): a small unease of its own. */
 	bool bHush = false;
+	/** FATIGUE-20261108: how tired, 0 to 1 (FS47Fatigue::Level): the strain comes on faster and goes slower. */
+	double Tired = 0;
 };
 
 class SIGNAL47_API FS47Stress
@@ -59,8 +61,9 @@ public:
 	// ---------- the pure rules (tested) ----------
 	/** Where the stress is heading with these inputs. The terms combine as chances do, so two worries are more than one, never over 1. */
 	static double Target(const FS47StressIn& In);
-	/** One step of Dt seconds from Cur toward Target: up quickly, down slowly (faster in a safe place). */
-	static double Advance(double Cur, double Target, double Dt, bool bSafe);
+	/** One step of Dt seconds from Cur toward Target: up quickly, down slowly (faster in a safe place). Tired: faster up, slower down
+	 *  (FS47Fatigue::StressRateOf). */
+	static double Advance(double Cur, double Target, double Dt, bool bSafe, double Tired = 0);
 	static double VignetteAlpha(double Strain);
 	static double VignetteReachOf(double Strain);
 	static double FovScaleOf(double Strain);

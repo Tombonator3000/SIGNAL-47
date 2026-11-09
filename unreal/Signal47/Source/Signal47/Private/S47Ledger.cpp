@@ -298,7 +298,7 @@ void S47Ledger::Fill(FIssue& Issue,int32 Seed,bool bHelped)
  }
  int32 High=-100,Low=200;
  for(int32 D=FMath::Max(1,Issue.Day-7);D<Issue.Day;++D){const S47Weather::FDay Word=S47Weather::Day(Seed,D);High=FMath::Max(High,Word.HighF);Low=FMath::Min(Low,Word.LowF);}
- Issue.LastWeek=High<-50?FString(TEXT("Caliche has no week of weather to report yet.")):FString::Printf(TEXT("Caliche last week: high %d, low %d, no rain. Dry lightning far off most nights."),High,Low);
+ Issue.LastWeek=High<-50?FString(TEXT("Caliche has no week of weather to report yet.")):S47Weather::LastWeek(Seed,FMath::Max(1,Issue.Day-7),Issue.Day);
  Issue.Almanac=S47Weather::Almanac(Issue.Date);
 }
 

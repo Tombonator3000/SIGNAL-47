@@ -78,8 +78,15 @@ public:
 	void Far(const FString& Name, const FVector& At, double Gain, double Rate = 1);
 
 	// ---------- Freeform: sounds from real places (SOUNDSCAPE-20261108, FS47Soundscape and FS47Animals) ----------
-	/** The night's own deep quiet spells (a mood of 0.08 now and then). Freeform leaves them out, so that a silence means something. */
+	/** The night's own deep quiet spells (a mood of 0.08 now and then). Freeform keeps them too since the M2 critic (FS47Soundscape::Hook):
+	 *  a lull in the crickets is ordinary out here, so a silence is never a sure sign. Kept as a switch for a mode that wants them out. */
 	bool bQuietSpells = true;
+	// ---------- WEATHER-20261108: the day's weather (S47Weather::Live, Freeform only; read each frame in Update) ----------
+	// A strong wind roars under the night's own and gusts more often, sand hisses in it, a shower ticks a few drops; under a strong wind
+	// the crickets go quiet and the far-off ones come less often and are harder to hear (it covers what would warn you).
+	/** Drops ticked so far (tests, F10). */
+	int32 Drops = 0;
+	double StormLevel() const { return StormWant; }
 	/** Where the far-off ones come from, asked as each falls due ("coyote", "dog", "owl", "train"). Unset: from anywhere, as in the
 	 *  Story. Set and false: none of that kind can be heard from here now, and it is left out. OutAt is three-space. */
 	TFunction<bool(const FString& Kind, const FVector& Listener, FVector& OutAt)> PlaceFor;
@@ -181,4 +188,10 @@ private:
 	void Truck();
 	void Meadowlark(const FVector& At);
 	void Lark(const FVector& At);
+	// the weather's: a low roar for a strong wind, a hiss for the sand in it, a drop now and then in a shower
+	TSharedPtr<FS47GainNode> StormGain, SandGain;
+	double StormWant = 0, SandWant = 0, DropIn = 0;
+	FVector LastAt = FVector::ZeroVector; // where the listener was last (Update)
+	void StepWeather(double Dt, double Now);
+	void Drop(double Now);
 };

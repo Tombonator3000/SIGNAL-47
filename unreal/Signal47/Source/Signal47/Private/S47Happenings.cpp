@@ -21,6 +21,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47NightRhythm.h"
+#include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47Radio.h"
@@ -1217,6 +1218,21 @@ void FS47Happenings::PlanCues(int32 Night)
  }
  Cues.Sort([](const FCue& A,const FCue& B){return A.Hour<B.Hour;});
 }
+namespace S47HapOmen
+{
+ // M2: a forewarning goes through the one owner of the night's signs (FS47Omen::Post), so that the crickets, the animals and the gear
+ // answer it as they answer everything else, and each may miss it. Out at Dist metres (in a random way, or at the place given): near
+ // enough for the night to go quiet (FS47Soundscape::HushReach), too far for the lamp or the player's strain to feel it yet.
+ void Forewarn(US47Main* M,const FString& Id,const FVector& Eye,const FVector* At,double Dist,double Severity,double Seconds)
+ {
+  if(!M||!M->Omen)return;
+  FS47OmenSource S;S.Id=Id;S.Severity=Severity;S.bComing=true;
+  if(At)S.At=*At;
+  else{const double A=FMath::FRand()*2*UE_DOUBLE_PI;S.At=Eye+FVector(FMath::Cos(A)*Dist,0,FMath::Sin(A)*Dist);}
+  S.Reach=FMath::Max(1.,FVector2D::Distance(FVector2D(Eye.X,Eye.Z),FVector2D(S.At.X,S.At.Z))*.8);
+  M->Omen->Post(S,Seconds);
+ }
+}
 void FS47Happenings::StepCues()
 {
  US47Audio* A=M->Audio.Get();
@@ -1237,12 +1253,12 @@ void FS47Happenings::StepCues()
   if(C.Kind==0)
   {
    // Far off first: the crickets go quiet a while.
-   if(A&&A->Night)A->Night->Hush(45,.04,.4,6.);
+   S47HapOmen::Forewarn(M,TEXT("happen:cue_far"),Eye(),nullptr,130,.45,45);
   }
   else if(Driving())M->World->Trouble.Start(ES47Trouble::Flicker,[]{FS47TroubleOpts O;O.Len=.6;return O;}());
   else if(!Outdoors()){if(A){FS47Sound O;O.Gain=.12f;O.Rate=.8f;A->Sfx(TEXT("switch"),O);A->HoldRoomTone(.2f,.15f);}ToneBack=M->T+1.4;}
   else if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn){M->Night->Flashlight->Flicker(.7,TEXT("cue"));ToneBack=M->T+1.1;}
-  else if(A&&A->Night)A->Night->Hush(20,.02,.2,3.);
+  else S47HapOmen::Forewarn(M,TEXT("happen:cue_near"),Eye(),nullptr,70,.45,20);
   UE_LOG(LogS47Happen,Display,TEXT("S47: happenings cue %s at %s"),C.Kind==0?TEXT("far"):TEXT("near"),*S47Hap::ClockText(M->Freeform->Clock()));
  }
 }
@@ -1561,7 +1577,7 @@ void FS47Happenings::StepLate()
  LateTryClock=F->Clock()+600;
  if(bLateHush)
  {
-  if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(150,.02,.25,8.);
+  S47HapOmen::Forewarn(M,TEXT("happen:late_hush"),Eye(),nullptr,150,.45,150);
   LateNight=Night;
   UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: between 23:00 and 01:00 on night %d, a hush"),Night);
   return;
@@ -2148,7 +2164,7 @@ void FS47Happenings::StepLanding(double Dt)
  if(Now.Stage==0&&Now.Age>1.5)
  {
   Now.Stage=1;
-  if(A&&A->Night)A->Night->Hush(60,.03,.3,6.);
+  S47HapOmen::Forewarn(M,TEXT("happen:landing_warning"),Eye(),bHere?&Ground:nullptr,160,.5,60);
   if(A&&bHere)A->Far(TEXT("dog1"),Ground+FVector(40,2,-30),.25f,.95f);
  }
  if(Now.Stage==1&&Now.Age>6)
@@ -2628,7 +2644,7 @@ bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
  if(F->EventPlaces)if(const FS47EventPlace* P=F->EventPlaces->Nearest(500)){Now.Place=P->Id;Now.Title=FString::Printf(TEXT("the open ground near %s"),*P->Title);}
  FigureSeen.Reset();FigureSeenFor=0;FigureStageSeen=-1;
  // Before anything shows: the crickets stop.
- if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(45,.03,.25,5.);
+ S47HapOmen::Forewarn(M,TEXT("happen:figure_near"),Eye(),&Now.At,0,.6,45);
  UsedPlace(Now.Place,TEXT("figure_near"));
  return true;
 }

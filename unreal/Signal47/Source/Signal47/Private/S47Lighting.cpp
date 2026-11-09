@@ -21,6 +21,7 @@
 #include "S47Three.h"
 #include "S47Sky.h"
 #include "S47Wind.h"
+#include "S47Weather.h"
 #include "S47Geo.h"
 #include "S47Json.h"
 #include "S47Lookdev.h"
@@ -629,7 +630,10 @@ void AS47Web::UpdateNativeFog()
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	// a developer event's fog (S47DevEvents.h) holds over the night's own until it is set back
-	LightingFog->SetFogDensity(GS47DevFogDensity >= 0.f ? GS47DevFogDensity : FMath::Clamp((FogDensity * 2.f + Caliche * .0012f) * Look.FogDensityGain, 0.0003f, 0.012f));
+	// WEATHER-20261108: the day's sand, haze or shower where the player is (S47Weather::Live, Freeform only), over the night's own
+	const S47Weather::FLive& Weather = S47Weather::Live();
+	const float WeatherFog = Weather.bOn ? float(Weather.FogAdd) : 0.f;
+	LightingFog->SetFogDensity(GS47DevFogDensity >= 0.f ? GS47DevFogDensity : FMath::Clamp((FogDensity * 2.f + Caliche * .0012f) * Look.FogDensityGain, 0.0003f, 0.012f) + WeatherFog);
 	// SKY.md: aerial perspective of the concept. Through late afternoon and dusk the far mesas go
 	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
@@ -638,6 +642,9 @@ void AS47Web::UpdateNativeFog()
 	const float Amber = 4.f * FMath::Clamp(SkyEvening, 0.f, 1.f) * (1.f - FMath::Clamp(SkyEvening, 0.f, 1.f));
 	const FLinearColor Blue = FLinearColor(.16f, .19f, .30f) * FMath::Lerp(.25f, 1.f, D);
 	LightingFog->SetFogInscatteringColor(FMath::Lerp(FogColor, Blue, Dusk * FMath::Lerp(.75f, .36f, Amber)) * FMath::Lerp(.12f, .32f, Caliche));
+	// The weather's own colour: tan sand by day (a dark brown by night), the haze pale (FS47WeatherLive::Shown).
+	if (Weather.bOn && Weather.TintK > 0.f && GS47DevFogDensity < 0.f)
+		LightingFog->SetFogInscatteringColor(FMath::Lerp(LightingFog->FogInscatteringLuminance, Weather.Tint * .55f, float(Weather.TintK)));
 	// A developer fog is a grey night mist, lit enough to be seen (the night's own inscatter is near black).
 	if (GS47DevFogDensity >= 0.f) LightingFog->SetFogInscatteringColor(FLinearColor(.045f, .05f, .06f));
 	LightingFog->SetDirectionalInscatteringExponent(FMath::Lerp(6.f, 3.f, Amber));

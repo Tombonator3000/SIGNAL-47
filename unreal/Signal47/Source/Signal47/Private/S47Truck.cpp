@@ -417,6 +417,13 @@ void FS47Truck::SetDash(double Mph, double Rpm, const FString& Clock, double Fue
 	FlushClock();
 }
 
+void FS47Truck::SetTempNeedle(double Needle)
+{
+	// (M2: the radiator's water in Freeform, FS47TruckCare; the little lift with the revs stays on top; an engine that is off is cold)
+	if (Gauge.TTemp <= 0.15) return;
+	Gauge.TTemp = FMath::Clamp(Needle + (Gauge.TTemp - 0.5), 0.0, 1.0);
+}
+
 void FS47Truck::FlushClock()
 {
 	const double T = Now();
