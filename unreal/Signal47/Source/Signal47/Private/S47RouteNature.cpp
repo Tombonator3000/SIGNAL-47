@@ -119,6 +119,46 @@ namespace
   All.Add(MakeShared<FJsonValueArray>(Box));(*Leg)->SetArrayField(TEXT("obstacles"),All);
  }
 
+ // BLOCKERS-20261109: the strips a big rock's foot is held by (Unreal centimetres; Ground the foot's points, Foot their box, In how far
+ // in from the outline). None for a foot under 2.5 m either way: there one box is close enough, and the walk keeps few boxes.
+ void SliceFoot(const TArray<FVector2D>& Ground,const FBox& Foot,const FVector& In,double Z0,double Z1,TArray<FBox>& Out)
+ {
+  constexpr double Big=250,Strip=60;
+  const FVector Size=Foot.GetSize();
+  if(Ground.Num()<3||Size.X<Big||Size.Y<Big)return;
+  // The convex hull of the foot (Andrew's monotone chain), anticlockwise.
+  TArray<FVector2D> P=Ground;
+  P.Sort([](const FVector2D& A,const FVector2D& B){return A.X<B.X||(A.X==B.X&&A.Y<B.Y);});
+  const auto Turn=[](const FVector2D& O,const FVector2D& A,const FVector2D& B){return (A.X-O.X)*(B.Y-O.Y)-(A.Y-O.Y)*(B.X-O.X);};
+  TArray<FVector2D> Hull;Hull.SetNum(2*P.Num());int32 K=0;
+  for(int32 I=0;I<P.Num();++I){while(K>=2&&Turn(Hull[K-2],Hull[K-1],P[I])<=0)--K;Hull[K++]=P[I];}
+  for(int32 I=P.Num()-2,Lower=K+1;I>=0;--I){while(K>=Lower&&Turn(Hull[K-2],Hull[K-1],P[I])<=0)--K;Hull[K++]=P[I];}
+  Hull.SetNum(FMath::Max(K-1,0));
+  if(Hull.Num()<3)return;
+  // Cut across the longer side: Along is that axis (0 x, 1 y), Across the other.
+  const int32 Along=Size.X>=Size.Y?0:1,Across=1-Along;
+  const double A0=Foot.Min[Along],A1=Foot.Max[Along];
+  const int32 N=FMath::CeilToInt((A1-A0)/Strip);
+  for(int32 S=0;S<N;++S)
+  {
+   const double S0=A0+(A1-A0)*S/N,S1=A0+(A1-A0)*(S+1)/N,Mid=(S0+S1)*.5;
+   double C0=1e18,C1=-1e18;
+   for(int32 I=0;I<Hull.Num();++I)
+   {
+    const FVector2D& Pa=Hull[I];const FVector2D& Pb=Hull[(I+1)%Hull.Num()];
+    const double Ha=Pa[Along]-Mid,Hb=Pb[Along]-Mid;
+    if(Ha*Hb>0||Ha==Hb)continue;
+    const double C=Pa[Across]+(Pb[Across]-Pa[Across])*(Ha/(Ha-Hb));
+    C0=FMath::Min(C0,C);C1=FMath::Max(C1,C);
+   }
+   C0+=In[Across];C1-=In[Across];
+   if(C1-C0<10)continue; // a sliver at a tip: the walker's radius covers it
+   FVector Lo(0,0,Z0),Hi(0,0,Z1);
+   Lo[Along]=S==0?S0+In[Along]:S0;Hi[Along]=S==N-1?S1-In[Along]:S1;Lo[Across]=C0;Hi[Across]=C1;
+   Out.Add(FBox(Lo,Hi));
+  }
+ }
+
  bool LegacyNature(const FString& Name)
  {
   for(const TCHAR* Prefix:{TEXT("props:rocksWest"),TEXT("props:rocksEast"),TEXT("props:rocksSaro"),TEXT("props:sage"),TEXT("props:yucca"),TEXT("props:tumbleweed")})
@@ -327,27 +367,37 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
     // FENCES-INVISIBLE-20261108: the turned rock's whole box held one off half a metre and more of bare ground at its corners.
     // The block is what the rock stands on at walking height: its vertices in the lowest metre and a half, a tenth in from them.
     FBox B=F.Mesh->GetBoundingBox().TransformBy(T);
+    TArray<FBox> Parts;
     {
      bool bExact=false;const TArray<FVector3f>& V=S47SaroClip::Vertices(F.Mesh,bExact);
      if(bExact)
      {
-      FBox Foot(ForceInit);const double Low=B.Min.Z+150;
-      for(const FVector3f& Corner:V){const FVector At=T.TransformPosition(FVector(Corner));if(At.Z<=Low)Foot+=At;}
+      FBox Foot(ForceInit);const double Low=B.Min.Z+150;TArray<FVector2D> Ground;
+      for(const FVector3f& Corner:V){const FVector At=T.TransformPosition(FVector(Corner));if(At.Z<=Low){Foot+=At;Ground.Add(FVector2D(At.X,At.Y));}}
       if(Foot.IsValid)
       {
        // (critic round 4: a tenth of a cliff's width is half a metre and more, past the walker's 0.27 m radius: one walked into its corners;
        // at most 15 cm in, which the radius covers)
-       const FVector In(FMath::Min((Foot.Max.X-Foot.Min.X)*.1,15.),FMath::Min((Foot.Max.Y-Foot.Min.Y)*.1,15.),0.);Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
+       const FVector In(FMath::Min((Foot.Max.X-Foot.Min.X)*.1,15.),FMath::Min((Foot.Max.Y-Foot.Min.Y)*.1,15.),0.);
+       // BLOCKERS-20261109: even so the one square box round a turned cliff stood out past its foot at the corners (F10 "Looks (M6)":
+       // routeNature:Cliff_A:0 and :1, 28 % of the edge bare). A big rock's foot is cut across its long side into strips of at most
+       // 60 cm, each as deep as the outline of the foot (its convex hull) at the strip's middle, the same distance in from that outline.
+       SliceFoot(Ground,Foot,In,B.Min.Z,B.Max.Z,Parts);
+       Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
        B=FBox(FVector(Foot.Min.X,Foot.Min.Y,B.Min.Z),FVector(Foot.Max.X,Foot.Max.Y,B.Max.Z));
       }
      }
     }
+    if(Parts.IsEmpty())Parts.Add(B);
     const FString Id=FString::Printf(TEXT("routeNature:%s:%d"),F.Name,I);
-    Block(B,TEXT("road"),Id);
     const FVector Pos=S47Three::ToThree(T.GetLocation());
-    if(Pos.Z<600)
+    for(const FBox& Part:Parts)
     {
-     const FVector Delta=S47Three::ToUE(SiteToCanonical);Block(FBox(B.Min-Delta,B.Max-Delta),TEXT("saro"),Id);
+     Block(Part,TEXT("road"),Id);
+     if(Pos.Z<600)
+     {
+      const FVector Delta=S47Three::ToUE(SiteToCanonical);Block(FBox(Part.Min-Delta,Part.Max-Delta),TEXT("saro"),Id);
+     }
     }
     ++Result->RockColliders;
    }

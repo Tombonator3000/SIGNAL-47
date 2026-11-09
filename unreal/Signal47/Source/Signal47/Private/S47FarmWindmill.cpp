@@ -137,8 +137,10 @@ namespace
 
  TArray<FBox2D> Footprints()
  {
-  return { FBox2D(MillAt - FVector2D(FootHalf + .05), MillAt + FVector2D(FootHalf + .05)), FBox2D(TankAt - FVector2D(TankR + .05), TankAt + FVector2D(TankR + .05)) };
+  return { FBox2D(MillAt - FVector2D(FootHalf + .05), MillAt + FVector2D(FootHalf + .05)) };
  }
+
+ FVector3d TankRound() { return FVector3d(TankAt.X, TankAt.Y, TankR + .05); }
 
  bool Retired(const FVector& P)
  {

@@ -181,7 +181,8 @@ void FS47Herd::FollowColliders()
  {
   const FVector P(COWS[I][0]+Offsets[I].X,Ys[I],COWS[I][1]+Offsets[I].Z);
   const FVector New=Group?Group.LocalToWorld(P):P+ModeOffset;
-  if(FVector2D::Distance(FVector2D(New.X,New.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))<.6)continue;
+  // (BLOCKERS-20261109: within 30 cm, not 60: the circle is round her middle, not a step behind her)
+  if(FVector2D::Distance(FVector2D(New.X,New.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))<.3)continue;
   MoveObstacle(ColliderAt[I],New,S47Herd::COW_R);ColliderAt[I]=New;
   if(LookAreas.IsValidIndex(I)&&LookBases.IsValidIndex(I))
   {FVector Look=LookBases[I]+FVector(Offsets[I].X,Ys[I]-S47RoadTerrain::SurfaceY(COWS[I][0],COWS[I][1]),Offsets[I].Z);LookAreas[I].SetPosition(Look);}

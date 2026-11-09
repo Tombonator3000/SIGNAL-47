@@ -1,9 +1,12 @@
 #include "S47Blockers.h"
 #include "S47Walker.h"
 #include "S47Drive.h"
+#include "S47Herd.h"
 #include "S47Main.h"
+#include "S47OpenLand.h"
 #include "S47SaroClip.h"
 #include "S47Three.h"
+#include "S47TownLayer.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
@@ -66,6 +69,52 @@ namespace
   for (const FKnown& K : Known)
    if (Walk == K.Area && FMath::Abs(B.MinX - K.MinX) < .02 && FMath::Abs(B.MaxX - K.MaxX) < .02 && FMath::Abs(B.MinZ - K.MinZ) < .02 && FMath::Abs(B.MaxZ - K.MaxZ) < .02) return &K;
   return nullptr;
+ }
+ // BLOCKERS-20261109: the others that are known by what they are rather than by their box. A cow's circle in the truck's list is
+ // her own (S47Herd: it goes with her, within a step) and round for a long animal, so its edge by her flanks shows bare. A fence
+ // line of the open land from SARO's z 100 south (the highway's and the pasture's) is stepped through in Freeform's open land
+ // (US47World::OnLand), so it holds no one there. Empty: not known.
+ FString KnownWhat(US47Main* M, const FString& Area, const FBlocker& B)
+ {
+  if (B.Kind == TEXT("drive") && B.bCircle && FMath::Abs((B.MaxX - B.MinX) * .5 - S47Herd::COW_R) < .001 && M->TownLayer)
+  {
+   const double X = (B.MinX + B.MaxX) * .5, Z = (B.MinZ + B.MaxZ) * .5;
+   for (const TSharedPtr<FS47Herd>& H : M->TownLayer->Herds)
+    if (H) for (int32 I = 0; I < H->Count(); ++I)
+    {
+     FVector At;
+     if (H->CowAt(I, At) && FMath::Abs(At.X - X) < .01 && FMath::Abs(At.Z - Z) < .01)
+      return FString::Printf(TEXT("cow %d's circle in the truck's list (%s herd, S47Herd COW_R %.2f m), where she is"), I, *H->Area, S47Herd::COW_R);
+    }
+  }
+  if (B.Kind == TEXT("land") && Area == TEXT("saro") && S47OpenLand::Live() && B.MinZ >= 100 && (B.MinX == B.MaxX || B.MinZ == B.MaxZ))
+   return TEXT("a fence line of MakeLands' Out, stepped through in Freeform's open land (US47World::OnLand); Story's fence (roadProps.ts) holds there");
+  return FString();
+ }
+ // Whether a point of a blocker's edge has others of its kind all round it (5 cm each way): inside them, where nothing walks or drives
+ // into it (the strips a big rock is held by, S47RouteNature, meet along their sides).
+ bool Inside(const TArray<FBlocker>& All, const FBlocker& Self, const FVector2D& P)
+ {
+  constexpr double E = .05;
+  const FVector2D Round[] = { { E, 0 }, { -E, 0 }, { 0, E }, { 0, -E }, { E, E }, { E, -E }, { -E, E }, { -E, -E } };
+  for (const FVector2D& D : Round)
+  {
+   const FVector2D Q = P + D;
+   bool bIn = false;
+   for (const FBlocker& O : All)
+   {
+    if (O.Kind != Self.Kind) continue;
+    if (O.bCircle)
+    {
+     const double R = (O.MaxX - O.MinX) * .5;
+     bIn = FVector2D::DistSquared(Q, FVector2D((O.MinX + O.MaxX) * .5, (O.MinZ + O.MaxZ) * .5)) <= R * R;
+    }
+    else bIn = Q.X >= O.MinX && Q.X <= O.MaxX && Q.Y >= O.MinZ && Q.Y <= O.MaxZ;
+    if (bIn) break;
+   }
+   if (!bIn) return false;
+  }
+  return true;
  }
  // A walk area's name for the area the player is in, and its drive leg's.
  FString WalkOf(const FString& Area) { return Area == TEXT("diner") ? FString(TEXT("road")) : Area; }
@@ -229,18 +278,24 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
     for (int32 I = 0; I < N; ++I) Edge.Add(A + (B - A) * (double(I) / N));
    }
   }
-  int32 Bare = 0;
+  int32 Bare = 0, Open = Edge.Num();
   FBox2D BareBox(ForceInit);
-  for (const FVector2D& P : Edge) if (!DrawnAt(P.X, P.Y)) { ++Bare; BareBox += P; }
-  if (Bare * 4 > Edge.Num())
+  // (BLOCKERS-20261109: a point inside others of its kind is no edge one meets, and does not count)
+  for (const FVector2D& P : Edge) if (!DrawnAt(P.X, P.Y)) { if (Inside(All, Bk, P)) --Open; else { ++Bare; BareBox += P; } }
+  if (Open > 0 && Bare * 4 > Open)
   {
    if (const FKnown* K = KnownOf(Walk, Bk))
    {
-    KnownLines.Add(FString::Printf(TEXT("  known: %s %s (%d%% bare here): %s"), *Bk.Kind, *Bk.Id, Bare * 100 / Edge.Num(), K->What));
+    KnownLines.Add(FString::Printf(TEXT("  known: %s %s (%d%% bare here): %s"), *Bk.Kind, *Bk.Id, Bare * 100 / Open, K->What));
+    continue;
+   }
+   if (const FString What = KnownWhat(M, Area, Bk); !What.IsEmpty())
+   {
+    KnownLines.Add(FString::Printf(TEXT("  known: %s %s (%d%% bare here): %s"), *Bk.Kind, *Bk.Id, Bare * 100 / Open, *What));
     continue;
    }
    FBlocker Found = Bk;
-   Found.Id += FString::Printf(TEXT(" (%d%% of its edge bare, at x %.2f..%.2f z %.2f..%.2f)"), Bare * 100 / Edge.Num(), BareBox.Min.X, BareBox.Max.X, BareBox.Min.Y, BareBox.Max.Y);
+   Found.Id += FString::Printf(TEXT(" (%d%% of its edge bare, at x %.2f..%.2f z %.2f..%.2f)"), Bare * 100 / Open, BareBox.Min.X, BareBox.Max.X, BareBox.Min.Y, BareBox.Max.Y);
    Out.Add(Found);
   }
  }

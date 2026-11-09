@@ -2508,7 +2508,11 @@ void US47World::ReconcileFarm(bool bEnabled)
    else{Box(101,115,187,197);Box(126,146,164,177);}
    // FENCES-INVISIBLE-20261108: the old stock tank's box (Story's, 3 m round road 152,200) held the truck where nothing stands in
    // Freeform; the new tower and tank (S47FarmWindmill) are where they are drawn.
-   if(S47FarmWindmill::Available())for(const FBox2D& Foot:S47FarmWindmill::Footprints())Box(Foot.Min.X,Foot.Max.X,Foot.Min.Y,Foot.Max.Y);
+   if(S47FarmWindmill::Available())
+   {
+    for(const FBox2D& Foot:S47FarmWindmill::Footprints())Box(Foot.Min.X,Foot.Max.X,Foot.Min.Y,Foot.Max.Y);
+    const FVector3d Tank=S47FarmWindmill::TankRound();Add(FS47Obstacle::Circle(Tank.X+O.X,Tank.Y+O.Z,Tank.Z));
+   }
    else Box(148,156,196,204);
    Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
    // The truck has only ever been able to reach what stood by its roads, and its lists hold no more than that. Off them, all that holds a walker holds it too.
@@ -2545,7 +2549,7 @@ void US47World::ReconcileFarm(bool bEnabled)
  for(const auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))for(const auto& Entry:Pair.Value)
  {
   const bool Added=Entry.Key<0;const int32 I=Added?-Entry.Key-1:Entry.Key;if(!L->Area->Obstacles.IsValidIndex(I))continue;
-  auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;}L->Area->Obstacles[I]=B;
+  auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;B.X+=1000000;}L->Area->Obstacles[I]=B; // (a circle by its middle: BLOCKERS-20261109's tank)
  }
  if(Changed)Under.Reset();
 }

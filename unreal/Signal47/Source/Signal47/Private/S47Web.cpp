@@ -94,6 +94,32 @@ namespace
 	{
 		for (int32 k = 0; k < 16; ++k) Out[k] = A.IsValidIndex(k) ? A[k]->AsNumber() : (k % 5 == 0 ? 1.0 : 0.0);
 	}
+	// BLOCKERS-20261109: the propane tank on its saddles south of the annex (web/src/world/Grounds.ts things(), x -3.6 z 17.6, the tank
+	// 2.2 m long with its end caps to 1.33 m each way). Its box ran 1.7 m each way, 0.4 m of nothing past each cap (F10 "Looks (M6)":
+	// saro#walk48, 30 % of its edge bare). In the walk and in the truck's list it now ends at the caps; the export's other boxes stay.
+	void FitPropaneTank(AS47Web* W)
+	{
+		constexpr double PX = -3.6, Was = 1.7, Now = 1.35;
+		const auto Old = [&](double X0, double X1, double Z0, double Z1) { return FMath::Abs(X0 - (PX - Was)) < .001 && FMath::Abs(X1 - (PX + Was)) < .001 && FMath::Abs(Z0 - 17) < .001 && FMath::Abs(Z1 - 18.2) < .001; };
+		TArray<FS47Rect>& Walk = W->CollidersMutable(TEXT("saro"));
+		const TSharedPtr<FJsonObject>& Drive = W->DriveData(); const TSharedPtr<FJsonObject>* Legs = nullptr, * Leg = nullptr; const TArray<TSharedPtr<FJsonValue>>* Obs = nullptr;
+		if (Drive.IsValid() && Drive->TryGetObjectField(TEXT("legs"), Legs) && (*Legs)->TryGetObjectField(TEXT("saro"), Leg)) (*Leg)->TryGetArrayField(TEXT("obstacles"), Obs);
+		int32 WalkFound = 0, DriveFound = 0;
+		for (const FS47Rect& R : Walk) WalkFound += R.bEnabled && Old(R.MinX, R.MaxX, R.MinZ, R.MaxZ);
+		if (Obs) for (const TSharedPtr<FJsonValue>& V : *Obs) { const TArray<TSharedPtr<FJsonValue>>* A = nullptr; DriveFound += V->TryGetArray(A) && A->Num() == 4 && Old((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber(), (*A)[3]->AsNumber()); }
+		if (WalkFound != 1 || DriveFound != 1) { UE_LOG(LogS47Web, Warning, TEXT("S47: propane tank's box not found as exported (walk %d, drive %d); left as it is"), WalkFound, DriveFound); return; }
+		for (FS47Rect& R : Walk) if (R.bEnabled && Old(R.MinX, R.MaxX, R.MinZ, R.MaxZ)) { R.MinX = PX - Now; R.MaxX = PX + Now; }
+		TArray<TSharedPtr<FJsonValue>> NewObs = *Obs;
+		for (TSharedPtr<FJsonValue>& V : NewObs)
+		{
+			const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+			if (!V->TryGetArray(A) || A->Num() != 4 || !Old((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber(), (*A)[3]->AsNumber())) continue;
+			TArray<TSharedPtr<FJsonValue>> Box; for (const double D : { PX - Now, PX + Now, 17., 18.2 }) Box.Add(MakeShared<FJsonValueNumber>(D));
+			V = MakeShared<FJsonValueArray>(Box);
+		}
+		(*Leg)->SetArrayField(TEXT("obstacles"), NewObs);
+		UE_LOG(LogS47Web, Display, TEXT("S47: propane tank's box at SARO ends at its caps, x %.2f..%.2f (walk and drive; BLOCKERS-20261109)"), PX - Now, PX + Now);
+	}
 }
 
 AS47Web::AS47Web()
@@ -734,6 +760,7 @@ void AS47Web::BeginPlay()
 	S47SubstationYard::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
+	FitPropaneTank(this);
 	S47SaroSeam::Build(this);
 	S47RouteLampFeet::Build(this);
 	// STREETLAMPS-20261108: cobra heads on davit arms in place of the highway's old poles, standing on those footings.
