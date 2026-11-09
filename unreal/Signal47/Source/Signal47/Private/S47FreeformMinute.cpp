@@ -106,11 +106,27 @@ FString FS47FreeformSession::NightPhotoFrom(double ShotClock) const
  for(const auto& KV:NightClocks){const double D=FMath::Abs(KV.Value-ShotClock);if(D<=NightPhotoNear&&D<Near){Near=D;Best=KV.Key;}}
  return Best;
 }
+bool FS47FreeformSession::AskedSameMinute(const FString& RecordId) const
+{
+ if(Asked.Contains(RecordId))return true;
+ const FString Id=S47FreeformMinuteLocal::Safe(RecordId);
+ return !Id.IsEmpty()&&(HasFinding(TEXT("minute_yes_")+Id)||HasFinding(TEXT("minute_no_")+Id));
+}
+// Over MostAsked: the oldest that has its record goes first (still asked by the record); a primed one only when none has.
+static void S47TrimAsked(TArray<FString>& Asked,int32 Most,const TFunctionRef<bool(const FString&)> HasRecord)
+{
+ while(Asked.Num()>Most)
+ {
+  int32 Drop=0;
+  for(int32 I=0;I<Asked.Num();++I)if(HasRecord(Asked[I])){Drop=I;break;}
+  Asked.RemoveAt(Drop);
+ }
+}
 bool FS47FreeformSession::AskSameMinute(const FString& RecordId,double Clock,const FString& What)
 {
  using namespace S47FreeformMinuteLocal;
- if(RecordId.IsEmpty()||Asked.Contains(RecordId)||!FMath::IsFinite(Clock)||Clock<0)return false;
- Asked.Add(RecordId);while(Asked.Num()>MostAsked)Asked.RemoveAt(0);
+ if(RecordId.IsEmpty()||AskedSameMinute(RecordId)||!FMath::IsFinite(Clock)||Clock<0)return false;
+ Asked.Add(RecordId);
  const bool bYes=SameMinute(ArrayMarks,Clock);
  const FString Id=Safe(RecordId),At=FS47Places::SlipClock(Clock);
  const FString Key=(bYes?TEXT("minute_yes_"):TEXT("minute_no_"))+Id;
@@ -133,6 +149,7 @@ bool FS47FreeformSession::AskSameMinute(const FString& RecordId,double Clock,con
   bYes?TEXT("THE ARRAY LOGGED SOMETHING OFF SCHEDULE IN THAT MINUTE. IT SAYS WHEN, NOT WHAT."):*FString::Printf(TEXT("NOTHING ON THE ARRAY'S LOG FROM %s TO %s."),*FS47Places::SlipClock(Clock-60),*FS47Places::SlipClock(Clock+60)),*Case);
  const bool bTelex=QueueTelex(TEXT("telex-minute-")+Id,TEXT("Array log query: ")+What,bYes?TEXT("SAME MINUTE / YES"):TEXT("SAME MINUTE / NO"),Page);
  UE_LOG(LogS47FreeformMinute,Display,TEXT("S47: same minute on array for %s at %s: %s%s%s"),*RecordId,*At,bYes?TEXT("yes"):TEXT("no"),bStruck?TEXT(", animals and weather struck"):TEXT(""),bTelex?TEXT(""):TEXT(" (telex full: the record only)"));
+ S47TrimAsked(Asked,MostAsked,[this](const FString& A){const FString S=Safe(A);return HasFinding(TEXT("minute_yes_")+S)||HasFinding(TEXT("minute_no_")+S);});
  Changed();
  return true;
 }
@@ -146,7 +163,7 @@ int32 FS47FreeformSession::AskWhatCameBack()
  {
   if(S.bUnavailable||S.Url.IsEmpty()||!S.Enlarged.IsEmpty()||!S.IsDeveloped())continue;
   Look+=1+S.LabStage;
-  if(Asked.Contains(S.Id))continue;
+  if(AskedSameMinute(S.Id))continue;
   const bool bTrip=TripFrame(S);
   if(!bTrip&&NightPhotoFrom(S.Clock).IsEmpty())continue;
   Due.Emplace(S.Id,bTrip?TEXT("the trip camera's frame"):TEXT("your photograph"),S.Clock);
@@ -155,7 +172,7 @@ int32 FS47FreeformSession::AskWhatCameBack()
  {
   if(!T.bRetrieved||T.Levels.IsEmpty()||T.Id.IsEmpty())continue;
   Look+=3;
-  if(Asked.Contains(T.Id)||!NightHour(T.Start))continue;
+  if(AskedSameMinute(T.Id)||!NightHour(T.Start))continue;
   // Its loudest minute: what the tape says the land had, and when.
   int32 Peak=0;for(int32 I=1;I<T.Levels.Num();++I)if(T.Levels[I]>T.Levels[Peak])Peak=I;
   Due.Emplace(T.Id,TEXT("the field logger's loudest minute"),T.Start+Peak*60.+30.);
@@ -166,7 +183,7 @@ int32 FS47FreeformSession::AskWhatCameBack()
  {
   // An older save: what came back before there was a question is not asked now, all at once; what is newer than the load is.
   for(int32 I=Due.Num()-1;I>=0;--I)if(Due[I].Clock<=PrimeBefore){Asked.Add(Due[I].Id);Due.RemoveAt(I);}
-  PrimeBefore=-1;while(Asked.Num()>MostAsked)Asked.RemoveAt(0);
+  PrimeBefore=-1;S47TrimAsked(Asked,MostAsked,[this](const FString& A){const FString S=Safe(A);return HasFinding(TEXT("minute_yes_")+S)||HasFinding(TEXT("minute_no_")+S);});
  }
  Due.Sort([](const FAsk& L,const FAsk& R){return L.Clock>R.Clock;});
  int32 N=0;
@@ -266,6 +283,19 @@ bool FS47FreeformSession::MinuteSelfTest(TArray<FString>& Lines)
   FS47FreeformSession O(nullptr);O.Begin(S47J::Read(S47J::Write(Old)));
   Check(O.ArrayLog().Num()==1&&SameMinute(O.ArrayLog(),Night4+21*3600.+5*60.+20)&&!SameMinute(O.ArrayLog(),Night4+21*3600.+9*60.)&&O.PrimeBefore>=0,TEXT("an older save's array log is read again from the array's own records"));
   S.Stop();O.Stop();
+ }
+ {
+  // Asked is only a cache: with it emptied (trimmed past MostAsked), a record already asked is never asked again; its YES or NO
+  // record is the mark. Past MostAsked the trim drops one with its record first, and keeps a primed one (no record).
+  FS47FreeformSession S(nullptr);S.Begin(nullptr);S.Tutorial=0;S.WorldClock=Night4+23*3600.;S.DayNumber=4;
+  const bool bOnce=S.AskSameMinute(TEXT("F-0030"),Night4+22*3600.,TEXT("your photograph"));
+  S.Asked.Reset();
+  const bool bNever=S.AskedSameMinute(TEXT("F-0030"))&&!S.AskSameMinute(TEXT("F-0030"),Night4+22*3600.,TEXT("your photograph"));
+  TArray<FString> T={TEXT("primed-0"),TEXT("F-0030"),TEXT("primed-1")};
+  S47TrimAsked(T,2,[&S](const FString& A){return S.HasFinding(TEXT("minute_no_")+A)||S.HasFinding(TEXT("minute_yes_")+A);});
+  Check(bOnce&&bNever&&T.Num()==2&&T[0]==TEXT("primed-0")&&T[1]==TEXT("primed-1"),
+   TEXT("asked once for good: the YES or NO record marks it, so trimming what was asked never asks it again"));
+  S.Stop();
  }
  return OK;
 }

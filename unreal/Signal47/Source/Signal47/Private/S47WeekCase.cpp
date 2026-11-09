@@ -1,6 +1,7 @@
 #include "S47WeekCase.h"
 #include "S47Drive.h"
 #include "S47FarmBuildings.h"
+#include "S47FarmSite.h"
 #include "S47FarmShedDoor.h"
 #include "S47FarmWorld.h"
 #include "S47FieldRadio.h"
@@ -9,6 +10,7 @@
 #include "S47FreeformCases.h"
 #include "S47FreeformDirector.h"
 #include "S47Happenings.h"
+#include "S47HighwayUfo.h"
 #include "S47Main.h"
 #include "S47MessageQueue.h"
 #include "S47NightRhythm.h"
@@ -48,10 +50,16 @@ namespace S47Week
  constexpr int32 ShedSite=3;
  const TCHAR* const Farm=TEXT("the Alderete place");
  // The morning after the big night: one more thing, after his own. Where and when, never what.
+ // CRIT9-20261109: the case is the night after next (CaseNightFor): his words say tomorrow night, not tonight.
  const TCHAR* const HookLines[]={
   TEXT("One more thing. Since the dishes went over by themselves, something on the bearing past the Alderete place is chewing my signal."),
-  TEXT("Every night, a little after two, for a few minutes. Where and when I can tell you. What, I cannot. Out.")};
- const TCHAR* const HookSlip=TEXT("A second slip under the first, the same hard hand: \"Something on the bearing past the Alderete place chews my signal every night a little after two. Where and when. Not what. D.\"");
+  TEXT("The last nights, a little after two, for a few minutes. Tomorrow night, I think. Where and when I can tell you. What, I cannot. Out.")};
+ const TCHAR* const HookSlipWords=TEXT("\"Something on the bearing past the Alderete place chews my signal a little after two. Tomorrow night, I think. Where and when. Not what. D.\"");
+ // Under the big night's slip when there is one, else a slip of its own.
+ FString HookSlip(bool bSecond)
+ {
+  return FString(bSecond?TEXT("A second slip under the first, the same hard hand: "):TEXT("A slip by the phone, in a hard square hand: "))+HookSlipWords;
+ }
  const TCHAR* const NightCall=TEXT("It's there again. Same bearing.");
  const TCHAR* const NightDesk=TEXT("WALKIE / From the set on the desk, Dale's voice, flat: \"It's there again. Same bearing.\"");
  // Way out A: the morning after, he has heard. Sarcastic; no pay, nothing for Ward.
@@ -60,7 +68,7 @@ namespace S47Week
   TEXT("The padlock is still on its chain, still locked. And the floor in there has gone hard and shiny, like a pot out of the kiln."),
   TEXT("But you were busy, I am sure. Nobody pays for a door we did not look at. Out.")};
  const TCHAR* const MorningSlipA=TEXT("A slip by the phone, in a hard square hand: \"Alderete feed shed. Door broken OUTWARD. Padlock still locked. Floor gone like glaze. You were busy, I am sure. D.\"");
- const TCHAR* const FindingA=TEXT("The feed shed at the Alderete place, the morning after, as it came over the walkie: the door broken outward from the inside, the padlock still locked on its chain, and the floor inside gone hard and glossy, like glaze. Nobody from the station was there.");
+ const TCHAR* const FindingA=TEXT("The feed shed at the Alderete place, the morning after, as Dale had it: the door broken outward from the inside, the padlock still locked on its chain, and the floor inside gone hard and glossy, like glaze. Nobody from the station was there.");
  // Patch 3: during the case, his hail on the walkie; answered, the bearing, where to keep out of sight, and the engine.
  const TCHAR* const HailFirst=TEXT("SARO night. You are at the Alderete place, yes? Answer me.");
  const TCHAR* const HailAgain=TEXT("SARO night. Pick up. My needle is doing it again.");
@@ -155,21 +163,27 @@ FS47WeekCase::FOut FS47WeekCase::StepState(FState& S,const FPlan& P,const FIn& I
   if(In.Night>S.CaseNight){To(EPhase::Done,TEXT("this game came in after its night"));O.bDone=true;break;}
   const int32 After=In.BigNight+1;
   if(In.Night==After&&In.Hour>=DaleHookAt&&In.Hour<DaleHookUntil&&!S.bDaleHook)O.bDaleHook=true;
-  if(In.Night==After&&In.Hour>=SlipFrom&&In.Hour<SlipUntil&&!S.bSlip)O.bSlip=true;
   if(In.Night>=S.CaseNight)To(EPhase::Day,TEXT("the case's day"));
   break;
  }
  case EPhase::Day:
   if(!In.bLive&&!S.bForced)break;
   if(In.Night>S.CaseNight){Over(EOutcome::A,true,TEXT("its night slept through"));break;}
+  // CRIT9-20261109: the bearing slip on the case's own evening (the night before, the farm has nothing yet).
+  if(!S.bForced&&In.Night==S.CaseNight&&In.Hour>=SlipFrom&&In.Hour<SlipUntil&&!S.bSlip)O.bSlip=true;
   if(In.Night==S.CaseNight&&In.Hour>=NightCallAt)To(EPhase::Night,TEXT("ten to two"));
   break;
  case EPhase::Night:
  {
   if(!In.bLive&&!S.bForced)break;
-  if(In.Night>S.CaseNight||(!S.bForced&&In.Hour>=ArriveBy)){Over(EOutcome::A,true,TEXT("never came: let be"));break;}
+  // CRIT9-20261109: too late is when phases one and two would no longer fit before the night's end (the case would end in B with
+  // the player still at the door), not only four o'clock.
+  const double Fits=(FMath::Max(Phase1Min,P.Phase1Auto)+FMath::Clamp(P.Phase2Len,30.,150.))*FMath::Clamp(In.Rate,0.,600.)/3600.;
+  const bool bTooLate=!S.bForced&&(In.Hour>=ArriveBy||(In.Hour>=ArriveFrom&&In.Hour+Fits>=LastHour));
+  if(In.Night>S.CaseNight||bTooLate){Over(EOutcome::A,true,TEXT("never came: let be"));break;}
   if(!S.bForced&&!S.bNightCall&&In.Hour>=NightCallAt&&In.Hour<NightCallUntil)O.bNightCall=true;
-  if(In.bAtFarm&&!In.bTaken&&(S.bForced||In.Hour>=ArriveFrom)){S.CaseAge=0;O.bBegan=true;To(EPhase::Phase1,TEXT("came to the farm"));}
+  // Not on top of anything else on the ground: it waits for the ground to be free.
+  if(In.bAtFarm&&!In.bTaken&&In.bGroundFree&&(S.bForced||In.Hour>=ArriveFrom)){S.CaseAge=0;O.bBegan=true;To(EPhase::Phase1,TEXT("came to the farm"));}
   break;
  }
  case EPhase::Phase1:
@@ -178,7 +192,10 @@ FS47WeekCase::FOut FS47WeekCase::StepState(FState& S,const FPlan& P,const FIn& I
   if(In.bTaken){Over(EOutcome::E,true,TEXT("taken"));break;}
   if(!In.bAtFarm){Over(EOutcome::B,true,TEXT("left before the breach"));break;}
   // The caps: the phase's, the whole case's and the night's.
-  if(S.Age>=Phase1Cap||S.CaseAge>=CaseCap||(!S.bForced&&In.Hour>=LastHour)){Over(EOutcome::B,true,TEXT("cap: phase one ran out"));break;}
+  if(S.Age>=Phase1Cap||S.CaseAge>=CaseCap){Over(EOutcome::B,true,TEXT("cap: phase one ran out"));break;}
+  // CRIT9-20261109: the night ending with the player still at the farm is not B (that is driving off): it wants out now. Past 02:41
+  // by then, so Story's minute is behind it.
+  if(!S.bForced&&In.Hour>=LastHour){S.bHeldForStory=false;O.bEscalated=true;To(EPhase::Phase2,TEXT("the night is ending: it wants out"));break;}
   const bool bReady=S.Age>=(In.bKnocked?Phase1Min:FMath::Max(Phase1Min,P.Phase1Auto));
   if(!bReady)break;
   if(!MayEscalate(In.Hour,In.Rate)){S.bHeldForStory=true;break;}
@@ -307,7 +324,7 @@ void FS47WeekCase::Begin(const S47J::FObj& Saved)
  Stop();
  S=LoadState(Saved);
  bShedFresh=true;
- bDevBefore=false;DaleLines.Reset();LastClock=-1;TryIn=0;Paced=0;HookSince=-1;SaidIn=0;
+ bDevBefore=false;DaleLines.Reset();DaleOwns=EDale::None;bDoorWaitSaid=false;LastClock=-1;TryIn=0;Paced=0;HookSince=-1;SaidIn=0;
  if(Saved.IsValid())UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: loaded %s"),*StateText());
 }
 void FS47WeekCase::Stop()
@@ -343,6 +360,12 @@ FS47WeekCase::FIn FS47WeekCase::ReadIn(double Dt)
   const FVector At=D?D->Pos:M->Player->Pos;const FVector Door=ShedDoor();
   In.bAtFarm=FVector2D::Distance(FVector2D(At.X,At.Z),FVector2D(Door.X,Door.Z))<FarmReach;
  }
+ // CRIT9-20261109: the ground as everyone else has it (its own Busy is only on the ground, so not yet ours here).
+ {
+  const FName Busy=M->Rhythm?M->Rhythm->ReadNow().Busy:NAME_None;
+  In.bGroundFree=(Busy.IsNone()||Busy==FName(TEXT("week_case")))&&!(F->Director&&F->Director->Busy())&&!(F->Taken&&F->Taken->Busy())
+   &&!(F->FarmSite&&F->FarmSite->VisitWantsGround())&&!(M->HighwayUfo&&M->HighwayUfo->Busy());
+ }
  In.bAtSaro=FS47FieldRadio::InSaroBuilding(M);
  In.bTaken=F->Taken&&(F->Taken->Stage()==FS47Taken::EStage::Lift||F->Taken->Stage()==FS47Taken::EStage::Away);
  // Patch 2: knocked at the shed's door (its knock closed, whether or not anything answered).
@@ -367,6 +390,8 @@ void FS47WeekCase::Step(double Dt)
   const FIn In=ReadIn(Dt);
   const FOut O=StepState(S,P,In);
   if(S.Phase!=Was)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %s -> %s (%s) at %s, night %d"),PhaseName(Was),PhaseName(S.Phase),*O.Why,*S47Hap::ClockText(M->Freeform->Clock()),In.Night);
+  // CRIT9-20261109: from ten to two the farm is the case's: its lights' visit tonight yields, as it does to the big night.
+  if(S.Phase==EPhase::Night&&Was!=EPhase::Night&&M->Freeform->FarmSite)M->Freeform->FarmSite->YieldTo(TEXT("week_case"));
   Apply(O);
   StepDale();
   // Patch 3: the truck on the yard and the cab, the thoughts, Dale's hail.
@@ -380,6 +405,13 @@ void FS47WeekCase::Step(double Dt)
  StepShed(Dt,P);
 }
 
+bool FS47WeekCase::PlayerInShed() const
+{
+ if(!M||!M->Player||(M->World&&M->World->bDriving)||!M->Web||M->Web->Area()!=TEXT("saro"))return false;
+ const FVector Origin=S47FarmWorld::RoadToArea(TEXT("saro"),FVector::ZeroVector);
+ return S47FarmBuildings::InShed(M->Player->Pos.X-Origin.X,M->Player->Pos.Z-Origin.Z,M->Player->Radius+.3);
+}
+
 // Patch 2: the phase gives the door its state and its mood, and the light its level. Held (a menu, a paper), nothing moves.
 void FS47WeekCase::StepShed(double Dt,const FPlan& P)
 {
@@ -390,7 +422,14 @@ void FS47WeekCase::StepShed(double Dt,const FPlan& P)
  if(!DoorObj)DoorObj=MakeShared<FS47FarmShedDoor>(M);
  if(!GlowObj)GlowObj=MakeShared<FS47ShedGlow>(M);
  DoorObj->Plan(F->Seed(),S.CaseNight,P.Rhythm);
- const FS47FarmShedDoor::EState Want=DoorFor(S,Night);
+ FS47FarmShedDoor::EState Want=DoorFor(S,Night);
+ // CRIT9-20261109: never locked with the player inside, or in the doorway: it stays open, and is tried again every frame.
+ if(Want==FS47FarmShedDoor::EState::Locked&&DoorObj->State()==FS47FarmShedDoor::EState::Open&&PlayerInShed())
+ {
+  Want=FS47FarmShedDoor::EState::Open;
+  if(!bDoorWaitSaid){bDoorWaitSaid=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: door waits: player inside"));}
+ }
+ else if(Want!=FS47FarmShedDoor::EState::Open)bDoorWaitSaid=false;
  // A breach is animated only as it happens on the ground; a load or a later night simply finds the door so.
  // Patch 3: phase two's second turn of the key: the kicks stop for a while, something listening.
  DoorObj->Set(Want,Cab.Listen>0&&S.Phase==EPhase::Phase2?FS47FarmShedDoor::EMood::Still:MoodFor(S.Phase),!bShedFresh&&S.Phase==EPhase::Phase3);
@@ -479,24 +518,50 @@ void FS47WeekCase::HookCamera(TFunction<bool(double,FS47View&)> Frame)
 }
 
 // ---------------------------------------------------------------- Dale, the slip, the morning
-bool FS47WeekCase::Dale(const TArray<FString>& Lines)
+// CRIT9-20261109: only a set that hears him now (in hand, not left out, on his channel) takes the lines; otherwise the slip by the
+// phone. What they say is marked said when the last is heard (DaleHeard), so that lines let go unheard leave the slip its turn.
+bool FS47WeekCase::Dale(const TArray<FString>& Lines,EDale Who)
 {
- if(!M->FieldRadio.IsValid()||!M->FieldRadio->Owned()||!DaleLines.IsEmpty())return false;
+ if(!M->FieldRadio.IsValid()||!M->FieldRadio->HearsDale()||!DaleLines.IsEmpty())return false;
  for(const FString& L:Lines)DaleLines.Add(S47Week::Dale(L));
- SaidIn=Paced+.5;DaleUntil=Paced+240;
+ DaleOwns=Who;SaidIn=Paced+.5;DaleUntil=Paced+240;
  return true;
+}
+void FS47WeekCase::DaleHeard(EDale Who)
+{
+ switch(Who)
+ {
+ case EDale::Hook:S.bDaleHook=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the hook heard on the walkie"));M->RequestAutosave();break;
+ case EDale::Night:S.bNightCall=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: ten to two heard on the walkie"));break;
+ case EDale::Morning:MorningDone();break;
+ default:break;
+ }
 }
 void FS47WeekCase::StepDale()
 {
- // Not heard in four minutes (the set off his channel all that time): he gives up on the rest.
- if(!DaleLines.IsEmpty()&&Paced>DaleUntil){UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %d of Dale's lines not heard, let go"),DaleLines.Num());DaleLines.Reset();}
+ // Not heard in four minutes (the set off his channel all that time): he gives up on the rest, and what they said is not marked said.
+ if(!DaleLines.IsEmpty()&&Paced>DaleUntil)
+ {
+  UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %d of Dale's lines not heard, let go (the slip by the phone instead)"),DaleLines.Num());
+  DaleLines.Reset();DaleOwns=EDale::None;TryIn=0;
+ }
  if(DaleLines.IsEmpty()||Paced<SaidIn||!M->FieldRadio.IsValid()||M->ModalOpen())return;
- if(M->FieldRadio->Message(DaleLines[0])){DaleLines.RemoveAt(0);SaidIn=Paced+7.5;}
+ // Not over his own voice still playing, nor over a hail waiting to be answered.
+ if(M->FieldRadio->DaleSpeaking()||M->FieldRadio->Hailing()){SaidIn=Paced+.5;return;}
+ const FString Line=DaleLines[0];
+ if(M->FieldRadio->Message(Line))
+ {
+  DaleLines.RemoveAt(0);
+  // The set's own reading time (FS47FieldRadio::Message), so that one line is not cut by the next.
+  SaidIn=Paced+FMath::Clamp(3.+double(Line.Len()-6)/18.,6.,11.)+.5;
+  if(DaleLines.IsEmpty()){const EDale Who=DaleOwns;DaleOwns=EDale::None;DaleHeard(Who);}
+ }
  else SaidIn=Paced+3;
 }
 void FS47WeekCase::SayDaleHook()
 {
  TryIn=Paced+2;
+ if(DaleOwns==EDale::Hook)return; // on the set now
  auto* F=M->Freeform.Get();
  FS47Happenings* H=F->Happenings.Get();
  // After his own morning about the big night: answered, slipped, or given up on by ten thirty.
@@ -507,11 +572,11 @@ void FS47WeekCase::SayDaleHook()
  // His own three lines take about twenty-five seconds on the set.
  if(Paced-HookSince<26||M->ModalOpen()||(M->FieldRadio.IsValid()&&(M->FieldRadio->DaleSpeaking()||M->FieldRadio->Hailing())))return;
  TArray<FString> Lines;for(const TCHAR* L:S47Week::HookLines)Lines.Add(L);
- if(Dale(Lines)){S.bDaleHook=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the hook, Dale on the walkie"));M->RequestAutosave();return;}
+ if(Dale(Lines,EDale::Hook)){UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the hook, Dale on the walkie"));return;}
  // No set, or it is off his channel: the slip by the phone, read at the station indoors.
  if(FS47FieldRadio::InSaroBuilding(M)&&M->UI)
  {
-  M->UI->Toast(S47Week::HookSlip,10);
+  M->UI->Toast(S47Week::HookSlip(H&&H->BigHas(TEXT("slip"))),10);
   S.bDaleHook=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the hook, Dale's slip by the phone"));M->RequestAutosave();
  }
 }
@@ -533,34 +598,33 @@ void FS47WeekCase::GiveSlip()
 void FS47WeekCase::SayNightCall()
 {
  TryIn=Paced+3;
- if(M->ModalOpen())return;
- if(Dale({S47Week::NightCall})){S.bNightCall=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: ten to two, Dale: same bearing"));return;}
+ if(M->ModalOpen()||DaleOwns==EDale::Night)return;
+ if(Dale({S47Week::NightCall},EDale::Night)){UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: ten to two, Dale: same bearing"));return;}
  if(FS47FieldRadio::InSaroBuilding(M)&&M->UI){M->UI->Toast(S47Week::NightDesk,7);S.bNightCall=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: ten to two, Dale from the desk set"));}
 }
 void FS47WeekCase::Morning()
 {
  TryIn=Paced+3;
+ if(M->ModalOpen()||DaleOwns==EDale::Morning)return;
+ // A's on the set or its slip; B to E, Dale's words at SARO follow the way out (their records are patch 5's). On the set they are
+ // marked when the last is heard (DaleHeard), the slip at once.
+ const TArray<FString> Lines=MorningLines(S.Outcome);
+ if(Lines.IsEmpty()){MorningDone();return;}
+ if(Dale(Lines,EDale::Morning))return;
+ if(!FS47FieldRadio::InSaroBuilding(M)||!M->UI)return;
+ M->UI->Toast(S.Outcome==EOutcome::A?FString(S47Week::MorningSlipA):S47Week::SlipOf(Lines),11);
+ MorningDone();
+}
+void FS47WeekCase::MorningDone()
+{
  auto* F=M->Freeform.Get();
- if(M->ModalOpen())return;
- if(S.Outcome==EOutcome::A)
+ if(S.Outcome==EOutcome::A&&F)
  {
-  TArray<FString> Lines;for(const TCHAR* L:S47Week::MorningA)Lines.Add(L);
-  bool bSaid=Dale(Lines);
-  if(!bSaid&&FS47FieldRadio::InSaroBuilding(M)&&M->UI){M->UI->Toast(S47Week::MorningSlipA,11);bSaid=true;}
-  if(!bSaid)return;
   // A faint line in case 8 (OUT ON THE LAND): a lead, no pay, and not a night record Ward counts (FS47Happenings::IsNightFinding).
   const FString Key=S47Week::FindingKey(S.CaseNight);
   if(!F->HasFinding(Key))F->RecordEvidence(Key,S47Week::FindingA);
  }
- else
- {
-  // Patch 3: B to E, Dale's words at SARO follow the way out (their records are patch 5's): on the set, or the slip by the phone.
-  const TArray<FString> Lines=MorningLines(S.Outcome);
-  bool bSaid=Lines.IsEmpty()||Dale(Lines);
-  if(!bSaid&&FS47FieldRadio::InSaroBuilding(M)&&M->UI){M->UI->Toast(S47Week::SlipOf(Lines),11);bSaid=true;}
-  if(!bSaid)return;
- }
- // B to E: their records are patch 5's; here only the morning is marked, with the player back at SARO.
+ // B to E: their records are patch 5's; here only the morning is marked.
  S.bMorning=true;
  UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the morning after, way out %s"),OutcomeName(S.Outcome));
  M->RequestAutosave();
@@ -592,7 +656,7 @@ void FS47WeekCase::StepHail()
   {
    if(!A.IsValid())return;
    UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale answered on the walkie: his help"));
-   if(Dale(HelpLines()))bHelpSaid=true;
+   if(Dale(HelpLines(),EDale::Help))bHelpSaid=true;
   },[A]{if(A.IsValid())UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale's hail not answered"));}))
  {
   bHailed=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale hails on the walkie"));
@@ -629,7 +693,7 @@ bool FS47WeekCase::DevForceA(FString& Why)
 void FS47WeekCase::DevStop()
 {
  Clean(TEXT("F10 stop"));
- DaleLines.Reset();
+ DaleLines.Reset();DaleOwns=EDale::None;
  S=bDevBefore?DevBefore:FState();
  if(S.Phase==EPhase::Phase1||S.Phase==EPhase::Phase2||S.Phase==EPhase::Phase3)S.Phase=EPhase::Night;
  bDevBefore=false;
@@ -706,11 +770,12 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   FState S;
   FOut O=StepState(S,P,At(3,9.));
   const bool bHook=O.bDaleHook&&S.Phase==EPhase::Hook&&S.CaseNight==4;S.bDaleHook=true;
-  O=StepState(S,P,At(3,20.));const bool bSlip=O.bSlip&&!O.bDaleHook;S.bSlip=true;
-  O=StepState(S,P,At(4,9.));const bool bDay=S.Phase==EPhase::Day;
+  O=StepState(S,P,At(3,20.));const bool bNoSlipYet=!O.bSlip&&!O.bDaleHook;
+  O=StepState(S,P,At(4,9.));const bool bDay=S.Phase==EPhase::Day&&!O.bSlip;
+  O=StepState(S,P,At(4,20.));const bool bSlip=O.bSlip&&S.Phase==EPhase::Day;S.bSlip=true;
   O=StepState(S,P,At(4,25.9));const bool bNight=S.Phase==EPhase::Night;
   O=StepState(S,P,At(4,25.9));const bool bCall=O.bNightCall;
-  Check(bHook&&bSlip&&bDay&&bNight&&bCall,TEXT("the hook: Dale the morning after the big night, the bearing slip that evening, the case's day, the call at ten to two"));
+  Check(bHook&&bNoSlipYet&&bSlip&&bDay&&bNight&&bCall,TEXT("the hook: Dale the morning after the big night, the case's day, the bearing slip on its own evening (not the night before), the call at ten to two"));
   FState N;O=StepState(N,P,At(3,9.));FIn Dev=At(3,9.);Dev.bLive=false;FState D;O=StepState(D,P,Dev);
   Check(!O.bDaleHook&&D.Phase==EPhase::Hook,TEXT("a developer run has no case of its own"));
   FIn Never=At(5,9.);Never.BigNight=-1;FState X;StepState(X,P,Never);
@@ -734,6 +799,17 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   FIn In=At(4,25.95);In.bAtFarm=true;FOut O=StepState(S,P,In);const bool bWait=S.Phase==EPhase::Night&&!O.bBegan;
   In.Hour=26.02;O=StepState(S,P,In);
   Check(bWait&&O.bBegan&&S.Phase==EPhase::Phase1,TEXT("phase one starts on arrival after two, not before"));
+  // CRIT9-20261109: not on top of something else on the ground; it waits, and the night's window still ends in A.
+  FState G;G.Phase=EPhase::Night;G.CaseNight=4;G.bNightCall=true;
+  FIn Gi=At(4,26.1);Gi.bAtFarm=true;Gi.bGroundFree=false;const FOut GO=StepState(G,P,Gi);const bool bHeld=!GO.bBegan&&G.Phase==EPhase::Night;
+  Gi.bGroundFree=true;const FOut GO2=StepState(G,P,Gi);
+  Check(bHeld&&GO2.bBegan&&G.Phase==EPhase::Phase1,TEXT("phase one waits while something else holds the ground, then starts"));
+  // CRIT9-20261109: a late arrival that phases one and two could not fit before the night's end is A, not phase one and then B.
+  FState Lt;Lt.Phase=EPhase::Night;Lt.CaseNight=4;Lt.bNightCall=true;FIn La=At(4,27.9);La.bAtFarm=true;const FOut LtO=StepState(Lt,P,La);
+  Check(!LtO.bBegan&&Lt.Phase==EPhase::Out&&Lt.Outcome==EOutcome::A,TEXT("arriving at 03:54 without time for it is A, never phase one cut off into B"));
+  // The night ending with the player still at the door: it wants out (phase two), not B.
+  FState En;En.Phase=EPhase::Phase1;En.CaseNight=4;En.Age=10;FIn Ei=At(4,LastHour);Ei.bAtFarm=true;Ei.Dt=1;const FOut EnO=StepState(En,P,Ei);
+  Check(EnO.bEscalated&&En.Phase==EPhase::Phase2&&En.Outcome==EOutcome::None,TEXT("phase one at the night's end with the player still there escalates; B is only for leaving"));
  }
  {
   // B: left in phase one. No knock: phase two comes by itself at about five minutes; held while it would run into Story's minute.
@@ -841,7 +917,7 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   for(const TCHAR* T:S47Week::MorningA)All.Add(T);
   All.Add(S47Week::NightCall);All.Add(S47Week::FindingA);
   // The slips sign "D." and the desk line names him as the set's caption does; Clean keeps "Dale" out of the rest.
-  All.Add(FString(S47Week::HookSlip));All.Add(FString(S47Week::MorningSlipA));All.Add(FString(S47Week::NightDesk).Replace(TEXT("Dale's voice"),TEXT("his voice")));
+  All.Add(S47Week::HookSlip(true));All.Add(S47Week::HookSlip(false));All.Add(FString(S47Week::MorningSlipA));All.Add(FString(S47Week::NightDesk).Replace(TEXT("Dale's voice"),TEXT("his voice")));
   FString Bad;
   for(const FString& T:All)
   {
@@ -850,7 +926,7 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   Check(Bad.IsEmpty(),TEXT("every line is clean: no 47, no 08:15 or 20:15, nothing of Story's far side, no names or brands ")+Bad);
   // What the player is told before it, says where and when, never what (the spoiler limits).
   bool bNoWhat=true;
-  for(const TCHAR* T:{S47Week::HookLines[0],S47Week::HookLines[1],S47Week::HookSlip,S47Week::NightCall})
+  for(const TCHAR* T:{S47Week::HookLines[0],S47Week::HookLines[1],S47Week::HookSlipWords,S47Week::NightCall})
   {const FString L=FString(T).ToLower();for(const TCHAR* W:{TEXT("creature"),TEXT("thing in"),TEXT("monster"),TEXT("arm"),TEXT("taken"),TEXT("light inside"),TEXT("breaks"),TEXT("shed door")})bNoWhat&=!L.Contains(W);}
   Check(bNoWhat,TEXT("the hook says where and when, never what is in the shed"));
  }

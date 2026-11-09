@@ -53,6 +53,10 @@ namespace
   {TEXT("e24"),TEXT("host"),TEXT("Lost and found: one brown work glove, left hand, at the Mesa. If you've got the right one, you know where the left one is.")},
   {TEXT("e25"),TEXT("host"),TEXT("Long night yet, folks. Put the kettle on.")},
  };
+ // CRIT9: the two recorded lines that say what the night is like play only on a night that is so (the weather in the same hour says
+ // the rest); on any other night their slot gets these written ones instead, once each where the recording would have been.
+ const FPiece EARL_MILD={TEXT("e_mild"),TEXT("host"),TEXT("Not a bad night out there for the time of year. Phones are open. If you are up anyway, you might as well talk to somebody.")};
+ const FPiece EARL_CLOUD={TEXT("e_cloud"),TEXT("host"),TEXT("Halley's comet is up there somewhere this week, low in the south, behind all that cloud. Try again tomorrow night.")};
 
  // Callers who cannot sleep, and what Earl says back.
  const FPiece SLEEPLESS[]={
@@ -143,28 +147,28 @@ namespace
 
  // What the town wants said: church, school, the county. {day} is the night's.
  const TCHAR* const NOTICES[]={
-  TEXT("The Altar Society at the Catholic church is holding its enchilada supper {day}. Three dollars, and kids under six eat free."),
-  TEXT("The Caliche volunteer fire department meets {day} at the firehouse. They need two more volunteers and somebody who can fix the siren."),
+  TEXT("The Altar Society at the Catholic church is holding its enchilada supper {day} evening. Three dollars, and kids under six eat free."),
+  TEXT("The Caliche volunteer fire department meets {day} at seven at the firehouse. They need two more volunteers and somebody who can fix the siren."),
   TEXT("The high school band is selling peanut brittle door to door, and they'll be on your street {day}. Buy some. It's for new uniforms."),
   TEXT("The county extension office says the youth rabbit show is {day} at the fairgrounds in Socorro."),
-  TEXT("The library will be open late {day} for story hour. Bring the little ones in their pajamas."),
-  TEXT("Choir practice at the Methodist church is moved to {day}. The organist has a dentist appointment."),
+  TEXT("The library will be open late {day} evening for story hour. Bring the little ones in their pajamas."),
+  TEXT("Choir practice at the Methodist church is moved to {day} evening. The organist has a dentist appointment."),
   TEXT("Blood drive at the school gym {day}. They give you a cookie and orange juice, and you save a life. That's a good deal."),
-  TEXT("The rosary for Manuel Griego is {day} at the Catholic church, and the family thanks everybody for all the food."),
+  TEXT("The rosary for Manuel Griego is {day} evening at the Catholic church, and the family thanks everybody for all the food."),
   TEXT("Caliche plays Magdalena in baseball {day}. First pitch at four, if the wind lets them."),
-  TEXT("The school mothers' bake sale is {day} out in front of the post office. Mrs. Trujillo's bizcochitos are gone by ten, so plan accordingly."),
+  TEXT("The school mothers' bake sale is {day} morning out in front of the post office. Mrs. Trujillo's bizcochitos are gone by ten, so plan accordingly."),
   TEXT("Rummage sale at the veterans' hall {day}. Bring your own bags."),
-  TEXT("The school board meets {day} about the new roof on the gym. The public is invited, and so is the rain."),
-  TEXT("Bingo at the senior center {day}. Bring quarters."),
+  TEXT("The school board meets {day} at seven about the new roof on the gym. The public is invited, and so is the rain."),
+  TEXT("Bingo at the senior center {day} night. Bring quarters."),
   TEXT("Free tuberculosis screening at the county clinic {day}. It doesn't hurt, they promise."),
   TEXT("First Communion classes start {day} at the parish hall. See Sister Agnes."),
   TEXT("Kindergarten roundup at the elementary school {day}. Bring the birth certificate and the shot record."),
-  TEXT("Square dance at the community hall {day}. Beginners welcome, and so are folks with two left feet."),
+  TEXT("Square dance at the community hall {day} night. Beginners welcome, and so are folks with two left feet."),
   TEXT("The garden club's plant swap is {day} behind the library. Bring a cutting, take a cutting."),
   TEXT("They're branding at the Lucero place {day} and need hands. They feed you."),
   TEXT("The high school track team is washing cars at the gas station {day} to get to the state meet."),
-  TEXT("Revival meeting {day} under the tent behind the Assembly church. Everybody's welcome. Bring a lawn chair."),
-  TEXT("The county commission meets {day} in Socorro to hear about the gravel on the Alderete road. If you've got an opinion, and you do, go say it."),
+  TEXT("Revival meeting {day} night under the tent behind the Assembly church. Everybody's welcome. Bring a lawn chair."),
+  TEXT("The county commission meets {day} morning in Socorro to hear about the gravel on the Alderete road. If you've got an opinion, and you do, go say it."),
   TEXT("Spelling bee at the elementary school {day}. Last year's champion is back, and she is not nervous."),
   TEXT("The Ladies Auxiliary is collecting canned goods for the food pantry. Leave them at the church {day}."),
   TEXT("The youth group from the Baptist church is selling light bulbs door to door {day}. Buy a few. Nobody ever had too many light bulbs."),
@@ -174,7 +178,8 @@ namespace
   TEXT("Free cheese and butter from the county {day} at the community center. Bring a sack."),
   TEXT("The Catholic church needs drivers {day} to take the shut-ins to the clinic in Socorro. Call the rectory."),
  };
- const TCHAR* const NOTICE_DAYS[]={TEXT("Saturday"),TEXT("Saturday morning"),TEXT("Friday evening"),TEXT("Thursday at seven"),TEXT("Sunday afternoon"),TEXT("Tuesday evening"),TEXT("next Saturday"),TEXT("Wednesday at six")};
+ // Days only (CRIT9): a notice that needs a time of day says it in its own words, so a day never brings a second time.
+ const TCHAR* const NOTICE_DAYS[]={TEXT("Saturday"),TEXT("Friday"),TEXT("Thursday"),TEXT("Sunday"),TEXT("Tuesday"),TEXT("next Saturday"),TEXT("Wednesday"),TEXT("Monday")};
 
  // The roads, as the deputy or somebody on the CB has them.
  const TCHAR* const ROADS[]={TEXT("U.S. sixty west of Magdalena"),TEXT("the county road past the Y"),TEXT("the Rio Salado bridge"),TEXT("the grade up toward Datil"),TEXT("the interstate south of Socorro"),TEXT("the Alderete road"),TEXT("the highway north of Caliche"),TEXT("the road out past the dishes"),TEXT("the old grade by the cattle pens"),TEXT("the river road below Lemitar")};
@@ -263,7 +268,7 @@ namespace
 
  // The night's weather, from the day the sky and the paper have (S47Weather).
  FString Sky(float Cloud,bool bNight){return Cloud<.2f?(bNight?TEXT("clear"):TEXT("sunny")):Cloud<.5f?(bNight?TEXT("a few clouds"):TEXT("partly cloudy")):TEXT("mostly cloudy");}
- FItem Weather(const FS47NightLineIn& In,int32 Hour)
+ FItem Weather(const FS47NightLineIn& In,int32 Hour,int32 NowF=-1)
  {
   const S47Weather::FDay Today=S47Weather::Day(In.Seed,FMath::Max(1,In.Night)),Next=S47Weather::Forecast(In.Seed,FMath::Max(1,In.Night),FMath::Max(1,In.Night)+1);
   const int32 V=int32(Mix(Mix(uint32(In.Seed),uint32(In.Night)),uint32(Hour))%3u);
@@ -277,7 +282,7 @@ namespace
   FItem I;I.Id=FString::Printf(TEXT("wx%d.%d.%d"),Hour,Next.LowF,Next.HighF);
   if(Hour>=26){I.Lines.Add(Line(FString(TEXT("For anybody planning a day: "))+Tomorrow,TEXT("host")));return I;}
   // Tonight's low is the one before tomorrow's daylight (the forecast's for the next day); now is on the way down to it.
-  const int32 Low=Next.LowF,Now=FMath::RoundToInt(Low+(Today.HighF-Low)*FMath::Clamp((26.-Hour)*.08,0.,.5));
+  const int32 Low=Next.LowF,Now=NowF>=0?NowF:FMath::RoundToInt(Low+(Today.HighF-Low)*FMath::Clamp((26.-Hour)*.08,0.,.5));
   I.Lines.Add(Line(FString::Printf(TEXT("%s Tonight %s, low around %s. %s"),Heads[V],*Sky(Today.CloudNight,true),*Number(Low),*Wind),TEXT("host")));
   if(Hour>=22)I.Lines.Add(Line(FString::Printf(TEXT("It's %s degrees in Caliche right now. %s"),*Number(Now),*Tomorrow),TEXT("host")));
   else I.Lines.Add(Line(Tomorrow,TEXT("host")));
@@ -299,7 +304,7 @@ namespace
  {
   const int32 N=UE_ARRAY_COUNT(NOTICES),T=Pick(N,2,In.Night,K,uint32(In.Seed),0x4e4f5449u);
   const int32 D=int32(Mix(uint32(In.Seed)^0x44415953u,uint32(In.Night*3+K))%UE_ARRAY_COUNT(NOTICE_DAYS));
-  static const TCHAR* const Heads[]={TEXT("Around town: "),TEXT("From the bulletin board: "),TEXT("A couple of things folks asked me to read. "),TEXT("")};
+  static const TCHAR* const Heads[]={TEXT("Around town: "),TEXT("From the bulletin board: "),TEXT("Somebody asked me to read this. "),TEXT("")};
   const int32 H=int32(Mix(uint32(In.Seed),uint32(In.Night*7+K))%UE_ARRAY_COUNT(Heads));
   FItem I;I.Id=FString::Printf(TEXT("an%02d"),T);I.Lines.Add(Line(FString(Heads[H])+FString(NOTICES[T]).Replace(TEXT("{day}"),NOTICE_DAYS[D]),TEXT("host")));
   return I;
@@ -387,7 +392,22 @@ TArray<TSharedPtr<FS47RadioSeg>> S47NightLine::Hour(const FS47NightLineIn& In,in
 {
  Hour=FMath::Clamp(Hour,20,27);
  const uint32 Seed=uint32(In.Seed);const int32 Night=FMath::Max(1,In.Night);
- const auto Earl=[&](int32 K){return Of(EARL[Pick(UE_ARRAY_COUNT(EARL),2,Night,K,Seed,0x4541524cu)],ES47Allowed::Hint);};
+ // CRIT9: Earl's recorded "Thirty-eight on the bank sign, and the wind has laid down" only in the midnight hour of a still night
+ // whose low is at most thirty-eight (and then the weather in the same hour says thirty-eight right now); the comet only under a sky
+ // that is not mostly cloudy. Otherwise the slot's written stand-in (the same slot, so nothing comes twice).
+ const S47Weather::FDay WxToday=S47Weather::Day(In.Seed,Night),WxNext=S47Weather::Forecast(In.Seed,Night,Night+1);
+ bool bColdSaid=false;
+ const auto Earl=[&](int32 K)
+ {
+  const FPiece& E=EARL[Pick(UE_ARRAY_COUNT(EARL),2,Night,K,Seed,0x4541524cu)];
+  if(FCString::Strcmp(E.Id,TEXT("rec_cold"))==0)
+  {
+   if(Hour==24&&WxToday.NightStorm<=.2f&&WxNext.LowF<=38){bColdSaid=true;return Of(E,ES47Allowed::Hint);}
+   return Of(EARL_MILD,ES47Allowed::Hint);
+  }
+  if(FCString::Strcmp(E.Id,TEXT("rec_comet"))==0&&WxToday.CloudNight>=.5f)return Of(EARL_CLOUD,ES47Allowed::Hint);
+  return Of(E,ES47Allowed::Hint);
+ };
  const auto Caller=[&](int32 K){return Of(SLEEPLESS[Pick(UE_ARRAY_COUNT(SLEEPLESS),2,Night,K,Seed,0x534c4550u)],ES47Allowed::Hint);};
  // In the hour the tier allows, and never earlier: before midnight a hint, the hour from one a glimpse, from two what came close.
  const auto Strange=[&](const FPiece* List,int32 N,ES47Allowed Tier,uint32 Salt){return Of(List[Pick(N,1,Night,0,Seed,Salt)],Tier);};
@@ -412,7 +432,7 @@ TArray<TSharedPtr<FS47RadioSeg>> S47NightLine::Hour(const FS47NightLineIn& In,in
   case 21:Talk.Add(Caller(0));Talk.Add(Road(In,0));Talk.Add(Strange(STRANGE_HINT,UE_ARRAY_COUNT(STRANGE_HINT),ES47Allowed::Hint,0x48494e54u));break;
   case 22:Talk.Add(Notice(In,1));Talk.Add(Weather(In,Hour));break;
   case 23:Talk.Add(Road(In,1));break;
-  case 24:Talk.Add(Earl(1));Talk.Add(Weather(In,Hour));break;
+  case 24:Talk.Add(Earl(1));Talk.Add(Weather(In,Hour,bColdSaid?38:-1));break;
   case 25:Talk.Add(Strange(STRANGE_GLIMPSE,UE_ARRAY_COUNT(STRANGE_GLIMPSE),ES47Allowed::Glimpse,0x474c494du));break;
   case 26:Talk.Add(Strange(STRANGE_FULL,UE_ARRAY_COUNT(STRANGE_FULL),ES47Allowed::Full,0x46554c4cu));Talk.Add(Weather(In,Hour));break;
   default:Talk.Add(Caller(1));break;
@@ -533,12 +553,30 @@ bool S47NightLine::SelfTest(TArray<FString>& Lines)
  {
   bool bAll=true;FString Bad;
   const auto Each=[&](const FPiece* List,int32 N){for(int32 I=0;I<N;++I)for(const TCHAR* T:{List[I].T1,List[I].T2,List[I].T3})if(T&&!Plain(T)){bAll=false;Bad=FString(T).Left(80);}};
-  Each(EARL,UE_ARRAY_COUNT(EARL));Each(SLEEPLESS,UE_ARRAY_COUNT(SLEEPLESS));Each(STRANGE_HINT,UE_ARRAY_COUNT(STRANGE_HINT));Each(STRANGE_GLIMPSE,UE_ARRAY_COUNT(STRANGE_GLIMPSE));Each(STRANGE_FULL,UE_ARRAY_COUNT(STRANGE_FULL));
+  Each(EARL,UE_ARRAY_COUNT(EARL));Each(&EARL_MILD,1);Each(&EARL_CLOUD,1);Each(SLEEPLESS,UE_ARRAY_COUNT(SLEEPLESS));Each(STRANGE_HINT,UE_ARRAY_COUNT(STRANGE_HINT));Each(STRANGE_GLIMPSE,UE_ARRAY_COUNT(STRANGE_GLIMPSE));Each(STRANGE_FULL,UE_ARRAY_COUNT(STRANGE_FULL));
   for(const TCHAR* T:NOTICES)for(const TCHAR* D:NOTICE_DAYS)if(!Plain(FString(T).Replace(TEXT("{day}"),D))){bAll=false;Bad=FString(T).Left(80);}
+  // CRIT9: a day is only a day, so a notice never has two times of day ("Thursday at seven ... First pitch at four").
+  for(const TCHAR* D:NOTICE_DAYS)for(const TCHAR* W:{TEXT(" at "),TEXT("morning"),TEXT("afternoon"),TEXT("evening"),TEXT("night")})if(FString(D).Contains(W)){bAll=false;Bad=D;}
   for(const TCHAR* R:ROADS)for(const TCHAR* C:ROAD_IS)if(!Plain(FString(R)+TEXT(" ")+C)){bAll=false;Bad=FString(R)+TEXT(" ")+C;}
   for(const FRecord& R:RECORDS)for(const TCHAR* I:INTROS)if(!Plain(FString(I).Replace(TEXT("{title}"),R.Title).Replace(TEXT("{artist}"),R.Artist))){bAll=false;Bad=R.Title;}
   for(int32 N=0;N<110;++N)bAll&=!Number(N).Contains(TEXT("forty-seven"));
   Check(bAll,FString(TEXT("the text filter lets through every written line, notice, road, record and number"))+(bAll?TEXT(""):*(TEXT(": ")+Bad)));
+ }
+ // CRIT9: Earl's recorded cold line never against the weather of its hour, the comet never under a mostly cloudy night.
+ {
+  bool bFits=true;FString Why;
+  for(const int32 Seed:{470001,1986,90210,7,123})for(int32 Night=1;Night<=40;++Night)for(const int32 H:{20,24})
+  {
+   FS47NightLineIn In;In.Night=Night;In.Seed=Seed;TArray<FString> Ids;const auto Segs=Hour(In,H,&Ids);
+   const S47Weather::FDay T=S47Weather::Day(Seed,Night),Nx=S47Weather::Forecast(Seed,Night,Night+1);
+   if(Ids.Contains(TEXT("rec_cold")))
+   {
+    bool bNow38=false;for(const auto& S:Segs)for(const FS47RadioLine& L:S->Lines)bNow38|=L.At(0).Contains(TEXT("thirty-eight degrees in Caliche right now"));
+    if(H!=24||T.NightStorm>.2f||Nx.LowF>38||!bNow38){bFits=false;Why=FString::Printf(TEXT("rec_cold, seed %d night %d at %d"),Seed,Night,H);}
+   }
+   if(Ids.Contains(TEXT("rec_comet"))&&T.CloudNight>=.5f){bFits=false;Why=FString::Printf(TEXT("rec_comet under cloud, seed %d night %d"),Seed,Night);}
+  }
+  Check(bFits,FString(TEXT("Earl's recorded cold night and comet only on a night that is so"))+(bFits?TEXT(""):*(TEXT(": ")+Why)));
  }
  // What the player has done comes back on the air.
  {

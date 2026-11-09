@@ -29,6 +29,7 @@
 #include "S47Places.h"
 #include "S47Radio.h"
 #include "S47Rhythm.h"
+#include "S47WeekCase.h"
 #include "S47RoadGlimpse.h"
 #include "S47RoadTerrain.h"
 #include "S47Seen.h"
@@ -1725,6 +1726,8 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  if(!bForced&&F->InTutorial()){Why=TEXT("the first shift");return false;}
  const bool bGround=!S47Hap::Background(Id);
  if(bGround&&!Now.Id.IsEmpty()){Why=FString::Printf(TEXT("%s is on"),*Now.Id);return false;}
+ // CRIT9-20261109: from ten to two the night is the week's case's (FS47WeekCase::HoldsFarm): nothing on the ground but the humor.
+ if(!bForced&&bGround&&Id!=TEXT("humor")&&FS47WeekCase::HoldsFarm(M)){Why=TEXT("the week's case has the night");return false;}
  bool bOk=false;const int32 SitesBefore=Sites.Num();
  if(Id==TEXT("car_dies"))bOk=BeginCar(bForced,Why);
  else if(Id==TEXT("clock_ahead"))bOk=BeginAhead(bForced,Why);

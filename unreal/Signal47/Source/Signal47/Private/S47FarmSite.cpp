@@ -837,19 +837,35 @@ void FS47FarmSite::YieldTo(const TCHAR* Why)
  if(bHad)UE_LOG(LogTemp,Display,TEXT("S47: lights site %s yields to %s: the marks stay, nothing comes to them tonight"),*Place,Why);
  if(M)M->RequestAutosave();
 }
-FString FS47FarmSite::ArrivalText(int32 Tier,int32 Pick,const FString& InTitle)
+// The time words, from the clock: at dusk to eight, after dark to ten, late in the evening to midnight, past midnight to two, the small
+// hours to six, and by day the morning (to noon) or by daylight. A night tier at dusk has nothing to do with the clock's word (CRIT9).
+FString FS47FarmSite::ArrivalWhen(int32 Tier,double Hour)
+{
+ if(Hour<0)
+ {
+  static const TCHAR* const ByTier[ArrivalTiers]={TEXT(", after dark"),TEXT(", past midnight"),TEXT(", in the small hours"),TEXT(", in the morning")};
+  return ByTier[FMath::Clamp(Tier,0,ArrivalTiers-1)];
+ }
+ const double H=FMath::Fmod(Hour,24.);
+ if(H>=6&&H<19)return H<12?TEXT(", in the morning"):TEXT(", by daylight");
+ if(H>=19&&H<20)return TEXT(", at dusk");
+ if(H>=20&&H<22)return TEXT(", after dark");
+ if(H>=22)return TEXT(", late in the evening");
+ return H<2?TEXT(", past midnight"):TEXT(", in the small hours");
+}
+FString FS47FarmSite::ArrivalText(int32 Tier,int32 Pick,const FString& InTitle,double Hour)
 {
  // Written as the player would note it: what is there, never what it means. The night's hour decides how much is there.
  static const TCHAR* const Lines[ArrivalTiers][ArrivalPicks]={
-  {TEXT("{t}, after dark. A few steps off, nine dark patches in the dirt, and the air over them smells of hot dust and struck matches, like a fuse gone. Somebody's truck, maybe."),
-   TEXT("{t}, after dark. A ring of dark patches in the dirt a few steps off, and a smell like a blown transformer, stronger inside the ring than out of it.")},
-  {TEXT("{t}, past midnight. Round the dark patches in the dirt the grass is singed brown at the tips, every blade on the side toward the middle. No fire ring, no ash, no bottles."),
-   TEXT("{t}, past midnight. The brush beside the dark patches in the dirt is scorched on one side only, as if something hot had stood low over them. The ground in the ring is dry, the ground beside it damp.")},
-  {TEXT("{t}, in the small hours. A jackrabbit lies at the edge of the dark patches in the dirt, on its side with its eyes open, not a mark on it. The ground under it is still warm."),
-   TEXT("{t}, in the small hours. Three sparrows lie at the edge of the dark patches in the dirt, side by side, not a mark on them. Nothing has been at them. The air in the ring smells of struck matches.")},
-  {TEXT("{t}, in the morning. Nine dark patches in the dirt, the grass round them singed brown at the tips. A jackrabbit lies dead at the edge of them, not a mark on it."),
-   TEXT("{t}, in the morning. Nine dark patches in the dirt. The brush beside them is scorched on one side only, and dead moths lie all over the ring.")}};
- FString Page=FString(Lines[FMath::Clamp(Tier,0,ArrivalTiers-1)][FMath::Clamp(Pick,0,ArrivalPicks-1)]).Replace(TEXT("{t}"),*InTitle);
+  {TEXT("{t}{when}. A few steps off, nine dark patches in the dirt, and the air over them smells of hot dust and struck matches, like a fuse gone. Somebody's truck, maybe."),
+   TEXT("{t}{when}. A ring of dark patches in the dirt a few steps off, and a smell like a blown transformer, stronger inside the ring than out of it.")},
+  {TEXT("{t}{when}. Round the dark patches in the dirt the grass is singed brown at the tips, every blade on the side toward the middle. No fire ring, no ash, no bottles."),
+   TEXT("{t}{when}. The brush beside the dark patches in the dirt is scorched on one side only, as if something hot had stood low over them. The ground in the ring is dry, the ground beside it damp.")},
+  {TEXT("{t}{when}. A jackrabbit lies at the edge of the dark patches in the dirt, on its side with its eyes open, not a mark on it. The ground under it is still warm."),
+   TEXT("{t}{when}. Three sparrows lie at the edge of the dark patches in the dirt, side by side, not a mark on them. Nothing has been at them. The air in the ring smells of struck matches.")},
+  {TEXT("{t}{when}. Nine dark patches in the dirt, the grass round them singed brown at the tips. A jackrabbit lies dead at the edge of them, not a mark on it."),
+   TEXT("{t}{when}. Nine dark patches in the dirt. The brush beside them is scorched on one side only, and dead moths lie all over the ring.")}};
+ FString Page=FString(Lines[FMath::Clamp(Tier,0,ArrivalTiers-1)][FMath::Clamp(Pick,0,ArrivalPicks-1)]).Replace(TEXT("{t}"),*InTitle).Replace(TEXT("{when}"),*ArrivalWhen(Tier,Hour));
  if(!Page.IsEmpty())Page[0]=FChar::ToUpper(Page[0]);
  return Page;
 }
@@ -871,7 +887,7 @@ void FS47FarmSite::StepArrival(double Dist)
  const double Clock=F.Clock();
  const int32 Tier=ByDaylight(Clock)?3:int32(S47NightTiers::AtClock(Clock,FS47FreeformSession::NightOf(Clock)));
  const int32 Pick=FMath::Clamp(int32(FS47NightRhythm::Roll(F.Seed(),Night,FCrc::StrCrc32(*Place)^0x41525256u)*ArrivalPicks),0,ArrivalPicks-1);
- F.RecordEvidence(Key,ArrivalText(Tier,Pick,Title));
+ F.RecordEvidence(Key,ArrivalText(Tier,Pick,Title,FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.));
  if(M->UI)M->UI->Toast(ArrivalToast(Tier),7);
  UE_LOG(LogTemp,Display,TEXT("S47: lights site %s: arrival record kept (tier %d, pick %d, %.0f m from the marks), visit %d"),*Place,Tier,Pick,Dist,Visit);
  M->RequestAutosave();

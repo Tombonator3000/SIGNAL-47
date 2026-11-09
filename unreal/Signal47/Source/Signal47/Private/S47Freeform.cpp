@@ -3537,6 +3537,14 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  return TEXT("OPS / corner PC / DAILY WORK");
 }
 
+// CRIT9: a chore open now is remembered by its kind; gone from the list since (done), its last line (or DoneLine) is added ticked
+// off for the rest of the night, so that the note keeps it struck (S47TonightNote::FDone) as it does the cards filed.
+void FS47FreeformSession::NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,const FString& OpenLine,const FString& DoneLine) const
+{
+ if(!OpenLine.IsEmpty()){ChoresOpen.Add(Kind,OpenLine);ChoresDone.Remove(Kind);return;}
+ if(const FString* Was=ChoresOpen.Find(Kind)){ChoresDone.Add(Kind,DoneLine.IsEmpty()?*Was:DoneLine);ChoresOpen.Remove(Kind);}
+ if(const FString* Done=ChoresDone.Find(Kind))Result.Add({*Done,true});
+}
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
@@ -3544,12 +3552,21 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
- if(Mail){const FString Post=Mail->TaskLine();if(!Post.IsEmpty())Result.Add({Post,false});}
+ // CRIT9: a new night (or a clock gone back, a load) forgets the chores done; those that stop when done stay ticked off tonight.
+ {const double C=Clock();const int32 N=NightOf(C);if(N!=ChoresNight||C+60<ChoresClock){ChoresOpen.Reset();ChoresDone.Reset();ChoresNight=N;}ChoresClock=C;}
+ if(Mail){const FString Post=Mail->TaskLine();if(!Post.IsEmpty())Result.Add({Post,false});NoteChore(Result,TEXT("post"),Post.StartsWith(TEXT("MAIL ORDER /"))?FString():Post,FString());}
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty()){const FString Steps=Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")));Result.Add({TEXT("TRUCK / ")+(Steps.IsEmpty()?Care->StatusLine():Steps),false});}
- if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
- if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can, or the county's roadside return: money on the budget or the weekly sheet, and a long wait."),false});
+ if(Care)NoteChore(Result,TEXT("truck"),Care->StatusLine().IsEmpty()?FString():TEXT("TRUCK / ")+Care->StatusLine(),FString());
+ const FString Feeder=TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power.");
+ if(bPowerFault)Result.Add({Feeder,false});
+ NoteChore(Result,TEXT("feeder"),bPowerFault?Feeder:FString(),FString());
+ const FString Tank=TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can, or the county's roadside return: money on the budget or the weekly sheet, and a long wait.");
+ if(Field&&!Field->HasVehicleFuel())Result.Add({Tank,false});
+ if(Field)NoteChore(Result,TEXT("tank"),Field->HasVehicleFuel()?FString():Tank,TEXT("SERVICE TRUCK / Tank filled."));
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
+ // The relay under the service guide is the guide's own line (ServiceGuide==2 is ticked off below): only the plain fault here.
+ if(Field&&ServiceGuide!=1)NoteChore(Result,TEXT("relay"),Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."):FString(),FString());
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const FString Step=CaseStep(Line).Task;!Step.IsEmpty())Result.Add({Step,false}); // CASES-OPS-20261109
  if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())Result.Add({Trail.Key,Trail.Value}); // PT-NOTEBOOK-20261109: ticked off, not dropped
  if(const FString Goal=StationGoalLine();!Goal.IsEmpty())Result.Add({Goal,false});

@@ -14,9 +14,9 @@ class FS47ShedGlow;
 // arm, and the truck's cab is safe in week one.
 //
 //   Hook    the morning after the big night, from half past eight, Dale on the walkie: something on the farm's bearing has been
-//           chewing his signal (his slip by the phone without a set); the evening after, the night's one bearing slip points at the
-//           farm (FS47Places::PointAt, the Director's one pointing-out a night).
-//   Day     the case's own day, until ten to two that night (the shed by daylight is patch 2).
+//           chewing his signal, tomorrow night he thinks (his slip by the phone without a set to hear him).
+//   Day     the case's own day, until ten to two that night (the shed by daylight is patch 2); the case's own evening, the night's
+//           one bearing slip points at the farm (FS47Places::PointAt, the Director's one pointing-out a night).
 //   Night   from 01:50: Dale, "It's there again. Same bearing." The case waits for the player to come to the farm after two.
 //   Phase1  on arrival after two, at least four minutes: look round, knock. Without a knock the next phase comes by itself.
 //   Phase2  it wants out: about a minute and a half, the light from inside and the kicks.
@@ -95,6 +95,9 @@ public:
   double Rate=1;        // game seconds a second of play
   int32 BigNight=0;     // FS47Happenings::BigHappened: 0 not yet, -1 never in this game
   bool bLive=true;      // the night's own rules run (a developer run has no case of its own)
+ // CRIT9-20261109: nothing else holds the ground (the rhythm's Busy, the Director, a visit, a taking, the highway's craft): phase one
+ // waits for it, and the night's window still ends in A.
+ bool bGroundFree=true;
   bool bAtFarm=false,bAtSaro=false,bDriving=false,bTaken=false,bKnocked=false;
   // Patch 3: something at the truck, for the cab's rules (StepCab). Patch 4's searcher fills these through SearcherFeed; until it
   // is in, a plain reserve does (ReserveSearcher): in the shed until the breach, then to the truck after a turn of its key.
@@ -248,6 +251,14 @@ private:
  TSharedPtr<uint8> Alive=MakeShared<uint8>(0);
  double LastClock=-1,Rate=14.67,TryIn=0,Paced=0,HookSince=-1,SaidIn=0,DaleUntil=0;
  TArray<FString> DaleLines;
+ // CRIT9-20261109: whose lines DaleLines are. What they say is marked said (and A's record kept) only once the last is heard; let go
+ // unheard, the mark stays unset and the slip by the phone gets its turn.
+ enum class EDale : uint8 { None, Hook, Night, Morning, Help };
+ EDale DaleOwns=EDale::None;
+ bool bDoorWaitSaid=false;
+ bool PlayerInShed() const;
+ void DaleHeard(EDale Who);
+ void MorningDone();
  bool bStall=false;
  TWeakObjectPtr<AS47Walker> Hooked;
  TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> Before;
@@ -281,7 +292,7 @@ private:
  void GiveSlip();
  void SayNightCall();
  void Morning();
- bool Dale(const TArray<FString>& Lines);
+ bool Dale(const TArray<FString>& Lines,EDale Who);
  void StepDale();
  void HoldScripts(bool bOn);
 };

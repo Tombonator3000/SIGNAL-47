@@ -107,7 +107,10 @@ public:
  static constexpr double ArriveWithin=30;
  static constexpr int32 ArrivalTiers=4,ArrivalPicks=2; // tiers: 0 hint, 1 glimpse, 2 full, 3 by daylight
  static FString ArrivalKey(const FString& InPlace,int32 Night){return FString::Printf(TEXT("lights_trace_%s_arrive_d%d"),*InPlace,Night);}
- static FString ArrivalText(int32 Tier,int32 Pick,const FString& InTitle);
+ // Hour: the hour of the day (0 to 24) the record is kept at; its time words come from the clock, the tier only picks what is there
+ // (CRIT9). Under 0: the tier's own word (the self-tests).
+ static FString ArrivalText(int32 Tier,int32 Pick,const FString& InTitle,double Hour=-1);
+ static FString ArrivalWhen(int32 Tier,double Hour);
  static FString ArrivalToast(int32 Tier);
  // The night the marks were made (they clear at the next noon), 0 with none.
  int32 SiteNight() const;

@@ -930,7 +930,9 @@ void FS47Happenings::StepBigAfter()
  // Dale's lines, one at a time, as he says them.
  if(!BigDaleLines.IsEmpty()&&Paced>=BigDaleIn&&M->FieldRadio.IsValid()&&!M->ModalOpen())
  {
-  if(M->FieldRadio->Message(BigDaleLines[0])){BigDaleLines.RemoveAt(0);BigDaleIn=Paced+7.5;}
+  // CRIT9-20261109: not over his own voice or a hail, and the set's own reading time before the next line.
+  if(M->FieldRadio->DaleSpeaking()||M->FieldRadio->Hailing())BigDaleIn=Paced+.5;
+  else if(const FString Line=BigDaleLines[0];M->FieldRadio->Message(Line)){BigDaleLines.RemoveAt(0);BigDaleIn=Paced+FMath::Clamp(3.+double(Line.Len()-6)/18.,6.,11.)+.5;}
   else BigDaleIn=Paced+3;
  }
  if(Paced<BigFollowTry)return;

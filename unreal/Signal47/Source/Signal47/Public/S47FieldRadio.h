@@ -82,6 +82,8 @@ public:
  void Lose() { bOwned=false; bLeftOut=true; }
  void Recover(bool bToHand) { bLeftOut=false; bOwned=bToHand; }
  bool LeftOut() const { return bLeftOut; }
+ // In hand, not left out, on his channel: a DALE line said now is heard (Message would take it). CRIT9-20261109.
+ bool HearsDale() const { return bOwned && !bLeftOut && Chan==1; }
  // Something said, out of the air at this place, with no radio involved.
  void Talk(const FVector& At);
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };

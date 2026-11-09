@@ -71,7 +71,10 @@ int32 FS47MessageQueue::Push(const FString& Text, float Secs, EPri Pri, TFunctio
 		if (!Who.IsEmpty() && Who == Speaker(Current[0]->Text)) { Current[0].Reset(); FreeAt[0] = T; bChanged = true; }
 	}
 	// Danger does not wait for a caption of less weight: that one steps back into the queue with what it has left, and comes after.
-	if (L == ELane::Speech && Pri == EPri::Danger && Current[0].IsSet() && Current[0]->Pri != EPri::Danger)
+	// Nor does Dale's line timed by his voice wait behind the radio's or the CB's: waiting, its words would be over before they are up.
+	// CRIT9: the radio's caption steps back the same way. A Dale line with no sound of its own waits as before.
+	const bool bDaleVoice = Pri == EPri::Dale && bool(I.Clock) && Current[0].IsSet() && Current[0]->Pri == EPri::Radio;
+	if (L == ELane::Speech && ((Pri == EPri::Danger && Current[0].IsSet() && Current[0]->Pri != EPri::Danger) || bDaleVoice))
 	{
 		FItem Back = Current[0].GetValue();
 		Current[0].Reset();
@@ -212,6 +215,22 @@ bool FS47MessageQueue::SelfTest(TArray<FString>& Lines)
 		const FItem* Back = R.Showing(ELane::Speech);
 		Check(bWaiting && bCut && Back && Back->Text.StartsWith(TEXT("CB: Long")) && FMath::IsNearlyEqual(Back->Until - 5.6, 6., .01),
 			TEXT("danger goes before the CB, and the CB line it cut comes back after with the time it had left"));
+	}
+	{
+		// CRIT9: Dale's line timed by his voice does not wait behind the radio's caption (its words would be gone with the sound)
+		FS47MessageQueue R;
+		double Sound = 0;
+		R.Push(TEXT("RADIO, a caller: \"Out past the cattle guard, a light.\""), 10.f, E::Radio);
+		R.Step(0, 0);
+		R.Step(2, 2);
+		Sound = 2;
+		R.Push(TEXT("WALKIE 1, DALE: It's there again. Same bearing."), 2.5f, E::Dale, [&Sound] { return Sound; });
+		R.Step(2.1, .1);
+		const bool bDale = Shows(R, ELane::Speech).StartsWith(TEXT("WALKIE")) && R.Waiting(ELane::Speech) == 1;
+		Sound = 4.6;
+		R.Step(4.6, 2.5);
+		R.Step(5.0, .4);
+		Check(bDale && Shows(R, ELane::Speech).StartsWith(TEXT("RADIO")), TEXT("Dale's voiced line goes before the radio's caption, and the radio's comes back after"));
 	}
 	{
 		// out of date: waited too long, no longer holds, or its sound is over

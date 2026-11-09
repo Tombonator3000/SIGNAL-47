@@ -666,6 +666,12 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  // WEEKLY-CASE-20261109: nor on top of the week's case on the ground (no presence, so no small bodies out of the glimpses either).
  if(FS47WeekCase::Holds(M))return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
+ // CRIT9-20261109: from ten to two the night is the week's case's: no threat, major or presence on the ground before it begins.
+ if(!Forced&&FS47WeekCase::HoldsFarm(M))
+ {
+  const FS47RhythmEvent* E=M->Rhythm?M->Rhythm->Data().Find(FName(*Id)):nullptr;
+  if(D->Family==TEXT("threat")||D->Family==TEXT("major")||(E&&E->bGround&&E->Level>=ES47RhythmLevel::Presence))return false;
+ }
  // The initial catalogue is anchored to the actual SARO yard and apparatus.
  if(Id==TEXT("feeder_presence"))
  {if(M->Web->Area()!=TEXT("road")||!M->Freeform->Field||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:feeder")),12))return false;}

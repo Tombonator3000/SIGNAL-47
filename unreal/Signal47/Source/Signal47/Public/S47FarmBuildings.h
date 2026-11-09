@@ -25,6 +25,8 @@ namespace S47FarmBuildings
  // road-local. FS47FarmShedDoor shuts it while the door is locked: Blocked counts it then, as a wall.
  FBox2D ShedDoorway();
  void SetShedDoorShut(bool bShut);
+ // CRIT9-20261109: within the feed shed's walls (its 5 x 4 m), widened by Pad: the door does not lock with someone in there.
+ bool InShed(double RoadX,double RoadZ,double Pad);
  bool ShedDoorShut();
  // The four plots with their roof overhangs: nothing grows here.
  const TArray<FBox2D>& Plots();

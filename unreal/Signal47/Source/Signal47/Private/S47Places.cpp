@@ -7,6 +7,7 @@
 #include "S47FreeformWorld.h"
 #include "S47Happenings.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47LeftGear.h"
 #include "S47Legs.h"
@@ -30,6 +31,14 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/PackageName.h"
 #include "UObject/GarbageCollection.h"
+
+// CRIT9: the key that opens the notebook at its map, as the player has it (the pad's button with a gamepad, a rebound key), never a
+// fixed one; the notebook's own key when the map has none.
+static FString FS47PlacesLocalMapKey()
+{
+ const FString Map=S47Keys::Said(TEXT("map"));
+ return Map.IsEmpty()?S47Keys::Said(TEXT("notebook")):Map;
+}
 
 namespace
 {
@@ -613,7 +622,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
  const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
   :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread),6);
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (%s)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread,*FS47PlacesLocalMapKey()),6);
  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, %s, night %d"),B.Az,Spread,*Target,Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night);
  M->RequestAutosave();
  return true;
@@ -635,7 +644,7 @@ bool FS47Places::PointAt(const FString& Target,double ToX,double ToZ)
  F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("The array resolves something off the main beam tonight, by itself: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),B.Az,Spread,*SlipClock(Now)));
  const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
   :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread),6);
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (%s)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread,*FS47PlacesLocalMapKey()),6);
  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, the week's case, night %d"),B.Az,Spread,*Target,Branches,Night);
  M->RequestAutosave();
  return true;

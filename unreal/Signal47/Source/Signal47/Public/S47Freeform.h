@@ -395,7 +395,7 @@ public:
  // strikes Animals and weather there (FS47FreeformCases::RuleOutWind); NO strikes nothing. Asked once a record. Saved under
  // "minutes"; an older save has none and its log is read again from the array's own records (the "At 02:14" in them).
  struct FArrayMark{double From=0,To=0;FString Kind;};
- static constexpr int32 MostArrayMarks=48,MostNightClocks=64,MostAsked=120,MostAskedAtOnce=3,FieldRecordPay=8;
+ static constexpr int32 MostArrayMarks=48,MostNightClocks=64,MostAsked=1024,MostAskedAtOnce=3,FieldRecordPay=8;
  static constexpr double SameSlack=60,NightPhotoNear=30*60;
  // The array caught something from From to To (game clock). Kept newest last, at most MostArrayMarks.
  void NoteArrayMinute(double From,double To,const FString& Kind);
@@ -409,7 +409,9 @@ public:
  // Sets a field time against the array's log once (RecordId: the photograph, the tape): the telex, the record, the case. True when
  // it was asked now.
  bool AskSameMinute(const FString& RecordId,double Clock,const FString& What);
- bool AskedSameMinute(const FString& RecordId) const{return Asked.Contains(RecordId);}
+ // Asked already: its YES or NO record is kept for good (Findings, saved), or it is in Asked (a record primed from an older save, which
+ // has none). The records are the mark, so trimming Asked never makes a record due again.
+ bool AskedSameMinute(const FString& RecordId) const;
  // At SARO (the pin board): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
  // asked yet, the newest first, at most MostAskedAtOnce at a time. The number asked.
  int32 AskWhatCameBack();
@@ -646,7 +648,11 @@ private:
  // LOOP-3-20261109: the array's own log, when each night record was kept, and what has been asked (S47FreeformMinute.cpp).
  TArray<FArrayMark> ArrayMarks;
  TMap<FString,double> NightClocks;
- TArray<FString> Asked; // newest last, at most MostAsked
+ TArray<FString> Asked; // newest last, at most MostAsked; the YES/NO records are the lasting mark (AskedSameMinute)
+ // CRIT9: the list's chores that simply stop when done (the post, the truck, the feeder, the tank, the relay): by kind, the line last
+ // open tonight, and the one gone from it since (shown ticked off until 08:00, as the note's header promises). In memory only.
+ mutable TMap<FString,FString> ChoresOpen,ChoresDone;mutable int32 ChoresNight=0;mutable double ChoresClock=-1;
+ void NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,const FString& OpenLine,const FString& DoneLine) const;
  double PrimeBefore=-1; // an older save: what came back before this clock is not asked again (-1: nothing to prime)
  int32 AskLook=-1;
  void NoteArrayRecord(const FString& Id,const FString& Text,bool bKeptNow=true);
