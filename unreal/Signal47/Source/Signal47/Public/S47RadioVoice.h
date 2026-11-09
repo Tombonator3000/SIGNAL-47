@@ -29,6 +29,12 @@ public:
 	void UseCatalog(const TSharedPtr<FJsonObject>& Catalog, const FString& InRoot);
 	// Native difference: selected short PCM clips load synchronously; this never starts audio.
 	bool Load(const TArray<FS47RadioClip>& Clips, TMap<FString, TSharedPtr<FS47AudioBuffer>>& Result, const TFunction<bool()>& IsAborted = {});
+	// VOICE-OUT-3 (Tom 9 November 2026): the web version's ensemble voices bacall (N. Vega), price (THE LINE)
+	// and lynch (the souvenir man), and KINSKI-READ-OUT's kinski bank, are clones of real people's voices and
+	// out of the game. No bank or role may have one of these names; their clips are never indexed, not even
+	// from an old voices.json or index.json.
+	static const TArray<FString>& RetiredVoices();
+	static bool RetiredVoice(const FString& VoiceOrBank) { return RetiredVoices().Contains(VoiceOrBank.ToLower()); }
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

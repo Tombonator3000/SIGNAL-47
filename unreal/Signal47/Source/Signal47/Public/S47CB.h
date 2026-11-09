@@ -10,8 +10,8 @@ class US47Audio;
 // voice mumbles like the grown-ups in Peanuts, as the AM radio's voices do (core/radio.ts, the same
 // horn behind a mute that opens on every syllable), each line captioned, and the squelch closes
 // with a click of hiss. Through a narrower, harder speaker than the AM set, from the dash, at the
-// radios' own level (AudioSys.radioBus). A line with a recording of its own (N. Vega's, the
-// character voices: US47Audio::CharacterBuffer) is played as it is.
+// radios' own level (AudioSys.radioBus). (N. Vega's recorded words, the bacall clone, are gone since
+// VOICE-OUT-3, Tom 9 November 2026: her CB lines are mumbled and captioned like the others.)
 
 /** CBLine: the words, the voice that mumbles them (core/radio.ts Voice: 'host' | 'woman' | 'man' |
  *  'roswell' | 'boy' | 'news' | 'old') and who said it, for the caption. */

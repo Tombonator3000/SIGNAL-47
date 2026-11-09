@@ -227,14 +227,11 @@ double FS47CB::Call(const TArray<FS47CBLine>& Lines, const TOptional<FVector>& A
 	if (A->OnPhoneCall) A->OnPhoneCall();
 	bBusy = true;
 	FS47AudioContext::FBatch B(*Ctx);
+	// VOICE-OUT-3 (Tom 9 November 2026): N. Vega's recorded CB words were the bacall clone, now gone; every
+	// CB line is the mumbled horn under its caption until a speaker has a recording of her own
 	TArray<TSharedPtr<FS47AudioBuffer>> Selected;
-	bool bRecorded = true;
-	for (const FS47CBLine& L : Lines)
-	{
-		Selected.Add(L.By == TEXT("N. VEGA") && L.Who == TEXT("woman") ? A->CharacterBuffer(TEXT("bacall"), L.Text) : nullptr);
-		const TSharedPtr<FS47AudioBuffer>& Buf = Selected.Last();
-		if (!(Buf.IsValid() && FMath::IsFinite(Buf->Duration()) && Buf->Duration() > 0)) bRecorded = false;
-	}
+	Selected.Init(nullptr, Lines.Num());
+	bool bRecorded = false;
 	TArray<TSharedPtr<FS47BufferSourceNode>> Sources;
 	const double T0 = Ctx->CurrentTime() + 0.05;
 	// the speaker: narrow, overdriven, from the dash

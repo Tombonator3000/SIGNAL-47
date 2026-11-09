@@ -234,7 +234,7 @@ public:
 	TFunction<void(const FString&)> OnNotebookTab; // a page of the notebook has been turned to
 	bool bLargeText = false;                       // html.text-large
 	// ui.npcDialogue: the night's character voices, one queue (core/npcDialogue.ts; set by main.ts's
-	// wiring, null until then). ui.speakNora is its SpeakNora.
+	// wiring, null until then). (ui.speakNora is gone with N. Vega's voice: VOICE-OUT-3.)
 	TSharedPtr<class FS47NpcDialogue> NpcDialogue;
 
 	// ---------- the readers (core/readAloud.ts) ----------

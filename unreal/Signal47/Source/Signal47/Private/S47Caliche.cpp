@@ -388,7 +388,8 @@ void FS47Caliche::Refresh()
 		if (const TSharedPtr<FS47ReadAloud> D = M->UI ? M->UI->DescriptionReader() : nullptr) D->Stop();
 	}
 	const bool bEarl = Who == TEXT("host") && EarlDialogue->Enabled() && Lines.ContainsByPredicate([](const FS47TalkLine& L) { return L.Who == TEXT("EARL"); });
-	const FString Voice = Who == TEXT("attendant") ? TEXT("stanton") : Who == TEXT("deputy") ? TEXT("stack") : Who == TEXT("souvenir_man") ? TEXT("lynch") : TEXT("");
+	// (VOICE-OUT-3, Tom 9 November 2026: the souvenir man's voice was the lynch clone, now gone; his lines are text)
+	const FString Voice = Who == TEXT("attendant") ? TEXT("stanton") : Who == TEXT("deputy") ? TEXT("stack") : TEXT("");
 	const bool bCharacter = !Voice.IsEmpty() && NpcDialogue->Enabled() && !FS47NpcDialogue::CharacterLines(Voice, Lines).IsEmpty();
 	const TArray<FS47TalkLine> Speech = Lines;
 	Body->ClearChildren();

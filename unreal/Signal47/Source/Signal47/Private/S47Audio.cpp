@@ -17,6 +17,7 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "S47Main.h"
+#include "S47RadioVoice.h"
 #include "S47SignalVoice.h"
 #include "S47Synth.h"
 #include "S47Three.h"
@@ -106,7 +107,8 @@ void US47Audio::DecodeAll()
 {
 	// Scripts/import-audio.sh writes the recordings Audio.ts decodes as WAVE files, with an index:
 	// sources (web name -> file), character (voice -> text -> character:<id>). (An old index's phone section,
-	// the retired Kinski telephone bank, is not read: KINSKI-READ-OUT.)
+	// the retired Kinski telephone bank, is not read: KINSKI-READ-OUT; nor its bacall and price character
+	// lines: VOICE-OUT-3.)
 	// The bought ones come second, so a file name finds them first (as the old lookup did).
 	const FString Dirs[2] = { FPaths::ProjectContentDir() / TEXT("Audio/Raw"), FPaths::ProjectContentDir() / TEXT("Licensed/Raw") };
 	for (const FString& Dir : Dirs)
@@ -140,7 +142,8 @@ void US47Audio::DecodeAll()
 			for (const auto& V : (*Character)->Values)
 			{
 				const TSharedPtr<FJsonObject>* ByText = nullptr;
-				if (!V.Value->TryGetObject(ByText)) continue;
+				// VOICE-OUT-3: an old index's bacall/price lines (clones of real people's voices) stay unread
+				if (FS47RadioVoice::RetiredVoice(FString(V.Key.ToView())) || !V.Value->TryGetObject(ByText)) continue;
 				TMap<FString, FString>& M = CharacterKeys.FindOrAdd(FString(V.Key.ToView()));
 				for (const auto& T : (*ByText)->Values) M.Add(FString(T.Key.ToView()), T.Value->AsString());
 			}
@@ -373,19 +376,21 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 	A->Buf.Add(TEXT("character:b"), Rec(3.0));
 	A->Buf.Add(TEXT("character:c"), Rec(1.5));
 	A->Buf.Add(TEXT("click"), Rec(0.1));
-	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("Sierra Motor Court."), TEXT("character:a"));
-	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("character:b"));
-	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("So you went out there."), TEXT("character:c"));
+	// (VOICE-OUT-3: the made-up recordings are Ward's, the one cast slot left on the telephone; N. Vega's
+	// bacall voice is gone)
+	A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(TEXT("Sierra Motor Court."), TEXT("character:a"));
+	A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("character:b"));
+	A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(TEXT("So you went out there."), TEXT("character:c"));
 	A->bCharacterVoices = true;
 	{
-		TArray<FS47PhoneCue> Nora;
-		Nora.Add({ TEXT("Sierra Motor Court."), TEXT("N. VEGA") });
+		TArray<FS47PhoneCue> Call;
+		Call.Add({ TEXT("Sierra Motor Court."), TEXT("WARD") });
 		FS47PhoneCue Aside; Aside.Text = TEXT("You give your name and SARO, and read her the survey number from the sleeve."); Aside.bAside = true; Aside.Pause = 3.4f;
-		Nora.Add(Aside);
-		Nora.Add({ TEXT("Station One.  Nobody has asked me for that key in a long time."), TEXT("N. VEGA") });
+		Call.Add(Aside);
+		Call.Add({ TEXT("Station One.  Nobody has asked me for that key in a long time."), TEXT("WARD") });
 		int32 Calls = 0;
 		A->OnPhoneCall = [&Calls] { ++Calls; };
-		const TOptional<FS47CallTimeline> TL = A->PhoneCall(Nora);
+		const TOptional<FS47CallTimeline> TL = A->PhoneCall(Call);
 		Check(TL.IsSet() && TL->Cues.Num() == 3, TEXT("phoneCall: a timeline when every spoken line has a recording"));
 		if (TL.IsSet() && TL->Cues.Num() == 3)
 		{
@@ -398,14 +403,16 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 		Check(A->PhonePlaying() && Calls == 1, TEXT("phoneCall: the session plays, onPhoneCall told"));
 		A->StopPhoneCalls();
 		Check(!A->PhonePlaying(), TEXT("stopPhoneCalls ends the session"));
-		Check(A->PhoneCall({ { TEXT("So you went out there."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: N. VEGA in her own voice"));
+		Check(A->PhoneCall({ { TEXT("So you went out there."), TEXT("WARD") } }).IsSet(), TEXT("phoneCall: a speaker in her own recorded voice"));
 		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("REYES") } }).IsSet(), TEXT("phoneCall: a speaker without a character voice: unset (captions), no generic telephone bank"));
-		Check(!A->PhoneCall({ { TEXT("Sierra Motor Court."), TEXT("N. VEGA") }, { TEXT("A line nobody recorded."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: one line without a recording: unset, nothing half-spoken"));
+		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("N. VEGA") } }).IsSet() && !A->LineBuffer(TEXT("THE LINE"), TEXT("So you went out there.")),
+			TEXT("phoneCall: N. Vega and the line have no voice (VOICE-OUT-3): unset (captions), no borrowed recording"));
+		Check(!A->PhoneCall({ { TEXT("Sierra Motor Court."), TEXT("WARD") }, { TEXT("A line nobody recorded."), TEXT("WARD") } }).IsSet(), TEXT("phoneCall: one line without a recording: unset, nothing half-spoken"));
 		Check(!A->PhonePlaying(), TEXT("... and no session"));
 		A->bCharacterVoices = false;
-		Check(!A->PhoneCall(Nora).IsSet(), TEXT("phoneCall: character voices off: unset (captions)"));
+		Check(!A->PhoneCall(Call).IsSet(), TEXT("phoneCall: character voices off: unset (captions)"));
 		A->bCharacterVoices = true;
-		A->StopPhoneCalls();
+		A->StopPhoneCalls(); A->CharacterKeys.Remove(TEXT("ward"));
 	}
 	{
 		A->OnPhoneCall = {}; // the previous timeline fixture captured a scoped counter

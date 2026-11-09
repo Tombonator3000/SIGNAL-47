@@ -554,15 +554,14 @@ TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lin
 }
 
 /** The recording phoneCall() plays: each speaker's own character voice only. (KINSKI-READ-OUT, Tom
- *  9 November 2026: the old fallback to the Kinski telephone bank is gone.) An unrecorded call uses its captions. */
+ *  9 November 2026: the old fallback to the Kinski telephone bank is gone. VOICE-OUT-3, the same day: so
+ *  are N. Vega's and THE LINE's, the bacall and price clones.) An unrecorded call uses its captions. */
 TSharedPtr<FS47AudioBuffer> US47Audio::LineBuffer(const FString& By, const FString& Text) const
 {
 	// Ward has her own unrecorded cast slot (HorrorStory/pack.json): captions until
 	// the agreed final voice session. Never substitute Dale's general telephone bank.
 	if (By == TEXT("WARD")) return CharacterBuffer(TEXT("ward"), Text);
-	const TSharedPtr<FS47AudioBuffer> Actor = By == TEXT("N. VEGA") ? CharacterBuffer(TEXT("bacall"), Text)
-		: By == TEXT("THE LINE") ? CharacterBuffer(TEXT("price"), Text) : nullptr;
-	return Actor;
+	return nullptr;
 }
 
 /** A hang-up, replacement, new night, save load or title: future sources stop too. */

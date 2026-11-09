@@ -48,6 +48,12 @@ FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 	Index(*CatPtr);
 }
 
+const TArray<FString>& FS47RadioVoice::RetiredVoices()
+{
+	static const TArray<FString> Retired = { TEXT("bacall"), TEXT("price"), TEXT("lynch"), TEXT("kinski") };
+	return Retired;
+}
+
 void FS47RadioVoice::UseCatalog(const TSharedPtr<FJsonObject>& Catalog, const FString& InRoot)
 {
 	Clips.Reset(); ById.Reset(); ByText.Reset(); Templates.Reset(); Hours.Reset(); Minutes.Reset(); Buffers.Reset(); Order.Reset(); Bytes = 0;
@@ -62,6 +68,7 @@ void FS47RadioVoice::Index(const TSharedPtr<FJsonObject>& Cat)
 		const TSharedPtr<FJsonObject> O = V->AsObject(); if (!O) continue;
 		FS47RadioClip C; C.Id = Str(O, TEXT("id")); C.Text = Str(O, TEXT("text")); C.File = Str(O, TEXT("file")); C.Voice = Str(O, TEXT("voice")); O->TryGetNumberField(TEXT("duration"), C.Duration);
 		O->TryGetNumberField(TEXT("speech_start_seconds"), C.SpeechStart); O->TryGetNumberField(TEXT("speech_end_seconds"), C.SpeechEnd); C.Channel = Str(O, TEXT("channel"));
+		if (RetiredVoice(C.Voice)) continue; // VOICE-OUT-3: an old catalog's retired roles stay unvoiced (text only)
 		ById.Add(C.Id, Clips.Num()); ByText.Add(Kind == TEXT("caller") || Kind == TEXT("ensemble") || Kind == TEXT("evening") || Kind == TEXT("horror") ? Key(C.Voice, Clean(C.Text)) : Clean(C.Text), Clips.Num()); Clips.Add(MoveTemp(C));
 	}
 	for (const auto& V : Arr(Cat, TEXT("templates")))
