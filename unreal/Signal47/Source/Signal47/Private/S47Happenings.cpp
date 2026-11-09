@@ -154,7 +154,7 @@ bool Resumable(const FString& Id,const FString& Variant)
 const TCHAR* const NightKeys[]={TEXT("cattle_ring_d"),TEXT("car_dies_d"),TEXT("clock_ahead_d"),TEXT("cb_echo_d"),TEXT("cb_empty_d"),TEXT("cb_wrong_d"),TEXT("landing_seen_d"),TEXT("landing_logged_d"),TEXT("hitcher_d"),TEXT("rv_d"),
  TEXT("carcass_d"),TEXT("house_lit_d"),TEXT("horizon_figure_d"),TEXT("cinema_film_d"),TEXT("room6_tv_d"),TEXT("blackout_d"),TEXT("array_burst_d"),TEXT("hood_warm_d"),TEXT("truck_tracks_d"),
  TEXT("animals_flee_d"),TEXT("car_light_d"),TEXT("dust_devil_d"),TEXT("missing_d"),TEXT("dogs_hush_d"),TEXT("phone_empty_d"),TEXT("geiger_landing_"),TEXT("geiger_trace_"),TEXT("geiger_sample_"),
- TEXT("figure_near_d"),TEXT("lights_trace_bignight_d")};
+ TEXT("figure_near_d"),TEXT("lights_trace_bignight_d"),TEXT("big_felt_d")};
 // What a line may not say (the text critic, 8 November): the answer for the player, and the motifs another system owns. One line.
 const TCHAR* const Concludes[]={TEXT("nobody in it"),TEXT("nobody lives there"),TEXT("nobody with it"),TEXT("it had it right"),TEXT("seemed embarrassed"),TEXT("nothing behind the station"),TEXT("looks like your handwriting"),TEXT("the way the lights came down"),TEXT("as if a film were running"),TEXT("does not seem to have heard"),TEXT("nothing out there for anyone")};
 bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TCHAR* W:Concludes)if(L.Contains(W))return true;return false;}
@@ -557,6 +557,18 @@ namespace S47Hap
     for(int32 I=int32(At*Hz);I<Count&&I<int32((At+.09)*Hz);++I){const double T=I/double(Hz)-At;S[I]+=float(FMath::Sin(2*UE_DOUBLE_PI*F*T)*FMath::Exp(-T*70.)+(T<.002?Noise()*.6:0.));}
    }
    Normalise(S,.5f);
+  }
+  else if(Name==TEXT("lowtone"))
+  {
+   // M7, the big night: a low note up out of the ground, two tones three cycles apart that beat, and one an octave over. One
+   // second, whole cycles of each, to loop without a seam.
+   const int32 Count=int32(Hz);S.SetNumZeroed(Count);
+   for(int32 I=0;I<Count;++I)
+   {
+    const double T=I/double(Hz);
+    S[I]=float(FMath::Sin(2*UE_DOUBLE_PI*52.*T)*1.+FMath::Sin(2*UE_DOUBLE_PI*55.*T)*.8+FMath::Sin(2*UE_DOUBLE_PI*104.*T)*.3);
+   }
+   Normalise(S,.7f);
   }
   return S;
  }
@@ -1484,6 +1496,7 @@ FString FS47Happenings::NightFindingKind(const FString& Id)
 }
 FString FS47Happenings::RestBlock() const
 {
+ if(Now.Id==TEXT("big_night"))return TEXT("Not now. Not with every light in the place doing that.");
  if(!Now.bDanger||!Now.bMet)return FString();
  if(Now.Id==TEXT("car_light"))return TEXT("Not with that light still over the truck.");
  if(Now.Id==TEXT("hitchhiker"))return TEXT("Not with her out there.");
@@ -1620,9 +1633,10 @@ void FS47Happenings::Step(double Dt)
  StepTips();
  StepBigAfter();
  // The night by its own rules: only where a real game is played (or a test asks for them), never in the first shift.
+ // The first big night asks for itself in the first shift too (it waits for the shift to end, and is never lost to it).
+ if(F->RulesLive()||bBigDevNatural)StepBigDue();
  if(F->RulesLive()&&!F->InTutorial())
  {
-  StepBigDue();
   StepSwap();
   static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
    TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
@@ -1642,7 +1656,6 @@ void FS47Happenings::Step(double Dt)
   StepLate();
   StepCues();
  }
- else if(bBigDevNatural&&!F->InTutorial())StepBigDue();
  StepWatch();
  StepReport();
  StepUnease(Dt);

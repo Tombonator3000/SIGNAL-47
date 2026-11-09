@@ -19,6 +19,7 @@
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
 #include "S47Story.h"
+#include "S47Taken.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47Trouble.h"
@@ -67,6 +68,12 @@ namespace S47Big
  const TCHAR* const Names[]={TEXT("column"),TEXT("fall"),TEXT("rise")};
  constexpr uint32 SaltNight=0x42494731u,SaltHour=0x42494732u,SaltVar=0x42494733u;
  double Smooth(double A,double B,double X){const double T=FMath::Clamp((X-A)/FMath::Max(1e-6,B-A),0.,1.);return T*T*(3-2*T);}
+ // Level in three's terms (y up): the way along the ground, x and z (FVector::GetSafeNormal2D keeps x and y, which is wrong here).
+ FVector Level(const FVector& V){return FVector(V.X,0,V.Z).GetSafeNormal();}
+ // The hour as the records write it, never at Story's minute: 02:47 is written 02:48.
+ FString Clock(double At){FString T=S47Hap::ClockText(At);if(T.EndsWith(TEXT(":47")))T=T.LeftChop(2)+TEXT("48");return T;}
+ // Story's dark minute and the minutes round it: the big night never starts in them, however late it is let go.
+ bool StoryWindow(double NightHour){return NightHour>=26.33&&NightHour<26.67;}
  // The words with their places filled in (FString::Printf takes only a literal).
  FString Put(const TCHAR* Text,const FString& Place,const FString& Clock=FString(),const FString& Way=FString(),double Az=0,double El=0)
  {
@@ -93,9 +100,9 @@ namespace S47Big
  const FWords Words[]={
   {TEXT("At {clock} a column of pale light stood up off the land out past {place}, {way}, for a few seconds, and went back down into the ground. The note under everything stopped with it."),
    TEXT("And a boy at the trailer park says a light stood up out past {place} like a fence post a mile high, and the yard lamps went out with it. Boys say things. The lamps I can see."),
-   TEXT("Earl, I was up with the baby about half past two, and a light stood straight up out past {place}. Like a searchlight with nobody under it. Then every light in the house went."),TEXT("woman"),
-   TEXT("You're the fourth call about that, ma'am, and nobody's told me what it was. If it was the base, they're not saying."),
-   TEXT("Breaker one-nine. Anybody else lose their dash lights last night, about half past two, out by {place}? Whole truck went dark and the radio sang one note at me."),
+   TEXT("Earl, I was up with the baby the other night, after two, and a light stood straight up out past {place}. Like a searchlight with nobody under it. Then every light in the house went."),TEXT("woman"),
+   TEXT("You're not the first call about that, ma'am, and nobody's told me what it was. If it was the base, they're not saying."),
+   TEXT("Breaker one-nine. Anybody else lose their dash lights last night, after two, out by {place}? Whole truck went dark and the radio sang one note at me."),
    TEXT("A trucker says his lights went out last night by {place}, and the radio sang one note."),
    TEXT("GLASSED GROUND"),
    TEXT("A disc of ground about two yards across has gone to glass: dark, glossy, cracked like a dry pond, still a little warm under the hand. A ring of pale ash around it. In the ash, small bare prints go round the glass twice, close together, and then go off in one line."),
@@ -103,7 +110,7 @@ namespace S47Big
    TEXT("Out past {place} a disc of ground gone to glass, still warm, with a ring of ash around it. Small bare prints in the ash go round it twice and then off in one line.")},
   {TEXT("At {clock} a light came down fast out past {place}, {way}, and lit up the ground where it went out. A boom came after it, late."),
    TEXT("The county had three calls before four about something coming down out past {place}. And a boom that woke every dog in Caliche. A boom. Not a plane. I asked them."),
-   TEXT("Earl, something came down out past {place} last night. Lit the whole sky white and then a boom like they used to make at the mine. My windows are still talking about it."),TEXT("man"),
+   TEXT("Earl, something came down out past {place} the other night. Lit the whole sky white and then a boom like they used to make at the mine. My windows are still talking about it."),TEXT("man"),
    TEXT("The county says there's no plane missing. That's all I've got, folks. If you find a piece of anything out there, leave it be and call the sheriff."),
    TEXT("Breaker one-nine. Who else heard that boom out by {place} last night? Lit me up like noon in the mirror. I pulled over and waited, and nothing came."),
    TEXT("A trucker says something came down by {place} last night, with a boom, and lit his mirror up."),
@@ -112,9 +119,9 @@ namespace S47Big
    TEXT(" Sighted along it, the furrow points back the way it came: toward {place}. It is on your map."),
    TEXT("Out past {place} a burnt furrow about twenty yards long, deepest at the end, and nothing at the end of it. The brush either side laid flat, pointing away.")},
   {TEXT("At {clock} a dozen small lights rose together off the land out past {place}, {way}, slowly, keeping together, and went out all at once high up."),
-   TEXT("And the ranch out past {place} says the cattle went through two fences before three o'clock. Before! Something told them first."),
+   TEXT("And the ranch out past {place} says the cattle went through two fences before the lights went up. Before! Something told them first."),
    TEXT("Earl, my cows are in my neighbor's yard and his are in mine. Something went up out past {place}, a whole string of lights going up slow, and every animal on the place ran from it."),TEXT("old"),
-   TEXT("That's the third one this morning about lights going up. I'm just the radio, folks. I don't know either."),
+   TEXT("That's the third one about lights going up. I'm just the radio, folks. I don't know either."),
    TEXT("Breaker one-nine. Anybody see the lights go up out by {place} last night? A string of them, slow. My dog won't come out from under the trailer."),
    TEXT("A trucker says he saw a string of lights go up slow out by {place} last night."),
    TEXT("STONES TURNED OVER"),
@@ -162,7 +169,7 @@ void FS47Happenings::ResetBig()
 {
  BigNight=0;BigVar=-1;BigSerial=0;BigDaleAt=0;BigClock=0;BigAz=0;BigEl=3;BigX=BigZ=0;BigTry=BigFollowTry=BigFlick=BigDaleIn=0;
  BigPlace.Empty();BigTitle.Empty();BigFollow.Reset();BigDaleLines.Reset();
- bBigSawNight=false;bBigPower=false;bBigMotors=false;bBigDimmed=false;bBigToneOn=false;
+ bBigSawNight=false;bBigPower=false;bBigMotors=false;bBigDimmed=false;bBigToneOn=false;bBigDevNatural=false;bBigSlept=false;BigSoon=-1;BigLastClock=-1;
 }
 void FS47Happenings::LoadBig(const S47J::FObj& O)
 {
@@ -173,7 +180,7 @@ void FS47Happenings::LoadBig(const S47J::FObj& O)
  if(!FMath::IsFinite(BigX)||!FMath::IsFinite(BigZ)||FMath::Abs(BigX)>1e5||FMath::Abs(BigZ)>1e5){BigX=BigZ=0;}
  BigPlace=S47J::Str(O,TEXT("place")).Left(64);BigTitle=S47J::Str(O,TEXT("title")).Left(120);
  bBigSawNight=S47J::Bool(O,TEXT("saw"));
- static const TCHAR* const Known[]={TEXT("array"),TEXT("dale"),TEXT("slip"),TEXT("hail"),TEXT("missed"),TEXT("radio"),TEXT("cb"),TEXT("seen"),TEXT("felt"),TEXT("trace"),TEXT("unseen"),TEXT("forced")};
+ static const TCHAR* const Known[]={TEXT("array"),TEXT("dale"),TEXT("slip"),TEXT("hail"),TEXT("missed"),TEXT("radio"),TEXT("cb"),TEXT("seen"),TEXT("felt"),TEXT("trace"),TEXT("unseen"),TEXT("forced"),TEXT("turned")};
  for(const FString& W:S47J::Strs(O,TEXT("follow")))for(const TCHAR* K:Known)if(W==K)BigFollow.Add(W);
  // A hail out when it was saved is not out any more.
  BigFollow.Remove(TEXT("hail"));
@@ -242,7 +249,7 @@ bool FS47Happenings::BeginBig(const FString& Variant,bool bForced,FString& Why)
  if(US47Audio* A=M->Audio.Get())
  {
   A->HoldRoomTone(.25f,.6f);bBigToneOn=true;
-  if(bHere)A->Far(TEXT("dog1"),Eye()+(Ground-Eye()).GetSafeNormal2D()*120.+FVector(0,2,0),.3f,.9f);
+  if(bHere)A->Far(TEXT("dog1"),Eye()+S47Big::Level(Ground-Eye())*120.+FVector(0,2,0),.3f,.9f);
  }
  Noticed(TEXT("big_night"),-1,TEXT("here"),Serial+1);
  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night begins day %d %s, %s, in %s%s"),Night,*S47Hap::ClockText(F->Clock()),BigVariantName(BigVar),*M->Web->Area(),bForced?TEXT(", F10"):TEXT(""));
@@ -262,6 +269,7 @@ void FS47Happenings::BigTurnArray(bool bSnap)
   if(W->PointDish(I,BigAz,BigEl,bSnap?9.:3.5))++Turned;
  }
  if(!bSnap&&Turned>0&&M->Audio&&!bBigMotors){M->Audio->StartMotors();bBigMotors=true;}
+ if(Turned>0)BigFollow.Add(TEXT("turned"));
  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: %d dishes on remote %s %.0f, %.0f up"),Turned,bSnap?TEXT("found at"):TEXT("turn to"),BigAz,BigEl);
 }
 void FS47Happenings::BigRecordArray(bool bWasThere)
@@ -269,12 +277,13 @@ void FS47Happenings::BigRecordArray(bool bWasThere)
  auto* F=M->Freeform.Get();
  if(BigFollow.Contains(TEXT("array")))return;
  BigFollow.Add(TEXT("array"));
+ if(!BigFollow.Contains(TEXT("turned")))BigTurnArray(true);
  if(FSite* S=SiteOf(TEXT("bigmark")))S->bKnown=true;
  const FString Key=FString::Printf(TEXT("array_burst_d%d_turn"),BigNight);
  if(!F->HasFinding(Key))
-  F->RecordEvidence(Key,FString::Printf(TEXT("At %s every antenna on remote turned by itself, all together, to about %03.0f degrees and %.0f up, low on the horizon, and stayed there. Nothing on the command log. The printer ran one line by itself: ALL CHANNELS OVER RANGE."),*S47Hap::ClockText(BigClock),BigAz,BigEl));
+  F->RecordEvidence(Key,FString::Printf(TEXT("At %s every antenna on remote turned by itself, all together, to about %03.0f degrees and %.0f up, low on the horizon, and stayed there. Nothing on the command log. The printer ran one line by itself: ALL CHANNELS OVER RANGE."),*S47Big::Clock(BigClock),BigAz,BigEl));
  if(M->UI)M->UI->Toast(bWasThere?FString::Printf(TEXT("ARRAY / Every antenna on remote has turned by itself to %03.0f, %.0f up. Nothing on the command log. The bearing is on your map (TAB)."),BigAz,BigEl)
-  :FString::Printf(TEXT("ARRAY / Every antenna on remote is pointed at %03.0f, %.0f up. Nobody commanded it. The bearing is on your map (TAB)."),BigAz,BigEl),7);
+  :FString::Printf(TEXT("ARRAY / Every antenna on remote is pointed at %03.0f, %.0f up. Nobody commanded it. On the printer's strip, one line by itself at %s: ALL CHANNELS OVER RANGE. The bearing is on your map (TAB)."),BigAz,BigEl,*S47Big::Clock(BigClock)),8);
  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: the array's record kept (%s)"),bWasThere?TEXT("there when it turned"):TEXT("found the morning after"));
  M->RequestAutosave();
 }
@@ -284,7 +293,7 @@ void FS47Happenings::EndBigEffects()
  if(bBigPower&&IsValid(M->SaroNight)&&M->SaroNight->Power)M->SaroNight->Power->Restore();
  if(bBigMotors&&IsValid(M->Audio))M->Audio->StopMotors();
  if(bBigDimmed&&IsValid(M->World))M->World->Trouble.Dim=1;
- if(bBigToneOn&&IsValid(M->Audio))M->Audio->HoldRoomTone(1.f,.8f);
+ if(bBigToneOn&&IsValid(M->Audio)){M->Audio->HoldRoomTone(1.f,.8f);M->Audio->Stop(TEXT("hapBigTone"),.3f);}
  bBigPower=bBigMotors=bBigDimmed=bBigToneOn=false;
  if(IsValid(M->Web.Get())&&!IsGarbageCollecting())for(const TCHAR* K:{TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigflash")})ShowBig(K,FVector::ZeroVector,0,FVector(1),0,false);
 }
@@ -303,14 +312,13 @@ void FS47Happenings::StepBig(double Dt)
  // The gear feels it from the start: a source at the player, strong enough for the lamp, the walkie, the truck and the watch.
  if(M->Omen&&Age<Back)
  {
-  FS47OmenSource S;S.Id=TEXT("night:big_night");S.At=Eye()+(bHere?(Ground-Eye()).GetSafeNormal2D()*25.:FVector(25,0,0));S.Severity=Age<Climax?.45:.65;S.Reach=320;S.bComing=Age<Flick;
+  FS47OmenSource S;S.Id=TEXT("night:big_night");S.At=Eye()+(bHere?S47Big::Level(Ground-Eye())*25.:FVector(25,0,0));S.Severity=Age<Climax?.45:.65;S.Reach=320;S.bComing=Age<Flick;
   M->Omen->Post(S,1.);
  }
  if(Crossed(Tone)&&A)
  {
   // Two low tones close together, beating, with one above: under everything, until the light out there goes.
-  const float Secs=float(ClimaxEnd-Tone);
-  A->Beep(52.f,Secs,.065f,0.f,TEXT("sine"));A->Beep(55.5f,Secs,.05f,0.f,TEXT("sine"));A->Beep(104.f,Secs,.018f,0.f,TEXT("sine"));
+  FS47Sound O;O.Gain=.5f;O.bLoop=true;A->LoopSfx(TEXT("hapBigTone"),Synth(TEXT("lowtone")),O);
   A->HoldRoomTone(.1f,1.5f);bBigToneOn=true;
  }
  if(Crossed(Rack))
@@ -356,7 +364,7 @@ void FS47Happenings::StepBig(double Dt)
  if(bHere&&Age>=Climax-.5&&Age<ClimaxEnd+8)
  {
   const double T=(Age-Climax)/(ClimaxEnd-Climax);
-  const FVector Away=(Ground-Eye()).GetSafeNormal2D();
+  const FVector Away=S47Big::Level(Ground-Eye());
   FVector At=Ground;FString Kind;bool bShow=false;FVector Scale(1);float K=1;
   if(BigVar==0)
   {
@@ -397,6 +405,7 @@ void FS47Happenings::StepBig(double Dt)
  }
  if(Crossed(ClimaxEnd))
  {
+  if(A)A->Stop(TEXT("hapBigTone"),.04f);
   UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: the note stops, %s"),BigFollow.Contains(TEXT("seen"))?TEXT("seen"):TEXT("not seen"));
  }
  // The sound of it arrives late, with the distance.
@@ -424,18 +433,17 @@ void FS47Happenings::StepBig(double Dt)
  {
   // Whatever stood out there is gone from the scene now (the fall's lit ground has faded by this).
   for(const TCHAR* K:{TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigflash")})ShowBig(K,FVector::ZeroVector,0,FVector(1),0,false);
-  const FString Clock=S47Hap::ClockText(BigClock);
+  const FString Clock=S47Big::Clock(BigClock);
   if(bSaro)BigRecordArray(true);
   if(BigFollow.Contains(TEXT("seen")))
   {
-   const FString Way=bSaro?FString::Printf(TEXT("about %03.0f degrees from SARO"),BigAz):FString::Printf(TEXT("to the %s"),*DirectionFrom(Eye(),Ground));
+   const FString Way=FString::Printf(TEXT("about %03.0f degrees from SARO"),BigAz);
    F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d_wide"),BigNight),S47Big::Put(S47Big::Words[BigVar].Seen,BigTitle,Clock,Way));
    Deed(FString::Printf(TEXT("You watched the light out past %s the night the array turned."),*BigTitle));
   }
   else
   {
-   F->RecordEvidence(FString::Printf(TEXT("blackout_d%d_wide"),BigNight),FString::Printf(TEXT("At %s every light went down and came back, and a low note came up out of the ground for half a minute and stopped all at once."),*Clock));
-   BigFollow.Add(TEXT("felt"));
+   BigFelt();
   }
   M->RequestAutosave();
  }
@@ -447,24 +455,36 @@ void FS47Happenings::StepBig(double Dt)
  }
 }
 
-// Slept through, or away where none of it reached: it happened all the same, and the morning finds what it left.
-void FS47Happenings::BigUnseen(int32 Night)
+// Slept through, or kept from it until five: it happened all the same, and the morning finds what it left. bSlept: the player slept
+// through it (Dale's words say so); otherwise they were awake and only felt it, and that is what is kept.
+void FS47Happenings::BigUnseen(int32 Night,bool bSlept)
 {
  auto* F=M->Freeform.Get();
  const FBigPlan P=BigPlan();
  BigVar=P.Variant;
  // Its own hour on its own night, for the records.
  BigClock=(double(Night)-1.)*86400.+8*3600.+(P.Hour-8.)*3600.;
- if(!BigSite(Night,F->Clock())){BigNight=-1;UE_LOG(LogS47BigNight,Display,TEXT("S47: big night slept through on night %d, and no ground for it"),Night);return;}
- BigNight=Night;BigFollow.Add(TEXT("unseen"));
- UE_LOG(LogS47BigNight,Display,TEXT("S47: big night slept through on night %d (%s): the morning finds what it left"),Night,BigVariantName(BigVar));
+ if(!BigSite(Night,F->Clock())){BigNight=-1;UE_LOG(LogS47BigNight,Display,TEXT("S47: big night on night %d, and no ground for it"),Night);return;}
+ BigNight=Night;
+ if(bSlept)BigFollow.Add(TEXT("unseen"));else BigFelt();
+ UE_LOG(LogS47BigNight,Display,TEXT("S47: big night %s on night %d (%s): the morning finds what it left"),bSlept?TEXT("slept through"):TEXT("kept off until five"),Night,BigVariantName(BigVar));
  M->RequestAutosave();
 }
+// Felt and not seen: the lights going and the note, under a key of its own (a lead for the visitors' case, not Caliche's outage).
+void FS47Happenings::BigFelt()
+{
+ auto* F=M->Freeform.Get();
+ BigFollow.Add(TEXT("felt"));
+ const FString Key=FString::Printf(TEXT("big_felt_d%d"),BigNight);
+ if(F&&!F->HasFinding(Key))F->RecordEvidence(Key,FString::Printf(TEXT("At %s every light went down and came back, and a low note came up out of the ground for half a minute and stopped all at once."),*S47Big::Clock(BigClock)));
+}
 
-// Due at its hour on its night, by the rhythm; past five, slept through. Asked in the night's own rules only.
+// Due at its hour on its night, by the rhythm; past five, it happened without the player. Asked in the night's own rules only, and
+// in the first shift too, so that a long first shift or a long sleep never loses it.
 void FS47Happenings::StepBigDue()
 {
  auto* F=M->Freeform.Get();
+ const double Was=BigLastClock;BigLastClock=F->Clock();
  if(BigNight!=0)return;
  // A developer run (the scenario tests among them) has none of its own unless F10's natural line asks: the tests built on other
  // nights stay as they were. A real game, and -S47NormalJourney, have it.
@@ -472,16 +492,30 @@ void FS47Happenings::StepBigDue()
  const FBigPlan P=BigPlan();
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  const double H=HourOfNight(F->Clock());
- if(Night<P.Night)return;
+ // Seen in this game before its night is over: from now on it cannot be lost, only slept through.
+ if(Night<P.Night){bBigSawNight=true;return;}
+ // The clock went on a long way at once: a rest, a wait or a trip. Over its night, it was slept through.
+ const bool bJump=Was>0&&F->Clock()-Was>1800;
  if(Night>P.Night)
  {
-  if(bBigSawNight)BigUnseen(P.Night);
+  if(bBigSawNight)BigUnseen(P.Night,true);
   else{BigNight=-1;UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: this game came in after its night %d; not made up for"),P.Night);}
   return;
  }
  if(!bBigSawNight){bBigSawNight=true;UE_LOG(LogS47BigNight,Display,TEXT("S47: big night tonight, night %d, from %s, %s"),P.Night,*S47Hap::ClockText(FMath::Fmod(P.Hour,24.)*3600.),BigVariantName(P.Variant));}
- if(H>=29.){BigUnseen(P.Night);return;}
- if(H<P.Hour||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen())return;
+ // Woken on its night (FS47FreeformDirector::DrawForNight) after one: it comes soon after the waking, not at an hour slept through again.
+ if(bJump&&H>=25.&&H<28.5){BigSoon=FMath::Max(26.05,H+.04);UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: awake at %s on its night, so it comes soon"),*S47Hap::ClockText(F->Clock()));}
+ if(bJump)bBigSlept=true;else if(H>=25.)bBigSlept=false;
+ if(H>=29.){BigUnseen(P.Night,bBigSlept);return;}
+ double From=P.Hour;if(BigSoon>0)From=FMath::Min(From,BigSoon);
+ if(S47Big::StoryWindow(From))From=26.67;
+ if(H<From||S47Big::StoryWindow(H)||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen()||F->InTutorial())return;
+ // Late in the night the rhythm's rest no longer holds it back, but nothing else on the ground and nobody being taken.
+ if(H>=28.5)
+ {
+  const bool bBusy=(M->Rhythm&&!M->Rhythm->ReadNow().Busy.IsNone())||(F->Taken&&F->Taken->Busy())||(F->Director&&F->Director->Busy());
+  if(bBusy){BigTry=Paced+5;return;}
+ }
  BigTry=Paced+5;
  FString Why;
  if(StartEvent(TEXT("big_night"),FString(),false,Why))return;
@@ -493,6 +527,8 @@ void FS47Happenings::StepBigAfter()
 {
  if(BigNight<=0||!M||!M->Freeform||BigLive())return;
  auto* F=M->Freeform.Get();
+ // Cut short by a Continue before its records: it was felt at least.
+ if(!BigFollow.Contains(TEXT("seen"))&&!BigFollow.Contains(TEXT("felt"))&&!BigFollow.Contains(TEXT("unseen")))BigFelt();
  const int32 Day=F->Day();
  const double Hour=S47Hap::HourOf(F->Clock());
  const double NightH=HourOfNight(F->Clock());
@@ -537,6 +573,7 @@ void FS47Happenings::StepBigAfter()
      if(M)M->RequestAutosave();
     },[this,Guard]{if(Guard.IsValid()){BigFollow.Remove(TEXT("hail"));BigFollow.Add(TEXT("missed"));UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: Dale's hail not answered: his slip by the phone"));}}))
    {BigFollow.Add(TEXT("hail"));UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: Dale hails on the walkie"));}
+   else if(Hour>=10.5){BigFollow.Add(TEXT("missed"));UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: the walkie would not take Dale's hail (another channel, or left out): his slip by the phone"));}
   }
   // No set, or no answer: the slip, read at the station indoors.
   const bool bNoSet=!M->FieldRadio.IsValid()||!M->FieldRadio->Owned();
@@ -549,7 +586,8 @@ void FS47Happenings::StepBigAfter()
    M->RequestAutosave();
   }
  }
- // 1420, the morning after and the two days after it: a caller and Earl, in the program's own turn, with the truck's radio on it.
+ // 1420, in the program's own turn with the truck's radio on it: Freeform's 1420 is on the air from midnight to four, so the nights
+ // after (from the next one to the third).
  if(!BigFollow.Contains(TEXT("radio"))&&Day>BigNight&&Day<=BigNight+3&&M->CarRadio&&M->CarRadio->Live()&&M->CarRadio->Station==TEXT("caliche")&&M->Radio&&M->Story)
  {
   const auto* St=M->Radio->Stations.Find(TEXT("caliche"));
@@ -568,7 +606,7 @@ void FS47Happenings::StepBigAfter()
   }
  }
  // The CB the evening after, from someone out on the road that night.
- if(!BigFollow.Contains(TEXT("cb"))&&bMorning&&NightH>=20&&NightH<23&&Now.Id.IsEmpty()&&Uneasy.I<0)
+ if(!BigFollow.Contains(TEXT("cb"))&&bMorning&&NightH>=20&&NightH<23&&Now.Id.IsEmpty()&&Uneasy.I<0&&(CanHearCb()||(M->FieldRadio.IsValid()&&M->FieldRadio->Owned())))
  {
   const FString Place=BigSpoken();
   Tip({S47Big::Put(W.Cb,Place)},BigVar==2?TEXT("old"):TEXT("man"),S47Big::Put(W.Passed,Place));
@@ -576,6 +614,12 @@ void FS47Happenings::StepBigAfter()
   UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: talked of on the CB the evening after"));
   M->RequestAutosave();
  }
+}
+void FS47Happenings::DevBigNatural()
+{
+ if(BigLive())EndEvent(false);
+ EndBigEffects();
+ ResetBig();bBigDevNatural=true;
 }
 bool FS47Happenings::DevBigSlept(const FString& Variant,FString& Why)
 {
@@ -660,7 +704,6 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   const S47J::FObj O=H.SaveBig();
   FS47Happenings L(nullptr);L.ResetBig();L.LoadBig(O);
   Check(L.BigNight==2&&L.BigVar==1&&FMath::IsNearlyEqual(L.BigAz,132.)&&L.BigHas(TEXT("array"))&&!L.BigHas(TEXT("hail"))&&L.bBigSawNight,TEXT("saved once it has come: a load keeps its night, its shape, the bearing and what followed, and lets a hail that was out go"));
-  Check(!L.BigWakes(2)&&!L.BigWakes(3),TEXT("once it has come it wakes nobody again"));
   FS47Happenings E(nullptr);E.ResetBig();
   Check(E.SaveBig()==nullptr&&E.BigHappened()==0,TEXT("a game that has not reached it saves nothing of it"));
  }

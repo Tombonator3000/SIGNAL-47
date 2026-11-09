@@ -141,7 +141,7 @@ public:
  // F10 and tests: the day after's follow-ups now, as far as where the player is allows (Dale's hail, the array's record).
  void DevBigMorning();
  // F10: the planner's own draw from now on, in a developer run too, as if this game had not reached it yet.
- void DevBigNatural(){ResetBig();bBigDevNatural=true;}
+ void DevBigNatural();
  // F10: tonight's big night as if slept through, in this shape (empty: the seed's): the mark is out there, the day after to come.
  bool DevBigSlept(const FString& Variant,FString& Why);
  // F10: as E on the mark.
@@ -375,6 +375,8 @@ private:
  bool bBigSawNight=false,bBigPower=false,bBigMotors=false,bBigDimmed=false,bBigToneOn=false;
  // F10's natural line: the plan is asked outside the night's own rules too (not saved).
  bool bBigDevNatural=false;
+ // The last clock StepBigDue saw (a long jump is a rest), whether the player slept on its night, and the hour a waking brings it on.
+ double BigLastClock=-1,BigSoon=-1;bool bBigSlept=false;
  bool BeginBig(const FString& Variant,bool bForced,FString& Why);
  void StepBig(double Dt);
  void StepBigDue();
@@ -383,7 +385,8 @@ private:
  void UseBig();
  void BigTurnArray(bool bSnap);
  void BigRecordArray(bool bWasThere);
- void BigUnseen(int32 Night);
+ void BigUnseen(int32 Night,bool bSlept);
+ void BigFelt();
  bool BigSite(int32 Night,double Clock);
  FString BigSpoken() const;
  S47J::FObj SaveBig() const;
