@@ -35,6 +35,7 @@
 #include "S47Three.h"
 #include "S47Docs.h"
 #include "S47Flow.h"
+#include "S47SaroSave.h"
 #include "S47Fx.h"
 #include "NiagaraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -123,6 +124,82 @@ namespace
    }
   }
   return Text+TEXT("\nOPS / DAILY WORK: select an unfinished observation. When none remain, the optional reference check provides a new SARO original.");
+ }
+ // M7 (B2): what is out there is heard where the player is, not told. A line goes with the sound only within reach and
+ // with nothing solid between (a shut door is solid); some only to a player who is outside. Anything else gets the sound alone.
+ bool SaysAloud(double Distance,double Range,bool bClear,bool bIndoors,bool bOutsideOnly)
+ {return FMath::IsFinite(Distance)&&Distance<=Range&&bClear&&!(bOutsideOnly&&bIndoors);}
+ bool PlayerIndoors(const US47Main* M){return M&&M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Indoors();}
+ // Line of hearing from the player's eye to the place: open, or the first thing in the way is the place itself (the fence it is at).
+ bool ClearTo(const US47Main* M,const FVector& At)
+ {
+  if(!M||!M->Night||!M->Web||!M->Web->GetWorld())return false;
+  const FVector Eye=M->Night->GlimpseIn(true).Cam.Pos;
+  FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformEventHearing),true);if(M->Player)Params.AddIgnoredActor(M->Player);
+  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(Eye),S47Three::ToUE(At),ECC_Visibility,Params))return true;
+  return FVector::Dist(S47Three::ToThree(Hit.ImpactPoint),At)<2.5;
+ }
+ bool HeardHere(const US47Main* M,const FVector& At,double Range,bool bOutsideOnly)
+ {
+  if(!M||!M->Player)return false;
+  const double Distance=FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(At.X,At.Z));
+  return Distance<=Range&&SaysAloud(Distance,Range,ClearTo(M,At),PlayerIndoors(M),bOutsideOnly);
+ }
+ // Who rings the lights in, and how it is put, by the week: the same words every night for a month were a template (M7).
+ FString LightsTip(int32 Week,const FString& Caller,const FString& Place)
+ {
+  switch(FMath::Clamp(Week,0,3))
+  {
+   case 0: return FString::Printf(TEXT("%s reports lights low over %s."),*Caller,*Place);
+   case 1: return FString::Printf(TEXT("%s says there are lights over %s again, low and slow, for a few minutes now."),*Caller,*Place);
+   case 2: return FString::Printf(TEXT("%s calls about lights over %s, and says somebody else on the road saw them too."),*Caller,*Place);
+   default: return FString::Printf(TEXT("%s is on the line about %s. Lights, low, and closer to the road than before."),*Caller,*Place);
+  }
+ }
+ FString HourText(double Clock){const int32 S=int32(FMath::Fmod(FMath::Max(0.,Clock),86400.));return FString::Printf(TEXT("%02d:%02d"),S/3600,(S/60)%60);}
+ // The antenna a visit was over: the one in S-03's place in their flight, wherever on the array the flight was put (OrbSite).
+ bool OrbDish(const US47Main* M,const FVector& Anchor,FString& OutDish,FVector& OutAt)
+ {
+  if(!M||!M->Web||M->Web->DishCount()<1)return false;
+  const auto& S03=FS47DuskOrb::Stops()[0];
+  const FVector2D Want(Anchor.X+S03.X-FS47DuskOrb::HomeX,Anchor.Z+S03.Z-FS47DuskOrb::HomeZ);
+  int32 Best=INDEX_NONE;double Near=12;
+  for(int32 I=0;I<M->Web->DishCount();++I){const double D=FVector2D::Distance(FVector2D(M->Web->DishX(I),M->Web->DishZ(I)),Want);if(D<Near){Near=D;Best=I;}}
+  if(Best==INDEX_NONE)return false;
+  const double X=M->Web->DishX(Best),Z=M->Web->DishZ(Best);
+  OutDish=M->Web->DishId(Best);OutAt=FVector(X,US47Night::SaroFloorAt(M->Web,X,Z)+1.,Z);
+  return !OutDish.IsEmpty();
+ }
+ // Found by going there: a sound at the thing, what is seen there, and a record another system reads. The orb's goes with the
+ // night's records as a burst on the array (FS47Happenings::IsNightFinding, the visitors' case, the night log's instruments);
+ // the fence and the gate end in _visit, the visitors' case's own (FS47FreeformCases::LineForFinding).
+ void FoundLeft(US47Main* M,const FS47DuskOrb::FLeft& L)
+ {
+  if(!M||!M->Freeform)return;
+  const int32 Day=M->Freeform->Day();
+  if(M->Audio)M->Audio->Sfx(L.Kind==TEXT("orb")?TEXT("click"):TEXT("metalTap"),FS47Sound{.Gain=.45f,.At=L.At});
+  FString Seen,Key,Record;
+  if(L.Kind==TEXT("orb"))
+  {
+   Seen=FString::Printf(TEXT("The strip recorder in the junction cabinet at %s has a step in it from last night."),*L.Dish);
+   Key=FString::Printf(TEXT("array_burst_d%d_%s"),Day,*L.Dish);
+   Record=FString::Printf(TEXT("At %s the strip recorder in the junction cabinet at %s stepped up off its noise floor and stayed up until %s. The antennas either side of it stayed flat. Nothing at the cabinet was switched."),*HourText(L.Began),*L.Dish,*HourText(L.Clock));
+  }
+  else if(L.Kind==TEXT("fence"))
+  {
+   Seen=TEXT("Two posts of the yard fence lean outward here. The wire between them is rubbed bright.");
+   Key=FString::Printf(TEXT("array_fence_d%d_visit"),Day);
+   Record=TEXT("Two posts of the yard fence toward the array lean outward, and the wire between them is rubbed bright at about chest height. The ground under it is soft and shows no prints.");
+  }
+  else
+  {
+   Seen=TEXT("The lower rail of the service gate is bowed inward.");
+   Key=FString::Printf(TEXT("service_gate_d%d_visit"),Day);
+   Record=TEXT("The lower rail of the service gate is bowed inward a hand's width, at about knee height. It was straight on the last round. Scrape marks on the concrete inside the gate.");
+  }
+  if(M->UI)M->UI->Toast(Seen,6);
+  M->Freeform->RecordEvidence(Key,Record);
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: found what the night left: %s %s (%s)"),*L.Kind,*L.Dish,*Key);
  }
  const FEvent* Definition(const FString& Id){return Catalog().FindByPredicate([&](const FEvent& D){return D.Id==Id;});}
  bool Instrument(const FString& Id){const auto* D=Definition(Id);return D && D->Family==TEXT("instrument");}
@@ -722,7 +799,11 @@ void FS47FreeformDirector::Apply()
   if(!M->Flow||M->Flow->bStarting||M->Flow->bRestoringNow)return;
   // Chosen a moment before the player turned the key: it waits for the key to come out. A developer run asks this too.
   if(!bForcedEvent&&!M->Flow->FreeformSaveBlock().IsEmpty())return;
-  if(!M->Flow->bDevRun||bTestSaveFails)
+  // M7-E: away from SARO no routine save is written (S47SaroSave::StationBlock). The event goes ahead; the save is asked for
+  // and waits for the station, so a contact out there goes back to the last log filed.
+  const bool bAway=!M->Flow->bDevRun&&!bTestSaveFails&&M->Flow->ManualSaveBlock()==S47SaroSave::StationOnly();
+  if(bAway)M->Flow->RequestAutosave(false);
+  else if(!M->Flow->bDevRun||bTestSaveFails)
   {
    FString Reason;
    if(bTestSaveFails||!M->Flow->AutosaveNow(&Reason))
@@ -748,12 +829,19 @@ void FS47FreeformDirector::Apply()
    // Who rings it in follows where it is, not which of the two it was.
    const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
    const FString Region=P?P->Region:FString(TEXT("land"));
-   const FString Tip=Region==TEXT("motel")?FString(TEXT("The night clerk at the Sierra Motor Court reports lights low over the lot.")):FString::Printf(TEXT("%s reports lights low over %s."),Region==TEXT("caliche")||Region==TEXT("diner")?TEXT("Somebody in town"):Region==TEXT("saro")?TEXT("A trucker on the highway"):Region==TEXT("farm")?TEXT("A caller on the county road"):TEXT("A rancher on the county road"),*LightPlaceTitle(LightPlace));
+   const bool bMotel=Region==TEXT("motel");
+   const FString Caller=bMotel?TEXT("The night clerk at the Sierra Motor Court"):Region==TEXT("caliche")||Region==TEXT("diner")?TEXT("Somebody in town"):Region==TEXT("saro")?TEXT("A trucker on the highway"):Region==TEXT("farm")?TEXT("A caller on the county road"):TEXT("A rancher on the county road");
+   const FString Tip=LightsTip((M->Freeform->Day()-1)/7,Caller,bMotel?FString(TEXT("the lot")):LightPlaceTitle(LightPlace));
    FS47FieldRadio::Report(M,Tip); // CB-WALKIE-20261108: the CB at hand, else Dale passes it on over the walkie
   }
   // Woken for this, or simply there: a figure out at the array makes itself known at least this much.
   if(Event==TEXT("observer"))
-  {if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.35f,.At=Anchor});if(M->UI)M->UI->Toast(TEXT("Something shifts out along the array fence. Then nothing."),5);}
+  {
+   // The sound always, where it is. The words only to someone outside and in earshot; nobody near, and the fence keeps it for the morning.
+   if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.35f,.At=Anchor});
+   if(HeardHere(M,Anchor,25,true)){if(M->UI)M->UI->Toast(TEXT("Something shifts out along the array fence. Then nothing."),5);}
+   else DuskOrb.LeaveFor(TEXT("fence"),FString(),Anchor,M->Freeform->Clock());
+  }
   if(Event==TEXT("roomlight_return"))
   {
    if(!ReactiveReady()||!M->RoomLights->SetEventLight(ReactiveRoom,ReactiveSerial)){Finish(false);return;}
@@ -763,7 +851,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("dusk_orb"))
   {
    if(M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
-   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?FString(TEXT("The low lights are back among the antennas.")):FString::Printf(TEXT("A low light moves between %s. Worth a photograph."),*OrbPair),6);
+   // No line here (M7): the one line about them comes the first time they are close or in sight (Step), and never again.
   }
   // Marked ground somewhere the player is not looking: somebody saw it come down, and says so.
   if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))
@@ -779,7 +867,11 @@ void FS47FreeformDirector::Apply()
   }
   if(Event==TEXT("feeder_fault"))M->Freeform->SetPowerFault(true);
   if(Event==TEXT("service_presence")&&Stage==0)
-  {if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.At=Anchor});if(M->UI)M->UI->Toast(TEXT("A heavy scrape beyond the service door. Something moves against the yard fence."),5);}
+  {
+   if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.At=Anchor});
+   if(HeardHere(M,Anchor,20,false)){if(M->UI)M->UI->Toast(TEXT("A heavy scrape beyond the service door. Something moves against the yard fence."),5);}
+   else DuskOrb.LeaveFor(TEXT("gate"),FString(),Anchor,M->Freeform->Clock());
+  }
   if(Event==TEXT("unsigned_telex")&&M->Audio)M->Audio->Sfx(TEXT("printer"),FS47Sound{.Gain=.25f,.At=FVector(-4,1,2)});
   if(S47SmallHints::Is(Event))S47SmallHints::Play(M,Event,Anchor);
   Changed();
@@ -1166,6 +1258,16 @@ void FS47FreeformDirector::Step(double Dt)
   bWasFirstShift=bFirstShift;
  }
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
+ // What a night left out there waits for the player to come to it, on foot, by the next morning; then it is gone.
+ {
+  const double Clock=M->Freeform->Clock();
+  if(DuskOrb.ExpireLeft(Clock))Changed();
+  if(!DuskOrb.Left().IsEmpty()&&M->Player&&M->Web&&M->Web->Area()==TEXT("saro")&&!(M->World&&M->World->bDriving))
+  {
+   const int32 Here=DuskOrb.LeftNear(Clock,FVector2D(M->Player->Pos.X,M->Player->Pos.Z));
+   if(Here>=0){const FS47DuskOrb::FLeft L=DuskOrb.Left()[Here];DuskOrb.Found(Here);FoundLeft(M,L);Changed();}
+  }
+ }
  if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
  StepMystery(Dt);
  if(Event.IsEmpty())
@@ -1249,6 +1351,16 @@ void FS47FreeformDirector::Step(double Dt)
   {
    const int32 StopNow=OrbStopNow(I);if(StopNow==OrbStopLogged[I])continue;
    OrbStopLogged[I]=StopNow;if(StopNow>=0){UE_LOG(LogTemp,Display,TEXT("S47: dusk orb %d stops at %s at %.1f s"),I,FS47DuskOrb::Stops()[StopNow].Name,Age);}
+  }
+  // The one line about them, the first time one is close or in sight: not from a room it cannot be seen from, and never again.
+  if(OrbFleeAge<0&&!DuskOrb.Told()&&!DuskOrb.WasPhotographed())for(int32 I=0;I<DuskOrb.VisitLights();++I)
+  {
+   if(FS47DuskOrb::Presence(Age,I,DuskOrb.VisitSeed(),DuskOrb.VisitSeconds())<=.5)continue;
+   const FVector At=OrbAt(I);
+   if(!InView(At,150)&&!SaysAloud(FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(At.X,At.Z)),25,true,PlayerIndoors(M),true))continue;
+   DuskOrb.Tell();Changed();
+   if(M->UI)M->UI->Toast(FString::Printf(TEXT("A low light moves between %s. Worth a photograph."),OrbPair.IsEmpty()?TEXT("the antennas"):*OrbPair),6);
+   break;
   }
   if(OrbFleeAge>=0)
   {
@@ -1389,6 +1501,9 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
   const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(LightPlace):nullptr;
   M->Freeform->FarmSite->Arm(M->Freeform->Clock(),LightPlace,LightPlaceTitle(LightPlace),P?FS47EventPlaces::AreaOf(*P):Scene,LightPlacePoint(LightPlace));
  }
+ // After the first photograph a visit pays nothing more: what it gives is what it leaves at the antenna it was over (M7).
+ if(Event==TEXT("dusk_orb")&&DuskOrb.VisitAfterPhoto()&&M&&M->Freeform)
+ {FString Dish;FVector At;if(OrbDish(M,Anchor,Dish,At))DuskOrb.LeaveFor(TEXT("orb"),Dish,At,M->Freeform->Clock(),DuskOrb.VisitClock());}
  if(Evidence&&M&&M->Freeform&&D)
  {
   FString Record=Text.IsEmpty()?D->Finding:Text;
@@ -1576,7 +1691,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  TaggedShot.Empty();LastPhotoAt=ActiveTime;
  if(TaggedIncident==IncidentId&&!Event.IsEmpty())
  {
-  bSeen=bPhoto=true;PhotoId=Shot.Id;if(Event==TEXT("dusk_orb"))DuskOrb.Photographed();FVector ObservedAt=Anchor;
+  bSeen=bPhoto=true;PhotoId=Shot.Id;if(Event==TEXT("dusk_orb"))DuskOrb.Photographed(M&&M->Freeform?M->Freeform->Clock():-1.);FVector ObservedAt=Anchor;
   if(Event==TEXT("observer")&&M&&M->Night&&M->Night->Glimpses)
    for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered){ObservedAt=I.Eye;break;}
   ObserveVisitor(ObservedAt);
@@ -1843,6 +1958,17 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(0,0,-10))==TEXT("N")&&FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(10,0,0))==TEXT("E")&&FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(-10,0,-10))==TEXT("NW"),TEXT("Coarse bearings follow world north and are observer-relative"));
  FS47RoswellBrain Brain;Brain.Start(FS47RoswellBrain::EMode::Curious,FVector(2,0,3),.4,77);Brain.bHasPlayerMemory=true;Brain.LastKnownPlayer=FVector(8,0,9);auto B=Brain.Save();FS47RoswellBrain Copy;
  Check(Copy.Restore(B)&&Copy.Pos==Brain.Pos&&Copy.LastKnownPlayer==Brain.LastKnownPlayer&&Copy.bHasPlayerMemory,TEXT("active native observer keeps identity-space position and measured player memory"));
+ {
+  // M7 (B2): the photo lab is about ten metres from the service door's anchor, through walls, indoors. No line from there,
+  // for the figure, the scrape or the lights; outside in earshot with nothing between, the line goes with the sound.
+  const double Lab=FVector2D::Distance(FVector2D(17.25,-1.9),FVector2D(11.9,-11));
+  Check(!SaysAloud(Lab,25,false,true,true)&&!SaysAloud(Lab,20,false,true,false)&&!SaysAloud(Lab,25,false,true,true),TEXT("from inside the photo lab neither the figure at the fence, the scrape at the service door nor the lights come with a line"));
+  Check(SaysAloud(8,25,true,false,true)&&SaysAloud(8,20,true,false,false)&&SaysAloud(8,20,true,true,false)&&!SaysAloud(8,25,true,true,true)&&!SaysAloud(30,25,true,false,true),TEXT("near, outside and with nothing between, the line goes with the sound; the figure's only to someone outside"));
+  const FString W1=LightsTip(0,TEXT("A rancher on the county road"),TEXT("the Baca lease")),W4=LightsTip(3,TEXT("A rancher on the county road"),TEXT("the Baca lease"));
+  bool Differ=true;for(int32 Wa=0;Wa<4;++Wa)for(int32 Wb=Wa+1;Wb<4;++Wb)Differ&=LightsTip(Wa,TEXT("x"),TEXT("y"))!=LightsTip(Wb,TEXT("x"),TEXT("y"));
+  Check(W1==TEXT("A rancher on the county road reports lights low over the Baca lease.")&&W4.Contains(TEXT("the Baca lease"))&&W4.StartsWith(TEXT("A rancher"))&&Differ&&LightsTip(9,TEXT("x"),TEXT("y"))==LightsTip(3,TEXT("x"),TEXT("y")),TEXT("the lights on the radio are put differently each week, by the same callers, about the same places"));
+  Check(HourText(2*86400.+20.5*3600.)==TEXT("20:30")&&HourText(-5)==TEXT("00:00"),TEXT("what is left at an antenna is dated by the hours of the visit"));
+ }
  Ok=FS47DuskOrb::SelfTest(Lines)&&Ok;
  return Ok;
 }

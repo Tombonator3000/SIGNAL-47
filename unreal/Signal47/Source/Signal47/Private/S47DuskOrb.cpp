@@ -5,12 +5,6 @@ namespace
  constexpr double Day=86400.,Dusk=18.5*3600.,DuskEnd=19.25*3600.,Grace=120.,NightWindow=3600.;
  bool ValidClock(double Clock){return FMath::IsFinite(Clock)&&Clock>=0&&Clock<=86400000000.;}
  double DayStart(double Clock){return FMath::FloorToDouble(Clock/Day)*Day;}
- // Evenings to the next visit once it has been photographed. Written out, not drawn: it has to survive Continue.
- int32 PhotographedGap(int32 Attempts)
- {
-  static const int32 Gaps[6]={3,2,4,3,4,2};
-  return Gaps[FMath::Abs(Attempts)%6];
- }
  double NextOpportunity(double Clock)
  {
   const double Start=DayStart(Clock);
@@ -23,12 +17,6 @@ namespace
  {
   static const double Hours[6]={21.25,22.5,20.25,23.25,21.75,20.75};
   return Hours[FMath::Abs(Visits)%6]*3600.;
- }
- int32 NightGap(int32 Visits)
- {
-  // Seven against the six hours above: the same hour and the same wait do not come round together for six weeks.
-  static const int32 Gaps[7]={2,1,3,1,4,2,1};
-  return Gaps[FMath::Abs(Visits)%7];
  }
  double NextNight(double Clock,int32 Visits)
  {
@@ -43,10 +31,65 @@ namespace
  int32 NightLights(int32 Visit){static const int32 N[8]={2,1,3,1,1,2,3,1};return N[FMath::Abs(Visit)%8];}
  double NightSeconds(int32 Visit){static const double S[7]={300,170,240,130,280,200,150};return S[FMath::Abs(Visit)%7];}
 }
+int32 FS47DuskOrb::EveningGap(int32 Attempts,bool bAfterPhoto)
+{
+ // Evenings to the next visit. Written out, not drawn: it has to survive Continue. M7: a light at every dusk was a timetable;
+ // every second or third evening until it is on film, then every fourth to seventh.
+ static const int32 Before[6]={2,3,2,3,3,2};
+ static const int32 After[6]={5,4,7,5,6,4};
+ return (bAfterPhoto?After:Before)[FMath::Abs(Attempts)%6];
+}
+int32 FS47DuskOrb::NightGapFor(int32 Visits,bool bAfterPhoto)
+{
+ // Seven against the six hours: the same hour and the same wait do not come round together for six weeks. Two to four
+ // nights apart, and three more once they are on film.
+ static const int32 Gaps[7]={3,2,4,2,3,4,2};
+ return Gaps[FMath::Abs(Visits)%7]+(bAfterPhoto?3:0);
+}
+double FS47DuskOrb::MorningAfter(double Clock)
+{
+ // Seven o'clock: after a night that ends past midnight that is the same calendar day, after an evening the next one.
+ const double Start=DayStart(Clock);
+ return Clock<Start+7*3600.?Start+7*3600.:Start+Day+7*3600.;
+}
+void FS47DuskOrb::LeaveFor(const FString& Kind,const FString& Dish,const FVector& At,double Clock,double Began)
+{
+ if(Kind.IsEmpty()||Kind.Len()>16||Dish.Len()>16||!ValidClock(Clock)||!FMath::IsFinite(At.X)||!FMath::IsFinite(At.Y)||!FMath::IsFinite(At.Z)||At.GetAbsMax()>1e6)return;
+ // A second night at the same place before the first was found adds nothing there: the first is what is found.
+ if(Remains.ContainsByPredicate([&](const FLeft& L){return L.Kind==Kind&&L.Dish==Dish&&FVector2D::Distance(FVector2D(L.At.X,L.At.Z),FVector2D(At.X,At.Z))<FindRange;}))return;
+ if(Remains.Num()>=MaxLeft)Remains.RemoveAt(0);
+ FLeft L;L.Kind=Kind;L.Dish=Dish;L.At=At;L.Clock=Clock;L.Began=ValidClock(Began)&&Began<=Clock?Began:Clock;
+ L.From=MorningAfter(Clock);L.Until=L.From+1.5*Day;
+ Remains.Add(L);
+}
+int32 FS47DuskOrb::LeftNear(double Clock,const FVector2D& At) const
+{
+ if(!ValidClock(Clock))return -1;
+ for(int32 I=0;I<Remains.Num();++I){const FLeft& L=Remains[I];if(Clock>=L.From&&Clock<=L.Until&&FVector2D::Distance(FVector2D(L.At.X,L.At.Z),At)<=FindRange)return I;}
+ return -1;
+}
+bool FS47DuskOrb::ExpireLeft(double Clock)
+{
+ if(!ValidClock(Clock))return false;
+ return Remains.RemoveAll([&](const FLeft& L){return Clock>L.Until;})>0;
+}
 void FS47DuskOrb::Begin(const S47J::FObj& Saved)
 {
  DueClock=-1;Attempts=0;bPhotographed=false;NightClock=-1;NightVisits=0;Lights=Count;Seconds=Duration;Seed=0;
+ bTold=bVisitAfterPhoto=false;VisitStarted=-1;Remains.Reset();
  if(!Saved)return;
+ // Older saves have none of these: not yet said, a visit from before the photograph, nothing left out there.
+ bTold=S47J::Bool(Saved,TEXT("told"));bVisitAfterPhoto=S47J::Bool(Saved,TEXT("afterPhoto"));
+ const double Began=S47J::Num(Saved,TEXT("visitClock"),-1);if(ValidClock(Began))VisitStarted=Began;
+ for(const auto& V:S47J::Arr(Saved,TEXT("left")))
+ {
+  const S47J::FObj* E=nullptr;if(!V.IsValid()||!V->TryGetObject(E)||!E)continue;
+  const auto A=S47J::Nums(*E,TEXT("at"));if(A.Num()!=3)continue;
+  const double From=S47J::Num(*E,TEXT("from"),-1),Until=S47J::Num(*E,TEXT("until"),-1);
+  const int32 Before=Remains.Num();LeaveFor(S47J::Str(*E,TEXT("kind")),S47J::Str(*E,TEXT("dish")),FVector(A[0],A[1],A[2]),S47J::Num(*E,TEXT("clock"),-1),S47J::Num(*E,TEXT("began"),-1));
+  // Its own window as saved, when it is one: Continue does not move it.
+  if(Remains.Num()>Before&&ValidClock(From)&&ValidClock(Until)&&Until>=From&&Until-From<=2*Day){Remains.Last().From=From;Remains.Last().Until=Until;}
+ }
  // An older save in the middle of a visit keeps three lights for the full time.
  Lights=FMath::Clamp(S47J::Int(Saved,TEXT("lights"),Count),1,Count);Seed=S47J::Int(Saved,TEXT("seed"),0);
  const double SavedSeconds=S47J::Num(Saved,TEXT("seconds"),Duration);Seconds=FMath::IsFinite(SavedSeconds)?FMath::Clamp(SavedSeconds,30.,Duration):Duration;
@@ -61,7 +104,15 @@ void FS47DuskOrb::Begin(const S47J::FObj& Saved)
 }
 S47J::FObj FS47DuskOrb::Save() const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("dueClock"),DueClock);S47J::Set(O,TEXT("attempts"),Attempts);S47J::Set(O,TEXT("photographed"),bPhotographed);S47J::Set(O,TEXT("nightDue"),NightClock);S47J::Set(O,TEXT("nightVisits"),NightVisits);S47J::Set(O,TEXT("lights"),Lights);S47J::Set(O,TEXT("seconds"),Seconds);S47J::Set(O,TEXT("seed"),Seed);return O;
+ auto O=S47J::New();S47J::Set(O,TEXT("dueClock"),DueClock);S47J::Set(O,TEXT("attempts"),Attempts);S47J::Set(O,TEXT("photographed"),bPhotographed);S47J::Set(O,TEXT("nightDue"),NightClock);S47J::Set(O,TEXT("nightVisits"),NightVisits);S47J::Set(O,TEXT("lights"),Lights);S47J::Set(O,TEXT("seconds"),Seconds);S47J::Set(O,TEXT("seed"),Seed);
+ if(bTold)S47J::Set(O,TEXT("told"),true);if(bVisitAfterPhoto)S47J::Set(O,TEXT("afterPhoto"),true);if(VisitStarted>=0)S47J::Set(O,TEXT("visitClock"),VisitStarted);
+ if(!Remains.IsEmpty())
+ {
+  TArray<TSharedPtr<FJsonValue>> Out;
+  for(const FLeft& L:Remains){auto E=S47J::New();S47J::Set(E,TEXT("kind"),L.Kind);S47J::Set(E,TEXT("dish"),L.Dish);S47J::Set(E,TEXT("at"),TArray<double>{L.At.X,L.At.Y,L.At.Z});S47J::Set(E,TEXT("clock"),L.Clock);S47J::Set(E,TEXT("began"),L.Began);S47J::Set(E,TEXT("from"),L.From);S47J::Set(E,TEXT("until"),L.Until);Out.Add(MakeShared<FJsonValueObject>(E));}
+  O->SetArrayField(TEXT("left"),Out);
+ }
+ return O;
 }
 bool FS47DuskOrb::Update(double Clock,bool bTutorial)
 {
@@ -72,7 +123,7 @@ bool FS47DuskOrb::Update(double Clock,bool bTutorial)
  if(DueClock<0){DueClock=NextOpportunity(Clock);return true;}
  // A skipped dusk is not a witnessed event. Reschedule without inventing an
  // encounter, evidence, warning or payment, including after a sleep/Continue.
- if(Clock>DayStart(DueClock)+DuskEnd){DueClock=NextOpportunity(Clock)+(bPhotographed?(PhotographedGap(Attempts)-1)*Day:0.);return true;}
+ if(Clock>DayStart(DueClock)+DuskEnd){DueClock=NextOpportunity(Clock)+(bPhotographed?(EveningGap(Attempts,true)-1)*Day:0.);return true;}
  return bNightMoved;
 }
 bool FS47DuskOrb::Ready(double Clock) const
@@ -87,23 +138,28 @@ void FS47DuskOrb::Started(double Clock)
 {
  if(!ValidClock(Clock))return;
  // A night's visit takes nothing from the dusk's schedule, its attempts or its photographic record.
+ bVisitAfterPhoto=bPhotographed;VisitStarted=Clock;
  if(ReadyNight(Clock))
  {
   Lights=NightLights(NightVisits);Seconds=NightSeconds(NightVisits);Seed=NightVisits*37+76;
   NightVisits=FMath::Min(1000000,NightVisits+1);
-  NightClock=DayStart(NightClock)+NightGap(NightVisits)*Day+NightSlot(NightVisits);
+  NightClock=DayStart(NightClock)+NightGapFor(NightVisits,bPhotographed)*Day+NightSlot(NightVisits);
   return;
  }
  Lights=DuskLights(Attempts);Seconds=DuskSeconds(Attempts);Seed=Attempts*53+165;
  Attempts=FMath::Min(1000000,Attempts+1);
- DueClock=DayStart(Clock)+(bPhotographed?PhotographedGap(Attempts):1)*Day+Dusk;
+ DueClock=DayStart(Clock)+EveningGap(Attempts,bPhotographed)*Day+Dusk;
 }
-void FS47DuskOrb::Photographed()
+void FS47DuskOrb::Photographed(double Clock)
 {
  if(bPhotographed)return;
  bPhotographed=true;
- // This evening's visit has already set tomorrow's: put that one back too.
- if(DueClock>=0)DueClock+=(PhotographedGap(Attempts)-1)*Day;
+ // This visit has already set the next dusk and night by the spacing before: put them back to the spacing from here on,
+ // counted from the day of the photograph (an older caller without a clock: the day before the dusk that was due).
+ const double From=ValidClock(Clock)?DayStart(Clock):DueClock>=0?DayStart(DueClock)-Day:-1.;
+ if(From<0)return;
+ if(DueClock>=0)DueClock=FMath::Max(DueClock,From+EveningGap(Attempts,true)*Day+Dusk);
+ if(NightClock>=0)NightClock=FMath::Max(NightClock,From+NightGapFor(NightVisits,true)*Day+NightSlot(NightVisits));
 }
 namespace
 {
@@ -271,8 +327,8 @@ bool FS47DuskOrb::SelfTest(TArray<FString>& Lines)
  Check(!S.Update(8*3600.,true)&&!S.Ready(Dusk),TEXT("Dusk orb does not schedule during tutorial"));
  Check(S.Update(9*3600.,false)&&!S.Ready(Dusk-1)&&S.Ready(Dusk),TEXT("Early tutorial completion schedules the coming dusk"));
  S.Started(Dusk);FS47DuskOrb R;R.Begin(S47J::Read(S47J::Write(S.Save())));
- Check(!R.Ready(Dusk)&&R.Ready(Day+Dusk),TEXT("Consumed dusk survives Continue without restarting or losing next opportunity"));
- R.Photographed();S.Begin(R.Save());Check(!S.Ready(Day+Dusk)&&(S.Ready(2*Day+Dusk)||S.Ready(3*Day+Dusk)||S.Ready(4*Day+Dusk))&&S.WasPhotographed(),TEXT("After a photograph the lights come back every few evenings; the record of it survives Continue"));
+ Check(!R.Ready(Dusk)&&!R.Ready(Day+Dusk)&&(R.Ready(2*Day+Dusk)||R.Ready(3*Day+Dusk)),TEXT("Consumed dusk survives Continue without restarting or losing next opportunity, two or three evenings on"));
+ R.Photographed(Dusk+60);S.Begin(R.Save());Check(!S.Ready(Day+Dusk)&&!S.Ready(2*Day+Dusk)&&!S.Ready(3*Day+Dusk)&&(S.Ready(4*Day+Dusk)||S.Ready(5*Day+Dusk)||S.Ready(6*Day+Dusk)||S.Ready(7*Day+Dusk))&&S.WasPhotographed(),TEXT("After a photograph the lights come back every fourth to seventh evening; the record of it survives Continue"));
  S.Begin(nullptr);S.Update(22*3600.,false);Check(!S.Ready(22*3600.)&&S.Ready(Day+Dusk),TEXT("Late tutorial completion waits for the next dusk"));
  S.Begin(nullptr);S.Update(18.75*3600.,false);Check(!S.Ready(18.75*3600.)&&S.Ready(18.75*3600.+Grace),TEXT("Tutorial completed at dusk gets a short saved grace period"));
  S.Begin(nullptr);S.Update(8*3600.,false);Check(S.Update(Day+8*3600.,false)&&!S.Ready(Day+8*3600.)&&S.Ready(Day+Dusk),TEXT("Sleeping past dusk reschedules without manufacturing an encounter"));
@@ -283,7 +339,7 @@ bool FS47DuskOrb::SelfTest(TArray<FString>& Lines)
  S.Begin(nullptr);S.Update(9*3600.,false);Check(S.Update(Day+8*3600.,false)&&S.NightVisitCount()==0&&!S.ReadyNight(Day+8*3600.)&&S.NextNightClock()>Day+8*3600.&&S.NextNightClock()<2*Day,TEXT("Sleeping through a night's hour reschedules without inventing a visit"));
  auto Old=S47J::New();S47J::Set(Old,TEXT("dueClock"),Dusk);S47J::Set(Old,TEXT("attempts"),1);S47J::Set(Old,TEXT("photographed"),true);
  S.Begin(Old);Check(S.NextNightClock()<0&&S.Ready(Dusk)&&S.WasPhotographed()&&!S.ReadyNight(21.25*3600.)&&S.Update(9*3600.,false)&&S.ReadyNight(S.NextNightClock()),TEXT("An older save keeps its record and gets the coming night"));
- bool Evening=true;for(int32 V=0;V<12;++V){const double H=NightSlot(V)/3600.;Evening&=H>=20&&H+NightWindow/3600.<=24.5&&NightGap(V)>=1;}
+ bool Evening=true;for(int32 V=0;V<12;++V){const double H=NightSlot(V)/3600.;Evening&=H>=20&&H+NightWindow/3600.<=24.5&&NightGapFor(V,false)>=1;}
  Check(Evening,TEXT("Every night's visit is in the dark and over before their hours"));
  // Each visit's own count, length and seed, and they survive Continue.
  FS47DuskOrb V;V.Begin(nullptr);V.Update(9*3600.,false);bool SawLights[4]={};bool LightsOk=true;double ShortestVisit=1e9,LongestVisit=0;int32 LastLights=0,Same=0;TArray<double> Waits;double LastDay=-1;
@@ -348,5 +404,41 @@ bool FS47DuskOrb::SelfTest(TArray<FString>& Lines)
  Check(ScanLevel(0)==0&&!LightOffset(30,1,2).IsNearlyZero(),TEXT("The light hangs under its orb and dips as it looks"));
  Check(FleeRise(0)==0&&FleeRise(FleeSeconds)>100.,TEXT("A startled orb is far overhead within its flight time"));
  Check(Visibility(0)==0&&Visibility(10)==1&&Visibility(Duration)==0&&Visibility(130,130)==0&&Visibility(100,130)==1,TEXT("Orb fades in and out without an abrupt visible teleport, whatever the visit's length"));
+ // M7 (B2): rarer, and spaced further once on film; dusk and night both, through the real schedule.
+ {
+  FS47DuskOrb G;G.Begin(nullptr);G.Update(9*3600.,false);bool BeforeOk=true,AfterOk=true,NightsOk=true,LaterOk=true,FlagOk=true;double Was=-1;int32 Visits=0;
+  for(int32 K=0;K<10;++K){const double At=G.DueClock;G.Started(At);FlagOk&=!G.VisitAfterPhoto()&&G.VisitClock()==At;++Visits;if(Was>=0){const double Gap=(DayStart(At)-DayStart(Was))/Day;BeforeOk&=Gap>=2&&Gap<=3;}Was=At;}
+  G.Photographed(Was+60);
+  for(int32 K=0;K<10;++K){const double At=G.DueClock;const double Gap=(DayStart(At)-DayStart(Was))/Day;AfterOk&=Gap>=4&&Gap<=7;G.Started(At);FlagOk&=G.VisitAfterPhoto();Was=At;}
+  for(int32 Ng=0;Ng<14;++Ng){NightsOk&=NightGapFor(Ng,false)>=2&&NightGapFor(Ng,false)<=4;LaterOk&=NightGapFor(Ng,true)>=5&&NightGapFor(Ng,true)<=7;}
+  // Thirty days before any photograph: dusk and night together, about half of what came before (forty-odd).
+  FS47DuskOrb T;T.Begin(nullptr);T.Update(9*3600.,false);int32 Month=0;for(int32 K=0;K<200;++K){const double Next=FMath::Min(T.DueClock,T.NightClock);if(Next>30*Day)break;T.Started(Next);++Month;}
+  Check(BeforeOk&&AfterOk&&FlagOk,TEXT("Before the first photograph every second or third evening, after it every fourth to seventh, and each visit knows which it is"));
+  Check(NightsOk&&LaterOk&&Month>=12&&Month<=26,*FString::Printf(TEXT("Nights two to four apart, five to seven once on film; %d visits in a month before any photograph"),Month));
+  FS47DuskOrb P;P.Begin(nullptr);P.Update(9*3600.,false);const double Night0=P.NightClock;P.Started(Night0);const double NightNext=P.NightClock;P.Photographed(Night0+60);
+  Check(P.NightClock>NightNext&&(DayStart(P.NightClock)-DayStart(Night0))/Day>=5,TEXT("A photograph in the dark puts the next night back as well"));
+ }
+ {
+  FS47DuskOrb Y;Y.Begin(nullptr);Check(!Y.Told(),TEXT("Not yet said in a new game"));Y.Tell();FS47DuskOrb YC;YC.Begin(S47J::Read(S47J::Write(Y.Save())));
+  FS47DuskOrb Fresh;Fresh.Begin(S47J::Read(S47J::Write(FS47DuskOrb().Save())));
+  Check(YC.Told()&&!Fresh.Told(),TEXT("The one line about them is said once and stays said across Continue; an older save has not said it"));
+ }
+ {
+  // Left at the antenna at 20:40 on day 3 (calendar day 2): nothing that night, there the next morning, gone after a day and a half.
+  const double Eve=2*Day+20.67*3600.;const FVector Cab(-40,1.2,-60);
+  FS47DuskOrb L;L.Begin(nullptr);L.LeaveFor(TEXT("orb"),TEXT("S-07"),Cab,Eve,Eve-1200);
+  const FVector2D On(Cab.X+2,Cab.Z+1),Off(Cab.X+FindRange+1.5,Cab.Z);
+  Check(L.LeftNear(Eve+3600,On)<0&&L.LeftNear(3*Day+6.9*3600.,On)<0&&L.LeftNear(3*Day+9*3600.,On)==0&&L.LeftNear(3*Day+9*3600.,Off)<0,TEXT("What a visit leaves is not there the same night, is there from the next morning, and only at the place"));
+  L.LeaveFor(TEXT("orb"),TEXT("S-07"),Cab+FVector(1,0,1),Eve+Day);
+  FS47DuskOrb LC;LC.Begin(S47J::Read(S47J::Write(L.Save())));
+  Check(L.Left().Num()==1&&LC.Left().Num()==1&&LC.Left()[0].Dish==TEXT("S-07")&&LC.Left()[0].Began==Eve-1200&&LC.Left()[0].From==L.Left()[0].From&&LC.LeftNear(3*Day+9*3600.,On)==0,TEXT("A second night at the same place adds nothing there, and what is left survives Continue with its own hours"));
+  // After a figure past two in the morning, the same calendar day's morning.
+  FS47DuskOrb F;F.Begin(nullptr);F.LeaveFor(TEXT("fence"),FString(),FVector(11.9,1,-11),4*Day+2.5*3600.);
+  Check(F.LeftNear(4*Day+3*3600.,FVector2D(11.9,-11))<0&&F.LeftNear(4*Day+8*3600.,FVector2D(11.9,-11))==0,TEXT("After a night past midnight it is there that same morning"));
+  Check(!LC.ExpireLeft(3*Day+20*3600.)&&LC.ExpireLeft(5*Day)&&LC.Left().IsEmpty(),TEXT("Not found within a day and a half, it is gone"));
+  FS47DuskOrb Many;Many.Begin(nullptr);for(int32 I=0;I<MaxLeft+3;++I)Many.LeaveFor(TEXT("gate"),FString(),FVector(I*20.,1,0),Eve+I*Day);
+  bool Bad=true;auto Junk=S47J::New();S47J::Set(Junk,TEXT("left"),TArray<double>{1,2,3});FS47DuskOrb J;J.Begin(Junk);Bad&=J.Left().IsEmpty();
+  Many.Found(0);Check(Many.Left().Num()==MaxLeft-1&&Bad,TEXT("At most a few wait at once, a found one is gone, and a damaged save invents none"));
+ }
  return OK;
 }
