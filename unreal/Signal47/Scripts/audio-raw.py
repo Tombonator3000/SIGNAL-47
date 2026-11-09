@@ -4,19 +4,17 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
 
   Content/Audio/Raw/sfx/<file>.wav        every sound in web/src/assets/audio (Audio.ts SOURCES: phoneRing,
                                           thudSoft, the steps, the aliens ..., named as Audio.ts names them)
-  Content/Audio/Raw/character/<id>.wav    the character voices: bacall for N. Vega's call lines and CB words, as
-                                          Audio.ts picks them, and her lines in room 6 (core/npcDialogue.ts, which
-                                          the web version loads from the ensemble bank as it plays them), price for
-                                          "Reference west ..."
+  Content/Audio/Raw/character/<id>.wav    the character voices on the telephone and the CB (Audio.ts characterKeys):
+                                          none since VOICE-OUT-3 (below); kept for a speaker's own future recordings
   Content/Audio/Raw/index.json            sources (web name -> file), character (voice -> text ->
-                                          character:<id>); texts normalised
+                                          character:<id>, empty for now); texts normalised
                                           as readAloud.ts normalizeReadingText
   Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media
   Content/Audio/Raw/voice/<bank>/*.wav    the voice banks read a clip at a time: Serling's (with the opening's)
                                           for the narrator (core/readAloud.ts, core/narrationBanks.ts),
                                           and the four RadioVoice banks, decoded lazily by RadioVoice
   Content/Audio/Raw/voices.json           every voice bank's catalog (serling, serling-intro, artbell,
-                                          artbell-town, radiocast, ensemble) with the asset each clip is
+                                          artbell-town, radiocast, ensemble without its retired voices) with the asset each clip is
                                           imported as (/Game/Audio/Voice/<Bank>/v_<file>) and its raw file
                                           (raw: voice/<bank>/<file>.wav), for ReadAloud, RecordedDialogue and
                                           RadioVoice
@@ -28,6 +26,12 @@ KINSKI-READ-OUT (Tom 9 November 2026): the web version's kinski bank (a clone of
 not imported any more: no Raw/voice/kinski, no Raw/phone, no kinski entry in voices.json (also dropped from
 an existing one with --recordings-only). Its files were moved to ~/.cache/signal47-kinski-retired.
 
+VOICE-OUT-3 (Tom 9 November 2026, "Fjern bare bacall, price, lynch enn saa lenge"): the ensemble's voices
+bacall (N. Vega), price (THE LINE) and lynch (the souvenir man) are clones of real people's voices and are
+not imported any more: no Raw/character lines, none of their clips in voices.json's ensemble or in
+Raw/voice/ensemble (also dropped from an existing voices.json and index.json with --recordings-only). Their
+lines are text. The ensemble keeps stanton and stack. Their files were moved to ~/.cache/signal47-voices-retired.
+
 Content/Audio and Content/Licensed are ignored by Git. The WAVE files keep each recording's own
 sample rate and channels (the context resamples, as decodeAudioData does). Needs ffmpeg.
 Usage: audio-raw.py [--web WEB_SRC] [--content CONTENT_DIR]"""
@@ -35,7 +39,6 @@ import argparse
 import importlib.util
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -91,13 +94,10 @@ BANKS = [('serling', 'Serling'), ('serling-intro', 'SerlingIntro'), ('artbell', 
          ('artbell-town', 'ArtBellTown'), ('radiocast', 'Radiocast'), ('ensemble', 'Ensemble')]
 # the banks whose clips are also written as WAVE files, read one clip at a time: the narrator's (Serling's,
 # with the opening's) and RadioVoice's
-RETIRED_BANKS = ('kinski',)  # KINSKI-READ-OUT: never imported, and removed from an existing voices.json
+# KINSKI-READ-OUT and VOICE-OUT-3: never imported, as a bank or as a voice inside one (the ensemble's bacall,
+# price and lynch), and removed from an existing voices.json and index.json
+RETIRED_BANKS = ('kinski', 'bacall', 'price', 'lynch')
 RAW_BANKS = ('serling', 'serling-intro', 'artbell', 'artbell-town', 'radiocast', 'ensemble')
-
-
-def normalize(text):
-    # readAloud.ts normalizeReadingText: text.replace(/\s+/g, ' ').trim()
-    return re.sub(r'\s+', ' ', text).strip()
 
 
 def camel(base):
@@ -115,39 +115,32 @@ def wav(src, dst):
     return True
 
 
-# ---------- core/phoneScripts.ts: the texts, read from its source (all literal strings) ----------
-JS_STRING = re.compile(r"'((?:[^'\\]|\\.)*)'")
+def retired(name):
+    return (name or '').lower() in RETIRED_BANKS
 
 
-def unquote(s):
-    return re.sub(r'\\(.)', r'\1', s)
+def drop_retired(voices):
+    # no retired bank, and no clip of a retired voice in any bank (VOICE-OUT-3)
+    for bank in [b for b in voices if retired(b)]:
+        voices.pop(bank)
+    for entry in voices.values():
+        cat = entry.get('catalog') if isinstance(entry, dict) else None
+        if isinstance(cat, dict) and isinstance(cat.get('clips'), list):
+            cat['clips'] = [c for c in cat['clips'] if not retired(c.get('voice'))]
+    return voices
 
 
-def array_strings(src, name):
-    m = re.search(r'export const %s\s*=\s*\[(.*?)\];' % re.escape(name), src, re.S)
-    if not m:
-        raise SystemExit('S47: %s not found in phoneScripts.ts' % name)
-    return [unquote(x) for x in JS_STRING.findall(m.group(1))]
-
-
-def call_lines(src, key):
-    # PHONE_CALLS.<key>: [{ by, text, aside?, pause? }, ...] -> the spoken ones' texts
-    m = re.search(r'\b%s:\s*\[(.*?)\n  \],' % re.escape(key), src, re.S)
-    if not m:
-        raise SystemExit('S47: PHONE_CALLS.%s not found in phoneScripts.ts' % key)
-    out = []
-    for obj in re.findall(r'\{(.*?)\}', m.group(1), re.S):
-        t = re.search(r"text:\s*'((?:[^'\\]|\\.)*)'", obj)
-        if t and not re.search(r'aside:\s*true', obj):
-            out.append(unquote(t.group(1)))
-    return out
+def write_json(path, data, **kw):
+    # atomically: a reader (the game, another script) never sees half a table
+    tmp = path + '.tmp-%d' % os.getpid()
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=1, **kw)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 
 if not args.recordings_only:
-    scripts = open(os.path.join(WEB, 'core', 'phoneScripts.ts'), encoding='utf-8').read()
-    NORA_CB_TEXTS = array_strings(scripts, 'NORA_CB_TEXTS')
-    channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
-
     # (Raw/tv is the TVs' programme sound from prepare-tv.py, and Raw/night Freeform's recorded night from
     # Tools/nightsounds, not from web/src: they stay)
     for d in (RAW, LICRAW):
@@ -176,44 +169,44 @@ if not args.recordings_only:
     # (KINSKI-READ-OUT: no telephone lines from the retired kinski bank; the 24 PHONE_TEXTS are captions
     # until they are recorded in the speakers' own voices)
 
-    # the character voices on the line (Audio.ts characterKeys)
-    ensemble = json.load(open(os.path.join(AUDIO, 'ensemble', 'catalog.json'), encoding='utf-8'))
-    for clip in ensemble['clips']:
-        text = normalize(clip['text'])
-        # (all of N. Vega's lines and the line's voice: the talk in room 6 plays hers through core/npcDialogue.ts)
-        if clip['voice'] not in ('bacall', 'price'):
-            continue
-        src = os.path.join(AUDIO, 'ensemble', clip['file'])
-        if not os.path.isfile(src) or not wav(src, os.path.join(RAW, 'character', clip['id'] + '.wav')):
-            continue
-        key = 'character:%s' % clip['id']
-        index['sources'][key] = 'character/%s.wav' % clip['id']
-        index['character'].setdefault(clip['voice'], {})[text] = key
-    missing = sorted(channel_texts - set(index['character'].get('bacall', {})))
-    print('S47: raw character lines: %d%s' % (sum(len(v) for v in index['character'].values()), (' (no recording on the line: %s)' % missing) if missing else ''))
+    # (VOICE-OUT-3: no character voices on the line. The web version's were the ensemble's bacall for
+    # N. Vega and price for THE LINE, both retired; her calls, CB words and room 6 are captions until the
+    # speakers have recordings of their own, which index['character'] will hold)
+    print('S47: raw character lines: 0 (bacall and price retired: VOICE-OUT-3)')
 
-    with open(os.path.join(RAW, 'index.json'), 'w', encoding='utf-8') as f:
-        json.dump(index, f, ensure_ascii=False, indent=1, sort_keys=True)
+    write_json(os.path.join(RAW, 'index.json'), index, sort_keys=True)
+else:
+    # an existing index keeps its sources, without a retired voice's character lines and their files' entries
+    index_path = os.path.join(RAW, 'index.json')
+    if os.path.isfile(index_path):
+        index = json.load(open(index_path, encoding='utf-8'))
+        character = index.get('character', {})
+        gone = set()
+        for voice in [v for v in character if retired(v)]:
+            gone |= set(character.pop(voice).values())
+        if gone:
+            for key in [k for k, v in index.get('sources', {}).items() if k in gone]:
+                index['sources'].pop(key)
+            write_json(index_path, index, sort_keys=True)
+            print('S47: index.json: %d retired character lines dropped' % len(gone))
 
 
 # every voice bank's catalog, with the asset each clip is imported as
 os.makedirs(RAW, exist_ok=True)
 voices_path = os.path.join(RAW, 'voices.json')
-voices = json.load(open(voices_path, encoding='utf-8')) if args.recordings_only and os.path.isfile(voices_path) else {}
-for bank in RETIRED_BANKS:
-    voices.pop(bank, None)
+voices = drop_retired(json.load(open(voices_path, encoding='utf-8')) if args.recordings_only and os.path.isfile(voices_path) else {})
 for bank, folder in BANKS:
     path = os.path.join(AUDIO, bank, 'catalog.json')
     if not os.path.isfile(path):
         continue
     cat = json.load(open(path, encoding='utf-8'))
-    for clip in cat.get('clips', []):
+    cat['clips'] = [c for c in cat.get('clips', []) if not retired(c.get('voice'))]  # VOICE-OUT-3
+    for clip in cat['clips']:
         clip['asset'] = 'v_' + os.path.splitext(clip['file'])[0]
         if bank in RAW_BANKS:
             clip['raw'] = 'voice/%s/%s.wav' % (bank, os.path.splitext(clip['file'])[0])
     voices[bank] = {'folder': '/Game/Audio/Voice/' + folder, 'catalog': cat}
-with open(os.path.join(RAW, 'voices.json'), 'w', encoding='utf-8') as f:
-    json.dump(voices, f, ensure_ascii=False, indent=1)
+write_json(voices_path, drop_retired(voices))
 print('S47: voice banks indexed: %s' % ', '.join('%s %d' % (b, len(v['catalog'].get('clips', []))) for b, v in voices.items()))
 
 if evening_entry is not None:

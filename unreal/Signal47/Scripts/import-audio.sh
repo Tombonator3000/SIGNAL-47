@@ -13,7 +13,9 @@
 #   /Game/Audio/Voice/<Bank>  the voice banks (serling, serling-intro, artbell, artbell-town, radiocast,
 #                         ensemble) as v_<file>, looked up through Content/Audio/Raw/voices.json
 #                         (S47_AUDIO_VOICES=0 leaves them out). KINSKI-READ-OUT, Tom 9 November
-#                         2026: the kinski bank (a clone of a real person's voice) is not imported any more
+#                         2026: the kinski bank (a clone of a real person's voice) is not imported any more.
+#                         VOICE-OUT-3, the same day: nor are the ensemble's bacall, price and lynch clips
+#                         (clones too; RETIRED_BANKS in audio-raw.py); the ensemble keeps stanton and stack
 #   /Game/Audio/Synth     tones the prologue still plays by file name (beep_1200 ...), made here as WAV
 #   /Game/Licensed/Sfx    the bought sounds from the private clone web/src/assets/licensed/sfx, if it is there
 # Content/Audio and Content/Licensed are ignored by Git; run this after a fresh clone. The raw step needs
@@ -82,6 +84,19 @@ if [ "${S47_AUDIO_EVENING_ONLY:-0}" != 1 ]; then
     for bank in serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
       conv "Voice/${bank#*:}" "$ROOT/web/src/assets/audio/${bank%%:*}" '' v_
     done
+    # VOICE-OUT-3: the retired voices' clips leave the stage before the import (the catalog says whose each is)
+    python3 - "$ROOT/web/src/assets/audio/ensemble/catalog.json" "$STAGE/wav/Voice/Ensemble" <<'PY'
+import json, os, sys
+RETIRED = ('kinski', 'bacall', 'price', 'lynch')  # as audio-raw.py RETIRED_BANKS
+catalog, stage = sys.argv[1], sys.argv[2]
+gone = 0
+for clip in json.load(open(catalog, encoding='utf-8')).get('clips', []) if os.path.isfile(catalog) else []:
+    path = os.path.join(stage, 'v_' + os.path.splitext(clip['file'])[0] + '.wav')
+    if (clip.get('voice') or '').lower() in RETIRED and os.path.isfile(path):
+        os.remove(path)
+        gone += 1
+print('Voice/Ensemble: %d retired clips left out (VOICE-OUT-3), %d staged' % (gone, len(os.listdir(stage)) if os.path.isdir(stage) else 0))
+PY
   fi
   python3 "$SCRIPTS/make-synth.py" "$STAGE/wav/Synth"
   echo "Synth: $(ls "$STAGE/wav/Synth" | wc -l) files"

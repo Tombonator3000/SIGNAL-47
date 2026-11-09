@@ -16,7 +16,13 @@ for dirpath, dirnames, filenames in os.walk(stage):
     dirnames.sort()
     if any(n.endswith('.wav') for n in filenames):
         groups.append(os.path.relpath(dirpath, stage))
+# KINSKI-READ-OUT and VOICE-OUT-3 (Tom 9 November 2026): clones of real people's voices are never imported as
+# a bank of their own (import-audio.sh also leaves the ensemble's bacall, price and lynch clips out of the stage)
+RETIRED_BANKS = ('kinski', 'bacall', 'price', 'lynch')
 for group in sorted(groups):
+    if os.path.basename(group).lower() in RETIRED_BANKS:
+        unreal.log_warning('S47: audio %s left out: a retired voice bank' % group)
+        continue
     folder = os.path.join(stage, group)
     dest = '/Game/Licensed/Sfx' if group == 'Licensed' else '/Game/Audio/' + group.replace(os.sep, '/')
     names = [n for n in sorted(os.listdir(folder)) if n.endswith('.wav')]
