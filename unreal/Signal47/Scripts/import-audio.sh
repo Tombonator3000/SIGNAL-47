@@ -1,18 +1,19 @@
 #!/bin/bash
 # Builds the game's sounds for Unreal from the web version's files and imports them:
-#   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, Kinski's 24 telephone lines,
-#                         the character lines on the telephone) as WAVE files with index.json, and voices.json
+#   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, the character lines on the
+#                         telephone) as WAVE files with index.json, and voices.json
 #                         (every voice bank's catalog), for the game's own Web Audio (Scripts/audio-raw.py)
 #                         plus bounded-stream PCM in Raw/media/{music,radio}, and the lazy voice banks
-#                         in Raw/voice (Kinski's and Serling's for ReadAloud, and the four RadioVoice
+#                         in Raw/voice (Serling's for the narrator, and the four RadioVoice
 #                         banks; outside index.sources, never all preloaded)
 #   Content/Licensed/Raw  the same for the bought sounds, if the private clone is there
 #   /Game/Audio/Sfx       the free sounds in web/src/assets/audio (CC0 and CC BY, see web/THIRD_PARTY_NOTICES.md)
 #   /Game/Audio/Music     the music in web/public/music (CC BY, credited in the game)
 #   /Game/Audio/Radio     the radio programmes in web/public/radio
-#   /Game/Audio/Voice/<Bank>  the voice banks (kinski, serling, serling-intro, artbell, artbell-town, radiocast,
+#   /Game/Audio/Voice/<Bank>  the voice banks (serling, serling-intro, artbell, artbell-town, radiocast,
 #                         ensemble) as v_<file>, looked up through Content/Audio/Raw/voices.json
-#                         (S47_AUDIO_VOICES=0 leaves them out: some 3200 files)
+#                         (S47_AUDIO_VOICES=0 leaves them out). KINSKI-READ-OUT, Tom 9 November
+#                         2026: the kinski bank (a clone of a real person's voice) is not imported any more
 #   /Game/Audio/Synth     tones the prologue still plays by file name (beep_1200 ...), made here as WAV
 #   /Game/Licensed/Sfx    the bought sounds from the private clone web/src/assets/licensed/sfx, if it is there
 # Content/Audio and Content/Licensed are ignored by Git; run this after a fresh clone. The raw step needs
@@ -78,7 +79,7 @@ if [ "${S47_AUDIO_EVENING_ONLY:-0}" != 1 ]; then
   conv Radio "$ROOT/web/public/radio"
   conv Licensed "$ROOT/web/src/assets/licensed/sfx"
   if [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
-    for bank in kinski:Kinski serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
+    for bank in serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
       conv "Voice/${bank#*:}" "$ROOT/web/src/assets/audio/${bank%%:*}" '' v_
     done
   fi

@@ -1,5 +1,5 @@
 # Imports the WAV files staged by import-audio.sh (S47_AUDIO_STAGE) into /Game/Audio/<group> (a group may
-# be a folder of folders: Voice/Kinski goes to /Game/Audio/Voice/Kinski) and /Game/Licensed/Sfx. Loops
+# be a folder of folders: Voice/Serling goes to /Game/Audio/Voice/Serling) and /Game/Licensed/Sfx. Loops
 # (names the web version loops, and engine_rough, which only Unreal plays) are marked looping.
 import os
 import unreal

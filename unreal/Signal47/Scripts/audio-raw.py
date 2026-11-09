@@ -4,20 +4,18 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
 
   Content/Audio/Raw/sfx/<file>.wav        every sound in web/src/assets/audio (Audio.ts SOURCES: phoneRing,
                                           thudSoft, the steps, the aliens ..., named as Audio.ts names them)
-  Content/Audio/Raw/phone/<id>.wav        Kinski's telephone lines: the kinski catalog's clips whose text
-                                          is one of PHONE_TEXTS (core/phoneScripts.ts), as Audio.ts picks them
   Content/Audio/Raw/character/<id>.wav    the character voices: bacall for N. Vega's call lines and CB words, as
                                           Audio.ts picks them, and her lines in room 6 (core/npcDialogue.ts, which
                                           the web version loads from the ensemble bank as it plays them), price for
                                           "Reference west ..."
-  Content/Audio/Raw/index.json            sources (web name -> file), phone (text -> phone:<id>),
-                                          character (voice -> text -> character:<id>); texts normalised
+  Content/Audio/Raw/index.json            sources (web name -> file), character (voice -> text ->
+                                          character:<id>); texts normalised
                                           as readAloud.ts normalizeReadingText
   Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media
-  Content/Audio/Raw/voice/<bank>/*.wav    the voice banks read a clip at a time: Kinski's and Serling's (with
-                                          the opening's) for ReadAloud (core/readAloud.ts, core/narrationBanks.ts),
+  Content/Audio/Raw/voice/<bank>/*.wav    the voice banks read a clip at a time: Serling's (with the opening's)
+                                          for the narrator (core/readAloud.ts, core/narrationBanks.ts),
                                           and the four RadioVoice banks, decoded lazily by RadioVoice
-  Content/Audio/Raw/voices.json           every voice bank's catalog (kinski, serling, serling-intro, artbell,
+  Content/Audio/Raw/voices.json           every voice bank's catalog (serling, serling-intro, artbell,
                                           artbell-town, radiocast, ensemble) with the asset each clip is
                                           imported as (/Game/Audio/Voice/<Bank>/v_<file>) and its raw file
                                           (raw: voice/<bank>/<file>.wav), for ReadAloud, RecordedDialogue and
@@ -25,6 +23,10 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
   Content/Audio/Raw/tv/                  left as it is: the TVs' programme sound (Scripts/prepare-tv.py)
   Content/Licensed/Raw/<name>.wav, index.json   the bought sounds (lic:<name>), when the private
                                           folder web/src/assets/licensed/sfx is there
+
+KINSKI-READ-OUT (Tom 9 November 2026): the web version's kinski bank (a clone of a real person's voice) is
+not imported any more: no Raw/voice/kinski, no Raw/phone, no kinski entry in voices.json (also dropped from
+an existing one with --recordings-only). Its files were moved to ~/.cache/signal47-kinski-retired.
 
 Content/Audio and Content/Licensed are ignored by Git. The WAVE files keep each recording's own
 sample rate and channels (the context resamples, as decodeAudioData does). Needs ffmpeg.
@@ -85,11 +87,12 @@ if args.evening_only:
     raise SystemExit(0)
 
 # the voice banks and the folders their clips are imported to (import-audio.sh does the same)
-BANKS = [('kinski', 'Kinski'), ('serling', 'Serling'), ('serling-intro', 'SerlingIntro'), ('artbell', 'ArtBell'),
+BANKS = [('serling', 'Serling'), ('serling-intro', 'SerlingIntro'), ('artbell', 'ArtBell'),
          ('artbell-town', 'ArtBellTown'), ('radiocast', 'Radiocast'), ('ensemble', 'Ensemble')]
-# the banks whose clips are also written as WAVE files, read one clip at a time: ReadAloud's (Kinski, and
-# the narrator's Serling bank with the opening's) and RadioVoice's
-RAW_BANKS = ('kinski', 'serling', 'serling-intro', 'artbell', 'artbell-town', 'radiocast', 'ensemble')
+# the banks whose clips are also written as WAVE files, read one clip at a time: the narrator's (Serling's,
+# with the opening's) and RadioVoice's
+RETIRED_BANKS = ('kinski',)  # KINSKI-READ-OUT: never imported, and removed from an existing voices.json
+RAW_BANKS = ('serling', 'serling-intro', 'artbell', 'artbell-town', 'radiocast', 'ensemble')
 
 
 def normalize(text):
@@ -142,10 +145,8 @@ def call_lines(src, key):
 
 if not args.recordings_only:
     scripts = open(os.path.join(WEB, 'core', 'phoneScripts.ts'), encoding='utf-8').read()
-    PHONE_TEXTS = array_strings(scripts, 'PHONE_TEXTS')
     NORA_CB_TEXTS = array_strings(scripts, 'NORA_CB_TEXTS')
     channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
-    phone_texts = set(normalize(t) for t in PHONE_TEXTS)
 
     # (Raw/tv is the TVs' programme sound from prepare-tv.py, and Raw/night Freeform's recorded night from
     # Tools/nightsounds, not from web/src: they stay)
@@ -159,7 +160,7 @@ if not args.recordings_only:
             else:
                 os.remove(path)
     os.makedirs(RAW, exist_ok=True)
-    index = {'sources': {}, 'phone': {}, 'character': {}}
+    index = {'sources': {}, 'character': {}}
 
     # the free sounds: everything in assets/audio (Audio.ts's SOURCES and the drive's engine loops)
     n = 0
@@ -172,21 +173,8 @@ if not args.recordings_only:
             n += 1
     print('S47: raw sfx: %d' % n)
 
-    # Kinski's telephone lines: only the 24 of PHONE_TEXTS (Audio.ts phoneKeys; a later clip with the same text wins)
-    catalog = json.load(open(os.path.join(AUDIO, 'kinski', 'catalog.json'), encoding='utf-8'))
-    for clip in catalog['clips']:
-        text = normalize(clip['text'])
-        src = os.path.join(AUDIO, 'kinski', clip['file'])
-        if text not in phone_texts or not os.path.isfile(src):
-            continue
-        key = 'phone:%s' % clip['id']
-        if key not in index['sources']:
-            if not wav(src, os.path.join(RAW, 'phone', clip['id'] + '.wav')):
-                continue
-            index['sources'][key] = 'phone/%s.wav' % clip['id']
-        index['phone'][text] = key
-    missing = sorted(phone_texts - set(index['phone']))
-    print('S47: raw phone lines: %d of %d%s' % (len(index['phone']), len(phone_texts), (' (no recording: %s)' % missing) if missing else ''))
+    # (KINSKI-READ-OUT: no telephone lines from the retired kinski bank; the 24 PHONE_TEXTS are captions
+    # until they are recorded in the speakers' own voices)
 
     # the character voices on the line (Audio.ts characterKeys)
     ensemble = json.load(open(os.path.join(AUDIO, 'ensemble', 'catalog.json'), encoding='utf-8'))
@@ -212,6 +200,8 @@ if not args.recordings_only:
 os.makedirs(RAW, exist_ok=True)
 voices_path = os.path.join(RAW, 'voices.json')
 voices = json.load(open(voices_path, encoding='utf-8')) if args.recordings_only and os.path.isfile(voices_path) else {}
+for bank in RETIRED_BANKS:
+    voices.pop(bank, None)
 for bank, folder in BANKS:
     path = os.path.join(AUDIO, bank, 'catalog.json')
     if not os.path.isfile(path):
@@ -255,7 +245,7 @@ except (ValueError, OSError, KeyError, TypeError) as exc:
 
 # core/radioVoice.ts and core/readAloud.ts decode only the selected clips, so keep the banks outside
 # index.sources. This lets their LRUs (24 buffers / 24 MiB, 4 buffers / 32 MiB) work without US47Audio
-# preloading a whole bank (Kinski's and Serling's are some 1500 clips and an hour and a half each).
+# preloading a whole bank (Serling's is some 1500 clips and an hour and a half).
 # (some 3000 files: the ffmpeg runs go side by side)
 with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
     for bank in RAW_BANKS:
