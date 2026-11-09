@@ -335,7 +335,9 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
       for(const FVector3f& Corner:V){const FVector At=T.TransformPosition(FVector(Corner));if(At.Z<=Low)Foot+=At;}
       if(Foot.IsValid)
       {
-       const FVector In=(Foot.Max-Foot.Min)*.1;Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
+       // (critic round 4: a tenth of a cliff's width is half a metre and more, past the walker's 0.27 m radius: one walked into its corners;
+       // at most 15 cm in, which the radius covers)
+       const FVector In(FMath::Min((Foot.Max.X-Foot.Min.X)*.1,15.),FMath::Min((Foot.Max.Y-Foot.Min.Y)*.1,15.),0.);Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
        B=FBox(FVector(Foot.Min.X,Foot.Min.Y,B.Min.Z),FVector(Foot.Max.X,Foot.Max.Y,B.Max.Z));
       }
      }

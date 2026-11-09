@@ -1,4 +1,5 @@
 #include "S47Blockers.h"
+#include "S47Walker.h"
 #include "S47Drive.h"
 #include "S47Main.h"
 #include "S47SaroClip.h"
@@ -55,6 +56,8 @@ namespace
 
 TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
 {
+ S47SaroClip::Forget();
+ constexpr double MeasureReach = 200; // metres from the player: what is drawn round one
  TArray<FBlocker> Out;
  if (!M || !M->Web || !M->World || !M->Web->GetWorld()) { Lines.Add(TEXT("no world")); return Out; }
  AS47Web* W = M->Web;
@@ -127,7 +130,8 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
  // ---- the blockers ----
  TArray<FBlocker> All;
  int32 NWalk = 0, NDrive = 0, NLand = 0;
- for (const FS47Rect& R : W->CollidersMutable(Walk)) if (R.bEnabled) { All.Add({ TEXT("walk"), R.Id, R.MinX, R.MaxX, R.MinZ, R.MaxZ, false }); ++NWalk; }
+ // (critic round 4: a walk box with no Id was listed as «walk  (…)» and could not be traced: its place in the list stands in)
+ { const TArray<FS47Rect>& Walks = W->CollidersMutable(Walk); for (int32 I = 0; I < Walks.Num(); ++I) { const FS47Rect& R = Walks[I]; if (R.bEnabled) { All.Add({ TEXT("walk"), R.Id.IsEmpty() ? FString::Printf(TEXT("%s#walk%d"), *Walk, I) : R.Id, R.MinX, R.MaxX, R.MinZ, R.MaxZ, false }); ++NWalk; } } }
  if (IS47DriveArea* Leg = M->World->LegArea(Walk))
   for (int32 I = 0; I < Leg->Obstacles.Num(); ++I)
   {
@@ -150,6 +154,8 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
  {
   const FBox2D Rect(FVector2D(Bk.MinX - Pad, Bk.MinZ - Pad), FVector2D(Bk.MaxX + Pad, Bk.MaxZ + Pad));
   const FVector2D Mid = Rect.GetCenter();
+  // (critic round 4: boxes 1.6-2 km off on Main Street were judged from the substation, where little of the town is drawn)
+  if (M->Player && FVector2D::Distance(Mid, FVector2D(M->Player->Pos.X, M->Player->Pos.Z)) > MeasureReach) { ++Away; continue; }
   // The ground (or roof) under its middle: the first visible thing straight down. None: another place's, out of sight now.
   FHitResult Hit; bool bGround = false;
   FCollisionQueryParams Each = Q;
@@ -220,6 +226,7 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
   *Area, *Walk, NWalk, NDrive, NLand, Seen, Away, Out.Num(), Pad, Drawn.Num(), Big));
  for (const FBlocker& Bk : Out)
   Lines.Add(FString::Printf(TEXT("  %s %s: x %.2f..%.2f z %.2f..%.2f (%.2f x %.2f m%s)"), *Bk.Kind, *Bk.Id, Bk.MinX, Bk.MaxX, Bk.MinZ, Bk.MaxZ, Bk.MaxX - Bk.MinX, Bk.MaxZ - Bk.MinZ, Bk.bCircle ? TEXT(", a circle") : TEXT("")));
+ S47SaroClip::Forget();
  return Out;
 }
 }

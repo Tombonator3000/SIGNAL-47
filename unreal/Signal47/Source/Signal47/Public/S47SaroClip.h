@@ -26,6 +26,8 @@ namespace S47SaroClip
  // The positions of a mesh's first LOD, in its own terms (cm): the render data when it keeps them, else the editor's source,
  // else the bounding box's corners (bExact false). Cached by mesh.
  SIGNAL47_API const TArray<FVector3f>& Vertices(UStaticMesh* Mesh, bool& bExact);
+ // Let go of the cached positions (a whole station's are some twelve million vertices): after a measure, by whoever used them.
+ SIGNAL47_API void Forget();
  // The slabs, for drawing or other checks: name, box in three metres.
  SIGNAL47_API void Walls(TArray<TPair<FString, FBox>>& Out);
 }
