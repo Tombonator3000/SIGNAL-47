@@ -1,0 +1,31 @@
+{
+ "export_dir": "saro/Export",
+ "meshes": {
+  "SM_Lived_SaroExterior": {
+   "triangles": 7066,
+   "materials": [
+    "M_Lived_BlackPlastic",
+    "M_Lived_BlockSaro",
+    "M_Lived_BlockWing",
+    "M_Lived_CableBlack",
+    "M_Lived_CableGrey",
+    "M_Lived_Coping",
+    "M_Lived_Downspout",
+    "M_Lived_OutGrime",
+    "M_Lived_RustSteel"
+   ],
+   "bounds_local_m": [
+    [
+     -6.6020002365112305,
+     -11.10200023651123,
+     -0.6000000238418579
+    ],
+    [
+     38.86199951171875,
+     6.302000045776367,
+     4.96999979019165
+    ]
+   ]
+  }
+ }
+}

@@ -1,0 +1,405 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "task": "STREETLAMPS-20261108",
+  "units": "metres",
+  "mapping": "Three (x,y,z) -> Blender (x,-z,y) -> UE centimetres (x,z,y)*100",
+  "destination": "/Game/Signal47/Art/StreetLamps",
+  "originality": "Original metric bpy geometry and procedural PBR textures made for SIGNAL / 47. No third-party imagery or meshes.",
+  "lens_material": "M_StreetLamp_Lens",
+  "lens_runtime_parameters": {
+    "EmissiveFactor": "linear RGB, zero when off, multiplies the lens base texture",
+    "TextureTint": "linear RGB, default one"
+  },
+  "collision": "none authored; import keeps auto_generate_collision=False and complex-as-simple like ExteriorFixtures; gameplay uses its own 2D colliders",
+  "assembly_three_m": {
+    "pole_origin": [
+      0,
+      0,
+      0
+    ],
+    "arm_origin": [
+      0,
+      7.6,
+      0
+    ],
+    "head_pivot": [
+      1.8,
+      8.05,
+      0.0
+    ],
+    "emitter": [
+      2.22,
+      7.877,
+      0.0
+    ],
+    "lens_bottom": [
+      2.22,
+      7.885,
+      0.0
+    ],
+    "note": "Three metres, pole at origin and arm/head unrotated (arm along +X). Rotate arm and head together about the pole axis."
+  },
+  "parts": {
+    "SM_StreetLamp_Head": {
+      "bounds_local_m": [
+        [
+          0.0,
+          -0.17,
+          -0.165
+        ],
+        [
+          0.78,
+          0.17,
+          0.20683
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          0.0,
+          -0.165,
+          -0.17
+        ],
+        [
+          0.78,
+          0.20683,
+          0.17
+        ]
+      ],
+      "materials": [
+        "M_StreetLamp_Housing",
+        "M_StreetLamp_Lens",
+        "M_StreetLamp_Photocell",
+        "M_StreetLamp_Hardware",
+        "M_StreetLamp_Gasket"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "pivot": "centre of the slipfitter mouth (rear face of the cast lip), where the 60 mm arm tube enters; nose toward +X",
+      "slipfitter": {
+        "mouth_centre_three_m": [
+          0,
+          0,
+          0
+        ],
+        "entry_axis_three": [
+          1,
+          0,
+          0
+        ],
+        "tube_diameter_m": 0.06,
+        "lip_outer_diameter_m": 0.12,
+        "note": "place the head pivot exactly on the arm end point, same yaw as the arm"
+      },
+      "housing_size_m": {
+        "length_incl_lip": 0.78,
+        "width": 0.34,
+        "height": 0.2,
+        "top_three_m_y": 0.135,
+        "skirt_three_m_y": -0.065
+      },
+      "lens_rim_centre_three_m": [
+        0.42,
+        -0.075,
+        0
+      ],
+      "lens_volume_centre_three_m": [
+        0.42,
+        -0.12,
+        0
+      ],
+      "lens_centre_three_m": [
+        0.42,
+        -0.165,
+        0
+      ],
+      "lens_normal_three": [
+        0,
+        -1,
+        0
+      ],
+      "aperture_m": [
+        0.5,
+        0.28
+      ],
+      "lens_depth_m": 0.09,
+      "emitter_three_m": [
+        0.42,
+        -0.173,
+        0.0
+      ],
+      "lamp_arc_three_m": [
+        0.42,
+        -0.035,
+        0
+      ],
+      "emitter_note": "lens_centre is the lowest outer point of the glass drop; emitter is 8 mm below it on the normal so a shadow-casting light is not occluded by the opaque lens mesh. lamp_arc is the HPS arc tube inside the housing.",
+      "suggested_light": {
+        "type": "spot pointing along lens_normal",
+        "outer_cone_deg": 70,
+        "inner_cone_deg": 45,
+        "colour_temperature_K": 2100,
+        "source": "high-pressure sodium, 150-250 W class"
+      },
+      "photocell_top_three_m": [
+        0.2,
+        0.20683,
+        0.0
+      ],
+      "bottom_three_m_y": -0.165,
+      "lod_triangles": [
+        2546,
+        1278,
+        578
+      ],
+      "editable_components": [
+        14,
+        12,
+        8
+      ]
+    },
+    "SM_StreetLamp_Arm": {
+      "bounds_local_m": [
+        [
+          -0.105,
+          -0.073,
+          -0.08
+        ],
+        [
+          1.8,
+          0.073,
+          0.48
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.105,
+          -0.08,
+          -0.073
+        ],
+        [
+          1.8,
+          0.48,
+          0.073
+        ]
+      ],
+      "materials": [
+        "M_StreetLamp_Galvanized",
+        "M_StreetLamp_Hardware"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "pivot": "pole axis at the arm root (centre of the clamp band); arm toward +X, rises toward +Y",
+      "head_mount_three_m": [
+        1.8,
+        0.45,
+        0.0
+      ],
+      "head_mount_axis_three": [
+        1,
+        0,
+        0
+      ],
+      "reach_m": 1.8,
+      "rise_m": 0.45,
+      "tube_diameter_m": 0.06,
+      "clamp_band": {
+        "inner_radius_m": 0.05771,
+        "outer_radius_m": 0.073,
+        "height_m": 0.16,
+        "centre_y_m": 0
+      },
+      "fits_pole_at_three_m_y": 7.6,
+      "measured_end_cap_centre_three_m": [
+        1.8,
+        0.45,
+        0.0
+      ],
+      "lod_triangles": [
+        712,
+        312,
+        156
+      ],
+      "editable_components": [
+        9,
+        5,
+        4
+      ]
+    },
+    "SM_StreetLamp_Pole": {
+      "bounds_local_m": [
+        [
+          -0.17,
+          -0.17,
+          0.0
+        ],
+        [
+          0.17,
+          0.17,
+          8.0
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.17,
+          0.0,
+          -0.17
+        ],
+        [
+          0.17,
+          8.0,
+          0.17
+        ]
+      ],
+      "materials": [
+        "M_StreetLamp_Galvanized",
+        "M_StreetLamp_Hardware"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "pivot": "centre of the foot-plate underside; y=0 is the ground / top of the concrete base",
+      "height_m": 8.0,
+      "shaft_top_three_m_y": 7.955,
+      "foot_plate_top_three_m_y": 0.025,
+      "foot_plate_m": [
+        0.34,
+        0.025,
+        0.34
+      ],
+      "shaft_diameter_m": {
+        "base": 0.2,
+        "top": 0.1104
+      },
+      "shaft_radius_formula": "r(y) = 0.1000 - 0.0448*(y-0.025)/7.930",
+      "arm_mount_three_m": [
+        0,
+        7.6,
+        0
+      ],
+      "radius_at_arm_mount_m": 0.05721,
+      "anchor_bolts_three_m": [
+        [
+          -0.13,
+          0.025,
+          -0.13
+        ],
+        [
+          -0.13,
+          0.025,
+          0.13
+        ],
+        [
+          0.13,
+          0.025,
+          -0.13
+        ],
+        [
+          0.13,
+          0.025,
+          0.13
+        ]
+      ],
+      "hand_hole": {
+        "facing_three": [
+          -1,
+          0,
+          0
+        ],
+        "y_range_m": [
+          0.38,
+          0.56
+        ]
+      },
+      "lod_triangles": [
+        966,
+        446,
+        166
+      ],
+      "editable_components": [
+        19,
+        13,
+        7
+      ]
+    },
+    "SM_StreetLamp_WoodArm": {
+      "bounds_local_m": [
+        [
+          -0.01026,
+          -0.05413,
+          -0.48
+        ],
+        [
+          1.2,
+          0.05413,
+          0.1
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.01026,
+          -0.48,
+          -0.05413
+        ],
+        [
+          1.2,
+          0.1,
+          0.05413
+        ]
+      ],
+      "materials": [
+        "M_StreetLamp_Galvanized",
+        "M_StreetLamp_Hardware"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "pivot": "contact point on the side of a wooden utility pole at the arm axis height; arm toward +X",
+      "head_mount_three_m": [
+        1.2,
+        0,
+        0
+      ],
+      "head_mount_axis_three": [
+        1,
+        0,
+        0
+      ],
+      "reach_m": 1.2,
+      "assumed_wood_pole_radius_m": 0.13,
+      "wood_pole_axis_three_m": [
+        -0.13,
+        0,
+        0
+      ],
+      "plate_y_range_m": [
+        -0.48,
+        0.1
+      ],
+      "through_bolts_three_m_y": [
+        0.07,
+        -0.38
+      ],
+      "lod_triangles": [
+        336,
+        208,
+        64
+      ],
+      "editable_components": [
+        12,
+        10,
+        4
+      ]
+    }
+  },
+  "total_LOD0_triangles": 4560
+}

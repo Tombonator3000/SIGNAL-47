@@ -1,0 +1,94 @@
+{
+ "units": "metres",
+ "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+ "meshes": {
+  "SM_Lived_ControlFloor": {
+   "triangles": 2,
+   "materials": [
+    "M_Lived_VCTFloor"
+   ],
+   "bounds_local_m": [
+    [
+     -6.0,
+     -4.5,
+     0.0017999999690800905
+    ],
+    [
+     6.0,
+     4.5,
+     0.0017999999690800905
+    ]
+   ]
+  },
+  "SM_Lived_ControlDressing": {
+   "triangles": 37444,
+   "materials": [
+    "M_Lived_AmberGlass",
+    "M_Lived_Ash",
+    "M_Lived_Beige",
+    "M_Lived_BlackPlastic",
+    "M_Lived_BlueCan",
+    "M_Lived_BulbWarm",
+    "M_Lived_Butt",
+    "M_Lived_CableBeige",
+    "M_Lived_CableBlack",
+    "M_Lived_CableGrey",
+    "M_Lived_Card",
+    "M_Lived_Ceramic",
+    "M_Lived_Chrome",
+    "M_Lived_Cloth",
+    "M_Lived_Foam",
+    "M_Lived_Grime",
+    "M_Lived_LampAmber",
+    "M_Lived_LampGreen",
+    "M_Lived_LampOff",
+    "M_Lived_LampRed",
+    "M_Lived_PanelGrey",
+    "M_Lived_Paper",
+    "M_Lived_RackSteel",
+    "M_Lived_ReelWindow",
+    "M_Lived_ShelfGreen",
+    "M_Lived_Tape",
+    "M_Lived_TrayGalv",
+    "M_Lived_WhiteCan"
+   ],
+   "bounds_local_m": [
+    [
+     -5.991000175476074,
+     -4.492000102996826,
+     0.0
+    ],
+    [
+     5.991000175476074,
+     4.489999771118164,
+     2.995500087738037
+    ]
+   ]
+  },
+  "SM_Lived_CorridorDressing": {
+   "triangles": 298,
+   "materials": [
+    "M_Lived_BlackPlastic",
+    "M_Lived_Chrome",
+    "M_Lived_Grime",
+    "M_Lived_PanelGrey",
+    "M_Lived_Paper",
+    "M_Lived_RackSteel",
+    "M_Lived_RedPaint",
+    "M_Lived_Tape"
+   ],
+   "bounds_local_m": [
+    [
+     -5.960000038146973,
+     -6.576000213623047,
+     0.0020000000949949026
+    ],
+    [
+     1.9600000381469727,
+     -4.835000038146973,
+     2.747999906539917
+    ]
+   ]
+  }
+ }
+}

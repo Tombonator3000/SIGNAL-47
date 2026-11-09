@@ -1,0 +1,127 @@
+[
+ {
+  "name": "M_TripoFleet_classic_jeep_00_CabTrim",
+  "reuse": "/Game/Licensed/TripoFleet/classic_jeep/Materials/M_TripoFleet_classic_jeep_00_CabTrim"
+ },
+ {
+  "name": "M_Truck_Tire",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Card_R.png"
+  },
+  "texture_tint_linear": [
+   0.028,
+   0.027,
+   0.025
+  ],
+  "metallic": 0,
+  "specular": 0.3,
+  "roughness": 0.9,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Truck_Lens",
+  "truck_lens": true,
+  "base_color": [
+   0.6,
+   0.6,
+   0.55
+  ]
+ },
+ {
+  "name": "M_Truck_Paint",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.66,
+   0.64,
+   0.575
+  ],
+  "metallic": 0,
+  "specular": 0.5,
+  "roughness": 0.5,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Truck_Trim",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.022,
+   0.022,
+   0.022
+  ],
+  "metallic": 0,
+  "specular": 0.4,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Truck_Steel",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.36,
+   0.36,
+   0.34
+  ],
+  "metallic": 0.9,
+  "specular": 0.5,
+  "roughness": 0.5,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Truck_Amber",
+  "base_color_linear": [
+   0.3,
+   0.12,
+   0.02,
+   1
+  ],
+  "roughness": 0.22,
+  "metallic": 0,
+  "specular": 0.5
+ },
+ {
+  "name": "M_JeepInterior_CJTireRubber",
+  "reuse": "/Game/Licensed/TripoFleet/classic_jeep/Materials/M_JeepInterior_CJTireRubber"
+ },
+ {
+  "name": "M_JeepInterior_CJChassis",
+  "reuse": "/Game/Licensed/TripoFleet/classic_jeep/Materials/M_JeepInterior_CJChassis"
+ },
+ {
+  "name": "M_JeepInterior_CJSeatVinyl",
+  "reuse": "/Game/Licensed/TripoFleet/classic_jeep/Materials/M_JeepInterior_CJSeatVinyl"
+ },
+ {
+  "name": "M_JeepInterior_CJSeatSeam",
+  "reuse": "/Game/Licensed/TripoFleet/classic_jeep/Materials/M_JeepInterior_CJSeatSeam"
+ }
+]

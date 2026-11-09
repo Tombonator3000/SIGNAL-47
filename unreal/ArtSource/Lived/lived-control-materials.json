@@ -1,0 +1,526 @@
+[
+ {
+  "name": "M_Lived_RackSteel",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.082,
+   0.096,
+   0.092
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_ShelfGreen",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.115,
+   0.165,
+   0.125
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_PanelGrey",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.285,
+   0.295,
+   0.27
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_TrayGalv",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.46,
+   0.47,
+   0.45
+  ],
+  "metallic": 0.85,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Beige",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.47,
+   0.42,
+   0.31
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_BlackPlastic",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.022,
+   0.022,
+   0.024
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_WhiteCan",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.55,
+   0.54,
+   0.48
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_BlueCan",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.06,
+   0.11,
+   0.19
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Ceramic",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.66,
+   0.63,
+   0.55
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Card",
+  "textures": {
+   "base_color": "textures/T_Lived_Card_BC.png",
+   "roughness": "textures/T_Lived_Card_R.png"
+  },
+  "texture_tint_linear": [
+   0.4,
+   0.28,
+   0.155
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Cloth",
+  "textures": {
+   "base_color": "textures/T_Lived_Cloth_BC.png",
+   "roughness": "textures/T_Lived_Cloth_R.png"
+  },
+  "texture_tint_linear": [
+   0.145,
+   0.105,
+   0.065
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_CableBlack",
+  "base_color_linear": [
+   0.016,
+   0.016,
+   0.017,
+   1
+  ],
+  "roughness": 0.55,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_CableGrey",
+  "base_color_linear": [
+   0.17,
+   0.17,
+   0.165,
+   1
+  ],
+  "roughness": 0.6,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_CableBeige",
+  "base_color_linear": [
+   0.42,
+   0.37,
+   0.26,
+   1
+  ],
+  "roughness": 0.6,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_AmberGlass",
+  "base_color_linear": [
+   0.22,
+   0.1,
+   0.03,
+   1
+  ],
+  "roughness": 0.16,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Butt",
+  "base_color_linear": [
+   0.52,
+   0.4,
+   0.24,
+   1
+  ],
+  "roughness": 0.85,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Ash",
+  "base_color_linear": [
+   0.1,
+   0.1,
+   0.1,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Foam",
+  "base_color_linear": [
+   0.74,
+   0.72,
+   0.66,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Tape",
+  "base_color_linear": [
+   0.5,
+   0.4,
+   0.2,
+   1
+  ],
+  "roughness": 0.62,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Chrome",
+  "base_color_linear": [
+   0.62,
+   0.62,
+   0.6,
+   1
+  ],
+  "roughness": 0.3,
+  "metallic": 0.95,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_RedPaint",
+  "base_color_linear": [
+   0.32,
+   0.025,
+   0.02,
+   1
+  ],
+  "roughness": 0.45,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_ReelWindow",
+  "base_color_linear": [
+   0.012,
+   0.012,
+   0.014,
+   1
+  ],
+  "roughness": 0.2,
+  "metallic": 0,
+  "specular": 0.45
+ },
+ {
+  "name": "M_Lived_Paper",
+  "textures": {
+   "base_color": "textures/T_Lived_Paper_BC.png"
+  },
+  "texture_tint_linear": [
+   0.92,
+   0.92,
+   0.9
+  ],
+  "roughness": 0.88,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Grime",
+  "textures": {
+   "base_color": "textures/T_Lived_Grime_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.82,
+  "metallic": 0,
+  "specular": 0.25,
+  "opacity_from_base_color": true,
+  "alpha_mode": "dithered_masked",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_LampGreen",
+  "base_color_linear": [
+   0.02,
+   0.05,
+   0.02,
+   1
+  ],
+  "roughness": 0.35,
+  "metallic": 0,
+  "specular": 0.5,
+  "emission": [
+   0.1,
+   0.95,
+   0.22,
+   1
+  ],
+  "emission_strength": 9.0
+ },
+ {
+  "name": "M_Lived_LampAmber",
+  "base_color_linear": [
+   0.05,
+   0.03,
+   0.01,
+   1
+  ],
+  "roughness": 0.35,
+  "metallic": 0,
+  "specular": 0.5,
+  "emission": [
+   1.0,
+   0.55,
+   0.08,
+   1
+  ],
+  "emission_strength": 8.0
+ },
+ {
+  "name": "M_Lived_LampRed",
+  "base_color_linear": [
+   0.05,
+   0.012,
+   0.01,
+   1
+  ],
+  "roughness": 0.35,
+  "metallic": 0,
+  "specular": 0.5,
+  "emission": [
+   1.0,
+   0.08,
+   0.04,
+   1
+  ],
+  "emission_strength": 8.0
+ },
+ {
+  "name": "M_Lived_LampOff",
+  "base_color_linear": [
+   0.015,
+   0.015,
+   0.012,
+   1
+  ],
+  "roughness": 0.35,
+  "metallic": 0,
+  "specular": 0.5,
+  "emission": [
+   0.0,
+   0.0,
+   0.0,
+   1
+  ],
+  "emission_strength": 0.0
+ },
+ {
+  "name": "M_Lived_BulbWarm",
+  "base_color_linear": [
+   0.6,
+   0.5,
+   0.35,
+   1
+  ],
+  "roughness": 0.35,
+  "metallic": 0,
+  "specular": 0.5,
+  "emission": [
+   1.0,
+   0.62,
+   0.28,
+   1
+  ],
+  "emission_strength": 14.0
+ },
+ {
+  "name": "M_Lived_VCTFloor",
+  "textures": {
+   "base_color": "textures/T_Lived_VCT_BC.png",
+   "roughness": "textures/T_Lived_VCT_R.png",
+   "normal": "textures/T_Lived_VCT_N.png"
+  },
+  "texture_tint_linear": [
+   0.76,
+   0.7,
+   0.6
+  ],
+  "roughness": 0.45,
+  "metallic": 0,
+  "specular": 0.45,
+  "normal_strength": 1.0,
+  "normal_convention": "DirectX",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ }
+]

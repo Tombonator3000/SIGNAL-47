@@ -1,0 +1,71 @@
+{
+ "export_dir": "house/Export",
+ "meshes": {
+  "SM_Lived_FarmHouse": {
+   "triangles": 29364,
+   "materials": [
+    "M_Farm_Stucco",
+    "M_House_Plaster",
+    "M_House_Plank",
+    "M_House_Lino",
+    "M_Farm_Wood",
+    "M_House_Beam",
+    "M_House_CabPaint",
+    "M_Farm_Paint",
+    "M_House_Blind",
+    "M_Farm_Concrete",
+    "M_House_Iron",
+    "M_Farm_Steel",
+    "M_Farm_Tin",
+    "M_House_Mattress",
+    "M_House_Curtain",
+    "M_House_China",
+    "M_Farm_Glass",
+    "M_House_Rug",
+    "M_Lived_Paper",
+    "M_House_Sofa",
+    "M_House_TV",
+    "M_House_Knob",
+    "M_Lived_Card",
+    "M_House_Tile",
+    "M_Lived_Grime",
+    "M_House_Loss",
+    "M_Lived_OutGrime",
+    "M_House_Soil"
+   ],
+   "bounds_local_m": [
+    [
+     -6.900000095367432,
+     -7.400000095367432,
+     -1.2999999523162842
+    ],
+    [
+     6.900000095367432,
+     6.420000076293945,
+     4.28000020980835
+    ]
+   ],
+   "collision": "complex"
+  },
+  "SM_Lived_HouseDoor": {
+   "triangles": 92,
+   "materials": [
+    "M_House_DoorPaint",
+    "M_House_DoorPanel",
+    "M_Farm_Steel"
+   ],
+   "bounds_local_m": [
+    [
+     -0.5,
+     -1.0,
+     -0.5
+    ],
+    [
+     0.5,
+     1.0,
+     0.5
+    ]
+   ]
+  }
+ }
+}
