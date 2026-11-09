@@ -138,10 +138,12 @@ int32 S47CarPaint::Dress(AS47Web* W)
  for (UStaticMeshComponent* C : All)
  {
   if (!IsCar(C) || C->ComponentTags.Contains(Tag) || C->ComponentTags.Contains(Skip)) continue;
-  // A car someone has already painted for a scene of its own (the visitors' black sedan, a motel car's night materials) is theirs.
-  bool bOwned = false;
-  for (int32 I = 0; I < C->GetNumMaterials(); ++I) bOwned |= C->GetMaterial(I) && C->GetMaterial(I)->IsA<UMaterialInstanceDynamic>();
-  if (bOwned) { C->ComponentTags.Add(Skip); continue; }
+  // A car someone has already painted all over for a scene of its own (the visitors' black sedan) is theirs. Critics, round 8: one
+  // dynamic slot used to skip the whole car (wagon 23's white body left its glass, tyres and chrome grey); now only the slots that
+  // already have a dynamic material are left as they are, slot by slot, and the rest are dressed.
+  int32 Owned = 0;
+  for (int32 I = 0; I < C->GetNumMaterials(); ++I) Owned += C->GetMaterial(I) && C->GetMaterial(I)->IsA<UMaterialInstanceDynamic>();
+  if (Owned > 0 && Owned == C->GetNumMaterials()) { C->ComponentTags.Add(Skip); continue; }
   C->ComponentTags.Add(Tag);
   UStaticMesh* Mesh = C->GetStaticMesh();
   // Every LOD's slot draws what LOD0's slot of the same name draws (the street lamps' WorldGrid lesson, 3f946c47).
@@ -158,6 +160,8 @@ int32 S47CarPaint::Dress(AS47Web* W)
    const FString Role = RoleOf(SlotName, Old ? Old->GetName() : FString());
    Was.Add(FString::Printf(TEXT("%s=%s(%s)->%s"), *SlotName, Old ? *Old->GetName() : TEXT("none"), *Drawable(Old), *Role));
    const FString Key = SlotName.Replace(TEXT("_LOD1"), TEXT("")).Replace(TEXT("_LOD2"), TEXT(""));
+   // (somebody's own paint on this slot: kept, and a LOD's copy of the slot gets the same)
+   if (auto* Theirs = Cast<UMaterialInstanceDynamic>(Old)) { if (!ByName.Contains(Key)) ByName.Add(Key, Theirs); Was.Last() += TEXT(" (kept)"); continue; }
    if (UMaterialInstanceDynamic** Same = ByName.Find(Key)) { C->SetMaterial(I, *Same); continue; }
    const FLook L = LookOf(Role, bSheriff);
    UMaterialInterface* Base = L.bGlass && Glass ? Glass : Lit;

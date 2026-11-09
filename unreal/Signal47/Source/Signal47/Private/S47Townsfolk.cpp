@@ -14,7 +14,9 @@
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
+#include "Misc/CommandLine.h"
 #include "Misc/Crc.h"
+#include "Misc/Parse.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Townsfolk, Log, All);
 
@@ -157,6 +159,14 @@ FString FS47Townsfolk::WorksAt(const FString& Who)
 {
 	return Who == TEXT("attendant") ? TEXT("gas") : Who == TEXT("waitress") ? TEXT("diner") : Who == TEXT("deputy") ? TEXT("sheriff") : Who == TEXT("souvenir_man") ? TEXT("souvenir") : FString();
 }
+FString FS47Townsfolk::NightPlaceOf(const FString& Who)
+{
+	// Critics, round 8: a night's event at the substation took the deputy, who by then was asleep in his house (S47TownDay); one at
+	// his house took nobody. At night they are where the day has them after dark.
+	static const bool bNoDay = FParse::Param(FCommandLine::Get(), TEXT("S47TownDayOff"));
+	if (bNoDay) return WorksAt(Who);
+	return Who == TEXT("deputy") ? TEXT("h02") : Who == TEXT("souvenir_man") ? TEXT("h03") : WorksAt(Who);
+}
 bool FS47Townsfolk::TakenBy(int32 Seed, int32 Night, const FString& Who)
 {
 	// About one night in three that something comes to their place, by the game's seed: never the same answer twice for a night.
@@ -168,7 +178,7 @@ int32 FS47Townsfolk::DaysAway(int32 Seed, const FString& Who, int32 Day)
 }
 FString FS47Townsfolk::TakenAfter(int32 Seed, int32 Night, TFunctionRef<int32(const FString&)> LastNightOf)
 {
-	for (const FString& Who : People()) if (LastNightOf(WorksAt(Who)) == Night && TakenBy(Seed, Night, Who)) return Who;
+	for (const FString& Who : People()) if (LastNightOf(NightPlaceOf(Who)) == Night && TakenBy(Seed, Night, Who)) return Who;
 	return FString();
 }
 FString FS47Townsfolk::Talk(const FString& Kind)
@@ -326,7 +336,7 @@ void FS47Townsfolk::Step(double Dt)
 		const FString Who = TakenAfter(F.Seed(), N, [&F](const FString& Id) { return F.EventPlaces->LastNight(Id); });
 		if (Who.IsEmpty()) continue;
 		UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: night %d settled in the morning: %s taken"), N, *Who);
-		Vanish(Who, WorksAt(Who));
+		Vanish(Who, NightPlaceOf(Who));
 		break;
 	}
 }
@@ -550,17 +560,20 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 	}
 	Check(WeekdayOf(1, false) == TEXT("Monday") && WeekdayOf(7, false) == TEXT("Sunday") && WeekdayOf(9, false) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
 	Check(WeekdayOf(1, true) == TEXT("Sunday") && WeekdayOf(2, true) == TEXT("Monday") && WeekdayOf(5, true) == TEXT("Thursday"), TEXT("M7: on the old calendar day 1 is Sunday, April 13, 1986, as the HUD has it"));
-	// Settled in arrears (critics, round 3): a night's event at the substation at two, the player rests to eight; that morning the night is
-	// over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
+	// Settled in arrears (critics, round 3): a night's event at the deputy's house at two, the player rests to eight; that morning the
+	// night is over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
+	// Critics, round 8: at night he is at home (S47TownDay), so an event at the empty substation takes nobody.
 	{
 		int32 N = 2;
 		while (N < 400 && !TakenBy(47, N, TEXT("deputy"))) ++N;
 		const double At2 = double(N) * 86400. + 2 * 3600., At8 = double(N) * 86400. + 8 * 3600.;
-		const auto Sheriff = [N](const FString& Id) { return Id == TEXT("sheriff") ? N : 0; };
+		const bool bDay = !FParse::Param(FCommandLine::Get(), TEXT("S47TownDayOff"));
+		const auto Home = [N, bDay](const FString& Id) { return Id == (bDay ? TEXT("h02") : TEXT("sheriff")) ? N : 0; };
+		const auto Office = [N](const FString& Id) { return Id == TEXT("sheriff") ? N : 0; };
 		const bool bNotYet = FS47FreeformSession::NightsOver(At2) == N - 1 && FS47FreeformSession::NightOf(At2) == N;
 		const bool bSlept = FS47FreeformSession::NightOf(At8) == N + 1 && FS47FreeformSession::NightsOver(At8) == N && FS47FreeformSession::NightsOver(At8 + 86400.) == N + 1;
-		Check(N < 400 && bNotYet && bSlept && TakenAfter(47, N, Sheriff) == TEXT("deputy") && TakenAfter(47, N + 1, Sheriff).IsEmpty(),
-			FString::Printf(TEXT("night %d's event at the substation, slept through to 08:00: settled that morning, and the deputy is taken"), N));
+		Check(N < 400 && bNotYet && bSlept && TakenAfter(47, N, Home) == TEXT("deputy") && TakenAfter(47, N + 1, Home).IsEmpty() && (!bDay || TakenAfter(47, N, Office).IsEmpty()),
+			FString::Printf(TEXT("night %d's event at the deputy's house, slept through to 08:00: settled that morning, and the deputy is taken; one at the empty substation takes nobody"), N));
 	}
 	Check(Talk(TEXT("farm_lights")) == TEXT("lights") && Talk(TEXT("site_visit")) == TEXT("lights") && Talk(TEXT("door_visit")) == TEXT("doors") && Talk(TEXT("figure_near")) == TEXT("figure") && Talk(TEXT("cattle_ring")) == TEXT("stock") && Talk(TEXT("motel_night")).IsEmpty(),
 		TEXT("talk follows what kind of thing it was; a night at the motel is not the town's"));

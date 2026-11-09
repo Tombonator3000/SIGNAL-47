@@ -51,9 +51,11 @@ namespace S47EventPlacesLocal
    {TEXT("souvenir"),TEXT("the souvenir shop"),TEXT("caliche"),14,2061,20.5,2061.2,TEXT("Souvenir"),TEXT(""),Town|Indoors|Door|Window,8,26},
    {TEXT("radio"),TEXT("the 1420 AM studio"),TEXT("caliche"),10,2036,17,2036,TEXT(""),TEXT(""),Town|Indoors|Window|Phone|People,8,26},
    {TEXT("h01"),TEXT("the empty house across from the laundromat"),TEXT("caliche"),18,2130,24,2129.6,TEXT("H01"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h02"),TEXT("the empty house across from the Plaza"),TEXT("caliche"),18,2154,24.5,2153.6,TEXT("H02"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h03"),TEXT("the last house on the east side of town"),TEXT("caliche"),19,2188,25,2188.4,TEXT("H03"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h04"),TEXT("the empty house at the south end of town"),TEXT("caliche"),-13,2238,-19,2237.6,TEXT("H04"),TEXT(""),Town|Indoors|Door|Window,8,24},
+   // Lived in since the town has its day (S47TownDay: the deputy's, the souvenir man's and the diner cook's): not "empty", and
+   // people there, so no "light in an empty house" is lit in them (critics, round 8).
+   {TEXT("h02"),TEXT("the deputy's house across from the Plaza"),TEXT("caliche"),18,2154,24.5,2153.6,TEXT("H02"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h03"),TEXT("the souvenir man's house at the end of the east side"),TEXT("caliche"),19,2188,25,2188.4,TEXT("H03"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h04"),TEXT("the cook's house at the south end of town"),TEXT("caliche"),-13,2238,-19,2237.6,TEXT("H04"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
    {TEXT("diner"),TEXT("the Mesa Diner"),TEXT("diner"),-6,2004,-14,2000,TEXT(""),TEXT(""),Indoors|Window|Phone|People|Road|Lot,14,26},
    // The other station, at the end of its track: measured from its gate below.
    {TEXT("station01"),TEXT("STATION 01"),TEXT("station"),0,0,0,0,TEXT(""),TEXT(""),Far|Open|Lot|Road,20,22},

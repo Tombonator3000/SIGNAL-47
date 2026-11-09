@@ -52,7 +52,7 @@ void FS47DevFreeform::AddTownDay(FS47DevEvents& E)
  };
  E.AddFreeform(Group, TEXT("Sheriff at 09:00"), TEXT("from the street, through the substation's window: at his desk or about the office"), [View, Sheriff]
  { View(9, FVector2D(7993, 2106.5), FVector(7980, Office + 1.1, 2107), TEXT("NPC-DAY: the sheriff at 09:00"), [Sheriff](FString& W) { return Sheriff({ TEXT("office") }, W); }); });
- E.AddFreeform(Group, TEXT("Sheriff at 12:00 (lunch)"), TEXT("at the diner's door: in his booth or at the counter, or on his way; his door says BACK SOON"), [View, Sheriff]
+ E.AddFreeform(Group, TEXT("Sheriff at 12:00 (lunch)"), TEXT("at the diner's door: in his booth or standing at the counter, or on his way; his door's card says OUT TO LUNCH"), [View, Sheriff]
  { View(12.15, FVector2D(7984.5, 2001.2), FVector(7980.3, Diner + .9, 1996.6), TEXT("NPC-DAY: the sheriff at lunch"), [Sheriff](FString& W) { return Sheriff({ TEXT("diner"), TEXT("office") }, W); }); });
  E.AddFreeform(Group, TEXT("Sheriff at 15:00"), TEXT("from the street: in the office, or out on patrol with the car (some afternoons)"), [View, Sheriff]
  { View(15, FVector2D(7993, 2104), FVector(7984, Office + 1.0, 2104), TEXT("NPC-DAY: the sheriff at 15:00"), [Sheriff](FString& W) { return Sheriff({ TEXT("office"), TEXT("patrol") }, W); }); });
@@ -63,7 +63,7 @@ void FS47DevFreeform::AddTownDay(FS47DevEvents& E)
  // The diner: the cook in the kitchen through the hatch at 07, 12 and 19 (and the sheriff at lunch).
  const auto Cook = [](FString& Why)
  {
-  const FString Spot = S47TownDay::SpotNow(TEXT("waitress"));
+  const FString Spot = S47TownDay::SpotNow(TEXT("cook"));
   Why = TEXT("cook ") + Spot;
   return S47TownDay::Active() && S47TownDay::PlaceOf(Spot) == TEXT("diner");
  };

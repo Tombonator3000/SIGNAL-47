@@ -101,7 +101,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am26"),TEXT("man"),TEXT("Branding at the Sedillo place Saturday. They want two who can rope and one who can cook, and not the same fella for both."),TEXT("Then I'm cooking."),nullptr,nullptr,0},
   {TEXT("am27"),TEXT("woman"),TEXT("The souvenir place has postcards of the dishes now, a quarter apiece. I bought one and I can't think who to send it to."),TEXT("Send it to the dishes."),nullptr,nullptr,0},
   {TEXT("am28"),TEXT("man"),TEXT("Drove by the Plaza about one in the morning and the doors were flickering like there was a picture on. Nothing shows past ten."),TEXT("Then somebody fell asleep in the booth."),nullptr,nullptr,0},
-  {TEXT("am29"),TEXT("woman"),TEXT("There's a light on in that old house at the south end of town again. Nobody's lived there since the Montoyas went to Belen."),TEXT("Kids, I'd guess. It's usually kids."),nullptr,nullptr,0},
+  {TEXT("am29"),TEXT("woman"),TEXT("There's a light on in that old house across from the laundromat again. Nobody's lived there since the Montoyas went to Belen."),TEXT("Kids, I'd guess. It's usually kids."),nullptr,nullptr,0},
   {TEXT("am01"),TEXT("man"),TEXT("Earl, can you tell the fella with the blue pickup he left his lunch at the elevator."),TEXT("He heard you. Everybody heard you."),nullptr,nullptr,0},
   {TEXT("am02"),TEXT("woman"),TEXT("Earl, the church rummage sale is Saturday now, not Friday."),TEXT("Saturday. Bring your own bags."),nullptr,nullptr,0},
   {TEXT("am03"),TEXT("old"),TEXT("I've got a question about the comet. Is it coming back?"),TEXT("Seventy-six years, they tell me. I wouldn't wait up."),nullptr,nullptr,0},

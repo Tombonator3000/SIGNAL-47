@@ -8,6 +8,7 @@
 #include "S47EyeGlint.h"
 #include "S47EventPlaces.h"
 #include "S47Visitors.h"
+#include "S47FarmLights.h"
 #include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
@@ -3141,6 +3142,9 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   for(const FS47EventPlace& P:F->EventPlaces->All())
   {
    if(!P.Has(ES47PlaceTrait::Window)||!P.Has(ES47PlaceTrait::Indoors)||P.Has(ES47PlaceTrait::People))continue;
+   // Critics, round 8: not the old house on the Alderete place while its own timer has its lamp on anyway (S47FarmLights: dusk to
+   // 22:30); a light there then is nobody's mystery.
+   if(P.Id==TEXT("oldhouse")&&S47FarmLights::HouseTimerOn(S47Hap::HourOf(Clock)))continue;
    FVector At;if(!F->EventPlaces->EntryNow(P.Id,At))continue;
    const FVector To(At.X-Feet.X,0,At.Z-Feet.Z);const double Far=To.Size();
    if(Far<(bForced?20:120)||Far>900)continue;

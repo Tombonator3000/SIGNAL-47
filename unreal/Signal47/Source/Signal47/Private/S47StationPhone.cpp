@@ -11,7 +11,9 @@
 
 namespace
 {
- struct FInstalledCut {TWeakObjectPtr<UStaticMeshComponent> Component;TStrongObjectPtr<UStaticMesh> Source;TWeakObjectPtr<UStaticMesh> Copy;TArray<TWeakObjectPtr<UMaterialInterface>> Materials;int32 Node=INDEX_NONE,Removed=0;};
+ // Copy is held weakly: once S47StreetLamps re-cuts g999 nothing holds it and the collector takes it (critics, round 8: the audit then
+ // failed on "!Copy" by when the collector had run). Its triangle count is kept instead, and the successor is checked against that.
+ struct FInstalledCut {TWeakObjectPtr<UStaticMeshComponent> Component;TStrongObjectPtr<UStaticMesh> Source;TWeakObjectPtr<UStaticMesh> Copy;TArray<TWeakObjectPtr<UMaterialInterface>> Materials;int32 Node=INDEX_NONE,Removed=0,CopyTris=0;};
  struct FState {TWeakObjectPtr<AS47Web> World;TWeakObjectPtr<UStaticMeshComponent> Model;bool Attempted=false,Installed=false;int32 Removed=0;TArray<FInstalledCut> Cuts;};
  FState State;
  struct FCut {UStaticMeshComponent* Component=nullptr;UStaticMesh* Source=nullptr;UStaticMesh* Copy=nullptr;int32 Node=INDEX_NONE,Removed=0;bool Whole=false;};
@@ -52,8 +54,9 @@ namespace S47StationPhone
    const auto* Copy=Cut.Copy.Get();const UStaticMesh* Now=C->GetStaticMesh();
    // PAYPHONE-MOVE: S47StreetLamps later cuts Caliche's lamps out of this same g999 remainder; its runtime successor
    // (owned by the Web, one LOD, fewer triangles, never the original trim) is derived from this copy and still lacks the phone.
-   const bool bSuccessor=Copy&&Now&&Now!=Copy&&Now!=Source&&Now->GetOuter()==W&&Now->GetNumLODs()==1&&Now->GetNumTriangles(0)<Copy->GetNumTriangles(0);
-   if(!Copy||(Now!=Copy&&!bSuccessor)||Copy->GetNumLODs()!=1||Source->GetNumLODs()!=1||Copy->GetNumTriangles(0)!=Source->GetNumTriangles(0)-Cut.Removed||C->GetNumMaterials()!=Cut.Materials.Num()||Copy->GetStaticMaterials()!=Source->GetStaticMaterials())return false;
+   const bool bSelf=Copy&&Now==Copy;
+   const bool bSuccessor=Now&&Now!=Copy&&Now!=Source&&Now->GetOuter()==W&&Now->GetNumLODs()==1&&Now->GetNumTriangles(0)<Cut.CopyTris;
+   if((!bSelf&&!bSuccessor)||Now->GetNumLODs()!=1||Source->GetNumLODs()!=1||Cut.CopyTris!=Source->GetNumTriangles(0)-Cut.Removed||C->GetNumMaterials()!=Cut.Materials.Num()||Now->GetStaticMaterials()!=Source->GetStaticMaterials())return false;
    for(int32 I=0;I<Cut.Materials.Num();++I)if(C->GetMaterial(I)!=Cut.Materials[I].Get())return false;
    const FString Path=Source->GetPathName();
    return (Path==TEXT("/Game/CalicheHomes/Trim/g999.g999")&&Source->GetNumTriangles(0)==1356&&Cut.Removed==24)
@@ -111,7 +114,7 @@ namespace S47StationPhone
    {
     auto Materials=C->GetMaterials();Cut.Copy->InitResources();C->SetStaticMesh(Cut.Copy);for(int32 K=0;K<Materials.Num();++K)C->SetMaterial(K,Materials[K]);
     // Component's UPROPERTY owns the clone. Retain its detached source for the strict composed audit.
-    FInstalledCut Installed;Installed.Component=C;Installed.Node=Cut.Node;Installed.Source.Reset(Cut.Source);Installed.Copy=Cut.Copy;Installed.Removed=Cut.Removed;
+    FInstalledCut Installed;Installed.Component=C;Installed.Node=Cut.Node;Installed.Source.Reset(Cut.Source);Installed.Copy=Cut.Copy;Installed.CopyTris=Cut.Copy->GetNumTriangles(0);Installed.Removed=Cut.Removed;
     for(auto* Material:Materials)Installed.Materials.Add(Material);State.Cuts.Add(MoveTemp(Installed));
    }
   }

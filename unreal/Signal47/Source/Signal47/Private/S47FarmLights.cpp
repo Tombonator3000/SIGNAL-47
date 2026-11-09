@@ -82,6 +82,7 @@ namespace
   TWeakObjectPtr<UStaticMeshComponent> Cord,Shade,Bulb;
   TWeakObjectPtr<UMaterialInstanceDynamic> BulbMat;
   TWeakObjectPtr<UPointLightComponent> BarnLight;
+  FVector BarnLightAt=FVector(1e9); // where the bulb's light was last put (UE): moved again only when the bulb has
   S47FarmLights::FSwing Swing;
   double BarnK=0,BarnNear=0;
   // yard
@@ -393,7 +394,16 @@ namespace S47FarmLights
    if(auto* L=S.BarnLight.Get())
    {
     const bool bLit=bNear&&Away(Pivot)<90&&S.BarnK>.001;
-    if(bLit)L->SetWorldLocation(S47Three::ToUE(End+Down*BulbMid));
+    // Critics, round 8: a shadowed point light that moves redraws all six of its shadow faces every frame. The swinging
+    // shadows are seen inside the barn or at its door, so they are drawn only within 25 m; and the light is moved only when the
+    // bulb has (more than a centimetre since it was last put there).
+    const bool bShadow=bLit&&Away(Pivot)<25;
+    if(L->CastShadows!=bShadow)L->SetCastShadows(bShadow);
+    if(bLit)
+    {
+     const FVector Want=S47Three::ToUE(End+Down*BulbMid);
+     if(FVector::DistSquared(Want,S.BarnLightAt)>1.){L->SetWorldLocation(Want);S.BarnLightAt=Want;}
+    }
     L->SetIntensity(bLit?float(CvBarn.GetValueOnGameThread()*S.BarnK):0.f);
     if(L->IsVisible()!=bLit)L->SetVisibility(bLit);
    }
@@ -442,18 +452,21 @@ namespace S47FarmLights
    S.HouseNear=Near(Lamp);
    // The night's "light in an empty house" when it is this one: on, until one comes up to it (S47Happenings, 18 m).
    bool bEvent=false;
+   const int32 Night=FS47FreeformSession::NightOf(Clock);
    if(M->Freeform->Happenings)
    {
     FVector Site;
     if(M->Freeform->Happenings->SiteHere(TEXT("houselit"),Site)&&FVector2D::Distance(FVector2D(Site.X,Site.Z),FVector2D(Door.X,Door.Z))<30)
     {
-     const int32 Night=FS47FreeformSession::NightOf(Clock);
      if(FVector2D::Distance(FVector2D(Site.X,Site.Z),FVector2D(Eye.X,Eye.Z))<18)S.EventOutNight=Night;
      bEvent=S.EventOutNight!=Night;
     }
    }
-   const bool bTimer=HouseTimerOn(Hour);
-   S.HouseWhy=bEvent?TEXT("the night's light in an empty house"):bTimer?TEXT("the timer, dusk to 22:30"):TEXT("off");
+   // Critics, round 8: once the night's light has gone out as one came up to it (the notebook says so), it stays out the rest of
+   // that night: the timer does not light it again behind one's back. (S47Happenings does not light this house while its timer is on.)
+   const bool bOutTonight=S.EventOutNight==Night;
+   const bool bTimer=HouseTimerOn(Hour)&&!bOutTonight;
+   S.HouseWhy=bEvent?TEXT("the night's light in an empty house"):bTimer?TEXT("the timer, dusk to 22:30"):bOutTonight?TEXT("out since one came up to it tonight"):TEXT("off");
    double K=bTimer||bEvent?Flicker(S.HouseNear,S.T+17.):0.;
    if(S.HouseNear>.75)K=0; // the bulb goes with something that close
    S.HouseK=K;

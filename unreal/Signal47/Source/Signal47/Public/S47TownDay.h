@@ -28,7 +28,8 @@ class AS47Web;
 // Each house's lamp is lit while its owner is home and awake (S47CalicheAccess::SetRoomLamp). -S47TownDayOff: as before.
 namespace S47TownDay
 {
- // The people with a day: FS47TripoNpcs' roles ("deputy" is the sheriff, "waitress" the diner's cook).
+ // The people with a day: "deputy" (the sheriff), "cook" (the diner's cook: FS47TripoNpcs' spare "waitress" figure, so that the
+ // waitress at the counter, FS47Townsfolk's "waitress", being gone does not take her too), "attendant", "souvenir_man".
  SIGNAL47_API const TArray<FString>& People();
  struct FSpot
  {
@@ -56,6 +57,7 @@ namespace S47TownDay
  SIGNAL47_API bool Active();
  // From FS47TripoNpcs::Update: where Role's body is drawn this frame (three-space metres, feet; yaw radians as its Euler(0,yaw,0)),
  // and whether at all. Default: where it would have stood (an Anchor spot is that). False: no day for it now; keep your own.
+ // Role is FS47TripoNpcs' ("waitress" is the cook's body); SpotNow takes either.
  SIGNAL47_API bool Pose(const FString& Role, const FVector& DefaultFeet, double DefaultYaw, FVector& OutFeet, double& OutYaw, bool& bOutShow);
  // The spot the running plan has Role at now (empty: none).
  SIGNAL47_API FString SpotNow(const FString& Role);

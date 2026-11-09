@@ -397,7 +397,7 @@ bool FS47Places::Use(const FString& Id)
   if(!Now.IsEmpty())
   {
    Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+Now;
-   if(Tier>=2)F.RecordEvidence(FString::Printf(TEXT("%s_night%d_t%d"),*Key,FS47FreeformSession::NightOf(F.Clock()),Tier),FString::Printf(TEXT("Saucer Rock, after midnight. %s"),*Now));
+   if(Tier==2||Tier==3)F.RecordEvidence(FString::Printf(TEXT("%s_night%d_t%d"),*Key,FS47FreeformSession::NightOf(F.Clock()),Tier),FString::Printf(TEXT("Saucer Rock, after midnight. %s"),*Now));
   }
  }
  Panel(*D,bFirst,Extra);return true;
@@ -406,7 +406,9 @@ int32 FS47Places::SaucerTier(double Hour)
 {
  if(!FMath::IsFinite(Hour))return 0;
  Hour=FMath::Fmod(FMath::Fmod(Hour,24.)+24.,24.);
- return Hour>=18?1:Hour<2?2:Hour<FS47NightRhythm::EndHour?3:0;
+ // Critics, round 8: the cap's "last of the light" from just after sunset (18:27) to 19:30 only; the rest of the evening its own
+ // (tier 4); before 18:30 still the day's board.
+ return Hour>=19.5?4:Hour>=18.5?1:Hour<2?2:Hour<FS47NightRhythm::EndHour?3:0;
 }
 FString FS47Places::SaucerAt(int32 Tier,bool bMap)
 {
@@ -414,7 +416,9 @@ FString FS47Places::SaucerAt(int32 Tier,bool bMap)
  {
   case 1:return TEXT("The cap keeps the last of the light a while after the land has gone dark. Inside the swept ring the sand is colder to the hand than outside it. Shade, most of the day. That would do it.");
   case 2:return TEXT("Low over the ridge to the west, a light that does not move. Look straight at it and it is not there; look a little aside and it is. It is still there when you turn to go.");
-  case 3:return TEXT("The sand inside the ring has been swept again since dark. Your own tracks into it are gone, and there are no others, going in or coming out.");
+  // (critics, round 8: true on a first visit as on a later one: the tracks one has just made coming in)
+  case 3:return TEXT("The sand inside the ring is swept smooth. Behind you, the tracks you made coming in are already gone, and there are no others, going in or coming out.");
+  case 4:return TEXT("The wind drops off inside the swept ring, as if the stones stood higher than they do. Out of the wind the sand stays cold to the hand. That would do it.");
   default:return bMap?TEXT("The souvenir man's map has it about right, for once. The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING."):TEXT("The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING.");
  }
 }
@@ -473,9 +477,9 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  // PT-SAUCER-ROCK-20261109: Saucer Rock is on the land where the souvenir man's map has it, with something to see at any hour.
  {
   const FDef* Rock=Def(TEXT("saucer_rock"));
-  bool bTiers=SaucerTier(12)==0&&SaucerTier(20)==1&&SaucerTier(0.5)==2&&SaucerTier(3)==3&&SaucerTier(7)==0&&SaucerTier(-1)==1;
-  for(int32 T=0;T<4;++T)bTiers&=!SaucerAt(T,false).IsEmpty()&&!SaucerAt(T,false).ToLower().Contains(TEXT("alien"))&&!SaucerAt(T,false).ToLower().Contains(TEXT("saucer people"));
-  Check(Rock&&FVector2D::Distance(FVector2D(Rock->X,Rock->Z),FVector2D(-760,2240))<1&&PartsOf(Rock->Kind).Num()>=10&&bTiers,TEXT("Saucer Rock stands where the map has it, a rock with a ring and a board, and says something by day, in the evening, after midnight and after two"));
+  bool bTiers=SaucerTier(12)==0&&SaucerTier(18.2)==0&&SaucerTier(19)==1&&SaucerTier(20)==4&&SaucerTier(0.5)==2&&SaucerTier(3)==3&&SaucerTier(7)==0&&SaucerTier(-1)==4;
+  for(int32 T=0;T<5;++T)bTiers&=!SaucerAt(T,false).IsEmpty()&&!SaucerAt(T,false).ToLower().Contains(TEXT("alien"))&&!SaucerAt(T,false).ToLower().Contains(TEXT("saucer people"));
+  Check(Rock&&FVector2D::Distance(FVector2D(Rock->X,Rock->Z),FVector2D(-760,2240))<1&&PartsOf(Rock->Kind).Num()>=10&&bTiers,TEXT("Saucer Rock stands where the map has it, a rock with a ring and a board, and says something by day, at dusk, in the evening, after midnight and after two"));
  }
  Check(bWords&&bParts,TEXT("each has a prop and one thing to find, and none says what it is"));
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));

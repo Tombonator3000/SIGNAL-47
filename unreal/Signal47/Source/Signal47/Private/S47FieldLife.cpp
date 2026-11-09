@@ -422,8 +422,12 @@ bool FS47TruckCare::DigOut()
  const double FirmM=!bSoftHere?0.:bFirm?FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(Rx,Rz)):FirmReach;
  M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
  Rescued(FirmM);
- const FString Way=!bSoftHere?FString(TEXT(" It stands on firm ground."))
-  :bFirm?FString::Printf(TEXT(" Firm ground about %.0f m %s%s: take it there gently, the brush will hold that far."),FMath::Max(5.,FMath::RoundToDouble(FirmM/5)*5),*WayTo(Rx,Rz,Fx,Fz),bBack?TEXT(", back the way you came"):TEXT(""))
+ // Critics, round 8: in yards, as the rest of the game speaks (an American in 1986 does not say "40 m"), to the nearest five;
+ // past sixty only "a good way off". Where nothing was measured (no road position), nothing said of the ground.
+ const int32 Yards=int32(FMath::Max(5.,FMath::RoundToDouble(FirmM*1.0936/5)*5));
+ const FString HowFar=Yards>60?FString(TEXT("a good way off to the")):FString::Printf(TEXT("about %d yards"),Yards);
+ const FString Way=!bAt?FString():!bSoftHere?FString(TEXT(" It stands on firm ground."))
+  :bFirm?FString::Printf(TEXT(" Firm ground %s %s%s: take it there gently, the brush will hold that far."),*HowFar,*WayTo(Rx,Rz,Fx,Fz),bBack?TEXT(", back the way you came"):TEXT(""))
   :FString(TEXT(" Sand all round: keep it moving, gently, and the brush will hold a while."));
  if(M->UI)M->UI->Toast((bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes))+Way,8);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out%s, grace %.0f s and %.0f m"),bSoftHere?*FString::Printf(TEXT(" in sand, firm ground %.0f m %s"),FirmM,*WayTo(Rx,Rz,Fx,Fz)):TEXT(" on firm ground"),GraceSeconds,GraceNeed);

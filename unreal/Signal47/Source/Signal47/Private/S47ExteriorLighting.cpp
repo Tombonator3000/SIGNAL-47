@@ -329,6 +329,7 @@ void AS47Web::UpdateExteriorLighting()
    G->SetOutputScale(I * 2, Mask); G->SetOutputScale(I * 2 + 1, Mask);
   }
 	TMap<UMaterialInstanceDynamic*, float> Emission;
+	static const bool bOldGlow = OldStreetGlow();
 	for (FExteriorLight& P : ExteriorLights)
 	{
 		USpotLightComponent* L = P.Light.Get();
@@ -361,10 +362,18 @@ void AS47Web::UpdateExteriorLighting()
 		if (UMaterialInstanceDynamic* D = P.Diffuser.Get(); D && !P.bAuthoredLens) Emission.FindOrAdd(D) = FMath::Max(Emission.FindRef(D), K);
 		// STREETLAMP-GLOW: the pool on the ground fades in from 300 m to 150 m (it came on at once at 200 m); the lamp's own bowl
 		// and halo glow at any distance (S47StreetLamps::Shine, below, from K alone).
-		const float Near = 1.f - FMath::SmoothStep(150.f, 300.f, float(FVector::Dist(Camera, P.At)));
+		const float Dist = float(FVector::Dist(Camera, P.At));
+		const float Near = 1.f - FMath::SmoothStep(150.f, 300.f, Dist);
 		const bool bOn = K > 0.0001f && Near > 0.f;
 		const bool bToggle = P.bWasOn != bOn;
 		if (bToggle) L->SetVisibility(bOn);
+		// Critics, round 8: the pool reaches 300 m, its shadows need not. They are drawn within about 110 m and dropped past 130 m
+		// (between, as they were: no flicker at the edge), so only the lamps one is among cost shadow maps. The pool, the bowl and
+		// its halo are as before at any distance.
+		const bool bShadow = bOn && (L->CastShadows ? Dist < 130.f : Dist < 110.f);
+		if (L->CastShadows != bShadow) L->SetCastShadows(bShadow);
+		const bool bVolumetric = bShadow && !(P.bStreetHead && !bOldGlow); // (as built: all but a new cobra head)
+		if (L->bCastVolumetricShadow != bVolumetric) L->SetCastVolumetricShadow(bVolumetric);
 		FLinearColor C = FloodCol(P.Set, P.Slot);
 		if (P.bSodium)
 		{

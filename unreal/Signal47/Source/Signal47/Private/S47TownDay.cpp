@@ -4,13 +4,16 @@
 #include "S47DeputyRound.h"
 #include "S47Freeform.h"
 #include "S47Inter.h"
+#include "S47Kit.h"
 #include "S47Main.h"
+#include "S47Props.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
+#include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
@@ -46,8 +49,9 @@ namespace S47TownDayLocal
   // the Mesa Diner: outside the door, the door (its opening is z 1999.35 to 2000.55), inside, the aisle, the second booth
   { TEXT("DinOut"), 7983.6, 1999.95 }, { TEXT("DinDoor"), 7981.85, 1999.95 }, { TEXT("DinIn"), 7980.4, 1999.95 },
   { TEXT("DinAisle"), 7978.3, 1999.95 }, { TEXT("DinBooth"), 7978.3, 1995.97 },
-  // the diner's kitchen, behind the hatch (between the partition and the range)
-  { TEXT("Kitchen"), 7973.8, 1997.2 },
+  // the diner's kitchen, behind the hatch (between the partition and the range), and its back: south of the range, behind the
+  // partition's solid part (diner_geometry.py: the hatch is by 1.2 to 3.6, the range bx -7.7 to -6.4 over it), out of the room's sight
+  { TEXT("Kitchen"), 7973.8, 1997.2 }, { TEXT("KitSouth"), 7973.8, 1995.6 }, { TEXT("KitBack"), 7972.95, 1993.45 },
   // the gas station: inside and outside its door (the opening z 2066.65 to 2067.75), the forecourt north of the pump island
   { TEXT("GasIn"), 7982.2, 2067.2 }, { TEXT("GasOut"), 7983.9, 2067.2 }, { TEXT("GasFore"), 7991.6, 2064.6 },
   // the souvenir shop, and the walk up the east side to the third house (clear of the church's and the shop's steps)
@@ -59,6 +63,7 @@ namespace S47TownDayLocal
   { TEXT("OffOut"), TEXT("OffSteps") }, { TEXT("OffSteps"), TEXT("OffCar") }, { TEXT("OffSteps"), TEXT("StOff") }, { TEXT("StOff"), TEXT("StDiner") },
   { TEXT("StDiner"), TEXT("DinOut") }, { TEXT("DinOut"), TEXT("DinDoor") }, { TEXT("DinDoor"), TEXT("DinIn") }, { TEXT("DinIn"), TEXT("DinAisle") },
   { TEXT("DinAisle"), TEXT("DinBooth") },
+  { TEXT("Kitchen"), TEXT("KitSouth") }, { TEXT("KitSouth"), TEXT("KitBack") },
   { TEXT("GasIn"), TEXT("GasOut") }, { TEXT("GasOut"), TEXT("GasFore") },
   { TEXT("SouvIn"), TEXT("SouvDoor") }, { TEXT("SouvDoor"), TEXT("SouvOut") }, { TEXT("SouvOut"), TEXT("EastS") }, { TEXT("EastS"), TEXT("EastN") },
   { TEXT("EastN"), TEXT("H03Out") }, { TEXT("H03Out"), TEXT("H03Door") },
@@ -73,9 +78,10 @@ namespace S47TownDayLocal
   { TEXT("off.window"), TEXT("office"), 7982.7, 2105.3, PI_ / 2, FSpot::Stand, TEXT("OffMid") },
   { TEXT("off.step"), TEXT("office"), 7984.75, 2102.3, PI_ / 2, FSpot::Stand, TEXT("OffOut") },
   { TEXT("off.car"), TEXT("office"), 7986.2, 2105.0, PI_ / 2, FSpot::Stand, TEXT("OffCar") },
-  // lunch at the Mesa: the second booth's seat nearest the door, or the fourth stool
+  // lunch at the Mesa: the second booth's seat nearest the door, or standing at the counter between the fourth and the fifth stool
+  // (critics, round 8: lowered onto a stool the single pose's legs went through it and the floor; at the counter he stands)
   { TEXT("diner.booth"), TEXT("diner"), 7980.35, 1995.97, 0, FSpot::Sit, TEXT("DinBooth") },
-  { TEXT("diner.stool"), TEXT("diner"), 7976.55, 1998.35, -PI_ / 2, FSpot::Sit, TEXT("DinAisle") },
+  { TEXT("diner.counter"), TEXT("diner"), 7976.35, 1997.55, -PI_ / 2, FSpot::Stand, TEXT("DinAisle") },
   // home (the second house on the east side), the county's round
   { TEXT("home.sheriff"), TEXT("home"), 8028.25, 2156.5, 0, FSpot::Hidden, TEXT("OffCar") },
   { TEXT("sleep.sheriff"), TEXT("home"), 8028.25, 2156.5, 0, FSpot::Hidden, TEXT("OffCar") },
@@ -83,9 +89,10 @@ namespace S47TownDayLocal
   // the diner's cook: at the hatch, at the range, in the back; home is the house down the south road
   { TEXT("diner.kitchen"), TEXT("diner"), 7973.8, 1997.55, PI_ / 2, FSpot::Stand, TEXT("Kitchen") },
   { TEXT("diner.range"), TEXT("diner"), 7973.8, 1996.7, -PI_ / 2, FSpot::Stand, TEXT("Kitchen") },
-  { TEXT("diner.back"), TEXT("diner"), 7973.8, 1997.2, 0, FSpot::Hidden, TEXT("Kitchen") },
-  { TEXT("home.cook"), TEXT("home"), 7976.5, 2241.0, 0, FSpot::Hidden, TEXT("Kitchen") },
-  { TEXT("sleep.cook"), TEXT("home"), 7976.5, 2241.0, 0, FSpot::Hidden, TEXT("Kitchen") },
+  // (in and out by the kitchen's back, not from beside the range in sight of the room: critics, round 8)
+  { TEXT("diner.back"), TEXT("diner"), 7972.95, 1993.45, 0, FSpot::Hidden, TEXT("KitBack") },
+  { TEXT("home.cook"), TEXT("home"), 7976.5, 2241.0, 0, FSpot::Hidden, TEXT("KitBack") },
+  { TEXT("sleep.cook"), TEXT("home"), 7976.5, 2241.0, 0, FSpot::Hidden, TEXT("KitBack") },
   // the attendant: his counter (where FS47TripoNpcs stands him), the pumps, a smoke by the door, the back room
   { TEXT("gas.counter"), TEXT("gas"), 0, 0, 0, FSpot::Anchor, TEXT("GasIn") },
   { TEXT("gas.pumps"), TEXT("gas"), 7991.3, 2057.5, -PI_ / 2, FSpot::Stand, TEXT("GasFore") },
@@ -100,8 +107,11 @@ namespace S47TownDayLocal
  // Whose house is whose (S47CalicheAccess room ids).
  FString HouseOf(const FString& Who)
  {
-  return Who == TEXT("deputy") ? TEXT("H02") : Who == TEXT("souvenir_man") ? TEXT("H03") : Who == TEXT("waitress") ? TEXT("H04") : FString();
+  return Who == TEXT("deputy") ? TEXT("H02") : Who == TEXT("souvenir_man") ? TEXT("H03") : Who == TEXT("cook") ? TEXT("H04") : FString();
  }
+ // FS47TripoNpcs' body for the cook is its spare "waitress" figure; the day calls her "cook" (critics, round 8: under "waitress" she
+ // went, and her lamp went out, whenever the waitress at the counter (FS47Townsfolk's "waitress") was gone).
+ FString DayKey(const FString& Role) { return Role == TEXT("waitress") ? FString(TEXT("cook")) : Role; }
  int32 NodeIndex(const FString& Id) { for (int32 I = 0; I < UE_ARRAY_COUNT(Nodes); ++I) if (Id == Nodes[I].Id) return I; return -1; }
  FVector2D NodeAt(int32 I) { return FVector2D(Nodes[I].X, Nodes[I].Z); }
  // The shortest way along the known paths, as node indices from A to B (empty: none).
@@ -185,6 +195,9 @@ namespace S47TownDayLocal
   TArray<FVector2D> Path;           // what is left of the way there
   FVector2D At = FVector2D::ZeroVector;
   double Yaw = 0, Age = 0, Phase = 0;
+  double Sit = 0;     // 0 standing to 1 seated: lowered and raised over a few tenths of a second, never in one frame
+  double Stride = 0;  // metres walked: the steps' rise and fall and the sway go by it, not by the clock
+  double Held = 0;    // real seconds a change in sight of the player has been held back (into or out of the car)
   bool bPlaced = false, bHidden = true, bSeated = false;
   FVector Anchor = FVector::ZeroVector; double AnchorYaw = 0; bool bAnchor = false;
  };
@@ -205,6 +218,10 @@ namespace S47TownDayLocal
   const double Floor = S47CalicheAccess::FloorAt(X, Z);
   if (!FMath::IsNaN(Floor)) return Floor;
   if (X > 7972.0 && X < 7981.8 && Z > 1991.1 && Z < 2008.8) return DinerFloor;
+  // The props' own floors (the gas station's shop and its ramp: Config/Props/town.json), as the player's walk has them first
+  // (critics, round 8: the attendant walked sunk into the shop's floor between the counter and the door).
+  const double Prop = AS47Props::FloorAt(X, Z);
+  if (FMath::IsFinite(Prop)) return Prop;
   FVector O = FVector(8000, 0, 0);
   if (M && M->Web) if (const FS47Obj G = M->Web->Obj(TEXT("world.town.group"))) O = G.WorldPosition();
   return O.Y + S47RoadTerrain::SurfaceY(X - O.X, Z - O.Z);
@@ -219,11 +236,11 @@ namespace S47TownDayLocal
    W.bPlaced = true; W.bHidden = !Visible(To); W.Arrived = W.Target;
    const int32 V = NodeIndex(To->Via);
    W.At = Visible(To) ? Goal(W, To) : V >= 0 ? NodeAt(V) : FVector2D(To->X, To->Z);
-   W.Yaw = To->Kind == FSpot::Anchor ? W.AnchorYaw : To->Yaw; W.bSeated = To->Kind == FSpot::Sit;
+   W.Yaw = To->Kind == FSpot::Anchor ? W.AnchorYaw : To->Yaw; W.bSeated = To->Kind == FSpot::Sit; W.Sit = W.bSeated ? 1 : 0;
    return;
   }
   // Unseen to unseen (home to bed, home to the night's round): nothing to walk.
-  if (W.bHidden && !Visible(To)) { W.Arrived = W.Target; W.bSeated = false; return; }
+  if (W.bHidden && !Visible(To)) { W.Arrived = W.Target; W.bSeated = false; W.Sit = 0; return; }
   // From a house or a back room: out of its door (where it went in) first.
   int32 Start = -1;
   if (W.bHidden && From) { Start = NodeIndex(From->Via); if (Start >= 0) W.At = NodeAt(Start); W.bHidden = false; }
@@ -236,18 +253,23 @@ namespace S47TownDayLocal
   if (Visible(To)) W.Path.Add(Goal(W, To));
   W.bSeated = false;
  }
- void Walk(FWalker& W, double Dt)
+ constexpr double HoldMax = 120; // real seconds: past this a change goes ahead even in sight (a player who never looks away)
+ // bHoldOut: the player can see where the walker would go out of sight (the sheriff at his car): stay there, in sight, until not.
+ void Walk(FWalker& W, double Dt, bool bHoldOut = false)
  {
   W.Age += Dt;
   const FSpot* To = SpotOf(W.Target);
-  double Left = Speed * Dt;
+  // Down into a seat or up out of it over about a third of a second; up first, then away.
+  W.Sit = FMath::FInterpConstantTo(W.Sit, W.bSeated ? 1. : 0., Dt, 3.);
+  double Left = W.Sit > .001 && !W.bSeated ? 0. : Speed * Dt;
   while (Left > 0 && W.Path.Num())
   {
    const FVector2D D = W.Path[0] - W.At; const double L = D.Size();
-   if (L > .01) { const double Want = FMath::Atan2(D.X, D.Y); W.Yaw = Want; }
+   // Turned into the way, not snapped to it: a quarter turn in about a third of a second.
+   if (L > .01) { const double Want = FMath::Atan2(D.X, D.Y); W.Yaw += FMath::Clamp(FMath::FindDeltaAngleRadians(W.Yaw, Want), -5. * Dt, 5. * Dt); }
    if (L <= Left)
    {
-    W.At = W.Path[0]; W.Path.RemoveAt(0); Left -= L;
+    W.At = W.Path[0]; W.Path.RemoveAt(0); Left -= L; W.Stride += L;
     // Through a shut door: it opens (the substation's, the shop's), as a hand on it would; nobody shuts it after them.
     for (const TCHAR* Door : { TEXT("OffDoor"), TEXT("SouvDoor") })
      if (FVector2D::Distance(W.At, NodeAt(NodeIndex(Door))) < .01)
@@ -256,10 +278,13 @@ namespace S47TownDayLocal
       if (S47CalicheAccess::HasDoor(Room) && !S47CalicheAccess::IsOpen(Room)) { S47CalicheAccess::SetOpenQuietly(Room, true); S47CalicheAccess::PoseDoor(Room, -1); }
      }
    }
-   else { W.At += D / L * Left; Left = 0; }
+   else { W.At += D / L * Left; W.Stride += Left; Left = 0; }
   }
   if (W.Path.IsEmpty() && To && W.Arrived != W.Target)
   {
+   // Critics, round 8: into the car and gone (or into a house) in front of the player: he waits by it until he is not watched.
+   if (bHoldOut && !Visible(To) && W.Held < HoldMax) { W.Held += Dt; return; }
+   W.Held = 0;
    W.Arrived = W.Target; W.bHidden = !Visible(To); W.bSeated = To->Kind == FSpot::Sit;
   }
   // Settle facing the spot's way once there.
@@ -275,6 +300,20 @@ namespace S47TownDayLocal
  {
   const FWalker* W = Walkers.Find(TEXT("deputy"));
   return bActive && W && W->Arrived == SpotId && W->Target == SpotId && W->Path.IsEmpty() && !W->bHidden && !FS47Townsfolk::AwayNow(TEXT("deputy"));
+ }
+ // Lunch with him in the booth (critics, round 8: it opened his office talk, "He opens the door", "two files on this desk"): a
+ // word at the table, today's one thing he has to say (FS47Townsfolk), and the office for the rest.
+ void OpenLunch(US47Main* M)
+ {
+  if (!M || !M->UI) return;
+  TArray<S47Kit::FW> Rows;
+  Rows.Add(S47Kit::Paper(TEXT("MESA DINER, THE SECOND BOOTH. He doesn't get up. He nods at the seat across from him and goes on with the special.")));
+  const FString Said = M->Freeform && M->Freeform->Townsfolk ? M->Freeform->Townsfolk->Gossip(TEXT("deputy")) : FString();
+  if (!Said.IsEmpty()) Rows.Add(S47Kit::Text(Said));
+  Rows.Add(S47Kit::Text(TEXT("THE DEPUTY: I'm on my lunch. Anything for a file, bring it by the office this afternoon.")));
+  const TWeakObjectPtr<US47Main> Weak(M);
+  Rows.Add(S47Kit::Button(TEXT("Let him eat"), [Weak] { if (US47Main* Run = Weak.Get()) if (Run->UI) Run->UI->Close(); }));
+  M->UI->Open(S47Kit::Shell(M->UI, TEXT("MESA DINER / THE DEPUTY"), S47Kit::Col(Rows), 820));
  }
  // A box round the booth's seat that answers the use trace while the sheriff sits there: talk to him at lunch.
  void BuildLunch(US47Main* M)
@@ -296,20 +335,21 @@ namespace S47TownDayLocal
   if (Node < 0) { C->DestroyComponent(); return; }
   LunchBox = C;
   FS47Interactable I; I.Id = TEXT("townday:sheriffLunch"); I.Object = W->ObjAt(Node); I.Range = 2.4;
-  I.Label = [] { return SheriffSeatedAt(TEXT("diner.booth")) ? FString(TEXT("Talk to the sheriff")) : FString(); };
+  // (the deputy, as every talk and paper has him; his hat on the hook, since a hat on the seat is the empty patrol car's)
+  I.Label = [] { return SheriffSeatedAt(TEXT("diner.booth")) ? FString(TEXT("Talk to the deputy")) : FString(); };
   I.Use = []
   {
    US47Main* Run = Main.Get();
-   if (Run && SheriffSeatedAt(TEXT("diner.booth")) && Run->TownLayer && Run->TownLayer->Caliche) Run->TownLayer->Caliche->Talk(TEXT("deputy"));
+   if (Run && SheriffSeatedAt(TEXT("diner.booth"))) OpenLunch(Run);
   };
-  I.Examine = [] { return SheriffSeatedAt(TEXT("diner.booth")) ? FString(TEXT("The sheriff, hat on the seat beside him, eating the special without looking at it.")) : FString(); };
+  I.Examine = [] { return SheriffSeatedAt(TEXT("diner.booth")) ? FString(TEXT("The deputy, in the second booth, eating the special without looking at it. His hat is on the hook by the door.")) : FString(); };
   M->Inter->Add(I); W->MarkUsable(Node, I.Id);
  }
 }
 
 const TArray<FString>& S47TownDay::People()
 {
- static const TArray<FString> P = { TEXT("deputy"), TEXT("waitress"), TEXT("attendant"), TEXT("souvenir_man") };
+ static const TArray<FString> P = { TEXT("deputy"), TEXT("cook"), TEXT("attendant"), TEXT("souvenir_man") };
  return P;
 }
 const TArray<S47TownDay::FSpot>& S47TownDay::Spots() { return S47TownDayLocal::AllSpots; }
@@ -361,7 +401,7 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
     const bool bPatrol = R.FRand() < .5f;
     const double P0 = bPatrol ? J(14.4, 15.4) : Leave, P1 = bPatrol ? FMath::Min(P0 + J(.55, .9), Leave - .3) : Leave;
     Office(Arrive + .03, L0);
-    Add(Rows, L0, L1, R.FRand() < .65f ? TEXT("diner.booth") : TEXT("diner.stool"));
+    Add(Rows, L0, L1, R.FRand() < .65f ? TEXT("diner.booth") : TEXT("diner.counter"));
     if (bPatrol && P1 > P0 + .2)
     {
      Office(L1, P0 - .03); Add(Rows, P0 - .03, P0, TEXT("off.car")); Add(Rows, P0, P1, TEXT("patrol")); Add(Rows, P1, P1 + .03, TEXT("off.car"));
@@ -377,7 +417,7 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
   if (Prev.bRound) Overlay(Rows, Prev.Due - 24 - .5, Prev.Due - 24 + .6, TEXT("patrol"));
   if (Tonight.bRound) Overlay(Rows, Tonight.Due - .5, Tonight.Due + .6, TEXT("patrol"));
  }
- else if (Who == TEXT("waitress"))
+ else if (Who == TEXT("cook"))
  {
   // The diner's cook: 06 to 21 every day, a break in the afternoon.
   const double Arrive = J(5.7, 5.95), Leave = J(20.7, 20.95), B0 = J(14.3, 14.8), Sleep = J(22.3, 23.0);
@@ -415,7 +455,13 @@ void S47TownDay::Stop()
 {
  using namespace S47TownDayLocal;
  US47Main* M = Main.Get();
- if (bActive && M && M->TownLayer && M->TownLayer->Town) M->TownLayer->Town->SetCarHeld(false);
+ if (bActive && M && M->TownLayer && M->TownLayer->Town)
+ {
+  FS47Town& Town = *M->TownLayer->Town;
+  Town.SetCarHeld(false);
+  // The man on the stoop as FS47Townsfolk::ShowPosts has him in Freeform without the day (-S47TownDayOff): there unless gone.
+  if (M->IsFreeform() && !Town.bSmokerIn && !FS47Townsfolk::AwayNow(TEXT("souvenir_man"))) Town.SetPeople(Town.bWomanIn, true);
+ }
  for (const auto& Pair : Lamp) S47CalicheAccess::SetRoomLamp(Pair.Key, 1);
  if (auto* C = LunchBox.Get()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  bActive = false; bLunchOn = false; Walkers.Reset(); Plans.Reset(); Lamp.Reset(); PlanDay = -1; LastClock = -1;
@@ -445,8 +491,22 @@ void S47TownDay::Step(US47Main* M, double Dt)
  // Out of sight they are where the plan says: another area, far off, or the clock jumped (a wait, a sleep).
  const bool bJump = LastClock < 0 || FMath::Abs(Clock - LastClock) > 600;
  LastClock = Clock;
- const bool bTown = M->Web->Area() == TEXT("diner");
- const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
+ // Critics, round 8: in the car on the main street the area is "road" (FS47FreeformDirector: one street either way), not "diner";
+ // every change there snapped him from the office to the booth in sight. Where the eye is: the camera's, on foot or driving.
+ const FString Area = M->Web->Area();
+ const bool bTown = Area == TEXT("diner") || Area == TEXT("road");
+ FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
+ FVector2D Fwd = FVector2D::ZeroVector;
+ if (M->Player) { P = S47Three::ToThree(M->Player->EyeUE()); const FVector Look = M->Player->ForwardUE(); Fwd = FVector2D(Look.X, Look.Y).GetSafeNormal(); }
+ // Whether the player could be watching a spot in town: near enough and roughly that way (or right by it).
+ const auto Seen = [&](const FVector2D& At)
+ {
+  if (!bTown) return false;
+  const FVector2D D = At - FVector2D(P.X, P.Z); const double L = D.Size();
+  return L < 8 || (L < 120 && FVector2D::DotProduct(D / L, Fwd) > .3);
+ };
+ const FVector2D CarAt = NodeAt(NodeIndex(TEXT("OffCar")));
+ const auto ByCar = [](const FSpot* S) { return S && FCString::Strcmp(S->Via, TEXT("OffCar")) == 0; };
  for (const FString& Who : People())
  {
   FWalker& W = Walkers.FindOrAdd(Who);
@@ -456,12 +516,17 @@ void S47TownDay::Step(US47Main* M, double Dt)
   if (To->Kind == FSpot::Anchor && !W.bAnchor) continue; // not stood anywhere yet: next frame
   if (Want != W.Target || bJump)
   {
+   // Out of the car from home or a patrol: not with the player looking at the car (he and it would come out of nothing).
+   const FSpot* From = SpotOf(W.Arrived);
+   if (!bJump && W.bPlaced && W.bHidden && Visible(To) && ByCar(From) && Seen(CarAt) && W.Held < HoldMax) { W.Held += Dt; Walk(W, Dt); continue; }
+   W.Held = 0;
    const FVector2D G = Visible(To) ? Goal(W, To) : FVector2D(To->X, To->Z);
    const bool bFar = FVector2D::Distance(FVector2D(P.X, P.Z), W.At) > 90 && FVector2D::Distance(FVector2D(P.X, P.Z), G) > 90;
    W.Target = Want;
    Lead(W, To, bJump || !bTown || bFar);
   }
-  Walk(W, Dt);
+  // Into the car and away: not with the player looking (he waits by it).
+  Walk(W, Dt, ByCar(To) && Seen(CarAt));
  }
  // The sheriff's place is the town's: his window lit and his door answered while he is in; the car outside while he is in town.
  if (M->TownLayer && M->TownLayer->Town)
@@ -471,16 +536,22 @@ void S47TownDay::Step(US47Main* M, double Dt)
   const bool bGone = FS47Townsfolk::AwayNow(TEXT("deputy"));
   const FString Place = S ? PlaceOf(S->Target) : FString();
   const bool bIn = !bGone && Place == TEXT("office");
-  const bool bCar = !bGone && S && (Place == TEXT("office") || Place == TEXT("diner") || (!S->bHidden && S->Path.Num()));
+  // (and while he is still about on foot: walking to it, or waiting by it until he is not watched)
+  const bool bCar = !bGone && S && (Place == TEXT("office") || Place == TEXT("diner") || (!S->bHidden && (S->Path.Num() || S->Arrived != S->Target)));
   if (Town.bDeputyIn != bIn) Town.SetDeputy(bIn);
   if (bHeldCar != (bCar && !bIn)) { bHeldCar = bCar && !bIn; Town.SetCarHeld(bHeldCar); }
+  // Critics, round 8: "Man on the stoop" answered at 03:00 and while he stood at his counter. The stoop's label, look and talk
+  // (FS47Caliche: Town.bSmokerIn) are there only while the day has him sitting on it.
+  const FWalker* Sm = Walkers.Find(TEXT("souvenir_man"));
+  const bool bStoop = Sm && !FS47Townsfolk::AwayNow(TEXT("souvenir_man")) && Sm->Target == TEXT("souv.stoop") && Sm->Arrived == Sm->Target && Sm->Path.IsEmpty() && !Sm->bHidden;
+  if (Town.bSmokerIn != bStoop) Town.SetPeople(Town.bWomanIn, bStoop);
  }
  // Each house's lamp while its owner is home and awake; the substation's while he is in.
  for (const FString& Who : People())
  {
   const FString House = HouseOf(Who); if (House.IsEmpty()) continue;
   const FWalker* W = Walkers.Find(Who);
-  const float K = W && !FS47Townsfolk::AwayNow(Who) && HomeAwake(W->Target) ? 1.f : 0.f;
+  const float K = W && !FS47Townsfolk::AwayNow(Who) && HomeAwake(W->Target) && W->Arrived == W->Target ? 1.f : 0.f; // (in the house)
   if (Lamp.FindRef(House, -1.f) != K) { Lamp.Add(House, K); S47CalicheAccess::SetRoomLamp(House, K); }
  }
  {
@@ -494,9 +565,10 @@ void S47TownDay::Step(US47Main* M, double Dt)
  if (bSeat != bLunchOn) { bLunchOn = bSeat; if (auto* C = LunchBox.Get()) C->SetCollisionEnabled(bSeat ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision); }
 }
 
-bool S47TownDay::Pose(const FString& Role, const FVector& DefaultFeet, double DefaultYaw, FVector& OutFeet, double& OutYaw, bool& bOutShow)
+bool S47TownDay::Pose(const FString& InRole, const FVector& DefaultFeet, double DefaultYaw, FVector& OutFeet, double& OutYaw, bool& bOutShow)
 {
  using namespace S47TownDayLocal;
+ const FString Role = DayKey(InRole);
  if (!bActive || !People().Contains(Role)) return false;
  FWalker& W = Walkers.FindOrAdd(Role);
  W.Anchor = DefaultFeet; W.AnchorYaw = DefaultYaw; W.bAnchor = true;
@@ -506,23 +578,36 @@ bool S47TownDay::Pose(const FString& Role, const FVector& DefaultFeet, double De
  const bool bThere = W.Path.IsEmpty() && To;
  bOutShow = !W.bHidden && !FS47Townsfolk::AwayNow(Role);
  double Y = bThere && To->Kind == FSpot::Anchor ? DefaultFeet.Y : GroundAt(M, W.At.X, W.At.Y);
- // Alive: a slow breath and a little weight shifting standing, a step's rise and fall walking, lowered behind the table sitting.
+ // Alive: a slow breath and a little weight shifting standing; lowered behind the table sitting, eased down and up.
  const double T = W.Age + FCrc::StrCrc32(*Role) % 97;
  double Yaw = W.Yaw;
- if (W.Path.Num()) Y += .022 * FMath::Abs(FMath::Sin(T * UE_DOUBLE_PI * 1.85));
+ FVector2D At = W.At;
+ if (W.Path.Num())
+ {
+  // Critics, round 8 (they slid along like statues): a walk read off the distance walked, about 0.7 m a step. The body rises over
+  // each planted foot and dips between (two bumps a stride), shifts its weight to the side of the foot it is on (once a stride),
+  // and its heading swings a little with the hips. The single pose cannot swing its legs; this is what the body above them does.
+  constexpr double StepLength = .68;
+  const double Ph = UE_DOUBLE_PI * W.Stride / StepLength;
+  const double Rise = FMath::Abs(FMath::Sin(Ph));
+  Y += .026 * Rise * Rise; // (never below the ground: the feet are the pose's own)
+  const FVector2D Ahead(FMath::Sin(W.Yaw), FMath::Cos(W.Yaw)), Side(Ahead.Y, -Ahead.X);
+  At += Side * (.028 * FMath::Sin(Ph));
+  Yaw += FMath::DegreesToRadians(2.6) * FMath::Sin(Ph);
+ }
  else
  {
   Y += .004 * FMath::Sin(T * 2 * UE_DOUBLE_PI / 4.6);
   Yaw += FMath::DegreesToRadians(1.6) * FMath::Sin(T * 2 * UE_DOUBLE_PI / 9.3) + FMath::DegreesToRadians(.8) * FMath::Sin(T * 2 * UE_DOUBLE_PI / 3.7 + 1.1);
-  if (W.bSeated) Y -= SitDrop;
  }
- OutFeet = FVector(W.At.X, Y, W.At.Y); OutYaw = Yaw;
+ Y -= SitDrop * FMath::SmoothStep(0., 1., W.Sit);
+ OutFeet = FVector(At.X, Y, At.Y); OutYaw = Yaw;
  return true;
 }
 
 FString S47TownDay::SpotNow(const FString& Role)
 {
- const S47TownDayLocal::FWalker* W = S47TownDayLocal::Walkers.Find(Role);
+ const S47TownDayLocal::FWalker* W = S47TownDayLocal::Walkers.Find(S47TownDayLocal::DayKey(Role));
  return S47TownDayLocal::bActive && W ? W->Target : FString();
 }
 
@@ -604,7 +689,7 @@ bool S47TownDay::SelfTest(TArray<FString>& Lines)
   bEvening &= PlaceOf(SpotIn(S, 20.)) == TEXT("home");
   bNight &= PlaceOf(SpotIn(S, 2.)) == TEXT("home");
   if (WeekDay == 6) bSunday &= PlaceOf(SpotIn(S, 10.)) == TEXT("home");
-  const TArray<FRow> C = Plan(Seed, Day, WeekDay, TEXT("waitress"));
+  const TArray<FRow> C = Plan(Seed, Day, WeekDay, TEXT("cook"));
   for (double H : { 7., 12., 19. }) bCook &= PlaceOf(SpotIn(C, H)) == TEXT("diner");
   bCook &= PlaceOf(SpotIn(C, 23.5)) == TEXT("home");
   const TArray<FRow> V = Plan(Seed, Day, WeekDay, TEXT("souvenir_man"));

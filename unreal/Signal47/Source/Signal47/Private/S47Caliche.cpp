@@ -23,6 +23,8 @@
 #include "S47Seen.h"
 #include "S47Story.h"
 #include "S47Town.h"
+#include "S47TownDay.h"
+#include "S47Townsfolk.h"
 #include "S47World.h"
 #include "Widgets/SBoxPanel.h"
 
@@ -217,6 +219,27 @@ namespace
 		return All;
 	}
 	const FPerson* Person(const FString& W) { return People().FindByPredicate([&](const FPerson& P) { return P.Id == W; }); }
+	// Freeform's day (S47TownDay, critics, round 8): the card in the substation's door for why he is out, so that BACK SOON stays the
+	// card of somebody gone; and what the window shows of him while he is in. Empty: as before (Story, or no day running).
+	FString DayDoorCard()
+	{
+		if (!S47TownDay::Active()) return FString();
+		if (FS47Townsfolk::AwayNow(TEXT("deputy"))) return TEXT("Locked. A note taped over the card in the frame: CALL SOCORRO.");
+		const FString Spot = S47TownDay::SpotNow(TEXT("deputy"));
+		if (Spot.StartsWith(TEXT("diner."))) return TEXT("Locked. A card in the frame, in ballpoint: AT LUNCH. BACK BY 1.");
+		if (Spot == TEXT("patrol")) return TEXT("Locked. A card in the frame: OUT ON PATROL. EMERGENCIES CALL COUNTY DISPATCH.");
+		return TEXT("Locked. The hours on a card in the frame: 8 TO 5 WEEKDAYS, SATURDAY 9 TO 1. AFTER HOURS CALL COUNTY DISPATCH.");
+	}
+	FString DayWindow()
+	{
+		if (!S47TownDay::Active()) return FString();
+		const FString Spot = S47TownDay::SpotNow(TEXT("deputy"));
+		if (Spot == TEXT("off.board") || Spot == TEXT("off.files") || Spot == TEXT("off.coffee"))
+			return TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy is up at the back of the room with his back to you.");
+		if (Spot == TEXT("off.window")) return TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy is at the window himself, looking out past you at the street.");
+		if (Spot == TEXT("off.step") || Spot == TEXT("off.car")) return TEXT("The office is lit and empty, the map on the wall stuck with pins, two rows of them running straight. The deputy is outside, by his car.");
+		return FString();
+	}
 	bool Asked(const FS47TownSeen& S, const FString& W, const FString& Id) { return S.Contains(TEXT("ask:") + W + TEXT(":") + Id); }
 	bool AvailableTopic(const FS47TownSeen& S, const FString& W, const FTopic& T, double Day, bool bReelReady)
 	{
@@ -290,8 +313,8 @@ void FS47Caliche::BindTown()
 	Add(TEXT("gasSign"), [] { return TEXT("Sign"); }, Say(TEXT("GAS. DIESEL. No brand, just the words."), 2.8), {}, 3);
 	Add(TEXT("paper"), [this] { return Town->bPaperIn ? FString(TEXT("Newspapers")) : FString(); }, [this] { if (!Town->bPaperIn) return; M->UI->Toast(TEXT("The Pecos Valley Sentinel, Monday, April 14, 1986, still in its twine. NICKLAUS, 46, WINS MASTERS. Dropped from a car that did not stop."), 5); Once(TEXT("paper"), TEXT("Caliche: the Pecos Valley Sentinel dropped at the gas station before five. Monday, April 14, 1986.")); }, [this] { return Town->bPaperIn ? FString(TEXT("NICKLAUS, 46, WINS MASTERS. Under the fold, smaller: County to grade the old Roswell road this summer.")) : FString(); });
 	auto Map = [this] { Once(TEXT("pins"), TEXT("Caliche, the sheriff's substation: a county map on the wall, stuck with pins. Most are scattered. Two rows run straight, one east along the old road, one west into the empty part of the map.")); };
-	Add(TEXT("sheriffWindow"), [] { return TEXT("Window"); }, [this, Map] { M->UI->Toast(Town->bDeputyIn ? TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy at the desk looks up at you, and back at the map.") : TEXT("The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight."), 5.2); Map(); }, [Map] { Map(); return TEXT("One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it."); });
-	Add(TEXT("sheriffDoor"), [this] { return Town->bDeputyIn ? TEXT("Knock") : TEXT("Door"); }, [this] { if (Town->bDeputyIn) Talk(TEXT("deputy")); else M->UI->Toast(TEXT("Locked. A card in the frame, in ballpoint: BACK SOON."), 3.6); }, [this] { return Town->bDeputyIn ? FString(TEXT("COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.")) : FString(); });
+	Add(TEXT("sheriffWindow"), [] { return TEXT("Window"); }, [this, Map] { const FString Day = Town->bDeputyIn ? DayWindow() : FString(); M->UI->Toast(!Day.IsEmpty() ? Day : Town->bDeputyIn ? FString(TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy at the desk looks up at you, and back at the map.")) : FString(TEXT("The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight.")), 5.2); Map(); }, [Map] { Map(); return TEXT("One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it."); });
+	Add(TEXT("sheriffDoor"), [this] { return Town->bDeputyIn ? TEXT("Knock") : TEXT("Door"); }, [this] { if (Town->bDeputyIn) { Talk(TEXT("deputy")); return; } const FString Card = M->IsFreeform() ? DayDoorCard() : FString(); M->UI->Toast(Card.IsEmpty() ? FString(TEXT("Locked. A card in the frame, in ballpoint: BACK SOON.")) : Card, Card.IsEmpty() ? 3.6 : 4.6); }, [this] { if (Town->bDeputyIn) return FString(TEXT("COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.")); return M->IsFreeform() ? DayDoorCard().Replace(TEXT("Locked. "), TEXT("")) : FString(); });
 	// The empty car's open door is a trace: it stays open until the player, having looked, shuts it
 	// (S47Props swing; the story node, beacon and notes are unchanged). A new event opens it again.
 	struct FPatrolDoor { bool bLooked = false, bShut = false; };
