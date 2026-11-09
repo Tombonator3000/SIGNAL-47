@@ -120,6 +120,8 @@ public:
 	void ReconcileFarmRanch(bool bFreeform);
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
+	// D37-SARO-EMPTY-20261109: SARO's staff corner is empty (no parked staff cars), false with a SKIP line when it was not built.
+	bool AuditStaffFleet(TArray<FString>& Lines) const;
 	void RadioWomanAfterTownStep();
 	bool AuditRadioWoman(TArray<FString>& Lines) const;
 	TSharedPtr<FJsonObject> RadioWomanReadback() const;

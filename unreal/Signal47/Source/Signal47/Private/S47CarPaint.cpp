@@ -28,7 +28,8 @@ namespace S47CarPaintLocal
   if (!Mesh) return false;
   if (const bool* B = MeshIsCar.Find(Mesh)) return *B;
   const FString P = Mesh->GetPathName();
-  // (and SARO's two parked cars, made from the same free sedan and pickup: Tools/sarofleet/build_fleet.py)
+  // (and SARO's fleet sedan and pickup, made from the same free cars: Tools/sarofleet/build_fleet.py; since D37-SARO-EMPTY only the
+  // Freeform empty-car incident uses the sedan)
   const bool B = P.StartsWith(TEXT("/Game/Free/Vehicles/")) || P.StartsWith(TEXT("/Game/Licensed/TripoFleet/police_car/")) || P.StartsWith(TEXT("/Game/Free/ServiceFleet/SM_SaroPark_"));
   if (MeshIsCar.Num() > 4096) MeshIsCar.Reset();
   MeshIsCar.Add(Mesh, B);
@@ -56,9 +57,22 @@ namespace S47CarPaintLocal
   return nullptr;
  }
  // The glTF instances' plain colour where they have no map (the El Alamo's near black paint).
+ // D37-SARO-EMPTY-20261109 (Tom, d37: SARO's parked cars "suddenly white"): the cars from Tools/sarofleet (/Game/Free/ServiceFleet,
+ // /Game/SaroFleet) are not glTF instances. Their importer (radioarray material() + sarofleet's map multiply) keeps the glTF factor
+ // as the vector parameter "Color" (map x Color where a slot has a map). Only "BaseColorFactor" was read, so the dark red sedan and
+ // the near black pickup lost their paint and came out in the paint role's own light grey. Their "Color" is read now. Only for that
+ // importer: other recipes (Tripo, Caliche street) name or use "Color" differently, and the town's glTF cars are unchanged.
+ bool FleetRecipe(const UMaterialInterface* M)
+ {
+  if (!M) return false;
+  const FString P = M->GetPathName();
+  return P.StartsWith(TEXT("/Game/Free/ServiceFleet/")) || P.StartsWith(TEXT("/Game/SaroFleet/"));
+ }
  bool Factor(UMaterialInterface* M, FLinearColor& Out)
  {
-  return M && M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorFactor")), Out);
+  if (!M) return false;
+  if (M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorFactor")), Out)) return true;
+  return FleetRecipe(M) && M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("Color")), Out);
  }
  // Whether the engine can draw a material here at all: a resource with a shader map for this platform, and not the default.
  // In the editor (-game included) shaders are compiled on demand, and a map that is there and drawn can still say it is not
@@ -281,6 +295,13 @@ bool S47CarPaint::SelfTest(TArray<FString>& Lines)
  Check(RoleOf(TEXT("UCB_Lights_and_Glass"), TEXT("UCB_Lights_and_Glass")) == TEXT("lamps"), TEXT("the lamp atlas keeps its map, not glass"));
  Check(RoleOf(TEXT("RB1c_Tire_1k"), TEXT("RB1c_Tire_1k")) == TEXT("tyre") && RoleOf(TEXT("M_TripoFleet_police_car_Hubcap"), TEXT("")) == TEXT("chrome"),
   TEXT("tyres and hubcaps"));
+ // D37-SARO-EMPTY: a SARO fleet material's own "Color" is its paint (the parked sedan's dark red came out light without it).
+ {
+  UMaterialInterface* Fleet = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Free/ServiceFleet/Materials/Fairheaven_LT80_Bodymat.Fairheaven_LT80_Bodymat"), nullptr, LOAD_NoWarn | LOAD_Quiet);
+  FLinearColor F = FLinearColor::White;
+  if (Fleet) Check(S47CarPaintLocal::Factor(Fleet, F) && F.R < .5f && F.R > F.G, FString::Printf(TEXT("the SARO fleet sedan keeps its dark red paint (%.3f %.3f %.3f)"), F.R, F.G, F.B));
+  else Lines.Add(TEXT("SKIP car paint: SARO fleet sedan material not in this build"));
+ }
  Check(RoleOf(TEXT("M_TripoFleet_police_car_00"), TEXT("")) == TEXT("atlas") && RoleOf(TEXT("M_TripoFleet_police_car_Lens"), TEXT("")) == TEXT("lens")
   && RoleOf(TEXT("UCB_BOTTOM_GT"), TEXT("UCB_BOTTOM_GT")) == TEXT("trim") && RoleOf(TEXT("Numberplates_Misk_U"), TEXT("")) == TEXT("plate"),
   TEXT("the Tripo atlas, lenses, underbody and plates"));

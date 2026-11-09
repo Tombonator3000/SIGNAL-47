@@ -4,6 +4,8 @@
 #include "S47Three.h"
 #include "S47SaroSite.h"
 #include "S47Web.h"
+#include "S47CarPaint.h"
+#include "Components/TextRenderComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -186,29 +188,39 @@ void FS47Fleet::Lenses(const FLinearColor& Color,double Head,double Tail)
  for(auto& P:HeadMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedHead);
  for(auto& P:TailMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedTail);
 }
+// D37-SARO-EMPTY-20261109 (Tom, d37 about 17:10: "the cars parked at SARO are suddenly white ... does there need to be cars there at
+// all, apart from the player's old pickup? It should just be the player there"). The staff sedan and the site pickup are gone: no
+// meshes, and their two boxes (the sedan's, moved to the west bay by EASTWING-01, and the pickup's at x 29.86..32.14) leave the walk
+// list, so the truck's forecourt obstacles (SyncWingObstacles, EnsureLegs: both read that list) lose them too. The dressing trim
+// stays: it is what cuts the export's own primitive cars and their wheel remnants out of g454 (and S47EastWing starts from it).
+// The player's truck, its collider (yard.truckCol, x 7.85..9.95) and the Freeform empty-car incident (hidden until it runs) are not
+// touched.
+namespace
+{
+ bool StaffCarFoot(const FS47Rect& R)
+ {
+  const bool Sedan=(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001))||
+   (FMath::IsNearlyEqual(R.MinX,S47SaroForecourt::SedanX-1.,.0001)&&FMath::IsNearlyEqual(R.MaxX,S47SaroForecourt::SedanX+1.,.0001));
+  if(Sedan&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))return true;
+  // web/src/world/dressSaro.ts: col(d.pickup(31.0, G, 9.9, PI + 0.04)), its turned box as exported.
+  return FMath::IsNearlyEqual(R.MinX,29.857851,.001)&&FMath::IsNearlyEqual(R.MaxX,32.142149,.001)&&FMath::IsNearlyEqual(R.MinZ,6.911371,.001)&&FMath::IsNearlyEqual(R.MaxZ,12.888629,.001);
+ }
+}
 TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
 {
- if(!W||!bSiteReady)return {};auto* Sedan=Asset(TEXT("SM_SaroPark_Sedan"));auto* Pickup=Asset(TEXT("SM_SaroPark_Pickup"));auto* Trim=Asset(TEXT("SM_SaroPark_LegacyTrim"));
+ if(!W||!bSiteReady)return {};auto* Trim=Asset(TEXT("SM_SaroPark_LegacyTrim"));
  const int32 Parent=W->Handle(TEXT("world.grounds.group"));UStaticMeshComponent* Old=nullptr;
  for(int32 I=0;I<W->PartCount();++I){const auto* N=W->Node(I);if(N&&N->Geo==454&&Within(W,I,Parent))Old=Cast<UStaticMeshComponent>(N->Comp.Get());}
- if(!Sedan||!Pickup||!Trim||!Old||Parent<0){UE_LOG(LogS47Fleet,Warning,TEXT("S47: parked fleet unavailable; complete legacy staff corner retained"));return {};}
- // Keep the red sedan in the west staff bay, clear of the EastWing roll-up door.
- // Only its exact original walking footprint follows the shared bay position.
- int32 SedanFeet=0;
- for(const auto& R:W->CollidersMutable(TEXT("saro")))
-  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++SedanFeet;
- if(SedanFeet!=1){UE_LOG(LogS47Fleet,Warning,TEXT("S47: staff fleet unchanged: exact sedan foot unavailable"));return {};}
+ if(!Trim||!Old||Parent<0){UE_LOG(LogS47Fleet,Warning,TEXT("S47: SARO staff corner: dressing trim unavailable; export as it is"));return {};}
  UStaticMesh* PavedTrim=ForecourtTrim(W,Trim);
  if(!PavedTrim){UE_LOG(LogS47Fleet,Error,TEXT("S47: forecourt trim requires exact10702 source with230 brush+144 wheel remnants and CPU access"));return {};}
- auto F=MakeShared<FS47FleetParked>();F->Web=W;auto* A=Part(W,Sedan,Parent,TEXT("fleet:staff-sedan"),FVector(S47SaroForecourt::SedanX,-.576,9.6));auto* B=Part(W,Pickup,Parent,TEXT("fleet:staff-pickup"),FVector(31,-.576,9.9),.04);
- if(!A||!B){if(A)A->DestroyComponent();if(B)B->DestroyComponent();return {};}
- for(auto& R:W->CollidersMutable(TEXT("saro")))
-  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))
-  {R.MinX+=S47SaroForecourt::SedanX-27.;R.MaxX+=S47SaroForecourt::SedanX-27.;}
+ auto F=MakeShared<FS47FleetParked>();F->Web=W;
+ F->RemovedFeet=W->CollidersMutable(TEXT("saro")).RemoveAll([](const FS47Rect& R){return StaffCarFoot(R);});
  // This composed trim removes only the two old vehicle bodies and the sixteen replaced wing windows.
  // Reuse the exact original atlas; unrelated footprint colliders stay byte-for-byte in place.
  auto* OriginalMaterial=Old->GetMaterial(0);Old->SetStaticMesh(PavedTrim);Old->SetMaterial(0,OriginalMaterial);
- F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles on paved staff bays, sedan west24.6 and matching foot, east garage approach clear"));return F;
+ F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;
+ UE_LOG(LogS47Fleet,Display,TEXT("S47: SARO staff corner empty: no parked staff cars (D37-SARO-EMPTY), %d car boxes out of the walk and drive lists, old export cars trimmed"),F->RemovedFeet);return F;
 }
 
 bool FS47Fleet::Audit(TArray<FString>& Lines)const
@@ -260,21 +272,29 @@ bool FS47Fleet::Audit(TArray<FString>& Lines)const
 bool FS47FleetParked::Audit(TArray<FString>& Lines)const
 {
  bool Ok=true;auto Check=[&](bool B,const FString& N){Ok&=B;Lines.Add(FString(B?TEXT("PASS staff fleet: "):TEXT("FAIL staff fleet: "))+N);};
- Check(bReady&&Components.Num()==2,TEXT("two production vehicles"));
- const FVector At[]={FVector(S47SaroForecourt::SedanX,-.576,9.6),FVector(31,-.576,9.9)};
- const TCHAR* Names[]={TEXT("SM_SaroPark_Sedan"),TEXT("SM_SaroPark_Pickup")};
- for(int32 I=0;I<Components.Num();++I)
+ Check(bReady&&Components.IsEmpty(),TEXT("no parked staff cars at SARO; only the player's own truck stands there"));
+ int32 Cars=0,Feet=0;
+ if(auto* W=Web.Get())
  {
-  auto* C=Components[I].Get();double E[16];S47Three::Compose(At[I],S47Three::Euler(0,I==0?0:.04,0),FVector::OneVector,E);
-  Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==Names[I]&&C->GetRelativeTransform().Equals(S47Three::MatToUE(E),.001),FString::Printf(TEXT("car%d correct imported body, staff bay and paved grounded height"),I));
+  TArray<UStaticMeshComponent*> All;W->GetComponents<UStaticMeshComponent>(All);
+  for(const UStaticMeshComponent* C:All)if(C&&C->GetStaticMesh()&&C->IsVisible()&&C->GetName()!=TEXT("FreeformEmptyCar")&&C->GetStaticMesh()->GetPathName().StartsWith(TEXT("/Game/Free/ServiceFleet/SM_SaroPark_"))&&!C->GetStaticMesh()->GetName().Contains(TEXT("Trim")))++Cars;
+  for(const auto& R:W->CollidersMutable(TEXT("saro")))Feet+=StaffCarFoot(R);
  }
- int32 NewFeet=0,OldFeet=0;
- if(auto* W=Web.Get())for(const auto& R:W->CollidersMutable(TEXT("saro")))
+ Check(Web.IsValid()&&Cars==0,FString::Printf(TEXT("no staff sedan or pickup drawn (found %d)"),Cars));
+ // D37-S03-PLATE: no antenna name on a vehicle (the S-03 title was on the motor bus cabinet, not on a car; this keeps it so).
+ int32 Named=0;
+ if(auto* W=Web.Get())
  {
-  if(FMath::IsNearlyEqual(R.MinX,S47SaroForecourt::SedanX-1.,.0001)&&FMath::IsNearlyEqual(R.MaxX,S47SaroForecourt::SedanX+1.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
-  if(FMath::IsNearlyEqual(R.MinX,34.,.0001)&&FMath::IsNearlyEqual(R.MaxX,36.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
-  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
+  TArray<UTextRenderComponent*> Texts;W->GetComponents<UTextRenderComponent>(Texts);
+  for(const UTextRenderComponent* T:Texts)if(T&&T->Text.ToString().Contains(TEXT("S-03")))
+   for(const USceneComponent* P=T->GetAttachParent();P;P=P->GetAttachParent())if(S47CarPaint::IsCar(Cast<UStaticMeshComponent>(P))){++Named;break;}
  }
- Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows west staff bay; old east bay and garage approach clear"));
+ Check(Web.IsValid()&&Named==0,FString::Printf(TEXT("no S-03 text on any vehicle (found %d)"),Named));
+ Check(Web.IsValid()&&Feet==0&&RemovedFeet==2,FString::Printf(TEXT("both staff car boxes gone from the walk and drive lists (removed %d, left %d)"),RemovedFeet,Feet));
  auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&(D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")||D->GetStaticMesh()->GetPathName()==TEXT("/Game/EastWing/Access/SM_EW_AccessDressing.SM_EW_AccessDressing"))&&D->GetStaticMesh()->GetNumTriangles(0)==10328&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car/window trim plus230 front brush+144 old wheel triangles removed,10328 unrelated triangles retain original dressing atlas"));return Ok;
+}
+bool AS47Web::AuditStaffFleet(TArray<FString>& Lines) const
+{
+ if(!FleetParked){Lines.Add(TEXT("SKIP staff fleet: SARO's staff corner not built in this run"));return false;}
+ return FleetParked->Audit(Lines);
 }

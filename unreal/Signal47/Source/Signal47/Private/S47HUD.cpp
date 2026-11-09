@@ -1,5 +1,6 @@
 #include "S47HUD.h"
 #include "S47StreetLamps.h"
+#include "S47CarPaint.h"
 #if PLATFORM_LINUX
 #include "Linux/LinuxPlatformApplicationMisc.h"
 #endif
@@ -243,6 +244,9 @@ void AS47HUD::Start()
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= S47StreetLamps::SelfTest(Lines); // (STREETLAMP-GLOW: every LOD's lens, no WorldGrid slot, the spot in the head, the glow on and off)
+		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.
+		bOk &= S47CarPaint::SelfTest(Lines);
+		if (Saro.IsValid() && !Saro->AuditStaffFleet(Lines) && !Lines.Last().StartsWith(TEXT("SKIP"))) bOk = false;
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);

@@ -125,7 +125,7 @@ namespace
   }
   void SyncWingObstacles()
   {
-   // Walls/door leaves appear after EnsureLegs; parked staff cars can move during native setup.
+   // Walls/door leaves appear after EnsureLegs; colliders can still change during native setup (no staff cars since D37-SARO-EMPTY).
    // Reuse our slots instead of removing entries owned by arrival, farm or other systems.
    int32 Used=0;
    if(ForecourtEnabled()||GarageEnabled())for(const FS47Rect& R:Owner->Web->CollidersMutable(TEXT("saro")))
@@ -2645,7 +2645,8 @@ bool US47World::AuditEastWingDrive(TArray<FString>& Lines)
  Traverse(FVector(21.5,-.576,16.2),0,9.5,false,TEXT("western paved frontage reaches the personnel entrance approach"));
  FS47DriveController StaffStop(nullptr,DriveArea);StaffStop.Place(FVector(S47SaroForecourt::SedanX,-.576,17.5),0);
  for(int32 I=0;I<480;++I)StaffStop.Update(1./60.,{0,.4},FVector2D::ZeroVector);
- Check(StaffStop.Pos.Z>14.5&&StaffStop.Pos.Z<17.4,TEXT("parked staff car still stops the complete vehicle footprint"));
+ // D37-SARO-EMPTY-20261109: no staff cars any more; the truck drives on into the empty bay past where the sedan's nose stopped it.
+ Check(StaffStop.Pos.Z<14.5,TEXT("empty staff bay: no parked car stops the truck"));
  const FS47Box2 LotParking=FArrivalSaroDrive::ForecourtParking(0,1.05,2.75);
  Check(LotParking.Contains(21.5,10)&&!LotParking.Contains(20.5,10)&&!LotParking.Contains(35.4,17),TEXT("forecourt parking requires the full Jeep footprint on the apron"));
  if(!M||!M->IsFreeform())

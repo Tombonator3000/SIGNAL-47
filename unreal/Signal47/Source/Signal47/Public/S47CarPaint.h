@@ -26,7 +26,8 @@ namespace S47CarPaint
 {
  // -S47TripoPatrol: the Tripo STATE POLICE car back in the sheriff's role (the town, the night round, the highway).
  SIGNAL47_API bool TripoPatrol();
- // Whether a mesh is one of the cars this dresses (/Game/Free/Vehicles, SARO's parked sedan and pickup, the Tripo patrol car).
+ // Whether a mesh is one of the cars this dresses (/Game/Free/Vehicles, the SARO fleet sedan of the Freeform empty-car incident,
+ // the Tripo patrol car). A SARO fleet slot's paint is its own "Color" parameter, not a glTF factor (D37-SARO-EMPTY-20261109).
  SIGNAL47_API bool IsCar(const UStaticMeshComponent* C);
  // What a slot is, from its name and its material's: "paint", "atlas", "glass", "lamps", "tyre", "chrome", "trim", "plate", "lens",
  // "interior" or "other".

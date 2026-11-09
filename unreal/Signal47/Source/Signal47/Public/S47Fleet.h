@@ -36,7 +36,7 @@ private:
  FLinearColor ExpectedHead=FLinearColor::Black,ExpectedTail=FLinearColor::Black;
  TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> HeadMids,TailMids;
 };
-/** Atomic replacement of the two staff-bay primitives; root owns the single Web hook. */
+/** SARO's staff corner: the export's primitive cars trimmed out and left empty (D37-SARO-EMPTY); root owns the single Web hook. */
 class SIGNAL47_API FS47FleetParked
 {
 public:
@@ -46,8 +46,9 @@ public:
  bool Audit(TArray<FString>& Lines)const;
 private:
  bool bReady=false;
+ int32 RemovedFeet=0;
  TWeakObjectPtr<AS47Web> Web;
- TArray<TWeakObjectPtr<UStaticMeshComponent>> Components;
+ TArray<TWeakObjectPtr<UStaticMeshComponent>> Components; // empty: no staff cars
  TWeakObjectPtr<UStaticMeshComponent> TrimmedDressing;
  TWeakObjectPtr<class UMaterialInterface> DressingMaterial;
 };
