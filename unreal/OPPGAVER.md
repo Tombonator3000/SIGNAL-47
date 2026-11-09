@@ -601,3 +601,5 @@ Codex eier `codex/alien-interference-20261106` i cosmic-kopien fra oppdatert mai
 7. november 2026 kl.01:05 Claude, natt: arbeidskopier er hovedkopi (`claude/night-c-20261107`), cosmic (Codex, lommelyktbatteri, urørt) og to agent-worktrees: `alien-hendelser` (Crab og Tall i hendelser, vinduer, skrekkforslag 6-9) og `feilretting` (tunlampe, lagret bil, egen radiolyd). Maks fire er nådd; begge fjernes når de er flettet.
 
 7. november 2026 kl.10:05 Claude: arbeidskopier er hovedkopi (`claude/night-h-20261107`), cosmic (Codex), og to agent-worktrees: nye fjell fra ekte data og innsetting av Toms `Pale-One.glb`. Grensen på fire holdes.
+
+9. november 2026 kl. 22:50 Claude, nattskift til 08:00 10. november (Toms bestilling): arbeidskopier er hovedkopi (`claude/day-20261109`), cosmic (Codex, urørt) og to låste agent-worktrees fra tidligere; grensen på fire er nådd, så nattens agenter leverer patcher i scratchpad uten nye kopier. Disk 128 GB ledig; kandidatpakkene d30–d35 er verifisert overflødige (d36–d39 beholdes) og ryddes i denne samlede kjøringen. Motorjobber: Claude via q.py. Filansvar i natt: all Freeform-C++ (Claude).

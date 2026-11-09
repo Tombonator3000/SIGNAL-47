@@ -856,6 +856,7 @@ void FS47DevFreeform::StepCards()
  {
   CardsJob=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==1&&X.CaseTest<0&&X.Stage==J::New;});
   if(CardsJob<0){Say(TEXT("no new slot-1 card today"));CardsStage=-1;return;}
+   if(F->EveningGated(Jobs[CardsJob]))return; // the card is not up yet; a player would wait too
   const bool bOut=F->OutThereTonight();
   FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: before the card: out there tonight %d (lead %s at %s%s), director anomaly %d"),Night,*ClockText(F->Clock()),bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0);
@@ -863,7 +864,8 @@ void FS47DevFreeform::StepCards()
   if(!F->SelectJob(CardsJob)){Say(TEXT("could not select the card"));CardsStage=-1;return;}
   const auto* P=F->ConsoleProfile();if(!P){Say(TEXT("no receiver profile"));CardsStage=-1;return;}
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
-  F->PointSelected();F->OpenTracking();CardsStage=1;return;
+  if(!F->PointSelected()){Say(TEXT("the array would not take the pointing command"));CardsStage=-1;return;}
+   F->OpenTracking();CardsStage=1;return;
  }
  if(!Jobs.IsValidIndex(CardsJob)){CardsStage=-1;return;}
  const auto& Card=Jobs[CardsJob];
@@ -977,6 +979,7 @@ void FS47DevFreeform::StepNatural(double Dt)
   Holding=Why;
  }
  double Use=Why.IsEmpty()?Speed:1;
+  if(bCards&&CardsStage>=1&&CardsStage<90)Use=1; // the card is worked at the pace a player works it
  // A formation is worth seeing, but it should not cost a night.
  if(M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&Use>5)Use=5;
  SpeedUsed=Use;
