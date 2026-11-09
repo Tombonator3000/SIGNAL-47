@@ -144,11 +144,27 @@ private:
 		FVector Feet = FVector::ZeroVector;
 		FName Head;
 		bool bReady = false, bTried = false;
+		// PT-FARM-GROUND-20261109: its own eyes (a copy of the model's own eye material: the game's lit material has no skeletal
+		// usage and drew the whole animal in the engine's grey), and what BuildRig found, for F10 and the log
+		TWeakObjectPtr<UMaterialInstanceDynamic> Eye;
+		FString Note;
 	};
 	FRig CoyoteRig, DogRig;
 	int32 DogShown = INDEX_NONE;
 	double DogYaw = 0;
-	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose);
+	/** A rig's coat, pale, nose: base colour and roughness for a copy of the slot's own (glTF) material. */
+	struct FCoat { FLinearColor Colour = FLinearColor::Gray; float Rough = .9f; };
+	bool BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, const FCoat& Coat, const FCoat& Pale, const FCoat& Nose);
+	/** The coyote's eye shine on the boxes' eyes and on each rig's own eyes. */
+	void SetEyeShine(double Shine);
+	/** The skeleton and the mesh agree: the paws at the foot of the mesh and the head inside it, along the skeleton's up. False
+	 *  (with Why) when the import put the mesh in another frame from its bones, as the Quaternius glTF can: skinned, it then
+	 *  sweeps through the ground. Pure, for the self-test. */
+	static bool RigFramesAgree(double PawsUp, double HeadUp, double Sole, double Tall, FString& Why);
+public:
+	/** F10/log: how each rig was built (rigged, or why not), and whether its materials can draw on a skeletal mesh. */
+	FString RigReport() const;
+private:
 	void PlayRig(FRig& Rig, const TCHAR* Clip, double Pace);
 	void PlaceRig(FRig& Rig, const FVector& FeetThree, double YawDeg);
 	void StepDogBody(double Dt);

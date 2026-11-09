@@ -202,6 +202,20 @@ void FS47DevFreeform::AddOmens(FS47DevEvents& E)
 	{
 		At(TEXT("farm"), 38, -27, [this] { FString Why; const bool bOk = M->Animals && M->Animals->DevDog(Why); Tell(bOk, Why, 7); });
 	});
+	// PT-FARM-GROUND-20261109 (Tom's picture about 13:25): where he stood, by the truck south of the old house, the dog's home 5 m
+	// ahead with the house's lit window behind it, the pen and the cattle off to the left. The dog's rig was drawn in the engine's
+	// grey (its material could not be drawn on a skeletal mesh) and, by the log, its mesh lies in another frame from its bones.
+	E.AddFreeform(AnimalGroup, TEXT("Go: by the Alderete dog in the lamp (farm ground)"), TEXT("23:00, by the truck south of the old house, lamp on, facing the dog's place and the house; says how each rig was built"), [this, At]
+	{
+		At(TEXT("farm"), 31, -40, [this]
+		{
+			S47OmenDevLocal::LampOn(M);
+			AimAt(S47OmenDevLocal::Land(M, 95, 205, .3));
+			const FString Rigs = M->Animals ? M->Animals->RigReport() : FString(TEXT("Freeform only"));
+			UE_LOG(LogTemp, Display, TEXT("S47: farm ground F10: %s"), *Rigs);
+			Tell(true, TEXT("By the old house, lamp on. The dog stands 5 m ahead, brown, or is only heard. ") + Rigs, 10);
+		});
+	});
 	E.AddFreeform(AnimalGroup, TEXT("The cattle walk off together"), TEXT("23:00, west of the pen; something 150 m east of them: all walk the same way, away"), [this, At]
 	{
 		At(TEXT("farm"), -35, 0, [this]
