@@ -271,8 +271,9 @@ def build(mat, tex, stone, ff, report):
     crust_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -2100, parameter_name='CrustAmount', default_value=.7)
     gravel_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -2000, parameter_name='GravelAmount', default_value=.6)
     # in the terms of masks_code: crust above .46, gravel below .42, mean of a field .5
-    # (twice as steep as they read: an edge between soils is short, not a soft cloud)
-    t150 = custom(mat, 'return 0.46 + (N1.g * 0.7 + N2.r * 0.3 - 0.55) * 2.0;', dict(N1=n1, N2=n2), f1, -2000, -2100)
+    # (T16-03, Tom 7 November: "store flater med overlapp mellom to teksturer". At twice the field's slope the crust came as whole
+    # orange lakes 20-40 m across with a cut edge on the grey gravel. Now 1.4 times, and the small field breaks each lake up.)
+    t150 = custom(mat, 'return 0.46 + (N1.g * 0.6 + N2.r * 0.25 + N2.b * 0.15 - 0.55) * 1.4;', dict(N1=n1, N2=n2), f1, -2000, -2100)
     # gravel where the washes run, where the flora's rocks lie, and on slopes
     t40 = custom(mat, """
 float g = N1.b * 0.75 + N2.g * 0.25 + 0.25 * Fld.g + 0.22 * Fld.b + 0.35 * smoothstep(6.0, 24.0, acos(saturate(normalize(N).z)) * 57.29578);
@@ -339,8 +340,15 @@ return normalize(tx.zyx * w.x + ty.xzy * w.y + tz.xyz * w.z);
     crust_mean = node(mat, unreal.MaterialExpressionConstant3Vector, -1500, -860, constant=unreal.LinearColor(CRUST_MEAN[0], CRUST_MEAN[1], CRUST_MEAN[2], 1))
     gravel_mean = node(mat, unreal.MaterialExpressionConstant3Vector, -1500, -820, constant=unreal.LinearColor(GRAVEL_MEAN[0], GRAVEL_MEAN[1], GRAVEL_MEAN[2], 1))
     # crust a little paler than the soil it dried from; the gravel the scan's own mix of colours over the same soil
-    crust = custom(mat, 'return Soil * Tint.rgb * lerp(1.0, clamp(D.rgb * Ratio, 0.3, 2.5), 0.35 + 0.65 * smoothstep(0.3, 0.7, N2.b)) * float3(1.13, 1.12, 1.11);',
-                   dict(Soil=crust_mean, Tint=crust_tint, D=crust_d, N2=n2, Ratio=ratio), f3, -1300, -850)
+    # (T16-03: the crust's own hue stood orange on the sand beside it, a second texture laid over the first. Now the sand under it
+    # gives the hue, and the crust keeps its cracks and a little warmth: the same soil, dried, not another one.)
+    crust = custom(mat, """
+float3 own = Soil * Tint.rgb * lerp(1.0, clamp(D.rgb * Ratio, 0.3, 2.5), 0.35 + 0.65 * smoothstep(0.3, 0.7, N2.b)) * float3(1.13, 1.12, 1.11);
+float3 sand = Sand.rgb;
+float lo = dot(own, float3(0.3, 0.59, 0.11)), ls = max(dot(sand, float3(0.3, 0.59, 0.11)), 0.001);
+float3 same = sand * clamp(lo / ls, 0.85, 1.25) * float3(1.03, 1.0, 0.97);
+return lerp(own, same, 0.72);
+""", dict(Soil=crust_mean, Tint=crust_tint, D=crust_d, N2=n2, Ratio=ratio, Sand=d['Sand']), f3, -1300, -850)
     # (a little darker and greyer than the soil as a whole: so a wash still reads at 100 m, when its stones have gone to one mip)
     gravel = custom(mat, 'return Soil * Tint.rgb * D.rgb * Ratio * float3(0.86, 0.87, 0.92);', dict(Soil=gravel_mean, Tint=gravel_tint, D=gravel_d, Ratio=ratio), f3, -1300, -700)
     l1 = lerp(mat, d['Sand'], crust, mc, -1100, -900)
