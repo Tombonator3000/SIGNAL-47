@@ -4,7 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 08:06, nattskift: steinlokk, takstige, motorvei begge veier, motellets lykter
+## Installert 9. november kl. 10:15, dagskift: M7 Freeform 1.0 (vurdering, kurve, første økt, lagring, økonomi), øyeglimt, UFO-lys, byger, fjell og bakke
+
+`5ed456ba` på `claude/day-20261109` (PR stablet på #509). Selvtest 3524 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `ea9e44a9`–`e48f987b`); F10: Eye glint 38/38, Sky lights 4/4, Weather and sleep 15/15. Tilbakerulling: `d35` (`d3a94124`) og `d34`.
+
+Nytt: Wards vurdering dag 30 krever en sak ført gjennom (gjetning gir 0), tredje bortføring får følge morgenen etter, KEPT OPEN har følge i verden og egen sluttside, utfallet skjult til brevet er lest, fylkesinspektøren dag 22; nettene bygger seg opp mot vurderingen (uke 4 og finalen tettest, første uke stille inne); lyd før tekst og færre lyskuler med spor etter foto; første økt peker mot Ward-brevet og walkien, HUD-kort høyst 70 tegn; rutinelagring bare inne på SARO, LOG NOT FILED; tom tank og tauing koster, pumpa fyller, lykta må lades, to dyre kjøp fra dag 15; øyeglimt på alle aliens; UFO-lys 1,5x med skimring; byge med myk sky, virga og våt bakke; fjell med lagdelt stein (Poly Haven CC0) og uten oransje skorpeflater ved gården; motellkontorets gamle fasade kuttet bort; lomme med tre steiner; 44 tekstrettinger. Kritikk 5 (6–8/10, 16 funn) rettes etter Toms test. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 08:06, nattskift: steinlokk, takstige, motorvei begge veier, motellets lykter
 
 `d3a94124` på `claude/m6-20261109` (PR #509). Selvtest 3413 i pakken og installert; regresjon 251 og livsprøve 64 (på `bd323eb3`); F10 «Physics (M5)» 11/11, «Reach and skies (T16)» 31/32 (den røde er prøvens egen, rettet i samme bygg). Tilbakerulling: `d34` (`34c9751f`) og `d33`.
 

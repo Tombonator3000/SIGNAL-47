@@ -28,6 +28,13 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 
 **M6 natt til 9. november (`claude/m6-20261109`, ikke installert da dette ble skrevet):** originale gatelykter (cobra head, `/Game/Signal47/Art/StreetLamps`, kilde i `unreal/ArtSource/StreetLamps`) på motorveien, i Caliche, ved motellet, SARO-gården og gården; Dales vindu åpnet utenfra; trafoen med piggtråd og transformator nr. 2, kollider på gjerdet; SARO-CLIP-prøve (tre ting flyttet); hinderliste i F10; grunnmur i Caliche (`S47CalicheGround`); motell-tv i Freeform med eget testkort; LOD-importen retter dreiningen (`import_lod_same_frame`). Kritikk 4: 6–7/10, 13 funn rettet. Toms testfunn T16-08, -09, -10 (prøve), -12, -13 og garasjeporten rettet i kilde.
 
+**Dagskift 9. november, spørsmål til Tom etter M7:**
+- [ ] **ECON-CAP-20261109 (Tom avgjør):** med 2–3 kveldsjobber stiger saldoen fortsatt $150–300 i uka i uke 3–4. Valg: tak på kassa (f.eks. $250–300, resten til fylket ved ukegjennomgangen, Ward kan lese det), lavere lønn, eller la det være.
+- [ ] **STAYS-CASE-20261109 (Tom avgjør):** Stays krever nå minst én sak ført gjennom. Skal Wards første brev nevne det?
+- [ ] **QUIET-WEEK1-20261109 (Tom avgjør):** første uke inne på SARO er nå nesten stille (ingen dør, servicegård eller opplyst rom før dag 8, ansikt i vinduet fra natt 5). Riktig?
+- [ ] **ORB-TRACE-20261109 (Tom avgjør):** skal sporet etter lyskulene ved antenna telle som nattark hos Ward, eller bare som spor i saken?
+- [ ] **CRIT5-20261109:** 16 bekreftede funn fra kritikerrunde 5 (Not yet i ring, Same Minute uten varsel, sporet etter tapte timer gir Supported, månen i siste rad, LOG NOT FILED uten lyd, opplæringskort, brevet sagt tre ganger, salutten, fareplassen ved lasting, eldre lagringer, pekere til postkassen, Wards første brev, månedsprøven uten Stays). Retting skrives under Toms test.
+
 **Oppfølging fra natta:**
 - [ ] **UNARIUS-STORY-20261109:** Story viser fortsatt Unarius-klippet (tredjepart, ekte personer, rettigheter ikke avklart) på motell-tv-en. Freeform viser eget testkort. Tom avgjør; må byttes eller avklares før deling, som `alien_interference.wav`.
 - [ ] **WEB-CPU-20261109:** gatelyktene kutter stolper ut av generert `/Game/Web` (g26, g235, g470) og trenger CPU-data. `Tools/streetlamps/prepare_cpu.py` kjøres nå av `import.sh` etter webimport; kontroller ved neste fulle webimport og pakking.
@@ -38,7 +45,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [x] **MOTEL-LAMPS-MEM-20261109:** d34-kandidaten gikk over 15 GB og krasjet ved start. Årsaken var `S47SaroClip::Vertices` (brukt av steinene i `S47RouteNature`), som i pakket spill leste posisjonsbufferen til mesher uten CPU-data. Rettet i `34c9751f`: bare editoren og mesher med CPU-tilgang leses. Motellyktene var uskyldige (prøvd på d34-pakken med `-S47MotelLampsNew`: 4,6 GB, selvtest OK) og er på igjen som standard etter d34; i d34 står de gamle motellyktene.
 - [ ] **UFO-SEEN-20261109 (Tom avgjør):** T16-05 og T16-07 virker i kode og prøve (formasjoner 5/5, forhåndsvisning, Pale One dag og natt), men på bildene er formasjonslysene knapt større enn stjernene og Pale One om natta en mørk silhuett. En vanlig natt har 0–2 pass etter kritikken 8. november. Skal lysene være større og tydeligere, komme oftere, og skal Pale One få øyeglimtet (se beslutningen om øyeglimt)?
 - [ ] **REACH-HUMAN-20261109:** T16-01 målt i F10 «Reach and skies (T16)»: fra gården når man fjellfoten eller kanten i alle åtte retninger til fots og med bil (1–4 km), uten usynlige vegger. Et menneske må kjenne om stansen ved fjellfoten er naturlig; bilen stopper brått i foten av skråningen.
-- [ ] **SHOWER-LOOK-20261109:** bygen har mørk sky og virga som et flatt kort; trenger bedre form og våt bakke (ny parameter i bakkematerialet).
+- [x] **SHOWER-LOOK-20261109:** byge med tre myke skykort, virga som tørker, bane forbi med vinden, og våt bakke (`WetK` i bakkematerialet, veikant og grus) som tørker på et par timer. d36.
 
 - [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
 - [ ] **T16-02: fjellteksturer.** Bedre, ekte New Mexico-utseende på `SM_FF_Range`.
