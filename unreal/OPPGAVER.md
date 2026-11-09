@@ -6,6 +6,8 @@
 
 Tom ca. 08:30: fortsett til kl. 20 med ultracode og agenter (kvoten nullstilles da). Kopier: `~/SIGNAL-47` (Claude, `claude/day-20261109`, koordinator, bygg og installasjon), `~/SIGNAL-47-cosmic` (Codex), og to agent-worktrees (øyeglimt på alle aliens; UFO-lys med skimring). Seks patch-agenter uten egen kopi tar M7-pakkene A, B1, B2, C, D og E fra gjennomgangen (planen og funnene i scratchpad `m7plan.md` og `m7audit.json`), med faste fileiere. Én tung motorjobb om gangen via `q.py`.
 
+Ettermiddag: Tom testet d36 11:50–14:20 (motorpause). Etterpå patch-agenter for testfunnene, kritikk 6–8, saker og telex, byen (dagsplan, hus, animasjoner), Dale-stemmen (VoiceStudio bare under reservasjon), nattradio og CB, og spilløkka trinn 1–4; ultracode-runder for saker og OPS, helhetlig løkke og ukesaker. d37 installert 17:03 (`2c88bf9f`). Ikke i d37: nattradio og CB (`f4bfa9b9`) og spilløkka trinn 3–4 (`933b1af3`). Under arbeid: ukesak uke 1, patch 1 (`S47WeekCase`). Testvinduer åpnes på venstre skjerm uten fokus (KWin-regel).
+
 ## Nattskift 8.–9. november til 10:00, Claude Code
 
 Tom ca. 22:30: ta alt, så TODO-lista til kl. 10:00 med agenter og ultracode. Kopier: `~/SIGNAL-47` (Claude, `claude/m2-20261108`, koordinator), `~/SIGNAL-47-cosmic` (Codex), og høyst to agent-worktrees (kart og nattlogg; lagring på SARO). Patch-agenter uten egen kopi for mindre oppgaver. Én tung motorjobb om gangen via `q.py`.

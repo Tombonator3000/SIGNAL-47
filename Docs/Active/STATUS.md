@@ -1,10 +1,16 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 7. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 9. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 10:15, dagskift: M7 Freeform 1.0 (vurdering, kurve, første økt, lagring, økonomi), øyeglimt, UFO-lys, byger, fjell og bakke
+## Installert 9. november kl. 17:03, dagskift: Toms testfunn fra d36, by med dagsplan og nye hus, saker og telex, spilløkka trinn 1–2, Dales nye stemme
+
+`2c88bf9f` på `claude/day-20261109` (PR #510 mot `main`). Selvtest 3843 (editor), livsprøve 72, regresjon 251, postprøve 35, månedsprøver routine, investigator, taken og cases PASS. Pakken er testet og installert med røyktest. Bilderunder (F10): Town day 11/11, SARO fixes 28/28, World fixes 19/19, Tripo new 23/23, Farm lights 15/15, First big night 15/15, Looks 39/40 (lyktefot rettet etterpå). Tilbakerulling: `d36` (`5ed456ba`) og `d35`.
+
+Nytt: gatelys som lyser fra armaturet og synes på avstand (også STATION 01); lys i låven, på tunet og i gårdshuset; SARO-rampe, stier, gang, arkivrom, brytere og Dales lys; månen med NASA-tekstur; steiner snudd; fjernt fjellmateriale; telefonautomaten ved bensinstasjonen; nådeperiode i sanden, synlig bil etter tauing og Saucer Rock; hunden og bilene ikke grå; byen har dagsplan, fire nye hus og åtte figurer med egne animasjoner; lyktene på antennefeltet byttet; saksbrett med neste steg, resultatark og RULED OUT, første sak åpnes ved registrering, telex som rives av, TONIGHT-lappen; peilelapp fra avvik og sak 8 OUT ON THE LAND; Dale med oppdiktet stemme (139 replikker), Kinski, bacall, price og lynch fjernet; kritikk 6–8 rettet. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 10:15, dagskift: M7 Freeform 1.0 (vurdering, kurve, første økt, lagring, økonomi), øyeglimt, UFO-lys, byger, fjell og bakke
 
 `5ed456ba` på `claude/day-20261109` (PR stablet på #509). Selvtest 3524 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `ea9e44a9`–`e48f987b`); F10: Eye glint 38/38, Sky lights 4/4, Weather and sleep 15/15. Tilbakerulling: `d35` (`d3a94124`) og `d34`.
 
