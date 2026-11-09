@@ -970,7 +970,7 @@ void FS47Visitors::OpenVan()
 		Rows.Add(S47Kit::Text(TEXT("THE SCHOOLTEACHER: We're scientists, more or less. We only want to see the instruments. One night. We'll bring donuts. We'll make a donation.")));
 		Rows.Add(S47Kit::Button(TEXT("Let them in tonight / a $15 donation"), [this]
 		{
-			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); G.Earn(15); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
+			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); G.EarnSide(15, TEXT("van donation")); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
 			// Their newsletter, mimeographed: a rumor in it. Tonight at nine they are at SARO's gate.
 			const FString New = G.Places ? G.Places->NextUnknown(G.Day() * 29) : FString();
 			if (!New.IsEmpty()) G.Places->Hear(New);

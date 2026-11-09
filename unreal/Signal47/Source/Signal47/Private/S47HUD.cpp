@@ -63,6 +63,7 @@
 #include "S47Openings.h"
 #include "S47Happenings.h"
 #include "S47FieldLife.h"
+#include "S47Outfit.h"
 #include "S47NightLog.h"
 #include "S47Tape.h"
 #include "S47PinBoard.h"
@@ -275,6 +276,7 @@ void AS47HUD::Start()
 		bOk &= FS47Happenings::SelfTest(Lines);
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= FS47TruckCare::SelfTest(Lines);
+		bOk &= FS47Outfit::SelfTest(Lines); // (M7: the truck's upgrades and the gear that opens the night)
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);
 		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines) & FS47Tape::SelfTest(Lines) & FS47PinBoard::SelfTest(Lines) & FS47Enlarger::SelfTest(Lines) & FS47WardReport::SelfTest(Lines) & FS47Answer::SelfTest(Lines); // (NIGHTLOG, MAP and TAPE, 8 November)

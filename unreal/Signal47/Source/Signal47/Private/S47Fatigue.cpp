@@ -313,6 +313,13 @@ void FS47Fatigue::Lost(double Seconds)
 	Caf *= FMath::Pow(0.5, Seconds / CaffeineHalfLife);
 }
 
+void FS47Fatigue::Desk(double Hours)
+{
+	if (!FMath::IsFinite(Hours) || Hours <= 0) return;
+	Awake += FMath::Min(Hours, 2.0);
+	UE_LOG(LogS47Fatigue, Display, TEXT("S47: fatigue: desk work %.2f h, awake %.1f h"), Hours, Awake);
+}
+
 FString FS47Fatigue::BedLine(double Seconds, EBed Where) const
 {
 	const double Hours = FMath::Max(0.0, FMath::IsFinite(Seconds) ? Seconds : 0.0) / 3600.0;

@@ -12,6 +12,7 @@
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47RadioTips.h"
+#include "S47Outfit.h"
 #include "S47RoomDecor.h"
 #include "S47Three.h"
 #include "S47Townsfolk.h"
@@ -497,7 +498,10 @@ void FS47TownUse::SetPropsShown(bool bShow)
 void FS47TownUse::BasketRows(const FString& Counter, const TArray<FWare>& Wares, TArray<TSharedRef<SWidget>>& Rows, TFunction<void()> Reopen)
 {
 	if (BasketAt != Counter) { Basket.Reset(); BasketAt = Counter; }
-	int32 Total = 0;
+	int32 Total = 0, Items = 0;
+	for (const auto& Pair : Basket) Items += Pair.Value;
+	// M7 (Tom, 9 November): a parcel is what the truck's rack takes (FS47Outfit: eight items, twenty with the bed rack)
+	const int32 Room = M->Freeform->Field ? M->Freeform->Field->ParcelRoom() : FS47Outfit::StockLoad;
 	for (const FWare& Ware : Wares)
 	{
 		const FString Id = Ware.Id;
@@ -507,9 +511,10 @@ void FS47TownUse::BasketRows(const FString& Counter, const TArray<FWare>& Wares,
 			S47Kit::Col({ S47Kit::Text(FString::Printf(TEXT("%s / $%d"), *FS47FreeformWorld::SupplyTitle(Id), Ware.Price)), S47Kit::Small(FString::Printf(TEXT("%s At SARO: %d."), Ware.For, Have)) }, 2.f),
 			S47Kit::Row({ S47Kit::Button(TEXT("-"), [this, Id, Reopen] { if (int32* N = Basket.Find(Id)) { if (--*N <= 0) Basket.Remove(Id); } Reopen(); }, false, Count > 0),
 				S47Kit::Text(FString::Printf(TEXT("  %d  "), Count)),
-				S47Kit::Button(TEXT("+"), [this, Id, Reopen] { int32& N = Basket.FindOrAdd(Id); N = FMath::Min(N + 1, 9); Reopen(); }, false, Count < 9 && Have + Count < 99) }),
+				S47Kit::Button(TEXT("+"), [this, Id, Reopen] { int32& N = Basket.FindOrAdd(Id); N = FMath::Min(N + 1, 9); Reopen(); }, false, Count < 9 && Have + Count < 99 && Items < Room) }),
 			.72f, .28f));
 	}
+	if (Items >= Room) Rows.Add(S47Kit::Small(FString::Printf(TEXT("That is all the truck's rack takes in one parcel: %d items.%s"), Room, Room < FS47Outfit::RackLoad ? TEXT(" A bed rack (OPS stores list) takes more.") : TEXT(""))));
 	const bool bHands = M->Freeform->Field && M->Freeform->Field->ParcelStage() == 0;
 	if (!bHands) Rows.Add(S47Kit::Small(TEXT("You already have a parcel out. Load it in the truck or unpack it at SARO's receiving table first; one parcel at a time.")));
 	Rows.Add(S47Kit::Button(Total > 0 ? FString::Printf(TEXT("Pay $%d and take the parcel / budget $%d"), Total, M->Freeform->Budget()) : FString(TEXT("Nothing in the basket")),
@@ -527,6 +532,9 @@ bool FS47TownUse::Pay(const FString& Counter, const TArray<FWare>& Wares)
 		Total += Ware->Price * Pair.Value;
 	}
 	FS47FreeformWorld& Field = *M->Freeform->Field;
+	int32 Items = 0;
+	for (const auto& Pair : Basket) Items += Pair.Value;
+	if (Items > Field.ParcelRoom()) { if (M->UI) M->UI->Toast(FString::Printf(TEXT("The truck's rack takes %d items in one parcel."), Field.ParcelRoom()), 4); return false; }
 	if (Field.ParcelStage() != 0 || (M->World && M->World->bDriving)) { if (M->UI) M->UI->Toast(TEXT("One parcel at a time: load or unpack the one you have first."), 4); return false; }
 	if (!M->Freeform->Spend(Total)) { if (M->UI) M->UI->Toast(M->Freeform->FeedbackText(), 4); return false; }
 	const FString Where = Counter == S47TownUseLocal::Radio ? TEXT("1420 AM") : Counter == S47TownUseLocal::Feed ? TEXT("the Feed & Seed") : TEXT("the souvenir shop");
@@ -565,7 +573,7 @@ FString FS47TownUse::TipRows(TArray<TSharedRef<SWidget>>& Rows, bool bPhone)
 	else if (Can.IsEmpty()) Rows.Add(S47Kit::Small(TEXT("Nothing to tell him yet: a place you have been out to, or one where you saw something go on in the last few nights.")));
 	else
 	{
-		Rows.Add(S47Kit::Small(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab).")));
+		Rows.Add(S47Kit::Small(FString::Printf(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab). The station pays $%d for a tip it reads."), FS47RadioTips::TipPay)));
 		for (int32 I = 0; I < FMath::Min(Can.Num(), 8); ++I)
 		{
 			const FString Id = Can[I].Key, Title = Can[I].Value;
@@ -686,10 +694,13 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	if (Pay <= 0) return false;
 	// He has copies made off it at the drugstore in Socorro: the player keeps the print, the field record keeps its photograph.
 	SoldPrints.Add(PhotoId); ++SoldToday;
-	F.Earn(Pay);
+	// M7 (Tom, 9 November): inside the week's cap on side money; past it he still takes the copy, for the window, and pays nothing
+	const int32 Paid = F.EarnSide(Pay, TEXT("souvenir copy"));
 	if (Shot->bOdd || Shot->Targets.Num() > 0) Note(TEXT("sold_odd"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: a copy of print %s sold for $%d (%s)"), *PhotoId, Pay, *Why);
-	if (M->UI) M->UI->Toast(FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay), 4);
+	if (M->UI) M->UI->Toast(Paid >= Pay ? FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay)
+		: Paid > 0 ? FString::Printf(TEXT("He has spent most of his week's money: $%d for it, not $%d. You keep your print."), Paid, Pay)
+		: FString(TEXT("\"I'm tapped out this week. It goes in the window anyway, if that's all right.\" Nothing for it. You keep your print.")), 5);
 	M->RequestAutosave();
 	return true;
 }

@@ -32,16 +32,26 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
   {TEXT("alarm"),TEXT("Yard lights and alarm horn"),60,TEXT("the county on speaking terms with the station"),TEXT("Goes off when anything comes within fifty yards of the station. It warns you and stops nothing. Sometimes it goes dead in the middle of an alarm; a fuse at its box fixes it.")},
   // M7 (C): two dear ones late in the month (S47OpeningsLocal::Late), so that a careful budget has something worth saving for in weeks 3
   // and 4. FS47FreeformSession::KitWaits opens them from day 15 (the county's surplus sale).
-  {TEXT("transfer"),TEXT("Automatic transfer switch for the backup generator"),90,TEXT("the county's surplus sale, from day 15"),TEXT("When the feeder fails, it throws the backup generator in by itself, from its own tank or a can in stock. You hear it clunk over from anywhere in the building.")},
-  {TEXT("array_alarm"),TEXT("Trip wires along the antenna field"),110,TEXT("the yard alarm fitted, and the county's surplus sale from day 15"),TEXT("Wires the yard alarm out along the dishes: the horn goes for anything among the antennas, not only at the yard. It still stops nothing, and out there it is easier to knock out.")},
+  {TEXT("transfer"),TEXT("Automatic transfer switch for the backup generator"),90,TEXT("the county's surplus sale, from day 15"),TEXT("When the feeder fails, it throws the backup generator in by itself, from its own tank or a can in stock. You hear it clunk over from anywhere in the building."),3},
+  {TEXT("array_alarm"),TEXT("Trip wires along the antenna field"),110,TEXT("the yard alarm fitted, and the county's surplus sale from day 15"),TEXT("Wires the yard alarm out along the dishes: the horn goes for anything among the antennas, not only at the yard. It still stops nothing, and out there it is easier to knock out."),3},
+  // M7 (Tom, 9 November): the truck you have, made better, not a new one (FS47Outfit). Felt in the driving and in what it carries.
+  {TEXT("truck_tires"),TEXT("Mud-and-sand tires for the truck"),45,TEXT("a week on the job (day 8), when the county signs for tires"),TEXT("More grip and more speed on gravel and dirt, and the wheels dig in half as fast in sand. The blacktop is no different."),2},
+  {TEXT("truck_rack"),TEXT("Bed rack and tie-downs for the truck"),40,TEXT("a week on the job (day 8)"),TEXT("A parcel from the counters can be more than twice as big: twenty items in the rack instead of eight."),2},
+  {TEXT("truck_tank"),TEXT("Auxiliary tank behind the cab"),55,TEXT("a week on the job (day 8) and a field record kept out on the land"),TEXT("Six units of fuel instead of four: about 72 km between pumps instead of 48. A full fill costs more."),2},
+  {TEXT("truck_engine"),TEXT("Engine rebuild with a four-barrel carburetor"),75,TEXT("a week on the job (day 8)"),TEXT("The truck pulls harder from a stand and runs faster on every road, and drinks about a tenth more fuel."),2},
+  // and field gear that opens the night: what a better ear and a better eye can bring back
+  {TEXT("field_recorder"),TEXT("Better field recorder and a gun microphone"),60,TEXT("a week on the job (day 8) and a cassette recorded out in the field"),TEXT("The tape hears twice as far, 140 m instead of 70, and catches what is out there from farther off. The cassettes cost the same."),2},
+  {TEXT("night_camera"),TEXT("Image intensifier for the field camera"),85,TEXT("a week on the job (day 8) and the fast film in hand"),TEXT("Surplus night glass on the lens: the film sees in the dark far more than the eye does. What it shows is still only what was there."),2},
+  {TEXT("rdf"),TEXT("Radio direction finder loop for the truck"),120,TEXT("the county's surplus sale, from day 15"),TEXT("A loop on the cab roof. Out at night, in the cab, it nulls toward whatever keys the band within about three kilometres, and you hear which way. It says nothing of what."),3},
  };
  return Table;
 }
 const FS47KitOffer* FS47Openings::Def(const FString& Id){return Defs().FindByPredicate([&](const FS47KitOffer& O){return Id==O.Id;});}
+int32 FS47Openings::FirstDay(const FString& Id){const auto* O=Def(Id);return O?(FMath::Max(1,O->Week)-1)*7+1:1;}
 namespace S47OpeningsLocal
 {
  // The late, dear ones (from day 15): what a full budget in weeks 3 and 4 can go on.
- bool Late(const FString& Id){return Id==TEXT("transfer")||Id==TEXT("array_alarm");}
+ bool Late(const FString& Id){const auto* O=FS47Openings::Def(Id);return O&&O->Week>=3;}
  // The trip wires along the antenna field: this close to a dish counts as among them.
  constexpr double DishReach=14;
  constexpr float ArrayKnockedOutChance=.45f;
@@ -50,16 +60,23 @@ bool FS47Openings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s openings: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
- TSet<FString> Ids;bool bWords=true;int32 Total=0,LateTotal=0,LateCount=0,Cheapest=1000000;
+ TSet<FString> Ids;bool bWords=true;int32 Total=0,LateTotal=0,LateCount=0,Cheapest=1000000,MidTotal=0,MidCount=0,MidDearest=0,MidCheapest=1000000,EarlyDearest=0;
  for(const auto& O:Defs())
  {
   Ids.Add(O.Id);bWords&=O.Price>0&&FCString::Strlen(O.Waits)>3&&FCString::Strlen(O.What)>10;
-  if(S47OpeningsLocal::Late(O.Id)){LateTotal+=O.Price;++LateCount;Cheapest=FMath::Min(Cheapest,O.Price);}else Total+=O.Price;
+  if(S47OpeningsLocal::Late(O.Id)){LateTotal+=O.Price;++LateCount;Cheapest=FMath::Min(Cheapest,O.Price);}
+  else if(O.Week==2){MidTotal+=O.Price;++MidCount;MidDearest=FMath::Max(MidDearest,O.Price);MidCheapest=FMath::Min(MidCheapest,O.Price);}
+  else{Total+=O.Price;EarlyDearest=FMath::Max(EarlyDearest,O.Price);}
  }
  Check(Ids.Num()==Defs().Num()&&bWords,TEXT("each has a price, what it waits for, and what it does"));
  Check(Total<=300,TEXT("all the early ones together are about five days' full pay"));
  // M7 (C): the money model for days 1 to 30 leaves $150 to $300 a week unspent in weeks 3 and 4 on two or three cards an evening.
- Check(LateCount==2&&Cheapest>=90&&LateTotal>=200&&LateTotal<=Total,TEXT("M7: two dear late ones from day 15, about $200 together, still less than the early ones"));
+ // M7 (Tom, 9 November, E's model): prices step up by the week; two cards an evening cannot buy all of it in a month.
+ Check(LateCount==3&&Cheapest>=90&&LateTotal>=300&&LateTotal<=360,TEXT("M7: three dear late ones from day 15, $90 and up"));
+ Check(MidCount==6&&MidCheapest>=40&&MidDearest<=Cheapest&&MidDearest>EarlyDearest&&MidTotal>=300&&MidTotal<=400,TEXT("M7: six from week 2 (the truck and the better field gear), dearer together than the early ones and each cheaper than the late"));
+ Check(FirstDay(TEXT("truck_engine"))==8&&FirstDay(TEXT("rdf"))==15&&FirstDay(TEXT("cot"))==1,TEXT("M7: week 2 opens on day 8, week 3 on day 15"));
+ bool bTruck=true;for(const TCHAR* Truck:{TEXT("truck_tires"),TEXT("truck_rack"),TEXT("truck_tank"),TEXT("truck_engine")})bTruck&=Def(Truck)!=nullptr;
+ Check(bTruck,TEXT("M7: the truck's own upgrades are on the stores list"));
  return OK;
 }
 

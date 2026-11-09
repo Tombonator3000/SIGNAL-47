@@ -29,6 +29,7 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "CoreGlobals.h"
+#include "S47Outfit.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/GarbageCollection.h"
 
@@ -85,10 +86,12 @@ namespace
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
- double PumpIncrement(double Tank,double Remaining) { return FMath::Max(0.,FMath::Min(.25,FMath::Min(4.-Tank,Remaining))); }
+ // M7 (Tom, 9 November): Cap is the truck's tank (four units, six with the auxiliary tank, FS47Outfit) and Per what a dollar buys this
+ // week (FuelPerDollar: the price goes up a little with the weeks).
+ double PumpIncrement(double Tank,double Remaining,double Cap=4.,double Per=.25) { return FMath::Max(0.,FMath::Min(Per,FMath::Min(Cap-Tank,Remaining))); }
  double DayClock(double T) { return FMath::Fmod(FMath::Fmod(T,86400.)+86400.,86400.); }
  // M7 (C): the pump runs on to a full tank, unless the nozzle is put back or the budget runs out first (StepPump).
- double PumpVolumeFor(double Tank) { return FMath::Max(0.,4.-Tank); }
+ double PumpVolumeFor(double Tank,double Cap=4.) { return FMath::Max(0.,Cap-Tank); }
  // M7 (C, TODO "Henting av bilen skal koste"): the county's roadside return. A dry tank is the cheap call-out (no hook-up, a can and
  // a ride), a truck in trouble the full tow; both take the tow's 45 to 90 minutes by how far out it is, and after dark the one wrecker
  // on duty is three quarters of an hour longer coming. Nobody is sent while something is close (the Director's RestBlock, as a wait).
@@ -180,10 +183,10 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
   Delivered=FMath::Clamp(S47J::Int(O,TEXT("delivered")),0,1000000);DeliveredByTruck=FMath::Clamp(S47J::Int(O,TEXT("cargoDelivered")),0,1000000);
   ServiceDeliveries=FMath::Clamp(S47J::Int(O,TEXT("serviceDelivered")),0,1000000);DonorTests=FMath::Clamp(S47J::Int(O,TEXT("donorTests")),0,1000000);ServiceTests=FMath::Clamp(S47J::Int(O,TEXT("serviceTests")),0,1000000);
   bGenerator=S47J::Bool(O,TEXT("generator"));GeneratorSeconds=FMath::Clamp(S47J::Num(O,TEXT("generatorSeconds")),0.,43200.);
-  Fuel=FMath::Clamp(S47J::Num(O,TEXT("fuel"),3),0.,4.);LastClock=S47J::Num(O,TEXT("lastClock"),-1);
-  bPumping=S47J::Bool(O,TEXT("pumping"));PumpRemaining=FMath::Clamp(S47J::Num(O,TEXT("pumpRemaining")),0.,1.);
-  PumpElapsed=FMath::Clamp(S47J::Num(O,TEXT("pumpElapsed")),0.,2.);PumpVolume=FMath::Clamp(S47J::Num(O,TEXT("pumpVolume")),0.,1.);PumpPaid=FMath::Clamp(S47J::Int(O,TEXT("pumpPaid")),0,4);
-  if(PumpRemaining<.00001||Fuel>=3.99999)bPumping=false;
+  Fuel=FMath::Clamp(S47J::Num(O,TEXT("fuel"),3),0.,FS47Outfit::BigTank);LastClock=S47J::Num(O,TEXT("lastClock"),-1);
+  bPumping=S47J::Bool(O,TEXT("pumping"));PumpRemaining=FMath::Clamp(S47J::Num(O,TEXT("pumpRemaining")),0.,FS47Outfit::BigTank);
+  PumpElapsed=FMath::Clamp(S47J::Num(O,TEXT("pumpElapsed")),0.,2.);PumpVolume=FMath::Clamp(S47J::Num(O,TEXT("pumpVolume")),0.,FS47Outfit::BigTank);PumpPaid=FMath::Clamp(S47J::Int(O,TEXT("pumpPaid")),0,40);
+  if(PumpRemaining<.00001||Fuel>=FS47Outfit::BigTank-.00001)bPumping=false;
   ServiceAz=S47J::Num(O,TEXT("serviceAz"));ServiceEl=S47J::Num(O,TEXT("serviceEl"));Settle=FMath::Clamp(S47J::Num(O,TEXT("settle")),0.,1.);
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
@@ -335,35 +338,35 @@ bool FS47FreeformWorld::StartPump()
  if(!Ready()||M->Freeform->Held()||bPumping)return false;
  if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
  {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
- const double Volume=PumpVolumeFor(Fuel);
+ const double Volume=PumpVolumeFor(Fuel,TankCap());
  if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
  // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
  if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: the budget is empty, so the pump stays off. Work registered at OPS pays into it. On a dry tank, you can still call roadside return from the truck."));return false;}
  bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
- Change(TEXT("REGULAR into the SARO truck: $1 every two seconds while it runs. Use the pump again to stop; you pay only for what went in."));return true;
+ Change(FString::Printf(TEXT("REGULAR into the SARO truck at $%.2f a unit this week: $1 every two seconds while it runs. Use the pump again to stop; you pay only for what went in."),1./FuelPerDollar()));return true;
 }
 void FS47FreeformWorld::StopPump()
 {
  if(!bPumping)return;bPumping=false;PumpRemaining=PumpElapsed=0;
- ApplyPump();Change(FString::Printf(TEXT("Nozzle back on the pump. Pumped %.2f for $%d; the gauge reads %.2f / 4."),PumpVolume,PumpPaid,Fuel));
+ ApplyPump();Change(FString::Printf(TEXT("Nozzle back on the pump. Pumped %.2f for $%d; the gauge reads %.2f / %.0f."),PumpVolume,PumpPaid,Fuel,TankCap()));
 }
 void FS47FreeformWorld::StepPump(double Dt)
 {
  if(!bPumping)return;
  if(!PumpConditions()){StopPump();return;}
  PumpElapsed+=FMath::Clamp(Dt,0.,.1);if(PumpElapsed<2.)return;
- const double Amount=PumpIncrement(Fuel,PumpRemaining);
+ const double Amount=PumpIncrement(Fuel,PumpRemaining,TankCap(),FuelPerDollar());
  if(Amount<.00001||!M->Freeform->Spend(1)){StopPump();return;}
  // Spend's autosave request is deferred; fuel and receipt are updated in this
  // same game-thread transaction before any snapshot can observe the new cash.
- Fuel=FMath::Min(4.,Fuel+Amount);PumpRemaining=FMath::Max(0.,PumpRemaining-Amount);PumpVolume+=Amount;++PumpPaid;PumpElapsed=0;
+ Fuel=FMath::Min(TankCap(),Fuel+Amount);PumpRemaining=FMath::Max(0.,PumpRemaining-Amount);PumpVolume+=Amount;++PumpPaid;PumpElapsed=0;
  if(bFuelHeld&&M->World){M->World->HoldTruck(0);bFuelHeld=false;}
- if(PumpRemaining<.00001||Fuel>=3.99999)StopPump();else{M->RequestAutosave();ApplyPump();}
+ if(PumpRemaining<.00001||Fuel>=TankCap()-.00001)StopPump();else{M->RequestAutosave();ApplyPump();}
 }
 FString FS47FreeformWorld::PumpDisplay() const
 {
- if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
- const double Volume=PumpVolumeFor(Fuel);return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,Volume,FMath::CeilToInt(Volume/.25-.00001),PumpPaid,PumpVolume);
+ if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / %.0f\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,TankCap(),PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining,TankCap(),FuelPerDollar()),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
+ const double Volume=PumpVolumeFor(Fuel,TankCap());return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / %.0f\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,TankCap(),Volume,FMath::CeilToInt(Volume/FuelPerDollar()-.00001),PumpPaid,PumpVolume);
 }
 void FS47FreeformWorld::ApplyPump()
 {
@@ -371,7 +374,7 @@ void FS47FreeformWorld::ApplyPump()
  if(bTripoPump)
  {
   const FString Left=FString::Printf(TEXT("TANK\n%.2f OF 4\nSALE $%d"),Fuel,PumpPaid);
-  const FString Right=FString::Printf(TEXT("FUEL $4/U\n%.2f SOLD\nE %s"),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
+  const FString Right=FString::Printf(TEXT("FUEL $%.2f/U\n%.2f SOLD\nE %s"),1./FuelPerDollar(),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
   if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
  }
  else for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
@@ -849,6 +852,8 @@ bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
 {
  if(!AtShopCounter()||Price(Id)<=0||(Emergency?Payload!=0:!CanAddShopItem()))return false;
  if(InventoryCount(Id)+Contents.FindRef(Id)>=99){Change(TEXT("SARO stock plus this paid parcel has reached the 99-item storage limit for that supply."));return false;}
+ // M7 (Tom, 9 November): one parcel is what the truck's rack takes (FS47Outfit: eight items, twenty with the bed rack)
+ if(!Emergency&&Payload==1&&ParcelCount()>=ParcelRoom()){Change(FString::Printf(TEXT("The parcel is as big as the truck's rack takes: %d items.%s"),ParcelRoom(),ParcelRoom()<FS47Outfit::RackLoad?TEXT(" A bed rack (OPS stores list) takes more."):TEXT("")));return false;}
  if(!Emergency&&!ShopOpen()){Change(TEXT("The shop counter sells supplies 08:00–20:00. Essential credit requisitions remain available here after hours."));return false;}
  if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film")||Id==TEXT("recorder_donor")||Id==TEXT("cell")||Id==TEXT("foil")||Id==TEXT("drive_motor"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
  // A coupon clipped from this week's Ledger takes something off (FS47Mail); never off an emergency requisition.
@@ -856,6 +861,8 @@ bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
  if(!M->Freeform->Spend(Cost,Emergency)){Change(M->Freeform->FeedbackText());return false;}
  if(Emergency)EmergencyDay=M->Freeform->Day();if(Payload==0){Item=Id;Contents.Reset();}++Contents.FindOrAdd(Id);Payload=1;bParcelWasLoaded=false;Change(TEXT("Paid and added to your counter parcel. Add more supplies or close the list and collect the sealed parcel."));return true;
 }
+int32 FS47FreeformWorld::ParcelCount() const{int32 N=0;for(const auto& Pair:Contents)N+=FMath::Max(0,Pair.Value);return N;}
+int32 FS47FreeformWorld::ParcelRoom() const{return FS47Outfit::TuneFor(M?M->Freeform.Get():nullptr).Load;}
 bool FS47FreeformWorld::CanAddShopItem() const
 {
  return Payload==0||(Payload==1&&Price(Item)>0&&!Contents.IsEmpty());
@@ -871,7 +878,7 @@ void FS47FreeformWorld::OpenShop()
 {
  if(!AtShopCounter()||!M->UI)return;TArray<S47Kit::FW> Rows;
  TrackPowerFault(M->Freeform->PowerFault());
- Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Truck; unpack at GARAGE RECEIVING to add stock."),M->Freeform->Budget())));
+ Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Truck; unpack at GARAGE RECEIVING to add stock.\nTHE TRUCK'S RACK TAKES %d ITEMS IN ONE PARCEL"),M->Freeform->Budget(),ParcelRoom())));
  if(Payload>0)Rows.Add(S47Kit::Paper(TEXT("PAID PARCEL / ")+ParcelDescription()));
  if(!CanAddShopItem())Rows.Add(S47Kit::Small(TEXT("The counter handles one parcel at a time, and you already have one out. GARAGE RECEIVING: Unpack supplies. CALIBRATION / REPAIR: Return a service case or logger. Then buy here again.")));
  if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Roadside return from the truck costs money and a long wait.")));
@@ -880,7 +887,7 @@ void FS47FreeformWorld::OpenShop()
   const FString Key(Id);
   const int32 Cost=M->Freeform->Mail?M->Freeform->Mail->CounterPrice(Key,Price(Key)):Price(Key);
   const FString Tag=Cost<Price(Key)?FString::Printf(TEXT("%s / $%d WITH THE LEDGER'S COUPON (was $%d)"),*ItemTitle(Key),Cost,Price(Key)):FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key));
-  Rows.Add(S47Kit::Button(Tag,[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99));
+  Rows.Add(S47Kit::Button(Tag,[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99&&(Payload!=1||ParcelCount()<ParcelRoom())));
  }
  Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work, and only with no requisition balance already standing. Donor controllers require bench testing before harvesting their relay.")));
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
@@ -929,7 +936,7 @@ bool FS47FreeformWorld::CargoUse()
  else
  {
   // A loaded rack on an empty tank still opens this menu: roadside return carries the truck and its cargo.
-  TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / 4"),Fuel)));
+  TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / %.0f"),Fuel,TankCap())));
   R.Add(S47Kit::Section(TEXT("CARGO")));
   R.Add(S47Kit::Status(TEXT("Parcel"),Payload==3?TEXT("LOADED"):TEXT("EMPTY"),Payload==3?1:0,FString(),false,Payload==3));
   if(Payload==3)
@@ -938,7 +945,7 @@ bool FS47FreeformWorld::CargoUse()
    for(const TCHAR* Key:AllItems())if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
    if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
   }
-  R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
+  R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<TankCap()-.01));
   // The truck's own trouble: what the player can do about it, and the county if not.
   const auto* Care=M->Freeform->Care.Get();const bool bCare=Care&&Care->NeedsRescue();
   if(bCare)R.Add(S47Kit::Paper(Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")))));
@@ -1008,7 +1015,7 @@ bool FS47FreeformWorld::AnalyzeSample()
 void FS47FreeformWorld::OpenWorkbench()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
- TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / %.0f\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,TankCap(),BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
  R.Add(S47Kit::Small(Logger.bOwned?FString::Printf(TEXT("FIELD LOGGER / operator-built, two field sites, %.0f-hour battery. Measures local electrical noise only."),Logger.MaxBattery()/3600.):LoggerAccess()?TEXT("FIELD LOGGER AUTHORIZED / loan kit, two field sites, six-hour battery. Measures local electrical noise only."):TEXT("FIELD LOGGER LOCKED / complete a supported conclusion in The repeated interval.")));
  if(LoggerAccess()&&!Logger.bLoanIssued)R.Add(S47Kit::Small(TEXT("PARTS STORAGE: Collect the loan kit once at EQUIPMENT CHECKOUT, then carry it to this bench. All later preparation, collection, return and comparison happen here.")));
  if(LoggerAccess()&&Logger.bLoanIssued)
@@ -1289,7 +1296,15 @@ void FS47FreeformWorld::OpenDepot()
  R.Add(S47Kit::Small(TEXT("Small spares travel in your service pouch. GARAGE RECEIVING: Unpack purchased parcels. PHOTO LAB: Load the stocked 36-exposure photographic film at the dry bench.")));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / PARTS STORAGE"),S47Kit::Col(R),880));
 }
-void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<3.99&&Consume(TEXT("fuel"))){Fuel=FMath::Min(4.,Fuel+2.);Change(TEXT("Fuel can transferred to the service truck."));}}
+double FS47FreeformWorld::TankCap()const{return FS47Outfit::TuneFor(M?M->Freeform.Get():nullptr).Tank;}
+double FS47FreeformWorld::FuelPerDollar()const
+{
+ // M7 (Tom, 9 November): the pump's price goes up a little with the weeks, $4.00 a unit in week 1 to $4.55 from week 4
+ static const double Per[]={.25,.24,.23,.22};
+ const int32 Week=M&&M->Freeform&&M->Freeform->RulesLive()?(M->Freeform->Day()-1)/7:0;
+ return Per[FMath::Clamp(Week,0,3)];
+}
+void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<TankCap()-.01&&Consume(TEXT("fuel"))){Fuel=FMath::Min(TankCap(),Fuel+2.);Change(TEXT("Fuel can transferred to the service truck."));}}
 void FS47FreeformWorld::RoadsideAssist()
 {
  const bool bTrouble=M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue();
@@ -1418,8 +1433,8 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  {
   if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
   if(bTripoPump)return bPumping?TEXT("Stop pump"):TEXT("Use pump");
-  if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / 4 / delivered %.2f / $%d"),Fuel,PumpVolume,PumpPaid);
-  const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
+  if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / %.0f / delivered %.2f / $%d"),Fuel,TankCap(),PumpVolume,PumpPaid);
+  const double Volume=PumpVolumeFor(Fuel,TankCap());return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / fill up to %.2f / $%d / tank %.2f of %.0f"),Volume,FMath::CeilToInt(Volume/FuelPerDollar()-.00001),Fuel,TankCap());
  }
  if(Id==TEXT("ff:carry"))return Payload==2?TEXT("Handle carried parcel / set down or drop"):FString();
  if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Store counter closed / essential requisition");
@@ -1487,7 +1502,9 @@ void FS47FreeformWorld::Step(double Dt)
  if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
  if(M->World&&M->World->bDriving)
  {
-  Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.);
+  // (M7: the engine rebuild drinks a tenth more, FS47Outfit)
+  Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.*FS47Outfit::TuneFor(M->Freeform.Get()).Burn);
+  Fuel=FMath::Min(Fuel,TankCap());
   if(Fuel<=.001)
   {
    if(!bFuelHeld)Change(TEXT("SERVICE TRUCK: Tank empty; the engine dies. Stop, get out and use the cargo rack: a fuel can from stock, or the county's roadside return, which costs money and a long wait."));

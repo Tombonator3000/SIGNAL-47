@@ -67,6 +67,12 @@ public:
  bool HasBackupPower() const { return GeneratorRunning(); }
  double GeneratorHours() const { return GeneratorSeconds / 3600.; }
  double VehicleFuel() const { return Fuel; }
+ // M7 (Tom, 9 November): the truck's tank (FS47Outfit: four units, six with the auxiliary tank), what a pump dollar buys this week,
+ // and the parcel: how many items are in it and how many the truck's rack takes.
+ double TankCap() const;
+ double FuelPerDollar() const;
+ int32 ParcelCount() const;
+ int32 ParcelRoom() const;
  bool HasVehicleFuel() const { return Fuel > .001; }
  void SkipFaultToday();
  void TestBuiltTripCamera(){Crafting.Built.AddUnique(TEXT("trip_camera"));}

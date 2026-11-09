@@ -72,6 +72,8 @@ private:
  // M6: what goes into SARO's walls, what stops one with nothing drawn, the street lamps' feet, and the views of Dale's window, the
  // substation and the lamps (SARO-CLIP, DALE-WINDOW, FENCES-INVISIBLE, STREETLAMPS-20261108); S47LooksDev.cpp.
  void AddLooks(FS47DevEvents& E);
+ // M7 (Tom, 9 November): money, the stores list and the truck's upgrades in numbers (the loop money, upgrades, going out); S47EconomyDev.cpp.
+ void AddEconomy(FS47DevEvents& E);
  // ALIEN-EYES (Tom, 9 November): the faint dot in every alien's eyes, each body at night at 5, 15, 40 and 55 m, by day, close up,
  // and switched off; S47EyeGlintDev.cpp. EyeGlintClear puts its body away when another line starts.
  void AddEyeGlint(FS47DevEvents& E);

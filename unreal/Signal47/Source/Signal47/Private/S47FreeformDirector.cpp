@@ -1714,9 +1714,10 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
   if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: Develop the photograph before submitting it"), 5);
   return false;
  }
- C->bPaid=true;M->Freeform->Earn(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0));
- M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,C->Reward));Changed();
- if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit."),5);
+ // M7 (Tom, 9 November): the documentation credit is field-work money: inside the week's cap (FS47FreeformSession::EarnSide)
+ C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
+ M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
+ if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d documentation credit."),Credit):FString(TEXT("OPS registered the field photograph. This week's documentation credit is used up: no payment.")),5);
  return true;
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);

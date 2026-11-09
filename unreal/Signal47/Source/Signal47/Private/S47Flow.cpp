@@ -2380,7 +2380,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });
-		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / 4"), F->VehicleFuel()), FString(), FString() });
+		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / %.0f"), F->VehicleFuel(), F->TankCap()), FString(), FString() });
 		Kit.Add({ TEXT("Backup generator"), TEXT("Fuel already in the generator; spare cans are separate."), FString::Printf(TEXT("%s / %.1f hours"), F->GeneratorRunning() ? TEXT("Running") : TEXT("Stopped"), F->GeneratorHours()), FString(), FString() });
 		if (F->ParcelStage() > 0)
 		{

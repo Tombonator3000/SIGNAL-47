@@ -2192,7 +2192,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		DashT = 0.1;
 		// (GEAR-FLICKER-20261108: close to something the dash clock jumps with the watch)
 		const FString DashSays = M->Story && !bCommuteVehicle ? FS47Happenings::DashClock(M, M->Story->ClockText(false)) : FString();
-		N->Truck->SetDash(D.Mph, D.Rpm, M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(DashSays) : DashSays, M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(DashSays) : DashSays, M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/M->Freeform->Field->TankCap() : Id == TEXT("roswell") ? 0.55 : 0.62);
 		// (M2: the temperature needle reads the radiator, FS47TruckCare)
 		if (M->IsFreeform() && M->Freeform && M->Freeform->Care && !bCommuteVehicle) N->Truck->SetTempNeedle(M->Freeform->Care->TempNeedle());
 		N->Truck->SetOdometer(Odometer());

@@ -168,17 +168,45 @@ public:
  // Time has a price (Tom, 7 November), low enough not to rush anyone. A card pays in full on its day and the next, then less.
  // Waiting costs a little in standby. Each week the station's review takes power and fuel. Nothing here can lock the game:
  // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
- static int32 PayAfterDays(int32 Days){return Days<=1?20:Days==2?15:Days==3?10:5;}
+ // M7 (Tom, 9 November): less for a card, more for a card done well. The base by how old the card is, and on top of it $2 for a card
+ // registered on its day or the next, $3 for a recording that reads (CleanRecordQuality), and $1 for an anomaly carried through its
+ // control. A good card pays $19 against the old $20; a sloppy late one $10 or less. Quality pays better than quantity.
+ static int32 PayAfterDays(int32 Days){return Days<=1?14:Days==2?10:Days==3?7:4;}
+ static constexpr int32 OnTimeBonus=2,CleanBonus=3,ControlBonus=1;
+ static constexpr double CleanRecordQuality=.6;
  int32 JobPay(const FJob& Job) const;
- // M7 (C's economy model): the county's power line is charged by what the station runs, a base and a dollar for each antenna on
- // the line, so that repairing the array costs something week by week.
+ // What of JobPay is the bonus for good work (0 to 6), and the words for it ("on time, clean recording").
+ int32 JobBonus(const FJob& Job,FString* Why=nullptr) const;
+ // The first evening's training card (the tutorial's) pays the old flat $20 whatever its state: Ward's welcome.
+ bool TrainingCard(const FJob& Job) const{return !TutorialJobId.IsEmpty()&&Job.Id==TutorialJobId;}
+ // M7 (C's economy model): the county's power line is charged by what the station runs, a base and so much for each antenna on
+ // the line, so that repairing the array costs something week by week. M7 (Tom, 9 November): the dishes wear, and their upkeep goes
+ // up with the weeks: $1 an antenna on the first sheet, $1.50 on the second and third, $2 from the fourth (UpkeepHalves, half-dollars).
  static constexpr int32 ReviewPowerBase=10,ReviewPowerPerDish=1,ReviewFuel=15,ArrearsCap=80,LostHoursDiscount=15;
- int32 ReviewPowerNow() const{return ReviewPowerBase+ReviewPowerPerDish*AvailableDishCount();}
+ static int32 UpkeepHalves(int32 Week){return Week<=1?2:Week<=3?3:4;}
+ static int32 ReviewPowerFor(int32 Week,int32 Dishes){return ReviewPowerBase+FMath::Max(0,Dishes)*UpkeepHalves(Week)/2;}
+ int32 ReviewPowerNow() const{return ReviewPowerFor(ReviewWeek+1,AvailableDishCount());}
+ // M7 (Tom, 9 November): money from the field work (copies sold to the souvenir man, the documentation credit for a photograph, a tip
+ // read on 1420, the sky-watch van) is worth having, and capped so that it never beats the job: SideCap a week, the rest goes unpaid.
+ // Returns what was paid. Kind is for the log.
+ static constexpr int32 SideCap=35;
+ int32 EarnSide(int32 Amount,const TCHAR* Kind);
+ int32 SideLeftThisWeek() const;
+ // M7 (Tom, 9 November): time is the second currency. Each card registered takes time off the night and adds to how tired you are
+ // (FS47Fatigue::Desk); a third card in one evening more. What the evening's cards took is on OPS.
+ static constexpr double DeskHoursPerCard=.25,DeskHoursThirdCard=.6;
+ int32 CardsFiledOn(int32 Day) const;
+ // M7 (Tom, 9 November): gear can break near what is out there (FS47Upgrades::StepBreakage): what it costs to put right goes on the next sheet.
+ static constexpr int32 RepairCap=12; // a week's sheet at most
+ void BreakGear(const FString& What,int32 Fee);
+ int32 RepairsDue() const{return Repairs;}
  // The running costs on the weekly sheet besides power and stores (critic, 8 November; Claude's numbers, kept low): truck wear per
  // two kilometres driven, film and darkroom chemicals per print developed, and Ward's re-check of a recording nobody can read.
  static constexpr int32 WearPerTwoKm=1,WearCap=15,FilmPerPrint=2,FilmCap=10,PoorRecordFee=3,FeeCap=15;
+ // M7 (Tom, 9 November): cassettes are used up in the field too: a dollar a take recorded that week (FS47Tape), at most TapeCap.
+ static constexpr int32 TapePerTake=1,TapeCap=6;
  static constexpr double PoorRecordQuality=.3;
- struct FWeekCosts{int32 Wear=0,Film=0,Fee=0,Poor=0,Prints=0;double Km=0;int32 Total() const{return Wear+Film+Fee;}};
+ struct FWeekCosts{int32 Wear=0,Film=0,Fee=0,Poor=0,Prints=0,Tapes=0,Tape=0,Repairs=0;double Km=0;int32 Total() const{return Wear+Film+Fee+Tape+Repairs;}};
  // For the review that falls at the end of this week (1-based): what it will charge besides power and stores.
  FWeekCosts WeekCosts(int32 Week) const;
  static int32 StandbyFor(double WaitSeconds){return FMath::Clamp(FMath::CeilToInt(WaitSeconds/(3*3600.)),0,4);}
@@ -211,6 +239,8 @@ public:
  // A night at the Sierra Motor Court, and its own dangers; not filed until back at SARO (MOTEL-SLEEP-20261108): S47MotelNight.h.
  TSharedPtr<class FS47MotelNight> MotelNight;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
+ // M7 (Tom, 9 November): the truck's upgrades and the field gear that opens the night, as bought (S47Outfit.h).
+ TSharedPtr<class FS47Outfit> Outfit;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;
  TSharedPtr<class FS47TripCamera> TripCamera;
@@ -256,6 +286,7 @@ public:
  // Gear that came by post, already paid for (FS47Mail): the station has it now. False: no such gear, or it has it already.
  bool ReceiveKit(const FString& Id);
  void TestGiveKit(const FString& Id){Kit.Add(Id);}
+ void TestTakeKit(const FString& Id){Kit.Remove(Id);}
  // Sleeping away from the station. At a motel nothing wakes you; on a cot out on the land whatever comes by does.
  enum class ERest:uint8{Station,Motel,Field};
  static constexpr int32 MotelRoom=8;
@@ -431,6 +462,10 @@ private:
  int32 RousedNight=0; // the last night a rest was really broken: never two running
  bool bTestEvening=false,bTestFirstPulse=false,bTestRules=false;
  int32 ReviewWeek=0,Carried=0,StandbyTotal=0,LastPay=20;
+ // M7 (Tom, 9 November): the week the side money was counted for (1-based), what it has paid that week, and repairs for the next sheet.
+ int32 SideWeek=0,SidePaid=0,Repairs=0;
+ FString DeskLine;
+ void DeskWork(const FJob& J);
  TSet<FString> Kit;
  ERest RestPlace=ERest::Station;
  int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
