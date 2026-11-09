@@ -161,7 +161,7 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 			const FVector Behind = S47FarmWorld::RoadToArea(Area, FVector(RoadAt.X + Side * 22, 0, RoadAt.Z + 9));
 			const FVector Rock = S47FarmWorld::RoadToArea(Area, FVector(RoadAt.X, 0, RoadAt.Z));
 			FStage S; S.From = 16.5; S.To = 17; S.Area = Area; S.Where = [Road] { return FVector2D(Road.X, Road.Z); };
-			Go(S, [this, G, R, Road, Behind, Rock, Steps, Family]
+			Go(S, [this, G, Road, Behind, Rock, Steps, Family]
 			{
 				const auto LookAt = [this, Rock] { if (M->Player) AimAt(FVector(Rock.X, M->Player->FloorY + M->Player->Eye + .5, Rock.Z)); };
 				const auto Stand = [this, LookAt](const FVector& At) { if (M->Player) { M->Player->Place(At.X, At.Z, 0); LookAt(); } };
@@ -169,14 +169,16 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 				LookAt();
 				Steps({
 					{ N + TEXT("-road-now"), LookAt },
-					{ N + TEXT("-road-before"), [R] { R->DevBefore(true); } },
-					{ N + TEXT("-road-nort"), [R] { R->DevBefore(false); R->DevRayTracing(false); } },
+					{ N + TEXT("-road-before"), [] { if (auto* L = FS47RouteNature::Live()) L->DevBefore(true); } },
+					{ N + TEXT("-road-nort"), [] { if (auto* L = FS47RouteNature::Live()) { L->DevBefore(false); L->DevRayTracing(false); } } },
 					{ N + TEXT("-behind-nort"), [Stand, Behind] { Stand(Behind); } },
-					{ N + TEXT("-behind-now"), [R] { R->DevRayTracing(true); } },
-					{ N + TEXT("-behind-before"), [R] { R->DevBefore(true); } },
-					{ FString(), [R, Stand, Road] { R->DevBefore(false); Stand(Road); } },
-				}, [this, G, R, Family]
+					{ N + TEXT("-behind-now"), [] { if (auto* L = FS47RouteNature::Live()) L->DevRayTracing(true); } },
+					{ N + TEXT("-behind-before"), [] { if (auto* L = FS47RouteNature::Live()) L->DevBefore(true); } },
+					{ FString(), [Stand, Road] { if (auto* L = FS47RouteNature::Live()) L->DevBefore(false); Stand(Road); } },
+				}, [this, G, Family]
 				{
+					FS47RouteNature* R = FS47RouteNature::Live();
+					if (!R) { Tell(false, TEXT("the route nature went away")); return; }
 					const FString Line = FString::Printf(TEXT("rock group %d (%s): pictures from the road and behind, now, before and without ray tracing; %s"), G + 1, *Family, *R->CutNote());
 					UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-ROCKS %s"), *Line);
 					Tell(true, Line, 10);
