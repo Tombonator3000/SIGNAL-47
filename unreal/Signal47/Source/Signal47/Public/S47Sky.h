@@ -220,6 +220,7 @@ private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
 	bool bMoon = false;
 	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;
+	double MoonStarDim = 0; // a bright moon high washes out the faint stars and the Milky Way
 	void PaintMoon();
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
 	// The inactive dome must survive GC while the component holds the other day/night material.

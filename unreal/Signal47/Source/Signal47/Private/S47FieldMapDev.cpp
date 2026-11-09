@@ -448,17 +448,22 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 	static const FMoonNight MoonNights[] = { { TEXT("new moon, May 8"), 11 }, { TEXT("first quarter, May 15"), 18 }, { TEXT("full moon, May 23"), 26 } };
 	for (const FMoonNight& Mn : MoonNights)
 	{
-		const FString Label = FString::Printf(TEXT("Moon: %s, 23:00 from the yard, before and after"), Mn.Name);
+		const FString Label = FString::Printf(TEXT("Moon: %s, 23:00 out on the land, before and after"), Mn.Name);
 		const int32 OnDay = Mn.Day;
-		E.AddFreeform(MoonGroup, Label, TEXT("the yard at SARO at 23:00, facing the moon (or south when it is down), no flashlight; a picture with the night as before, then with the moon"), [this, OnDay]
+		E.AddFreeform(MoonGroup, Label, TEXT("the open land west of the highway at 23:00, facing the moon (or south when it is down), no flashlight; a picture with the night as before, then with the moon"), [this, OnDay]
 		{
 			FS47FreeformSession* Fs = Session(); if (!Fs) { Tell(false, TEXT("no session")); return; }
 			const S47Weather::FMoon Mo = S47Weather::Moon(Fs->DateOfDay(OnDay), 23 * 3600.0);
 			const double Az = Mo.El > 3 ? Mo.Az : 180.0;
-			FStage Stage; Stage.Day = OnDay; Stage.From = 23; Stage.To = 23.2; Stage.Area = TEXT("saro");
-			Stage.Where = [] { const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 36, -312); return FVector2D(At.X, At.Z); };
-			Stage.Yaw = S47OpenLand::Turned(TEXT("road"), TEXT("saro"), -FMath::DegreesToRadians(Az));
-			Stage.Pitch = FMath::DegreesToRadians(FMath::Clamp(Mo.El - 12.0, 0.0, 28.0));
+			// Out on the open land west of the highway (the wash), where nothing stands between the moon and the ground.
+			const FS47EventPlace* Wash = Fs->EventPlaces ? Fs->EventPlaces->Find(TEXT("land:wash_west")) : nullptr;
+			if (!Wash) { Tell(false, TEXT("no open land on the list")); return; }
+			const FString Area = FS47EventPlaces::AreaOf(*Wash);
+			const FVector Stood = S47OpenLand::FromRoad(Area, Wash->X, Wash->Z);
+			FStage Stage; Stage.Day = OnDay; Stage.From = 23; Stage.To = 23.2; Stage.Area = Area;
+			Stage.Where = [Stood] { return FVector2D(Stood.X, Stood.Z); };
+			Stage.Yaw = S47OpenLand::Turned(TEXT("road"), Area, -FMath::DegreesToRadians(Az));
+			Stage.Pitch = FMath::DegreesToRadians(FMath::Clamp(Mo.El - 22.0, 0.0, 16.0));
 			Go(Stage, [this, OnDay, Mo]
 			{
 				if (M && M->Night && M->Night->Flashlight) M->Night->Flashlight->bOn = false;
@@ -475,7 +480,7 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 						After(1.6, [this, Shot, OnDay, Mo]
 						{
 							Shot(FString::Printf(TEXT("moon-d%02d-after"), OnDay));
-							Tell(true, FString::Printf(TEXT("Day %d: %.0f%% lit, AZ %.0f EL %.0f, light x%.2f"), OnDay, Mo.Lit * 100, Mo.Az, Mo.El, S47Weather::MoonLight(Mo)));
+							After(.6, [this, OnDay, Mo] { Tell(true, FString::Printf(TEXT("Day %d: %.0f%% lit, AZ %.0f EL %.0f, light x%.2f"), OnDay, Mo.Lit * 100, Mo.Az, Mo.El, S47Weather::MoonLight(Mo))); });
 						});
 					});
 				});

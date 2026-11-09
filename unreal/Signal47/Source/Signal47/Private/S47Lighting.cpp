@@ -589,7 +589,8 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) * CloudFinaleWeatherWeight : 1.f;
 		// Twilight: the sky lights what the glow does not reach, blue and soft (CvDuskSky; Caliche's own sky is lit already).
 		const float DuskSky = 1.f + FMath::Max(0.f, CvDuskSky.GetValueOnGameThread()) * (CurrentArea == TEXT("roswell") ? 0.f : FMath::Clamp(Twilight, 0.f, 1.f)) * (1.f - .6f * Caliche);
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky);
+		// MOON-20261108: the night sky's own fill follows the moon as the moonlight does (1 at a half moon), the day not at all.
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight) * FMath::Lerp(SkyMoon, 1.f, FMath::Clamp(Daylight, 0.f, 1.f)), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden) * DuskSky);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);

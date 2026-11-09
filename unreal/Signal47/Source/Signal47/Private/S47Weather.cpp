@@ -141,10 +141,10 @@ S47Weather::FMoon S47Weather::Moon(const FDateTime& Date,double Clock)
 }
 float S47Weather::MoonLight(const FMoon& Mo)
 {
- // Half lit is the night as tuned (1); new or below the horizon what the sky gives (.45); full and high 1.8. Low in the sky, less.
- const double ByPhase=Mo.Lit<=.5?.45+.55*(Mo.Lit/.5):1+.8*((Mo.Lit-.5)/.5);
+ // Half lit is the night as tuned (1); new or below the horizon what the sky gives (.4); full and high 2.4. Low in the sky, less.
+ const double ByPhase=Mo.Lit<=.5?.4+.6*(Mo.Lit/.5):1+1.4*((Mo.Lit-.5)/.5);
  const double Up=FMath::SmoothStep(-2.,12.,Mo.El);
- return float(FMath::Lerp(.45,ByPhase,Up));
+ return float(FMath::Lerp(.4,ByPhase,Up));
 }
 void S47Weather::MoonTimes(const FDateTime& Date,double& OutRise,double& OutSet)
 {
@@ -212,7 +212,7 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
   const FMoon First=Moon(FDateTime(1986,5,16),20*3600.);
   Check(Full.Lit>.97&&Full.El>15&&Full.Az>140&&Full.Az<220&&New.Lit<.03&&New.El<0,TEXT("the full moon of 23 May stands south at midnight; the new moon of 8 May is down at 23:00"));
   Check(First.Lit>.35&&First.Lit<.75&&First.Az>150&&First.Az<260&&First.El>20,TEXT("the first quarter stands south-west in the evening"));
-  Check(FMath::IsNearlyEqual(MoonLight(FMoon{14.8,.5,180,50}),1.f,.02f)&&MoonLight(FMoon{14.8,1,180,60})>1.7f&&MoonLight(FMoon{0,0,0,-30})<.5f&&MoonLight(FMoon{14.8,1,90,-10})<.5f,TEXT("moonlight: a half moon is the night as tuned, a full one brighter, none down"));
+  Check(FMath::IsNearlyEqual(MoonLight(FMoon{14.8,.5,180,50}),1.f,.02f)&&MoonLight(FMoon{14.8,1,180,60})>2.2f&&MoonLight(FMoon{0,0,0,-30})<.5f&&MoonLight(FMoon{14.8,1,90,-10})<.5f,TEXT("moonlight: a half moon is the night as tuned, a full one brighter, none down"));
   double MoonUp=0,MoonDown=0;MoonTimes(FDateTime(1986,5,23),MoonUp,MoonDown);
   Check(MoonUp>17*3600.&&MoonUp<21.5*3600.,TEXT("a full moon rises about sunset"));
   const FString Printed=Almanac(FDateTime(1986,5,16));

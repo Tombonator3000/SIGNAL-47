@@ -50,7 +50,7 @@ namespace S47Weather
  // MOON-20261108: the moon in the valley's sky at a moment (the calendar date and the clock, seconds after midnight, local): its
  // age, the share of it lit (0 new to 1 full), and where it stands (degrees: azimuth from north through east, elevation). A plain
  // model good to a few degrees: it lags the sun by its age, on the ecliptic. Light: what its light is worth on the land against
- // the half moon the night was tuned for (1): about .45 with no moon up, 1.8 for a full moon high.
+ // the half moon the night was tuned for (1): about .4 with no moon up, 2.4 for a full moon high.
  // SunAz, SunEl: the sun by the same reckoning, for which side of the moon is lit.
  struct FMoon{double Age=0,Lit=0,Az=0,El=-90,SunAz=0,SunEl=-90;};
  SIGNAL47_API FMoon Moon(const FDateTime& Date,double Clock);

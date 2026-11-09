@@ -724,6 +724,7 @@ void FS47Sky::SetCometClock(double Clock)
 void FS47Sky::SetMoon(bool bShow, double Az, double El, double Lit, double SunAz, double SunEl)
 {
 	bMoon = bShow; MoonAz = Az; MoonEl = El; MoonLit = FMath::Clamp(Lit, 0.0, 1.0); MoonSunAz = SunAz; MoonSunEl = SunEl;
+	MoonStarDim = bShow ? .5 * MoonLit * MoonLit * FMath::SmoothStep(-2.0, 15.0, El) : 0.0;
 }
 
 void FS47Sky::PaintMoon()
@@ -1006,7 +1007,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	Common(StarsMid.Get());
 	if (UMaterialInstanceDynamic* D = StarsMid.Get())
 	{
-		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.))));
+		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max3(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.), MoonStarDim)));
 		D->SetScalarParameterValue(TEXT("PR"), float(FMath::Clamp(FinaleStarScale, .2, 1.)));
 	}
 	// Keep native capability separate from this private material's fallback-weather blend.
@@ -1059,8 +1060,8 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 			const FVector Facing = S47Three::ToUE(-Dir).GetSafeNormal(), Toward = S47Three::ToUE(Lit).GetSafeNormal();
 			MoonComp->SetRelativeLocation(S47Three::ToUE(Dir * StarRadius * .97));
 			MoonComp->SetRelativeRotation(FRotationMatrix::MakeFromZX(Facing, Toward).Rotator());
-			MoonComp->SetRelativeScale3D(FVector(StarRadius * .0157));
-			if (MoonMid.IsValid()) MoonMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .9f) * float(FMath::Lerp(1.5, .25, FMath::Clamp(Daylight(), 0.0, 1.0))));
+			MoonComp->SetRelativeScale3D(FVector(StarRadius * .036)); // about two degrees across: larger than life, as a painter would
+			if (MoonMid.IsValid()) MoonMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .97f, .9f) * float(FMath::Lerp(4.0, .5, FMath::Clamp(Daylight(), 0.0, 1.0))));
 		}
 	}
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);
