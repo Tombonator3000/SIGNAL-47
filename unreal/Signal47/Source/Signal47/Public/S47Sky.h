@@ -219,6 +219,17 @@ private:
 	TArray<TPair<int32, bool>> ConceptLegacyMesas;
 	bool bConceptLegacyMesasHidden = false;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp, MoonComp;
+	// M5 sweep 2: the day's weather over the sky (S47Weather::Live, Freeform only). By day the sky is a photograph that neither the
+	// cloud cover nor the sun's disc reaches, so a sand day stayed blue and a shower clear: a sphere inside the dome, unlit and
+	// translucent, brown in the sand and grey under a shower's cloud, hidden when there is no such weather.
+	TWeakObjectPtr<UStaticMeshComponent> VeilComp;
+	TStrongObjectPtr<UMaterialInstanceDynamic> VeilMid;
+	bool bVeilTried = false;
+	void DrawVeil(AS47Web* W, const FVector& Eye);
+public:
+	/** The veil's colour and opacity for the sand (0 to 1), a shower's cloud (0 to 1) and the daylight (tested). */
+	static void VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity);
+private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
 	bool bMoon = false;
 	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;

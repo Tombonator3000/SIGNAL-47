@@ -96,11 +96,20 @@ private:
 		int32 N = 0;
 		FVector Box = FVector::OneVector, Carried = FVector::ZeroVector;
 		void Drift(double Dt, const FVector& V);
+		// M5 sweep 2: drawn as short streaks (Group motes in a row along Streak, Step metres apart); the seed the box was made from
+		uint32 Seed = 0;
+		int32 Group = 1;
+		double Step = 0;
+		bool bBottom = false;
+		FVector Streak = FVector::ZeroVector;
 	};
 	FMotes Flash, Head;
 	// WEATHER-20261108: the blowing sand round the eye (lit by the day; at night only a little, the lamp's and the headlights' own
 	// dust thicken with it instead) and a shower's few drops (S47Weather::Live)
 	FMotes Sand, Drops;
+	/** M5 sweep 2: lay the motes out again in rows of Mo.Group along Dir (three-space, the way they are carried), so that each row reads
+	 *  as one fine streak of sand or a falling drop rather than a round dot; only when the way has turned by more than a few degrees. */
+	void Streaks(FMotes& Mo, const FVector& Dir);
 	void Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, bool bOut, double Dawn);
 
 	TWeakObjectPtr<AS47Web> Web;
