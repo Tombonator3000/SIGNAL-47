@@ -2,6 +2,8 @@
 
 Skjul A: åpent maskinskjul med pulttak, 9 x 5,5 m, bølgeblikk på stolper, ulike bukter mot sør.
 Skjul B: lite fôr- og redskapsskjul, 5 x 4 m, stående bord og lavt saltak, dør som står åpen ut.
+Skjul B sin dør: egen mesh SM_FarmShedDoor (WEEKLY-CASE-20261109, patch 2), lukket, nullpunkt i hengselet. Spillet
+(S47FarmShedDoor) svinger, låser og knuser den. DOOR_APART=False gir den gamle bakte døra tilbake.
 """
 import math
 
@@ -14,6 +16,9 @@ A_POSTS = [-4.4, -1.75, 1.6, 4.4]
 B_W2, B_D2 = 2.5, 2.0
 B_EAVE, B_RIDGE = 2.3, 3.05
 A_FLOOR, B_FLOOR = .05, .165  # Over høyeste terreng i fotavtrykket: S47FarmBuildings.cpp Floors.
+DOOR_APART = True  # Dørbladet er egen mesh (build_shed_door), ikke bakt inn i SM_FarmShedB.
+B_DOOR = (1.0, 1.98, B_FLOOR, 1.95)  # Døråpningen i sørveggen, u fra vestre hjørne: S47FarmBuildings::ShedDoorway.
+B_DOOR_LN = B_DOOR[1] - B_DOOR[0] - .02
 
 
 def azf(y):
@@ -188,7 +193,7 @@ def build_shed_b(lod=0):
     t = .05
     it = (.8, .8, .8)
     gable = [(0, B_EAVE + .08), (B_W2, B_RIDGE + .08), (2 * B_W2, B_EAVE + .08)]
-    door = (1.0, 1.98, B_FLOOR, 1.95)
+    door = B_DOOR
     win_s = (3.2, 3.85, 1.12, 1.68)
     win_e = (1.6, 2.3, 1.2, 1.78)
     hatch = (2.15, 2.85, 2.05, 2.62)
@@ -215,31 +220,34 @@ def build_shed_b(lod=0):
                 k.bx('corner', min(x, x - sx * .15), max(x, x - sx * .15), min(y, y + sy * .03), max(y, y + sy * .03), WALL_BASE, B_EAVE - .02, 'Wood')
                 k.bx('corner', min(x, x + sx * .03), max(x, x + sx * .03), min(y - sy * .15, y), max(y - sy * .15, y), WALL_BASE, B_EAVE - .02, 'Wood')
     # Dør med rester av samme turkise maling som huset. Står åpen ut, holdt av en kloss.
-    if lod < 2:
+    # Karmen også på LOD2 når bladet er egen mesh: ellers mister LOD2 malingssporet, og sporene skal være like.
+    if lod < 2 or DOOR_APART:
         frame(S, 'doorFrame', door[0], door[1], door[2], door[3], .1, 'Paint', False)
-    a = math.radians(-68)
-    hinge = S.P(door[0] + .01, 0, .01)
-    ln = door[1] - door[0] - .02
-    dx, dy = math.cos(a), math.sin(a)
-    tip = (hinge[0] + dx * ln, hinge[1] + dy * ln)
-    cx, cy = (hinge[0] + tip[0]) / 2, (hinge[1] + tip[1]) / 2
-    nrm = (dy, -dx, 0)   # Yttersiden når døra er lukket.
-    door_start = len(k.v)
-    k.obox('doorLeaf', (cx, cy, 1.0), (dx, dy, 0), nrm, (0, 0, 1), (ln, .04, 1.9), 'Paint', 2)
-    if lod < 2:
-        for z, h in ((.2, .12), (1.0, .12), (1.8, .12)):
-            k.obox('doorRail', (cx + nrm[0] * .03, cy + nrm[1] * .03, z), (dx, dy, 0), nrm, (0, 0, 1), (ln, .022, h), 'Paint', 0)
-    if lod == 0:
-        for g in (.2, .4, .58, .77):
-            c = (hinge[0] + dx * g + nrm[0] * .0215, hinge[1] + dy * g + nrm[1] * .0215, 1.0)
-            k.obox('doorGroove', c, (dx, dy, 0), nrm, (0, 0, 1), (.012, .003, 1.88), 'Wood', 2, tint=(.25, .24, .22))
-        k.pipe('doorHandle', (hinge[0] + dx * .86 + nrm[0] * .03, hinge[1] + dy * .86 + nrm[1] * .03, 1.0),
-               (hinge[0] + dx * .86 + nrm[0] * .08, hinge[1] + dy * .86 + nrm[1] * .08, 1.0), .012, 'Wood', 6, (.3, .28, .26))
-        for z in (.4, 1.55):
-            c = (hinge[0] + dx * .16 + nrm[0] * .044, hinge[1] + dy * .16 + nrm[1] * .044, z)
-            k.obox('hinge', c, (dx, dy, 0), nrm, (0, 0, 1), (.32, .008, .035), 'Wood', 0, tint=(.3, .28, .26))
-    if lod == 0:
-        k.rotate_since(door_start, (hinge[0], hinge[1], 1.9), nrm, .014)   # Døra henger litt ned i ytterkant.
+    if not DOOR_APART:
+        # Den gamle bakte døra, åpen ut og holdt av en kloss.
+        a = math.radians(-68)
+        hinge = S.P(door[0] + .01, 0, .01)
+        ln = door[1] - door[0] - .02
+        dx, dy = math.cos(a), math.sin(a)
+        tip = (hinge[0] + dx * ln, hinge[1] + dy * ln)
+        cx, cy = (hinge[0] + tip[0]) / 2, (hinge[1] + tip[1]) / 2
+        nrm = (dy, -dx, 0)   # Yttersiden når døra er lukket.
+        door_start = len(k.v)
+        k.obox('doorLeaf', (cx, cy, 1.0), (dx, dy, 0), nrm, (0, 0, 1), (ln, .04, 1.9), 'Paint', 2)
+        if lod < 2:
+            for z, h in ((.2, .12), (1.0, .12), (1.8, .12)):
+                k.obox('doorRail', (cx + nrm[0] * .03, cy + nrm[1] * .03, z), (dx, dy, 0), nrm, (0, 0, 1), (ln, .022, h), 'Paint', 0)
+        if lod == 0:
+            for g in (.2, .4, .58, .77):
+                c = (hinge[0] + dx * g + nrm[0] * .0215, hinge[1] + dy * g + nrm[1] * .0215, 1.0)
+                k.obox('doorGroove', c, (dx, dy, 0), nrm, (0, 0, 1), (.012, .003, 1.88), 'Wood', 2, tint=(.25, .24, .22))
+            k.pipe('doorHandle', (hinge[0] + dx * .86 + nrm[0] * .03, hinge[1] + dy * .86 + nrm[1] * .03, 1.0),
+                   (hinge[0] + dx * .86 + nrm[0] * .08, hinge[1] + dy * .86 + nrm[1] * .08, 1.0), .012, 'Wood', 6, (.3, .28, .26))
+            for z in (.4, 1.55):
+                c = (hinge[0] + dx * .16 + nrm[0] * .044, hinge[1] + dy * .16 + nrm[1] * .044, z)
+                k.obox('hinge', c, (dx, dy, 0), nrm, (0, 0, 1), (.32, .008, .035), 'Wood', 0, tint=(.3, .28, .26))
+        if lod == 0:
+            k.rotate_since(door_start, (hinge[0], hinge[1], 1.9), nrm, .014)   # Døra henger litt ned i ytterkant.
     # Vinduer: dyp karm og sålbrett.
     for F, h in ((S, win_s), (E, win_e)):
         F.quad('glass', h[0], h[1], h[2], h[3], -.045, 'Glass')
@@ -313,3 +321,38 @@ def collision_shed_b():
             ucx_box(-B_W2, B_W2, B_D2 - .05, B_D2, 0, z), ucx_box(-B_W2, -B_W2 + .05, -B_D2, B_D2, 0, z),
             ucx_box(B_W2 - .05, B_W2, -B_D2, B_D2, 0, z),
             [(-xe, -ry, ze - .05), (xe, -ry, ze - .05), (0, -ry, zr), (-xe, ry, ze - .05), (xe, ry, ze - .05), (0, ry, zr)]]
+
+
+def door_leaf(k, lod, tilt=0.):
+    """Dørbladet lukket, langs +x fra hengselet, yttersiden mot -y. Samme deler som den gamle bakte døra."""
+    ln = B_DOOR_LN
+    nrm = (0, -1, 0)
+    start = len(k.v)
+    k.obox('doorLeaf', (ln / 2, 0, 1.0), (1, 0, 0), nrm, (0, 0, 1), (ln, .04, 1.9), 'Paint', 2)
+    if lod < 2:
+        for z, h in ((.2, .12), (1.0, .12), (1.8, .12)):
+            k.obox('doorRail', (ln / 2, -.03, z), (1, 0, 0), nrm, (0, 0, 1), (ln, .022, h), 'Paint', 0)
+    if lod == 0:
+        for g in (.2, .4, .58, .77):
+            k.obox('doorGroove', (g, -.0215, 1.0), (1, 0, 0), nrm, (0, 0, 1), (.012, .003, 1.88), 'Wood', 2, tint=(.25, .24, .22))
+        k.pipe('doorHandle', (.86, -.03, 1.0), (.86, -.08, 1.0), .012, 'Wood', 6, (.3, .28, .26))
+    # Hengselbånd (ett også på LOD2, så materialsporene er like) og beslaget kjettingen går gjennom ytterst.
+    for z in ((.4, 1.55) if lod < 2 else (1.0,)):
+        k.obox('hinge', (.16, -.044, z), (1, 0, 0), nrm, (0, 0, 1), (.32, .008, .035), 'Wood', 0, tint=(.3, .28, .26))
+    if lod < 2:
+        k.obox('hasp', (ln - .07, -.046, 1.12), (1, 0, 0), nrm, (0, 0, 1), (.09, .01, .05), 'Wood', 0, tint=(.3, .28, .26))
+    if lod == 0 and tilt:
+        k.rotate_since(start, (0, 0, 1.9), (0, -1, 0), tilt)
+
+
+def build_shed_door(lod=0):
+    """SM_FarmShedDoor: nullpunkt i hengselet (S47FarmShedDoor::HingeLocal), z = 0 er skjulets z = 0, så spillet setter
+    den ved skjulets anker pluss hengselet. Ingen sig: døra står lukket i karmen og skal ikke treffe den."""
+    k = Kit('SM_FarmShedDoor', lod, 914)
+    k.tone = {'Board': (.84, .84, .88), 'Wood': (.9, .9, .92)}
+    door_leaf(k, lod)
+    return finish(k)
+
+
+def collision_shed_door():
+    return [ucx_box(0, B_DOOR_LN, -.02, .02, .05, 1.95)]

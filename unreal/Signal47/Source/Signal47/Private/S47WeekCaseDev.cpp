@@ -3,12 +3,14 @@
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
+#include "S47FarmShedDoor.h"
+#include "S47ShedGlow.h"
 #include "S47WeekCase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47WeekCaseDev,Log,All);
 
 // F10, "Week case (T)" (WEEKLY-CASE-20261109, patch 1): the week's case started now at the farm, way out A carried to its morning, and
-// stopped and cleaned up. Each line says what the case is in afterwards (LogS47WeekCaseDev too). Nothing here is saved; a stop gives
+// stopped and cleaned up; patch 2: phase one's rattling, a knock and its answer, phase two's light and kicks, the door bursting. Each line says what the case is in afterwards (LogS47WeekCaseDev too). Nothing here is saved; a stop gives
 // the case back as it was before F10 touched it. -S47DevSweep=/tmp/dir "-S47DevSweepGroup=Week case (T)" runs the group in turn.
 void FS47DevFreeform::AddWeekCase(FS47DevEvents& E)
 {
@@ -45,6 +47,57 @@ void FS47DevFreeform::AddWeekCase(FS47DevEvents& E)
   {
    WaitFor([Case]{FS47WeekCase* W=Case();return W&&W->Phase()==FS47WeekCase::EPhase::Done;},40,[Say]{Say(true,TEXT("way out A: its morning has come"));},
     [Say]{Say(false,TEXT("its morning did not come (a panel open, or the set off Dale's channel?)"));});
+  });
+ });
+ // Patch 2: the shed. Each starts the case on the ground at 02:50 in front of the door first (as "start now"), then goes on.
+ const auto AtTheDoor=[this,Case,Say,AtShed](TFunction<void(FS47WeekCase*)> Then)
+ {
+  FStage Stage;Stage.From=2+50/60.;Stage.To=3.5;Stage.Area=TEXT("saro");Stage.Where=AtShed;Stage.Yaw=0;
+  Go(Stage,[this,Case,Say,Then]
+  {
+   FS47WeekCase* C=Case();FString Why;
+   if(!C||!C->DevStart(Why)){Say(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   WaitFor([Case]{FS47WeekCase* W=Case();return W&&W->HoldsGround()&&W->DoorNow()&&W->DoorNow()->Drawn();},8,[Case,Then]{if(FS47WeekCase* W=Case())Then(W);},
+    [Say]{Say(false,TEXT("it did not begin at the shed, or its door is not drawn (the farm buildings missing?)"));});
+  });
+ };
+ E.AddFreeform(Group,TEXT("Week case: phase 1 (rattle)"),TEXT("02:50 in front of the feed shed, phase one: uneven rattling inside, the yard's lamp blinking; E on the door tries it, then knocks"),[AtTheDoor,Say]
+ {
+  AtTheDoor([Say](FS47WeekCase* C){Say(C->Phase()==FS47WeekCase::EPhase::Phase1,TEXT("phase one at the shed: listen for the rattling; E tries the door, then knocks"));});
+ });
+ E.AddFreeform(Group,TEXT("Week case: knock and answer"),TEXT("phase one at the shed, a knock in tonight's rhythm, a long silence, and the same rhythm back from inside"),[this,AtTheDoor,Case,Say]
+ {
+  AtTheDoor([this,Case,Say](FS47WeekCase* C)
+  {
+   FString Why;
+   if(!C->DevKnock(Why)){Say(false,Why);return;}
+   WaitFor([Case]{FS47WeekCase* W=Case();return W&&W->DoorNow()&&W->DoorNow()->Answers()>0;},20,[Say]{Say(true,TEXT("knocked, and it answered in the same rhythm"));},
+    [Say]{Say(false,TEXT("nothing answered within twenty seconds"));});
+  });
+ });
+ E.AddFreeform(Group,TEXT("Week case: phase 2 (light and kicks)"),TEXT("phase two at the shed: the stripe under the door, then the shafts; kicks at uneven pauses, the door bulging; the lamp and lantern flickering"),[this,AtTheDoor,Case,Say]
+ {
+  AtTheDoor([this,Case,Say](FS47WeekCase* C)
+  {
+   FString Why;
+   if(!C->DevPhase(FS47WeekCase::EPhase::Phase2,Why)){Say(false,Why);return;}
+   WaitFor([Case]{FS47WeekCase* W=Case();return W&&W->GlowNow()&&W->GlowNow()->Lit();},6,[Say]{Say(true,TEXT("phase two: the light is coming, the kicks begin"));},
+    [Say]{Say(false,TEXT("phase two began but the light did not come"));});
+  });
+ });
+ E.AddFreeform(Group,TEXT("Week case: the door breaks"),TEXT("phase two, then the breach after a few kicks: the door bursts outward, the pieces in the yard, the padlock still locked on its chain"),[this,AtTheDoor,Case,Say]
+ {
+  AtTheDoor([this,Case,Say](FS47WeekCase* C)
+  {
+   FString Why;
+   if(!C->DevPhase(FS47WeekCase::EPhase::Phase2,Why)){Say(false,Why);return;}
+   After(12,[this,Case,Say]
+   {
+    FS47WeekCase* W=Case();FString Why2;
+    if(!W||!W->DevPhase(FS47WeekCase::EPhase::Phase3,Why2)){Say(false,Why2.IsEmpty()?FString(TEXT("the case is gone")):Why2);return;}
+    WaitFor([Case]{FS47WeekCase* X=Case();return X&&X->DoorNow()&&X->DoorNow()->State()==FS47FarmShedDoor::EState::Broken;},4,[Say]{Say(true,TEXT("the door broke outward"));},
+     [Say]{Say(false,TEXT("the breach did not break the door"));});
+   });
   });
  });
  E.AddFreeform(Group,TEXT("Week case: stop and clean"),TEXT("over at once: the stall, the view and whatever is drawn given back; the case as it was before F10"),[Case,Say]

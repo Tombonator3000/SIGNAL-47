@@ -1,6 +1,7 @@
 #include "S47WeekCase.h"
 #include "S47Drive.h"
 #include "S47FarmBuildings.h"
+#include "S47FarmShedDoor.h"
 #include "S47FarmWorld.h"
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
@@ -14,6 +15,8 @@
 #include "S47Places.h"
 #include "S47Rhythm.h"
 #include "S47Script.h"
+#include "S47ShedGlow.h"
+#include "S47ShedSound.h"
 #include "S47ScriptPlayer.h"
 #include "S47Taken.h"
 #include "S47UI.h"
@@ -27,7 +30,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47WeekCase,Log,All);
 
-// WEEKLY-CASE-20261109, patch 1: the owner, the gate and way out A. See S47WeekCase.h. Dale's lines go over the walkie as the big
+// WEEKLY-CASE-20261109, patch 1: the owner, the gate and way out A; patch 2: the shed's door, its light and its sounds, driven by the
+// phases here (StepShed), and put away by every way out (OnClean). See S47WeekCase.h. Dale's lines go over the walkie as the big
 // night's do (S47BigNight.cpp, StepBigAfter): "DALE: " and his words, one at a time; with no set to hear them, a slip by the phone at
 // SARO. Never 47, never 08:15 or 20:15, nothing of Story's far side (S47Hap::Clean and S47Script::LintText, the self-test).
 namespace S47Hap
@@ -99,7 +103,7 @@ FS47WeekCase::FOut FS47WeekCase::StepState(FState& S,const FPlan& P,const FIn& I
 {
  FOut O;
  const auto To=[&](EPhase Next,const TCHAR* Why){S.Phase=Next;S.Age=0;O.Why=Why;};
- const auto Over=[&](EOutcome Out,bool bSettled,const TCHAR* Why){S.Outcome=Out;S.bSettled=bSettled;O.bOver=true;O.bSettled=bSettled;S.bHeldForStory=false;To(EPhase::Out,Why);};
+ const auto Over=[&](EOutcome Out,bool bSettled,const TCHAR* Why){S.Outcome=Out;S.bSettled=bSettled;O.bOver=true;O.bSettled=bSettled;S.bHeldForStory=false;if(!S.bDoorBroken){S.bDoorBroken=true;S.DoorNight=S.CaseNight;}To(EPhase::Out,Why);};
  const double Dt=FMath::Max(0.,In.Dt);
  switch(S.Phase)
  {
@@ -147,7 +151,7 @@ FS47WeekCase::FOut FS47WeekCase::StepState(FState& S,const FPlan& P,const FIn& I
   S.Age+=Dt;S.CaseAge+=Dt;
   if(In.bTaken){Over(EOutcome::E,true,TEXT("taken"));break;}
   if(!In.bAtFarm){Over(EOutcome::B,true,TEXT("left before the breach"));break;}
-  if(S.Age>=FMath::Clamp(P.Phase2Len,30.,150.)||S.CaseAge>=CaseCap){O.bBreach=true;To(EPhase::Phase3,TEXT("the breach"));}
+  if(S.Age>=FMath::Clamp(P.Phase2Len,30.,150.)||S.CaseAge>=CaseCap){O.bBreach=true;S.bDoorBroken=true;S.DoorNight=S.CaseNight;To(EPhase::Phase3,TEXT("the breach"));}
   break;
  case EPhase::Phase3:
   S.Age+=Dt;S.CaseAge+=Dt;
@@ -197,6 +201,8 @@ S47J::FObj FS47WeekCase::SaveState(const FState& S)
  if(S.bNightCall)S47J::Set(O,TEXT("call"),true);
  if(S.bMorning)S47J::Set(O,TEXT("morning"),true);
  if(S.bForced)S47J::Set(O,TEXT("forced"),true);
+ // The door broken out: only with a way out (out there nothing is saved, and Continue finds it locked again).
+ if((P==EPhase::Out||P==EPhase::Done)&&S.bDoorBroken){S47J::Set(O,TEXT("door"),TEXT("broken"));S47J::Set(O,TEXT("doorNight"),S.DoorNight);}
  return O;
 }
 FS47WeekCase::FState FS47WeekCase::LoadState(const S47J::FObj& O)
@@ -212,8 +218,22 @@ FS47WeekCase::FState FS47WeekCase::LoadState(const S47J::FObj& O)
  if(S.Phase==EPhase::Out&&S.Outcome==EOutcome::None)S.Phase=EPhase::Night;
  S.bDaleHook=S47J::Bool(O,TEXT("hook"));S.bSlip=S47J::Bool(O,TEXT("slip"));S.bNightCall=S47J::Bool(O,TEXT("call"));
  S.bMorning=S47J::Bool(O,TEXT("morning"));S.bForced=S47J::Bool(O,TEXT("forced"));
+ S.bDoorBroken=(S.Phase==EPhase::Out||S.Phase==EPhase::Done)&&S47J::Str(O,TEXT("door"))==TEXT("broken");
+ S.DoorNight=S.bDoorBroken?FMath::Clamp(S47J::Int(O,TEXT("doorNight")),0,100000):0;
  S.bSettled=true;
  return S;
+}
+
+FS47FarmShedDoor::EState FS47WeekCase::DoorFor(const FState& S,int32 Night)
+{
+ using ED=FS47FarmShedDoor::EState;
+ if(S.bDoorBroken&&(S.Phase==EPhase::Phase3||S.Phase==EPhase::Out||S.Phase==EPhase::Done)&&Night<=S.DoorNight+BrokenNights)return ED::Broken;
+ if(S.Phase==EPhase::Day||S.Phase==EPhase::Night||S.Phase==EPhase::Phase1||S.Phase==EPhase::Phase2)return ED::Locked;
+ return ED::Open;
+}
+FS47FarmShedDoor::EMood FS47WeekCase::MoodFor(EPhase P)
+{
+ return P==EPhase::Phase1?FS47FarmShedDoor::EMood::Rattle:P==EPhase::Phase2?FS47FarmShedDoor::EMood::Kicks:FS47FarmShedDoor::EMood::Still;
 }
 
 // ---------------------------------------------------------------- asked by everyone else
@@ -248,17 +268,21 @@ void FS47WeekCase::Begin(const S47J::FObj& Saved)
 {
  Stop();
  S=LoadState(Saved);
+ bShedFresh=true;
  bDevBefore=false;DaleLines.Reset();LastClock=-1;TryIn=0;Paced=0;HookSince=-1;SaidIn=0;
  if(Saved.IsValid())UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: loaded %s"),*StateText());
 }
 void FS47WeekCase::Stop()
 {
  Clean(TEXT("stop"));
+ if(DoorObj)DoorObj->Stop();
+ if(GlowObj)GlowObj->Stop();
 }
 S47J::FObj FS47WeekCase::Save() const{return SaveState(S);}
 FString FS47WeekCase::StateText() const
 {
- return FString::Printf(TEXT("%s, night %d, outcome %s%s%s"),PhaseName(S.Phase),S.CaseNight,OutcomeName(S.Outcome),S.bForced?TEXT(", F10"):TEXT(""),S.bHeldForStory?TEXT(", waiting out Story's minute"):TEXT(""));
+ const FString Shed=FString::Printf(TEXT("; %s; %s"),DoorObj?*DoorObj->StateText():TEXT("door not drawn"),GlowObj?*GlowObj->StateText():TEXT("glow out"));
+ return FString::Printf(TEXT("%s, night %d, outcome %s%s%s"),PhaseName(S.Phase),S.CaseNight,OutcomeName(S.Outcome),S.bForced?TEXT(", F10"):TEXT(""),S.bHeldForStory?TEXT(", waiting out Story's minute"):TEXT(""))+Shed;
 }
 
 FS47WeekCase::FIn FS47WeekCase::ReadIn(double Dt)
@@ -283,20 +307,45 @@ FS47WeekCase::FIn FS47WeekCase::ReadIn(double Dt)
  }
  In.bAtSaro=FS47FieldRadio::InSaroBuilding(M);
  In.bTaken=F->Taken&&(F->Taken->Stage()==FS47Taken::EStage::Lift||F->Taken->Stage()==FS47Taken::EStage::Away);
+ // Patch 2: knocked at the shed's door (its knock closed, whether or not anything answered).
+ In.bKnocked=DoorObj.IsValid()&&DoorObj->Knocked();
  return In;
 }
 
 void FS47WeekCase::Step(double Dt)
 {
- if(!M||!M->IsFreeform()||!M->Freeform||!M->Freeform->Active()||S.Phase==EPhase::Done)return;
+ if(!M||!M->IsFreeform()||!M->Freeform||!M->Freeform->Active())return;
  Paced+=Dt;
  const FPlan P=PlanFor(M->Freeform->Seed(),S.CaseNight>0&&S.bForced?S.CaseNight-2:(M->Freeform->Happenings?M->Freeform->Happenings->BigHappened():0));
- const EPhase Was=S.Phase;
- const FIn In=ReadIn(Dt);
- const FOut O=StepState(S,P,In);
- if(S.Phase!=Was)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %s -> %s (%s) at %s, night %d"),PhaseName(Was),PhaseName(S.Phase),*O.Why,*S47Hap::ClockText(M->Freeform->Clock()),In.Night);
- Apply(O);
- StepDale();
+ if(S.Phase!=EPhase::Done)
+ {
+  const EPhase Was=S.Phase;
+  const FIn In=ReadIn(Dt);
+  const FOut O=StepState(S,P,In);
+  if(S.Phase!=Was)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %s -> %s (%s) at %s, night %d"),PhaseName(Was),PhaseName(S.Phase),*O.Why,*S47Hap::ClockText(M->Freeform->Clock()),In.Night);
+  Apply(O);
+  StepDale();
+ }
+ // The door stands whatever the case is doing (open before it, broken a week after it).
+ StepShed(Dt,P);
+}
+
+// Patch 2: the phase gives the door its state and its mood, and the light its level. Held (a menu, a paper), nothing moves.
+void FS47WeekCase::StepShed(double Dt,const FPlan& P)
+{
+ auto* F=M->Freeform.Get();
+ const bool bHeld=F->Held()||M->ModalOpen();
+ const double D=bHeld?0.:Dt;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ if(!DoorObj)DoorObj=MakeShared<FS47FarmShedDoor>(M);
+ if(!GlowObj)GlowObj=MakeShared<FS47ShedGlow>(M);
+ DoorObj->Plan(F->Seed(),S.CaseNight,P.Rhythm);
+ const FS47FarmShedDoor::EState Want=DoorFor(S,Night);
+ // A breach is animated only as it happens on the ground; a load or a later night simply finds the door so.
+ DoorObj->Set(Want,MoodFor(S.Phase),!bShedFresh&&S.Phase==EPhase::Phase3);
+ bShedFresh=false;
+ DoorObj->Step(D);
+ GlowObj->Step(D,FS47ShedGlow::LevelFor(S.Phase,S.Age),Want==FS47FarmShedDoor::EState::Broken);
 }
 
 void FS47WeekCase::Apply(const FOut& O)
@@ -310,6 +359,12 @@ void FS47WeekCase::Apply(const FOut& O)
   // The night's ground is the case's: the rhythm's one start (a danger, the night's slot), and no script on top of it.
   if(M->Rhythm){M->Rhythm->Began(TEXT("week_case"));bRhythmBegan=true;}
   HoldScripts(true);
+  // Patch 2: the door's knocks are this visit's; the light, the sounds and the omen go with every way out.
+  if(DoorObj)DoorObj->Calm();
+  {
+   const TWeakPtr<FS47FarmShedDoor> WeakDoor=DoorObj;const TWeakPtr<FS47ShedGlow> WeakGlow=GlowObj;
+   OnClean([WeakDoor,WeakGlow]{if(const TSharedPtr<FS47FarmShedDoor> D=WeakDoor.Pin())D->Calm();if(const TSharedPtr<FS47ShedGlow> G=WeakGlow.Pin())G->Off();});
+  }
   UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: phase one at the shed, %s"),*S47Hap::ClockText(F->Clock()));
  }
  if(O.bEscalated)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: phase two at %s"),*S47Hap::ClockText(F->Clock()));
@@ -480,6 +535,22 @@ void FS47WeekCase::DevStop()
  if(S.Phase==EPhase::Phase1||S.Phase==EPhase::Phase2||S.Phase==EPhase::Phase3)S.Phase=EPhase::Night;
  bDevBefore=false;
  UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: F10 stop: %s"),*StateText());
+}
+
+bool FS47WeekCase::DevPhase(EPhase P,FString& Why)
+{
+ if(!HoldsGround()){Why=TEXT("the case is not on the ground at the shed");return false;}
+ if(P!=EPhase::Phase1&&P!=EPhase::Phase2&&P!=EPhase::Phase3){Why=TEXT("only phases one to three");return false;}
+ S.Phase=P;S.Age=0;S.bHeldForStory=false;
+ if(P==EPhase::Phase3){S.bDoorBroken=true;S.DoorNight=S.CaseNight;}
+ UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: F10 to %s"),PhaseName(P));
+ return true;
+}
+bool FS47WeekCase::DevKnock(FString& Why)
+{
+ if(S.Phase!=EPhase::Phase1){Why=TEXT("only in phase one");return false;}
+ if(!DoorObj||!DoorObj->DevKnock()){Why=TEXT("the door is not drawn or not locked");return false;}
+ return true;
 }
 
 // ---------------------------------------------------------------- self-test
@@ -684,5 +755,49 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   {const FString L=FString(T).ToLower();for(const TCHAR* W:{TEXT("creature"),TEXT("thing in"),TEXT("monster"),TEXT("arm"),TEXT("taken"),TEXT("light inside"),TEXT("breaks"),TEXT("shed door")})bNoWhat&=!L.Contains(W);}
   Check(bNoWhat,TEXT("the hook says where and when, never what is in the shed"));
  }
+  // Patch 2: the door, the light and the sounds as the phases have them.
+ {
+  using ED=FS47FarmShedDoor::EState;using EM=FS47FarmShedDoor::EMood;
+  FState D;D.CaseNight=4;
+  bool bStates=true;
+  D.Phase=EPhase::Hook;bStates&=DoorFor(D,3)==ED::Open;
+  for(const EPhase Ph:{EPhase::Day,EPhase::Night,EPhase::Phase1,EPhase::Phase2})
+  {
+   D.Phase=Ph;bStates&=DoorFor(D,4)==ED::Locked;
+  }
+  bStates&=MoodFor(EPhase::Phase1)==EM::Rattle&&MoodFor(EPhase::Phase2)==EM::Kicks&&MoodFor(EPhase::Day)==EM::Still&&MoodFor(EPhase::Night)==EM::Still&&MoodFor(EPhase::Phase3)==EM::Still;
+  // Through the machine: the breach breaks it, every way out leaves it broken, a week later it stands open again.
+  const FPlan Q=PlanFor(11,2);
+  FState B;B.Phase=EPhase::Phase2;B.CaseNight=4;FIn In;In.Night=4;In.Hour=26.8;In.BigNight=2;In.Rate=14.67;In.Dt=Q.Phase2Len+1;In.bAtFarm=true;
+  StepState(B,Q,In);const bool bBreach=B.Phase==EPhase::Phase3&&DoorFor(B,4)==ED::Broken;
+  FState A;A.Phase=EPhase::Night;A.CaseNight=4;FIn Late=In;Late.Hour=ArriveBy;Late.bAtFarm=false;Late.Dt=0;StepState(A,Q,Late);
+  const bool bAOut=A.Phase==EPhase::Out&&DoorFor(A,5)==ED::Broken&&DoorFor(A,4+BrokenNights)==ED::Broken&&DoorFor(A,5+BrokenNights)==ED::Open;
+  Check(bStates&&bBreach&&bAOut,TEXT("the shed door: open before its day, locked from its day to the breach, rattling in phase one and kicked in two, broken by the breach and by every way out, the rest of the week"));
+  // Broken is kept by the save with its way out; out there nothing is, and Continue finds it locked again.
+  FState C;C.Phase=EPhase::Out;C.Outcome=EOutcome::C;C.CaseNight=4;C.bDoorBroken=true;C.DoorNight=4;
+  const FState LC=LoadState(SaveState(C));
+  FState G;G.Phase=EPhase::Phase3;G.CaseNight=4;G.bDoorBroken=true;G.DoorNight=4;
+  const FState LG=LoadState(SaveState(G));
+  FState Dn;Dn.Phase=EPhase::Done;Dn.Outcome=EOutcome::A;Dn.CaseNight=4;Dn.bDoorBroken=true;Dn.DoorNight=4;
+  const FState LD=LoadState(SaveState(Dn));
+  Check(LC.bDoorBroken&&LC.DoorNight==4&&DoorFor(LC,5)==ED::Broken&&!LG.bDoorBroken&&DoorFor(LG,4)==ED::Locked&&LD.bDoorBroken&&DoorFor(LD,6)==ED::Broken,
+   TEXT("the broken door is saved as a state with its way out; broken on the ground is not, and the night comes back locked"));
+  // The answer to a knock: the plan's rhythm from the seed, answered in the same rhythm.
+  bool bRhythm=true;
+  for(int32 Sd=1;Sd<=200;++Sd)
+  {
+   const FPlan R=PlanFor(Sd,2),R2=PlanFor(Sd,2);
+   const TArray<double> Knock=FS47FarmShedDoor::Pattern(R.Rhythm);
+   bRhythm&=R.Rhythm==R2.Rhythm&&FS47FarmShedDoor::AnswerFor(Knock)==Knock&&FS47FarmShedDoor::AnswerFor(FS47FarmShedDoor::Pattern(R2.Rhythm))==Knock;
+  }
+  Check(bRhythm,TEXT("a knock in phase one is answered in the same rhythm, the plan's rhythm from the seed, the same every time"));
+  // The light is out outside phases two and three, whatever the age.
+  bool bDark=true;
+  for(const EPhase Ph:{EPhase::Hook,EPhase::Day,EPhase::Night,EPhase::Phase1,EPhase::Out,EPhase::Done})for(double Age=0;Age<1500;Age+=11)bDark&=!FS47ShedGlow::LevelFor(Ph,Age).Lit();
+  Check(bDark&&FS47ShedGlow::LevelFor(EPhase::Phase2,1).Lit()&&FS47ShedGlow::LevelFor(EPhase::Phase3,1).Lit(),TEXT("the light from inside is out but in phases two and three"));
+ }
+ OK&=FS47FarmShedDoor::SelfTest(Lines);
+ OK&=FS47ShedGlow::SelfTest(Lines);
+ OK&=S47ShedSound::SelfTest(Lines);
  return OK;
 }

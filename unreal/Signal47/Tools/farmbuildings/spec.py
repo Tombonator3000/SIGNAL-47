@@ -8,4 +8,6 @@ SPEC = {
     'house': {'mesh': 'SM_FarmHouse', 'walls': (12.0, 8.0), 'height': 4.9, 'max': (-6.8, 6.6, -4.7, 5.1, 6.9), 'tris': (24000, 10000, 3000)},
     'shed_a': {'mesh': 'SM_FarmShedA', 'walls': (9.0, 5.5), 'height': 3.7, 'max': (-5.2, 5.2, -3.5, 3.4, 3.9), 'tris': (8000, 3500, 1000)},
     'shed_b': {'mesh': 'SM_FarmShedB', 'walls': (5.0, 4.0), 'height': 3.15, 'max': (-3.15, 3.15, -3.0, 2.7, 3.3), 'tris': (8000, 3500, 1000)},
+    # WEEKLY-CASE-20261109: skjul B sin dør som egen del, nullpunkt i hengselet (sheds.build_shed_door).
+    'shed_door': {'mesh': 'SM_FarmShedDoor', 'walls': (.96, .04), 'height': 1.95, 'max': (-.02, .98, -.1, .03, 1.96), 'tris': (600, 250, 60)},
 }

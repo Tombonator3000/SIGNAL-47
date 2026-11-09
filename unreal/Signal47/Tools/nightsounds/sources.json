@@ -1,5 +1,5 @@
 {
- "note": "SOUNDSCAPE-20261108: the night's far sounds. Every source is CC0 1.0 on its own Freesound page (checked 8 November 2026); the public 128 kbps HQ preview is what was cut, as for the camera shutter and the night sounds before (web/THIRD_PARTY_NOTICES.md). from/to: seconds in the source. loop: a held sound, its tail crossfaded into its head.",
+ "note": "SOUNDSCAPE-20261108: the night's far sounds. Every source is CC0 1.0 on its own Freesound page (checked 8 November 2026); the public 128 kbps HQ preview is what was cut, as for the camera shutter and the night sounds before (web/THIRD_PARTY_NOTICES.md). from/to: seconds in the source. loop: a held sound, its tail crossfaded into its head. WEEKLY-CASE-20261109 (patch 2): the feed shed's clips (shed*), CC0 1.0 the same way, checked 9 November 2026; one rap or one kick a clip, as the game plays them.",
  "clips": [
   {"clip": "coyote0", "id": 711262, "author": "buzzatsea", "title": "coyotes howling in santa fe", "from": 3.5, "to": 19.5},
   {"clip": "coyote1", "id": 711262, "author": "buzzatsea", "title": "coyotes howling in santa fe", "from": 29.5, "to": 40.0},
@@ -20,6 +20,28 @@
   {"clip": "wires0", "id": 829000, "author": "bruno.auzet", "title": "gusts on overhead power lines", "from": 60.0, "to": 88.0, "loop": true},
   {"clip": "wires1", "id": 147599, "author": "felix.blume", "title": "Wind blowing and howling in an antenna and its wire on the top of the chilean cliff.", "from": 32.0, "to": 62.0, "loop": true},
   {"clip": "flush0", "id": 574656, "author": "TRP", "title": "Wing flaps doves fly away NOTL 181225.flac", "from": 0.2, "to": 4.2},
-  {"clip": "flush1", "id": 616623, "author": "TRP", "title": "121003 Pigeon flock fly away, wing flaps, Toronto.wav", "from": 0.0, "to": 6.8}
+  {"clip": "flush1", "id": 616623, "author": "TRP", "title": "121003 Pigeon flock fly away, wing flaps, Toronto.wav", "from": 0.0, "to": 6.8},
+  {"clip": "shedknock0", "id": 637643, "author": "kyles", "title": "knock and bang on wood doors various", "from": 25.6, "to": 25.88, "fade_in": 0.002, "fade_out": 0.08},
+  {"clip": "shedkick0", "id": 452609, "author": "kyles", "title": "door wood old heavy kick open good impact 1 with rattle 1 without", "from": 0.0, "to": 1.5, "highpass": 50, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedkick1", "id": 452609, "author": "kyles", "title": "door wood old heavy kick open good impact 1 with rattle 1 without", "from": 2.12, "to": 3.55, "highpass": 50, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedsplinter0", "id": 723974, "author": "Saladsounds", "title": "Wooden Door breaks", "from": 0.0, "to": 1.3, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedsplinter1", "id": 262538, "author": "Talitha5", "title": "Locked door being forced open", "from": 0.05, "to": 1.85, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedsplinter2", "id": 160213, "author": "qubodup", "title": "Kicking/Forcing/Breaking Wooden Door", "from": 0.0, "to": 1.0, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedsplinter3", "id": 452561, "author": "kyles", "title": "axe chops through thin wood trailer rv wall tearing splinters", "from": 0.25, "to": 2.1, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedsplinter4", "id": 452561, "author": "kyles", "title": "axe chops through thin wood trailer rv wall tearing splinters", "from": 50.15, "to": 52.1, "fade_in": 0.004, "fade_out": 0.2},
+  {"clip": "shedchain0", "id": 452576, "author": "kyles", "title": "chain thick rattle hooked onto metal1", "from": 0.0, "to": 2.44},
+  {"clip": "shedchain1", "id": 452576, "author": "kyles", "title": "chain thick rattle hooked onto metal1", "from": 3.45, "to": 6.68},
+  {"clip": "shedchain2", "id": 452576, "author": "kyles", "title": "chain thick rattle hooked onto metal1", "from": 7.15, "to": 8.93},
+  {"clip": "shedchain3", "id": 330635, "author": "leonelmail", "title": "Padlock Chain Lock Unlock", "from": 43.15, "to": 45.75},
+  {"clip": "shedchain4", "id": 345070, "author": "metrostock99", "title": "CHAIN & LOCK ON FENCE SOUND", "from": 0.4, "to": 3.9},
+  {"clip": "shedheavy0", "id": 438308, "author": "craigsmith", "title": "G24-09-Falling on Wooden or Dirt Floor with Splinters", "from": 8.55, "to": 9.9, "highpass": 40},
+  {"clip": "shedheavy1", "id": 438308, "author": "craigsmith", "title": "G24-09-Falling on Wooden or Dirt Floor with Splinters", "from": 11.35, "to": 12.45, "highpass": 40},
+  {"clip": "shedheavy2", "id": 377016, "author": "Mrthenoronha", "title": "Dragging Furniture", "from": 2.05, "to": 5.25, "highpass": 50},
+  {"clip": "shedheavy3", "id": 377016, "author": "Mrthenoronha", "title": "Dragging Furniture", "from": 17.05, "to": 21.05, "highpass": 50},
+  {"clip": "shedheavy4", "id": 578493, "author": "PostProdDog", "title": "Dragging a body across a concrete floor 2", "from": 11.4, "to": 15.4},
+  {"clip": "shedbreath0", "id": 574208, "author": "mucky_pete7", "title": "MONSTER BREATH 1", "from": 4.6, "to": 11.9, "highpass": 40, "loop": true},
+  {"clip": "shedbreath1", "id": 470900, "author": "Zrte", "title": "Monster breathing", "from": 0.5, "to": 7.5, "highpass": 60, "loop": true},
+  {"clip": "shedbreath2", "id": 350414, "author": "bevibeldesign", "title": "Animal Heavy Breathing", "from": 3.04, "to": 9.1, "loop": true},
+  {"clip": "shedbreath3", "id": 476032, "author": "Sheyvan", "title": "Heavy Dog Breathing", "from": 12.9, "to": 18.7, "loop": true}
  ]
 }

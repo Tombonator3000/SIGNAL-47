@@ -127,3 +127,23 @@ These source credits describe the recordings, not the fictional instrument's acq
 
 STREET LAMPS (2026-11-09)
 Cobra-head street lamp, davit arm, tapered steel pole and wood-pole arm: original Blender geometry and procedural textures made for SIGNAL / 47 (unreal/ArtSource/StreetLamps). No third-party meshes or images.
+
+FEED SHED SOUNDS (2026-11-09, WEEKLY-CASE-20261109)
+Freesound, CC0 1.0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/); credited by choice. Cut, levelled and
+staged by Tools/nightsounds (KILDER.md, sources.json "shed*"):
+"knock and bang on wood doors various" by kyles, CC0, https://freesound.org/people/kyles/sounds/637643/
+"door wood old heavy kick open good impact 1 with rattle 1 without" by kyles, CC0, https://freesound.org/people/kyles/sounds/452609/
+"Wooden Door breaks" by Saladsounds, CC0, https://freesound.org/people/Saladsounds/sounds/723974/
+"Locked door being forced open" by Talitha5, CC0, https://freesound.org/people/Talitha5/sounds/262538/
+"Kicking/Forcing/Breaking Wooden Door" by qubodup, CC0, https://freesound.org/people/qubodup/sounds/160213/
+"axe chops through thin wood trailer rv wall tearing splinters" by kyles, CC0, https://freesound.org/people/kyles/sounds/452561/
+"chain thick rattle hooked onto metal1" by kyles, CC0, https://freesound.org/people/kyles/sounds/452576/
+"Padlock Chain Lock Unlock" by leonelmail, CC0, https://freesound.org/people/leonelmail/sounds/330635/
+"CHAIN & LOCK ON FENCE SOUND" by metrostock99, CC0, https://freesound.org/people/metrostock99/sounds/345070/
+"G24-09-Falling on Wooden or Dirt Floor with Splinters" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/438308/
+"Dragging Furniture" by Mrthenoronha, CC0, https://freesound.org/people/Mrthenoronha/sounds/377016/
+"Dragging a body across a concrete floor 2" by PostProdDog, CC0, https://freesound.org/people/PostProdDog/sounds/578493/
+"MONSTER BREATH 1" by mucky_pete7, CC0, https://freesound.org/people/mucky_pete7/sounds/574208/
+"Monster breathing" by Zrte, CC0, https://freesound.org/people/Zrte/sounds/470900/
+"Animal Heavy Breathing" by bevibeldesign, CC0, https://freesound.org/people/bevibeldesign/sounds/350414/
+"Heavy Dog Breathing" by Sheyvan, CC0, https://freesound.org/people/Sheyvan/sounds/476032/

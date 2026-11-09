@@ -67,6 +67,7 @@ namespace
   const double C=FMath::Cos(S.Yaw),N=FMath::Sin(S.Yaw),Dx=RoadX-S.X,Dz=RoadZ-S.Z;
   return FVector2D(Dx*C-Dz*N,-Dx*N-Dz*C);
  }
+ bool bShedShut=false; // FS47FarmShedDoor's say
 }
 
 namespace S47FarmBuildings
@@ -141,8 +142,20 @@ namespace S47FarmBuildings
  bool Blocked(double RoadX,double RoadZ,double Radius)
  {
   for(const FBox2D& B:Obstacles())if(RoadX>B.Min.X-Radius&&RoadX<B.Max.X+Radius&&RoadZ>B.Min.Y-Radius&&RoadZ<B.Max.Y+Radius)return true;
+  if(bShedShut){const FBox2D B=ShedDoorway();if(RoadX>B.Min.X-Radius&&RoadX<B.Max.X+Radius&&RoadZ>B.Min.Y-Radius&&RoadZ<B.Max.Y+Radius)return true;}
   return false;
  }
+
+ FBox2D ShedDoorway()
+ {
+  // sheds.py: the door u 1.0 to 1.98 along the south wall from its west corner (x -2.5), the wall from y -2 to -1.95: the gap left
+  // between the rows {82.0,83.0} and {83.98,87.0} above.
+  const FSite& S=Sites()[3];
+  const FVector2D A=ToRoad(S,1.0-2.5,-2.),B=ToRoad(S,1.98-2.5,-1.95);
+  return FBox2D(FVector2D(FMath::Min(A.X,B.X),FMath::Min(A.Y,B.Y)),FVector2D(FMath::Max(A.X,B.X),FMath::Max(A.Y,B.Y)));
+ }
+ void SetShedDoorShut(bool bShut){bShedShut=bShut;}
+ bool ShedDoorShut(){return bShedShut;}
 
  const TArray<FBox2D>& Plots()
  {

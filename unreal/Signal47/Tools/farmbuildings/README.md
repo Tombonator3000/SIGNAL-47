@@ -43,6 +43,20 @@ python3 Scripts/unreal_guard.py require-idle && S47_FARM_REPORT="$HOME/scratch-b
 
 Resultatet er `Content/FarmBuildings/**.uasset`, egne modeller gjennom Git LFS som `Content/EastWing`. FBX og blend blir utenfor Git. FBX-flagget er nødvendig: uten det får LOD1 og LOD2 +90 grader (`townintegration/README.md`), og `check_lods` stopper importen.
 
+## Døra i fôrskjulet (WEEKLY-CASE-20261109, patch 2)
+
+Dørbladet er tatt ut av `SM_FarmShedB` (`sheds.DOOR_APART`) og er egen mesh, `SM_FarmShedDoor` (`build_shed_door`): lukket, langs +x fra hengselet, yttersiden mot -y, nullpunkt i hengselet og z = 0 lik skjulets z = 0. Spillet (`S47FarmShedDoor`) setter den ved skjulets anker pluss hengselet (-1,49, -2,0), svinger den ut mot sør, låser den med kjetting og hengelås og knuser den. Karmen ligger nå også på LOD2, så materialsporene er like. `DOOR_APART = False` gir den gamle bakte døra tilbake, med de samme trekanttallene som før (6172, 2270, 444). Mangler den nye meshen, tegner spillet et enkelt dørblad av bokser over den bakte døra.
+
+Ikke kjørt ennå. Rekkefølgen, når ingen annen tung jobb går:
+
+```sh
+python3 check.py shed_b shed_door
+python3 heavy.py shed_b mat + shed_door mat + shed_b verify + shed_door verify
+python3 Scripts/unreal_guard.py require-idle && S47_FARM_ONLY=shed_b,shed_door S47_FARM_REPORT="$HOME/scratch-bm/Signal47-farmbuildings/import-door-$(date +%H%M%S).json" "$HOME/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" -run=pythonscript -script="$PWD/Tools/farmbuildings/import_assets.py" -unattended -nullrhi -nosplash -NoSound '-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0'
+```
+
+De to første fra `Tools/farmbuildings`, importen fra `unreal/Signal47`. `S47_FARM_ONLY` gjør at bare skjul B og døra importeres på nytt.
+
 ## Spillet
 
 Prøve etter import, fra pakket eller editorkjøring: `-S47MenuPointerTest -S47MenuPointerBuildings -S47Title -UserDir=/tmp/S47-menu-pointer-buildings`. Bildene `buildings-day-*.png` og `buildings-night-*.png` havner i `Saved/AlbumTest`, og loggen sier `S47: buildings PASS`.

@@ -1,9 +1,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47FarmShedDoor.h"
 class US47Main;
 class AS47Walker;
 struct FS47View;
+class FS47ShedGlow;
 
 // WEEKLY-CASE-20261109, week one, "the shed" (Docs/Research/Gameplay/UKESAKER_2026-11-09.md, patch 1 of 6: the owner, the gate and way
 // out A). Freeform only. One authored case a week; the first comes two nights after the first big night (FS47Happenings::BigPlan: the
@@ -16,8 +18,8 @@ struct FS47View;
 //           farm (FS47Places::PointAt, the Director's one pointing-out a night).
 //   Day     the case's own day, until ten to two that night (the shed by daylight is patch 2).
 //   Night   from 01:50: Dale, "It's there again. Same bearing." The case waits for the player to come to the farm after two.
-//   Phase1  on arrival after two, at least four minutes: look round, knock (patch 2). Without a knock the next phase comes by itself.
-//   Phase2  it wants out: about a minute and a half (the light and the kicks are patch 2).
+//   Phase1  on arrival after two, at least four minutes: look round, knock. Without a knock the next phase comes by itself.
+//   Phase2  it wants out: about a minute and a half, the light from inside and the kicks.
 //   Phase3  the breach and the search: at most three minutes (the searcher is patch 4).
 //   Out     the case's ground is let go; what it leaves waits for the morning, or for SARO.
 //   Done    over for this game.
@@ -73,7 +75,16 @@ public:
   bool bSettled=true;      // Out: the outcome is final (false while the player is still at the farm after the search)
   bool bForced=false;      // F10's: the hours do not hold it back
   bool bHeldForStory=false;
+  // Patch 2: the shed's door burst out (on the ground from the breach; on every way out, since it gets out whether she saw it or
+  // not). Saved only with a way out, so that Continue from out there finds it locked again; kept BrokenNights nights.
+  bool bDoorBroken=false;
+  int32 DoorNight=0;
  };
+ static constexpr int32 BrokenNights=6;
+ // Patch 2: the door as the case has it now (open before its day, locked from its day to the breach, broken the rest of the week),
+ // and what is going on behind it (rattling in phase one, kicks in phase two).
+ static FS47FarmShedDoor::EState DoorFor(const FState& S,int32 Night);
+ static FS47FarmShedDoor::EMood MoodFor(EPhase P);
  struct FIn
  {
   int32 Night=0;        // FS47FreeformSession::NightOf
@@ -121,6 +132,10 @@ public:
  EOutcome Outcome() const{return S.Outcome;}
  int32 CaseNight() const{return S.CaseNight;}
  FString StateText() const;
+ double PhaseAge() const{return S.Age;}
+ // Patch 2: the shed's door and its light (drawn whenever Freeform runs; the case drives them).
+ const FS47FarmShedDoor* DoorNow() const{return DoorObj.Get();}
+ const FS47ShedGlow* GlowNow() const{return GlowObj.Get();}
  // Where the shed's door is, in the area's terms (SARO's).
  static FVector ShedDoor();
  static FVector2D ShedRoad();
@@ -143,6 +158,11 @@ public:
  bool DevForceA(FString& Why);
  // Over at once and cleaned up; the case as it was before F10 touched it.
  void DevStop();
+ // On the ground already (DevStart and at the shed): to this phase now, its age from zero (patch 2: phase two's light and kicks,
+ // phase three's breach).
+ bool DevPhase(EPhase P,FString& Why);
+ // In phase one: a knock at the door as if E were pressed with "Knock".
+ bool DevKnock(FString& Why);
  bool DevTouched() const{return bDevBefore;}
  static bool SelfTest(TArray<FString>& Lines);
 private:
@@ -157,6 +177,10 @@ private:
  TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> Before;
  TArray<TFunction<void()>> Cleanups;
  bool bRhythmBegan=false,bScriptsHeld=false;
+ TSharedPtr<FS47FarmShedDoor> DoorObj;
+ TSharedPtr<FS47ShedGlow> GlowObj;
+ bool bShedFresh=true;
+ void StepShed(double Dt,const FPlan& P);
  FIn ReadIn(double Dt);
  void Apply(const FOut& O);
  void SayDaleHook();
