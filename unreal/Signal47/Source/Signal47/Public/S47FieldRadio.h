@@ -59,7 +59,15 @@ public:
  // a summary of what somebody rang in (Tip: "a rancher reports lights...") is Dale's to pass on, over the walkie, in his own
  // words, on channel 1, and never read out on the CB. While he is busy or the set is off his channel it waits for him (HeldTips).
  static void Report(US47Main* M, const FString& Tip);
+ // CB-TRUCK-20261109 (Tom, 9 November: «CB: er det mer logisk at den bare er i bilen?», yes): the CB is the set hung under the
+ // truck's dash, its microphone on a hook. Only with the player sitting in the truck can it be heard or used; nowhere else, not at
+ // SARO. The walkie is Dale's and goes on as it was.
  static bool CbAtHand(const US47Main* M);
+ // On foot in the SARO building (the control room and the annex): where the array's monitor and Dale's desk are. What CbAtHand
+ // also meant before CB-TRUCK-20261109.
+ static bool InSaroBuilding(const US47Main* M);
+ // Pure, for the tests: whether a CB is heard and can be used, from where the player is. Only bInTruck counts.
+ static constexpr bool CbHeardAt(bool bInTruck,bool /*bInSaroBuilding*/,bool /*bWalkieInHand*/){return bInTruck;}
  // How long a report waits for Dale before it is let go, in seconds of play.
  static constexpr double HeldTipSeconds=240;
  int32 TipsWaiting() const { return HeldTips.Num(); }

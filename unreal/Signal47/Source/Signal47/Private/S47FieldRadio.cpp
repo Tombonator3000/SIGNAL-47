@@ -21,6 +21,7 @@
 #include "S47DevEvents.h"
 #include "S47Three.h"
 #include "S47CB.h"
+#include "S47HudGauges.h"
 #include "S47Keys.h"
 #include "S47Predecessor.h"
 #include "S47TripoNew.h"
@@ -456,9 +457,12 @@ void FS47FieldRadio::StepHand(double Dt)
 // ---------- the CB and the walkie apart (CB-WALKIE-20261108) ----------
 bool FS47FieldRadio::CbAtHand(const US47Main* M)
 {
- if(!M)return false;
- if(M->World&&M->World->bDriving)return true;
- // The base set in the control room: anywhere in the SARO building.
+ // CB-TRUCK-20261109: under the dash, and only with the player in the seat.
+ return M&&CbHeardAt(M->World&&M->World->bDriving,false,false);
+}
+bool FS47FieldRadio::InSaroBuilding(const US47Main* M)
+{
+ if(!M||(M->World&&M->World->bDriving))return false;
  if(!M->Web||!M->Player||M->Web->Area()!=TEXT("saro"))return false;
  for(const TCHAR* ZoneName:{TEXT("room.bounds"),TEXT("annex.zone.southDoor"),TEXT("annex.zone.corridor"),TEXT("annex.zone.recordsDoor"),TEXT("annex.zone.records")})
   if(M->Web->Rect(ZoneName).Contains(M->Player->Pos))return true;
@@ -466,14 +470,14 @@ bool FS47FieldRadio::CbAtHand(const US47Main* M)
 }
 bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FString& Voice,TFunction<void()> OnBegun)
 {
- if(!M||Lines.IsEmpty())return false;
+ // CB-TRUCK-20261109: nothing is heard on a CB the player is not sitting at.
+ if(!M||Lines.IsEmpty()||!CbAtHand(M))return false;
  if(!M->CB.IsValid()&&IsValid(M->Audio))M->CB=MakeShared<FS47CB>(M->Audio);
  if(!M->CB.IsValid()||M->CB->bBusy)return false;
  TArray<FS47CBLine> Call;
  for(const FString& Said:Lines){FS47CBLine Each;Each.Text=Said;Each.Who=Voice;Each.By=TEXT("CB, a caller");Call.Add(Each);}
- // In the cab from the dash; at the base set, beside the player.
+ // In the cab, from the set under the dash (FS47CB::Call: unset is in the cab with the player).
  TOptional<FVector> From;
- if(!(M->World&&M->World->bDriving)&&M->Player)From=M->Player->Pos+FVector(.6,1.1,-.4);
  TWeakObjectPtr<US47Main> WeakMain=M;
  const TSharedRef<bool> bFirst=MakeShared<bool>(true);
  const double Took=M->CB->Call(Call,From,[WeakMain,OnBegun,bFirst](const FS47CBLine& Line,double Secs)
@@ -786,6 +790,11 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
   }
   Report(nullptr,TEXT("A rancher reports lights."));
   C(!CbAtHand(nullptr)&&!CbSay(nullptr,{TEXT("Breaker.")},TEXT("man"))&&W.TipsWaiting()==0,TEXT("no game: no CB at hand, and nothing held for one"));
+  // CB-TRUCK-20261109 (Tom, 9 November): the CB is the truck's, under the dash: heard and used only sitting in it.
+  C(CbHeardAt(true,false,false)&&CbHeardAt(true,false,true)&&!CbHeardAt(false,true,false)&&!CbHeardAt(false,true,true)&&!CbHeardAt(false,false,true)&&!CbHeardAt(false,false,false),
+   TEXT("the CB works only in the truck: not in the SARO building, not on foot, not with the walkie in hand"));
+  C(S47HudGauges::RadioKind(true,CbHeardAt(false,true,false),false,false,false,0)!=1&&S47HudGauges::RadioKind(true,CbHeardAt(true,false,false),false,false,false,0)==1,
+   TEXT("the HUD's CB 19 line shows a call only in the truck"));
  }
  return Ok;
 }

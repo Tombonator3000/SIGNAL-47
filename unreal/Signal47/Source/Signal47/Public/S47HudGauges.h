@@ -15,7 +15,7 @@ namespace S47HudGauges
 	/** The mark shows only while the lamp is on or the battery is low, and only where the lamp has a battery (Freeform). */
 	SIGNAL47_API bool BatteryShown(bool bDrains, bool bHave, bool bOn, double Level, double Low);
 
-	/** What the radio line says. The CB under the truck's dash and at SARO's base set: CB 19. The carried walkie (CB-WALKIE-20261108:
+	/** What the radio line says. The CB under the truck's dash, heard only sitting in the truck (CB-TRUCK-20261109): CB 19. The carried walkie (CB-WALKIE-20261108:
 	 *  Dale's): its channel and who is sending, "WALKIE 1 · DALE". The two are told apart by these words; both are drawn in the
 	 *  palette's one radio colour (HUD-D-20261109). */
 	SIGNAL47_API FString CbLine();

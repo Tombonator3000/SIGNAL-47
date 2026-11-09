@@ -1537,7 +1537,16 @@ void FS47Happenings::Cb(const TArray<FString>& Lines,const FString& Voice,bool b
 {
  if(!M||Lines.IsEmpty())return;
  static_cast<void>(bWrong);
- // The set's own sound and its HUD line, at the dash or beside the player at the base set.
+ // CB-TRUCK-20261109: the CB is under the truck's dash and nowhere else. Away from it, a call waits a while for the player to sit in
+ // the truck (StepTips), as a stranger's tip does; it is never put on the screen as a CB line out of the truck.
+ if(!CanHearCb())
+ {
+  FHeldTip Held;Held.Lines=Lines;Held.Voice=Voice;Held.Until=Paced+240;
+  if(HeldTips.Num()>=3)HeldTips.RemoveAt(0);
+  HeldTips.Add(Held);
+  return;
+ }
+ // The set's own sound and its HUD line, from the dash.
  if(FS47FieldRadio::CbSay(M,Lines,Voice))return;
  // Busy, or no sound to play it with: the words, one after another.
  double In=0;for(const FString& L:Lines){Say(TEXT("CB: ")+L,In,float(S47CB::SecsOf(L))+1.5f);In+=S47CB::SecsOf(L)+.6;}
@@ -1885,8 +1894,10 @@ uint32 FS47Happenings::NeedMask(const FString& Id)
  if(Id==TEXT("dogs_hush"))return NeedFoot|NeedTown|NeedSmall|NeedNear;
  if(Id==TEXT("horizon_figure")||Id==TEXT("figure_near"))return NeedFoot;
  if(Id==TEXT("landing"))return NeedFoot|NeedDrive|NeedSaro;
- if(Id==TEXT("cb_stranded")||Id==TEXT("missing_person"))return NeedDrive|NeedSaro;
- if(Id==TEXT("cb_echo"))return NeedDrive|NeedSaro;
+ // CB-TRUCK-20261109: the stuck driver and the voice come over the CB, and the CB is in the truck only. The missing man's word can
+ // also come from Dale over the walkie at SARO.
+ if(Id==TEXT("missing_person"))return NeedDrive|NeedSaro;
+ if(Id==TEXT("cb_stranded")||Id==TEXT("cb_echo"))return NeedDrive;
  if(Id==TEXT("stranded_rv")||Id==TEXT("carcass")||Id==TEXT("cinema_film"))return NeedFoot|NeedDrive|NeedIndoors|NeedSaro|NeedTown;
  if(Id==TEXT("house_lit"))return NeedFoot|NeedDrive|NeedTown;
  if(Id==TEXT("phone_empty")||Id==TEXT("town_blackout"))return NeedTown|NeedNear|(Id==TEXT("town_blackout")?NeedSmall:0u);
@@ -1955,7 +1966,8 @@ void FS47Happenings::StepEvent(double Dt)
  else if(Now.Id==TEXT("cb_echo"))
  {
   // Heard, it is the night's danger. When the voice stops the set goes dead and for a while it is out there: in the truck the engine
-  // and the lights die; at the base set the station goes quiet and something knocks. Out on foot in that while, the light comes down.
+  // and the lights die (CB-TRUCK-20261109: the CB is only in the truck). Out of the cab by then the night goes quiet, and at SARO
+  // something knocks. Out on foot in that while, the light comes down.
   if(!Now.bMet&&Now.Age>1.2&&CanHearCb())MeetDanger();
   if(Now.Stage==0&&Now.Age>=Now.Yaw)
   {
@@ -2355,7 +2367,7 @@ void FS47Happenings::UseCattle()
 bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
- if(!CanHearCb()&&!bForced){Why=TEXT("no CB to hear it on: the truck or the base set");return false;}
+ if(!CanHearCb()&&!bForced){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
  if(const FSite* Old=SiteOf(TEXT("truck")))if(!Old->bDone){Why=TEXT("a driver is still waiting out there");return false;}
  using S47Hap::Bit;
  FSpot S=Where(TEXT("cb_stranded"),Bit(ES47PlaceTrait::Far),Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors),bForced?0:450,0,1.f,Serial);
@@ -2393,7 +2405,7 @@ bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& 
 bool FS47Happenings::BeginEcho(bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
- if(!CanHearCb()){Why=TEXT("no CB to hear it on");return false;}
+ if(!CanHearCb()){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
  if(!bForced&&!MayStart(TEXT("cb_echo"))){Why=TEXT("the rhythm says not now");return false;}
  const FString Did=Deeds.IsEmpty()?FString(TEXT("You were out on the road at night.")):Deeds[int32(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x44454544u)*Deeds.Num())%Deeds.Num()];
  Now=FActive();Now.Id=TEXT("cb_echo");Now.bForced=bForced;Now.bDanger=true;Now.Serial=Serial+1;Now.Clock=F->Clock();
@@ -2479,7 +2491,7 @@ void FS47Happenings::StepLanding(double Dt)
  FSite* R=nullptr;for(FSite& S:Sites)if(S.Kind==TEXT("landing")&&S.Serial==Now.Serial)R=&S;
  // At SARO the array logs it whether or not anyone is at the monitor; it is said only to one in the building.
  const bool bLogged=M->Web->Area()==TEXT("saro");
- const bool bAtMonitor=bLogged&&FS47FieldRadio::CbAtHand(M)&&!Driving();
+ const bool bAtMonitor=bLogged&&FS47FieldRadio::InSaroBuilding(M);
  if(R&&(Now.bSeen||bLogged||Now.bForced))
  {
   R->bKnown=true;
@@ -3240,7 +3252,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  if(Id==TEXT("array_burst"))
  {
   // Only at the monitor: in the SARO building, not out on the farm that shares its area.
-  if(!bForced&&(bDrive||!FS47FieldRadio::CbAtHand(M)))return No(TEXT("not in the SARO building"));
+  if(!bForced&&(bDrive||!FS47FieldRadio::InSaroBuilding(M)))return No(TEXT("not in the SARO building"));
   if(!Ask(TEXT("array_burst")))return No(TEXT("the rhythm says not now"));
   // Off the main beam, toward somewhere nobody has looked at yet: which way, never what.
   FString Target;double ToX=0,ToZ=0;bool bHave=false;
@@ -4418,6 +4430,9 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   bool bFoot=false,bDrive=false,bAll=true;
   for(const FString& Id:Ids())if(IsDanger(Id)){const uint32 Need=NeedMask(Id);bAll&=Need!=0;bFoot|=(Need&S47Hap::NeedFoot)!=0;bDrive|=(Need&S47Hap::NeedDrive)!=0;}
   Check(bAll&&bFoot&&bDrive,TEXT("the night's dangers fit somewhere the player is: one on foot, one at the wheel"));
+  // CB-TRUCK-20261109: the CB is under the truck's dash, so its calls are drawn only for a player sitting in the truck.
+  Check(NeedMask(TEXT("cb_stranded"))==S47Hap::NeedDrive&&NeedMask(TEXT("cb_echo"))==S47Hap::NeedDrive&&(NeedMask(TEXT("missing_person"))&S47Hap::NeedSaro),
+   TEXT("the stuck driver and the voice on the CB come only in the truck; the missing man's word can also come over Dale's walkie at SARO"));
  }
  // The draws are the seed's: the same night draws the same, and something most nights.
  {

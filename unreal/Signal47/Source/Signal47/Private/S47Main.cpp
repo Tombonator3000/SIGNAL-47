@@ -59,6 +59,7 @@
 
 #include "S47Flow.h"
 #include "S47Radio.h"
+#include "S47NightLine.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
 #include "S47Three.h"
@@ -343,6 +344,8 @@ void US47Main::RadioStep(double Dt)
 	DinerRadio->Pos = bDinerOn ? TOptional<FVector>(CounterAt) : TOptional<FVector>();
 	// A test receiver uses the same graph, positioned by the camera, without starting a trip.
 	if (!RadioTest.IsEmpty()) { CarRadio->Set(true, RadioTest); CarRadio->Pos = S47Three::ToThree(Player->EyeUE()); CarRadio->Power = 1; CarRadio->Muffle = 0; bCarNear = true; }
+	// NIGHT-RADIO-20261109: in Freeform 1420 is Earl's Night Line from eight to four, made for the night (S47NightLine).
+	if (IsFreeform() != bool(Radio->NightLineIn)) Radio->NightLineIn = IsFreeform() ? TFunction<bool(FS47NightLineIn&)>([this](FS47NightLineIn& In) { return S47NightLine::Fill(this, In); }) : TFunction<bool(FS47NightLineIn&)>();
 	Radio->Update(Dt, Story ? Story->Clock() : 0);
 	if (TripRadio) TripRadio->Update({World->TripNow(), Story ? Story->ChapterKey : FString(), Story ? Story->Clock() : 0, World->bDriving && CarRadio->Live() && !(Story && Story->IsCinematic()) ? CarRadio->Station : FString()});
 	bRadioHeard = (CarRadio->Live() && bCarNear) || (DinerRadio->Live() && !World->bDriving && FVector::Distance(Player->Pos, CounterAt) < 12);

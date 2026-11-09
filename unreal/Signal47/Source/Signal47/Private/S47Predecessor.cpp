@@ -537,7 +537,7 @@ FString FS47Predecessor::AnswerWalkie()
  FDaleCall C;
  C.Hour=FMath::Fmod(FMath::Max(0.,ClockNow),86400.)/3600.;
  C.bDriving=M->World&&M->World->bDriving;
- C.bAtStation=!C.bDriving&&FS47FieldRadio::CbAtHand(M);
+ C.bAtStation=!C.bDriving&&FS47FieldRadio::InSaroBuilding(M);
  C.bInside=F.Taken&&F.Taken->Indoors();
  C.bFarOut=!C.bInside&&!C.bDriving&&M->Web&&M->Web->Area()!=TEXT("saro");
  C.bMissed=bDaleMissed;C.bLostTime=F.TimesTaken()>DaleHoursTold;C.bArrayDown=F.AvailableDishCount()<24;

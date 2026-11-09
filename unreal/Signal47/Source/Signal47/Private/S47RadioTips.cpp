@@ -10,6 +10,7 @@
 #include "S47FieldRadio.h"
 #include "S47Radio.h"
 #include "S47RadioVoice.h"
+#include "S47NightLine.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47World.h"
@@ -205,7 +206,7 @@ void FS47RadioTips::Step(double Dt)
 }
 void FS47RadioTips::StepCb()
 {
- // Only where there is a CB: the truck, or the base set in the SARO building. Never on foot.
+ // Only where there is a CB: sitting in the truck (CB-TRUCK-20261109). Never on foot, never at SARO.
  if(!FS47FieldRadio::CbAtHand(M))return;
  // Several that mean nothing for each that does; each line once in a game, until there are none left.
  TArray<const FLine*> Plain,Telling;
@@ -317,6 +318,8 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
   Check(Air.Contains(TEXT("windmill"))&&!Air.Contains(TEXT("alien"))&&!Air.Contains(TEXT("ufo"))&&Air.Len()<220,TEXT("Earl reads a tip with its place and without saying what it was"));
  }
  auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am02"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
+ // NIGHT-RADIO-20261109: Earl's Night Line, made for each night (S47NightLine).
+ OK&=S47NightLine::SelfTest(Lines);
  return OK;
 }
 

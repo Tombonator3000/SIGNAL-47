@@ -131,14 +131,14 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
  {
   const FString V=Variant;
   const FString Label=V==TEXT("real")?TEXT("CB: a driver stuck far out"):V==TEXT("empty")?TEXT("CB: a driver stuck far out, and his rig empty"):TEXT("CB: a driver stuck far out, and the voice not right");
-  E.AddFreeform(G,Label,TEXT("21:00, control room, on the base set; where he is goes on the map"),[this,Haps,V]
+  // CB-TRUCK-20261109: the CB is under the truck's dash, so the call comes in the truck on the highway.
+  E.AddFreeform(G,Label,TEXT("21:00, in the truck on the highway, on the CB under the dash; where he is goes on the map"),[this,Haps,V,Road]
   {
-   FStage Stage;Stage.From=21;Stage.To=24;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::ControlRoom();};Stage.Yaw=UE_DOUBLE_PI;
-   Go(Stage,[this,Haps,V]
+   Road(21,24,false,[this,Haps,V]
    {
     FS47Happenings* H=Haps();FString Why;
     if(!H||!H->DevStart(TEXT("cb_stranded"),V,Why)){Tell(false,Why);return;}
-    Tell(H->HasSite(TEXT("truck")),FString::Printf(TEXT("The call comes on the base set. Where he says he is, is on your map (TAB)%s."),V==TEXT("wrong")?TEXT("; a later night the voice may come back"):TEXT("")),7);
+    Tell(H->HasSite(TEXT("truck")),FString::Printf(TEXT("The call comes on the CB under the dash. Where he says he is, is on your map (TAB)%s."),V==TEXT("wrong")?TEXT("; a later night the voice may come back"):TEXT("")),7);
    });
   });
  }
@@ -148,14 +148,13 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   if(!H||!H->DevStart(TEXT("cb_stranded"),TEXT("real"),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
   ToSite(TEXT("truck"),10,TEXT("His rig, ahead of you, and him beside it. E on it."));
  });
- E.AddFreeform(G,TEXT("CB: the voice says what you did"),TEXT("02:30, control room; a danger, after a voice that was not right"),[this,Haps]
+ E.AddFreeform(G,TEXT("CB: the voice says what you did"),TEXT("02:30, in the truck on the highway; a danger, after a voice that was not right"),[this,Haps,Road]
  {
-  FStage Stage;Stage.From=2.5;Stage.To=4.5;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::ControlRoom();};Stage.Yaw=UE_DOUBLE_PI;
-  Go(Stage,[this,Haps]
+  Road(2.5,4.5,false,[this,Haps]
   {
    FS47Happenings* H=Haps();FString Why;
    if(!H||!H->DevStart(TEXT("cb_echo"),FString(),Why)||!H->Live(TEXT("cb_echo"))){Tell(false,Why);return;}
-   Tell(true,TEXT("The base set opens by itself, and the voice says something you did."),6);
+   Tell(true,TEXT("The CB under the dash opens by itself, and the voice says something you did."),6);
   });
  });
  E.AddFreeform(G,TEXT("Landing: lights come down, from the yard"),TEXT("23:00, yard, looking at them; the bearing goes on the map"),[this,Haps]
@@ -583,15 +582,14 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   FStage Stage;Stage.From=9;Stage.To=17;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::Yard();};Stage.Yaw=UE_DOUBLE_PI;
   Go(Stage,[this,Shot,Report,Left,ArrayMiddle]{AimAt(ArrayMiddle());After(2,[Shot]{Shot(TEXT("morning-array"));});After(3,[this,Report,Left]{Tell(Left({TEXT("array"),TEXT("turned")}),Report(TEXT("the array by day")),6);});});
  });
- E.AddFreeform(B,TEXT("The evening after: the CB"),TEXT("20:30, the control room by the base set; somebody who was out on the road that night"),[this,Haps,Report]
+ E.AddFreeform(B,TEXT("The evening after: the CB"),TEXT("20:30, in the truck on the highway (the CB is under its dash); somebody who was out on the road that night"),[this,Haps,Report,Road]
  {
-  FStage Stage;Stage.From=20.5;Stage.To=22.5;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::ControlRoom();};Stage.Yaw=UE_DOUBLE_PI;
-  Go(Stage,[this,Haps,Report]
+  Road(20.5,22.5,false,[this,Haps,Report]
   {
    WaitFor([Haps]{FS47Happenings* Hw=Haps();return Hw&&Hw->BigHas(TEXT("cb"));},30,[this,Report]{Tell(true,Report(TEXT("on the CB")),6);},[this,Report]{Tell(false,TEXT("nothing on the CB: ")+Report(TEXT("on the CB")));});
   });
  });
- E.AddFreeform(B,TEXT("The night after: 1420 in the truck"),TEXT("00:30 the night after, the truck on the highway, the radio on 1420 (on the air from midnight to four); a caller about the lights, in the program's own turn"),[this,Road,Haps,Report]
+ E.AddFreeform(B,TEXT("The night after: 1420 in the truck"),TEXT("00:30 the night after, the truck on the highway, the radio on 1420 (Earl's Night Line, on the air from eight in the evening to four); a caller about the lights, in the program's own turn"),[this,Road,Haps,Report]
  {
   Road(.5,3.5,false,[this,Haps,Report]
   {

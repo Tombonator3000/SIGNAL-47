@@ -8,6 +8,7 @@
 class US47Audio;
 class FS47Radio;
 class FS47MediaSource;
+struct FS47NightLineIn;
 
 // core/radio.ts: Line, Seg, Slotted. Shared segment identity is queue.indexOf/includes in TS.
 struct FS47RadioLine
@@ -21,6 +22,7 @@ struct FS47RadioLine
 };
 struct FS47RadioSeg
 {
+	// "talk", "music", "anthem", "carrier", "dead", and (NIGHT-RADIO-20261109) "static": on the air with nothing on it but hiss, Len seconds.
 	FString Kind = TEXT("dead"), Tune;
 	TArray<FS47RadioLine> Lines;
 	double Len = 0;
@@ -99,6 +101,9 @@ private:
 	double Len = std::numeric_limits<double>::infinity(), Sc = 0, Calm = 10;
 	bool bEveningProgramme = false;
 	int32 LoopAt = 0, Said = -1, SegNo = 0, TrackSkip = -1;
+	// NIGHT-RADIO-20261109: which night and hour of Freeform's Night Line Cfg.Loop holds (Night x 100 + hour), and the hour last seen.
+	int32 BlockKey = -1, BlockHour = -1;
+	void FreeformFixed(double Clock);
 	FString After = TEXT("loop");
 	TOptional<double> Prev, AudioAt;
 	bool bFading = false, bHostReady = false, bHostPending = false;
@@ -209,6 +214,9 @@ public:
 	TFunction<void(const FString&, const FString&, const FString&, TOptional<double>)> OnLine;
 	bool bBoyCalled = false;
 	bool bEveningTimeline = false;
+	// NIGHT-RADIO-20261109: set in Freeform (US47Main::RadioStep), it fills tonight's facts (S47NightLine::Fill), and 1420 is then
+	// Earl's Night Line from eight in the evening to four, made for the night by S47NightLine. Unset: Story's programme as it was.
+	TFunction<bool(FS47NightLineIn&)> NightLineIn;
 	FS47RadioVoice HostBank, CallerBank;
 	bool HostVoice() const { return bRecordedHost; }
 	bool CallerVoice() const { return bRecordedCallers; }
