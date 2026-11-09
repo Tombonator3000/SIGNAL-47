@@ -13,6 +13,7 @@
 - [Gameplay: notatboka](Gameplay/NOTATBOK_2026-11-09.md): NOW bygd som TONIGHT, CASES/PAPERS/WHO & WHAT i stedet for flate lister med dubletter, og skriblerier om folk og dem.
 - [Gameplay: sammenlignbare spill](Gameplay/SAMMENLIGNBARE_SPILL_2026-11-09.md): 14 spill (VotV, Iron Lung, Papers Please, Obra Dinn, Roottrees, Her Story, Phasmophobia, Pacific Drive m.fl.), 11 prinsipper og fallgruver for jobbsim, etterforskning og skrekk.
 - [Gameplay: gjennomgang av d38](Gameplay/GJENNOMGANG_D38_2026-11-09.md): natta minutt for minutt, økonomien kjørt, sømmene mellom jobb, etterforskning og skrekk, eskaleringskurven og topp 10 mangler.
+- [Gameplay: helhetlig design og 1986 som mekanikk](Gameplay/HELHETLIG_DESIGN_1986_2026-11-09.md): syntesen av alle gameplay-dokumentene 9. november. Sju pilarer, 1986-ting som mekanikk (ur, blyantkryss, sendedøgn), én løkke for natt, uke og måned, ukesakene som serie, økonomirettinger, plan i tolv trinn og fem spørsmål til Tom.
 - [Gameplay: agent-harness, logiske brister og konkrete forbedringsforslag](Gameplay/WORKFLOW_REVIEW.md), med kildeanalyse, avgrenset lagringslesing og oppdatert VotV-kontroll 2. november.
 
 - [MotionBricks: genererte bevegelsesoverganger, retargeting og bakte klipp](MotionBricks/README.md), festet NVIDIA-kilde; lokal integrasjon UNVERIFIED.
