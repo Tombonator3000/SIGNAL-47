@@ -50,6 +50,23 @@ namespace
   return true;
  }
  FIntPoint CellOf(double X, double Z, double Size) { return FIntPoint(FMath::FloorToInt(X / Size), FMath::FloorToInt(Z / Size)); }
+ // BLOCKERS-20261109: boxes that stand for something drawn which this measure cannot see from where it is taken. SARO's records room:
+ // the room's furniture is drawn only while one is near it, and the measure stands in the yard; each box is the web export's own,
+ // made by the code that builds the piece (web/src/world/Annex.ts, dressing.ts). Matched by the box itself: the list's indices move.
+ struct FKnown { const TCHAR* Area; double MinX, MaxX, MinZ, MaxZ; const TCHAR* What; };
+ const FKnown Known[] = {
+  { TEXT("saro"), -5.27, -3.65, 9.84, 10.5, TEXT("records room: the three filing cabinets on the south wall (Annex.ts records room)") },
+  { TEXT("saro"), -3.32, -1.38, 10.1, 10.5, TEXT("records room: the low bookcase with binders (Annex.ts)") },
+  { TEXT("saro"), -1.8, -1.0, 7.5, 8.4, TEXT("records room: the card index cabinet on the east wall (Annex.ts)") },
+  { TEXT("saro"), -3.9, -3.4, 9.05, 9.7, TEXT("records room: the folding chair at the table (Annex.ts)") },
+  { TEXT("saro"), -4.7, -4.22, 9.48, 9.86, TEXT("records room: the middle cabinet's open drawer (dressing.ts)") },
+ };
+ const FKnown* KnownOf(const FString& Walk, const FBlocker& B)
+ {
+  for (const FKnown& K : Known)
+   if (Walk == K.Area && FMath::Abs(B.MinX - K.MinX) < .02 && FMath::Abs(B.MaxX - K.MaxX) < .02 && FMath::Abs(B.MinZ - K.MinZ) < .02 && FMath::Abs(B.MaxZ - K.MaxZ) < .02) return &K;
+  return nullptr;
+ }
  // A walk area's name for the area the player is in, and its drive leg's.
  FString WalkOf(const FString& Area) { return Area == TEXT("diner") ? FString(TEXT("road")) : Area; }
 }
@@ -149,6 +166,7 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
   for (int32 I = 0; I < Land->Num(); ++I) { const FS47Box2& Bx = (*Land)[I]; All.Add({ TEXT("land"), FString::Printf(TEXT("%s#%d"), *Area, I), Bx.MinX, Bx.MaxX, Bx.MinZ, Bx.MaxZ, false }); ++NLand; }
  // ---- each against what is drawn ----
  int32 Away = 0, Seen = 0;
+ TArray<FString> KnownLines;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Blockers), true);
  for (const FBlocker& Bk : All)
  {
@@ -216,16 +234,22 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
   for (const FVector2D& P : Edge) if (!DrawnAt(P.X, P.Y)) { ++Bare; BareBox += P; }
   if (Bare * 4 > Edge.Num())
   {
+   if (const FKnown* K = KnownOf(Walk, Bk))
+   {
+    KnownLines.Add(FString::Printf(TEXT("  known: %s %s (%d%% bare here): %s"), *Bk.Kind, *Bk.Id, Bare * 100 / Edge.Num(), K->What));
+    continue;
+   }
    FBlocker Found = Bk;
    Found.Id += FString::Printf(TEXT(" (%d%% of its edge bare, at x %.2f..%.2f z %.2f..%.2f)"), Bare * 100 / Edge.Num(), BareBox.Min.X, BareBox.Max.X, BareBox.Min.Y, BareBox.Max.Y);
    Out.Add(Found);
   }
  }
  Out.Sort([](const FBlocker& A, const FBlocker& B) { return (A.MaxX - A.MinX) * (A.MaxZ - A.MinZ) > (B.MaxX - B.MinX) * (B.MaxZ - B.MinZ); });
- Lines.Add(FString::Printf(TEXT("Blockers in %s (walk %s): %d walk, %d drive, %d land; %d here, %d with no visible ground under them (other places); %d with nothing drawn within %.2f m (%d small things, %d big meshes read)"),
-  *Area, *Walk, NWalk, NDrive, NLand, Seen, Away, Out.Num(), Pad, Drawn.Num(), Big));
+ Lines.Add(FString::Printf(TEXT("Blockers in %s (walk %s): %d walk, %d drive, %d land; %d here, %d with no visible ground under them (other places); %d with nothing drawn within %.2f m, %d more known to stand for something drawn (%d small things, %d big meshes read)"),
+  *Area, *Walk, NWalk, NDrive, NLand, Seen, Away, Out.Num(), Pad, KnownLines.Num(), Drawn.Num(), Big));
  for (const FBlocker& Bk : Out)
   Lines.Add(FString::Printf(TEXT("  %s %s: x %.2f..%.2f z %.2f..%.2f (%.2f x %.2f m%s)"), *Bk.Kind, *Bk.Id, Bk.MinX, Bk.MaxX, Bk.MinZ, Bk.MaxZ, Bk.MaxX - Bk.MinX, Bk.MaxZ - Bk.MinZ, Bk.bCircle ? TEXT(", a circle") : TEXT("")));
+ Lines.Append(KnownLines);
  S47SaroClip::Forget();
  return Out;
 }

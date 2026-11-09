@@ -865,6 +865,23 @@ void US47World::Enter(const FString& NewArea)
 	// a truck shows where it stands, or where it is being driven (AS47Web shows every truck with
 	// its area; World.enter's rules after it)
 	EnsureLegs();
+	// BLOCKERS-20261109: in Freeform the three thin walls the web export closes Caliche's ends with (roadProps.ts fences(): west of
+	// the town at TOWN.z1 and at DINER.z + 45, east of it at the old road's south edge) are taken out of the road's drive. Nothing
+	// is drawn along them (F10 "Looks (M6)": road#18, road#19, road#10, 29-94 % of the edge bare); the drawn fences and the town's
+	// own walls still hold the truck. Story keeps them: there the fences keep the truck on the highway until chapter six.
+	if (bLegsMade && M && M->IsFreeform())
+		if (IS47DriveArea* RoadLeg = LegArea(TEXT("road")))
+		{
+			static const FS47Box2 TownEnds[] = { { 7958, 7979, 2299.85, 2300.15 }, { 7958, 7979, 2044.8, 2045.1 }, { 8029.85, 8048, 2017.8, 2018.1 } };
+			const int32 Out = RoadLeg->Obstacles.RemoveAll([](const FS47Obstacle& O)
+			{
+				if (O.bCircle) return false;
+				for (const FS47Box2& B : TownEnds)
+					if (FMath::Abs(O.MinX - B.MinX) < .01 && FMath::Abs(O.MaxX - B.MaxX) < .01 && FMath::Abs(O.MinZ - B.MinZ) < .01 && FMath::Abs(O.MaxZ - B.MaxZ) < .01) return true;
+				return false;
+			});
+			if (Out) UE_LOG(LogS47World, Display, TEXT("S47: Freeform: %d invisible walls at Caliche's ends taken out of the road's drive (BLOCKERS-20261109)"), Out);
+		}
 	if (bLegsMade)
 	{
 		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get(), ParkedP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);

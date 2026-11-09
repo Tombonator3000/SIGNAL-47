@@ -225,6 +225,42 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
    });
   });
  });
+ // MOTEL-FACADE-20261109: the office has one front, V2's: the export's wear layer (node 769, g529) no longer meets a ray on the office's
+ // front (x -43.6 and out, z 672.0..677.8). The same fan of rays as above; PASS when none of them stops on it there.
+ E.AddFreeform(Group, TEXT("Motel office: one front"), TEXT("11:00 on the walk: the fan of rays over the office's front; none may stop on the export's wear layer there"), [this, Log]
+ {
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(-40.6, 671.6); };
+  Go(S, [this, Log]
+  {
+   if (!M->Player) { Tell(false, TEXT("no player")); return; }
+   AimAt(FVector(-43.8, M->Player->FloorY + M->Player->Eye - .25, 674.4));
+   After(1.0, [this, Log]
+   {
+    AS47Walker* P = M->Player; UWorld* World = M->Web->GetWorld();
+    int32 Rays = 0, Wear = 0, Office = 0; FString First;
+    for (int32 Y = -6; Y <= 6; ++Y) for (int32 Pi = -2; Pi <= 2; ++Pi)
+    {
+     const double Yaw = P->Yaw + Y * FMath::DegreesToRadians(5.), Pitch = P->Pitch + Pi * FMath::DegreesToRadians(5.);
+     const FVector Fwd(-FMath::Sin(Yaw) * FMath::Cos(Pitch), FMath::Sin(Pitch), -FMath::Cos(Yaw) * FMath::Cos(Pitch));
+     const FVector Start = P->EyeUE(), End = Start + S47Three::DirToUE(Fwd) * 2500;
+     FHitResult H; FCollisionQueryParams Q(SCENE_QUERY_STAT(S47LooksMotelFront), true, P);
+     if (!World->LineTraceSingleByChannel(H, Start, End, ECC_Visibility, Q)) continue;
+     ++Rays;
+     const FVector At = S47Three::ToThree(H.ImpactPoint);
+     if (At.X < -43.6 || At.Z < 672.0 || At.Z > 677.8) continue;
+     ++Office;
+     if (M->Web->NodeOf(H.GetComponent()) == 769) { ++Wear; if (First.IsEmpty()) First = FString::Printf(TEXT(" (first at x %.3f y %.3f z %.3f)"), At.X, At.Y, At.Z); }
+    }
+    TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("Motel office front: %d rays hit, %d on the office's front, %d of them on the export's wear layer (node 769)%s"), Rays, Office, Wear, *First));
+    Log(Lines);
+    Tell(Wear == 0 && Office > 0, Lines[0], 10);
+   });
+  });
+ });
+ E.AddFreeform(Group, TEXT("Motel office window, close"), TEXT("11:00 on the walk by the office, looking along its front at the window"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-41.4, 673.2), Saro3(-43.5, -.1, 676.2), TEXT("The office's window from the walk: frame and sill in V2's wall, one face behind them")); });
+ E.AddFreeform(Group, TEXT("Invisible blockers at the farm"), TEXT("11:00 at the farm's turn-off: the same for the farm's yard, barn and road (the road's walk)"), [Blockers]
+ { Blockers(TEXT("diner"), FVector2D(8000 + 26, 181), TEXT("the farm")); });
  E.AddFreeform(Group, TEXT("Motel television at night"), TEXT("23:00 in front of the office's television"), [View, Saro, Saro3]
  { View(TEXT("saro"), 23, Saro(-46.3, 675.6), Saro3(-47.77, .05, 676.85), TEXT("The office television at night: what is on the screen")); });
  E.AddFreeform(Group, TEXT("Motel lot lamps by day"), TEXT("11:00 in the motel's lot"), [View, Saro, Saro3]

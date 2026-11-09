@@ -307,6 +307,22 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   TArray<UMaterialInterface*> Mats;for(auto* M:P.Comp->GetMaterials())Mats.Add(M);P.Comp->SetStaticMesh(P.Mesh);
   for(int32 S=0;S<P.Slots.Num();++S)P.Comp->SetMaterial(S,Mats[P.Slots[S]]);
  }
+ // MOTEL-FACADE-20261109: the office keeps V2's front. The export's wear layer for the court (node 769, g529, dressMotel.ts) has the
+ // old office front at x -43.488, 1.2 cm proud of V2's own wall (-43.50, SM_Sierra_Office), so two faces stood on each other there
+ // and V2's window frame (-43.37..-43.41) stood out of the export's plate. The layer is one cooked mesh without CPU data, so its
+ // office triangles cannot be cut out here: the whole layer goes 3 cm back instead, which puts the office plate 1.8 cm inside V2's
+ // wall (hidden) and leaves the rest where it already was in effect (the rooms' fronts were behind V2's walls; the skirting, the
+ // fascia streaks and the ground stains move 3 cm). The asset is not changed.
+ if(const auto* Wear=W->Node(769);Wear&&Wear->Geo==529&&Wear->Parent==767)
+ {
+  const USceneComponent* Parent=Wear->Comp.IsValid()?Wear->Comp->GetAttachParent():nullptr;
+  if(Parent&&Parent->GetComponentQuat().Equals(FQuat::Identity,1e-4)&&Wear->Q.Equals(FQuat::Identity,1e-4))
+  {
+   const double Before=W->WorldThree(769).X;W->SetPosition(769,Wear->P+FVector(-.03,0,0));
+   UE_LOG(LogS47MotelV2,Display,TEXT("S47: motel office front: the court's wear layer (node769 g529) set back from x %.3f to %.3f; V2's office wall is the front (MOTEL-FACADE-20261109)"),Before,W->WorldThree(769).X);
+  }
+  else UE_LOG(LogS47MotelV2,Warning,TEXT("S47: motel office front: the court's wear layer is turned; left where it is (MOTEL-FACADE-20261109)"));
+ }
  for(auto* C:Retired){Retire(C);F->Retired.Add(C);}
  for(const int32 I:RetiredRoots)W->SetVisible(I,false);
  for(const auto& Move:Moves){const auto* N=W->Node(Move.Node);W->SetPosition(Move.Node,Move.Position-W->WorldThree(N->Parent));W->SetScale(Move.Node,Move.Scale);}
