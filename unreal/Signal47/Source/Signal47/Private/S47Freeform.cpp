@@ -1901,6 +1901,7 @@ FString FS47FreeformSession::WaitConsequences(double Target) const
  const double Hours=FMath::Max(0.,Target-WorldClock)/3600.;
  const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Target-8*3600.)/SecondsPerDay))+1);
  FString Text=FString::Printf(TEXT("WAIT %.2f HOURS / UNTIL SHIFT DAY %02d, %s\nNo observing, listening, printing or physical test work is performed during this interval. Unfinished work and original records stay intact."),Hours,Day,*FS47FreeformCases::Clock(Target));
+ if(Fatigue&&RulesLive())Text+=TEXT("\n")+Fatigue->BedLine(Target-WorldClock,FS47Fatigue::EBed::Station); // what kind of sleep it will be (M5 critic 3)
  const bool Recording=Work.ContainsByPredicate([](const FJob& J){return J.Stage==EJobStage::Integrating||(J.bControl&&J.ControlAt<8);});
  if(Recording)Text+=TEXT("\nBLOCKED / Finish the active observation or internal control before waiting.");
  const FString Block=Director?Director->RestBlock():FString();
@@ -2590,6 +2591,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
 bool FS47FreeformSession::Use(const FString& Id)
 {
  if(!bActive)return false;
+ if(Fatigue&&Id==TEXT("diner:waitress"))Fatigue->AtDiner(); // the cup she pours is drunk (M5 critic 3; FS47Fatigue checks she is there)
  if(Townsfolk&&Townsfolk->Use(Id))return true; // the Mesa's waitress (TOWNSFOLK-20261108)
  if(AudioDesk&&AudioDesk->Use(Id))return true;
  if(Field&&Field->Use(Id))return true;

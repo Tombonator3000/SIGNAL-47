@@ -44,7 +44,8 @@ struct FS47RhythmData
  TFunction<double(int32)> LitOf;
  float MoonOn(int32 Day) const;
  // WEATHER-20261108: a night the wind holds into (S47Weather::Day().NightStorm, 0 to 1) is a little busier: what comes near and the
- // danger are worth up to StormNight times as much. StormOf: the game sets it; unset, no weather.
+ // danger are worth up to StormNight times as much. StormOf: the game sets it (since M5 critic 3 only for a night whose wind blows on
+ // through the small hours, NightStorm over a half); unset, no weather.
  float StormNight=1.15f;
  TFunction<double(int32)> StormOf;
  float StormOn(int32 Day) const;

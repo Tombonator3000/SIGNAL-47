@@ -76,6 +76,8 @@ public:
 
  FVector Eye() const { return Pos+FVector(0,1.08-.42*Crouch,0); }
  const TArray<FVector>& Route() const { return Path; }
+ /** A hunt's pace (m/s): once it sees the player, and searching where it last did. FS47Fatigue keeps a tired run above the first. */
+ static constexpr double HuntSeenSpeed=2.8,HuntSearchSpeed=1.15;
  static const TCHAR* ModeName(EMode Value);
  static const TCHAR* StateName(EState Value);
  static bool SelfTest(TArray<FString>& Lines);

@@ -39,7 +39,7 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		[Out] { Out(16, 18, FS47WeatherLive::EDev::Sand, 240, false, TEXT("Blowing sand for four minutes. Look at the far land, walk, get in the truck and drive: the sand drifts onto the track and the wind pushes the truck.")); });
 	E.AddFreeform(Group, TEXT("Blowing sand at night, lamp on"), TEXT("23:00, open land: sand streaming through the lamp's beam and the headlights; the crickets gone under the wind; four minutes"),
 		[Out] { Out(23, 4.5, FS47WeatherLive::EDev::Sand, 240, true, TEXT("Sand at night for four minutes: through the lamp and the headlights. Listen: the wind covers the crickets and your steps.")); });
-	E.AddFreeform(Group, TEXT("A stray shower"), TEXT("17:00, open land: the cloud thickens, a few drops fall and tick, thunder far off, the dirt slick after; two minutes"),
+	E.AddFreeform(Group, TEXT("A stray shower"), TEXT("17:00, open land: the cloud thickens and the land darkens, drops fall past and tick, thunder far off, the dirt slick after (the tyres hiss on it); two minutes"),
 		[Out] { Out(17, 19.5, FS47WeatherLive::EDev::Shower, 120, false, TEXT("A stray shower for two minutes: a few drops, thunder a long way off. Drive on the dirt after it: less grip.")); });
 	E.AddFreeform(Group, TEXT("Morning haze"), TEXT("06:30, open land: the low haze, the far land pale; four minutes"),
 		[Out] { Out(6.5, 8.5, FS47WeatherLive::EDev::Haze, 240, false, TEXT("Haze for four minutes, as on a still morning or the morning after a shower.")); });
@@ -81,8 +81,8 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		B->DevSet(Hours);
 		Tell(true, FString::Printf(TEXT("%s (%s)"), Say, *B->Describe()), 7);
 	};
-	E.AddFreeform(Group, TEXT("Tired: twenty hours awake"), TEXT("the edge flickers now and then, the strain comes faster, the run is shorter"), [Awake] { Awake(20, TEXT("Twenty hours awake.")); });
-	E.AddFreeform(Group, TEXT("Worn out: twenty-eight hours awake"), TEXT("as tired as it gets: the eyes close for a moment now and then; coffee at the pot helps"), [Awake] { Awake(28, TEXT("Twenty-eight hours awake.")); });
+	E.AddFreeform(Group, TEXT("Tired: twenty hours awake"), TEXT("now and then the eyelids grow heavy for a few seconds, with a yawn; the strain comes faster; a run winds you and eases off"), [Awake] { Awake(20, TEXT("Twenty hours awake.")); });
+	E.AddFreeform(Group, TEXT("Worn out: twenty-eight hours awake"), TEXT("as tired as it gets: heavy spells more often, the eyes shutting a moment in them; winded, the breath is heard; coffee at the pot or the Mesa helps"), [Awake] { Awake(28, TEXT("Twenty-eight hours awake.")); });
 	E.AddFreeform(Group, TEXT("Rested"), TEXT("felt in this run too: nothing shows"), [Awake] { Awake(0, TEXT("Rested.")); });
 	E.AddFreeform(Group, TEXT("The hours awake as the game has them"), TEXT("what F10 set is gone; a developer run feels none of it"), [this, Body]
 	{
@@ -91,7 +91,7 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		B->DevSet(-1);
 		Tell(true, B->Describe(), 6);
 	});
-	E.AddFreeform(Group, TEXT("What the body says now"), TEXT("hours awake, coffee, how tired, and what it does to the run and the strain"), [this, Body]
+	E.AddFreeform(Group, TEXT("What the body says now"), TEXT("hours awake, coffee, how tired, the run's wind, and what it does to the run and the strain"), [this, Body]
 	{
 		FS47Fatigue* B = Body();
 		if (!B) { Tell(false, TEXT("Freeform only")); return; }

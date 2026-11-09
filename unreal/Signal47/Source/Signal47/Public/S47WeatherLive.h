@@ -3,6 +3,7 @@
 #include "S47Weather.h"
 
 class US47Main;
+class FS47GainNode;
 
 // WEATHER-20261108: the day's weather on the world, in Freeform. S47Weather::Day() is the truth (the paper prints it); each frame this
 // reads what it is doing now (S47Weather::Now, for the calendar day and the clock of the session), eases toward it over a few seconds
@@ -13,7 +14,8 @@ class US47Main;
 //                 night, a few drops fall in a shower (FS47NightLife)
 //   the wind      the brush sways harder and turns with it (S47Wind::Storm); the ambience roars and hisses, the crickets go under,
 //                 far-off sounds come less, drops tick in a shower (FS47Ambience)
-//   the ground    sand drifts onto the dirt tracks, a crosswind pushes the truck at speed, wet dirt has less grip (FS47TruckCare)
+//   the ground    sand drifts onto the dirt tracks, a crosswind pushes the truck at speed, wet dirt has less grip (FS47TruckCare);
+//                 the wet is heard as the tyres' hiss on it, and the first slide on it says why (StepWet, M5 critic 3)
 //   the ears      a storm covers footsteps and breathing from what listens (FS47RoswellGroup)
 //   the night     a stormy night is a little busier (FS47Rhythm reads Day().NightStorm)
 // Nothing makes the game unplayable: the thickest sand adds no more fog than a light mist (S47Weather::Live().FogAdd at most .03).
@@ -58,4 +60,8 @@ private:
 	EDev DevWhat = EDev::None;
 	double DevLeft = 0;
 	int32 CalDay = 0, LoggedDay = 0;
+	// the wet under the tyres: their hiss (a loop of noise on the sound effects, silent when dry) and the day the slide was explained
+	TSharedPtr<FS47GainNode> Spray;
+	int32 ToldWet = 0;
+	void StepWet();
 };

@@ -13,6 +13,7 @@
 #include "S47Fx.h"
 #include "S47Image.h"
 #include "S47Three.h"
+#include "S47Weather.h"
 #include "S47Web.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Sky, Log, All);
@@ -975,10 +976,15 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	const float DayWeight = PureSkyMid.IsValid() ? float(PureSkyWeight) * (1.f - .88f * GoldenSky) : 0.f;
 	UMaterialInstanceDynamic* ActiveDome = DayWeight > 0.f ? PureSkyMid.Get() : DomeMid.Get();
 	if (DomeComp.IsValid() && DomeComp->GetMaterial(0) != ActiveDome) DomeComp->SetMaterial(0, ActiveDome);
+	// M5 critic 3: blowing sand (S47Weather::Live, Freeform only) browns the low sky toward the sun, as the dusk's dusty grade does, and
+	// dims the sun's disc; a shower's cloud dims it too
+	const S47Weather::FLive& Wx = S47Weather::Live();
+	const double SandSky = Wx.bOn ? FMath::Clamp(Wx.Dust * 1.2, 0.0, 1.0) * Midday : 0.0;
+	const double SunVeil = Wx.bOn ? (1.0 - 0.55 * FMath::Clamp(Wx.Dust * 1.2, 0.0, 1.0)) * (1.0 - 0.4 * FMath::Clamp(Wx.Rain + FMath::Max(0.0, Wx.CloudBias - .06) / .18, 0.0, 1.0)) : 1.0;
 	if (PureSkyMid.IsValid())
 	{
 		PureSkyMid->SetScalarParameterValue(TEXT("PureSkyWeight"), DayWeight);
-		PureSkyMid->SetScalarParameterValue(TEXT("SunsetStrength"), GoldenSky);
+		PureSkyMid->SetScalarParameterValue(TEXT("SunsetStrength"), FMath::Max(GoldenSky, float(0.6 * SandSky)));
 	}
 	// sky.group.rotation.y = world.skyYaw; group.position.copy(follow); ten times as far (SKY_SCALE)
 	W->SetLocal(GroupNode, Eye, S47Three::Euler(0, Yaw, 0), FVector(SKY_SCALE));
@@ -997,7 +1003,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		if (!D) return;
 		D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
 		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
-		D->SetScalarParameterValue(TEXT("Sun"), float(Sun));
+		D->SetScalarParameterValue(TEXT("Sun"), float(Sun * SunVeil));
 		D->SetScalarParameterValue(TEXT("ConceptBlend"), FMath::Max(float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))), GoldenSky));
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));

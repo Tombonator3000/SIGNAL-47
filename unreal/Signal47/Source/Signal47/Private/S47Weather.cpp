@@ -30,13 +30,25 @@ namespace S47WeatherLocal
  // A stray shower: about one day in nine of the calm ones, from the third day.
  bool ShowerOn(int32 Seed,int32 Num){return Num>=3&&!Spell(Seed,Num)&&Draw(Seed,Num,19)<.11;}
  // What the day's wind is at a clock hour: still at dawn, up by late morning, its most in the afternoon, down at dusk; on a windy day
- // some of it holds into the night as NightStorm says, gone by about one.
+ // some of it holds into the night as NightStorm says, gone by about one. A stormy night (NightStorm over a half, FS47Rhythm's busier
+ // night: M5 critic 3) holds it through the small hours, when the night's own visitors are about, easing from four and gone by six.
+ // H runs on past midnight (24 to 30) for the night after the day.
  constexpr double StillMph=4; // the night's and the dawn's own breeze, every day the same, so that midnight is no seam
+ constexpr float HeldNight=.5f; // NightStorm above this: the wind holds into the small hours
+ constexpr double SmallHours=6; // how far into the next day the night before's wind and sand can reach (FS47NightRhythm::EndHour)
  double MphAt(const S47Weather::FDay& D,double H)
  {
   double Mph=StillMph+(D.WindMph-StillMph)*Trap(H,8.5,13.,17.5,21.);
-  if(D.NightStorm>0&&H>=17)Mph=FMath::Max(Mph,D.WindMph*.7*D.NightStorm*(1.-Smooth01((H-23.)/2.)));
+  if(D.NightStorm>HeldNight&&H>=17)Mph=FMath::Max(Mph,D.WindMph*(.5+.35*D.NightStorm)*(1.-Smooth01((H-28.)/2.)));
+  else if(D.NightStorm>0&&H>=17)Mph=FMath::Max(Mph,D.WindMph*.7*D.NightStorm*(1.-Smooth01((H-23.)/2.)));
   return Mph;
+ }
+ // The sand carried on with the wind after dark: gone by midnight, or on a stormy night by about half past three.
+ double NightDust(const S47Weather::FDay& D,double H)
+ {
+  if(!D.bDust||H<D.DustTo-1.)return 0.;
+  const double End=D.NightStorm>HeldNight?26.:22.5;
+  return .4*D.DustK*D.NightStorm*(1.-Smooth01((H-End)/1.5));
  }
  // The way the wind blows from, as the gusts in FS47Omen do.
  FString WayFrom(const S47Weather::FDay& D){return FS47Omen::Way(FMath::DegreesToRadians(double(D.WindFrom)));}
@@ -63,7 +75,7 @@ S47Weather::FDay S47Weather::Day(int32 Seed,int32 ShiftDay)
    D.DustFrom=float(12.5+2.*L::Draw(Seed,Num,16));D.DustTo=float(18.5+1.5*L::Draw(Seed,Num,17));
    D.NightStorm=float(.35+.65*L::Draw(Seed,Num,18));
   }
-  else D.NightStorm=float(.25*L::Draw(Seed,Num,18));
+  else D.NightStorm=0.f; // (a windy day without sand is still by night: a stormy night is a rare one, and a felt one, M5 critic 3)
  }
  else
  {
@@ -105,18 +117,23 @@ S47Weather::FNow S47Weather::Now(int32 Seed,int32 CalendarDay,double ClockOfDay)
  FNow N;
  double Mph=L::MphAt(D,H);
  // the small hours have what is left of the night before's wind
- if(H<3&&Num>1)Mph=FMath::Max(Mph,L::MphAt(Day(Seed,Num-1),H+24.));
+ const bool bAfter=H<L::SmallHours&&Num>1;
+ const FDay Before=bAfter?Day(Seed,Num-1):FDay();
+ if(bAfter)Mph=FMath::Max(Mph,L::MphAt(Before,H+24.));
  N.Mph=Mph;N.Wind=FMath::Clamp((Mph-12.)/22.,0.,1.);
  if(D.bDust)
  {
   N.Dust=D.DustK*L::Trap(H,D.DustFrom,D.DustFrom+1.2,D.DustTo-1.,D.DustTo+.6);
-  // and some of it carried on with the wind after dark, gone by midnight
-  if(H>=D.DustTo-1.)N.Dust=FMath::Max(N.Dust,.4*D.DustK*D.NightStorm*(1.-L::Smooth01((H-22.5)/1.5)));
+  // and some of it carried on with the wind after dark
+  N.Dust=FMath::Max(N.Dust,L::NightDust(D,H));
  }
- N.Storm=H>=19||H<5?N.Wind:0.;
+ // (a stormy night's sand still in the air in the small hours)
+ if(bAfter)N.Dust=FMath::Max(N.Dust,L::NightDust(Before,H+24.));
+ N.Storm=H>=19||H<L::SmallHours?N.Wind:0.;
  if(D.bShower)
  {
-  N.Rain=L::Trap(H,D.ShowerAt-.25,D.ShowerAt+.05,D.ShowerAt+.45,D.ShowerAt+.8);
+  // (M5 critic 3: long enough to be seen and heard, about three quarters of an hour at its fullest)
+  N.Rain=L::Trap(H,D.ShowerAt-.25,D.ShowerAt+.05,D.ShowerAt+.8,D.ShowerAt+1.1);
   N.Wet=L::Trap(H,D.ShowerAt,D.ShowerAt+.35,D.ShowerAt+1.5,D.ShowerAt+4.);
   N.bThunder=D.bThunder&&L::Trap(H,D.ShowerAt-1.,D.ShowerAt-.5,D.ShowerAt+1.,D.ShowerAt+1.6)>0;
  }
@@ -165,7 +182,7 @@ FString S47Weather::Words(const FDay& D,bool bShort)
  if(D.bDust)
  {
   Said_+=FString::Printf(TEXT(" %s wind %d to %d mph in the afternoon, gusts to %d. Blowing sand, with poor visibility at times."),*L::Capital(L::WayFrom(D)),L::Clean(D.WindMph-4),L::Clean(D.WindMph+4),D.GustMph);
-  Said_+=D.NightStorm>.5f?TEXT(" The wind easing late in the evening."):TEXT(" Easing after sundown.");
+  Said_+=D.NightStorm>L::HeldNight?TEXT(" Windy on through the night, easing toward morning."):TEXT(" Easing after sundown.");
  }
  else if(D.Windy())Said_+=FString::Printf(TEXT(" Windy in the afternoon, %s %d to %d mph, gusty."),*L::WayFrom(D),L::Clean(D.WindMph-4),L::Clean(D.WindMph+4));
  else
@@ -329,7 +346,7 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
   bNow&=Nine.Dust==0&&Noon.Dust==0&&Dawn.Rain==0;
   if(A.bDust)bNow&=Four.Wind>Dawn.Wind&&Four.Wind>.3;
   if(!A.Windy())bNow&=Four.Wind<.05;
-  if(A.bShower){const FNow In=Now(TrySeed,Num,(A.ShowerAt+.25)*3600.),Later=Now(TrySeed,Num,(A.ShowerAt+1.)*3600.);bNow&=In.Rain>.9&&Later.Wet>.5&&Later.Rain==0&&In.CloudBias>.15;}
+  if(A.bShower){const FNow In=Now(TrySeed,Num,(A.ShowerAt+.25)*3600.),Later=Now(TrySeed,Num,(A.ShowerAt+1.2)*3600.);bNow&=In.Rain>.9&&Later.Wet>.5&&Later.Rain==0&&In.CloudBias>.15;}
   else bNow&=Four.Rain==0&&Four.Wet==0;
   bNow&=(Dawn.Haze>.4)==A.bHaze&&Late.Haze==0;
   bNow&=Four.CloudBias==CloudBiasAt(A,16*3600.);
@@ -354,6 +371,19 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
  Check(bClean,TEXT("nothing printed about the weather says the number the game keeps out"));
  Check(bNow,TEXT("what the world shows is the day's: sand in a dust day's afternoon only, rain at the shower's hour and slick dirt after, haze at dawn"));
  Check(bSmooth,TEXT("the wind runs on over midnight into the small hours without a jump"));
+ {
+  // M5 critic 3: a stormy night (FS47Rhythm's busier one) still blows in the night's own hours; a windy day without sand is still by night
+  int32 Held=0,HeldWindy=0,Calm=0,CalmStill=0;bool bSeam=true;
+  for(const int32 TrySeed:{1,470047,-90210,123456789,777,31337})for(int32 Num=1;Num<=30;++Num)
+  {
+   const FDay A=Day(TrySeed,Num);
+   const FNow Small=Now(TrySeed,Num+1,2.5*3600.),Dawn6=Now(TrySeed,Num+1,6.*3600.),Dawn6Less=Now(TrySeed,Num+1,6.*3600.-1.);
+   bSeam&=FMath::Abs(Dawn6.Mph-Dawn6Less.Mph)<1.&&FMath::Abs(Dawn6.Dust-Dawn6Less.Dust)<.01;
+   if(A.NightStorm>L::HeldNight){++Held;HeldWindy+=Small.Wind>.1&&Small.Storm>.1?1:0;}
+   else if(!A.bDust&&A.Windy()){++Calm;CalmStill+=A.NightStorm==0.f&&Small.Storm<.05?1:0;}
+  }
+  Check(Held>0&&HeldWindy==Held&&CalmStill==Calm&&bSeam,FString::Printf(TEXT("a stormy night blows on at half past two (%d of %d); a windy day without sand is still by night (%d of %d); no seam at six"),HeldWindy,Held,CalmStill,Calm));
+ }
  Check(bWay,TEXT("the wind blows away from where FS47Omen's gusts come from"));
  {
   int32 Seed=-1,OnDay=-1;
