@@ -24,6 +24,8 @@ Hver milepæl er ferdig når Tom har spilt den, en ny kritiker ikke finner alvor
 
 Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom bestemte.
 
+**Natt til 9. november (bygget i editor, selvtest OK; ikke spilt av Tom):** M3 og MOON flettet til main (PR #507). M4 bygget på `claude/m4-20261109`: midlertidige bokser for trailerpark, skole, Grange-hall og Baca (`S47TownSites`), funksjon i 1420 AM, Feed & Seed og suvenirsjappa (`S47TownUse`), fire faste byfolk (`S47Townsfolk`), Eloy Baca, Sky Watch og militæret (`S47Visitors`), motellnatt (`S47MotelNight`). M5 bygget: vær som følger `S47Weather` (`S47WeatherLive`) og tretthet med kaffe og søvn (`S47Fatigue`), samt M2-trådene (temperaturnål, pust som høres, forvarsler via `Omen->Post`). Kritikerrunde 3 ga 4–6,5/10 og 35 bekreftede funn (morgensjekken hoppes over ved søvn til 08:00, militæret rydder ikke, Sky Watch kommer ikke, sladderen vet for mye, trettheten blinker og kommer for tidlig); retting pågår. Gjenstår i M4/M5: Tripo-figurene (stiene står klare i `S47Hap`), PHYSICS og feltseng på SARO (pågår), ekte modeller for boksene.
+
 - [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
 - [ ] **T16-02: fjellteksturer.** Bedre, ekte New Mexico-utseende på `SM_FF_Range`.
 - [ ] **T16-03: bakken rundt gården.** Store flater med overlapp mellom to teksturer.

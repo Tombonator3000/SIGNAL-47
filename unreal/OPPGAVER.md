@@ -6,6 +6,8 @@
 
 Tom ca. 22:30: ta alt, så TODO-lista til kl. 10:00 med agenter og ultracode. Kopier: `~/SIGNAL-47` (Claude, `claude/m2-20261108`, koordinator), `~/SIGNAL-47-cosmic` (Codex), og høyst to agent-worktrees (kart og nattlogg; lagring på SARO). Patch-agenter uten egen kopi for mindre oppgaver. Én tung motorjobb om gangen via `q.py`.
 
+Kl. 03: hovedkopien er på `claude/m4-20261109` (M4 og M5 flettet, PR #507 i main). Agent-worktrees: fysikk og feltseng (PHYSICS, SARO-COT) og retting etter kritikerrunde 3 for M4. Patch-agent uten egen kopi: retting av vær og tretthet. Ferdige agent-kopier (kart, M4, M5) er avviklet.
+
 ## M1 Verden som lever, Claude Code 8. november ettermiddag
 
 Tom ca. 15: kjør på med milepælene, M1 først. Kopier: `~/SIGNAL-47` (Claude, `claude/m1-20261108`, koordinator, bygger og installerer), `~/SIGNAL-47-cosmic` (Codex), og høyst to agent-worktrees: A stedskatalog og hendelser hvor som helst (ANYWHERE, ARRAY-ORBS), B natthendelser 1-8 og geigerteller (NIGHT31, GEIGER). Én tung motorjobb om gangen via `q.py`.
