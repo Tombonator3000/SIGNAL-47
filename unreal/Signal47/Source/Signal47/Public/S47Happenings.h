@@ -116,6 +116,41 @@ public:
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
 
+ // M7, the first big night (Tom, 9 November: «Det må skje noe stort natt to eller tre», S47BigNight.cpp). Once in a game, on the
+ // second or third night (the seed's), after two: the whole array turns by itself to one point low on the horizon while the power
+ // flickers, every instrument in the rack goes off at once, a low note comes up through the ground, and for a few seconds something
+ // stands, falls or rises out on the land in that direction (the seed's variant: "column", "fall" or "rise"). Felt wherever the
+ // player is: at SARO the lights and the rack, in the truck the dash and the lamps, in Caliche the street lamps, on foot the lamp.
+ // Nothing dangerous and nobody taken. It leaves a mark at the place, a line in the night log (the array's own record), the array
+ // still pointing there in the morning, Dale on the walkie, 1420 and the CB talking, the Ledger's front page, and a lead to the
+ // visitors' case. Slept through, it still happened: the morning finds what it left.
+ struct FBigPlan{int32 Night=0;double Hour=0;int32 Variant=0;};
+ // Pure, from the seed: the night (2 or 3), the hour of the night (26.1 to 27.6, never the 02:20s to 02:40s), the variant.
+ static FBigPlan BigPlanFor(int32 Seed);
+ static const TCHAR* BigVariantName(int32 Variant);
+ static int32 BigVariantOf(const FString& Name);
+ // This game's: from the seed, moved to the other of the two nights when the drawn one is calm and the other is not.
+ FBigPlan BigPlan() const;
+ // The night it came (or was slept through), 0 not yet, -1 never in this game (a save from after its nights).
+ int32 BigHappened() const{return BigNight;}
+ bool BigLive() const{return Now.Id==TEXT("big_night");}
+ // A sleeper on this night is woken for it (FS47FreeformDirector::DrawForNight).
+ bool BigWakes(int32 Night) const;
+ // What of the day after has come: "array", "dale", "slip", "radio", "cb", "seen", "felt", "trace", "unseen".
+ bool BigHas(const FString& What) const{return BigFollow.Contains(What);}
+ // F10 and tests: the day after's follow-ups now, as far as where the player is allows (Dale's hail, the array's record).
+ void DevBigMorning();
+ // F10: the planner's own draw from now on, in a developer run too, as if this game had not reached it yet.
+ void DevBigNatural(){ResetBig();bBigDevNatural=true;}
+ // F10: tonight's big night as if slept through, in this shape (empty: the seed's): the mark is out there, the day after to come.
+ bool DevBigSlept(const FString& Variant,FString& Why);
+ // F10: as E on the mark.
+ void DevUseBig(){UseBig();}
+ double BigBearing() const{return BigAz;}
+ double BigElevation() const{return BigEl;}
+ const FString& BigPlaceTitle() const{return BigTitle;}
+ static bool BigSelfTest(TArray<FString>& Lines);
+
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
  struct FProp;
@@ -330,6 +365,32 @@ private:
  bool FireUnease(int32 I,bool bForced,FString& Why);
  void StepUneasy(double Dt,double Pc=1);
  void EndUneasy();
+ // ---- the first big night (S47BigNight.cpp) ----
+ int32 BigNight=0,BigVar=-1,BigSerial=0,BigDaleAt=0;
+ double BigClock=0,BigAz=0,BigEl=3,BigX=0,BigZ=0,BigTry=0,BigFollowTry=0,BigFlick=0,BigDaleIn=0;
+ FString BigPlace,BigTitle;
+ TSet<FString> BigFollow;
+ TArray<FString> BigDaleLines;
+ // Stepped during its night in this game (saved): only then is a night slept through the night it happened.
+ bool bBigSawNight=false,bBigPower=false,bBigMotors=false,bBigDimmed=false,bBigToneOn=false;
+ // F10's natural line: the plan is asked outside the night's own rules too (not saved).
+ bool bBigDevNatural=false;
+ bool BeginBig(const FString& Variant,bool bForced,FString& Why);
+ void StepBig(double Dt);
+ void StepBigDue();
+ void StepBigAfter();
+ void EndBigEffects();
+ void UseBig();
+ void BigTurnArray(bool bSnap);
+ void BigRecordArray(bool bWasThere);
+ void BigUnseen(int32 Night);
+ bool BigSite(int32 Night,double Clock);
+ FString BigSpoken() const;
+ S47J::FObj SaveBig() const;
+ void LoadBig(const S47J::FObj& O);
+ void ResetBig();
+ // A drawn thing of the big night: built if need be, at Foot, each part's size times Scale, its lamps at LampK of their strength.
+ bool ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn);
  // ---- the counter ----
  void StepGeiger(double Dt);
  float DoseAt(const FVector& Foot,FString& Near,double& NearM) const;

@@ -154,7 +154,7 @@ bool Resumable(const FString& Id,const FString& Variant)
 const TCHAR* const NightKeys[]={TEXT("cattle_ring_d"),TEXT("car_dies_d"),TEXT("clock_ahead_d"),TEXT("cb_echo_d"),TEXT("cb_empty_d"),TEXT("cb_wrong_d"),TEXT("landing_seen_d"),TEXT("landing_logged_d"),TEXT("hitcher_d"),TEXT("rv_d"),
  TEXT("carcass_d"),TEXT("house_lit_d"),TEXT("horizon_figure_d"),TEXT("cinema_film_d"),TEXT("room6_tv_d"),TEXT("blackout_d"),TEXT("array_burst_d"),TEXT("hood_warm_d"),TEXT("truck_tracks_d"),
  TEXT("animals_flee_d"),TEXT("car_light_d"),TEXT("dust_devil_d"),TEXT("missing_d"),TEXT("dogs_hush_d"),TEXT("phone_empty_d"),TEXT("geiger_landing_"),TEXT("geiger_trace_"),TEXT("geiger_sample_"),
- TEXT("figure_near_d")};
+ TEXT("figure_near_d"),TEXT("lights_trace_bignight_d")};
 // What a line may not say (the text critic, 8 November): the answer for the player, and the motifs another system owns. One line.
 const TCHAR* const Concludes[]={TEXT("nobody in it"),TEXT("nobody lives there"),TEXT("nobody with it"),TEXT("it had it right"),TEXT("seemed embarrassed"),TEXT("nothing behind the station"),TEXT("looks like your handwriting"),TEXT("the way the lights came down"),TEXT("as if a film were running"),TEXT("does not seem to have heard"),TEXT("nothing out there for anyone")};
 bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TCHAR* W:Concludes)if(L.Contains(W))return true;return false;}
@@ -313,6 +313,48 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   {TEXT("roadkill"),TEXT("A dead animal on the road, then not")},{TEXT("lamps_out"),TEXT("Caliche's lamps go out one by one")},{TEXT("dark_car"),TEXT("A car without lights behind you")},
   {TEXT("birds"),TEXT("All the birds go up at once")},
  };
+ // M7, the big night (S47BigNight.cpp). A column of pale light some nine hundred metres high, a brighter core in it, and the ground
+ // lit white where it stands; the parts are placed from its foot so that it grows up off the land as its height is scaled.
+ TArray<FPiece> BigColumnParts()
+ {
+  return {{Cyl,FVector(0,450,0),FVector(16,900,16),0,0,0,0xcfdcf4,22.f,false},{Cyl,FVector(0,450,0),FVector(5,900,5),0,0,0,0xffffff,80.f,false},
+   {Cyl,FVector(0,.6,0),FVector(34,1.2,34),0,0,0,0xe6eeff,18.f,false}};
+ }
+ // A dozen small lights close together, at uneven heights, that rise as one.
+ TArray<FPiece> BigRiseParts()
+ {
+  TArray<FPiece> Out;
+  for(int32 I=0;I<12;++I){const double A=I*2.4+.3,R=10.+(I%4)*7.;Out.Add({Ball,FVector(FMath::Cos(A)*R,(I%3)*6.-6.,FMath::Sin(A)*R),FVector(6.5),0,0,0,0xfff2d8,70.f,false});}
+  return Out;
+ }
+ // What it leaves. Glassed ground: a dark disc gone to glass in a ring of pale ash, and small bare prints round it twice and off.
+ TArray<FPiece> BigMarkColumn()
+ {
+  const uint32 Ash=0x8a8172,Glass=0x0e1012,Crack=0x3a3832,Print=0x3b342a;
+  TArray<FPiece> Out={{Cyl,FVector(0,.012,0),FVector(6.6,.02,6.6),0,0,0,Ash,0,true},{Cyl,FVector(0,.024,0),FVector(2.1,.024,2.1),0,0,0,Glass,0,true}};
+  for(int32 I=0;I<5;++I)Out.Add({Cube,FVector(0,.038,0),FVector(.025,.006,1.9-.2*I),I*.63,0,0,Crack,0,false});
+  for(int32 I=0;I<26;++I){const double A=I*2.*UE_DOUBLE_PI/13.,R=2.55+(I/13)*.32;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.1,.02,.22),-A,0,0,Print,0,false});}
+  for(int32 I=0;I<10;++I)Out.Add({Ball,FVector((I%2)*.28-.14,.02,-3.4-I*.8),FVector(.1,.02,.22),0,0,0,Print,0,false});
+  return Out;
+ }
+ // The furrow: burnt along its bottom, a lip of thrown caliche either side, deepest at its end with nothing there, the brush laid flat.
+ TArray<FPiece> BigMarkFall()
+ {
+  const uint32 Floor=0x16120e,Lip=0x6a5c48,Pit=0x0c0a09,Brush=0x4a3b2a;
+  TArray<FPiece> Out={{Cube,FVector(0,.012,9),FVector(1.2,.03,18),0,0,0,Floor,0,false},{Cube,FVector(.9,.11,9),FVector(.55,.22,18),0,0,.12,Lip,0,false},
+   {Cube,FVector(-.9,.11,9),FVector(.55,.22,18),0,0,-.12,Lip,0,false},{Cyl,FVector(0,.016,0),FVector(2.6,.026,2.6),0,0,0,Pit,0,true}};
+  for(int32 I=0;I<12;++I){const double Side=I%2?1.:-1.,Z=1.5+I*1.4;Out.Add({Ball,FVector(Side*(2.4+(I%3)*.5),.07,Z),FVector(1.5,.12,.55),Side*.5,0,0,Brush,0,false});}
+  return Out;
+ }
+ // Stones turned over: a ring of them dark side up round a middle swept bare, and cattle tracks running out of it every way.
+ TArray<FPiece> BigMarkRise()
+ {
+  const uint32 Bare=0x8f8572,Stone=0x2e2820,Track=0x2a241c;
+  TArray<FPiece> Out={{Cyl,FVector(0,.012,0),FVector(6.2,.016,6.2),0,0,0,Bare,0,true}};
+  for(int32 I=0;I<28;++I){const double A=I*.9+.2,R=3.3+(I%5)*.45;Out.Add({Ball,FVector(FMath::Cos(A)*R,.05,FMath::Sin(A)*R),FVector(.28,.12,.22),A,0,0,Stone,0,false});}
+  for(int32 D=0;D<8;++D)for(int32 I=0;I<5;++I){const double A=D*UE_DOUBLE_PI/4.+.2,R=5.8+I*.9;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.16,.02,.2),-A,0,0,Track,0,false});}
+  return Out;
+ }
  // The passing over the truck, and the lights that come down: lamps, each with its own point light.
  TArray<FPiece> GlowParts(double Size,int32 Count,double Spread,uint32 Colour,float Glow)
  {
@@ -562,7 +604,9 @@ const TArray<FString>& FS47Happenings::Ids()
   TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("carcass"),TEXT("house_lit"),TEXT("horizon_figure"),TEXT("cinema_film"),TEXT("room6_tv"),TEXT("town_blackout"),
   TEXT("array_burst"),TEXT("am_caller"),TEXT("hood_warm"),TEXT("truck_tracks"),TEXT("animals_flee"),TEXT("car_light"),TEXT("dust_devil"),TEXT("missing_person"),
   // On foot, a danger (Tom's critics, 8 November: M1 had none for a player on foot).
-  TEXT("figure_near")};
+  TEXT("figure_near"),
+  // M7: the first big night, once in a game on night 2 or 3 (S47BigNight.cpp).
+  TEXT("big_night")};
  return L;
 }
 bool FS47Happenings::IsDanger(const FString& Id){return Id==TEXT("cb_echo")||Id==TEXT("hitchhiker")||Id==TEXT("car_light")||Id==TEXT("figure_near");}
@@ -577,8 +621,10 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
  Paced=0;NearK=1;DangerAt=-1;Tally=FTally();NoticedSerials.Reset();RefusedSaid.Reset();LateDrawSaid.Reset();LoopsOn.Reset();SoundNext=0;HeldTips.Reset();FigureSeen.Reset();FigureSeenFor=0;SwapTry=0;RumorTry=0;
  DimLeft=0;bDimmed=false;Dose=0;Needle=0;TickDebt=0;GeigerUpFor=0;GeigerNoteIn=0;bGeigerUp=false;bGeigerHeld=false;bDevGeiger=false;bGeigerAway=false;
+ ResetBig();
  if(Saved.IsValid())
  {
+  LoadBig(S47J::Obj(Saved,TEXT("big")));
   const S47J::FObj Last=S47J::Obj(Saved,TEXT("last"));
   for(const FString& Id:Ids()){const int32 D=S47J::Int(Last,*Id,0);if(D>=1&&D<100000)LastDays.Add(Id,D);}
   Serial=FMath::Clamp(S47J::Int(Saved,TEXT("serial")),0,1000000);
@@ -606,7 +652,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    S.bFound=S47J::Bool(O,TEXT("found"));S.bDone=S47J::Bool(O,TEXT("done"));S.bHeard=S47J::Bool(O,TEXT("heard"));
    // Before a landing's bearing was set as it came down, a bearing on it meant it was known.
    S.bKnown=O->HasField(TEXT("known"))?S47J::Bool(O,TEXT("known")):S.Az>=0;
-   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst");
+   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst")||S.Kind==TEXT("bigmark");
    if(bKind&&S.Night>0&&FMath::IsFinite(S.X)&&FMath::IsFinite(S.Z)&&FMath::Abs(S.X)<1e5&&FMath::Abs(S.Z)<1e5&&FMath::IsFinite(S.Until)&&Sites.Num()<16)Sites.Add(S);
   }
   // What was on when it was saved, if it can carry on (S47Hap::Resumable): otherwise it may be drawn again.
@@ -649,6 +695,7 @@ S47J::FObj FS47Happenings::Save() const
  if(MetTotal>0)S47J::Set(O,TEXT("met"),MetTotal);
  if(GhostNight>0)S47J::Set(O,TEXT("ghostNight"),GhostNight);
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
+ if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
   auto N=S47J::New();
@@ -679,6 +726,8 @@ S47J::FObj FS47Happenings::Save() const
 void FS47Happenings::Stop()
 {
  Life.Reset();
+ // The big night's hold on SARO's power, the truck's lamps and the motors is let go first, whatever else is.
+ EndBigEffects();
  // At process exit the object array may already be gone: IsValid(M) itself faults there (seen in the Reyes and journey runs
  // after the test passed). Only plain state is reset then.
  if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();Now=FActive();Says.Reset();return;}
@@ -749,6 +798,12 @@ void FS47Happenings::FillMap(FS47MapView& View) const
   else if((S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("carcass")||S.Kind==TEXT("missing"))&&(S.bHeard||S.bFound)&&!S.bDone)
   {
    FS47MapPin P;P.East=S.X;P.South=S.Z-SaroZ;P.Label=S.Kind==TEXT("truck")?TEXT("CB"):S.Kind==TEXT("rv")?TEXT("camper"):S.Kind==TEXT("carcass")?TEXT("cow"):TEXT("pickup");P.bHeard=!S.bFound;View.Pins.Add(P);
+  }
+  // The big night's mark: the array's bearing to it once known, and the place in pencil until it is found.
+  else if(S.Kind==TEXT("bigmark")&&(S.bKnown||S.bFound))
+  {
+   if(S.Az>=0){FS47MapSector Sec;Sec.Az=S.Az;Sec.Spread=S.Spread;Sec.Label=FString::Printf(TEXT("N%d"),S.Night);View.Sectors.Add(Sec);}
+   FS47MapPin P;P.East=S.X;P.South=S.Z-SaroZ;P.Label=TEXT("mark");P.bHeard=!S.bFound;View.Pins.Add(P);
   }
   else if(S.Kind==TEXT("burst")&&S.Az>=0)
   {
@@ -971,6 +1026,14 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("tracks"))Spec=S47Hap::TrackParts();
  else if(Kind==TEXT("pickup")){if(!Exists(S47Hap::PickupModel))return nullptr;Spec.Add({S47Hap::PickupModel,FVector::ZeroVector,FVector(1),0,0,0,0x2c4a7au,0,true});UseId=TEXT("ff:hap:missing");}
  else if(Kind==TEXT("chair"))Spec=S47Hap::ChairParts();
+ // M7, the big night (S47BigNight.cpp): what stands out there for a few seconds, and what it leaves.
+ else if(Kind==TEXT("bigglow_column")){Spec=S47Hap::BigColumnParts();Lamps.Add({FVector(0,40,0),0xdfe8ff,80000000.f,250000.f});}
+ else if(Kind==TEXT("bigglow_fall")){Spec=S47Hap::GlowParts(24,1,0,0xf4fff2,90.f);Lamps.Add({FVector(0,0,0),0xe8f6ff,40000000.f,200000.f});}
+ else if(Kind==TEXT("bigglow_rise")){Spec=S47Hap::BigRiseParts();Lamps.Add({FVector(0,0,0),0xfff0d2,20000000.f,150000.f});}
+ else if(Kind==TEXT("bigflash"))Lamps.Add({FVector(0,0,0),0xeaf4ff,120000000.f,300000.f});
+ else if(Kind==TEXT("bigmark_column")){Spec=S47Hap::BigMarkColumn();UseId=TEXT("ff:hap:bigmark");}
+ else if(Kind==TEXT("bigmark_fall")){Spec=S47Hap::BigMarkFall();UseId=TEXT("ff:hap:bigmark");}
+ else if(Kind==TEXT("bigmark_rise")){Spec=S47Hap::BigMarkRise();UseId=TEXT("ff:hap:bigmark");}
  else if(Kind==TEXT("stare"))Spec=S47Hap::StareParts();
  else if(Kind==TEXT("carcass"))Spec=S47Hap::CarcassParts();
  else if(Kind==TEXT("window")){Spec=S47Hap::WindowParts();Lamps.Add({FVector(0,0,.6),0xffc27a,1800.f,700.f});}
@@ -1036,7 +1099,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  if(!UseId.IsEmpty()&&!P.Hits.IsEmpty())
  {
   const TWeakPtr<uint8> Guard=Alive;
-  FS47Interactable I;I.Id=UseId;I.Object=P.Hits[0];I.Range=UseId==TEXT("ff:hap:truck")||UseId==TEXT("ff:hap:rv")||UseId==TEXT("ff:hap:missing")?4.5:UseId==TEXT("ff:hap:carcass")?4.:3.2;
+  FS47Interactable I;I.Id=UseId;I.Object=P.Hits[0];I.Range=UseId==TEXT("ff:hap:truck")||UseId==TEXT("ff:hap:rv")||UseId==TEXT("ff:hap:missing")?4.5:UseId==TEXT("ff:hap:carcass")?4.:UseId==TEXT("ff:hap:bigmark")?6.:3.2;
   I.Label=[this,Guard,UseId]()->FString
   {
    if(!Guard.IsValid()||!M||!M->Freeform)return FString();
@@ -1047,6 +1110,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
    if(UseId==TEXT("ff:hap:humor"))return Now.Id!=TEXT("humor")?FString():Now.Variant==TEXT("car")?TEXT("Pink convertible / look"):Now.Variant==TEXT("singer")?TEXT("The singer / listen"):Now.Variant==TEXT("pump")?TEXT("The small man / talk"):FString();
    if(UseId==TEXT("ff:hap:phone"))return Now.Id==TEXT("phone_empty")&&Now.Stage==0?TEXT("The phone / answer it"):FString();
    if(UseId==TEXT("ff:hap:carcass"))return SiteOf(TEXT("carcass"))?TEXT("Dead cow / look closer"):FString();
+   if(UseId==TEXT("ff:hap:bigmark"))return SiteOf(TEXT("bigmark"))?TEXT("Marked ground / look closer"):FString();
    if(UseId==TEXT("ff:hap:missing")){const FSite* S=SiteOf(TEXT("missing"));return S&&!S->bDone?TEXT("Blue pickup / look inside"):FString();}
    if(UseId==TEXT("ff:hap:truck"))
    {
@@ -1067,6 +1131,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
    else if(UseId==TEXT("ff:hap:phone"))UsePhone();
    else if(UseId==TEXT("ff:hap:carcass"))UseSite(TEXT("carcass"));
    else if(UseId==TEXT("ff:hap:missing"))UseSite(TEXT("missing"));
+   else if(UseId==TEXT("ff:hap:bigmark"))UseBig();
   };
   I.Examine=I.Label;
   M->Inter->Add(I);
@@ -1102,6 +1167,27 @@ void FS47Happenings::ShowProp(FProp& P,bool bOn)
   C->SetCollisionEnabled(bHere&&Pt.bHit?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get()){Lc->SetVisibility(bHere);Lc->SetIntensity(bHere?L.Lumens:0.f);}
+}
+// The big night's drawn things: posed with each part's place and size times Scale (a column that grows up off the ground), the
+// lamps at LampK of their strength. Not PoseProp's pose: its next call poses it again from scratch.
+bool FS47Happenings::ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn)
+{
+ FProp* P=bOn?Prop(Kind):FindProp(Kind);
+ if(!P)return false;
+ if(!bOn){ShowProp(*P,false);return true;}
+ const FQuat Turn=S47Three::Euler(0,Yaw,0);
+ for(FProp::FPart& Pt:P->Parts)
+ {
+  UStaticMeshComponent* C=Pt.C.Get();if(!IsValid(C))continue;
+  const FQuat Q=Turn*S47Three::Euler(Pt.Pitch,Pt.Yaw,Pt.Roll,TEXT("YXZ"));
+  double E[16];S47Three::Compose(Foot+Turn.RotateVector(Pt.At*Scale),Q,Pt.Size*Scale,E);
+  C->SetWorldTransform(S47Three::MatToUE(E));
+ }
+ for(FProp::FLamp& L:P->Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetWorldLocation(S47Three::ToUE(Foot+Turn.RotateVector(L.At*Scale)));
+ P->bPosed=false;
+ ShowProp(*P,true);
+ for(FProp::FLamp& L:P->Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetIntensity(L.Lumens*FMath::Clamp(LampK,0.f,1.f));
+ return true;
 }
 void FS47Happenings::HideAll()
 {
@@ -1441,7 +1527,8 @@ void FS47Happenings::PutAway(const FString& Id)
 {
  static const TCHAR* const What[][2]={{TEXT("car_dies"),TEXT("passer")},{TEXT("landing"),TEXT("lander")},{TEXT("car_light"),TEXT("lander")},{TEXT("cb_echo"),TEXT("lander")},{TEXT("hitchhiker"),TEXT("hitcher")},
   {TEXT("humor"),TEXT("car")},{TEXT("humor"),TEXT("singer")},{TEXT("humor"),TEXT("hairy")},{TEXT("humor"),TEXT("zet")},{TEXT("phone_empty"),TEXT("phone")},{TEXT("horizon_figure"),TEXT("shade")},
-  {TEXT("room6_tv"),TEXT("tvlight")},{TEXT("animals_flee"),TEXT("rabbits")},{TEXT("dust_devil"),TEXT("devil")},{TEXT("figure_near"),TEXT("shade")},{TEXT("figure_near"),TEXT("lander")}};
+  {TEXT("room6_tv"),TEXT("tvlight")},{TEXT("animals_flee"),TEXT("rabbits")},{TEXT("dust_devil"),TEXT("devil")},{TEXT("figure_near"),TEXT("shade")},{TEXT("figure_near"),TEXT("lander")},
+  {TEXT("big_night"),TEXT("bigglow_column")},{TEXT("big_night"),TEXT("bigglow_fall")},{TEXT("big_night"),TEXT("bigglow_rise")},{TEXT("big_night"),TEXT("bigflash")}};
  if(M&&IsValid(M->Web.Get()))for(const auto& W:What)if(Id==W[0])for(const auto& P:Props)if(P&&P->Kind==W[1])ShowProp(*P,false);
  if(Id==TEXT("room6_tv")&&M&&IsValid(M->Audio))M->Audio->TvHiss({});
 }
@@ -1464,6 +1551,7 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  else if(Id==TEXT("stranded_rv"))bOk=BeginRv(bForced,Why);
  else if(Id==TEXT("humor"))bOk=BeginHumor(Variant,bForced,Why);
  else if(Id==TEXT("figure_near"))bOk=BeginFigure(bForced,Why);
+ else if(Id==TEXT("big_night"))bOk=BeginBig(Variant,bForced,Why);
  else bOk=BeginMore(Id,Variant,bForced,Why);
  if(!bOk)return false;
  ++Serial;TryAt.Remove(Id);
@@ -1499,6 +1587,7 @@ void FS47Happenings::EndEvent(bool bEvidence)
  const double Away=AwayNow(Id);const bool bNoticed=NoticedSerials.Contains(Now.Serial);
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening end %s after %.0f s (%.0f min of the night)%s%s, %s, %s"),*Id,Now.Age,M&&M->Freeform&&Now.Clock>0?(M->Freeform->Clock()-Now.Clock)/60.:0.,bEvidence?TEXT(", kept"):TEXT(""),bDanger?(bMet?TEXT(", met"):TEXT(", never met")):TEXT(""),bNoticed?TEXT("noticed"):TEXT("not noticed"),Away<0?TEXT("no distance"):*FString::Printf(TEXT("%.0f m from the player"),Away));
  PutAway(Id);
+ if(Id==TEXT("big_night"))EndBigEffects();
  if(M&&M->Audio)M->Audio->Stop(TEXT("hapEngine"),.6f);
  // The truck's lights are never left out by an event cut short.
  if(bDimmed&&M&&M->World){M->World->Trouble.Dim=1;bDimmed=false;}
@@ -1529,9 +1618,11 @@ void FS47Happenings::Step(double Dt)
  StepSites(Dt);
  SiteSounds();
  StepTips();
+ StepBigAfter();
  // The night by its own rules: only where a real game is played (or a test asks for them), never in the first shift.
  if(F->RulesLive()&&!F->InTutorial())
  {
+  StepBigDue();
   StepSwap();
   static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
    TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
@@ -1551,6 +1642,7 @@ void FS47Happenings::Step(double Dt)
   StepLate();
   StepCues();
  }
+ else if(bBigDevNatural&&!F->InTutorial())StepBigDue();
  StepWatch();
  StepReport();
  StepUnease(Dt);
@@ -1700,6 +1792,7 @@ void FS47Happenings::StepEvent(double Dt)
  else if(Now.Id==TEXT("hitchhiker"))StepHitcher(Dt);
  else if(Now.Id==TEXT("humor"))StepHumor(Dt);
  else if(Now.Id==TEXT("figure_near"))StepFigure(Dt);
+ else if(Now.Id==TEXT("big_night"))StepBig(Dt);
  else if(Now.Id==TEXT("cb_stranded"))
  {
   if(Now.Age>=Now.Len)EndEvent(true);
@@ -1932,6 +2025,8 @@ void FS47Happenings::PlaceSites()
   else if(S.Kind==TEXT("carcass"))Show(TEXT("deadcow"),At,S.Yaw);
   else if(S.Kind==TEXT("missing"))Show(TEXT("pickup"),At,S.Yaw);
   else if(S.Kind==TEXT("tracks"))Show(TEXT("tracks"),At,S.Yaw);
+  // The big night's mark, in its own shape (S47BigNight.cpp).
+  else if(S.Kind==TEXT("bigmark")){const FString Mark=TEXT("bigmark_")+S.Variant;Show(*Mark,At,S.Yaw);}
   else if(S.Kind==TEXT("truck")&&!S.bDone)
   {
    if(S.Variant==TEXT("wrong"))Show(TEXT("handset"),At,S.Yaw);
@@ -1949,7 +2044,7 @@ void FS47Happenings::PlaceSites()
    }
   }
  }
- for(const TCHAR* K:{TEXT("ring"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
+ for(const TCHAR* K:{TEXT("ring"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks"),TEXT("bigmark_column"),TEXT("bigmark_fall"),TEXT("bigmark_rise")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
 }
 
 // ---------------------------------------------------------------- car_dies: something goes over the truck
@@ -3852,7 +3947,7 @@ bool FS47Happenings::DevStart(const FString& Id,const FString& Variant,FString& 
 }
 bool FS47Happenings::LiveAt(FVector& Out) const
 {
- if(Now.Id==TEXT("hitchhiker")||Now.Id==TEXT("humor")||Now.Id==TEXT("landing"))return WorldOf(Now.X,Now.Z,Out);
+ if(Now.Id==TEXT("hitchhiker")||Now.Id==TEXT("humor")||Now.Id==TEXT("landing")||Now.Id==TEXT("big_night"))return WorldOf(Now.X,Now.Z,Out);
  if(Now.Id==TEXT("car_dies")||Now.Id==TEXT("dogs_hush")||Now.Id==TEXT("phone_empty")||Now.Id==TEXT("horizon_figure")||Now.Id==TEXT("room6_tv")||Now.Id==TEXT("dust_devil")||Now.Id==TEXT("car_light")||Now.Id==TEXT("figure_near")){Out=Now.At;return true;}
  return false;
 }
@@ -3908,7 +4003,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  // it that is not a log line or a path. Nothing named, no make or brand, American spelling, nothing from Story's far side.
  {
   int32 Read=0;TArray<FString> Bad,Tells;
-  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp")})
+  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp")})
   {
    FString Src;if(!FFileHelper::LoadFileToString(Src,*(FPaths::GameSourceDir()/File)))continue;
    TArray<FString> SrcLines;Src.ParseIntoArrayLines(SrcLines,false);
@@ -4025,5 +4120,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   }
   Check(Some>Nights*6/10,FString::Printf(TEXT("something of these is drawn on %d of %d nights"),Some,Nights));
  }
+ // M7: the first big night's plan, its save and its words (S47BigNight.cpp).
+ OK&=BigSelfTest(Lines);
  return OK;
 }
