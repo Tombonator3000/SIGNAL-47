@@ -1468,6 +1468,9 @@ void FS47DevFreeform::StepSweep(double Dt)
  TArray<const FS47DevEvents::FEvent*> Lines;
  for(const auto& Ev:Menu->Events())if(Ev.bFreeform&&Ev.Group!=TEXT("Run the night")&&Ev.Group!=TEXT("Time and place")&&!Ev.Group.StartsWith(TEXT("No line"))&&(SweepOnly.IsEmpty()||Ev.Group==SweepOnly))Lines.Add(&Ev);
  SweepWait-=Dt;
+ // The menu's lines may not be there yet in the first frames of a game: a sweep that found none ended at once with "0 of 0"
+ // (9 November, Reach and skies). Wait up to a minute for them before saying so.
+ if(Lines.IsEmpty()&&SweepIndex==0&&SweepWait>-60)return;
  if(bSweepPending)
  {
   // The line's own work, then a moment for it to show.
