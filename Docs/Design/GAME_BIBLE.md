@@ -174,6 +174,20 @@ Fra dag 12 kan tre nye mystery-saker åpne. Hver åpner på et spor spilleren fi
 | THE PRINTED MINUTE | Sky Watch sender bulletinen i posten etter første varebilbesøk fra dag 12, senest dag 15: kl. 00:50 tredje natt fra poststempelet. | Måleren og skriveren ved racket i minuttet, ellers strimmelen i to døgn; vinden i steinene ved varden i halvannet døgn. | Det andre stedet, eller aggregat, ved siden av kilden eller gjentak. | FCC eller kraftlaget: reservesikring, kostnad eller feil på linjen. |
 | THE RAKED GROUND | Den rakede bakken militæret etterlot, når spilleren leser den. | Den rakede sirkelen; skriveren ved racket kjører loggen fra morgenen. | Det andre stedet. | Feltkontoret eller sheriffen: patrulje betalt eller ikke. |
 
+#### Første store natt (M7, 9. november)
+
+Toms bestilling: «Det må skje noe stort natt to eller tre for å gi både pekepinn på hva som kan skje fremover og hekte spillere.» Én gang i hvert spill, natt 2 eller 3 etter frøet, mellom 02:06 og 03:36 og aldri 02:20 til 02:40 (Storys mørke minutt). Hele arrayet snur seg selv mot ett punkt lavt i horisonten mens strømmen flimrer, racket slår ut og en lav tone stiger fra bakken. Så, i den retningen, i ni sekunder: en lyssøyle står opp av bakken (søylen), et lys faller og lyser opp bakken der det slokner (fallet), eller et dusin små lys stiger sammen og slokner samtidig (stigningen). Det merkes der spilleren er: lysene og racket på SARO, lyktene og dashbordet i bilen, gatelyktene i Caliche og lykta til fots. Ingen fare, ingen tas. Sovende vekkes på stasjonen eller i felt; den som sover på motellet, finner sporene om morgenen.
+
+| Følge | Hvor |
+| --- | --- |
+| Arrayet står fortsatt pekt dit, og nattloggen får arrayets egen linje (ALL CHANNELS OVER RANGE). | SARO |
+| Dale på walkien fra 08:30, eller lappen ved telefonen. | SARO |
+| En innringer og Earl på 1420 de neste nettene (Freeforms 1420 sender fra midnatt til fire), og en sjåfør på CB-en kvelden etter. | Bilradio, CB |
+| Ledger torsdag fra funnene (sett eller merket). | Postkassen |
+| Glassert grunn med små bare fotspor, en brent fure uten noe i enden, eller steiner snudd med fuktig side opp. Gir en ny plass på kartet og et spor i saken om besøkende. | Stedet |
+
+Koden er `S47BigNight.cpp` (id `big_night` i `director.json`), og F10-gruppen heter «First big night (M7)».
+
 Reyes-sporet fortsetter etter vogn 23 fra dag 15: Dale sier at noen har vært i vognen siden april, og noen har tørket støvet av tripptelleren, som viser at vognen aldri kjørte de siste ni engelske milene ut til flaten. Det fører til betjenten, som har Ortiz' termos fra luftslangen. Dale ber deg sende den, og søsteren skriver tilbake. Hver sen sak har også en Reyes-lapp fra april. Dale har fjorten nye replikker for uke 2 til 4, hver knyttet til noe som faktisk har skjedd. Ingenting her viser hvordan noen ble tatt.
 
 ### Plan, avbrudd og gjenopptak

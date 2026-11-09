@@ -1117,6 +1117,13 @@ void FS47FreeformDirector::RollTonight(int32 Day)
 bool FS47FreeformDirector::DrawForNight(int32 Night,double At)
 {
  if(!bEnabled||!Event.IsEmpty())return false;
+ // M7: the first big night wakes whoever sleeps at the station or out on the land on its night, without the dice below
+ // (FS47Happenings::BigWakes). It comes at its own hour, after the waking or at once if that is past.
+ if(M&&M->Freeform&&M->Freeform->Happenings&&M->Freeform->Happenings->BigWakes(Night))
+ {
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: a rest on night %d is broken for the big night"),Night);
+  return true;
+ }
  RollTonight(Night);
  // Only for what would really start at that hour, and can be heard or read when it does. The feeder and the array wait
  // for the player to go there: no reason to wake anyone.
