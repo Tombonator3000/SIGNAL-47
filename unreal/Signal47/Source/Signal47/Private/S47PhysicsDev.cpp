@@ -158,7 +158,7 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 			After(.3, [this, H, Box]
 			{
 				if (!H->PickUp(Box)) { Tell(false, TEXT("the carton could not be picked up from here")); return; }
-				AimAt(FVector(32.25, M->Player->FloorY + .9, .6));
+				AimAt(FVector(32.0, M->Player->FloorY + .86, .75));
 				After(1.0, [this, H, Box]
 				{
 					const bool bPut = H->Put();
@@ -201,6 +201,8 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 					const auto AtThrow = G->Individuals();
 					const FVector Was = AtThrow.IsEmpty() ? FVector::ZeroVector : AtThrow[0].Pos;
 					H->ThrowNow(Charge);
+					// and look away at once, still low: one that sees you watching it bolts (FS47RoswellBrain: watched and alarmed)
+					M->Player->Yaw += UE_DOUBLE_PI;
 					WaitFor([Landed, Hands] { return Landed(Hands()); }, 5, [this, H, G, Stone, Was]
 					{
 						const FVector Fell = H->View(Stone).At;

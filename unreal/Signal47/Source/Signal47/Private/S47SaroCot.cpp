@@ -27,14 +27,14 @@ namespace
 	// Where a cot could go, in order: three-space middle of it on the floor, and whether its length runs along z.
 	struct FCotSpot { const TCHAR* Name; double X, Z; bool bAlongZ; };
 	const FCotSpot CotSpots[] = {
-		// the control room, along the west wall north of the filing cabinets, under the map (where the night man is)
-		{ TEXT("the control room, under the map on the west wall"), -5.33, -2.48, true },
-		// the east wing's test lab, along its west wall south of the glass cabinet
+		// (The control room has no free wall 1.9 m long: the old cabinet and the tape shelf of S47Lived stand on the west wall, the
+		// racks on the east. The records room is full of its table. The first sweep, 9 November, measured them.)
+		// the east wing's test lab, along its west wall south of the glass cabinet: the quietest room with a door that shuts
 		{ TEXT("the east wing's test lab, by the west wall"), 21.24, 3.4, true },
 		// the parts storage, along the partition to calibration
 		{ TEXT("the parts storage, along the partition"), 28.65, -.1, false },
-		// the records room, along the corridor wall east of its door
-		{ TEXT("the records room, by the corridor wall"), -2.2, 7.45, false },
+		// the calibration room, along its partition to storage, east of the bench
+		{ TEXT("the calibration room, along the partition"), 29.6, 1.0, false },
 	};
 	bool CotLive(const UObject* O) { return IsValid(O) && !O->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed); }
 }
@@ -66,6 +66,8 @@ FString FS47SaroCot::Measure(double X, double Z, bool bAlong) const
 		// the zones themselves, not the walker's test (that keeps the player's own width off every edge)
 		bool bIn = false;
 		for (const FS47Rect& Z0 : W->ZonesMutable(TEXT("saro"))) bIn |= Z0.bEnabled && C.X >= Z0.MinX - 1e-6 && C.X <= Z0.MaxX + 1e-6 && C.Y >= Z0.MinZ - 1e-6 && C.Y <= Z0.MaxZ + 1e-6;
+		// (the east wing is walked as open land once it is built, S47EastWing::Walls, not as zones)
+		if (!bIn && M->Player->OpenLand) bIn = M->Player->OpenLand(C.X, C.Y);
 		if (!bIn) return FString::Printf(TEXT("a corner off the walk zones at %.2f, %.2f"), C.X, C.Y);
 	}
 	// (b) clear of everything the player walks round
@@ -335,9 +337,9 @@ bool FS47SaroCot::SelfTest(TArray<FString>& Lines)
 	Check(Length > 1.7 && Length < 2.1 && Width > .55 && Width < .8 && Height > .3 && Height < .5, TEXT("an army cot's size: about 1.9 by 0.7 m, the canvas some 40 cm up"));
 	bool bInside = true;
 	for (const FCotSpot& S : CotSpots) bInside &= FMath::IsFinite(S.X) && FMath::IsFinite(S.Z);
-	// the first place is in the control room, inside its exported walk zone (x -5.75..5.75, z -4.22..4.22), off the west wall's face
+	// the first place is in the east wing's test lab (x 20.85..26, z -5.25..5.25 inside its walls), along its west wall
 	const FCotSpot& First = CotSpots[0];
-	Check(bInside && First.bAlongZ && First.X - Width / 2 > -5.75 && First.X + Width / 2 < -4.5 && First.Z - Length / 2 > -4.22 && First.Z + Length / 2 < -1.5,
-		TEXT("the first place is along the control room's west wall, within its floor and north of the filing cabinets"));
+	Check(bInside && First.bAlongZ && First.X - Width / 2 > 20.85 && First.X + Width / 2 < 22.0 && First.Z - Length / 2 > -5.25 && First.Z + Length / 2 < 5.25,
+		TEXT("the first place is along the test lab's west wall, inside its walls"));
 	return bOk;
 }

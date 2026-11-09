@@ -672,7 +672,10 @@ void FS47Handling::StepFly(FItem& It, double Dt)
 		// The walk zones stand in for a wall the sweep did not see: out of them low down is into a wall, so it comes back.
 		const double Floor = FloorUnder(Next);
 		const bool bWalk = Walkable(Next);
-		if (!bHit && It.bWasWalkable && !bWalk && (!FMath::IsFinite(Floor) || Next.Z - Floor < 260))
+		// (A real wall just ahead is left to the sweep, so the stone strikes the wall itself and not the edge of the floor before it.)
+		FHitResult Ahead;
+		if (!bHit && It.bWasWalkable && !bWalk && (!FMath::IsFinite(Floor) || Next.Z - Floor < 260)
+			&& !Sweep(Ahead, Next, Next + HandFlat(It.Vel) * 90, It.Q, Shape, Q))
 		{
 			const FVector Along = HandFlat(It.Vel);
 			N = -Along; bHit = bGuard = true;
