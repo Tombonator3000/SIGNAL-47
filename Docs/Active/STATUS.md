@@ -4,9 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 04:34, nattskift: M4 folk og steder, M5 vær, tretthet og fysikk, kritikk 3
+## Installert 9. november kl. 06:46, nattskift: M6 utseende første runde, Toms testfunn, kritikk 4
 
-`da2b5ece` på `claude/m4-20261109` (PR #508 åpen, venter på Tom). Selvtest 3389 i pakken og installert; F10: Town 16/16, Townsfolk 7/7, Visitors 8/8, Motel 6/6, Weather 13/13, Physics 10/11. Tilbakerulling: `d32` (`16f33ecd`) og `d31`.
+`34c9751f` på `claude/m6-20261109` (lagt oppå `claude/m4-20261109`; ikke pushet da dette ble skrevet). Selvtest 3401 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `0372c0c6`); F10 «Looks (M6)» 31/33. Tilbakerulling: `d33` (`da2b5ece`) og `d32`.
+
+Nytt: originale cobra head-gatelykter på motorveien, i Caliche, på SARO-gården og ved gården (motellets står som før i d34); Dales vindu synes utenfra; trafoen med piggtråd, transformator nr. 2 og kollider på gjerdet; grunnmur under svevende bygg i Caliche; motell-tv med eget testkort i Freeform; ingen oransje kuler eller glorier ved lyktene; 40 usynlige bokser fra bydressingen tatt ut; ting på SARO flyttet ut av veggene; garasjeporten følger lagringen; walkie-talkien knitrer i stedet for å skrike; modemlyden stopper utenfor kontrollrommet; kalenderen på veggen; litt mer dis i SARO. Kritikk 4 (6–7/10, 13 funn) rettet. To kandidater ble stoppet før installasjon fordi pakket spill gikk over 15 GB; årsak funnet og rettet (`S47SaroClip::Vertices`). Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 04:34, nattskift: M4 folk og steder, M5 vær, tretthet og fysikk, kritikk 3
+
+`da2b5ece` på `claude/m4-20261109` (PR #508). Selvtest 3389 i pakken og installert; F10: Town 16/16, Townsfolk 7/7, Visitors 8/8, Motel 6/6, Weather 13/13, Physics 10/11.
 
 Nytt: midlertidige bokser for trailerpark, skole, Grange-hall og Baca; 1420 AM, Feed & Seed og suvenirsjappa med funksjon; fire byfolk som sladrer og kan forsvinne; Eloy Baca, Sky Watch og militæret (rydder synlig); motellnatt uten lagring; vær etter `S47Weather` (sandstorm, byge, dis) som stemmer med avisa; tretthet med kaffe og søvn; plukke, bære og kaste med støy som lokker; feltseng på SARO. Kritikk 3 (4–6,5/10, 35 funn) rettet. Kjent: steinlokket virker i selvtest, men ikke i F10-prøven; bygen er en første versjon. Ikke spilt av menneske; lyd ikke hørt.
 
