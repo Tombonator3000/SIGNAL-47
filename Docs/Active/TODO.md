@@ -35,6 +35,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **LOD-AUDIT-20261109:** skann av 392 mesher fant dreide LOD-er bare i gatelyktene og `SM_SubstationField_ApronGrade` (begge rettet). Kjør `scratchpad`-skriptet `lodcheck.py` igjen etter nye importer.
 - [ ] **BLOCKERS-20261109:** hinderlista i F10 «Looks (M6)» feiler fortsatt på resterende bokser (M4 `temp:*`, motell, antenner, kuer, arkivmøbler); sorter og rett.
 - [ ] **STONE-LURE-20261109:** steinlokket virker i selvtest, men F10-prøven feiler (den lille tror spilleren er et annet sted).
+- [x] **MOTEL-LAMPS-MEM-20261109:** d34-kandidaten gikk over 15 GB og krasjet ved start. Årsaken var `S47SaroClip::Vertices` (brukt av steinene i `S47RouteNature`), som i pakket spill leste posisjonsbufferen til mesher uten CPU-data. Rettet i `34c9751f`: bare editoren og mesher med CPU-tilgang leses. Motellyktene var uskyldige (prøvd på d34-pakken med `-S47MotelLampsNew`: 4,6 GB, selvtest OK) og er på igjen som standard etter d34; i d34 står de gamle motellyktene.
 - [ ] **SHOWER-LOOK-20261109:** bygen har mørk sky og virga som et flatt kort; trenger bedre form og våt bakke (ny parameter i bakkematerialet).
 
 - [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
