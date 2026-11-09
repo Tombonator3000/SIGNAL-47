@@ -741,7 +741,8 @@ void AS47Web::UpdateNativeLighting()
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f * NightBase(), 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
+		// MOON-20261108: the moon's phase and height (SkyMoon, 1 at a half moon: the night as approved).
+		const float LocalMoon = SkyMoon * FMath::Lerp(PreviousNight() ? 0.16f : 0.055f * NightBase(), 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
 		// Lightning keeps its authored brightness; only the moon baseline receives the gain.
 		const float MoonOwn = LocalMoon * (1.f - SkyDawn) * Look.MoonGain + SkyFlash * 0.8f;
 		Moon->SetIntensity(R.Base > 0 ? (MoonOwn + TwilightEach) * FinaleLight : 0.f);

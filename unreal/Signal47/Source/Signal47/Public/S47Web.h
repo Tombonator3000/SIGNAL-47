@@ -83,7 +83,7 @@ public:
 	const FPostProcessSettings* GetGraphicsPostProcess() const;
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	float ExteriorDaylightMask(int32 Set, int32 Slot) const;
-	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f, float Twilight = 0.f);
+	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f, float Twilight = 0.f); void SetMoonLight(float K) { SkyMoon = FMath::Clamp(K, .2f, 2.5f); }
 	/** Rendering only: where the sun is under the horizon at dusk (west) or dawn (east), in degrees, for the colour and direction of the twilight. */
 	void SetTwilightSun(bool bWest, float DepthDeg) { bTwilightWest = bWest; TwilightDepth = DepthDeg; }
 	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
@@ -506,7 +506,7 @@ private:
 	TSet<uint64> SuppressedPools;
 	int32 LightingQuality = 1;
 	FS47GraphicsSettings Graphics;
-	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0, SkyTwilight = 0;
+	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0, SkyTwilight = 0, SkyMoon = 1; // SkyMoon: the moon's light against the half moon the night was tuned for (MOON-20261108)
 	bool bTwilightWest = true; float TwilightDepth = 0;
 	TWeakObjectPtr<class UDirectionalLightComponent> DuskBlue;   // the rest of the twilight sky's light, made when first wanted (S47Lighting.cpp)
 	float FinaleGroundShade = 0;

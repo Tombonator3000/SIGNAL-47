@@ -18,6 +18,9 @@
 #include "S47Enlarger.h"
 #include "S47WardReport.h"
 #include "S47Answer.h"
+#include "S47Weather.h"
+#include "S47Flashlight.h"
+#include "HAL/IConsoleManager.h"
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47BoardRules.h"
@@ -414,8 +417,12 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		{
 			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->SkyAnswer) { Tell(false, TEXT("no answer in this run")); return; }
 			const bool bOpen = Fs->Use(TEXT("crtRight"));
-			Pictured(TEXT("answer"), .35f);
-			Tell(bOpen, bOpen ? TEXT("The tracking terminal") : TEXT("the tracking terminal did not open (no job or no power)"));
+			// The terminal comes up after the camera has moved to the screen: the picture then, and the line ends after it.
+			After(2.2, [this, Pictured, bOpen]
+			{
+				Pictured(TEXT("answer"), .05f);
+				After(.4, [this, bOpen] { Tell(bOpen, bOpen ? TEXT("The tracking terminal") : TEXT("the tracking terminal did not open (no job or no power)")); });
+			});
 		});
 	});
 	E.AddFreeform(AnswerGroup, TEXT("Answer: a night after the array was held 31 minutes at AZ 214 EL 38, the printout"), TEXT("at SARO; the call as if made a sidereal day ago, answered now; the printer runs; the printout opened"), [this, AtDesk, Pictured]
@@ -433,6 +440,48 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			Tell(bAnswered && Paper, bAnswered ? TEXT("The printout nobody asked for") : TEXT("no answer was printed"));
 		});
 	});
+
+	// ---- the moon (MOON-20261108) ----
+	// Before and after from the same view: the night as it was (s47.moon 0), then the real moon of the date; 23:00, no flashlight.
+	static const TCHAR* const MoonGroup = TEXT("Moon (M5)");
+	struct FMoonNight { const TCHAR* Name; int32 Day; };
+	static const FMoonNight MoonNights[] = { { TEXT("new moon, May 8"), 11 }, { TEXT("first quarter, May 15"), 18 }, { TEXT("full moon, May 23"), 26 } };
+	for (const FMoonNight& Mn : MoonNights)
+	{
+		const FString Label = FString::Printf(TEXT("Moon: %s, 23:00 from the yard, before and after"), Mn.Name);
+		const int32 OnDay = Mn.Day;
+		E.AddFreeform(MoonGroup, Label, TEXT("the yard at SARO at 23:00, facing the moon (or south when it is down), no flashlight; a picture with the night as before, then with the moon"), [this, OnDay]
+		{
+			FS47FreeformSession* Fs = Session(); if (!Fs) { Tell(false, TEXT("no session")); return; }
+			const S47Weather::FMoon Mo = S47Weather::Moon(Fs->DateOfDay(OnDay), 23 * 3600.0);
+			const double Az = Mo.El > 3 ? Mo.Az : 180.0;
+			FStage Stage; Stage.Day = OnDay; Stage.From = 23; Stage.To = 23.2; Stage.Area = TEXT("saro");
+			Stage.Where = [] { const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 36, -312); return FVector2D(At.X, At.Z); };
+			Stage.Yaw = S47OpenLand::Turned(TEXT("road"), TEXT("saro"), -FMath::DegreesToRadians(Az));
+			Stage.Pitch = FMath::DegreesToRadians(FMath::Clamp(Mo.El - 12.0, 0.0, 28.0));
+			Go(Stage, [this, OnDay, Mo]
+			{
+				if (M && M->Night && M->Night->Flashlight) M->Night->Flashlight->bOn = false;
+				IConsoleVariable* Cv = IConsoleManager::Get().FindConsoleVariable(TEXT("s47.moon"));
+				if (Cv) Cv->Set(0);
+				const FString Dir = SweepDir;
+				const auto Shot = [Dir](const FString& Name) { if (!Dir.IsEmpty()) FScreenshotRequest::RequestScreenshot(Dir / Name + TEXT(".png"), false, false); };
+				After(1.6, [this, Shot, OnDay, Mo, Cv]
+				{
+					Shot(FString::Printf(TEXT("moon-d%02d-before"), OnDay));
+					After(.5, [this, Shot, OnDay, Mo, Cv]
+					{
+						if (Cv) Cv->Set(1);
+						After(1.6, [this, Shot, OnDay, Mo]
+						{
+							Shot(FString::Printf(TEXT("moon-d%02d-after"), OnDay));
+							Tell(true, FString::Printf(TEXT("Day %d: %.0f%% lit, AZ %.0f EL %.0f, light x%.2f"), OnDay, Mo.Lit * 100, Mo.Az, Mo.El, S47Weather::MoonLight(Mo)));
+						});
+					});
+				});
+			});
+		});
+	}
 
 	// ---- the night's log ----
 	E.AddFreeform(MapGroup, TEXT("Night log: a night with things in it, through to 06:00"), TEXT("22:00 at the yard: a light seen, a flat tire, 95 minutes nobody can account for, a rest to six; then the sheet"), [this, Pictured]

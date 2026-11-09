@@ -13,7 +13,8 @@
         { "from_day": 15, "hint": 0.9, "observation": 1.15, "presence": 1.2, "danger": 0.6, "near": 0.5 },
         { "from_day": 22, "hint": 0.8, "observation": 1.3, "presence": 1.5, "danger": 0.75, "near": 0.4 }
       ]
-    }
+    },
+    "moon": { "full": 0.75, "new": 1.3 }
   },
   "events": [
     { "id": "extra_pulse", "system": "director", "slot": "ground", "level": "hint", "budget": "invest", "from_day": 1, "hours": "any", "areas": ["saro"], "cooldown_days": [2, 4], "needs": ["reference_filed"], "enforce": true },

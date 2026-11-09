@@ -49,6 +49,13 @@ def check(doc):
         if weeks[0].get('danger', 0) > .1: warnings.append('curve: the first week is meant for small things and things seen, its danger above 0.1')
         if any(b.get('danger', 0) < a.get('danger', 0) for a, b in zip(weeks, weeks[1:])): warnings.append('curve: the danger falls from one week to the next')
         if any(b.get('near', 1) > a.get('near', 1) for a, b in zip(weeks, weeks[1:])): warnings.append('curve: things go further off from one week to the next')
+    # The moon (MOON-20261108): what a night's levels and danger are worth at a full and a new moon; S47Rhythm.cpp turns away the same.
+    moon = g.get('moon')
+    if moon is not None:
+        for k in ('full', 'new'):
+            v = moon.get(k, 1)
+            if not isinstance(v, (int, float)) or not .3 <= v <= 2: bad(f'moon: {k} 0.3 to 2')
+        if moon.get('full', 1) > moon.get('new', 1): warnings.append('moon: a full moon is meant to be the quieter night')
     seen = set()
     for e in doc.get('events', []):
         i = e.get('id', '?')

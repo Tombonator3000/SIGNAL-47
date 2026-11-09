@@ -37,8 +37,15 @@ struct FS47RhythmData
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
  TArray<FS47RhythmEvent> Events;
  TArray<FS47RhythmWeek> Weeks; // in order of FromDay; empty: every level at its own chance, everything as near as it is
+ // The moon (MOON-20261108, globals.moon): what a night's levels and its danger are worth at a full moon and at a new one, the
+ // nights between in proportion to the share of the moon lit. 1 and 1: the moon changes nothing. LitOf: the share lit on a shift
+ // day's night (the game sets it; unset, a pure parse: no moon).
+ float MoonFull=1,MoonNew=1;
+ TFunction<double(int32)> LitOf;
+ float MoonOn(int32 Day) const;
  const FS47RhythmEvent* Find(FName Id) const{return Events.FindByPredicate([Id](const FS47RhythmEvent& E){return E.Id==Id;});}
- const FS47RhythmWeek& Week(int32 Day) const;
+ // This week's row with the night's moon in it (a copy).
+ FS47RhythmWeek Week(int32 Day) const;
  float Worth(ES47RhythmLevel Level,int32 Day) const;
 };
 
@@ -65,6 +72,7 @@ public:
  explicit FS47Rhythm(US47Main* Main):M(Main){}
  // From the packaged file, or what is embedded if that is missing or broken. An override only with -S47DirectorOverride.
  void Load();
+ void LoadRules();
  // F10, in a test run: Saved/Director/director.override.json, asked for by hand. False: why not, in Why.
  bool LoadOverride(FString& Why);
  bool OverrideOn() const{return bOverride;}

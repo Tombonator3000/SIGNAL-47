@@ -299,7 +299,7 @@ void S47Ledger::Fill(FIssue& Issue,int32 Seed,bool bHelped)
  int32 High=-100,Low=200;
  for(int32 D=FMath::Max(1,Issue.Day-7);D<Issue.Day;++D){const S47Weather::FDay Word=S47Weather::Day(Seed,D);High=FMath::Max(High,Word.HighF);Low=FMath::Min(Low,Word.LowF);}
  Issue.LastWeek=High<-50?FString(TEXT("Caliche has no week of weather to report yet.")):FString::Printf(TEXT("Caliche last week: high %d, low %d, no rain. Dry lightning far off most nights."),High,Low);
- Issue.Almanac=S47Weather::Almanac();
+ Issue.Almanac=S47Weather::Almanac(Issue.Date);
 }
 
 TSharedRef<SWidget> S47Ledger::Page(const FIssue& Issue)
@@ -435,7 +435,7 @@ TArray<FString> S47Ledger::AllText()
  for(const X::FFrontDef& D:X::Quiet()){Out.Add(D.Head);Out.Add(D.Body);}
  for(const X::FLogDef& D:X::Logs())Out.Add(D.Line);
  for(const FCoupon& Cp:Coupons())Out.Add(Cp.Line);
- Out.Add(S47LedgerLocal::Masthead);Out.Add(S47Weather::Almanac());
+ Out.Add(S47LedgerLocal::Masthead);Out.Add(S47Weather::Almanac());for(int32 Dd=0;Dd<30;++Dd)Out.Add(S47Weather::Almanac(FDateTime(1986,4,28)+FTimespan::FromDays(Dd)));
  return Out;
 }
 
@@ -533,7 +533,7 @@ bool S47Ledger::SelfTest(TArray<FString>& Lines)
   const FIssue Quiet=Make(470047,3,TArray<FFact>(),Used);
   Check(Quiet.Front.Last().Lead==TEXT("shack")&&Quiet.Front.Last().Body.Contains(TEXT("the line shack")),TEXT("a quiet week gets talk about a place nobody has mentioned yet"));
   Check(Quiet.Letters.Num()==3&&Quiet.Letters[0].Head==X::Thanks().Head,TEXT("the trucker's thanks is printed the week there was cause"));
-  Check(Second.Week[1].EndsWith(S47Weather::Words(S47Weather::Forecast(470047,Second.Day,Second.Day+1),true))&&Second.Almanac==S47Weather::Almanac(),TEXT("the forecast and the almanac are S47Weather's, the sky's own"));
+  Check(Second.Week[1].EndsWith(S47Weather::Words(S47Weather::Forecast(470047,Second.Day,Second.Day+1),true))&&Second.Almanac==S47Weather::Almanac(Second.Date),TEXT("the forecast and the almanac are S47Weather's, the sky's own"));
  }
  {
   // The critics' week: cattle in a ring by the church Tuesday, a light in the farmhouse Tuesday, a dead cow by the church Wednesday.
