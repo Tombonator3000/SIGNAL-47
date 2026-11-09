@@ -36,7 +36,20 @@ void FS47FreeformTest::StepFreeLife(double Dt)
  if(Age>900){Finish(false,TEXT("life journey exceeded its time"));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI||!M->Inter)return;
  auto& F=*M->Freeform;if(!F.FarmSite||!F.Taken||!F.Gear)return;auto& Site=*F.FarmSite;
- static int32 ShotsBefore=0,Night=0;
+ static int32 ShotsBefore=0,Night=0;static double SeenClock=0;
+ if(Stage==10||Stage==20)
+ {
+  // Waiting in the live night, nothing here moves the clock but the night itself (seconds of it a frame). A jump of half an hour,
+  // or back, is a hand on the test's window (F10's events, a rest, a load), not the draw: say so (life run of 9 November, 15:57:
+  // keys and an F10 line in the window took the clock from 02:31 to 21:00 and the run blamed the night).
+  const double Now=F.Clock();
+  if(Now>SeenClock+1800||Now<SeenClock-1)
+  {
+   const auto Hm=[](double C){const int32 Mi=int32(FMath::Fmod(FMath::Max(0.,C),86400.)/60.);return FString::Printf(TEXT("%02d:%02d"),Mi/60,Mi%60);};
+   return Finish(false,FString::Printf(TEXT("the clock was moved from outside the test, %s to %s (day %d) at stage %d: input in the test window (F10, a rest, a load)? run again untouched"),*Hm(SeenClock),*Hm(Now),F.Day(),Stage));
+  }
+  SeenClock=Now;
+ }
  if(Stage==0)
  {
   if(Age<3)return;
@@ -53,14 +66,17 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   if(!Check(!F.TheirHoursNow(Midnight+.5*3600.),TEXT("half an hour after midnight is not their hours")))return;
   // Past the farm, away from the station, in the open.
   M->Player->Place(90,620,0);
-  Site.TestFieldRoll(0.f);Stage=10;At=Age;return;
+  Site.TestFieldRoll(0.f);SeenClock=F.Clock();Stage=10;At=Age;return;
  }
  if(Stage==10)
  {
   if(!F.TheirHoursNow(F.Clock()))return Finish(false,TEXT("the night ran out before the draw"));
   if(!Site.FieldVisit())
   {
-   if(Age-At>FS47FarmSite::FieldDwellSeconds+40)return Finish(false,FString::Printf(TEXT("no field visit from the draw: drawn night %d, want %d, indoors %d"),Site.FieldDrawnNight(),Night,F.Taken->Indoors()));
+   // The draw waits for the rhythm as well as the dwell. TestHush stills the director, not the night's happenings and unease
+   // (S47Happenings): one that begins just before the dwell is done holds the draw for its spacing (2 to 6 minutes of the clock,
+   // up to half a minute here) and, ending, for the rhythm's rest after it (45 s): room for both, not a fail for a night's own life.
+   if(Age-At>FS47FarmSite::FieldDwellSeconds+100)return Finish(false,FString::Printf(TEXT("no field visit from the draw: drawn night %d, want %d, indoors %d"),Site.FieldDrawnNight(),Night,F.Taken->Indoors()));
    return;
   }
   if(!Check(Age-At>=FS47FarmSite::FieldDwellSeconds-1&&Site.FieldDrawnNight()==F.Day(),TEXT("a field visit starts from its own draw, once they have been out there a while")))return;
