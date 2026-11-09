@@ -1,4 +1,8 @@
 #include "S47HudGauges.h"
+#include "S47Json.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 #include <limits>
 
 namespace
@@ -23,15 +27,41 @@ bool S47HudGauges::BatteryShown(bool bDrains, bool bHave, bool bOn, double Level
 	return bDrains && bHave && (bOn || Level < Low);
 }
 
-FString S47HudGauges::CbLine() { return TEXT("CB 19  27.185"); }
-FString S47HudGauges::WalkieLine(int32 Channel, int32 Mode)
+FString S47HudGauges::CbLine() { return TEXT("CB 19"); }
+FString S47HudGauges::WalkieLine(int32 Channel, const FString& Who)
 {
-	const int32 Ch = FMath::Clamp(Channel, 1, 3);
-	const FString Line = FString::Printf(TEXT("WALKIE %d  %.3f"), Ch, 49.830 + 0.015 * (Ch - 1));
-	return Mode == 1 ? Line + TEXT("  TX") : Mode == 2 ? Line + TEXT("  CALL") : Line;
+	const FString Line = FString::Printf(TEXT("WALKIE %d"), FMath::Clamp(Channel, 1, 3));
+	const FString Name = Who.TrimStartAndEnd().ToUpper();
+	return Name.IsEmpty() ? Line : Line + TEXT(" \u00B7 ") + Name;
 }
 
-FLinearColor S47HudGauges::WalkieTint() { return FLinearColor(0.58f, 0.86f, 0.64f, 1.f); }
+bool S47HudGauges::WalkieSpeaker(const FString& Head, int32& Channel, FString& Who)
+{
+	const FString HeadUp = Head.TrimStartAndEnd().ToUpper();
+	if (!HeadUp.StartsWith(TEXT("WALKIE "))) return false;
+	FString Set, Name;
+	if (!HeadUp.Split(TEXT(","), &Set, &Name)) return false;
+	Name.TrimStartAndEndInline();
+	const FString Digits = Set.Mid(7).TrimStartAndEnd();
+	if (Name.IsEmpty() || Digits.IsEmpty() || !Digits.IsNumeric()) return false;
+	Channel = FMath::Clamp(FCString::Atoi(*Digits), 1, 3);
+	Who = Name;
+	return true;
+}
+
+int32 S47HudGauges::RadioKind(bool bCbBusy, bool bCbAtHand, bool bWalkieOwned, bool bHailing, bool bKeyed, double SpeechLeft)
+{
+	if (bCbBusy && bCbAtHand) return 1;
+	if (bWalkieOwned && (bHailing || bKeyed || (FMath::IsFinite(SpeechLeft) && SpeechLeft > 0))) return 2;
+	return 0;
+}
+
+FString S47HudGauges::WalkieWho(bool bHailing, bool bKeyed, const FString& Speaker)
+{
+	if (bKeyed) return TEXT("YOU");
+	if (bHailing) return TEXT("DALE");
+	return Speaker;
+}
 
 double S47HudGauges::CbStrength(double T)
 {
@@ -61,6 +91,162 @@ double S47HudGauges::FiledAlpha(double T)
 	return FMath::Clamp((FiledFor - T) / 0.8, 0.0, 1.0);
 }
 
+// ---------- HUD D (HUD-D-20261109) ----------
+
+const S47HudGauges::FHudPalette& S47HudGauges::Palette(EHudColor Color)
+{
+	// V4 (Tom, 8 November): the clock and the battery one teal VFD, the battery dimmed to the clock; low in the game's Neon at full
+	// strength; the radio line amber. The others are one colour throughout, each with a low colour well away from it.
+	static const FHudPalette Palettes[HudColors] = {
+		{ TEXT("teal"), TEXT("Station teal"), TEXT("The station's own: the clock and the battery in a cool teal, like the console's vacuum-fluorescent displays, and the radio line in amber. A low battery turns red."),
+			0x78ffde, 150.f / 255.f, 14.f / 255.f, 0x78ffde, 0.5f, 0.55f, 0.14f, 0xff5a45, 0.7f, 1.f, 0.2f, 0xffb052, 225.f / 255.f, 215.f / 255.f },
+		{ TEXT("amber"), TEXT("Amber"), TEXT("Everything in warm amber, the clock too, like an old amber terminal. A low battery turns a hard red."),
+			0xffb052, 150.f / 255.f, 14.f / 255.f, 0xffb052, 0.6f, 0.7f, 0.18f, 0xff3a2e, 0.7f, 1.f, 0.2f, 0xffb052, 225.f / 255.f, 215.f / 255.f },
+		{ TEXT("green"), TEXT("Phosphor green"), TEXT("Everything in the green of a phosphor screen. A low battery turns red."),
+			0x8cffa4, 150.f / 255.f, 14.f / 255.f, 0x8cffa4, 0.5f, 0.55f, 0.14f, 0xff5a45, 0.7f, 1.f, 0.2f, 0x8cffa4, 215.f / 255.f, 205.f / 255.f },
+		{ TEXT("white"), TEXT("Paper white"), TEXT("Everything in a soft paper white, the plainest to read. A low battery turns red."),
+			0xebe3cf, 130.f / 255.f, 12.f / 255.f, 0xebe3cf, 0.45f, 0.5f, 0.12f, 0xff5a45, 0.7f, 1.f, 0.2f, 0xebe3cf, 205.f / 255.f, 195.f / 255.f },
+		{ TEXT("red"), TEXT("Red night"), TEXT("Everything in a deep red that leaves your eyes used to the dark, as an observer's red lamp does. A low battery turns pale yellow, so it still stands out."),
+			0xff3a2e, 170.f / 255.f, 16.f / 255.f, 0xff3a2e, 0.55f, 0.65f, 0.16f, 0xffd27a, 0.7f, 1.f, 0.2f, 0xff3a2e, 225.f / 255.f, 215.f / 255.f },
+	};
+	const int32 I = int32(Color);
+	return Palettes[I >= 0 && I < HudColors ? I : 0];
+}
+
+namespace S47HudGaugesChoice
+{
+	// the chosen palette, for the session (US47Flow sets it from the store and from Settings)
+	static S47HudGauges::EHudColor& Chosen() { static S47HudGauges::EHudColor Value = S47HudGauges::EHudColor::StationTeal; return Value; }
+}
+
+const S47HudGauges::FHudPalette& S47HudGauges::Palette() { return Palette(S47HudGaugesChoice::Chosen()); }
+S47HudGauges::EHudColor S47HudGauges::HudColor() { return S47HudGaugesChoice::Chosen(); }
+void S47HudGauges::SetHudColor(EHudColor Color) { const int32 I = int32(Color); S47HudGaugesChoice::Chosen() = I >= 0 && I < HudColors ? Color : EHudColor::StationTeal; }
+FString S47HudGauges::HudColorId(EHudColor Color) { return Palette(Color).Id; }
+
+S47HudGauges::EHudColor S47HudGauges::HudColorFrom(const FString& Id)
+{
+	const FString Want = Id.TrimStartAndEnd().ToLower();
+	for (int32 I = 0; I < HudColors; ++I)
+		if (Want == Palette(EHudColor(I)).Id) return EHudColor(I);
+	return EHudColor::StationTeal;
+}
+
+double S47HudGauges::ColorDistance(uint32 A, uint32 B)
+{
+	double Sum = 0;
+	for (int32 Shift : { 16, 8, 0 })
+	{
+		const double Step = (double((A >> Shift) & 255u) - double((B >> Shift) & 255u)) / 255.0;
+		Sum += Step * Step;
+	}
+	return FMath::Sqrt(Sum);
+}
+
+S47HudGauges::FClockFace S47HudGauges::ClockFace(const FString& Watch)
+{
+	FClockFace Face;
+	const FString W = Watch.TrimStartAndEnd();
+	if (W == TEXT("88:88")) { Face.bValid = Face.bAll = true; return Face; }
+	TArray<FString> Pieces;
+	W.ParseIntoArray(Pieces, TEXT(":"), false);
+	if (Pieces.Num() < 2 || Pieces.Num() > 3) return Face;
+	int32 Nums[3] = { 0, 0, -1 };
+	for (int32 I = 0; I < Pieces.Num(); ++I)
+	{
+		if (Pieces[I].IsEmpty() || Pieces[I].Len() > 2) return Face;
+		for (const TCHAR Ch : Pieces[I]) if (!FChar::IsDigit(Ch)) return Face;
+		Nums[I] = FCString::Atoi(*Pieces[I]);
+	}
+	if (Nums[0] > 23 || Nums[1] > 59 || Nums[2] > 59 || (Pieces.Num() == 3 && Pieces[2].Len() != 2) || Pieces[1].Len() != 2) return Face;
+	Face.bValid = true;
+	Face.bPm = Nums[0] >= 12;
+	Face.Hour = Nums[0] % 12 == 0 ? 12 : Nums[0] % 12;
+	Face.Minute = Nums[1];
+	Face.Second = Nums[2];
+	return Face;
+}
+
+uint8 S47HudGauges::Segments(int32 Digit)
+{
+	static const uint8 Lit[10] = { 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f };
+	return Digit >= 0 && Digit <= 9 ? Lit[Digit] : 0;
+}
+
+double S47HudGauges::NoteAlpha(double T)
+{
+	if (!FMath::IsFinite(T) || T < 0) return 0;
+	if (T < NoteIn) return FMath::SmoothStep(0.0, 1.0, T / NoteIn);
+	if (T < NoteHold) return 1;
+	if (T < NoteHold + NoteFade) return 1.0 - FMath::SmoothStep(0.0, 1.0, (T - NoteHold) / NoteFade);
+	return 0;
+}
+
+FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
+{
+	int32 Upper = 0, Lower = 0;
+	for (const TCHAR Ch : Text) { Upper += FChar::IsUpper(Ch) ? 1 : 0; Lower += FChar::IsLower(Ch) ? 1 : 0; }
+	if (Lower > Upper) return Text;
+	// the capitals the hand keeps (the station's, the units, the bands) and the names it writes with a capital
+	struct FKept { const TCHAR* Up; const TCHAR* As; };
+	static const FKept Kept[] = {
+		{ TEXT("SARO"), TEXT("SARO") }, { TEXT("CB"), TEXT("CB") }, { TEXT("MHZ"), TEXT("MHz") }, { TEXT("KHZ"), TEXT("kHz") }, { TEXT("GHZ"), TEXT("GHz") },
+		{ TEXT("AM"), TEXT("AM") }, { TEXT("FM"), TEXT("FM") }, { TEXT("UFO"), TEXT("UFO") }, { TEXT("VLA"), TEXT("VLA") }, { TEXT("TV"), TEXT("TV") },
+		{ TEXT("USA"), TEXT("USA") }, { TEXT("OK"), TEXT("OK") }, { TEXT("I"), TEXT("I") }, { TEXT("KOB"), TEXT("KOB") }, { TEXT("NASA"), TEXT("NASA") },
+		{ TEXT("FAA"), TEXT("FAA") }, { TEXT("HQ"), TEXT("HQ") }, { TEXT("DALE"), TEXT("Dale") }, { TEXT("WARD"), TEXT("Ward") }, { TEXT("EARL"), TEXT("Earl") },
+		{ TEXT("NORA"), TEXT("Nora") }, { TEXT("VEGA"), TEXT("Vega") }, { TEXT("CALICHE"), TEXT("Caliche") }, { TEXT("ROSWELL"), TEXT("Roswell") },
+		{ TEXT("SOCORRO"), TEXT("Socorro") }, { TEXT("MAGDALENA"), TEXT("Magdalena") }, { TEXT("ALBUQUERQUE"), TEXT("Albuquerque") }, { TEXT("DATIL"), TEXT("Datil") },
+		{ TEXT("MEXICO"), TEXT("Mexico") }, { TEXT("APRIL"), TEXT("April") },
+	};
+	static const TCHAR* Small[] = { TEXT("a"), TEXT("an"), TEXT("and"), TEXT("the"), TEXT("of"), TEXT("to"), TEXT("in"), TEXT("on"), TEXT("at"), TEXT("by"), TEXT("for"), TEXT("or") };
+	FString Out;
+	Out.Reserve(Text.Len());
+	bool bSentence = true, bFirstWord = true;
+	int32 I = 0;
+	while (I < Text.Len())
+	{
+		const TCHAR Ch = Text[I];
+		if (!FChar::IsAlnum(Ch))
+		{
+			Out.AppendChar(Ch);
+			if (Ch == TEXT('.') || Ch == TEXT('!') || Ch == TEXT('?')) bSentence = true;
+			++I;
+			continue;
+		}
+		int32 J = I;
+		bool bFigure = false;
+		while (J < Text.Len() && FChar::IsAlnum(Text[J])) { bFigure |= FChar::IsDigit(Text[J]); ++J; }
+		const FString Word = Text.Mid(I, J - I);
+		const bool bAfterApostrophe = I > 0 && Text[I - 1] == TEXT('\'');
+		FString Written;
+		if (bFigure) Written = Word;
+		else
+		{
+			const FString Up = Word.ToUpper();
+			for (const FKept& K : Kept) if (Up == K.Up) { Written = K.As; break; }
+			if (Written.IsEmpty())
+			{
+				Written = Word.ToLower();
+				bool bSmall = false;
+				for (const TCHAR* S : Small) bSmall |= Written == S;
+				const bool bCapital = !bAfterApostrophe && ((bTitle && (bFirstWord || !bSmall)) || bSentence);
+				if (bCapital) Written[0] = FChar::ToUpper(Written[0]);
+			}
+		}
+		Out += Written;
+		bSentence = false;
+		bFirstWord = false;
+		I = J;
+	}
+	return Out;
+}
+
+double S47HudGauges::BackingStrength(double Daylight)
+{
+	const double Lit = FMath::IsFinite(Daylight) ? FMath::Clamp(Daylight, 0.0, 1.0) : 0.0;
+	return 0.15 + 0.85 * FMath::SmoothStep(0.05, 0.6, Lit);
+}
+
 bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -74,11 +260,28 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(BatteryShown(true, true, true, 1.0, 0.2) && BatteryShown(true, true, false, 0.1, 0.2) && !BatteryShown(true, true, false, 0.8, 0.2),
 		TEXT("shown while the lamp is on, or when it is low; hidden when it is off and well charged"));
 	Check(!BatteryShown(false, true, true, 0.1, 0.2) && !BatteryShown(true, false, true, 0.1, 0.2), TEXT("not shown in the Story, nor before the lamp is taken"));
-	Check(CbLine().Contains(TEXT("19")) && WalkieLine().Contains(TEXT("49.830")) && !CbLine().IsEmpty(), TEXT("the radio line names the channel and the frequency"));
-	Check(WalkieLine(2).Contains(TEXT("WALKIE 2")) && WalkieLine(2).Contains(TEXT("49.845")) && WalkieLine(3).Contains(TEXT("49.860")) && WalkieLine(7) == WalkieLine(3)
-		&& WalkieLine(1, 1).EndsWith(TEXT("TX")) && WalkieLine(1, 2).EndsWith(TEXT("CALL")) && !WalkieLine(1).Contains(TEXT("CB")) && !CbLine().Contains(TEXT("WALKIE")),
-		TEXT("the walkie's line says its channel and whether it is keyed or calling, and never reads as the CB's"));
-	Check(WalkieTint().G > WalkieTint().R && WalkieTint().G > WalkieTint().B, TEXT("the walkie has a tint of its own, apart from the CB's amber"));
+	Check(CbLine() == TEXT("CB 19") && WalkieLine(1, TEXT("Dale")) == FString(TEXT("WALKIE 1 \u00B7 DALE")) && WalkieLine(2) == TEXT("WALKIE 2") && WalkieLine(7) == WalkieLine(3),
+		TEXT("the radio line names the set, its channel and who is sending"));
+	// HUD-D-20261109: one radio colour in every palette, so the CB and the walkie are told apart by their words alone
+	bool bApart = true;
+	for (const FString& Who : { FString(), FString(TEXT("DALE")), FString(TEXT("YOU")) })
+		for (int32 Ch = 1; Ch <= 3; ++Ch)
+		{
+			const FString W = WalkieLine(Ch, Who);
+			bApart &= W.StartsWith(TEXT("WALKIE ")) && !W.Contains(TEXT("CB")) && !CbLine().Contains(TEXT("WALKIE")) && W != CbLine();
+		}
+	Check(bApart, TEXT("the CB and the walkie are told apart by their words: CB 19 against WALKIE and its channel, never by colour alone"));
+	int32 Ch = 0; FString Who;
+	Check(WalkieSpeaker(TEXT("WALKIE 1, DALE"), Ch, Who) && Ch == 1 && Who == TEXT("DALE") && !WalkieSpeaker(TEXT("WALKIE 2"), Ch, Who) && !WalkieSpeaker(TEXT("CB, Breaker"), Ch, Who)
+		&& !WalkieSpeaker(TEXT("WARD"), Ch, Who), TEXT("a walkie caption names who is speaking; the set's own head and the CB's do not"));
+	Check(RadioKind(false, false, true, false, false, 0) == 0 && RadioKind(false, true, true, false, false, 0) == 0 && RadioKind(true, false, true, false, false, 0) == 0
+		&& RadioKind(false, false, false, true, true, 5) == 0 && RadioKind(false, false, true, false, false, -1) == 0
+		&& RadioKind(false, false, true, false, false, std::numeric_limits<double>::quiet_NaN()) == 0,
+		TEXT("the walkie line is hidden while nobody is sending: carrying the set, a CB out of reach or no set at all show nothing"));
+	Check(RadioKind(true, true, true, true, false, 3) == 1 && RadioKind(false, false, true, true, false, 0) == 2 && RadioKind(false, false, true, false, true, 0) == 2
+		&& RadioKind(false, false, true, false, false, 2.5) == 2, TEXT("the line shows while a CB call is on, Dale hails, the player is keyed or words are coming"));
+	Check(WalkieWho(false, true, TEXT("DALE")) == TEXT("YOU") && WalkieWho(true, false, FString()) == TEXT("DALE") && WalkieWho(false, false, TEXT("DALE")) == TEXT("DALE"),
+		TEXT("the walkie line names the one sending"));
 	bool bCb = true;
 	for (int32 I = 0; I < 200; ++I) { const double S = CbStrength(I * 0.37); bCb &= S > 0.6 && S <= 1.0; }
 	Check(bCb, TEXT("the CB's signal during a call stays strong and steady"));
@@ -95,5 +298,79 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(FiledLine(TEXT("08:27")) == TEXT("LOG FILED  08:27") && FiledLine(FString()) == TEXT("LOG FILED"), TEXT("the departure stamp says LOG FILED and the save's clock"));
 	Check(FiledAlpha(-1) == 0 && FiledAlpha(0) == 0 && FMath::IsNearlyEqual(FiledAlpha(0.125), 0.5, 1e-9) && FiledAlpha(1) == 1 && FMath::IsNearlyEqual(FiledAlpha(FiledFor - 0.4), 0.5, 1e-9) && FiledAlpha(FiledFor) == 0
 		&& FiledAlpha(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("the stamp comes in, holds and is gone after a few seconds"));
+
+	// HUD-D-20261109: the palettes, the choice and its keeping
+	bool bPalettes = true, bLowApart = true;
+	TSet<FString> PaletteIds;
+	for (int32 I = 0; I < HudColors; ++I)
+	{
+		const FHudPalette& Pal = Palette(EHudColor(I));
+		PaletteIds.Add(Pal.Id);
+		bPalettes &= HudColorFrom(Pal.Id) == EHudColor(I) && FCString::Strlen(Pal.Label) > 2 && FCString::Strlen(Pal.Help) > 20
+			&& Pal.ClockOn > Pal.ClockGhost && Pal.BatteryOn > Pal.BatteryGhost && Pal.RadioText > 0.5f && Pal.RadioWave > 0.5f;
+		// the low battery always stands apart: a colour well away from the battery's own, and at full strength
+		bLowApart &= ColorDistance(Pal.Low, Pal.Battery) >= 0.4 && ColorDistance(Pal.Low, Pal.Clock) >= 0.4 && Pal.LowOn >= 1.f && Pal.LowOn > Pal.BatteryOn
+			&& Pal.LowFrame > Pal.BatteryFrame && Pal.LowGhost >= Pal.BatteryGhost;
+	}
+	Check(bPalettes && PaletteIds.Num() == HudColors, TEXT("five HUD palettes, each with its own id, name and words, read back from its id"));
+	Check(bLowApart, TEXT("in every palette a low battery stands apart from the battery and the clock, at full strength"));
+	const FHudPalette& Teal = Palette(EHudColor::StationTeal);
+	Check(Teal.Clock == 0x78ffde && Teal.Battery == 0x78ffde && Teal.Low == 0xff5a45 && Teal.Radio == 0xffb052 && FMath::IsNearlyEqual(Teal.ClockOn, 150.f / 255.f)
+		&& FMath::IsNearlyEqual(Teal.ClockGhost, 14.f / 255.f) && FMath::IsNearlyEqual(Teal.BatteryOn, 0.55f) && FMath::IsNearlyEqual(Teal.BatteryFrame, 0.5f)
+		&& FMath::IsNearlyEqual(Teal.LowFrame, 0.7f) && FMath::IsNearlyEqual(Teal.RadioText, 225.f / 255.f) && FMath::IsNearlyEqual(Teal.RadioWave, 215.f / 255.f)
+		&& FString(Teal.Label) == TEXT("Station teal"), TEXT("Station teal is V4 as Tom chose it"));
+	const FHudPalette& AmberPal = Palette(EHudColor::Amber);
+	Check(AmberPal.Clock == AmberPal.Battery && AmberPal.Clock == AmberPal.Radio && AmberPal.Clock == 0xffb052, TEXT("Amber is amber throughout, the clock too"));
+	Check(HudColorFrom(TEXT("nonsense")) == EHudColor::StationTeal && HudColorFrom(FString()) == EHudColor::StationTeal && HudColorFrom(TEXT(" RED ")) == EHudColor::RedNight,
+		TEXT("an unknown or missing choice is Station teal"));
+	{
+		const EHudColor Was = HudColor();
+		SetHudColor(EHudColor::PhosphorGreen);
+		const bool bSet = HudColor() == EHudColor::PhosphorGreen && Palette().Clock == Palette(EHudColor::PhosphorGreen).Clock;
+		SetHudColor(EHudColor(200));
+		const bool bBad = HudColor() == EHudColor::StationTeal;
+		// kept as the settings are: a string in the store's JSON, written out and read back
+		bool bKept = true;
+		for (int32 I = 0; I < HudColors; ++I)
+		{
+			const S47J::FObj Saved = S47J::New();
+			S47J::Set(Saved, TEXT("hudColor"), HudColorId(EHudColor(I)));
+			FString Written;
+			const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Written);
+			FJsonSerializer::Serialize(Saved.ToSharedRef(), Writer);
+			S47J::FObj Back;
+			FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Written), Back);
+			bKept &= HudColorFrom(S47J::Str(Back, TEXT("hudColor"))) == EHudColor(I);
+		}
+		SetHudColor(Was);
+		Check(bSet && bBad && bKept, TEXT("the HUD colour is set at once, a bad one falls back, and the choice is kept and read back from the store"));
+	}
+
+	// the segment clock: 12 hours with AM and PM
+	const FClockFace Late = ClockFace(TEXT("23:41")), Small = ClockFace(TEXT("01:47")), Noon = ClockFace(TEXT("12:05")), Midnight = ClockFace(TEXT("00:12"));
+	Check(Late.bValid && Late.Hour == 11 && Late.Minute == 41 && Late.bPm && Late.Second < 0 && Small.Hour == 1 && !Small.bPm && Noon.Hour == 12 && Noon.bPm
+		&& Midnight.Hour == 12 && !Midnight.bPm, TEXT("the clock reads 12 hours with AM and PM, never 24"));
+	const FClockFace Secs = ClockFace(TEXT("02:13:07")), All = ClockFace(TEXT("88:88"));
+	Check(Secs.bValid && Secs.Second == 7 && Secs.Hour == 2 && All.bValid && All.bAll && !ClockFace(TEXT("")).bValid && !ClockFace(TEXT("LATE AFTERNOON")).bValid
+		&& !ClockFace(TEXT("25:00")).bValid && !ClockFace(TEXT("9:7")).bValid, TEXT("the seconds of a warning, the jumping 88:88, and words that are no time"));
+	Check(Segments(8) == 0x7f && Segments(1) == 0x06 && Segments(0) == 0x3f && Segments(7) == 0x07 && Segments(-1) == 0 && Segments(10) == 0,
+		TEXT("each figure lights its own segments"));
+
+	// the task's cassette card: in, six seconds, out over one
+	bool bHold = true, bFalls = true;
+	for (double T = NoteIn; T < NoteHold; T += 0.25) bHold &= NoteAlpha(T) == 1.0;
+	for (double T = NoteHold; T < NoteHold + NoteFade + 0.5; T += 0.05) bFalls &= NoteAlpha(T + 0.05) <= NoteAlpha(T);
+	Check(NoteAlpha(0) == 0 && NoteAlpha(-1) == 0 && NoteAlpha(NoteIn * 0.5) > 0 && bHold && FMath::IsNearlyEqual(NoteAlpha(NoteHold + NoteFade * 0.5), 0.5, 1e-9)
+		&& NoteAlpha(NoteHold + NoteFade) == 0 && NoteAlpha(60) == 0 && NoteAlpha(std::numeric_limits<double>::quiet_NaN()) == 0 && bFalls,
+		TEXT("the task's card stands six seconds after the task changes and fades out over one"));
+	Check(Handwritten(TEXT("CALICHE JUNCTION"), true) == TEXT("Caliche Junction") && Handwritten(TEXT("CONTROL ROOM"), true) == TEXT("Control Room")
+		&& Handwritten(TEXT("SARO"), true) == TEXT("SARO") && Handwritten(TEXT("KEEP THE COMPLETED FEEDER RECORD. RETURN TO THE SERVICE TRUCK"), false) == TEXT("Keep the completed feeder record. Return to the service truck")
+		&& Handwritten(TEXT("TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz"), false) == TEXT("Track the unlogged residual near 1420.4 MHz")
+		&& Handwritten(TEXT("back to the truck - on foot"), false) == TEXT("back to the truck - on foot") && Handwritten(TEXT("CALL DALE'S DESK"), false) == TEXT("Call Dale's desk")
+		&& Handwritten(TEXT("ROAD TO THE MESA"), true) == TEXT("Road to the Mesa"),
+		TEXT("the task is written by hand: the place in title case, the task as a sentence, the station's capitals and the figures kept"));
+	Check(BackingStrength(0) <= 0.15 && BackingStrength(0.05) <= 0.15 && BackingStrength(1) == 1.0 && BackingStrength(0.6) == 1.0 && BackingStrength(0.3) > BackingStrength(0.1)
+		&& BackingStrength(std::numeric_limits<double>::quiet_NaN()) <= 0.15 && BackingStrength(-2) <= 0.15 && BackingStrength(5) == 1.0,
+		TEXT("the dark rim under the clock and the battery is faint at night and full against a bright day sky"));
 	return bOk;
 }

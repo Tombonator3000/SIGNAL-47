@@ -311,6 +311,8 @@ void US47Flow::Init(US47Main* InM)
 	Brightness = float(S47J::Num(Store, TEXT("brightness"), 0.5));
 	ApplyBrightness();
 	S47Keys::Load(S47J::Obj(Store, TEXT("keys")));
+	// HUD-D-20261109: the HUD's colours, as the player chose them (Settings > Picture > HUD color)
+	S47HudGauges::SetHudColor(S47HudGauges::HudColorFrom(S47J::Str(Store, TEXT("hudColor"))));
 
 	// the opening card (core/Opening.ts)
 	FS47OpeningHooks H;
@@ -1425,6 +1427,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.Brightness = Brightness;
 	O.OnBrightness = [this](float V) { Brightness = V; ApplyBrightness(); StoreSet(TEXT("brightness"), double(V)); };
 	O.OnKeys = [this] { StoreSet(TEXT("keys"), MakeShared<FJsonValueObject>(S47Keys::Save())); };
+	O.HudColor = S47HudGauges::HudColorId(S47HudGauges::HudColor());
+	O.OnHudColor = [this](const FString& Id) { S47HudGauges::SetHudColor(S47HudGauges::HudColorFrom(Id)); StoreSet(TEXT("hudColor"), S47HudGauges::HudColorId(S47HudGauges::HudColor())); };
 	return O;
 }
 

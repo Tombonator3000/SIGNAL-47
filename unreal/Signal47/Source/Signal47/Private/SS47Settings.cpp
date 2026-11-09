@@ -7,6 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
+#include "S47HudGauges.h"
 #include "S47Picture.h"
 #include "S47Theme.h"
 #include "Widgets/Layout/SBorder.h"
@@ -288,6 +289,22 @@ void SS47Settings::BuildRows()
 			TEXT("How bright the night is, before the picture's curve. At 50% it is as it was made; raise it if the dark hides too much on your screen, but the night should stay dark."));
 		AddSlider(TEXT("Field of view"), &FS47PauseOpts::Fov, &FS47PauseOpts::OnFov, 60.f, 90.f, 1.f, 70.f, [](float V) { return FString::Printf(TEXT("%d°"), FMath::RoundToInt32(V)); },
 			TEXT("How wide you see, in degrees across the height of the picture. 70 is the game's own."));
+		// HUD-D-20261109: the HUD's colours (the clock, the battery, the radio line), at once and kept with the rest
+		if (P->OnHudColor)
+		{
+			TArray<FString> Names;
+			for (int32 I = 0; I < S47HudGauges::HudColors; ++I) Names.Add(FString(S47HudGauges::Palette(S47HudGauges::EHudColor(I)).Label).ToUpper());
+			AddChoice(TEXT("HUD color"), Names, [P] { return int32(S47HudGauges::HudColorFrom(P->HudColor)); },
+				[P](int32 I)
+				{
+					const FString Id = S47HudGauges::HudColorId(S47HudGauges::EHudColor(FMath::Clamp(I, 0, S47HudGauges::HudColors - 1)));
+					if (P->HudColor == Id) return;
+					P->HudColor = Id;
+					P->OnHudColor(Id);
+				}, 0,
+				[P] { return FString(S47HudGauges::Palette(S47HudGauges::HudColorFrom(P->HudColor)).Label); },
+				[P] { return FString(S47HudGauges::Palette(S47HudGauges::HudColorFrom(P->HudColor)).Help) + TEXT("\n\nThe clock, the flashlight's battery and the radio line. Captions and papers keep their own colours."); });
+		}
 		break;
 	}
 	case 2: // SOUND

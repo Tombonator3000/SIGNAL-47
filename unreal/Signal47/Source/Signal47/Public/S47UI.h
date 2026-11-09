@@ -67,6 +67,8 @@ struct FS47PauseOpts
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
 	// bound in Settings > Controls (S47Keys; the store keeps them)
 	float Brightness = 0.5f; TFunction<void(float)> OnBrightness;
+	// HUD-D-20261109: the HUD's colours (S47HudGauges::FHudPalette's id: teal, amber, green, white, red), at once and kept
+	FString HudColor = TEXT("teal"); TFunction<void(const FString&)> OnHudColor;
 	TFunction<void()> OnKeys;
 	FString Tab;                          // the settings' tab to open at: game, picture, sound, voices, controls, accessibility, graphics
 	// the pause menu's status and tonight's card

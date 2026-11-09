@@ -677,6 +677,9 @@ S47J::FObj FS47Happenings::Save() const
 void FS47Happenings::Stop()
 {
  Life.Reset();
+ // At process exit the object array may already be gone: IsValid(M) itself faults there (seen in the Reyes and journey runs
+ // after the test passed). Only plain state is reset then.
+ if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();Now=FActive();Says.Reset();return;}
  if(bDimmed&&IsValid(M)&&IsValid(M->World)&&!IsEngineExitRequested()){M->World->Trouble.Dim=1;}
  if(!Now.Id.IsEmpty()&&IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())M->Audio->Stop(TEXT("hapEngine"),.2f);
  if(Uneasy.I>=0&&IsValid(M)&&!IsEngineExitRequested()&&!IsGarbageCollecting())EndUneasy();
