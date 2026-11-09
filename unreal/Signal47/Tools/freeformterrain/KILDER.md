@@ -59,3 +59,10 @@ Skanninger fra Poly Haven, CC0, kreditering ikke påkrevd: [Dry Ground Rocks](ht
 - **Målt:** fargen på fjell og slette utenfor ca. 7 km er flyfotoets egen, som forhold til slettens jord (`T_FF_Range_C.rgb`), litt mer metning og kontrast enn fotoet.
 - **Laget:** de nære åsene (inntil 2,5-7 km) har form fra `build_range.py`, så fotoets arroyoer passer ikke der. Farge fra kartets ruglete nord, speilet og myknet, blandet med oker på solsiden, gråere kratt i kløfter og nordsider. Bar stein etter helning og rygger (`T_FF_Range_C.a`).
 - **Lagene:** `T_FF_Range_B`, 512 m snitt, rødbrun, gråbrun, grå, oker, mørk og tynne lyse kalichebenker. Rekkefølge og tykkelse er laget; bergartene er de som nevnes for Organ- og Doña Ana-fjellene (ryolitt, andesitt, kalkstein).
+
+## Fjellenes stein og lag (9. november 2026, `make_range_rock.py`, T16-02)
+Toms test 7. november: «fjell: ser ok ut, men må få bedre New Mexico texturer».
+- **Skanninger fra Poly Haven, CC0**, kreditering ikke påkrevd, ført i `CREDITS.txt`: [Cliff Side](https://polyhaven.com/a/cliff_side) av James Ray Cock, Jenelle van Heerden og Dario Barresi (lagdelt rødbrun sedimentær klippe) og [Dark Rock 02](https://polyhaven.com/a/dark_rock_02) av Amal Kumar (mørk sprukket stein, brukt som basalt). Hentet 9. november 2026 som 2k PNG (`diff`, `nor_gl`, `disp`) til `range/src/` under `~/Documents/ChatGPT/Signal 47/modeller/terreng-2026-11-07/freeformterrain/`.
+- `make_range_rock.py` (bare Pillow) skalerer til 1024 px og skriver `T_FF_RangeCliff_D`, `T_FF_RangeBasalt_D` (sRGB), `T_FF_RangeRock_N` (RG klippens normal, BA basaltens, DirectX) og `range_rock.json` med lineære snitt. Materialet bruker skanningene som mønster med snitt 1. Lagene og basaltens tone gir fargen.
+- `T_FF_Range_B` skrives nå av `make_range_rock.py`: tydeligere lag med røde lag, gul sandstein, tykkere lyse kalksteinsbenker og tynne mørke basaltstrømmer. Rekkefølge og tykkelse er laget. Den gamle fila ligger i `range/backup-20261109/`.
+- **Laget:** hvor vulkansk land og basaltkapper står (`VolcanicAt`, makrostøy og høyde over meshens null). Det er ikke kartlagt geologi.
