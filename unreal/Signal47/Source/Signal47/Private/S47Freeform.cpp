@@ -2137,7 +2137,7 @@ void FS47FreeformSession::BreakGear(const FString& What,int32 Fee)
 {
  Fee=FMath::Clamp(Fee,0,int32(RepairCap));if(Fee<=0)return;
  Repairs=FMath::Min(int32(RepairCap),Repairs+Fee);
- RecordEvidence(FString::Printf(TEXT("broken-%s-d%d"),*What,DayNumber),FString::Printf(TEXT("Day %d: the %s gave out close to something out there. $%d for the repair goes on the next weekly sheet."),DayNumber,*What,Fee));
+ RecordEvidence(FString::Printf(TEXT("broken-%s-d%d"),*What.Replace(TEXT(" "),TEXT("_")),DayNumber),FString::Printf(TEXT("Day %d: the %s gave out close to something out there. $%d for the repair goes on the next weekly sheet."),DayNumber,*What,Fee));
  UE_LOG(LogTemp,Display,TEXT("S47: gear broken near an event: %s, $%d on the sheet (%d due)"),*What,Fee,Repairs);
  Changed();
 }
