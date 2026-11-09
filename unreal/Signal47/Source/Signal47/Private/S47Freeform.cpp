@@ -2384,7 +2384,8 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
   if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
  }
  else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
- Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
+ // A late line (M7) has no test to choose until there is something to compare: its other place first.
+ Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):Line>=FS47FreeformCases::LateFirst?TEXT(". Three explanations fit. The OPS case board says where else to look."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
@@ -2580,8 +2581,9 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
     const bool bKept=Findings.Contains(Clue.Finding);
     // The feeder has nothing to show before midnight (Director, MysteryClueHere); the chart is there as soon as it is there.
     const bool bLost=Line==FS47FreeformCases::LostLine;
-    const TCHAR* Open=bLost?(Index==0?TEXT("not looked at yet. Log on at OPS: it still shows the hour you lost."):TEXT("not looked at yet. Go back to where it happened.")):Index==1?TEXT("not looked at yet. Worth a look after midnight; whatever is there will not last past noon."):TEXT("not looked at yet. Whatever is there will not last past noon.");
-    Trail+=FString::Printf(TEXT("\n%s: %s"),Clue.Place,bKept?*Findings.FindRef(Clue.Finding):bLost||(Director&&Director->MysteryTrailOpen())?Open:TEXT("nothing retained."));
+    // M7's late lines say where their own places are (FClueDef::Hint).
+    const TCHAR* Open=Clue.Hint?Clue.Hint:bLost?(Index==0?TEXT("not looked at yet. Log on at OPS: it still shows the hour you lost."):TEXT("not looked at yet. Go back to where it happened.")):Index==1?TEXT("not looked at yet. Worth a look after midnight; whatever is there will not last past noon."):TEXT("not looked at yet. Whatever is there will not last past noon.");
+    Trail+=FString::Printf(TEXT("\n%s: %s"),Clue.Place,bKept?*Findings.FindRef(Clue.Finding):Clue.Hint||bLost||(Director&&Director->MysteryTrailOpen())?Open:TEXT("nothing retained."));
    }
    List->AddSlot()[S47FreeformTerminal::Paper(Trail)];
   }
@@ -3133,6 +3135,23 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Check(!MLate.PlanCaseTest(MLine,0)&&MLate.FeedbackText().Contains(TEXT("gone cold"))&&MLate.ConcludeCase(MLine,MWas),TEXT("Mystery: a cold trail refuses a new control and still takes the filing"));
    MLate.Stop();
   }
+ }
+ {
+  // M7's late lines through the session (S47PredecessorLate.cpp keeps their traces): the place opens the case, a person is not
+  // tested, the printed minute takes a control, a filing is answered next morning as for the first mystery, and the county trusts a
+  // station that files.
+  FS47FreeformSession LBase(nullptr);LBase.Begin(nullptr);auto LState=LBase.Save();LBase.Stop();S47J::Set(LState,TEXT("tutorial"),0);
+  FS47FreeformSession L(nullptr);L.Begin(LState);
+  const int32 Post=FS47FreeformCases::PostLine,Minute=FS47FreeformCases::MinuteLine;
+  L.RecordEvidence(TEXT("post_empty"),L.CaseFile().ClueText(Post,0));
+  Check(L.CaseFile().Get(Post)->bOpen&&!L.CaseFile().Get(Minute)->bOpen&&!L.PlanCaseTest(Post,1)&&L.FeedbackText().Contains(TEXT("other place")),TEXT("Late cases: the empty post opens on its place, and offers no recording to test a person"));
+  L.RecordEvidence(TEXT("minute_chart"),L.CaseFile().ClueText(Minute,0));
+  Check(L.CaseFile().Get(Minute)->bOpen&&L.PlanCaseTest(Minute,0),TEXT("Late cases: the printed minute opens on its chart and takes a generator control"));
+  const int32 Trust=L.SheriffTrust();
+  Check(L.ConcludeCase(Post,2)&&L.SheriffTrust()==Trust+1,TEXT("Late cases: an assessment on the empty post goes in on any evidence, and the county counts it"));
+  L.TestAdvance(86400.);L.StepCaseReplies();
+  Check(L.HasFinding(TEXT("case6-reply"))&&L.CaseFile().Get(Post)->bReplied,TEXT("Late cases: the reply comes the next morning"));
+  L.Stop();
  }
  Case.Stop();
  {

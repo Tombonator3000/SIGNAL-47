@@ -56,6 +56,81 @@ namespace
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. The survey office will let the portable magnetometer go for $25 if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
  };
+ // M7, weeks three and four. Somebody in Caliche gone from their post (FS47Townsfolk): their place in town, and what the station's
+ // horizon channel logged toward town that night. No recording tests a person (UnavailableReason): the other place is the control.
+ const FS47FreeformCases::FMysteryDef EmptyPost={
+  3,TEXT("Reply: the empty post"),
+  {{TEXT("post_empty"),TEXT("Their place in Caliche"),{
+    TEXT("Their place in town: the till locked and the float gone with the key, the coat hook by the back door empty, the radio switched off at the wall. People who mean to go tidy up first. People who mean to come back do too."),
+    TEXT("Their place in town: the door on the latch and two sets of tire tracks in the dust out front, one of them wide, like a county car or bigger. A cigarette end on the step, not a brand anybody here smokes. Plenty of people stop on that street."),
+    TEXT("Their place in town: everything where it was left, the phone ringing to nobody, a cup half full on the counter with a skin on it. The clock on the wall says ten past three and has stopped there. Clocks stop.")},
+    TEXT("not looked at yet. Their place in town, while it still stands as it was left.")},
+   {TEXT("post_chart"),TEXT("SARO receiver log, that night"),{
+    TEXT("Receiver log, the night they went: nothing on the horizon channel toward town but the town's own lights, steady all night, as on any night. Whatever happened there made no noise the dishes could hear."),
+    TEXT("Receiver log, the night they went: a burst of ignition hash on the horizon channel toward town a little after three, then a second one, fainter, going away north. Engines start every night out there."),
+    TEXT("Receiver log, the night they went: the horizon channel toward town goes flat for a minute or so after three, as if every light in Caliche had gone out at once. Nobody in town says they did. A relay can drop out the same way.")},
+    TEXT("not looked at yet. The receiver log for that night is at the rack in the control room.")}},
+  {{{TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nFiled as gone of their own accord. They telephoned the substation from Belen this morning: a sister ill, they said, and they would be back at work in a day or two.\n\nThe county thanks the station for not making a search of it."),ER::None},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nFiled as gone of their own accord, so nobody was sent. A neighbor has since reported a car on the street that night that nobody in town knows. It has not been found.\n\nWe would have liked to hear of it sooner."),ER::None},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nFiled as gone of their own accord. No relative has heard from them, no bus or ride out of town had them on it, and their car is where it always is.\n\nThe file stays open. It is not ours to close on your word."),ER::None}},
+   {{TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nA deputy drove the county roads for two nights on your report. They had gone to Belen to see a sister, and say so.\n\nThe search is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nA deputy found the car you describe at the motor court, with a man asleep in it: a relative with a grievance about money. He has been told to leave the county, and they have been driven home.\n\nThank you for a report that gave us something to look for."),ER::None},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nA deputy sat on the street for two nights. No car came, nobody was seen, and nothing is missing from the place.\n\nThe search is charged to your station. He says he will not do it a third night."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for, so nobody was asked. Word in town is that they went to see family in Belen. Nobody here asked further."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for. The deputy has since had word of a strange car on the street that night. He asks that the station call him next time, not file it."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for. Nobody in town will say where they were. One of them asked the attendant whether the station had heard anything that night, and did not say why."),ER::None}}},
+  true
+ };
+ // The Socorro Sky Watch's bulletin (FS47Visitors' van) prints a night and a minute, and the receiver has a burst at it. The chart at
+ // the rack, and the cairn on the rise where they said to watch from.
+ const FS47FreeformCases::FMysteryDef PrintedMinute={
+  2,TEXT("Reply: the printed minute"),
+  {{TEXT("minute_chart"),TEXT("SARO receiver chart, the minute"),{
+    TEXT("Receiver chart, ten to one. Hash in a block that starts on the minute and stops on the minute, the way a hand on a key would. A watch is all it takes to keep an appointment."),
+    TEXT("Receiver chart, ten to one. The hash comes up with a step in the mains hum, as a pump or a heater does when something switches it on, and dies away as the load settles. Plenty on that line runs on a clock."),
+    TEXT("Receiver chart, ten to one. The hash swells and fades as slowly as something crossing the beam, and the reference channel beside it stays flat. A drifting gain stage can draw the same shape.")},
+    TEXT("not looked at yet. The chart at the rack keeps the night.")},
+   {TEXT("minute_cairn"),TEXT("The cairn on the rise"),{
+    TEXT("At the cairn: tire tracks up the rise and a dozen cigarette ends in a ring, and a length of thin wire tied off at the top stone, cut. Anybody watching the sky would bring a radio."),
+    TEXT("At the cairn: nobody's tracks but your own. From the top, a light at the pump house on the county road goes on and off by itself every few minutes. Ranches leave lights on timers."),
+    TEXT("At the cairn: the stones restacked, a hand higher than the survey tag says they stood, and no prints in the dust around it. The wind on the rise does not stack rocks. Somebody did, some time.")},
+    TEXT("not looked at yet. The cairn on the rise, where the bulletin said to watch from; whatever is there will not last long.")}},
+  {{{TEXT("FCC FIELD OFFICE / ALBUQUERQUE\nRE: SARO REPORT, UNLICENSED CARRIER\n\nOn your report we spoke to the Socorro Sky Watch. One of their members has a transmitter he is not licensed for, and keyed it at the minute in their bulletin to see whether your station would hear it.\n\nHe has been told. The bulletin will not print another minute."),ER::None},
+    {TEXT("FCC FIELD OFFICE / ALBUQUERQUE\nRE: SARO REPORT, UNLICENSED CARRIER\n\nWe found no unlicensed set. The co-op tells us a stock-tank heater on the county line switches on at that hour every night.\n\nThe call-out is charged to your station."),ER::CallOut},
+    {TEXT("FCC FIELD OFFICE / ALBUQUERQUE\nRE: SARO REPORT, UNLICENSED CARRIER\n\nNobody in the Sky Watch owns a transmitter, and nobody keyed anything. Their bulletin had the minute on good authority, they say, and they will not say whose.\n\nThe call-out is charged to your station."),ER::CallOut}},
+   {{TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO REPORT, A TIMER ON THE LINE\n\nOur crew checked every timer on the county line and found each on its own hours. A rancher on the line says some people with a van sat on the rise that night with a radio.\n\nThe call-out is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO REPORT, A TIMER ON THE LINE\n\nA stock-tank heater at the pump house on the county road, on a timer set for ten to one and arcing as it switched. Replaced. No charge.\n\nA spare control fuse for your panel is in your depot, with our thanks."),ER::Spare},
+    {TEXT("SOCORRO ELECTRIC CO-OP / LINE RECORDS\nRE: SARO REPORT, A TIMER ON THE LINE\n\nNo timer on the line switches at that hour, and our recorder shows nothing at ten to one.\n\nThe call-out is charged to your station."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE PRINTED MINUTE\n\nFiled as not accounted for. The Sky Watch's next bulletin says a member made contact with SARO at the minute they printed, and asks for donations."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE PRINTED MINUTE\n\nFiled as not accounted for, so nobody was sent. The heater at the pump house on the county road shorted out the next night and took the line with it.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE PRINTED MINUTE\n\nFiled as not accounted for. The Sky Watch wrote to ask whether you heard it. They had the minute from a man who rode with them once, they say, and none of them knows where he got it."),ER::None}}},
+  true
+ };
+ // After a big night the military went over the ground before the player came (FS47Visitors::Cleared): the raked circle, and what the
+ // horizon channel logged that morning. No recording tests what they came for.
+ const FS47FreeformCases::FMysteryDef RakedGround={
+  3,TEXT("Reply: the raked ground"),
+  {{TEXT("raked_ground"),TEXT("The raked ground"),{
+    TEXT("The raked ground: a wide circle combed smooth, and at its edge a strip of foil and a nylon line cut short. Aircraft drop things. So do weather balloons."),
+    TEXT("The raked ground: combed smooth in a wide circle, and outside it the tracks of the two cars and a third set, a truck with a trailer, going off toward the county road. Somebody brought something to carry away."),
+    TEXT("The raked ground: combed smooth in a wide circle, and in the middle of it the rake marks go round and round one place and stop short of it, as if whoever held the rake did not want to step there.")},
+    TEXT("not looked at yet. The ground they went over, while the rake marks are still in it.")},
+   {TEXT("raked_chart"),TEXT("SARO receiver log, that morning"),{
+    TEXT("Receiver log, first light: rotor hash on the horizon channel, and under it a beacon tone that steps off a few minutes after six. Aircraft carry beacons, and they are switched off when they are found."),
+    TEXT("Receiver log, first light: rotor hash on the horizon channel, then engine noise for an hour, low and heavy, like a truck working in low gear. Trucks work out there every day."),
+    TEXT("Receiver log, first light: rotor hash on the horizon channel, and before it, for most of an hour, nothing at all on that bearing: not the wind, not the ranch generators, not the highway. Then the rotors, and everything back.")},
+    TEXT("not looked at yet. The receiver log for that morning is at the rack in the control room.")}},
+  {{{TEXT("RANGE OFFICE / PUBLIC AFFAIRS\nRE: YOUR INQUIRY\n\nA target drone from the range came down short on the night you give, and a recovery team went out for it at first light. The ground was dressed afterward, as is usual.\n\nThe range thanks the station for its discretion."),ER::None},
+    {TEXT("RANGE OFFICE / PUBLIC AFFAIRS\nRE: YOUR INQUIRY\n\nThe range had nothing in the air that night and sent nobody. We have passed your report to the county, and the sheriff writes that he will charge the station for the patrol he sent."),ER::CallOut},
+    {TEXT("RANGE OFFICE / PUBLIC AFFAIRS\nRE: YOUR INQUIRY\n\nThe range had nothing in the air that night. We have no record of a recovery at the place you give.\n\nPlease do not inquire further on this matter."),ER::None}},
+   {{TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, VEHICLES ON STATE LAND\n\nThe vehicles were federal and had a right to be there. The deputy who drove out was turned back at the cattle guard.\n\nThe patrol is charged to your station."),ER::CallOut},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, VEHICLES ON STATE LAND\n\nThe trailer tracks you describe led to a man hauling scrap up the mine track, who had been picking over what was left out there before anyone came. He has been cited. The cars were not his.\n\nThank you for the tracks."),ER::None},
+    {TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO REPORT, VEHICLES ON STATE LAND\n\nThe deputy found no trailer, no third vehicle and nothing hauled away. He found the raked circle and did not walk into it.\n\nThe patrol is charged to your station."),ER::CallOut}},
+   {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE RAKED GROUND\n\nFiled as not accounted for, so nobody was asked. The Ledger prints a rancher's story of a little jet with no pilot, found hung on his fence the same week."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE RAKED GROUND\n\nFiled as not accounted for. Somebody has been back to the place since with a truck and a trailer, and the raked circle is gone under their tracks."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE RAKED GROUND\n\nFiled as not accounted for. Nobody has asked about it. The two cars were seen again on the highway two nights later, going north, slowly, with no lights on."),ER::None}}},
+  true
+ };
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
  {
   TEXT("THE REPEATED INTERVAL"),
@@ -142,6 +217,54 @@ namespace
    {true,true,false}},   // not the clocks and not the power: it keeps time only with nobody else able to reach it
   {TEXT(""),TEXT(""),TEXT("")},
   TEXT("Station log: the lost hours"),TEXT("access.lostHours"),&LostTime
+ },
+ {
+  TEXT("THE EMPTY POST"),
+  TEXT("Somebody in Caliche is not at their post, and their place stands as if they had only stepped out. Look at it while it is like that, and look at what the station logged toward town that night: the receiver log is at the rack. No recording here tests a person; the traces need not agree. File what you think it was. The reply comes the next morning, and the county acts on what you file."),
+  FS47FreeformCases::EObservable::ClockDelta,
+  {TEXT("They left on their own"),TEXT("Somebody came for them"),TEXT("Not accounted for")},
+  {TEXT("Left"),TEXT("Somebody"),TEXT("Unaccounted")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+  // Never offered (UnavailableReason): kept separating, as every line's are, for the shared rules.
+  {{false,true,true},
+   {true,false,true},
+   {true,true,false}},
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: the empty post"),TEXT("access.emptyPost"),&EmptyPost
+ },
+ {
+  TEXT("THE PRINTED MINUTE"),
+  TEXT("The Sky Watch's bulletin gave a night and a minute, and at that minute the receiver chart has a burst on it. Look at the chart at the rack, and at the cairn on the rise where they said to watch from; neither keeps long, and they need not agree. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  FS47FreeformCases::EObservable::ExtraTicks,
+  {TEXT("Somebody keying a set on time"),TEXT("A timer on the county line"),TEXT("Not accounted for")},
+  {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
+   {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
+   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
+  // Generator, OffSource, Repeat
+  {{true,true,false},   // a hand on a key keeps one appointment, not the next night's
+   {false,true,true},   // what switches on the line stays on the line, and off the generator
+   {true,false,true}},  // what arrives through the beam goes when the beam moves
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: the printed minute"),TEXT("access.printedMinute"),&PrintedMinute
+ },
+ {
+  TEXT("THE RAKED GROUND"),
+  TEXT("After a night out on the land somebody came at first light, a helicopter low and two cars at the way in, and went over the ground before you got there. Look at it while the rake marks are still in it, and at what the station heard that morning: the receiver log is at the rack. No recording here tests what they came for; the traces need not agree. File what you think it was. The reply comes the next morning."),
+  FS47FreeformCases::EObservable::ClockDelta,
+  {TEXT("Something of theirs came down"),TEXT("Somebody cleaning up after themselves"),TEXT("Not accounted for")},
+  {TEXT("Theirs"),TEXT("Cleaning up"),TEXT("Unaccounted")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+  // Never offered (UnavailableReason), as for the empty post.
+  {{false,true,true},
+   {true,false,true},
+   {true,true,false}},
+  {TEXT(""),TEXT(""),TEXT("")},
+  TEXT("Station log: the raked ground"),TEXT("access.rakedGround"),&RakedGround
  }};
 }
 
@@ -177,6 +300,8 @@ bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
 }
 FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test,bool bSecondLogger)
 {
+ // M7: what has gone from a post in town, or what was raked over out on the land, is not on any recording the station can make.
+ if(Line==PostLine||Line==RakedLine)return TEXT("No station recording tests this. The control is the other place: look at both, then file.");
  return Line==2&&Test==2&&!bSecondLogger?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
 }
 void FS47FreeformCases::Reset(int32 Seed)
@@ -517,6 +642,43 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   FS47FreeformCases Old;Old.Load(S47J::Read(TEXT("{\"v\":1,\"access\":[\"access.fieldlogger\"],\"cases\":[{\"open\":true},{},{}]}")),ProbeSeed);
   Good&=Old.Get(MysteryLine)&&!Old.Get(MysteryLine)->bOpen&&Old.Get(MysteryLine)->Truth==1&&Old.Get(0)->bOpen&&!Old.ReplyDue(MysteryLine,9)&&Old.HasAccess(TEXT("access.fieldlogger"));
  }
- Lines.Add(FString::Printf(TEXT("%s / Freeform cases: four data-driven cases, observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged"),Good?TEXT("PASS"):TEXT("FAIL")));
+ // M7: the three late lines. Each is a mystery that opens on one of its own traces, so a filing needs the other place too (or, for
+ // the printed minute, a control); each has its own places and replies; what they say never names a cause; a wrong filing never pays
+ // and a right one never charges; the two with nothing to record offer no test; and none of it says what Freeform must not.
+ {
+  static const TCHAR* const Far[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("silhouette"),TEXT("cable"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("taken"),TEXT("1947"),TEXT("8.15"),TEXT("the event"),TEXT("old road"),TEXT("chevy"),TEXT("winnebago"),TEXT("grey"),TEXT("tyre")};
+  TSet<FString> Ids;bool bLate=true,bClean=true;FString Offender;
+  const auto Clean=[&](const TCHAR* Text){const FString Low=FString(Text).ToLower();for(const TCHAR* W:Far)if(Low.Contains(W)){bClean=false;Offender=FString(W)+TEXT(": ")+FString(Text).Left(50);}};
+  for(int32 Line=0;Line<CaseCount;++Line)if(const FMysteryDef* Y=Defs[Line].Mystery)for(const FClueDef& Clue:Y->Clues)Ids.Add(Clue.Finding);
+  for(int32 Line=LateFirst;Line<CaseCount;++Line)
+  {
+   const FCaseDef& D=Defs[Line];const FMysteryDef* Y=D.Mystery;
+   bLate&=Y&&Y->bOpensOnTrace&&D.Access&&D.Access[0];
+   if(!Y)continue;
+   Clean(D.Title);Clean(D.Question);for(int32 C=0;C<CauseCount;++C){Clean(D.Causes[C]);Clean(D.Short[C]);}
+   for(int32 I=0;I<ClueCount;++I)
+   {
+    const FClueDef& Clue=Y->Clues[I];bLate&=LineForFinding(Clue.Finding)==Line&&Clue.Hint&&Clue.Hint[0];
+    for(const TCHAR* Read:Clue.Read){Clean(Read);for(int32 C=0;C<CauseCount;++C)bLate&=!FString(Read).Contains(D.Causes[C]);}
+   }
+   for(int32 Sent=0;Sent<CauseCount;++Sent)for(int32 Was=0;Was<CauseCount;++Was)
+   {
+    const FReplyDef& Answer=Y->Replies[Sent][Was];Clean(Answer.Text);bLate&=Answer.Text&&Answer.Text[0];
+    if(Sent!=Was)bLate&=Answer.Effect!=EReply::Spare;else bLate&=Answer.Effect!=EReply::FeederFault&&Answer.Effect!=EReply::CallOut;
+   }
+   const bool bRecorded=Line==MinuteLine;
+   for(int32 T=0;T<TestCount;++T)bLate&=UnavailableReason(Line,T).IsEmpty()==bRecorded;
+   // Filed on the one trace that opened it: nothing behind it. The other place looked at too: something.
+   FS47FreeformCases K;K.Reset(11);FString Said;const bool One[ClueCount]={true,false},Two[ClueCount]={true,true};
+   K.Open(Line,13,.83*3600);K.Conclude(Line,2,Said,14);
+   bLate&=K.Get(Line)->bConcluded&&!K.Supported(Line,One)&&K.Supported(Line,Two)&&!K.ReplyDue(Line,14)&&K.ReplyDue(Line,15)&&K.HasAccess(D.Access);
+  }
+  Good&=bLate&&bClean&&Ids.Num()==ClueCount*(CaseCount-3);
+  if(!bClean)Lines.Add(TEXT("FAIL Freeform cases: a late case says what it must not: ")+Offender);
+  // A save from before them has five lines: the three new ones wait, closed.
+  FS47FreeformCases Old;Old.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true},{},{},{},{}]}")),3);
+  Good&=Old.Get(0)->bOpen&&Old.Get(PostLine)&&!Old.Get(PostLine)->bOpen&&!Old.Get(RakedLine)->bOpen;
+ }
+ Lines.Add(FString::Printf(TEXT("%s / Freeform cases: eight data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }
