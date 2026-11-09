@@ -59,7 +59,10 @@ public:
   int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0,Hunch=-1; // optional player note, never evidence
   int32 ConcludeDay=0;bool bReplied=false; // mystery lines only
   bool bBeyondWind=false; // the visitors' case after a taking or a flooded room; follows from the findings, never saved
-  double OpenClock=0; // seconds into the day of the retained original
+  double OpenClock=0; // seconds into the day the case opened
+ // CASES-OPS-20261109: what the repeat window is measured from: the first original's own day and clock (SetReference), or, for a
+ // case opened on a trace or an observation, the day and clock it opened. Saved only when it differs from the opening.
+ int32 RefDay=0;double RefClock=0;
   FString PlannedJob;
   FResult Results[TestCount];
   TArray<FString> Leads; // retained observation ids, first-hand facts only
@@ -73,15 +76,23 @@ public:
  // Adds a retained observation as a lead; opens the case on its first lead. Idempotent.
  bool AddLead(int32 Line,const FString& ObservationId,int32 Day,double DayClock);
  static int32 LineForObservation(const FString& Event);
+ // CASES-OPS-20261109: a finding the case file keeps for itself ("case1-test2", "case4-conclusion", "case4-reply"): a record of the
+ // station's own business, not of anything seen. It goes in no field record, on no pin board card and under no SEEN AND HEARD.
+ static bool IsCaseRecord(const FString& Key);
+ // The first original's own clock (the reel deck's case): the repeat window is reckoned from it. Only while no test has a result.
+ void SetReference(int32 Line,int32 Day,double DayClock);
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
+ // Refused once one explanation is left (CASES-OPS-20261109): the case is then concluded or filed, not tested.
  bool Plan(int32 Line,int32 Test,const FString& JobId);
  bool SetHunch(int32 Line,int32 Cause);
  void CancelPlan(int32 Line);
- // Records a finished test. Returns false if it was not the planned test.
+ // Records a finished test. Returns false if it was not the planned test, or the case is already concluded.
  bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);
  bool Excluded(int32 Line,int32 Cause) const;
  // Lost time or a room lit up from outside: the visitors' case can no longer be the wind. Never leaves a case with nothing.
+ // CASES-OPS-20261109: the hidden cause moves off the wind only before any result is retained, or later only to a cause every
+ // retained result agrees with; with none, it stays the wind, which the retained tests then leave as the one explanation.
  void RuleOutWind(int32 Line);
  FString QuestionText(int32 Line) const;
  int32 Remaining(int32 Line) const;

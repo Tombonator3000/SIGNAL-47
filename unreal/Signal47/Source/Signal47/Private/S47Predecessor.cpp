@@ -821,11 +821,10 @@ bool FS47Predecessor::InMailbox(const FString& Id) const{return M&&M->Freeform&&
 FString FS47Predecessor::ArchiveLabel() const{return Live()?FString(TEXT("April's shift binder / the night of the 13th")):FString();}
 
 // ---------- OPS ----------
-void FS47Predecessor::OpsRows(TArray<TSharedRef<SWidget>>& Rows)
+void FS47Predecessor::OpsRows(TArray<TSharedRef<SWidget>>& Rows,const TArray<TSharedRef<SWidget>>& More)
 {
- if(!Live()||Tray.IsEmpty())return;
  TArray<S47Kit::FW> Col;
- for(const FString& Id:Tray)
+ if(Live())for(const FString& Id:Tray)
  {
   const FString Title=MakeDoc(Id).Title;
   Col.Add(T::Button(TEXT("READ / ")+Title,[this,Id]
@@ -834,6 +833,8 @@ void FS47Predecessor::OpsRows(TArray<TSharedRef<SWidget>>& Rows)
    ReadDoc(Id);
   },true));
  }
+ Col.Append(More);
+ if(Col.IsEmpty())return;
  Rows.Add(T::Panel(TEXT("IN THE TRAY"),S47Kit::Col(Col)));
 }
 void FS47Predecessor::OpsKeys(TArray<TSharedRef<SWidget>>& Rows)

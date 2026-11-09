@@ -391,7 +391,7 @@ namespace S47FreeformEvidenceTest
    if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation remains refused without a misleading menu choice, credit or stage advance")))return;Go(33);return;
   }
   if(S.Stage==33)
-  {if(!Click(M,TEXT("Source unresolved; retain both measurements"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}
+  {if(!Click(M,TEXT("Register comparison: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}
   if(S.Stage==330)
   {
    const auto* C=F.CaseFile().Get(0);

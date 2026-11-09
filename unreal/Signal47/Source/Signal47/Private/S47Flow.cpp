@@ -1436,18 +1436,19 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 			FString Card;
 			if (F.FocusedFieldCase() >= 0) F.AvailableActivities(&Card);
 			if (!Card.IsEmpty() && Card != In.Next && !Card.Contains(TEXT("FOLLOW THE PLAN")) && !Card.Contains(TEXT("WET BENCH"))) In.Tasks.Insert({ Card, false }, 0);
+			// CASES-OPS-20261109: the cases as FS47FreeformSession::CaseStep has them: waiting on evidence while a test is to be chosen; a
+			// conclusion or a filing is a line of its own (from Tasks); a planned test brings its window
 			for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
 			{
-				const auto* C = F.CaseFile().Get(Line);
-				if (!C || !C->bOpen || C->bConcluded) continue;
-				if (C->Planned < 0) { In.WaitingCases.Add(FS47FreeformCases::Def(Line).Title); continue; }
+				using EStep = FS47FreeformSession::ECaseStep;
+				const FS47FreeformSession::FCaseStep Step = F.CaseStep(Line);
+				if (Step.Step == EStep::ChooseTest) { In.WaitingCases.Add(FS47FreeformCases::Def(Line).Title); continue; }
+				if (Step.Step != EStep::RunPlan && Step.Step != EStep::WaitWindow) continue;
 				double Start = 0, End = 0;
 				// (a field test not yet prepared has only a preview of its window: the step is to prepare it now)
 				if (!F.CaseTestWindow(Line, Start, End) || F.CaseWindowText(Line).Contains(TEXT("PREVIEW ONLY"))) continue;
 				// the step in the words FS47FreeformSession::Tasks gives it, so that the window lands on that line
-				const FString Step = F.PlannedFieldTest(Line) >= 0 ? F.FieldNextAction(Line)
-					: TEXT("CASE / ") + FString(FS47FreeformCases::Def(Line).Tests[FMath::Clamp(C->Planned, 0, FS47FreeformCases::TestCount - 1)].Name) + TEXT(": run job ") + C->PlannedJob;
-				In.Windows.Add({ Step, Start, End });
+				In.Windows.Add({ Step.Task, Start, End });
 			}
 			double Up = 0;
 			if (F.NextEveningCard(Up)) In.EveningUp = Up;
@@ -2192,7 +2193,21 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		}
 		for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
 		{
-			const int32 Test = F->PlannedFieldTest(Line); if (Test < 0 && F->FocusedFieldCase() != Line) continue;
+			const int32 Test = F->PlannedFieldTest(Line);
+			// CASES-OPS-20261109: every open case has its own entry on Now, its step from FS47FreeformSession::CaseStep
+			if (Test < 0 && F->FocusedFieldCase() != Line)
+			{
+				const FS47FreeformSession::FCaseStep Step = F->CaseStep(Line);
+				if (Step.Step == FS47FreeformSession::ECaseStep::Closed) continue;
+				static const TCHAR* StepNames[] = { TEXT("Closed"), TEXT("Choose a test"), TEXT("Test planned"), TEXT("Test waits for its window"), TEXT("Conclude"), TEXT("File an assessment"), TEXT("Reply due") };
+				FS47NbWorkItem W; W.Id = FString::Printf(TEXT("case/%d/%d"), Line, int32(Step.Step));
+				W.Title = FString(TEXT("Case / ")) + FS47FreeformCases::Def(Line).Title;
+				W.Status = FString::Printf(TEXT("%s / %d of 3 explanations left"), StepNames[FMath::Clamp(int32(Step.Step), 0, 6)], F->CaseFile().Remaining(Line));
+				W.NextAction = Step.Next; W.Location = Step.Step == FS47FreeformSession::ECaseStep::RunPlan ? TEXT("OPS / DAILY WORK") : TEXT("OPS / CASE BOARD");
+				W.Hints = { TEXT("A case is closed by your own retained tests or by an assessment you file. The case board shows what each test predicts."), W.NextAction };
+				X.WorkItems.Add(W);
+				continue;
+			}
 			FS47NbWorkItem W; W.Id = FString::Printf(TEXT("field-plan/%d"), Line);
 			W.Title = Test >= 0 ? FString(TEXT("Field test / ")) + FS47FreeformCases::Def(Line).Tests[Test].Name : FString(TEXT("Review / ")) + FS47FreeformCases::Def(Line).Title; W.bCanFollow = true; W.bFollowed = F->FocusedFieldCase() == Line;
 			W.Status = W.bFollowed ? TEXT("Following / field plan retained") : TEXT("Field plan retained");

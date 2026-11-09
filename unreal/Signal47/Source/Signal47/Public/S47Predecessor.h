@@ -86,7 +86,8 @@ public:
  bool KeptOpen() const{return Outcome==EOutcome::Stays&&bOutcomeRead;}
 
  // OPS: what lies in the tray, the keys, and the station's status. SARO: UNDER REVIEW.
- void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
+ // More: the session's own papers for the same tray (CASES-OPS-20261109: the morning's case replies), after Ward's and Reyes's.
+ void OpsRows(TArray<TSharedRef<SWidget>>& Rows,const TArray<TSharedRef<SWidget>>& More=TArray<TSharedRef<SWidget>>());
  void OpsKeys(TArray<TSharedRef<SWidget>>& Rows);
  FString StatusLine() const;
  FString AccountLine() const;

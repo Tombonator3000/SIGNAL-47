@@ -266,6 +266,7 @@ void FS47PinBoard::PinWhatCameBack(bool bQuiet)
 	int32 Pinned = 0;
 	for (const FString& Id : M->Freeform->FindingIdsFrom(0))
 	{
+		if (FS47FreeformCases::IsCaseRecord(Id)) continue; // CASES-OPS-20261109: the case file's own, no card
 		const FString Card = FindingCard(Id);
 		if (!Up.Contains(Card)) { Up.Add(Card); ++Pinned; }
 	}
@@ -289,6 +290,7 @@ TArray<FS47PinBoard::FItem> FS47PinBoard::Items() const
 	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) FixOfDay.Add(B.Day, &B);
 	for (const FString& Id : Fs.FindingIdsFrom(0))
 	{
+		if (FS47FreeformCases::IsCaseRecord(Id)) continue; // CASES-OPS-20261109: an older save's case cards come down
 		const FString Card = FindingCard(Id);
 		if (!Up.Contains(Card)) continue;
 		FItem It; It.Id = Card; It.Line = FS47FreeformCases::LineForFinding(Id);
@@ -349,7 +351,8 @@ TArray<FS47Doc> FS47PinBoard::Papers() const
 	for (const FS47Doc& D : M->Story->Docs())
 	{
 		const FString Finding = D.Id.StartsWith(TEXT("freeform-")) ? D.Id.RightChop(9) : FString();
-		if (!Finding.IsEmpty() && M->Freeform && M->Freeform->HasFinding(Finding)) continue; // field records are on the board
+		// field records are on the board; a case's telex is a paper like any other (CASES-OPS-20261109)
+		if (!Finding.IsEmpty() && M->Freeform && M->Freeform->HasFinding(Finding) && !FS47FreeformCases::IsCaseRecord(Finding)) continue;
 		Out.Add(D);
 	}
 	return Out;
@@ -364,6 +367,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 	const FString Still = TEXT("It is in your notebook. It goes up on the board when you are back at SARO.");
 	// The field records, newest last; only the latest MostCards stay up, the rest are taken down into the tray's back.
 	TArray<FString> Order = Fs.FindingIdsFrom(0);
+	Order.RemoveAll([](const FString& Id) { return FS47FreeformCases::IsCaseRecord(Id); }); // CASES-OPS-20261109: the case file's own
 	Order.StableSort([this, &Fs](const FString& A, const FString& B)
 	{
 		const FWhere* Wa = Where.Find(A); const FWhere* Wb = Where.Find(B);

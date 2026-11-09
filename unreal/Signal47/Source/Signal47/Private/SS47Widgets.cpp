@@ -256,33 +256,47 @@ namespace
 		TAttribute<float> AlphaAttr;
 		static float Height(int32 Count) { return CardH + Pitch * FMath::Max(0, Count - 2); }
 		FString HeadWords() const { return S47HudGauges::Handwritten(HeadAttr.Get(FString()).TrimStartAndEnd(), true); }
-		// the place on the first line, the task wrapped to the card under it (at most four lines, the last cut short)
+		// the place on the first line, the task wrapped to the card under it (at most four lines, the last cut short). CASES-OPS-
+		// 20261109: a second part after a line break (an open case, FS47FreeformSession::HudCaseLine) starts a line of its own, at
+		// most two more lines; the task gives up its last lines to it.
 		TArray<FString> Lines() const
 		{
 			using namespace S47Game;
 			TArray<FString> Out;
 			const FString HeadLine = HeadWords();
 			if (!HeadLine.IsEmpty()) Out.Add(HeadLine);
-			TArray<FString> Words;
-			S47HudGauges::Handwritten(BodyAttr.Get(FString()).TrimStartAndEnd(), false).ParseIntoArrayWS(Words);
-			if (!Words.Num()) return Out;
-			if (!FSlateApplication::IsInitialized()) { Out.Add(FString::Join(Words, TEXT(" "))); return Out; }
-			const TSharedRef<FSlateFontMeasure> Meter = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+			TArray<FString> Parts;
+			BodyAttr.Get(FString()).ParseIntoArray(Parts, TEXT("\n"), true);
+			if (Parts.Num() > 2) Parts.SetNum(2);
+			const bool bMeasure = FSlateApplication::IsInitialized();
+			const TSharedPtr<FSlateFontMeasure> Meter = bMeasure ? TSharedPtr<FSlateFontMeasure>(FSlateApplication::Get().GetRenderer()->GetFontMeasureService()) : nullptr;
 			const FSlateFontInfo Font = Hand(28.f);
 			const float Room = P(CardW - 52.f - 12.f);
-			FString Line;
-			for (const FString& Each : Words)
+			auto Wrap = [&](const FString& Text)
 			{
-				const FString Try = Line.IsEmpty() ? Each : Line + TEXT(" ") + Each;
-				if (!Line.IsEmpty() && float(Meter->Measure(Try, Font).X) > Room) { Out.Add(Line); Line = Each; }
-				else Line = Try;
-			}
-			if (!Line.IsEmpty()) Out.Add(Line);
-			if (Out.Num() > MostLines)
-			{
-				Out.SetNum(MostLines);
-				Out.Last() += TEXT("...");
-			}
+				TArray<FString> Words, Got;
+				S47HudGauges::Handwritten(Text.TrimStartAndEnd(), false).ParseIntoArrayWS(Words);
+				if (!Words.Num()) return Got;
+				if (!Meter.IsValid()) { Got.Add(FString::Join(Words, TEXT(" "))); return Got; }
+				FString Line;
+				for (const FString& Each : Words)
+				{
+					const FString Try = Line.IsEmpty() ? Each : Line + TEXT(" ") + Each;
+					if (!Line.IsEmpty() && float(Meter->Measure(Try, Font).X) > Room) { Got.Add(Line); Line = Each; }
+					else Line = Try;
+				}
+				if (!Line.IsEmpty()) Got.Add(Line);
+				return Got;
+			};
+			auto Cut = [](TArray<FString>& L, int32 Most) { if (L.Num() > Most) { L.SetNum(FMath::Max(Most, 0)); if (L.Num()) L.Last() += TEXT("..."); } };
+			TArray<FString> Task = Parts.Num() ? Wrap(Parts[0]) : TArray<FString>();
+			TArray<FString> Case = Parts.Num() > 1 ? Wrap(Parts[1]) : TArray<FString>();
+			Cut(Case, 2);
+			// the task as before; with a case under it, the card takes one line more and the task keeps at least one
+			const int32 Most = MostLines + (Case.Num() ? 1 : 0) - Out.Num();
+			Cut(Task, FMath::Max(1, Most - Case.Num()));
+			Out.Append(Task);
+			Out.Append(Case);
 			return Out;
 		}
 	};

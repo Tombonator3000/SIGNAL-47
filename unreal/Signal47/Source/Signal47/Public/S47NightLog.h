@@ -40,6 +40,9 @@ public:
  static FString RemarkFor(const FNight& N);
  // A field record's words, as the sheet has them: the first sentence, no longer than a line, its own time taken off the front.
  static FString Lead(const FString& Record,FString& OutAt);
+ // CASES-OPS-20261109: a sheet's line about a case (the WORK line FS47FreeformSession::CaseRecordLine gives it, "Case 1, ...", or an
+ // older sheet's case record under SEEN AND HEARD): the station's own business. The weekly report leaves it off (FS47WardReport).
+ static bool CaseLine(const FString& Text);
 
  // Facts: the sheet's lines as they were typed (the work's too, as Work lines), for the weekly report (FS47WardReport).
  struct FSheet{int32 Night=0;FString Title,Page,Remark;double Typed=0,Sent=-1,Read=-1;TArray<FLine> Facts;};

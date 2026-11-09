@@ -40,6 +40,8 @@ namespace S47NightLogLocal
 	{
 		for (const TCHAR* Not : { TEXT("taken-"), TEXT("recovery-"), TEXT("ward-"), TEXT("round-d"), TEXT("assessment"), TEXT("shiftlog"), TEXT("dev_") })
 			if (Key.StartsWith(Not)) return true;
+		// CASES-OPS-20261109: a case's own records ("case1-test2", its telexes) are not seen or heard; they go under WORK (Watch)
+		if (FS47FreeformCases::IsCaseRecord(Key)) return true;
 		return Key.EndsWith(TEXT("_needle"));
 	}
 	// The instruments' own findings go under the night's work, not under what was seen.
@@ -53,6 +55,15 @@ namespace S47NightLogLocal
 }
 
 // ---------- the words ----------
+
+bool FS47NightLog::CaseLine(const FString& Text)
+{
+	if (Text.Len() > 6 && Text.StartsWith(TEXT("Case "), ESearchCase::CaseSensitive) && FChar::IsDigit(Text[5])) return true;
+	// an older sheet's lines from the field records the case file used to write
+	for (const TCHAR* Old : { TEXT("CASE / "), TEXT("CASE CONCLUDED / "), TEXT("ASSESSMENT FILED / ") })
+		if (Text.StartsWith(Old, ESearchCase::CaseSensitive)) return true;
+	return false;
+}
 
 FString FS47NightLog::Lead(const FString& Record, FString& OutAt)
 {
@@ -259,6 +270,7 @@ void FS47NightLog::Prime()
 	LastCash = Fs.Budget();
 	LastFindings = Fs.FindingCount();
 	if (M->Story) for (const FS47Doc& D : M->Story->Docs()) if (D.Id.StartsWith(TEXT("freeform-"))) Known.Add(D.Id);
+	for (const FString& Key : Fs.FindingIdsFrom(0)) if (FS47FreeformCases::IsCaseRecord(Key)) Known.Add(TEXT("case:") + Key);
 	if (Fs.Tips) { SaidKnown = Fs.Tips->Said(); LastSaid = SaidKnown.Num(); }
 	if (M->Gear) { BaseFlickers = M->Gear->Flickers(); BaseDrifts = M->Gear->RadioDrifts(); BaseCoughs = M->Gear->Coughs(); BaseJumps = M->Gear->ClockJumps(); }
 	bLampDead = M->Night && M->Night->Flashlight && M->Night->Flashlight->Dead();
@@ -294,6 +306,15 @@ void FS47NightLog::Watch(double ClockNow, bool& bOutLost)
 			if (Text.IsEmpty()) continue;
 			const EPart Part = Key.StartsWith(TEXT("clock_ahead")) ? EPart::Time : (Key.StartsWith(TEXT("car_dies")) || Key.StartsWith(TEXT("car_light"))) ? EPart::Gear : S47NightLogLocal::Instrument(Key) ? EPart::Work : EPart::Seen;
 			Add(ClockNow, Part, Text, At);
+		}
+		// CASES-OPS-20261109: a case's record kept tonight is one line under WORK, never a field record
+		for (const FString& Key : Fs.FindingIdsFrom(FMath::Max(1, Night)))
+		{
+			if (!FS47FreeformCases::IsCaseRecord(Key) || Known.Contains(TEXT("case:") + Key)) continue;
+			Known.Add(TEXT("case:") + Key);
+			if (Night <= 0) continue;
+			const FString Line = Fs.CaseRecordLine(Key);
+			if (!Line.IsEmpty()) Add(ClockNow, EPart::Work, Line);
 		}
 	}
 	if (Fs.Tips && Fs.Tips->Said().Num() != LastSaid)

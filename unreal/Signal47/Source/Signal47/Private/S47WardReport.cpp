@@ -241,6 +241,9 @@ void FS47WardReport::Make(int32 Week)
 			if (Sh.Night < Rep.First || Sh.Night > Rep.Last) continue;
 			for (const FS47NightLog::FLine& L : Sh.Facts)
 			{
+				// CASES-OPS-20261109: a case's own records are the station's business, not the week's report: nothing to leave out and
+				// nothing that makes "in order" a lie
+				if (FS47NightLog::CaseLine(L.Text)) continue;
 				FItem It; It.Cat = CatOf(L.Part); It.Night = Sh.Night; It.Clock = L.Clock; It.Text = L.Text;
 				if (PerCat[int32(It.Cat)]++ < MostItems) Rep.Items.Add(It);
 			}

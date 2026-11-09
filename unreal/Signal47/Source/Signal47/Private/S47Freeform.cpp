@@ -267,6 +267,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   if(!FieldPlan&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(Line);
  }
  if(FieldFocus>=0){const auto* Focus=Cases.Get(FieldFocus);if(!Focus||!Focus->bOpen||Focus->bConcluded)FieldFocus=-1;}
+ // CASES-OPS-20261109: an older save's reel-deck case has its window from the review; the first original it came from says the clock
+ // (SetReference keeps it only while no test has a result).
+ if(const auto* First=Cases.Get(0);First&&First->bOpen&&First->RefDay==First->OpenDay&&First->RefClock==First->OpenClock)
+  if(const FJob* Original=Work.FindByPredicate([](const FJob& J){return J.bAnomaly&&J.bAudioReviewed&&J.CaseTest<0&&!Specialized(J.Phenomenon)&&J.ReferenceClock>0;}))
+   Cases.SetReference(0,NightOf(Original->ReferenceClock),FMath::Fmod(Original->ReferenceClock,86400.));
  AddDay(DayNumber);
  if(Tutorial>0)
  {
@@ -605,7 +610,8 @@ void FS47FreeformSession::Step(double Dt)
   else M->Audio->ReceiverMonitorOff();
  }
  // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
- if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(HudObjective());
+ // CASES-OPS-20261109: and a second line for the most pressing case not already on it (HudCaseLine), whatever the first line says
+ if(M->UI&&M->Mode==US47Main::EMode::Play){const FString Card=HudObjective();const FString Case=HudCaseLine(Card);M->UI->Objective(Case.IsEmpty()?Card:Card+TEXT("\n")+Case);}
 }
 int32 FS47FreeformSession::PendingPrint(const FJob& J)
 {
@@ -843,7 +849,7 @@ bool FS47FreeformSession::StartAcquisition()
  FJob* J=Job();if(!ReceiverReady()){Feedback=ReceiverNextAction();return false;}
  if(J->CaseTest>=0)
  {
-  if(!Cases.Get(J->CaseLine)||!Cases.Get(J->CaseLine)->bOpen){Feedback=TEXT("This case test no longer belongs to an open case.");return false;}
+  if(!Cases.Get(J->CaseLine)||!Cases.Get(J->CaseLine)->bOpen||Cases.Get(J->CaseLine)->bConcluded){Feedback=TEXT("This case test no longer belongs to an open case.");return false;}
   const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty()){Feedback=Missing;Changed(Feedback);return false;}
   if(CaseCondition(J->CaseLine,J->CaseTest)==ECaseCondition::RelaySwap&&!Consume(TEXT("relay"))){Feedback=TEXT("Case test: no spare relay in the depot. Buy one at Caliche.");Changed(Feedback);return false;}
  }
@@ -1018,8 +1024,14 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(Specialized(J->Phenomenon))return CompareInstrument();
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
   if(!MarkCoversTicks(J->MarkStart,J->MarkEnd)){Feedback=TEXT("Mark the original from just before the first extra ticks to just after the last ones, about 9 to 13 seconds.");return false;}
+  const bool bCaseWasOpen=Cases.Get(0)&&Cases.Get(0)->bOpen;
   J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
-  if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register a supported conclusion; the marked comparison is retained."));
+  // CASES-OPS-20261109: the repeat window goes from this original's own clock, and the reel deck says one thing: the job first.
+  const bool bOpened=!bCaseWasOpen&&Cases.Get(0)&&Cases.Get(0)->bOpen;
+  if(bOpened&&J->ReferenceClock>0)Cases.SetReference(0,NightOf(J->ReferenceClock),FMath::Fmod(J->ReferenceClock,86400.));
+  if(Director)Director->Use(TEXT("ff:compare"));
+  Changed(bOpened?FString::Printf(TEXT("CASE OPENED: %s (OPS / CASE BOARD). FIRST THE JOB: OPS / DAILY WORK, register the comparison as unresolved, then the printer and the binder."),FS47FreeformCases::Def(0).Title)
+   :FString(TEXT("OPS / DAILY WORK: register the comparison as unresolved, then the printer and the binder. The marked comparison is retained.")));
  }
  else return false;
  Changed();return true;
@@ -1185,8 +1197,11 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
  if(Id.IsEmpty()||Findings.Contains(Id))return;
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
- if(PinBoard)PinBoard->Kept(Id);
- if(M&&M->Story)
+ // CASES-OPS-20261109: a case's own record (a test result, a conclusion, a reply) is no field record and no card on the board; its
+ // telex is its one document and the night log has it under WORK (FS47NightLog, CaseRecordLine).
+ const bool bCaseRecord=FS47FreeformCases::IsCaseRecord(Id);
+ if(PinBoard&&!bCaseRecord)PinBoard->Kept(Id);
+ if(M&&M->Story&&!bCaseRecord)
  {
   // Named by what it says, never by its key, and stamped with where the player is, not always the station.
   FString Named=Text;int32 Stop=INDEX_NONE;
@@ -1379,7 +1394,7 @@ void FS47FreeformSession::OpenOperations()
     {
      A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck on the wall table before registering.")));
      A.Add(T::Small(TEXT("A quiet internal reference does not prove a sky source. Retain the unresolved result; a directional or independent field control is still needed.")));
-     A.Add(T::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+     A.Add(T::Button(TEXT("Register comparison: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
    }
    else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?FString::Printf(TEXT("Register observation and case test result / $%d"),JobPay(*J)):J->bPaid?FString(TEXT("Register retained reference / no additional payment")):FString::Printf(TEXT("Register routine result / $%d"),JobPay(*J)),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
@@ -1401,13 +1416,27 @@ void FS47FreeformSession::OpenOperations()
   T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true)}));
  if(Section==0)
  {
-  if(Predecessor)Predecessor->OpsRows(Rows);
+  {
+   // CASES-OPS-20261109: the morning's case replies wait in the tray that day, with Ward's and Reyes's papers.
+   TArray<S47Kit::FW> Replies;
+   for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+   {
+    const FString Key=FString::Printf(TEXT("case%d-reply"),Line+1);const auto* Y=FS47FreeformCases::Def(Line).Mystery;
+    if(!Y||!HasFinding(Key)||FindingDays.FindRef(Key)!=DayNumber)continue;
+    Replies.Add(T::Button(TEXT("READ / ")+FString(Y->ReplyTitle),[this,DocId=TEXT("freeform-")+Key]
+    {
+     if(!M||!M->Story||!M->UI)return;
+     if(const FS47Doc* Doc=M->Story->Docs().FindByPredicate([&DocId](const FS47Doc& D){return D.Id==DocId;}))M->UI->Document(*Doc);
+    },true));
+   }
+   if(Predecessor)Predecessor->OpsRows(Rows,Replies);else if(!Replies.IsEmpty())Rows.Add(T::Panel(TEXT("IN THE TRAY"),S47Kit::Col(Replies)));
+  }
   if(NightLog)NightLog->OpsRows(Rows);
   if(WardReport)WardReport->OpsRows(Rows);
   if(Tutorial==0)
   {
    TArray<S47Kit::FW> Continue;
-   const int32 Next=J&&J->Stage!=EJobStage::Filed&&!J->bDuplicateRejected&&!EveningGated(*J)?Selected:Work.IndexOfByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);});
+   const int32 Next=J&&J->Stage!=EJobStage::Filed&&!J->bDuplicateRejected&&!EveningGated(*J)&&!CaseTestWaits(*J)?Selected:Work.IndexOfByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);});
    if(Work.IsValidIndex(Next))
    {
     const FJob& NextJob=Work[Next];
@@ -1431,7 +1460,7 @@ void FS47FreeformSession::OpenOperations()
    Rows.Add(T::Panel(TEXT("CONTINUE TODAY"),S47Kit::Col(Continue)));
   }
   Rows.Add(T::Small(QueueExplanation));
-  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
+  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
   if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
    Rows.Add(T::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference: complete the 3C 286 calibration cross and register it here, so later discrepancies can be compared against working instruments.")));
   auto Today=T::Panel(TEXT("TODAY'S WORK"),S47Kit::Col({T::Table({TEXT("JOB"),TEXT("SOURCE"),TEXT("STATUS")},{1.25f,1.35f,1.f},Rows4(false)),
@@ -1457,7 +1486,7 @@ void FS47FreeformSession::OpenOperations()
  if(Section==1)
  {
   Rows.Add(T::Small(QueueExplanation));
-  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpenOperations();},true));
+  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpenOperations();},true));
   if(FieldFocus>=0)Rows.Add(T::Panel(TEXT("ACTIVE FIELD TEST"),T::Banner(TAttribute<FString>::CreateLambda([this]{return FieldNextAction(FieldFocus).ToUpper();}),true)));
   auto Queue=T::Panel(FString::Printf(TEXT("WORK QUEUE (DAY %02d)"),DayNumber),S47Kit::Col({T::Table({TEXT("ID"),TEXT("SOURCE"),TEXT("STATE")},{1.4f,1.3f,1.f},Rows4(true)),
    T::Big(FString(bShowEarlierJobs?TEXT("HIDE EARLIER WORK"):TEXT("SHOW EARLIER WORK")),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();})}));
@@ -1805,9 +1834,7 @@ void FS47FreeformSession::OpenArchive()
   }
   else Rows.Add(Paper(FString::Printf(TEXT("TO FILE / The registered packet for %s is waiting. Take it to the binder in the records room; this copy of the archive is read-only."),*Waiting->Id)));
  }
- static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
- TArray<FString> CaseLines;for(int32 I=0;I<3;++I)if(MysterySteps[I]>0)CaseLines.Add(FString::Printf(TEXT("%s %d/3%s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT(" READY TO COMPARE"):TEXT("")));
- if(!CaseLines.IsEmpty())Rows.Add(Plain(FString::Join(CaseLines,TEXT("   |   "))));
+ // CASES-OPS-20261109: the old three-family count ("READY TO COMPARE") had nothing to do here: it is gone. The cases are on CASE BOARD.
  if(const FString Gap=Predecessor?Predecessor->ArchiveLabel():FString();!Gap.IsEmpty())
  {
   const auto Open=[this]{if(Predecessor)Predecessor->OpenGap();};
@@ -1882,10 +1909,154 @@ FString FS47FreeformSession::CasePrecondition(const FJob& J)const
   default:return FString();
  }
 }
+namespace
+{
+ // CASES-OPS-20261109: how pressing a case's step is; 0: nothing to do or see.
+ int32 CaseStepRank(FS47FreeformSession::ECaseStep S)
+ {
+  using E=FS47FreeformSession::ECaseStep;
+  switch(S){case E::Conclude:return 6;case E::RunPlan:return 5;case E::File:return 4;case E::ChooseTest:return 3;case E::WaitWindow:return 2;case E::AwaitReply:return 1;default:return 0;}
+ }
+}
 int32 FS47FreeformSession::CaseAwaitingChoice()const
 {
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded&&C->Planned<0)return Line;
- return -1;
+ // The star on CASE BOARD: only when there is something to do there (CaseStep), the most pressing first.
+ int32 Best=-1,BestRank=0;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+ {
+  const ECaseStep S=CaseStep(Line).Step;
+  if(S!=ECaseStep::ChooseTest&&S!=ECaseStep::Conclude&&S!=ECaseStep::File)continue;
+  if(const int32 R=CaseStepRank(S);R>BestRank){Best=Line;BestRank=R;}
+ }
+ return Best;
+}
+bool FS47FreeformSession::CaseTestWaits(const FJob& J)const
+{
+ if(J.CaseTest<0||J.Stage>EJobStage::Pointed||J.bCaseRecorded||CaseCondition(J.CaseLine,J.CaseTest)!=ECaseCondition::Repeat)return false;
+ const auto* C=Cases.Get(J.CaseLine);
+ return C&&C->bOpen&&!C->bConcluded&&C->Planned==J.CaseTest&&!Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.));
+}
+FS47FreeformSession::FCaseStep FS47FreeformSession::CaseStep(int32 Line)const
+{
+ FCaseStep S;const auto* C=Cases.Get(Line);if(!C||!C->bOpen)return S;
+ const auto& D=FS47FreeformCases::Def(Line);const FString Title=D.Title;
+ if(C->bConcluded)
+ {
+  if(D.Mystery&&!C->bReplied)
+  {
+   S.Step=ECaseStep::AwaitReply;S.Next=TEXT("OPS / IN THE TRAY: THE REPLY ON ")+Title+TEXT(" COMES WITH THE MORNING, AT 08:00.");
+   S.Card=TEXT("CASE // ")+Title+TEXT(": REPLY DUE 08:00.");S.Short=Title+TEXT(": REPLY DUE 08:00.");
+  }
+  return S;
+ }
+ // One explanation left: that is the step, whatever is still planned (an older save's plan; Plan refuses a new one).
+ const int32 Left=Cases.Remaining(Line);
+ if(C->Planned>=0&&Left>1)
+ {
+  const FString Test=CaseTestName(Line,C->Planned);
+  S.Card=TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+Title+TEXT(".");
+  if(PlannedFieldTest(Line)>=0){S.Step=ECaseStep::RunPlan;S.Next=FieldNextAction(Line);S.Task=S.Next;S.Short=Title+TEXT(": FOLLOW THE FIELD TEST.");return S;}
+  // the same words as before, so that the pause menu's note puts the test's window on this line
+  S.Task=TEXT("CASE / ")+Test+TEXT(": run job ")+C->PlannedJob;
+  const FJob* J=Work.FindByPredicate([&](const FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&X.CaseTest==C->Planned;});
+  if(J&&CaseTestWaits(*J))
+  {
+   double Start=0,End=0;const bool bWindow=CaseTestWindow(Line,Start,End);
+   const FString From=bWindow?FS47FreeformCases::Clock(Start):FString();
+   S.Step=ECaseStep::WaitWindow;
+   S.Next=TEXT("OPS / CASE BOARD: ")+Title+TEXT(": THE CASE TEST, JOB ")+C->PlannedJob+TEXT(", WAITS FOR ITS WINDOW")+(bWindow?TEXT(", ")+From+TEXT(" TO ")+FS47FreeformCases::Clock(End):FString())+TEXT(".");
+   const FString When=bWindow?TEXT(": TEST WINDOW FROM ")+From+TEXT("."):FString(TEXT(": TEST WAITS FOR ITS WINDOW."));
+   S.Card=TEXT("CASE // ")+Title+When;S.Short=Title+When;return S;
+  }
+  S.Step=ECaseStep::RunPlan;S.Short=Title+TEXT(": RUN THE PLANNED TEST.");
+  S.Next=TEXT("OPS / DAILY WORK: RUN CASE TEST JOB ")+C->PlannedJob+TEXT(" (")+Test.ToUpper()+TEXT(") FOR ")+Title+TEXT(".");
+  return S;
+ }
+ if(Left<=1&&!D.Mystery)
+ {
+  int32 Cause=-1;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Cause=I;
+  S.Step=ECaseStep::Conclude;
+  S.Next=TEXT("OPS / CASE BOARD: REGISTER THE SUPPORTED CONCLUSION FOR ")+Title+(Cause>=0?TEXT(": ")+FString(D.Causes[Cause]).ToUpper():FString())+TEXT(".");
+  S.Card=TEXT("CASE BOARD // REGISTER THE CONCLUSION FOR ")+Title+TEXT(".");S.Short=Title+TEXT(": REGISTER THE CONCLUSION.");
+  S.Task=TEXT("CASE / ")+Title+TEXT(": register the supported conclusion on the OPS case board");return S;
+ }
+ const bool bCold=Cases.TrailCold(Line,DayNumber);
+ bool bTest=false;
+ if(!bCold&&Left>1)for(int32 T=0;T<FS47FreeformCases::TestCount;++T)
+  bTest|=!C->Results[T].bDone&&FS47FreeformCases::UnavailableReason(Line,T,HasKit(TEXT("logger2"))).IsEmpty()&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access));
+ const FString Late=LateStep(Line,Findings);
+ if(D.Mystery&&(Left<=1||(!bTest&&(Late.IsEmpty()||Late==TEXT("file your assessment")))))
+ {
+  S.Step=ECaseStep::File;
+  S.Next=TEXT("OPS / CASE BOARD: FILE YOUR ASSESSMENT OF ")+Title+(bCold?TEXT(". THE TRAIL HAS GONE COLD."):TEXT("."));
+  S.Card=TEXT("CASE BOARD // FILE YOUR ASSESSMENT OF ")+Title+TEXT(".");S.Short=Title+TEXT(": FILE YOUR ASSESSMENT.");
+  S.Task=TEXT("CASE / ")+Title+TEXT(": file your assessment on the OPS case board");return S;
+ }
+ S.Step=ECaseStep::ChooseTest;
+ if(!Late.IsEmpty())
+ {
+  S.Next=TEXT("OPS / CASE BOARD: ")+Title+TEXT(": ")+Late.ToUpper()+TEXT(".");S.Card=TEXT("CASE // ")+Title+TEXT(": ")+Late.ToUpper()+TEXT(".");
+  S.Short=Title+TEXT(": LOOK AT THE OTHER PLACE, OR FILE.");S.Task=TEXT("CASE / ")+Title+TEXT(": ")+Late;
+ }
+ else if(D.Mystery)
+ {
+  S.Next=TEXT("OPS / CASE BOARD: CHOOSE A CONTROL OR FILE YOUR ASSESSMENT FOR ")+Title+TEXT(".");S.Card=TEXT("CASE BOARD // A CONTROL OR A FILING FOR ")+Title+TEXT(".");
+  S.Short=Title+TEXT(": A CONTROL, OR FILE IT.");S.Task=TEXT("CASE / ")+Title+TEXT(": choose a control or file your assessment on the OPS case board");
+ }
+ else
+ {
+  S.Next=FString::Printf(TEXT("OPS / CASE BOARD: CHOOSE A TEST FOR %s. %d OF 3 EXPLANATIONS STILL POSSIBLE."),*Title,Left);S.Card=TEXT("CASE BOARD // CHOOSE A TEST FOR ")+Title+TEXT(".");
+  S.Short=Title+TEXT(": CHOOSE A TEST.");S.Task=TEXT("CASE / ")+Title+TEXT(": choose a test on the OPS case board");
+ }
+ return S;
+}
+int32 FS47FreeformSession::UrgentCase(bool bActionOnly)const
+{
+ int32 Best=-1,BestRank=0;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+ {
+  const int32 R=CaseStepRank(CaseStep(Line).Step);
+  if(R<=0||(bActionOnly&&R<3))continue;
+  if(R>BestRank){Best=Line;BestRank=R;}
+ }
+ return Best;
+}
+FString FS47FreeformSession::HudCaseLine(const FString& FirstLine)const
+{
+ if(bDead||Tutorial>0)return FString();
+ // The most pressing case not already on the card: a case is never out of sight while one is open.
+ TArray<TPair<int32,FCaseStep>> Order;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(FCaseStep S=CaseStep(Line);CaseStepRank(S.Step)>0)Order.Add({Line,MoveTemp(S)});
+ Order.StableSort([](const TPair<int32,FCaseStep>& A,const TPair<int32,FCaseStep>& B){return CaseStepRank(A.Value.Step)>CaseStepRank(B.Value.Step);});
+ for(const auto& Each:Order)
+ {
+  const FCaseStep& S=Each.Value;
+  if(S.Short.IsEmpty()||FirstLine.Contains(FS47FreeformCases::Def(Each.Key).Title))continue;
+  FString Out=S.Short;
+  if(Out.Len()>S47HudGauges::CardMost){Out=Out.Left(S47HudGauges::CardMost-3);int32 Space=INDEX_NONE;if(Out.FindLastChar(TEXT(' '),Space)&&Space>20)Out.LeftInline(Space);Out+=TEXT("...");}
+  return Out;
+ }
+ return FString();
+}
+FString FS47FreeformSession::CaseRecordLine(const FString& Key)const
+{
+ if(!FS47FreeformCases::IsCaseRecord(Key))return FString();
+ FString Rest;const int32 Case=FCString::Atoi(*Key.Mid(4));const int32 Line=Case-1;
+ const auto* C=Cases.Get(Line);if(!C||!Key.Split(TEXT("-"),nullptr,&Rest))return FString();
+ const auto& D=FS47FreeformCases::Def(Line);const FString Head=FString::Printf(TEXT("Case %d, %s: "),Case,D.Title);
+ if(Rest.StartsWith(TEXT("test")))
+ {
+  const int32 Test=FCString::Atoi(*Rest.Mid(4))-1;if(Test<0||Test>=FS47FreeformCases::TestCount||!C->Results[Test].bDone)return FString();
+  TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=C->Results[Test].bPresent)Out.Add(D.Causes[I]);
+  return Head+FString(D.Tests[Test].Name).ToLower()+TEXT(" registered")+(Out.IsEmpty()?FString(TEXT(".")):TEXT("; rules out ")+JoinAnd(Out)+TEXT("."));
+ }
+ if(Rest==TEXT("conclusion"))
+ {
+  if(!C->bConcluded||C->Conclusion<0)return FString();
+  return Head+(D.Mystery?TEXT("assessment filed, "):TEXT("conclusion registered, "))+FString(D.Causes[C->Conclusion]).ToLower()+TEXT(".");
+ }
+ if(Rest==TEXT("reply"))return Head+TEXT("the reply came in on the telex.");
+ return FString();
 }
 void FS47FreeformSession::IngestObservations()
 {
@@ -1915,11 +2086,12 @@ bool FS47FreeformSession::CaseTestWindow(int32 Line,double& Start,double& End) c
  if(Kind!=ECaseCondition::Repeat)return false;
  // Case days, like OPS, begin at 08:00. Clamp a midnight-crossing interval to
  // the first eligible shift; this is the same condition as InRepeatWindow.
- const double Earliest=C->OpenDay*SecondsPerDay+8*3600.;
+ // From the first original's day and clock (FS47FreeformCases::SetReference; the opening for any other case), CASES-OPS-20261109.
+ const double Earliest=C->RefDay*SecondsPerDay+8*3600.;
  const double Base=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;
  for(int32 Offset=-1;Offset<=3;++Offset)
  {
-  const double Centre=Base+Offset*SecondsPerDay+C->OpenClock;
+  const double Centre=Base+Offset*SecondsPerDay+C->RefClock;
   const double A=FMath::Max(Earliest,Centre-FS47FreeformCases::RepeatWindow),B=Centre+FS47FreeformCases::RepeatWindow;
   if(A<=B&&B>WorldClock){Start=A;End=B;return true;}
  }
@@ -2406,7 +2578,7 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
 FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
  int32 Pending=0;const FJob* Evening=nullptr;
- for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
+ for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!CaseTestWaits(J)){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
  // The array is what the whole station is working toward: whatever else is on the line, it stays in sight.
  const FString Goal=StationGoalLine();
  const auto* Next=Field&&Field->ArrayWear().bActive?Field->ArrayWear().NextBranch():nullptr;
@@ -2432,17 +2604,15 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
    :FString::Printf(TEXT("ANTENNA %s // THE %s NEEDS %s."),Next->Junction,Next->Title,*Missing.ToUpper());
   return Say(Goal,Short);
  };
+ // CASES-OPS-20261109 (CaseStep): a case with one explanation left, or its planned test ready to run, before the cards; any other
+ // case step after the station goal, the most pressing first.
+ const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
+ if(Step.Step==ECaseStep::Conclude||(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0))return Say(Step.Next+Tail,Step.Card);
  if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending)+Tail,
   FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")));
  // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
  if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark)return SayGoal();
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)
-  {
-   const FString Late=LateStep(Line,Findings).ToUpper();
-   if(C->Planned<0&&!Late.IsEmpty())return Say(TEXT("OPS / CASE BOARD: ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": ")+Late+TEXT(".")+Tail,TEXT("CASE // ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": ")+Late+TEXT("."));
-   return Say((C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT(".")+Tail,
-    (C->Planned>=0?TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("CASE BOARD // CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT("."));
-  }
+ if(Urgent>=0)return Say(Step.Next+Tail,Step.Card);
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."))+Tail,TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
  if(ServiceGuide==1)return Say(ServiceObjective());
  if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine()+Tail,Gear->TaskLine());
@@ -2461,7 +2631,7 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
- if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([this](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!EveningGated(J);}))return false;
+ if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([this](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!EveningGated(J)&&!CaseTestWaits(J);}))return false;
  FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-REFERENCE-%04d"),DayNumber,Work.Num());J.Day=DayNumber;J.Slot=0;J.Source=0;
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,0,0);J.bGenerated=true;J.bPaid=true;
  J.Card.Receiver.Card=TEXT("OPTIONAL REFERENCE CHECK / NO PAYMENT\nRetain a fresh instrument baseline using the usual tracking cross and receiver. This check creates no incident or cause by itself.\n\n")+J.Card.Receiver.Card;
@@ -2509,6 +2679,8 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
   if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
  }
  else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
+ // The reel deck's review says it in its own one message, with the job's next step (CASES-OPS-20261109).
+ if(FindingId==TEXT("pulse-review")){Changed();return;}
  // A late line (M7) has no test to choose until there is something to compare: its other place first.
  Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):Line>=FS47FreeformCases::LateFirst?TEXT(". Three explanations fit. The OPS case board says where else to look."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
 }
@@ -2524,6 +2696,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
   if(Def.Access&&!Cases.HasAccess(Def.Access)){Feedback=TEXT("This test needs the field logger on loan. Conclude THE REPEATED INTERVAL to have one approved.");return false;}
   const FString Unavailable=FS47FreeformCases::UnavailableReason(Line,Test,HasKit(TEXT("logger2")));
   if(!Unavailable.IsEmpty()){Feedback=Unavailable;return false;}
+  if(Cases.Remaining(Line)<=1){Feedback=FS47FreeformCases::Def(Line).Mystery?TEXT("Only one explanation is left: file your assessment on the case board."):TEXT("Only one explanation is left: register the supported conclusion on the case board.");Changed(Feedback);return false;}
   if(Cases.TrailCold(Line,DayNumber)){Feedback=TEXT("The trail has gone cold: a fresh control would no longer show anything about that night. You can still file your assessment.");Changed(Feedback);return false;}
   if(Def.Condition==ECaseCondition::FieldWork)
   {
@@ -2573,7 +2746,7 @@ void FS47FreeformSession::StepCaseReplies()
    FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-reply"),Line+1);Doc.Title=Y->ReplyTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
    Doc.Page=Page;Doc.Transcript=Page;M->Story->AddDoc(Doc);
   }
-  FString Note=FString(Y->ReplyTitle)+TEXT(" has come in at the telex.");
+  FString Note=FString(Y->ReplyTitle)+TEXT(" has come in on the telex. It is in the tray at OPS.");
   switch(Answer->Effect)
   {
    case FS47FreeformCases::EReply::Spare:AddItem(TEXT("fuse"),1);break;
@@ -2615,16 +2788,20 @@ bool FS47FreeformSession::CaseSupported(int32 Line) const
 }
 bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 {
+ const bool bFieldPlan=PlannedFieldTest(Line)>=0;
  FString Why;if(!Cases.Conclude(Line,Cause,Why,DayNumber)){Feedback=Why;Changed(Why);return false;}
  if(FieldFocus==Line)FieldFocus=-1;
  const auto& D=FS47FreeformCases::Def(Line);const FString Name=D.Causes[Cause];
+ // A test recording not yet started no longer tests anything: it goes back to being a day's ordinary paid work. One already under
+ // way runs out as routine, since the case no longer has a plan for it to report to (FS47FreeformCases::Record refuses it). The same
+ // for a trial case as for a filing (CASES-OPS-20261109); a field plan is put away with it.
+ bool bFreed=false;
+ for(FJob& J:Work)if(J.CaseLine==Line&&!J.bCaseRecorded&&J.Stage<=EJobStage::Pointed)
+ {J.CaseLine=-1;J.CaseTest=-1;J.Stage=EJobStage::New;J.Elapsed=0;J.Card=FS47FreeformJobs::Make(JobSeed,J.Day,J.Slot,J.Source);bFreed=true;}
+ if(bFreed)Settle=0;
+ if(bFieldPlan&&Line==2&&CaseField)CaseField->ResetPlan();
  if(D.Mystery)
  {
-  // A test recording not yet started no longer tests anything: it goes back to being a day's ordinary paid work. One
-  // already under way runs out as routine, since the case no longer has a plan for it to report to.
-  for(FJob& J:Work)if(J.CaseLine==Line&&!J.bCaseRecorded&&J.Stage<=EJobStage::Pointed)
-  {J.CaseLine=-1;J.CaseTest=-1;J.Stage=EJobStage::New;J.Elapsed=0;J.Card=FS47FreeformJobs::Make(JobSeed,J.Day,J.Slot,J.Source);}
-  Settle=0;
   RecordEvidence(FString::Printf(TEXT("case%d-conclusion"),Line+1),FString::Printf(TEXT("ASSESSMENT FILED / %s\nYOUR ASSESSMENT / %s\nDAY %d. It rests on the retained traces and tests and has not been checked."),D.Title,*Name,DayNumber));
   if(M&&M->Story)
   {
@@ -2650,7 +2827,15 @@ FString FS47FreeformSession::TonightPlan()const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
  {
   const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;const auto& D=FS47FreeformCases::Def(Line);
-  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. %s"),D.Title,Cases.Remaining(Line),!LateStep(Line,Findings).IsEmpty()?*(TEXT("Next: ")+LateStep(Line,Findings)+TEXT(".")):D.Mystery?TEXT("Open the case board: choose a control or file your assessment."):TEXT("Open the case board and choose the next test.")));continue;}
+  if(C->Planned<0)
+  {
+   // CASES-OPS-20261109: what is next, as CaseStep has it: a test to choose, a conclusion to register, an assessment to file.
+   const ECaseStep Step=CaseStep(Line).Step;
+   const FString Hint=Step==ECaseStep::Conclude?FString(TEXT("Only one explanation is left: register the supported conclusion on the case board."))
+    :Step==ECaseStep::File?FString(Cases.TrailCold(Line,DayNumber)?TEXT("The trail has gone cold: file your assessment on the case board."):TEXT("Nothing is left to test: file your assessment on the case board."))
+    :!LateStep(Line,Findings).IsEmpty()?TEXT("Next: ")+LateStep(Line,Findings)+TEXT("."):D.Mystery?FString(TEXT("Open the case board: choose a control or file your assessment.")):FString(TEXT("Open the case board and choose the next test."));
+   Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. %s"),D.Title,Cases.Remaining(Line),*Hint));continue;
+  }
   const auto& T=D.Tests[C->Planned];
   FString Plan=TEXT("TONIGHT'S PLAN / ")+FString(D.Title)+TEXT(" / CASE TEST: ")+FString(T.Name).ToUpper()+TEXT(" / JOB ")+C->PlannedJob+TEXT("\n")+T.Instruction;
   switch(T.Condition)
@@ -2677,10 +2862,10 @@ FString FS47FreeformSession::TonightPlan()const
 void FS47FreeformSession::OpenCaseBoard(int32 Line)
 {
  if(!RequirePower()||!M||!M->UI)return;
- if(Line<0){Line=CaseAwaitingChoice();if(Line<0)for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(Cases.Get(I)&&Cases.Get(I)->bOpen&&!Cases.Get(I)->bConcluded){Line=I;break;}if(Line<0)Line=0;}
+ if(Line<0){Line=CaseAwaitingChoice();if(Line<0)Line=UrgentCase();if(Line<0)for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(Cases.Get(I)&&Cases.Get(I)->bOpen&&!Cases.Get(I)->bConcluded){Line=I;break;}if(Line<0)Line=0;}
  TArray<S47Kit::FW> Rows;const auto* C=Cases.Get(Line);const auto& D=FS47FreeformCases::Def(Line);
  TArray<S47Kit::FW> Tabs;
- for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(const auto* X=Cases.Get(I);X&&X->bOpen&&I!=Line)Tabs.Add(S47FreeformTerminal::Button(FString::Printf(TEXT("Case %d: %s"),I+1,*FString(FS47FreeformCases::Def(I).Title).ToLower()),[this,I]{Feedback.Empty();OpenCaseBoard(I);},X->Planned<0&&!X->bConcluded));
+ for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(const auto* X=Cases.Get(I);X&&X->bOpen&&I!=Line)Tabs.Add(S47FreeformTerminal::Button(FString::Printf(TEXT("Case %d: %s"),I+1,*FString(FS47FreeformCases::Def(I).Title).ToLower()),[this,I]{Feedback.Empty();OpenCaseBoard(I);},CaseStepRank(CaseStep(I).Step)>=3&&CaseStep(I).Step!=ECaseStep::RunPlan));
  if(!Tabs.IsEmpty())Rows.Add(S47Kit::Row(Tabs));
  if(!C||!C->bOpen)
  {
@@ -2688,7 +2873,9 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
  }
  else
  {
-  Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("CASE %d / %s\nOPENED DAY %d FROM THE RETAINED ORIGINAL AT %s\n%s"),Line+1,D.Title,C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock),*Cases.QuestionText(Line))));
+  const bool bOwnClock=C->RefDay!=C->OpenDay||C->RefClock!=C->OpenClock; // the first original's (CASES-OPS-20261109)
+  Rows.Add(S47FreeformTerminal::Paper(bOwnClock?FString::Printf(TEXT("CASE %d / %s\nOPENED DAY %d AT %s FROM THE RETAINED ORIGINAL OF DAY %d %s\n%s"),Line+1,D.Title,C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock),C->RefDay,*FS47FreeformCases::Clock(C->RefClock),*Cases.QuestionText(Line))
+   :FString::Printf(TEXT("CASE %d / %s\nOPENED DAY %d FROM THE RETAINED ORIGINAL AT %s\n%s"),Line+1,D.Title,C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock),*Cases.QuestionText(Line))));
   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
   {
    const bool Out=Cases.Excluded(Line,I);
@@ -2749,7 +2936,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / ")+C->PlannedJob+TEXT("\n")+CaseWindowText(Line);
    else if(bCold&&!C->bConcluded)Card+=TEXT("\nTRAIL COLD / Too long since that night for a fresh control to show anything.");
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
-   if(!bCold&&Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
+   if(!bCold&&Unavailable.IsEmpty()&&!Res.bDone&&!C->bConcluded&&C->Planned<0&&Cases.Remaining(Line)>1&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
   }
   if(PlannedFieldTest(Line)>=0)
   {
@@ -2947,7 +3134,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
    }
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
    if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER THE RETAINED MEASUREMENTS");
-   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
+   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE COMPARISON: SOURCE UNRESOLVED"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
   default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR CASE ARCHIVE");
@@ -2998,7 +3185,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can, or the county's roadside return: money on the budget or the weekly sheet, and a long wait."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(!LateStep(Line,Findings).IsEmpty()?TEXT(": ")+LateStep(Line,Findings):FS47FreeformCases::Def(Line).Mystery?FString(TEXT(": choose a control or file your assessment on the OPS case board")):FString(TEXT(": choose a test on the OPS case board"))),false});
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const FString Step=CaseStep(Line).Task;!Step.IsEmpty())Result.Add({Step,false}); // CASES-OPS-20261109
  if(Director){const FString Trail=Director->MysteryTrailHint();if(!Trail.IsEmpty())Result.Add({Trail,false});}
  if(const FString Goal=StationGoalLine();!Goal.IsEmpty())Result.Add({Goal,false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
@@ -3317,6 +3504,34 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   L.Stop();
  }
  Case.Stop();
+ {
+  // CASES-OPS-20261109: CaseStep through the session; a trial case concluded with a test still planned frees its job, which then
+  // registers as routine work and records nothing for the closed case; a repeat test waiting for its window is no waiting card.
+  FS47FreeformSession P(nullptr);P.Begin(nullptr);P.Tutorial=0;
+  Check(P.CaseStep(0).Step==ECaseStep::Closed&&P.UrgentCase()<0&&P.HudCaseLine(FString()).IsEmpty(),TEXT("CaseStep: no case, no step and no second HUD line"));
+  P.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
+  Check(P.CaseStep(0).Step==ECaseStep::ChooseTest&&P.CaseAwaitingChoice()==0&&P.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).Contains(TEXT("CHOOSE A TEST")),TEXT("CaseStep: an opened case asks for a test, on the HUD's second line too"));
+  const int32 Truth=P.CaseFile().Get(0)->Truth;
+  Check(P.PlanCaseTest(0,1)&&P.CaseStep(0).Step==ECaseStep::RunPlan&&P.CaseAwaitingChoice()<0&&P.Tasks().ContainsByPredicate([](const FS47Task& T){return T.Text.Contains(TEXT(": run job "));}),TEXT("CaseStep: a planned test is run, and the case board's star is off"));
+  auto St=P.Save();const auto List=S47J::Arr(S47J::Obj(St,TEXT("cases")),TEXT("cases"));
+  TArray<TSharedPtr<FJsonValue>> Kept;
+  for(int32 T=0;T<FS47FreeformCases::TestCount;++T){auto Y=S47J::New();if(T!=1){S47J::Set(Y,TEXT("done"),true);S47J::Set(Y,TEXT("present"),FS47FreeformCases::PresentFor(0,Truth,T));S47J::Set(Y,TEXT("day"),1);}Kept.Add(MakeShared<FJsonValueObject>(Y));}
+  List[0]->AsObject()->SetArrayField(TEXT("results"),Kept);
+  FS47FreeformSession Q(nullptr);Q.Begin(S47J::Read(S47J::Write(St)));Q.Tutorial=0;
+  Check(Q.CaseFile().Get(0)->Planned==1&&Q.CaseFile().Remaining(0)==1&&Q.CaseStep(0).Step==ECaseStep::Conclude&&Q.UrgentCase()==0,TEXT("CaseStep: one explanation left is a conclusion to register, first of anything"));
+  Check(!Q.PlanCaseTest(0,1)||Q.CaseFile().Get(0)->Planned==1,TEXT("CaseStep: no second plan beside the first"));
+  Check(Q.ConcludeCase(0,Truth)&&Q.CaseFile().Get(0)->Planned<0&&Q.Jobs().Last().CaseTest==-1&&Q.Jobs().Last().CaseLine==-1&&Q.CaseStep(0).Step==ECaseStep::Closed,TEXT("Conclusion: a trial case's planned test job goes back to ordinary work"));
+  {
+   auto& QJ=Q.Work.Last();QJ.Stage=EJobStage::Recorded;QJ.bPrinted=true;Q.Selected=Q.Work.Num()-1;
+   Check(Q.RegisterComparison(TEXT("normal"))&&!Q.CaseFile().Get(0)->Results[1].bDone&&Q.CaseFile().Get(0)->bConcluded,TEXT("Conclusion: the freed job registers as routine and records nothing for the closed case"));
+  }
+  Check(Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("registered"))&&Q.CaseRecordLine(TEXT("case1-conclusion")).StartsWith(TEXT("Case 1, "))&&Q.CaseRecordLine(TEXT("carrier_saro")).IsEmpty(),TEXT("Case records: one WORK line each for the night log"));
+  FS47FreeformSession Wait(nullptr);Wait.Begin(nullptr);Wait.Tutorial=0;Wait.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
+  Check(Wait.PlanCaseTest(0,2)&&Wait.CaseTestWaits(Wait.Work.Last())&&Wait.CaseStep(0).Step==ECaseStep::WaitWindow&&Wait.CaseAwaitingChoice()<0&&Wait.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).Contains(TEXT("WINDOW")),TEXT("CaseStep: a repeat test planned on the day itself waits for its window and is not a waiting card"));
+  Wait.RecordEvidence(TEXT("case1-test3"),TEXT("CASE / test"));
+  Check(Wait.HasFinding(TEXT("case1-test3"))&&FS47FreeformCases::IsCaseRecord(TEXT("case1-test3")),TEXT("Case records stay findings (for the night log) without a field record"));
+  P.Stop();Q.Stop();Wait.Stop();
+ }
  {
   // The first pulsar has the extra ticks; nothing else does by this rule; an older save with one recorded is left alone.
   FS47FreeformSession Pulse(nullptr);Pulse.Begin(nullptr);Pulse.TestFirstPulse();Pulse.Tutorial=0;

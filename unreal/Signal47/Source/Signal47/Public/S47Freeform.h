@@ -307,6 +307,33 @@ public:
  // FS47Predecessor::Count and the case board's warning before a filing go by the same sum.
  bool CaseSupported(int32 Line) const;
  FString TonightPlan() const;
+ // CASES-OPS-20261109 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): where an open case stands and its next step, worked out from
+ // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective, HudCaseLine), the task list
+ // (Tasks), TONIGHT'S PLAN and the pause menu's note, the notebook's Now and the case board's star (CaseAwaitingChoice) all read it.
+ // CHOOSE_TEST: a test (or control) can be planned; for a mystery, or a filing. RUN_PLAN: the planned test can be run now.
+ // WAIT_WINDOW: planned, its dated window not open yet. CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
+ // left, its trail cold or no control to be had. AWAIT_REPLY: filed, the morning's reply not in. CLOSED: nothing (or not open).
+ enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, WaitWindow, Conclude, File, AwaitReply };
+ struct FCaseStep
+ {
+  ECaseStep Step=ECaseStep::Closed;
+  FString Next; // the whole step, as the objective says it: "OPS / CASE BOARD: REGISTER THE SUPPORTED CONCLUSION FOR ..."
+  FString Card; // the HUD's card when the case is the objective: "CASE BOARD // ..."
+  FString Short;// the HUD card's second line: "THE SAME MINUTE: REPLY DUE 08:00."
+  FString Task; // the task list's line: "CASE / THE SAME MINUTE: file your assessment on the OPS case board"; empty: not a task
+ };
+ FCaseStep CaseStep(int32 Line) const;
+ // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) WAIT_WINDOW and
+ // AWAIT_REPLY; the lower line first among equals. -1: none.
+ int32 UrgentCase(bool bActionOnly=false) const;
+ // The HUD card's second line while a case is open: the most pressing case not already on the card's first line. Empty: none.
+ FString HudCaseLine(const FString& FirstLine) const;
+ // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "Case 1, THE REPEATED INTERVAL:
+ // off-source pointing registered; rules out Follows the sky source." Empty for any other finding.
+ FString CaseRecordLine(const FString& Key) const;
+ // A planned case test that cannot run before its dated window (the repeat): waiting, not open work. It is not counted with the
+ // cards waiting and does not hold back the reference check.
+ bool CaseTestWaits(const FJob& Job) const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
