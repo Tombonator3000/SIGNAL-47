@@ -58,7 +58,7 @@ namespace S47EventPlacesLocal
    {TEXT("h04"),TEXT("the cook's house at the south end of town"),TEXT("caliche"),-13,2238,-19,2237.6,TEXT("H04"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
    // CALICHE-HOMES (S47CalicheNewHomes): the homes of the ones who had none, lived in (S47TownDay). The trailer has no room to go into.
    {TEXT("h05"),TEXT("the waitress's house across from the substation"),TEXT("caliche"),18.5,2115.9,24.5,2115.9,TEXT("H05"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
-   {TEXT("h06"),TEXT("Earl's house at the south end of the east side"),TEXT("caliche"),18,2207.4,24,2207.4,TEXT("H06"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h06"),TEXT("the night DJ's house at the south end of the east side"),TEXT("caliche"),18,2207.4,24,2207.4,TEXT("H06"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
    {TEXT("h07"),TEXT("the radio woman's house south of the feed store"),TEXT("caliche"),-13,2227.4,-19,2227.4,TEXT("H07"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
    {TEXT("h08"),TEXT("the trailer past the cook's house"),TEXT("caliche"),-21,2254.5,-26.4,2254.5,TEXT(""),TEXT(""),Town|People|Open,8,22},
    {TEXT("diner"),TEXT("the Mesa Diner"),TEXT("diner"),-6,2004,-14,2000,TEXT(""),TEXT(""),Indoors|Window|Phone|People|Road|Lot,14,26},
