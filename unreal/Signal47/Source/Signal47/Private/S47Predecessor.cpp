@@ -862,8 +862,10 @@ FString FS47Predecessor::TaskLine() const
  if(InMailbox(TEXT("assessment")))return TEXT("MAILBOX / Dr. Ward's assessment is in the box at the road.");
  // Critic round 5: her other papers while they wait, in the box or unread in the tray (ReadDoc takes them out of it): the inspector,
  // her letter about the lost hours, and the last Monday note, which says what the review still wants.
- if(InMailbox(TEXT("inspector")))return TEXT("MAILBOX / The county inspector's letter is in the box at the road.");
- if(Tray.Contains(TEXT("inspector")))return TEXT("OPS / There is a letter from the county inspector in the tray.");
+ // (only before the assessment: once it is made, what the station is now comes first; the month test's closing day showed it)
+ if(Outcome==EOutcome::None&&InMailbox(TEXT("inspector")))return TEXT("MAILBOX / The county inspector's letter is in the box at the road.");
+ if(Outcome==EOutcome::None&&Tray.Contains(TEXT("inspector")))return TEXT("OPS / There is a letter from the county inspector in the tray.");
+ if(Outcome==EOutcome::None)
  {
   const FString Monday=FString::Printf(TEXT("week-%d"),WeekNoted);
   for(const FString& Id:{FString(TEXT("ward-taken")),Monday})
