@@ -1,5 +1,6 @@
 // story/looks.ts
 #include "S47Looks.h"
+#include "S47SaroFixes.h"
 
 #include "S47Inter.h"
 #include "S47Web.h"
@@ -76,8 +77,8 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Box(TEXT("labSign"), Say(TEXT("PHOTOGRAPHIC LAB. PROCESS / EXAMINE / FILE. Under it, in marker: SHUT THE DOOR WHEN THE RED LIGHT IS ON.")));
 	Box(TEXT("siteSign"), Say(TEXT("SARO. SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. AUTHORIZED VEHICLES ONLY. NO VISITORS AFTER DARK. Sun-bleached on the side facing the highway.")), 20);
 	Box(TEXT("quietSign"), Say(TEXT("RADIO QUIET ZONE. NO TRANSMITTERS BEYOND THIS SIGN. The CB under the truck's dash is meant to stay off past here.")), 20);
-	// the stop sign where the service road meets the highway
-	Box(TEXT("stopSign"), Say(TEXT("STOP. The highway is empty both ways, as far as the dark goes.")), 20);
+	// the stop sign where the service road meets the highway (taken away after Tom's test of d36, PT-STOP; S47SaroFixes)
+	if (S47SaroFixes::Before()) Box(TEXT("stopSign"), Say(TEXT("STOP. The highway is empty both ways, as far as the dark goes.")), 20);
 	Box(TEXT("wingLetters"), Say(TEXT("SARO, and under it SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. One bolt in the last word has rusted through.")), 30);
 	// ---------- down the highway to the motel: where drive/roadProps.ts signs() puts them ----------
 	Box(TEXT("speedSign"), Say(TEXT("SPEED LIMIT 55. Pocked with birdshot along the bottom edge.")), 24);
@@ -176,7 +177,7 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("recPhone"), TEXT("A wall phone, beige, the cord stretched out long."));
 	Looks(TEXT("vending"), TEXT("Cola, orange soda, peanut butter crackers. The light inside flickers."));
 	Looks(TEXT("officeDoor"), TEXT("A frosted glass door, OPERATIONS in black. Dark behind it."));
-	Looks(TEXT("restroomDoor"), TEXT("MEN and WOMEN. The fan inside runs all night."));
+	Looks(TEXT("restroomDoor"), S47SaroFixes::Before() ? TEXT("MEN and WOMEN. The fan inside runs all night.") : TEXT("MEN and WOMEN. Locked. A note taped under the plate in Dale's hand: OUT OF ORDER, PLUMBER CALLED. The fan inside runs all night."));
 
 	// ---------- STATION 01 (Chapter3.ts) ----------
 	Looks(TEXT("s1transit"), TEXT("A brass transit on a concrete pier, its cover off. The bubble still settles."));

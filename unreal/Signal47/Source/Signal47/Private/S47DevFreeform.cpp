@@ -1393,6 +1393,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddTripoNew(E);
  AddReach(E);
  AddWorldFixes(E);
+ AddSaroFixes(E);
 }
 
 void FS47DevFreeform::Stop()
