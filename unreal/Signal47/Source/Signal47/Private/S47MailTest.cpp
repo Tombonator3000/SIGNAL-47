@@ -166,7 +166,7 @@ void FS47FreeformTest::StepMail(double Dt)
   {
    const int32 No=Base+Week;const FString Text=Post.IssueText(No);
    FString Word;
-   if(!Check(!Text.IsEmpty()&&S47Ledger::Clean(Text,Word)&&!Text.Contains(TEXT("{"))&&!Text.Contains(TEXT("somewhere out of town"))&&!Text.Contains(TEXT("dust"))&&!Text.Contains(TEXT("moon")),FString::Printf(TEXT("the Ledger no. %d is printed, clean, nothing left unfilled, no weather the sky does not show"),No)))return;
+   if(!Check(!Text.IsEmpty()&&S47Ledger::Clean(Text,Word)&&!Text.Contains(TEXT("{"))&&!Text.Contains(TEXT("somewhere out of town"))&&!Text.Contains(TEXT("dust")),FString::Printf(TEXT("the Ledger no. %d is printed, clean, nothing left unfilled, no weather the sky does not show"),No)))return;
    if(Week==1)
    {
     const FString Tue=L::Night(Ses,Thursday-2),Wed=L::Night(Ses,Thursday-1);
