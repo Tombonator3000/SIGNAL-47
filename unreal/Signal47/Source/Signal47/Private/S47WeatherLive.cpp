@@ -205,5 +205,12 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 		S47Weather::FNow C = N; Override(EDev::Calm, C);
 		Check(N.Dust == 1 && N.Wind >= .8 && R.Rain == 1 && R.Wet == 1 && R.bThunder && C.Dust == 0 && C.Wind == 0, TEXT("F10's sand, shower and calm"));
 	}
+	{
+		// M5 sweep 2: the sky's veil (FS47Sky): brown and thick in the sand by day, grey under a shower, nothing on a plain day
+		FLinearColor SandC, RainC, PlainC; double SandA = 0, RainA = 0, PlainA = 1, NightA = 0; FLinearColor NightC;
+		FS47Sky::VeilOf(1, 0, 1, SandC, SandA); FS47Sky::VeilOf(0, 1, 1, RainC, RainA); FS47Sky::VeilOf(0, 0, 1, PlainC, PlainA); FS47Sky::VeilOf(1, 0, 0, NightC, NightA);
+		Check(SandA > .4 && SandC.R > SandC.G && SandC.G > SandC.B && RainA > .3 && RainC.B >= RainC.R && PlainA == 0 && NightA > .1 && NightC.R < .1f,
+			TEXT("the sky's veil: brown in the sand by day (dark at night), grey under a shower, none on a plain day"));
+	}
 	return OK;
 }

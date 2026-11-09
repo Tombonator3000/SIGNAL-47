@@ -965,6 +965,61 @@ bool FS47Sky::Build(AS47Web* W)
 	return bLive;
 }
 
+void FS47Sky::VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity)
+{
+	const double S = FMath::Clamp(FMath::IsFinite(Sand) ? Sand : 0.0, 0.0, 1.0), R = FMath::Clamp(FMath::IsFinite(Shower) ? Shower : 0.0, 0.0, 1.0);
+	const double D = FMath::Clamp(FMath::IsFinite(Day) ? Day : 1.0, 0.0, 1.0);
+	// the sand: a tan-brown veil by day, a dark brown one at night that hides the fainter stars; a shower's cloud: grey, by day
+	const double SandA = 0.55 * S * (0.35 + 0.65 * D), RainA = 0.42 * R * D;
+	OutOpacity = 1.0 - (1.0 - SandA) * (1.0 - RainA);
+	const FLinearColor SandC = FMath::Lerp(FLinearColor(.06f, .04f, .025f), FLinearColor(.66f, .50f, .32f), float(D));
+	const FLinearColor RainC = FLinearColor(.42f, .45f, .50f) * float(FMath::Lerp(0.15, 1.0, D));
+	OutColor = SandA + RainA > 1e-6 ? (SandC * float(SandA) + RainC * float(RainA)) * float(1.0 / (SandA + RainA)) : SandC;
+}
+
+void FS47Sky::DrawVeil(AS47Web* W, const FVector& Eye)
+{
+	const S47Weather::FLive& Wx = S47Weather::Live();
+	FLinearColor Col; double A = 0;
+	if (Wx.bOn) VeilOf(Wx.Dust * 1.2, FMath::Max(Wx.Rain, (Wx.CloudBias - .06) / .18), Daylight(), Col, A);
+	if (A < 0.01)
+	{
+		if (VeilComp.IsValid() && VeilComp->IsVisible()) VeilComp->SetVisibility(false);
+		return;
+	}
+	if (!VeilComp.IsValid())
+	{
+		if (bVeilTried || !W) return;
+		bVeilTried = true;
+		UStaticMesh* Ball = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+		UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Unlit_Trans_2S.M_Web_Unlit_Trans_2S"));
+		if (!Ball || !Base) return;
+		UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, TEXT("S47WeatherVeil"));
+		C->SetupAttachment(W->GetRootComponent());
+		C->SetMobility(EComponentMobility::Movable);
+		C->SetStaticMesh(Ball);
+		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		C->SetCastShadow(false);
+		C->bAffectDistanceFieldLighting = false;
+		C->bVisibleInReflectionCaptures = false;
+		C->bVisibleInRealTimeSkyCaptures = false;
+		C->SetVisibleInRayTracing(false);
+		C->SetWorldScale3D(FVector(36000.f)); // 18 km round the eye (the dome is 30 km out): the far land beyond it goes into the sand too
+		VeilMid.Reset(UMaterialInstanceDynamic::Create(Base, W));
+		C->SetMaterial(0, VeilMid.Get());
+		C->RegisterComponent();
+		VeilComp = C;
+		UE_LOG(LogTemp, Display, TEXT("S47: sky: the weather's veil built"));
+	}
+	if (UMaterialInstanceDynamic* D = VeilMid.Get())
+	{
+		D->SetVectorParameterValue(TEXT("Color"), Col);
+		D->SetScalarParameterValue(TEXT("Opacity"), float(A));
+	}
+	VeilComp->SetWorldLocation(S47Three::ToUE(Eye));
+	if (!VeilComp->IsVisible()) VeilComp->SetVisibility(true);
+}
+
 void FS47Sky::Draw(const FVector& Eye, double Yaw)
 {
 	AS47Web* W = Web.Get();
@@ -988,6 +1043,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	}
 	// sky.group.rotation.y = world.skyYaw; group.position.copy(follow); ten times as far (SKY_SCALE)
 	W->SetLocal(GroupNode, Eye, S47Three::Euler(0, Yaw, 0), FVector(SKY_SCALE));
+	DrawVeil(W, Eye);
 	const FLinearColor Holes = V4(HoleDir), HoleRad(float(HoleR.X), float(HoleR.Y), 0.f, 0.f);
 	auto Common = [&](UMaterialInstanceDynamic* D)
 	{
