@@ -214,7 +214,11 @@ S47J::FObj FS47Mail::Save() const
  Pieces(TEXT("box"),Box);Pieces(TEXT("pending"),Pending);Pieces(TEXT("fetched"),Fetched);
  if(!Posted.IsEmpty()){TArray<FString> Ids=Posted.Array();Ids.Sort();S47J::Set(O,TEXT("posted"),Ids);}
  if(!ReadIssues.IsEmpty()){TArray<FString> Ids=ReadIssues.Array();Ids.Sort();S47J::Set(O,TEXT("read"),Ids);}
- if(!Unread.IsEmpty()){TArray<FString> Ids=Unread.Array();Ids.Sort();S47J::Set(O,TEXT("unread"),Ids);}
+ // Only what is still not read (IsUnread: read at OPS, in the notebook, or a Ledger issue read) is kept as such.
+ {
+  TArray<FString> Ids;for(const FPiece& Pc:Fetched)if(Unread.Contains(Pc.Id)&&IsUnread(Pc))Ids.Add(Pc.Id);
+  if(!Ids.IsEmpty()){Ids.Sort();S47J::Set(O,TEXT("unread"),Ids);}
+ }
  if(!Orders.IsEmpty())
  {
   TArray<TSharedPtr<FJsonValue>> A;
@@ -833,7 +837,7 @@ TArray<FS47Mail::FPiece> FS47Mail::Unbox()
  // Only the last few stay on the desk to be read again; the rest are filed where they belong. What is not read yet goes last.
  while(Fetched.Num()>12)
  {
-  int32 Old=Fetched.IndexOfByPredicate([this](const FPiece& Pc){return !Unread.Contains(Pc.Id);});
+  int32 Old=Fetched.IndexOfByPredicate([this](const FPiece& Pc){return !IsUnread(Pc);});
   if(Old<0)Old=0;
   Unread.Remove(Fetched[Old].Id);Fetched.RemoveAt(Old);
  }
@@ -847,6 +851,8 @@ bool FS47Mail::IsUnread(const FPiece& Pc) const
  // Dr. Ward's are read at OPS as well: gone from the tray, read. A paper read from elsewhere counts too.
  if(Pc.Kind==TEXT("ward")&&M&&M->Freeform&&M->Freeform->Predecessor&&!M->Freeform->Predecessor->InTray(Pc.Ref))return false;
  if(Pc.Kind==TEXT("ledger")&&ReadIssues.Contains(Pc.Id))return false;
+ // Critic round 7: the rest are filed as the notebook's papers (FileDoc, "mail-<id>"); opened there, they are read.
+ if(M&&M->Freeform&&M->Freeform->JournalEntryRead(TEXT("mail-")+Pc.Id))return false;
  return true;
 }
 void FS47Mail::MarkRead(const FString& Id){Unread.Remove(Id);}

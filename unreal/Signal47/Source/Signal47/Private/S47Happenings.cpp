@@ -47,6 +47,7 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
@@ -392,6 +393,8 @@ struct FS47Happenings::FProp
  TArray<FPart> Parts;
  struct FLamp{TWeakObjectPtr<UPointLightComponent> L;FVector At=FVector::ZeroVector;float Lumens=0;};
  TArray<FLamp> Lamps;
+ // A road glimpse's body: the truck's lights at its distance, on lighting channel 1 that only the body is on (FS47Happenings::FarBeam).
+ TWeakObjectPtr<USpotLightComponent> FarBeam;
  TArray<FS47Obj> Hits;
  // The dot in each big black eye, on a part whose mesh has its eyes measured (Zet, S47EyeGlint): children of that part, so that they
  // move and hide with it (ShowProp sets its children too).
@@ -747,7 +750,16 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    A.Age=S47J::Num(Was,TEXT("age"));A.Len=S47J::Num(Was,TEXT("len"));A.X=S47J::Num(Was,TEXT("x"));A.Z=S47J::Num(Was,TEXT("z"));A.Yaw=S47J::Num(Was,TEXT("yaw"));A.Clock=S47J::Num(Was,TEXT("clock"));
    A.At=FVector(S47J::Num(Was,TEXT("ax")),S47J::Num(Was,TEXT("ay")),S47J::Num(Was,TEXT("az")));A.bSeen=S47J::Bool(Was,TEXT("seen"));A.bMet=S47J::Bool(Was,TEXT("met"));A.bDanger=IsDanger(A.Id);
    const bool bFinite=FMath::IsFinite(A.Age)&&FMath::IsFinite(A.Len)&&FMath::IsFinite(A.X)&&FMath::IsFinite(A.Z)&&!A.At.ContainsNaN()&&A.Len>0&&A.Len<86400&&FMath::Abs(A.X)<1e5&&FMath::Abs(A.Z)<1e5;
-   if(Ids().Contains(A.Id)&&S47Hap::Resumable(A.Id,A.Variant)&&bFinite){A.Age=FMath::Clamp(A.Age,0.,A.Len);Now=A;}
+   // A figure on the rise saved with Tom's Nordic or Cosmic, loaded in a build without them (the private TripoNew models are kept
+   // out of Git): the shade stands there instead, as a new one would be drawn (FigureFor); without the shade's body either, it is
+   // not carried on at all, so that nothing unseen is seen (critic round 7).
+   bool bBody=true;
+   if(A.Id==TEXT("horizon_figure"))
+   {
+    if(!A.Variant.IsEmpty()){const TCHAR* P=S47RoadGlimpse::PathOf(A.Variant);if(!P||!S47Hap::Exists(P))A.Variant.Reset();}
+    bBody=S47Hap::Exists(S47Hap::HairyStandIn)||!A.Variant.IsEmpty();
+   }
+   if(Ids().Contains(A.Id)&&S47Hap::Resumable(A.Id,A.Variant)&&bFinite&&bBody){A.Age=FMath::Clamp(A.Age,0.,A.Len);Now=A;}
   }
  }
  if(M&&IsValid(M->Web.Get())&&Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;}
@@ -1213,6 +1225,18 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
   Lc->SetAttenuationRadius(L.Radius);Lc->SetCastShadows(false);Lc->SetLightColor(S47Three::Hex(L.Colour));Lc->SetVisibility(false);Lc->RegisterComponent();
   FProp::FLamp La;La.L=Lc;La.At=L.At;La.Lumens=L.Lumens;P.Lamps.Add(La);
  }
+ // Critic round 7: the truck's spots end at 45 m (S47Truck, attenuation 4500), a road glimpse crosses at 60 to 120 m. A body that can
+ // be lit (not the shade's near-black) is also on lighting channel 1, and its own spot there, from the truck's lamps, gives it what
+ // their beam would give at that distance (FarBeam): the figure shows pale in the far throw, the road and land around it stay dark.
+ if(Kind.StartsWith(TEXT("glimpse_"))&&Kind!=TEXT("glimpse_shadow")&&!P.Parts.IsEmpty())
+ {
+  for(FProp::FPart& Pt:P.Parts)if(UStaticMeshComponent* C=Pt.C.Get())C->SetLightingChannels(true,true,false);
+  auto* Sp=NewObject<USpotLightComponent>(W,MakeUniqueObjectName(W,USpotLightComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapFarBeam_%s_%s"),*Kind,*Here))));
+  Sp->SetupAttachment(W->GetRootComponent());Sp->SetMobility(EComponentMobility::Movable);Sp->SetIntensityUnits(ELightUnits::Candelas);Sp->SetIntensity(0);
+  Sp->SetLightingChannels(false,true,false);Sp->SetCastShadows(false);Sp->SetIndirectLightingIntensity(0);Sp->SetVolumetricScatteringIntensity(0);
+  Sp->SetAffectTranslucentLighting(false);Sp->SetLightColor(FLinearColor(1.f,.9f,.72f));Sp->SetVisibility(false);Sp->RegisterComponent();
+  P.FarBeam=Sp;
+ }
  if(P.Parts.IsEmpty()&&P.Lamps.IsEmpty()){UE_LOG(LogS47Happen,Warning,TEXT("S47: happening prop %s: nothing could be loaded"),*Kind);return nullptr;}
  if(!UseId.IsEmpty()&&!P.Hits.IsEmpty())
  {
@@ -1286,6 +1310,8 @@ void FS47Happenings::ShowProp(FProp& P,bool bOn)
   C->SetCollisionEnabled(bHere&&Pt.bHit?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get()){Lc->SetVisibility(bHere);Lc->SetIntensity(bHere?L.Lumens:0.f);}
+ // The far beam is the road glimpse's to turn on (StepMore road_glimpse); it never outlasts the body.
+ if(!bHere)if(USpotLightComponent* Sp=P.FarBeam.Get()){Sp->SetIntensity(0);Sp->SetVisibility(false);}
 }
 // The big night's drawn things: posed with each part's place and size times Scale (a column that grows up off the ground), the
 // lamps at LampK of their strength. Not PoseProp's pose: its next call poses it again from scratch.
@@ -3409,18 +3435,43 @@ bool FS47Happenings::StepMore(double Dt)
    PoseProp(*P,At+FVector(0,S47RoadGlimpse::Bob(Glimpse,Now.Age),0),Yaw);
   }
   if(P)ShowProp(*P,bShow);
-  // Seen: in the truck's lights (their near throw, or the far reach straight ahead), or against the sky, with nothing between.
+  // In the truck's lights (their near throw, or the far reach straight ahead): its far beam, from the lamps, the pair's 2 x 4200 cd
+  // (S47Truck PlaceHeadlights) as their cone has it at that bearing, in over 40 to 50 m where the spots themselves end.
+  bool bBeam=false;
+  const double Head=Glimpse.Body==S47RoadGlimpse::EBody::Low?.5:1.5;
+  {
+   FS47Truck* T=bShow&&Driving()?M->World->CabTruck():nullptr;
+   const FS47DriveController* D=T?M->World->CabDrive():nullptr;
+   double Cd=0;FVector Lamp=FVector::ZeroVector,Flat=FVector::ZeroVector;
+   if(D)
+   {
+    const FVector Ahead(-FMath::Sin(D->Heading),0,-FMath::Cos(D->Heading));Flat=FVector(At.X-D->Pos.X,0,At.Z-D->Pos.Z);
+    const double Deg=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Ahead,Flat.GetSafeNormal()),-1.,1.)));
+    bBeam=M->World->Trouble.Dim>.5&&T->Beam()>.01&&S47RoadGlimpse::InBeam(Flat.Size(),Deg);
+    Lamp=T->LocalToWorld(FVector(0,.8435,-2.65));
+    if(bBeam)Cd=2.*4200.*T->Beam()*(1.-FMath::SmoothStep(10.,21.,Deg))*FMath::SmoothStep(40.,50.,Flat.Size());
+   }
+   if(USpotLightComponent* Sp=P?P->FarBeam.Get():nullptr)
+   {
+    const bool bLit=Cd>1.;
+    if(bLit)
+    {
+     const FVector Aim=At+FVector(0,Head*.6,0);const double Dist=FMath::Max(1.,(Aim-Lamp).Size());
+     // Narrow, onto the body alone (nothing else is on its channel); its reach twice the distance, so the falloff is the lamps'.
+     const float Cone=float(FMath::RadiansToDegrees(FMath::Atan(4./Dist)))+1.f;
+     Sp->SetWorldLocationAndRotation(S47Three::ToUE(Lamp),(S47Three::ToUE(Aim)-S47Three::ToUE(Lamp)).Rotation());
+     Sp->SetOuterConeAngle(Cone);Sp->SetInnerConeAngle(Cone*.75f);Sp->SetAttenuationRadius(float(Dist*200.));Sp->SetIntensity(float(Cd));
+    }
+    else Sp->SetIntensity(0);
+    if(Sp->IsVisible()!=bLit)Sp->SetVisibility(bLit);
+   }
+  }
+  // Seen: lit by that beam (the shade's near-black stays dark in it), glowing of itself (the Cosmic one), or against the sky, with
+  // nothing between.
   if(bShow&&!Now.bSeen)
   {
-   bool bBeam=false;
-   if(const FS47DriveController* D=Driving()?M->World->CabDrive():nullptr)
-   {
-    const FVector Ahead(-FMath::Sin(D->Heading),0,-FMath::Cos(D->Heading)),Flat(At.X-D->Pos.X,0,At.Z-D->Pos.Z);
-    const double Deg=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Ahead,Flat.GetSafeNormal()),-1.,1.)));
-    bBeam=M->World->Trouble.Dim>.5&&S47RoadGlimpse::InBeam(Flat.Size(),Deg);
-   }
-   const double Head=Glimpse.Body==S47RoadGlimpse::EBody::Low?.5:1.5;
-   if(SeenLit(At+FVector(0,Head,0),S47RoadGlimpse::BeamFarM+5,32,bBeam?LitOwn:(LitGround|LitSky),*Kind)){Now.bSeen=true;Noticed(TEXT("road_glimpse"),Away,TEXT("sight"));}
+   const bool bOwn=(bBeam&&Now.Variant!=TEXT("shadow"))||Now.Variant==TEXT("cosmic");
+   if(SeenLit(At+FVector(0,Head,0),S47RoadGlimpse::BeamFarM+5,32,bOwn?LitOwn:(LitGround|LitSky),*Kind)){Now.bSeen=true;Noticed(TEXT("road_glimpse"),Away,TEXT("sight"));}
   }
   if(Now.Stage==0&&(!bOn||Away<=S47RoadGlimpse::GoneWithinM))
   {

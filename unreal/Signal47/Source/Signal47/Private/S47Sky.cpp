@@ -8,6 +8,7 @@
 #include "HAL/IConsoleManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
+#include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "S47FreeformTerrain.h"
@@ -929,7 +930,10 @@ bool FS47Sky::Build(AS47Web* W)
 		// PT-MOON-20261109 (Tom: "månen trenger tekstur", a flat white disc): NASA's near side in its own material, the phase shaded from
 		// the sun, hidden by the clouds in front of it (Tools/sky/import_moon.py). The painted disc stays the fallback without it.
 		bMoonTex = false;
-		if (UMaterialInterface* TexBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Sky/M_S47_Moon.M_S47_Moon")))
+		// Not in Git until import_moon.sh has run: look for the package first, so a build without it says nothing and asks the disk once.
+		UMaterialInterface* TexBase = FPackageName::DoesPackageExist(TEXT("/Game/Sky/M_S47_Moon"))
+			? LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Sky/M_S47_Moon.M_S47_Moon"), nullptr, LOAD_NoWarn | LOAD_Quiet) : nullptr;
+		if (TexBase)
 			if (UMaterialInstanceDynamic* T = UMaterialInstanceDynamic::Create(TexBase, W)) { MoonTexMid.Reset(T); bMoonTex = true; }
 		UE_LOG(LogS47Sky, Display, TEXT("S47: moon %s"), bMoonTex ? TEXT("textured (M_S47_Moon)") : TEXT("painted disc (M_S47_Moon missing: Tools/sky/import_moon.sh)"));
 		MoonComp = Part(W, Under(GroupNode), LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")), bMoonTex ? MoonTexMid.Get() : D, -3);

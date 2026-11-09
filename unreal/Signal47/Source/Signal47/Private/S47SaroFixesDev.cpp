@@ -42,7 +42,7 @@ void FS47DevFreeform::AddSaroFixes(FS47DevEvents& E)
  static const FView Views[] = {
   // Tom's first picture: on the walk west of the ramp, looking at the entrance.
   { TEXT("Ramp and walk: Tom's view of the entrance"), 11, FVector2D(-14.2, 5.7), FVector(-6.4, .6, 5.7), TEXT("PT-RAMP / PT-PATHS: the ramp in worn concrete, the walk's edge in the ground's own dust") },
-  { TEXT("Ramp close up"), 11, FVector2D(-11.8, 7.2), FVector(-9.0, -.4, 5.7), TEXT("PT-RAMP: concrete, broom grooves, the landing") },
+  { TEXT("Ramp close up"), 11, FVector2D(-11.8, 7.2), FVector(-9.0, -.4, 5.7), TEXT("PT-RAMP: concrete, the nosing, the landing") },
   { TEXT("Ramp at dusk"), 19.4, FVector2D(-14.2, 5.7), FVector(-6.4, .6, 5.7), TEXT("PT-RAMP at dusk") },
   { TEXT("Walks: the branch to the lot"), 11, FVector2D(-11.6, 9.8), FVector(-11.6, -.6, 6.0), TEXT("PT-PATHS: joints, the slab's edge, the dust over it") },
   { TEXT("Walks: the edge close up"), 11, FVector2D(-14.0, 7.3), FVector(-14.0, -.6, 6.1), TEXT("PT-PATHS: the edge at the foot of the eye") },

@@ -498,7 +498,10 @@ void FS47Office::Init()
   };
   It.Use = [this, Id] { Use(Id); }; It.Examine = [this, Id]
   {
-   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return FString(TEXT("OPERATIONS. The spare is in the service drawer at the workbench. The office uses its own tagged key."));
+   // PT-HALL moved the cabinet out into the hall (critic round 7: as the locked door's toast says it, one place to look).
+   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return FString(S47SaroFixes::Before()
+    ? TEXT("OPERATIONS. The spare is in the service drawer at the workbench. The office uses its own tagged key.")
+    : TEXT("OPERATIONS. Dale keeps a spare in the service cabinet in the hall. The office uses its own tagged key."));
    if (Id == TEXT("office:tape")) return FString(TEXT("SERVICE ROAD / FIELD 01. The deck is present, but this tape cannot be played. The paper beside the maintenance forms gives the camera position."));
    return FString(TEXT("An ordinary Operations working copy. Survey-station records keep their separate file."));
   }; M->Inter->Add(It);

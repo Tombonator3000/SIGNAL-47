@@ -40,16 +40,21 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 	using FStep = TPair<FString, TFunction<void()>>;
 	const auto Steps = [this, Shot](const TArray<FStep>& List, TFunction<void()> Done)
 	{
+		// The step holds itself only weakly (critic round 7: a strong self-capture kept every run alive for good); the timer that waits
+		// holds it strongly, so the chain lives while a step is due and is freed after the last.
 		TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
-		*Next = [this, Shot, List, Done, Next](int32 I)
+		const TWeakPtr<TFunction<void(int32)>> WeakNext = Next;
+		*Next = [this, Shot, List, Done, WeakNext](int32 I)
 		{
 			if (I >= List.Num()) { if (Done) Done(); return; }
 			if (List[I].Value) List[I].Value();
-			After(1.4, [Shot, List, Next, I]
+			const TSharedPtr<TFunction<void(int32)>> Strong = WeakNext.Pin();
+			if (!Strong) return;
+			After(1.4, [Shot, List, Strong, I]
 			{
 				if (!List[I].Key.IsEmpty()) Shot(List[I].Key);
 				// (the screenshot is written in the next frame: nothing changes until then)
-				(*Next)(I + 1);
+				(*Strong)(I + 1);
 			});
 		};
 		After(1.5, [Next] { (*Next)(0); });

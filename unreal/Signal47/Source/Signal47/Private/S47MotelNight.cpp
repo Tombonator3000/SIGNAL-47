@@ -143,8 +143,11 @@ void FS47MotelNight::AfterRest(double Morning, double SleptFrom, double Until)
 		{
 			if (!M || !M->Freeform) return;
 			// The room is already paid for tonight: nothing is charged again (and nothing handed back that a requisition could swallow).
+			// Through TakeRoom (critic round 7), so that what wakes the second sleep (the big night, WakeBefore) gets the motel's own
+			// telling in AfterRest, not the generic wake; it sees the room paid and asks for nothing.
 			if (M->UI) M->UI->Close(true);
-			if (!M->Freeform->RestAt(Morning, FS47FreeformSession::ERest::Motel, true) && M->UI) M->UI->Toast(TEXT("You lie awake until it is light."), 4);
+			if (!RoomPaid(M->Freeform->Clock())) PaidUntil = Morning;
+			if (!TakeRoom(Morning) && M->UI) M->UI->Toast(TEXT("You lie awake until it is light."), 4);
 		}, true));
 	Rows.Add(S47Kit::Button(Wakes(K) ? TEXT("Stay up") : TEXT("Check out"), [this] { if (M && M->UI) M->UI->Close(); }));
 	M->UI->Open(S47Kit::Shell(M->UI, Title, S47Kit::Col(Rows), 780));

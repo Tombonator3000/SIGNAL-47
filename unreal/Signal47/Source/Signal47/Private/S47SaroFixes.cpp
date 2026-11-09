@@ -213,6 +213,18 @@ namespace
   return GroundY;
  }
 
+ // A cut that failed for want of the source's CPU data will not get it while the game runs (the import's bAllowCPUAccess,
+ // Tools/sarofixes/prepare_cpu.py): once every mesh of those geometries is loaded and done compiling, the answer is final.
+ bool NoCpuData(AS47Web* W, const TArray<int32>& Geos, const FString& Why)
+ {
+  if (!Why.Contains(TEXT("needs ready retained CPU data")) && !Why.Contains(TEXT("CPU buffers are incomplete"))) return false;
+  if (Why.Contains(TEXT("missing mesh"))) return false;
+  for (int32 K = 0; K < W->PartCount(); ++K)
+   if (const FS47WebNode* N = W->Node(K)) if (Geos.Contains(N->Geo))
+    if (const auto* C = Cast<UStaticMeshComponent>(N->Comp.Get())) if (const UStaticMesh* Mesh = C->GetStaticMesh()) if (Mesh->IsCompiling()) return false;
+  return true;
+ }
+
  // ---- PT-STOP ----
  bool BuildStop(FState& S, AS47Web* W)
  {
@@ -221,7 +233,11 @@ namespace
   FEdit Pole; Pole.Id = TEXT("pt-stop-pole"); Pole.RootPath = TEXT("world.grounds.group"); Pole.GeometryIds = { StopPoleGeo };
   Pole.ThreeBounds = FBox(FVector(-19.06, -.66, 21.04), FVector(-18.94, 1.66, 21.16)); Pole.MinTriangles = 12; Pole.MaxTriangles = 48;
   FString Why;
-  if (!S47SaroLegacyCleanup::Apply(W, { Pole }, &Why)) { Say(S, TEXT("stop sign"), TEXT("waiting: ") + Why + TEXT(" (Tools/sarofixes/prepare_cpu.py keeps g436's CPU data)")); return false; }
+  if (!S47SaroLegacyCleanup::Apply(W, { Pole }, &Why))
+  {
+   if (NoCpuData(W, { StopPoleGeo }, Why)) { Say(S, TEXT("stop sign"), TEXT("kept: no CPU data for g436 in this build (Tools/sarofixes/prepare_cpu.py): ") + Why); return true; }
+   Say(S, TEXT("stop sign"), TEXT("waiting: ") + Why + TEXT(" (Tools/sarofixes/prepare_cpu.py keeps g436's CPU data)")); return false;
+  }
   W->SetVisible(StopPlaneNode, false);
   if (auto* C = Cast<UPrimitiveComponent>(Plane->Comp.Get())) { C->SetVisibility(false); C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
   S.Hidden.Add(StopPlaneNode);
@@ -268,7 +284,11 @@ namespace
   Plate(TEXT("pt-switch-records-plate"), TEXT("annex.group"), 376, FVector(-4.659, 1.189, 6.794), FVector(-4.581, 1.311, 6.813));
   Plate(TEXT("pt-switch-control-plate"), TEXT("room.group"), 219, FVector(-1.759, 1.189, 4.485), FVector(-1.681, 1.311, 4.505));
   FString Why;
-  if (!S47SaroLegacyCleanup::Apply(W, Edits, &Why)) { Say(S, TEXT("switch plates"), TEXT("waiting: ") + Why); return false; }
+  if (!S47SaroLegacyCleanup::Apply(W, Edits, &Why))
+  {
+   if (NoCpuData(W, { 376, 219 }, Why)) { Say(S, TEXT("switch plates"), TEXT("kept: no CPU data for g376/g219 in this build: ") + Why); return true; }
+   Say(S, TEXT("switch plates"), TEXT("waiting: ") + Why); return false;
+  }
   S.Plates = 2;
   Say(S, TEXT("switch plates"), TEXT("the dead plates by the records and control switches removed (the corridor's by the legacy cleanup)"));
   return true;
@@ -284,7 +304,7 @@ namespace
   const int32 Parent = W->Handle(TEXT("world.grounds.group"));
   if (Parent < 0) return false;
   // The same solid as the export's: the landing x -7.6..-6.3, z 4.75..6.65, 0.62 m high, and the run down west to x -10.6 over
-  // z 5.05..6.35. Concrete in metre-true UVs, a broom finish across the run, worn paler where feet go.
+  // z 5.05..6.35. Concrete in metre-true UVs.
   FMeshData D;
   const double Y0 = -.62, Y1 = 0;
   const FVector Up(0, 1, 0), East(1, 0, 0), South(0, 0, 1);
@@ -301,23 +321,19 @@ namespace
   UStaticMesh* Mesh = Build(W, D, Mat, true);
   UStaticMeshComponent* C = Mesh ? Place(S, W, Parent, TEXT("ramp"), Mesh, Mat, true, true) : nullptr;
   if (!C) { Say(S, TEXT("ramp"), TEXT("the new ramp mesh could not be made; the old ramp stays")); return true; }
-  // Broom grooves across the run, 12 cm apart, and the nosing where the run meets the landing: thin dark strips just over the face.
+  // The nosing where the run meets the landing: one 6 cm dark strip just over the face. Critic round 7: the 6 mm broom grooves that
+  // were laid as geometry here went under a pixel from 7 m and shimmered (moire, TSR) from the lot; real broom marks are 1-3 mm and
+  // read as texture, which M_CS_WornConcrete (a bought material, not ours to rebuild here) already carries. No groove geometry.
   if (UMaterialInstanceDynamic* Groove = Flat(W, 0x7d786d, .97))
   {
    FMeshData G;
-   for (double X = -10.45; X < -7.65; X += .12)
-   {
-    const double T = (X + 10.6) / 3.0, Y = Y0 + T * (Y1 - Y0) + .0025;
-    const double T2 = (X + .006 + 10.6) / 3.0, Ye = Y0 + T2 * (Y1 - Y0) + .0025;
-    G.Face(FVector(X, Y, 5.10), FVector(X + .006, Ye, 5.10), FVector(X + .006, Ye, 6.30), FVector(X, Y, 6.30), SlopeUp, Run, 1);
-   }
    G.Face(FVector(-7.62, Y1 + .002, 5.05), FVector(-7.56, Y1 + .002, 5.05), FVector(-7.56, Y1 + .002, 6.35), FVector(-7.62, Y1 + .002, 6.35), Up, East, 1);
-   if (UStaticMesh* GM = Build(W, G, Groove, false)) Place(S, W, Parent, TEXT("rampGrooves"), GM, Groove, false, true);
+   if (UStaticMesh* GM = Build(W, G, Groove, false)) Place(S, W, Parent, TEXT("rampNosing"), GM, Groove, false, true);
   }
   // The export's ramp keeps its collision for the walk; only its pale picture goes.
   if (auto* Old = Cast<UPrimitiveComponent>(N->Comp.Get())) { Old->SetVisibility(false); Old->SetCastShadow(false); }
   S.Hidden.Add(RampNode);
-  Say(S, TEXT("ramp"), TEXT("worn concrete ramp and landing with broom grooves over the export's (its collision kept)"));
+  Say(S, TEXT("ramp"), TEXT("worn concrete ramp and landing with a nosing strip over the export's (its collision kept)"));
   return true;
  }
 
@@ -521,9 +537,11 @@ namespace
 
  void Show(FState& S, US47Main* M, AS47Web* W)
  {
-  const bool bSaro = M->Mode == US47Main::EMode::Play && W->Area() == TEXT("saro");
-  const bool bInside = bSaro && W->Obj(TEXT("annex.interior")).Shown();
-  for (const auto& Weak : S.Outdoor) if (UPrimitiveComponent* C = Weak.Get()) C->SetVisibility(bSaro);
+  // The outdoor parts stand in for export parts that stay hidden for good (the old ramp 627), so they show in every mode at SARO:
+  // the title and end cameras look at its front (US47Flow::TitleCam). Only the indoor parts wait for Play and the annex interior.
+  const bool bOutdoor = W->Area() == TEXT("saro");
+  const bool bInside = M->Mode == US47Main::EMode::Play && bOutdoor && W->Obj(TEXT("annex.interior")).Shown();
+  for (const auto& Weak : S.Outdoor) if (UPrimitiveComponent* C = Weak.Get()) C->SetVisibility(bOutdoor);
   for (const auto& Weak : S.Indoor) if (UPrimitiveComponent* C = Weak.Get()) C->SetVisibility(bInside);
   for (const int32 Node : S.Hidden) if (const FS47WebNode* N = W->Node(Node)) if (auto* C = Cast<UPrimitiveComponent>(N->Comp.Get())) if (C->IsVisible()) C->SetVisibility(false);
   if (UMaterialInstanceDynamic* G = S.Glow.Get())

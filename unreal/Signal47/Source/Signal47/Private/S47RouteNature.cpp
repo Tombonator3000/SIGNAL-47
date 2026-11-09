@@ -316,7 +316,7 @@ void FS47RouteNature::DevBefore(bool bBefore)
  {
   const TArray<FTransform>& Want=bBefore?S.Before:S.Now;
   if(Want.Num()!=C->GetInstanceCount())continue;
-  C->BatchUpdateInstancesTransforms(0,Want,true,true,true); // (added in world space, as Build does)
+  C->BatchUpdateInstancesTransforms(0,Want,false,true,true); // (local: Build keeps them in the component's frame)
   if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);
  }
 }
@@ -506,7 +506,14 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
    }
   }
   C->BuildTreeIfOutdated(false,true);
-  if(F.Rock)Result->RockSets.Add({F.Name,C,F.Instances,F.Before});
+  // Kept in the component's own frame (critic round 7): the shared root moves it between areas, so F10's before/now must not put
+  // back where the instances stood in the world when they were built.
+  if(F.Rock)
+  {
+   const FTransform CT=C->GetComponentTransform();
+   const auto Local=[&CT](const TArray<FTransform>& In){TArray<FTransform> Out;Out.Reserve(In.Num());for(const FTransform& T:In)Out.Add(T.GetRelativeTransform(CT));return Out;};
+   Result->RockSets.Add({F.Name,C,Local(F.Instances),Local(F.Before)});
+  }
   Result->Nodes.Add(W->AdoptNode(C,Parent,FString(TEXT("highway:routeNature:"))+F.Name));Result->Counts.Add(F.Instances.Num());
   UE_LOG(LogTemp,Display,TEXT("S47: RouteNature %s instances=%d nativeBounds_cm=%s LODs=%d cull=%dm shadowRT=%d"),
    F.Name,F.Instances.Num(),*F.Mesh->GetBoundingBox().ToString(),F.Mesh->GetNumLODs(),F.Cull/100,F.Rock);

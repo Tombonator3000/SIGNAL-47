@@ -28,9 +28,10 @@ namespace
 	// the programme from the set's speaker, as loud as the motel office's (S47MotelTv PROGRAMME); the card's thin tone, the snow's
 	// hiss and the tube's whine as the motel's set and room 6's (S47Audio TvHiss) have them
 	const double PROGRAMME = 0.3, TONE = 0.03, CARD_HISS = 0.006, SNOW_HISS = 0.09, WHINE = 0.0016;
-	// CRIT6-20261109: in the story the set is on the station's own supply: dark before the power is up, in the dark minute and while
-	// the feeder is out (as S47Evening and S47SaroWork follow it).
-	bool StoryLit(bool bPowered, bool bDark, bool bFeederOut) { return bPowered && !bDark && !bFeederOut; }
+	// CRIT6-20261109, critic round 7: in the story the set is on the room's circuit, as Dale's ceiling and desk lamps are (S47Office):
+	// dark in the dark minute and while the feeder is out (AS47Story::PowerOut folds FeederOutage into bDark), not waiting on RX
+	// bank 3 (AS47Story::bPowered, the receiver's), which comes up only after the handover.
+	bool StoryLit(bool bDark) { return !bDark; }
 	// through the office's wall and door: duller and quieter
 	const double WALL_LP = 650, OPEN_LP = 18000, THROUGH = 0.4;
 	// the set's light on the room in front of it (lumens, as the office's own lamps are given), following the picture
@@ -121,10 +122,10 @@ double FS47OfficeTv::Clock() const
 
 bool FS47OfficeTv::Powered() const
 {
-	// Freeform: SARO's own supply (the feeder or the generator). The story: its power, its dark minute and the feeder (StoryLit).
+	// Freeform: SARO's own supply (the feeder or the generator). The story: the room's power, as its lamps have it (StoryLit).
 	if (!M) return false;
 	if (M->IsFreeform() && M->Freeform) return M->Freeform->HasPowerForReactiveLight();
-	return M->Story && StoryLit(M->Story->bPowered, M->Story->bDark, M->Story->FeederOutage());
+	return M->Story && StoryLit(M->Story->bDark);
 }
 
 FVector FS47OfficeTv::Speaker() const { return Obj ? Obj.LocalToWorld(FVector(0, 0.26, 0)) : FVector::ZeroVector; }
@@ -302,8 +303,7 @@ bool FS47OfficeTv::SelfTest(TArray<FString>& Lines)
 	Check(ShowAt(1 * 3600, true, false, false) == EShow::Card && ShowAt(12 * 3600, true, false, true) == EShow::Card, TEXT("without the local clip: the test card in its place"));
 	Check(ShowAt(12 * 3600, true, true, false) == EShow::Snow && ShowAt(4 * 3600, true, true, false) == EShow::Snow, TEXT("snow the rest of the day"));
 	Check(ShowAt(1 * 3600, false, true, true) == EShow::Off, TEXT("dark without power"));
-	Check(StoryLit(true, false, false) && !StoryLit(false, false, false) && !StoryLit(true, true, false) && !StoryLit(true, false, true)
-		&& ShowAt(1 * 3600, StoryLit(true, true, false), true, false) == EShow::Off && ShowAt(1 * 3600, StoryLit(true, false, true), true, false) == EShow::Off,
-		TEXT("CRIT6: in the story the set goes dark with the station: before the power is up, in the dark minute and with the feeder out"));
+	Check(StoryLit(false) && !StoryLit(true) && ShowAt(1 * 3600, StoryLit(true), true, false) == EShow::Off && ShowAt(1 * 3600, StoryLit(false), true, false) == EShow::Programme,
+		TEXT("in the story the set follows the room's power (its lamps' !bDark, the feeder in it), not RX bank 3"));
 	return bOk;
 }
