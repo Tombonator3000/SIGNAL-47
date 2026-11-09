@@ -7,6 +7,7 @@ class AS47Web;
 class UStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 class USceneComponent;
+class UPointLightComponent;
 
 // M4, NEW-PLACES-20261108 (Tom, 8 November: "Når M4, plasser temp-boks der du mener de forskjellige bygningene bør stå"). Freeform
 // only: grey boxes the size the buildings will be, each with its name on a board or a wall and "(TEMP)" after it, so that Tom can
@@ -88,6 +89,12 @@ private:
 	// Stop puts them back.
 	struct FHidden { TWeakObjectPtr<UInstancedStaticMeshComponent> Comp; int32 Index = -1; FTransform Was; };
 	TArray<FHidden> Hidden;
+	// The places at night (critics, round 3: the boxes were dead after dark): a porch light at the trailers until midnight, the court's
+	// yard light on its water tower and the school's over its door all night; out on a night something big came there (S47Visitors::Big).
+	struct FLamp { FString Site; TWeakObjectPtr<UPointLightComponent> L; double From = 19, To = 24; };
+	TArray<FLamp> Lamps;
+	void BuildLamps();
+	void StepLamps();
 	bool Build();
 	void Seat(const FString& Site, bool bWithFloor);
 	void SetColliders(bool bOn);

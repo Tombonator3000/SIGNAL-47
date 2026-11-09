@@ -1,5 +1,9 @@
 #include "S47TownSites.h"
+#include "S47EventPlaces.h"
+#include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47Visitors.h"
+#include "Components/PointLightComponent.h"
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47OpenLand.h"
@@ -530,6 +534,53 @@ void FS47TownSites::Stop()
 	bActive = false;
 	if (!IsValid(Scene.Get())) return;
 	ShowAll(false); SetColliders(false); HidePlants(false); SetDrive(false);
+	for (const FLamp& L : Lamps) if (UPointLightComponent* C = L.L.Get()) C->SetVisibility(false);
+}
+
+void FS47TownSites::BuildLamps()
+{
+	using namespace S47TownSites;
+	AS47Web* W = M ? M->Web.Get() : nullptr;
+	if (!IsValid(W) || !Lamps.IsEmpty()) return;
+	const auto Add = [&](const FString& Site, double LocalX, double LocalZ, double Up, float Lumens, double Reach, double From, double To)
+	{
+		const FSite* S = Find(Site);
+		if (!S) return;
+		const FVector2D At = ToRoad(*S, LocalX, LocalZ);
+		UPointLightComponent* C = NewObject<UPointLightComponent>(W, *FString::Printf(TEXT("S47TempLamp_%s_%d"), *Site, Lamps.Num()));
+		C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
+		C->SetIntensityUnits(ELightUnits::Lumens); C->SetIntensity(Lumens); C->SetAttenuationRadius(float(Reach * 100.)); C->SetLightColor(FLinearColor(1.f, .78f, .52f)); C->SetCastShadows(false);
+		C->RegisterComponent(); C->SetVisibility(false);
+		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + At.X, S47FarmWorld::FloorRoad(At.X, At.Y) + Up, At.Y)));
+		FLamp L; L.Site = Site; L.L = C; L.From = From; L.To = To; Lamps.Add(L);
+	};
+	// The trailers' porch lights at the lane ends (north row, and two of the south row), until midnight; the court's yard light under
+	// the tank and the school's over its front door, all night.
+	for (const double X : { 38.0, 20.0, 2.0, -16.0 }) Add(TEXT("trailers"), X + 1.4, -6.4, 2.4, 260.f, 7, 19, 24);
+	for (const double X : { 38.0, 2.0 }) Add(TEXT("trailers"), X - 1.4, 6.4, 2.4, 260.f, 7, 19, 24);
+	Add(TEXT("trailers"), -40, 3.6, 13.2, 900.f, 26, 19, 31);
+	Add(TEXT("school"), -18.8, 0, 3.6, 700.f, 16, 19, 31);
+}
+
+void FS47TownSites::StepLamps()
+{
+	Lamps.RemoveAll([](const FLamp& L) { return !L.L.IsValid(); }); // a new scene: made again
+	if (Lamps.IsEmpty()) BuildLamps();
+	if (!M || !M->Freeform || !M->Web) return;
+	const FS47FreeformSession& F = *M->Freeform;
+	const FString Area = M->Web->Area();
+	const bool bHere = Area == TEXT("road") || Area == TEXT("diner");
+	double H = FMath::Fmod(F.Clock(), 86400.) / 3600.;
+	if (H < 8) H += 24; // the night's hours, 19 to 31
+	const int32 Night = FS47FreeformSession::NightOf(F.Clock());
+	for (const FLamp& L : Lamps)
+	{
+		UPointLightComponent* C = L.L.Get();
+		if (!C) continue;
+		// Out where something big came tonight: nobody switches it on again.
+		const bool bDark = F.EventPlaces && F.EventPlaces->LastNight(L.Site) == Night && FS47Visitors::Big(F.EventPlaces->LastKind(L.Site));
+		C->SetVisibility(bHere && !bDark && H >= L.From && H < L.To);
+	}
 }
 
 void FS47TownSites::Step(double Dt)
@@ -542,6 +593,7 @@ void FS47TownSites::Step(double Dt)
 	SeatIn -= Dt;
 	if (SeatIn > 0 || !M->Player || !M->Web) return;
 	SeatIn = 1;
+	StepLamps();
 	const FString Area = M->Web->Area();
 	if (Area != TEXT("road") && Area != TEXT("diner")) return;
 	double RX = 0, RZ = 0;

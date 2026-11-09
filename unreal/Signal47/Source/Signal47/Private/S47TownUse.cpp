@@ -19,6 +19,8 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47FarmWorld.h"
+#include "S47Truck.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
@@ -51,8 +53,8 @@ namespace S47TownUseLocal
 			{ TEXT("spare"), 15, TEXT("Mounted and aired up. The jack is already behind your seat.") },
 			{ TEXT("cell"), 3, TEXT("Flashlight and lantern cells. The bench at SARO uses them too.") },
 			{ TEXT("foil"), 3, TEXT("Aluminum flashing off the roll: the bench shields a lead with it.") },
-			{ TEXT("rope"), 12, TEXT("Hooked to a fence post, it pulls the truck out of sand: about 10 minutes instead of 25. Kept, not used up.") },
-			{ TEXT("wire"), 4, TEXT("Run out from the trip camera, its line catches what crosses 30 m out instead of 18.") },
+			{ TEXT("rope"), 12, TEXT("Hook it to a fence post and crank. Gets a truck out of sand a lot quicker than a spade, and it lasts.") },
+			{ TEXT("wire"), 4, TEXT("Run it out from a trip camera and it'll catch what crosses a good thirty yards off.") },
 			{ TEXT("salt"), 3, TEXT("Set it out at a place on the land. In the morning, see what came to it.") },
 			{ TEXT("feed"), 6, TEXT("Range cubes: the same, and more comes to them.") } };
 		return W;
@@ -159,12 +161,13 @@ void FS47TownUse::Begin(const S47J::FObj& Saved)
 {
 	Stop();
 	bLive = M != nullptr;
-	Flags.Reset(); SoldPrints.Reset(); Lures.Reset(); Basket.Reset(); BasketAt.Empty();
+	Flags.Reset(); SoldPrints.Reset(); Lures.Reset(); Basket.Reset(); BasketAt.Empty(); Witnessed.Reset();
 	bMap = false; TourDay = SoldDay = SoldToday = Postcards = 0;
 	if (Saved.IsValid())
 	{
 		for (const FString& F : S47J::Strs(Saved, TEXT("seen"))) if (!F.IsEmpty() && F.Len() < 24) Flags.Add(F);
 		for (const FString& P : S47J::Strs(Saved, TEXT("sold"))) if (!P.IsEmpty() && P.Len() < 160 && SoldPrints.Num() < 400) SoldPrints.Add(P);
+		for (const FString& P : S47J::Strs(Saved, TEXT("witnessed"))) if (!P.IsEmpty() && P.Len() < 80 && Witnessed.Num() < 64) Witnessed.Add(P);
 		bMap = S47J::Bool(Saved, TEXT("map"));
 		TourDay = FMath::Clamp(S47J::Int(Saved, TEXT("tourDay")), 0, 1000000);
 		SoldDay = FMath::Clamp(S47J::Int(Saved, TEXT("soldDay")), 0, 1000000);
@@ -196,8 +199,100 @@ void FS47TownUse::Step(double Dt)
 {
 	(void)Dt;
 	if (!M || !M->IsFreeform() || !IsValid(M->Web.Get())) return;
-	if (Scene.Get() != M->Web.Get()) { Scene = M->Web; bBuilt = false; Props.Reset(); }
+	if (Scene.Get() != M->Web.Get()) { Scene = M->Web; bBuilt = false; Props.Reset(); LureParts.Reset(); Spaceman.Reset(); PrintParts.Reset(); }
 	if (!bBuilt && Build()) SetPropsShown(true);
+	if (!bBuilt || !bLive || !M->Freeform) return;
+	WitnessIn -= Dt;
+	if (WitnessIn <= 0) { WitnessIn = 2; StepWitness(); }
+	StepThings();
+}
+
+void FS47TownUse::StepWitness()
+{
+	FS47FreeformSession& F = *M->Freeform;
+	if (!F.EventPlaces) return;
+	const int32 Now = Night();
+	// Near enough to have seen it go on: lights from a long way off, anything else from close by.
+	for (const FS47EventPlace& P : F.EventPlaces->All())
+	{
+		if (F.EventPlaces->LastNight(P.Id) != Now || P.Id == TEXT("motel")) continue;
+		const FString Key = FString::Printf(TEXT("%s:%d"), *P.Id, Now);
+		if (Witnessed.Contains(Key)) continue;
+		const double Away = F.EventPlaces->DistanceFromPlayer(P);
+		const double Reach = FS47Townsfolk::Talk(F.EventPlaces->LastKind(P.Id)) == TEXT("lights") ? 1500 : 300;
+		if (Away < 0 || Away > Reach) continue;
+		Witnessed.Add(Key);
+		UE_LOG(LogS47TownUse, Display, TEXT("S47: town: the player was near %s on night %d (%.0f m): something to tell Earl"), *P.Id, Now, Away);
+	}
+	// Old nights go: nothing older than four nights is offered anyway.
+	for (auto It = Witnessed.CreateIterator(); It; ++It) { FString Id, N; if (!It->Split(TEXT(":"), &Id, &N, ESearchCase::CaseSensitive, ESearchDir::FromEnd) || FCString::Atoi(*N) < Now - 4) It.RemoveCurrent(); }
+}
+
+void FS47TownUse::StepThings()
+{
+	FS47FreeformSession& F = *M->Freeform;
+	const FString Here = M->Web ? M->Web->Area() : FString();
+	const bool bLand = Here == TEXT("road") || Here == TEXT("diner");
+	// The lures nearest the player: the block or sack where it was set out; by morning, licked down or gone and tracks right up to it,
+	// or untouched with the tracks stopping short all round (shy: ReadLure). Read or not, what the morning made of it is shown.
+	FVector2D Me; const bool bMe = F.EventPlaces && F.EventPlaces->PlayerRoad(Me);
+	TArray<const FLure*> Near;
+	if (bMe && bLand && F.Places)
+		for (const FLure& L : Lures) { double X = 0, Z = 0; if (F.Places->Spot(L.Place, X, Z) && FVector2D::Distance(Me, FVector2D(X, Z)) < 400) Near.Add(&L); }
+	Near.Sort([&](const FLure& A, const FLure& B) { double Ax = 0, Az = 0, Bx = 0, Bz = 0; F.Places->Spot(A.Place, Ax, Az); F.Places->Spot(B.Place, Bx, Bz); return FVector2D::Distance(Me, FVector2D(Ax, Az)) < FVector2D::Distance(Me, FVector2D(Bx, Bz)); });
+	for (int32 I = 0; I < LureParts.Num(); ++I)
+	{
+		UStaticMeshComponent* C = LureParts[I].Get();
+		if (!C) continue;
+		const int32 Which = I / (TracksPerLure + 1), Part = I % (TracksPerLure + 1);
+		const FLure* L = Near.IsValidIndex(Which) ? Near[Which] : nullptr;
+		double X = 0, Z = 0;
+		if (!L || !F.Places->Spot(L->Place, X, Z)) { C->SetHiddenInGame(true); continue; }
+		const bool bSalt = L->Kind == TEXT("salt"), bMorning = Night() > L->Night;
+		bool bShy = false;
+		if (bMorning)
+		{
+			TArray<TPair<FVector2D, int32>> Used;
+			if (F.EventPlaces) for (const FS47EventPlace& P : F.EventPlaces->All()) if (const int32 Last = F.EventPlaces->LastNight(P.Id)) Used.Emplace(FVector2D(P.X, P.Z), Last);
+			bShy = Shy(FVector2D(X, Z), L->Night, Used);
+		}
+		// A little off the place's own point, toward the open side, where it was set out.
+		const double Lx = X + 3, Lz = Z + 2;
+		if (Part == 0)
+		{
+			const double K = bMorning && !bShy ? (bSalt ? .6 : .35) : 1;
+			const FVector Size = bSalt ? FVector(.25, .25 * K, .25) : FVector(.55, .3 * K, .35);
+			C->SetHiddenInGame(false);
+			C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Lx, S47FarmWorld::FloorRoad(Lx, Lz) + Size.Y * .5, Lz)));
+			C->SetWorldScale3D(FVector(Size.X, Size.Z, Size.Y));
+			continue;
+		}
+		// Hoof prints: none the evening it was set out; by morning right up to it, or stopping short of it all round.
+		C->SetHiddenInGame(!bMorning);
+		if (!bMorning) continue;
+		const int32 T = Part - 1;
+		const double A = (T / 2) * (2 * UE_DOUBLE_PI / 3) + .4, R = bShy ? 6.2 + (T % 2) * 1.6 : .7 + (T % 2) * .9;
+		const double Tx = Lx + FMath::Cos(A) * R, Tz = Lz + FMath::Sin(A) * R;
+		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Tx, S47FarmWorld::FloorRoad(Tx, Tz) + .01, Tz)));
+		C->SetWorldScale3D(FVector(.13, .1, .012));
+	}
+	// The rubber spaceman on the truck's dash, by the compass, bobbing on its suction cup as the truck goes.
+	FS47Truck* T = M->World ? M->World->TruckHere() : nullptr;
+	const bool bMan = T && T->IsValid() && Seen(TEXT("spaceman")) && M->Player && (M->World->bDriving || FVector2D::Distance(FVector2D(M->Player->Pos.X, M->Player->Pos.Z), FVector2D(T->Position.X, T->Position.Z)) < 30);
+	for (int32 I = 0; I < Spaceman.Num(); ++I)
+	{
+		UStaticMeshComponent* C = Spaceman[I].Get();
+		if (!C) continue;
+		C->SetHiddenInGame(!bMan);
+		if (!bMan) continue;
+		const FVector Foot = T->WorldToLocal(T->CompassAt()) + FVector(.42, .0, .0);
+		const double Bob = M->World->bDriving ? FMath::Sin(M->T * 9.) * .012 : 0;
+		const FVector L = I == 0 ? Foot + FVector(0, .04, 0) : Foot + FVector(Bob, .1, 0);
+		C->SetWorldLocation(S47Three::ToUE(T->LocalToWorld(L)));
+	}
+	// The player's picture in his window, once he has bought one worth putting there.
+	for (const auto& P : PrintParts) if (auto* C = P.Get()) C->SetHiddenInGame(!Seen(TEXT("sold_odd")));
+	if (auto* W = PrintWords.Get()) W->SetHiddenInGame(!Seen(TEXT("sold_odd")));
 }
 
 S47J::FObj FS47TownUse::Save() const
@@ -205,6 +300,7 @@ S47J::FObj FS47TownUse::Save() const
 	auto O = S47J::New();
 	if (!Flags.IsEmpty()) { TArray<FString> A = Flags.Array(); A.Sort(); S47J::Set(O, TEXT("seen"), A); }
 	if (!SoldPrints.IsEmpty()) { TArray<FString> A = SoldPrints.Array(); A.Sort(); S47J::Set(O, TEXT("sold"), A); }
+	if (!Witnessed.IsEmpty()) { TArray<FString> A = Witnessed.Array(); A.Sort(); S47J::Set(O, TEXT("witnessed"), A); }
 	if (bMap) S47J::Set(O, TEXT("map"), true);
 	if (TourDay) S47J::Set(O, TEXT("tourDay"), TourDay);
 	if (SoldDay) { S47J::Set(O, TEXT("soldDay"), SoldDay); S47J::Set(O, TEXT("soldToday"), SoldToday); }
@@ -323,6 +419,49 @@ bool FS47TownUse::Build()
 		};
 		M->Inter->Add(I);
 	}
+	// What the town's wares put out into the world: drawn only when they are there (StepThings).
+	{
+		UStaticMesh* Cyl = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+		UStaticMesh* Ball = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+		const auto Bit = [&](const FString& Name, UStaticMesh* Mesh, uint32 Hex, int32 Under, TArray<TWeakObjectPtr<UStaticMeshComponent>>& Into) -> UStaticMeshComponent*
+		{
+			UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *Name);
+			C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent()); C->SetStaticMesh(Mesh ? Mesh : Cube); C->SetMaterial(0, Mat(Hex));
+			C->SetCastShadow(false); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->RegisterComponent(); C->SetHiddenInGame(true);
+			if (Under >= 0) W->AdoptNode(C, Under, Name);
+			Into.Add(C);
+			return C;
+		};
+		for (int32 L = 0; L < LuresDrawn; ++L)
+		{
+			Bit(FString::Printf(TEXT("S47TownLure%d"), L), Cube, 0xe6e1d3, Root, LureParts);
+			for (int32 K = 0; K < TracksPerLure; ++K) Bit(FString::Printf(TEXT("S47TownLureTrack%d_%d"), L, K), Cyl, 0x4a3b2b, Root, LureParts);
+		}
+		// Not on any one area's root: the truck is in every area.
+		Bit(TEXT("S47TownSpacemanBody"), Cyl, 0x8d918b, -1, Spaceman)->SetWorldScale3D(FVector(.035, .035, .07));
+		Bit(TEXT("S47TownSpacemanHead"), Ball, 0x8d918b, -1, Spaceman)->SetWorldScale3D(FVector(.05, .045, .055));
+		// The souvenir shop's window, inside the glass on the right as one looks in from the street (build_souvenir.py: window x -2.8
+		// to -.6, world z = 2064 + Blender x; the glass at world x 8020.24, the room from 8020.63): framed, black, three lights in it.
+		const double Floor = [] { const double Fl = S47CalicheAccess::FloorAt(8021.6, 2065.2); return FMath::IsFinite(Fl) ? Fl : 4.9528; }();
+		const auto Pane = [&](const FString& Name, const FVector& At, const FVector& Size, uint32 Hex)
+		{
+			UStaticMeshComponent* C = Bit(Name, Cube, Hex, Root, PrintParts);
+			C->SetWorldLocation(S47Three::ToUE(At)); C->SetWorldScale3D(FVector(Size.X, Size.Z, Size.Y));
+		};
+		Pane(TEXT("S47TownPrintFrame"), FVector(8020.74, Floor + 1.75, 2062.95), FVector(.02, .30, .38), 0x3b2a1c);
+		Pane(TEXT("S47TownPrintPhoto"), FVector(8020.725, Floor + 1.75, 2062.95), FVector(.012, .24, .32), 0x09090b);
+		Pane(TEXT("S47TownPrintLight0"), FVector(8020.716, Floor + 1.80, 2062.87), FVector(.006, .026, .026), 0xf2efe4);
+		Pane(TEXT("S47TownPrintLight1"), FVector(8020.716, Floor + 1.82, 2062.95), FVector(.006, .03, .03), 0xf2efe4);
+		Pane(TEXT("S47TownPrintLight2"), FVector(8020.716, Floor + 1.78, 2063.04), FVector(.006, .022, .022), 0xf2efe4);
+		Pane(TEXT("S47TownPrintCard"), FVector(8020.73, Floor + 1.555, 2062.95), FVector(.01, .07, .34), 0xe9e2cc);
+		UTextRenderComponent* T = NewObject<UTextRenderComponent>(W, TEXT("S47TownPrintWords"));
+		T->SetMobility(EComponentMobility::Movable); T->SetupAttachment(W->GetRootComponent());
+		T->SetText(FText::FromString(TEXT("LIGHTS OVER THE FLATS\nTAKEN BY A SARO EMPLOYEE"))); T->SetWorldSize(1.9f); T->SetHorizontalAlignment(EHTA_Center); T->SetVerticalAlignment(EVRTA_TextCenter);
+		T->SetTextRenderColor(Ink); T->SetCollisionEnabled(ECollisionEnabled::NoCollision); T->SetCastShadow(false); T->RegisterComponent(); T->SetHiddenInGame(true);
+		T->SetWorldLocationAndRotation(S47Three::ToUE(FVector(8020.72, Floor + 1.555, 2062.95)), FRotator(0, 180, 0));
+		W->AdoptNode(T, Root, T->GetName());
+		PrintWords = T;
+	}
 	bBuilt = true;
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town counters ready: 1420 AM lobby board, Feed & Seed stand, souvenir counter (%d parts)"), Props.Num());
 	return true;
@@ -336,6 +475,12 @@ void FS47TownUse::SetPropsShown(bool bShow)
 			C->SetHiddenInGame(!bShow);
 			if (!C->IsA<UTextRenderComponent>()) C->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 		}
+	// The things out in the world are drawn by StepThings while Freeform runs; out of it, none of them.
+	if (!bShow)
+	{
+		for (const auto* Set : { &LureParts, &Spaceman, &PrintParts }) for (const auto& P : *Set) if (auto* C = P.Get()) C->SetHiddenInGame(true);
+		if (auto* T = PrintWords.Get()) T->SetHiddenInGame(true);
+	}
 	if (AS47Web* W = Scene.Get()) for (FS47Rect& R : W->CollidersMutable(TEXT("road"))) if (R.Id.StartsWith(TEXT("townuse:"))) R.bEnabled = bShow;
 }
 
@@ -379,7 +524,8 @@ bool FS47TownUse::Pay(const FString& Counter, const TArray<FWare>& Wares)
 	const FString Where = Counter == S47TownUseLocal::Radio ? TEXT("1420 AM") : Counter == S47TownUseLocal::Feed ? TEXT("the Feed & Seed") : TEXT("the souvenir shop");
 	if (!Field.TakePostedParcel(Basket, CounterPoint(Counter), FString::Printf(TEXT("Parcel from %s carried. Load it in the truck, then unpack it at SARO's GARAGE RECEIVING table into stock."), *Where)))
 	{
-		M->Freeform->Earn(Total);
+		// Handed back in cash: a refund is not earnings, and never goes to the requisition (FS47FreeformSession::Refund).
+		M->Freeform->Refund(Total);
 		if (M->UI) M->UI->Toast(TEXT("The parcel could not be handed over here. Nothing was charged."), 4);
 		return false;
 	}
@@ -398,15 +544,17 @@ FString FS47TownUse::TipRows(TArray<TSharedRef<SWidget>>& Rows, bool bPhone)
 	FS47RadioTips* Tips = F.Tips.Get();
 	if (!Tips) return FString();
 	const FString Notes = Tips->TakeNotes();
-	if (!Notes.IsEmpty()) Rows.Add(S47Kit::Paper(bPhone ? TEXT("Earl, before you start: \"") + Notes.Replace(TEXT(" E."), TEXT("")) + TEXT("\"") : TEXT("A note on the spike with your name on it:\n\n") + Notes));
+	// Earl's words in double quotes, the caller's in single ones inside them (critics, round 3: no quotes inside quotes of the same kind).
+	if (!Notes.IsEmpty()) Rows.Add(S47Kit::Paper(bPhone ? TEXT("Before you can get a word in, Earl says: \"") + Notes.Replace(TEXT("\n\n"), TEXT(" And another. ")) + TEXT("\"") : TEXT("A note on the spike with your name on it:\n\n") + Notes + TEXT("\n\nE.")));
 	Rows.Add(S47Kit::Section(TEXT("A TIP FOR THE AIR"), TEXT("one a day")));
 	// What the player can tell of: places found on the land, and places where something went on in the last three nights.
 	TArray<TPair<FString, FString>> Can;
 	const auto AddPlace = [&Can, Tips](const FString& Id, const FString& Title) { if (!Tips->Gave(Id) && !Can.ContainsByPredicate([&Id](const TPair<FString, FString>& C) { return C.Key == Id; })) Can.Emplace(Id, Title); };
 	if (F.Places) for (const FS47Places::FDef& D : FS47Places::Defs()) if (F.Places->Found(D.Id) && FString(D.Id) != TEXT("motel")) AddPlace(D.Id, D.Title);
-	if (F.EventPlaces) for (const FS47EventPlace& P : F.EventPlaces->All()) { const int32 Last = F.EventPlaces->LastNight(P.Id); if (Last > 0 && Last >= Night() - 3) AddPlace(P.Id, P.Title); }
+	// Only what the player could know of: a place they were near on the night something went on there (Witnessed), never the motel.
+	if (F.EventPlaces) for (const FS47EventPlace& P : F.EventPlaces->All()) { const int32 Last = F.EventPlaces->LastNight(P.Id); if (Last > 0 && Last >= Night() - 3 && P.Id != TEXT("motel") && Witnessed.Contains(FString::Printf(TEXT("%s:%d"), *P.Id, Last))) AddPlace(P.Id, P.Title); }
 	if (!Tips->CanGive()) Rows.Add(S47Kit::Small(TEXT("Earl takes one a day from any one caller. Tomorrow.")));
-	else if (Can.IsEmpty()) Rows.Add(S47Kit::Small(TEXT("Nothing to tell him yet: a place you have been out to, or one where something went on in the last few nights.")));
+	else if (Can.IsEmpty()) Rows.Add(S47Kit::Small(TEXT("Nothing to tell him yet: a place you have been out to, or one where you saw something go on in the last few nights.")));
 	else
 	{
 		Rows.Add(S47Kit::Small(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab).")));
@@ -461,7 +609,7 @@ void FS47TownUse::OpenFeed()
 	TArray<TSharedRef<SWidget>> Rows;
 	if (!OpenAt(Feed, Hour()))
 	{
-		Rows.Add(S47Kit::Paper(FString::Printf(TEXT("FEED & SEED. Nobody behind the counter. The hours are painted on the door: %s, CLOSED SUNDAYS EXCEPT IN CALVING."), *HoursOf(Feed).ToUpper())));
+		Rows.Add(S47Kit::Paper(FString::Printf(TEXT("FEED & SEED. Nobody behind the counter. The hours are painted on the door: %s. Under them, in chalk: RING THE BELL IN CALVING."), *HoursOf(Feed).ToUpper())));
 		M->UI->Open(S47Kit::Shell(M->UI, TEXT("FEED & SEED"), S47Kit::Col(Rows), 760));
 		return;
 	}
@@ -490,7 +638,8 @@ bool FS47TownUse::Tour()
 {
 	if (!M || !M->Freeform || !M->UI) return false;
 	FS47FreeformSession& F = *M->Freeform;
-	if (TourDay == F.Day()) return false;
+	// Nobody to drive it while he is gone (S47Townsfolk).
+	if (TourDay == F.Day() || (F.Townsfolk && F.Townsfolk->Away(TEXT("souvenir_man")))) return false;
 	if (!F.Spend(5)) { M->UI->Toast(F.FeedbackText(), 4); return false; }
 	TourDay = F.Day();
 	F.SpendTime(2 * 3600);
@@ -519,7 +668,7 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	if (!M || !M->Freeform || !M->Night || !M->Night->Album) return false;
 	FS47FreeformSession& F = *M->Freeform;
 	if (SoldDay != F.Day()) { SoldDay = F.Day(); SoldToday = 0; }
-	if (SoldToday >= PrintsADay || SoldPrints.Contains(PhotoId)) return false;
+	if (SoldToday >= PrintsADay || SoldPrints.Contains(PhotoId) || (F.Townsfolk && F.Townsfolk->Away(TEXT("souvenir_man")))) return false;
 	const FS47AlbumShot* Shot = M->Night->Album->Shots().FindByPredicate([&PhotoId](const FS47AlbumShot& S) { return S.Id == PhotoId; });
 	if (!Shot) return false;
 	bool bRecord = false;
@@ -541,6 +690,12 @@ void FS47TownUse::SellRows(TArray<TSharedRef<SWidget>>& Rows)
 {
 	FS47FreeformSession& F = *M->Freeform;
 	if (SoldDay != F.Day()) { SoldDay = F.Day(); SoldToday = 0; }
+	if (F.Townsfolk && F.Townsfolk->Away(TEXT("souvenir_man")))
+	{
+		Rows.Add(S47Kit::Section(TEXT("HE BUYS PRINTS")));
+		Rows.Add(S47Kit::Small(TEXT("The girl at the register looks at your prints and gives them back. \"He does that. I can't.\"")));
+		return;
+	}
 	Rows.Add(S47Kit::Section(TEXT("HE BUYS PRINTS"), FString::Printf(TEXT("%d of %d today"), SoldToday, PrintsADay)));
 	Rows.Add(S47Kit::Small(TEXT("He has copies made off your print in Socorro and sells them as postcards. You keep the print. A dollar for anything, more for the dishes, for night, for what the station looks for, and a good deal more for the strange ones.")));
 	const FS47Album* Album = M->Night && M->Night->Album ? M->Night->Album.Get() : nullptr;
@@ -579,7 +734,9 @@ void FS47TownUse::OpenSouvenir()
 		M->UI->Open(S47Kit::Shell(M->UI, TEXT("SAUCER CRASH 1947"), S47Kit::Col(Rows), 760));
 		return;
 	}
-	Rows.Add(S47Kit::Paper(TEXT("SAUCER CRASH 1947. Postcards on a wire rack, rubber spacemen in a bin, a hand-drawn map under the glass. The man from the stoop is behind the counter in the daytime, in the same hat.")));
+	const bool bGone = F.Townsfolk && F.Townsfolk->Away(TEXT("souvenir_man"));
+	Rows.Add(S47Kit::Paper(bGone ? TEXT("SAUCER CRASH 1947. Postcards on a wire rack, rubber spacemen in a bin, a hand-drawn map under the glass. His hat is on its hook behind the counter, and he is not under it.")
+		: TEXT("SAUCER CRASH 1947. Postcards on a wire rack, rubber spacemen in a bin, a hand-drawn map under the glass. The man from the stoop is behind the counter in the daytime, in the same hat.")));
 	// His one thing today, or who minds the register while he is gone (S47Townsfolk).
 	if (F.Townsfolk) { const FString Said = F.Townsfolk->CounterLine(TEXT("souvenir_man")); if (!Said.IsEmpty()) Rows.Add(S47Kit::Text(Said)); }
 	// The map of saucer sites: once.
@@ -594,12 +751,12 @@ void FS47TownUse::OpenSouvenir()
 	}
 	// The tour: two hours, once a day, while he has the light for it.
 	const bool bTourHours = Hour() >= 10 && Hour() < 15;
-	Rows.Add(S47Kit::Two(S47Kit::Small(TourDay == F.Day() ? TEXT("You took the tour today.") : bTourHours ? TEXT("The tour: two hours in his station wagon, the sites the book talks about. He always knows one more.") : TEXT("Tours leave between 10 AM and 3 PM.")),
-		S47Kit::Button(TEXT("Take the tour / $5 / 2 hours"), [this] { Tour(); }, false, bTourHours && TourDay != F.Day() && F.Budget() >= 5), .7f, .3f));
+	Rows.Add(S47Kit::Two(S47Kit::Small(bGone ? TEXT("A card on the register, in the girl's hand: NO TOURS THIS WEEK.") : TourDay == F.Day() ? TEXT("You took the tour today.") : bTourHours ? TEXT("The tour: two hours in his station wagon, the sites the book talks about. He always knows one more.") : TEXT("Tours leave between 10 AM and 3 PM.")),
+		S47Kit::Button(TEXT("Take the tour / $5 / 2 hours"), [this] { Tour(); }, false, !bGone && bTourHours && TourDay != F.Day() && F.Budget() >= 5), .7f, .3f));
 	// Postcards and a rubber spaceman: the town notices both.
 	Rows.Add(S47Kit::Two(S47Kit::Small(FString::Printf(TEXT("Postcards of the dishes at sunset, five for a dollar. You have bought %d."), Postcards)),
 		S47Kit::Button(TEXT("Five postcards / $1"), [this] { if (M->Freeform->Spend(1)) { Postcards += 5; Note(TEXT("postcard")); M->RequestAutosave(); } OpenSouvenir(); }, false, F.Budget() >= 1), .7f, .3f));
-	Rows.Add(S47Kit::Two(S47Kit::Small(Seen(TEXT("spaceman")) ? TEXT("The rubber spaceman rides on your dash now. People notice.") : TEXT("A rubber spaceman with a suction cup, gray, big eyes. For the dash.")),
+	Rows.Add(S47Kit::Two(S47Kit::Small(Seen(TEXT("spaceman")) ? TEXT("The rubber spaceman rides on your dash now, by the compass. People notice.") : TEXT("A rubber spaceman with a suction cup, gray, big eyes. For the dash.")),
 		S47Kit::Button(TEXT("A rubber spaceman / $3"), [this] { if (M->Freeform->Spend(3)) Note(TEXT("spaceman")); OpenSouvenir(); }, false, !Seen(TEXT("spaceman")) && F.Budget() >= 3), .7f, .3f));
 	Rows.Add(S47Kit::Section(TEXT("FILM")));
 	BasketRows(Souvenir, SouvenirWares(), Rows, [this] { OpenSouvenir(); });

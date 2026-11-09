@@ -309,7 +309,8 @@ void FS47FreeformSession::Stop()
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
  if(bCanRestore){if(TownUse)TownUse->Stop();if(TownSites)TownSites->Stop();}
- if(Townsfolk)Townsfolk->Stop();
+ // At exit or in the purge the town's figures may already be gone: only the plain list of who is away is cleared then.
+ if(Townsfolk){if(bCanRestore)Townsfolk->Stop();else Townsfolk->ResetAway();}
  if(Visitors&&bCanRestore)Visitors->Stop();
  if(NightLog)NightLog->Stop();
  if(Tape)Tape->Stop();
@@ -1118,6 +1119,7 @@ void FS47FreeformSession::Earn(int32 Amount)
  if(Amount<=0||Amount>10000)return;
  const int32 Paid=FMath::Min(Amount,Loan);Loan-=Paid;Cash=FMath::Min(1000080,Cash+Amount-Paid);Changed();
 }
+void FS47FreeformSession::Refund(int32 Amount){if(Amount<=0||Amount>10000)return;Cash=FMath::Min(1000080,Cash+Amount);Changed();}
 int32 FS47FreeformSession::InventoryCount(const FString& Id)const{return Field?Field->InventoryCount(Id):0;}
 void FS47FreeformSession::AddItem(const FString& Id,int32 Count){if(Field)Field->AddItem(Id,Count);}
 bool FS47FreeformSession::Consume(const FString& Id){return Field&&Field->Consume(Id);}
@@ -2208,14 +2210,14 @@ bool FS47FreeformSession::BuyKit(const FString& Id)
  Changed(Feedback);return true;
 }
 int32 FS47FreeformSession::MotelPrice()const{return Mail?Mail->MotelPrice(MotelRoom):MotelRoom;}
-bool FS47FreeformSession::RestAt(double Target,ERest Where)
+bool FS47FreeformSession::RestAt(double Target,ERest Where,bool bPaid)
 {
  // The price is the one at the desk tonight, before the night has gone by and the Ledger's coupon with it.
- const int32 Room=MotelPrice();
+ const int32 Room=Where==ERest::Motel&&!bPaid?MotelPrice():0;
  if(Where==ERest::Motel&&Cash<Room)return false;
  RestPlace=Where;
  const bool bGood=WaitUntil(Target);
- if(bGood&&Where==ERest::Motel){Cash-=Room;Changed(FString::Printf(TEXT("A night at the Sierra Motor Court, $%d."),Room));}
+ if(bGood&&Where==ERest::Motel&&Room>0){Cash-=Room;Changed(FString::Printf(TEXT("A night at the Sierra Motor Court, $%d."),Room));}
  UE_LOG(LogTemp,Display,TEXT("S47: rest away from the station, kind %d: %s"),int32(Where),bGood?TEXT("slept"):TEXT("refused"));
  RestPlace=ERest::Station;return bGood;
 }

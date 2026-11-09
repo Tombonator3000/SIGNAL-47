@@ -5,6 +5,8 @@
 #include "S47FieldLife.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47Geo.h"
+#include "S47Inter.h"
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47OpenLand.h"
@@ -185,6 +187,23 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 			Tell(bOk, bOk ? Said : FString(TEXT("the lure could not be set out")), 9);
 		});
 	}
+	// What the wares put out in the world (critics, round 3: not only text).
+	E.AddFreeform(Group, TEXT("Lure: the salt block at the windmill by morning, in the world"), TEXT("salt set out last night at the windmill: the block licked down and hoof prints right up to it, seen from a few steps off"), [this, StandAt, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		double X = 0, Z = 0;
+		if (!F || !F->TownUse || !F->Places || !F->Places->Spot(TEXT("windmill"), X, Z)) { Tell(false, TEXT("Freeform only")); return; }
+		FString Said;
+		if (!F->TownUse->DevLureNight(TEXT("windmill"), false, Said)) { Tell(false, TEXT("the lure could not be set out")); return; }
+		StandAt(FVector2D(X + 7, Z + 6), FVector2D(X + 3, Z + 2), 10, 11, [this, Pictured] { Pictured(TEXT("lure"), 1.5f); bLastOk = true; LastText = TEXT("the salt block, licked"); });
+	});
+	E.AddFreeform(Group, TEXT("Souvenirs: your picture in his window"), TEXT("eleven in the morning on the sidewalk: the framed print of lights over the flats inside the shop window, once he has bought a strange one"), [this, StandAt, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->TownUse) { Tell(false, TEXT("Freeform only")); return; }
+		F->TownUse->Note(TEXT("sold_odd"));
+		StandAt(FVector2D(17.6, 2062.4), FVector2D(20.7, 2062.95), 11, 12, [this, Pictured] { Pictured(TEXT("window"), 1.5f); bLastOk = true; LastText = TEXT("the picture in the window"); });
+	});
 	// ---- TOWNSFOLK-20261108: the regulars ----
 	const TCHAR* const Folk = TEXT("Townsfolk (M4)");
 	const auto TalkTo = [this, StandAt, Pictured](const FString& Who, const FVector2D& Eye, const FVector2D& Look, double Hour)
@@ -280,23 +299,80 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 			bLastOk = true; LastText = TEXT("the Sky Watch");
 		});
 	});
-	E.AddFreeform(Out, TEXT("Visitors: the military's morning at the farm"), TEXT("first light at the Alderete place: a helicopter over it, then two black sedans; walk up and they go, and the ground is gone over"), [this, StandAt, Pictured]
+	// Stand at a road-local point in the area that owns it, facing another, at an hour; then Then.
+	const auto StandIn = [this](const FString& Area, const FVector2D& Eye, const FVector2D& Look, double From, double Pitch, TFunction<void()> Then)
+	{
+		FStage Stage; Stage.Area = Area; Stage.From = From; Stage.To = From + 1;
+		const FVector At = S47OpenLand::FromRoad(Area, Eye.X, Eye.Y);
+		Stage.Where = [At] { return FVector2D(At.X, At.Z); };
+		Stage.Yaw = S47TownDevLocal::YawToward(Eye, Look); Stage.Pitch = Pitch;
+		Go(Stage, Then);
+	};
+	E.AddFreeform(Out, TEXT("Visitors: the military's morning at the farm"), TEXT("first light at the Alderete place, ten metres from where the two black sedans park at its way in: the helicopter over it, the cars, then they drive off as you stand there"), [this, StandIn, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		const FS47EventPlace* P = F && F->EventPlaces ? F->EventPlaces->Find(TEXT("farm")) : nullptr;
+		if (!F || !F->Visitors || !P) { Tell(false, TEXT("Freeform only")); return; }
+		// Where the cars will stand (at the farm's way in, clear of its buildings), and a place ten metres off them on the far side from
+		// the pasture: the cars fill the near half of the picture, the pasture and the helicopter over it the far half.
+		FVector2D A, B;
+		if (!F->Visitors->CarsSpot(TEXT("farm"), A, B)) { A = FVector2D(P->EntryX + 9, P->EntryZ + 6); B = A + FVector2D(3.4, 0); }
+		const FVector2D Cars = (A + B) * .5, Place(P->X, P->Z);
+		const FVector2D Away = (Cars - Place).GetSafeNormal();
+		const FVector2D Eye = Cars + Away * 10 + FVector2D(-Away.Y, Away.X) * 2.5;
+		UE_LOG(LogS47TownDev, Display, TEXT("S47: F10 military: cars at road %.1f %.1f and %.1f %.1f, eye %.1f %.1f"), A.X, A.Y, B.X, B.Y, Eye.X, Eye.Y);
+		StandIn(FS47EventPlaces::AreaOf(*P), Eye, Cars, 6, .14, [this, Pictured]
+		{
+			FS47FreeformSession* G = Session();
+			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"), true)) { Tell(false, TEXT("no such place")); return; }
+			// The helicopter comes over the place about 40 s in; the cars stand from 20 s; held for the pictures until about 56 s.
+			After(39, [this, Pictured] { Pictured(TEXT("milheli"), .2f); });
+			After(50, [this, Pictured] { Pictured(TEXT("milcars"), .2f); });
+			After(59.5, [this, Pictured] { Pictured(TEXT("milgo"), .2f); });
+			bLastOk = true; LastText = TEXT("the military's morning");
+		});
+	});
+	E.AddFreeform(Out, TEXT("Visitors: the ground they went over"), TEXT("eleven in the morning at the farm, hours after they left: the raked circle and the tire tracks where the marks were"), [this, StandIn, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		const FS47EventPlace* P = F && F->EventPlaces ? F->EventPlaces->Find(TEXT("farm")) : nullptr;
+		if (!F || !F->Visitors || !P) { Tell(false, TEXT("Freeform only")); return; }
+		const FVector2D Place(P->X, P->Z), Entry(P->EntryX, P->EntryZ);
+		const FVector2D Eye = Place + (Entry - Place).GetSafeNormal() * 16;
+		StandIn(FS47EventPlaces::AreaOf(*P), Eye, Place, 11, -.22, [this, Pictured]
+		{
+			FS47FreeformSession* G = Session();
+			if (!G || !G->Visitors || !G->Visitors->DevRaked(TEXT("farm"))) { Tell(false, TEXT("no such place")); return; }
+			Pictured(TEXT("raked"), 1.5f);
+			Tell(G->Visitors->Cleared(TEXT("farm"), FS47FreeformSession::NightOf(G->Clock())), TEXT("Raked smooth in a wide circle, tire tracks across it toward the way in."), 6);
+		});
+	});
+	E.AddFreeform(Out, TEXT("Visitors: the Sky Watch at SARO's gate"), TEXT("half past nine the evening they were let in: their van on the visitors' lot, the dome light on, and what they do"), [this, StandIn, Pictured]
 	{
 		FS47FreeformSession* F = Session();
 		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
-		// The farm is SARO's ground: stand in SARO's area, or the cars (in that area's set) are not drawn.
-		FStage Stage; Stage.Area = TEXT("saro"); Stage.From = 6; Stage.To = 7;
-		const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 40, 292);
-		Stage.Where = [At] { return FVector2D(At.X, At.Z); };
-		Stage.Yaw = S47TownDevLocal::YawToward(FVector2D(40, 292), FVector2D(70, 246)); Stage.Pitch = -.02;
-		Go(Stage, [this, Pictured]
+		F->Visitors->DevVanGate();
+		// The visitors' lot by SARO's gate (SARO's own x -18 to -8, z 10 to 20): from the south side of it, looking north.
+		const FVector2D Lot(-13 + S47Geo::SARO_IN_ROAD.X, 15.5 + S47Geo::SARO_IN_ROAD.Z);
+		StandIn(TEXT("saro"), Lot + FVector2D(4, 12), Lot, 21.5, -.04, [this, Pictured]
 		{
-			FS47FreeformSession* G = Session();
-			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"))) { Tell(false, TEXT("no such place")); return; }
-			// It comes over the place about 40 s in; the cars stand from 20 s.
-			After(34, [this, Pictured] { Pictured(TEXT("heli"), .2f); });
-			After(60, [this, Pictured] { Pictured(TEXT("cars"), .2f); });
-			bLastOk = true; LastText = TEXT("the military's morning");
+			Pictured(TEXT("vangate"), 2.f);
+			After(3.0, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van_saro")); Pictured(TEXT("vangatetalk"), 1.2f); });
+			bLastOk = true; LastText = TEXT("the Sky Watch at the gate");
+		});
+	});
+	E.AddFreeform(Out, TEXT("Visitors: the Sky Watch van, empty, out where they went"), TEXT("by day at the windmill on the Baca lease: the van standing empty, the side door open, a flashlight on the ground"), [this, StandIn, Pictured]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Visitors || !F->Visitors->DevVanEmpty(TEXT("windmill"))) { Tell(false, TEXT("Freeform only")); return; }
+		FString Area; FVector2D At; bool bOpen = false;
+		if (!F->Visitors->VanWhere(Area, At, bOpen)) { Tell(false, TEXT("the van is not anywhere")); return; }
+		// From its open side (east), a little behind.
+		StandIn(Area, At + FVector2D(8, 5), At, 11, -.05, [this, Pictured]
+		{
+			Pictured(TEXT("vanempty"), 2.f);
+			After(3.0, [this, Pictured] { if (M && M->Inter) M->Inter->UseId(TEXT("ff:visit:van")); Pictured(TEXT("vanemptytalk"), 1.2f); });
+			bLastOk = true; LastText = TEXT("the empty van");
 		});
 	});
 	// ---- MOTEL-SLEEP-20261108 ----
@@ -308,7 +384,7 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		{
 			FS47FreeformSession* F = Session();
 			if (!F || !F->MotelNight || !F->Places) { Tell(false, TEXT("Freeform only")); return; }
-			if (K == 4 && F->InventoryCount(TEXT("film")) <= 0) F->AddItem(TEXT("film"), 1);
+			if (K == 4 && F->InventoryCount(TEXT("spare")) <= 0 && F->InventoryCount(TEXT("water")) <= 0) F->AddItem(TEXT("water"), 1);
 			FStage Stage; Stage.From = 22; Stage.To = 23; Stage.Area = TEXT("saro");
 			double X = 0, Z = 0; F->Places->Spot(TEXT("motel"), X, Z);
 			Stage.Where = [X, Z] { return FVector2D(X + 1.5, Z); };
