@@ -4,6 +4,7 @@
 #include "Misc/Parse.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
+#include "S47Fatigue.h"
 #include "S47FieldRadio.h"
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
@@ -50,11 +51,13 @@ double FS47Stress::Target(const FS47StressIn& In)
 	return 1.0 - Calm;
 }
 
-double FS47Stress::Advance(double Cur, double To, double Dt, bool bSafe)
+double FS47Stress::Advance(double Cur, double To, double Dt, bool bSafe, double Tired)
 {
 	if (!FMath::IsFinite(Dt) || Dt <= 0) return Cur;
-	if (To > Cur) return FMath::Min(To, Cur + (To - Cur) * (1.0 - FMath::Exp(-Dt / S47StressLocal::RiseSeconds)));
-	return FMath::Max(To, Cur - Dt / (bSafe ? S47StressLocal::FallSafeSeconds : S47StressLocal::FallSeconds));
+	// tired, it comes on faster and leaves more slowly (FATIGUE-20261108)
+	const double Rate = FS47Fatigue::StressRateOf(FMath::Clamp(FMath::IsFinite(Tired) ? Tired : 0.0, 0.0, 1.0));
+	if (To > Cur) return FMath::Min(To, Cur + (To - Cur) * (1.0 - FMath::Exp(-Dt * Rate / S47StressLocal::RiseSeconds)));
+	return FMath::Max(To, Cur - Dt / (Rate * (bSafe ? S47StressLocal::FallSafeSeconds : S47StressLocal::FallSeconds)));
 }
 
 double FS47Stress::VignetteAlpha(double Strain)
@@ -121,6 +124,7 @@ FS47StressIn FS47Stress::Read()
 	const FString Area = M->World ? M->World->Area : FString(TEXT("saro"));
 	R.bSafe = M->Space == TEXT("room") && Area == TEXT("saro");
 	R.bHush = M->IsFreeform() && M->Soundscape.IsValid() && M->Soundscape->Hushed();
+	R.Tired = M->IsFreeform() && M->Freeform && M->Freeform->Fatigue ? M->Freeform->Fatigue->Level() : 0.0;
 	return R;
 }
 
@@ -143,7 +147,7 @@ void FS47Stress::Step(double Dt)
 		if (ReadIn <= 0) { ReadIn = 0.25; Inputs = Read(); }
 		else { Inputs.SinceTaken = SinceTaken; }
 		const double Was = S;
-		S = FMath::Clamp(Advance(S, Target(Inputs), Dt, Inputs.bSafe && Inputs.Danger <= 0.02 && Inputs.Presence <= 0), 0.0, 1.0);
+		S = FMath::Clamp(Advance(S, Target(Inputs), Dt, Inputs.bSafe && Inputs.Danger <= 0.02 && Inputs.Presence <= 0, Inputs.Tired), 0.0, 1.0);
 		if (bLog && (int32(Was * 10) != int32(S * 10)))
 		{
 			UE_LOG(LogS47Stress, Display, TEXT("S47: stress %.2f (danger %.2f, presence %.2f, dark %d, hush %d, taken %d, safe %d)"), S, Inputs.Danger, Inputs.Presence, Inputs.bDark, Inputs.bHush, Inputs.bTaken, Inputs.bSafe);
@@ -219,6 +223,8 @@ bool FS47Stress::SelfTest(TArray<FString>& Lines)
 	Check(Advance(0.9, 0.0, 1.0, true) < 0.9 && Advance(0.9, 0.0, 1.0, true) > 0.85, TEXT("it falls slowly, not at once"));
 	Check(Advance(0.9, 0.0, 10.0, true) < Advance(0.9, 0.0, 10.0, false), TEXT("it falls faster in a safe place"));
 	Check(Advance(0.2, 0.5, 0, false) == 0.2 && Advance(0.5, 0.0, -1, true) == 0.5 && Advance(0.5, 0.3, 1000, false) == 0.3, TEXT("no time, no change; it never falls below where it heads"));
+	Check(Advance(0.1, 1.0, 1.0, false, 1) > Advance(0.1, 1.0, 1.0, false, 0) + 0.1 && Advance(0.9, 0.0, 10.0, true, 1) > Advance(0.9, 0.0, 10.0, true, 0) && Advance(0.1, 1.0, 1.0, false, 0) == Advance(0.1, 1.0, 1.0, false),
+		TEXT("tired (FATIGUE-20261108): the strain comes on faster and goes more slowly; rested, as before"));
 	double Down = 1; int32 Steps = 0;
 	while (Down > 0.05 && Steps < 100000) { Down = Advance(Down, 0.0, 0.5, true); ++Steps; }
 	Check(Steps * 0.5 > 60 && Steps * 0.5 < 120, TEXT("from full to calm in about a minute and a half indoors at SARO"));

@@ -763,6 +763,12 @@ void FS47Sky::Update(double Dt, double T)
 	if (Evening > 0 || Midday > 0)
 	{
 		Flash = 0; FlashT = 0;
+		// (WEATHER-20261108: a shower's afternoon has thunder a long way off, heard and not seen)
+		if (DayThunder > 0 && (DayThunderIn -= Dt) <= 0)
+		{
+			DayThunderIn = 20 + Rand() * 45;
+			if (OnThunder) OnThunder(0.5 + Rand() * 2, (0.25 + Rand() * 0.35) * FMath::Min(1.0, DayThunder));
+		}
 		return;
 	}
 	NextFlash -= Dt;

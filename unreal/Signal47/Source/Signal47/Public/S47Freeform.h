@@ -203,6 +203,10 @@ public:
  TSharedPtr<class FS47WardReport> WardReport;
  // A point of the sky held off schedule, and what may answer from it the next night (ANSWER-20261108): S47Answer.h.
  TSharedPtr<class FS47Answer> SkyAnswer;
+ // The day's weather on the world (WEATHER-20261108, S47Weather::Day is the truth the paper prints): S47WeatherLive.h.
+ TSharedPtr<class FS47WeatherLive> Weather;
+ // The hours awake, sleep and the coffee pot (FATIGUE-20261108): S47Fatigue.h.
+ TSharedPtr<class FS47Fatigue> Fatigue;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;

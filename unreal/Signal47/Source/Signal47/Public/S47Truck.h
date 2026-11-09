@@ -84,6 +84,8 @@ struct SIGNAL47_API FS47Truck
 	void CopyCab(const FS47Truck& O);
 	/** Dashboard values. Needles ease in Update(); the clock redraws at most 10 times a second. */
 	void SetDash(double Mph, double Rpm, const FString& Clock, double Fuel);
+	/** After SetDash: the engine's own temperature (FS47TruckCare::TempNeedle, .5 normal to 1 in the red) while it runs; cold when off. */
+	void SetTempNeedle(double Needle);
 	/** The radio's dial: the needle at x on the AM scale (canvas pixels), lit while it plays. */
 	void SetRadio(double X, bool bOn);
 	/** The odometer: the miles on it since the shift began (World.odometer), over MILES OUT. */

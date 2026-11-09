@@ -20,6 +20,7 @@
 #include "S47Flashlight.h"
 #include "S47HudGauges.h"
 #include "S47Stress.h"
+#include "S47Fatigue.h"
 #include "S47Flow.h"
 #include "S47GameStyle.h"
 #include "S47Image.h"
@@ -877,7 +878,13 @@ void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 
 {
 	const US47Main* M = Main();
 	if (!M || !M->Stress) return;
-	const float Alpha = float(M->Stress->Vignette()), Reach = float(M->Stress->VignetteReach());
+	float Alpha = float(M->Stress->Vignette()), Reach = float(M->Stress->VignetteReach());
+	// FATIGUE-20261108: tired, the edge flickers dark now and then, and goes dark a moment when the eyes close; the darker of the two
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Fatigue)
+	{
+		Alpha = FMath::Max(Alpha, float(M->Freeform->Fatigue->EdgeAlpha()));
+		Reach = FMath::Max(Reach, float(M->Freeform->Fatigue->EdgeReach()));
+	}
 	if (Alpha < 0.004f || Reach <= 0.f) return;
 	// nested frames, each a little darker toward the edge: a soft dark rim without a texture or a post-process material
 	const FVector2f S = FVector2f(G.GetLocalSize());

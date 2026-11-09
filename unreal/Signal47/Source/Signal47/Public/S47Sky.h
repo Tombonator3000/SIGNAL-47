@@ -77,6 +77,8 @@ public:
 	int32 Meteors = 0;                    // how many have crossed the sky (tests)
 	/** onThunder(delay, strength): main.ts plays it after the delay. */
 	TFunction<void(double, double)> OnThunder;
+	/** WEATHER-20261108: thunder far off by day under a shower's cloud, 0 to 1 (FS47WeatherLive): heard now and then, no flash. */
+	double DayThunder = 0;
 
 	FS47Sky();
 	/** Dawn remains 04:40-05:30, unchanged through 05:40. Midday blends 05:40-06:00 and 17:00-18:00.
@@ -190,7 +192,7 @@ private:
 	double DawnLift = 1;
 	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
 	FMet Met;
-	double FlashT = 0, NextFlash = 9;
+	double FlashT = 0, NextFlash = 9, DayThunderIn = 8;
 	// the streak as meteorStep lays it out (its corners are the material's: M_WebMeteor)
 	bool bMetVisible = false;
 	double MetI = 0, Head = 0, Back = 0;

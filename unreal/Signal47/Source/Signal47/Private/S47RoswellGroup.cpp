@@ -11,7 +11,9 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47FieldRadio.h"
+#include "S47Stress.h"
 #include "S47Three.h"
+#include "S47Weather.h"
 #include "Components/PoseableMeshComponent.h"
 
 struct FS47RoswellGroup::FImpl
@@ -226,6 +228,10 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   // SNEAK-20261108: a crouching player is seen and heard from less far; the walkie in their hand is a noise of its own.
   In.PlayerQuiet=M->Player->Sneak();
   if (M->FieldRadio && M->FieldRadio->LoudNow()) In.Noise=FS47RoswellBrain::FNoise{Feet+FVector(0,1.,0),1.2};
+  // STRESS-20261108: breathing that hard is heard a few metres off (the brain's reach is loudness times ten), from the mouth
+  else if (M->Stress && M->Stress->HeardWithin()>0) In.Noise=FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Stress->HeardWithin()/10.};
+  // WEATHER-20261108: a strong wind covers steps and breath
+  if (const S47Weather::FLive& Wx=S47Weather::Live(); Wx.bOn) In.HearScale=1.-.5*FMath::Clamp(Wx.Wind,0.,1.);
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));

@@ -1,38 +1,71 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "Math/Color.h"
 
 // The weather of a Freeform day and the sky's almanac, in one place others can read (coordinator, 8 November: "a simple function
-// others can use"). It follows the sky the game draws, never the other way round (coordinator, 8 November: the paper is to say what
-// the player can see). What the sky does is the same every day: FS47Sky draws a broken layer by day, more of it in the morning
-// (CloudCoverAt), breaking up after sundown to a few night clouds, dry lightning far off every night with its thunder (Update);
-// S47Wind and FS47Ambience give a light wind with gusts now and then; no dust, no rain, no moon of its own (the night's moonlight is
-// the same every night, S47Lighting). So a day here has the sky's clouds, a light wind, dry lightning after dark and no dust or rain;
-// what changes is only the warmth, which nobody sees (FS47Ambience keeps the night's cooling to about 41 F at dawn, and the day's
-// highs climb slowly through the spring). The almanac is the sky's own: sunrise 05:30 and sunset 18:27 (FS47Sky::SetClock) and
-// Halley's comet, low in the south from the evening until a little after three (FS47Sky::SetCometClock). Since MOON-20261108 the sky
-// has the real moon of the date in Freeform (Moon: its place, phase and light; FS47Sky draws it, AS47Web lights the land by it), and
-// the paper's almanac for a date prints it (Almanac(Date)); Almanac() alone is the sun and the comet. When WEATHER-20261108 gives the
-// sky days of its own (wind, dust, a shower), the sky should read Day() and Day() gets its variety back. Pure: no world and no
-// clock, the same for a seed and a day whatever is loaded or waited through.
+// others can use"). WEATHER-20261108: Day() is the truth. The paper prints it (S47Ledger reads Forecast and Words), and what the
+// player sees, hears and drives through comes from the same day by Now(): FS47WeatherLive puts it on the sky's cloud, the fog, the
+// wind in the brush, the ambience and the truck each frame, through Live(). What a spring here has (New Mexico, April and May):
+//   - wind most afternoons, and on some days a strong south-west wind from about one o'clock with blowing sand, the far land gone
+//     brown, easing in the evening (some of it may hold into the night: NightStorm, which the night's rhythm reads);
+//   - now and then a stray shower late in the day, most of it drying before it reaches the ground (virga): a few drops, thunder
+//     far off; the dirt is slick for a few hours after;
+//   - haze some mornings, always the morning after a shower.
+// Dry lightning far off every night is the sky's own (FS47Sky::Update). The almanac is the sky's: sunrise 05:30 and sunset 18:27
+// (FS47Sky::SetClock), Halley's comet low in the south from the evening until a little after three (FS47Sky::SetCometClock) and,
+// since MOON-20261108, the real moon of the date (Moon, Almanac(Date)); Almanac() alone is the sun and the comet. Pure: no world and
+// no clock, the same for a seed and a day whatever is loaded or waited through. The paper keeps the word dust out (its own test):
+// a dust day is "blowing sand".
 namespace S47Weather
 {
  struct FDay
  {
   int32 HighF=78,LowF=41;     // degrees Fahrenheit
   int32 WindMph=8,GustMph=18; // the afternoon's wind; no gusts to speak of when 0
-  float CloudAm=.6f,CloudPm=.5f,CloudNight=.12f; // the cover as FS47Sky draws it: morning, afternoon, night
-  bool bDust=false;           // blowing dust: the sky draws none yet
-  bool bShower=false;         // a shower: the sky draws none yet
+  float WindFrom=225.f;       // degrees, the way it blows from (FS47Omen::WindFrom: the gusts come from there)
+  float CloudAm=.6f,CloudPm=.5f,CloudNight=.12f; // the cover as FS47Sky draws it with the day's weather: morning, afternoon, night
+  bool bDust=false;           // a strong wind with blowing sand in the afternoon
+  float DustK=0;              // how thick it gets, .45 to 1
+  float DustFrom=13.5f,DustTo=19.f; // its hours (clock hours of the day)
+  float NightStorm=0;         // how much of the wind holds into the night, 0 to 1
+  bool bShower=false;         // a stray shower late in the day, mostly virga, a few drops
+  float ShowerAt=17.f;        // when (clock hour)
+  bool bThunder=false;        // thunder with it, far off
+  bool bHaze=false;           // haze in the morning
+  float HazeK=0;              // how thick, .5 to 1
   bool bLightning=true;       // dry lightning far off after dark: every night, as the sky has it
+  bool Windy() const{return WindMph>=18;}
  };
- // The day's weather in this game (the seed is FS47FreeformSession::Seed()).
+ // The day's weather in this game (the seed is FS47FreeformSession::Seed(); the day is the shift day, whose daytime is that date's).
  SIGNAL47_API FDay Day(int32 Seed,int32 ShiftDay);
  // What a forecast written on IssuedOn said about ForDay: the day itself with a forecaster's errors in the warmth and the wind, the
- // more the further ahead. Never weather the sky does not have.
+ // more the further ahead; two days out or more a shower can be missed. On the day itself it is the day's weather.
  SIGNAL47_API FDay Forecast(int32 Seed,int32 IssuedOn,int32 ForDay);
  // For a paper: "Mostly cloudy in the morning, partly cloudy in the afternoon, clearing after sundown. Light winds, gusty at times.
- // Dry lightning far off after dark. High 78, low 41." Short: "Partly cloudy. 78/41".
+ // Dry lightning far off after dark. High 78, low 41." Short: "Partly cloudy. 78/41". A dust day says blowing sand, a shower day a
+ // stray shower, a hazy morning haze early.
  SIGNAL47_API FString Words(const FDay& D,bool bShort=false);
+ // What the weather is doing at a moment, from the day (and the night before, for the small hours). Wind: how strong beyond the light
+ // breeze the brush always has, 0 to 1 (1 about 34 mph); Mph: the wind now; Dust, Rain, Haze 0 to 1; Wet: how slick the dirt is
+ // after a shower; CloudBias: what the day adds to the sky's own cover (FS47Sky::CloudCoverAt); Storm: the wind held into the night;
+ // DirX, DirZ: which way it blows, three-space (x east, z south), away from FDay::WindFrom.
+ struct FNow{double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8;bool bThunder=false;};
+ SIGNAL47_API FNow Now(int32 Seed,int32 CalendarDay,double ClockOfDay);
+ SIGNAL47_API double CloudBiasAt(const FDay& D,double ClockOfDay);
+ // What is on the world now: FS47WeatherLive writes it each frame in Freeform; off elsewhere, where the sky is the Story's own.
+ // FogAdd: density added to the native fog where the player is (less indoors); Tint, TintK: the colour the fog takes and how much
+ // of it; HorizonK: how much more the far land fades.
+ struct FLive
+ {
+  bool bOn=false;
+  double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8;
+  double FogAdd=0,TintK=0,HorizonK=0;
+  FLinearColor Tint=FLinearColor(.5f,.38f,.24f);
+ };
+ SIGNAL47_API FLive& Live();
+ // For a paper's "last week" (S47Ledger still prints its own, "no rain"): the highs and lows of the days From to To-1, and whether it
+ // rained or blew sand.
+ SIGNAL47_API FString LastWeek(int32 Seed,int32 FromDay,int32 ToDay);
  // The sky's own times (seconds after midnight).
  constexpr double SunriseClock=5*3600.+30*60.,SunsetClock=18*3600.+27*60.;
  // Halley's comet over the land: from 20:00 until 03:05, as the sky draws it.

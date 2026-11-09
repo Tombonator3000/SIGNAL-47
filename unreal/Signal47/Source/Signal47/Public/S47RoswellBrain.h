@@ -29,6 +29,8 @@ public:
   // SNEAK-20261108: how low the player keeps, 0 standing to 1 crouched (AS47Walker::Sneak). Seen and heard from less far (S47Sneak.h).
   double PlayerQuiet = 0.;
   TOptional<FNoise> Noise;
+  // WEATHER-20261108: how far sounds carry now, 1 on a still night; a strong wind covers steps and breath (down to about half).
+  double HearScale = 1.;
   // A visit's attention (FS47VisitAttention): stop and face this, a lamp or a sound, easing back from it at HoldBack m/s.
   // Comes from outside on each tick, so nothing of it is in a save and Story never sets it. Never changes the mode.
   TOptional<FVector> HoldLook;

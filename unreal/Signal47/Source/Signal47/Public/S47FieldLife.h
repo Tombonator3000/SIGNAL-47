@@ -74,7 +74,7 @@ private:
  double WaterLeft=1,Metres=0,WeekMetres=0,LegMetres=0; // LegMetres: driven since the truck was last at SARO
  bool bStuck=false,bFlat=false,bWarned=false,bPowerSet=false,bHeldSet=false;
  // the sand and the wheel as they are driven (not saved: a Continue starts on firm ground)
- double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1;
+ double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1,GustT=0; // GustT: a strong wind's push on the truck (WEATHER-20261108)
  bool bSandHeld=false,bSandHinted=false,bHissed=false;
  void Hold();
  void StepGround(double Dt,FS47DriveController& D,double RoadX,double RoadZ);
