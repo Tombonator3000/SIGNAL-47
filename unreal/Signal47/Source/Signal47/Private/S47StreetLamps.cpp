@@ -438,6 +438,16 @@ namespace
   }
   for (FBatch& B : Batches) { B.Without->InitResources(); B.C->SetStaticMesh(B.Without); }
   for (FBatch* B : Lens) { B->Without->InitResources(); B->C->SetStaticMesh(B->Without); }
+  // Sweep 5: node 685 draws TownBuildings' room trim /Game/TownBuildings/RoomTrim/StaticMeshes/g470, 24 triangles: the two lot lamps'
+  // lenses and nothing else (12 each, as lotLamps() makes them), with no CPU data. With both lamps replaced it goes whole.
+  if (Lens.IsEmpty())
+   if (UStaticMeshComponent* Trim = NodeMesh(W, 685, 470))
+    if (UStaticMesh* Mesh = Trim->GetStaticMesh(); Mesh && Mesh->GetPathName().Contains(TEXT("/RoomTrim/")) && Mesh->GetNumTriangles(0) == 24)
+    {
+     W->SetVisible(685, false); // the node itself, so an area's visibility pass keeps it hidden
+     Trim->SetVisibility(false); Trim->SetHiddenInGame(true); Trim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+     UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the motel lot's two old lenses (%s, 24 triangles) hidden whole"), *Mesh->GetPathName());
+    }
   Raise(W, Parent, TEXT("motel"), TEXT("CourtLot"), Feet, FQuat(FVector(0, 1, 0), PI) /* the arm west, as the old one */, {}, PoleMesh, ArmMesh, HeadMesh, Out, {}, OldHeight / PoleHeight);
   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the motel lot's two lamps are cobra heads on 6.6 m poles"));
   return true;
