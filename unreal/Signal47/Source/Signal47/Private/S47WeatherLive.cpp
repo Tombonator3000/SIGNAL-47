@@ -292,7 +292,7 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 				for (int32 I = 0; I < Px.Num(); I += 7) Same += Px[I] == First[I];
 		}
 		Check(bNoEdges && Rows > 0 && Spread >= 4 && Same < (W * H / 7) * 2 / 3,
-			FString::Printf(TEXT("the shower's three cards: a soft, torn base (its height wanders %d rows of %d), no card's edge shows, each its own cloud"), Spread, H));
+			FString::Printf(TEXT("the shower's three cards: a soft, torn base (its height wanders %d rows of %d), no card's edge shows, each its own cloud (edges %s, rows %d, same %d of %d)"), Spread, H, bNoEdges ? TEXT("none") : TEXT("SEEN"), Rows, Same, (W * H / 7) * 2 / 3));
 	}
 	{
 		// the shower walks past with the wind: upwind before, beside the land while it rains, downwind after, gone in the end
