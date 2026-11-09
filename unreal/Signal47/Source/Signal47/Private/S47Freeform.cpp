@@ -100,6 +100,13 @@ namespace
  using ECaseCondition=FS47FreeformCases::ECondition;
  ECaseCondition CaseCondition(int32 Line,int32 Test){return FS47FreeformCases::Def(Line).Tests[FMath::Clamp(Test,0,FS47FreeformCases::TestCount-1)].Condition;}
  FString CaseTestName(int32 Line,int32 Test){return FS47FreeformCases::Def(Line).Tests[FMath::Clamp(Test,0,FS47FreeformCases::TestCount-1)].Name;}
+ // M7's late lines with no control to choose (UnavailableReason): the place still to look at, else the filing. Empty: any other line.
+ FString LateStep(int32 Line,const TMap<FString,FString>& Kept)
+ {
+  if(Line<FS47FreeformCases::LateFirst||FS47FreeformCases::UnavailableReason(Line,0).IsEmpty())return FString();
+  if(const auto* Y=FS47FreeformCases::Def(Line).Mystery)for(const auto& Clue:Y->Clues)if(!Kept.Contains(Clue.Finding)){FString Place=Clue.Place;if(Place.Len()>1&&FChar::IsLower(Place[1]))Place[0]=FChar::ToLower(Place[0]);return TEXT("look at ")+Place+TEXT(", or file your assessment");}
+  return TEXT("file your assessment");
+ }
  FString StageText(FS47FreeformSession::EJobStage Stage)
  {
   static const TCHAR* Names[]={TEXT("UNSTARTED"),TEXT("POINTED"),TEXT("ACQUIRING"),TEXT("AT PRINTER"),TEXT("RECORDED"),TEXT("REGISTERED"),TEXT("PACKET COLLECTED"),TEXT("FILED")};
@@ -2316,8 +2323,12 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
  if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark)return SayGoal();
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)
-  return Say((C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT(".")+Tail,
-   (C->Planned>=0?TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("CASE BOARD // CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT("."));
+  {
+   const FString Late=LateStep(Line,Findings).ToUpper();
+   if(C->Planned<0&&!Late.IsEmpty())return Say(TEXT("OPS / CASE BOARD: ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": ")+Late+TEXT(".")+Tail,TEXT("CASE // ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": ")+Late+TEXT("."));
+   return Say((C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT(".")+Tail,
+    (C->Planned>=0?TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("CASE BOARD // CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title))+TEXT("."));
+  }
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."))+Tail,TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
  if(ServiceGuide==1)return Say(ServiceObjective());
  if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine()+Tail,Gear->TaskLine());
@@ -2519,7 +2530,7 @@ FString FS47FreeformSession::TonightPlan()const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
  {
   const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;const auto& D=FS47FreeformCases::Def(Line);
-  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. %s"),D.Title,Cases.Remaining(Line),D.Mystery?TEXT("Open the case board: choose a control or file your assessment."):TEXT("Open the case board and choose the next test.")));continue;}
+  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. %s"),D.Title,Cases.Remaining(Line),!LateStep(Line,Findings).IsEmpty()?*(TEXT("Next: ")+LateStep(Line,Findings)+TEXT(".")):D.Mystery?TEXT("Open the case board: choose a control or file your assessment."):TEXT("Open the case board and choose the next test.")));continue;}
   const auto& T=D.Tests[C->Planned];
   FString Plan=TEXT("TONIGHT'S PLAN / ")+FString(D.Title)+TEXT(" / CASE TEST: ")+FString(T.Name).ToUpper()+TEXT(" / JOB ")+C->PlannedJob+TEXT("\n")+T.Instruction;
   switch(T.Condition)
@@ -2848,7 +2859,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&!Field->HasVehicleFuel())Result.Add({TEXT("SERVICE TRUCK / Tank empty: use the truck for a stock fuel can, or the county's roadside return: money on the budget or the weekly sheet, and a long wait."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(FS47FreeformCases::Def(Line).Mystery?TEXT(": choose a control or file your assessment on the OPS case board"):TEXT(": choose a test on the OPS case board")),false});
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+(!LateStep(Line,Findings).IsEmpty()?TEXT(": ")+LateStep(Line,Findings):FS47FreeformCases::Def(Line).Mystery?FString(TEXT(": choose a control or file your assessment on the OPS case board")):FString(TEXT(": choose a test on the OPS case board"))),false});
  if(Director){const FString Trail=Director->MysteryTrailHint();if(!Trail.IsEmpty())Result.Add({Trail,false});}
  if(const FString Goal=StationGoalLine();!Goal.IsEmpty())Result.Add({Goal,false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});

@@ -77,7 +77,7 @@ namespace
     {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nA deputy found the car you describe at the motor court, with a man asleep in it: a relative with a grievance about money. He has been told to leave the county, and they have been driven home.\n\nThank you for a report that gave us something to look for."),ER::None},
     {TEXT("SOCORRO COUNTY SHERIFF\nRE: YOUR REPORT, CALICHE\n\nA deputy sat on the street for two nights. No car came, nobody was seen, and nothing is missing from the place.\n\nThe search is charged to your station. He says he will not do it a third night."),ER::CallOut}},
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for, so nobody was asked. Word in town is that they went to see family in Belen. Nobody here asked further."),ER::None},
-    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for. The deputy has since had word of a strange car on the street that night. He asks that the station call him next time, not file it."),ER::None},
+    {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for. The county has since had word of a strange car on the street that night. The substation asks that the station call next time, not file it."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE EMPTY POST\n\nFiled as not accounted for. Nobody in town will say where they were. One of them asked the attendant whether the station had heard anything that night, and did not say why."),ER::None}}},
   true
  };

@@ -174,9 +174,9 @@ void FS47Predecessor::StepLateRaked(int32 Today)
  if(F.HasFinding(TEXT("raked_ground"))||!F.Visitors)return;
  // The visitors keep their own record when the player gets to the ground they went over ("military_<place>_<night>"), with the
  // raked circle drawn there. From the third week that is where the case opens, the same moment.
- for(const FString& Id:F.FindingIdsFrom(bLateNow?0:LateCaseDay))
+ // Fresh: read today or yesterday, so that an older save with the ground read long ago does not open it on Continue.
+ for(const FString& Id:F.FindingIdsFrom(bLateNow?0:FMath::Max(int32(LateCaseDay),Today-1)))
   if(Id.StartsWith(TEXT("military_"))){LateKeep(FS47FreeformCases::RakedLine,0,FString());return;}
- (void)Today;
 }
 
 void FS47Predecessor::StepLateRack()

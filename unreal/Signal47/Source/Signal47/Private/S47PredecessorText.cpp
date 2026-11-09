@@ -244,19 +244,21 @@ const TArray<FBark>& Barks()
   {TEXT("pool"),nullptr,8,TEXT("You are still on nights. They had a pool on you at the district. I said three days. Now I owe a man in Socorro five dollars.")},
   {TEXT("kept"),TEXT("kept-salute"),1,TEXT("So she kept us. I ran the whole array up and down from my bench, to see if it still moves. It moves. Do not get used to it. Dale out.")},
   // M7, weeks two to four: what has really gone on (FS47Predecessor::Meets), each once, one a day like the rest.
-  {TEXT("skywatch"),TEXT("visit:let_in"),5,TEXT("You let the people with the van into my station? They read my logbooks. I know, because the logbooks are in order now, and they never are.")},
+  // The short-lived ones first (a case open for a day or two, somebody away), so that one a day does not crowd them out.
+  {TEXT("minute"),TEXT("case:6+minute_chart"),12,TEXT("Your chart has a burst on it at ten to one. Ten to one! Who keeps appointments in this county? You run the control, then you file. Not the other way.")},
+  {TEXT("post"),TEXT("case:5"),12,TEXT("You are asking around Caliche after somebody who is not at their post? The county rang my bench. You are the station, not the county. Write what you saw.")},
+  {TEXT("raked"),TEXT("case:7"),12,TEXT("You walked out on their raked ground? Do not tell me. Write down how wide the circle was and the time, and do not go back. Verstanden?")},
+  {TEXT("away"),TEXT("town:away"),9,TEXT("Somebody in Caliche is not at their post, the county says. People go to Belen. People come back. You do your card, and you lock the door. Dale out.")},
+  {TEXT("wiped"),TEXT("trip_due"),15,TEXT("The deputy drove past wagon 23. Somebody has been in it since April, he says, and wiped the dash. Not him, not the district. You stay off that flat. Dale out.")},
+  {TEXT("week4"),TEXT("assess7"),23,TEXT("A week to Ward's numbers. I have shut the pool at the district: nobody would take the other side of it. Do not make me open it again. Dale out.")},
   {TEXT("van"),TEXT("visit:van_empty"),5,TEXT("Their van is out there with the door open, the deputy says. You do not go and close it. You write down where, and you stay in the building.")},
   {TEXT("copter"),TEXT("visit:military_seen"),8,TEXT("Helicopter low over the land this morning, and two cars that are not the county's. You did not see them. No. You write down that you did, with the time.")},
-  {TEXT("away"),TEXT("town:away"),9,TEXT("Somebody in Caliche is not at their post, the county says. People go to Belen. People come back. You do your card, and you lock the door. Dale out.")},
-  {TEXT("filed"),TEXT("filed:case"),8,TEXT("You filed an assessment. Now the county reads it and rings my bench to ask what it means, and I say ask the operator. Do not make me a liar.")},
-  {TEXT("minute"),TEXT("case:6"),12,TEXT("Your chart has a burst on it at ten to one. Ten to one! Who keeps appointments in this county? You run the control, then you file. Not the other way.")},
-  {TEXT("post"),TEXT("case:5"),12,TEXT("You are asking around Caliche after somebody who is not at their post? The deputy rang my bench. You are the station, not the county. Write what you saw.")},
-  {TEXT("raked"),TEXT("case:7"),12,TEXT("You walked out on their raked ground? Do not tell me. Write down how wide the circle was and the time, and do not go back. Verstanden?")},
-  {TEXT("halfway"),TEXT("array_low"),14,TEXT("Two weeks, and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Mend something.")},
-  {TEXT("trip"),TEXT("trip"),15,TEXT("You were out at wagon 23 again, reading the dash? The deputy read it in April. He wrote down the number and not one word of what he thought. Do the same.")},
   {TEXT("thermos"),TEXT("talk_attendant_thermos"),15,TEXT("The attendant says you have the thermos from unit 23. Tag it and put it in the outgoing tray; the district runs it to Socorro. Do not drink from it, Mensch.")},
+  {TEXT("trip"),TEXT("trip"),15,TEXT("You were out at wagon 23 again, reading the dash? The deputy read it in April. He wrote down the number and not one word of what he thought. Do the same.")},
   {TEXT("inspector"),TEXT("inspector"),22,TEXT("The county inspector wrote to you? He wrote to my bench too. He wants to know whether the array moves. I said ask the operator. So make it move.")},
-  {TEXT("week4"),TEXT("assess7"),23,TEXT("A week to Ward's numbers. I have shut the pool at the district: nobody would take the other side of it. Do not make me open it again. Dale out.")},
+  {TEXT("skywatch"),TEXT("visit:let_in"),5,TEXT("You let the people with the van into my station? They read my logbooks. I know, because the logbooks are in order now, and they never are.")},
+  {TEXT("filed"),TEXT("filed:case"),8,TEXT("You filed an assessment. Now the county reads it and rings my bench to ask what it means, and I say ask the operator. Do not make me a liar.")},
+  {TEXT("halfway"),TEXT("array_low"),14,TEXT("Two weeks, and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Mend something.")},
  };
  return Table;
 }

@@ -403,7 +403,10 @@ bool FS47Predecessor::Meets(const TCHAR* Needs) const
  if(Need.StartsWith(TEXT("visit:")))return F.Visitors&&F.Visitors->Has(Need.Mid(6));
  if(Need==TEXT("town:away"))return !LateAway().IsEmpty();
  if(Need==TEXT("filed:case")){for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)return true;return false;}
- if(Need.StartsWith(TEXT("case:"))){const auto* K=F.CaseFile().Get(FCString::Atoi(*Need.Mid(5)));return K&&K->bOpen&&!K->bConcluded;}
+ // "case:6": open and not yet filed; "case:6+minute_chart": and that trace kept.
+ if(Need.StartsWith(TEXT("case:"))){FString Num=Need.Mid(5),Kept;if(!Need.Mid(5).Split(TEXT("+"),&Num,&Kept))Num=Need.Mid(5);const auto* K=F.CaseFile().Get(FCString::Atoi(*Num));return K&&K->bOpen&&!K->bConcluded&&(Kept.IsEmpty()||F.HasFinding(Kept));}
+ // Wagon 23 seen and its call-out read in the first weeks, and the trip meter not yet: somebody has been at it since.
+ if(Need==TEXT("trip_due"))return Seen.Contains(WagonId)&&Seen.Contains(TEXT("callout"))&&!Seen.Contains(TEXT("trip"))&&F.Day()>=LateTripDay;
  if(Need==TEXT("array_low"))return F.AvailableDishCount()<20;
  if(Need==TEXT("assess7"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=7&&AssessDay-F.Day()>3;
  return Seen.Contains(Need);
@@ -998,7 +1001,7 @@ void FS47Predecessor::OpenWagon()
  if((F.Day()>=LateTripDay||bLateNow)&&Seen.Contains(TEXT("callout")))
  {
   Rows.Add(Para(Seen.Contains(TEXT("trip"))?FString(TEXT("The trip meter, wiped clean in the dust of the dash."))
-   :bFirst?FString(TEXT("Somebody has wiped the dust off the dash, and only off the trip meter.")):FString(TEXT("Somebody has been here since you were. The dust on the dash is wiped off the trip meter, and only off that.")),860.f,true));
+   :M->Freeform->FindingDay(TEXT("reyes_wagon"))>=LateTripDay?FString(TEXT("Somebody has wiped the dust off the dash, and only off the trip meter.")):FString(TEXT("Somebody has been here since you were. The dust on the dash is wiped off the trip meter, and only off that.")),860.f,true));
   Rows.Add(S47Kit::Button(FString(TEXT("Read the trip meter"))+(Seen.Contains(TEXT("trip"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("trip"),TEXT("wagon"));}));
  }
  Rows.Add(S47Kit::Button(TEXT("Leave it how you found it"),[this]{if(M&&M->UI)M->UI->Close();}));
@@ -1683,9 +1686,9 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   Check(X::Followed(false,false,false,true).Contains(TEXT("thermos"))&&!X::Followed(true,true,true,false).Contains(TEXT("thermos")),TEXT("the Stays letter says the thermos went home only when it did"));
   // Dale, weeks two to four: a line for each thing that has really gone on, after the first week's.
   int32 Late2=0;for(const X::FBark& B:X::Barks())Late2+=B.FromDay>=5?1:0;
-  bool bLateNeeds=true;for(const TCHAR* Id:{TEXT("skywatch"),TEXT("van"),TEXT("copter"),TEXT("away"),TEXT("filed"),TEXT("minute"),TEXT("post"),TEXT("raked"),TEXT("halfway"),TEXT("trip"),TEXT("thermos"),TEXT("inspector"),TEXT("week4")})
+  bool bLateNeeds=true;for(const TCHAR* Id:{TEXT("skywatch"),TEXT("van"),TEXT("copter"),TEXT("away"),TEXT("filed"),TEXT("minute"),TEXT("post"),TEXT("raked"),TEXT("halfway"),TEXT("trip"),TEXT("thermos"),TEXT("inspector"),TEXT("week4"),TEXT("wiped")})
   {const X::FBark* B=X::Barks().FindByPredicate([Id](const X::FBark& Q){return FCString::Strcmp(Q.Id,Id)==0;});bLateNeeds&=B&&B->Needs&&!None3.Meets(B->Needs);}
-  Check(Late2>=13&&bLateNeeds,TEXT("Dale has thirteen lines for weeks two to four, and each waits for what it answers"));
+  Check(Late2>=14&&bLateNeeds,TEXT("Dale has fourteen lines for weeks two to four, and each waits for what it answers"));
  }
  for(int32 I=0;I<6;++I)Check(OutcomeOf(NameOf(EOutcome(I)))==EOutcome(I),TEXT("the outcome's name comes back as itself"));
  // Saves.
