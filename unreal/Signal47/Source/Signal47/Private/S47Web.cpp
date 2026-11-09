@@ -23,6 +23,7 @@
 #include "S47SaroLampFeet.h"
 #include "S47RouteLampFeet.h"
 #include "S47StreetLamps.h"
+#include "S47CalicheGround.h"
 #include "S47SubstationYard.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
@@ -739,6 +740,8 @@ void AS47Web::BeginPlay()
 	S47StreetLamps::Build(this);
 	BuildHighwayRanch();
 	BuildHighwayLandscape();
+	// CALICHE-REAL-20261108: a concrete stem wall under each of Caliche's building walls that measures floating over the land.
+	S47CalicheGround::Build(this);
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));

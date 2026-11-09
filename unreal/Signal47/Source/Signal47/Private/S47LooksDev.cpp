@@ -1,5 +1,6 @@
 #include "S47DevFreeform.h"
 #include "S47Blockers.h"
+#include "S47CalicheGround.h"
 #include "S47DevEvents.h"
 #include "S47FarmWorld.h"
 #include "S47Main.h"
@@ -166,4 +167,54 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  { View(TEXT("saro"), 22, FVector2D(41, -291), FVector(35.25, 2.2, -298.4), TEXT("The service yard's lamps at night")); });
  E.AddFreeform(Group, TEXT("Caliche's lamps at night"), TEXT("22:00 on Main Street"), [View]
  { View(TEXT("diner"), 22, FVector2D(3, 2138), FVector(-6, 4.5, 2150), TEXT("Main Street's lamps at night")); });
+
+ // ---- M6 part 2 (9 November): the motel, the farm's and the motel's lamps, Caliche's glows and its buildings' feet ----
+ // The motel stands in SARO's terms (S47Geo::MOTEL_AT, the court group at x -2.5, z 650): the reception x -48.1..-43.7, z 672.3..677.5,
+ // its door at x -43.7, z 674.1; the television at (-47.77, floor + 1.5, 676.85), turned to the counter and the door.
+ E.AddFreeform(Group, TEXT("Motel office from the door"), TEXT("11:00 in the motel office's doorway, looking in"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-43.9, 674.1), Saro3(-48.0, -.15, 675.6), TEXT("The motel office from the door: walls, counter, shelves and the television")); });
+ E.AddFreeform(Group, TEXT("Motel office, south wall"), TEXT("11:00 inside the office, looking at its south wall and window"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-45.6, 676.6), Saro3(-45.0, -.2, 672.3), TEXT("The office's south wall from inside: the right side of every face")); });
+ E.AddFreeform(Group, TEXT("Motel office from outside"), TEXT("11:00 on the walk south-east of the office"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-40.6, 671.6), Saro3(-43.8, -.25, 674.4), TEXT("The office from the walk: the window and the door in their wall")); });
+ E.AddFreeform(Group, TEXT("Motel television at night"), TEXT("23:00 in front of the office's television"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 23, Saro(-46.3, 675.6), Saro3(-47.77, .05, 676.85), TEXT("The office television at night: what is on the screen")); });
+ E.AddFreeform(Group, TEXT("Motel lot lamps by day"), TEXT("11:00 in the motel's lot"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-38.5, 662), Saro3(-32.05, 3.2, 668), TEXT("The motel's lot lamp: pole, arm and head")); });
+ E.AddFreeform(Group, TEXT("Motel lot lamps at night"), TEXT("22:00 in the motel's lot"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 22, Saro(-38.5, 662), Saro3(-32.05, 3.2, 668), TEXT("The motel's lot lamps at night")); });
+ E.AddFreeform(Group, TEXT("Farm lamp by day"), TEXT("11:00 at the farm's turn-off from the highway"), [View]
+ { View(TEXT("diner"), 11, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The lamp on the pole at the farm's turn-off")); });
+ E.AddFreeform(Group, TEXT("Farm lamp at night"), TEXT("22:00 at the farm's turn-off"), [View]
+ { View(TEXT("diner"), 22, FVector2D(26, 181), FVector(15, 4.5, 190), TEXT("The farm's turn-off lamp at night")); });
+ E.AddFreeform(Group, TEXT("Substation track lamp by day"), TEXT("11:00 where the service track leaves the highway"), [View]
+ { View(TEXT("diner"), 11, FVector2D(-1, 503), FVector(-10, 4.5, 512), TEXT("The lamp where the substation's track leaves the highway")); });
+ E.AddFreeform(Group, TEXT("SARO's yard lamps by day"), TEXT("11:00 in the service yard"), [View]
+ { View(TEXT("saro"), 11, FVector2D(41, -291), FVector(35.25, 2.2, -298.4), TEXT("The service yard's lamps by day")); });
+ E.AddFreeform(Group, TEXT("A Caliche lamp close, night"), TEXT("22:00 under a lamp on Main Street"), [View]
+ { View(TEXT("diner"), 22, FVector2D(1.5, 2143), FVector(-5.2, 5.5, 2150), TEXT("One of Caliche's lamps close at night: a small glow at the bowl, a pool on the ground")); });
+ E.AddFreeform(Group, TEXT("Caliche from the highway, day"), TEXT("11:00 on the highway south of Caliche"), [View]
+ { View(TEXT("diner"), 11, FVector2D(4, 2005), FVector(-4, 6, 2120), TEXT("Main Street's lamps from the south by day: no glows")); });
+ // CALICHE-REAL: every building shell's feet against the land, the list to the log; the picture is the worst corner, if one floats.
+ E.AddFreeform(Group, TEXT("Caliche: buildings in the ground"), TEXT("11:00 on Main Street: each building's corners and edge middles against the ground outside them; the list goes to the log"), [this, Log]
+ {
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("diner"); S.Where = [] { return FVector2D(8000 - 2, 2140); };
+  Go(S, [this, Log]
+  {
+   After(1.0, [this, Log]
+   {
+    TArray<FString> Lines; FVector Worst = FVector::ZeroVector;
+    const int32 Bad = S47CalicheGround::Measure(M->Web, Lines, &Worst);
+    Log(Lines);
+    if (!Worst.IsZero() && M->Player)
+    {
+     // eight metres out from the worst corner, toward the street, looking at its foot
+     const FVector2D From(Worst.X + (Worst.X < 8000 - 5 ? -6. : 6.), Worst.Z - 5);
+     M->Player->Place(From.X, From.Y, 0);
+     After(.6, [this, Worst] { AimAt(FVector(Worst.X, Worst.Y + .4, Worst.Z)); });
+    }
+    After(1.8, [this, Bad, Lines] { Tell(Bad == 0 && Lines.Num() > 1, Lines.Num() ? Lines[0] : FString(TEXT("no buildings")), 12); });
+   });
+  });
+ });
 }
