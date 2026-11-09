@@ -748,10 +748,11 @@ bool SelfTest(TArray<FString>& Lines)
   {
    int32 Sections = 0;
    for (const FStaticMeshSection& Sec : R->LODResources[Lod].Sections) Sections += Lens.Contains(Sec.MaterialIndex) && Sec.NumTriangles > 0;
-   Without += Sections == 0;
+   // the far LOD (2) may drop the bowl's lens: the halo stands for it out there (S47StreetLamps::Shine)
+   Without += Sections == 0 && Lod < 2;
    Each += FString::Printf(TEXT(" LOD%d %d"), Lod, Sections);
   }
-  Check(R->LODResources.Num() > 0 && Without == 0, FString::Printf(TEXT("every LOD draws its bowl with a lens slot (lens sections:%s)"), *Each));
+  Check(R->LODResources.Num() > 0 && Without == 0, FString::Printf(TEXT("every near LOD draws its bowl with a lens slot, the far one has the halo (lens sections:%s)"), *Each));
  }
  // the emitter and the spot inside the head's bounds, under the bowl's footprint, the bowl facing down
  const FBox Box = HeadMesh->GetBoundingBox();

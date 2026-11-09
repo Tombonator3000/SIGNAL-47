@@ -4319,7 +4319,10 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
      int32 Close=At+6;while(Close<L.Len()&&!(L[Close]==TEXT('"')&&L[Close-1]!=TEXT('\\')))++Close;
      const FString Lit=L.Mid(At+6,Close-At-6);
      if(!Lit.Contains(TEXT(" "))||Lit.StartsWith(TEXT("S47:"))||Lit.StartsWith(TEXT("/"))||Lit.Len()<8)continue;
-     ++Read;if(!S47Hap::Clean(Lit)&&Bad.Num()<4)Bad.Add(Lit.Left(60));
+     // Dale's own call sign on his hails and the speaker tag in front of his lines name him as the radio does (S47FieldRadio); every
+     // other line keeps "Dale" out.
+     const FString Said=Lit.Replace(TEXT("SARO, Dale."),TEXT("SARO.")).Replace(TEXT("DALE: "),TEXT(""));
+     ++Read;if(!S47Hap::Clean(Said)&&Bad.Num()<4)Bad.Add(Lit.Left(60));
      if(S47Hap::Concluding(Lit)&&Tells.Num()<4)Tells.Add(Lit.Left(60));
     }
    }
