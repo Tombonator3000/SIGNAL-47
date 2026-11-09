@@ -11,6 +11,7 @@ Does not touch import_ground.py or M_S47_DesertGround, which Story uses. Reuses 
 - no count of tiles: each layer's offset jumps by a smooth index (T_FF_Noise.a), the sand crossfaded over the jump and the rest picked
 - stones lying in the ground: T_FF_Stones_*, whole stones by rank, more on slopes, on fans and in gravel washes, standing up by displacement
 - PlainMesh (scalar, 0): for a flat mesh with no sediment in UV1 and no vertex colours of its own (the SARO corridor's ground, S47FreeformTerrain): no sediment, and the ring's own shade
+- WetK (scalar, 0): the ground after a stray shower (S47WeatherLive), darker, richer and less rough in patches and drops; 0 changes nothing
 - soil and plants agree: T_FF_Field holds what S47Flora decides by road-local metres, so the soil is darker under each creosote and against
   the farm's buildings, a little darker where the stands are, and the stones lie where the flora's own rocks lie
 
@@ -206,6 +207,42 @@ float wash = smoothstep(0.50, 0.74, N1.b * 0.8 + N2.g * 0.2);
 float p = 0.22 + 0.70 * wash + 0.40 * Fld.g + 0.35 * Fld.b + 0.60 * smoothstep(5.0, 22.0, deg) + 0.65 * sedGravel + 0.55 * Sed.y;
 p *= (0.5 + 0.59 * Gravel) * (0.7 + 0.6 * N2.r) * (1.0 - 0.85 * sedSand);
 return min(p, 0.98);
+"""
+
+
+# SHOWER-LOOK-20261109: wet ground where a stray shower has been (WetK from S47WeatherLive: the slick dirt's own Wet, 0 to 1).
+# Wet desert soil goes about half as bright, a little richer in colour and less rough; wet stone darker and glossier still. It is not
+# one even sheet: the water stays longest in the washes and the low patches and leaves the rises and slopes first (the 67 m field,
+# the 23 m patch, the grain tearing the edge), and drops lie about as dark spots of 1 to 2 cm around the wet and over the dry,
+# averaged out to their share of darkness where they are too small to draw. At WetK 0 the colour and roughness pass through.
+WET = """
+float k = saturate(K);
+if (k <= 0.0) return float4(C, R);
+float deg = acos(saturate(normalize(N).z)) * 57.29578;
+float sedSand = smoothstep(0.55, 0.85, Sed.x);
+float lump = dot(P1.rgb * Ratio, float3(0.3, 0.6, 0.1)) - 1.0;
+float hold = 0.5 + 0.9 * (N2.r - 0.5) + 0.35 * (N1.b - 0.5) + 0.6 * lump + 0.25 * sedSand - 0.3 * smoothstep(8.0, 25.0, deg) + 0.22 * (Grit.a - 0.5);
+float edge = 1.0 - 1.3 * k;
+float wet = saturate((hold - edge) / 0.12);
+// the drops: one cell of 7 cm in two holds one, near the wet and while it is still wet
+float2 p = World.xy / 7.0;
+float2 c = floor(p); c -= 4096.0 * floor(c / 4096.0);
+float2 f = frac(p);
+float3 q = frac(float3(c.xyx) * float3(0.1031, 0.1030, 0.0973));
+q += dot(q, q.yzx + 33.33);
+float3 h = frac((q.xxy + q.yzz) * q.zyx);
+float rad = 0.11 + 0.15 * h.z;
+float w = max(fwidth(p.x), fwidth(p.y));
+float density = 0.5 * saturate(k * 2.5) * saturate((hold - edge + 0.4) / 0.4);
+float spot = (1.0 - smoothstep(rad - w, rad + w, length(f - (h.xy * 0.6 + 0.2)))) * step(h.z * 0.6 + h.x * 0.4, density);
+spot = lerp(spot, density * 0.17, saturate(w * 2.0 - 0.2));
+float m = max(wet, spot);
+if (m <= 0.0) return float4(C, R);
+float l = dot(C, float3(0.3, 0.59, 0.11));
+float3 rich = max(lerp(float3(l, l, l), C, 1.18), 0.0);
+float dark = lerp(lerp(0.52, 0.6, Gravel), 0.46, max(Stone, Rock));
+float rough = min(R, lerp(0.52, 0.34, max(Stone, Rock)));
+return float4(lerp(C, rich * dark, m), lerp(R, rough, m));
 """
 
 
@@ -427,6 +464,13 @@ float h = lerp(H, 0.5, off);
 h = lerp(lerp(h, Hc, M.x), Hg, M.y);
 return lerp(h, 0.5, M.z);
 """, dict(H=(disp_h, 'A'), A=(disp_d, 'A'), P=presence, Hc=(disp_c, 'A'), Hg=(disp_g, 'A'), M=disp_masks), unreal.CustomMaterialOutputType.CMOT_FLOAT1, -1000, 1100)
+
+    # SHOWER-LOOK-20261109: the ground after a stray shower (WetK, 0 dry: then this node changes nothing)
+    wet_k = node(mat, unreal.MaterialExpressionScalarParameter, -400, 200, parameter_name='WetK', default_value=0.)
+    wet = custom(mat, WET, dict(C=base, R=rough, K=wet_k, World=wp, N1=n1, N2=n2, P1=patch1, Sed=uv1, Stone=stones_big, Gravel=mg, Rock=mr,
+                                N=n_ws, Grit=(grit, 'RGBA'), Ratio=ratio), f4, -300, 200)
+    base = channels(mat, wet, -200, 200, r=True, g=True, b=True)
+    rough = channels(mat, wet, -200, 260, a=True)
 
     attrs = node(mat, unreal.MaterialExpressionMakeMaterialAttributes, -100, -100)
     # (Specular stays the open pin's .5. Tom, 7 November: "behold farger bakke". Down to .15 it read 56,41,31 against 61,46,36 at 18:00; the track of light toward a low sun is the price.)

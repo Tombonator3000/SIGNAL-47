@@ -978,95 +978,169 @@ void FS47Sky::VeilOf(double Sand, double Shower, double Day, FLinearColor& OutCo
 	OutColor = SandA + RainA > 1e-6 ? (SandC * float(SandA) + RainC * float(RainA)) * float(1.0 / (SandA + RainA)) : SandC;
 }
 
-void FS47Sky::CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out)
+namespace
+{
+	// a few octaves of the engine's noise, about -1 to 1
+	double CellFbm(double X, double Y, int32 Octaves)
+	{
+		double Sum = 0, Amp = .5, Freq = 1;
+		for (int32 O = 0; O < Octaves; ++O) { Sum += Amp * FMath::PerlinNoise2D(FVector2D(X * Freq, Y * Freq)); Amp *= .5; Freq *= 2.03; }
+		return Sum * 1.6;
+	}
+	// a rain shaft under a card's base: where (0 to 1 across), how wide, how much
+	struct FCellShaft { double Mid, Width, Strength; };
+}
+
+void FS47Sky::CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant)
 {
 	Out.SetNumZeroed(FMath::Max(0, Wd) * FMath::Max(0, Ht));
 	if (Wd < 2 || Ht < 2) return;
 	const auto Smooth = [](double A, double B, double X) { return Smooth01((X - A) / FMath::Max(1e-6, B - A)); };
-	for (int32 Y = 0; Y < Ht; ++Y) for (int32 X = 0; X < Wd; ++X)
+	// SHOWER-LOOK-20261109: each card its own cloud. The cell has four shafts, the mass behind two broad pale ones, the piece in front
+	// two narrow ones
+	static const FCellShaft Shafts0[] = { { .30, .045, .85 }, { .46, .07, 1 }, { .61, .05, .8 }, { .73, .03, .5 } };
+	static const FCellShaft Shafts1[] = { { .38, .08, .7 }, { .58, .06, .55 } };
+	static const FCellShaft Shafts2[] = { { .44, .05, 1 }, { .60, .035, .7 } };
+	const int32 Kind = FMath::Clamp(Variant, 0, 2);
+	const TArrayView<const FCellShaft> Shafts = Kind == 0 ? MakeArrayView(Shafts0) : Kind == 1 ? MakeArrayView(Shafts1) : MakeArrayView(Shafts2);
+	const double Seed = 17.31 * Kind;
+	for (int32 X = 0; X < Wd; ++X)
 	{
-		const double U = double(X) / (Wd - 1), V = double(Y) / (Ht - 1), Edge = 1 - FMath::Abs(2 * U - 1);
-		// the cloud: a lumpy top, higher in the middle, a flat, slightly ragged base, soft at the sides and mottled
-		const double Top = .30 - .18 * Smooth(0, .8, Edge) + .07 * FMath::PerlinNoise1D(float(U * 7.3)) + .03 * FMath::PerlinNoise1D(float(U * 23.1));
-		const double Base = .58 + .025 * FMath::PerlinNoise1D(float(U * 11.7 + 3.1));
-		const double Mottle = .88 + .12 * FMath::PerlinNoise2D(FVector2D(U * 9.0, V * 5.0));
-		const double Cloud = Smooth(Top, Top + .09, V) * (1 - Smooth(Base - .015, Base + .015, V)) * Smooth(0, .35, Edge) * Mottle;
-		// the virga: streaks hanging from the base in two or three shafts, slanting a little with the wind, thinning and gone well
-		// before the ground (it dries on the way down)
-		const double Below = V - Base, Ends = .9 + .05 * FMath::PerlinNoise1D(float(U * 5.3 + 7.7)) - Base;
-		double Virga = 0;
-		if (Below > 0 && Ends > 0)
+		const double U = double(X) / (Wd - 1), Edge = 1 - FMath::Abs(2 * U - 1);
+		// the top: towers higher in the middle, lumpy; the base soft and ragged, sagging under each shaft where the rain falls out of it
+		const double Top = FMath::Max(.05, .27 - .2 * Smooth(0, .8, Edge) + .09 * FMath::PerlinNoise1D(float(U * 4.3 + Seed)) + .04 * FMath::PerlinNoise1D(float(U * 11.3 + Seed)));
+		double Sag = 0;
+		for (const FCellShaft& Sh : Shafts) Sag += .075 * Sh.Strength * FMath::Exp(-FMath::Square((U - Sh.Mid) / (Sh.Width * 1.6)));
+		const double Base = .56 + .045 * FMath::PerlinNoise1D(float(U * 3.7 + Seed + 3.1)) + .025 * FMath::PerlinNoise1D(float(U * 9.1 + Seed)) + .01 * FMath::PerlinNoise1D(float(U * 23.0 + Seed)) + Sag;
+		for (int32 Y = 0; Y < Ht; ++Y)
 		{
-			const double Us = U - .07 * Below;
-			const double Streak = FMath::Square(FMath::Clamp(.5 + .9 * FMath::PerlinNoise1D(float(Us * 41.0)), 0.0, 1.0));
-			double Shafts = 0;
-			for (const double Mid : { .34, .5, .63 }) Shafts = FMath::Max(Shafts, FMath::Exp(-FMath::Square((Us - Mid) / .06)));
-			const double Fade = FMath::Pow(FMath::Clamp(1 - Below / Ends, 0.0, 1.0), 1.4);
-			Virga = .62 * Streak * Shafts * Fade * Smooth(.1, .45, Edge) * Smooth(0, .02, Below);
+			const double V = double(Y) / (Ht - 1);
+			const double Mottle = .82 + .18 * (.5 + .5 * CellFbm(U * 8.0 + Seed, V * 5.0, 4));
+			// cauliflower at the top, tatters at the base: the edges are torn by the noise in two directions, a band 8 % deep, not a line
+			const double TopV = V + .035 * CellFbm(U * 26.0 + Seed, V * 18.0, 3);
+			const double BaseV = V + .055 * CellFbm(U * 21.0 + Seed + 5.7, V * 26.0, 3);
+			const double Cloud = Smooth(Top, Top + .10, TopV) * (1 - Smooth(Base - .055, Base + .035, BaseV)) * Smooth(0, .35, Edge) * Mottle;
+			// the virga: fibres hanging from the base in its shafts, curling back with the wind the further they fall (the wind is less
+			// under the cloud), each drying at its own height well before the ground
+			const double Below = V - Base;
+			double Virga = 0;
+			if (Below > -.03)
+			{
+				for (int32 K = 0; K < Shafts.Num(); ++K)
+				{
+					const FCellShaft& Sh = Shafts[K];
+					const double Len = FMath::Min(.93 - Base, .2 + .16 * (.5 + .5 * FMath::PerlinNoise1D(float(K * 3.7 + Seed + 1.3))));
+					if (Len <= 0) continue;
+					const double Fall = FMath::Max(0.0, Below);
+					const double Us = U - .05 * Fall - .5 * Fall * Fall;
+					const double Shape = FMath::Exp(-FMath::Square((Us - Sh.Mid) / (Sh.Width * (1 + 1.2 * Fall)))); // (spreading as it falls)
+					const double Fibre = FMath::Square(FMath::Clamp(.5 + .8 * FMath::PerlinNoise2D(FVector2D(Us * 70.0 + Seed, Fall * 2.5 + K)), 0.0, 1.0));
+					const double Fade = FMath::Pow(FMath::Clamp(1 - Fall / Len, 0.0, 1.0), 1.25) * Smooth(-.03, .02, Below);
+					Virga += .7 * Sh.Strength * Shape * (.45 + .55 * Fibre) * Fade;
+				}
+				Virga = FMath::Clamp(Virga, 0.0, 1.0) * Smooth(.1, .45, Edge);
+			}
+			const double A = FMath::Clamp(1 - (1 - .95 * Cloud) * (1 - Virga), 0.0, 1.0);
+			// sunlit at the top, dark and heavy at the base; the rain a lighter grey than the base it falls from
+			const double CloudLum = FMath::Lerp(.95, .44, Smooth(.12, Base, V)) * (.9 + .1 * Mottle); // (not from Top: its noise would stripe the cloud)
+			const double VirgaLum = FMath::Lerp(.58, .74, Smooth(0, .25, Below));
+			const double Lum = A > 1e-4 ? (CloudLum * .95 * Cloud + VirgaLum * Virga) / FMath::Max(1e-4, .95 * Cloud + Virga) : 0.0;
+			const uint8 G = uint8(FMath::Clamp(FMath::RoundToInt(255 * Lum), 0, 255));
+			Out[Y * Wd + X] = FColor(G, G, uint8(FMath::Min(255, G + 8)), uint8(FMath::Clamp(FMath::RoundToInt(255 * A), 0, 255)));
 		}
-		const double A = FMath::Clamp(1 - (1 - .94 * Cloud) * (1 - Virga), 0.0, 1.0);
-		// darker toward the heavy base; the virga a lighter grey
-		const double CloudLum = FMath::Lerp(.95, .5, Smooth(Top, Base, V)), Lum = A > 1e-4 ? (CloudLum * .94 * Cloud + .78 * Virga) / FMath::Max(1e-4, .94 * Cloud + Virga) : 0.0;
-		const uint8 G = uint8(FMath::Clamp(FMath::RoundToInt(255 * Lum), 0, 255));
-		Out[Y * Wd + X] = FColor(G, G, uint8(FMath::Min(255, G + 8)), uint8(FMath::Clamp(FMath::RoundToInt(255 * A), 0, 255)));
 	}
+}
+
+void FS47Sky::CellPlace(double DirX, double DirZ, double ShowerH, FVector2D& OutOffset, double& OutShow)
+{
+	FVector2D Dir(FMath::IsFinite(DirX) ? DirX : 0, FMath::IsFinite(DirZ) ? DirZ : 0);
+	Dir = Dir.SizeSquared() > 1e-6 ? Dir.GetSafeNormal() : FVector2D(.6, -.8);
+	OutShow = 1;
+	if (!FMath::IsFinite(ShowerH) || ShowerH <= S47Weather::NoShower + 1) { OutOffset = -Dir * CellDistance; return; }
+	// it rains on the land from a quarter of an hour before ShowerH 0 to about 1.1 (S47Weather::ShowerCourse): nearest at .4, to the side
+	const double Upwind = CellSpeed * (.4 - ShowerH);
+	OutOffset = -Dir * Upwind + FVector2D(-Dir.Y, Dir.X) * CellAside;
+	const double Far = OutOffset.Size();
+	OutShow = 1 - Smooth01((Far - (CellFar - 3000)) / 5000);
+	if (Far > CellFar) OutOffset *= CellFar / Far;
 }
 
 void FS47Sky::DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day)
 {
 	const S47Weather::FLive& Wx = S47Weather::Live();
-	const double K = Wx.bOn ? Clamp01(Rain) * Smooth01((Day - .1) / .5) : 0.0;
+	FVector2D Off; double Show = 0;
+	CellPlace(Wx.DirX, Wx.DirZ, Wx.ShowerH, Off, Show);
+	const double K = Wx.bOn ? Clamp01(Rain) * Smooth01((Day - .1) / .5) * Show : 0.0;
 	if (K < .02)
 	{
-		if (CellComp.IsValid() && CellComp->IsVisible()) CellComp->SetVisibility(false);
+		for (const TWeakObjectPtr<UStaticMeshComponent>& C : CellComp) if (C.IsValid() && C->IsVisible()) C->SetVisibility(false);
 		return;
 	}
-	if (!CellComp.IsValid())
+	if (!CellComp[0].IsValid())
 	{
 		if (bCellTried || !W) return;
 		bCellTried = true;
 		UStaticMesh* Card = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
 		UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Unlit_Trans_2S.M_Web_Unlit_Trans_2S"));
-		TArray<FColor> Px; CellPixels(256, 128, Px);
-		UTexture2D* Tex = S47Image::FromPixels(Px, 256, 128);
-		if (!Card || !Base || !Tex) return;
-		Tex->AddressX = TA_Clamp; Tex->AddressY = TA_Clamp; Tex->UpdateResource();
-		UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, TEXT("S47ShowerCell"));
-		C->SetupAttachment(W->GetRootComponent());
-		C->SetMobility(EComponentMobility::Movable);
-		C->SetStaticMesh(Card);
-		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		C->SetCastShadow(false);
-		C->bAffectDistanceFieldLighting = false;
-		C->bVisibleInReflectionCaptures = false;
-		C->bVisibleInRealTimeSkyCaptures = false;
-		C->SetVisibleInRayTracing(false);
-		C->SetTranslucentSortPriority(1); // over the veil, which would wash it back to the veil's grey
-		CellMid.Reset(UMaterialInstanceDynamic::Create(Base, W));
-		CellMid->SetTextureParameterValue(TEXT("Map"), Tex);
-		CellMid->SetScalarParameterValue(TEXT("UseMap"), 1.f);
-		// the engine's plane has the picture's top row at its -Y edge (as S47Figures' cards have it), stood up below
-		CellMid->SetVectorParameterValue(TEXT("MapU"), FLinearColor(1, 0, 0, 0));
-		CellMid->SetVectorParameterValue(TEXT("MapV"), FLinearColor(0, 1, 0, 0));
-		C->SetMaterial(0, CellMid.Get());
-		C->RegisterComponent();
-		CellComp = C;
-		UE_LOG(LogS47Sky, Display, TEXT("S47: sky: the shower's cloud built"));
+		if (!Card || !Base) return;
+		// drawn far to near: the mass behind, the cell, the piece in front, all over the veil, which would wash them to its grey
+		static const int32 Sort[CellCards] = { 2, 1, 3 };
+		for (int32 I = 0; I < CellCards; ++I)
+		{
+			TArray<FColor> Px; CellPixels(384, 192, Px, I);
+			UTexture2D* Tex = S47Image::FromPixels(Px, 384, 192);
+			if (!Tex) return;
+			Tex->AddressX = TA_Clamp; Tex->AddressY = TA_Clamp; Tex->UpdateResource();
+			UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47ShowerCell%d"), I));
+			C->SetupAttachment(W->GetRootComponent());
+			C->SetMobility(EComponentMobility::Movable);
+			C->SetStaticMesh(Card);
+			C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			C->SetCastShadow(false);
+			C->bAffectDistanceFieldLighting = false;
+			C->bVisibleInReflectionCaptures = false;
+			C->bVisibleInRealTimeSkyCaptures = false;
+			C->SetVisibleInRayTracing(false);
+			C->SetTranslucentSortPriority(Sort[I]);
+			CellMid[I].Reset(UMaterialInstanceDynamic::Create(Base, W));
+			CellMid[I]->SetTextureParameterValue(TEXT("Map"), Tex);
+			CellMid[I]->SetScalarParameterValue(TEXT("UseMap"), 1.f);
+			// the engine's plane has the picture's top row at its -Y edge (as S47Figures' cards have it), stood up below
+			CellMid[I]->SetVectorParameterValue(TEXT("MapU"), FLinearColor(1, 0, 0, 0));
+			CellMid[I]->SetVectorParameterValue(TEXT("MapV"), FLinearColor(0, 1, 0, 0));
+			C->SetMaterial(0, CellMid[I].Get());
+			C->RegisterComponent();
+			CellComp[I] = C;
+		}
+		UE_LOG(LogS47Sky, Display, TEXT("S47: sky: the shower's cloud built (%d cards)"), CellCards);
 	}
-	if (UMaterialInstanceDynamic* D = CellMid.Get())
+	// laid out from the cell: Ahead along the eye's line to it (metres), Aside across it (shares of the cell's width), the card's size
+	// against the cell's, how light and how solid. Nearer, the cell is drawn a little narrower, so that it never fills the whole view.
+	const double Dist = FMath::Max(1000.0, Off.Size());
+	const FVector2D Fwd = Off / Dist, Right(-Fwd.Y, Fwd.X);
+	const double Width = FMath::Clamp(2.4 * Dist, 9000.0, CellWidth);
+	struct FLayer { double Ahead, Aside, Size, Tone, Solid; };
+	const FLayer Layers[CellCards] = { { 0, 0, 1, 1, 1 }, { 3500, .3, .85, 1.18, .8 }, { -FMath::Min(1800.0, .35 * Dist), -.32, .5, .82, 1 } };
+	const float Lit = float(FMath::Lerp(0.25, 1.0, Clamp01(Day)));
+	for (int32 I = 0; I < CellCards; ++I)
 	{
-		D->SetVectorParameterValue(TEXT("Color"), FLinearColor(.26f, .27f, .30f) * float(FMath::Lerp(0.25, 1.0, Clamp01(Day))));
-		D->SetScalarParameterValue(TEXT("Opacity"), float(FMath::Min(1.0, 1.1 * K)));
+		UStaticMeshComponent* C = CellComp[I].Get();
+		UMaterialInstanceDynamic* D = CellMid[I].Get();
+		if (!C || !D) continue;
+		const FLayer& L = Layers[I];
+		D->SetVectorParameterValue(TEXT("Color"), FLinearColor(.26f, .27f, .30f) * Lit * float(L.Tone));
+		D->SetScalarParameterValue(TEXT("Opacity"), float(FMath::Min(1.0, 1.1 * K) * L.Solid));
+		const FVector2D At2 = Off + Fwd * L.Ahead + Right * (L.Aside * Width);
+		const double CardW = Width * L.Size, CardH = CellHeight * (.6 + .4 * L.Size);
+		// the foot of every card at the eye's own height, so a smaller card is a lower cloud
+		const FVector At = Eye + FVector(At2.X, CardH / 2 - 2, At2.Y);
+		// turned to the eye, the picture's top (the plane's -Y) up
+		const FVector2D Back = (-At2).GetSafeNormal();
+		const FVector Facing = S47Three::DirToUE(FVector(Back.X, 0, Back.Y));
+		C->SetWorldLocationAndRotation(S47Three::ToUE(At), FRotationMatrix::MakeFromZY(Facing, FVector(0, 0, -1)).Rotator());
+		C->SetWorldScale3D(FVector(CardW, CardH, 1)); // the plane is a metre square in centimetres
+		if (!C->IsVisible()) C->SetVisibility(true);
 	}
-	// upwind, where it comes from: the wind blows toward Dir (three: x east, z south)
-	FVector2D Dir(Wx.DirX, Wx.DirZ);
-	Dir = Dir.SizeSquared() > 1e-6 ? Dir.GetSafeNormal() : FVector2D(.6, -.8);
-	const FVector At = Eye + FVector(-Dir.X * CellDistance, CellHeight / 2 - 2, -Dir.Y * CellDistance);
-	// turned to the eye, the picture's top (the plane's -Y) up
-	const FVector Facing = S47Three::DirToUE(FVector(Dir.X, 0, Dir.Y));
-	CellComp->SetWorldLocationAndRotation(S47Three::ToUE(At), FRotationMatrix::MakeFromZY(Facing, FVector(0, 0, -1)).Rotator());
-	CellComp->SetWorldScale3D(FVector(CellWidth, CellHeight, 1)); // the plane is a metre square in centimetres
-	if (!CellComp->IsVisible()) CellComp->SetVisibility(true);
 }
 
 void FS47Sky::DrawVeil(AS47Web* W, const FVector& Eye)
