@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 20:30 (d38): alt etter d37, `53cfda05` på `claude/day-20261109` (PR #510 mot `main`)
+## Installert 9. november kl. 22:15 (d39): `17e11f59` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4073 kontroller). Tilbakerulling: d38 (`53cfda05`). Ledig disk etterpå: 127 GB. Kandidatpakkene d30–d35 er overflødige og kan ryddes ved neste samlede kjøring.
+
+Nytt siden d38 (ikke spilt, bare selvtest):
+- [Sammenfletting](../Research/Gameplay/SAMMENFLETTING_2026-11-09.md) trinn 1: nattens hendelse (landing, kadaver, savnet, bobil, sjåfør) får stedet sitt trukket på forhånd, pulsarkortet viser avvik den natta, og peilelappen peker på det stedet.
+- Saksprøver: planlagt mottakerprøve kan avbrytes fra saksbrettet, ødelagt prøve står som TEST SPOILED på raden, saksjobben blir stående i lista på senere dager, tydeligere meldinger.
+
+## Tidligere: installert 9. november kl. 20:30 (d38): alt etter d37, `53cfda05` på `claude/day-20261109` (PR #510 mot `main`)
 
 Bygget og selvtestet kl. 19:03 på `d9c7309e` (editor BUILD 0, selvtest 4055/4059; de fire feilene er rettet i `2010d8e8`, men ikke bygget). Syntakssjekk av alle endrede C++-filer er ren. d38 pakket, røyktestet og installert 20:30 etter Toms beskjed (`53cfda05`). For å nå diskreserven ble pakkene fra tre mislykkede kandidater slettet (d34-failed-mem, d34-failed-2 og d38-failed-2); bevisfilene er beholdt. Tilbakerulling: d37 (`2c88bf9f`).
 

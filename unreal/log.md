@@ -2197,3 +2197,7 @@ Gren `claude/day-20261109`, uten motorjobb (syntakssjekk av 10 C++-filer OK). To
 ## 9. november, dagskift (Claude Code), slutt 20:13
 
 d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet i kode. Etter d37 kom 35 commits: ukesak uke 1 patch 1–3, spilløkka trinn 1–4, notatbok, nattradio og CB, meldingskø, den store natta, Dale-stemme, kritikk 6–9 med flere. Siste bygg 19:03 (selvtest 4055/4059, de fire er rettet). d38 er pakket, men ikke installert. Neste: bygg, selvtest, editorjobber (prepare_cpu, døra i fôrskjulet, skjullyder), og pakk d38 på nytt.
+
+## 9. november kl. 22:15 (Claude Code): d39 installert
+
+`17e11f59`: sammenfletting trinn 1 og første retting av saksprøvene. Editor BUILD 0, selvtest 4073 OK, røyktest av kandidat og installert. Ikke spilt. Kandidatpakkene d30–d35 kan ryddes ved neste samlede kjøring; 127 GB ledig.
