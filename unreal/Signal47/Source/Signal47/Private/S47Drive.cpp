@@ -101,7 +101,7 @@ void FS47DriveController::Place(const FVector& P, double InHeading)
 	Heading = InHeading;
 	Speed = 0; Steer = 0; bReverse = false; Gear = 1; Accel = 0; YawRate = 0;
 	Lat = 0; LatG = 0; YawSm = 0; Odo = 0; KnockCell = 0; ScrapeT = 1; HeadX = 0; HeadZ = 0; TurnLook = 0;
-	Yaw = 0; Pitch = PITCH0; bArrived = false; bEngine = true; Power = 1; Held = 0; LookBox.Reset();
+	Yaw = 0; Pitch = PITCH0; bArrived = false; bEngine = true; Power = 1; Held = 0; GripScale = 1; LookBox.Reset();
 	const FGround G = Ground();
 	Body = FBody();
 	Body.Y = G.Y; Body.Pitch = G.Pitch; Body.Roll = G.Roll;
@@ -137,7 +137,9 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	if (bHandling) Rate *= 1.35 - 0.6 * FMath::Clamp(FMath::Abs(Speed) / 22, 0.0, 1.0);
 	Steer += FMath::Clamp(Want - Steer, -Rate * Dt, Rate * Dt);
 	// ---------- longitudinal ----------
-	const FS47Surface S = Surface = Area->Surface(Pos.X, Pos.Z);
+	FS47Surface Under = Area->Surface(Pos.X, Pos.Z);
+	Under.Grip *= FMath::Clamp(GripScale, 0.3, 1.0); // (WEATHER-20261108: wet dirt; 1 normally)
+	const FS47Surface S = Surface = Under;
 	const double V = Speed, Dir = bReverse ? -1 : 1;
 	const double Go = Throttle * Dir;                 // > 0: pull in the selected direction (D or R)
 	const bool bPulling = bEngine && Go > 0;

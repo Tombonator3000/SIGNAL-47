@@ -25,9 +25,33 @@ public:
  bool DevAm();
  // A CB line as said: once, and what it points at heard of. Called when its first word comes over the CB (CB-WALKIE-20261108).
  void MarkSaid(const FString& Id);
+
+ // TOWN-USE-20261108: a tip the player gives 1420 AM, in the station's lobby or on the phone from SARO (S47TownUse). Earl reads it
+ // on the air in his own turn on the programme, and a day or more after that somebody calls back about it: as often as not about
+ // somewhere else, a place the player has not been told of, which is then heard of (a pencil question mark on the map). Heard on
+ // the truck's radio when it is on 1420; otherwise Earl leaves a note at the lobby. One tip a day, each place once.
+ struct FGiven{FString Place;int32 Day=0;int32 Stage=0;int32 ReadDay=0;FString Back,BackPlace;};
+ bool CanGive() const;
+ bool Gave(const FString& Place) const{return Tipped.ContainsByPredicate([&Place](const FGiven& G){return G.Place==Place;});}
+ bool Give(const FString& Place);
+ const TArray<FGiven>& Given() const{return Tipped;}
+ // What came back while nobody was listening, as Earl's note at the lobby; the place it points at is heard of as it is read. Empty: none.
+ FString TakeNotes();
+ // Earl's words for a tip, and what a caller says back (a place the player has not heard of, by the game's seed; else nobody saw a thing).
+ static FString OnAirLine(const FString& Title);
+ // OutVoice: whose voice says it ("woman", "man", "old"), bound to the words (a woman's husband, the baby, "ma'am").
+ FString CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer,FString* OutVoice=nullptr) const;
+ // F10: the next waiting tip read now, or its call-back now, whatever the hour and the radio. What was said; empty: nothing waiting.
+ FString DevNext();
 private:
  US47Main* M=nullptr;
  TSet<FString> Used;
+ TArray<FGiven> Tipped;
+ // The next tip's turn on 1420 (StepAm), when there is one waiting: true if it took the slot.
+ bool StepTipped(class FS47Station& Station);
+ FString TitleOf(const FString& Place) const;
+ // Its turn has come, said on the air or not: the call-back's place heard of.
+ void Back(FGiven& G);
  double CbIn=40,AmIn=60;
  bool Ready(const TCHAR* Needs,int32 Trust) const;
  void StepCb();

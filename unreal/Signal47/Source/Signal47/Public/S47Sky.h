@@ -77,6 +77,8 @@ public:
 	int32 Meteors = 0;                    // how many have crossed the sky (tests)
 	/** onThunder(delay, strength): main.ts plays it after the delay. */
 	TFunction<void(double, double)> OnThunder;
+	/** WEATHER-20261108: thunder far off by day under a shower's cloud, 0 to 1 (FS47WeatherLive): heard now and then, no flash. */
+	double DayThunder = 0;
 
 	FS47Sky();
 	/** Dawn remains 04:40-05:30, unchanged through 05:40. Midday blends 05:40-06:00 and 17:00-18:00.
@@ -190,7 +192,7 @@ private:
 	double DawnLift = 1;
 	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
 	FMet Met;
-	double FlashT = 0, NextFlash = 9;
+	double FlashT = 0, NextFlash = 9, DayThunderIn = 8;
 	// the streak as meteorStep lays it out (its corners are the material's: M_WebMeteor)
 	bool bMetVisible = false;
 	double MetI = 0, Head = 0, Back = 0;
@@ -217,6 +219,28 @@ private:
 	TArray<TPair<int32, bool>> ConceptLegacyMesas;
 	bool bConceptLegacyMesasHidden = false;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp, MoonComp;
+	// M5 sweep 2: the day's weather over the sky (S47Weather::Live, Freeform only). By day the sky is a photograph that neither the
+	// cloud cover nor the sun's disc reaches, so a sand day stayed blue and a shower clear: a sphere inside the dome, unlit and
+	// translucent, brown in the sand and grey under a shower's cloud, hidden when there is no such weather.
+	TWeakObjectPtr<UStaticMeshComponent> VeilComp;
+	TStrongObjectPtr<UMaterialInstanceDynamic> VeilMid;
+	bool bVeilTried = false;
+	void DrawVeil(AS47Web* W, const FVector& Eye);
+	// M5 sweep 3: the shower itself. The veil alone only greyed the blue (sweep-003: still a blue sky with white cloud): a painted card on
+	// the side the shower comes from (upwind), CellDistance out and turned to the eye, a dark, heavy cloud with grey virga hanging under
+	// it that dries before it reaches the ground. Drawn over the veil; hidden by night and without a shower.
+	TWeakObjectPtr<UStaticMeshComponent> CellComp;
+	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid;
+	bool bCellTried = false;
+	void DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day);
+public:
+	/** The veil's colour and opacity for the sand (0 to 1), a shower's cloud (0 to 1) and the daylight (tested). */
+	static void VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity);
+	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot. */
+	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out);
+	/** Where the shower stands from the eye and how big its card is (metres). */
+	static constexpr double CellDistance = 7000, CellWidth = 14000, CellHeight = 4000;
+private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
 	bool bMoon = false;
 	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;

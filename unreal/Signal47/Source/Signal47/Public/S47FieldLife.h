@@ -52,6 +52,9 @@ public:
  void WeekBilled(){WeekMetres=0;}
  static constexpr double WaterRange=36000; // metres on a full radiator
  static constexpr double DigMinutes=25,WheelMinutes=15;
+ // TOWN-USE-20261108: with the Feed & Seed's tow rope and come-along in stock, hooked to a fence post or a bumper: quicker out.
+ static constexpr double RopeDigMinutes=10;
+ double DigTime() const;
  // How soft the ground is here, road-local: 0 hard, 1 the deepest of a wash's bed.
  static double SandAt(double RoadX,double RoadZ);
  // How fast the wheels dig in (per second, toward 1 = stuck; below 0 they come out): deep, driven hard and slow is worst; way on,
@@ -74,7 +77,7 @@ private:
  double WaterLeft=1,Metres=0,WeekMetres=0,LegMetres=0; // LegMetres: driven since the truck was last at SARO
  bool bStuck=false,bFlat=false,bWarned=false,bPowerSet=false,bHeldSet=false;
  // the sand and the wheel as they are driven (not saved: a Continue starts on firm ground)
- double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1;
+ double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1,GustT=0; // GustT: a strong wind's push on the truck (WEATHER-20261108)
  bool bSandHeld=false,bSandHinted=false,bHissed=false;
  void Hold();
  void StepGround(double Dt,FS47DriveController& D,double RoadX,double RoadZ);
@@ -103,6 +106,8 @@ public:
  // What it caught, strongest first: a body near it, a light over its ground, nothing.
  enum class ECatch:uint8{None,Light,Body};
  static constexpr double BodyReach=18,LightReach=60;
+ // TOWN-USE-20261108: with a roll of the Feed & Seed's fence wire in stock the trip line runs further out: it catches a body this far.
+ static constexpr double WireBodyReach=30;
  // 0 nothing, 1 an animal (ordinary life, from the night's seed), 2 a light from above, 3 something standing in the frame.
  static int32 Reading(ECatch Got,int32 Seed,int32 Night);
  static FString ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night,double When=-1,bool bFrame=false);

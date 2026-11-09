@@ -108,6 +108,7 @@ public:
 	// tests: walk as if these keys were held (x right, z back: main.ts input.move), or unset; and run
 	TOptional<FVector2D> TestMove;
 	double MoveScale = 1; // legs going heavy: held in the light
+	double RunScale = 1; // FATIGUE-20261108: how much of the run is left when tired (FS47Fatigue); the run is 1 + 0.6 times this
 	bool bTestRun = false;
 
 private:

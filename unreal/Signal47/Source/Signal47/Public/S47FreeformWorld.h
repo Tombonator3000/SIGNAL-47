@@ -87,9 +87,10 @@ public:
  // A parcel that came by post (FS47Mail), lifted out of the box at the road: in both hands, to the truck or GARAGE RECEIVING like any
  // paid parcel. Posted: supplies of this counter and their counts; At: where it is lifted from. False: the hands are taken (one
  // parcel at a time), or something in it is not a supply.
- bool TakePostedParcel(const TMap<FString,int32>& Posted,const FVector& At);
+ bool TakePostedParcel(const TMap<FString,int32>& Posted,const FVector& At,const FString& Said=FString()); // Said: the line for the task list (a counter in town: S47TownUse)
  // What the Caliche counter asks for a supply without a coupon; 0 for what it does not sell.
  static int32 ShopPrice(const FString& Supply);
+ static FString SupplyTitle(const FString& Supply); // "spare wheel", as the parcel and the receiving table name it
  void OpenCarryMenu();
  FVector ParcelPosition() const;
  bool ParcelSimulating() const;

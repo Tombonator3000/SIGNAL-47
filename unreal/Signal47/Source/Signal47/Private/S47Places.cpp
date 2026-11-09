@@ -14,6 +14,8 @@
 #include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
+#include "S47TownUse.h"
+#include "S47MotelNight.h"
 #include "S47UI.h"
 #include "S47FieldLife.h"
 #include "S47Walker.h"
@@ -288,7 +290,7 @@ void FS47Places::StepNeedle(double Dt)
   const FVector At(Road.X+B.X,Foot.Y,Road.Z+B.Z);const double D=FVector2D(At.X-Foot.X,At.Z-Foot.Z).Size();
   if(D<Best){Best=D;Toward=At;What=B.Id;}
  }
- if(F.FarmSite&&F.FarmSite->Armed()){const FVector C=F.FarmSite->Centre();const double D=FVector2D(C.X-Foot.X,C.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=C;What=TEXT("marks");}}
+ if(F.FarmSite&&F.FarmSite->Armed()&&!F.FarmSite->Raked()){const FVector C=F.FarmSite->Centre();const double D=FVector2D(C.X-Foot.X,C.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=C;What=TEXT("marks");}}
  if(F.Gear)for(const auto& L:F.Gear->Items()){const double D=FVector2D(L.At.X-Foot.X,L.At.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=L.At;What=L.Item;}}
  if(What.IsEmpty())return;
  const int32 Strength=Best<20?3:Best<50?2:1;
@@ -307,8 +309,15 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
  {
-  Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. If anything goes on out there tonight, you will hear about it in the morning.")));
-  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Motel);},true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
+  Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. What goes on out on the land, you hear about in the morning. A motel has its own nights.")));
+  Rows.Add(S47Kit::Small(TEXT("A night here is not filed: nothing is saved until you are back at SARO.")));
+  // MOTEL-SLEEP-20261108: the night's own may wake the player at its hour (S47MotelNight).
+  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
+  {
+   if(M->UI)M->UI->Close(true);
+   const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next,From=F->Clock();
+   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next,From);
+  },true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))
  {
@@ -320,6 +329,8 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   const FString Where=D.Title;
   Rows.Add(S47Kit::Button(TEXT("Leave the trip camera here until morning"),[this,F,Where]{F->TripCamera->SetHere(Where,false);if(M->UI)M->UI->Close(true);}));
  }
+ // Salt or range cubes from the Feed & Seed, set out here, and what came to them (TOWN-USE-20261108, S47TownUse).
+ if(F->TownUse&&FString(D.Id)!=Motel)F->TownUse->LureRows(D.Id,Rows);
  M->UI->Open(S47Kit::Shell(M->UI,FString(D.Title).ToUpper(),S47Kit::Col(Rows),760));
 }
 bool FS47Places::Use(const FString& Id)

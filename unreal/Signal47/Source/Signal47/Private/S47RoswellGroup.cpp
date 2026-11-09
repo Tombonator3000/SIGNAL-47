@@ -1,4 +1,5 @@
 #include "S47RoswellGroup.h"
+#include "S47Noise.h"
 #include "S47RoswellWorld.h"
 #include "S47RoswellMotion.h"
 #include "S47RoswellAudio.h"
@@ -11,7 +12,11 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47FieldRadio.h"
+#include "S47Stress.h"
+#include "S47Fatigue.h"
+#include "S47Freeform.h"
 #include "S47Three.h"
+#include "S47Weather.h"
 #include "Components/PoseableMeshComponent.h"
 
 struct FS47RoswellGroup::FImpl
@@ -225,7 +230,24 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   In.PlayerForward=Input.Cam.Forward; In.PlayerSpeed=Speed; In.bFlashlight=Input.bFlashlight;
   // SNEAK-20261108: a crouching player is seen and heard from less far; the walkie in their hand is a noise of its own.
   In.PlayerQuiet=M->Player->Sneak();
-  if (M->FieldRadio && M->FieldRadio->LoudNow()) In.Noise=FS47RoswellBrain::FNoise{Feet+FVector(0,1.,0),1.2};
+  TArray<FS47RoswellBrain::FNoise,TInlineAllocator<4>> Noises;
+  if (M->FieldRadio && M->FieldRadio->LoudNow()) Noises.Add(FS47RoswellBrain::FNoise{Feet+FVector(0,1.,0),1.2});
+  // STRESS-20261108: breathing that hard is heard a few metres off (the brain's reach is loudness times ten), from the mouth
+  if (M->Stress && M->Stress->HeardWithin()>0) Noises.Add(FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Stress->HeardWithin()/10.});
+  // PHYSICS-20261108: a stone, a can or a crate landing (S47Noise): heard where it fell, so it goes to look there and not at the player
+  if (const TOptional<S47Noise::FNoise> Fell=S47Noise::Latest(.35)) Noises.Add(FS47RoswellBrain::FNoise{Fell->At,Fell->Loudness});
+  // FATIGUE-20261109: a winded run's hard breathing too (FS47Fatigue: tired, the run winds you)
+  if (M->IsFreeform() && M->Freeform && M->Freeform->Fatigue && M->Freeform->Fatigue->HeardWithin()>0) Noises.Add(FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Freeform->Fatigue->HeardWithin()/10.});
+  // The one this one hears best from where it is, not the first of them: a stone landing beside it is not lost under the walkie
+  // or the player's breath twelve metres off (PHYSICS-20261108, the F10 lure).
+  double BestMargin=0;
+  for (const FS47RoswellBrain::FNoise& N:Noises)
+  {
+   const double Margin=FMath::Clamp(N.Loudness,0.,2.)*10.-FVector::Dist(A.Brain.Eye(),N.At);
+   if (!In.Noise || Margin>BestMargin) { In.Noise=N; BestMargin=Margin; }
+  }
+  // WEATHER-20261108: a strong wind covers steps and breath
+  if (const S47Weather::FLive& Wx=S47Weather::Live(); Wx.bOn) In.HearScale=1.-.5*FMath::Clamp(Wx.Wind,0.,1.);
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));
@@ -261,7 +283,8 @@ TArray<FS47RoswellGroup::FView> FS47RoswellGroup::Views() const
  TArray<FView> Out;
  for (const auto& A:P->Actors) if (A->bActive)
   Out.Add({A->Id,A->Brain.Mode,A->Brain.State,A->Brain.Pos,A->Brain.Eye(),A->Brain.DistanceTravelled,A->Brain.Age,
-   A->Brain.Velocity.Size(),A->Brain.Crouch,A->bRoof,A->Body && A->Body->Rendered(),A->Contacts,A->Foley.Played()});
+   A->Brain.Velocity.Size(),A->Brain.Crouch,A->bRoof,A->Body && A->Body->Rendered(),A->Contacts,A->Foley.Played(),
+   A->Brain.LastKnownPlayer,A->Brain.bHasPlayerMemory});
  return Out;
 }
 

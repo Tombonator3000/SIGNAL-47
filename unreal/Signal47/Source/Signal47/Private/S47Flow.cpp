@@ -6,6 +6,9 @@
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47TownUse.h"
+#include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47Rhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
@@ -2225,6 +2228,9 @@ FS47MapView US47Flow::MapView() const
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Places) M->Freeform->Places->FillMap(V);
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor) M->Freeform->Predecessor->FillMap(V);
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Happenings) M->Freeform->Happenings->FillMap(V);
+	if (M->IsFreeform() && M->Freeform && M->Freeform->TownUse) M->Freeform->TownUse->FillMap(V); // the saucer map's sites, lures set out
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Townsfolk) M->Freeform->Townsfolk->FillMap(V); // where one of the town was last seen
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Visitors) M->Freeform->Visitors->FillMap(V); // where Baca says to look
 	if (M->IsFreeform())
 	{
 		// Freeform has no Story chapter clues. It has the survey sheet (MAP-20261108): where the player and the truck are, exactly,

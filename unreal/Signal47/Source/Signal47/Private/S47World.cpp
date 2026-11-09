@@ -2169,6 +2169,8 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		// (GEAR-FLICKER-20261108: close to something the dash clock jumps with the watch)
 		const FString DashSays = M->Story && !bCommuteVehicle ? FS47Happenings::DashClock(M, M->Story->ClockText(false)) : FString();
 		N->Truck->SetDash(D.Mph, D.Rpm, M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(DashSays) : DashSays, M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
+		// (M2: the temperature needle reads the radiator, FS47TruckCare)
+		if (M->IsFreeform() && M->Freeform && M->Freeform->Care && !bCommuteVehicle) N->Truck->SetTempNeedle(M->Freeform->Care->TempNeedle());
 		N->Truck->SetOdometer(Odometer());
 	}
 	// main.ts: the compass on the dash of the truck being driven reads the sky's north here
@@ -2491,7 +2493,7 @@ void US47World::ReconcileFarm(bool bEnabled)
     };
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
-     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue;
+     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
      Solid(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
     }
     if(Id==TEXT("saro"))

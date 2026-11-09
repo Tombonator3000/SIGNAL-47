@@ -1,5 +1,6 @@
 // web/src/core/ambience.ts
 #include "S47Ambience.h"
+#include "S47Weather.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -123,6 +124,33 @@ FS47Ambience::FS47Ambience(const TSharedRef<FS47AudioContext>& InCtx, const TSha
 	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(0.7); Bp->Frequency.SetValue(420);
 	auto Wg = C.CreateGain(); N->Connect(Bp); Bp->Connect(Wg); Wg->Connect(WindIn); N->Start(Now, Rnd(0, 2));
 	Wind.Gain = Wg; Wind.Bp = Bp; Wind.Level = MakeUnique<FDrift>(Wg->Gain, 0.02, 0.16, 6, 20, 2.5, 6); Wind.Colour = MakeUnique<FDrift>(Bp->Frequency, 260, 720, 5, 16, 2, 5);
+	// WEATHER-20261108: a strong wind's low roar and the sand's hiss in it, silent until the day has them (StepWeather)
+	{
+		auto Roar = C.CreateBufferSource(); Roar->Buffer = Brown; Roar->bLoop = true;
+		auto RoarLp = C.CreateBiquadFilter(); RoarLp->SetType(TEXT("lowpass")); RoarLp->Frequency.SetValue(340);
+		StormGain = C.CreateGain(); StormGain->Gain.SetValue(0);
+		Roar->Connect(RoarLp); RoarLp->Connect(StormGain); StormGain->Connect(WindIn); Roar->Start(Now, Rnd(0, 2));
+		if (Noise.IsValid())
+		{
+			auto Hiss = C.CreateBufferSource(); Hiss->Buffer = Noise; Hiss->bLoop = true;
+			auto HissBp = C.CreateBiquadFilter(); HissBp->SetType(TEXT("bandpass")); HissBp->Q.SetValue(0.6); HissBp->Frequency.SetValue(2600);
+			SandGain = C.CreateGain(); SandGain->Gain.SetValue(0);
+			Hiss->Connect(HissBp); HissBp->Connect(SandGain); SandGain->Connect(WindIn); Hiss->Start(Now, Rnd(0, 1));
+		}
+		// M5 critic 3: the shelter bus, indoors and in the cab only, past the wall's low-pass (SetSpace opens it)
+		Shelter = C.CreateGain(); Shelter->Gain.SetValue(0); Shelter->Connect(Gate);
+		auto Hall = C.CreateBufferSource(); Hall->Buffer = Brown; Hall->bLoop = true;
+		auto HallLp = C.CreateBiquadFilter(); HallLp->SetType(TEXT("lowpass")); HallLp->Frequency.SetValue(170);
+		ShelterRoar = C.CreateGain(); ShelterRoar->Gain.SetValue(0);
+		Hall->Connect(HallLp); HallLp->Connect(ShelterRoar); ShelterRoar->Connect(Shelter); Hall->Start(Now, Rnd(0, 2));
+		if (Noise.IsValid())
+		{
+			auto Body = C.CreateBufferSource(); Body->Buffer = Noise; Body->bLoop = true;
+			auto BodyBp = C.CreateBiquadFilter(); BodyBp->SetType(TEXT("bandpass")); BodyBp->Q.SetValue(0.8); BodyBp->Frequency.SetValue(850);
+			ShelterRush = C.CreateGain(); ShelterRush->Gain.SetValue(0);
+			Body->Connect(BodyBp); BodyBp->Connect(ShelterRush); ShelterRush->Connect(Shelter); Body->Start(Now, Rnd(0, 1));
+		}
+	}
 	// the crickets as recorded: faint, under the single ones
 	if (const TSharedPtr<FS47AudioBuffer>* Cr = Buf->Find(TEXT("crickets")))
 	{
@@ -209,6 +237,9 @@ bool FS47Ambience::SelfTest(TArray<FString>& Lines)
 	const FTimeOfDay Dusk = TimeOfDay(18.5 * 3600);
 	Check(Dusk.Night > 0 && Dusk.Night < 1, TEXT("insects fade in during dusk instead of waiting for 21:00"));
 	Check(TimeOfDay(19 * 3600).Night == 1, TEXT("night ambience is available after dusk"));
+	// M5 critic 3: a storm heard indoors and in the cab through the shelter bus, not only at about -28 dB through the wall
+	Check(ShelterStorm(1, false) > 0.05 * (0.22 + 0.06) * 4 && ShelterStorm(1, true) > ShelterStorm(1, false) && ShelterStorm(0, true) == 0 && ShelterStorm(1, false) < 0.22 + 0.06,
+		TEXT("a storm is heard indoors and in the cab (its own roar, the rush against the body), quieter than out in the open, nothing on a still day"));
 	const FTimeOfDay Before = TimeOfDay(21 * 3600 - .01), After = TimeOfDay(21 * 3600 + .01);
 	Check(FMath::Abs(Before.Temp - After.Temp) < .001 && Before.Night == After.Night,
 		TEXT("temperature and nocturnal envelope stay continuous across 21:00"));
@@ -241,12 +272,21 @@ void FS47Ambience::SetSpace(const FString& InSpace)
 	const double Cut = Space == TEXT("yard") ? 9000 : Space == TEXT("room") ? 420 : 380;
 	Out->Gain.SetTargetAtTime(Level, Now, 0.8);
 	Lp->Frequency.SetTargetAtTime(Cut, Now, 0.5);
+	// the weather's own sounds in here (M5 critic 3): the shelter bus opens indoors and in the cab
+	if (Shelter.IsValid()) Shelter->Gain.SetTargetAtTime(Space == TEXT("yard") ? 0.0 : 1.0, Now, 0.8);
+}
+
+double FS47Ambience::ShelterStorm(double Storm, bool bCab)
+{
+	const double S = FMath::Clamp(FMath::IsFinite(Storm) ? Storm : 0.0, 0.0, 1.0);
+	return 0.09 * S * S + 0.025 * S + (bCab ? 0.05 : 0.012) * S;
 }
 
 void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	const double Now = Ctx->CurrentTime();
+	LastAt = At;
 	const double Wk = Space == TEXT("room") ? FMath::Clamp(Window, 0.0, 1.0) : 0;
 	if (Wk != WinK)
 	{
@@ -276,9 +316,11 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	}
 	Wind.Level->Step(Dt, Now, 0.3 + 0.7 * M);
 	Wind.Colour->Step(Dt, Now);
-	if ((T.Gust -= Dt) <= 0) { T.Gust = Rnd(14, 55) / (0.4 + M); Gust(); }
-	// ---------- crickets: fewer and slower as it cools, gone by dawn ----------
-	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * Day.Night * (1 - FMath::Clamp(Thin, 0.0, 1.0));
+	// (a windy day gusts far more often: S47Weather::Live)
+	StepWeather(Dt, Now);
+	if ((T.Gust -= Dt) <= 0) { T.Gust = Rnd(14, 55) / (0.4 + M) / (1 + 4 * StormWant); Gust(); }
+	// ---------- crickets: fewer and slower as it cools, gone by dawn; and under a strong wind ----------
+	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * Day.Night * (1 - FMath::Clamp(Thin, 0.0, 1.0)) * (1 - 0.85 * StormWant);
 	const double Rate = FMath::Max(0.2, (Temp - 4) / 7.5);
 	if (BugRec) BugRec->Level->Step(Dt, Now, Active * (0.5 + 0.5 * M));
 	if (Held)
@@ -307,7 +349,7 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	for (const TSharedPtr<FCricket>& C : Crickets) C->Schedule(Rate);
 	// ---------- far off ----------
 	if (Space == TEXT("lab") || bStilled) return;                     // the engine covers it; held still, nothing
-	const double Busy = (0.3 + M) * (1 - 0.7 * FMath::Clamp(Thin, 0.0, 1.0));
+	const double Busy = (0.3 + M) * (1 - 0.7 * FMath::Clamp(Thin, 0.0, 1.0)) * (1 - 0.6 * StormWant);
 	if ((T.Life -= Dt) <= 0)
 	{
 		T.Life = Rnd(25, 70) / Busy;
@@ -411,11 +453,103 @@ void FS47Ambience::Note(const TSharedPtr<FS47AudioNode>& Dest, double At, double
 
 // ---------- the wind gusts ----------
 
+void FS47Ambience::StepWeather(double Dt, double Now)
+{
+	// WEATHER-20261108: what the day's weather is doing (S47Weather::Live; nothing outside a live Freeform game)
+	const S47Weather::FLive& L = S47Weather::Live();
+	const double Storm = L.bOn ? FMath::Clamp(L.Wind, 0.0, 1.0) : 0.0, Sand = L.bOn ? FMath::Clamp(L.Dust, 0.0, 1.0) : 0.0;
+	const double Rain = L.bOn ? FMath::Clamp(L.Rain, 0.0, 1.0) : 0.0;
+	if (FMath::Abs(Storm - StormWant) > 0.01 || (Storm == 0 && StormWant != 0) || ShelterSpace != Space)
+	{
+		StormWant = Storm; ShelterSpace = Space;
+		if (StormGain.IsValid()) StormGain->Gain.SetTargetAtTime(0.22 * Storm * Storm + 0.06 * Storm, Now, 1.5);
+		// indoors: the building's roar; in the cab (and the lab) the rush against the body as well (ShelterStorm's parts)
+		const bool bCab = Space != TEXT("yard") && Space != TEXT("room");
+		if (ShelterRoar.IsValid()) ShelterRoar->Gain.SetTargetAtTime(0.09 * Storm * Storm + 0.025 * Storm, Now, 1.5);
+		if (ShelterRush.IsValid()) ShelterRush->Gain.SetTargetAtTime((bCab ? 0.05 : 0.012) * Storm, Now, 1.5);
+	}
+	// indoors a pane rattles in the gusts, and the sand ticks on the glass
+	const bool bIn = Space != TEXT("yard");
+	if (bIn && Storm > 0.3 && (RattleIn -= Dt) <= 0) { RattleIn = Rnd(4, 14) / Storm; Rattle(Now, Storm); }
+	if (bIn && Sand > 0.25 && (GrainIn -= Dt) <= 0) { GrainIn = Rnd(0.03, 0.3) / (0.3 + Sand); Grain(Now, Sand); }
+	if (FMath::Abs(Sand - SandWant) > 0.01 || (Sand == 0 && SandWant != 0))
+	{
+		SandWant = Sand;
+		if (SandGain.IsValid()) SandGain->Gain.SetTargetAtTime(0.035 * Sand, Now, 1.5);
+	}
+	// a shower: a drop here and there, then a few more, never a downpour (most of it dries before it gets down); indoors on the roof
+	if (Rain > 0.02 && (DropIn -= Dt) <= 0)
+	{
+		DropIn = Rnd(0.08, 0.6) / (0.25 + Rain) / (bIn ? 1.6 : 1.0);
+		Drop(Now);
+	}
+}
+
+void FS47Ambience::Rattle(double Now, double K)
+{
+	// a loose pane or the cab's door in a gust: a few quick knocks of glass in its frame, dying away
+	if (!Noise.IsValid() || !Shelter.IsValid()) return;
+	FS47AudioContext& C = *Ctx;
+	const int32 N = FMath::RoundToInt(Rnd(4, 9));
+	const double Freq = Rnd(900, 1500), Pan = Rnd(-0.7, 0.7);
+	double At = Now + 0.02;
+	for (int32 I = 0; I < N; ++I)
+	{
+		auto Src = C.CreateBufferSource(); Src->Buffer = Noise;
+		auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(5); Bp->Frequency.SetValue(Freq * Rnd(0.92, 1.08));
+		auto G = C.CreateGain(); G->Gain.SetValue(0);
+		auto P = C.CreateStereoPanner(); P->Pan.SetValue(Pan);
+		Src->Connect(Bp); Bp->Connect(G); G->Connect(P); P->Connect(Shelter);
+		const double Peak = 0.07 * K * (1.0 - 0.75 * I / FMath::Max(1, N - 1)) * Rnd(0.7, 1.0);
+		G->Gain.SetValueAtTime(0, At); G->Gain.LinearRampToValueAtTime(Peak, At + 0.002); G->Gain.SetTargetAtTime(0, At + 0.004, 0.01);
+		Src->Start(At, Rnd(0, 0.5)); Src->Stop(At + 0.06);
+		At += Rnd(0.025, 0.05);
+	}
+	++Rattles;
+}
+
+void FS47Ambience::Grain(double Now, double K)
+{
+	// a grain of sand on the window or the windscreen: the faintest high tick
+	if (!Noise.IsValid() || !Shelter.IsValid()) return;
+	FS47AudioContext& C = *Ctx;
+	auto Src = C.CreateBufferSource(); Src->Buffer = Noise;
+	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(3); Bp->Frequency.SetValue(Rnd(3000, 5200));
+	auto G = C.CreateGain(); G->Gain.SetValue(0);
+	auto P = C.CreateStereoPanner(); P->Pan.SetValue(Rnd(-0.8, 0.8));
+	Src->Connect(Bp); Bp->Connect(G); G->Connect(P); P->Connect(Shelter);
+	const double Peak = Rnd(0.012, 0.035) * K;
+	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(Peak, Now + 0.001); G->Gain.SetTargetAtTime(0, Now + 0.002, 0.006);
+	Src->Start(Now, Rnd(0, 0.5)); Src->Stop(Now + 0.04);
+	++Grains;
+}
+
+void FS47Ambience::Drop(double Now)
+{
+	// a big single drop on the dry ground or a leaf: a short tick of noise, high and bright, somewhere about the listener
+	if (!Noise.IsValid()) return;
+	FS47AudioContext& C = *Ctx;
+	auto Src = C.CreateBufferSource(); Src->Buffer = Noise;
+	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Q.SetValue(2.5); Bp->Frequency.SetValue(Rnd(1800, 5200));
+	auto G = C.CreateGain(); G->Gain.SetValue(0);
+	auto Pan = C.CreatePanner(); Pan->PanningModel = TEXT("equalpower"); Pan->DistanceModel = ES47DistanceModel::Inverse; Pan->RefDistance = 2; Pan->RolloffFactor = 1; Pan->MaxDistance = 30;
+	const double A = FMath::FRand() * Pi * 2, D = Rnd(0.5, 6);
+	Pan->SetPosition(LastAt.X + FMath::Cos(A) * D, LastAt.Y - 1.2, LastAt.Z + FMath::Sin(A) * D);
+	// indoors on the roof over the listener, duller, past the wall's low-pass (the shelter bus); out in the open on the ground
+	const bool bRoof = Space != TEXT("yard") && Shelter.IsValid();
+	if (bRoof) { Bp->Frequency.SetValue(Rnd(700, 1900)); Pan->SetPosition(LastAt.X + FMath::Cos(A) * D, LastAt.Y + 3, LastAt.Z + FMath::Sin(A) * D); }
+	Src->Connect(Bp); Bp->Connect(G); G->Connect(Pan); Pan->Connect(bRoof ? Shelter : Out);
+	const double Peak = bRoof ? Rnd(0.04, 0.1) : Rnd(0.05, 0.14);
+	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(Peak, Now + 0.003); G->Gain.SetTargetAtTime(0, Now + 0.006, 0.012);
+	Src->Start(Now, Rnd(0, 0.5)); Src->Stop(Now + 0.09);
+	++Drops;
+}
+
 void FS47Ambience::Gust()
 {
 	const double Now = Ctx->CurrentTime();
 	FWind& W = Wind;
-	const double Up = Rnd(1.2, 3), Hold = Rnd(0.5, 2.5), Down = Rnd(3, 7), Peak = Rnd(0.12, 0.3);
+	const double Up = Rnd(1.2, 3), Hold = Rnd(0.5, 2.5), Down = Rnd(3, 7), Peak = Rnd(0.12, 0.3) * (1 + 1.6 * StormWant);
 	FS47AudioParam& G = W.Gain->Gain;
 	G.CancelScheduledValues(Now); G.SetValueAtTime(G.Value(), Now);
 	G.LinearRampToValueAtTime(Peak, Now + Up); G.SetValueAtTime(Peak, Now + Up + Hold);

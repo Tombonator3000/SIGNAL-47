@@ -2,6 +2,10 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Places.h"
+#include "S47EventPlaces.h"
+#include "S47TownUse.h"
+#include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47CB.h"
 #include "S47FieldRadio.h"
 #include "S47Radio.h"
@@ -75,6 +79,13 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   // Once you have opened the locker next to yours, the air has more to say about who had it (FS47Predecessor).
   {TEXT("cb35"),TEXT("Anybody with a scanner picking up an open carrier on the service band out off the old grade? Been sitting there for weeks. Nobody ever comes on it."),nullptr,TEXT("reyes_locker"),0},
   {TEXT("cb36"),TEXT("That white district wagon's still out on the flat, county tag on the mirror. I slowed down. I didn't get out."),nullptr,TEXT("reyes_locker"),0},
+  // What the town has seen the player buy (S47TownUse): somebody always notices.
+  {TEXT("cb57"),TEXT("Somebody's setting out salt blocks on open range, nowhere near a tank. Cattle are walking off the lease after them."),nullptr,TEXT("shop:lure"),0},
+  {TEXT("cb59"),TEXT("Old Baca's dog is out on the county road all by itself. Anybody been up to his place lately?"),nullptr,TEXT("visit:baca_gone"),0},
+  {TEXT("cb60"),TEXT("That painted van with the sky-watch people is out on the flats with all the doors open. Nobody in it. Nobody."),nullptr,TEXT("visit:van_empty"),0},
+  {TEXT("cb61"),TEXT("Two black sedans at first light, government plates, parked off the road like they owned it. Didn't wave."),nullptr,TEXT("visit:military"),0},
+  {TEXT("cb62"),TEXT("Helicopter came over real low at sunup, no markings I could see. Cattle went every which way."),nullptr,TEXT("visit:military_seen"),0},
+  {TEXT("cb58"),TEXT("White pickup from the dishes has a little rubber spaceman on the dash. Waved at me. The spaceman, I mean."),nullptr,TEXT("shop:spaceman"),0},
   {TEXT("cb33"),TEXT("You got a friend at the sheriff's now? Ask him who else has been asking about that survey track."),TEXT("stake"),nullptr,1},
   {TEXT("cb34"),TEXT("Between you and me, that tank's not on the county's plat. Nobody knows who put it there. Ask anybody over sixty."),TEXT("tank"),nullptr,2},
  };
@@ -126,24 +137,63 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am36"),TEXT("old"),TEXT("That man they were looking for out on the flats. Anybody hear if he turned up?"),TEXT("If he did, he hasn't called me."),nullptr,nullptr,0},
   {TEXT("am37"),TEXT("old"),TEXT("My dad used to say the old-timers never built a house facing that flat out past the dishes. He never said why, and I never asked."),TEXT("Thank you. I think."),nullptr,nullptr,2},
   {TEXT("am38"),TEXT("old"),TEXT("Somebody from the dishes found that flag stake, they tell me. So who put it there? You people ought to know."),TEXT("Maybe they don't."),nullptr,TEXT("place_stake"),0},
+  {TEXT("am50"),TEXT("woman"),TEXT("Those sky-watch people were in the Mesa all morning telling everybody what they saw last night. I'd like my booth back."),TEXT("They'll be on next week, I expect."),nullptr,TEXT("visit:van_back"),0},
+  {TEXT("am43"),TEXT("man"),TEXT("The souvenir man's got a new picture in his window. Lights over the flats, he says, taken by somebody from the dishes."),TEXT("I'll go look. I won't believe it, but I'll look."),nullptr,TEXT("shop:sold_odd"),0},
+  {TEXT("am44"),TEXT("old"),TEXT("Took the souvenir man's tour Sunday. Five dollars to look at a rock. He says it's the rock."),TEXT("It's a nice rock, Pete."),nullptr,TEXT("shop:tour"),0},
+  {TEXT("am45"),TEXT("woman"),TEXT("My sister in Belen got a postcard of the dishes from somebody who works out there. She wants to know is it safe."),TEXT("Tell her it's a postcard."),nullptr,TEXT("shop:postcard"),0},
+  // One of the town's own gone (S47Townsfolk).
+  {TEXT("am46"),TEXT("woman"),TEXT("Earl, the deputy's car hasn't been in front of the substation in a couple of days and nobody answers the phone there."),TEXT("I'll call Socorro for you."),nullptr,TEXT("town:away_deputy"),0},
+  {TEXT("am47"),TEXT("man"),TEXT("Gas station's got a card in the night window. BACK SOON. It's been up a good while now."),TEXT("He'll turn up. They do."),nullptr,TEXT("town:away_attendant"),0},
+  {TEXT("am48"),TEXT("old"),TEXT("The shop man's not on his stoop. Thirty years he's sat on that stoop, Earl."),TEXT("I noticed, Pete."),nullptr,TEXT("town:away_souvenir_man"),0},
+  {TEXT("am49"),TEXT("woman"),TEXT("The Mesa's short a waitress this week. The cook's doing both and he is not happy about it."),TEXT("Tip him, then."),nullptr,TEXT("town:away_waitress"),0},
+  // And back again (S47Townsfolk: "back_", three days after): the town notices that too, and what is not right about it.
+  {TEXT("am51"),TEXT("man"),TEXT("Deputy's car was back out front of the substation this morning. He didn't wave. He always waves."),TEXT("Give him a day."),nullptr,TEXT("town:back_deputy"),0},
+  {TEXT("am52"),TEXT("man"),TEXT("Gas station's open again. He gave me my change twice and never noticed. I gave it back."),TEXT("Good man."),nullptr,TEXT("town:back_attendant"),0},
+  {TEXT("am53"),TEXT("old"),TEXT("The shop man's back on his stoop. Sat there all morning with his hat in his lap. Thirty years I never saw him without it on."),TEXT("I saw that too, Pete."),nullptr,TEXT("town:back_souvenir_man"),0},
+  {TEXT("am54"),TEXT("woman"),TEXT("She's back at the Mesa. Poured my coffee this morning and kept pouring after the cup was full. Just stood there."),TEXT("Be kind to her."),nullptr,TEXT("town:back_waitress"),0},
   {TEXT("am39"),TEXT("woman"),TEXT("I live in the yellow house at the junction. The last one on nights at the dishes waved every morning on the way by. I still look up when that truck comes past."),nullptr,nullptr,TEXT("reyes_locker"),0},
  };
  return L;
 }
 void FS47RadioTips::Begin(const S47J::FObj& Saved)
 {
- Used.Reset();CbIn=FMath::FRandRange(30.f,60.f);AmIn=FMath::FRandRange(40.f,80.f);
+ Used.Reset();Tipped.Reset();CbIn=FMath::FRandRange(30.f,60.f);AmIn=FMath::FRandRange(40.f,80.f);
  for(const FString& S:S47J::Strs(Saved,TEXT("said")))if(!S.IsEmpty()&&S.Len()<16)Used.Add(S);
+ for(const auto& V:S47J::Arr(Saved,TEXT("given")))
+ {
+  if(!V||V->Type!=EJson::Object||Tipped.Num()>=64)continue;const auto O=V->AsObject();FGiven G;
+  G.Place=S47J::Str(O,TEXT("place")).Left(64);G.Day=FMath::Clamp(S47J::Int(O,TEXT("day")),0,1000000);G.Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,2);
+  G.ReadDay=FMath::Clamp(S47J::Int(O,TEXT("read")),0,1000000);G.Back=S47J::Str(O,TEXT("back")).Left(400);G.BackPlace=S47J::Str(O,TEXT("backPlace")).Left(64);
+  if(!G.Place.IsEmpty()&&G.Day>0&&!Gave(G.Place))Tipped.Add(G);
+ }
 }
 S47J::FObj FS47RadioTips::Save() const
 {
- auto O=S47J::New();if(Used.IsEmpty())return O;
- TArray<FString> A=Used.Array();A.Sort();S47J::Set(O,TEXT("said"),A);return O;
+ auto O=S47J::New();if(Used.IsEmpty()&&Tipped.IsEmpty())return O;
+ if(!Used.IsEmpty()){TArray<FString> A=Used.Array();A.Sort();S47J::Set(O,TEXT("said"),A);}
+ if(!Tipped.IsEmpty())
+ {
+  TArray<TSharedPtr<FJsonValue>> List;
+  for(const FGiven& G:Tipped)
+  {
+   auto X=S47J::New();S47J::Set(X,TEXT("place"),G.Place);S47J::Set(X,TEXT("day"),G.Day);S47J::Set(X,TEXT("stage"),G.Stage);S47J::Set(X,TEXT("read"),G.ReadDay);
+   if(!G.Back.IsEmpty())S47J::Set(X,TEXT("back"),G.Back);if(!G.BackPlace.IsEmpty())S47J::Set(X,TEXT("backPlace"),G.BackPlace);
+   List.Add(MakeShared<FJsonValueObject>(X));
+  }
+  O->SetArrayField(TEXT("given"),List);
+ }
+ return O;
 }
 bool FS47RadioTips::Ready(const TCHAR* Needs,int32 Trust) const
 {
  auto& F=*M->Freeform;
  if(Trust>F.TownTrust())return false;
+ // Something the town has seen the player do (S47TownUse::Seen): "shop:lure" and the like.
+ if(Needs&&FString(Needs).StartsWith(TEXT("shop:")))return F.TownUse&&F.TownUse->Seen(FString(Needs).Mid(5));
+ // One of Caliche's regulars gone (S47Townsfolk::Has): "town:away_deputy" and the like.
+ if(Needs&&FString(Needs).StartsWith(TEXT("town:")))return F.Townsfolk&&F.Townsfolk->Has(FString(Needs).Mid(5));
+ // From outside town (S47Visitors::Has): "visit:baca_gone", "visit:military" and the like.
+ if(Needs&&FString(Needs).StartsWith(TEXT("visit:")))return F.Visitors&&F.Visitors->Has(FString(Needs).Mid(6));
  return !Needs||F.HasFinding(Needs);
 }
 void FS47RadioTips::Step(double Dt)
@@ -194,6 +244,8 @@ void FS47RadioTips::StepAm()
  // Only with the truck's radio on 1420, and in its own turn on the station's programme.
  if(!M->CarRadio||!M->CarRadio->Live()||M->CarRadio->Station!=TEXT("caliche")||!M->Radio||!M->Story)return;
  const auto* Found=M->Radio->Stations.Find(TEXT("caliche"));if(!Found||!Found->IsValid())return;
+ // A tip of the player's comes first, in its own turn (TOWN-USE-20261108).
+ if(StepTipped(**Found))return;
  TArray<const FCall*> Plain,Telling;
  for(const FCall& C:AmCalls())
  {
@@ -251,6 +303,19 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
  TSet<FString> Pointed;for(const FLine& L:CbLines())if(L.Place)Pointed.Add(L.Place);for(const FCall& C:AmCalls())if(C.Place)Pointed.Add(C.Place);
  Check(Pointed.Num()>=8,TEXT("all the places can be heard of"));
  FS47RadioTips None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0,TEXT("an older save has said nothing and writes nothing"));
+ // TOWN-USE-20261108: a tip given, read and called back about survives a Continue, and Earl's words never name the thing.
+ {
+  auto T=S47J::New();TArray<TSharedPtr<FJsonValue>> G;
+  auto A=S47J::New();S47J::Set(A,TEXT("place"),TEXT("windmill"));S47J::Set(A,TEXT("day"),3);S47J::Set(A,TEXT("stage"),1);S47J::Set(A,TEXT("read"),3);G.Add(MakeShared<FJsonValueObject>(A));
+  auto B=S47J::New();S47J::Set(B,TEXT("place"),TEXT("windmill"));S47J::Set(B,TEXT("day"),4);G.Add(MakeShared<FJsonValueObject>(B));
+  T->SetArrayField(TEXT("given"),G);
+  FS47RadioTips Tip(nullptr);Tip.Begin(S47J::Read(S47J::Write(T)));
+  Check(Tip.Given().Num()==1&&Tip.Gave(TEXT("windmill"))&&Tip.Given()[0].Stage==1&&Tip.Given()[0].ReadDay==3,TEXT("a tip given to 1420 survives a Continue, each place once"));
+  FS47RadioTips Again(nullptr);Again.Begin(S47J::Read(S47J::Write(Tip.Save())));
+  Check(Again.Given().Num()==1&&S47J::Write(Again.Save())==S47J::Write(Tip.Save()),TEXT("and is written again the same"));
+  const FString Air=OnAirLine(TEXT("the windmill on the Baca lease")).ToLower();
+  Check(Air.Contains(TEXT("windmill"))&&!Air.Contains(TEXT("alien"))&&!Air.Contains(TEXT("ufo"))&&Air.Len()<220,TEXT("Earl reads a tip with its place and without saying what it was"));
+ }
  auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am02"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
  return OK;
 }
@@ -268,4 +333,127 @@ bool FS47RadioTips::DevAm()
  const int32 Before=Used.Num();
  if(M&&M->Freeform)StepAm();
  return Used.Num()>Before;
+}
+
+// ---------- TOWN-USE-20261108: the player's tips to 1420 AM ----------
+
+FString FS47RadioTips::TitleOf(const FString& Place) const
+{
+ if(M&&M->Freeform&&M->Freeform->EventPlaces)return M->Freeform->EventPlaces->TitleOf(Place);
+ if(const FS47Places::FDef* D=FS47Places::Def(Place))return D->Title;
+ return TEXT("somewhere out there");
+}
+
+bool FS47RadioTips::CanGive() const
+{
+ if(!M||!M->Freeform)return false;
+ const int32 Today=M->Freeform->Day();
+ return !Tipped.ContainsByPredicate([Today](const FGiven& G){return G.Day==Today;});
+}
+
+bool FS47RadioTips::Give(const FString& Place)
+{
+ if(!M||!M->Freeform||Place.IsEmpty()||Gave(Place)||!CanGive()||Tipped.Num()>=64)return false;
+ FGiven G;G.Place=Place.Left(64);G.Day=M->Freeform->Day();Tipped.Add(G);
+ UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip given: %s, day %d"),*G.Place,G.Day);
+ M->RequestAutosave();
+ return true;
+}
+
+FString FS47RadioTips::OnAirLine(const FString& Title)
+{
+ // Earl as he is with the callers: dry, and nothing in it that says what anybody thinks it was.
+ return FString::Printf(TEXT("Got a note here from somebody who works nights out at the dishes. Something going on out by %s, they say, late. Anybody else out that way, phones are open."),*Title);
+}
+
+FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer,FString* OutVoice) const
+{
+ OutPlace.Empty();OutAnswer.Empty();
+ const FString Tip=TitleOf(G.Place);
+ const uint32 Salt=FCrc::StrCrc32(*G.Place)+uint32(G.Day);
+ // Never back at the place the tip was about (it may itself be one nobody has told the player of yet).
+ if(M&&M->Freeform&&M->Freeform->Places)for(int32 Try=0;Try<8&&(OutPlace.IsEmpty()||OutPlace==G.Place);++Try)OutPlace=M->Freeform->Places->NextUnknown(int32((Salt+uint32(Try)*7919u)%100000u));
+ if(OutPlace==G.Place)OutPlace.Empty();
+ const int32 Pick=int32(Salt%3u);
+ if(!OutPlace.IsEmpty())
+ {
+  const FString New=TitleOf(OutPlace);
+  static const TCHAR* const Lines[]={
+   TEXT("About what your caller from the dishes said, {tip}. I didn't see a thing there. You want to see something, go look at {new}. I'm not saying more on the radio."),
+   TEXT("Earl, about {tip}. My husband saw a light that same night, only it was out by {new}. He won't talk about it, so I am."),
+   TEXT("That fella that called about {tip}. Ask him if he's been out to {new}. I go by it every week and I don't stop anymore.")};
+  static const TCHAR* const Answers[]={TEXT("Well. There you go."),TEXT("Thank you, ma'am. Phones are open."),TEXT("I'll pass it along.")};
+  // The voice goes with the words: a woman about her husband (and "ma'am" back), a man for the other two.
+  static const TCHAR* const LineVoices[]={TEXT("man"),TEXT("woman"),TEXT("old")};
+  OutAnswer=Answers[Pick];if(OutVoice)*OutVoice=LineVoices[Pick];
+  return FString(Lines[Pick]).Replace(TEXT("{tip}"),*Tip).Replace(TEXT("{new}"),*New);
+ }
+ static const TCHAR* const Nothing[]={
+  TEXT("About {tip}. I drove by in the morning. Nothing there. Tire tracks, is all, and I expect those were his."),
+  TEXT("Earl, about {tip}. My dog wouldn't go out that night, if that's worth anything."),
+  TEXT("About {tip}: I was up all night with the baby and I'd have seen it. I didn't see it.")};
+ // "His" tracks and the drive by are a man's; the dog an old man's; up with the baby, a young mother.
+ static const TCHAR* const NothingVoices[]={TEXT("man"),TEXT("old"),TEXT("woman")};
+ OutAnswer=TEXT("Well, now we know.");if(OutVoice)*OutVoice=NothingVoices[Pick];
+ return FString(Nothing[Pick]).Replace(TEXT("{tip}"),*Tip);
+}
+
+void FS47RadioTips::Back(FGiven& G)
+{
+ FString Where,Answer;
+ G.Back=CallBack(G,Where,Answer);G.BackPlace=Where;G.Stage=2;
+ if(!Where.IsEmpty()&&M&&M->Freeform&&M->Freeform->Places)M->Freeform->Places->Hear(Where);
+ UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s called back about: %s"),*G.Place,Where.IsEmpty()?TEXT("nothing new"):*Where);
+ if(M)M->RequestAutosave();
+}
+
+bool FS47RadioTips::StepTipped(FS47Station& Station)
+{
+ if(!M||!M->Freeform||!M->Story)return false;
+ const int32 Today=M->Freeform->Day();
+ for(FGiven& G:Tipped)
+ {
+  TArray<FS47RadioLine> Lines;
+  if(G.Stage==0)Lines.Add(FS47RadioLine(OnAirLine(TitleOf(G.Place)),TEXT("host")));
+  else if(G.Stage==1&&Today>G.ReadDay)
+  {
+   FString Where,Answer,Voice;const FString Said=CallBack(G,Where,Answer,&Voice);
+   Lines.Add(FS47RadioLine(Said,Voice.IsEmpty()?FString(TEXT("man")):Voice,TEXT("a caller")));
+   Lines.Add(FS47RadioLine(Answer,TEXT("host")));
+  }
+  else continue;
+  if(!Station.Slot(Lines,M->Story->Clock()))return true; // Not its turn: it waits, and nothing else takes the turn meant for it.
+  if(G.Stage==0){G.Stage=1;G.ReadDay=Today;UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s read on the air"),*G.Place);M->RequestAutosave();}
+  else Back(G);
+  return true;
+ }
+ return false;
+}
+
+FString FS47RadioTips::TakeNotes()
+{
+ if(!M||!M->Freeform)return FString();
+ const int32 Today=M->Freeform->Day();
+ TArray<FString> Notes;
+ for(FGiven& G:Tipped)
+ {
+  // Read on the air or not, by the second day the call-back has come in; nobody heard it in the truck, so it is on Earl's spike.
+  if(G.Stage>=2||Today<G.Day+2)continue;
+  const bool bWasRead=G.Stage==1;
+  Back(G);
+  // Earl's own words, with the caller's inside them in single quotes; one paragraph a tip (S47TownUse frames them).
+  Notes.Add(FString::Printf(TEXT("%sSomebody called back, said '%s'"),bWasRead?TEXT(""):TEXT("Read your note on the air. "),*G.Back));
+ }
+ return FString::Join(Notes,TEXT("\n\n"));
+}
+
+FString FS47RadioTips::DevNext()
+{
+ if(!M||!M->Freeform)return FString();
+ for(FGiven& G:Tipped)
+ {
+  if(G.Stage==0){G.Stage=1;G.ReadDay=M->Freeform->Day()-1;const FString Air=OnAirLine(TitleOf(G.Place));UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s read on the air (F10)"),*G.Place);return TEXT("EARL: ")+Air;}
+  if(G.Stage==1){Back(G);return TEXT("CALLER: ")+G.Back;}
+ }
+ return FString();
 }

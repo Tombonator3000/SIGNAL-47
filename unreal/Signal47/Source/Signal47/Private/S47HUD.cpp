@@ -13,6 +13,10 @@
 #include "S47HudGauges.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
+#include "S47Fatigue.h"
+#include "S47Handling.h"
+#include "S47SaroCot.h"
+#include "S47WeatherLive.h"
 #include "S47Sneak.h"
 #include "S47Omen.h"
 #include "S47GearFlicker.h"
@@ -51,6 +55,11 @@
 #include "S47Predecessor.h"
 #include "S47Mail.h"
 #include "S47RadioTips.h"
+#include "S47TownSites.h"
+#include "S47TownUse.h"
+#include "S47Townsfolk.h"
+#include "S47Visitors.h"
+#include "S47MotelNight.h"
 #include "S47Openings.h"
 #include "S47Happenings.h"
 #include "S47FieldLife.h"
@@ -244,6 +253,8 @@ void AS47HUD::Start()
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)
+		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines); // (M5: PHYSICS-20261108 and its lure, SARO-COT)
 		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
@@ -257,6 +268,7 @@ void AS47HUD::Start()
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
+		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);

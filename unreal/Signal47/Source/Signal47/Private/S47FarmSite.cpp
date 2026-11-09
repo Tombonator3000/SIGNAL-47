@@ -1,4 +1,5 @@
 #include "S47FarmSite.h"
+#include "S47Noise.h"
 #include "S47EventPlaces.h"
 #include "S47Rhythm.h"
 #include "S47Taken.h"
@@ -34,6 +35,8 @@
 #include "S47IndoorDread.h"
 #include "S47Ambience.h"
 #include "S47Flow.h"
+#include "S47OpenLand.h"
+#include "S47Visitors.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -152,6 +155,11 @@ int32 FS47FarmSite::PickWho(const FString& InPlace,double Hour,float Roll)
  return Roll<Crab?1:Roll<Crab+Tall?2:0;
 }
 
+bool FS47FarmSite::Raked() const
+{
+ const FS47FreeformSession* F=M&&M->Freeform?M->Freeform.Get():nullptr;
+ return F&&Armed()&&!bField&&F->Visitors&&F->EventPlaces&&F->Visitors->Cleared(Place,F->EventPlaces->LastNight(Place));
+}
 const FS47EventPlace* FS47FarmSite::PlaceOnList() const
 {
  return M&&M->Freeform&&M->Freeform->EventPlaces?M->Freeform->EventPlaces->Find(Place):nullptr;
@@ -347,6 +355,18 @@ void FS47FarmSite::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform)return;
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;if(bField)Home.Visit=4;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
+ // MILITARY-20261108: they went over this ground first (S47Visitors): the marks are gone, and the raked circle stands where they were.
+ if(Raked())
+ {
+  if(bShown)
+  {
+   Show(false);
+   double RoadX=0,RoadZ=0;
+   if(S47OpenLand::RoadOf(AreaId==TEXT("diner")?FString(TEXT("road")):AreaId,Middle.X,Middle.Z,RoadX,RoadZ))M->Freeform->Visitors->RakeAt(Place,M->Freeform->EventPlaces->LastNight(Place),RoadX,RoadZ);
+   UE_LOG(LogTemp,Display,TEXT("S47: lights site %s gone over by the military: marks hidden"),*Place);
+  }
+  StepFieldDraw(Dt);return;
+ }
  // A menu holds all of it: no sound starts, no second counts.
  if(M->bPausedByMenu||M->ModalOpen())return;
  // Evening's marks, and now the hour they can come: a second report of the same place, for whoever went home.
@@ -649,6 +669,8 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  // The set is the player's to carry, but not their noise: nobody chose that voice.
  const bool bSetSpoke=RadioNow!=RadioSeen&&See.BodyDist<30;
  if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
+ // PHYSICS-20261108: something thrown or dropped that it can hear (S47Noise), each one once: it turns to where it fell
+ {static uint32 NoiseSeen=0;if(const auto Fell=S47Noise::Latest(.4);Fell&&Fell->Serial!=NoiseSeen&&FVector::Dist(Fell->At,*Eye)<=S47Noise::Reach(Fell->Loudness)*1.5){NoiseSeen=Fell->Serial;See.bNoise=true;See.Sound=Fell->At;}}
  bWasRunning=bRunning;bWasDriving=bDriving;RadioSeen=RadioNow;
  const auto Before=Attention.Doing();
  // Frozen, it is still only looking: what comes after the look waits until it can move again.
@@ -736,14 +758,14 @@ FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
 }
 FString FS47FarmSite::Label() const
 {
- if(!bActive||!Armed()||bField)return FString();
+ if(!bActive||!Armed()||bField||Raked())return FString();
  if(M&&M->Freeform&&ByDaylight(M->Freeform->Clock()))return M->Freeform->HasFinding(DaylightId())?TEXT("Pressed ground / already looked at by daylight"):TEXT("Pressed ground / look again by daylight");
  return M&&M->Freeform&&M->Freeform->HasFinding(FindingId())?TEXT("Pressed ground / already noted"):TEXT("Pressed ground / look closer");
 }
 
 bool FS47FarmSite::Use()
 {
- if(!bActive||!Armed()||bField||!M||!M->UI||!M->Freeform)return false;
+ if(!bActive||!Armed()||bField||Raked()||!M||!M->UI||!M->Freeform)return false;
  const bool bNew=!M->Freeform->HasFinding(FindingId());
  const bool bFarm=Place==TEXT("farm");
  if(ByDaylight(M->Freeform->Clock()))

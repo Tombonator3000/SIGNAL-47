@@ -60,6 +60,8 @@ namespace S47KeysLocal
 			A(TEXT("counter"), TEXT("Counter"), Low, TEXT("Hold the Geiger counter up, or put it away, once you have built it. Put away, it stays down even where it climbs."), EKeys::Z),
 			// TAPE-20261108: the field recorder off the desk by the array's PC, as the counter is
 			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back on the desk by the array's PC."), EKeys::U),
+			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground
+			A(TEXT("throw"), TEXT("Throw / pick up a stone"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold; tap to set it down. Empty-handed outdoors, looking at bare ground: pick up a stone. Use picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
 		};
 	}
 

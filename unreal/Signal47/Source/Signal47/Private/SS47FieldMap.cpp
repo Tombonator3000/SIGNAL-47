@@ -5,6 +5,7 @@
 #include "S47Mail.h"
 #include "S47Predecessor.h"
 #include "S47FarmBuildings.h"
+#include "S47TownSites.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
 #include "S47Geo.h"
@@ -839,6 +840,8 @@ void SS47FieldMap::SurveyWorld() const
 		{ 21, 35, 2091, 2100 },                                 // the church
 		{ 24, 33, 2128, 2138 }, { 24.5, 32, 2152, 2161 }, { 25, 34, 2180, 2190 }, { -28, -19, 2236, 2246 } }; // the four houses
 	for (const auto& T4 : TownBlocks) Blocks.Add({ FBox2D(FVector2D(T4[0], T4[2]), FVector2D(T4[1], T4[3])) });
+	// M4's temporary boxes (S47TownSites; the sheet is Freeform's): drawn as the buildings they stand for, from their one table.
+	for (const FBox2D& Temp : S47TownSites::SolidFootprints()) Blocks.Add({ Temp });
 	if (S47FarmBuildings::Available()) for (const FBox2D& Plot : S47FarmBuildings::Plots()) Blocks.Add({ Plot });
 	US47Main* Mn = US47Main::Get(nullptr);
 	AS47Web* Web = Mn ? Mn->Web.Get() : nullptr;
@@ -1192,6 +1195,15 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		const auto& Town = S47RoadShape::TOWN();
 		Name(TEXT("C A L I C H E"), Town.East, (Town.Z0 + Town.Z1) * .5, FVector2f(FMath::Max(16.f, float(10 * Sc)), 0), Printed(Sc >= 1.5 ? 30 : 24), 0.f, .5f);
 		Name(TEXT("Alderete Ranch"), 146, 194, FVector2f(FMath::Max(12.f, float(8 * Sc)), 0), Printed(17), 0.f, .5f);
+		// M4's temporary boxes, named beside them on the side away from the highway, once the town is near enough to read.
+		if (Sc >= .45)
+			for (const S47TownSites::FSite& Site : S47TownSites::Sites())
+			{
+				double Reach = 0;
+				for (const S47TownSites::FPart& Part : Site.Parts) if (Part.bSolid) for (const FBox2D& Foot : S47TownSites::Footprint(Site, Part))
+					Reach = FMath::Max(Reach, Site.NameSide > 0 ? Foot.Max.X - Site.X : Site.X - Foot.Min.X);
+				Name(Site.MapName, Site.X, Site.Z, FVector2f(float(Site.NameSide) * (float(Reach * Sc) + 8.f), 0), Printed(15), Site.NameSide > 0 ? 0.f : 1.f, .5f);
+			}
 		const S47Geo::FXZ St = S47Geo::StationToRoad(0, 0);
 		Name(TEXT("STATION 01"), St.X - 32, St.Z, FVector2f(-10, 0), Printed(17), 1.f, .5f);
 	}

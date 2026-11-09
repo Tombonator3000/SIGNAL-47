@@ -20,6 +20,7 @@
 #include "S47Flashlight.h"
 #include "S47HudGauges.h"
 #include "S47Stress.h"
+#include "S47Fatigue.h"
 #include "S47Flow.h"
 #include "S47GameStyle.h"
 #include "S47Image.h"
@@ -877,10 +878,35 @@ void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 
 {
 	const US47Main* M = Main();
 	if (!M || !M->Stress) return;
-	const float Alpha = float(M->Stress->Vignette()), Reach = float(M->Stress->VignetteReach());
+	float Alpha = float(M->Stress->Vignette()), Reach = float(M->Stress->VignetteReach());
+	const FVector2f S = FVector2f(G.GetLocalSize());
+	// FATIGUE-20261108, M5 critic 3: tired, a faint rim (always lighter than a moderate strain's, and added to it as shades are, so the
+	// strain still reads), and now and then the eyelids, heavy for a few seconds, from the top and the bottom: a look of its own
+	float Lids = 0.f;
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Fatigue)
+	{
+		const float Tired = float(M->Freeform->Fatigue->EdgeAlpha());
+		Alpha = 1.f - (1.f - Alpha) * (1.f - Tired);
+		Reach = FMath::Max(Reach, float(M->Freeform->Fatigue->EdgeReach()));
+		Lids = float(M->Freeform->Fatigue->Lids());
+	}
+	if (Lids > 0.004f)
+	{
+		// each lid a soft dark band, darkest at the screen's edge; at 1 they meet in the middle
+		constexpr int32 LidBands = 12;
+		const float Edge = FMath::Lerp(0.8f, 0.985f, FMath::Clamp(Lids, 0.f, 1.f));
+		const float LidEach = 1.f - FMath::Pow(1.f - Edge, 1.f / LidBands);
+		const FLinearColor Lid(0.012f, 0.008f, 0.006f, LidEach);
+		const float Deep = S.Y * 0.5f * FMath::Min(1.f, Lids * 1.08f);
+		for (int32 I = 1; I <= LidBands; ++I)
+		{
+			const float Dy = Deep * I / LidBands;
+			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, 0.f))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
+			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, S.Y - Dy))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
+		}
+	}
 	if (Alpha < 0.004f || Reach <= 0.f) return;
 	// nested frames, each a little darker toward the edge: a soft dark rim without a texture or a post-process material
-	const FVector2f S = FVector2f(G.GetLocalSize());
 	constexpr int32 Bands = 14;
 	const float Each = 1.f - FMath::Pow(1.f - FMath::Min(Alpha, 0.95f), 1.f / Bands);
 	const FLinearColor Dark(0.02f, 0.f, 0.f, Each);

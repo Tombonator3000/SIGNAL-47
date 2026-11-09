@@ -143,6 +143,9 @@ public:
  void TestLiveRules(){bTestRules=true;}
  // Whose night a clock falls in: the shift day it belongs to. Bodies keep to their own start each night (S47NightRhythm.h).
  static int32 NightOf(double AtClock){return FMath::Max(1,int32(FMath::FloorToDouble((AtClock-8*3600.)/SecondsInDay))+1);}
+ // The last night that is over: from four in the morning after it. A rest that jumps the clock to 08:00 has slept through it, and
+ // whatever settles a night in the morning (S47Townsfolk, S47Visitors) settles every night up to this one, not only the night of now.
+ static int32 NightsOver(double AtClock){return NightOf(AtClock+4*3600.)-1;}
  double BodyStartHour(int32 Night) const;
  bool QuietNight(int32 Night) const;
  bool TheirHoursNow(double AtClock) const;
@@ -182,6 +185,16 @@ public:
  // The box at the road and the post that comes to it: Ward's papers, the Ledger, the catalog and its parcels, bills (S47Mail.h).
  TSharedPtr<class FS47Mail> Mail;
  TSharedPtr<class FS47RadioTips> Tips;
+ // M4: Caliche's counters (1420 AM's tips and parts, the Feed & Seed, the souvenir shop), TOWN-USE-20261108: S47TownUse.h. And the
+ // temporary boxes where new buildings will stand (the trailer park, the school, the Grange hall), NEW-PLACES-20261108: S47TownSites.h.
+ TSharedPtr<class FS47TownUse> TownUse;
+ TSharedPtr<class FS47TownSites> TownSites;
+ // Caliche's regulars, who remember, talk, and are missed when they are gone (TOWNSFOLK-20261108): S47Townsfolk.h.
+ TSharedPtr<class FS47Townsfolk> Townsfolk;
+ // From outside town: the old neighbor, the sky-watch van, the military after big nights (NEIGHBOR, ENTHUSIASTS, MILITARY): S47Visitors.h.
+ TSharedPtr<class FS47Visitors> Visitors;
+ // A night at the Sierra Motor Court, and its own dangers; not filed until back at SARO (MOTEL-SLEEP-20261108): S47MotelNight.h.
+ TSharedPtr<class FS47MotelNight> MotelNight;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;
@@ -203,6 +216,14 @@ public:
  TSharedPtr<class FS47WardReport> WardReport;
  // A point of the sky held off schedule, and what may answer from it the next night (ANSWER-20261108): S47Answer.h.
  TSharedPtr<class FS47Answer> SkyAnswer;
+ // The day's weather on the world (WEATHER-20261108, S47Weather::Day is the truth the paper prints): S47WeatherLive.h.
+ TSharedPtr<class FS47WeatherLive> Weather;
+ // The hours awake, sleep and the coffee pot (FATIGUE-20261108): S47Fatigue.h.
+ TSharedPtr<class FS47Fatigue> Fatigue;
+ // Loose things in the hand, carried and thrown, and what hears them land (PHYSICS-20261108): S47Handling.h. Nothing of it is saved.
+ TSharedPtr<class FS47Handling> Handling;
+ // The cot at SARO, the same rest as OPS (SARO-COT): S47SaroCot.h.
+ TSharedPtr<class FS47SaroCot> Cot;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;
@@ -225,7 +246,8 @@ public:
  static constexpr int32 MotelRoom=8;
  // A room tonight: MotelRoom, or less with the Ledger's coupon clipped (FS47Mail).
  int32 MotelPrice() const;
- bool RestAt(double Target,ERest Where);
+ // bPaid: the room was paid for already tonight (back to sleep after the night woke you): nothing is charged again.
+ bool RestAt(double Target,ERest Where,bool bPaid=false);
  ERest LastRest() const{return RestPlace;}
  float SiteVisitChance() const;
  void TestEveningGate(){bTestEvening=true;}
@@ -284,6 +306,8 @@ public:
  // weekly sheet as carried arrears (false, capped like any carried bill). Never refused and never touches the requisition.
  bool BillTow(int32 Fee);
  void Earn(int32 Amount);
+ // Money handed back for something not had (a parcel that could not be handed over): to cash, never to the requisition.
+ void Refund(int32 Amount);
  int32 InventoryCount(const FString& Id) const;
  void AddItem(const FString& Id,int32 Count);
  bool Consume(const FString& Id);

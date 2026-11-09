@@ -27,6 +27,7 @@
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47Weather.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
@@ -115,7 +116,7 @@ FString FS47TruckCare::Steps(int32 Spares,int32 Waters) const
  {
   T+=TEXT("STUCK IN SAND. The back wheels have dug in; driving only digs deeper.\n");
   T+=TEXT("1. Get out of the truck (the exit key; the truck cannot move).\n");
-  T+=FString::Printf(TEXT("2. Stand by the truck, look at the cargo rack on the back and use it: SERVICE TRUCK / CARGO opens.\n3. Choose \"Dig it out with the spade\" (the spade is behind the seat, about %.0f minutes).\n"),DigMinutes);
+  T+=FString::Printf(TEXT("2. Stand by the truck, look at the cargo rack on the back and use it: SERVICE TRUCK / CARGO opens.\n3. Choose \"Dig it out with the spade\" (the spade is behind the seat, about %.0f minutes%s).\n"),DigTime(),DigTime()<DigMinutes?TEXT(", with the come-along"):TEXT(""));
  }
  if(bFlat)
  {
@@ -146,7 +147,18 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
  FS47EngineSound* Engine=M->World->EngineSound();
  const double Going=FMath::Abs(D.Speed);
  // ---- the sand: it drags and tugs the wheel; driven hard and slow the wheels dig in, and it tells before it sinks ----
- const double Soft=D.Surface.Kind==ES47SurfaceKind::Asphalt?0.:SandAt(RoadX,RoadZ);
+ // (WEATHER-20261108: on a sand day it drifts across the dirt tracks, less on gravel, never on the asphalt)
+ const S47Weather::FLive& Wx=S47Weather::Live();
+ const double Drift=Wx.bOn?Wx.Dust*(D.Surface.Kind==ES47SurfaceKind::Dirt?.18:.08):0.;
+ const double Soft=D.Surface.Kind==ES47SurfaceKind::Asphalt?0.:FMath::Min(1.,SandAt(RoadX,RoadZ)+Drift);
+ // a strong wind pushes the truck off its line at speed, in gusts, the way it blows
+ if(Wx.bOn&&Wx.Wind>.15&&Going>4)
+ {
+  GustT+=Dt;
+  const double Gusting=.55+.45*FMath::Sin(GustT*.9)*FMath::Sin(GustT*.37+1.);
+  const double Toward=-FMath::Cos(D.Heading)*Wx.DirX+FMath::Sin(D.Heading)*Wx.DirZ; // which way turning goes with the wind
+  D.Heading+=Dt*Wx.Wind*.03*Gusting*FMath::Sign(Toward)*FMath::Min(1.,FMath::Abs(Toward)*2.)*FMath::Min(1.,Going/15.);
+ }
  if(!bStuck)
  {
   Bog=FMath::Clamp(Bog+Dt*BogRate(Soft,D.Load,D.Speed,D.Reversing()),0.,1.);
@@ -196,6 +208,12 @@ void FS47TruckCare::Step(double Dt)
  ShowSand();
  if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;Bog=0;return;} // parked at SARO: the next tow is priced from there
  auto* D=M->World->CabDrive();if(!D)return;
+ // (WEATHER-20261108: after a shower the dirt is slick for a few hours, the gravel a little, the asphalt hardly)
+ {
+  const S47Weather::FLive& Wx=S47Weather::Live();
+  const double Wet=Wx.bOn?FMath::Clamp(Wx.Wet,0.,1.):0.;
+  D->GripScale=1.-Wet*(D->Surface.Kind==ES47SurfaceKind::Dirt?.35:D->Surface.Kind==ES47SurfaceKind::Gravel?.2:.06);
+ }
  Hold();
  if(!D->bHandling)return; // The autopilot's road trips have none of this.
  double RoadX=0,RoadZ=0;
@@ -296,11 +314,16 @@ void FS47TruckCare::ShowSand()
  }
  Shown->SetVisibility(Shown->GetInstanceCount()>0);
 }
+double FS47TruckCare::DigTime() const
+{
+ return M&&M->Freeform&&M->Freeform->InventoryCount(TEXT("rope"))>0?RopeDigMinutes:DigMinutes;
+}
 bool FS47TruckCare::DigOut()
 {
  if(!bStuck||!M||!M->Freeform||!M->World)return false;
- bStuck=false;Bog=0;M->Freeform->SpendTime(DigMinutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),DigMinutes),6);
+ const bool bRope=M->Freeform->InventoryCount(TEXT("rope"))>0;const double Minutes=DigTime();
+ bStuck=false;Bog=0;M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
+ if(M->UI)M->UI->Toast(bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes),6);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out"));M->RequestAutosave();return true;
 }
 bool FS47TruckCare::ChangeWheel()
@@ -440,7 +463,7 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
  At=FVector(M->Player->Pos.X+1.5,M->Player->FloorY,M->Player->Pos.Z);
  if(!bBuilt)Build();
  Layout();
- if(M->UI)M->UI->Toast(TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
+ if(M->UI)M->UI->Toast(M->Freeform->InventoryCount(TEXT("wire"))>0?TEXT("Trip camera set, and fence wire run out from it across the way in, thirty yards each side. It reads in the morning."):TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: trip camera set at %s, marks %d"),*Title,bAtMarks);M->RequestAutosave();return true;
 }
 int32 FS47TripCamera::Reading(ECatch Got,int32 Seed,int32 Night)
@@ -484,8 +507,9 @@ void FS47TripCamera::Watch()
  const FVector Lens=At+FVector(0,.9,0);
  const auto Flat=[&Lens](const FVector& P){return FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(Lens.X,Lens.Z));};
  TOptional<FVector> Body,Light;
- if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<BodyReach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
- if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<BodyReach&&Sees(Lens,*Eye))Body=*Eye;
+ const double Reach=F.InventoryCount(TEXT("wire"))>0?WireBodyReach:BodyReach;
+ if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<Reach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
+ if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<Reach&&Sees(Lens,*Eye))Body=*Eye;
  if(!Body)
  {
   if(F.Taken&&F.Taken->Stage()==FS47Taken::EStage::Flood&&Flat(F.Taken->LightFrom())<LightReach)Light=F.Taken->LightFrom();

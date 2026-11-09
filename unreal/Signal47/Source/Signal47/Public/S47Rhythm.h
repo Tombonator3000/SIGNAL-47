@@ -43,6 +43,12 @@ struct FS47RhythmData
  float MoonFull=1,MoonNew=1;
  TFunction<double(int32)> LitOf;
  float MoonOn(int32 Day) const;
+ // WEATHER-20261108: a night the wind holds into (S47Weather::Day().NightStorm, 0 to 1) is a little busier: what comes near and the
+ // danger are worth up to StormNight times as much. StormOf: the game sets it (since M5 critic 3 only for a night whose wind blows on
+ // through the small hours, NightStorm over a half); unset, no weather.
+ float StormNight=1.15f;
+ TFunction<double(int32)> StormOf;
+ float StormOn(int32 Day) const;
  const FS47RhythmEvent* Find(FName Id) const{return Events.FindByPredicate([Id](const FS47RhythmEvent& E){return E.Id==Id;});}
  // This week's row with the night's moon in it (a copy).
  FS47RhythmWeek Week(int32 Day) const;

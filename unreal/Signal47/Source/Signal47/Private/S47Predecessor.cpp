@@ -5,6 +5,8 @@
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47TownUse.h"
+#include "S47Townsfolk.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -706,6 +708,8 @@ bool FS47Predecessor::UsePhone()
  const bool bWard=WardAvailable();
  if(!bWard)Rows.Add(Para(TEXT("A note under the card: \"Dr. Ward's office takes calls from 08:00 to 21:00. Anything urgent goes on the slip and waits for the morning.\""),760.f,true));
  Rows.Add(S47Kit::Button(bWard?FString(TEXT("Dr. Ward, duty officer")):FString(TEXT("Dr. Ward, duty officer / office closed until 08:00")),[this,Guard]{if(Guard.IsValid()&&WardAvailable())ShowTalk(TEXT("ward"),FString());},false,bWard));
+ // TOWN-USE-20261108: Caliche's station takes tips on its request line, any hour (S47TownUse, FS47RadioTips).
+ if(M->Freeform&&M->Freeform->TownUse)Rows.Add(S47Kit::Button(TEXT("1420 AM, the request line in Caliche"),[this,Guard]{if(Guard.IsValid()&&M&&M->Freeform&&M->Freeform->TownUse)M->Freeform->TownUse->OpenRadio(true);}));
  Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO OPERATIONS LINE"),S47Kit::Col(Rows),760));
  return true;
@@ -715,6 +719,8 @@ bool FS47Predecessor::UsePhone()
 bool FS47Predecessor::Talk(const FString& Who)
 {
  if(!M||!M->UI)return false;
+ // Gone from their post (TOWNSFOLK-20261108): the empty place, and what the others say.
+ if(M->Freeform&&M->Freeform->Townsfolk&&M->Freeform->Townsfolk->ShowAway(Who))return true;
  if(!X::Person(Who))
  {
   M->UI->Toast(TEXT("They look up, see the jacket, and go back to what they were doing."),4);
@@ -735,7 +741,12 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
   else Rows.Add(Para(FString(L.Who)+TEXT(": ")+Line,860.f));
  };
  const X::FTopic* Topic=TopicId.IsEmpty()?nullptr:P->Topics.FindByPredicate([&](const X::FTopic& Q){return TopicId==Q.Id;});
- if(!Topic)for(const X::FSay& L:P->First)Say(L);
+ if(!Topic)
+ {
+  for(const X::FSay& L:P->First)Say(L);
+  // Today's one thing: what they remember of you, or what is going round town (TOWNSFOLK-20261108).
+  if(M->Freeform->Townsfolk){const FString Said=M->Freeform->Townsfolk->Gossip(Who);if(!Said.IsEmpty())Rows.Add(Para(Said,860.f));}
+ }
  else if(Who==TEXT("ward")&&TopicId==TEXT("review"))
  {
   const FTally C=Count();

@@ -40,6 +40,7 @@
 #include "S47Theme.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47WeatherLive.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Legs.h"
@@ -165,6 +166,8 @@ void FS47DevFreeform::ClearRunning()
  // M2's made-up presences and silences (S47OmenDev.cpp)
  if(M->Omen)M->Omen->DevClear();
  if(M->Soundscape)M->Soundscape->DevHush(0);
+ // M5's weather set here (S47WeatherDev.cpp): the day's own again
+ if(F->Weather)F->Weather->Dev(FS47WeatherLive::EDev::None,0);
 }
 
 void FS47DevFreeform::Go(const FStage& Stage,TFunction<void()> Then)
@@ -1372,6 +1375,9 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddHappenings(E);
  AddOmens(E);
  AddMapLog(E);
+ AddTown(E);
+ AddWeather(E);
+ AddPhysics(E);
 }
 
 void FS47DevFreeform::Stop()

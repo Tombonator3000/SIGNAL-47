@@ -128,6 +128,9 @@ public:
  FVector ClosePassNow() const;
  // The event's anchor is in the area the player is in now (its scene, the town's two as one).
  bool AnchorHere() const { return SameScene(); }
+ // MILITARY-20261108: a landing_trace whose ground the military went over first (S47Visitors::Cleared, the night its place was
+ // used): no marks, no fragment and nothing for the counter. The event ends at the next step, the raked circle where it lay.
+ bool TraceRaked() const;
  bool PhysicalObjectPresented() const; // actual component visibility: physical props/sky, including scene and adopted ancestors
  FString ObservationNote() const;
  FString Status() const;

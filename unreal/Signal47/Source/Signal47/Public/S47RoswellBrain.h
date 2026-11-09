@@ -29,6 +29,8 @@ public:
   // SNEAK-20261108: how low the player keeps, 0 standing to 1 crouched (AS47Walker::Sneak). Seen and heard from less far (S47Sneak.h).
   double PlayerQuiet = 0.;
   TOptional<FNoise> Noise;
+  // WEATHER-20261108: how far sounds carry now, 1 on a still night; a strong wind covers steps and breath (down to about half).
+  double HearScale = 1.;
   // A visit's attention (FS47VisitAttention): stop and face this, a lamp or a sound, easing back from it at HoldBack m/s.
   // Comes from outside on each tick, so nothing of it is in a save and Story never sets it. Never changes the mode.
   TOptional<FVector> HoldLook;
@@ -74,6 +76,8 @@ public:
 
  FVector Eye() const { return Pos+FVector(0,1.08-.42*Crouch,0); }
  const TArray<FVector>& Route() const { return Path; }
+ /** A hunt's pace (m/s): once it sees the player, and searching where it last did. FS47Fatigue keeps a tired run above the first. */
+ static constexpr double HuntSeenSpeed=2.8,HuntSearchSpeed=1.15;
  static const TCHAR* ModeName(EMode Value);
  static const TCHAR* StateName(EState Value);
  static bool SelfTest(TArray<FString>& Lines);
@@ -89,11 +93,18 @@ private:
  double DesiredCrouch = 0, DesiredSpeed = 0;
  bool bTargetCover = false, bTargetRoof = false, bTargetWindow = false;
  FVector Goal = FVector::ZeroVector, LastPlayerEye = FVector::ZeroVector;
+ // PHYSICS-20261108: the last sound it heard from somewhere other than where the player is (a thrown stone, a can), and how long
+ // ago. Heard while it could see the player, it is taken for them as soon as it no longer does (bLurePending); a curious one also
+ // goes to look there (bGoLook). Not saved: a noise lasts a moment.
+ FVector NoiseAt = FVector::ZeroVector;
+ double NoiseAge = 1e6;
+ bool bLurePending = false, bGoLook = false;
 
  void Step(double Dt, const FInput& In, const FWorld& World);
  void Enter(EState NewState);
  bool Plan(const FVector& To, const FString& Id, const FWorld& World);
  bool Choose(const FInput& In, const FWorld& World, bool bFlee, bool bPreferCover);
+ bool GoLook(const FVector& At, const FWorld& World);
  void Move(double Dt, const FWorld& World);
  bool Seen(const FInput& In, const FWorld& World) const;
  bool Watched(const FInput& In, const FWorld& World) const;

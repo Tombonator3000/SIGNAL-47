@@ -6,6 +6,7 @@
 #include "S47Docs.h"
 #include "S47Drive.h"
 #include "S47EventPlaces.h"
+#include "S47Visitors.h"
 #include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
@@ -21,6 +22,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47NightRhythm.h"
+#include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47Radio.h"
@@ -895,6 +897,11 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
  UE_LOG(LogS47Happen,Verbose,TEXT("S47: happening %s: no catalogue answer, the land's own place %s"),*Kind,D->Id);
  return S;
 }
+// MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
+static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
+{
+ return M&&M->Freeform&&M->Freeform->Visitors&&!Place.IsEmpty()&&M->Freeform->Visitors->Cleared(Place,Night);
+}
 void FS47Happenings::UsedPlace(const FString& Place,const FString& Kind) const
 {
  if(!Place.IsEmpty()&&M&&M->Freeform&&M->Freeform->EventPlaces)M->Freeform->EventPlaces->Used(Place,Kind);
@@ -1217,6 +1224,21 @@ void FS47Happenings::PlanCues(int32 Night)
  }
  Cues.Sort([](const FCue& A,const FCue& B){return A.Hour<B.Hour;});
 }
+namespace S47HapOmen
+{
+ // M2: a forewarning goes through the one owner of the night's signs (FS47Omen::Post), so that the crickets, the animals and the gear
+ // answer it as they answer everything else, and each may miss it. Out at Dist metres (in a random way, or at the place given): near
+ // enough for the night to go quiet (FS47Soundscape::HushReach), too far for the lamp or the player's strain to feel it yet.
+ void Forewarn(US47Main* M,const FString& Id,const FVector& Eye,const FVector* At,double Dist,double Severity,double Seconds)
+ {
+  if(!M||!M->Omen)return;
+  FS47OmenSource S;S.Id=Id;S.Severity=Severity;S.bComing=true;
+  if(At)S.At=*At;
+  else{const double A=FMath::FRand()*2*UE_DOUBLE_PI;S.At=Eye+FVector(FMath::Cos(A)*Dist,0,FMath::Sin(A)*Dist);}
+  S.Reach=FMath::Max(1.,FVector2D::Distance(FVector2D(Eye.X,Eye.Z),FVector2D(S.At.X,S.At.Z))*.8);
+  M->Omen->Post(S,Seconds);
+ }
+}
 void FS47Happenings::StepCues()
 {
  US47Audio* A=M->Audio.Get();
@@ -1237,12 +1259,12 @@ void FS47Happenings::StepCues()
   if(C.Kind==0)
   {
    // Far off first: the crickets go quiet a while.
-   if(A&&A->Night)A->Night->Hush(45,.04,.4,6.);
+   S47HapOmen::Forewarn(M,TEXT("happen:cue_far"),Eye(),nullptr,130,.45,45);
   }
   else if(Driving())M->World->Trouble.Start(ES47Trouble::Flicker,[]{FS47TroubleOpts O;O.Len=.6;return O;}());
   else if(!Outdoors()){if(A){FS47Sound O;O.Gain=.12f;O.Rate=.8f;A->Sfx(TEXT("switch"),O);A->HoldRoomTone(.2f,.15f);}ToneBack=M->T+1.4;}
   else if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn){M->Night->Flashlight->Flicker(.7,TEXT("cue"));ToneBack=M->T+1.1;}
-  else if(A&&A->Night)A->Night->Hush(20,.02,.2,3.);
+  else S47HapOmen::Forewarn(M,TEXT("happen:cue_near"),Eye(),nullptr,70,.45,20);
   UE_LOG(LogS47Happen,Display,TEXT("S47: happenings cue %s at %s"),C.Kind==0?TEXT("far"):TEXT("near"),*S47Hap::ClockText(M->Freeform->Clock()));
  }
 }
@@ -1561,7 +1583,7 @@ void FS47Happenings::StepLate()
  LateTryClock=F->Clock()+600;
  if(bLateHush)
  {
-  if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(150,.02,.25,8.);
+  S47HapOmen::Forewarn(M,TEXT("happen:late_hush"),Eye(),nullptr,150,.45,150);
   LateNight=Night;
   UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: between 23:00 and 01:00 on night %d, a hush"),Night);
   return;
@@ -1891,6 +1913,8 @@ void FS47Happenings::PlaceSites()
   }
   if(!bSameLand||Away>900)continue;
   const auto Show=[&](const TCHAR* Kind,const FVector& Foot,double Yaw){if(FProp* P=Prop(Kind)){PoseProp(*P,Foot,Yaw);ShowProp(*P,true);Want.Add(Kind);}};
+  // Gone over by the military: no ring, only their raked circle where it was (drawn by S47Visitors).
+  if(S.Kind==TEXT("landing")&&S47HapRakedSite(M,S.Place,S.Night)){M->Freeform->Visitors->RakeAt(S.Place,S.Night,S.X,S.Z);continue;}
   if(S.Kind==TEXT("landing"))
   {
    // Laid on the slope, not a flat plate half in the air (seen 8 November): the ground's fall across the ring, measured near.
@@ -2148,7 +2172,7 @@ void FS47Happenings::StepLanding(double Dt)
  if(Now.Stage==0&&Now.Age>1.5)
  {
   Now.Stage=1;
-  if(A&&A->Night)A->Night->Hush(60,.03,.3,6.);
+  S47HapOmen::Forewarn(M,TEXT("happen:landing_warning"),Eye(),bHere?&Ground:nullptr,160,.5,60);
   if(A&&bHere)A->Far(TEXT("dog1"),Ground+FVector(40,2,-30),.25f,.95f);
  }
  if(Now.Stage==1&&Now.Age>6)
@@ -2628,7 +2652,7 @@ bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
  if(F->EventPlaces)if(const FS47EventPlace* P=F->EventPlaces->Nearest(500)){Now.Place=P->Id;Now.Title=FString::Printf(TEXT("the open ground near %s"),*P->Title);}
  FigureSeen.Reset();FigureSeenFor=0;FigureStageSeen=-1;
  // Before anything shows: the crickets stop.
- if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(45,.03,.25,5.);
+ S47HapOmen::Forewarn(M,TEXT("happen:figure_near"),Eye(),&Now.At,0,.6,45);
  UsedPlace(Now.Place,TEXT("figure_near"));
  return true;
 }
@@ -3695,15 +3719,16 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  const auto Road=[&](double X,double Z){return S47OpenLand::FromRoad(Area,X,Z);};
  // Where something came down: hot in the middle of the ring.
  // Hot in the middle, and faint a long way out, so that walking the right way the ticks come faster: it leads to what nobody saw.
- for(const FSite& S:Sites)if(S.Kind==TEXT("landing")){const FVector At=Road(S.X,S.Z);Add(At,1.1f,5.,FString::Printf(TEXT("landing:%d"),S.Serial));Add(At,.16f,110.,FString::Printf(TEXT("landing:%d"),S.Serial));}
+ for(const FSite& S:Sites)if(S.Kind==TEXT("landing")&&!S47HapRakedSite(M,S.Place,S.Night)){const FVector At=Road(S.X,S.Z);Add(At,1.1f,5.,FString::Printf(TEXT("landing:%d"),S.Serial));Add(At,.16f,110.,FString::Printf(TEXT("landing:%d"),S.Serial));}
  // The dead cow's ring, a little and a little further out; the truck's warm hood, a little, the night it was warm.
  for(const FSite& S:Sites)if(S.Kind==TEXT("carcass")){const FVector At=Road(S.X,S.Z);Add(At,.3f,5.,TEXT("carcass"));Add(At,.07f,70.,TEXT("carcass"));}
  auto* F=M->Freeform.Get();
  if(HoodNight==F->Day()&&M->World)if(FS47Truck* T=M->World->TruckHere())Add(T->Position,.3f,3.,TEXT("hood"));
  // Marks left at a site by a visit, as the magnetometer has them (FS47Places::StepNeedle): in the frame the player stands in.
- if(F->FarmSite&&F->FarmSite->Armed())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
+ if(F->FarmSite&&F->FarmSite->Armed()&&!F->FarmSite->Raked())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
  // The marks a landing_trace left, where the Director put them (its anchor, in its own scene), while they lie there.
- if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere())
+ // Gone over by the military first (S47Visitors::Cleared): nothing there for the counter either.
+ if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere()&&!F->Director->TraceRaked())
  {
   const FVector At=F->Director->EventAnchor();
   Add(At,.45f,5.,FString::Printf(TEXT("trace:%d"),F->Day()));Add(At,.08f,60.,FString::Printf(TEXT("trace:%d"),F->Day()));

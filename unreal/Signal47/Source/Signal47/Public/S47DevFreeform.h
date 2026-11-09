@@ -61,6 +61,12 @@ private:
  void AddOmens(FS47DevEvents& E);
  // M3: the survey map's accuracy place by place, and the night's typed log (MAP-20261108, NIGHTLOG-20261108); S47FieldMapDev.cpp.
  void AddMapLog(FS47DevEvents& E);
+ // M4: the temporary boxes and Caliche's counters (NEW-PLACES-20261108, TOWN-USE-20261108); S47TownDev.cpp.
+ void AddTown(FS47DevEvents& E);
+ // M5: the day's weather on the world and the hours awake (WEATHER-20261108, FATIGUE-20261108); S47WeatherDev.cpp.
+ void AddWeather(FS47DevEvents& E);
+ // M5: loose things picked up, carried, thrown and heard, and the cot at SARO (PHYSICS-20261108, SARO-COT); S47PhysicsDev.cpp.
+ void AddPhysics(FS47DevEvents& E);
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);

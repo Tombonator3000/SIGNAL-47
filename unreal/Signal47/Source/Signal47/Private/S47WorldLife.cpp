@@ -353,15 +353,21 @@ void US47WorldLife::Step(double Dt)
 		W->SetMoonLight(S47Weather::MoonLight(Mo));
 	}
 	else { Sky->SetMoon(false, 0, -90, 0, 0, -90); W->SetMoonLight(1.f); }
+	// WEATHER-20261108: the day's weather on the sky (FS47WeatherLive writes it in a live Freeform game; elsewhere the sky is its own)
+	if (!M->IsFreeform() || bTitle) S47Weather::Live().bOn = false;
+	const S47Weather::FLive& Weather = S47Weather::Live();
+	if (Weather.bOn) Sky->CloudCover = FMath::Clamp(Sky->CloudCover + Weather.CloudBias, 0.0, 0.9);
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening), float(Sky->Twilight));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
 	const double FogK = Area != TEXT("roswell") ? NIGHT_FOG + (DAWN_FOG - NIGHT_FOG) * DawnK : NIGHT_FOG + (1 - NIGHT_FOG) * DawnK;
-	const FLinearColor FogC = Sky->FogColor * float(FogK);
+	FLinearColor FogC = Sky->FogColor * float(FogK);
+	// the sand or the haze in the air colours the far air too (and the painted horizon with it)
+	if (Weather.bOn && Weather.TintK > 0) FogC = FMath::Lerp(FogC, Weather.Tint, float(Weather.TintK * 0.7));
 	W->SetFogColor(FogC);
 	// World.update: the dawn's haze on the near mesas (world/horizon.ts), as on the land in front of
-	// them, none at night; its colour and density are the fog's (M_WebTone)
-	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Daylight())));
+	// them, none at night; its colour and density are the fog's (M_WebTone); the day's sand and haze fade them more
+	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Daylight()) + (Weather.bOn ? Weather.HorizonK : 0.0)));
 	// the painted horizon: the area's air, the land where it ends, the lit places' glow where they are from here
 	Backdrop->Update(*Sky, FogC, W->FogDensity, Area == TEXT("roswell"), Cam.Pos.Y - GroundUnder(Cam.Pos), SkyPlaces(), Cam.Pos, Yaw);
 	Sky->Draw(Cam.Pos, Yaw);
@@ -385,6 +391,8 @@ void US47WorldLife::Step(double Dt)
 	// flora.ts followFlora: before each picture the wind moves on, and every patch shown fills round the camera
 	static const double Start = FPlatformTime::Seconds();
 	S47Wind::WindAt(FPlatformTime::Seconds() - Start);
+	// (WEATHER-20261108: a windy afternoon sways it harder, from the day's quarter)
+	if (Weather.bOn) S47Wind::Storm(Weather.Wind, FVector2D(Weather.DirX, Weather.DirZ));
 	const S47Wind::FWind& Wd = S47Wind::Wind();
 	W->SetEnvScalar(TEXT("WindTime"), float(Wd.Time));
 	W->SetEnvScalar(TEXT("WindAmp"), float(Wd.Strength));
