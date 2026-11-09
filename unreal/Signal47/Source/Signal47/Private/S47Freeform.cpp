@@ -1445,9 +1445,9 @@ void FS47FreeformSession::OpenOperations()
    D.Add(T::Value(TEXT("AZ"),FString::Printf(TEXT("%.1f°"),TargetAz())));D.Add(T::Value(TEXT("EL"),FString::Printf(TEXT("%.1f°"),TargetEl())));
    D.Add(T::Value(TEXT("FREQUENCY"),FString::Printf(TEXT("%.3f MHz"),P.F)));D.Add(T::Value(TEXT("INTEGRATION"),FString::Printf(TEXT("%.0f s"),SourceSeconds())));
    if(!J->bPaid)D.Add(T::Value(TEXT("PAYS NOW"),FString::Printf(TEXT("$%d%s%s"),JobPay(*J),J->bDocked?TEXT(" / HALF RATE"):DayNumber-J->Day>1?TEXT(" / LATE"):TEXT(""),
-    RulesLive()&&J->CaseTest<0&&J->Stage<EJobStage::Recorded?*FString::Printf(TEXT(" / +$%d IF THE RECORDING READS"),CleanBonus):TEXT(""))));
+    RulesLive()&&!TrainingCard(*J)&&J->Stage<EJobStage::Recorded?*FString::Printf(TEXT(" / +$%d IF THE RECORDING READS"),CleanBonus):TEXT(""))));
    // M7: what the evening's cards have taken (time is the second currency)
-   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / SIDE MONEY LEFT THIS WEEK $%d"),CardsFiledOn(DayNumber),SideLeftThisWeek())));
+   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / SIDE MONEY LEFT THIS WEEK $%d"),CardsTonight(),SideLeftThisWeek())));
    D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true));
   }
   else D.Add(T::Small(TEXT("Select a job in the queue.")));
@@ -2099,17 +2099,15 @@ int32 FS47FreeformSession::JobBonus(const FJob& J,FString* Why)const
  if(Why)*Why=B>0?FString::Printf(TEXT(" ($%d of it for %s)"),B,*FString::Join(For,TEXT(", "))):FString(TEXT(" (no bonus: late, and the recording does not read)"));
  return B;
 }
-int32 FS47FreeformSession::CardsFiledOn(int32 OnDay)const
-{
- int32 N=0;for(const FJob& J:Work)if(J.bPaid&&J.Day==OnDay)++N;return N;
-}
+int32 FS47FreeformSession::CardsTonight()const{return DeskNight==NightOf(WorldClock)?DeskCards:0;}
 void FS47FreeformSession::DeskWork(const FJob& J)
 {
  DeskLine.Empty();
  if(!RulesLive())return;
  // the card's time: from the start of the acquisition to now, as the night's clock has it (pointing and walking not counted)
  const int32 Minutes=FMath::Clamp(int32((WorldClock-J.ReferenceClock)/60.),0,600);
- const int32 Tonight=CardsFiledOn(DayNumber);
+ if(DeskNight!=NightOf(WorldClock)){DeskNight=NightOf(WorldClock);DeskCards=0;}
+ const int32 Tonight=++DeskCards;
  const double Hours=Tonight>=3?DeskHoursThirdCard:DeskHoursPerCard;
  if(Fatigue)Fatigue->Desk(Hours);
  const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
@@ -3333,7 +3331,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    FString Why;const int32 Good=Q.JobPay(C);Q.JobBonus(C,&Why);
    C.bAnomaly=C.bControl=true;const int32 Controlled=Q.JobPay(C);C.bAnomaly=C.bControl=false;
    C.RecordingQuality=.2;const int32 Muddy=Q.JobPay(C);
-   Q.TestAdvance(3*86400);const int32 LateMuddy=Q.JobPay(C);
+   Q.TestAdvance(3*86400);const int32 LateMuddy=Q.JobPay(Q.Work[0]);
    Check(Good==19&&Controlled==20&&Muddy==16&&LateMuddy==7&&Why.Contains(TEXT("clean recording")),*FString::Printf(TEXT("M7: good card $%d, anomaly controlled $%d, muddy on time $%d, muddy three days late $%d"),Good,Controlled,Muddy,LateMuddy));
    // two good cards are worth more than three muddy late ones
    Check(2*Good>3*LateMuddy,TEXT("M7: two good cards pay more than three muddy late ones"));

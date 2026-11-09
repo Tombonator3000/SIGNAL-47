@@ -373,7 +373,7 @@ void FS47FreeformWorld::ApplyPump()
  const FString Display=PumpDisplay();if(Display==LastPumpDisplay)return;LastPumpDisplay=Display;
  if(bTripoPump)
  {
-  const FString Left=FString::Printf(TEXT("TANK\n%.2f OF 4\nSALE $%d"),Fuel,PumpPaid);
+  const FString Left=FString::Printf(TEXT("TANK\n%.2f OF %.0f\nSALE $%d"),Fuel,TankCap(),PumpPaid);
   const FString Right=FString::Printf(TEXT("FUEL $%.2f/U\n%.2f SOLD\nE %s"),1./FuelPerDollar(),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
   if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
  }

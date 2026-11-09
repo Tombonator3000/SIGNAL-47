@@ -27,7 +27,7 @@ void FS47DevFreeform::AddEconomy(FS47DevEvents& E)
 		const int32 Halves = FS47FreeformSession::UpkeepHalves(Week);
 		Tell(true, FString::Printf(TEXT("Day %d, week %d. Budget $%d, carried $%d. Next review %s. Upkeep $%d.%02d a dish (%d on the line: $%d). Pump $%.2f a unit. Side money left this week $%d of $%d. Cards filed tonight %d. Repairs due $%d."),
 			F->Day(), Week, F->Budget(), F->Arrears(), *F->NextReviewText(), Halves / 2, Halves % 2 * 50, F->AvailableDishCount(), F->ReviewPowerNow(), 1.0 / F->Field->FuelPerDollar(),
-			F->SideLeftThisWeek(), int32(FS47FreeformSession::SideCap), F->CardsFiledOn(F->Day()), F->RepairsDue()), 14);
+			F->SideLeftThisWeek(), int32(FS47FreeformSession::SideCap), F->CardsTonight(), F->RepairsDue()), 14);
 	});
 	E.AddFreeform(Group, TEXT("Money: what a card pays, good and sloppy"), TEXT("the base by age and the bonus for good work: on time, a clean recording, an anomaly controlled"), [this]
 	{

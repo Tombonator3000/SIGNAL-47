@@ -195,7 +195,8 @@ public:
  // M7 (Tom, 9 November): time is the second currency. Each card registered takes time off the night and adds to how tired you are
  // (FS47Fatigue::Desk); a third card in one evening more. What the evening's cards took is on OPS.
  static constexpr double DeskHoursPerCard=.25,DeskHoursThirdCard=.6;
- int32 CardsFiledOn(int32 Day) const;
+ // Cards registered at OPS this night (from 08:00 to 08:00), as they were registered; not saved (a Continue starts the count again).
+ int32 CardsTonight() const;
  // M7 (Tom, 9 November): gear can break near what is out there (FS47Upgrades::StepBreakage): what it costs to put right goes on the next sheet.
  static constexpr int32 RepairCap=12; // a week's sheet at most
  void BreakGear(const FString& What,int32 Fee);
@@ -465,6 +466,7 @@ private:
  // M7 (Tom, 9 November): the week the side money was counted for (1-based), what it has paid that week, and repairs for the next sheet.
  int32 SideWeek=0,SidePaid=0,Repairs=0;
  FString DeskLine;
+ int32 DeskNight=0,DeskCards=0;
  void DeskWork(const FJob& J);
  TSet<FString> Kit;
  ERest RestPlace=ERest::Station;
