@@ -489,7 +489,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		FTextBlockStyle LineStyle = FTextBlockStyle().SetFont(Type(16)).SetColorAndOpacity(Color);
 		if (bDone)
 		{
-			FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
+			FSlateBrush Strike = *FCoreStyle::Get().GetBrush("GenericWhiteBox");
 			Strike.TintColor = Color;
 			LineStyle.SetStrikeBrush(Strike);
 		}

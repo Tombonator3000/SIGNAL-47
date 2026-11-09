@@ -78,7 +78,7 @@ public:
 	TArray<FCard> Cards() const;
 	// The line, from what Who has told (Told's keys without "who:"), the day, and the day they went (0: here). TitleOf names a place.
 	static FString CardLine(const FString& Who, const TArray<FString>& Keys, int32 Today, int32 GoneDay, TFunctionRef<FString(const FString&)> TitleOf);
-	static FString RoleOf(const FString& Who);
+	static FString RoleOf(const FString& Who); const TSet<FString>& ToldKeys() const { return Told; } // MARGINALIA-20261109: what they have told, "who:key" (S47Marginalia::FactsOf)
 	// Where someone gone was last seen, pencilled on the survey sheet (US47Flow::MapView).
 	void FillMap(struct FS47MapView& V) const;
 	// F10

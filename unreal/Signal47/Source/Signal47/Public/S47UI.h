@@ -104,7 +104,7 @@ struct FS47MapView
 	TArray<FS47MapJob> Jobs;
 };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
-struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none
+struct FS47PersonCard { FString Name, Role, Note, Portrait; }; struct FS47NbScribble { FString Side, Box, Role, Text, Follow, FollowText; bool bStruck = false; }; // Portrait: a picture's art name, empty while there is none. MARGINALIA-20261109: a scribble in WHO & WHAT (S47Marginalia): Side "people" or "them", the box it is in, the line, where it points (Follow "map" or "board"), struck when proved wrong
 // the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far
 // as it has come up (Dev, 0..1); Look is told each time a print is opened big
 struct FS47AlbumView
@@ -140,7 +140,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TOptional<TArray<FS47Doc>> Papers; // PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
+	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; // MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
 };
 
 // UI.viewfinder's options

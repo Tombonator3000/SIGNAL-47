@@ -13,6 +13,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
 #include "S47Script.h"
+#include "S47Marginalia.h"
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -447,6 +448,56 @@ namespace
 			return Layer + 1;
 		}
 	};
+
+	// MARGINALIA-20261109: WHO & WHAT's squared paper, faint blue lines under the pencil
+	class SGraphPaper : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SGraphPaper) {}
+		SLATE_END_ARGS()
+		void Construct(const FArguments&) {}
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(8, 8); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Step = FMath::Max(6.f, P(24.f));
+			const FLinearColor Col = C(0x233a7a, 0.09f);
+			for (float X = Step; X < Sz.X; X += Step) FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(X, 0), FVector2f(X, Sz.Y) }, ESlateDrawEffect::None, Col, false, 1.f);
+			for (float Y = Step; Y < Sz.Y; Y += Step) FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(0, Y), FVector2f(Sz.X, Y) }, ESlateDrawEffect::None, Col, false, 1.f);
+			return Layer + 1;
+		}
+	};
+	// MARGINALIA-20261109: a line through struck text. Slate draws a text block's strike only when its brush names a resource (the
+	// plain-text marshaller tests GetResourceName), and the colour brush "WhiteBrush" names none: an image brush, the engine's white.
+	FSlateBrush StrikeBrush(const FLinearColor& Ink)
+	{
+		FSlateBrush Strike = *FCoreStyle::Get().GetBrush("GenericWhiteBox");
+		Strike.TintColor = Ink;
+		return Strike;
+	}
+	// A scribble's pencil: soft grey lead, and a line through it when the guess was proved wrong.
+	FTextBlockStyle PencilStyle(float Px, bool bStruck)
+	{
+		const FLinearColor Lead = bStruck ? C(0x3a3a40, 0.55f) : C(0x3a3a40);
+		FTextBlockStyle St = FTextBlockStyle().SetFont(S47Game::Hand(Px)).SetColorAndOpacity(Lead);
+		if (bStruck) St.SetStrikeBrush(StrikeBrush(Lead));
+		return St;
+	}
+	// One scribble: the pencil, struck through when proved wrong, and in red pencil where it points on to ([MAP], [BOARD]).
+	TSharedRef<SWidget> ScribbleLine(const FS47NbScribble& S, float Px, TFunction<void()> OnFollow)
+	{
+		using namespace S47Game;
+		const FTextBlockStyle St = PencilStyle(Px, S.bStruck);
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(S.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 30))];
+		if (!S.FollowText.IsEmpty())
+		{
+			const FString Tag = S.Follow == TEXT("map") ? TEXT("  [MAP]") : S.Follow == TEXT("board") ? TEXT("  [BOARD]") : TEXT("");
+			const TSharedRef<SWidget> F = SNew(STextBlock).Text(FText::FromString(TEXT("-> ") + S.FollowText + Tag)).Font(Hand(Px - 2.f)).ColorAndOpacity(StampRed()).AutoWrapText(true);
+			L->AddSlot().AutoHeight().Padding(P(18), 0, 0, 0)[OnFollow ? StaticCastSharedRef<SWidget>(Click(F, OnFollow)) : F];
+		}
+		return L;
+	}
 }
 
 FString SS47Notebook::Excerpt(const FS47Doc& D)
@@ -863,12 +914,7 @@ void SS47Notebook::Build()
 			// li.done: struck through, the ink paler
 			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
 			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(Li)).SetColorAndOpacity(Ink);
-			if (bDone)
-			{
-				FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
-				Strike.TintColor = Ink;
-				St.SetStrikeBrush(Strike);
-			}
+			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 			if (bTasks) Row->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(P(28))[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : TEXT("-"))).Font(Hand(Li)).ColorAndOpacity(Ink)]];
 			Row->AddSlot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(Items[I])).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Li), 34))];
@@ -911,7 +957,7 @@ void SS47Notebook::Build()
 			const bool bDone = N.bDone, bNext = N.Group == TEXT("next");
 			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
 			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(bNext ? Px + 3.f : Px)).SetColorAndOpacity(Ink);
-			if (bDone) { FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush"); Strike.TintColor = Ink; St.SetStrikeBrush(Strike); }
+			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
 			if (bNext) Mark = SNew(SNextArrow);
 			else if (N.Group == TEXT("also")) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
@@ -1190,21 +1236,53 @@ void SS47Notebook::Build()
 	else if (Tab == TEXT("people") && X.People && X.bFreeform)
 	{
 		// PT-NOTEBOOK-20261109: WHO & WHAT, the minimal one: a pencilled box for each of Caliche's regulars the player has met or missed,
-		// who they are and one plain line from what they have told (FS47Townsfolk::Cards)
+		// who they are and one plain line from what they have told (FS47Townsfolk::Cards). MARGINALIA-20261109: on squared paper, with
+		// the player's own scribbles under each (X.Scribbles' PEOPLE), and a box for each one met only there (Dale, Earl, Baca, Ward).
+		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
+		{
+			if (S.Follow == TEXT("map")) return [this] { Show(TEXT("map")); };
+			if (S.Follow == TEXT("board") && OnBoard) return [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); };
+			return nullptr;
+		};
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		TSet<FString> Boxed;
+		const auto Pencil = [&](const TSharedRef<SVerticalBox>& Bx, const FString& Name)
+		{
+			Boxed.Add(Name);
+			for (const FS47NbScribble& S : X.Scribbles)
+				if (S.Side == TEXT("people") && S.Box == Name) { Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[ScribbleLine(S, 24.f, Follow(S))]; Read.Add(S.Text); }
+		};
+		const auto Framed = [&](const TSharedRef<SVerticalBox>& Bx) { return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(14), P(8)))[Bx]; };
+		const auto Named = [&](const FString& Name, const FString& Role) -> TSharedRef<SVerticalBox>
+		{
+			return SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(32)).ColorAndOpacity(InkBlue())]
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Role.ToUpper())).Font(Term(17, 1)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+		};
 		for (int32 I = 0; I < X.People->Num(); ++I)
 		{
 			const FS47PersonCard& Pc = (*X.People)[I];
-			TSharedRef<SVerticalBox> Bx = SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Pc.Name)).Font(Hand(32)).ColorAndOpacity(InkBlue())]
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Pc.Role.ToUpper())).Font(Term(17, 1)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+			TSharedRef<SVerticalBox> Bx = Named(Pc.Name, Pc.Role);
 			if (!Pc.Note.IsEmpty()) Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[Inked(Pc.Note, 26.f, C(0x3a3a40))];
-			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[Entry(I, SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(14), P(8)))[Bx])];
 			Read.Add(Pc.Name + TEXT(". ") + Pc.Role + TEXT(". ") + Pc.Note);
+			Pencil(Bx, Pc.Name);
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[Entry(I, Framed(Bx))];
+		}
+		int32 Extra = 0;
+		for (const FS47NbScribble& S : X.Scribbles)
+		{
+			if (S.Side != TEXT("people") || Boxed.Contains(S.Box)) continue;
+			TSharedRef<SVerticalBox> Bx = Named(S.Box, S.Role);
+			Read.Add(S.Box + TEXT(". ") + S.Role + TEXT("."));
+			Pencil(Bx, S.Box);
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[Framed(Bx)];
+			++Extra;
 		}
 		const FString None = TEXT("Nobody in town has said much to me yet. The gas station and the Mesa are open late.");
-		LeftSlot->SetContent(Lay(Head(TEXT("Who & what"), FString::Printf(TEXT("PEOPLE · %d"), X.People->Num())), X.People->Num() ? StaticCastSharedRef<SWidget>(L) : Empty(None), LeftScroll));
-		if (!X.People->Num()) Read.Add(None);
+		const int32 N = X.People->Num() + Extra;
+		LeftSlot->SetContent(SNew(SOverlay) + SOverlay::Slot()[SNew(SGraphPaper)]
+			+ SOverlay::Slot()[Lay(Head(TEXT("Who & what"), FString::Printf(TEXT("PEOPLE · %d"), N)), N ? StaticCastSharedRef<SWidget>(L) : Empty(None), LeftScroll)]);
+		if (!N) Read.Add(None);
 	}
 	else if (Tab == TEXT("people") && X.People)
 	{
@@ -1373,6 +1451,41 @@ void SS47Notebook::BuildRight()
 		if (K.Art == TEXT("camera")) Acts.Add({ S47Keys::Label(TEXT("camera")), TEXT("RAISE"), [this] { Press(S47Keys::Key(TEXT("camera"), 0)); } });
 		if (K.Art == TEXT("flashlight")) Acts.Add({ S47Keys::Label(TEXT("light")), K.State == TEXT("On") ? TEXT("SWITCH OFF") : TEXT("SWITCH ON"), [this] { Press(S47Keys::Key(TEXT("light"), 0)); } });
 		if (K.Art == TEXT("papers")) Acts.Add({ TEXT("ENTER"), TEXT("PAPERS"), [this] { Show(TEXT("papers")); } });
+	}
+	else if (Tab == TEXT("people") && X.bFreeform)
+	{
+		// MARGINALIA-20261109: THEM, on the facing page of squared paper: a box for each thing out there the player has a name for (only
+		// their own names, never what it is), the scribbles under it as they grew, the wrong guesses struck through.
+		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
+		{
+			if (S.Follow == TEXT("map")) return [this] { Show(TEXT("map")); };
+			if (S.Follow == TEXT("board") && OnBoard) return [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); };
+			return nullptr;
+		};
+		TArray<FString> Boxes, Said;
+		for (const FS47NbScribble& S : X.Scribbles) if (S.Side == TEXT("them")) Boxes.AddUnique(S.Box);
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		for (const FString& Name : Boxes)
+		{
+			TSharedRef<SVerticalBox> Bx = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
+			Said.Add(Name);
+			for (const FS47NbScribble& S : X.Scribbles)
+				if (S.Side == TEXT("them") && S.Box == Name) { Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[ScribbleLine(S, 24.f, Follow(S))]; Said.Add(S.Text); }
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x3a3a40, 0.45f), 1.2f, 2.f)).Padding(FMargin(P(12), P(6)))[Bx]];
+		}
+		const FString None = TEXT("Nothing out there I could put a name to. Yet.");
+		RightSlot->SetContent(SNew(SOverlay) + SOverlay::Slot()[SNew(SGraphPaper)]
+			+ SOverlay::Slot()
+			[
+				SNew(SCanvas)
+				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
+				+ SCanvas::Slot().Position(P2(46, 146)).Size(P2(536, 734 - 146 - 92))
+				[
+					SAssignNew(RightScroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3)))
+					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[Boxes.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
+				]
+			]);
+		Readings(Boxes.Num() ? Said : TArray<FString>{ None });
 	}
 	else if (Tab == TEXT("people") && X.People && X.People->IsValidIndex(I))
 	{
@@ -1933,6 +2046,24 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Check(TEXT("Freeform: the photographs are the album's alone, not a section of the documents"), Free->Tab == TEXT("papers"), Free->Tab);
 		Free->Show(TEXT("findings")); Free->Section(1);
 		Check(TEXT("Freeform: WHO & WHAT in Knowledge, one box a person"), Free->Tab == TEXT("people") && Free->Count() == 1 && Free->Columns() == 1, Free->Tab);
+		// MARGINALIA-20261109: the scribbles (S47Marginalia's own checks: nothing before it happened, the tiers, the limits, no word for
+		// what they are), a struck guess with a line Slate really draws, and the scribbles changing nothing of what can be chosen
+		{
+			TArray<FString> Marg;
+			const bool bMarg = S47Marginalia::SelfTest(Marg);
+			Lines.Append(Marg);
+			Check(TEXT("Freeform WHO & WHAT: the scribbles keep to what happened, the tiers and the spoiler limits (S47Marginalia)"), bMarg);
+			Check(TEXT("Freeform WHO & WHAT: a struck guess has a line through it that Slate draws, a standing one none"),
+				!PencilStyle(24.f, true).StrikeBrush.GetResourceName().IsNone() && PencilStyle(24.f, false).StrikeBrush.GetResourceName().IsNone() && !StrikeBrush(S47Game::InkBlue()).GetResourceName().IsNone());
+			FS47NbExtras Mx = Fx;
+			const auto Scrib = [](const TCHAR* Side, const TCHAR* Box, const TCHAR* Text, bool bStruck) { FS47NbScribble S; S.Side = Side; S.Box = Box; S.Text = Text; S.bStruck = bStruck; return S; };
+			Mx.Scribbles = { Scrib(TEXT("people"), TEXT("THE DEPUTY"), TEXT("Writes everything down."), false), Scrib(TEXT("people"), TEXT("DALE"), TEXT("Never seen him."), false),
+				Scrib(TEXT("them"), TEXT("THE LOW ONE"), TEXT("Coyote. A big one."), true) };
+			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
+			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);
+			Check(TEXT("Freeform WHO & WHAT: PEOPLE and THEM on the two pages, and the scribbles change nothing of what can be chosen"),
+				Pencilled->Tab == TEXT("people") && Pencilled->Count() == 1 && Pencilled->RightSlot->GetChildren()->GetChildAt(0) != SNullWidget::NullWidget, Pencilled->Tab);
+		}
 		Free->Show(TEXT("tasks"));
 		Check(TEXT("Freeform NOW: every line of the note is on it (so the note's \"+N more\" are all here), the job cards folded on one line"), Free->Count() == Fx.Now.Num(), FString::FromInt(Free->Count()));
 		Free->Choose(3); Free->Activate();

@@ -66,6 +66,7 @@
 #include "S47HUD.h"
 #include "S47HudGauges.h"
 #include "S47Script.h"
+#include "S47Marginalia.h"
 #include "S47PinBoard.h"
 #include "S47TonightNote.h"
 #include "S47Image.h"
@@ -2168,6 +2169,8 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				if (S47Script::LintText(P.Name + TEXT(" / ") + P.Role).IsEmpty()) Folk.Add(P);
 			}
 		X.People = Folk;
+		// MARGINALIA-20261109: WHO & WHAT's pencil, PEOPLE and THEM, from what has really happened (S47Marginalia; nothing new is saved)
+		if (M->Story) S47Marginalia::Fill(S47Marginalia::FactsOf(*M->Freeform, M->Story->Docs()), X.Scribbles);
 		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
 		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
 	}
