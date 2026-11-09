@@ -136,8 +136,9 @@ void S47EyeGlint::Step(const FVector& EyeUE,double Daylight)
  {
   const FRest* R=Rests.Find(G);
   USceneComponent* Parent=G->GetAttachParent();
-  // The body hidden (the dot inherits it), or no rest to place it by: nothing to draw.
-  if(!R||!Parent||!G->IsVisible()||!bOn){if(!G->bHiddenInGame)G->SetHiddenInGame(true);continue;}
+  // The body hidden (the dot inherits its visible flag), or no rest to place it by: nothing to draw. Not IsVisible(): in a game world
+  // it is false while hidden in game, and a dot hidden for the dark would never come back.
+  if(!R||!Parent||!G->GetVisibleFlag()||!bOn){if(!G->bHiddenInGame)G->SetHiddenInGame(true);continue;}
   const FTransform Bone=Parent->GetSocketTransform(G->GetAttachSocketName());
   const FVector At=Bone.TransformPosition(R->Base);
   const double Metres=FVector::Dist(EyeUE,At)/100.;
@@ -165,7 +166,7 @@ void S47EyeGlint::Step(const FVector& EyeUE,double Daylight)
 int32 S47EyeGlint::Shown()
 {
  int32 N=0;
- for(const auto& Weak:All)if(const UStaticMeshComponent* G=Weak.Get())if(G->IsVisible()&&!G->bHiddenInGame)++N;
+ for(const auto& Weak:All)if(const UStaticMeshComponent* G=Weak.Get())if(G->GetVisibleFlag()&&!G->bHiddenInGame)++N;
  return N;
 }
 

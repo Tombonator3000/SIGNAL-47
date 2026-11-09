@@ -95,7 +95,7 @@ namespace S47EyeGlintDevLocal
    for (const auto& Weak : Bodies[Active].Creature.Glints) if (const UStaticMeshComponent* G = Weak.Get())
    {
     Sum += S47Three::ToThree(G->GetComponentLocation()); ++All;
-    if (G->IsVisible() && !G->bHiddenInGame) ++N;
+    if (G->GetVisibleFlag() && !G->bHiddenInGame) ++N;
    }
    if (Mid && All) *Mid = Sum / All;
    return N;
