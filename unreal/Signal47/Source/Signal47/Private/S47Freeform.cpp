@@ -28,6 +28,7 @@
 #include "S47MotelNight.h"
 #include "S47FieldLife.h"
 #include "S47NightRhythm.h"
+#include "S47ScriptPlayer.h"
 #include "S47Aftermath.h"
 #include "S47FarmNight.h"
 #include "S47IndoorDread.h"
@@ -286,6 +287,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Round)Round=MakeShared<FS47DayRound>(M);Round->Begin(S47J::Obj(Saved,TEXT("round")));
  if(!RoadCar)RoadCar=MakeShared<FS47RoadsideCar>(M);RoadCar->Begin(S47J::Obj(Saved,TEXT("roadCar")));
  if(!Happenings)Happenings=MakeShared<FS47Happenings>(M);Happenings->Begin(S47J::Obj(Saved,TEXT("happenings")));
+ if(!Scripts)Scripts=MakeShared<FS47ScriptPlayer>(M);Scripts->Begin(S47J::Obj(Saved,TEXT("scripts")));
  if(!NightLog)NightLog=MakeShared<FS47NightLog>(M);NightLog->Begin(S47J::Obj(Saved,TEXT("nightLog")));
  if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
  if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
@@ -320,6 +322,7 @@ void FS47FreeformSession::Stop()
  if(CaseField)CaseField->Stop();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(Outfit)Outfit->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
+ if(Scripts&&bCanRestore)Scripts->Stop();
  if(bCanRestore){if(TownUse)TownUse->Stop();if(TownSites)TownSites->Stop();}
  // At exit or in the purge the town's figures may already be gone: only the plain list of who is away is cleared then.
  if(Townsfolk){if(bCanRestore)Townsfolk->Stop();else Townsfolk->ResetAway();}
@@ -549,6 +552,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Round&&!Held())Round->Step(D);
  if(RoadCar)RoadCar->Step(D);
  if(Happenings)Happenings->Step(D);
+ if(Scripts)Scripts->Step(D);
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
  if(PinBoard)PinBoard->Step(Dt);
@@ -3005,6 +3009,7 @@ S47J::FObj FS47FreeformSession::Save()const
  S47J::Set(O,TEXT("cases"),Cases.Save());
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
+ if(Scripts){const auto Played=Scripts->Save();if(Played->Values.Num()>0)S47J::Set(O,TEXT("scripts"),Played);}
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));

@@ -62,6 +62,7 @@
 #include "S47MotelNight.h"
 #include "S47Openings.h"
 #include "S47Happenings.h"
+#include "S47Script.h"
 #include "S47FieldLife.h"
 #include "S47Outfit.h"
 #include "S47NightLog.h"
@@ -274,6 +275,7 @@ void AS47HUD::Start()
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);
+		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the 02:00 lock and the lint)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47Outfit::SelfTest(Lines); // (M7: the truck's upgrades and the gear that opens the night)

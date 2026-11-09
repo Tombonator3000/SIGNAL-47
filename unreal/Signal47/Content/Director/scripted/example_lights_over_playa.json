@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"id": "example_lights_over_playa",
+	"name": "Lights over the playa",
+	"enabled": false,
+	"repeat": "once",
+	"trigger":
+	{
+		"nights": [3, 0],
+		"hours": [22, 1.5],
+		"place": "land:playa",
+		"radius": 600,
+		"conditions": [
+			{ "if": "outdoors" },
+			{ "if": "weather", "is": "clear" }
+		]
+	},
+	"actions": [
+		{ "at": 0, "do": "sky", "form": "triangle", "pace": "slow" },
+		{ "at": 2, "do": "fault", "kind": "omen", "severity": 0.3, "secs": 20 },
+		{ "at": 6, "do": "line", "who": "dale", "text": "You see those lights over the playa? Write the time down. Now, not later. Over." },
+		{ "at": 14, "do": "toast", "text": "The crickets have gone quiet.", "secs": 4 },
+		{ "at": 30, "do": "evidence", "id": "script_lights_over_playa", "text": "Three lights over the playa, slow, no sound. Gone before the hour." }
+	]
+}

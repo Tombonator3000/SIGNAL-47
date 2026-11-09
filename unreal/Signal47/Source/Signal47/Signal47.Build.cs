@@ -30,5 +30,7 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Content/FreeformTerrain/*.json", StagedFileType.UFS);
 		// The rhythm of a Freeform night (S47Rhythm), read at run time.
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/*.json", StagedFileType.UFS);
+		// Tom's scripted events (S47ScriptPlayer), one file each.
+		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/scripted/*.json", StagedFileType.UFS);
 	}
 }
