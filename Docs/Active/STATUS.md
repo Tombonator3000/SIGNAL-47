@@ -4,7 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 06:46, nattskift: M6 utseende første runde, Toms testfunn, kritikk 4
+## Installert 9. november kl. 08:06, nattskift: steinlokk, takstige, motorvei begge veier, motellets lykter
+
+`d3a94124` på `claude/m6-20261109` (PR #509). Selvtest 3413 i pakken og installert; regresjon 251 og livsprøve 64 (på `bd323eb3`); F10 «Physics (M5)» 11/11, «Reach and skies (T16)» 31/32 (den røde er prøvens egen, rettet i samme bygg). Tilbakerulling: `d34` (`34c9751f`) og `d33`.
+
+Nytt: steinen lokker en nysgjerrig liten bort; fast stige til takplaten på SARO (T16-11); UFO-møtet på motorveien går sør når det skal (T16-06); motellets lykter som cobra head; F10-gruppe som måler hvor langt man kommer fra gården (1–4 km til fjellfoten eller kanten i alle retninger, ingen usynlige vegger funnet). Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 06:46, nattskift: M6 utseende første runde, Toms testfunn, kritikk 4
 
 `34c9751f` på `claude/m6-20261109` (lagt oppå `claude/m4-20261109`; ikke pushet da dette ble skrevet). Selvtest 3401 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `0372c0c6`); F10 «Looks (M6)» 31/33. Tilbakerulling: `d33` (`da2b5ece`) og `d32`.
 

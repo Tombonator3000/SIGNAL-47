@@ -34,8 +34,10 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **MOTEL-FACADE-20261109:** motellkontoret har to fasader oppå hverandre (eksportens plater på x -43,49 foran V2-kontorets flater og vindusrammen i `SM_Sierra_Office`). Ingen inverterte normaler funnet.
 - [ ] **LOD-AUDIT-20261109:** skann av 392 mesher fant dreide LOD-er bare i gatelyktene og `SM_SubstationField_ApronGrade` (begge rettet). Kjør `scratchpad`-skriptet `lodcheck.py` igjen etter nye importer.
 - [ ] **BLOCKERS-20261109:** hinderlista i F10 «Looks (M6)» feiler fortsatt på resterende bokser (M4 `temp:*`, motell, antenner, kuer, arkivmøbler); sorter og rett.
-- [ ] **STONE-LURE-20261109:** steinlokket virker i selvtest, men F10-prøven feiler (den lille tror spilleren er et annet sted).
+- [x] **STONE-LURE-20261109:** rettet (F10 så bort for sent; `GoLook` mistet hvor den prøvde mellom tikk). F10 11/11 på d35.
 - [x] **MOTEL-LAMPS-MEM-20261109:** d34-kandidaten gikk over 15 GB og krasjet ved start. Årsaken var `S47SaroClip::Vertices` (brukt av steinene i `S47RouteNature`), som i pakket spill leste posisjonsbufferen til mesher uten CPU-data. Rettet i `34c9751f`: bare editoren og mesher med CPU-tilgang leses. Motellyktene var uskyldige (prøvd på d34-pakken med `-S47MotelLampsNew`: 4,6 GB, selvtest OK) og er på igjen som standard etter d34; i d34 står de gamle motellyktene.
+- [ ] **UFO-SEEN-20261109 (Tom avgjør):** T16-05 og T16-07 virker i kode og prøve (formasjoner 5/5, forhåndsvisning, Pale One dag og natt), men på bildene er formasjonslysene knapt større enn stjernene og Pale One om natta en mørk silhuett. En vanlig natt har 0–2 pass etter kritikken 8. november. Skal lysene være større og tydeligere, komme oftere, og skal Pale One få øyeglimtet (se beslutningen om øyeglimt)?
+- [ ] **REACH-HUMAN-20261109:** T16-01 målt i F10 «Reach and skies (T16)»: fra gården når man fjellfoten eller kanten i alle åtte retninger til fots og med bil (1–4 km), uten usynlige vegger. Et menneske må kjenne om stansen ved fjellfoten er naturlig; bilen stopper brått i foten av skråningen.
 - [ ] **SHOWER-LOOK-20261109:** bygen har mørk sky og virga som et flatt kort; trenger bedre form og våt bakke (ny parameter i bakkematerialet).
 
 - [ ] **T16-01: usynlige vegger.** Spilleren kommer bare litt rundt gården. Fjellene skal kunne nås, og stansen ved foten prøves av et menneske.
@@ -43,13 +45,13 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **T16-03: bakken rundt gården.** Store flater med overlapp mellom to teksturer.
 - [ ] **T16-04: lyskuler.** Sporadisk, én til tre, svever rundt og undersøker som droner.
 - [ ] **T16-05: UFO på himmelen.** Forhåndsvisningen i utviklermenyen virker ikke. De skal komme i ulike formasjoner med jevne mellomrom.
-- [ ] **T16-06: UFO-møter på motorveien** skal kunne gå både nord og sør.
+- [x] **T16-06: UFO-møter på motorveien** skal kunne gå både nord og sør. **9. november:** begge retninger fantes; F10 «sør» startet nordover når man satt i bilen. Rettet (`a80b6d05`), sett i d35-bygg.
 - [ ] **T16-07: Pale One** virker ikke i utviklermenyen.
 - [ ] **T16-08: kalenderen** i vestfløyen, som viser spillets dag, skal også henge i kontrollrommet i SARO.
 - [ ] **T16-09: modemlyd** følger spilleren ut av kontrollrommet etter at en jobb er sendt.
 - [ ] **T16-10: sidedøra** på garasjen i SARO kan ikke brukes. Tom bekrefter at det er servicedøra på østsiden av vingen: «Service dør ja, kommer ikke igjennom.» Rettet i kilde (`RefreshWingObstacles`), ikke prøvd.
 - [ ] **Garasjeporten i SARO er stengt i Freeform selv om den står som oppe:** `StepDoor` nuller `DoorOpen` før Freeform er aktiv. Funnet av lys-agenten 7. november, ikke rettet.
-- [ ] **T16-11: takplaten.** Oppdraget sier «fasten plate at the ladder», men det finnes ingen stige å klatre opp på taket med.
+- [x] **T16-11: takplaten.** Oppdraget sier «fasten plate at the ladder», men det finnes ingen stige å klatre opp på taket med. **9. november:** fast galvanisert stige på målt bakke ved nordveggen (x 5,85), platen ved stigetoppen; selvtest mot veggtabellen; installert i d35, ikke prøvd av menneske.
 - [ ] **T16-12: walkie-talkie** skriker for mye og for sterkt når Roswell dukker opp. Roes kraftig ned.
 - [ ] **T16-13: tåke.** Litt mer tåke inne i SARO sett utenfra om natten.
 - [ ] **T16-14: massivt lys utenfra.** Prøver innendørs der enormt lys kommer inn utenfra, med tåke og lyssøyler. **7. november:** lyssøylene virker i kontrollrommet, gårdshuset, garasjen og kinoen, sett i bilder. Årsaken var at motoren holder lokal tåke 10 m fra øyet. v3 (kino, kaldere farge) er ikke bygget. Gårdshuset slipper ikke lenger lys inn etter at modellen ble byttet, under retting. Tom vurderer om det er skremmende nok, og fargen.
