@@ -9,9 +9,11 @@
 #include "S47Main.h"
 #include "S47OpenLand.h"
 #include "S47Radio.h"
+#include "S47RoadGlimpse.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Taken.h"
+#include "S47TripoNew.h"
 #include "S47Truck.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -266,6 +268,31 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    });
   });
  }
+ // F10-NORDIC-COSMIC-20261109 (Tom, 9 November: «Nordic og Cosmic alien må inn i F10-dev-menyen også»): his Nordic and Cosmic one by
+ // name in each event that may have them (S47RoadGlimpse::DevBodies): crossing the road at 00:30 and on foot at 02:30 here, on the rise
+ // at 00:30 with the rest below. Each asks the event for its body (its own Variant) and says which it got; without Tom's private
+ // models (a build from Git alone) it gets what stands in, says so and passes.
+ const auto Body=[this,Haps](const FString& Id,const FString& Want,bool bAim)
+ {
+  FS47Happenings* H=Haps();FString Why;
+  if(!H||!H->DevStart(Id,Want,Why)||!H->Live(Id)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+  if(bAim){FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,1.4,0));}
+  const FString Got=H->LiveVariant();
+  const TCHAR* Own=S47RoadGlimpse::PathOf(Want);
+  const bool bHave=Own&&S47TripoNew::Exists(Own);
+  const FString Line=FString::Printf(TEXT("%s asked for %s: body %s (%s)%s"),*Id,*Want,Got.IsEmpty()?TEXT("shade"):*Got,S47RoadGlimpse::DevBodyName(Got),
+   bHave?TEXT(""):TEXT("; Tom's model is not in this build, what stands in for it is there"));
+  UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 alien body %s"),*Line);
+  Tell(bHave?Got==Want:Got!=Want,Line,6);
+ };
+ for(const S47RoadGlimpse::FDevBody& D:S47RoadGlimpse::DevBodies())
+ {
+  const FString Id=D.Event,Want=D.Body;const double Hour=D.Hour;
+  if(Id==TEXT("road_glimpse"))
+   E.AddFreeform(G,D.Label,D.Note,[Road,Body,Id,Want,Hour]{Road(Hour,4.5,false,[Body,Id,Want]{Body(Id,Want,false);});});
+  else if(Id==TEXT("figure_near"))
+   E.AddFreeform(G,D.Label,D.Note,[this,Body,Id,Want,Hour]{ToLandPlace(TEXT("windmill"),40,Hour,4.5,[Body,Id,Want](double,double){Body(Id,Want,true);});});
+ }
  E.AddFreeform(G,TEXT("Humour: a small man at the pump wants water"),TEXT("22:00, the pump in Caliche; E talks to him"),[this,Humor]
  {
   FStage Stage;Stage.From=22;Stage.To=1;Stage.Area=TEXT("diner");Stage.Yaw=0;
@@ -342,6 +369,13 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    else{Stage.From=23;Stage.Area=TEXT("saro");Stage.Where=[]{const FS47Box2& Park=S47Legs::MOTEL_PARK();return FVector2D(Park.MinX-6,Park.MinZ+6);};}
    Go(Stage,Fire);
   });
+ }
+ // F10-NORDIC-COSMIC-20261109: the figure on the rise as the Nordic or the Cosmic one (S47RoadGlimpse::DevBodies), at 00:30.
+ for(const S47RoadGlimpse::FDevBody& D:S47RoadGlimpse::DevBodies())
+ {
+  const FString Id=D.Event,Want=D.Body;const double Hour=D.Hour;
+  if(Id==TEXT("horizon_figure"))
+   E.AddFreeform(R,D.Label,D.Note,[this,Body,Id,Want,Hour]{ToLandPlace(TEXT("windmill"),40,Hour,4.5,[Body,Id,Want](double,double){Body(Id,Want,true);});});
  }
  // Without F10's shortcut: the light over the truck takes a player who gets out under it, in the real game's rules, and the hood is
  // warm for one who walks away from the truck and comes back.

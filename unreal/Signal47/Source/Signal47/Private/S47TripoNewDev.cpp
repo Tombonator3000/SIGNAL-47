@@ -7,6 +7,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47OpenLand.h"
+#include "S47RoadGlimpse.h"
 #include "S47Sky.h"
 #include "S47Three.h"
 #include "S47TripoNew.h"
@@ -303,6 +304,52 @@ void FS47DevFreeform::AddTripoNew(FS47DevEvents& E)
        UE_LOG(LogS47TripoNewDev, Display, TEXT("S47: tripo new %s"), *Line);
        Tell(Fx->Dots() == 2, Line, 8);
       });
+     });
+    });
+   });
+  });
+ }
+ // ---- F10-NORDIC-COSMIC-20261109 (Tom, 9 November): the Nordic and the Cosmic one close, for how they look: the Nordic by day and by
+ // night, the Cosmic one's glow by night (S47RoadGlimpse::DevBodies, "close"). Each says the body drawn and its glow; a build without
+ // Tom's models shows the stand-in, says so and passes. Pictures: tripo-<id>-close-<day|night>.png.
+ for (const S47RoadGlimpse::FDevBody& D : S47RoadGlimpse::DevBodies())
+ {
+  if (FCString::Strcmp(D.Event, TEXT("close")) != 0) continue;
+  const FModel* Found = S47TripoNew::Find(D.Body);
+  if (!Found) continue;
+  const int32 K = int32(Found - S47TripoNew::Models().GetData());
+  const double Hour = D.Hour;
+  const bool bNight = Hour >= 20. || Hour < 5.;
+  const bool bCosmic = FCString::Strcmp(D.Body, TEXT("cosmic")) == 0;
+  const double Metres = bCosmic ? 3. : 2.5;
+  E.AddFreeform(Group, D.Label, D.Note, [this, Fx, Out, Ahead, Draw, Shot, Daylight, K, Hour, bNight, bCosmic, Metres]
+  {
+   Out(Hour, bNight ? 1 : 0, [this, Fx, Ahead, Draw, Shot, Daylight, K, Hour, bNight, bCosmic, Metres]
+   {
+    const FModel& Mo = S47TripoNew::Models()[K];
+    FVector Foot; double Face = 0;
+    Ahead(Metres, 0, Foot, Face);
+    if (!Draw(K, Foot, Face)) { Tell(false, TEXT("nothing could be drawn")); return; }
+    AimAt(Foot + FVector(0, Mo.SizeM * .6, 0));
+    After(1.2, [this, Fx, Shot, Daylight, K, Hour, bNight, bCosmic]
+    {
+     Shot(FString::Printf(TEXT("tripo-%s-close-%s"), S47TripoNew::Models()[K].Id, bNight ? TEXT("night") : TEXT("day")));
+     After(.3, [this, Fx, Daylight, K, Hour, bNight, bCosmic]
+     {
+      if (Fx->Now.IsEmpty()) { Tell(false, TEXT("the body went")); return; }
+      const FShown& S = Fx->Now[0];
+      const FModel& Mo2 = S47TripoNew::Models()[K];
+      const UStaticMeshComponent* C = S.C.Get();
+      const FString Asset = C && C->GetStaticMesh() ? C->GetStaticMesh()->GetName() : FString(TEXT("none"));
+      const bool bSkin = S.Cosmic.Skin.IsValid();
+      const int32 Stars = S.Cosmic.Stars.Num();
+      // Tom's own: the Cosmic one shines (its overlay and stars), the Nordic does not; a stand-in has neither, and passes.
+      const bool bGlowOk = !S.bOwn ? !bSkin && Stars == 0 : bCosmic ? bSkin && Stars > 0 : !bSkin && Stars == 0;
+      const FString Line = FString::Printf(TEXT("close %s, %02.0f:00, daylight %.3f: body %s (%s, %.2fm); glow %s, %d stars (want %s)%s"), Mo2.Id, Hour, Daylight(), *Asset,
+       S.bOwn ? TEXT("own") : S.bCube ? TEXT("box") : TEXT("stand-in"), SizeOf(C, Mo2), bSkin ? TEXT("on") : TEXT("none"), Stars,
+       S.bOwn ? (bCosmic ? TEXT("on") : TEXT("none")) : TEXT("none, a stand-in"), S.bOwn ? TEXT("") : TEXT("; Tom's model is not in this build"));
+      UE_LOG(LogS47TripoNewDev, Display, TEXT("S47: tripo new %s"), *Line);
+      Tell(C != nullptr && bGlowOk, Line, 8);
      });
     });
    });

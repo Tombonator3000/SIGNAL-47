@@ -66,6 +66,9 @@ public:
  bool Live(const FString& Id) const;
  // The one holding the ground now, empty when none.
  const FString& Ground() const;
+ // F10-NORDIC-COSMIC-20261109: the variant the one on the ground was given; for the figures and the crossing, its body ("nordic",
+ // "cosmic", "tall", "shadow", "crawler"; empty: the shade). Empty when none is on.
+ const FString& LiveVariant() const;
  void FillRhythm(FS47RhythmNow& Out) const;
  // A humorous one happened tonight: nothing dangerous may follow it (Tom: never the same night as a danger).
  bool HumorTonight() const;
@@ -74,7 +77,8 @@ public:
  static FString DashClock(const US47Main* M,const FString& Usual);
  double DashAhead() const;
  // F10 and tests: start one here and now, past its draw. Variant: real, empty or wrong for cb_stranded; car, singer, crossing or
- // pump for humor. Why: what stopped it.
+ // pump for humor; nordic, cosmic or shade for horizon_figure and figure_near; tall, low or a body for road_glimpse. Why: what
+ // stopped it.
  bool DevStart(const FString& Id,const FString& Variant,FString& Why);
  // F10 and tests: as the night itself would start it, with every condition asked (only the rhythm's dice and draws left out).
  bool DevTry(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
@@ -330,7 +334,8 @@ private:
  bool BeginHitcher(bool bForced,FString& Why);
  bool BeginRv(bool bForced,FString& Why);
  bool BeginHumor(const FString& Variant,bool bForced,FString& Why);
- bool BeginFigure(bool bForced,FString& Why);
+ // Variant: "nordic" or "cosmic" (F10), or "shade"; empty: the seed's (S47RoadGlimpse::FigureFor).
+ bool BeginFigure(const FString& Variant,bool bForced,FString& Why);
  void StepFigure(double Dt);
  // The crossing far ahead now on the road (road_glimpse): its body, side, distance, and whether it stops or leaves prints.
  S47RoadGlimpse::FPlan Glimpse;

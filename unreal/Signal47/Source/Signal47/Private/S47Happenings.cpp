@@ -853,6 +853,7 @@ bool FS47Happenings::Live(const FString& Id) const
  return false;
 }
 const FString& FS47Happenings::Ground() const{return Now.Id;}
+const FString& FS47Happenings::LiveVariant() const{return Now.Variant;}
 bool FS47Happenings::HumorTonight() const{return M&&M->Freeform&&HumorNight==FS47FreeformSession::NightOf(M->Freeform->Clock());}
 void FS47Happenings::FillRhythm(FS47RhythmNow& Out) const
 {
@@ -1734,7 +1735,7 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  else if(Id==TEXT("hitchhiker"))bOk=BeginHitcher(bForced,Why);
  else if(Id==TEXT("stranded_rv"))bOk=BeginRv(bForced,Why);
  else if(Id==TEXT("humor"))bOk=BeginHumor(Variant,bForced,Why);
- else if(Id==TEXT("figure_near"))bOk=BeginFigure(bForced,Why);
+ else if(Id==TEXT("figure_near"))bOk=BeginFigure(Variant,bForced,Why);
  else if(Id==TEXT("big_night"))bOk=BeginBig(Variant,bForced,Why);
  else bOk=BeginMore(Id,Variant,bForced,Why);
  if(!bOk)return false;
@@ -2948,14 +2949,15 @@ void FS47Happenings::UseHumor()
 // off to one side, then close behind. Then a light comes down over where it stood, and whoever is still out there under it is taken
 // (S47Taken, as under the light over the truck). The truck, a roof, or a hard run away is the way out, and it is kept as such.
 // Stages: 0 far, 1 gone, 2 nearer, 3 gone, 4 close, 5 the light coming, 6 the light down, 7 it went up, 8 taken, 9 got away.
-bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
+bool FS47Happenings::BeginFigure(const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
  if(!bForced&&(Driving()||!Outdoors())){Why=TEXT("not out on foot");return false;}
  if(!S47Hap::Exists(S47Hap::HairyStandIn)){Why=TEXT("no figure for it in this build");return false;}
  if(!bForced&&!MayStart(TEXT("figure_near"))){Why=TEXT("the rhythm says not now");return false;}
  // Tom's Nordic or Cosmic some nights, when this build has them; the shade otherwise (S47RoadGlimpse::FigureFor, the seed's).
- const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(F->Clock()),0x46494731u,[](const TCHAR* Path){return S47Hap::Exists(Path);});
+ // F10's Variant: one of them, or shade (F10-NORDIC-COSMIC-20261109).
+ const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(F->Clock()),0x46494731u,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
  if(!Prop(S47Hap::ShadeKind(Body))||!Prop(TEXT("lander"))){Why=TEXT("nothing to draw it with");return false;}
  const FS47Cam Cam=FS47Cam::Of(M->Player);
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);

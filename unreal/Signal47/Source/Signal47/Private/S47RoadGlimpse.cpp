@@ -94,6 +94,27 @@ FString S47RoadGlimpse::FigureFor(int32 Seed,int32 Night,uint32 Salt,TFunctionRe
  return Path&&Have(Path)?Pick:FString();
 }
 
+const TArray<S47RoadGlimpse::FDevBody>& S47RoadGlimpse::DevBodies()
+{
+ static const TArray<FDevBody> Lines={
+  {TEXT("horizon_figure"),TEXT("nordic"),TEXT("Glimpse: the Nordic on the rise, far off"),TEXT("00:30, on foot near the windmill; Tom's Nordic a long way off, dead still; the lamp finds nobody"),.5},
+  {TEXT("horizon_figure"),TEXT("cosmic"),TEXT("Glimpse: the Cosmic one on the rise, far off"),TEXT("00:30, on foot near the windmill; Tom's Cosmic one a long way off, shining of itself; the lamp finds nobody"),.5},
+  {TEXT("figure_near"),TEXT("nordic"),TEXT("On foot: the Nordic comes nearer (danger)"),TEXT("02:30, on foot by the windmill, lamp on; the Nordic, gone when seen and nearer the next time, then a light comes down"),2.5},
+  {TEXT("figure_near"),TEXT("cosmic"),TEXT("On foot: the Cosmic one comes nearer (danger)"),TEXT("02:30, on foot by the windmill, lamp on; the Cosmic one, gone when seen and nearer the next time, then a light comes down"),2.5},
+  {TEXT("road_glimpse"),TEXT("nordic"),TEXT("Glimpse: the Nordic crosses far ahead"),TEXT("00:30, in the truck on the highway; the Nordic 60 to 120 m ahead in the lights, gone before you get there"),.5},
+  {TEXT("road_glimpse"),TEXT("cosmic"),TEXT("Glimpse: the Cosmic one crosses far ahead"),TEXT("00:30, in the truck on the highway; the Cosmic one 60 to 120 m ahead, shining of itself, gone before you get there"),.5},
+  {TEXT("close"),TEXT("nordic"),TEXT("Close: the Nordic, day"),TEXT("11:00 on the open land, 2.5 m from you, facing you: his face, his hair, his clothes by day"),11.},
+  {TEXT("close"),TEXT("nordic"),TEXT("Close: the Nordic, night"),TEXT("23:00 on the open land, no flashlight, 2.5 m from you: what is left of him in the dark"),23.},
+  {TEXT("close"),TEXT("cosmic"),TEXT("Close: the Cosmic one's glow, night"),TEXT("23:00 on the open land, no flashlight, 3 m from you: the body of light, its stars"),23.},
+ };
+ return Lines;
+}
+
+const TCHAR* S47RoadGlimpse::DevBodyName(const FString& Body)
+{
+ return Body==TEXT("nordic")?TEXT("the Nordic"):Body==TEXT("cosmic")?TEXT("the Cosmic one"):Body.IsEmpty()?TEXT("the shade"):TEXT("a stand-in");
+}
+
 FString S47RoadGlimpse::Record(const FPlan& P,const FString& Clock)
 {
  const TCHAR* From=P.Side>0?TEXT("right"):TEXT("left");
@@ -181,6 +202,40 @@ bool S47RoadGlimpse::SelfTest(TArray<FString>& Lines)
   }
   Check(Shade>200&&Nordic>100&&Cosmic>100&&bNever&&bSame,FString::Printf(TEXT("the figure on the rise or on foot: the shade %d, Nordic %d, Cosmic %d of 800; only with the model"),Shade,Nordic,Cosmic));
   Check(FigureFor(1,1,1,All,TEXT("shade")).IsEmpty()&&FigureFor(1,1,1,All,TEXT("cosmic"))==TEXT("cosmic")&&FigureFor(1,1,1,None,TEXT("nordic")).IsEmpty(),TEXT("F10 can ask for each, and gets the shade without the model"));
+ }
+ // F10-NORDIC-COSMIC-20261109: the F10 lines for Tom's two, one per event and body, each asking for the body it says, on any seed
+ // and night; Tom's own asset behind each; the close ones the Nordic by day and night and the Cosmic one's glow by night.
+ {
+  const TCHAR* const Events[]={TEXT("horizon_figure"),TEXT("figure_near"),TEXT("road_glimpse")};
+  bool bEach=true,bAsk=true,bNamed=true,bHour=true;FString Missing;
+  for(const TCHAR* Ev:Events)for(const TCHAR* Body:{TEXT("nordic"),TEXT("cosmic")})
+  {
+   const FDevBody* Line=nullptr;int32 N=0;
+   for(const FDevBody& D:DevBodies())if(FCString::Strcmp(D.Event,Ev)==0&&FCString::Strcmp(D.Body,Body)==0){Line=&D;++N;}
+   if(N!=1){bEach=false;Missing+=FString::Printf(TEXT(" %s/%s x%d"),Ev,Body,N);continue;}
+   const FString Want=Line->Body;
+   const TCHAR* Asset=PathOf(Want);
+   bNamed&=FString(Line->Label).Contains(Want==TEXT("nordic")?TEXT("Nordic"):TEXT("Cosmic"))&&Asset&&FString(Asset).EndsWith(Want==TEXT("nordic")?TEXT(".SM_Tripo_Nordic"):TEXT(".SM_Tripo_Cosmic"));
+   const bool bRoad=FCString::Strcmp(Ev,TEXT("road_glimpse"))==0;
+   for(int32 Seed=1;Seed<=12;++Seed)for(int32 Night=1;Night<=12;++Night)
+    bAsk&=bRoad?PlanFor(Seed,Night,22,All,Want).Id==Want:FigureFor(Seed,Night,0x46494731u,All,Want)==Want&&FigureFor(Seed,Night,0x484f525au,All,Want)==Want;
+   // The rise and the crossing in the glimpse tier (00:30); the one on foot after two, in the full one.
+   bHour&=FCString::Strcmp(Ev,TEXT("figure_near"))==0?Line->Hour>=2.&&Line->Hour<4.:FMath::IsNearlyEqual(Line->Hour,.5);
+  }
+  Check(bEach,FString::Printf(TEXT("F10 has one line for each of the Nordic and the Cosmic one on the rise, on foot and crossing the road%s"),*Missing));
+  Check(bAsk&&bNamed,TEXT("each such F10 line asks for the body it names (SM_Tripo_Nordic, SM_Tripo_Cosmic), and gets it on any seed and night when the build has it"));
+  Check(bHour,TEXT("the glimpses at 00:30, the one on foot after two"));
+  bool bNordicDay=false,bNordicNight=false,bCosmicNight=false,bCloseOk=true;
+  for(const FDevBody& D:DevBodies())if(FCString::Strcmp(D.Event,TEXT("close"))==0)
+  {
+   const FString B=D.Body;const bool bNight=D.Hour>=20.||D.Hour<5.;
+   const S47TripoNew::FModel* Mo=S47TripoNew::Find(B);
+   bCloseOk&=Mo&&(B==TEXT("nordic")||B==TEXT("cosmic"))&&FString(Mo->Path).EndsWith(B==TEXT("nordic")?TEXT(".SM_Tripo_Nordic"):TEXT(".SM_Tripo_Cosmic"))
+    &&S47TripoNew::IsCosmic(B==TEXT("cosmic")?TEXT("SM_Tripo_Cosmic"):TEXT("SM_Tripo_Nordic"))==(B==TEXT("cosmic"));
+   bNordicDay|=B==TEXT("nordic")&&!bNight;bNordicNight|=B==TEXT("nordic")&&bNight;bCosmicNight|=B==TEXT("cosmic")&&bNight;
+  }
+  Check(bCloseOk&&bNordicDay&&bNordicNight&&bCosmicNight,TEXT("F10 has the Nordic close by day and by night, and the Cosmic one's glow close by night, each Tom's own model"));
+  Check(FCString::Strcmp(DevBodyName(TEXT("nordic")),TEXT("the Nordic"))==0&&FCString::Strcmp(DevBodyName(FString()),TEXT("the shade"))==0,TEXT("the F10 lines name the body they got"));
  }
  // The words: what was seen and where from, never what it was.
  {

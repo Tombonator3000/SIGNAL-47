@@ -46,6 +46,15 @@ namespace S47RoadGlimpse
  // Horizon figures and the figure on foot (FS47Happenings): the shade as before, or Tom's Nordic or Cosmic when this build has them,
  // from the seed ("", "nordic" or "cosmic"). Want: one of those, or "shade" (F10); empty: the seed's.
  SIGNAL47_API FString FigureFor(int32 Seed,int32 Night,uint32 Salt,TFunctionRef<bool(const TCHAR*)> Have,const FString& Want=FString());
+ // F10-NORDIC-COSMIC-20261109 (Tom, 9 November: «Nordic og Cosmic alien må inn i F10-dev-menyen også»): the F10 lines that ask for
+ // each of his two by name, in each event that may have them (horizon_figure, figure_near, road_glimpse: Want above), and the two
+ // close by in "Tripo new" (close: the Nordic by day and by night, the Cosmic one's glow by night). S47HappeningsDev and
+ // S47TripoNewDev make their lines from this table; the self-test asks that every event has both and that each line's ask is the
+ // body it gets. Hour: the clock the line is set to (.5 is 00:30, 23 is 23:00).
+ struct FDevBody{const TCHAR* Event;const TCHAR* Body;const TCHAR* Label;const TCHAR* Note;double Hour;};
+ SIGNAL47_API const TArray<FDevBody>& DevBodies();
+ // Its label's name for a body: "the Nordic", "the Cosmic one".
+ SIGNAL47_API const TCHAR* DevBodyName(const FString& Body);
  // What the player keeps: the crossing, when it was seen (Clock as "00:40"); the prints, when found.
  SIGNAL47_API FString Record(const FPlan& P,const FString& Clock);
  SIGNAL47_API FString TracksRecord(bool bLow,const FString& Clock,bool bDay);
