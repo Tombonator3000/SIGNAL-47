@@ -212,7 +212,7 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 							if (Frame >= 12)
 							{
 								const int32 Seen = OnScreen(M, Shown);
-								const FString Line = FString::Printf(TEXT("%s: %d lights on the screen, twinkling (size %.2f, twinkle %.2f, colour %.2f)"), *Name, Seen, FS47SkyGlint::SizeScale, FS47SkyGlint::Twinkle, FS47SkyGlint::Chroma);
+								const FString Line = FString::Printf(TEXT("%s: %d lights on the screen, twinkling (size %.2f, twinkle %.2f, colour %.2f, core %.2f)"), *Name, Seen, FS47SkyGlint::SizeScale, FS47SkyGlint::Twinkle, FS47SkyGlint::Chroma, FS47SkyGlint::Core);
 								UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), Seen > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
 								if (SweepDir.IsEmpty()) { Tell(Seen > 0, Line, 8); return; }
 								// The same view with no lights: the ground is to be the same in both.
