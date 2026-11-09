@@ -848,7 +848,7 @@ APRIL 13, 1986
 
 **Utløser:** Valgfri tilbakemelding etter den faktisk gjennomførte T02-kontrollen. Spillerens kontaktvalg rapporterer kontrollresultatet før Dale svarer.
 
-**Regi:** Kinski-profilen brukes bare i walkien. Dale bekrefter spillerens rapport språklig; han ser ikke stedet direkte.
+**Regi:** Dales stemme brukes bare i walkien. Dale bekrefter spillerens rapport språklig; han ser ikke stedet direkte.
 
 **Krav:** {"all": ["trafo_anomaly_checked"], "none": ["dale_field_call_done"]}
 

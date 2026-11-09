@@ -13,7 +13,7 @@
       "source_provenance": "web/production/kinski/provenance.json",
       "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio).",
       "deprecated_for_new_lines": true,
-      "deprecated_nb": "Utfaset for nye replikker, Tom 9. november ca. 13:45: profilen er en klone av den ekte Klaus Kinskis stemme fra et dokumentarklipp. Dale får en egen, oppdiktet stemme (profil dale). De 56 eksisterende takene står urørt til Tom har lyttet; generate.py lager ingen ny take med denne profilen uten --allow-deprecated. Profilen slettes ikke; det avgjør Tom."
+      "deprecated_nb": "Utfaset for nye replikker, Tom 9. november ca. 13:45: profilen er en klone av den ekte Klaus Kinskis stemme fra et dokumentarklipp. Dale får en egen, oppdiktet stemme (profil dale). Story-bankene bruker profilen dale fra 9. november (DALE-STORY-SWAP): pack.json sier voice_profile dale, og takene kommer fra DaleVoice. De 56 gamle takene ligger urørt i ~/.cache/signal47-eveningshift/takes (Content-kopiene flyttet til kinski-retired-from-content) til Tom har lyttet; generate.py lager ingen ny take med denne profilen uten --allow-deprecated. Profilen slettes ikke; det avgjør Tom."
     },
     "waitress": {
       "actors": ["WAITRESS"],

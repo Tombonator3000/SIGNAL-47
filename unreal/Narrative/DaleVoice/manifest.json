@@ -98,9 +98,9 @@
     "the souvenir shop",
     "the 1420 AM studio",
     "the empty house across from the laundromat",
-    "the empty house across from the Plaza",
-    "the last house on the east side of town",
-    "the empty house at the south end of town",
+    "the deputy's house across from the Plaza",
+    "the souvenir man's house at the end of the east side",
+    "the cook's house at the south end of town",
     "the Mesa Diner",
     "the windmill on the Baca lease",
     "the water tank on the old grade",
@@ -111,7 +111,7 @@
     "the cairn on the rise",
     "the survey stake off the track",
     "the salt lick and trough",
-    "Saucer Rock",
+    "the flat-top rock west of town",
     "the remote feeder on the county road",
     "the lot"
    ],
@@ -149,8 +149,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_HANDOVER_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_HANDOVER_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Vanlig telefonstemme, rolig og litt tørr. Ingen truende pause."
   },
   {
@@ -162,8 +162,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_HANDOVER_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_HANDOVER_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -175,8 +175,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_HANDOVER_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_HANDOVER_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -188,8 +188,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_HANDOVER_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_HANDOVER_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -201,8 +201,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_FOOD_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_FOOD_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -214,8 +214,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_FOOD_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_FOOD_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -227,8 +227,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_NOFOOD_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_NOFOOD_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -240,8 +240,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_NOFOOD_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_NOFOOD_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -253,8 +253,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -266,8 +266,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -279,8 +279,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -292,8 +292,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -305,8 +305,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_005.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_005.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -318,8 +318,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_006.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_006.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -331,8 +331,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D01_BRIEF_007.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_BRIEF_007.wav",
+   "current_profile": "dale",
    "delivery_nb": "Vennlig avslutning med naturlig engelsk prosodi, uten uhyggelig undertone."
   },
   {
@@ -344,8 +344,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D11_POWER_PHONE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D11_POWER_PHONE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -357,8 +357,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D11_POWER_PHONE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D11_POWER_PHONE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -370,8 +370,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D11_POWER_PHONE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D11_POWER_PHONE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -383,8 +383,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D11_POWER_PHONE_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D11_POWER_PHONE_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -396,8 +396,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D11_POWER_PHONE_005.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D11_POWER_PHONE_005.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -409,8 +409,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D12_POWER_WALKIE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D12_POWER_WALKIE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -422,8 +422,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D12_POWER_WALKIE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D12_POWER_WALKIE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -435,8 +435,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D12_POWER_WALKIE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D12_POWER_WALKIE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -448,8 +448,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_SIGNAL_PHONE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -461,8 +461,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_SIGNAL_PHONE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Kort naturlig tenkepause, uten dramatisk gisp."
   },
   {
@@ -474,8 +474,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_SIGNAL_PHONE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -487,8 +487,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_SIGNAL_PHONE_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -500,8 +500,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_BEFORE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_BEFORE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -513,8 +513,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_BEFORE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_BEFORE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -526,8 +526,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_BEFORE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_BEFORE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -539,8 +539,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_POWER_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_POWER_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -552,8 +552,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_POWER_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_POWER_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -565,8 +565,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_END_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_END_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -578,8 +578,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D21_END_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D21_END_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -591,8 +591,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_OFFICE_PHONE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Tilbakeholden, men menneskelig. Han vet dette fordi spilleren nettopp har fortalt at kontoret er åpnet."
   },
   {
@@ -604,8 +604,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_OFFICE_PHONE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -617,8 +617,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_OFFICE_PHONE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -630,8 +630,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_WARD_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_WARD_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -643,8 +643,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_WARD_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_WARD_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -656,8 +656,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_WARD_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_WARD_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -669,8 +669,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_TAPE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_TAPE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -682,8 +682,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_TAPE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_TAPE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -695,8 +695,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_TAPE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_TAPE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -708,8 +708,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_RECORD_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_RECORD_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -721,8 +721,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_RECORD_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_RECORD_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -734,8 +734,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_RECORD_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_RECORD_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -747,8 +747,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_END_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_END_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -760,8 +760,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D31_END_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D31_END_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -773,8 +773,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D41_FIELD_WALKIE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -786,8 +786,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D41_FIELD_WALKIE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -799,8 +799,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D41_FIELD_WALKIE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -812,8 +812,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D41_FIELD_WALKIE_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -825,8 +825,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D51_LAST_PHONE_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D51_LAST_PHONE_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -838,8 +838,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D51_LAST_PHONE_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D51_LAST_PHONE_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -851,8 +851,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D51_LAST_PHONE_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D51_LAST_PHONE_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
   },
   {
@@ -864,8 +864,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "EveningShift/D51_LAST_PHONE_004.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D51_LAST_PHONE_004.wav",
+   "current_profile": "dale",
    "delivery_nb": "Helt vanlig avslutning, uten kunnskap om den kommende slutten."
   },
   {
@@ -877,8 +877,8 @@
    "kind": "story_cue",
    "status": "alias",
    "alias_of": "D01_HANDOVER_001",
-   "current_take": "EveningShift/D01_HANDOVER_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/D01_HANDOVER_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Nøyaktig samme opptak som første overleveringsreplikk. Ingen nye ord eller improvisasjon."
   },
   {
@@ -890,8 +890,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "HorrorStory/H01_BRIEF_001.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H01_BRIEF_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -903,8 +903,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "HorrorStory/H01_BRIEF_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H01_BRIEF_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -916,8 +916,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": "HorrorStory/H01_BRIEF_003.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H01_BRIEF_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -929,8 +929,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H02_BRIEF_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -942,8 +942,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H02_BRIEF_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -955,8 +955,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H02_BRIEF_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -968,8 +968,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H04_BRIEF_001.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -981,8 +981,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H04_BRIEF_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -994,8 +994,8 @@
    "kind": "story_cue",
    "status": "voice",
    "alias_of": null,
-   "current_take": null,
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H04_BRIEF_003.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -1007,8 +1007,8 @@
    "kind": "story_cue",
    "status": "alias",
    "alias_of": "H01_BRIEF_002",
-   "current_take": "HorrorStory/H01_BRIEF_002.wav",
-   "current_profile": "kinski",
+   "current_take": "DaleVoice/H01_BRIEF_002.wav",
+   "current_profile": "dale",
    "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
   },
   {
@@ -1985,7 +1985,7 @@
    "id": "FF_RELAY_hap_1",
    "text": "A driver says he saw lights come down out past {place} last night. Nobody went to look.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2082",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2083",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1998,7 +1998,7 @@
    "id": "FF_RELAY_hap_2",
    "text": "A rancher lost a heifer out by {place}. The vet looked at her and would not say.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2088",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2089",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -2011,7 +2011,7 @@
    "id": "FF_RELAY_hap_3",
    "text": "A rancher has a cow down out by {place} and wants a vet. He does not like the look of her.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3130",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3131",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -2024,7 +2024,7 @@
    "id": "FF_RELAY_hap_4",
    "text": "The county is looking for a man from Magdalena who did not come home: a blue half-ton pickup, last seen headed toward {place}.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3355",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3359",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",

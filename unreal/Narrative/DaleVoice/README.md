@@ -47,7 +47,23 @@ python3 catalog.py --voice dale_de_design --import-raw ../../Signal47/Content/Au
 
 ## Avspilling i spillet
 
-Story: kveldspakken og HorrorStory spiller Dale gjennom `FS47RecordedDialogue`, som finner klippet på eksakt tekst i lydbanken og legger på telefon- eller walkiefilteret. De nye takene kan tas i bruk uten C++: bytt Dales klipp i bankene med samme id og tekst (`Signal47/Scripts/evening-voice-catalog.py`, `HorrorStory/voice/catalog.py`), og kjør `build_pack.py` for nye tider i undertekstene.
+Story (DALE-STORY-SWAP, 9. november): kveldspakken og HorrorStory spiller Dale gjennom `FS47RecordedDialogue`, som finner klippet på rolle og eksakt tekst i bankene `evening` og `horror` og legger på telefon- eller walkiefilteret. Dales klipp i begge bankene er nå disse takene, med samme id og tekst:
+
+- `pack.json` i begge pakkene gir DALE `voice_profile: dale` (var `kinski`). `build_pack.py` krever det og henter Dales takes fra `takes.json` her, bundet til id og eksakt tekst i `manifest.json`. Pakkenes egne `voice/takes.json` har bare de andre rollene. Tidene havner i `recording_manifest.json`, `subtitles.json` og den kompilerte `*PackData.inl`.
+- `evening`: 56 Dale-klipp og aliaset `D61_FIXED_FRAGMENT_001` (peker på `D01_HANDOVER_001`), lest fra `Content/Audio/DaleVoice`. `evening-voice-catalog.py` stopper hvis en gammel Dale-take ligger igjen i `Content/Audio/EveningShift`.
+- `horror`: alle 9 Dale-replikkene (H01, H02, H04; før var bare de tre H01 innspilt) pluss de to dispatch-takene. Aliaset `SC04_ANNEX_IMPRINT_001` deler tekst og fil med `H01_BRIEF_002`. `HorrorStory/voice/catalog.py` sjekker hash, tider, `verification.json` og `generation.json` her.
+- `audio-raw.py` tar med Dales mappe for `evening` og importerer nå også `horror` (før falt banken ut ved full oppdatering av `voices.json`).
+- De gamle Kinski-takene er ikke slettet: hovedkopiene ligger urørt i `~/.cache/signal47-eveningshift/takes` og `~/.cache/signal47-horror/sc01/takes`, og de 56 kopiene fra `Content/Audio/EveningShift` ligger i `~/.cache/signal47-eveningshift/kinski-retired-from-content`.
+
+Spillet leser tidene fra den kompilerte pakken. Før neste bygg finner den gamle binæren ikke klippene (den slår opp rollen `kinski`) og viser Dales Story-replikker som tekst. Etter bygg og Raw-import stemmer stemme og undertekst.
+
+```sh
+python3 EveningShift/build_pack.py && python3 EveningShift/build_pack.py --check
+python3 HorrorStory/build_pack.py && python3 HorrorStory/build_pack.py --check
+python3 HorrorStory/voice/catalog.py && python3 HorrorStory/voice/catalog.py --check
+cd ../Signal47 && python3 Scripts/audio-raw.py --evening-only      # evening med Dales takes
+python3 ../Narrative/HorrorStory/voice/catalog.py --import-raw Content/Audio/Raw
+```
 
 Freeform (DALE-WIRE, 9. november): koblet i C++ gjennom `FS47DaleVoice`, som slår opp i banken `dale` på manifestets id eller eksakt tekst (med eller uten `DALE:` foran) og spiller med `FS47RecordedDialogue` gjennom mottakerfilteret. Uten take gjelder dagens oppførsel uendret.
 

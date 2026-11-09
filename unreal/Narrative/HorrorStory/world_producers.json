@@ -4624,7 +4624,7 @@
         "Originalfilmen Service Road / Field 01, 72 sekunder, egen produksjon etter VHS_DALE_FIELD_01-storyboardet, med miljølyd; egne Blender-kilder eller CC0",
         "Vindusendring etter undersøkelsen"
       ],
-      "voice_nb": "H04_BRIEF_001 til 003 (Dale, telefon, kinski) står som pending i recording_manifest.json og finnes ikke i voice/takes.json. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.",
+      "voice_nb": "H04_BRIEF_001 til 003 (Dale, telefon) er innspilt med Dales egen stemme dale i ../DaleVoice (takes.json der), 9. november. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.",
       "dependencies_nb": [
         "SC06 levert",
         "EveningShift-eierskapet til kontor og VHS"

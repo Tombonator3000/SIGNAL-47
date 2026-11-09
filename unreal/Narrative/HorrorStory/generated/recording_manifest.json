@@ -10,115 +10,115 @@
   },
   "cue_count": 52,
   "required_recording_count": 51,
-  "recorded_count": 5,
+  "recorded_count": 11,
   "recordings": [
     {
       "line_id": "H01_BRIEF_001",
       "scene_id": "H01_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
+      "voice_profile": "dale",
       "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": "HorrorStory/H01_BRIEF_001.wav",
-      "duration_seconds": 5.63
+      "audio_file": "DaleVoice/H01_BRIEF_001.wav",
+      "duration_seconds": 6.4
     },
     {
       "line_id": "H01_BRIEF_002",
       "scene_id": "H01_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
+      "voice_profile": "dale",
       "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": "HorrorStory/H01_BRIEF_002.wav",
-      "duration_seconds": 3.75
+      "audio_file": "DaleVoice/H01_BRIEF_002.wav",
+      "duration_seconds": 4.07
     },
     {
       "line_id": "H01_BRIEF_003",
       "scene_id": "H01_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
+      "voice_profile": "dale",
       "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": "HorrorStory/H01_BRIEF_003.wav",
-      "duration_seconds": 4.82
+      "audio_file": "DaleVoice/H01_BRIEF_003.wav",
+      "duration_seconds": 5.17
     },
     {
       "line_id": "H02_BRIEF_001",
       "scene_id": "H02_BRIEF",
       "actor": "DALE",
       "channel": "walkie",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H02_BRIEF_001.wav",
+      "duration_seconds": 3.14
     },
     {
       "line_id": "H02_BRIEF_002",
       "scene_id": "H02_BRIEF",
       "actor": "DALE",
       "channel": "walkie",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H02_BRIEF_002.wav",
+      "duration_seconds": 4.44
     },
     {
       "line_id": "H02_BRIEF_003",
       "scene_id": "H02_BRIEF",
       "actor": "DALE",
       "channel": "walkie",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H02_BRIEF_003.wav",
+      "duration_seconds": 3.94
     },
     {
       "line_id": "H04_BRIEF_001",
       "scene_id": "H04_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H04_BRIEF_001.wav",
+      "duration_seconds": 4.6
     },
     {
       "line_id": "H04_BRIEF_002",
       "scene_id": "H04_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H04_BRIEF_002.wav",
+      "duration_seconds": 4.39
     },
     {
       "line_id": "H04_BRIEF_003",
       "scene_id": "H04_BRIEF",
       "actor": "DALE",
       "channel": "phone",
-      "voice_profile": "kinski",
-      "status": "pending",
+      "voice_profile": "dale",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "DaleVoice/H04_BRIEF_003.wav",
+      "duration_seconds": 4.22
     },
     {
       "line_id": "H06_BRIEF_001",
@@ -509,12 +509,12 @@
       "scene_id": "SC04_ANNEX_IMPRINT",
       "actor": "DALE",
       "channel": "radio",
-      "voice_profile": "kinski",
+      "voice_profile": "dale",
       "status": "reuses_recording",
       "reuse_of": "H01_BRIEF_002",
       "recording_required": false,
-      "audio_file": "HorrorStory/H01_BRIEF_002.wav",
-      "duration_seconds": 3.75
+      "audio_file": "DaleVoice/H01_BRIEF_002.wav",
+      "duration_seconds": 4.07
     },
     {
       "line_id": "SC04_SAFE_ROOM_AGREEMENT_001",

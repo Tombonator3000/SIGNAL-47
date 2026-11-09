@@ -20,7 +20,8 @@
 # S47_PROJECT=<dir of Signal47.uproject> imports into another checkout (its web/ is the source).
 # S47_AUDIO_RAW_ONLY=1 refreshes only the runtime recordings, without an Unreal asset import.
 # S47_AUDIO_EVENING_ONLY=1 imports only the supplied EveningShift bank and preserves all other audio.
-# S47_EVENING_WAV_DIR overrides Content/Audio/EveningShift (109 approved originals).
+# S47_EVENING_WAV_DIR overrides Content/Audio/EveningShift (the 53 approved originals of the other roles;
+# Dale's 56 come from Content/Audio/DaleVoice).
 set -euo pipefail
 UE_ROOT=${UE_ROOT:-$HOME/.local/opt/UnrealEngine-5.8.4}
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
@@ -89,7 +90,11 @@ if [ -d "$evening_dir" ] && [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
   for f in "$evening_dir"/*.wav; do
     cp -- "$f" "$STAGE/wav/Voice/Evening/v_$(basename "$f")"
   done
-  echo 'Voice/Evening: 109 original PCM files staged without conversion'
+  # DALE-STORY-SWAP: Dale's evening cues are his own takes (Content/Audio/DaleVoice), as the manifest says
+  while IFS= read -r f; do
+    cp -- "$D/Content/Audio/$f" "$STAGE/wav/Voice/Evening/v_$(basename "$f")"
+  done < <(python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); [print(r["audio_file"]) for r in m["recordings"] if r["recording_required"] and (r["audio_file"] or "").startswith("DaleVoice/")]' "$ROOT/unreal/Narrative/EveningShift/generated/recording_manifest.json")
+  echo "Voice/Evening: $(ls "$STAGE/wav/Voice/Evening" | wc -l) original PCM files staged without conversion"
 fi
 PYTHONPATH="$SCRIPTS${PYTHONPATH:+:$PYTHONPATH}" python3 -c 'from unreal_guard import require_idle; require_idle()'
 S47_AUDIO_STAGE="$STAGE/wav" "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.uproject" -run=pythonscript -script="$SCRIPTS/import-audio.py" -unattended -nullrhi -nosplash 2>&1 | grep -E "S47:|Error:|Traceback" | grep -v "LogPython: Display: Python" | grep -v "Toolset\|toolset\|ToolsetDefinition" | tail -40

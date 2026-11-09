@@ -34,7 +34,7 @@
   "actors": {
     "DALE": {
       "display_name": "DALE",
-      "voice_profile": "kinski",
+      "voice_profile": "dale",
       "record": true,
       "allowed_channels": [
         "phone",

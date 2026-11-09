@@ -231,6 +231,8 @@ def cues():
     for item in manifest['recordings']:
         if not item['recording_required']:
             continue
+        if item['voice_profile'] == 'dale':
+            continue  # Dale's takes are made, checked and kept by ../../DaleVoice (DALE-STORY-SWAP)
         out.append({**item, 'text': texts[item['line_id']]['text'], 'delivery_nb': texts[item['line_id']]['delivery_nb']})
     return out
 
@@ -284,9 +286,12 @@ def main():
     if args.sync:
         for target in args.sync:
             target.mkdir(parents=True, exist_ok=True)
-            for wav in sorted(takes_dir.glob('*.wav')):
+            # Only the current cues' takes: the retired kinski Dale takes stay in the cache (DALE-STORY-SWAP).
+            wanted = {cue['line_id'] + '.wav' for cue in cues()}
+            synced = [wav for wav in sorted(takes_dir.glob('*.wav')) if wav.name in wanted]
+            for wav in synced:
                 shutil.copy2(wav, target / wav.name)
-            print(json.dumps({'synced': len(list(takes_dir.glob('*.wav'))), 'to': str(target)}))
+            print(json.dumps({'synced': len(synced), 'to': str(target)}))
         return
     casting = load_casting()
     retakes_path = HERE / 'retakes.json'

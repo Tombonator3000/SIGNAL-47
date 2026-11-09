@@ -62,18 +62,26 @@ spec = importlib.util.spec_from_file_location('s47_evening_catalog', os.path.joi
 evening_catalog = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(evening_catalog)
 evening_dir = args.evening_wav_dir or Path(args.content) / 'Audio/EveningShift'
+dale_dir = Path(args.content) / 'Audio/DaleVoice'
 evening_entry = None
 if evening_dir.is_dir() or args.evening_only or args.evening_wav_dir:
     try:
         manifest_path = evening_catalog.DEFAULT_MANIFEST
+        # Dale's cues are his own voice (DALE-STORY-SWAP): Content/Audio/DaleVoice and DaleVoice/takes.json
         evening_entry = evening_catalog.catalog(evening_catalog.read_json(manifest_path),
             evening_catalog.read_json(manifest_path.with_name('subtitles.json')), evening_dir,
-            evening_catalog.read_json(evening_catalog.DEFAULT_TAKES))
+            evening_catalog.read_json(evening_catalog.DEFAULT_TAKES), dale_dir,
+            evening_catalog.read_json(evening_catalog.DEFAULT_DALE_TAKES))
     except (ValueError, OSError, KeyError, TypeError, evening_catalog.wave.Error) as exc:
         sys.exit('S47: EveningShift validation failed: %s' % exc)
+def evening_counts():
+    v = evening_entry['evening']['validation']
+    return '%d supplied PCM WAVs (%d Dale), %d cues' % (v['unique_recording_count'], v['dale_recording_count'], v['cue_count'])
+
+
 if args.evening_only:
-    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW))
-    print('S47: raw voice evening: 109 supplied PCM WAVs, 110 cues; other banks preserved')
+    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW), dale_dir=dale_dir)
+    print('S47: raw voice evening: %s; other banks preserved' % evening_counts())
     raise SystemExit(0)
 
 # the voice banks and the folders their clips are imported to (import-audio.sh does the same)
@@ -219,8 +227,21 @@ with open(os.path.join(RAW, 'voices.json'), 'w', encoding='utf-8') as f:
 print('S47: voice banks indexed: %s' % ', '.join('%s %d' % (b, len(v['catalog'].get('clips', []))) for b, v in voices.items()))
 
 if evening_entry is not None:
-    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW), voices)
-    print('S47: raw voice evening: 109 supplied PCM WAVs, 110 cues; measured hashes/timings verified')
+    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW), voices, dale_dir=dale_dir)
+    print('S47: raw voice evening: %s; measured hashes/timings verified' % evening_counts())
+
+# DALE-STORY-SWAP-20261109: HorrorStory's bank "horror" (SC01 dispatch and Dale's own takes from DaleVoice,
+# Narrative/HorrorStory/voice/catalog.py, which keeps every other bank as it is). Without this, a full refresh
+# rebuilt voices.json without it and Story's horror lines lost their voice.
+try:
+    spec = importlib.util.spec_from_file_location('s47_horror_catalog', os.path.join(ROOT, 'unreal', 'Narrative', 'HorrorStory', 'voice', 'catalog.py'))
+    horror_catalog = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(horror_catalog)
+    horror_entry = horror_catalog.catalog(horror_catalog.generate.HOME_DATA)
+    print('S47: raw voice horror: %d takes' % horror_catalog.import_raw(horror_entry, horror_catalog.generate.HOME_DATA, Path(RAW)))
+    voices = json.load(open(os.path.join(RAW, 'voices.json'), encoding='utf-8'))
+except (ValueError, OSError, KeyError, TypeError) as exc:
+    print('S47: raw voice horror left out: %s' % exc, file=sys.stderr)
 
 # DALE-WIRE-20261109: Dale's own Freeform takes as the "dale" bank (Narrative/DaleVoice/catalog.py, which keeps every other bank
 # as it is). Until there are takes it is an empty bank, and the game keeps his lines as text with the walkie's own chatter.

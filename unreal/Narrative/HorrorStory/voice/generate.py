@@ -54,6 +54,10 @@ def scenario_cue_ids(scenario):
 def cues():
     wanted = SC01_CUE_IDS if SCENARIO == 'SC01' else scenario_cue_ids(SCENARIO)
     rows = {r['line_id']: r for r in original_cues()}
+    # Dale's lines (profile dale) are left out by original_cues: DaleVoice makes and keeps his takes.
+    dale = {r['line_id'] for r in json.loads((PACK / 'generated/recording_manifest.json').read_text())['recordings']
+            if r['voice_profile'] == 'dale'}
+    wanted = tuple(k for k in wanted if k not in dale)
     missing = set(wanted) - rows.keys()
     if missing:
         raise ValueError(f'{SCENARIO} recording cues missing: {sorted(missing)}')

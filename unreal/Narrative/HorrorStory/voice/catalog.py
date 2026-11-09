@@ -3,9 +3,16 @@
 
 The committed catalog contains no audio. --import-raw changes only ignored
 Content/Audio/Raw and preserves every unrelated bank structurally unchanged.
+
+Dale's cues (voice_profile dale, Tom 9 November; DALE-STORY-SWAP) are his own fictional
+voice from Narrative/DaleVoice: every recorded Dale cue of the pack, with the WAV from
+Content/Audio/DaleVoice (else the DaleVoice cache) and hash, speech window and checks from
+DaleVoice takes.json, verification.json and generation.json, bound by id and exact text to
+DaleVoice/manifest.json. The retired kinski takes in ~/.cache/signal47-horror are not read.
 """
 from pathlib import Path
 import argparse
+import csv
 import hashlib
 import importlib.util
 import json
@@ -20,6 +27,64 @@ if str(HERE) not in sys.path:sys.path.insert(0,str(HERE))
 import text_contract
 spec=importlib.util.spec_from_file_location('signal47_sc01_catalog_generation',HERE/'generate.py')
 generate=importlib.util.module_from_spec(spec);spec.loader.exec_module(generate)
+PACK=HERE.parent
+DALE=PACK.parent/'DaleVoice'
+DALE_SYNCED=PACK.parents[1]/'Signal47/Content/Audio/DaleVoice'
+DALE_CACHE=Path.home()/'.cache/signal47-dale-voice/dale/takes'
+DALE_PROFILE='dale'
+
+
+def dale_wavs():
+    return DALE_SYNCED if DALE_SYNCED.is_dir() and any(DALE_SYNCED.glob('*.wav')) else DALE_CACHE
+
+
+def pack_dale_cues():
+    """Every recorded Dale cue of the pack in manifest order (generate.cues leaves them to DaleVoice)."""
+    manifest=json.loads((PACK/'generated/recording_manifest.json').read_text())
+    texts={r['line_id']:r['text'] for r in csv.DictReader((PACK/'generated/voice_lines.csv').open(newline=''))}
+    return [{**r,'text':texts[r['line_id']]} for r in manifest['recordings']
+            if r['voice_profile']==DALE_PROFILE and r['recording_required']]
+
+
+def measure(path,cue_id):
+    with wave.open(str(path),'rb') as wav:
+        if (wav.getnchannels(),wav.getsampwidth(),wav.getframerate(),wav.getcomptype())!=(1,2,48000,'NONE'):
+            raise ValueError(f'Invalid recording format: {cue_id}')
+        frames=wav.getnframes()
+        if len(wav.readframes(frames))!=frames*2:raise ValueError(f'Truncated recording: {cue_id}')
+    return frames,hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def dale_clips():
+    """Dale's horror clips from DaleVoice; any stale or missing evidence stops the catalog."""
+    cues=pack_dale_cues()
+    if not cues:return []
+    takes=json.loads((DALE/'takes.json').read_text())['takes'];report=json.loads((DALE/'verification.json').read_text())
+    generation=json.loads((DALE/'generation.json').read_text())['takes']
+    lines={l['id']:l for l in json.loads((DALE/'manifest.json').read_text())['lines']}
+    if report.get('status')!='PASS':raise ValueError('DaleVoice technical validation has not passed')
+    folder=dale_wavs();clips=[]
+    for cue in cues:
+        cue_id=cue['line_id'];meta=takes.get(cue_id);line=lines.get(cue_id)
+        if not meta:raise ValueError(f'No DaleVoice take: {cue_id}')
+        if not line or line['status']!='voice' or line['text']!=cue['text']:
+            raise ValueError(f'DaleVoice/manifest.json differs from the pack: {cue_id}')
+        if meta.get('file')!=f'DaleVoice/{cue_id}.wav':raise ValueError(f'DaleVoice take file mismatch: {cue_id}')
+        frames,digest=measure(folder/f'{cue_id}.wav',cue_id);duration=frames/48000
+        checked=report['takes'].get(cue_id,{})
+        if checked.get('sha256')!=digest or checked.get('problems')!=[] or checked.get('voice_profile')!=DALE_PROFILE:
+            raise ValueError(f'Stale DaleVoice verification: {cue_id}')
+        if generation.get(cue_id,{}).get('audio',{}).get('sha256')!=digest:
+            raise ValueError(f'Stale DaleVoice generation record: {cue_id}')
+        if digest!=meta['sha256'] or abs(meta['duration_seconds']-duration)>1/48000:
+            raise ValueError(f'Stale measured recording: {cue_id}')
+        start,end=meta['speech_start_seconds'],meta['speech_end_seconds']
+        if not 0<=start<end<=duration:raise ValueError(f'Invalid timing: {cue_id}')
+        clips.append({'id':cue_id,'text':cue['text'],'voice':DALE_PROFILE,
+                      'file':f'{cue_id}.wav','asset':f'v_{cue_id}',
+                      'raw':f'voice/horror/{cue_id}.wav','duration':duration,'frames':frames,'sha256':digest,
+                      'speech_start_seconds':start,'speech_end_seconds':end,'reuse_of':None})
+    return clips
 
 
 def catalog(data):
@@ -29,7 +94,8 @@ def catalog(data):
     cues=generate.cues();required={cue['line_id'] for cue in cues}
     if not cues or len(required)!=len(cues):raise ValueError('Missing or duplicate current cue identities')
     if set(takes['takes'])!=required:raise ValueError(f'Partial or unexpected {generate.SCENARIO} timing set')
-    clips=[];lookup={}
+    clips=dale_clips();lookup={(DALE_PROFILE,' '.join(c['text'].split())):c['id'] for c in clips}
+    dale_count=len(clips)
     for cue in cues:
         cue_id=cue['line_id'];meta=takes['takes'][cue_id];path=data/'takes'/f'{cue_id}.wav'
         with wave.open(str(path),'rb') as wav:
@@ -52,18 +118,22 @@ def catalog(data):
                       'file':f'{cue_id}.wav','asset':f'v_{cue_id}',
                       'raw':f'voice/horror/{cue_id}.wav','duration':duration,'frames':frames,'sha256':digest,
                       'speech_start_seconds':start,'speech_end_seconds':end,'reuse_of':None})
+    order={r['line_id']:n for n,r in enumerate(json.loads((PACK/'generated/recording_manifest.json').read_text())['recordings'])}
+    clips.sort(key=lambda c:order[c['id']])
     return {'horror':{'folder':'/Game/Audio/Voice/Horror','catalog':{'clips':clips},
-          'validation':{'pack_id':'signal47_horror_story_h1','scenario':generate.SCENARIO,'cue_count':len(cues),
+          'validation':{'pack_id':'signal47_horror_story_h1','scenario':generate.SCENARIO,'cue_count':len(clips),
+                        'dale_cue_count':dale_count,'dale_voice':'dale (DaleVoice, dale_de_design)',
                         'sample_rate_hz':48000,'sample_format':'PCM16','channels':1,
                         'technical_status':report['technical_status'],'word_status':report['word_status'],
-                        'human_listened':False,'scope':f'{len(cues)} measured {generate.SCENARIO} takes only; later story cues remain pending.'}}}
+                        'human_listened':False,'scope':f'{len(cues)} measured {generate.SCENARIO} dispatch takes and {dale_count} Dale takes from DaleVoice; later story cues remain pending.'}}}
 
 
 def import_raw(entry,data,target):
     index=target/'voices.json';before=json.loads(index.read_text()) if index.exists() else {}
     for clip in entry['horror']['catalog']['clips']:
         destination=target/clip['raw'];destination.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copyfile(data/'takes'/clip['file'],destination)
+        source=(dale_wavs() if clip['voice']==DALE_PROFILE else data/'takes')/clip['file']
+        shutil.copyfile(source,destination)
         if hashlib.sha256(destination.read_bytes()).hexdigest()!=clip['sha256']:
             raise ValueError(f'Imported recording hash mismatch: {clip["id"]}')
     after={**before,**entry};target.mkdir(parents=True,exist_ok=True)
@@ -85,4 +155,5 @@ if __name__=='__main__':
         if a.output.read_text()!=text:raise ValueError('Catalog differs from measured inputs')
     else:a.output.write_text(text)
     if a.import_raw:print('Imported recordings:',import_raw(entry,a.data,a.import_raw))
-    print(f'PASS: {entry["horror"]["validation"]["cue_count"]} exact {generate.SCENARIO} cue identities, PCM frames, hashes and speech timings')
+    v=entry["horror"]["validation"]
+    print(f'PASS: {v["cue_count"]} exact cue identities ({v["dale_cue_count"]} Dale from DaleVoice), PCM frames, hashes and speech timings')

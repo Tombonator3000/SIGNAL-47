@@ -170,7 +170,7 @@ SC02-kandidaten har eksisterende vert, blek original aktør, native import og li
 - Normalt: Dale over walkie: klagen gjelder inspeksjonslampen, bruk merket kontroll utenfor gjerdet.
 - Avbrudd: Pause eller panel stopper walkie-stemmen; gjenopptas ved neste frie øyeblikk uten å starte på nytt.
 - Alternativ: Spiller som allerede har lest journalen får briefen én gang uten å miste T01-fremdrift.
-- Stemmecues: 3, innspilt 0
+- Stemmecues: 3, innspilt 3
 - Modeller: Eksisterende trafostasjon (prop:substation*); SARO 07
 - Lyd: Walkie-kanal med eksisterende FS47WalkieSound-klikk
 - Dokumenter: EV_TRAFO_CARD
@@ -753,7 +753,7 @@ Kontoret, skuffen, reservenøkkelen og feltmappen finnes i FS47Office, og arkive
 - Kontrakten sier at EveningShift alene eier kontor, dokumenter og VHS, mens FS47Office ligger i Main: koordiner eierskap
 - MISSION_FLOW sier arrayvedlegget ligger i feltmappen, mens koden har det som eget ark i kontorskapet
 
-**Stemmer:** H04_BRIEF_001 til 003 (Dale, telefon, kinski) står som pending i recording_manifest.json og finnes ikke i voice/takes.json. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
+**Stemmer:** H04_BRIEF_001 til 003 (Dale, telefon) er innspilt med Dales egen stemme dale i ../DaleVoice (takes.json der), 9. november. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -770,7 +770,7 @@ Kontoret, skuffen, reservenøkkelen og feltmappen finnes i FS47Office, og arkive
 - Normalt: Dale på telefon peker på reservenøkkelen og feltmappen.
 - Avbrudd: Telefonen kan avbrytes; uopplevde replikker gir ingen nøkkel. Dialog setter ingen verdensfakta.
 - Alternativ: Spilleren kan finne nøkkelen før briefen; briefen vises da fortsatt én gang uten å gjenta nøkkelutdeling.
-- Stemmecues: 3, innspilt 0
+- Stemmecues: 3, innspilt 3
 - Modeller: Eksisterende kontor, serviceskuff, messingnøkkel
 - Lyd: Telefonkanal for Dale; skuff og lås på verdenskanal
 - Dokumenter: EV_DALE_INDEX, EV_DALE_NOTE
