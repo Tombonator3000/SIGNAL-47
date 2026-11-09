@@ -6,6 +6,7 @@
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
+#include "S47OfficeTv.h"
 #include "S47OfficeWindow.h"
 #include "S47Sky.h"
 #include "S47Main.h"
@@ -183,6 +184,8 @@ struct FS47Office::FVisual
  TArray<FSheet> Sheets;
  struct FReference { FString Name; FS47Obj Surface; TWeakObjectPtr<UTexture2D> Texture; };
  TArray<FReference> References;
+ // TV-SCHEDULE-20261109: Dale's set on the shelf, on the late station (S47OfficeTv.h).
+ TUniquePtr<FS47OfficeTv> Tv;
 };
 
 FS47Office::FS47Office(US47Main* InM) : Visual(MakeUnique<FVisual>()), M(InM) {}
@@ -418,9 +421,10 @@ void FS47Office::Init()
  FS47Obj TVObj = Mesh(TEXT("office:fieldDeck"), TV, FVector(-.45, .73, 7.75), FVector(.7), nullptr);
  if (const FS47WebNode* N = W->Node(TVObj.I)) if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()))
  {
-  // The unproduced tape has no substitute image, moving sequence or pilot glow.
-  if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink);
-  if (C->GetNumMaterials() > 2) C->SetMaterial(2, Ink);
+  // The unproduced tape still has no substitute image: the set is on the late station instead (TV-SCHEDULE-20261109, Tom), its
+  // KELVORA screen and pilot driven by FS47OfficeTv. Without its screen slot it stays dark, as before.
+  if (C->GetNumMaterials() > 2) Visual->Tv = MakeUnique<FS47OfficeTv>(M, C, TVObj, [this] { return M && M->Player && Contains(M->Player->Pos); });
+  else { if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink); }
  }
  Collider(TEXT("office:deckFoot"), -.77, -.17, 7.43, 8.07);
  FS47Obj Deck = Box(TEXT("office:cassette"), FVector(-.43, .72, 8.08), FVector(.20, .025, .12), Ink);
@@ -1035,6 +1039,7 @@ void FS47Office::Step(double Dt)
  if (!bEntered && WasUnlocked() && bEverOpened && Here() && Contains(M->Player->Pos)) { bEntered = true; Changed(); }
  SyncWait -= SafeDt;
  if (SyncWait <= 0) { SyncFacts(); SyncWait = .25; }
+ if (Visual->Tv) Visual->Tv->Step(SafeDt);
 }
 
 S47J::FObj FS47Office::Save() const
@@ -1083,5 +1088,6 @@ bool FS47Office::SelfTest(TArray<FString>& Lines)
  Check(SharedRoom.WantsDeparture() && DepartureQueries==1,TEXT("Story still queries its existing departure requirements"));
  SharedRoom.bDeparted=true;
  Check(SharedRoom.DepartureReleased(),TEXT("Story retains an explicitly released departure"));
+ Ok &= FS47OfficeTv::SelfTest(Lines);
  return Ok;
 }

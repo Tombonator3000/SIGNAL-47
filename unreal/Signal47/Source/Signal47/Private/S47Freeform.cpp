@@ -140,7 +140,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
  Tutorial=!Saved&&M&&M->Flow&&(!M->Flow->bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTutorial")))?1:0;
- TutorialJobId.Empty();FieldFocus=-1;
+ TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
@@ -2781,6 +2781,10 @@ FString FS47FreeformSession::Objective()const
   return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
  }
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
+ // SPAWN-MAILBOX-20261109 (Tom): a new game starts at the box at the road; Dr. Ward's letter in it comes first, then the HUD's card
+ // points in to OPS in the control room (the first shift's first step), as before. Once inside, the shift's step whatever the box.
+ if(bMailboxStart&&Tutorial==1&&Mail&&Mail->Holds(TEXT("ward:letter"))&&M&&M->World&&M->Player&&M->World->Area==TEXT("saro")&&!M->World->Indoors(M->Player->Pos))
+  return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
  if(Tutorial>0){const FString T=TutorialObjective();if(!T.IsEmpty())return T;}
  // A tip is only worth the top line when it is not in the way of the way home, the power or a recording under way.
  // It stands in the task list all the same.

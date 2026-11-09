@@ -316,6 +316,9 @@ public:
  int32 FindingDay(const FString& Id) const { return FindingDays.FindRef(Id); }
  TArray<FString> FindingIdsFrom(int32 FromDay) const;
  bool InTutorial() const { return Tutorial>0; }
+ // SPAWN-MAILBOX-20261109: this new game began at the box at the road (US47Flow), so Dr. Ward's letter there is the HUD's first
+ // task, before the first shift's OPS. Not saved: a Continue goes on with the tutorial as it was.
+ bool bMailboxStart=false;
  void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);

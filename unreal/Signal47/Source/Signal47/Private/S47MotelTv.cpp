@@ -68,17 +68,23 @@ namespace
 	}
 }
 
-FS47MotelTv::FS47MotelTv(US47Main* InM, FS47MotelTvDeps InD) : M(InM), D(MoveTemp(InD))
+TArray<FColor> FS47MotelTv::CardPicture()
 {
-	Card = TestCard();
+	TArray<FColor> Out = TestCard();
 	// Round 15's blank card, if staged; otherwise the TypeScript's own colour bars remain.
 	TArray<uint8> Bytes;
 	if (FFileHelper::LoadFileToArray(Bytes, *(FPaths::ProjectContentDir() / TEXT("WebData/art/tv_testcard_blank.jpg"))))
 	{
 		TArray<FColor> Art; int32 Aw = 0, Ah = 0;
-		if (S47Image::DecodePixels(TEXT("data:image/jpeg;base64,") + FBase64::Encode(Bytes), Art, Aw, Ah))
-			for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X) Card[Y * W + X] = Sample(Art, Aw, Ah, (X + 0.5) * Aw / W - 0.5, (Y + 0.5) * Ah / H - 0.5);
+		if (S47Image::DecodePixels(TEXT("data:image/jpeg;base64,") + FBase64::Encode(Bytes), Art, Aw, Ah) && Aw > 0 && Ah > 0 && Art.Num() == Aw * Ah)
+			for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X) Out[Y * W + X] = Sample(Art, Aw, Ah, (X + 0.5) * Aw / W - 0.5, (Y + 0.5) * Ah / H - 0.5);
 	}
+	return Out;
+}
+
+FS47MotelTv::FS47MotelTv(US47Main* InM, FS47MotelTvDeps InD) : M(InM), D(MoveTemp(InD))
+{
+	Card = CardPicture();
 	Tv = M && M->Web ? M->Web->Obj(TEXT("world.motel.tv.group")) : FS47Obj();
 	BindScreen();
 	const FS47Obj Px = M && M->Web ? M->Web->Obj(TEXT("world.motel.proxies.officeTv")) : FS47Obj();
@@ -466,7 +472,8 @@ void FS47MotelTv::Sound(double InDist)
  *  quieter from outside the office, and stepping back under a phone, a call or a voice. */
 void FS47MotelTv::Broadcast(double Dt, const FS47MotelTvIn& S, double InDist)
 {
-	if (!ShowsFilm()) return;
+	// (off the air now, TV-SCHEDULE-20261109: the programme's sound stops with its picture)
+	if (!ShowsFilm()) { Programme.Silence(); return; }
 	const bool bInside = M && M->Web && (M->Web->Rect(TEXT("world.motel.zones[2]")).Contains(S.Cam.Pos, 0.3) || M->Web->Rect(TEXT("world.motel.zones[3]")).Contains(S.Cam.Pos, 0.3));
 	const double U = Mode == TEXT("card") ? Unrest : 0, Waver = U > 0 ? 1 - U * (0.35 + 0.65 * FMath::FRand() * FMath::FRand()) : 1;
 	const double Duck = M && M->Story ? M->Story->VoicesDuck() : 1.0;

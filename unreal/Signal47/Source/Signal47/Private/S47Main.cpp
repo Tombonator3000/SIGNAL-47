@@ -158,7 +158,9 @@ void US47Main::Step(double Dt)
 	}
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
-	if (!bFree && TownLayer && TownLayer->MotelTv) TownLayer->MotelTv->bCardOnly = false; // Story keeps its film
+	// TV-SCHEDULE-20261109 (Tom): the late programme on the motel office's set in both modes, by the station's hours; the test card
+	// the rest of the day (and at every hour without the local frame pack). -S47MotelTvFilm or -S47TvOnAir: the film at any hour.
+	if (TownLayer && TownLayer->MotelTv) TownLayer->MotelTv->bCardOnly = !(FS47TvProgramme::ForcedOnAir() || FS47TvProgramme::OnAir(bFree && Freeform ? Freeform->Clock() : Story ? Story->Clock() : 0));
 	if (!bFree && Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
 	// MOTEL-REAL-20261108: in Freeform the town layer's world step does not run, so the motel office's set never got past the
 	// first frame it was painted with. Its picture (the late programme, or the test card and its snow) and its sound go on here;
@@ -166,8 +168,6 @@ void US47Main::Step(double Dt)
 	if (bFree && Mode == EMode::Play && TownLayer && TownLayer->MotelTv && Web && !FParse::Param(FCommandLine::Get(), TEXT("S47MotelTvFrozen")))
 	{
 		FS47MotelTvIn Tv; Tv.bSaro = Web->Area() == TEXT("saro"); Tv.Cam = FS47Cam::Of(Player, 5000); Tv.Clock = Freeform ? Freeform->Clock() : 0;
-		// the card and its snow, not the borrowed film (-S47MotelTvFilm: the film, as Story has it)
-		TownLayer->MotelTv->bCardOnly = !FParse::Param(FCommandLine::Get(), TEXT("S47MotelTvFilm"));
 		TownLayer->MotelTv->Update(Dt, Tv);
 	}
 	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);

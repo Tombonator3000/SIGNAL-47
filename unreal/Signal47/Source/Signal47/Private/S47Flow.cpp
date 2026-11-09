@@ -13,6 +13,8 @@
 #include "S47Rhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
+#include "S47Mail.h"
+#include "S47MailBox.h"
 #include "S47HighwayUfo.h"
 #include "S47FarmWorld.h"
 #include "S47Horror.h"
@@ -1060,7 +1062,22 @@ void US47Flow::StartGame(const FStart& O)
    auto Shut=S47J::New();S47J::Set(Shut,TEXT("personnel"),false);S47J::Set(Shut,TEXT("service"),false);S47J::Set(Shut,TEXT("garage"),0.);S47J::Set(Shut,TEXT("garageUp"),false);
    if(M->EastWing)M->EastWing->Begin(Shut);
    if(M->Web)for(const auto& Door:M->Web->DoorStates())M->Web->SetDoorById(Door.Key,false,true);
-   if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
+   // SPAWN-MAILBOX-20261109 (Tom): a new operator's first sight is the box at the road with Dr. Ward's letter in it, SARO behind it.
+   // On the highway's shoulder, a step south-west of the box: its side with SARO / BOX 19 and its door in view, the station on the
+   // same line beyond it. The letter is in the box from the first second (as FS47Predecessor posts it at the shift's start), and the
+   // HUD's card asks for it before the first shift's OPS (FS47FreeformSession::Objective). Tests written for the visitor ramp
+   // (-S47GarageStartTest, -S47RescueJourneyTest and other developer runs) keep that start; -S47MailboxStart asks for this one.
+   const bool bAtBox=!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47MailboxStart"));
+   const double BoxX=FS47MailBoxModel::PostX,BoxZ=FS47MailBoxModel::PostZ,StandX=BoxX-.95,StandZ=BoxZ+1.35;
+   if(M->Player&&bAtBox&&(M->Player->Walkable(StandX,StandZ)||!M->Player->Walkable(-9.5,5.7)))
+   {
+    // Facing the box's middle (1.17 m up), the eyes a little down to it and the station on the horizon past it.
+    M->Player->Place(StandX,StandZ,FMath::Atan2(-(BoxX-StandX),-(BoxZ-StandZ)));M->Player->Pitch=-.12;
+    M->Freeform->bMailboxStart=true;
+    if(M->Freeform->Mail&&M->Freeform->Mail->Live()&&!M->Freeform->Mail->Ever(TEXT("ward:letter")))M->Freeform->Mail->PostWard(TEXT("letter"),true);
+    UE_LOG(LogS47Flow,Display,TEXT("S47: new Freeform operator at the mailbox (%.2f %.2f), letter %s"),StandX,StandZ,M->Freeform->Mail&&M->Freeform->Mail->Holds(TEXT("ward:letter"))?TEXT("in the box"):TEXT("not posted"));
+   }
+   else if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
   }
  }
  // New Freeform operators collect the camera physically. Every legacy Freeform

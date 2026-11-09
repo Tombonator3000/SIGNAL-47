@@ -45,9 +45,11 @@ public:
 	FString FrameUrl;
 	bool Busy() const { return Mode != TEXT("card"); }
 	bool bWaiting = false;
-	/** MOTEL-REAL-20261108: the test card, its snow and thin tone instead of the late film (Freeform: the film is third-party footage
-	 *  kept only locally, its rights not cleared; the task asks for a card or an original programme, nothing borrowed). */
+	/** MOTEL-REAL-20261108: the test card, its snow and thin tone instead of the late film. TV-SCHEDULE-20261109: set each frame by
+	 *  the station's hours (FS47TvProgramme::OnAir) in both modes; without the local frame pack the card shows at every hour. */
 	bool bCardOnly = false;
+	/** The 320 x 240 test card: Round 15's blank card when staged (WebData/art), otherwise the colour bars (the other sets use it). */
+	static TArray<FColor> CardPicture();
 	bool ShowsFilm() const { return !bCardOnly && Programme.Available(); }
 	int32 Slips = 0;
 	bool Heard() const { return Busy() && Dist < 30; }

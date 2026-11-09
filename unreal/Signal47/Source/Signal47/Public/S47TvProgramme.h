@@ -36,6 +36,15 @@ public:
 
 	/** A 4:3 picture Sw x Sh into Width x Height of a screen shaped Aspect: averaged, bars in black. */
 	static void Fit(const TArray<FColor>& Src, int32 Sw, int32 Sh, TArray<FColor>& Out, int32 Width, int32 Height, double Aspect);
+
+	/** TV-SCHEDULE-20261109 (Tom: the clip on the other sets too, in Freeform and in Story): the late station's hours, one schedule
+	 *  for every set in the world. The programme goes out from half past eleven at night to half past three in the morning; the rest
+	 *  of the day a set shows its own test card or snow. Clock: seconds after midnight (any day; wrapped). Without the frame pack
+	 *  (Available false) a set keeps its card or snow at every hour. */
+	static constexpr double ON_AIR = 23.5 * 3600, OFF_AIR = 3.5 * 3600;
+	static bool OnAir(double Clock);
+	/** -S47TvOnAir, -S47MotelTvFilm or a -S47MotelTv=programme... test: the programme at any hour (the tests' pictures). */
+	static bool ForcedOnAir();
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

@@ -2,7 +2,9 @@
 #include "S47TvProgramme.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "S47Audio.h"
@@ -236,6 +238,26 @@ void FS47TvProgramme::Silence()
 	Src.Reset(); Gain.Reset(); Wall.Reset(); Ctx.Reset();
 }
 
+// ---------- the station's hours ----------
+
+bool FS47TvProgramme::OnAir(double Clock)
+{
+	if (!FMath::IsFinite(Clock)) return false;
+	const double Day = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+	return Day >= ON_AIR || Day < OFF_AIR;
+}
+
+bool FS47TvProgramme::ForcedOnAir()
+{
+	static const bool bForced = []
+	{
+		const TCHAR* Cmd = FCommandLine::Get();
+		FString Tv;
+		return FParse::Param(Cmd, TEXT("S47TvOnAir")) || FParse::Param(Cmd, TEXT("S47MotelTvFilm")) || (FParse::Value(Cmd, TEXT("S47MotelTv="), Tv) && Tv.StartsWith(TEXT("programme")));
+	}();
+	return bForced;
+}
+
 FString FS47TvProgramme::Describe() const
 {
 	return FString::Printf(TEXT("picture %.2f s (frame %d), sound %s, level %.3f%s, brightness %.2f"), Time, FrameIndex(),
@@ -287,5 +309,8 @@ bool FS47TvProgramme::SelfTest(TArray<FString>& Lines)
 	for (int32 I = 0; I < 4; ++I) T.Step(0.25, C, Dest, 0.5, true);
 	Check(T.Time > 1.2, TEXT("a context that stands does not hold the picture"));
 	C->Suspend(false); T.Silence(); C->Close();
+	// the station's hours: on from 23:30 to 03:30, wrapping round midnight and any day
+	Check(!OnAir(23 * 3600 + 29 * 60) && OnAir(23.5 * 3600) && OnAir(0) && OnAir(86400 + 2 * 3600) && OnAir(-1800) && !OnAir(3.5 * 3600) && !OnAir(12 * 3600) && !OnAir(-12 * 3600),
+		TEXT("the programme's hours: from half past eleven to half past three, the card or snow the rest of the day"));
 	return bOk;
 }
