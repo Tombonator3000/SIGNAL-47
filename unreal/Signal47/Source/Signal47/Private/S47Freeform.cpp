@@ -18,6 +18,8 @@
 #include "S47Predecessor.h"
 #include "S47Mail.h"
 #include "S47RadioTips.h"
+#include "S47TownSites.h"
+#include "S47TownUse.h"
 #include "S47FieldLife.h"
 #include "S47NightRhythm.h"
 #include "S47Aftermath.h"
@@ -253,6 +255,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!EventPlaces)EventPlaces=MakeShared<FS47EventPlaces>(M);EventPlaces->Begin(S47J::Obj(Saved,TEXT("eventPlaces")));
  if(!Predecessor)Predecessor=MakeShared<FS47Predecessor>(M);Predecessor->Begin(S47J::Obj(Saved,TEXT("predecessor")),Saved.IsValid(),DayNumber);
  if(!Tips)Tips=MakeShared<FS47RadioTips>(M);Tips->Begin(S47J::Obj(Saved,TEXT("tips")));
+ if(!TownUse)TownUse=MakeShared<FS47TownUse>(M);TownUse->Begin(S47J::Obj(Saved,TEXT("townUse")));
+ if(!TownSites)TownSites=MakeShared<FS47TownSites>(M);TownSites->Begin();
  if(!TruckLamp)TruckLamp=MakeShared<FS47TruckLamp>(M);
  if(!YardAlarm)YardAlarm=MakeShared<FS47YardAlarm>(M);YardAlarm->Begin(S47J::Obj(Saved,TEXT("alarm")));
  if(!Care)Care=MakeShared<FS47TruckCare>(M);Care->Begin(S47J::Obj(Saved,TEXT("care")));
@@ -290,6 +294,7 @@ void FS47FreeformSession::Stop()
  if(CaseField)CaseField->Stop();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
+ if(bCanRestore){if(TownUse)TownUse->Stop();if(TownSites)TownSites->Stop();}
  if(NightLog)NightLog->Stop();
  if(Tape)Tape->Stop();
  if(PinBoard)PinBoard->Stop();
@@ -498,6 +503,8 @@ void FS47FreeformSession::Step(double Dt)
  if(Predecessor)Predecessor->Step(D);
  if(Mail)Mail->Step(D);
  if(Tips&&!Held())Tips->Step(D);
+ if(TownUse)TownUse->Step(D);
+ if(TownSites)TownSites->Step(D);
  if(TruckLamp)TruckLamp->Step(D);
  if(YardAlarm)YardAlarm->Step(D);
  if(Care&&!Held())Care->Step(D);
@@ -2777,7 +2784,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
- if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
+ if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(TownUse){const auto Town=TownUse->Save();if(Town->Values.Num()>0)S47J::Set(O,TEXT("townUse"),Town);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {

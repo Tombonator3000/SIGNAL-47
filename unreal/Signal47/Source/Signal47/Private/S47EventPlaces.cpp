@@ -12,6 +12,7 @@
 #include "S47Places.h"
 #include "S47Relief.h"
 #include "S47RoadShape.h"
+#include "S47TownSites.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -129,8 +130,10 @@ const TArray<FS47EventPlace>& FS47EventPlaces::All() const
  if(List.IsEmpty())
  {
   // Room for what is measured later (the feeder): pointers handed out stay good.
-  List.Reserve(Seeds().Num()+8);
+  List.Reserve(Seeds().Num()+S47TownSites::Sites().Num()+8);
   for(const FSeed& S:Seeds())List.Add(Make(S));
+  // M4's temporary boxes (S47TownSites): the trailer park, the school, the Grange hall, from the one table there.
+  List.Append(S47TownSites::EventPlaces());
   // The motel's lot and STATION 01's gate are their own terms' numbers: on the land's here.
   if(FS47EventPlace* Motel=List.FindByPredicate([](const FS47EventPlace& P){return P.Id==TEXT("motel");}))
   {
@@ -408,6 +411,7 @@ void FS47EventPlaces::LogPick(const FString& Kind,const FS47EventPlace* P,const 
 TArray<FString> FS47EventPlaces::Ids()
 {
  TArray<FString> Out;for(const auto& S:S47EventPlacesLocal::Seeds())Out.Add(S.Id);
+ for(const auto& S:S47TownSites::Sites())Out.Add(S.Id);
  return Out;
 }
 

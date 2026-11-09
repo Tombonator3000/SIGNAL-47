@@ -73,8 +73,13 @@ namespace
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
  const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };
- int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:0; }
- FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
+ // TOWN-USE-20261108: what the Feed & Seed sells besides the counter's own supplies (S47TownUse.cpp); carried and unpacked the same way.
+ // rope: the come-along digs the truck out quicker (FS47TruckCare); wire: a longer trip line (FS47TripCamera); salt and feed: set out
+ // at a place on the land, they say in the morning what came to them (FS47TownUse).
+ const TCHAR* TownItems[] = { TEXT("rope"), TEXT("wire"), TEXT("salt"), TEXT("feed") };
+ TArray<const TCHAR*> AllItems() { TArray<const TCHAR*> A; for(const TCHAR* I:Items)A.Add(I); for(const TCHAR* I:TownItems)A.Add(I); return A; }
+ int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:Id==TEXT("rope")?12:Id==TEXT("wire")?4:Id==TEXT("salt")?3:Id==TEXT("feed")?6:0; }
+ FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):Id==TEXT("rope")?TEXT("tow rope and come-along"):Id==TEXT("wire")?TEXT("roll of smooth fence wire"):Id==TEXT("salt")?TEXT("salt lick block"):Id==TEXT("feed")?TEXT("sack of range cubes"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
@@ -151,7 +156,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
      Contents.Add(Key,int32(Count));
     }
     if(!Valid){Contents.Reset();Payload=0;Item.Empty();}
-    else if(!Contents.Contains(Item))for(const TCHAR* Key:Items)if(Contents.Contains(Key)){Item=Key;break;}
+    else if(!Contents.Contains(Item))for(const TCHAR* Key:AllItems())if(Contents.Contains(Key)){Item=Key;break;}
    }
   }
   bParcelWasLoaded=S47J::Bool(O,TEXT("parcelLoaded"),Payload==3);
@@ -166,7 +171,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
-  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
+  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
  if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  // Old saves already carrying the device retain their physical loan. New loans
@@ -232,7 +237,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
- S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
+ S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
 }
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
@@ -812,14 +817,15 @@ bool FS47FreeformWorld::RequestEmergencyFuse()
  Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition debt. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
 }
 int32 FS47FreeformWorld::ShopPrice(const FString& Supply){return Price(Supply);}
-bool FS47FreeformWorld::TakePostedParcel(const TMap<FString,int32>& Posted,const FVector& At)
+FString FS47FreeformWorld::SupplyTitle(const FString& Supply){return ItemTitle(Supply);}
+bool FS47FreeformWorld::TakePostedParcel(const TMap<FString,int32>& Posted,const FVector& At,const FString& Said)
 {
  if(!Ready()||Payload!=0||Posted.IsEmpty()||!M->World||M->World->bDriving)return false;
  for(const auto& Pair:Posted)if(Price(Pair.Key)<=0||Pair.Value<1||Pair.Value>99)return false;
  Contents=Posted;Item.Empty();
- for(const TCHAR* Key:Items)if(Contents.Contains(Key)){Item=Key;break;}
+ for(const TCHAR* Key:AllItems())if(Contents.Contains(Key)){Item=Key;break;}
  Payload=2;bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,At);
- Change(TEXT("Parcel from the mailbox carried. Load it at the truck or unpack it at GARAGE RECEIVING. Use parcel handling to set it down or drop it safely."));
+ Change(Said.IsEmpty()?FString(TEXT("Parcel from the mailbox carried. Load it at the truck or unpack it at GARAGE RECEIVING. Use parcel handling to set it down or drop it safely.")):Said);
  return true;
 }
 bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
@@ -841,7 +847,7 @@ FString FS47FreeformWorld::ParcelDescription() const
 {
  if(Contents.IsEmpty())return Payload>0?ItemTitle(Item):FString(TEXT("empty"));
  TArray<FString> Lines;
- for(const TCHAR* Key:Items)if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add(FString::Printf(TEXT("%d x %s"),Count,*ItemTitle(Key)));
+ for(const TCHAR* Key:AllItems())if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add(FString::Printf(TEXT("%d x %s"),Count,*ItemTitle(Key)));
  return FString::Join(Lines,TEXT(", "));
 }
 void FS47FreeformWorld::OpenShop()
@@ -910,7 +916,7 @@ bool FS47FreeformWorld::CargoUse()
   if(Payload==3)
   {
    TArray<TPair<FString,FString>> Lines;
-   for(const TCHAR* Key:Items)if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
+   for(const TCHAR* Key:AllItems())if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
    if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
   }
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
@@ -922,7 +928,7 @@ bool FS47FreeformWorld::CargoUse()
    R.Add(S47Kit::Section(TEXT("RADIATOR"),FString::Printf(TEXT("%.0f%%"),Care->Water()*100)));
    R.Add(S47Kit::Section(TEXT("SPARE WHEEL"),FString::Printf(TEXT("%d"),InventoryCount(TEXT("spare")))));
    if(!Care->StatusLine().IsEmpty())R.Add(S47Kit::Small(Care->StatusLine()));
-   if(Care->Stuck())R.Add(S47Kit::Button(FString::Printf(TEXT("Dig it out with the spade / about %.0f minutes"),FS47TruckCare::DigMinutes),[this]{M->Freeform->Care->DigOut();M->UI->Close();},true));
+   if(Care->Stuck())R.Add(S47Kit::Button(FString::Printf(TEXT("Dig it out with the spade / about %.0f minutes"),Care->DigTime()),[this]{M->Freeform->Care->DigOut();M->UI->Close();},true));
    if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));
    if(Care->Water()<1)R.Add(S47Kit::Button(TEXT("Fill the radiator from a can"),[this]{M->Freeform->Care->TopUp();M->UI->Close();},Care->Hot(),InventoryCount(TEXT("water"))>0));
   }
