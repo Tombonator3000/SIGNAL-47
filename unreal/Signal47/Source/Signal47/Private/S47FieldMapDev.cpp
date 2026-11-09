@@ -311,7 +311,7 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 							if (Pb.Book()) Pb.Book()->Connect(Mine, Church, false); // a second time would untie it
 							const int32 Station = Pb.StationThreads().Num();
 							if (M->Board.Open) M->Board.Open(FString(), FString());
-							Pictured(TEXT("board"), 1.5f);
+							Pictured(TEXT("board"), .35f); // the next line opens the tray half a second after this one ends
 							const bool bOk = Pb.AtSaro() && Pb.UpCount() >= 4 && Station >= 2 && Pb.ThreadCount() >= 1 && bClip;
 							Tell(bOk, FString::Printf(TEXT("On the board: %d up, %d station threads, %d of your own, clipping %s"), Pb.UpCount(), Station, Pb.ThreadCount(), bClip ? TEXT("up") : TEXT("refused")));
 						});
@@ -327,7 +327,8 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
 			Fs->PinBoard->OpenTray();
 			Pictured(TEXT("board"), 1.f);
-			Tell(true, FString::Printf(TEXT("The tray: %d papers"), Fs->PinBoard->Papers().Num()));
+			const int32 InTray = Fs->PinBoard->Papers().Num();
+			Tell(true, FString::Printf(TEXT("The tray: %d %s"), InTray, InTray == 1 ? TEXT("paper") : TEXT("papers")));
 		});
 	});
 

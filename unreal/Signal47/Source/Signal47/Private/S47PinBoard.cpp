@@ -447,7 +447,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 		FS47BoardCard Cd;
 		Cd.Id = PapersId; Cd.Region = TEXT("ns"); Cd.Kind = TEXT("paper"); Cd.bHave = true;
 		Cd.Stamp = TEXT("PAPERS"); Cd.Title = TEXT("THE TRAY");
-		Cd.Text = InTray > 0 ? FString::Printf(TEXT("%d papers: the mail, the Ledger, telexes, the night logs."), InTray) : FString(TEXT("Empty."));
+		Cd.Text = InTray > 1 ? FString::Printf(TEXT("%d papers: the mail, the Ledger, telexes, the night logs."), InTray) : InTray == 1 ? FString(TEXT("One paper.")) : FString(TEXT("Empty."));
 		Cd.Action = TEXT("OPEN");
 		const TWeakPtr<uint8> Guard = Life;
 		FS47PinBoard* Self = const_cast<FS47PinBoard*>(this);
