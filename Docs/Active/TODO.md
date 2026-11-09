@@ -55,6 +55,8 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **PT-FARM-GROUND-20261109:** ved kuene på gården stikker en stor, grå, kantete form uten tekstur opp av bakken, og noe beveger seg rart («noe stort som ikke blir rendret riktig»). Busken foran har blokkete svarte kanter i bladverket. Toms bilde ca. 13:25, natt med lommelykt.
 - [ ] **PT-FARM-LIGHTS-20261109:** Tom ca. 13:30: inne i låven en lyspære som dingler med lys; et utelys på gårdsplassen; ekte lys innenfra gårdshuset.
 - [ ] **PT-PAYPHONE-20261109:** Tom ca. 13:45: telefonautomaten i byen flyttes til siden av bensinstasjonen, og den gamle ved stasjonen slettes.
+- [ ] **PT-SHERIFF-CAR-20261109:** sheriffbilen er grå uten tekstur (leire), med en klump på taket i stedet for lysbjelke (Toms bilde ca. 13:50).
+- [ ] **NPC-DAY-20261109:** Tom: sheriffen og andre NPC-er skal ha dagsrutine: gå rundt, sitte inne, være på jobb og hjemme etter klokka. I dag står sheriffen stille i døra.
 - [ ] **SUBSTATION-LOD-20261109:** `Tools/substationfield/import_assets.py` og `relod_apron.py` bruker samme LOD-mønster som ga WorldGrid-slotter i gatelysene (rettet i kode i 3f946c47). Substasjonsmodellene har trolig samme feil.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
