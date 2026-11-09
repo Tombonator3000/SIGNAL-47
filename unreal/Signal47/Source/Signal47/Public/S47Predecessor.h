@@ -6,6 +6,7 @@
 class US47Main;
 class AS47Web;
 class USceneComponent;
+class UTextRenderComponent;
 struct FS47Doc;
 struct FS47MapView;
 
@@ -15,8 +16,13 @@ struct FS47MapView;
 // S47PredecessorText.cpp, and its self-test refuses the far side. Saved under "predecessor"; a save from before it picks it up
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
 namespace S47PredecessorText{struct FBark;}
+class FS47Predecessor;
+// -S47Freeform -S47AssessMonthTest=routine|investigator|taken, with -UserDir=/tmp/...: thirty days through the real StepNews, the
+// post, the letter and the closing (S47AssessMonthTest.cpp). Does nothing without the flag.
+struct FS47AssessMonthTest{static void Step(FS47Predecessor& P,double Dt);};
 class FS47Predecessor
 {
+ friend struct FS47AssessMonthTest;
 public:
  explicit FS47Predecessor(US47Main* Main):M(Main){}
  enum class EOutcome:uint8{None,Stays,KnowsEnough,ClosedOriginals,ClosedNothing,Gone};
@@ -26,13 +32,21 @@ public:
  // Logs: night logs her office has initialed (FS47NightLog, NIGHTLOG-20261108): a station that reports its nights counts a little.
  // Tapes: cassettes played back with something on them nobody heard out there (FS47Tape, TAPE-20261108): what she can send on.
  // Trust: what her office makes of the weekly reports (FS47WardReport, WARD-REPORT-20261108): whole ones raise it, a lie found out lowers it.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0;bool bWagon=false,bGap=false;};
- static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7;
+ // M7 (9 November): Concluded counts only a line with something behind it (FS47FreeformCases::Supported); a mystery filed on
+ // nothing is Guessed, and counts for nothing. Photos: prints made in the camera, not enlargements of them. Reprieved: the times
+ // taken when "Not yet" gave the nights back; only a taking after that sends somebody else.
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0;bool bWagon=false,bGap=false;};
+ // CasesToStay: routine alone does not keep the station (M7): the county wants at least one case carried through. LogsForPoint: the
+ // night sheets count once, a little. CarriedWarn: from here Ward names the limit of the carried line in her own words.
+ static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7,CasesToStay=1,LogsForPoint=15,CarriedWarn=40,InspectorAfter=21,PayReplyDays=3;
  static constexpr double CleanQuality=.6;
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
  // and the work, which counts once it is there and no more for being piled up.
  static int32 Points(const FTally& T);
  static EOutcome Decide(const FTally& T);
+ // M7: the third stretch of lost time is answered the morning after it is noticed (TakenWarning said so), not on the assessment day;
+ // after "Not yet" only a further one does it. NoticedDay: the day it was first seen (0: not yet).
+ static bool GoneDue(int32 Taken,int32 Reprieved,int32 NoticedDay,int32 Today){return Taken>=TakenTooOften&&Taken>Reprieved&&NoticedDay>0&&Today>NoticedDay;}
  static const TCHAR* NameOf(EOutcome O);
  static EOutcome OutcomeOf(const FString& Name);
  FTally Count() const;
@@ -59,6 +73,10 @@ public:
  // The closing order has taken effect: the county power is off, the array stowed, the truck the district's.
  bool StationClosed() const{return bClosed;}
  int32 ClosingDay() const{return CloseDay;}
+ // The assessment letter has been read: until then OPS says only that it is made (M7: the status does not give it away).
+ bool OutcomeRead() const{return bOutcomeRead;}
+ // SARO kept open and the letter read: the station's own finale has happened or is due (StepKept).
+ bool KeptOpen() const{return Outcome==EOutcome::Stays&&bOutcomeRead;}
 
  // OPS: what lies in the tray, the keys, and the station's status. SARO: UNDER REVIEW.
  void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
@@ -124,7 +142,9 @@ public:
  void TestFound(const FString& Id);
  void TestHear(const FString& Id){Hear(Id);}
  bool TestRadioOff();
- void TestReset(){Outcome=EOutcome::None;}
+ void TestReset(){Outcome=EOutcome::None;bOutcomeRead=false;}
+ // "Not yet" on the letter to the next operator, as the button does it.
+ void TestNotYet(){NotYet();}
  void TestTakeBack(){TakeKeysBack();}
  // A topic's or a bark's condition: a thing found, or how far things have gone. Public for the self-test.
  bool Meets(const TCHAR* Needs) const;
@@ -136,13 +156,35 @@ private:
  TSet<FString> Seen,HeardOf;
  TArray<FString> Tray;
  int32 OpensDay=1,AssessDay=FirstAssess,WeekNoted=0,RadioOffDay=-1,NoraState=0,DaleDay=0;
+ // M7: the times taken at "Not yet", the day a third taking was noticed, and the day the Stays letter was read.
+ int32 TakenAtReprieve=0,GoneNoticed=0,KeptDay=0;
+ bool bOutcomeRead=false;
  EOutcome Outcome=EOutcome::None;
  bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false,bClosed=false,bStowed=false;
  int32 CloseDay=0;
  void StepClosing();
  void Close();
  void StepWarnings();
- int32 LeftDay=0;double LeftClock=0;
+ // M7: after KEPT OPEN. The reverse of Close and StepClosing: the rack clicks over and the whole array is run up and back down from
+ // Dale's bench, once, the first quiet time at the station; the second locker gets a name; a reply to the routed pay comes by post.
+ void StepKept(double Dt);
+ struct FSaluteDish{int32 I=0;double Az=0,El=0;};
+ TArray<FSaluteDish> Salute;double SaluteTime=0;int32 SaluteStage=0;
+ TWeakObjectPtr<UTextRenderComponent> KeptLabel;
+ void OpenKept();
+ void NotYet();
+ // The day the first assessment was set for: a reprieve never comes back earlier than it.
+ int32 FirstAssessDay() const{return bOlder?OpensDay+FirstAssess:FirstAssess;}
+ // June 30, 1986, the end of the fiscal year the station is kept through, as a day of this game.
+ int32 FiscalEndDay() const;
+ // What you leave behind and how far you went into Reyes: OpenLeft's account, shared by the page after KEPT OPEN.
+ // bStaying: told to the operator who stays, not the one who goes.
+ void Account(TArray<TSharedRef<SWidget>>& Rows,const FTally& C,float Width,bool bStaying=false) const;
+ // Ward's word on each thing she reads (M7: no lever she counts goes unsaid).
+ FString LeverWords(const FTally& C) const;
+ // The title, and what the button says about the save: away from the building nothing is filed (M7-E, S47SaroSave).
+ bool AwayFromStation() const;
+ FString TitleButton() const; int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
  bool bLetterTold=false,bRinging=false,bRadioLoop=false;
  FString ToastSeen;double ToastAt=0;

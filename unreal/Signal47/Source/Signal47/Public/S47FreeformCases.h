@@ -35,6 +35,7 @@ public:
   const TCHAR* ReplyTitle;
   FClueDef Clues[ClueCount];
   FReplyDef Replies[CauseCount][CauseCount]; // [what was filed][what it was]
+  bool bOpensOnTrace=false; // the line opens on one of its own traces (the same minute), not on a happening (the lost hours)
  };
  struct FCaseDef
  {
@@ -80,6 +81,10 @@ public:
  int32 Remaining(int32 Line) const;
  int32 ValidTestsTotal() const;
  bool Conclude(int32 Line,int32 Cause,FString& Why,int32 Day=0);
+ // M7: what stands behind a line, for Dr. Ward's assessment (FS47Predecessor::Count). A tested line always has its tests. A mystery
+ // line, which takes a filing on any evidence, has something behind it only with a control recorded, or with a trace kept beyond
+ // the one that opened it: the other place looked at too. Kept: which of the line's places are in the findings.
+ bool Supported(int32 Line,const bool Kept[ClueCount]) const;
  // Which reading a place shows: one place tells it straight, the other leans elsewhere. Both follow from the seed.
  int32 ClueReading(int32 Line,int32 Clue) const;
  FString ClueText(int32 Line,int32 Clue) const;

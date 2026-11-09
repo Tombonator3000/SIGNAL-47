@@ -277,7 +277,7 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
  {
   const auto* Current=F.CurrentJob();if(!Current||Current->Stage!=EJ::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==EJ::Recorded&&!F.CurrentJob()->bAnomaly,TEXT("timed recording and printer retain a routine original")))return;
-  if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Debt()==0&&F.Budget()==5,TEXT("registered work pays $20: the $15 debt first, then $5 cash")))return;
+  if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Debt()==0&&F.Budget()==0&&F.Arrears()==15,TEXT("registered work pays $20: the $15 debt first, then $5 off the weekly sheet")))return;
   RestorePatch=[](const S47J::FObj& State)
   {
    const auto Session=S47J::Obj(State,TEXT("freeform"));const auto Supply=S47J::Obj(Session,TEXT("field"));

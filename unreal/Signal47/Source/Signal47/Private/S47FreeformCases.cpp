@@ -33,6 +33,8 @@ namespace
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Overnight someone took the ground lead off the feeder panel.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. The top insulator on the feeder let go this morning.\n\nThe line is unstable. Measure it at the service bay."),ER::FeederFault},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE SAME MINUTE\n\nFiled as not accounted for, so nobody was sent. Nothing further has happened.\n\nA rancher on US-60 called the office to ask whether we had noticed anything at that minute. He did not say why."),ER::None}}}
+,
+  true
  };
  const FS47FreeformCases::FMysteryDef LostTime={
   4,TEXT("Personnel: the lost hours"),
@@ -300,6 +302,14 @@ bool FS47FreeformCases::Conclude(int32 Line,int32 Cause,FString& Why,int32 Day)
  C.bConcluded=true;C.Conclusion=Cause;Access.Add(D.Access);
  Why=TEXT("Conclusion supported by your retained tests.");return true;
 }
+bool FS47FreeformCases::Supported(int32 Line,const bool Kept[ClueCount]) const
+{
+ const FCase* C=Get(Line);if(!C||!C->bOpen)return false;
+ const FMysteryDef* Y=Def(Line).Mystery;
+ if(!Y||C->ValidTests>0)return true;
+ int32 Traces=0;for(int32 I=0;I<ClueCount;++I)Traces+=Kept&&Kept[I]?1:0;
+ return Traces>(Y->bOpensOnTrace?1:0);
+}
 int32 FS47FreeformCases::ClueReading(int32 Line,int32 Clue) const
 {
  const FCase* C=Get(Line);if(!C||!Def(Line).Mystery||Clue<0||Clue>=ClueCount)return -1;
@@ -447,6 +457,17 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  Good&=!W.InRepeatWindow(0,3,23.5*3600)&&W.InRepeatWindow(0,4,.5*3600)&&!W.InRepeatWindow(0,4,2*3600)&&W.InRepeatWindow(0,5,22.1*3600)&&Clock(-1800)==TEXT("23:30");
  FS47FreeformCases Bad;Bad.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"planned\":99,\"openClock\":1e99,\"concluded\":true,\"conclusion\":7}]}")),5);
  Good&=Bad.Get(0)->Planned==-1&&Bad.Get(0)->OpenClock<=86399&&!Bad.Get(0)->bConcluded&&Bad.Get(0)->Conclusion==-1;
+ // M7: a filing on the same minute with only the trace that opened it has nothing behind it; the other place looked at, or a
+ // control recorded, has. The lost hours open on a taking, so one place looked at is enough there. A tested line has its tests.
+ {
+  FS47FreeformCases Filed;Filed.Reset(4);FString Said;const bool NoTrace[ClueCount]={false,false},OneTrace[ClueCount]={true,false},TwoTraces[ClueCount]={true,true};
+  Filed.Open(MysteryLine,3,0);Filed.Conclude(MysteryLine,0,Said,3);
+  Good&=Filed.Get(MysteryLine)->bConcluded&&!Filed.Supported(MysteryLine,NoTrace)&&!Filed.Supported(MysteryLine,OneTrace)&&Filed.Supported(MysteryLine,TwoTraces);
+  Filed.Open(LostLine,5,0);Filed.Conclude(LostLine,1,Said,5);
+  Good&=Filed.Get(LostLine)->bConcluded&&!Filed.Supported(LostLine,NoTrace)&&Filed.Supported(LostLine,OneTrace);
+  FS47FreeformCases Tested;Tested.Reset(4);bool bFirstTest=false;Tested.Open(MysteryLine,3,0);Tested.Plan(MysteryLine,0,TEXT("J"));Tested.Record(MysteryLine,0,4,true,true,bFirstTest);Tested.Conclude(MysteryLine,2,Said,4);
+  Good&=Tested.Supported(MysteryLine,OneTrace)&&!Tested.Supported(1,TwoTraces);
+ }
  // A mystery: an assessment on any evidence, possibly wrong; what is found leans different ways; the reply waits a day.
  {
   const FMysteryDef* Y=Def(MysteryLine).Mystery;Good&=Y!=nullptr&&Defs[0].Mystery==nullptr;

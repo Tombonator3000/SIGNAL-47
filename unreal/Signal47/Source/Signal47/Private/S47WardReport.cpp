@@ -183,6 +183,14 @@ S47J::FObj FS47WardReport::Save() const
 	return O;
 }
 
+int32 FS47WardReport::TrustAtReview() const { return TrustAtReview(TrustNow, Kept); }
+int32 FS47WardReport::TrustAtReview(int32 TrustThen, const TArray<FReport>& Reports)
+{
+	int32 T = TrustThen;
+	for (const FReport& Rep : Reports)
+		if (Rep.Sent >= 0 && Rep.Read == -1 && LeftOut(Rep) == 0 && LiesIn(Rep).IsEmpty()) ++T;
+	return FMath::Clamp(T, -MostTrust, MostTrust);
+}
 int32 FS47WardReport::SentCount() const { int32 Nn = 0; for (const FReport& Rep : Kept) Nn += Rep.Sent >= 0 ? 1 : 0; return Nn; }
 int32 FS47WardReport::CaughtCount() const { int32 Nn = 0; for (const FLie& L : Lies) Nn += L.bCaught ? 1 : 0; return Nn; }
 
@@ -483,5 +491,13 @@ bool FS47WardReport::SelfTest(TArray<FString>& Lines)
 	Check(Page.Contains(TEXT("No time unaccounted for.")) && Told.Num() == 1 && Told[0] == ECat::Time, TEXT("'in order' over what happened is a lie; over a quiet part it is only true"));
 	Check(PointsFor(0) == 0 && PointsFor(2) == 1 && PointsFor(5) == 2 && PointsFor(-2) == -1 && PointsFor(-6) == -2, TEXT("trust counts a little in her assessment, either way"));
 	Check(RoutineLine(ECat::Seen) == nullptr, TEXT("what was seen can be left out, never written away"));
+	{
+		// M7: a whole report telexed the evening before the assessment counts at the assessment, unread or not; a partial one does not.
+		FReport Whole = Rep; for (FItem& It : Whole.Items) It.bOn = true; Whole.Routine = 0; Whole.Sent = 10; Whole.Read = -1;
+		FReport Part = Rep; Part.Sent = 10; Part.Read = -1;
+		FReport Done = Whole; Done.Read = 20;
+		Check(TrustAtReview(2, { Whole }) == 3 && TrustAtReview(2, { Part }) == 2 && TrustAtReview(2, { Done }) == 2 && TrustAtReview(MostTrust, { Whole }) == MostTrust,
+			TEXT("the last week's report, telexed whole and not yet read, counts at the assessment"));
+	}
 	return bOk;
 }
