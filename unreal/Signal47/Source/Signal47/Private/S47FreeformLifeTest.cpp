@@ -93,7 +93,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   UE_LOG(LogTemp,Display,TEXT("S47: free life: %s"),*F.Taken->LastNote());
   Stage=40;At=Age;return;
  }
- static int32 PlaceIndex=0,RoundIndex=0,RoundPay=0;
+ static int32 PlaceIndex=0,RoundIndex=0,RoundPay=0,RoundSheet=0;
  if(Stage==50)
  {
   // Each place by daylight, on its own ground, seen from a few metres, with a picture for a person to judge.
@@ -204,14 +204,14 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   const auto Stops=FS47DayRound::StopsFor(F.Seed(),F.Day());
   for(const FString& S:Stops)if(!Check(F.Field->InteractionPoint(S).X!=0||F.Field->InteractionPoint(S).Z!=0,TEXT("each stop of the round has a place in the world")))return;
   UE_LOG(LogTemp,Display,TEXT("S47: free life: trip camera PASS, round stops %s"),*FString::Join(Stops,TEXT(",")));
-  RoundIndex=0;RoundPay=Pay;Stage=81;At=Age;return;
+  RoundIndex=0;RoundPay=Pay;RoundSheet=F.Arrears();Stage=81;At=Age;return;
  }
  if(Stage==81)
  {
   const auto Stops=FS47DayRound::StopsFor(F.Seed(),F.Day());
   if(RoundIndex>=Stops.Num())
   {
-   if(!Check(F.Round->DoneToday()&&F.Budget()>=RoundPay+FS47DayRound::RoundPay&&F.HasFinding(FString::Printf(TEXT("round-d%d"),F.Day())),TEXT("three stops make a round, paid and on record")))return;
+   if(!Check(F.Round->DoneToday()&&F.Budget()+(RoundSheet-F.Arrears())>=RoundPay+FS47DayRound::RoundPay&&F.HasFinding(FString::Printf(TEXT("round-d%d"),F.Day())),TEXT("three stops make a round, paid and on record")))return;
    UE_LOG(LogTemp,Display,TEXT("S47: free life: round PASS"));
    Finish(true,TEXT("field visit, taken, gear, case, places, stores, alarm, rests, truck, trip camera and round as played"));return;
   }
