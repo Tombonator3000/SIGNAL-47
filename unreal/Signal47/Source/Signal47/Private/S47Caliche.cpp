@@ -381,12 +381,11 @@ void FS47Caliche::Refresh()
 		if (EarlDialogue->Enabled() != M->Flow->bArtBell) EarlDialogue->SetEnabled(M->Flow->bArtBell);
 	}
 	const bool bFresh = Lines != ShownLines;
-	// (a new exchange: ui.descriptionReader?.stop(); ui.readAloud?.stop(), and the voices)
+	// (a new exchange: ui.descriptionReader?.stop(), and the voices)
 	if (bFresh)
 	{
 		ShownLines = Lines; StopSpeech();
 		if (const TSharedPtr<FS47ReadAloud> D = M->UI ? M->UI->DescriptionReader() : nullptr) D->Stop();
-		if (M->UI && M->UI->ReadAloud) M->UI->ReadAloud->Stop();
 	}
 	const bool bEarl = Who == TEXT("host") && EarlDialogue->Enabled() && Lines.ContainsByPredicate([](const FS47TalkLine& L) { return L.Who == TEXT("EARL"); });
 	const FString Voice = Who == TEXT("attendant") ? TEXT("stanton") : Who == TEXT("deputy") ? TEXT("stack") : Who == TEXT("souvenir_man") ? TEXT("lynch") : TEXT("");
@@ -400,8 +399,8 @@ void FS47Caliche::Refresh()
 	for (const FS47TalkLine& L : Lines) Body->AddSlot().AutoHeight().Padding(0, 3)[S47Kit::Unread(L.Who.IsEmpty() ? S47Kit::Small(L.Text) : S47Kit::Text(L.Who + TEXT("\n") + L.Text))];
 	if (!bReeling) for (const FTopic& T : P->Topics) if (Available(Who, T.Id)) Body->AddSlot().AutoHeight().Padding(0, 4)[S47Kit::Button(T.Label, [this, Id = T.Id] { Choice(Id); })];
 	Body->AddSlot().AutoHeight().Padding(0, 4)[S47Kit::Button(bReeling ? TEXT("Walk away") : P->Bye, [this] { M->UI->Close(); })];
-	// ui.readingControls(reading, texts): Kinski reads the lines no voice has (Earl's while his voice is on,
-	// the character's while the character voices are)
+	// ui.readingControls(reading, texts): the lines no voice has (Earl's while his voice is on, the
+	// character's while the character voices are); no reader for conversations since KINSKI-READ-OUT, so nothing
 	if (bFresh || !Reading.IsValid())
 	{
 		const TArray<FS47TalkLine> Voiced = !Voice.IsEmpty() && NpcDialogue->Enabled() ? FS47NpcDialogue::CharacterLines(Voice, Lines) : TArray<FS47TalkLine>();

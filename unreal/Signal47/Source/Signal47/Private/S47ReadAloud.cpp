@@ -238,18 +238,6 @@ TArray<FString> S47Reading::DocumentReadingParagraphs(const FString& Text)
 	return Out;
 }
 
-const FS47ReadingBank& S47Reading::KinskiBank()
-{
-	static const FS47ReadingBank B = []
-	{
-		FS47ReadingBank K;
-		K.Label = TEXT("Dale's voice (read-aloud)");
-		LoadBank(TEXT("kinski"), K);
-		return K;
-	}();
-	return B;
-}
-
 const FS47ReadingBank& S47Reading::SerlingBank()
 {
 	// clips: [...clips, ...openingClips]; urls from both (the opening's last)
@@ -618,22 +606,14 @@ bool FS47ReadAloud::SelfTest(TArray<FString>& Lines)
 	// the banks themselves, when their recordings are in this build (Scripts/audio-raw.py); what they
 	// have is written in the log as well
 	auto Info = [&Lines](const FString& S) { Lines.Add(TEXT("INFO readAloud: ") + S); UE_LOG(LogS47ReadAloud, Display, TEXT("S47: readAloud self test: %s"), *S); };
-	const FS47ReadingBank& K = S47Reading::KinskiBank();
 	const FS47ReadingBank& Se = S47Reading::SerlingBank();
-	Info(FString::Printf(TEXT("Kinski %d clips (%d with recordings), Serling %d (%d)"), K.Clips.Num(), K.Urls.Num(), Se.Clips.Num(), Se.Urls.Num()));
+	Info(FString::Printf(TEXT("Serling %d clips (%d with recordings)"), Se.Clips.Num(), Se.Urls.Num()));
 	if (Se.Urls.Num())
 	{
 		FS47ReadAloud Narrator(nullptr, Se);
 		Check(Narrator.Available(FS47Opening::Paragraphs()), TEXT("the narrator has the opening card's five paragraphs"));
 		const FS47Doc Log = S47Docs::ShiftLog();
 		Info(FString::Printf(TEXT("the shift log's transcript %s for the narrator"), Narrator.Available({ Log.Transcript }) ? TEXT("recorded") : TEXT("not recorded")));
-	}
-	if (K.Urls.Num())
-	{
-		FS47ReadAloud Kinski(nullptr, K);
-		const FS47Doc Log = S47Docs::ShiftLog();
-		Info(FString::Printf(TEXT("the shift log's page %s for Kinski: %s"), Kinski.Available(S47Reading::DocumentReadingParagraphs(Log.Page)) ? TEXT("recorded") : TEXT("not recorded"),
-			*FString::Join(Kinski.Segments(S47Reading::DocumentReadingParagraphs(Log.Page)).Get(TArray<FString>()), TEXT(" | ")).Left(160)));
 	}
 	return bOk;
 }

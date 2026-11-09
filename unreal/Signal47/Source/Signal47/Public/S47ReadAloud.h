@@ -6,9 +6,10 @@ class US47Audio;
 class FS47AudioBuffer;
 class FS47BufferSourceNode;
 
-// web/src/core/readAloud.ts and core/narrationBanks.ts. Optional prerecorded narration: Kinski reading
-// papers and conversations (the 'kinskiReadAloud' setting), and the same player with the Serling bank
-// as the narrator (descriptions, the chapter cards, the opening card). No running voice service is
+// web/src/core/readAloud.ts and core/narrationBanks.ts. Optional prerecorded narration: the player with
+// the Serling bank as the narrator (descriptions, the chapter cards, the opening card). (KINSKI-READ-OUT,
+// Tom 9 November 2026: the web version's Kinski reader for papers and conversations, a clone of a real
+// person's voice, is gone with its bank and its setting; papers are text only.) No running voice service is
 // needed: a text is read only when every word of it is in the bank's recordings, whole or pieced
 // together from recorded fragments, numbers, clocks and identifiers.
 //
@@ -31,8 +32,6 @@ namespace S47Reading
 	/** documentReadingParagraphs: UI.document draws these source markers as pencil and paper
 	 *  separators: no '~ ' before a pencil line, no line of dashes; the paragraphs, normalised. */
 	SIGNAL47_API TArray<FString> DocumentReadingParagraphs(const FString& Text);
-	/** readAloud.ts kinskiBank: 'Synthetic Kinski parody'. */
-	SIGNAL47_API const FS47ReadingBank& KinskiBank();
 	/** core/narrationBanks.ts serlingBank: the Serling bank and the opening's, 'Synthetic Rod Serling parody'. */
 	SIGNAL47_API const FS47ReadingBank& SerlingBank();
 }
@@ -43,7 +42,7 @@ public:
 	// Tom 5 Nov 2026: descriptions and papers are text only. The bank and its tests stay; nothing in play offers it.
 	static constexpr bool bOfferInGame = false;
 public:
-	explicit FS47ReadAloud(US47Audio* InAudio, const FS47ReadingBank& InBank = S47Reading::KinskiBank());
+	FS47ReadAloud(US47Audio* InAudio, const FS47ReadingBank& InBank);
 	~FS47ReadAloud();
 
 	const FString& Label() const { return Bank.Label; }

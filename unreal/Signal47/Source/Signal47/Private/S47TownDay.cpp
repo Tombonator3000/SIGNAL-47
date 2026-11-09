@@ -71,7 +71,9 @@ namespace S47TownDayLocal
  constexpr double PI_ = UE_DOUBLE_PI;
  const TArray<FSpot> AllSpots = {
   // the sheriff at the substation (desk: the west chair, facing the door; the board, coffee and files along the back)
-  { TEXT("off.desk"), TEXT("office"), 7979.62, 2107.25, PI_ / 2, FSpot::Sit, TEXT("OffBack") },
+  // (his chair is x 7979.37 to 7979.83 at the desk's west end, x 7979.725: 5 cm back from its middle, as one sits, 17 cm clear of
+  // the desk's edge; sweep of 9 November: at 7979.62 he was in the desk)
+  { TEXT("off.desk"), TEXT("office"), 7979.55, 2107.25, PI_ / 2, FSpot::Sit, TEXT("OffBack") },
   { TEXT("off.board"), TEXT("office"), 7978.35, 2105.3, -PI_ / 2, FSpot::Stand, TEXT("OffBack") },
   { TEXT("off.coffee"), TEXT("office"), 7978.25, 2109.9, -PI_ / 2, FSpot::Stand, TEXT("OffBack") },
   { TEXT("off.files"), TEXT("office"), 7977.3, 2102.7, -PI_ / 2, FSpot::Stand, TEXT("OffBack") },
@@ -633,12 +635,25 @@ int32 S47TownDay::MeasureSpots(AS47Web* W, TArray<FString>& Lines)
  TArray<FS47Rect> Cs;
  for (const TCHAR* Area : { TEXT("diner"), TEXT("road") }) for (const FS47Rect& R : W->CollidersMutable(Area))
   if (R.bEnabled && !R.Id.StartsWith(TEXT("access:door:")) && R.MaxX - R.MinX < 400 && R.MaxZ - R.MinZ < 400) Cs.Add(R);
- const auto In = [&Cs](const FVector2D& P, double Pad, bool bSit, FString& Which)
+ // Boxes of the export's walk list that keep the player out of a place a townsman is meant to be in (sweep of 9 November: five of
+ // the "6 in something"). The diner's kitchen behind its partition (web Diner.ts: "rear kitchen/service space is closed behind a
+ // partition and hatch"; diner_geometry.py: the partition at bx -5.9 to -5.7, the range's bench at bx -7.7 to -6.4): the cook works
+ // there, between the two, and goes out by its back. The second booth's box, seats and table in one: the sheriff sits in it.
+ struct FMeant { double MinX, MaxX, MinZ, MaxZ; bool bSitOnly; };
+ static const FMeant Meant[] = { { 7971.95, 7974.25, 1991.15, 2008.75, false }, { 7979.68, 7981.62, 1995.66, 1998.14, true } };
+ const auto IsMeant = [](const FS47Rect& R, bool bSit)
+ {
+  for (const FMeant& K : Meant)
+   if ((bSit || !K.bSitOnly) && FMath::Abs(R.MinX - K.MinX) < .02 && FMath::Abs(R.MaxX - K.MaxX) < .02 && FMath::Abs(R.MinZ - K.MinZ) < .02 && FMath::Abs(R.MaxZ - K.MaxZ) < .02) return true;
+  return false;
+ };
+ const auto In = [&Cs, &IsMeant](const FVector2D& P, double Pad, bool bSit, FString& Which)
  {
   for (const FS47Rect& R : Cs)
   {
    // A seated spot is in its chair or stool on purpose: small furniture under half a square metre does not count there.
    if (bSit && (R.MaxX - R.MinX) * (R.MaxZ - R.MinZ) < .5) continue;
+   if (IsMeant(R, bSit)) continue;
    if (P.X > R.MinX - Pad && P.X < R.MaxX + Pad && P.Y > R.MinZ - Pad && P.Y < R.MaxZ + Pad) { Which = R.Id.IsEmpty() ? TEXT("(unnamed)") : R.Id; return true; }
   }
   return false;

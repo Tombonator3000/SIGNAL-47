@@ -259,22 +259,20 @@ void US47Flow::Init(US47Main* InM)
 	FString QualityOverride;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), QualityOverride)) Graphics = FS47GraphicsSettings::ForPreset(QualityOverride);
 	Quality = Graphics.LegacyQuality();
-	bKinski = S47J::Bool(Store, TEXT("kinskiReadAloud"), false);
 	bArtBell = S47J::Bool(Store, TEXT("artBellRadioHost"), true);
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
 	bCharacters = S47J::Bool(Store, TEXT("characterVoices"), true);
-	if (M->Audio) { M->Audio->bCharacterVoices = bCharacters; M->Audio->bKinskiCalls = bKinski; }
-	// main.ts: the readers (core/readAloud.ts): Kinski's for papers and conversations, opt-in, and the
-	// narrator, Serling's, on unless switched off; ui.readAloud and ui.narrator
-	M->UI->ReadAloud = MakeShared<FS47ReadAloud>(M->Audio);
-	M->UI->ReadAloud->SetEnabled(bKinski);
+	if (M->Audio) M->Audio->bCharacterVoices = bCharacters;
+	// main.ts: the reader (core/readAloud.ts): the narrator, Serling's, on unless switched off; ui.narrator.
+	// (KINSKI-READ-OUT, Tom 9 November 2026: no Kinski reader for papers and conversations, and the old
+	// 'kinskiReadAloud' setting is ignored)
 	M->UI->Narrator = MakeShared<FS47ReadAloud>(M->Audio, S47Reading::SerlingBank());
 	M->UI->Narrator->SetEnabled(bSerling);
 	// stopNarration(except): every voice but the one about to speak; onReadingStart, and the phone's call
 	// (the character voices' and Earl's starts are wired with them: Chapter4's, TownLayer's)
 	M->UI->OnReadingStart = [this](FS47ReadAloud* Reader)
 	{
-		StopNarration(Reader ? Reader : M->UI->ReadAloud.Get());
+		StopNarration(Reader);
 		if (M->Audio) M->Audio->StopPhoneCalls();
 		if (M->CB.IsValid()) M->CB->Stop();
 	};
@@ -1303,9 +1301,8 @@ void US47Flow::Finale()
 
 void US47Flow::StopNarration(const void* Except)
 {
-	// main.ts stopNarration: for (const player of [readAloud, narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop()
+	// main.ts stopNarration: for (const player of [narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop()
 	US47UI* UI = M->UI;
-	if (UI->ReadAloud.IsValid() && UI->ReadAloud.Get() != Except) UI->ReadAloud->Stop();
 	if (UI->Narrator.IsValid() && UI->Narrator.Get() != Except) UI->Narrator->Stop();
 	if (UI->EarlDialogue.IsValid() && static_cast<const void*>(UI->EarlDialogue.Get()) != Except) UI->EarlDialogue->Stop();
 	if (UI->NpcDialogue.IsValid() && static_cast<const void*>(UI->NpcDialogue.Get()) != Except) UI->NpcDialogue->Stop();
@@ -1468,8 +1465,6 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Observing) M->Observing->SetCharacterVoicesEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
 	O.bSerling = bSerling;
 	O.OnSerling = [this](bool V) { bSerling = V; if (M->UI->Narrator.IsValid()) M->UI->Narrator->SetEnabled(V); StoreSet(TEXT("serlingNarrator"), V); };
-	O.bKinski = bKinski;
-	O.OnKinski = [this](bool V) { bKinski = V; if (M->UI->ReadAloud.IsValid()) M->UI->ReadAloud->SetEnabled(V); if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
 	O.bArtBell = bArtBell;
 	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->TownLayer && M->TownLayer->Caliche->EarlDialogue) M->TownLayer->Caliche->EarlDialogue->SetEnabled(V); if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); };
 	O.bRadioCast = bRadioCast;

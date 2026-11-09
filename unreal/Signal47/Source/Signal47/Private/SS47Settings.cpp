@@ -320,8 +320,7 @@ void SS47Settings::BuildRows()
 			TEXT("Character voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
 		AddToggle(TEXT("The Night Narrator"), &FS47PauseOpts::bSerling, &FS47PauseOpts::OnSerling, true,
 			TEXT("The Night Narrator reads descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description."));
-		AddToggle(TEXT("Dale's voice (read-aloud)"), &FS47PauseOpts::bKinski, &FS47PauseOpts::OnKinski, false,
-			TEXT("Dale's voice for papers, optional conversation reading and other phone voices. Also reads descriptions when The Night Narrator is Off."));
+		// (KINSKI-READ-OUT, Tom 9 November 2026: no "Dale's voice (read-aloud)" toggle; papers are text only)
 		AddToggle(TEXT("Earl, 1420 AM (radio host)"), &FS47PauseOpts::bArtBell, &FS47PauseOpts::OnArtBell, true,
 			TEXT("Earl's voice on Night Line, AM 1420, and when you speak with him in Caliche."));
 		AddToggle(TEXT("Radio callers & bulletin"), &FS47PauseOpts::bRadioCast, &FS47PauseOpts::OnRadioCast, true,

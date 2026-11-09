@@ -173,17 +173,28 @@ void FS47DevFreeform::AddSaroFixes(FS47DevEvents& E)
   {
    struct FPlace { const TCHAR* Name; double X, Z; };
    static const FPlace Places[] = { { TEXT("corridor"), -2.4, 5.6 }, { TEXT("records"), -3.5, 8.7 }, { TEXT("office"), .5, 8.5 } };
-   TSharedRef<int32> Count = MakeShared<int32>(0);
+   // Each thing once, however many of the three places measure it (sweep of 9 November: two things, counted three times, were "6").
+   TSharedRef<TSet<FString>> Count = MakeShared<TSet<FString>>();
    TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
    *Next = [this, Log, Count, Next](int32 I)
    {
-    if (I >= int32(UE_ARRAY_COUNT(Places))) { Tell(*Count == 0, FString::Printf(TEXT("%d things in the walls of the hall, records and office (the log has each)"), *Count), 10); return; }
+    if (I >= int32(UE_ARRAY_COUNT(Places)))
+    {
+     Tell(Count->Num() == 0, FString::Printf(TEXT("%d things in the walls of the hall, records and office%s (the log has each)"), Count->Num(), Count->Num() ? *(TEXT(": ") + FString::Join(Count->Array(), TEXT("; "))) : TEXT("")), 10);
+     return;
+    }
     M->Player->Place(Places[I].X, Places[I].Z, 0);
     After(.8, [this, Log, Count, Next, I]
     {
      TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("walls, from the %s:"), Places[I].Name));
+     // What the fixes placed: the hall's service cabinet, the parts made here (sarofix:) and the records room's own dressing
+     // (S47RecordsDressing's nodes, records:...). Not every name with "records" in it: the records door's frame (S47SaroDoorDetail)
+     // sits in its opening as a frame does, and S47Office's green face on the records partition runs to the export's records / office
+     // partition (Annex.ts, x -1.0) over the 6 cm the clip table gives that wall; neither is a fix's, and both were in the log as
+     // "6 things" on 9 November.
      for (const S47SaroClip::FHit& H : S47SaroClip::Run(M->Web->GetWorld(), .02, Lines))
-      if (H.Thing.Contains(TEXT("office:serviceCabinet")) || H.Thing.Contains(TEXT("sarofix")) || H.Thing.Contains(TEXT("records"), ESearchCase::IgnoreCase) || H.Thing.Contains(TEXT("S47Records"))) ++*Count;
+      if (H.Thing.Contains(TEXT("office:serviceCabinet")) || H.Thing.Contains(TEXT("sarofix")) || H.Thing.Contains(TEXT("[records:")) || H.Thing.Contains(TEXT("S47Records")))
+       Count->Add(H.Thing + TEXT(" into ") + H.Wall);
      Log(Lines);
      (*Next)(I + 1);
     });

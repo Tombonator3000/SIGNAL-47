@@ -500,7 +500,7 @@ void US47Audio::CallLine(float Secs)
 TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lines, float Lead, float Gap)
 {
 	StopPhoneCalls();
-	if ((!bKinskiCalls && !bCharacterVoices) || !Ctx.IsValid() || Ctx->State() == TEXT("closed") || !Noise.IsValid() || !Lines.Num()
+	if (!bCharacterVoices || !Ctx.IsValid() || Ctx->State() == TEXT("closed") || !Noise.IsValid() || !Lines.Num()
 		|| !Lines.ContainsByPredicate([](const FS47PhoneCue& L) { return !L.bAside; })) return {};
 	FBatch Batch(*Ctx);
 	TArray<TSharedPtr<FS47AudioBuffer>> Buffers;
@@ -553,8 +553,8 @@ TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lin
 	return TL;
 }
 
-/** The recording phoneCall() plays: Ward uses only her own cast slot; the other legacy
- *  lines retain their existing fallback. An unrecorded call uses its captions. */
+/** The recording phoneCall() plays: each speaker's own character voice only. (KINSKI-READ-OUT, Tom
+ *  9 November 2026: the old fallback to the Kinski telephone bank is gone.) An unrecorded call uses its captions. */
 TSharedPtr<FS47AudioBuffer> US47Audio::LineBuffer(const FString& By, const FString& Text) const
 {
 	// Ward has her own unrecorded cast slot (HorrorStory/pack.json): captions until
@@ -562,10 +562,7 @@ TSharedPtr<FS47AudioBuffer> US47Audio::LineBuffer(const FString& By, const FStri
 	if (By == TEXT("WARD")) return CharacterBuffer(TEXT("ward"), Text);
 	const TSharedPtr<FS47AudioBuffer> Actor = By == TEXT("N. VEGA") ? CharacterBuffer(TEXT("bacall"), Text)
 		: By == TEXT("THE LINE") ? CharacterBuffer(TEXT("price"), Text) : nullptr;
-	if (Actor.IsValid()) return Actor;
-	if (!bKinskiCalls) return nullptr;
-	const FString* Key = PhoneKeys.Find(NormalizeReadingText(Text));
-	return Key ? Buf.FindRef(*Key) : nullptr;
+	return Actor;
 }
 
 /** A hang-up, replacement, new night, save load or title: future sources stop too. */

@@ -89,6 +89,25 @@ namespace
   }
   if (B.Kind == TEXT("land") && Area == TEXT("saro") && S47OpenLand::Live() && B.MinZ >= 100 && (B.MinX == B.MaxX || B.MinZ == B.MaxZ))
    return TEXT("a fence line of MakeLands' Out, stepped through in Freeform's open land (US47World::OnLand); Story's fence (roadProps.ts) holds there");
+  // The records room's own dressing (S47RecordsDressing: the clerk's desk, the cartons on the floor and the flat cartons) puts its
+  // boxes in SARO's walk list by its own names, records:..., and draws its pieces as children of annex.interior, so they are hidden
+  // while the measure stands in the yard, as the Known boxes above are (sweep of 9 November: three of the "5 invisible blockers").
+  // Known only while the room is hidden and only where one of its drawn pieces, hidden or not, stands within the blocker's box.
+  if (B.Kind == TEXT("walk") && Area == TEXT("saro") && B.Id.StartsWith(TEXT("records:")) && M->Web && !M->Web->Obj(TEXT("annex.interior")).Shown())
+  {
+   const FBox2D Box(FVector2D(B.MinX - .05, B.MinZ - .05), FVector2D(B.MaxX + .05, B.MaxZ + .05));
+   for (int32 K = 0; K < M->Web->PartCount(); ++K)
+   {
+    const FS47WebNode* N = M->Web->Node(K);
+    const UStaticMeshComponent* C = N ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
+    if (!C || !C->GetStaticMesh() || !N->Name.StartsWith(TEXT("records:"))) continue;
+    const FBox U = C->Bounds.GetBox();
+    const FVector A = S47Three::ToThree(U.Min), Z = S47Three::ToThree(U.Max);
+    const FBox2D Drawn(FVector2D(FMath::Min(A.X, Z.X), FMath::Min(A.Z, Z.Z)), FVector2D(FMath::Max(A.X, Z.X), FMath::Max(A.Z, Z.Z)));
+    if (Drawn.Intersect(Box))
+     return FString::Printf(TEXT("records room: %s (S47RecordsDressing), drawn with the room's inside, hidden from the yard"), *N->Name);
+   }
+  }
   return FString();
  }
  // Whether a point of a blocker's edge has others of its kind all round it (5 cm each way): inside them, where nothing walks or drives

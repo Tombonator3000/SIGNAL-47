@@ -61,6 +61,10 @@ namespace S47CarPaintLocal
   return M && M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorFactor")), Out);
  }
  // Whether the engine can draw a material here at all: a resource with a shader map for this platform, and not the default.
+ // In the editor (-game included) shaders are compiled on demand, and a map that is there and drawn can still say it is not
+ // finalized (S47FinaleSky ShaderReady): every slot read "no shader map" in the sweep of 9 November, the town's own master
+ // (M_Web_Lit_Opaque, every building in Caliche) as much as the glTF instances. There it says which it is: "editor map" (there, not
+ // finalized; drawn), "compiling", or "no shader map" (none at all). A cooked build's maps are finalized: there "ok" or not.
  FString Drawable(UMaterialInterface* M)
  {
   if (!M) return TEXT("none");
@@ -68,8 +72,17 @@ namespace S47CarPaintLocal
   const FMaterialResource* R = M->GetMaterialResource(GMaxRHIShaderPlatform);
   if (!R) return TEXT("no resource");
   if (R->IsDefaultMaterial()) return TEXT("is default");
-  if (!R->HasValidGameThreadShaderMap()) return TEXT("no shader map");
-  return TEXT("ok");
+  if (R->HasValidGameThreadShaderMap()) return TEXT("ok");
+#if WITH_EDITOR
+  if (R->GetGameThreadShaderMap()) return TEXT("editor map");
+  if (const UMaterial* Base = M->GetMaterial(); Base && Base->IsCompiling()) return TEXT("compiling");
+#endif
+  return TEXT("no shader map");
+ }
+ bool Draws(UMaterialInterface* M)
+ {
+  const FString D = Drawable(M);
+  return D == TEXT("ok") || D == TEXT("editor map");
  }
  struct FLook { FLinearColor Colour = FLinearColor(.5f, .5f, .5f); float Rough = .5f, Metal = 0, Opacity = 1; bool bGlass = false, bKeepMap = true; };
  FLook LookOf(const FString& Role, bool bSheriff)
@@ -235,13 +248,20 @@ int32 S47CarPaint::Measure(AS47Web* W, TArray<FString>& Lines)
   {
    if (!IsCar(C) || !C->ComponentTags.Contains(Tag)) continue;
    ++Cars; int32 Left = 0;
+   TArray<FString> Why;
    for (int32 I = 0; I < C->GetNumMaterials(); ++I)
    {
     UMaterialInterface* M = C->GetMaterial(I);
-    if (!Cast<UMaterialInstanceDynamic>(M) || Drawable(M) != TEXT("ok")) ++Left;
+    // A slot is dressed when it draws a dynamic material that can be drawn here (S47CarPaint's own, on the town's master or glass,
+    // or the one somebody painted the slot with for a scene of their own, kept).
+    const bool bDynamic = Cast<UMaterialInstanceDynamic>(M) != nullptr;
+    if (bDynamic && Draws(M)) continue;
+    ++Left;
+    if (Why.Num() < 3) Why.Add(FString::Printf(TEXT("%d %s(%s)"), I, M ? *M->GetName() : TEXT("none"), bDynamic ? *Drawable(M) : TEXT("its own")));
    }
    Bad += Left > 0;
-   Each.Add(FString::Printf(TEXT("%s %s: %d slots, %d not on the town's materials"), Left ? TEXT("FAIL") : TEXT("PASS"), *C->GetStaticMesh()->GetName(), C->GetNumMaterials(), Left));
+   Each.Add(FString::Printf(TEXT("%s %s: %d slots, %d not on the town's materials%s"), Left ? TEXT("FAIL") : TEXT("PASS"), *C->GetStaticMesh()->GetName(), C->GetNumMaterials(), Left,
+    Why.Num() ? *(TEXT(": ") + FString::Join(Why, TEXT(", "))) : TEXT("")));
   }
  }
  Lines.Add(FString::Printf(TEXT("%s car paint: %d car parts, %d still on their own materials"), Cars && !Bad ? TEXT("PASS") : TEXT("FAIL"), Cars, Bad));

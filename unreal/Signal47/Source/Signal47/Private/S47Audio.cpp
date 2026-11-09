@@ -105,7 +105,8 @@ TSharedPtr<FS47AudioBuffer> US47Audio::MakeNoise(bool bBrown) const
 void US47Audio::DecodeAll()
 {
 	// Scripts/import-audio.sh writes the recordings Audio.ts decodes as WAVE files, with an index:
-	// sources (web name -> file), phone (text -> phone:<id>), character (voice -> text -> character:<id>).
+	// sources (web name -> file), character (voice -> text -> character:<id>). (An old index's phone section,
+	// the retired Kinski telephone bank, is not read: KINSKI-READ-OUT.)
 	// The bought ones come second, so a file name finds them first (as the old lookup did).
 	const FString Dirs[2] = { FPaths::ProjectContentDir() / TEXT("Audio/Raw"), FPaths::ProjectContentDir() / TEXT("Licensed/Raw") };
 	for (const FString& Dir : Dirs)
@@ -133,9 +134,6 @@ void US47Audio::DecodeAll()
 				ByFile.Add(FPaths::GetBaseFilename(File), Key);
 			}
 		}
-		const TSharedPtr<FJsonObject>* Phone = nullptr;
-		if (J->TryGetObjectField(TEXT("phone"), Phone))
-			for (const auto& P : (*Phone)->Values) PhoneKeys.Add(FString(P.Key.ToView()), P.Value->AsString());
 		const TSharedPtr<FJsonObject>* Character = nullptr;
 		if (J->TryGetObjectField(TEXT("character"), Character))
 		{
@@ -371,14 +369,14 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 	A->Unlock(false, false);
 	FS47AudioContext& C = *A->Ctx;
 	auto Rec = [&C](double Secs) { return TSharedPtr<FS47AudioBuffer>(C.CreateBuffer(1, int32(Secs * 24000), 24000.f)); };
-	A->Buf.Add(TEXT("phone:a"), Rec(2.0));
-	A->Buf.Add(TEXT("phone:b"), Rec(3.0));
+	A->Buf.Add(TEXT("character:a"), Rec(2.0));
+	A->Buf.Add(TEXT("character:b"), Rec(3.0));
 	A->Buf.Add(TEXT("character:c"), Rec(1.5));
 	A->Buf.Add(TEXT("click"), Rec(0.1));
-	A->PhoneKeys.Add(TEXT("Sierra Motor Court."), TEXT("phone:a"));
-	A->PhoneKeys.Add(TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("phone:b"));
+	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("Sierra Motor Court."), TEXT("character:a"));
+	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("character:b"));
 	A->CharacterKeys.FindOrAdd(TEXT("bacall")).Add(TEXT("So you went out there."), TEXT("character:c"));
-	A->bKinskiCalls = true; A->bCharacterVoices = true;
+	A->bCharacterVoices = true;
 	{
 		TArray<FS47PhoneCue> Nora;
 		Nora.Add({ TEXT("Sierra Motor Court."), TEXT("N. VEGA") });
@@ -401,31 +399,26 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 		A->StopPhoneCalls();
 		Check(!A->PhonePlaying(), TEXT("stopPhoneCalls ends the session"));
 		Check(A->PhoneCall({ { TEXT("So you went out there."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: N. VEGA in her own voice"));
-		A->bCharacterVoices = false;
-		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: her voice off and no Kinski line: unset (captions)"));
-		A->bCharacterVoices = true;
+		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("REYES") } }).IsSet(), TEXT("phoneCall: a speaker without a character voice: unset (captions), no Kinski fallback"));
 		Check(!A->PhoneCall({ { TEXT("Sierra Motor Court."), TEXT("N. VEGA") }, { TEXT("A line nobody recorded."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: one line without a recording: unset, nothing half-spoken"));
 		Check(!A->PhonePlaying(), TEXT("... and no session"));
-		A->bKinskiCalls = false; A->bCharacterVoices = false;
-		Check(!A->PhoneCall(Nora).IsSet(), TEXT("phoneCall: both voices off: unset"));
-		A->bKinskiCalls = true; A->bCharacterVoices = true;
+		A->bCharacterVoices = false;
+		Check(!A->PhoneCall(Nora).IsSet(), TEXT("phoneCall: character voices off: unset (captions)"));
+		A->bCharacterVoices = true;
 		A->StopPhoneCalls();
 	}
 	{
 		A->OnPhoneCall = {}; // the previous timeline fixture captured a scoped counter
-		// The actual Ward text also exists in the legacy Dale/Kinski phone bank.
 		const FString Ward = TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened.");
-		A->PhoneKeys.Add(Ward, TEXT("phone:a"));
-		Check(A->LineBuffer(TEXT("DALE"), Ward) == A->Buf[TEXT("phone:a")], TEXT("phone routing: legacy Dale recording remains available"));
-		Check(!A->LineBuffer(TEXT("WARD"), Ward), TEXT("phone routing: unrecorded Ward never borrows Dale's matching text"));
+		Check(!A->LineBuffer(TEXT("WARD"), Ward) && !A->LineBuffer(TEXT("DALE"), Ward), TEXT("phone routing: unrecorded Ward (and the old Kinski Dale lines) have no recording"));
 		Check(!A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet() && !A->PhonePlaying(), TEXT("phone routing: unrecorded Ward leaves the complete call to captions"));
 		A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(Ward, TEXT("character:c"));
-		Check(A->LineBuffer(TEXT("WARD"), Ward) == A->Buf[TEXT("character:c")], TEXT("phone routing: an explicitly recorded Ward bank wins over the legacy duplicate"));
+		Check(A->LineBuffer(TEXT("WARD"), Ward) == A->Buf[TEXT("character:c")], TEXT("phone routing: an explicitly recorded Ward bank is used"));
 		A->bCharacterVoices = false;
-		Check(!A->LineBuffer(TEXT("WARD"), Ward), TEXT("phone routing: Ward voice off does not fall back to Dale"));
-		A->bCharacterVoices = true; A->bKinskiCalls = false;
-		Check(A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet(), TEXT("phone routing: Ward's own future recording is independent of Dale calls"));
-		A->StopPhoneCalls(); A->CharacterKeys.Remove(TEXT("ward")); A->bKinskiCalls = true;
+		Check(!A->LineBuffer(TEXT("WARD"), Ward), TEXT("phone routing: Ward voice off: no recording"));
+		A->bCharacterVoices = true;
+		Check(A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet(), TEXT("phone routing: Ward's own future recording plays"));
+		A->StopPhoneCalls(); A->CharacterKeys.Remove(TEXT("ward"));
 	}
 	Check(A->StepPick(TEXT("dirt")).Name.StartsWith(TEXT("stepGravel")) && FMath::IsNearlyEqual(A->StepPick(TEXT("dirt")).Gain, 0.16f), TEXT("stepPick: dirt is the gravel steps at 0.16"));
 	{

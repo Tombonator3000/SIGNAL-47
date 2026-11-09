@@ -441,11 +441,11 @@ void FS47T02Test::Step(double Dt)
    {
     if (!M->Audio || !M->Audio->bReady || !M->Audio->Ctx.IsValid() || M->Audio->Ctx->State()!=TEXT("running"))
     { if (T.Elapsed-T.Since>15) Fail(TEXT("Ward caption fixture requires a ready running native audio context")); return; }
-    if (!Check(M->Audio->bKinskiCalls && M->Audio->bCharacterVoices && !M->Audio->PhonePlaying(),
-     TEXT("Ward routing tested with native audio ready and both voice options enabled"))) return;
+    if (!Check(M->Audio->bCharacterVoices && !M->Audio->PhonePlaying(),
+     TEXT("Ward routing tested with native audio ready and the character voices enabled"))) return;
     const auto& Lines=S47PhoneScripts::Ward();
     if (!Check(Lines.Num()==2 && !M->Audio->LineBuffer(Lines[0].By,Lines[0].Text) && !M->Audio->LineBuffer(Lines[1].By,Lines[1].Text),
-     TEXT("both actual Ward lines have no recording instead of borrowing generic Kinski audio"))) return;
+     TEXT("both actual Ward lines have no recording (her own slot is unrecorded)"))) return;
     if (!Check(C2->PhoneLabel()==TEXT("Answer the phone") && !C2->S.bAnswered && C2->S.Stage==TEXT("ward-call"),
      TEXT("Ward caption fixture starts on the real unanswered ringing call"))) return;
     T.WardCallAt=T.Elapsed;

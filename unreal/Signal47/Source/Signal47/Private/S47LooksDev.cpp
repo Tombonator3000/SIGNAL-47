@@ -259,7 +259,7 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
    After(1.0, [this, Log]
    {
     AS47Walker* P = M->Player; UWorld* World = M->Web->GetWorld();
-    int32 Rays = 0, Wear = 0, Office = 0; FString First;
+    int32 Rays = 0, Wear = 0, Office = 0, Ground = 0; FString First;
     for (int32 Y = -6; Y <= 6; ++Y) for (int32 Pi = -2; Pi <= 2; ++Pi)
     {
      const double Yaw = P->Yaw + Y * FMath::DegreesToRadians(5.), Pitch = P->Pitch + Pi * FMath::DegreesToRadians(5.);
@@ -271,7 +271,13 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
      const FVector At = S47Three::ToThree(H.ImpactPoint);
      if (At.X < -43.6 || At.Z < 672.0 || At.Z > 677.8) continue;
      ++Office;
-     if (M->Web->NodeOf(H.GetComponent()) == 769) { ++Wear; if (First.IsEmpty()) First = FString::Printf(TEXT(" (first at x %.3f y %.3f z %.3f)"), At.X, At.Y, At.Z); }
+     // A front stands: the layer's flat band of dust on the walk at the wall's foot (g529, 1.5 cm over the ground, layer x -41.0 to
+     // -40.5, z 24.8 to 27.8: the sweep of 9 November met it once, at y -2.084, 30 cm out from the wall) is ground, not a second front.
+     if (M->Web->NodeOf(H.GetComponent()) == 769)
+     {
+      if (FMath::Abs(H.ImpactNormal.Z) > .7) { ++Ground; continue; }
+      ++Wear; if (First.IsEmpty()) First = FString::Printf(TEXT(" (first at x %.3f y %.3f z %.3f)"), At.X, At.Y, At.Z);
+     }
     }
     // what the layer draws: 648 triangles as the trim has it, 596 with the old office front cut out (S47MotelV2 CutOut; without the
     // trim's CPU data it stays 648 and the layer is only set back 3 cm)
@@ -279,7 +285,7 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
     const UStaticMeshComponent* LayerMesh = Layer ? Cast<UStaticMeshComponent>(Layer->Comp.Get()) : nullptr;
     const UStaticMesh* Drawn = LayerMesh ? LayerMesh->GetStaticMesh() : nullptr;
     const int32 Drawing = Drawn && Drawn->GetRenderData() && Drawn->GetNumLODs() > 0 ? Drawn->GetNumTriangles(0) : -1;
-    TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("Motel office front: %d rays hit, %d on the office's front, %d of them on the export's wear layer (node 769)%s; the layer draws %d triangles (%s)"), Rays, Office, Wear, *First,
+    TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("Motel office front: %d rays hit, %d on the office's front, %d of them on a standing face of the export's wear layer (node 769)%s, %d on its dust on the walk; the layer draws %d triangles (%s)"), Rays, Office, Wear, *First, Ground,
      Drawing, Drawing == 596 ? TEXT("the old front cut out") : Drawing == 648 ? TEXT("not cut: no CPU data on the trim? run Tools/streetlamps/prepare_motel_cpu.py") : TEXT("unexpected")));
     Log(Lines);
     Tell(Wear == 0 && Office > 0, Lines[0], 10);

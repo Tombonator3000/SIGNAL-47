@@ -1400,7 +1400,6 @@ double AS47Story::VoicesDuck() const
 	if (M && M->UI)
 	{
 		bVoice |= M->UI->NpcDialogue.IsValid() && M->UI->NpcDialogue->Playing();
-		bVoice |= M->UI->ReadAloud.IsValid() && M->UI->ReadAloud->Playing();
 		bVoice |= M->UI->Narrator.IsValid() && M->UI->Narrator->Playing();
 	}
 	return bVoice ? 0.25 : 1.0;

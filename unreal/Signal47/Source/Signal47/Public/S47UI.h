@@ -40,8 +40,8 @@ struct FS47PauseOpts
 	TFunction<void()> OnResume, OnTitle;
 	float Volume = 0.8f, Sens = 1.f, Music = 0.7f, Radio = 1.f;
 	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio;
-	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
-	TFunction<void(bool)> OnCharacters, OnSerling, OnKinski, OnArtBell, OnRadioCast;
+	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
+	TFunction<void(bool)> OnCharacters, OnSerling, OnArtBell, OnRadioCast;
 	TFunction<void()> OnSave, OnLoad;     // unset: not offered
 	FString Quality = TEXT("high");       // 'ultra' | 'high' | 'low'
 	TFunction<void(const FString&)> OnQuality;
@@ -238,12 +238,12 @@ public:
 	TSharedPtr<class FS47NpcDialogue> NpcDialogue;
 
 	// ---------- the readers (core/readAloud.ts) ----------
-	// ui.readAloud: Kinski reading papers and conversations ('kinskiReadAloud'); ui.narrator: the same
-	// player with the Serling bank ('serlingNarrator'); ui.earlDialogue: Earl's voice (Caliche's). Set by
-	// main.ts's wiring (S47Flow, S47Caliche), null until then.
-	TSharedPtr<class FS47ReadAloud> ReadAloud, Narrator;
+	// ui.narrator: the reader with the Serling bank ('serlingNarrator'); ui.earlDialogue: Earl's voice
+	// (Caliche's). Set by main.ts's wiring (S47Flow, S47Caliche), null until then. (KINSKI-READ-OUT, Tom
+	// 9 November 2026: ui.readAloud, the Kinski reader for papers and conversations, is gone.)
+	TSharedPtr<class FS47ReadAloud> Narrator;
 	TSharedPtr<class FS47EarlDialogue> EarlDialogue;
-	/** get descriptionReader(): the narrator when it is on, else Kinski when he is on, else none. */
+	/** get descriptionReader(): the narrator when it is on, else none. */
 	TSharedPtr<class FS47ReadAloud> DescriptionReader() const;
 	/** stopSpeech(): every reader and voice. */
 	void StopSpeech();
@@ -253,7 +253,7 @@ public:
 	TFunction<bool()> CanDescribe;
 	/** readingControls(parent, texts, label, kind): explicit playback only, the Read button and its status
 	 *  (.read-aloud) as a widget to put where the box goes; nothing when the reader is off. 'document' and
-	 *  'conversation' are Kinski's, the rest the description reader's. */
+	 *  'conversation' have no reader (text only, KINSKI-READ-OUT), the rest the description reader's. */
 	TSharedRef<SWidget> ReadingControls(const TArray<FString>& Texts, const FString& Label = TEXT("Read aloud"), const FString& Kind = TEXT("conversation"));
 	/** descriptionReadings(parent, selector, kind, extra): read the descriptions currently visible in Parent
 	 *  (the texts S47Kit marks readable: .lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card

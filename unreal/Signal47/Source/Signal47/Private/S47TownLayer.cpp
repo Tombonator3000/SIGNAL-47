@@ -84,7 +84,7 @@ void US47TownLayer::Init(US47Main* InM)
 	// ui.earlDialogue (main.ts: the one Earl; UI.stopSpeech stops it); ui.onEarlStart and onCharacterStart:
 	// stopNarration (the readers here; Caliche stops the other voice itself), the calls and the CB
 	if (M->UI) M->UI->EarlDialogue = Caliche->EarlDialogue;
-	Caliche->OnCharacterStart = Caliche->OnEarlStart = [this] { if (M->UI && M->UI->ReadAloud) M->UI->ReadAloud->Stop(); if (M->UI && M->UI->Narrator) M->UI->Narrator->Stop(); M->Audio->StopPhoneCalls(); if (M->CB) M->CB->Stop(); };   // (cb.stop)
+	Caliche->OnCharacterStart = Caliche->OnEarlStart = [this] { if (M->UI && M->UI->Narrator) M->UI->Narrator->Stop(); M->Audio->StopPhoneCalls(); if (M->CB) M->CB->Stop(); };   // (cb.stop)
 	{ auto Before = M->Audio->OnPhoneCall; M->Audio->OnPhoneCall = [this, Before] { Caliche->StopSpeech(); if (Before) Before(); }; }
 	TownEvents = MakeShared<FS47TownEvents>(M); TownEvents->Bind(Town.Get()); Roadside = MakeShared<FS47Roadside>(M);
 	Cutouts = MakeShared<FS47Cutouts>(M, [this](bool bFirst)

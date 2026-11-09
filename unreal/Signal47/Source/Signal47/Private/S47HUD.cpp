@@ -878,9 +878,8 @@ void AS47HUD::ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose)
 {
 	TWeakObjectPtr<AS47HUD> Self = this;
 	if (Audio) Audio->Play(TEXT("paper0"), 0.5f);
-	// UI.document: the page read by Kinski (Read document, without its pencil marks and rules) and the
-	// transcript by the description reader (Read description), each when that reader is on: the view's
-	// own actions (SS47Document)
+	// UI.document: the page is text only (KINSKI-READ-OUT); the transcript is read by the description
+	// reader (Read description) when it is on: the view's own actions (SS47Document)
 	US47UI* UI = US47Main::Get(this)->UI;
 	if (UI) UI->StopSpeech();
 	SetModal(SNew(SS47Document).Doc(Doc).UI(UI).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));

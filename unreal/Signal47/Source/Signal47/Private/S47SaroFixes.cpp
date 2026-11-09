@@ -226,7 +226,7 @@ namespace
  }
 
  // ---- PT-STOP ----
- bool BuildStop(FState& S, AS47Web* W)
+ bool BuildStop(FState& S, US47Main* M, AS47Web* W)
  {
   const FS47WebNode* Plane = W->Node(StopPlaneNode);
   if (!Plane || Plane->Geo != StopPlaneGeo || !Plane->Comp.IsValid()) { Say(S, TEXT("stop sign"), TEXT("the export's octagon (node 633, geo 430) differs; the sign stays")); return true; }
@@ -256,6 +256,11 @@ namespace
    }
    (*Leg)->SetArrayField(TEXT("obstacles"), Kept);
   }
+  // The truck's SARO leg is built from that list when the world loads (US47World, "drive legs: saro ..."), which is before this runs:
+  // the live leg keeps its own copy, and the pole's box stayed in it with nothing drawn (sweep of 9 November, drive saro#14).
+  if (M && M->World)
+   if (IS47DriveArea* Live = M->World->LegArea(TEXT("saro")))
+    Drive += Live->Obstacles.RemoveAll([](const FS47Obstacle& O) { return !O.bCircle && StopFoot(O.MinX, O.MaxX, O.MinZ, O.MaxZ); });
   S.StopCut = 1;
   Say(S, TEXT("stop sign"), FString::Printf(TEXT("gone: octagon hidden, pole cut from g436, walk feet %d and drive boxes %d removed"), Walk, Drive));
   return true;
@@ -592,7 +597,7 @@ void Update(US47Main* M, double Dt)
   if (!S.bLight) S.bLight = BuildLight(S, W);
   if (!S.bRamp) S.bRamp = BuildRamp(S, W);
   if (!S.bWalks) S.bWalks = BuildWalks(S, W);
-  if (!S.bStop) S.bStop = BuildStop(S, W);
+  if (!S.bStop) S.bStop = BuildStop(S, M, W);
  }
  Show(S, M, W);
 }

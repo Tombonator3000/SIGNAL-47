@@ -69,7 +69,7 @@ struct FS47Pressure
 
 // The game's sounds: web/src/core/Audio.ts (AudioSys), ported onto the Web Audio of
 // S47WebAudio.h and played through one synth component. Recordings are decoded into the context
-// by their web names (phoneRing, thudSoft, stepConcrete0, lic:door_heavy, phone:<id> ...) from the
+// by their web names (phoneRing, thudSoft, stepConcrete0, lic:door_heavy, character:<id> ...) from the
 // WAVE files Scripts/import-audio.sh writes to Content/Audio/Raw and Content/Licensed/Raw (with
 // their index.json); the synthesised sounds are the same graphs as the web version's.
 //
@@ -118,7 +118,8 @@ public:
 	TMap<FString, TSharedPtr<FS47AudioBuffer>> Buf;
 	float Volume = 0.8f;
 	bool bReady = false;
-	bool bKinskiCalls = true, bCharacterVoices = true; // kinskiCalls, characterVoices (main.ts sets them from the settings)
+	bool bCharacterVoices = true; // characterVoices (main.ts sets it from the settings). (KINSKI-READ-OUT: no kinskiCalls; the
+	                              // old Kinski phone bank is retired, so a line without a character voice is a caption)
 	TFunction<void()> OnPhoneCall;
 
 	/** The bought sounds are in this build (the credits name them only then): BOUGHT_SFX. */
@@ -296,7 +297,6 @@ private:
 
 	// the recordings' index (Content/Audio/Raw/index.json, Content/Licensed/Raw/index.json)
 	TMap<FString, FString> ByFile;           // file name (thud_soft) -> web name (thudSoft), the bought ones first
-	TMap<FString, FString> PhoneKeys;        // normalised text -> phone:<id>
 	TMap<FString, TMap<FString, FString>> CharacterKeys; // voice -> normalised text -> character:<id>
 	void DecodeAll();
 	void Unlock(bool bWithSynth, bool bDecode = true); // preload() and unlock(): the context, the buses, the noise, the recordings

@@ -700,14 +700,13 @@ void SS47Talk::Render()
 		if (UI.IsValid())
 		{
 			if (const TSharedPtr<FS47ReadAloud> D = UI->DescriptionReader()) D->Stop();
-			if (UI->ReadAloud.IsValid()) UI->ReadAloud->Stop();
 			if (O.bEarl && UI->EarlDialogue.IsValid()) UI->EarlDialogue->Stop();
 		}
 		StopCharacter();
 		TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
 		// the lines nobody voices get Read aloud (ui.readingControls): the character's own are its voice's
 		// (Earl's voice in this panel, ui.earlReadingControls, is Caliche's own panel's in this version, so
-		// o.earl takes no lines from Kinski here)
+		// o.earl takes no lines from another reader here; conversations have no reader since KINSKI-READ-OUT)
 		TArray<FS47DialogueLine> All;
 		for (const S47Panels::FTalkLine& L : V.Lines) All.Add({ L.Who, L.Text });
 		const TArray<FS47DialogueLine> Voiced = !O.Character.IsEmpty() && NpcOn() ? FS47NpcDialogue::CharacterLines(O.Character, All) : TArray<FS47DialogueLine>();

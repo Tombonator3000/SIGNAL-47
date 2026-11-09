@@ -1048,11 +1048,10 @@ void SS47Document::Construct(const FArguments& InArgs)
 	const FS47Doc& D = InArgs._Doc;
 	US47UI* UI = InArgs._UI;
 	TextScale = UI && UI->bLargeText ? 1.35f : 1.f;
-	// UI.document's readings: Kinski reads the page (Read document, without its pencil marks and rules),
-	// the description reader the transcript (Read description), each when that reader is on
+	// UI.document's readings: the description reader the transcript (Read description), when it is on.
+	// (KINSKI-READ-OUT, Tom 9 November 2026: the page itself is text only, no Read document; ReadDoc stays unset)
 	if (UI)
 	{
-		if (!D.Page.TrimStartAndEnd().IsEmpty()) ReadDoc = UI->ReadingAction(S47Reading::DocumentReadingParagraphs(D.Page), TEXT("document"));
 		ReadDesc = UI->ReadingAction(Paragraphs(D.Transcript), TEXT("description"));
 	}
 	// the actions: the readings (V the first), then PUT IT DOWN (Esc)

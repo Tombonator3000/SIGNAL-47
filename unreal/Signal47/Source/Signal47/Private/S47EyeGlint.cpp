@@ -159,7 +159,10 @@ void S47EyeGlint::Detail::MakeDots(UObject* Outer,USceneComponent* Mesh,FName Bo
   // A point seen, not a lamp: no shadow, no light given to what is round it, not in reflections or the sky's capture.
   G->SetCastShadow(false);G->bAffectDynamicIndirectLighting=false;G->bAffectDistanceFieldLighting=false;G->bAffectIndirectLightingWhileHidden=false;
   G->bVisibleInReflectionCaptures=false;G->bVisibleInRealTimeSkyCaptures=false;G->bReceivesDecals=false;G->SetVisibleInRayTracing(false);
-  G->SetVisibility(false);G->SetHiddenInGame(true);
+  // Its visible flag starts as its body's: a body hidden now shows its dots with itself (SetVisibility(true,true): S47Happenings,
+  // S47TripoCreature), and one already shown (F10 "Tripo new" draws Zet shown) has them at once. Step's hidden-in-game is the dark's.
+  // (Sweep of 9 November: always false here, Zet's dots stayed off on a body that was never shown again with its children.)
+  G->SetVisibility(Mesh->GetVisibleFlag());G->SetHiddenInGame(true);
   G->RegisterComponent();
   G->SetRelativeLocation(Head.InverseTransformPosition(Head.GetLocation()+(I?Eyes.Right:Eyes.Left)));
   G->SetWorldScale3D(FVector(MinSize));
