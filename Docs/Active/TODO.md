@@ -51,6 +51,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **PT-DALE-LIGHT-20261109:** Dales kontor har ingen lysarmatur der lyset kommer fra.
 - [ ] **PT-RECORDS-20261109:** arkivrommet («records») trenger en realismerunde.
 - [ ] **PT-SWITCH-20261109:** lysbryterne har én bryter som virker og en falsk bryterplate ved siden av.
+- [ ] **PT-LAMPGLOW-20261109:** gatelysene lyser opp området om natta, men lyset kommer ikke fra armaturet. Hodet er mørkt, uten lysende linse eller glorie. Lyskilden skal sitte i hodet (Toms bilde ca. 13:20).
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
 - [x] **ECON-CAP-20261109:** ny pengeløkke etter Toms seks punkter (grunnlønn $14/10/7/4 + tillegg for godt arbeid, vedlikehold og bensin stiger per uke, kassetter og ødelagt utstyr koster, felles tak $35/uke på feltinntekter, bilen oppgraderes: dekk, lasteramme, ekstratank, motor; feltopptaker, nattkamera, radiopeiler). Modellen gir saldo $18–53 ved ukegjennomgang med to kort per kveld. Se [pengeløkka](../Research/Gameplay/OKONOMI_LOKKE_2026-11-09.md).
