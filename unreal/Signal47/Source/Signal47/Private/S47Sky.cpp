@@ -1040,7 +1040,10 @@ void FS47Sky::CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant)
 				}
 				Virga = FMath::Clamp(Virga, 0.0, 1.0) * Smooth(.1, .45, Edge);
 			}
-			const double A = FMath::Clamp(1 - (1 - .98 * Cloud) * (1 - Virga), 0.0, 1.0);
+			// the card itself never shows: everything fades out over the outer few percent of the picture (self test: no card's edge shows)
+			const double Ux = (X + .5) / Wd, Vy = (Y + .5) / Ht;
+			const double Border = Smooth(0, .07, FMath::Min(Ux, 1 - Ux)) * Smooth(0, .07, FMath::Min(Vy, 1 - Vy));
+			const double A = FMath::Clamp(1 - (1 - .98 * Cloud) * (1 - Virga), 0.0, 1.0) * Border;
 			// sunlit at the top, dark and heavy at the base; the rain a lighter grey than the base it falls from
 			const double CloudLum = FMath::Lerp(.95, .44, Smooth(.12, Base, V)) * (.9 + .1 * Mottle); // (not from Top: its noise would stripe the cloud)
 			const double VirgaLum = FMath::Lerp(.58, .74, Smooth(0, .25, Below));
