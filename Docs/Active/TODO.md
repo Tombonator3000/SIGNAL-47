@@ -36,6 +36,22 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
   - **Gjenbruk:** bygger på systemene som finnes (Happenings, SkyVisitors, Omen, Audio, PointDish, Townsfolk, Visitors) og følger de samme reglene: ingen alien før ca. 02:00 og spoilergrensene.
   - **Senere:** enkel tidslinje med dra-og-slipp, kopier og lim inn, og deling av skript mellom maskiner.
 
+**Toms test av d36, 9. november ca. 12:30 (med bilder):**
+- [ ] **PT-WALKIE-20261109:** Toms bedre walkie-modell (`walkie talkie 3d model.glb`, `SM_Tripo_Walkie`) skal brukes som walkie. «pakke tripo3d-1» er en **geigerteller-prototype** og skal brukes som geigertelleren.
+- [ ] **PT-NORDIC-COSMIC-20261109:** Nordic har vanlige øyne (ingen øyeglimt). Cosmic skal lyse i hele kroppen, som et stjernevesen formet av lys og stjerner.
+- [ ] **PT-BIGNIGHT-20261109:** Dale får si «Herrgott». Den store natta skal også vekke en som sover på motellet.
+- [ ] **PT-MAIL-20261109:** brevene i postkassen forsvant da Tom åpnet postordre, og han fikk ikke lest dem.
+- [ ] **PT-MOON-20261109:** månen trenger tekstur (den er en flat hvit skive).
+- [ ] **PT-RAMP-20261109:** rampen til SARO-inngangen trenger tekstur (flat og lys).
+- [ ] **PT-PATHS-20261109:** stiene rundt SARO må integreres bedre; de ser falske ut (flate betongstriper med pullerter).
+- [ ] **PT-ROCKS-20261109:** store steiner i ørkenen er bare delvis modellert (avkuttet side).
+- [ ] **PT-RANGE-FAR-20261109:** fjellene langt i bakgrunnen har for synlig teksturoverlapp (striper).
+- [ ] **PT-STOP-20261109:** fjern stoppskiltet ved SARO.
+- [ ] **PT-HALL-20261109:** gangen på SARO: skuffen står inni veggen, toalettet bak RESTROOMS-døra må komme, noe svever på døra, og «SERVICE / SPARE»-skiltet («SPARE IN SERVICE DRAWER») skal fjernes som unødvendig tekst.
+- [ ] **PT-DALE-LIGHT-20261109:** Dales kontor har ingen lysarmatur der lyset kommer fra.
+- [ ] **PT-RECORDS-20261109:** arkivrommet («records») trenger en realismerunde.
+- [ ] **PT-SWITCH-20261109:** lysbryterne har én bryter som virker og en falsk bryterplate ved siden av.
+
 **Dagskift 9. november, spørsmål til Tom etter M7:**
 - [x] **ECON-CAP-20261109:** ny pengeløkke etter Toms seks punkter (grunnlønn $14/10/7/4 + tillegg for godt arbeid, vedlikehold og bensin stiger per uke, kassetter og ødelagt utstyr koster, felles tak $35/uke på feltinntekter, bilen oppgraderes: dekk, lasteramme, ekstratank, motor; feltopptaker, nattkamera, radiopeiler). Modellen gir saldo $18–53 ved ukegjennomgang med to kort per kveld. Se [pengeløkka](../Research/Gameplay/OKONOMI_LOKKE_2026-11-09.md).
 - [ ] **ECON-FOLLOW-20261109 (Tom avgjør):** (1) ett kort per kveld er knapt: skal grunnlønnen være $15? (2) skal fotokreditten (PHOTO-01) stå utenfor taket på $35? (3) vinsj som dyrt kjøp i uke 3? (4) eget arbeidslys rundt bilen? (5) skal hvert kort ta fast tid (f.eks. 20 min skrivebordsarbeid)? (6) nattkameraets lysforsterkning må vurderes på bilde.
