@@ -860,11 +860,12 @@ void FS47DevFreeform::StepCards()
   const bool bOut=F->OutThereTonight();
   FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: before the card: out there tonight %d (lead %s at %s%s), director anomaly %d"),Night,*ClockText(F->Clock()),bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0);
+  if(F->PowerFault()){F->SetPowerFault(false);UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the feeder was out; restored here as a player would have done at the substation"),Night);}
   if(M->UI)M->UI->Close(true);
   if(!F->SelectJob(CardsJob)){Say(TEXT("could not select the card"));CardsStage=-1;return;}
   const auto* P=F->ConsoleProfile();if(!P){Say(TEXT("no receiver profile"));CardsStage=-1;return;}
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
-  if(!F->PointSelected()){Say(TEXT("the array would not take the pointing command"));CardsStage=-1;return;}
+  if(!F->PointSelected()){const auto* CJ=F->CurrentJob();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards: pointing refused: job %d stage %d, web %d, power %d"),CJ?1:0,CJ?int32(CJ->Stage):-1,M->Web?1:0,F->HasPowerForReactiveLight()?1:0);Say(TEXT("the array would not take the pointing command"));CardsStage=-1;return;}
    F->OpenTracking();CardsStage=1;return;
  }
  if(!Jobs.IsValidIndex(CardsJob)){CardsStage=-1;return;}
@@ -878,12 +879,25 @@ void FS47DevFreeform::StepCards()
  }
  if(CardsStage==2)
  {
-  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)return;
+  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
+  {
+   // A recording that never reaches the printer is the finding: said every half hour of the clock, and left after ninety minutes.
+   static double StallSaid=0,StallFrom=0;static int32 StallNight=0;
+   if(StallNight!=Night){StallNight=Night;StallFrom=F->Clock();StallSaid=F->Clock();}
+   if(F->Clock()-StallSaid>=1800){StallSaid=F->Clock();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: still no chart: stage %d, printer %.2f, power %d [%s]"),Night,*ClockText(F->Clock()),int32(Card.Stage),F->PrinterProgress(),F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));}
+   if(F->Clock()-StallFrom>=5400){Say(TEXT("GAVE UP, the recording never reached the printer"));CardsStage=-1;}
+   return;
+  }
   if(!F->CollectChart()){Say(TEXT("could not collect the chart"));CardsStage=-1;return;}
   if(M->UI)M->UI->Close(true);
   if(!Card.bAnomaly){CardsStage=9;return;}
-  if(!F->StartControl()){Say(TEXT("the control would not start"));CardsStage=-1;return;}
-  CardsStage=3;return;
+  CardsStage=25;return;
+ }
+ if(CardsStage==25)
+ {
+  // The array settles for a second first; a player presses again, so this does too (it gives up at 03:00 with the rest).
+  if(F->StartControl())CardsStage=3;
+  return;
  }
  if(CardsStage==3)
  {

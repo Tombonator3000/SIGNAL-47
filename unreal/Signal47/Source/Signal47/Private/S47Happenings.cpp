@@ -714,7 +714,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
- LeadNow=FLead();
+ LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
@@ -751,6 +751,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
     if(T.IsSet()&&T.Night<100000&&LeadKindOf(One)==T.Kind)LeadNow=T;
    }
   }
+  WordNight=FMath::Clamp(S47J::Int(Saved,TEXT("wordNight")),0,100000); // CHAIN-5B-20261109: an older save has none (0)
   // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
   {const TArray<double> P=S47J::Nums(Saved,TEXT("past"));for(int32 I=0;I+2<P.Num()&&Past.Num()<MostPast;I+=3)if(FMath::IsFinite(P[I])&&FMath::IsFinite(P[I+1])&&FMath::Abs(P[I])<1e5&&FMath::Abs(P[I+1])<1e5&&P[I+2]>=1&&P[I+2]<100000)Past.Add({P[I],P[I+1],int32(P[I+2])});}
   for(const auto& V:S47J::Arr(Saved,TEXT("sites")))
@@ -817,6 +818,7 @@ S47J::FObj FS47Happenings::Save() const
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
  if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
  if(LeadNow.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),LeadNow.Night);S47J::Set(L,TEXT("kind"),LeadNow.Kind);S47J::Set(L,TEXT("place"),LeadNow.Place);if(LeadNow.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
+ if(WordNight>0)S47J::Set(O,TEXT("wordNight"),WordNight); // CHAIN-5B-20261109
  if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
@@ -1097,7 +1099,17 @@ void FS47Happenings::DrawLead(int32 Night)
  // Loaded with tonight's: kept as it was drawn (a slip may have pointed there already).
  if(LeadNow.IsSet()&&LeadNow.Night==Night&&F&&F->EventPlaces&&F->EventPlaces->Find(LeadNow.Place)&&(LeadNow.bPointed||Plan.Contains(LeadNow.Kind)))return;
  LeadNow=FLead();
- const FString Kind=LeadKindOf(Plan);
+ // NIGHT-20261110: a kind still in its cooldown (or too early in the month) cannot start tonight, so it is no lead: 8 of 11 leads
+ // in the 17-night run pointed at something the rhythm then never let begin.
+ TMap<FString,double> Can=Plan;
+ if(M&&M->Rhythm&&F&&F->RulesLive())for(auto It=Can.CreateIterator();It;++It)
+ {
+  // Asked for the hour it is drawn for, with nothing on the ground and no rest: only what holds all night counts here.
+  FS47RhythmNow At=M->Rhythm->ReadNow();At.Day=Night;At.Clock=(Night-1)*86400.+It.Value()*3600.;At.Busy=NAME_None;At.RestLeft=0;At.SinceStart=1e9;
+  const FS47Verdict V=M->Rhythm->May(FName(*It.Key()),At);
+  if(!V.bMay&&(V.Why==TEXT("cooldown")||V.Why==TEXT("too_early_day")||V.Why==TEXT("off")||V.Why==TEXT("outside_hours")||V.Why==TEXT("tier"))){if(!LeadKindOf(TMap<FString,double>{{It.Key(),0.}}).IsEmpty())UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: %s is no lead tonight (%s %s)"),Night,*It.Key(),*V.Why.ToString(),*V.Detail);It.RemoveCurrent();}
+ }
+ const FString Kind=LeadKindOf(Can);
  if(Kind.IsEmpty()||!F||!F->EventPlaces||F->InTutorial())return;
  using S47Hap::Bit;
  FS47PlaceNeed N;N.Kind=Kind;
@@ -1125,7 +1137,9 @@ FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,d
  const double Away=PlayerRoad(Px,Pz)?FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)):-1.;
  if(!LeadFits(Away,MinM,MaxM,LeadNow.bPointed)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
  S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;
- UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,LeadNow.bPointed?TEXT(", a slip pointed there"):TEXT(""));
+ // Asked on every try while the rhythm holds it back: said once for each night's place.
+ static FString SaidLead;const FString Key=FString::Printf(TEXT("%d/%s/%d"),LeadNow.Night,*E->Id,LeadNow.bPointed?1:0);
+ if(SaidLead!=Key){SaidLead=Key;UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,LeadNow.bPointed?TEXT(", a slip pointed there"):TEXT(""));}
  return S;
 }
 bool FS47Happenings::OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const
@@ -1157,6 +1171,46 @@ void FS47Happenings::PointedTonight(int32 Night)
  if(!LeadNow.IsSet()||LeadNow.Night!=Night||LeadNow.bPointed)return;
  LeadNow.bPointed=true;
  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s at %s: a slip points there, held to its place until morning"),Night,*LeadNow.Kind,*LeadNow.Place);
+}
+// CHAIN-5B-20261109: the word of tonight (S47Happenings.h). What a voice can explain away: a thing seen, and roughly which way from SARO.
+FString FS47Happenings::WordLine(const FString& Who,const FString& Kind,const FString& Way,bool bAhead)
+{
+ const TCHAR* Thing=Kind==TEXT("landing")?TEXT("lights coming down slow"):Kind==TEXT("carcass")?TEXT("a cow down and the rest standing off from her")
+  :Kind==TEXT("cattle_ring")?TEXT("cattle bunched up in a ring and not grazing"):Kind==TEXT("missing_person")?TEXT("a blue pickup sitting with its door open")
+  :Kind==TEXT("stranded_rv")?TEXT("a camper with every light burning"):Kind==TEXT("cb_stranded")?TEXT("a rig on the shoulder with its flashers going"):nullptr;
+ if(!Thing)return FString();
+ const bool bWay=!Way.IsEmpty();
+ if(Who==TEXT("earl"))return bAhead
+  ?FString::Printf(TEXT("Then, still chewing: \"Third rancher tonight to call and say his dogs won't come out from under the porch%s. I tell them it's the weather. There isn't any weather.\""),bWay?*FString::Printf(TEXT(", every one of them out to the %s of you people"),*Way):TEXT(""))
+  :FString::Printf(TEXT("Then, still chewing: \"Had a woman call in just now about %s, %s. I told her it's the county. She said the county's in bed. She's not wrong.\""),Thing,bWay?*FString::Printf(TEXT("out to the %s of you people"),*Way):TEXT("out past your dishes somewhere"));
+ if(Who==TEXT("cb"))return bAhead
+  ?FString::Printf(TEXT("Breaker one-nine. Anybody else getting hash on this channel tonight%s? Like somebody keying up and not saying anything."),bWay?*FString::Printf(TEXT(", worst with my nose pointed %s"),*Way):TEXT(""))
+  :FString::Printf(TEXT("Breaker one-nine. Anybody else seeing %s, %s? Never mind. Probably the county."),Thing,bWay?*FString::Printf(TEXT("out %s of the dishes"),*Way):TEXT("out past the dishes"));
+ if(Who==TEXT("printer"))
+ {
+  const FString Aim=bWay?TEXT(", BEARING ROUGHLY ")+Way.ToUpper():FString();
+  return bAhead?FString::Printf(TEXT("PRINTER / A line by itself under the chart, from the array log: SIDELOBE HASH, LOW ON THE HORIZON%s. PROBABLY TRAFFIC."),*Aim)
+   :FString::Printf(TEXT("PRINTER / A line by itself under the chart, from the array log: LOW HORIZON NOISE, INTERMITTENT%s. LOGGED, NOT CLEARED."),*Aim);
+ }
+ return FString();
+}
+FString FS47Happenings::WordOfTonight(const FString& Who)
+{
+ auto* F=M?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive()||F->InTutorial())return FString();
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ const double H=HourOfNight(F->Clock());
+ if(Night<=0||WordNight==Night||H<20||H>=29.5)return FString();
+ FString Event,Title;double X=0,Z=0;bool bAhead=false;
+ if(!OutTonight(Night,Event,Title,X,Z,bAhead))return FString();
+ // Which way only for what has come, or for what a slip has pointed at already: no word points anywhere the night has not.
+ FString Way;
+ if(!bAhead||(LeadNow.bPointed&&LeadNow.Night==Night)){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);Way=S47Hap::Compass(FS47Places::AzimuthOf(SaroX,SaroZ,X,Z));}
+ const FString Said=WordLine(Who,Event,Way,bAhead);
+ if(Said.IsEmpty())return Said;
+ WordNight=Night;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: the word of tonight (%s) from the %s, %s%s"),Night,*Event,*Who,bAhead?TEXT("still to come"):TEXT("come already"),Way.IsEmpty()?TEXT(", no way said"):*FString::Printf(TEXT(", to the %s"),*Way));
+ return Said;
 }
 // MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
 static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
@@ -1956,6 +2010,12 @@ void FS47Happenings::Step(double Dt)
   }
   StepLate();
   StepCues();
+  // CHAIN-5B-20261109: the word of tonight on the CB (WordOfTonight), now and then while the player sits at it and the channel is quiet.
+  if(CanHearCb()&&Now.Id.IsEmpty()&&HeldTips.IsEmpty()&&WordNight!=Night&&Paced>=WordTry&&!(M->CB.IsValid()&&M->CB->bBusy)&&!FS47FieldRadio::DaleOnAir(M))
+  {
+   WordTry=Paced+120;
+   if(FS47NightRhythm::Roll(F->Seed(),int32(F->Clock()/600.),0x574f5244u)<.35f){const FString Said=WordOfTonight(TEXT("cb"));if(!Said.IsEmpty())Cb({Said},TEXT("man"),false);}
+  }
  }
  StepWatch();
  StepReport();
@@ -2520,7 +2580,9 @@ void FS47Happenings::UseCattle()
 bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
- if(!CanHearCb()&&!bForced){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
+ // NIGHT-20261110: what a slip has pointed at is out there whether or not anyone hears the call.
+ const bool bPromised=LeadNow.bPointed&&LeadNow.Kind==TEXT("cb_stranded")&&LeadNow.Night==FS47FreeformSession::NightOf(F->Clock());
+ if(!CanHearCb()&&!bForced&&!bPromised){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
  if(const FSite* Old=SiteOf(TEXT("truck")))if(!Old->bDone){Why=TEXT("a driver is still waiting out there");return false;}
  using S47Hap::Bit;
  FSpot S=Where(TEXT("cb_stranded"),Bit(ES47PlaceTrait::Far),Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors),bForced?0:450,0,1.f,Serial);
@@ -3230,6 +3292,20 @@ namespace S47HapTiers
  bool GlimpseOnly(double Clock){return S47NightTiers::AtClock(Clock,FS47FreeformSession::NightOf(Clock))==ES47Allowed::Glimpse;}
  // How near the player comes before a glimpse on the horizon is gone (a full night's figure waits until 90 m).
  constexpr double GlimpseGoneAt=130.;
+ // CHAIN-5B-20261109 (SAMMENFLETTING, dead time at SARO): the way out through the nearest of the control room's windows (the peeker's,
+ // FS47Glimpses::SaroWindowSpots), for one standing in the room and looking toward it, within forty degrees. False anywhere else.
+ bool WindowLine(const US47Main* M,const FVector& Feet,const FVector& Fwd,FVector& Out)
+ {
+  if(!M||!M->Web||!M->Player||!FS47FieldRadio::InSaroBuilding(M)||!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))return false;
+  double Nearest=1e9;
+  for(const FVector2D& Spot:FS47Glimpses::SaroWindowSpots())
+  {
+   const FVector To(Spot.X-Feet.X,0,Spot.Y-Feet.Z);const double D=To.Size();
+   if(D<.3||D>=Nearest||FVector::DotProduct(To/D,Fwd)<.766)continue;
+   Nearest=D;Out=To/D;
+  }
+  return Nearest<1e9;
+ }
 }
 bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why)
 {
@@ -3305,7 +3381,9 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  if(Id==TEXT("house_lit"))
  {
   if(HasSite(TEXT("houselit"))){Why=TEXT("one is lit already");return false;}
-  if(!bOut&&!bDrive&&!bForced)return No(TEXT("indoors"));
+  // CHAIN-5B-20261109: or from SARO's control room, an empty house out through the window the player is looking out of (WindowLine).
+  FVector Through=Fwd;const bool bPane=!bOut&&!bDrive&&WindowLine(M,Feet,Fwd,Through);
+  if(!bOut&&!bDrive&&!bPane&&!bForced)return No(TEXT("indoors, not at a SARO window"));
   if(!F->EventPlaces)return No(TEXT("no place catalogue"));
   // An empty house: windows, nobody living there, on this ground and in sight.
   const FS47EventPlace* Best=nullptr;double BestScore=-1;
@@ -3318,6 +3396,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
    FVector At;if(!F->EventPlaces->EntryNow(P.Id,At))continue;
    const FVector To(At.X-Feet.X,0,At.Z-Feet.Z);const double Far=To.Size();
    if(Far<(bForced?20:120)||Far>900)continue;
+   if(bPane&&!bForced&&FVector::DotProduct(To/Far,Through)<.8)continue; // CHAIN-5B-20261109: only what lies out through the glass
    const double Score=FVector::DotProduct(To/Far,Fwd)+FS47NightRhythm::Roll(F->Seed(),F->Day(),S47Hap::SaltOf(P.Id))*.5;
    if(Score>BestScore){BestScore=Score;Best=&P;}
   }
@@ -3332,7 +3411,9 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  }
  if(Id==TEXT("horizon_figure"))
  {
-  if(!bOut&&!bForced)return No(TEXT("not out on foot"));
+  // CHAIN-5B-20261109: or in SARO's control room looking out of a window (WindowLine): on the rise out through the glass, as far off.
+  FVector Through=Fwd;const bool bPane=!bOut&&!bDrive&&WindowLine(M,Feet,Fwd,Through);
+  if(!bOut&&!bPane&&!bForced)return No(TEXT("not out on foot or at a SARO window"));
   if(!S47Hap::Exists(S47Hap::HairyStandIn))return No(TEXT("no figure for it in this build"));
   if(!Ask(TEXT("horizon_figure")))return No(TEXT("the rhythm says not now"));
   // Tom's Nordic or Cosmic on the rise some nights, when this build has them; the shade otherwise. F10's Variant: one of them, or shade.
@@ -3341,8 +3422,9 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   // On the rise at the edge of the view, a long way off; nearer as the weeks go. Before the full tier (TIERS-20261109: a glimpse, from
   // midnight) it keeps farther off, never nearer than 170 m, and is gone sooner when the player comes (GlimpseGoneAt).
   const bool bGlimpse=GlimpseOnly(Clock);
-  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Max(FMath::Clamp(190.*NearK,100.,190.),bGlimpse?170.:0.);
-  FVector At=Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;
+  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Max(FMath::Clamp(190.*NearK,100.,190.),bGlimpse||bPane?170.:0.);
+  // From the window: along the line out through its glass, never nearer than a glimpse's 170 m, whatever the hour.
+  FVector At=bPane&&!bForced?Feet+Through*Far:Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;
   double X=0,Z=0;
   if(!RoadOfWorld(At,X,Z)||!WorldOf(X,Z,At))return No(TEXT("no ground there"));
   Arm(TEXT("horizon_figure"),120);Now.Variant=Body;Now.At=At;Now.X=X;Now.Z=Z;
@@ -3524,7 +3606,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(HasSite(TEXT("missing"))){Why=TEXT("his pickup is still out there");return false;}
   FSpot S=Where(TEXT("missing_person"),Bit(ES47PlaceTrait::Far),Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro),bForced?0:FMath::Max(250.,500.*NearK),0,1.f,Serial);
   if(!S.bSet)return No(TEXT("nowhere far out"));
-  if(!bForced&&!CanHearCb()&&!(M->FieldRadio.IsValid()&&M->FieldRadio->Owned()))return No(TEXT("nothing to hear the county on"));
+  if(!bForced&&!CanHearCb()&&!(M->FieldRadio.IsValid()&&M->FieldRadio->Owned())&&!(LeadNow.bPointed&&LeadNow.Kind==TEXT("missing_person")&&LeadNow.Night==FS47FreeformSession::NightOf(F->Clock())))return No(TEXT("nothing to hear the county on")); // NIGHT-20261110
   if(!Ask(TEXT("missing_person")))return No(TEXT("the rhythm says not now"));
   const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x4d495353u)*2*UE_DOUBLE_PI;
   FSite P;P.Kind=TEXT("missing");P.Place=S.Place;P.Title=S.Title;P.Night=F->Day();P.Serial=Serial+1;P.X=S.X+FMath::Cos(A)*18;P.Z=S.Z+FMath::Sin(A)*18;P.Yaw=A;P.Until=Clock+2*86400.;P.bHeard=true;
@@ -4455,6 +4537,16 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
    TEXT("the lead starts at its drawn place when that fits where the player is, never on top of them, and however far once a slip has pointed there"));
   FS47Happenings Empty(nullptr);FString E,T;double X=0,Z=0;bool bAhead=true;
   Check(!Empty.Lead().IsSet()&&!Empty.OutTonight(3,E,T,X,Z,bAhead)&&!bAhead,TEXT("with nothing drawn there is nothing out there for a slip to point at"));
+  // CHAIN-5B-20261109: the word of tonight: each voice has one for each thing a lead can be, a way only when one is given, no place named.
+  bool bWords=Empty.WordOfTonight(TEXT("earl")).IsEmpty()&&WordLine(TEXT("earl"),TEXT("dogs_hush"),FString(),false).IsEmpty()&&WordLine(TEXT("nobody"),TEXT("landing"),FString(),false).IsEmpty();
+  for(const TCHAR* Kind:{TEXT("landing"),TEXT("carcass"),TEXT("cattle_ring"),TEXT("missing_person"),TEXT("stranded_rv"),TEXT("cb_stranded")})
+   for(const TCHAR* Who:{TEXT("earl"),TEXT("cb"),TEXT("printer")})
+    for(const bool bAh:{false,true})
+    {
+     const FString With=WordLine(Who,Kind,TEXT("north-east"),bAh),Without=WordLine(Who,Kind,FString(),bAh);
+     bWords&=!With.IsEmpty()&&!Without.IsEmpty()&&With.Contains(TEXT("north-east"))&&!Without.Contains(TEXT("north"))&&!Without.Contains(TEXT("east"))&&!With.Contains(TEXT("%"));
+    }
+  Check(bWords,TEXT("the word of tonight: Earl, the CB and the printer each say what tonight's thing is like, which way only when it is given, and nothing with no night"));
  }
  // Every one of them is in the rhythm's file, under its own system, and the dangerous ones wait past the first night.
  FS47RhythmData D;FString Why;

@@ -159,6 +159,14 @@ public:
  bool OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const;
  // A slip pointed at the one still to come: it is held to its place, and waits out the night for its chance.
  void PointedTonight(int32 Night);
+ // CHAIN-5B-20261109 (SAMMENFLETTING, dead time at SARO): one word a night about what is out there tonight (OutTonight), from Earl on
+ // the request line, the CB in the truck or the printer at the rack, whichever the player comes to first ("earl", "cb", "printer").
+ // Never a place's name and never on the map: a compass word from SARO, for what has come already, or for the one still to come only
+ // once a slip has pointed there (it agrees with the slip). It takes nothing from the night's one pointing-out. Empty: nothing tonight,
+ // said already tonight, or not the night's hours (20:00 to 05:30).
+ FString WordOfTonight(const FString& Who);
+ // The words by themselves: Kind the event's id (OutTonight's Event), Way a compass word or empty, bAhead it has not come yet.
+ static FString WordLine(const FString& Who,const FString& Kind,const FString& Way,bool bAhead);
 
  // M7, the first big night (Tom, 9 November: «Det må skje noe stort natt to eller tre», S47BigNight.cpp). Once in a game, on the
  // second or third night (the seed's), after two: the whole array turns by itself to one point low on the horizon while the power
@@ -262,6 +270,8 @@ private:
  // CHAIN-1-20261109: tonight's lead (above), and its draw at the end of PlanTonight.
  FLead LeadNow;
  void DrawLead(int32 Night);
+ // CHAIN-5B-20261109: the night the word of tonight was said (WordOfTonight; saved, "wordNight"), and when the CB may next try it.
+ int32 WordNight=0;double WordTry=0;
  // The night's own pace: one at x1 in play; F10's natural night runs its minutes at its speed, so what lasts is measured in the
  // night's minutes and not in seconds of the screen (critics, 8 November: at x30 a figure held the ground for twenty hours).
  double NightPace() const;

@@ -37,7 +37,9 @@ namespace S47PredecessorText
  // Levers: her word on each other thing she reads (Levers below). Reprieved: the times taken at "Not yet" (FS47Predecessor's
  // TakenAtReprieve). From three stretches of lost time she says what she has already done about it only once "Not yet" answered
  // that count; noticed and not yet acted on, only that she meant it.
- FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0,bool bWouldStay=false,const FString& Levers=FString(),int32 Reprieved=0);
+ // CHAIN-2-20261109: FieldCases, of those carried through, the ones with something brought in from out on the land
+ // (FS47Predecessor::FTally::Field), a line of its own every week; under 0 (older callers, tests): as many as Concluded.
+ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0,bool bWouldStay=false,const FString& Levers=FString(),int32 Reprieved=0,int32 FieldCases=-1);
  // From this much carried on the sheet she names its limit (FS47FreeformSession::ArrearsCap) in her own words.
  constexpr int32 CarriedWarn=40;
  // One sentence of hers per thing the assessment reads besides the numbers on the sheet, no figures but money: the night sheets,

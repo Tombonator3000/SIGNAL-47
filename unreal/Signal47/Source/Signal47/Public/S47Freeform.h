@@ -180,15 +180,17 @@ public:
  int32 JobBonus(const FJob& Job,FString* Why=nullptr) const;
  // The first evening's training card (the tutorial's) pays the old flat $20 whatever its state: Ward's welcome.
  bool TrainingCard(const FJob& Job) const{return !TutorialJobId.IsEmpty()&&Job.Id==TutorialJobId;}
- // M7 (C's economy model): the county's power line is charged by what the station runs, a base and so much for each antenna on
- // the line, so that repairing the array costs something week by week. M7 (Tom, 9 November): the dishes wear, and their upkeep goes
- // up with the weeks: $1 an antenna on the first sheet, $1.50 on the second and third, $2 from the fourth (UpkeepHalves, half-dollars).
+ // M7 (C's economy model): the county's power line is charged a base and a fault tariff for each antenna that is out of service.
+ // CHAIN-5-20261109: it used to be a charge per antenna in service, so every repair made the sheet dearer; now every repair makes it
+ // cheaper (a full array costs the base only). The tariff goes up with the weeks: $1 an antenna out on the first sheet, $1.50 on the
+ // second and third, $2 from the fourth (UpkeepHalves, half-dollars). The same range as before: $10 to $64.
  static constexpr int32 ReviewPowerBase=10,ReviewPowerPerDish=1,ReviewFuel=15,ArrearsCap=80,LostHoursDiscount=15;
  static int32 UpkeepHalves(int32 Week){return Week<=1?2:Week<=3?3:4;}
- static int32 ReviewPowerFor(int32 Week,int32 Dishes){return ReviewPowerBase+FMath::Max(0,Dishes)*UpkeepHalves(Week)/2;}
+ static int32 ReviewPowerFor(int32 Week,int32 Dishes){return ReviewPowerBase+FMath::Clamp(27-Dishes,0,27)*UpkeepHalves(Week)/2;} // Dishes: antennas in service (CHAIN-5-20261109)
  int32 ReviewPowerNow() const{return ReviewPowerFor(ReviewWeek+1,AvailableDishCount());}
  // M7 (Tom, 9 November): money from the field work (copies sold to the souvenir man, the documentation credit for a photograph, a tip
  // read on 1420, the sky-watch van) is worth having, and capped so that it never beats the job: SideCap a week, the rest goes unpaid.
+ // CHAIN-5-20261109: in the fiction the cap is the university's field allowance, a fixed sum a week that the weekly sheet names.
  // Returns what was paid. Kind is for the log.
  static constexpr int32 SideCap=35;
  int32 EarnSide(int32 Amount,const TCHAR* Kind);
@@ -286,6 +288,8 @@ public:
  int32 KitPrice(const FString& Id) const;
  // A place found out on the land, or marks at a site kept as a record: the first field work away from the station.
  bool FieldRecordKept() const;
+ // CHAIN-2-20261109: one record's key is of that kind: a place, marks, what the night left out there, a field time set against the array.
+ static bool FieldRecordKey(const FString& Key);
  // Kinds of record the night's events have left (FS47Happenings::IsNightFinding), from that day on: for Ward and the assessment.
  int32 NightRecordKinds(int32 FromDay=0) const;
  bool BuyKit(const FString& Id);
@@ -311,6 +315,9 @@ public:
  // Critic round 5: the line has something behind it as Dr. Ward counts it (FS47FreeformCases::Supported, with the traces kept):
  // FS47Predecessor::Count and the case board's warning before a filing go by the same sum.
  bool CaseSupported(int32 Line) const;
+ // CHAIN-2-20261109: carried through (CaseSupported) with something brought in from out there: OUT ON THE LAND itself, a control done
+ // in the field, a lead that is a field record, or a mystery's place away from the station looked at. Ward wants one (Decide).
+ bool CaseFromField(int32 Line) const;
  FString TonightPlan() const;
  // CASES-OPS-20261109 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): where an open case stands and its next step, worked out from
  // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective, HudCaseLine), the task list
@@ -419,6 +426,10 @@ public:
  // record the station pays for once, as field money under the week's cap (EarnSide, FieldRecordPay). -1: refused (not developed, not
  // from a night out there, already registered); otherwise what was paid (0 when the week's field money is used up).
  int32 RegisterNightPhoto(const FString& ShotId,double ShotClock,bool bDeveloped,const FString& Title);
+ // CHAIN-2-20261109: taken and registered on the night of tonight's lead (FS47Happenings::Lead: the night the card ran off and the slip
+ // pointed out there), it pays the same-night rate, still under the week's cap. The receipt says so (SameNightMark).
+ static constexpr int32 SameNightPay=4;
+ static constexpr const TCHAR* SameNightMark=TEXT("Same-night rate");
  bool NightPhotoRegistered(const FString& ShotId) const{return HasFinding(TEXT("field-registration.")+ShotId);}
  static bool MinuteSelfTest(TArray<FString>& Lines);
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
@@ -426,7 +437,7 @@ public:
  // physically, then reports what the player actually secured. -1 when no field test is planned.
  int32 PlannedFieldTest(int32 Line) const;
  bool CancelFieldTest(int32 Line);
- bool CancelCaseJob(int32 Line); // a planned receiver test, before it is pointed or recorded
+ bool CancelCaseJob(int32 Line); // a planned receiver test, before it records (CASETEST-20261109: also once pointed, or spoiled)
  bool FieldTestExpectsPresent(int32 Line,int32 Test) const;
  bool ReportFieldTest(int32 Line,int32 Test,bool bValid,bool bPresent,const FString& Evidence);
  // LOOP-WHOLE-20261109, step 2: OUT ON THE LAND's controls are the kit the player has. What a planned one still needs (empty: it can
@@ -626,6 +637,11 @@ private:
  bool StationSealed() const;
  bool CaseObserved(const FJob& J) const;
  FString CasePrecondition(const FJob& J) const;
+ // CASETEST-20261109: a broken condition stops the recording and keeps the plan on the same job; a relay fitted for the timing swap
+ // goes back to the depot when its recording stops short; Continue observation prefers a case test that can be recorded now.
+ void SpoilCaseTest(FJob& J,const FString& Why);
+ void UnfitCaseRelay(const FJob& J);
+ int32 ContinueJob() const;
  int32 CaseAwaitingChoice() const;
  void IngestObservations();
  int32 IngestedObservations=0;
@@ -675,6 +691,7 @@ private:
  bool bRestoreAngles=false;
  FJob* Job();
  void AddDay(int32 Number);
+ void LapseUntakenCards(); // CHAIN-5-20261109: at the turn of the day (not TestAdvance) cards nobody began fall away
  void Changed(const FString& Text=FString());
  void UpdateMysteries();
  bool PointReady() const;

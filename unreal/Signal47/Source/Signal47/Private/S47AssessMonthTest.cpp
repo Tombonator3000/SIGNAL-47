@@ -26,6 +26,8 @@
 //  taken         three stretches of lost time (days 6, 8 and 10): Ward's warning after the second, somebody else the morning after
 //                the third, "Not yet", and then an assessment by the work that is not Gone.
 //  taken-again   as taken, and a fourth stretch on day 14 (critic round 5): somebody else the morning after, with no second "Not yet".
+//  (CHAIN-2-20261109: Stays also wants one of the cases carried through to have something brought in from out on the land in it,
+//  FS47FreeformSession::CaseFromField. Routine has none; the investigator carries no case and files no work, so still KnowsEnough.)
 //  cases         the station's work and a case carried through (critic round 5: no profile went down the Stays path): the array
 //                mended, the day's jobs filed as a fixture, the weekly reports sent, and THE SAME MINUTE with both its traces kept
 //                and filed. Stays, KEPT OPEN read, and the run up of the array from Dale's bench.
@@ -157,6 +159,8 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
    if(!Check(F.CaseSupported(Line)&&F.ConcludeCase(Line,Cause)&&F.CaseFile().Get(Line)->bConcluded,TEXT("with the feeder looked at too, the same minute is carried through and filed")))return;
    M->UI->Close(true);
    if(!Check(P.Count().Concluded==1&&P.Count().Guessed==0,TEXT("Ward counts the filing as a case carried through")))return;
+   // CHAIN-2-20261109: the remote feeder is out on the land, so the case has something brought in from out there in it
+   if(!Check(P.Count().Field==1&&F.CaseFromField(Line),TEXT("CHAIN-2: the feeder looked at out on the county road makes it a case with something from out on the land")))return;
    Work();
   }
   S.Stage=2;S.Since=S.Age;return;
@@ -214,6 +218,9 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
   if(!Check(Got!=EO::Gone,TEXT("the assessment by the work is not Gone")))return;
   if(!Check(P.StatusLine()==TEXT("UNDER REVIEW / ASSESSMENT MADE")&&!P.OutcomeRead(),TEXT("decided, not read: OPS says ASSESSMENT MADE and nothing else")))return;
   if(S.Profile==TEXT("routine")&&!Check(Got!=EO::Stays,TEXT("the card alone does not keep SARO open")))return;
+  // CHAIN-2-20261109: and the Monday notes said where it stood, the same line every week
+  if(S.Profile==TEXT("routine")&&!Check(P.Count().Field==0&&F.FindingText(TEXT("ward-week-1")).Contains(TEXT("brought in from out on the land: 0. I need one.")),TEXT("CHAIN-2: no case from out on the land, and her Monday note had the line for it")))return;
+  if(bCases&&!Check(F.FindingText(TEXT("ward-week-1")).Contains(TEXT("brought in from out on the land: 1.")),TEXT("CHAIN-2: the cases profile's Monday note counts its case from out on the land")))return;
   // Critic round 5: the investigator carries no case through, so only knowing enough is right; the cases profile stays.
   if(bLooks&&!Check(Got==EO::KnowsEnough,TEXT("the investigator, with no case carried through, knows enough and does not stay")))return;
   if(bCases&&!Check(Got==EO::Stays,FString::Printf(TEXT("the work and a case carried through keep SARO open (points %d of %d, filed %d, array %d)"),FS47Predecessor::Points(P.Count()),FS47Predecessor::PointsToStay,P.Count().Filed,P.Count().Dishes)))return;

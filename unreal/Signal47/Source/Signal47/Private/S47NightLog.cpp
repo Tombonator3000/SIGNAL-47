@@ -13,6 +13,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Observing.h"
+#include "S47Openings.h"
 #include "S47Predecessor.h"
 #include "S47RadioTips.h"
 #include "S47Story.h"
@@ -116,6 +117,12 @@ FString FS47NightLog::Type(const FNight& Nt)
 	for (const FLine& L : Nt.Lines) if (L.Part == EPart::Work) { Page += (L.At.IsEmpty() ? FString() : L.At + TEXT("  ")) + L.Text + TEXT("\n"); bAnyWork = true; }
 	for (const FString& Job : Nt.Work) { Page += Job + TEXT("\n"); bAnyWork = true; }
 	if (!bAnyWork) Page += TEXT("Nothing outstanding.\n");
+	// CHAIN-2-20261109: what the night delivered, the same three lines every morning.
+	FString Money = Nt.Side > 0 ? FString::Printf(TEXT("Field money tonight: $%d%s."), Nt.Side, Nt.bSameNight ? TEXT(", the same-night rate in it") : TEXT("")) : FString(TEXT("No field money tonight."));
+	if (Nt.SideLeft >= 0) Money += FString::Printf(TEXT(" $%d left of the week's $%d."), Nt.SideLeft, int32(FS47FreeformSession::SideCap));
+	Page += TEXT("\nDELIVERED\nMONEY   ") + Money + TEXT("\n");
+	Page += TEXT("OPENED  ") + (Nt.Opened.IsEmpty() ? FString(TEXT("Nothing new.")) : TEXT("On the stores list now: ") + FString::Join(Nt.Opened, TEXT("; ")) + TEXT(".")) + TEXT("\n");
+	Page += TEXT("WARD    ") + (Nt.Ward.IsEmpty() ? FString(TEXT("Nothing from out on the land tonight.")) : Nt.Ward) + TEXT("\n");
 	Page += FString::Printf(TEXT("\nACCOUNT\n$%d at dusk, $%d at 06:00. In $%d, out $%d."), Nt.CashFrom, Nt.CashTo, Nt.In, Nt.Out);
 	if (Nt.Carried > 0) Page += FString::Printf(TEXT(" Carried on the weekly sheet: $%d."), Nt.Carried);
 	Page += TEXT("\n\nTyped at 06:00 for the shift binder.");
@@ -146,6 +153,7 @@ void FS47NightLog::Begin(const S47J::FObj& Saved)
 	Logs.Reset(); Lines.Reset();
 	Night = 0; From = 0; CashFrom = CashIn = CashOut = 0; Flickers = Drifts = Coughs = Jumps = 0;
 	bPrimed = false; bDevLost = false; Known.Reset(); SaidKnown.Reset();
+	Side = 0; LastSideLeft = -1; OpenAtDusk.Reset(); bOpenKnown = false; // CHAIN-2-20261109
 	if (!Saved.IsValid()) return;
 	for (const auto& V : S47J::Arr(Saved, TEXT("sheets")))
 	{
@@ -176,6 +184,9 @@ void FS47NightLog::Begin(const S47J::FObj& Saved)
 		CashFrom = S47J::Int(Tn, TEXT("cash")); CashIn = FMath::Max(0, S47J::Int(Tn, TEXT("in"))); CashOut = FMath::Max(0, S47J::Int(Tn, TEXT("out")));
 		Flickers = FMath::Max(0, S47J::Int(Tn, TEXT("flickers"))); Drifts = FMath::Max(0, S47J::Int(Tn, TEXT("drifts")));
 		Coughs = FMath::Max(0, S47J::Int(Tn, TEXT("coughs"))); Jumps = FMath::Max(0, S47J::Int(Tn, TEXT("jumps")));
+		// CHAIN-2-20261109: optional; an older save has neither
+		Side = FMath::Clamp(S47J::Int(Tn, TEXT("side")), 0, 10000);
+		if (S47J::Has(Tn, TEXT("open"))) { bOpenKnown = true; for (const FString& Id : S47J::Strs(Tn, TEXT("open"))) if (FS47Openings::Def(Id)) OpenAtDusk.Add(Id); }
 		for (const auto& V : S47J::Arr(Tn, TEXT("lines")))
 		{
 			const S47J::FObj* O = nullptr;
@@ -219,6 +230,8 @@ S47J::FObj FS47NightLog::Save() const
 		S47J::Set(Tn, TEXT("night"), Night); S47J::Set(Tn, TEXT("from"), From);
 		S47J::Set(Tn, TEXT("cash"), CashFrom); S47J::Set(Tn, TEXT("in"), CashIn); S47J::Set(Tn, TEXT("out"), CashOut);
 		S47J::Set(Tn, TEXT("flickers"), Flickers); S47J::Set(Tn, TEXT("drifts"), Drifts); S47J::Set(Tn, TEXT("coughs"), Coughs); S47J::Set(Tn, TEXT("jumps"), Jumps);
+		S47J::Set(Tn, TEXT("side"), Side); // CHAIN-2-20261109
+		if (bOpenKnown) S47J::Set(Tn, TEXT("open"), OpenAtDusk.Array());
 		TArray<TSharedPtr<FJsonValue>> List;
 		for (const FLine& L : Lines)
 		{
@@ -278,12 +291,40 @@ void FS47NightLog::Prime()
 	bPowerOut = Fs.PowerFault();
 	bArrayOut = Fs.Field && Fs.Field->HasArrayFault();
 	bWasTaken = Fs.Taken && Fs.Taken->Busy();
+	// CHAIN-2-20261109
+	LastSideLeft = Fs.SideLeftThisWeek();
+	if (Night > 0 && !bOpenKnown) { OpenNow(OpenAtDusk); bOpenKnown = true; }
+}
+
+void FS47NightLog::OpenNow(TSet<FString>& Out) const
+{
+	Out.Reset();
+	if (!M || !M->Freeform) return;
+	for (const FS47KitOffer& O : FS47Openings::Defs()) if (M->Freeform->HasKit(O.Id) || M->Freeform->KitWaits(O.Id).IsEmpty()) Out.Add(O.Id);
+}
+
+// CHAIN-2-20261109: how tonight counts toward Dr. Ward's assessment: what came in from out on the land, the kinds of night record she
+// counts, and whether a case carried through has something from out there in it (FS47Predecessor::Decide wants one).
+FString FS47NightLog::WardLine() const
+{
+	if (!M || !M->Freeform) return FString();
+	const auto& Fs = *M->Freeform;
+	int32 Kept = 0;
+	for (const FString& Key : Fs.FindingIdsFrom(FMath::Max(1, Night))) Kept += FS47FreeformSession::FieldRecordKey(Key) ? 1 : 0;
+	FString Said = Kept > 0 ? FString::Printf(TEXT("%d %s from out on the land tonight."), Kept, Kept == 1 ? TEXT("field record") : TEXT("field records")) : FString(TEXT("Nothing from out on the land tonight."));
+	if (Fs.Predecessor && Fs.Predecessor->Result() == FS47Predecessor::EOutcome::None)
+	{
+		const FS47Predecessor::FTally C = Fs.Predecessor->Count();
+		Said += FString::Printf(TEXT(" Kinds of night record on file: %d. A case carried through with something from out there: %s."), C.Land, C.Field >= FS47Predecessor::FieldToStay ? TEXT("on file") : TEXT("none yet, and she needs one"));
+	}
+	return Said;
 }
 
 void FS47NightLog::Open(int32 Nt, double At)
 {
 	Night = Nt; From = At; CashFrom = LastCash; CashIn = CashOut = 0; Flickers = Drifts = Coughs = Jumps = 0;
 	Lines.Reset();
+	Side = 0; OpenNow(OpenAtDusk); bOpenKnown = true; // CHAIN-2-20261109
 	UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d open from %s, $%d"), Nt, *S47NightLogLocal::ClockOf(At), CashFrom);
 }
 
@@ -392,6 +433,10 @@ void FS47NightLog::Step(double Dt)
 	const int32 Cash = Fs.Budget();
 	if (Night > 0) { if (Cash > LastCash) CashIn += Cash - LastCash; else CashOut += LastCash - Cash; }
 	LastCash = Cash;
+	// CHAIN-2-20261109: field money is what comes off the week's cap (FS47FreeformSession::EarnSide); the cap filling again is no money.
+	const int32 SideLeft = Fs.SideLeftThisWeek();
+	if (Night > 0 && LastSideLeft >= 0 && SideLeft < LastSideLeft) Side += LastSideLeft - SideLeft;
+	LastSideLeft = SideLeft;
 	LastClock = ClockNow;
 	if (Night > 0 && ClockNow >= SixOf(Night)) Close(ClockNow);
 	Receive(ClockNow);
@@ -430,6 +475,12 @@ FS47NightLog::FNight FS47NightLog::Gather() const
 		else Got.Work.Add(FString::Printf(TEXT("%s: not recorded."), *Name));
 	}
 	if (Older > 0) Got.Work.Add(FString::Printf(TEXT("%d older %s still open."), Older, Older == 1 ? TEXT("job") : TEXT("jobs")));
+	// CHAIN-2-20261109: DELIVERED
+	Got.Side = Side; Got.SideLeft = Fs.SideLeftThisWeek();
+	for (const FString& Key : Fs.FindingIdsFrom(FMath::Max(1, Night))) Got.bSameNight |= Key.StartsWith(TEXT("field-registration.")) && Fs.FindingText(Key).Contains(FS47FreeformSession::SameNightMark);
+	if (bOpenKnown) for (const FS47KitOffer& O : FS47Openings::Defs())
+		if (!OpenAtDusk.Contains(O.Id) && !Fs.HasKit(O.Id) && Fs.KitWaits(O.Id).IsEmpty()) Got.Opened.Add(FString::Printf(TEXT("%s ($%d)"), O.Title, Fs.KitPrice(O.Id)));
+	Got.Ward = WardLine();
 	return Got;
 }
 
@@ -453,7 +504,7 @@ void FS47NightLog::Close(double ClockNow)
 	UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d typed: %d seen and heard, %d time, %d equipment, %d work, $%d to $%d"), Night, NSeen, NTime, NGear, Done.Work.Num(), Done.CashFrom, Done.CashTo);
 	UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d page: %s"), Night, *Sh.Page.Replace(TEXT("\n"), TEXT(" | ")));
 	if (M->UI && M->Freeform->Clock() < SixOf(Night) + 3 * 3600) M->UI->Toast(TEXT("06:00. The night log is typed: Documents, in your notebook. OPS can telex it to Dr. Ward."), 6);
-	Night = 0; Lines.Reset(); Flickers = Drifts = Coughs = Jumps = 0;
+	Night = 0; Lines.Reset(); Flickers = Drifts = Coughs = Jumps = 0; Side = 0;
 	M->RequestAutosave();
 }
 
@@ -601,6 +652,13 @@ bool FS47NightLog::SelfTest(TArray<FString>& Lines)
 		const FString Quiet = Type(Nt);
 		Check(Quiet.Contains(TEXT("NIGHT OF THU MAY 1 TO FRI MAY 2, 1986")) && Quiet.Contains(TEXT("Nothing out of the ordinary.")) && Quiet.Contains(TEXT("No faults.")) && Quiet.Contains(TEXT("$142 at dusk, $167 at 06:00. In $40, out $15.")), TEXT("a quiet night still gets its sheet, with the money"));
 		Check(RemarkFor(Nt).Contains(TEXT("quiet night")), TEXT("Ward's line for a quiet night"));
+		// CHAIN-2-20261109
+		Check(Quiet.Contains(TEXT("\nDELIVERED\nMONEY   No field money tonight.\nOPENED  Nothing new.\nWARD    Nothing from out on the land tonight.\n")) && Quiet.Find(TEXT("DELIVERED")) < Quiet.Find(TEXT("ACCOUNT")), TEXT("CHAIN-2: a quiet night still has its three lines of what it delivered, before the account"));
+		FNight Paid = Nt;
+		Paid.Side = 12; Paid.SideLeft = 23; Paid.bSameNight = true; Paid.Opened.Add(TEXT("Survey magnetometer, used ($40)")); Paid.Ward = TEXT("1 field record from out on the land tonight.");
+		const FString Sheet = Type(Paid);
+		Check(Sheet.Contains(TEXT("MONEY   Field money tonight: $12, the same-night rate in it. $23 left of the week's $35.\n")) && Sheet.Contains(TEXT("OPENED  On the stores list now: Survey magnetometer, used ($40).\n")) && Sheet.Contains(TEXT("WARD    1 field record from out on the land tonight.\n")),
+			TEXT("CHAIN-2: the money tonight with what is left of the week's cap, what opened on the stores list, and how it counts for Ward"));
 	}
 	for (int32 I = 0; I < 8; ++I) Nt.Lines.Add({ 23 * 3600. + I * 60, EPart::Seen, FString::Printf(TEXT("%02d:%02d"), 23, I), FString::Printf(TEXT("Thing %d."), I) });
 	Nt.Lines.Add({ 26 * 3600., EPart::Time, FString(), TEXT("02:10 to 03:55 not accounted for (1 hr 45 min).") });
@@ -624,9 +682,17 @@ bool FS47NightLog::SelfTest(TArray<FString>& Lines)
 		A.Logs.Add(Sh);
 		A.Night = 4; A.From = DuskOf(4); A.CashFrom = 90; A.CashIn = 15; A.Flickers = 2;
 		A.Lines.Add({ DuskOf(4) + 3600, EPart::Seen, TEXT("20:00"), TEXT("A light low over the flat.") });
+		A.Side = 8; A.bOpenKnown = true; A.OpenAtDusk.Add(TEXT("cot")); A.OpenAtDusk.Add(TEXT("flying carpet"));
 		FS47NightLog B(nullptr);
 		B.Begin(S47J::Read(S47J::Write(A.Save())));
 		Check(B.Logs.Num() == 1 && B.ReadCount() == 1 && B.Logs[0].Sent == Sh.Sent && B.Night == 4 && B.CashFrom == 90 && B.CashIn == 15 && B.Flickers == 2 && B.Lines.Num() == 1 && B.Lines[0].At == TEXT("20:00"), TEXT("sheets, what Ward has had, and tonight so far survive a Continue"));
+		Check(B.Side == 8 && B.bOpenKnown && B.OpenAtDusk.Num() == 1 && B.OpenAtDusk.Contains(TEXT("cot")), TEXT("CHAIN-2: tonight's field money and the stores list at dusk survive a Continue, nonsense dropped"));
+		{
+			auto Old = A.Save(); S47J::Obj(Old, TEXT("tonight"))->RemoveField(TEXT("side")); S47J::Obj(Old, TEXT("tonight"))->RemoveField(TEXT("open"));
+			FS47NightLog Od(nullptr);
+			Od.Begin(S47J::Read(S47J::Write(Old)));
+			Check(Od.Night == 4 && Od.Side == 0 && !Od.bOpenKnown, TEXT("CHAIN-2: an older save's night has no field money and reads the stores list again"));
+		}
 		FS47NightLog Cn(nullptr);
 		Cn.Begin(nullptr);
 		Check(Cn.Save()->Values.Num() == 0 && Cn.ReadCount() == 0, TEXT("an older save has no sheets and writes nothing"));

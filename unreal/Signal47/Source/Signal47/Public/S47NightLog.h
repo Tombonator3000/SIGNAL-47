@@ -34,6 +34,11 @@ public:
   int32 CashFrom=0,CashTo=0,In=0,Out=0,Carried=0;
   TArray<FLine> Lines;
   TArray<FString> Work;
+  // CHAIN-2-20261109: DELIVERED, the same three lines every morning: the field money tonight (SideLeft: what is left of the week's
+  // cap, under 0 not said; bSameNight: a field record paid at the same-night rate), what opened on the stores list tonight, and how
+  // tonight counts toward Dr. Ward's assessment (empty: nothing from out on the land).
+  int32 Side=0,SideLeft=-1;bool bSameNight=false;
+  TArray<FString> Opened;FString Ward;
  };
  static FString Type(const FNight& N);
  // What Dr. Ward writes under it when her office has read it: from what is on the sheet, never what it means.
@@ -73,6 +78,12 @@ private:
  int32 CashFrom=0,CashIn=0,CashOut=0;
  TArray<FLine> Lines;
  int32 Flickers=0,Drifts=0,Coughs=0,Jumps=0;
+ // CHAIN-2-20261109: the field money tonight, and what was on the stores list at dusk (saved, "side" and "open"; an older save has
+ // neither: the list is read again on the first step). LastSideLeft: what was left of the week's cap last step (not saved).
+ int32 Side=0,LastSideLeft=-1;
+ TSet<FString> OpenAtDusk;bool bOpenKnown=false;
+ void OpenNow(TSet<FString>& Out) const;
+ FString WardLine() const;
  // Watching (not saved: read again from the world on the first step).
  bool bPrimed=false,bDevLost=false;
  double LastClock=0;

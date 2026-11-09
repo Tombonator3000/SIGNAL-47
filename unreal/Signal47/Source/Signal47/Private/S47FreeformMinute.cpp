@@ -197,9 +197,15 @@ int32 FS47FreeformSession::RegisterNightPhoto(const FString& ShotId,double ShotC
  const FString From=NightPhotoFrom(ShotClock);const bool bTrip=Title.StartsWith(TEXT("Trip camera"));
  if(From.IsEmpty()&&!bTrip)return -1;
  // Field money, under the week's cap (EarnSide): Dr. Ward counts the photograph in the album whether or not it is registered here.
- const int32 Paid=EarnSide(FieldRecordPay,TEXT("field record"));
- RecordEvidence(TEXT("field-registration.")+ShotId,FString::Printf(TEXT("OPS FIELD RECORD RECEIPT\nPhotograph: %s, %s\nFrom: %s\nField record credit: $%d%s.\nPaid once per photograph."),
-  *ShotId,*FS47Places::SlipClock(ShotClock),bTrip?TEXT("the trip camera, read in the morning"):TEXT("a night out on the land"),Paid,Paid<FieldRecordPay?TEXT(" (this week's field money is used up)"):TEXT("")));
+ // CHAIN-2-20261109: brought in the same night as tonight's lead (the card off, the slip out there), the best rate, still capped.
+ const int32 ShotNight=NightOf(ShotClock);
+ const bool bSameNight=!bTrip&&Happenings&&Happenings->Lead().IsSet()&&Happenings->Lead().Night==ShotNight&&NightOf(WorldClock)==ShotNight;
+ const int32 Offered=FieldRecordPay+(bSameNight?SameNightPay:0);
+ const int32 Paid=EarnSide(Offered,TEXT("field record"));
+ const FString SameLine=bSameNight&&Paid>FieldRecordPay?FString::Printf(TEXT("\n%s: brought in the night the station's own work pointed out there, $%d more."),SameNightMark,Paid-FieldRecordPay):FString();
+ RecordEvidence(TEXT("field-registration.")+ShotId,FString::Printf(TEXT("OPS FIELD RECORD RECEIPT\nPhotograph: %s, %s\nFrom: %s\nField record credit: $%d%s.%s\nPaid once per photograph."),
+  *ShotId,*FS47Places::SlipClock(ShotClock),bTrip?TEXT("the trip camera, read in the morning"):TEXT("a night out on the land"),Paid,Paid<Offered?TEXT(" (this week's field money is used up)"):TEXT(""),
+  *SameLine));
  UE_LOG(LogS47FreeformMinute,Display,TEXT("S47: field record %s registered at OPS (%s), $%d"),*ShotId,bTrip?TEXT("trip camera"):*From,Paid);
  return Paid;
 }

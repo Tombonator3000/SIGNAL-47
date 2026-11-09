@@ -29,6 +29,10 @@ public:
  // case board shows (FoldedLeads), never dropped without a word.
  static constexpr int32 LandLine=8, LandLeads=96, LandCamera=0, LandNeedle=1, LandLogger=2;
  static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
+ // CASETEST-20261109: a field control's window (the visitors' gate and field post, the land's logger tape) still counts with up to
+ // twenty minutes of it unwatched in all: a call, a drive, a short wait. More than that and it records nothing.
+ static constexpr double UnwatchedAllowance=20*60.;
+ static bool WindowKept(double Span,double Watched,double Unwatched){return Span>0&&Unwatched<=UnwatchedAllowance+.001&&Watched>=Span-UnwatchedAllowance-.01;}
  // Yes/No name what this test shows when the observable is present/absent; Access gates planning.
  struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; const TCHAR* Yes=nullptr; const TCHAR* No=nullptr; const TCHAR* Access=nullptr; };
  // What a filed assessment brings on next morning. Spare and CallOut never run the player into debt; FeederFault is the
@@ -111,7 +115,7 @@ public:
  // line, which takes a filing on any evidence, has something behind it only with a control recorded, or with a trace kept beyond
  // the one that opened it: the other place looked at too. Kept: which of the line's places are in the findings.
  bool Supported(int32 Line,const bool Kept[ClueCount]) const;
- // Which reading a place shows: one place tells it straight, the other leans elsewhere. Both follow from the seed.
+ // Which reading a place shows: one place tells it straight, the other agrees or leans elsewhere (CHAIN-3-20261109). From the seed.
  int32 ClueReading(int32 Line,int32 Clue) const;
  FString ClueText(int32 Line,int32 Clue) const;
  bool TrailCold(int32 Line,int32 Day) const;

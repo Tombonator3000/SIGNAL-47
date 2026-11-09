@@ -5,6 +5,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
+#include "S47Happenings.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -606,6 +607,8 @@ void FS47TownUse::OpenRadio(bool bPhone)
 	}
 	Rows.Add(S47Kit::Paper(bPhone ? TEXT("The request line rings a long time. Then Earl, eating something: \"Fourteen-twenty, you're on. No, you're not. Go ahead.\"")
 		: TEXT("1420 AM. A cork board by the studio glass: lost dogs, a hay baler for sale, the church supper. A slot in a box marked TIPS & REQUESTS, and a card: USED RADIO PARTS & BATTERIES, ASK EARL.")));
+	// CHAIN-5B-20261109: on the request line at night, once a night, what a caller told Earl about tonight (FS47Happenings::WordOfTonight).
+	if (bPhone && M->Freeform->Happenings) { const FString Word = M->Freeform->Happenings->WordOfTonight(TEXT("earl")); if (!Word.IsEmpty()) Rows.Add(S47Kit::Paper(Word)); }
 	TipRows(Rows, bPhone);
 	if (!bPhone)
 	{

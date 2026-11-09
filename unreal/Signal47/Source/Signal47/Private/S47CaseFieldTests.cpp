@@ -55,6 +55,11 @@ namespace
  constexpr double ClimbEnd=ClimbToFoot+ClimbUp+ClimbWork+ClimbDown+ClimbBack;
  constexpr double ClimbTop=RoofY+.5;                    // the eye at the top: half a metre over the roof's edge and the plate
  double Smooth(double X){X=FMath::Clamp(X,0.,1.);return X*X*(3-2*X);}
+ // CASETEST-20261109: how much of the window is watched, and of the twenty minutes that may go unwatched, how much has.
+ FString Watch(double Coverage,double Gaps,double Span)
+ {
+  return FString::Printf(TEXT("WATCHED %.0f OF %.0f MIN; UNWATCHED %.0f OF %.0f MIN ALLOWED"),FMath::Min(Coverage,Span)/60.,Span/60.,Gaps/60.,FS47FreeformCases::UnwatchedAllowance/60.);
+ }
  FString When(double Clock)
  {
   const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Clock-8*3600)/86400.))+1);
@@ -184,8 +189,8 @@ FString FS47CaseFieldTests::Objective()const
  {
   if(!Prepared())return TEXT("FIELD POST, EAST ARRAY EDGE: SET THE CONTACT PICKUPS. If set now: ")+Times+TEXT(". They need two hours before the window; set later, it moves to the following night.");
   const double At=M->Freeform->Clock();
-  if(At<R.End)return TEXT("FIELD POST SET / ")+Times+TEXT(". Do other work; a window slept through records nothing.");
-  return R.Gaps>0?FString(TEXT("FIELD POST: COLLECT THE PICKUPS. Part of the window went by unattended, so this records no comparison.")):FString(TEXT("FIELD POST, EAST ARRAY EDGE: COLLECT THE PICKUPS AND READ THEM."));
+  if(At<R.End)return TEXT("FIELD POST SET / ")+Times+(At<R.Start?FString(TEXT(". Do other work; up to 20 minutes of the window may go unwatched, a window slept through records nothing.")):TEXT(" / ")+Watch(R.Coverage,R.Gaps,R.End-R.Start)+(R.Gaps>FS47FreeformCases::UnwatchedAllowance?TEXT(". Too much has gone unwatched: this run is incomplete and records nothing; read the post after the window to take it again."):TEXT(".")));
+  return !FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)?FString::Printf(TEXT("FIELD POST: COLLECT THE PICKUPS. Incomplete: %.0f minutes of the window went by unwatched (20 allowed), so this records no comparison; the test stays planned to take again."),R.Gaps/60.):FString(TEXT("FIELD POST, EAST ARRAY EDGE: COLLECT THE PICKUPS AND READ THEM."));
  }
  if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: CLIMB THE LADDER BY THE CONTROL ROOM WALL AND FASTEN THE ROOF PLATE. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
@@ -193,9 +198,9 @@ FString FS47CaseFieldTests::Objective()const
  const double Now=M->Freeform->Clock();
  // TONIGHT-NOTE-20261109: said plainly; resting or waiting past the window records nothing (Valid needs it all observed)
  if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times
-  +(Test==0?TEXT(". Skipping time past the window counts for nothing; be in the room for it."):TEXT(". Skipping time past the window counts for nothing; stay up through it."));
- if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window.")
-  :TEXT("ARRAY SERVICE GATE: INSPECT THE TAPE AND TRACKING STRIPS. ")+(R.Gaps>0||R.bGateTampered?FString(TEXT("Control incomplete: unobserved time or operator disturbance; inspection records no negative result.")):FString(TEXT("The active window is complete.")));
+  +(Test==0?TEXT(". Skipping time past the window counts for nothing; be in the room for it."):TEXT(". Stay up through it: up to 20 minutes of it may go unwatched, more counts for nothing."));
+ if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(" / ")+Watch(R.Coverage,R.Gaps,R.End-R.Start)+(R.Gaps>FS47FreeformCases::UnwatchedAllowance?TEXT(". Too much has gone unwatched: this run is incomplete; inspect after the window to take it again."):TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window."))
+  :TEXT("ARRAY SERVICE GATE: INSPECT THE TAPE AND TRACKING STRIPS. ")+(R.bGateTampered?FString(TEXT("Control incomplete: the seal or strips were disturbed; inspection records no negative result, and the test stays planned to take again.")):!FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)?FString::Printf(TEXT("Control incomplete: %.0f minutes of the window went by unwatched (20 allowed); inspection records no negative result, and the test stays planned to take again."),R.Gaps/60.):FString(TEXT("The active window is complete.")));
  if(Now>=R.End)return TEXT("ROOF CONTROL INCOMPLETE: THE LISTENING WINDOW ENDED. Plan the roof test again; no silence or cause is inferred from missed time.");
  const auto& Wind=S47Wind::Wind();
  return FString::Printf(TEXT("CONTROL ROOM: LISTEN / %.0f OF 60 SECONDS. %s Window ends %s."),R.Listened,
@@ -222,9 +227,9 @@ bool FS47CaseFieldTests::Prepare(int32 Test)
 bool FS47CaseFieldTests::ReadPost()
 {
  if(!Prepared()||R.Test!=2||M->Freeform->Clock()<R.End||!Near(PostPoint(M),2.6))return false;
- const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001;
+ const bool Valid=FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps); // CASETEST-20261109: twenty minutes may go unwatched
  const bool bBoth=M->Freeform->FieldTestExpectsPresent(Line,2);
- const FString Evidence=!Valid?TEXT("Part of the window went by unattended. The pickups' roll is not continuous, so this establishes nothing; repeat the control."):
+ const FString Evidence=!Valid?FString::Printf(TEXT("%.0f minutes of the window went by unwatched, more than the 20 allowed. The pickups' roll is not continuous enough, so this establishes nothing."),R.Gaps/60.):
   bBoth?TEXT("Both pickups' rolls for the full window: the roof and the field post moved at the same minute, three times, a hundred and forty yards apart. Nothing on the road or the wind record accounts for that minute."):
   TEXT("Both pickups' rolls for the full window: the roof moved and the field post did not, at any minute. This excludes a simultaneous disturbance in this window only.");
  const bool Result=M->Freeform->ReportFieldTest(Line,2,Valid,bBoth,Evidence);if(Result)Changed();return Result;
@@ -233,8 +238,8 @@ bool FS47CaseFieldTests::InspectGate()
 {
  if(!Prepared()||R.Test!=1||M->Freeform->Clock()<R.End||!Near(GateAt,2.6))return false;
  MonitorGateIntegrity();
- const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001&&!R.bGateTampered;
- const FString Evidence=!Valid?TEXT("The sealed-gate control lacks a complete observed world window, or its seal/strips were disturbed between preparation and inspection. No negative result is established; repeat the control."):
+ const bool Valid=FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)&&!R.bGateTampered; // CASETEST-20261109: twenty minutes may go unwatched
+ const FString Evidence=R.bGateTampered?FString(TEXT("The numbered seal or strips were disturbed between preparation and inspection. No negative result is established.")):!Valid?FString::Printf(TEXT("%.0f minutes of the sealed-gate window went by unwatched, more than the 20 allowed. No negative result is established."),R.Gaps/60.):
   R.bGateCrossed?TEXT("After a fully sampled control window: numbered seal torn at the latch and a series of dark crossing marks disturbs the strips on both sides of the gate. The physical disturbance occurred during the active window."):
   TEXT("After a fully sampled control window: numbered seal intact and both strips undisturbed. This excludes a crossing through this controlled gate in this window only.");
  const bool Result=M->Freeform->ReportFieldTest(Line,1,Valid,R.bGateCrossed,Evidence);if(Result)Changed();return Result;
@@ -350,6 +355,9 @@ void FS47CaseFieldTests::AdvanceUnobservedTo(double Clock)
 {
  if(!Prepared()||!FMath::IsFinite(Clock)||Clock<=R.LastClock)return;
  MonitorGateIntegrity();
+ // CASETEST-20261109: a crossing in unwatched time tears the seal all the same, so the allowance never turns it into a negative.
+ const double EventAt=R.Start+(R.End-R.Start)*.5;
+ if(R.Test==1&&R.LastClock<EventAt&&Clock>=EventAt&&M&&M->Freeform&&M->Freeform->FieldTestExpectsPresent(Line,1))R.bGateCrossed=true;
  R.Gaps+=Overlap(R.LastClock,Clock,R.Start,R.End);R.LastClock=Clock;R.bHavePlayer=false;
 }
 void FS47CaseFieldTests::MonitorGateIntegrity()

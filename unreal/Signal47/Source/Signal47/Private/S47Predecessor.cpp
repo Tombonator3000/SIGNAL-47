@@ -133,7 +133,7 @@ FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
  // After "Not yet" only a further stretch of lost time sends somebody else (M7).
  if(C.Taken>=TakenTooOften&&C.Taken>C.Reprieved)return EOutcome::Gone;
  // Routine alone does not keep the station (M7): at least one case carried through, as her Monday notes say.
- const bool bWorks=C.Concluded>=CasesToStay&&C.Arrears<FS47FreeformSession::ArrearsCap&&C.Filed>=FiledFloor&&Points(C)>=PointsToStay;
+ const bool bWorks=C.Concluded>=CasesToStay&&C.Field>=FieldToStay&&C.Arrears<FS47FreeformSession::ArrearsCap&&C.Filed>=FiledFloor&&Points(C)>=PointsToStay;
  if(bWorks)return EOutcome::Stays;
  if(C.Known>=KnownEnough&&C.bWagon&&C.bGap)return EOutcome::KnowsEnough;
  if(C.Originals>0||C.Photos>0)return EOutcome::ClosedOriginals;
@@ -165,7 +165,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  {
   // A mystery takes a filing on any evidence (M7): it counts only with a control recorded or the other place looked at too.
   // The same sum the case board warns by before a filing (critic round 5): FS47FreeformSession::CaseSupported.
-  if(F.CaseSupported(Line))++C.Concluded;else ++C.Guessed;
+  if(F.CaseSupported(Line)){++C.Concluded;C.Field+=F.CaseFromField(Line)?1:0;}else ++C.Guessed; // CHAIN-2-20261109
  }
  C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();C.Reprieved=TakenAtReprieve;
  if(F.NightLog)C.Logs=F.NightLog->ReadCount();
@@ -371,7 +371,7 @@ void FS47Predecessor::StepNews(double Dt)
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
   F.RecordEvidence(TEXT("ward-")+Id,KeptOpen()?X::KeptNote(Week,C.Filed,C.Dishes,C.Arrears,DateText(FiscalEndDay()),C.Taken,C.Arrears>=CarriedWarn?LeverWords(C):FString())
-   :X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved));
+   :X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved,C.Field));
   // By post, with the next round (the flag says so), or in the tray where there is none.
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(Id);
@@ -384,7 +384,7 @@ void FS47Predecessor::StepNews(double Dt)
  {
   Seen.Add(TEXT("inspector"));
   const FTally C=Count();
-  const int32 Weakest=C.Concluded<CasesToStay?0:C.Dishes<20?1:C.Filed<FiledFloor?2:C.Arrears>=CarriedWarn?3:C.Filed>0&&C.Clean*2<C.Filed?4:5;
+  const int32 Weakest=C.Concluded<CasesToStay||C.Field<FieldToStay?0:C.Dishes<20?1:C.Filed<FiledFloor?2:C.Arrears>=CarriedWarn?3:C.Filed>0&&C.Clean*2<C.Filed?4:5;
   F.RecordEvidence(TEXT("ward-inspector"),X::Inspector(DateText(Today),DateText(AssessDay),Weakest));
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(TEXT("inspector"));
@@ -1537,7 +1537,7 @@ void FS47Predecessor::TestWeek()
  TestOn();if(!M||!M->Freeform)return;
  const int32 Week=++WeekNoted;const FString Id=FString::Printf(TEXT("week-%d"),Week);
  const FTally C=Count();
- M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved));
+ M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved,C.Field));
  ReadDoc(Id);
 }
 void FS47Predecessor::TestRing()
@@ -1686,9 +1686,9 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  // The assessment.
  FTally Grind;Grind.Filed=60;Grind.Clean=60;Grind.Photos=5;Grind.Dishes=14;
  Check(Decide(Grind)!=EOutcome::Stays,TEXT("sixty cards and nothing else carried through is not enough to stay"));
- FTally Good;Good.Filed=FiledFloor;Good.Clean=FiledFloor;Good.Concluded=2;Good.Dishes=14;
+ FTally Good;Good.Filed=FiledFloor;Good.Clean=FiledFloor;Good.Concluded=2;Good.Field=1;Good.Dishes=14;
  Check(Decide(Good)==EOutcome::Stays,TEXT("two cases carried through and readable records: SARO stays"));
- FTally Mended;Mended.Filed=FiledFloor;Mended.Clean=FiledFloor;Mended.Concluded=1;Mended.Dishes=25;
+ FTally Mended;Mended.Filed=FiledFloor;Mended.Clean=FiledFloor;Mended.Concluded=1;Mended.Field=1;Mended.Dishes=25;
  Check(Decide(Mended)==EOutcome::Stays,TEXT("one case and a mended array: SARO stays too"));
  FTally Sloppy=Good;Sloppy.Clean=2;Check(Decide(Sloppy)!=EOutcome::Stays,TEXT("not on records nobody can read"));
  FTally Idle=Good;Idle.Filed=FiledFloor-1;Idle.Clean=Idle.Filed;Check(Decide(Idle)!=EOutcome::Stays,TEXT("not without the work itself"));
@@ -1706,6 +1706,7 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   Check(X::WeekNote(2,5,0,14,5,0,10,TEXT("MONDAY"),0,PointsToStay,2).Contains(TEXT("somebody else on nights")),TEXT("the Monday sheet names the lost hours, and what a third would do"));
  }
  FTally Owing=Good;Owing.Arrears=FS47FreeformSession::ArrearsCap;Check(Decide(Owing)!=EOutcome::Stays,TEXT("not with the sheet at its limit"));
+ Check(FS47FreeformSession::ArrearsCap==80&&X::Letter(false,FString(),FString()).Contains(TEXT("less than $80")),TEXT("the first letter names the same limit as the code (CHAIN-5-20261109)"));
  FTally Knows;Knows.Known=KnownEnough;Knows.bWagon=Knows.bGap=true;Check(Decide(Knows)==EOutcome::KnowsEnough,TEXT("closed, but knowing what can be known"));
  FTally NoWagon=Knows;NoWagon.bWagon=false;NoWagon.Originals=1;Check(Decide(NoWagon)==EOutcome::ClosedOriginals,TEXT("without the wagon it is not enough; the originals remain"));
  Check(Decide(FTally())==EOutcome::ClosedNothing,TEXT("nothing done, nothing kept"));
@@ -1716,7 +1717,12 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   FTally Routine;Routine.Filed=81;Routine.Clean=81;Routine.Dishes=27;Routine.Logs=27;Routine.Trust=4;Routine.Photos=4;Routine.Land=3;
   Check(Points(Routine)>=PointsToStay&&Decide(Routine)!=EOutcome::Stays,TEXT("the month done by the card, with no case carried through, does not keep SARO open"));
   FTally Guessed=Routine;Guessed.Guessed=2;Check(Decide(Guessed)!=EOutcome::Stays,TEXT("nor with two filings that have nothing behind them"));
-  FTally Carried=Routine;Carried.Concluded=1;Check(Decide(Carried)==EOutcome::Stays,TEXT("with one case carried through, the same month does"));
+  // CHAIN-2-20261109: and the case has to have something in it brought in from out on the land.
+  FTally Desk=Routine;Desk.Concluded=1;Check(Decide(Desk)!=EOutcome::Stays,TEXT("CHAIN-2: with one case carried through on what the station saw from its desk, the same month does not"));
+  FTally Carried=Desk;Carried.Field=1;Check(Decide(Carried)==EOutcome::Stays,TEXT("with one case carried through with something from out on the land, the same month does"));
+  {const FString DeskNote=X::WeekNote(3,81,1,27,81,0,9,TEXT("MONDAY"),Points(Desk),PointsToStay,0,0,false,FString(),0,0);const FString FieldNote=X::WeekNote(3,81,1,27,81,0,9,TEXT("MONDAY"),Points(Carried),PointsToStay,0,0,true,FString(),0,1);
+   Check(DeskNote.Contains(TEXT("brought in from out on the land: 0. I need one."))&&DeskNote.Contains(TEXT("What is not there yet is a case with something in it from out on the land"))&&FieldNote.Contains(TEXT("brought in from out on the land: 1. I need one."))&&X::WeekNote(1,0,0,14,0,0,20,TEXT("MONDAY"),0,PointsToStay,0).Contains(TEXT("out on the land: 0.")),
+    TEXT("CHAIN-2: every Monday note has the line for a case with something from out on the land, and says when it is what is missing"));}
   const FString Note=X::WeekNote(3,81,0,27,81,0,9,TEXT("MONDAY"),Points(Routine),PointsToStay,0,0,false,FString());
   Check(!Note.Contains(TEXT("I could defend it"))&&Note.Contains(TEXT("case carried through")),TEXT("and Ward's Monday note says what is missing, not that it would pass"));
   // The third stretch of lost time: answered the morning after it is noticed; after "Not yet", only a further one does it.

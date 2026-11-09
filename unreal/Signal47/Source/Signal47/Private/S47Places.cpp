@@ -570,6 +570,8 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
  {
   const FBearing& B=Fixes[I];
   FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("D%d truck"),B.Day):FString::Printf(TEXT("D%d"),B.Day);
+  // NIGHT-20261110: the pencilled wedge carries the hour the slip was taken (as the slip has it); an older bearing has none.
+  if(B.Clock>=0)S.Label+=TEXT(" ")+SlipClock(B.Clock);
   S.bFrom=B.bCar;S.FromX=B.FromX;S.FromZ=B.FromZ;
   // The pencil pales as it cools, never quite away while it is live.
   S.Fade=float(.3+.7*Freshness(B,Now));
@@ -705,6 +707,9 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   Check(ColdAt(Clock)==4*86400.+12*3600.&&ColdAt(4*86400.+1*3600.)==4*86400.+12*3600.&&Live(B,ColdAt(Clock)-1)&&!Live(B,ColdAt(Clock))&&Live(Old,1e9)
    &&Fresh.Sectors.Num()==1&&Later.Sectors.Num()==1&&Fresh.Sectors[0].Fade>Later.Sectors[0].Fade&&Later.Sectors[0].Fade>=.3f&&Cold.Sectors.IsEmpty(),
    TEXT("a bearing is cold by the next noon: it pales on the map until then and is off it after"));
+  // NIGHT-20261110: the wedge on the map carries the hour of its slip; an older bearing (no clock) keeps its bare label.
+  FS47MapView Bare;FS47Places Plain(nullptr);Plain.Begin(nullptr);Plain.Fixes.Add(Old);Plain.FillMapAt(Bare,1e6);
+  Check(Fresh.Sectors[0].Label.EndsWith(SlipClock(Clock))&&Bare.Sectors.Num()==1&&!Bare.Sectors[0].Label.Contains(TEXT(":")),TEXT("the pencilled wedge carries the hour of its slip, an older one has none"));
   // Story's numbers never on the paper: no 47 in a degree or a clock, no 8.15 or 20.15.
   bool bClean=true;
   for(int32 D=0;D<360;++D){FBearing X=B;X.Az=D;const FString L=SlipLine(X);bClean&=!L.Contains(TEXT("47"))&&Whole(D)!=47&&Whole(D)!=147&&Whole(D)!=247&&Whole(D)!=347;}

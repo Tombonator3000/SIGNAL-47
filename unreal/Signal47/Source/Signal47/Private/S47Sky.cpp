@@ -1390,7 +1390,8 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 				// earthshine: most on a thin crescent, none to speak of past the quarter, and lost in daylight
 				T->SetScalarParameterValue(TEXT("Earth"), float(CvMoonEarth.GetValueOnGameThread() * FMath::Pow(1 - MoonLit, 2.0) * Night));
 				// the disc hides the stars behind it at night, dark side too; by day the sky's blue lies over it
-				T->SetScalarParameterValue(TEXT("OccDark"), float(FMath::Lerp(.92, 0.0, Day)));
+				// NIGHT-20261110 MOON-DARK: only partly at night (was .92), so a crescent's dark side is no blacker than the sky around it
+				T->SetScalarParameterValue(TEXT("OccDark"), float(FMath::Lerp(.4, 0.0, Day)));
 				T->SetScalarParameterValue(TEXT("OccLit"), float(FMath::Lerp(1.0, .35, Day)));
 			}
 		}

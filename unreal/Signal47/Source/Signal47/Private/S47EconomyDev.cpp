@@ -18,14 +18,14 @@
 void FS47DevFreeform::AddEconomy(FS47DevEvents& E)
 {
 	static const TCHAR* const Group = TEXT("Economy (M7)");
-	E.AddFreeform(Group, TEXT("Money: this week's sheet so far"), TEXT("the budget, the next review and what it will ask, the array's upkeep a dish, the pump's price, side money left, cards tonight"), [this]
+	E.AddFreeform(Group, TEXT("Money: this week's sheet so far"), TEXT("the budget, the next review and what it will ask, the array's fault tariff an antenna out, the pump's price, side money left, cards tonight"), [this]
 	{
 		FS47FreeformSession* F = Session();
 		if (!F || !F->Field) { Tell(false, TEXT("Freeform only")); return; }
 		F->TestLiveRules();
 		const int32 Week = (F->Day() - 1) / 7 + 1;
 		const int32 Halves = FS47FreeformSession::UpkeepHalves(Week);
-		Tell(true, FString::Printf(TEXT("Day %d, week %d. Budget $%d, carried $%d. Next review %s. Upkeep $%d.%02d a dish (%d on the line: $%d). Pump $%.2f a unit. Side money left this week $%d of $%d. Cards filed tonight %d. Repairs due $%d."),
+		Tell(true, FString::Printf(TEXT("Day %d, week %d. Budget $%d, carried $%d. Next review %s. Fault tariff $%d.%02d an antenna out (%d in service: $%d). Pump $%.2f a unit. Side money left this week $%d of $%d. Cards filed tonight %d. Repairs due $%d."),
 			F->Day(), Week, F->Budget(), F->Arrears(), *F->NextReviewText(), Halves / 2, Halves % 2 * 50, F->AvailableDishCount(), F->ReviewPowerNow(), 1.0 / F->Field->FuelPerDollar(),
 			F->SideLeftThisWeek(), int32(FS47FreeformSession::SideCap), F->CardsTonight(), F->RepairsDue()), 14);
 	});

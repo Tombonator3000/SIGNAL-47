@@ -241,14 +241,14 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	const double CellRate = bDrains && Want > 0 && !bHeld ? CellDropRate(Battery) : 0.0;
 	if (CellDark > 0) CellDark -= FMath::Max(0.0, Dt);
 	else if (CellRate > 0 && FMath::IsFinite(Dt) && Dt > 0 && FMath::FRand() < CellRate * Dt) { CellDark = 0.06 + FMath::FRand() * 0.22; ++Cuts; }
-	if (CellDark > 0) K = FMath::Min(K, 0.1);
+	if (CellDark > 0) K = FMath::Min(K, bCalm ? 0.6 : 0.1); // NIGHT-20261110: calm = a dip, not a cut-out
 	// something near takes the beam down steadily (GEAR-FLICKER), with no battery spent on it
 	if (SagK > 0) K *= 1 - SagK;
 	// a weak battery: the beam thins, and near the end the contact stutters
 	if (bDrains && Battery < LowLevel)
 	{
 		K *= BatteryGain(Battery);
-		if (Battery < LowLevel * 0.4) K *= 0.75 + 0.25 * FMath::Sin(T * 23) * FMath::Sin(T * 7.1);
+		if (Battery < LowLevel * 0.4) K *= bCalm ? 0.9 : 0.75 + 0.25 * FMath::Sin(T * 23) * FMath::Sin(T * 7.1);
 	}
 	ThreeIntensity = Level < 0.01 ? 0 : 40 * FLASH_GAIN * Level * K;
 	USpotLightComponent* L = Spot.Get();
@@ -351,6 +351,18 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 			G.bHave = true; G.bDrains = true; G.Toggle();
 			for (int32 I = 0; I < 6000; ++I) G.Update(1.0 / 60, I / 60.0, Cam, false);
 			Check(WeakCuts > 0 && G.CutOuts() == 0, TEXT("with nothing near, a weak cell still makes the lamp cut out; a good one does not"));
+			// NIGHT-20261110: with reduced flicker the same weak cell only dims; the lamp never falls below a fraction of its steady beam
+			FS47Flashlight C(nullptr);
+			C.bHave = true; C.bDrains = true; C.bCalm = true; C.Toggle(); C.SetBattery(0.12);
+			double CalmLeast = 1e9, NormalLeast = 1e9;
+			FS47Flashlight N2(nullptr);
+			N2.bHave = true; N2.bDrains = true; N2.Toggle(); N2.SetBattery(0.12);
+			for (int32 I = 0; I < 6000; ++I)
+			{
+				C.Update(1.0 / 60, I / 60.0, Cam, false); N2.Update(1.0 / 60, I / 60.0, Cam, false);
+				if (I > 60) { CalmLeast = FMath::Min(CalmLeast, C.Intensity()); NormalLeast = FMath::Min(NormalLeast, N2.Intensity()); }
+			}
+			Check(C.CutOuts() > 0 && CalmLeast > NormalLeast && CalmLeast > 0.25 * C.Intensity(), TEXT("reduced flicker: a weak cell dips smoothly and never cuts out"));
 		}
 		Check(FS47Flashlight::BatteryGain(1) == 1 && FS47Flashlight::BatteryGain(0.2) == 1 && FS47Flashlight::BatteryGain(0) == 0
 			&& FS47Flashlight::BatteryGain(0.1) < 1 && FS47Flashlight::BatteryGain(0.1) > FS47Flashlight::BatteryGain(0.05), TEXT("the beam thins steadily below the low mark"));

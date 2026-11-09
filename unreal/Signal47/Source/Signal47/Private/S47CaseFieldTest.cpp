@@ -200,7 +200,9 @@ void FS47CaseFieldTest::Step(double Dt)
  if(O.Stage==9608)
  {
   O.Shot(TEXT("casefield-gate-incomplete"));if(!UseRay(TEXT("case:gate-seal")))return;
-  if(!Check(!F.CaseFile().Get(2)->Results[1].bDone&&F.CaseFile().Get(2)->ValidTests==0&&F.PlannedFieldTest(2)==-1,TEXT("physical inspection of slept-through control records no conclusion and permits a new plan")))return;
+  // CASETEST-20261109: an invalid control stays planned to take again, fresh (no coverage borrowed); this run then plans the roof instead
+  if(!Check(!F.CaseFile().Get(2)->Results[1].bDone&&F.CaseFile().Get(2)->ValidTests==0&&F.PlannedFieldTest(2)==1&&!C.Prepared()&&S47J::Num(C.Save(),TEXT("gaps"))==0&&F.FeedbackText().Contains(TEXT("stays planned")),TEXT("physical inspection of slept-through control records no conclusion and keeps the test planned, fresh, to take again")))return;
+  if(!Check(F.CancelFieldTest(2)&&F.PlannedFieldTest(2)==-1,TEXT("the kept plan can still be cleared for another control")))return;
   Board();O.Go(9610,.4);return;
  }
  if(O.Stage==9610)
@@ -310,7 +312,7 @@ void FS47CaseFieldTest::Step(double Dt)
  {
   const int32 Relays=F.InventoryCount(TEXT("relay"));
   if(!UseRay(TEXT("case:gate-seal")))return;
-  if(!Check(!F.CaseFile().Get(2)->Results[1].bDone&&F.CaseFile().Get(2)->ValidTests==1&&F.PlannedFieldTest(2)<0&&F.InventoryCount(TEXT("relay"))==Relays,TEXT("disturbed post-window inspection yields no valid result or reward and releases plan")))return;
+  if(!Check(!F.CaseFile().Get(2)->Results[1].bDone&&F.CaseFile().Get(2)->ValidTests==1&&F.PlannedFieldTest(2)==1&&!C.Prepared()&&F.InventoryCount(TEXT("relay"))==Relays,TEXT("disturbed post-window inspection yields no valid result or reward and keeps the test planned to take again (CASETEST-20261109)")))return;
   F.Begin(GateBranch,false);F.Director->Stop();ApproachControl(1);O.Go(96254,.3);return;
  }
  if(O.Stage==96254)

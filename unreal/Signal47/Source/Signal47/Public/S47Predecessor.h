@@ -36,7 +36,10 @@ public:
  // M7 (9 November): Concluded counts only a line with something behind it (FS47FreeformCases::Supported); a mystery filed on
  // nothing is Guessed, and counts for nothing. Photos: prints made in the camera, not enlargements of them. Reprieved: the times
  // taken when "Not yet" gave the nights back; only a taking after that sends somebody else.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0;bool bWagon=false,bGap=false;};
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0;bool bWagon=false,bGap=false;};
+ // CHAIN-2-20261109: Field, of the cases carried through, those with something brought in from out there (FS47FreeformSession::
+ // CaseFromField); FieldToStay of them, or the station is not kept, however good the rest. The Monday note has the line every week.
+ static constexpr int32 FieldToStay=1;
  // CasesToStay: routine alone does not keep the station (M7): the county wants at least one case carried through. LogsForPoint: the
  // night sheets count once, a little. CarriedWarn: from here Ward names the limit of the carried line in her own words.
  static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7,CasesToStay=1,LogsForPoint=15,CarriedWarn=40,InspectorAfter=21,PayReplyDays=3;

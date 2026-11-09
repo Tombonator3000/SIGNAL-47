@@ -180,7 +180,7 @@ namespace
    {true,false,true}},  // a sky-fixed source vanishes off the beam
   {TEXT("CALICHE VALLEY ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 31-B, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nYour generator comparison has been forwarded to the line crew. A spare control fuse is in your depot."),
    TEXT("SOUTHWEST RADIO MONITORING OFFICE / ALBUQUERQUE\nRE: UNLICENSED INTERMITTENT CARRIER\n\nTwo ranchers near US-60 reported an intermittent carrier in 1984. The source was never located.\n\nYour repeat and generator records exclude the station itself. A portable field logger is approved on loan so the carrier can be recorded from a second site."),
-   TEXT("SOUTHWEST RADIO OBSERVATORIES / TIMING DESK\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky rises 3 minutes 56 seconds earlier each night; anything on the ground keeps clock time. A field logger is approved on loan for an independent second site.")},
+   TEXT("SOUTHWEST RADIO OBSERVATORIES / TIMING DESK\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky keeps star time; anything on the ground keeps clock time, and your off-beam control is the first check of which this is. A field logger is approved on loan for an independent second site.")},
   TEXT("Records reply: the repeated interval"),TEXT("access.fieldlogger")
  },
  {
@@ -593,7 +593,10 @@ int32 FS47FreeformCases::ClueReading(int32 Line,int32 Clue) const
  const uint32 Draw=Mix(uint32(CaseSeed)^Mix(0x434c5545u+uint32(Line)));
  const int32 Straight=int32(Draw%uint32(ClueCount));
  const int32 Stray=(C->Truth+1+int32((Draw>>8)%uint32(CauseCount-1)))%CauseCount;
- return Clue==Straight?C->Truth:Stray;
+ // CHAIN-3-20261109: the other place agrees on half the seeds, and always where the station has no control (the other place is the
+ // control). Where the two disagree, a control the station can run separates them: any two causes differ in at least two tests.
+ bool bControl=false;for(int32 Ctl=0;Ctl<TestCount;++Ctl)bControl|=UnavailableReason(Line,Ctl,true).IsEmpty();
+ return Clue==Straight||!bControl||((Draw>>16)&1u)?C->Truth:Stray;
 }
 FString FS47FreeformCases::ClueText(int32 Line,int32 Clue) const
 {
@@ -817,14 +820,23 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  {
   const FMysteryDef* Y=Def(MysteryLine).Mystery;Good&=Y!=nullptr&&Defs[0].Mystery==nullptr;
   Good&=LineForFinding(TEXT("carrier_saro"))==MysteryLine&&LineForFinding(TEXT("carrier_feeder"))==MysteryLine&&LineForFinding(TEXT("carrier_elsewhere"))==-1;
-  TSet<int32> HonestAt,Strays;
+  TSet<int32> HonestAt,Strays;int32 Agreed=0; // CHAIN-3-20261109
   for(int32 Seed=0;Y&&Seed<256;++Seed)
   {
    FS47FreeformCases K;K.Reset(Seed);const int32 Truth=K.Get(MysteryLine)->Truth;
    const int32 A=K.ClueReading(MysteryLine,0),B=K.ClueReading(MysteryLine,1);
-   // One place tells it straight and the other leans elsewhere, whichever way round.
-   Good&=A!=B&&(A==Truth||B==Truth)&&A>=0&&B>=0&&A<CauseCount&&B<CauseCount;
-   HonestAt.Add(A==Truth?0:1);Strays.Add((A==Truth?B:A)-Truth);
+   // CHAIN-3-20261109: one place always tells it straight; the other agrees, or leans elsewhere, whichever way round, and then a
+   // control the station can run tells the two readings apart.
+   Good&=(A==Truth||B==Truth)&&A>=0&&B>=0&&A<CauseCount&&B<CauseCount;
+   if(A==B)++Agreed;
+   else
+   {
+    HonestAt.Add(A==Truth?0:1);Strays.Add((A==Truth?B:A)-Truth);
+    bool bSplit=false;for(int32 Ctl=0;Ctl<TestCount;++Ctl)bSplit|=UnavailableReason(MysteryLine,Ctl,true).IsEmpty()&&PresentFor(MysteryLine,A,Ctl)!=PresentFor(MysteryLine,B,Ctl);
+    Good&=bSplit;
+   }
+   // Where the station has no control, the two places agree.
+   for(const int32 Quiet:{PostLine,RakedLine})Good&=K.ClueReading(Quiet,0)==K.Get(Quiet)->Truth&&K.ClueReading(Quiet,1)==K.Get(Quiet)->Truth;
    // Text is drawn from the one shared pool: it never names a cause or says what it was.
    for(int32 Clue=0;Clue<ClueCount;++Clue)
    {
@@ -833,7 +845,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    }
    FS47FreeformCases Again;Again.Load(S47J::Read(S47J::Write(K.Save())),Seed);Good&=Again.Get(MysteryLine)->Truth==Truth&&Again.ClueReading(MysteryLine,0)==A&&Again.ClueReading(MysteryLine,1)==B;
   }
-  Good&=HonestAt.Num()==2&&Strays.Num()>=2;
+  Good&=HonestAt.Num()==2&&Strays.Num()>=2&&Agreed>32&&Agreed<224;
   for(int32 Sent=0;Y&&Sent<CauseCount;++Sent)for(int32 Was=0;Was<CauseCount;++Was)
   {
    const FReplyDef& Answer=Y->Replies[Sent][Was];Good&=Answer.Text&&Answer.Text[0];
@@ -960,6 +972,9 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   FS47FreeformCases Old;Old.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true},{},{},{},{}]}")),3);
   Good&=Old.Get(0)->bOpen&&Old.Get(PostLine)&&!Old.Get(PostLine)->bOpen&&!Old.Get(RakedLine)->bOpen;
  }
+ // CASETEST-20261109: twenty minutes of a field window may go unwatched in all; more, or a window not watched through, counts for nothing.
+ Good&=WindowKept(10800,10800,0)&&WindowKept(10800,10800-UnwatchedAllowance,UnwatchedAllowance)&&!WindowKept(10800,10800-UnwatchedAllowance-60,UnwatchedAllowance+60)
+  &&!WindowKept(10800,0,10800)&&!WindowKept(10800,5400,0)&&!WindowKept(0,0,0);
  Lines.Add(FString::Printf(TEXT("%s / Freeform cases: nine data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground; and OUT ON THE LAND, split from the visitors: the night's records out there go to it, an older save's move over, records that disagree rule nothing out, no lead dropped at the cap), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the repeat window from the first original's clock, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }

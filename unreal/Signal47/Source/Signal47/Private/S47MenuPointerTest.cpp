@@ -239,7 +239,7 @@ namespace
   // opening, the job, its recording and result, the filing by the board's own buttons, the reply and its effect.
   // PASS only if: no body before two; the notice waits for its hour; a menu holds the notice and the morning's reply; a
   // disk Continue in the notice neither loses nor repeats it; nothing is at the feeder before midnight and something is
-  // after; the two places read differently; what the player can read on the board, the plan and the tasks is word for word
+  // after; one of the two places reads straight; what the player can read on the board, the plan and the tasks is word for word
   // the same under another cause; a real control closes what it should and the board stops offering it; filed right, the
   // morning brings what the table says for it, once, also after a disk Continue; back from before the control, filed wrong,
   // it is accepted, survives a Continue before the reply, is answered next morning with no gain, and Rest still goes on.
@@ -355,7 +355,8 @@ namespace
     }
     if(!F.HasFinding(FeederClue))return Elapsed-DreadAt>30?Fail(TEXT("after midnight the feeder has something to find")):true;
     const int32 A=F.CaseFile().ClueReading(L,0),B=F.CaseFile().ClueReading(L,1);
-    if(A==B||(A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("the two places must read differently, one of them straight"));
+    // CHAIN-3-20261109: the two places may agree; one of them always tells it straight.
+    if((A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("one of the two places must read straight"));
     M->World->Enter(TEXT("saro"));DreadAt=Elapsed;MysterySub=0;Stage=494;return true;
    }
    if(Stage==494)

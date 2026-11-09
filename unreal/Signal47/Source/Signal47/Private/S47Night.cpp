@@ -744,6 +744,7 @@ void US47Night::FlashlightStep(double Dt)
 	// Freeform only: the lamp has a battery. It charges slowly while the lamp is off and the player is indoors at SARO.
 	// M7 (C): on the station's power: with the feeder down and no generator running, the charger on the shelf is dark too.
 	Flashlight->bDrains = M->IsFreeform();
+	Flashlight->bCalm = M->Flow && M->Flow->bCalmFlash; // NIGHT-20261110: reduced flicker also softens the weak cell
 	if (Flashlight->bDrains && Flashlight->bHave && !Flashlight->bOn && M->Mode == EMode::Play && !M->bPausedByMenu && !Modal()
 		&& M->Space == TEXT("room") && Area() == TEXT("saro") && Flashlight->BatteryLevel() < 1 && (!M->Freeform || M->Freeform->HasPowerForReactiveLight()))
 		Flashlight->Charge(Dt / FS47Flashlight::ChargeSeconds);
