@@ -7,6 +7,7 @@
 #include "S47Three.h"
 #include "S47ExteriorFixtures.h"
 #include "S47SaroArrival.h"
+#include "S47StreetLamps.h"
 
 namespace
 {
@@ -28,7 +29,9 @@ void AS47Web::BuildExteriorLighting()
 	const int32 Site = FloodSet(TEXT("site")), Court = FloodSet(TEXT("court"));
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
 	const bool bLookdev = LookdevExterior();
-	const auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
+	auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
+	// STREETLAMPS-20261108: the highway's cobra heads (S47StreetLamps, built with the world) carry the old feeds' lights.
+	Fixtures.Append(S47StreetLamps::Fixtures(this));
 	if (Fixtures.Contains(TEXT("FireExit")) && SaroArrival) SaroArrival->RetireCanopyLight();
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
 		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone, float Source = 8.f, float SoftSource = 6.f)
@@ -37,7 +40,19 @@ void AS47Web::BuildExteriorLighting()
 		if (!Owner || Set < 0 || Slot < 0 || Slot >= FloodSlots(Set)) return;
 		FExteriorLight P;
 		P.Node = Owner.I; P.Set = Set; P.Slot = Slot; P.At = At; P.Target = Target; P.Candela = Candela;
-		if (const auto* Fixture = Fixtures.Find(Name))
+		// STREETLAMPS-20261108: the street lamps' lights are high-pressure sodium, whatever the shared pool's tint.
+		const FString LightName(Name);
+		P.bSodium = LightName.StartsWith(TEXT("Highway")) || LightName.StartsWith(TEXT("Caliche")) || LightName.StartsWith(TEXT("CourtLot")) || LightName.StartsWith(TEXT("Yard"));
+		const auto* Fixture = Fixtures.Find(Name);
+		if (Fixture && Fixture->bStreetLamp)
+		{
+			// A cobra head: the source just under its bowl, aimed where the old one was (over the road), a small finite source.
+			P.At = Fixture->Aperture + Fixture->Normal * .03;
+			P.Diffuser = Fixture->Lens; P.Fixture = Fixture->Mesh; P.bAuthoredLens = true; P.bStreetHead = true;
+			Source = FMath::Min(Fixture->Width, Fixture->Height) * .2f;
+			SoftSource = Source * .6f;
+		}
+		else if (Fixture)
 		{
 			P.At = Fixture->Aperture;
 			// The wall-pack optic spreads down within its broad beam; canopy points straight down.
@@ -72,13 +87,14 @@ void AS47Web::BuildExteriorLighting()
 		L->SetupAttachment(GetRootComponent()); L->SetMobility(EComponentMobility::Movable);
 		L->SetIntensityUnits(ELightUnits::Candelas); L->SetIntensity(0);
 		L->SetWorldLocationAndRotation(S47Three::ToUE(P.At), S47Three::DirToUE(P.Target - P.At).Rotation());
-		L->SetInnerConeAngle(Cone * 0.65f); L->SetOuterConeAngle(Cone);
+		// A street lamp's refractor spreads its light wide and soft to the edge: the warm cone fades rather than ending in a ring.
+		L->SetInnerConeAngle(Cone * (P.bSodium ? 0.4f : 0.65f)); L->SetOuterConeAngle(Cone);
 		L->SetAttenuationRadius(Reach * 100.f);
 		L->SetSourceRadius(Source); L->SetSoftSourceRadius(SoftSource);
 		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
 		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 20.f;
 		L->ContactShadowCastingIntensity = 0.75f;
-		L->SetVolumetricScatteringIntensity(0.35f); L->SetIndirectLightingIntensity(1.f);
+		L->SetVolumetricScatteringIntensity(P.bSodium ? 0.6f : 0.35f); L->SetIndirectLightingIntensity(1.f);
 		L->SetVisibility(false); L->RegisterComponent();
 		P.Light = L;
 		ExteriorLights.Add(P);
@@ -107,7 +123,7 @@ void AS47Web::BuildExteriorLighting()
 			const FVector At = T.TransformPosition(G->Pos[Point]);
 			const FString Name = FString::Printf(TEXT("Highway%02d"), I + 1);
 			Add(*Name, TEXT("ext.group"), Site, 5 + FMath::Min(I, 2), TEXT("ext.glow.points"), Point,
-				At, FVector(-24, -0.62, At.Z), 90.f, 16.f, 58.f);
+				At, FVector(-24, -0.62, At.Z), 220.f, 22.f, 68.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees)
 		}
 	}
 	// Building wall packs: a shared material pool never substitutes for the real housings.
@@ -200,12 +216,13 @@ void AS47Web::BuildExteriorLighting()
 		const FVector At(Pool.R, Pool.G + 0.255, Pool.B);
 		const FString Name = FString::Printf(TEXT("Caliche%02d"), I);
 		Add(*Name, TEXT("world.town.group"), Town, I, TEXT(""), -1,
-			At, At + FVector(2.3, -7.5, 0), 120.f, 16.f, 61.f, 18.f, 8.f);
+			At, At + FVector(2.3, -7.5, 0), 200.f, 20.f, 64.f, 18.f, 8.f); // STREETLAMPS: was 120 cd, 16 m, 61 degrees
 		if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
 		{
 			// The second sprite was a thirteen-metre additive substitute for ground light.
 			// Keep only the lens glint; native fog and the shadowed cone make the halo/pool.
-			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, 0.45f);
+			// STREETLAMPS: at .45 m the glint read as an orange ball beside the head at night; a lens-sized glint
+			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, 0.22f);
 			if (G->Pos.IsValidIndex(I * 2 + 1)) G->SetSize(I * 2 + 1, 0.f);
 		}
 	}
@@ -299,7 +316,13 @@ void AS47Web::UpdateExteriorLighting()
 		const bool bOn = K > 0.0001f && FVector::DistSquared(Camera, P.At) < FMath::Square(200.f);
 		const bool bToggle = P.bWasOn != bOn;
 		if (bToggle) L->SetVisibility(bOn);
-		const FLinearColor C = FloodCol(P.Set, P.Slot);
+		FLinearColor C = FloodCol(P.Set, P.Slot);
+		if (P.bSodium)
+		{
+			// the feed's brightness in sodium's colour
+			const FLinearColor S = S47StreetLamps::Sodium();
+			C = S * (FMath::Max3(C.R, C.G, C.B) / FMath::Max(0.001f, FMath::Max3(S.R, S.G, S.B)));
+		}
 		const float Gain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		// Unreal's setters ignore unchanged values; colour-only HDR changes still update power.
 		L->SetIntensity(bOn ? P.Candela * K * Gain : 0.f);
@@ -307,7 +330,8 @@ void AS47Web::UpdateExteriorLighting()
 		if (P.bAuthoredLens)
 		{
 			if (auto* M = P.Fixture.Get()) M->SetVisibility(ObjAt(P.Node).Shown(), false);
-			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * (1.5f * K));
+			// a cobra head's bowl glows bright enough to bloom (prosjektbibliotek: bloom over 1 only on lamps)
+			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * ((P.bStreetHead ? 6.f : 1.5f) * K));
 		}
 		if (bLog && bToggle) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s %s k=%.4f cd=%.2f"), *L->GetName(), bOn ? TEXT("on") : TEXT("off"), K, L->Intensity);
 		P.LastK = K; P.bWasOn = bOn;

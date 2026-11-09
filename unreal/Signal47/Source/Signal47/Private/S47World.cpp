@@ -2084,6 +2084,12 @@ IS47DriveArea* US47World::LegArea(const FString& Id) const
 	return L ? L->Area.Get() : nullptr;
 }
 
+const TArray<FS47Box2>* US47World::LandOut(const FString& InArea) const
+{
+	const FLand* L = Lands.Find(InArea);
+	return L ? &L->Out : nullptr;
+}
+
 // What OnLand would say no to here, by name, for the probe of how far one gets (S47ReliefProbe).
 FString US47World::WhyNotLand(double X, double Z)
 {

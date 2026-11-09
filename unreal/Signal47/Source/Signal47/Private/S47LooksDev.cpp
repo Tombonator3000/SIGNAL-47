@@ -1,0 +1,144 @@
+#include "S47DevFreeform.h"
+#include "S47Blockers.h"
+#include "S47DevEvents.h"
+#include "S47FarmWorld.h"
+#include "S47Main.h"
+#include "S47SaroClip.h"
+#include "S47StreetLamps.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "S47World.h"
+#include "Misc/Paths.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47Looks, Log, All);
+
+// F10, M6 (SARO-CLIP, DALE-WINDOW, FENCES-INVISIBLE, STREETLAMPS, 8 November): what goes into SARO's walls, measured from every place
+// inside the buildings; what stops one where nothing is drawn, at SARO and on the road by the substation; how far each street lamp's
+// foot stands from the ground; and the views before and after: Dale's window from both sides, the substation by day and night, the
+// lamps by day and night. The measuring lines write their whole list to the log (LogS47Looks). Nothing here is saved.
+// -S47DevSweep=/tmp/dir -S47DevSweepGroup="Looks (M6)" runs the group in turn, a picture after each line.
+void FS47DevFreeform::AddLooks(FS47DevEvents& E)
+{
+ static const TCHAR* const Group = TEXT("Looks (M6)");
+ const auto Log = [](const TArray<FString>& Lines) { for (const FString& L : Lines) UE_LOG(LogS47Looks, Display, TEXT("S47: M6 %s"), *L); };
+ // Stand at a place given in the road's terms (as the relief probe's views are), at an hour, and look at another, Lift metres over the eye.
+ const auto View = [this](const FString& Area, double Hour, const FVector2D& EyeRoad, const FVector& LookRoad, const FString& Say)
+ {
+  const FVector Eye = S47FarmWorld::RoadToArea(Area, FVector(EyeRoad.X, 0, EyeRoad.Y));
+  const FVector Look = S47FarmWorld::RoadToArea(Area, FVector(LookRoad.X, 0, LookRoad.Z));
+  FStage S; S.From = Hour; S.To = Hour + 1.5; S.Area = Area; S.Where = [Eye] { return FVector2D(Eye.X, Eye.Z); };
+  Go(S, [this, Look, LookRoad, Say]
+  {
+   if (!M->Player) { Tell(false, TEXT("no player")); return; }
+   AimAt(FVector(Look.X, M->Player->FloorY + M->Player->Eye + LookRoad.Y, Look.Z));
+   After(1.2, [this, Say] { Tell(true, Say, 8); });
+  });
+ };
+ // SARO's own terms to the road's.
+ const auto Saro = [](double X, double Z) { return FVector2D(X + 24, Z - 300); };
+ const auto Saro3 = [](double X, double Lift, double Z) { return FVector(X + 24, Lift, Z - 300); };
+
+ // ---- SARO-CLIP: from every room in turn, since a room's things are drawn only while one is near them ----
+ E.AddFreeform(Group, TEXT("SARO: things in the walls"), TEXT("11:00, from each room of the station in turn: every drawn vertex further than 2 cm into a wall; the list goes to the log"), [this, Log]
+ {
+  struct FPlace { const TCHAR* Name; double X, Z; };
+  static const FPlace Places[] = { { TEXT("control room"), 0, 0 }, { TEXT("corridor"), -3, 5.7 }, { TEXT("records"), -3, 8.7 }, { TEXT("office"), .5, 8.5 },
+   { TEXT("photo lab"), 16, -2.5 }, { TEXT("wing lab"), 23, 0 }, { TEXT("wing storage"), 28.8, -2.5 }, { TEXT("wing calibration"), 28.8, 3 }, { TEXT("garage"), 35, 0 } };
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(0, 0); };
+  Go(S, [this, Log]
+  {
+   TSharedRef<TMap<FString, S47SaroClip::FHit>> All = MakeShared<TMap<FString, S47SaroClip::FHit>>();
+   TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
+   const FString Dir = (SweepDir.IsEmpty() ? FPaths::ProjectSavedDir() / TEXT("Looks") : SweepDir) / TEXT("saro-clip");
+   *Next = [this, All, Next, Dir, Log](int32 I)
+   {
+    if (I >= int32(UE_ARRAY_COUNT(Places)))
+    {
+     TArray<S47SaroClip::FHit> Hits; All->GenerateValueArray(Hits);
+     Hits.Sort([](const S47SaroClip::FHit& A, const S47SaroClip::FHit& B) { return A.Depth > B.Depth; });
+     TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("SARO walls, all rooms: %d things into a wall deeper than 20 mm"), Hits.Num()));
+     for (const auto& H : Hits) Lines.Add(FString::Printf(TEXT("  %.0f mm into %s: %s, %d vertices at x %.2f..%.2f y %.2f..%.2f z %.2f..%.2f"), H.Depth * 1000, *H.Wall, *H.Thing, H.Count,
+      H.Where.Min.X, H.Where.Max.X, H.Where.Min.Y, H.Where.Max.Y, H.Where.Min.Z, H.Where.Max.Z));
+     Log(Lines);
+     FString Worst; for (int32 K = 0; K < FMath::Min(3, Hits.Num()); ++K) Worst += FString::Printf(TEXT("; %.0f mm %s in %s"), Hits[K].Depth * 1000, *Hits[K].Thing.Left(60), *Hits[K].Wall);
+     Tell(Hits.IsEmpty(), FString::Printf(TEXT("%d things go into SARO's walls (the log has each)%s"), Hits.Num(), *Worst), 12);
+     return;
+    }
+    M->Player->Place(Places[I].X, Places[I].Z, 0);
+    After(.8, [this, All, Next, Dir, Log, I]
+    {
+     TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("from the %s:"), Places[I].Name));
+     for (const auto& H : S47SaroClip::Run(M->Web->GetWorld(), .02, Lines, Dir / FString::FromInt(I)))
+     {
+      const FString Key = H.Thing + TEXT("|") + H.Wall;
+      if (S47SaroClip::FHit* Kept = All->Find(Key)) { if (H.Depth > Kept->Depth) *Kept = H; }
+      else All->Add(Key, H);
+     }
+     Log(Lines);
+     (*Next)(I + 1);
+    });
+   };
+   (*Next)(0);
+  });
+ });
+
+ // ---- FENCES-INVISIBLE: at SARO, and on the road by the substation (Caliche, the motel and the farm are the same walk) ----
+ const auto Blockers = [this, Log](const FString& Area, const FVector2D& At, const FString& Where)
+ {
+  FStage S; S.From = 11; S.To = 12.5; S.Area = Area; S.Where = [At] { return At; };
+  Go(S, [this, Log, Where]
+  {
+   After(1.0, [this, Log, Where]
+   {
+    TArray<FString> Lines;
+    const TArray<S47Blockers::FBlocker> Found = S47Blockers::Run(M, .35, Lines);
+    Log(Lines);
+    FString First; for (int32 K = 0; K < FMath::Min(3, Found.Num()); ++K) First += FString::Printf(TEXT("; %s %s"), *Found[K].Kind, *Found[K].Id.Left(70));
+    Tell(Found.IsEmpty(), FString::Printf(TEXT("%s: %d blockers with nothing drawn by them (the log has each)%s"), *Where, Found.Num(), *First), 12);
+   });
+  });
+ };
+ E.AddFreeform(Group, TEXT("Invisible blockers at SARO"), TEXT("11:00 in SARO's yard: every walk collider, drive obstacle and kept-out box here whose edge has nothing drawn by it"), [Blockers]
+ { Blockers(TEXT("saro"), FVector2D(10, 14), TEXT("SARO")); });
+ E.AddFreeform(Group, TEXT("Invisible blockers on the road"), TEXT("11:00 by the substation: the same for the road's walk, which holds Caliche, the motel, the substation and the farm"), [Blockers]
+ { Blockers(TEXT("diner"), FVector2D(7896, 520), TEXT("the road")); });
+
+ // ---- STREETLAMPS: each lamp's foot against the ground under it ----
+ E.AddFreeform(Group, TEXT("Street lamps: feet on the ground"), TEXT("11:00 on the highway by SARO: every street lamp's foot measured against the ground under it, in each area it stands in"), [this, Log]
+ {
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(-14, 36); };
+  Go(S, [this, Log]
+  {
+   TArray<FString> Lines;
+   const int32 Bad = S47StreetLamps::MeasureFeet(M->Web, Lines);
+   Log(Lines);
+   Tell(Bad == 0 && Lines.Num() > 1, Lines.Num() ? Lines[0] : FString(TEXT("no street lamps")), 12);
+  });
+ });
+
+ // ---- the views ----
+ E.AddFreeform(Group, TEXT("Dale's window from outside, day"), TEXT("11:00 south of the annex, looking at the office's window"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(.4, 17), Saro3(.4, .55, 10.8), TEXT("Dale's window from the yard: glass, frame and sill, the blind and the room behind it")); });
+ E.AddFreeform(Group, TEXT("Dale's window from inside"), TEXT("11:00 in the office, looking out of the window"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(1.0, 8.0), Saro3(.4, .1, 10.8), TEXT("Dale's window from the office: the same opening, the yard outside")); });
+ E.AddFreeform(Group, TEXT("The substation by day"), TEXT("11:00 at the gate, looking in"), [View]
+ { View(TEXT("diner"), 11, FVector2D(-104, 516), FVector(-110, -.4, 537), TEXT("The substation: fence and its wire, transformers on their pads, insulators, signs, gravel")); });
+ E.AddFreeform(Group, TEXT("The substation from the east"), TEXT("11:00 east of the fence"), [View]
+ { View(TEXT("diner"), 11, FVector2D(-94, 540), FVector(-110, -.4, 537), TEXT("The substation from the side: the yard's walk edge should be the fence")); });
+ E.AddFreeform(Group, TEXT("Highway lamps by day"), TEXT("11:00 on the highway west of SARO"), [View]
+ { View(TEXT("saro"), 11, FVector2D(11, -254), FVector(5.5, 4.5, -264), TEXT("A highway lamp: pole, arm and cobra head")); });
+ E.AddFreeform(Group, TEXT("A lamp's foot"), TEXT("11:00 close to a highway lamp's foot"), [View]
+ { View(TEXT("saro"), 11, FVector2D(8.5, -261), FVector(5.5, -1.6, -264), TEXT("A highway lamp's foot on its concrete, on the ground")); });
+ E.AddFreeform(Group, TEXT("Caliche's lamps by day"), TEXT("11:00 on Main Street"), [View]
+ { View(TEXT("diner"), 11, FVector2D(3, 2138), FVector(-6, 4.5, 2150), TEXT("Main Street's lamps by day")); });
+ E.AddFreeform(Group, TEXT("Dale's window from outside, night"), TEXT("22:00 south of the annex"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 22, Saro(.4, 17), Saro3(.4, .55, 10.8), TEXT("Dale's window at night from the yard")); });
+ E.AddFreeform(Group, TEXT("The substation at night"), TEXT("22:00 at the gate"), [View]
+ { View(TEXT("diner"), 22, FVector2D(-104, 516), FVector(-110, -.4, 537), TEXT("The substation at night")); });
+ E.AddFreeform(Group, TEXT("Highway lamps at night"), TEXT("22:00 on the highway west of SARO"), [View]
+ { View(TEXT("saro"), 22, FVector2D(11, -254), FVector(5.5, 4.5, -264), TEXT("Highway lamps at night: sodium yellow, a warm cone on the road")); });
+ E.AddFreeform(Group, TEXT("SARO's yard lamps at night"), TEXT("22:00 in the service yard"), [View]
+ { View(TEXT("saro"), 22, FVector2D(41, -291), FVector(35.25, 2.2, -298.4), TEXT("The service yard's lamps at night")); });
+ E.AddFreeform(Group, TEXT("Caliche's lamps at night"), TEXT("22:00 on Main Street"), [View]
+ { View(TEXT("diner"), 22, FVector2D(3, 2138), FVector(-6, 4.5, 2150), TEXT("Main Street's lamps at night")); });
+}

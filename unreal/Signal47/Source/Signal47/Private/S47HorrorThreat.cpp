@@ -34,7 +34,8 @@ namespace
  constexpr double WalkReach = 11, RunReach = 20, EngineReach = 45, DriveLost = 20, DriveLoseTime = 2.0;
  constexpr double HeadRate = 2.6, BodyRate = 2.8, ReWarn = 6, WarnGap = 3, Stride = 1.5;
  // Closed yard: the fence collider of Config/Props/substation.json. The gates are part of it.
- constexpr double YardX0 = 7880, YardX1 = 7900, YardZ0 = 529, YardZ1 = 544.2;
+ // FENCES-INVISIBLE-20261108: on the fence posts (+-9.2 by +-7.2, 4.8 cm thick), no longer the gravel bed's edge 0.75 m outside them.
+ constexpr double YardX0 = 7880.75, YardX1 = 7899.25, YardZ0 = 529, YardZ1 = 543.45;
  // Measured front colliders: substation.json control block, S47SubstationFollowup culvert and band post.
  struct FThreatBlock { double X0, X1, Z0, Z1; };
  const FThreatBlock FrontBlocks[] = {{7884.25, 7885.75, 527.26, 528.16}, {7881.15, 7882.85, 527.4, 528.4}, {7880.26, 7880.44, 527.56, 527.74}};

@@ -6,31 +6,25 @@ unreal/Signal47/Content/FreeformTerrain/*.bin filter=lfs diff=lfs merge=lfs -tex
 
 # Preserve the archived PDF byte-for-byte; do not treat PDF syntax as text.
 Docs/DesignBible-2026-10-27/SIGNAL-47-Designbibel.pdf binary
-
 # Editable Sierra motel source and exports.
 unreal/ArtSource/MotelV2/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/MotelV2/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/MotelV2/textures/*.png filter=lfs diff=lfs merge=lfs -text
-
 # Editable photolab detail source and portable exports.
 unreal/ArtSource/PhotoLab/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/PhotoLab/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/PhotoLab/textures/*.png filter=lfs diff=lfs merge=lfs -text
-
 # The CC0 animals (ANIMALS-20261108): Quaternius' glTF, imported by Tools/animals/import_animals.py.
 unreal/Signal47/Tools/animals/src/*.glb filter=lfs diff=lfs merge=lfs -text
-
 # Editable Caliche substation contact detail.
 unreal/Signal47/Tools/substationdetail/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/Signal47/Tools/substationdetail/*.glb filter=lfs diff=lfs merge=lfs -text
 unreal/Signal47/Tools/substationdetail/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/Signal47/Tools/substationdetail/exports/*.glb filter=lfs diff=lfs merge=lfs -text
-
 # Caliche crossing flasher (ENV-03): editable source, exports and maps.
 unreal/ArtSource/TrafficSignal/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/TrafficSignal/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/TrafficSignal/textures/*.png filter=lfs diff=lfs merge=lfs -text
-
 # Editable original cloud-tank bakes and hero-craft sources.
 unreal/ArtSource/FinaleSky/CloudTank-*/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/CloudTank-*/*.png filter=lfs diff=lfs merge=lfs -text
@@ -40,22 +34,21 @@ unreal/ArtSource/FinaleSky/FinalCraft-v3/*.blend filter=lfs diff=lfs merge=lfs -
 unreal/ArtSource/FinaleSky/FinalCraft-v3/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v4/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v4/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
-
 unreal/ArtSource/FinaleSky/FinalCraft-v5/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v5/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
-
 # Review footage and a clean still for the installed UFO finale.
 Docs/Evidence/UnrealDeliveries/UFO_FINALE_2026-10-31/*.mp4 filter=lfs diff=lfs merge=lfs -text
 Docs/Evidence/UnrealDeliveries/UFO_FINALE_2026-10-31/*.png filter=lfs diff=lfs merge=lfs -text
-
 # Editable EastWing architectural shell and authored LOD exports.
 unreal/ArtSource/EastWing/Shell/exports/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/EastWing/Shell/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
-
 # Local CC0 EastWing masonry source maps.
 unreal/ArtSource/EastWing/Shell/Textures/ConcreteBlockWall/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/EastWing/Shell/Textures/ConcreteBlockWall/*.jpg filter=lfs diff=lfs merge=lfs -text
-
 # ImageGen ground originals and engine-size texture maps.
 unreal/ArtSource/Backdrop/photo_sources/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/Backdrop/exports/ground/*.png filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/StreetLamps/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/StreetLamps/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/StreetLamps/textures/*.png filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/StreetLamps/Preview/*.png filter=lfs diff=lfs merge=lfs -text
