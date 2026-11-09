@@ -23,6 +23,7 @@
 #include "S47SaroLampFeet.h"
 #include "S47RouteLampFeet.h"
 #include "S47StreetLamps.h"
+#include "S47StationPhone.h"
 #include "S47CalicheGround.h"
 #include "S47SubstationYard.h"
 #include "S47Fleet.h"
@@ -750,6 +751,10 @@ void AS47Web::BeginPlay()
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
+	// PAYPHONE-MOVE-20261109: the gas station's one payphone (the blue model at the old call anchor) goes in now, while the
+	// CalicheHomes trims it cuts the old exported phone out of still carry their CPU data; S47StreetLamps cuts Caliche's
+	// lamps out of the same batch (g999) below, and its runtime copy has no CPU indices in a cooked build.
+	S47StationPhone::Update(this);
 	// Cinema overlays install after the current CalicheAccess geometry in TownLayer.
 	MotelV2 = FS47MotelV2::Build(this);
 	RadioWoman = FS47RadioWoman::Build(this);
