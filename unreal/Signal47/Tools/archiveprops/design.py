@@ -22,7 +22,7 @@ def part(role, at, parent='annex.interior', local=False, **kw):
                 retire_scope_handle='annex.interior', **kw)
 
 PARTS = {
- 'SM_ArchiveProps_ShelvingStorage': part('Five-tier bolted steel shelving and ordinary archive cartons', [-5.78,0,8.65], retire_geo_ids=[361,362,378,379], retire_node_names=['lic:archive_box','lic:archive_box_lid']),
+ 'SM_ArchiveProps_ShelvingStorage': part('Five-tier bolted steel shelving and ordinary archive cartons', [-5.735,0,8.65], retire_geo_ids=[361,362,378,379], retire_node_names=['lic:archive_box','lic:archive_box_lid']),
  'SM_ArchiveProps_FilingCabinets': part('Three four-drawer cabinets at original footprints', [-4.46,0,10.17], retire_geo_ids=[335,336,337,338,401], retire_node_names=['lic:filing_cabinet']),
  'SM_ArchiveProps_CardIndex': part('Twelve-drawer maintenance index with one open card tray', [-1.25,0,7.95], retire_geo_ids=[329,330,331,332]),
  'SM_ArchiveProps_Bookcase': part('Low walnut bookcase and bound service-reference volumes', [-2.35,0,10.3], retire_geo_ids=[363,364,365,366,367]),

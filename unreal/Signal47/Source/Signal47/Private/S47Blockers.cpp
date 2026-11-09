@@ -17,8 +17,37 @@ namespace S47Blockers
 {
 namespace
 {
- constexpr double Cell = 8, BigSize = 25, Fine = 2;
+ constexpr double Cell = 8, BigSize = 4, Fine = 2;
  struct FDrawn { FBox Box; bool bBig = false; FString Name; };
+ // A standing face of a big mesh (a wall, a fence, a post): its corners in three metres. Flat ground never stands.
+ struct FFace { FVector3f A, B, C; };
+ // Its triangles' corner indices: the render data's, or the editor's source; empty when neither is kept.
+ void Indices(UStaticMesh* Mesh, TArray<uint32>& Out)
+ {
+  Out.Reset();
+  if (const FStaticMeshRenderData* RD = Mesh->GetRenderData(); RD && RD->LODResources.Num() > 0 && RD->LODResources[0].IndexBuffer.GetNumIndices() > 0)
+  {
+   bool bExact = false;
+   const int32 NV = S47SaroClip::Vertices(Mesh, bExact).Num();
+   const uint32 RV = RD->LODResources[0].VertexBuffers.PositionVertexBuffer.GetNumVertices();
+   if (bExact && uint32(NV) == RV) { RD->LODResources[0].IndexBuffer.GetCopy(Out); return; }
+  }
+ }
+ // The triangle's shadow on the ground meets the square (separating axes: the square's two, the triangle's three).
+ bool Meets(const FVector2D T[3], const FBox2D& Sq)
+ {
+  const FVector2D C[4] = { Sq.Min, { Sq.Max.X, Sq.Min.Y }, Sq.Max, { Sq.Min.X, Sq.Max.Y } };
+  const auto Apart = [&](const FVector2D& Axis)
+  {
+   double A0 = 1e18, A1 = -1e18, B0 = 1e18, B1 = -1e18;
+   for (int32 I = 0; I < 3; ++I) { const double D = FVector2D::DotProduct(T[I], Axis); A0 = FMath::Min(A0, D); A1 = FMath::Max(A1, D); }
+   for (int32 I = 0; I < 4; ++I) { const double D = FVector2D::DotProduct(C[I], Axis); B0 = FMath::Min(B0, D); B1 = FMath::Max(B1, D); }
+   return A1 < B0 || B1 < A0;
+  };
+  if (Apart({ 1, 0 }) || Apart({ 0, 1 })) return false;
+  for (int32 I = 0; I < 3; ++I) { const FVector2D E = T[(I + 1) % 3] - T[I]; if (!E.IsNearlyZero() && Apart({ -E.Y, E.X })) return false; }
+  return true;
+ }
  FIntPoint CellOf(double X, double Z, double Size) { return FIntPoint(FMath::FloorToInt(X / Size), FMath::FloorToInt(Z / Size)); }
  // A walk area's name for the area the player is in, and its drive leg's.
  FString WalkOf(const FString& Area) { return Area == TEXT("diner") ? FString(TEXT("road")) : Area; }
@@ -34,7 +63,8 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
  // ---- what is drawn: small things by their boxes in a grid; big ones by their vertices, finer ----
  TArray<FDrawn> Drawn;
  TMap<FIntPoint, TArray<int32>> Grid;
- TMap<FIntPoint, TArray<FVector3f>> BigPoints;
+ TArray<FFace> Faces;
+ TMap<FIntPoint, TArray<int32>> FaceGrid;
  int32 Big = 0;
  for (TActorIterator<AActor> It(World); It; ++It)
  {
@@ -65,10 +95,31 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
     }
     ++Big;
     bool bExact = false;
-    for (const FVector3f& L : S47SaroClip::Vertices(Mesh, bExact))
+    const TArray<FVector3f>& V = S47SaroClip::Vertices(Mesh, bExact);
+    TArray<uint32> Ix; Indices(Mesh, Ix);
+    if (Ix.IsEmpty())
     {
-     const FVector P = S47Three::ToThree(T.TransformPosition(FVector(L)));
-     BigPoints.FindOrAdd(CellOf(P.X, P.Z, Fine)).Add(FVector3f(P));
+     // no triangles to read: its box stands for it, as a small thing's does
+     const int32 Index = Drawn.Add({ Three, true, C->GetName() });
+     const FIntPoint A = CellOf(Three.Min.X, Three.Min.Z, Cell), B = CellOf(Three.Max.X, Three.Max.Z, Cell);
+     for (int32 X = A.X; X <= B.X; ++X) for (int32 Z = A.Y; Z <= B.Y; ++Z) Grid.FindOrAdd(FIntPoint(X, Z)).Add(Index);
+     continue;
+    }
+    for (int32 K = 0; K + 2 < Ix.Num(); K += 3)
+    {
+     if (FMath::Max3(Ix[K], Ix[K + 1], Ix[K + 2]) >= uint32(V.Num())) break;
+     FFace F;
+     F.A = FVector3f(S47Three::ToThree(T.TransformPosition(FVector(V[Ix[K]]))));
+     F.B = FVector3f(S47Three::ToThree(T.TransformPosition(FVector(V[Ix[K + 1]]))));
+     F.C = FVector3f(S47Three::ToThree(T.TransformPosition(FVector(V[Ix[K + 2]]))));
+     const FVector3f N = FVector3f::CrossProduct(F.B - F.A, F.C - F.A);
+     const float Len = N.Size();
+     if (Len < 1e-8f || FMath::Abs(N.Y) / Len > .7f) continue; // flat: ground, a floor, a roof's top
+     const int32 Index = Faces.Add(F);
+     const FIntPoint A = CellOf(FMath::Min3(F.A.X, F.B.X, F.C.X), FMath::Min3(F.A.Z, F.B.Z, F.C.Z), Fine);
+     const FIntPoint B = CellOf(FMath::Max3(F.A.X, F.B.X, F.C.X), FMath::Max3(F.A.Z, F.B.Z, F.C.Z), Fine);
+     if ((B.X - A.X + 1) * (B.Y - A.Y + 1) > 400) continue; // a face hundreds of metres long is a backdrop, not a wall here
+     for (int32 X = A.X; X <= B.X; ++X) for (int32 Z = A.Y; Z <= B.Y; ++Z) FaceGrid.FindOrAdd(FIntPoint(X, Z)).Add(Index);
     }
    }
   }
@@ -100,18 +151,18 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
   const FBox2D Rect(FVector2D(Bk.MinX - Pad, Bk.MinZ - Pad), FVector2D(Bk.MaxX + Pad, Bk.MaxZ + Pad));
   const FVector2D Mid = Rect.GetCenter();
   // The ground (or roof) under its middle: the first visible thing straight down. None: another place's, out of sight now.
-  FHitResult Hit; double GroundY = 0; bool bGround = false;
+  FHitResult Hit; bool bGround = false;
   FCollisionQueryParams Each = Q;
   for (int32 Try = 0; Try < 8; ++Try)
   {
    if (!World->LineTraceSingleByChannel(Hit, S47Three::ToUE(Mid.X, 400, Mid.Y), S47Three::ToUE(Mid.X, -400, Mid.Y), ECC_Visibility, Each)) break;
    UPrimitiveComponent* P = Hit.GetComponent();
-   if (P && P->IsVisible() && !P->bHiddenInGame) { bGround = true; GroundY = S47Three::ToThree(Hit.ImpactPoint).Y; break; }
+   if (P && P->IsVisible() && !P->bHiddenInGame) { bGround = true; break; }
    Each.AddIgnoredComponent(P);
   }
   if (!bGround) { ++Away; continue; }
   ++Seen;
-  // Whatever is drawn standing within Pad of a point (higher than a decal on the ground, lower than far overhead).
+  // Whatever is drawn standing within Pad of a point: a small thing taller than a decal, or a standing face of a big mesh.
   const auto DrawnAt = [&](double PX, double PZ)
   {
    const FBox2D Sq(FVector2D(PX - Pad, PZ - Pad), FVector2D(PX + Pad, PZ + Pad));
@@ -122,14 +173,18 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
      {
       const FBox& D = Drawn[I].Box;
       if (D.Max.X < Sq.Min.X || D.Min.X > Sq.Max.X || D.Max.Z < Sq.Min.Y || D.Min.Z > Sq.Max.Y) continue;
-      if (D.Max.Y < GroundY + .15 || D.Min.Y > GroundY + 6) continue;
-      return true;
-     }
+      if (D.Max.Y - D.Min.Y < .15) continue; // a decal or a flat patch on the ground
+     return true;
+    }
    const FIntPoint A = CellOf(Sq.Min.X, Sq.Min.Y, Fine), B = CellOf(Sq.Max.X, Sq.Max.Y, Fine);
    for (int32 X = A.X; X <= B.X; ++X) for (int32 Z = A.Y; Z <= B.Y; ++Z)
-    if (const TArray<FVector3f>* In = BigPoints.Find(FIntPoint(X, Z)))
-     for (const FVector3f& P : *In)
-      if (P.X >= Sq.Min.X && P.X <= Sq.Max.X && P.Z >= Sq.Min.Y && P.Z <= Sq.Max.Y && P.Y > GroundY + .25 && P.Y < GroundY + 6) return true;
+    if (const TArray<int32>* In = FaceGrid.Find(FIntPoint(X, Z)))
+     for (const int32 I : *In)
+     {
+      const FFace& F = Faces[I];
+      const FVector2D T2[3] = { { F.A.X, F.A.Z }, { F.B.X, F.B.Z }, { F.C.X, F.C.Z } };
+      if (Meets(T2, Sq)) return true;
+     }
    return false;
   };
   // Round its edge every half metre (the edge is what one walks or drives into): the share with nothing drawn by it.

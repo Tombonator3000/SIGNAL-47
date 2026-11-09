@@ -54,11 +54,25 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
    {
     if (I >= int32(UE_ARRAY_COUNT(Places)))
     {
-     TArray<S47SaroClip::FHit> Hits; All->GenerateValueArray(Hits);
-     Hits.Sort([](const S47SaroClip::FHit& A, const S47SaroClip::FHit& B) { return A.Depth > B.Depth; });
-     TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("SARO walls, all rooms: %d things into a wall deeper than 20 mm"), Hits.Num()));
+     TArray<S47SaroClip::FHit> Every; All->GenerateValueArray(Every);
+     Every.Sort([](const S47SaroClip::FHit& A, const S47SaroClip::FHit& B) { return A.Depth > B.Depth; });
+     // What is built into a wall by design is listed apart: the export's own walls, frames and sills (its unnamed batches), door and
+     // window frames, trims, the room shells and partitions, the outside skin, floor grime that runs under a wall, weeds at its foot,
+     // conduit through a partition, and REEL047's fire drawer, which stands in the wall until it is pulled out (archive047.ts).
+     static const TCHAR* const BuiltIn[] = { TEXT("Frame"), TEXT("frame"), TEXT("Bead"), TEXT("Trim"), TEXT("Door"), TEXT("authoredRoom"), TEXT("Overlay"),
+      TEXT("LivedSaroExterior"), TEXT("rampEntrance"), TEXT("AccessDressing"), TEXT("weeds"), TEXT("Conduit"), TEXT("Reel047"), TEXT("partition"), TEXT("Skirting") };
+     const auto IsBuiltIn = [](const FString& Thing)
+     {
+      for (const TCHAR* Word : BuiltIn) if (Thing.Contains(Word, ESearchCase::CaseSensitive)) return true;
+      int32 At = Thing.Find(TEXT("[N")); // an unnamed node of the export: [N123]
+      return At >= 0 && At + 2 < Thing.Len() && FChar::IsDigit(Thing[At + 2]);
+     };
+     TArray<S47SaroClip::FHit> Hits, Built;
+     for (const auto& H : Every) (IsBuiltIn(H.Thing) ? Built : Hits).Add(H);
+     TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("SARO walls, all rooms: %d things into a wall deeper than 20 mm (and %d parts built into walls by design, listed after)"), Hits.Num(), Built.Num()));
      for (const auto& H : Hits) Lines.Add(FString::Printf(TEXT("  %.0f mm into %s: %s, %d vertices at x %.2f..%.2f y %.2f..%.2f z %.2f..%.2f"), H.Depth * 1000, *H.Wall, *H.Thing, H.Count,
       H.Where.Min.X, H.Where.Max.X, H.Where.Min.Y, H.Where.Max.Y, H.Where.Min.Z, H.Where.Max.Z));
+     for (const auto& H : Built) Lines.Add(FString::Printf(TEXT("  built in: %.0f mm into %s: %s"), H.Depth * 1000, *H.Wall, *H.Thing));
      Log(Lines);
      FString Worst; for (int32 K = 0; K < FMath::Min(3, Hits.Num()); ++K) Worst += FString::Printf(TEXT("; %.0f mm %s in %s"), Hits[K].Depth * 1000, *Hits[K].Thing.Left(60), *Hits[K].Wall);
      Tell(Hits.IsEmpty(), FString::Printf(TEXT("%d things go into SARO's walls (the log has each)%s"), Hits.Num(), *Worst), 12);
