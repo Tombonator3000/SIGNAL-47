@@ -1,4 +1,5 @@
 #include "S47StreetLamps.h"
+#include "S47Night.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "CollisionQueryParams.h"
@@ -461,6 +462,105 @@ namespace
  }
 }
 
+namespace
+{
+ // ---- ARRAY-LAMPS: the array field's eleven posts (Exterior.ts array(), arrayLayout.ts LAMPS), in the highway's pole batch ----
+ struct FFieldPost { double X, Z, Height; int32 Dish; };
+ // Where each stands, how tall the old post was (it went from -0.6 to 6.4 or 5.4; its glow 0.5 under the top), and the antenna its
+ // light falls on (S47Lighting: ArrayDishes for the five floods, BuildArrayLighting's Targets for the six): S-03, S-02, S-01, S-04,
+ // S-05, then S-07, S-06, S-09, S-10, S-11, S-12. Each is 11 to 24 m from that antenna's axis; the head, 2.2 m out along the arm, stays
+ // at least 1.5 m clear of a reflector's rim at the head's height, however the antenna turns.
+ const FFieldPost FieldPosts[] = { { 30, -30, 7, 2 }, { -10, -42, 7, 1 }, { -40, -56, 7, 0 }, { 12, -78, 7, 3 }, { 48, -86, 7, 4 },
+  { -70, -94, 6, 6 }, { -33, -100, 6, 5 }, { 60, -146, 6, 8 }, { -52, -158, 6, 9 }, { -4, -190, 6, 10 }, { 94, -110, 6, 11 } };
+ constexpr int32 FieldFloods = 5; // the first five carry the site's floods
+ // A cobra head throws down and out (its peak some 65 degrees from straight down, cut off above the horizontal by the housing): the
+ // spot's axis 40 degrees out from straight down, towards the antenna, its 62 degree cone up to the horizontal.
+ constexpr double FieldAimFromDown = 40;
+ const TCHAR* const FieldPrefix = TEXT("Array");
+ // Each old post whole: the cylinder 0.16 m round at its foot, from -0.6 to its top (the batch's own terms are the site's).
+ FBox FieldBox(const FFieldPost& P) { return FBox(FVector(P.X - .3, -.7, P.Z - .3), FVector(P.X + .3, P.Height - .5, P.Z + .3)); }
+ // The glow over a post's top (ext.glow.points: 0.5 under the top, or at y -999 while ArrayBack has it out), by where it is.
+ int32 FieldGlow(AS47Web* W, const FS47GlowPoints* G, const FFieldPost& P)
+ {
+  if (!G) return INDEX_NONE;
+  const FTransform T = W->NodeWorldThree(G->Node);
+  for (int32 I = 0; I < G->Num(); ++I)
+  {
+   const FVector At = T.TransformPosition(G->Pos[I]);
+   if (FMath::Abs(At.X - P.X) < .05 && FMath::Abs(At.Z - P.Z) < .05 && (FMath::Abs(At.Y - (P.Height - .5)) < .05 || At.Y < -900)) return I;
+  }
+  return INDEX_NONE;
+ }
+ // Triangles of a batch wholly inside each box, from its CPU data only (never read without bAllowCPUAccess). False: not readable.
+ bool CountIn(const UStaticMeshComponent* C, const TArray<FBox>& Boxes, TArray<int32>& Counts)
+ {
+  Counts.Init(0, Boxes.Num());
+  const UStaticMesh* Mesh = C ? C->GetStaticMesh().Get() : nullptr;
+  if (!Mesh || !Mesh->bAllowCPUAccess || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.Num() < 1) return false;
+  const auto& Src = Mesh->GetRenderData()->LODResources[0]; const auto& B = Src.VertexBuffers.PositionVertexBuffer;
+  if (!B.GetVertexData() || Src.IndexBuffer.GetIndexDataSize() == 0) return false;
+  TArray<uint32> Index; Src.IndexBuffer.GetCopy(Index);
+  for (int32 I = 0; I + 2 < Index.Num(); I += 3)
+  {
+   if (FMath::Max3(Index[I], Index[I + 1], Index[I + 2]) >= B.GetNumVertices()) return false;
+   for (int32 J = 0; J < Boxes.Num(); ++J)
+   {
+    bool bIn = true;
+    for (int32 K = 0; K < 3 && bIn; ++K) bIn = Boxes[J].IsInsideOrOn(S47Three::ToThree(FVector(B.VertexPosition(Index[I + K]))));
+    if (bIn) { ++Counts[J]; break; }
+   }
+  }
+  return true;
+ }
+ bool Field(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ {
+  if (FParse::Param(FCommandLine::Get(), TEXT("S47ArrayLampsOld"))) return false;
+  // after Highway, which cut its own poles from the same batch: what is drawn now is that copy, with CPU data
+  UStaticMeshComponent* Batch = NodeMesh(W, 35, 26);
+  const int32 Parent = W->Handle(TEXT("ext.group"));
+  const FS47WebNode* P = W->Node(Parent);
+  if (!Batch || !P || !P->Comp.IsValid() || !Batch->GetComponentTransform().Equals(FTransform::Identity, .001))
+  { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: the array field's pole batch (node 35, g26) or ext.group differs; the old posts stay")); return false; }
+  TArray<FBox> Boxes;
+  for (const FFieldPost& F : FieldPosts) Boxes.Add(FieldBox(F));
+  TArray<int32> Counts;
+  UStaticMesh* Without = Cut(W, Batch, Boxes, Counts);
+  bool bAll = Without != nullptr;
+  for (const int32 N : Counts) bAll &= N >= 12;
+  if (!bAll)
+  {
+   UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: the array field's old posts were not all found in g26 (%s; CPU data %d); the old posts stay"),
+    *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), Batch->GetStaticMesh() && Batch->GetStaticMesh()->bAllowCPUAccess ? 1 : 0);
+   return false;
+  }
+  // Each foot on SARO's ground there (Grounds.ts floorAt: the array is graded flat at the ground's level), the arm to its antenna.
+  TArray<FVector> Feet[2]; TArray<FQuat> Turns[2];
+  for (int32 I = 0; I < UE_ARRAY_COUNT(FieldPosts); ++I)
+  {
+   const FFieldPost& F = FieldPosts[I];
+   const double Y = US47Night::SaroFloorAt(W, F.X, F.Z);
+   FVector2D To(-1, 0);
+   if (F.Dish < W->DishCount()) To = FVector2D(W->DishX(F.Dish) - F.X, W->DishZ(F.Dish) - F.Z).GetSafeNormal();
+   if (To.IsNearlyZero()) To = FVector2D(-1, 0);
+   // the arm's +x turned to To about the pole (y up: a turn by a takes +x to (cos a, 0, -sin a))
+   const int32 Kind = I < FieldFloods ? 0 : 1;
+   Feet[Kind].Add(FVector(F.X, Y, F.Z)); Turns[Kind].Add(FQuat(FVector(0, 1, 0), FMath::Atan2(-To.Y, To.X)));
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp array x %.0f z %.0f: a %.0f m pole on the ground at y %.3f, its arm to dish %d (%.2f, %.2f)"), F.X, F.Z, F.Height, Y, F.Dish, To.X, To.Y);
+  }
+  Without->InitResources(); Batch->SetStaticMesh(Without);
+  // The glow over each old top goes: the bowl and its halo are the lamp now (its colour and place stay, for ArrayBack and SARO's power).
+  int32 Hidden = 0;
+  if (FS47GlowPoints* G = W->Glow(TEXT("ext.glow.points")))
+   for (const FFieldPost& F : FieldPosts)
+    if (const int32 I = FieldGlow(W, G, F); I != INDEX_NONE) { G->SetSize(I, 0.f); ++Hidden; }
+  Raise(W, Parent, TEXT("array"), TEXT("ArrayFlood"), Feet[0], FQuat::Identity, {}, PoleMesh, ArmMesh, HeadMesh, Out, Turns[0], 7. / PoleHeight);
+  Raise(W, Parent, TEXT("arrayPost"), TEXT("ArrayPost"), Feet[1], FQuat::Identity, {}, PoleMesh, ArmMesh, HeadMesh, Out, Turns[1], 6. / PoleHeight);
+  UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the array field's eleven posts are cobra heads on 7 and 6 m poles; %s old triangles cut, %d old glows hidden"),
+   *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), Hidden);
+  return true;
+ }
+}
+
 FLinearColor Sodium() { return S47Three::Hex(0xffa552); }
 
 bool Build(AS47Web* W)
@@ -482,7 +582,8 @@ bool Build(AS47Web* W)
  const bool bTown = Caliche(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
  const bool bYard = Yard(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
  const bool bMotel = MotelLot(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
- return bRoad || bTown || bYard || bMotel;
+ const bool bField = Field(W, PoleMesh, ArmMesh, HeadMesh, Lamps); // ARRAY-LAMPS (after Highway: the same batch)
+ return bRoad || bTown || bYard || bMotel || bField;
 }
 
 TMap<FName, S47ExteriorFixtures::FFixture> Fixtures(AS47Web* W)
@@ -707,6 +808,94 @@ int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit)
    bSpot ? TEXT("on") : TEXT("off"), L.Glow.bLit ? TEXT("lit") : TEXT("dark"), Peak(L.Glow.Emissive), bHalo ? TEXT("shown") : L.Glow.Halo.IsValid() ? TEXT("hidden") : TEXT("(none: no M_WebGlow)")));
  }
  Lines.Add(FString::Printf(TEXT("Street lamp glow: %d measured here, %d lit, %d wrong (%d in other places, not drawn now)"), Measured, Lit, Bad, Away));
+ Lines.Append(Each);
+ return Bad;
+}
+
+// ---- ARRAY-LAMPS ----
+namespace
+{
+ FLamp* FieldLampAt(AS47Web* W, double X, double Z)
+ {
+  TArray<FLamp>* Lamps = W ? All().Find(W) : nullptr;
+  if (!Lamps) return nullptr;
+  for (FLamp& L : *Lamps)
+   if (L.Light.StartsWith(FieldPrefix) && FMath::Square(L.Foot.X - X) + FMath::Square(L.Foot.Z - Z) < 9.0) return &L;
+  return nullptr;
+ }
+ FVector FieldSpot(const FLamp& L) { return L.Emitter + L.Normal * .03; } // as S47ExteriorLighting puts a cobra head's spot
+}
+
+bool FieldHead(AS47Web* W, double X, double Z, FVector& Spot, FVector& Aim)
+{
+ const FLamp* L = FieldLampAt(W, X, Z);
+ if (!L || !L->Head.IsValid()) return false;
+ Spot = FieldSpot(*L);
+ // out along the arm (the head's emitter from the pole, flat), then down
+ FVector Out = L->Emitter - L->Foot; Out.Y = 0;
+ Out = Out.GetSafeNormal();
+ if (Out.IsNearlyZero()) Out = FVector(-1, 0, 0);
+ const double A = FMath::DegreesToRadians(FieldAimFromDown);
+ Aim = Spot + (Out * FMath::Sin(A) + FVector(0, -1, 0) * FMath::Cos(A)) * 4.0;
+ return true;
+}
+
+bool ShineField(AS47Web* W, double X, double Z, const FLinearColor& Emissive, USpotLightComponent* Light)
+{
+ FLamp* L = FieldLampAt(W, X, Z);
+ if (!L || !L->Glow) return false;
+ L->Spot = Light;
+ FLinearColor E = Emissive;
+ // lit exactly when its spot is (MeasureGlow): at the very foot of a feed's ramp a spot that is on keeps the bowl just lit
+ if (Light && Light->GetVisibleFlag() && Light->Intensity > 0 && Peak(E) <= Dark * 2) E = Sodium() * (Dark * 4);
+ Shine(L->Glow, E);
+ return true;
+}
+
+int32 MeasureField(AS47Web* W, TArray<FString>& Lines)
+{
+ if (!W) { Lines.Add(TEXT("Array field lamps: no world")); return 1; }
+ int32 Bad = 0, Built = 0;
+ TArray<FString> Each;
+ // the old posts in the pole batch as it is drawn now
+ TArray<FBox> Boxes;
+ for (const FFieldPost& F : FieldPosts) Boxes.Add(FieldBox(F));
+ TArray<int32> Counts;
+ const bool bRead = CountIn(NodeMesh(W, 35, 26), Boxes, Counts);
+ int32 Left = 0;
+ for (const int32 N : Counts) Left += N;
+ // the old glows over the posts' tops
+ const FS47GlowPoints* G = W->Glow(TEXT("ext.glow.points"));
+ for (int32 I = 0; I < UE_ARRAY_COUNT(FieldPosts); ++I)
+ {
+  const FFieldPost& F = FieldPosts[I];
+  const int32 Gi = FieldGlow(W, G, F);
+  const bool bGlow = G && Gi != INDEX_NONE && G->Size.IsValidIndex(Gi) && G->Size[Gi] > .001f;
+  const FLamp* L = FieldLampAt(W, F.X, F.Z);
+  const UStaticMeshComponent* Head = L ? L->Head.Get() : nullptr;
+  Built += Head != nullptr;
+  bool bOk = !bGlow && bRead && Counts.IsValidIndex(I) && Counts[I] == 0 && Head && L->Pole.IsValid() && L->Arm.IsValid();
+  FString What = FString::Printf(TEXT("old post %s, old glow %s"), !bRead ? TEXT("unread (no CPU data)") : Counts[I] ? *FString::Printf(TEXT("%d triangles LEFT"), Counts[I]) : TEXT("gone"),
+   bGlow ? TEXT("SHOWN") : Gi == INDEX_NONE ? TEXT("not found") : TEXT("hidden"));
+  if (Head)
+  {
+   // the spot's place inside the head's bounds, under the bowl (not down the pole), and the lens and halo there
+   const FBox Box = Head->Bounds.GetBox();
+   const FVector Spot = S47Three::ToUE(FieldSpot(*L));
+   const bool bIn = Box.ExpandBy(5.0).IsInside(Spot) && Spot.Z < Box.Min.Z + 5.0;
+   const USpotLightComponent* S = L->Spot.Get();
+   const double Off = S ? FVector::Dist(S->GetComponentLocation(), Spot) : 0; // centimetres
+   const bool bLens = L->Glow.Lens.IsValid(), bHalo = L->Glow.Halo.IsValid();
+   bOk &= bIn && bLens && bHalo && Off <= 6;
+   What += FString::Printf(TEXT("; head, lens %s, halo %s, the spot's place %s the head under the bowl, its light %s"), bLens ? TEXT("yes") : TEXT("NONE"), bHalo ? TEXT("yes") : TEXT("NONE (no M_WebGlow)"),
+    bIn ? TEXT("in") : TEXT("OUTSIDE"), S ? *FString::Printf(TEXT("%.0f mm from it (%s)"), Off * 10, S->GetVisibleFlag() ? TEXT("on") : TEXT("off")) : TEXT("not bound yet"));
+  }
+  else What += TEXT("; NO HEAD");
+  Bad += !bOk;
+  Each.Add(FString::Printf(TEXT("  %s post %d at x %.0f z %.0f (%.0f m): %s"), bOk ? TEXT("ok") : TEXT("WRONG"), I + 1, F.X, F.Z, F.Height, *What));
+ }
+ Lines.Add(FString::Printf(TEXT("Array field lamps: %d of %d are cobra heads, %s old post triangles left, %d wrong"), Built, int32(UE_ARRAY_COUNT(FieldPosts)),
+  bRead ? *FString::FromInt(Left) : TEXT("(unread)"), Bad));
  Lines.Append(Each);
  return Bad;
 }

@@ -198,6 +198,29 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  { View(TEXT("saro"), 22, FVector2D(11, -254), FVector(5.5, 4.5, -264), TEXT("Highway lamps at night: sodium yellow, a warm cone on the road")); });
  E.AddFreeform(Group, TEXT("SARO's yard lamps at night"), TEXT("22:00 in the service yard"), [View]
  { View(TEXT("saro"), 22, FVector2D(41, -291), FVector(35.25, 2.2, -298.4), TEXT("The service yard's lamps at night")); });
+ // ---- ARRAY-LAMPS: the field's eleven posts are cobra heads now; the one by S-02 from the spine, and every one measured ----
+ E.AddFreeform(Group, TEXT("Array field lamps at night"), TEXT("22:00 on the spine by S-02, looking at its lamp: no old post or glow left, each lamp's head, lens, halo and spot in the head (the log has each)"), [this, Log, Saro, Saro3]
+ {
+  const FVector2D EyeRoad = Saro(-1.5, -36);
+  const FVector Eye = S47FarmWorld::RoadToArea(TEXT("saro"), FVector(EyeRoad.X, 0, EyeRoad.Y));
+  const FVector LookRoad = Saro3(-11.1, 2.5, -44);
+  const FVector Look = S47FarmWorld::RoadToArea(TEXT("saro"), FVector(LookRoad.X, 0, LookRoad.Z));
+  FStage S; S.From = 22; S.To = 23.5; S.Area = TEXT("saro"); S.Where = [Eye] { return FVector2D(Eye.X, Eye.Z); };
+  Go(S, [this, Log, Look, LookRoad]
+  {
+   if (!M->Player) { Tell(false, TEXT("no player")); return; }
+   AimAt(FVector(Look.X, M->Player->FloorY + M->Player->Eye + LookRoad.Y, Look.Z));
+   After(1.2, [this, Log]
+   {
+    TArray<FString> Lines; int32 Lit = 0;
+    const int32 Bad = S47StreetLamps::MeasureField(M->Web, Lines);
+    const FString Field = Lines.Num() ? Lines[0] : FString(TEXT("no field lamps"));
+    const int32 Glow = S47StreetLamps::MeasureGlow(M->Web, Lines, Lit);
+    Log(Lines);
+    Tell(Bad == 0 && Glow == 0 && Lit > 0, FString::Printf(TEXT("%s; %d street lamps lit here, %d glow wrong (the log has each)"), *Field, Lit, Glow), 12);
+   });
+  });
+ });
  E.AddFreeform(Group, TEXT("Caliche's lamps at night"), TEXT("22:00 on Main Street"), [View]
  { View(TEXT("diner"), 22, FVector2D(3, 2138), FVector(-6, 4.5, 2150), TEXT("Main Street's lamps at night")); });
 

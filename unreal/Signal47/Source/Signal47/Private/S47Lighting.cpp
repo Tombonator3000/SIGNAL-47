@@ -25,6 +25,7 @@
 #include "S47Geo.h"
 #include "S47Json.h"
 #include "S47Lookdev.h"
+#include "S47StreetLamps.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -196,16 +197,21 @@ void AS47Web::BuildArrayLighting()
 	{
 		const int32 Point = I + 5, Dish = Targets[I];
 		if (!G->Pos.IsValidIndex(Point) || Dish >= DishCount()) continue;
-		const FVector At = Transform.TransformPosition(G->Pos[Point]);
+		FVector At = Transform.TransformPosition(G->Pos[Point]);
 		if (At.Y < -900) continue;
+		// ARRAY-LAMPS: with a cobra head on the post (S47StreetLamps) the source is in its bowl, thrown down and out over the antenna
+		FVector Spot, Aim;
+		const bool bHead = S47StreetLamps::FieldHead(this, At.X, At.Z, Spot, Aim);
+		if (bHead) At = Spot;
 		USpotLightComponent* L = NewObject<USpotLightComponent>(this);
 		L->SetupAttachment(GetRootComponent());
 		L->SetMobility(EComponentMobility::Movable);
 		L->SetIntensityUnits(ELightUnits::Candelas);
 		L->SetIntensity(0);
 		L->SetLightColor(S47Three::Hex(0xff9a45));
-		L->SetWorldLocationAndRotation(S47Three::ToUE(At), S47Three::DirToUE(DishBowlTarget(*this, Dish) - At).Rotation());
-		L->SetInnerConeAngle(Cones[I] * 0.68f); L->SetOuterConeAngle(Cones[I]);
+		L->SetWorldLocationAndRotation(S47Three::ToUE(At), S47Three::DirToUE((bHead ? Aim : DishBowlTarget(*this, Dish)) - At).Rotation());
+		if (bHead) { L->SetInnerConeAngle(S47StreetLamps::FieldCone * 0.4f); L->SetOuterConeAngle(S47StreetLamps::FieldCone); }
+		else { L->SetInnerConeAngle(Cones[I] * 0.68f); L->SetOuterConeAngle(Cones[I]); }
 		L->SetAttenuationRadius(3200.f);
 		L->SetSourceRadius(18.f); L->SetSoftSourceRadius(12.f);
 		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
@@ -264,11 +270,21 @@ void AS47Web::UpdateArrayLighting()
 		const bool bGlow = Transform.TransformPosition(G->Pos[P.Glow]).Y > -900 && FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B) > 0.0001f;
 		const bool bOn = bArea && Dist < 200.f && K > 0.001f && (bGlow || bRed);
 		if (L->IsVisible() != bOn) L->SetVisibility(bOn);
-		if (!bOn) continue;
-		L->SetWorldRotation(S47Three::DirToUE(DishBowlTarget(*this, P.Dish) - P.At).Rotation());
+		// ARRAY-LAMPS: a cobra head's bowl and halo carry the same feed at any distance (the light on the ground only near)
+		FVector Spot, Aim;
+		const bool bHead = S47StreetLamps::FieldHead(this, P.At.X, P.At.Z, Spot, Aim);
+		const float Feed = bArea && K > 0.001f && (bGlow || bRed) ? K * (bRed ? 1.f : FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B)) : 0.f;
+		if (!bOn)
+		{
+			if (bHead) S47StreetLamps::ShineField(this, P.At.X, P.At.Z, (C / ColorGain) * (6.f * Feed), L);
+			continue;
+		}
+		L->SetWorldRotation(S47Three::DirToUE((bHead ? Aim : DishBowlTarget(*this, P.Dish)) - P.At).Rotation());
 		L->SetLightColor(C / ColorGain);
 		L->SetIntensity(480.f * K * ColorGain * (bRed ? 1.f : FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B)));
-		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < 37.f));
+		// (a head keeps the exterior lamps' shadow reach, critics round 8: drawn within 110 m, dropped past 130 m)
+		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < 37.f) && (!bHead || (L->CastShadows ? Dist < 130.f : Dist < 110.f)));
+		if (bHead) S47StreetLamps::ShineField(this, P.At.X, P.At.Z, (C / ColorGain) * (6.f * Feed), L);
 	}
 }
 
@@ -691,30 +707,52 @@ void AS47Web::SyncFloodLights()
 		const bool bArray = F.Key == TEXT("site") && P.Slot < UE_ARRAY_COUNT(ArrayDishes) && DishCount() > ArrayDishes[P.Slot];
 		FVector Pos(V.R, V.G, V.B);
 		if (bArray && Pos.Y > -900) Pos.Y = 6.5;
+		// ARRAY-LAMPS: with a cobra head on the flood's post (S47StreetLamps) the source is in its bowl, thrown down and out over the
+		// antenna's apron and pedestal, and the bowl and halo carry the flood's feed at any distance (the light on the ground only near)
+		FVector Spot, Aim;
+		const bool bHead = bArray && Pos.Y > -900 && S47StreetLamps::FieldHead(this, Pos.X, Pos.Z, Spot, Aim);
+		if (bHead) Pos = Spot;
 		const float Dist = FVector::Distance(Pos, Camera);
 		bool bArea = PoolRoots[P.Set].IsEmpty();
 		for (const int32 Root : PoolRoots[P.Set]) if (Nodes.IsValidIndex(Root) && Nodes[Root].bVis) bArea = true;
-		bool bOn = DayMask > .0001f && bArea && V.A > 0.001f && F.Scale > 0 && Pos.Y > -900 && Dist < 180 && !SuppressedPools.Contains(PoolId(P.Set, P.Slot));
+		const bool bFed = DayMask > .0001f && bArea && V.A > 0.001f && F.Scale > 0 && Pos.Y > -900 && !SuppressedPools.Contains(PoolId(P.Set, P.Slot));
+		bool bOn = bFed && Dist < 180;
 		// Shared pools are copies for materials in the adjacent area, never extra fixtures.
 		for (const FVector& O : Occupied) if (Pos.Equals(O, 0.12)) { bOn = false; break; }
 		if (bOn) Occupied.Add(Pos);
 		L->SetVisibility(bOn);
-		if (!bOn) continue;
+		const auto ShineHead = [&]
+		{
+			if (!bHead) return;
+			const float ColorGain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
+			const float Feed = bFed ? DayMask * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) : 0.f;
+			S47StreetLamps::ShineField(this, Pos.X, Pos.Z, (C / ColorGain) * (6.f * Feed), Cast<USpotLightComponent>(L));
+		};
+		if (!bOn) { ShineHead(); continue; }
 		P.Reach = FMath::Max(P.Reach, V.A);
 		L->SetWorldLocation(S47Three::ToUE(Pos));
-		if (bArray) L->SetWorldRotation(S47Three::DirToUE(ArrayBowlTarget(*this, P.Slot) - Pos).Rotation());
+		if (bArray) L->SetWorldRotation(S47Three::DirToUE((bHead ? Aim : ArrayBowlTarget(*this, P.Slot)) - Pos).Rotation());
+		if (USpotLightComponent* S = bArray ? Cast<USpotLightComponent>(L) : nullptr)
+		{
+			S->SetInnerConeAngle(bHead ? S47StreetLamps::FieldCone * 0.4f : ArrayCones[P.Slot] * 0.68f);
+			S->SetOuterConeAngle(bHead ? S47StreetLamps::FieldCone : ArrayCones[P.Slot]);
+		}
 		const float ColorGain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		L->SetLightColor(C / ColorGain);
 		const bool bInside = F.Key == TEXT("annex") || F.Key == TEXT("lab") || F.Key == TEXT("hut") || F.Key == TEXT("cab") || F.Key == TEXT("motel");
 		const float Gain = F.Key == TEXT("cab") ? 0.3f : bInside ? 12.f : F.Key == TEXT("diner") ? 18.f : 50.f;
 		// Keep the exact story dimming and red pulse state, but calibrate the real field floods
 		// for their 12-25 m throw onto the reflector backs rather than a pool beneath the post.
-		L->SetIntensity(DayMask * (bArray ? ArrayCandelas[P.Slot] * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) * ColorGain : V.A * F.Scale * Gain * ColorGain));
+		// (ARRAY-LAMPS: a head over the apron throws a few metres, not 24 m onto S-03's back: at most a highway head's 480 cd and some)
+		const float Candela = bHead ? FMath::Min(ArrayCandelas[P.Slot], 600.f) : ArrayCandelas[P.Slot];
+		L->SetIntensity(DayMask * (bArray ? Candela * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) * ColorGain : V.A * F.Scale * Gain * ColorGain));
 		const float Limit = F.Key == TEXT("cab") ? 2.f : F.Key == TEXT("hut") ? 5.f : bInside ? 7.f : F.Key == TEXT("diner") ? 8.f : 70.f;
 		L->SetAttenuationRadius((bArray ? ArrayRadii[P.Slot] : FMath::Min(Limit, P.Reach * 1.6f + 8.f)) * 100.f);
 		// A light that reaches the eye retains its occlusion, including walls behind the camera.
 		const float Reach = L->AttenuationRadius * 0.01f;
-		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < Reach + 5.f));
+		// (a head keeps the exterior lamps' shadow reach, critics round 8: drawn within 110 m, dropped past 130 m)
+		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < Reach + 5.f) && (!bHead || (L->CastShadows ? Dist < 130.f : Dist < 110.f)));
+		ShineHead();
 	}
 }
 

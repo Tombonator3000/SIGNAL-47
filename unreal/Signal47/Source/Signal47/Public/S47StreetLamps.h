@@ -23,7 +23,7 @@ class UStaticMeshComponent;
 // draws that slot's material (the lens's dynamic one included), and a faint sodium halo hangs just under each bowl, lit with it.
 namespace S47StreetLamps
 {
- // After S47RouteLampFeet::Build, which made the footings the poles stand on.
+ // After S47RouteLampFeet::Build, which made the footings the poles stand on. (ARRAY-LAMPS: and the array field's eleven, below.)
  SIGNAL47_API bool Build(AS47Web* W);
  // The heads by the name of the exterior light that belongs to each ("Highway01".."Highway08"), for S47ExteriorLighting.
  SIGNAL47_API TMap<FName, S47ExteriorFixtures::FFixture> Fixtures(AS47Web* W);
@@ -70,4 +70,24 @@ namespace S47StreetLamps
  // -S47SelfTest: the imported head (when it is there): every LOD draws a lens slot, no slot is left on WorldGridMaterial, the
  // emitter and the spot's place lie in the head's bounds under the lens, and the lens and halo follow on and off.
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
+
+ // ---- ARRAY-LAMPS (Tom, 9 November: the lamps out on the array field were only sticks with a light on top) ----
+ // Exterior.ts array(): eleven posts beside the tracks (arrayLayout.ts LAMPS), 7 m for the first five and 6 m for the rest, each a
+ // six-sided cylinder in the highway's pole batch (node 35, g26) with a 2.6 m sodium glow (ext.glow.points 0..10) just over its top.
+ // The first five carry the site's floods 0..4 (S47Lighting SyncFloodLights), the other six BuildArrayLighting's spots. Each post
+ // becomes a cobra head on a davit arm, on a steel pole cut to the old post's height, the arm turned to the antenna its light serves,
+ // its foot on SARO's ground (US47Night::SaroFloorAt). The lights keep their feeds (the floods' pools, ArrayBack's red and dark, SARO's
+ // power, dusk) and move into the bowl, aimed down and out over the antenna's apron and pedestal, as a cobra head throws (its housing
+ // cuts it off above the horizontal); the glow over the old top goes. -S47ArrayLampsOld: the old posts.
+ // The cone of a field head's spot (outer, degrees; the inner is 0.4 of it, a refractor's soft edge).
+ inline constexpr float FieldCone = 62.f;
+ // The field's lamp whose pole stands within 3 m of (X, Z), site metres: where its spot goes (in the bowl) and a point it aims at.
+ // False: no head there (no models, the old posts, or none built at that place).
+ SIGNAL47_API bool FieldHead(AS47Web* W, double X, double Z, FVector& Spot, FVector& Aim);
+ // That lamp's lens and halo lit so (linear; black: dark), and the spot that lights from it (for MeasureGlow). Call it each frame,
+ // lit or dark (the halo keeps its size far off). False: no head there.
+ SIGNAL47_API bool ShineField(AS47Web* W, double X, double Z, const FLinearColor& Emissive, USpotLightComponent* Light);
+ // The field's lamps: no old post left in the pole batch, no old glow over a post's top, and every lamp a head with a lens, a halo
+ // and its spot inside the head under the bowl. Lines: a summary first, a line a lamp. Returns how many are wrong.
+ SIGNAL47_API int32 MeasureField(AS47Web* W, TArray<FString>& Lines);
 }
