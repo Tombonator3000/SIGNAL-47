@@ -92,7 +92,7 @@ private:
 	// the tracks round it by morning; the rubber spaceman on the dash; the player's picture in the souvenir shop's window.
 	TArray<TWeakObjectPtr<UStaticMeshComponent>> LureParts, Spaceman, PrintParts;
 	TWeakObjectPtr<class UTextRenderComponent> PrintWords;
-	static constexpr int32 LuresDrawn = 4, TracksPerLure = 6;
+	static constexpr int32 LuresDrawn = 4, TracksPerLure = 6, LureBits = 3; // the salt block, its licked hollow, the sack
 	double ThingsIn = 0;
 	void StepThings();
 	// Where something went on that the player was near enough to know of: "place:night" (FS47EventPlaces' places). Earl's tip list
