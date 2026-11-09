@@ -103,6 +103,45 @@ namespace
   }
  }
  double Gap(const FSample& S) { return S.bGround ? (S.Bottom - S.Ground) / 100 : 0; } // metres, positive: floating
+ // One edge of the footprint at its wall. The bounding box is not the wall: an awning, a sign or a step can stand out past it
+ // (sweep 1: a stem wall under the bounding edge stood out in front of the Feed & Seed and past its corner). Rays at 40 cm over the
+ // shell's foot, from outside in, every 25 cm along the edge, against the shell alone: the wall is where most of them stop, and it
+ // runs as far as they stop there. Then the ground just outside it at its two ends and middle, and the gap there.
+ struct FWallEdge { bool bWall = false; double Face = 0, From = 0, To = 0, Foot = 0, Low = 0, Worst = -1e9; FVector Along = FVector::ZeroVector, Inward = FVector::ZeroVector, Start = FVector::ZeroVector; };
+ FWallEdge WallEdge(UWorld* World, const FBuilding& B, const TArray<FBuilding>& All, const TArray<FSample>& S, int32 E)
+ {
+  FWallEdge W;
+  const FSample& A = S[E]; const FSample& M = S[E + 4]; const FSample& Z = S[(E + 1) % 4];
+  const FTransform T = B.C->GetComponentTransform();
+  W.Along = Z.Local - A.Local; W.Inward = M.In; W.Start = A.Local;
+  const double Span = W.Along.Size();
+  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47CalicheWall), true);
+  TArray<TPair<double, double>> Hits; // along (0..1), depth in from the bounding edge (cm)
+  for (double D = 15; D <= Span - 15; D += 25)
+  {
+   const FVector P = A.Local + W.Along * (D / Span) + FVector(0, 0, 40);
+   FHitResult H;
+   if (B.C->LineTraceComponent(H, T.TransformPosition(P - W.Inward * 150), T.TransformPosition(P + W.Inward * 250), Q))
+    Hits.Add({ D / Span, FVector::DotProduct(T.InverseTransformPosition(H.ImpactPoint) - P, W.Inward) });
+  }
+  if (Hits.Num() < 3) return W;
+  TArray<double> Depths; for (const auto& H : Hits) Depths.Add(H.Value); Depths.Sort();
+  W.Face = Depths[Depths.Num() / 2];
+  double From = 1, To = 0; int32 On = 0;
+  for (const auto& H : Hits) if (FMath::Abs(H.Value - W.Face) < 20) { From = FMath::Min(From, H.Key); To = FMath::Max(To, H.Key); ++On; }
+  if (On < 3 || W.Face > 150) return W;
+  W.From = From; W.To = To; W.Foot = FMath::Max3(A.Bottom, M.Bottom, Z.Bottom);
+  W.Low = 1e9; int32 Found = 0;
+  for (const double U : { From, (From + To) / 2, To })
+  {
+   const FVector Out = T.TransformPosition(A.Local + W.Along * U + W.Inward * (W.Face - 12));
+   double G = 0; FString What;
+   if (!Ground(World, FVector(Out.X, Out.Y, W.Foot + 300), 1300, All, G, What)) continue;
+   ++Found; W.Low = FMath::Min(W.Low, G); W.Worst = FMath::Max(W.Worst, (W.Foot - G) / 100);
+  }
+  W.bWall = Found >= 2;
+  return W;
+ }
 }
 
 void Build(AS47Web* W)
@@ -122,42 +161,13 @@ void Build(AS47Web* W)
   const FTransform T = B.C->GetComponentTransform();
   for (int32 E = 0; E < 4; ++E)
   {
-   const FSample& A = S[E]; const FSample& M = S[E + 4]; const FSample& Z = S[(E + 1) % 4];
-   if (FMath::Max3(Gap(A), Gap(M), Gap(Z)) < FloatFrom) continue;
-   // The bounding box is not the wall: an awning, a sign or a step can stand out past it (sweep 1: a stem wall under the bounding
-   // edge stood out in front of the Feed & Seed and past its corner). Find the wall itself: rays at 40 cm over the shell's foot from
-   // outside in, every 25 cm along the edge, against the shell alone. The wall is where most of them stop; the stem wall runs as
-   // far along it as they stop there, its outer face 2 cm behind the wall's face.
-   const FVector Along = Z.Local - A.Local, Inward = M.In;
-   const double Span = Along.Size();
-   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47CalicheWall), true);
-   TArray<TPair<double, double>> Hits; // along (0..1), depth in from the bounding edge (cm)
-   for (double D = 15; D <= Span - 15; D += 25)
-   {
-    const FVector P = A.Local + Along * (D / Span) + FVector(0, 0, 40);
-    FHitResult H;
-    if (B.C->LineTraceComponent(H, T.TransformPosition(P - Inward * 150), T.TransformPosition(P + Inward * 250), Q))
-     Hits.Add({ D / Span, FVector::DotProduct(T.InverseTransformPosition(H.ImpactPoint) - P, Inward) });
-   }
-   if (Hits.Num() < 3) { UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %s edge %d: the wall is not found by rays (%d); no stem wall"), *B.Name, E, Hits.Num()); continue; }
-   TArray<double> Depths; for (const auto& H : Hits) Depths.Add(H.Value); Depths.Sort();
-   const double Face = Depths[Depths.Num() / 2];
-   double From = 1, To = 0; int32 On = 0;
-   for (const auto& H : Hits) if (FMath::Abs(H.Value - Face) < 20) { From = FMath::Min(From, H.Key); To = FMath::Max(To, H.Key); ++On; }
-   if (On < 3 || Face > 150) continue;
-   // the ground just outside the wall at its two ends and middle, and the gap there
-   const double Foot = FMath::Max3(A.Bottom, M.Bottom, Z.Bottom);
-   double Low = 1e9, Worst = -1e9; int32 Found = 0;
-   for (const double U : { From, (From + To) / 2, To })
-   {
-    const FVector Out = T.TransformPosition(A.Local + Along * U + Inward * (Face - 12));
-    double G = 0; FString What;
-    if (!Ground(World, FVector(Out.X, Out.Y, Foot + 300), 1300, All, G, What)) continue;
-    ++Found; Low = FMath::Min(Low, G); Worst = FMath::Max(Worst, (Foot - G) / 100);
-   }
-   if (Found < 2 || Worst < FloatFrom || Worst > StemUpTo) continue;
+   if (FMath::Max3(Gap(S[E]), Gap(S[E + 4]), Gap(S[(E + 1) % 4])) < FloatFrom) continue;
+   const FWallEdge WE = WallEdge(World, B, All, S, E);
+   if (!WE.bWall) { UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: %s edge %d: the wall is not found by rays; no stem wall"), *B.Name, E); continue; }
+   if (WE.Worst < FloatFrom || WE.Worst > StemUpTo) continue;
+   const FVector Along = WE.Along, Inward = WE.Inward; const double Span = Along.Size(), Face = WE.Face, From = WE.From, To = WE.To, Foot = WE.Foot, Low = WE.Low, Worst = WE.Worst;
    const double Thick = 20, Length = (To - From) * Span + 20; // (each end ray stands 25 cm short of the next; 10 cm more each way)
-   const FVector CentreLocal = A.Local + Along * ((From + To) / 2) + Inward * (Face + 2 + Thick / 2);
+   const FVector CentreLocal = WE.Start + Along * ((From + To) / 2) + Inward * (Face + 2 + Thick / 2);
    const double Top = Foot + 5, Bottom = Low - 20;
    FVector Centre = T.TransformPosition(CentreLocal); Centre.Z = (Top + Bottom) / 2;
    const bool bAlongX = FMath::Abs(Along.X) > FMath::Abs(Along.Y);
@@ -209,12 +219,21 @@ int32 Measure(AS47Web* W, TArray<FString>& Lines, FVector* WorstAt)
   }
   const int32 Stem = Stems.FindRef(B.Name.Replace(TEXT(":"), TEXT("_")));
   Stemmed += Stem > 0;
-  // floating: a sample over 3 cm above the ground with no stem wall under that building
-  const bool bBad = Float > 0 && Stem == 0;
+  // at the wall itself (the bounding corners can be an awning's or a step's): the worst gap along any edge's wall
+  double AtWall = -1e9; FString Walls;
+  for (int32 E = 0; E < 4; ++E)
+  {
+   const FWallEdge WE = WallEdge(World, B, All, S, E);
+   Walls += WE.bWall ? FString::Printf(TEXT(" %+.0f"), WE.Worst * 1000) : FString(TEXT(" -"));
+   if (WE.bWall) AtWall = FMath::Max(AtWall, WE.Worst);
+  }
+  // floating: a wall over 3 cm above the ground outside it, and no stem wall under that building
+  const bool bBad = AtWall >= FloatFrom && Stem == 0;
+  Float = AtWall >= FloatFrom ? 1 : 0;
   Floating += bBad;
   const FVector At = S47Three::ToThree(B.C->GetComponentLocation());
-  Each.Add(FString::Printf(TEXT("  %s %s at x %.1f z %.1f: foot y %.2f; gap at corners and edge middles (mm, + floats):%s; worst %+.0f mm, deepest %+.0f mm; ground falls %.2f m across it; %d stem walls; ground under the first corner: %s"),
-   bBad ? TEXT("FLOATS") : Float > 0 ? TEXT("stemmed") : TEXT("ok"), *B.Name, At.X, At.Z, S.Num() ? S[0].Bottom / 100 : 0., *Gaps,
+  Each.Add(FString::Printf(TEXT("  %s %s at x %.1f z %.1f: foot y %.2f; at each wall (mm, + floats):%s; at the bounding corners and edge middles:%s; worst %+.0f mm, deepest %+.0f mm; ground falls %.2f m across it; %d stem walls; ground under the first corner: %s"),
+   bBad ? TEXT("FLOATS") : Float > 0 ? TEXT("stemmed") : TEXT("ok"), *B.Name, At.X, At.Z, S.Num() ? S[0].Bottom / 100 : 0., *Walls, *Gaps,
    Found ? Worst * 1000 : 0., Found ? Deepest * 1000 : 0., Found ? GroundHi - GroundLo : 0., Stem, S.Num() && S[0].bGround ? *S[0].On : TEXT("nothing")));
  }
  // M4's temporary boxes and the town's own are listed, never changed.

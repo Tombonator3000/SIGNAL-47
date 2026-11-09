@@ -380,7 +380,10 @@ namespace
   constexpr double PoleX = -28.4, OldHeight = 6.6;
   const int32 Parent = W->Handle(TEXT("world.motel.group"));
   struct FBatch { int32 Node, Geo, Least; UStaticMeshComponent* C = nullptr; UStaticMesh* Without = nullptr; TArray<int32> Counts; };
-  FBatch Batches[] = { { 678, 463, 12 }, { 676, 461, 6 }, { 685, 470, 2 } };
+  // (sweep 2: node 685 had no CPU data at runtime and no lens was found in it; the lens may as well be in 687, g472, the same lamps
+  // material, which TownBuildings retires. The lenses are cut where they are found and the lamps go on without them otherwise.)
+  FBatch Batches[] = { { 678, 463, 12 }, { 676, 461, 6 } };
+  FBatch Lenses[] = { { 685, 470, 2 }, { 687, 472, 2 } };
   if (!W->Node(Parent)) return false;
   TArray<FBox> Boxes;
   for (const double Z : Zs) Boxes.Add(FBox(FVector(-29.9, -.3, Z - .3), FVector(-28.15, OldHeight + .15, Z + .3)));
@@ -397,6 +400,17 @@ namespace
     return false;
    }
   }
+  TArray<FBatch*> Lens;
+  for (FBatch& B : Lenses)
+  {
+   B.C = NodeMesh(W, B.Node, B.Geo);
+   B.Without = B.C ? Cut(W, B.C, Boxes, B.Counts) : nullptr;
+   bool bAll = B.Without != nullptr;
+   for (const int32 N : B.Counts) bAll &= N >= B.Least;
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: motel lot lenses in node %d g%d: %s (CPU data %d, shown %d)"), B.Node, B.Geo,
+    *FString::JoinBy(B.Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), B.C && B.C->GetStaticMesh() && B.C->GetStaticMesh()->bAllowCPUAccess ? 1 : 0, B.C && B.C->IsVisible() ? 1 : 0);
+   if (bAll) Lens.Add(&B);
+  }
   UWorld* World = W->GetWorld();
   const FTransform Court = W->NodeWorldThree(Parent);
   TArray<FVector> Feet;
@@ -410,6 +424,7 @@ namespace
    UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp motel lot z %.0f stands on %s at y %.3f"), Z, *What, Y);
   }
   for (FBatch& B : Batches) { B.Without->InitResources(); B.C->SetStaticMesh(B.Without); }
+  for (FBatch* B : Lens) { B->Without->InitResources(); B->C->SetStaticMesh(B->Without); }
   Raise(W, Parent, TEXT("motel"), TEXT("CourtLot"), Feet, FQuat(FVector(0, 1, 0), PI) /* the arm west, as the old one */, {}, PoleMesh, ArmMesh, HeadMesh, Out, {}, OldHeight / PoleHeight);
   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the motel lot's two lamps are cobra heads on 6.6 m poles"));
   return true;
