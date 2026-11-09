@@ -191,7 +191,9 @@ FString FS47CaseFieldTests::Objective()const
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
  if(Test==1&&R.bGateTampered)return TEXT("GATE CONTROL DISTURBED / The numbered seal or strips were disturbed after preparation. Closing the gate does not reseal it. OPS / CASE BOARD: cancel this plan and prepare a new control, or inspect after the window to retain the incomplete result.");
  const double Now=M->Freeform->Clock();
- if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times+TEXT(". A time jump through the window supplies no observation.");
+ // TONIGHT-NOTE-20261109: said plainly; resting or waiting past the window records nothing (Valid needs it all observed)
+ if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times
+  +(Test==0?TEXT(". Skipping time past the window counts for nothing; be in the room for it."):TEXT(". Skipping time past the window counts for nothing; stay up through it."));
  if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window.")
   :TEXT("ARRAY SERVICE GATE: INSPECT THE TAPE AND TRACKING STRIPS. ")+(R.Gaps>0||R.bGateTampered?FString(TEXT("Control incomplete: unobserved time or operator disturbance; inspection records no negative result.")):FString(TEXT("The active window is complete.")));
  if(Now>=R.End)return TEXT("ROOF CONTROL INCOMPLETE: THE LISTENING WINDOW ENDED. Plan the roof test again; no silence or cause is inferred from missed time.");

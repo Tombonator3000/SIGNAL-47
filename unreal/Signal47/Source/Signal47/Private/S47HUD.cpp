@@ -13,6 +13,7 @@
 #include "S47FieldRadio.h"
 #include "S47DaleVoice.h"
 #include "S47HudGauges.h"
+#include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
 #include "S47Fatigue.h"
@@ -270,6 +271,7 @@ void AS47HUD::Start()
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
 		bOk &= S47NightTiers::SelfTest(Lines); // (TIERS-20261109: hint, glimpse, full by the clock and the week)
+		bOk &= S47TonightNote::SelfTest(Lines); // (TONIGHT-NOTE-20261109: the pause menu's note: the next step, done ticked, the spoiler limits)
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);

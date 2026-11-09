@@ -1,5 +1,5 @@
 #pragma once
-
+#include "S47TonightNote.h" // (TONIGHT-NOTE-20261109; on the blank line, so that the generated header's lines stay)
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "S47Docs.h"
@@ -78,7 +78,7 @@ struct FS47PauseOpts
 	FString CaseLine;                     // "CASE 1 · SAVED 2 MIN AGO"
 	FString Objective;                    // the current objective, "CONTROL ROOM // THE SUPERVISOR LINE IS RINGING"
 	TArray<FString> OpenTasks;            // tonight's tasks not done yet
-	FString LastNote;                     // the latest note in the notebook
+	FString LastNote; S47TonightNote::FNote Note; // the latest note in the notebook; TONIGHT-NOTE-20261109: tonight's plan (S47TonightNote)
 };
 // UI.chapterCard
 struct FS47ChapterCardOpts { FString Closed, Recap, Next, Title, Clock; };

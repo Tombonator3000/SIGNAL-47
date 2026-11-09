@@ -14,6 +14,7 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SLeafWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SWindow.h"
 #include "Widgets/Text/STextBlock.h"
@@ -372,6 +373,36 @@ namespace S47MenusLocal
 		}
 	};
 
+	// TONIGHT-NOTE-20261109: the mark before a line of the note: a typed box, ticked by hand when it is done, and the supervisor's red
+	// pencil arrow before the next step
+	class SS47NoteMark : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47NoteMark) {}
+			SLATE_ARGUMENT(S47TonightNote::EMark, Mark)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& InArgs) { Mark = InArgs._Mark; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(40, 22) * S47Theme::U; }
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override
+		{
+			S47_USING_THEME
+			const auto Line = [&](TArray<FVector2f> P, const FLinearColor& C, float Th) { FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), MoveTemp(P), ESlateDrawEffect::None, C, true, Th); };
+			const float X = 22 * U, Y = 5 * U, B = 12 * U;
+			Line({ { X, Y }, { X + B, Y }, { X + B, Y + B }, { X, Y + B }, { X, Y } }, Ink(Mark == S47TonightNote::EMark::Done ? 0.35f : 0.6f), 1.2f * U);
+			if (Mark == S47TonightNote::EMark::Done)
+				Line({ { X + 1.5f * U, Y + 5.5f * U }, { X + 5.f * U, Y + 10.5f * U }, { X + 15.f * U, Y - 4.f * U } }, Css(0x233a7a, 0.95f), 2.2f * U);
+			if (Mark == S47TonightNote::EMark::Next)
+			{
+				const float M = Y + B * 0.5f;
+				Line({ { 1.f * U, M + 0.5f * U }, { 17.f * U, M } }, Css(0x8a3b2c), 2.f * U);
+				Line({ { 11.5f * U, M - 4.5f * U }, { 17.f * U, M }, { 11.f * U, M + 4.5f * U } }, Css(0x8a3b2c), 2.f * U);
+			}
+			return Layer;
+		}
+	private:
+		S47TonightNote::EMark Mark = S47TonightNote::EMark::Open;
+	};
+
 	// the strip on the left: rgba(5,7,13,.96) to .86, with a thin amber line on its right
 	class SS47Strip : public SCompoundWidget
 	{
@@ -440,13 +471,59 @@ void SS47Pause::Construct(const FArguments& InArgs)
 	FString Place, Doing = P->Objective;
 	if (P->Objective.Split(TEXT(" // "), &Place, &Doing)) Place = Place.TrimStartAndEnd();
 	if (Doing.IsEmpty() && P->OpenTasks.Num()) Doing = P->OpenTasks[0];
-	const bool bCard = !Doing.IsEmpty() || !P->LastNote.IsEmpty();
+	// TONIGHT-NOTE-20261109: the night's plan as the supervisor types it (S47TonightNote): each line's room and window, done ticked
+	// and struck, the next step under the red arrow; then what else is open, and what the clock allows now in red pencil. The
+	// objective alone, as before, only when there is no plan to show.
+	const S47TonightNote::FNote& Note = P->Note;
+	const bool bPlan = !Note.Lines.IsEmpty();
+	const bool bCard = bPlan || !Note.IsEmpty() || !Doing.IsEmpty() || !P->LastNote.IsEmpty();
 	TSharedRef<SVerticalBox> Card = SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(STextBlock).Text(FText::FromString(Place.IsEmpty() ? TEXT("TONIGHT") : TEXT("TONIGHT · ") + Place)).Font(Term(20, 2)).ColorAndOpacity(Css(0x8a3b2c))
+			SNew(STextBlock).Text(FText::FromString(bPlan || Place.IsEmpty() ? TEXT("TONIGHT") : TEXT("TONIGHT · ") + Place)).Font(Term(20, 2)).ColorAndOpacity(Css(0x8a3b2c))
 		];
-	if (!Doing.IsEmpty())
+	for (const S47TonightNote::FLine& L : Note.Lines)
+	{
+		const bool bDone = L.Mark == S47TonightNote::EMark::Done, bNext = L.Mark == S47TonightNote::EMark::Next;
+		const FLinearColor Color = bDone ? Css(0x6d7895) : bNext ? Ink() : Ink(0.82f);
+		FTextBlockStyle LineStyle = FTextBlockStyle().SetFont(Type(16)).SetColorAndOpacity(Color);
+		if (bDone)
+		{
+			FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
+			Strike.TintColor = Color;
+			LineStyle.SetStrikeBrush(Strike);
+		}
+		Card->AddSlot().AutoHeight().Padding(0, (bNext ? 6 : 3) * U, 0, 0)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(S47MenusLocal::SS47NoteMark).Mark(L.Mark)]
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Top).Padding(4 * U, 0, 0, 0)
+			[
+				SNew(STextBlock).Text(FText::FromString(S47TonightNote::LineText(L))).TextStyle(&LineStyle).AutoWrapText(true).LineHeightPercentage(1.1f)
+			]
+		];
+	}
+	if (Note.More > 0)
+	{
+		Card->AddSlot().AutoHeight().Padding(44 * U, 2 * U, 0, 0)
+		[
+			SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
+		];
+	}
+	if (Note.Also.Num())
+	{
+		Card->AddSlot().AutoHeight().Padding(0, 10 * U, 0, 0)[SNew(STextBlock).Text(FText::FromString(TEXT("ALSO OPEN"))).Font(Term(17, 2)).ColorAndOpacity(Css(0x8a3b2c, 0.85f))];
+		for (const FString& A : Note.Also)
+			Card->AddSlot().AutoHeight().Padding(0, 2 * U, 0, 0)[SNew(STextBlock).Text(FText::FromString(A)).Font(Type(14)).ColorAndOpacity(Ink(0.78f)).AutoWrapText(true).LineHeightPercentage(1.1f)];
+	}
+	if (!Note.Clock.IsEmpty())
+	{
+		Card->AddSlot().AutoHeight().Padding(0, 8 * U, 0, 0)
+		[
+			SNew(STextBlock).Text(FText::FromString(Note.Clock)).Font(Hand(28)).ColorAndOpacity(Css(0x8a3b2c)).AutoWrapText(true).LineHeightPercentage(0.8f)
+		];
+	}
+	if (!bPlan && !Doing.IsEmpty())
 	{
 		Card->AddSlot().AutoHeight().Padding(0, 6 * U, 0, 0)
 		[
@@ -474,7 +551,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		// .card, bottom right, turned 1.4 degrees
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 120, 150))
 		[
-			SNew(SBox).WidthOverride(430 * U).Visibility(bCard ? EVisibility::HitTestInvisible : EVisibility::Collapsed)
+			SNew(SBox).WidthOverride((bPlan ? 480 : 430) * U).Visibility(bCard ? EVisibility::HitTestInvisible : EVisibility::Collapsed)
 			.RenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(-1.4f)))).RenderTransformPivot(FVector2D(0.5f, 0.5f))
 			[
 				SNew(S47MenusLocal::SS47Card)[Card]

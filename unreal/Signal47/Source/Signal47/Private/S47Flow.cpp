@@ -65,6 +65,7 @@
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
 #include "S47HudGauges.h"
+#include "S47Script.h"
 #include "S47Image.h"
 #include "S47Keys.h"
 #include "S47Mirrors.h"
@@ -1330,6 +1331,7 @@ void US47Flow::OpenPause()
 		UGameplayStatics::SetGamePaused(Self->M->Hud, false);
 	};
 	FS47PauseOpts O = PauseStatus(Settings());
+	UE_LOG(LogS47Flow, Display, TEXT("S47: tonight's note: %s"), *S47TonightNote::Plain(O.Note).Replace(TEXT("\n"), TEXT(" | ")));
 	O.OnResume = Resume;
 	O.OnTitle = [this, Resume] { RequestTitle(Resume); };
 	// the case menus sit on top of the pause menu and go back to it
@@ -1411,8 +1413,49 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 	{
 		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
 		if (M->IsFreeform() && M->Freeform) O.Objective=M->Freeform->Objective();
-		for (const FS47Task& T : S->Tasks()) if (!T.bDone) O.OpenTasks.Add(T.Text);
+		const TArray<FS47Task> Tasks = S->Tasks();
+		for (const FS47Task& T : Tasks) if (!T.bDone) O.OpenTasks.Add(T.Text);
 		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
+		// TONIGHT-NOTE-20261109: the card as the night's plan, from the same list, the HUD's objective card and the case windows
+		S47TonightNote::FIn In;
+		for (const FS47Task& T : Tasks) In.Tasks.Add({ T.Text, T.bDone });
+		In.Next = O.Objective;
+		In.Clock = O.Clock;
+		if (M->IsFreeform() && M->Freeform)
+		{
+			const FS47FreeformSession& F = *M->Freeform;
+			In.bFreeform = true;
+			In.Clock = F.Clock();
+			In.Next = F.HudObjective();
+			// what there is to do besides the objective's step: the film waiting in the lab (AvailableActivities says it only when
+			// nothing comes before it), and with a case's field test in focus the day's work as the HUD would have it unfocused (not
+			// "follow the plan": the plan's own step is on the note with its window)
+			if (M->Night && M->Night->Album && M->Night->Album->PendingLabPhoto() && !In.Next.Contains(TEXT("WET BENCH"))
+				&& !Tasks.ContainsByPredicate([](const FS47Task& T) { return T.Text.Contains(TEXT("WET BENCH")); }))
+				In.Tasks.Insert({ TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false }, 0);
+			FString Card;
+			if (F.FocusedFieldCase() >= 0) F.AvailableActivities(&Card);
+			if (!Card.IsEmpty() && Card != In.Next && !Card.Contains(TEXT("FOLLOW THE PLAN")) && !Card.Contains(TEXT("WET BENCH"))) In.Tasks.Insert({ Card, false }, 0);
+			for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+			{
+				const auto* C = F.CaseFile().Get(Line);
+				if (!C || !C->bOpen || C->bConcluded) continue;
+				if (C->Planned < 0) { In.WaitingCases.Add(FS47FreeformCases::Def(Line).Title); continue; }
+				double Start = 0, End = 0;
+				// (a field test not yet prepared has only a preview of its window: the step is to prepare it now)
+				if (!F.CaseTestWindow(Line, Start, End) || F.CaseWindowText(Line).Contains(TEXT("PREVIEW ONLY"))) continue;
+				// the step in the words FS47FreeformSession::Tasks gives it, so that the window lands on that line
+				const FString Step = F.PlannedFieldTest(Line) >= 0 ? F.FieldNextAction(Line)
+					: TEXT("CASE / ") + FString(FS47FreeformCases::Def(Line).Tests[FMath::Clamp(C->Planned, 0, FS47FreeformCases::TestCount - 1)].Name) + TEXT(": run job ") + C->PlannedJob;
+				In.Windows.Add({ Step, Start, End });
+			}
+			double Up = 0;
+			if (F.NextEveningCard(Up)) In.EveningUp = Up;
+			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
+			// the handwritten note keeps to Freeform's limits as the plan does
+			if (!S47Script::LintText(O.LastNote).IsEmpty()) O.LastNote.Reset();
+		}
+		O.Note = S47TonightNote::Build(In);
 	}
 	return O;
 }
