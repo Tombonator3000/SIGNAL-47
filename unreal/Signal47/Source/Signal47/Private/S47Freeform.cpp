@@ -856,7 +856,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  const FJob* J=CurrentJob();if(!J)return TEXT("OPS (corner PC): Select an observation in DAILY WORK.");
  if(EveningGated(*J))return AvailableActivities();
  if(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Packet||J->Stage==EJobStage::Filed)return JobNextAction(*J);
- if(!HasPower()){if(PrinterProgress()>=1)return PrinterHint();return TEXT("SERVICE BAY: Restore the SARO feeder or start the fuelled backup generator.");}
+ if(!HasPower()){if(PrinterProgress()>=1)return PrinterHint();return TEXT("Restore the SARO feeder, or start the fuelled standby generator outside behind the control room.");}
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
@@ -1995,7 +1995,7 @@ FString FS47FreeformSession::CasePrecondition(const FJob& J)const
  if(J.CaseTest<0)return FString();const auto* C=Cases.Get(J.CaseLine);if(!C)return FString();
  switch(CaseCondition(J.CaseLine,J.CaseTest))
  {
-  case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("SERVICE BAY: START THE FUELLED BACKUP GENERATOR; KEEP THE WHOLE CASE TEST RECORDING ON GENERATOR POWER, OFF THE MAINS"));
+  case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("BEHIND THE CONTROL ROOM: START THE FUELLED STANDBY GENERATOR; KEEP THE WHOLE CASE TEST RECORDING ON GENERATOR POWER, OFF THE MAINS"));
   case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():TEXT("OPS (corner PC): CHECK THE CASE BOARD; WAIT FOR THE DATED REPEAT WINDOW. ")+CaseWindowText(J.CaseLine);
   case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("SARO CONTROL ROOM: CLOSE BOTH OUTSIDE DOORS AND STAY INSIDE THROUGH THE WHOLE CASE TEST RECORDING"));
   case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CALICHE GAS STATION: BUY A RELAY FOR THE TIMING SWAP; THE SARO DEPOT HAS NONE"));
@@ -3444,7 +3444,7 @@ FString FS47FreeformSession::Objective()const
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
  {
   if(Field&&Field->EmergencyFuseAvailable()&&Field->InventoryCount(TEXT("fuel"))<=0&&Field->GeneratorHours()<=0)return TEXT("NO POWER, NO SPARE FUSE: THE CALICHE STORE COUNTER ISSUES ONE FEEDER-REPAIR FUSE ON CREDIT, DAY OR NIGHT");
-  return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+  return TEXT("SERVICE BAY: MEASURE THE FEEDER, OR START THE FUELLED STANDBY GENERATOR OUTSIDE");
  }
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  // SPAWN-MAILBOX-20261109 (Tom): a new game starts at the box at the road; Dr. Ward's letter in it comes first, then the HUD's card
@@ -3511,7 +3511,7 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  {
   switch(CaseCondition(J.CaseLine,J.CaseTest))
   {
-   case ECaseCondition::Generator:return TEXT("Service bay / backup generator");
+   case ECaseCondition::Generator:return TEXT("Behind the control room / standby generator");
    case ECaseCondition::Repeat:return TEXT("OPS / CASE BOARD / dated repeat window");
    case ECaseCondition::RelaySwap:return TEXT("Caliche gas station / replacement relay counter");
    case ECaseCondition::DoorsSealed:return TEXT("SARO / south and east outside doors");

@@ -1,5 +1,9 @@
 #include "S47DevFreeform.h"
 #include "S47Blockers.h"
+#include "S47Freeform.h"
+#include "S47FreeformWorld.h"
+#include "S47Inter.h"
+#include "S47World.h"
 #include "S47DevEvents.h"
 #include "S47Main.h"
 #include "S47SaroClip.h"
@@ -66,12 +70,101 @@ void FS47DevFreeform::AddSaroFixes(FS47DevEvents& E)
   { TEXT("Records: the east end"), 11, FVector2D(-4.9, 9.7), FVector(-1.6, 1.0, 8.2), TEXT("PT-RECORDS: shelves, cabinets, the desk") },
   { TEXT("Records: the west end"), 11, FVector2D(-1.7, 9.7), FVector(-5.6, 1.0, 8.4), TEXT("PT-RECORDS: the other way") },
   { TEXT("Records: at night"), 22.5, FVector2D(-3.9, 7.35), FVector(-4.2, 1.0, 10.2), TEXT("PT-RECORDS: at night, the desk lamp") },
+  // Tom's pictures of d37 (SARO-GEN-RAMP-20261109): the yard door's wall with no card, no shelf and no brown box; the standby generator
+  // and its control box out in the pocket; the truck ramp's west side from where he stood on it.
+  { TEXT("Yard door: no card, no shelf"), 22.5, FVector2D(4.4, .9), FVector(5.95, 1.0, .67), TEXT("SARO-GEN: the control room's east wall by the yard door, bare") },
+  { TEXT("Generator outside: the control box"), 22.5, FVector2D(6.1, 6.2), FVector(4.9, .45, 7.6), TEXT("SARO-GEN: Start / fuel at the standby generator's control box") },
+  { TEXT("Truck ramp: Tom's view west off its side"), 22.5, FVector2D(7.6, 14.6), FVector(-7.3, .3, 15.5), TEXT("SARO-RAMP: the ramp's west side, open to the walk") },
  };
  for (const FView& V : Views)
  {
   const FView Copy = V;
   E.AddFreeform(Group, Copy.Label, FString::Printf(TEXT("%.0f:%02.0f at SARO; a picture in a sweep"), FMath::FloorToDouble(Copy.Hour), FMath::Frac(Copy.Hour) * 60), [View, Copy] { View(Copy.Hour, Copy.Stand, Copy.Look, Copy.Say); });
  }
+
+ // ---- SARO-GEN-RAMP-20261109: on foot off the truck ramp, and the generator started outside ----
+ // On foot (the walker's own TestMove, as FARM-GATE's) from on the truck ramp down off its west side to the walk, off its east side
+ // to the wing's ground, and down its length to the foot and back up to the pad. Each says where it stopped and what held it there
+ // (US47World::WhyNotLand). Nothing is saved.
+ E.AddFreeform(Group, TEXT("Walk down the ramp both ways"), TEXT("11:00 at SARO's truck ramp: on foot off its west and east sides, and down its length and back up"), [this]
+ {
+  if (!M->World || !M->Player) { Tell(false, TEXT("no game")); return; }
+  struct FLeg { const TCHAR* Name; FVector2D From, To; };
+  static const FLeg Legs[] = {
+   { TEXT("west off the side"), { 7.6, 14.6 }, { 5.6, 14.6 } }, { TEXT("east off the side"), { 12.2, 14.6 }, { 13.9, 14.6 } },
+   { TEXT("down its length"), { 10.6, 11.7 }, { 10.6, 17.9 } }, { TEXT("back up to the pad"), { 10.6, 17.9 }, { 10.6, 11.7 } },
+  };
+  TSharedRef<TArray<FString>> Said = MakeShared<TArray<FString>>();
+  TSharedRef<bool> Good = MakeShared<bool>(true);
+  TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
+  *Next = [this, Said, Good, Next](int32 I)
+  {
+   if (I >= int32(UE_ARRAY_COUNT(Legs)))
+   {
+    if (M->Player) M->Player->TestMove.Reset();
+    const FString Text = FString::Printf(TEXT("SARO-RAMP: %s. %s"), *Good ? TEXT("down off the ramp both ways, and down and up it") : TEXT("held (log: LogS47SaroFixesDev)"), *FString::Join(*Said, TEXT("; ")));
+    UE_LOG(LogS47SaroFixesDev, Display, TEXT("S47: %s"), *Text);
+    Tell(*Good, Text.Left(400), 14);
+    return;
+   }
+   const FLeg L = Legs[I];
+   M->Player->Place(L.From.X, L.From.Y, FMath::Atan2(-(L.To.X - L.From.X), -(L.To.Y - L.From.Y)));
+   WaitFor([this, L]
+   {
+    if (!M->Player) return true;
+    const FVector2D P(M->Player->Pos.X, M->Player->Pos.Z), D = L.To - P, Way = L.To - L.From;
+    if (FVector2D::DotProduct(D, Way) <= 0) { M->Player->TestMove.Reset(); return true; }
+    M->Player->Yaw = FMath::Atan2(-D.X, -D.Y); M->Player->Pitch = -.08; M->Player->TestMove = FVector2D(0, -1);
+    return false;
+   }, 12, [this, Said, Next, L, I]
+   {
+    Said->Add(FString::Printf(TEXT("PASS %s (floor %.2f)"), L.Name, M->Player ? M->Player->FloorY : 0.));
+    UE_LOG(LogS47SaroFixesDev, Display, TEXT("S47: PASS on foot %s"), L.Name);
+    (*Next)(I + 1);
+   }, [this, Said, Good, Next, L, I]
+   {
+    if (M->Player) M->Player->TestMove.Reset();
+    const FVector2D P = M->Player ? FVector2D(M->Player->Pos.X, M->Player->Pos.Z) : FVector2D::ZeroVector, Ahead = P + (L.To - L.From).GetSafeNormal() * .1;
+    const FString Why = M->World ? M->World->WhyNotLand(Ahead.X, Ahead.Y) : FString();
+    Said->Add(FString::Printf(TEXT("FAIL %s: stopped at %.2f %.2f (%s)"), L.Name, P.X, P.Y, *Why)); *Good = false;
+    UE_LOG(LogS47SaroFixesDev, Display, TEXT("S47: FAIL on foot %s: stopped at %.2f %.2f, ahead: %s"), L.Name, P.X, P.Y, *Why);
+    (*Next)(I + 1);
+   });
+  };
+  FStage S; S.From = 11; S.To = 13; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(7.6, 14.6); };
+  Go(S, [this, Next] { After(1.0, [Next] { (*Next)(0); }); });
+ });
+ // The start point outside, looked at from the ground beside it: what the eye picks there, the inside wall bare.
+ E.AddFreeform(Group, TEXT("Generator outside"), TEXT("22:30 at the standby generator: Start / fuel at its control box; nothing of it, the card or the shelf left inside"), [this, Log]
+ {
+  FS47FreeformSession* F = Session();
+  if (!F || !F->Field || !M->Player || !M->Web) { Tell(false, TEXT("Freeform only")); return; }
+  const FVector At = F->Field->InteractionPoint(TEXT("ff:generator"));
+  FStage S; S.From = 22.5; S.To = 23.5; S.Area = TEXT("saro"); S.Where = [At] { return FVector2D(At.X + .85, At.Z); };
+  Go(S, [this, At, Log]
+  {
+   AimAt(At);
+   After(1.5, [this, At, Log]
+   {
+    FS47FreeformSession* F = Session();
+    TArray<FString> Lines; S47SaroFixes::Report(M, Lines); Log(Lines);
+    FString Shelf; for (const FString& L : Lines) if (L.Contains(TEXT("camera shelf"))) Shelf = L;
+    const FString Picked = M->Inter && M->Player ? M->Inter->Pick(M->Player->EyeUE(), M->Player->ForwardUE()) : FString();
+    const FString Label = F && F->Field ? F->Field->Label(TEXT("ff:generator")) : FString();
+    const bool bOutside = !(At.X > -6.7 && At.X < 6.7 && At.Z > -5.9 && At.Z < 5.9);
+    const FS47WebNode* Card = M->Web->Node(161);
+    const UPrimitiveComponent* CardC = Card ? Cast<UPrimitiveComponent>(Card->Comp.Get()) : nullptr;
+    int32 ShelfBox = 0;
+    for (const FS47Rect& R : M->Web->Colliders()) if (R.bEnabled && FMath::Abs(R.MinX - 5.6) < .02 && FMath::Abs(R.MaxX - 6.0) < .02 && FMath::Abs(R.MinZ - .3) < .02 && FMath::Abs(R.MaxZ - 1.05) < .02) ++ShelfBox;
+    const bool bGood = bOutside && Picked == TEXT("ff:generator") && !Label.IsEmpty() && (!CardC || !CardC->IsVisible()) && Shelf.Contains(TEXT("gone")) && ShelfBox == 0;
+    const FString Text = FString::Printf(TEXT("SARO-GEN: start point %.2f %.2f %.2f %s; the eye picks %s, \"%s\"; card %s; %s; shelf walk box %s"), At.X, At.Y, At.Z,
+     bOutside ? TEXT("outside") : TEXT("INSIDE"), Picked.IsEmpty() ? TEXT("nothing") : *Picked, *Label, CardC && CardC->IsVisible() ? TEXT("STILL SHOWN") : TEXT("hidden"),
+     Shelf.IsEmpty() ? TEXT("no shelf line") : *Shelf, ShelfBox ? TEXT("STILL ON") : TEXT("off"));
+    UE_LOG(LogS47SaroFixesDev, Display, TEXT("S47: %s %s"), bGood ? TEXT("PASS") : TEXT("FAIL"), *Text);
+    Tell(bGood, Text.Left(400), 14);
+   });
+  });
+ });
 
  // ---- what was built, and why a part waits ----
  E.AddFreeform(Group, TEXT("What was built"), TEXT("11:00 at SARO: each part's state; the list goes to the log"), [this, Log]

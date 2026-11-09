@@ -1,15 +1,17 @@
 """Editor-only preparation for S47SaroFixes (Tom's test of d36, PT-STOP), run in a reserved editor slot like Tools/streetlamps/prepare_cpu.py.
 Keeps the CPU copy of the generated web batch that holds the stop sign's pole by SARO (g436, the pole material's batch of the grounds'
-signs: the stop sign, the radio quiet zone's two posts and the rest), so the runtime can clone it without the stop sign's pole.
+signs: the stop sign, the radio quiet zone's two posts and the rest), so the runtime can clone it without the stop sign's pole; and
+of the control room's desk-top and cabinet batches (g55, g60) for the field camera's old shelf by the yard door (Tom's test of d37).
 Changes nothing else: no reimport, no geometry, no material. /Game/Web is generated and not in Git; run this again after a new web import
-(Tools/webexport/import.sh does). Without it the stop sign stays and LogS47SaroFixes says why.
+(Tools/webexport/import.sh does). Without it the stop sign and the shelf stay and LogS47SaroFixes says why.
 """
 import json
 from pathlib import Path
 import unreal
 
 rows = []
-for geo, tris, folder in [(436, 288, 'geo_003')]:
+# SARO-GEN-RAMP-20261109: g55 (the control room's desk tops) and g60 (its cabinets) for the field camera's old shelf by the yard door.
+for geo, tris, folder in [(436, 288, 'geo_003'), (55, 72, 'geo_000'), (60, 36, 'geo_000')]:
     path = f'/Game/Web/Geo/{folder}/StaticMeshes/g{geo}.g{geo}'
     mesh = unreal.load_asset(path)
     assert isinstance(mesh, unreal.StaticMesh), (path, 'missing imported web batch')

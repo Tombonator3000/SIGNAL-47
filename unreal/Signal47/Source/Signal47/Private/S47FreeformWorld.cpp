@@ -3,6 +3,7 @@
 #include "S47Mail.h"
 #include "S47FieldLife.h"
 #include "S47Legs.h"
+#include "S47OpenLand.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Observing.h"
@@ -72,7 +73,11 @@ namespace
   if(OnRetiredBench(Legacy))Legacy+=Delta;
   return Original;
  }
- const FVector GeneratorAt(5.89,1.35,.65); // SARO-CLIP-20261108: its 20 cm box stood 3 cm into the east wall (inner face x 6.0) at 5.93
+ // SARO-GEN-RAMP-20261109 (Tom's test of d37): started and fuelled at the standby generator itself, outside in the pocket behind the
+ // control room (Grounds.ts things(): the housing at x 4.3, z 8.4 on the ground at -0.6), at the black control box on its east face
+ // (0.25 x 0.35 x 0.18 at x 4.9, y 0.45, z 7.6). The brown box on the control room's east wall (5.89, 1.35, .65) is gone.
+ const FVector GeneratorAt(4.9,.45,7.6);
+ const FVector GeneratorBox(.27,.37,.20); // the control box's own, a centimetre proud of it all round: one dark box, a bigger mark to aim at
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
  const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };
@@ -705,7 +710,7 @@ bool FS47FreeformWorld::Build()
  CargoSaro=Box(TEXT("FreeformCargoSaro"),TruckPoint(),FVector(.62,.12,.52),0x383e37,Saro);
  CargoRoad=Box(TEXT("FreeformCargoRoad"),TruckPoint(),FVector(.62,.12,.52),0x383e37,Road);
  Bind(CargoSaro,TEXT("ff:cargo"),3.0);M->Web->MarkUsable(CargoRoad.I,TEXT("ff:cargo"));
- Generator=Box(TEXT("FreeformBackupSelector"),GeneratorAt,FVector(.20,.22,.10),0x776044,Saro,TEXT("ff:generator"));
+ Generator=Box(TEXT("FreeformGeneratorControl"),GeneratorAt,GeneratorBox,0x2a2c2e,Saro,TEXT("ff:generator"));
  {
   const FVector At=ServiceAt();
   // Adapt the authored cabinet. Its existing ground collider remains authoritative.
@@ -1487,9 +1492,9 @@ void FS47FreeformWorld::Step(double Dt)
   if(GeneratorSeconds>0)
   {
    bGenerator=true;if(M->Audio)M->Audio->Sfx(TEXT("engineStart"),FS47Sound{.Gain=.45f});
-   Change(TEXT("The lights dip. Down in the service bay the transfer switch clunks over, and the backup generator coughs and takes the load."));
+   Change(TEXT("The lights dip. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator coughs and takes the load."));
   }
-  else Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and the generator turns and does not catch: no fuel for it."));
+  else Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator turns and does not catch: no fuel for it."));
   UE_LOG(LogTemp,Display,TEXT("S47: transfer switch: generator %s"),bGenerator?TEXT("started"):TEXT("dry"));
  }
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
@@ -1701,6 +1706,22 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
   C(RDry.Fee>0&&RDry.Fee==EmptyTankFee&&RDry.Minutes>=45&&RFar.Fee>RDry.Fee&&RFar.Fee<RTow.Fee+20&&RFar.Minutes<=90&&!RDry.bRefused,TEXT("M7: a dry tank's roadside return costs $20 to $45 and 45 to 90 minutes by how far out"));
   C(RNight.Minutes>=RDry.Minutes+NightTowWait-.001&&RTow.Fee==FS47TruckCare::TowFeeFor(4000)&&RNear.bRefused,TEXT("M7: after dark the wrecker is longer coming; a truck in trouble pays the full tow; nobody comes while something is close (RestBlock)"));
  }
+ // SARO-GEN-RAMP-20261109: no generator button inside; one starts and fuels it at the standby generator outside, from the open
+ // ground east of its housing (its walk box x 3.7..4.9, z 7.05..9.75; the pocket's zone x 2.65..6.55, z 5.95..20).
+ {
+  FS47FreeformWorld G(nullptr);G.Begin();
+  const FVector At=G.InteractionPoint(TEXT("ff:generator")),Old(5.89,1.35,.65);
+  const bool Outside=!(At.X>-6.7&&At.X<6.7&&At.Z>-5.9&&At.Z<5.9)&&!(At.X>-6.6&&At.X<2.6&&At.Z>5.8&&At.Z<11.1);
+  C(Outside&&FVector2D(At.X-Old.X,At.Z-Old.Z).Size()>5&&G.InteractionPoint(TEXT("obs:generator"))==At,TEXT("SARO-GEN: no generator button in the control room; the start point is outside, not on its east wall"));
+  C(At.X>4.85&&At.X<5.05&&At.Z>7.05&&At.Z<9.75&&At.Y>0&&At.Y<1&&At.X+.3<6.55-.27,TEXT("SARO-GEN: the start point is the standby generator's control box, on the housing's east face, with room to stand by it in the pocket"));
+  // One standing on the ground just east of the box: in the pocket's zone, clear of the housing's walk box, near enough (Near: 2.9 m).
+  const double Body=.27,Stand=At.X+GeneratorBox.X*.5+Body+.05;
+  C(Stand>=2.65+Body&&Stand<=6.55-Body&&Stand>=4.9+Body&&FMath::Abs(Stand-At.X)<2.9&&FMath::Abs(-.6-At.Y)<3.,TEXT("SARO-GEN: one standing on the ground beside the box can start and fuel it"));
+ }
+ // SARO-GEN-RAMP-20261109: nothing on the way down off the truck ramp's sides for one on foot; the truck's lines and the pad stay.
+ C(S47OpenLand::TruckRampSide(6.6,6.6,12.4,16.6)&&S47OpenLand::TruckRampSide(13,13,12.4,16.6),TEXT("SARO-RAMP: the truck ramp's west and east sides do not hold one on foot"));
+ C(!S47OpenLand::TruckRampSide(6.6,6.6,3.4,12.4)&&!S47OpenLand::TruckRampSide(13,13,3.4,12.4)&&!S47OpenLand::TruckRampSide(6.6,6.6,3.4,16.6)&&!S47OpenLand::TruckRampSide(6.6,13,3.4,3.4)&&!S47OpenLand::TruckRampSide(6.15,6.45,16.75,17.05),
+  TEXT("SARO-RAMP: the pad's sides, its north edge and the bollard at the ramp's foot still hold"));
  OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }

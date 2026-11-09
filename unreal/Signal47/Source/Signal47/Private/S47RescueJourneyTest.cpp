@@ -90,7 +90,8 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
   if(!Check(W.InventoryCount(TEXT("fuse"))==0&&W.InventoryCount(TEXT("relay"))==0&&W.InventoryCount(TEXT("fuel"))==0,TEXT("SARO stock holds no fuse, relay or fuel can")))return;
   if(!Check(Garage()==0.&&!W.ShopOpen(),TEXT("garage still shut, and the shop is closed at this hour")))return;
   if(!Check(!F.Spend(5,true)&&F.Budget()==0&&F.Debt()==10,TEXT("standing debt refuses ordinary emergency credit without changing the balance")))return;
-  const FVector Selector=W.InteractionPoint(TEXT("ff:generator"));M->Player->Place(Selector.X-1.2,Selector.Z,0);W.Use(TEXT("ff:generator"));
+  // SARO-GEN-RAMP-20261109: the control box on the standby generator outside; stand on the ground east of its housing.
+  const FVector Selector=W.InteractionPoint(TEXT("ff:generator"));M->Player->Place(Selector.X+1.0,Selector.Z,0);W.Use(TEXT("ff:generator"));
   if(!Check(!W.GeneratorRunning(),TEXT("backup generator cannot start without a fuel can")))return;
   F.Use(TEXT("opsTerminal"));
   if(!Check(!M->UI->Modal(),TEXT("unpowered OPS opens no work, so no money can be earned yet")))return;

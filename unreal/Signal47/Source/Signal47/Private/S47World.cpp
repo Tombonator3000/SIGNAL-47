@@ -1611,6 +1611,8 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 	{
 		for (const FS47Obstacle& O : G->Area->Obstacles)
 		{
+			// SARO-GEN-RAMP-20261109: the truck ramp's open sides hold the truck, not one on foot (S47OpenLand::TruckRampSide).
+			if (!O.bCircle && A == TEXT("saro") && S47OpenLand::TruckRampSide(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue;
 			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
 		}
 	}
@@ -2156,6 +2158,7 @@ FString US47World::WhyNotLand(double X, double Z)
 	{
 		for (const FS47Obstacle& O : G->Area->Obstacles)
 		{
+			if (!O.bCircle && Area == TEXT("saro") && S47OpenLand::TruckRampSide(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue; // (as OnLand)
 			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R)
 				return O.bCircle ? FString::Printf(TEXT("post or rock r %.2f at %.1f %.1f"), O.R, O.X, O.Z) : FString::Printf(TEXT("obstacle box %.1f..%.1f, %.1f..%.1f"), O.MinX, O.MaxX, O.MinZ, O.MaxZ);
 		}
@@ -2563,8 +2566,10 @@ void US47World::ReconcileFarm(bool bEnabled)
     if(Id==TEXT("saro"))
     {
      // MakeLands' walls with no collider of their own (the zones keep the walker from them), its slabs, the array's and the site's fences; the pad is reached by its ramp only.
+     // SARO-GEN-RAMP-20261109: the pad's sides and the ramp's sides are separate lines. The truck keeps to the ramp by all four; one on
+     // foot is held by the ramp's two in nothing (OnLand: S47OpenLand::TruckRampSide), they were the invisible wall Tom met at x 6.87.
      for(const FS47Box2& Wall:TArray<FS47Box2>{{-6.7,6.7,-5.9,5.9},{-6.6,2.6,5.8,11.1},{-7.75,-6.0,4.75,6.65},{12.6,19.2,-6.0,1.0},{6.3,11.0,-.6,3.4},{8.0,11.0,-19.6,-.6},{11.0,12.6,-13.4,-8.6},{11.0,12.6,-1.9,-.6},
-      {-80,-28.6,-20,-20},{-19.4,60,-20,-20},{-18.6,46.5,34.5,34.5},{46.5,46.5,-19.9,34.5},{6.6,6.6,3.4,16.6},{13,13,3.4,16.6},{6.6,13,3.4,3.4}})
+      {-80,-28.6,-20,-20},{-19.4,60,-20,-20},{-18.6,46.5,34.5,34.5},{46.5,46.5,-19.9,34.5},{6.6,6.6,3.4,12.4},{6.6,6.6,12.4,16.6},{13,13,3.4,12.4},{13,13,12.4,16.6},{6.6,13,3.4,3.4}})
       Solid(Wall.MinX,Wall.MaxX,Wall.MinZ,Wall.MaxZ);
     }
    }

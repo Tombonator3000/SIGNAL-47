@@ -199,6 +199,12 @@ namespace S47OpenLand
 		const double Wide = MaxX - MinX, Deep = MaxZ - MinZ;
 		return (Wide <= .6 && Deep >= 25) || (Deep <= 1.1 && Wide >= 25);
 	}
+	bool TruckRampSide(double MinX, double MaxX, double MinZ, double MaxZ)
+	{
+		// The ramp's sides in SARO's terms: x 6.6 and 13.0 (S47Legs::SARO_PAD's), from the pad's edge at z 12.4 down to the foot at 16.6.
+		const bool bLine = FMath::Abs(MaxX - MinX) < .01 && (FMath::Abs(MinX - 6.6) < .01 || FMath::Abs(MinX - 13.0) < .01);
+		return bLine && MinZ >= 12.4 - .01 && MaxZ <= 16.6 + .01 && MaxZ - MinZ > 1;
+	}
 
 	bool RoadOf(const FString& Leg, double X, double Z, double& OutRoadX, double& OutRoadZ)
 	{

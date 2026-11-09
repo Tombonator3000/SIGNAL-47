@@ -30,6 +30,10 @@ namespace S47OpenLand
 	SIGNAL47_API bool InStationCore(double RoadX, double RoadZ, double Grow = 0);
 	/** A wire fence or an unseen wall of Story's, by its shape: long and thin. Open in Freeform. */
 	SIGNAL47_API bool IsBoundaryLine(double MinX, double MaxX, double MinZ, double MaxZ);
+	/** SARO's truck ramp, its two open sides (SARO-GEN-RAMP-20261109, Tom's test of d37: "an invisible wall, one cannot get down off
+	 *  the ramp"). They hold the truck to the ramp (US47World::ReconcileFarm) but not one on foot, who steps down off them anywhere and
+	 *  up where the side is low enough (AS47Walker::Resolve); the pad's own sides stay shut to both. True for those two lines only. */
+	SIGNAL47_API bool TruckRampSide(double MinX, double MaxX, double MinZ, double MaxZ);
 
 	/** World terms of a leg (or the diner's area, or the motel's), to road-local and back. False: not a leg of the land. */
 	SIGNAL47_API bool RoadOf(const FString& Leg, double X, double Z, double& OutRoadX, double& OutRoadZ);

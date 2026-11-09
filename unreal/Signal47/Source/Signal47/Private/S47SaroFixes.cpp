@@ -31,6 +31,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47SaroFixes, Log, All);
 // The service cabinet, its sign and label are moved and removed where they are built (S47Office.cpp); the records room is its own
 // file (S47RecordsDressing.cpp). Everything here is measured on the web export (manifest of 22 October; geo ids below) and the
 // authored office room (ArtSource/Office); a part whose source differs keeps the old and says why.
+// Tom's test of d37 (SARO-GEN-RAMP-20261109): the camera card and its empty shelf by the control room's yard door go in Freeform.
 namespace S47SaroFixes
 {
 namespace
@@ -64,19 +65,28 @@ namespace
  // went back 0.5 m into the bay (S47Office): a black bar in the air before the bay. Its batch (node 531, geo 350) holds only that and
  // the restrooms' header, which the authored corridor (corridor_dressing.py, Restroom_steel_header) already has. ----
  constexpr int32 HeaderNode = 531, HeaderGeo = 350;
+ // ---- SARO-GEN-RAMP-20261109 (Tom's test of d37): by the control room's yard door, the field camera's old shelf (ControlRoom.ts
+ // eastWall(): a cabinet 0.36 x 0.95 x 0.7 at x 5.81, z 0.67 with its top, and the walk box x 5.6..6, z 0.3..1.05) and the card over it
+ // ("FIELD CAMERA / C / VIEWFINDER / SPACE / SHUTTER", node 161, geo 63, its own two triangles). Freeform keeps the camera in the photo
+ // lab (US47Chapter1::PlaceFieldCamera), so the shelf stood empty; the generator's brown box in front of the card is gone too
+ // (S47FreeformWorld: the generator is started outside). The cabinet is 12 triangles of the control room's cabinet batch (geo 60) and
+ // its top 12 of the desk tops' batch (geo 55), measured on the export (geo_000.glb). ----
+ constexpr int32 CameraCardNode = 161, CameraCardGeo = 63, ShelfTopGeo = 55, ShelfGeo = 60;
+ bool ShelfFoot(const FS47Rect& R)
+ { return FMath::Abs(R.MinX - 5.6) < .02 && FMath::Abs(R.MaxX - 6.0) < .02 && FMath::Abs(R.MinZ - .3) < .02 && FMath::Abs(R.MaxZ - 1.05) < .02; }
 
  struct FState
  {
   TWeakObjectPtr<AS47Web> Web;
   double Retry = 0;
-  bool bStop = false, bRamp = false, bWalks = false, bHeader = false, bPlates = false, bLight = false, bRestroom = false;
+  bool bStop = false, bRamp = false, bWalks = false, bHeader = false, bPlates = false, bLight = false, bRestroom = false, bShelf = false;
   TMap<FString, FString> Why;
   TArray<TWeakObjectPtr<UPrimitiveComponent>> Outdoor, Indoor;
   TArray<int32> Hidden;
   TWeakObjectPtr<UMaterialInstanceDynamic> Edge, Glow;
   TWeakObjectPtr<URectLightComponent> OfficeLight;
   TWeakObjectPtr<UStaticMeshComponent> Lens, Body;
-  int32 EdgeVertices = 0, Joints = 0, StopCut = 0, Plates = 0;
+  int32 EdgeVertices = 0, Joints = 0, StopCut = 0, Plates = 0, ShelfCut = 0, ShelfFeet = 0;
   bool bTripoFixture = false;
  };
  TMap<TWeakObjectPtr<US47Main>, FState> States;
@@ -298,6 +308,38 @@ namespace
   }
   S.Plates = 2;
   Say(S, TEXT("switch plates"), TEXT("the dead plates by the records and control switches removed (the corridor's by the legacy cleanup)"));
+  return true;
+ }
+
+ // ---- SARO-GEN-RAMP-20261109: the camera card and the shelf it stood over, by the control room's yard door ----
+ bool BuildShelf(FState& S, US47Main* M, AS47Web* W)
+ {
+  // Story still sets its field camera on this shelf (US47Chapter1::PlaceFieldCamera); Freeform has it in the photo lab. One look every
+  // two seconds until Freeform is the game.
+  if (!M || !M->IsFreeform()) return false;
+  const FS47WebNode* Card = W->Node(CameraCardNode);
+  if (!Card || Card->Geo != CameraCardGeo || !Card->Comp.IsValid()) { Say(S, TEXT("camera shelf"), TEXT("node 161 (geo 63) differs; the card and the shelf stay")); return true; }
+  W->SetVisible(CameraCardNode, false);
+  if (auto* C = Cast<UPrimitiveComponent>(Card->Comp.Get())) { C->SetVisibility(false); C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
+  S.Hidden.AddUnique(CameraCardNode);
+  TArray<FEdit> Edits;
+  auto Cut = [&](const TCHAR* Id, int32 Geo)
+  {
+   FEdit E; E.Id = Id; E.RootPath = TEXT("room.group"); E.GeometryIds = { Geo };
+   E.ThreeBounds = FBox(FVector(5.625, -.005, .315), FVector(5.995, .975, 1.025)); E.MinTriangles = E.MaxTriangles = 12; Edits.Add(E);
+  };
+  Cut(TEXT("gen-camera-shelf-top"), ShelfTopGeo);
+  Cut(TEXT("gen-camera-shelf"), ShelfGeo);
+  FString Why;
+  if (!S47SaroLegacyCleanup::Apply(W, Edits, &Why))
+  {
+   if (NoCpuData(W, { ShelfTopGeo, ShelfGeo }, Why)) { Say(S, TEXT("camera shelf"), TEXT("card hidden; the shelf kept, and its walk box: no CPU data for g55/g60 in this build (Tools/sarofixes/prepare_cpu.py): ") + Why); return true; }
+   Say(S, TEXT("camera shelf"), TEXT("card hidden; the shelf waiting: ") + Why); return false;
+  }
+  S.ShelfCut = 2;
+  // Its walk box goes with it, switched off rather than taken out of the list (FARM-GATE-20261109: others hold slots by index).
+  for (FS47Rect& R : W->CollidersMutable(TEXT("saro"))) if (R.bEnabled && ShelfFoot(R)) { R.bEnabled = false; ++S.ShelfFeet; }
+  Say(S, TEXT("camera shelf"), FString::Printf(TEXT("gone: the camera card hidden, the shelf and its top cut from g60/g55, %d walk box off"), S.ShelfFeet));
   return true;
  }
 
@@ -590,11 +632,12 @@ void Update(US47Main* M, double Dt)
  FState& S = States.FindOrAdd(TWeakObjectPtr<US47Main>(M));
  if (S.Web.Get() != W) { S = FState(); S.Web = W; }
  S.Retry -= Dt;
- if (S.Retry <= 0 && !(S.bStop && S.bRamp && S.bWalks && S.bHeader && S.bPlates && S.bLight && S.bRestroom))
+ if (S.Retry <= 0 && !(S.bStop && S.bRamp && S.bWalks && S.bHeader && S.bPlates && S.bLight && S.bRestroom && S.bShelf))
  {
   S.Retry = 2;
   if (!S.bHeader) S.bHeader = BuildHeader(S, W);
   if (!S.bPlates) S.bPlates = BuildPlates(S, W);
+  if (!S.bShelf) S.bShelf = BuildShelf(S, M, W);
   if (!S.bRestroom) S.bRestroom = BuildRestroom(S, W);
   if (!S.bLight) S.bLight = BuildLight(S, W);
   if (!S.bRamp) S.bRamp = BuildRamp(S, W);

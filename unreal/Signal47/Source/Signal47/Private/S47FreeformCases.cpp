@@ -171,7 +171,7 @@ namespace
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Feeder interference"),TEXT("Local intermittent transmitter"),TEXT("Follows the sky source")},
   {TEXT("Feeder"),TEXT("Transmitter"),TEXT("Sky")},
-  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power. One can of fuel runs it for six hours.")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time of the first original.")}},
   // Generator, OffSource, Repeat
@@ -190,7 +190,7 @@ namespace
   {TEXT("Receiver timing relay fault"),TEXT("Mains-locked station clock"),TEXT("Someone uses the station at night")},
   {TEXT("Relay"),TEXT("Mains"),TEXT("Someone")},
   {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
-   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
    {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
   // RelaySwap, Generator, DoorsSealed
   {{false,true,true},   // a faulty timing relay is replaced
@@ -225,7 +225,7 @@ namespace
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
-  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
   // Generator, OffSource, Repeat
@@ -242,7 +242,7 @@ namespace
   {TEXT("The station clocks were wrong"),TEXT("A lapse of my own"),TEXT("Not accounted for")},
   {TEXT("Clocks"),TEXT("A lapse"),TEXT("Unaccounted")},
   {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
-   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
    {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
   // RelaySwap, Generator, DoorsSealed
   {{false,true,true},    // a slipping relay: gone with the relay, whatever else is done
@@ -258,7 +258,7 @@ namespace
   {TEXT("They left on their own"),TEXT("Somebody came for them"),TEXT("Not accounted for")},
   {TEXT("Left"),TEXT("Somebody"),TEXT("Unaccounted")},
   {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
-   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
    {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
   // Never offered (UnavailableReason): kept separating, as every line's are, for the shared rules.
   {{false,true,true},
@@ -273,7 +273,7 @@ namespace
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Somebody keying a set on time"),TEXT("A timer on the county line"),TEXT("Not accounted for")},
   {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},
-  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
+  {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
   // Generator, OffSource, Repeat
@@ -290,7 +290,7 @@ namespace
   {TEXT("Something of theirs came down"),TEXT("Somebody cleaning up after themselves"),TEXT("Not accounted for")},
   {TEXT("Theirs"),TEXT("Cleaning up"),TEXT("Unaccounted")},
   {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
-   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the backup generator by the service bay, then record the whole observation on generator power, off the mains.")},
+   {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
    {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
   // Never offered (UnavailableReason), as for the empty post.
   {{false,true,true},
