@@ -45,6 +45,10 @@ public:
 	FString FrameUrl;
 	bool Busy() const { return Mode != TEXT("card"); }
 	bool bWaiting = false;
+	/** MOTEL-REAL-20261108: the test card, its snow and thin tone instead of the late film (Freeform: the film is third-party footage
+	 *  kept only locally, its rights not cleared; the task asks for a card or an original programme, nothing borrowed). */
+	bool bCardOnly = false;
+	bool ShowsFilm() const { return !bCardOnly && Programme.Available(); }
 	int32 Slips = 0;
 	bool Heard() const { return Busy() && Dist < 30; }
 	void Update(double Dt, const FS47MotelTvIn& S);

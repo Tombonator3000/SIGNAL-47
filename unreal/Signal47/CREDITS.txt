@@ -112,3 +112,6 @@ https://commons.wikimedia.org/wiki/File:Chorus_Radio_Waves_within_Earth%27s_Atmo
 Prepared for local playback at 48 kHz; NASA reference playback preserves speed and source identity.
 Synthetic Nebula ambience: Ultimate SFX for Games, Function Loops (purchased library).
 These source credits describe the recordings, not the fictional instrument's acquisition date.
+
+STREET LAMPS (2026-11-09)
+Cobra-head street lamp, davit arm, tapered steel pole and wood-pole arm: original Blender geometry and procedural textures made for SIGNAL / 47 (unreal/ArtSource/StreetLamps). No third-party meshes or images.

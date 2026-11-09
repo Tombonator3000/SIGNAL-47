@@ -1,0 +1,400 @@
+[
+ {
+  "name": "M_Farm_Stucco",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Stucco"
+ },
+ {
+  "name": "M_Farm_Wood",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Wood"
+ },
+ {
+  "name": "M_Farm_Paint",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Paint"
+ },
+ {
+  "name": "M_Farm_Tin",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Tin"
+ },
+ {
+  "name": "M_Farm_Glass",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Glass"
+ },
+ {
+  "name": "M_Farm_Concrete",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Concrete"
+ },
+ {
+  "name": "M_Farm_Steel",
+  "reuse": "/Game/FarmBuildings/Materials/M_Farm_Steel"
+ },
+ {
+  "name": "M_House_Plaster",
+  "textures": {
+   "base_color": "house/textures/T_House_Plaster_BC.png",
+   "roughness": "house/textures/T_House_Plaster_R.png",
+   "normal": "house/textures/T_House_Plaster_N.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Plank",
+  "textures": {
+   "base_color": "house/textures/T_House_Plank_BC.png",
+   "roughness": "house/textures/T_House_Plank_R.png",
+   "normal": "house/textures/T_House_Plank_N.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Beam",
+  "textures": {
+   "base_color": "house/textures/T_House_Beam_BC.png",
+   "roughness": "house/textures/T_House_Beam_R.png",
+   "normal": "house/textures/T_House_Beam_N.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Soil",
+  "textures": {
+   "base_color": "house/textures/T_House_Soil_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.2,
+  "opacity_from_base_color": true,
+  "alpha_mode": "dithered_masked",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_OutGrime",
+  "reuse": "/Game/Lived/Saro/Materials/M_Lived_OutGrime"
+ },
+ {
+  "name": "M_House_Loss",
+  "textures": {
+   "base_color": "house/textures/T_House_Loss_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.92,
+  "metallic": 0,
+  "specular": 0.25,
+  "opacity_from_base_color": true,
+  "alpha_mode": "dithered_masked",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_House_Lino",
+  "textures": {
+   "base_color": "house/textures/T_House_Lino_BC.png",
+   "roughness": "house/textures/T_House_Lino_R.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Rug",
+  "textures": {
+   "base_color": "house/textures/T_House_Rug_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Sofa",
+  "textures": {
+   "base_color": "house/textures/T_House_Sofa_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_CabPaint",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.5,
+   0.52,
+   0.4
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_Tile",
+  "textures": {
+   "base_color": "textures/T_Lived_Plastic_BC.png",
+   "roughness": "textures/T_Lived_Plastic_R.png"
+  },
+  "texture_tint_linear": [
+   0.5,
+   0.56,
+   0.5
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.3,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "normal_strength": 0.8,
+  "normal_convention": "DirectX"
+ },
+ {
+  "name": "M_House_China",
+  "base_color_linear": [
+   0.62,
+   0.59,
+   0.5,
+   1
+  ],
+  "roughness": 0.32,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_Iron",
+  "base_color_linear": [
+   0.03,
+   0.03,
+   0.03,
+   1
+  ],
+  "roughness": 0.7,
+  "metallic": 0.5,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_Mattress",
+  "base_color_linear": [
+   0.42,
+   0.37,
+   0.3,
+   1
+  ],
+  "roughness": 0.9,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_Curtain",
+  "base_color_linear": [
+   0.48,
+   0.44,
+   0.36,
+   1
+  ],
+  "roughness": 0.9,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_TV",
+  "base_color_linear": [
+   0.07,
+   0.045,
+   0.025,
+   1
+  ],
+  "roughness": 0.45,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_Knob",
+  "base_color_linear": [
+   0.12,
+   0.12,
+   0.12,
+   1
+  ],
+  "roughness": 0.4,
+  "metallic": 0.8,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_Blind",
+  "base_color_linear": [
+   0.4,
+   0.36,
+   0.28,
+   1
+  ],
+  "roughness": 0.55,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_DoorPaint",
+  "base_color_linear": [
+   0.24,
+   0.4,
+   0.37,
+   1
+  ],
+  "roughness": 0.72,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_House_DoorPanel",
+  "base_color_linear": [
+   0.18,
+   0.3,
+   0.28,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.35
+ },
+ {
+  "name": "M_Lived_Card",
+  "textures": {
+   "base_color": "textures/T_Lived_Card_BC.png",
+   "roughness": "textures/T_Lived_Card_R.png"
+  },
+  "texture_tint_linear": [
+   0.4,
+   0.28,
+   0.155
+  ],
+  "metallic": 0,
+  "specular": 0.45,
+  "roughness": 0.6,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Grime",
+  "reuse": "/Game/Lived/Control/Materials/M_Lived_Grime"
+ },
+ {
+  "name": "M_Lived_Paper",
+  "reuse": "/Game/Lived/Control/Materials/M_Lived_Paper"
+ }
+]

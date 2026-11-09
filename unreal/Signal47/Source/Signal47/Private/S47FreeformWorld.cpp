@@ -70,7 +70,7 @@ namespace
   if(OnRetiredBench(Legacy))Legacy+=Delta;
   return Original;
  }
- const FVector GeneratorAt(5.93,1.35,.65);
+ const FVector GeneratorAt(5.89,1.35,.65); // SARO-CLIP-20261108: its 20 cm box stood 3 cm into the east wall (inner face x 6.0) at 5.93
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
  const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };

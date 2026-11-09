@@ -19,6 +19,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47SoundWorkshop, Log, All);
 
 namespace
 {
+// T16-09: out of the control room this long with the modem going, and its sound is stopped (US47Audio::StepTransferWalls).
+constexpr double TransferLeaveSeconds = 1.5;
+
 bool SafeName(const FString& S)
 {
 	if (S.IsEmpty() || S.Len() > 80) return false;
@@ -129,15 +132,15 @@ void US47Audio::PcTransfer(double Seconds, TOptional<FVector> At)
 	if (!Ctx || !FMath::IsFinite(Seconds) || Seconds <= 0) return;
 	TArray<FString> Errors;
 	TSharedPtr<FS47AudioNode> Dest;
-	TransferWalls.Reset(); TransferLp.Reset(); bTransferHere = false;
-	if (At.IsSet())
+	TransferWalls.Reset(); TransferLp.Reset(); bTransferHere = false; TransferOutSince = -1;
 	{
-		// T16-09: the modem is the OPS PC's, in the room. Panner (distance) -> walls gain -> dull filter -> mix.
+		// T16-09: the modem is the OPS PC's, in the room. Mix -> dull filter -> walls gain -> panner (distance) at the PC.
+		// Without a place (no OPS PC loaded) the same walls, straight to the bus: it still stays in the room.
 		FS47AudioContext::FBatch Batch(*Ctx);
 		TransferLp = Ctx->CreateBiquadFilter(); TransferLp->SetType(TEXT("lowpass")); TransferLp->Frequency.SetValue(18000);
 		TransferWalls = Ctx->CreateGain(); TransferWalls->Gain.SetValue(1);
 		TransferLp->Connect(TransferWalls);
-		TransferWalls->Connect(Panner(At.GetValue(), 2.5));
+		if (At.IsSet()) TransferWalls->Connect(Panner(At.GetValue(), 2.5)); else TransferWalls->Connect(SfxBus);
 		Dest = TransferLp;
 		bTransferHere = true;
 	}
@@ -155,24 +158,83 @@ void US47Audio::PcTransferAtOps(AS47Web* Web, double Seconds)
 {
 	TOptional<FVector> At;
 	if (Web && Web->IsLoaded())
-		if (const FS47WebItem* Item = Web->Item(TEXT("opsTerminal")); Item && (Item->bBox || Web->ObjAt(Item->Node)))
+		if (const FS47WebItem* Item = Web->Item(TEXT("opsTerminal")); (Item && (Item->bBox || Web->ObjAt(Item->Node))) || Web->Handle(TEXT("room.objs.opsTerminal")) >= 0)
 		{
+			// (PropLocation falls back to the room's node when the export has no interactable for it)
 			const FVector P = S47Three::ToThree(Web->PropLocation(TEXT("opsTerminal")));
 			if (!P.ContainsNaN()) At = P;
 		}
 	PcTransfer(Seconds, At);
 }
 
+bool US47Audio::InControlRoom(const FVector& Eye)
+{
+	return Eye.X > -6.f && Eye.X < 6.f && Eye.Z > -4.5f && Eye.Z < 4.5f;
+}
+
 // Control room bounds (ControlRoom.ts: x +-6, z +-4.5, walls .3 thick). Out of it the modem comes through a wall and a door:
-// a third of the level and nothing above a few hundred hertz. Eased, so a step through the door is not a click.
+// a quarter of the level and nothing above a few hundred hertz. Eased, so a step through the door is not a click.
+// T16-09, second round (Tom: the modem sound follows you out after a job is sent): out of the room for TransferLeaveSeconds it
+// fades away and stops, as a door shut on it would; the transfer itself (the job) is not touched, only its sound.
 void US47Audio::StepTransferWalls(const FVector& Eye)
 {
 	if (!bTransferHere || !Ctx.IsValid() || !TransferWalls.IsValid() || !TransferLp.IsValid()) return;
-	const bool bIn = Eye.X > -6.f && Eye.X < 6.f && Eye.Z > -4.5f && Eye.Z < 4.5f;
+	const bool bIn = InControlRoom(Eye);
 	FS47AudioContext::FBatch Batch(*Ctx);
 	const double T = Ctx->CurrentTime();
-	TransferWalls->Gain.SetTargetAtTime(bIn ? 1.0 : 0.3, T, 0.12);
+	TransferWalls->Gain.SetTargetAtTime(bIn ? 1.0 : 0.25, T, 0.12);
 	TransferLp->Frequency.SetTargetAtTime(bIn ? 18000.0 : 450.0, T, 0.12);
+	if (bIn) { TransferOutSince = -1; return; }
+	if (TransferOutSince < 0) TransferOutSince = T;
+	if (T - TransferOutSince < TransferLeaveSeconds) return;
+	TransferWalls->Gain.SetTargetAtTime(0.0, T, 0.15);
+	StopSoundMix(TEXT("pc_transfer"), 0.6f);
+	++TransferSerial; // (its timeout has nothing left to stop)
+	bTransferHere = false;
+}
+
+// T16-09: the modem's walls, offline. A tone stands in for the recording (the bank is not loaded in a self test).
+bool US47Audio::TransferSelfTest(TArray<FString>& Lines)
+{
+	bool Ok = true;
+	const auto Check = [&](bool B, const TCHAR* Why) { Ok &= B; Lines.Add(FString::Printf(TEXT("%s modem: %s"), B ? TEXT("PASS") : TEXT("FAIL"), Why)); };
+	Check(InControlRoom(FVector(0, 1.6, -3.0)) && InControlRoom(FVector(-5.5, 1.6, 4.0)) && !InControlRoom(FVector(-2.4, 1.6, 5.6)) && !InControlRoom(FVector(8.9, 1.6, 8.0)),
+		TEXT("the control room is the room the OPS PC is in; the corridor and the yard are not"));
+	US47Audio* A = NewObject<US47Audio>(GetTransientPackage()); A->AddToRoot();
+	constexpr int32 Rate = 48000;
+	A->Ctx = FS47AudioContext::Make(Rate); A->bReady = true;
+	A->Master = A->Ctx->CreateGain(); A->Master->Gain.SetValue(1); A->Master->Connect(A->Ctx->Destination);
+	A->SfxBus = A->Ctx->CreateGain(); A->SfxBus->Connect(A->Master);
+	{
+		FS47AudioContext::FBatch Batch(*A->Ctx);
+		A->TransferLp = A->Ctx->CreateBiquadFilter(); A->TransferLp->SetType(TEXT("lowpass")); A->TransferLp->Frequency.SetValue(18000);
+		A->TransferWalls = A->Ctx->CreateGain(); A->TransferWalls->Gain.SetValue(1);
+		A->TransferLp->Connect(A->TransferWalls); A->TransferWalls->Connect(A->SfxBus);
+		auto Tone = A->Ctx->CreateOscillator(); Tone->Frequency.SetValue(1200); Tone->Connect(A->TransferLp); Tone->Start(0);
+		A->bTransferHere = true; A->TransferOutSince = -1;
+	}
+	TArray<float> Samples; Samples.SetNumZeroed(Rate / 10 * 2);
+	auto Run = [&](const FVector& Eye, double Seconds)
+	{
+		double Top = 0;
+		for (double T = 0; T < Seconds - 1e-6; T += .1)
+		{
+			A->StepTransferWalls(Eye);
+			A->Ctx->Render(Samples.GetData(), Rate / 10, 2); A->Ctx->Tick(.1);
+			Top = 0; for (float V : Samples) Top = FMath::Max(Top, FMath::Abs(double(V)));
+		}
+		return Top; // the last tenth of a second
+	};
+	const FVector Desk(0, 1.6, -3.0), Corridor(-2.4, 1.6, 5.6);
+	const double In = Run(Desk, .6);
+	const double OutSoon = Run(Corridor, .5);
+	Check(In > .3 && OutSoon < In * .4 && A->bTransferHere, TEXT("stepping out, the modem drops behind the wall at once"));
+	Run(Desk, .3);
+	Check(A->bTransferHere && A->TransferOutSince < 0, TEXT("back in the room within a moment, it is there again"));
+	const double Gone = Run(Corridor, TransferLeaveSeconds + 1.2);
+	Check(!A->bTransferHere && Gone < .002, TEXT("out of the room, it fades and stops instead of following the player"));
+	A->Ctx->Close(); A->RemoveFromRoot();
+	return Ok;
 }
 
 bool US47Audio::RenderSoundWorkshop(const FString& BankPath)

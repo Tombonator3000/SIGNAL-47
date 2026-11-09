@@ -22,6 +22,9 @@
 #include "S47SaroSite.h"
 #include "S47SaroLampFeet.h"
 #include "S47RouteLampFeet.h"
+#include "S47StreetLamps.h"
+#include "S47CalicheGround.h"
+#include "S47SubstationYard.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
 #include "S47CalicheHomes.h"
@@ -727,12 +730,18 @@ void AS47Web::BeginPlay()
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
 	S47SubstationDetail::Build(this);
+	// FENCES-INVISIBLE-20261108: barbed wire on the substation's fence and a second transformer on its own pad.
+	S47SubstationYard::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
 	S47SaroSeam::Build(this);
 	S47RouteLampFeet::Build(this);
+	// STREETLAMPS-20261108: cobra heads on davit arms in place of the highway's old poles, standing on those footings.
+	S47StreetLamps::Build(this);
 	BuildHighwayRanch();
 	BuildHighwayLandscape();
+	// CALICHE-REAL-20261108: a concrete stem wall under each of Caliche's building walls that measures floating over the land.
+	S47CalicheGround::Build(this);
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));

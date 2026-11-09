@@ -226,6 +226,8 @@ public:
 	// Without a place it is the old room-less sound.
 	void PcTransfer(double Seconds = 2.2, TOptional<FVector> At = TOptional<FVector>());
 	void PcTransferAtOps(AS47Web* Web, double Seconds = 2.2);
+	// T16-09: the modem stays in its room (walls when the listener is out, and stopped once well out). Offline.
+	static bool TransferSelfTest(TArray<FString>& Lines);
 	static bool RenderSoundWorkshop(const FString& BankPath);
 	// Menu tape texture is independent of music and follows the SFX/menu level.
 	void TitleTexture(bool bOn);
@@ -280,7 +282,9 @@ private:
 	TSharedPtr<FS47GainNode> TransferWalls;        // quieter when the listener is not in the control room
 	TSharedPtr<FS47BiquadFilterNode> TransferLp;   // and duller
 	bool bTransferHere = false;
+	double TransferOutSince = -1;                  // T16-09: when the listener left the control room with the modem on
 	void StepTransferWalls(const FVector& Eye);
+	static bool InControlRoom(const FVector& EyeThree);
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;

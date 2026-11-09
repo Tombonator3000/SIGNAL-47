@@ -1,5 +1,6 @@
 // Original roadside composition using a private, bounded native nature kit.
 #include "S47RouteNature.h"
+#include "S47SaroClip.h"
 #include "S47Web.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
@@ -323,7 +324,24 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
    const FTransform& T=F.Instances[I];C->AddInstance(T,true);
    if(F.Rock)
    {
-    const FBox B=F.Mesh->GetBoundingBox().TransformBy(T);
+    // FENCES-INVISIBLE-20261108: the turned rock's whole box held one off half a metre and more of bare ground at its corners.
+    // The block is what the rock stands on at walking height: its vertices in the lowest metre and a half, a tenth in from them.
+    FBox B=F.Mesh->GetBoundingBox().TransformBy(T);
+    {
+     bool bExact=false;const TArray<FVector3f>& V=S47SaroClip::Vertices(F.Mesh,bExact);
+     if(bExact)
+     {
+      FBox Foot(ForceInit);const double Low=B.Min.Z+150;
+      for(const FVector3f& Corner:V){const FVector At=T.TransformPosition(FVector(Corner));if(At.Z<=Low)Foot+=At;}
+      if(Foot.IsValid)
+      {
+       // (critic round 4: a tenth of a cliff's width is half a metre and more, past the walker's 0.27 m radius: one walked into its corners;
+       // at most 15 cm in, which the radius covers)
+       const FVector In(FMath::Min((Foot.Max.X-Foot.Min.X)*.1,15.),FMath::Min((Foot.Max.Y-Foot.Min.Y)*.1,15.),0.);Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
+       B=FBox(FVector(Foot.Min.X,Foot.Min.Y,B.Min.Z),FVector(Foot.Max.X,Foot.Max.Y,B.Max.Z));
+      }
+     }
+    }
     const FString Id=FString::Printf(TEXT("routeNature:%s:%d"),F.Name,I);
     Block(B,TEXT("road"),Id);
     const FVector Pos=S47Three::ToThree(T.GetLocation());

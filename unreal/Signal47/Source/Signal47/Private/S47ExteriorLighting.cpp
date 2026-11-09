@@ -7,6 +7,7 @@
 #include "S47Three.h"
 #include "S47ExteriorFixtures.h"
 #include "S47SaroArrival.h"
+#include "S47StreetLamps.h"
 
 namespace
 {
@@ -19,6 +20,18 @@ namespace
 		const FVector Out = FVector(LensNormal.X, 0, LensNormal.Z).GetSafeNormal();
 		return (Out * .35 + FVector(0, -1, 0)).GetSafeNormal();
 	}
+	// M6 (Caliche's lamps by day and night): a street head's glint in metres, how much of its colour it shows, and its light's
+	// volumetric scattering. -S47StreetGlowOld keeps the glows as M6 part 1 left them, for before and after.
+	// Critic round 4: at night a ragged orange cloud hung beside each head (the head's own volumetric shadow cut into the coarse fog
+	// froxels, and the glint half behind the bowl). The scattering is off for the heads, the glint smaller and up inside the bowl.
+	constexpr float StreetGlint = .16f, StreetGlintGain = .5f, StreetScatter = 0.f;
+	bool OldStreetGlow() { return FParse::Param(FCommandLine::Get(), TEXT("S47StreetGlowOld")); }
+	// Critic round 4: two soft orange discs stood over Caliche at noon. Every one of the town's runtime glows is a visible node of its
+	// own (world.town.runtime.glows[N]), lit day and night in Freeform (the town's timetable does not run there); only the street
+	// lamps' were masked. The rest (the radio mast's two red beacons with six-metre halos, signs, windows, the crossing signal) get
+	// the night mask here, halos over three metres come down to at most 2.5 m, and the crossing signal (0 and 1, blinking in Story)
+	// keeps a lens-sized glint and no halo. Per world: the glow nodes this owns.
+	TMap<TWeakObjectPtr<const AS47Web>, TArray<int32>>& TownNightGlows() { static TMap<TWeakObjectPtr<const AS47Web>, TArray<int32>> A; return A; }
 }
 
 void AS47Web::BuildExteriorLighting()
@@ -28,7 +41,9 @@ void AS47Web::BuildExteriorLighting()
 	const int32 Site = FloodSet(TEXT("site")), Court = FloodSet(TEXT("court"));
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
 	const bool bLookdev = LookdevExterior();
-	const auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
+	auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
+	// STREETLAMPS-20261108: the highway's cobra heads (S47StreetLamps, built with the world) carry the old feeds' lights.
+	Fixtures.Append(S47StreetLamps::Fixtures(this));
 	if (Fixtures.Contains(TEXT("FireExit")) && SaroArrival) SaroArrival->RetireCanopyLight();
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
 		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone, float Source = 8.f, float SoftSource = 6.f)
@@ -37,7 +52,19 @@ void AS47Web::BuildExteriorLighting()
 		if (!Owner || Set < 0 || Slot < 0 || Slot >= FloodSlots(Set)) return;
 		FExteriorLight P;
 		P.Node = Owner.I; P.Set = Set; P.Slot = Slot; P.At = At; P.Target = Target; P.Candela = Candela;
-		if (const auto* Fixture = Fixtures.Find(Name))
+		// STREETLAMPS-20261108: the street lamps' lights are high-pressure sodium, whatever the shared pool's tint.
+		const FString LightName(Name);
+		P.bSodium = LightName.StartsWith(TEXT("Highway")) || LightName.StartsWith(TEXT("Caliche")) || LightName.StartsWith(TEXT("CourtLot")) || LightName.StartsWith(TEXT("Yard"));
+		const auto* Fixture = Fixtures.Find(Name);
+		if (Fixture && Fixture->bStreetLamp)
+		{
+			// A cobra head: the source just under its bowl, aimed where the old one was (over the road), a small finite source.
+			P.At = Fixture->Aperture + Fixture->Normal * .03;
+			P.Diffuser = Fixture->Lens; P.Fixture = Fixture->Mesh; P.bAuthoredLens = true; P.bStreetHead = true;
+			Source = FMath::Min(Fixture->Width, Fixture->Height) * .2f;
+			SoftSource = Source * .6f;
+		}
+		else if (Fixture)
 		{
 			P.At = Fixture->Aperture;
 			// The wall-pack optic spreads down within its broad beam; canopy points straight down.
@@ -65,20 +92,24 @@ void AS47Web::BuildExteriorLighting()
 			// A glint belongs to the aperture, not a metre-wide additive ball in front of it.
 			// The native light and fog supply the pool and the atmospheric halo.
 			const bool bPost = (Set == Site && ((Slot >= 5 && Slot <= 7) || (Slot >= 12 && Slot <= 15))) || (Set == Court && Slot >= 10);
-			G->SetSize(GlowIndex, P.bAuthoredLens ? 0.f : bPost ? 0.4f : 0.22f);
-			G->SetPosition(GlowIndex, NodeWorldThree(G->Node).InverseTransformPosition(P.At));
+			// M6: a cobra head's bowl keeps a small soft glint of its own (a third of a metre, just under the lens), so the
+			// lamp reads lit from afar without a ball in the air; the day mask and the feed take it out in daylight.
+			G->SetSize(GlowIndex, P.bStreetHead && !OldStreetGlow() ? StreetGlint : P.bAuthoredLens ? 0.f : bPost ? 0.4f : 0.22f);
+			G->SetPosition(GlowIndex, NodeWorldThree(G->Node).InverseTransformPosition(P.bStreetHead && !OldStreetGlow() ? P.At + FVector(0, .06, 0) /* 3 cm up inside the bowl */ : P.At));
 		}
 		USpotLightComponent* L = NewObject<USpotLightComponent>(this, FName(*FString::Printf(TEXT("S47Exterior_%s"), Name)));
 		L->SetupAttachment(GetRootComponent()); L->SetMobility(EComponentMobility::Movable);
 		L->SetIntensityUnits(ELightUnits::Candelas); L->SetIntensity(0);
 		L->SetWorldLocationAndRotation(S47Three::ToUE(P.At), S47Three::DirToUE(P.Target - P.At).Rotation());
-		L->SetInnerConeAngle(Cone * 0.65f); L->SetOuterConeAngle(Cone);
+		// A street lamp's refractor spreads its light wide and soft to the edge: the warm cone fades rather than ending in a ring.
+		L->SetInnerConeAngle(Cone * (P.bSodium ? 0.4f : 0.65f)); L->SetOuterConeAngle(Cone);
 		L->SetAttenuationRadius(Reach * 100.f);
 		L->SetSourceRadius(Source); L->SetSoftSourceRadius(SoftSource);
-		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+		L->SetCastShadows(true); L->SetCastVolumetricShadow(!(P.bStreetHead && !OldStreetGlow()));
 		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 20.f;
 		L->ContactShadowCastingIntensity = 0.75f;
-		L->SetVolumetricScatteringIntensity(0.35f); L->SetIndirectLightingIntensity(1.f);
+		// M6: a street head's scattering is a faint veil under it, not a halo the size of a house (it was .6 for all sodium)
+		L->SetVolumetricScatteringIntensity(P.bStreetHead && !OldStreetGlow() ? StreetScatter : P.bSodium ? 0.6f : 0.35f); L->SetIndirectLightingIntensity(1.f);
 		L->SetVisibility(false); L->RegisterComponent();
 		P.Light = L;
 		ExteriorLights.Add(P);
@@ -107,7 +138,7 @@ void AS47Web::BuildExteriorLighting()
 			const FVector At = T.TransformPosition(G->Pos[Point]);
 			const FString Name = FString::Printf(TEXT("Highway%02d"), I + 1);
 			Add(*Name, TEXT("ext.group"), Site, 5 + FMath::Min(I, 2), TEXT("ext.glow.points"), Point,
-				At, FVector(-24, -0.62, At.Z), 90.f, 16.f, 58.f);
+				At, FVector(-24, -0.62, At.Z), 480.f, 26.f, 70.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees; at 220 cd the pool was still small)
 		}
 	}
 	// Building wall packs: a shared material pool never substitutes for the real housings.
@@ -199,14 +230,40 @@ void AS47Web::BuildExteriorLighting()
 		const FLinearColor Pool = FloodPos(Town, I);
 		const FVector At(Pool.R, Pool.G + 0.255, Pool.B);
 		const FString Name = FString::Printf(TEXT("Caliche%02d"), I);
-		Add(*Name, TEXT("world.town.group"), Town, I, TEXT(""), -1,
-			At, At + FVector(2.3, -7.5, 0), 120.f, 16.f, 61.f, 18.f, 8.f);
+		// M6 (sweep 4: orange balls by day, great halos by night): the sprites that are drawn are not world.town.glow.points
+		// (node 1556, hidden at the export) but one node each under town:runtime, world.town.runtime.glows[N]: N = 2I a 2.2 m
+		// orange glint and 2I+1 a 13 m halo, both at the old head (x -3.9) and lit day and night, since Freeform does not run
+		// the town's timetable (S47Town::GlowColor). The glint becomes this lamp's own: on its bowl, small, under the day mask
+		// and the feed; the halo goes (the light's own scattering and the bowl's bloom are the glow in the air).
+		const FString GlintPath = FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2);
+		const bool bNewGlow = !OldStreetGlow() && Glow(GlintPath);
+		Add(*Name, TEXT("world.town.group"), Town, I, bNewGlow ? *GlintPath : TEXT(""), bNewGlow ? 0 : -1,
+			At, At + FVector(2.3, -7.5, 0), 200.f, 20.f, 64.f, 18.f, 8.f); // STREETLAMPS: was 120 cd, 16 m, 61 degrees
+		if (bNewGlow)
+			if (FS47GlowPoints* Halo = Glow(FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2 + 1)))
+				if (Halo->Num() > 0) { Halo->SetSize(0, 0.f); Halo->SetOutputScale(0, 0.f); }
 		if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
 		{
 			// The second sprite was a thirteen-metre additive substitute for ground light.
 			// Keep only the lens glint; native fog and the shadowed cone make the halo/pool.
-			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, 0.45f);
+			// STREETLAMPS: at .45 m the glint read as an orange ball beside the head at night; a lens-sized glint
+			// With a cobra head of S47StreetLamps the bowl itself glows, and the glint (at the old head) goes.
+			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, Fixtures.Contains(FName(*Name)) ? 0.f : 0.22f);
 			if (G->Pos.IsValidIndex(I * 2 + 1)) G->SetSize(I * 2 + 1, 0.f);
+		}
+	}
+	{
+		TArray<int32>& Night = TownNightGlows().FindOrAdd(this);
+		Night.Reset();
+		for (int32 N = 0; N < 64; ++N)
+		{
+			const bool bLamp = N >= 2 && N <= 15; // the seven street lamps' glint and halo, above
+			const int32 Node = Handle(FString::Printf(TEXT("world.town.runtime.glows[%d]"), N));
+			FS47GlowPoints* G = Glow(Node);
+			if (bLamp || !G || G->Num() < 1) continue;
+			if (N <= 1) { G->SetSize(0, N == 0 ? .3f : 0.f); continue; } // the crossing signal: a lens, no halo, its own blink
+			if (G->Size[0] > 3.f) G->SetSize(0, FMath::Min(2.5f, G->Size[0] * .4f));
+			Night.Add(Node);
 		}
 	}
 	// Only the four exported lamp-bulb faces use this material in the yard. Resolve their
@@ -240,7 +297,7 @@ void AS47Web::BuildExteriorLighting()
 			}
 			else M->SetMaterial(MeshSlot, D);
 			KeepMids.Add(D);
-			for (FExteriorLight& P : ExteriorLights) if (P.Set == Site && P.Slot >= 12 && P.Slot <= 15) { P.Diffuser = D; P.Material = N.Mats[MatSlot]; }
+			for (FExteriorLight& P : ExteriorLights) if (P.Set == Site && P.Slot >= 12 && P.Slot <= 15 && !P.bStreetHead) { P.Diffuser = D; P.Material = N.Mats[MatSlot]; } // (M6: a yard post replaced by a cobra head keeps its own lens)
 		}
 	}
 }
@@ -259,6 +316,12 @@ void AS47Web::UpdateExteriorLighting()
   G->SetOutputScale(6, ExteriorDaylightMask(Field, 3));
   G->SetOutputScale(10, ExteriorDaylightMask(Field, 5));
  }
+ if (const TArray<int32>* Night = TownNightGlows().Find(this))
+ {
+  // (the first street lamp's photocell stands for the town's night)
+  const float Dark = ExteriorDaylightMask(FloodSet(TEXT("town")), 1);
+  for (const int32 Node : *Night) if (FS47GlowPoints* G = Glow(Node)) G->SetOutputScale(0, Dark);
+ }
  if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
   for (int32 I = 1; I <= 7; ++I)
   {
@@ -275,7 +338,7 @@ void AS47Web::UpdateExteriorLighting()
 		if (!ObjAt(P.Node).Shown()) K = 0;
 		if (FS47GlowPoints* G = Glow(P.GlowNode); G && G->Pos.IsValidIndex(P.Glow) && G->Col.IsValidIndex(P.Glow))
 		{
-			G->SetOutputScale(P.Glow, DayMask);
+			G->SetOutputScale(P.Glow, DayMask * (P.bStreetHead ? StreetGlintGain : 1.f));
 			const FLinearColor C = G->Col[P.Glow];
 			const float GlowK = FMath::Max3(C.R, C.G, C.B) / P.GlowReference;
 			if (NodeWorldThree(G->Node).TransformPosition(G->Pos[P.Glow]).Y < -900) K = 0;
@@ -299,7 +362,13 @@ void AS47Web::UpdateExteriorLighting()
 		const bool bOn = K > 0.0001f && FVector::DistSquared(Camera, P.At) < FMath::Square(200.f);
 		const bool bToggle = P.bWasOn != bOn;
 		if (bToggle) L->SetVisibility(bOn);
-		const FLinearColor C = FloodCol(P.Set, P.Slot);
+		FLinearColor C = FloodCol(P.Set, P.Slot);
+		if (P.bSodium)
+		{
+			// the feed's brightness in sodium's colour
+			const FLinearColor S = S47StreetLamps::Sodium();
+			C = S * (FMath::Max3(C.R, C.G, C.B) / FMath::Max(0.001f, FMath::Max3(S.R, S.G, S.B)));
+		}
 		const float Gain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		// Unreal's setters ignore unchanged values; colour-only HDR changes still update power.
 		L->SetIntensity(bOn ? P.Candela * K * Gain : 0.f);
@@ -307,7 +376,8 @@ void AS47Web::UpdateExteriorLighting()
 		if (P.bAuthoredLens)
 		{
 			if (auto* M = P.Fixture.Get()) M->SetVisibility(ObjAt(P.Node).Shown(), false);
-			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * (1.5f * K));
+			// a cobra head's bowl glows bright enough to bloom (prosjektbibliotek: bloom over 1 only on lamps)
+			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * ((P.bStreetHead ? 6.f : 1.5f) * K));
 		}
 		if (bLog && bToggle) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s %s k=%.4f cd=%.2f"), *L->GetName(), bOn ? TEXT("on") : TEXT("off"), K, L->Intensity);
 		P.LastK = K; P.bWasOn = bOn;

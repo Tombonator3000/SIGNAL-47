@@ -217,6 +217,8 @@ public:
  void WalkOver();
  /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */
  IS47DriveArea* LegArea(const FString& Id) const;
+ /** What the open land of an area keeps out (FLand::Out), for S47Blockers' list of what stops one with nothing drawn. Null: no land. */
+ const TArray<FS47Box2>* LandOut(const FString& InArea) const;
  FString WhyNotLand(double X, double Z);
  // An old save can leave the parked service truck inside a new farm wall: put it on the nearest clear ground, same heading. No save field changes.
  void KeepParkedOutOfFarmWalls();

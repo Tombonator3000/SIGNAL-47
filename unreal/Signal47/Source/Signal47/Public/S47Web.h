@@ -429,6 +429,8 @@ private:
 		float Reference = 1, Candela = 0, GlowReference = 1, LastK = -1;
 		bool bWasOn = false;
 		bool bAuthoredLens = false;
+		bool bSodium = false;      // a street lamp (STREETLAMPS-20261108): high-pressure sodium yellow at the feed's brightness
+		bool bStreetHead = false;  // its light comes from a cobra head's bowl (S47StreetLamps)
 		TWeakObjectPtr<USpotLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
 		TWeakObjectPtr<UStaticMeshComponent> Fixture;
