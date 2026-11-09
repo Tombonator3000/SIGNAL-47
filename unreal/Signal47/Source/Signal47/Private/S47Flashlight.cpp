@@ -316,7 +316,7 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		for (int32 I = 0; I < 3000; ++I) B.Update(1.0, I, Cam, false);
 		Check(B.BatteryLevel() == 1 && B.bOn && !B.Dead(), TEXT("Story: the lamp has no battery and never runs down"));
 		B.bDrains = true;
-		for (int32 I = 0; I < 1350; ++I) B.Update(1.0, I, Cam, false);
+		for (int32 I = 0; I < int32(FS47Flashlight::RunSeconds / 2); ++I) B.Update(1.0, I, Cam, false);
 		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 0.5, 0.001) && B.Intensity() > 60, TEXT("Freeform: half the lit time takes half the battery, the beam still full"));
 		B.Update(1.0, 0, Cam, true);
 		const double Held = B.BatteryLevel();
