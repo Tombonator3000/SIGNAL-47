@@ -20,6 +20,10 @@ namespace
 		const FVector Out = FVector(LensNormal.X, 0, LensNormal.Z).GetSafeNormal();
 		return (Out * .35 + FVector(0, -1, 0)).GetSafeNormal();
 	}
+	// M6 (Caliche's lamps by day and night): a street head's glint in metres, how much of its colour it shows, and its light's
+	// volumetric scattering. -S47StreetGlowOld keeps the glows as M6 part 1 left them, for before and after.
+	constexpr float StreetGlint = .32f, StreetGlintGain = .55f, StreetScatter = .22f;
+	bool OldStreetGlow() { return FParse::Param(FCommandLine::Get(), TEXT("S47StreetGlowOld")); }
 }
 
 void AS47Web::BuildExteriorLighting()
@@ -80,7 +84,9 @@ void AS47Web::BuildExteriorLighting()
 			// A glint belongs to the aperture, not a metre-wide additive ball in front of it.
 			// The native light and fog supply the pool and the atmospheric halo.
 			const bool bPost = (Set == Site && ((Slot >= 5 && Slot <= 7) || (Slot >= 12 && Slot <= 15))) || (Set == Court && Slot >= 10);
-			G->SetSize(GlowIndex, P.bAuthoredLens ? 0.f : bPost ? 0.4f : 0.22f);
+			// M6: a cobra head's bowl keeps a small soft glint of its own (a third of a metre, just under the lens), so the
+			// lamp reads lit from afar without a ball in the air; the day mask and the feed take it out in daylight.
+			G->SetSize(GlowIndex, P.bStreetHead && !OldStreetGlow() ? StreetGlint : P.bAuthoredLens ? 0.f : bPost ? 0.4f : 0.22f);
 			G->SetPosition(GlowIndex, NodeWorldThree(G->Node).InverseTransformPosition(P.At));
 		}
 		USpotLightComponent* L = NewObject<USpotLightComponent>(this, FName(*FString::Printf(TEXT("S47Exterior_%s"), Name)));
@@ -94,7 +100,8 @@ void AS47Web::BuildExteriorLighting()
 		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
 		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 20.f;
 		L->ContactShadowCastingIntensity = 0.75f;
-		L->SetVolumetricScatteringIntensity(P.bSodium ? 0.6f : 0.35f); L->SetIndirectLightingIntensity(1.f);
+		// M6: a street head's scattering is a faint veil under it, not a halo the size of a house (it was .6 for all sodium)
+		L->SetVolumetricScatteringIntensity(P.bStreetHead && !OldStreetGlow() ? StreetScatter : P.bSodium ? 0.6f : 0.35f); L->SetIndirectLightingIntensity(1.f);
 		L->SetVisibility(false); L->RegisterComponent();
 		P.Light = L;
 		ExteriorLights.Add(P);
@@ -215,8 +222,18 @@ void AS47Web::BuildExteriorLighting()
 		const FLinearColor Pool = FloodPos(Town, I);
 		const FVector At(Pool.R, Pool.G + 0.255, Pool.B);
 		const FString Name = FString::Printf(TEXT("Caliche%02d"), I);
-		Add(*Name, TEXT("world.town.group"), Town, I, TEXT(""), -1,
+		// M6 (sweep 4: orange balls by day, great halos by night): the sprites that are drawn are not world.town.glow.points
+		// (node 1556, hidden at the export) but one node each under town:runtime, world.town.runtime.glows[N]: N = 2I a 2.2 m
+		// orange glint and 2I+1 a 13 m halo, both at the old head (x -3.9) and lit day and night, since Freeform does not run
+		// the town's timetable (S47Town::GlowColor). The glint becomes this lamp's own: on its bowl, small, under the day mask
+		// and the feed; the halo goes (the light's own scattering and the bowl's bloom are the glow in the air).
+		const FString GlintPath = FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2);
+		const bool bNewGlow = !OldStreetGlow() && Glow(GlintPath);
+		Add(*Name, TEXT("world.town.group"), Town, I, bNewGlow ? *GlintPath : TEXT(""), bNewGlow ? 0 : -1,
 			At, At + FVector(2.3, -7.5, 0), 200.f, 20.f, 64.f, 18.f, 8.f); // STREETLAMPS: was 120 cd, 16 m, 61 degrees
+		if (bNewGlow)
+			if (FS47GlowPoints* Halo = Glow(FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2 + 1)))
+				if (Halo->Num() > 0) { Halo->SetSize(0, 0.f); Halo->SetOutputScale(0, 0.f); }
 		if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
 		{
 			// The second sprite was a thirteen-metre additive substitute for ground light.
@@ -293,7 +310,7 @@ void AS47Web::UpdateExteriorLighting()
 		if (!ObjAt(P.Node).Shown()) K = 0;
 		if (FS47GlowPoints* G = Glow(P.GlowNode); G && G->Pos.IsValidIndex(P.Glow) && G->Col.IsValidIndex(P.Glow))
 		{
-			G->SetOutputScale(P.Glow, DayMask);
+			G->SetOutputScale(P.Glow, DayMask * (P.bStreetHead ? StreetGlintGain : 1.f));
 			const FLinearColor C = G->Col[P.Glow];
 			const float GlowK = FMath::Max3(C.R, C.G, C.B) / P.GlowReference;
 			if (NodeWorldThree(G->Node).TransformPosition(G->Pos[P.Glow]).Y < -900) K = 0;
