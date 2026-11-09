@@ -76,6 +76,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **BIGNIGHT-SEEN-20261109:** Tom fikk nesten ikke med seg den store natta (rise, natt 2, 03:35). Den så ut som «mange lysende disker stablet over hverandre» (plassholdergeometri). Den skal se troverdig ut, ikke kunne overses (drønn, flimring, skjær i horisonten, høydepunktet venter på blikket), og Dale og andre kilder skal gi mer hjelp og flere detaljer.
 - [ ] **MSG-ONE-20261109:** Tom: bare én melding om gangen. Dale og CB-tekst kom samtidig og fylte skjermen. Hjelpeteksten i bilen («kjør til bensinstasjonen») kommer hver gang man setter seg inn.
 - [ ] **SARO-GEN-RAMP-20261109:** Tom ca. 18:10: generatoren skal startes ute ved standby-generatoren, ikke med knappen inne. Fjern skiltet med kamera og søylen ved utgangsdøra. Spilleren kommer fortsatt ikke ned fra rampa på SARO på grunn av en usynlig vegg (Toms bilder på skrivebordet).
+- [ ] **VIGNETTE-STEPS-20261109:** Tom ca. 18:20: lyseffekter, redsel og tretthet har en firkantet lavpoly-kant (nøstede rektangler i stedet for myk vignett). Lyset under bortføringen er nøstede rektangler over hele skjermen. Lyder henger igjen i loop etter oppvåkning (Toms bilder).
 - [ ] **SUBSTATION-LOD-20261109:** `Tools/substationfield/import_assets.py` og `relod_apron.py` bruker samme LOD-mønster som ga WorldGrid-slotter i gatelysene (rettet i kode i 3f946c47). Substasjonsmodellene har trolig samme feil.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
