@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47FarmWindmill.h"
 #include "S47Relief.h"
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
@@ -2488,7 +2489,11 @@ void US47World::ReconcileFarm(bool bEnabled)
    // The new buildings' real walls with the barn's door left open, or the two old boxes when their meshes are missing.
    if(S47FarmBuildings::Available())for(const FBox2D& Solid:S47FarmBuildings::Obstacles())Box(Solid.Min.X,Solid.Max.X,Solid.Min.Y,Solid.Max.Y);
    else{Box(101,115,187,197);Box(126,146,164,177);}
-   Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
+   // FENCES-INVISIBLE-20261108: the old stock tank's box (Story's, 3 m round road 152,200) held the truck where nothing stands in
+   // Freeform; the new tower and tank (S47FarmWindmill) are where they are drawn.
+   if(S47FarmWindmill::Available())for(const FBox2D& Foot:S47FarmWindmill::Footprints())Box(Foot.Min.X,Foot.Max.X,Foot.Min.Y,Foot.Max.Y);
+   else Box(148,156,196,204);
+   Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
    // The truck has only ever been able to reach what stood by its roads, and its lists hold no more than that. Off them, all that holds a walker holds it too.
    if(!S47OpenLand::Off()&&M&&M->Web)
    {
@@ -2500,6 +2505,10 @@ void US47World::ReconcileFarm(bool bEnabled)
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
      if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
+     // FENCES-INVISIBLE-20261108: a cow's walk box has its own circle in the truck's list, which goes with the cow (S47Herd); a copy
+     // made here stayed where the cow stood when the farm opened, and held the truck in the empty pasture.
+     const double CX=(C.MinX+C.MaxX)*.5,CZ=(C.MinZ+C.MaxZ)*.5,CR=(C.MaxX-C.MinX)*.5;
+     if(Obs.ContainsByPredicate([&](const FS47Obstacle& Have){return Have.bCircle&&FMath::Abs(Have.X-CX)<.01&&FMath::Abs(Have.Z-CZ)<.01&&FMath::Abs(Have.R-CR)<.02;}))continue;
      Solid(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
     }
     if(Id==TEXT("saro"))

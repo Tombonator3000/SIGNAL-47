@@ -123,7 +123,7 @@ void AS47Web::BuildExteriorLighting()
 			const FVector At = T.TransformPosition(G->Pos[Point]);
 			const FString Name = FString::Printf(TEXT("Highway%02d"), I + 1);
 			Add(*Name, TEXT("ext.group"), Site, 5 + FMath::Min(I, 2), TEXT("ext.glow.points"), Point,
-				At, FVector(-24, -0.62, At.Z), 220.f, 22.f, 68.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees)
+				At, FVector(-24, -0.62, At.Z), 480.f, 26.f, 70.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees; at 220 cd the pool was still small)
 		}
 	}
 	// Building wall packs: a shared material pool never substitutes for the real housings.

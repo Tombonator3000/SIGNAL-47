@@ -13,6 +13,9 @@ namespace S47FarmWindmill
  bool Available();
  // In the Story ranch's own metres (before Freeform's 310 m west): the old windmill's and tank's triangles, which go.
  bool Retired(const FVector& StoryThree);
+ // Road-local footprints of the tower's feet and of the tank, for the truck's obstacles (FENCES-INVISIBLE-20261108: the old
+ // tank's box stayed where nothing stands any more).
+ TArray<FBox2D> Footprints();
  // Built once, then placed for the area and shown in Freeform only (as S47FarmWorld's parts).
  void Reconcile(AS47Web* W,bool bOn);
 }

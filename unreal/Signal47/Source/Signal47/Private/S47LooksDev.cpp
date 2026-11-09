@@ -60,7 +60,9 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
      // window frames, trims, the room shells and partitions, the outside skin, floor grime that runs under a wall, weeds at its foot,
      // conduit through a partition, and REEL047's fire drawer, which stands in the wall until it is pulled out (archive047.ts).
      static const TCHAR* const BuiltIn[] = { TEXT("Frame"), TEXT("frame"), TEXT("Bead"), TEXT("Trim"), TEXT("Door"), TEXT("authoredRoom"), TEXT("Overlay"),
-      TEXT("LivedSaroExterior"), TEXT("rampEntrance"), TEXT("AccessDressing"), TEXT("weeds"), TEXT("Conduit"), TEXT("Reel047"), TEXT("partition"), TEXT("Skirting") };
+      TEXT("LivedSaroExterior"), TEXT("rampEntrance"), TEXT("AccessDressing"), TEXT("weeds"), TEXT("Conduit"), TEXT("Reel047"), TEXT("partition"), TEXT("Skirting"),
+      // the photo lab's service entry at the floor and its safelight, recessed in the north wall (S47PhotoLabDetail)
+      TEXT("UtilityDetail"), TEXT("SafelightHousing") };
      const auto IsBuiltIn = [](const FString& Thing)
      {
       for (const TCHAR* Word : BuiltIn) if (Thing.Contains(Word, ESearchCase::CaseSensitive)) return true;
@@ -117,24 +119,33 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  E.AddFreeform(Group, TEXT("Invisible blockers on the road"), TEXT("11:00 by the substation: the same for the road's walk, which holds Caliche, the motel, the substation and the farm"), [Blockers]
  { Blockers(TEXT("diner"), FVector2D(7896, 520), TEXT("the road")); });
 
- // ---- STREETLAMPS: each lamp's foot against the ground under it ----
- E.AddFreeform(Group, TEXT("Street lamps: feet on the ground"), TEXT("11:00 on the highway by SARO: every street lamp's foot measured against the ground under it, in each area it stands in"), [this, Log]
+ // ---- STREETLAMPS: each lamp's foot against the ground under it, where the lamps are drawn ----
+ const auto Feet = [this, Log](const FString& Area, const FVector2D& At)
  {
-  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(-14, 36); };
+  FStage S; S.From = 11; S.To = 12.5; S.Area = Area; S.Where = [At] { return At; };
   Go(S, [this, Log]
   {
-   TArray<FString> Lines;
-   const int32 Bad = S47StreetLamps::MeasureFeet(M->Web, Lines);
-   Log(Lines);
-   Tell(Bad == 0 && Lines.Num() > 1, Lines.Num() ? Lines[0] : FString(TEXT("no street lamps")), 12);
+   After(.8, [this, Log]
+   {
+    TArray<FString> Lines;
+    const int32 Bad = S47StreetLamps::MeasureFeet(M->Web, Lines);
+    Log(Lines);
+    Tell(Bad == 0 && Lines.Num() > 1, Lines.Num() ? Lines[0] : FString(TEXT("no street lamps")), 12);
+   });
   });
- });
+ };
+ E.AddFreeform(Group, TEXT("Highway lamps: feet on the ground"), TEXT("11:00 on the highway by SARO: each lamp's foot measured against what is under it"), [Feet]
+ { Feet(TEXT("saro"), FVector2D(-14, 36)); });
+ E.AddFreeform(Group, TEXT("Caliche's lamps: feet on the ground"), TEXT("11:00 on Main Street: each lamp's foot measured against its footing and the sidewalk"), [Feet]
+ { Feet(TEXT("diner"), FVector2D(8000 - 2, 2140)); });
 
  // ---- the views ----
  E.AddFreeform(Group, TEXT("Dale's window from outside, day"), TEXT("11:00 south of the annex, looking at the office's window"), [View, Saro, Saro3]
  { View(TEXT("saro"), 11, Saro(.4, 17), Saro3(.4, .55, 10.8), TEXT("Dale's window from the yard: glass, frame and sill, the blind and the room behind it")); });
  E.AddFreeform(Group, TEXT("Dale's window from inside"), TEXT("11:00 in the office, looking out of the window"), [View, Saro, Saro3]
  { View(TEXT("saro"), 11, Saro(1.0, 8.0), Saro3(.4, .1, 10.8), TEXT("Dale's window from the office: the same opening, the yard outside")); });
+ E.AddFreeform(Group, TEXT("The records room"), TEXT("11:00 in the records room, looking at its south wall: what the walk colliders there stand for"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-3.0, 7.4), Saro3(-3.6, -.6, 10.2), TEXT("The records room: shelves and boxes against the south wall")); });
  E.AddFreeform(Group, TEXT("The substation by day"), TEXT("11:00 at the gate, looking in"), [View]
  { View(TEXT("diner"), 11, FVector2D(-104, 516), FVector(-110, -.4, 537), TEXT("The substation: fence and its wire, transformers on their pads, insulators, signs, gravel")); });
  E.AddFreeform(Group, TEXT("The substation from the east"), TEXT("11:00 east of the fence"), [View]

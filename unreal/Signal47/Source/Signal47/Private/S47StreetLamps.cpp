@@ -116,7 +116,8 @@ namespace
   return Out;
  }
  // The first visible thing straight down from From, but none of Ignore.
- bool Down(UWorld* World, const FVector& From, double Depth, const TArray<UPrimitiveComponent*>& Ignore, double& Y, FString* What = nullptr)
+ // bAnyShown false: whatever is there, drawn now or not (at build an area away is hidden, and its ground is no less there).
+ bool Down(UWorld* World, const FVector& From, double Depth, const TArray<UPrimitiveComponent*>& Ignore, double& Y, FString* What = nullptr, bool bShownOnly = true)
  {
   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47StreetLampFoot), true);
   for (UPrimitiveComponent* P : Ignore) if (P) Q.AddIgnoredComponent(P);
@@ -125,7 +126,7 @@ namespace
    FHitResult Hit;
    if (!World->LineTraceSingleByChannel(Hit, S47Three::ToUE(From), S47Three::ToUE(From - FVector(0, Depth, 0)), ECC_Visibility, Q)) return false;
    UPrimitiveComponent* P = Hit.GetComponent();
-   if (P && P->IsVisible() && !P->bHiddenInGame)
+   if (P && (!bShownOnly || (P->IsVisible() && !P->bHiddenInGame)))
    {
     Y = S47Three::ToThree(Hit.ImpactPoint).Y;
     if (What) *What = P->GetName();
@@ -214,7 +215,7 @@ namespace
   for (const double Z : Zs)
   {
    double Y = 0; FString What;
-   if (!Down(World, FVector(-18.5, 1.5, Z), 4, Ignore, Y, &What))
+   if (!Down(World, FVector(-18.5, 1.5, Z), 4, Ignore, Y, &What, false))
    { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: nothing under the highway pole at z %.0f; the old lamps stay"), Z); return false; }
    Feet.Add(FVector(-18.5, Y, Z));
    UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp road z %.0f stands on %s at y %.3f"), Z, *What, Y);
@@ -267,7 +268,7 @@ namespace
    for (const FVector2D& D : { FVector2D(-.4, 0), FVector2D(0, .4), FVector2D(0, -.4) })
    {
     double Y = 0;
-    if (Down(World, FVector(OriginX + LampX + D.X, Base + .5, Z + D.Y), 3, {}, Y)) Ys.Add(Y);
+    if (Down(World, FVector(OriginX + LampX + D.X, Base + .5, Z + D.Y), 3, {}, Y, nullptr, false)) Ys.Add(Y);
    }
    Ys.Sort();
    const double Y = Ys.Num() ? Ys[Ys.Num() / 2] : Base;
@@ -342,11 +343,13 @@ int32 MeasureFeet(AS47Web* W, TArray<FString>& Lines)
  const TArray<FLamp>* Lamps = W ? All().Find(W) : nullptr;
  if (!Lamps || Lamps->IsEmpty()) { Lines.Add(TEXT("Street lamps: none of the new lamps is built (no models, or -S47StreetLampsOff)")); return 0; }
  UWorld* World = W->GetWorld();
- int32 Bad = 0, Measured = 0;
+ int32 Bad = 0, Measured = 0, Away = 0;
  TArray<FString> Each;
  for (const FLamp& L : *Lamps)
  {
   if (!L.Pole.IsValid()) continue;
+  // Only the lamps of the place one is in are drawn, and only what is drawn can be measured against.
+  if (!L.Pole->IsVisible() || L.Pole->bHiddenInGame) { ++Away; continue; }
   TArray<UPrimitiveComponent*> Own = { L.Pole.Get(), L.Arm.Get(), L.Head.Get() };
   // the pole's base as drawn now (a relief or a mover may have shifted it since the build)
   const FVector Base = S47Three::ToThree(L.Pole->GetComponentLocation());
@@ -362,7 +365,7 @@ int32 MeasureFeet(AS47Web* W, TArray<FString>& Lines)
   Each.Add(FString::Printf(TEXT("  %s %s at x %.2f z %.2f: base y %.3f; on %s at %.3f (gap %+.0f mm); ground %s at %.3f (footing %.0f mm over it)"), bOk ? TEXT("ok") : TEXT("WRONG"), *L.Light,
    Base.X, Base.Z, Base.Y, bSupport ? *On : TEXT("nothing"), Support, Gap * 1000, bGround ? *Earth : TEXT("nothing"), Ground, bGround && bSupport ? (Support - Ground) * 1000 : 0.));
  }
- Lines.Add(FString::Printf(TEXT("Street lamps: %d measured, %d stand on what is under them within 2 cm, %d wrong"), Measured, Measured - Bad, Bad));
+ Lines.Add(FString::Printf(TEXT("Street lamps: %d measured here, %d stand on what is under them within 2 cm, %d wrong (%d in other places, not drawn now)"), Measured, Measured - Bad, Bad, Away));
  Lines.Append(Each);
  return Bad;
 }
