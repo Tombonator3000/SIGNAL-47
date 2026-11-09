@@ -5,6 +5,8 @@
 #include "S47FieldRadio.h"
 #include "S47FarmSite.h"
 #include "S47EventPlaces.h"
+#include "S47OpenLand.h"
+#include "S47Visitors.h"
 #include "S47NightRhythm.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -796,7 +798,7 @@ void FS47FreeformDirector::Draw()
  {
   if(!bTracePlaced){Effects->PlaceSample(Anchor);bTracePlaced=true;}
   const FS47Obj Here=Effects->SampleFor(Scene);
-  Effects->Physical(Effects->IsRoadSample(Here)?Effects->Sample:Effects->SampleRoad,false);Effects->Physical(Here,true);
+  Effects->Physical(Effects->IsRoadSample(Here)?Effects->Sample:Effects->SampleRoad,false);Effects->Physical(Here,!TraceRaked());
  }
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  if(auto* Orb=Effects->Orb.Get())
@@ -934,6 +936,11 @@ bool FS47FreeformDirector::SameScene() const
  // On foot in town is the diner's area and in the truck it is the road's: one street either way.
  const auto Town=[](const FString& A){return A==TEXT("road")||A==TEXT("diner");};
  return Here==Scene||(Town(Here)&&Town(Scene));
+}
+bool FS47FreeformDirector::TraceRaked() const
+{
+ const FS47FreeformSession* F=M&&M->Freeform?M->Freeform.Get():nullptr;
+ return F&&Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&F->Visitors&&F->EventPlaces&&F->Visitors->Cleared(PlaceId,F->EventPlaces->LastNight(PlaceId));
 }
 FString FS47FreeformDirector::TipLine() const
 {
@@ -1205,6 +1212,14 @@ void FS47FreeformDirector::Step(double Dt)
   if(Start(Id,false)){const auto* D=Definition(Id);if(D->Family==TEXT("minor")||D->Family==TEXT("maintenance"))--MinorLeft;else if(Id==TEXT("response_lights")||Id==TEXT("quiet_zone"))--SkyLeft;else --InvestLeft;Changed();}return;
  }
  Apply();if(!bApplied||Event.IsEmpty())return;Age+=Dt*TestPace;Draw();const auto* Def=Definition(Event);if(!Def){Finish(false);return;}
+ // MILITARY-20261108: they got to the marked ground first. Nothing left to photograph or pick up; their raked circle where it lay.
+ if(TraceRaked())
+ {
+  double RoadX=0,RoadZ=0;
+  if(S47OpenLand::RoadOf(Scene==TEXT("diner")?FString(TEXT("road")):Scene,Anchor.X,Anchor.Z,RoadX,RoadZ))M->Freeform->Visitors->RakeAt(PlaceId,M->Freeform->EventPlaces->LastNight(PlaceId),RoadX,RoadZ);
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: landing_trace at %s gone over by the military: marks and fragment gone"),*PlaceId);
+  Finish(false);return;
+ }
  // Hardware can be repaired at a separate physical site (the feeder is on the
  // road). Complete against its saved authority before applying scene-local rules.
  if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
@@ -1393,7 +1408,7 @@ FString FS47FreeformDirector::Label(const FString& Id)const
 {
  if(!bEnabled||Event.IsEmpty())return {};
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&!(bCarLight&&CarStage==1))return TEXT("Inspect the unoccupied car and dashboard clock");
- if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace"))return bPhoto?TEXT("Pick up the loose fragment"):TEXT("Photograph the marked surface before moving anything");
+ if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&!TraceRaked())return bPhoto?TEXT("Pick up the loose fragment"):TEXT("Photograph the marked surface before moving anything");
  return {};
 }
 bool FS47FreeformDirector::Use(const FString& Id)
@@ -1420,7 +1435,7 @@ bool FS47FreeformDirector::Use(const FString& Id)
  }
  if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4))
  {Finish(true);if(M->UI)M->UI->Toast(TEXT("Hood warm. Ignition off. The dashboard clock is six minutes behind the station clock. No driver in sight."),6);return true;}
- if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&Near(Anchor,2.7))
+ if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&!TraceRaked()&&Near(Anchor,2.7))
  {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Photograph it where it lies before you pick it up."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}
  return false;
 }

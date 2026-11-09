@@ -319,15 +319,16 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		FVector2D A, B;
 		if (!F->Visitors->CarsSpot(TEXT("farm"), A, B)) { A = FVector2D(P->EntryX + 9, P->EntryZ + 6); B = A + FVector2D(3.4, 0); }
 		const FVector2D Cars = (A + B) * .5, Place(P->X, P->Z);
-		const FVector2D Eye = Cars + FVector2D(1.0, Cars.Y < Place.Y ? -11 : 11);
+		const FVector2D Out = (Cars - Place).GetSafeNormal();
+		const FVector2D Eye = Cars + Out * 14 + FVector2D(Out.Y, -Out.X) * 5, Look = Cars * .7 + Place * .3;
 		UE_LOG(LogS47TownDev, Display, TEXT("S47: F10 military: cars at road %.1f %.1f and %.1f %.1f, eye %.1f %.1f"), A.X, A.Y, B.X, B.Y, Eye.X, Eye.Y);
-		StandIn(FS47EventPlaces::AreaOf(*P), Eye, Cars, 6, .14, [this, Pictured]
+		StandIn(FS47EventPlaces::AreaOf(*P), Eye, Look, 6, .22, [this, Pictured]
 		{
 			FS47FreeformSession* G = Session();
 			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"), true)) { Tell(false, TEXT("no such place")); return; }
-			// The helicopter comes over the place about 40 s in; the cars stand from 20 s; held for the pictures until about 56 s.
-			After(39, [this, Pictured] { Pictured(TEXT("milheli"), .2f); });
-			After(50, [this, Pictured] { Pictured(TEXT("milcars"), .2f); });
+			// The helicopter is over the place from 35 s to 55 s; the cars stand from 20 s; held for the pictures until about 56 s.
+			After(44, [this, Pictured] { Pictured(TEXT("milheli"), .2f); });
+			After(52, [this, Pictured] { Pictured(TEXT("milcars"), .2f); });
 			After(59.5, [this, Pictured] { Pictured(TEXT("milgo"), .2f); });
 			bLastOk = true; LastText = TEXT("the military's morning");
 		});
