@@ -1,4 +1,5 @@
 #include "S47Walker.h"
+#include "S47Handling.h"
 
 #include "Camera/CameraComponent.h"
 #include "Engine/GameViewportClient.h"
@@ -386,6 +387,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 	// A held parcel stays usable when looking at clear ground. Existing object
 	// interactions (cargo rack, bench, doors) continue to take priority.
 	if (Focused.IsEmpty() && !Inter->Holds.ContainsByPredicate([](const TFunction<bool()>& H){return H&&H();})) if (US47Main* M=US47Main::Get(this); M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2) Focused=TEXT("ff:carry");
+	// PHYSICS-20261108: a loose thing in the hand, likewise: Use sets it down where you look (S47Handling)
+	if (Focused.IsEmpty() && !Inter->Holds.ContainsByPredicate([](const TFunction<bool()>& H){return H&&H();})) if (US47Main* M=US47Main::Get(this); M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Handling&&M->Freeform->Handling->Holding()) Focused=TEXT("phys:put");
 	if (!Focused.IsEmpty() && OnUse && PC && (S47Keys::Pressed(PC, TEXT("use")) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{
 		OnUse(Focused);

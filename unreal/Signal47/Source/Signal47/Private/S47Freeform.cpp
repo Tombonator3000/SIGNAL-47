@@ -7,6 +7,8 @@
 #include "S47DeputyRound.h"
 #include "S47NightLog.h"
 #include "S47Tape.h"
+#include "S47Handling.h"
+#include "S47SaroCot.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
 #include "S47WardReport.h"
@@ -280,6 +282,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!SkyAnswer)SkyAnswer=MakeShared<FS47Answer>(M);SkyAnswer->Begin(S47J::Obj(Saved,TEXT("answer")));
  if(!Weather)Weather=MakeShared<FS47WeatherLive>(M);Weather->Stop();
  if(!Fatigue)Fatigue=MakeShared<FS47Fatigue>(M);Fatigue->Begin(S47J::Obj(Saved,TEXT("fatigue")));
+ if(!Handling)Handling=MakeShared<FS47Handling>(M);Handling->Begin();
+ if(!Cot)Cot=MakeShared<FS47SaroCot>(M);Cot->Begin();
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -314,6 +318,8 @@ void FS47FreeformSession::Stop()
  if(SkyAnswer)SkyAnswer->Stop();
  if(bCanRestore&&Weather)Weather->Stop();else S47Weather::Live().bOn=false;
  if(bCanRestore&&Fatigue)Fatigue->Stop();
+ if(bCanRestore&&Handling)Handling->Stop();
+ if(bCanRestore&&Cot)Cot->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -536,6 +542,8 @@ void FS47FreeformSession::Step(double Dt)
  if(SkyAnswer)SkyAnswer->Step(Dt);
  if(Weather)Weather->Step(D);
  if(Fatigue)Fatigue->Step(D);
+ if(Handling)Handling->Step(D);
+ if(Cot)Cot->Step(D);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);

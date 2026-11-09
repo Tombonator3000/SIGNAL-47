@@ -1,4 +1,5 @@
 #include "S47FarmSite.h"
+#include "S47Noise.h"
 #include "S47EventPlaces.h"
 #include "S47Rhythm.h"
 #include "S47Taken.h"
@@ -649,6 +650,8 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  // The set is the player's to carry, but not their noise: nobody chose that voice.
  const bool bSetSpoke=RadioNow!=RadioSeen&&See.BodyDist<30;
  if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
+ // PHYSICS-20261108: something thrown or dropped that it can hear (S47Noise), each one once: it turns to where it fell
+ {static uint32 NoiseSeen=0;if(const auto Fell=S47Noise::Latest(.4);Fell&&Fell->Serial!=NoiseSeen&&FVector::Dist(Fell->At,*Eye)<=S47Noise::Reach(Fell->Loudness)*1.5){NoiseSeen=Fell->Serial;See.bNoise=true;See.Sound=Fell->At;}}
  bWasRunning=bRunning;bWasDriving=bDriving;RadioSeen=RadioNow;
  const auto Before=Attention.Doing();
  // Frozen, it is still only looking: what comes after the look waits until it can move again.

@@ -1,4 +1,5 @@
 #include "S47RoswellGroup.h"
+#include "S47Noise.h"
 #include "S47RoswellWorld.h"
 #include "S47RoswellMotion.h"
 #include "S47RoswellAudio.h"
@@ -230,6 +231,8 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   if (M->FieldRadio && M->FieldRadio->LoudNow()) In.Noise=FS47RoswellBrain::FNoise{Feet+FVector(0,1.,0),1.2};
   // STRESS-20261108: breathing that hard is heard a few metres off (the brain's reach is loudness times ten), from the mouth
   else if (M->Stress && M->Stress->HeardWithin()>0) In.Noise=FS47RoswellBrain::FNoise{Input.Cam.Pos,M->Stress->HeardWithin()/10.};
+  // PHYSICS-20261108: a stone, a can or a crate landing (S47Noise): heard where it fell, so it goes to look there and not at the player
+  else if (const TOptional<S47Noise::FNoise> Fell=S47Noise::Latest(.35)) In.Noise=FS47RoswellBrain::FNoise{Fell->At,Fell->Loudness};
   // WEATHER-20261108: a strong wind covers steps and breath
   if (const S47Weather::FLive& Wx=S47Weather::Live(); Wx.bOn) In.HearScale=1.-.5*FMath::Clamp(Wx.Wind,0.,1.);
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }

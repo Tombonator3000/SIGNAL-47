@@ -217,6 +217,10 @@ public:
  TSharedPtr<class FS47WeatherLive> Weather;
  // The hours awake, sleep and the coffee pot (FATIGUE-20261108): S47Fatigue.h.
  TSharedPtr<class FS47Fatigue> Fatigue;
+ // Loose things in the hand, carried and thrown, and what hears them land (PHYSICS-20261108): S47Handling.h. Nothing of it is saved.
+ TSharedPtr<class FS47Handling> Handling;
+ // The cot at SARO, the same rest as OPS (SARO-COT): S47SaroCot.h.
+ TSharedPtr<class FS47SaroCot> Cot;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;
