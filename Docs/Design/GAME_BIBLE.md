@@ -162,6 +162,18 @@ Taklyder, observatør, landingsspor og nærvær ved feeder/array er innganger. E
 
 Takforsøk krever et tilgjengelig fysisk festepunkt, referanse før tiltak, tydelig tilstand etter festing og sammenlignbare forhold. Vindindikator uten målt vindhastighet skal ikke kalles m/s. Portkontrollen må bevare forseglingens integritet fra oppsett til inspeksjon. Å lukke en tidligere åpnet port reparerer ikke kontrollen.
 
+#### Sene saker i uke 3 og 4 (M7, 9. november)
+
+Fra dag 12 kan tre nye mystery-saker åpne. Hver åpner på et spor spilleren finner selv, med samme lyd eller bilde uansett årsak, og teksten er sakens seedede lesning av stedet. En innlevering teller hos Ward bare med det andre stedet sett eller en kontroll tatt opp. Svaret kommer morgenen etter.
+
+| Sak | Åpner | Spor | Kontroll | Følge |
+| --- | --- | --- | --- | --- |
+| THE EMPTY POST | Noen av de fire i Caliche er borte fra posten (byfolk). Har ingen forsvunnet mellom dag 15 og 20, og ingen på en uke, tar natten én om morgenen mens spilleren er på SARO. | Telefon eller radio som går for ingen fra 45 m, holdt ved døra; skriveren ved racket kjører loggen for natten av seg selv. | Det andre stedet. Ingen opptak tester en person. | Sheriffens svar, søk betalt eller ikke, fylkets tillit. |
+| THE PRINTED MINUTE | Sky Watch sender bulletinen i posten etter første varebilbesøk fra dag 12, senest dag 15: kl. 00:50 tredje natt fra poststempelet. | Måleren og skriveren ved racket i minuttet, ellers strimmelen i to døgn; vinden i steinene ved varden i halvannet døgn. | Det andre stedet, eller aggregat, ved siden av kilden eller gjentak. | FCC eller kraftlaget: reservesikring, kostnad eller feil på linjen. |
+| THE RAKED GROUND | Den rakede bakken militæret etterlot, når spilleren leser den. | Den rakede sirkelen; skriveren ved racket kjører loggen fra morgenen. | Det andre stedet. | Feltkontoret eller sheriffen: patrulje betalt eller ikke. |
+
+Reyes-sporet fortsetter etter vogn 23 fra dag 15: Dale sier at noen har vært i vognen siden april, og noen har tørket støvet av tripptelleren, som viser at vognen aldri kjørte de siste ni engelske milene ut til flaten. Det fører til betjenten, som har Ortiz' termos fra luftslangen. Dale ber deg sende den, og søsteren skriver tilbake. Hver sen sak har også en Reyes-lapp fra april. Dale har fjorten nye replikker for uke 2 til 4, hver knyttet til noe som faktisk har skjedd. Ingenting her viser hvordan noen ble tatt.
+
 ### Plan, avbrudd og gjenopptak
 
 TONIGHT'S PLAN viser valgt spørsmål, neste sted/handling, dato, start/slutt og manglende utstyr. Spilleren kan arbeide med noe annet mens et forsøk venter, uten å miste feltplanen. Frivillig hvile til skumring eller før et vindu skal opplyse om virkningen på opptak, batteri og strøm.

@@ -40,6 +40,10 @@ public:
  // night sheets count once, a little. CarriedWarn: from here Ward names the limit of the carried line in her own words.
  static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7,CasesToStay=1,LogsForPoint=15,CarriedWarn=40,InspectorAfter=21,PayReplyDays=3;
  static constexpr double CleanQuality=.6;
+ // M7, weeks three and four (S47PredecessorLate.cpp): the late cases from LateCaseDay, somebody gone from a post in town between
+ // PostFrom and PostUntil when nobody has gone since AwayRest days, the Sky Watch's bulletin from LateCaseDay (from BulletinBy
+ // whatever the van saw), wagon 23's trip meter from LateTripDay, and the thermos's letter ThermosReplyDays after it went.
+ static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=15,LateTripDay=15,ThermosReplyDays=3;
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
  // and the work, which counts once it is there and no more for being piled up.
  static int32 Points(const FTally& T);
@@ -143,6 +147,14 @@ public:
  void TestHear(const FString& Id){Hear(Id);}
  bool TestRadioOff();
  void TestReset(){Outcome=EOutcome::None;bOutcomeRead=false;}
+ // M7, weeks three and four (S47PredecessorLate.cpp), for F10 "Late cases (M7)": "post" somebody in Caliche gone now, "bulletin" the
+ // Sky Watch's sheet in the box now, "minute" its burst due a minute from now, "trip" wagon 23 as on day 15 with the call-out read,
+ // "thermos" the attendant's talk had, "reply" the thermos's letter due now. Why: what was done. False: not in a Freeform game.
+ bool TestLate(const FString& What,FString& Why);
+ // Where a late case's place is now (F10's Go): "post" the post of whoever is gone, "cairn", "rack". False: nowhere to go.
+ bool LateSpot(const FString& What,FString& OutArea,double& OutX,double& OutZ) const;
+ // The world clock of the Sky Watch's printed minute; 0 until the bulletin is posted.
+ double MinuteClock() const{return LateMinuteAt>0?LateMinuteAt:LateBulletinDay>0?double(LateBulletinDay+2)*86400.+50*60.:0;}
  // "Not yet" on the letter to the next operator, as the button does it.
  void TestNotYet(){NotYet();}
  // Critic round 5: "Not yet" is given once. After it, a further stretch of lost time ends it, as her Monday note says.
@@ -180,6 +192,27 @@ private:
  struct FSaluteDish{int32 I=0;double Az=0,El=0;};
  TArray<FSaluteDish> Salute;double SaluteTime=0;int32 SaluteStage=0;
  TWeakObjectPtr<UTextRenderComponent> KeptLabel;
+ // M7, weeks three and four (S47PredecessorLate.cpp): the late cases' traces out in the world (FS47FreeformCases' PostLine, MinuteLine
+ // and RakedLine), the Sky Watch's bulletin, somebody gone from a post in town when nobody has gone by then, and unit 23's thermos
+ // on its way back to Ortiz's family. Saved: the bulletin's postmark, the day the thermos went, the day a post was emptied and the
+ // last day somebody was seen gone. Not saved: the sound at a place, which starts again where the player is.
+ void StepLate(double Dt);
+ void StepLatePost(int32 Today,double Hour);
+ void StepLateMinute(int32 Today);
+ void StepLateRaked(int32 Today);
+ void StepLateRack();
+ void StepLateThermos(int32 Today);
+ // Keeps a late line's trace (its text from the case's seeded reading) with what the player saw or heard. False: kept already.
+ bool LateKeep(int32 Line,int32 Clue,const FString& Toast);
+ void LateSound(const FString& Name,const FVector& At,float Gain);
+ void LateQuiet();
+ bool InControlRoom() const;
+ FString LateAway() const; // who in Caliche is gone now (FS47Townsfolk), empty: nobody
+ int32 LateBulletinDay=0,LateThermosDay=0,LatePostDay=0,LateAwayDay=0;
+ // F10 (TestLate): the day gates let go, and the printed minute set to a clock of its own. Neither is saved.
+ double LateIn=0,LateRackAt=-1,LateMinuteAt=0;
+ bool bLateLoop=false,bCairnHeard=false,bLateNow=false;
+ FString LateLoopName;
  void OpenKept();
  void NotYet();
  // The day the first assessment was set for: a reprieve never comes back earlier than it.

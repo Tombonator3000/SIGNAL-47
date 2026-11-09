@@ -17,8 +17,11 @@ public:
  enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap, FieldWork };
  // What the recording shows: the extra pulse group, or the receiver clock offset.
  enum class EObservable : uint8 { ExtraTicks, ClockDelta, FieldTrace };
- static constexpr int32 TestCount=3, CauseCount=3, CaseCount=5, MaxLeads=32;
+ static constexpr int32 TestCount=3, CauseCount=3, CaseCount=8, MaxLeads=32;
  static constexpr int32 MysteryLine=3, LostLine=4, ClueCount=2, CallOutCharge=10;
+ // M7, weeks three and four (S47PredecessorLate.cpp finds their traces out in the world): somebody in Caliche gone from their post
+ // (FS47Townsfolk), the Sky Watch's printed minute (FS47Visitors, the cairn), and the ground the military raked (FS47Visitors).
+ static constexpr int32 PostLine=5, MinuteLine=6, RakedLine=7, LateFirst=5;
  static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
  // Yes/No name what this test shows when the observable is present/absent; Access gates planning.
  struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; const TCHAR* Yes=nullptr; const TCHAR* No=nullptr; const TCHAR* Access=nullptr; };
@@ -28,7 +31,8 @@ public:
  struct FReplyDef { const TCHAR* Text; EReply Effect=EReply::None; };
  // One place to look. Read holds what can be found there, one reading leaning to each cause. A reading is never proof of
  // the cause it leans to, and which one shows is decided by ClueReading.
- struct FClueDef { const TCHAR* Finding; const TCHAR* Place; const TCHAR* Read[CauseCount]; };
+ // Hint: what the case board says of a place not yet looked at (null: the board's own words for the first two mysteries).
+ struct FClueDef { const TCHAR* Finding; const TCHAR* Place; const TCHAR* Read[CauseCount]; const TCHAR* Hint=nullptr; };
  struct FMysteryDef
  {
   int32 FreshDays; // controls can be planned this many days after the day it opened; filing is always open

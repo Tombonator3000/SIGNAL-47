@@ -45,8 +45,9 @@ namespace S47PredecessorText
  FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCount,int32 Guessed,int32 Arrears,int32 Cap);
  // The Monday sheet after KEPT OPEN: shorter, and nothing to win.
  FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
- // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay. Only the outside; empty if none.
- FString Followed(bool bWagon,bool bDeputy,bool bPayReturned);
+ // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the
+ // outside; empty if none.
+ FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false);
  FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch,const FString& FoundOut=FString());
  // Day 22: the county's inspector writes ahead of the assessment, about the one thing he will look at first.
  // Weakest: 0 cases, 1 the array, 2 the work, 3 the carried line, 4 readable records, 5 nothing he can find.

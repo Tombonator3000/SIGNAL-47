@@ -67,6 +67,27 @@ const TArray<FDocDef>& Docs()
   {TEXT("callout"),TEXT("Call-out sheet, from wagon 23's clipboard"),TEXT("typed"),TEXT("DISTRICT MAINT."),
    TEXT("DISTRICT MAINTENANCE / UNIT 23\nTECH: M. ORTIZ\n\nCALL-OUT: NIGHT OF 04/13/86\nFROM: DISTRICT DISPATCH\nAUTH: WARD\nTO: CALICHE, THEN SARO\n\n~ took the big thermos\n~ back by 6"),
    TEXT("Unit 23's call-out sheet. Mara Ortiz, sent on Ward's authority, the night of April 13. Her note says back by six."),nullptr},
+  // ---- M7, weeks three and four: wagon 23's second look, and the thermos it led to (S47PredecessorLate.cpp)
+  {TEXT("trip"),TEXT("Wagon 23's trip meter"),TEXT("typed"),TEXT("UNIT 23 / THE DASH"),
+   TEXT("TRIP      38.2\nODOMETER  61,904\n\n~ The district yard in Socorro to the pumps at Caliche is thirty-eight miles by the highway. The call-out sheet says TO CALICHE, THEN SARO.\n~ The flat is nine miles past Caliche, by the grade. The trip meter does not have them.\n~ Street tar on the tires. The dust on the mat is the flat's."),
+   TEXT("Wagon 23's trip meter reads 38.2: the district yard to the pumps at Caliche, and not a mile more. The flat it stands on is nine miles past the town."),nullptr},
+  {TEXT("ortiz_reply"),TEXT("A letter to the night operator, by post, from Socorro"),TEXT("hand"),TEXT("BY POST"),
+   TEXT("To the night operator at SARO,\n\nThe district sent me Mara's thermos, with a note that said it was you who found who had it. Thank you.\n\nShe took that thermos on every back-country job and brought it home empty. This time it came back full. That is how I know she never got where she was going. I am not saying anything else by it.\n\nIf the county ever asks you, tell them that. They have stopped asking me.\n\nMara's sister"),
+   TEXT("Mara Ortiz's sister wrote after the district sent the thermos on. It came back full, and she says that is how she knows Mara never got where she was going."),nullptr},
+  // ---- M7: the Sky Watch's bulletin, by post (S47PredecessorLate.cpp; THE PRINTED MINUTE)
+  {TEXT("skywatch"),TEXT("A mimeographed sheet, by post: the Socorro Sky Watch"),TEXT("typed"),TEXT("SOCORRO SKY WATCH"),
+   TEXT("SOCORRO SKY WATCH / BULLETIN\nTo members and friends. Dues are a dollar.\n\nWe have it on good authority that something will be heard on the 1420 dial, and seen from the cairn on the rise past the SARO dishes, on the third night from the postmark on this envelope, at ten minutes to one exactly.\n\nBring warm clothes, binoculars and a watch you trust. No flashlights on the rise, please.\n\nThe people from the station are welcome. They never come."),
+   TEXT("The Socorro Sky Watch sent the station its bulletin: something to be heard and seen from the cairn on the rise at ten to one, the third night from the postmark."),TEXT("cairn")},
+  // ---- M7: among the sheets of the late cases
+  {TEXT("case_post"),TEXT("Note in Reyes's hand, in the back of the April log"),TEXT("hand"),TEXT("REYES"),
+   TEXT("~ Nobody at the gas station's night window Tuesday or Wednesday. Back Thursday. Wouldn't say where.\n~ Deputy says people go to Belen.\n~ Everybody in this county goes to Belen. I have never once seen Belen."),
+   TEXT("In April somebody in Caliche was gone from their post for two nights too, and would not say where. Reyes noted it in the back of the log."),nullptr},
+  {TEXT("case_minute"),TEXT("Note in Reyes's hand, folded into a Sky Watch bulletin"),TEXT("hand"),TEXT("REYES"),
+   TEXT("~ The van people left one of these at the Mesa. On good authority. Whose?\n~ Went up to the cairn at the time it said. Nothing on the dial. Nothing in the sky. Something on the chart when I got back.\n~ Cairn's higher than when I tagged it. Not measuring it again."),
+   TEXT("Reyes had a Sky Watch bulletin too, went up to the cairn at its minute, and found something on the chart afterward. The note says the cairn had grown."),TEXT("cairn")},
+  {TEXT("case_raked"),TEXT("Note in Reyes's hand, inside the field folder"),TEXT("hand"),TEXT("REYES"),
+   TEXT("~ Two dark cars at the stake Friday, early. They pulled out when I came up the track.\n~ Ground round it raked smooth. I did not walk on it. I don't know why not.\n~ Called the county road office again. They have stopped picking up."),
+   TEXT("Reyes saw two dark cars at the stake one Friday morning in April, and the ground raked smooth around it."),TEXT("stake")},
   // ---- by post, after KEPT OPEN, when the final pay was routed back (M7)
   {TEXT("pay_reply"),TEXT("A letter to the night operator, by post"),TEXT("hand"),TEXT("BY POST"),
    TEXT("To the night operator at SARO,\n\nSomebody from Dr. Ward's office sent on the pay, with a note that said it was you who routed it back. Thank you. Nobody had to do that.\n\nWe don't know anything more than we did. Nobody calls. If you ever learn something, I would rather hear it from you than from the county.\n\nThe station is staying open, the note said. Then somebody is still there at night. That helps more than I can say in a letter.\n\nReyes's mother"),
@@ -85,7 +106,9 @@ const TArray<FTagDef>& Tags()
 }
 const TArray<FCaseNote>& CaseNotes()
 {
- static const TArray<FCaseNote> Table={{TEXT("THE REPEATED INTERVAL"),TEXT("case_interval")},{TEXT("DISAGREEING RECORDS"),TEXT("case_records")},{TEXT("VISITORS AROUND THE BASE"),TEXT("case_visitors")}};
+ static const TArray<FCaseNote> Table={{TEXT("THE REPEATED INTERVAL"),TEXT("case_interval")},{TEXT("DISAGREEING RECORDS"),TEXT("case_records")},{TEXT("VISITORS AROUND THE BASE"),TEXT("case_visitors")},
+  // M7: the late cases turn up Reyes's April too.
+  {TEXT("THE EMPTY POST"),TEXT("case_post")},{TEXT("THE PRINTED MINUTE"),TEXT("case_minute")},{TEXT("THE RAKED GROUND"),TEXT("case_raked")}};
  return Table;
 }
 const TArray<FPerson>& People()
@@ -109,6 +132,11 @@ const TArray<FPerson>& People()
      {{You,TEXT("There's a white district wagon out on the flat. Number 23.")},{Att,TEXT("It was out front of here that night. The deputy's asked me. The county's asked me. A woman from the district asked me.")},{Att,TEXT("I told them all the same. I was reading. I looked up and it was parked. I looked up again and there was nobody by it.")},{Att,TEXT("It was there at six when I went home. How it got where it is, you tell me. I write down what goes in the till.")}}},
     {TEXT("closing"),TEXT("Ask what people are saying about SARO"),nullptr,nullptr,TEXT("Caliche has heard that the county may close SARO."),
      {{You,TEXT("What are people saying about the station?")},{Att,TEXT("That the county's shutting you down. That true?")},{You,TEXT("End of May, maybe.")},{Att,TEXT("Then I won't order extra.")}}},
+    // M7: wagon 23's trip meter stops at his pumps.
+    {TEXT("thermos"),TEXT("Ask whether anything of hers was left at the pumps"),TEXT("trip"),nullptr,TEXT("The attendant found a district thermos by the air hose the morning after wagon 23 stood at his pumps, cap on and full. The county did not want it. He gave it to you."),
+     {{You,TEXT("The wagon's trip meter stops at your pumps. Was anything of hers left here?")},{Att,TEXT("The county asked me that. I said no, because what they asked was had I found a person.")},
+      {TEXT(""),TEXT("He reaches under the counter and sets a steel thermos on it, a big one, DISTRICT 23 stenciled down the side in white.")},
+      {Att,TEXT("By the air hose, the Monday. Cap on, full to the top. Nobody'd had any of it. I kept it for whoever came asking right.")},{Att,TEXT("Take it. It's been looking at me.")}}},
    }},
   {TEXT("deputy"),TEXT("SHERIFF SUBSTATION / THE DEPUTY"),
    {{TEXT(""),TEXT("He opens the door and looks at your jacket before he looks at you.")},{Dep,TEXT("So you're what they sent. Help you?")}},
@@ -215,6 +243,22 @@ const TArray<FBark>& Barks()
   {TEXT("mine"),TEXT("tag_mine"),1,TEXT("Somebody saw you out at the mine on the west side. That is as far as you go. Not in. Not for a list, not for anybody. Dale out.")},
   {TEXT("pool"),nullptr,8,TEXT("You are still on nights. They had a pool on you at the district. I said three days. Now I owe a man in Socorro five dollars.")},
   {TEXT("kept"),TEXT("kept-salute"),1,TEXT("So she kept us. I ran the whole array up and down from my bench, to see if it still moves. It moves. Do not get used to it. Dale out.")},
+  // M7, weeks two to four: what has really gone on (FS47Predecessor::Meets), each once, one a day like the rest.
+  // The short-lived ones first (a case open for a day or two, somebody away), so that one a day does not crowd them out.
+  {TEXT("minute"),TEXT("case:6+minute_chart"),12,TEXT("Your chart has a burst on it at ten to one. Ten to one! Who keeps appointments in this county? You run the control, then you file. Not the other way.")},
+  {TEXT("post"),TEXT("case:5"),12,TEXT("You are asking around Caliche after somebody who is not at their post? The county rang my bench. You are the station, not the county. Write what you saw.")},
+  {TEXT("raked"),TEXT("case:7"),12,TEXT("You walked out on their raked ground? Do not tell me. Write down how wide the circle was and the time, and do not go back. Verstanden?")},
+  {TEXT("away"),TEXT("town:away"),9,TEXT("Somebody in Caliche is not at their post, the county says. People go to Belen. People come back. You do your card, and you lock the door. Dale out.")},
+  {TEXT("wiped"),TEXT("trip_due"),15,TEXT("The deputy drove past wagon 23. Somebody has been in it since April, he says, and wiped the dash. Not him, not the district. You stay off that flat. Dale out.")},
+  {TEXT("week4"),TEXT("assess7"),23,TEXT("A week to Ward's numbers. I have shut the pool at the district: nobody would take the other side of it. Do not make me open it again. Dale out.")},
+  {TEXT("van"),TEXT("visit:van_empty"),5,TEXT("Their van is out there with the door open, the deputy says. You do not go and close it. You write down where, and you stay in the building.")},
+  {TEXT("copter"),TEXT("visit:military_seen"),8,TEXT("Helicopter low over the land this morning, and two cars that are not the county's. You did not see them. No. You write down that you did, with the time.")},
+  {TEXT("thermos"),TEXT("talk_attendant_thermos"),15,TEXT("The attendant says you have the thermos from unit 23. Tag it and put it in the outgoing tray; the district runs it to Socorro. Do not drink from it, Mensch.")},
+  {TEXT("trip"),TEXT("trip"),15,TEXT("You were out at wagon 23 again, reading the dash? The deputy read it in April. He wrote down the number and not one word of what he thought. Do the same.")},
+  {TEXT("inspector"),TEXT("inspector"),22,TEXT("The county inspector wrote to you? He wrote to my bench too. He wants to know whether the array moves. I said ask the operator. So make it move.")},
+  {TEXT("skywatch"),TEXT("visit:let_in"),5,TEXT("You let the people with the van into my station? They read my logbooks. I know, because the logbooks are in order now, and they never are.")},
+  {TEXT("filed"),TEXT("filed:case"),8,TEXT("You filed an assessment. Now the county reads it and rings my bench to ask what it means, and I say ask the operator. Do not make me a liar.")},
+  {TEXT("halfway"),TEXT("array_low"),14,TEXT("Two weeks, and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Mend something.")},
  };
  return Table;
 }
@@ -296,9 +340,10 @@ FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString
  const FString Hours=Taken>0?FString(TEXT("\n\nThe hours in your log nobody can account for are still in it. Stay in the building after dark if you can.")):FString();
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\nWEEK %d\n\nThe station is open. Filed: %d. Array: %d of 27. Carried on the sheet: $%d.\n\nThere is nothing to win this time. SARO stays open through the end of the fiscal year, %s, and after that it goes into next year's budget with the rest of the district. Keep the work going, and keep your originals.%s%s%s\n\nWard"),Week,Filed,Dishes,Arrears,*FiscalEnd,Levers.IsEmpty()?TEXT(""):TEXT("\n\n"),*Levers,*Hours);
 }
-FString Followed(bool bWagon,bool bDeputy,bool bPayReturned)
+FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos)
 {
  TArray<FString> L;
+ if(bThermos)L.Add(TEXT("The district sent Mara Ortiz's thermos on to her family. Her sister has written to my office to ask that I thank whoever found it."));
  if(bWagon)L.Add(TEXT("The district has sent its flatbed for wagon 23 at last, and the search for Mara Ortiz is back on the sheriff's desk, with your notes in the file."));
  if(bDeputy)L.Add(TEXT("The deputy asked for a copy of your log for the Ortiz file. I sent it. He said it was the first one that gave him times and not ideas."));
  if(bPayReturned)L.Add(TEXT("Reyes's final pay has gone from my office to the family, with a note from me saying who routed it back. If they write, it will come to the station."));

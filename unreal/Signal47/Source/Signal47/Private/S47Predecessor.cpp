@@ -7,6 +7,7 @@
 #include "S47Freeform.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -177,7 +178,8 @@ int32 FS47Predecessor::Known() const
 {
  int32 N=0;
  for(const X::FTagDef& D:X::Tags())if(Seen.Contains(D.Doc))++N;
- for(const TCHAR* Id:{TEXT("locker"),WagonId,TEXT("gap"),TEXT("talk_deputy_ortiz"),TEXT("talk_ward_reyes")})if(Seen.Contains(Id))++N;
+ // M7: wagon 23's trip meter and the thermos it led to count as well.
+ for(const TCHAR* Id:{TEXT("locker"),WagonId,TEXT("gap"),TEXT("talk_deputy_ortiz"),TEXT("talk_ward_reyes"),TEXT("trip"),TEXT("talk_attendant_thermos")})if(Seen.Contains(Id))++N;
  return N;
 }
 
@@ -187,6 +189,7 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
  Stop();Life=MakeShared<uint8>(0);
  Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=bClosed=bStowed=bSawTutorial=bLegacyReprieve=bLegacyRead=false;CloseDay=0;LeftDay=0;LeftClock=0;NewsIn=8;TakenAtReprieve=GoneNoticed=KeptDay=0;bOutcomeRead=false;Salute.Reset();SaluteTime=0;SaluteStage=0;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
  DaleAnswered=DaleAnsweredDay=DaleMisses=DaleMissDay=DaleHoursTold=0;DaleLastClock=-1e9;DaleRetryClock=0;bDaleMissed=false;
+ LateBulletinDay=LateThermosDay=LatePostDay=LateAwayDay=0;LateIn=0;LateRackAt=-1;LateMinuteAt=0;bLateLoop=bCairnHeard=bLateNow=false;LateLoopName.Empty();
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
   bOlder=S47J::Bool(Saved,TEXT("older"));OpensDay=FMath::Max(1,S47J::Int(Saved,TEXT("opens"),1));AssessDay=FMath::Max(OpensDay,S47J::Int(Saved,TEXT("assess"),FirstAssess));WeekNoted=FMath::Max(0,S47J::Int(Saved,TEXT("weekNoted")));
@@ -197,6 +200,9 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
   bLeft=S47J::Bool(Saved,TEXT("left"));LeftDay=S47J::Int(Saved,TEXT("leftDay"));LeftClock=S47J::Num(Saved,TEXT("leftClock"));
   CloseDay=FMath::Max(0,S47J::Int(Saved,TEXT("closeDay")));bClosed=S47J::Bool(Saved,TEXT("closed"));
   TakenAtReprieve=FMath::Max(0,S47J::Int(Saved,TEXT("reprieve")));GoneNoticed=FMath::Max(0,S47J::Int(Saved,TEXT("goneNoticed")));KeptDay=FMath::Max(0,S47J::Int(Saved,TEXT("keptDay")));
+  // M7's weeks three and four (S47PredecessorLate.cpp).
+  LateBulletinDay=FMath::Clamp(S47J::Int(Saved,TEXT("bulletin")),0,36500);LateThermosDay=FMath::Clamp(S47J::Int(Saved,TEXT("thermosDay")),0,36500);
+  LatePostDay=FMath::Clamp(S47J::Int(Saved,TEXT("postDay")),0,36500);LateAwayDay=FMath::Clamp(S47J::Int(Saved,TEXT("awayDay")),0,36500);
   // A save from before the letter's reading was kept: read, unless it still lies in the tray, or (critic round 5) in the box at the
   // road or with the postman, which the first Step looks at once the post is loaded (SettleLegacy).
   bOutcomeRead=Outcome!=EOutcome::None&&(Saved->HasField(TEXT("outcomeRead"))?S47J::Bool(Saved,TEXT("outcomeRead")):!Tray.Contains(TEXT("assessment")));
@@ -222,10 +228,11 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 void FS47Predecessor::Stop()
 {
  Life.Reset();bRinging=false;bBound=bBoundLand=false;
- BackTo.Empty();
+ BackTo.Empty();LateRackAt=-1;bCairnHeard=false;
  // The UObject purge may have taken the scene before this plain C++ object goes, as in FS47FreeformSession::Stop.
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return;
  if(IsValid(M->Audio)){if(bRadioLoop)M->Audio->Stop(RadioKey,.2f);M->Audio->Stop(RingKey,.1f);}
+ LateQuiet();
  bRadioLoop=false;
  for(auto& P:Shown)if(auto* C=P.Get())C->SetVisibility(false);
  if(auto* L=KeptLabel.Get())L->SetVisibility(false);
@@ -258,6 +265,10 @@ S47J::FObj FS47Predecessor::Save() const
  if(GoneNoticed>0)S47J::Set(O,TEXT("goneNoticed"),GoneNoticed);
  if(KeptDay>0)S47J::Set(O,TEXT("keptDay"),KeptDay);
  if(Outcome!=EOutcome::None)S47J::Set(O,TEXT("outcomeRead"),bOutcomeRead);
+ if(LateBulletinDay>0)S47J::Set(O,TEXT("bulletin"),LateBulletinDay);
+ if(LateThermosDay>0)S47J::Set(O,TEXT("thermosDay"),LateThermosDay);
+ if(LatePostDay>0)S47J::Set(O,TEXT("postDay"),LatePostDay);
+ if(LateAwayDay>0)S47J::Set(O,TEXT("awayDay"),LateAwayDay);
  return O;
 }
 bool FS47Predecessor::Live() const{return M&&M->Freeform&&(bTest||M->Freeform->RulesLive());}
@@ -321,6 +332,7 @@ void FS47Predecessor::Step(double Dt)
  StepKept(Dt);
  if(F.Held())return;
  StepNews(Dt);
+ StepLate(Dt);
 }
 void FS47Predecessor::StepNews(double Dt)
 {
@@ -426,6 +438,17 @@ bool FS47Predecessor::Meets(const TCHAR* Needs) const
  if(Need==TEXT("branch1"))return F.Field&&F.Field->ArrayWear().bActive&&F.Field->ArrayWear().Restored.Num()>0;
  if(Need==TEXT("assess3"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=3&&AssessDay>=F.Day();
  if(Need==TEXT("late")){const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;return Hour>=2&&Hour<4.5;}
+ // M7, weeks two to four: what has really gone on. The visitors' own flags (FS47Visitors::Has), somebody in Caliche gone from their
+ // post, an assessment filed on any case, a case open, the array still half down, the last week before the assessment.
+ if(Need.StartsWith(TEXT("visit:")))return F.Visitors&&F.Visitors->Has(Need.Mid(6));
+ if(Need==TEXT("town:away"))return !LateAway().IsEmpty();
+ if(Need==TEXT("filed:case")){for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)return true;return false;}
+ // "case:6": open and not yet filed; "case:6+minute_chart": and that trace kept.
+ if(Need.StartsWith(TEXT("case:"))){FString Num=Need.Mid(5),Kept;if(!Need.Mid(5).Split(TEXT("+"),&Num,&Kept))Num=Need.Mid(5);const auto* K=F.CaseFile().Get(FCString::Atoi(*Num));return K&&K->bOpen&&!K->bConcluded&&(Kept.IsEmpty()||F.HasFinding(Kept));}
+ // Wagon 23 seen and its call-out read in the first weeks, and the trip meter not yet: somebody has been at it since.
+ if(Need==TEXT("trip_due"))return Seen.Contains(WagonId)&&Seen.Contains(TEXT("callout"))&&!Seen.Contains(TEXT("trip"))&&F.Day()>=LateTripDay;
+ if(Need==TEXT("array_low"))return F.AvailableDishCount()<20;
+ if(Need==TEXT("assess7"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=7&&AssessDay-F.Day()>3;
  return Seen.Contains(Need);
 }
 const S47PredecessorText::FBark* FS47Predecessor::NextBark() const
@@ -723,7 +746,7 @@ FString FS47Predecessor::OutcomeLetter(EOutcome O) const
  const FString CloseOn=DateText(CloseDay>0?CloseDay:(M&&M->Freeform?M->Freeform->Day():AssessDay)+NoticeDays);
  switch(O)
  {
-  case EOutcome::Stays:return X::Stays(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Known>=KnownEnough,X::Followed(Found(WagonId),Found(TEXT("talk_deputy_ortiz")),bPayReturned));
+  case EOutcome::Stays:return X::Stays(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Known>=KnownEnough,X::Followed(Found(WagonId),Found(TEXT("talk_deputy_ortiz")),bPayReturned,LateThermosDay>0));
   case EOutcome::KnowsEnough:return X::KnowsEnough(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
   case EOutcome::ClosedOriginals:return X::ClosedOriginals(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos,CloseOn);
   case EOutcome::ClosedNothing:return X::ClosedNothing(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
@@ -1027,6 +1050,13 @@ void FS47Predecessor::OpenWagon()
  }
  else Rows.Add(Para(TEXT("You switched the radio off. It clicks as it cools."),860.f,true));
  Rows.Add(S47Kit::Button(FString(TEXT("The clipboard on the passenger seat"))+(Seen.Contains(TEXT("callout"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("callout"),TEXT("wagon"));}));
+ // M7, Reyes's trail after wagon 23: from the third week somebody has wiped the dust off the trip meter, and only off that.
+ if((F.Day()>=LateTripDay||bLateNow)&&Seen.Contains(TEXT("callout")))
+ {
+  Rows.Add(Para(Seen.Contains(TEXT("trip"))?FString(TEXT("The trip meter, wiped clean in the dust of the dash."))
+   :M->Freeform->FindingDay(TEXT("reyes_wagon"))>=LateTripDay?FString(TEXT("Somebody has wiped the dust off the dash, and only off the trip meter.")):FString(TEXT("Somebody has been here since you were. The dust on the dash is wiped off the trip meter, and only off that.")),860.f,true));
+  Rows.Add(S47Kit::Button(FString(TEXT("Read the trip meter"))+(Seen.Contains(TEXT("trip"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("trip"),TEXT("wagon"));}));
+ }
  Rows.Add(S47Kit::Button(TEXT("Leave it how you found it"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("WAGON 23"),S47Kit::Col(Rows),860));
  if(bFirst&&F.Day()>0)UE_LOG(LogTemp,Display,TEXT("S47: predecessor: wagon 23 found on day %d"),F.Day());
@@ -1555,7 +1585,7 @@ TArray<FString> FS47Predecessor::AllText()
  // M7: the levers in her words, the notes after KEPT OPEN, what the Stays letter says of what was found, and the inspector.
  const FString AllLevers=X::Levers(false,false,0,false,1,60,80)+X::Levers(true,true,2,true,0,0,80)+X::Levers(false,false,-1,false,0,0,80);
  Out.Add(AllLevers);Out.Add(X::WeekNote(4,20,1,25,18,45,2,D,6,PointsToStay,3,2,false,AllLevers));Out.Add(X::WeekNote(4,20,1,25,18,0,2,D,7,PointsToStay,0,0,true,AllLevers));
- Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true)));
+ Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true,true)));
  for(int32 W=0;W<6;++W)Out.Add(X::Inspector(D,D,W));
  Out.Add(TEXT("Return to the title. Continue goes back to the log filed when you left SARO"));
  return Out;
@@ -1718,6 +1748,26 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   Check(bRun&&GotAz==123&&GotEl==37&&!bOther&&!Run.SaluteTarget(4,Az,El),TEXT("a save during the run up after KEPT OPEN keeps where each dish was pointed"));
   // Ward's first letter says what keeps the station open: a case carried through as well as the work.
   Check(X::Letter(false,TEXT("MAY 1"),TEXT("MAY 28")).Contains(TEXT("case board"))&&X::Letter(true,TEXT("MAY 1"),TEXT("MAY 28")).Contains(TEXT("case board")),TEXT("her first letter names the case board, not the routine alone"));
+  // M7, weeks three and four (S47PredecessorLate.cpp).
+  auto St=S47J::New();S47J::Set(St,TEXT("opens"),1);S47J::Set(St,TEXT("assess"),30);S47J::Set(St,TEXT("bulletin"),13);S47J::Set(St,TEXT("thermosDay"),18);S47J::Set(St,TEXT("postDay"),16);S47J::Set(St,TEXT("awayDay"),17);
+  S47J::Set(St,TEXT("seen"),TArray<FString>{TEXT("trip"),TEXT("talk_attendant_thermos")});
+  FS47Predecessor Late(nullptr);Late.Begin(S47J::Read(S47J::Write(St)),false,19);
+  const double Minute=Late.MinuteClock();
+  Check(FS47FreeformSession::NightOf(Minute)==15&&FMath::IsNearlyEqual(FMath::Fmod(Minute,86400.)/3600.,50/60.,1e-6),TEXT("the Sky Watch's printed minute is ten to one on the third night from the postmark"));
+  const auto Back3=Late.Save();
+  Check(S47J::Int(Back3,TEXT("bulletin"))==13&&S47J::Int(Back3,TEXT("thermosDay"))==18&&S47J::Int(Back3,TEXT("postDay"))==16&&S47J::Int(Back3,TEXT("awayDay"))==17&&Late.Known()==2,TEXT("the bulletin, the thermos, an emptied post and the trip meter survive a Continue, and the trail after wagon 23 counts in what is known"));
+  FS47Predecessor None3(nullptr);None3.Begin(nullptr,false,1);
+  Check(None3.MinuteClock()==0&&!None3.Save()->HasField(TEXT("bulletin")),TEXT("no printed minute before the bulletin"));
+  // The trail after wagon 23: the trip meter, the attendant's thermos once it has been read, and the letter that answers it.
+  const X::FPerson* Att=X::Person(TEXT("attendant"));
+  const X::FTopic* Thermos=Att?Att->Topics.FindByPredicate([](const X::FTopic& Q){return FString(Q.Id)==TEXT("thermos");}):nullptr;
+  Check(X::Doc(TEXT("trip"))&&X::Doc(TEXT("ortiz_reply"))&&X::Doc(TEXT("skywatch"))&&Thermos&&Thermos->Needs&&FString(Thermos->Needs)==TEXT("trip")&&!None3.Meets(Thermos->Needs),TEXT("wagon 23's trip meter leads to the attendant's thermos, and its letter and the Sky Watch's bulletin have their papers"));
+  Check(X::Followed(false,false,false,true).Contains(TEXT("thermos"))&&!X::Followed(true,true,true,false).Contains(TEXT("thermos")),TEXT("the Stays letter says the thermos went home only when it did"));
+  // Dale, weeks two to four: a line for each thing that has really gone on, after the first week's.
+  int32 Late2=0;for(const X::FBark& B:X::Barks())Late2+=B.FromDay>=5?1:0;
+  bool bLateNeeds=true;for(const TCHAR* Id:{TEXT("skywatch"),TEXT("van"),TEXT("copter"),TEXT("away"),TEXT("filed"),TEXT("minute"),TEXT("post"),TEXT("raked"),TEXT("halfway"),TEXT("trip"),TEXT("thermos"),TEXT("inspector"),TEXT("week4"),TEXT("wiped")})
+  {const X::FBark* B=X::Barks().FindByPredicate([Id](const X::FBark& Q){return FCString::Strcmp(Q.Id,Id)==0;});bLateNeeds&=B&&B->Needs&&!None3.Meets(B->Needs);}
+  Check(Late2>=14&&bLateNeeds,TEXT("Dale has fourteen lines for weeks two to four, and each waits for what it answers"));
  }
  for(int32 I=0;I<6;++I)Check(OutcomeOf(NameOf(EOutcome(I)))==EOutcome(I),TEXT("the outcome's name comes back as itself"));
  // Saves.
