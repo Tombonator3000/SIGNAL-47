@@ -1135,8 +1135,8 @@ void FS47Sky::DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day)
 		// the foot of every card at the eye's own height, so a smaller card is a lower cloud
 		const FVector At = Eye + FVector(At2.X, CardH / 2 - 2, At2.Y);
 		// turned to the eye, the picture's top (the plane's -Y) up
-		const FVector2D Back = (-At2).GetSafeNormal();
-		const FVector Facing = S47Three::DirToUE(FVector(Back.X, 0, Back.Y));
+		const FVector2D ToEye = (-At2).GetSafeNormal();
+		const FVector Facing = S47Three::DirToUE(FVector(ToEye.X, 0, ToEye.Y));
 		C->SetWorldLocationAndRotation(S47Three::ToUE(At), FRotationMatrix::MakeFromZY(Facing, FVector(0, 0, -1)).Rotator());
 		C->SetWorldScale3D(FVector(CardW, CardH, 1)); // the plane is a metre square in centimetres
 		if (!C->IsVisible()) C->SetVisibility(true);
