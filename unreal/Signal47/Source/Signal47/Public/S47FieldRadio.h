@@ -6,6 +6,7 @@
 
 class US47Main;
 class UBoxComponent;
+class FS47DaleVoice;
 
 // SARO's carried field set. Room 6's batteryless historical radio remains independent.
 class FS47FieldRadio
@@ -21,8 +22,12 @@ public:
  bool Ready() const { return Root.IsValid(); }
  void Take();
  // Comes over the carried set, if there is one. False: the player has no walkie to hear it on. Dale's ("DALE: ...") come only on
- // channel 1; a voice too broken to make out comes on any.
+ // channel 1; a voice too broken to make out comes on any. DALE-WIRE-20261109: in Freeform a line of Dale's with a take in the
+ // "dale" bank (FS47DaleVoice, looked up whole before the set breaks it up) is heard in his own voice instead of the set's chatter,
+ // and its caption follows his measured speech; without one it is as before.
  bool Message(const FString& Text);
+ // Dale is speaking on the set in his own voice just now.
+ bool DaleSpeaking() const;
  // How many times the set has made itself heard (a message, a hail, the player keying it), for whatever may hear it there too.
  int32 MessagesHeard() const { return MessageCount; }
  void TestOwn() { bOwned=true; bLeftOut=false; Chan=1; }
@@ -112,6 +117,12 @@ private:
  TWeakObjectPtr<UBoxComponent> Hit;
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Copies;
  FS47EncounterSound Sound;
+ // DALE-WIRE-20261109: his takes on channel 1, made when first needed, and his caption, held for his first word.
+ TSharedPtr<FS47DaleVoice> Voice;
+ bool bCaption=false,bCaptionAll=false;
+ FString CaptionLine;
+ double CaptionStart=0,CaptionEnd=0,CaptionReading=0;
+ void StepCaption();
  bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
  // Tom's Tripo walkie stands on the desk in place of the three web parts (TRIPO-NEW, S47TripoNew).
  bool bTripoWalkie=false;

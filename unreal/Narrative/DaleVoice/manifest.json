@@ -80,7 +80,7 @@
  },
  "template_domains": {
   "place": {
-   "count": 31,
+   "count": 32,
    "values": [
     "the Alderete place",
     "the old house on the Alderete place",
@@ -111,6 +111,7 @@
     "the cairn on the rise",
     "the survey stake off the track",
     "the salt lick and trough",
+    "Saucer Rock",
     "the remote feeder on the county road",
     "the lot"
    ],

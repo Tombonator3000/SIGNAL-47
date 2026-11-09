@@ -9,6 +9,7 @@ class USceneComponent;
 class UTextRenderComponent;
 struct FS47Doc;
 struct FS47MapView;
+class FS47DaleVoice;
 
 // Freeform only (Tom, 7 November: "Forrige nattvakt: Reyes fra Story mode"). Why be at SARO, why build it up, why not just leave:
 // Ward's review, thirty days out; the operator before you, whose locker, notes and survey tags are still here; Mara Ortiz's wagon on
@@ -277,6 +278,11 @@ private:
  void ShowDoc(const FS47Doc& Doc,const FString& Back);
  FS47Doc MakeDoc(const FString& Id) const;
  void ShowTalk(const FString& Who,const FString& TopicId);
+ // DALE-WIRE-20261109: Dale's own takes on the service line (FS47DaleVoice, "phone"), each line of his that the page shows, one
+ // after another; stopped when the receiver goes down (the page closed or put down) or another page of his replaces it. Lines with
+ // no take are the page's text, as before. Not saved, and it marks nothing as heard.
+ TSharedPtr<FS47DaleVoice> Phone;
+ void SpeakPhone(const TArray<FString>& Lines);
  void Leave();
  void TakeKeysBack();
  void ToTitle(bool bNextOperator);

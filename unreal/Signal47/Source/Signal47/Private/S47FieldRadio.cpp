@@ -24,6 +24,7 @@
 #include "S47Keys.h"
 #include "S47Predecessor.h"
 #include "S47TripoNew.h"
+#include "S47DaleVoice.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -129,6 +130,7 @@ void FS47FieldRadio::Stop()
 {
  Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
+ if(Voice)Voice->Stop(); bCaption=false;
  HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -217,19 +219,56 @@ bool FS47FieldRadio::Message(const FString& Text)
  FString Who,Said=Text;
  if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);}
  ++MessageCount; SinceMessage=0; SinceLoud=0;
+ // DALE-WIRE-20261109: what he said, whole, is what his takes are looked up by.
+ const FString Whole=Said;
  // GEAR-FLICKER-20261108: near something, words of his are lost in the noise, and the set crackles over them.
  if(!Who.IsEmpty()&&M->IsFreeform()&&M->Gear.IsValid())
  {
-  const FString Whole=Said;Said=M->Gear->Broken(Said,MessageCount);
+  Said=M->Gear->Broken(Said,MessageCount);
   if(Said!=Whole&&M->Audio&&Sound.Crackle(M->Audio,FMath::Max(.4,GearNoise)))++Crackled;
  }
- const bool bHeard=M->Audio&&Sound.Message(M->Audio);
- if(bHeard)S47FieldRadioSet::Roger(M->Audio,S47FieldRadioSet::MessageSeconds);
+ // DALE-WIRE-20261109: his own voice when the bank has a take for it (or for each of his parts of it, one after another; a part with
+ // a place or a bearing in it stays text). The set's synthetic chatter only when nothing of his is played. The crackle above lies
+ // over his words where they break up; the squelch opens and shuts round him and the roger beep comes after his last take.
+ bool bVoiced=false;
+ FS47DaleVoice::FPlan Plan;
+ if(!Who.IsEmpty()&&M->IsFreeform()&&M->Audio)
+ {
+  if(!Voice)Voice=MakeShared<FS47DaleVoice>(M->Audio,TEXT("walkie"));
+  // A caption of his still waiting for its first word is not lost under this one.
+  if(bCaption){Voice->Stop();StepCaption();}
+  Plan=Voice->PlanWalkie(Whole);
+  bVoiced=Plan.Voiced()>0&&Voice->Play(Plan);
+ }
+ const bool bHeard=bVoiced||(M->Audio&&Sound.Message(M->Audio));
+ if(bVoiced){S47FieldRadioSet::Squelch(M->Audio,0,.16,.08);S47FieldRadioSet::Squelch(M->Audio,Plan.Seconds+.02,.22,.1);}
+ if(bHeard)S47FieldRadioSet::Roger(M->Audio,bVoiced?Plan.Seconds+.05:S47FieldRadioSet::MessageSeconds);
  // Anything but Dale is the set itself breaking up: it is only heard (the broken voice and the squelch), never told in words.
  // A caption is for words somebody says.
- if(M->UI&&!Who.IsEmpty())M->UI->Toast(Head(Chan,Who)+TEXT(": ")+Said,FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
- UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d: %s"),Chan,bHeard,*Text);
+ if(M->UI&&!Who.IsEmpty())
+ {
+  const FString Line=Head(Chan,Who)+TEXT(": ")+Said;
+  const float Reading=FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f);
+  // With his voice: up at his first word, down at his last (takes.json), on the sound's clock. Words of it that are only text
+  // (a report he passes on) keep the time to read them.
+  if(bVoiced){bCaption=true;bCaptionAll=Plan.All();CaptionLine=Line;CaptionStart=Plan.SpeechStart;CaptionEnd=Plan.SpeechEnd;CaptionReading=Reading;StepCaption();}
+  else{bCaption=false;M->UI->Toast(Line,Reading);}
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d, voice %d of %d: %s"),Chan,bHeard,bVoiced?Plan.Voiced():0,Plan.Parts.Num(),*Text);
  return true;
+}
+bool FS47FieldRadio::DaleSpeaking() const{return Voice&&Voice->Playing();}
+void FS47FieldRadio::StepCaption()
+{
+ if(!bCaption)return;
+ if(!M||!M->UI){bCaption=false;return;}
+ const double At=Voice?Voice->Clock():-1.;
+ // Before his first word, wait for it; cut off before it (another line, the channel turned), it is shown now for its reading time.
+ if(At>=0&&At<CaptionStart)return;
+ bCaption=false;
+ const TFunction<double()> Clock=Voice&&At>=0?Voice->CaptionClock():TFunction<double()>();
+ const double For=!Clock?CaptionReading:FMath::Max(.01,FMath::Max(CaptionEnd-At,bCaptionAll?0.:CaptionReading-(At-CaptionStart)));
+ M->UI->Toast(CaptionLine,float(For),Clock);
 }
 
 // ---------- the player's own hand on it (WALKIE-USE-20261108) ----------
@@ -249,6 +288,8 @@ void FS47FieldRadio::NextChannel()
 {
  if(!bOwned||bLeftOut){if(M&&M->UI)M->UI->Toast(TEXT("No walkie on you to turn."),3);return;}
  Chan=Chan%Channels+1;SinceTouch=0;
+ // DALE-WIRE-20261109: his voice is on channel 1, and goes with the turn of the knob.
+ if(Voice)Voice->Stop();
  // A look at the service band still to come goes with the turn of the knob; an answer still to come does not.
  if(bBandPending){Then=nullptr;ThenIn=-1;bBandPending=false;}
  if(!M)return;
@@ -341,7 +382,8 @@ bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunctio
 {
  if(!bOwned){DeskCall(Words);return false;}
  // Not while the player is on the air, or waiting for what comes back: that call gets its answer first.
- if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||Words.First.IsEmpty())return false;
+ // (Nor over his own voice still on the set, DALE-WIRE-20261109: he finishes first.)
+ if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||DaleSpeaking()||Words.First.IsEmpty())return false;
  HailWords=Words;HailAnswer=MoveTemp(OnAnswer);HailMissed=MoveTemp(OnMissed);
  HailLeft=S47FieldRadioSet::HailSeconds;HailAgainIn=S47FieldRadioSet::HailAgainSeconds;HailCount=1;SinceTouch=0;
  if(M->Audio)S47FieldRadioSet::Call(M->Audio);
@@ -460,7 +502,8 @@ bool FS47FieldRadio::Deliver(const FString& Tip)
  // channel, it waits for him.
  FS47Predecessor* Dale=M->IsFreeform()&&M->Freeform?M->Freeform->Predecessor.Get():nullptr;
  const FString Relay=Dale?Dale->RelayLine(Tip):FString();
- if(Relay.IsEmpty()||HailLeft>0||!Message(Relay))return false;
+ // (Nor over his own voice still on the set: DALE-WIRE-20261109.)
+ if(Relay.IsEmpty()||HailLeft>0||DaleSpeaking()||!Message(Relay))return false;
  UE_LOG(LogTemp,Display,TEXT("S47: report passed on by Dale over the walkie: %s"),*Tip);
  return true;
 }
@@ -552,6 +595,7 @@ void FS47FieldRadio::Step(double Dt)
 {
  if(!M) return;
  SinceMessage+=Dt;
+ StepCaption();
  Build();
  const bool Play=bAvailable && !bUnsupported && M->Mode==US47Main::EMode::Play;
  const bool Shown=Play && !bOwned && !bLeftOut && M->Web && M->Web->Area()==TEXT("saro");

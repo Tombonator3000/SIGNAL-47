@@ -36,7 +36,8 @@ FString FS47RadioVoice::Clean(const FString& Text)
 
 FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 {
-	const FString Bank = Kind == TEXT("horror") ? TEXT("horror") : Kind == TEXT("evening") ? TEXT("evening") : Kind == TEXT("ensemble") ? TEXT("ensemble") : Kind == TEXT("earl") ? TEXT("artbell-town") : Kind == TEXT("caller") ? TEXT("radiocast") : TEXT("artbell");
+	// DALE-WIRE-20261109: "dale" is Dale's own Freeform bank (Narrative/DaleVoice/catalog.py), keyed on exact text as Earl's is.
+	const FString Bank = Kind == TEXT("horror") ? TEXT("horror") : Kind == TEXT("evening") ? TEXT("evening") : Kind == TEXT("ensemble") ? TEXT("ensemble") : Kind == TEXT("dale") ? TEXT("dale") : Kind == TEXT("earl") ? TEXT("artbell-town") : Kind == TEXT("caller") ? TEXT("radiocast") : TEXT("artbell");
 	Root = FPaths::ProjectContentDir() / TEXT("Audio/Raw/voice") / Bank;
 	FString Text; TSharedPtr<FJsonObject> Voices;
 	if (!FFileHelper::LoadFileToString(Text, *(FPaths::ProjectContentDir() / TEXT("Audio/Raw/voices.json"))) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Voices) || !Voices) return;
@@ -44,11 +45,23 @@ FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 	if (!Voices->TryGetObjectField(Bank, B) || !B || !*B) return;
 	const TSharedPtr<FJsonObject>* CatPtr = nullptr;
 	if (!(*B)->TryGetObjectField(TEXT("catalog"), CatPtr) || !CatPtr || !*CatPtr) return;
-	const TSharedPtr<FJsonObject> Cat = *CatPtr;
+	Index(*CatPtr);
+}
+
+void FS47RadioVoice::UseCatalog(const TSharedPtr<FJsonObject>& Catalog, const FString& InRoot)
+{
+	Clips.Reset(); ById.Reset(); ByText.Reset(); Templates.Reset(); Hours.Reset(); Minutes.Reset(); Buffers.Reset(); Order.Reset(); Bytes = 0;
+	Root = InRoot;
+	if (Catalog) Index(Catalog);
+}
+
+void FS47RadioVoice::Index(const TSharedPtr<FJsonObject>& Cat)
+{
 	for (const auto& V : Arr(Cat, TEXT("clips")))
 	{
 		const TSharedPtr<FJsonObject> O = V->AsObject(); if (!O) continue;
 		FS47RadioClip C; C.Id = Str(O, TEXT("id")); C.Text = Str(O, TEXT("text")); C.File = Str(O, TEXT("file")); C.Voice = Str(O, TEXT("voice")); O->TryGetNumberField(TEXT("duration"), C.Duration);
+		O->TryGetNumberField(TEXT("speech_start_seconds"), C.SpeechStart); O->TryGetNumberField(TEXT("speech_end_seconds"), C.SpeechEnd); C.Channel = Str(O, TEXT("channel"));
 		ById.Add(C.Id, Clips.Num()); ByText.Add(Kind == TEXT("caller") || Kind == TEXT("ensemble") || Kind == TEXT("evening") || Kind == TEXT("horror") ? Key(C.Voice, Clean(C.Text)) : Clean(C.Text), Clips.Num()); Clips.Add(MoveTemp(C));
 	}
 	for (const auto& V : Arr(Cat, TEXT("templates")))
@@ -67,11 +80,18 @@ FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 	}
 }
 
+TOptional<FS47RadioClip> FS47RadioVoice::FindId(const FString& Id) const
+{
+	const int32* I = Id.IsEmpty() ? nullptr : ById.Find(Id);
+	if (!I) return {};
+	return Valid({ Clips[*I] }) ? TOptional<FS47RadioClip>(Clips[*I]) : TOptional<FS47RadioClip>();
+}
+
 TOptional<TArray<FS47RadioClip>> FS47RadioVoice::Resolve(const FString& Text, double Clock, const FString& Voice) const
 {
-	if (Kind == TEXT("ensemble") || Kind == TEXT("earl") || Kind == TEXT("caller") || Kind == TEXT("evening") || Kind == TEXT("horror"))
+	if (Kind == TEXT("ensemble") || Kind == TEXT("earl") || Kind == TEXT("caller") || Kind == TEXT("evening") || Kind == TEXT("horror") || Kind == TEXT("dale"))
 	{
-		const bool bRole = Kind != TEXT("earl");
+		const bool bRole = Kind != TEXT("earl") && Kind != TEXT("dale");
 		const int32* I = bRole && Voice.IsEmpty() ? nullptr : ByText.Find(bRole ? Key(Voice, Clean(Text)) : Clean(Text));
 		if (I) { const TArray<FS47RadioClip> Found = { Clips[*I] }; if (Valid(Found)) return Found; }
 		return {};

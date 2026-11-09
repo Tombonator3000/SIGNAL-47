@@ -1,6 +1,4 @@
 #include "S47HUD.h"
-#include "S47CarPaint.h"
-#include "S47TownDay.h"
 #include "S47StreetLamps.h"
 #if PLATFORM_LINUX
 #include "Linux/LinuxPlatformApplicationMisc.h"
@@ -13,6 +11,7 @@
 #include "S47TitleEraseSound.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
+#include "S47DaleVoice.h"
 #include "S47HudGauges.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
@@ -260,6 +259,7 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)
 		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines); // (M5: PHYSICS-20261108 and its lure, SARO-COT)
@@ -278,7 +278,6 @@ void AS47HUD::Start()
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
-		bOk &= S47TownDay::SelfTest(Lines) & S47CarPaint::SelfTest(Lines); // (NPC-DAY: Caliche's people's days; SHERIFF-CAR: what each car slot is)
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);

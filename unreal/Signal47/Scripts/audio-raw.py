@@ -222,6 +222,16 @@ if evening_entry is not None:
     evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW), voices)
     print('S47: raw voice evening: 109 supplied PCM WAVs, 110 cues; measured hashes/timings verified')
 
+# DALE-WIRE-20261109: Dale's own Freeform takes as the "dale" bank (Narrative/DaleVoice/catalog.py, which keeps every other bank
+# as it is). Until there are takes it is an empty bank, and the game keeps his lines as text with the walkie's own chatter.
+try:
+    spec = importlib.util.spec_from_file_location('s47_dale_catalog', os.path.join(ROOT, 'unreal', 'Narrative', 'DaleVoice', 'catalog.py'))
+    dale_catalog = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dale_catalog)
+    print('S47: raw voice dale: %d takes' % dale_catalog.import_raw(dale_catalog.build(), Path(RAW)))
+except (ValueError, OSError, KeyError, TypeError) as exc:
+    print('S47: raw voice dale left out: %s' % exc, file=sys.stderr)
+
 # core/radioVoice.ts and core/readAloud.ts decode only the selected clips, so keep the banks outside
 # index.sources. This lets their LRUs (24 buffers / 24 MiB, 4 buffers / 32 MiB) work without US47Audio
 # preloading a whole bank (Kinski's and Serling's are some 1500 clips and an hour and a half each).

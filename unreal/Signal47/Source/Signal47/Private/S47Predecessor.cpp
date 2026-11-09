@@ -40,6 +40,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "CoreGlobals.h"
+#include "S47DaleVoice.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -232,6 +233,7 @@ void FS47Predecessor::Stop()
  // The UObject purge may have taken the scene before this plain C++ object goes, as in FS47FreeformSession::Stop.
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return;
  if(IsValid(M->Audio)){if(bRadioLoop)M->Audio->Stop(RadioKey,.2f);M->Audio->Stop(RingKey,.1f);}
+ if(Phone)Phone->Stop(); // DALE-WIRE-20261109: nothing of his goes on talking into the title or another game
  LateQuiet();
  bRadioLoop=false;
  for(auto& P:Shown)if(auto* C=P.Get())C->SetVisibility(false);
@@ -939,11 +941,15 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
 {
  const X::FPerson* P=X::Person(Who);if(!P||!M||!M->UI||!M->Freeform)return;
  TArray<S47Kit::FW> Rows;
- const auto Say=[&Rows](const X::FSay& L)
+ // DALE-WIRE-20261109: what Dale says on this page, in order, for his takes on the line.
+ const bool bDaleLine=Who==TEXT("dale");
+ TArray<FString> DaleSays;
+ const auto Say=[&Rows,&DaleSays,bDaleLine](const X::FSay& L)
  {
   const FString Line(L.Line);
   if(FCString::Strlen(L.Who)==0)Rows.Add(Para(Line,860.f,true));
   else Rows.Add(Para(FString(L.Who)+TEXT(": ")+Line,860.f));
+  if(bDaleLine&&FCString::Strcmp(L.Who,TEXT("DALE"))==0)DaleSays.Add(Line);
  };
  const X::FTopic* Topic=TopicId.IsEmpty()?nullptr:P->Topics.FindByPredicate([&](const X::FTopic& Q){return TopicId==Q.Id;});
  if(!Topic)
@@ -983,7 +989,21 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
   Rows.Add(S47Kit::Button(Q.Label,[this,Guard,Name,Id]{if(Guard.IsValid())ShowTalk(Name,Id);}));
  }
  Rows.Add(S47Kit::Button(TEXT("Leave it there"),[this]{if(M&&M->UI)M->UI->Close();}));
- M->UI->Open(S47Kit::Shell(M->UI,P->Title,S47Kit::Col(Rows),860,true));
+ // DALE-WIRE-20261109: the page goes (put down, or the next page of his in its place, whose own takes start after it opens): so does
+ // his voice.
+ TFunction<void()> PutDown;
+ if(bDaleLine)PutDown=[this,Guard]{if(Guard.IsValid()&&Phone)Phone->Stop();};
+ M->UI->Open(S47Kit::Shell(M->UI,P->Title,S47Kit::Col(Rows),860,true),MoveTemp(PutDown));
+ if(bDaleLine)SpeakPhone(DaleSays);
+}
+void FS47Predecessor::SpeakPhone(const TArray<FString>& Lines)
+{
+ if(!M||!IsValid(M->Audio)||Lines.IsEmpty())return;
+ if(!Phone)Phone=MakeShared<FS47DaleVoice>(M->Audio,TEXT("phone"));
+ const FS47DaleVoice::FPlan Plan=Phone->PlanLines(Lines);
+ // No take for any of it: the page is text, as before.
+ const bool bVoiced=Plan.Voiced()>0&&Phone->Play(Plan);
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the service line, voice %d of %d lines"),bVoiced?Plan.Voiced():0,Plan.Parts.Num());
 }
 
 // ---------- the locker ----------
