@@ -14,6 +14,7 @@
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
@@ -662,6 +663,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  if(M&&M->HighwayUfo&&M->HighwayUfo->Busy())return false;
  // Nothing else starts on top of a visit or a taking.
  if(M&&M->Freeform&&((M->Freeform->Taken&&M->Freeform->Taken->Busy())||(M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround())))return false;
+ // WEEKLY-CASE-20261109: nor on top of the week's case on the ground (no presence, so no small bodies out of the glimpses either).
+ if(FS47WeekCase::Holds(M))return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // The initial catalogue is anchored to the actual SARO yard and apparatus.
  if(Id==TEXT("feeder_presence"))
@@ -1169,6 +1172,8 @@ FString FS47FreeformDirector::RestBlock() const
  if(Session.Happenings){const FString Night=Session.Happenings->RestBlock();if(!Night.IsEmpty())return Night;}
  // CRIT6-20261109: a director script under way: a rest would jump the clock past its timeline with its figure still out.
  if(FS47ScriptPlayer::Busy(M))return TEXT("Not now.");
+ // WEEKLY-CASE-20261109: the week's case on the ground.
+ if(const FString Week=FS47WeekCase::RestBlockOf(M);!Week.IsEmpty())return Week;
  return FString();
 }
 void FS47FreeformDirector::EndForRest()

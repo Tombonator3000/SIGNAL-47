@@ -616,6 +616,28 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  M->RequestAutosave();
  return true;
 }
+bool FS47Places::PointAt(const FString& Target,double ToX,double ToZ)
+{
+ if(!M||!M->Freeform||!M->Freeform->RulesLive()||!M->Freeform->Field||Target.IsEmpty())return false;
+ auto& F=*M->Freeform;
+ const auto& Wear=F.Field->ArrayWear();
+ const int32 Branches=Wear.bActive?Wear.Restored.Num():0;
+ const double Now=F.Clock();const int32 Night=FS47FreeformSession::NightOf(Now);
+ if(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day())return false;
+ double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
+ const double Spread=SpreadFor(Branches);
+ const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x5745454bu),Target);
+ Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
+ LastFixDay=F.Day();
+ if(F.Director)F.Director->NotePointOut(Night);
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("The array resolves something off the main beam tonight, by itself: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),B.Az,Spread,*SlipClock(Now)));
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
+  :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread),6);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, the week's case, night %d"),B.Az,Spread,*Target,Branches,Night);
+ M->RequestAutosave();
+ return true;
+}
 bool FS47Places::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;

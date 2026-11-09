@@ -28,6 +28,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WeekCase.h"
 #include "CoreGlobals.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -516,11 +517,11 @@ void FS47Happenings::StepBigDue()
  double From=P.Hour;if(BigSoon>0)From=FMath::Min(From,BigSoon);
  if(S47Big::StoryWindow(From))From=26.67;
  // (CRIT6-20261109: nor on top of a director script; it waits for the script's end)
- if(H<From||S47Big::StoryWindow(H)||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen()||F->InTutorial()||FS47ScriptPlayer::Busy(M))return;
+ if(H<From||S47Big::StoryWindow(H)||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen()||F->InTutorial()||FS47ScriptPlayer::Busy(M)||FS47WeekCase::Holds(M))return;
  // Late in the night the rhythm's rest no longer holds it back, but nothing else on the ground and nobody being taken.
  if(H>=28.5)
  {
-  const bool bBusy=(M->Rhythm&&!M->Rhythm->ReadNow().Busy.IsNone())||(F->Taken&&F->Taken->Busy())||(F->Director&&F->Director->Busy());
+  const bool bBusy=(M->Rhythm&&!M->Rhythm->ReadNow().Busy.IsNone())||(F->Taken&&F->Taken->Busy())||(F->Director&&F->Director->Busy())||FS47WeekCase::Holds(M);
   if(bBusy){BigTry=Paced+5;return;}
  }
  BigTry=Paced+5;

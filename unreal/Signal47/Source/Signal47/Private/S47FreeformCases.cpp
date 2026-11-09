@@ -335,6 +335,8 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // LOOP-3-20261109: what comes home from out there as a question (the same minute on the array, FS47FreeformSession::AskSameMinute)
  // and a needle that will not settle where something happened in the last two nights (FS47Places::Use, LOOP-4).
  if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
+ // WEEKLY-CASE-20261109: what the week's case leaves (S47WeekCase), a lead out on the land; never a night record (FS47Happenings).
+ if(Id.StartsWith(TEXT("weekcase_")))return LandLine;
  return -1;
 }
 bool FS47FreeformCases::IsCaseRecord(const FString& Key)

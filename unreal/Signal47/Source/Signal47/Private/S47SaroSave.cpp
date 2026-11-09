@@ -5,6 +5,7 @@
 #include "S47Freeform.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
@@ -82,7 +83,7 @@ FString S47SaroSave::Unsaved(const US47Main* M)
 	const bool bVisit = F->FarmSite && F->FarmSite->VisitWantsGround();
 	const bool bAtDoor = F->IndoorDread && (F->IndoorDread->DoorActive() || F->IndoorDread->PeekActive());
 	const bool bVoice = F->Happenings && !F->Happenings->Ground().IsEmpty() && FS47Happenings::IsDanger(F->Happenings->Ground());
-	if (bVisit || bAtDoor || bVoice) return FString(TEXT("Not now. Something is out there."));
+	if (bVisit || bAtDoor || bVoice || FS47WeekCase::Holds(M)) return FString(TEXT("Not now. Something is out there."));
 	// MOTEL-SLEEP-20261108: a night at the motel is not filed until the player is back at SARO (S47MotelNight).
 	if (F->MotelNight && F->MotelNight->Unfiled()) return FString(TEXT("The log is filed at SARO. A night at the motel is not saved until you are back there."));
 	return FString();
@@ -99,6 +100,8 @@ FString S47SaroSave::Danger(const US47Main* M)
 	if (M->HighwayUfo && M->HighwayUfo->Busy()) return TEXT("the light over the road");
 	// CRIT6-20261109: a director script under way ("script" is not in director.json, so the rhythm's line below would not see it).
 	if (FS47ScriptPlayer::Busy(M)) return TEXT("a script under way");
+	// WEEKLY-CASE-20261109: the week's case on the ground (phases one to three): nothing is filed out there.
+	if (const FString Week = FS47WeekCase::DangerOf(M); !Week.IsEmpty()) return Week;
 	if (M->Night && M->Night->Glimpses && !M->Night->Glimpses->Individuals().IsEmpty()) return TEXT("bodies out");
 	// whatever holds the night's ground (director.json): a presence or a danger, never a light in the sky or a fault in the rack
 	if (M->Rhythm)

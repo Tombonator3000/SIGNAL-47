@@ -11,6 +11,7 @@
 #include "S47GameStyle.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
@@ -322,6 +323,8 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  if(F->Happenings)F->Happenings->FillRhythm(N);
  // CRIT6-20261109: a director script under way holds the ground: no meeting, no taking and no big night starts on top of it.
  if(FS47ScriptPlayer::Busy(M))N.Busy=TEXT("script");
+ // WEEKLY-CASE-20261109: the week's case on the ground holds it (S47WeekCase.h).
+ if(FS47WeekCase::Holds(M))N.Busy=TEXT("week_case");
  if(F->Taken&&F->Taken->Busy())N.Busy=TEXT("taken");
  if(F->FarmSite&&F->FarmSite->VisitWantsGround())N.Busy=F->FarmSite->FieldVisit()?TEXT("field_visit"):TEXT("site_visit");
  if(M->HighwayUfo&&M->HighwayUfo->StageName()!=TEXT("idle")&&M->HighwayUfo->StageName()!=TEXT("done"))N.Busy=TEXT("highway_ufo");

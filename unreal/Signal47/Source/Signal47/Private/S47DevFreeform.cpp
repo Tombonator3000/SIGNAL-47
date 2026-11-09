@@ -21,6 +21,7 @@
 #include "S47FreeformWorld.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -166,6 +167,8 @@ void FS47DevFreeform::ClearRunning()
  if(WorldFixesClear)WorldFixesClear();
  S47FloodProbe::StopLive(M);
  if(F->Happenings)F->Happenings->DevClear(false);
+ // WEEKLY-CASE-20261109: the week's case on the ground is over, cleaned up, as it was before F10.
+ if(F->WeekCase&&F->WeekCase->HoldsGround())F->WeekCase->DevStop();
  // M2's made-up presences and silences (S47OmenDev.cpp)
  if(M->Omen)M->Omen->DevClear();
  if(M->Soundscape)M->Soundscape->DevHush(0);
@@ -1407,6 +1410,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddSaroFixes(E);
  AddFarmLights(E);
  AddTownDay(E);
+ AddWeekCase(E);
 }
 
 void FS47DevFreeform::Stop()

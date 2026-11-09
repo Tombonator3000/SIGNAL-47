@@ -95,6 +95,8 @@ private:
  void AddSaroFixes(FS47DevEvents& E);
  // FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's lamp and the old house's lit room; S47FarmLightsDev.cpp.
  void AddFarmLights(FS47DevEvents& E);
+ // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
+ void AddWeekCase(FS47DevEvents& E);
  void AddTownDay(FS47DevEvents& E); // NPC-DAY: "Town day (T)" (S47TownDayDev.cpp)
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);

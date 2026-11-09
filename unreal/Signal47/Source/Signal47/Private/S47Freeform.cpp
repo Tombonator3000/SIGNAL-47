@@ -59,6 +59,7 @@
 #include "S47World.h"
 #include "S47Flow.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47Fatigue.h"
 #include "S47WeatherLive.h"
 #include "S47Observing.h"
@@ -328,6 +329,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Round)Round=MakeShared<FS47DayRound>(M);Round->Begin(S47J::Obj(Saved,TEXT("round")));
  if(!RoadCar)RoadCar=MakeShared<FS47RoadsideCar>(M);RoadCar->Begin(S47J::Obj(Saved,TEXT("roadCar")));
  if(!Happenings)Happenings=MakeShared<FS47Happenings>(M);Happenings->Begin(S47J::Obj(Saved,TEXT("happenings")));
+ if(!WeekCase)WeekCase=MakeShared<FS47WeekCase>(M);WeekCase->Begin(S47J::Obj(Saved,TEXT("weekCase")));
  if(!Scripts)Scripts=MakeShared<FS47ScriptPlayer>(M);Scripts->Begin(S47J::Obj(Saved,TEXT("scripts")));
  if(!NightLog)NightLog=MakeShared<FS47NightLog>(M);NightLog->Begin(S47J::Obj(Saved,TEXT("nightLog")));
  if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
@@ -364,6 +366,7 @@ void FS47FreeformSession::Stop()
  StopSopCard();StopTelex();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
+ if(WeekCase)WeekCase->Stop();
  if(Scripts&&bCanRestore)Scripts->Stop();
  // CRIT6-20261109: the cab's controller is in the world, which the purge may already have taken.
  if(Outfit&&bCanRestore)Outfit->Stop();
@@ -596,6 +599,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Round&&!Held())Round->Step(D);
  if(RoadCar)RoadCar->Step(D);
  if(Happenings)Happenings->Step(D);
+ if(WeekCase)WeekCase->Step(D);
  if(Scripts)Scripts->Step(D);
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
@@ -3603,6 +3607,7 @@ S47J::FObj FS47FreeformSession::Save()const
  SaveMinutes(O); // LOOP-3-20261109
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
+ if(WeekCase){const S47J::FObj Week=WeekCase->Save();if(Week.IsValid())S47J::Set(O,TEXT("weekCase"),Week);}
  if(Scripts){const auto Played=Scripts->Save();if(Played->Values.Num()>0)S47J::Set(O,TEXT("scripts"),Played);}
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}

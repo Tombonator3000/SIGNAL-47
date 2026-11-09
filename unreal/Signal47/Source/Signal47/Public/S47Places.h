@@ -35,6 +35,10 @@ public:
  // the tiers (MayPointAt). The bearing goes on the map and its slip on the OPS printer (FS47FreeformSession::QueueBearingSlip).
  // True if it gave one.
  bool AfterRegistered(bool bAnomaly=false);
+ // WEEKLY-CASE-20261109: the evening after the first big night the night's one pointing-out is the week's case's (FS47WeekCase): a
+ // slip from SARO toward Target (road-local ToX, ToZ), its sector over it, the spread by the mended branches as a registration's.
+ // The same rules: once a night (the Director's MayPointOut), on the map and the OPS printer. True if it gave one.
+ bool PointAt(const FString& Target,double ToX,double ToZ);
  // A bearing on the map. From SARO, or (bCar) from where the truck stood when the direction finder nulled (From, road-local x and z),
  // so that two from different places can cross. Clock: when it was taken; Until: when it goes cold (the next noon). Older saves have
  // neither (-1): no time, never cold, from SARO.

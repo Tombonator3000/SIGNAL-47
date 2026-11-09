@@ -250,6 +250,8 @@ public:
  TSharedPtr<class FS47RoadsideCar> RoadCar;
  // What can happen out in the night (TODO NIGHT31-20261108 proposals 1 to 8), and the counter (GEIGER-20261108): S47Happenings.h.
  TSharedPtr<class FS47Happenings> Happenings;
+ // WEEKLY-CASE-20261109: the week's authored case, one owner that whoever asks about danger sees (S47WeekCase.h).
+ TSharedPtr<class FS47WeekCase> WeekCase;
  // DIRECTOR-TOOL-20261109: Tom's scripted events (Content/Director/scripted) and their editor behind F10: S47ScriptPlayer.h.
  TSharedPtr<class FS47ScriptPlayer> Scripts;
  // The night's typed log at 06:00, in the notebook and on the telex to Dr. Ward (NIGHTLOG-20261108): S47NightLog.h.

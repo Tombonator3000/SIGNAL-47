@@ -90,7 +90,8 @@ static const TCHAR* S47RhythmDefaultJson=TEXT(R"S47JSON({
     { "id": "dust_devil", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "tier": "hint", "hours": [20, 23.5], "draw": { "per_night": 0.15, "at": [20.5, 23.5] }, "cooldown_days": [3, 6], "needs": ["outdoors"], "enforce": true },
     { "id": "missing_person", "system": "night", "slot": "background", "level": "observation", "from_day": 4, "tier": "hint", "hours": "night", "draw": { "per_night": 0.1, "at": [20.5, 0] }, "cooldown_days": [5, 9], "needs": [], "enforce": true },
     { "id": "unease", "system": "night", "slot": "background", "level": "hint", "from_day": 1, "tier": "hint", "hours": "night", "cooldown_days": [0, 0], "needs": [], "enforce": true },
-    { "id": "big_night", "system": "night", "slot": "ground", "level": "presence", "from_day": 2, "tier": "full", "hours": [2, 5], "draw": { "per_night": 1.0, "at": [2.1, 3.6] }, "needs": [], "enforce": true }
+    { "id": "big_night", "system": "night", "slot": "ground", "level": "presence", "from_day": 2, "tier": "full", "hours": [2, 5], "draw": { "per_night": 1.0, "at": [2.1, 3.6] }, "needs": [], "enforce": true },
+    { "id": "week_case", "system": "week", "slot": "ground", "level": "danger", "from_day": 4, "tier": "full", "hours": [2, 5], "needs": [], "enforce": true }
   ]
 }
 )S47JSON");

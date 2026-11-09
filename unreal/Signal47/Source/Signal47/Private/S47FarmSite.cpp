@@ -37,6 +37,7 @@
 #include "S47Flow.h"
 #include "S47OpenLand.h"
 #include "S47Visitors.h"
+#include "S47WeekCase.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -84,7 +85,7 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();
  const FVector2D Foot(M->Player->Pos.X,M->Player->Pos.Z);
  const bool bAtMarks=Armed()&&Here()&&FVector2D(Foot.X-Middle.X,Foot.Y-Middle.Z).Size()<140; // Those marks have their own visit.
- const bool bQuiet=G&&F.Director&&F.Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!F.Taken->Busy()&&!(F.IndoorDread&&F.IndoorDread->DoorActive());
+ const bool bQuiet=G&&F.Director&&F.Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!F.Taken->Busy()&&!(F.IndoorDread&&F.IndoorDread->DoorActive())&&!FS47WeekCase::HoldsFarm(M);
  if(bAtMarks||!bQuiet||M->ModalOpen()||!OutOnFoot(M->Web->Area(),Foot.Size(),M->World->bDriving,F.Taken->Indoors())){FieldDwell=0;return;}
  // Active seconds, as their hours are: F10's natural night at x30 runs the hours by in forty real seconds, and a real-time minute
  // of standing out there never came (krit9field: nine nights in the open, no draw at all).
@@ -536,7 +537,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // Only after dark, on foot and when it has stood about here a while; nothing else may be going on.
   const bool bDark=M->Life&&M->Life->Sky.IsValid()&&M->Life->Sky->Daylight()<.1;
   // Something at a door indoors counts too: it goes first, and this waits its turn.
-  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy()&&!(M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorActive());
+  // WEEKLY-CASE-20261109: nor the week's case, from its call at ten to two to its end (an ordinary visit would start on top of it).
+  const bool bQuiet=M->Freeform->Director&&M->Freeform->Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!Tk->Busy()&&!(M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorActive())&&!FS47WeekCase::HoldsFarm(M);
   const double Clock=M->Freeform->Clock();
   // Parked with a spotlight on, they know about it from further off.
   const bool bLampOut=bDriving&&M->Freeform->TruckLamp&&M->Freeform->TruckLamp->On()&&M->World->CabDrive()&&FMath::Abs(M->World->CabDrive()->Speed)<.5;
