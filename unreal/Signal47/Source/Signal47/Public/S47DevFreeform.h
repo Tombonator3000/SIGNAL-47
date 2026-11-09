@@ -132,6 +132,10 @@ private:
  // -S47NaturalStand=tour: through each night the player goes where a player would be (control room, Caliche, the wheel, the farm,
  // the open land), so that what fits each place can come by itself. Nothing is started or cleared.
  void StepTour();
+ // -S47NaturalCards=1: each evening the slot-1 card is run through the session as a player would (point, record, control, both
+ // reels, register), so that a run over many nights shows what the card and the bearing slip said. Logs only.
+ void StepCards();
+ int32 CardsNight=0,CardsStage=0,CardsJob=-1;bool bCards=false;double CardsWait=0;
  int32 TourNight=0,TourLeg=-1;
  double ScheduleHeld=0; // a line has set the Director's schedule by itself for this long
  FString Holding;

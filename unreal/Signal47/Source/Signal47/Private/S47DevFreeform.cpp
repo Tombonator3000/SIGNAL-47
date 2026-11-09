@@ -16,6 +16,8 @@
 #include "S47FloodProbe.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47Story.h"
+#include "S47FreeformAudioDesk.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
@@ -837,6 +839,78 @@ void FS47DevFreeform::StepStand()
  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night %d: standing at %s, %.0f %.0f, %s"),Night,*StandPlace,M->Player->Pos.X,M->Player->Pos.Z,*ClockText(F->Clock()));
 }
 
+void FS47DevFreeform::StepCards()
+{
+ auto* F=Session();
+ if(!bCards||!F||!M->Player||!M->Web||!M->World||!M->Story||M->World->bBusy||M->World->bDriving||M->Web->Area()!=TEXT("saro"))return;
+ if(F->Taken&&F->Taken->Busy())return;
+ using J=FS47FreeformSession::EJobStage;
+ const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ const auto Say=[&](const TCHAR* What){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: %s [%s]"),Night,*ClockText(F->Clock()),What,*F->FeedbackText().Left(160));};
+ if(CardsNight!=Night){if(H<19.5||H>=23.)return;CardsNight=Night;CardsStage=0;CardsJob=-1;}
+ if(CardsStage<0)return;
+ if(H>=27.&&CardsStage<90){Say(TEXT("GAVE UP, the card was not through by 03:00"));CardsStage=-1;return;}
+ const auto& Jobs=F->Jobs();
+ if(CardsStage==0)
+ {
+  CardsJob=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==1&&X.CaseTest<0&&X.Stage==J::New;});
+  if(CardsJob<0){Say(TEXT("no new slot-1 card today"));CardsStage=-1;return;}
+  const bool bOut=F->OutThereTonight();
+  FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: before the card: out there tonight %d (lead %s at %s%s), director anomaly %d"),Night,*ClockText(F->Clock()),bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0);
+  if(M->UI)M->UI->Close(true);
+  if(!F->SelectJob(CardsJob)){Say(TEXT("could not select the card"));CardsStage=-1;return;}
+  const auto* P=F->ConsoleProfile();if(!P){Say(TEXT("no receiver profile"));CardsStage=-1;return;}
+  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+  F->PointSelected();F->OpenTracking();CardsStage=1;return;
+ }
+ if(!Jobs.IsValidIndex(CardsJob)){CardsStage=-1;return;}
+ const auto& Card=Jobs[CardsJob];
+ if(CardsStage==1)
+ {
+  if(M->UI)M->UI->Close(true);
+  if(!F->StartAcquisition())return;
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: recording %s, discrepancy %d, phenomenon '%s'"),Night,*ClockText(F->Clock()),*Card.Id,Card.bAnomaly?1:0,*Card.Phenomenon);
+  CardsStage=2;return;
+ }
+ if(CardsStage==2)
+ {
+  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)return;
+  if(!F->CollectChart()){Say(TEXT("could not collect the chart"));CardsStage=-1;return;}
+  if(M->UI)M->UI->Close(true);
+  if(!Card.bAnomaly){CardsStage=9;return;}
+  if(!F->StartControl()){Say(TEXT("the control would not start"));CardsStage=-1;return;}
+  CardsStage=3;return;
+ }
+ if(CardsStage==3)
+ {
+  if(Card.ControlAt<8)return;
+  if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
+  F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=4;return;
+ }
+ if(CardsStage==4){if(F->AudioPlaying())return;F->AudioAction(TEXT("control"));F->AudioAction(TEXT("play"));CardsStage=5;return;}
+ if(CardsStage==5)
+ {
+  if(F->AudioPlaying())return;
+  F->AudioAction(TEXT("original"));F->SeekAudio(9.1);F->AudioAction(TEXT("mark_start"));F->SeekAudio(13.0);F->AudioAction(TEXT("mark_end"));
+  const bool bOk=F->AudioAction(TEXT("confirm"));
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: both reels heard (original %.0f s, control %.0f s), interval confirmed %d [%s]"),Night,*ClockText(F->Clock()),Card.OriginalCovered,Card.ControlCovered,bOk?1:0,*F->FeedbackText().Left(160));
+  if(M->UI)M->UI->Close(true);
+  if(!bOk){CardsStage=-1;return;}
+  CardsStage=9;return;
+ }
+ if(CardsStage==9)
+ {
+  const int32 Before=F->Places?F->Places->Bearings().Num():0;
+  const bool bOk=F->RegisterComparison(Card.bAnomaly?TEXT("unresolved"):TEXT("normal"));
+  const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: registered %d, discrepancy %d, bearing slip %s%s [%s]"),Night,*ClockText(F->Clock()),bOk?1:0,Card.bAnomaly?1:0,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT(""),*F->FeedbackText().Left(160));
+  if(M->UI)M->UI->Close(true);
+  CardsStage=90;return;
+ }
+}
+
 void FS47DevFreeform::StepTour()
 {
  auto* F=Session();
@@ -1473,6 +1547,7 @@ void FS47DevFreeform::Step(double Dt)
     UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night from day %d %s"),F0->Day(),*ClockText(F0->Clock()));
    }
    FParse::Value(FCommandLine::Get(),TEXT("S47NaturalStand="),StandPlace);
+   {int32 CardsFlag=0;bCards=FParse::Value(FCommandLine::Get(),TEXT("S47NaturalCards="),CardsFlag)&&CardsFlag>0;}
    // -S47NaturalHold=0: nothing drops the speed to x1, for a run over many nights where what matters is what comes and where.
    int32 HoldFlag=1;
    if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalHold="),HoldFlag)&&HoldFlag==0)
@@ -1482,7 +1557,7 @@ void FS47DevFreeform::Step(double Dt)
    }
   }
  }
- if(bNatural){StepNatural(Dt);StepStand();StepTour();}
+ if(bNatural){StepNatural(Dt);StepStand();StepTour();StepCards();}
  StepSweep(Dt);
 }
 
