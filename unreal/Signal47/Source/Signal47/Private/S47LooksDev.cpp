@@ -16,6 +16,8 @@
 #include "Materials/MaterialInterface.h"
 #include "S47World.h"
 #include "Misc/Paths.h"
+#include "Misc/Parse.h"
+#include "Misc/CommandLine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Looks, Log, All);
 
@@ -56,7 +58,8 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
   {
    TSharedRef<TMap<FString, S47SaroClip::FHit>> All = MakeShared<TMap<FString, S47SaroClip::FHit>>();
    TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
-   const FString Dir = (SweepDir.IsEmpty() ? FPaths::ProjectSavedDir() / TEXT("Looks") : SweepDir) / TEXT("saro-clip");
+   // (critic round 4: every run wrote some 400 MB of vertices; now only on -S47SaroClipDump)
+   const FString Dir = FParse::Param(FCommandLine::Get(), TEXT("S47SaroClipDump")) ? (SweepDir.IsEmpty() ? FPaths::ProjectSavedDir() / TEXT("Looks") : SweepDir) / TEXT("saro-clip") : FString();
    *Next = [this, All, Next, Dir, Log](int32 I)
    {
     if (I >= int32(UE_ARRAY_COUNT(Places)))
@@ -123,6 +126,8 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  };
  E.AddFreeform(Group, TEXT("Invisible blockers at SARO"), TEXT("11:00 in SARO's yard: every walk collider, drive obstacle and kept-out box here whose edge has nothing drawn by it"), [Blockers]
  { Blockers(TEXT("saro"), FVector2D(10, 14), TEXT("SARO")); });
+ E.AddFreeform(Group, TEXT("Invisible blockers on Main Street"), TEXT("11:00 on Main Street: the same for Caliche, measured where it is drawn"), [Blockers]
+ { Blockers(TEXT("diner"), FVector2D(8000 - 2, 2140), TEXT("Main Street")); });
  E.AddFreeform(Group, TEXT("Invisible blockers on the road"), TEXT("11:00 by the substation: the same for the road's walk, which holds Caliche, the motel, the substation and the farm"), [Blockers]
  { Blockers(TEXT("diner"), FVector2D(7896, 520), TEXT("the road")); });
 

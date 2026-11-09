@@ -128,6 +128,8 @@ void Walls(TArray<TPair<FString, FBox>>& Out)
  for (const FSlab& S : Table()) Out.Add({ S.Name, S.Box });
 }
 
+void Forget() { Cache().Reset(); }
+
 TArray<FHit> Run(UWorld* World, double Tol, TArray<FString>& Lines, const FString& DumpDir)
 {
  TArray<FHit> Hits;
@@ -244,6 +246,7 @@ TArray<FHit> Run(UWorld* World, double Tol, TArray<FString>& Lines, const FStrin
   FFileHelper::SaveStringToFile(Text, *(DumpDir / TEXT("saro-geo.json")));
   Lines.Add(FString::Printf(TEXT("SARO walls: %d vertices of %d parts written to %s"), Dump.Num() / 3, DumpIndex.Num(), *DumpDir));
  }
+ Cache().Reset(); // (critic round 4: twelve million vertices were kept after the measure)
  return Hits;
 }
 }

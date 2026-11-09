@@ -9,6 +9,8 @@
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Dom/JsonObject.h"
+#include "Dom/JsonValue.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47CalicheGround, Log, All);
 
@@ -144,8 +146,64 @@ namespace
  }
 }
 
+namespace
+{
+ // Critic round 4: four car-sized boxes and a dozen small ones on Main Street stopped one where nothing is drawn. They are the
+ // colliders of the town's street dressing (web/src/world/dressTown.ts col(): Earl's sedan, two pickups, a wagon, drums, crates,
+ // a pallet, trash cans, soda machines, a news box, tyres), whose group dress/town:near the export left hidden (weathering.ts
+ // nearOnly(250 m), its visibility frozen at the export; nothing in Unreal shows it again). With the group hidden, each box whose
+ // middle is within 0.5 m of one of those props (town terms, +8000 in x) goes from the walk and from the truck's obstacles.
+ // -S47CalicheDressBoxes keeps them.
+ int32 ClearHiddenDressing(AS47Web* W)
+ {
+  if (FParse::Param(FCommandLine::Get(), TEXT("S47CalicheDressBoxes"))) return 0;
+  bool bFound = false, bHidden = false;
+  for (int32 I = 0; I < W->PartCount() && !bFound; ++I)
+   if (const FS47WebNode* N = W->Node(I); N && N->Name == TEXT("dress/town:near")) { bFound = true; bHidden = !N->bVis; }
+  if (!bFound || !bHidden) { UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: dress/town:near %s; its boxes stay"), bFound ? TEXT("is shown") : TEXT("not found")); return 0; }
+  static const FVector2D Props[] = { { -16.9, 2086.4 }, { -16.75, 2078.65 }, { -16.6, 2079.4 }, { -16.6, 2076.5 }, { -16.55, 2065.6 }, { -10.25, 2046.0 },
+   { -14.6, 2134.6 }, { -14.7, 2139.05 }, { -13.5, 2192.5 }, { -13.6, 2207.4 }, { -12.85, 2207.6 }, { -14.4, 2215.0 }, { -13.75, 2215.25 },
+   { 24.6, 2027.5 }, { 21.6, 2071.3 }, { 22.5, 2071.6 }, { 23.3, 2071.2 }, { 26.5, 2140.3 }, { 27.2, 2177.6 }, { -23.5, 2233.8 },
+   { 23.4, 2137.3 }, { 24.4, 2190.75 }, { -18.4, 2246.6 } };
+  const auto Dressing = [](double MinX, double MaxX, double MinZ, double MaxZ)
+  {
+   if (MaxX - MinX > 6.5 || MaxZ - MinZ > 6.5) return false;
+   const double X = (MinX + MaxX) / 2, Z = (MinZ + MaxZ) / 2;
+   for (const FVector2D& P : Props) if (FMath::Abs(X - (8000 + P.X)) < .5 && FMath::Abs(Z - P.Y) < .5) return true;
+   return false;
+  };
+  int32 Walks = 0, Drives = 0;
+  TArray<FS47Rect>& Walk = W->CollidersMutable(TEXT("road"));
+  for (int32 I = 0; I < Walk.Num(); ++I)
+  {
+   FS47Rect& R = Walk[I];
+   if (!R.Id.IsEmpty() || !R.bEnabled || !Dressing(R.MinX, R.MaxX, R.MinZ, R.MaxZ)) continue;
+   UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: hidden dressing's walk box %d at x %.2f..%.2f z %.2f..%.2f taken out"), I, R.MinX, R.MaxX, R.MinZ, R.MaxZ);
+   // (the drive copies a box's corners even when it is off, so it goes far away too, as MotelV2 does)
+   R.Id = FString::Printf(TEXT("caliche-ground:hidden-dressing:%d"), I); R.bEnabled = false; R.MinX = R.MinZ = 1.e9; R.MaxX = R.MaxZ = 1.e9 + .01;
+   ++Walks;
+  }
+  const TSharedPtr<FJsonObject>& D = W->DriveData(); const TSharedPtr<FJsonObject>* Legs = nullptr; const TSharedPtr<FJsonObject>* Road = nullptr;
+  const TArray<TSharedPtr<FJsonValue>>* Obstacles = nullptr;
+  if (D && D->TryGetObjectField(TEXT("legs"), Legs) && (*Legs)->TryGetObjectField(TEXT("road"), Road) && (*Road)->TryGetArrayField(TEXT("obstacles"), Obstacles))
+  {
+   TArray<TSharedPtr<FJsonValue>> Keep;
+   for (const auto& V : *Obstacles)
+   {
+    const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+    if (V->TryGetArray(A) && A->Num() == 4 && Dressing((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber(), (*A)[3]->AsNumber())) { ++Drives; continue; }
+    Keep.Add(V);
+   }
+   if (Drives) (*Road)->SetArrayField(TEXT("obstacles"), Keep);
+  }
+  UE_LOG(LogS47CalicheGround, Display, TEXT("S47: Caliche ground: the hidden street dressing's boxes taken out: %d from the walk, %d from the truck's obstacles"), Walks, Drives);
+  return Walks + Drives;
+ }
+}
+
 void Build(AS47Web* W)
 {
+ if (W) ClearHiddenDressing(W);
  if (!W || FParse::Param(FCommandLine::Get(), TEXT("S47CalicheGroundOff")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"))) return;
  UWorld* World = W->GetWorld();
  UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));

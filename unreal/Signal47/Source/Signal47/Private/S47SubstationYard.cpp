@@ -56,8 +56,12 @@ bool Build(AS47Web* W)
  UMaterialInterface* Steel = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/SubstationDetail/Materials/M_SubstationDetail_GalvanizedSteel.M_SubstationDetail_GalvanizedSteel"));
  UMaterialInterface* Concrete = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/SaroSite/Materials/M_SaroSite_Concrete.M_SaroSite_Concrete"));
  if (!Cube || !Cylinder || !Steel || !Concrete) { UE_LOG(LogS47SubstationYard, Warning, TEXT("S47: substation yard: shapes or materials missing; nothing added")); return false; }
- USceneComponent* Parent = Fence->Comp.Get();
+ // Critic round 4: the barbed wire was in the log (30 arms, 15 strands, 1284 barbs) but not in the pictures. Its batches hung on the
+ // fence's component while their nodes were adopted under the fence's parent, so setting a node put the fence's own transform
+ // on them twice, and the instances (added in world space before the turn was set) moved with it. Everything here now hangs on
+ // the fence's parent, and the wire's instances go in after their nodes are set.
  const int32 ParentNode = Fence->Parent;
+ USceneComponent* Parent = W->Node(ParentNode) && W->Node(ParentNode)->Comp.IsValid() ? W->Node(ParentNode)->Comp.Get() : Fence->Comp.Get();
 
  // ---- barbed wire: an arm out and up at 45 degrees from the top of every post, three strands along each run ----
  UInstancedStaticMeshComponent* Arms = Batch(W, Parent, Cube, Steel, TEXT("S47SubstationYard_WireArms"));
@@ -68,19 +72,20 @@ bool Build(AS47Web* W)
   { { -9.2, -7.2 }, { -9.2, 7.2 }, { -1, 0 } }, { { 9.2, -7.2 }, { 9.2, 7.2 }, { 1, 0 } }, { { -9.2, 7.2 }, { 9.2, 7.2 }, { 0, 1 } } };
  const double Rise = ArmLength / FMath::Sqrt(2.);
  int32 NArms = 0, NStrands = 0, NBarbs = 0;
+ TArray<FTransform> ArmAt, StrandAt, BarbAt;
  for (const FRun& R : Runs)
  {
   const int32 Count = FMath::CeilToInt(FVector2D::Distance(R.A, R.B) / 2.7);
   for (int32 I = 0; I <= Count; ++I)
   {
    const FVector2D P = R.A + (R.B - R.A) * (double(I) / Count);
-   Arms->AddInstance(Along(Site(P, PostTop - .06), Site(P + R.Out * Rise, PostTop - .06 + Rise), .028), true); ++NArms;
+   ArmAt.Add(Along(Site(P, PostTop - .06), Site(P + R.Out * Rise, PostTop - .06 + Rise), .028)); ++NArms;
   }
   for (int32 K = 1; K <= 3; ++K)
   {
    const double T = Rise * K / 3;
    const FVector A = Site(R.A + R.Out * T, PostTop - .06 + T), B = Site(R.B + R.Out * T, PostTop - .06 + T);
-   Strands->AddInstance(Along(A, B, Strand), true); ++NStrands;
+   StrandAt.Add(Along(A, B, Strand)); ++NStrands;
    // the barbs: a short twist of wire across the strand every 14 cm, turned a little each time
    const int32 NB = FMath::FloorToInt(FVector::Distance(A, B) / BarbEvery);
    const FVector UA = S47Three::ToUE(A), UB = S47Three::ToUE(B), Dir = (UB - UA).GetSafeNormal();
@@ -89,7 +94,7 @@ bool Build(AS47Web* W)
     const FVector At = UA + (UB - UA) * (double(J) / NB);
     const FQuat Turn(Dir, FMath::DegreesToRadians(37. * J + 19. * K));
     const FQuat Q = Turn * FRotationMatrix::MakeFromZ(Dir).ToQuat();
-    Barbs->AddInstance(FTransform(Q, At, FVector(.028, .0035, .0035)), true); ++NBarbs;
+    BarbAt.Add(FTransform(Q, At, FVector(.028, .0035, .0035))); ++NBarbs;
    }
   }
  }
@@ -105,6 +110,7 @@ bool Build(AS47Web* W)
  Keep(W->AdoptNode(Arms, ParentNode, TEXT("substationYard:wireArms")), FenceQ, FVector::OneVector);
  Keep(W->AdoptNode(Strands, ParentNode, TEXT("substationYard:wireStrands")), FenceQ, FVector::OneVector);
  Keep(W->AdoptNode(Barbs, ParentNode, TEXT("substationYard:wireBarbs")), FenceQ, FVector::OneVector);
+ Arms->AddInstances(ArmAt, false, true); Strands->AddInstances(StrandAt, false, true); Barbs->AddInstances(BarbAt, false, true);
 
  // ---- a station-service transformer: the kit's own, at 0.55, on a 3.2 x 1.7 m pad 15 cm over the gravel at x -6.6, y 2.4 ----
  const FVector2D T2(-6.6, 2.4);

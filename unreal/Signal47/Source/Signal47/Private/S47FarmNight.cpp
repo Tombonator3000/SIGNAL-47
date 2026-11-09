@@ -19,6 +19,8 @@
 #include "S47Audio.h"
 #include "S47FarmHouse.h"
 #include "S47FarmWorld.h"
+#include "S47Drive.h"
+#include "S47World.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47RoadTerrain.h"
@@ -147,6 +149,13 @@ bool FS47FarmNight::Build()
    }
   }
   LampOn(L,TEXT("TrafoLamp"),Foot,FVector(7997,0,520),1100);
+  { // Critic round 4: one walked and drove through this pole. A 40 cm square for the walk, a circle for the truck.
+   TArray<FS47Rect>& Walk=M->Web->CollidersMutable(TEXT("road"));
+   if(!Walk.ContainsByPredicate([](const FS47Rect& R){return R.Id==TEXT("farmNight:trafoLampPole");}))
+   {FS47Rect R;R.MinX=Foot.X-.2;R.MaxX=Foot.X+.2;R.MinZ=Foot.Z-.2;R.MaxZ=Foot.Z+.2;R.Id=TEXT("farmNight:trafoLampPole");Walk.Add(R);}
+   if(M->World)if(IS47DriveArea* Road=M->World->LegArea(TEXT("road")))
+    if(!Road->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-Foot.X)<.01&&FMath::Abs(O.Z-Foot.Z)<.01;}))Road->Obstacles.Add(FS47Obstacle::Circle(Foot.X,Foot.Z,.3));
+  }
   if(PoleMesh)
   {
    auto* C=NewObject<UStaticMeshComponent>(M->Web,TEXT("S47TrafoLampPole"));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(PoleMesh);
@@ -159,6 +168,15 @@ bool FS47FarmNight::Build()
   FLamp L;L.At=SignLampWorld();L.Aim=SignWorld();L.Candela=38;
   Part(L,TEXT("S47SignLampArm"),Substation(0,-7.85,4.45),Size(.05,.05,1.3),Steel);
   L.Head=Part(L,TEXT("S47SignLampHead"),Substation(0,-8.5,4.45),Size(.42,.09,.26),Steel);
+  { // Critic round 4: the gooseneck and its head hung in the air over the sign with no post. A 6 cm steel post now stands from the
+   // measured ground up to the arm's back end, just behind the panel, as such a sign lamp is mounted.
+   const FVector Back=Substation(0,-7.2,4.45);double Ground=Back.Y-4.5;
+   FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SignLampPost),true);
+   if(UWorld* World=M->Web->GetWorld();World&&World->LineTraceSingleByChannel(Hit,S47Three::ToUE(Back.X,Back.Y-.3,Back.Z),S47Three::ToUE(Back.X,Back.Y-8,Back.Z),ECC_Visibility,Q))Ground=S47Three::ToThree(Hit.ImpactPoint).Y;
+   const double Height=Back.Y+.05-Ground;
+   Part(L,TEXT("S47SignLampPost"),FVector(Back.X,Ground+Height/2,Back.Z),Size(.06,Height,.06),Steel);
+   UE_LOG(LogTemp,Display,TEXT("S47: the sign lamp's post stands on %s at y %.3f, %.2f m up to its arm"),*GetNameSafe(Hit.GetComponent()),Ground,Height);
+  }
   Beam(L,TEXT("S47SignLampLight"),58,12);Lamps.Add(L);
  }
  bBuilt=true;return true;
