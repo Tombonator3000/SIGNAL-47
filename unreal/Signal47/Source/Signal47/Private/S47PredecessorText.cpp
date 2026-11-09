@@ -69,7 +69,7 @@ const TArray<FDocDef>& Docs()
    TEXT("Unit 23's call-out sheet. Mara Ortiz, sent on Ward's authority, the night of April 13. Her note says back by six."),nullptr},
   // ---- by post, after KEPT OPEN, when the final pay was routed back (M7)
   {TEXT("pay_reply"),TEXT("A letter to the night operator, by post"),TEXT("hand"),TEXT("BY POST"),
-   TEXT("To the night operator at SARO,\n\nSomebody from Dr. Ward's office sent on the pay, with a note that said it was you who routed it back. Thank you. Nobody had to do that.\n\nWe don't know anything more than we did. Nobody calls. If you ever learn something, I would rather hear it from you than from the county.\n\nThe station is staying open, the note said. Then somebody is still there at night. That helps more than I can say on a card.\n\nReyes's mother"),
+   TEXT("To the night operator at SARO,\n\nSomebody from Dr. Ward's office sent on the pay, with a note that said it was you who routed it back. Thank you. Nobody had to do that.\n\nWe don't know anything more than we did. Nobody calls. If you ever learn something, I would rather hear it from you than from the county.\n\nThe station is staying open, the note said. Then somebody is still there at night. That helps more than I can say in a letter.\n\nReyes's mother"),
    TEXT("Reyes's mother wrote to the station after the final pay was routed back to the family. She thanks you, and asks to hear it from you, if you ever learn something."),nullptr},
  };
  return Table;
@@ -214,7 +214,7 @@ const TArray<FBark>& Barks()
   {TEXT("wagon"),TEXT("wagon"),1,TEXT("The deputy called my bench. Somebody has been out at wagon 23, he says, and he has an idea who. Leave that one to the county.")},
   {TEXT("mine"),TEXT("tag_mine"),1,TEXT("Somebody saw you out at the mine on the west side. That is as far as you go. Not in. Not for a list, not for anybody. Dale out.")},
   {TEXT("pool"),nullptr,8,TEXT("You are still on nights. They had a pool on you at the district. I said three days. Now I owe a man in Socorro five dollars.")},
-  {TEXT("kept"),TEXT("kept-salute"),1,TEXT("So she kept us. I ran the whole array up and down from my bench, to see it still moves. It moves. Do not get used to it. Dale out.")},
+  {TEXT("kept"),TEXT("kept-salute"),1,TEXT("So she kept us. I ran the whole array up and down from my bench, to see if it still moves. It moves. Do not get used to it. Dale out.")},
  };
  return Table;
 }
@@ -259,19 +259,23 @@ FString Letter(bool bOlderGame,const FString& Dated,const FString& Assess)
  if(bOlderGame)return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nYou were put on nights in a hurry and nobody sat you down, so I will be plain now.\n\nReyes, who had those nights before you, has not been seen since the morning of April 14. The county has the file and I can't add to it. Since then my office has been asked why the county and the district should keep paying for 27 antennas.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nNothing about your pay or the work you've done so far changes. Keep your originals. You'll hear from me every Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleaned out. Leave it or clean it out, as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers.\n\nWard"),*Dated,*Assess);
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nWelcome. I will be plain, since nobody else will have been.\n\nThe station has had no night operator since April 14. Reyes, who had the job, has not been seen since that morning. The county has the file and I can't add to it. My office has been asked why the county and the district should keep paying for 27 antennas that nobody is looking after, and I don't have a good answer yet. You are meant to give me one.\n\nI will assess SARO on %s. If the work is being done, the array is in repair and the accounts are not in arrears, it stays open and so do you. If not, it closes.\n\nYou should know you got this job because nobody else wanted it. You wrote on your application that you need the money. So you'll understand that I need the numbers. Three jobs come up on the OPS terminal each morning at 08:00. Register what you measure, file what you register, and keep your originals. You'll hear from me every Monday.\n\nField maintenance is Dale, on the service line and on the walkie. You will not meet him. He will shout. He is usually right, and that does not help.\n\nReyes's locker is in the storage room in the east wing, and it has not been cleaned out. Leave it or clean it out, as you like.\n\nIf you decide this isn't for you, there's no need to call. Hang your keys on the board by the lockers. It has been done before.\n\nWard"),*Dated,*Assess);
 }
-FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land,bool bWouldStay,const FString& Levers)
+FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land,bool bWouldStay,const FString& Levers,int32 Reprieved)
 {
  // What the land gave at night is something she can use: what was seen, where and when, not what it was.
  const FString Field=Land>0?FString::Printf(TEXT(" Field records from out on the land at night: %d %s. Those I can use, as long as they say what you saw and where, not what you think it was."),Land,Land==1?TEXT("kind"):TEXT("kinds")):FString();
  // What she says is what she will assess by (M7): cases carried through, the array, records that can be read. A pile of cards is
  // not it, and the count of cards no longer earns anything past the floor.
+ // With the points there and a case carried through, what still fails is elsewhere on the sheet (Decide: arrears, the floor).
  const TCHAR* Remark=bWouldStay?TEXT("If I had to assess today, I could defend it. Keep it that way.")
-  :Points>=PointsNeeded?TEXT("The rest of it is close to what I need. What is missing is a case carried through to the end: the county will not keep a station open on routine.")
+  :Points>=PointsNeeded?(Concluded<1?TEXT("The rest of it is close to what I need. What is missing is a case carried through to the end: the county will not keep a station open on routine.")
+   :TEXT("The rest of it is close to what I need. What is not is on this sheet, and the county will read all of it."))
   :Points*2>=PointsNeeded?TEXT("That is enough to argue with. It is not enough to win. The county will not count cards: it wants cases carried through, the array mended and records it can read.")
   :TEXT("I can't defend that. Filing cards is not what I am asked about. Carry a case through, mend the array, keep your records readable.");
  FString Hours;
  if(Taken==1)Hours=TEXT("\n\nYour log has a stretch of hours in it that nobody can account for. Write down what you can check. I would rather have that than a story.");
- else if(Taken>=3)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I said what I would do after another, and I did it. You asked for the nights back, and you have them, on my word and not on the numbers. There will not be a second time."),Taken);
+ // What she has done only once "Not yet" has answered this very count; before that (noticed, not yet acted on) only that she meant it.
+ else if(Taken>=3&&Reprieved>0&&Taken==Reprieved)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I said what I would do after another, and I did it. You asked for the nights back, and you have them, on my word and not on the numbers. There will not be a second time."),Taken);
+ else if(Taken>=3)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I said what I would do after another. I meant it."),Taken);
  else if(Taken>=2)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I have had one operator go missing from this station. I am not going to have another. If it happens again I will put somebody else on nights."),Taken);
  const FString More=Levers.IsEmpty()?FString():TEXT("\n\n")+Levers;
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\nWEEK %d\n\nFiled so far: %d, and %d of them clean enough to read. Cases carried to a conclusion: %d. Array: %d of 27. Carried on the sheet: $%d.%s\n\n%s%s%s%s\n\nThe assessment is %s, %d days from now.\n\nWard"),Week,Filed,Clean,Concluded,Dishes,Arrears,*Field,Remark,Arrears>0&&Arrears<CarriedWarn?TEXT(" The county will read the carried line first."):TEXT(""),*More,*Hours,*Assess,DaysLeft);
@@ -282,9 +286,9 @@ FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCo
  L.Add(bLogsCount?TEXT("Your night sheets reach me. Keep sending them."):TEXT("Your night sheets reach me when you telex them, and a station that reports its nights counts for something."));
  L.Add(bTapesCount?TEXT("The tapes you played back are something I can send on."):TEXT("A tape with something on it that nobody heard out there is something I could send on."));
  L.Add(TrustPoints>0?TEXT("Your weekly reports have been whole. That is noticed."):TrustPoints<0?TEXT("Your weekly reports leave things out, and I have found some of them. I read those reports."):TEXT("Send me the weekly report from OPS, and send it whole. I read those reports."));
- L.Add(bPhotosCount?TEXT("The photographs are on file."):TEXT("A few photographs of what happened would help. Prints of the same frame are not more photographs."));
+ L.Add(bPhotosCount?TEXT("The photographs are on file."):TEXT("A few photographs of what you saw would help. Prints of the same frame are not more photographs."));
  if(Guessed>0)L.Add(TEXT("A filing with nothing behind it I can't put in front of the county. Look at the other place, or run a control, before you file."));
- if(Arrears>=CarriedWarn)L.Add(FString::Printf(TEXT("$%d is carried on the sheet. Past $%d on that line I can't put my name to the station, whatever else is in order."),Arrears,Cap));
+ if(Arrears>=CarriedWarn)L.Add(FString::Printf(TEXT("$%d is carried on the sheet. Past $%d on that line I can't put my name to keeping the station open, whatever else is in order."),Arrears,Cap));
  return FString::Join(L,TEXT(" "));
 }
 FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers)
@@ -295,7 +299,7 @@ FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString
 FString Followed(bool bWagon,bool bDeputy,bool bPayReturned)
 {
  TArray<FString> L;
- if(bWagon)L.Add(TEXT("The county has sent its flatbed for wagon 23 at last, and the search for Mara Ortiz is back on the sheriff's desk, with your notes in the file."));
+ if(bWagon)L.Add(TEXT("The district has sent its flatbed for wagon 23 at last, and the search for Mara Ortiz is back on the sheriff's desk, with your notes in the file."));
  if(bDeputy)L.Add(TEXT("The deputy asked for a copy of your log for the Ortiz file. I sent it. He said it was the first one that gave him times and not ideas."));
  if(bPayReturned)L.Add(TEXT("Reyes's final pay has gone from my office to the family, with a note from me saying who routed it back. If they write, it will come to the station."));
  return FString::Join(L,TEXT(" "));
@@ -315,11 +319,11 @@ FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int3
 FString Inspector(const FString& Dated,const FString& Assess,int32 Weakest)
 {
  static const TCHAR* const First[]={
-  TEXT("I will ask first for a case your station has carried through to the end, start to finish, with its tests. Routine I can get from any station."),
+  TEXT("I will ask first for a case your station has carried through to the end, with something behind it. Routine I can get from any station."),
   TEXT("I will look first at the array. A station with a third of its antennas down is a station I am asked to close."),
   TEXT("I will look first at the work filed. I am told there is not much of it."),
   TEXT("I will read the carried line on the weekly sheet first. A station that cannot keep its accounts does not get kept."),
-  TEXT("I will ask first to hear the recordings. A record nobody can read is not a record."),
+  TEXT("I will read the filed records first. A record nobody can read is not a record."),
   TEXT("I have read the weekly sheets and I have no questions yet. That is unusual, and I will have some on the day."),
  };
  return FString::Printf(TEXT("SOCORRO COUNTY / OFFICE OF THE INSPECTOR\n%s\n\nTo the night operator, SARO.\n\nDr. Ward's assessment of the station is %s. I will be reading it, and the county will go by what I say about it.\n\n%s\n\nI do not need to see you. I need to see the station's records.\n\nOffice of the County Inspector"),*Dated,*Assess,First[FMath::Clamp(Weakest,0,5)]);

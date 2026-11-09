@@ -34,9 +34,10 @@ namespace S47PredecessorText
  // names the hours in the log nobody can account for.
  // Land: kinds of record kept from the land at night (FS47FreeformSession::NightRecordKinds), which count too.
  // M7: bWouldStay: the assessment today would keep the station (FS47Predecessor::Decide), the only time she praises the week.
- // Levers: her word on each other thing she reads (Levers below). From three stretches of lost time (only after "Not yet") she
- // says what she has already done about it.
- FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0,bool bWouldStay=false,const FString& Levers=FString());
+ // Levers: her word on each other thing she reads (Levers below). Reprieved: the times taken at "Not yet" (FS47Predecessor's
+ // TakenAtReprieve). From three stretches of lost time she says what she has already done about it only once "Not yet" answered
+ // that count; noticed and not yet acted on, only that she meant it.
+ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0,bool bWouldStay=false,const FString& Levers=FString(),int32 Reprieved=0);
  // From this much carried on the sheet she names its limit (FS47FreeformSession::ArrearsCap) in her own words.
  constexpr int32 CarriedWarn=40;
  // One sentence of hers per thing the assessment reads besides the numbers on the sheet, no figures but money: the night sheets,

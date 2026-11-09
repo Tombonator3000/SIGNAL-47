@@ -421,7 +421,7 @@ bool FS47TownUse::Build()
 		{
 			return Counter == S47TownUseLocal::Radio ? FString(TEXT("A cork board: lost dogs, a hay baler, the church supper. A slot marked TIPS & REQUESTS."))
 				: Counter == S47TownUseLocal::Feed ? FString(TEXT("A price board in chalk: salt, range cubes, wire, a few things for a truck."))
-				: FString(TEXT("SOUVENIRS. TOURS. FILM. Painted by the same hand as the sign outside."));
+				: FString(TEXT("A card on the counter, in chalk: TOURS - FILM. WE BUY PHOTOS. The same hand as the sign outside."));
 		};
 		M->Inter->Add(I);
 	}
@@ -755,14 +755,14 @@ void FS47TownUse::OpenSouvenir()
 	{
 		TArray<FString> Names;
 		for (const FTourSite& S : SaucerMap()) Names.Add(S.Label);
-		Rows.Add(S47Kit::Small(TEXT("Your copy of his map, pencilled onto the survey sheet: ") + FString::Join(Names, TEXT(", ")) + TEXT(".")));
+		Rows.Add(S47Kit::Small(TEXT("Your copy of his map, penciled onto the survey sheet: ") + FString::Join(Names, TEXT(", ")) + TEXT(".")));
 	}
 	// The tour: two hours, once a day, while he has the light for it.
 	const bool bTourHours = Hour() >= 10 && Hour() < 15;
 	Rows.Add(S47Kit::Two(S47Kit::Small(bGone ? TEXT("A card on the register, in the girl's hand: NO TOURS THIS WEEK.") : TourDay == F.Day() ? TEXT("You took the tour today.") : bTourHours ? TEXT("The tour: two hours in his station wagon, the sites the book talks about. He always knows one more.") : TEXT("Tours leave between 10 AM and 3 PM.")),
 		S47Kit::Button(TEXT("Take the tour / $5 / 2 hours"), [this] { Tour(); }, false, !bGone && bTourHours && TourDay != F.Day() && F.Budget() >= 5), .7f, .3f));
 	// Postcards and a rubber spaceman: the town notices both.
-	Rows.Add(S47Kit::Two(S47Kit::Small(FString::Printf(TEXT("Postcards of the dishes at sunset, five for a dollar. You have bought %d."), Postcards)),
+	Rows.Add(S47Kit::Two(S47Kit::Small(FString::Printf(TEXT("Postcards of the dishes at sunset, a quarter apiece or five for a dollar. You have bought %d."), Postcards)),
 		S47Kit::Button(TEXT("Five postcards / $1"), [this] { if (M->Freeform->Spend(1)) { Postcards += 5; Note(TEXT("postcard")); M->RequestAutosave(); } OpenSouvenir(); }, false, F.Budget() >= 1), .7f, .3f));
 	Rows.Add(S47Kit::Two(S47Kit::Small(Seen(TEXT("spaceman")) ? TEXT("The rubber spaceman rides on your dash now, by the compass. People notice.") : TEXT("A rubber spaceman with a suction cup, gray, big eyes. For the dash.")),
 		S47Kit::Button(TEXT("A rubber spaceman / $3"), [this] { if (M->Freeform->Spend(3)) Note(TEXT("spaceman")); OpenSouvenir(); }, false, !Seen(TEXT("spaceman")) && F.Budget() >= 3), .7f, .3f));
@@ -827,9 +827,9 @@ FString FS47TownUse::ReadLure(const FString& Place)
 	const bool bSalt = L->Kind == TEXT("salt");
 	const int32 Pick = int32((FCrc::StrCrc32(*Place) + uint32(L->Night) * 31u) % 3u);
 	static const TCHAR* const SaltSaid[] = {
-		TEXT("Licked hollow on one side. Cattle tracks all round it, and a coyote's along the edge of them."),
+		TEXT("Licked hollow on one side. Cattle tracks all around it, and a coyote's along the edge of them."),
 		TEXT("Licked down a little. Deer tracks, a doe and a small one, and they took their time."),
-		TEXT("Licked, and the ground round it trampled. Cattle, by the tracks and by what they left.") };
+		TEXT("Licked, and the ground around it trampled. Cattle, by the tracks and by what they left.") };
 	static const TCHAR* const FeedSaid[] = {
 		TEXT("The cubes are gone. Javelina, by the tracks and the mess they made of the sack."),
 		TEXT("Gone. Coyote tracks over cattle tracks, and the coyote came last."),

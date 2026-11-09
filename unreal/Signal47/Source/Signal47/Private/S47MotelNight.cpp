@@ -113,7 +113,7 @@ void FS47MotelNight::AfterRest(double Morning, double SleptFrom)
 		if (!F.HasFinding(Id)) F.RegisterFinding(Id, Record);
 		Rows.Add(S47Kit::Small(TEXT("Kept as a field record.")));
 	}
-	Rows.Add(S47Kit::Small(TEXT("A night here is not filed. Nothing is saved until you are back at SARO.")));
+	Rows.Add(S47Kit::Small(TEXT("Nothing is saved at the motel. The game saves again once you are back at SARO.")));
 	if (Wakes(K) && F.Clock() < Morning - 600)
 		Rows.Add(S47Kit::Button(TEXT("Back to sleep until morning"), [this, Morning]
 		{

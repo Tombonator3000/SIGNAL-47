@@ -62,7 +62,7 @@ namespace S47KeysLocal
 			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back on the desk by the array's PC."), EKeys::U),
 			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground.
 			// STONE-POCKET-20261109: a tap puts a stone in the pocket (three fit); empty-handed, the key takes one out first.
-			A(TEXT("throw"), TEXT("Throw / pick up a stone"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap with a stone in your hand: into your pocket, three fit (looking at bare ground, you pick up the next one too); tap with anything else, or the pocket full: set it down. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. Use picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
+			A(TEXT("throw"), TEXT("Throw / set down"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap to set it down; a stone goes in your pocket instead while there is room (three fit), and looking at bare ground you pick up the next. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. The Use key picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
 		};
 	}
 

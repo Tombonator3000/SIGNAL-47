@@ -2366,7 +2366,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	// STONE-POCKET-20261109: the stones in the jacket pocket, said in words, not as a number
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Handling && M->Freeform->Handling->PocketCount() > 0)
 	{
-		Kit.Add({ TEXT("Stones"), FS47Handling::PocketLine(M->Freeform->Handling->PocketCount()) + FString::Printf(TEXT(" Off the ground, the size of a fist. %s with your hand empty brings one out; tapped with a stone in your hand, it puts it in. Three fit. They knock together when you run."), *S47Keys::Said(TEXT("throw"))),
+		Kit.Add({ TEXT("Stones"), FS47Handling::PocketLine(M->Freeform->Handling->PocketCount()) + FString::Printf(TEXT(" Off bare ground, each about the size of a fist. %s with an empty hand brings one out; a tap with a stone in your hand puts it in. Three fit. They knock together when you run."), *S47Keys::Said(TEXT("throw"))),
 			TEXT("Jacket pocket"), FString(), FString() });
 	}
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });

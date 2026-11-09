@@ -316,7 +316,7 @@ void FS47Predecessor::StepNews(double Dt)
   const FTally C=Count();
   const double Pace=double(C.Filed)/FMath::Max(1.,double(Today-OpensDay));
   F.RecordEvidence(TEXT("ward-")+Id,KeptOpen()?X::KeptNote(Week,C.Filed,C.Dishes,C.Arrears,DateText(FiscalEndDay()),C.Taken,C.Arrears>=CarriedWarn?LeverWords(C):FString())
-   :X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C)));
+   :X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-Today),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved));
   // By post, with the next round (the flag says so), or in the tray where there is none.
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(Id);
@@ -571,7 +571,7 @@ void FS47Predecessor::StepKept(double Dt)
   Seen.Add(TEXT("pay_reply_sent"));
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(TEXT("pay_reply"));
-  if(M->UI&&!bByPost)M->UI->Toast(TEXT("A letter for the night operator has come, by way of Dr. Ward's office. It is in the OPS tray."),5);
+  if(M->UI&&!bByPost)M->UI->Toast(TEXT("A letter has come by way of Dr. Ward's office. It is in the OPS tray."),5);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: an answer to the routed pay, day %d"),F.Day());
   M->RequestAutosave();
  }
@@ -1295,7 +1295,7 @@ void FS47Predecessor::Bind()
  }
  if(LockerTwoObj)
  {
-  BindOne(TEXT("ff:reyes:locker2"),LockerTwoObj,2.6,[this]{return KeptOpen()?FString(TEXT("Locker: NIGHT OPS")):FString(TEXT("Locker: no name on it"));},[this]{if(M&&M->UI)M->UI->Toast(KeptOpen()?TEXT("Somebody from Ward's office has been by with the label tape. It's yours, and now it says so."):TEXT("Empty, and clean. It's yours if you want it. Nobody has told you so."),4);});
+  BindOne(TEXT("ff:reyes:locker2"),LockerTwoObj,2.6,[this]{return KeptOpen()?FString(TEXT("Locker: NIGHT OPS")):FString(TEXT("Locker: no name on it"));},[this]{if(M&&M->UI)M->UI->Toast(KeptOpen()?TEXT("Ward's office has been by with the label tape. It's yours now."):TEXT("Empty, and clean. It's yours if you want it. Nobody has told you so."),4);});
   for(const FS47Obj& O:LockerTwoParts)if(O)M->Web->MarkUsable(O.I,TEXT("ff:reyes:locker2"));
  }
  if(BoardObj)
@@ -1428,7 +1428,7 @@ void FS47Predecessor::TestWeek()
  TestOn();if(!M||!M->Freeform)return;
  const int32 Week=++WeekNoted;const FString Id=FString::Printf(TEXT("week-%d"),Week);
  const FTally C=Count();
- M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C)));
+ M->Freeform->RecordEvidence(TEXT("ward-")+Id,X::WeekNote(Week,C.Filed,C.Concluded,C.Dishes,C.Clean,C.Arrears,FMath::Max(0,AssessDay-M->Freeform->Day()),DateText(AssessDay),Points(C),PointsToStay,C.Taken,C.Land,Decide(C)==EOutcome::Stays,LeverWords(C),C.Reprieved));
  ReadDoc(Id);
 }
 void FS47Predecessor::TestRing()
@@ -1615,7 +1615,10 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   FTally Reprieved=Good;Reprieved.Taken=TakenTooOften;Reprieved.Reprieved=TakenTooOften;
   Check(Decide(Reprieved)==EOutcome::Stays,TEXT("after \"Not yet\" with no new taking, the review goes by the work"));
   FTally Again=Reprieved;Again.Taken=TakenTooOften+1;Check(Decide(Again)==EOutcome::Gone,TEXT("and a further taking ends it"));
-  Check(X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3).Contains(TEXT("There will not be a second time"))&&!X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3).Contains(TEXT("If it happens again")),TEXT("after the reprieve her Monday note does not promise what she has already done"));
+  Check(X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3,0,false,FString(),3).Contains(TEXT("There will not be a second time"))&&!X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3,0,false,FString(),3).Contains(TEXT("If it happens again")),TEXT("after the reprieve her Monday note does not promise what she has already done"));
+  Check(X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3).Contains(TEXT("I meant it"))&&!X::WeekNote(5,20,1,25,18,0,9,TEXT("MONDAY"),6,PointsToStay,3).Contains(TEXT("I did it")),TEXT("with the third noticed and no \"Not yet\" yet, she does not say she has already acted"));
+  {FTally Owes=Routine;Owes.Concluded=1;const FString OwesNote=X::WeekNote(3,81,1,27,81,0,9,TEXT("MONDAY"),Points(Owes),PointsToStay,0,0,false,FString());
+   Check(!OwesNote.Contains(TEXT("What is missing is a case")),TEXT("with a case carried through, her note does not say the case is missing"));}
   // Every lever she counts has her word on the Monday sheet; the carried line's limit is named from CarriedWarn.
   const FString Lev=X::Levers(false,false,0,false,1,CarriedWarn,FS47FreeformSession::ArrearsCap);
   Check(Lev.Contains(TEXT("night sheets"))&&Lev.Contains(TEXT("tape"))&&Lev.Contains(TEXT("weekly report"))&&Lev.Contains(TEXT("photographs"))&&Lev.Contains(TEXT("nothing behind it"))&&Lev.Contains(FString::Printf(TEXT("Past $%d"),FS47FreeformSession::ArrearsCap))

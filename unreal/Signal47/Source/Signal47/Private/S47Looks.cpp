@@ -199,7 +199,7 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("diner:coffee"), TEXT("The pot on the warmer, a ring of old coffee baked round the rim."));
 	Looks(TEXT("diner:counter"), TEXT("A radio on the shelf behind the counter, between the pie dome and the register."));
 	Looks(TEXT("diner:clipping"), TEXT("Yellow newsprint behind a strip of tape, the date cut off."));
-	Looks(TEXT("diner:payphone"), TEXT("A payphone in a niche. Numbers written all over the wall round it."));
+	Looks(TEXT("diner:payphone"), TEXT("A payphone in a niche. Numbers written all over the wall around it."));
 	Looks(TEXT("diner:booth"), TEXT("Red vinyl, split and taped. The window beside it is cold."));
 	Looks(TEXT("diner:menu"), TEXT("White letters pushed into a felt board. The P in PIE is upside down."));
 	Looks(TEXT("diner:jukebox"), TEXT("OUT OF ORDER, in ballpoint behind the glass. A record still on the arm."));

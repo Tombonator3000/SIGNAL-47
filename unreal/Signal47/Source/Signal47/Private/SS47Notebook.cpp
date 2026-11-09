@@ -247,7 +247,7 @@ namespace
 			// (the second choice and the case board have rows of their own here; the web's table has neither)
 			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("The takeout bag: set it down, stow it, take it out or throw it away. At a prompt, the other choice.") });
 			// M7-HUD-20261109: loose things in the hand, and the stones (PHYSICS-20261108, STONE-POCKET-20261109)
-			Foot.Rows.Add({ KeysSaid(TEXT("throw")), TEXT("Hold to throw what you carry, tap to set it down. A stone goes in your pocket, three fit. Empty-handed: a stone from the pocket, or outdoors one off bare ground.") });
+			Foot.Rows.Add({ KeysSaid(TEXT("throw")), TEXT("Hold to throw what you carry; tap to set it down, or to pocket a stone (three fit). Empty-handed: a stone from the pocket, or outdoors, one off bare ground.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
 			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });

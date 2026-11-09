@@ -874,7 +874,7 @@ void FS47FreeformWorld::OpenShop()
  Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Truck; unpack at GARAGE RECEIVING to add stock."),M->Freeform->Budget())));
  if(Payload>0)Rows.Add(S47Kit::Paper(TEXT("PAID PARCEL / ")+ParcelDescription()));
  if(!CanAddShopItem())Rows.Add(S47Kit::Small(TEXT("The counter handles one parcel at a time, and you already have one out. GARAGE RECEIVING: Unpack supplies. CALIBRATION / REPAIR: Return a service case or logger. Then buy here again.")));
- if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Use the truck to call roadside return; it costs time, not money.")));
+ if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Roadside return from the truck costs money and a long wait.")));
  for(const TCHAR* Id:Items)
  {
   const FString Key(Id);
@@ -1299,7 +1299,8 @@ void FS47FreeformWorld::RoadsideAssist()
  const double Hour=DayClock(M->Freeform->Clock())/3600.;
  const FString Block=M->Freeform->Director?M->Freeform->Director->RestBlock():FString();
  const FRoadsideTerms Terms=RoadsideTermsFor(bTrouble,Care?Care->TowFee():FS47TruckCare::TowFeeFor(0),Care?Care->TowMinutes():FS47TruckCare::TowMinutesFor(0),Hour,Block);
- if(Terms.bRefused){Change(TEXT("The county radio answers, and then only static. Nobody is sent out while that is there. ")+Block);return;}
+ // (not the rest block's words: they are about lying down, and would say what is out there)
+ if(Terms.bRefused){Change(TEXT("The county radio answers, then only static. Nobody is coming out yet."));return;}
  const bool bCash=M->Freeform->BillTow(Terms.Fee);
  if(M->World->bDriving)M->World->GetOutHere(true);
  if(M->Freeform->Care)M->Freeform->Care->Clear();
@@ -1309,9 +1310,10 @@ void FS47FreeformWorld::RoadsideAssist()
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
  Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Terms.Minutes*60);
- const FString Billed=bCash?FString::Printf(TEXT(" $%d paid in cash."),Terms.Fee):FString::Printf(TEXT(" $%d is on the weekly sheet."),Terms.Fee);
- const FString Wait=Hour>=21||Hour<6?FString::Printf(TEXT("You sat in the dark cab for %.0f minutes, the engine ticking as it cooled, before the county's amber light came up the road. "),Terms.Minutes)
-  :FString::Printf(TEXT("The county truck took %.0f minutes to come out. "),Terms.Minutes);
+ const FString Billed=bCash?FString::Printf(TEXT(" $%d paid from the budget."),Terms.Fee):FString::Printf(TEXT(" $%d is on the weekly sheet."),Terms.Fee);
+ // No minutes in the telling: they are on the button already.
+ const FString Wait=Hour>=21||Hour<6?FString(TEXT("You sat in the dark cab a long while, the engine ticking as it cooled, before the county's amber light came up the road. "))
+  :FString(TEXT("The county truck was a long time coming out. "));
  Change(Wait+(bTrouble?TEXT("It towed the truck and cargo back to SARO and left it sound, with at least fifteen miles of fuel in the tank."):TEXT("It brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),FString(TEXT("Roadside return used; the interrupted trip and cargo were retained."))+Billed);
  UE_LOG(LogTemp,Display,TEXT("S47: roadside return: %s, $%d, %.0f minutes (%s)"),bTrouble?TEXT("tow"):TEXT("dry tank"),Terms.Fee,Terms.Minutes,bCash?TEXT("cash"):TEXT("on the sheet"));

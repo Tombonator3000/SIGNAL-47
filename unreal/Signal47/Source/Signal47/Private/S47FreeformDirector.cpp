@@ -181,7 +181,7 @@ namespace
   FString Seen,Key,Record;
   if(L.Kind==TEXT("orb"))
   {
-   Seen=FString::Printf(TEXT("The strip recorder in the junction cabinet at %s has a step in it from last night."),*L.Dish);
+   Seen=FString::Printf(TEXT("The strip recorder in the junction cabinet at %s has a step in it."),*L.Dish);
    Key=FString::Printf(TEXT("array_burst_d%d_%s"),Day,*L.Dish);
    Record=FString::Printf(TEXT("At %s the strip recorder in the junction cabinet at %s stepped up off its noise floor and stayed up until %s. The antennas either side of it stayed flat. Nothing at the cabinet was switched."),*HourText(L.Began),*L.Dish,*HourText(L.Clock));
   }

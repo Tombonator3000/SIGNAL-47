@@ -33,7 +33,7 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
   // M7 (C): two dear ones late in the month (S47OpeningsLocal::Late), so that a careful budget has something worth saving for in weeks 3
   // and 4. FS47FreeformSession::KitWaits opens them from day 15 (the county's surplus sale).
   {TEXT("transfer"),TEXT("Automatic transfer switch for the backup generator"),90,TEXT("the county's surplus sale, from day 15"),TEXT("When the feeder fails, it throws the backup generator in by itself, from its own tank or a can in stock. You hear it clunk over from anywhere in the building.")},
-  {TEXT("array_alarm"),TEXT("Trip wires along the antenna field"),110,TEXT("the yard alarm fitted, and the county's surplus sale from day 15"),TEXT("Wires the yard alarm out along the dishes: the horn goes for anything among the antennas, not only at the yard. It still stops nothing, and out there it is easier to put out.")},
+  {TEXT("array_alarm"),TEXT("Trip wires along the antenna field"),110,TEXT("the yard alarm fitted, and the county's surplus sale from day 15"),TEXT("Wires the yard alarm out along the dishes: the horn goes for anything among the antennas, not only at the yard. It still stops nothing, and out there it is easier to knock out.")},
  };
  return Table;
 }

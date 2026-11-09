@@ -40,7 +40,7 @@ namespace S47TownsfolkLocal
 	FFour GoneLines = {
 		TEXT("{a} hasn't been in since {b}. Truck's still at the house. Nobody's saying anything, which is how you know."),
 		TEXT("Have you heard? {A}. Nobody's seen hide nor hair since {b}. I keep looking at the door."),
-		TEXT("{a} has been missing since {b}, last seen by {c}. If you were out that night I want to hear it. Times, not stories."),
+		TEXT("{a} has been missing since {b}, last seen near {c}. If you were out that night I want to hear it. Times, not stories."),
 		TEXT("{A}. Gone since {b}, out by {c}. You think I don't know what that means? I've been telling people for thirty years.") };
 	FFour SelfBackLines = {
 		TEXT("Don't ask me where I was. I don't know, and I don't want to."),
@@ -55,17 +55,17 @@ namespace S47TownsfolkLocal
 	// What is going round about a night's event, by what kind of thing it was (FS47Townsfolk::Talk). Second-hand: a third of the time
 	// it is put at the wrong place (Lines).
 	FFour RumorLines = {
-		TEXT("Fella fueling up this morning said there were lights out by {a} last night. Paid cash and didn't wait for change."),
+		TEXT("Fella fueling up this morning said there were lights out by {a} the other night. Paid cash and didn't wait for change."),
 		TEXT("The breakfast crowd's all about {a}. Lights, they say. Low, and no sound at all."),
 		TEXT("I've had calls about {a}. Nothing on the ground when I got there. I wrote the times down."),
-		TEXT("{A}. Last night. I'll have a postcard of it by Friday.") };
+		TEXT("{A}. The other night. I'll have a postcard of it by Friday.") };
 	FFour DoorRumorLines = {
-		TEXT("Somebody was trying doors out by {a} last night, they say. Nobody anybody knows. Didn't take a thing."),
-		TEXT("They're saying somebody was at the windows out by {a} last night. Just looking in. I'd have died."),
+		TEXT("Somebody was trying doors out by {a} the other night, they say. Nobody anybody knows. Didn't take a thing."),
+		TEXT("They're saying somebody was at the windows out by {a} the other night. Just looking in. I'd have died."),
 		TEXT("Call came in about {a}. Somebody at a door in the night, nobody there when I got out there. I wrote the time down."),
 		TEXT("{A}. Somebody at the door in the night, and no tracks in the morning. That's how it starts.") };
 	FFour FigureRumorLines = {
-		TEXT("Trucker said he saw somebody walking out past {a} last night. No coat, no car. He didn't stop."),
+		TEXT("Trucker said he saw somebody walking out past {a} the other night. No coat, no car. He didn't stop."),
 		TEXT("A man was walking out by {a} in the middle of the night, they say. Just walking. Who does that?"),
 		TEXT("Had a report of somebody on foot out by {a} after midnight. Nobody when I drove by. If it was you, don't."),
 		TEXT("Somebody walking out by {a} at night, and not one of ours. I'd stay in, if I were you.") };

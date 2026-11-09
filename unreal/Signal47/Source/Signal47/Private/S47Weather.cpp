@@ -201,8 +201,10 @@ FString S47Weather::LastWeek(int32 Seed,int32 FromDay,int32 ToDay)
  int32 High=-100,Low=200,Showers=0,Sand=0;
  for(int32 D=FMath::Max(1,FromDay);D<ToDay;++D){const FDay W=Day(Seed,D);High=FMath::Max(High,W.HighF);Low=FMath::Min(Low,W.LowF);Showers+=W.bShower?1:0;Sand+=W.bDust?1:0;}
  if(High<-50)return TEXT("Caliche has no week of weather to report yet.");
- const FString Rain=Showers>0?FString(TEXT("a stray shower that hardly settled the road")):FString(TEXT("no rain"));
- const FString Blown=Sand>1?FString::Printf(TEXT(", blowing sand on %d afternoons"),L::Clean(Sand)):Sand==1?FString(TEXT(", blowing sand one afternoon")):FString();
+ // How many, in words, as the paper sets them under ten; not "the dust" (the paper never says dust: S47Ledger's test).
+ static const TCHAR* const Count[]={TEXT("no"),TEXT("one"),TEXT("two"),TEXT("three"),TEXT("four"),TEXT("five"),TEXT("six"),TEXT("seven"),TEXT("eight"),TEXT("nine")};
+ const FString Rain=Showers>2?FString(TEXT("a few stray showers late in the day")):Showers==2?FString(TEXT("two stray showers late in the day")):Showers==1?FString(TEXT("a stray shower one afternoon")):FString(TEXT("no rain"));
+ const FString Blown=Sand>1?FString::Printf(TEXT(", blowing sand on %s afternoons"),Sand<10?Count[Sand]:*FString::FromInt(L::Clean(Sand))):Sand==1?FString(TEXT(", blowing sand one afternoon")):FString();
  return FString::Printf(TEXT("Caliche last week: high %d, low %d, %s%s. Dry lightning far off most nights."),High,Low,*Rain,*Blown);
 }
 FString S47Weather::ClockWords(double SecondsAfterMidnight)

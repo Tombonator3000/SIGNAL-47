@@ -82,7 +82,7 @@ const TArray<FS47RadioTips::FLine>& FS47RadioTips::CbLines()
   // What the town has seen the player buy (S47TownUse): somebody always notices.
   {TEXT("cb57"),TEXT("Somebody's setting out salt blocks on open range, nowhere near a tank. Cattle are walking off the lease after them."),nullptr,TEXT("shop:lure"),0},
   {TEXT("cb59"),TEXT("Old Baca's dog is out on the county road all by itself. Anybody been up to his place lately?"),nullptr,TEXT("visit:baca_gone"),0},
-  {TEXT("cb60"),TEXT("That painted van with the sky-watch people is out on the flats with all the doors open. Nobody in it. Nobody."),nullptr,TEXT("visit:van_empty"),0},
+  {TEXT("cb60"),TEXT("That painted van with the Sky Watch people is out on the flats with the side door open. Nobody in it. Nobody."),nullptr,TEXT("visit:van_empty"),0},
   {TEXT("cb61"),TEXT("Two black sedans at first light, government plates, parked off the road like they owned it. Didn't wave."),nullptr,TEXT("visit:military"),0},
   {TEXT("cb62"),TEXT("Helicopter came over real low at sunup, no markings I could see. Cattle went every which way."),nullptr,TEXT("visit:military_seen"),0},
   {TEXT("cb58"),TEXT("White pickup from the dishes has a little rubber spaceman on the dash. Waved at me. The spaceman, I mean."),nullptr,TEXT("shop:spaceman"),0},
@@ -137,7 +137,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am36"),TEXT("old"),TEXT("That man they were looking for out on the flats. Anybody hear if he turned up?"),TEXT("If he did, he hasn't called me."),nullptr,nullptr,0},
   {TEXT("am37"),TEXT("old"),TEXT("My dad used to say the old-timers never built a house facing that flat out past the dishes. He never said why, and I never asked."),TEXT("Thank you. I think."),nullptr,nullptr,2},
   {TEXT("am38"),TEXT("old"),TEXT("Somebody from the dishes found that flag stake, they tell me. So who put it there? You people ought to know."),TEXT("Maybe they don't."),nullptr,TEXT("place_stake"),0},
-  {TEXT("am50"),TEXT("woman"),TEXT("Those sky-watch people were in the Mesa all morning telling everybody what they saw last night. I'd like my booth back."),TEXT("They'll be on next week, I expect."),nullptr,TEXT("visit:van_back"),0},
+  {TEXT("am50"),TEXT("woman"),TEXT("Those Sky Watch people were in the Mesa all morning telling everybody what they saw last night. I'd like my booth back."),TEXT("They'll be on next week, I expect."),nullptr,TEXT("visit:van_back"),0},
   {TEXT("am43"),TEXT("man"),TEXT("The souvenir man's got a new picture in his window. Lights over the flats, he says, taken by somebody from the dishes."),TEXT("I'll go look. I won't believe it, but I'll look."),nullptr,TEXT("shop:sold_odd"),0},
   {TEXT("am44"),TEXT("old"),TEXT("Took the souvenir man's tour Sunday. Five dollars to look at a rock. He says it's the rock."),TEXT("It's a nice rock, Pete."),nullptr,TEXT("shop:tour"),0},
   {TEXT("am45"),TEXT("woman"),TEXT("My sister in Belen got a postcard of the dishes from somebody who works out there. She wants to know is it safe."),TEXT("Tell her it's a postcard."),nullptr,TEXT("shop:postcard"),0},
@@ -150,7 +150,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am51"),TEXT("man"),TEXT("Deputy's car was back out front of the substation this morning. He didn't wave. He always waves."),TEXT("Give him a day."),nullptr,TEXT("town:back_deputy"),0},
   {TEXT("am52"),TEXT("man"),TEXT("Gas station's open again. He gave me my change twice and never noticed. I gave it back."),TEXT("Good man."),nullptr,TEXT("town:back_attendant"),0},
   {TEXT("am53"),TEXT("old"),TEXT("The shop man's back on his stoop. Sat there all morning with his hat in his lap. Thirty years I never saw him without it on."),TEXT("I saw that too, Pete."),nullptr,TEXT("town:back_souvenir_man"),0},
-  {TEXT("am54"),TEXT("woman"),TEXT("She's back at the Mesa. Poured my coffee this morning and kept pouring after the cup was full. Just stood there."),TEXT("Be kind to her."),nullptr,TEXT("town:back_waitress"),0},
+  {TEXT("am54"),TEXT("woman"),TEXT("The waitress is back at the Mesa. Poured my coffee this morning and kept pouring after the cup was full. Just stood there."),TEXT("Be kind to her."),nullptr,TEXT("town:back_waitress"),0},
   {TEXT("am39"),TEXT("woman"),TEXT("I live in the yellow house at the junction. The last one on nights at the dishes waved every morning on the way by. I still look up when that truck comes past."),nullptr,nullptr,TEXT("reyes_locker"),0},
  };
  return L;
@@ -379,9 +379,9 @@ FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAn
  {
   const FString New=TitleOf(OutPlace);
   static const TCHAR* const Lines[]={
-   TEXT("About what your caller from the dishes said, {tip}. I didn't see a thing there. You want to see something, go look at {new}. I'm not saying more on the radio."),
+   TEXT("That caller from the dishes, about {tip}. I didn't see a thing there. You want to see something, go look at {new}. I'm not saying more on the radio."),
    TEXT("Earl, about {tip}. My husband saw a light that same night, only it was out by {new}. He won't talk about it, so I am."),
-   TEXT("That fella that called about {tip}. Ask him if he's been out to {new}. I go by it every week and I don't stop anymore.")};
+   TEXT("Whoever called about {tip}. Ask them if they've been out to {new}. I go by it every week and I don't stop anymore.")};
   static const TCHAR* const Answers[]={TEXT("Well. There you go."),TEXT("Thank you, ma'am. Phones are open."),TEXT("I'll pass it along.")};
   // The voice goes with the words: a woman about her husband (and "ma'am" back), a man for the other two.
   static const TCHAR* const LineVoices[]={TEXT("man"),TEXT("woman"),TEXT("old")};
@@ -389,10 +389,10 @@ FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAn
   return FString(Lines[Pick]).Replace(TEXT("{tip}"),*Tip).Replace(TEXT("{new}"),*New);
  }
  static const TCHAR* const Nothing[]={
-  TEXT("About {tip}. I drove by in the morning. Nothing there. Tire tracks, is all, and I expect those were his."),
+  TEXT("About {tip}. I drove by in the morning. Nothing there. Tire tracks, is all, and I expect those were theirs."),
   TEXT("Earl, about {tip}. My dog wouldn't go out that night, if that's worth anything."),
   TEXT("About {tip}: I was up all night with the baby and I'd have seen it. I didn't see it.")};
- // "His" tracks and the drive by are a man's; the dog an old man's; up with the baby, a young mother.
+ // The drive by is a man's; the dog an old man's; up with the baby, a young mother.
  static const TCHAR* const NothingVoices[]={TEXT("man"),TEXT("old"),TEXT("woman")};
  OutAnswer=TEXT("Well, now we know.");if(OutVoice)*OutVoice=NothingVoices[Pick];
  return FString(Nothing[Pick]).Replace(TEXT("{tip}"),*Tip);

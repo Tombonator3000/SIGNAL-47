@@ -310,7 +310,7 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  if(FString(D.Id)==Motel)
  {
   Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. What goes on out on the land, you hear about in the morning. A motel has its own nights.")));
-  Rows.Add(S47Kit::Small(TEXT("A night here is not filed: nothing is saved until you are back at SARO.")));
+  Rows.Add(S47Kit::Small(TEXT("Nothing is saved at the motel. The game saves again once you are back at SARO.")));
   // MOTEL-SLEEP-20261108: the night's own may wake the player at its hour (S47MotelNight).
   Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
   {

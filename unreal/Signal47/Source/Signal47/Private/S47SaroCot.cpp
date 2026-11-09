@@ -222,7 +222,7 @@ void FS47SaroCot::Build()
 		return TEXT("Lie down on the cot");
 	};
 	I.Use = [this, Guard] { if (Guard.IsValid()) OpenMenu(); };
-	I.Examine = [Guard]() -> FString { return Guard.IsValid() ? FString(TEXT("An army folding cot, olive canvas on aluminium, a wool blanket folded at the foot. Somebody has slept on it before you; the canvas sags in the middle.")) : FString(); };
+	I.Examine = [Guard]() -> FString { return Guard.IsValid() ? FString(TEXT("An army folding cot, olive canvas on aluminum, a wool blanket folded at the foot. Somebody has slept on it before you; the canvas sags in the middle.")) : FString(); };
 	M->Inter->Add(I);
 	bShown = true;
 	UE_LOG(LogS47SaroCot, Display, TEXT("S47: cot: put up in %s at %s, %d parts"), *Place(), *At.ToCompactString(), Parts.Num());
@@ -316,7 +316,7 @@ void FS47SaroCot::OpenMenu()
 	FS47FreeformSession* F = M->Freeform.Get();
 	const int32 Secs = int32(FMath::Fmod(F->Clock(), 86400.0));
 	TArray<S47Kit::FW> Rows;
-	Rows.Add(S47Kit::Small(FString::Printf(TEXT("%02d:%02d. The cot creaks when you sit on it. The station sleeps with you: the same rest as REST UNTIL MORNING at OPS."), Secs / 3600, (Secs / 60) % 60)));
+	Rows.Add(S47Kit::Small(FString::Printf(TEXT("%02d:%02d. The cot creaks when you sit on it. Sleeping here is the same as resting at the OPS desk."), Secs / 3600, (Secs / 60) % 60)));
 	const TWeakPtr<uint8> Guard = Life;
 	// what kind of sleep it will be, in the same words as OPS (FS47Fatigue::BedLine: the cot here is the station's bed)
 	const auto Bed = [F](double Seconds) { return F->Fatigue && F->RulesLive() ? F->Fatigue->BedLine(Seconds, FS47Fatigue::EBed::Station) : FString(); };

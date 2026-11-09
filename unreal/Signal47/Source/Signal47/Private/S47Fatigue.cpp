@@ -298,10 +298,10 @@ void FS47Fatigue::Slept(double Seconds, EBed Where)
 	{
 		WakeAge = 0; YawnIn = 2.5;
 		if (Live() && M->UI)
-			M->UI->Toast(bWired ? TEXT("You lay a long time with the coffee loud in you, listening to the receiver. Your eyes still sting.")
-				: Where == EBed::Cot ? TEXT("The cot's frame was in your back all night. Your eyes still sting.")
+			M->UI->Toast(bWired ? TEXT("You lay a long time with the coffee loud in you. Your eyes still sting.")
+				: Where == EBed::Cot ? TEXT("The cot's frame dug into your back. Your eyes still sting.")
 				: Awake > 6.5 ? TEXT("Not enough sleep. Your eyes still sting, and the night will be long.")
-				: TEXT("A short sleep. Your eyelids are heavy; it will do for the evening, the small hours will drag."), 5);
+				: TEXT("A short sleep. Your eyelids are heavy. Enough for the evening, but the small hours will drag."), 5);
 	}
 }
 
@@ -345,10 +345,10 @@ bool FS47Fatigue::Use(const FString& Id)
 	if (!M || !M->IsFreeform() || !M->Web || M->Web->Area() != TEXT("saro")) return false;
 	if (Id == TEXT("coffeePot"))
 	{
-		if (Mug > 0) { if (M->UI) M->UI->Toast(TEXT("Your mug is still full. The hot plate ticks."), 2.6f); return true; }
+		if (Mug > 0) { if (M->UI) M->UI->Toast(TEXT("There is still coffee in your mug. The hot plate ticks."), 2.6f); return true; }
 		if (M->Audio) M->Audio->Pour(M->Web->PropLocation(TEXT("coffeePot")));
 		Mug = 1; ShowMug();
-		if (M->UI) M->UI->Toast(TEXT("You fill the SARO mug. It has been on the hot plate since the day shift."), 3);
+		if (M->UI) M->UI->Toast(TEXT("You fill the SARO mug. The coffee has been on the hot plate since the day shift."), 3);
 		return true;
 	}
 	if (Id == TEXT("mug"))

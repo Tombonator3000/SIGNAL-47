@@ -130,7 +130,7 @@ FString FS47Handling::PutLabel() const
 	const FString Key = S47Keys::Label(TEXT("throw"));
 	if (Key.IsEmpty()) return FString::Printf(TEXT("Set the %s down"), *HeldName());
 	// STONE-POCKET-20261109: a stone, with room in the pocket, goes into it with a tap
-	if (Tapped(Items[Held].Kind, PocketItems.Num()) == ETap::IntoPocket) return FString::Printf(TEXT("Set the %s down / tap %s: in your pocket, hold: throw"), *HeldName(), *Key);
+	if (Tapped(Items[Held].Kind, PocketItems.Num()) == ETap::IntoPocket) return FString::Printf(TEXT("Set the %s down / tap %s to pocket it, hold to throw"), *HeldName(), *Key);
 	return FString::Printf(TEXT("Set the %s down / hold %s to throw"), *HeldName(), *Key);
 }
 
@@ -366,7 +366,7 @@ void FS47Handling::AddUse(int32 Index)
 		if (!Guard.IsValid() || !Items.IsValidIndex(Index)) return FString();
 		switch (Items[Index].Kind)
 		{
-		case EKind::Can: return TEXT("A coffee can with the label half off, a few cigarette ends in the bottom. Tin: it would carry, thrown.");
+		case EKind::Can: return TEXT("A coffee can with the label half off, a few cigarette ends in the bottom. Thrown, it would make a racket.");
 		case EKind::Box: return TEXT("A carton of spare chart paper, taped shut. Light enough to carry in both arms.");
 		case EKind::Crate: return TEXT("A slatted crate of spare insulators, heavy. Both arms, and slowly.");
 		default: return TEXT("A stone off the ground, about the size of a fist.");
