@@ -6,6 +6,7 @@
 class US47Main;
 class UStaticMeshComponent;
 class UMaterialInterface;
+class UPrimitiveComponent;
 
 // PHYSICS-20261108 (Tom, 8 November): picking up, carrying and throwing loose things in Freeform. The parcel from the shop keeps
 // its own carry (FS47FreeformCarry); this is everything else: a stone off the ground wherever the player stands outdoors, and the
@@ -64,6 +65,8 @@ public:
 	/** How loud an impact is for whatever listens (S47Noise; heard out to ten metres times this). */
 	static double Loudness(EKind Kind, ESurface Surface, double ImpactMps);
 	static const TCHAR* SurfaceName(ESurface S);
+	/** Drawn and solid: a hidden proxy or a see-through light shaft is in the Visibility channel too, and is no wall or floor. */
+	static bool Solid(const UPrimitiveComponent* C);
 	static bool SelfTest(TArray<FString>& Lines);
 
 	// ---------- for F10 and the tests ----------
@@ -79,7 +82,10 @@ public:
 	bool ThrowNow(double Charge);
 	int32 HeldIndex() const { return Held; }
 	int32 IndexOf(const FString& Id) const;
+	/** The loudest impact since the last throw (or the last one, between throws), in words. */
 	FString LastImpact() const { return LastHit; }
+	/** How loud that loudest impact was (S47Noise's scale); negative before any. */
+	double ThrowLoudness() const { return ThrowLoud; }
 	int32 ImpactCount() const { return Hits; }
 
 private:
@@ -105,7 +111,7 @@ private:
 	TArray<FItem> Items;
 	int32 Held = -1, Hits = 0, StoneCount = 0;
 	bool bBuilt = false, bDown = false, bPressTaken = false, bOwnSpeed = false, bPutAdded = false;
-	double DownFor = 0, Clock = 0, BaseSpeed = 1.9, AppliedSpeed = 1.9;
+	double DownFor = 0, Clock = 0, BaseSpeed = 1.9, AppliedSpeed = 1.9, ThrowLoud = -1;
 	FString LastHit;
 	UMaterialInterface* Base = nullptr;
 
@@ -124,5 +130,7 @@ private:
 	double HalfUp(const FItem& It, const FVector& Up = FVector::UpVector) const;
 	bool Walkable(const FVector& AtUE) const;
 	FCollisionQueryParams Query(const FItem* Self) const;
+	bool Trace(FHitResult& H, const FVector& A, const FVector& B, FCollisionQueryParams P) const;
+	bool Sweep(FHitResult& H, const FVector& A, const FVector& B, const FQuat& Q, const struct FCollisionShape& S, FCollisionQueryParams P) const;
 	void Release(bool bRestoreSpeed);
 };

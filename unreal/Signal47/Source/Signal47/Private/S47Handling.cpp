@@ -19,6 +19,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
 #include <limits>
 #include "UObject/GarbageCollection.h"
 
@@ -131,6 +132,44 @@ bool FS47Handling::Walkable(const FVector& AtUE) const
 	if (!M || !M->Player) return true;
 	const FVector P = S47Three::ToThree(AtUE);
 	return M->Player->Walkable(P.X, P.Z);
+}
+
+// What a thrown thing can meet: what is drawn and solid. A hidden proxy (an interaction box, an invisible wall) or a see-through
+// light shaft answers the Visibility channel too, and a stone must neither bounce off nor come to rest on it.
+bool FS47Handling::Solid(const UPrimitiveComponent* C)
+{
+	if (!C) return true;
+	if (!C->IsVisible() || C->bHiddenInGame) return false;
+	if (const UMaterialInterface* Mat = C->GetMaterial(0))
+	{
+		const EBlendMode B = Mat->GetBlendMode();
+		if (B == BLEND_Translucent || B == BLEND_Additive || B == BLEND_Modulate) return false;
+	}
+	return true;
+}
+
+bool FS47Handling::Trace(FHitResult& H, const FVector& A, const FVector& B, FCollisionQueryParams P) const
+{
+	UWorld* W = M && M->Web ? M->Web->GetWorld() : nullptr;
+	for (int32 I = 0; W && I < 6; ++I)
+	{
+		if (!W->LineTraceSingleByChannel(H, A, B, ECC_Visibility, P)) return false;
+		if (Solid(H.GetComponent())) return true;
+		P.AddIgnoredComponent(H.GetComponent());
+	}
+	return false;
+}
+
+bool FS47Handling::Sweep(FHitResult& H, const FVector& A, const FVector& B, const FQuat& Q, const FCollisionShape& S, FCollisionQueryParams P) const
+{
+	UWorld* W = M && M->Web ? M->Web->GetWorld() : nullptr;
+	for (int32 I = 0; W && I < 6; ++I)
+	{
+		if (!W->SweepSingleByChannel(H, A, B, Q, ECC_Visibility, S, P)) return false;
+		if (Solid(H.GetComponent())) return true;
+		P.AddIgnoredComponent(H.GetComponent());
+	}
+	return false;
 }
 
 FS47Handling::ESurface FS47Handling::SurfaceOf(const FHitResult* Hit, const FVector& AtUE, const FVector& Normal) const
@@ -253,7 +292,7 @@ int32 FS47Handling::Spawn(EKind Kind, const FVector& At, double YawRad, const FS
 	{
 		FHitResult H;
 		const FCollisionQueryParams Q = Query(nullptr);
-		if (W->GetWorld()->LineTraceSingleByChannel(H, L + FVector(0, 0, 60), L - FVector(0, 0, 120), ECC_Visibility, Q)) L.Z = H.ImpactPoint.Z;
+		if (Trace(H, L + FVector(0, 0, 60), L - FVector(0, 0, 120), Q)) L.Z = H.ImpactPoint.Z;
 		else { const double F = FloorUnder(L); if (FMath::IsFinite(F)) L.Z = F; }
 	}
 	L.Z += HalfUp(It) + 0.15;
@@ -429,7 +468,7 @@ bool FS47Handling::PickStone()
 	FHitResult H;
 	FCollisionQueryParams Q = Query(nullptr);
 	for (const FItem& It : Items) if (It.Comp.IsValid()) Q.AddIgnoredComponent(It.Comp.Get());
-	if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, Eye, Eye + Fwd * 260, ECC_Visibility, Q) || H.ImpactNormal.Z < .75) return false;
+	if (!Trace(H, Eye, Eye + Fwd * 260, Q) || H.ImpactNormal.Z < .75) return false;
 	const FVector P = S47Three::ToThree(H.ImpactPoint);
 	// the ground itself: not a table, not a floor under a roof, not concrete
 	const double Floor = FloorUnder(H.ImpactPoint);
@@ -464,7 +503,7 @@ bool FS47Handling::ThrowNow(double Charge)
 	// out of the hand where the hand is, never from the far side of a wall it is pressed to
 	{
 		FHitResult H;
-		if (M->Web->GetWorld()->SweepSingleByChannel(H, Eye, It.Loc, It.Q, ECC_Visibility, FCollisionShape::MakeBox(It.Half * .9), Query(&It)))
+		if (Sweep(H, Eye, It.Loc, It.Q, FCollisionShape::MakeBox(It.Half * .9), Query(&It)))
 			It.Loc = H.bStartPenetrating ? Eye : H.Location;
 	}
 	const FVector Dir = (Fwd + FVector(0, 0, .1)).GetSafeNormal();
@@ -474,7 +513,7 @@ bool FS47Handling::ThrowNow(double Charge)
 	const double SpinK = It.Kind == EKind::Stone ? 9 : It.Kind == EKind::Can ? 12 : 2.5;
 	It.Spin = HandRight(Fwd) * SpinK * (.5 + .5 * Charge) + FVector(R.FRandRange(-1.f, 1.f), R.FRandRange(-1.f, 1.f), R.FRandRange(-1.f, 1.f)) * SpinK * .3;
 	It.State = EState::Fly; It.Air = 0; It.bWasWalkable = Walkable(It.Loc);
-	Held = -1;
+	Held = -1; ThrowLoud = -1;
 	Release(true);
 	if (M->Audio && Charge > .5) { FS47Sound S; S.At = S47Three::ToThree(Eye); S.Gain = .05f + .05f * float(Charge); S.Rate = 1.8f; S.Lp = 1600; M->Audio->Sfx(TEXT("gust"), S); }
 	UE_LOG(LogS47Handling, Display, TEXT("S47: handling: threw the %s at %.1f m/s (charge %.2f)"), D.Name, Speed / 100.0, Charge);
@@ -496,21 +535,31 @@ bool FS47Handling::Put()
 	// where the view meets a level surface within reach: a table top, a shelf, the floor in front
 	{
 		FHitResult H;
-		if (W->LineTraceSingleByChannel(H, Eye, Eye + Fwd * 190, ECC_Visibility, Q) && H.ImpactNormal.Z > .8) Tries.Add(H.ImpactPoint);
+		if (Trace(H, Eye, Eye + Fwd * 190, Q) && H.ImpactNormal.Z > .8)
+		{
+			Tries.Add(H.ImpactPoint);
+			// and round it on the same surface, in case something stands right there (a vise on a bench)
+			for (const double R : { 15.0, 30.0 }) for (int32 A = 0; A < 8; ++A)
+			{
+				const FVector Off(FMath::Cos(A * UE_PI / 4) * R, FMath::Sin(A * UE_PI / 4) * R, 0);
+				FHitResult Near;
+				if (Trace(Near, H.ImpactPoint + Off + FVector(0, 0, 25), H.ImpactPoint + Off - FVector(0, 0, 25), Q) && Near.ImpactNormal.Z > .8 && FMath::Abs(Near.ImpactPoint.Z - H.ImpactPoint.Z) < 3) Tries.Add(Near.ImpactPoint);
+			}
+		}
 	}
 	// else the ground a step in front, then closer to the feet
 	for (const double Ahead : { 65.0, 45.0, 30.0 })
 	{
 		FHitResult H;
 		const FVector Over = Eye + FlatFwd * Ahead;
-		if (W->LineTraceSingleByChannel(H, Over, Over - FVector(0, 0, 260), ECC_Visibility, Q) && H.ImpactNormal.Z > .8) Tries.Add(H.ImpactPoint);
+		if (Trace(H, Over, Over - FVector(0, 0, 260), Q) && H.ImpactNormal.Z > .8) Tries.Add(H.ImpactPoint);
 	}
 	for (const FVector& S : Tries)
 	{
 		const FVector L = S + FVector(0, 0, Up + .2);
 		// nothing between the hand and there, room for it there, and on this side of any wall
 		FHitResult Block;
-		if (W->SweepSingleByChannel(Block, Eye, L + FVector(0, 0, 4), FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(4), Q)) continue;
+		if (Sweep(Block, Eye, L + FVector(0, 0, 4), FQuat::Identity, FCollisionShape::MakeSphere(4), Q)) continue;
 		if (W->OverlapBlockingTestByChannel(L + FVector(0, 0, 1.5), Upright, ECC_Visibility, FCollisionShape::MakeBox(It.Half * .95), Q)) continue;
 		if (!Walkable(L) && FMath::IsFinite(FloorUnder(L)) && L.Z - FloorUnder(L) < 30) continue;
 		It.Loc = L; It.Q = Upright; It.State = EState::Rest; It.Vel = It.Spin = FVector::ZeroVector; It.Area = M->Web->Area();
@@ -567,7 +616,14 @@ void FS47Handling::Impact(FItem& It, const FHitResult* Hit, const FVector& Norma
 			break;
 		}
 	}
-	LastHit = FString::Printf(TEXT("%s on %s at %.1f m/s, heard to %.0f m"), D.Name, SurfaceName(S), Mps, S47Noise::Reach(Loud));
+	// the loudest impact since it left the hand is the one F10 reports
+	if (Loud >= ThrowLoud)
+	{
+		ThrowLoud = Loud;
+		LastHit = FString::Printf(TEXT("%s on %s at %.1f m/s, heard to %.0f m"), D.Name, SurfaceName(S), Mps, S47Noise::Reach(Loud));
+	}
+	const UPrimitiveComponent* Part = Hit ? Hit->GetComponent() : nullptr;
+	UE_LOG(LogS47Handling, Display, TEXT("S47: handling: impact %s on %s (%s) at %.1f m/s"), D.Name, SurfaceName(S), Part ? *Part->GetName() : TEXT("a wall the walk zones keep"), Mps);
 	S47Noise::Make(At3, Loud, FString::Printf(TEXT("%s on %s"), D.Name, SurfaceName(S)));
 }
 
@@ -580,7 +636,7 @@ void FS47Handling::Settle(FItem& It, const FVector& N)
 	const FVector From = Axes[Best] * (FVector::DotProduct(Axes[Best], N) >= 0 ? 1.0 : -1.0);
 	It.Q = (FQuat::FindBetweenNormals(From, N) * It.Q).GetNormalized();
 	FHitResult H;
-	if (M->Web->GetWorld()->LineTraceSingleByChannel(H, It.Loc + N * 2, It.Loc - N * 80, ECC_Visibility, Query(&It))) It.Loc = H.ImpactPoint + N * (HalfUp(It, N) + .15);
+	if (Trace(H, It.Loc + N * 2, It.Loc - N * 80, Query(&It))) It.Loc = H.ImpactPoint + N * (HalfUp(It, N) + .15);
 	else { const double F = FloorUnder(It.Loc); if (FMath::IsFinite(F)) It.Loc.Z = F + HalfUp(It) + .15; }
 	It.State = EState::Rest; It.Vel = It.Spin = FVector::ZeroVector; It.Air = 0;
 	It.Area = M->Web->Area();
@@ -590,7 +646,6 @@ void FS47Handling::Settle(FItem& It, const FVector& N)
 
 void FS47Handling::StepFly(FItem& It, double Dt)
 {
-	UWorld* W = M->Web->GetWorld();
 	const FKindDef& D = Def(It.Kind);
 	const FCollisionShape Shape = FCollisionShape::MakeBox(It.Half);
 	const FCollisionQueryParams Q = Query(&It);
@@ -603,7 +658,7 @@ void FS47Handling::StepFly(FItem& It, double Dt)
 		It.Vel *= 1.0 - .03 * H;
 		const FVector From = It.Loc, To = From + It.Vel * H;
 		FHitResult Hit;
-		bool bHit = W->SweepSingleByChannel(Hit, From, To, It.Q, ECC_Visibility, Shape, Q);
+		bool bHit = Sweep(Hit, From, To, It.Q, Shape, Q);
 		if (bHit && Hit.bStartPenetrating)
 		{
 			// out of whatever it is in, along the way out, before anything else
@@ -639,8 +694,10 @@ void FS47Handling::StepFly(FItem& It, double Dt)
 		{
 			const FVector Vt = It.Vel - N * Vn;
 			const double Mps = -Vn / 100.0;
+			// what is heard: the blow straight in, or a share of the whole speed when it comes in glancing (a stone skidding in is not silent)
+			const double Heard = FMath::Max(Mps, .6 * It.Vel.Size() / 100.0);
 			It.Vel = Vt * (1.0 - D.Grip * FMath::Clamp(Mps / 3.0, .25, 1.0)) - N * Vn * D.Bounce;
-			if (Mps > .9) Impact(It, bGuard ? nullptr : &Hit, N, Mps);
+			if (Heard > .9) Impact(It, bGuard ? nullptr : &Hit, N, Heard);
 			It.Spin = It.Spin * .5 + FVector::CrossProduct(N, Vt) / FMath::Max(3.0, It.Half.GetMin()) * .25;
 			if (It.Spin.Size() > 30) It.Spin = It.Spin.GetSafeNormal() * 30;
 		}
@@ -658,7 +715,6 @@ void FS47Handling::StepFly(FItem& It, double Dt)
 
 void FS47Handling::StepHeld(FItem& It, double Dt)
 {
-	UWorld* W = M->Web->GetWorld();
 	const FKindDef& D = Def(It.Kind);
 	const FCollisionQueryParams Q = Query(&It);
 	const FVector Eye = M->Player->EyeUE(), Fwd = M->Player->ForwardUE(), FlatFwd = HandFlat(Fwd), Right = HandRight(Fwd);
@@ -672,7 +728,7 @@ void FS47Handling::StepHeld(FItem& It, double Dt)
 	{
 		// never held through a wall the player stands against
 		FHitResult H;
-		if (W->SweepSingleByChannel(H, Eye, Target, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(FMath::Max(2.0, It.Half.GetMin() * .8)), Q))
+		if (Sweep(H, Eye, Target, FQuat::Identity, FCollisionShape::MakeSphere(FMath::Max(2.0, It.Half.GetMin() * .8)), Q))
 			Target = H.bStartPenetrating ? Eye : H.Location;
 	}
 	const double W0 = FollowRate(D.Mass), Zeta = .72;
@@ -681,7 +737,7 @@ void FS47Handling::StepHeld(FItem& It, double Dt)
 	if (It.Vel.Size() > 900) It.Vel = It.Vel.GetSafeNormal() * 900;
 	FVector Next = It.Loc + It.Vel * Dt;
 	FHitResult H;
-	if (W->SweepSingleByChannel(H, It.Loc, Next, It.Q, ECC_Visibility, FCollisionShape::MakeBox(It.Half), Q))
+	if (Sweep(H, It.Loc, Next, It.Q, FCollisionShape::MakeBox(It.Half), Q))
 	{
 		if (H.bStartPenetrating) Next = It.Loc + H.Normal * (H.PenetrationDepth + .3);
 		else

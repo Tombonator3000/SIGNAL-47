@@ -1,6 +1,7 @@
 #include "S47SaroCot.h"
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47Handling.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -13,6 +14,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Engine/OverlapResult.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/GarbageCollection.h"
 
@@ -59,7 +61,12 @@ FString FS47SaroCot::Measure(double X, double Z, bool bAlong) const
 	const double HX = (bAlong ? Width : Length) / 2, HZ = (bAlong ? Length : Width) / 2;
 	// (a) on the room's own floor: every corner in its walk zones
 	for (const FVector2D C : { FVector2D(X - HX, Z - HZ), FVector2D(X + HX, Z - HZ), FVector2D(X - HX, Z + HZ), FVector2D(X + HX, Z + HZ), FVector2D(X, Z) })
-		if (!M->Player->Walkable(C.X, C.Y)) return FString::Printf(TEXT("a corner off the walk zones at %.2f, %.2f"), C.X, C.Y);
+	{
+		// the zones themselves, not the walker's test (that keeps the player's own width off every edge)
+		bool bIn = false;
+		for (const FS47Rect& Z0 : W->ZonesMutable(TEXT("saro"))) bIn |= Z0.bEnabled && C.X >= Z0.MinX - 1e-6 && C.X <= Z0.MaxX + 1e-6 && C.Y >= Z0.MinZ - 1e-6 && C.Y <= Z0.MaxZ + 1e-6;
+		if (!bIn) return FString::Printf(TEXT("a corner off the walk zones at %.2f, %.2f"), C.X, C.Y);
+	}
 	// (b) clear of everything the player walks round
 	for (const FS47Rect& C : W->CollidersMutable(TEXT("saro")))
 		if (C.bEnabled && C.Id != CotUseId && C.MaxX > X - HX && C.MinX < X + HX && C.MaxZ > Z - HZ && C.MinZ < Z + HZ)
@@ -74,7 +81,15 @@ FString FS47SaroCot::Measure(double X, double Z, bool bAlong) const
 	auto Hit = [&](const FVector& A, const FVector& B, FString& What)
 	{
 		FHitResult H;
-		if (!World->LineTraceSingleByChannel(H, S47Three::ToUE(A), S47Three::ToUE(B), ECC_Visibility, Q)) return false;
+		FCollisionQueryParams Solid = Q;
+		bool bAny = false;
+		for (int32 K = 0; K < 6; ++K)
+		{
+			if (!World->LineTraceSingleByChannel(H, S47Three::ToUE(A), S47Three::ToUE(B), ECC_Visibility, Solid)) break;
+			if (FS47Handling::Solid(H.GetComponent())) { bAny = true; break; }
+			Solid.AddIgnoredComponent(H.GetComponent());
+		}
+		if (!bAny) return false;
 		const UPrimitiveComponent* C = H.GetComponent();
 		What = FString::Printf(TEXT("%s at %.2f m over the floor"), C ? *C->GetName() : TEXT("something"), H.ImpactPoint.Z / 100.0 - Y0);
 		return true;
@@ -98,7 +113,9 @@ FString FS47SaroCot::Measure(double X, double Z, bool bAlong) const
 	const FVector Mid = S47Three::ToUE(X, Y0 + .06 + Height / 2, Z);
 	// (three x is Unreal x, three z is Unreal y)
 	const FVector Half = FVector(HX, HZ, Height / 2 - .03) * 100;
-	if (World->OverlapBlockingTestByChannel(Mid, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeBox(Half), Q)) return TEXT("a body overlaps the space");
+	TArray<FOverlapResult> Over;
+	World->OverlapMultiByChannel(Over, Mid, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeBox(Half), Q);
+	for (const FOverlapResult& O : Over) if (O.bBlockingHit && FS47Handling::Solid(O.GetComponent())) return FString::Printf(TEXT("%s overlaps the space"), O.GetComponent() ? *O.GetComponent()->GetName() : TEXT("a body"));
 	return FString();
 }
 

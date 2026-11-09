@@ -183,28 +183,38 @@ void FS47DevFreeform::AddPhysics(FS47DevEvents& E)
 				const auto Bodies = G->Individuals();
 				if (Bodies.IsEmpty()) { Tell(false, TEXT("it went")); return; }
 				const FVector Body = Bodies[0].Pos, Me = FVector(M->Player->Pos.X, M->Player->FloorY, M->Player->Pos.Z);
-				// off to the side of it, away from the player: about five metres from the player, at right angles to the line to it
+				// to land a few metres off to the side of it, beyond it: thrown up at about twenty degrees, as hard as that distance takes
 				FVector ToBody(Body.X - Me.X, 0, Body.Z - Me.Z); ToBody = ToBody.GetSafeNormal();
 				const FVector Side(-ToBody.Z, 0, ToBody.X);
-				const FVector Aim = Me + Side * 5 + ToBody * 2.5;
-				AimAt(FVector(Aim.X, M->Player->FloorY + 1.0, Aim.Z));
+				const FVector Aim = Body + Side * 3.0 + ToBody * 1.5;
+				AimAt(FVector(Aim.X, Aim.Y, Aim.Z));
+				const double Pitch = .244, Rise = FMath::Atan2(FMath::Sin(Pitch) + .1, FMath::Cos(Pitch));
+				const double Dist = FVector::Dist2D(FVector(Me.X, Me.Z, 0), FVector(Aim.X, Aim.Z, 0)), Drop = M->Player->FloorY + M->Player->Eye - .62 * M->Player->Sneak() - .21 - Aim.Y;
+				const double V = FMath::Sqrt(9.8 * Dist * Dist / FMath::Max(.1, 2 * FMath::Square(FMath::Cos(Rise)) * (Dist * FMath::Tan(Rise) + Drop)));
+				const double Arm = FS47Handling::ThrowSpeed(FS47Handling::Def(EKind::Stone).Mass, 1);
+				const double Charge = FMath::Clamp((V / Arm - .22) / .78, 0.0, 1.0);
+				M->Player->Pitch = Pitch;
 				if (!StoneInHand(H)) { Tell(false, TEXT("no stone in the hand")); return; }
-				After(.4, [this, H, G, Body, Landed, Hands]
+				After(.4, [this, H, G, Charge, Landed, Hands]
 				{
 					const int32 Stone = H->HeldIndex();
-					H->ThrowNow(.55);
-					WaitFor([Landed, Hands] { return Landed(Hands()); }, 5, [this, H, G, Stone]
+					const auto AtThrow = G->Individuals();
+					const FVector Was = AtThrow.IsEmpty() ? FVector::ZeroVector : AtThrow[0].Pos;
+					H->ThrowNow(Charge);
+					WaitFor([Landed, Hands] { return Landed(Hands()); }, 5, [this, H, G, Stone, Was]
 					{
 						const FVector Fell = H->View(Stone).At;
-						const auto Before = G->Individuals();
-						const double From = Before.IsEmpty() ? 0 : FVector::Dist2D(FVector(Before[0].Pos.X, Before[0].Pos.Z, 0), FVector(Fell.X, Fell.Z, 0));
-						After(3.0, [this, G, Fell, From, H]
+						const double From = FVector::Dist2D(FVector(Was.X, Was.Z, 0), FVector(Fell.X, Fell.Z, 0));
+						After(2.5, [this, G, Fell, From, H]
 						{
 							const auto Now = G->Individuals();
 							if (Now.IsEmpty()) { Tell(false, TEXT("it went before it could be seen to hear")); return; }
+							const FVector Me(M->Player->Pos.X, M->Player->FloorY, M->Player->Pos.Z);
 							const double To = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Fell.X, Fell.Z, 0));
-							const bool bDrawn = To < From - .5 || Now[0].State == FS47RoswellBrain::EState::Listen || Now[0].State == FS47RoswellBrain::EState::Search;
-							Tell(bDrawn, FString::Printf(TEXT("The stone fell (%s). It was %.1f m from it, now %.1f m, %s."), *H->LastImpact(), From, To, FS47RoswellBrain::StateName(Now[0].State)), 10);
+							const double ToMe = FVector::Dist2D(FVector(Now[0].Pos.X, Now[0].Pos.Z, 0), FVector(Me.X, Me.Z, 0));
+							const bool bInReach = From <= S47Noise::Reach(H->ThrowLoudness()) + .5;
+							const bool bDrawn = bInReach && (To < From - 1.0 || Now[0].State == FS47RoswellBrain::EState::Listen || Now[0].State == FS47RoswellBrain::EState::Search);
+							Tell(bDrawn, FString::Printf(TEXT("The stone fell %.1f m from where it stood (%s). It is now %.1f m from the stone and %.1f m from you, %s."), From, *H->LastImpact(), To, ToMe, FS47RoswellBrain::StateName(Now[0].State)), 10);
 						});
 					}, [this] { Tell(false, TEXT("the stone was still in the air")); });
 				});
