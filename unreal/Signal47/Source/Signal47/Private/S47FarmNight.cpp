@@ -96,6 +96,7 @@ bool FS47FarmNight::Build()
  {
   auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Mesh);
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+  S47StreetLamps::MatchLodSlots(C); // STREETLAMP-GLOW: the LOD1/2 slots held WorldGridMaterial (grey from a few metres on)
   double Mx[16];S47Three::Compose(At,Q,FVector::OneVector,Mx);C->SetWorldTransform(S47Three::MatToUE(Mx));
   L.Parts.Add(C);L.Offsets.Add(At);return C;
  };
@@ -107,9 +108,10 @@ bool FS47FarmNight::Build()
   const FVector Pivot=Foot+FVector(0,PoleTop,0)+Out*.13,Head=Pivot+Out*1.2;
   MeshPart(L,TEXT("S47")+Tag+TEXT("WoodArm"),WoodArm,Pivot,Q);
   UStaticMeshComponent* H=MeshPart(L,TEXT("S47")+Tag+TEXT("Cobra"),CobraHead,Head,Q);
-  const int32 Slot=CobraHead->GetMaterialIndex(TEXT("M_StreetLamp_Lens"));
-  if(Slot>=0&&H->GetMaterial(Slot)){auto* D=UMaterialInstanceDynamic::Create(H->GetMaterial(Slot),M->Web);D->SetVectorParameterValue(TEXT("EmissiveFactor"),FLinearColor::Black);H->SetMaterial(Slot,D);L.Head=D;}
-  L.At=Head+Q.RotateVector(FVector(.42,-.2,0));L.Aim=FVector(Head.X,Foot.Y,Head.Z)+Out*3;L.Candela=Candela;
+  // STREETLAMP-GLOW: the lens on every LOD (it was on LOD0's slot alone, so from a few metres on the head was dark) and a halo
+  L.Glow=S47StreetLamps::Dress(M->Web,H);
+  // the light in the head, 3 cm under the bowl, as the highway's (S47ExteriorLighting)
+  L.At=Head+Q.RotateVector(S47StreetLamps::SpotLocal());L.Aim=FVector(Head.X,Foot.Y,Head.Z)+Out*3;L.Candela=Candela;
   Beam(L,TEXT("S47")+Tag+TEXT("Light"),66,36);
   UE_LOG(LogTemp,Display,TEXT("S47: %s: wood arm and cobra head at %s, reaching %s"),*Tag,*Head.ToString(),*Out.ToString());
  };
@@ -148,19 +150,28 @@ bool FS47FarmNight::Build()
     Foot.Y=Y-.05; // set a little into it, as a pole is
    }
   }
-  LampOn(L,TEXT("TrafoLamp"),Foot,FVector(7997,0,520),1100);
-  { // Critic round 4: one walked and drove through this pole. A 40 cm square for the walk, a circle for the truck.
-   TArray<FS47Rect>& Walk=M->Web->CollidersMutable(TEXT("road"));
+  // Tom 9 November: from the highway this lamp stayed dark until one was at the turn-off. It was drawn and lit in the road's area
+  // alone, and the drive south from SARO is in SARO's terms up to z 800 there (the turn-off is SARO's z 812): only once the area
+  // changed at the turn-off did it come on. Now it is road-local, as the farm's lamp is: drawn in SARO's terms too.
+  L.bRoadLocal=true;
+  const FVector FootRoad=Foot-FVector(8000,0,0);
+  LampOn(L,TEXT("TrafoLamp"),FootRoad,FVector(-3,0,520),1100);
+  // Critic round 4: one walked and drove through this pole. A 40 cm square for the walk, a circle for the truck; in SARO's terms too
+  // now that it stands there as well (STREETLAMP-GLOW).
+  for(const TCHAR* Where:{TEXT("road"),TEXT("saro")})
+  {
+   const FVector P=S47FarmWorld::RoadToArea(Where,FootRoad);
+   TArray<FS47Rect>& Walk=M->Web->CollidersMutable(Where);
    if(!Walk.ContainsByPredicate([](const FS47Rect& R){return R.Id==TEXT("farmNight:trafoLampPole");}))
-   {FS47Rect R;R.MinX=Foot.X-.2;R.MaxX=Foot.X+.2;R.MinZ=Foot.Z-.2;R.MaxZ=Foot.Z+.2;R.Id=TEXT("farmNight:trafoLampPole");Walk.Add(R);}
-   if(M->World)if(IS47DriveArea* Road=M->World->LegArea(TEXT("road")))
-    if(!Road->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-Foot.X)<.01&&FMath::Abs(O.Z-Foot.Z)<.01;}))Road->Obstacles.Add(FS47Obstacle::Circle(Foot.X,Foot.Z,.3));
+   {FS47Rect R;R.MinX=P.X-.2;R.MaxX=P.X+.2;R.MinZ=P.Z-.2;R.MaxZ=P.Z+.2;R.Id=TEXT("farmNight:trafoLampPole");Walk.Add(R);}
+   if(M->World)if(IS47DriveArea* Leg=M->World->LegArea(Where))
+    if(!Leg->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-P.X)<.01&&FMath::Abs(O.Z-P.Z)<.01;}))Leg->Obstacles.Add(FS47Obstacle::Circle(P.X,P.Z,.3));
   }
   if(PoleMesh)
   {
    auto* C=NewObject<UStaticMeshComponent>(M->Web,TEXT("S47TrafoLampPole"));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(PoleMesh);
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetWorldScale3D(PoleScale);C->RegisterComponent();
-   L.Parts.Add(C);L.Offsets.Add(Foot);
+   L.Parts.Add(C);L.Offsets.Add(FootRoad);
   }
   Lamps.Add(L);
  }
@@ -205,6 +216,8 @@ void FS47FarmNight::SetOn(bool bNow,const FString& Area)
  {
   const bool bShown=L.bRoadLocal?(bRoadSide||Area==TEXT("saro")):bRoadSide;
   if(auto* S=L.Light.Get()){S->SetIntensity(bNow&&bShown?L.Candela:0);S->SetVisibility(bNow&&bShown);}
+  // a cobra head: its lens on every LOD and its halo, as bright as the highway's (S47ExteriorLighting: six times the feed)
+  if(L.Glow)S47StreetLamps::Shine(L.Glow,bNow&&bShown?S47StreetLamps::Sodium()*6.f:FLinearColor::Black);
   if(auto* Mat=L.Head.Get())
   {
    Mat->SetVectorParameterValue(TEXT("Emissive"),bNow?FLinearColor(1,.68,.34)*40.f:FLinearColor::Black);Mat->SetScalarParameterValue(TEXT("EmissivePower"),bNow?1.f:0.f);
@@ -222,6 +235,7 @@ void FS47FarmNight::Stop()
  {
   for(const auto& C:L.Parts)if(C.IsValid()){C->SetVisibility(false);C->SetHiddenInGame(true);}
   if(auto* S=L.Light.Get()){S->SetIntensity(0);S->SetVisibility(false);}
+  if(L.Glow)S47StreetLamps::Shine(L.Glow,FLinearColor::Black);
  }
  LastArea.Empty();bOn=false;
  HazeNear(false);HazeGlow=0;
@@ -240,6 +254,8 @@ void FS47FarmNight::Step(double Dt)
  const bool bAreaChanged=Area!=LastArea;
  if(bAreaChanged){Place(Area);LastArea=Area;}
  if(bAreaChanged||bNight!=bOn)SetOn(bNight,Area);
+ // STREETLAMP-GLOW: the halo keeps its width and brightness for the eye's distance (the lens's value is not set again)
+ for(FLamp& L:Lamps)if(L.Glow)S47StreetLamps::Shine(L.Glow,L.Glow.Emissive);
  BuildHaze();
  StepHaze(Dt,bNight);
  // A menu or a panel holds them: nothing starts in a paused sound context, to all come at once on the way out.

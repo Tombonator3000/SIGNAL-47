@@ -85,6 +85,16 @@ try:
         R.check(name + ' source material set', set(slots) == set(row.get('materials', [])),
                 {'native': slots, 'source': row.get('materials')})
         lod_source = lods(mesh, path)
+        # STREETLAMP-GLOW: any slot the LODs added draws the authored material of its name (the runtime matches them too,
+        # S47StreetLamps::MatchLodSlots), and none is left on WorldGridMaterial
+        for index, slot in enumerate(mesh.get_editor_property('static_materials')):
+            material = str(slot.get_editor_property('material_slot_name'))
+            if material in mats and slot.get_editor_property('material_interface') != mats[material]:
+                mesh.set_material(index, mats[material])
+        grey = [str(slot.get_editor_property('material_slot_name')) for slot in mesh.get_editor_property('static_materials')
+                if not slot.get_editor_property('material_interface')
+                or slot.get_editor_property('material_interface').get_name() == 'WorldGridMaterial']
+        R.check(name + ' no LOD slot on WorldGridMaterial', not grey, grey)
         settings = mesh.get_editor_property('nanite_settings')
         settings.enabled = False
         mesh.set_editor_property('nanite_settings', settings)

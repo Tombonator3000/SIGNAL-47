@@ -151,6 +151,28 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  E.AddFreeform(Group, TEXT("Caliche's lamps: feet on the ground"), TEXT("11:00 on Main Street: each lamp's foot measured against its footing and the sidewalk"), [Feet]
  { Feet(TEXT("diner"), FVector2D(8000 - 2, 2140)); });
 
+ // ---- STREETLAMP-GLOW: each lamp's spot in its head under the bowl, and its bowl and halo lit exactly with it ----
+ const auto Glow = [this, Log](const FString& Area, const FVector2D& At, double Hour, bool bNight)
+ {
+  FStage S; S.From = Hour; S.To = Hour + 1.5; S.Area = Area; S.Where = [At] { return At; };
+  Go(S, [this, Log, bNight]
+  {
+   After(1.0, [this, Log, bNight]
+   {
+    TArray<FString> Lines; int32 Lit = 0;
+    const int32 Bad = S47StreetLamps::MeasureGlow(M->Web, Lines, Lit);
+    Log(Lines);
+    Tell(Bad == 0 && Lines.Num() > 1 && (bNight ? Lit > 0 : Lit == 0), Lines.Num() ? Lines[0] : FString(TEXT("no street lamps")), 12);
+   });
+  });
+ };
+ E.AddFreeform(Group, TEXT("Highway lamps: glow at night"), TEXT("22:00 on the highway by SARO: each lamp's spot in its head, its bowl and halo lit with it (the log has each)"), [Glow]
+ { Glow(TEXT("saro"), FVector2D(-14, 36), 22, true); });
+ E.AddFreeform(Group, TEXT("Highway lamps: dark by day"), TEXT("11:00 on the highway by SARO: no bowl or halo lit"), [Glow]
+ { Glow(TEXT("saro"), FVector2D(-14, 36), 11, false); });
+ E.AddFreeform(Group, TEXT("Caliche's lamps: glow at night"), TEXT("22:00 on Main Street: the same for Caliche's seven"), [Glow]
+ { Glow(TEXT("diner"), FVector2D(8000 - 2, 2140), 22, true); });
+
  // ---- the views ----
  E.AddFreeform(Group, TEXT("Dale's window from outside, day"), TEXT("11:00 south of the annex, looking at the office's window"), [View, Saro, Saro3]
  { View(TEXT("saro"), 11, Saro(.4, 17), Saro3(.4, .55, 10.8), TEXT("Dale's window from the yard: glass, frame and sill, the blind and the room behind it")); });

@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47StreetLamps.h"
 class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
@@ -21,7 +22,7 @@ public:
  static FVector SignLampWorld();
  static FVector SignWorld();
 private:
- struct FLamp{TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Offsets;TWeakObjectPtr<UMaterialInstanceDynamic> Head;TWeakObjectPtr<USpotLightComponent> Light;bool bRoadLocal=false;FVector At=FVector::ZeroVector,Aim=FVector::ZeroVector;float Candela=0;};
+ struct FLamp{TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Offsets;TWeakObjectPtr<UMaterialInstanceDynamic> Head;TWeakObjectPtr<USpotLightComponent> Light;bool bRoadLocal=false;FVector At=FVector::ZeroVector,Aim=FVector::ZeroVector;float Candela=0;S47StreetLamps::FGlow Glow;}; // Glow: a cobra head's lens and halo (STREETLAMP-GLOW)
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
  TArray<FLamp> Lamps;

@@ -218,6 +218,16 @@ def import_lod_same_frame(mesh, lod, path, dest):
     temporary asset is deleted."""
     temp = dest + '/_LodTemp'
     source = import_mesh(path, temp)
+    # set_lod_from_static_mesh reuses a slot only for the same material object. The temporary mesh comes in without materials
+    # (WorldGridMaterial on every slot), so each LOD's sections got new slots of their own on WorldGridMaterial (9 November: the
+    # street lamps were grey from a few metres on and their lenses never glowed). Its slots take the base mesh's materials by
+    # slot name first, so the LOD's sections land on the base mesh's own slots.
+    base = {str(slot.get_editor_property('material_slot_name')): slot.get_editor_property('material_interface')
+            for slot in mesh.get_editor_property('static_materials')}
+    for index, slot in enumerate(source.get_editor_property('static_materials')):
+        material = base.get(str(slot.get_editor_property('material_slot_name')))
+        if material:
+            source.set_material(index, material)
     got = S.set_lod_from_static_mesh(mesh, lod, source, 0, True)
     E.delete_asset(temp + '/' + path.stem)
     E.delete_directory(temp)

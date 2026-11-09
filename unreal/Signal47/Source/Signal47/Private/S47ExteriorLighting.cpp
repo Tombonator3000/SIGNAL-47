@@ -359,7 +359,10 @@ void AS47Web::UpdateExteriorLighting()
 		// Apply after reading/writing power-owned glow colours to avoid feedback or double dimming.
 		K *= DayMask;
 		if (UMaterialInstanceDynamic* D = P.Diffuser.Get(); D && !P.bAuthoredLens) Emission.FindOrAdd(D) = FMath::Max(Emission.FindRef(D), K);
-		const bool bOn = K > 0.0001f && FVector::DistSquared(Camera, P.At) < FMath::Square(200.f);
+		// STREETLAMP-GLOW: the pool on the ground fades in from 300 m to 150 m (it came on at once at 200 m); the lamp's own bowl
+		// and halo glow at any distance (S47StreetLamps::Shine, below, from K alone).
+		const float Near = 1.f - FMath::SmoothStep(150.f, 300.f, float(FVector::Dist(Camera, P.At)));
+		const bool bOn = K > 0.0001f && Near > 0.f;
 		const bool bToggle = P.bWasOn != bOn;
 		if (bToggle) L->SetVisibility(bOn);
 		FLinearColor C = FloodCol(P.Set, P.Slot);
@@ -371,13 +374,18 @@ void AS47Web::UpdateExteriorLighting()
 		}
 		const float Gain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		// Unreal's setters ignore unchanged values; colour-only HDR changes still update power.
-		L->SetIntensity(bOn ? P.Candela * K * Gain : 0.f);
+		L->SetIntensity(bOn ? P.Candela * K * Gain * Near : 0.f);
 		L->SetLightColor(C / Gain);
 		if (P.bAuthoredLens)
 		{
 			if (auto* M = P.Fixture.Get()) M->SetVisibility(ObjAt(P.Node).Shown(), false);
 			// a cobra head's bowl glows bright enough to bloom (prosjektbibliotek: bloom over 1 only on lamps)
-			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * ((P.bStreetHead ? 6.f : 1.5f) * K));
+			if (auto* D = P.Diffuser.Get())
+			{
+				const FLinearColor LensGlow = C * ((P.bStreetHead ? 6.f : 1.5f) * K);
+				// STREETLAMP-GLOW: a cobra head's lens on every LOD and its halo under the bowl, with the feed (dusk, outages, flicker)
+				if (!P.bStreetHead || !S47StreetLamps::Shine(this, D, LensGlow, L)) D->SetVectorParameterValue(TEXT("EmissiveFactor"), LensGlow);
+			}
 		}
 		if (bLog && bToggle) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s %s k=%.4f cd=%.2f"), *L->GetName(), bOn ? TEXT("on") : TEXT("off"), K, L->Intensity);
 		P.LastK = K; P.bWasOn = bOn;

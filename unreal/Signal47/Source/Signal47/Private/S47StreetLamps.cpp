@@ -3,11 +3,18 @@
 #include "S47Web.h"
 #include "CollisionQueryParams.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/MaterialBillboardComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/IConsoleManager.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "UObject/Package.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "RenderUtils.h"
@@ -36,6 +43,8 @@ namespace
   TWeakObjectPtr<UMaterialInstanceDynamic> Lens;
   FVector Emitter = FVector::ZeroVector, Normal = FVector(0, -1, 0);
   TArray<TWeakObjectPtr<UPrimitiveComponent>> Under; // what it was set on (the footing), for the measure
+  FGlow Glow;                              // STREETLAMP-GLOW: the lens on every LOD and the halo under the bowl
+  TWeakObjectPtr<USpotLightComponent> Spot; // the exterior light's spot, as S47ExteriorLighting last lit it (for the measure)
  };
  TMap<TWeakObjectPtr<AS47Web>, TArray<FLamp>>& All() { static TMap<TWeakObjectPtr<AS47Web>, TArray<FLamp>> A; return A; }
 
@@ -146,6 +155,8 @@ namespace
   // (M6 sweep 4: the arm's, head's and wood arm's LOD1/2 had come in turned 90 degrees about the pole; imported again on 9 November
   // through import_recipe.import_lod_same_frame, every LOD within 0.4 cm of LOD0's frame, so no LOD is forced)
   C->SetCastShadow(true); C->RegisterComponent();
+  // STREETLAMP-GLOW: the LOD1/2 slots draw what LOD0's slot of the same name draws (they hold WorldGridMaterial in the asset)
+  MatchLodSlots(C);
   double Matrix[16]; S47Three::Compose(At, Q, Scale, Matrix); C->SetWorldTransform(S47Three::MatToUE(Matrix));
   // AdoptNode keeps only where it is; the turn goes into the node too, or the next time the node is set the arm swings back to +x
   // (sweep 3: the heads stood over the road, the arms pointed the other way).
@@ -177,13 +188,9 @@ namespace
    UStaticMeshComponent* Head = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:head"), Family, I), HeadMesh, Slip, Q);
    L.Head = Head;
    L.Emitter = Slip + Q.RotateVector(EmitAt); L.Normal = Q.RotateVector(EmitNormal);
-   const int32 Slot = HeadMesh->GetMaterialIndex(LensSlot);
-   if (Slot >= 0 && Head->GetMaterial(Slot))
-   {
-    UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Head->GetMaterial(Slot), W);
-    D->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor::Black); Head->SetMaterial(Slot, D); L.Lens = D;
-   }
-   else UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamp %s has no %s slot; its light stays where the old one was"), *L.Light, LensSlot);
+   // STREETLAMP-GLOW: one dark lens material on every LOD's lens slot (it was on LOD0's alone) and the halo under the bowl
+   L.Glow = Dress(W, Head); L.Lens = L.Glow.Lens;
+   if (!L.Lens.IsValid()) UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamp %s has no %s slot; its light stays where the old one was"), *L.Light, LensSlot);
    Out.Add(L);
   }
  }
@@ -521,5 +528,249 @@ int32 MeasureFeet(AS47Web* W, TArray<FString>& Lines)
  Lines.Add(FString::Printf(TEXT("Street lamps: %d measured here, %d stand on what is under them within 2 cm, %d wrong (%d in other places, not drawn now)"), Measured, Measured - Bad, Bad, Away));
  Lines.Append(Each);
  return Bad;
+}
+
+// ---- STREETLAMP-GLOW ----
+namespace
+{
+ TAutoConsoleVariable<float> CVarHalo(TEXT("s47.lamps.Halo"), 1.f, TEXT("STREETLAMP-GLOW: the cobra heads' halo under the bowl, times (0: none)."));
+ TAutoConsoleVariable<float> CVarHaloSize(TEXT("s47.lamps.HaloSize"), 1.1f, TEXT("STREETLAMP-GLOW: the cobra heads' halo, its width in metres."));
+ // The halo's centre shows this share of the lens's emissive: a faint veil round a bright bowl, not a ball (critic round 4 found
+ // orange clouds beside the heads; M_WebGlow falls from 1 at the centre to 0.55 a quarter out and 0 at the rim).
+ constexpr float HaloShare = .04f;
+ // The halo's centre 6 cm under the emitter, so the bowl over it does not cut it as one looks up from the road.
+ const FVector HaloBelow(0, -.06, 0);
+ constexpr float Dark = 1e-4f;
+ // Far off (Tom 9 November: the turn-off's lamp was a faint dot until one stood under it) the bowl is under a pixel: the halo keeps
+ // at least this angular width (0.26 degrees, some three pixels across a 1080p view, so 13 m wide three kilometres out) and its
+ // centre comes up from the faint veil near the lamp to most of the bowl's own brightness, between 60 and 600 m. A sodium lamp
+ // reads for kilometres across the desert at night.
+ constexpr double HaloMinAngle = .0045, HaloNear = 60, HaloFar = 600;
+ constexpr float HaloFarShare = .35f;
+ bool CameraAt(const UWorld* World, FVector& Out)
+ {
+  const APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
+  if (!PC || !PC->PlayerCameraManager) return false;
+  Out = PC->PlayerCameraManager->GetCameraLocation();
+  return true;
+ }
+ // A slot's name without the _N a duplicate may be given.
+ FString SlotKey(const FStaticMaterial& Slot)
+ {
+  FString S = (Slot.MaterialSlotName.IsNone() ? Slot.ImportedMaterialSlotName : Slot.MaterialSlotName).ToString();
+  int32 Under = INDEX_NONE;
+  if (S.FindLastChar(TEXT('_'), Under) && Under > 0 && Under + 1 < S.Len())
+  {
+   bool bDigits = true;
+   for (int32 I = Under + 1; I < S.Len(); ++I) bDigits &= FChar::IsDigit(S[I]);
+   if (bDigits) S.LeftInline(Under);
+  }
+  return S;
+ }
+ bool Shown(const UPrimitiveComponent* C) { return C && C->IsVisible() && !C->bHiddenInGame; }
+ float Peak(const FLinearColor& C) { return FMath::Max3(C.R, C.G, C.B); }
+}
+
+FVector EmitterLocal() { return EmitAt; }
+FVector SpotLocal() { return EmitAt + EmitNormal * .03; }
+
+int32 MatchLodSlots(UStaticMeshComponent* Part)
+{
+ const UStaticMesh* Mesh = Part ? Part->GetStaticMesh().Get() : nullptr;
+ if (!Mesh) return 0;
+ const TArray<FStaticMaterial>& Slots = Mesh->GetStaticMaterials();
+ TMap<FString, int32> First;
+ int32 Set = 0;
+ for (int32 I = 0; I < Slots.Num(); ++I)
+ {
+  const FString Key = SlotKey(Slots[I]);
+  if (Key.IsEmpty() || Key == TEXT("None")) continue;
+  if (const int32* J = First.Find(Key))
+  {
+   UMaterialInterface* Want = Part->GetMaterial(*J);
+   if (Want && Part->GetMaterial(I) != Want) { Part->SetMaterial(I, Want); ++Set; }
+  }
+  else First.Add(Key, I);
+ }
+ return Set;
+}
+
+FGlow Dress(UObject* Outer, UStaticMeshComponent* Head)
+{
+ FGlow G; G.Head = Head;
+ const UStaticMesh* Mesh = Head ? Head->GetStaticMesh().Get() : nullptr;
+ if (!Mesh) return G;
+ if (!Outer) Outer = Head;
+ const TArray<FStaticMaterial>& Slots = Mesh->GetStaticMaterials();
+ TArray<int32> Lens;
+ for (int32 I = 0; I < Slots.Num(); ++I) if (SlotKey(Slots[I]) == LensSlot) Lens.Add(I);
+ if (UMaterialInterface* Base = Lens.Num() ? Head->GetMaterial(Lens[0]) : nullptr)
+ {
+  UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Base, Outer);
+  D->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor::Black);
+  for (const int32 I : Lens) Head->SetMaterial(I, D);
+  G.Lens = D; G.Emissive = FLinearColor::Black;
+ }
+ MatchLodSlots(Head);
+ // The halo: the glow points' own soft spot (M_WebGlow: additive, unlit, Color x Brightness), camera-facing, on the head.
+ if (UMaterialInterface* GlowBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebGlow.M_WebGlow")))
+ {
+  UMaterialBillboardComponent* B = NewObject<UMaterialBillboardComponent>(Outer);
+  B->SetupAttachment(Head); B->SetMobility(EComponentMobility::Movable);
+  B->SetRelativeLocation(S47Three::ToUE(EmitAt + HaloBelow)); // the head's own terms (Compose/MatToUE conjugate with ToUE)
+  UMaterialInstanceDynamic* H = UMaterialInstanceDynamic::Create(GlowBase, Outer);
+  H->SetVectorParameterValue(TEXT("Color"), FLinearColor::Black); H->SetScalarParameterValue(TEXT("Brightness"), 1.f);
+  G.HaloSize = FMath::Max(.05f, CVarHaloSize.GetValueOnAnyThread());
+  B->AddElement(H, nullptr, false, G.HaloSize * 50.f, G.HaloSize * 50.f, nullptr); // half its width each way, centimetres
+  B->SetCollisionEnabled(ECollisionEnabled::NoCollision); B->SetCastShadow(false);
+  B->bVisibleInRayTracing = false; B->bVisibleInReflectionCaptures = false; B->bVisibleInRealTimeSkyCaptures = false;
+  B->SetVisibility(false);
+  if (Head->IsRegistered()) B->RegisterComponent();
+  G.Halo = B; G.HaloMid = H;
+ }
+ return G;
+}
+
+void Shine(FGlow& G, const FLinearColor& Emissive)
+{
+ if (UMaterialInstanceDynamic* D = G.Lens.Get(); D && !G.Emissive.Equals(Emissive, Dark)) D->SetVectorParameterValue(TEXT("EmissiveFactor"), Emissive);
+ G.Emissive = Emissive;
+ G.bLit = Peak(Emissive) > Dark;
+ UMaterialBillboardComponent* B = G.Halo.Get();
+ if (!B) return;
+ const float Scale = FMath::Max(0.f, CVarHalo.GetValueOnAnyThread());
+ const bool bHalo = G.bLit && Scale > 0 && Shown(G.Head.Get());
+ if (bHalo)
+ {
+  // how far the eye is (metres; none known, as in the self-test: near)
+  double Dist = 0; FVector Cam;
+  if (CameraAt(B->GetWorld(), Cam)) Dist = FVector::Dist(Cam, B->GetComponentLocation()) / 100.0;
+  const float Far = float(FMath::SmoothStep(HaloNear, HaloFar, Dist));
+  if (UMaterialInstanceDynamic* H = G.HaloMid.Get())
+  {
+   const FLinearColor Want = FLinearColor(Emissive.R, Emissive.G, Emissive.B, 1.f) * (FMath::Lerp(HaloShare, HaloFarShare, Far) * Scale);
+   if (!H->K2_GetVectorParameterValue(TEXT("Color")).Equals(Want, Dark)) H->SetVectorParameterValue(TEXT("Color"), FLinearColor(Want.R, Want.G, Want.B, 1.f));
+  }
+  const float Size = FMath::Max3(.05f, CVarHaloSize.GetValueOnAnyThread(), float(Dist * HaloMinAngle));
+  if (B->Elements.Num() && FMath::Abs(Size - G.HaloSize) > FMath::Max(.001f, Size * .02f))
+  {
+   B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Size * 50.f; G.HaloSize = Size;
+   B->UpdateBounds(); B->MarkRenderStateDirty();
+  }
+ }
+ if (B->GetVisibleFlag() != bHalo) B->SetVisibility(bHalo);
+}
+
+bool Shine(AS47Web* W, const UMaterialInstanceDynamic* Lens, const FLinearColor& Emissive, USpotLightComponent* Light)
+{
+ TArray<FLamp>* Lamps = Lens ? All().Find(W) : nullptr;
+ if (!Lamps) return false;
+ for (FLamp& L : *Lamps)
+  if (L.Glow.Lens.Get() == Lens)
+  {
+   L.Spot = Light;
+   Shine(L.Glow, Emissive);
+   return true;
+  }
+ return false;
+}
+
+int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit)
+{
+ Lit = 0;
+ const TArray<FLamp>* Lamps = W ? All().Find(W) : nullptr;
+ if (!Lamps || Lamps->IsEmpty()) { Lines.Add(TEXT("Street lamp glow: none of the new lamps is built (no models, or -S47StreetLampsOff)")); return 0; }
+ const bool bHaloWanted = CVarHalo.GetValueOnAnyThread() > 0;
+ int32 Bad = 0, Measured = 0, Away = 0;
+ TArray<FString> Each;
+ for (const FLamp& L : *Lamps)
+ {
+  const UStaticMeshComponent* Head = L.Head.Get();
+  if (!Head) continue;
+  if (!Shown(Head)) { ++Away; continue; }
+  ++Measured;
+  const USpotLightComponent* S = L.Spot.Get();
+  const FTransform T = Head->GetComponentTransform();
+  const FVector Emit = T.TransformPosition(S47Three::ToUE(EmitAt));
+  const FBox Box = Head->Bounds.GetBox().ExpandBy(5.0);
+  const bool bIn = S && Box.IsInside(S->GetComponentLocation());
+  const double Off = S ? FVector::Dist(S->GetComponentLocation(), Emit) : 1e6; // centimetres
+  // straight down is -Z in Unreal; the spot's tilt from it
+  const double Tilt = S ? FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(-S->GetForwardVector().Z, -1.0, 1.0))) : 180;
+  const bool bSpot = S && S->IsVisible() && S->Intensity > 0;
+  const bool bHalo = L.Glow.Halo.IsValid() && L.Glow.Halo->GetVisibleFlag();
+  Lit += L.Glow.bLit;
+  const bool bOk = bIn && Off <= 6 && Tilt <= 45 && (!bSpot || L.Glow.bLit) && bHalo == (L.Glow.bLit && bHaloWanted && L.Glow.Halo.IsValid());
+  Bad += !bOk;
+  Each.Add(FString::Printf(TEXT("  %s %s: spot %s the head's bounds, %.0f mm from the emitter, %.0f degrees off straight down; spot %s, lens %s (%.2f), halo %s"),
+   bOk ? TEXT("ok") : TEXT("WRONG"), *L.Light, bIn ? TEXT("inside") : S ? TEXT("OUTSIDE") : TEXT("(none yet)"), Off * 10, Tilt,
+   bSpot ? TEXT("on") : TEXT("off"), L.Glow.bLit ? TEXT("lit") : TEXT("dark"), Peak(L.Glow.Emissive), bHalo ? TEXT("shown") : L.Glow.Halo.IsValid() ? TEXT("hidden") : TEXT("(none: no M_WebGlow)")));
+ }
+ Lines.Add(FString::Printf(TEXT("Street lamp glow: %d measured here, %d lit, %d wrong (%d in other places, not drawn now)"), Measured, Lit, Bad, Away));
+ Lines.Append(Each);
+ return Bad;
+}
+
+bool SelfTest(TArray<FString>& Lines)
+{
+ UStaticMesh* HeadMesh = Asset(TEXT("SM_StreetLamp_Head"));
+ if (!HeadMesh) { Lines.Add(TEXT("street lamp glow: the models are not imported; skipped")); return true; }
+ bool bOk = true;
+ const auto Check = [&](bool bGood, const FString& What) { Lines.Add(FString::Printf(TEXT("%s street lamp glow: %s"), bGood ? TEXT("ok") : TEXT("FAIL"), *What)); bOk &= bGood; };
+ UObject* Outer = GetTransientPackage();
+ const UMaterialInterface* Grid = UMaterial::GetDefaultMaterial(MD_Surface);
+ // every part: no slot left on the engine's default (WorldGridMaterial) once the LOD slots are matched
+ for (const TCHAR* Name : { TEXT("SM_StreetLamp_Head"), TEXT("SM_StreetLamp_Arm"), TEXT("SM_StreetLamp_Pole"), TEXT("SM_StreetLamp_WoodArm") })
+ {
+  UStaticMesh* Mesh = Asset(Name);
+  if (!Mesh) { Check(false, FString::Printf(TEXT("%s missing beside the head"), Name)); continue; }
+  UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(Outer);
+  C->SetStaticMesh(Mesh);
+  const int32 Set = MatchLodSlots(C);
+  int32 Grey = 0;
+  for (int32 I = 0; I < C->GetNumMaterials(); ++I) { const UMaterialInterface* M = C->GetMaterial(I); Grey += !M || M == Grid || M->GetName() == TEXT("WorldGridMaterial"); }
+  Check(Grey == 0, FString::Printf(TEXT("%s: %d slots, %d matched to LOD0's of the same name, %d left on WorldGridMaterial"), Name, C->GetNumMaterials(), Set, Grey));
+ }
+ UStaticMeshComponent* Head = NewObject<UStaticMeshComponent>(Outer);
+ Head->SetStaticMesh(HeadMesh);
+ FGlow G = Dress(Outer, Head);
+ Check(G.Lens.IsValid(), TEXT("the head has a lens slot and a dynamic lens material"));
+ // every LOD that is drawn has a lens section, and each lens slot draws the one dynamic material
+ TArray<int32> Lens;
+ for (int32 I = 0; I < HeadMesh->GetStaticMaterials().Num(); ++I) if (SlotKey(HeadMesh->GetStaticMaterials()[I]) == LensSlot) Lens.Add(I);
+ int32 OnLens = 0;
+ for (const int32 I : Lens) OnLens += G.Lens.IsValid() && Head->GetMaterial(I) == G.Lens.Get();
+ Check(Lens.Num() > 0 && OnLens == Lens.Num(), FString::Printf(TEXT("%d of %d lens slots draw the dynamic lens"), OnLens, Lens.Num()));
+ if (const FStaticMeshRenderData* R = HeadMesh->GetRenderData())
+ {
+  FString Each; int32 Without = 0;
+  for (int32 Lod = 0; Lod < R->LODResources.Num(); ++Lod)
+  {
+   int32 Sections = 0;
+   for (const FStaticMeshSection& Sec : R->LODResources[Lod].Sections) Sections += Lens.Contains(Sec.MaterialIndex) && Sec.NumTriangles > 0;
+   Without += Sections == 0;
+   Each += FString::Printf(TEXT(" LOD%d %d"), Lod, Sections);
+  }
+  Check(R->LODResources.Num() > 0 && Without == 0, FString::Printf(TEXT("every LOD draws its bowl with a lens slot (lens sections:%s)"), *Each));
+ }
+ // the emitter and the spot inside the head's bounds, under the bowl's footprint, the bowl facing down
+ const FBox Box = HeadMesh->GetBoundingBox();
+ const FVector Emit = S47Three::ToUE(EmitterLocal()), Spot = S47Three::ToUE(SpotLocal());
+ const auto UnderLens = [](const FVector& P) { return FMath::Abs(P.X - EmitAt.X) <= LensWidth / 200. && FMath::Abs(P.Z - EmitAt.Z) <= LensDepth / 200.; };
+ Check(Box.ExpandBy(2.0).IsInside(Emit) && UnderLens(EmitterLocal()) && EmitNormal.Y < -.99, FString::Printf(TEXT("the emitter %s lies in the head's bounds %s (2 cm slack) under the lens"), *Emit.ToString(), *Box.ToString()));
+ Check(Box.ExpandBy(5.0).IsInside(Spot) && UnderLens(SpotLocal()) && Spot.Z < Box.Min.Z + 5.0, FString::Printf(TEXT("the spot %s lies in the head's bounds (5 cm slack), under the bowl, not down the pole"), *Spot.ToString()));
+ // on and off: the lens takes what it is given, the halo shows with it and goes with it
+ const FLinearColor On = Sodium() * 6.f;
+ Shine(G, On);
+ const bool bHaloOn = !G.Halo.IsValid() || G.Halo->GetVisibleFlag() == (CVarHalo.GetValueOnAnyThread() > 0);
+ Check(G.Lens.IsValid() && G.Lens->K2_GetVectorParameterValue(TEXT("EmissiveFactor")).Equals(On, .001f) && G.bLit && bHaloOn,
+  FString::Printf(TEXT("lit: the lens glows sodium (%s) and the halo shows%s"), *On.ToString(), G.Halo.IsValid() ? TEXT("") : TEXT(" (no M_WebGlow here: no halo)")));
+ Shine(G, FLinearColor::Black);
+ Check(G.Lens.IsValid() && Peak(G.Lens->K2_GetVectorParameterValue(TEXT("EmissiveFactor"))) <= Dark && !G.bLit && (!G.Halo.IsValid() || !G.Halo->GetVisibleFlag()),
+  TEXT("dark: the lens is black and the halo hidden"));
+ Head->SetVisibility(false);
+ Shine(G, On);
+ Check(!G.Halo.IsValid() || !G.Halo->GetVisibleFlag(), TEXT("a hidden head shows no halo, lit or not"));
+ return bOk;
 }
 }
