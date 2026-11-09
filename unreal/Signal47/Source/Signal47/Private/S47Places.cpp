@@ -39,6 +39,14 @@ namespace
  const TCHAR* const Cone=TEXT("/Engine/BasicShapes/Cone.Cone");
  const TCHAR* const CowBody=TEXT("/Game/Signal47/Art/Cows/SM_Cow_Alive_Body.SM_Cow_Alive_Body");
  const TCHAR* const CowHead=TEXT("/Game/Signal47/Art/Cows/SM_Cow_Alive_Head.SM_Cow_Alive_Head");
+ // PT-SAUCER-ROCK-20261109: Poly Haven's boulders (CC0, Tools/freemodels, cooked with /Game/Free): pivot at the middle of the base,
+ // in centimetres, so a scale of 1 is the rock as it was scanned and the part's height is where its base sits.
+ const TCHAR* const RockA=TEXT("/Game/Free/Desert/namaqualand_boulder_04/StaticMeshes/namaqualand_boulder_04.namaqualand_boulder_04"); // 2.5 x 2.5 x 1.9 m
+ const TCHAR* const RockB=TEXT("/Game/Free/Desert/namaqualand_boulder_02/StaticMeshes/namaqualand_boulder_02.namaqualand_boulder_02"); // 2.5 x 1.2 x .9 m
+ const TCHAR* const RockC=TEXT("/Game/Free/Desert/namaqualand_boulder_03/StaticMeshes/namaqualand_boulder_03.namaqualand_boulder_03"); // 2.4 x 3.1 x 1.5 m
+ const TCHAR* const RockD=TEXT("/Game/Free/Desert/namaqualand_boulder_05/StaticMeshes/namaqualand_boulder_05.namaqualand_boulder_05"); // 1.4 x .7 x .5 m
+ const TCHAR* const RockE=TEXT("/Game/Free/Desert/namaqualand_rocks_01/StaticMeshes/namaqualand_rocks_01.namaqualand_rocks_01");     // a spill of stones
+ bool Have(const TCHAR* Path){return FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(Path)));}
  TArray<FPart> PartsOf(const FString& Kind)
  {
   const uint32 Steel=0x8b8e8a,Rust=0x7a4b2e,Wood=0x5b4733,Dark=0x151311,Pale=0xd8d4c6,Flag=0xd0641e,Stone=0x8f8778,Dirt=0x7c6348;
@@ -51,6 +59,24 @@ namespace
   if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
   if(Kind==TEXT("trough"))return {{Cube,{0,.32,0},{3.2,.64,.9},Rust,0,0},{Cube,{0,.62,0},{3,.03,.7},Dark,0,0},{Cube,{2.6,.2,.8},{.4,.4,.4},Pale,12,0},{Cube,{-3,.6,-1},{.1,1.2,.1},Wood,0,5}};
   if(Kind==TEXT("cairn"))return {{Ball,{0,.3,0},{1.5,.7,1.3},Stone,0,0},{Ball,{.2,.8,.1},{1,.55,.9},Stone,40,0},{Ball,{0,1.2,0},{.6,.4,.6},Stone,10,0},{Cube,{.05,1.65,0},{.05,.7,.05},Wood,0,6}};
+  // PT-SAUCER-ROCK-20261109 (Tom: at Saucer Rock and nothing there). A pillar of pale rock with a wide flat cap balanced on it, a
+  // cup and saucer, seen from the track by day and as a shape against the sky at night; a ring of stones round its foot with the
+  // sand swept smooth inside it, a fire ring, cans, and the hand-lettered board the tourists come for. The scanned boulders where
+  // the free models are in, basic shapes where they are not. The first part is the one that is used.
+  if(Kind==TEXT("saucer rock"))
+  {
+   const uint32 Sand=0xb9a27f,Can=0xa8a39a,Ash=0x2a2622;
+   TArray<FPart> P;
+   if(Have(RockA)&&Have(RockB))P={{RockA,{0,-.3,0},{.85,1.75,.85},0,20,0},{RockB,{.25,2.75,-.1},{2.3,.8,3.8},0,35,4}};
+   else P={{Cyl,{0,1.45,0},{2.1,3.3,2.1},Stone,0,0},{Ball,{.25,3.2,-.1},{5.8,.75,4.8},Stone,35,4}};
+   P.Append({{Cyl,{0,.0,0},{8.2,.03,8.2},Sand,0,0},
+    {RockC,{-5.6,-.2,2.8},{.55,.5,.55},0,70,0},{RockD,{4.6,0,-3.4},{1,1,1},0,140,0},{RockE,{-2.8,0,-4.9},{1,1,1},0,15,0},
+    {Cube,{6.8,.7,-1.2},{.08,1.4,.08},Wood,0,3},{Cube,{6.8,1.25,-1.17},{.7,.28,.03},Pale,0,3},
+    {Cyl,{6,.01,3.8},{1,.02,1},Ash,0,0},{Cyl,{6.3,.06,4.6},{.066,.12,.066},Can,0,0},{Cyl,{5.2,.035,3.1},{.066,.12,.066},Can,0,90}});
+   // the ring round its foot: twelve stones, set by hand
+   for(int32 I=0;I<12;++I){const double A=I*UE_DOUBLE_PI/6;P.Add({Ball,{4.2*FMath::Cos(A),.1,4.2*FMath::Sin(A)},{.38,.24,.32},Stone,float(I*37%180),0});}
+   return P;
+  }
   // The Sierra Motor Court's office, as far as a player needs it: a bell and a key rack on the wall by the door.
   if(Kind==TEXT("motel"))return {{Cube,{0,1.05,0},{.5,.7,.06},Wood,0,0},{Cube,{0,1.5,0},{.14,.14,.14},Rust,0,0}};
   return {};
@@ -71,6 +97,8 @@ const TArray<FS47Places::FDef>& FS47Places::Defs()
   {TEXT("shack"),TEXT("the line shack"),TEXT("shack"),440,930,TEXT("A line camp, one room, with a cot frame and a calendar for 1971. Coffee in a can, gone solid. Someone has been keeping a tally on the door frame in pencil, in fours and a stroke. The last group stops at three."),TEXT("Stove, nails, a bed frame. The needle has plenty to say and none of it is anything.")},
   {TEXT("trough"),TEXT("the salt lick and trough"),TEXT("trough"),240,1740,TEXT("A rusted trough and a block of stock salt, licked hollow on one side only. The hoof prints all stop about ten feet short of the trough, and go back the way they came."),TEXT("Iron in the trough. The needle settles on it from any side.")},
   {TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("cairn"),-320,430,TEXT("A stack of stones with a post in the top, the kind a survey party leaves. From here you can see SARO and the farm both. The stones are newer than the post. Someone has rebuilt it recently, carefully, facing the array."),TEXT("A steady reading, nothing to speak of. It stays steady for longer than you would think a needle could.")},
+  // PT-SAUCER-ROCK-20261109: on the souvenir man's map, and now on the land too, where he drew it (FS47TownUse::SaucerMap).
+  {TEXT("saucer_rock"),TEXT("Saucer Rock"),TEXT("saucer rock"),-760,2240,TEXT("A pillar of pale rock taller than two men with a wide flat cap on it, a cup and saucer. Initials cut in the stem back to 1951, a fire ring, cans. Round its foot someone has set a ring of stones and swept the sand inside it smooth. Nothing has crossed it."),TEXT("The cap pulls the needle a few degrees. Walk round it and the pull follows the rock, as it should.")},
   {Motel,TEXT("the Sierra Motor Court"),Motel,0,0,TEXT("Sierra Motor Court office. The night bell works and the key rack has more keys than the lot has cars. The card on the counter says rooms are eight dollars, and quiet."),TEXT("Nothing but the bell.")},
  };
  return Table;
@@ -359,7 +387,36 @@ bool FS47Places::Use(const FString& Id)
   Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+FString(D->Needle);
   F.RecordEvidence(Key+TEXT("_needle"),FString::Printf(TEXT("Magnetometer at %s. %s"),D->Title,D->Needle));
  }
+ // PT-SAUCER-ROCK-20261109: Saucer Rock by the hour, as the nights go (18 to 24 a hint that has another reason, after midnight
+ // something far off, after two the sign of a visit): what is there when nothing is happening, kept once a night.
+ if(Id==TEXT("saucer_rock"))
+ {
+  const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;
+  const int32 Tier=SaucerTier(Hour);
+  const FString Now=SaucerAt(Tier,F.TownUse&&F.TownUse->HasMap());
+  if(!Now.IsEmpty())
+  {
+   Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+Now;
+   if(Tier>=2)F.RecordEvidence(FString::Printf(TEXT("%s_night%d_t%d"),*Key,FS47FreeformSession::NightOf(F.Clock()),Tier),FString::Printf(TEXT("Saucer Rock, after midnight. %s"),*Now));
+  }
+ }
  Panel(*D,bFirst,Extra);return true;
+}
+int32 FS47Places::SaucerTier(double Hour)
+{
+ if(!FMath::IsFinite(Hour))return 0;
+ Hour=FMath::Fmod(FMath::Fmod(Hour,24.)+24.,24.);
+ return Hour>=18?1:Hour<2?2:Hour<FS47NightRhythm::EndHour?3:0;
+}
+FString FS47Places::SaucerAt(int32 Tier,bool bMap)
+{
+ switch(Tier)
+ {
+  case 1:return TEXT("The cap keeps the last of the light a while after the land has gone dark. Inside the swept ring the sand is colder to the hand than outside it. Shade, most of the day. That would do it.");
+  case 2:return TEXT("Low over the ridge to the west, a light that does not move. Look straight at it and it is not there; look a little aside and it is. It is still there when you turn to go.");
+  case 3:return TEXT("The sand inside the ring has been swept again since dark. Your own tracks into it are gone, and there are no others, going in or coming out.");
+  default:return bMap?TEXT("The souvenir man's map has it about right, for once. The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING."):TEXT("The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING.");
+ }
 }
 void FS47Places::FillMap(FS47MapView& View) const
 {
@@ -412,7 +469,14 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s places: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  TSet<FString> Ids;bool bWords=true,bParts=true;
  for(const FDef& D:Defs()){Ids.Add(D.Id);bWords&=FCString::Strlen(D.Finding)>40&&FCString::Strlen(D.Finding)<320&&FCString::Strlen(D.Needle)>4&&!FString(D.Finding).Contains(TEXT("alien"));bParts&=PartsOf(D.Kind).Num()>0;}
- Check(Ids.Num()==Defs().Num()&&Defs().Num()>=9,TEXT("eight to ten places besides the motel, each once"));
+ Check(Ids.Num()==Defs().Num()&&Defs().Num()>=9&&Defs().Num()<=11,TEXT("eight to ten places besides the motel, each once"));
+ // PT-SAUCER-ROCK-20261109: Saucer Rock is on the land where the souvenir man's map has it, with something to see at any hour.
+ {
+  const FDef* Rock=Def(TEXT("saucer_rock"));
+  bool bTiers=SaucerTier(12)==0&&SaucerTier(20)==1&&SaucerTier(0.5)==2&&SaucerTier(3)==3&&SaucerTier(7)==0&&SaucerTier(-1)==1;
+  for(int32 T=0;T<4;++T)bTiers&=!SaucerAt(T,false).IsEmpty()&&!SaucerAt(T,false).ToLower().Contains(TEXT("alien"))&&!SaucerAt(T,false).ToLower().Contains(TEXT("saucer people"));
+  Check(Rock&&FVector2D::Distance(FVector2D(Rock->X,Rock->Z),FVector2D(-760,2240))<1&&PartsOf(Rock->Kind).Num()>=10&&bTiers,TEXT("Saucer Rock stands where the map has it, a rock with a ring and a board, and says something by day, in the evening, after midnight and after two"));
+ }
  Check(bWords&&bParts,TEXT("each has a prop and one thing to find, and none says what it is"));
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
  Check(SpreadFor(0)==0&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("every mended branch narrows the sector, and none is exact"));

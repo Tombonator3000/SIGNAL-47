@@ -67,6 +67,8 @@ namespace S47EventPlacesLocal
    {TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("land"),-320,430,-320,430,TEXT(""),TEXT("ff:place:cairn"),Open,8,22},
    {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("land"),-130,650,-130,650,TEXT(""),TEXT("ff:place:stake"),Open|Far,8,22},
    {TEXT("trough"),TEXT("the salt lick and trough"),TEXT("land"),240,1740,240,1740,TEXT(""),TEXT("ff:place:trough"),Open|Far|Farm,10,22},
+   // PT-SAUCER-ROCK-20261109: the souvenir man's Saucer Rock, west of Caliche: a light can stand over it like any place out there.
+   {TEXT("saucer_rock"),TEXT("Saucer Rock"),TEXT("land"),-760,2240,-760,2240,TEXT(""),TEXT("ff:place:saucer_rock"),Open|Far,14,26},
    // Open land with nothing built on it: where something comes down, where somebody is stuck. Seated off the hills below.
    {TEXT("land:wash_west"),TEXT("the dry wash under the west mesa"),TEXT("land"),-900,1150,-900,1150,TEXT(""),TEXT(""),Open|Far|Wash,30,22},
    {TEXT("land:wash_mine"),TEXT("the arroyo below the old mine"),TEXT("land"),-650,1650,-650,1650,TEXT(""),TEXT(""),Open|Far|Wash,30,22},

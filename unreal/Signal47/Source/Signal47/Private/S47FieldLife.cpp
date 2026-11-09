@@ -25,6 +25,7 @@
 #include "S47Geo.h"
 #include "S47EngineSound.h"
 #include "S47Story.h"
+#include "S47Truck.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -83,14 +84,84 @@ double FS47TruckCare::FlatChance(double Mps,ES47SurfaceKind Kind)
  const double Fast=FMath::Square(FMath::Clamp(FMath::Abs(Mps)/12.,0.,1.));
  return (Kind==ES47SurfaceKind::Dirt?.0035:.0012)*Fast;
 }
+bool FS47TruckCare::FirmNear(double RoadX,double RoadZ,double& OutX,double& OutZ)
+{
+ if(!FMath::IsFinite(RoadX)||!FMath::IsFinite(RoadZ))return false;
+ if(SandAt(RoadX,RoadZ)<.15){OutX=RoadX;OutZ=RoadZ;return true;}
+ // Ring by ring outward, sixteen ways round: the first ring with firm ground on it, and on it the firmest.
+ for(double R=4;R<=FirmReach;R+=4)
+ {
+  double Best=.15;bool bAny=false;
+  for(int32 I=0;I<16;++I)
+  {
+   const double A=I*UE_DOUBLE_PI/8,X=RoadX+FMath::Cos(A)*R,Z=RoadZ+FMath::Sin(A)*R;
+   const double Soft=SandAt(X,Z);
+   if(Soft<Best){Best=Soft;OutX=X;OutZ=Z;bAny=true;}
+  }
+  if(bAny)return true;
+ }
+ return false;
+}
+FString FS47TruckCare::WayTo(double FromX,double FromZ,double ToX,double ToZ)
+{
+ // degrees from north, east 90 (road-local z runs south)
+ double Az=FMath::RadiansToDegrees(FMath::Atan2(ToX-FromX,-(ToZ-FromZ)));if(Az<0)Az+=360;
+ static const TCHAR* const Ways[]={TEXT("north"),TEXT("north-east"),TEXT("east"),TEXT("south-east"),TEXT("south"),TEXT("south-west"),TEXT("west"),TEXT("north-west")};
+ return Ways[int32(FMath::RoundToDouble(Az/45.))%8];
+}
+FS47TruckCare::ESand FS47TruckCare::SandStep(double Dt,double Soft,double Load,double Mps,bool bReverse,double DigScale)
+{
+ if(bStuck||!FMath::IsFinite(Dt)||Dt<=0)return ESand::None;
+ const double Sp=FMath::IsFinite(Mps)?FMath::Abs(Mps):0.;
+ // The grace: driven seconds and driven metres, both. Neither runs out by standing in the sand.
+ if(bGrace)
+ {
+  GraceT+=Dt;GraceM+=Sp*Dt;
+  if(GraceT>=GraceSeconds&&GraceM>=GraceNeed){bGrace=false;ReturnT=0;bReWarned=false;WarnT=0;}
+ }
+ double Rate=BogRate(Soft,Load,Mps,bReverse);
+ if(Rate>0)
+ {
+  if(bGrace)Rate=0; // the brush under the wheels: they do not dig in, though easing off and backing out still bring them up
+  else if(bAfterRescue){ReturnT+=Dt;Rate*=FMath::Lerp(.25,1.,FMath::Clamp(ReturnT/ReturnSeconds,0.,1.));} // and then by degrees
+  Rate*=FMath::IsFinite(DigScale)?FMath::Max(0.,DigScale):1.;
+ }
+ Bog=FMath::Clamp(Bog+Dt*Rate,0.,1.);
+ ESand Out=ESand::None;
+ if(bAfterRescue&&!bGrace)
+ {
+  // It tells first: the wheels dig in again, and only some seconds after that can they hold.
+  if(!bReWarned&&Bog>.2){bReWarned=true;WarnT=0;Out=ESand::Warn;}
+  else if(bReWarned){WarnT+=Dt;if(Bog<.05)bReWarned=false;}
+  if(Bog>=1&&(!bReWarned||WarnT<WarnLead))Bog=.97;
+  // Out on firm ground with the wheels clear: the dig is behind it, and the sand is as it always was.
+  if(Soft<.15&&Bog<=0)bAfterRescue=false;
+ }
+ if(Bog>=1){Bog=1;bStuck=true;bGrace=bAfterRescue=false;Out=ESand::Stuck;}
+ return Out;
+}
+void FS47TruckCare::Rescued(double FirmMetres)
+{
+ bStuck=false;Bog=0;bGrace=bAfterRescue=true;bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;bSandHinted=false;
+ // Firm ground further off than the grace's own metres: as far as that, and a truck's length or two past it, up to a limit.
+ GraceNeed=FMath::IsFinite(FirmMetres)&&FirmMetres>GraceMetres-10?FMath::Min(FirmReach+10,FirmMetres+10):GraceMetres;
+}
 void FS47TruckCare::Begin(const S47J::FObj& Saved)
 {
  WaterLeft=1;Metres=0;WeekMetres=0;LegMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;Bog=0;bSandHeld=false;bHissed=false;
+ bGrace=bAfterRescue=bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;GraceNeed=GraceMetres;LastFirm=FVector2D(1e9,1e9);
  if(!Saved.IsValid())return;
  const double Week=S47J::Num(Saved,TEXT("weekMetres"));WeekMetres=FMath::IsFinite(Week)?FMath::Clamp(Week,0.,1e7):0;
  const double W=S47J::Num(Saved,TEXT("water"),1);WaterLeft=FMath::IsFinite(W)?FMath::Clamp(W,0.,1.):1;
  bStuck=S47J::Bool(Saved,TEXT("stuck"));bFlat=S47J::Bool(Saved,TEXT("flat"));
  const double Leg=S47J::Num(Saved,TEXT("legMetres"));LegMetres=FMath::IsFinite(Leg)?FMath::Clamp(Leg,0.,1e6):0;
+ // STUCK-GRACE-20261109: a dig's grace, as far as it had run.
+ const double Gt=S47J::Num(Saved,TEXT("graceT"),-1),Gm=S47J::Num(Saved,TEXT("graceM"),-1),Gn=S47J::Num(Saved,TEXT("graceNeed"),GraceMetres);
+ if(!bStuck&&FMath::IsFinite(Gt)&&FMath::IsFinite(Gm)&&Gt>=0&&Gm>=0)
+ {
+  GraceT=FMath::Min(Gt,1e5);GraceM=FMath::Min(Gm,1e6);GraceNeed=FMath::IsFinite(Gn)?FMath::Clamp(Gn,GraceMetres,FirmReach+10):GraceMetres;
+  bAfterRescue=true;bGrace=!(GraceT>=GraceSeconds&&GraceM>=GraceNeed);
+ }
 }
 S47J::FObj FS47TruckCare::Save() const
 {
@@ -100,6 +171,7 @@ S47J::FObj FS47TruckCare::Save() const
  if(bFlat)S47J::Set(O,TEXT("flat"),true);
  if(WeekMetres>=1)S47J::Set(O,TEXT("weekMetres"),FMath::RoundToDouble(WeekMetres));
  if(LegMetres>=1)S47J::Set(O,TEXT("legMetres"),FMath::RoundToDouble(LegMetres));
+ if(bAfterRescue&&!bStuck){S47J::Set(O,TEXT("graceT"),FMath::RoundToDouble(GraceT*10)/10);S47J::Set(O,TEXT("graceM"),FMath::RoundToDouble(GraceM*10)/10);if(GraceNeed!=GraceMetres)S47J::Set(O,TEXT("graceNeed"),FMath::RoundToDouble(GraceNeed));}
  return O;
 }
 FString FS47TruckCare::StatusLine() const
@@ -162,10 +234,11 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
  }
  if(!bStuck)
  {
-  // (M7: mud-and-sand tires dig in half as fast, FS47Outfit; coming out is as quick)
-  const double Rate=BogRate(Soft,D.Load,D.Speed,D.Reversing());
-  Bog=FMath::Clamp(Bog+Dt*(Rate>0?Rate*FS47Outfit::TuneFor(M&&M->Freeform?M->Freeform.Get():nullptr).Bog:Rate),0.,1.);
-  if(Soft>.05){D.Held=1.8*Soft;bSandHeld=true;}
+  // (M7: mud-and-sand tires dig in half as fast, FS47Outfit; coming out is as quick. STUCK-GRACE-20261109: SandStep has the grace.)
+  if(Soft<.15)LastFirm=FVector2D(RoadX,RoadZ);
+  const ESand Did=SandStep(Dt,Soft,D.Load,D.Speed,D.Reversing(),FS47Outfit::TuneFor(M&&M->Freeform?M->Freeform.Get():nullptr).Bog);
+  // the sand drags, less with the brush under the wheels
+  if(Soft>.05){D.Held=1.8*Soft*(bGrace?.5:1.);bSandHeld=true;}
   else if(bSandHeld){D.Held=0;bSandHeld=false;}
   // the wheel tugs this way and that in the soft ground
   if(Soft>.1&&Going>.5){TugT+=Dt;D.Heading+=Dt*Soft*.1*FMath::Sin(TugT*1.7)*FMath::Min(1.,Going/6.);}
@@ -178,11 +251,16 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
     if(M->Audio)M->Audio->Sfx(TEXT("gust"),FS47Sound{.Gain=float(.12+.3*Bog),.Rate=1.7f,.Lp=900.f,.Dur=.35f});
     if(Engine&&Bog>.45&&FMath::FRand()<.45f)Engine->Cough(.25+.3*Bog);
    }
-   if(!bSandHinted&&Bog>.4&&M->UI){bSandHinted=true;M->UI->Toast(TEXT("Soft sand. Ease off, or back out."),4);}
+   if(!bSandHinted&&!bAfterRescue&&Bog>.4&&M->UI){bSandHinted=true;M->UI->Toast(TEXT("Soft sand. Ease off, or back out."),4);}
   }
-  if(Bog>=1)
+  if(Did==ESand::Warn)
   {
-   bStuck=true;Bog=1;if(bSandHeld){bSandHeld=false;}Hold();
+   if(M->UI)M->UI->Toast(TEXT("The wheels are digging in again. Ease off, or back out the way you came."),4);
+   UE_LOG(LogTemp,Display,TEXT("S47: truck: the wheels dig in again after the dig, at %.0f, %.0f (depth %.2f)"),RoadX,RoadZ,Soft);
+  }
+  if(Did==ESand::Stuck)
+  {
+   if(bSandHeld){bSandHeld=false;}Hold();
    if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.5f,.Rate=.6f});
    if(M->UI)M->UI->Toast(TEXT("The back end settles. Stuck to the axle in sand."),6);
    UE_LOG(LogTemp,Display,TEXT("S47: truck: bogged in sand at %.0f, %.0f (depth %.2f)"),RoadX,RoadZ,Soft);M->RequestAutosave();
@@ -325,9 +403,31 @@ bool FS47TruckCare::DigOut()
 {
  if(!bStuck||!M||!M->Freeform||!M->World)return false;
  const bool bRope=M->Freeform->InventoryCount(TEXT("rope"))>0;const double Minutes=DigTime();
- bStuck=false;Bog=0;M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
- if(M->UI)M->UI->Toast(bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes),6);
- UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out"));M->RequestAutosave();return true;
+ // STUCK-GRACE-20261109: where it stands, how far firm ground is and which way; the way it came in, when that is near enough.
+ double Rx=0,Rz=0,Fx=0,Fz=0;bool bAt=false;
+ if(M->Web)
+ {
+  const FS47Truck* T=M->World->TruckHere();
+  const FVector P=T?T->Position:(M->Player?M->Player->Pos:FVector::ZeroVector);
+  bAt=(T||M->Player)&&S47OpenLand::RoadOf(M->Web->Area(),P.X,P.Z,Rx,Rz);
+ }
+ const bool bSoftHere=bAt&&SandAt(Rx,Rz)>=.15;
+ bool bFirm=bSoftHere&&FirmNear(Rx,Rz,Fx,Fz);
+ bool bBack=false;
+ if(bSoftHere&&LastFirm.X<1e8)
+ {
+  const double Back=FVector2D::Distance(LastFirm,FVector2D(Rx,Rz));
+  if(Back<=FirmReach&&(!bFirm||Back<=FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(Rx,Rz))+15)){Fx=LastFirm.X;Fz=LastFirm.Y;bFirm=bBack=true;}
+ }
+ const double FirmM=!bSoftHere?0.:bFirm?FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(Rx,Rz)):FirmReach;
+ M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
+ Rescued(FirmM);
+ const FString Way=!bSoftHere?FString(TEXT(" It stands on firm ground."))
+  :bFirm?FString::Printf(TEXT(" Firm ground about %.0f m %s%s: take it there gently, the brush will hold that far."),FMath::Max(5.,FMath::RoundToDouble(FirmM/5)*5),*WayTo(Rx,Rz,Fx,Fz),bBack?TEXT(", back the way you came"):TEXT(""))
+  :FString(TEXT(" Sand all round: keep it moving, gently, and the brush will hold a while."));
+ if(M->UI)M->UI->Toast((bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes))+Way,8);
+ UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out%s, grace %.0f s and %.0f m"),bSoftHere?*FString::Printf(TEXT(" in sand, firm ground %.0f m %s"),FirmM,*WayTo(Rx,Rz,Fx,Fz)):TEXT(" on firm ground"),GraceSeconds,GraceNeed);
+ M->RequestAutosave();return true;
 }
 bool FS47TruckCare::ChangeWheel()
 {
@@ -344,7 +444,7 @@ bool FS47TruckCare::TopUp()
  if(M->UI)M->UI->Toast(TEXT("You fill the radiator from the can and wait for it to stop ticking."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: radiator topped up"));M->RequestAutosave();return true;
 }
-void FS47TruckCare::Clear(){bStuck=bFlat=false;Bog=0;bHissed=false;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
+void FS47TruckCare::Clear(){bStuck=bFlat=false;Bog=0;bHissed=false;bGrace=bAfterRescue=bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;GraceNeed=GraceMetres;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
 bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
@@ -385,6 +485,63 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
   FS47TruckCare B(nullptr);B.Begin(nullptr);B.TestBog(.8);B.Begin(nullptr);
   Check(B.Bogging()==0&&FMath::IsNearlyEqual(B.TempNeedle(),.5),TEXT("a Continue starts on firm ground; the needle sits in the middle with a full radiator"));
   B.TestWater(.02);Check(B.TempNeedle()>.9,TEXT("the needle climbs as the radiator runs dry"));
+ }
+ // STUCK-GRACE-20261109 (Tom): dug out, the truck is not stuck again inside 12 seconds' driving or 40 metres, the later; then,
+ // still in the sand, it can be, but only after it has said so.
+ {
+  const double Dt=.05;
+  // full throttle at a crawl in the deepest sand, from the dig: when it holds again, and when it warned
+  const auto Drive=[Dt](FS47TruckCare& C,double Mps,double Limit,double& Stuck,double& Warned,double& GraceEnd,double& Metres)
+  {
+   Stuck=Warned=GraceEnd=-1;Metres=0;
+   for(double T=0;T<Limit&&Stuck<0;T+=Dt)
+   {
+    const ESand S=C.SandStep(Dt,1,1,Mps,false);Metres+=Mps*Dt;
+    if(GraceEnd<0&&!C.InGrace())GraceEnd=T;
+    if(S==ESand::Warn&&Warned<0)Warned=T;
+    if(S==ESand::Stuck)Stuck=T;
+   }
+  };
+  double Stuck=0,Warned=0,GraceEnd=0,Metres=0;
+  FS47TruckCare A(nullptr);A.Begin(nullptr);
+  Check(!A.InGrace()&&!A.AfterRescue(),TEXT("STUCK-GRACE: a truck that was never dug out has no grace"));
+  A.TestStick();A.Rescued();
+  Check(!A.Stuck()&&A.Bogging()==0&&A.InGrace()&&FMath::IsNearlyEqual(A.GraceSecondsLeft(),GraceSeconds)&&FMath::IsNearlyEqual(A.GraceMetresLeft(),GraceMetres),TEXT("STUCK-GRACE: dug out, it is free and the grace has begun"));
+  // standing in the sand with the wheels spinning: a minute of it and it has not sunk, and the grace has not run out
+  Drive(A,0,60,Stuck,Warned,GraceEnd,Metres);
+  Check(Stuck<0&&A.InGrace()&&A.Bogging()==0,TEXT("STUCK-GRACE: standing still with the throttle down for a minute, it does not sink and the grace waits"));
+  // at a crawl (1 m/s): 40 m takes 40 s, so the metres are the later; never stuck before them
+  FS47TruckCare Slow(nullptr);Slow.Begin(nullptr);Slow.TestStick();Slow.Rescued();
+  Drive(Slow,1,120,Stuck,Warned,GraceEnd,Metres);
+  Check(GraceEnd>=GraceMetres-.1&&Stuck>GraceEnd&&Stuck*1.>=GraceMetres,*FString::Printf(TEXT("STUCK-GRACE: at 1 m/s the grace runs %.1f s (40 m), stuck again only at %.1f s"),GraceEnd,Stuck));
+  // at 5 m/s: 40 m in 8 s, so the 12 seconds are the later; never stuck before 12 s
+  FS47TruckCare Quick(nullptr);Quick.Begin(nullptr);Quick.TestStick();Quick.Rescued();
+  Drive(Quick,5,120,Stuck,Warned,GraceEnd,Metres);
+  Check(GraceEnd>=GraceSeconds-.1&&GraceEnd<GraceSeconds+.2&&Stuck>GraceEnd,*FString::Printf(TEXT("STUCK-GRACE: at 5 m/s the grace runs %.1f s (12 s), stuck again only at %.1f s"),GraceEnd,Stuck));
+  // after the grace, still in the deepest sand at full throttle: it can stick again, warned first, and not in an instant
+  Check(Stuck>0&&Warned>GraceEnd&&Stuck-Warned>=WarnLead-.01&&Stuck-GraceEnd>=4&&Quick.Stuck(),*FString::Printf(TEXT("STUCK-GRACE: kept in the sand after the grace it sinks again, warned %.1f s before, %.1f s after the grace"),Stuck-Warned,Stuck-GraceEnd));
+  // after the grace it digs in slower at first than a truck that was never dug out
+  FS47TruckCare Fresh(nullptr);Fresh.Begin(nullptr);double FreshStuck=0,Fw=0,Fg=0,Fm=0;Drive(Fresh,2,30,FreshStuck,Fw,Fg,Fm);
+  FS47TruckCare Ramp(nullptr);Ramp.Begin(nullptr);Ramp.TestStick();Ramp.Rescued();double Rs=0,Rw=0,Rg=0,Rm=0;Drive(Ramp,2,120,Rs,Rw,Rg,Rm);
+  Check(FreshStuck>0&&Rs>0&&Rs-Rg>FreshStuck,*FString::Printf(TEXT("STUCK-GRACE: from the grace's end it takes %.1f s to sink, a fresh truck %.1f s"),Rs-Rg,FreshStuck));
+  // out onto firm ground the dig is behind it
+  FS47TruckCare Out(nullptr);Out.Begin(nullptr);Out.TestStick();Out.Rescued();
+  for(double Tm=0;Tm<20;Tm+=Dt)Out.SandStep(Dt,0,1,5,false);
+  Check(!Out.InGrace()&&!Out.AfterRescue()&&!Out.Stuck(),TEXT("STUCK-GRACE: driven out onto firm ground, the sand is as it always was"));
+  // firm ground further off than 40 m: the grace reaches it
+  FS47TruckCare Far(nullptr);Far.Begin(nullptr);Far.TestStick();Far.Rescued(60);
+  Check(FMath::IsNearlyEqual(Far.GraceMetresLeft(),70.),TEXT("STUCK-GRACE: firm ground 60 m off, the grace holds for 70 m"));
+  // the grace survives a Continue as far as it had run; a sound truck writes nothing of it
+  FS47TruckCare Mid(nullptr);Mid.Begin(nullptr);Mid.TestStick();Mid.Rescued();
+  for(double Tm=0;Tm<5;Tm+=Dt)Mid.SandStep(Dt,1,1,2,false);
+  FS47TruckCare Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Mid.Save())));
+  Check(Kept.InGrace()&&FMath::Abs(Kept.GraceSecondsLeft()-7)<.2&&FMath::Abs(Kept.GraceMetresLeft()-30)<.3&&!Kept.Stuck(),TEXT("STUCK-GRACE: the grace survives a Continue as far as it had run"));
+  FS47TruckCare Done(nullptr);Done.Begin(nullptr);Done.TestStick();Done.Rescued();Done.Clear();
+  Check(Done.Save()->Values.Num()==0&&!Done.InGrace(),TEXT("STUCK-GRACE: the county tow leaves no grace behind and writes nothing"));
+  // where the firm ground is: off the wash's bed within reach, and the words for the way
+  double Fx=0,Fz=0;const bool bFound=FirmNear(-330,500,Fx,Fz);
+  Check(bFound&&SandAt(Fx,Fz)<.15&&FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(-330,500))<=FirmReach&&WayTo(0,0,0,-10)==TEXT("north")&&WayTo(0,0,10,0)==TEXT("east")&&WayTo(0,0,-7,7)==TEXT("south-west"),
+   TEXT("STUCK-GRACE: from the wash's bed firm ground is found within reach, and which way it lies is said in words"));
  }
  return OK;
 }

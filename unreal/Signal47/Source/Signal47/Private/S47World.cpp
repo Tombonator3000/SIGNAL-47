@@ -885,14 +885,7 @@ void US47World::Enter(const FString& NewArea)
 	if (bLegsMade)
 	{
 		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get(), ParkedP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);
-		auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
-		// (on the motel's lot it is SARO's truck too, in SARO's area)
-		SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
-		const bool bOnRoad = Area == TEXT("road") || Area == TEXT("diner");
-		TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
-		ParkedP->Group.SetVisible(Here(TEXT("station01")));
-		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
-		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);ParkedP->Group.SetVisible(false);}
+		ShowTrucks();
 	}
 	S47FarmWorld::Reconcile(M);
 	if (OnEnter) OnEnter(NewArea);
@@ -1898,8 +1891,24 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 			T->SetParkPose(T->Position, T->Rotation.Y);
 	}
 	for (const TCHAR* P : TRUCKS) ParkAt(P);
+	// TOW-SHOW-20261109 (Tom: towed home to SARO, the truck was not there, only its "Drive" in the air): the county tow entered SARO's
+	// area while the truck still stood on the road and only then put it on its pad, and the trucks were shown only on entering.
+	ShowTrucks();
 	// (a save made on foot by the truck left somewhere with no walk of its own: the ground round it again)
 	SetGround(At);
+}
+
+void US47World::ShowTrucks()
+{
+	if (!SaroTruckP || !TruckP || !ParkedP || !OldTruckP) return;
+	auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
+	// (on the motel's lot it is SARO's truck too, in SARO's area)
+	SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
+	const bool bOnRoad = Area == TEXT("road") || Area == TEXT("diner");
+	TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
+	ParkedP->Group.SetVisible(Here(TEXT("station01")));
+	OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
+	if (bCommuteVehicle) { SaroTruckP->Group.SetVisible(false); TruckP->Group.SetVisible(false); ParkedP->Group.SetVisible(false); }
 }
 
 S47J::FObj US47World::OdoSave() const

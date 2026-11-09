@@ -222,6 +222,8 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
   if(!Click(TEXT("Request roadside return")))return;
   if(!Check(M->Web->Area()==TEXT("saro")&&!Wd->bDriving&&FMath::IsNearlyEqual(W.VehicleFuel(),2.)&&W.ParcelStage()==3&&W.ParcelContents().FindRef(TEXT("fuse"))==1,TEXT("roadside brings truck and loaded fuse to SARO with a two-unit reserve")))return;
   if(!Check(F.Budget()==0&&F.Debt()==15&&F.Clock()>=RescueClock+900&&F.HasFinding(TEXT("roadside"))&&F.Arrears()==20,TEXT("roadside on an empty account goes on the weekly sheet, takes time, and is on record")))return;
+  // TOW-SHOW-20261109 (Tom): towed home, the truck stands on its pad and is drawn, not just its handle and the parcel on its rack.
+  if(!Check(Wd->TruckAt==TEXT("saro")&&Wd->SaroTruck()&&Wd->SaroTruck()->Group.Shown()&&Wd->TruckHere()==Wd->SaroTruck()&&!(Wd->CabTruck()),TEXT("towed home, the truck is on its pad at SARO and can be seen")))return;
   Go(19,.8);return;
  }
 

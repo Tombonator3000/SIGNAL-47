@@ -328,6 +328,8 @@ private:
 	bool bHaveView = false;
 
 	void ParkAt(FString Id);
+	// Each truck shown where it stands or is being driven, in the area the player is in (Enter, and PlaceTruck: TOW-SHOW-20261109).
+	void ShowTrucks();
 	void BringTruckOver(const FString& ToLeg);
 	void LightsOn(FS47Truck& T);
 	void TripStep(double Dt);

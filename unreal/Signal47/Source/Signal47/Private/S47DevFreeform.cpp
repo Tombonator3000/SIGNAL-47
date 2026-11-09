@@ -1095,6 +1095,17 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
    });
   });
  }
+ // PT-SAUCER-ROCK-20261109: Saucer Rock by day and after midnight, from 14 m off, looking at it. E on it says what the hour shows.
+ for(const bool bNight:{false,true})
+  E.AddFreeform(G,bNight?TEXT("Saucer Rock by night (01:00)"):TEXT("Saucer Rock by day (11:00)"),bNight?TEXT("on foot, 14 m off, after midnight: E on it, then look past it to the west"):TEXT("on foot, 14 m off, late morning: E on it finds it and marks the map"),[this,bNight]
+  {
+   ToLandPlace(TEXT("saucer_rock"),14,bNight?1.:11.,bNight?1.75:12.,[this,bNight](double X,double Z)
+   {
+    AimAt(FVector(X,M->Player->FloorY+2.2,Z));
+    auto* F=Session();double Rx=0,Rz=0;const bool bSpot=F&&F->Places&&F->Places->Spot(TEXT("saucer_rock"),Rx,Rz);
+    Tell(bSpot,FString::Printf(TEXT("At Saucer Rock (road %.0f, %.0f), %s. E on it: %s"),Rx,Rz,bNight?TEXT("01:00"):TEXT("11:00"),bNight?TEXT("the light past it, kept as a record."):TEXT("the find, and the map marked.")),7);
+   });
+  });
  static const TCHAR* const K=TEXT("What the shops have, and the radio");
  E.AddFreeform(K,TEXT("Give me everything on offer"),TEXT("spotlight, cot, magnetometer, second logger, film, alarm; this test run only"),[this]
  {

@@ -109,7 +109,7 @@ const TArray<FS47TownUse::FTourSite>& FS47TownUse::SaucerMap()
 		{ TEXT("The mine they shut"), -560, 1340, TEXT("mine") },
 		{ TEXT("Rock pile on the rise"), -320, 430, TEXT("cairn") },
 		{ TEXT("Line camp"), 440, 930, TEXT("shack") },
-		{ TEXT("Saucer Rock"), -760, 2240, nullptr },
+		{ TEXT("Saucer Rock"), -760, 2240, TEXT("saucer_rock") }, // PT-SAUCER-ROCK-20261109: out there now (FS47Places)
 		{ TEXT("The Glowing Wash"), 620, 1980, nullptr },
 		{ TEXT("Hermit's sighting"), -1250, 1720, nullptr },
 		{ TEXT("Landing circle (fenced)"), 950, 2700, nullptr },
@@ -791,7 +791,16 @@ void FS47TownUse::FillMap(FS47MapView& V) const
 	double SaroX = 0, SaroZ = 0;
 	S47OpenLand::RoadOf(TEXT("saro"), 9, 0, SaroX, SaroZ);
 	(void)SaroX;
-	if (bMap) for (const FTourSite& S : SaucerMap()) if (!S.Place) { FS47MapPin P; P.East = S.X; P.South = S.Z - SaroZ; P.Label = S.Label; P.bHeard = true; V.Pins.Add(P); }
+	// (PT-SAUCER-ROCK-20261109: a real site the survey sheet does not have yet, as on a map bought before Saucer Rock was out there,
+	// is still pencilled in from his map, where the land really has it.)
+	const FS47Places* Land = M && M->Freeform ? M->Freeform->Places.Get() : nullptr;
+	if (bMap) for (const FTourSite& S : SaucerMap())
+	{
+		double X = S.X, Z = S.Z;
+		if (S.Place && (!Land || Land->Heard(S.Place) || Land->Found(S.Place))) continue;
+		if (S.Place && Land) Land->Spot(S.Place, X, Z);
+		FS47MapPin P; P.East = X; P.South = Z - SaroZ; P.Label = S.Label; P.bHeard = true; V.Pins.Add(P);
+	}
 	if (M && M->Freeform && M->Freeform->Places)
 		for (const FLure& L : Lures)
 		{

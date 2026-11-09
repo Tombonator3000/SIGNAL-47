@@ -47,6 +47,10 @@ public:
  const TArray<FVector2D>& MapMarks() const{return Marks;}
  bool ToggleMark(double X,double Z,double Within);
  static constexpr int32 MaxMarks=40;
+ // PT-SAUCER-ROCK-20261109: what Saucer Rock shows by the hour. 0 day (and the hours before dawn), 1 evening 18 to 24, 2 after
+ // midnight to 2, 3 after 2 to the night's end. The text for each (bMap: the player has the souvenir man's map).
+ static int32 SaucerTier(double Hour);
+ static FString SaucerAt(int32 Tier,bool bMap);
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
