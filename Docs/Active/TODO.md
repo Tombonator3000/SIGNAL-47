@@ -61,6 +61,8 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **PT-STUCK-GRACE-20261109:** Tom: etter at bilen er gravd ut, setter den seg fast igjen med en gang. Gi minst 10–15 sekunders kjøring før den kan sette seg fast på nytt.
 - [ ] **PT-SAUCER-ROCK-20261109:** Tom kom til Saucer Rock, og det var ingenting der.
 - [ ] **PT-TOW-INVISIBLE-20261109:** etter tauing hjem til SARO er bilen usynlig. «DRIVE / SARO SERVICE WORK» svever der den skal stå. En gul kube uten tekstur står ved aggregatet (Toms bilde ca. 14:00).
+- [ ] **SHERIFF-CAR-CHOICE-20261109 (Tom avgjør):** c9edb0fd bytter sheriffbilen fra Tripo-politibilen (svart og hvit STATE POLICE, avvik fra D-18) til Fairheaven LT '80 i fylkets brune og hvite lakk. Tripo-bilen kommer tilbake med `-S47TripoPatrol`. Årsaken til de grå bilene avgjøres av logglinjene `S47 CARPAINT:` etter bygg.
+- [ ] **NPC-DAY-FOLLOW-20261109:** sheriffen er nå hjemme om natta i Freeform, så kveldsbanking og sladder på kontordøra er borte. Nattlige hendelser i Happenings og `TakenAfter` kan fortsatt «ta» ham fra kontoret. Dale, Earl, benkekvinna, Eloy Baca og MetaHuman-servitøren har ingen dagsplan. NPC-ene mangler animasjoner for gange og sitting, så de glir og senkes.
 - [ ] **SUBSTATION-LOD-20261109:** `Tools/substationfield/import_assets.py` og `relod_apron.py` bruker samme LOD-mønster som ga WorldGrid-slotter i gatelysene (rettet i kode i 3f946c47). Substasjonsmodellene har trolig samme feil.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
