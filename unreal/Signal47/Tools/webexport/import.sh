@@ -15,7 +15,7 @@ S47_WEB="$OUT" "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.up
 # (wires, the ranch, the farm, the office, the arrival, the street lamps' old poles) and needs their CPU data; without it each keeps
 # the old geometry and warns. Each script changes only allow_cpu_access. Tools/radiowoman/prepare_cpu.py needs its private sources
 # and is run by hand (its README).
-for PREP in highwaypower highwayranch farmworld office saroarrival streetlamps; do
+for PREP in highwaypower highwayranch farmworld office saroarrival streetlamps sarofixes; do
   "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.uproject" -run=pythonscript -script="$D/Tools/$PREP/prepare_cpu.py" -unattended -nullrhi -nosplash 2>&1 | grep "_CPU_PASS\|Traceback\|Error:" | sort -u
 done
 # the notebook's kit drawings and portraits (Content/WebData/art)

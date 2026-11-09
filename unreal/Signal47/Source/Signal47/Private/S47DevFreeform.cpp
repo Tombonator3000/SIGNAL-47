@@ -1391,6 +1391,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddEyeGlint(E);
  AddTripoNew(E);
  AddReach(E);
+ AddSaroFixes(E);
 }
 
 void FS47DevFreeform::Stop()

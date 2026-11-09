@@ -1,4 +1,5 @@
 #include "S47SaroLegacyCleanup.h"
+#include "S47SaroFixes.h"
 
 #include "S47Three.h"
 #include "S47Web.h"
@@ -278,7 +279,8 @@ bool Build(AS47Web* W)
  Add(TEXT("aerial_frame_mount"),TEXT("annex.group"),376,{-4.034,1.400,4.80},{-3.466,1.800,4.833},50,{0,0,.032});
  Add(TEXT("fire_card_mount"),TEXT("annex.group"),376,{-5.335,1.35,4.80},{-5.165,1.556,4.816},26,{0,0,.028});
  Add(TEXT("safety_poster_mount"),TEXT("annex.group"),376,{-2.51,1.18,6.585},{-2.09,1.74,6.603},26,{0,0,-.017});
- Add(TEXT("control_switch_mount"),TEXT("annex.group"),376,{-3.119,1.189,4.80},{-3.041,1.311,4.813},12,{0,0,.032});
+ // PT-SWITCH (Tom's test of d36): this dead plate beside the live corridor switch (S47RoomLights) goes; it was moved onto the paint.
+ Add(TEXT("control_switch_mount"),TEXT("annex.group"),376,{-3.119,1.189,4.80},{-3.041,1.311,4.813},12,S47SaroFixes::Before()?FVector(0,0,.032):FVector::ZeroVector);
  FString Why;
  if (!Apply(W,Edits,&Why))
  {

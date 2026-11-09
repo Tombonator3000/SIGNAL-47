@@ -1,4 +1,5 @@
 #include "S47Office.h"
+#include "S47SaroFixes.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
@@ -301,22 +302,31 @@ void FS47Office::Init()
  // The Blender leaf includes real lock cylinder, lever, hinges and kick plates.
  Label(TEXT("office:doorTitle"), TEXT("DALE / OPERATIONS"), FVector(.47, 1.662, HingeZ - .039), -90, 3.3f, Visual->Leaf.I);
  Label(TEXT("office:doorTitleInside"), TEXT("OPERATIONS"), FVector(.47, 1.662, HingeZ + .039), 90, 3.3f, Visual->Leaf.I);
- Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585 + FrontOffset), FVector(.30, .31, .018), Paper);
- Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572 + FrontOffset), -90, 2.8f);
+ // PT-HALL (Tom's test of d36): the paper "SPARE IN SERVICE DRAWER" and the "SERVICE / SPARE" label are gone as needless text;
+ // the door's own words say where the spare is kept. -S47SaroFixesBefore keeps the old for F10's before pictures.
+ const bool bHallBefore = S47SaroFixes::Before();
+ if (bHallBefore)
+ {
+  Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585 + FrontOffset), FVector(.30, .31, .018), Paper);
+  Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572 + FrontOffset), -90, 2.8f);
+ }
  // Own service cabinet at the workbench. It is unrelated to the archive's REEL047 drawer.
  // SARO-CLIP-20261108: 12 cm east of where it stood, which put its west side 12 cm into the passing bay's west wall (x -.82).
- constexpr double CabinetOut = .12;
- Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59 + CabinetOut, .525, 6.32 + FrontOffset), FVector::OneVector, nullptr);
- Collider(TEXT("office:serviceCabinetFoot"), -.94 + CabinetOut, -.26 + CabinetOut, 6.045 + FrontOffset, 6.60 + FrontOffset);
- FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59 + CabinetOut, .85, 6.22 + FrontOffset), FVector::OneVector, nullptr);
+ // PT-HALL: it still stood across the bay's west corner: 0.57 m deep in a 0.5 m bay, so from the corridor its back went into the
+ // corner's wall. It now stands out in the corridor against the records partition (its painted face about z 6.586), clear of the
+ // bay, the records door (x -4.4..-3.4), the poster (x -2.51..-2.09) and the clock over it (x -1.15, 2.3 m).
+ const double CabinetDx = bHallBefore ? .12 : -1.35 + .59, CabinetDz = bHallBefore ? FrontOffset : -.02;
+ Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59 + CabinetDx, .525, 6.32 + CabinetDz), FVector::OneVector, nullptr);
+ Collider(TEXT("office:serviceCabinetFoot"), -.94 + CabinetDx, -.26 + CabinetDx, 6.045 + CabinetDz, 6.60 + CabinetDz);
+ FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59 + CabinetDx, .85, 6.22 + CabinetDz), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({DrawerFront, DrawerFront.Position()});
- FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59 + CabinetOut, .805, 6.17 + FrontOffset), FVector::OneVector, nullptr);
+ FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59 + CabinetDx, .805, 6.17 + CabinetDz), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({KeyBody, KeyBody.Position()}); Visual->KeyParts.Add(KeyBody);
  // The real paper inset on the plastic tag is the usable face. The bounds centre
  // of the entire cut key falls inside its open split ring and is not a surface.
- FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513 + CabinetOut, .8086, 6.215 + FrontOffset), FVector(.053, .001, .025), Paper);
+ FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513 + CabinetDx, .8086, 6.215 + CabinetDz), FVector(.053, .001, .025), Paper);
  Visual->DrawerParts.Add({KeyTag, KeyTag.Position()}); Visual->KeyParts.Add(KeyTag);
- Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59 + CabinetOut, 1.14, 6.565 + FrontOffset), -90, 3.f);
+ if (bHallBefore) Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59 + CabinetDx, 1.14, 6.565 + CabinetDz), -90, 3.f);
  // The native desk's measured top is .790m. A 10mm height offset retains the
  // existing .800m work surface and all six independent document/use anchors.
  Mesh(TEXT("office:desk"), Desk, FVector(.37, .01, 9.73), FVector::OneVector, nullptr, PI);
@@ -831,7 +841,7 @@ bool FS47Office::Use(const FString& Id)
  }
  if (Id == TEXT("office:door") || Id == TEXT("officeDoor"))
  {
-  if (!bKey) { bDoorInspected = true; Changed(); M->UI->Toast(TEXT("OPERATIONS / LOCKED. The paper label reads: SPARE IN SERVICE DRAWER."), 4); return true; }
+  if (!bKey) { bDoorInspected = true; Changed(); M->UI->Toast(S47SaroFixes::Before() ? TEXT("OPERATIONS / LOCKED. The paper label reads: SPARE IN SERVICE DRAWER.") : TEXT("OPERATIONS / LOCKED. Dale keeps a spare in the service cabinet in the hall."), 4); return true; }
   if (bDoorTarget && InDoorSweep(M->Player->Pos, M->Player->Radius)) { M->UI->Toast(TEXT("Step clear of the doorway before closing it."), 3); return true; }
   bUnlocked = true; bDoorTarget = !bDoorTarget; Changed(); return true;
  }

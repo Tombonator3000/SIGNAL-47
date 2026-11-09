@@ -50,6 +50,7 @@
 #include "S47Rx3Detail.h"
 #include "S47SaroPeriodProps.h"
 #include "S47PeriodFixtures.h"
+#include "S47SaroFixes.h"
 #include "S47Lookdev.h"
 #include "S47FinalePreview.h"
 #include "S47FinaleMovie.h"
@@ -256,6 +257,9 @@ void US47Main::Step(double Dt)
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);
 		S47PeriodFixtures::Update(this, Dt);
+		// Tom's test of d36 at SARO (PT-RAMP, PT-PATHS, PT-STOP, PT-HALL, PT-DALE-LIGHT, PT-SWITCH; PT-RECORDS in its own file).
+		S47SaroFixes::Update(this, Dt);
+		S47RecordsDressing::Update(this, Dt);
 		S47Lookdev::Update(this, Dt);
 	}
 	if (!bFree && SkyVisitors) SkyVisitors->Step(Dt);
