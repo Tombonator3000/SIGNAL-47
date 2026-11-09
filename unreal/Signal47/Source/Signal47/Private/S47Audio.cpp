@@ -399,7 +399,7 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 		A->StopPhoneCalls();
 		Check(!A->PhonePlaying(), TEXT("stopPhoneCalls ends the session"));
 		Check(A->PhoneCall({ { TEXT("So you went out there."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: N. VEGA in her own voice"));
-		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("REYES") } }).IsSet(), TEXT("phoneCall: a speaker without a character voice: unset (captions), no Kinski fallback"));
+		Check(!A->PhoneCall({ { TEXT("So you went out there."), TEXT("REYES") } }).IsSet(), TEXT("phoneCall: a speaker without a character voice: unset (captions), no generic telephone bank"));
 		Check(!A->PhoneCall({ { TEXT("Sierra Motor Court."), TEXT("N. VEGA") }, { TEXT("A line nobody recorded."), TEXT("N. VEGA") } }).IsSet(), TEXT("phoneCall: one line without a recording: unset, nothing half-spoken"));
 		Check(!A->PhonePlaying(), TEXT("... and no session"));
 		A->bCharacterVoices = false;
@@ -410,7 +410,7 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 	{
 		A->OnPhoneCall = {}; // the previous timeline fixture captured a scoped counter
 		const FString Ward = TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened.");
-		Check(!A->LineBuffer(TEXT("WARD"), Ward) && !A->LineBuffer(TEXT("DALE"), Ward), TEXT("phone routing: unrecorded Ward (and the old Kinski Dale lines) have no recording"));
+		Check(!A->LineBuffer(TEXT("WARD"), Ward) && !A->LineBuffer(TEXT("DALE"), Ward), TEXT("phone routing: unrecorded Ward and Dale have no generic telephone recording"));
 		Check(!A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet() && !A->PhonePlaying(), TEXT("phone routing: unrecorded Ward leaves the complete call to captions"));
 		A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(Ward, TEXT("character:c"));
 		Check(A->LineBuffer(TEXT("WARD"), Ward) == A->Buf[TEXT("character:c")], TEXT("phone routing: an explicitly recorded Ward bank is used"));

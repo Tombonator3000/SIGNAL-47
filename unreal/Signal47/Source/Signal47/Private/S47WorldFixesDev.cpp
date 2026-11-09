@@ -8,7 +8,11 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47WorldLife.h"
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Modules/ModuleManager.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47WorldFixes, Log, All);
@@ -23,6 +27,79 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47WorldFixes, Log, All);
 namespace
 {
 	FS47Sky* SkyOf(US47Main* M) { return M && M->Life ? M->Life->Sky.Get() : nullptr; }
+
+	// PT-MOON self-test on a sweep's own pictures: the luminance (Rec. 709, 0..255) of a PNG, top row first.
+	bool LoadLuma(const FString& File, TArray<uint8>& Out, int32& W, int32& H)
+	{
+		TArray<uint8> Bytes;
+		if (!FFileHelper::LoadFileToArray(Bytes, *File, FILEREAD_Silent) || Bytes.Num() < 8) return false;
+		IImageWrapperModule& IW = FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
+		TSharedPtr<IImageWrapper> Wr = IW.CreateImageWrapper(EImageFormat::PNG);
+		TArray<uint8> Raw;
+		if (!Wr.IsValid() || !Wr->SetCompressed(Bytes.GetData(), Bytes.Num()) || !Wr->GetRaw(ERGBFormat::BGRA, 8, Raw)) return false;
+		W = int32(Wr->GetWidth()); H = int32(Wr->GetHeight());
+		if (W <= 0 || H <= 0 || Raw.Num() < W * H * 4) return false;
+		Out.SetNumUninitialized(W * H);
+		for (int32 K = 0; K < W * H; ++K)
+		{
+			const uint8* P = Raw.GetData() + K * 4; // B G R A
+			Out[K] = uint8((P[2] * 54 + P[1] * 183 + P[0] * 19) >> 8);
+		}
+		return true;
+	}
+
+	// The disc in a close moon picture (Aim put it in the middle): the pixels of the middle window brighter than halfway from the
+	// window's edge (the sky) to its brightest; how many, their spread (10th to 90th percentile), and the mask itself.
+	struct FMoonDisc { int32 N = 0; int32 P10 = 0, P50 = 0, P90 = 0; TArray<bool> Mask; };
+	FMoonDisc DiscOf(const TArray<uint8>& L, int32 W, int32 H)
+	{
+		FMoonDisc D;
+		const int32 R = FMath::Min(W, H) * 45 / 100, X0 = FMath::Max(0, W / 2 - R), X1 = FMath::Min(W, W / 2 + R), Y0 = FMath::Max(0, H / 2 - R), Y1 = FMath::Min(H, H / 2 + R);
+		TArray<int32> Edge, All;
+		for (int32 Y = Y0; Y < Y1; ++Y) for (int32 X = X0; X < X1; ++X)
+		{
+			All.Add(L[Y * W + X]);
+			if (Y == Y0 || Y == Y1 - 1 || X == X0 || X == X1 - 1) Edge.Add(L[Y * W + X]);
+		}
+		if (All.IsEmpty() || Edge.IsEmpty()) return D;
+		Edge.Sort(); All.Sort();
+		const int32 Sky = Edge[Edge.Num() / 2], Top = All[FMath::Min(All.Num() - 1, All.Num() * 995 / 1000)];
+		if (Top - Sky < 24) return D; // nothing stands out of the sky
+		const int32 Cut = (Sky + Top) / 2;
+		D.Mask.SetNumZeroed(W * H);
+		TArray<int32> In;
+		for (int32 Y = Y0; Y < Y1; ++Y) for (int32 X = X0; X < X1; ++X)
+			if (L[Y * W + X] >= Cut) { D.Mask[Y * W + X] = true; In.Add(L[Y * W + X]); }
+		if (In.IsEmpty()) return D;
+		In.Sort();
+		D.N = In.Num(); D.P10 = In[In.Num() / 10]; D.P50 = In[In.Num() / 2]; D.P90 = In[In.Num() * 9 / 10];
+		return D;
+	}
+
+	// "-now-close" against "-before-close": the textured moon and the painted disc must not be the same picture. False only when
+	// both pictures are there and are the same inside the disc (the 9 November fault); Note says what was found either way.
+	bool MoonPicturesDiffer(const FString& Dir, const FString& Name, FString& Note)
+	{
+		TArray<uint8> A, B; int32 Wa = 0, Ha = 0, Wb = 0, Hb = 0;
+		if (!LoadLuma(Dir / (Name + TEXT("-now-close.png")), A, Wa, Ha) || !LoadLuma(Dir / (Name + TEXT("-before-close.png")), B, Wb, Hb) || Wa != Wb || Ha != Hb)
+		{
+			Note = TEXT("pictures not read (not written yet?)");
+			return true;
+		}
+		const FMoonDisc Now = DiscOf(A, Wa, Ha), Before = DiscOf(B, Wb, Hb);
+		if (Now.N == 0) { Note = TEXT("no disc found in the now-close picture"); return true; }
+		// mean difference where both have the disc, 0..255 (the rim moves by a pixel between two pictures of the same moon: a thin
+		// crescent of the same disc measured up to 2.7 so, the textured moon against the painted disc far more)
+		double Sum = 0; int32 N = 0;
+		if (Before.Mask.Num() == Now.Mask.Num())
+			for (int32 K = 0; K < Wa * Ha; ++K)
+				if (Now.Mask[K] && Before.Mask[K]) { Sum += FMath::Abs(int32(A[K]) - int32(B[K])); ++N; }
+		if (N == 0) { Note = TEXT("no disc found in the before-close picture"); return true; }
+		const double Diff = Sum / N;
+		Note = FString::Printf(TEXT("now-close disc %d px, luminance p10/p50/p90 %d/%d/%d (spread %d); before-close disc %d px, %d/%d/%d (spread %d); now vs before %.1f per pixel"),
+			Now.N, Now.P10, Now.P50, Now.P90, Now.P90 - Now.P10, Before.N, Before.P10, Before.P50, Before.P90, Before.P90 - Before.P10, Diff);
+		return Diff >= 6.0;
+	}
 }
 
 void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
@@ -35,7 +112,14 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 		if (M && M->Player && SavedFov > 0) { M->Player->Fov = SavedFov; SavedFov = -1; }
 	};
 	// A picture with this name, in a sweep only (its own directory).
-	const auto Shot = [this](const FString& Name) { if (!SweepDir.IsEmpty()) FScreenshotRequest::RequestScreenshot(SweepDir / (Name + TEXT(".png")), false, false); };
+	const auto Shot = [this](const FString& Name)
+	{
+		if (SweepDir.IsEmpty()) return;
+		FScreenshotRequest::RequestScreenshot(SweepDir / (Name + TEXT(".png")), false, false);
+		// PT-MOON: what the moon's plane has on it as its picture is taken (the material and the values on it)
+		if (Name.StartsWith(TEXT("moon-")))
+			if (FS47Sky* S = SkyOf(M)) UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-MOON shot %s: %s"), *Name, *S->MoonDrawn());
+	};
 	// A run of steps a second apart for the textures to come in: each sets something up and takes its picture.
 	using FStep = TPair<FString, TFunction<void()>>;
 	const auto Steps = [this, Shot](const TArray<FStep>& List, TFunction<void()> Done)
@@ -50,11 +134,13 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 			if (List[I].Value) List[I].Value();
 			const TSharedPtr<TFunction<void(int32)>> Strong = WeakNext.Pin();
 			if (!Strong) return;
-			After(1.4, [Shot, List, Strong, I]
+			After(1.4, [this, Shot, List, Strong, I]
 			{
 				if (!List[I].Key.IsEmpty()) Shot(List[I].Key);
-				// (the screenshot is written in the next frame: nothing changes until then)
-				(*Strong)(I + 1);
+				// PT-MOON 9 November: the picture is taken when this frame is drawn, after the sky has drawn it; the next step must not
+				// set up its state before then. It did (run in the same frame), and every "-now-close" moon showed the painted disc of the
+				// "-before" step after it, every "-before-wide" the textured moon. A quarter second is at least one frame (S47DevFreeform::Step).
+				After(.25, [Strong, I] { (*Strong)(I + 1); });
 			});
 		};
 		After(1.5, [Next] { (*Next)(0); });
@@ -107,11 +193,26 @@ void FS47DevFreeform::AddWorldFixes(FS47DevEvents& E)
 						FVector At;
 						const bool bDrawn = S3 && S3->MoonWorld(At);
 						const bool bClouds = M->Web && M->Web->CloudsActive();
+						// what the plane has on it now ("loaded" alone said textured while every close picture showed the painted disc)
+						const bool bTexDrawn = S3 && S3->MoonDrawsTexture();
+						const bool bWantTex = S3 && S3->MoonTextured();
 						const FString Line = FString::Printf(TEXT("%s: %s, %s, az %.0f el %.0f lit %.2f%s"), *Name, bDrawn ? TEXT("drawn") : TEXT("not drawn"),
-							S3 && S3->MoonTextured() ? TEXT("textured (M_S47_Moon)") : TEXT("painted disc (M_S47_Moon not imported)"), L.Az, L.El, L.Lit,
+							bTexDrawn ? TEXT("textured (M_S47_Moon on the plane)") : bWantTex ? TEXT("M_S47_Moon loaded but NOT on the plane") : TEXT("painted disc (M_S47_Moon not imported)"),
+							L.Az, L.El, L.Lit,
 							L.Cover >= 0 ? (bClouds ? TEXT(", clouds on") : TEXT(", volumetric clouds off here (packaged builds, or -S47EditorClouds)")) : TEXT(""));
-						UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-MOON %s %s"), bDrawn ? TEXT("PASS") : TEXT("FAIL"), *Line);
-						Tell(bDrawn, Line, 10);
+						if (S3) UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-MOON drawn %s: %s"), *Name, *S3->MoonDrawn());
+						// the pictures themselves (a sweep only): the close "now" must not be the painted "before"
+						bool bPictures = true;
+						if (!SweepDir.IsEmpty() && bWantTex)
+						{
+							FString Note;
+							bPictures = MoonPicturesDiffer(SweepDir, Name, Note);
+							UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-MOON TEXTURE %s %s: %s"), bPictures ? TEXT("PASS") : TEXT("FAIL"), *Name,
+								bPictures ? *Note : *(Note + TEXT(": now and before are the same picture, the textured moon is not what the close picture shows")));
+						}
+						const bool bPass = bDrawn && (!bWantTex || bTexDrawn) && bPictures;
+						UE_LOG(LogS47WorldFixes, Display, TEXT("S47: PT-MOON %s %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), *Line);
+						Tell(bPass, Line, 10);
 					});
 				});
 			});

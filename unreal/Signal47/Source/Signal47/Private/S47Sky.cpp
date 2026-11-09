@@ -743,6 +743,38 @@ bool FS47Sky::MoonWorld(FVector& Out) const
 	return true;
 }
 
+bool FS47Sky::MoonDrawsTexture() const
+{
+	return MoonComp.IsValid() && MoonComp->IsVisible() && MoonTexMid.IsValid() && MoonComp->GetMaterial(0) == MoonTexMid.Get();
+}
+
+FString FS47Sky::MoonDrawn() const
+{
+	if (!MoonComp.IsValid() || !MoonComp->IsVisible()) return TEXT("hidden");
+	const UMaterialInterface* On = MoonComp->GetMaterial(0);
+	if (MoonMid.IsValid() && On == MoonMid.Get()) return FString::Printf(TEXT("painted disc (M_Web_Unlit_Add, phase painted %.2f)"), MoonPainted);
+	if (!MoonTexMid.IsValid() || On != MoonTexMid.Get()) return FString::Printf(TEXT("other material %s"), On ? *On->GetPathName() : TEXT("(none)"));
+	// the MID that is on the plane, as it is set this frame (S47Sky::Draw): the light, the sun's side, the map
+	const UMaterialInstanceDynamic* T = MoonTexMid.Get();
+	FLinearColor Color = FLinearColor::Black, SunL = FLinearColor::Black;
+	float Flip = 0, Earth = 0, OccLit = 0, OccDark = 0;
+	T->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("Color")), Color);
+	T->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("SunL")), SunL);
+	T->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("Flip")), Flip);
+	T->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("Earth")), Earth);
+	T->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("OccLit")), OccLit);
+	T->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("OccDark")), OccDark);
+	UTexture* Map = nullptr;
+	T->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("Map")), Map);
+	FString MapNote = TEXT("Map missing");
+	if (UTexture2D* Tex = Cast<UTexture2D>(Map))
+		MapNote = FString::Printf(TEXT("Map %s %dx%d, mips %d resident %d, group %d, %s"), *Tex->GetName(), Tex->GetSizeX(), Tex->GetSizeY(),
+			Tex->GetNumMips(), Tex->GetNumResidentMips(), int32(Tex->LODGroup), Tex->NeverStream ? TEXT("never streamed") : TEXT("streamed"));
+	else if (Map) MapNote = FString::Printf(TEXT("Map %s (not a 2D texture)"), *Map->GetName());
+	return FString::Printf(TEXT("M_S47_Moon (%s; Color %.2f %.2f %.2f, SunL %.2f %.2f %.2f, Flip %+.0f, Earth %.3f, OccLit %.2f, OccDark %.2f)"),
+		*MapNote, Color.R, Color.G, Color.B, SunL.R, SunL.G, SunL.B, Flip, Earth, OccLit, OccDark);
+}
+
 void FS47Sky::PaintMoon()
 {
 	// The disc lit on its +U side, as much as its phase: the terminator is an ellipse across it. A little earthshine on the rest,

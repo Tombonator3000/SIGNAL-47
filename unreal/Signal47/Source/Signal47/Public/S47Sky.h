@@ -97,6 +97,11 @@ public:
 	static FDevMoon DevMoon;
 	/** The moon's plane uses M_S47_Moon (NASA's near side, its phase shaded, hidden by clouds); false: the painted fallback. */
 	bool MoonTextured() const { return bMoonTex; }
+	/** PT-MOON: what the moon's plane draws this frame, read from the component itself: "M_S47_Moon" with its Map (size, mips, group,
+	 *  streaming) and the values set on that MID (Color, SunL, Flip, Earth, Occ), or "painted disc", or "hidden". For the logs. */
+	FString MoonDrawn() const;
+	/** True when the moon's plane has M_S47_Moon's MID on it now (not only loaded). */
+	bool MoonDrawsTexture() const;
 	/** Where the moon's disc is drawn (Unreal, world), if it is drawn now. */
 	bool MoonWorld(FVector& Out) const;
 	/** meteorNow(): a shooting star now, unless one is crossing already. */
