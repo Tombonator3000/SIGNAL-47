@@ -7,6 +7,7 @@
 ## Nåværende Unreal-undersøkelser
 
 - [Gameplay: pengeløkka i Freeform](Gameplay/OKONOMI_LOKKE_2026-11-09.md), med målinger fra M7-gjennomgangen, sammenligning med Dredge, Papers, Please og Voices of the Void, og Toms beslutning 9. november.
+- [Gameplay: saker, logging og OPS-PC-en](Gameplay/SAKER_OPS_2026-11-09.md): gjennomgang med kritikere og designagenter 9. november, med bekreftede feil, anbefalt design (`CaseStep`), arbeidsplan og tre spørsmål til Tom.
 - [Gameplay: agent-harness, logiske brister og konkrete forbedringsforslag](Gameplay/WORKFLOW_REVIEW.md), med kildeanalyse, avgrenset lagringslesing og oppdatert VotV-kontroll 2. november.
 
 - [MotionBricks: genererte bevegelsesoverganger, retargeting og bakte klipp](MotionBricks/README.md), festet NVIDIA-kilde; lokal integrasjon UNVERIFIED.
