@@ -289,7 +289,7 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 				Rows = Spread > 0 ? Rows : 0;
 			}
 			else
-				for (int32 I = 0; I < Px.Num(); I += 7) Same += Px[I] == First[I];
+				for (int32 I = 0; I < Px.Num(); I += 7) Same += Px[I] == First[I] && Px[I].A > 20 && Px[I].A < 235; // (the solid body and the clear sky are alike in any cloud; the shape is in between)
 		}
 		Check(bNoEdges && Rows > 0 && Spread >= 4 && Same < (W * H / 7) * 2 / 3,
 			FString::Printf(TEXT("the shower's three cards: a soft, torn base (its height wanders %d rows of %d), no card's edge shows, each its own cloud (edges %s, rows %d, same %d of %d)"), Spread, H, bNoEdges ? TEXT("none") : TEXT("SEEN"), Rows, Same, (W * H / 7) * 2 / 3));
