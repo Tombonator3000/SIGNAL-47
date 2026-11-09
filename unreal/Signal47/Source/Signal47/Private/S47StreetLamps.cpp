@@ -137,7 +137,7 @@ namespace
   }
   return false;
  }
- UStaticMeshComponent* Place(AS47Web* W, USceneComponent* Parent, int32 ParentNode, const FString& Name, UStaticMesh* Mesh, const FVector& At, const FQuat& Q)
+ UStaticMeshComponent* Place(AS47Web* W, USceneComponent* Parent, int32 ParentNode, const FString& Name, UStaticMesh* Mesh, const FVector& At, const FQuat& Q, const FVector& Scale = FVector::OneVector)
  {
   auto* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47StreetLamp_%s"), *Name.Replace(TEXT(":"), TEXT("_"))));
   C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(Parent); C->SetStaticMesh(Mesh);
@@ -145,20 +145,23 @@ namespace
   // (M6 sweep 4: the arm's, head's and wood arm's LOD1/2 had come in turned 90 degrees about the pole; imported again on 9 November
   // through import_recipe.import_lod_same_frame, every LOD within 0.4 cm of LOD0's frame, so no LOD is forced)
   C->SetCastShadow(true); C->RegisterComponent();
-  double Matrix[16]; S47Three::Compose(At, Q, FVector::OneVector, Matrix); C->SetWorldTransform(S47Three::MatToUE(Matrix));
+  double Matrix[16]; S47Three::Compose(At, Q, Scale, Matrix); C->SetWorldTransform(S47Three::MatToUE(Matrix));
   // AdoptNode keeps only where it is; the turn goes into the node too, or the next time the node is set the arm swings back to +x
   // (sweep 3: the heads stood over the road, the arms pointed the other way).
   const int32 Node = W->AdoptNode(C, ParentNode, TEXT("streetLamp:") + Name);
   if (Node >= 0) W->ObjAt(Node).SetQuaternion(W->NodeWorldThree(ParentNode).GetRotation().Inverse() * Q);
+  if (Node >= 0 && !Scale.Equals(FVector::OneVector)) W->SetScale(Node, Scale);
   return C;
  }
  bool Disabled() { return FParse::Param(FCommandLine::Get(), TEXT("S47StreetLampsOff")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff")); }
 
  // ---- the highway west of SARO: Exterior.ts road(), eight poles at x -18.5 with their arms west over the road, in g26 ----
  // A pole on each foot, its arm turned by Q, the head on the arm's end, the lens a material of its own for the light's feed.
- void Raise(AS47Web* W, int32 ParentNode, const TCHAR* Family, const TCHAR* LightPrefix, const TArray<FVector>& Feet, const FQuat& Q,
-  const TArray<UPrimitiveComponent*>& Under, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ void Raise(AS47Web* W, int32 ParentNode, const TCHAR* Family, const TCHAR* LightPrefix, const TArray<FVector>& Feet, const FQuat& Turn,
+  const TArray<UPrimitiveComponent*>& Under, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out,
+  const TArray<FQuat>& Each = {}, double Height = 1)
  {
+  // Each: a turn per lamp instead of Turn. Height: the pole's height as a share of the model's eight metres (the arm sits as far down).
   const FS47WebNode* P = W->Node(ParentNode);
   USceneComponent* ParentComp = P ? P->Comp.Get() : nullptr;
   if (!ParentComp) return;
@@ -166,8 +169,9 @@ namespace
   {
    FLamp L; L.Light = FString::Printf(TEXT("%s%02d"), LightPrefix, I + 1); L.Foot = Feet[I];
    for (UPrimitiveComponent* U : Under) L.Under.Add(U);
-   const FVector Root = Feet[I] + Q.RotateVector(ArmOnPole), Slip = Root + Q.RotateVector(ArmEnd);
-   L.Pole = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:pole"), Family, I), PoleMesh, Feet[I], Q);
+   const FQuat Q = Each.IsValidIndex(I) ? Each[I] : Turn;
+   const FVector Root = Feet[I] + Q.RotateVector(ArmOnPole * FVector(1, Height, 1)), Slip = Root + Q.RotateVector(ArmEnd);
+   L.Pole = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:pole"), Family, I), PoleMesh, Feet[I], Q, FVector(1, Height, 1));
    L.Arm = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:arm"), Family, I), ArmMesh, Root, Q);
    UStaticMeshComponent* Head = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:head"), Family, I), HeadMesh, Slip, Q);
    L.Head = Head;
@@ -310,6 +314,58 @@ namespace
  }
 }
 
+namespace
+{
+ // ---- SARO's service yard: ServiceYard.ts, four props.lampPost(4.4, 0.95) along the walk and the truck pad, merged into the yard's
+ // static batches: their pole, arm and box head in the pole material's batch (g235, node 387), their bulb faces alone in the bulb
+ // material's (g236, node 388; S47ExteriorLighting: only those four faces use it). Each becomes a cobra head on a davit arm, its pole
+ // cut to the old post's 4.4 m (the arm 4.18 m up), turned the old arm's way. The pole batch needs CPU data (Tools/streetlamps/
+ // prepare_cpu.py); without it the old posts stay.
+ bool Yard(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ {
+  if (FParse::Param(FCommandLine::Get(), TEXT("S47YardLampsOld"))) return false;
+  struct FPost { double X, Z, Turn; };
+  static const FPost Posts[] = { { 11.25, 1.6, PI }, { 11.25, -6.0, PI }, { 7.75, -9.2, 0 }, { 6.85, 11.6, 0 } };
+  constexpr double OldHeight = 4.4;
+  UStaticMeshComponent* Batch = NodeMesh(W, 387, 235);
+  UStaticMeshComponent* Bulbs = NodeMesh(W, 388, 236);
+  const int32 Parent = W->Handle(TEXT("yard.group"));
+  if (!Batch || !Bulbs || !W->Node(Parent) || !Batch->GetComponentTransform().Equals(FTransform::Identity, .001))
+  { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: the yard's lamp-post batch (node 387, g235) or its bulbs (388, g236) differ; the old posts stay")); return false; }
+  // Each post whole: the pole round its foot, the arm and head out to 0.95 m and a little past, up to 4.6 m.
+  TArray<FBox> Boxes;
+  for (const FPost& P : Posts)
+  {
+   const double Out0 = P.Turn > 1 ? -1.25 : -.2, Out1 = P.Turn > 1 ? .2 : 1.25;
+   Boxes.Add(FBox(FVector(P.X + Out0, -.2, P.Z - .25), FVector(P.X + Out1, OldHeight + .2, P.Z + .25)));
+  }
+  TArray<int32> Counts;
+  UStaticMesh* Without = Cut(W, Batch, Boxes, Counts);
+  bool bAll = Without != nullptr;
+  for (const int32 N : Counts) bAll &= N >= 12;
+  if (!bAll)
+  {
+   UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: the yard's old posts were not all found in g235 (%s; CPU data: %d); the old posts stay"),
+    *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), Batch->GetStaticMesh() && Batch->GetStaticMesh()->bAllowCPUAccess ? 1 : 0);
+   return false;
+  }
+  UWorld* World = W->GetWorld();
+  TArray<FVector> Feet; TArray<FQuat> Turns;
+  for (const FPost& P : Posts)
+  {
+   double Y = 0; FString What;
+   if (!Down(World, FVector(P.X, 1.5, P.Z), 4, { Batch, Bulbs }, Y, &What, false)) Y = 0;
+   Feet.Add(FVector(P.X, Y, P.Z)); Turns.Add(FQuat(FVector(0, 1, 0), P.Turn));
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp yard x %.2f z %.2f stands on %s at y %.3f"), P.X, P.Z, What.IsEmpty() ? TEXT("(nothing found, y 0)") : *What, Y);
+  }
+  Without->InitResources(); Batch->SetStaticMesh(Without);
+  Bulbs->SetVisibility(false); Bulbs->SetHiddenInGame(true); Bulbs->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  Raise(W, Parent, TEXT("yard"), TEXT("Yard"), Feet, FQuat::Identity, {}, PoleMesh, ArmMesh, HeadMesh, Out, Turns, OldHeight / PoleHeight);
+  UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the yard's four posts are cobra heads on 4.4 m poles; %s old triangles cut"), *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }));
+  return true;
+ }
+}
+
 FLinearColor Sodium() { return S47Three::Hex(0xffa552); }
 
 bool Build(AS47Web* W)
@@ -329,7 +385,8 @@ bool Build(AS47Web* W)
  Lamps.Reset();
  const bool bRoad = Highway(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
  const bool bTown = Caliche(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
- return bRoad || bTown;
+ const bool bYard = Yard(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
+ return bRoad || bTown || bYard;
 }
 
 TMap<FName, S47ExteriorFixtures::FFixture> Fixtures(AS47Web* W)

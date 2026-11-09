@@ -275,7 +275,7 @@ void AS47Web::BuildExteriorLighting()
 			}
 			else M->SetMaterial(MeshSlot, D);
 			KeepMids.Add(D);
-			for (FExteriorLight& P : ExteriorLights) if (P.Set == Site && P.Slot >= 12 && P.Slot <= 15) { P.Diffuser = D; P.Material = N.Mats[MatSlot]; }
+			for (FExteriorLight& P : ExteriorLights) if (P.Set == Site && P.Slot >= 12 && P.Slot <= 15 && !P.bStreetHead) { P.Diffuser = D; P.Material = N.Mats[MatSlot]; } // (M6: a yard post replaced by a cobra head keeps its own lens)
 		}
 	}
 }
