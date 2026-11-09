@@ -251,7 +251,14 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
      ++Office;
      if (M->Web->NodeOf(H.GetComponent()) == 769) { ++Wear; if (First.IsEmpty()) First = FString::Printf(TEXT(" (first at x %.3f y %.3f z %.3f)"), At.X, At.Y, At.Z); }
     }
-    TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("Motel office front: %d rays hit, %d on the office's front, %d of them on the export's wear layer (node 769)%s"), Rays, Office, Wear, *First));
+    // what the layer draws: 648 triangles as the trim has it, 596 with the old office front cut out (S47MotelV2 CutOut; without the
+    // trim's CPU data it stays 648 and the layer is only set back 3 cm)
+    const FS47WebNode* Layer = M->Web->Node(769);
+    const UStaticMeshComponent* LayerMesh = Layer ? Cast<UStaticMeshComponent>(Layer->Comp.Get()) : nullptr;
+    const UStaticMesh* Drawn = LayerMesh ? LayerMesh->GetStaticMesh() : nullptr;
+    const int32 Drawing = Drawn && Drawn->GetRenderData() && Drawn->GetNumLODs() > 0 ? Drawn->GetNumTriangles(0) : -1;
+    TArray<FString> Lines; Lines.Add(FString::Printf(TEXT("Motel office front: %d rays hit, %d on the office's front, %d of them on the export's wear layer (node 769)%s; the layer draws %d triangles (%s)"), Rays, Office, Wear, *First,
+     Drawing, Drawing == 596 ? TEXT("the old front cut out") : Drawing == 648 ? TEXT("not cut: no CPU data on the trim? run Tools/streetlamps/prepare_motel_cpu.py") : TEXT("unexpected")));
     Log(Lines);
     Tell(Wear == 0 && Office > 0, Lines[0], 10);
    });

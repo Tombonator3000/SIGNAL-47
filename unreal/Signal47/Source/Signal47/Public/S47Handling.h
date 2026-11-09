@@ -22,6 +22,12 @@ class UPrimitiveComponent;
 // The consequence: an impact loud enough is posted to S47Noise where it happened, and what listens hears it there (the small ones
 // go to look; a visit turns to it), so a stone thrown off to the side draws them away from you. Nothing of it is saved: the things
 // at SARO are back in their places when a save is opened, and a stone taken off the ground is only a stone.
+//
+// STONE-POCKET-20261109 (Tom, 9 November): a jacket pocket for three stones. The throw key tapped with a stone in the hand puts it
+// in the pocket (looking at bare ground, the next one comes up off it at once); empty-handed, the key brings one out of the pocket
+// before it looks for one on the ground. The player has it without a number on the screen: the stones knock together, quietly, when
+// running or jumping with them, and the notebook's kit has a line for them ("Two stones in your pocket."). Not saved: the pocket is
+// empty when a save is opened and when a new day begins.
 class SIGNAL47_API FS47Handling
 {
 public:
@@ -69,6 +75,24 @@ public:
 	static bool Solid(const UPrimitiveComponent* C);
 	static bool SelfTest(TArray<FString>& Lines);
 
+	// ---------- the pocket (STONE-POCKET-20261109) ----------
+	static constexpr int32 PocketSize = 3;
+	/** What the throw key does pressed with nothing in the hand. */
+	enum class EEmpty : uint8 { PickUpInView, FromPocket, OffTheGround };
+	static EEmpty EmptyHanded(bool bThingInView, int32 InPocket);
+	/** What a tap of the throw key does with this in the hand (held longer, it is thrown as ever). */
+	enum class ETap : uint8 { IntoPocket, SetDown };
+	static ETap Tapped(EKind InHand, int32 InPocket);
+	/** The kit's line for it, in words: "Two stones in your pocket."; empty for none. */
+	static FString PocketLine(int32 InPocket);
+	/** Whether the stones knock together now: some in the pocket, and running (faster than the walk by a quarter) or in the air. */
+	static bool Rattles(int32 InPocket, double Mps, double WalkMps, bool bInAir);
+	int32 PocketCount() const { return PocketItems.Num(); }
+	/** The stone in the hand into the pocket, if there is room. */
+	bool PocketHeld();
+	/** A stone out of the pocket into the empty hand. */
+	bool TakeOut();
+
 	// ---------- for F10 and the tests ----------
 	struct FView { EKind Kind = EKind::Stone; FString Id, Area; FVector At = FVector::ZeroVector; bool bHeld = false, bFlying = false, bResting = true; int32 Impacts = 0; double Speed = 0; };
 	int32 Num() const { return Items.Num(); }
@@ -114,6 +138,14 @@ private:
 	double DownFor = 0, Clock = 0, BaseSpeed = 1.9, AppliedSpeed = 1.9, ThrowLoud = -1;
 	FString LastHit;
 	UMaterialInterface* Base = nullptr;
+	// the pocket: the stones in it, by index (hidden, in no area); the walk measured for their knocking
+	TArray<int32> PocketItems;
+	int32 PocketDay = -1, Knocks = 0;
+	bool bFromPocket = false, bPocketPos = false, bPocketAir = false;
+	double KnockDist = 0;
+	FVector PocketPos = FVector::ZeroVector;
+	void EmptyPocket();
+	void StepPocket(double Dt);
 
 	bool Live() const;
 	void Build();

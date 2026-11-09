@@ -6,6 +6,7 @@
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47Handling.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
@@ -2333,6 +2334,12 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			: FString(TEXT("On the desk by the array's PC. Its cassettes play back there.")),
 			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the desk / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
 			FString(), FString() });
+	}
+	// STONE-POCKET-20261109: the stones in the jacket pocket, said in words, not as a number
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Handling && M->Freeform->Handling->PocketCount() > 0)
+	{
+		Kit.Add({ TEXT("Stones"), FS47Handling::PocketLine(M->Freeform->Handling->PocketCount()) + FString::Printf(TEXT(" Off the ground, the size of a fist. %s with your hand empty brings one out; tapped with a stone in your hand, it puts it in. Three fit. They knock together when you run."), *S47Keys::Said(TEXT("throw"))),
+			TEXT("Jacket pocket"), FString(), FString() });
 	}
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
