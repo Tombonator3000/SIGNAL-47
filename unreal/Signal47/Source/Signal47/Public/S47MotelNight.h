@@ -28,6 +28,13 @@ public:
 	static bool Wakes(EKind K) { return K == EKind::Handle || K == EKind::Idling || K == EKind::Phone; }
 	// When to sleep until, for a room taken now until Morning (08:00): the hour it wakes the player, or Morning.
 	double SleepUntil(double Morning) const;
+	// MOTEL-PAY-20261109: "Take a room" at the desk (FS47Places): the rest, and AfterRest. A room is paid for until the morning it was
+	// taken for; woken before it (the big night, the night's own, or up and about) and back at the desk, the same night's room is not
+	// charged again. False: no rest (refused, or a room not paid and the budget short).
+	bool TakeRoom(double Morning);
+	// The room taken tonight is still paid for at Now (before the morning it was taken until).
+	bool RoomPaid(double Now) const { return PaidFor(PaidUntil, Now); }
+	static bool PaidFor(double PaidUntil, double Now) { return PaidUntil > 0 && FMath::IsFinite(Now) && Now < PaidUntil - 1; }
 	// After the rest (FS47Places' desk): what the night was, its sound, its cost; a woken player may go back to sleep until Morning.
 	// SleptFrom: the clock when the room was taken. A rest that did not cover the small hours (a nap from seven) has no night in it.
 	// Until: the hour the rest was to end (SleepUntil); woken before it, it was the big night that woke them, and the night's own is
@@ -49,6 +56,7 @@ private:
 	bool bUnfiled = false;
 	int32 ForcedKind = -1;
 	int32 LastNight = 0;
+	double PaidUntil = 0; // the morning (08:00) tonight's room was paid until; 0: none
 	double StepIn = 0;
 	EKind Tonight(int32 Night) const;
 	bool CanSteal() const;

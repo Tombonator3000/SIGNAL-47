@@ -169,7 +169,8 @@ void US47Audio::PcTransferAtOps(AS47Web* Web, double Seconds)
 
 bool US47Audio::InControlRoom(const FVector& Eye)
 {
-	return Eye.X > -6.f && Eye.X < 6.f && Eye.Z > -4.5f && Eye.Z < 4.5f;
+	// Under its ceiling (3 m; the floor is at 0): on the roof above it (the ladder, T16-11, the roof at 3.6) the player is out of it.
+	return Eye.X > -6.f && Eye.X < 6.f && Eye.Z > -4.5f && Eye.Z < 4.5f && Eye.Y < 3.f;
 }
 
 // Control room bounds (ControlRoom.ts: x +-6, z +-4.5, walls .3 thick). Out of it the modem comes through a wall and a door:
@@ -198,8 +199,9 @@ bool US47Audio::TransferSelfTest(TArray<FString>& Lines)
 {
 	bool Ok = true;
 	const auto Check = [&](bool B, const TCHAR* Why) { Ok &= B; Lines.Add(FString::Printf(TEXT("%s modem: %s"), B ? TEXT("PASS") : TEXT("FAIL"), Why)); };
-	Check(InControlRoom(FVector(0, 1.6, -3.0)) && InControlRoom(FVector(-5.5, 1.6, 4.0)) && !InControlRoom(FVector(-2.4, 1.6, 5.6)) && !InControlRoom(FVector(8.9, 1.6, 8.0)),
-		TEXT("the control room is the room the OPS PC is in; the corridor and the yard are not"));
+	Check(InControlRoom(FVector(0, 1.6, -3.0)) && InControlRoom(FVector(-5.5, 1.6, 4.0)) && !InControlRoom(FVector(-2.4, 1.6, 5.6)) && !InControlRoom(FVector(8.9, 1.6, 8.0))
+		&& !InControlRoom(FVector(-1.5, 3.6 + 1.6, -1.0)),
+		TEXT("the control room is the room the OPS PC is in; the corridor, the yard and the roof above it are not"));
 	US47Audio* A = NewObject<US47Audio>(GetTransientPackage()); A->AddToRoot();
 	constexpr int32 Rate = 48000;
 	A->Ctx = FS47AudioContext::Make(Rate); A->bReady = true;
@@ -233,6 +235,15 @@ bool US47Audio::TransferSelfTest(TArray<FString>& Lines)
 	Check(A->bTransferHere && A->TransferOutSince < 0, TEXT("back in the room within a moment, it is there again"));
 	const double Gone = Run(Corridor, TransferLeaveSeconds + 1.2);
 	Check(!A->bTransferHere && Gone < .002, TEXT("out of the room, it fades and stops instead of following the player"));
+	{
+		// Up the ladder onto the roof right above the desk: out of the room as well, and it stops there too.
+		FS47AudioContext::FBatch Batch(*A->Ctx);
+		A->TransferLp->Frequency.SetValue(18000); A->TransferWalls->Gain.SetValue(1);
+		A->bTransferHere = true; A->TransferOutSince = -1;
+	}
+	const double Again = Run(Desk, .6);
+	const double Roof = Run(FVector(-1.5, 3.6 + 1.6, -1.0), TransferLeaveSeconds + 1.2);
+	Check(Again > .3 && !A->bTransferHere && Roof < .002, TEXT("on the roof above the control room it stops as well"));
 	A->Ctx->Close(); A->RemoveFromRoot();
 	return Ok;
 }

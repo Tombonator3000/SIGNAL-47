@@ -311,13 +311,15 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  {
   Rows.Add(S47Kit::Small(TEXT("A locked door and a bed. What goes on out on the land, you hear about in the morning. A motel has its own nights.")));
   Rows.Add(S47Kit::Small(TEXT("Nothing is saved at the motel. The game saves again once you are back at SARO.")));
-  // MOTEL-SLEEP-20261108: the night's own may wake the player at its hour (S47MotelNight).
-  Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
+  // MOTEL-SLEEP-20261108: the night's own may wake the player at its hour (S47MotelNight). MOTEL-PAY-20261109: woken early (the big
+  // night wakes a room too) and back at the desk, it is the room already paid for tonight, not a second one (FS47MotelNight::TakeRoom).
+  const bool bPaid=F->MotelNight&&F->MotelNight->RoomPaid(F->Clock());
+  Rows.Add(S47Kit::Button(bPaid?FString(TEXT("Back to your room until morning / paid")):FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
   {
    if(M->UI)M->UI->Close(true);
-   const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next,From=F->Clock();
-   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next,From,Until);
-  },true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
+   if(F->MotelNight){F->MotelNight->TakeRoom(Next);return;}
+   F->RestAt(Next,FS47FreeformSession::ERest::Motel);
+  },true,TAttribute<bool>::CreateLambda([F]{return (F->MotelNight&&F->MotelNight->RoomPaid(F->Clock()))||F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))
  {

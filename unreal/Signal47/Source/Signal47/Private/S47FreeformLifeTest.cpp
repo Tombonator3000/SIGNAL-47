@@ -20,6 +20,7 @@
 #include "S47Openings.h"
 #include "S47FieldLife.h"
 #include "S47Places.h"
+#include "S47MotelNight.h"
 #include "S47NightRhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47Legs.h"
@@ -166,6 +167,21 @@ void FS47FreeformTest::StepFreeLife(double Dt)
   F.Earn(50);const int32 Cash=F.Budget();
   const double Morning=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+8*3600;
   if(!Check(F.RestAt(Morning,FS47FreeformSession::ERest::Motel)&&F.Clock()==Morning&&F.Budget()==Cash-FS47FreeformSession::MotelRoom,TEXT("a night at the motel: to morning, unbroken, for the price of a room")))return;
+  {
+   // MOTEL-PAY-20261109: the desk's own way in. Woken in the night (the door handle here; the big night wakes a room the same way)
+   // and back at the desk, the room is the one already paid for: one night, one price.
+   if(!Check(F.MotelNight.IsValid(),TEXT("the motel's nights")))return;
+   const double Evening2=double(F.Day()-1)*86400.+22*3600.;
+   if(!Check(F.TestAdvance(FMath::Max(0.,Evening2-F.Clock())),TEXT("the next evening")))return;
+   F.Earn(50);const int32 Before=F.Budget(),Price=F.MotelPrice();
+   const double Morning2=(FMath::FloorToDouble((F.Clock()-8*3600)/86400.)+1)*86400.+8*3600;
+   F.MotelNight->DevKind(int32(FS47MotelNight::EKind::Handle));
+   if(!Check(F.MotelNight->TakeRoom(Morning2)&&F.Clock()<Morning2&&F.Budget()==Before-Price&&F.MotelNight->RoomPaid(F.Clock()),TEXT("a room taken at the desk, paid, and the night wakes the player before morning")))return;
+   if(M->UI)M->UI->Close(true);
+   for(int32 I=0;I<3&&F.Clock()<Morning2;++I){if(!Check(F.MotelNight->TakeRoom(Morning2),TEXT("back to the room from the desk")))return;if(M->UI)M->UI->Close(true);}
+   if(M->UI)M->UI->Close(true);
+   if(!Check(F.Clock()==Morning2&&F.Budget()==Before-Price&&!F.MotelNight->RoomPaid(F.Clock()),TEXT("back at the desk the same night: the same room, not paid for twice")))return;
+  }
   // A cot out on the land: on a night that is not calm, something comes by.
   int32 C=F.Day();while(F.QuietNight(C)||C<2)++C;
   const double Late=double(C-1)*86400.+22*3600.;

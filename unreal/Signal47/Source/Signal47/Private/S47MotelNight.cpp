@@ -53,6 +53,21 @@ double FS47MotelNight::SleepUntil(double Morning) const
 	return At > M->Freeform->Clock() + 1800 && At < Morning ? At : Morning;
 }
 
+bool FS47MotelNight::TakeRoom(double Morning)
+{
+	if (!M || !M->Freeform || !FMath::IsFinite(Morning)) return false;
+	FS47FreeformSession& F = *M->Freeform;
+	// MOTEL-PAY-20261109: woken early (the big night wakes a room too, FS47FreeformSession::WakeBefore) the player is back at the
+	// desk the same night; that is the room already paid for, not a second one.
+	const bool bPaid = RoomPaid(F.Clock());
+	const double Until = SleepUntil(Morning), From = F.Clock();
+	if (!F.RestAt(Until, FS47FreeformSession::ERest::Motel, bPaid)) return false;
+	if (!bPaid) PaidUntil = Morning;
+	UE_LOG(LogS47MotelNight, Display, TEXT("S47: motel room %s, paid until %.0f"), bPaid ? TEXT("taken again, already paid") : TEXT("taken and paid"), PaidUntil);
+	AfterRest(Morning, From, Until);
+	return true;
+}
+
 void FS47MotelNight::AfterRest(double Morning, double SleptFrom, double Until)
 {
 	if (!M || !M->Freeform || !M->UI) return;
@@ -155,12 +170,16 @@ void FS47MotelNight::Begin(const S47J::FObj& Saved)
 	// A Continue comes from a save, and no save is written during a motel night: it always starts filed.
 	bUnfiled = false; ForcedKind = -1; StepIn = 0;
 	LastNight = Saved.IsValid() ? FMath::Clamp(S47J::Int(Saved, TEXT("lastNight")), 0, 1000000) : 0;
+	const double Paid = Saved.IsValid() ? S47J::Num(Saved, TEXT("paidUntil")) : 0;
+	PaidUntil = FMath::IsFinite(Paid) && Paid > 0 ? Paid : 0;
 }
 
 S47J::FObj FS47MotelNight::Save() const
 {
 	auto O = S47J::New();
 	if (LastNight) S47J::Set(O, TEXT("lastNight"), LastNight);
+	// (back at SARO before the morning and saved there, the room at the motel is still tonight's)
+	if (PaidUntil > 0) S47J::Set(O, TEXT("paidUntil"), PaidUntil);
 	return O;
 }
 
@@ -204,7 +223,17 @@ bool FS47MotelNight::SelfTest(TArray<FString>& Lines)
 			FString::Printf(TEXT("the big night wakes a room before its 02:30 (%.0f min before) or soon after a late check-in (%.0f min); not past the rest or the night"),
 				(Mid + 2.5 * 3600. - Early) / 60., (Late - Mid - 3 * 3600.) / 60.));
 	}
-	FS47MotelNight A(nullptr); A.LastNight = 6; FS47MotelNight B(nullptr); B.Begin(S47J::Read(S47J::Write(A.Save())));
+	{
+		// MOTEL-PAY-20261109: a room from 22:00 is paid until 08:00. Woken at 02:40 (the big night) and back at the desk, or in again
+		// at five, nothing more is due; at eight it is over, and the next evening's room is a new one.
+		const double Morning = 5 * 86400. + 8 * 3600.;
+		Check(PaidFor(Morning, 4 * 86400. + 22 * 3600.) && PaidFor(Morning, 5 * 86400. + 2 * 3600. + 40 * 60.) && PaidFor(Morning, 5 * 86400. + 5 * 3600.)
+			&& !PaidFor(Morning, Morning) && !PaidFor(Morning, 5 * 86400. + 22 * 3600.) && !PaidFor(0, 5 * 86400. + 2 * 3600.),
+			TEXT("woken in the night and back at the desk, the room is the one already paid for; the next night's is not"));
+	}
+	FS47MotelNight A(nullptr); A.LastNight = 6; A.PaidUntil = 5 * 86400. + 8 * 3600.; FS47MotelNight B(nullptr); B.Begin(S47J::Read(S47J::Write(A.Save())));
 	Check(B.LastNight == 6 && !B.Unfiled(), TEXT("a Continue starts with the motel night filed: no save was written during one"));
+	Check(B.RoomPaid(5 * 86400. + 3 * 3600.) && !B.RoomPaid(5 * 86400. + 9 * 3600.) && !B.TakeRoom(5 * 86400. + 8 * 3600.),
+		TEXT("a room paid tonight is kept in a save made at SARO before the morning (and nothing is taken without a session)"));
 	return bAll;
 }
