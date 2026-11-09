@@ -1,5 +1,6 @@
 #include "S47DevFreeform.h"
 #include "S47CarPaint.h"
+#include "S47CalicheNewHomes.h"
 #include "S47DevEvents.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
@@ -73,6 +74,23 @@ void FS47DevFreeform::AddTownDay(FS47DevEvents& E)
   E.AddFreeform(Group, Label, TEXT("inside the door, looking at the kitchen's hatch: the cook at the range or the hatch"), [View, Cook, Hour, Label]
   { View(Hour, FVector2D(7979.2, 2001.4), FVector(7973.8, Diner + 1.5, 1997.4), TEXT("NPC-DAY: ") + Label, Cook); });
  }
+ // CALICHE-HOMES: the four new homes at dusk, from the street by Earl's: each built and clear of the walk's colliders, and its windows
+ // lit exactly while the day has its owner home and awake (at 18:36 the waitress, Earl and the regular are; the woman with the radio
+ // is out on her bench).
+ E.AddFreeform(Group, TEXT("New homes at dusk"), TEXT("18:36 from the street by Earl's: H05 to H08 built and clear, lit while their people are home (the log has each)"), [this]
+ {
+  FStage S; S.From = 18.6; S.To = 18.68; S.Area = TEXT("diner"); S.Where = [] { return FVector2D(8010, 2196); };
+  Go(S, [this]
+  {
+   AimAt(FVector(8028.5, 10.0, 2204));
+   After(2.5, [this]
+   {
+    TArray<FString> Lines; const int32 Bad = S47CalicheNewHomes::Measure(M, Lines);
+    for (const FString& L : Lines) UE_LOG(LogS47TownDayDev, Display, TEXT("S47: %s"), *L);
+    Tell(Bad == 0, (Lines.Num() ? Lines[0] : FString(TEXT("nothing measured"))) + TEXT(". ") + S47TownDay::DevState(M), 12);
+   });
+  });
+ });
  E.AddFreeform(Group, TEXT("Spots and paths against the walk"), TEXT("every planned spot and every path between them against the diner's and road's colliders (the log has each)"), [this]
  {
   FStage S; S.From = 11; S.To = 11.1; S.Area = TEXT("diner"); S.Where = [] { return FVector2D(7993, 2104); };

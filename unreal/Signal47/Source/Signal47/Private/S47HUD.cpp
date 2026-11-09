@@ -59,6 +59,7 @@
 #include "S47Mail.h"
 #include "S47RadioTips.h"
 #include "S47TownSites.h"
+#include "S47CalicheNewHomes.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
@@ -280,6 +281,7 @@ void AS47HUD::Start()
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
+		bOk &= S47CalicheNewHomes::SelfTest(Lines); // (CALICHE-HOMES: no house in the road or in another, a home for each of the town's people)
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);

@@ -105,12 +105,32 @@ namespace S47TownDayLocal
   { TEXT("souv.counter"), TEXT("souvenir"), 8023.3, 2062.4, -PI_ / 2, FSpot::Stand, TEXT("SouvIn") },
   { TEXT("home.souvenir"), TEXT("home"), 8029.5, 2185.0, 0, FSpot::Hidden, TEXT("H03Door") },
   { TEXT("sleep.souvenir"), TEXT("home"), 8029.5, 2185.0, 0, FSpot::Hidden, TEXT("H03Door") },
+  // CALICHE-HOMES (Tom, 9 November about 16:40: "Må kanskje et par hus til i Caliche, så folk har steder å bo?"). The ones who had
+  // no home: each one's lamp goes by this day, their bodies are their own scenes' (the waitress at the counter, Earl in the studio,
+  // the woman on her bench, the regular at the diner), so every spot of theirs is out of the day's drawing, and one way in each.
+  // The houses: S47CalicheNewHomes (H05 to H07 are rooms in Content/CalicheAccess/assembly.json, H08 the trailer).
+  { TEXT("diner.night"), TEXT("diner"), 7978.3, 1999.95, 0, FSpot::Away, TEXT("DinIn") },
+  { TEXT("home.waitress"), TEXT("home"), 8028.25, 2113.0, 0, FSpot::Hidden, TEXT("DinIn") },
+  { TEXT("sleep.waitress"), TEXT("home"), 8028.25, 2113.0, 0, FSpot::Hidden, TEXT("DinIn") },
+  { TEXT("radio.air"), TEXT("radio"), 8022.8, 2037.55, 0, FSpot::Away, TEXT("StOff") },
+  { TEXT("home.earl"), TEXT("home"), 8028.5, 2204.0, 0, FSpot::Hidden, TEXT("StOff") },
+  { TEXT("sleep.earl"), TEXT("home"), 8028.5, 2204.0, 0, FSpot::Hidden, TEXT("StOff") },
+  { TEXT("bench"), TEXT("bench"), 7986.0, 2130.5, 0, FSpot::Away, TEXT("StDiner") },
+  { TEXT("home.bench_woman"), TEXT("home"), 7976.5, 2224.0, 0, FSpot::Hidden, TEXT("StDiner") },
+  { TEXT("sleep.bench_woman"), TEXT("home"), 7976.5, 2224.0, 0, FSpot::Hidden, TEXT("StDiner") },
+  { TEXT("diner.regular"), TEXT("diner"), 7976.35, 1999.95, 0, FSpot::Away, TEXT("DinOut") },
+  { TEXT("home.regular"), TEXT("home"), 7969.0, 2254.5, 0, FSpot::Hidden, TEXT("DinOut") },
+  { TEXT("sleep.regular"), TEXT("home"), 7969.0, 2254.5, 0, FSpot::Hidden, TEXT("DinOut") },
  };
  // Whose house is whose (S47CalicheAccess room ids).
  FString HouseOf(const FString& Who)
  {
-  return Who == TEXT("deputy") ? TEXT("H02") : Who == TEXT("souvenir_man") ? TEXT("H03") : Who == TEXT("cook") ? TEXT("H04") : FString();
+  return Who == TEXT("deputy") ? TEXT("H02") : Who == TEXT("souvenir_man") ? TEXT("H03") : Who == TEXT("cook") ? TEXT("H04")
+   : Who == TEXT("mesa_waitress") ? TEXT("H05") : Who == TEXT("earl") ? TEXT("H06") : Who == TEXT("bench_woman") ? TEXT("H07")
+   : Who == TEXT("regular") ? TEXT("H08") : FString();
  }
+ // FS47Townsfolk's name for one of the day's people, where it has them ("waitress" is the one at the counter): who can be gone.
+ FString FolkOf(const FString& Who) { return Who == TEXT("mesa_waitress") ? FString(TEXT("waitress")) : Who; }
  // FS47TripoNpcs' body for the cook is its spare "waitress" figure; the day calls her "cook" (critics, round 8: under "waitress" she
  // went, and her lamp went out, whenever the waitress at the counter (FS47Townsfolk's "waitress") was gone).
  FString DayKey(const FString& Role) { return Role == TEXT("waitress") ? FString(TEXT("cook")) : Role; }
@@ -353,10 +373,12 @@ namespace S47TownDayLocal
 
 const TArray<FString>& S47TownDay::People()
 {
- static const TArray<FString> P = { TEXT("deputy"), TEXT("cook"), TEXT("attendant"), TEXT("souvenir_man") };
+ static const TArray<FString> P = { TEXT("deputy"), TEXT("cook"), TEXT("attendant"), TEXT("souvenir_man"),
+  TEXT("mesa_waitress"), TEXT("earl"), TEXT("bench_woman"), TEXT("regular") }; // (CALICHE-HOMES: the last four)
  return P;
 }
 const TArray<S47TownDay::FSpot>& S47TownDay::Spots() { return S47TownDayLocal::AllSpots; }
+FString S47TownDay::HomeOf(const FString& Who) { return S47TownDayLocal::HouseOf(S47TownDayLocal::DayKey(Who)); }
 const S47TownDay::FSpot* S47TownDay::Spot(const FString& Id)
 {
  for (const FSpot& S : S47TownDayLocal::AllSpots) if (Id == S.Id) return &S;
@@ -447,6 +469,36 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
   { Fill(Rows, From, To, R, { { TEXT("souv.counter"), 4.f, .3f, .8f }, { TEXT("souv.stoop"), 2.f, .12f, .35f } }); };
   Shop(Arrive, Lunch); Add(Rows, Lunch, Lunch + .45, TEXT("souv.stoop")); Shop(Lunch + .45, Leave);
   Add(Rows, Leave, Sleep, TEXT("home.souvenir")); Add(Rows, Sleep, 24, TEXT("sleep.souvenir"));
+ }
+ // CALICHE-HOMES: the night people sleep into the afternoon and are home, lamp lit, until they go out at dusk.
+ else if (Who == TEXT("mesa_waitress"))
+ {
+  // The Mesa's night counter (FS47Townsfolk has her at the diner in the night's hours): from about 18:50 until after 05.
+  const double Off = J(5.1, 5.35), Bed = J(5.9, 6.3), Up = J(13.2, 13.8), On = J(18.75, 18.95);
+  Add(Rows, 0, Off, TEXT("diner.night")); Add(Rows, Off, Bed, TEXT("home.waitress")); Add(Rows, Bed, Up, TEXT("sleep.waitress"));
+  Add(Rows, Up, On, TEXT("home.waitress")); Add(Rows, On, 24, TEXT("diner.night"));
+ }
+ else if (Who == TEXT("earl"))
+ {
+  // 1420 AM's night line: on the air from a little after seven until four (S47Timeline::EarlOnDuty), home to sleep it off.
+  const double Off = J(4.0, 4.15), Bed = J(4.6, 5.0), Up = J(11.3, 11.9), On = J(19.15, 19.4);
+  Add(Rows, 0, Off, TEXT("radio.air")); Add(Rows, Off, Bed, TEXT("home.earl")); Add(Rows, Bed, Up, TEXT("sleep.earl"));
+  Add(Rows, Up, On, TEXT("home.earl")); Add(Rows, On, 24, TEXT("radio.air"));
+ }
+ else if (Who == TEXT("bench_woman"))
+ {
+  // The woman with the radio sits out on the laundromat's bench from six until ten to five (FS47Town: NightPerson), as she always has.
+  constexpr double Off = 4. + 50. / 60., On = 18.;
+  const double Bed = J(5.3, 5.7), Up = J(12.8, 13.4);
+  Add(Rows, 0, Off, TEXT("bench")); Add(Rows, Off, Bed, TEXT("home.bench_woman")); Add(Rows, Bed, Up, TEXT("sleep.bench_woman"));
+  Add(Rows, Up, On, TEXT("home.bench_woman")); Add(Rows, On, 24, TEXT("bench"));
+ }
+ else if (Who == TEXT("regular"))
+ {
+  // The regular ("comes in when the lights are up"): home all day, the Mesa's counter in the evening, home to bed before midnight.
+  const double Up = J(8.3, 8.9), In = J(19.9, 20.2), Out = J(23.0, 23.4), Bed = J(23.6, 23.9);
+  Add(Rows, 0, Up, TEXT("sleep.regular")); Add(Rows, Up, In, TEXT("home.regular")); Add(Rows, In, Out, TEXT("diner.regular"));
+  Add(Rows, Out, Bed, TEXT("home.regular")); Add(Rows, Bed, 24, TEXT("sleep.regular"));
  }
  return Rows;
 }
@@ -555,7 +607,7 @@ void S47TownDay::Step(US47Main* M, double Dt)
  {
   const FString House = HouseOf(Who); if (House.IsEmpty()) continue;
   const FWalker* W = Walkers.Find(Who);
-  const float K = W && !FS47Townsfolk::AwayNow(Who) && HomeAwake(W->Target) && W->Arrived == W->Target ? 1.f : 0.f; // (in the house)
+  const float K = W && !FS47Townsfolk::AwayNow(FolkOf(Who)) && HomeAwake(W->Target) && W->Arrived == W->Target ? 1.f : 0.f; // (in the house)
   if (Lamp.FindRef(House, -1.f) != K) { Lamp.Add(House, K); S47CalicheAccess::SetRoomLamp(House, K); }
  }
  {

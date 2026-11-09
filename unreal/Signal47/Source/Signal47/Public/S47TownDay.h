@@ -30,6 +30,9 @@ namespace S47TownDay
 {
  // The people with a day: "deputy" (the sheriff), "cook" (the diner's cook: FS47TripoNpcs' spare "waitress" figure, so that the
  // waitress at the counter, FS47Townsfolk's "waitress", being gone does not take her too), "attendant", "souvenir_man".
+ // CALICHE-HOMES: and "mesa_waitress" (FS47Townsfolk's "waitress", the night counter), "earl" (1420 AM), "bench_woman" (the woman
+ // with the radio on the laundromat's bench) and "regular" (the Mesa's regular): only their homes' lamps go by the day; their bodies
+ // are their own scenes', so none of their spots is drawn here.
  SIGNAL47_API const TArray<FString>& People();
  struct FSpot
  {
@@ -49,6 +52,8 @@ namespace S47TownDay
  SIGNAL47_API FString SpotIn(const TArray<FRow>& Rows, double Hour);
  // Whether a spot is somewhere the person is awake at home (the lamp lit).
  SIGNAL47_API bool HomeAwake(const FString& SpotId);
+ // CALICHE-HOMES: whose house it is (a S47CalicheAccess room id, "H08" the trailer); empty: no house (the attendant lives at his station).
+ SIGNAL47_API FString HomeOf(const FString& Who);
 
  // ---- the running game ----
  // Each frame from FS47Townsfolk::Step (Freeform only).

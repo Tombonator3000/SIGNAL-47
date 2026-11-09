@@ -1038,6 +1038,390 @@
         1461
       ],
       "asset": "/Game/CalicheAccess/SM_Access_Souvenir_Door.SM_Access_Souvenir_Door"
+    },
+    "SM_Access_H05_Interior": {
+      "name": "SM_Access_H05_Interior",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2113.0
+      ],
+      "family": "H05",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H02_Interior.SM_Access_H02_Interior",
+      "optional": true
+    },
+    "SM_Access_H05_Door": {
+      "name": "SM_Access_H05_Door",
+      "root": [
+        8024.5,
+        8.003066062927246,
+        2116.375
+      ],
+      "family": "H05",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H02_Door.SM_Access_H02_Door",
+      "optional": true
+    },
+    "SM_Access_H05_Shell": {
+      "name": "SM_Access_H05_Shell",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2113.0
+      ],
+      "family": "H05",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Shell.SM_Homes_H02_Shell",
+      "optional": true
+    },
+    "SM_Access_H05_Roof": {
+      "name": "SM_Access_H05_Roof",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2113.0
+      ],
+      "family": "H05",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "lod_triangles": [
+        528,
+        348,
+        236
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Roof.SM_Homes_H02_Roof",
+      "optional": true
+    },
+    "SM_Access_H05_Fixtures": {
+      "name": "SM_Access_H05_Fixtures",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2113.0
+      ],
+      "family": "H05",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_SagePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "lod_triangles": [
+        964,
+        608,
+        264
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Fixtures.SM_Homes_H02_Fixtures",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_SagePaint": "/Game/CalicheHomes/Materials/MI_Homes_BluePaint.MI_Homes_BluePaint"
+      }
+    },
+    "SM_Access_H06_Interior": {
+      "name": "SM_Access_H06_Interior",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2204.0
+      ],
+      "family": "H06",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H01_Interior.SM_Access_H01_Interior",
+      "optional": true
+    },
+    "SM_Access_H06_Door": {
+      "name": "SM_Access_H06_Door",
+      "root": [
+        8024.0,
+        7.314197063446045,
+        2207.875
+      ],
+      "family": "H06",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H01_Door.SM_Access_H01_Door",
+      "optional": true
+    },
+    "SM_Access_H06_Shell": {
+      "name": "SM_Access_H06_Shell",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2204.0
+      ],
+      "family": "H06",
+      "role": "static",
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Shell.SM_Homes_H01_Shell",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_TanStucco": "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco"
+      }
+    },
+    "SM_Access_H06_Roof": {
+      "name": "SM_Access_H06_Roof",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2204.0
+      ],
+      "family": "H06",
+      "role": "static",
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_RoofTar"
+      ],
+      "lod_triangles": [
+        892,
+        572,
+        364
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Roof.SM_Homes_H01_Roof",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_TanStucco": "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco"
+      }
+    },
+    "SM_Access_H06_Fixtures": {
+      "name": "SM_Access_H06_Fixtures",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2204.0
+      ],
+      "family": "H06",
+      "role": "static",
+      "materials": [
+        "M_Homes_TanWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "lod_triangles": [
+        736,
+        452,
+        192
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Fixtures.SM_Homes_H01_Fixtures",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_TanWear": "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear"
+      }
+    },
+    "SM_Access_H07_Interior": {
+      "name": "SM_Access_H07_Interior",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2224.0
+      ],
+      "family": "H07",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H04_Interior.SM_Access_H04_Interior",
+      "optional": true
+    },
+    "SM_Access_H07_Door": {
+      "name": "SM_Access_H07_Door",
+      "root": [
+        7981.0,
+        11.268553733825684,
+        2227.875
+      ],
+      "family": "H07",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H04_Door.SM_Access_H04_Door",
+      "optional": true
+    },
+    "SM_Access_H07_Shell": {
+      "name": "SM_Access_H07_Shell",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2224.0
+      ],
+      "family": "H07",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Shell.SM_Homes_H04_Shell",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_CreamStucco": "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco"
+      }
+    },
+    "SM_Access_H07_Roof": {
+      "name": "SM_Access_H07_Roof",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2224.0
+      ],
+      "family": "H07",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "lod_triangles": [
+        540,
+        348,
+        236
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Roof.SM_Homes_H04_Roof",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_CreamStucco": "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco",
+        "M_Homes_CreamWear": "/Game/CalicheHomes/Materials/MI_Homes_TanWear.MI_Homes_TanWear"
+      }
+    },
+    "SM_Access_H07_Fixtures": {
+      "name": "SM_Access_H07_Fixtures",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2224.0
+      ],
+      "family": "H07",
+      "role": "static",
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_BluePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "lod_triangles": [
+        736,
+        440,
+        192
+      ],
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Fixtures.SM_Homes_H04_Fixtures",
+      "optional": true,
+      "material_overrides": {
+        "M_Homes_CreamWear": "/Game/CalicheHomes/Materials/MI_Homes_TanWear.MI_Homes_TanWear",
+        "M_Homes_BluePaint": "/Game/CalicheHomes/Materials/MI_Homes_SagePaint.MI_Homes_SagePaint"
+      }
     }
   },
   "buildings": [
@@ -3509,6 +3893,243 @@
       ],
       "interact": "souvenirDoor",
       "furniture": []
+    },
+    {
+      "id": "H05",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2113.0
+      ],
+      "footprint": [
+        -3.75,
+        3.75,
+        -4.5,
+        4.5
+      ],
+      "floor": 0,
+      "door": [
+        -3.75,
+        -2.9,
+        0.95,
+        2.1
+      ],
+      "front": -1,
+      "hinge": [
+        -3.75,
+        -3.375,
+        0
+      ],
+      "furniture": [
+        [
+          8027.65,
+          8028.85,
+          2112.6,
+          2113.4
+        ],
+        [
+          8027.7375,
+          8028.7625,
+          2112.6675,
+          2113.3325
+        ],
+        [
+          8027.22,
+          8027.68,
+          2112.775,
+          2113.225
+        ],
+        [
+          8027.249076756641,
+          8027.650923243358,
+          2112.798,
+          2113.202
+        ],
+        [
+          8024.8,
+          8025.5,
+          2115.75,
+          2116.25
+        ],
+        [
+          8030.0,
+          8031.6,
+          2109.225,
+          2109.975
+        ],
+        [
+          8029.975,
+          8031.625,
+          2109.2,
+          2110.0
+        ],
+        [
+          8029.975,
+          8031.625,
+          2109.155,
+          2109.285
+        ]
+      ],
+      "ground_seat": true,
+      "model": "H02"
+    },
+    {
+      "id": "H06",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2204.0
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -5.0,
+        5.0
+      ],
+      "floor": 0,
+      "door": [
+        -4.5,
+        -3.4,
+        0.95,
+        2.1
+      ],
+      "front": -1,
+      "hinge": [
+        -4.5,
+        -3.875,
+        0
+      ],
+      "furniture": [
+        [
+          8027.9,
+          8029.1,
+          2203.6,
+          2204.4
+        ],
+        [
+          8027.9875,
+          8029.0125,
+          2203.6675,
+          2204.3325
+        ],
+        [
+          8027.47,
+          8027.93,
+          2203.775,
+          2204.225
+        ],
+        [
+          8027.499076756641,
+          8027.900923243358,
+          2203.798,
+          2204.202
+        ],
+        [
+          8024.3,
+          8025.0,
+          2207.25,
+          2207.75
+        ],
+        [
+          8031.0,
+          8032.6,
+          2199.725,
+          2200.475
+        ],
+        [
+          8030.975,
+          8032.625,
+          2199.7,
+          2200.5
+        ],
+        [
+          8030.975,
+          8032.625,
+          2199.655,
+          2199.785
+        ]
+      ],
+      "ground_seat": true,
+      "model": "H01"
+    },
+    {
+      "id": "H07",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2224.0
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -5.0,
+        5.0
+      ],
+      "floor": 0,
+      "door": [
+        4.5,
+        -3.4,
+        0.95,
+        2.1
+      ],
+      "front": 1,
+      "hinge": [
+        4.5,
+        -3.875,
+        0
+      ],
+      "furniture": [
+        [
+          7975.9,
+          7977.1,
+          2223.6,
+          2224.4
+        ],
+        [
+          7975.9875,
+          7977.0125,
+          2223.6675,
+          2224.3325
+        ],
+        [
+          7975.47,
+          7975.93,
+          2223.775,
+          2224.225
+        ],
+        [
+          7975.499076756641,
+          7975.900923243358,
+          2223.798,
+          2224.202
+        ],
+        [
+          7972.3,
+          7973.0,
+          2227.25,
+          2227.75
+        ],
+        [
+          7979.0,
+          7980.6,
+          2219.725,
+          2220.475
+        ],
+        [
+          7978.975,
+          7980.625,
+          2219.7,
+          2220.5
+        ],
+        [
+          7978.975,
+          7980.625,
+          2219.655,
+          2219.785
+        ]
+      ],
+      "ground_seat": true,
+      "model": "H04"
     }
   ]
 }
