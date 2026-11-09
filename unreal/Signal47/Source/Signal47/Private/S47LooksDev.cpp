@@ -8,6 +8,12 @@
 #include "S47StreetLamps.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47Three.h"
+#include "CollisionQueryParams.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/World.h"
+#include "Materials/MaterialInterface.h"
 #include "S47World.h"
 #include "Misc/Paths.h"
 
@@ -177,6 +183,43 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  { View(TEXT("saro"), 11, Saro(-45.6, 676.6), Saro3(-45.0, -.2, 672.3), TEXT("The office's south wall from inside: the right side of every face")); });
  E.AddFreeform(Group, TEXT("Motel office from outside"), TEXT("11:00 on the walk south-east of the office"), [View, Saro, Saro3]
  { View(TEXT("saro"), 11, Saro(-40.6, 671.6), Saro3(-43.8, -.25, 674.4), TEXT("The office from the walk: the window and the door in their wall")); });
+ // MOTEL-REAL: what the office's front is made of, ray by ray from the walk: mesh, material, where each ray stops and which side
+ // of the face it meets (the window reads as a box standing out of the wall). The list goes to the log.
+ E.AddFreeform(Group, TEXT("Motel office window: what is drawn"), TEXT("11:00 on the walk: a fan of rays over the office's window and door; the list goes to the log"), [this, Log]
+ {
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [] { return FVector2D(-40.6, 671.6); };
+  Go(S, [this, Log]
+  {
+   if (!M->Player) { Tell(false, TEXT("no player")); return; }
+   AimAt(FVector(-43.8, M->Player->FloorY + M->Player->Eye - .25, 674.4));
+   After(1.0, [this, Log]
+   {
+    AS47Walker* P = M->Player; UWorld* World = M->Web->GetWorld();
+    TArray<FString> Lines; TMap<FString, int32> Seen;
+    for (int32 Y = -6; Y <= 6; ++Y) for (int32 Pi = -2; Pi <= 2; ++Pi)
+    {
+     const double Yaw = P->Yaw + Y * FMath::DegreesToRadians(5.), Pitch = P->Pitch + Pi * FMath::DegreesToRadians(5.);
+     const FVector Fwd(-FMath::Sin(Yaw) * FMath::Cos(Pitch), FMath::Sin(Pitch), -FMath::Cos(Yaw) * FMath::Cos(Pitch));
+     const FVector Start = P->EyeUE(), End = Start + S47Three::DirToUE(Fwd) * 2500;
+     FHitResult H; FCollisionQueryParams Q(SCENE_QUERY_STAT(S47LooksMotelRay), true, P); Q.bReturnFaceIndex = true;
+     if (!World->LineTraceSingleByChannel(H, Start, End, ECC_Visibility, Q)) continue;
+     UStaticMeshComponent* C = Cast<UStaticMeshComponent>(H.GetComponent()); int32 Section = INDEX_NONE;
+     UMaterialInterface* Mat = C ? C->GetMaterialFromCollisionFaceIndex(H.FaceIndex, Section) : nullptr;
+     const FS47WebNode* N = M->Web->Node(M->Web->NodeOf(H.GetComponent()));
+     const FVector At = S47Three::ToThree(H.ImpactPoint);
+     const double Dot = FVector::DotProduct(H.ImpactNormal, (End - Start).GetSafeNormal());
+     const FString Key = FString::Printf(TEXT("%s | %s | %s"), N ? *N->Name : *GetNameSafe(H.GetComponent()), C && C->GetStaticMesh() ? *C->GetStaticMesh()->GetName() : TEXT("-"), *GetNameSafe(Mat));
+     ++Seen.FindOrAdd(Key);
+     Lines.Add(FString::Printf(TEXT("  ray yaw %+d pitch %+d: %s at x %.3f y %.3f z %.3f, %.2f m, %s face (normal.ray %+.2f), %s"), Y * 5, Pi * 5, *Key, At.X, At.Y, At.Z, H.Distance / 100,
+      Dot > 0 ? TEXT("BACK") : TEXT("front"), Dot, Mat && Mat->IsTwoSided() ? TEXT("two-sided") : TEXT("one-sided")));
+    }
+    TArray<FString> Head; Head.Add(FString::Printf(TEXT("Motel office front: %d rays, %d things met:"), Lines.Num(), Seen.Num()));
+    for (const auto& K : Seen) Head.Add(FString::Printf(TEXT("  %d x %s"), K.Value, *K.Key));
+    Head.Append(Lines); Log(Head);
+    Tell(true, Head[0], 10);
+   });
+  });
+ });
  E.AddFreeform(Group, TEXT("Motel television at night"), TEXT("23:00 in front of the office's television"), [View, Saro, Saro3]
  { View(TEXT("saro"), 23, Saro(-46.3, 675.6), Saro3(-47.77, .05, 676.85), TEXT("The office television at night: what is on the screen")); });
  E.AddFreeform(Group, TEXT("Motel lot lamps by day"), TEXT("11:00 in the motel's lot"), [View, Saro, Saro3]
