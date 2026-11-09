@@ -696,6 +696,12 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   const bool bFull=M->Rhythm?M->Rhythm->TierOf(FName(*Id))==ES47Allowed::Full:(Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"));
   if(bFull&&!M->Freeform->TheirHoursNow(Clock))return false;
   if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(Today-*Last<CoolFor(Id,*Last))return false;
+  // PT-FEEDER-20261109: the big night's night is its own, and a report is the night's one pointing-out.
+  if(Id==TEXT("town_lights")||Id==TEXT("farm_lights"))
+  {
+   const int32 LightNight=FS47FreeformSession::NightOf(Clock);
+   if(!LightsMayCome(Id,M->Freeform->Happenings&&M->Freeform->Happenings->BigOwns(LightNight),MayPointOut(LightNight)))return false;
+  }
   if(D->Family==TEXT("threat")&&(LastThreatDay==Today||Clock<86400.+19*3600.))return false;
   // Asked at the moment it would start: one dangerous meeting a night, across every system (Tom, 7 November).
   if(At<0&&D->Family==TEXT("threat")&&M->Rhythm&&!M->Rhythm->Allow(FName(*Id)))return false;
@@ -772,6 +778,8 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  if(Id==TEXT("array_presence"))Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:service"));
  if(Id==TEXT("roomlight_return"))Anchor=M->RoomLights->InteractionPoint(ReactiveRoom);
  if(M->Rhythm)M->Rhythm->Began(FName(*Id));
+ // PT-FEEDER-20261109: the report sends the player out to the place: tonight's one pointing-out (LightsMayCome).
+ if(Id==TEXT("town_lights")&&!Forced)NotePointOut(FS47FreeformSession::NightOf(M->Freeform->Clock()));
  LastDays.Add(Id,M->Freeform->Day());if(const auto* D=Definition(Id)){if(D->Family==TEXT("threat"))LastThreatDay=M->Freeform->Day();if(D->Family==TEXT("major"))LastMajorDay=M->Freeform->Day();}
  // Save the random choice and phase before applying any perceptible effect.
  Changed();UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s variant%d day%d"),*Event,Variant,M->Freeform->Day());return true;
@@ -1190,6 +1198,12 @@ FString FS47FreeformDirector::ReportedLine() const
  else if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))return FString::Printf(TEXT("Reported: something came down near %s"),*LightPlaceTitle(PlaceId));
  else if(M&&M->Freeform&&M->Freeform->FarmSite&&M->Freeform->FarmSite->Armed())Where=M->Freeform->FarmSite->PlaceTitle();
  return Where.IsEmpty()?FString():FString::Printf(TEXT("Reported: lights at %s (until noon)"),*Where);
+}
+bool FS47FreeformDirector::ReportDone() const
+{
+ if(Event==TEXT("landing_trace")&&!PlaceId.IsEmpty()&&!Near(Anchor,60))return false;
+ const FS47FarmSite* Site=M&&M->Freeform?M->Freeform->FarmSite.Get():nullptr;
+ return ReportDoneWith(Event==TEXT("farm_lights")||Event==TEXT("town_lights"),Site&&Site->Armed(),Site&&Site->Checked());
 }
 FString FS47FreeformDirector::MysteryTrailHint() const
 {
@@ -1938,6 +1952,20 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   const bool bAfterSlip=!FS47Happenings::TakePointOut(&Night,7);
   const bool bBurst=FS47Happenings::TakePointOut(&Night,8)&&!Night.MayPointOut(8)&&!FS47Happenings::TakePointOut(&Night,8);
   Check(bAfterSlip&&bBurst&&FS47Happenings::TakePointOut(&Night,9)&&FS47Happenings::TakePointOut(nullptr,9),TEXT("the array's burst and a logged landing count against the night's one pointing-out, as the bearing slip does"));
+ }
+ {
+  // PT-FEEDER-20261109 (d37: lights at the feeder at 03:22, the big night at 03:35, the site's visit refused for the big night's slot):
+  // the big night and the lights' report never share a night. Planned for night 2: night 2 is its own before it comes and after,
+  // nights 1 and 3 are not; slept through or come on 3, that night. A report is the night's one pointing-out: not after a slip.
+  using H=FS47Happenings;
+  const bool bOwns=H::BigOwnsNight(2,2,0,true)&&!H::BigOwnsNight(1,2,0,true)&&!H::BigOwnsNight(3,2,0,true)&&H::BigOwnsNight(2,2,2,true)&&!H::BigOwnsNight(3,2,2,true)
+   &&H::BigOwnsNight(3,2,3,true)&&!H::BigOwnsNight(2,2,0,false)&&!H::BigOwnsNight(2,2,-1,true)&&!H::BigOwnsNight(0,0,0,true);
+  bool bApart=true;
+  for(const TCHAR* L:{TEXT("town_lights"),TEXT("farm_lights")})for(const bool bPoint:{true,false})bApart&=!LightsMayCome(L,true,bPoint);
+  FS47FreeformDirector Rep(nullptr);Rep.Begin(Saved);
+  const bool bFree=LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(5));Rep.NotePointOut(5);
+  const bool bSpent=!LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(5))&&LightsMayCome(TEXT("farm_lights"),false,Rep.MayPointOut(5))&&LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(6));
+  Check(bOwns&&bApart&&bFree&&bSpent,TEXT("the big night and the lights' report never overlap: the big night owns its night, before and after it comes, and a report is the night's one pointing-out"));
  }
  auto Active=S47J::Clone(Saved);S47J::Set(Active,TEXT("event"),TEXT("extra_pulse"));S47J::Set(Active,TEXT("age"),12.5);S47J::Set(Active,TEXT("controlled"),true);R.Begin(Active);
  Check(R.ActiveEvent()==TEXT("extra_pulse")&&R.EventAge()==12.5&&R.Busy(),TEXT("pending incident restores its selected identity, control and phase"));

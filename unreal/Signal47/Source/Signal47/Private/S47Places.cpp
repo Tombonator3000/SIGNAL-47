@@ -583,6 +583,8 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  const double Now=F.Clock();const int32 Night=FS47FreeformSession::NightOf(Now);
  // At most one thing a night at SARO points out at the land: the Director holds it (director.json point_out_per_night).
  if(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day())return false;
+ // PT-FEEDER-20261109: the big night's night is its own (FS47Happenings::BigOwns): it points, nothing else does, before it or after.
+ if(F.Happenings&&F.Happenings->BigOwns(Night))return false;
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  // What is off the main beam tonight: the marks, if there are any and their tier allows it at this hour (director.json: before
  // midnight only what can be explained away); otherwise something out on the land nobody has looked at.

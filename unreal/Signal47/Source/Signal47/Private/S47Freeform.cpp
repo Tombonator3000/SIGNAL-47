@@ -3540,7 +3540,7 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
- if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,false});}
+ if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,Director->ReportDone()});} // PT-FEEDER-20261109
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
@@ -4216,6 +4216,36 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  }
  {bool bNamed=true;for(int32 L0=0;L0<FS47FarmSite::SecondCallLines;++L0)bNamed&=FS47FarmSite::SecondCallLine(L0,TEXT("the church")).Contains(TEXT("the church"));Check(bNamed,TEXT("Calls: every second call names the place and says nothing about what it is"));}
  Check(FS47FreeformCases::LineForFinding(TEXT("farm_trace_daylight_d3"))==2,TEXT("Marks: a daylight record goes to the visitors' case"));
+ {
+  // PT-FEEDER-20261109 (d37: «lights at the remote feeder», only sounds and a flickering lamp, the line never ticked off). A reported
+  // place always gives at least one find, at every hour: an arrival record of its own for each tier and pick, naming the place, never
+  // the same at two hours; a lead in OUT ON THE LAND (case 8) and a field record in the notebook; and the report is then done.
+  bool bEvery=true,bApart=true;
+  for(int32 T0=0;T0<FS47FarmSite::ArrivalTiers;++T0)for(int32 P0=0;P0<FS47FarmSite::ArrivalPicks;++P0)
+  {
+   const FString A0=FS47FarmSite::ArrivalText(T0,P0,TEXT("the remote feeder on the county road"));
+   bEvery&=A0.StartsWith(TEXT("The remote feeder on the county road, "))&&A0.Contains(TEXT("dark patches in the dirt"))&&A0.Len()>80&&!FS47FarmSite::ArrivalToast(T0).IsEmpty()&&!A0.Contains(TEXT("47"));
+   for(int32 T1=T0+1;T1<FS47FarmSite::ArrivalTiers;++T1)for(int32 P1=0;P1<FS47FarmSite::ArrivalPicks;++P1)bApart&=A0!=FS47FarmSite::ArrivalText(T1,P1,TEXT("the remote feeder on the county road"));
+  }
+  const FString Key=FS47FarmSite::ArrivalKey(TEXT("feeder"),2);
+  FS47FreeformSession Out(nullptr);Out.Begin(nullptr);
+  const bool bBefore=!FS47FarmSite::CheckedIn(Out,TEXT("feeder"),2,false);
+  Out.RecordEvidence(Key,FS47FarmSite::ArrivalText(2,0,TEXT("the remote feeder on the county road")));
+  const auto* Land=Out.CaseFile().Get(FS47FreeformCases::LandLine);
+  const bool bLead=FS47FreeformCases::LineForFinding(Key)==FS47FreeformCases::LandLine&&FS47FreeformCases::LineForFinding(TEXT("lights_trace_feeder"))==FS47FreeformCases::LandLine
+   &&FS47FreeformCases::LineForFinding(TEXT("lights_trace_feeder_daylight_d3"))==FS47FreeformCases::LandLine&&Land&&Land->bOpen&&Land->Leads.Contains(Key)&&Out.HasFinding(Key)&&Out.FieldRecordKept();
+  const bool bDone=FS47FarmSite::CheckedIn(Out,TEXT("feeder"),2,false)&&!FS47FarmSite::CheckedIn(Out,TEXT("feeder"),3,false)&&!FS47FarmSite::CheckedIn(Out,TEXT("church"),2,false);
+  FS47FreeformSession Looked(nullptr);Looked.Begin(nullptr);Looked.RecordEvidence(TEXT("lights_trace_church"),TEXT("Open ground outside the church, the night of the lights."));
+  FS47FreeformSession Morning(nullptr);Morning.Begin(nullptr);Morning.RecordEvidence(TEXT("farm_trace_daylight_d3"),TEXT("Pasture at the Alderete place, by daylight."));
+  const bool bOther=FS47FarmSite::CheckedIn(Looked,TEXT("church"),4,false)&&FS47FarmSite::CheckedIn(Morning,TEXT("farm"),2,false)&&FS47FarmSite::CheckedIn(Out,TEXT("motel"),2,true);
+  const bool bNote=FS47FreeformDirector::ReportDoneWith(false,true,true)&&!FS47FreeformDirector::ReportDoneWith(true,true,true)&&!FS47FreeformDirector::ReportDoneWith(false,true,false)&&!FS47FreeformDirector::ReportDoneWith(false,false,true);
+  Check(bEvery&&bApart&&bBefore&&bLead&&bDone&&bOther&&bNote,TEXT("Reported place: at every hour a find of its own, kept in the notebook and as a lead out on the land, and the report ticked off once the place is found or found empty"));
+  // The big night has the night: marks standing tonight keep what they are, but nothing more comes and no second call goes out.
+  FS47FarmSite Yield(nullptr);Yield.TestArm(5*86400.);const bool bWould=Yield.WillStandAt(4*86400.)&&!Yield.Nudged();
+  Yield.YieldTo(TEXT("big_night"));
+  Check(bWould&&!Yield.WillStandAt(4*86400.)&&Yield.Nudged()&&Yield.Yielded()&&Yield.VisitStage()==4&&Yield.Armed(),TEXT("Reported place: marks standing on the big night's night yield to it, and stay to be found"));
+  Out.Stop();Looked.Stop();Morning.Stop();
+ }
  {
   FS47FreeformSession Trust(nullptr);Trust.Begin(nullptr);
   Check(!Trust.DeputyOnRoute()&&Trust.SheriffTrust()==0,TEXT("Patrol: nobody has written to the county yet"));

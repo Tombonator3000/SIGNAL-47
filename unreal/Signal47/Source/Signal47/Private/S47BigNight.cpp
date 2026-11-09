@@ -1,6 +1,7 @@
 #include "S47Happenings.h"
 #include "S47Audio.h"
 #include "S47Drive.h"
+#include "S47FarmSite.h"
 #include "S47EventPlaces.h"
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
@@ -169,6 +170,11 @@ bool FS47Happenings::BigWakes(int32 Night) const
 {
  return BigNight==0&&M&&M->Freeform&&!M->Freeform->InTutorial()&&!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural)&&BigPlan().Night==Night;
 }
+bool FS47Happenings::BigOwns(int32 Night) const
+{
+ if(!M||!M->Freeform||M->Freeform->InTutorial())return false;
+ return BigOwnsNight(Night,BigPlan().Night,BigNight,!(M->Flow&&M->Flow->bDevRun&&!bBigDevNatural));
+}
 FString FS47Happenings::BigSpoken() const{return Spoken(BigTitle.IsEmpty()?FString(TEXT("the flat")):BigTitle);}
 
 // ---------------------------------------------------------------- saving
@@ -259,6 +265,11 @@ bool FS47Happenings::BeginBig(const FString& Variant,bool bForced,FString& Why)
   if(bHere)A->Far(TEXT("dog1"),Eye()+S47Big::Level(Ground-Eye())*120.+FVector(0,2,0),.3f,.9f);
  }
  Noticed(TEXT("big_night"),-1,TEXT("here"),Serial+1);
+ // PT-FEEDER-20261109 (d37): the big night owns its night and points at its own place. Marks some lights left tonight stay what they
+ // are, a record to find, but nothing more comes to them and no second call sends the player there; and it is the night's one
+ // pointing-out (FS47FreeformDirector::MayPointOut), so no bearing slip sends the player anywhere else after it.
+ if(F->FarmSite)F->FarmSite->YieldTo(TEXT("big_night"));
+ if(!bForced&&F->Director&&F->Director->MayPointOut(Night))F->Director->NotePointOut(Night);
  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night begins day %d %s, %s, in %s%s"),Night,*S47Hap::ClockText(F->Clock()),BigVariantName(BigVar),*M->Web->Area(),bForced?TEXT(", F10"):TEXT(""));
  return true;
 }

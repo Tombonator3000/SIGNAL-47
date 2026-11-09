@@ -24,6 +24,10 @@ public:
  int32 PointOutsOn(int32 Night) const{return PointNight==Night?PointCount:0;}
  bool MayPointOut(int32 Night) const{return PointOutsOn(Night)<PointOutLimit();}
  void NotePointOut(int32 Night);
+ // PT-FEEDER-20261109 (d37): whether lights may come tonight, past their own dice and hours. Neither kind on the big night's night
+ // (FS47Happenings::BigOwns): it owns the night. And lights heard of (town_lights) send the player out, so they are the night's one
+ // pointing-out: not after a bearing slip, and none after them (Start notes it).
+ static bool LightsMayCome(const FString& Id,bool bBigOwnsNight,bool bMayPointOut){return !bBigOwnsNight&&(Id!=TEXT("town_lights")||bMayPointOut);}
  // Whether what an event left out on the land may be pointed at now: the event's tier in director.json against the hour
  // (S47NightTiers: before midnight only a hint). An event the file does not have counts as full.
  bool MayPointAt(const FString& EventId,double Clock,int32 Night) const;
@@ -88,6 +92,11 @@ public:
  void EndForRest();
  // A task row while lights are reported somewhere, and while their marks stand. Empty otherwise.
  FString ReportedLine() const;
+ // PT-FEEDER-20261109 (d37: the feeder looked at, the line still open): the report on tonight's note is ticked off once the player
+ // has been to the place and found something there, or found it gone over and empty (FS47FarmSite::Checked). Not while the lights
+ // are still up, and not for a landing's report, which is its own.
+ bool ReportDone() const;
+ static bool ReportDoneWith(bool bLightsUp,bool bArmed,bool bChecked){return !bLightsUp&&bArmed&&bChecked;}
  // What the night's mystery still has to show, as a task row, while it can be found.
  FString MysteryTrailHint() const;
  explicit FS47FreeformDirector(US47Main* Main);

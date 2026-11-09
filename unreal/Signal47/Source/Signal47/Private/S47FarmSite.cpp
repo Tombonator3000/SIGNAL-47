@@ -38,6 +38,8 @@
 #include "S47OpenLand.h"
 #include "S47Visitors.h"
 #include "S47WeekCase.h"
+#include "S47Happenings.h"
+#include "S47NightTiers.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -254,6 +256,7 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;bBound=false;
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
  Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bFalseCall=S47J::Bool(Saved,TEXT("falseCall"));EmptyTipNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("emptyTip"))):0;bStallSet=false;HushIn=0;
+ bCheckedEmpty=S47J::Bool(Saved,TEXT("checkedEmpty"));bYielded=S47J::Bool(Saved,TEXT("yielded"));bFigureAsked=false;FigureIn=0;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -296,6 +299,8 @@ S47J::FObj FS47FarmSite::Save() const
  if(FieldMisses>0)S47J::Set(O,TEXT("fieldMisses"),FieldMisses);
  // Saved in the middle of a field visit: the marks as they stand, and the visit is over on Continue.
  const FVector SavedAt=bField?Home.Middle:Middle;
+ if(ClearAt>0&&bCheckedEmpty)S47J::Set(O,TEXT("checkedEmpty"),true);
+ if(ClearAt>0&&bYielded)S47J::Set(O,TEXT("yielded"),true);
  if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),(bField?Home.Visit:Visit)==0?0:4);S47J::Set(O,TEXT("place"),bField?Home.Place:Place);S47J::Set(O,TEXT("title"),bField?Home.Title:Title);S47J::Set(O,TEXT("area"),bField?Home.Area:AreaId);S47J::Set(O,TEXT("at"),TArray<double>{SavedAt.X,SavedAt.Y,SavedAt.Z});S47J::Set(O,TEXT("nudged"),bNudged);}
  return O;
 }
@@ -309,6 +314,7 @@ void FS47FarmSite::Arm(double Clock,const FString& InPlace,const FString& InTitl
  if(Visit>=1&&Visit<=3)EndVisit(false);
  ClearAt=FMath::FloorToDouble((Clock-Morning)/Day+1)*Day+Morning;
  Place=InPlace;Title=InTitle;AreaId=InArea;Middle=Point;
+ bYielded=bCheckedEmpty=bFigureAsked=false;FigureIn=0;
  // Not every night's lights leave something behind that comes back for you.
  const float Comes=M&&M->Freeform?M->Freeform->SiteVisitChance():.6f;
  Visit=FMath::FRand()<Comes&&Clock>=CalmUntil?0:4;VisitDwell=0;
@@ -367,6 +373,9 @@ void FS47FarmSite::Step(double Dt)
    if(S47OpenLand::RoadOf(AreaId==TEXT("diner")?FString(TEXT("road")):AreaId,Middle.X,Middle.Z,RoadX,RoadZ))M->Freeform->Visitors->RakeAt(Place,M->Freeform->EventPlaces->LastNight(Place),RoadX,RoadZ);
    UE_LOG(LogTemp,Display,TEXT("S47: lights site %s gone over by the military: marks hidden"),*Place);
   }
+  // PT-FEEDER-20261109: come out to it and found it gone over: checked, and empty (the raked circle is its own record).
+  if(!bCheckedEmpty&&!bField&&M->Player&&M->World&&!M->World->bDriving&&Here()&&FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size()<=ArriveWithin)
+  {bCheckedEmpty=true;UE_LOG(LogTemp,Display,TEXT("S47: lights site %s checked: gone over, nothing left"),*Place);M->RequestAutosave();}
   StepFieldDraw(Dt);return;
  }
  // A menu holds all of it: no sound starts, no second counts.
@@ -382,6 +391,8 @@ void FS47FarmSite::Step(double Dt)
  if(!Live()||!M->Audio||!M->Player||!M->Web||!Here())return;
  const double Dist=FVector2D(M->Player->Pos.X-Middle.X,M->Player->Pos.Z-Middle.Z).Size();
  StepVisit(Dt,Dist);
+ StepArrival(Dist);
+ StepFigure(Dt,Dist);
  // Everything out here goes quiet first; a stretch at a time, so that it comes back on its own whatever ends this.
  if(VisitHushed())
  {
@@ -799,4 +810,81 @@ bool FS47FarmSite::Use()
  M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col(Rows),760));
  if(bNew)M->RequestAutosave();
  return true;
+}
+
+// ---------------------------------------------------------------- PT-FEEDER-20261109: what a reported place gives
+int32 FS47FarmSite::SiteNight() const{return ClearAt>0?FS47FreeformSession::NightOf(ClearAt)-1:0;}
+bool FS47FarmSite::CheckedIn(const FS47FreeformSession& F,const FString& InPlace,int32 Night,bool bEmpty)
+{
+ if(bEmpty||F.HasFinding(ArrivalKey(InPlace,Night)))return true;
+ // The marks looked at, at night or by daylight (the morning after is still the marks' night until eight).
+ const FString Marks=InPlace==TEXT("farm")?FString(TEXT("farm_trace")):TEXT("lights_trace_")+InPlace;
+ return F.HasFinding(Marks)||F.HasFinding(FString::Printf(TEXT("%s_daylight_d%d"),*Marks,Night))||F.HasFinding(FString::Printf(TEXT("%s_daylight_d%d"),*Marks,Night+1));
+}
+bool FS47FarmSite::Checked() const
+{
+ if(bField||!Armed()||!M||!M->Freeform)return false;
+ return CheckedIn(*M->Freeform,Place,SiteNight(),bCheckedEmpty);
+}
+void FS47FarmSite::YieldTo(const TCHAR* Why)
+{
+ // A meeting already under way is not cut off: the rhythm keeps the big night from starting on top of one anyway.
+ if(bField||ClearAt<=0||(Visit>=1&&Visit<=3))return;
+ const bool bHad=Visit==0||bFalseCall||!bNudged;
+ Visit=4;bFalseCall=false;bNudged=true;bYielded=true;
+ if(bHad)UE_LOG(LogTemp,Display,TEXT("S47: lights site %s yields to %s: the marks stay, nothing comes to them tonight"),*Place,Why);
+ if(M)M->RequestAutosave();
+}
+FString FS47FarmSite::ArrivalText(int32 Tier,int32 Pick,const FString& InTitle)
+{
+ // Written as the player would note it: what is there, never what it means. The night's hour decides how much is there.
+ static const TCHAR* const Lines[ArrivalTiers][ArrivalPicks]={
+  {TEXT("{t}, after dark. A few steps off, nine dark patches in the dirt, and the air over them smells of hot dust and struck matches, like a fuse gone. Somebody's truck, maybe."),
+   TEXT("{t}, after dark. A ring of dark patches in the dirt a few steps off, and a smell like a blown transformer, stronger inside the ring than out of it.")},
+  {TEXT("{t}, past midnight. Round the dark patches in the dirt the grass is singed brown at the tips, every blade on the side toward the middle. No fire ring, no ash, no bottles."),
+   TEXT("{t}, past midnight. The brush beside the dark patches in the dirt is scorched on one side only, as if something hot had stood low over them. The ground in the ring is dry, the ground beside it damp.")},
+  {TEXT("{t}, in the small hours. A jackrabbit lies at the edge of the dark patches in the dirt, on its side with its eyes open, not a mark on it. The ground under it is still warm."),
+   TEXT("{t}, in the small hours. Three sparrows lie at the edge of the dark patches in the dirt, side by side, not a mark on them. Nothing has been at them. The air in the ring smells of struck matches.")},
+  {TEXT("{t}, in the morning. Nine dark patches in the dirt, the grass round them singed brown at the tips. A jackrabbit lies dead at the edge of them, not a mark on it."),
+   TEXT("{t}, in the morning. Nine dark patches in the dirt. The brush beside them is scorched on one side only, and dead moths lie all over the ring.")}};
+ FString Page=FString(Lines[FMath::Clamp(Tier,0,ArrivalTiers-1)][FMath::Clamp(Pick,0,ArrivalPicks-1)]).Replace(TEXT("{t}"),*InTitle);
+ if(!Page.IsEmpty())Page[0]=FChar::ToUpper(Page[0]);
+ return Page;
+}
+FString FS47FarmSite::ArrivalToast(int32 Tier)
+{
+ static const TCHAR* const Says[ArrivalTiers]={
+  TEXT("FIELD / A smell of struck matches, and dark patches in the dirt a few steps off. Kept in your notebook; look closer at the marks."),
+  TEXT("FIELD / Singed grass round dark patches in the dirt a few steps off. Kept in your notebook; look closer at the marks."),
+  TEXT("FIELD / Something dead at the edge of dark patches in the dirt a few steps off. Kept in your notebook; look closer at the marks."),
+  TEXT("FIELD / The marks by daylight, a few steps off, and what the night left by them. Kept in your notebook.")};
+ return Says[FMath::Clamp(Tier,0,ArrivalTiers-1)];
+}
+void FS47FarmSite::StepArrival(double Dist)
+{
+ if(bField||!Armed()||Raked()||!M||!M->Freeform||!M->World||M->World->bDriving||Dist>ArriveWithin)return;
+ auto& F=*M->Freeform;
+ const int32 Night=SiteNight();const FString Key=ArrivalKey(Place,Night);
+ if(F.HasFinding(Key))return;
+ const double Clock=F.Clock();
+ const int32 Tier=ByDaylight(Clock)?3:int32(S47NightTiers::AtClock(Clock,FS47FreeformSession::NightOf(Clock)));
+ const int32 Pick=FMath::Clamp(int32(FS47NightRhythm::Roll(F.Seed(),Night,FCrc::StrCrc32(*Place)^0x41525256u)*ArrivalPicks),0,ArrivalPicks-1);
+ F.RecordEvidence(Key,ArrivalText(Tier,Pick,Title));
+ if(M->UI)M->UI->Toast(ArrivalToast(Tier),7);
+ UE_LOG(LogTemp,Display,TEXT("S47: lights site %s: arrival record kept (tier %d, pick %d, %.0f m from the marks), visit %d"),*Place,Tier,Pick,Dist,Visit);
+ M->RequestAutosave();
+}
+void FS47FarmSite::StepFigure(double Dt,double Dist)
+{
+ // Nothing is coming to these marks (the dice said so), and the hour allows a glimpse: a while after the player has found them, a
+ // figure may stand far off past them (FS47Happenings' horizon_figure, asked as the night asks it: the rhythm, the tier, on foot).
+ // Once for these marks. Not when the big night has the night (YieldTo).
+ if(bFigureAsked||bField||bYielded||Visit!=4||!Armed()||Raked()||!M||!M->Freeform||!M->World||M->World->bDriving||Dist>60)return;
+ auto& F=*M->Freeform;const double Clock=F.Clock();
+ if(ByDaylight(Clock)||!S47NightTiers::Allows(ES47Allowed::Glimpse,FMath::Fmod(Clock,86400.)/3600.,FS47FreeformSession::NightOf(Clock)))return;
+ if(!F.HasFinding(ArrivalKey(Place,SiteNight()))){FigureIn=0;return;}
+ FigureIn+=Dt;if(FigureIn<20)return;
+ bFigureAsked=true;
+ FString Why;const bool bCame=F.Happenings&&F.Happenings->Request(TEXT("horizon_figure"),Why);
+ UE_LOG(LogTemp,Display,TEXT("S47: lights site %s: a figure far off past the marks: %s"),*Place,bCame?TEXT("it stands there"):*(TEXT("not tonight, ")+Why));
 }

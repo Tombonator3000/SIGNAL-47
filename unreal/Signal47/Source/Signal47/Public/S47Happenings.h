@@ -78,6 +78,9 @@ public:
  bool DevStart(const FString& Id,const FString& Variant,FString& Why);
  // F10 and tests: as the night itself would start it, with every condition asked (only the rhythm's dice and draws left out).
  bool DevTry(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
+ // PT-FEEDER-20261109: asked for by a place the player has come out to (FS47FarmSite: a figure far off past the marks), with every
+ // condition asked as the night itself would ask it: the rhythm, the tier, the player's situation. Why: what stopped it.
+ bool Request(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
  int32 DangersMet() const{return MetTotal;}
  // Whatever is on the ground is over at once; with bSites the lasting ones go too. Test runs only.
  void DevClear(bool bSites);
@@ -155,6 +158,11 @@ public:
  bool BigLive() const{return Now.Id==TEXT("big_night");}
  // A sleeper on this night is woken for it (FS47FreeformDirector::DrawForNight).
  bool BigWakes(int32 Night) const;
+ // PT-FEEDER-20261109 (d37): the big night's night is its own from dusk to morning, before it comes and after: no lights reported or
+ // seen elsewhere (FS47FreeformDirector::LightsMayCome), no bearing slip (FS47Places), nothing more to marks already standing.
+ bool BigOwns(int32 Night) const;
+ // The rule by itself: the planned night while it has not come (and the game is not a dev run), or the night it came.
+ static bool BigOwnsNight(int32 Night,int32 PlannedNight,int32 CameNight,bool bWaits){return Night>0&&((CameNight==0&&bWaits&&Night==PlannedNight)||CameNight==Night);}
  // What of the day after has come: "array", "dale", "slip", "radio", "cb", "seen", "felt", "trace", "unseen".
  bool BigHas(const FString& What) const{return BigFollow.Contains(What);}
  // F10 and tests: the day after's follow-ups now, as far as where the player is allows (Dale's hail, the array's record).

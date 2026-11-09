@@ -5,6 +5,7 @@
 #include "S47VisitAttention.h"
 class US47Main;
 class AS47Web;
+class FS47FreeformSession;
 class UStaticMeshComponent;
 class ULocalFogVolumeComponent;
 struct FS47EventPlace;
@@ -94,6 +95,32 @@ public:
  static float FieldChanceFor(int32 Night,int32 Misses,bool bLit);
  static bool OutOnFoot(const FString& Area,double FromStation,bool bDriving,bool bRoof);
  int32 FieldDrawnNight() const{return FieldNight;}
+ // PT-FEEDER-20261109 (d37, Tom: «lights at the remote feeder ... skal det være noe mer?»). A trip out to a reported place always
+ // brings something home (HELHETLIG_LOKKE: an empty trip rules a place out or gives a lead). What is there, by the hour of arrival:
+ //   always      the arrival record (below), the marks to look closer at, the sound from the place, the haze, the look by daylight
+ //   18 to 24    a smell of struck matches over the marks: a hint, explained away by a truck or a fuse
+ //   24 to 02    singed grass or scorched brush round the marks; a figure far off past them, if nothing is coming to them
+ //   after 02    something dead at the edge of the marks; the figure far off, or the visit (the dice, the rhythm)
+ //   morning     what the night left, by daylight
+ // The arrival record is kept the first time the player is on foot within ArriveWithin of the marks: a field record in the notebook
+ // and a lead in OUT ON THE LAND (FS47FreeformCases::LineForFinding, lights_trace_), and the toast says where the marks are.
+ static constexpr double ArriveWithin=30;
+ static constexpr int32 ArrivalTiers=4,ArrivalPicks=2; // tiers: 0 hint, 1 glimpse, 2 full, 3 by daylight
+ static FString ArrivalKey(const FString& InPlace,int32 Night){return FString::Printf(TEXT("lights_trace_%s_arrive_d%d"),*InPlace,Night);}
+ static FString ArrivalText(int32 Tier,int32 Pick,const FString& InTitle);
+ static FString ArrivalToast(int32 Tier);
+ // The night the marks were made (they clear at the next noon), 0 with none.
+ int32 SiteNight() const;
+ // The report on tonight's note is done (FS47FreeformDirector::ReportDone): the player has been there and found something (the
+ // arrival record, the marks looked at, the daylight look), or found the place gone over and empty.
+ bool Checked() const;
+ static bool CheckedIn(const FS47FreeformSession& F,const FString& InPlace,int32 Night,bool bEmpty);
+ // The big night owns its night (FS47Happenings::BigOwns): marks standing tonight stay what they are, a record to find, but nothing
+ // more comes to them, no second call is made about them and no figure stands past them.
+ void YieldTo(const TCHAR* Why);
+ bool Yielded() const{return bYielded;}
+ // Test: marks standing until Until with a visit still to come, as Arm leaves them, without a world.
+ void TestArm(double Until){ClearAt=Until;Visit=0;bNudged=false;bFalseCall=false;bYielded=false;bCheckedEmpty=false;}
  // Test: the next field draw, in place of the game's own.
  void TestFieldRoll(float Roll){FieldRoll=Roll;}
 private:
@@ -147,6 +174,11 @@ private:
  void StepFieldDraw(double Dt);
  void RestoreHome();
  bool Live() const{return Armed()||bField;}
+ // PT-FEEDER-20261109: the arrival record, the place found gone over, and the figure far off past the marks (asked for once).
+ bool bYielded=false,bCheckedEmpty=false,bFigureAsked=false;
+ double FigureIn=0;
+ void StepArrival(double Dist);
+ void StepFigure(double Dt,double Dist);
  void StepEmptyTip();
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;

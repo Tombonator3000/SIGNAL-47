@@ -327,6 +327,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
  if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
+ // PT-FEEDER-20261109: what lights leave at a place out there (FS47FarmSite: the arrival record, the marks, their daylight look and a
+ // visit at them) is a lead on the land. The farm's own marks (farm_trace) share the station's ground and stay with the visitors.
+ if(Id.StartsWith(TEXT("lights_trace_")))return LandLine;
  // Around the base: the station, its doors and rooms, the farm that shares its ground, a taking.
  if(Id.Contains(TEXT("_daylight_d"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
  // LOOP-WHOLE-20261109, step 2: out on the land. What the night's events leave there (FS47Happenings), a thing moved at a place, the
