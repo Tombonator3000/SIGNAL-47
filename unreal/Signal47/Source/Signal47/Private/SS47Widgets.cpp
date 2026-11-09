@@ -974,36 +974,40 @@ void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 
 		Reach = FMath::Max(Reach, float(M->Freeform->Fatigue->EdgeReach()));
 		Lids = float(M->Freeform->Fatigue->Lids());
 	}
+	// VIGNETTE-STEPS-20261109 (Tom, d37): the lids and the rim were frames laid on frames (12 and 14 boxes), which showed as hard
+	// rectangles, each a step darker, round the lights and the abduction's glare. Now each is one smooth shade: a mesh whose vertices
+	// carry the darkness (S47HudGauges::RimShade, LidShade) and the card blends between them, one element each. Same colours,
+	// the same darkness at the edge and the same reach.
+	const auto Shade = [&](const S47HudGauges::FShadeMesh& Mesh, const FLinearColor& Col)
+	{
+		if (Mesh.Index.IsEmpty() || !FSlateApplication::IsInitialized()) return;
+		const FSlateRenderTransform& T = G.GetAccumulatedRenderTransform();
+		TArray<FSlateVertex> Verts;
+		Verts.Reserve(Mesh.At.Num());
+		for (int32 I = 0; I < Mesh.At.Num(); ++I)
+		{
+			FLinearColor C = Col;
+			C.A = FMath::Clamp(Mesh.Alpha[I], 0.f, 1.f);
+			Verts.Add(FSlateVertex::Make<ESlateVertexRounding::Disabled>(T, Mesh.At[I], FVector2f::ZeroVector, C.ToFColor(true)));
+		}
+		TArray<SlateIndex> Index;
+		Index.Reserve(Mesh.Index.Num());
+		for (const uint32 I : Mesh.Index) Index.Add(SlateIndex(I));
+		const FSlateResourceHandle Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(*FCoreStyle::Get().GetBrush(TEXT("WhiteBrush")));
+		FSlateDrawElement::MakeCustomVerts(Out, Layer, Handle, Verts, Index, nullptr, 0, 0);
+	};
+	S47HudGauges::FShadeMesh Mesh;
 	if (Lids > 0.004f)
 	{
 		// each lid a soft dark band, darkest at the screen's edge; at 1 they meet in the middle
-		constexpr int32 LidBands = 12;
 		const float Edge = FMath::Lerp(0.8f, 0.985f, FMath::Clamp(Lids, 0.f, 1.f));
-		const float LidEach = 1.f - FMath::Pow(1.f - Edge, 1.f / LidBands);
-		const FLinearColor Lid(0.012f, 0.008f, 0.006f, LidEach);
 		const float Deep = S.Y * 0.5f * FMath::Min(1.f, Lids * 1.08f);
-		for (int32 I = 1; I <= LidBands; ++I)
-		{
-			const float Dy = Deep * I / LidBands;
-			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, 0.f))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
-			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, S.Y - Dy))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
-		}
+		S47HudGauges::LidMesh(S, Deep, Edge, Mesh);
+		Shade(Mesh, FLinearColor(0.012f, 0.008f, 0.006f));
 	}
 	if (Alpha < 0.004f || Reach <= 0.f) return;
-	// nested frames, each a little darker toward the edge: a soft dark rim without a texture or a post-process material
-	constexpr int32 Bands = 14;
-	const float Each = 1.f - FMath::Pow(1.f - FMath::Min(Alpha, 0.95f), 1.f / Bands);
-	const FLinearColor Dark(0.02f, 0.f, 0.f, Each);
-	auto Fill = [&](float X0, float Y0, float X1, float Y1)
-	{
-		if (X1 > X0 && Y1 > Y0) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(X1 - X0, Y1 - Y0), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, Dark);
-	};
-	for (int32 I = 1; I <= Bands; ++I)
-	{
-		const float Dx = S.X * Reach * I / Bands, Dy = S.Y * Reach * I / Bands;
-		Fill(0.f, 0.f, S.X, Dy); Fill(0.f, S.Y - Dy, S.X, S.Y);
-		Fill(0.f, Dy, Dx, S.Y - Dy); Fill(S.X - Dx, Dy, S.X, S.Y - Dy);
-	}
+	S47HudGauges::RimMesh(S, Reach, Alpha, Mesh);
+	Shade(Mesh, FLinearColor(0.02f, 0.f, 0.f));
 }
 
 int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const

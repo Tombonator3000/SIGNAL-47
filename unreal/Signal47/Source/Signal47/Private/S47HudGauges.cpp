@@ -355,6 +355,107 @@ double S47HudGauges::BackingStrength(double Daylight)
 	return 0.15 + 0.85 * FMath::SmoothStep(0.05, 0.6, Lit);
 }
 
+// ---------- the dark edge (VIGNETTE-STEPS-20261109) ----------
+
+namespace
+{
+	// how far the rim's corners are rounded: 2 a circle, larger nearer the old square corner
+	constexpr double RimCornerPower = 3.0;
+	// vertices across each side's reach: at 1920 pixels and the widest reach, one every 18 pixels or so
+	constexpr int32 RimSteps = 40, LidSteps = 40;
+	constexpr double RimMost = 0.95;
+
+	bool Usable(double X) { return FMath::IsFinite(X); }
+
+	// The axis' stops: the edge, through the reach, and the same from the far side. Sorted, without doubles.
+	void Stops(double Reach, int32 Steps, TArray<double>& Out)
+	{
+		Out.Reset();
+		const double R = FMath::Clamp(Reach, 0.0, 0.5);
+		for (int32 I = 0; I <= Steps; ++I) { Out.Add(R * I / Steps); Out.Add(1.0 - R * I / Steps); }
+		Out.Sort();
+		TArray<double> Kept;
+		for (const double S : Out) if (Kept.IsEmpty() || S - Kept.Last() > 1e-6) Kept.Add(S);
+		Out = MoveTemp(Kept);
+	}
+
+	// Two triangles over a cell, split along the diagonal whose ends are most alike, so the split follows the shade.
+	void Cell(S47HudGauges::FShadeMesh& M, uint32 A, uint32 B, uint32 C, uint32 D)
+	{
+		// A B
+		// C D
+		constexpr float Seen = 0.5f / 255.f;
+		if (M.Alpha[A] < Seen && M.Alpha[B] < Seen && M.Alpha[C] < Seen && M.Alpha[D] < Seen) return;
+		if (FMath::Abs(M.Alpha[A] - M.Alpha[D]) <= FMath::Abs(M.Alpha[B] - M.Alpha[C])) M.Index.Append({ A, B, D, A, D, C });
+		else M.Index.Append({ A, B, C, B, D, C });
+	}
+}
+
+double S47HudGauges::RimShade(double U, double V, double Reach, double Alpha)
+{
+	if (!Usable(U) || !Usable(V) || !Usable(Reach) || !Usable(Alpha) || Reach <= 0.0 || Alpha <= 0.0) return 0.0;
+	const double A = FMath::Min(Alpha, RimMost);
+	// nearness to each edge, 1 at the edge and 0 at the reach, in each side's own share as the old frames were
+	const double Wx = FMath::Clamp(1.0 - FMath::Min(U, 1.0 - U) / Reach, 0.0, 1.0);
+	const double Wy = FMath::Clamp(1.0 - FMath::Min(V, 1.0 - V) / Reach, 0.0, 1.0);
+	const double C = FMath::Min(1.0, FMath::Pow(FMath::Pow(Wx, RimCornerPower) + FMath::Pow(Wy, RimCornerPower), 1.0 / RimCornerPower));
+	// in softly from the inner end, still rising at the edge
+	const double E = C * C * (2.0 - C);
+	// the old frames laid N shades of 1-(1-A)^(1/N) over each other: 1-(1-A)^(share of the frames a point was inside), here without steps
+	return 1.0 - FMath::Pow(1.0 - A, E);
+}
+
+double S47HudGauges::LidShade(double Y, double Deep, double Edge)
+{
+	if (!Usable(Y) || !Usable(Deep) || !Usable(Edge) || Deep <= 0.0 || Edge <= 0.0) return 0.0;
+	const double C = FMath::Clamp(1.0 - Y / Deep, 0.0, 1.0);
+	return 1.0 - FMath::Pow(1.0 - FMath::Min(Edge, 0.999), C);
+}
+
+void S47HudGauges::RimMesh(const FVector2f& Size, double Reach, double Alpha, FShadeMesh& Out)
+{
+	Out.Reset();
+	if (Size.X <= 0.f || Size.Y <= 0.f || !Usable(Reach) || !Usable(Alpha) || Reach <= 0.0 || Alpha <= 0.0) return;
+	TArray<double> Su, Sv;
+	Stops(Reach, RimSteps, Su);
+	Stops(Reach, RimSteps, Sv);
+	const int32 Nu = Su.Num(), Nv = Sv.Num();
+	Out.At.Reserve(Nu * Nv); Out.Alpha.Reserve(Nu * Nv);
+	for (int32 J = 0; J < Nv; ++J)
+		for (int32 I = 0; I < Nu; ++I)
+		{
+			Out.At.Add(FVector2f(float(Su[I] * Size.X), float(Sv[J] * Size.Y)));
+			Out.Alpha.Add(float(RimShade(Su[I], Sv[J], Reach, Alpha)));
+		}
+	for (int32 J = 0; J + 1 < Nv; ++J)
+		for (int32 I = 0; I + 1 < Nu; ++I)
+			Cell(Out, uint32(J * Nu + I), uint32(J * Nu + I + 1), uint32((J + 1) * Nu + I), uint32((J + 1) * Nu + I + 1));
+}
+
+void S47HudGauges::LidMesh(const FVector2f& Size, double Deep, double Edge, FShadeMesh& Out)
+{
+	Out.Reset();
+	if (Size.X <= 0.f || Size.Y <= 0.f || !Usable(Deep) || !Usable(Edge) || Deep <= 0.0 || Edge <= 0.0) return;
+	const double D = FMath::Min(Deep, double(Size.Y));
+	// one strip from each edge: a row of two vertices at each step, the shade the same all along it
+	for (const bool bTop : { true, false })
+	{
+		const uint32 First = uint32(Out.At.Num());
+		for (int32 K = 0; K <= LidSteps; ++K)
+		{
+			const double Y = D * K / LidSteps;
+			const float At = float(bTop ? Y : Size.Y - Y), A = float(LidShade(Y, D, Edge));
+			Out.At.Add(FVector2f(0.f, At)); Out.Alpha.Add(A);
+			Out.At.Add(FVector2f(Size.X, At)); Out.Alpha.Add(A);
+		}
+		for (int32 K = 0; K < LidSteps; ++K)
+		{
+			const uint32 R = First + uint32(2 * K);
+			Cell(Out, R, R + 1, R + 2, R + 3);
+		}
+	}
+}
+
 bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -534,5 +635,82 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(BackingStrength(0) <= 0.15 && BackingStrength(0.05) <= 0.15 && BackingStrength(1) == 1.0 && BackingStrength(0.6) == 1.0 && BackingStrength(0.3) > BackingStrength(0.1)
 		&& BackingStrength(std::numeric_limits<double>::quiet_NaN()) <= 0.15 && BackingStrength(-2) <= 0.15 && BackingStrength(5) == 1.0,
 		TEXT("the dark rim under the clock and the battery is faint at night and full against a bright day sky"));
+	// VIGNETTE-STEPS-20261109: the strain's rim and the lids are smooth shades, not frames on frames. A step is a change of more
+	// than 8 of 255 from one pixel to the next on a 1920 x 1080 view; the old 14 frames at 0.7 jumped 21 of 255 at each edge.
+	{
+		constexpr double Step = 8.0 / 255.0;
+		constexpr double W = 1920.0, H = 1080.0;
+		bool bRimSmooth = true, bRimRising = true, bRimEnds = true;
+		FString Worst;
+		for (const double Reach : { 0.1, 0.22, 0.38 })
+			for (const double A : { 0.3, 0.7, 0.95 })
+			{
+				// along the middle of the left side, the edge to the reach and on into the clear middle
+				double Was = RimShade(0.0, 0.5, Reach, A), Most = 0;
+				bRimEnds &= FMath::IsNearlyEqual(Was, FMath::Min(A, 0.95), 1e-6) && RimShade(Reach, 0.5, Reach, A) < 1e-9 && RimShade(0.5, 0.5, Reach, A) == 0.0;
+				for (int32 X = 1; X <= int32(W / 2); ++X)
+				{
+					const double S = RimShade(X / W, 0.5, Reach, A);
+					bRimRising &= S <= Was + 1e-12;
+					Most = FMath::Max(Most, FMath::Abs(Was - S));
+					Was = S;
+				}
+				// and down from a corner, where the old frames met in a hard diagonal
+				Was = RimShade(0.0, 0.0, Reach, A);
+				for (int32 K = 1; K <= int32(H / 2); ++K)
+				{
+					const double S = RimShade(K / W, K / H, Reach, A);
+					bRimRising &= S <= Was + 1e-12;
+					Most = FMath::Max(Most, FMath::Abs(Was - S));
+					Was = S;
+				}
+				if (Most > Step) { bRimSmooth = false; Worst = FString::Printf(TEXT(" (reach %.2f, alpha %.2f: %.1f of 255)"), Reach, A, Most * 255); }
+			}
+		Check(bRimSmooth && bRimRising && bRimEnds, *(FString(TEXT("the strain's rim darkens smoothly toward the edge, as dark there as before and clear past its reach")) + Worst));
+		// the old frames, for the measure: the same test finds their steps
+		{
+			constexpr int32 Bands = 14;
+			const double A = 0.7, Reach = 0.3, Each = 1.0 - FMath::Pow(1.0 - A, 1.0 / Bands);
+			auto Old = [&](double U) { int32 K = 0; for (int32 I = 1; I <= Bands; ++I) K += U < Reach * I / Bands ? 1 : 0; return 1.0 - FMath::Pow(1.0 - Each, K); };
+			double Most = 0;
+			for (int32 X = 1; X <= int32(W / 2); ++X) Most = FMath::Max(Most, FMath::Abs(Old((X - 1) / W) - Old(X / W)));
+			Check(Most > Step, TEXT("the measure catches the old nested frames' steps"));
+		}
+		// the mesh: one element, its vertices on the shade, fine enough that the blend between them hides them
+		FShadeMesh Mesh;
+		RimMesh(FVector2f(float(W), float(H)), 0.38, 0.95, Mesh);
+		bool bMesh = Mesh.At.Num() == Mesh.Alpha.Num() && Mesh.Index.Num() > 0 && Mesh.Index.Num() % 3 == 0 && Mesh.At.Num() < 65536;
+		for (const uint32 I : Mesh.Index) bMesh &= I < uint32(Mesh.At.Num());
+		bool bOn = true, bFine = true;
+		double Gap = 0;
+		for (int32 I = 0; I < Mesh.At.Num(); ++I)
+		{
+			bOn &= FMath::IsNearlyEqual(double(Mesh.Alpha[I]), RimShade(Mesh.At[I].X / W, Mesh.At[I].Y / H, 0.38, 0.95), 1e-5);
+			// the next vertex along the row, if there is one: how big a change the card blends over how many pixels
+			if (I + 1 < Mesh.At.Num() && Mesh.At[I + 1].Y == Mesh.At[I].Y && Mesh.At[I + 1].X > Mesh.At[I].X)
+			{
+				const double Dx = Mesh.At[I + 1].X - Mesh.At[I].X, Da = FMath::Abs(Mesh.Alpha[I + 1] - Mesh.Alpha[I]);
+				Gap = FMath::Max(Gap, Da);
+				bFine &= Da / Dx <= Step;
+			}
+		}
+		Check(bMesh && bOn && bFine && Gap < 0.12, *FString::Printf(TEXT("the rim is one mesh of %d vertices, drawn as one element, %.1f of 255 at most between neighbours"), Mesh.At.Num(), Gap * 255));
+		RimMesh(FVector2f(float(W), float(H)), 0.0, 0.7, Mesh);
+		const bool bNoReach = Mesh.Index.IsEmpty();
+		RimMesh(FVector2f(float(W), float(H)), 0.3, 0.0, Mesh);
+		Check(bNoReach && Mesh.Index.IsEmpty() && RimShade(0, 0, std::numeric_limits<double>::quiet_NaN(), 0.7) == 0.0, TEXT("no rim, no mesh: nothing is drawn while calm"));
+		// the lids: darkest at the screen's edge, smooth to their reach, the same as the old 12 bands at the edge
+		bool bLids = true;
+		for (const double Lids : { 0.3, 0.6, 1.0 })
+		{
+			const double Edge = FMath::Lerp(0.8, 0.985, Lids), Deep = H * 0.5 * FMath::Min(1.0, Lids * 1.08);
+			double Was = LidShade(0, Deep, Edge);
+			bLids &= FMath::IsNearlyEqual(Was, Edge, 1e-6) && LidShade(Deep, Deep, Edge) < 1e-9;
+			for (int32 Y = 1; Y <= int32(Deep); ++Y) { const double S = LidShade(Y, Deep, Edge); bLids &= S <= Was + 1e-12 && Was - S <= Step; Was = S; }
+		}
+		LidMesh(FVector2f(float(W), float(H)), H * 0.5, 0.985, Mesh);
+		bLids &= Mesh.At.Num() == 2 * 2 * (LidSteps + 1) && Mesh.Index.Num() > 0 && Mesh.Index.Num() % 3 == 0;
+		Check(bLids, TEXT("the heavy lids are one smooth shade each from the top and the bottom, as dark at the edge as before"));
+	}
 	return bOk;
 }

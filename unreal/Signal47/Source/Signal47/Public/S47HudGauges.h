@@ -104,5 +104,28 @@ namespace S47HudGauges
 	 *  where the teal would wash out. */
 	SIGNAL47_API double BackingStrength(double Daylight);
 
+	// ---------- the dark edge of strain and fatigue (VIGNETTE-STEPS-20261109) ----------
+
+	/** Tom, 9 November: the strain's rim and the heavy eyelids showed as nested rectangles, each a step darker (14 and 12 boxes on
+	 *  top of each other). Now each is one shade: a mesh of vertices whose darkness is worked out here and blended smoothly
+	 *  between them on the card, drawn as a single element. Same colours, same strength at the screen's edge, same reach.
+	 *  The rim: U and V from 0 to 1 across the view, Reach the share of each side it covers, Alpha its darkness at the edge (capped
+	 *  at 0.95 as before). The corners are rounded (no hard diagonal) and come in softly at the inner end. */
+	SIGNAL47_API double RimShade(double U, double V, double Reach, double Alpha);
+	/** A lid: Y pixels from its own edge of the screen, Deep how far it reaches, Edge its darkness at the screen's edge. */
+	SIGNAL47_API double LidShade(double Y, double Deep, double Edge);
+	/** Vertices in pixels, their darkness 0 to 1, and triangles over them: one draw. */
+	struct FShadeMesh
+	{
+		TArray<FVector2f> At;
+		TArray<float> Alpha;
+		TArray<uint32> Index;
+		void Reset() { At.Reset(); Alpha.Reset(); Index.Reset(); }
+	};
+	/** The rim over a view of Size pixels, fine enough that the step from one vertex to the next is never seen. */
+	SIGNAL47_API void RimMesh(const FVector2f& Size, double Reach, double Alpha, FShadeMesh& Out);
+	/** Both lids, from the top and the bottom, Deep pixels each. */
+	SIGNAL47_API void LidMesh(const FVector2f& Size, double Deep, double Edge, FShadeMesh& Out);
+
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

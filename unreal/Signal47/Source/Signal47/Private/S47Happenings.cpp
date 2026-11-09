@@ -1788,7 +1788,7 @@ void FS47Happenings::Step(double Dt)
 {
  auto* F=M?M->Freeform.Get():nullptr;
  if(!F||!F->Active()||!M->IsFreeform()||!M->Web||!M->Player||!M->World||!Life.IsValid())return;
- if(Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;Sight.Init(M);LoopsOn.Reset();}
+ if(Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;Sight.Init(M);if(M->Audio)for(const FString& K:LoopsOn)M->Audio->Stop(K,.3f);LoopsOn.Reset();} // (AFTER-TAKEN-20261109: a new scene stops what was looping, the projector or the generator, instead of forgetting it still plays)
  // The Cosmic one breathes and its stars drift while it is out there.
  for(const auto& P:Props)if(P&&P->bShown)for(S47TripoNew::FCosmicGlow& G:P->Cosmic)S47TripoNew::StepCosmicGlow(G,Dt);
  if(F->Held()){StepGeiger(0);return;}
