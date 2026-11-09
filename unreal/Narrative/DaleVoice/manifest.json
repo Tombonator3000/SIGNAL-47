@@ -53,9 +53,9 @@
     "total": 19
    },
    "freeform/big_night": {
-    "template": 5,
-    "total": 9,
-    "voice": 4
+    "template": 9,
+    "total": 14,
+    "voice": 5
    },
    "freeform/relay": {
     "template": 16,
@@ -67,20 +67,20 @@
    }
   },
   "by_status": {
-   "voice": 139,
+   "voice": 140,
    "alias": 2,
-   "template": 21,
+   "template": 25,
    "disabled": 1
   },
   "voice_by_channel": {
    "phone": 78,
-   "walkie": 61
+   "walkie": 62
   },
-  "voice_words": 2383
+  "voice_words": 2418
  },
  "template_domains": {
   "place": {
-   "count": 32,
+   "count": 36,
    "values": [
     "the Alderete place",
     "the old house on the Alderete place",
@@ -99,8 +99,12 @@
     "the 1420 AM studio",
     "the empty house across from the laundromat",
     "the deputy's house across from the Plaza",
-    "the souvenir man's house at the end of the east side",
+    "the souvenir man's house on the east side",
     "the cook's house at the south end of town",
+    "the waitress's house across from the substation",
+    "the night DJ's house at the south end of the east side",
+    "the radio woman's house south of the feed store",
+    "the trailer past the cook's house",
     "the Mesa Diner",
     "the windmill on the Baca lease",
     "the water tank on the old grade",
@@ -136,6 +140,40 @@
   "el": {
    "count": 90,
    "values": "0-89 (degrees)",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  },
+  "azwords": {
+   "count": 360,
+   "values": "the bearing digit by digit: zero-zero-zero to three-five-nine",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  },
+  "way": {
+   "count": 8,
+   "values": [
+    "north",
+    "north-east",
+    "east",
+    "south-east",
+    "south",
+    "south-west",
+    "west",
+    "north-west"
+   ],
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp"
+  },
+  "miles": {
+   "count": 9,
+   "values": [
+    "under a mile",
+    "about a mile",
+    "a mile and a half",
+    "about two miles",
+    "about three miles",
+    "about four miles",
+    "about five miles",
+    "about six miles",
+    "a good way"
+   ],
    "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
   }
  },
@@ -1727,7 +1765,7 @@
    "id": "FF_BIG_DaleFirst",
    "text": "Herrgott. Every dish on remote is looking at {az} this morning, {el} degrees up, like dogs at a door. Not on my log. Not on yours? Good. Then nobody did it.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:136",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:147",
    "kind": "big_night",
    "pack": "freeform",
    "variables": [
@@ -1740,7 +1778,7 @@
    "id": "FF_BIG_DaleSlept",
    "text": "Herrgott. You slept through it? Good for you. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths. Not on my log.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:137",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:148",
    "kind": "big_night",
    "pack": "freeform",
    "variables": [
@@ -1753,7 +1791,7 @@
    "id": "FF_BIG_DaleLast",
    "text": "Leave the array where it is until I have read the encoders myself. And if you go out there, you go by daylight, and you take the walkie. Out.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:138",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:149",
    "kind": "big_night",
    "pack": "freeform",
    "status": "voice"
@@ -1762,7 +1800,7 @@
    "id": "FF_BIG_HailFirst",
    "text": "SARO, Dale. Pick up.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:140",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:151",
    "kind": "big_night",
    "pack": "freeform",
    "status": "voice"
@@ -1771,7 +1809,7 @@
    "id": "FF_BIG_HailAgain",
    "text": "SARO! The walkie. Now.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:141",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:152",
    "kind": "big_night",
    "pack": "freeform",
    "status": "voice"
@@ -1780,7 +1818,67 @@
    "id": "FF_BIG_HailGiveUp",
    "text": "Fine. I leave it on the slip by the phone.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:142",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:153",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_DaleSee",
+   "text": "Are you seeing this? Bearing {azwords} from the station, low on the horizon, out past {place}. Every dish on remote just swung round to it by itself. Look that way.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:175",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "azwords",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleNudge",
+   "text": "Get outside and look {way} of the station, over {place}. The sky there is lit like a ballpark. Go and look, before it stops.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:176",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "place",
+    "way"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleArray",
+   "text": "Herrgott. The printer ran by itself: all channels over range, nine seconds of it, every one on {azwords}. And the array is still looking there. I did not tell it to.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:177",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "azwords"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleGo",
+   "text": "Out past {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:178",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "miles",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleWard",
+   "text": "And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:179",
    "kind": "big_night",
    "pack": "freeform",
    "status": "voice"
@@ -1789,7 +1887,7 @@
    "id": "FF_BIG_column_dale",
    "text": "And a boy at the trailer park says a light stood up out past {place} like a fence post a mile high, and the yard lamps went out with it. Boys say things. The lamps I can see.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:103",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:114",
    "kind": "big_night",
    "pack": "freeform",
    "variables": [
@@ -1801,7 +1899,7 @@
    "id": "FF_RELAY_big_column",
    "text": "A trucker says his lights went out last night by {place}, and the radio sang one note.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:107",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:118",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
    "pack": "freeform",
@@ -1814,7 +1912,7 @@
    "id": "FF_BIG_furrow_dale",
    "text": "The county had three calls before four about something coming down out past {place}. And a boom that woke every dog in Caliche. A boom. Not a plane. I asked them.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:113",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:124",
    "kind": "big_night",
    "pack": "freeform",
    "variables": [
@@ -1826,7 +1924,7 @@
    "id": "FF_RELAY_big_furrow",
    "text": "A trucker says something came down by {place} last night, with a boom, and lit his mirror up.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:117",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:128",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
    "pack": "freeform",
@@ -1839,7 +1937,7 @@
    "id": "FF_BIG_stones_dale",
    "text": "And the ranch out past {place} says the cattle went through two fences before the lights went up. Before! Something told them first.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:123",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:134",
    "kind": "big_night",
    "pack": "freeform",
    "variables": [
@@ -1851,7 +1949,7 @@
    "id": "FF_RELAY_big_stones",
    "text": "A trucker says he saw a string of lights go up slow out by {place} last night.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:127",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:138",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
    "pack": "freeform",
@@ -1864,7 +1962,7 @@
    "id": "FF_RELAY_lights_w1",
    "text": "{caller} reports lights low over {place}.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:154",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:155",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1878,7 +1976,7 @@
    "id": "FF_RELAY_lights_w2",
    "text": "{caller} says there are lights over {place} again, low and slow, for a few minutes now.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:155",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:156",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1892,7 +1990,7 @@
    "id": "FF_RELAY_lights_w3",
    "text": "{caller} calls about lights over {place}, and says somebody else on the road saw them too.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:156",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:157",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1906,7 +2004,7 @@
    "id": "FF_RELAY_lights_w4",
    "text": "{caller} is on the line about {place}. Lights, low, and closer to the road than before.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:157",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:158",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1920,7 +2018,7 @@
    "id": "FF_RELAY_landing",
    "text": "A rancher says something came down near {place} a while ago, a flash and no sound. He would rather not go and look.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:861",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:872",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1933,7 +2031,7 @@
    "id": "FF_RELAY_second_1",
    "text": "A second call about {place}. The caller says the lights have not gone, and won't go out to look.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:129",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:132",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1946,7 +2044,7 @@
    "id": "FF_RELAY_second_2",
    "text": "Another call about {place}. Same man. He says they are lower now.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:130",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:133",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1959,7 +2057,7 @@
    "id": "FF_RELAY_second_3",
    "text": "Somebody else called about {place}. She wants to know who is working out there at this hour.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:131",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:134",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1972,7 +2070,7 @@
    "id": "FF_RELAY_second_4",
    "text": "A call about {place}. Could be nothing. The man had been drinking and said so.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:132",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:135",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1985,7 +2083,7 @@
    "id": "FF_RELAY_hap_1",
    "text": "A driver says he saw lights come down out past {place} last night. Nobody went to look.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2083",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2120",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -1998,7 +2096,7 @@
    "id": "FF_RELAY_hap_2",
    "text": "A rancher lost a heifer out by {place}. The vet looked at her and would not say.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2089",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2126",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -2011,7 +2109,7 @@
    "id": "FF_RELAY_hap_3",
    "text": "A rancher has a cow down out by {place} and wants a vet. He does not like the look of her.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3131",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3172",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",
@@ -2024,7 +2122,7 @@
    "id": "FF_RELAY_hap_4",
    "text": "The county is looking for a man from Magdalena who did not come home: a blue half-ton pickup, last seen headed toward {place}.",
    "channel": "walkie",
-   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3359",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3404",
    "kind": "relay",
    "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
    "pack": "freeform",

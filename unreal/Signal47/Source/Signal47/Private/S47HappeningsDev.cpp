@@ -530,10 +530,11 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   {
    FS47Happenings* H=Haps();FString Why;
    if(!H||!H->DevStart(TEXT("big_night"),TEXT("column"),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   // BIGNIGHT-SEEN-20261109: nobody can look out from in here, so its height comes at the latest, 40 s later than before.
    After(12,[Shot]{Shot(TEXT("column-room-flicker"));});
-   After(30,[Shot]{Shot(TEXT("column-room-dark"));});
-   After(47,[Shot]{Shot(TEXT("column-room-back"));});
-   After(50,[this,Report,Left]{Tell(Left({TEXT("array"),TEXT("seen|felt")}),Report(TEXT("column in the control room")),6);});
+   After(70,[Shot]{Shot(TEXT("column-room-dark"));});
+   After(87,[Shot]{Shot(TEXT("column-room-back"));});
+   After(92,[this,Report,Left]{Tell(Left({TEXT("array"),TEXT("seen|felt")}),Report(TEXT("column in the control room")),6);});
   });
  });
  E.AddFreeform(B,TEXT("Big night (fall): in the truck on the highway"),TEXT("02:30, at the wheel north-bound; the lamps blink and die, and something comes down out there"),[this,Road,Haps,Shot,Report,Left]
@@ -542,9 +543,10 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   {
    FS47Happenings* H=Haps();FString Why;
    if(!H||!H->DevStart(TEXT("big_night"),TEXT("fall"),Why)){if(M->World)M->World->TestInput=nullptr;Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   // BIGNIGHT-SEEN-20261109: at the wheel the eyes are on the road; its height comes when it is looked at, at the latest 40 s later.
    After(9,[Shot]{Shot(TEXT("fall-truck-blink"));});
-   After(30,[Shot]{Shot(TEXT("fall-truck-climax"));});
-   After(48,[this,Report,Left]{if(M->World)M->World->TestInput=nullptr;Tell(Left({TEXT("seen|felt")}),Report(TEXT("fall in the truck")),6);});
+   WaitFor([Haps]{FS47Happenings* Hw=Haps();return Hw&&Hw->BigCameUp();},75,[this,Shot]{After(3,[Shot]{Shot(TEXT("fall-truck-climax"));});},[this]{Tell(false,TEXT("its height never came"));});
+   After(92,[this,Report,Left]{if(M->World)M->World->TestInput=nullptr;Tell(Left({TEXT("seen|felt")}),Report(TEXT("fall in the truck")),6);});
   });
  });
  E.AddFreeform(B,TEXT("Big night (rise): on foot by the windmill"),TEXT("02:30, out on the land with the lamp; it flickers, and lights go up out there"),[this,Haps,Shot,Report,Left]
@@ -557,6 +559,50 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    After(14,[Shot]{Shot(TEXT("rise-foot-flicker"));});
    After(32,[Shot]{Shot(TEXT("rise-foot-climax"));});
    After(48,[this,Report,Left]{Tell(Left({TEXT("seen|felt")}),Report(TEXT("rise on foot")),6);});
+  });
+ });
+ // BIGNIGHT-SEEN-20261109 (Tom, d37): the rise as it is now (soft light, the glow over the horizon first, its height waiting for the
+ // eyes), from Caliche looking at it, from SARO looking away first, and at the wheel never looking.
+ const auto Held=[Haps]()->FString{FS47Happenings* H=Haps();return H?FString::Printf(TEXT("; waited %.1f s for the eyes, came up %d"),H->BigHeldFor(),H->BigCameUp()?1:0):FString();};
+ E.AddFreeform(B,TEXT("Big night: rise seen from Caliche"),TEXT("02:30, Caliche's street, looking at it: the glow over the horizon, then the lights go up in a soft column"),[this,Haps,Shot,Report,Left,Held]
+ {
+  FStage Stage;Stage.From=2.5;Stage.To=4.5;Stage.Area=TEXT("diner");Stage.Where=[]{return FVector2D(7995,2120);};Stage.Yaw=0;
+  Go(Stage,[this,Haps,Shot,Report,Left,Held]
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("big_night"),TEXT("rise"),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,160,0));
+   After(14,[Shot]{Shot(TEXT("rise-caliche-glow"));});
+   After(31,[Shot]{Shot(TEXT("rise-caliche-climax"));});
+   After(34,[this,Haps]{FVector At2;FS47Happenings* Ha=Haps();if(Ha&&Ha->LiveAt(At2))AimAt(At2+FVector(0,450,0));});
+   After(35,[Shot]{Shot(TEXT("rise-caliche-high"));});
+   After(54,[this,Haps,Report,Left,Held]{FS47Happenings* Hr=Haps();Tell(Left({TEXT("seen")})&&Hr&&Hr->BigHeldFor()<2,Report(TEXT("rise from Caliche"))+Held(),6);});
+  });
+ });
+ E.AddFreeform(B,TEXT("Big night: rise from SARO"),TEXT("02:30, the yard, looking at the array; its height waits; at 40 s look its way: it comes up then"),[this,Haps,Shot,Report,Left,ArrayMiddle,Held]
+ {
+  FStage Stage;Stage.From=2.5;Stage.To=4.5;Stage.Area=TEXT("saro");Stage.Where=[]{return S47HapDev::Yard();};Stage.Yaw=UE_DOUBLE_PI;
+  Go(Stage,[this,Haps,Shot,Report,Left,ArrayMiddle,Held]
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("big_night"),TEXT("rise"),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   AimAt(ArrayMiddle());
+   After(38,[this,Haps,Shot]{Shot(TEXT("rise-saro-waiting"));FS47Happenings* Hw=Haps();UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 big night from SARO: at 38 s, waited %.1f s, came up %d"),Hw?Hw->BigHeldFor():0.,Hw&&Hw->BigCameUp()?1:0);});
+   After(40,[this,Haps]{FVector At;FS47Happenings* Ha=Haps();if(Ha&&Ha->LiveAt(At))AimAt(At+FVector(0,160,0));});
+   After(46,[Shot]{Shot(TEXT("rise-saro-climax"));});
+   After(75,[this,Haps,Report,Left,Held]{FS47Happenings* Hr=Haps();const double W=Hr?Hr->BigHeldFor():0;Tell(Left({TEXT("array"),TEXT("seen")})&&W>8&&W<20,Report(TEXT("rise from SARO"))+Held(),6);});
+  });
+ });
+ E.AddFreeform(B,TEXT("Big night: rise while driving"),TEXT("02:30, at the wheel north-bound, never looking: the lamps blink, the radio breaks up, and its height comes at the latest"),[this,Road,Haps,Shot,Report,Left,Held]
+ {
+  Road(2.5,4.5,true,[this,Haps,Shot,Report,Left,Held]
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("big_night"),TEXT("rise"),Why)){if(M->World)M->World->TestInput=nullptr;Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   After(2,[Shot]{Shot(TEXT("rise-drive-blink"));});
+   After(16,[Shot]{Shot(TEXT("rise-drive-glow"));});
+   WaitFor([Haps]{FS47Happenings* Hw=Haps();return Hw&&Hw->BigCameUp();},80,[this,Shot]{After(3,[Shot]{Shot(TEXT("rise-drive-climax"));});},[this]{Tell(false,TEXT("its height never came"));});
+   After(98,[this,Haps,Report,Left,Held]{if(M->World)M->World->TestInput=nullptr;FS47Happenings* Hr=Haps();Tell(Left({TEXT("seen|felt")})&&Hr&&(Hr->BigHas(TEXT("seen"))||Hr->BigHeldFor()>=39),Report(TEXT("rise while driving"))+Held(),6);});
   });
  });
  E.AddFreeform(B,TEXT("Slept through: the morning after at SARO, the walkie"),TEXT("as if slept through tonight; 09:00 the next day in the control room: the array found turned, a hail, answered"),[this,Haps,Shot,Report]

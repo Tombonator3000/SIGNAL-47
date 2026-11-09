@@ -173,6 +173,9 @@ public:
  bool DevBigSlept(const FString& Variant,FString& Why);
  // F10: as E on the mark.
  void DevUseBig(){UseBig();}
+ // BIGNIGHT-SEEN-20261109: how long its height has waited for the player's eyes (seconds of the night), and whether it has come.
+ double BigHeldFor() const;
+ bool BigCameUp() const;
  double BigBearing() const{return BigAz;}
  double BigElevation() const{return BigEl;}
  const FString& BigPlaceTitle() const{return BigTitle;}
@@ -423,6 +426,15 @@ private:
  S47J::FObj SaveBig() const;
  void LoadBig(const S47J::FObj& O);
  void ResetBig();
+ // BIGNIGHT-SEEN-20261109 (S47BigNight.cpp): what is drawn of it (soft light, one set for every area), the wait for the player's eyes
+ // before its height, and its words on the walkie, the CB and 1420, one at a time.
+ struct FBigNow;
+ TSharedPtr<FBigNow> BigNow;
+ FBigNow& BigState();
+ void DrawBig(double Age,const FVector& Ground,bool bHere);
+ void HideBigLook();
+ void SayBig();
+ void QueueBig(int32 Kind,const TArray<FString>& Lines,const FString& Voice,double In,double Within);
  // A drawn thing of the big night: built if need be, at Foot, each part's size times Scale, its lamps at LampK of their strength.
  bool ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn);
  // ---- the counter ----

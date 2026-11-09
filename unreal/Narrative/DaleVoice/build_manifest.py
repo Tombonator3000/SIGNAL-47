@@ -130,7 +130,8 @@ def big_night():
     lines = lines_of(path)
     out = []
     for i, line in enumerate(lines):
-        m = re.search(r'const TCHAR\* const (DaleFirst|DaleSlept|DaleLast|HailFirst|HailAgain|HailGiveUp)=TEXT\(' + LIT + r'\);', line)
+        # His morning (DaleFirst ...), his hail, and BIGNIGHT-SEEN-20261109's lines while it goes on and just after (DaleSee ...).
+        m = re.search(r'const TCHAR\* const (Dale[A-Z]\w*|Hail[A-Z]\w*)=TEXT\(' + LIT + r'\);', line)
         if m:
             out.append({'id': f'FF_BIG_{m.group(1)}', 'text': unescape(m.group(2)), 'channel': 'walkie',
                         'source': f'{rel(path)}:{i + 1}', 'kind': 'big_night'})
@@ -244,7 +245,10 @@ def template_domains():
     return {'place': {'count': len(places), 'values': places, 'source': rel(CPP / 'S47EventPlaces.cpp')},
             'caller': {'count': len(dict.fromkeys(callers)), 'values': list(dict.fromkeys(callers)), 'source': rel(CPP / 'S47FreeformDirector.cpp')},
             'az': {'count': 360, 'values': '000-359 (degrees, three digits)', 'source': rel(CPP / 'S47BigNight.cpp')},
-            'el': {'count': 90, 'values': '0-89 (degrees)', 'source': rel(CPP / 'S47BigNight.cpp')}}
+            'el': {'count': 90, 'values': '0-89 (degrees)', 'source': rel(CPP / 'S47BigNight.cpp')},
+            'azwords': {'count': 360, 'values': 'the bearing digit by digit: zero-zero-zero to three-five-nine', 'source': rel(CPP / 'S47BigNight.cpp')},
+            'way': {'count': 8, 'values': ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'], 'source': rel(CPP / 'S47Happenings.cpp')},
+            'miles': {'count': 9, 'values': ['under a mile', 'about a mile', 'a mile and a half', 'about two miles', 'about three miles', 'about four miles', 'about five miles', 'about six miles', 'a good way'], 'source': rel(CPP / 'S47BigNight.cpp')}}
 
 
 def build():

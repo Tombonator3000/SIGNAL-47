@@ -1,5 +1,6 @@
 #include "S47Happenings.h"
 #include "S47Audio.h"
+#include "S47CB.h"
 #include "S47Drive.h"
 #include "S47FarmSite.h"
 #include "S47EventPlaces.h"
@@ -30,6 +31,13 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47WeekCase.h"
+#include "S47SkyVisitors.h"
+#include "S47Three.h"
+#include "Components/PointLightComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "HAL/IConsoleManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "CoreGlobals.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -59,6 +67,7 @@ namespace S47Hap
  double Bearing(double Az);
  FString Compass(double Az);
  bool Clean(const FString& Text);
+ bool Concluding(const FString& Text);
  double HourOf(double Clock);
 }
 namespace S47HapOmen
@@ -143,7 +152,208 @@ namespace S47Big
  const TCHAR* const HailAgain=TEXT("SARO! The walkie. Now.");
  const TCHAR* const HailGiveUp=TEXT("Fine. I leave it on the slip by the phone.");
  const TCHAR* const Slip=TEXT("A slip by the phone, in a hard square hand: \"Array on remote all at {az} this morning, {el} up. Not me. Not you? Leave it so. If you go out to {place}, go by day. D.\"");
+ // BIGNIGHT-SEEN-20261109 (Tom, d37: «mange lysende disker stablet over hverandre», and he nearly missed it): its height waits for
+ // the player's eyes. From the moment the power starts to go, a glow stands over the place's horizon, seen from anywhere; the shape
+ // itself comes when the player has looked that way, with a clear line, for a few seconds, or at the latest HoldMost later.
+ constexpr double HoldAt=Climax-.6,GazeNeed=2.5,HoldMost=40,GazeDeg=24;
+ struct FHold{double Held=0,Gaze=0,Since=1e9;bool bReleased=false;};
+ // RawAge: the event's own age; the age the night is at comes back (held at HoldAt while it waits).
+ double StepHold(FHold& H,double RawAge,double Dt,bool bLooking)
+ {
+  if(bLooking){H.Gaze+=Dt;H.Since=0;}else{H.Gaze=FMath::Max(0.,H.Gaze-Dt*.35);H.Since+=Dt;}
+  double Age=RawAge-H.Held;
+  if(!H.bReleased&&Age>HoldAt)
+  {
+   if((H.Gaze>=GazeNeed&&H.Since<1.5)||H.Held>=HoldMost)H.bReleased=true;
+   else{H.Held+=Age-HoldAt;Age=HoldAt;}
+  }
+  return Age;
+ }
+ // Its words while it goes on and just after (Dale on the walkie, a stranger on the CB, a caller on 1420), one at a time. {azwords}:
+ // the array's bearing digit by digit; {place}: the place as spoken; {way}: which way it is from SARO; {miles}: how far; {from}: where
+ // the stranger is. Concrete about where, never about what. Dale's are text only until they are recorded (templates in the manifest).
+ const TCHAR* const DaleSee=TEXT("Are you seeing this? Bearing {azwords} from the station, low on the horizon, out past {place}. Every dish on remote just swung round to it by itself. Look that way.");
+ const TCHAR* const DaleNudge=TEXT("Get outside and look {way} of the station, over {place}. The sky there is lit like a ballpark. Go and look, before it stops.");
+ const TCHAR* const DaleArray=TEXT("Herrgott. The printer ran by itself: all channels over range, nine seconds of it, every one on {azwords}. And the array is still looking there. I did not tell it to.");
+ const TCHAR* const DaleGo=TEXT("Out past {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.");
+ const TCHAR* const DaleWard=TEXT("And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories.");
+ // On the CB from somebody else out on the road, as the shape stands: first line, second line, for each shape.
+ const TCHAR* const CbLive[3][2]={
+  {TEXT("Breaker one-nine, anybody else seeing this? There's a light standing straight up out past {place}. I'm {from} and I can read my map by it."),TEXT("It's just standing there, like a post. And my radio's singing one note at me.")},
+  {TEXT("Breaker one-nine! Something just came down out past {place}. I'm {from} and the whole sky went white."),TEXT("Did anybody hear that? Did anybody else hear that?")},
+  {TEXT("Breaker one-nine, anybody seeing this? Lights going up out past {place}, slow, a whole string of them. I'm {from}."),TEXT("They're still going up. Lord. They're still going up.")}};
+ const TCHAR* const CbFrom[2]={TEXT("parked at the pumps in Caliche"),TEXT("pulled over on the highway up by the motel")};
+ // On 1420 while it is up, in the program's own turn (Earl's Night Line is on the air from midnight to four).
+ const TCHAR* const RadioLive[3]={
+  TEXT("Earl, are you seeing this? I'm at my kitchen window and the whole sky out past {place} is lit up. It's standing there like a searchlight."),
+  TEXT("Earl, something just came down out past {place}. The windows shook. Are you seeing this?"),
+  TEXT("Earl, there are lights going up out past {place}, right now, while I'm talking to you. Slow. All together.")};
+ // MSG-ONE-20261109's danger lane (US47UI::Alert, before any caption): the boom as it starts, and the glow, which way from the player.
+ const TCHAR* const AlertBoom=TEXT("A low boom rolls in over the land. Every light you have flickers.");
+ const TCHAR* const AlertGlow=TEXT("The sky {way} of you is lit, low, out past {place}.");
+ const TCHAR* const RadioHost=TEXT("I see it from the studio window too, ma'am. Everybody stay inside and keep your lights on. I'm not going anywhere.");
+ // The bearing as it is said on the air: 175 is "one-seven-five".
+ FString AzWords(double Az)
+ {
+  static const TCHAR* const D[]={TEXT("zero"),TEXT("one"),TEXT("two"),TEXT("three"),TEXT("four"),TEXT("five"),TEXT("six"),TEXT("seven"),TEXT("eight"),TEXT("nine")};
+  const FString N=FString::Printf(TEXT("%03.0f"),Az);FString Out;
+  for(const TCHAR C:N)if(FChar::IsDigit(C)){if(!Out.IsEmpty())Out+=TEXT("-");Out+=D[C-'0'];}
+  return Out;
+ }
+ // How far, as a man in 1986 New Mexico says it.
+ FString Miles(double Metres)
+ {
+  const double Mi=Metres/1609.34;
+  if(Mi<.75)return TEXT("under a mile");
+  if(Mi<1.25)return TEXT("about a mile");
+  if(Mi<1.75)return TEXT("a mile and a half");
+  static const TCHAR* const N[]={TEXT("two"),TEXT("three"),TEXT("four"),TEXT("five"),TEXT("six")};
+  const int32 K=FMath::RoundToInt(Mi);
+  return K<=6?FString::Printf(TEXT("about %s miles"),N[FMath::Clamp(K,2,6)-2]):FString(TEXT("a good way"));
+ }
+ FString Fill(const TCHAR* Text,const FString& Place,double Az,const FString& Way=FString(),const FString& Far=FString(),const FString& From=FString())
+ {
+  return FString(Text).Replace(TEXT("{azwords}"),*AzWords(Az)).Replace(TEXT("{place}"),*Place).Replace(TEXT("{way}"),*Way).Replace(TEXT("{miles}"),*Far).Replace(TEXT("{from}"),*From);
+ }
 }
+
+// ---------------------------------------------------------------- what is drawn (BIGNIGHT-SEEN-20261109)
+// Not meshes: soft additive glows (M_WebGlow, the export's own glow sprite), many overlapping so that nothing has an edge: a shaft is
+// a row of long soft ellipses along its axis turned to the eye about that axis, a glow over the horizon and one up in the sky are
+// big faint ones turned to the eye, and real lights light the ground under it. Laid out here, pure (three's metres from its foot,
+// y up), so that the self test can count the parts and measure their shapes.
+namespace S47BigLook
+{
+ TAutoConsoleVariable<float> CvGlow(TEXT("s47.bignight.Glow"),1.f,TEXT("The big night's glow: brightness of every soft part, times this. 0 hides them (the lights stay)."));
+ TAutoConsoleVariable<float> CvLamp(TEXT("s47.bignight.Lamp"),1.f,TEXT("The big night's glow: strength of the lights on the ground under it, times this."));
+ enum ERole:uint8{Horizon=1,Sky,Shaft,Foot,Point,Trail,Head,Flash};
+ struct FSprite{FVector At=FVector::ZeroVector,Axis=FVector::ZeroVector;double W=1,H=1,Bright=0;FLinearColor Colour=FLinearColor::White;int32 Id=0;uint8 Role=0;};
+ struct FLamps{double FootK=0,UpK=0;FVector UpAt=FVector::ZeroVector;};
+ constexpr int32 MostSprites=40,RisePoints=9;
+ // Each segment 2*Hh long, centres Step*Hh apart: three or more over every point of the shaft, so there is no gap and no band.
+ constexpr double Step=.6;
+ // From Bottom to Top along up, N segments W wide; brighter low (Low) or high (High), each with its own flicker number.
+ void AddShaft(TArray<FSprite>& Out,int32 N,double Bottom,double Top,double W,double Bright,double Low,double High,const FLinearColor& C,int32 Id0)
+ {
+  const double Len=Top-Bottom;
+  if(Len<1||Bright<=1e-4||N<1)return;
+  const double Hh=Len/(Step*(N-1)+1.5);
+  for(int32 I=0;I<N;++I)
+  {
+   const double Y=Bottom+.75*Hh+I*Step*Hh;
+   const double U=N>1?I/double(N-1):.5;
+   FSprite S;S.Role=Shaft;S.At=FVector(0,Y,0);S.Axis=FVector(0,1,0);S.W=W;S.H=2*Hh;S.Bright=Bright*FMath::Lerp(Low,High,U);S.Colour=C;S.Id=Id0+I;
+   Out.Add(S);
+  }
+ }
+ FSprite Face(uint8 Role,const FVector& At,double W,double H,double Bright,const FLinearColor& C,int32 Id)
+ {
+  FSprite S;S.Role=Role;S.At=At;S.W=W;S.H=H;S.Bright=Bright;S.Colour=C;S.Id=Id;return S;
+ }
+ // Var: the shape. T: 0 to 1 over its nine seconds (below 0 before, over 1 after). Pre: 0 to 1, the glow over the horizon before
+ // it. Time: seconds, for what moves. Away: level, from the eye toward the place (the fall comes in from behind it).
+ void Layout(int32 Var,double T,double Pre,double Time,const FVector& Away,TArray<FSprite>& Out,FLamps& L)
+ {
+  using S47Big::Smooth;
+  Out.Reset();L=FLamps();
+  const bool bOn=T>=0&&T<1;
+  const double After=T>=1?FMath::Exp(-(T-1)*3.):0.;
+  const double Breathe=.86+.14*FMath::Sin(Time*1.3);
+  const FLinearColor Pale(.80f,.87f,1.f),White(1.f,1.f,1.f),Warm(1.f,.93f,.80f),Green(.82f,1.f,.90f);
+  const FLinearColor Tint=Var==2?FMath::Lerp(Warm,Green,float(.5+.5*FMath::Sin(Time*.45))):FMath::Lerp(Pale,White,float(.5+.5*FMath::Sin(Time*.6)));
+  double Up=0;
+  if(Var==0)
+  {
+   // A shaft stands up off the land in a second, holds, and goes back down into it: its top comes down.
+   const double Top=900.*Smooth(0,.14,T)*(1-Smooth(.84,1,T));
+   if(bOn&&Top>2)
+   {
+    AddShaft(Out,10,0,Top,7,1.5,1.,.55,White,100);
+    AddShaft(Out,8,0,Top,24,.45,1.,.45,Tint,120);
+    AddShaft(Out,6,0,Top*1.04,78,.11,1.,.35,Pale,140);
+    Out.Add(Face(Foot,FVector(0,9,0),120,32,1.1,White,160));
+   }
+   Up=bOn?1:0;
+   L.FootK=.12*Pre+Up;L.UpAt=FVector(0,FMath::Max(10.,Top*.45),0);L.UpK=.5*Up;
+  }
+  else if(Var==1)
+  {
+   // From high and behind the place, at a slant, faster as it comes, a long soft tail behind it; then the ground lit where it goes out.
+   const double D=FMath::Clamp(T/.42,0.,1.);
+   const FVector From=Away*1500.+FVector(0,1150,0),Ground(0,6,0);
+   const FVector HeadAt=Ground+(From-Ground)*(1-D*D);
+   const FVector Back=(From-Ground).GetSafeNormal();
+   const bool bAir=bOn&&D<1;
+   if(bAir)
+   {
+    Out.Add(Face(S47BigLook::Head,HeadAt,30,30,2.2,White,200));
+    Out.Add(Face(S47BigLook::Head,HeadAt,130,130,.22,Tint,201));
+    const double Tail=70+260*D;
+    for(int32 I=0;I<4;++I)
+    {
+     FSprite S;S.Role=S47BigLook::Trail;S.Axis=Back;S.At=HeadAt+Back*(Tail*(.45+I*.55));S.W=16-3*I;S.H=Tail*1.3;S.Bright=.7*FMath::Pow(.6,I);S.Colour=I==0?White:Tint;S.Id=210+I;
+     Out.Add(S);
+    }
+   }
+   const double Since=T>=.42?(T-.42)*(S47Big::ClimaxEnd-S47Big::Climax):-1;
+   const double Flash=Since>=0?FMath::Exp(-Since*.55):0.;
+   if(Flash>.01)
+   {
+    Out.Add(Face(S47BigLook::Flash,FVector(0,22,0),280,95,2.*Flash,White,220));
+    Out.Add(Face(Foot,FVector(0,6,0),140,26,1.2*Flash,Tint,221));
+   }
+   Up=FMath::Max(bAir?.6:0.,Flash);
+   L.FootK=.12*Pre+1.3*Flash;L.UpAt=bAir?HeadAt:FVector(0,30,0);L.UpK=bAir?1.:0.;
+  }
+  else
+  {
+   // A string of small lights, a loose handful, rising slowly together out of a glow on the ground, with a soft column of light left
+   // standing under them; and out all at once, high up. No two of them one over another: each its own place across.
+   const double Rise=Smooth(0,.92,T);
+   const bool bLit=T>=0&&T<.92;
+   const double Yc=8+780.*Rise;
+   if(bLit)
+   {
+    for(int32 I=0;I<RisePoints;++I)
+    {
+     const double A=I*2.39996+.4,R=6+(I%3)*7+(I%2)*3.5;
+     const double Dy=double((I*37)%9-4)*6.+FMath::Sin(Time*.6+I*1.7)*2.;
+     const FVector P(FMath::Cos(A)*R+FMath::Sin(Time*.31+I)*.8,Yc+Dy,FMath::Sin(A)*R+FMath::Cos(Time*.27+I)*.8);
+     const double Size=6.+(I%4)*1.5;
+     Out.Add(Face(Point,P,Size,Size,1.2,I%3?Warm:White,300+I));
+    }
+    // The column under them, brighter near them; and the ground they came off, glowing until they are well up.
+    AddShaft(Out,8,0,FMath::Max(12.,Yc-10),30,.26,.45,1.,Tint,320);
+    AddShaft(Out,6,0,FMath::Max(12.,Yc-10),9,.5,.35,1.,White,330);
+    Out.Add(Face(Foot,FVector(0,7,0),100,26,.25+.85*(1-Rise),Warm,340));
+   }
+   Up=bLit?1:0;
+   L.FootK=.12*Pre+(bLit?.35+.65*(1-Rise):0.);L.UpAt=FVector(0,Yc,0);L.UpK=bLit?1.:0.;
+  }
+  // Over the place's horizon, seen from anywhere: before it (Pre), brighter while it stands, fading after. And up on the sky.
+  const double Glow=Pre*Breathe+Up+After;
+  if(Glow>.005)
+  {
+   Out.Add(Face(Horizon,FVector(0,150,0),1500,560,.055*Pre*Breathe+.17*Up+.17*After,Tint,10));
+   Out.Add(Face(Sky,FVector(0,760,0),2600,1400,.03*Pre*Breathe+.075*Up+.075*After,Pale,11));
+  }
+ }
+ // Where on the land it stands: the horizon's glow is over the foot, so its bearing from SARO is the place's.
+ FVector HorizonOffset(int32 Var){TArray<FSprite> S;FLamps L;Layout(Var,.5,1,0,FVector(0,0,-1),S,L);for(const FSprite& P:S)if(P.Role==Horizon)return P.At;return FVector(1e9);}
+}
+
+// The big night's own state while it is on and just after, not saved: the wait for the eyes, the words to come, what is drawn.
+struct FS47Happenings::FBigNow
+{
+ S47Big::FHold Hold;double LastAge=0;
+ bool bSee=false,bNudge=false,bCb=false,bRadio=false,bAfter=false,bUp=false;
+ struct FSay{int32 Kind=0;TArray<FString> Lines;FString Voice;double At=0,Until=0;};
+ TArray<FSay> Says;double FreeAt=0;
+ TWeakObjectPtr<AS47Web> Web;
+ TArray<TWeakObjectPtr<UStaticMeshComponent>> Planes;TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> Mids;
+ TWeakObjectPtr<UPointLightComponent> FootLight,UpLight;
+ bool bShown=false;
+};
 
 // ---------------------------------------------------------------- the plan
 FS47Happenings::FBigPlan FS47Happenings::BigPlanFor(int32 Seed)
@@ -182,6 +392,7 @@ void FS47Happenings::ResetBig()
 {
  BigNight=0;BigVar=-1;BigSerial=0;BigDaleAt=0;BigClock=0;BigAz=0;BigEl=3;BigX=BigZ=0;BigTry=BigFollowTry=BigFlick=BigDaleIn=0;
  BigPlace.Empty();BigTitle.Empty();BigFollow.Reset();BigDaleLines.Reset();
+ if(BigNow){BigNow->Says.Reset();BigNow->Hold=S47Big::FHold();BigNow->LastAge=0;}
  bBigSawNight=false;bBigPower=false;bBigMotors=false;bBigDimmed=false;bBigToneOn=false;bBigDevNatural=false;bBigSlept=false;BigSoon=-1;BigLastClock=-1;
 }
 void FS47Happenings::LoadBig(const S47J::FObj& O)
@@ -257,8 +468,9 @@ bool FS47Happenings::BeginBig(const FString& Variant,bool bForced,FString& Why)
  // The night goes quiet first, from the place's direction: crickets, birds, the gear starting to feel it.
  FVector Ground;const bool bHere=WorldOf(BigX,BigZ,Ground);
  S47HapOmen::Forewarn(M,TEXT("happen:big_night"),Eye(),bHere?&Ground:nullptr,180,.55,40);
- // What will stand out there is built now, hidden, not in the second it is wanted.
- if(bHere){Prop(FString(TEXT("bigglow_"))+BigVariantName(BigVar));if(BigVar==1)Prop(TEXT("bigflash"));}
+ // BIGNIGHT-SEEN-20261109: what stands out there is soft light drawn where the player is (DrawBig), not a prop built per area; its
+ // wait for the eyes and its words start afresh.
+ {FBigNow& B=BigState();B.Hold=S47Big::FHold();B.LastAge=0;B.bSee=B.bNudge=B.bCb=B.bRadio=B.bAfter=B.bUp=false;B.Says.Reset();B.FreeAt=0;}
  if(US47Audio* A=M->Audio.Get())
  {
   A->HoldRoomTone(.25f,.6f);bBigToneOn=true;
@@ -313,7 +525,12 @@ void FS47Happenings::EndBigEffects()
  if(bBigDimmed&&IsValid(M->World))M->World->Trouble.Dim=1;
  if(bBigToneOn&&IsValid(M->Audio)){M->Audio->HoldRoomTone(1.f,.8f);M->Audio->Stop(TEXT("hapBigTone"),.3f);}
  bBigPower=bBigMotors=bBigDimmed=bBigToneOn=false;
- if(IsValid(M->Web.Get())&&!IsGarbageCollecting())for(const TCHAR* K:{TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigflash")})ShowBig(K,FVector::ZeroVector,0,FVector(1),0,false);
+ if(IsValid(M->Web.Get())&&!IsGarbageCollecting())
+ {
+  HideBigLook();
+  // (props from a build before BIGNIGHT-SEEN-20261109 are never made now; put away all the same)
+  for(const TCHAR* K:{TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigflash")})ShowBig(K,FVector::ZeroVector,0,FVector(1),0,false);
+ }
 }
 
 // ---------------------------------------------------------------- the night itself
@@ -322,21 +539,40 @@ void FS47Happenings::StepBig(double Dt)
  using namespace S47Big;
  auto* F=M->Freeform.Get();
  US47Audio* A=M->Audio.Get();
- const double Age=Now.Age,Was=Age-Dt;
- const auto Crossed=[&](double T){return Was<T&&Age>=T;};
+ FBigNow& B=BigState();
  const FString Area=M->Web->Area();
  const bool bSaro=Area==TEXT("saro"),bDrive=Driving(),bOut=Outdoors()&&!bDrive;
  FVector Ground;const bool bHere=WorldOf(BigX,BigZ,Ground);
- // The gear feels it from the start: a source at the player, strong enough for the lamp, the walkie, the truck and the watch.
+ // BIGNIGHT-SEEN-20261109: its height waits for the player's eyes (StepHold). Looking: toward the sky over the place, within a
+ // narrow cone and with nothing solid between (SeenLit, stricter than the old 48 degrees), from the time the glow is up over it.
+ const FVector Over=Ground+FVector(0,160,0);
+ const bool bLooking=bHere&&!B.Hold.bReleased&&B.LastAge>=Flick&&SeenLit(Over,16000,GazeDeg,LitOwn,nullptr);
+ const bool bWasHeld=!B.Hold.bReleased;
+ const double Age=StepHold(B.Hold,Now.Age,Dt,bLooking),Was=B.LastAge;
+ B.LastAge=Age;
+ Now.Len=S47Big::Len+B.Hold.Held;
+ if(bWasHeld&&B.Hold.bReleased)UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: its height comes, %s after %.1f s of waiting (looked at it %.1f s)"),B.Hold.Held>=HoldMost?TEXT("unlooked for"):TEXT("looked for"),B.Hold.Held,B.Hold.Gaze);
+ const auto Crossed=[&](double T){return Was<T&&Age>=T;};
+ const FString Place=BigSpoken();
+ // The gear feels it from the start: a source at the player, strong enough for the lamp, the walkie, the truck and the watch (and the
+ // car radio drifting, S47GearFlicker); stronger than before, since Tom nearly missed it.
  if(M->Omen&&Age<Back)
  {
-  FS47OmenSource S;S.Id=TEXT("night:big_night");S.At=Eye()+(bHere?S47Big::Level(Ground-Eye())*25.:FVector(25,0,0));S.Severity=Age<Climax?.45:.65;S.Reach=320;S.bComing=Age<Flick;
+  FS47OmenSource S;S.Id=TEXT("night:big_night");S.At=Eye()+(bHere?S47Big::Level(Ground-Eye())*25.:FVector(25,0,0));S.Severity=Age<Climax?.55:.75;S.Reach=320;S.bComing=Age<Flick;
   M->Omen->Post(S,1.);
+ }
+ // The first second: a low boom over the whole land, the truck's lamps and the hand lamp blink (the night has gone quiet already).
+ if(Crossed(.4))
+ {
+  if(A)A->Boom(.32f);
+  if(M->UI)M->UI->Alert(AlertBoom,5);
+  if(bDrive){FS47TroubleOpts O;O.Count=3.;O.Per=.35;M->World->Trouble.Start(ES47Trouble::Blink,O);}
+  if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn)M->Night->Flashlight->Flicker(1.2,TEXT("big_night"));
  }
  if(Crossed(Tone)&&A)
  {
   // Two low tones close together, beating, with one above: under everything, until the light out there goes.
-  FS47Sound O;O.Gain=.5f;O.bLoop=true;A->LoopSfx(TEXT("hapBigTone"),Synth(TEXT("lowtone")),O);
+  FS47Sound O;O.Gain=.62f;O.bLoop=true;A->LoopSfx(TEXT("hapBigTone"),Synth(TEXT("lowtone")),O);
   A->HoldRoomTone(.1f,1.5f);bBigToneOn=true;
  }
  if(Crossed(Rack))
@@ -370,55 +606,46 @@ void FS47Happenings::StepBig(double Dt)
   else if(Age<Back+8)P.Set(1,Smooth(Back,Back+8,Age)*.8);
   else{P.Restore();bBigPower=false;}
  }
+ // Out on foot or in the truck, the lamps go on blinking while it builds (and while it waits for the eyes).
  if(!bSaro&&bOut&&Age>=Flick&&Age<Climax&&M->T>=BigFlick&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn){BigFlick=M->T+FMath::FRandRange(.6f,1.4f);M->Night->Flashlight->Flicker(.8,TEXT("big_night"));}
+ if(bDrive&&Age>=Turn&&Age<Climax&&M->T>=BigFlick){BigFlick=M->T+FMath::FRandRange(3.f,6.f);FS47TroubleOpts O;O.Count=2.;O.Per=.3;M->World->Trouble.Start(ES47Trouble::Blink,O);}
+ if(Crossed(Flick+1.5)&&bHere&&M->UI)M->UI->Alert(Fill(AlertGlow,Place,BigAz,DirectionFrom(Eye(),Ground)),6);
  if(Crossed(Turn))BigTurnArray(false);
  if(bBigMotors&&Age>Turn+3&&M->Web&&!M->Web->DishesMoving()){if(A)A->StopMotors();bBigMotors=false;}
+ // Dale, as the array turns: where to look. Then, while it waits for the eyes and nobody looks, once more.
+ if(Crossed(Turn+2.5)&&!B.bSee){B.bSee=true;QueueBig(0,{Dale(Fill(DaleSee,Place,BigAz))},FString(),0,25);}
+ if(!B.Hold.bReleased&&!B.bNudge&&B.Hold.Held>=14&&!bLooking){B.bNudge=true;QueueBig(0,{Dale(Fill(DaleNudge,Place,BigAz,S47Hap::Compass(BigAz)))},FString(),0,20);}
  if(Crossed(Climax))
  {
+  B.bUp=true;
   if(bDrive){M->World->Trouble.Dim=.04;bBigDimmed=true;}
   if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn)M->Night->Flashlight->FlickerOut(ClimaxEnd-Climax);
+  if(A)A->Boom(.22f);
+  // A stranger on the CB who sees it from somewhere else, and a caller on 1420 if the truck's radio is on it.
+  if(!B.bCb&&CanHearCb())
+  {
+   B.bCb=true;double X=0,Z=0;const bool bTown=PlayerRoad(X,Z)&&Z>1700;
+   const int32 V=FMath::Clamp(BigVar,0,2);
+   QueueBig(1,{Fill(CbLive[V][0],Place,BigAz,FString(),FString(),CbFrom[bTown?1:0]),FString(CbLive[V][1])},BigVar==2?TEXT("old"):TEXT("man"),2,20);
+  }
+  if(!B.bRadio&&M->CarRadio&&M->CarRadio->Live()&&M->CarRadio->Station==TEXT("caliche"))
+  {
+   B.bRadio=true;QueueBig(2,{Fill(RadioLive[FMath::Clamp(BigVar,0,2)],Place,BigAz),FString(RadioHost)},TEXT("woman"),14,40);
+  }
  }
- // Out there, in that direction: the shape of tonight.
- if(bHere&&Age>=Climax-.5&&Age<ClimaxEnd+8)
+ // Out there, in that direction: the shape of tonight, in soft light, and the glow over its horizon before it (DrawBig).
+ DrawBig(Age,Ground,bHere);
+ if(bHere&&Age>=Climax&&Age<ClimaxEnd&&!BigFollow.Contains(TEXT("seen")))
  {
-  const double T=(Age-Climax)/(ClimaxEnd-Climax);
-  const FVector Away=S47Big::Level(Ground-Eye());
-  FVector At=Ground;FString Kind;bool bShow=false;FVector Scale(1);float K=1;
-  if(BigVar==0)
+  // Seen: looked at with a clear line, as for the wait, at where the shape is now.
+  TArray<S47BigLook::FSprite> Spr;S47BigLook::FLamps L;
+  S47BigLook::Layout(FMath::Clamp(BigVar,0,2),(Age-Climax)/(ClimaxEnd-Climax),0,M->T,S47Big::Level(Ground-Eye()),Spr,L);
+  const FVector Look=BigVar==0?Ground+FVector(0,250,0):Ground+L.UpAt;
+  if(SeenLit(Look,16000,30,LitOwn,nullptr)||SeenLit(Over,16000,GazeDeg,LitOwn,nullptr))
   {
-   // Up off the land in a second, standing, and back down into it.
-   const double H=Smooth(0,.14,T)*(1-Smooth(.84,1,T));
-   Kind=TEXT("bigglow_column");bShow=T>=0&&T<1&&H>.01;Scale=FVector(1,FMath::Max(.01,H),1);K=float(H);
-   At=Ground+FVector(0,FMath::Max(0.,(1-H))*-2,0);
-  }
-  else if(BigVar==1)
-  {
-   // From high and behind it, at a slant, faster as it comes: then the ground lit where it went out, fading.
-   const double D=FMath::Clamp(T/.42,0.,1.);
-   Kind=TEXT("bigglow_fall");bShow=T>=0&&D<1;
-   At=Ground+Away*(1500.*(1-D*D))+FVector(0,1150.*(1-D*D)+6,0);
-   if(D>=1)
-   {
-    const double Since=(T-.42)*(ClimaxEnd-Climax);
-    ShowBig(TEXT("bigflash"),Ground+FVector(0,30,0),0,FVector(1),float(FMath::Exp(-Since*.55)),Since<14);
-   }
-  }
-  else
-  {
-   // A dozen, together, slowly up; and out all at once.
-   const double Up=Smooth(0,.92,T);
-   Kind=TEXT("bigglow_rise");bShow=T>=0&&T<.92;At=Ground+FVector(0,8+780.*Up,0);
-  }
-  if(!Kind.IsEmpty())ShowBig(Kind,At,Age*.05,Scale,K,bShow);
-  if(bShow&&!BigFollow.Contains(TEXT("seen")))
-  {
-   const FVector Look=BigVar==0?Ground+FVector(0,250,0):At;
-   if(SeenLit(Look,14000,48,LitOwn,*Kind))
-   {
-    BigFollow.Add(TEXT("seen"));
-    Noticed(TEXT("big_night"),AwayFrom(Ground),TEXT("sight"),Now.Serial);
-    UE_LOG(LogS47BigNight,Display,TEXT("S47: big night %s seen, %.0f m off"),BigVariantName(BigVar),FVector::Dist(Eye(),Look));
-   }
+   BigFollow.Add(TEXT("seen"));
+   Noticed(TEXT("big_night"),AwayFrom(Ground),TEXT("sight"),Now.Serial);
+   UE_LOG(LogS47BigNight,Display,TEXT("S47: big night %s seen, %.0f m off"),BigVariantName(BigVar),FVector::Dist(Eye(),Look));
   }
  }
  if(Crossed(ClimaxEnd))
@@ -449,10 +676,9 @@ void FS47Happenings::StepBig(double Dt)
  }
  if(Crossed(Record))
  {
-  // Whatever stood out there is gone from the scene now (the fall's lit ground has faded by this).
-  for(const TCHAR* K:{TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigflash")})ShowBig(K,FVector::ZeroVector,0,FVector(1),0,false);
+  HideBigLook();
   const FString Clock=S47Big::Clock(BigClock);
-  if(bSaro)BigRecordArray(true);
+  if(bSaro){BigRecordArray(true);B.FreeAt=FMath::Max(B.FreeAt,Paced+9);}
   if(BigFollow.Contains(TEXT("seen")))
   {
    const FString Way=FString::Printf(TEXT("about %03.0f degrees from SARO"),BigAz);
@@ -463,14 +689,159 @@ void FS47Happenings::StepBig(double Dt)
   {
    BigFelt();
   }
+  // Just after: Dale says what the array kept, where to go and what Ward will want, one line at a time.
+  if(!B.bAfter)
+  {
+   B.bAfter=true;
+   double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+   const FString Far=Miles(FVector2D::Distance(FVector2D(SaroX,SaroZ),FVector2D(BigX,BigZ)));
+   QueueBig(0,{Dale(Fill(DaleArray,Place,BigAz))},FString(),6,60);
+   QueueBig(0,{Dale(Fill(DaleGo,Place,BigAz,FString(),Far))},FString(),7,80);
+   QueueBig(0,{Dale(Fill(DaleWard,Place,BigAz))},FString(),8,100);
+   if(FSite* S=SiteOf(TEXT("bigmark")))S->bKnown=true;
+  }
   M->RequestAutosave();
  }
- if(Age>=Now.Len)
+ if(Age>=S47Big::Len)
  {
   EndBigEffects();
   UE_LOG(LogS47BigNight,Display,TEXT("S47: big night over, %s"),BigFollow.Contains(TEXT("seen"))?TEXT("seen"):TEXT("felt"));
   EndEvent(true);
  }
+}
+
+// ---------------------------------------------------------------- BIGNIGHT-SEEN-20261109: drawn, and its words
+FS47Happenings::FBigNow& FS47Happenings::BigState(){if(!BigNow)BigNow=MakeShared<FBigNow>();return *BigNow;}
+double FS47Happenings::BigHeldFor() const{return BigNow?BigNow->Hold.Held:0.;}
+bool FS47Happenings::BigCameUp() const{return BigNow&&BigNow->bUp;}
+void FS47Happenings::HideBigLook()
+{
+ if(!BigNow||!BigNow->bShown)return;
+ BigNow->bShown=false;
+ if(IsEngineExitRequested()||GExitPurge||IsGarbageCollecting())return;
+ for(const TWeakObjectPtr<UStaticMeshComponent>& C:BigNow->Planes)if(UStaticMeshComponent* P=C.Get())P->SetVisibility(false);
+ for(UPointLightComponent* L:{BigNow->FootLight.Get(),BigNow->UpLight.Get()})if(L){L->SetIntensity(0);L->SetVisibility(false);}
+}
+// One set of soft parts and two lights for every area, placed each frame at the place in the area the player is in (WorldOf): never
+// a copy left in another area, and nothing built per area (before 9 November one prop was built in road and another in diner).
+void FS47Happenings::DrawBig(double Age,const FVector& Ground,bool bHere)
+{
+ using namespace S47Big;
+ FBigNow& B=BigState();
+ AS47Web* W=M&&M->Web?M->Web.Get():nullptr;
+ if(!bHere||!IsValid(W)||!W->IsLoaded()||IsEngineExitRequested()||IsGarbageCollecting()||Age<Flick||Age>=ClimaxEnd+8){HideBigLook();return;}
+ if(B.Web.Get()!=W){B.Planes.Reset();B.Mids.Reset();B.FootLight.Reset();B.UpLight.Reset();B.Web=W;B.bShown=false;}
+ const double T=(Age-Climax)/(ClimaxEnd-Climax);
+ const double Pre=Smooth(Flick,HoldAt,Age)*(1-Smooth(Climax,ClimaxEnd,Age));
+ const FVector EyeAt=Eye();
+ const int32 Var=FMath::Clamp(BigVar,0,2);
+ TArray<S47BigLook::FSprite> Spr;S47BigLook::FLamps L;
+ S47BigLook::Layout(Var,T,Pre,M->T,S47Big::Level(Ground-EyeAt),Spr,L);
+ const int32 Want=FMath::Min(Spr.Num(),S47BigLook::MostSprites);
+ if(B.Planes.Num()<Want)
+ {
+  auto* Mat=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_WebGlow.M_WebGlow"));
+  auto* Plane=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Plane.Plane"));
+  if(!Mat||!Plane){UE_LOG(LogS47BigNight,Warning,TEXT("S47: big night: no glow material or plane to draw it with"));HideBigLook();return;}
+  while(B.Planes.Num()<Want)
+  {
+   auto* C=NewObject<UStaticMeshComponent>(W,MakeUniqueObjectName(W,UStaticMeshComponent::StaticClass(),FName(TEXT("S47BigGlow"))));
+   C->SetupAttachment(W->GetRootComponent());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Plane);
+   auto* Mid=UMaterialInstanceDynamic::Create(Mat,W);Mid->SetScalarParameterValue(TEXT("Brightness"),0.f);C->SetMaterial(0,Mid);
+   C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);
+   C->SetCastShadow(false);C->bAffectDistanceFieldLighting=false;C->bVisibleInReflectionCaptures=false;C->bVisibleInRealTimeSkyCaptures=false;
+   C->SetVisibility(false);C->RegisterComponent();
+   B.Planes.Add(C);B.Mids.Add(Mid);
+  }
+  UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: %d soft parts to draw it with, in %s"),B.Planes.Num(),*W->Area());
+ }
+ for(TWeakObjectPtr<UPointLightComponent>* Slot:{&B.FootLight,&B.UpLight})if(!Slot->IsValid())
+ {
+  auto* Lc=NewObject<UPointLightComponent>(W,MakeUniqueObjectName(W,UPointLightComponent::StaticClass(),FName(TEXT("S47BigGlowLamp"))));
+  Lc->SetupAttachment(W->GetRootComponent());Lc->SetMobility(EComponentMobility::Movable);Lc->SetIntensityUnits(ELightUnits::Lumens);Lc->SetIntensity(0);
+  Lc->SetAttenuationRadius(Slot==&B.FootLight?250000.f:150000.f);Lc->SetCastShadows(false);Lc->SetVolumetricScatteringIntensity(Slot==&B.FootLight?.35f:.2f);
+  Lc->SetVisibility(false);Lc->RegisterComponent();*Slot=Lc;
+ }
+ B.bShown=true;
+ const float K=FMath::Max(0.f,S47BigLook::CvGlow.GetValueOnGameThread());
+ const FVector EyeUE=S47Three::ToUE(EyeAt);
+ for(int32 I=0;I<B.Planes.Num();++I)
+ {
+  UStaticMeshComponent* C=B.Planes[I].Get();UMaterialInstanceDynamic* Mid=B.Mids.IsValidIndex(I)?B.Mids[I].Get():nullptr;
+  if(!C||!Mid)continue;
+  if(I>=Want||K<=0||Spr[I].Bright<=1e-4){C->SetVisibility(false);continue;}
+  const S47BigLook::FSprite& S=Spr[I];
+  const FVector At=Ground+S.At,AtUE=S47Three::ToUE(At);
+  FVector ToEye=(EyeUE-AtUE).GetSafeNormal();if(ToEye.IsNearlyZero())ToEye=FVector::ForwardVector;
+  FMatrix R;
+  if(S.Axis.IsNearlyZero())R=FMath::Abs(ToEye.Z)>.999?FRotationMatrix::MakeFromZ(ToEye):FRotationMatrix::MakeFromZX(ToEye,FVector::UpVector);
+  else{const FVector Ax=S47Three::DirToUE(S.Axis).GetSafeNormal();R=FMath::Abs(FVector::DotProduct(Ax,ToEye))>.999?FRotationMatrix::MakeFromX(Ax):FRotationMatrix::MakeFromXZ(Ax,ToEye);}
+  // The engine's plane is a metre square across its local x and y, its face along z: x along the long way.
+  C->SetWorldLocationAndRotation(AtUE,R.Rotator());C->SetWorldScale3D(FVector(S.H,S.W,1));
+  // A little of the sky lights' twinkle and colour (FS47SkyGlint), less on the big glows, so it is never quite still.
+  const double Elev=FMath::Atan2(At.Y-EyeAt.Y,FMath::Max(1.,FVector2D::Distance(FVector2D(At.X,At.Z),FVector2D(EyeAt.X,EyeAt.Z))));
+  const FVector G=FMath::Lerp(FVector::OneVector,FS47SkyGlint::Gains(M->T,S.Id,Elev),S.Role==S47BigLook::Horizon||S.Role==S47BigLook::Sky?.25:.5);
+  Mid->SetVectorParameterValue(TEXT("Color"),FLinearColor(float(S.Colour.R*G.X),float(S.Colour.G*G.Y),float(S.Colour.B*G.Z),1.f));
+  Mid->SetScalarParameterValue(TEXT("Brightness"),float(S.Bright*K));
+  C->SetVisibility(true);
+ }
+ // The ground under it and the land round it lit: the light's own colour, unsteady.
+ const float LK=FMath::Max(0.f,S47BigLook::CvLamp.GetValueOnGameThread());
+ const double Flick2=.85+.15*FMath::Sin(M->T*9.1)*FMath::Sin(M->T*3.7);
+ const FLinearColor Col=Var==2?S47Three::Hex(0xfff0d2):S47Three::Hex(0xdfe8ff);
+ const float FootLm=Var==1?120000000.f:Var==0?80000000.f:30000000.f;
+ if(UPointLightComponent* Lc=B.FootLight.Get()){Lc->SetWorldLocation(S47Three::ToUE(Ground+FVector(0,30,0)));Lc->SetLightColor(Col);Lc->SetIntensity(float(FootLm*FMath::Clamp(L.FootK,0.,1.5)*Flick2*LK));Lc->SetVisibility(L.FootK>.001);}
+ if(UPointLightComponent* Lc=B.UpLight.Get()){Lc->SetWorldLocation(S47Three::ToUE(Ground+L.UpAt));Lc->SetLightColor(Col);Lc->SetIntensity(float(20000000.f*FMath::Clamp(L.UpK,0.,1.)*Flick2*LK));Lc->SetVisibility(L.UpK>.001);}
+}
+void FS47Happenings::QueueBig(int32 Kind,const TArray<FString>& Lines,const FString& Voice,double In,double Within)
+{
+ if(Lines.IsEmpty())return;
+ FBigNow& B=BigState();
+ FBigNow::FSay S;S.Kind=Kind;S.Lines=Lines;S.Voice=Voice;S.At=Paced+In;S.Until=S.At+Within;B.Says.Add(S);
+}
+// Its words go out one at a time, in step with the night and never over a hail or a line of Dale's still being said: the walkie
+// (0, Dale's), the CB (1, a stranger's, only in the truck), 1420 (2, a caller, only with the truck's radio on it). What cannot be
+// heard where the player is now goes: the morning (his hail or his slip) still has the same news.
+void FS47Happenings::SayBig()
+{
+ if(!BigNow||BigNow->Says.IsEmpty()||!M)return;
+ FBigNow& B=*BigNow;
+ const FBigNow::FSay S=B.Says[0];
+ const auto Drop=[&](const TCHAR* Why){UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: a line let go (%s): %s"),Why,*S.Lines[0].Left(60));B.Says.RemoveAt(0);};
+ if(Paced>S.Until){Drop(TEXT("too late"));return;}
+ if(Paced<S.At||Paced<B.FreeAt||M->ModalOpen())return;
+ FS47FieldRadio* R=M->FieldRadio.IsValid()?M->FieldRadio.Get():nullptr;
+ if(R&&(R->Hailing()||R->DaleSpeaking()))return;
+ double Secs=0;bool bSaid=false;
+ if(S.Kind==0)
+ {
+  if(!R||!R->Owned()){Drop(TEXT("no walkie"));return;}
+  bSaid=R->Message(S.Lines[0]);Secs=4.+S.Lines[0].Len()/15.;
+ }
+ else if(S.Kind==1)
+ {
+  if(!CanHearCb()){Drop(TEXT("not at the CB"));return;}
+  if(M->CB.IsValid()&&M->CB->bBusy)return;
+  bSaid=FS47FieldRadio::CbSay(M,S.Lines,S.Voice);
+  for(const FString& Ln:S.Lines)Secs+=S47CB::SecsOf(Ln)+.6;
+ }
+ else
+ {
+  if(!(M->CarRadio&&M->CarRadio->Live()&&M->CarRadio->Station==TEXT("caliche")&&M->Radio&&M->Story)){Drop(TEXT("1420 not on"));return;}
+  const auto* St=M->Radio->Stations.Find(TEXT("caliche"));
+  if(St&&St->IsValid())
+  {
+   TArray<FS47RadioLine> Ls;Ls.Add(FS47RadioLine(S.Lines[0],S.Voice,TEXT("a caller")));
+   if(S.Lines.Num()>1)Ls.Add(FS47RadioLine(S.Lines[1],TEXT("host")));
+   bSaid=(*St)->Slot(Ls,M->Story->Clock()).IsValid();
+  }
+  Secs=16;
+ }
+ if(!bSaid){B.Says[0].At=Paced+2;return;}
+ UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: said on the %s: %s"),S.Kind==0?TEXT("walkie"):S.Kind==1?TEXT("CB"):TEXT("1420"),*S.Lines[0].Left(70));
+ // (the shared queue, FS47MessageQueue, shows them one at a time; this only keeps them from all coming in at once)
+ B.FreeAt=Paced+FMath::Max(4.,Secs*.6);
+ B.Says.RemoveAt(0);
 }
 
 // Slept through, or kept from it until five: it happened all the same, and the morning finds what it left. bSlept: the player slept
@@ -544,6 +915,8 @@ void FS47Happenings::StepBigDue()
 // ---------------------------------------------------------------- the day after
 void FS47Happenings::StepBigAfter()
 {
+ // Its words from the night itself, one at a time, during it and just after (BIGNIGHT-SEEN-20261109).
+ SayBig();
  if(BigNight<=0||!M||!M->Freeform||BigLive())return;
  auto* F=M->Freeform.Get();
  // Cut short by a Continue before its records: it was felt at least.
@@ -756,6 +1129,74 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   bool bNum=true;for(int32 Az=0;Az<360;++Az){const FString S=FString::Printf(TEXT("%03.0f"),S47Hap::Bearing(Az));bNum&=!S.Contains(TEXT("47"));}
   Check(bNum,TEXT("no bearing it gives reads as Story's number"));
   Check(S47Big::ClimaxEnd-S47Big::Tone!=47&&S47Big::Len!=47&&S47Big::Back-S47Big::Flick!=47,TEXT("nothing in it lasts Story's number of seconds"));
+ }
+ // BIGNIGHT-SEEN-20261109 (Tom, d37): what is drawn is soft light and not a stack of discs; the glow over the horizon stands over the
+ // place; its height waits for the eyes, or comes at the latest HoldMost later; and every new line passes the same filters.
+ {
+  using namespace S47BigLook;
+  bool bSoft=true,bCount=true,bShaft=true,bApart=true,bFinite=true;int32 Most=0,PointsSeen=0;
+  for(int32 V=0;V<3;++V)for(int32 K=-2;K<=12;++K)
+  {
+   const double T=K/10.;TArray<FSprite> S;FLamps L;Layout(V,T,K<0?1.:0.,K*.37,FVector(0,0,-1),S,L);
+   Most=FMath::Max(Most,S.Num());bCount&=S.Num()<=MostSprites;
+   TArray<const FSprite*> Pts;TMap<int32,TArray<const FSprite*>> Shafts;
+   for(const FSprite& P:S)
+   {
+    bFinite&=FMath::IsFinite(P.W)&&FMath::IsFinite(P.H)&&P.W>0&&P.H>0&&!P.At.ContainsNaN()&&FMath::IsFinite(P.Bright)&&P.Bright>=0;
+    bSoft&=P.Role>=Horizon&&P.Role<=S47BigLook::Flash;
+    if(P.Role==Point){Pts.Add(&P);bSoft&=P.W<=12&&FMath::IsNearlyEqual(P.W,P.H);}
+    if(P.Role==Shaft)Shafts.FindOrAdd(P.Id/10).Add(&P);
+   }
+   for(int32 I=0;I<Pts.Num();++I)for(int32 J=I+1;J<Pts.Num();++J)if(FVector2D::Distance(FVector2D(Pts[I]->At.X,Pts[I]->At.Z),FVector2D(Pts[J]->At.X,Pts[J]->At.Z))<3.)bApart=false;
+   if(V==2&&T>=0&&T<.92)PointsSeen=FMath::Max(PointsSeen,Pts.Num());
+   for(const auto& It:Shafts)
+   {
+    const TArray<const FSprite*>& Sg=It.Value;
+    for(int32 I=0;I<Sg.Num();++I){bShaft&=Sg[I]->Axis.Equals(FVector(0,1,0));if(I>0){const double Gap=Sg[I]->At.Y-Sg[I-1]->At.Y;bShaft&=Gap>0&&Gap<=.65*Sg[I]->H*.5+1e-6;}}
+   }
+  }
+  Check(bSoft&&bFinite&&bCount,FString::Printf(TEXT("BIGNIGHT-SEEN: drawn only in soft glows, at most %d parts at once (%d at the most), none of them a solid shape"),MostSprites,Most));
+  Check(bApart&&PointsSeen==RisePoints,FString::Printf(TEXT("BIGNIGHT-SEEN: the rise is %d small round lights, none of them over another (not a stack of discs)"),PointsSeen));
+  Check(bShaft,TEXT("BIGNIGHT-SEEN: every shaft is soft parts along up, each overlapping the next, with no gap or band"));
+  bool bDir=true;
+  for(int32 V=0;V<3;++V){const FVector O=HorizonOffset(V);bDir&=FVector2D(O.X,O.Z).Size()<.5&&O.Y>0&&O.Y<1000;}
+  double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+  const FVector O=HorizonOffset(2);
+  for(int32 I=0;I<24;++I)
+  {
+   const double A=FMath::DegreesToRadians(I*15.+3.),X=SaroX+FMath::Sin(A)*2000.,Z=SaroZ-FMath::Cos(A)*2000.;
+   const double Got=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,X+O.X,Z+O.Z)),Want=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,X,Z));
+   bDir&=FMath::Abs(Got-Want)<1.01||FMath::Abs(Got-Want)>358.9;
+  }
+  Check(bDir,TEXT("BIGNIGHT-SEEN: the glow over the horizon stands over the place itself, so its bearing from SARO is the place's (the array's) every way round"));
+ }
+ {
+  using namespace S47Big;
+  const auto Run=[](double LookFrom,double& At)
+  {
+   FHold H;double Raw=0,Was=0;At=-1;
+   for(int32 I=0;I<2000&&At<0;++I){Raw+=.1;const double Age=StepHold(H,Raw,.1,Raw>=LookFrom&&Was>=Flick);if(Age>=Climax)At=Raw;Was=Age;}
+  };
+  double Never=0,Always=0,Late=0;Run(1e9,Never);Run(0,Always);Run(50,Late);
+  Check(FMath::Abs(Never-(Climax+HoldMost))<1.,FString::Printf(TEXT("BIGNIGHT-SEEN: never looked at, its height comes at the latest %.0f s later (at %.1f s)"),HoldMost,Never));
+  Check(Always>0&&Always<Climax+.5,FString::Printf(TEXT("BIGNIGHT-SEEN: looked at as it builds, its height comes on time (at %.1f s)"),Always));
+  Check(Late>50+GazeNeed-.2&&Late<50+GazeNeed+1.5,FString::Printf(TEXT("BIGNIGHT-SEEN: looked at from 50 s on, it waits for %.1f s of looking and comes then (at %.1f s)"),GazeNeed,Late));
+ }
+ {
+  using namespace S47Big;
+  TArray<FString> All;
+  for(const TCHAR* T:{DaleSee,DaleNudge,DaleArray,DaleGo,DaleWard,RadioHost,CbFrom[0],CbFrom[1],AlertBoom,AlertGlow})All.Add(T);
+  for(int32 V=0;V<3;++V){All.Add(CbLive[V][0]);All.Add(CbLive[V][1]);All.Add(RadioLive[V]);}
+  FString Bad;
+  for(const FString& T:All)
+  {
+   const FString Filled=Fill(*T,TEXT("the salt lick"),175,TEXT("south"),Miles(2018),CbFrom[0]);
+   if((!S47Hap::Clean(Filled)||S47Hap::Concluding(Filled)||Filled.Contains(TEXT("Reyes"))||Filled.Contains(TEXT("{")))&&Bad.Len()<200)Bad+=Filled.Left(50)+TEXT(" / ");
+  }
+  Check(Bad.IsEmpty(),TEXT("BIGNIGHT-SEEN: every new line passes the filters (Story's far side, names, brands, telling the answer, Reyes) ")+Bad);
+  bool bSaid=AzWords(175)==TEXT("one-seven-five")&&AzWords(8)==TEXT("zero-zero-eight")&&Miles(1500)==TEXT("about a mile")&&Miles(2018)==TEXT("a mile and a half")&&Miles(3300)==TEXT("about two miles");
+  for(int32 Az=0;Az<360;++Az)bSaid&=!AzWords(S47Hap::Bearing(Az)).Contains(TEXT("four-seven"));
+  Check(bSaid,TEXT("BIGNIGHT-SEEN: the bearing is said digit by digit (175: one-seven-five), never as Story's number, and the distance in miles"));
  }
  return OK;
 }
