@@ -24,6 +24,9 @@ namespace S47FreeformTerminal
  FW Filled(const FString& Text,TFunction<void()> Action,TAttribute<bool> Enabled=true); // the one thing to do
  // The right-hand header clock ("DAY 01 | 19:10"). The owner clears it when it stops.
  void SetClock(TFunction<FString()> Clock);
+ // CASES-OPS-20261109: the left-hand header ("SARO OPS V4.2  TERM 1  OPR NIGHT", as Story's operations system heads its screen).
+ // Empty: the old "SARO / LOCAL WORKSTATION". The owner clears it with the clock.
+ void SetStation(const FString& Station);
 
  // --- Workstation layout (UI-03) ---
  struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; };

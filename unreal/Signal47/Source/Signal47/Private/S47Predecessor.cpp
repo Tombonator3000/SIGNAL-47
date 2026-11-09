@@ -152,7 +152,8 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  const auto& F=*M->Freeform;
  for(const auto& J:F.Jobs())
  {
-  if(J.CaseTest<0&&J.Stage==FS47FreeformSession::EJobStage::Filed)
+  // CASES-OPS-20261109: the floor counts paid observing work, a case's test recording too; the free reference check does not.
+  if(J.Stage==FS47FreeformSession::EJobStage::Filed&&!FS47FreeformSession::ReferenceCheck(J))
   {
    ++C.Filed;
    // A recording from before its quality was kept is given the benefit of the doubt.

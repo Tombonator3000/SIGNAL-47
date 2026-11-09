@@ -834,7 +834,7 @@ bool FS47FreeformWorld::RequestEmergencyFuse()
  }
  if(!M->Freeform->ChargeEmergencyFeederFuse()){Change(TEXT("The requisition balance cannot cover another $5. No parcel was issued or budget charged."));return false;}
  EmergencyFuseFault=PowerFaultSerial;Item=TEXT("fuse");Contents.Reset();Contents.Add(Item,1);Payload=1;bParcelWasLoaded=false;
- Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition debt. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
+ Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
 }
 int32 FS47FreeformWorld::ShopPrice(const FString& Supply){return Price(Supply);}
 FString FS47FreeformWorld::SupplyTitle(const FString& Supply){return ItemTitle(Supply);}
@@ -893,7 +893,7 @@ void FS47FreeformWorld::OpenShop()
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
  if(M->Freeform->PowerFault())
  {
-  Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to requisition debt even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
+  Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to the requisition even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
   Rows.Add(S47Kit::Button(TEXT("Request feeder-repair fuse / $5 / credit available"),[this]{if(RequestEmergencyFuse())M->UI->Close();},true,EmergencyFuseAvailable()));
  }
  // The attendant's one thing today, or who is minding the counter while he is gone (TOWNSFOLK-20261108, S47Townsfolk).
@@ -1390,7 +1390,7 @@ bool FS47FreeformWorld::FeederUse()
  if(!M->Freeform->PowerFault()){Change(TEXT("SARO feeder voltage and local fuse are normal."));return true;}
  if(Feeder<=1){Feeder=2;Change(TEXT("SERVICE BAY FEEDER: Low supply confirmed. Open the enclosed isolation switch."));}
  else if(Feeder==2){Feeder=3;Change(TEXT("SERVICE BAY FEEDER: Supply isolated. Replace the blown control fuse from your service stock."));}
- else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("No spare fuse in stock. The CALICHE STORE COUNTER sells a $5 feeder fuse on credit, any hour, even in debt. Unpack it at GARAGE RECEIVING, then come back here."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
+ else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("No spare fuse in stock. The CALICHE STORE COUNTER sells a $5 feeder fuse on requisition, any hour, even with a balance standing. Unpack it at GARAGE RECEIVING, then come back here."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
  else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("SERVICE BAY FEEDER: Wait for the automatic three-second test. The indicator settles and mains supply returns when it passes."));}}
  return true;
 }

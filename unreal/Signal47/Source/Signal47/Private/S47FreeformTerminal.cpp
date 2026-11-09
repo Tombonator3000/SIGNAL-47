@@ -35,6 +35,7 @@ namespace S47FreeformTerminal
  namespace
  {
   TFunction<FString()> ClockSource;
+  FString StationSource; // CASES-OPS-20261109 (SetStation)
   double Now(){return FPlatformTime::Seconds();}
   float Pulse(double Speed=3.){return .55f+.45f*float(FMath::Sin(Now()*Speed));}
   const FSlateBrush* Fill(){static const FSlateColorBrush B(FLinearColor::White);return &B;}
@@ -138,10 +139,12 @@ namespace S47FreeformTerminal
  FW Knob(const FString& Name,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange)
  {return Control(Name,Shown,Min,Max,Step,Value,OnChange);}
  void SetClock(TFunction<FString()> Clock){ClockSource=MoveTemp(Clock);}
+ void SetStation(const FString& Station){StationSource=Station;}
  FW Frame(const FString& Title,FW Body,TSharedPtr<SWidget> Footer)
  {
   // One header row as in the mockups: station | screen title | day and clock.
   const TFunction<FString()> Clock=ClockSource;
+  const FString Station=StationSource.IsEmpty()?FString(TEXT("SARO / LOCAL WORKSTATION")):StationSource;
   auto Bar=[]{return SNew(STextBlock).Text(FText::FromString(TEXT("|"))).Font(S47Style::Mono(26)).ColorAndOpacity(Green);};
   // The glass is 1200 wide; the frame's padding takes 24 of it (FS47WrapMark).
   S47Kit::FirstFrameWrap(Body,1176.f);
@@ -149,7 +152,7 @@ namespace S47FreeformTerminal
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(FString(TEXT("SARO / LOCAL WORKSTATION")),22,Green)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(Station,22,Green)]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[Bar()]
      +SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Center).VAlign(VAlign_Center)
       [SNew(SHorizontalBox)

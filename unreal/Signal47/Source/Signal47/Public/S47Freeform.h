@@ -11,6 +11,7 @@ class FS47FreeformDirector;
 class FS47FreeformWorld;
 class FS47CaseFieldTests;
 struct FS47Task;
+struct FS47Doc;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
 class FS47FreeformSession
@@ -302,6 +303,8 @@ public:
  void TestEveningGate(){bTestEvening=true;}
  static constexpr double SecondsInDay=86400.;
  bool StartReferenceCheck();
+ // The optional reference check's job (StartReferenceCheck): free, so it is not paid observing work (FS47Predecessor::Count).
+ static bool ReferenceCheck(const FJob& Job){return Job.Id.Contains(TEXT("-REFERENCE-"));}
  bool ConcludeCase(int32 Line,int32 Cause);
  // Critic round 5: the line has something behind it as Dr. Ward counts it (FS47FreeformCases::Supported, with the traces kept):
  // FS47Predecessor::Count and the case board's warning before a filing go by the same sum.
@@ -335,6 +338,25 @@ public:
  // cards waiting and does not hold back the reference check.
  bool CaseTestWaits(const FJob& Job) const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
+ // CASES-OPS-20261109, step 4 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): the case sheet as OPS / CASE BOARD heads it and the
+ // printed result sheet repeats it. NEXT from CaseStep ("NEXT > CONCLUDE: INSTRUMENT ARTEFACT"); the kind ("TRIAL CASE", "ASSESSMENT");
+ // how it closes; what closing it brings, before the choice ("ON CLOSE: ..."); where it came from with the original's own clock; and
+ // each explanation's standing ("STILL POSSIBLE", "RULED OUT D03"). Worked out from the case file as it is; nothing saved.
+ FString CaseNextLine(int32 Line) const;
+ static FString CaseKind(int32 Line);
+ static FString CaseClosesWhen(int32 Line);
+ FString CaseOnClose(int32 Line) const;
+ FString CaseSource(int32 Line) const;
+ FString CaseStanding(int32 Line,int32 Cause) const;
+ // The block of lines at the head of the sheet: kind, closes when, on close, source, then A/B/C with their standing.
+ FString CaseSheetHead(int32 Line,int32 MarkTest=-1) const; // MarkTest: the result whose fallen explanations say "<< THIS RESULT"
+ // The result sheet (step 4): each test result registered (a case job at OPS, or a field test reported) is printed on the OPS printer,
+ // stamped RULED OUT / Dnn or STILL POSSIBLE, after any job's paper. Collected at the printer like an original; it opens as a paper,
+ // goes in the documents, and the next visit to OPS opens CASE BOARD on that case. Saved while waiting (an older save has none).
+ struct FResultSheet { int32 Line=-1,Test=-1,Day=0; double Feed=0; FString Job,Stamp,Page; };
+ const TArray<FResultSheet>& ResultSheets() const { return CaseSheets; }
+ // -1: no result sheet waiting; otherwise its paper fraction 0..1 (it feeds only while no job's paper is waiting).
+ double SheetProgress() const;
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
@@ -428,6 +450,16 @@ public:
  int32 Seed() const{return JobSeed;}
  // The workstation's own day and clock, as its header shows them. Only what it shows: WorldClock is never touched.
  FString TerminalClock() const;
+ // CASES-OPS-20261109: the header's left side, as Story's operations system has it ("SARO OPS V4.2  TERM 1  OPR NIGHT"), and the
+ // calendar date of a clock ("28-APR-86").
+ static FString TerminalStation(int32 Screen);
+ FString TerminalDate(double AtClock) const;
+ // The procedure card taped to the desk by the OPS terminal: what the screens used to explain, to be read when wanted.
+ static FS47Doc SopCard();
+ // OPS's own system lines (S47FreeformScreens.cpp): the queue ("MORE WORK / 2 OPEN TODAY / 1 CARRIED / NEXT ISSUE 08:00") and the
+ // account on the glass ("BUDGET $31 / REQ $12"). REQUISITION, never debt.
+ static FString QueueLine(int32 Remaining,int32 Today,int32 Earlier,int32 Rejected);
+ static FString OpsAccountLine(int32 Budget,int32 Requisition);
  bool OpsOnGlass() const { return ActiveTerminal==3&&TerminalOnGlass(); }
  // Gone for this long: the clock moves, and work under way is broken off as after contact. Nothing secured is lost.
  void TakenAway(double WorldSeconds);
@@ -523,6 +555,16 @@ private:
  void IngestObservations();
  int32 IngestedObservations=0;
  int32 OpsSection=0,ReceiverTab=0;
+ // CASES-OPS-20261109: the result sheets on the printer (FResultSheet), the case the next OPS visit opens on (-1: the overview), the
+ // test whose sheet was last collected (its row is marked on the board), and whether the board's traces are folded (presentation only).
+ TArray<FResultSheet> CaseSheets;
+ int32 BoardLine=-1,FreshLine=-1,FreshTest=-1;bool bCaseDetails=false;
+ void QueueResultSheet(int32 Line,int32 Test,const FString& Job);
+ bool CollectResultSheet();
+ int32 SheetIndex() const;
+ TWeakObjectPtr<class UStaticMeshComponent> SopProp;TWeakObjectPtr<class AS47Web> SopScene;
+ void StepSopCard();
+ void StopSopCard();
  TSharedRef<class SWidget> OpsShell(int32 Section,TSharedRef<class SWidget> Content);
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;

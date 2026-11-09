@@ -299,7 +299,9 @@ void US47CaseBoard::Open(const FString& Place, const FString& Region)
 	const FString Current = H.Region ? H.Region() : FString(TEXT("ns"));
 	const int32 Now = FMath::Max(0, RegionIndex(Current));
 	FS47BoardSpec O;
-	O.Title = Place.IsEmpty() ? TEXT("CASE BOARD") : TEXT("CASE BOARD / ") + Place;
+	// CASES-OPS-20261109: in Freeform this is the PINBOARD; CASE BOARD is the OPS screen there (FS47FreeformSession::OpenCaseBoard).
+	const FString Board = M->IsFreeform() ? TEXT("PINBOARD") : TEXT("CASE BOARD");
+	O.Title = Place.IsEmpty() ? Board : Board + TEXT(" / ") + Place;
 	O.Size = SizeAt(Now); O.Focus = Region.IsEmpty() ? Current : Region;
 	O.Status = [this] { return Status(); };
 	O.Regions = [this, Now] { return Regions(Now); };

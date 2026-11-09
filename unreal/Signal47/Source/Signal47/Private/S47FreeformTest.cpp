@@ -812,10 +812,10 @@ void FS47FreeformTest::Step(double Dt)
    Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
-   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE SUPPORTED"),TEXT("OPS")))return;
+   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE COMPARISON"),TEXT("OPS")))return;
    Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
    Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
-   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR CASE ARCHIVE")),TEXT("filed work directs to further work or retained archive")))return;
+   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR RECORDS")),TEXT("filed work directs to further work or retained archive")))return;
    auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
    S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
    GuidanceExpected=F.NextAction();
@@ -846,7 +846,7 @@ void FS47FreeformTest::Step(double Dt)
   Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
   auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
   auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
-  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("CASE ARCHIVE"),TEXT("SERVICE"),TEXT("SUPPLIES")};
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SERVICE"),TEXT("SUPPLIES")}; // CASES-OPS-20261109: CASE ARCHIVE is RECORDS
   if(Stage==0)
   {
    if(Age<3)return;
@@ -874,7 +874,7 @@ void FS47FreeformTest::Step(double Dt)
    }
    if(OpsNavStep==2)
    {
-    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("collect its original at the printer")),TEXT("empty archive explains where retained records come from")))return;
+    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("INDEXED HERE AS THEY ARE RETAINED")),TEXT("empty archive explains where retained records come from")))return;
     Shot(TEXT("ops-empty-archive"));Go(8804,.3);return;
    }
    if(OpsNavStep==3)
@@ -909,8 +909,8 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==88051)
   {
-   if(!Check(StillAtOps()&&HasText(TEXT("ALL AVAILABLE WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
-   if(!Click(TEXT("CASE ARCHIVE")))return;Go(88052,.3);return;
+   if(!Check(StillAtOps()&&HasText(TEXT("ALL OBSERVING WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
+   if(!Click(TEXT("RECORDS")))return;Go(88052,.3);return;
   }
   if(Stage==88052)
   {

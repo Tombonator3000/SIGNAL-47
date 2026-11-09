@@ -82,7 +82,7 @@ bool FS47FreeformSession::CompleteServiceGuide()
  if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish)){Feedback=TEXT("REMOTE is not restored. Inspect the target antenna at ARRAY STATUS.");Changed(Feedback);return false;}
  const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the truck and unpacked at SARO garage receiving during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
  RecordEvidence(HasFinding(TEXT("service-work-order"))?FString::Printf(TEXT("service-work-order-%d-%s"),Field->ServiceCompletions(),*Field->ServiceDishId()):FString(TEXT("service-work-order")),FString::Printf(TEXT("%s planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Field->ServiceDishId(),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
- ServiceGuide=2;bGuideFocus=false;Feedback=FString::Printf(TEXT("WORK ORDER ARCHIVED / %s is back in REMOTE. Select DAILY WORK or CASE ARCHIVE."),*Field->ServiceDishId());Changed(Feedback);return true;
+ ServiceGuide=2;bGuideFocus=false;Feedback=FString::Printf(TEXT("WORK ORDER ARCHIVED / %s is back in REMOTE. Select DAILY WORK or RECORDS."),*Field->ServiceDishId());Changed(Feedback);return true;
 }
 void FS47FreeformSession::OpenServiceGuide()
 {
@@ -103,7 +103,7 @@ void FS47FreeformSession::OpenServiceGuide()
  }
  if(ServiceGuide!=1)
  {
-  if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN CASE ARCHIVE")));
+  if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN RECORDS")));
   Rows.Add(S47FreeformTerminal::Text(Field&&Field->HasArrayFault()?FString::Printf(TEXT("%s needs service. Accept the existing fault below; other antennas and observing jobs remain available."),*Dish):ServiceGuide==0?TEXT("FIRST SERVICE / S-03. Learn to diagnose, replace a relay and run its real movement test. Accepting isolates S-03 from remote operation."):TEXT("Optional planned maintenance. The next order selects an antenna from the array; its identity is retained until repaired. Accepting isolates only that antenna.")));
   Rows.Add(S47FreeformTerminal::Text(TEXT("Use a relay from stock, or choose a new supply trip: buy a relay or donor in Caliche, carry its parcel in the truck, then unpack at GARAGE RECEIVING. Donors must be tested at CALIBRATION / REPAIR.")));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{StartServiceGuide(false);OpenServiceGuide();},true));

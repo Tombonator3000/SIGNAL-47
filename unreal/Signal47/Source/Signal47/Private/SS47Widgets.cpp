@@ -617,7 +617,8 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 			HintRow->ClearChildren();
 			auto Add = [this](const FString& K, const TCHAR* L) { HintRow->AddSlot().AutoWidth().Padding(P(14), 0)[KeyHint(*K, L)]; };
 			Add(S47Keys::Label(TEXT("notebook")).ToUpper(), TEXT("NOTEBOOK"));
-			if (bBoard) Add(S47Keys::Label(TEXT("board")).ToUpper(), TEXT("CASE BOARD"));
+			// CASES-OPS-20261109: Freeform's B is the PINBOARD (CASE BOARD is the OPS screen there)
+			if (bBoard) Add(S47Keys::Label(TEXT("board")).ToUpper(), M->IsFreeform() ? TEXT("PINBOARD") : TEXT("CASE BOARD"));
 			if (bLight) Add(S47Keys::Label(TEXT("light")).ToUpper(), TEXT("FLASHLIGHT"));
 			Add(S47Keys::Label(TEXT("pause")), TEXT("PAUSE"));
 		}

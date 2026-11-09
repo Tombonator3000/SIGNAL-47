@@ -277,7 +277,7 @@ void FS47PinBoard::PinWhatCameBack(bool bQuiet)
 	}
 	if (Pinned <= 0) return;
 	UE_LOG(LogS47PinBoard, Display, TEXT("S47: pin board: %d put up on the board at SARO"), Pinned);
-	if (!bQuiet && M->UI) M->UI->Toast(FString::Printf(TEXT("You pin what you brought back on the board (%s): %d new."), *S47Keys::Said(TEXT("board")), Pinned), 4.5f);
+	if (!bQuiet && M->UI) M->UI->Toast(FString::Printf(TEXT("You pin what you brought back on the PINBOARD (%s): %d new."), *S47Keys::Said(TEXT("board")), Pinned), 4.5f);
 }
 
 TArray<FS47PinBoard::FItem> FS47PinBoard::Items() const
@@ -364,7 +364,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 	TArray<FS47BoardCard> Out;
 	if (!M || !M->Freeform) return Out;
 	const FS47FreeformSession& Fs = *M->Freeform;
-	const FString Still = TEXT("It is in your notebook. It goes up on the board when you are back at SARO.");
+	const FString Still = TEXT("It is in your notebook. It goes up on the PINBOARD when you are back at SARO.");
 	// The field records, newest last; only the latest MostCards stay up, the rest are taken down into the tray's back.
 	TArray<FString> Order = Fs.FindingIdsFrom(0);
 	Order.RemoveAll([](const FString& Id) { return FS47FreeformCases::IsCaseRecord(Id); }); // CASES-OPS-20261109: the case file's own
@@ -481,7 +481,7 @@ void FS47PinBoard::OpenTray()
 	if (!M || !M->UI) return;
 	const TWeakPtr<uint8> Guard = Life;
 	TArray<S47Kit::FW> TrayRows;
-	TrayRows.Add(S47Kit::Paper(TEXT("The tray by the board: the mail, the Ledger, telexes, the night logs and Dr. Ward's letters. A paper that names a place out on the land can go up on the board as a clipping.")));
+	TrayRows.Add(S47Kit::Paper(TEXT("The tray by the PINBOARD: the mail, the Ledger, telexes, the night logs and Dr. Ward's letters. A paper that names a place out on the land can go up on the PINBOARD as a clipping.")));
 	TArray<FS47Doc> Pile = Papers();
 	int32 Shown = 0;
 	for (int32 I = Pile.Num() - 1; I >= 0 && Shown < 9; --I, ++Shown)
@@ -496,7 +496,7 @@ void FS47PinBoard::OpenTray()
 			M->UI->Document(D, [this, Guard] { if (Guard.IsValid()) FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this, Guard](float) { if (Guard.IsValid()) OpenTray(); return false; }), 0.f); });
 		}));
 		if (Place.IsEmpty()) continue;
-		if (Clips.Contains(D.Id)) { TrayRows.Add(S47Kit::Small(Up.Contains(ClipCard(D.Id)) ? TEXT("On the board.") : TEXT("Goes up on the board when you are back at SARO."))); continue; }
+		if (Clips.Contains(D.Id)) { TrayRows.Add(S47Kit::Small(Up.Contains(ClipCard(D.Id)) ? TEXT("On the PINBOARD.") : TEXT("Goes up on the PINBOARD when you are back at SARO."))); continue; }
 		if (Clips.Num() >= MostClips) continue;
 		const FS47Places::FDef* Def = FS47Places::Def(Place);
 		TrayRows.Add(S47Kit::Button(FString::Printf(TEXT("Pin it up: %s"), Def ? Def->Title : *Place), [this, Guard, Id = D.Id]
@@ -504,14 +504,14 @@ void FS47PinBoard::OpenTray()
 			if (!Guard.IsValid() || !M) return;
 			Clips.AddUnique(Id);
 			if (AtSaro()) Up.Add(ClipCard(Id));
-			else if (M->UI) M->UI->Toast(TEXT("It goes up on the board when you are back at SARO."), 3.5f);
+			else if (M->UI) M->UI->Toast(TEXT("It goes up on the PINBOARD when you are back at SARO."), 3.5f);
 			UE_LOG(LogS47PinBoard, Display, TEXT("S47: pin board: clipping %s chosen from the tray"), *Id);
 			M->RequestAutosave();
 			OpenTray();
 		}));
 	}
 	if (Pile.Num() > Shown) TrayRows.Add(S47Kit::Small(FString::Printf(TEXT("%d older papers under these, in the notebook."), Pile.Num() - Shown)));
-	TrayRows.Add(S47Kit::Button(TEXT("Back to the board"), [this, Guard]
+	TrayRows.Add(S47Kit::Button(TEXT("Back to the PINBOARD"), [this, Guard]
 	{
 		if (!Guard.IsValid() || !M) return;
 		if (M->UI) M->UI->Close();

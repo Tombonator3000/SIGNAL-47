@@ -462,7 +462,8 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	TSharedRef<SHorizontalBox> Keys = SNew(SHorizontalBox);
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(TEXT("Q E")), TEXT("TAB / , SECTIONS"), nullptr)];
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Arrows, TEXT("CHOOSE"), nullptr)];
-	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(S47Keys::Label(TEXT("board")).ToUpper()), TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
+	// CASES-OPS-20261109: Freeform's B is the PINBOARD (CASE BOARD is the OPS screen there)
+	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(S47Keys::Label(TEXT("board")).ToUpper()), X.bFreeform ? TEXT("PINBOARD") : TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
 	Keys->AddSlot().AutoWidth()[Bar(Keycap(S47Keys::Label(TEXT("notebook")).ToUpper()), TEXT("CLOSE"), [this] { Close(); })];
 
 	const FVector2D Book(150, 70);
