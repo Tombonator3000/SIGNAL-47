@@ -533,12 +533,20 @@ namespace
     *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), Batch->GetStaticMesh() && Batch->GetStaticMesh()->bAllowCPUAccess ? 1 : 0);
    return false;
   }
-  // Each foot on SARO's ground there (Grounds.ts floorAt: the array is graded flat at the ground's level), the arm to its antenna.
+  // Each foot on the ground that is drawn there, the arm to its antenna. SARO's walking floor (Grounds.ts floorAt: the array graded
+  // flat at -0.6) is where to look; the ground mesh under it lies 2 cm lower (N7 at -0.62, as under the highway's footings), and a
+  // pole set on the floor stood 20 mm over it (sweep of 9 November: all eleven WRONG in MeasureFeet). The old posts' collision stays
+  // in the batch, so the batch is passed through; nothing more than 30 cm from the floor counts as ground.
+  UWorld* World = W->GetWorld();
   TArray<FVector> Feet[2]; TArray<FQuat> Turns[2];
   for (int32 I = 0; I < UE_ARRAY_COUNT(FieldPosts); ++I)
   {
    const FFieldPost& F = FieldPosts[I];
-   const double Y = US47Night::SaroFloorAt(W, F.X, F.Z);
+   const double Floor = US47Night::SaroFloorAt(W, F.X, F.Z);
+   double Y = Floor, Hit = 0; FString What;
+   if (World && Down(World, FVector(F.X, Floor + 1.5, F.Z), 3, { Batch }, Hit, &What, false, Floor + .3) && FMath::Abs(Hit - Floor) <= .3) Y = Hit;
+   else What = TEXT("(nothing drawn found: SARO's floor)");
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp array x %.0f z %.0f stands on %s at y %.3f (SARO's floor %.3f)"), F.X, F.Z, *What, Y, Floor);
    FVector2D To(-1, 0);
    if (F.Dish < W->DishCount()) To = FVector2D(W->DishX(F.Dish) - F.X, W->DishZ(F.Dish) - F.Z).GetSafeNormal();
    if (To.IsNearlyZero()) To = FVector2D(-1, 0);
