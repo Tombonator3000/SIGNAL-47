@@ -142,10 +142,15 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am44"),TEXT("old"),TEXT("Took the souvenir man's tour Sunday. Five dollars to look at a rock. He says it's the rock."),TEXT("It's a nice rock, Pete."),nullptr,TEXT("shop:tour"),0},
   {TEXT("am45"),TEXT("woman"),TEXT("My sister in Belen got a postcard of the dishes from somebody who works out there. She wants to know is it safe."),TEXT("Tell her it's a postcard."),nullptr,TEXT("shop:postcard"),0},
   // One of the town's own gone (S47Townsfolk).
-  {TEXT("am46"),TEXT("woman"),TEXT("Earl, the deputy's car hasn't been in front of the substation in two days and nobody answers the phone there."),TEXT("I'll call Socorro for you."),nullptr,TEXT("town:away_deputy"),0},
-  {TEXT("am47"),TEXT("man"),TEXT("Gas station's got a card in the night window. BACK SOON. It's been up since the start of the week."),TEXT("He'll turn up. They do."),nullptr,TEXT("town:away_attendant"),0},
+  {TEXT("am46"),TEXT("woman"),TEXT("Earl, the deputy's car hasn't been in front of the substation in a couple of days and nobody answers the phone there."),TEXT("I'll call Socorro for you."),nullptr,TEXT("town:away_deputy"),0},
+  {TEXT("am47"),TEXT("man"),TEXT("Gas station's got a card in the night window. BACK SOON. It's been up a good while now."),TEXT("He'll turn up. They do."),nullptr,TEXT("town:away_attendant"),0},
   {TEXT("am48"),TEXT("old"),TEXT("The shop man's not on his stoop. Thirty years he's sat on that stoop, Earl."),TEXT("I noticed, Pete."),nullptr,TEXT("town:away_souvenir_man"),0},
   {TEXT("am49"),TEXT("woman"),TEXT("The Mesa's short a waitress this week. The cook's doing both and he is not happy about it."),TEXT("Tip him, then."),nullptr,TEXT("town:away_waitress"),0},
+  // And back again (S47Townsfolk: "back_", three days after): the town notices that too, and what is not right about it.
+  {TEXT("am51"),TEXT("man"),TEXT("Deputy's car was back out front of the substation this morning. He didn't wave. He always waves."),TEXT("Give him a day."),nullptr,TEXT("town:back_deputy"),0},
+  {TEXT("am52"),TEXT("man"),TEXT("Gas station's open again. He gave me my change twice and never noticed. I gave it back."),TEXT("Good man."),nullptr,TEXT("town:back_attendant"),0},
+  {TEXT("am53"),TEXT("old"),TEXT("The shop man's back on his stoop. Sat there all morning with his hat in his lap. Thirty years I never saw him without it on."),TEXT("I saw that too, Pete."),nullptr,TEXT("town:back_souvenir_man"),0},
+  {TEXT("am54"),TEXT("woman"),TEXT("She's back at the Mesa. Poured my coffee this morning and kept pouring after the cup was full. Just stood there."),TEXT("Be kind to her."),nullptr,TEXT("town:back_waitress"),0},
   {TEXT("am39"),TEXT("woman"),TEXT("I live in the yellow house at the junction. The last one on nights at the dishes waved every morning on the way by. I still look up when that truck comes past."),nullptr,nullptr,TEXT("reyes_locker"),0},
  };
  return L;
@@ -361,7 +366,7 @@ FString FS47RadioTips::OnAirLine(const FString& Title)
  return FString::Printf(TEXT("Got a note here from somebody who works nights out at the dishes. Something going on out by %s, they say, late. Anybody else out that way, phones are open."),*Title);
 }
 
-FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer) const
+FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer,FString* OutVoice) const
 {
  OutPlace.Empty();OutAnswer.Empty();
  const FString Tip=TitleOf(G.Place);
@@ -378,14 +383,18 @@ FString FS47RadioTips::CallBack(const FGiven& G,FString& OutPlace,FString& OutAn
    TEXT("Earl, about {tip}. My husband saw a light that same night, only it was out by {new}. He won't talk about it, so I am."),
    TEXT("That fella that called about {tip}. Ask him if he's been out to {new}. I go by it every week and I don't stop anymore.")};
   static const TCHAR* const Answers[]={TEXT("Well. There you go."),TEXT("Thank you, ma'am. Phones are open."),TEXT("I'll pass it along.")};
-  OutAnswer=Answers[Pick];
+  // The voice goes with the words: a woman about her husband (and "ma'am" back), a man for the other two.
+  static const TCHAR* const LineVoices[]={TEXT("man"),TEXT("woman"),TEXT("old")};
+  OutAnswer=Answers[Pick];if(OutVoice)*OutVoice=LineVoices[Pick];
   return FString(Lines[Pick]).Replace(TEXT("{tip}"),*Tip).Replace(TEXT("{new}"),*New);
  }
  static const TCHAR* const Nothing[]={
   TEXT("About {tip}. I drove by in the morning. Nothing there. Tire tracks, is all, and I expect those were his."),
   TEXT("Earl, about {tip}. My dog wouldn't go out that night, if that's worth anything."),
   TEXT("About {tip}: I was up all night with the baby and I'd have seen it. I didn't see it.")};
- OutAnswer=TEXT("Well, now we know.");
+ // "His" tracks and the drive by are a man's; the dog an old man's; up with the baby, a young mother.
+ static const TCHAR* const NothingVoices[]={TEXT("man"),TEXT("old"),TEXT("woman")};
+ OutAnswer=TEXT("Well, now we know.");if(OutVoice)*OutVoice=NothingVoices[Pick];
  return FString(Nothing[Pick]).Replace(TEXT("{tip}"),*Tip);
 }
 
@@ -408,9 +417,8 @@ bool FS47RadioTips::StepTipped(FS47Station& Station)
   if(G.Stage==0)Lines.Add(FS47RadioLine(OnAirLine(TitleOf(G.Place)),TEXT("host")));
   else if(G.Stage==1&&Today>G.ReadDay)
   {
-   FString Where,Answer;const FString Said=CallBack(G,Where,Answer);
-   static const TCHAR* const Voices[]={TEXT("woman"),TEXT("man"),TEXT("old")};
-   Lines.Add(FS47RadioLine(Said,Voices[FCrc::StrCrc32(*G.Place)%3],TEXT("a caller")));
+   FString Where,Answer,Voice;const FString Said=CallBack(G,Where,Answer,&Voice);
+   Lines.Add(FS47RadioLine(Said,Voice.IsEmpty()?FString(TEXT("man")):Voice,TEXT("a caller")));
    Lines.Add(FS47RadioLine(Answer,TEXT("host")));
   }
   else continue;
@@ -433,7 +441,8 @@ FString FS47RadioTips::TakeNotes()
   if(G.Stage>=2||Today<G.Day+2)continue;
   const bool bWasRead=G.Stage==1;
   Back(G);
-  Notes.Add(FString::Printf(TEXT("%s%s"),bWasRead?TEXT(""):TEXT("Read your note on the air. "),*FString::Printf(TEXT("Somebody called back: \"%s\" E."),*G.Back)));
+  // Earl's own words, with the caller's inside them in single quotes; one paragraph a tip (S47TownUse frames them).
+  Notes.Add(FString::Printf(TEXT("%sSomebody called back, said '%s'"),bWasRead?TEXT(""):TEXT("Read your note on the air. "),*G.Back));
  }
  return FString::Join(Notes,TEXT("\n\n"));
 }

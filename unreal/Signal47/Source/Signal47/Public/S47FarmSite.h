@@ -26,6 +26,8 @@ public:
  bool Use();
  FString Label() const;
  bool Armed() const{return ClearAt>0;}
+ // MILITARY-20261108: the marks' night was gone over in the morning (S47Visitors::Cleared): no marks, nothing to read, no flake.
+ bool Raked() const;
  // Whether a body is coming or here at this site, so that spawning may use the open ground round the player.
  bool VisitWantsGround() const{return Visit>=1&&Visit<=3;}
  int32 VisitStage() const{return Visit;}

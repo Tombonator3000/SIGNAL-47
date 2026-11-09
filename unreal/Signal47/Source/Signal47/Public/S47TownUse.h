@@ -5,6 +5,7 @@ class US47Main;
 class AS47Web;
 class SWidget;
 class UPrimitiveComponent;
+class UStaticMeshComponent;
 struct FS47MapView;
 struct FS47AlbumShot;
 
@@ -87,6 +88,18 @@ private:
 	TMap<FString, int32> Basket;
 	FString BasketAt;
 	TArray<TWeakObjectPtr<UPrimitiveComponent>> Props;
+	// What is out in the world because of what was bought (critics, round 3: not only text): a salt block or a sack at each lure and
+	// the tracks round it by morning; the rubber spaceman on the dash; the player's picture in the souvenir shop's window.
+	TArray<TWeakObjectPtr<UStaticMeshComponent>> LureParts, Spaceman, PrintParts;
+	TWeakObjectPtr<class UTextRenderComponent> PrintWords;
+	static constexpr int32 LuresDrawn = 4, TracksPerLure = 6;
+	double ThingsIn = 0;
+	void StepThings();
+	// Where something went on that the player was near enough to know of: "place:night" (FS47EventPlaces' places). Earl's tip list
+	// offers only these and the places found (critics, round 3: the list was an oracle for nights the player never saw).
+	TSet<FString> Witnessed;
+	double WitnessIn = 0;
+	void StepWitness();
 	bool Build();
 	void SetPropsShown(bool bShow);
 	// The shared basket: a row a supply with its price and what it is for, + and -, and a pay button that hands over the parcel.

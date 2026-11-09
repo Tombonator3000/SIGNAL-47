@@ -290,7 +290,7 @@ void FS47Places::StepNeedle(double Dt)
   const FVector At(Road.X+B.X,Foot.Y,Road.Z+B.Z);const double D=FVector2D(At.X-Foot.X,At.Z-Foot.Z).Size();
   if(D<Best){Best=D;Toward=At;What=B.Id;}
  }
- if(F.FarmSite&&F.FarmSite->Armed()){const FVector C=F.FarmSite->Centre();const double D=FVector2D(C.X-Foot.X,C.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=C;What=TEXT("marks");}}
+ if(F.FarmSite&&F.FarmSite->Armed()&&!F.FarmSite->Raked()){const FVector C=F.FarmSite->Centre();const double D=FVector2D(C.X-Foot.X,C.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=C;What=TEXT("marks");}}
  if(F.Gear)for(const auto& L:F.Gear->Items()){const double D=FVector2D(L.At.X-Foot.X,L.At.Z-Foot.Z).Size();if(D<Best){Best=D;Toward=L.At;What=L.Item;}}
  if(What.IsEmpty())return;
  const int32 Strength=Best<20?3:Best<50?2:1;
@@ -315,8 +315,8 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
   Rows.Add(S47Kit::Button(FString::Printf(TEXT("Take a room until morning / $%d"),F->MotelPrice()),[this,F,Next]
   {
    if(M->UI)M->UI->Close(true);
-   const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next;
-   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next);
+   const double Until=F->MotelNight?F->MotelNight->SleepUntil(Next):Next,From=F->Clock();
+   if(F->RestAt(Until,FS47FreeformSession::ERest::Motel)&&F->MotelNight)F->MotelNight->AfterRest(Next,From);
   },true,TAttribute<bool>::CreateLambda([F]{return F->Budget()>=F->MotelPrice();})));
  }
  else if(F->HasKit(TEXT("cot")))
