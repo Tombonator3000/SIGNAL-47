@@ -85,16 +85,16 @@ struct FS47ChapterCardOpts { FString Closed, Recap, Next, Title, Clock; };
 // the notebook's map (ui/areaMap.ts MapView), kit (KitItem) and people (PersonCard)
 struct FS47MapAt { FString Spot; double T = 0, M = 0, Mi = 0; bool bT = false, bM = false, bMi = false; };
 struct FS47MapMark { FString Kind; double Clock = 0; FString Line; TOptional<FS47MapAt> At; };
-// Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres.
-struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false; };
-struct FS47MapSector { double Az = 0, Spread = 0; FString Label; };
+// Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres. LOOP-1-20261109: a pin inside a live bearing's sector is marked (bInSector); a sector from elsewhere than SARO (bFrom: the truck's direction finder) starts at From, road-local x and z; Fade 1 fresh to 0 cold.
+struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false, bInSector = false; };
+struct FS47MapSector { double Az = 0, Spread = 0; FString Label; bool bFrom = false; double FromX = 0, FromZ = 0; float Fade = 1.f; };
 // Freeform's survey sheet (SS47FieldMap, MAP-20261108): a pencil mark of the player's own, road-local metres (x east, z south).
 struct FS47MapNote { double X = 0, Z = 0; int32 N = 0; };
 // Freeform's sheet: work the player has now, written in by the place in ink ("S-05 drive fault", "fix the feeder"), road-local.
 struct FS47MapJob { double X = 0, Z = 0; FString Text; };
 struct FS47MapView
 {
-	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors;
+	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors; TArray<FVector2D> Crossings; // LOOP-1-20261109: Crossings, where two live bearings from different places cross, road-local (FS47Places::Cross)
 	// Freeform: the survey sheet instead of the sketch. Where the player is and which way they face (degrees from north,
 	// clockwise), and where the truck stands, all road-local, whatever area each is in (S47FieldMap::Me).
 	bool bField = false, bMe = false, bTruck = false, bDriving = false;

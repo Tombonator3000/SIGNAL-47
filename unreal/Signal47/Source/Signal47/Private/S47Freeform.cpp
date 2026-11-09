@@ -264,7 +264,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();
   FResultSheet Sh;Sh.Line=SafeInt(O,TEXT("line"),-1);Sh.Test=SafeInt(O,TEXT("test"),-1);Sh.Day=FMath::Clamp(SafeInt(O,TEXT("day")),1,36500);
   Sh.Feed=FMath::Clamp(SafeNum(O,TEXT("feed")),0.,PrinterSeconds);Sh.Job=S47J::Str(O,TEXT("job"));Sh.Stamp=S47J::Str(O,TEXT("stamp"));Sh.Page=S47J::Str(O,TEXT("page"));
-  if(Sh.Line<0||Sh.Line>=FS47FreeformCases::CaseCount||Sh.Test<0||Sh.Test>=FS47FreeformCases::TestCount||Sh.Page.IsEmpty()||Sh.Page.Len()>4000||CaseSheets.Num()>=8)continue;
+  const bool bSlip=IsBearingSlip(Sh)&&Sh.Line==-1&&Sh.Test==-1; // LOOP-1-20261109: a bearing slip, of no case
+  if((!bSlip&&(Sh.Line<0||Sh.Line>=FS47FreeformCases::CaseCount||Sh.Test<0||Sh.Test>=FS47FreeformCases::TestCount))||Sh.Page.IsEmpty()||Sh.Page.Len()>4000||CaseSheets.Num()>=8)continue;
   CaseSheets.Add(Sh);
  }
  LoadTelex(Saved); // TELEX-20261109: what is on the telex and in the tray
@@ -662,6 +663,8 @@ FString FS47FreeformSession::PrinterHint()const
  if(I==INDEX_NONE&&!CaseSheets.IsEmpty())
  {
   const FResultSheet& Sh=CaseSheets[0];
+  if(IsBearingSlip(Sh))return Sh.Feed>=PrinterSeconds?FString(TEXT("PRINTER: Collect the bearing slip."))
+   :FString::Printf(TEXT("PRINTER: bearing slip %s (%.0f%%). %s"),HasPower()?TEXT("feeding paper"):TEXT("feed paused"),100*Sh.Feed/PrinterSeconds,HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
   if(Sh.Feed>=PrinterSeconds)return FString::Printf(TEXT("PRINTER: Collect the case %d result sheet, %s."),Sh.Line+1,FS47FreeformCases::Def(Sh.Line).Title);
   return FString::Printf(TEXT("PRINTER: case %d result sheet %s (%.0f%%). %s"),Sh.Line+1,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),100*Sh.Feed/PrinterSeconds,HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
  }
@@ -1140,7 +1143,7 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  FString PayWhy;
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);JobBonus(*J,&PayWhy);Earn(LastPay);DeskWork(*J);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);ClearCompletedSelection();return true;}
- if(Places)Places->AfterRegistered();
+ if(Places)Places->AfterRegistered(J->bAnomaly); // LOOP-1-20261109: a discrepancy points out even with no branch mended
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
  if(WasTutorial&&!InTutorial())return true;
  Feedback=bOpened?FString::Printf(TEXT("CASE OPENED: %s (OPS / CASE BOARD). Registered: the packet is printing; collect it and file its originals in the binder."),FS47FreeformCases::Def(0).Title)
@@ -2234,10 +2237,29 @@ void FS47FreeformSession::QueueResultSheet(int32 Line,int32 Test,const FString& 
   *FS47FreeformCases::TestResultText(Line,Test,bPresent),*FS47FreeformCases::Prediction(Line,Test),*CaseSheetHead(Line,Test),*CaseNextLine(Line),*Sh.Stamp);
  CaseSheets.Add(Sh);
 }
+bool FS47FreeformSession::QueueBearingSlip(int32 Day,const FString& Line,const FString& Note)
+{
+ if(Line.IsEmpty()||CaseSheets.Num()>=8)return false;
+ FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d"),Sh.Day);Sh.Stamp=TEXT("COLD BY NOON");
+ if(CaseSheets.ContainsByPredicate([&](const FResultSheet& X){return X.Job==Sh.Job;}))return false;
+ Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nFROM SARO, OFF THE MAIN BEAM. WHICH WAY, NOT HOW FAR AND NOT WHAT.\n%s\nPENCILED IN ON THE MAP (TAB)."),
+  *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note);
+ CaseSheets.Add(Sh);Changed();return true;
+}
 bool FS47FreeformSession::CollectResultSheet()
 {
  if(CaseSheets.IsEmpty()||CaseSheets[0].Feed<PrinterSeconds)return false;
  const FResultSheet Sh=CaseSheets[0];CaseSheets.RemoveAt(0);
+ if(IsBearingSlip(Sh))
+ {
+  // LOOP-1-20261109: the slip off the printer is a paper in the notebook; no case board to open on.
+  FS47Doc Doc;Doc.Id=Sh.Job;Doc.Title=FString::Printf(TEXT("Bearing slip, D%02d"),Sh.Day);Doc.Kind=TEXT("printout");Doc.Stamp=Sh.Stamp;Doc.Page=Sh.Page;Doc.Transcript=Sh.Page;
+  StopPrinterFeedback();StepPrinter(0);
+  if(M&&M->Audio)M->Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.45f});
+  if(M&&M->Story)M->Story->AddDoc(Doc);
+  if(M&&M->UI)M->UI->Document(Doc);
+  Feedback=TEXT("BEARING SLIP: which way, cold by noon. It is on your map (TAB).");Changed(Feedback);return true;
+ }
  FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-sheet%d-d%d"),Sh.Line+1,Sh.Test+1,Sh.Day);Doc.Title=FString::Printf(TEXT("Result sheet: %s, test %d"),FS47FreeformCases::Def(Sh.Line).Title,Sh.Test+1);
  Doc.Kind=TEXT("printout");Doc.Stamp=Sh.Stamp;Doc.Page=Sh.Page;Doc.Transcript=Sh.Page;
  // The next visit to OPS opens CASE BOARD on this case with the explanation that fell marked (Use, OpenCaseBoard).
@@ -2797,7 +2819,9 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // CASES-OPS-20261109 (CaseStep): a case with one explanation left, or its planned test ready to run, before the cards; any other
  // case step after the station goal, the most pressing first.
  // CASES-OPS-20261109: a case's result sheet on the printer comes first of the case steps: it says what the test showed.
- if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title)+Tail,TEXT("PRINTER // CASE RESULT SHEET."));
+ // LOOP-1-20261109: a bearing slip once it is the printer's turn (a job's paper first); a case's own sheet as before.
+ if(!CaseSheets.IsEmpty()&&IsBearingSlip(CaseSheets[0])){if(SheetIndex()==0)return Say(FString(TEXT("PRINTER: COLLECT THE BEARING SLIP."))+Tail,TEXT("PRINTER // BEARING SLIP."));}
+ else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title)+Tail,TEXT("PRINTER // CASE RESULT SHEET."));
  const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
  if(Step.Step==ECaseStep::Conclude||(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0))return Say(Step.Next+Tail,Step.Card);
  if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending)+Tail,
@@ -3807,6 +3831,18 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(!Said.Contains(TEXT("DEBT"),ESearchCase::IgnoreCase)&&Said.Contains(TEXT("REQ $12")),TEXT("OPS text says REQUISITION, never DEBT"));
   Check(TerminalStation(3)==TEXT("SARO OPS V4.2  TERM 1  OPR NIGHT")&&!TerminalStation(1).Contains(TEXT("REYES"))&&Sh.TerminalDate(8*3600.).Len()==9&&Sh.TerminalDate(8*3600.).Contains(TEXT("-86")),TEXT("OPS header as Story's: SARO OPS V4.2, terminal, a new operator and DD-MON-86"));
   Sh.Stop();ShR.Stop();
+ }
+ {
+  // LOOP-1-20261109: a bearing slip waits on the printer as a paper of no case, one a day, survives a Continue, and is collected there.
+  FS47FreeformSession Sl(nullptr);Sl.Begin(nullptr);Sl.Tutorial=0;
+  const bool bQueued=Sl.QueueBearingSlip(4,TEXT("BEARING ABOUT 110° ±40° / 19:52 / COLD BY NOON"),TEXT("NO BRANCH MENDED: A WIDE SECTOR."))&&!Sl.QueueBearingSlip(4,TEXT("again"),TEXT("again"));
+  FS47FreeformSession SlR(nullptr);SlR.Begin(S47J::Read(S47J::Write(Sl.Save())));
+  const bool bKept=SlR.CaseSheets.Num()==1&&IsBearingSlip(SlR.CaseSheets[0])&&SlR.CaseSheets[0].Page==Sl.CaseSheets[0].Page;
+  Check(bQueued&&Sl.CaseSheets.Num()==1&&Sl.SheetIndex()==0&&Sl.PrinterHint().Contains(TEXT("bearing slip"))&&bKept&&Sl.CaseSheets[0].Page.Contains(TEXT("COLD BY NOON"))&&!Sl.CaseSheets[0].Page.Contains(TEXT("47")),
+   TEXT("Bearing slip: queued on the printer once a day, kept over a Continue, and no 47 on it"));
+  Sl.CaseSheets[0].Feed=PrinterSeconds;
+  Check(Sl.CollectChart()&&Sl.CaseSheets.IsEmpty()&&Sl.BoardLine<0&&Sl.FeedbackText().StartsWith(TEXT("BEARING SLIP")),TEXT("Bearing slip: collected at the printer like a result sheet, with no case board to open on"));
+  Sl.Stop();SlR.Stop();
  }
  {
   // Tom, 9 November: RETAIN at the reel deck keeps the comparison and opens no case, even with the event's own record after it; a

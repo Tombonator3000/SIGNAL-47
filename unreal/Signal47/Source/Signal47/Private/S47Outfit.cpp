@@ -9,6 +9,7 @@
 #include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Openings.h"
+#include "S47Places.h"
 #include "S47ScriptPlayer.h"
 #include "S47Tape.h"
 #include "S47UI.h"
@@ -114,9 +115,13 @@ void FS47Outfit::Step(double Dt)
    if(Best&&S47OpenLand::RoadOf(Area,P.X,P.Z,Hx,Hz)&&S47OpenLand::RoadOf(Area,Best->At.X,Best->At.Z,Tx,Tz))
    {
     const TCHAR* Way=FS47Omen::Way(FS47Omen::BearingOf(FVector2D(Hx,Hz),FVector2D(Tx,Tz)));
+    // LOOP-1-20261109 (HELHETLIG_LOKKE step 1): the null is a line on the map from where the truck stands, not only a word, so that
+    // two taken from different places cross (FS47Places::AddCarFix, Cross). A loop's null is a few degrees wide either way.
+    const double Az=FS47Places::AzimuthOf(Hx,Hz,Tx,Tz)+FMath::FRandRange(-3.,3.);
+    const bool bLine=F.Places&&F.Places->AddCarFix(Hx,Hz,Az,Best->Id,F.Clock(),F.Day());
     if(M->Audio){M->Audio->Beep(700.f,.18f,.05f);M->Audio->Beep(700.f,.18f,.03f,.3f);}
-    if(M->UI)M->UI->Toast(RdfLine(BestM,Way),6);
-    UE_LOG(LogS47Outfit,Display,TEXT("S47: rdf: %s at %.0f m, toward the %s"),*Best->Id,BestM,Way);
+    if(M->UI)M->UI->Toast(RdfLine(BestM,Way)+(bLine?TEXT(" Penciled in from here on your map (TAB)."):TEXT("")),6);
+    UE_LOG(LogS47Outfit,Display,TEXT("S47: rdf: %s at %.0f m, toward the %s%s"),*Best->Id,BestM,Way,bLine?TEXT(", a new line on the map"):TEXT(""));
    }
   }
  }

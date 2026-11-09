@@ -401,7 +401,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
@@ -434,7 +434,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   LightPlace=S47J::Str(O,TEXT("lightPlace"));PlaceId=S47J::Str(O,TEXT("place")).Left(64);PhotoId=S47J::Str(O,TEXT("photo"));Scene=S47J::Str(O,TEXT("scene"),TEXT("saro"));Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,3);Variant=FMath::Clamp(S47J::Int(O,TEXT("variant")),0,2);
   // Older saves have none of these: no pot until the next day, no finding owed.
   SkyLeft=FMath::Clamp(S47J::Int(O,TEXT("skyLeft")),0,1);bOwedArray=S47J::Bool(O,TEXT("owedArray"));bOwedFeeder=S47J::Bool(O,TEXT("owedFeeder"));bForcedEvent=S47J::Bool(O,TEXT("forced"));
-  SeenDay=S47J::Int(O,TEXT("seenDay"));DangerNight=FMath::Max(0,S47J::Int(O,TEXT("dangerNight")));DangerCount=FMath::Max(0,S47J::Int(O,TEXT("danger")));SlotNight=FMath::Max(0,S47J::Int(O,TEXT("slotNight")));PeekNight=FMath::Max(0,S47J::Int(O,TEXT("peekNight")));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);MinorBudget=FMath::Clamp(S47J::Int(O,TEXT("minorBudget"),MinorLeft),MinorLeft,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
+  SeenDay=S47J::Int(O,TEXT("seenDay"));DangerNight=FMath::Max(0,S47J::Int(O,TEXT("dangerNight")));DangerCount=FMath::Max(0,S47J::Int(O,TEXT("danger")));SlotNight=FMath::Max(0,S47J::Int(O,TEXT("slotNight")));PeekNight=FMath::Max(0,S47J::Int(O,TEXT("peekNight")));PointNight=FMath::Max(0,S47J::Int(O,TEXT("pointNight")));PointCount=FMath::Clamp(S47J::Int(O,TEXT("pointOut")),0,9);MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);MinorBudget=FMath::Clamp(S47J::Int(O,TEXT("minorBudget"),MinorLeft),MinorLeft,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
   // Old saves know that a roll was spent, but not whether an unavailable
   // event was chosen. Never reroll it or invent a pending event on migration.
   PendingThreatNight=FMath::Max(0,S47J::Int(O,TEXT("pendingThreatNight")));
@@ -502,7 +502,7 @@ void FS47FreeformDirector::Stop()
 S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);if(!PlaceId.IsEmpty())S47J::Set(O,TEXT("place"),PlaceId);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
- S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}if(SlotNight>0)S47J::Set(O,TEXT("slotNight"),SlotNight);if(PeekNight>0)S47J::Set(O,TEXT("peekNight"),PeekNight);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
+ S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}if(SlotNight>0)S47J::Set(O,TEXT("slotNight"),SlotNight);if(PeekNight>0)S47J::Set(O,TEXT("peekNight"),PeekNight);if(PointNight>0){S47J::Set(O,TEXT("pointNight"),PointNight);S47J::Set(O,TEXT("pointOut"),PointCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
  if(SkyLeft>0)S47J::Set(O,TEXT("skyLeft"),SkyLeft);if(bOwedArray)S47J::Set(O,TEXT("owedArray"),true);if(bOwedFeeder)S47J::Set(O,TEXT("owedFeeder"),true);if(bForcedEvent)S47J::Set(O,TEXT("forced"),true);
@@ -1051,6 +1051,21 @@ void FS47FreeformDirector::NoteDanger()
  ++DangerCount;Changed();
 }
 int32 FS47FreeformDirector::DangerTonight() const{return M&&M->Freeform&&DangerNight==FS47FreeformSession::NightOf(M->Freeform->Clock())?DangerCount:0;}
+int32 FS47FreeformDirector::PointOutLimit() const{return M&&M->Rhythm?M->Rhythm->Data().PointOutPerNight:1;}
+void FS47FreeformDirector::NotePointOut(int32 Night)
+{
+ if(Night<=0)return;
+ if(PointNight!=Night){PointNight=Night;PointCount=0;}
+ ++PointCount;
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: director: pointed out at the land, night %d (%d of %d)"),Night,PointCount,PointOutLimit());
+ if(M)Changed();
+}
+bool FS47FreeformDirector::TierAllowsAt(ES47Allowed Need,double Clock,int32 Night){return S47NightTiers::Allows(Need,FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.,Night);}
+bool FS47FreeformDirector::MayPointAt(const FString& EventId,double Clock,int32 Night) const
+{
+ const FS47RhythmEvent* E=M&&M->Rhythm?M->Rhythm->Data().Find(FName(*EventId)):nullptr;
+ return TierAllowsAt(E?E->Tier:ES47Allowed::Full,Clock,Night);
+}
 void FS47FreeformDirector::FillRhythm(FS47RhythmNow& Out) const
 {
  Out.RestLeft=FMath::Max(0.,RestUntil-ActiveTime);Out.MinorLeft=MinorLeft;Out.InvestLeft=InvestLeft;Out.SkyLeft=SkyLeft;Out.DangerTonight=DangerTonight();
@@ -1885,6 +1900,17 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   FS47FreeformDirector Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Took.Save())));
   FS47FreeformDirector Before(nullptr);Before.Begin(Saved);
   Check(Back.SlotNight==12&&Back.PeekNight==12&&Before.SlotNight==0&&Before.PeekNight==0&&!S47J::Write(Saved).Contains(TEXT("slotNight")),TEXT("the night's danger slot and the peek survive a load, and a save from before has neither"));
+ }
+ {
+  // LOOP-1-20261109: one pointing-out a night (the bearing slip), held over a Continue; the next night has its own. The tiers: what
+  // is only a hint may be pointed at in the evening, a full meeting's place not before two.
+  FS47FreeformDirector Point(nullptr);Point.Begin(Saved);
+  const bool bFirst=Point.PointOutLimit()==1&&Point.MayPointOut(4);Point.NotePointOut(4);
+  FS47FreeformDirector Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Point.Save())));
+  const double Evening=3*86400.+21*3600.,Late=4*86400.+3*3600.;
+  Check(bFirst&&!Point.MayPointOut(4)&&!Back.MayPointOut(4)&&Back.MayPointOut(5)&&!S47J::Write(Saved).Contains(TEXT("pointNight"))
+   &&TierAllowsAt(ES47Allowed::Hint,Evening,4)&&!TierAllowsAt(ES47Allowed::Full,Evening,4)&&!TierAllowsAt(ES47Allowed::Glimpse,Evening,4)&&TierAllowsAt(ES47Allowed::Full,Late,4)&&!Point.MayPointAt(TEXT("no_such_event"),Evening,4),
+   TEXT("at most one pointing-out a night, kept over a Continue and new the next night; before midnight only a hint may be pointed at"));
  }
  auto Active=S47J::Clone(Saved);S47J::Set(Active,TEXT("event"),TEXT("extra_pulse"));S47J::Set(Active,TEXT("age"),12.5);S47J::Set(Active,TEXT("controlled"),true);R.Begin(Active);
  Check(R.ActiveEvent()==TEXT("extra_pulse")&&R.EventAge()==12.5&&R.Busy(),TEXT("pending incident restores its selected identity, control and phase"));

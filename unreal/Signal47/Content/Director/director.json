@@ -7,6 +7,7 @@
     "rest_after": { "danger": 170, "other": 45, "taken": 1800 },
     "budget_per_day": { "minor": [2, 4], "invest": [0, 2], "sky": [0, 1] },
     "danger_per_night": 1,
+    "point_out_per_night": 1,
     "curve": {
       "weeks": [
         { "from_day": 1, "hint": 1.0, "observation": 0.7, "presence": 0.35, "danger": 0.0, "near": 1.0 },

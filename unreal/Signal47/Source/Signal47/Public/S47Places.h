@@ -9,8 +9,8 @@ struct FS47MapView;
 
 // Freeform only: somewhere to drive to (Tom, 7 November). Small places out on the land, each with one thing to find, and a place
 // lights can stand over. Simple props from basic shapes where the project has no model; they want real models later. Heard
-// about on the radio, or found: a pencil mark on the notebook's map. A mended branch of the array gives a bearing, a sector on
-// the same map: which way, never what. Also where a cot can be put up, and what the magnetometer reads.
+// about on the radio, or found: a pencil mark on the notebook's map. A registered discrepancy (or work with a mended branch) gives a
+// bearing, a sector on the same map and a slip on the printer: which way, never what. It is cold by the next noon. Also where a cot can be put up, and what the magnetometer reads.
 class FS47Places
 {
 public:
@@ -30,11 +30,45 @@ public:
  FString NextUnknown(int32 Salt) const;
  bool Use(const FString& Id);
  void FillMap(FS47MapView& View) const;
- // Registered work with mended branches gives one bearing a night. True if it gave one.
- bool AfterRegistered();
- struct FBearing{int32 Day=0;double Az=0,Spread=0;FString Target;};
+ // Registered work gives one bearing a night: a discrepancy always (LOOP-1-20261109, HELHETLIG_LOKKE step 1: also with no branch
+ // mended, then wide), routine work only with mended branches. The Director holds the night's one pointing-out (MayPointOut) and
+ // the tiers (MayPointAt). The bearing goes on the map and its slip on the OPS printer (FS47FreeformSession::QueueBearingSlip).
+ // True if it gave one.
+ bool AfterRegistered(bool bAnomaly=false);
+ // A bearing on the map. From SARO, or (bCar) from where the truck stood when the direction finder nulled (From, road-local x and z),
+ // so that two from different places can cross. Clock: when it was taken; Until: when it goes cold (the next noon). Older saves have
+ // neither (-1): no time, never cold, from SARO.
+ struct FBearing{int32 Day=0;double Az=0,Spread=0;FString Target;double Clock=-1,Until=-1;bool bCar=false;double FromX=0,FromZ=0;};
  const TArray<FBearing>& Bearings() const{return Fixes;}
- static double SpreadFor(int32 Branches){return Branches<=0?0.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
+ // LOOP-1-20261109: no branch mended is a wide sector (±40), never none; every mended branch narrows it.
+ static double SpreadFor(int32 Branches){return Branches<=0?40.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
+ // Whether registered work points out at all: a discrepancy always, routine work with a mended branch.
+ static bool Gives(bool bAnomaly,int32 Branches){return bAnomaly||Branches>0;}
+ // A bearing from SARO (From, road-local) toward To, as a registration takes it: the spread by the branches, the line off the true
+ // one by up to half of it (Roll 0 to 1), whole degrees, cold by the next noon.
+ static FBearing StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target);
+ // The bearing slip, as the printer has it: "BEARING ABOUT 110° ±40° / 19:52 / COLD BY NOON".
+ static FString SlipLine(const FBearing& B);
+ // A clock for paper, hh:mm, that is never Story's (08:15, 20:15, or a 47 anywhere): a minute on is as good.
+ static FString SlipClock(double Clock);
+ // Whole degrees 0 to 359 that never read as Story's number (S47Happenings' Bearing rule: 47, 147 ... become a degree more).
+ static double Whole(double Az);
+ // The next noon after Clock: when a bearing taken then goes cold.
+ static double ColdAt(double Clock);
+ // 1 just taken, falling to 0 at Until; 1 for an older one with no time. Live: not cold yet.
+ static double Freshness(const FBearing& B,double Now);
+ static bool Live(const FBearing& B,double Now){return B.Until<0||Now<B.Until;}
+ // Where the middle lines of two bearings from different places meet, ahead of both (road-local); false when they do not.
+ static bool Cross(const FBearing& A,const FBearing& B,FVector2D& Out);
+ // Whether a road-local point is inside a bearing's sector.
+ static bool InSector(const FBearing& B,double X,double Z);
+ // The direction finder (FS47Outfit): a bearing from the truck, road-local, toward Target (what keyed the band). One near the last
+ // from the truck toward the same thing replaces it; a few kept per target. True when it is a new line on the map.
+ static constexpr double CarSpread=8,CarApart=300;
+ static constexpr int32 MaxFixes=12;
+ bool AddCarFix(double FromX,double FromZ,double Az,const FString& Target,double Clock,int32 Day);
+ // FillMap with a clock: what is live, faded as it cools, the known places inside a sector marked, and where lines cross.
+ void FillMapAt(FS47MapView& View,double Now) const;
  static double AzimuthOf(double FromX,double FromZ,double ToX,double ToZ); // Degrees, north 0, east 90. Road-local: z runs south.
  // Some small things are not where they were: metres from where they first stood, following from the game and the day, so a
  // Continue changes nothing. Only what could be carried. Only moved while nobody is near.
@@ -65,6 +99,7 @@ private:
  bool bBuilt=false;
  double NeedleIn=0;
  int32 LastFixDay=0;
+ static void SaroRoad(double& X,double& Z);
  bool bHasFound(const FString& Id) const;
  bool Build();
  void Seat(FBuilt& B);

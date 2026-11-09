@@ -2,6 +2,7 @@
 #include "S47Audio.h"
 #include "S47FarmSite.h"
 #include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47FreeformObservation.h"
 #include "S47FreeformWorld.h"
 #include "S47Inter.h"
@@ -123,7 +124,19 @@ void FS47Places::Begin(const S47J::FObj& Saved)
  {
   if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();FBearing B;
   B.Day=FMath::Max(0,S47J::Int(O,TEXT("day")));B.Az=S47J::Num(O,TEXT("az"));B.Spread=S47J::Num(O,TEXT("spread"));B.Target=S47J::Str(O,TEXT("target"));
-  if(FMath::IsFinite(B.Az)&&FMath::IsFinite(B.Spread)&&B.Az>=0&&B.Az<=360&&B.Spread>0&&B.Spread<=45){Fixes.Add(B);LastFixDay=FMath::Max(LastFixDay,B.Day);}
+  // LOOP-1-20261109: when it was taken, when it goes cold, and from where; an older save has none of them (no time, never cold,
+  // from SARO), so the save needs no new version.
+  B.Clock=S47J::Num(O,TEXT("clock"),-1);B.Until=S47J::Num(O,TEXT("until"),-1);
+  if(!FMath::IsFinite(B.Clock)||B.Clock<0)B.Clock=-1;
+  if(!FMath::IsFinite(B.Until)||B.Until<0||(B.Clock>=0&&B.Until<=B.Clock))B.Until=-1;
+  B.bCar=S47J::Bool(O,TEXT("car"));SaroRoad(B.FromX,B.FromZ);
+  if(B.bCar)
+  {
+   const TArray<double> From=S47J::Nums(O,TEXT("from"));
+   if(From.Num()!=2||!FMath::IsFinite(From[0])||!FMath::IsFinite(From[1])||!S47OpenLand::InRim(From[0],From[1]))continue;
+   B.FromX=From[0];B.FromZ=From[1];
+  }
+  if(FMath::IsFinite(B.Az)&&FMath::IsFinite(B.Spread)&&B.Az>=0&&B.Az<=360&&B.Spread>0&&B.Spread<=45&&Fixes.Num()<MaxFixes){Fixes.Add(B);if(!B.bCar)LastFixDay=FMath::Max(LastFixDay,B.Day);}
  }
  if(!M||!IsValid(M->Web.Get()))return;
  if(Scene.Get()!=M->Web.Get()){bBuilt=false;Built.Reset();}
@@ -140,7 +153,14 @@ S47J::FObj FS47Places::Save() const
  if(!Fixes.IsEmpty())
  {
   TArray<TSharedPtr<FJsonValue>> List;
-  for(const FBearing& B:Fixes){auto X=S47J::New();S47J::Set(X,TEXT("day"),B.Day);S47J::Set(X,TEXT("az"),B.Az);S47J::Set(X,TEXT("spread"),B.Spread);S47J::Set(X,TEXT("target"),B.Target);List.Add(MakeShared<FJsonValueObject>(X));}
+  for(const FBearing& B:Fixes)
+  {
+   auto X=S47J::New();S47J::Set(X,TEXT("day"),B.Day);S47J::Set(X,TEXT("az"),B.Az);S47J::Set(X,TEXT("spread"),B.Spread);S47J::Set(X,TEXT("target"),B.Target);
+   if(B.Clock>=0)S47J::Set(X,TEXT("clock"),B.Clock);
+   if(B.Until>=0)S47J::Set(X,TEXT("until"),B.Until);
+   if(B.bCar){S47J::Set(X,TEXT("car"),true);S47J::Set(X,TEXT("from"),TArray<double>{FMath::RoundToDouble(B.FromX*10)/10,FMath::RoundToDouble(B.FromZ*10)/10});}
+   List.Add(MakeShared<FJsonValueObject>(X));
+  }
   O->SetArrayField(TEXT("fixes"),List);
  }
  if(!Marks.IsEmpty()){TArray<double> Xz;for(const FVector2D& Mk:Marks){Xz.Add(FMath::RoundToDouble(Mk.X*10)/10);Xz.Add(FMath::RoundToDouble(Mk.Y*10)/10);}S47J::Set(O,TEXT("marks"),Xz);}
@@ -422,48 +442,166 @@ FString FS47Places::SaucerAt(int32 Tier,bool bMap)
   default:return bMap?TEXT("The souvenir man's map has it about right, for once. The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING."):TEXT("The board on the post says SAUCER ROCK in house paint, and under it, smaller, NO CAMPING.");
  }
 }
-void FS47Places::FillMap(FS47MapView& View) const
+void FS47Places::SaroRoad(double& X,double& Z){X=0;Z=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,X,Z);}
+double FS47Places::Whole(double Az)
 {
- const FVector Road=S47Legs::ORIGINS(TEXT("road"));
- double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+ // As S47Happenings' Bearing: whole degrees, and never Story's number (47, 147 ...): a degree on is as good a bearing.
+ if(!FMath::IsFinite(Az))return 0;
+ int32 D=FMath::RoundToInt(FMath::Fmod(FMath::Fmod(Az,360.)+360.,360.))%360;
+ if(FString::FromInt(D).Contains(TEXT("47")))D=(D+1)%360;
+ return double(D);
+}
+FString FS47Places::SlipClock(double Clock)
+{
+ int32 S=FMath::IsFinite(Clock)?int32(FMath::Fmod(FMath::Max(0.,Clock),86400.)):0;
+ FString T;
+ for(int32 Try=0;Try<4;++Try)
+ {
+  T=FString::Printf(TEXT("%02d:%02d"),(S/3600)%24,(S/60)%60);
+  if(!T.Contains(TEXT("47"))&&T!=TEXT("08:15")&&T!=TEXT("20:15"))break;
+  S+=60;
+ }
+ return T;
+}
+double FS47Places::ColdAt(double Clock)
+{
+ const double Noon=12*3600.;
+ return (FMath::FloorToDouble((FMath::Max(0.,Clock)-Noon)/86400.)+1)*86400.+Noon;
+}
+double FS47Places::Freshness(const FBearing& B,double Now)
+{
+ if(B.Until<0)return 1;
+ if(Now>=B.Until)return 0;
+ if(B.Clock<0||B.Until<=B.Clock)return 1;
+ return FMath::Clamp((B.Until-Now)/(B.Until-B.Clock),0.,1.);
+}
+FString FS47Places::SlipLine(const FBearing& B)
+{
+ const FString Az=FString::Printf(TEXT("%03.0f"),Whole(B.Az));
+ const FString Spread=FString::Printf(TEXT("%.0f"),FMath::Clamp(FMath::RoundToDouble(B.Spread),1.,45.));
+ return B.Clock>=0?FString::Printf(TEXT("BEARING ABOUT %s° ±%s° / %s / COLD BY NOON"),*Az,*Spread,*SlipClock(B.Clock))
+  :FString::Printf(TEXT("BEARING ABOUT %s° ±%s°"),*Az,*Spread);
+}
+bool FS47Places::InSector(const FBearing& B,double X,double Z)
+{
+ if(FVector2D::Distance(FVector2D(B.FromX,B.FromZ),FVector2D(X,Z))<1)return false;
+ return FMath::Abs(FMath::FindDeltaAngleDegrees(B.Az,AzimuthOf(B.FromX,B.FromZ,X,Z)))<=B.Spread;
+}
+bool FS47Places::Cross(const FBearing& A,const FBearing& B,FVector2D& Out)
+{
+ // From one station two bearings never cross: it has to be two places (the truck and SARO, or the truck twice).
+ const FVector2D Pa(A.FromX,A.FromZ),Pb(B.FromX,B.FromZ);
+ if(FVector2D::Distance(Pa,Pb)<50)return false;
+ const auto Dir=[](double Az){const double R=FMath::DegreesToRadians(Az);return FVector2D(FMath::Sin(R),-FMath::Cos(R));}; // z runs south
+ const FVector2D Da=Dir(A.Az),Db=Dir(B.Az);
+ const double Den=FVector2D::CrossProduct(Da,Db);
+ if(FMath::Abs(Den)<.02)return false; // within a degree or so of parallel: no point to it
+ const FVector2D W=Pb-Pa;
+ const double Ta=FVector2D::CrossProduct(W,Db)/Den,Tb=FVector2D::CrossProduct(W,Da)/Den;
+ if(Ta<=0||Tb<=0||Ta>20000||Tb>20000)return false;
+ Out=Pa+Da*Ta;return true;
+}
+bool FS47Places::AddCarFix(double FromX,double FromZ,double Az,const FString& Target,double Clock,int32 Day)
+{
+ if(!FMath::IsFinite(FromX)||!FMath::IsFinite(FromZ)||!FMath::IsFinite(Az)||!FMath::IsFinite(Clock)||Target.IsEmpty()||!S47OpenLand::InRim(FromX,FromZ))return false;
+ FBearing B;B.Day=FMath::Max(0,Day);B.Az=Whole(Az);B.Spread=CarSpread;B.Target=Target.Left(64);B.Clock=FMath::Max(0.,Clock);B.Until=ColdAt(B.Clock);B.bCar=true;B.FromX=FromX;B.FromZ=FromZ;
+ // The newest line from the truck toward the same thing: still near where it was taken, this one goes in its place.
+ for(int32 I=Fixes.Num()-1;I>=0;--I)
+ {
+  const FBearing& Was=Fixes[I];
+  if(!Was.bCar||Was.Target!=B.Target||!Live(Was,B.Clock))continue;
+  if(FVector2D::Distance(FVector2D(Was.FromX,Was.FromZ),FVector2D(FromX,FromZ))<CarApart){Fixes[I]=B;if(M)M->RequestAutosave();return false;}
+  break;
+ }
+ Fixes.Add(B);
+ // Three lines from the truck toward one thing at most, and the list as long as it was: the truck's oldest go first, so that a
+ // drive does not push the station's own bearings off.
+ int32 Same=0;
+ for(int32 I=Fixes.Num()-1;I>=0;--I)if(Fixes[I].bCar&&Fixes[I].Target==B.Target&&++Same>3)Fixes.RemoveAt(I);
+ while(Fixes.Num()>MaxFixes){const int32 Car=Fixes.IndexOfByPredicate([](const FBearing& X){return X.bCar;});Fixes.RemoveAt(Car!=INDEX_NONE?Car:0);}
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing from the truck at %.0f %.0f: %.0f within %.0f toward %s"),FromX,FromZ,B.Az,B.Spread,*B.Target);
+ if(M)M->RequestAutosave();
+ return true;
+}
+FS47Places::FBearing FS47Places::StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target)
+{
+ // Somewhere in the sector, not on its middle line: the roll moves the line up to half the spread either way.
+ FBearing B;B.Day=Day;B.Spread=SpreadFor(Branches);B.Az=Whole(AzimuthOf(FromX,FromZ,ToX,ToZ)+(double(Roll)-.5)*B.Spread);B.Target=Target;
+ B.Clock=FMath::Max(0.,Clock);B.Until=ColdAt(B.Clock);B.FromX=FromX;B.FromZ=FromZ;
+ return B;
+}
+void FS47Places::FillMap(FS47MapView& View) const{FillMapAt(View,M&&M->Freeform?M->Freeform->Clock():0.);}
+void FS47Places::FillMapAt(FS47MapView& View,double Now) const
+{
+ // The live bearings, newest last, at most six: a cold one is off the map (LOOP-1-20261109: cold by noon).
+ TArray<int32> Shown;
+ for(int32 I=Fixes.Num()-1;I>=0&&Shown.Num()<6;--I)if(Live(Fixes[I],Now))Shown.Insert(I,0);
+ double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  for(const FBuilt& B:Built)
  {
   if(B.Id==Motel)continue;
   const bool bKept=bHasFound(B.Id);
   if(!bKept&&!HeardOf.Contains(B.Id))continue;
-  FS47MapPin P;P.East=B.X;P.South=B.Z-SaroZ;P.Label=Def(B.Id)?FString(Def(B.Id)->Kind):B.Id;P.bHeard=!bKept;View.Pins.Add(P);
+  FS47MapPin P;P.East=B.X;P.South=B.Z-SaroZ;P.Label=Def(B.Id)?FString(Def(B.Id)->Kind):B.Id;P.bHeard=!bKept;
+  for(const int32 I:Shown)P.bInSector|=InSector(Fixes[I],B.X,B.Z);
+  View.Pins.Add(P);
  }
- (void)Road;
- const int32 From=FMath::Max(0,Fixes.Num()-3);
- for(int32 I=From;I<Fixes.Num();++I){FS47MapSector S;S.Az=Fixes[I].Az;S.Spread=Fixes[I].Spread;S.Label=FString::Printf(TEXT("D%d"),Fixes[I].Day);View.Sectors.Add(S);}
+ for(const int32 I:Shown)
+ {
+  const FBearing& B=Fixes[I];
+  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("D%d truck"),B.Day):FString::Printf(TEXT("D%d"),B.Day);
+  S.bFrom=B.bCar;S.FromX=B.FromX;S.FromZ=B.FromZ;
+  // The pencil pales as it cools, never quite away while it is live.
+  S.Fade=float(.3+.7*Freshness(B,Now));
+  View.Sectors.Add(S);
+ }
+ for(int32 A=0;A<Shown.Num();++A)for(int32 C=A+1;C<Shown.Num();++C)
+ {
+  FVector2D At;
+  if(Cross(Fixes[Shown[A]],Fixes[Shown[C]],At)&&S47OpenLand::InRim(At.X,At.Y))View.Crossings.Add(At);
+ }
 }
-bool FS47Places::AfterRegistered()
+bool FS47Places::AfterRegistered(bool bAnomaly)
 {
  if(!M||!M->Freeform||!M->Freeform->RulesLive()||!M->Freeform->Field)return false;
  auto& F=*M->Freeform;
  const auto& Wear=F.Field->ArrayWear();
  const int32 Branches=Wear.bActive?Wear.Restored.Num():0;
- if(Branches<=0||LastFixDay==F.Day())return false;
- double SaroX=0,SaroZ=0;if(!S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ))return false;
- // What is off the main beam tonight: the marks, if there are any; otherwise something out on the land nobody has looked at.
+ // LOOP-1-20261109: a discrepancy points out even with no branch mended (wide); routine work only through a mended branch.
+ if(!Gives(bAnomaly,Branches))return false;
+ const double Now=F.Clock();const int32 Night=FS47FreeformSession::NightOf(Now);
+ // At most one thing a night at SARO points out at the land: the Director holds it (director.json point_out_per_night).
+ if(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day())return false;
+ double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
+ // What is off the main beam tonight: the marks, if there are any and their tier allows it at this hour (director.json: before
+ // midnight only what can be explained away); otherwise something out on the land nobody has looked at.
  FString Target;double ToX=0,ToZ=0;bool bHave=false;
  if(F.FarmSite&&F.FarmSite->Armed())
  {
-  const FVector C=F.FarmSite->Centre();const FVector Road=S47Legs::ORIGINS(TEXT("road"));
-  Target=F.FarmSite->PlaceTitle();
-  if(F.FarmSite->PlaceId()==TEXT("farm"))bHave=S47OpenLand::RoadOf(TEXT("saro"),C.X,C.Z,ToX,ToZ);
-  else{ToX=C.X-Road.X;ToZ=C.Z-Road.Z;bHave=true;}
+  const FString Why=F.FarmSite->FieldVisit()?TEXT("field_visit"):F.FarmSite->PlaceId()==TEXT("farm")?TEXT("farm_lights"):TEXT("town_lights");
+  if(!F.Director||F.Director->MayPointAt(Why,Now,Night))
+  {
+   const FVector C=F.FarmSite->Centre();const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+   Target=F.FarmSite->PlaceTitle();
+   if(F.FarmSite->PlaceId()==TEXT("farm"))bHave=S47OpenLand::RoadOf(TEXT("saro"),C.X,C.Z,ToX,ToZ);
+   else{ToX=C.X-Road.X;ToZ=C.Z-Road.Z;bHave=true;}
+  }
  }
  if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
- const double Err=(FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au)-.5)*Spread;
- double Az=FMath::Fmod(AzimuthOf(SaroX,SaroZ,ToX,ToZ)+Err+360.,360.);
- FBearing B;B.Day=F.Day();B.Az=Az;B.Spread=Spread;B.Target=Target;Fixes.Add(B);if(Fixes.Num()>12)Fixes.RemoveAt(0);
+ const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target);
+ Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight: about %03.0f degrees from SARO, within %.0f. Penciled in on the map. It says which way, not how far and not what."),Branches,Branches==1?TEXT("branch"):TEXT("branches"),Az,Spread));
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("Something off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),Az,Spread),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.1f within %.0f toward %s, %d branches"),Az,Spread,*Target,Branches);
+ if(F.Director)F.Director->NotePointOut(Night);
+ const FString Mended=Branches<=0?FString(TEXT("With no branch mended the array still resolves something off the main beam, broadly"))
+  :FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("%s: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),*Mended,B.Az,Spread,*SlipClock(Now)));
+ // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
+  :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (TAB)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread),6);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, %s, night %d"),B.Az,Spread,*Target,Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night);
  M->RequestAutosave();
  return true;
 }
@@ -483,7 +621,8 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  }
  Check(bWords&&bParts,TEXT("each has a prop and one thing to find, and none says what it is"));
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
- Check(SpreadFor(0)==0&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("every mended branch narrows the sector, and none is exact"));
+ // LOOP-1-20261109: with no branch mended the sector is wide (±40), never none; every mended branch narrows it.
+ Check(SpreadFor(0)==40&&SpreadFor(0)>SpreadFor(1)&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("no branch mended is a wide sector, every mended branch narrows it, and none is exact"));
  {
   bool bStable=true,bNear=true,bMoves=false,bStill=true;
   for(int32 Day=1;Day<=120;++Day)
@@ -493,12 +632,60 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   }
   Check(bStable&&bNear&&bMoves&&bStill,TEXT("small things shift a little over the days, the same way in any Continue; what could not be carried stays"));
  }
+ {
+  // LOOP-1-20261109: a registered discrepancy gives a bearing and its slip with no branch mended; routine work still needs one.
+  double Sx=0,Sz=0;SaroRoad(Sx,Sz);
+  const double Clock=3*86400.+19*3600.+52*60.; // day 4, 19:52
+  const FBearing B=StationFix(4,Clock,0,Sx,Sz,Sx+500,Sz,.5f,TEXT("windmill"));
+  const FString Line=SlipLine(B);
+  Check(Gives(true,0)&&!Gives(false,0)&&Gives(false,2)&&B.Spread==40&&B.Az==90&&Line==TEXT("BEARING ABOUT 090° ±40° / 19:52 / COLD BY NOON")&&InSector(B,Sx+400,Sz+200)&&!InSector(B,Sx,Sz+400),
+   TEXT("a discrepancy gives a wide bearing and its slip with no branch mended, routine work needs a mended branch, and a place in the sector is in it"));
+  // Cold by noon: the next noon, the pencil paling until then, and off the map once it is cold; an older one (no time) never is.
+  FS47Places Map(nullptr);Map.Begin(nullptr);Map.Fixes.Add(B);
+  FS47MapView Fresh,Later,Cold;Map.FillMapAt(Fresh,Clock+60);Map.FillMapAt(Later,ColdAt(Clock)-3600);Map.FillMapAt(Cold,ColdAt(Clock)+1);
+  FBearing Old=B;Old.Clock=Old.Until=-1;
+  Check(ColdAt(Clock)==4*86400.+12*3600.&&ColdAt(4*86400.+1*3600.)==4*86400.+12*3600.&&Live(B,ColdAt(Clock)-1)&&!Live(B,ColdAt(Clock))&&Live(Old,1e9)
+   &&Fresh.Sectors.Num()==1&&Later.Sectors.Num()==1&&Fresh.Sectors[0].Fade>Later.Sectors[0].Fade&&Later.Sectors[0].Fade>=.3f&&Cold.Sectors.IsEmpty(),
+   TEXT("a bearing is cold by the next noon: it pales on the map until then and is off it after"));
+  // Story's numbers never on the paper: no 47 in a degree or a clock, no 8.15 or 20.15.
+  bool bClean=true;
+  for(int32 D=0;D<360;++D){FBearing X=B;X.Az=D;const FString L=SlipLine(X);bClean&=!L.Contains(TEXT("47"))&&Whole(D)!=47&&Whole(D)!=147&&Whole(D)!=247&&Whole(D)!=347;}
+  for(int32 Min=0;Min<24*60;++Min){const FString C=SlipClock(Min*60.);bClean&=C.Len()==5&&!C.Contains(TEXT("47"))&&C!=TEXT("08:15")&&C!=TEXT("20:15");}
+  Check(bClean&&SlipClock(20*3600.+15*60.)==TEXT("20:16")&&SlipClock(19*3600.+47*60.)==TEXT("19:48"),TEXT("the slip never prints a 47, 08:15 or 20:15: a degree or a minute on"));
+  // The direction finder: a line from where the truck stands, into Fixes; one near the last toward the same thing replaces it;
+  // two from different places cross, and the crossing is on the map. Two from SARO never cross.
+  FS47Places Truck(nullptr);Truck.Begin(nullptr);
+  const double Tx=Sx+200,Tz=Sz+900;
+  const bool bFirst=Truck.AddCarFix(Tx,Tz,45,TEXT("omen:a"),Clock,4);
+  const bool bSame=!Truck.AddCarFix(Tx+40,Tz-30,44,TEXT("omen:a"),Clock+120,4)&&Truck.Bearings().Num()==1&&Truck.Bearings()[0].Az==44;
+  const bool bSecond=Truck.AddCarFix(Tx+1000,Tz,315,TEXT("omen:a"),Clock+600,4)&&Truck.Bearings().Num()==2;
+  FVector2D At;const bool bCross=Cross(Truck.Bearings()[0],Truck.Bearings()[1],At);
+  FS47MapView Two;Truck.FillMapAt(Two,Clock+700);
+  const FBearing SaroA=StationFix(4,Clock,2,Sx,Sz,Sx+500,Sz,.5f,TEXT("mine")),SaroB=StationFix(5,Clock+86400,2,Sx,Sz,Sx,Sz+500,.5f,TEXT("mine"));
+  FVector2D Never;
+  Check(bFirst&&bSame&&bSecond&&Truck.Bearings()[0].bCar&&Truck.Bearings()[0].FromX==Tx+40&&bCross&&FVector2D::Distance(At,FVector2D(Tx+520,Tz-520))<60
+   &&Two.Sectors.Num()==2&&Two.Sectors[0].bFrom&&Two.Crossings.Num()==1&&!Cross(SaroA,SaroB,Never),
+   TEXT("the direction finder's bearing is from the truck, in the fixes, and two from different places cross on the map; two from SARO never do"));
+  // A save keeps the new fields; an older bearing (no clock, from SARO) reads as before.
+  FS47Places Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Truck.Save())));
+  const FBearing& K=Kept.Bearings()[0];
+  Check(Kept.Bearings().Num()==2&&K.bCar&&FMath::IsNearlyEqual(K.FromX,Tx+40,.11)&&FMath::IsNearlyEqual(K.FromZ,Tz-30,.11)&&FMath::IsNearlyEqual(K.Clock,Clock+120,.5)&&FMath::IsNearlyEqual(K.Until,ColdAt(Clock),.5),
+   TEXT("a bearing's clock, its noon and the truck's place survive a Continue"));
+ }
  FS47Places None(nullptr);None.Begin(nullptr);Check(None.Save()->Values.Num()==0&&None.Bearings().IsEmpty(),TEXT("an older save has none of it and writes nothing"));
  auto O=S47J::New();S47J::Set(O,TEXT("heard"),TArray<FString>{TEXT("mine"),TEXT("nowhere")});
  auto Fix=S47J::New();S47J::Set(Fix,TEXT("day"),3);S47J::Set(Fix,TEXT("az"),31.);S47J::Set(Fix,TEXT("spread"),12.);S47J::Set(Fix,TEXT("target"),TEXT("mine"));
  TArray<TSharedPtr<FJsonValue>> List;List.Add(MakeShared<FJsonValueObject>(Fix));O->SetArrayField(TEXT("fixes"),List);
  FS47Places Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));
- Check(Back.Heard(TEXT("mine"))&&!Back.Heard(TEXT("nowhere"))&&Back.Bearings().Num()==1&&Back.Bearings()[0].Az==31.,TEXT("heard and bearings survive a Continue, and nonsense is dropped"));
+ {
+  double Sx=0,Sz=0;SaroRoad(Sx,Sz);const FBearing& Was=Back.Bearings()[0];
+  Check(Back.Heard(TEXT("mine"))&&!Back.Heard(TEXT("nowhere"))&&Back.Bearings().Num()==1&&Was.Az==31.&&Was.Clock<0&&Was.Until<0&&!Was.bCar&&Was.FromX==Sx&&Was.FromZ==Sz&&Live(Was,1e9),
+   TEXT("heard and bearings survive a Continue, an older bearing is from SARO and never cold, and nonsense is dropped"));
+  // A bearing from the truck with no place to stand on is nonsense too.
+  auto Bad=S47J::Clone(O);auto Car=S47J::Clone(Fix);S47J::Set(Car,TEXT("car"),true);TArray<TSharedPtr<FJsonValue>> L2;L2.Add(MakeShared<FJsonValueObject>(Car));Bad->SetArrayField(TEXT("fixes"),L2);
+  FS47Places Dropped(nullptr);Dropped.Begin(S47J::Read(S47J::Write(Bad)));
+  Check(Dropped.Bearings().IsEmpty(),TEXT("a bearing from the truck without where it stood is dropped"));
+ }
  {
   // The player's own marks on the map: one down, another, the first rubbed out by a touch near it, and the rest kept over a Continue.
   FS47Places Pencil(nullptr);Pencil.Begin(nullptr);

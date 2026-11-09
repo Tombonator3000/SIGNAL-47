@@ -356,6 +356,11 @@ public:
  // goes in the documents, and the next visit to OPS opens CASE BOARD on that case. Saved while waiting (an older save has none).
  struct FResultSheet { int32 Line=-1,Test=-1,Day=0; double Feed=0; FString Job,Stamp,Page; };
  const TArray<FResultSheet>& ResultSheets() const { return CaseSheets; }
+ // LOOP-1-20261109: a bearing slip (FS47Places::AfterRegistered) waits in the same queue as a sheet of no case: Line and Test -1, Job
+ // its document's id. Printed after any job's paper and collected at the printer the same way; saved while waiting. False: the
+ // printer already holds as many papers as it takes, and the bearing is on the map without it.
+ static bool IsBearingSlip(const FResultSheet& Sh){return Sh.Line<0&&Sh.Test<0&&Sh.Job.StartsWith(TEXT("freeform-bearing-"));}
+ bool QueueBearingSlip(int32 Day,const FString& Line,const FString& Note);
  // -1: no result sheet waiting; otherwise its paper fraction 0..1 (it feeds only while no job's paper is waiting).
  double SheetProgress() const;
  // TELEX-20261109 (Tom, 9 November, DECISIONS "Saker og OPS"): the telex in the control room is paper. What comes back to SARO, a

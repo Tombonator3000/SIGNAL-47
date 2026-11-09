@@ -81,6 +81,9 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  if(!Range(B,TEXT("sky"),A0,A1)||A0<0||A0>A1){Why=TEXT("budget sky");return false;}Out.SkyMin=int32(A0);Out.SkyMax=int32(A1);
  // null, or not there at all: no limit.
  Out.DangerPerNight=G->HasTypedField<EJson::Number>(TEXT("danger_per_night"))?S47J::Int(G,TEXT("danger_per_night")):-1;
+ // LOOP-1-20261109: the night's pointing-out at the land (the bearing slip). Absent: one.
+ Out.PointOutPerNight=G->HasTypedField<EJson::Number>(TEXT("point_out_per_night"))?S47J::Int(G,TEXT("point_out_per_night")):1;
+ if(Out.PointOutPerNight<0||Out.PointOutPerNight>3){Why=TEXT("point_out_per_night: 0 to 3");return false;}
  // The moon: optional, 0.3 to 2 at each end.
  if(const auto Moon=S47J::Obj(G,TEXT("moon")))
  {
@@ -694,6 +697,7 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  Check(D.Earliest==FS47NightRhythm::EarliestHour&&D.Latest==FS47NightRhythm::LatestHour&&D.End==FS47NightRhythm::EndHour,TEXT("their hours as FS47NightRhythm has them"));
  const auto Chance=[&](const TCHAR* Id){const auto* E=D.Find(Id);return E?E->PerNight:-1.;};
  Check(FMath::IsNearlyEqual(float(Chance(TEXT("door_visit"))),float(FS47DoorVisit::ComeChance),.001f),TEXT("door visit's chance as FS47DoorVisit has it"));
+ Check(D.PointOutPerNight==1,TEXT("one pointing-out at the land a night (point_out_per_night, LOOP-1-20261109)"));
  Check(D.TickMin==240&&D.TickMax==420&&D.RestDanger==170&&D.RestOther==45&&D.RestTaken==1800&&D.MinorMin==2&&D.MinorMax==4&&D.InvestMin==0&&D.InvestMax==2&&D.SkyMin==0&&D.SkyMax==1,TEXT("ticks, rest and budgets as the Director has them"));
  // Every event a save can name.
  bool bAll=true;FString Missing;

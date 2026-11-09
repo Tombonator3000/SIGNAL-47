@@ -43,6 +43,9 @@ def check(doc):
         if len(r) != 2 or not 0 <= r[0] <= r[1]: bad('budget_per_day.' + k)
     limit = g.get('danger_per_night')
     if limit is not None and (not isinstance(limit, int) or limit < 0): bad('danger_per_night: null or a whole number')
+    # LOOP-1-20261109: how many times a night SARO points the player out at the land (the bearing slip); S47Rhythm.cpp the same.
+    point = g.get('point_out_per_night', 1)
+    if not isinstance(point, int) or isinstance(point, bool) or not 0 <= point <= 3: bad('point_out_per_night: a whole number 0 to 3')
     # The build-up (Tom's critics, 8 November): one row a week from day 1, in order; S47Rhythm.cpp turns away the same.
     weeks = g.get('curve', {}).get('weeks', [])
     last = 0

@@ -47,6 +47,9 @@ struct FS47RhythmData
  // from the fourth week's first night.
  double TierGlimpse=0,TierFull=2,TierLateGlimpse=23,TierLateFull=1;int32 TierLateNight=22;
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
+ // LOOP-1-20261109: globals.point_out_per_night, how many times a night something at SARO points the player out at the land (the
+ // bearing slip; FS47FreeformDirector::MayPointOut). 0 to 3; absent: 1.
+ int32 PointOutPerNight=1;
  TArray<FS47RhythmEvent> Events;
  TArray<FS47RhythmWeek> Weeks; // in order of FromDay; empty: every level at its own chance, everything as near as it is
  // curve.finale: the nights from the assessment day less FinaleBefore up to it. Absent: the weeks to the end.

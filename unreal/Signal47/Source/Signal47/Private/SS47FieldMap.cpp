@@ -661,11 +661,13 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 		Said.Add(D < 15 ? FString(TEXT("The truck is right here.")) : FString::Printf(TEXT("The truck is %s %s of you."), *S47FieldMapLocal::YardsOrMiles(D), *Compass(FS47Places::AzimuthOf(V.MeX, V.MeZ, V.TruckX, V.TruckZ))));
 	}
 	TArray<FString> Pins;
-	for (const FS47MapPin& Pin : V.Pins) Pins.Add(Pin.bHeard ? Pin.Label + TEXT(" (heard of)") : Pin.Label);
+	for (const FS47MapPin& Pin : V.Pins) Pins.Add((Pin.bHeard ? Pin.Label + TEXT(" (heard of)") : Pin.Label) + (Pin.bInSector ? TEXT(", inside a bearing") : TEXT("")));
 	if (Pins.Num()) Said.Add(TEXT("Pencilled in: ") + FString::Join(Pins, TEXT(", ")) + TEXT("."));
-	TArray<FString> Fixes;
-	for (const FS47MapSector& Sec : V.Sectors) Fixes.Add(FString::Printf(TEXT("%s about %03.0f degrees"), *Sec.Label, Sec.Az));
+	TArray<FString> Fixes, FromTruck;
+	for (const FS47MapSector& Sec : V.Sectors) (Sec.bFrom ? FromTruck : Fixes).Add(FString::Printf(TEXT("%s about %03.0f degrees%s"), *Sec.Label, Sec.Az, Sec.Fade < .5f ? TEXT(", going cold") : TEXT("")));
 	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT(", ")) + TEXT("."));
+	if (FromTruck.Num()) Said.Add(TEXT("Bearings from the truck: ") + FString::Join(FromTruck, TEXT(", ")) + TEXT("."));
+	if (V.Crossings.Num()) Said.Add(FString::Printf(TEXT("%d place%s where two bearings cross, ringed."), V.Crossings.Num(), V.Crossings.Num() == 1 ? TEXT("") : TEXT("s")));
 	TArray<FString> Work;
 	for (const FS47MapJob& Job : V.Jobs) Work.Add(Job.Text);
 	if (Work.Num()) Said.Add(TEXT("Written in by the places: ") + FString::Join(Work, TEXT("; ")) + TEXT("."));
@@ -1230,11 +1232,24 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	const FLinearColor Lead = Graphite(.92f);
 	for (const FS47MapSector& Sec : View.Sectors)
 	{
-		const auto Ray = [this](double Deg) { const double A = FMath::DegreesToRadians(Deg); return ToPage(SaroAt.X + FMath::Sin(A) * 9000, SaroAt.Y - FMath::Cos(A) * 9000); };
-		const FVector2D From = ToPage(SaroAt.X, SaroAt.Y);
-		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Lead, 1.2f, LPencil, { 7, 6 });
+		// LOOP-1-20261109: from SARO, or from where the truck stood (the direction finder); the pencil pales as the bearing cools.
+		const FVector2D Origin = Sec.bFrom ? FVector2D(Sec.FromX, Sec.FromZ) : SaroAt;
+		const FLinearColor Line = Graphite(.92f * FMath::Clamp(Sec.Fade, .2f, 1.f));
+		const auto Ray = [this, Origin](double Deg) { const double A = FMath::DegreesToRadians(Deg); return ToPage(Origin.X + FMath::Sin(A) * 9000, Origin.Y - FMath::Cos(A) * 9000); };
+		const FVector2D From = ToPage(Origin.X, Origin.Y);
+		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Line, 1.2f, LPencil, { 7, 6 });
+		// The truck's line is a narrow one: its middle drawn too, so that two of them are seen to cross.
+		if (Sec.bFrom) Pen.Dashed({ F2(From), F2(Ray(Sec.Az)) }, Line, 1.f, LPencil, { 2, 4 });
 		FVector2D A = From, B = Ray(Sec.Az);
-		if (ClipToFrame(A, B)) Pen.Text(Sec.Label, F2(FMath::Lerp(A, B, .8)), Pencil(24), Lead, LPencilWords, .5f, .5f, true);
+		if (ClipToFrame(A, B)) Pen.Text(Sec.Label, F2(FMath::Lerp(A, B, Sec.bFrom ? .35 : .8)), Pencil(24), Line, LPencilWords, .5f, .5f, true);
+	}
+	// Where two bearings from different places cross: a ring round it, the way one would pencil it.
+	for (const FVector2D& Cross : View.Crossings)
+	{
+		if (!Visible(Cross.X, Cross.Y, 40)) continue;
+		const FVector2f Ctr = OnPage(Cross.X, Cross.Y);
+		Pen.Lines(Pen.Circle(Ctr, 12, 24), Lead, 1.8f, LPencil);
+		Pen.Lines(Pen.Circle(Ctr, 3, 10), Lead, 1.6f, LPencil);
 	}
 	// What to look into (heard of on the CB or the radio, in the paper, from Dale or Ward, a bearing's end): a circle with a question
 	// mark and its word. Looked into: the word struck through and ticked. Far out on the sheet only the circles, not the words.
@@ -1253,9 +1268,11 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines(Pen.Circle(Ctr, 6, 18), Lead, 1.5f, LPencil);
 			Pen.Lines({ Ctr + FVector2f(-4, 0), Ctr + FVector2f(-1, 4), Ctr + FVector2f(6, -6) }, Lead, 2.f, LPencil);
 		}
+		// LOOP-1-20261109: a place inside a live bearing's sector, ringed once more.
+		if (Pin.bInSector) Pen.Lines(Pen.Circle(Ctr, 15, 26), Lead, 1.2f, LPencil);
 		if (Sc < .15) continue;
-		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(13, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
-		if (!Pin.bHeard) Pen.Lines({ Ctr + FVector2f(12, 3), Ctr + FVector2f(14 + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2);
+		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(Pin.bInSector ? 19.f : 13.f, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
+		if (!Pin.bHeard) { const float By = Pin.bInSector ? 6.f : 0.f; Pen.Lines({ Ctr + FVector2f(12 + By, 3), Ctr + FVector2f(14 + By + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2); }
 	}
 	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
 	{

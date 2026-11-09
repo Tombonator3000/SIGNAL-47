@@ -287,7 +287,7 @@ TArray<FS47PinBoard::FItem> FS47PinBoard::Items() const
 	if (!M || !M->Freeform) return Out;
 	const FS47FreeformSession& Fs = *M->Freeform;
 	TMap<int32, const FS47Places::FBearing*> FixOfDay;
-	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) FixOfDay.Add(B.Day, &B);
+	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) if (!B.bCar) FixOfDay.Add(B.Day, &B); // LOOP-1-20261109: SARO's own, not the truck's
 	for (const FString& Id : Fs.FindingIdsFrom(0))
 	{
 		if (FS47FreeformCases::IsCaseRecord(Id)) continue; // CASES-OPS-20261109: an older save's case cards come down
@@ -376,7 +376,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 	});
 	if (Order.Num() > MostCards) Order.RemoveAt(0, Order.Num() - MostCards);
 	TMap<int32, const FS47Places::FBearing*> FixOfDay;
-	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) FixOfDay.Add(B.Day, &B);
+	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) if (!B.bCar) FixOfDay.Add(B.Day, &B); // LOOP-1-20261109: SARO's own, not the truck's
 	for (const FString& Id : Order)
 	{
 		const FString Text = Fs.FindingText(Id);

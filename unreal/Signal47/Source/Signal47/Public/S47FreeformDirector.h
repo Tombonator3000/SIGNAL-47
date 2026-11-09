@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47DuskOrb.h"
 #include "S47FreeformObservation.h"
+#include "S47NightTiers.h"
 class US47Main;
 struct FS47AlbumShot;
 
@@ -16,6 +17,18 @@ public:
  void FillRhythm(struct FS47RhythmNow& Out) const;
  void NoteDanger();
  int32 DangerTonight() const;
+ // LOOP-1-20261109 (HELHETLIG_LOKKE step 1): what at SARO points the player out at the land (the bearing slip a registration gives,
+ // FS47Places::AfterRegistered) comes at most PointOutLimit times a night: director.json's globals.point_out_per_night, 1 without
+ // it. Nights as FS47FreeformSession::NightOf; saved with the night, so a Continue does not give a second one.
+ int32 PointOutLimit() const;
+ int32 PointOutsOn(int32 Night) const{return PointNight==Night?PointCount:0;}
+ bool MayPointOut(int32 Night) const{return PointOutsOn(Night)<PointOutLimit();}
+ void NotePointOut(int32 Night);
+ // Whether what an event left out on the land may be pointed at now: the event's tier in director.json against the hour
+ // (S47NightTiers: before midnight only a hint). An event the file does not have counts as full.
+ bool MayPointAt(const FString& EventId,double Clock,int32 Night) const;
+ static bool TierAllowsAt(ES47Allowed Need,double Clock,int32 Night);
+ int32 PointNight=0,PointCount=0;
  // Critic round 5: the night the rhythm's danger slot was taken (FS47Rhythm::Began, DangerSlotOpen) and the night of the last peek in
  // at a window (FS47Rhythm::BeganOn), saved with the night's dangers: a load of the same night, or a Continue, has them as they were.
  int32 SlotNight=0,PeekNight=0;
