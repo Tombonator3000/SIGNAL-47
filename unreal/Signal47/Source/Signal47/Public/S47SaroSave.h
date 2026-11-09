@@ -11,7 +11,9 @@ class US47Main;
 // taken, the annex and Dale's office, the photo lab and the east wing). Every time the player leaves (out of the building into the
 // yard, setting off in a vehicle, or out of SARO's area into another), one autosave is written into the case's autosave slots, the
 // same rotating three every other autosave uses, so nothing the player saved by hand is written over. Never in the middle of a
-// visit, a taking or anything else out there: it waits a little for a safe moment, and is let go if none comes.
+// visit, a taking or anything else out there: it waits a little for a safe moment, and is let go if none comes, and then the HUD
+// stamps LOG NOT FILED. No routine autosave is written away from the building (StationBlock), so a contact out there goes back to
+// the log filed on leaving.
 namespace S47SaroSave
 {
 	/** In the SARO building, on foot: the rooms a manual save is offered in. */
@@ -21,6 +23,20 @@ namespace S47SaroSave
 	SIGNAL47_API bool OnStationGround(double X, double Z);
 	/** What the save menu says anywhere else in Freeform, with the save not offered. */
 	SIGNAL47_API FString StationOnly();
+	/** M7-E (9 November): the station's rule for every Freeform save but the departure. The save menu, the routine autosave (every 30 s
+	 *  and on progress), the save on losing the window's focus and the one on quitting to the title are filed only inside the building;
+	 *  away from it the routine autosave waits (US47Flow::bPendingAuto stays) until the player is back in. bCase: a Freeform case in
+	 *  play that could be saved at all (not a developer run, not a contact); Block: SaveBlock's own reason, which comes after the
+	 *  station's. The departure is the one save away from the building (FS47SaroDeparture, US47Flow::FileDeparture). */
+	SIGNAL47_API FString StationBlock(bool bCase, bool bInside, const FString& Block);
+	/** The stamp when a departure could not be filed: a danger at the door, or no safe moment before the player went on. */
+	SIGNAL47_API FString NotFiledLine();
+	/** Quitting to the title away from the station: what Continue returns to, the log last filed, and what is lost. */
+	SIGNAL47_API FString QuitAwayText(const FString& Chapter, const FString& Place, const FString& Clock);
+	/** A departure that is due: written now, waiting for a safe moment, or not filed (its last chance gone). Danger first, then
+	 *  SaveBlock's reason (never the station's rule: leaving is the one save that is written outside). */
+	enum class EFile : uint8 { Write, Wait, NotFiled };
+	SIGNAL47_API EFile FileNow(const FString& Danger, const FString& Block, bool bLastChance);
 	/** What no save can carry (a visit on the ground, one at a door or a window, the wrong voice on the CB): a save in the middle of
 	 *  it would come back without it. Empty when there is none. Every Freeform save waits for it (US47Flow::FreeformSaveBlock). */
 	SIGNAL47_API FString Unsaved(const US47Main* M);

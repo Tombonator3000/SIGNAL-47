@@ -174,6 +174,22 @@ namespace
 	}
 	bool SmokeTest() { return FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")); }
 
+	// SAVE-SARO-20261108 / M7-E: a Freeform case that could be saved at all (not a developer run, not a contact, whose own words come
+	// first) and the player not inside SARO: nothing but the departure is filed (S47SaroSave::StationBlock)
+	bool CaseInPlay(const US47Main* M, int32 CaseId, bool bDevRun)
+	{
+		return M && M->IsFreeform() && M->Mode == EMode::Play && CaseId && !bDevRun && !(M->Freeform && M->Freeform->Dead());
+	}
+	bool AwayFromSaro(const US47Main* M, int32 CaseId, bool bDevRun) { return CaseInPlay(M, CaseId, bDevRun) && !S47SaroSave::InStation(M); }
+
+	// a departure that could not be filed: the same stamp as LOG FILED, and a dull dry thud of a stamp that did not take
+	void NotFiled(US47Main* M)
+	{
+		if (!M) return;
+		if (M->UI) M->UI->Filed(S47SaroSave::NotFiledLine());
+		if (M->Audio) M->Audio->Sfx(TEXT("thud_soft"), FS47Sound{ .Gain = .4f, .Rate = 1.35f, .Lp = 1600.f });
+	}
+
 	// the chapter in play counts as Prologue.at('chN'): ch1 < ch2 < ... < ch6
 	int32 ChapterNo(const AS47Story* S)
 	{
@@ -1326,11 +1342,15 @@ void US47Flow::OpenPause()
 void US47Flow::RequestTitle(TFunction<void()> Resume)
 {
 	FString Reason;
-	if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
+	// M7-E: away from SARO nothing is filed on quitting either; the warning says Continue goes back to the log filed on leaving
+	const bool bAway = AwayFromSaro(M, CaseId, bDevRun);
+	if (bAway) Reason = S47SaroSave::StationOnly();
+	else if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
 	// Unreal: leaving an unsafe story state or a failed disk write requires an informed choice.
 	const TOptional<FS47SaveMeta> Last = CaseId ? Saves.Latest(CaseId) : TOptional<FS47SaveMeta>();
 	FString ReturnTo = Last
-		? FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock)
+		? (bAway ? S47SaroSave::QuitAwayText(Last->Chapter, Last->Place, Last->Clock)
+			: FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock))
 		: FString(TEXT("This night has no saved checkpoint. Leaving now loses this night's progress."));
 	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) ReturnTo += TEXT(" The last drive and the ending must be played again from the diner.");
 	UE_LOG(LogS47Flow, Display, TEXT("S47: quit warning: %s / %s"), *Reason, *ReturnTo);
@@ -1522,7 +1542,8 @@ void US47Flow::Activation(bool bActive)
 	// main.ts: the tab put away (a phone may close it in the background) or the pointer lock lost:
 	// save, and pause. (Not in the automated runs, where the window may never have the focus.)
 	if (bActive || !M || M->Mode != EMode::Play || SmokeTest()) return;
-	AutosaveNow();
+	// M7-E: away from SARO it only pauses; the routine autosave waits until the player is back inside
+	if (!AwayFromSaro(M, CaseId, bDevRun)) AutosaveNow();
 	if (!M->bPausedByMenu) OpenPause();
 }
 
@@ -1552,9 +1573,10 @@ FString US47Flow::FreeformSaveBlock() const
 
 FString US47Flow::ManualSaveBlock() const
 {
-	// Freeform files the log at the station: anywhere else the menu says so (a developer run's, a dead session's own words first)
-	if (M->IsFreeform() && M->Mode == EMode::Play && CaseId && !bDevRun && !(M->Freeform && M->Freeform->Dead()) && !S47SaroSave::InStation(M)) return S47SaroSave::StationOnly();
-	return SaveBlock();
+	// Freeform files the log at the station: anywhere else the menu says so (a developer run's, a dead session's own words first).
+	// M7-E: the routine autosave, the one on losing the focus and the one on quitting keep the same rule (FlushAutosave, Activation,
+	// RequestTitle); only the departure is filed outside (FileDeparture asks SaveBlock).
+	return S47SaroSave::StationBlock(CaseInPlay(M, CaseId, bDevRun), S47SaroSave::InStation(M), SaveBlock());
 }
 
 // ---------- the departure from SARO (SAVE-SARO-20261108) ----------
@@ -1600,7 +1622,8 @@ void US47Flow::StepDeparture(double Dt)
 	{
 		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure not filed: no safe moment (%s)"), DepartureWaitSaid.IsEmpty() ? TEXT("gone on") : *DepartureWaitSaid);
 		DepartureText = TEXT("not filed: ") + (DepartureWaitSaid.IsEmpty() ? FString(TEXT("the player went on")) : DepartureWaitSaid);
-		Departure.Drop(); DepartureWaitSaid.Empty();
+		Departure.Drop(); DepartureWaitSaid.Empty(); bDepartureShow = false;
+		NotFiled(M);
 		return;
 	}
 	FileDeparture(false);
@@ -1635,15 +1658,18 @@ bool US47Flow::FileDeparture(bool bLastChance)
 		bDepartureShow = false; Departure.Drop(); DepartureWaitSaid.Empty();
 		return false;
 	}
-	FString Why = S47SaroSave::Danger(M);
-	if (Why.IsEmpty()) Why = SaveBlock();
-	if (!Why.IsEmpty())
+	// the departure asks SaveBlock, not the station's rule (ManualSaveBlock): leaving is the one save written outside the building
+	const FString Danger = S47SaroSave::Danger(M), Block = Danger.IsEmpty() ? SaveBlock() : FString();
+	const S47SaroSave::EFile Now = S47SaroSave::FileNow(Danger, Block, bLastChance);
+	const FString Why = Danger.IsEmpty() ? Block : Danger;
+	if (Now != S47SaroSave::EFile::Write)
 	{
-		if (bLastChance)
+		if (Now == S47SaroSave::EFile::NotFiled)
 		{
 			UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s) not filed: %s"), *How, *Why);
 			DepartureText = TEXT("not filed: ") + Why;
 			Departure.Drop(); DepartureWaitSaid.Empty(); bDepartureShow = false;
+			NotFiled(M);
 			return false;
 		}
 		if (DepartureWaitSaid != Why)
@@ -1666,6 +1692,7 @@ bool US47Flow::FileDeparture(bool bLastChance)
 		DepartureText = TEXT("not filed: ") + Err;
 		if (M->UI) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
 		Departure.Drop();
+		NotFiled(M);
 		return false;
 	}
 	Saves.NewGeneration(CaseId);
@@ -1705,7 +1732,8 @@ void US47Flow::RequestAutosave(bool bMilestone)
 
 void US47Flow::FlushAutosave()
 {
-	if (!bPendingAuto || !SaveBlock().IsEmpty()) return;
+	// M7-E: in Freeform away from SARO it is not written, and stays asked for until the player is back inside
+	if (!bPendingAuto || !ManualSaveBlock().IsEmpty()) return;
 	bPendingAuto = false;
 	// Rendering a save's picture stops the game for about 60 ms, and Freeform autosaves at least every
 	// 30 seconds. Routine autosaves share a recent picture; milestones and every other save take a new one.
@@ -2393,7 +2421,7 @@ bool US47Flow::OpenTestView(const FString& View)
 	if (View == TEXT("continue")) { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); return true; }
 	// New night and Begin night on the opening card; the pause menu's Quit to title
 	if (View == TEXT("newnight")) { RequestNewNight(FMath::Max(1, Saves.FreeCase())); Opening->Begin(); return true; }
-	if (View == TEXT("totitle")) { AutosaveNow(); ToTitle(); return true; }
+	if (View == TEXT("totitle")) { if (!AwayFromSaro(M, CaseId, bDevRun)) AutosaveNow(); ToTitle(); return true; }
 	// the settings, or the settings at a tab (settings:picture)
 	if (View == TEXT("settings") || View.StartsWith(TEXT("settings:")))
 	{
