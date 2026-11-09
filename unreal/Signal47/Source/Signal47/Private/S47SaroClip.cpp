@@ -91,7 +91,13 @@ const TArray<FVector3f>& Vertices(UStaticMesh* Mesh, bool& bExact)
  FCached& C = Cache().FindOrAdd(Mesh);
  if (C.V.IsEmpty() && Mesh)
  {
-  if (const FStaticMeshRenderData* RD = Mesh->GetRenderData(); RD && RD->LODResources.Num() > 0)
+  // A cooked mesh without CPU access keeps no positions on the CPU: what its buffer seems to hold then is not to be read (d34 candidate:
+  // the rocks' footprints read past it, grew to 15 GB and crashed at the start). Only the editor and meshes marked for CPU read are read.
+  bool bReadable = Mesh->bAllowCPUAccess;
+#if WITH_EDITOR
+  bReadable = true;
+#endif
+  if (const FStaticMeshRenderData* RD = bReadable ? Mesh->GetRenderData() : nullptr; RD && RD->LODResources.Num() > 0)
   {
    const FPositionVertexBuffer& P = RD->LODResources[0].VertexBuffers.PositionVertexBuffer;
    if (P.GetNumVertices() > 0 && P.GetVertexData())
