@@ -252,6 +252,11 @@ void US47UI::Noted(const FString& Text)
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Noted(Text);
 }
 
+void US47UI::Filed(const FString& Line)
+{
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Filed(Line);
+}
+
 void US47UI::ClearExamineTimer()
 {
 	if (ExamineTimer.IsValid()) FTSTicker::RemoveTicker(ExamineTimer);

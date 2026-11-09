@@ -17,7 +17,12 @@
 #include "S47NightRhythm.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
+#include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
+#include "S47EventPlaces.h"
+#include "S47FarmWorld.h"
+#include "S47Geo.h"
+#include "S47EngineSound.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -25,7 +30,9 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "HAL/IConsoleManager.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -34,9 +41,49 @@
 #include "UObject/GarbageCollection.h"
 
 // ---------- the truck
+namespace S47TruckCareLocal
+{
+ TAutoConsoleVariable<int32> CvSandPatches(TEXT("s47.SandPatches"),1,TEXT("Freeform: pale sand lies in the dry wash where the truck can bog down (1), or the wash is left as the ground has it (0)."));
+ const TCHAR* const SandLit=TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque");
+ const TCHAR* const SandBall=TEXT("/Engine/BasicShapes/Sphere.Sphere");
+ // how far round the player the pale sand is laid, and how far the player goes before it is laid again
+ constexpr double SandReach=240,SandRelay=70;
+ // the wheel's own turn: a flat thumps once a turn
+ constexpr double WheelTurn=2.3;
+}
+double FS47TruckCare::SandAt(double RoadX,double RoadZ)
+{
+ if(!FMath::IsFinite(RoadX)||!FMath::IsFinite(RoadZ))return 0;
+ // the wash's bed (the trough the land has, S47RoadShape::WashAt): soft in its middle, firm up its banks
+ double Soft=FMath::Clamp((S47RoadShape::WashAt(RoadX,RoadZ)-.25)/.6,0.,1.);
+ // and the dry washes out on the land (S47EventPlaces Wash): a soft bed round each, as far as it spreads
+ static const struct { double X,Z,R; } Beds[]={{-900,1150,26},{-650,1650,26},{750,1100,26},{-560,1340,12}};
+ for(const auto& Bed:Beds)
+ {
+  const double D=FVector2D::Distance(FVector2D(RoadX,RoadZ),FVector2D(Bed.X,Bed.Z));
+  if(D<Bed.R)Soft=FMath::Max(Soft,1.-FMath::SmoothStep(Bed.R*.35,Bed.R,D));
+ }
+ return Soft;
+}
+double FS47TruckCare::BogRate(double Soft,double Load,double Mps,bool bReverse)
+{
+ const double Dp=FMath::Clamp(Soft,0.,1.),Ld=FMath::Clamp(Load,0.,1.),Sp=FMath::IsFinite(Mps)?FMath::Abs(Mps):0.;
+ if(Dp<.15)return -.5;            // out of it
+ if(bReverse)return -.6;          // back out in its own tracks
+ if(Ld<.25)return -.3;            // eased off: the wheels stop digging
+ if(Sp>=7)return .1*Ld*Dp-.2;     // way on: it floats over
+ // driven hard and slow in deep sand: the wheels dig in, three or four seconds to the axle
+ return .3*Ld*Dp*(.5+(7-Sp)/14.);
+}
+double FS47TruckCare::FlatChance(double Mps,ES47SurfaceKind Kind)
+{
+ if(Kind==ES47SurfaceKind::Asphalt||!FMath::IsFinite(Mps))return 0;
+ const double Fast=FMath::Square(FMath::Clamp(FMath::Abs(Mps)/12.,0.,1.));
+ return (Kind==ES47SurfaceKind::Dirt?.0035:.0012)*Fast;
+}
 void FS47TruckCare::Begin(const S47J::FObj& Saved)
 {
- WaterLeft=1;Metres=0;WeekMetres=0;LegMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;
+ WaterLeft=1;Metres=0;WeekMetres=0;LegMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;Bog=0;bSandHeld=false;bHissed=false;
  if(!Saved.IsValid())return;
  const double Week=S47J::Num(Saved,TEXT("weekMetres"));WeekMetres=FMath::IsFinite(Week)?FMath::Clamp(Week,0.,1e7):0;
  const double W=S47J::Num(Saved,TEXT("water"),1);WaterLeft=FMath::IsFinite(W)?FMath::Clamp(W,0.,1.):1;
@@ -94,13 +141,66 @@ void FS47TruckCare::Hold()
  if(bStuck){M->World->HoldTruck(25.);bHeldSet=true;}
  else if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
 }
+void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,double RoadZ)
+{
+ FS47EngineSound* Engine=M->World->EngineSound();
+ const double Going=FMath::Abs(D.Speed);
+ // ---- the sand: it drags and tugs the wheel; driven hard and slow the wheels dig in, and it tells before it sinks ----
+ const double Soft=D.Surface.Kind==ES47SurfaceKind::Asphalt?0.:SandAt(RoadX,RoadZ);
+ if(!bStuck)
+ {
+  Bog=FMath::Clamp(Bog+Dt*BogRate(Soft,D.Load,D.Speed,D.Reversing()),0.,1.);
+  if(Soft>.05){D.Held=1.8*Soft;bSandHeld=true;}
+  else if(bSandHeld){D.Held=0;bSandHeld=false;}
+  // the wheel tugs this way and that in the soft ground
+  if(Soft>.1&&Going>.5){TugT+=Dt;D.Heading+=Dt*Soft*.1*FMath::Sin(TugT*1.7)*FMath::Min(1.,Going/6.);}
+  if(Bog>.2)
+  {
+   // the wheels spin: sand thrown up under the arches, the engine labouring, oftener the deeper it digs
+   if((SpinIn-=Dt)<=0)
+   {
+    SpinIn=FMath::Lerp(.7,.3,Bog);
+    if(M->Audio)M->Audio->Sfx(TEXT("gust"),FS47Sound{.Gain=float(.12+.3*Bog),.Rate=1.7f,.Lp=900.f,.Dur=.35f});
+    if(Engine&&Bog>.45&&FMath::FRand()<.45f)Engine->Cough(.25+.3*Bog);
+   }
+   if(!bSandHinted&&Bog>.4&&M->UI){bSandHinted=true;M->UI->Toast(TEXT("Soft sand. Ease off, or back out."),4);}
+  }
+  if(Bog>=1)
+  {
+   bStuck=true;Bog=1;if(bSandHeld){bSandHeld=false;}Hold();
+   if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.5f,.Rate=.6f});
+   if(M->UI)M->UI->Toast(TEXT("The back end settles. Stuck to the axle in sand."),6);
+   UE_LOG(LogTemp,Display,TEXT("S47: truck: bogged in sand at %.0f, %.0f (depth %.2f)"),RoadX,RoadZ,Soft);M->RequestAutosave();
+  }
+ }
+ // ---- a flat: it pulls to one side and thumps once a turn of the wheel ----
+ if(bFlat&&Going>1)
+ {
+  D.Heading+=Dt*PullSide*.06*FMath::Min(1.,Going/12.);
+  if((ThumpIn-=Dt)<=0)
+  {
+   ThumpIn=FMath::Max(.15,S47TruckCareLocal::WheelTurn/Going);
+   if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=float(FMath::Clamp(.12+Going*.02,.12,.4)),.Rate=.75f});
+  }
+ }
+ // ---- the radiator running low: it pings now and then, and hisses once before it boils dry ----
+ if(!Hot()&&WaterLeft<.12&&Engine)
+ {
+  if((PingIn-=Dt)<=0){PingIn=FMath::FRandRange(18.f,40.f);Engine->Cough(.2);}
+  if(WaterLeft<.05&&!bHissed){bHissed=true;if(M->Audio)M->Audio->Sfx(TEXT("gust"),FS47Sound{.Gain=.2f,.Rate=2.2f,.Lp=4000.f,.Dur=1.4f});}
+ }
+}
 void FS47TruckCare::Step(double Dt)
 {
  if(!M||!M->Freeform||!M->World||!M->Freeform->RulesLive())return;
- if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;return;} // parked at SARO: the next tow is priced from there
+ ShowSand();
+ if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;Bog=0;return;} // parked at SARO: the next tow is priced from there
  auto* D=M->World->CabDrive();if(!D)return;
  Hold();
  if(!D->bHandling)return; // The autopilot's road trips have none of this.
+ double RoadX=0,RoadZ=0;
+ const bool bOnLand=M->Web&&S47OpenLand::RoadOf(M->Web->Area(),D->Pos.X,D->Pos.Z,RoadX,RoadZ);
+ if(bOnLand)StepGround(FMath::Min(Dt,.2),*D,RoadX,RoadZ);
  const double Step=FMath::Abs(D->Speed)*FMath::Min(Dt,.2);
  if(Step<=0)return;
  const bool bWasHot=Hot();
@@ -114,24 +214,92 @@ void FS47TruckCare::Step(double Dt)
  }
  LegMetres+=Step;
  Metres+=Step;if(Metres<100)return;Metres=0;
- if(bStuck)return;
- const bool bOff=D->Surface.Kind==ES47SurfaceKind::Dirt;
- const float Sand=bOff?SandChance:0.f,Flat=bOff?FlatOffRoad:FlatOnRoad;
- if(FMath::FRand()<Sand)
+ if(bStuck||bFlat)return;
+ // a tyre goes on rough ground taken fast: never on the blacktop, seldom at a crawl (no dice for the sand: that is StepGround's)
+ if(FMath::FRand()<FlatChance(D->Speed,D->Surface.Kind))
  {
-  bStuck=true;Hold();if(M->UI)M->UI->Toast(TEXT("The back end sinks and the wheels spin: stuck in sand to the axle. Get out, then use the cargo rack on the truck: \"Dig it out with the spade\". The task list has the steps."),10);
-  UE_LOG(LogTemp,Display,TEXT("S47: truck: bogged in sand"));M->RequestAutosave();
+  bFlat=true;PullSide=FMath::RandBool()?1.:-1.;ThumpIn=.4;
+  if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=1.f,.Rate=.5f});
+  if(auto* Engine=M->World->EngineSound())Engine->Thump(FMath::Min(6.,FMath::Abs(D->Speed)*.5));
+  if(M->UI)M->UI->Toast(TEXT("A bang under the truck, and a wheel starts to thump."),5);
+  UE_LOG(LogTemp,Display,TEXT("S47: truck: flat tyre at %.1f m/s"),FMath::Abs(D->Speed));M->RequestAutosave();
  }
- else if(!bFlat&&FMath::FRand()<Flat)
+}
+void FS47TruckCare::ShowSand()
+{
+ using namespace S47TruckCareLocal;
+ if(!M||!M->Player||!M->Web||!IsValid(M->Web.Get()))return;
+ UInstancedStaticMeshComponent* Shown=SandShown.Get();
+ const FString Area=M->Web->Area();
+ double Rx=0,Rz=0;
+ const bool bArea=Area==TEXT("road")||Area==TEXT("saro")||Area==TEXT("diner")||Area==TEXT("motel");
+ const bool bWant=CvSandPatches.GetValueOnGameThread()!=0&&M->IsFreeform()&&bArea&&S47OpenLand::RoadOf(Area,M->Player->Pos.X,M->Player->Pos.Z,Rx,Rz);
+ // nothing to lay where neither the wash nor a bed is within reach
+ const double ToWash=FMath::Abs(Rx+330+.25*(Rz-500))/FMath::Sqrt(1.0625);
+ bool bBedNear=false;
+ for(const FVector2D& Bed:{FVector2D(-900,1150),FVector2D(-650,1650),FVector2D(750,1100),FVector2D(-560,1340)})bBedNear|=FVector2D::Distance(Bed,FVector2D(Rx,Rz))<SandReach+30;
+ if(!bWant||(ToWash>SandReach+20&&!bBedNear)){if(Shown&&Shown->IsVisible())Shown->SetVisibility(false);SandArea.Empty();return;}
+ if(Shown&&SandScene.Get()==M->Web.Get()&&Area==SandArea&&FVector2D::Distance(SandCentre,FVector2D(Rx,Rz))<SandRelay){if(!Shown->IsVisible())Shown->SetVisibility(true);return;}
+ if(!Shown||SandScene.Get()!=M->Web.Get())
  {
-  bFlat=true;if(M->UI)M->UI->Toast(TEXT("A bang, and the wheel starts to thump: a flat. Stop and get out, then use the cargo rack on the truck: \"Jack it up and change the wheel\" (needs the spare wheel). The task list has the steps."),10);
-  UE_LOG(LogTemp,Display,TEXT("S47: truck: flat tyre"));M->RequestAutosave();
+  UStaticMesh* Dome=LoadObject<UStaticMesh>(nullptr,SandBall);UMaterialInterface* Lit=LoadObject<UMaterialInterface>(nullptr,SandLit);
+  if(!Dome||!Lit){SandArea=Area;SandCentre=FVector2D(Rx,Rz);return;}
+  AS47Web* Web=M->Web.Get();
+  auto* Ism=NewObject<UInstancedStaticMeshComponent>(Web,TEXT("ff:sand"));
+  Ism->SetupAttachment(Web->GetRootComponent());Ism->SetMobility(EComponentMobility::Movable);Ism->SetStaticMesh(Dome);
+  UMaterialInstanceDynamic* Mat=UMaterialInstanceDynamic::Create(Lit,Web);
+  Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.60f,.53f,.42f));Mat->SetScalarParameterValue(TEXT("Roughness"),1.f);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1.f);
+  Ism->SetMaterial(0,Mat);Ism->SetCastShadow(false);Ism->SetCollisionEnabled(ECollisionEnabled::NoCollision);Ism->SetCanEverAffectNavigation(false);
+  Ism->RegisterComponent();
+  SandShown=Ism;SandScene=M->Web;Shown=Ism;
  }
+ SandArea=Area;SandCentre=FVector2D(Rx,Rz);
+ Shown->ClearInstances();
+ // A low pale bank of sand laid on the ground in each soft place, a patch every few metres, each lying along the slope there.
+ auto Lay=[&](double X,double Z,double Soft,int32 Nth)
+ {
+  FVector OnGround=S47OpenLand::FromRoad(Area,X,Z);
+  const double Y=S47FarmWorld::FloorRoad(X,Z);
+  const double Ex=(S47FarmWorld::FloorRoad(X+1,Z)-S47FarmWorld::FloorRoad(X-1,Z))*.5,Ez=(S47FarmWorld::FloorRoad(X,Z+1)-S47FarmWorld::FloorRoad(X,Z-1))*.5;
+  if(!FMath::IsFinite(Y)||!FMath::IsFinite(Ex)||!FMath::IsFinite(Ez)||FMath::Abs(Ex)>.25||FMath::Abs(Ez)>.25)return;
+  OnGround.Y=Y-.035;
+  const FVector Up=S47Three::DirToUE(FVector(-Ex,1,-Ez).GetSafeNormal());
+  const uint32 Hashed=uint32(Nth)*2654435761u;
+  const double Yaw=double(Hashed%360u),Long=FMath::Lerp(5.0,7.5,double((Hashed>>9)%100u)/100.0)*(.7+.3*Soft),Wide=FMath::Lerp(3.5,5.0,double((Hashed>>17)%100u)/100.0)*(.7+.3*Soft);
+  const FQuat Turn=FQuat::FindBetweenNormals(FVector::UpVector,Up)*FQuat(FVector::UpVector,FMath::DegreesToRadians(Yaw));
+  Shown->AddInstance(FTransform(Turn,S47Three::ToUE(OnGround),FVector(Long,Wide,.1)),true);
+ };
+ int32 Laid=0;
+ for(double Z=Rz-SandReach;Z<=Rz+SandReach;Z+=5)
+ {
+  const double Mid=-330-.25*(Z-500);
+  for(double Across=-12;Across<=12;Across+=6)
+  {
+   const double X=Mid+Across;
+   if(FVector2D::Distance(FVector2D(X,Z),FVector2D(Rx,Rz))>SandReach)continue;
+   const double Soft=SandAt(X,Z);
+   if(Soft>=.35)Lay(X,Z,Soft,++Laid);
+  }
+ }
+ // the beds of the washes out on the land, where one is near
+ static const FVector2D Beds[]={FVector2D(-900,1150),FVector2D(-650,1650),FVector2D(750,1100),FVector2D(-560,1340)};
+ for(const FVector2D& Bed:Beds)
+ {
+  if(FVector2D::Distance(Bed,FVector2D(Rx,Rz))>SandReach+30)continue;
+  for(int32 K=0;K<9;++K)
+  {
+   const double A=K*.7,Ring=K==0?0.:6.+2.*(K%3);
+   const FVector2D At=Bed+FVector2D(FMath::Cos(A),FMath::Sin(A))*Ring;
+   const double Soft=SandAt(At.X,At.Y);
+   if(Soft>=.35)Lay(At.X,At.Y,Soft,++Laid);
+  }
+ }
+ Shown->SetVisibility(Shown->GetInstanceCount()>0);
 }
 bool FS47TruckCare::DigOut()
 {
  if(!bStuck||!M||!M->Freeform||!M->World)return false;
- bStuck=false;M->Freeform->SpendTime(DigMinutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
+ bStuck=false;Bog=0;M->Freeform->SpendTime(DigMinutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),DigMinutes),6);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out"));M->RequestAutosave();return true;
 }
@@ -146,11 +314,11 @@ bool FS47TruckCare::ChangeWheel()
 bool FS47TruckCare::TopUp()
 {
  if(WaterLeft>=1||!M||!M->Freeform||!M->Freeform->Consume(TEXT("water")))return false;
- WaterLeft=1;bWarned=false;
+ WaterLeft=1;bWarned=false;bHissed=false;
  if(M->UI)M->UI->Toast(TEXT("You fill the radiator from the can and wait for it to stop ticking."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: radiator topped up"));M->RequestAutosave();return true;
 }
-void FS47TruckCare::Clear(){bStuck=bFlat=false;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
+void FS47TruckCare::Clear(){bStuck=bFlat=false;Bog=0;bHissed=false;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
 bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
@@ -173,6 +341,25 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
  T.TestLeg(10000);FS47TruckCare L(nullptr);L.Begin(S47J::Read(S47J::Write(T.Save())));
  Check(L.TowFee()==60&&FMath::IsNearlyEqual(L.TowMinutes(),75.),TEXT("the distance from SARO survives a Continue"));
  L.Clear();Check(L.TowFee()==35,TEXT("a truck back at SARO starts the distance again"));
+ // M2 critic: the sand is where the land is soft, and it tells before it holds; a tyre goes on rough ground taken fast.
+ {
+  const double Bed=SandAt(-330,500),Bank=SandAt(-330+30,500),Hard=SandAt(200,200),Road=SandAt(0,1500);
+  Check(Bed>.9&&Bank<Bed&&Hard==0&&Road==0&&SandAt(-900,1150)>.9&&SandAt(-900+40,1150)==0,TEXT("sand only in the dry wash's bed and the washes out on the land, nowhere else"));
+  Check(BogRate(1,1,2,false)>0&&BogRate(1,1,2,false)<.35&&BogRate(.1,1,2,false)<0&&BogRate(1,1,2,true)<0&&BogRate(1,.1,2,false)<0&&BogRate(1,.8,12,false)<0,
+   TEXT("driven hard and slow in deep sand the wheels dig in over a few seconds; easing off, keeping way on or backing out takes it back"));
+  // from firm, full throttle at a crawl in the deepest sand: how long before it is stuck, and how long it is heard first
+  double Dug=0,Took=0,Heard=-1;
+  while(Dug<1&&Took<30){Dug=FMath::Clamp(Dug+.05*BogRate(1,1,2,false),0.,1.);Took+=.05;if(Heard<0&&Dug>.2)Heard=Took;}
+  Check(Took>2.5&&Took<6&&Heard>0&&Took-Heard>2,TEXT("the wheels are heard spinning a couple of seconds before it sinks"));
+  Check(FlatChance(20,ES47SurfaceKind::Asphalt)==0&&FlatChance(3,ES47SurfaceKind::Dirt)<FlatChance(12,ES47SurfaceKind::Dirt)&&FlatChance(12,ES47SurfaceKind::Gravel)<FlatChance(12,ES47SurfaceKind::Dirt),
+   TEXT("never a flat on the blacktop; on rough ground oftener the faster it is taken"));
+  // a working week: some twenty kilometres of dirt at about ten metres a second
+  const double Week=200*FlatChance(10,ES47SurfaceKind::Dirt);
+  Check(Week>.2&&Week<1,TEXT("about one flat in a week or two of ordinary field driving"));
+  FS47TruckCare B(nullptr);B.Begin(nullptr);B.TestBog(.8);B.Begin(nullptr);
+  Check(B.Bogging()==0&&FMath::IsNearlyEqual(B.TempNeedle(),.5),TEXT("a Continue starts on firm ground; the needle sits in the middle with a full radiator"));
+  B.TestWater(.02);Check(B.TempNeedle()>.9,TEXT("the needle climbs as the radiator runs dry"));
+ }
  return OK;
 }
 

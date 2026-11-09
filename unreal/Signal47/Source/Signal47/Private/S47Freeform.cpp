@@ -5,6 +5,11 @@
 #include "S47FarmSite.h"
 #include "S47Taken.h"
 #include "S47DeputyRound.h"
+#include "S47NightLog.h"
+#include "S47Tape.h"
+#include "S47PinBoard.h"
+#include "S47Enlarger.h"
+#include "S47WardReport.h"
 #include "S47LeftGear.h"
 #include "S47Openings.h"
 #include "S47Places.h"
@@ -254,6 +259,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Round)Round=MakeShared<FS47DayRound>(M);Round->Begin(S47J::Obj(Saved,TEXT("round")));
  if(!RoadCar)RoadCar=MakeShared<FS47RoadsideCar>(M);RoadCar->Begin(S47J::Obj(Saved,TEXT("roadCar")));
  if(!Happenings)Happenings=MakeShared<FS47Happenings>(M);Happenings->Begin(S47J::Obj(Saved,TEXT("happenings")));
+ if(!NightLog)NightLog=MakeShared<FS47NightLog>(M);NightLog->Begin(S47J::Obj(Saved,TEXT("nightLog")));
+ if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
+ if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
+ if(!Enlarger)Enlarger=MakeShared<FS47Enlarger>(M);
+ if(!WardReport)WardReport=MakeShared<FS47WardReport>(M);WardReport->Begin(S47J::Obj(Saved,TEXT("wardReport")));
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -278,6 +288,10 @@ void FS47FreeformSession::Stop()
  if(CaseField)CaseField->Stop();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
+ if(NightLog)NightLog->Stop();
+ if(Tape)Tape->Stop();
+ if(PinBoard)PinBoard->Stop();
+ if(WardReport)WardReport->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -488,6 +502,10 @@ void FS47FreeformSession::Step(double Dt)
  if(Round&&!Held())Round->Step(D);
  if(RoadCar)RoadCar->Step(D);
  if(Happenings)Happenings->Step(D);
+ if(NightLog)NightLog->Step(D);
+ if(Tape)Tape->Step(Dt);
+ if(PinBoard)PinBoard->Step(Dt);
+ if(WardReport)WardReport->Step(Dt);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -1084,6 +1102,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
  if(Id.IsEmpty()||Findings.Contains(Id))return;
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ if(PinBoard)PinBoard->Kept(Id);
  if(M&&M->Story)
  {
   // Named by what it says, never by its key, and stamped with where the player is, not always the station.
@@ -1299,6 +1318,8 @@ void FS47FreeformSession::OpenOperations()
  if(Section==0)
  {
   if(Predecessor)Predecessor->OpsRows(Rows);
+  if(NightLog)NightLog->OpsRows(Rows);
+  if(WardReport)WardReport->OpsRows(Rows);
   if(Tutorial==0)
   {
    TArray<S47Kit::FW> Continue;
@@ -1653,7 +1674,7 @@ void FS47FreeformSession::OpenTapePanel()
   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
   .CanMark(Marking).OnMark([this](double At){MarkAudioAt(At);});
  auto Mark=[this](bool bIn){return TAttribute<FString>::CreateLambda([this,bIn]{const auto* J=CurrentJob();const double At=!J?-1.:bIn?J->MarkStart:J->MarkEnd;return At<0?FString(TEXT("--")):FString::Printf(TEXT("%.1f s"),At);});};
- const S47Kit::FW Tape=T::Panel(TEXT("TAPE"),S47Kit::Col({
+ const S47Kit::FW TapeBox=T::Panel(TEXT("TAPE"),S47Kit::Col({
   T::Columns({{1.f,T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare)},{1.f,T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare)}}),
   T::Display(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%04.1f / %.0f s"),AudioCursor,AudioSourceIndex==0?18.:8.);}),
    TAttribute<FString>::CreateLambda([this]{return FString(CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));})),
@@ -1665,7 +1686,7 @@ void FS47FreeformSession::OpenTapePanel()
   T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
   T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);}))}}),
   T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
- Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,Tape}}));
+ Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,TapeBox}}));
  // The chip says what the references are for: a listening aid, never proof.
  Rows.Add(T::Panel(TEXT("LISTENING REFERENCES"),S47Kit::Col({
   T::Columns({{1.f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("FOR YOUR EAR, NOT EVIDENCE"),-1)]},{1.4f,T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0))}}),
@@ -2742,6 +2763,10 @@ S47J::FObj FS47FreeformSession::Save()const
  S47J::Set(O,TEXT("cases"),Cases.Save());
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
+ if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
+ if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
+ if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
+ if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());

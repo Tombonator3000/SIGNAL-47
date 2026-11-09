@@ -146,6 +146,7 @@ FS47AlbumShot FS47Album::Expose()
 	O.After = [this] { ShowFilmOnly(false); if (D.After) D.After(); };
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
+	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
 	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
  FS47PhotoPose Pose;
  if(F&&D.Web){Pose.Scene=D.Web->Area();Pose.Eye=S47Three::ToThree(F->PhotoLoc);Pose.Forward=S47Three::ToThree(F->PhotoRot.Vector()).GetSafeNormal();Pose.Fov=US47FieldCamera::PHOTO_FOV;}
@@ -167,6 +168,7 @@ FS47AlbumShot FS47Album::Expose()
 	FS47AlbumShot Shot;
 	Shot.Id = FString::Printf(TEXT("free%d@%d"), N + 1, int32(FMath::FloorToDouble(Clock + 0.5)));
 	Shot.Url = Url; Shot.Clock = Clock; Shot.Place = Place;
+	if (Snap.Neg.Num()) Shot.Neg = S47Image::ToDataUrl(Snap.Neg, Snap.NegW, Snap.NegH, true, 64);
  if(Snap.bRendered&&Pose.Valid())Shot.Pose=Pose;
 	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
 	Shot.Text = bFace ? FString(FACE_LINE) : FString::Join(Parts, TEXT(" "));
@@ -180,6 +182,11 @@ FS47AlbumShot FS47Album::Expose()
 	}
 	if (D.Tag && Snap.bRendered) D.Tag(Shot);
 	Data.Shots.Add(Shot);
+	// The saves have room for so many negatives: the oldest give theirs up.
+	{
+		int32 Kept = 0;
+		for (int32 I = Data.Shots.Num() - 1; I >= 0; --I) if (!Data.Shots[I].Neg.IsEmpty() && ++Kept > MostNegatives) Data.Shots[I].Neg.Empty();
+	}
 	if (bFace) Data.Face = FS47FaceSave{ Shot.Id };
 	FLast L;
 	L.Names = Names; L.Odd = Odd; L.Mean = Snap.Mean; L.Ms = NowMs() - T0; L.LookMs = T1 - T0; L.bGhost = GhostAt.IsSet(); L.bFace = bFace;
@@ -205,6 +212,7 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	O.Seed = FMath::FloorToDouble(Clock * 1000) + N * 7919 + 13;
 	const bool bSmall = D.Small && D.Small();
 	O.W = bSmall ? 320 : 640;
+	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
 	const FS47Snap Snap = F->Snap(O);
 	F->PhotoLoc = OldLoc;
 	F->PhotoRot = OldRot;
@@ -212,6 +220,7 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	FS47AlbumShot Shot;
 	Shot.Id = FString::Printf(TEXT("trip%d@%d"), N + 1, int32(FMath::FloorToDouble(Clock + 0.5)));
 	Shot.Url = S47Image::ToDataUrl(Snap.Px, Snap.W, Snap.H, true, bSmall ? 62 : 74);
+	if (Snap.Neg.Num()) Shot.Neg = S47Image::ToDataUrl(Snap.Neg, Snap.NegW, Snap.NegH, true, 64);
 	Shot.Clock = Clock; Shot.Place = Place; Shot.Text = Text; Shot.bOdd = true;
 	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
 	// Its own film: one more frame on the books, so Left() is what it was.
@@ -219,6 +228,22 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	Data.Shots.Add(Shot);
 	OutId = Shot.Id;
 	return true;
+}
+
+FString FS47Album::AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text)
+{
+	if (W <= 0 || H <= 0 || Px.Num() != W * H) return FString();
+	FS47AlbumShot Shot;
+	int32 N = Data.Shots.Num();
+	do { Shot.Id = FString::Printf(TEXT("enl%d@%d"), ++N, int32(FMath::FloorToDouble(From.Clock + 0.5))); }
+	while (Data.Shots.ContainsByPredicate([&Shot](const FS47AlbumShot& S) { return S.Id == Shot.Id; }));
+	Shot.Url = S47Image::ToDataUrl(Px, W, H, true, 74);
+	Shot.Clock = From.Clock; Shot.Place = From.Place; Shot.Pose = From.Pose; Shot.Text = Text; Shot.Enlarged = From.Id;
+	Shot.LabStage = -1; // a finished print off the enlarger
+	// Paper, not film: one more frame on the books, so Left() is what it was.
+	Data.FilmCapacity += 1;
+	Data.Shots.Add(Shot);
+	return Shot.Id;
 }
 
 bool FS47Album::AddUnbidden(bool bGround)
@@ -301,6 +326,8 @@ void FS47Album::Restore(const S47J::FObj& V)
 			S.Id = S47J::Str(*O, TEXT("id")); S.Url = S47J::Str(*O, TEXT("url")); S.Clock = S47J::Num(*O, TEXT("clock"));
 			S.Place = S47J::Str(*O, TEXT("place")); S.Text = S47J::Str(*O, TEXT("text")); S.bOdd = S47J::Bool(*O, TEXT("odd"));
 			S.bUnavailable = S47J::Bool(*O, TEXT("unavailable"));
+			S.Neg = S47J::Str(*O, TEXT("neg")); S.Enlarged = S47J::Str(*O, TEXT("enlarged")).Left(64);
+			if (!S.Neg.StartsWith(TEXT("data:image/"))) S.Neg.Empty();
    if(const auto P=S47J::Obj(*O,TEXT("shutterPose")))
    {
     FS47PhotoPose Pose;Pose.Scene=S47J::Str(P,TEXT("scene"));const auto Eye=S47J::Nums(P,TEXT("eye")),Forward=S47J::Nums(P,TEXT("forward"));Pose.Fov=S47J::Num(P,TEXT("fov"));
@@ -338,6 +365,8 @@ S47J::FObj FS47Album::SaveData() const
   }
 		if (S.bOdd) S47J::Set(J, TEXT("odd"), true);
 		if (S.bUnavailable) S47J::Set(J, TEXT("unavailable"), true);
+		if (!S.Neg.IsEmpty()) S47J::Set(J, TEXT("neg"), S.Neg);
+		if (!S.Enlarged.IsEmpty()) S47J::Set(J, TEXT("enlarged"), S.Enlarged);
 		if (S.LabStage >= 0) S47J::Set(J, TEXT("labStage"), S.LabStage);
 		if (S.Targets.Num())
 		{

@@ -23,7 +23,7 @@ const TArray<FDocDef>& Docs()
    TEXT("Reyes's final pay, held at the site and not called for. Somebody in payroll has already typed a last day worked: April 13."),nullptr},
   // ---- the binder
   {TEXT("gap"),TEXT("April's shift binder"),TEXT("typed"),TEXT("SARO / RECORDS"),
-   TEXT("SHIFT BINDER / APRIL 1986\n\nApril 1 to April 13, 18:00: all present, all initialled R.\n\nAfter that the rings hold nothing. The receiver log for the night of the 13th is gone. So is the strip chart, the shift journal and the feeder test journal.\n\n~ Originals not on file. County has asked. Do not reconstruct. - W."),
+   TEXT("SHIFT BINDER / APRIL 1986\n\nApril 1 to April 13, 18:00: all present, all initialed R.\n\nAfter that the rings hold nothing. The receiver log for the night of the 13th is gone. So is the strip chart, the shift journal and the feeder test journal.\n\n~ Originals not on file. County has asked. Do not reconstruct. - W."),
    TEXT("The originals of the night of April 13 are gone from the binder. Receiver log, strip chart, shift journal, feeder journal. Ward's note says not to reconstruct them."),nullptr},
   // ---- the survey tags, out on the land, in the order Reyes went
   {TEXT("tag_windmill"),TEXT("Survey tag at the windmill"),TEXT("hand"),TEXT("SARO RFI / 1"),

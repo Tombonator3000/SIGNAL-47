@@ -168,3 +168,11 @@ Tripo-bilen, Tom 8. november: git-historikken skrives ikke om. Modellen ble lage
 Hendelser hvor som helst, Tom 8. november: gårdens hendelser skal kunne komme ved nesten alle bygg i verden, som landing i ørkenen eller som noen som sitter fast langt ute og ber om hjelp. Stedet trekkes tilfeldig (med frø), ikke fast på gården hver gang.
 
 Prioritet, Tom 8. november: hendelser og elementer som mangler går foran perfekt grafikk. Interiørmodeller kan gjenbrukes flere steder.
+
+Nattskift og tre valg, Tom 8. november ca. 22:30: (1) stemmevalg som viser til ekte personer får navn fra spillets egen verden (Night Narrator, Dale, Earl på 1420 AM); (2) i Freeform kan man bare lagre på SARO, men spillet lagrer alltid automatisk når man drar fra SARO; (3) Tripo3D-modellene kommer fra Tom 9. november. Nattarbeid gjennom TODO til kl. 10:00 9. november.
+
+HUD og kart, Tom 8. november ca. 23:10 etter mockupene: kartet skal være det detaljerte USGS-kartet fra mockupen. HUD: batteri med fem streker; LCD-klokke som i C, men mindre og svakere; pågående oppdrag ikke som digital tekst, men håndskrevet som i C; ikke bilradiolooken fra C; oppgavelinja toner ut etter seks sekunder; walkie-bølgen vises bare når noen sender. Ny mockup (D) før bygging.
+
+HUD D valgt, Tom 8. november ca. 23:40: LCD-klokke fra C (mindre og svakere), håndskrevet oppdragslapp på kassettomslag som toner ut etter seks sekunder, batteri med fem streker, walkie-linje bare ved sending. Fargevalg for batteri og walkie vurderes i en egen kritikkrunde før bygging.
+
+HUD-farge, Tom 8. november ca. 23:55: V4. Klokke og batteri i samme turkis (VFD/LCD), walkie- og CB-linja i ravgult, CB og walkie skilles på teksten; lavt batteri skifter til rødt. Spilleren kan velge HUD-farge selv i innstillingene (Station teal som standard, Amber, Phosphor green, Paper white, Red night).

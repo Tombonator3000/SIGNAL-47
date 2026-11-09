@@ -67,6 +67,8 @@ struct FS47PauseOpts
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
 	// bound in Settings > Controls (S47Keys; the store keeps them)
 	float Brightness = 0.5f; TFunction<void(float)> OnBrightness;
+	// HUD-D-20261109: the HUD's colours (S47HudGauges::FHudPalette's id: teal, amber, green, white, red), at once and kept
+	FString HudColor = TEXT("teal"); TFunction<void(const FString&)> OnHudColor;
 	TFunction<void()> OnKeys;
 	FString Tab;                          // the settings' tab to open at: game, picture, sound, voices, controls, accessibility, graphics
 	// the pause menu's status and tonight's card
@@ -86,7 +88,21 @@ struct FS47MapMark { FString Kind; double Clock = 0; FString Line; TOptional<FS4
 // Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres.
 struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false; };
 struct FS47MapSector { double Az = 0, Spread = 0; FString Label; };
-struct FS47MapView { TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors; };
+// Freeform's survey sheet (SS47FieldMap, MAP-20261108): a pencil mark of the player's own, road-local metres (x east, z south).
+struct FS47MapNote { double X = 0, Z = 0; int32 N = 0; };
+// Freeform's sheet: work the player has now, written in by the place in ink ("S-05 drive fault", "fix the feeder"), road-local.
+struct FS47MapJob { double X = 0, Z = 0; FString Text; };
+struct FS47MapView
+{
+	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors;
+	// Freeform: the survey sheet instead of the sketch. Where the player is and which way they face (degrees from north,
+	// clockwise), and where the truck stands, all road-local, whatever area each is in (S47FieldMap::Me).
+	bool bField = false, bMe = false, bTruck = false, bDriving = false;
+	double MeX = 0, MeZ = 0, MeHeading = 0, TruckX = 0, TruckZ = 0, TruckHeading = 0;
+	FString MeArea;
+	TArray<FS47MapNote> Notes;
+	TArray<FS47MapJob> Jobs;
+};
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
 struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none
 // the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far
@@ -117,6 +133,8 @@ struct FS47NbExtras
 	TFunction<bool(const FString&)> EntryRead;
 	TFunction<void(const FString&)> MarkRead, OnFollow;
 	TOptional<FS47MapView> Map;          // drawn by the notebook (areaMap)
+	// Freeform's sheet: a pencil mark put down or rubbed out at road-local x and z, or rubbed out within so many metres of one there; the marks after.
+	TFunction<TArray<FS47MapNote>(double, double, double)> OnMapNote;
 	TArray<FString> MapDescription;
 	FString MapNote;                     // a line in pencil under the map
 	TOptional<TArray<FS47KitItem>> Kit;
@@ -250,6 +268,8 @@ public:
 	/** A line written into the notebook (AS47Story::Note): the HUD's NOTED slip (not while a case is
 	 *  being opened, when its old lines come back). */
 	void Noted(const FString& Text);
+	/** SAVE-SARO-20261108: the small LOG FILED stamp over the HUD's gauges, when the autosave on leaving SARO is written. */
+	void Filed(const FString& Line);
 
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;

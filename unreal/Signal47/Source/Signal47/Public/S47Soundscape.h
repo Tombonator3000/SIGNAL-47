@@ -20,7 +20,9 @@ class FS47AudioBuffer;
 //
 // A sudden silence is the warning (GAME_BIBLE, Lydens roller): when something real begins to come near (FS47Omen: the first
 // sign of a figure, the steps before the light, the quiet before a visit, a craft on its approach), everything out here stops at
-// once, seconds before it is there, and stays stopped while it is near. After, the crickets come back one at a time.
+// once, seconds before it is there, and stays stopped while it is near. After, the crickets come back one at a time. But the
+// crickets stop for a gust too (FS47Omen's ordinary causes), now and then the night misses what comes (FS47Omen::Misses), and the
+// night's own lulls are left in: a silence is a reason to listen, never a sure answer.
 class SIGNAL47_API FS47Soundscape : public TSharedFromThis<FS47Soundscape>
 {
 public:
@@ -33,6 +35,8 @@ public:
 
 	bool Hushed() const { return bHush; }
 	int32 Hushes() const { return HushCount; }
+	/** Of those, the ones with something real behind them (the rest were the wind). */
+	int32 RealHushes() const { return RealHushCount; }
 	int32 Played(const FString& Kind) const { return Counts.FindRef(Kind); }
 
 	/** F10: one of them now, from where it would come from here: windmill, wires, cattle, coyote, train, owl. Why: what stopped it. */
@@ -58,7 +62,7 @@ private:
 	US47Main* M = nullptr;
 	bool bHooked = false, bHush = false, bLog = false, bLogChecked = false;
 	double HushHold = 0, HushAgain = 0, AfterHush = 0, DevHushLeft = 0, DevWiresLeft = 0;
-	int32 HushCount = 0;
+	int32 HushCount = 0, RealHushCount = 0;
 	TMap<FString, double> Due;
 	TMap<FString, int32> Counts;
 	TArray<TSharedPtr<FS47AudioBuffer>> Moos;

@@ -15,6 +15,9 @@
 #include "S47Mail.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightLog.h"
+#include "S47Tape.h"
+#include "S47WardReport.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47PredecessorText.h"
@@ -109,6 +112,11 @@ int32 FS47Predecessor::Points(const FTally& C)
  // What the land gave at night, kept as records of different kinds.
  P+=C.Land>=8?2:C.Land>=4?1:0;
  P+=C.Filed>=20?1:0;
+ // Night logs her office has had and initialed.
+ P+=C.Logs>=20?2:C.Logs>=10?1:0;
+ // Tapes with something on them nobody heard: a recording is a record she can send on.
+ P+=C.Tapes>=2?1:0;
+ P+=FS47WardReport::PointsFor(C.Trust);
  return P;
 }
 FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
@@ -143,6 +151,9 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)++C.Concluded;
  C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();
+ if(F.NightLog)C.Logs=F.NightLog->ReadCount();
+ if(F.Tape)C.Tapes=F.Tape->OddHeardCount();
+ if(F.WardReport)C.Trust=F.WardReport->Trust();
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped())++C.Photos;
  return C;
 }
@@ -262,7 +273,7 @@ void FS47Predecessor::StepNews(double Dt)
  if(bWardOpen&&!bLetterTold&&(Tray.Contains(Letter)||InMailbox(Letter)))
  {
   bLetterTold=true;
-  if(M->UI)M->UI->Toast(InMailbox(Letter)?TEXT("The flag is up on the mailbox at the road. There is a letter from Dr. Ward's office in it."):TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
+  if(M->UI&&!InMailbox(Letter))M->UI->Toast(TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Ward's letter %s, day %d, %s"),InMailbox(Letter)?TEXT("in the mailbox"):TEXT("in the tray"),Today,*DateText(Today));
   M->RequestAutosave();
  }
@@ -470,7 +481,7 @@ void FS47Predecessor::StepWarnings()
   F.RecordEvidence(TEXT("ward-taken"),X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
   const bool bByPost=F.Mail&&F.Mail->Live();
   Send(TEXT("ward-taken"));
-  if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the post."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
+  if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the mail."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: warned after %d takings"),F.TimesTaken());
   M->RequestAutosave();
  }
@@ -524,7 +535,7 @@ void FS47Predecessor::Decided()
  if(M->UI)
  {
   if(bMutedOutcome)OpenAssessment();
-  else M->UI->Toast(bByPost?TEXT("Dr. Ward has made her assessment. It comes with the post."):TEXT("Dr. Ward's assessment is in the OPS tray."),6);
+  else M->UI->Toast(bByPost?TEXT("Dr. Ward has made her assessment. It comes in the mail."):TEXT("Dr. Ward's assessment is in the OPS tray."),6);
  }
 }
 
@@ -657,7 +668,7 @@ FString FS47Predecessor::TaskLine() const
 {
  if(!Live())return FString();
  if(Tray.Contains(TEXT("letter")))return TEXT("OPS / There is a letter from Dr. Ward's office in the tray.");
- if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road. The flag is up.");
+ if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
  if(Tray.Contains(TEXT("assessment")))return TEXT("OPS / Dr. Ward's assessment is in the tray.");
  if(InMailbox(TEXT("assessment")))return TEXT("MAILBOX / Dr. Ward's assessment is in the box at the road.");
  if(Outcome==EOutcome::None&&M&&M->Freeform)return FString::Printf(TEXT("SARO under review / Dr. Ward assesses the station on %s."),*DateText(AssessDay));
@@ -1301,6 +1312,14 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   for(const TCHAR* W:Far)if(Low.Contains(W)){bClean=false;Offender=FString(W)+TEXT(" in: ")+Text.Left(60);}
  }
  Check(bClean,TEXT("no paper and no person says anything from Story's far side"));
+ {
+  // Night logs her office has initialed count a little: one point at ten, two at twenty, nothing before.
+  FTally Usual;Usual.Filed=12;Usual.Clean=10;
+  FTally Ten=Usual;Ten.Logs=10;FTally Twenty=Usual;Twenty.Logs=25;FTally Few=Usual;Few.Logs=9;
+  Check(Points(Few)==Points(Usual)&&Points(Ten)==Points(Usual)+1&&Points(Twenty)==Points(Usual)+2,TEXT("initialed night logs count toward the assessment: one point at ten, two at twenty"));
+  FTally OneTape=Usual;OneTape.Tapes=1;FTally TwoTapes=Usual;TwoTapes.Tapes=2;
+  Check(Points(OneTape)==Points(Usual)&&Points(TwoTapes)==Points(Usual)+1,TEXT("two tapes with something on them nobody heard count one point"));
+ }
  if(!bClean)Lines.Add(FString(TEXT("FAIL predecessor: "))+Offender);
  // Reyes is only ever Reyes.
  bool bNeutral=true;

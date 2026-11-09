@@ -4,15 +4,18 @@
 
 class US47Main;
 
-// STRESS-20261108: the player character's strain, 0 to 1, with no number on the screen. It rises near danger (a dangerous event
-// going on, a figure close by, the dark outside without a lamp, being taken, and a while after) and falls slowly where it is safe
-// (indoors at SARO). Three things show it, and none of them while it is low: a darker edge (SS47Hud paints it), a view a little
-// narrower (AS47Walker::FovScale) and heavier breathing (the walkie's breath, S47Walkie::Breath, through the sfx bus; OnBreath
-// is the hook for a recorded breath later). Held by US47Main::Stress, stepped each frame after the flashlight.
+// STRESS-20261108: the player character's strain, 0 to 1, with no number on the screen. It rises near danger (something dangerous
+// close by, as FS47Omen has it at the player's eyes; a figure close by; being taken, and a while after) and falls slowly where it is
+// safe (indoors at SARO). The dark outside without a lamp and the night going quiet are a small unease of their own, kept under
+// the breathing: heavy breath means something is near, not that it is night (M2 critic). Three things show it, and none of them
+// while it is low: a darker edge (SS47Hud paints it), a view a little narrower (AS47Walker::FovScale) and heavier breathing (the
+// walkie's breath, S47Walkie::Breath, through the sfx bus; OnBreath is the hook for a recorded breath later). Breathing that hard
+// can be heard a few metres off (HeardWithin, for whatever listens). Held by US47Main::Stress, stepped each frame after the
+// flashlight.
 struct FS47StressIn
 {
-	/** A dangerous event is going on near the player (the director's "not now", the farm's visit, the low pass overhead...). */
-	bool bEvent = false;
+	/** How dangerous what is near the player is, by how near, 0 to 1 (FS47Omen::Level: an event somewhere else is not near). */
+	double Danger = 0;
 	/** How near a real presence is, 0 to 1, and whether it is in view / hunting. */
 	double Presence = 0;
 	bool bSeen = false, bHunting = false;
@@ -42,6 +45,10 @@ public:
 
 	/** 0 to 1. */
 	double Level() const { return S; }
+	/** How far off the player's breathing can be heard just now, metres: a few metres for a moment after each hard breath when
+	 *  near panic, 0 otherwise (for FS47RoswellBrain's ears, as the walkie's noise is). */
+	double HeardWithin() const { return SinceBreath < 1.2 ? BreathReach(S) : 0.0; }
+	static double BreathReach(double Strain);
 	/** The edge's darkness (alpha at the very edge, 0 when calm) and how far in it reaches (share of the screen, 0 when calm). */
 	double Vignette() const { return VignetteAlpha(S); }
 	double VignetteReach() const { return VignetteReachOf(S); }
@@ -65,7 +72,7 @@ public:
 
 private:
 	US47Main* M = nullptr;
-	double S = 0, ReadIn = 0, BreathIn = 2, SinceTaken = 1e9;
+	double S = 0, ReadIn = 0, BreathIn = 2, SinceTaken = 1e9, SinceBreath = 1e9;
 	bool bWasTaken = false, bLog = false, bLogChecked = false;
 	int32 BreathCount = 0;
 	FS47StressIn Inputs;

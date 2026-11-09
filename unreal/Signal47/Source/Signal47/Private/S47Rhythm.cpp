@@ -67,6 +67,24 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  if(!Range(B,TEXT("sky"),A0,A1)||A0<0||A0>A1){Why=TEXT("budget sky");return false;}Out.SkyMin=int32(A0);Out.SkyMax=int32(A1);
  // null, or not there at all: no limit.
  Out.DangerPerNight=G->HasTypedField<EJson::Number>(TEXT("danger_per_night"))?S47J::Int(G,TEXT("danger_per_night")):-1;
+ // The curve, week by week: optional, but whole when it is there (a week that starts the game, in order, factors in range).
+ if(const auto Curve=S47J::Obj(G,TEXT("curve")))
+ {
+  int32 Last=0;
+  for(const auto& V:S47J::Arr(Curve,TEXT("weeks")))
+  {
+   const S47J::FObj* WPtr=nullptr;if(!V.IsValid()||!V->TryGetObject(WPtr)||!WPtr){Why=TEXT("curve: a week is not an object");return false;}
+   const S47J::FObj& W=*WPtr;
+   FS47RhythmWeek Wk;Wk.FromDay=S47J::Int(W,TEXT("from_day"),0);
+   Wk.Hint=float(S47J::Num(W,TEXT("hint"),1));Wk.Observation=float(S47J::Num(W,TEXT("observation"),1));Wk.Presence=float(S47J::Num(W,TEXT("presence"),1));
+   Wk.Danger=float(S47J::Num(W,TEXT("danger"),-1));Wk.Near=S47J::Num(W,TEXT("near"),1);
+   const bool bFirst=Out.Weeks.IsEmpty();
+   if((bFirst&&Wk.FromDay!=1)||(!bFirst&&Wk.FromDay<=Last)){Why=TEXT("curve: weeks start on day 1, in order");return false;}
+   for(const float K:{Wk.Hint,Wk.Observation,Wk.Presence})if(!(K>=0&&K<=3)){Why=TEXT("curve: a level's worth is 0 to 3");return false;}
+   if(!(Wk.Danger>=0&&Wk.Danger<=1)||!(Wk.Near>.1&&Wk.Near<=2)){Why=TEXT("curve: danger 0 to 1, near above 0.1");return false;}
+   Last=Wk.FromDay;Out.Weeks.Add(Wk);
+  }
+ }
  for(const auto& Value:S47J::Arr(Doc,TEXT("events")))
  {
   const S47J::FObj* Ptr=nullptr;if(!Value.IsValid()||!Value->TryGetObject(Ptr)||!Ptr){Why=TEXT("an event is not an object");return false;}
@@ -83,7 +101,18 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
   else if(Range(O,TEXT("hours"),E.From,E.To)&&E.From>=0&&E.From<=24&&E.To>=0&&E.To<=24)E.Hours=ES47RhythmHours::Window;
   else{Why=Id+TEXT(": hours");return false;}
   E.Areas=S47J::Strs(O,TEXT("areas"));
-  if(const auto Draw=S47J::Obj(O,TEXT("draw"))){E.PerNight=S47J::Num(Draw,TEXT("per_night"),-1);E.DrawState=S47J::Str(Draw,TEXT("state"));if(E.PerNight>1){Why=Id+TEXT(": per_night");return false;}}
+  if(const auto Draw=S47J::Obj(O,TEXT("draw")))
+  {
+   E.PerNight=S47J::Num(Draw,TEXT("per_night"),-1);E.DrawState=S47J::Str(Draw,TEXT("state"));if(E.PerNight>1){Why=Id+TEXT(": per_night");return false;}
+   // draw.at, clock hours: after midnight counted on past 24, as the night counts them.
+   double At0=0,At1=0;
+   if(Draw->HasField(TEXT("at")))
+   {
+    if(!Range(Draw,TEXT("at"),At0,At1)||At0<0||At0>24||At1<0||At1>24){Why=Id+TEXT(": draw.at");return false;}
+    E.DrawFrom=At0<12?At0+24:At0;E.DrawTo=At1<12?At1+24:At1;
+    if(E.DrawFrom<18||E.DrawTo>30||E.DrawTo<=E.DrawFrom){Why=Id+TEXT(": draw.at is not in the night, or ends before it starts");return false;}
+   }
+  }
   double C0,C1;if(Range(O,TEXT("cooldown_days"),C0,C1)){E.CoolMin=int32(C0);E.CoolMax=int32(C1);}
   E.MinNights=S47J::Int(O,TEXT("min_nights_between"));E.bFixedTable=S47J::Str(O,TEXT("schedule"))==TEXT("fixed_table");
   for(const FString& N:S47J::Strs(O,TEXT("needs")))
@@ -247,10 +276,36 @@ void FS47Rhythm::Ended(FName Id,bool bMet)
  F->Director->RestFor(E->Level==ES47RhythmLevel::Danger&&bMet?Rules.RestDanger:Rules.RestOther);
 }
 
-float FS47Rhythm::PerNight(FName Id,float Otherwise) const
+const FS47RhythmWeek& FS47RhythmData::Week(int32 Day) const
+{
+ static const FS47RhythmWeek Flat;
+ const FS47RhythmWeek* Got=nullptr;
+ for(const FS47RhythmWeek& W:Weeks)if(Day>=W.FromDay)Got=&W;
+ return Got?*Got:Flat;
+}
+float FS47RhythmData::Worth(ES47RhythmLevel Level,int32 Day) const
+{
+ const FS47RhythmWeek& W=Week(Day);
+ switch(Level)
+ {
+ case ES47RhythmLevel::Hint:return W.Hint;
+ case ES47RhythmLevel::Observation:return W.Observation;
+ case ES47RhythmLevel::Presence:return W.Presence;
+ default:return 1.f; // a danger's own chance is the shape it takes in the night's one slot (FS47Happenings::PlanTonight)
+ }
+}
+float FS47Rhythm::PerNight(FName Id,float Otherwise,int32 Day) const
 {
  const auto* E=Rules.Find(Id);
- return E&&E->PerNight>=0?float(E->PerNight):Otherwise;
+ const float Base=E&&E->PerNight>=0?float(E->PerNight):Otherwise;
+ if(Day<=0||!E||E->System!=TEXT("night"))return Base;
+ return FMath::Clamp(Base*Rules.Worth(E->Level,Day),0.f,1.f);
+}
+bool FS47Rhythm::DrawHours(FName Id,double& From,double& To) const
+{
+ const auto* E=Rules.Find(Id);
+ if(!E||E->DrawFrom<0||E->DrawTo<=E->DrawFrom)return false;
+ From=E->DrawFrom;To=E->DrawTo;return true;
 }
 
 bool FS47Rhythm::NeedHolds(FName Name) const
@@ -376,6 +431,11 @@ FString FS47Rhythm::PanelText(bool bFull) const
  const double Hour=HourOf(Now.Clock);
  FString T=FString::Printf(TEXT("DIRECTOR  DAG %d  %s  %s%s%s"),Now.Day,*ClockText(Now.Clock),(Hour>=19||Hour<6)?TEXT("natt"):TEXT("dag"),Now.bQuiet?TEXT("  ROLIG NATT"):TEXT(""),bOverride?TEXT("  [OVERRIDE AKTIV]"):TEXT(""));
  T+=FString::Printf(TEXT("\nIgjen i dag: små %d  undersøkelser %d  himmel %d   Fare i natt %d/%s"),Now.MinorLeft,Now.InvestLeft,Now.SkyLeft,Now.DangerTonight,Rules.DangerPerNight<0?TEXT("-"):*FString::FromInt(Rules.DangerPerNight));
+ {
+  // The build-up this week (curve): what each level of the night events is worth, the night's danger slot, how near.
+  const FS47RhythmWeek& W=Rules.Week(Now.Day);
+  T+=FString::Printf(TEXT("\nKURVE     uke fra dag %d: små x%.2f  sett x%.2f  nær x%.2f  farens plass %.0f %%  avstand x%.2f"),W.FromDay,W.Hint,W.Observation,W.Presence,W.Danger*100.f,W.Near);
+ }
  T+=FString::Printf(TEXT("\nNÅ        %s"),Now.Busy.IsNone()?TEXT("ingen"):*Now.Busy.ToString());
  if(Now.RestLeft>0)T+=FString::Printf(TEXT("\nRO        %.0f s igjen"),Now.RestLeft);
  // What comes next on its own clock.
@@ -471,6 +531,18 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   FS47RhythmNow A=N;A.bHumorTonight=true;
   Check(Says(TEXT("door_visit"),A)==TEXT("humor_night"),TEXT("after a humorous one tonight no danger comes"));
   Check(R.May(TEXT("peek"),A).bMay,TEXT("and a look in at a window still may"));
+ }
+ {
+  // The curve (Tom's critics, 8 November): week one is small things and things seen, the second comes nearer, the third and fourth
+  // have more and worse. In numbers: the night's danger grows, things come nearer, what comes near is worth more each week.
+  const FS47RhythmWeek &W1=D.Week(1),&W2=D.Week(9),&W3=D.Week(16),&W4=D.Week(28);
+  Check(D.Weeks.Num()>=4&&W1.Danger<=.1f&&W1.Danger<W2.Danger&&W2.Danger<W3.Danger&&W3.Danger<=W4.Danger&&W1.Near>W2.Near&&W2.Near>W3.Near&&W3.Near>=W4.Near&&W1.Presence<W4.Presence,TEXT("the curve: more and nearer week by week, the first week small"));
+  FS47Rhythm C(nullptr);FString W;Parse(S47RhythmDefaultJson,C.Rules,W);
+  Check(C.PerNight(TEXT("cattle_ring"),0.f,2)<C.PerNight(TEXT("cattle_ring"),0.f,25)&&C.PerNight(TEXT("service_presence"),.35f,2)==C.PerNight(TEXT("service_presence"),.35f),TEXT("a night event's chance follows the curve; the Director's own does not"));
+  double A=0,B=0;
+  Check(C.DrawHours(TEXT("car_dies"),A,B)&&A>=19&&B<=30&&A<B&&!C.DrawHours(TEXT("service_presence"),A,B),TEXT("a night event is drawn in its own hours of the night"));
+  FS47RhythmData Bad2;
+  Check(!Parse(FString(S47RhythmDefaultJson).Replace(TEXT("\"from_day\": 8, \"hint\""),TEXT("\"from_day\": 0, \"hint\"")),Bad2,W),TEXT("a curve out of order is turned away"));
  }
  OK&=S47SmallHints::SelfTest(Lines);
  Check(CoolDays(TEXT("flyover"),3)>=2&&CoolDays(TEXT("flyover"),3)<=4&&CoolDays(TEXT("flyover"),3)==CoolDays(TEXT("flyover"),3),TEXT("cooldown two to four days, the same each time"));

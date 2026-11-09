@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A sketch of the rhythm, not proof of it: throws the Director's budget, ticks and cooldowns from director.json over many days and says
 how many small things come and when. The world is not modelled: sight, being at a cabinet, and what a player does are not here.
-  python3 simulate.py [--days 30] [--runs 200] [--without-hints] [--no-pace] [--only id,id]
+  python3 simulate.py [--days 30] [--runs 200] [--without-hints] [--no-pace] [--only id,id] [--curve]
 --only keeps to what can reach a player who stays in one place, e.g. the farmhouse:
   --only roof_tick,service_door_open,roof_steps,empty_car,flyover"""
 import argparse, random, sys, zlib
@@ -58,15 +58,46 @@ def run(doc, days, rnd, hints, use_pace, only=None):
         rest = active + g['rest_after']['other']
         results.setdefault(day, []).append((pick['id'], hour))
     return results, days - 1
+def week_of(doc, day):
+    row = {'hint': 1, 'observation': 1, 'presence': 1, 'danger': .35, 'near': 1, 'from_day': 1}
+    for w in doc['globals'].get('curve', {}).get('weeks', []):
+        if day >= w['from_day']: row = {**row, **w}
+    return row
+def curve(doc, days):
+    """The night events' build-up, as director.json has it (FS47Happenings::PlanTonight): what a night is likely to hold, by level,
+    week by week, and when in the night each level is drawn. Expected values from the chances, no dice; calm nights not counted."""
+    night = [e for e in doc['events'] if e['system'] == 'night' and e['level'] != 'danger' and e['id'] not in ('humor', 'unease', 'clock_ahead')]
+    def hour(e):
+        at = e.get('draw', {}).get('at')
+        if not at: return None
+        return [x + 24 if x < 12 else x for x in at]
+    print('day  week  hint  observation  presence  danger slot  near')
+    for day in range(1, days + 1):
+        w = week_of(doc, day)
+        sums = {k: 0. for k in ('hint', 'observation', 'presence')}
+        for e in night:
+            if day < e['from_day'] or 'per_night' not in e.get('draw', {}): continue
+            sums[e['level']] += min(1., e['draw']['per_night'] * w[e['level']])
+        slot = w['danger'] if day >= 2 else 0
+        print(f'{day:3d}  {w["from_day"]:4d}  {sums["hint"]:4.2f}  {sums["observation"]:11.2f}  {sums["presence"]:8.2f}  {slot:11.2f}  {w["near"]:4.2f}')
+    for level in ('hint', 'observation', 'presence'):
+        hs = [sum(h) / 2 for e in night if e['level'] == level for h in [hour(e)] if h]
+        if hs: print(f'{level}: drawn around {sum(hs) / len(hs):.1f} on average (hours of the night, past 24 after midnight)')
+    print('dangers: one slot a night in their hours, taken by the first that fits where the player is.')
 def main():
     a = argparse.ArgumentParser()
     a.add_argument('--days', type=int, default=30); a.add_argument('--runs', type=int, default=200)
     a.add_argument('--without-hints', action='store_true'); a.add_argument('--no-pace', action='store_true'); a.add_argument('--seed', type=int, default=47)
     a.add_argument('--only', default='')
+    a.add_argument('--curve', action='store_true', help='the night events\' build-up week by week, from the curve')
     o = a.parse_args()
     doc = director_rules.load(ROOT / 'Content/Director/director.json')
     errors, warnings = director_rules.check(doc)
     for e in errors: print('error:', e)
+    for w in warnings: print('warning:', w)
+    if o.curve:
+        curve(doc, o.days)
+        return
     rnd = random.Random(o.seed)
     total, days = 0, 0
     by_hour = [0] * 24

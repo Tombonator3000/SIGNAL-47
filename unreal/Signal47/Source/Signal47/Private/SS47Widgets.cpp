@@ -24,6 +24,8 @@
 #include "S47GameStyle.h"
 #include "S47Image.h"
 #include "S47Night.h"
+#include "S47Sky.h"
+#include "S47WorldLife.h"
 #include "S47ReadAloud.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -128,6 +130,160 @@ namespace
 	private:
 		FLinearColor Color;
 	};
+
+	// HUD-D-20261109: convex shapes in one batch of vertices (the clock's segments, the battery's slanted strokes), each with its own
+	// colour, drawn with one element
+	struct FHudVerts
+	{
+		explicit FHudVerts(const FGeometry& InGeometry) : Transform(InGeometry.GetAccumulatedRenderTransform()) {}
+		FSlateRenderTransform Transform;
+		TArray<FSlateVertex> Verts;
+		TArray<SlateIndex> Index;
+		void Poly(TArrayView<const FVector2f> Pts, const FLinearColor& Col)
+		{
+			if (Pts.Num() < 3 || Col.A <= 0.002f) return;
+			const FColor Col8 = Col.ToFColor(true);
+			const SlateIndex First = SlateIndex(Verts.Num());
+			for (const FVector2f& Pt : Pts) Verts.Add(FSlateVertex::Make<ESlateVertexRounding::Disabled>(Transform, Pt, FVector2f::ZeroVector, Col8));
+			for (int32 I = 1; I + 1 < Pts.Num(); ++I) { Index.Add(First); Index.Add(SlateIndex(First + I)); Index.Add(SlateIndex(First + I + 1)); }
+		}
+		void Draw(FSlateWindowElementList& Out, int32 Layer) const
+		{
+			if (!Index.Num() || !FSlateApplication::IsInitialized()) return;
+			const FSlateResourceHandle Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(*FCoreStyle::Get().GetBrush(TEXT("WhiteBrush")));
+			FSlateDrawElement::MakeCustomVerts(Out, Layer, Handle, Verts, Index, nullptr, 0, 0);
+		}
+	};
+
+	// words set on their baseline, as the mockups' PIL drew them (Align: 0 from the left, 0.5 centred, 1 to the right of X)
+	void HudTextAt(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FString& Words, const FSlateFontInfo& Font, FVector2f Baseline, float Align, const FLinearColor& Col)
+	{
+		if (Words.IsEmpty() || Col.A <= 0.002f || !FSlateApplication::IsInitialized()) return;
+		const TSharedRef<FSlateFontMeasure> Meter = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		const FVector2f TextSize = FVector2f(Meter->Measure(Words, Font));
+		const float Ascent = float(Meter->GetMaxCharacterHeight(Font)) + float(Meter->GetBaseline(Font));
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(TextSize + FVector2f(4.f, 0.f), FSlateLayoutTransform(FVector2f(Baseline.X - TextSize.X * Align, Baseline.Y - Ascent))), Words, Font, ESlateDrawEffect::None, Col);
+	}
+
+	// HUD-D2-20261109: words with a dark rim round them (eight shifts of the words in black under them), for the clock's AM, PM and day
+	// against a bright sky; Rim 0 is the plain words
+	void HudTextRimmed(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FString& Words, const FSlateFontInfo& Font, FVector2f Baseline, float Align, const FLinearColor& Col, float Rim)
+	{
+		if (Rim > 0.01f && Col.A > 0.002f)
+		{
+			const float Step = FMath::Max(1.f, S47Game::P(0.9f));
+			const FLinearColor Dark(0.f, 0.f, 0.f, FMath::Min(1.f, 0.5f * Rim * Col.A / 0.59f));
+			for (int32 Ix = -1; Ix <= 1; ++Ix)
+				for (int32 Iy = -1; Iy <= 1; ++Iy)
+					if (Ix || Iy) HudTextAt(Out, Layer, G, Words, Font, Baseline + FVector2f(Ix * Step, Iy * Step), Align, Dark);
+		}
+		HudTextAt(Out, Layer + 1, G, Words, Font, Baseline, Align, Col);
+	}
+
+	// HUD-D2-20261109: the sky's daylight for the HUD's dark rim (S47HudGauges::BackingStrength); night when there is no sky
+	float HudBacking()
+	{
+		const US47Main* Mn = US47Main::Get(nullptr);
+		const double SkyLight = Mn && Mn->Life && Mn->Life->Sky.IsValid() ? Mn->Life->Sky->Daylight() : 0.0;
+		return float(S47HudGauges::BackingStrength(SkyLight));
+	}
+
+	// HUD-D-20261109: the task on a cassette's J-card, written by hand (mock/hud_D_task.png, scratchpad hud_D_color.py jcard): the
+	// paper, the red stripe, the A in its box, C-60, the blue rules, the place and the task in the player's hand, and a strip of
+	// tape. Painted whole, in mockup pixels; 340 wide, a rule more for each line past two.
+	class SS47HudNote : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47HudNote) : _Alpha(1.f) {}
+			SLATE_ATTRIBUTE(FString, Head)
+			SLATE_ATTRIBUTE(FString, Body)
+			SLATE_ATTRIBUTE(float, Alpha)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { HeadAttr = A._Head; BodyAttr = A._Body; AlphaAttr = A._Alpha; }
+		static constexpr float CardW = 340.f, CardH = 70.f, Pitch = 25.f;
+		static constexpr int32 MostLines = 4;
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(S47Game::P(CardW), S47Game::P(Height(Lines().Num()))); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool) const override
+		{
+			using namespace S47Game;
+			const float Strength = AlphaAttr.Get(1.f) * Style.GetColorAndOpacityTint().A;
+			const TArray<FString> Written = Lines();
+			if (Strength <= 0.003f || !Written.Num()) return Layer;
+			const float CardTall = Height(Written.Num());
+			const FSlateBrush* White = FCoreStyle::Get().GetBrush(TEXT("WhiteBrush"));
+			auto Rect = [&](int32 Lay, float X, float Y, float RW, float RH, const FLinearColor& Col)
+			{
+				if (RW > 0.f && RH > 0.f && Col.A > 0.002f) FSlateDrawElement::MakeBox(Out, Lay, G.ToPaintGeometry(FVector2f(P(RW), P(RH)), FSlateLayoutTransform(FVector2f(P(X), P(Y)))), White, ESlateDrawEffect::None, Col);
+			};
+			auto Frame = [&](int32 Lay, float X, float Y, float RW, float RH, float Line, const FLinearColor& Col)
+			{
+				Rect(Lay, X, Y, RW, Line, Col); Rect(Lay, X, Y + RH - Line, RW, Line, Col); Rect(Lay, X, Y + Line, Line, RH - 2 * Line, Col); Rect(Lay, X + RW - Line, Y + Line, Line, RH - 2 * Line, Col);
+			};
+			// its shadow, the paper, darker towards its edges where it has been handled
+			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(P(CardW + 16.f), P(CardTall + 16.f)), FSlateLayoutTransform(FVector2f(P(-7.f), P(-5.f)))), Soft(8.f), ESlateDrawEffect::None, FLinearColor(0, 0, 0, 0.62f * Strength));
+			Rect(Layer + 1, 0.f, 0.f, CardW, CardTall, C(0xb2aa96, 236.f / 255.f * Strength));
+			const float Grime[3] = { 0.16f, 0.09f, 0.04f };
+			for (int32 I = 0; I < 3; ++I) Frame(Layer + 2, 2.f * I, 2.f * I, CardW - 4.f * I, CardTall - 4.f * I, 2.f, C(0x463826, Grime[I] * Strength));
+			// the red stripe, the side's A in its box, the tape's length
+			const FLinearColor Red = C(0x96342c, 230.f / 255.f * Strength);
+			Rect(Layer + 2, 0.f, 0.f, 6.f, CardTall, Red);
+			Frame(Layer + 2, 17.f, 11.f, 20.f, 20.f, 1.3f, C(0x96342c, 215.f / 255.f * Strength));
+			HudTextAt(Out, Layer + 3, G, TEXT("A"), Display(14.f), FVector2f(P(27.f), P(27.f)), 0.5f, Red);
+			FSlateFontInfo Small = S47Style::Display(9.f * U);
+			Small.LetterSpacing = FMath::RoundToInt(1.f / 9.f * 1000.f);
+			HudTextAt(Out, Layer + 3, G, TEXT("C-60"), Small, FVector2f(P(CardW - 9.f), P(12.f)), 1.f, C(0x766a5a, 200.f / 255.f * Strength));
+			// the rules, and the words on them
+			const int32 RuleCount = FMath::Max(2, Written.Num());
+			for (int32 I = 0; I < RuleCount; ++I) Rect(Layer + 2, 46.f, 35.f + Pitch * I, CardW - 56.f, 1.f, C(0x54689c, 105.f / 255.f * Strength));
+			const bool bHead = !HeadWords().IsEmpty();
+			for (int32 I = 0; I < Written.Num(); ++I)
+			{
+				const bool bFirst = I == 0;
+				const FSlateFontInfo Font = Hand(bFirst && bHead ? 31.f : 28.f);
+				const float Baseline = bFirst ? 31.f : 57.f + Pitch * (I - 1);
+				HudTextAt(Out, Layer + 3, G, Written[I], Font, FVector2f(P(bFirst ? 50.f : 52.f), P(Baseline)), 0.f, C(0x233a7a, (bFirst ? 248.f : 240.f) / 255.f * Strength));
+			}
+			// the tape over the top edge
+			const FLinearColor Tape = C(0xcdc096, 165.f / 255.f * Strength);
+			S47Theme::Triangle(Out, Layer + 4, G, FVector2f(P(196.f), P(-8.f)), FVector2f(P(252.f), P(-6.f)), FVector2f(P(251.f), P(8.f)), Tape);
+			S47Theme::Triangle(Out, Layer + 4, G, FVector2f(P(196.f), P(-8.f)), FVector2f(P(251.f), P(8.f)), FVector2f(P(195.f), P(6.f)), Tape);
+			return Layer + 4;
+		}
+	private:
+		TAttribute<FString> HeadAttr, BodyAttr;
+		TAttribute<float> AlphaAttr;
+		static float Height(int32 Count) { return CardH + Pitch * FMath::Max(0, Count - 2); }
+		FString HeadWords() const { return S47HudGauges::Handwritten(HeadAttr.Get(FString()).TrimStartAndEnd(), true); }
+		// the place on the first line, the task wrapped to the card under it (at most four lines, the last cut short)
+		TArray<FString> Lines() const
+		{
+			using namespace S47Game;
+			TArray<FString> Out;
+			const FString HeadLine = HeadWords();
+			if (!HeadLine.IsEmpty()) Out.Add(HeadLine);
+			TArray<FString> Words;
+			S47HudGauges::Handwritten(BodyAttr.Get(FString()).TrimStartAndEnd(), false).ParseIntoArrayWS(Words);
+			if (!Words.Num()) return Out;
+			if (!FSlateApplication::IsInitialized()) { Out.Add(FString::Join(Words, TEXT(" "))); return Out; }
+			const TSharedRef<FSlateFontMeasure> Meter = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+			const FSlateFontInfo Font = Hand(28.f);
+			const float Room = P(CardW - 52.f - 12.f);
+			FString Line;
+			for (const FString& Each : Words)
+			{
+				const FString Try = Line.IsEmpty() ? Each : Line + TEXT(" ") + Each;
+				if (!Line.IsEmpty() && float(Meter->Measure(Try, Font).X) > Room) { Out.Add(Line); Line = Each; }
+				else Line = Try;
+			}
+			if (!Line.IsEmpty()) Out.Add(Line);
+			if (Out.Num() > MostLines)
+			{
+				Out.SetNum(MostLines);
+				Out.Last() += TEXT("...");
+			}
+			return Out;
+		}
+	};
 }
 
 bool SS47Hud::Playing() const { const US47Main* M = Main(); return !M || M->Mode == US47Main::EMode::Play; }
@@ -142,58 +298,15 @@ void SS47Hud::Construct(const FArguments& InArgs)
 	auto Aim = [this] { return ShowAimAttr.Get(true); };
 	auto Vis = [Aim] { return Aim() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	auto PromptOn = [this] { return ShowPromptAttr.Get(ShowAimAttr.Get(true)); };
-	// the watch's face: the seconds clock when it is set (chapter six, the warning), else the night's
-	auto WatchText = [this] { return SecondsText.IsEmpty() ? ClockAttr.Get().ToString() : SecondsText; };
-
-	// .obj: the place and the clock in amber over the objective, a soft dark under it
-	const TSharedRef<SWidget> Objective = SNew(SBorder).BorderImage(Box(FLinearColor::Transparent)).Padding(0)
-		.ColorAndOpacity_Lambda([this] { const float K = FMath::SmoothStep(0.f, 1.f, ObjectiveIn); return FLinearColor(1, 1, 1, 0.2f + 0.8f * K); })
-		.Visibility_Lambda([this] { return ObjectiveText.IsEmpty() || Vf.bOn || !Playing() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+	// HUD-D-20261109: the task on a cassette card, written by hand, when it changes: six seconds, then out over one (no line of
+	// digital text). The place (or the task's own head) on its first line, the task under it.
+	const TSharedRef<SWidget> Note = SNew(SBox)
+		.Visibility_Lambda([this] { return NoteT < 0.f || ObjectiveText.IsEmpty() || Vf.bOn || !Playing() || ModalOpen() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
 		[
-			Shadowed(SNew(SBox).MinDesiredWidth(P(400)).MaxDesiredWidth(P(520))
-			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()
-				[
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveHead.IsEmpty() ? Place : ObjectiveHead); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT(" // "))).Font(Term(22, 3)).ColorAndOpacity(C(0x7d786d)).Visibility_Lambda([this] { return ObjectiveHead.IsEmpty() && Place.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })]
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([] { const US47Main* M = Main(); return FText::FromString(M && M->Evening && M->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : M && M->Story ? M->Story->ClockText(false) : FString()); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
-				[
-					SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveBody); }).Font(Type(20)).ColorAndOpacity(C(0xefe7d3))
-					.Visibility_Lambda([this] { return ObjectiveBody.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
-					.ShadowOffset(FVector2D(0, P(2))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).AutoWrapText(true).LineHeightPercentage(LinePercent(Type(20), 28))
-				]
-			], 36.f, FVector2D(0, 2), 0.3f)
-		];
-
-	// .watch: the LCD and the day under it
-	const TSharedRef<SWidget> Watch = SNew(SVerticalBox)
-		.Visibility_Lambda([WatchText] { return WatchText().IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right)
-		[
-			SNew(SBorder).BorderImage(Box(C(0x0a0804, 0.62f), C(0xffb052, 0.25f), 1.f)).Padding(FMargin(P(12), 0))
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().AutoWidth()
-				[
-					SNew(STextBlock).Font(Term(40, 3)).ColorAndOpacity(C(0xffcf8a)).ShadowOffset(FVector2D::ZeroVector)
-					.Text_Lambda([WatchText] { const FString T = WatchText(); int32 I = INDEX_NONE; T.FindLastChar(TEXT(':'), I); return FText::FromString(T.Len() > 5 && I > 3 ? T.Left(I) : T); })
-				]
-				// (the seconds in the brighter amber the console counted the line drop in, .clockline.secs .ss)
-				+ SHorizontalBox::Slot().AutoWidth()
-				[
-					SNew(STextBlock).Font(Term(40, 3)).ColorAndOpacity(C(0xffd27a))
-					.Text_Lambda([WatchText] { const FString T = WatchText(); int32 I = INDEX_NONE; T.FindLastChar(TEXT(':'), I); return FText::FromString(T.Len() > 5 && I > 3 ? T.Mid(I) : FString()); })
-				]
-			]
-		]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(4), 0, 0)
-		[
-			SNew(STextBlock).Font(Term(18, 2)).ColorAndOpacity(C(0x8a857a)).ShadowOffset(FVector2D(0, P(1))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
-			.Text_Lambda([] { const US47Main* M = Main(); if (M && M->IsFreeform() && M->Freeform && M->Mode==US47Main::EMode::Play) { return FText::FromString(S47Game::DateLine(M->Freeform->Date())); } return FText::FromString(M && M->Story && M->Mode == US47Main::EMode::Play ? DayLine(M->Story->Clock()) : FString()); })
+			Turned(SNew(SS47HudNote)
+				.Head_Lambda([this] { return ObjectiveHead.IsEmpty() ? Place : ObjectiveHead; })
+				.Body_Lambda([this] { return ObjectiveBody; })
+				.Alpha_Lambda([this] { return float(S47HudGauges::NoteAlpha(NoteT)); }), -1.1f)
 		];
 
 	// .read: V and what it reads (UI.ts descriptionButton; dimmed when there is no recording of the text)
@@ -266,8 +379,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		SNew(SBox).Visibility_Lambda([]{return SS47ScreenView::AnyWorldScreenActive()?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible;})
 		[
 		SNew(SOverlay)
-		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(40), P(34), 0, 0)[Objective]
-		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(30), P(40), 0)[Watch]
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(34), P(30), 0, 0)[Note]
+		// (the segment clock top right is painted, SS47Hud::PaintClock)
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(112), P(40), 0)[Read]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[Cross]
 		// the prompt 28 px under the ring; at the line its top at 64% of the screen (.at-line .prompt)
@@ -306,7 +419,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 void SS47Hud::Objective(const FString& Text)
 {
 	if (Text == ObjectiveText) return;
-	ObjectiveIn = 0.f;
+	// HUD-D-20261109: a new task brings its card in; none takes it away
+	NoteT = Text.TrimStartAndEnd().IsEmpty() ? -1.f : 0.f;
 	ObjectiveText = Text;
 	// "FRAME 01 // INSPECT THE PRINT": the head goes on the tag line, before the clock; without one
 	// the tag is the place
@@ -322,6 +436,14 @@ void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
 	FRegexMatcher M(Caption, Text);
 	if (!M.FindNext()) LastToast = Text;
+	// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
+	{
+		FString CapHead, Said;
+		S47Game::SplitCaption(Text, CapHead, Said);
+		int32 SpokeOn = 1;
+		FString Speaking;
+		if (S47HudGauges::WalkieSpeaker(CapHead, SpokeOn, Speaking)) { Gauges.Speaker = Speaking; Gauges.SpeechLeft = FMath::Max(Gauges.SpeechLeft, Secs); }
+	}
 	// UI.toast: the same line twice in a row is noise
 	TSharedPtr<FToast> LastLive;
 	for (const TSharedRef<FToast>& T : Toasts) if (T->Out < 0.f) LastLive = T;
@@ -357,11 +479,11 @@ void SS47Hud::Rebuild()
 		TSharedRef<SVerticalBox> In = SNew(SVerticalBox);
 		if (!T->Who.IsEmpty())
 		{
-			// CB-WALKIE-20261108: what came over the CB under its channel, in amber; the walkie's (Dale's) in the set's own green
+			// CB-WALKIE-20261108: what came over the CB under its channel; the walkie's under its own (HUD-D-20261109: both in amber,
+			// told apart by their words, CB 19 or WALKIE 1, as the radio line is)
 			FString WhoShown = T->Who.ToUpper();
-			const bool bWalkieHead = WhoShown.StartsWith(TEXT("WALKIE"));
 			if (WhoShown == TEXT("CB") || WhoShown.StartsWith(TEXT("CB,"))) WhoShown = FString(TEXT("CB 19")) + WhoShown.Mid(2);
-			In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(22, 3)).ColorAndOpacity(bWalkieHead ? S47HudGauges::WalkieTint() : Amber())];
+			In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(22, 3)).ColorAndOpacity(Amber())];
 		}
 		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
 		[
@@ -443,7 +565,12 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
-	ObjectiveIn = FMath::Min(1.f, ObjectiveIn + Dt / 0.6f);
+	// HUD-D-20261109: the task's card runs its seven seconds only while it can be seen
+	if (NoteT >= 0.f && Playing() && !ModalOpen() && !Vf.bOn)
+	{
+		NoteT += Dt;
+		if (NoteT >= float(S47HudGauges::NoteHold + S47HudGauges::NoteFade)) NoteT = -1.f;
+	}
 	// the slip's time runs only while it can be seen
 	if (SlipT >= 0.f && Playing() && !ModalOpen())
 	{
@@ -486,16 +613,24 @@ void SS47Hud::ReadGauges(float Dt)
 		Gauges.bLow = Lamp.Low();
 	}
 	int32 Kind = 0; float Signal = 0.f;
+	Gauges.SpeechLeft = FMath::Max(0.f, Gauges.SpeechLeft - Dt);
 	if (bShow)
 	{
-		// CB-WALKIE-20261108: the CB's line only where a CB is (the truck, the SARO building): never on foot with the walkie
-		if (M->CB.IsValid() && M->CB->bBusy && FS47FieldRadio::CbAtHand(M)) { Kind = 1; Signal = float(S47HudGauges::CbStrength(Now)); }
-		else if (M->FieldRadio.IsValid() && M->FieldRadio->InUse())
+		// HUD-D-20261109: the line only while somebody sends (S47HudGauges::RadioKind). CB-WALKIE-20261108: the CB's only where a CB is
+		// (the truck, the SARO building), never on foot with the walkie.
+		const bool bCbBusy = M->CB.IsValid() && M->CB->bBusy;
+		const FS47FieldRadio* Walkie = M->FieldRadio.Get();
+		const bool bOwned = Walkie && Walkie->Owned() && !Walkie->LeftOut();
+		const bool bHail = bOwned && Walkie->Hailing(), bKeyed = bOwned && Walkie->Transmitting();
+		Kind = S47HudGauges::RadioKind(bCbBusy, bCbBusy && FS47FieldRadio::CbAtHand(M), bOwned, bHail, bKeyed, Gauges.SpeechLeft);
+		if (Kind == 1) Signal = float(S47HudGauges::CbStrength(Now));
+		else if (Kind == 2)
 		{
-			Kind = 2; Signal = float(M->FieldRadio->Strength());
-			// WALKIE-USE-20261108: the channel it is on, and whether the player is keyed or Dale is calling
-			Gauges.Channel = M->FieldRadio->Channel();
-			Gauges.Mode = M->FieldRadio->Hailing() ? 2 : M->FieldRadio->Transmitting() ? 1 : 0;
+			Signal = float(Walkie->Strength());
+			// WALKIE-USE-20261108: the channel it is on, and who is sending: the player keyed, Dale calling, or whoever is speaking
+			Gauges.Channel = Walkie->Channel();
+			Gauges.Who = S47HudGauges::WalkieWho(bHail, bKeyed, Gauges.Speaker);
+			Gauges.bCalling = bHail;
 		}
 	}
 	// the radio line keeps its words while it fades out
@@ -505,65 +640,237 @@ void SS47Hud::ReadGauges(float Dt)
 	Gauges.RadioA += ((Kind ? 1.f : 0.f) - Gauges.RadioA) * Rate;
 	if (Gauges.BatteryA < 0.004f) Gauges.BatteryA = 0.f;
 	if (Gauges.RadioA < 0.004f) Gauges.RadioA = 0.f;
+	// SAVE-SARO-20261108: the LOG FILED stamp runs its few seconds whether or not it can be seen
+	Gauges.bShown = bShow;
+	if (Gauges.FiledT >= 0.f)
+	{
+		Gauges.FiledT += Dt;
+		if (Gauges.FiledT >= float(S47HudGauges::FiledFor)) Gauges.FiledT = -1.f;
+	}
 }
 
 void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
 {
 	using namespace S47Game;
 	const FVector2f S = FVector2f(G.GetLocalSize());
-	const float Right = S.X - P(44.f), Floor = S.Y - P(30.f);
+	const float Right = S.X - P(40.f), Floor = S.Y - P(29.f);
 	auto Fill = [&](float X0, float Y0, float W, float H, const FLinearColor& Col)
 	{
 		if (W > 0.f && H > 0.f) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(W, H), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, Col);
 	};
-	// the battery: a thin frame with a nub, five small strokes in it (an old battery's mark). Low: the colour turns and the last stroke breathes.
+	// HUD-D-20261109: the instruments in the chosen palette (S47HudGauges::FHudPalette), placed as the mockup (hud_D_final.png): the
+	// battery's right edge 40 px from the screen's at 1600 x 900, its foot 29 px up, the radio line over it
+	const S47HudGauges::FHudPalette& Pal = S47HudGauges::Palette();
+	// the battery: a thin frame with a nub and five slanted strokes in it (an old battery's mark), dimmed to the clock's level. Low: the
+	// palette's low colour at full strength, and the last stroke breathes.
 	if (Gauges.BatteryA > 0.f)
 	{
-		const float StrokeW = P(4.f), StrokeGap = P(3.f), StrokeH = P(14.f), Pad = P(3.f), Line = FMath::Max(1.f, P(1.2f));
-		constexpr int32 Count = S47HudGauges::BatteryStrokes;
-		const float InnerW = Count * StrokeW + (Count - 1) * StrokeGap;
-		const float FrameW = InnerW + 2.f * Pad, FrameH = StrokeH + 2.f * Pad, NubW = P(3.f), NubH = P(8.f);
-		const float Left = Right - NubW - FrameW, Top0 = Floor - FrameH;
-		const FLinearColor Tone = Gauges.bLow ? C(0xe0623f) : Amber();
-		const float Pulse = Gauges.bLow && Gauges.Strokes <= 1 ? 0.55f + 0.45f * FMath::Sin(float(Now) * 5.f) : 1.f;
-		const float A = Gauges.BatteryA * Pulse;
-		const FLinearColor Frame(Tone.R, Tone.G, Tone.B, 0.55f * Gauges.BatteryA);
-		Fill(Left, Top0, FrameW, Line, Frame); Fill(Left, Top0 + FrameH - Line, FrameW, Line, Frame);
-		Fill(Left, Top0, Line, FrameH, Frame); Fill(Left + FrameW - Line, Top0, Line, FrameH, Frame);
-		Fill(Left + FrameW, Top0 + (FrameH - NubH) * 0.5f, NubW, NubH, Frame);
-		for (int32 I = 0; I < Count; ++I)
+		constexpr float Scale = 1.15f, FrameW = 40.f, FrameH = 19.f;
+		const float BatLeft = Right - P(Scale * (FrameW + 3.4f)), Top0 = Floor - P(Scale * FrameH);
+		auto Q = [&](float X, float Y) { return FVector2f(BatLeft + P(Scale * X), Top0 + P(Scale * Y)); };
+		const bool bLow = Gauges.bLow;
+		const uint32 Tone = bLow ? Pal.Low : Pal.Battery;
+		const float FrameA = (bLow ? Pal.LowFrame : Pal.BatteryFrame) * Gauges.BatteryA;
+		const float Pulse = bLow && Gauges.Strokes <= 1 ? 0.55f + 0.45f * FMath::Sin(float(Now) * 5.f) : 1.f;
+		const float LitA = (bLow ? Pal.LowOn : Pal.BatteryOn) * Gauges.BatteryA * Pulse, GhostA = (bLow ? Pal.LowGhost : Pal.BatteryGhost) * Gauges.BatteryA;
+		const float Line = FMath::Max(1.f, P(Scale * 1.3f));
+		const FVector2f FrameLo = Q(0, 0), FrameHi = Q(FrameW, FrameH);
+		// HUD-D2-20261109: a dark rim hugging the frame's lines, the nub and each stroke, strong only against a bright sky (no box)
+		const float Rim = HudBacking() * Gauges.BatteryA;
+		FHudVerts RimV(G);
+		auto Ring = [&](float X0, float Y0, float X1, float Y1, float Alpha)
+		{
+			const float Wide = P(1.2f);
+			const FVector2f Corners[4] = { FVector2f(X0 - Wide, Y0 - Wide), FVector2f(X1 + Wide, Y0 - Wide), FVector2f(X1 + Wide, Y1 + Wide), FVector2f(X0 - Wide, Y1 + Wide) };
+			RimV.Poly(Corners, FLinearColor(0, 0, 0, Alpha * Rim));
+		};
+		if (Rim > 0.01f)
+		{
+			Ring(FrameLo.X, FrameLo.Y, FrameHi.X, FrameLo.Y + Line, 0.4f); Ring(FrameLo.X, FrameHi.Y - Line, FrameHi.X, FrameHi.Y, 0.4f);
+			Ring(FrameLo.X, FrameLo.Y + Line, FrameLo.X + Line, FrameHi.Y - Line, 0.4f); Ring(FrameHi.X - Line, FrameLo.Y + Line, FrameHi.X, FrameHi.Y - Line, 0.4f);
+		}
+		Fill(FrameLo.X, FrameLo.Y, FrameHi.X - FrameLo.X, Line, C(Tone, FrameA)); Fill(FrameLo.X, FrameHi.Y - Line, FrameHi.X - FrameLo.X, Line, C(Tone, FrameA));
+		Fill(FrameLo.X, FrameLo.Y + Line, Line, FrameHi.Y - FrameLo.Y - 2.f * Line, C(Tone, FrameA)); Fill(FrameHi.X - Line, FrameLo.Y + Line, Line, FrameHi.Y - FrameLo.Y - 2.f * Line, C(Tone, FrameA));
+		const FVector2f N0 = Q(FrameW - 0.6f + 1.3f, FrameH * 0.5f - 4.2f), N1 = Q(FrameW + 3.4f, FrameH * 0.5f + 4.2f);
+		if (Rim > 0.01f) Ring(N0.X, N0.Y, N1.X, N1.Y, 0.4f);
+		Fill(N0.X, N0.Y, N1.X - N0.X, N1.Y - N0.Y, C(Tone, FrameA));
+		FHudVerts Glow(G), Strokes(G);
+		constexpr float SegW = 5.4f, SegGap = 1.75f, Skew = 1.6f, SegTop = 3.4f, SegBot = FrameH - 3.4f;
+		float X = 3.6f;
+		for (int32 I = 0; I < S47HudGauges::BatteryStrokes; ++I, X += SegW + SegGap)
 		{
 			const bool bLit = I < Gauges.Strokes;
-			Fill(Left + Pad + I * (StrokeW + StrokeGap), Top0 + Pad, StrokeW, StrokeH, FLinearColor(Tone.R, Tone.G, Tone.B, (bLit ? 0.85f * A : 0.12f * Gauges.BatteryA)));
+			const FVector2f Pts[4] = { Q(X + Skew, SegTop), Q(X + Skew + SegW, SegTop), Q(X + SegW, SegBot), Q(X, SegBot) };
+			Strokes.Poly(Pts, C(Tone, bLit ? LitA : GhostA));
+			if (Rim > 0.01f)
+			{
+				const FVector2f Dim4[4] = { Q(X + Skew - 1.f, SegTop - 1.f), Q(X + Skew + SegW + 1.f, SegTop - 1.f), Q(X + SegW + 1.f, SegBot + 1.f), Q(X - 1.f, SegBot + 1.f) };
+				RimV.Poly(Dim4, FLinearColor(0, 0, 0, (bLit ? 0.4f : 0.12f) * Rim));
+			}
+			if (bLit)
+			{
+				const FVector2f Halo[4] = { Q(X + Skew - 0.7f, SegTop - 0.7f), Q(X + Skew + SegW + 0.7f, SegTop - 0.7f), Q(X + SegW + 0.7f, SegBot + 0.7f), Q(X - 0.7f, SegBot + 0.7f) };
+				Glow.Poly(Halo, C(Tone, 0.22f * LitA));
+			}
 		}
+		RimV.Draw(Out, Layer - 1);   // (OnPaint leaves a layer under the gauges for it)
+		Glow.Draw(Out, Layer);
+		Strokes.Draw(Out, Layer);
 	}
-	// the radio line: the channel and the frequency in small type, a thin rule under it and a short wave for the signal; it sits
-	// above the battery when that is showing
+	// the radio line, only while somebody sends: who it is in small type, and a short wave for the signal; over the battery when that
+	// is showing. CB 19 or WALKIE 1 · DALE, both in the palette's radio colour: the words tell them apart.
 	if (Gauges.RadioA > 0.f && Gauges.Radio != 0)
 	{
-		// CB-WALKIE-20261108: the CB in its amber, the walkie (Dale's) in a green of its own, with its channel and TX or CALL
 		const bool bWalkie = Gauges.Radio != 1;
-		const FString Words = bWalkie ? S47HudGauges::WalkieLine(Gauges.Channel, Gauges.Mode) : S47HudGauges::CbLine();
-		const FLinearColor Tint = bWalkie ? S47HudGauges::WalkieTint() : FLinearColor(1.f, 0.69f, 0.32f, 1.f);
-		const FLinearColor TextTint = bWalkie ? FLinearColor(0.62f, 0.78f, 0.66f, 1.f) : FLinearColor(0.56f, 0.54f, 0.49f, 1.f);
-		const float Calling = bWalkie && Gauges.Mode == 2 ? 0.6f + 0.4f * FMath::Abs(FMath::Sin(float(Now) * 4.f)) : 1.f;
-		const FSlateFontInfo Font = Term(18.f, 1.f);
-		const float WordsW = FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Words, Font).X;
-		const float WaveW = P(64.f), WaveH = P(14.f), Gap = P(10.f);
-		const float LineBottom = Floor - Gauges.BatteryA * P(32.f);
-		const float MidY = LineBottom - P(10.f);
-		const float Left = Right - WaveW - Gap - WordsW;
-		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(WordsW + P(8.f), P(22.f)), FSlateLayoutTransform(FVector2f(Left, MidY - P(11.f)))), Words, Font, ESlateDrawEffect::None, FLinearColor(TextTint.R, TextTint.G, TextTint.B, 0.9f * Gauges.RadioA * Calling));
-		Fill(Left, LineBottom, Right - Left, FMath::Max(1.f, P(1.f)), FLinearColor(Tint.R, Tint.G, Tint.B, 0.22f * Gauges.RadioA));
+		const FString Words = bWalkie ? S47HudGauges::WalkieLine(Gauges.Channel, Gauges.Who) : S47HudGauges::CbLine();
+		const float Calling = bWalkie && Gauges.bCalling ? 0.6f + 0.4f * FMath::Abs(FMath::Sin(float(Now) * 4.f)) : 1.f;
+		const float WaveW = P(46.f), WaveH = P(11.f);
+		const float MidY = Floor - P(7.f) - Gauges.BatteryA * P(28.f);
+		HudTextAt(Out, Layer, G, Words, Term(18.f, 1.2f), FVector2f(Right - WaveW - P(12.f), MidY + P(5.f)), 1.f, C(Pal.Radio, Pal.RadioText * Gauges.RadioA * Calling));
 		TArray<FVector2f> Points;
-		constexpr int32 Samples = 28;
+		constexpr int32 Samples = 36;
 		for (int32 I = 0; I <= Samples; ++I)
 		{
-			const double X = double(I) / Samples;
-			Points.Add(FVector2f(Right - WaveW + float(X) * WaveW, MidY - float(S47HudGauges::Wave(X, Now * 6.0, Gauges.Strength)) * WaveH * 0.5f));
+			const double Along = double(I) / Samples;
+			Points.Add(FVector2f(Right - WaveW + float(Along) * WaveW, MidY - float(S47HudGauges::Wave(Along, Now * 6.0, Gauges.Strength)) * WaveH * 0.5f));
 		}
-		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, FLinearColor(Tint.R, Tint.G, Tint.B, 0.8f * Gauges.RadioA), true, FMath::Max(1.f, P(1.4f)));
+		FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Points, ESlateDrawEffect::None, C(Pal.Radio, Pal.RadioWave * Gauges.RadioA), true, FMath::Max(1.f, P(1.3f)));
 	}
+	// SAVE-SARO-20261108: LOG FILED when the autosave on leaving SARO is written, in the CB's amber in a thin stamped frame, over the
+	// radio line and the battery when they are showing; a few seconds, then gone (S47HudGauges::FiledAlpha)
+	const float StampA = Gauges.bShown && Gauges.FiledT >= 0.f ? float(S47HudGauges::FiledAlpha(Gauges.FiledT)) : 0.f;
+	if (StampA > 0.f && !Gauges.Filed.IsEmpty())
+	{
+		const FSlateFontInfo StampFont = Term(20.f, 2.f);
+		const float StampTextW = FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Gauges.Filed, StampFont).X;
+		const float StampPad = P(8.f), StampH = P(26.f), StampEdge = FMath::Max(1.f, P(1.2f));
+		const float StampBottom = Floor - Gauges.BatteryA * P(26.f) - Gauges.RadioA * P(24.f) - P(4.f);
+		const float StampW = StampTextW + 2.f * StampPad, StampLeft = Right - StampW, StampTop = StampBottom - StampH;
+		const FLinearColor StampInk(1.f, 0.69f, 0.32f, 0.6f * StampA);
+		Fill(StampLeft, StampTop, StampW, StampEdge, StampInk); Fill(StampLeft, StampBottom - StampEdge, StampW, StampEdge, StampInk);
+		Fill(StampLeft, StampTop, StampEdge, StampH, StampInk); Fill(Right - StampEdge, StampTop, StampEdge, StampH, StampInk);
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.92f * StampA));
+	}
+}
+
+FString SS47Hud::WatchWords() const
+{
+	// the watch's face: the seconds clock when it is set (chapter six, the warning), else the night's
+	return SecondsText.IsEmpty() ? ClockAttr.Get(FText::GetEmpty()).ToString() : SecondsText;
+}
+
+FString SS47Hud::DayWords() const
+{
+	const US47Main* M = Main();
+	if (M && M->IsFreeform() && M->Freeform && M->Mode == US47Main::EMode::Play) return S47Game::DateLine(M->Freeform->Date());
+	return M && M->Story && M->Mode == US47Main::EMode::Play ? S47Game::DayLine(M->Story->Clock()) : FString();
+}
+
+void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
+{
+	using namespace S47Game;
+	const FString Words = WatchWords();
+	if (Words.IsEmpty()) return;
+	// HUD-D-20261109 (mock hud_D_color.py clock): a VFD's seven-segment figures, 19 px tall at 1600 x 900, the dark 88:88 under them,
+	// AM and PM beside them and the day under them in the display's dot type; no panel, no frame. Its right edge 40 px in.
+	const S47HudGauges::FHudPalette& Pal = S47HudGauges::Palette();
+	const S47HudGauges::FClockFace Shown = S47HudGauges::ClockFace(Words);
+	const FVector2f S = FVector2f(G.GetLocalSize());
+	const float RightEdge = S.X - P(40.f);
+	const FLinearColor OnInk = C(Pal.Clock, Pal.ClockOn), Ghost = C(Pal.Clock, Pal.ClockGhost), DimInk = C(Pal.Clock, Pal.ClockOn * 0.7f);
+	if (!Shown.bValid)
+	{
+		// words that are no time: as they are, in the display's colour
+		HudTextAt(Out, Layer, G, Words, Term(22.f, 2.f), FVector2f(RightEdge, P(52.f)), 1.f, OnInk);
+		return;
+	}
+	constexpr float Kc = 0.42f, Slant = 0.12f;
+	constexpr float DigitH = 46.f * Kc, DigitW = 22.f * Kc, Thick = 6.2f * Kc;
+	const float SecondsW = Shown.Second >= 0 ? 22.f : 0.f;
+	const FVector2f Corner(RightEdge - P(80.f + SecondsW), P(34.f));
+	auto Pf = [](float Mx, float My) { return FVector2f(P(Mx), P(My)); };
+	FHudVerts ShadeV(G), Glow(G), Ghosts(G), Lit(G), RimV(G);
+	// HUD-D2-20261109: a dark rim round every segment, faint at night and full against a bright sky (no box)
+	const float Rim = HudBacking();
+	// a figure's segments (mockup pixels from the clock's corner): the ones present in dark, the lit ones over them with a soft
+	// glow and a little shadow under
+	auto Figure = [&](float X0, float Y0, float Size, uint8 Present, uint8 LitMask)
+	{
+		const float FigW = DigitW * Size, FigH = DigitH * Size, SegT = Thick * Size, Gap = SegT * 0.22f, HalfH = FigH * 0.5f;
+		auto ToLocal = [&](float X, float Y) { return Corner + FVector2f(P(X + (Y0 + FigH - Y) * Slant), P(Y)); };
+		// a, b, c, d, e, f, g: horizontal (y, x0, x1) or upright (x, y0, y1)
+		struct FSeg { bool bAcross; float Pos, From, To; };
+		const FSeg Segs[7] = { { true, Y0, X0, X0 + FigW }, { false, X0 + FigW, Y0, Y0 + HalfH }, { false, X0 + FigW, Y0 + HalfH, Y0 + FigH }, { true, Y0 + FigH, X0, X0 + FigW },
+			{ false, X0, Y0 + HalfH, Y0 + FigH }, { false, X0, Y0, Y0 + HalfH }, { true, Y0 + HalfH, X0, X0 + FigW } };
+		for (int32 I = 0; I < 7; ++I)
+		{
+			if (!(Present & (1 << I))) continue;
+			const FSeg& Sg = Segs[I];
+			auto HexPts = [&](float Grow, FVector2f Shift, TArray<FVector2f, TInlineAllocator<6>>& Pts)
+			{
+				const float Ht = SegT * 0.5f + Grow, From = Sg.From + Gap - Grow, To = Sg.To - Gap + Grow;
+				Pts.Reset();
+				if (Sg.bAcross)
+				{
+					for (const FVector2f& Pt : { FVector2f(From, Sg.Pos), FVector2f(From + Ht, Sg.Pos - Ht), FVector2f(To - Ht, Sg.Pos - Ht), FVector2f(To, Sg.Pos), FVector2f(To - Ht, Sg.Pos + Ht), FVector2f(From + Ht, Sg.Pos + Ht) })
+						Pts.Add(ToLocal(Pt.X, Pt.Y) + Shift);
+				}
+				else
+				{
+					for (const FVector2f& Pt : { FVector2f(Sg.Pos, From), FVector2f(Sg.Pos + Ht, From + Ht), FVector2f(Sg.Pos + Ht, To - Ht), FVector2f(Sg.Pos, To), FVector2f(Sg.Pos - Ht, To - Ht), FVector2f(Sg.Pos - Ht, From + Ht) })
+						Pts.Add(ToLocal(Pt.X, Pt.Y) + Shift);
+				}
+			};
+			TArray<FVector2f, TInlineAllocator<6>> Pts;
+			if (LitMask & (1 << I))
+			{
+				HexPts(1.4f, FVector2f::ZeroVector, Pts); RimV.Poly(Pts, FLinearColor(0, 0, 0, 0.42f * Rim));
+				HexPts(0.f, FVector2f(P(0.5f), P(1.2f)), Pts); ShadeV.Poly(Pts, FLinearColor(0, 0, 0, 0.45f * Pal.ClockOn));
+				HexPts(0.9f, FVector2f::ZeroVector, Pts); Glow.Poly(Pts, C(Pal.Clock, 0.2f * Pal.ClockOn));
+				HexPts(0.f, FVector2f::ZeroVector, Pts); Lit.Poly(Pts, OnInk);
+			}
+			else
+			{
+				HexPts(1.f, FVector2f::ZeroVector, Pts); RimV.Poly(Pts, FLinearColor(0, 0, 0, 0.12f * Rim));
+				HexPts(0.f, FVector2f::ZeroVector, Pts); Ghosts.Poly(Pts, Ghost);
+			}
+		}
+	};
+	auto Colon = [&](float X0, float Y0, float FigH, float Dot)
+	{
+		for (const float Fy : { 0.3f, 0.72f })
+		{
+			const float DotY = Y0 + FigH * Fy, SkewX = X0 + (Y0 + FigH - DotY) * Slant;
+			const FVector2f Sq[4] = { Corner + Pf(SkewX - Dot / 2, DotY - Dot / 2), Corner + Pf(SkewX + Dot / 2, DotY - Dot / 2), Corner + Pf(SkewX + Dot / 2, DotY + Dot / 2), Corner + Pf(SkewX - Dot / 2, DotY + Dot / 2) };
+			const FVector2f Ring[4] = { Sq[0] + Pf(-1.2f, -1.2f), Sq[1] + Pf(1.2f, -1.2f), Sq[2] + Pf(1.2f, 1.2f), Sq[3] + Pf(-1.2f, 1.2f) };
+			RimV.Poly(Ring, FLinearColor(0, 0, 0, 0.42f * Rim));
+			Lit.Poly(Sq, OnInk);
+		}
+	};
+	constexpr uint8 All = 0x7f, TensPresent = 0x06;
+	// a 12-hour clock: the tens of the hours can only be a 1, so that place has only its two segments
+	Figure(0.f, 0.f, 1.f, TensPresent, Shown.bAll || Shown.Hour >= 10 ? TensPresent : 0);
+	Figure(36.f * Kc, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Hour % 10));
+	Colon(72.f * Kc, 0.f, DigitH, 4.6f * Kc);
+	Figure(84.f * Kc, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Minute / 10));
+	Figure(118.f * Kc, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Minute % 10));
+	if (Shown.Second >= 0)
+	{
+		// the warning's seconds, smaller, on the figures' foot
+		constexpr float Small = 0.6f;
+		Figure(158.f * Kc, DigitH * (1.f - Small), Small, All, S47HudGauges::Segments(Shown.Second / 10));
+		Figure(158.f * Kc + 36.f * Kc * Small, DigitH * (1.f - Small), Small, All, S47HudGauges::Segments(Shown.Second % 10));
+	}
+	RimV.Draw(Out, Layer);
+	ShadeV.Draw(Out, Layer);
+	Ghosts.Draw(Out, Layer + 1);
+	Glow.Draw(Out, Layer + 1);
+	Lit.Draw(Out, Layer + 2);
+	const float Mark = 158.f * Kc + SecondsW;
+	const bool bAmLit = Shown.bAll || !Shown.bPm, bPmLit = Shown.bAll || Shown.bPm;
+	HudTextRimmed(Out, Layer + 1, G, TEXT("AM"), Term(11.f, 0.8f), Corner + Pf(Mark, 7.5f), 0.f, bAmLit ? DimInk : Ghost, bAmLit ? Rim : 0.f);
+	HudTextRimmed(Out, Layer + 1, G, TEXT("PM"), Term(11.f, 0.8f), Corner + Pf(Mark, 17.5f), 0.f, bPmLit ? DimInk : Ghost, bPmLit ? Rim : 0.f);
+	HudTextRimmed(Out, Layer + 1, G, DayWords(), Term(12.f, 0.9f), Corner + Pf(4.f, DigitH + 13.f), 0.f, C(Pal.Clock, Pal.ClockOn * 0.6f), Rim);
 }
 
 void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
@@ -594,6 +901,12 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 	// the strain's edge goes in first, under the objective, the watch and the captions
 	if (Playing() && !ModalOpen()) PaintEdge(G, Out, Layer);
 	int32 Top = SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer, Style, bParentEnabled);
+	// HUD-D-20261109: the segment clock, where the watch's panel was (gone with the HUD while a screen in the world is in use)
+	if (!SS47ScreenView::AnyWorldScreenActive())
+	{
+		PaintClock(G, Out, Top + 1);
+		Top += 3;
+	}
 	if (Vf.bOn)
 	{
 		// .viewfinder: the dark round the frame, its corners, the patch in the middle and the words
@@ -629,10 +942,10 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		Text(Vf.Hint, C.X, R.Bottom - 14 - 22, 15.f * 1.3f, Line * FLinearColor(1, 1, 1, 0.75f), true);
 		Top += 4;
 	}
-	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f)
+	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f || (Gauges.bShown && Gauges.FiledT >= 0.f))
 	{
-		PaintGauges(G, Out, Top + 1);
-		Top += 1;
+		PaintGauges(G, Out, Top + 2);
+		Top += 2;
 	}
 	if (FlashT > 0.f)
 	{

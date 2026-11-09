@@ -185,6 +185,8 @@ void US47Night::Init(US47Main* InM)
 	A.Place = [Self] { return Self.IsValid() ? (Self->M->IsFreeform() && Self->M->Freeform ? FString::Printf(TEXT("DAY %d / %s"),Self->M->Freeform->Day(),*Self->PlaceName()) : Self->PlaceName()) : FString(); };
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
 	A.RequiresLab = [Self] { return Self.IsValid() && Self->M->IsFreeform(); };
+	// ENLARGE-20261108: the darkroom's enlarger works from the negative.
+	A.Negative = [Self] { return Self.IsValid() && Self->M->IsFreeform(); };
 	A.Extra = [Self] { return Self.IsValid() && !Self->M->IsFreeform() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
 	// (ext.dishArray.cull(photoCam): Unreal culls the instances per view by itself)
 	A.Before = [Self] { if (Self.IsValid() && !Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };

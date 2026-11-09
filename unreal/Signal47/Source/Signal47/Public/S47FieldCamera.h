@@ -46,8 +46,11 @@ struct FS47SnapOptions
 	double Seed = 0;
 	int32 W = 640;
 	TFunction<void(TArray<FColor>& Raw, int32 W, int32 H)> Post;
+	// ENLARGE-20261108: render Super times as large and keep that as the negative; the print is made from it, smaller.
+	int32 Super = 1;
 };
-struct FS47Snap { TArray<FColor> Px; int32 W = 0, H = 0; double Mean = 0; bool bRendered = false; };
+// Neg: the negative (Super > 1), as rendered, without the print's grain: what an enlarger can still find in it.
+struct FS47Snap { TArray<FColor> Px; int32 W = 0, H = 0; double Mean = 0; bool bRendered = false; TArray<FColor> Neg; int32 NegW = 0, NegH = 0; };
 
 // core/FieldCamera.ts: the SARO field camera. Raising it narrows the view to a 16:10 frame; what
 // is inside the frame is exactly what the photograph records. An exposure renders the scene from

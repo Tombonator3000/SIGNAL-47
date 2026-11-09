@@ -10,6 +10,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Omen.h"
 #include "S47Soundscape.h"
 #include "S47Sky.h"
 #include "S47Story.h"
@@ -21,7 +22,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Stress, Log, All);
 
-namespace
+namespace S47StressLocal
 {
 	// how fast it rises (the time constant, seconds) and how long it takes to fall from full to nothing
 	constexpr double RiseSeconds = 3.5, FallSafeSeconds = 90, FallSeconds = 360;
@@ -29,58 +30,67 @@ namespace
 	constexpr double AfterTakenSeconds = 420, AfterTakenLevel = 0.75;
 	// nothing shows below this; the edge and the narrower view come in above it
 	constexpr double EdgeFrom = 0.15, FovFrom = 0.35, BreathFrom = 0.4;
+	// the dark and the hush together stay under the breathing: 1 - (1 - DarkMost) * (1 - HushWorry) < BreathFrom
+	constexpr double DarkLeast = 0.12, DarkMost = 0.26, HushWorry = 0.15;
 }
 
 double FS47Stress::Target(const FS47StressIn& In)
 {
 	double Calm = 1; // the chance that none of the worries holds
 	auto Worry = [&Calm](double T) { Calm *= 1.0 - FMath::Clamp(T, 0.0, 1.0); };
-	if (In.bEvent) Worry(0.85);
+	// something dangerous near, as near as it is: full on top of it, nothing at its reach (FS47Omen's own falloff)
+	if (In.Danger > 0) Worry(0.9 * FMath::Clamp(In.Danger, 0.0, 1.0));
 	const double Near = FMath::Clamp(In.Presence, 0.0, 1.0);
 	if (Near > 0) Worry(0.95 * Near * (In.bHunting ? 1.0 : In.bSeen ? 0.85 : 0.6));
-	if (In.bDark && !In.bSafe) Worry(0.3 + 0.2 * FMath::Clamp(In.Darkness, 0.0, 1.0));
-	// the silence before something (SOUNDSCAPE-20261108): felt a little, even with nothing to see
-	if (In.bHush) Worry(0.25);
+	if (In.bDark && !In.bSafe) Worry(FMath::Lerp(S47StressLocal::DarkLeast, S47StressLocal::DarkMost, FMath::Clamp(In.Darkness, 0.0, 1.0)));
+	// the silence (SOUNDSCAPE-20261108): felt a little, even with nothing to see; a gust does it too
+	if (In.bHush) Worry(S47StressLocal::HushWorry);
 	if (In.bTaken) Worry(1.0);
-	else if (In.SinceTaken < AfterTakenSeconds) Worry(AfterTakenLevel * (1.0 - FMath::Max(0.0, In.SinceTaken) / AfterTakenSeconds));
+	else if (In.SinceTaken < S47StressLocal::AfterTakenSeconds) Worry(S47StressLocal::AfterTakenLevel * (1.0 - FMath::Max(0.0, In.SinceTaken) / S47StressLocal::AfterTakenSeconds));
 	return 1.0 - Calm;
 }
 
 double FS47Stress::Advance(double Cur, double To, double Dt, bool bSafe)
 {
 	if (!FMath::IsFinite(Dt) || Dt <= 0) return Cur;
-	if (To > Cur) return FMath::Min(To, Cur + (To - Cur) * (1.0 - FMath::Exp(-Dt / RiseSeconds)));
-	return FMath::Max(To, Cur - Dt / (bSafe ? FallSafeSeconds : FallSeconds));
+	if (To > Cur) return FMath::Min(To, Cur + (To - Cur) * (1.0 - FMath::Exp(-Dt / S47StressLocal::RiseSeconds)));
+	return FMath::Max(To, Cur - Dt / (bSafe ? S47StressLocal::FallSafeSeconds : S47StressLocal::FallSeconds));
 }
 
 double FS47Stress::VignetteAlpha(double Strain)
 {
-	return 0.72 * FMath::SmoothStep(EdgeFrom, 1.0, Strain);
+	return 0.72 * FMath::SmoothStep(S47StressLocal::EdgeFrom, 1.0, Strain);
 }
 
 double FS47Stress::VignetteReachOf(double Strain)
 {
-	return Strain <= EdgeFrom ? 0.0 : FMath::Lerp(0.12, 0.34, FMath::SmoothStep(EdgeFrom, 1.0, Strain));
+	return Strain <= S47StressLocal::EdgeFrom ? 0.0 : FMath::Lerp(0.12, 0.34, FMath::SmoothStep(S47StressLocal::EdgeFrom, 1.0, Strain));
 }
 
 double FS47Stress::FovScaleOf(double Strain)
 {
-	return 1.0 - 0.10 * FMath::SmoothStep(FovFrom, 1.0, Strain);
+	return 1.0 - 0.10 * FMath::SmoothStep(S47StressLocal::FovFrom, 1.0, Strain);
 }
 
 double FS47Stress::BreathGap(double Strain)
 {
-	return Strain < BreathFrom ? 0.0 : FMath::Lerp(6.5, 1.6, FMath::SmoothStep(BreathFrom, 1.0, Strain));
+	return Strain < S47StressLocal::BreathFrom ? 0.0 : FMath::Lerp(6.5, 1.6, FMath::SmoothStep(S47StressLocal::BreathFrom, 1.0, Strain));
 }
 
 double FS47Stress::BreathStrength(double Strain)
 {
-	return Strain < BreathFrom ? 0.0 : 0.12 + 0.5 * FMath::SmoothStep(BreathFrom, 1.0, Strain);
+	return Strain < S47StressLocal::BreathFrom ? 0.0 : 0.12 + 0.5 * FMath::SmoothStep(S47StressLocal::BreathFrom, 1.0, Strain);
+}
+
+double FS47Stress::BreathReach(double Strain)
+{
+	// near panic only: up to three and a half metres, in the open (FS47RoswellBrain takes less through a wall)
+	return Strain < 0.6 ? 0.0 : FMath::Lerp(1.5, 3.5, FMath::SmoothStep(0.6, 1.0, Strain));
 }
 
 void FS47Stress::Reset()
 {
-	S = 0; ReadIn = 0; BreathIn = 2; SinceTaken = 1e9; bWasTaken = false; Inputs = FS47StressIn();
+	S = 0; ReadIn = 0; BreathIn = 2; SinceTaken = 1e9; SinceBreath = 1e9; bWasTaken = false; Inputs = FS47StressIn();
 	if (M && M->Player) M->Player->FovScale = 1.f;
 }
 
@@ -88,8 +98,9 @@ FS47StressIn FS47Stress::Read()
 {
 	FS47StressIn R;
 	if (!M) return R;
-	// a dangerous event near: the director's reason the player cannot lie down is exactly "something is close or after them"
-	if (M->IsFreeform() && M->Freeform && M->Freeform->Director) R.bEvent = !M->Freeform->Director->RestBlock().IsEmpty();
+	// something dangerous near the player, by how near (FS47Omen: real sources only, at the eyes); not that something is going on
+	// somewhere in the same area (the Director's rest block knew no distance)
+	if (M->IsFreeform() && M->Omen.IsValid()) R.Danger = M->Omen->Level();
 	if (M->FieldRadio)
 	{
 		R.Presence = M->FieldRadio->PresenceLevel();
@@ -127,14 +138,15 @@ void FS47Stress::Step(double Dt)
 	if (!bHeld && FMath::IsFinite(Dt) && Dt > 0)
 	{
 		if (SinceTaken < 1e8) SinceTaken += Dt;
+		if (SinceBreath < 1e8) SinceBreath += Dt;
 		ReadIn -= Dt;
 		if (ReadIn <= 0) { ReadIn = 0.25; Inputs = Read(); }
 		else { Inputs.SinceTaken = SinceTaken; }
 		const double Was = S;
-		S = FMath::Clamp(Advance(S, Target(Inputs), Dt, Inputs.bSafe && !Inputs.bEvent && Inputs.Presence <= 0), 0.0, 1.0);
+		S = FMath::Clamp(Advance(S, Target(Inputs), Dt, Inputs.bSafe && Inputs.Danger <= 0.02 && Inputs.Presence <= 0), 0.0, 1.0);
 		if (bLog && (int32(Was * 10) != int32(S * 10)))
 		{
-			UE_LOG(LogS47Stress, Display, TEXT("S47: stress %.2f (event %d, presence %.2f, dark %d, taken %d, safe %d)"), S, Inputs.bEvent, Inputs.Presence, Inputs.bDark, Inputs.bTaken, Inputs.bSafe);
+			UE_LOG(LogS47Stress, Display, TEXT("S47: stress %.2f (danger %.2f, presence %.2f, dark %d, hush %d, taken %d, safe %d)"), S, Inputs.Danger, Inputs.Presence, Inputs.bDark, Inputs.bHush, Inputs.bTaken, Inputs.bSafe);
 		}
 		Breathe(Dt);
 	}
@@ -151,7 +163,7 @@ void FS47Stress::Breathe(double Dt)
 	if (BreathIn > 0) return;
 	BreathIn = Gap * FMath::FRandRange(0.85f, 1.15f);
 	const double K = BreathStrength(S);
-	++BreathCount;
+	++BreathCount; SinceBreath = 0;
 	if (bLog)
 	{
 		UE_LOG(LogS47Stress, Display, TEXT("S47: stress breath %d at %.2f (strength %.2f)"), BreathCount, S, K);
@@ -173,21 +185,27 @@ bool FS47Stress::SelfTest(TArray<FString>& Lines)
 	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s stress: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), What)); bOk &= bCond; };
 	FS47StressIn In;
 	Check(Target(In) == 0, TEXT("a calm place has no strain to head for"));
-	In.bEvent = true; const double Event = Target(In);
+	In.Danger = 1; const double Event = Target(In);
 	In = FS47StressIn(); In.Presence = 1; In.bHunting = true; const double Hunter = Target(In);
 	In.bHunting = false; In.bSeen = true; const double Seen = Target(In);
 	In.bSeen = false; const double Heard = Target(In);
-	Check(Event > 0.8 && Hunter > Seen && Seen > Heard && Heard > 0.5 && Hunter < 1, TEXT("a dangerous event or a figure close by raises it; a hunting one more than a seen one, a seen one more than a felt one"));
+	Check(Event > 0.8 && Hunter > Seen && Seen > Heard && Heard > 0.5 && Hunter < 1, TEXT("something dangerous or a figure close by raises it; a hunting one more than a seen one, a seen one more than a felt one"));
+	In = FS47StressIn(); In.Danger = 0.15; const double FarOff = Target(In);
+	In.Danger = 0; const double Nothing = Target(In);
+	Check(FarOff < S47StressLocal::BreathFrom && Nothing == 0 && Event > S47StressLocal::BreathFrom, TEXT("something dangerous far off is felt a little, never as hard breath; only near is"));
 	In = FS47StressIn(); In.Presence = 0.5; const double Half = Target(In);
 	In.Presence = 0.2; const double Far = Target(In);
 	Check(Far < Half && Far > 0, TEXT("a figure further off strains less"));
 	In = FS47StressIn(); In.bDark = true; In.Darkness = 1; const double Dark = Target(In);
 	In.Darkness = 0.1; const double Dusk = Target(In);
-	Check(Dark > Dusk && Dusk > 0.25 && Dark < 0.6, TEXT("the dark outside without a lamp is a steady unease, less than any danger"));
+	Check(Dark > Dusk && Dusk > 0.1 && Dark < S47StressLocal::BreathFrom && BreathGap(Dark) == 0, TEXT("the dark outside without a lamp is a small unease, under the breathing"));
 	In.bSafe = true; Check(Target(In) == 0, TEXT("indoors at SARO the dark is no worry"));
 	In = FS47StressIn(); In.bHush = true; const double Hush = Target(In);
-	Check(Hush > 0.2 && Hush < Dusk && Hush < Event, TEXT("the night going quiet is a small unease, less than the dark or a danger"));
-	In = FS47StressIn(); In.bEvent = true; In.Presence = 0.8; In.bDark = true; In.bTaken = true;
+	Check(Hush > 0.1 && Hush < Dark && Hush < Event, TEXT("the night going quiet is a small unease, less than the dark or a danger"));
+	In.bDark = true; In.Darkness = 1;
+	Check(Target(In) < S47StressLocal::BreathFrom && BreathGap(Target(In)) == 0, TEXT("in the dark with the crickets stopped it is uneasy, but the breathing waits for something near"));
+	Check(BreathReach(0.5) == 0 && BreathReach(0.6) > 0 && BreathReach(1) <= 3.5 && BreathReach(1) > BreathReach(0.7), TEXT("hard breathing near panic is heard a few metres off, no more"));
+	In = FS47StressIn(); In.Danger = 1; In.Presence = 0.8; In.bDark = true; In.bTaken = true;
 	Check(Target(In) <= 1.0 && Target(In) >= Event, TEXT("worries add up as chances do and never pass 1"));
 	In = FS47StressIn(); In.bTaken = true; Check(Target(In) == 1.0, TEXT("being taken is the most there is"));
 	In = FS47StressIn(); In.SinceTaken = 0; const double Fresh = Target(In);
@@ -219,6 +237,6 @@ bool FS47Stress::SelfTest(TArray<FString>& Lines)
 	Check(BreathGap(1) < BreathGap(0.5) && BreathGap(1) > 1.0 && BreathStrength(1) > BreathStrength(0.5) && BreathStrength(1) < 1.0, TEXT("the breathing comes faster and heavier as the strain grows"));
 	// the object, with no game behind it: nothing happens and nothing breaks
 	FS47Stress Quiet(nullptr); Quiet.Step(1.0); Quiet.Reset();
-	Check(Quiet.Level() == 0 && Quiet.Vignette() == 0 && Quiet.Breaths() == 0, TEXT("without a game it stays calm"));
+	Check(Quiet.Level() == 0 && Quiet.Vignette() == 0 && Quiet.Breaths() == 0 && Quiet.HeardWithin() == 0, TEXT("without a game it stays calm"));
 	return bOk;
 }

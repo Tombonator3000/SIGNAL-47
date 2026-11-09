@@ -20,17 +20,26 @@ struct FS47RhythmEvent
  ES47RhythmLevel Level=ES47RhythmLevel::Hint;
  ES47RhythmHours Hours=ES47RhythmHours::Any;
  double From=0,To=0,PerNight=-1;
+ // draw.at: the hours of the night it is drawn in, 19 to 30 (past midnight over 24); -1: the system's own.
+ double DrawFrom=-1,DrawTo=-1;
  int32 FromDay=1,CoolMin=-1,CoolMax=-1,MinNights=0;
  TArray<FString> Areas;
  TArray<FName> Needs;
 };
+// The build-up over the game (Tom's critics, 8 November: the chances were flat from the first night to the thirtieth): one row a week,
+// from its day. What each level of a night event is worth that week (a factor on its per_night), how likely the night's one
+// danger slot is (FS47Happenings), and how near things come (a factor on the distances they keep). The last row holds to the end.
+struct FS47RhythmWeek{int32 FromDay=1;float Hint=1,Observation=1,Presence=1,Danger=.35f;double Near=1;};
 struct FS47RhythmData
 {
  // RestDanger: a pause after a danger, not the rest of the night (Tom's critics, 8 November: was 480 s, two hours of the clock).
  double Earliest=1,Latest=3,End=6,DevFixed=2,TickMin=240,TickMax=420,RestDanger=170,RestOther=45,RestTaken=1800;
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
  TArray<FS47RhythmEvent> Events;
+ TArray<FS47RhythmWeek> Weeks; // in order of FromDay; empty: every level at its own chance, everything as near as it is
  const FS47RhythmEvent* Find(FName Id) const{return Events.FindByPredicate([Id](const FS47RhythmEvent& E){return E.Id==Id;});}
+ const FS47RhythmWeek& Week(int32 Day) const;
+ float Worth(ES47RhythmLevel Level,int32 Day) const;
 };
 
 // Everything May looks at, read before the question. Pure data, so that the same answer can be had from a test.
@@ -81,8 +90,11 @@ public:
  void Ended(FName Id,bool bMet=true);
  // The clock of the last start of anything, for those that keep their own distance from it too (FS47Happenings' unease).
  double LastStart() const{return LastStartClock;}
- // The night's chance from the file, with the code's own number if the file does not have it.
- float PerNight(FName Id,float Otherwise) const;
+ // The night's chance from the file, with the code's own number if the file does not have it. With a day, a night event's chance
+ // is also worth what its level is worth that week (the curve), never above one.
+ float PerNight(FName Id,float Otherwise,int32 Day=0) const;
+ // The hours of the night it is drawn in (draw.at), 19 to 30; From and To untouched when the file has none.
+ bool DrawHours(FName Id,double& From,double& To) const;
  bool NeedHolds(FName Name) const;
  // Watches who starts while the panel or a log is on, for the log: what started, and what the rules would have said just before it.
  void Observe(double Dt);

@@ -619,7 +619,7 @@ TFunction<void()> SS47Talk::CharacterReadingControls(const TSharedRef<SVerticalB
 	if (!Speech.Num()) return nullptr;
 	TSharedRef<FVoiceBox> V = MakeShared<FVoiceBox>();
 	V->Parody = Voice == TEXT("bacall") && Speech.ContainsByPredicate([](const FS47DialogueLine& L) { return L.Who == TEXT("THE LINE"); })
-		? FString(TEXT("Synthetic Lauren Bacall / Vincent Price parodies")) : FString::Printf(TEXT("Synthetic %s parody"), *FS47NpcDialogue::Label(Voice));
+		? FString(TEXT("Nora Vega's and the recorded line's voices")) : FString::Printf(TEXT("%s's voice"), *FS47NpcDialogue::Label(Voice));
 	V->bDisabled = !Reader->Available(Voice, Lines);
 	const TWeakPtr<FS47NpcDialogue> R = Reader;
 	TFunction<void(ES47DialogueState)> Update = [V](ES47DialogueState S)

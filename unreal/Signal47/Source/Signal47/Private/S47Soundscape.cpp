@@ -191,7 +191,7 @@ void FS47Soundscape::Hook()
 {
 	if (bHooked || !M || !M->Audio || !M->Audio->Night) return;
 	FS47Ambience& Night = *M->Audio->Night;
-	Night.bQuietSpells = false;
+	// (the night's own quiet spells stay in: a lull in the crickets is ordinary out here, and a silence is no sure sign, M2 critic)
 	TWeakPtr<FS47Soundscape> Weak = AsShared();
 	Night.PlaceFor = [Weak](const FString& Kind, const FVector& Listener, FVector& Out)
 	{
@@ -222,28 +222,41 @@ void FS47Soundscape::Reset()
 void FS47Soundscape::StepHush(double Dt)
 {
 	FS47Ambience& Night = *M->Audio->Night;
-	bool bWant = DevHushLeft > 0;
+	bool bWant = DevHushLeft > 0, bReal = DevHushLeft > 0;
+	FVector From = FVector::ZeroVector;
 	DevHushLeft = FMath::Max(0.0, DevHushLeft - Dt);
+	const FVector Eye = M->Player ? S47Three::ToThree(M->Player->EyeUE()) : FVector::ZeroVector;
 	if (M->Omen && M->Player)
 	{
-		const FVector Eye = S47Three::ToThree(M->Player->EyeUE());
 		for (const FS47OmenSource& Src : M->Omen->Sources())
 		{
-			if (Src.bResidual || Src.Severity < S47SoundscapeLocal::HushSeverity) continue;
+			if (Src.bResidual || Src.Severity < S47SoundscapeLocal::HushSeverity || M->Omen->Misses(Src.Id, ES47OmenChannel::Hush)) continue;
 			const double Flat = FVector2D::Distance(FVector2D(Eye.X, Eye.Z), FVector2D(Src.At.X, Src.At.Z));
-			if (Flat < HushReach(Src.Reach)) { bWant = true; break; }
+			if (Flat < HushReach(Src.Reach)) { bWant = true; bReal = true; From = Src.At; break; }
 		}
+	}
+	// A gust: the crickets stop for it all the same, at once, and from the way the wind comes (FS47Omen's ordinary causes).
+	double GustFrom = 0;
+	const double Gust = M->Omen && !bWant ? M->Omen->Ordinary(ES47Ordinary::Gust, &GustFrom) : 0.0;
+	if (Gust > 0)
+	{
+		bWant = true;
+		From = Eye + FVector(FMath::Sin(GustFrom), 0, -FMath::Cos(GustFrom)) * 120.0;
 	}
 	if (bWant) HushHold = S47SoundscapeLocal::HushHoldSeconds;
 	if (bWant && !bHush)
 	{
-		// At once: not a fade. That is the warning.
+		// At once: not a fade. That is the warning, or the wind.
 		bHush = true; ++HushCount; HushAgain = 1.2;
+		if (bReal) ++RealHushCount;
 		Night.Hush(4, 0.0, 0.07, 4);
 		Night.Wires(FVector::ZeroVector, 0);
+		// a strong gust is heard coming through; a weak one is not, and then it is a silence like any other
+		if (!bReal && Gust > 0.65 && M->Audio) M->Audio->Sfx(TEXT("gust"), FS47Sound{ .Gain = float(0.25 + 0.3 * Gust), .Lp = 1400.f });
+		if (M->Omen && M->Space == TEXT("yard")) M->Omen->Felt(ES47OmenChannel::Hush, TEXT("the crickets stopped all at once"), bReal, From, true);
 		if (bLog)
 		{
-			UE_LOG(LogS47Soundscape, Display, TEXT("S47: soundscape hush %d"), HushCount);
+			UE_LOG(LogS47Soundscape, Display, TEXT("S47: soundscape hush %d (%s)"), HushCount, bReal ? TEXT("something real") : TEXT("a gust"));
 		}
 	}
 	else if (bHush && bWant)

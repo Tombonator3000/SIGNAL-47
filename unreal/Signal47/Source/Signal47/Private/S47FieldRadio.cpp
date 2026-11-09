@@ -99,7 +99,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=0; LastCue=-1; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
  HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
  if(Root) Root.SetVisible(false);
@@ -176,8 +176,9 @@ bool FS47FieldRadio::Message(const FString& Text)
  }
  const bool bHeard=M->Audio&&Sound.Message(M->Audio);
  if(bHeard)S47FieldRadioSet::Roger(M->Audio,S47FieldRadioSet::MessageSeconds);
- // Anything but Dale is the set itself breaking up, told as a sound in brackets: nobody else talks on the walkie.
- if(M->UI)M->UI->Toast(Head(Chan,Who)+TEXT(": ")+(Who.IsEmpty()?TEXT("(")+Said+TEXT(")"):Said),FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
+ // Anything but Dale is the set itself breaking up: it is only heard (the broken voice and the squelch), never told in words.
+ // A caption is for words somebody says.
+ if(M->UI&&!Who.IsEmpty())M->UI->Toast(Head(Chan,Who)+TEXT(": ")+Said,FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
  UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d: %s"),Chan,bHeard,*Text);
  return true;
 }
@@ -212,7 +213,7 @@ void FS47FieldRadio::NextChannel()
   {
    if(!M||Chan!=2||!M->Freeform||!M->Freeform->Predecessor)return;
    const FString OnBand=M->Freeform->Predecessor->ServiceBand();
-   if(!OnBand.IsEmpty()&&M->UI){M->UI->Toast(Head(2)+TEXT(": (")+OnBand+TEXT(")"),8);SinceTouch=0;}
+   if(!OnBand.IsEmpty())Carrier(OnBand);
   };
   ThenIn=1.4;bBandPending=true;
  }
@@ -242,16 +243,32 @@ bool FS47FieldRadio::PressTalk()
  Then=[this]{Reply();};ThenIn=FMath::FRandRange(1.9f,3.f);
  return true;
 }
+FS47FieldRadio::EBack FS47FieldRadio::BackFor(bool bSomethingNear,float Roll)
+{
+ // Neither is sure: a far car on 49 MHz sounds like something under the hiss, and something near does not always answer.
+ const float Voice=bSomethingNear?.7f:.2f;
+ return FMath::Clamp(Roll,0.f,1.f)<Voice?EBack::Voice:EBack::Squelch;
+}
+void FS47FieldRadio::Carrier(const FString& OnBand)
+{
+ // An open carrier: the squelch held open, a thin steady whine under it. What the player makes of it is the band's own reading.
+ if(M&&M->Audio){S47FieldRadioSet::Squelch(M->Audio,0,2.4,.05);M->Audio->Beep(1020.f,2.2f,.010f,.05f,TEXT("sine"));}
+ if(M&&M->UI)M->UI->Toast(Head(2)+TEXT(": ")+OnBand,8);
+ SinceTouch=0;
+}
 void FS47FieldRadio::Reply()
 {
  if(!M||!bOwned||bLeftOut)return;
  SinceTouch=0;
- // Something near is breaking up the set: what comes back is not Dale, and not words.
- if(LastRadio>.05)
+ // Something near is breaking up the set: what comes back is not Dale. Only heard, never told; and not always.
+ if(RealNear>.05)
  {
-  ++MessageCount;SinceLoud=0;
-  if(M->Audio)Sound.Message(M->Audio);
-  if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (something comes back under the hiss. Not words.)"),6);
+  if(BackFor(true,FMath::FRand())==EBack::Voice)
+  {
+   ++MessageCount;SinceLoud=0;
+   if(M->Audio)Sound.Message(M->Audio);
+  }
+  else if(M->Audio)S47FieldRadioSet::Squelch(M->Audio,0,.5,.1);
   UE_LOG(LogTemp,Display,TEXT("S47: walkie called on channel %d with a presence near: not Dale"),Chan);
   return;
  }
@@ -264,11 +281,11 @@ void FS47FieldRadio::Reply()
  if(Chan==2&&Dale)
  {
   const FString OnBand=Dale->ServiceBand();
-  if(!OnBand.IsEmpty()){if(M->UI)M->UI->Toast(Head(2)+TEXT(": (")+OnBand+TEXT(")"),8);return;}
+  if(!OnBand.IsEmpty()){Carrier(OnBand);return;}
  }
- // Nobody: the squelch opens on nothing, and shuts again.
- if(M->Audio)S47FieldRadioSet::Squelch(M->Audio,0,.5,.1);
- if(M->UI)M->UI->Toast(Head(Chan)+TEXT(": (nobody comes back: only the hiss)"),4);
+ // Nobody: the squelch opens on nothing and shuts again; now and then a far voice on the channel that is nobody's business.
+ if(BackFor(false,FMath::FRand())==EBack::Voice&&M->Audio&&Sound.Message(M->Audio)){++MessageCount;SinceLoud=0;}
+ else if(M->Audio)S47FieldRadioSet::Squelch(M->Audio,0,.5,.1);
  UE_LOG(LogTemp,Display,TEXT("S47: walkie called on channel %d: nobody"),Chan);
 }
 bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunction<void()> OnMissed)
@@ -320,7 +337,7 @@ void FS47FieldRadio::StepHand(double Dt)
   ThenIn-=Dt;
   if(ThenIn<0){const TFunction<void()> Do=MoveTemp(Then);Then=nullptr;bBandPending=false;if(Do)Do();}
  }
- // A report that waited: said by the first CB or the walkie on Dale's channel, or let go after a while (CB-WALKIE-20261108).
+ // A report that waited: said by Dale on the walkie once he is free and the set is on his channel, or let go after a while.
  for(FHeldTip& Held:HeldTips)Held.Age+=Dt;
  HeldTips.RemoveAll([](const FHeldTip& Held){return Held.Age>HeldTipSeconds;});
  if(!HeldTips.IsEmpty()&&ThenIn<0&&TxLeft<=0&&Deliver(HeldTips[0].Tip))HeldTips.RemoveAt(0);
@@ -360,7 +377,7 @@ void FS47FieldRadio::Report(US47Main* M,const FString& Tip)
 {
  if(!M||Tip.IsEmpty())return;
  if(M->FieldRadio.IsValid()&&M->FieldRadio->Deliver(Tip))return;
- // Nobody to hear it on yet: it waits for the truck's CB, the base set, or Dale on the walkie. A CB is never heard on foot.
+ // Nobody to hear it on yet: it waits for Dale on the walkie, free and on his channel.
  if(!M->FieldRadio.IsValid())return;
  auto& Held=M->FieldRadio->HeldTips;
  if(Held.Num()>=3)Held.RemoveAt(0);
@@ -370,16 +387,9 @@ void FS47FieldRadio::Report(US47Main* M,const FString& Tip)
 bool FS47FieldRadio::Deliver(const FString& Tip)
 {
  if(!M||M->ModalOpen())return false;
- if(CbAtHand(M))
- {
-  if(CbSay(M,{Tip},TEXT("man"))){UE_LOG(LogTemp,Display,TEXT("S47: report over the CB: %s"),*Tip);return true;}
-  // Another call on the channel: after it. No sound to play it with: the words, at the CB.
-  if(M->CB.IsValid()&&M->CB->bBusy)return false;
-  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+Tip,7);
-  UE_LOG(LogTemp,Display,TEXT("S47: report over the CB, words only: %s"),*Tip);
-  return true;
- }
- // Away from any CB: the county has rung it through to Dale's bench, and he passes it on in his own words, on his channel.
+ // The county has rung it through to Dale's bench, and he passes it on in his own words, on his channel. A summary like that is
+ // never read out on the CB (the CB is the callers' own voices, FS47Happenings::Cb): while Dale is busy or the walkie is off his
+ // channel, it waits for him.
  FS47Predecessor* Dale=M->IsFreeform()&&M->Freeform?M->Freeform->Predecessor.Get():nullptr;
  const FString Relay=Dale?Dale->RelayLine(Tip):FString();
  if(Relay.IsEmpty()||HailLeft>0||!Message(Relay))return false;
@@ -493,8 +503,11 @@ void FS47FieldRadio::Step(double Dt)
   Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
   Visible|=K>.04 && A.bVisible; Hunting|=K>.04 && A.bHunting;
  }
- // Freeform: the set hears everything near the way it hears a body (GEAR-FLICKER-20261108), not only the bodies above.
+ // Freeform: the set hears everything near the way it hears a body (GEAR-FLICKER-20261108), not only the bodies above; and what
+ // any set hears out here (a spell of open squelch), so that the hiss alone says nothing sure.
  if(M->IsFreeform()) Heard=FMath::Max(Heard,GearNoise);
+ RealNear=Heard;
+ if(M->IsFreeform()) Heard=FMath::Max(Heard,OrdHiss);
  LastLevel=Level; LastSeen=Visible; LastHunt=Hunting;
  // Require stable changes and a genuine quiet gap before another presence cue.
  QuietFor=Level<.015?QuietFor+Dt:0;
@@ -510,17 +523,39 @@ void FS47FieldRadio::Step(double Dt)
  { Listening=true; Speaker=M->Audio->AmRadioPosition(); }
  LastRadio=Listening?Heard:0;
  Sound.UpdateRadio(M->Audio,LastRadio,Speaker,false);
- // Freeform: it crackles, seldom at the edge of its reach, near enough all the time close by.
- if(M->IsFreeform()&&LastRadio>.01)
+ // Freeform: it crackles, seldom at the edge of its reach, near enough all the time close by; and of itself, now and then, far
+ // from the mast, in low ground, in the wind or with a far car keyed up on the channel.
+ const double Ordinary=Listening&&M->IsFreeform()?OrdCrackle:0.;
+ bool bCrackled=false;
+ if(M->IsFreeform()&&(LastRadio>.01||Ordinary>.01))
  {
   CrackleIn-=Dt;
   if(CrackleIn<=0)
   {
-   CrackleIn=FMath::Lerp(2.6,.09,FMath::Sqrt(LastRadio))*FMath::FRandRange(.55f,1.45f);
-   if(Sound.Crackle(M->Audio,LastRadio))++Crackled;
+   const double RealGap=LastRadio>.01?FMath::Lerp(2.6,.09,FMath::Sqrt(LastRadio)):1e9;
+   const double OrdinaryGap=Ordinary>.01?FMath::Lerp(14.,2.,FMath::Clamp(Ordinary/.7,0.,1.)):1e9;
+   CrackleIn=FMath::Min(RealGap,OrdinaryGap)*FMath::FRandRange(.55f,1.45f);
+   if(Sound.Crackle(M->Audio,FMath::Max(LastRadio,Ordinary*.6))){++Crackled;bCrackled=true;}
   }
  }
  else CrackleIn=0;
+ // A spell of breaking up, for the night's log and the notebook: the hiss up, or the crackle coming thick (three in a few seconds;
+ // a crackle now and then far from the mast is not one). What comes within eight seconds of the last is the same spell.
+ SinceNoise+=Dt;SinceCrackle+=Dt;
+ if(bCrackled){if(SinceCrackle>6)CrackleRun=0;++CrackleRun;SinceCrackle=0;}
+ if(bOwned&&!bLeftOut&&(LastRadio>.25||CrackleRun>=3))
+ {
+  if(SinceNoise>8)++DropCount;
+  SinceNoise=0;
+  if(CrackleRun>=3&&SinceCrackle>6)CrackleRun=0;
+ }
+ // The HUD's wave, when the line is up of its own accord: what the set hears now, wandering a little, never a steady reading.
+ if((StrengthIn-=Dt)<=0)
+ {
+  StrengthIn=FMath::FRandRange(.6f,2.4f);
+  StrengthWant=FMath::Clamp(1.-.6*LastRadio-.5*Ordinary-FMath::FRandRange(0.f,.25f),.15,1.);
+ }
+ StrengthNow+=(StrengthWant-StrengthNow)*FMath::Min(1.,Dt*2.5);
  ControlTest(Dt);
 }
 void FS47FieldRadio::ControlTest(double Dt)
@@ -607,6 +642,14 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  {
   FS47FieldRadio Q(nullptr); Q.TestOwn();
   C(!Q.InUse() && Q.Strength()==1 && Q.PresenceLevel()==0 && !Q.PresenceSeen() && !Q.PresenceHunting(),TEXT("a carried set that has heard nothing is not in use on the HUD, at full strength"));
+  // M2: breaking up never puts the line on the HUD; only words, a call or the player's own hand do.
+  Q.SetGearNoise(1);Q.SetOrdinaryNoise(1,1);Q.LastRadio=1;
+  C(!Q.InUse()&&Q.OrdinaryNoiseNow()==1&&Q.GearNoiseNow()==1,TEXT("a set breaking up with something near is heard, not shown: no HUD line for it"));
+ }
+ {
+  int32 NearVoice=0,NobodyVoice=0;
+  for(int32 I=0;I<100;++I){NearVoice+=BackFor(true,I/100.f)==EBack::Voice?1:0;NobodyVoice+=BackFor(false,I/100.f)==EBack::Voice?1:0;}
+  C(NearVoice>50&&NearVoice<100&&NobodyVoice>0&&NobodyVoice<40,TEXT("what comes back is not sure either way: mostly a voice under the hiss with something near, now and then with nobody"));
  }
  {
   // WALKIE-USE-20261108: the channels, what the set is on, and what it says it is.

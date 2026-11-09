@@ -35,8 +35,8 @@ namespace S47Style
 	const FLinearColor Phosphor = FLinearColor::FromSRGBColor(FColor(0x8c, 0xff, 0xa4));
 }
 
-// The overlay while walking (mock/hud.html): the objective top left under its place and clock, the
-// wristwatch top right, the ring at the centre with the use prompt under it (a keycap, the label,
+// The overlay while walking (mock/hud.html; HUD D, HUD-D-20261109): the task on a cassette card top left for a few seconds when
+// it changes, the segment clock top right, the ring at the centre with the use prompt under it (a keycap, the label,
 // the second thing on a line of its own), the captions at the foot on a dark band (the speaker in
 // amber over the line), the slip that says a line went into the notebook, the key hints, and a fade
 // to black with a word on it. The viewfinder and the shutter are drawn over it.
@@ -68,6 +68,8 @@ public:
 	void ShutterFlash() { FlashT = 0.28f; }
 	/** A line written into the notebook (AS47Story::Note): the NOTED slip, bottom left, in turn. */
 	void Noted(const FString& Text);
+	/** SAVE-SARO-20261108: LOG FILED, a small stamp over the gauges for a few seconds (S47HudGauges::FiledAlpha). */
+	void Filed(const FString& Line) { Gauges.Filed = Line; Gauges.FiledT = 0.f; }
 	/** UI.ts lastDescription: the last toast that was not a caption (radio, telephone, the CB). */
 	FString LastToast;
 	/** .description-read (UI.ts descriptionButton): Read description [V] at the top right, while the
@@ -89,7 +91,7 @@ private:
 	FString FadeText;
 	double Now = 0;
 	FString ObjectiveText, ObjectiveHead, ObjectiveBody, ExamineText, SecondsText;
-	float ObjectiveIn = 1.f;          // the objective coming in after it changed
+	float NoteT = -1.f;               // HUD-D-20261109: the task's card, seconds since the task changed (-1: not showing)
 	FString Place;                    // where the player is (placeName), for the objective's tag
 	float PlaceT = 0.f;
 	FString HintKey;                  // the key hints shown, to rebuild them when they change
@@ -102,9 +104,18 @@ private:
 	TSharedPtr<class SBox> SlipSlot;
 	// HUD-20261108: the small gauges bottom right, the flashlight's battery as five strokes and the radio line with its wave, each
 	// fading in and out; read from the game a few times a frame, painted over everything but the fade (S47HudGauges.h)
-	struct FGauges { float BatteryA = 0.f, RadioA = 0.f; int32 Strokes = 0, Radio = 0, Channel = 1, Mode = 0; bool bLow = false; float Strength = 0.f; } Gauges;
+	struct FGauges { float BatteryA = 0.f, RadioA = 0.f; int32 Strokes = 0, Radio = 0, Channel = 1; bool bLow = false, bCalling = false; float Strength = 0.f;
+		// HUD-D-20261109: the walkie line only while somebody sends: who is named on it, and how long the words of the last walkie
+		// caption still come (its speaker from the caption's head, "WALKIE 1, DALE")
+		FString Who, Speaker; float SpeechLeft = 0.f;
+		// SAVE-SARO-20261108: the LOG FILED stamp, seconds since it was filed (-1: none), and whether the gauges may show now
+		FString Filed; float FiledT = -1.f; bool bShown = false; } Gauges;
 	void ReadGauges(float Dt);
 	void PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
+	// HUD-D-20261109: the segment clock top right (12 hours, AM and PM, the day under it), in the chosen HUD colour; no box
+	FString WatchWords() const;
+	FString DayWords() const;
+	void PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	// STRESS-20261108: the darker edge, painted under the rest of the HUD (S47Stress.h)
 	void PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	void Rebuild();

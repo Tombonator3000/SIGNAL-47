@@ -11,6 +11,7 @@
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
 #include "S47HudGauges.h"
+#include "S47SaroSave.h"
 #include "S47Stress.h"
 #include "S47Sneak.h"
 #include "S47Omen.h"
@@ -53,6 +54,12 @@
 #include "S47Openings.h"
 #include "S47Happenings.h"
 #include "S47FieldLife.h"
+#include "S47NightLog.h"
+#include "S47Tape.h"
+#include "S47PinBoard.h"
+#include "S47Enlarger.h"
+#include "S47WardReport.h"
+#include "SS47FieldMap.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -236,6 +243,7 @@ void AS47HUD::Start()
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
@@ -254,6 +262,7 @@ void AS47HUD::Start()
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);
+		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines) & FS47Tape::SelfTest(Lines) & FS47PinBoard::SelfTest(Lines) & FS47Enlarger::SelfTest(Lines) & FS47WardReport::SelfTest(Lines); // (NIGHTLOG, MAP and TAPE, 8 November)
 		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);

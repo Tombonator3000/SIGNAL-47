@@ -26,6 +26,9 @@ struct FS47BoardCard
 	FString Doc;                  // the paper in the journal it stands for
 	FString Region;
 	TOptional<double> X, Y, W;
+	// A card that opens something of its own (Freeform's tray of papers): the button's word and what it does.
+	FString Action;
+	TFunction<void()> OnAction;
 };
 struct FS47BoardQuestion
 {
@@ -93,6 +96,9 @@ struct FS47BookSpec
 	TFunction<FString(const FString& A, const FString& B)> QuestionOf;
 	FString Empty;
 	TFunction<bool(const FString&)> Legacy;
+	// Threads of the player's own (Freeform's board): any two of this book's pins may be tied without a rule, and tying them again
+	// unties them. The board never says whether one holds; this gives the reply. Unset: only the rules' threads hold.
+	TFunction<FString(const FString& A, const FString& B)> Free;
 };
 
 // What a chapter needs of the board: to lay it out, and to draw it again when its state changes

@@ -1023,6 +1023,19 @@ void FS47DevFreeform::AddTimePlace(FS47DevEvents& E)
   const FString Label=P.Label;
   E.AddFreeform(G,P.Label,TEXT("on foot; whatever is running stops"),[this,Stage,Label]{Go(Stage,[this,Label]{Tell(true,Label,3);});});
  }
+ // SAVE-SARO-20261108: out of the control room into the yard, as one leaving the station: the departure's autosave and LOG FILED.
+ // In a real case it writes the autosave (an autosave slot, never a manual one); a developer run shows the mark and saves nothing.
+ E.AddFreeform(G,TEXT("Leave SARO: the departure autosave"),TEXT("control room, then out into the yard; LOG FILED, and the autosave in a real case"),[this]
+ {
+  FStage In;In.Area=TEXT("saro");In.Where=[]{return FVector2D(0,-1.2);};In.Yaw=UE_DOUBLE_PI;
+  Go(In,[this]
+  {
+   if(!M||!M->Flow){Tell(false,TEXT("Freeform only"));return;}
+   M->Flow->DevDeparture();
+   FStage Out;Out.Area=TEXT("saro");Out.Where=[]{return FVector2D(7,19);};Out.Yaw=UE_DOUBLE_PI;
+   Go(Out,[this]{Tell(true,TEXT("Left SARO: ")+(M&&M->Flow?M->Flow->DepartureNote():FString()),6);});
+  });
+ });
 }
 
 // ---- out on the land, what the shops have, and the radio ----
@@ -1358,6 +1371,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddMail(E);
  AddHappenings(E);
  AddOmens(E);
+ AddMapLog(E);
 }
 
 void FS47DevFreeform::Stop()

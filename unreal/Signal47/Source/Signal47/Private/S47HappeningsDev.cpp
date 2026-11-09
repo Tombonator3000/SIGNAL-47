@@ -201,6 +201,18 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    },[this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck never passed her"));});
   });
  });
+ // The danger on foot (Tom's critics, 8 November): out by the windmill at three, the night's own rules, the lamp on. Turn to it
+ // when it is there; it comes nearer each time; run, or get under a roof, before the light comes down.
+ E.AddFreeform(G,TEXT("On foot: something that comes nearer (danger)"),TEXT("03:00, on foot by the windmill, lamp on; it is gone when seen and nearer the next time, then a light comes down"),[this,Haps]
+ {
+  ToLandPlace(TEXT("windmill"),40,3,4.5,[this,Haps](double,double)
+  {
+   FS47Happenings* H=Haps();FString Why;
+   if(!H||!H->DevStart(TEXT("figure_near"),FString(),Why)||!H->Live(TEXT("figure_near"))){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+   FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,1.4,0));
+   Tell(true,TEXT("Out there, ahead: a figure. Look at it, and look away. Get to the truck or under a roof, or run, before the light comes down."),7);
+  });
+ });
  E.AddFreeform(G,TEXT("Stranded camper: go to it"),TEXT("on foot beside it, at night, every window lit; E on the door"),[this,Haps,ToSite]
  {
   FS47Happenings* H=Haps();FString Why;
@@ -215,11 +227,11 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,1.2,0));
   Tell(true,Say,6);
  };
- E.AddFreeform(G,TEXT("Humour: a pink convertible at the diner"),TEXT("21:30, the diner's lot; engine running, nobody in it; E on it"),[this,Humor]
+ E.AddFreeform(G,TEXT("Humour: a pink convertible at the diner"),TEXT("21:30, the diner's lot; engine running, a note on the seat; E on it"),[this,Humor]
  {
   FStage Stage;Stage.From=21.5;Stage.To=1;Stage.Area=TEXT("diner");Stage.Yaw=0;
   Stage.Where=[this]{return S47HapDev::CatalogSpot(M,TEXT("diner"),TEXT("diner"),TEXT("diner"),FVector2D(7978,1972),-10);};
-  Go(Stage,[Humor]{Humor(TEXT("car"),TEXT("A pink convertible, running, nobody in it. E on it."));});
+  Go(Stage,[Humor]{Humor(TEXT("car"),TEXT("A pink convertible, running, a note on the seat. E on it."));});
  });
  E.AddFreeform(G,TEXT("Humour: a singer by the motel pool"),TEXT("22:00, the motel; he waves; E listens"),[this,Humor]
  {
@@ -258,7 +270,7 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   {TEXT("house_lit"),TEXT("12. A light in an empty house"),TEXT("22:00, Caliche; it goes out when you come up"),1,TEXT("houselit")},
   {TEXT("horizon_figure"),TEXT("14. A figure on the rise"),TEXT("23:00, on foot near the windmill; the lamp finds nobody"),0,nullptr},
   {TEXT("cinema_film"),TEXT("15. The cinema runs a film for nobody"),TEXT("22:00, Caliche, by the Plaza"),1,TEXT("cinema")},
-  {TEXT("room6_tv"),TEXT("16. Room 6: the television on, nobody"),TEXT("23:00, the motel lot"),5,nullptr},
+  {TEXT("room6_tv"),TEXT("16. Room 6: the door open a crack, the television on"),TEXT("23:00, the motel lot"),5,nullptr},
   {TEXT("town_blackout"),TEXT("17. Caliche goes dark for a minute"),TEXT("22:00, Caliche's street"),1,nullptr},
   {TEXT("array_burst"),TEXT("18. The array catches a burst: a bearing"),TEXT("23:00, control room; the bearing goes on the map"),2,nullptr},
   {TEXT("am_caller"),TEXT("19. 1420: a caller tells last night wrong"),TEXT("21:00, in the truck, when it is the caller's turn on the program"),4,nullptr},

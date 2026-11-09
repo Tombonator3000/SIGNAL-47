@@ -8,7 +8,7 @@ const TMap<FString, FString>& FS47NpcDialogue::CharacterSpeakers()
 }
 const TMap<FString, FString>& FS47NpcDialogue::CharacterLabels()
 {
-	static const TMap<FString, FString> Labels = { { TEXT("stanton"), TEXT("Harry Dean Stanton") }, { TEXT("stack"), TEXT("Robert Stack") }, { TEXT("lynch"), TEXT("David Lynch") }, { TEXT("bacall"), TEXT("Lauren Bacall") }, { TEXT("price"), TEXT("Vincent Price") } };
+	static const TMap<FString, FString> Labels = { { TEXT("stanton"), TEXT("The gas attendant") }, { TEXT("stack"), TEXT("The deputy") }, { TEXT("lynch"), TEXT("The souvenir man") }, { TEXT("bacall"), TEXT("Nora Vega") }, { TEXT("price"), TEXT("The recorded line") } };
 	return Labels;
 }
 TArray<FS47DialogueLine> FS47NpcDialogue::CharacterLines(const FString& Voice, const TArray<FS47DialogueLine>& Lines)
@@ -67,6 +67,6 @@ bool FS47NpcDialogue::SelfTest(TArray<FString>& Lines)
 	const auto A = CharacterLines(TEXT("stanton"), Speech), B = CharacterLines(TEXT("bacall"), Speech), P = CharacterLines(TEXT("price"), Speech);
 	Check(A.Num() == 1 && A[0].Who == TEXT("THE ATTENDANT"), TEXT("Stanton speaks only the authored attendant lines"));
 	Check(B.Num() == 2 && B[0].Who == TEXT("N. VEGA") && B[1].Who == TEXT("THE LINE") && P.Num() == 1, TEXT("Bacall includes the line, whose authored voice is Price"));
-	Check(CharacterLines(TEXT("other"), Speech).IsEmpty() && CharacterSpeakers().Num() == 4 && CharacterLabels().FindRef(TEXT("stack")) == TEXT("Robert Stack"), TEXT("roles are explicit, with the original names"));
+	Check(CharacterLines(TEXT("other"), Speech).IsEmpty() && CharacterSpeakers().Num() == 4 && CharacterLabels().FindRef(TEXT("stack")) == TEXT("The deputy"), TEXT("roles are explicit, with the original names"));
 	return bOk;
 }

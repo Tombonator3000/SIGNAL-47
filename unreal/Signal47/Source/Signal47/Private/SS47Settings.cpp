@@ -7,6 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
+#include "S47HudGauges.h"
 #include "S47Picture.h"
 #include "S47Theme.h"
 #include "Widgets/Layout/SBorder.h"
@@ -164,8 +165,8 @@ void SS47Settings::BuildRows()
 	auto AddPad = [&](const FString& Label, const FString& Buttons, const FString& Help)
 	{
 		FRow R; R.Kind = FRow::EKind::Info; R.Label = Label;
-		R.Value = Says(Buttons); R.Title = Says(TEXT("Xbox controller: ") + Label);
-		R.Text = Says(Help + TEXT("\n\nThe Xbox layout is fixed. Keyboard and mouse bindings are listed below."));
+		R.Value = Says(Buttons); R.Title = Says(TEXT("Controller: ") + Label);
+		R.Text = Says(Help + TEXT("\n\nThe controller layout is fixed. Keyboard and mouse bindings are listed below."));
 		Push(MoveTemp(R));
 	};
 	// an ON / OFF setting
@@ -288,6 +289,22 @@ void SS47Settings::BuildRows()
 			TEXT("How bright the night is, before the picture's curve. At 50% it is as it was made; raise it if the dark hides too much on your screen, but the night should stay dark."));
 		AddSlider(TEXT("Field of view"), &FS47PauseOpts::Fov, &FS47PauseOpts::OnFov, 60.f, 90.f, 1.f, 70.f, [](float V) { return FString::Printf(TEXT("%d°"), FMath::RoundToInt32(V)); },
 			TEXT("How wide you see, in degrees across the height of the picture. 70 is the game's own."));
+		// HUD-D-20261109: the HUD's colours (the clock, the battery, the radio line), at once and kept with the rest
+		if (P->OnHudColor)
+		{
+			TArray<FString> Names;
+			for (int32 I = 0; I < S47HudGauges::HudColors; ++I) Names.Add(FString(S47HudGauges::Palette(S47HudGauges::EHudColor(I)).Label).ToUpper());
+			AddChoice(TEXT("HUD color"), Names, [P] { return int32(S47HudGauges::HudColorFrom(P->HudColor)); },
+				[P](int32 I)
+				{
+					const FString Id = S47HudGauges::HudColorId(S47HudGauges::EHudColor(FMath::Clamp(I, 0, S47HudGauges::HudColors - 1)));
+					if (P->HudColor == Id) return;
+					P->HudColor = Id;
+					P->OnHudColor(Id);
+				}, 0,
+				[P] { return FString(S47HudGauges::Palette(S47HudGauges::HudColorFrom(P->HudColor)).Label); },
+				[P] { return FString(S47HudGauges::Palette(S47HudGauges::HudColorFrom(P->HudColor)).Help) + TEXT("\n\nThe clock, the flashlight's battery and the radio line. Captions and papers keep their own colours."); });
+		}
 		break;
 	}
 	case 2: // SOUND
@@ -300,13 +317,13 @@ void SS47Settings::BuildRows()
 		break;
 	case 3: // VOICES (UI.pause's notes)
 		AddToggle(TEXT("Character voices"), &FS47PauseOpts::bCharacters, &FS47PauseOpts::OnCharacters, true,
-			TEXT("Synthetic parody voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
-		AddToggle(TEXT("Rod Serling narrator"), &FS47PauseOpts::bSerling, &FS47PauseOpts::OnSerling, true,
-			TEXT("Synthetic Rod Serling parody for descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description."));
-		AddToggle(TEXT("Kinski read-aloud"), &FS47PauseOpts::bKinski, &FS47PauseOpts::OnKinski, false,
-			TEXT("Synthetic Kinski parody for papers, optional conversation reading and other phone voices. Also reads descriptions when the Rod Serling narrator is Off."));
-		AddToggle(TEXT("Art Bell radio host"), &FS47PauseOpts::bArtBell, &FS47PauseOpts::OnArtBell, true,
-			TEXT("Synthetic Art Bell parody for Earl on Night Line, AM 1420, and when you speak with him in Caliche."));
+			TEXT("Character voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
+		AddToggle(TEXT("The Night Narrator"), &FS47PauseOpts::bSerling, &FS47PauseOpts::OnSerling, true,
+			TEXT("The Night Narrator reads descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description."));
+		AddToggle(TEXT("Dale's voice (read-aloud)"), &FS47PauseOpts::bKinski, &FS47PauseOpts::OnKinski, false,
+			TEXT("Dale's voice for papers, optional conversation reading and other phone voices. Also reads descriptions when The Night Narrator is Off."));
+		AddToggle(TEXT("Earl, 1420 AM (radio host)"), &FS47PauseOpts::bArtBell, &FS47PauseOpts::OnArtBell, true,
+			TEXT("Earl's voice on Night Line, AM 1420, and when you speak with him in Caliche."));
 		AddToggle(TEXT("Radio callers & bulletin"), &FS47PauseOpts::bRadioCast, &FS47PauseOpts::OnRadioCast, true,
 			TEXT("Synthetic callers and the 1947 news bulletin on AM 1420."));
 		break;

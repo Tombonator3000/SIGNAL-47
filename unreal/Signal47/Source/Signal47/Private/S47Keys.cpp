@@ -58,6 +58,8 @@ namespace S47KeysLocal
 			A(TEXT("channel"), TEXT("Walkie channel"), Low, TEXT("Turn the walkie to its next channel: 1 is Dale's, 2 the district's service band, 3 nobody's. Off channel 1, Dale cannot reach you."), EKeys::Y),
 			// GEIGER-20261108: the counter in the player's own hand once it is built, as the walkie is
 			A(TEXT("counter"), TEXT("Counter"), Low, TEXT("Hold the Geiger counter up, or put it away, once you have built it. Put away, it stays down even where it climbs."), EKeys::Z),
+			// TAPE-20261108: the field recorder off the desk by the array's PC, as the counter is
+			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back on the desk by the array's PC."), EKeys::U),
 		};
 	}
 

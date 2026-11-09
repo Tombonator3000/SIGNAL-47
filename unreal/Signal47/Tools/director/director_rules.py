@@ -34,6 +34,21 @@ def check(doc):
         if len(r) != 2 or not 0 <= r[0] <= r[1]: bad('budget_per_day.' + k)
     limit = g.get('danger_per_night')
     if limit is not None and (not isinstance(limit, int) or limit < 0): bad('danger_per_night: null or a whole number')
+    # The build-up (Tom's critics, 8 November): one row a week from day 1, in order; S47Rhythm.cpp turns away the same.
+    weeks = g.get('curve', {}).get('weeks', [])
+    last = 0
+    for n, w in enumerate(weeks):
+        day = w.get('from_day')
+        if not isinstance(day, int) or (n == 0 and day != 1) or (n > 0 and day <= last): bad('curve: weeks start on day 1, in order')
+        last = day if isinstance(day, int) else last
+        for k in ('hint', 'observation', 'presence'):
+            if not 0 <= w.get(k, 1) <= 3: bad(f'curve week {n + 1}: {k} 0 to 3')
+        if not 0 <= w.get('danger', -1) <= 1: bad(f'curve week {n + 1}: danger 0 to 1')
+        if not .1 < w.get('near', 1) <= 2: bad(f'curve week {n + 1}: near above 0.1')
+    if weeks:
+        if weeks[0].get('danger', 0) > .1: warnings.append('curve: the first week is meant for small things and things seen, its danger above 0.1')
+        if any(b.get('danger', 0) < a.get('danger', 0) for a, b in zip(weeks, weeks[1:])): warnings.append('curve: the danger falls from one week to the next')
+        if any(b.get('near', 1) > a.get('near', 1) for a, b in zip(weeks, weeks[1:])): warnings.append('curve: things go further off from one week to the next')
     seen = set()
     for e in doc.get('events', []):
         i = e.get('id', '?')
@@ -50,6 +65,10 @@ def check(doc):
             if a not in AREAS: bad(i + ': area ' + a)
         draw = e.get('draw', {})
         if 'per_night' in draw and not 0 <= draw['per_night'] <= 1: bad(i + ': draw.per_night')
+        if 'at' in draw:
+            at = draw['at']
+            night = [x + 24 if isinstance(x, (int, float)) and x < 12 else x for x in at] if isinstance(at, list) else []
+            if len(night) != 2 or not all(isinstance(x, (int, float)) for x in night) or not 18 <= night[0] < night[1] <= 30: bad(i + ': draw.at, clock hours in the night, from before to')
         cool = e.get('cooldown_days')
         if cool is not None and (len(cool) != 2 or not 0 <= cool[0] <= cool[1]): bad(i + ': cooldown_days')
         for n in e.get('needs', []):

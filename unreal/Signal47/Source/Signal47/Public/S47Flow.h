@@ -5,6 +5,7 @@
 #include "S47Journal.h"
 #include "S47Saves.h"
 #include "S47Graphics.h"
+#include "S47SaroSave.h"
 #include "S47UI.h"
 #include "UObject/Object.h"
 #include "S47Flow.generated.h"
@@ -52,6 +53,11 @@ public:
 	TOptional<FS47SaveMeta> WriteSave(const FString& Kind, int32 Slot, FString& OutError);
 	FString SaveBlock() const;                 // why the game cannot be saved now; empty when it can
 	FString FreeformSaveBlock() const;         // Freeform's own reasons, for developer runs too: SaveBlock says a developer run never saves
+	// SAVE-SARO-20261108 (S47SaroSave.h): the log is filed at the station, and an autosave is written each time the player leaves it
+	FString ManualSaveBlock() const;           // the save menu's: in Freeform, anywhere but inside SARO; then SaveBlock
+	void DepartingByTruck();                   // US47World::StartTrip, before the trip begins: a departure in a vehicle
+	void DevDeparture();                       // F10: armed as if the player had been inside a while; the departure shows its mark
+	const FString& DepartureNote() const { return DepartureText; } // what became of the last departure
 	FString PlaceName() const;                 // the place on a save's card
 	FString PlaceName(const FVector& P) const; // placeName(p): the place of a point (the truck's, in the cab)
 	FString CaptureThumb();                    // 192 x 108 JPEG of the player's view
@@ -125,6 +131,15 @@ public:
 private:
 	bool bPendingFreshThumb = false, bReuseThumb = false;
 	FString LastThumb; int32 LastThumbCase = 0; double LastThumbAt = 0;
+	// SAVE-SARO-20261108: the departure from SARO and its autosave
+	FS47SaroDeparture Departure;
+	const void* DepartureSession = nullptr;
+	FString DepartureText, DepartureWaitSaid;
+	bool bDepartureShow = false;
+	FS47SaroDeparture::FIn DepartureIn(double Dt) const;
+	bool DepartureLive() const;
+	void StepDeparture(double Dt);
+	bool FileDeparture(bool bLastChance);
  FS47Journal Journal;
  bool ValidJournalHint(const FString& Id) const;
  bool ValidJournalEntry(const FString& Id) const;
@@ -172,7 +187,10 @@ private:
 	void RequestTitle(TFunction<void()> Resume);
 	FDelegateHandle ActivationHandle;
 	FS47NbExtras NotebookExtras() const;
+public:
+	// The case board reads the same view the map draws (bearings, pins).
 	FS47MapView MapView() const;
+private:
 	FS47MapAt MapAt() const;
 	TArray<FS47KitItem> KitItems() const;
 	TArray<FS47PersonCard> PeopleItems() const;

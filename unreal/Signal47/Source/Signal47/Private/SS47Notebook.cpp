@@ -15,6 +15,7 @@
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "SS47AreaMap.h"
+#include "SS47FieldMap.h"
 #include "SS47Widgets.h"
 #include "Styling/CoreStyle.h"
 #include "TextureResource.h"
@@ -201,7 +202,7 @@ namespace
 
 	FCtlPage Controls(bool bPhone, bool bPad = false)
 	{
-		if (bPad) return { TEXT("Xbox controller"), {
+		if (bPad) return { TEXT("Controller"), {
 			{ TEXT("On foot"), {
 				{ TEXT("LS / L3"), TEXT("Walk / run.") },
 				{ TEXT("RS"), TEXT("Look around.") },
@@ -700,6 +701,7 @@ void SS47Notebook::Build()
 	Reading.Reset();
 	Entries.Reset();
 	LeftScroll.Reset(); RightScroll.Reset();
+	FieldMap.Reset();
 	bRightIsEntries = false;
 	if (!LeftSlot.IsValid()) return;
 	LeftSlot->SetContent(SNullWidget::NullWidget);
@@ -908,6 +910,46 @@ void SS47Notebook::Build()
 		for (int32 I = 0; I < NShots; ++I) Prints->AddSlot()[Entry(Photos.Num() + I, SNew(SBox).Padding(P(8))[Print(I, 214.f, false)])];
 		bRightIsEntries = NShots > 0;
 		if (NShots) RightSlot->SetContent(Lay((Album && Album->OnDiscard ? Head(TEXT("Your photographs"), FString::Printf(TEXT("%d KEPT"), NShots)) : Head(TEXT("Tonight"), FString::Printf(TEXT("FREE FRAMES · %d"), NShots))), Prints, RightScroll, 146.f, true));
+	}
+	else if (Tab == TEXT("map") && X.Map && X.Map->bField)
+	{
+		// Freeform (MAP-20261108): the survey sheet, to scale, with zoom and the player exactly where they are. Laid flat, so a
+		// mouse on it means what it points at; taped down, how to work it pencilled under it.
+		TSharedRef<SS47FieldMap> Sheet = SNew(SS47FieldMap).View(*X.Map).Width(P(960)).OnNote(X.OnMapNote);
+		FieldMap = Sheet;
+		TSharedRef<SCanvas> Spread = SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(148, 16)).Size(P2(960, 640))[Shadowed(Sheet, 16.f, FVector2D(0, 8), 0.4f)]
+			+ SCanvas::Slot().Position(P2(118, 6)).Size(P2(74, 26))[Tape(70, 20, -32)]
+			+ SCanvas::Slot().Position(P2(1066, 6)).Size(P2(74, 26))[Tape(70, 20, 34)]
+			+ SCanvas::Slot().Position(P2(118, 632)).Size(P2(74, 26))[Tape(70, 20, 30)]
+			+ SCanvas::Slot().Position(P2(1066, 632)).Size(P2(74, 26))[Tape(70, 20, -28)];
+		Spread->AddSlot().Position(P2(170, 668)).Size(P2(920, 44))[SNew(STextBlock).Font(Hand(26)).ColorAndOpacity(InkBlue()).Text_Lambda([]
+		{
+			return FText::FromString(S47Gamepad::UsingGamepad()
+				? TEXT("LT / RT zoom   left stick or D-pad move   A back to me   R3 mark it")
+				: TEXT("wheel or + / - zoom   drag or arrows move   Home back to me   X or right click: mark it"));
+		})];
+		// The index card tucked under the sheet's corner: what the pencil and the ink on it mean (Tom, 8 November: "my marks").
+		{
+			TSharedRef<SVerticalBox> Card = SNew(SVerticalBox);
+			const FLinearColor Lead = C(0x3a3a40);
+			// A ruled index card: a red rule under its heading, pale blue ones under each line.
+			const auto CardLine = [&Card](const TCHAR* Words, const FLinearColor& Col, float Size, const FLinearColor& Rule)
+			{
+				Card->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Words)).Font(Hand(Size)).ColorAndOpacity(Col)];
+				Card->AddSlot().AutoHeight().Padding(FMargin(0, 0, 0, P(3)))[SNew(SBox).HeightOverride(P(1.5f))[SNew(SBorder).BorderImage(Box(Rule))]];
+			};
+			const FLinearColor BlueRule = C(0x9fb6d3), RedRule = C(0xc0504d);
+			CardLine(TEXT("my marks"), InkBlue(), 28, RedRule);
+			CardLine(TEXT("x 1    marked it myself"), Lead, 21, BlueRule);
+			CardLine(TEXT("(?)    heard of, not found"), Lead, 21, BlueRule);
+			CardLine(TEXT("struck out: looked into"), Lead, 21, BlueRule);
+			CardLine(TEXT("- - -  bearing from SARO"), Lead, 21, BlueRule);
+			CardLine(TEXT("blue ink: work to do"), InkBlue(), 21, BlueRule);
+			Spread->AddSlot().Position(P2(-74, 428)).Size(P2(256, 228))[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf7f3e6))).Padding(FMargin(P(12), P(8)))[Card], 8.f, FVector2D(0, 3), 0.3f), -3.f)];
+		}
+		SpreadSlot->SetContent(Spread);
+		Read = X.MapDescription;
 	}
 	else if (Tab == TEXT("map") && X.Map)
 	{
@@ -1277,6 +1319,25 @@ void SS47Notebook::Tick(const FGeometry& G, const double Now, const float Dt)
 {
 	SCompoundWidget::Tick(G, Now, Dt);
 	if (Tab == TEXT("controls") && (KeysShown != S47Keys::Changes() || PadShown != S47Gamepad::Changes())) Build();
+	if (Tab == TEXT("map") && FieldMap.IsValid()) FieldMap->Step(Dt);
+}
+
+FReply SS47Notebook::OnAnalogValueChanged(const FGeometry& G, const FAnalogInputEvent& E)
+{
+	// The survey sheet moves under the left stick.
+	if (Tab == TEXT("map") && FieldMap.IsValid() && Big == INDEX_NONE && (E.GetKey() == EKeys::Gamepad_LeftX || E.GetKey() == EKeys::Gamepad_LeftY))
+	{
+		FieldMap->Stick(E.GetKey(), E.GetAnalogValue());
+		return FReply::Handled();
+	}
+	return SCompoundWidget::OnAnalogValueChanged(G, E);
+}
+
+FReply SS47Notebook::OnMouseWheel(const FGeometry& G, const FPointerEvent& E)
+{
+	// The wheel off the sheet, and LT and RT (the pad turns them into the wheel), zoom it about its middle.
+	if (Tab == TEXT("map") && FieldMap.IsValid() && Big == INDEX_NONE) { FieldMap->Wheel(E.GetWheelDelta()); return FReply::Handled(); }
+	return SCompoundWidget::OnMouseWheel(G, E);
 }
 
 FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
@@ -1302,6 +1363,8 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
 	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder) { Turn(-1); return FReply::Handled(); }
 	if (K == EKeys::E || K == EKeys::Gamepad_RightShoulder) { Turn(1); return FReply::Handled(); }
+	// The survey sheet's own: move, zoom, back to me, a mark (SS47FieldMap::Key).
+	if (Tab == TEXT("map") && FieldMap.IsValid() && FieldMap->Key(K)) return FReply::Handled();
 	const bool bUp = K == EKeys::Up || K == EKeys::W || K == EKeys::Gamepad_DPad_Up, bDown = K == EKeys::Down || K == EKeys::S || K == EKeys::Gamepad_DPad_Down, bLeft = K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left, bRight = K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right;
 	if (bUp || bDown || bLeft || bRight)
 	{
@@ -1552,7 +1615,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		auto Has = [](const FCtlPage& Pg, const FString& Want) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Key + TEXT(" | ") + R.Value == Want) return true; return false; };
 		const FCtlPage Desk = Controls(false);
 		const FCtlPage Pad = Controls(false, true);
-		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Xbox controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
+		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
 		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
 		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
 		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));

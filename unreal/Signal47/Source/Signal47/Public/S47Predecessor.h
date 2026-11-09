@@ -23,7 +23,10 @@ public:
  // What the assessment goes by: only what really happened in this game.
  // Clean: filed jobs whose recording was tuned well enough to read (critic, 8 November: quality and cases, not a count of cards).
  // Land: kinds of record kept from the land at night (the night's events, FS47Happenings), which count a little toward staying.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0;bool bWagon=false,bGap=false;};
+ // Logs: night logs her office has initialed (FS47NightLog, NIGHTLOG-20261108): a station that reports its nights counts a little.
+ // Tapes: cassettes played back with something on them nobody heard out there (FS47Tape, TAPE-20261108): what she can send on.
+ // Trust: what her office makes of the weekly reports (FS47WardReport, WARD-REPORT-20261108): whole ones raise it, a lie found out lowers it.
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0;bool bWagon=false,bGap=false;};
  static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7;
  static constexpr double CleanQuality=.6;
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
