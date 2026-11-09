@@ -257,7 +257,7 @@ void FS47TownUse::StepThings()
 			bShy = Shy(FVector2D(X, Z), L->Night, Used);
 		}
 		// A little off the place's own point, toward the open side, where it was set out.
-		const double Lx = X + 3, Lz = Z + 2;
+		const double Lx = X + 5, Lz = Z + 4;
 		if (Part == 0)
 		{
 			const double K = bMorning && !bShy ? (bSalt ? .6 : .35) : 1;
@@ -274,7 +274,7 @@ void FS47TownUse::StepThings()
 		const double A = (T / 2) * (2 * UE_DOUBLE_PI / 3) + .4, R = bShy ? 6.2 + (T % 2) * 1.6 : .7 + (T % 2) * .9;
 		const double Tx = Lx + FMath::Cos(A) * R, Tz = Lz + FMath::Sin(A) * R;
 		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Tx, S47FarmWorld::FloorRoad(Tx, Tz) + .01, Tz)));
-		C->SetWorldScale3D(FVector(.13, .1, .012));
+		C->SetWorldScale3D(FVector(.24, .19, .015));
 	}
 	// The rubber spaceman on the truck's dash, by the compass, bobbing on its suction cup as the truck goes.
 	FS47Truck* T = M->World ? M->World->TruckHere() : nullptr;
@@ -435,7 +435,7 @@ bool FS47TownUse::Build()
 		for (int32 L = 0; L < LuresDrawn; ++L)
 		{
 			Bit(FString::Printf(TEXT("S47TownLure%d"), L), Cube, 0xe6e1d3, Root, LureParts);
-			for (int32 K = 0; K < TracksPerLure; ++K) Bit(FString::Printf(TEXT("S47TownLureTrack%d_%d"), L, K), Cyl, 0x4a3b2b, Root, LureParts);
+			for (int32 K = 0; K < TracksPerLure; ++K) Bit(FString::Printf(TEXT("S47TownLureTrack%d_%d"), L, K), Cyl, 0x3a2c1f, Root, LureParts);
 		}
 		// Not on any one area's root: the truck is in every area.
 		Bit(TEXT("S47TownSpacemanBody"), Cyl, 0x8d918b, -1, Spaceman)->SetWorldScale3D(FVector(.035, .035, .07));

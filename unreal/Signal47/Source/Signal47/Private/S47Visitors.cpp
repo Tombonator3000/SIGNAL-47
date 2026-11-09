@@ -381,8 +381,8 @@ bool FS47Visitors::Build()
 		HeliParts.Add(Part(TEXT("S47VisitHeliTail") + Tag, Cube, 0x3d4232, Root, false));
 		HeliParts.Add(Part(TEXT("S47VisitHeliRotor") + Tag, Cyl, 0x1a1a18, Root, false));
 		// The ground gone over: pale raked caliche in a wide circle, and the tire tracks of the cars across it.
-		UStaticMeshComponent* Disc = Part(TEXT("S47VisitRaked") + Tag, Cyl, 0xcdbf9f, Root, false); Disc->SetCastShadow(false); RakeParts.Add(Disc);
-		for (int32 K = 0; K < 4; ++K) { UStaticMeshComponent* T = Part(FString::Printf(TEXT("S47VisitTrack%s%d"), *Tag, K), Cube, 0x54493a, Root, false); T->SetCastShadow(false); RakeParts.Add(T); }
+		UStaticMeshComponent* Disc = Part(TEXT("S47VisitRaked") + Tag, Cyl, 0xc6b195, Root, false); Disc->SetCastShadow(false); RakeParts.Add(Disc);
+		for (int32 K = 0; K < 4; ++K) { UStaticMeshComponent* T = Part(FString::Printf(TEXT("S47VisitTrack%s%d"), *Tag, K), Cube, 0x80684f, Root, false); T->SetCastShadow(false); RakeParts.Add(T); }
 	}
 	bBuilt = true;
 	UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors ready: two vans, Baca's door and lamp, %s sedans, helicopter and raked ground stand-ins"), Sedan ? TEXT("model") : TEXT("box"));
@@ -757,15 +757,15 @@ void FS47Visitors::PlaceRaked()
 			C->SetWorldScale3D(FVector(RakeRadius * 2, RakeRadius * 2, .004));
 			continue;
 		}
-		// Two cars' tracks: in across the circle from where they stood, and out again a little to one side.
+		// Two cars' tracks across the circle, in from where they stood and out again a little to one side, pressed into the raked
+		// ground and fading a few metres past its edge (long flat strips stand off the uneven land: seen in the first sweep).
 		const FVector2D To = (Kind <= 2 ? Best->CarA : Best->CarB);
-		const FVector2D From = Middle + (Middle - To).GetSafeNormal() * RakeRadius * .8;
-		const FVector2D Along = (To - From).GetSafeNormal(), Side(-Along.Y, Along.X);
-		const double Len = FVector2D::Distance(From, To);
-		const FVector2D Centre = (From + To) * .5 + Side * ((Kind % 2 ? -.75 : .75) + (Kind > 2 ? 1.1 : 0));
+		const FVector2D Along = (To - Middle).GetSafeNormal(), Side(-Along.Y, Along.X);
+		const double Len = RakeRadius * 2 + 4;
+		const FVector2D Centre = Middle + Along * 2 + Side * ((Kind % 2 ? -.75 : .75) + (Kind > 2 ? 1.1 : 0));
 		const FVector C3 = S47OpenLand::FromRoad(Area, Centre.X, Centre.Y);
 		C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(C3.X, S47FarmWorld::FloorRoad(Centre.X, Centre.Y) + .05, C3.Z)), FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Along.Y, Along.X)), 0));
-		C->SetWorldScale3D(FVector(Len, .28, .006));
+		C->SetWorldScale3D(FVector(Len, .22, .006));
 	}
 }
 
