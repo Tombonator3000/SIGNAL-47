@@ -150,6 +150,7 @@ void FS47DevFreeform::ClearRunning()
  auto* F=Session();if(!F)return;
  Waiting.Reset();
  if(M->World){M->World->TestInput=nullptr;M->World->Autopilot.Reset();}
+ if(M->Player)M->Player->TestMove.Reset(); // (a line's walk, FARM-GATE's, stops with it)
  if(F->Director&&DevRun()&&F->Director->Busy())F->Director->CancelForTest();
  if(F->IndoorDread)F->IndoorDread->DevCancel();
  if(F->Taken&&F->Taken->Busy()){F->Taken->Stop();if(M->UI)M->UI->Fade(false);} // Reached by a crab goes dark at once: Stop leaves that to whoever asked.
@@ -1409,6 +1410,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWorldFixes(E);
  AddSaroFixes(E);
  AddFarmLights(E);
+ AddFarmGate(E);
  AddTownDay(E);
  AddWeekCase(E);
 }

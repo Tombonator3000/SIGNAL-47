@@ -260,7 +260,9 @@ namespace
   // the live leg keeps its own copy, and the pole's box stayed in it with nothing drawn (sweep of 9 November, drive saro#14).
   if (M && M->World)
    if (IS47DriveArea* Live = M->World->LegArea(TEXT("saro")))
-    Drive += Live->Obstacles.RemoveAll([](const FS47Obstacle& O) { return !O.bCircle && StopFoot(O.MinX, O.MaxX, O.MinZ, O.MaxZ); });
+    // FARM-GATE-20261109: parked far off in its own slot, not removed: the farm (its closed gate), the east wing and the arrival hold
+    // slots in the live list by index, and the removal shifted them; the gate stayed shut in Freeform at the slot below its own.
+    for (FS47Obstacle& O : Live->Obstacles) if (!O.bCircle && StopFoot(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) { O = FS47Obstacle::Box(1e9, 1e9, 1e9, 1e9); ++Drive; }
   S.StopCut = 1;
   Say(S, TEXT("stop sign"), FString::Printf(TEXT("gone: octagon hidden, pole cut from g436, walk feet %d and drive boxes %d removed"), Walk, Drive));
   return true;

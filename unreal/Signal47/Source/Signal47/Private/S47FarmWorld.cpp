@@ -593,6 +593,7 @@ namespace S47FarmWorld
   Lines.Add(FString(Moved?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: a truck parked in a wall by an old save is moved to the nearest clear ground, one on the road is left alone"));
   const bool Relief=S47Relief::SelfTest(Lines);
   const bool Lights=S47FarmLights::SelfTest(Lines); // FARM-LIGHTS: the bulb's swing, the hours, the flicker, where each light hangs
-  return Good&&Moved&&Relief&&Lights;
+  const bool Gate=GateSelfTest(Lines); // FARM-GATE-20261109: the open gate stays open when the list moves under it, both ways, both frames
+  return Good&&Moved&&Relief&&Lights&&Gate;
  }
 }

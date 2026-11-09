@@ -95,6 +95,8 @@ private:
  void AddSaroFixes(FS47DevEvents& E);
  // FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's lamp and the old house's lit room; S47FarmLightsDev.cpp.
  void AddFarmLights(FS47DevEvents& E);
+ // FARM-GATE-20261109: "Farm gate (T)": the Jeep and the walker through the farm's open gate, both ways (S47FarmGateDev.cpp).
+ void AddFarmGate(FS47DevEvents& E);
  // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
  void AddWeekCase(FS47DevEvents& E);
  void AddTownDay(FS47DevEvents& E); // NPC-DAY: "Town day (T)" (S47TownDayDev.cpp)

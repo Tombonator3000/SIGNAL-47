@@ -873,13 +873,15 @@ void US47World::Enter(const FString& NewArea)
 		if (IS47DriveArea* RoadLeg = LegArea(TEXT("road")))
 		{
 			static const FS47Box2 TownEnds[] = { { 7958, 7979, 2299.85, 2300.15 }, { 7958, 7979, 2044.8, 2045.1 }, { 8029.85, 8048, 2017.8, 2018.1 } };
-			const int32 Out = RoadLeg->Obstacles.RemoveAll([](const FS47Obstacle& O)
+			// FARM-GATE-20261109: parked far off in its own slot, not removed: the farm, the east wing, the town's car and the UFO hold
+			// slots in this list by index, and a removal shifted them (the closed ranch gate stayed live in the open gate).
+			int32 Out = 0;
+			for (FS47Obstacle& O : RoadLeg->Obstacles)
 			{
-				if (O.bCircle) return false;
+				if (O.bCircle) continue;
 				for (const FS47Box2& B : TownEnds)
-					if (FMath::Abs(O.MinX - B.MinX) < .01 && FMath::Abs(O.MaxX - B.MaxX) < .01 && FMath::Abs(O.MinZ - B.MinZ) < .01 && FMath::Abs(O.MaxZ - B.MaxZ) < .01) return true;
-				return false;
-			});
+					if (FMath::Abs(O.MinX - B.MinX) < .01 && FMath::Abs(O.MaxX - B.MaxX) < .01 && FMath::Abs(O.MinZ - B.MinZ) < .01 && FMath::Abs(O.MaxZ - B.MaxZ) < .01) { O = FS47Obstacle::Box(1e9, 1e9, 1e9, 1e9); ++Out; break; }
+			}
 			if (Out) UE_LOG(LogS47World, Display, TEXT("S47: Freeform: %d invisible walls at Caliche's ends taken out of the road's drive (BLOCKERS-20261109)"), Out);
 		}
 	if (bLegsMade)
@@ -2555,11 +2557,10 @@ void US47World::ReconcileFarm(bool bEnabled)
  const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
  // The road's walk has the same long fences as colliders of its own. Story needs them back.
  if(Changed&&!S47OpenLand::Off()&&M&&M->Web)for(FS47Rect& C:M->Web->CollidersMutable(TEXT("road")))if(S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))C.bEnabled=!bEnabled;
- for(const auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))for(const auto& Entry:Pair.Value)
- {
-  const bool Added=Entry.Key<0;const int32 I=Added?-Entry.Key-1:Entry.Key;if(!L->Area->Obstacles.IsValidIndex(I))continue;
-  auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;B.X+=1000000;}L->Area->Obstacles[I]=B; // (a circle by its middle: BLOCKERS-20261109's tank)
- }
+ // FARM-GATE-20261109: each entry finds its own obstacle again before it is written. The lists' indices moved when something took
+ // an obstacle out after they were read (SARO's stop sign, Caliche's ends), and the closed ranch gate stayed live in Freeform at the
+ // slot below its own while its retired copy went over a neighbour: an invisible wall in the open gate, on foot and at the wheel.
+ for(auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))S47FarmWorld::ApplyControlled(L->Area->Obstacles,Pair.Value,bEnabled); // (a circle by its middle: BLOCKERS-20261109's tank)
  if(Changed)Under.Reset();
 }
 
