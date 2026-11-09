@@ -222,7 +222,8 @@ void AS47Web::BuildExteriorLighting()
 			// The second sprite was a thirteen-metre additive substitute for ground light.
 			// Keep only the lens glint; native fog and the shadowed cone make the halo/pool.
 			// STREETLAMPS: at .45 m the glint read as an orange ball beside the head at night; a lens-sized glint
-			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, 0.22f);
+			// With a cobra head of S47StreetLamps the bowl itself glows, and the glint (at the old head) goes.
+			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, Fixtures.Contains(FName(*Name)) ? 0.f : 0.22f);
 			if (G->Pos.IsValidIndex(I * 2 + 1)) G->SetSize(I * 2 + 1, 0.f);
 		}
 	}

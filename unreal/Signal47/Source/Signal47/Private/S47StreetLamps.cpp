@@ -50,10 +50,11 @@ namespace
  }
  // An export batch with every triangle wholly inside one of the boxes (the mesh's own terms, three metres) taken out: the same runtime
  // render-data clone as S47ExteriorFixtures' patch, keeping every other triangle, vertex, UV, colour, slot and the collision body.
- UStaticMesh* Cut(AS47Web* W, UStaticMeshComponent* C, const TArray<FBox>& Boxes, TArray<int32>& Counts)
+ UStaticMesh* Cut(AS47Web* W, UStaticMeshComponent* C, const TArray<FBox>& Boxes, TArray<int32>& Counts, TArray<double>* Bottoms = nullptr)
  {
   UStaticMesh* Original = C ? C->GetStaticMesh() : nullptr;
   Counts.Init(0, Boxes.Num());
+  if (Bottoms) Bottoms->Init(1e9, Boxes.Num());
   if (!Original || !Original->bAllowCPUAccess || !Original->GetRenderData() || Original->GetRenderData()->LODResources.Num() != 1) return nullptr;
   const auto& Src = Original->GetRenderData()->LODResources[0]; const auto& B = Src.VertexBuffers;
   if (!B.PositionVertexBuffer.GetVertexData() || !B.StaticMeshVertexBuffer.GetTangentData() || !B.StaticMeshVertexBuffer.GetTexCoordData() || Src.IndexBuffer.GetIndexDataSize() == 0) return nullptr;
@@ -70,7 +71,12 @@ namespace
     if (FMath::Max3(A, Bb, Cc) >= B.PositionVertexBuffer.GetNumVertices()) return nullptr;
     int32 Box = -1;
     for (int32 J = 0; J < Boxes.Num(); ++J) if (In(A, Boxes[J]) && In(Bb, Boxes[J]) && In(Cc, Boxes[J])) { Box = J; break; }
-    if (Box >= 0) { ++Counts[Box]; continue; }
+    if (Box >= 0)
+    {
+     ++Counts[Box];
+     if (Bottoms) for (const uint32 V : { A, Bb, Cc }) (*Bottoms)[Box] = FMath::Min((*Bottoms)[Box], S47Three::ToThree(FVector(B.PositionVertexBuffer.VertexPosition(V))).Y);
+     continue;
+    }
     Keep.Append({ A, Bb, Cc }); ++Copy.NumTriangles;
    }
    if (Copy.NumTriangles) Sections.Add(Copy);
@@ -142,6 +148,34 @@ namespace
  bool Disabled() { return FParse::Param(FCommandLine::Get(), TEXT("S47StreetLampsOff")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff")); }
 
  // ---- the highway west of SARO: Exterior.ts road(), eight poles at x -18.5 with their arms west over the road, in g26 ----
+ // A pole on each foot, its arm turned by Q, the head on the arm's end, the lens a material of its own for the light's feed.
+ void Raise(AS47Web* W, int32 ParentNode, const TCHAR* Family, const TCHAR* LightPrefix, const TArray<FVector>& Feet, const FQuat& Q,
+  const TArray<UPrimitiveComponent*>& Under, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ {
+  const FS47WebNode* P = W->Node(ParentNode);
+  USceneComponent* ParentComp = P ? P->Comp.Get() : nullptr;
+  if (!ParentComp) return;
+  for (int32 I = 0; I < Feet.Num(); ++I)
+  {
+   FLamp L; L.Light = FString::Printf(TEXT("%s%02d"), LightPrefix, I + 1); L.Foot = Feet[I];
+   for (UPrimitiveComponent* U : Under) L.Under.Add(U);
+   const FVector Root = Feet[I] + Q.RotateVector(ArmOnPole), Slip = Root + Q.RotateVector(ArmEnd);
+   L.Pole = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:pole"), Family, I), PoleMesh, Feet[I], Q);
+   L.Arm = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:arm"), Family, I), ArmMesh, Root, Q);
+   UStaticMeshComponent* Head = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:head"), Family, I), HeadMesh, Slip, Q);
+   L.Head = Head;
+   L.Emitter = Slip + Q.RotateVector(EmitAt); L.Normal = Q.RotateVector(EmitNormal);
+   const int32 Slot = HeadMesh->GetMaterialIndex(LensSlot);
+   if (Slot >= 0 && Head->GetMaterial(Slot))
+   {
+    UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Head->GetMaterial(Slot), W);
+    D->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor::Black); Head->SetMaterial(Slot, D); L.Lens = D;
+   }
+   else UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamp %s has no %s slot; its light stays where the old one was"), *L.Light, LensSlot);
+   Out.Add(L);
+  }
+ }
+
  bool Highway(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
  {
   UStaticMeshComponent* Batch = NodeMesh(W, 35, 26);
@@ -187,27 +221,83 @@ namespace
   }
   Without->InitResources(); Batch->SetStaticMesh(Without);
   for (UPrimitiveComponent* C : Old) { C->SetVisibility(false); C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
-  const FQuat West(FVector(0, 1, 0), PI); // the arm's +x turned to -x, over the road
-  USceneComponent* ParentComp = P->Comp.Get();
-  for (int32 I = 0; I < Feet.Num(); ++I)
-  {
-   FLamp L; L.Light = FString::Printf(TEXT("Highway%02d"), I + 1); L.Foot = Feet[I];
-   if (Concrete) L.Under.Add(Concrete);
-   const FVector Root = Feet[I] + West.RotateVector(ArmOnPole), Slip = Root + West.RotateVector(ArmEnd);
-   L.Pole = Place(W, ParentComp, Parent, FString::Printf(TEXT("road:%d:pole"), I), PoleMesh, Feet[I], West);
-   L.Arm = Place(W, ParentComp, Parent, FString::Printf(TEXT("road:%d:arm"), I), ArmMesh, Root, West);
-   UStaticMeshComponent* Head = Place(W, ParentComp, Parent, FString::Printf(TEXT("road:%d:head"), I), HeadMesh, Slip, West);
-   L.Head = Head;
-   L.Emitter = Slip + West.RotateVector(EmitAt); L.Normal = West.RotateVector(EmitNormal);
-   const int32 Slot = HeadMesh->GetMaterialIndex(LensSlot);
-   if (Slot >= 0 && Head->GetMaterial(Slot))
-   {
-    UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Head->GetMaterial(Slot), W);
-    D->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor::Black); Head->SetMaterial(Slot, D); L.Lens = D;
-   }
-   Out.Add(L);
-  }
+  TArray<UPrimitiveComponent*> Under; if (Concrete) Under.Add(Concrete);
+  Raise(W, Parent, TEXT("road"), TEXT("Highway"), Feet, FQuat(FVector(0, 1, 0), PI) /* the arm's +x turned to -x, over the road */, Under, PoleMesh, ArmMesh, HeadMesh, Out);
   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: the highway's eight lamps are cobra heads on davit arms; %s old triangles cut"), *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }));
+  return true;
+ }
+
+ // ---- Caliche's Main Street: Town.ts streetLamps(), seven poles at x -7 (town terms) with their arms east over the street to the
+ // head at -3.9, in one of the town's merged batches (which one is found by where the triangles are). Each gets a concrete footing,
+ // as the web version had none. The lens quads Town.ts lit (world.town.runtime.panels.lamps.*) are hidden: the bowl is the lamp now.
+ bool Caliche(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
+ {
+  static const double Zs[] = { 2030, 2092, 2122, 2150, 2184, 2222, 2262 };
+  constexpr double LampX = -7, OriginX = 8000;
+  const int32 Group = W->Handle(TEXT("world.town.group"));
+  const FS47WebNode* G = W->Node(Group);
+  if (!G || !G->Comp.IsValid()) { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: no world.town.group; Caliche's lamps stay")); return false; }
+  // Pole, rod arm and box head of each, whole (the batch's own terms are the town's: the group stands at x 8000).
+  TArray<FBox> Boxes;
+  for (const double Z : Zs) Boxes.Add(FBox(FVector(LampX - .35, -10, Z - .3), FVector(-3.3, 25, Z + .3)));
+  UStaticMeshComponent* Batch = nullptr; UStaticMesh* Without = nullptr; TArray<int32> Counts; TArray<double> Bases;
+  for (int32 I = 0; I < W->PartCount() && !Batch; ++I)
+  {
+   const FS47WebNode* N = W->Node(I);
+   if (!N || N->Geo < 0 || N->bInstanced || !N->Name.IsEmpty()) continue;
+   int32 Up = N->Parent; bool bTown = false;
+   for (int32 Guard = 0; Up >= 0 && Guard < 8 && !bTown; ++Guard) { bTown = Up == Group; const FS47WebNode* P = W->Node(Up); Up = P ? P->Parent : -1; }
+   UStaticMeshComponent* C = bTown ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
+   if (!C || !C->GetComponentTransform().Equals(FTransform(FQuat::Identity, S47Three::ToUE(OriginX, 0, 0)), .001)) continue;
+   TArray<int32> Got; TArray<double> Low;
+   UStaticMesh* Cut0 = Cut(W, C, Boxes, Got, &Low);
+   bool bAll = Cut0 != nullptr;
+   for (const int32 K : Got) bAll &= K >= 12;
+   if (bAll) { Batch = C; Without = Cut0; Counts = Got; Bases = Low; }
+  }
+  if (!Batch) { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: no town batch holds all seven of Caliche's old lamps; they stay")); return false; }
+  // The ground under each, beside the pole (straight down would meet the old pole's collision, which the cut leaves): the sidewalk,
+  // from half a metre over the old pole's base (where Town.ts put it, on its own ground) down.
+  UWorld* World = W->GetWorld();
+  TArray<FVector> Feet;
+  for (int32 I = 0; I < UE_ARRAY_COUNT(Zs); ++I)
+  {
+   const double Z = Zs[I], Base = Bases[I];
+   TArray<double> Ys;
+   for (const FVector2D& D : { FVector2D(-.4, 0), FVector2D(0, .4), FVector2D(0, -.4) })
+   {
+    double Y = 0;
+    if (Down(World, FVector(OriginX + LampX + D.X, Base + .5, Z + D.Y), 3, {}, Y)) Ys.Add(Y);
+   }
+   Ys.Sort();
+   const double Y = Ys.Num() ? Ys[Ys.Num() / 2] : Base;
+   Feet.Add(FVector(OriginX + LampX, Y, Z));
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp caliche z %.0f: old base y %.3f, the sidewalk beside it at %.3f (%d of 3 found)"), Z, Base, Y, Ys.Num());
+  }
+  Without->InitResources(); Batch->SetStaticMesh(Without);
+  for (const FString& Path : W->PathsUnder(TEXT("world.town.runtime.panels.lamps.")))
+   if (const FS47WebNode* Q = W->Node(W->Obj(Path).I))
+    if (UPrimitiveComponent* Quad = Cast<UPrimitiveComponent>(Q->Comp.Get())) Quad->SetHiddenInGame(true);
+  // A footing each: concrete, 0.45 m square, 30 cm into the ground and 8 cm out of it; the pole stands on its top.
+  UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+  UMaterialInterface* Concrete = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/SaroSite/Materials/M_SaroSite_Concrete.M_SaroSite_Concrete"));
+  TArray<UPrimitiveComponent*> Under;
+  if (Cube && Concrete)
+  {
+   auto* F = NewObject<UInstancedStaticMeshComponent>(W, TEXT("S47StreetLamp_CalicheFootings"));
+   F->SetMobility(EComponentMobility::Movable); F->SetupAttachment(G->Comp.Get()); F->SetStaticMesh(Cube); F->SetMaterial(0, Concrete);
+   F->SetCollisionEnabled(ECollisionEnabled::QueryOnly); F->SetCollisionResponseToAllChannels(ECR_Ignore); F->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+   F->SetCastShadow(true); F->RegisterComponent();
+   for (FVector& Foot : Feet)
+   {
+    F->AddInstance(FTransform(FQuat::Identity, S47Three::ToUE(Foot.X, Foot.Y - .11, Foot.Z), FVector(.45, .45, .38)), true);
+    Foot.Y += .08;
+   }
+   W->AdoptNode(F, Group, TEXT("streetLamp:caliche:footings"));
+   Under.Add(F);
+  }
+  Raise(W, Group, TEXT("caliche"), TEXT("Caliche"), Feet, FQuat::Identity /* the arm east, over the street */, Under, PoleMesh, ArmMesh, HeadMesh, Out);
+  UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: Caliche's seven lamps are cobra heads on footings; batch %s, %s old triangles cut"), *Batch->GetName(), *FString::JoinBy(Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }));
   return true;
  }
 }
@@ -230,7 +320,8 @@ bool Build(AS47Web* W)
  TArray<FLamp>& Lamps = All().FindOrAdd(W);
  Lamps.Reset();
  const bool bRoad = Highway(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
- return bRoad;
+ const bool bTown = Caliche(W, PoleMesh, ArmMesh, HeadMesh, Lamps);
+ return bRoad || bTown;
 }
 
 TMap<FName, S47ExteriorFixtures::FFixture> Fixtures(AS47Web* W)

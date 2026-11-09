@@ -25,6 +25,8 @@
 #include "S47Three.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47StreetLamps.h"
+#include "Engine/World.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -62,7 +64,10 @@ bool FS47FarmNight::Build()
  auto Beam=[&](FLamp& L,const FString& Name,float Cone,float Reach)
  {
   auto* S=NewObject<USpotLightComponent>(M->Web,*Name);S->SetupAttachment(M->Web->GetRootComponent());S->SetMobility(EComponentMobility::Movable);
-  S->SetIntensityUnits(ELightUnits::Candelas);S->SetIntensity(0);S->SetInnerConeAngle(Cone*.6f);S->SetOuterConeAngle(Cone);S->SetAttenuationRadius(Reach*100);S->SetCastShadows(false);S->SetVisibility(false);S->RegisterComponent();
+  S->SetIntensityUnits(ELightUnits::Candelas);S->SetIntensity(0);S->SetInnerConeAngle(Cone*.6f);S->SetOuterConeAngle(Cone);S->SetAttenuationRadius(Reach*100);S->SetCastShadows(false);S->SetVisibility(false);
+  // STREETLAMPS-20261108: the road lamps are high-pressure sodium like every other street lamp (they were white); the sign's gooseneck stays an ordinary bulb
+  if(!Name.Contains(TEXT("SignLamp")))S->SetLightColor(S47StreetLamps::Sodium());
+  S->RegisterComponent();
   L.Light=S;
  };
  const FLinearColor Steel(.09,.09,.085);
@@ -96,12 +101,23 @@ bool FS47FarmNight::Build()
  }
  { // Where the service track to the substation leaves the highway: no pole stands on that side, so one of the same kind does.
   FLamp L;
-  LampOn(L,TEXT("TrafoLamp"),TrafoLampWorld(),FVector(7997,0,520),1100);
+  // STREETLAMPS-20261108: its foot on the ground measured under it (it was set at y -1 by hand): the first thing straight down.
+  FVector Foot=TrafoLampWorld();
+  {
+   FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47TrafoLampFoot),true);
+   if(UWorld* World=M->Web->GetWorld();World&&World->LineTraceSingleByChannel(Hit,S47Three::ToUE(Foot.X,Foot.Y+12,Foot.Z),S47Three::ToUE(Foot.X,Foot.Y-12,Foot.Z),ECC_Visibility,Q))
+   {
+    const double Y=S47Three::ToThree(Hit.ImpactPoint).Y;
+    UE_LOG(LogTemp,Display,TEXT("S47: the trafo lamp's pole stands on %s at y %.3f (was %.3f by hand)"),*GetNameSafe(Hit.GetComponent()),Y,Foot.Y);
+    Foot.Y=Y-.05; // set a little into it, as a pole is
+   }
+  }
+  LampOn(L,TEXT("TrafoLamp"),Foot,FVector(7997,0,520),1100);
   if(PoleMesh)
   {
    auto* C=NewObject<UStaticMeshComponent>(M->Web,TEXT("S47TrafoLampPole"));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(PoleMesh);
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetWorldScale3D(PoleScale);C->RegisterComponent();
-   L.Parts.Add(C);L.Offsets.Add(TrafoLampWorld());
+   L.Parts.Add(C);L.Offsets.Add(Foot);
   }
   Lamps.Add(L);
  }
