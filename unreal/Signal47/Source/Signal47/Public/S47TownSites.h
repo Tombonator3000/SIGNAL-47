@@ -82,6 +82,8 @@ private:
 	TArray<FS47Obstacle> Obstacles; // as added to the road's drive area, world terms
 	bool bBuilt = false, bActive = false, bDriveAdded = false;
 	double SeatIn = 0;
+	// The plants may come into the world after the boxes: looked for again a few times while none have been found.
+	double PlantIn = 5; int32 PlantTries = 0;
 	// Plants (Caliche's own and the route's) that stood where a box now stands: shrunk to nothing, and their transforms kept so that
 	// Stop puts them back.
 	struct FHidden { TWeakObjectPtr<UInstancedStaticMeshComponent> Comp; int32 Index = -1; FTransform Was; };

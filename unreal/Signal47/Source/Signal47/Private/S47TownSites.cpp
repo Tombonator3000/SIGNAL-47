@@ -462,10 +462,14 @@ void FS47TownSites::HidePlants(bool bHide)
 	const FVector Road = S47Legs::ORIGINS(TEXT("road"));
 	TArray<UInstancedStaticMeshComponent*> All;
 	M->Web->GetComponents<UInstancedStaticMeshComponent>(All);
+	int32 Kinds = 0, Seen = 0;
+	FVector2D First(0, 0);
 	for (UInstancedStaticMeshComponent* C : All)
 	{
 		const FString Name = C ? C->GetName() : FString();
 		if (!C || !(Name.StartsWith(TEXT("Nature_")) || Name.StartsWith(TEXT("RouteNature_")))) continue;
+		++Kinds; Seen += C->GetInstanceCount();
+		if (Kinds == 1 && C->GetInstanceCount() > 0) { FTransform T0; C->GetInstanceTransform(0, T0, true); First = FVector2D(T0.GetLocation().X / 100.0 - Road.X, T0.GetLocation().Y / 100.0 - Road.Z); }
 		bool bAny = false;
 		for (int32 I = 0; I < C->GetInstanceCount(); ++I)
 		{
@@ -481,7 +485,7 @@ void FS47TownSites::HidePlants(bool bHide)
 		}
 		if (bAny) { C->MarkRenderStateDirty(); if (auto* H = Cast<UHierarchicalInstancedStaticMeshComponent>(C)) H->BuildTreeIfOutdated(false, true); }
 	}
-	UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %d plants under the boxes hidden"), Hidden.Num());
+	UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %d plants under the boxes hidden (%d plant kinds, %d plants looked at, %d components; the first at road %.0f %.0f)"), Hidden.Num(), Kinds, Seen, All.Num(), First.X, First.Y);
 }
 
 void FS47TownSites::ShowAll(bool bShow)
@@ -520,6 +524,7 @@ void FS47TownSites::Step(double Dt)
 	if (!M || M->Web.Get() != Scene.Get()) { Begin(); return; }
 	// The truck's list is made once the world has its legs, which may be after the session began.
 	if (!bDriveAdded) SetDrive(true);
+	if (Hidden.IsEmpty() && PlantTries < 6 && (PlantIn -= Dt) <= 0) { PlantIn = 5; ++PlantTries; HidePlants(true); }
 	SeatIn -= Dt;
 	if (SeatIn > 0 || !M->Player || !M->Web) return;
 	SeatIn = 1;
