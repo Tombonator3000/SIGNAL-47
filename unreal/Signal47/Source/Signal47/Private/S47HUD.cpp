@@ -172,6 +172,7 @@
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "S47EyeGlint.h"
+#include "S47TripoNew.h"
 #include "SS47ScreenView.h"
 #include "SS47Widgets.h"
 #include "Slate/WidgetRenderer.h"
@@ -277,6 +278,7 @@ void AS47HUD::Start()
 		bOk &= FS47Happenings::SelfTest(Lines);
 		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the 02:00 lock and the lint)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
+		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);
 		bOk &= FS47Outfit::SelfTest(Lines); // (M7: the truck's upgrades and the gear that opens the night)
 		bOk &= FS47TripCamera::SelfTest(Lines);

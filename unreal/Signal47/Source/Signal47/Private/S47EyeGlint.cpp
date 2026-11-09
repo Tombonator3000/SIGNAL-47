@@ -90,27 +90,70 @@ double S47EyeGlint::Level(double Daylight,double Metres,double Facing)
  return FMath::Clamp(Dark*Near*Turned,0.,1.);
 }
 
+namespace S47EyeGlint::Detail
+{
+ // Static bodies baked in a pose (S47TripoNew, 9 November): the dot in the mesh's own centimetres from its foot pivot, forward +Y.
+ // Measured with Tools/triponpcs/measure_eyes.py on each <name>_eyes.blend (Tools/triponew/prepare.py), --dark .12, 9 November;
+ // dot_world as (100x, -100y, 100z), the picture checked by eye. Only Zet has the big black eyes: the Nordic's are a man's, blue,
+ // and the Cosmic one has no eyes at all, a glowing head; neither gets a dot until Tom says otherwise.
+ struct FStaticBody { const TCHAR* Asset; S47EyeGlint::FEyes Eyes; };
+ const FStaticBody StaticBodies[]={
+  {TEXT("SM_Tripo_Zet"),{FVector(7.04,12.27,121.77),FVector(-6.03,12.19,121.61)}},
+ };
+
+ // Two dots under Parent (at Socket): Head is the frame the eyes are given in, in Parent's own space; FaceFwd the face's forward in it.
+ void MakeDots(UObject* Outer,USceneComponent* Parent,FName Socket,const FTransform& Head,const FVector& FaceFwd,const S47EyeGlint::FEyes& Eyes,
+  TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out);
+}
+
+const S47EyeGlint::FEyes* S47EyeGlint::ForStatic(const FString& AssetName)
+{
+ for(const FStaticBody& B:StaticBodies)if(AssetName==B.Asset)return &B.Eyes;
+ return nullptr;
+}
+
+void S47EyeGlint::AddStatic(UObject* Outer,UStaticMeshComponent* Mesh,const FEyes& Eyes,TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out)
+{
+ if(!Outer||!Mesh)return;
+ MakeDots(Outer,Mesh,NAME_None,FTransform::Identity,FVector(0,1,0),Eyes,Out);
+}
+
+bool S47EyeGlint::AddStaticIfKnown(UObject* Outer,UStaticMeshComponent* Mesh,TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out)
+{
+ const UStaticMesh* Asset=Mesh?Mesh->GetStaticMesh():nullptr;
+ const FEyes* Eyes=Asset?ForStatic(Asset->GetName()):nullptr;
+ if(!Eyes)return false;
+ AddStatic(Outer,Mesh,*Eyes,Out);
+ return true;
+}
+
 void S47EyeGlint::Add(UObject* Outer,USkinnedMeshComponent* Mesh,const FEyes& Eyes,TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out,FName Bone)
 {
  if(!Outer||!Mesh)return;
  const int32 BoneIndex=Mesh->GetBoneIndex(Bone);
  if(BoneIndex==INDEX_NONE)return;
- auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
- auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
- if(!Sphere||!Base)return;
  double FaceYaw=0.;
  if(const USkinnedAsset* Asset=Mesh->GetSkinnedAsset())
   for(const FBody& B:Bodies)if(Asset->GetName()==B.Asset)FaceYaw=FMath::DegreesToRadians(B.FaceYawDeg);
  // The bone at its rest pose in component space: the body is built in it, before any pose.
  const FTransform Head=Mesh->GetBoneTransform(BoneIndex,FTransform::Identity);
  const FVector FaceFwd(FMath::Sin(FaceYaw),FMath::Cos(FaceYaw),0.);
+ MakeDots(Outer,Mesh,Bone,Head,FaceFwd,Eyes,Out);
+}
+
+void S47EyeGlint::Detail::MakeDots(UObject* Outer,USceneComponent* Mesh,FName Bone,const FTransform& Head,const FVector& FaceFwd,const S47EyeGlint::FEyes& Eyes,
+ TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out)
+{
+ auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+ auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ if(!Sphere||!Base)return;
  const uint32 Seed=NextSeed++*7919u;
  for(int32 I=0;I<2;++I)
  {
   auto* Mat=UMaterialInstanceDynamic::Create(Base,Outer);
   Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor::Black);Mat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor::Black);
   Mat->SetScalarParameterValue(TEXT("EmissivePower"),1);
-  auto* G=NewObject<UStaticMeshComponent>(Outer,*FString::Printf(TEXT("%sGlint%d"),*Mesh->GetName(),I));
+  auto* G=NewObject<UStaticMeshComponent>(Outer,MakeUniqueObjectName(Outer,UStaticMeshComponent::StaticClass(),FName(*FString::Printf(TEXT("%sGlint%d"),*Mesh->GetName(),I))));
   G->SetMobility(EComponentMobility::Movable);G->SetupAttachment(Mesh,Bone);G->SetStaticMesh(Sphere);G->SetMaterial(0,Mat);
   G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetGenerateOverlapEvents(false);G->SetCanEverAffectNavigation(false);
   // A point seen, not a lamp: no shadow, no light given to what is round it, not in reflections or the sky's capture.

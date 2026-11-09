@@ -31,7 +31,7 @@ python3 $Q python3 run.py import                  # triponpcs/import_assets.py t
 | walkie talkie 3d model.glb | SM_Tripo_Walkie | 0,34 m med antenne |
 | pakke tripo3d-1.glb | SM_Tripo_Parcel | 0,31 m, uten tekstur |
 
-Navnene på de fem første er de som `S47Hap` i `S47Happenings.cpp` venter på. Katalogen i spillet er `S47TripoNew` (stier, mål og stand-in når modellen mangler). Øynene til Zet, Nordic og Cosmic er målt med `triponpcs/measure_eyes.py` på `<navn>_eyes.blend`. Den fila har den bakte kroppen og et ettbeins armatur der hodet står i positur. `dot_world`, regnet om til `(100x, -100y, 100z)`, er punktet i meshens egne centimeter, ført i `S47EyeGlint` (`ForStatic`).
+Navnene på de fem første er de som `S47Hap` i `S47Happenings.cpp` venter på. Katalogen i spillet er `S47TripoNew` (stier, mål og stand-in når modellen mangler). Øynene måles med `triponpcs/measure_eyes.py` på `<navn>_eyes.blend`. Den fila har den bakte kroppen og et ettbeins armatur der hodet står i positur. `dot_world`, regnet om til `(100x, -100y, 100z)`, er punktet i meshens egne centimeter, ført i `S47EyeGlint` (`ForStatic`). Bare Zet har store svarte øyne. Han er målt med `--dark .12` (46 og 55 flater), og prikkene er kontrollert i bildet. Nordic har menneskeøyne med blå iris, og målingen fant bare én pupill. Cosmic har ikke ansikt. Ingen av de to får prikk før Tom avgjør det.
 
 Alle fem figurene har Tripo-rigg (80 UE5-bein) med egne klipp (idle, walk, run, look_around osv.). Her brukes de statisk. En animert utgave kan lages med `triponpcs/prepare_pale_one.py` ved å legge til rader i `BODIES`.
 
