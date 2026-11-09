@@ -4,6 +4,7 @@
 #include "S47Three.h"
 #include "S47Web.h"
 #include "S47Props.h"
+#include "S47CarPaint.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -171,7 +172,9 @@ void FS47TripoFleet::InstallWorld(AS47Web* W)
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47LegacyFleet")))return;
  auto* Police=Asset(TEXT("police_car"),TEXT("SM_TripoFleet_PoliceCar"));
  auto* Door=Asset(TEXT("police_car"),TEXT("SM_TripoFleet_PoliceCarDoor"));
- if(Police&&Door)AS47Props::RetargetPatrolCar(Police,Door,FVector(-.99,.83,-1.00));
+ // SHERIFF-CAR (Tom 9 November): the county's car is the Fairheaven LT '80 in the sheriff's tan and white (star and SHERIFF on the
+ // doors, Tools/freemodels/repaint.py). The Tripo car is a black and white STATE POLICE car: only with -S47TripoPatrol.
+ if(Police&&Door&&S47CarPaint::TripoPatrol())AS47Props::RetargetPatrolCar(Police,Door,FVector(-.99,.83,-1.00));
  const FS47Obj Diner=W->Obj(TEXT("world.diner.group"));if(!Diner||Diner.Find(TEXT("tripo:mesa-tractor")))return;
  UStaticMesh* Tractor=Asset(TEXT("heavy_truck"),TEXT("SM_TripoFleet_HeavyTruck"));
  const FS47Obj Original=Diner.Find(TEXT("prop:mesaTruck"));

@@ -9,6 +9,7 @@
 #include "S47Three.h"
 #include "S47Timeline.h"
 #include "S47Town.h"
+#include "S47TownDay.h"
 #include "S47TownLayer.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -129,6 +130,15 @@ void FS47TripoNpcs::Update()
  {
   if (auto* C = Slot.Mesh.Get()) { C->SetWorldTransform(Pose(At, Q)); C->SetVisibility(bShow); Slot.bBound = true; }
  };
+ // NPC-DAY (S47TownDay, Freeform): where the day has them, walking, at work, at home (not drawn); else where they stood here.
+ auto Daily = [&Place](FState::FSlot& Slot, const FVector& At, const FQuat& Q, bool bArea) -> bool
+ {
+  const FVector Ahead = Q.RotateVector(FVector(0, 0, 1));
+  FVector Feet; double Yaw = 0; bool bShow = false;
+  if (!S47TownDay::Pose(Slot.Role, At, FMath::Atan2(Ahead.X, Ahead.Z), Feet, Yaw, bShow)) return false;
+  Place(Slot, Feet, S47Three::Euler(0, Yaw, 0), bArea && bShow);
+  return true;
+ };
  auto OnObject = [&](FState::FSlot& Slot, const TCHAR* Path, const FVector& Offset, bool bFlip)
  {
   const FS47Obj O = W->Obj(Path); if (!O) return;
@@ -143,7 +153,16 @@ void FS47TripoNpcs::Update()
   if (R == TEXT("patron")) OnObject(Slot, TEXT("world.diner.objs.driver"), FVector(0,.28,0), true);
   else if (R == TEXT("nora")) OnObject(Slot, TEXT("world.room6.objs.nora"), FVector::ZeroVector, true);
   else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,.12,.02), true);
-  else if (R == TEXT("souvenir_man")) OnObject(Slot, TEXT("world.town.smoker"), FVector::ZeroVector, true);
+  else if (R == TEXT("souvenir_man"))
+  {
+   const FS47Obj O = W->Obj(TEXT("world.town.smoker"));
+   if (O)
+   {
+    const FVector At = O.LocalToWorld(FVector::ZeroVector); const FQuat Q = O.WorldQuaternion() * S47Three::Euler(0, PI, 0);
+    Mask(NodeComponent(O));
+    if (!Daily(Slot, At, Q, TownGroup.Shown())) Place(Slot, At, Q, O.Shown());
+   }
+  }
   else if (R == TEXT("dale"))
   {
    USceneComponent* Room = Named(TEXT("OperationsRoomRoot"));
@@ -154,8 +173,11 @@ void FS47TripoNpcs::Update()
    const FS47Obj Old = W->Obj(TEXT("world.diner.objs.waitress"));
    // A spare mannequin by the kitchen has no dialogue proxy. The working
    // MetaHuman remains the waitress at the counter.
-   if (Old && DinerInterior) Place(Slot, Old.WorldPosition() + FVector(.03,0,-2.40),
-    S47Three::Euler(0,PI/2,0), DinerInterior.Shown());
+   if (Old && DinerInterior)
+   {
+    const FVector At = Old.WorldPosition() + FVector(.03,0,-2.40); const FQuat Q = S47Three::Euler(0,PI/2,0);
+    if (!Daily(Slot, At, Q, DinerInterior.Shown())) Place(Slot, At, Q, DinerInterior.Shown());
+   }
   }
   else if (R == TEXT("attendant"))
   {
@@ -166,8 +188,8 @@ void FS47TripoNpcs::Update()
     // The night-window box starts at the counter, .65m above the floor.
     // Use the adjacent 2.20m doorway's bottom as the shared interior floor.
     const FVector At=Window.WorldPosition();
-    Place(Slot,FVector(At.X-.50,Door.WorldPosition().Y-1.10+.02,At.Z),
-     S47Three::Euler(0,PI/2,0),TownGroup.Shown());
+    const FVector Feet(At.X-.50,Door.WorldPosition().Y-1.10+.02,At.Z); const FQuat Q=S47Three::Euler(0,PI/2,0);
+    if (!Daily(Slot,Feet,Q,TownGroup.Shown())) Place(Slot,Feet,Q,TownGroup.Shown());
    }
   }
   else if (R == TEXT("earl"))
@@ -196,8 +218,12 @@ void FS47TripoNpcs::Update()
    else
    {
     const FS47Obj Door = W->Obj(TEXT("world.town.proxies.sheriffDoor"));
-    if (Door) Place(Slot, Door.WorldPosition() + FVector(.62,-1.05,0), S47Three::Euler(0,PI/2,0),
-     TownGroup.Shown() && Town && Town->bDeputyIn);
+    if (Door)
+    {
+     const FVector At = Door.WorldPosition() + FVector(.62,-1.05,0); const FQuat Q = S47Three::Euler(0,PI/2,0);
+     // (the diner is the town's area too: seen at lunch from the street or inside)
+     if (!Daily(Slot, At, Q, TownGroup.Shown() || DinerInterior.Shown())) Place(Slot, At, Q, TownGroup.Shown() && Town && Town->bDeputyIn);
+    }
    }
   }
   else if (R == TEXT("mara_ortiz"))

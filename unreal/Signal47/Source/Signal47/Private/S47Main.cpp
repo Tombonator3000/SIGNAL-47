@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47CarPaint.h"
 #include "S47TripoCreature.h"
 #include "S47EyeGlint.h"
 #include "S47Sky.h"
@@ -252,6 +253,8 @@ void US47Main::Step(double Dt)
 	{
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
 		TripoNpcs->Step();
+		// SHERIFF-CAR (Tom 9 November: the cars in town drawn as grey clay): every car in the town's own materials (S47CarPaint.h).
+		S47CarPaint::Step(Web.Get(), Dt);
 		FS47SaroRooms::Update(this, Dt);
 		S47Lived::Update(this, Dt);
 		// FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's dusk-to-dawn lamp, the old house's lit room. Freeform only.

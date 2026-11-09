@@ -26,10 +26,13 @@ namespace S47CalicheAccess
 namespace
 {
  TWeakObjectPtr<US47Main> Main;
- struct FRoom {FString Id,Use;FVector Root,Hinge;double X0,X1,Y0,Y1,Floor,Front,DoorY,Width,Height,StepGround=0;int32 Steps=1;bool bOpen=true;TWeakObjectPtr<UStaticMeshComponent> Leaf;};
+ struct FRoom {FString Id,Use;FVector Root,Hinge;double X0,X1,Y0,Y1,Floor,Front,DoorY,Width,Height,StepGround=0;int32 Steps=1;bool bOpen=true;TWeakObjectPtr<UStaticMeshComponent> Leaf;TWeakObjectPtr<UPointLightComponent> Lamp;};
  TArray<FRoom> Rooms;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> Retired;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lamps;
+ // NPC-DAY: the whole town's level (SetLampLevel: a blackout, a flicker) times each room's own (SetRoomLamp: whether anyone is home).
+ double LampK=1;TMap<FString,double> RoomK;
+ void ApplyLamps();
  struct FExteriorGlow {TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Base;};
  TArray<FExteriorGlow> ExteriorGlows;float LastExteriorMask=-1.f;
  void BindExterior(UStaticMeshComponent* C,const FString& Name)
@@ -80,9 +83,19 @@ bool MoveNearestDoor(const FVector& At,double Range)
  }
  return Best&&UseDoor(Best->Id);
 }
+namespace{void ApplyLamps()
+{
+ for(const FRoom& R:Rooms)if(auto* P=R.Lamp.Get())P->SetIntensity(float(650.*FMath::Clamp(LampK,0.,1.5)*FMath::Clamp(RoomK.FindRef(R.Id,1.),0.,1.)));
+}}
 void SetLampLevel(double K)
 {
- for(const auto& L:Lamps)if(auto* P=L.Get())P->SetIntensity(float(650.*FMath::Clamp(K,0.,1.5)));
+ LampK=K;ApplyLamps();
+}
+void SetRoomLamp(const FString& Id,double K)
+{
+ const FRoom* R=Find(Id);if(!R)return;
+ if(FMath::Clamp(K,0.,1.)==1.)RoomK.Remove(R->Id);else RoomK.Add(R->Id,FMath::Clamp(K,0.,1.));
+ ApplyLamps();
 }
 bool RoomMiddle(const FString& Id,FVector& Out)
 {
@@ -160,7 +173,7 @@ bool UseDoor(const FString& Id)
 }
 void Init(US47Main* M)
 {
- Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
+ Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();LampK=1;RoomK.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
  AS47Web* W=M->Web;FString Text;TSharedPtr<FJsonObject> J;
  if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
  if(J->GetStringField(TEXT("status"))!=TEXT("NATIVE_READY"))return;
@@ -242,7 +255,7 @@ void Init(US47Main* M)
     auto* Step=NewObject<UStaticMeshComponent>(W);Step->SetupAttachment(ParentComp.Get());Step->SetMobility(EComponentMobility::Movable);Step->SetStaticMesh(Cube);Step->SetMaterial(0,Mid);Step->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Step->SetCollisionResponseToAllChannels(ECR_Ignore);Step->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);Step->RegisterComponent();Step->SetWorldLocation(S47Three::ToUE(FX+R.Front*At,(Top+Bottom)/2,DZ));Step->SetWorldScale3D(FVector(.32,R.Width+.7,Top-Bottom));W->AdoptNode(Step,Parent,TEXT("caliche-access:entry-step:")+R.Id);
    }
   }
-  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(ParentComp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(650);L->SetLightColor(FLinearColor(1,.84,.63));L->SetAttenuationRadius(800);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.Root+FVector((R.X0+R.X1)/2,2.6,-(R.Y0+R.Y1)/2)));Lamps.Add(L);
+  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(ParentComp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(650);L->SetLightColor(FLinearColor(1,.84,.63));L->SetAttenuationRadius(800);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.Root+FVector((R.X0+R.X1)/2,2.6,-(R.Y0+R.Y1)/2)));Lamps.Add(L);R.Lamp=L;
   Rooms.Add(R);Sync(Rooms.Last());
  }
  for(int32 I=0;W->Node(I);++I)if(const auto* N=W->Node(I);N->Name==TEXT("prop:radioStationDoor"))

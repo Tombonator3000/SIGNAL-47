@@ -20,6 +20,8 @@ namespace S47CalicheAccess
  bool MoveNearestDoor(const FVector& At,double Range);
  // The rooms' own lamps, 1 as built and 0 out.
  void SetLampLevel(double K);
+ // NPC-DAY: one room's lamp (by its id: "Sheriff", "H02"...), 1 as built and 0 out: whether anyone is home. Times the level above.
+ void SetRoomLamp(const FString& Id,double K);
  // Test: the middle of a room's floor, by its id or use.
  bool RoomMiddle(const FString& Id,FVector& Out);
  // The room this point is in, by its id. False: none of them.

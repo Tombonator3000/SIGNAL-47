@@ -1,4 +1,5 @@
 #include "S47HighwayUfo.h"
+#include "S47CarPaint.h"
 #include "S47Rhythm.h"
 #include "S47FarmSite.h"
 
@@ -101,7 +102,8 @@ struct FS47HighwayUfo::FVisual
   if(!Ufo->Prepare())return false;if(!bCar)return true;if(bReady)return true;
   auto* Car=Asset(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCar.SM_TripoFleet_PoliceCar"));
   auto* Door=Asset(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCarDoor.SM_TripoFleet_PoliceCarDoor"));
-  bTripo=Car&&Door;
+  // SHERIFF-CAR: the county's tan and white Fairheaven; the Tripo STATE POLICE car only with -S47TripoPatrol.
+  bTripo=Car&&Door&&S47CarPaint::TripoPatrol();
   if(!bTripo)
   {
    Car=Asset(TEXT("/Game/Free/Vehicles/fairheaven_lt80_cop/StaticMeshes/fairheaven_lt80_cop.fairheaven_lt80_cop"));

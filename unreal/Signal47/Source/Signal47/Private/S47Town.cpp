@@ -131,10 +131,11 @@ void FS47Town::SetDeputy(bool bOn)
 	SetPanel(TEXT("sheriffWin"), bOn ? 1 : 0.07); SetFlood(10, bOn ? 4.5 : 0); GlowColor(21, bOn ? 0x2a2618 : 0);
 }
 void FS47Town::SetCarOut(bool bOn) { bCarOut = bOn && !bDeputyIn; PlaceCar(); }
+void FS47Town::SetCarHeld(bool bOn) { if (bCarHeld == bOn) return; bCarHeld = bOn; PlaceCar(); }
 
 void FS47Town::PlaceCar()
 {
-	const bool bOut = bCarOut, bHere = bDeputyIn || bOut;
+	const bool bOut = bCarOut, bHere = bDeputyIn || bOut || bCarHeld;
 	const double X = bOut ? CarShoulder.X : -12.3, Z = bOut ? CarShoulder.Z : 2106.5, Y = S47RoadTerrain::SurfaceY(X, Z);
 	Car.SetVisible(bHere); CarDoor.SetVisible(bOut); Car.SetPosition(FVector(X, Y, Z)); Car.SetRotY(bOut ? 0.04 : 0);
 	FS47Obj P = Proxy(TEXT("patrolCar")); P.SetPosition(FVector(X, Y + 0.8, Z));

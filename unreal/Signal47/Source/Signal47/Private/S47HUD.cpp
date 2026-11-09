@@ -1,4 +1,6 @@
 #include "S47HUD.h"
+#include "S47CarPaint.h"
+#include "S47TownDay.h"
 #include "S47StreetLamps.h"
 #if PLATFORM_LINUX
 #include "Linux/LinuxPlatformApplicationMisc.h"
@@ -276,6 +278,7 @@ void AS47HUD::Start()
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
+		bOk &= S47TownDay::SelfTest(Lines) & S47CarPaint::SelfTest(Lines); // (NPC-DAY: Caliche's people's days; SHERIFF-CAR: what each car slot is)
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);

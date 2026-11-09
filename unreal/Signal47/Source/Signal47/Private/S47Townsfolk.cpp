@@ -9,6 +9,7 @@
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47RadioTips.h"
+#include "S47TownDay.h"
 #include "S47TownUse.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
@@ -214,6 +215,7 @@ void FS47Townsfolk::Stop()
 	S47TownsfolkLocal::GAway.Reset();
 	// At process exit the object array may already be gone (as in S47Happenings::Stop): the town's figures are not touched then.
 	if (IsEngineExitRequested() || GExitPurge || IsGarbageCollecting()) return;
+	S47TownDay::Stop();
 	ShowPosts(true);
 }
 
@@ -295,6 +297,8 @@ void FS47Townsfolk::DevReturnAll()
 void FS47Townsfolk::Step(double Dt)
 {
 	if (!M || !M->Freeform) return;
+	// NPC-DAY: their days, every frame (where they are, walking, the sheriff's window, door and car, the houses' lamps).
+	S47TownDay::Step(M, Dt);
 	StepIn -= Dt;
 	if (StepIn > 0) return;
 	StepIn = 5;

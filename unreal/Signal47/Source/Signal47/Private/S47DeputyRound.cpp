@@ -1,6 +1,7 @@
 #include "S47DeputyRound.h"
 #include "S47NightRhythm.h"
 #include "S47Audio.h"
+#include "S47CarPaint.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
 #include "S47HighwayUfo.h"
@@ -41,7 +42,8 @@ struct FS47DeputyRound::FCar
   bReady=false;Web=Main->Web;Parts.Reset();Lamps.Reset();
   auto* Body=Mesh(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCar.SM_TripoFleet_PoliceCar"));
   auto* Door=Mesh(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCarDoor.SM_TripoFleet_PoliceCarDoor"));
-  const bool bTripo=Body&&Door;
+  // SHERIFF-CAR: the county's tan and white Fairheaven; the Tripo STATE POLICE car only with -S47TripoPatrol.
+  const bool bTripo=Body&&Door&&S47CarPaint::TripoPatrol();
   if(!bTripo)
   {
    Body=Mesh(TEXT("/Game/Free/Vehicles/fairheaven_lt80_cop/StaticMeshes/fairheaven_lt80_cop.fairheaven_lt80_cop"));
