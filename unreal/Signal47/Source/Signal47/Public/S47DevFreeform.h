@@ -70,6 +70,9 @@ private:
  // M6: what goes into SARO's walls, what stops one with nothing drawn, the street lamps' feet, and the views of Dale's window, the
  // substation and the lamps (SARO-CLIP, DALE-WINDOW, FENCES-INVISIBLE, STREETLAMPS-20261108); S47LooksDev.cpp.
  void AddLooks(FS47DevEvents& E);
+ // T16 (Tom's test, 7 November): how far one gets from the farm every way on foot and at the wheel, and what stops it; the sky's
+ // formations and preview, the highway both ways, the Pale One, each by the menu's own line and read back; S47ReachDev.cpp.
+ void AddReach(FS47DevEvents& E);
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);

@@ -11,6 +11,7 @@
 #include "S47Night.h"
 #include "S47OpenLand.h"
 #include "S47Relief.h"
+#include "S47RoadArea.h"
 #include "S47RoadEdge.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
@@ -375,46 +376,86 @@ namespace
 	// game's own walker and a controller of the game's own class on the leg's real area, as fast as the machine goes, not in its time.
 	// With -S47OpenLandOff it says what it was. Road-local, all of it.
 	bool ReachEndIsNatural(const FString& Why) { return Why.StartsWith(TEXT("hill")) || Why.StartsWith(TEXT("the rim")); }
-	void ReachWalk(US47Main* M, const FReachStart& Start, int32 DirAt)
+	// What stands in the way and can be gone round: a thing, not the land's end.
+	bool IsThing(const FString& Why)
 	{
+		return Why.StartsWith(TEXT("obstacle box")) || Why.StartsWith(TEXT("post or rock")) || Why.StartsWith(TEXT("collider")) || Why.StartsWith(TEXT("out of bounds box")) || Why.StartsWith(TEXT("the barricades"));
+	}
+	S47ReliefProbe::FReach WalkReach(US47Main* M, const TCHAR* Name, const FString& StartArea, double StartX, double StartZ, int32 DirAt, bool bRound)
+	{
+		S47ReliefProbe::FReach R;
 		US47World* Life = M->World;
 		AS47Walker* P = M->Player;
 		const double Angle = DirAt * UE_DOUBLE_PI / 4, Dx = FMath::Sin(Angle), Dz = -FMath::Cos(Angle), Step = .5;
-		Life->Enter(Start.Area);
-		const FVector At = S47OpenLand::FromRoad(Start.Area, Start.WalkX, Start.WalkZ);
+		R.Dx = Dx; R.Dz = Dz;
+		Life->Enter(StartArea);
+		const FVector At = S47OpenLand::FromRoad(StartArea, StartX, StartZ);
 		P->Place(At.X, At.Z, 0);
-		double Rx = Start.WalkX, Rz = Start.WalkZ, CheckAt = 0;
-		int32 Crossed = 0, NoGround = 0, Steps = 0;
-		FString AreaHere = Life->Area;
+		double Rx = StartX, Rz = StartZ, CheckAt = 0;
+		int32 Steps = 0;
+		FString AreaHere = Life->Area, RoundWhat;
 		const double Limit = 9000;
-		FString Why = TEXT("walked to the probe's limit");
-		for (; Steps * Step < Limit * 1.5; ++Steps)
+		R.Why = TEXT("walked to the probe's limit");
+		const auto Move = [&](double Ax, double Az)
 		{
-			const FVector A = S47OpenLand::FromRoad(Life->Area, Rx, Rz), B = S47OpenLand::FromRoad(Life->Area, Rx + Dx * Step, Rz + Dz * Step);
+			const FVector A = S47OpenLand::FromRoad(Life->Area, Rx, Rz), B = S47OpenLand::FromRoad(Life->Area, Rx + Ax, Rz + Az);
 			P->MoveBy(B.X - A.X, B.Z - A.Z);
 			Life->WalkOver();
-			if (Life->Area != AreaHere) { AreaHere = Life->Area; ++Crossed; }
+			if (Life->Area != AreaHere) { AreaHere = Life->Area; ++R.Crossed; }
 			S47OpenLand::RoadOf(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
+		};
+		const auto FreeAhead = [&](double Ahead) { const FVector N = S47OpenLand::FromRoad(Life->Area, Rx + Dx * Ahead, Rz + Dz * Ahead); return Life->WhyNotLand(N.X, N.Z) == TEXT("nothing says no here"); };
+		for (; Steps * Step < Limit * 1.5 && Steps < 40000; ++Steps)
+		{
+			Move(Dx * Step, Dz * Step);
 			if (Steps % 40 == 0 && Life->Area != TEXT("station01"))
 			{
 				double GroundY = 0;
-				if (!ProbeGroundY(M->Web.Get(), P->Pos, S47RoadTerrain::SurfaceY(Rx, Rz), GroundY)) ++NoGround;
+				if (!ProbeGroundY(M->Web.Get(), P->Pos, S47RoadTerrain::SurfaceY(Rx, Rz), GroundY)) ++R.NoGround;
 			}
 			if (Steps % 16 != 15) continue;
-			const double Along = (Rx - Start.WalkX) * Dx + (Rz - Start.WalkZ) * Dz;
+			const double Along = (Rx - StartX) * Dx + (Rz - StartZ) * Dz;
 			if (Along - CheckAt < 1)
 			{
 				const FVector Next = S47OpenLand::FromRoad(Life->Area, Rx + Dx * 1, Rz + Dz * 1);
-				Why = Life->WhyNotLand(Next.X, Next.Z);
+				R.Why = Life->WhyNotLand(Next.X, Next.Z);
+				// Round it, as one would: sideways one way up to 40 m, then back past the start the other way, until a step ahead is free.
+				if (bRound && R.Round < 24 && (IsThing(R.Why) || R.Why == TEXT("nothing says no here")))
+				{
+					bool bPast = false;
+					for (const double Side : { 1., -2. })
+					{
+						const int32 Count = FMath::RoundToInt(FMath::Abs(Side) * 80);
+						for (int32 K = 0; K < Count && !bPast; ++K)
+						{
+							Move(-Dz * FMath::Sign(Side) * Step, Dx * FMath::Sign(Side) * Step);
+							if (K % 4 == 3) bPast = FreeAhead(1.5);
+						}
+						if (bPast) break;
+					}
+					if (bPast)
+					{
+						++R.Round;
+						if (RoundWhat.Len() < 900) RoundWhat += FString::Printf(TEXT(" [%.0f m: %s]"), Along, *R.Why);
+						CheckAt = (Rx - StartX) * Dx + (Rz - StartZ) * Dz - 1;
+						continue;
+					}
+				}
 				break;
 			}
 			CheckAt = Along;
 		}
-		const double Along = (Rx - Start.WalkX) * Dx + (Rz - Start.WalkZ) * Dz;
-		const bool bEnd = ReachEndIsNatural(Why);
-		const FString Line = FString::Printf(TEXT("reach walk %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, %d points with no ground mesh"), Start.Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, NoGround);
+		R.Metres = (Rx - StartX) * Dx + (Rz - StartZ) * Dz;
+		R.EndX = Rx; R.EndZ = Rz; R.EndArea = Life->Area;
+		R.bNatural = ReachEndIsNatural(R.Why) && R.NoGround == 0;
+		R.Line = FString::Printf(TEXT("reach walk %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, %d points with no ground mesh, %d things gone round%s"), Name, ReachDirs[DirAt], Rx, Rz, R.Metres, *R.Why, R.Crossed, R.NoGround, R.Round, *RoundWhat);
+		return R;
+	}
+	void ReachWalk(US47Main* M, const FReachStart& Start, int32 DirAt)
+	{
+		const S47ReliefProbe::FReach R = WalkReach(M, Start.Name, Start.Area, Start.WalkX, Start.WalkZ, DirAt, false);
 		// (the measure of how it was only says what it was)
-		if (S47OpenLand::Live()) ProbeCheck(bEnd && NoGround == 0, Line); else ProbeLine(Line);
+		if (S47OpenLand::Live()) ProbeCheck(R.bNatural, R.Line); else ProbeLine(R.Line);
 	}
 	// Out from the road on both sides, all along it (Tom, 7 November 2026): from the crown of the highway, square to it, on foot and at the wheel, 40 m past its fence's line.
 	void ReachOffRoad(US47Main* M)
@@ -483,14 +524,16 @@ namespace
 		// (a building or a post in the way is no fence: nine in ten, and the log has the rest by name)
 		if (S47OpenLand::Live()) ProbeCheck(WalkHeld * 10 <= WalkOut && DriveHeld * 10 <= DriveOut, Line); else ProbeLine(Line);
 	}
-	void ReachDrive(US47Main* M, const FReachStart& Start, int32 DirAt)
+	S47ReliefProbe::FReach DriveReach(US47Main* M, const TCHAR* Name, const FString& StartArea, double StartX, double StartZ, int32 DirAt)
 	{
+		S47ReliefProbe::FReach R;
 		US47World* Life = M->World;
 		const double Angle = DirAt * UE_DOUBLE_PI / 4, Dx = FMath::Sin(Angle), Dz = -FMath::Cos(Angle);
-		FString Leg = FString(Start.Area) == TEXT("diner") ? FString(TEXT("road")) : FString(Start.Area);
+		R.Dx = Dx; R.Dz = Dz;
+		FString Leg = StartArea == TEXT("diner") ? FString(TEXT("road")) : StartArea;
 		IS47DriveArea* Area = Life->LegArea(Leg);
-		if (!Area) { ProbeCheck(false, FString::Printf(TEXT("no leg %s"), *Leg)); return; }
-		double Rx = Start.DriveX, Rz = Start.DriveZ;
+		if (!Area) { R.Why = R.Line = FString::Printf(TEXT("no leg %s"), *Leg); return R; }
+		double Rx = StartX, Rz = StartZ;
 		const auto HeadingIn = [&](const FString& InLeg, double Fx, double Fz, double Ax, double Az)
 		{
 			const FVector A = S47OpenLand::FromRoad(InLeg, Ax, Az), B = S47OpenLand::FromRoad(InLeg, Ax + Fx, Az + Fz);
@@ -508,6 +551,9 @@ namespace
 		FString Why = TEXT("drove to the probe's limit");
 		for (int32 Frame = 0; Frame < 60 * 60 * 8; ++Frame)
 		{
+			// The road's hills know whether the truck already stands in one (FS47RoadArea::Update, called each frame in the game
+			// for the truck on the road): without it, what the last frame left there decided (9 November: the probe drove through them).
+			if (Leg == TEXT("road")) static_cast<FS47RoadArea*>(Area)->Update(H, Time, D->Pos);
 			D->Update(H, In, FVector2D::ZeroVector);
 			Time += H;
 			Top = FMath::Max(Top, FMath::Abs(D->Speed));
@@ -533,7 +579,7 @@ namespace
 				double GroundY = 0;
 				if (!ProbeGroundY(M->Web.Get(), D->Pos, S47RoadTerrain::SurfaceY(Rx, Rz), GroundY)) ++NoGround;
 			}
-			Along = (Rx - Start.DriveX) * Dx + (Rz - Start.DriveZ) * Dz;
+			Along = (Rx - StartX) * Dx + (Rz - StartZ) * Dz;
 			if (Time - CheckTime < 3) continue;
 			const double Gained = Along - CheckAt;
 			CheckAt = Along; CheckTime = Time;
@@ -575,8 +621,15 @@ namespace
 			Why = Found;
 			break;
 		}
-		const FString Line = FString::Printf(TEXT("reach drive %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, most %.2f m of floor at one, %d things driven round, %d points with no ground mesh, top %.0f m/s"), Start.Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, MostFromLine, Detours, NoGround, Top);
-		if (S47OpenLand::Live()) ProbeCheck(ReachEndIsNatural(Why) && NoGround == 0, Line); else ProbeLine(Line);
+		R.Why = Why; R.Metres = Along; R.EndX = Rx; R.EndZ = Rz; R.EndArea = Leg; R.Crossed = Crossed; R.Round = Detours; R.NoGround = NoGround;
+		R.bNatural = ReachEndIsNatural(Why) && NoGround == 0;
+		R.Line = FString::Printf(TEXT("reach drive %s %s: stopped at road %.0f %.0f, %.0f m out, by: %s; %d lines crossed, most %.2f m of floor at one, %d things driven round, %d points with no ground mesh, top %.0f m/s"), Name, ReachDirs[DirAt], Rx, Rz, Along, *Why, Crossed, MostFromLine, Detours, NoGround, Top);
+		return R;
+	}
+	void ReachDrive(US47Main* M, const FReachStart& Start, int32 DirAt)
+	{
+		const S47ReliefProbe::FReach R = DriveReach(M, Start.Name, Start.Area, Start.DriveX, Start.DriveZ, DirAt);
+		if (S47OpenLand::Live()) ProbeCheck(R.bNatural, R.Line); else ProbeLine(R.Line);
 	}
 	void ProbeSetHour(US47Main* M, double Hour)
 	{
@@ -959,4 +1012,14 @@ namespace S47ReliefProbe
 		}
 		return ProbeFinish(TEXT("lost its place"));
 	}
+}
+
+namespace S47ReliefProbe
+{
+	FReach Reach(US47Main* Main, const TCHAR* Name, const FString& Area, double RoadX, double RoadZ, int32 Dir, bool bDrive, bool bRound)
+	{
+		if (!Main || !Main->World || !Main->Player || !Main->Web || Dir < 0 || Dir >= int32(UE_ARRAY_COUNT(ReachDirs))) { FReach R; R.Why = R.Line = TEXT("no game"); return R; }
+		return bDrive ? DriveReach(Main, Name, Area, RoadX, RoadZ, Dir) : WalkReach(Main, Name, Area, RoadX, RoadZ, Dir, bRound);
+	}
+	const TCHAR* ReachDir(int32 Dir) { return Dir >= 0 && Dir < int32(UE_ARRAY_COUNT(ReachDirs)) ? ReachDirs[Dir] : TEXT("?"); }
 }
