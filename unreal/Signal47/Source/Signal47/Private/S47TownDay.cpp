@@ -211,6 +211,8 @@ namespace S47TownDayLocal
  TWeakObjectPtr<UStaticMeshComponent> LunchBox; bool bLunchBuilt = false, bLunchOn = false;
  TMap<FString, float> Lamp;
  bool bHeldCar = false;
+ // NPC-ANIM: day keys whose body walks on its own clips (value: its sit clip sits, so no lowering).
+ TMap<FString, bool> Rigged;
 
  const FSpot* SpotOf(const FString& Id) { return S47TownDay::Spot(Id); }
  bool Visible(const FSpot* S) { return S && S->Kind != FSpot::Hidden && S->Kind != FSpot::Away; }
@@ -584,6 +586,13 @@ bool S47TownDay::Pose(const FString& InRole, const FVector& DefaultFeet, double 
  const double T = W.Age + FCrc::StrCrc32(*Role) % 97;
  double Yaw = W.Yaw;
  FVector2D At = W.At;
+ // NPC-ANIM: a rigged body's clips step, sway and breathe; its sit clip sits. It gets the path as it is.
+ if (const bool* SeatInClip = Rigged.Find(Role))
+ {
+  if (!*SeatInClip) Y -= SitDrop * FMath::SmoothStep(0., 1., W.Sit);
+  OutFeet = FVector(At.X, Y, At.Y); OutYaw = Yaw;
+  return true;
+ }
  if (W.Path.Num())
  {
   // Critics, round 8 (they slid along like statues): a walk read off the distance walked, about 0.7 m a step. The body rises over
@@ -604,6 +613,21 @@ bool S47TownDay::Pose(const FString& InRole, const FVector& DefaultFeet, double 
  }
  Y -= SitDrop * FMath::SmoothStep(0., 1., W.Sit);
  OutFeet = FVector(At.X, Y, At.Y); OutYaw = Yaw;
+ return true;
+}
+
+void S47TownDay::SetRigged(const FString& Role, bool bRigged, bool bSeatInClip)
+{
+ const FString Key = S47TownDayLocal::DayKey(Role);
+ if (bRigged) S47TownDayLocal::Rigged.Add(Key, bSeatInClip); else S47TownDayLocal::Rigged.Remove(Key);
+}
+
+bool S47TownDay::SitNow(const FString& Role, double& OutSit)
+{
+ using namespace S47TownDayLocal;
+ const FWalker* W = bActive ? Walkers.Find(DayKey(Role)) : nullptr;
+ if (!W || !W->bPlaced) return false;
+ OutSit = FMath::SmoothStep(0., 1., W->Sit);
  return true;
 }
 

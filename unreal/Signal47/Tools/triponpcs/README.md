@@ -104,3 +104,22 @@ python3 $Q python3 run_pale_one.py import  [pale|tall|roswell]   # /Game/License
 ```
 
 `prepare_pale_one.py` legger skala, gulv og akser inn i selve dataene og skalerer klippenes bein-location med. Armaturet heter `Armature`, så Unreal dropper dummy-noden. Mixamo-navn gis samme alias som i `prepare_roswell.py`, også i klippenes kanaler. `manifest.json` har øyemål (`eyes`) og bein per klipp som importen leser tilbake mot Blender: importen feiler over 1 cm avvik. `FS47ClipBank` leser klippene som `A_PaleOne_*`, `A_TallOne_*` og `A_Roswell2_*`; mangler skinn eller klipp, faller spillet tilbake til gammel kropp og prosedyrale bevegelser med én logglinje.
+
+## Byfolk på egen rigg (NPC-ANIM, 9. november)
+
+Alle menneskefigurene kom fra Tripo ferdig rigget og vektet (65 Mixamo-bein, `revision-v2/active-assets.json`).
+`prepare_rigged_townsfolk.py` beholder riggen og skinnet, gir beina UE5-navn (samme alias som Roswell 2) og legger på
+Tripos egne klipp fra en menneskeproporsjonert Tripo-kropp (`tripo-new-2026-11-09/raw/nordic.glb`, samme klippsett som
+Tall One). Overføringen tar hvert beins rotasjon bort fra hvileposituren i verdensrom, etter at målbeinets hvileretning er
+dreid inn på kildens (T- og A-positur møtes), og hoftebanen skaleres med forholdet mellom hoftehøydene. Gangen beholder
+sin egen forflytning; `FS47ClipBank` leser den og spiller gangen etter faktisk tilbakelagt avstand, med føttene plantet.
+
+```sh
+Q=~/.claude/skills/signal47-nattskift/scripts/q.py
+python3 $Q python3 run_rigged_townsfolk.py prepare deputy   # Blender: skinn, LOD, klipp, manifest.json
+python3 $Q python3 run_rigged_townsfolk.py import deputy    # import_pale_one.py: /Game/Licensed/TripoNPC/Rigged
+```
+
+Resultatet ligger privat i `tripo-npc-2026-10-29/rigged-2026-11-09/<rolle>` og i `Content/Licensed`, utenfor Git.
+`FS47TripoNpcs` bruker `SK_Tripo_<rolle>` og `A_Tripo_<rolle>_{idle,walk,sit,relax,look_around}` der de finnes, ellers
+den statiske figuren som før. `-S47RiggedNpcsOff` gir de statiske figurene til sammenligning.

@@ -59,6 +59,12 @@ namespace S47TownDay
  // and whether at all. Default: where it would have stood (an Anchor spot is that). False: no day for it now; keep your own.
  // Role is FS47TripoNpcs' ("waitress" is the cook's body); SpotNow takes either.
  SIGNAL47_API bool Pose(const FString& Role, const FVector& DefaultFeet, double DefaultYaw, FVector& OutFeet, double& OutYaw, bool& bOutShow);
+ // NPC-ANIM (Tom, 9 November: "så de ikke sklir over bakken"): a body that walks and stands on its own clips (FS47TripoNpcs'
+ // rigged figures). Pose then gives it the plain path: no steps' rise and fall, sway or breath (the clips have them), and with
+ // bSeatInClip no lowering behind the table either (its sit clip sits). Off again with bRigged false.
+ SIGNAL47_API void SetRigged(const FString& Role, bool bRigged, bool bSeatInClip);
+ // How far into a seat Role is now, 0 standing to 1 seated (eased as Pose eases it); false if the day has no place for it now.
+ SIGNAL47_API bool SitNow(const FString& Role, double& OutSit);
  // The spot the running plan has Role at now (empty: none).
  SIGNAL47_API FString SpotNow(const FString& Role);
  SIGNAL47_API FString DevState(US47Main* M);

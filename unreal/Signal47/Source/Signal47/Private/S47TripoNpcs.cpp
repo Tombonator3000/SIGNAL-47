@@ -11,11 +11,16 @@
 #include "S47Town.h"
 #include "S47TownDay.h"
 #include "S47TownLayer.h"
+#include "S47TripoCreature.h"
+#include "S47CreatureClips.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/World.h"
 #include "Misc/CommandLine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47TripoNpcs, Log, All);
@@ -62,6 +67,10 @@ struct FS47TripoNpcs::FState
   FString Role;
   TWeakObjectPtr<UStaticMeshComponent> Mesh;
   bool bBound = false;
+  // NPC-ANIM: the same figure on its own rig with clips, drawn instead of the bake where this build has it (Licensed/TripoNPC/Rigged).
+  TSharedPtr<FS47TripoCreature> Rig;
+  TWeakObjectPtr<USceneComponent> RigRoot;
+  bool bSeated = false; // the figure is a seated one (roles.json): it sits wherever it is put
  };
  TArray<FSlot> Slots;
  TWeakObjectPtr<UStaticMeshComponent> Radio;
@@ -72,7 +81,11 @@ struct FS47TripoNpcs::FState
 
 FS47TripoNpcs::FS47TripoNpcs(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 { bOff = FParse::Param(FCommandLine::Get(), TEXT("S47TripoNpcsOff")); }
-FS47TripoNpcs::~FS47TripoNpcs() = default;
+FS47TripoNpcs::~FS47TripoNpcs()
+{
+ // The day's walk goes back to the bake's steps for anyone this one put on a rig.
+ if (State) for (const auto& Slot : State->Slots) if (Slot.Rig) S47TownDay::SetRigged(Slot.Role, false, false);
+}
 
 UStaticMeshComponent* FS47TripoNpcs::Component(const FString& Role) const
 {
@@ -107,6 +120,40 @@ void FS47TripoNpcs::Build()
    C->ComponentTags.Add(*FString::Printf(TEXT("S47Tripo:%s"), Role)); Slot.Mesh = C;
   }
   else UE_LOG(LogS47TripoNpcs, Warning, TEXT("S47: Tripo %s unavailable; original visual retained"), Role);
+  // NPC-ANIM (Tom, 9 November: "Kan animasjoner fra andre figurer overføres til for eksempel byfolket, så de ikke sklir over
+  // bakken?"). Every one of these figures came out of Tripo rigged; Tools/triponpcs/prepare_rigged_townsfolk.py keeps that rig and
+  // gives it Tripo's clips from a human-proportioned body. Where this build has the result, the figure stands, walks and sits on
+  // it (FS47ClipMotion: its steps go by the distance it really goes, its feet stay where they land); where it has not, or with
+  // -S47RiggedNpcsOff, the static bake above as before. Placement, presence and story stay the bake's (Update).
+  if (Slot.Mesh.IsValid() && !FParse::Param(FCommandLine::Get(), TEXT("S47RiggedNpcsOff")))
+  {
+   const FString Skin = FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/SK_Tripo_%s.SK_Tripo_%s"), Role, Role);
+   if (USkeletalMesh* SkinAsset = LoadObject<USkeletalMesh>(nullptr, *Skin, nullptr, LOAD_NoWarn | LOAD_Quiet))
+   {
+    auto* RigRoot = NewObject<USceneComponent>(W, *FString::Printf(TEXT("TripoNPCRigRoot_%s"), Role));
+    W->AddInstanceComponent(RigRoot); RigRoot->SetMobility(EComponentMobility::Movable);
+    RigRoot->SetupAttachment(W->GetRootComponent()); RigRoot->RegisterComponent();
+    TSharedPtr<FS47TripoCreature> Rig = MakeShared<FS47TripoCreature>();
+    if (Rig->Build(W, RigRoot, FString::Printf(TEXT("TripoNPCRig_%s"), Role), *Skin))
+     Rig->Clips = FS47ClipBank::For(SkinAsset, *Rig, *FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/A_Tripo_%s_"), Role));
+    if (Rig->Ready() && Rig->Clips)
+    {
+     // Both the bake and the rig face +Y with their feet at the pivot under the pelvis: the rig takes the bake's transform as it is.
+     Rig->Mesh->SetRelativeRotation(FRotator::ZeroRotator);
+     Slot.Rig = Rig; Slot.RigRoot = RigRoot;
+     for (const TCHAR* Seated : { TEXT("patron"), TEXT("nora"), TEXT("earl"), TEXT("radio_woman") }) Slot.bSeated |= FCString::Strcmp(Role, Seated) == 0;
+     S47TownDay::SetRigged(Role, true, Rig->Clips->Has(ES47Clip::Sit));
+     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s on its own rig: walk %.2f m/s a cycle of %.0f cm, sit clip %s"), Role,
+      Rig->Clips->GaitSpeedMps(ES47Clip::Walk), Rig->Clips->GaitCycleCm(ES47Clip::Walk), Rig->Clips->Has(ES47Clip::Sit) ? TEXT("yes") : TEXT("no"));
+    }
+    else
+    {
+     if (UPoseableMeshComponent* Body = Rig->Mesh.Get()) Body->DestroyComponent();
+     RigRoot->DestroyComponent();
+     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s rigged skin found without its clips; the static bake is worn"), Role);
+    }
+   }
+  }
   State->Slots.Add(MoveTemp(Slot));
  }
  // The old bench figure and its radio were merged by material. Keep a real
@@ -300,6 +347,24 @@ void FS47TripoNpcs::Update()
    C->SetVisibility(false);
   }
   if (!bPlay) C->SetVisibility(false);
+ }
+ // NPC-ANIM: a rigged figure is drawn where its bake would be, in its place: standing, walking (FS47ClipMotion reads the walk off
+ // how far the root really goes, so the feet do not glide) or seated where the day has it seated (S47TownDay::SitNow; Pose gives
+ // it the plain path, S47TownDay::SetRigged). The bake keeps its visibility flag, which the roster, the radio and the quick check
+ // read, but is not drawn.
+ const double Clock = W->GetWorld() ? W->GetWorld()->GetTimeSeconds() : 0.;
+ for (auto& Slot : State->Slots)
+ {
+  UStaticMeshComponent* C = Slot.Mesh.Get(); USceneComponent* RigRoot = Slot.RigRoot.Get();
+  if (!C || !RigRoot || !Slot.Rig || !Slot.Rig->Ready() || !Slot.Rig->Clips) continue;
+  C->SetHiddenInGame(true);
+  FTransform T = C->GetComponentTransform(); T.SetScale3D(FVector::OneVector);
+  RigRoot->SetWorldTransform(T);
+  FS47ClipPose Clip; Clip.bVisible = C->IsVisible() && Slot.bBound; Clip.Clock = Clock; Clip.Move = ES47Clip::Walk;
+  double Sit = 0;
+  const bool bSit = Slot.bSeated || (S47TownDay::SitNow(Slot.Role, Sit) && Sit > .5);
+  if (bSit && Slot.Rig->Clips->Has(ES47Clip::Sit)) Clip.Stand = ES47Clip::Sit;
+  Slot.Rig->PlayClips(Clip);
  }
  if (UStaticMeshComponent* Radio = State->Radio.Get())
  {
