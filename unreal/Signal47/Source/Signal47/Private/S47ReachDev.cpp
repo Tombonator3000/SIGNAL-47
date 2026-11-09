@@ -105,6 +105,8 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 				const FString Line = FString::Printf(TEXT("%s: %d lights drawn, %d on the screen (first at%s)"), *Label, Shown.Num(), Seen, *Where);
 				UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), Seen > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
 				Tell(Seen > 0, Line, 8);
+				// Gone again once the picture is taken, so the next line starts from the night's own sky.
+				After(3, [this] { if (M->SkyVisitors) { M->SkyVisitors->DevStage(0); M->SkyVisitors->DevFormationStop(); } });
 			});
 		});
 	};
@@ -124,6 +126,7 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 		Go(S, [this]
 		{
 			if (!M->SkyVisitors) { Tell(false, TEXT("no sky")); return; }
+			M->SkyVisitors->DevStage(0);
 			M->SkyVisitors->DevFormationStop();
 			// What the night's own schedule sends, read each half hour from the state it keeps (the log has S47SkyVisitors' own lines).
 			TSharedRef<int32> Came = MakeShared<int32>(0), Asked = MakeShared<int32>(0);
@@ -170,6 +173,7 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 			auto* F = Session();
 			if (!F || !M->HighwayUfo || !M->World) { Tell(false, TEXT("Freeform only")); return; }
 			ClearRunning();
+			if (M->World->bDriving) M->World->StopDriving();
 			ToHour(3.2, 5.5);
 			M->HighwayUfo->Begin(nullptr);
 			// From the town's edge north-bound, from the motel south-bound: the stretch where it may start lies just ahead.

@@ -423,15 +423,23 @@ namespace
 				if (bRound && R.Round < 24 && (IsThing(R.Why) || R.Why == TEXT("nothing says no here")))
 				{
 					bool bPast = false;
-					for (const double Side : { 1., -2. })
+					// A straight line can go in by a door or a gate and meet the far wall: sideways finds no way there, so back out the way
+					// it came, 12 m at a time, and try again, as one walks back out of a barn (sweep of 9 November: the barn, the cows' pen).
+					for (int32 Back = 0; Back < 4 && !bPast; ++Back)
 					{
-						const int32 Count = FMath::RoundToInt(FMath::Abs(Side) * 80);
-						for (int32 K = 0; K < Count && !bPast; ++K)
+						for (int32 K = 0; K < (Back ? 24 : 0); ++K) Move(-Dx * Step, -Dz * Step);
+						for (const double Side : { 1., -2. })
 						{
-							Move(-Dz * FMath::Sign(Side) * Step, Dx * FMath::Sign(Side) * Step);
-							if (K % 4 == 3) bPast = FreeAhead(1.5);
+							const int32 Count = FMath::RoundToInt(FMath::Abs(Side) * 80);
+							for (int32 K = 0; K < Count && !bPast; ++K)
+							{
+								Move(-Dz * FMath::Sign(Side) * Step, Dx * FMath::Sign(Side) * Step);
+								if (K % 4 == 3) bPast = FreeAhead(1.5);
+							}
+							if (bPast) break;
+							// back to the middle before the other side, or the next backing starts 40 m off
+							if (Side < 0) for (int32 K = 0; K < 80; ++K) Move(-Dz * Step, Dx * Step);
 						}
-						if (bPast) break;
 					}
 					if (bPast)
 					{

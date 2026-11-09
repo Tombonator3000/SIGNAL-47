@@ -567,6 +567,9 @@ void FS47DevFreeform::StartHighway(bool bNorth,bool bFollow)
  auto* F=Session();
  if(!F||!M->HighwayUfo||!M->World){Tell(false,TEXT("Freeform only"));return;}
  ClearRunning();
+ // StartTrip does nothing while a truck is driven: south after north kept the north-bound trip, and its encounter went north
+ // (sweep of 9 November). Out of the cab first, as Go does.
+ if(M->World->bDriving)M->World->StopDriving();
  ToHour(SmallFrom,SmallTo);
  // Clears its rest, which the encounter asks for: the save it holds is only this test run's.
  M->HighwayUfo->Begin(nullptr);
@@ -591,7 +594,7 @@ void FS47DevFreeform::AddHighway(FS47DevEvents& E)
  E.AddFreeform(G,TEXT("On the road, the night's own rule"),TEXT("03:12, north-bound; it comes on the open stretch unless it has had its three nights"),[this]
  {
   auto* F=Session();if(!F||!M->World){Tell(false,TEXT("Freeform only"));return;}
-  ClearRunning();ToHour(SmallFrom,SmallTo);M->HighwayUfo->Begin(nullptr);
+  ClearRunning();if(M->World->bDriving)M->World->StopDriving();ToHour(SmallFrom,SmallTo);M->HighwayUfo->Begin(nullptr);
   const double StartX=1.8,StartZ=1700.;
   FS47TripOpts O;O.AtPos=FVector(8000+StartX,S47RoadTerrain::SurfaceY(StartX,StartZ),StartZ);O.AtHeading=0.;O.Leg=TEXT("road");
   M->World->StartTrip(TEXT("road"),TEXT("diner"),O);
