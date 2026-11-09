@@ -30,6 +30,13 @@ Dale, Tom 7. november: Dale er en sint tysker, og temperamentet er inspirert av 
 
 Dales stemme, Tom 9. november: Dale får en egen, oppdiktet stemme i stedet for Kinski-klonen. Tom ba ca. 14:00 om «stemme som du mener er best». Valget er designprofilen `dale_de_design`: en middelaldrende mann med lav stemme, der den tyske aksenten kommer fra modellen via en tysk prøvetekst. Ingen virkelig person ligger bak, og den er ikke en klone av en ekte stemme. Kinski-profilen brukes ikke til nye replikker. De gamle Kinski-takes i Story byttes før spillet deles. Maler med sted eller retning som settes inn under spillet, vises som tekst uten stemme inntil videre. Se `unreal/Narrative/DaleVoice/`.
 
+Saker og OPS, Tom 9. november ca. 16:40 (svar på gjennomgangen i [SAKER_OPS](../Research/Gameplay/SAKER_OPS_2026-11-09.md)):
+1. To lukkeregler beholdes, men saksarket sier tydelig hvilken som gjelder: prøvesak (svar med en gang) eller vurdering (svar neste morgen).
+2. Første sak åpnes når jobben er registrert på OPS, ikke ved RETAIN på spoledekket.
+3. Telex blir fysisk papir: svar og nattlogg rives av ved telexmaskinen.
+
+Samme melding: byfolket skal ikke skli over bakken. Animasjoner fra andre figurer kan overføres (retargeting). Caliche trenger kanskje et par hus til, så folk har steder å bo. Kinski-opplesningen av papirer skal slettes.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
