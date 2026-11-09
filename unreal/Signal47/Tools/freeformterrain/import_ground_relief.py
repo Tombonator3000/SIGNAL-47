@@ -11,6 +11,7 @@ Does not touch import_ground.py or M_S47_DesertGround, which Story uses. Reuses 
 - no count of tiles: each layer's offset jumps by a smooth index (T_FF_Noise.a), the sand crossfaded over the jump and the rest picked
 - stones lying in the ground: T_FF_Stones_*, whole stones by rank, more on slopes, on fans and in gravel washes, standing up by displacement
 - PlainMesh (scalar, 0): for a flat mesh with no sediment in UV1 and no vertex colours of its own (the SARO corridor's ground, S47FreeformTerrain): no sediment, and the ring's own shade
+- WetK (scalar, 0): the ground after a stray shower (S47WeatherLive), darker, richer and less rough in patches and drops; 0 changes nothing
 - soil and plants agree: T_FF_Field holds what S47Flora decides by road-local metres, so the soil is darker under each creosote and against
   the farm's buildings, a little darker where the stands are, and the stones lie where the flora's own rocks lie
 
@@ -209,6 +210,42 @@ return min(p, 0.98);
 """
 
 
+# SHOWER-LOOK-20261109: wet ground where a stray shower has been (WetK from S47WeatherLive: the slick dirt's own Wet, 0 to 1).
+# Wet desert soil goes about half as bright, a little richer in colour and less rough; wet stone darker and glossier still. It is not
+# one even sheet: the water stays longest in the washes and the low patches and leaves the rises and slopes first (the 67 m field,
+# the 23 m patch, the grain tearing the edge), and drops lie about as dark spots of 1 to 2 cm around the wet and over the dry,
+# averaged out to their share of darkness where they are too small to draw. At WetK 0 the colour and roughness pass through.
+WET = """
+float k = saturate(K);
+if (k <= 0.0) return float4(C, R);
+float deg = acos(saturate(normalize(N).z)) * 57.29578;
+float sedSand = smoothstep(0.55, 0.85, Sed.x);
+float lump = dot(P1.rgb * Ratio, float3(0.3, 0.6, 0.1)) - 1.0;
+float hold = 0.5 + 0.9 * (N2.r - 0.5) + 0.35 * (N1.b - 0.5) + 0.6 * lump + 0.25 * sedSand - 0.3 * smoothstep(8.0, 25.0, deg) + 0.22 * (Grit.a - 0.5);
+float edge = 1.0 - 1.3 * k;
+float wet = saturate((hold - edge) / 0.12);
+// the drops: one cell of 7 cm in two holds one, near the wet and while it is still wet
+float2 p = World.xy / 7.0;
+float2 c = floor(p); c -= 4096.0 * floor(c / 4096.0);
+float2 f = frac(p);
+float3 q = frac(float3(c.xyx) * float3(0.1031, 0.1030, 0.0973));
+q += dot(q, q.yzx + 33.33);
+float3 h = frac((q.xxy + q.yzz) * q.zyx);
+float rad = 0.11 + 0.15 * h.z;
+float w = max(fwidth(p.x), fwidth(p.y));
+float density = 0.5 * saturate(k * 2.5) * saturate((hold - edge + 0.4) / 0.4);
+float spot = (1.0 - smoothstep(rad - w, rad + w, length(f - (h.xy * 0.6 + 0.2)))) * step(h.z * 0.6 + h.x * 0.4, density);
+spot = lerp(spot, density * 0.17, saturate(w * 2.0 - 0.2));
+float m = max(wet, spot);
+if (m <= 0.0) return float4(C, R);
+float l = dot(C, float3(0.3, 0.59, 0.11));
+float3 rich = max(lerp(float3(l, l, l), C, 1.18), 0.0);
+float dark = lerp(lerp(0.52, 0.6, Gravel), 0.46, max(Stone, Rock));
+float rough = min(R, lerp(0.52, 0.34, max(Stone, Rock)));
+return float4(lerp(C, rich * dark, m), lerp(R, rough, m));
+"""
+
+
 def build(mat, tex, stone, ff, report):
     wp = node(mat, unreal.MaterialExpressionWorldPosition, -3600, -1800)
     uv1_raw = node(mat, unreal.MaterialExpressionTextureCoordinate, -3600, -1700, coordinate_index=1)
@@ -271,8 +308,9 @@ def build(mat, tex, stone, ff, report):
     crust_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -2100, parameter_name='CrustAmount', default_value=.7)
     gravel_amount = node(mat, unreal.MaterialExpressionScalarParameter, -2200, -2000, parameter_name='GravelAmount', default_value=.6)
     # in the terms of masks_code: crust above .46, gravel below .42, mean of a field .5
-    # (twice as steep as they read: an edge between soils is short, not a soft cloud)
-    t150 = custom(mat, 'return 0.46 + (N1.g * 0.7 + N2.r * 0.3 - 0.55) * 2.0;', dict(N1=n1, N2=n2), f1, -2000, -2100)
+    # (T16-03, Tom 7 November: "store flater med overlapp mellom to teksturer". At twice the field's slope the crust came as whole
+    # orange lakes 20-40 m across with a cut edge on the grey gravel. Now 1.4 times, and the small field breaks each lake up.)
+    t150 = custom(mat, 'return 0.46 + (N1.g * 0.6 + N2.r * 0.25 + N2.b * 0.15 - 0.55) * 1.4;', dict(N1=n1, N2=n2), f1, -2000, -2100)
     # gravel where the washes run, where the flora's rocks lie, and on slopes
     t40 = custom(mat, """
 float g = N1.b * 0.75 + N2.g * 0.25 + 0.25 * Fld.g + 0.22 * Fld.b + 0.35 * smoothstep(6.0, 24.0, acos(saturate(normalize(N).z)) * 57.29578);
@@ -339,8 +377,15 @@ return normalize(tx.zyx * w.x + ty.xzy * w.y + tz.xyz * w.z);
     crust_mean = node(mat, unreal.MaterialExpressionConstant3Vector, -1500, -860, constant=unreal.LinearColor(CRUST_MEAN[0], CRUST_MEAN[1], CRUST_MEAN[2], 1))
     gravel_mean = node(mat, unreal.MaterialExpressionConstant3Vector, -1500, -820, constant=unreal.LinearColor(GRAVEL_MEAN[0], GRAVEL_MEAN[1], GRAVEL_MEAN[2], 1))
     # crust a little paler than the soil it dried from; the gravel the scan's own mix of colours over the same soil
-    crust = custom(mat, 'return Soil * Tint.rgb * lerp(1.0, clamp(D.rgb * Ratio, 0.3, 2.5), 0.35 + 0.65 * smoothstep(0.3, 0.7, N2.b)) * float3(1.13, 1.12, 1.11);',
-                   dict(Soil=crust_mean, Tint=crust_tint, D=crust_d, N2=n2, Ratio=ratio), f3, -1300, -850)
+    # (T16-03: the crust's own hue stood orange on the sand beside it, a second texture laid over the first. Now the sand under it
+    # gives the hue, and the crust keeps its cracks and a little warmth: the same soil, dried, not another one.)
+    crust = custom(mat, """
+float3 own = Soil * Tint.rgb * lerp(1.0, clamp(D.rgb * Ratio, 0.3, 2.5), 0.35 + 0.65 * smoothstep(0.3, 0.7, N2.b)) * float3(1.13, 1.12, 1.11);
+float3 sand = Sand.rgb;
+float lo = dot(own, float3(0.3, 0.59, 0.11)), ls = max(dot(sand, float3(0.3, 0.59, 0.11)), 0.001);
+float3 same = sand * clamp(lo / ls, 0.85, 1.25) * float3(1.03, 1.0, 0.97);
+return lerp(own, same, 0.72);
+""", dict(Soil=crust_mean, Tint=crust_tint, D=crust_d, N2=n2, Ratio=ratio, Sand=d['Sand']), f3, -1300, -850)
     # (a little darker and greyer than the soil as a whole: so a wash still reads at 100 m, when its stones have gone to one mip)
     gravel = custom(mat, 'return Soil * Tint.rgb * D.rgb * Ratio * float3(0.86, 0.87, 0.92);', dict(Soil=gravel_mean, Tint=gravel_tint, D=gravel_d, Ratio=ratio), f3, -1300, -700)
     l1 = lerp(mat, d['Sand'], crust, mc, -1100, -900)
@@ -419,6 +464,13 @@ float h = lerp(H, 0.5, off);
 h = lerp(lerp(h, Hc, M.x), Hg, M.y);
 return lerp(h, 0.5, M.z);
 """, dict(H=(disp_h, 'A'), A=(disp_d, 'A'), P=presence, Hc=(disp_c, 'A'), Hg=(disp_g, 'A'), M=disp_masks), unreal.CustomMaterialOutputType.CMOT_FLOAT1, -1000, 1100)
+
+    # SHOWER-LOOK-20261109: the ground after a stray shower (WetK, 0 dry: then this node changes nothing)
+    wet_k = node(mat, unreal.MaterialExpressionScalarParameter, -400, 200, parameter_name='WetK', default_value=0.)
+    wet = custom(mat, WET, dict(C=base, R=rough, K=wet_k, World=wp, N1=n1, N2=n2, P1=patch1, Sed=uv1, Stone=stones_big, Gravel=mg, Rock=mr,
+                                N=n_ws, Grit=(grit, 'RGBA'), Ratio=ratio), f4, -300, 200)
+    base = channels(mat, wet, -200, 200, r=True, g=True, b=True)
+    rough = channels(mat, wet, -200, 260, a=True)
 
     attrs = node(mat, unreal.MaterialExpressionMakeMaterialAttributes, -100, -100)
     # (Specular stays the open pin's .5. Tom, 7 November: "behold farger bakke". Down to .15 it read 56,41,31 against 61,46,36 at 18:00; the track of light toward a low sun is the price.)

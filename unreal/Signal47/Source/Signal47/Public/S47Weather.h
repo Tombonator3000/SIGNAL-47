@@ -49,8 +49,15 @@ namespace S47Weather
  // breeze the brush always has, 0 to 1 (1 about 34 mph); Mph: the wind now; Dust, Rain, Haze 0 to 1; Wet: how slick the dirt is
  // after a shower; CloudBias: what the day adds to the sky's own cover (FS47Sky::CloudCoverAt); Storm: the wind held into the night;
  // DirX, DirZ: which way it blows, three-space (x east, z south), away from FDay::WindFrom.
- struct FNow{double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8;bool bThunder=false;};
+ // ShowerH (SHOWER-LOOK-20261109): hours since the day's shower set in (FDay::ShowerAt), NoShower on a day without one; the sky
+ // walks the shower's cloud past on it (FS47Sky::CellPlace), upwind before and downwind after.
+ constexpr double NoShower=-99;
+ struct FNow{double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower;bool bThunder=false;};
  SIGNAL47_API FNow Now(int32 Seed,int32 CalendarDay,double ClockOfDay);
+ // A shower's own course, Hours after it set in: the rain (about three quarters of an hour at its fullest), the wet dirt (slick from a
+ // third of an hour in, drying from an hour and a half, dry by four), thunder far off with it if bThunder, and what its cloud adds to
+ // the sky. Now() has a shower day's from this, and F10's shower runs the same course on the clock.
+ SIGNAL47_API void ShowerCourse(double Hours,bool bThunder,double& OutRain,double& OutWet,double& OutCloud,bool& bOutThunder);
  SIGNAL47_API double CloudBiasAt(const FDay& D,double ClockOfDay);
  // What is on the world now: FS47WeatherLive writes it each frame in Freeform; off elsewhere, where the sky is the Story's own.
  // FogAdd: density added to the native fog where the player is (less indoors); Tint, TintK: the colour the fog takes and how much
@@ -58,7 +65,7 @@ namespace S47Weather
  struct FLive
  {
   bool bOn=false;
-  double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8;
+  double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower;
   double FogAdd=0,TintK=0,HorizonK=0;
   FLinearColor Tint=FLinearColor(.5f,.38f,.24f);
  };

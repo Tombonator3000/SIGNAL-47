@@ -1,10 +1,12 @@
 #include "S47WeatherLive.h"
 
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "S47Audio.h"
 #include "S47Drive.h"
 #include "S47Freeform.h"
+#include "S47FreeformTerrain.h"
 #include "S47Main.h"
 #include "S47Sky.h"
 #include "S47UI.h"
@@ -31,7 +33,7 @@ void FS47WeatherLive::Shown(const S47Weather::FNow& Now, double Daylight, double
 	using namespace S47WeatherLiveLocal;
 	Out.bOn = true;
 	Out.Wind = Now.Wind; Out.Mph = Now.Mph; Out.Dust = Now.Dust; Out.Rain = Now.Rain; Out.Haze = Now.Haze; Out.Wet = Now.Wet;
-	Out.CloudBias = Now.CloudBias; Out.Storm = Now.Storm; Out.DirX = Now.DirX; Out.DirZ = Now.DirZ;
+	Out.CloudBias = Now.CloudBias; Out.Storm = Now.Storm; Out.DirX = Now.DirX; Out.DirZ = Now.DirZ; Out.ShowerH = Now.ShowerH;
 	const double Day = FMath::Clamp(Daylight, 0.0, 1.0), Open = FMath::Clamp(InOutdoors, 0.0, 1.0);
 	// how thick the air is where the player is: the sand most, the morning's haze, a little in a shower
 	Out.FogAdd = FMath::Min(MaxFog, (SandFog * Now.Dust + HazeFog * Now.Haze + RainFog * Now.Rain) * FMath::Lerp(IndoorShare, 1.0, Open));
@@ -56,23 +58,32 @@ void FS47WeatherLive::Ease(S47Weather::FNow& Cur, const S47Weather::FNow& Want, 
 	Dir = Dir.SizeSquared() > 1e-8 ? Dir.GetSafeNormal() : FVector2D(Want.DirX, Want.DirZ);
 	Cur.DirX = Dir.X; Cur.DirZ = Dir.Y;
 	Cur.bThunder = Want.bThunder;
+	Cur.ShowerH = Want.ShowerH; // (a clock, not a quantity: the cloud's walk is already smooth)
 }
 
-void FS47WeatherLive::Override(EDev Kind, S47Weather::FNow& Now)
+void FS47WeatherLive::Override(EDev Kind, S47Weather::FNow& Now, double ShowerHours)
 {
 	switch (Kind)
 	{
 	case EDev::Sand: Now.Wind = FMath::Max(Now.Wind, .8); Now.Mph = FMath::Max(Now.Mph, 30.0); Now.Dust = 1; Now.Storm = FMath::Max(Now.Storm, .8); Now.CloudBias = -.12; Now.Rain = 0; Now.Wet = 0; Now.Haze = 0; break;
-	case EDev::Shower: Now.Rain = 1; Now.Wet = 1; Now.CloudBias = .24; Now.bThunder = true; Now.Dust = 0; break;
+	case EDev::Shower:
+	{
+		// SHOWER-LOOK-20261109: the shower's own course, as a shower day has it, so the rain stops and the dirt dries after it
+		double Rain = 0, Wet = 0, Cloud = 0; bool bThunder = false;
+		S47Weather::ShowerCourse(ShowerHours, true, Rain, Wet, Cloud, bThunder);
+		Now.Rain = Rain; Now.Wet = Wet; Now.CloudBias = FMath::Max(Now.CloudBias, Cloud); Now.bThunder = bThunder; Now.ShowerH = ShowerHours; Now.Dust = 0;
+		break;
+	}
 	case EDev::Haze: Now.Haze = 1; Now.Dust = 0; Now.Wind = 0; Now.Mph = 4; break;
 	case EDev::Calm: Now = S47Weather::FNow(); break;
 	default: break;
 	}
 }
 
-void FS47WeatherLive::Dev(EDev Kind, double Seconds)
+void FS47WeatherLive::Dev(EDev Kind, double Seconds, double ShowerHours)
 {
 	DevWhat = Kind; DevLeft = Kind == EDev::None ? 0 : FMath::Max(0.0, Seconds);
+	DevShowerH = FMath::IsFinite(ShowerHours) ? ShowerHours : DevShowerHours; DevShowerFrom = -1; // its course starts on the next frame's clock
 	bHave = false; // shown at once, not eased in
 	UE_LOG(LogS47WeatherLive, Display, TEXT("S47: weather: developer %d for %.0f s"), int32(Kind), DevLeft);
 }
@@ -80,7 +91,8 @@ void FS47WeatherLive::Dev(EDev Kind, double Seconds)
 void FS47WeatherLive::Stop()
 {
 	S47Weather::Live() = S47Weather::FLive();
-	bHave = false; LastClock = -1; DevLeft = 0; DevWhat = EDev::None;
+	bHave = false; LastClock = -1; DevLeft = 0; DevWhat = EDev::None; DevShowerFrom = -1;
+	ApplyGroundWet(0);
 	if (Spray.IsValid() && M && M->Audio && M->Audio->Ctx) { FS47AudioContext::FBatch Batch(*M->Audio->Ctx); Spray->Gain.SetTargetAtTime(0, M->Audio->Ctx->CurrentTime(), 0.3); }
 	if (M && M->Life && M->Life->Sky.IsValid()) M->Life->Sky->DayThunder = 0;
 	if (FogApplied > 0 && M && M->Web) M->Web->RefreshFog();
@@ -100,7 +112,13 @@ void FS47WeatherLive::Step(double Dt)
 	const double Clock = F->Clock();
 	CalDay = int32(FMath::FloorToDouble(Clock / 86400.0)) + 1;
 	S47Weather::FNow Want = S47Weather::Now(F->Seed(), CalDay, FMath::Fmod(Clock, 86400.0));
-	if (DevLeft > 0) { DevLeft = FMath::Max(0.0, DevLeft - FMath::Max(0.0, Dt)); Override(DevWhat, Want); }
+	if (DevLeft > 0)
+	{
+		DevLeft = FMath::Max(0.0, DevLeft - FMath::Max(0.0, Dt));
+		// the shower's course runs on the game's clock from where F10 put it (26 game seconds to one by day)
+		if (DevShowerFrom < 0) DevShowerFrom = Clock - DevShowerH * 3600.0;
+		Override(DevWhat, Want, (Clock - DevShowerFrom) / 3600.0);
+	}
 	// a rest or a test that moves the clock: the weather of the new hour at once
 	const bool bJump = !bHave || FMath::Abs(Clock - LastClock) > JumpSeconds;
 	if (bJump) Cur = Want;
@@ -120,6 +138,7 @@ void FS47WeatherLive::Step(double Dt)
 		M->Web->RefreshFog();
 	}
 	StepWet();
+	ApplyGroundWet(GroundWet(L));
 	if (LoggedDay != CalDay)
 	{
 		LoggedDay = CalDay;
@@ -155,6 +174,22 @@ void FS47WeatherLive::StepWet()
 		ToldWet = CalDay;
 		M->UI->Toast(TEXT("The back end steps out. The shower has turned the dirt to grease."), 4);
 	}
+}
+
+void FS47WeatherLive::ApplyGroundWet(double Wet)
+{
+	// SHOWER-LOOK-20261109: the ground darkens where the shower has been and dries again with the dirt's own Wet (the material's
+	// patches dry first on the rises, last in the washes). Written when it changes, and again when the ground's instance is new.
+	// A ground material without WetK (not yet imported) takes no harm: the parameter is simply not there.
+	if (!M || !M->Web) return;
+	UMaterialInstanceDynamic* Ground = S47FreeformTerrain::GroundMid(M->Web);
+	const bool bNew = Ground && WetSeen.Get() != Ground;
+	if (!bNew && WetApplied >= 0 && FMath::Abs(Wet - WetApplied) < .004 && !(Wet == 0 && WetApplied > 0)) return;
+	if (!Ground && WetApplied < 0) return;
+	WetSeen = Ground; WetApplied = Wet;
+	for (UMaterialInstanceDynamic* Mid : { Ground, S47FreeformTerrain::CorridorMid(M->Web), S47FreeformTerrain::RangeMid(M->Web) })
+		if (Mid) Mid->SetScalarParameterValue(TEXT("WetK"), float(Wet));
+	// (the road edge copies the ground's parameters, WetK with them: S47RoadEdge EdgeTone)
 }
 
 FString FS47WeatherLive::Describe() const
@@ -224,6 +259,71 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 		for (int32 X = W / 4; X < 3 * W / 4; ++X) { VirgaHigh += Px[int32(.66 * (H - 1)) * W + X].A; VirgaLow += Px[int32(.84 * (H - 1)) * W + X].A; }
 		Check(Px.Num() == W * H && At(.5, .4).A > 150 && At(.5, .54).R < At(.5, .3).R && Edges < 8 && VirgaHigh > 2 * VirgaLow && VirgaHigh > 4 * (W / 2),
 			TEXT("the shower's cloud: dark and solid in the middle, darkest at the base, virga thinning under it, no edge of the card shows"));
+	}
+	{
+		// SHOWER-LOOK-20261109: the base is soft and torn, not a ruler's line (from solid to clear over several rows, at a height that
+		// wanders across the cloud), each of the three cards is its own cloud with no edge of its own, and they are not one picture
+		const int32 W = 192, H = 96;
+		bool bNoEdges = true; int32 Rows = 0, Spread = 0, Same = 0;
+		TArray<FColor> First;
+		for (int32 Var = 0; Var < FS47Sky::CellCards; ++Var)
+		{
+			TArray<FColor> Px; FS47Sky::CellPixels(W, H, Px, Var);
+			uint8 Edges = 0;
+			for (int32 X = 0; X < W; ++X) Edges = FMath::Max3(Edges, Px[X].A, Px[(H - 1) * W + X].A);
+			for (int32 Y = 0; Y < H; ++Y) Edges = FMath::Max3(Edges, Px[Y * W].A, Px[Y * W + W - 1].A);
+			bNoEdges &= Edges < 8;
+			if (Var == 0)
+			{
+				First = Px;
+				int32 Low = H, High = 0;
+				for (int32 X = W / 4; X < 3 * W / 4; X += 4)
+				{
+					// down from the middle of the cloud: the last solid row and the first thin one under it
+					int32 Solid = -1, Thin = -1;
+					for (int32 Y = int32(.4 * H); Y < H; ++Y) { if (Px[Y * W + X].A > 210) Solid = Y; else if (Solid >= 0 && Px[Y * W + X].A < 120) { Thin = Y; break; } }
+					if (Solid < 0 || Thin < 0) continue;
+					Rows += Thin - Solid; ++Spread; Low = FMath::Min(Low, Solid); High = FMath::Max(High, Solid);
+				}
+				Spread = Spread > 0 ? High - Low : 0;
+				Rows = Spread > 0 ? Rows : 0;
+			}
+			else
+				for (int32 I = 0; I < Px.Num(); I += 7) Same += Px[I] == First[I];
+		}
+		Check(bNoEdges && Rows > 0 && Spread >= 4 && Same < (W * H / 7) * 2 / 3,
+			FString::Printf(TEXT("the shower's three cards: a soft, torn base (its height wanders %d rows of %d), no card's edge shows, each its own cloud"), Spread, H));
+	}
+	{
+		// the shower walks past with the wind: upwind before, beside the land while it rains, downwind after, gone in the end
+		FVector2D Before, During, After, Gone, Plain; double ShowB = 0, ShowD = 0, ShowA = 0, ShowG = 1, ShowP = 0;
+		const double Dx = .6, Dz = -.8;
+		FS47Sky::CellPlace(Dx, Dz, -.6, Before, ShowB); FS47Sky::CellPlace(Dx, Dz, .4, During, ShowD);
+		FS47Sky::CellPlace(Dx, Dz, 1.2, After, ShowA); FS47Sky::CellPlace(Dx, Dz, 3.5, Gone, ShowG);
+		FS47Sky::CellPlace(Dx, Dz, S47Weather::NoShower, Plain, ShowP);
+		const FVector2D Wind(Dx, Dz);
+		Check(FVector2D::DotProduct(Before, Wind) < -5000 && During.Size() < 4000 && During.Size() > 2000 && FVector2D::DotProduct(After, Wind) > 5000 && ShowB > .9 && ShowD == 1 && ShowA > .9
+			&& ShowG < .05 && FMath::IsNearlyEqual(Plain.Size(), FS47Sky::CellDistance, 1.0) && FVector2D::DotProduct(Plain, Wind) < 0 && ShowP == 1,
+			TEXT("the shower's cloud: upwind before it rains, about 3 km beside the land while it rains, downwind after, gone over the horizon three hours on"));
+	}
+	{
+		// F10's shower runs the shower's own course on the clock, and the ground shows the slick dirt's own wet, drying over the hours after
+		S47Weather::FNow Under, Just, TwoAfter, Over;
+		Override(EDev::Shower, Under, .5); Override(EDev::Shower, Just, 1.2); Override(EDev::Shower, TwoAfter, 3.2); Override(EDev::Shower, Over, 4.2);
+		S47Weather::FLive LU, LJ, LT, LO, Off;
+		Shown(Under, 1, 1, LU); Shown(Just, 1, 1, LJ); Shown(TwoAfter, 1, 1, LT); Shown(Over, 1, 1, LO);
+		Check(LU.Rain == 1 && GroundWet(LU) == 1 && LJ.Rain == 0 && GroundWet(LJ) == 1 && GroundWet(LT) > .15 && GroundWet(LT) < .6 && GroundWet(LO) == 0 && GroundWet(Off) == 0
+			&& LT.ShowerH == 3.2 && Under.bThunder && !TwoAfter.bThunder,
+			FString::Printf(TEXT("F10's shower: rain and wet under it, no rain and wet just after, the ground %.2f wet two hours after the rain, dry by four, none with no weather"), GroundWet(LT)));
+		// and a real shower day the same, on its own clock
+		for (int32 TrySeed = 1; TrySeed < 60; ++TrySeed) for (int32 Num = 3; Num < 20; ++Num)
+		{
+			const S47Weather::FDay D = S47Weather::Day(TrySeed, Num);
+			if (!D.bShower) continue;
+			const S47Weather::FNow A = S47Weather::Now(TrySeed, Num, (D.ShowerAt + 3.2) * 3600.0);
+			Check(FMath::IsNearlyEqual(A.ShowerH, 3.2, 1e-6) && FMath::IsNearlyEqual(A.Wet, TwoAfter.Wet, 1e-9), TEXT("a shower day's wet two hours after the rain is F10's"));
+			TrySeed = 60; break;
+		}
 	}
 	return OK;
 }

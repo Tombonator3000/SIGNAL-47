@@ -350,7 +350,7 @@ namespace
 				FLinearColor Want, Have;
 				if (Ground->GetVectorParameterValue(Name, Want) && (!Mid->GetVectorParameterValue(Name, Have) || !Have.Equals(Want, .001f))) Mid->SetVectorParameterValue(Name, Want);
 			}
-			for (const TCHAR* Name : { TEXT("GravelAmount"), TEXT("CrustAmount") })
+			for (const TCHAR* Name : { TEXT("GravelAmount"), TEXT("CrustAmount"), TEXT("WetK") }) // (WetK: the shower's wet, S47WeatherLive)
 			{
 				float Want = 0, Have = 0;
 				if (Ground->GetScalarParameterValue(Name, Want) && (!Mid->GetScalarParameterValue(Name, Have) || !FMath::IsNearlyEqual(Have, Want, .001f))) Mid->SetScalarParameterValue(Name, Want);

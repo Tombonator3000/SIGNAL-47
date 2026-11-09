@@ -187,6 +187,8 @@ public:
 	int32 ShowerLive() const;
 	int32 ShowerSlotsBuilt() const { return ShowerComps.Num(); }
 	int32 ShowerSlotsVisible() const;
+	/** SHOWER-LOOK-20261109: the shower's cloud is this many cards (DrawCell). */
+	static constexpr int32 CellCards = 3;
 
 private:
 	double DawnLift = 1;
@@ -229,17 +231,28 @@ private:
 	// M5 sweep 3: the shower itself. The veil alone only greyed the blue (sweep-003: still a blue sky with white cloud): a painted card on
 	// the side the shower comes from (upwind), CellDistance out and turned to the eye, a dark, heavy cloud with grey virga hanging under
 	// it that dries before it reaches the ground. Drawn over the veil; hidden by night and without a shower.
-	TWeakObjectPtr<UStaticMeshComponent> CellComp;
-	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid;
+	// SHOWER-LOOK-20261109: one flat card with a hard, straight base read as a painted plate. Now three, each its own picture (a soft,
+	// torn base, rain shafts that sag it, virga that curls back with the wind and dries at its own height): the cell, a paler mass
+	// behind it and a smaller, darker piece in front, on a little different distances and to either side; and they walk past with the
+	// wind on the shower's own clock (CellPlace): upwind before, close beside the land while it rains, downwind after, gone in the end.
+	TWeakObjectPtr<UStaticMeshComponent> CellComp[CellCards];
+	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid[CellCards];
 	bool bCellTried = false;
 	void DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day);
 public:
 	/** The veil's colour and opacity for the sand (0 to 1), a shower's cloud (0 to 1) and the daylight (tested). */
 	static void VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity);
-	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot. */
-	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out);
+	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot.
+	 *  Variant: 0 the cell, 1 the mass behind it, 2 the piece in front (each its own lumps, shafts and torn base). */
+	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant = 0);
 	/** Where the shower stands from the eye and how big its card is (metres). */
 	static constexpr double CellDistance = 7000, CellWidth = 14000, CellHeight = 4000;
+	/** How fast the shower walks with the wind (metres an hour), and how far to the side of the land it passes (metres). */
+	static constexpr double CellSpeed = 9000, CellAside = 3200, CellFar = 16000;
+	/** Where the shower's cell stands from the eye (three-space metres, x east, z south) ShowerH hours after it set in, with the wind
+	 *  blowing toward (DirX, DirZ), and how much of it shows for its distance (0 gone over the horizon). Without a shower's clock
+	 *  (S47Weather::NoShower) it stands CellDistance upwind, as it did. */
+	static void CellPlace(double DirX, double DirZ, double ShowerH, FVector2D& OutOffset, double& OutShow);
 private:
 	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
 	bool bMoon = false;

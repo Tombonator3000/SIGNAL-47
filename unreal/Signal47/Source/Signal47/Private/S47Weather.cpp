@@ -103,10 +103,21 @@ double S47Weather::CloudBiasAt(const FDay& D,double ClockOfDay)
  const double H=FMath::Fmod(FMath::Fmod(ClockOfDay,86400.)+86400.,86400.)/3600.;
  double B=0;
  // a shower's cloud builds through the afternoon and goes after it; on a sand day the brown takes the place of the cloud
- if(D.bShower)B+=.24*L::Trap(H,D.ShowerAt-3.,D.ShowerAt-.5,D.ShowerAt+1.5,D.ShowerAt+3.5);
+ if(D.bShower){double Rain,Wet,Cloud;bool bThunder;ShowerCourse(H-D.ShowerAt,false,Rain,Wet,Cloud,bThunder);B+=Cloud;}
  if(D.bDust)B-=.12*L::Trap(H,D.DustFrom-1.,D.DustFrom+.5,D.DustTo-1.,D.DustTo+1.);
  if(D.bHaze)B+=.06*L::Trap(H,4.,5.,8.5,10.5);
  return B;
+}
+void S47Weather::ShowerCourse(double Hours,bool bThunder,double& OutRain,double& OutWet,double& OutCloud,bool& bOutThunder)
+{
+ namespace L=S47WeatherLocal;
+ const double H=FMath::IsFinite(Hours)?Hours:NoShower;
+ // (M5 critic 3: long enough to be seen and heard, about three quarters of an hour at its fullest)
+ OutRain=L::Trap(H,-.25,.05,.8,1.1);
+ OutWet=L::Trap(H,0.,.35,1.5,4.);
+ // its cloud builds through the afternoon and goes after it
+ OutCloud=.24*L::Trap(H,-3.,-.5,1.5,3.5);
+ bOutThunder=bThunder&&L::Trap(H,-1.,-.5,1.,1.6)>0;
 }
 S47Weather::FNow S47Weather::Now(int32 Seed,int32 CalendarDay,double ClockOfDay)
 {
@@ -132,10 +143,9 @@ S47Weather::FNow S47Weather::Now(int32 Seed,int32 CalendarDay,double ClockOfDay)
  N.Storm=H>=19||H<L::SmallHours?N.Wind:0.;
  if(D.bShower)
  {
-  // (M5 critic 3: long enough to be seen and heard, about three quarters of an hour at its fullest)
-  N.Rain=L::Trap(H,D.ShowerAt-.25,D.ShowerAt+.05,D.ShowerAt+.8,D.ShowerAt+1.1);
-  N.Wet=L::Trap(H,D.ShowerAt,D.ShowerAt+.35,D.ShowerAt+1.5,D.ShowerAt+4.);
-  N.bThunder=D.bThunder&&L::Trap(H,D.ShowerAt-1.,D.ShowerAt-.5,D.ShowerAt+1.,D.ShowerAt+1.6)>0;
+  double Cloud=0;
+  N.ShowerH=H-D.ShowerAt;
+  ShowerCourse(N.ShowerH,D.bThunder,N.Rain,N.Wet,Cloud,N.bThunder);
  }
  if(D.bHaze)N.Haze=D.HazeK*L::Trap(H,4.,5.,8.,9.75);
  N.CloudBias=CloudBiasAt(D,ClockOfDay);

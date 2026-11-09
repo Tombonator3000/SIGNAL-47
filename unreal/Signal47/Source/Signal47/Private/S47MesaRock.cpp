@@ -4,6 +4,8 @@
 #include "S47FarmWorld.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47Weather.h"
+#include "S47WeatherLive.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -130,7 +132,7 @@ namespace
  TArray<FUnderSlot> UnderSlots;TSet<TWeakObjectPtr<UStaticMeshComponent>> UnderDone;bool bUnderFresh=false;
  void TickUnderfoot(AS47Web* Web,double Dt)
  {
-  static double Wait=0;static float LastDay=-1;static bool bLastReal=false;
+  static double Wait=0;static float LastDay=-1,LastWet=0;static bool bLastReal=false;
   if((Wait-=Dt)<=0)
   {
    Wait=2.0;
@@ -147,10 +149,14 @@ namespace
   }
   if(UnderSlots.IsEmpty())return;
   const US47Main* Main=US47Main::Get(Web);const bool bReal=S47FarmWorld::Enabled(Main);const float Day=bReal?DayAt(Main):0.f;
-  if(!bUnderFresh&&bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f)return;
-  bUnderFresh=false;bLastReal=bReal;LastDay=Day;
+  // SHOWER-LOOK-20261109: after a stray shower the tracks and the station's sand darken with the ground's own wet (S47WeatherLive,
+  // the relief's WetK), and dry with it; packed and crowned, a track sheds it a little sooner than the soil beside it
+  const float Wet=bReal?float(FS47WeatherLive::GroundWet(S47Weather::Live())):0.f;
+  if(!bUnderFresh&&bReal==bLastReal&&FMath::Abs(Day-LastDay)<.002f&&FMath::Abs(Wet-LastWet)<.004f&&!(Wet==0.f&&LastWet>0.f))return;
+  bUnderFresh=false;bLastReal=bReal;LastDay=Day;LastWet=Wet;
+  const float D=1.f-.42f*FMath::Pow(FMath::Clamp(Wet,0.f,1.f),1.3f);const FLinearColor Dark(D,D,D,1.f);
   UnderSlots.RemoveAll([](const FUnderSlot& S){return !S.Mid.IsValid();});
-  for(const FUnderSlot& S:UnderSlots)S.Mid->SetVectorParameterValue(TEXT("Color"),FMath::Lerp(S.Story,S.Story*S.Scale,Day));
+  for(const FUnderSlot& S:UnderSlots)S.Mid->SetVectorParameterValue(TEXT("Color"),FMath::Lerp(S.Story,S.Story*S.Scale,Day)*Dark);
  }
 }
 
