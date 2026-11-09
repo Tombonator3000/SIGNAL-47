@@ -206,7 +206,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  {
   const FString Feedback=Free?M->Freeform->FeedbackText():M->Observing->AudioFeedbackText();
   if(!Accepted)M->UI->Toast(Feedback.IsEmpty()?TEXT("Retain an anomalous original and complete its independent control before comparing."):Feedback,4);
-  else if(I==6&&Free)M->UI->Toast(TEXT("Comparison retained. Register the supported conclusion at OPS."),4);
+  // (Freeform's RETAIN says its one next step itself, FS47FreeformSession::AudioAction: Tom, 9 November, the case opens at OPS)
  }
  return true;
 }

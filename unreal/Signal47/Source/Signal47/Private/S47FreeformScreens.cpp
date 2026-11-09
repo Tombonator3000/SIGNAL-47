@@ -156,11 +156,12 @@ FS47Doc FS47FreeformSession::SopCard()
   TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) tunes and records, the PRINTER gives the original. Register the result here.\n")
   TEXT("3. Finish a recording or a control before you switch jobs. Unfinished jobs keep. They pay in full on their day and the next, then less.\n")
   TEXT("4. EARLIER WORK shows what is done and what is carried over. RECORDS keeps originals, field findings, service and closed cases. Read only.\n")
-  TEXT("5. An unusual original is never registered on its own. Compare it with the internal reference at the reel deck (wall table), register the comparison as unresolved, collect the packet at the printer and file it in the records-room binder. Payment follows the filing.\n")
+  TEXT("5. An unusual original is never registered on its own. Compare it with the internal reference at the reel deck (wall table), register the comparison as unresolved (that opens its case on CASE BOARD), collect the packet at the printer and file it in the records-room binder. Payment follows the filing.\n")
   TEXT("6. A quiet internal reference does not prove a sky source. Only a directional or independent control rules an explanation out.\n")
-  TEXT("7. CASE BOARD. A trial case closes when your tests rule out all but one explanation; the records reply comes at once. An assessment can be filed when you choose; its reply comes on the telex next morning. Every test registered prints a result sheet: collect it at the printer.\n")
-  TEXT("8. Queue empty: an optional reference check keeps a fresh baseline. No payment.\n")
-  TEXT("9. OVERVIEW is the main menu. ESC leaves the terminal.\n\n")
+  TEXT("7. CASE BOARD. A trial case closes when your tests rule out all but one explanation; the records reply comes at once. An assessment can be filed when you choose; its reply prints on the telex next morning. Every test registered prints a result sheet: collect it at the printer.\n")
+  TEXT("8. TELEX (by the corridor door). Replies and Dr. Ward's receipts print there. Tear them off at the machine; they go in the tray here. Send night logs from OVERVIEW.\n")
+  TEXT("9. Queue empty: an optional reference check keeps a fresh baseline. No payment.\n")
+  TEXT("10. OVERVIEW is the main menu. ESC leaves the terminal.\n\n")
   TEXT("Do not write on this card. - D.");
  D.Transcript=D.Page;return D;
 }

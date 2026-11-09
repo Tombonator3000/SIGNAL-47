@@ -496,11 +496,28 @@ void FS47NightLog::Receive(double ClockNow)
 	{
 		if (Sh.Sent < 0 || Sh.Read >= 0 || ClockNow < Sh.Sent + 30 * 60) continue;
 		Sh.Read = ClockNow;
-		File(Sh);
-		if (M->UI) M->UI->Toast(TEXT("Dr. Ward's office initialed your night log. Her note is on it."), 5);
+		// TELEX-20261109: the receipt prints on the telex; the sheet in the notebook has her line once it is torn off (Received). A full
+		// machine files it at once, as before.
+		const auto Dated = [this](double Clock) { return M->Freeform ? S47Game::DateLine(M->Freeform->DateOfDay(int32(FMath::FloorToDouble(Clock / 86400.0)) + 1)) : FString(); };
+		const FString Page = FString::Printf(TEXT("DR. WARD'S OFFICE\nTO SARO NIGHT OPERATOR\nRE NIGHT LOG, NIGHT OF %s\n\nRECEIVED %s, %s.\n%s\n\nW."),
+			*S47Game::DateLine(M->Freeform->DateOfDay(Sh.Night)), *S47NightLogLocal::ClockOf(ClockNow), *Dated(ClockNow), *Sh.Remark);
+		if (M->Freeform->QueueTelex(ReceiptId(Sh.Night), FString::Printf(TEXT("Dr. Ward's office: night log of %s"), *S47Game::DateLine(M->Freeform->DateOfDay(Sh.Night))), TEXT("TELEX / INITIALED"), Page))
+		{
+			if (M->UI) M->UI->Toast(TEXT("In the control room, the telex starts up: Dr. Ward's office."), 5);
+		}
+		else
+		{
+			File(Sh);
+			if (M->UI) M->UI->Toast(TEXT("Dr. Ward's office initialed your night log. Her note is on it."), 5);
+		}
 		UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d initialed at %s: %s (%d initialed)"), Sh.Night, *S47NightLogLocal::ClockOf(ClockNow), *Sh.Remark, ReadCount());
 		M->RequestAutosave();
 	}
+}
+
+void FS47NightLog::Received(int32 Nt)
+{
+	if (const FSheet* Sh = Find(Nt); Sh && Sh->Read >= 0) File(*Sh);
 }
 
 void FS47NightLog::OpsRows(TArray<TSharedRef<SWidget>>& Into)
@@ -525,7 +542,9 @@ void FS47NightLog::OpsRows(TArray<TSharedRef<SWidget>>& Into)
 	const FSheet* Last = nullptr;
 	for (const FSheet& Sh : Logs) if (Sh.Sent >= 0 && (!Last || Sh.Sent > Last->Sent)) Last = &Sh;
 	FString Status = FString::Printf(TEXT("Initialed by Dr. Ward's office: %d."), Got);
-	if (Last) Status += Last->Read >= 0 ? FString::Printf(TEXT(" The last came back with a note on it: \"%s\""), *Last->Remark) : FString(TEXT(" The last is waiting for her office (08:00 to 21:00)."));
+	// TELEX-20261109: what came back is read off the telex first
+	if (Last && Last->Read >= 0 && M->Freeform->OnTelex(ReceiptId(Last->Night))) Status += TEXT(" Her office's receipt for the last is on the telex.");
+	else if (Last) Status += Last->Read >= 0 ? FString::Printf(TEXT(" The last came back with a note on it: \"%s\""), *Last->Remark) : FString(TEXT(" The last is waiting for her office (08:00 to 21:00)."));
 	Col.Add(FT::Small(Status));
 	Into.Add(FT::Panel(TEXT("NIGHT LOG"), S47Kit::Col(Col)));
 }

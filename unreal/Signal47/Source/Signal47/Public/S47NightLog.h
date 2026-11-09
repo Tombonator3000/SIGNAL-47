@@ -54,6 +54,10 @@ public:
  // OPS: the sheets not yet sent, each with its telex button, and what has come back.
  void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
  bool Send(int32 N);
+ // TELEX-20261109: her office's receipt comes back on the telex in the control room ("telex-nightlog-N"); torn off there, her line
+ // goes on the sheet in the notebook too.
+ void Received(int32 N);
+ static FString ReceiptId(int32 N){return FString::Printf(TEXT("telex-nightlog-%d"),N);}
 
  // F10 and tests: type tonight's sheet now with what it has so far; a stretch of lost time; open the last sheet.
  bool DevTypeNow();

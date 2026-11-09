@@ -315,7 +315,8 @@ public:
  // (Tasks), TONIGHT'S PLAN and the pause menu's note, the notebook's Now and the case board's star (CaseAwaitingChoice) all read it.
  // CHOOSE_TEST: a test (or control) can be planned; for a mystery, or a filing. RUN_PLAN: the planned test can be run now.
  // WAIT_WINDOW: planned, its dated window not open yet. CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
- // left, its trail cold or no control to be had. AWAIT_REPLY: filed, the morning's reply not in. CLOSED: nothing (or not open).
+ // left, its trail cold or no control to be had. AWAIT_REPLY: filed, the morning's reply not in, or in on the telex and not torn off
+ // yet (TELEX-20261109). CLOSED: nothing (or not open; the interval case opens when its comparison is registered at OPS).
  enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, WaitWindow, Conclude, File, AwaitReply };
  struct FCaseStep
  {
@@ -357,6 +358,27 @@ public:
  const TArray<FResultSheet>& ResultSheets() const { return CaseSheets; }
  // -1: no result sheet waiting; otherwise its paper fraction 0..1 (it feeds only while no job's paper is waiting).
  double SheetProgress() const;
+ // TELEX-20261109 (Tom, 9 November, DECISIONS "Saker og OPS"): the telex in the control room is paper. What comes back to SARO, a
+ // filed case's morning reply, Dr. Ward's office on a weekly report (and her query about one) or the receipt for a night log she has
+ // initialed, prints there with its motor and type bars while the paper grows out of the top (S47FreeformTelex.cpp). The player tears
+ // it off at the machine (E, "Tear off the telex"); only then is it a document in the notebook and a paper IN THE TRAY at OPS. What
+ // SARO sends still goes from OPS. The sheets on the machine and the tray are saved ("telex"); an older save has none.
+ struct FTelexSheet { FString DocId,Title,Stamp,Page; int32 Day=0; double Feed=0; };
+ static constexpr double TelexSeconds=8.;
+ // A sheet for the telex. False when that paper is already on the machine or the machine holds MostTelex (the caller files it as
+ // before, so that nothing is lost).
+ bool QueueTelex(const FString& DocId,const FString& Title,const FString& Stamp,const FString& Page);
+ bool OnTelex(const FString& DocId) const; // printing or printed, not torn off yet
+ bool InTelexTray(const FString& DocId) const;
+ bool TelexReady() const;                   // the first sheet has printed and can be torn off
+ int32 TelexWaiting() const { return TelexSheets.Num(); }
+ const TArray<FTelexSheet>& TelexQueue() const { return TelexSheets; }
+ const TArray<FTelexSheet>& TelexTray() const { return TelexTorn; }
+ // Tears off the first printed sheet: its document goes in the notebook (and opens), the paper in the OPS tray. Out: that document.
+ bool TearOffTelex(FS47Doc* Out=nullptr);
+ // What the machine says: "TELEX: A reply is waiting" (printed), "TELEX: printing" (not yet), empty with nothing on it.
+ FString TelexLine() const;
+ static constexpr int32 MostTelex=8,MostTray=6;
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
@@ -565,6 +587,20 @@ private:
  TWeakObjectPtr<class UStaticMeshComponent> SopProp;TWeakObjectPtr<class AS47Web> SopScene;
  void StepSopCard();
  void StopSopCard();
+ // TELEX-20261109: the sheets on the machine (the first feeds first) and the ones torn off, newest last; the paper on the machine and
+ // its sound (not saved: built again from the sheets).
+ TArray<FTelexSheet> TelexSheets,TelexTorn;
+ TWeakObjectPtr<class UStaticMeshComponent> TelexPaper;TWeakObjectPtr<class AS47Web> TelexScene;
+ bool bTelexMotor=false;int32 TelexStrikes=0;
+ void StepTelex(double Dt);
+ void StopTelex();
+ void LoadTelex(const S47J::FObj& Saved);
+ void SaveTelex(const S47J::FObj& Out) const;
+ // Tom, 9 November: the first case opens when its job is registered at OPS, not at the reel deck's RETAIN. True while the interval
+ // case is not open and a reviewed pulsar comparison still waits for its registration: what the reel deck and the event retain then
+ // does not open it (OpenCaseFor, Begin); RegisterComparison does (OpenFirstCase).
+ bool FirstCaseHeld() const;
+ bool OpenFirstCase(const FJob& J);
  TSharedRef<class SWidget> OpsShell(int32 Section,TSharedRef<class SWidget> Content);
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;

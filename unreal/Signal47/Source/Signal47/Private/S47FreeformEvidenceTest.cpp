@@ -377,7 +377,9 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==290)
   {if(F.AudioPlaying())return;if(!Check(M,J->ControlCovered==8&&!J->bAudioReviewed,TEXT("independent negative control is actually heard for8s before interpretation")))return;Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
   if(S.Stage==291)
-  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN secures comparison without payment or origin claim")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
+  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN secures comparison without payment or origin claim")))return;
+   // Tom, 9 November: RETAIN opens no case; it says the next step, the registration at OPS.
+   if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Register comparison: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("RETAIN opens no case and says only the next step: register at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
   if(S.Stage==292){WalkTo(M,{{.42,1.2},{-4.2,1.2},{-4.2,2.49}},30);return;}
   if(S.Stage==30){Aim(M,Target(M,TEXT("opsTerminal")));Go(31);return;}
   if(S.Stage==31){if(!Use(M,TEXT("opsTerminal")))return;Go(32,.6);return;}
@@ -391,12 +393,17 @@ namespace S47FreeformEvidenceTest
    if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation remains refused without a misleading menu choice, credit or stage advance")))return;Go(33);return;
   }
   if(S.Stage==33)
-  {if(!Click(M,TEXT("Register comparison: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}
+  {
+   if(!Click(M,TEXT("Register comparison: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;
+   // Tom, 9 November: the registration is what opens the case, and says so.
+   if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL")),TEXT("registering the comparison opens THE REPEATED INTERVAL: CASE OPENED")))return;
+   Go(330,.6);return;
+  }
   if(S.Stage==330)
   {
    const auto* C=F.CaseFile().Get(0);
    if(!Click(M,TEXT("CASE BOARD")))return;
-   if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the reviewed extra-pulse original opens the interval case")))return;Go(331,.8);return;
+   if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the registered extra-pulse comparison has opened the interval case")))return;Go(331,.8);return;
   }
   if(S.Stage==331)
   {

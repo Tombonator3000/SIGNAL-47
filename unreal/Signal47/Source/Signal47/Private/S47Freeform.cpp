@@ -267,9 +267,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   if(Sh.Line<0||Sh.Line>=FS47FreeformCases::CaseCount||Sh.Test<0||Sh.Test>=FS47FreeformCases::TestCount||Sh.Page.IsEmpty()||Sh.Page.Len()>4000||CaseSheets.Num()>=8)continue;
   CaseSheets.Add(Sh);
  }
+ LoadTelex(Saved); // TELEX-20261109: what is on the telex and in the tray
  TakenCount=0;for(const auto& Kept:Findings)TakenCount+=Kept.Key.StartsWith(TEXT("taken-"))?1:0;
- // Older saves: an already retained discrepancy opens its case retroactively.
- for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0)Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);}
+ // Older saves: an already retained discrepancy opens its case retroactively. The interval case waits for its registration at OPS
+ // while a reviewed comparison is still unregistered (Tom, 9 November: FirstCaseHeld).
+ for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0&&!(Line==0&&FirstCaseHeld()))Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);}
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0)
  {
   // Field work has its own retained plan ID and deliberately creates no receiver job.
@@ -353,7 +355,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- StopSopCard();
+ StopSopCard();StopTelex();
  if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
  if(Scripts&&bCanRestore)Scripts->Stop();
@@ -608,6 +610,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Director)Director->Step(D);
  StepPrinter(D);
  StepSopCard();
+ StepTelex(D); // TELEX-20261109
  IngestObservations();
  StepEquipmentFeedback();
  StepTutorial();
@@ -1054,14 +1057,11 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(Specialized(J->Phenomenon))return CompareInstrument();
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
   if(!MarkCoversTicks(J->MarkStart,J->MarkEnd)){Feedback=TEXT("Mark the original from just before the first extra ticks to just after the last ones, about 9 to 13 seconds.");return false;}
-  const bool bCaseWasOpen=Cases.Get(0)&&Cases.Get(0)->bOpen;
   J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
-  // CASES-OPS-20261109: the repeat window goes from this original's own clock, and the reel deck says one thing: the job first.
-  const bool bOpened=!bCaseWasOpen&&Cases.Get(0)&&Cases.Get(0)->bOpen;
-  if(bOpened&&J->ReferenceClock>0)Cases.SetReference(0,NightOf(J->ReferenceClock),FMath::Fmod(J->ReferenceClock,86400.));
   if(Director)Director->Use(TEXT("ff:compare"));
-  Changed(bOpened?FString::Printf(TEXT("CASE OPENED: %s (OPS / CASE BOARD). FIRST THE JOB: OPS / DAILY WORK, register the comparison as unresolved, then the printer and the binder."),FS47FreeformCases::Def(0).Title)
-   :FString(TEXT("OPS / DAILY WORK: register the comparison as unresolved, then the printer and the binder. The marked comparison is retained.")));
+  // Tom, 9 November: RETAIN keeps the comparison and says the next step, nothing more. The case opens when the job is registered at
+  // OPS (FirstCaseHeld, OpenFirstCase), and its repeat window still goes from this original's own clock.
+  Feedback=TEXT("RETAINED. NEXT: OPS / DAILY WORK, Register comparison: source unresolved.");Changed(Feedback);
  }
  else return false;
  Changed();return true;
@@ -1132,6 +1132,8 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  const bool AlreadyPaid=J->bPaid;
  J->Stage=EJobStage::Registered;
+ // Tom, 9 November: the reviewed pulsar comparison, registered as unresolved, is what opens THE REPEATED INTERVAL.
+ const bool bOpened=J->bAnomaly&&!Specialized(J->Phenomenon)&&J->CaseTest<0&&OpenFirstCase(*J);
  // The OPS computer has accepted an actual result; opening its screen alone is silent.
  // The whole modem recording: nothing in the panel transition cuts it short.
  if(M&&M->Audio)M->Audio->PcTransferAtOps(M->Web,27.);
@@ -1141,7 +1143,8 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  if(Places)Places->AfterRegistered();
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
  if(WasTutorial&&!InTutorial())return true;
- Feedback=J->Stage==EJobStage::Registered?FString(TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder.")):AlreadyPaid?FString(TEXT("Reference check registered. Original retained; no additional payment is due.")):FString::Printf(TEXT("Routine result registered. $%d credited%s; the original remains in EARLIER WORK and the notebook.%s"),LastPay,*PayWhy,*DeskLine);Changed(Feedback);return true;
+ Feedback=bOpened?FString::Printf(TEXT("CASE OPENED: %s (OPS / CASE BOARD). Registered: the packet is printing; collect it and file its originals in the binder."),FS47FreeformCases::Def(0).Title)
+  :J->Stage==EJobStage::Registered?FString(TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder.")):AlreadyPaid?FString(TEXT("Reference check registered. Original retained; no additional payment is due.")):FString::Printf(TEXT("Routine result registered. $%d credited%s; the original remains in EARLIER WORK and the notebook.%s"),LastPay,*PayWhy,*DeskLine);Changed(Feedback);return true;
 }
 bool FS47FreeformSession::NearBinder() const
 {
@@ -1444,12 +1447,26 @@ void FS47FreeformSession::OpenOperations()
  if(Section==0)
  {
   {
-   // CASES-OPS-20261109: the morning's case replies wait in the tray that day, with Ward's and Reyes's papers.
+   // CASES-OPS-20261109: the morning's case replies wait in the tray that day, with Ward's and Reyes's papers. TELEX-20261109: what
+   // was torn off the telex lies there, newest first, the day it was torn off and the next; what is still on the machine is not here.
    TArray<S47Kit::FW> Replies;
+   if(!TelexSheets.IsEmpty())Replies.Add(T::Small(TelexSheets.Num()==1?FString(TEXT("TELEX / ONE PAPER ON THE MACHINE / TEAR IT OFF THERE")):FString::Printf(TEXT("TELEX / %d PAPERS ON THE MACHINE / TEAR THEM OFF THERE"),TelexSheets.Num())));
+   for(int32 I=TelexTorn.Num()-1;I>=0;--I)
+   {
+    const FTelexSheet& Paper=TelexTorn[I];if(DayNumber-Paper.Day>1)continue;
+    Replies.Add(T::Button(TEXT("READ / ")+Paper.Title,[this,Paper]
+    {
+     if(!M||!M->UI)return;
+     const FS47Doc* Doc=M->Story?M->Story->Docs().FindByPredicate([&Paper](const FS47Doc& D){return D.Id==Paper.DocId;}):nullptr;
+     if(Doc){M->UI->Document(*Doc);return;}
+     FS47Doc Copy;Copy.Id=Paper.DocId;Copy.Title=Paper.Title;Copy.Kind=TEXT("telex");Copy.Stamp=Paper.Stamp;Copy.Page=Paper.Page;Copy.Transcript=Paper.Page;M->UI->Document(Copy);
+    },true));
+   }
    for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
    {
     const FString Key=FString::Printf(TEXT("case%d-reply"),Line+1);const auto* Y=FS47FreeformCases::Def(Line).Mystery;
-    if(!Y||!HasFinding(Key)||FindingDays.FindRef(Key)!=DayNumber)continue;
+    // (an older save's reply, or one the full machine filed at once: there is no telex paper for it)
+    if(!Y||!HasFinding(Key)||FindingDays.FindRef(Key)!=DayNumber||OnTelex(TEXT("freeform-")+Key)||InTelexTray(TEXT("freeform-")+Key))continue;
     Replies.Add(T::Button(TEXT("READ / ")+FString(Y->ReplyTitle),[this,DocId=TEXT("freeform-")+Key]
     {
      if(!M||!M->Story||!M->UI)return;
@@ -1983,8 +2000,15 @@ FS47FreeformSession::FCaseStep FS47FreeformSession::CaseStep(int32 Line)const
  {
   if(D.Mystery&&!C->bReplied)
   {
-   S.Step=ECaseStep::AwaitReply;S.Next=TEXT("OPS / IN THE TRAY: THE REPLY ON ")+Title+TEXT(" COMES WITH THE MORNING, AT 08:00.");
+   S.Step=ECaseStep::AwaitReply;S.Next=TEXT("TELEX (control room): THE REPLY ON ")+Title+TEXT(" COMES WITH THE MORNING, AT 08:00.");
    S.Card=TEXT("CASE // ")+Title+TEXT(": REPLY DUE 08:00.");S.Short=Title+TEXT(": REPLY DUE 08:00.");
+  }
+  // TELEX-20261109: in, and still on the machine: the step is to tear it off there.
+  else if(D.Mystery&&OnTelex(FString::Printf(TEXT("freeform-case%d-reply"),Line+1)))
+  {
+   S.Step=ECaseStep::AwaitReply;S.Next=TEXT("TELEX (control room): THE REPLY ON ")+Title+TEXT(" IS IN. TEAR IT OFF AT THE TELEX.");
+   S.Card=TEXT("TELEX // TEAR OFF THE REPLY ON ")+Title+TEXT(".");S.Short=Title+TEXT(": TEAR OFF THE REPLY AT THE TELEX.");
+   S.Task=TEXT("CASE / ")+Title+TEXT(": tear off the reply at the telex in the control room");
   }
   return S;
  }
@@ -2063,6 +2087,8 @@ int32 FS47FreeformSession::UrgentCase(bool bActionOnly)const
 FString FS47FreeformSession::HudCaseLine(const FString& FirstLine)const
 {
  if(bDead||Tutorial>0)return FString();
+ // TELEX-20261109: a paper on the telex is the second line until it is torn off: "TELEX: A reply is waiting".
+ if(const FString Telex=TelexLine();!Telex.IsEmpty()&&!FirstLine.Contains(TEXT("TELEX")))return Telex;
  // The most pressing case not already on the card: a case is never out of sight while one is open.
  TArray<TPair<int32,FCaseStep>> Order;
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(FCaseStep S=CaseStep(Line);CaseStepRank(S.Step)>0)Order.Add({Line,MoveTemp(S)});
@@ -2171,7 +2197,7 @@ FString FS47FreeformSession::CaseNextLine(int32 Line)const
    if(CaseTestWindow(Line,Start,End))return FString::Printf(TEXT("NEXT > JOB %s WAITS FOR ITS WINDOW, %s TO %s"),*C->PlannedJob,*FS47FreeformCases::Clock(Start),*FS47FreeformCases::Clock(End));
    return FString::Printf(TEXT("NEXT > JOB %s WAITS FOR ITS WINDOW"),*C->PlannedJob);
   }
-  case ECaseStep::AwaitReply:return TEXT("NEXT > THE REPLY COMES BY TELEX AT 08:00");
+  case ECaseStep::AwaitReply:return C->bReplied?FString(TEXT("NEXT > THE REPLY IS IN: TEAR IT OFF AT THE TELEX")):FString(TEXT("NEXT > THE REPLY COMES BY TELEX AT 08:00"));
   default:break;
  }
  if(!C->bConcluded||C->Conclusion<0)return FString();
@@ -2846,11 +2872,24 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
   const auto* CaseNow=Cases.Get(Line);
   if(!bNew||!(CaseNow&&CaseNow->bOpen))return;
  }
- else if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
+ // Tom, 9 November: the interval case waits for its comparison's registration at OPS (FirstCaseHeld, OpenFirstCase).
+ else if(Line<0||(Line==0&&FirstCaseHeld())||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
  // The reel deck's review says it in its own one message, with the job's next step (CASES-OPS-20261109).
  if(FindingId==TEXT("pulse-review")){Changed();return;}
  // A late line (M7) has no test to choose until there is something to compare: its other place first.
  Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+(bBeyondWind?TEXT(". Wind is ruled out. Two explanations are left. Choose a test on the OPS case board."):Line>=FS47FreeformCases::LateFirst?TEXT(". Three explanations fit. The OPS case board says where else to look."):TEXT(". Three explanations fit. Choose a test on the OPS case board.")));
+}
+bool FS47FreeformSession::FirstCaseHeld()const
+{
+ if(const auto* C=Cases.Get(0);!C||C->bOpen)return false;
+ return Work.ContainsByPredicate([](const FJob& J){return J.bAnomaly&&J.bAudioReviewed&&J.CaseTest<0&&!Specialized(J.Phenomenon)&&J.Stage==EJobStage::Recorded&&!J.bDuplicateRejected;});
+}
+bool FS47FreeformSession::OpenFirstCase(const FJob& J)
+{
+ // Opened now, the day and clock of the registration; the repeat window from the original's own clock (SetReference).
+ if(!Cases.Open(0,DayNumber,FMath::Fmod(WorldClock,86400.)))return false;
+ if(J.ReferenceClock>0)Cases.SetReference(0,NightOf(J.ReferenceClock),FMath::Fmod(J.ReferenceClock,86400.));
+ UpdateMysteries();return true;
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
@@ -2910,12 +2949,16 @@ void FS47FreeformSession::StepCaseReplies()
   Cases.MarkReplied(Line);if(!Answer||!Y)continue;
   const FString Page=Answer->Text;
   RecordEvidence(FString::Printf(TEXT("case%d-reply"),Line+1),Page);
-  if(M&&M->Story)
+  // TELEX-20261109: it prints on the telex, and is a paper only once it is torn off there (TearOffTelex). A full machine (or no room
+  // for it) files it as before, so that nothing is lost.
+  const FString DocId=FString::Printf(TEXT("freeform-case%d-reply"),Line+1),Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
+  const bool bOnMachine=QueueTelex(DocId,Y->ReplyTitle,Stamp,Page);
+  if(!bOnMachine&&M&&M->Story)
   {
-   FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-reply"),Line+1);Doc.Title=Y->ReplyTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
+   FS47Doc Doc;Doc.Id=DocId;Doc.Title=Y->ReplyTitle;Doc.Kind=TEXT("telex");Doc.Stamp=Stamp;
    Doc.Page=Page;Doc.Transcript=Page;M->Story->AddDoc(Doc);
   }
-  FString Note=FString(Y->ReplyTitle)+TEXT(" has come in on the telex. It is in the tray at OPS.");
+  FString Note=bOnMachine?FString(TEXT("The telex in the control room is printing: "))+Y->ReplyTitle+TEXT(". Tear it off at the machine."):FString(Y->ReplyTitle)+TEXT(" has come in on the telex. It is in the tray at OPS.");
   switch(Answer->Effect)
   {
    case FS47FreeformCases::EReply::Spare:AddItem(TEXT("fuse"),1);break;
@@ -2993,6 +3036,13 @@ bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 FString FS47FreeformSession::TonightPlan()const
 {
  TArray<FString> Out;
+ // TELEX-20261109: what waits on the telex comes first; it is only a paper once it is torn off.
+ if(!TelexSheets.IsEmpty())
+ {
+  TArray<FString> Titles;for(const FTelexSheet& T:TelexSheets)Titles.Add(T.Title);
+  const FString Head=TelexSheets.Num()==1?FString(TEXT("A REPLY IS WAITING")):FString::Printf(TEXT("%d PAPERS ARE WAITING"),TelexSheets.Num());
+  Out.Add(FString::Printf(TEXT("TELEX / %s\nIn the control room: %s. Tear it off at the machine; then it is in your notebook and in the tray at OPS."),*Head,*FString::Join(Titles,TEXT("; "))));
+ }
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
  {
   const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;const auto& D=FS47FreeformCases::Def(Line);
@@ -3038,7 +3088,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
  if(!Tabs.IsEmpty())Rows.Add(S47Kit::Row(Tabs));
  if(!C||!C->bOpen)
  {
-  Rows.Add(S47FreeformTerminal::Paper(TEXT("OPS / CASE BOARD\nNO OPEN CASE. A RETAINED COMPARISON OR A FIELD TRACE OPENS ONE HERE.")));
+  Rows.Add(S47FreeformTerminal::Paper(TEXT("OPS / CASE BOARD\nNO OPEN CASE. A COMPARISON REGISTERED AT DAILY WORK, OR A FIELD TRACE, OPENS ONE HERE.")));
  }
  else
  {
@@ -3168,6 +3218,9 @@ bool FS47FreeformSession::Use(const FString& Id)
  if(Id==TEXT("crtCenter")){OpenReceiver();return true;}
  if(Id==TEXT("crtLeft")){OpenStatus();return true;}
  if(Id==TEXT("crtRight")){OpenTracking();return true;}
+ // TELEX-20261109: a printed paper is torn off by hand, power or not; one still printing is waited for.
+ if(Id==TEXT("telex")&&TelexReady()){TearOffTelex();return true;}
+ if(Id==TEXT("telex")&&!TelexSheets.IsEmpty()&&HasPower()){Feedback=TelexLine()+TEXT(". The telex is still printing.");Changed(Feedback);return true;}
  if(Id==TEXT("opsTerminal")||Id==TEXT("telex")||Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))
  {
   if(!HasPower()&&(Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))){OpenArchive();return true;}
@@ -3192,6 +3245,9 @@ bool FS47FreeformSession::Use(const FString& Id)
 FString FS47FreeformSession::Label(const FString& Id)const
 {
  if(!bActive)return FString();
+ // TELEX-20261109
+ if(Id==TEXT("telex")&&TelexReady())return TEXT("Tear off the telex");
+ if(Id==TEXT("telex")&&!TelexSheets.IsEmpty()&&HasPower())return TEXT("The telex is printing");
  if(!HasPower()&&(Id==TEXT("crtCenter")||Id==TEXT("crtLeft")||Id==TEXT("crtRight")||Id==TEXT("opsTerminal")||Id==TEXT("telex")||Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")))return TEXT("Instrument unpowered / restore feeder or generator");
  if(AudioDesk){const FString L=AudioDesk->Label(Id);if(!L.IsEmpty())return L;}
  if(Field){const FString L=Field->Label(Id);if(!L.IsEmpty())return L;}
@@ -3416,6 +3472,7 @@ S47J::FObj FS47FreeformSession::Save()const
   for(const FResultSheet& Sh:CaseSheets){auto X=S47J::New();S47J::Set(X,TEXT("line"),Sh.Line);S47J::Set(X,TEXT("test"),Sh.Test);S47J::Set(X,TEXT("day"),Sh.Day);S47J::Set(X,TEXT("feed"),Sh.Feed);S47J::Set(X,TEXT("job"),Sh.Job);S47J::Set(X,TEXT("stamp"),Sh.Stamp);S47J::Set(X,TEXT("page"),Sh.Page);Waiting.Add(MakeShared<FJsonValueObject>(X));}
   O->SetArrayField(TEXT("caseSheets"),Waiting);
  }
+ SaveTelex(O); // TELEX-20261109
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
  if(Scripts){const auto Played=Scripts->Save();if(Played->Values.Num()>0)S47J::Set(O,TEXT("scripts"),Played);}
@@ -3750,6 +3807,68 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(!Said.Contains(TEXT("DEBT"),ESearchCase::IgnoreCase)&&Said.Contains(TEXT("REQ $12")),TEXT("OPS text says REQUISITION, never DEBT"));
   Check(TerminalStation(3)==TEXT("SARO OPS V4.2  TERM 1  OPR NIGHT")&&!TerminalStation(1).Contains(TEXT("REYES"))&&Sh.TerminalDate(8*3600.).Len()==9&&Sh.TerminalDate(8*3600.).Contains(TEXT("-86")),TEXT("OPS header as Story's: SARO OPS V4.2, terminal, a new operator and DD-MON-86"));
   Sh.Stop();ShR.Stop();
+ }
+ {
+  // Tom, 9 November: RETAIN at the reel deck keeps the comparison and opens no case, even with the event's own record after it; a
+  // Continue in between keeps it so; registering it at OPS opens THE REPEATED INTERVAL and says CASE OPENED, its repeat window from
+  // the original's own clock. An older save whose case is already open goes on as before.
+  FS47FreeformSession Fc(nullptr);Fc.Begin(nullptr);Fc.Tutorial=0;Fc.WorldClock=22*3600.;
+  const int32 FcI=Fc.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
+  Check(FcI!=INDEX_NONE,TEXT("First case fixture: a pulsar job on the first day"));
+  if(FcI!=INDEX_NONE)
+  {
+   Fc.Selected=FcI;
+   {
+    FJob& FcJ=Fc.Work[FcI];FcJ.Stage=EJobStage::Recorded;FcJ.bPrinted=true;FcJ.bAnomaly=true;FcJ.bControl=true;FcJ.ControlAt=8;
+    FcJ.OriginalCovered=18;FcJ.ControlCovered=8;FcJ.MarkStart=9.2;FcJ.MarkEnd=12.8;FcJ.ReferenceClock=21.5*3600.;
+   }
+   const bool bRetained=Fc.AudioAction(TEXT("confirm"));
+   Fc.RecordEvidence(TEXT("extra_pulse"),TEXT("An extra pulse group survives a separate receiver check. The source is unresolved.")); // the event's own, as the Director keeps it
+   Check(bRetained&&Fc.Work[FcI].bAudioReviewed&&Fc.HasFinding(TEXT("pulse-review"))&&!Fc.CaseFile().Get(0)->bOpen&&Fc.CaseStep(0).Step==ECaseStep::Closed&&Fc.CaseAwaitingChoice()<0
+    &&Fc.FeedbackText().Contains(TEXT("Register comparison: source unresolved"))&&!Fc.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: RETAIN keeps the comparison, opens no case and says only the next step, the registration at OPS"));
+   const auto Between=S47J::Read(S47J::Write(Fc.Save()));
+   FS47FreeformSession Fc2(nullptr);Fc2.Begin(Between);Fc2.Tutorial=0;
+   Check(!Fc2.CaseFile().Get(0)->bOpen&&Fc2.Work[FcI].bAudioReviewed&&Fc2.Work[FcI].Stage==EJobStage::Recorded,TEXT("First case: a Continue between RETAIN and the registration opens no case either"));
+   Fc2.Selected=FcI;
+   Check(Fc2.RegisterComparison(TEXT("unresolved"))&&Fc2.Work[FcI].Stage==EJobStage::Registered&&Fc2.CaseFile().Get(0)->bOpen&&Fc2.CaseStep(0).Step==ECaseStep::ChooseTest
+    &&Fc2.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL"))&&Fc2.CaseFile().Get(0)->RefDay==1&&FMath::IsNearlyEqual(Fc2.CaseFile().Get(0)->RefClock,21.5*3600.),TEXT("First case: registering the comparison at OPS opens it, says CASE OPENED, and keeps the original's clock for the repeat"));
+   // An older save: the case was opened at RETAIN, the comparison not registered yet.
+   auto Older=S47J::Read(S47J::Write(Fc.Save()));
+   {const auto List=S47J::Arr(S47J::Obj(Older,TEXT("cases")),TEXT("cases"));if(List.Num()>0){auto O0=List[0]->AsObject();S47J::Set(O0,TEXT("open"),true);S47J::Set(O0,TEXT("openDay"),1);S47J::Set(O0,TEXT("openClock"),21.75*3600.);}}
+   FS47FreeformSession Fc3(nullptr);Fc3.Begin(Older);Fc3.Tutorial=0;Fc3.Selected=FcI;
+   Check(Fc3.CaseFile().Get(0)->bOpen&&Fc3.RegisterComparison(TEXT("unresolved"))&&Fc3.CaseFile().Get(0)->bOpen&&Fc3.CaseFile().Get(0)->OpenDay==1&&!Fc3.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: an older save with the case open at RETAIN goes on as before"));
+   Fc2.Stop();Fc3.Stop();
+  }
+  Fc.Stop();
+ }
+ {
+  // TELEX-20261109: a filed case's morning reply prints on the telex and is no paper until it is torn off there: not in the tray, the
+  // case's step, the HUD's second line, TONIGHT'S PLAN and the machine say so; it survives a Continue on the machine; torn off it is a
+  // document (into the notebook with a running game) and lies in the OPS tray, also after a Continue.
+  const int32 ML=FS47FreeformCases::MysteryLine;
+  FS47FreeformSession X(nullptr);X.Begin(nullptr);X.Tutorial=0;
+  X.RecordEvidence(TEXT("carrier_saro"),X.CaseFile().ClueText(ML,0));
+  int32 Filed=0;for(int32 Cause=0;Cause<FS47FreeformCases::CauseCount;++Cause)if(!X.CaseFile().Excluded(ML,Cause)){Filed=Cause;break;}
+  Check(X.ConcludeCase(ML,Filed),TEXT("Telex fixture: an assessment filed on a trace"));
+  X.TestAdvance(86400.);X.StepCaseReplies();
+  const FString Doc=FString::Printf(TEXT("freeform-case%d-reply"),ML+1);
+  Check(X.HasFinding(FString::Printf(TEXT("case%d-reply"),ML+1))&&X.CaseFile().Get(ML)->bReplied&&X.OnTelex(Doc)&&!X.InTelexTray(Doc)&&X.TelexTray().IsEmpty()&&!X.TelexReady()&&!X.TearOffTelex(),
+   TEXT("Telex: the morning reply comes in on the telex, not straight into the tray, and cannot be torn off while it prints"));
+  const FCaseStep XS=X.CaseStep(ML);
+  Check(XS.Step==ECaseStep::AwaitReply&&XS.Task.Contains(TEXT("tear off the reply at the telex"))&&X.CaseNextLine(ML).Contains(TEXT("TEAR IT OFF AT THE TELEX"))&&X.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).StartsWith(TEXT("TELEX: A reply is waiting"))
+   &&X.TonightPlan().StartsWith(TEXT("TELEX / A REPLY IS WAITING"))&&X.Label(TEXT("telex"))==TEXT("The telex is printing"),TEXT("Telex: CaseStep, the HUD's second line, TONIGHT'S PLAN and the machine say a reply is waiting there"));
+  FS47FreeformSession Y(nullptr);Y.Begin(S47J::Read(S47J::Write(X.Save())));Y.Tutorial=0;
+  Check(Y.OnTelex(Doc)&&Y.TelexQueue().Num()==1&&Y.TelexQueue()[0].Page==X.TelexQueue()[0].Page&&!Y.InTelexTray(Doc)&&Y.CaseStep(ML).Step==ECaseStep::AwaitReply,TEXT("Telex: a paper on the machine survives Save and Continue, still not in the tray"));
+  Y.TelexSheets[0].Feed=TelexSeconds;
+  FS47Doc Torn;
+  Check(Y.TelexReady()&&Y.Label(TEXT("telex"))==TEXT("Tear off the telex")&&Y.TearOffTelex(&Torn)&&Torn.Id==Doc&&Torn.Kind==TEXT("telex")&&Torn.Page==X.TelexQueue()[0].Page&&!Y.OnTelex(Doc)&&Y.InTelexTray(Doc)
+   &&Y.TelexLine().IsEmpty()&&Y.HudCaseLine(FString()).IsEmpty()&&Y.CaseStep(ML).Step==ECaseStep::Closed,TEXT("Telex: torn off, the reply is a document for the notebook and lies in the OPS tray; the case has nothing left"));
+  FS47FreeformSession Z(nullptr);Z.Begin(S47J::Read(S47J::Write(Y.Save())));
+  Check(Z.InTelexTray(Doc)&&Z.TelexQueue().IsEmpty()&&Z.TelexTray().Last().Page==Torn.Page,TEXT("Telex: the torn-off paper is still in the tray after Continue"));
+  Check(Z.QueueTelex(TEXT("telex-selftest-1"),TEXT("Test"),TEXT("TELEX"),TEXT("PAGE"))&&!Z.QueueTelex(TEXT("telex-selftest-1"),TEXT("Test"),TEXT("TELEX"),TEXT("PAGE"))&&!Z.QueueTelex(Doc,TEXT("Test"),TEXT("TELEX"),TEXT("PAGE")),
+   TEXT("Telex: a paper prints once, and one already torn off is not printed again"));
+  {FS47FreeformSession TxOld(nullptr);TxOld.Begin(S47J::Read(TEXT("{\"v\":1}")));Check(TxOld.TelexQueue().IsEmpty()&&TxOld.TelexTray().IsEmpty()&&!TxOld.Save()->HasField(TEXT("telex")),TEXT("Telex: an older save has nothing on the machine and writes nothing"));TxOld.Stop();}
+  X.Stop();Y.Stop();Z.Stop();
  }
  {
   // The first pulsar has the extra ticks; nothing else does by this rule; an older save with one recorded is left alone.
