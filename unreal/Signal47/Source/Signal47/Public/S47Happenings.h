@@ -148,7 +148,7 @@ public:
  // discrepancy and the bearing slip (FS47Places::AfterRegistered) are about the same thing. Saved ("lead"; an older save has
  // none and draws it again). A calm night, or one with none of these drawn, has none: nothing is made up.
  struct FLead{int32 Night=0;FString Kind,Place;bool bPointed=false;bool IsSet() const{return Night>0&&!Kind.IsEmpty()&&!Place.IsEmpty();}};
- const FLead& Lead() const{return Tonight;}
+ const FLead& Lead() const{return LeadNow;}
  // Which of a night's draws it is: a landing before a carcass before a missing man's pickup, a camper, a stuck driver. Empty: none.
  static FString LeadKindOf(const TMap<FString,double>& Drawn);
  // Whether it may start at its drawn place with the player this far off (road-local metres, under 0: no player). Never on top of
@@ -260,7 +260,7 @@ private:
  // ---- the night ----
  void PlanTonight(int32 Night);
  // CHAIN-1-20261109: tonight's lead (above), and its draw at the end of PlanTonight.
- FLead Tonight;
+ FLead LeadNow;
  void DrawLead(int32 Night);
  // The night's own pace: one at x1 in play; F10's natural night runs its minutes at its speed, so what lasts is measured in the
  // night's minutes and not in seconds of the screen (critics, 8 November: at x30 a figure held the ground for twenty hours).

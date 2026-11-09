@@ -714,7 +714,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
- Tonight=FLead();
+ LeadNow=FLead();
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
@@ -748,7 +748,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    {
     FLead T;T.Night=S47J::Int(L,TEXT("night"));T.Kind=S47J::Str(L,TEXT("kind")).Left(32);T.Place=S47J::Str(L,TEXT("place")).Left(64);T.bPointed=S47J::Bool(L,TEXT("pointed"));
     TMap<FString,double> One;One.Add(T.Kind,0.);
-    if(T.IsSet()&&T.Night<100000&&LeadKindOf(One)==T.Kind)Tonight=T;
+    if(T.IsSet()&&T.Night<100000&&LeadKindOf(One)==T.Kind)LeadNow=T;
    }
   }
   // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
@@ -816,7 +816,7 @@ S47J::FObj FS47Happenings::Save() const
  if(GhostNight>0)S47J::Set(O,TEXT("ghostNight"),GhostNight);
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
  if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
- if(Tonight.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),Tonight.Night);S47J::Set(L,TEXT("kind"),Tonight.Kind);S47J::Set(L,TEXT("place"),Tonight.Place);if(Tonight.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
+ if(LeadNow.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),LeadNow.Night);S47J::Set(L,TEXT("kind"),LeadNow.Kind);S47J::Set(L,TEXT("place"),LeadNow.Place);if(LeadNow.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
  if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
@@ -1095,8 +1095,8 @@ void FS47Happenings::DrawLead(int32 Night)
 {
  auto* F=M?M->Freeform.Get():nullptr;
  // Loaded with tonight's: kept as it was drawn (a slip may have pointed there already).
- if(Tonight.IsSet()&&Tonight.Night==Night&&F&&F->EventPlaces&&F->EventPlaces->Find(Tonight.Place)&&(Tonight.bPointed||Plan.Contains(Tonight.Kind)))return;
- Tonight=FLead();
+ if(LeadNow.IsSet()&&LeadNow.Night==Night&&F&&F->EventPlaces&&F->EventPlaces->Find(LeadNow.Place)&&(LeadNow.bPointed||Plan.Contains(LeadNow.Kind)))return;
+ LeadNow=FLead();
  const FString Kind=LeadKindOf(Plan);
  if(Kind.IsEmpty()||!F||!F->EventPlaces||F->InTutorial())return;
  using S47Hap::Bit;
@@ -1110,7 +1110,7 @@ void FS47Happenings::DrawLead(int32 Night)
  double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
  const FS47PlacePick P=F->EventPlaces->PickFor(N,F->Seed(),Night,FVector2D(SaroX,SaroZ),FVector2D::ZeroVector,0x4c454144u);
  if(!P.IsSet()){UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s: no place fits from SARO, drawn when it starts as before"),Night,*Kind);return;}
- Tonight.Night=Night;Tonight.Kind=Kind;Tonight.Place=P.Id;
+ LeadNow.Night=Night;LeadNow.Kind=Kind;LeadNow.Place=P.Id;
  const double* At=Plan.Find(Kind);
  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead: %s at %s, %.0f m from SARO, from %s"),Night,*Kind,*P.Id,P.DistanceM,At?*S47Hap::ClockText(FMath::Fmod(*At,24.)*3600.):TEXT("no hour"));
 }
@@ -1119,13 +1119,13 @@ FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,d
  FSpot S;
  auto* F=M?M->Freeform.Get():nullptr;
  // F10 asks with no least distance (a forced one, wanted where the player is): left as it was.
- if(!F||!F->EventPlaces||MinM<=0||!Tonight.IsSet()||Tonight.Kind!=Kind||Tonight.Night!=FS47FreeformSession::NightOf(F->Clock()))return S;
- const FS47EventPlace* E=F->EventPlaces->Find(Tonight.Place);if(!E)return S;
+ if(!F||!F->EventPlaces||MinM<=0||!LeadNow.IsSet()||LeadNow.Kind!=Kind||LeadNow.Night!=FS47FreeformSession::NightOf(F->Clock()))return S;
+ const FS47EventPlace* E=F->EventPlaces->Find(LeadNow.Place);if(!E)return S;
  double Px=0,Pz=0;
  const double Away=PlayerRoad(Px,Pz)?FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)):-1.;
- if(!LeadFits(Away,MinM,MaxM,Tonight.bPointed)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
+ if(!LeadFits(Away,MinM,MaxM,LeadNow.bPointed)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
  S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;
- UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,Tonight.bPointed?TEXT(", a slip pointed there"):TEXT(""));
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,LeadNow.bPointed?TEXT(", a slip pointed there"):TEXT(""));
  return S;
 }
 bool FS47Happenings::OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const
@@ -1142,21 +1142,21 @@ bool FS47Happenings::OutTonight(int32 Night,FString& Event,FString& Title,double
   Event=K[1];Title=S->Title;X=S->X;Z=S->Z;return true;
  }
  // The one still to come, while it still can: its hour and a half, or the rest of the night once a slip has pointed there (Due).
- if(!Tonight.IsSet()||Tonight.Night!=Night||PlanNight!=Night)return false;
- const double* From=Plan.Find(Tonight.Kind);if(!From)return false;
- if(const int32* Last=LastDays.Find(Tonight.Kind);Last&&*Last==F->Day())return false;
+ if(!LeadNow.IsSet()||LeadNow.Night!=Night||PlanNight!=Night)return false;
+ const double* From=Plan.Find(LeadNow.Kind);if(!From)return false;
+ if(const int32* Last=LastDays.Find(LeadNow.Kind);Last&&*Last==F->Day())return false;
  // It has come (and was found, or it would have been pointed at above): nothing more to say about it.
- for(const auto& K:Left)if(Tonight.Kind==K[1]){const FSite* S=SiteOf(FString(K[0]));if(S&&S->Night==Night)return false;}
- if(HourOfNight(F->Clock())>=FMath::Min(30.,Tonight.bPointed?DangerUntil:*From+DrawWindow))return false;
- const FS47EventPlace* E=F->EventPlaces?F->EventPlaces->Find(Tonight.Place):nullptr;if(!E)return false;
- Event=Tonight.Kind;Title=E->Title;X=E->X;Z=E->Z;bAhead=true;
+ for(const auto& K:Left)if(LeadNow.Kind==K[1]){const FSite* S=SiteOf(FString(K[0]));if(S&&S->Night==Night)return false;}
+ if(HourOfNight(F->Clock())>=FMath::Min(30.,LeadNow.bPointed?DangerUntil:*From+DrawWindow))return false;
+ const FS47EventPlace* E=F->EventPlaces?F->EventPlaces->Find(LeadNow.Place):nullptr;if(!E)return false;
+ Event=LeadNow.Kind;Title=E->Title;X=E->X;Z=E->Z;bAhead=true;
  return true;
 }
 void FS47Happenings::PointedTonight(int32 Night)
 {
- if(!Tonight.IsSet()||Tonight.Night!=Night||Tonight.bPointed)return;
- Tonight.bPointed=true;
- UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s at %s: a slip points there, held to its place until morning"),Night,*Tonight.Kind,*Tonight.Place);
+ if(!LeadNow.IsSet()||LeadNow.Night!=Night||LeadNow.bPointed)return;
+ LeadNow.bPointed=true;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s at %s: a slip points there, held to its place until morning"),Night,*LeadNow.Kind,*LeadNow.Place);
 }
 // MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
 static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
@@ -1640,7 +1640,7 @@ bool FS47Happenings::Due(const FString& Id) const
  const int32* Last=LastDays.Find(Id);
  // The night's danger waits in its slot until five for something that fits; the rest have an hour and a half.
  // CHAIN-1-20261109: the lead a slip has pointed at waits as long, so that what the slip said is out there comes to be there.
- const bool bPromised=Tonight.bPointed&&Tonight.Night==PlanNight&&Tonight.Kind==Id;
+ const bool bPromised=LeadNow.bPointed&&LeadNow.Night==PlanNight&&LeadNow.Kind==Id;
  return S47Hap::DueAt(H,*From,IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow)&&!(Last&&*Last==M->Freeform->Day());
 }
 bool FS47Happenings::MayStart(const FString& Id)
