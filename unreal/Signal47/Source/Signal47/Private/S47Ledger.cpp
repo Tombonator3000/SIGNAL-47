@@ -510,10 +510,10 @@ bool S47Ledger::SelfTest(TArray<FString>& Lines)
    TArray<FString> Counted;PlainText(A).ParseIntoArrayWS(Counted);MostWords=FMath::Max(MostWords,Counted.Num());
    const FString Text=PlainText(A);bShort&=!Text.Contains(TEXT("{"))&&!Text.Contains(TEXT("}"))&&!Text.Contains(TEXT("somewhere out of town"),ESearchCase::CaseSensitive);
    FString Word;bPrinted&=Clean(Text,Word);
-   bPrinted&=!Text.Contains(TEXT("dust"))&&!Text.Contains(TEXT("sprinkle"))&&!Text.Contains(TEXT("frost"))&&!Text.Contains(TEXT("moon"));
+   bPrinted&=!Text.Contains(TEXT("dust"))&&!Text.Contains(TEXT("sprinkle"))&&!Text.Contains(TEXT("frost")); // the moon is in the sky since MOON-20261108
   }
  }
- Check(bPrinted,TEXT("no paper as printed says a forbidden word, or weather the sky does not show (dust, sprinkles, frost, a moon)"));
+ Check(bPrinted,TEXT("no paper as printed says a forbidden word, or weather the sky does not show (dust, sprinkles, frost)"));
  Check(bSame,TEXT("a game's paper is the same every time it is opened"));
  Check(bUnique,TEXT("no county item, log entry, letter, ad or county front page is printed twice in five weeks"));
  Check(bDated,bDated?FString(TEXT("nothing with a date is printed after it, or before it for what came of it")):TEXT("printed outside its dates: ")+Late);
