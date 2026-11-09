@@ -37,6 +37,13 @@ Saker og OPS, Tom 9. november ca. 16:40 (svar på gjennomgangen i [SAKER_OPS](..
 
 Samme melding: byfolket skal ikke skli over bakken. Animasjoner fra andre figurer kan overføres (retargeting). Caliche trenger kanskje et par hus til, så folk har steder å bo. Kinski-opplesningen av papirer skal slettes.
 
+Spilløkka, Tom 9. november ca. 18:20 (svar på [HELHETLIG_LOKKE](../Research/Gameplay/HELHETLIG_LOKKE_2026-11-09.md)):
+1. Tråder spilleren knytter selv på pinboardet teller ikke som bevis. Tidsstempel og samme minutt bærer bevisene.
+2. Høyst én utpeking per natt, og kort 3 er valget mellom jobb og tur ut.
+3. Sak 0 og 1 får ingen prøve ute ennå. Det vurderes på nytt etter neste kritikerrunde.
+
+Samme melding: mer nattradio. CB-radioen skal være i bilen. Testvinduer fra Unreal skal åpnes på venstre skjerm og ikke ta fokus fra det Tom gjør.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
