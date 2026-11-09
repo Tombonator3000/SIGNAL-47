@@ -37,7 +37,8 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
   - **Senere:** enkel tidslinje med dra-og-slipp, kopier og lim inn, og deling av skript mellom maskiner.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
-- [ ] **ECON-CAP-20261109 (Tom avgjør):** med 2–3 kveldsjobber stiger saldoen fortsatt $150–300 i uka i uke 3–4. Valg: tak på kassa (f.eks. $250–300, resten til fylket ved ukegjennomgangen, Ward kan lese det), lavere lønn, eller la det være.
+- [x] **ECON-CAP-20261109:** ny pengeløkke etter Toms seks punkter (grunnlønn $14/10/7/4 + tillegg for godt arbeid, vedlikehold og bensin stiger per uke, kassetter og ødelagt utstyr koster, felles tak $35/uke på feltinntekter, bilen oppgraderes: dekk, lasteramme, ekstratank, motor; feltopptaker, nattkamera, radiopeiler). Modellen gir saldo $18–53 ved ukegjennomgang med to kort per kveld. Se [pengeløkka](../Research/Gameplay/OKONOMI_LOKKE_2026-11-09.md).
+- [ ] **ECON-FOLLOW-20261109 (Tom avgjør):** (1) ett kort per kveld er knapt: skal grunnlønnen være $15? (2) skal fotokreditten (PHOTO-01) stå utenfor taket på $35? (3) vinsj som dyrt kjøp i uke 3? (4) eget arbeidslys rundt bilen? (5) skal hvert kort ta fast tid (f.eks. 20 min skrivebordsarbeid)? (6) nattkameraets lysforsterkning må vurderes på bilde.
 - [ ] **STAYS-CASE-20261109 (Tom avgjør):** Stays krever nå minst én sak ført gjennom. Skal Wards første brev nevne det?
 - [ ] **QUIET-WEEK1-20261109 (Tom avgjør):** første uke inne på SARO er nå nesten stille (ingen dør, servicegård eller opplyst rom før dag 8, ansikt i vinduet fra natt 5). Riktig?
 - [ ] **ORB-TRACE-20261109 (Tom avgjør):** skal sporet etter lyskulene ved antenna telle som nattark hos Ward, eller bare som spor i saken?
