@@ -16,6 +16,9 @@ public:
  void FillRhythm(struct FS47RhythmNow& Out) const;
  void NoteDanger();
  int32 DangerTonight() const;
+ // Critic round 5: the night the rhythm's danger slot was taken (FS47Rhythm::Began, DangerSlotOpen) and the night of the last peek in
+ // at a window (FS47Rhythm::BeganOn), saved with the night's dangers: a load of the same night, or a Continue, has them as they were.
+ int32 SlotNight=0,PeekNight=0;
  // The hint on the player's objective line while lights are reported somewhere.
  FString TipLine() const;
  // Test: tonight is a night for lights, at the next scheduler tick.

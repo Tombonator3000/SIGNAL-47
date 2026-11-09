@@ -39,6 +39,8 @@ namespace S47HudGauges
 	/** SAVE-SARO-20261108: the small stamp over the gauges when the autosave on leaving SARO is written. LOG FILED and the clock the
 	 *  save's card has (S47SaroSave.h). */
 	SIGNAL47_API FString FiledLine(const FString& Clock);
+	/** Critic round 5: LOG NOT FILED (S47SaroSave::NotFiledLine), which the HUD stamps in a dull red rather than the amber of LOG FILED. */
+	SIGNAL47_API bool FiledRefused(const FString& Stamp);
 	/** How long the stamp shows, and its strength T seconds after the save: in over a quarter second, held, out over the last 0.8. */
 	constexpr double FiledFor = 4.5;
 	SIGNAL47_API double FiledAlpha(double T);

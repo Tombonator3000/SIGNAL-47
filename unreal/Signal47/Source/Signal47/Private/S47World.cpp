@@ -726,7 +726,7 @@ void US47World::EnsureLegs()
 		// d.thud: audio.play('thudSoft', { gain, rate: 0.8 })
 		if (!M || !M->Audio) return;
 		FS47Sound S; S.Gain = float(FMath::Min(1.0, Speed / 8)); S.Rate = 0.8f;
-		M->Audio->Sfx(TEXT("thud_soft"), S);
+		M->Audio->Sfx(TEXT("thudSoft"), S); // the buffer's name, as the web's 'thudSoft' (critic round 5: the file's name played nothing)
 	};
 	// SARO's own ground (ensureSaroLeg): its colliders without the truck's own, and the posts of
 	// the road's stretch (the export's list has both)

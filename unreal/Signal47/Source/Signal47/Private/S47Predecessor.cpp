@@ -161,9 +161,8 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* K=F.CaseFile().Get(Line);K&&K->bConcluded)
  {
   // A mystery takes a filing on any evidence (M7): it counts only with a control recorded or the other place looked at too.
-  bool Kept[FS47FreeformCases::ClueCount]={};
-  if(const auto* Y=FS47FreeformCases::Def(Line).Mystery)for(int32 I=0;I<FS47FreeformCases::ClueCount;++I)Kept[I]=F.HasFinding(Y->Clues[I].Finding);
-  if(F.CaseFile().Supported(Line,Kept))++C.Concluded;else ++C.Guessed;
+  // The same sum the case board warns by before a filing (critic round 5): FS47FreeformSession::CaseSupported.
+  if(F.CaseSupported(Line))++C.Concluded;else ++C.Guessed;
  }
  C.Dishes=F.AvailableDishCount();C.Arrears=F.Arrears();C.Taken=F.TimesTaken();C.Land=F.NightRecordKinds();C.Reprieved=TakenAtReprieve;
  if(F.NightLog)C.Logs=F.NightLog->ReadCount();
@@ -186,7 +185,7 @@ int32 FS47Predecessor::Known() const
 void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
 {
  Stop();Life=MakeShared<uint8>(0);
- Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=bClosed=bStowed=false;CloseDay=0;LeftDay=0;LeftClock=0;NewsIn=8;TakenAtReprieve=GoneNoticed=KeptDay=0;bOutcomeRead=false;Salute.Reset();SaluteTime=0;SaluteStage=0;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
+ Seen.Reset();HeardOf.Reset();Tray.Reset();Outcome=EOutcome::None;bLeft=bPayReturned=bLetterTold=bRinging=bClosed=bStowed=bSawTutorial=bLegacyReprieve=bLegacyRead=false;CloseDay=0;LeftDay=0;LeftClock=0;NewsIn=8;TakenAtReprieve=GoneNoticed=KeptDay=0;bOutcomeRead=false;Salute.Reset();SaluteTime=0;SaluteStage=0;RingLeft=0;NoraNext=0;RadioOffDay=-1;NoraState=0;DaleDay=0;bBound=bBoundLand=false;
  DaleAnswered=DaleAnsweredDay=DaleMisses=DaleMissDay=DaleHoursTold=0;DaleLastClock=-1e9;DaleRetryClock=0;bDaleMissed=false;
  if(Saved.IsValid()&&Saved->Values.Num()>0)
  {
@@ -198,8 +197,13 @@ void FS47Predecessor::Begin(const S47J::FObj& Saved,bool bOlderGame,int32 Today)
   bLeft=S47J::Bool(Saved,TEXT("left"));LeftDay=S47J::Int(Saved,TEXT("leftDay"));LeftClock=S47J::Num(Saved,TEXT("leftClock"));
   CloseDay=FMath::Max(0,S47J::Int(Saved,TEXT("closeDay")));bClosed=S47J::Bool(Saved,TEXT("closed"));
   TakenAtReprieve=FMath::Max(0,S47J::Int(Saved,TEXT("reprieve")));GoneNoticed=FMath::Max(0,S47J::Int(Saved,TEXT("goneNoticed")));KeptDay=FMath::Max(0,S47J::Int(Saved,TEXT("keptDay")));
-  // A save from before the letter's reading was kept: read, unless it still lies in the tray.
+  // A save from before the letter's reading was kept: read, unless it still lies in the tray, or (critic round 5) in the box at the
+  // road or with the postman, which the first Step looks at once the post is loaded (SettleLegacy).
   bOutcomeRead=Outcome!=EOutcome::None&&(Saved->HasField(TEXT("outcomeRead"))?S47J::Bool(Saved,TEXT("outcomeRead")):!Tray.Contains(TEXT("assessment")));
+  bLegacyRead=Outcome!=EOutcome::None&&!Saved->HasField(TEXT("outcomeRead"));
+  // A "Not yet" from before M7 moved only the day (critic round 5): the times taken it gave the nights back at are taken on the first
+  // Step, so that it is not undone the next morning.
+  bLegacyReprieve=!Saved->HasField(TEXT("reprieve"))&&Outcome==EOutcome::None&&AssessDay>FirstAssessDay();
   // A closing outcome from before the notice was kept: the notice runs from the assessment.
   if(CloseDay==0&&(Outcome==EOutcome::KnowsEnough||Outcome==EOutcome::ClosedOriginals||Outcome==EOutcome::ClosedNothing))CloseDay=AssessDay+NoticeDays;
   // Reading one's own letter again after a Continue is fine; being told it is there, is not.
@@ -225,6 +229,9 @@ void FS47Predecessor::Stop()
  bRadioLoop=false;
  for(auto& P:Shown)if(auto* C=P.Get())C->SetVisibility(false);
  if(auto* L=KeptLabel.Get())L->SetVisibility(false);
+ // A run up after KEPT OPEN broken off (critic round 5): each dish of it is sent back to where it was pointed, not left at the zenith.
+ if(SaluteStage>0&&IsValid(M->Web.Get())&&Scene.Get()==M->Web.Get())for(const FSaluteDish& D:Salute)if(D.I<M->Web->DishCount()&&M->Web->DishRemoteAvailable(D.I))M->Web->PointDish(D.I,D.Az,D.El,3);
+ Salute.Reset();SaluteStage=0;SaluteTime=0;
  if(IsValid(M->Web.Get()))
  {
   for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==TEXT("ff:reyes-lockers"))R.bEnabled=false;
@@ -254,11 +261,41 @@ S47J::FObj FS47Predecessor::Save() const
  return O;
 }
 bool FS47Predecessor::Live() const{return M&&M->Freeform&&(bTest||M->Freeform->RulesLive());}
+void FS47Predecessor::SettleLegacy(int32 Taken,bool bAssessmentPosted,int32 Today)
+{
+ if(bLegacyReprieve)
+ {
+  // The nights given back are kept: only a further stretch after this sends somebody else (GoneDue), not the next morning.
+  bLegacyReprieve=false;
+  if(TakenAtReprieve==0&&Taken>=TakenTooOften)
+  {
+   TakenAtReprieve=Taken;
+   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: a \"Not yet\" from before M7 kept at %d takings, assessment day %d"),TakenAtReprieve,AssessDay);
+  }
+ }
+ if(bLegacyRead)
+ {
+  bLegacyRead=false;
+  // Still in the box at the road, or on its way: not read, and OPS does not give it away.
+  if(bOutcomeRead&&bAssessmentPosted)bOutcomeRead=false;
+  // KEPT OPEN read before the finale was kept: it is had now (StepKept), from the day it was decided or today.
+  if(Outcome==EOutcome::Stays&&bOutcomeRead&&!Seen.Contains(TEXT("kept"))){Seen.Add(TEXT("kept"));KeptDay=FMath::Max(AssessDay,Today);}
+ }
+}
+bool FS47Predecessor::SaluteTarget(int32 I,double& Az,double& El) const
+{
+ if(SaluteStage<=0)return false;
+ for(const FSaluteDish& D:Salute)if(D.I==I){Az=D.Az;El=D.El;return true;}
+ return false;
+}
 void FS47Predecessor::Step(double Dt)
 {
  FS47AssessMonthTest::Step(*this,Dt);
  if(!Live())return;
  auto& F=*M->Freeform;
+ // A save from before M7, once the post is loaded (critic round 5).
+ if(bLegacyReprieve||bLegacyRead)SettleLegacy(F.TimesTaken(),F.Mail&&(F.Mail->Holds(TEXT("ward:assessment"))||F.Mail->Coming(TEXT("ward:assessment"))),F.Day());
+ if(F.InTutorial())bSawTutorial=true;
  BuildSaro();BuildLand();Bind();
  {
   // Placed once when built, and measured again only near the player, when there is ground there to measure.
@@ -301,7 +338,10 @@ void FS47Predecessor::StepNews(double Dt)
  if(bWardOpen&&!bLetterTold&&!F.InTutorial()&&(Tray.Contains(Letter)||InMailbox(Letter)))
  {
   bLetterTold=true;
-  if(M->UI)M->UI->Toast(InMailbox(Letter)?TEXT("There is a letter from Dr. Ward's office in the mailbox at the road."):TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
+  // Critic round 5: right after the first shift the toast FIRST SHIFT COMPLETE and the HUD's card already say where the letter is;
+  // a third time is noise. Told by toast after a Continue, or when the card is on something else.
+  const bool bCardSays=bSawTutorial&&InMailbox(Letter)&&FS47FreeformSession::LetterWaits(F.Objective());
+  if(M->UI&&!bCardSays)M->UI->Toast(InMailbox(Letter)?TEXT("There is a letter from Dr. Ward's office in the mailbox at the road."):TEXT("There is a letter from Dr. Ward's office in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Ward's letter %s, day %d, %s"),InMailbox(Letter)?TEXT("in the mailbox"):TEXT("in the tray"),Today,*DateText(Today));
   M->RequestAutosave();
  }
@@ -797,6 +837,19 @@ FString FS47Predecessor::TaskLine() const
  if(InMailbox(TEXT("letter")))return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
  if(Tray.Contains(TEXT("assessment")))return TEXT("OPS / Dr. Ward's assessment is in the tray.");
  if(InMailbox(TEXT("assessment")))return TEXT("MAILBOX / Dr. Ward's assessment is in the box at the road.");
+ // Critic round 5: her other papers while they wait, in the box or unread in the tray (ReadDoc takes them out of it): the inspector,
+ // her letter about the lost hours, and the last Monday note, which says what the review still wants.
+ if(InMailbox(TEXT("inspector")))return TEXT("MAILBOX / The county inspector's letter is in the box at the road.");
+ if(Tray.Contains(TEXT("inspector")))return TEXT("OPS / There is a letter from the county inspector in the tray.");
+ {
+  const FString Monday=FString::Printf(TEXT("week-%d"),WeekNoted);
+  for(const FString& Id:{FString(TEXT("ward-taken")),Monday})
+  {
+   const bool bNote=Id==Monday;
+   if(InMailbox(Id))return bNote?TEXT("MAILBOX / Dr. Ward's Monday note is in the box at the road."):TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
+   if(Tray.Contains(Id))return TEXT("OPS / There is a letter from Dr. Ward's office in the tray.");
+  }
+ }
  if(Outcome==EOutcome::None&&M&&M->Freeform)return FString::Printf(TEXT("SARO under review / Dr. Ward assesses the station on %s."),*DateText(AssessDay));
  // After the letter (M7): what the station is now, and until when.
  if(KeptOpen()&&M&&M->Freeform)return FString::Printf(TEXT("SARO KEPT OPEN / yours through %s."),*DateText(FiscalEndDay()));
@@ -1019,7 +1072,8 @@ void FS47Predecessor::OpenAssessment()
   Rows.Add(Para(TEXT("You read this over someone's shoulder. It was opened on the desk you sat at, by the operator who starts tonight. Nobody at the station expects you back. Your originals and photographs are where you left them."),900.f,true));
   Rows.Add(S47Kit::Button(TEXT("Start the shift as the new operator"),[this,Guard]{if(Guard.IsValid())ToTitle(true);},true));
   Rows.Add(S47Kit::Button(TitleButton(),[this,Guard]{if(Guard.IsValid())ToTitle(false);}));
-  Rows.Add(S47Kit::Button(TEXT("Not yet. Go back to the station, and Ward's review with it"),[this,Guard]
+  // Once (critic round 5): after one "Not yet" a further stretch of lost time ends it, as "There will not be a second time" said.
+  if(OffersNotYet())Rows.Add(S47Kit::Button(TEXT("Not yet. Go back to the station, and Ward's review with it"),[this,Guard]
   {
    if(!Guard.IsValid()||!M->Freeform)return;
    NotYet();if(M->UI)M->UI->Close();
@@ -1035,7 +1089,8 @@ void FS47Predecessor::OpenAssessment()
 // ---------- the keys ----------
 void FS47Predecessor::NotYet()
 {
- if(!M||!M->Freeform)return;
+ // Once (critic round 5): an old page or a stray call after the first reprieve gives no second one.
+ if(!M||!M->Freeform||!OffersNotYet())return;
  // A real reprieve (M7): only a further stretch of lost time sends somebody else; otherwise the review goes by the work. Never
  // sooner than the first assessment was set for.
  TakenAtReprieve=M->Freeform->TimesTaken();GoneNoticed=0;
@@ -1637,6 +1692,32 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   FS47Predecessor Older2(nullptr);Older2.Begin(S47J::Read(S47J::Write(Old)),false,31);
   Check(!Older2.OutcomeRead()&&Older2.StatusLine().Contains(TEXT("ASSESSMENT MADE")),TEXT("a save from before this, with the letter still in the tray, is not told the outcome either"));
   Check(Unread.TitleButton()==TEXT("Return to the title. This save stays"),TEXT("without a game, the title button does not claim the player is away"));
+ }
+ {
+  // Critic round 5. "Not yet" once: a save with a reprieve in it offers no second one.
+  auto Rp=S47J::New();S47J::Set(Rp,TEXT("opens"),1);S47J::Set(Rp,TEXT("assess"),44);S47J::Set(Rp,TEXT("reprieve"),3);
+  FS47Predecessor Once(nullptr);Once.Begin(S47J::Read(S47J::Write(Rp)),false,31);
+  FS47Predecessor NewGame(nullptr);NewGame.Begin(nullptr,false,1);
+  Check(NewGame.OffersNotYet()&&!Once.OffersNotYet()&&Once.AssessmentDay()==44&&!Once.bLegacyReprieve,TEXT("\"Not yet\" is given once: after a reprieve the letter to the next operator has no second one"));
+  // Saves from before M7: a "Not yet" without its reprieve keeps its nights; a KEPT OPEN read has its finale; one still in the box
+  // at the road is not read.
+  auto Old7=S47J::New();S47J::Set(Old7,TEXT("opens"),1);S47J::Set(Old7,TEXT("assess"),44);
+  FS47Predecessor Reprieved7(nullptr);Reprieved7.Begin(S47J::Read(S47J::Write(Old7)),false,31);
+  const bool bWaited=Reprieved7.bLegacyReprieve;Reprieved7.SettleLegacy(3,false,31);
+  Check(bWaited&&Reprieved7.TakenAtReprieve==3&&!GoneDue(3,Reprieved7.TakenAtReprieve,31,32)&&GoneDue(4,Reprieved7.TakenAtReprieve,31,32)&&!Reprieved7.OffersNotYet(),TEXT("a \"Not yet\" from before M7 keeps its nights: only a further stretch of lost time ends it"));
+  auto Kept7=S47J::New();S47J::Set(Kept7,TEXT("opens"),1);S47J::Set(Kept7,TEXT("assess"),30);S47J::Set(Kept7,TEXT("outcome"),TEXT("stays"));
+  FS47Predecessor ReadKept(nullptr);ReadKept.Begin(S47J::Read(S47J::Write(Kept7)),false,33);ReadKept.SettleLegacy(0,false,33);
+  FS47Predecessor Posted(nullptr);Posted.Begin(S47J::Read(S47J::Write(Kept7)),false,31);Posted.SettleLegacy(0,true,31);
+  Check(ReadKept.KeptOpen()&&ReadKept.Found(TEXT("kept"))&&ReadKept.KeptDay==33&&!Posted.OutcomeRead()&&Posted.StatusLine()==TEXT("UNDER REVIEW / ASSESSMENT MADE")&&!Posted.Found(TEXT("kept")),
+   TEXT("a KEPT OPEN read before M7 gets its finale, and one still in the box at the road is not read yet"));
+  // The run up after KEPT OPEN is saved as where each dish goes back to, never as the zenith.
+  FS47Predecessor Run(nullptr);Run.Begin(nullptr,false,30);
+  FSaluteDish Dish;Dish.I=4;Dish.Az=123;Dish.El=37;Run.Salute.Add(Dish);Run.SaluteStage=1;
+  double Az=0,El=0;const bool bRun=Run.SaluteTarget(4,Az,El);const double GotAz=Az,GotEl=El;const bool bOther=Run.SaluteTarget(5,Az,El);
+  Run.SaluteStage=0;
+  Check(bRun&&GotAz==123&&GotEl==37&&!bOther&&!Run.SaluteTarget(4,Az,El),TEXT("a save during the run up after KEPT OPEN keeps where each dish was pointed"));
+  // Ward's first letter says what keeps the station open: a case carried through as well as the work.
+  Check(X::Letter(false,TEXT("MAY 1"),TEXT("MAY 28")).Contains(TEXT("case board"))&&X::Letter(true,TEXT("MAY 1"),TEXT("MAY 28")).Contains(TEXT("case board")),TEXT("her first letter names the case board, not the routine alone"));
  }
  for(int32 I=0;I<6;++I)Check(OutcomeOf(NameOf(EOutcome(I)))==EOutcome(I),TEXT("the outcome's name comes back as itself"));
  // Saves.

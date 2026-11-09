@@ -26,7 +26,14 @@ FString FS47LeftGear::NameOf(const FString& Item){return Item==TEXT("radio")?TEX
 
 void FS47LeftGear::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);Left.Reset();
+ Stop();Life=MakeShared<uint8>(0);Left.Reset();Place=FLeft();bPlace=false;
+ if(const auto P=S47J::Obj(Saved,TEXT("place")))
+ {
+  Place.Area=S47J::Str(P,TEXT("area"));Place.Title=S47J::Str(P,TEXT("title"));Place.Clock=S47J::Num(P,TEXT("clock"));
+  const auto A=S47J::Nums(P,TEXT("at"));if(A.Num()==3)Place.At=FVector(A[0],A[1],A[2]);
+  bPlace=!Place.Area.IsEmpty()&&FMath::IsFinite(Place.Clock)&&A.Num()==3&&!Place.At.ContainsNaN();
+  if(!bPlace)Place=FLeft();
+ }
  for(const auto& V:S47J::Arr(Saved,TEXT("left")))
  {
   if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();
@@ -63,7 +70,9 @@ void FS47LeftGear::Stop()
 }
 S47J::FObj FS47LeftGear::Save() const
 {
- auto O=S47J::New();if(Left.IsEmpty())return O;
+ auto O=S47J::New();
+ if(bPlace){auto P=S47J::New();S47J::Set(P,TEXT("area"),Place.Area);S47J::Set(P,TEXT("title"),Place.Title);S47J::Set(P,TEXT("clock"),Place.Clock);S47J::Set(P,TEXT("at"),TArray<double>{Place.At.X,Place.At.Y,Place.At.Z});S47J::Set(O,TEXT("place"),P);}
+ if(Left.IsEmpty())return O;
  TArray<TSharedPtr<FJsonValue>> List;
  for(const FLeft& L:Left)
  {
@@ -138,6 +147,12 @@ TArray<FString> FS47LeftGear::Leave(int32 Count,const FString& Area,const FVecto
  for(const FString& Item:Out)UE_LOG(LogTemp,Display,TEXT("S47: left behind: %s at %s, area %s"),*Item,*At.ToCompactString(),*Area);
  return Out;
 }
+void FS47LeftGear::MarkPlace(const FString& Area,const FVector& At,const FString& Title,double Clock)
+{
+ if(Area.IsEmpty()||At.ContainsNaN()||!FMath::IsFinite(Clock))return;
+ Place=FLeft();Place.Area=Area;Place.At=At;Place.Title=Title;Place.Clock=Clock;bPlace=true;
+ UE_LOG(LogTemp,Display,TEXT("S47: left behind: nothing, the place kept at %s, area %s"),*At.ToCompactString(),*Area);
+}
 void FS47LeftGear::GiveBack(const FLeft& L,bool bToHand)
 {
  if(!M)return;
@@ -154,6 +169,7 @@ bool FS47LeftGear::Fetch(const FString& Item)
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("Your %s, in the dirt where you stood. It still works."),*NameOf(Item)),5);
  UE_LOG(LogTemp,Display,TEXT("S47: left behind: %s fetched"),*Item);
  if(M->Freeform)M->Freeform->LostTimeTrace(1);
+ bPlace=false; // the place has been looked at, whatever else happened there
  M->RequestAutosave();return true;
 }
 void FS47LeftGear::Step(double Dt)
@@ -168,6 +184,18 @@ void FS47LeftGear::Step(double Dt)
   if(M->UI)M->UI->Toast(FString::Printf(TEXT("Somebody has handed in your %s at the gate. It is back where it is kept."),*NameOf(L.Item)),6);
   UE_LOG(LogTemp,Display,TEXT("S47: left behind: %s handed in"),*L.Item);
   M->RequestAutosave();
+ }
+ // Gone back to where it happened, in daylight (critic round 5): the trace, once.
+ if(bPlace&&M->Player&&Here(Place))
+ {
+  const double Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
+  if(PlaceLooked(Hour,FVector2D(M->Player->Pos.X-Place.At.X,M->Player->Pos.Z-Place.At.Z).Size(),Clock-Place.Clock))
+  {
+   bPlace=false;M->Freeform->LostTimeTrace(1);
+   if(M->UI)M->UI->Toast(FString::Printf(TEXT("This is where it happened, at %s. Noted in your field records (TAB)."),*Place.Title),6);
+   UE_LOG(LogTemp,Display,TEXT("S47: left behind: the place gone back to in daylight"));
+   M->RequestAutosave();
+  }
  }
  // The area shown changes under it; cheap enough to follow.
  static_cast<void>(Dt);
@@ -195,5 +223,10 @@ bool FS47LeftGear::SelfTest(TArray<FString>& Lines)
  Check(Two.IsLeft(Kinds[0])&&Two.IsLeft(Kinds[1])&&Two.Items().Num()==2&&Two.Items()[0].At.Equals(FVector(1,2,3))&&Two.Items()[0].Clock==100,TEXT("what lies out there survives a Continue, one of each, and nonsense in a save is dropped"));
  Check(Two.TaskLine().Contains(TEXT("field set and camera"))&&Two.TaskLine().Contains(TEXT("the church")),TEXT("the task says what and where"));
  FS47LeftGear Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Two.Save())));Check(S47J::Write(Back.Save())==S47J::Write(Two.Save()),TEXT("saving it twice changes nothing"));
+ // Critic round 5: a taking with nothing left behind keeps its place, and only a look in daylight, after waking, counts.
+ FS47LeftGear Spot(nullptr);Spot.Begin(nullptr);Spot.MarkPlace(TEXT("road"),FVector(4,5,6),TEXT("the church"),90000);
+ FS47LeftGear SpotBack(nullptr);SpotBack.Begin(S47J::Read(S47J::Write(Spot.Save())));
+ Check(SpotBack.PlaceMarked()&&!SpotBack.AnyLeft()&&SpotBack.TaskLine().IsEmpty()&&S47J::Write(SpotBack.Save())==S47J::Write(Spot.Save()),TEXT("the place of a taking survives a Continue, with nothing to fetch"));
+ Check(PlaceLooked(10,3,6*3600)&&!PlaceLooked(2,3,6*3600)&&!PlaceLooked(10,PlaceReach+1,6*3600)&&!PlaceLooked(10,0,60),TEXT("the place counts when gone back to in daylight, not at night, from afar, or on waking"));
  return OK;
 }

@@ -171,6 +171,10 @@ int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last,int32 Min,int32 Max)
 void FS47Rhythm::Load()
 {
  LoadRules();
+ BindRules();
+}
+void FS47Rhythm::BindRules()
+{
  // The night's moon, from the real date of the shift day at eleven at night (S47Weather::Moon).
  Rules.LitOf=[this](int32 Day)
  {
@@ -224,6 +228,8 @@ bool FS47Rhythm::LoadOverride(FString& Why)
  FS47RhythmData Got;
  if(!Parse(Text,Got,Why))return false;
  Rules=MoveTemp(Got);bOverride=true;SourceName=TEXT("override");
+ // The parse has none of the game's own: without them the finale row, the moon and the wind were gone (critic round 5).
+ BindRules();
  UE_LOG(LogS47Rhythm,Warning,TEXT("S47: rhythm: OVERRIDE from %s by hand, %d events"),*OverrideFile(),Rules.Events.Num());
  return true;
 }
@@ -325,13 +331,15 @@ void FS47Rhythm::Began(FName Id)
  if(Id==TEXT("taken")&&((F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||F->Director->ActiveEvent()==TEXT("service_presence")||(F->Happenings&&F->Happenings->HoldsTaking())))return;
  // The night's danger slot (M7): the first that comes near while it is open has it, wherever the player is.
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
- if(BeganSeed!=F->Seed()){BeganNight.Reset();SlotTakenNight=0;BeganSeed=F->Seed();}
+ if(BeganSeed!=F->Seed()){BeganNight.Reset();BeganSeed=F->Seed();}
  if(E->bGround&&E->Level>=ES47RhythmLevel::Presence&&DangerSlotOpen())
  {
-  SlotTakenNight=Night;
+  // The Director keeps it, and saves it (critic round 5): a load of the same night has it taken or not as it was then.
+  F->Director->SlotNight=Night;
   UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm danger slot of night %d taken by %s at %s"),Night,*Id.ToString(),*ClockText(F->Clock()));
  }
  BeganNight.Add(Id,Night);
+ if(Id==TEXT("peek"))F->Director->PeekNight=Night;
  // The common log of starts: the next, of anything, waits two to six minutes of the clock (May, "spacing").
  LastStartClock=F->Clock();StartGap=120.+240.*FS47NightRhythm::Roll(F->Seed(),int32(LastStartClock/60.),0x53504143u);
  if(E->Level==ES47RhythmLevel::Danger)
@@ -366,8 +374,15 @@ const FS47RhythmWeek& FS47RhythmData::Row(int32 Day,int32 Assess,int32* SpanFrom
  int32 At=INDEX_NONE;
  for(int32 K=0;K<Weeks.Num();++K)if(Day>=Weeks[K].FromDay)At=K;
  if(SpanFrom)*SpanFrom=At==INDEX_NONE?Day:Weeks[At].FromDay;
- // The last row's own week, for its moon: it holds to the end, but a full moon is measured against the nights round it.
+ // The last row's own week, for its moon: it holds to the end, but a full moon is measured against the nights round it. Critic
+ // round 5: past its first week, against the week of seven nights the day is in (a fixed 22 to 28 blew June up by up to 1.67).
  if(SpanTo)*SpanTo=At==INDEX_NONE?Day:Weeks.IsValidIndex(At+1)?Weeks[At+1].FromDay-1:Weeks[At].FromDay+6;
+ if(At!=INDEX_NONE&&!Weeks.IsValidIndex(At+1)&&Day>Weeks[At].FromDay+6)
+ {
+  const int32 Block=Weeks[At].FromDay+7*((Day-Weeks[At].FromDay)/7);
+  if(SpanFrom)*SpanFrom=Block;
+  if(SpanTo)*SpanTo=Block+6;
+ }
  return At==INDEX_NONE?Plain:Weeks[At];
 }
 int32 FS47RhythmData::DangerLimit(int32 Day,int32 Assess) const
@@ -433,7 +448,11 @@ float FS47Rhythm::PerNight(FName Id,float Otherwise,int32 Day) const
  return FMath::Clamp(Base*Rules.Worth(E->Level,Day),0.f,1.f);
 }
 bool FS47Rhythm::SameGame() const{return M&&M->Freeform&&BeganSeed==M->Freeform->Seed();}
-int32 FS47Rhythm::BeganOn(FName Id) const{return SameGame()?BeganNight.FindRef(Id):0;}
+int32 FS47Rhythm::BeganOn(FName Id) const
+{
+ if(Id==TEXT("peek"))return M&&M->Freeform&&M->Freeform->Director?M->Freeform->Director->PeekNight:0;
+ return SameGame()?BeganNight.FindRef(Id):0;
+}
 double FS47Rhythm::DangerSlotHour(int32 Seed,int32 Night,float SlotChance,double StartHour,bool bCalm)
 {
  // Until five, from an hour in their hours: the same dice FS47Happenings has always thrown for it.
@@ -451,7 +470,7 @@ double FS47Rhythm::SlotHourTonight() const
 bool FS47Rhythm::DangerSlotOpen(double Grace) const
 {
  const auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
- if(!F||!F->Director||F->Director->DangerTonight()>0||(SameGame()&&SlotTakenNight==FS47FreeformSession::NightOf(F->Clock())))return false;
+ if(!F||!F->Director||F->Director->DangerTonight()>0||F->Director->SlotNight==FS47FreeformSession::NightOf(F->Clock()))return false;
  // Not while one of the night's own dangers is out there (met or not yet).
  if(F->Happenings)for(const TCHAR* Id:{TEXT("figure_near"),TEXT("hitchhiker"),TEXT("car_light"),TEXT("cb_echo")})if(F->Happenings->Live(Id))return false;
  const double Slot=SlotHourTonight();
@@ -730,6 +749,17 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
     Said+=FString::Printf(TEXT(" %s %.2f %.2f %.2f %.2f;"),Which==0?TEXT("seen"):Which==1?TEXT("near"):TEXT("danger"),M2,M3,M4,Fin);
    }
    Check(bRise&&Real.Week(28).bFinale&&!Real.Week(26).bFinale,TEXT("with the real moon of May 1986 the weeks build, and the last nights are the fullest (weeks 2, 3, 4, finale):")+Said);
+   // Critic round 5: past the last row's first week (KEPT OPEN, or a reprieve to day 44) the moon is measured against the week of
+   // nights round the day, not against 22 to 28 around the full moon of 23 May: June's nights no longer come up to 1.67 times.
+   FS47RhythmData Late=Real;Late.AssessOf=[]{return 0;};
+   double Sum=0,Most=0;for(int32 Dd=29;Dd<=49;++Dd){const double K=Late.MoonIn(Dd,0);Sum+=K;Most=FMath::Max(Most,K);}
+   Check(FMath::Abs(Sum/21.-1.)<=.01&&Most<=1.45&&Late.MoonIn(41,0)<1.3f,FString::Printf(TEXT("after day 28 the moon moves the nights round their own week: mean %.3f, most %.2f, day 41 %.2f"),Sum/21.,Most,Late.MoonIn(41,0)));
+  }
+  {
+   // Critic round 5: a reload by hand (F10's override) keeps the game's own moon, wind and assessment on the rules.
+   FS47Rhythm Bound(nullptr);FString Bw;Parse(S47RhythmDefaultJson,Bound.Rules,Bw);
+   const bool bBare=!Bound.Rules.AssessOf&&!Bound.Rules.LitOf&&!Bound.Rules.StormOf;Bound.BindRules();
+   Check(bBare&&Bound.Rules.AssessOf&&Bound.Rules.LitOf&&Bound.Rules.StormOf&&Bound.Rules.AssessNow()==0,TEXT("the rules read again by hand are bound to the game's moon, wind and assessment again"));
   }
   {
    // The finale's row from three days before the assessment until it, its own danger limit, and none once it has been decided.

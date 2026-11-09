@@ -2481,6 +2481,12 @@ int32 FS47FreeformSession::TownTrust() const
  int32 Seen=0;for(const auto& Kept:Findings)Seen+=Kept.Key.StartsWith(TEXT("place_"))&&!Kept.Key.EndsWith(TEXT("_needle"))?1:0;
  return SheriffTrust()+(Seen+NightRecordKinds()>=4?1:0);
 }
+bool FS47FreeformSession::CaseSupported(int32 Line) const
+{
+ bool Kept[FS47FreeformCases::ClueCount]={};
+ if(const auto* Y=FS47FreeformCases::Def(Line).Mystery)for(int32 I=0;I<FS47FreeformCases::ClueCount;++I)Kept[I]=HasFinding(Y->Clues[I].Finding);
+ return Cases.Supported(Line,Kept);
+}
 bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 {
  FString Why;if(!Cases.Conclude(Line,Cause,Why,DayNumber)){Feedback=Why;Changed(Why);return false;}
@@ -2628,9 +2634,24 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
   if(!C->bConcluded&&D.Mystery)
   {
-   Rows.Add(S47FreeformTerminal::Small(TEXT("FILE / What you file is acted on. Nothing here checks it first, and it cannot be taken back. Only your own retained tests can close an explanation.")));
+   // Critic round 5: a filing with nothing behind it yet (one trace, no control) is said to be one before it goes in, and asked
+   // again: Dr. Ward does not count it (FS47Predecessor::Count), and the line is closed for good once filed.
+   const bool bBacked=CaseSupported(Line);
+   Rows.Add(S47FreeformTerminal::Small(bBacked?TEXT("FILE / What you file is acted on. Nothing here checks it first, and it cannot be taken back. Only your own retained tests can close an explanation.")
+    :TEXT("FILE / Dr. Ward will not count a filing with only one trace behind it. Look at the other place too, or record a control, first. What you file is acted on and cannot be taken back.")));
    TArray<S47Kit::FW> Filings;
-   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Filings.Add(S47FreeformTerminal::Button(FString(TEXT("File assessment: "))+D.Short[I],[this,Line,I]{ConcludeCase(Line,I);OpenCaseBoard(Line);},true));
+   if(!bBacked&&FileAskLine==Line&&FileAskCause>=0&&FileAskCause<FS47FreeformCases::CauseCount&&!Cases.Excluded(Line,FileAskCause))
+   {
+    const int32 Cause=FileAskCause;
+    Rows.Add(S47FreeformTerminal::Small(FString::Printf(TEXT("FILE ANYWAY? / %s, on what you have now. It cannot be taken back, and it will not count in the review."),D.Causes[Cause])));
+    Filings.Add(S47FreeformTerminal::Button(FString(TEXT("File anyway: "))+D.Short[Cause],[this,Line,Cause]{FileAskLine=FileAskCause=-1;ConcludeCase(Line,Cause);OpenCaseBoard(Line);},false));
+    Filings.Add(S47FreeformTerminal::Button(TEXT("Not yet"),[this,Line]{FileAskLine=FileAskCause=-1;OpenCaseBoard(Line);},true));
+   }
+   else for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Filings.Add(S47FreeformTerminal::Button(FString(TEXT("File assessment: "))+D.Short[I],[this,Line,I]
+   {
+    if(!CaseSupported(Line)){FileAskLine=Line;FileAskCause=I;OpenCaseBoard(Line);return;}
+    FileAskLine=FileAskCause=-1;ConcludeCase(Line,I);OpenCaseBoard(Line);
+   },true));
    Rows.Add(S47Kit::Row(Filings));
   }
   else if(C->bConcluded&&D.Mystery)Rows.Add(S47FreeformTerminal::Small(C->bReplied?TEXT("ASSESSMENT FILED / The reply is in your documents."):TEXT("ASSESSMENT FILED / The reply comes in the morning.")));
@@ -2729,7 +2750,7 @@ void FS47FreeformSession::StepTutorial()
 }
 FString FS47FreeformSession::TutorialObjective()const
 {
- if(Tutorial==1)return TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB");
+ if(Tutorial==1)return TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"); // whole on the HUD's card (critic round 5)
  const FJob* J=CurrentJob();if(!J)return FString();
  return FString::Printf(TEXT("FIRST SHIFT %d/%d / %s"),FMath::Clamp(Tutorial,2,6),J->Stage>=EJobStage::Registered?6:5,*JobNextAction(*J));
 }
@@ -2780,7 +2801,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
  {
   case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");
   case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)");
-  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP TUNING VALID; COLLECT THE ORIGINAL AT THE PRINTER WHEN RECORDING FINISHES");
+  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"); // the printer stays on the card (critic round 5)
   case EJobStage::Chart:return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
   case EJobStage::Recorded:
    if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. LEGACY ORIGINAL RETAINED; UNVERIFIABLE DUPLICATE REMOVED FROM PRINTER QUEUE WITHOUT A FINDING OR PAYMENT.");
@@ -2879,7 +2900,19 @@ S47J::FObj FS47FreeformSession::Save()const
  O->SetArrayField(TEXT("jobs"),Jobs);
  auto F=S47J::New(),D=S47J::New();for(const auto& P:Findings){S47J::Set(F,*P.Key,P.Value);S47J::Set(D,*P.Key,FindingDays.FindRef(P.Key));}S47J::Set(O,TEXT("findings"),F);S47J::Set(O,TEXT("findingDays"),D);
  TArray<double> U,Q;for(bool V:Upgrades)U.Add(V?1:0);for(int32 V:MysterySteps)Q.Add(V);S47J::Set(O,TEXT("upgrades"),U);S47J::Set(O,TEXT("mysteries"),Q);
- TArray<double> Angles=SavedAngles;if(!bRestoreAngles&&M&&M->Web&&M->Web->IsLoaded()){Angles.Reset();for(int32 I=0;I<M->Web->DishCount();++I)Angles.Append({M->Web->DishAz(I),M->Web->DishEl(I),M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)});}S47J::Set(O,TEXT("angles"),Angles);
+ TArray<double> Angles=SavedAngles;
+ if(!bRestoreAngles&&M&&M->Web&&M->Web->IsLoaded())
+ {
+  Angles.Reset();
+  for(int32 I=0;I<M->Web->DishCount();++I)
+  {
+   // The run up after KEPT OPEN (critic round 5): saved as where the dish was pointed, so that a Continue does not leave it at the zenith.
+   double Az=M->Web->DishAz(I),El=M->Web->DishEl(I),ToAz=M->Web->DishTargetAz(I),ToEl=M->Web->DishTargetEl(I),WasAz=0,WasEl=0;
+   if(Predecessor&&Predecessor->SaluteTarget(I,WasAz,WasEl)){Az=ToAz=WasAz;El=ToEl=WasEl;}
+   Angles.Append({Az,El,ToAz,ToEl});
+  }
+ }
+ S47J::Set(O,TEXT("angles"),Angles);
  S47J::Set(O,TEXT("cases"),Cases.Save());
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
@@ -3002,7 +3035,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   WJ->Stage=NextWas;
   Check(NextFits,TEXT("Every stage of a job gives every workstation a NEXT line that fits the glass"));
  }
- Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
+ Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
  Check(TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),0)==TEXT("NEXT / USE THIS PC")&&TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),1)==TEXT("NEXT / ARRAY STATUS (LEFT-HAND PC)"),TEXT("A blocked array sends every workstation to the status PC"));
  Check(TerminalNextLine(TEXT("EVENING OBSERVATION / 3C 286 IS UP FROM 19:20. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),2)==TEXT("NEXT / 3C 286 IS UP FROM 19:20")&&TerminalNextLine(Workflow.EveningLine(*WJ),2).Contains(TEXT("IS UP FROM")),TEXT("An evening observation shows its time, and a clock's colon does not cut the line"));
  Check(TerminalNextLine(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),1)==TEXT("NEXT / S-03 CABLE JUNCTION / LOCAL BOX")&&TerminalNextLine(TEXT("A very long sentence with no station in it that cannot fit on the glass at all"),1).IsEmpty()&&TerminalNextLine(TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),3).IsEmpty()&&TerminalNextLine(FString(),3).IsEmpty(),TEXT("NEXT line keeps a place that fits and says nothing rather than half a sentence"));
@@ -3213,6 +3246,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   const auto* LostCase=Gone.CaseFile().Get(FS47FreeformCases::LostLine);
   Check(LostCase&&LostCase->bOpen&&Cost.Contains(TEXT("half rate"))&&Gone.Work.Last().Stage==EJobStage::New&&Gone.Work.Last().bDocked&&Gone.JobPay(Gone.Work.Last())==10,TEXT("Taken: the case opens, today's cards go in at half rate, and a pointed array has to be pointed again"));
   Gone.LostTimeTrace(1);Check(Gone.HasFinding(TEXT("lost_ground"))&&FS47FreeformCases::LineForFinding(TEXT("lost_clock"))==FS47FreeformCases::LostLine,TEXT("Taken: going back gives the case a trace"));
+  // Critic round 5: one trace of the lost hours is not a case carried through; the clock at OPS as well is.
+  {const bool bOne=Gone.CaseSupported(FS47FreeformCases::LostLine);FS47FreeformSession Both(nullptr);Both.Begin(S47J::Read(S47J::Write(Gone.Save())));Both.TestLiveRules();Both.LostTimeTrace(0);
+   Check(!bOne&&Both.CaseSupported(FS47FreeformCases::LostLine),TEXT("Taken: one trace of the lost hours has nothing behind it for Ward; the OPS clock and the place together have"));Both.Stop();}
   FS47FreeformSession GoneAgain(nullptr);GoneAgain.Begin(S47J::Read(S47J::Write(Gone.Save())));
   Check(GoneAgain.Work.Last().bDocked&&GoneAgain.CaseFile().Get(FS47FreeformCases::LostLine)->bOpen,TEXT("Taken: all of that survives a Continue"));
   Check(GoneAgain.ConcludeCase(FS47FreeformCases::LostLine,1)&&GoneAgain.CaseFile().HasAccess(TEXT("access.lostHours")),TEXT("Taken: an assessment can be filed, and opens what follows"));

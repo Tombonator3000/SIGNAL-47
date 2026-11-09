@@ -182,12 +182,13 @@ namespace
 	}
 	bool AwayFromSaro(const US47Main* M, int32 CaseId, bool bDevRun) { return CaseInPlay(M, CaseId, bDevRun) && !S47SaroSave::InStation(M); }
 
-	// a departure that could not be filed: the same stamp as LOG FILED, and a dull dry thud of a stamp that did not take
+	// a departure that could not be filed: the stamp of LOG FILED in red (SS47Hud, S47HudGauges::FiledRefused), and a dull dry thud
+	// of a stamp that did not take. Critic round 5: Sfx goes by the buffer's name, "thudSoft"; "thud_soft" is its file and played nothing.
 	void NotFiled(US47Main* M)
 	{
 		if (!M) return;
 		if (M->UI) M->UI->Filed(S47SaroSave::NotFiledLine());
-		if (M->Audio) M->Audio->Sfx(TEXT("thud_soft"), FS47Sound{ .Gain = .4f, .Rate = 1.35f, .Lp = 1600.f });
+		if (M->Audio) M->Audio->Sfx(TEXT("thudSoft"), FS47Sound{ .Gain = .4f, .Rate = 1.35f, .Lp = 1600.f });
 	}
 
 	// the chapter in play counts as Prologue.at('chN'): ch1 < ch2 < ... < ch6

@@ -35,7 +35,9 @@ public:
   const TCHAR* ReplyTitle;
   FClueDef Clues[ClueCount];
   FReplyDef Replies[CauseCount][CauseCount]; // [what was filed][what it was]
-  bool bOpensOnTrace=false; // the line opens on one of its own traces (the same minute), not on a happening (the lost hours)
+  // One trace is what opened the question, and a filing wants a second, or a control: the same minute opens on one of its own; the
+  // lost hours open on a taking, and what the player wakes to is not looked into either (critic round 5).
+  bool bOpensOnTrace=false;
  };
  struct FCaseDef
  {

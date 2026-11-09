@@ -756,10 +756,12 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 		const float StampPad = P(8.f), StampH = P(26.f), StampEdge = FMath::Max(1.f, P(1.2f));
 		const float StampBottom = Floor - Gauges.BatteryA * P(26.f) - Gauges.RadioA * P(24.f) - P(4.f);
 		const float StampW = StampTextW + 2.f * StampPad, StampLeft = Right - StampW, StampTop = StampBottom - StampH;
-		const FLinearColor StampInk(1.f, 0.69f, 0.32f, 0.6f * StampA);
+		// critic round 5: LOG NOT FILED in a dull red of its own, not the amber of a log that was filed
+		const FLinearColor StampHue = S47HudGauges::FiledRefused(Gauges.Filed) ? FLinearColor(0.78f, 0.36f, 0.30f) : FLinearColor(1.f, 0.69f, 0.32f);
+		const FLinearColor StampInk(StampHue.R, StampHue.G, StampHue.B, 0.6f * StampA);
 		Fill(StampLeft, StampTop, StampW, StampEdge, StampInk); Fill(StampLeft, StampBottom - StampEdge, StampW, StampEdge, StampInk);
 		Fill(StampLeft, StampTop, StampEdge, StampH, StampInk); Fill(Right - StampEdge, StampTop, StampEdge, StampH, StampInk);
-		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.92f * StampA));
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(StampHue.R, StampHue.G, StampHue.B, 0.92f * StampA));
 	}
 }
 

@@ -383,7 +383,9 @@ void FS47Taken::Apply()
  {
   TArray<FString> Names;for(const FString& Item:M->Freeform->Gear->Leave(T.Leaves,WasArea,Before,Place,WakeClock))Names.Add(FS47LeftGear::NameOf(Item));
   if(!Names.IsEmpty())Gone=FString::Printf(TEXT(" My %s %s not on me. It must still be where I stood."),*FString::Join(Names,TEXT(" and ")),Names.Num()>1?TEXT("are"):TEXT("is"));
-  else M->Freeform->LostTimeTrace(1); // Nothing to go back for: where they came to is all there is to look at, and they are looking at it.
+  // Nothing to go back for: the place is kept, and going back to it in daylight is the case's trace (FS47LeftGear::MarkPlace).
+  // Critic round 5: waking up there was the trace, so any filing on THE LOST HOURS counted as carried through.
+  else if(!M->Freeform->HasFinding(TEXT("lost_ground")))M->Freeform->Gear->MarkPlace(WasArea,Before,Place,WakeClock);
  }
  Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s"),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
  Note[0]=FChar::ToUpper(Note[0]);

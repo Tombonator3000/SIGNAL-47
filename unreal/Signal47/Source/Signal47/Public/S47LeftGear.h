@@ -21,6 +21,13 @@ public:
  // Count things go, from what the player has with them: the set first, then the camera. Returns them for the note.
  TArray<FString> Leave(int32 Count,const FString& Area,const FVector& At,const FString& Title,double Clock);
  bool IsLeft(const FString& Item) const{return Left.ContainsByPredicate([&](const FLeft& L){return L.Item==Item;});}
+ // Critic round 5: a taking that left nothing behind still left a place. Going back there in daylight is the case's trace (THE LOST
+ // HOURS, lost_ground), not waking up at it. The last such place; saved under "place".
+ void MarkPlace(const FString& Area,const FVector& At,const FString& Title,double Clock);
+ bool PlaceMarked() const{return bPlace;}
+ // Pure: whether a look at the place counts. Hour: the clock's, 0 to 24; Away: metres from it; Since: seconds since waking.
+ static bool PlaceLooked(double Hour,double Away,double Since){return Hour>=7&&Hour<19&&Away<=PlaceReach&&Since>=3600;}
+ static constexpr double PlaceReach=10;
  bool AnyLeft() const{return !Left.IsEmpty();}
  const TArray<FLeft>& Items() const{return Left;}
  FString TaskLine() const;
@@ -30,6 +37,7 @@ public:
 private:
  US47Main* M=nullptr;
  TArray<FLeft> Left;
+ FLeft Place;bool bPlace=false;
  TSharedPtr<uint8> Life;
  TWeakObjectPtr<AS47Web> Scene;
  // One prop per kind of thing and exterior root: the ray finds whichever area is shown.

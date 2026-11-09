@@ -138,7 +138,8 @@ public:
  static double DangerSlotHour(int32 Seed,int32 Night,float SlotChance,double StartHour,bool bCalm);
  double SlotHourTonight() const;
  bool DangerSlotOpen(double Grace=0) const;
- // The night (FS47FreeformSession::NightOf) this last began on in this game, 0 never (not saved: for tonight's questions).
+ // The night (FS47FreeformSession::NightOf) this last began on in this game, 0 never (not saved: for tonight's questions). The peek
+ // is the Director's, saved with the danger slot (critic round 5), so that a load or a Continue answers for the night it is.
  int32 BeganOn(FName Id) const;
  // The hours of the night it is drawn in (draw.at), 19 to 30; From and To untouched when the file has none.
  bool DrawHours(FName Id,double& From,double& To) const;
@@ -168,8 +169,11 @@ private:
  TMap<FName,FName> ShadowSaid;
  void CloseNight(int32 NewNight);
  double LastStartClock=-1e9,StartGap=0;
- // Tonight's answers, for the game whose seed they were had in (a new game in the same run starts clean).
+ // Tonight's answers, for the game whose seed they were had in (a new game in the same run starts clean). The night the danger
+ // slot was taken and the peek's are kept by the Director, and saved (critic round 5: FS47FreeformDirector::SlotNight, PeekNight).
  TMap<FName,int32> BeganNight;
- int32 SlotTakenNight=0,BeganSeed=0;
+ int32 BeganSeed=0;
  bool SameGame() const;
+ // The game's own moon, wind and assessment on the rules (critic round 5: after a reload by hand too, not only Load()).
+ void BindRules();
 };

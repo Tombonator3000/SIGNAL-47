@@ -15,6 +15,8 @@ struct FS47Task;
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
 class FS47FreeformSession
 {
+ // The month's assessment test (S47AssessMonthTest.cpp, profile "cases"): files the day's jobs as a fixture.
+ friend struct FS47AssessMonthTest;
 public:
  enum class EJobStage : uint8 { New, Pointed, Integrating, Chart, Recorded, Registered, Packet, Filed };
  struct FJob
@@ -267,6 +269,9 @@ public:
  static constexpr double SecondsInDay=86400.;
  bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
+ // Critic round 5: the line has something behind it as Dr. Ward counts it (FS47FreeformCases::Supported, with the traces kept):
+ // FS47Predecessor::Count and the case board's warning before a filing go by the same sum.
+ bool CaseSupported(int32 Line) const;
  FString TonightPlan() const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
@@ -416,6 +421,8 @@ private:
  // First shift tutorial (0 done/off, 1 accept a job at OPS, 2.. follows the job to filing).
  int32 Tutorial=0;FString TutorialJobId;void StepTutorial();FString TutorialObjective()const;
  int32 FieldFocus=-1;
+ // The case board's "file anyway?" for a filing with nothing behind it yet (critic round 5): its line and cause, -1 none. Not saved.
+ int32 FileAskLine=-1,FileAskCause=-1;
  void ClearCompletedSelection();
  bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;

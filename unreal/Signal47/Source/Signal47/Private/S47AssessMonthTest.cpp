@@ -1,6 +1,9 @@
 #include "S47Predecessor.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47FreeformCases.h"
+#include "S47FreeformWorld.h"
+#include "S47WardReport.h"
 #include "S47Mail.h"
 #include "S47Main.h"
 #include "S47UI.h"
@@ -22,6 +25,10 @@
 //                when the work does not keep the station (or Stays, with the finale, if it does).
 //  taken         three stretches of lost time (days 6, 8 and 10): Ward's warning after the second, somebody else the morning after
 //                the third, "Not yet", and then an assessment by the work that is not Gone.
+//  taken-again   as taken, and a fourth stretch on day 14 (critic round 5): somebody else the morning after, with no second "Not yet".
+//  cases         the station's work and a case carried through (critic round 5: no profile went down the Stays path): the array
+//                mended, the day's jobs filed as a fixture, the weekly reports sent, and THE SAME MINUTE with both its traces kept
+//                and filed. Stays, KEPT OPEN read, and the run up of the array from Dale's bench.
 // Each checks the letter in the box at the road (and the flag of the box with something in it), that OPS says only ASSESSMENT MADE
 // until the letter is read, the outcome after it, and the closing day. Heavy (about 30 game days, a few seconds each): a night job.
 // The routine numbers of a whole month (27 of 27, three jobs a day, twenty night sheets) are in FS47Predecessor::SelfTest; filing
@@ -75,7 +82,16 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
  auto& F=*M->Freeform;
  if(F.Predecessor.Get()!=&P)return;
  using EO=FS47Predecessor::EOutcome;
- const bool bTaken=S.Profile==TEXT("taken"),bLooks=S.Profile==TEXT("investigator");
+ const bool bAgain=S.Profile==TEXT("taken-again"),bTaken=S.Profile==TEXT("taken")||bAgain,bLooks=S.Profile==TEXT("investigator"),bCases=S.Profile==TEXT("cases");
+ // The cases profile's work, as a fixture (filing real jobs needs the receiver's own): each job up to today filed clean and paid, the
+ // weekly report sent whole when it is due.
+ const auto Work=[&]()
+ {
+  if(!bCases)return;
+  for(FS47FreeformSession::FJob& J:F.Work)if(J.CaseTest<0&&J.Day<=F.Day()&&J.Stage!=FS47FreeformSession::EJobStage::Filed)
+  {J.Stage=FS47FreeformSession::EJobStage::Filed;J.RecordingSoundVersion=2;J.RecordingQuality=.9;F.Earn(20);}
+  if(F.WardReport)for(const FS47WardReport::FReport& Rep:TArray<FS47WardReport::FReport>(F.WardReport->Reports()))if(Rep.Sent<0)F.WardReport->Send(Rep.Week);
+ };
 
  // The post: the round, the box emptied, and what came read, once a day; the assessment is left for its own stage.
  const auto Post=[&]()
@@ -87,6 +103,8 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
   if(F.Mail->MailIn())
   {
    if(F.Mail->Holds(TEXT("ward:assessment")))Check(P.TaskLine().StartsWith(TEXT("MAILBOX / Dr. Ward's assessment")),FString::Printf(TEXT("day %d: the assessment is in the box at the road, and the list says so"),F.Day()));
+   // Critic round 5: her Monday note in the box is on the list too, not only on the map.
+   else if(F.Mail->Holds(TEXT("ward:week-1")))Check(P.TaskLine().StartsWith(TEXT("MAILBOX /")),FString::Printf(TEXT("day %d: Ward's Monday note is in the box at the road, and the list says so"),F.Day()));
    F.Mail->TestFetch();M->UI->Close(true);
   }
   TArray<FString> Read=P.Tray;
@@ -98,7 +116,7 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
   if(S.Age<3)return;
   FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
   if(!Check(User.StartsWith(TEXT("/tmp/"))&&M->Flow->bDevRun,TEXT("an isolated temporary profile and a developer run, which is never saved")))return;
-  if(!Check(S.Profile==TEXT("routine")||bTaken||bLooks,TEXT("a known profile: routine, investigator or taken")))return;
+  if(!Check(S.Profile==TEXT("routine")||bTaken||bLooks||bCases,TEXT("a known profile: routine, investigator, taken, taken-again or cases")))return;
   S.Root=FPaths::ProjectSavedDir()/TEXT("FreeformTest");IFileManager::Get().MakeDirectory(*S.Root,true);
   M->UI->Close(true);F.TestLiveRules();F.TestEndFirstShift();
   if(!Check(P.AssessmentDay()==FS47Predecessor::FirstAssess&&P.Result()==EO::None&&P.StatusLine().StartsWith(TEXT("UNDER REVIEW / DAY")),TEXT("a new game: assessed on day 30, under review")))return;
@@ -125,12 +143,28 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
    P.bPayReturned=true;
    if(!Check(P.Known()>=FS47Predecessor::KnownEnough&&P.Found(TEXT("wagon"))&&P.Found(TEXT("gap")),TEXT("the investigator knows what can be known")))return;
   }
+  if(bCases)
+  {
+   // The array mended, and THE SAME MINUTE seen at the rack: open, and a filing on that alone would count for nothing.
+   if(F.Field)F.Field->RestoreWholeArrayFixture();
+   const int32 Line=FS47FreeformCases::MysteryLine;
+   F.RecordEvidence(FS47FreeformCases::Def(Line).Mystery->Clues[0].Finding,F.CaseFile().ClueText(Line,0));
+   const auto* K=F.CaseFile().Get(Line);
+   if(!Check(K&&K->bOpen&&!F.CaseSupported(Line),TEXT("the same minute opens on the chart at the rack, and one trace has nothing behind it")))return;
+   // The feeder looked at too: carried through, and filed.
+   F.RecordEvidence(FS47FreeformCases::Def(Line).Mystery->Clues[1].Finding,F.CaseFile().ClueText(Line,1));
+   int32 Cause=0;while(Cause<FS47FreeformCases::CauseCount-1&&F.CaseFile().Excluded(Line,Cause))++Cause;
+   if(!Check(F.CaseSupported(Line)&&F.ConcludeCase(Line,Cause)&&F.CaseFile().Get(Line)->bConcluded,TEXT("with the feeder looked at too, the same minute is carried through and filed")))return;
+   M->UI->Close(true);
+   if(!Check(P.Count().Concluded==1&&P.Count().Guessed==0,TEXT("Ward counts the filing as a case carried through")))return;
+   Work();
+  }
   S.Stage=2;S.Since=S.Age;return;
  }
  if(S.Stage==2)
  {
   // The month, six hours at a time.
-  Post();
+  Post();Work();
   if(bTaken)
   {
    const int32 Want=F.Day()>=10?3:F.Day()>=8?2:F.Day()>=6?1:0;
@@ -152,9 +186,22 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
  }
  if(S.Stage==3)
  {
-  // After the reprieve: the rest of the month with no new lost time.
+  // After the reprieve: the rest of the month with no new lost time; or (taken-again) a fourth stretch, and no second "Not yet".
   Post();
-  if(!Check(P.Result()!=EO::Gone,TEXT("without a new stretch of lost time nobody is sent")))return;
+  if(bAgain)
+  {
+   if(F.Day()>=14&&S.TakenGiven<4){++S.TakenGiven;F.RecordEvidence(TEXT("taken-assess-month-4"),TEXT("Another stretch of the night nobody can account for (assess month fixture)."));}
+   if(P.Result()==EO::Gone)
+   {
+    if(!Check(F.Day()==15&&F.TimesTaken()==4,TEXT("after the reprieve a fourth stretch sends somebody else the morning after")))return;
+    if(!Check(!P.OffersNotYet()&&M->ModalOpen(),TEXT("the letter to the next operator has no second \"Not yet\"")))return;
+    const int32 Was=P.AssessmentDay();P.TestNotYet();M->UI->Close(true);
+    if(!Check(P.Result()==EO::Gone&&P.AssessmentDay()==Was,TEXT("and nothing gives the nights back a second time")))return;
+    Finish(true,TEXT("taken again after \"Not yet\": somebody else, once and for all"));return;
+   }
+   if(F.Day()>16){Finish(false,TEXT("the fourth stretch of lost time sent nobody"));return;}
+  }
+  else if(!Check(P.Result()!=EO::Gone,TEXT("without a new stretch of lost time nobody is sent")))return;
   if(P.Result()!=EO::None){S.Stage=4;S.Since=S.Age;return;}
   if(F.Day()>P.AssessmentDay()+1){Finish(false,TEXT("the assessment after the reprieve went by with nothing decided"));return;}
   if(!F.TestAdvance(6*3600.)){S.Hold=1;return;}
@@ -167,7 +214,9 @@ void FS47AssessMonthTest::Step(FS47Predecessor& P,double Dt)
   if(!Check(Got!=EO::Gone,TEXT("the assessment by the work is not Gone")))return;
   if(!Check(P.StatusLine()==TEXT("UNDER REVIEW / ASSESSMENT MADE")&&!P.OutcomeRead(),TEXT("decided, not read: OPS says ASSESSMENT MADE and nothing else")))return;
   if(S.Profile==TEXT("routine")&&!Check(Got!=EO::Stays,TEXT("the card alone does not keep SARO open")))return;
-  if(bLooks&&!Check(Got==EO::Stays||Got==EO::KnowsEnough,TEXT("the investigator stays, or knows enough")))return;
+  // Critic round 5: the investigator carries no case through, so only knowing enough is right; the cases profile stays.
+  if(bLooks&&!Check(Got==EO::KnowsEnough,TEXT("the investigator, with no case carried through, knows enough and does not stay")))return;
+  if(bCases&&!Check(Got==EO::Stays,FString::Printf(TEXT("the work and a case carried through keep SARO open (points %d of %d, filed %d, array %d)"),FS47Predecessor::Points(P.Count()),FS47Predecessor::PointsToStay,P.Count().Filed,P.Count().Dishes)))return;
   const bool bInBox=F.Mail&&F.Mail->Live()?F.Mail->Holds(TEXT("ward:assessment"))||F.Mail->Coming(TEXT("ward:assessment")):P.Tray.Contains(TEXT("assessment"));
   if(!Check(bInBox||P.Tray.Contains(TEXT("assessment")),TEXT("the assessment is on its way by post, or in the tray")))return;
   S.Stage=5;return;

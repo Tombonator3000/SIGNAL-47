@@ -78,6 +78,11 @@ double S47HudGauges::Wave(double X, double Phase, double Strength)
 	return FMath::Clamp((Clean * (0.25 + 0.75 * K) + Torn * (1 - K) * 0.6) * Ends * (0.2 + 0.8 * K), -1.0, 1.0);
 }
 
+bool S47HudGauges::FiledRefused(const FString& Stamp)
+{
+	return Stamp.Contains(TEXT("NOT FILED"));
+}
+
 FString S47HudGauges::FiledLine(const FString& Clock)
 {
 	const FString C = Clock.TrimStartAndEnd();
@@ -399,6 +404,7 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	auto Swing = [](double K) { double M = 0; for (int32 P = 0; P < 40; ++P) for (int32 I = 0; I <= 48; ++I) M = FMath::Max(M, FMath::Abs(Wave(I / 48.0, P * 0.3, K))); return M; };
 	Check(Swing(1.0) > Swing(0.5) && Swing(0.5) > Swing(0.1) && Swing(1.0) > 0.9, TEXT("a stronger signal swings wider"));
 	Check(FiledLine(TEXT("08:27")) == TEXT("LOG FILED  08:27") && FiledLine(FString()) == TEXT("LOG FILED"), TEXT("the departure stamp says LOG FILED and the save's clock"));
+	Check(FiledRefused(TEXT("LOG NOT FILED")) && !FiledRefused(FiledLine(TEXT("08:27"))) && !FiledRefused(FiledLine(FString())), TEXT("a departure that was not filed has a stamp of its own colour, LOG FILED does not"));
 	Check(FiledAlpha(-1) == 0 && FiledAlpha(0) == 0 && FMath::IsNearlyEqual(FiledAlpha(0.125), 0.5, 1e-9) && FiledAlpha(1) == 1 && FMath::IsNearlyEqual(FiledAlpha(FiledFor - 0.4), 0.5, 1e-9) && FiledAlpha(FiledFor) == 0
 		&& FiledAlpha(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("the stamp comes in, holds and is gone after a few seconds"));
 
@@ -481,7 +487,7 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		const FString Long = TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF 2 UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK. STATION GOAL: ARRAY 12 OF 27.");
 		const TCHAR* Tasks[] = {
 			TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
-			TEXT("RECEIVER (centre PC): KEEP TUNING VALID; COLLECT THE ORIGINAL AT THE PRINTER WHEN RECORDING FINISHES"),
+			TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
 			TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
 			TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN"),
 			TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),
@@ -493,15 +499,34 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		bool bFits = CardLine(Long).Len() <= CardMost;
 		for (const TCHAR* Task : Tasks) bFits &= CardLine(Task).Len() <= CardMost && !CardLine(Task).IsEmpty();
 		Check(bFits && CardLine(FString()).IsEmpty(), TEXT("every task fits the card in seventy characters, however long it is"));
-		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY TO THE SELECTED SOURCE") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP TUNING VALID. COLLECT THE ORIGINAL AT THE...")
+		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY TO THE SELECTED SOURCE") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP IT TUNED. COLLECT THE ORIGINAL AT THE PRINTER")
 			&& CardLine(Tasks[3]).StartsWith(TEXT("SERVICE TRUCK // TANK EMPTY. GET OUT AND USE THE TRUCK")) && CardLine(Tasks[3]).EndsWith(TEXT("..."))
 			&& CardLine(Tasks[6]) == TEXT("MAILBOX // A letter from Dr. Ward's office is in the box at the road.")
 			&& CardLine(TEXT("FRAME 01 // INSPECT THE PRINT")) == TEXT("FRAME 01 // INSPECT THE PRINT"),
 			TEXT("the card names the place and then the task in whole sentences; a doctor's title is no end of one"));
 		Check(CardLine(Tasks[2]) == TEXT("FIRST SHIFT 2/5 // TRACKING PC: POINT THE ARRAY TO THE SELECTED SOURCE")
-			&& CardLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB")) == TEXT("OPS 1/5 // OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR...")
+			&& CardLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")) == TEXT("FIRST SHIFT 1/5 // OPS: OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")
 			&& CardLine(TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING")) == TEXT("RECEIVER PC 3/5 // TUNE THE CARD AND PRESS START RECORDING") && CardLine(Tasks[5]) == TEXT("EAST-WING GARAGE // THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP...")
 			&& CardLine(Tasks[8]).EndsWith(TEXT("...")), TEXT("a sentence too long for the card is cut at a word and says so; the rest waits in the notebook and the pause menu"));
+		{
+			// Critic round 5: the first shift's card is never cut off. Its steps as FS47FreeformSession says them (TutorialObjective,
+			// JobNextAction), and the printer stays on it.
+			const TCHAR* Shift[] = {
+				TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),
+				TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+				TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"),
+				TEXT("FIRST SHIFT 3/5 / TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)"),
+				TEXT("FIRST SHIFT 4/5 / RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
+				TEXT("FIRST SHIFT 4/5 / PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"),
+				TEXT("FIRST SHIFT 5/5 / OPS (corner PC): REGISTER THE ROUTINE RESULT"),
+				TEXT("FIRST SHIFT 6/6 / PRINTER: COLLECT THE LABELLED REGISTERED PACKET"),
+				TEXT("FIRST SHIFT 6/6 / RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER"),
+			};
+			bool bWhole = true;
+			FString Cut;
+			for (const TCHAR* Step : Shift) { const FString Shown = CardLine(Step); if (Shown.EndsWith(TEXT("...")) || Shown.Len() > CardMost) { bWhole = false; Cut = Shown; } }
+			Check(bWhole && CardLine(Shift[4]).EndsWith(TEXT("AT THE PRINTER")), *(FString(TEXT("the first shift's card says each step whole, the printer too ")) + Cut));
+		}
 		Check(CardWith(TEXT("OPS // 2 OBSERVATIONS WAITING."), { FString(TEXT(" WALKIE: ON THE DESK.")), FString(TEXT(" ARRAY 12 OF 27.")) }) == TEXT("OPS // 2 OBSERVATIONS WAITING. WALKIE: ON THE DESK. ARRAY 12 OF 27.")
 			&& CardWith(TEXT("ANTENNA S-13 // REPAIR IT."), { FString(TEXT(" THIS ONE IS FAR TOO LONG TO FIT ON THE CARD AT ALL, REALLY NOT.")), FString(TEXT(" ARRAY 12/27.")) }) == TEXT("ANTENNA S-13 // REPAIR IT. ARRAY 12/27."),
 			TEXT("more is said after the task only while the card has room, a tail too long left out"));

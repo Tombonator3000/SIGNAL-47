@@ -55,6 +55,10 @@ namespace
    {{TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Field service has since found the timing relay slipping and charged nothing for it.\n\nThe note stands as you wrote it."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. Nobody has asked about it. You might see somebody about your sleep."),ER::None},
     {TEXT("SARO OPERATIONS / FILE NOTE\nRE: THE LOST HOURS\n\nFiled as not accounted for. The survey office will let the portable magnetometer go for $25 if you want to look at that ground properly. Nobody here is going to ask why."),ER::None}}}
+,
+  // Critic round 5: what the player wakes to is not looked into. One trace (the clock at OPS, or the place gone back to in daylight)
+  // is what opened the question; a filing counts with both, or with a control (Supported).
+  true
  };
  const FS47FreeformCases::FCaseDef Defs[FS47FreeformCases::CaseCount]={
  {
@@ -458,13 +462,14 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  FS47FreeformCases Bad;Bad.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"planned\":99,\"openClock\":1e99,\"concluded\":true,\"conclusion\":7}]}")),5);
  Good&=Bad.Get(0)->Planned==-1&&Bad.Get(0)->OpenClock<=86399&&!Bad.Get(0)->bConcluded&&Bad.Get(0)->Conclusion==-1;
  // M7: a filing on the same minute with only the trace that opened it has nothing behind it; the other place looked at, or a
- // control recorded, has. The lost hours open on a taking, so one place looked at is enough there. A tested line has its tests.
+ // control recorded, has. Critic round 5: the lost hours too, since waking up is no looking into anything: one trace is not enough,
+ // the clock at OPS and the place both are. A tested line has its tests.
  {
   FS47FreeformCases Filed;Filed.Reset(4);FString Said;const bool NoTrace[ClueCount]={false,false},OneTrace[ClueCount]={true,false},TwoTraces[ClueCount]={true,true};
   Filed.Open(MysteryLine,3,0);Filed.Conclude(MysteryLine,0,Said,3);
   Good&=Filed.Get(MysteryLine)->bConcluded&&!Filed.Supported(MysteryLine,NoTrace)&&!Filed.Supported(MysteryLine,OneTrace)&&Filed.Supported(MysteryLine,TwoTraces);
   Filed.Open(LostLine,5,0);Filed.Conclude(LostLine,1,Said,5);
-  Good&=Filed.Get(LostLine)->bConcluded&&!Filed.Supported(LostLine,NoTrace)&&Filed.Supported(LostLine,OneTrace);
+  Good&=Filed.Get(LostLine)->bConcluded&&!Filed.Supported(LostLine,NoTrace)&&!Filed.Supported(LostLine,OneTrace)&&Filed.Supported(LostLine,TwoTraces);
   FS47FreeformCases Tested;Tested.Reset(4);bool bFirstTest=false;Tested.Open(MysteryLine,3,0);Tested.Plan(MysteryLine,0,TEXT("J"));Tested.Record(MysteryLine,0,4,true,true,bFirstTest);Tested.Conclude(MysteryLine,2,Said,4);
   Good&=Tested.Supported(MysteryLine,OneTrace)&&!Tested.Supported(1,TwoTraces);
  }

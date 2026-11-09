@@ -17,7 +17,7 @@ struct FS47MapView;
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
 namespace S47PredecessorText{struct FBark;}
 class FS47Predecessor;
-// -S47Freeform -S47AssessMonthTest=routine|investigator|taken, with -UserDir=/tmp/...: thirty days through the real StepNews, the
+// -S47Freeform -S47AssessMonthTest=routine|investigator|taken|taken-again|cases, with -UserDir=/tmp/...: thirty days through the real StepNews, the
 // post, the letter and the closing (S47AssessMonthTest.cpp). Does nothing without the flag.
 struct FS47AssessMonthTest{static void Step(FS47Predecessor& P,double Dt);};
 class FS47Predecessor
@@ -145,6 +145,11 @@ public:
  void TestReset(){Outcome=EOutcome::None;bOutcomeRead=false;}
  // "Not yet" on the letter to the next operator, as the button does it.
  void TestNotYet(){NotYet();}
+ // Critic round 5: "Not yet" is given once. After it, a further stretch of lost time ends it, as her Monday note says.
+ bool OffersNotYet() const{return TakenAtReprieve==0;}
+ // Critic round 5: while the array is run up after KEPT OPEN, a dish's own pointing (where it goes back to), for the save; false
+ // when it is not one of the run, or there is none under way.
+ bool SaluteTarget(int32 I,double& Az,double& El) const;
  void TestTakeBack(){TakeKeysBack();}
  // A topic's or a bark's condition: a thing found, or how far things have gone. Public for the self-test.
  bool Meets(const TCHAR* Needs) const;
@@ -159,6 +164,10 @@ private:
  // M7: the times taken at "Not yet", the day a third taking was noticed, and the day the Stays letter was read.
  int32 TakenAtReprieve=0,GoneNoticed=0,KeptDay=0;
  bool bOutcomeRead=false;
+ // Critic round 5: a save from before M7 has no word of the reprieve or of the letter being read. Settled on the first Step,
+ // once the post is loaded (SettleLegacy): its "Not yet" kept, its letter not yet taken out of the box unread, its KEPT OPEN finale.
+ bool bLegacyReprieve=false,bLegacyRead=false;
+ void SettleLegacy(int32 Taken,bool bAssessmentPosted,int32 Today);
  EOutcome Outcome=EOutcome::None;
  bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false,bClosed=false,bStowed=false;
  int32 CloseDay=0;
@@ -186,7 +195,9 @@ private:
  bool AwayFromStation() const;
  FString TitleButton() const; int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
- bool bLetterTold=false,bRinging=false,bRadioLoop=false;
+ // bSawTutorial: the first shift ran in this sitting, so the HUD's card comes in with the letter when it is done (critic round 5:
+ // the toast said it a third time).
+ bool bLetterTold=false,bRinging=false,bRadioLoop=false,bSawTutorial=false;
  FString ToastSeen;double ToastAt=0;
  FString BackTo; // reopened on the next tick: not from inside the panel's own closing
  // In the world.
