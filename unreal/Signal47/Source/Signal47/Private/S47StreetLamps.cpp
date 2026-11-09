@@ -50,9 +50,10 @@ namespace
  }
  // An export batch with every triangle wholly inside one of the boxes (the mesh's own terms, three metres) taken out: the same runtime
  // render-data clone as S47ExteriorFixtures' patch, keeping every other triangle, vertex, UV, colour, slot and the collision body.
- UStaticMesh* Cut(AS47Web* W, UStaticMeshComponent* C, const TArray<FBox>& Boxes, TArray<int32>& Counts, TArray<double>* Bottoms = nullptr)
+ UStaticMesh* Cut(AS47Web* W, UStaticMeshComponent* C, const TArray<FBox>& Boxes, TArray<int32>& Counts, TArray<double>* Bottoms = nullptr, UStaticMesh* Source = nullptr)
  {
-  UStaticMesh* Original = C ? C->GetStaticMesh() : nullptr;
+  // Source: the same batch as an asset with CPU data, when what the component draws has none (the motel lot's lens batch, sweep 3)
+  UStaticMesh* Original = Source ? Source : C ? static_cast<UStaticMesh*>(C->GetStaticMesh()) : nullptr;
   Counts.Init(0, Boxes.Num());
   if (Bottoms) Bottoms->Init(1e9, Boxes.Num());
   if (!Original || !Original->bAllowCPUAccess || !Original->GetRenderData() || Original->GetRenderData()->LODResources.Num() != 1) return nullptr;
@@ -404,11 +405,23 @@ namespace
   for (FBatch& B : Lenses)
   {
    B.C = NodeMesh(W, B.Node, B.Geo);
-   B.Without = B.C ? Cut(W, B.C, Boxes, B.Counts) : nullptr;
+   UStaticMesh* Drawn = B.C ? B.C->GetStaticMesh() : nullptr;
+   // what is drawn may be a copy without CPU data (sweep 3: g470 had it as an asset, the component's mesh did not); then the asset
+   // itself, if it has the data and the same triangles
+   UStaticMesh* Source = nullptr;
+   if (Drawn && !Drawn->bAllowCPUAccess)
+   {
+    const FString Path = FString::Printf(TEXT("/Game/Web/Geo/geo_%03d/StaticMeshes/g%d.g%d"), B.Geo / 120, B.Geo, B.Geo);
+    UStaticMesh* Asset = LoadObject<UStaticMesh>(nullptr, *Path);
+    if (Asset && Asset != Drawn && Asset->bAllowCPUAccess && Asset->GetNumTriangles(0) == Drawn->GetNumTriangles(0)) Source = Asset;
+    UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: node %d draws %s (%d triangles, no CPU data); the asset %s: %s"), B.Node, *GetPathNameSafe(Drawn), Drawn->GetNumTriangles(0), *Path,
+     Source ? TEXT("same triangles with CPU data, cut from it") : Asset ? TEXT("not usable (no CPU data or other triangles)") : TEXT("missing"));
+   }
+   B.Without = B.C ? Cut(W, B.C, Boxes, B.Counts, nullptr, Source) : nullptr;
    bool bAll = B.Without != nullptr;
    for (const int32 N : B.Counts) bAll &= N >= B.Least;
-   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: motel lot lenses in node %d g%d: %s (CPU data %d, shown %d)"), B.Node, B.Geo,
-    *FString::JoinBy(B.Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), B.C && B.C->GetStaticMesh() && B.C->GetStaticMesh()->bAllowCPUAccess ? 1 : 0, B.C && B.C->IsVisible() ? 1 : 0);
+   UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamps: motel lot lenses in node %d g%d: %s (drawn %s, CPU data %d, shown %d)"), B.Node, B.Geo,
+    *FString::JoinBy(B.Counts, TEXT(","), [](int32 N) { return FString::FromInt(N); }), *GetPathNameSafe(Drawn), Drawn && Drawn->bAllowCPUAccess ? 1 : 0, B.C && B.C->IsVisible() ? 1 : 0);
    if (bAll) Lens.Add(&B);
   }
   UWorld* World = W->GetWorld();
