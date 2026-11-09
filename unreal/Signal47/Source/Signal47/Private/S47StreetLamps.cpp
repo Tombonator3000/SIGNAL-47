@@ -21,9 +21,9 @@ namespace
 {
  // ---- unreal/ArtSource/StreetLamps/model_contract.json: three metres, each mesh in its own terms, y up, the arm along +x ----
  constexpr double PoleHeight = 8.0;
- const FVector ArmOnPole(0, 7.42, 0);   // the arm's root on a pole standing on its foot
- const FVector ArmEnd(1.80, .45, 0);    // the arm's end, where the head's slipfitter takes it, from the arm's root
- const FVector EmitAt(.40, -.13, 0);    // the bowl's middle from the head's pivot (the slipfitter)
+ const FVector ArmOnPole(0, 7.6, 0);    // the arm's root on a pole standing on its foot (assembly_three_m.arm_origin)
+ const FVector ArmEnd(1.80, .45, 0);    // the arm's end, where the head's slipfitter takes it, from the arm's root (head_pivot - arm_origin)
+ const FVector EmitAt(.42, -.173, 0);   // 8 mm under the bowl's lowest point, from the head's pivot (the slipfitter mouth)
  const FVector EmitNormal(0, -1, 0);
  constexpr float LensWidth = 50, LensDepth = 28; // centimetres
  const TCHAR* const LensSlot = TEXT("M_StreetLamp_Lens");
