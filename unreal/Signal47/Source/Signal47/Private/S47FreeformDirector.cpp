@@ -1286,6 +1286,8 @@ void FS47FreeformDirector::Step(double Dt)
   if(bNight)
   {
    RollTonight(Day);
+   // M7 (B1): on SARO at night the shared danger slot can be taken by something at the service yard (the window face waits 9 minutes for it)
+   if(M->Rhythm&&M->Rhythm->DangerSlotOpen()&&PendingThreatNight!=Day&&M->Web&&M->Web->Area()==TEXT("saro"))PendingThreatNight=Day;
    if(StartPendingNightChoice(TEXT("service_presence"),Day,PendingThreatNight))return;
    if(StartPendingNightChoice(TEXT("close_pass"),Day,PendingMajorNight))return;
    if(StartPendingNightChoice(TEXT("observer"),Day,PendingObserverNight))return;
