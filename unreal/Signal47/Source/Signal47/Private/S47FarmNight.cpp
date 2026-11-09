@@ -282,8 +282,9 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  PlayMoo(M->Audio,Near,bAfraid);++Moos;
 }
 
-static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.03f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
-static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.12f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
+// T16-13, second round: a little more (Tom 9 Nov), half as much again of both.
+static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.045f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
+static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.18f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
 static TAutoConsoleVariable<float> CvHazeStart(TEXT("s47.haze.Start"),150.f,TEXT("r.LocalFogVolume.GlobalStartDistance in cm for someone out in the yard at night."));
 static TAutoConsoleVariable<float> CvHazeIndoors(TEXT("s47.haze.Indoors"),.2f,TEXT("SARO's rooms at night: how much of the glow is left for someone inside."));
 

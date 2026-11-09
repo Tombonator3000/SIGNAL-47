@@ -339,6 +339,7 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 	bAll &= FS47SoundMixer::SelfTest(Out);
 	bAll &= TitleTextureSelfTest(Out);
 	bAll &= ReceiverMonitorSelfTest(Out);
+	bAll &= TransferSelfTest(Out); // (T16-09)
 	bAll &= FS47ReceiverSound::SelfTest(Out);
 	bAll &= FS47Ambience::SelfTest(Out);
 	auto Check = [&](bool bOk, const FString& What)

@@ -8,7 +8,16 @@ namespace
  constexpr int32 Rate=48000;
  // T16-12 levels. The transmission's peak after levelling and its largest playback gain: at full radio level its peak is
  // .42*.62=.26 (-12 dBFS) and its rms about .07, 7 dB over the hiss, where it had been -3 dBFS rms.
- constexpr float TransmissionPeak=.42f,TransmissionGainMax=.62f;
+ // T16-12, second round (Tom: still screams too much and too loud when Roswell turns up): the set is mostly crackle now. The
+ // transmission plays at a third of that (peak .42*.2=.084, -21.5 dBFS), only once the set has heard one for a while (not
+ // at a glimpse), as a short piece of its seven seconds and seldom; the hiss is half; the crackle stays on top.
+ constexpr float TransmissionPeak=.42f,TransmissionGainMax=.2f;
+ constexpr double TransmissionLevel=.4;                          // the set must hear one this strongly,
+ constexpr double TransmissionAfter=8.;                          // for this long, before anything comes through it
+ constexpr double TransmissionShortest=1.2,TransmissionLongest=2.2; // seconds of the recording, from a random place in it
+ constexpr double TransmissionGapMin=100.,TransmissionGapMax=200.;
+ constexpr double RadioHiss=.12;                                 // the hiss at full level (was .24)
+ constexpr double CrackleBase=.04,CrackleSpan=.28;               // a crackle's gain .04..0.32 by strength (was .06..0.48)
  double Smooth(double X) { X=FMath::Clamp(X,0.,1.); return X*X*(3.-2.*X); }
  int32 Index(FS47EncounterSound::EKind K) { return FMath::Clamp(int32(K),0,2); }
  double Duration(int32 K) { return K==0?.95:K==1?1.35:1.9; }
@@ -156,7 +165,7 @@ bool FS47EncounterSound::Bind(US47Audio* A)
    }
   }
   UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording loaded (%s), %.1f s, peak %.3f before levelling, %.2f after, played at most x%.2f"),bOriginal?TEXT("original synthesis"):TEXT("fallback clip"),TransmissionBuffer->Duration(),Peak,TransmissionPeak,TransmissionGainMax);
-  // The first one comes well after the first contact, not with it.
+  // The first one comes well after the first contact, not with it (and only after TransmissionAfter of it: UpdateRadio).
   NextTransmission=Context->CurrentTime()+FMath::FRandRange(12.f,25.f);
  }
  else UE_LOG(LogTemp,Display,TEXT("S47: alien interference recording absent, radio hiss only"));
@@ -198,7 +207,7 @@ bool FS47EncounterSound::Crackle(US47Audio* Audio,double Strength)
  const double Now=Context->CurrentTime();
  auto Src=Context->CreateBufferSource();Src->Buffer=Crackles[FMath::RandRange(0,Crackles.Num()-1)];
  Src->PlaybackRate.SetValue(FMath::FRandRange(.8f,1.3f));
- auto Gain=Context->CreateGain();Gain->Gain.SetValue(.06+.42*FMath::Clamp(Strength,0.,1.));
+ auto Gain=Context->CreateGain();Gain->Gain.SetValue(CrackleBase+CrackleSpan*FMath::Clamp(Strength,0.,1.));
  // Under the player's radio slider, as the hiss is.
  Src->Connect(Gain);Gain->Connect(RadioVolume);Src->Start(Now);
  Voices.Add({Src,Gain,Now+.6});
@@ -247,7 +256,7 @@ void FS47EncounterSound::RadioMix()
  if (!Context || !RadioGain || !RadioVolume) return;
  FS47AudioContext::FBatch Batch(*Context); const double Now=Context->CurrentTime();
  const bool Duck=Now<CueUntil;
- const double Want=bHeld?0.:RadioLevel*.24*(Duck?.28:1.);
+ const double Want=bHeld?0.:RadioLevel*RadioHiss*(Duck?.28:1.);
  RadioGain->Gain.CancelAndHoldAtTime(Now);
  RadioGain->Gain.SetTargetAtTime(Want,Now,bHeld?.025:Duck?.06:.16);
  // Route through SfxBus for the game's quiet scenes, with the independent
@@ -285,21 +294,29 @@ void FS47EncounterSound::UpdateRadio(US47Audio* A,double Level,TOptional<FVector
  const double Now=Context->CurrentTime();
  if (Transmission && (RadioLevel<=.015 || bHeld))
  { StopTransmission(); }
- if (TransmissionBuffer && RadioGain && !bHeld && RadioLevel>.2 && Now>=NextTransmission
+ // How long the set has heard one strongly: a glimpse at the edge of its reach is crackle only.
+ if (RadioLevel>TransmissionLevel) { if (LoudSince<0) LoudSince=Now; }
+ else if (RadioLevel<.1) LoudSince=-1;
+ if (TransmissionBuffer && RadioGain && !bHeld && LoudSince>=0 && Now-LoudSince>=TransmissionAfter && Now>=NextTransmission
      && (!Transmission || Transmission->Ended()))
  {
   Transmission=Context->CreateBufferSource(); Transmission->Buffer=TransmissionBuffer;
-  // In and out over a third of a second, so it comes up through the hiss and leaves without a cut.
-  const double Peak=TransmissionGainMax*RadioLevel,Len=TransmissionBuffer->Duration();
-  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValueAtTime(0,Now).LinearRampToValueAtTime(Peak,Now+.35)
-   .SetValueAtTime(Peak,FMath::Max(Now+.35,Now+Len-.45)).LinearRampToValueAtTime(0,Now+Len);
-  auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(3000.);
+  // A short piece of it, from anywhere in it: a voice breaking in and gone, not the whole seven seconds of it.
+  const double Whole=TransmissionBuffer->Duration();
+  const double Len=FMath::Min(Whole,double(FMath::FRandRange(float(TransmissionShortest),float(TransmissionLongest))));
+  const double From=FMath::FRandRange(0.f,float(FMath::Max(0.,Whole-Len)));
+  // In over a quarter of a second and out over a third, so it comes up through the hiss and leaves without a cut.
+  const double Peak=TransmissionGainMax*RadioLevel;
+  TransmissionGain=Context->CreateGain(); TransmissionGain->Gain.SetValueAtTime(0,Now).LinearRampToValueAtTime(Peak,Now+.25)
+   .SetValueAtTime(Peak,FMath::Max(Now+.25,Now+Len-.35)).LinearRampToValueAtTime(0,Now+Len);
+  // Duller than before (3 kHz): the whistle in it was the screaming part.
+  auto Band=Context->CreateBiquadFilter(); Band->SetType(TEXT("lowpass")); Band->Frequency.SetValue(2400.);
   Transmission->Connect(Band); Band->Connect(TransmissionGain);
   // Past the hiss's own low level, still under the player's radio slider and placed with the set.
   if (bRadioPlaced&&RadioPan) TransmissionGain->Connect(RadioPan); else TransmissionGain->Connect(RadioVolume);
-  Transmission->Start(Now);
-  UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f, gain peak %.3f, next not before %.0f s"),RadioLevel,Peak,TransmissionBuffer->Duration()+55.);
-  NextTransmission=Now+TransmissionBuffer->Duration()+FMath::FRandRange(55.f,110.f);
+  Transmission->Start(Now,From,Len);
+  NextTransmission=Now+Len+FMath::FRandRange(float(TransmissionGapMin),float(TransmissionGapMax));
+  UE_LOG(LogTemp,Display,TEXT("S47: alien interference transmission at radio level %.2f, gain peak %.3f, %.1f s from %.1f s, next not before %.0f s"),RadioLevel,Peak,Len,From,NextTransmission-Now);
  }
  RadioMix();
 }
@@ -335,7 +352,7 @@ void FS47EncounterSound::Reset()
   if (RadioSource) RadioSource->Stop();
   if (Transmission) Transmission->Stop();
  }
- Transmission.Reset(); TransmissionGain.Reset(); TransmissionBuffer.Reset(); NextTransmission=0;
+ Transmission.Reset(); TransmissionGain.Reset(); TransmissionBuffer.Reset(); NextTransmission=0; LoudSince=-1;
  Voices.Reset(); Cues.Reset(); RadioSource.Reset(); RadioGain.Reset(); RadioVolume.Reset(); RadioPan.Reset();
  Context.Reset(); Owner.Reset(); bHeld=bRadioPlaced=false; RadioLevel=NextAny=CueUntil=0; LastKind=-1;
  for (double& T:NextKind) T=0;
@@ -366,14 +383,39 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  // Synthetic fixture proves the optional recording path without publishing private audio.
  Mix.TransmissionBuffer=CueBuffer(0); Mix.NextTransmission=0;
  Mix.UpdateRadio(A,1.);
+ Check(!Mix.Transmission && Mix.LoudSince>=0,TEXT("T16-12: a set that has only just heard one gives crackle and hiss, no transmission yet"));
+ Mix.LoudSince=A->Ctx->CurrentTime()-TransmissionAfter-.1; Mix.UpdateRadio(A,1.);
  const auto FirstTransmission=Mix.Transmission;
  const double Next=Mix.NextTransmission;
- Check(FirstTransmission && Next>A->Ctx->CurrentTime()+13.,TEXT("nearby radio starts a bounded recording with a quiet cooldown"));
+ Check(FirstTransmission && Next>A->Ctx->CurrentTime()+TransmissionGapMin,TEXT("nearby radio starts a bounded recording with a quiet cooldown (100 s or more)"));
  Mix.UpdateRadio(A,1.);
  Check(Mix.Transmission==FirstTransmission && Mix.NextTransmission==Next,TEXT("continuous presence cannot stack or retrigger the recording"));
  Mix.UpdateRadio(A,0.);
- Check(!Mix.Transmission,TEXT("leaving the proximity range stops the recording"));
- Mix.NextTransmission=0; Mix.UpdateRadio(A,1.);
+ Check(!Mix.Transmission && Mix.LoudSince<0,TEXT("leaving the proximity range stops the recording"));
+ {
+  // T16-12: the loudest the set gets with one right by it: the hiss at full and a transmission as loud as the real one is after
+  // levelling (full-scale noise at TransmissionPeak), rendered for a second through the real graph.
+  const auto Saved=Mix.TransmissionBuffer;
+  auto Loud=MakeShared<FS47AudioBuffer>(1,Rate*7,Rate);FRandomStream R(47123);
+  for (int32 I=0;I<Loud->Length();++I) Loud->GetChannelData(0)[I]=R.FRandRange(-TransmissionPeak,TransmissionPeak);
+  Mix.TransmissionBuffer=Loud; Mix.NextTransmission=0; Mix.LoudSince=A->Ctx->CurrentTime()-TransmissionAfter-.1; Mix.UpdateRadio(A,1.);
+  const bool Started=bool(Mix.Transmission);
+  double Top=0,Sum=0;int32 N=0;
+  for (int32 Chunk=0;Chunk<4;++Chunk)
+  {
+   A->Ctx->Render(Samples.GetData(),Rate/4,2); A->Ctx->Tick(.25); Mix.UpdateRadio(A,1.);
+   if (Chunk==0) continue; // past the fade-in
+   for (float V:Samples) { Top=FMath::Max(Top,FMath::Abs(double(V))); Sum+=double(V)*V; ++N; }
+  }
+  const double Rms=FMath::Sqrt(Sum/FMath::Max(1,N));
+  Lines.Add(FString::Printf(TEXT("INFO walkie at full level with a transmission: peak %.3f, rms %.4f"),Top,Rms));
+  Check(Started && Top<.2 && Rms<.05,TEXT("T16-12: the walkie at its loudest stays under -14 dBFS peak and -26 dBFS rms"));
+  Check(TransmissionGainMax<=.25f && TransmissionLongest<=2.5 && TransmissionGapMin>=90. && RadioHiss<=.15 && CrackleBase+CrackleSpan<=.35,
+   TEXT("T16-12: transmissions low, short and seldom; hiss and crackle down"));
+  Mix.UpdateRadio(A,0.); Mix.TransmissionBuffer=Saved;
+ }
+ Mix.NextTransmission=0; Mix.LoudSince=A->Ctx->CurrentTime()-TransmissionAfter-.1; Mix.UpdateRadio(A,1.);
+ Check(bool(Mix.Transmission),TEXT("the held-radio fixture has a transmission to stop"));
  const double Before=A->Ctx->CurrentTime();
  Mix.Hold(true);
  Check(!Mix.Transmission,TEXT("pause stops the optional transmission"));

@@ -17,6 +17,8 @@ public:
  // The wall calendars (wing and control room) show the game's date: one shared 1024x816 sheet, redrawn only when the date changes.
  void UpdateCalendar(US47Main* Main);
  int32 CalendarCount() const { return CalendarSheets.Num(); }
+ // T16-08: both calendars hang on a wall of S47SaroClip's table and go into none, and the control room's is clear of its neighbours.
+ static bool SelfTest(TArray<FString>& Lines);
 private:
  struct FEmission { TWeakObjectPtr<UMaterialInstanceDynamic> Material; FLinearColor Powered; };
  TArray<FEmission> Emission;

@@ -6,6 +6,7 @@
 #include "S47Freeform.h"
 #include "S47Story.h"
 #include "S47GameStyle.h"
+#include "S47SaroClip.h"
 #include "Engine/Texture2D.h"
 #include "Math/RotationMatrix.h"
 #include "TextureResource.h"
@@ -103,9 +104,12 @@ namespace
   {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
   {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{27.30,1.22,.422},180},
   // T16-08: the same calendar (the same mesh, one more instance) on the control room's west wall, between the map and the
-  // filing cabinets (map frame ends z-2.29, cabinets start z-1.48), clear of the windows (north wall) and the bulletin board
-  // (south wall). Yaw-90 faces +x; the wall's front is x-5.975, the pivot sits 3 mm off it as the wing's own calendar does.
-  {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{-5.972,1.40,-1.90},-90},
+  // filing cabinets (map frame ends z-2.29, cabinets start z-1.48, their tops at 1.32), clear of the windows (north wall) and
+  // the bulletin board (south wall). Yaw-90 faces +x. The wall's painted face there is SM_Saro_ControlRoomFinishes' West_upper
+  // at x-5.993 (the shell's own at x-6.0, S47SaroClip's "control west"); x-5.975 is the map's frame, not the wall, and left the
+  // calendar standing 2 cm off it. The blade's back is 2.1 mm behind its pivot, so it now hangs 1 mm in front of the paint, as
+  // the wing's own calendar hangs on its partition. Checked against the walls and its neighbours in FS47EastWingProps::SelfTest.
+  {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{-5.990,1.40,-1.90},-90},
   // Second stocked rack along the storage west wall.
   {TEXT("SM_EW_ShelvingStocked"),TEXT("Workshop"),{26.34,0,-2.60},-90,true},
   {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,2.45},-90},
@@ -302,4 +306,49 @@ void FS47EastWingProps::UpdateCalendar(US47Main* Main)
  Tex->UpdateTextureRegions(0,1,Region,CalW*sizeof(FColor),sizeof(FColor),Copy,[](uint8* Src,const FUpdateTextureRegion2D* R){FMemory::Free(Src);delete R;});
  CalendarKey=Key;
  UE_LOG(LogS47EastWingProps,Display,TEXT("S47: wall calendar sheet drawn: %s, %d calendars (wing and control room share one %dx%d sheet)"),*S47Game::DateLine(Date),CalendarSheets.Num(),CalW,CalH);
+}
+
+// T16-08: each SM_EW_Calendar1986 hangs flat on a wall of S47SaroClip's table (its back within 1.5 cm of a slab's face, all of it
+// in front of that face) and goes into none: the table draws the wing's partitions .16 thick where they are .15, so 6 mm is the
+// tolerance. The control room's also stands in front of the painted finish (x-5.993) and clear of the map's frame, the filing
+// cabinets and the LISTEN poster (ControlRoom.ts westWall) by 3 cm.
+bool FS47EastWingProps::SelfTest(TArray<FString>& Lines)
+{
+ TArray<TPair<FString,FBox>> Walls;S47SaroClip::Walls(Walls);
+ // The blade in its own UE terms (cm): asset bounds, Blender -Y front landing on UE +Y (SM_EW_Calendar1986.asset.json).
+ const FBox Local(FVector(-15.2,-.21,0),FVector(15.2,1.31,51.6));
+ const FBox Neighbours[]={FBox(FVector(-6.005,1.265,-3.71),FVector(-5.975,2.235,-2.29)),FBox(FVector(-5.975,0,-1.48),FVector(-5.425,1.32,.28)),
+  FBox(FVector(-5.98,1.66,-.91),FVector(-5.97,2.58,-.29))};
+ bool Good=Walls.Num()>0;int32 Count=0;
+ for(const FPlacement& P:Layout)
+ {
+  if(FCString::Strcmp(P.Asset,TEXT("SM_EW_Calendar1986"))!=0)continue;
+  ++Count;
+  const FTransform T(FRotator(0,P.Yaw,0),S47Three::ToUE(P.At),FVector::OneVector);
+  FBox Blade(ForceInit);
+  for(int32 K=0;K<8;++K)Blade+=S47Three::ToThree(T.TransformPosition(FVector(K&1?Local.Max.X:Local.Min.X,K&2?Local.Max.Y:Local.Min.Y,K&4?Local.Max.Z:Local.Min.Z)));
+  double Deepest=0,Gap=1e9;FString On;
+  for(const auto& W:Walls)
+  {
+   const FBox& S=W.Value;const FVector E=S.GetSize();const int32 Thin=E.X<E.Z?0:2,Along=Thin==0?2:0;
+   const FBox I=Blade.Overlap(S);
+   if(I.IsValid&&I.GetSize().GetMin()>0)Deepest=FMath::Max(Deepest,I.GetSize()[Thin]);
+   // Hung on this slab: in its plane the blade lies within it, and its back is close to the face it is in front of.
+   if(Blade.Min.Y<S.Min.Y||Blade.Max.Y>S.Max.Y||Blade.Min[Along]<S.Min[Along]||Blade.Max[Along]>S.Max[Along])continue;
+   const double Off=FMath::Max(S.Min[Thin]-Blade.Max[Thin],Blade.Min[Thin]-S.Max[Thin]);
+   if(Off>-.006&&Off<Gap){Gap=Off;On=W.Key;}
+  }
+  bool Ok=Deepest<=.006&&Gap<=.015;
+  if(P.At.X<0)
+  {
+   Ok&=Blade.Min.X>-5.993;
+   for(const FBox& N:Neighbours)Ok&=!Blade.ExpandBy(.03).Intersect(N);
+  }
+  Lines.Add(FString::Printf(TEXT("%s / Wall calendar at (%.3f, %.2f, %.3f): on \"%s\" %.1f mm off its face, %.1f mm into any wall%s"),Ok?TEXT("PASS"):TEXT("FAIL"),
+   P.At.X,P.At.Y,P.At.Z,*On,Gap*1000.,Deepest*1000.,P.At.X<0?TEXT(", in front of the paint and clear of the map, cabinets and poster"):TEXT("")));
+  Good&=Ok;
+ }
+ Good&=Count==2;
+ if(Count!=2)Lines.Add(FString::Printf(TEXT("FAIL / Wall calendars: %d placed, the wing's and the control room's expected"),Count));
+ return Good;
 }

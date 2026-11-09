@@ -36,6 +36,7 @@ private:
  TArray<TSharedPtr<FS47AudioBuffer>> Crackles;
  TSharedPtr<FS47BufferSourceNode> MessageSource,TalkSource;
  double NextTransmission=0;
+ double LoudSince=-1; // T16-12: when the set began to hear one strongly; -1 while it does not
  TSharedPtr<FS47GainNode> RadioGain,RadioVolume,TransmissionGain;
  TSharedPtr<FS47PannerNode> RadioPan;
  TWeakObjectPtr<US47Audio> Owner;
