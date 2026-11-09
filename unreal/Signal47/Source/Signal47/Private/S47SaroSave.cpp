@@ -12,6 +12,7 @@
 #include "S47Night.h"
 #include "S47Office.h"
 #include "S47Rhythm.h"
+#include "S47ScriptPlayer.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -96,6 +97,8 @@ FString S47SaroSave::Danger(const US47Main* M)
 	if (F->FarmSite && F->FarmSite->VisitWantsGround()) return TEXT("a visit on the ground");
 	if (F->IndoorDread && (F->IndoorDread->DoorActive() || F->IndoorDread->PeekActive())) return TEXT("something at a door or a window");
 	if (M->HighwayUfo && M->HighwayUfo->Busy()) return TEXT("the light over the road");
+	// CRIT6-20261109: a director script under way ("script" is not in director.json, so the rhythm's line below would not see it).
+	if (FS47ScriptPlayer::Busy(M)) return TEXT("a script under way");
 	if (M->Night && M->Night->Glimpses && !M->Night->Glimpses->Individuals().IsEmpty()) return TEXT("bodies out");
 	// whatever holds the night's ground (director.json): a presence or a danger, never a light in the sky or a fault in the rack
 	if (M->Rhythm)

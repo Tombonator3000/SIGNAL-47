@@ -3,17 +3,20 @@
 #include "S47Drive.h"
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
+#include "S47Happenings.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Openings.h"
+#include "S47ScriptPlayer.h"
 #include "S47Tape.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Outfit, Log, All);
 
@@ -63,9 +66,24 @@ FString FS47Outfit::Compare(const FS47TruckTune& Now)
   TopA1*Mph,TopA0*Mph,*Sec(SecA1),*Sec(SecA0),TopD1*Mph,TopD0*Mph,*Sec(SecD1),*Sec(SecD0),Now.Tank,Now.Tank*12/Now.Burn,Now.Load,int32(StockLoad),Now.Bog);
 }
 
+void FS47Outfit::Begin(const S47J::FObj& Saved)
+{
+ // CRIT6-20261109: the night last rolled survives a Continue; a new game (nothing saved) starts with none.
+ RolledNight=FMath::Max(0,S47J::Int(Saved,TEXT("rolled"),0));RdfIn=5;
+}
+
+S47J::FObj FS47Outfit::Save() const
+{
+ const S47J::FObj O=S47J::New();
+ if(RolledNight>0)S47J::Set(O,TEXT("rolled"),RolledNight);
+ return O;
+}
+
 void FS47Outfit::Stop()
 {
- if(!M||!M->World||IsEngineExitRequested())return;
+ // CRIT6-20261109: as the other Stops: at exit or in the UObject purge the world (and the cab in it) may already be gone, so it is
+ // asked before M->World is read at all.
+ if(!M||IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||!IsValid(M->World))return;
  if(FS47DriveController* D=M->World->CabDrive()){D->PullScale=D->TopScale=D->LooseGripScale=D->LooseTopScale=1;}
 }
 
@@ -109,7 +127,10 @@ void FS47Outfit::Step(double Dt)
  const int32 Night=FS47FreeformSession::NightOf(F.Clock());
  const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&M->Night->Flashlight->bDrains;
  const bool bTape=F.Tape&&F.Tape->Recording();
- if(Level>=BreakLevel&&Night!=RolledNight&&(bLamp||bTape))
+ // CRIT6-20261109: the big night is a presence, never a danger, and a director script is authored: neither breaks gear, and the
+ // night's one roll is left for later.
+ const bool bAuthored=(F.Happenings&&F.Happenings->BigLive())||FS47ScriptPlayer::Busy(M);
+ if(RollsNow(Level,Night,RolledNight,bLamp||bTape,bAuthored))
  {
   const float Roll=FMath::FRand();
   const bool bBreak=BreaksNow(Level,Night,RolledNight,Roll);
@@ -120,7 +141,7 @@ void FS47Outfit::Step(double Dt)
   {
    M->Night->Flashlight->SetBattery(0);M->Night->Flashlight->bOn=false;
    F.BreakGear(TEXT("flashlight"),4);
-   if(M->UI)M->UI->Toast(TEXT("The flashlight goes hot in your hand and dies. The cell is cooked. A new one from the store, and $4 on the sheet for the bulb."),6);
+   if(M->UI)M->UI->Toast(TEXT("The flashlight goes hot in your hand and dies. The cell is cooked, and the contacts with it: a fresh cell from the store, and $4 on the next sheet for the repair."),6);
   }
   else
   {
@@ -153,6 +174,13 @@ bool FS47Outfit::SelfTest(TArray<FString>& Lines)
  const FS47Surface Dirt=FS47DriveController::Tuned(Track(),1,1.25,1.3),Black=FS47DriveController::Tuned(Blacktop(),1.15,1.25,1.3);
  Check(Dirt.Grip<=1&&Dirt.Grip>.55&&FMath::IsNearlyEqual(Black.Grip,1.)&&FMath::IsNearlyEqual(Black.Top,34.5,1e-6),TEXT("tuned surfaces: grip never over 1, the blacktop's top by the engine only"));
  Check(BreaksNow(.6,3,2,.1f)&&!BreaksNow(.6,3,3,.1f)&&!BreaksNow(.3,3,2,.1f)&&!BreaksNow(.6,3,2,.9f),TEXT("gear gives out only near something dangerous, at most once a night, not always"));
+ Check(RollsNow(.64,2,0,true,false)&&!RollsNow(.64,2,0,true,true)&&!RollsNow(.64,2,0,false,false)&&!RollsNow(.64,2,2,true,false),TEXT("CRIT6: no roll in the big night or under a script (the night is kept for later), none with the gear off, one a night"));
+ {
+  FS47Outfit A(nullptr);const S47J::FObj None=S47J::New();A.Begin(None);const bool bFresh=A.LastRolledNight()==0&&A.Save()->Values.Num()==0;
+  const S47J::FObj Was=S47J::New();S47J::Set(Was,TEXT("rolled"),3);A.Begin(S47J::Read(S47J::Write(Was)));
+  FS47Outfit B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
+  Check(bFresh&&A.LastRolledNight()==3&&B.LastRolledNight()==3&&!RollsNow(.64,3,B.LastRolledNight(),true,false),TEXT("CRIT6: the night last rolled is saved and read back, and a new game starts with none"));
+ }
  Check(RdfLine(500,TEXT("north")).Contains(TEXT("north"))&&RdfLine(2500,TEXT("east")).Contains(TEXT("faint")),TEXT("the direction finder says which way and how strong, never what"));
  for(const TCHAR* Id:{TEXT("truck_tires"),TEXT("truck_rack"),TEXT("truck_tank"),TEXT("truck_engine"),TEXT("field_recorder"),TEXT("night_camera"),TEXT("rdf")})
   Check(FS47Openings::Def(Id)!=nullptr,FString::Printf(TEXT("%s is on the stores list"),Id));

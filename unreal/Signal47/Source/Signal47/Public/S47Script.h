@@ -12,7 +12,9 @@
 // The fixed rules, the same as for the night's own events (DECISIONS, Freeform):
 //   - the night's tiers (S47NightTiers, Tom 9 November): a script with a figure is a full meeting and starts from two in the morning (one
 //     in the fourth week), a glimpse ("tier": "glimpse", every figure vanishing when looked at) from midnight (23:00 in the fourth week),
-//     both until AlienUntil; "early": true, set on purpose, lets an authored one start from AlienEarlyFrom;
+//     both until AlienUntil; "early": true, set on purpose, lets an authored one start from AlienEarlyFrom. A script without a figure
+//     keeps the tier its file sets (CRIT6-20261109), and one with a formation in the sky is a glimpse at least; with neither it is a
+//     hint, at any hour its trigger allows;
 //   - never while another big event holds the night (the Director's event, being taken, a night happening on the ground, the light
 //     over the highway, another script): FS47ScriptNow::bBigEvent;
 //   - the spoiler limits: never the 47 seconds, the 1947 photograph, C, the cable, Tomás, the third silhouette, how anyone was taken,
@@ -84,13 +86,16 @@ struct FS47Script
  ES47ScriptRepeat Repeat=ES47ScriptRepeat::Once;
  double CooldownMin=60;       // Always: minutes of the game's clock before it can come again
  ES47Allowed Tier=ES47Allowed::Full; // what its figures are: full, or a glimpse (every figure vanishes when looked at); no figure: a hint
+ bool bTierSet=false;         // the file says "tier" (CRIT6-20261109): then it holds for a script without a figure too
  bool bEarly=false;           // an authored exception: its figures may start before their tier's hour, from AlienEarlyFrom
  FS47ScriptTrigger Trigger;
  TArray<FS47ScriptAction> Actions;
  FString File;                // where it was read from; not written
  bool HasFigure() const;
- // What it needs of the night's tier: a hint without a figure, else its Tier.
- ES47Allowed Need() const{return HasFigure()?Tier:ES47Allowed::Hint;}
+ bool HasSky() const;
+ // What it needs of the night's tier: its Tier with a figure or when the file sets one, else a hint; a formation in the sky (Sky)
+ // a glimpse at least (CRIT6-20261109).
+ ES47Allowed Need() const;
  double Length() const;       // the last action's start plus what it holds for, seconds
 };
 

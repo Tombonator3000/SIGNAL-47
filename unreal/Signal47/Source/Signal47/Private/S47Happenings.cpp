@@ -610,8 +610,55 @@ FString FS47Happenings::Synth(const TCHAR* Name)
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening sound %s made, %.2f s"),*Key,S.Num()/Hz);
  return Key;
 }
+// CRIT6-20261109: what a happening pays from the field (the pickup's reward, the geiger jar, the stuck rig) goes under the week's cap
+// (FS47FreeformSession::EarnSide), and what is said says what came of it: the same words as the photo credit, the souvenir copies,
+// 1420's tips and the sky-watch van.
+namespace S47HapPay
+{
+ // Empty when it was paid in full.
+ FString Short(int32 Paid,int32 Offered,const TCHAR* What)
+ {
+  if(Paid>=Offered)return FString();
+  return Paid>0?FString::Printf(TEXT("FIELD MONEY / $%d of the $%d for %s: with that, this week's field money is used up."),Paid,Offered,What)
+   :FString::Printf(TEXT("FIELD MONEY / Nothing for %s: this week's field money is used up."),What);
+ }
+ FString ReportCb(int32 Paid,const FString& Named)
+ {
+  return FString::Printf(TEXT("County copies, the blue half-ton by %s. I'll send a unit when I've got one. His family put up twenty dollars for word of that truck%s"),*Named,
+   Paid>0?TEXT("; it'll come through your station."):TEXT("."));
+ }
+ FString ReportFound(int32 Paid,const FString& Title)
+ {
+  const FString Head=FString::Printf(TEXT("Called in the missing man's pickup out by %s to the county. They are sending a unit. "),*Title);
+  return Head+(Paid>=20?FString(TEXT("His family's twenty dollars for word of it came through the station."))
+   :Paid>0?FString::Printf(TEXT("$%d of his family's twenty dollars came through the station; this week's field money took no more."),Paid)
+   :FString(TEXT("His family's twenty dollars stayed with them: this week's field money was used up.")));
+ }
+ FString JarFound(int32 Paid,const FString& Title)
+ {
+  return FString::Printf(TEXT("A jar of soil from the middle of the scorched ring out by %s, where the counter pegged. Sent to Dr. Ward; %s"),*Title,
+   *(Paid>0?FString::Printf(TEXT("$%d for it on the sheet."),Paid):FString(TEXT("this week's field money is used up: no payment."))));
+ }
+ FString JarToast(int32 Paid)
+ {
+  return Paid>0?FString::Printf(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit: Dr. Ward pays $%d for it."),Paid)
+   :FString(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit for Dr. Ward. This week's field money is used up: no payment."));
+ }
+ // The start of the stuck rig's page; the lead that follows starts "says ...".
+ FString RigPaid(int32 Paid)
+ {
+  return Paid>=15?FString(TEXT("He counts fifteen dollars into your hand, and "))
+   :Paid>0?FString::Printf(TEXT("He counts fifteen dollars into your hand. This week's field money has room for $%d of it, and you give him the rest back. He "),Paid)
+   :FString(TEXT("He holds out fifteen dollars. This week's field money is used up, so you wave it off. He "));
+ }
+ FString RigFound(int32 Paid,const FString& Title)
+ {
+  return FString::Printf(TEXT("Helped a driver dig his rig out of the sand by %s, after his call on the CB. %s"),*Title,
+   *(Paid>0?FString::Printf(TEXT("Paid $%d for the trouble."),Paid):FString(TEXT("Nothing paid: this week's field money was used up."))));
+ }
+}
 // The missing man's pickup, noted, is called in at the next CB or the station's phone: the county sends a unit, and his people's
-// twenty dollars for word of it comes through the station (FS47FreeformSession::SheriffTrust counts it).
+// twenty dollars for word of it comes through the station (FS47FreeformSession::SheriffTrust counts it), inside the week's cap.
 void FS47Happenings::StepReport()
 {
  if(!Now.Id.IsEmpty()||!M->Freeform||M->ModalOpen())return;
@@ -621,10 +668,11 @@ void FS47Happenings::StepReport()
  S->Variant=TEXT("reported");S->bDone=true;
  const FString Named=Spoken(S->Title);
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("You call it in on channel nine: the blue pickup by %s."),*Named),5);
- Cb({FString::Printf(TEXT("County copies, the blue half-ton by %s. I'll send a unit when I've got one. His family put up twenty dollars for word of that truck; it'll come through your station."),*Named)},TEXT("woman"),false);
- F->Earn(20);
- F->RecordEvidence(FString::Printf(TEXT("missing_reported_d%d"),S->Night),FString::Printf(TEXT("Called in the missing man's pickup out by %s to the county. They are sending a unit. His family's twenty dollars for word of it came through the station."),*S->Title));
- UE_LOG(LogS47Happen,Display,TEXT("S47: happening missing_person: called in to the county, $20"));
+ const int32 Paid=F->EarnSide(20,TEXT("pickup reward"));
+ Cb({S47HapPay::ReportCb(Paid,Named)},TEXT("woman"),false);
+ if(M->UI){const FString Cap=S47HapPay::Short(Paid,20,TEXT("word of the pickup"));if(!Cap.IsEmpty())M->UI->Toast(Cap,5);}
+ F->RecordEvidence(FString::Printf(TEXT("missing_reported_d%d"),S->Night),S47HapPay::ReportFound(Paid,S->Title));
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happening missing_person: called in to the county, $%d"),Paid);
  M->RequestAutosave();
 }
 // The scene owns what was drawn, and may be gone already: nothing in the world is touched here.
@@ -2485,15 +2533,15 @@ void FS47Happenings::UseSite(const FString& Kind)
   if(S->Variant==TEXT("real"))
   {
    Title=TEXT("STUCK RIG");
-   F->SpendTime(30*60.);F->Earn(15);
+   F->SpendTime(30*60.);const int32 Paid=F->EarnSide(15,TEXT("stuck rig"));
    FString Lead=TEXT("says the CB has been strange out this way lately, and will not say how.");
    if(F->Places)
    {
     const FString Next=F->Places->NextUnknown(F->Day()+S->Serial*3);
     if(const FS47Places::FDef* D=Next.IsEmpty()?nullptr:FS47Places::Def(Next)){F->Places->Hear(Next);Lead=FString::Printf(TEXT("says he saw a light sitting out by %s a few nights back. He did not go and look. It is on your map."),D->Title);}
    }
-   PanelRows.Add(S47Kit::Text(TEXT("He has been at it with a tire iron. Between the two of you, his jack and a board off the trailer, it comes out in half an hour. He counts fifteen dollars into your hand, and ")+Lead));
-   F->RecordEvidence(FString::Printf(TEXT("cb_helped_d%d"),S->Night),FString::Printf(TEXT("Helped a driver dig his rig out of the sand by %s, after his call on the CB. Paid $15 for the trouble."),*S->Title));
+   PanelRows.Add(S47Kit::Text(TEXT("He has been at it with a tire iron. Between the two of you, his jack and a board off the trailer, it comes out in half an hour. ")+S47HapPay::RigPaid(Paid)+Lead));
+   F->RecordEvidence(FString::Printf(TEXT("cb_helped_d%d"),S->Night),S47HapPay::RigFound(Paid,S->Title));
    Deed(TEXT("You dug a man's rig out of the sand."));
    S->bDone=true;
   }
@@ -4077,9 +4125,9 @@ void FS47Happenings::StepGeiger(double Dt)
   const FString Jar=FString::Printf(TEXT("geiger_sample_%d"),N);
   if(Dose>.85f&&!F->HasFinding(Jar))
   {
-   F->RecordEvidence(Jar,FString::Printf(TEXT("A jar of soil from the middle of the scorched ring out by %s, where the counter pegged. Sent to Dr. Ward; $10 for it on the sheet."),Ring?*Ring->Title:TEXT("the land")));
-   F->Earn(10);
-   if(M->UI)M->UI->Toast(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit: Dr. Ward pays $10 for it."),5);
+   const int32 Paid=F->EarnSide(10,TEXT("geiger jar"));
+   F->RecordEvidence(Jar,S47HapPay::JarFound(Paid,Ring?Ring->Title:FString(TEXT("the land"))));
+   if(M->UI)M->UI->Toast(S47HapPay::JarToast(Paid),5);
   }
  }
  else if(What.StartsWith(TEXT("marks:"))){Key=TEXT("geiger_")+What.Replace(TEXT(":"),TEXT("_d"));Page=TEXT("The counter over the marks: well above background, highest in the middle of them.");}
@@ -4339,6 +4387,17 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   FS47Happenings C(nullptr);C.Begin(S47J::Read(S47J::Write(A.Save())));
   Check(C.Now.Id.IsEmpty(),TEXT("a crossing cut off by a save is not carried on"));
   Check(S47Hap::ShadeKind(FString())==TEXT("shade")&&S47Hap::ShadeKind(TEXT("nordic"))==TEXT("glimpse_nordic")&&S47Hap::RoadTrackParts(true).Num()>S47Hap::RoadTrackParts(false).Num(),TEXT("the shade, or Tom's figure by name; prints in fours and in strides"));
+ }
+ // CRIT6-20261109: what the field pays says what came of it, paid, part paid or past the week's cap.
+ {
+  using namespace S47HapPay;
+  const bool bFull=Short(20,20,TEXT("x")).IsEmpty()&&ReportFound(20,TEXT("the wash")).Contains(TEXT("came through"))&&ReportCb(20,TEXT("the wash")).Contains(TEXT("come through your station"))
+   &&JarFound(10,TEXT("the ring")).Contains(TEXT("$10"))&&JarToast(10).Contains(TEXT("$10"))&&RigPaid(15).Contains(TEXT("fifteen dollars into your hand"))&&RigFound(15,TEXT("the road")).Contains(TEXT("$15"));
+  bool bNone=true;
+  for(const FString& T:{Short(0,20,TEXT("x")),ReportFound(0,TEXT("the wash")),JarFound(0,TEXT("the ring")),JarToast(0),RigPaid(0),RigFound(0,TEXT("the road"))})bNone&=T.Contains(TEXT("field money"))&&!T.Contains(TEXT("$"));
+  bNone&=!ReportCb(0,TEXT("the wash")).Contains(TEXT("come through"));
+  const bool bPart=Short(5,20,TEXT("x")).Contains(TEXT("$5 of the $20"))&&ReportFound(5,TEXT("the wash")).Contains(TEXT("$5"))&&RigPaid(5).Contains(TEXT("$5"))&&JarFound(4,TEXT("the ring")).Contains(TEXT("$4"));
+  Check(bFull&&bNone&&bPart,TEXT("CRIT6: the pickup's reward, the geiger jar and the stuck rig say what they paid, and past the week's cap say so with no dollar promised"));
  }
  OK&=S47RoadGlimpse::SelfTest(Lines);
  // M7: the first big night's plan, its save and its words (S47BigNight.cpp).

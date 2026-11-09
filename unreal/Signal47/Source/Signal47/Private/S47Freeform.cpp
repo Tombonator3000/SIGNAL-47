@@ -109,6 +109,24 @@ namespace
   if(const auto* Y=FS47FreeformCases::Def(Line).Mystery)for(const auto& Clue:Y->Clues)if(!Kept.Contains(Clue.Finding)){FString Place=Clue.Place;if(Place.Len()>1&&FChar::IsLower(Place[1]))Place[0]=FChar::ToLower(Place[0]);return TEXT("look at ")+Place+TEXT(", or file your assessment");}
   return TEXT("file your assessment");
  }
+ // CRIT6-20261109: the pay line's reasons as English has them: "a", "a and b", "a, b and c".
+ FString JoinAnd(const TArray<FString>& L)
+ {
+  if(L.Num()<=1)return L.Num()?L[0]:FString();
+  FString Out;for(int32 I=0;I<L.Num();++I)Out+=(I==0?FString():I==L.Num()-1?FString(TEXT(" and ")):FString(TEXT(", ")))+L[I];
+  return Out;
+ }
+ // The desk line after a card (CRIT6-20261109): no minutes when the card's start is not known, none either when it began on an
+ // earlier night or ran over four hours; the hours left to 06:00 only while the night lasts.
+ FString DeskText(bool bKnown,bool bEarlier,double Minutes,int32 Tonight,double Hour)
+ {
+  FString Took;
+  if(bKnown&&bEarlier)Took=TEXT(" That card ran on from an earlier night;");
+  else if(bKnown&&Minutes>240)Took=TEXT(" That card took more than four hours of the night;");
+  else if(bKnown){const int32 Min=FMath::Max(0,int32(Minutes));Took=FString::Printf(TEXT(" That card took %d %s of the night;"),Min,Min==1?TEXT("minute"):TEXT("minutes"));}
+  const FString Left=Hour>=6&&Hour<12?FString(TEXT("the night is over")):Hour>=12&&Hour<18?FString(TEXT("the night still to come")):FString::Printf(TEXT("%.1f hours left to 06:00"),FMath::Max(0.,(Hour>=12?30.:6.)-Hour));
+  return Took+FString::Printf(TEXT(" %d %s tonight, %s.%s"),Tonight,Tonight==1?TEXT("card"):TEXT("cards"),*Left,Tonight>=3?TEXT(" A third card at the screens: your eyes feel it."):TEXT(""));
+ }
  FString StageText(FS47FreeformSession::EJobStage Stage)
  {
   static const TCHAR* Names[]={TEXT("UNSTARTED"),TEXT("POINTED"),TEXT("ACQUIRING"),TEXT("AT PRINTER"),TEXT("RECORDED"),TEXT("REGISTERED"),TEXT("PACKET COLLECTED"),TEXT("FILED")};
@@ -280,7 +298,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Visitors)Visitors=MakeShared<FS47Visitors>(M);Visitors->Begin(S47J::Obj(Saved,TEXT("visitors")));
  if(!MotelNight)MotelNight=MakeShared<FS47MotelNight>(M);MotelNight->Begin(S47J::Obj(Saved,TEXT("motelNight")));
  if(!TruckLamp)TruckLamp=MakeShared<FS47TruckLamp>(M);
- if(!Outfit)Outfit=MakeShared<FS47Outfit>(M);
+ if(!Outfit)Outfit=MakeShared<FS47Outfit>(M);Outfit->Begin(S47J::Obj(Saved,TEXT("outfit")));
  if(!YardAlarm)YardAlarm=MakeShared<FS47YardAlarm>(M);YardAlarm->Begin(S47J::Obj(Saved,TEXT("alarm")));
  if(!Care)Care=MakeShared<FS47TruckCare>(M);Care->Begin(S47J::Obj(Saved,TEXT("care")));
  if(!TripCamera)TripCamera=MakeShared<FS47TripCamera>(M);TripCamera->Begin(S47J::Obj(Saved,TEXT("tripCamera")));
@@ -320,9 +338,11 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(CaseField)CaseField->Stop();
- if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(Outfit)Outfit->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
+ if(Director)Director->Stop();if(AudioDesk)AudioDesk->Stop();if(Decor)Decor->Stop();if(IndoorDread)IndoorDread->Stop();if(Taken)Taken->Stop();if(Aftermath)Aftermath->Stop();if(Deputy)Deputy->Stop();if(Gear)Gear->Stop();if(Places)Places->Stop();if(Predecessor)Predecessor->Stop();if(TruckLamp)TruckLamp->Stop();if(YardAlarm)YardAlarm->Stop();if(TripCamera)TripCamera->Stop();if(RoadCar)RoadCar->Stop();if(FarmSite)FarmSite->Stop();if(FarmNight)FarmNight->Stop();if(HouseDoors)HouseDoors->Stop();if(Field)Field->Stop();
  if(Happenings)Happenings->Stop();
  if(Scripts&&bCanRestore)Scripts->Stop();
+ // CRIT6-20261109: the cab's controller is in the world, which the purge may already have taken.
+ if(Outfit&&bCanRestore)Outfit->Stop();
  if(bCanRestore){if(TownUse)TownUse->Stop();if(TownSites)TownSites->Stop();}
  // At exit or in the purge the town's figures may already be gone: only the plain list of who is away is cleared then.
  if(Townsfolk){if(bCanRestore)Townsfolk->Stop();else Townsfolk->ResetAway();}
@@ -1451,7 +1471,7 @@ void FS47FreeformSession::OpenOperations()
    if(!J->bPaid)D.Add(T::Value(TEXT("PAYS NOW"),FString::Printf(TEXT("$%d%s%s"),JobPay(*J),J->bDocked?TEXT(" / HALF RATE"):DayNumber-J->Day>1?TEXT(" / LATE"):TEXT(""),
     RulesLive()&&!TrainingCard(*J)&&J->Stage<EJobStage::Recorded?*FString::Printf(TEXT(" / +$%d IF THE RECORDING READS"),CleanBonus):TEXT(""))));
    // M7: what the evening's cards have taken (time is the second currency)
-   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / SIDE MONEY LEFT THIS WEEK $%d"),CardsTonight(),SideLeftThisWeek())));
+   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / FIELD MONEY LEFT THIS WEEK $%d"),CardsTonight(),SideLeftThisWeek())));
    D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true));
   }
   else D.Add(T::Small(TEXT("Select a job in the queue.")));
@@ -2113,11 +2133,11 @@ int32 FS47FreeformSession::JobBonus(const FJob& J,FString* Why)const
 {
  if(!RulesLive()||TrainingCard(J)){if(Why)Why->Empty();return 0;}
  TArray<FString> For;int32 B=0;
- if(DayNumber-J.Day<=1){B+=OnTimeBonus;For.Add(TEXT("on time"));}
+ if(DayNumber-J.Day<=1){B+=OnTimeBonus;For.Add(TEXT("being on time"));}
  // a recording made with the newer sound (version 2) is judged by its quality; an older one has nothing to judge it by
  if(J.Stage>=EJobStage::Recorded&&(J.RecordingSoundVersion<2||J.RecordingQuality>=CleanRecordQuality)){B+=CleanBonus;For.Add(TEXT("a clean recording"));}
- if(J.bAnomaly&&J.bControl){B+=ControlBonus;For.Add(TEXT("the anomaly controlled"));}
- if(Why)*Why=B>0?FString::Printf(TEXT(" ($%d of it for %s)"),B,*FString::Join(For,TEXT(", "))):FString(TEXT(" (no bonus: late, and the recording does not read)"));
+ if(J.bAnomaly&&J.bControl){B+=ControlBonus;For.Add(TEXT("controlling the anomaly"));}
+ if(Why)*Why=B>0?FString::Printf(TEXT(" ($%d of it for %s)"),B,*JoinAnd(For)):FString(TEXT(" (no bonus: late, and the recording does not read)"));
  return B;
 }
 int32 FS47FreeformSession::CardsTonight()const{return DeskNight==NightOf(WorldClock)?DeskCards:0;}
@@ -2126,15 +2146,16 @@ void FS47FreeformSession::DeskWork(const FJob& J)
  DeskLine.Empty();
  if(!RulesLive())return;
  // the card's time: from the start of the acquisition to now, as the night's clock has it (pointing and walking not counted)
- const int32 Minutes=FMath::Clamp(int32((WorldClock-J.ReferenceClock)/60.),0,600);
+ // (CRIT6-20261109: begun on an earlier night, or unknown, it has no minutes of its own: DeskText)
+ const bool bKnown=J.ReferenceClock>0&&J.ReferenceClock<=WorldClock;
+ const bool bEarlier=bKnown&&NightOf(J.ReferenceClock)!=NightOf(WorldClock);
+ const int32 Minutes=bKnown?FMath::Clamp(int32((WorldClock-J.ReferenceClock)/60.),0,6000):0;
  if(DeskNight!=NightOf(WorldClock)){DeskNight=NightOf(WorldClock);DeskCards=0;}
  const int32 Tonight=++DeskCards;
  const double Hours=Tonight>=3?DeskHoursThirdCard:DeskHoursPerCard;
  if(Fatigue)Fatigue->Desk(Hours);
  const double Hour=FMath::Fmod(WorldClock,SecondsPerDay)/3600.;
- const double Left=FMath::Max(0.,(Hour>=12?30.:6.)-Hour); // to 06:00
- DeskLine=FString::Printf(TEXT(" That card took %d minutes of the night; %d %s tonight, %.1f hours left to 06:00.%s"),Minutes,Tonight,Tonight==1?TEXT("card"):TEXT("cards"),Left,
-  Tonight>=3?TEXT(" A third card at the screens: your eyes feel it."):TEXT(""));
+ DeskLine=DeskText(bKnown,bEarlier,Minutes,Tonight,Hour);
  UE_LOG(LogTemp,Display,TEXT("S47: card %s filed: %d min, %d tonight, desk %.2f h"),*J.Id,Minutes,Tonight,Hours);
 }
 int32 FS47FreeformSession::SideLeftThisWeek()const
@@ -3036,7 +3057,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
  if(Mail)S47J::Set(O,TEXT("mail"),Mail->Save());
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
- if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(TownUse){const auto Town=TownUse->Save();if(Town->Values.Num()>0)S47J::Set(O,TEXT("townUse"),Town);}if(Townsfolk){const auto Folk=Townsfolk->Save();if(Folk->Values.Num()>0)S47J::Set(O,TEXT("townsfolk"),Folk);}if(Visitors){const auto Out=Visitors->Save();if(Out->Values.Num()>0)S47J::Set(O,TEXT("visitors"),Out);}if(MotelNight){const auto Motel=MotelNight->Save();if(Motel->Values.Num()>0)S47J::Set(O,TEXT("motelNight"),Motel);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
+ if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Outfit){const auto Rolled=Outfit->Save();if(Rolled->Values.Num()>0)S47J::Set(O,TEXT("outfit"),Rolled);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(TownUse){const auto Town=TownUse->Save();if(Town->Values.Num()>0)S47J::Set(O,TEXT("townUse"),Town);}if(Townsfolk){const auto Folk=Townsfolk->Save();if(Folk->Values.Num()>0)S47J::Set(O,TEXT("townsfolk"),Folk);}if(Visitors){const auto Out=Visitors->Save();if(Out->Values.Num()>0)S47J::Set(O,TEXT("visitors"),Out);}if(MotelNight){const auto Motel=MotelNight->Save();if(Motel->Values.Num()>0)S47J::Set(O,TEXT("motelNight"),Motel);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
@@ -3358,6 +3379,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    C.bAnomaly=C.bControl=true;const int32 Controlled=Q.JobPay(C);C.bAnomaly=C.bControl=false;
    C.RecordingQuality=.2;const int32 Muddy=Q.JobPay(C);
    Q.TestAdvance(3*86400);const int32 LateMuddy=Q.JobPay(Q.Work[0]);
+   Check(Why.Contains(TEXT("for being on time and a clean recording"))&&JoinAnd({TEXT("a"),TEXT("b"),TEXT("c")})==TEXT("a, b and c"),TEXT("CRIT6: the pay line's reasons in plain English: for being on time and a clean recording"));
+   Check(DeskText(true,false,95,1,23.5).Contains(TEXT("took 95 minutes"))&&DeskText(true,false,95,1,23.5).Contains(TEXT("6.5 hours left to 06:00"))&&!DeskText(true,false,300,2,1).Contains(TEXT("300"))&&DeskText(true,true,700,1,1).Contains(TEXT("earlier night"))&&!DeskText(true,true,700,1,1).Contains(TEXT("minutes"))&&DeskText(true,false,30,1,7).Contains(TEXT("the night is over"))&&!DeskText(true,false,30,1,7).Contains(TEXT("0.0 hours"))&&!DeskText(false,false,0,1,23).Contains(TEXT("took")),
+    TEXT("CRIT6: the desk line: its minutes up to four hours, none from an earlier night or unknown, and after 06:00 the night is over"));
    Check(Good==19&&Controlled==20&&Muddy==16&&LateMuddy==7&&Why.Contains(TEXT("clean recording")),*FString::Printf(TEXT("M7: good card $%d, anomaly controlled $%d, muddy on time $%d, muddy three days late $%d"),Good,Controlled,Muddy,LateMuddy));
    // two good cards are worth more than three muddy late ones
    Check(2*Good>3*LateMuddy,TEXT("M7: two good cards pay more than three muddy late ones"));
@@ -3372,6 +3396,11 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Check(SideAgain.SideLeftThisWeek()==0&&SideAgain.EarnSide(10,TEXT("test"))==0,TEXT("M7: the week's side money survives a Continue"));
    SideAgain.TestAdvance(7*86400);Check(SideAgain.SideLeftThisWeek()==SideCap&&SideAgain.EarnSide(10,TEXT("test"))==10,TEXT("M7: a new week, a new cap"));
    Check(SideCap*4<7*2*PayAfterDays(0),TEXT("M7: a month's capped side money is less than one week of two base cards an evening"));
+   {
+    // CRIT6-20261109: the pickup's reward, the geiger jar and the stuck rig go through the cap too (FS47Happenings): two jars after it is used, nothing.
+    const int32 Before=Side.Budget();const int32 Jar1=Side.EarnSide(10,TEXT("geiger jar")),Jar2=Side.EarnSide(10,TEXT("geiger jar")),Reward=Side.EarnSide(20,TEXT("pickup reward")),Rig=Side.EarnSide(15,TEXT("stuck rig"));
+    Check(Jar1==0&&Jar2==0&&Reward==0&&Rig==0&&Side.Budget()==Before,TEXT("CRIT6: past the week's cap two geiger jars, the pickup's reward and the stuck rig pay nothing"));
+   }
    Side.Stop();SideAgain.Stop();
   }
   const int32 Start=Econ.Budget(),Week=Econ.ReviewPowerNow()+ReviewFuel;Econ.TestAdvance(5*86400);Econ.StepWeeklyReview();

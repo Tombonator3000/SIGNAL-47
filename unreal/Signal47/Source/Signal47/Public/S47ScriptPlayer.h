@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Script.h"
+#include "Misc/DateTime.h"
 class US47Main;
 class FS47FreeformSession;
 
@@ -48,6 +49,11 @@ public:
  int32 PlayedCount(const FString& Id) const{return Memory.Count.FindRef(Id);}
  // The moment, as a trigger reads it.
  FS47ScriptNow Now() const;
+ // CRIT6-20261109: the weather and the moon a trigger reads, as the world shows them at Clock: the calendar day's (FS47WeatherLive,
+ // the sky's moon), not the shift day's, whose morning is still "today" until 08:00. The night's storm is the evening's, the shift
+ // day's (ShiftDay), held into the small hours. CalendarDate: that calendar day's date (FS47FreeformSession::DateOfDay).
+ static int32 CalendarDayOf(double Clock){return int32(FMath::FloorToDouble(FMath::Max(0.,Clock)/86400.))+1;}
+ static void SkyNow(int32 Seed,double Clock,int32 ShiftDay,const FDateTime& CalendarDate,FS47ScriptNow& N);
  // Where the player stands, or the ground they look at (within 400 m), road-local. False: no player on the land.
  bool HereRoad(FS47ScriptPoint& Out) const;
  bool LookRoad(FS47ScriptPoint& Out) const;
@@ -55,7 +61,9 @@ public:
  // ---- for everyone else ----
  // The session's player, or null outside Freeform.
  static FS47ScriptPlayer* Of(const US47Main* M);
- // A script is playing now: nothing else big should start (FS47FreeformDirector and FS47Happenings may ask).
+ // A script is playing now: nothing else big should start. Asked by the night's rhythm (FS47Rhythm::ReadNow: "script" holds the
+ // ground), the Director's RestBlock, the big night (StepBigDue), the gear (FS47Outfit) and saving (S47SaroSave::Danger); being
+ // taken stops it (FS47Taken).
  static bool Busy(const US47Main* M);
  // Another big event holds the night: the Director's event, being taken, a night happening on the ground, the light over the
  // highway, or a lock someone holds (Hold). Why: which.
@@ -105,7 +113,11 @@ private:
  void StepFigure(FFigure& F,double Dt);
  struct FLook{FVector Target=FVector::ZeroVector;double Left=0,Total=1,FromYaw=0,FromPitch=0;bool bLive=false;} Look;
  void StepLook(double Dt);
- struct FDishHold{TArray<FVector2D> Targets;double Left=0;bool bLive=false;} DishHold;
+ // bBigTurned: the big night had turned the array already when the targets were taken (CRIT6-20261109: one that turns it after
+ // that is not undone when the hold ends).
+ struct FDishHold{TArray<FVector2D> Targets;double Left=0;bool bLive=false,bBigTurned=false;} DishHold;
+ // Put the antennas back where the script found them, unless the big night has turned them since, or is under way.
+ void RestoreDishes();
  bool bSkyStarted=false,bOmenPosted=false;
  // How long the formation and the posted sign still last: the script is not over before they are.
  double SkyLeft=0,OmenLeft=0;

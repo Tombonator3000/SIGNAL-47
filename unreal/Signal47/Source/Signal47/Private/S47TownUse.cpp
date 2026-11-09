@@ -573,7 +573,7 @@ FString FS47TownUse::TipRows(TArray<TSharedRef<SWidget>>& Rows, bool bPhone)
 	else if (Can.IsEmpty()) Rows.Add(S47Kit::Small(TEXT("Nothing to tell him yet: a place you have been out to, or one where you saw something go on in the last few nights.")));
 	else
 	{
-		Rows.Add(S47Kit::Small(FString::Printf(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab). The station pays $%d for a tip it reads."), FS47RadioTips::TipPay)));
+		Rows.Add(S47Kit::Small(FString::Printf(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab). The station pays $%d for a tip it reads, while this week's field money lasts."), FS47RadioTips::TipPay)));
 		for (int32 I = 0; I < FMath::Min(Can.Num(), 8); ++I)
 		{
 			const FString Id = Can[I].Key, Title = Can[I].Value;
@@ -699,8 +699,8 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	if (Shot->bOdd || Shot->Targets.Num() > 0) Note(TEXT("sold_odd"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: a copy of print %s sold for $%d (%s)"), *PhotoId, Pay, *Why);
 	if (M->UI) M->UI->Toast(Paid >= Pay ? FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay)
-		: Paid > 0 ? FString::Printf(TEXT("He has spent most of his week's money: $%d for it, not $%d. You keep your print."), Paid, Pay)
-		: FString(TEXT("\"I'm tapped out this week. It goes in the window anyway, if that's all right.\" Nothing for it. You keep your print.")), 5);
+		: Paid > 0 ? FString::Printf(TEXT("$%d for it, not $%d: with that, this week's field money is used up. You keep your print."), Paid, Pay)
+		: FString(TEXT("\"It goes in the window anyway, if that's all right.\" This week's field money is used up: no payment. You keep your print.")), 5);
 	M->RequestAutosave();
 	return true;
 }

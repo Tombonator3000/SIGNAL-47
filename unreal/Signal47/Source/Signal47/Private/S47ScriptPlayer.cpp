@@ -16,6 +16,7 @@
 #include "S47OpenLand.h"
 #include "S47PaleBody.h"
 #include "S47Radio.h"
+#include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Taken.h"
 #include "S47Three.h"
@@ -219,17 +220,8 @@ FS47ScriptNow FS47ScriptPlayer::Now() const
  if(HereRoad(Here)){N.bHasRoad=true;N.Road=Here.Road();}
  if(M->Player&&M->World)N.bIndoors=M->World->Indoors(M->Player->Pos);
  N.bInTruck=M->World&&M->World->bDriving;
- // The day's weather as the paper prints it (S47Weather::Day), at this hour.
- const double H=N.Hour();
- const S47Weather::FDay W=S47Weather::Day(F->Seed(),N.Day);
- const float Cloud=H<12?W.CloudAm:H<19?W.CloudPm:W.CloudNight;
- N.Weather.Add(Cloud>=.5f?TEXT("cloudy"):TEXT("clear"));
- N.Weather.Add(W.Windy()?TEXT("windy"):TEXT("calm"));
- if(W.bDust&&H>=W.DustFrom&&H<W.DustTo)N.Weather.Add(TEXT("dust"));
- if(W.bShower&&FMath::Abs(H-W.ShowerAt)<1.)N.Weather.Add(TEXT("shower"));
- if(W.NightStorm>.5f&&(H>=19||H<6))N.Weather.Add(TEXT("storm"));
- const S47Weather::FMoon Mo=S47Weather::Moon(F->Date(),FMath::Fmod(N.Clock,86400.));
- N.MoonLit=Mo.Lit;N.bMoonUp=Mo.El>0;
+ // The weather and the moon as the world shows them now (SkyNow): the calendar day's, not the shift day's.
+ SkyNow(F->Seed(),N.Clock,N.Day,F->DateOfDay(CalendarDayOf(N.Clock)),N);
  N.HasFinding=[F](const FString& Id)
  {
   if(!Id.EndsWith(TEXT("*")))return F->HasFinding(Id);
@@ -250,6 +242,26 @@ FS47ScriptNow FS47ScriptPlayer::Now() const
  };
  N.bBigEvent=BigEvent(M,N.BigWhy);
  return N;
+}
+
+void FS47ScriptPlayer::SkyNow(int32 Seed,double Clock,int32 ShiftDay,const FDateTime& CalendarDate,FS47ScriptNow& N)
+{
+ // CRIT6-20261109: what FS47WeatherLive puts on the world (S47Weather::Now on the calendar day) and the cover the sky draws with it
+ // (FS47Sky::CloudCoverAt and the day's CloudBias, as S47Weather::Day reckons its own); between midnight and eight the shift day is
+ // still yesterday, whose morning cover is not tonight's.
+ const int32 CalDay=CalendarDayOf(Clock);
+ const double Sec=FMath::Fmod(FMath::Max(0.,Clock),86400.),H=Sec/3600.;
+ const S47Weather::FNow W=S47Weather::Now(Seed,CalDay,Sec);
+ const double Cover=FMath::Clamp(FS47Sky::CloudCoverAt(Sec)+W.CloudBias,0.,.9);
+ N.Weather.Reset();
+ N.Weather.Add(Cover>=.5?TEXT("cloudy"):TEXT("clear"));
+ N.Weather.Add(W.Mph>=18?TEXT("windy"):TEXT("calm"));
+ if(W.Dust>.1)N.Weather.Add(TEXT("dust"));
+ if(W.Rain>0)N.Weather.Add(TEXT("shower"));
+ // The storm is the evening's wind held into the night: the shift day's, which in the small hours is the evening before.
+ if(S47Weather::Day(Seed,FMath::Max(1,ShiftDay)).NightStorm>.5f&&(H>=19||H<6))N.Weather.Add(TEXT("storm"));
+ const S47Weather::FMoon Mo=S47Weather::Moon(CalendarDate,Sec);
+ N.MoonLit=Mo.Lit;N.bMoonUp=Mo.El>0;
 }
 
 FString FS47ScriptPlayer::WhyNot(const FS47Script& S) const
@@ -347,6 +359,20 @@ void FS47ScriptPlayer::Finish(const FString& Why)
  ClearEffects();
 }
 
+void FS47ScriptPlayer::RestoreDishes()
+{
+ if(!DishHold.bLive||!M||!IsValid(M->Web))return;
+ // CRIT6-20261109: the big night's bearing is the array's now (its toast and its finding say so): a script ending does not undo it.
+ const FS47FreeformSession* F=M->Freeform.Get();
+ const FS47Happenings* H=F?F->Happenings.Get():nullptr;
+ if(H&&(H->BigLive()||(H->BigHas(TEXT("turned"))&&!DishHold.bBigTurned)))
+ {
+  UE_LOG(LogS47Script,Display,TEXT("S47: script %s: the array is left where the big night turned it"),*Run.S.Id);
+  return;
+ }
+ for(int32 I=0;I<DishHold.Targets.Num();++I)M->Web->PointDish(I,DishHold.Targets[I].X,DishHold.Targets[I].Y,9,true);
+}
+
 bool FS47ScriptPlayer::EffectsLive() const
 {
  return Look.bLive||DishHold.bLive||SkyLeft>0||OmenLeft>0||Figures.ContainsByPredicate([](const FFigure& F){return F.bLive;});
@@ -362,7 +388,7 @@ void FS47ScriptPlayer::ClearEffects()
  Figures.Reset();
  if(Bodies)for(bool& U:Bodies->bInUse)U=false;
  Look=FLook();
- if(DishHold.bLive&&M&&IsValid(M->Web))for(int32 I=0;I<DishHold.Targets.Num();++I)M->Web->PointDish(I,DishHold.Targets[I].X,DishHold.Targets[I].Y,9,true);
+ RestoreDishes();
  DishHold=FDishHold();
  if(bSkyStarted&&M&&M->SkyVisitors)M->SkyVisitors->DevFormationStop();
  bSkyStarted=false;SkyLeft=0;
@@ -385,13 +411,16 @@ void FS47ScriptPlayer::Step(double Dt)
   SkyLeft=FMath::Max(0.,SkyLeft-Dt);OmenLeft=FMath::Max(0.,OmenLeft-Dt);
   if(DishHold.bLive&&(DishHold.Left-=Dt)<=0)
   {
-   for(int32 I=0;I<DishHold.Targets.Num();++I)M->Web->PointDish(I,DishHold.Targets[I].X,DishHold.Targets[I].Y,9,true);
+   RestoreDishes();
    DishHold=FDishHold();
   }
   if(bRun&&Run.Next>=Run.S.Actions.Num()&&Run.Hold<=0&&!EffectsLive())Finish(TEXT("done"));
   else if(bRun&&Run.Age>Run.S.Length()+S47ScriptPlayerLocal::SafetySeconds)Finish(TEXT("ran too long"));
   return;
  }
+ // CRIT6-20261109: nothing starts in the first shift's tutorial, nor where the night's own rules do not run (a developer's fixtures,
+ // the scenario tests); PREVIEW still plays.
+ if(F->InTutorial()||!F->RulesLive())return;
  if((CheckIn-=Dt)>0)return;
  CheckIn=S47ScriptPlayerLocal::CheckEvery;
  bool bAnyOn=false;
@@ -481,7 +510,7 @@ void FS47ScriptPlayer::Fire(const FS47ScriptAction& A)
  case ES47ScriptAct::Dish:
  {
   if(!M->Web||F->PowerFault()){Log(TEXT("refused: no power on the array"));break;}
-  if(!DishHold.bLive){DishHold.Targets.Reset();for(int32 I=0;I<M->Web->DishCount();++I)DishHold.Targets.Add(FVector2D(M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)));}
+  if(!DishHold.bLive){DishHold.Targets.Reset();for(int32 I=0;I<M->Web->DishCount();++I)DishHold.Targets.Add(FVector2D(M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)));DishHold.bBigTurned=F->Happenings&&F->Happenings->BigHas(TEXT("turned"));}
   if(A.Index>=0&&A.Index<M->Web->DishCount())M->Web->PointDish(A.Index,A.Az,FMath::Clamp(A.El,0.,90.),FMath::Max(.5,A.Slew),true);
   else M->Web->PointDishes(A.Az,FMath::Clamp(A.El,0.,90.),FMath::Max(.5,A.Slew));
   if(A.Secs>0){DishHold.bLive=true;DishHold.Left=A.Secs;}else DishHold=FDishHold();

@@ -18,6 +18,7 @@
 #include "S47Rhythm.h"
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
+#include "S47ScriptPlayer.h"
 #include "S47Story.h"
 #include "S47Taken.h"
 #include "S47Town.h"
@@ -135,6 +136,10 @@ namespace S47Big
  const TCHAR* const DaleFirst=TEXT("Herrgott. Every dish on remote is looking at {az} this morning, {el} degrees up, like dogs at a door. Not on my log. Not on yours? Good. Then nobody did it.");
  const TCHAR* const DaleSlept=TEXT("Herrgott. You slept through it? Good for you. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths. Not on my log.");
  const TCHAR* const DaleLast=TEXT("Leave the array where it is until I have read the encoders myself. And if you go out there, you go by daylight, and you take the walkie. Out.");
+ // CRIT6-20261109: his hail as he calls the station (S47FieldRadio's own): never by name. Reyes is the night operator who went missing.
+ const TCHAR* const HailFirst=TEXT("SARO, Dale. Pick up.");
+ const TCHAR* const HailAgain=TEXT("SARO! The walkie. Now.");
+ const TCHAR* const HailGiveUp=TEXT("Fine. I leave it on the slip by the phone.");
  const TCHAR* const Slip=TEXT("A slip by the phone, in a hard square hand: \"Array on remote all at {az} this morning, {el} up. Not me. Not you? Leave it so. If you go out to {place}, go by day. D.\"");
 }
 
@@ -510,7 +515,8 @@ void FS47Happenings::StepBigDue()
  if(H>=29.){BigUnseen(P.Night,bBigSlept);return;}
  double From=P.Hour;if(BigSoon>0)From=FMath::Min(From,BigSoon);
  if(S47Big::StoryWindow(From))From=26.67;
- if(H<From||S47Big::StoryWindow(H)||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen()||F->InTutorial())return;
+ // (CRIT6-20261109: nor on top of a director script; it waits for the script's end)
+ if(H<From||S47Big::StoryWindow(H)||Paced<BigTry||!Now.Id.IsEmpty()||M->ModalOpen()||F->InTutorial()||FS47ScriptPlayer::Busy(M))return;
  // Late in the night the rhythm's rest no longer holds it back, but nothing else on the ground and nobody being taken.
  if(H>=28.5)
  {
@@ -557,7 +563,7 @@ void FS47Happenings::StepBigAfter()
   if(Hour>=8.5&&Hour<18&&!BigFollow.Contains(TEXT("hail"))&&!BigFollow.Contains(TEXT("missed"))&&M->FieldRadio.IsValid()&&M->FieldRadio->Owned()&&!M->ModalOpen())
   {
    const TWeakPtr<uint8> Guard=Alive;
-   FS47FieldRadio::FHail Words{TEXT("Reyes. Pick up."),TEXT("Reyes! The walkie. Now."),TEXT("Fine. I leave it on the slip by the phone.")};
+   FS47FieldRadio::FHail Words{S47Big::HailFirst,S47Big::HailAgain,S47Big::HailGiveUp};
    const bool bSlept=BigFollow.Contains(TEXT("unseen"));
    if(M->FieldRadio->Hail(Words,[this,Guard,Place,bSlept]
     {
@@ -723,11 +729,18 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   TArray<FString> All;
   for(const S47Big::FWords& W:S47Big::Words)for(const TCHAR* T:{W.Seen,W.DaleLine,W.Caller,W.Earl,W.Cb,W.Passed,W.Title,W.Mark,W.Lead,W.Found})All.Add(T);
   for(const TCHAR* T:{S47Big::DaleFirst,S47Big::DaleSlept,S47Big::DaleLast,S47Big::Slip})All.Add(T);
+  // (his hail names him as a call sign does, "SARO, Dale.", as S47FieldRadio's own; Clean keeps "Dale" out of every other line)
+  for(const TCHAR* T:{S47Big::HailFirst,S47Big::HailAgain,S47Big::HailGiveUp})All.Add(FString(T).Replace(TEXT("SARO, Dale."),TEXT("SARO.")));
   FString Bad;for(const FString& T:All)if(!S47Hap::Clean(T)&&Bad.Len()<200)Bad+=T.Left(50)+TEXT(" / ");
   Check(Bad.IsEmpty(),TEXT("every line is clean of Story's far side, names and brands ")+Bad);
   Check(FString(S47Big::DaleFirst).StartsWith(TEXT("Herrgott."))&&FString(S47Big::DaleSlept).StartsWith(TEXT("Herrgott."))&&S47Hap::Clean(S47Big::Dale(S47Big::DaleFirst))
    &&S47Big::Dale(S47Big::Put(S47Big::DaleSlept,TEXT("the dry lake"),FString(),FString(),132,4)).Contains(TEXT("DALE: Herrgott.")),
    TEXT("Dale's morning starts \"Herrgott.\" whether the night was seen or slept through, and nothing takes it out"));
+  // CRIT6-20261109: Dale never calls the player Reyes (the one who went missing), in any line of his here.
+  FString Named;
+  for(const TCHAR* T:{S47Big::DaleFirst,S47Big::DaleSlept,S47Big::DaleLast,S47Big::Slip,S47Big::HailFirst,S47Big::HailAgain,S47Big::HailGiveUp})if(FString(T).Contains(TEXT("Reyes")))Named+=FString(T).Left(40)+TEXT(" / ");
+  for(const S47Big::FWords& W:S47Big::Words)if(FString(W.DaleLine).Contains(TEXT("Reyes")))Named+=FString(W.DaleLine).Left(40)+TEXT(" / ");
+  Check(Named.IsEmpty(),TEXT("CRIT6: no line of Dale's in the big night says Reyes ")+Named);
   bool bNum=true;for(int32 Az=0;Az<360;++Az){const FString S=FString::Printf(TEXT("%03.0f"),S47Hap::Bearing(Az));bNum&=!S.Contains(TEXT("47"));}
   Check(bNum,TEXT("no bearing it gives reads as Story's number"));
   Check(S47Big::ClimaxEnd-S47Big::Tone!=47&&S47Big::Len!=47&&S47Big::Back-S47Big::Flick!=47,TEXT("nothing in it lasts Story's number of seconds"));

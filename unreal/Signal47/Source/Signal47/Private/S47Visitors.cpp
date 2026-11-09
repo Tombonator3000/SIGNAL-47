@@ -968,13 +968,19 @@ void FS47Visitors::OpenVan()
 	else
 	{
 		Rows.Add(S47Kit::Text(TEXT("THE SCHOOLTEACHER: We're scientists, more or less. We only want to see the instruments. One night. We'll bring donuts. We'll make a donation.")));
-		Rows.Add(S47Kit::Button(TEXT("Let them in tonight / a $15 donation"), [this]
+		// CRIT6-20261109: the donation is field money, under the week's cap (FS47FreeformSession::EarnSide): the button says what it
+		// will be, and the toast what it was.
+		const int32 Offer = F.RulesLive() ? FMath::Min(15, F.SideLeftThisWeek()) : 15;
+		Rows.Add(S47Kit::Button(Offer > 0 ? FString::Printf(TEXT("Let them in tonight / a $%d donation"), Offer) : FString(TEXT("Let them in tonight / no donation: this week's field money is used up")), [this]
 		{
-			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); G.EarnSide(15, TEXT("van donation")); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
+			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); const int32 Paid = G.EarnSide(15, TEXT("van donation")); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
 			// Their newsletter, mimeographed: a rumor in it. Tonight at nine they are at SARO's gate.
 			const FString New = G.Places ? G.Places->NextUnknown(G.Day() * 29) : FString();
 			if (!New.IsEmpty()) G.Places->Hear(New);
-			if (M->UI) M->UI->Toast(New.IsEmpty() ? TEXT("$15 and a newsletter. Tonight at nine, at SARO's gate.") : FString::Printf(TEXT("$15 and their newsletter. It says to watch %s. Tonight at nine, at SARO's gate."), *PlaceTitle(New)), 8);
+			const FString Money = Paid >= 15 ? FString(TEXT("$15 and"))
+				: Paid > 0 ? FString::Printf(TEXT("$%d of their $15 (with that, this week's field money is used up) and"), Paid)
+				: FString(TEXT("They press $15 on you; this week's field money is used up, so you tell them to keep it. You take"));
+			if (M->UI) M->UI->Toast(New.IsEmpty() ? FString::Printf(TEXT("%s a newsletter. Tonight at nine, at SARO's gate."), *Money) : FString::Printf(TEXT("%s their newsletter. It says to watch %s. Tonight at nine, at SARO's gate."), *Money, *PlaceTitle(New)), 8);
 			OpenVan();
 		}));
 		Rows.Add(S47Kit::Button(TEXT("Turn them down"), [this]

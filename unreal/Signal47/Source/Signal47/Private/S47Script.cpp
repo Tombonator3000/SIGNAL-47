@@ -69,6 +69,17 @@ bool FS47Script::HasFigure() const
  return Actions.ContainsByPredicate([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure;});
 }
 
+bool FS47Script::HasSky() const
+{
+ return Actions.ContainsByPredicate([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Sky;});
+}
+
+ES47Allowed FS47Script::Need() const
+{
+ const ES47Allowed Own=HasFigure()||bTierSet?Tier:ES47Allowed::Hint;
+ return HasSky()&&uint8(Own)<uint8(ES47Allowed::Glimpse)?ES47Allowed::Glimpse:Own;
+}
+
 double FS47Script::Length() const
 {
  double End=0,Waits=0;
@@ -141,7 +152,7 @@ S47J::FObj ToJson(const FS47Script& S)
  S47J::Set(O,TEXT("id"),S.Id);S47J::Set(O,TEXT("name"),S.Name);S47J::Set(O,TEXT("enabled"),S.bEnabled);
  S47J::Set(O,TEXT("repeat"),RepeatName(S.Repeat));
  if(S.Repeat==ES47ScriptRepeat::Always)S47J::Set(O,TEXT("cooldown_min"),S.CooldownMin);
- if(S.Tier!=ES47Allowed::Full)S47J::Set(O,TEXT("tier"),S47NightTiers::Name(S.Tier));
+ if(S.Tier!=ES47Allowed::Full||S.bTierSet)S47J::Set(O,TEXT("tier"),S47NightTiers::Name(S.Tier));
  if(S.bEarly)S47J::Set(O,TEXT("early"),true);
  const S47J::FObj T=S47J::New();
  const FS47ScriptTrigger& Tr=S.Trigger;
@@ -205,6 +216,7 @@ bool FromJson(const S47J::FObj& O,FS47Script& Out,FString& Why)
  if(Out.Id.IsEmpty()){Why=TEXT("no id");return false;}
  Out.Repeat=RepeatFrom(S47J::Str(O,TEXT("repeat"),TEXT("once")));Out.CooldownMin=FMath::Max(0.,S47J::Num(O,TEXT("cooldown_min"),60));
  {const FString TierName=S47J::Str(O,TEXT("tier"),TEXT("full"));if(!S47NightTiers::FromName(TierName,Out.Tier)){Why=TEXT("tier is hint, glimpse or full");return false;}}
+ Out.bTierSet=O->HasField(TEXT("tier"));
  Out.bEarly=S47J::Bool(O,TEXT("early"));
  const S47J::FObj T=S47J::Obj(O,TEXT("trigger"));
  FS47ScriptTrigger& Tr=Out.Trigger;
@@ -377,14 +389,22 @@ TArray<FString> Lint(const FS47Script& S,TArray<FString>* Warnings)
   // Its tier's hour in the first week, and the soonest of any week (the fourth): what a figure waits for.
   const double First=FigureFrom(S,1),Soonest=FigureFrom(S,S47NightTiers::LateFromNight);
   const FString When=FMath::IsNearlyEqual(First,Soonest)?HourText(First):FString::Printf(TEXT("%s (%s in the fourth week)"),*HourText(First),*HourText(Soonest));
-  if(S.HasFigure()&&T.HourFrom>=0)
+  // What holds it to the night's hours: a figure, a tier the file sets, or a formation in the sky (Need, CRIT6-20261109).
+  const bool bHeld=S.Need()!=ES47Allowed::Hint;
+  const FString What=S.HasFigure()?FString::Printf(TEXT("a figure (%s)"),S47NightTiers::Name(S.Need())):S.bTierSet&&S.Need()==S.Tier?FString::Printf(TEXT("its tier (%s)"),S47NightTiers::Name(S.Need())):FString(TEXT("a light in the sky (a glimpse)"));
+  if(bHeld&&T.HourFrom>=0)
   {
-   // Does the window reach the hours a figure may start in at all, in any week? Look at every quarter hour of it.
+   // Does the window reach the hours it may start in at all, in any week? Look at every quarter hour of it.
    bool bAny=false;for(double H=0;H<24&&!bAny;H+=.25)bAny=InHours(H,T.HourFrom,T.HourTo)&&InHours(H,Soonest,AlienUntil);
-   if(!bAny)Warnings->Add(FString::Printf(TEXT("a figure (%s) only starts from %s to %s, and these hours never reach them: it will never play"),S47NightTiers::Name(S.Tier),*When,*HourText(AlienUntil)));
+   if(!bAny)Warnings->Add(FString::Printf(TEXT("%s only starts from %s to %s, and these hours never reach them: it will never play"),*What,*When,*HourText(AlienUntil)));
   }
-  if(S.HasFigure()&&T.HourFrom<0)Warnings->Add(FString::Printf(TEXT("a figure (%s): it waits for %s whatever the trigger says"),S47NightTiers::Name(S.Tier),*When));
-  if(S.HasFigure()&&S.bEarly)Warnings->Add(FString::Printf(TEXT("early: set on purpose, its figures may start from %s"),*HourText(AlienEarlyFrom)));
+  if(bHeld&&T.HourFrom<0)Warnings->Add(FString::Printf(TEXT("%s: it waits for %s whatever the trigger says"),*What,*When));
+  if(bHeld&&S.bEarly)Warnings->Add(FString::Printf(TEXT("early: set on purpose, it may start from %s"),*HourText(AlienEarlyFrom)));
+  // CRIT6-20261109: a tier and no figure: it now holds what the script does (its sounds, lines and findings) to that tier's hours.
+  if(S.bTierSet&&!S.HasFigure())Warnings->Add(S.Tier==ES47Allowed::Hint
+   ?(S.HasSky()?FString(TEXT("tier hint, but a light in the sky is a glimpse at least: it waits for the glimpse's hour")):FString(TEXT("tier hint and no figure: it plays at any hour its trigger allows")))
+   :FString::Printf(TEXT("tier %s and no figure: everything it does waits for %s"),S47NightTiers::Name(S.Tier),*When));
+  if(!S.bTierSet&&!S.HasFigure()&&S.HasSky())Warnings->Add(FString::Printf(TEXT("no tier set, but a light in the sky is a glimpse at least: it waits for %s"),*When));
   if(!S.bEnabled)Warnings->Add(TEXT("switched off: it plays only from PREVIEW"));
  }
  return E;
@@ -443,10 +463,11 @@ bool Ready(const FS47Script& S,const FS47ScriptNow& Now,const FS47ScriptMemory& 
  // The night's tier (S47NightTiers): a full figure from two, a glimpse from midnight, an hour sooner in the fourth week; early, from
  // the evening, only when the file says so.
  const double From=FigureFrom(S,Now.Night);
- const bool bAlienHours=!S.HasFigure()||InHours(Now.Hour(),From,AlienUntil);
+ // CRIT6-20261109: what a script needs is its Need (a figure, a tier set, a light in the sky); a plain hint at any hour.
+ const bool bAlienHours=S.Need()==ES47Allowed::Hint||InHours(Now.Hour(),From,AlienUntil);
  if(bPreview)
  {
-  if(!bAlienHours)Why=FString::Printf(TEXT("in play this waits for %s (a figure, %s)"),*HourText(From),S47NightTiers::Name(S.Tier));
+  if(!bAlienHours)Why=FString::Printf(TEXT("in play this waits for %s (%s, %s)"),*HourText(From),S.HasFigure()?TEXT("a figure"):TEXT("its tier"),S47NightTiers::Name(S.Need()));
   if(Now.bBigEvent)Why+=(Why.IsEmpty()?FString():FString(TEXT("; ")))+TEXT("in play this waits: ")+Now.BigWhy;
   return true;
  }
@@ -461,7 +482,7 @@ bool Ready(const FS47Script& S,const FS47ScriptNow& Now,const FS47ScriptMemory& 
  if(T.NightFrom>0&&Now.Night<T.NightFrom){Why=TEXT("too early a night");return false;}
  if(T.NightTo>0&&Now.Night>T.NightTo){Why=TEXT("its nights are over");return false;}
  if(!InHours(Now.Hour(),T.HourFrom,T.HourTo)){Why=TEXT("outside its hours");return false;}
- if(!bAlienHours){Why=FString::Printf(TEXT("a figure (%s) waits for %s"),S47NightTiers::Name(S.Tier),*HourText(From));return false;}
+ if(!bAlienHours){Why=FString::Printf(TEXT("%s (%s) waits for %s"),S.HasFigure()?TEXT("a figure"):TEXT("its tier"),S47NightTiers::Name(S.Need()),*HourText(From));return false;}
  if(T.HasWhere())
  {
   if(!Now.bHasRoad){Why=TEXT("no player on the land");return false;}

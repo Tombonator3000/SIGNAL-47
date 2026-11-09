@@ -36,6 +36,7 @@
 #include "S47Docs.h"
 #include "S47Flow.h"
 #include "S47SaroSave.h"
+#include "S47ScriptPlayer.h"
 #include "S47Fx.h"
 #include "NiagaraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -1151,6 +1152,8 @@ FString FS47FreeformDirector::RestBlock() const
  if(Event==TEXT("observer")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))return TEXT("There is a figure out by the antennas. Not while it is still there.");
  // A night event's danger, once met (the light over the truck, the woman by the road, the voice): stress reads this too.
  if(Session.Happenings){const FString Night=Session.Happenings->RestBlock();if(!Night.IsEmpty())return Night;}
+ // CRIT6-20261109: a director script under way: a rest would jump the clock past its timeline with its figure still out.
+ if(FS47ScriptPlayer::Busy(M))return TEXT("Not now.");
  return FString();
 }
 void FS47FreeformDirector::EndForRest()
@@ -1725,7 +1728,7 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  // M7 (Tom, 9 November): the documentation credit is field-work money: inside the week's cap (FS47FreeformSession::EarnSide)
  C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
  M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
- if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d documentation credit."),Credit):FString(TEXT("OPS registered the field photograph. This week's documentation credit is used up: no payment.")),5);
+ if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d documentation credit."),Credit):FString(TEXT("OPS registered the field photograph. This week's field money is used up: no payment.")),5);
  return true;
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);

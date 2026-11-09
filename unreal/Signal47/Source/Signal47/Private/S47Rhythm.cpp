@@ -17,6 +17,7 @@
 #include "S47Night.h"
 #include "S47NightRhythm.h"
 #include "S47Predecessor.h"
+#include "S47ScriptPlayer.h"
 #include "S47SkyVisitors.h"
 #include "S47SmallHints.h"
 #include "S47Taken.h"
@@ -316,6 +317,8 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
   if(F->IndoorDread->DoorActive())N.Busy=TEXT("door_visit");else if(F->IndoorDread->PeekActive())N.Busy=TEXT("peek");
  }
  if(F->Happenings)F->Happenings->FillRhythm(N);
+ // CRIT6-20261109: a director script under way holds the ground: no meeting, no taking and no big night starts on top of it.
+ if(FS47ScriptPlayer::Busy(M))N.Busy=TEXT("script");
  if(F->Taken&&F->Taken->Busy())N.Busy=TEXT("taken");
  if(F->FarmSite&&F->FarmSite->VisitWantsGround())N.Busy=F->FarmSite->FieldVisit()?TEXT("field_visit"):TEXT("site_visit");
  if(M->HighwayUfo&&M->HighwayUfo->StageName()!=TEXT("idle")&&M->HighwayUfo->StageName()!=TEXT("done"))N.Busy=TEXT("highway_ufo");

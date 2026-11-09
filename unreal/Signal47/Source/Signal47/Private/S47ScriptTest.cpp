@@ -1,10 +1,14 @@
 #include "S47Script.h"
+#include "S47ScriptPlayer.h"
+#include "S47Sky.h"
+#include "S47Weather.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
 // DIRECTOR-TOOL-20261109: the scripted events' self-test, called from the HUD's (-S47SelfTest): the JSON both ways, the trigger,
 // the night's tiers (S47NightTiers: a figure waits for two, a glimpse for midnight, sooner in the fourth week, early only when set),
-// the lock against a big event, and the lint. No world: FS47ScriptNow is filled by hand.
+// the lock against a big event, and the lint. No world: FS47ScriptNow is filled by hand (and the sky's words by FS47ScriptPlayer::SkyNow,
+// which is pure).
 
 namespace S47ScriptTestLocal
 {
@@ -87,7 +91,8 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
  // ---- the trigger ----
  {
   FS47Script S=Sample();
-  S.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure;});
+  // (a light in the sky is a glimpse at least, CRIT6-20261109: the trigger is tried on the plain hints)
+  S.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure||A.Do==ES47ScriptAct::Sky;});
   FS47ScriptMemory Mem;FString Why;
   Check(Ready(S,NightAt(23.75),Mem,Why),TEXT("in its hours, days, place and conditions it starts")+(Why.IsEmpty()?FString():TEXT(" (")+Why+TEXT(")")));
   Check(Ready(S,NightAt(3.5),Mem,Why),TEXT("its hours run past midnight"));
@@ -134,8 +139,11 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
   S.Trigger.HourFrom=-1;S.Trigger.HourTo=-1;
   Check(!Ready(S,NightAt(14),Mem,Why)&&!Ready(S,NightAt(6.5),Mem,Why),TEXT("a figure with no hours of its own waits for 02:00 too, by day as well"));
   Check(Ready(S,NightAt(23.5),Mem,Why,true)&&Why.Contains(TEXT("02:00")),TEXT("a preview plays now and says that in play it would wait"));
-  FS47Script NoFig=Sample();NoFig.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure;});
-  Check(Ready(NoFig,NightAt(23.75),Mem,Why),TEXT("lights and a voice are not held for 02:00"));
+  FS47Script NoFig=Sample();NoFig.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure||A.Do==ES47ScriptAct::Sky;});
+  Check(Ready(NoFig,NightAt(23.75),Mem,Why),TEXT("a sound and a voice are not held for 02:00"));
+  // CRIT6-20261109: a formation in the sky with no figure is a glimpse: not before midnight.
+  FS47Script Lights=Sample();Lights.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure;});
+  Check(Lights.Need()==ES47Allowed::Glimpse&&!Ready(Lights,NightAt(23.75),Mem,Why)&&Why.Contains(TEXT("00:00"))&&Ready(Lights,NightAt(.5),Mem,Why),TEXT("CRIT6: lights in the sky without a figure are a glimpse: they wait at 23:45 and play at 00:30"));
   TArray<FString> Warn;
   FS47Script Never=Sample();Never.Trigger.HourFrom=19;Never.Trigger.HourTo=23;
   Check(Lint(Never,&Warn).Num()==0&&Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("never play"));}),TEXT("a figure whose hours never reach 02:00 gets a warning"));
@@ -158,6 +166,34 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
   FS47Script Back;FS47Script EG=Early;EG.Tier=ES47Allowed::Glimpse;
   Check(Read(Write(EG),Back,Why)&&Back.bEarly&&Back.Tier==ES47Allowed::Glimpse&&!Write(S).Contains(TEXT("\"tier\""))&&!Write(S).Contains(TEXT("\"early\"")),TEXT("tier and early are written when set, and read back"));
   Check(!Read(Write(S).Replace(TEXT("\"id\""),TEXT("\"tier\": \"near\", \"id\"")),Back,Why),TEXT("an unknown tier is turned away"));
+  // CRIT6-20261109: a tier the file sets holds for a script without a figure too, is written back, and the lint says what it does.
+  FS47Script Plain=S;Plain.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure||A.Do==ES47ScriptAct::Sky;});
+  FS47Script Set=Plain;Set.Tier=ES47Allowed::Full;Set.bTierSet=true;
+  TArray<FString> Warn;
+  Check(Plain.Need()==ES47Allowed::Hint&&Ready(Plain,NightAt(23.5),Mem,Why)&&Set.Need()==ES47Allowed::Full&&!Ready(Set,NightAt(23.5),Mem,Why)&&Why.Contains(TEXT("02:00"))&&Ready(Set,NightAt(2.5),Mem,Why),TEXT("CRIT6: \"tier\": \"full\" with no figure waits for 02:00; with no tier set it is a hint at any hour"));
+  Check(Read(Write(Set),Back,Why)&&Back.bTierSet&&Back.Tier==ES47Allowed::Full&&Write(Set).Contains(TEXT("\"tier\""))&&Read(Write(Plain),Back,Why)&&!Back.bTierSet,TEXT("CRIT6: a tier set on purpose is written and read back as set, even full"));
+  Check(Lint(Set,&Warn).Num()==0&&Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("no figure"));}),TEXT("CRIT6: the lint warns that a tier with no figure holds everything the script does"));
+  FS47Script Sky=Sample();Sky.Actions.RemoveAll([](const FS47ScriptAction& A){return A.Do==ES47ScriptAct::Figure;});
+  Check(Lint(Sky,&Warn).Num()==0&&Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("light in the sky"));}),TEXT("CRIT6: the lint warns that a light in the sky waits for the glimpse's hour"));
+ }
+
+ // ---- the weather and the moon in the small hours (CRIT6-20261109) ----
+ {
+  // 01:00 on the fourth calendar day is still the third shift day: a script reads the night's sky, as the world draws it.
+  const double Clock=3*86400.+3600.;
+  const FDateTime Date4(1986,4,24);
+  int32 Wrong=0,OldWrong=0;
+  for(int32 Seed=1;Seed<=300;++Seed)
+  {
+   FS47ScriptNow N;FS47ScriptPlayer::SkyNow(Seed,Clock,3,Date4,N);
+   const bool bCloudy=FMath::Clamp(FS47Sky::CloudCoverAt(3600.)+S47Weather::Now(Seed,4,3600.).CloudBias,0.,.9)>=.5;
+   Wrong+=N.Weather.Contains(TEXT("cloudy"))!=bCloudy;
+   OldWrong+=(S47Weather::Day(Seed,3).CloudAm>=.5f)!=bCloudy;
+  }
+  Check(Wrong==0&&FS47ScriptPlayer::CalendarDayOf(Clock)==4&&FS47ScriptPlayer::CalendarDayOf(3*86400.-1)==3,FString::Printf(TEXT("CRIT6: at 01:00 the cover is the night's on the calendar day, not the shift day's morning (the old reading was wrong on %d of 300 games)"),OldWrong));
+  FS47ScriptNow N;FS47ScriptPlayer::SkyNow(47,Clock,3,Date4,N);
+  const S47Weather::FMoon Mo=S47Weather::Moon(Date4,3600.);
+  Check(FMath::IsNearlyEqual(N.MoonLit,Mo.Lit)&&N.bMoonUp==(Mo.El>0)&&N.Weather.Num()>=2,TEXT("CRIT6: the moon a script reads at 01:00 is the calendar date's, as the sky draws it"));
  }
 
  // ---- the lint ----
