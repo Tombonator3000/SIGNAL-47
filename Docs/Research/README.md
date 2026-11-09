@@ -10,6 +10,7 @@
 - [Gameplay: saker, logging og OPS-PC-en](Gameplay/SAKER_OPS_2026-11-09.md): gjennomgang med kritikere og designagenter 9. november, med bekreftede feil, anbefalt design (`CaseStep`), arbeidsplan og tre spørsmål til Tom.
 - [Gameplay: helhetlig spilløkke](Gameplay/HELHETLIG_LOKKE_2026-11-09.md): hvordan SARO-jobben og undersøkelser i verden knyttes sammen (peilelapp, sak OUT ON THE LAND, feltfunn som spørsmål tilbake, spor som kjølner), med plan i seks trinn og tre spørsmål til Tom.
 - [Gameplay: ukesaker](Gameplay/UKESAKER_2026-11-09.md): én skriptet, større sak hver uke. Uke 1 «Skjulet» beat for beat (spark, brist, leter, bil som harker, gjemmesteder), skisse av uke 2–4, mekanikker og plan i seks patcher.
+- [Gameplay: notatboka](Gameplay/NOTATBOK_2026-11-09.md): NOW bygd som TONIGHT, CASES/PAPERS/WHO & WHAT i stedet for flate lister med dubletter, og skriblerier om folk og dem.
 - [Gameplay: agent-harness, logiske brister og konkrete forbedringsforslag](Gameplay/WORKFLOW_REVIEW.md), med kildeanalyse, avgrenset lagringslesing og oppdatert VotV-kontroll 2. november.
 
 - [MotionBricks: genererte bevegelsesoverganger, retargeting og bakte klipp](MotionBricks/README.md), festet NVIDIA-kilde; lokal integrasjon UNVERIFIED.
