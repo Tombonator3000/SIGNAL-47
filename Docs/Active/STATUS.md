@@ -4,6 +4,30 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Ikke installert ennå, kveld 9. november: alt etter d37 ligger i `claude/day-20261109` (HEAD `2010d8e8`)
+
+Bygget og selvtestet kl. 19:03 på `d9c7309e` (editor BUILD 0, selvtest 4055/4059; de fire feilene er rettet i `2010d8e8`, men ikke bygget). Syntakssjekk av alle endrede C++-filer er ren. d38 ble pakket (`d38/candidate`, `package.json`), men ble ikke testet og installert før skiftslutt, fordi køen ventet på vakten. Første forsøk ble avvist fordi arbeidskopien endret seg under pakkingen. Installert er fortsatt d37.
+
+Nytt siden d37 (ikke spilt):
+- Nattradio på 1420 fra 20 til 04, og CB bare i bilen.
+- Spilløkka trinn 3–4: samme minutt på telexen, og magnetometerets historie.
+- Ukesak uke 1, patch 1–3: eier, krok, døra, lyset, lydene, bilen, tanker og Dale.
+- Meldte steder gir alltid et funn, og den store natta eier natta.
+- Porten ved gården.
+- Bilene ved SARO er fjernet, og S-03 er dekket.
+- Én melding om gangen, og bilhintet kommer én gang.
+- Notatboka: NOW som TONIGHT, dokumenter uten dubletter, og WHO & WHAT med skriblerier.
+- Den store natta er myk og kan ikke overses.
+- Generatoren startes ute, og rampa på SARO er rettet.
+- Jevn vignett, og ingen pust i loop etter bortføring.
+- Krasj etter lang pause er rettet (lydhendelser).
+- Nordic og Cosmic i F10.
+- Tastehint følger kontrolleren.
+- Kritikk 9 er rettet.
+- Støvvirvelen, sheriffbilens lys og øyeglimtet er rettet.
+
+Krever editoren før neste pakke: `Tools/sarofixes/prepare_cpu.py` (g55 og g60 for hylla), Blender og import av døra til fôrskjulet (`Tools/farmbuildings/README.md`), og staging av skjullydene (`prepare.py --stage`).
+
 ## Installert 9. november kl. 17:03, dagskift: Toms testfunn fra d36, by med dagsplan og nye hus, saker og telex, spilløkka trinn 1–2, Dales nye stemme
 
 `2c88bf9f` på `claude/day-20261109` (PR #510 mot `main`). Selvtest 3843 (editor), livsprøve 72, regresjon 251, postprøve 35, månedsprøver routine, investigator, taken og cases PASS. Pakken er testet og installert med røyktest. Bilderunder (F10): Town day 11/11, SARO fixes 28/28, World fixes 19/19, Tripo new 23/23, Farm lights 15/15, First big night 15/15, Looks 39/40 (lyktefot rettet etterpå). Tilbakerulling: `d36` (`5ed456ba`) og `d35`.
