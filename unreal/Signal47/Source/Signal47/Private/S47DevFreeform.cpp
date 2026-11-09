@@ -1394,6 +1394,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddReach(E);
  AddWorldFixes(E);
  AddSaroFixes(E);
+ AddFarmLights(E);
 }
 
 void FS47DevFreeform::Stop()

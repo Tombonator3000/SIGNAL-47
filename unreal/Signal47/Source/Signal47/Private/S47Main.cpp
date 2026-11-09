@@ -45,6 +45,7 @@
 #include "Misc/Parse.h"
 #include "S47TripoNpcs.h"
 #include "S47Lived.h"
+#include "S47FarmLights.h"
 #include "S47SaroRooms.h"
 #include "S47SaroLegacyCleanup.h"
 #include "S47Rx3Detail.h"
@@ -253,6 +254,8 @@ void US47Main::Step(double Dt)
 		TripoNpcs->Step();
 		FS47SaroRooms::Update(this, Dt);
 		S47Lived::Update(this, Dt);
+		// FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's dusk-to-dawn lamp, the old house's lit room. Freeform only.
+		S47FarmLights::Update(this, Dt);
 		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);

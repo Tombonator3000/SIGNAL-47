@@ -93,6 +93,8 @@ private:
  float SavedFov=-1; // the view's own while a World fixes line looks close
  // Tom's test of d36 at SARO: the ramp, walks, stop sign, hall, switches, Dale's light and records, before and after; S47SaroFixesDev.cpp.
  void AddSaroFixes(FS47DevEvents& E);
+ // FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's lamp and the old house's lit room; S47FarmLightsDev.cpp.
+ void AddFarmLights(FS47DevEvents& E);
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);

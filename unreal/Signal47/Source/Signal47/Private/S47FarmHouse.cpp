@@ -133,8 +133,8 @@ namespace S47FarmHouse
   };
   Ring(TEXT("parapet"),0,WallHeight,Parapet,EMat::Wall);
   Ring(TEXT("cap"),.035,Parapet,Parapet+.07,EMat::Trim);
-  for(const double X:{2.2,9.6})Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutN%.0f"),X*10),X-.1,-.62,X+.1,.3,RoofTop+.02,RoofTop+.16,EMat::Trim);
-  for(const double Y:{2.,6.5})
+  for(const double X:{1.,9.6})Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutN%.0f"),X*10),X-.1,-.62,X+.1,.3,RoofTop+.02,RoofTop+.16,EMat::Trim);
+  for(const double Y:{2.,8.}) // (none over a window: build_house.py, FARM-LIGHTS)
   {
    Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutW%.0f"),Y*10),-.62,Y-.1,.3,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);
    Add(Out,FString::Printf(TEXT("farm:oldhouse:spoutE%.0f"),Y*10),Width-.3,Y-.1,Width+.62,Y+.1,RoofTop+.02,RoofTop+.16,EMat::Trim);

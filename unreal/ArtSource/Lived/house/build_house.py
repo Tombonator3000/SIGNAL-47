@@ -220,8 +220,10 @@ for x0 in(.3,W_-.3):skin_x(x0,.3,D_-.3,WH+.3,PT,STUCCO,1 if x0<4 else -1)
 ring(.035,PT,PT+.07,WOOD)
 def canal(x0,y0,x1,y1):
     box(WOOD,x0,x1,WH+.32,WH+.46,y0,y1,.008)
-for x in(2.2,9.6):canal(x-.09,-.62,x+.09,.3)
-for y in(2.,6.5):canal(-.62,y-.09,.3,y+.09);canal(W_-.3,y-.09,W_+.62,y+.09)
+# FARM-LIGHTS (Tom's picture, 9 November): no canal over a window. The ones at north x 2.2 and west/east y 6.5 hung right over the
+# windows, their rain streak drawn across the opening: from outside a dark bracket over the lit window and black patches in it.
+for x in(1.0,9.6):canal(x-.09,-.62,x+.09,.3)
+for y in(2.,8.):canal(-.62,y-.09,.3,y+.09);canal(W_-.3,y-.09,W_+.62,y+.09)
 box(STUCCO,8.5,9.25,WH+.3,WH+1.6,3.,3.7,.015);box(WOOD,8.42,9.33,WH+1.6,WH+1.68,2.92,3.78,.01)
 g.cyl(IRON,p(4.1,WH+.3,2.2),.05,.9);g.lathe(IRON,p(4.1,WH+1.2,2.2),[(.09,0),(.03,.08)],8)
 # a dead swamp cooler
@@ -436,8 +438,8 @@ def outband(along,fixed,face,a0,a1,y0,y1,which,scale=1.):
     if face>0 and along=='x' or face<0 and along=='y':q=q[::-1];uv=uv[::-1]
     g.quad(q,OG,uv)
 # rain from every canal: a dark streak down the wall under it
-for x in(2.2,9.6):outband('x',0,-1,x-.25,x+.25,.2,WH+.5,3,.5)
-for y in(2.,6.5):outband('y',0,-1,y-.25,y+.25,.2,WH+.5,3,.5);outband('y',12,1,y-.25,y+.25,.2,WH+.5,3,.5)
+for x in(1.0,9.6):outband('x',0,-1,x-.25,x+.25,.2,WH+.5,3,.5)
+for y in(2.,8.):outband('y',0,-1,y-.25,y+.25,.2,WH+.5,3,.5);outband('y',12,1,y-.25,y+.25,.2,WH+.5,3,.5)
 # adobe showing through, outside: bigger, low, and at the corners
 def outloss(along,fixed,face,c,up,w,h,k):loss(along,fixed,-face if False else face,c,up,w,h,k)
 for k,(al,fx,fc,c,up,w) in enumerate((('x',0,-1,.5,-.1,.9),('x',0,-1,11.4,.0,1.1),('x',9,1,.6,-.05,1.),('x',9,1,11.5,.2,.8),('y',0,-1,.6,.1,.9),('y',0,-1,8.3,-.1,1.2),('y',12,1,.7,.05,1.),('y',12,1,8.2,.3,.7),('x',0,-1,4.2,1.9,.5),('x',9,1,7.3,.0,.9))):
