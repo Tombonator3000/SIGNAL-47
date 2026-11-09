@@ -28,6 +28,8 @@ public:
  bool Message(const FString& Text);
  // Dale is speaking on the set in his own voice just now.
  bool DaleSpeaking() const;
+ // MSG-ONE-20261109: Dale's voice is on the carried set now: a CB call does not start over him, it waits (one speaker at a time).
+ static bool DaleOnAir(const US47Main* M);
  // How many times the set has made itself heard (a message, a hail, the player keying it), for whatever may hear it there too.
  int32 MessagesHeard() const { return MessageCount; }
  void TestOwn() { bOwned=true; bLeftOut=false; Chan=1; }

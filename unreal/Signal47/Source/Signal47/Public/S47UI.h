@@ -183,6 +183,8 @@ public:
 	void Init(AS47HUD* InHud) { Hud = InHud; }
 
 	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {});
+	// MSG-ONE-20261109: a line of danger: it goes before any caption in the one queue (FS47MessageQueue), even one on screen.
+	void Alert(const FString& Text, float Secs = 4.f);
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it

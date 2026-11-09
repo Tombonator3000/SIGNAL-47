@@ -352,4 +352,8 @@ private:
 	void Toast(const FString& Text, float Secs);
 	bool FirstTime(const FString& Id);
 	TSet<FString> Hints;
+	// TRUCK-HINT-20261109: the Freeform line about the gas station and GARAGE RECEIVING: whether it has been said this run, and the
+	// situations it was last said or held for (S47TruckHint::Due). For the run, as Hints.
+	bool bTruckHintSaid = false;
+	TSet<FString> TruckHintFor;
 };

@@ -225,7 +225,7 @@ void FS47RadioTips::StepCb()
  const FString SaidId=L->Id;const TWeakObjectPtr<US47Main> WeakMain=M;
  const auto Begun=[WeakMain,SaidId]{if(WeakMain.IsValid()&&WeakMain->Freeform&&WeakMain->Freeform->Tips)WeakMain->Freeform->Tips->MarkSaid(SaidId);};
  if(FS47FieldRadio::CbSay(M,{FString(L->Text)},Drivers[FCrc::StrCrc32(L->Id)%4],Begun))return;
- if(M->CB.IsValid()&&M->CB->bBusy){CbIn=FMath::Min(CbIn,12.);return;}
+ if((M->CB.IsValid()&&M->CB->bBusy)||FS47FieldRadio::DaleOnAir(M)){CbIn=FMath::Min(CbIn,12.);return;} // MSG-ONE-20261109: or Dale on the walkie
  // No sound to play it with: the words.
  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
  MarkSaid(SaidId);

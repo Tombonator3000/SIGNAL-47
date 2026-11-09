@@ -259,6 +259,7 @@ bool FS47FieldRadio::Message(const FString& Text)
  return true;
 }
 bool FS47FieldRadio::DaleSpeaking() const{return Voice&&Voice->Playing();}
+bool FS47FieldRadio::DaleOnAir(const US47Main* M){return M&&M->FieldRadio.IsValid()&&M->FieldRadio->DaleSpeaking();}
 void FS47FieldRadio::StepCaption()
 {
  if(!bCaption)return;
@@ -474,6 +475,8 @@ bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FStrin
  if(!M||Lines.IsEmpty()||!CbAtHand(M))return false;
  if(!M->CB.IsValid()&&IsValid(M->Audio))M->CB=MakeShared<FS47CB>(M->Audio);
  if(!M->CB.IsValid()||M->CB->bBusy)return false;
+ // MSG-ONE-20261109: not over Dale's voice on the walkie; the caller tries again (as when the CB is busy).
+ if(DaleOnAir(M))return false;
  TArray<FS47CBLine> Call;
  for(const FString& Said:Lines){FS47CBLine Each;Each.Text=Said;Each.Who=Voice;Each.By=TEXT("CB, a caller");Call.Add(Each);}
  // In the cab, from the set under the dash (FS47CB::Call: unset is in the cab with the player).

@@ -304,6 +304,11 @@ void US47UI::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, MoveTemp(Clock));
 }
 
+void US47UI::Alert(const FString& Text, float Secs)
+{
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, {}, int32(FS47MessageQueue::EPri::Danger));
+}
+
 void US47UI::ClearToasts()
 {
 	// (and lastDescription with them, SS47Hud's; the closer look's words; the button)

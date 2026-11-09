@@ -14,6 +14,7 @@
 #include "S47FieldRadio.h"
 #include "S47DaleVoice.h"
 #include "S47HudGauges.h"
+#include "S47MessageQueue.h"
 #include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
@@ -266,6 +267,7 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
 		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)

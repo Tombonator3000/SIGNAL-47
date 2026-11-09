@@ -1552,6 +1552,8 @@ void FS47Happenings::Cb(const TArray<FString>& Lines,const FString& Voice,bool b
  }
  // The set's own sound and its HUD line, from the dash.
  if(FS47FieldRadio::CbSay(M,Lines,Voice))return;
+ // MSG-ONE-20261109: Dale's voice on the walkie: the call waits for him (StepTips), as one away from the CB does, not as text over him.
+ if(FS47FieldRadio::DaleOnAir(M)){FHeldTip Held;Held.Lines=Lines;Held.Voice=Voice;Held.Until=Paced+240;if(HeldTips.Num()>=3)HeldTips.RemoveAt(0);HeldTips.Add(Held);return;}
  // Busy, or no sound to play it with: the words, one after another.
  double In=0;for(const FString& L:Lines){Say(TEXT("CB: ")+L,In,float(S47CB::SecsOf(L))+1.5f);In+=S47CB::SecsOf(L)+.6;}
 }
@@ -1569,7 +1571,7 @@ void FS47Happenings::StepTips()
 {
  if(HeldTips.IsEmpty()||!M||M->ModalOpen())return;
  if(HeldTips[0].Until<Paced){HeldTips.RemoveAt(0);return;}
- if(CanHearCb()&&!(M->CB.IsValid()&&M->CB->bBusy)){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);Cb(H.Lines,H.Voice,false);}
+ if(CanHearCb()&&!(M->CB.IsValid()&&M->CB->bBusy)&&!FS47FieldRadio::DaleOnAir(M)){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);Cb(H.Lines,H.Voice,false);}
  else if(M->FieldRadio.IsValid()&&M->FieldRadio->Owned()&&!HeldTips[0].Passed.IsEmpty()){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);FS47FieldRadio::Report(M,H.Passed);}
 }
 FString FS47Happenings::Spoken(const FString& Title)

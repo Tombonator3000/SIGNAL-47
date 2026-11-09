@@ -11,6 +11,7 @@
 #include "S47FieldLife.h"
 #include "S47Predecessor.h"
 #include "S47FreeformWorld.h"
+#include "S47MessageQueue.h"
 #include "S47Spine.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -1000,9 +1001,25 @@ void US47World::Roam(const FString& From)
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		const bool bFreeform = M && M->IsFreeform();
-		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: south past the motel, west side of the highway, just past Mesa Diner. Parts 08:00-20:00, essentials after hours. GARAGE RECEIVING: unload at the labeled table in the SARO garage, east wing. Both are on the notebook map."));
-		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
-		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
+		// TRUCK-HINT-20261109: not every time in. The first time, and then once for each situation it is about that has come up since
+		// the last time in (the tank empty, a parcel on the rack, a fault waiting for a relay); otherwise it is in NOW/TONIGHT.
+		bool bTruckHint = false;
+		if (bFreeform)
+		{
+			TArray<FString> Now;
+			if (const FS47FreeformWorld* Fw = M->Freeform ? M->Freeform->Field.Get() : nullptr)
+			{
+				if (!Fw->HasVehicleFuel()) Now.Add(TEXT("tank"));
+				if (Fw->ParcelStage() == 3) Now.Add(TEXT("parcel"));
+				if (Fw->HasArrayFault() && Fw->InventoryCount(TEXT("relay")) == 0) Now.Add(TEXT("part:") + Fw->ServiceDishId());
+			}
+			S47TruckHint::FState Hint{ bTruckHintSaid, TruckHintFor };
+			bTruckHint = S47TruckHint::Due(Hint, Now);
+			bTruckHintSaid = Hint.bIntro; TruckHintFor = MoveTemp(Hint.Shown);
+		}
+		if (bTruckHint) Say.Add(TEXT("CALICHE GAS STATION: south past the motel, west side of the highway, just past Mesa Diner. Parts 08:00-20:00, essentials after hours. GARAGE RECEIVING: unload at the labeled table in the SARO garage, east wing. Both are on the notebook map."));
+		else if (!bFreeform && FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
+		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bTruckHint ? 12.f : 5.5f);
 	};
 	StartTrip(From, FString(), O);
 }

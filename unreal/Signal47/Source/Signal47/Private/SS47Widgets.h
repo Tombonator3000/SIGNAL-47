@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Fonts/SlateFontInfo.h"
 #include "S47Docs.h"
+#include "S47MessageQueue.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SLeafWidget.h"
 
@@ -54,7 +55,9 @@ public:
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
-	void Toast(const FString& Text, float Secs, TFunction<double()> Clock = {});
+	// MSG-ONE-20261109: every line goes through one queue (FS47MessageQueue): one caption at a time at the foot, a plain line beside it
+	// small in the corner. Pri: an FS47MessageQueue::EPri, or -1 to tell it from the words (FS47MessageQueue::Classify).
+	void Toast(const FString& Text, float Secs, TFunction<double()> Clock = {}, int32 Pri = -1);
 	void ClearToasts();
 	void Fade(bool bOn, const FString& Text);
 	bool IsFaded() const { return bFadeOn; }
@@ -80,9 +83,13 @@ public:
 	bool bAtLine = false;
 
 private:
-	struct FToast { FString Text, Who, Line; double Until = 0; TFunction<double()> Clock; float In = 0.f, Out = -1.f; };
+	// what is on screen of the queue's lines: the one each lane shows, and the ones fading out (Id: the queue's; bCorner: a plain line
+	// beside a caption, small in the corner)
+	struct FToast { FString Text, Who, Line; int32 Id = 0; bool bHint = false, bCorner = false; float In = 0.f, Out = -1.f; };
 	TArray<TSharedRef<FToast>> Toasts;
-	TSharedPtr<SVerticalBox> ToastBox;
+	TSharedPtr<SVerticalBox> ToastBox, CornerBox;
+	FS47MessageQueue Queue;
+	void SyncToasts();
 	TUniquePtr<FSlateBrush> WhiteBrush;
 	TAttribute<FText> PromptAttr, AltAttr, ClockAttr;
 	TAttribute<bool> ShowPromptAttr, ShowAimAttr;

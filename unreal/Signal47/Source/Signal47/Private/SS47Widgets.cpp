@@ -310,6 +310,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 	using namespace S47Game;
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
 	NotebooksShut = SS47Notebook::Shut();
+	// MSG-ONE-20261109: while Dale's own voice is on the set, nobody else's caption starts (danger does)
+	Queue.Hold = [](const FS47MessageQueue::FItem& I) { const US47Main* Mn = Main(); return I.Pri > FS47MessageQueue::EPri::Dale && Mn && Mn->FieldRadio.IsValid() && Mn->FieldRadio->DaleSpeaking(); };
 	PromptAttr = InArgs._Prompt; AltAttr = InArgs._PromptAlt; ClockAttr = InArgs._Clock;
 	ShowPromptAttr = InArgs._ShowPrompt; ShowAimAttr = InArgs._ShowAim;
 	auto Aim = [this] { return ShowAimAttr.Get(true); };
@@ -406,6 +408,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		[Prompt]
 		// the captions at the foot (.sub), the newest under
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(96))[SAssignNew(ToastBox, SVerticalBox)]
+		// MSG-ONE-20261109: a plain line while a caption is up, small and dimmed, bottom left over the NOTED slip
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(P(40), 0, 0, P(200))[SAssignNew(CornerBox, SVerticalBox)]
 		// the NOTED slip (.note), bottom left
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(P(40), 0, 0, P(96))
 		[
@@ -446,53 +450,83 @@ void SS47Hud::Objective(const FString& Text)
 	else { ObjectiveHead.Reset(); ObjectiveBody = Text.TrimStartAndEnd(); }
 }
 
-void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
+void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock, int32 Pri)
 {
 	// Captions already have their own radio/telephone delivery. Do not turn them
 	// into a second narrator or replace the last environmental description.
 	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
 	FRegexMatcher M(Caption, Text);
 	if (!M.FindNext()) LastToast = Text;
-	// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
-	{
-		FString CapHead, Said;
-		S47Game::SplitCaption(Text, CapHead, Said);
-		int32 SpokeOn = 1;
-		FString Speaking;
-		if (S47HudGauges::WalkieSpeaker(CapHead, SpokeOn, Speaking)) { Gauges.Speaker = Speaking; Gauges.SpeechLeft = FMath::Max(Gauges.SpeechLeft, Secs); }
-	}
-	// UI.toast: the same line twice in a row is noise
-	TSharedPtr<FToast> LastLive;
-	for (const TSharedRef<FToast>& T : Toasts) if (T->Out < 0.f) LastLive = T;
-	if (LastLive.IsValid() && LastLive->Text == Text) return;
-	// UI.ts toast(text, secs, clock): recorded captions share the pausable sound clock.
-	const double At = Clock ? Clock() : Now;
-	const TSharedRef<FToast> T = MakeShared<FToast>();
-	T->Text = Text;
-	T->Until = At + Secs;
-	T->Clock = MoveTemp(Clock);
-	// the speaker over the line; a plain line is stamped with the clock it came at
-	S47Game::SplitCaption(Text, T->Who, T->Line);
-	if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
-	Toasts.Add(T);
-	// at most two lines on screen; older ones fade out instead of vanishing mid-read
-	int32 Live = 0;
-	for (const TSharedRef<FToast>& X : Toasts) Live += X->Out < 0.f;
-	for (const TSharedRef<FToast>& X : Toasts) if (Live > 2 && X->Out < 0.f) { X->Out = 0.f; --Live; }
-	Rebuild();
+	// MSG-ONE-20261109: into the one queue, which shows it when it is its turn (SyncToasts). A CB line holds only while the player
+	// sits at the CB (Freeform), a walkie line only while the set is on them; out of date, it is let go unseen.
+	using FQ = FS47MessageQueue;
+	const FQ::EPri P = Pri >= 0 && Pri <= int32(FQ::EPri::Hint) ? FQ::EPri(Pri) : FQ::Classify(Text, bool(Clock));
+	const FString Head = FQ::Speaker(Text).ToUpper();
+	TFunction<bool()> Valid;
+	if (Head == TEXT("CB") || Head.StartsWith(TEXT("CB,")) || Head.StartsWith(TEXT("CB ")))
+		Valid = [] { US47Main* Mn = Main(); return !Mn || !Mn->IsFreeform() || FS47FieldRadio::CbAtHand(Mn); };
+	else if (Head.StartsWith(TEXT("WALKIE")))
+		Valid = [] { const US47Main* Mn = Main(); return !Mn || !Mn->FieldRadio.IsValid() || (Mn->FieldRadio->Owned() && !Mn->FieldRadio->LeftOut()); };
+	Queue.Push(Text, Secs, P, MoveTemp(Clock), MoveTemp(Valid));
+	if (Queue.Step(Now, 0.)) SyncToasts();
 }
 
-void SS47Hud::ClearToasts() { Toasts.Empty(); LastToast.Empty(); Rebuild(); }
+void SS47Hud::SyncToasts()
+{
+	// MSG-ONE-20261109: what each lane of the queue shows now. The line it showed before fades out; the new one comes in. A plain line
+	// stands in the corner while a caption is up.
+	using FQ = FS47MessageQueue;
+	const bool bCaption = Queue.Showing(FQ::ELane::Speech) != nullptr;
+	bool bChanged = false;
+	for (const FQ::ELane Lane : { FQ::ELane::Speech, FQ::ELane::Hint })
+	{
+		const FQ::FItem* Shown = Queue.Showing(Lane);
+		const bool bHint = Lane == FQ::ELane::Hint;
+		TSharedPtr<FToast> Live;
+		for (const TSharedRef<FToast>& X : Toasts) if (X->Out < 0.f && X->bHint == bHint) Live = X;
+		if (Live.IsValid() && (!Shown || Shown->Id != Live->Id)) { Live->Out = 0.f; Live.Reset(); bChanged = true; }
+		if (Shown && !Live.IsValid())
+		{
+			const TSharedRef<FToast> T = MakeShared<FToast>();
+			T->Text = Shown->Text;
+			T->Id = Shown->Id;
+			T->bHint = bHint;
+			T->bCorner = bHint && bCaption;
+			// the speaker over the line; a plain line is stamped with the clock it came at
+			S47Game::SplitCaption(Shown->Text, T->Who, T->Line);
+			if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
+			// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
+			int32 SpokeOn = 1;
+			FString Speaking;
+			if (!bHint && S47HudGauges::WalkieSpeaker(T->Who, SpokeOn, Speaking))
+			{
+				Gauges.Speaker = Speaking;
+				Gauges.SpeechLeft = FMath::Max(Gauges.SpeechLeft, float(Shown->Until - (Shown->Clock ? Shown->Clock() : Now)));
+			}
+			Toasts.Add(T);
+			Live = T;
+			bChanged = true;
+		}
+		if (bHint && Live.IsValid() && Live->bCorner != bCaption) { Live->bCorner = bCaption; bChanged = true; }
+	}
+	if (bChanged) Rebuild();
+}
+
+void SS47Hud::ClearToasts() { Toasts.Empty(); Queue.Clear(); Queue.Step(Now, 0.); LastToast.Empty(); Rebuild(); }
 
 void SS47Hud::Rebuild()
 {
 	using namespace S47Game;
-	if (!ToastBox.IsValid()) return;
+	if (!ToastBox.IsValid() || !CornerBox.IsValid()) return;
 	ToastBox->ClearChildren();
+	CornerBox->ClearChildren();
 	const bool bLarge = Main() && Main()->UI && Main()->UI->bLargeText;
-	const float Px = bLarge ? 26.f : 22.f;
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
+		// MSG-ONE-20261109: a plain line beside a caption is smaller, dimmer and to the left, under no caption
+		const bool bCorner = T->bCorner;
+		const float Px = (bLarge ? 26.f : 22.f) * (bCorner ? 0.8f : 1.f);
+		const float Dim = bCorner ? 0.72f : 1.f;
 		TSharedRef<SVerticalBox> In = SNew(SVerticalBox);
 		if (!T->Who.IsEmpty())
 		{
@@ -500,22 +534,22 @@ void SS47Hud::Rebuild()
 			// told apart by their words, CB 19 or WALKIE 1, as the radio line is)
 			FString WhoShown = T->Who.ToUpper();
 			if (WhoShown == TEXT("CB") || WhoShown.StartsWith(TEXT("CB,"))) WhoShown = FString(TEXT("CB 19")) + WhoShown.Mid(2);
-			In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(22, 3)).ColorAndOpacity(Amber())];
+			In->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(bCorner ? 18 : 22, 3)).ColorAndOpacity(Amber())];
 		}
-		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
+		In->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center)
 		[
-			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(T->Line.Len() > 42).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(bCorner || T->Line.Len() > 42).WrapTextAt(P(bCorner ? 440 : 676)).Justification(bCorner ? ETextJustify::Left : ETextJustify::Center)
 			.LineHeightPercentage(LinePercent(Type(Px), Px * 1.4f))
 		];
 		const TWeakPtr<FToast> W = T;
-		ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+		(bCorner ? CornerBox : ToastBox)->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center).Padding(0, P(3))
 		[
-			SNew(SBorder).BorderImage(Box(C(0x05070d, 0.72f))).Padding(FMargin(P(22), P(10), P(22), P(12)))
-			.ColorAndOpacity_Lambda([W]
+			SNew(SBorder).BorderImage(Box(C(0x05070d, bCorner ? 0.5f : 0.72f))).Padding(bCorner ? FMargin(P(14), P(7), P(14), P(8)) : FMargin(P(22), P(10), P(22), P(12)))
+			.ColorAndOpacity_Lambda([W, Dim]
 			{
 				const TSharedPtr<FToast> X = W.Pin();
 				if (!X.IsValid()) return FLinearColor::Transparent;
-				return FLinearColor(1, 1, 1, X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In));
+				return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In)));
 			})
 			.RenderTransform_Lambda([W] { const TSharedPtr<FToast> X = W.Pin(); return TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2D(0, X.IsValid() && X->Out < 0.f ? P(6) * (1.f - FMath::SmoothStep(0.f, 1.f, X->In)) : 0.f))); })
 			[In]
@@ -564,15 +598,13 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	using namespace S47Game;
 	SCompoundWidget::Tick(G, InCurrentTime, Dt);
 	Now += Dt;
-	// the captions: in, held to their time (on their own clock when they have one), then out
+	// MSG-ONE-20261109: the queue holds each line to its time (on its own clock when it has one) and says which comes next; a line
+	// waits only while the game is being played. Here they come in and go out.
+	if (Queue.Step(Now, Playing() && !ModalOpen() ? double(Dt) : 0.)) SyncToasts();
 	bool bGone = false;
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
-		if (T->Out < 0.f)
-		{
-			T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
-			if (T->Until <= (T->Clock ? T->Clock() : Now)) T->Out = 0.f;
-		}
+		if (T->Out < 0.f) T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
 		else T->Out += Dt;
 		bGone |= T->Out >= 0.6f;
 	}
