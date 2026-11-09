@@ -5,6 +5,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformObservation.h"
 #include "S47FreeformWorld.h"
+#include "S47Happenings.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47LeftGear.h"
@@ -404,8 +405,13 @@ bool FS47Places::Use(const FString& Id)
  }
  if(F.HasKit(TEXT("magnetometer")))
  {
-  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+FString(D->Needle);
+  // LOOP-4-20261109 (HELHETLIG_LOKKE step 4): the needle has a history. Where something happened near the place in the last two
+  // nights it will not settle, whatever any bearing says; otherwise the place's own reading. The unsettled needle is a record of OUT
+  // ON THE LAND, once a day a place (FS47FreeformCases::LineForFinding).
+  double Px=0,Pz=0;const bool bStirred=F.Happenings&&Spot(Id,Px,Pz)&&F.Happenings->StirredNear(Px,Pz);
+  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+NeedleReading(D->Needle,bStirred);
   F.RecordEvidence(Key+TEXT("_needle"),FString::Printf(TEXT("Magnetometer at %s. %s"),D->Title,D->Needle));
+  if(bStirred)F.RecordEvidence(FString::Printf(TEXT("%s_unsettled_d%d"),*Key,F.Day()),FString::Printf(TEXT("Magnetometer at %s: the needle will not settle. It keeps swinging slowly across the heading long after I stand still, the way it does in a magnetic storm."),D->Title));
  }
  // PT-SAUCER-ROCK-20261109: Saucer Rock by the hour, as the nights go (18 to 24 a hint that has another reason, after midnight
  // something far off, after two the sign of a visit): what is there when nothing is happening, kept once a night.
@@ -421,6 +427,11 @@ bool FS47Places::Use(const FString& Id)
   }
  }
  Panel(*D,bFirst,Extra);return true;
+}
+FString FS47Places::NeedleReading(const FString& Needle,bool bStirred)
+{
+ if(!bStirred)return Needle;
+ return Needle+TEXT(" Then it will not settle. Long after you stand still it keeps swinging, slowly, across the heading, the way it does in a magnetic storm.");
 }
 int32 FS47Places::SaucerTier(double Hour)
 {
@@ -669,6 +680,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   // A save keeps the new fields; an older bearing (no clock, from SARO) reads as before.
   FS47Places Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Truck.Save())));
   const FBearing& K=Kept.Bearings()[0];
+  // LOOP-4-20261109: the counter ticks at a bearing's place only while it is live; cold by noon, no dose. An older bearing (never
+  // cold) still gives one; a target that is no place gives none.
+  FBearing ToWindmill=B;ToWindmill.Target=TEXT("windmill");FBearing Nowhere=ToWindmill;Nowhere.Target=TEXT("omen:a");FBearing Older=ToWindmill;Older.Clock=Older.Until=-1;
+  Check(Dosed(ToWindmill,Clock+60)&&!Dosed(ToWindmill,ColdAt(Clock))&&!Dosed(ToWindmill,ColdAt(Clock)+86400)&&Dosed(Older,1e9)&&!Dosed(Nowhere,Clock+60),
+   TEXT("a cold bearing gives the counter no dose at its place; a live one does"));
+  // The needle: the place's own reading when nothing happened near it, and one that will not settle when something did.
+  const FString Calm=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),false),Stirred=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),true);
+  Check(Calm==TEXT("All steel; the needle follows the tower and nothing else.")&&!Calm.Contains(TEXT("settle"))&&Stirred.StartsWith(Calm)&&Stirred.Contains(TEXT("will not settle"))&&!Stirred.ToLower().Contains(TEXT("alien")),
+   TEXT("the needle is calm with nothing near and will not settle after something happened near"));
   Check(Kept.Bearings().Num()==2&&K.bCar&&FMath::IsNearlyEqual(K.FromX,Tx+40,.11)&&FMath::IsNearlyEqual(K.FromZ,Tz-30,.11)&&FMath::IsNearlyEqual(K.Clock,Clock+120,.5)&&FMath::IsNearlyEqual(K.Until,ColdAt(Clock),.5),
    TEXT("a bearing's clock, its noon and the truck's place survive a Continue"));
  }

@@ -58,6 +58,11 @@ public:
  // 1 just taken, falling to 0 at Until; 1 for an older one with no time. Live: not cold yet.
  static double Freshness(const FBearing& B,double Now);
  static bool Live(const FBearing& B,double Now){return B.Until<0||Now<B.Until;}
+ // LOOP-4-20261109: whether the Geiger counter ticks at the place a bearing points at: only while it is live (a cold one gives no dose).
+ static bool Dosed(const FBearing& B,double Now){return Live(B,Now)&&Def(B.Target)!=nullptr;}
+ // LOOP-4-20261109: the magnetometer at a place, with its history (FS47Happenings::StirredNear): the place's own reading, and when
+ // something happened near it in the last two nights, a needle that will not settle. Pure.
+ static FString NeedleReading(const FString& Needle,bool bStirred);
  // Where the middle lines of two bearings from different places meet, ahead of both (road-local); false when they do not.
  static bool Cross(const FBearing& A,const FBearing& B,FVector2D& Out);
  // Whether a road-local point is inside a bearing's sector.

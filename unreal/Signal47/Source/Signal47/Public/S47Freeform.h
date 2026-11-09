@@ -385,6 +385,38 @@ public:
  FString TelexLine() const;
  static constexpr int32 MostTelex=8,MostTray=6;
  static constexpr int32 CaseBoardRecords=12; // LOOP-WHOLE-20261109: field records shown on a case board; the rest are counted
+ // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): what comes back from the field comes home as a question. The array keeps its own log of
+ // what it caught off schedule, minute by minute (ArrayLog: a landing, whether anyone saw it, a burst off the main beam, the big
+ // night's turn, an answer on the monitor channel). A time from the field (a developed photograph from a night out there, a trip
+ // camera frame, the loan field logger's loudest minute) is set against it when the player is back at SARO (FS47PinBoard::
+ // PinWhatCameBack, no button of its own): "SAME MINUTE ON ARRAY: YES/NO" on the telex, and a field record of OUT ON THE LAND. YES
+ // strikes Animals and weather there (FS47FreeformCases::RuleOutWind); NO strikes nothing. Asked once a record. Saved under
+ // "minutes"; an older save has none and its log is read again from the array's own records (the "At 02:14" in them).
+ struct FArrayMark{double From=0,To=0;FString Kind;};
+ static constexpr int32 MostArrayMarks=48,MostNightClocks=64,MostAsked=120,MostAskedAtOnce=3,FieldRecordPay=8;
+ static constexpr double SameSlack=60,NightPhotoNear=30*60;
+ // The array caught something from From to To (game clock). Kept newest last, at most MostArrayMarks.
+ void NoteArrayMinute(double From,double To,const FString& Kind);
+ const TArray<FArrayMark>& ArrayLog() const{return ArrayMarks;}
+ // Pure: whether the log has something within a minute of Clock.
+ static bool SameMinute(const TArray<FArrayMark>& Marks,double Clock);
+ // Pure: the first "At 02:14" or " at 02:14" in a record, as seconds into the day; false when it has none.
+ static bool ClockIn(const FString& Text,int32& OutSeconds);
+ // The night record a photograph taken at ShotClock belongs to (kept within half an hour of it, at night), or empty.
+ FString NightPhotoFrom(double ShotClock) const;
+ // Sets a field time against the array's log once (RecordId: the photograph, the tape): the telex, the record, the case. True when
+ // it was asked now.
+ bool AskSameMinute(const FString& RecordId,double Clock,const FString& What);
+ bool AskedSameMinute(const FString& RecordId) const{return Asked.Contains(RecordId);}
+ // At SARO (the pin board): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
+ // asked yet, the newest first, at most MostAskedAtOnce at a time. The number asked.
+ int32 AskWhatCameBack();
+ // OPS (FS47FreeformDirector::RegisterFieldRecord): a developed photograph from one of the night's happenings out there is a field
+ // record the station pays for once, as field money under the week's cap (EarnSide, FieldRecordPay). -1: refused (not developed, not
+ // from a night out there, already registered); otherwise what was paid (0 when the week's field money is used up).
+ int32 RegisterNightPhoto(const FString& ShotId,double ShotClock,bool bDeveloped,const FString& Title);
+ bool NightPhotoRegistered(const FString& ShotId) const{return HasFinding(TEXT("field-registration.")+ShotId);}
+ static bool MinuteSelfTest(TArray<FString>& Lines);
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
@@ -609,6 +641,15 @@ private:
  void StopTelex();
  void LoadTelex(const S47J::FObj& Saved);
  void SaveTelex(const S47J::FObj& Out) const;
+ // LOOP-3-20261109: the array's own log, when each night record was kept, and what has been asked (S47FreeformMinute.cpp).
+ TArray<FArrayMark> ArrayMarks;
+ TMap<FString,double> NightClocks;
+ TArray<FString> Asked; // newest last, at most MostAsked
+ double PrimeBefore=-1; // an older save: what came back before this clock is not asked again (-1: nothing to prime)
+ int32 AskLook=-1;
+ void NoteArrayRecord(const FString& Id,const FString& Text,bool bKeptNow=true);
+ void LoadMinutes(const S47J::FObj& Saved);
+ void SaveMinutes(const S47J::FObj& Out) const;
  // Tom, 9 November: the first case opens when its job is registered at OPS, not at the reel deck's RETAIN. True while the interval
  // case is not open and a reviewed pulsar comparison still waits for its registration: what the reel deck and the event retain then
  // does not open it (OpenCaseFor, Begin); RegisterComparison does (OpenFirstCase).

@@ -332,6 +332,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // LOOP-WHOLE-20261109, step 2: out on the land. What the night's events leave there (FS47Happenings), a thing moved at a place, the
  // trip camera, a car on the road, Saucer Rock by the hour after midnight (FS47Places). Leads, not yet one cause.
  if(FS47Happenings::IsNightFinding(Id)||Id.Contains(TEXT("_moved_d"))||Id.StartsWith(TEXT("tripcam_d"))||Id.StartsWith(TEXT("roadcar_b"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_night"))&&(Id.EndsWith(TEXT("_t2"))||Id.EndsWith(TEXT("_t3")))))return LandLine;
+ // LOOP-3-20261109: what comes home from out there as a question (the same minute on the array, FS47FreeformSession::AskSameMinute)
+ // and a needle that will not settle where something happened in the last two nights (FS47Places::Use, LOOP-4).
+ if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
  return -1;
 }
 bool FS47FreeformCases::IsCaseRecord(const FString& Key)
@@ -468,9 +471,10 @@ void FS47FreeformCases::FollowLand()
  // every kept record agrees with, so that the other controls and the reply follow what was seen. A pure function of the seed and
  // the results, so a Continue finds the same. When no cause fits them all the records disagree, and it stays the seed's.
  const int32 Own=Seeded(CaseSeed,LandLine);
- for(int32 K=0;K<CauseCount;++K)
+ // (LOOP-3-20261109: with animals and weather struck by the same minute on the array, the cause is first looked for among the others)
+ for(int32 Pass=C.bBeyondWind?0:1;Pass<2;++Pass)for(int32 K=0;K<CauseCount;++K)
  {
-  const int32 Cause=(Own+K)%CauseCount;bool bFits=true;
+  const int32 Cause=(Own+K)%CauseCount;bool bFits=Pass==1||Cause!=0;
   for(int32 T=0;T<TestCount;++T)bFits&=!C.Results[T].bDone||PresentFor(LandLine,Cause,T)==C.Results[T].bPresent;
   if(bFits){C.Truth=Cause;return;}
  }
@@ -529,8 +533,11 @@ bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
 }
 void FS47FreeformCases::RuleOutWind(int32 Line)
 {
- if(Line!=2||!Cases.IsValidIndex(Line)||Cases[Line].bConcluded)return;
+ // LOOP-3-20261109: OUT ON THE LAND strikes its first explanation (animals and weather) the same way, when the array had something in
+ // the same minute as a record out there (FS47FreeformSession::AskSameMinute); its hidden cause follows its records (FollowLand).
+ if((Line!=2&&Line!=LandLine)||!Cases.IsValidIndex(Line)||Cases[Line].bConcluded)return;
  FCase& C=Cases[Line];C.bBeyondWind=true;
+ if(Line==LandLine){FollowLand();return;}
  // The hidden cause follows: what the tests go on to show has to be able to end somewhere else. But a retained result is never
  // contradicted after the fact (CASES-OPS-20261109, the lock): the cause moves only to one that every result already kept agrees
  // with, the unexplained first. With none such it stays the wind, and the tests kept have already closed the other two, so the
@@ -545,7 +552,7 @@ void FS47FreeformCases::RuleOutWind(int32 Line)
 FString FS47FreeformCases::QuestionText(int32 Line) const
 {
  const FCase* C=Get(Line);
- if(C&&C->bBeyondWind)return TEXT("What is moving around SARO at night? Wind does not account for lost time or a room full of light. Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation that is left.");
+ if(C&&C->bBeyondWind&&Line==2)return TEXT("What is moving around SARO at night? Wind does not account for lost time or a room full of light. Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation that is left.");
  return Def(Line).Question;
 }
 int32 FS47FreeformCases::Remaining(int32 Line) const{int32 N=0;for(int32 I=0;I<CauseCount;++I)N+=Excluded(Line,I)?0:1;return N;}

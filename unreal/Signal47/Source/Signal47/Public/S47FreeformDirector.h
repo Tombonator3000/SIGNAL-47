@@ -114,6 +114,11 @@ public:
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
+ // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): OPS's one way to register what came back from the field. A claim (one of the Director's
+ // own incidents) as RegisterPhotoClaim; otherwise Id is an album photograph from one of the night's happenings out there, or a trip
+ // camera frame, which OPS pays for once as field money under the week's cap (FS47FreeformSession::RegisterNightPhoto). Dr. Ward's
+ // count of the album does not wait on it.
+ bool RegisterFieldRecord(const FString& Id);
  bool PlanPhotoControl(const FString& Id);
  bool PlanLocalNoiseCheck(const FString& Id);
  FString LocalNoisePlanHint(const FString& Id) const;

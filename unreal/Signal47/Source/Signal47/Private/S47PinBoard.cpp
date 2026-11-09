@@ -263,6 +263,10 @@ void FS47PinBoard::PinWhatCameBack(bool bQuiet)
 {
 	using namespace S47PinBoardLocal;
 	if (!M || !M->Freeform) return;
+	// LOOP-3-20261109 (HELHETLIG_LOKKE step 3): what came back with a time on it (a developed photograph from a night out there, a trip
+	// camera frame, a logger tape) is set against the array's own log as it goes up: the answer prints on the telex (SAME MINUTE ON
+	// ARRAY). No button of its own, and no thread the player ties here is evidence (Tom, 9 November): only the time is.
+	M->Freeform->AskWhatCameBack();
 	int32 Pinned = 0;
 	for (const FString& Id : M->Freeform->FindingIdsFrom(0))
 	{

@@ -6,6 +6,7 @@
 #include "S47RoadGlimpse.h"
 class US47Main;
 class AS47Web;
+class FS47FreeformDirector;
 class UStaticMeshComponent;
 class UPointLightComponent;
 struct FS47MapView;
@@ -121,6 +122,19 @@ public:
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
 
+ // LOOP-4-20261109 (HELHETLIG_LOKKE step 4). The night's one pointing-out at the land (FS47FreeformDirector::MayPointOut) is taken by
+ // the array's own burst and by a landing the array logs with nobody watching, as by the bearing slip: true when this one may point
+ // out (and it is counted); without a Director, always.
+ static bool TakePointOut(FS47FreeformDirector* Director,int32 Night);
+ // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
+ // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
+ // bearing's sector: a needle that swung wherever a bearing points would be a metal detector.
+ struct FStir{double X=0,Z=0;int32 Night=0;};
+ static constexpr double StirReach=350;
+ static constexpr int32 StirNights=2,MostPast=24;
+ static bool Stirred(const TArray<FStir>& Near,double X,double Z,int32 Day);
+ bool StirredNear(double X,double Z) const;
+
  // M7, the first big night (Tom, 9 November: «Det må skje noe stort natt to eller tre», S47BigNight.cpp). Once in a game, on the
  // second or third night (the seed's), after two: the whole array turns by itself to one point low on the horizon while the power
  // flickers, every instrument in the rack goes off at once, a low note comes up through the ground, and for a few seconds something
@@ -187,6 +201,8 @@ private:
  // For what the interaction list holds on to: lives as long as this does, across every Begin.
  TSharedPtr<uint8> Alive=MakeShared<uint8>(0);
  TArray<FSite> Sites;
+ // LOOP-4-20261109: where something stood out there that has since gone, and its night (saved, "past"; an older save has none).
+ TArray<FStir> Past;
  TMap<FString,int32> LastDays;
  TArray<FString> Deeds; // what the player did, in a voice's words, for one that repeats it
  int32 Serial=0,HumorNight=-100,EchoFrom=0,LateNight=0,PlanNight=0,AheadNight=0;

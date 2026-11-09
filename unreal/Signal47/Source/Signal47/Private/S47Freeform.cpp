@@ -269,10 +269,12 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   CaseSheets.Add(Sh);
  }
  LoadTelex(Saved); // TELEX-20261109: what is on the telex and in the tray
+ LoadMinutes(Saved); // LOOP-3-20261109: the array's own log and what has been asked of it
  TakenCount=0;for(const auto& Kept:Findings)TakenCount+=Kept.Key.StartsWith(TEXT("taken-"))?1:0;
  // Older saves: an already retained discrepancy opens its case retroactively. The interval case waits for its registration at OPS
  // while a reviewed comparison is still unregistered (Tom, 9 November: FirstCaseHeld).
  for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0&&!(Line==0&&FirstCaseHeld()))Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);if(F.Key.StartsWith(TEXT("taken-"))||F.Key.StartsWith(TEXT("flood-room-")))Cases.RuleOutWind(Line);
+  if(F.Key.StartsWith(TEXT("minute_yes_")))Cases.RuleOutWind(Line); // LOOP-3-20261109: the same minute on the array, out on the land
   // LOOP-WHOLE-20261109: a save from before OUT ON THE LAND: what it kept out there is the land's (leads moved from the visitors keep
   // their place; the trip camera, things moved and the road were never leads before). Once: a newer save has them already.
   if(Line==FS47FreeformCases::LandLine&&Cases.FromBeforeLand())Cases.AddLead(Line,F.Key,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);}
@@ -1239,6 +1241,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  // (a magnetometer reading at a place already read is kept once, but it is read again: the land's control takes it, LandRecord)
  if(Findings.Contains(Id)){LandRecord(Id);return;}
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ NoteArrayRecord(Id,Text); // LOOP-3-20261109: the array's own log, and when a night record out there was kept
  // CASES-OPS-20261109: a case's own record (a test result, a conclusion, a reply) is no field record and no card on the board; its
  // telex is its one document and the night log has it under WORK (FS47NightLog, CaseRecordLine).
  const bool bCaseRecord=FS47FreeformCases::IsCaseRecord(Id);
@@ -1657,6 +1660,26 @@ void FS47FreeformSession::OpenOperations()
    }
   }
   if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));
+  // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): a photograph from one of the night's happenings out there, or a trip camera frame, is a
+  // field record OPS registers once for field money under the week's cap (FS47FreeformDirector::RegisterFieldRecord). Dr. Ward counts
+  // the album either way; this only pays. The newest few.
+  TArray<S47Kit::FW> Records;int32 Listed=0;
+  if(M&&M->Night&&M->Night->Album)
+  {
+   const auto& Shots=M->Night->Album->Shots();
+   for(int32 I=Shots.Num()-1;I>=0&&Listed<4;--I)
+   {
+    const FS47AlbumShot& P=Shots[I];
+    if(P.bUnavailable||P.Url.IsEmpty()||!P.Enlarged.IsEmpty()||NightPhotoRegistered(P.Id))continue;
+    if(!P.Text.StartsWith(TEXT("Trip camera"))&&NightPhotoFrom(P.Clock).IsEmpty())continue;
+    if(Director->PhotoClaims().ContainsByPredicate([&P](const auto& C){return C.PhotoId==P.Id;}))continue;
+    ++Listed;const FString ShotId=P.Id;
+    Records.Add(T::Small(FString::Printf(TEXT("%s / %s / %s"),*P.Id,*FS47Places::SlipClock(P.Clock),*P.Text.Left(60))));
+    if(!P.IsDeveloped())Records.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect it at the wet bench first.")));
+    else Records.Add(T::Button(FString::Printf(TEXT("Register field record / $%d field credit"),int32(FieldRecordPay)),[this,ShotId]{if(Director)Director->RegisterFieldRecord(ShotId);OpenOperations();},false,CanRegisterPhotoEvidence()));
+   }
+  }
+  if(!Records.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD RECORDS / A NIGHT OUT ON THE LAND"),S47Kit::Col(Records)));
  }
  if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
  OpenTerminal(3,TEXT("OPS / SUPPLIES"),OpsShell(5,S47Kit::Col(Rows)));
@@ -2176,7 +2199,7 @@ FString FS47FreeformSession::CaseStanding(int32 Line,int32 Cause)const
  int32 Day=0;
  for(int32 T=0;T<FS47FreeformCases::TestCount;++T)if(C->Results[T].bDone&&FS47FreeformCases::PresentFor(Line,Cause,T)!=C->Results[T].bPresent&&(Day==0||C->Results[T].Day<Day))Day=FMath::Max(1,C->Results[T].Day);
  if(Day>0&&Cases.Excluded(Line,Cause))return FString::Printf(TEXT("RULED OUT D%02d"),Day); // (the land's records may disagree)
- if(Cases.Excluded(Line,Cause))return TEXT("RULED OUT / LOST TIME"); // the visitors' wind, after a taking or a room lit from outside
+ if(Cases.Excluded(Line,Cause))return Line==FS47FreeformCases::LandLine?TEXT("RULED OUT / SAME MINUTE ON ARRAY"):TEXT("RULED OUT / LOST TIME"); // the visitors' wind, after a taking or a room lit from outside; the land's animals and weather, after the same minute on the array (LOOP-3-20261109)
  if(C->bConcluded)return bMystery?TEXT("NOT FILED"):TEXT("RULED OUT");
  return TEXT("STILL POSSIBLE");
 }
@@ -3577,6 +3600,7 @@ S47J::FObj FS47FreeformSession::Save()const
   O->SetArrayField(TEXT("caseSheets"),Waiting);
  }
  SaveTelex(O); // TELEX-20261109
+ SaveMinutes(O); // LOOP-3-20261109
  if(!bOldCalendar)S47J::Set(O,TEXT("calendar"),2);
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
  if(Scripts){const auto Played=Scripts->Save();if(Played->Values.Num()>0)S47J::Set(O,TEXT("scripts"),Played);}
@@ -4239,6 +4263,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   G.Stop();
  }
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
+ OK&=MinuteSelfTest(Lines); // LOOP-3-20261109 (S47FreeformMinute.cpp)
  S.Stop();R.Stop();return OK;
 }
 

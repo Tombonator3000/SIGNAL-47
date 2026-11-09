@@ -161,7 +161,8 @@ bool Resumable(const FString& Id,const FString& Variant)
 const TCHAR* const NightKeys[]={TEXT("cattle_ring_d"),TEXT("car_dies_d"),TEXT("clock_ahead_d"),TEXT("cb_echo_d"),TEXT("cb_empty_d"),TEXT("cb_wrong_d"),TEXT("landing_seen_d"),TEXT("landing_logged_d"),TEXT("hitcher_d"),TEXT("rv_d"),
  TEXT("carcass_d"),TEXT("house_lit_d"),TEXT("horizon_figure_d"),TEXT("cinema_film_d"),TEXT("room6_tv_d"),TEXT("blackout_d"),TEXT("array_burst_d"),TEXT("hood_warm_d"),TEXT("truck_tracks_d"),
  TEXT("animals_flee_d"),TEXT("car_light_d"),TEXT("dust_devil_d"),TEXT("missing_d"),TEXT("dogs_hush_d"),TEXT("phone_empty_d"),TEXT("geiger_landing_"),TEXT("geiger_trace_"),TEXT("geiger_sample_"),
- TEXT("figure_near_d"),TEXT("lights_trace_bignight_d"),TEXT("big_felt_d"),TEXT("road_glimpse_d"),TEXT("road_tracks_d")};
+ TEXT("figure_near_d"),TEXT("lights_trace_bignight_d"),TEXT("big_felt_d"),TEXT("road_glimpse_d"),TEXT("road_tracks_d"),
+ TEXT("answer_d")}; // LOOP-3-20261109: the answer on the monitor channel (S47Answer) is a night record of OUT ON THE LAND too
 // What a line may not say (the text critic, 8 November): the answer for the player, and the motifs another system owns. One line.
 const TCHAR* const Concludes[]={TEXT("nobody in it"),TEXT("nobody lives there"),TEXT("nobody with it"),TEXT("it had it right"),TEXT("seemed embarrassed"),TEXT("nothing behind the station"),TEXT("looks like your handwriting"),TEXT("the way the lights came down"),TEXT("as if a film were running"),TEXT("does not seem to have heard"),TEXT("nothing out there for anyone")};
 bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TCHAR* W:Concludes)if(L.Contains(W))return true;return false;}
@@ -702,7 +703,7 @@ bool FS47Happenings::IsDanger(const FString& Id){return Id==TEXT("cb_echo")||Id=
 void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
- Now=FActive();Sites.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
+ Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
@@ -729,6 +730,8 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    if(U.IsValid())for(const auto& KV:U->Values){const int32 I=FCString::Atoi(*KV.Key);double N=0;if(I>=0&&I<UneaseCount()&&KV.Value.IsValid()&&KV.Value->TryGetNumber(N)&&N>0&&N<100000)UneaseLast.Add(I,int32(N));}
   }
   for(const double U:S47J::Nums(Saved,TEXT("uneaseDone")))if(U>=0&&U<UneaseCount()&&UneaseDone.Num()<4)UneaseDone.AddUnique(int32(U));
+  // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
+  {const TArray<double> P=S47J::Nums(Saved,TEXT("past"));for(int32 I=0;I+2<P.Num()&&Past.Num()<MostPast;I+=3)if(FMath::IsFinite(P[I])&&FMath::IsFinite(P[I+1])&&FMath::Abs(P[I])<1e5&&FMath::Abs(P[I+1])<1e5&&P[I+2]>=1&&P[I+2]<100000)Past.Add({P[I],P[I+1],int32(P[I+2])});}
   for(const auto& V:S47J::Arr(Saved,TEXT("sites")))
   {
    if(!V.IsValid()||V->Type!=EJson::Object)continue;
@@ -792,6 +795,7 @@ S47J::FObj FS47Happenings::Save() const
  if(GhostNight>0)S47J::Set(O,TEXT("ghostNight"),GhostNight);
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
  if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
+ if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
   auto N=S47J::New();
@@ -1629,6 +1633,24 @@ double FS47Happenings::AwayNow(const FString& Id) const
  }
  return -1;
 }
+bool FS47Happenings::TakePointOut(FS47FreeformDirector* Director,int32 Night)
+{
+ if(!Director)return true;
+ if(!Director->MayPointOut(Night))return false;
+ Director->NotePointOut(Night);return true;
+}
+bool FS47Happenings::Stirred(const TArray<FStir>& Near,double X,double Z,int32 Day)
+{
+ for(const FStir& S:Near)if(S.Night<=Day&&S.Night>=Day-StirNights&&FVector2D::Distance(FVector2D(S.X,S.Z),FVector2D(X,Z))<=StirReach)return true;
+ return false;
+}
+bool FS47Happenings::StirredNear(double X,double Z) const
+{
+ if(!M||!M->Freeform)return false;
+ TArray<FStir> Near=Past;
+ for(const FSite& S:Sites)Near.Add({S.X,S.Z,S.Night});
+ return Stirred(Near,X,Z,M->Freeform->Day());
+}
 bool FS47Happenings::IsNightFinding(const FString& Id)
 {
  for(const TCHAR* K:S47Hap::NightKeys)if(Id.StartsWith(K))return true;
@@ -2002,6 +2024,7 @@ void FS47Happenings::StepSites(double Dt)
    if(Away>250||(S.Kind==TEXT("cattle")&&!Seen(At,400,50)))
    {
     UE_LOG(LogS47Happen,Display,TEXT("S47: happening site %s at %s gone"),*S.Kind,*S.Title);
+    Past.Add({S.X,S.Z,S.Night});while(Past.Num()>MostPast)Past.RemoveAt(0); // LOOP-4-20261109: the needle remembers it
     Sites.RemoveAt(I);M->RequestAutosave();continue;
    }
   }
@@ -2492,7 +2515,11 @@ void FS47Happenings::StepLanding(double Dt)
  // At SARO the array logs it whether or not anyone is at the monitor; it is said only to one in the building.
  const bool bLogged=M->Web->Area()==TEXT("saro");
  const bool bAtMonitor=bLogged&&FS47FieldRadio::InSaroBuilding(M);
- if(R&&(Now.bSeen||bLogged||Now.bForced))
+ // LOOP-3-20261109: the array's own log has it, whoever is at SARO and whether or not anyone saw it: a time from out there can be
+ // set against it (FS47FreeformSession::SameMinute). LOOP-4: logged with nobody watching, its bearing is the night's one pointing-out
+ // at the land, or nothing on the map when the night has had it.
+ if(F)F->NoteArrayMinute(Now.Clock,Now.Clock+FMath::Max(Now.Len,60.),TEXT("landing"));
+ if(R&&(Now.bSeen||Now.bForced||(bLogged&&TakePointOut(F?F->Director.Get():nullptr,FS47FreeformSession::NightOf(Now.Clock)))))
  {
   R->bKnown=true;
   // Only what it means for the map: what came down was on the screen, or on the array's monitor with its beeps and the printer.
@@ -3253,6 +3280,9 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  {
   // Only at the monitor: in the SARO building, not out on the farm that shares its area.
   if(!bForced&&(bDrive||!FS47FieldRadio::InSaroBuilding(M)))return No(TEXT("not in the SARO building"));
+  // LOOP-4-20261109: the night's one pointing-out at the land, shared with the bearing slip and a logged landing.
+  const int32 PointNight=FS47FreeformSession::NightOf(Clock);
+  if(!bForced&&F->Director&&!F->Director->MayPointOut(PointNight))return No(TEXT("the night has pointed out at the land already"));
   if(!Ask(TEXT("array_burst")))return No(TEXT("the rhythm says not now"));
   // Off the main beam, toward somewhere nobody has looked at yet: which way, never what.
   FString Target;double ToX=0,ToZ=0;bool bHave=false;
@@ -3263,6 +3293,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   const double Az=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,ToX,ToZ)+(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x42525354u)-.5)*Spread);
   FSite S;S.Kind=TEXT("burst");S.Place=Target;S.Title=Target;S.Night=F->Day();S.Serial=Serial+1;S.X=ToX;S.Z=ToZ;S.Az=Az;S.Spread=Spread;S.Until=Clock+4*86400.;
   Sites.RemoveAll([](const FSite& Old){return Old.Kind==TEXT("burst");});Sites.Add(S);
+  if(!bForced)TakePointOut(F->Director.Get(),PointNight);
   if(F->Places&&FS47Places::Def(Target))F->Places->Hear(Target);
   if(M->Audio)
   {
@@ -4152,7 +4183,8 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  if(F->Places)for(const FS47Places::FBearing& B:F->Places->Bearings())
  {
   double X=0,Z=0;
-  if(FS47Places::Def(B.Target)&&F->Places->Spot(B.Target,X,Z))Add(Road(X,Z),.22f,10.,TEXT("place:")+B.Target);
+  // LOOP-4-20261109: only while the bearing is live: a cold one (cold by noon) gives nothing (FS47Places::Dosed).
+  if(FS47Places::Dosed(B,F->Clock())&&F->Places->Spot(B.Target,X,Z))Add(Road(X,Z),.22f,10.,TEXT("place:")+B.Target);
  }
  return FMath::Min(Sum,1.5f);
 }
@@ -4377,6 +4409,17 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  {
   FS47Happenings A(nullptr);A.Begin(nullptr);
   Check(A.Save()->Values.Num()==0&&A.Sites.IsEmpty(),TEXT("an older save has none of it and writes nothing"));
+ {
+  // LOOP-4-20261109: the needle has a history. Something out there near a place in the last two nights (standing there still, or
+  // gone): it will not settle. Further off, or longer ago, it is calm; what has gone survives a Continue.
+  const TArray<FStir> Near={{100,-400,6}};
+  Check(Stirred(Near,250,-400,6)&&Stirred(Near,100,-100,8)&&!Stirred(Near,100,-400,9)&&!Stirred(Near,600,-400,6)&&!Stirred(Near,100,-400,5)&&!Stirred({},0,0,6),
+   TEXT("the needle will not settle within 350 m of something the last two nights, and is calm further off, longer ago or with nothing"));
+  FS47Happenings Gone(nullptr);Gone.Begin(nullptr);Gone.Past.Add({100,-400,6});
+  FS47Happenings Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Gone.Save())));
+  Check(Back.Past.Num()==1&&Back.Past[0].Night==6&&FMath::IsNearlyEqual(Back.Past[0].Z,-400.)&&Stirred(Back.Past,120,-380,7),TEXT("what stood out there and has gone is kept for the needle over a Continue"));
+  Gone.Stop();Back.Stop();
+ }
   FSite S;S.Kind=TEXT("landing");S.Title=TEXT("the wash");S.Night=4;S.Serial=3;S.X=120;S.Z=-440;S.Az=31;S.Spread=12;S.Until=9e5;A.Sites.Add(S);
   FSite Bad;Bad.Kind=TEXT("nonsense");Bad.Night=2;A.Sites.Add(Bad);
   A.LastDays.Add(TEXT("landing"),4);A.Deeds.Add(TEXT("You walked round the burnt ring out by the wash."));A.bEchoArmed=true;A.EchoFrom=4;A.HumorNight=3;

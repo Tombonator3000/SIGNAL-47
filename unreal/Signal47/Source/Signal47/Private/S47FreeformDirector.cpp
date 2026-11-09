@@ -1746,6 +1746,19 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d documentation credit."),Credit):FString(TEXT("OPS registered the field photograph. This week's field money is used up: no payment.")),5);
  return true;
 }
+bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
+{
+ if(Claims.ContainsByPredicate([&](const FPhotoClaim& P){return P.Id==Id;}))return RegisterPhotoClaim(Id);
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album)return false;
+ const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==Id;});
+ if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->Enlarged.IsEmpty())return false;
+ if(!Shot->IsDeveloped()){if(M->UI)M->UI->Toast(TEXT("PHOTO LAB: Develop the photograph before submitting it"),5);return false;}
+ const int32 Paid=M->Freeform->RegisterNightPhoto(Shot->Id,Shot->Clock,true,Shot->Text);
+ if(Paid<0)return false;
+ Changed();
+ if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field credit."),Paid):FString(TEXT("OPS registered the field record. This week's field money is used up: no payment.")),5);
+ return true;
+}
 // Public declaration: bool PlanPhotoControl(const FString& Id);
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
 {
@@ -1911,6 +1924,15 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   Check(bFirst&&!Point.MayPointOut(4)&&!Back.MayPointOut(4)&&Back.MayPointOut(5)&&!S47J::Write(Saved).Contains(TEXT("pointNight"))
    &&TierAllowsAt(ES47Allowed::Hint,Evening,4)&&!TierAllowsAt(ES47Allowed::Full,Evening,4)&&!TierAllowsAt(ES47Allowed::Glimpse,Evening,4)&&TierAllowsAt(ES47Allowed::Full,Late,4)&&!Point.MayPointAt(TEXT("no_such_event"),Evening,4),
    TEXT("at most one pointing-out a night, kept over a Continue and new the next night; before midnight only a hint may be pointed at"));
+ }
+ {
+  // LOOP-4-20261109: the array's burst and a landing the array logs take the night's one pointing-out too (FS47Happenings::
+  // TakePointOut): after a bearing slip the burst does not point; a burst first leaves no slip that night; the next night has its own.
+  FS47FreeformDirector Night(nullptr);Night.Begin(Saved);
+  Night.NotePointOut(7);
+  const bool bAfterSlip=!FS47Happenings::TakePointOut(&Night,7);
+  const bool bBurst=FS47Happenings::TakePointOut(&Night,8)&&!Night.MayPointOut(8)&&!FS47Happenings::TakePointOut(&Night,8);
+  Check(bAfterSlip&&bBurst&&FS47Happenings::TakePointOut(&Night,9)&&FS47Happenings::TakePointOut(nullptr,9),TEXT("the array's burst and a logged landing count against the night's one pointing-out, as the bearing slip does"));
  }
  auto Active=S47J::Clone(Saved);S47J::Set(Active,TEXT("event"),TEXT("extra_pulse"));S47J::Set(Active,TEXT("age"),12.5);S47J::Set(Active,TEXT("controlled"),true);R.Begin(Active);
  Check(R.ActiveEvent()==TEXT("extra_pulse")&&R.EventAge()==12.5&&R.Busy(),TEXT("pending incident restores its selected identity, control and phase"));
