@@ -23,13 +23,17 @@ struct FS47RhythmEvent
  // draw.at: the hours of the night it is drawn in, 19 to 30 (past midnight over 24); -1: the system's own.
  double DrawFrom=-1,DrawTo=-1;
  int32 FromDay=1,CoolMin=-1,CoolMax=-1,MinNights=0;
+ // later: the same event, more often from a day on (M7: the content ran out after day 8): its per_night from that day, in order.
+ TArray<TPair<int32,double>> Later;
  TArray<FString> Areas;
  TArray<FName> Needs;
 };
 // The build-up over the game (Tom's critics, 8 November: the chances were flat from the first night to the thirtieth): one row a week,
 // from its day. What each level of a night event is worth that week (a factor on its per_night), how likely the night's one
 // danger slot is (FS47Happenings), and how near things come (a factor on the distances they keep). The last row holds to the end.
-struct FS47RhythmWeek{int32 FromDay=1;float Hint=1,Observation=1,Presence=1,Danger=.35f;double Near=1;};
+// DangerPerNight: that week's limit (-1: globals.danger_per_night). M7: the finale is a row of its own, from AssessDay-BeforeAssess
+// to the assessment, so that the last nights before Dr. Ward comes are the fullest.
+struct FS47RhythmWeek{int32 FromDay=1;float Hint=1,Observation=1,Presence=1,Danger=.35f;double Near=1;int32 DangerPerNight=-1;bool bFinale=false;};
 struct FS47RhythmData
 {
  // RestDanger: a pause after a danger, not the rest of the night (Tom's critics, 8 November: was 480 s, two hours of the clock).
@@ -37,12 +41,20 @@ struct FS47RhythmData
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
  TArray<FS47RhythmEvent> Events;
  TArray<FS47RhythmWeek> Weeks; // in order of FromDay; empty: every level at its own chance, everything as near as it is
+ // curve.finale: the nights from the assessment day less FinaleBefore up to it. Absent: the weeks to the end.
+ FS47RhythmWeek Finale;bool bHasFinale=false;int32 FinaleBefore=3;
+ // The assessment's day while it is still ahead (FS47Predecessor; FS47RhythmNow::AssessDay reads the same). Unset or 0: no finale.
+ TFunction<int32()> AssessOf;
+ int32 AssessNow() const{return AssessOf?AssessOf():0;}
  // The moon (MOON-20261108, globals.moon): what a night's levels and its danger are worth at a full moon and at a new one, the
  // nights between in proportion to the share of the moon lit. 1 and 1: the moon changes nothing. LitOf: the share lit on a shift
- // day's night (the game sets it; unset, a pure parse: no moon).
+ // day's night (the game sets it; unset, a pure parse: no moon). M7: the moon moves the nights within their row, never the row
+ // itself (MoonIn): every game starts on 28 April 1986, and a full moon over the fourth week made it quieter than the second.
  float MoonFull=1,MoonNew=1;
  TFunction<double(int32)> LitOf;
  float MoonOn(int32 Day) const;
+ // The moon's factor on a night against the mean of its row's nights (1 when there is no moon).
+ float MoonIn(int32 Day,int32 Assess) const;
  // WEATHER-20261108: a night the wind holds into (S47Weather::Day().NightStorm, 0 to 1) is a little busier: what comes near and the
  // danger are worth up to StormNight times as much. StormOf: the game sets it (since M5 critic 3 only for a night whose wind blows on
  // through the small hours, NightStorm over a half); unset, no weather.
@@ -50,8 +62,15 @@ struct FS47RhythmData
  TFunction<double(int32)> StormOf;
  float StormOn(int32 Day) const;
  const FS47RhythmEvent* Find(FName Id) const{return Events.FindByPredicate([Id](const FS47RhythmEvent& E){return E.Id==Id;});}
- // This week's row with the night's moon in it (a copy).
+ // This week's row with the night's moon in it (a copy); the finale's from AssessNow()-FinaleBefore.
  FS47RhythmWeek Week(int32 Day) const;
+ // The row as the file has it, without moon or weather, for an assessment day (0: none), and the days it covers.
+ const FS47RhythmWeek& Row(int32 Day,int32 Assess,int32* SpanFrom=nullptr,int32* SpanTo=nullptr) const;
+ // How many dangers a night may have: the row's own limit, or the file's; -1 none.
+ int32 DangerLimit(int32 Day,int32 Assess) const;
+ // What a level is worth that night. A danger (M7: the curve reached only the night system): the row's danger against the third
+ // week's .6, so that week one (0) shuts the door, the lit room and the yard's presence, and week four is worth more than its chance.
+ static constexpr float DangerPivot=.6f;
  float Worth(ES47RhythmLevel Level,int32 Day) const;
 };
 
@@ -62,6 +81,8 @@ struct FS47RhythmNow
  // Something humorous came tonight (FS47Happenings): Tom, 8 November, never on the same night as a danger.
  bool bHumorTonight=false;
  int32 Day=1,MinorLeft=0,InvestLeft=0,SkyLeft=0,DangerTonight=0;
+ // The assessment's day while it is ahead (0: none, or decided): the finale row and its danger limit.
+ int32 AssessDay=0;
  double Clock=0,RestLeft=0;
  // Since the last start of anything, and how long the one after it waits (FS47Rhythm::Began).
  double SinceStart=1e9,StartGap=0;
@@ -104,9 +125,21 @@ public:
  void Ended(FName Id,bool bMet=true);
  // The clock of the last start of anything, for those that keep their own distance from it too (FS47Happenings' unease).
  double LastStart() const{return LastStartClock;}
- // The night's chance from the file, with the code's own number if the file does not have it. With a day, a night event's chance
- // is also worth what its level is worth that week (the curve), never above one.
+ // The night's chance from the file (its "later" row from that day), with the code's own number if the file does not have it,
+ // worth what its level is worth that night (the curve, moon and wind), never above one, and nothing before its from_day. M7: for
+ // every system, not only the night's. Day 0: today, as FS47RhythmNow reads it (so the Director's calls need no day); without a
+ // game, the file's number. Day -1: the file's number only (the shapes of the night's one danger slot, whose chance is the slot's).
  float PerNight(FName Id,float Otherwise,int32 Day=0) const;
+ // The night's one danger slot (FS47Happenings::PlanTonight draws it; the same dice here): its hour of the night, 24 and over past
+ // midnight, -1 none. Open: its hour has come, it is not five yet, and no danger has begun tonight: whatever fits where the player is
+ // may take it (FS47DoorVisit at a door indoors, the peek at SARO; the Director's service_presence, B2). Pure on its inputs.
+ // Taken: the first that comes near the ground while it is open (Began, presence or danger), or any danger tonight. Grace: hours
+ // after its hour before this asker may have it, so that what fits better goes first (the peek waits for the yard's presence).
+ static double DangerSlotHour(int32 Seed,int32 Night,float SlotChance,double StartHour,bool bCalm);
+ double SlotHourTonight() const;
+ bool DangerSlotOpen(double Grace=0) const;
+ // The night (FS47FreeformSession::NightOf) this last began on in this game, 0 never (not saved: for tonight's questions).
+ int32 BeganOn(FName Id) const;
  // The hours of the night it is drawn in (draw.at), 19 to 30; From and To untouched when the file has none.
  bool DrawHours(FName Id,double& From,double& To) const;
  bool NeedHolds(FName Name) const;
@@ -119,6 +152,8 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
+ // Today's shift day where the night's rules run (FS47RhythmNow::Day), 0 elsewhere.
+ int32 DayNow() const;
  FS47RhythmData Rules;
  bool bOverride=false,bWatching=false,bWatchInit=false;
  FString SourceName;
@@ -133,4 +168,8 @@ private:
  TMap<FName,FName> ShadowSaid;
  void CloseNight(int32 NewNight);
  double LastStartClock=-1e9,StartGap=0;
+ // Tonight's answers, for the game whose seed they were had in (a new game in the same run starts clean).
+ TMap<FName,int32> BeganNight;
+ int32 SlotTakenNight=0,BeganSeed=0;
+ bool SameGame() const;
 };

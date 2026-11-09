@@ -1173,16 +1173,17 @@ void FS47Happenings::PlanTonight(int32 Night)
  }
  // The night's one danger of these (Tom's critics, 8 November: none of M1's was ever met, and none on foot): a slot at an hour in
  // their hours, kept until five, and taken by the first of them that fits where the player is then. How likely the slot is grows
- // week by week (curve "danger"); which shapes it may take tonight is each one's own per_night.
- if(!bCalm&&Night>=2&&Week.Danger>0&&FS47NightRhythm::Roll(Seed,Night,0x534c4f54u)<Week.Danger)
+ // week by week (curve "danger"); which shapes it may take tonight is each one's own per_night. M7: the same slot is the indoor
+ // systems' too (FS47Rhythm::DangerSlotOpen): a player who keeps inside meets it at a door, at the window, or in the yard.
+ DangerAt=FS47Rhythm::DangerSlotHour(Seed,Night,Week.Danger,F->BodyStartHour(Night),bCalm);
+ if(DangerAt>0)
  {
-  const double Start=F->BodyStartHour(Night)+24;
-  DangerAt=Start+FMath::Max(0.,27.8-Start)*FS47NightRhythm::Roll(Seed,Night,0x534c4f55u);
   const bool bEcho=bEchoArmed&&Night>EchoFrom&&Night<=EchoFrom+3;
   for(const TCHAR* Id:{TEXT("figure_near"),TEXT("hitchhiker"),TEXT("car_light"),TEXT("cb_echo")})
   {
    if(FString(Id)==TEXT("cb_echo")&&!bEcho)continue;
-   const float Shape=M->Rhythm?M->Rhythm->PerNight(FName(Id),.6f):.6f;
+   // The shape's own number, not the curve's: the slot's chance has the week's danger in it already.
+   const float Shape=M->Rhythm?M->Rhythm->PerNight(FName(Id),.6f,-1):.6f;
    if(FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(Id)^0x53484150u)<Shape)Plan.Add(Id,DangerAt);
   }
   // The night leads up to it, closer each time: the dogs go quiet, then the animals run past (a chain on one night, as the critics
@@ -3200,7 +3201,9 @@ void FS47Happenings::PlanUnease(int32 Night)
   return FS47NightRhythm::Roll(Seed,Night,0x55520000u+uint32(A))<FS47NightRhythm::Roll(Seed,Night,0x55520000u+uint32(B));
  });
  const float Many=FS47NightRhythm::Roll(Seed,Night,0x554e5754u);
- UneaseWant=Many<.25f?1:Many<.7f?2:3;
+ // M7, the rhythm review: as many in the first week as in the fourth was flat. One a night in the first week, two in the second,
+ // then up to three and four toward the end.
+ UneaseWant=FMath::Min(4,1+(Night>=8?1:0)+(Night>=15&&Many>.4f?1:0)+(Night>=22&&Many>.7f?1:0));
  UneaseAt.Reset();
  // Spread from half past eight to half past five, so they do not all fall in one hour.
  for(int32 K=0;K<UneaseWant;++K)UneaseAt.Add(20.5+(K+.2+.6*FS47NightRhythm::Roll(Seed,Night,0x55415400u+uint32(K)))*9./UneaseWant);
@@ -3238,7 +3241,7 @@ void FS47Happenings::StepUnease(double Dt)
   return;
  }
  const double H=HourOfNight(Clock);
- const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,3)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
+ const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,4)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
  FString Why;
  // What waits for a moment: getting into the truck, coming back into SARO after a while out, walking back up to the truck.
  if(bSlot&&Uneasy.I<0)
@@ -3279,8 +3282,9 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
   if(!Now.Id.IsEmpty()){Why=TEXT("something else is on");return false;}
   const double Since=M->Rhythm?Clock-M->Rhythm->LastStart():1e9;
   if(Since<300+300*FS47NightRhythm::Roll(F->Seed(),int32(Clock/600.),0x55475031u)){Why=TEXT("something else began a moment ago");return false;}
-  // The strong ones (your name, the note) not before the sixth night unless the player has been taken, and only in a quiet stretch.
-  if((I==2||I==19)&&FS47FreeformSession::NightOf(Clock)<6&&F->TimesTaken()<=0){Why=TEXT("too early in the game for that one");return false;}
+  // The strong ones (your name, the note) not before the third week (M7: they were the same from the sixth night as on the last)
+  // unless the player has been taken, and only in a quiet stretch.
+  if((I==2||I==19)&&FS47FreeformSession::NightOf(Clock)<15&&F->TimesTaken()<=0){Why=TEXT("too early in the game for that one");return false;}
   if((I==2||I==19)&&Since<20*60){Why=TEXT("not quiet enough for that one");return false;}
   // Not just after a danger, nor on top of one, nor just before their hours begin.
   if(DangerSeen>0&&Clock-DangerClock<20*60){Why=TEXT("too soon after a danger");return false;}

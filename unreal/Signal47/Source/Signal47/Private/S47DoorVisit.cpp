@@ -279,13 +279,25 @@ void FS47DoorVisit::StepDraw(double Dt)
  const int32 Day=M->Freeform->Day();
  // The first night is not drawn at all: nothing is spent of it, and nothing comes.
  if(Day<FirstDay)return;
+ // M7: the curve's chance, as every system's (none while the week's danger is 0, more in the fourth week); a test's own dice and a
+ // developer's fixtures against the code's number.
+ const bool bCurve=M->Rhythm&&M->Freeform->RulesLive()&&TestRoll<0;
  if(RollDay!=Day)
  {
   if(InsideFor<25)return;
   RollDay=Day;
   const float Roll=TestRoll>=0?TestRoll:FMath::FRand();
-  bTonight=MayCome(Day,LastDay)&&Roll<ComeChance;WaitFor=InsideFor+FMath::FRandRange(4.f,35.f);
-  UE_LOG(LogTemp,Display,TEXT("S47: door visit draw for day %d: %d, in %.0f s"),Day,bTonight,WaitFor-InsideFor);
+  const float Chance=bCurve?M->Rhythm->PerNight(TEXT("door_visit"),float(ComeChance),Day):float(ComeChance);
+  bTonight=MayCome(Day,LastDay)&&Roll<Chance;WaitFor=InsideFor+FMath::FRandRange(4.f,35.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: door visit draw for day %d: %d (chance %.2f), in %.0f s"),Day,bTonight,Chance,WaitFor-InsideFor);
+  M->RequestAutosave();
+ }
+ // The night's one danger slot, open with nothing else in it (FS47Rhythm::DangerSlotOpen): indoors at a door, it comes to the door.
+ // So a player who keeps inside is reached by the night's danger too (M7, the rhythm review).
+ if(!bTonight&&bCurve&&RollDay==Day&&MayCome(Day,LastDay)&&M->Rhythm->DangerSlotOpen())
+ {
+  bTonight=true;WaitFor=InsideFor+FMath::FRandRange(4.f,20.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: door visit: the night's danger slot comes to this door, day %d, in %.0f s"),Day,WaitFor-InsideFor);
   M->RequestAutosave();
  }
  if(!bTonight||InsideFor<WaitFor)return;

@@ -10,9 +10,10 @@
       "weeks": [
         { "from_day": 1, "hint": 1.0, "observation": 0.7, "presence": 0.35, "danger": 0.0, "near": 1.0 },
         { "from_day": 8, "hint": 1.0, "observation": 1.0, "presence": 0.8, "danger": 0.4, "near": 0.7 },
-        { "from_day": 15, "hint": 0.9, "observation": 1.15, "presence": 1.2, "danger": 0.6, "near": 0.5 },
-        { "from_day": 22, "hint": 0.8, "observation": 1.3, "presence": 1.5, "danger": 0.75, "near": 0.4 }
-      ]
+        { "from_day": 15, "hint": 1.0, "observation": 1.2, "presence": 1.2, "danger": 0.6, "near": 0.5 },
+        { "from_day": 22, "hint": 1.05, "observation": 1.5, "presence": 1.6, "danger": 0.85, "near": 0.38, "danger_per_night": 2 }
+      ],
+      "finale": { "before_assess": 3, "hint": 1.1, "observation": 1.7, "presence": 1.9, "danger": 1.0, "near": 0.3, "danger_per_night": 2 }
     },
     "moon": { "full": 0.75, "new": 1.3 }
   },
@@ -42,14 +43,14 @@
     { "id": "quiet_zone", "system": "director", "slot": "ground", "level": "observation", "budget": "sky", "from_day": 3, "hours": "night", "areas": ["saro"], "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "observer", "system": "director", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.5, "state": "pendingObserverNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out"], "enforce": true },
     { "id": "service_presence", "system": "director", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.35, "state": "pendingThreatNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out"], "enforce": true },
-    { "id": "close_pass", "system": "director", "slot": "ground", "level": "presence", "from_day": 4, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.1, "state": "pendingMajorNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "close_pass", "system": "director", "slot": "ground", "level": "presence", "from_day": 4, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.1, "state": "pendingMajorNight" }, "later": [{ "from_day": 15, "per_night": 0.15 }, { "from_day": 22, "per_night": 0.22 }], "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "feeder_presence", "system": "director", "slot": "ground", "level": "presence", "from_day": 2, "hours": "their_hours", "areas": ["road"], "draw": { "per_night": 0.4, "state": "pendingSiteNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out", "near_feeder"], "enforce": true },
     { "id": "array_presence", "system": "director", "slot": "ground", "level": "presence", "from_day": 3, "hours": "their_hours", "areas": ["saro"], "draw": { "per_night": 0.4, "state": "pendingSiteNight" }, "cooldown_days": [2, 4], "needs": ["native_body", "no_bodies_out", "near_service", "no_array_fault"], "enforce": true },
     { "id": "farm_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro", "road", "diner"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "town_lights", "system": "director", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "areas": ["saro", "road", "diner"], "draw": { "per_night": 0.45, "state": "pendingLightNight" }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "dusk_orb", "system": "director", "slot": "ground", "level": "observation", "from_day": 1, "hours": [18.5, 23.25], "areas": ["saro"], "schedule": "fixed_table", "needs": [], "enforce": true },
     { "id": "door_visit", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "draw": { "per_night": 0.45, "state": "door" }, "min_nights_between": 2, "needs": ["indoors", "door_found"], "enforce": true },
-    { "id": "peek", "system": "indoor", "slot": "ground", "level": "presence", "from_day": 1, "hours": "their_hours", "draw": { "per_night": 0.5, "state": "peek" }, "needs": ["indoors", "peek_place"], "enforce": true },
+    { "id": "peek", "system": "indoor", "slot": "ground", "level": "presence", "from_day": 5, "hours": "their_hours", "draw": { "per_night": 0.5, "state": "peek" }, "needs": ["indoors", "peek_place"], "enforce": true },
     { "id": "lit_room", "system": "indoor", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "draw": { "per_night": 0.4 }, "needs": ["indoors", "flood_room"], "enforce": true },
     { "id": "site_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["site_waiting", "on_foot"], "enforce": true },
     { "id": "field_visit", "system": "site", "slot": "ground", "level": "danger", "from_day": 2, "hours": "their_hours", "needs": ["on_foot", "past_fence"], "enforce": true },
@@ -63,7 +64,7 @@
     { "id": "cattle_ring", "system": "night", "slot": "background", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.32, "at": [22, 3] }, "cooldown_days": [1, 3], "needs": ["outdoors"], "enforce": true },
     { "id": "cb_stranded", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [19.5, 4], "draw": { "per_night": 0.28, "at": [20.5, 0.5] }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "cb_echo", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.8 }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
-    { "id": "landing", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [21.5, 4.5], "draw": { "per_night": 0.24, "at": [22.5, 3.5] }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "landing", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": [21.5, 4.5], "draw": { "per_night": 0.24, "at": [22.5, 3.5] }, "later": [{ "from_day": 22, "per_night": 0.32 }], "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "hitchhiker", "system": "night", "slot": "ground", "level": "danger", "from_day": 3, "hours": "their_hours", "draw": { "per_night": 0.6 }, "min_nights_between": 5, "needs": ["driving"], "enforce": true },
     { "id": "stranded_rv", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.14, "at": [20, 23] }, "min_nights_between": 6, "needs": [], "enforce": true },
     { "id": "humor", "system": "night", "slot": "ground", "level": "hint", "from_day": 7, "hours": [5, 6.5], "draw": { "per_night": 0.5, "at": [5, 5.8] }, "min_nights_between": 7, "needs": [], "enforce": true },
@@ -75,7 +76,7 @@
     { "id": "cinema_film", "system": "night", "slot": "background", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.15, "at": [22, 1] }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
     { "id": "room6_tv", "system": "night", "slot": "ground", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.1, "at": [23, 3] }, "cooldown_days": [4, 7], "needs": [], "enforce": true },
     { "id": "town_blackout", "system": "night", "slot": "ground", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.12, "at": [22, 0.5] }, "cooldown_days": [3, 6], "needs": [], "enforce": true },
-    { "id": "array_burst", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.25, "at": [21.5, 4] }, "cooldown_days": [2, 4], "needs": [], "enforce": true },
+    { "id": "array_burst", "system": "night", "slot": "ground", "level": "observation", "from_day": 2, "hours": "night", "draw": { "per_night": 0.25, "at": [21.5, 4] }, "later": [{ "from_day": 15, "per_night": 0.3 }, { "from_day": 22, "per_night": 0.38 }], "cooldown_days": [2, 4], "needs": [], "enforce": true },
     { "id": "am_caller", "system": "night", "slot": "background", "level": "hint", "from_day": 2, "hours": [20, 3], "draw": { "per_night": 0.25, "at": [20, 2] }, "cooldown_days": [2, 4], "needs": ["driving"], "enforce": true },
     { "id": "hood_warm", "system": "night", "slot": "background", "level": "hint", "from_day": 2, "hours": "night", "draw": { "per_night": 0.3, "at": [22, 4] }, "cooldown_days": [2, 4], "needs": ["on_foot"], "enforce": true },
     { "id": "truck_tracks", "system": "night", "slot": "background", "level": "observation", "from_day": 3, "hours": "night", "draw": { "per_night": 0.15, "at": [23, 4] }, "cooldown_days": [3, 6], "needs": ["on_foot"], "enforce": true },
