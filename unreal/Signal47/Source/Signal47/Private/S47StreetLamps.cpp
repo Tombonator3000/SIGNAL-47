@@ -376,7 +376,9 @@ namespace
  // Git; prepare_cpu.py for g470); without it the old lamps stay.
  bool MotelLot(AS47Web* W, UStaticMesh* PoleMesh, UStaticMesh* ArmMesh, UStaticMesh* HeadMesh, TArray<FLamp>& Out)
  {
-  if (FParse::Param(FCommandLine::Get(), TEXT("S47MotelLampsOld"))) return false;
+  // d34 (9 November): in the packaged game the motel lot's cut trims sent the self test past 15 GB within seconds (the editor's did
+  // not show it); until that is found the old lot lamps stay, and -S47MotelLampsNew raises the cobra heads (MOTEL-LAMPS-MEM-20261109).
+  if (!FParse::Param(FCommandLine::Get(), TEXT("S47MotelLampsNew")) || FParse::Param(FCommandLine::Get(), TEXT("S47MotelLampsOld"))) return false;
   static const double Zs[] = { 18., 47. };
   constexpr double PoleX = -28.4, OldHeight = 6.6;
   const int32 Parent = W->Handle(TEXT("world.motel.group"));
