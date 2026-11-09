@@ -78,6 +78,7 @@ Rekkefølge: M1 først, så M2 og M3; grafikk (M6) etter hendelsene, slik Tom be
 - [ ] **SARO-GEN-RAMP-20261109:** Tom ca. 18:10: generatoren skal startes ute ved standby-generatoren, ikke med knappen inne. Fjern skiltet med kamera og søylen ved utgangsdøra. Spilleren kommer fortsatt ikke ned fra rampa på SARO på grunn av en usynlig vegg (Toms bilder på skrivebordet).
 - [ ] **VIGNETTE-STEPS-20261109:** Tom ca. 18:20: lyseffekter, redsel og tretthet har en firkantet lavpoly-kant (nøstede rektangler i stedet for myk vignett). Lyset under bortføringen er nøstede rektangler over hele skjermen. Lyder henger igjen i loop etter oppvåkning (Toms bilder).
 - [ ] **INSTALL-DEBUG-SYMBOLS-20261109:** installasjonen kopierer ikke `Signal47.debug`/`.sym`. De gamle fra 4. november ga feil stack i krasjrapporten for d37. `delivery.py` bør kopiere eller fjerne dem.
+- [ ] **D37-LAST-20261109:** Tom ca. 18:52 (bilder på skrivebordet): (1) nattlysene ute skal være ekte Unreal-lys med volumetrisk spredning, ikke stablede flater; (2) lysene på politibilen svever langt over bilen; (3) det hvite punktet i aliens' øyne sitter feil og stikker ut av kroppen. Rettes i ultracode-runde.
 - [ ] **SUBSTATION-LOD-20261109:** `Tools/substationfield/import_assets.py` og `relod_apron.py` bruker samme LOD-mønster som ga WorldGrid-slotter i gatelysene (rettet i kode i 3f946c47). Substasjonsmodellene har trolig samme feil.
 
 **Dagskift 9. november, spørsmål til Tom etter M7:**
