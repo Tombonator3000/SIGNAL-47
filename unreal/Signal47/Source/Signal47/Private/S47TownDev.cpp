@@ -284,7 +284,12 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 	{
 		FS47FreeformSession* F = Session();
 		if (!F || !F->Visitors) { Tell(false, TEXT("Freeform only")); return; }
-		StandAt(FVector2D(40, 292), FVector2D(70, 246), 6, 7, [this, Pictured]
+		// The farm is SARO's ground: stand in SARO's area, or the cars (in that area's set) are not drawn.
+		FStage Stage; Stage.Area = TEXT("saro"); Stage.From = 6; Stage.To = 7;
+		const FVector At = S47OpenLand::FromRoad(TEXT("saro"), 40, 292);
+		Stage.Where = [At] { return FVector2D(At.X, At.Z); };
+		Stage.Yaw = S47TownDevLocal::YawToward(FVector2D(40, 292), FVector2D(70, 246)); Stage.Pitch = -.02;
+		Go(Stage, [this, Pictured]
 		{
 			FS47FreeformSession* G = Session();
 			if (!G || !G->Visitors || !G->Visitors->DevMilitary(TEXT("farm"))) { Tell(false, TEXT("no such place")); return; }
