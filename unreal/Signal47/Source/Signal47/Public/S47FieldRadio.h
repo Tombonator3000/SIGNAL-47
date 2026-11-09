@@ -113,6 +113,8 @@ private:
  TArray<TWeakObjectPtr<class UStaticMeshComponent>> Copies;
  FS47EncounterSound Sound;
  bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
+ // Tom's Tripo walkie stands on the desk in place of the three web parts (TRIPO-NEW, S47TripoNew).
+ bool bTripoWalkie=false;
  S47J::FObj Unknown;
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0,OrdHiss=0,OrdCrackle=0,RealNear=0;
  double StrengthNow=1,StrengthWant=1,StrengthIn=0,SinceNoise=1e9,SinceCrackle=1e9;

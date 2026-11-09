@@ -23,8 +23,11 @@
 #include "S47CB.h"
 #include "S47Keys.h"
 #include "S47Predecessor.h"
+#include "S47TripoNew.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Misc/Parse.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
@@ -162,7 +165,23 @@ bool FS47FieldRadio::Build()
  W->AddInstanceComponent(Box); Box->RegisterComponent();
  Root=W->ObjAt(W->AdoptNode(Box,Room.I,TEXT("saro:fieldRadio"))); Hit=Box;
  Root.SetPosition(FVector(3.18,.840,2.70)); Root.SetRotation(FVector(0,.2,0));
- for(int32 I=0;I<Parts.Num();++I)
+ // TRIPO-NEW (Tom's walkie of 9 November): his own model on the desk when this build has it, standing on its foot with its face to
+ // the room (-Z); else the three web parts as before. -S47TripoNewOff keeps the old one, for a picture to compare.
+ bTripoWalkie=false;
+ if(const S47TripoNew::FModel* Own=S47TripoNew::Find(TEXT("walkie"));Own&&S47TripoNew::Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff")))
+  if(UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,Own->Path))
+  {
+   auto* C=NewObject<UStaticMeshComponent>(W,TEXT("SaroFieldRadioTripo"));
+   C->SetupAttachment(Box); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Mesh);
+   C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+   C->SetCanEverAffectNavigation(false); C->SetCastShadow(true);
+   W->AddInstanceComponent(C); C->RegisterComponent();
+   FS47Obj Copy=W->ObjAt(W->AdoptNode(C,Root.I,TEXT("saro:fieldRadio:tripo")));
+   Copy.SetPosition(FVector(0,-.06,0)); Copy.SetRotation(FVector(0,PI,0)); Copy.SetScale(FVector(1));
+   Copies.Add(C); bTripoWalkie=true;
+   UE_LOG(LogTemp,Display,TEXT("S47: field radio: Tom's Tripo walkie on the desk (%s)"),Own->Path);
+  }
+ for(int32 I=0;I<Parts.Num()&&!bTripoWalkie;++I)
  {
   auto* C=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("SaroFieldRadioPart%d"),I));
   C->SetupAttachment(Box); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Parts[I]->GetStaticMesh());
@@ -610,7 +629,7 @@ void FS47FieldRadio::ControlTest(double Dt)
  auto Check=[&](bool B,const TCHAR* Text){UE_LOG(LogTemp,Display,TEXT("S47: field radio %s: %s"),B?TEXT("PASS"):TEXT("FAIL"),Text);if(!B){TestStage=-1;FPlatformMisc::RequestExitWithStatus(false,1);}return B;};
  if(TestStage==0)
  {
-  if(!Check(!Owned() && Copies.Num()==3 && Root.Shown(),TEXT("three source-mesh copies are on the SARO desk"))) return;
+  if(!Check(!Owned() && (Copies.Num()==3||(bTripoWalkie&&Copies.Num()==1)) && Root.Shown(),TEXT("three source-mesh copies, or Tom's Tripo walkie, are on the SARO desk"))) return;
   const auto* Old=M->Web->Node(M->Web->Obj(TEXT("world.room6.objs.walkie")).I);
   if(!Check(Old && Old->Children.Num()==3,TEXT("Room 6 original remains separate and complete")))return;
   if(!Check(LastLevel==0,TEXT("quiet room does not warn about dormant or future enemies")))return;

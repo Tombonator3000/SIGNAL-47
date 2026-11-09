@@ -25,6 +25,13 @@ namespace S47EyeGlint
  // Two dots on a skinned body's head bone. Out gets them, to be dropped with the body.
  SIGNAL47_API void Add(UObject* Outer, USkinnedMeshComponent* Mesh, const FEyes& Eyes, TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out,
   FName Bone = TEXT("head"));
+ // A static body baked in a pose (Tom's Tripo figures of 9 November, S47TripoNew): its eyes in the mesh's own centimetres from
+ // its foot pivot, forward +Y, up +Z, measured on the baked mesh; null for a mesh with none measured.
+ SIGNAL47_API const FEyes* ForStatic(const FString& AssetName);
+ // Two dots on a static body, children of the mesh itself: they move, turn and hide with it, and Step treats them as the rest.
+ SIGNAL47_API void AddStatic(UObject* Outer, UStaticMeshComponent* Mesh, const FEyes& Eyes, TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out);
+ // The same, when the mesh is one with its eyes measured: false for any other (nothing is added).
+ SIGNAL47_API bool AddStaticIfKnown(UObject* Outer, UStaticMeshComponent* Mesh, TArray<TWeakObjectPtr<UStaticMeshComponent>>& Out);
  // Every dot once a frame, from the viewer's eye (Unreal space) and the sky's light.
  SIGNAL47_API void Step(const FVector& EyeUE, double Daylight);
  // Dots drawn now.

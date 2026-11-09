@@ -19,7 +19,11 @@ from unreal_guard import run_owned  # noqa: E402
 
 ROOT = Path(os.environ.get('S47_PALE_ONE_DIR', Path.home() / 'Documents/ChatGPT/Signal 47/modeller/pale-one-2026-11-07'))
 KIND = sys.argv[2] if len(sys.argv) > 2 else 'pale'
-SOURCE = ROOT / {'roswell': 'Roswell.glb', 'tall': 'Tall-One.glb'}.get(KIND, 'Pale-One.glb')
+# Tom's Tripo aliens of 9 November (TRIPO-NEW) live in their own private folder; their output goes there too.
+NEW = {'zet': 'zet.glb', 'nordic': 'nordic.glb', 'cosmic': 'cosmic.glb'}
+if KIND in NEW:
+    ROOT = Path(os.environ.get('S47_TRIPO_NEW_ROOT', Path.home() / 'Documents/ChatGPT/Signal 47/modeller/tripo-new-2026-11-09'))
+SOURCE = ROOT / 'raw' / NEW[KIND] if KIND in NEW else ROOT / {'roswell': 'Roswell.glb', 'tall': 'Tall-One.glb'}.get(KIND, 'Pale-One.glb')
 SUFFIX = '' if KIND == 'pale' else '-' + KIND
 PREPARED = ROOT / ('prepared' + SUFFIX)
 PROJECT = Path(os.environ.get('S47_PROJECT', Path.home() / 'SIGNAL-47/unreal/Signal47'))

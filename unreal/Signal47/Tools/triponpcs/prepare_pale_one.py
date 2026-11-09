@@ -37,6 +37,19 @@ BODIES = {
                 'dest': '/Game/Licensed/TripoNPC/Roswell',
                 'clips': {'sneak walking': 'sneak', 'completely still': 'listen', 'walk.001': 'walk', 'run.001': 'run',
                           'climb.001': 'climb', 'jump_down.001': 'jump_down', 'fall.001': 'fall', 'afraid.001': 'afraid'}},
+    # Tom's Tripo aliens of 9 November (TRIPO-NEW, Tools/triponew), UE5 bone names; not yet prepared or imported animated (the static
+    # bakes are in use). Source: run_pale_one.py takes them from the TripoNew private folder.
+    'zet': {'name': 'SK_Tripo_Zet', 'clip_prefix': 'A_Zet_', 'material': 'M_Tripo_Zet_00', 'height': 1.40,
+            'dest': '/Game/Licensed/TripoNew/Animated',
+            'clips': {'idle.001': 'idle', 'walk.001': 'walk', 'run.001': 'run', 'look_around.001': 'look_around', 'sit.001': 'sit'}},
+    'nordic': {'name': 'SK_Tripo_Nordic', 'clip_prefix': 'A_Nordic_', 'material': 'M_Tripo_Nordic_00', 'height': 1.96,
+               'dest': '/Game/Licensed/TripoNew/Animated',
+               'clips': {'idle.001': 'idle', 'walk.001': 'walk', 'run.001': 'run', 'look_around.001': 'look_around',
+                         'standing_relax.001': 'relax', 'afraid.001': 'afraid', 'greet_02.001': 'greet'}},
+    'cosmic': {'name': 'SK_Tripo_Cosmic', 'clip_prefix': 'A_Cosmic_', 'material': 'M_Tripo_Cosmic_00', 'height': 2.30,
+               'dest': '/Game/Licensed/TripoNew/Animated',
+               'clips': {'idle.001': 'idle', 'walk.001': 'walk', 'run.001': 'run', 'look_around.001': 'look_around',
+                         'climb.001': 'climb', 'jump_down.001': 'jump_down'}},
 }
 PROBE_BONES = ('pelvis', 'head', 'foot_l', 'foot_r', 'hand_r', 'ball_l')
 

@@ -78,6 +78,10 @@ private:
  // and switched off; S47EyeGlintDev.cpp. EyeGlintClear puts its body away when another line starts.
  void AddEyeGlint(FS47DevEvents& E);
  TFunction<void()> EyeGlintClear;
+ // TRIPO-NEW (Tom's nine Tripo models of 9 November): each by day and night in the world, all nine in a row, the aliens' eyes close;
+ // a stand-in where a private model is missing. S47TripoNewDev.cpp. TripoNewClear puts them away when another line starts.
+ void AddTripoNew(FS47DevEvents& E);
+ TFunction<void()> TripoNewClear;
  // T16 (Tom's test, 7 November): how far one gets from the farm every way on foot and at the wheel, and what stops it; the sky's
  // formations and preview, the highway both ways, the Pale One, each by the menu's own line and read back; S47ReachDev.cpp.
  void AddReach(FS47DevEvents& E);
