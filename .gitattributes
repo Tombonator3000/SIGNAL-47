@@ -48,6 +48,7 @@ unreal/ArtSource/EastWing/Shell/Textures/ConcreteBlockWall/*.jpg filter=lfs diff
 # ImageGen ground originals and engine-size texture maps.
 unreal/ArtSource/Backdrop/photo_sources/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/Backdrop/exports/ground/*.png filter=lfs diff=lfs merge=lfs -text
+# Original street lamps (STREETLAMPS-20261108): editable source, exports and maps.
 unreal/ArtSource/StreetLamps/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/StreetLamps/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/StreetLamps/textures/*.png filter=lfs diff=lfs merge=lfs -text
