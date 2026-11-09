@@ -129,7 +129,7 @@ private:
 	mutable FString VanSpotKey; mutable FVector2D VanSpotRoad = FVector2D::ZeroVector;
 	TArray<TWeakObjectPtr<UStaticMeshComponent>> HeliParts, CarParts, RakeParts;
 	double HeliAge = -1;
-	bool bCarsLogged = false;
+	bool bCarsLogged = false, bCarsIdling = false;
 	TWeakObjectPtr<UStaticMeshComponent> Porch;
 	TWeakObjectPtr<UPointLightComponent> BacaLamp;
 	FVector PorchHinge = FVector::ZeroVector; // UE, the door's west edge

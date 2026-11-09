@@ -58,6 +58,27 @@ namespace S47VisitorsLocal
 	const FBunk BacaBunk[] = { { TEXT("Baca's burned circle"), 1150, 520 }, { TEXT("Baca's singing rock"), 980, 1820 }, { TEXT("Baca's cold spot"), 640, 2350 } };
 	const TCHAR* const NotSaid[] = { TEXT("chevy"), TEXT("ford"), TEXT("dodge"), TEXT("jeep"), TEXT("coke"), TEXT("alien"), TEXT("ufo"), TEXT("roswell"), TEXT("tyre"), TEXT("grey"), TEXT("colour"), TEXT("petrol") };
 	const TCHAR* SetArea(int32 Set) { return Set == 1 ? TEXT("saro") : TEXT("road"); }
+	// The helicopter, in parts (critics: a black disc over the farm by day read as a saucer): an olive drab body, a tail boom with its
+	// fin and tail rotor, skids on two cross tubes, a mast and two long thin blades that turn. UE centimetres from the body's middle,
+	// nose toward +Y (it flies south); Spin: 1 and 2 the main blades, 3 the tail rotor.
+	struct FHeliBit { int32 Mesh; uint32 Hex; FVector Off, Size; int32 Spin; };
+	const FHeliBit HeliBits[] = {
+		{ 2, 0x56603f, FVector(0, 0, 0), FVector(2.3, 4.4, 2.1), 0 },
+		{ 0, 0x56603f, FVector(0, -470, 50), FVector(.36, 5.2, .42), 0 },
+		{ 0, 0x56603f, FVector(0, -740, 120), FVector(.1, .8, 1.3), 0 },
+		{ 1, 0x40463a, FVector(0, 0, 112), FVector(.22, .22, .5), 0 },
+		{ 0, 0x34382f, FVector(0, 0, 140), FVector(11.6, .3, .05), 1 },
+		{ 0, 0x34382f, FVector(0, 0, 140), FVector(11.6, .3, .05), 2 },
+		{ 0, 0x34382f, FVector(22, -745, 125), FVector(.04, 1.7, .14), 3 },
+		{ 0, 0x2f332b, FVector(-100, 30, -135), FVector(.12, 3.8, .1), 0 },
+		{ 0, 0x2f332b, FVector(100, 30, -135), FVector(.12, 3.8, .1), 0 },
+		{ 0, 0x2f332b, FVector(0, -50, -118), FVector(2.1, .08, .08), 0 },
+		{ 0, 0x2f332b, FVector(0, 110, -118), FVector(2.1, .08, .08), 0 } };
+	constexpr int32 HeliPer = UE_ARRAY_COUNT(HeliBits);
+	// The raked ground: a few overlapping discs for a ragged edge (x, z off the middle and a radius, metres), the rake's strokes across
+	// it, and two ruts of tire track in four lengths each that follow the ground.
+	const FVector RakeDiscs[] = { FVector(0, 0, 5.6), FVector(1.0, .4, 4.8), FVector(-.9, .7, 4.9), FVector(.3, -1.0, 4.7), FVector(-.5, -.6, 5.2) };
+	constexpr int32 RakeDiscN = UE_ARRAY_COUNT(RakeDiscs), RakeStripeN = 8, RakeRutN = 8, RakePer = RakeDiscN + RakeStripeN + RakeRutN;
 	int32 SetOf(const FString& Area) { return Area == TEXT("saro") ? 1 : 0; }
 }
 
@@ -377,12 +398,16 @@ bool FS47Visitors::Build()
 			if (Sedan) { auto* Black = Mat(0x0d0d10, .35f); for (int32 S = 0; S < Car->GetNumMaterials(); ++S) Car->SetMaterial(S, Black); }
 			CarParts.Add(Car);
 		}
-		HeliParts.Add(Part(TEXT("S47VisitHeliBody") + Tag, Ball, 0x3d4232, Root, false));
-		HeliParts.Add(Part(TEXT("S47VisitHeliTail") + Tag, Cube, 0x3d4232, Root, false));
-		HeliParts.Add(Part(TEXT("S47VisitHeliRotor") + Tag, Cyl, 0x1a1a18, Root, false));
-		// The ground gone over: pale raked caliche in a wide circle, and the tire tracks of the cars across it.
-		UStaticMeshComponent* Disc = Part(TEXT("S47VisitRaked") + Tag, Cyl, 0xc6b195, Root, false); Disc->SetCastShadow(false); RakeParts.Add(Disc);
-		for (int32 K = 0; K < 4; ++K) { UStaticMeshComponent* T = Part(FString::Printf(TEXT("S47VisitTrack%s%d"), *Tag, K), Cube, 0x80684f, Root, false); T->SetCastShadow(false); RakeParts.Add(T); }
+		for (int32 K = 0; K < HeliPer; ++K)
+			HeliParts.Add(Part(FString::Printf(TEXT("S47VisitHeli%s%d"), *Tag, K), HeliBits[K].Mesh == 2 ? Ball : HeliBits[K].Mesh == 1 ? Cyl : Cube, HeliBits[K].Hex, Root, false));
+		// The ground gone over: raked earth a shade lighter than the land round it, a ragged edge, the rake's strokes, and the ruts of
+		// the cars across it, darker and pressed in.
+		for (int32 K = 0; K < RakePer; ++K)
+		{
+			const uint32 Hex = K < RakeDiscN ? 0xa88c74 : K < RakeDiscN + RakeStripeN ? 0x957a63 : 0x6a5442;
+			UStaticMeshComponent* T = Part(FString::Printf(TEXT("S47VisitRaked%s%d"), *Tag, K), K < RakeDiscN ? Cyl : Cube, Hex, Root, false);
+			T->SetCastShadow(false); RakeParts.Add(T);
+		}
 	}
 	bBuilt = true;
 	UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors ready: two vans, Baca's door and lamp, %s sedans, helicopter and raked ground stand-ins"), Sedan ? TEXT("model") : TEXT("box"));
@@ -634,14 +659,14 @@ void FS47Visitors::PlaceHeli(const FVisit& V, double Age, double Dt)
 	{
 		UStaticMeshComponent* C = HeliParts[I].Get();
 		if (!C) continue;
-		const bool bSaroSet = I >= 3, bMine = bFly && ((Area == TEXT("saro")) == bSaroSet);
+		using namespace S47VisitorsLocal;
+		const bool bSaroSet = I >= HeliPer, bMine = bFly && ((Area == TEXT("saro")) == bSaroSet);
 		C->SetHiddenInGame(!bMine);
 		if (!bMine) continue;
 		const FVector Base = S47Three::ToUE(FVector(At.X, Y, At.Z));
-		const int32 Kind = I % 3;
-		if (Kind == 0) { C->SetWorldLocationAndRotation(Base, FRotator(0, 90, 0)); C->SetWorldScale3D(FVector(4.5, 2.0, 2.0)); }
-		else if (Kind == 1) { C->SetWorldLocationAndRotation(Base + FVector(0, -480, 40), FRotator(0, 90, 0)); C->SetWorldScale3D(FVector(5.0, .35, .45)); }
-		else { C->SetWorldLocationAndRotation(Base + FVector(0, 0, 130), FRotator(0, Age * 1400.0, 0)); C->SetWorldScale3D(FVector(11, 11, .06)); }
+		const FHeliBit& B = HeliBits[I % HeliPer];
+		const FRotator Turn = B.Spin == 1 ? FRotator(0, Age * 1400.0, 0) : B.Spin == 2 ? FRotator(0, Age * 1400.0 + 90, 0) : B.Spin == 3 ? FRotator(0, 0, Age * 2600.0) : FRotator::ZeroRotator;
+		C->SetWorldLocationAndRotation(Base + B.Off, Turn); C->SetWorldScale3D(B.Size);
 	}
 	// The thump of the blades, louder as it comes over (the engine's own beeper until there is a recording): in the world's seconds,
 	// so that it is the same beat at thirty frames a second as at a hundred and forty.
@@ -711,10 +736,23 @@ void FS47Visitors::StepMilitary(double Dt)
 		HeliAge = HeliAge < 0 ? 0 : HeliAge + Dt;
 		PlaceHeli(*Live, HeliAge, Dt);
 		PlaceCars(*Live, HeliAge > 20, Dt);
+		// Their engines running while they stand there: heard as the player comes up.
+		const bool bIdle = HeliAge > 20 && Live->Leave < 0 && Live->bSpot && bMe && FVector2D::Distance(Me, Live->CarA) < 120 && M->Audio;
+		if (bIdle && !bCarsIdling)
+		{
+			const FS47EventPlace* P = F.EventPlaces ? F.EventPlaces->Find(Live->Place) : nullptr;
+			const FString Area = P ? FS47EventPlaces::AreaOf(*P) : FString(TEXT("road"));
+			FS47Sound O; O.At = S47OpenLand::FromRoad(Area, Live->CarA.X, Live->CarA.Y) + FVector(0, S47FarmWorld::FloorRoad(Live->CarA.X, Live->CarA.Y) + .6, 0); O.Gain = .3f; O.Rate = .8f; O.bLoop = true;
+			M->Audio->LoopSfx(TEXT("visitCars"), TEXT("engineIdle"), O);
+		}
+		if (!bIdle && bCarsIdling && M->Audio) M->Audio->Stop(TEXT("visitCars"), .6f);
+		bCarsIdling = bIdle;
 	}
 	else
 	{
 		HeliAge = -1;
+		if (bCarsIdling && M->Audio) M->Audio->Stop(TEXT("visitCars"), .6f);
+		bCarsIdling = false;
 		for (const auto& P : HeliParts) if (auto* C = P.Get()) C->SetHiddenInGame(true);
 		for (int32 I = 0; I < CarParts.Num(); ++I)
 		{
@@ -747,25 +785,35 @@ void FS47Visitors::PlaceRaked()
 	{
 		UStaticMeshComponent* C = RakeParts[I].Get();
 		if (!C) continue;
-		const int32 Set = I / 5, Kind = I % 5;
+		const int32 Set = I / RakePer, Kind = I % RakePer;
 		C->SetHiddenInGame(Set != Mine);
 		if (Set != Mine) continue;
-		const FVector Mid3 = S47OpenLand::FromRoad(Area, Middle.X, Middle.Y);
-		if (Kind == 0)
+		const FVector2D Along = (Best->CarA - Middle).GetSafeNormal(), Side(-Along.Y, Along.X);
+		const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Along.Y, Along.X));
+		const auto Lay = [&](const FVector2D& Where, double Lift, const FVector& Size, double Turn)
 		{
-			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Mid3.X, S47FarmWorld::FloorRoad(Middle.X, Middle.Y) + .03, Mid3.Z)), FRotator::ZeroRotator);
-			C->SetWorldScale3D(FVector(RakeRadius * 2, RakeRadius * 2, .004));
+			const FVector A3 = S47OpenLand::FromRoad(Area, Where.X, Where.Y);
+			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(A3.X, S47FarmWorld::FloorRoad(Where.X, Where.Y) + Lift, A3.Z)), FRotator(0, Turn, 0));
+			C->SetWorldScale3D(Size);
+		};
+		if (Kind < RakeDiscN)
+		{
+			const FVector& D = RakeDiscs[Kind];
+			Lay(Middle + FVector2D(D.X, D.Y), .03 + Kind * .002, FVector(D.Z * 2, D.Z * 2, .004), 0);
 			continue;
 		}
-		// Two cars' tracks across the circle, in from where they stood and out again a little to one side, pressed into the raked
-		// ground and fading a few metres past its edge (long flat strips stand off the uneven land: seen in the first sweep).
-		const FVector2D To = (Kind <= 2 ? Best->CarA : Best->CarB);
-		const FVector2D Along = (To - Middle).GetSafeNormal(), Side(-Along.Y, Along.X);
-		const double Len = RakeRadius * 2 + 4;
-		const FVector2D Centre = Middle + Along * 2 + Side * ((Kind % 2 ? -.75 : .75) + (Kind > 2 ? 1.1 : 0));
-		const FVector C3 = S47OpenLand::FromRoad(Area, Centre.X, Centre.Y);
-		C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(C3.X, S47FarmWorld::FloorRoad(Centre.X, Centre.Y) + .05, C3.Z)), FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Along.Y, Along.X)), 0));
-		C->SetWorldScale3D(FVector(Len, .22, .006));
+		if (Kind < RakeDiscN + RakeStripeN)
+		{
+			// The rake's strokes, side by side across the circle, short near its edge.
+			const double Off = (Kind - RakeDiscN - (RakeStripeN - 1) * .5) * 1.15, Half = FMath::Sqrt(FMath::Max(.5, FMath::Square(4.7) - Off * Off));
+			Lay(Middle + Along * Off, .045, FVector(.07, Half * 2, .003), Yaw);
+			continue;
+		}
+		// Two ruts, in four lengths each, from behind the circle out toward where the cars stood: on the raked earth inside it, on the
+		// land outside.
+		const int32 Rut = (Kind - RakeDiscN - RakeStripeN) / 4, Seg = (Kind - RakeDiscN - RakeStripeN) % 4;
+		const FVector2D At = Middle + Along * (-6 + 4 * Seg + 2) + Side * (Rut ? .8 : -.8);
+		Lay(At, FVector2D::Distance(At, Middle) < 5 ? .05 : .015, FVector(4.05, .2, .004), Yaw);
 	}
 }
 

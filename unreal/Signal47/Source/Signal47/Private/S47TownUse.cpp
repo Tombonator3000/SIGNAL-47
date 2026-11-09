@@ -244,7 +244,7 @@ void FS47TownUse::StepThings()
 	{
 		UStaticMeshComponent* C = LureParts[I].Get();
 		if (!C) continue;
-		const int32 Which = I / (TracksPerLure + 1), Part = I % (TracksPerLure + 1);
+		const int32 Which = I / (TracksPerLure + LureBits), Part = I % (TracksPerLure + LureBits);
 		const FLure* L = Near.IsValidIndex(Which) ? Near[Which] : nullptr;
 		double X = 0, Z = 0;
 		if (!L || !F.Places->Spot(L->Place, X, Z)) { C->SetHiddenInGame(true); continue; }
@@ -258,19 +258,25 @@ void FS47TownUse::StepThings()
 		}
 		// A little off the place's own point, toward the open side, where it was set out.
 		const double Lx = X + 5, Lz = Z + 4;
-		if (Part == 0)
+		// A grey-white salt block, twenty-five centimetres, licked down with a hollow in its top by morning; or a jute sack of cubes,
+		// torn flat by morning. Neither when the night was shy: then they stand as they were left.
+		const bool bTaken = bMorning && !bShy;
+		if (Part < LureBits)
 		{
-			const double K = bMorning && !bShy ? (bSalt ? .6 : .35) : 1;
-			const FVector Size = bSalt ? FVector(.25, .25 * K, .25) : FVector(.55, .3 * K, .35);
-			C->SetHiddenInGame(false);
-			C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Lx, S47FarmWorld::FloorRoad(Lx, Lz) + Size.Y * .5, Lz)));
+			const bool bThis = Part == 2 ? !bSalt : bSalt && (Part == 0 || bTaken);
+			C->SetHiddenInGame(!bThis);
+			if (!bThis) continue;
+			const double Floor = S47FarmWorld::FloorRoad(Lx, Lz);
+			const FVector Size = Part == 0 ? FVector(.25, bTaken ? .17 : .25, .25) : Part == 1 ? FVector(.13, .012, .11) : FVector(.55, bTaken ? .11 : .3, .36);
+			const double Up = Part == 1 ? .17 : Size.Y * .5;
+			C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Lx, Floor + Up, Lz)));
 			C->SetWorldScale3D(FVector(Size.X, Size.Z, Size.Y));
 			continue;
 		}
 		// Hoof prints: none the evening it was set out; by morning right up to it, or stopping short of it all round.
 		C->SetHiddenInGame(!bMorning);
 		if (!bMorning) continue;
-		const int32 T = Part - 1;
+		const int32 T = Part - LureBits;
 		const double A = (T / 2) * (2 * UE_DOUBLE_PI / 3) + .4, R = bShy ? 6.2 + (T % 2) * 1.6 : .7 + (T % 2) * .9;
 		const double Tx = Lx + FMath::Cos(A) * R, Tz = Lz + FMath::Sin(A) * R;
 		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + Tx, S47FarmWorld::FloorRoad(Tx, Tz) + .01, Tz)));
@@ -434,7 +440,9 @@ bool FS47TownUse::Build()
 		};
 		for (int32 L = 0; L < LuresDrawn; ++L)
 		{
-			Bit(FString::Printf(TEXT("S47TownLure%d"), L), Cube, 0xe6e1d3, Root, LureParts);
+			Bit(FString::Printf(TEXT("S47TownLure%d"), L), Cube, 0xd6d3cb, Root, LureParts);
+			Bit(FString::Printf(TEXT("S47TownLureHollow%d"), L), Cube, 0xa9a397, Root, LureParts);
+			Bit(FString::Printf(TEXT("S47TownLureSack%d"), L), Cube, 0x9b7a50, Root, LureParts);
 			for (int32 K = 0; K < TracksPerLure; ++K) Bit(FString::Printf(TEXT("S47TownLureTrack%d_%d"), L, K), Cyl, 0x3a2c1f, Root, LureParts);
 		}
 		// Not on any one area's root: the truck is in every area.

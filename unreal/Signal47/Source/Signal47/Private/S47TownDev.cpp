@@ -313,13 +313,13 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 		FS47FreeformSession* F = Session();
 		const FS47EventPlace* P = F && F->EventPlaces ? F->EventPlaces->Find(TEXT("farm")) : nullptr;
 		if (!F || !F->Visitors || !P) { Tell(false, TEXT("Freeform only")); return; }
-		// Where the cars will stand (at the farm's way in, clear of its buildings), and a place ten metres off them on the far side from
-		// the pasture: the cars fill the near half of the picture, the pasture and the helicopter over it the far half.
+		// Where the cars will stand (at the farm's way in, clear of its buildings, side by side across x), and a place eleven metres off
+		// their sides on the far side from the pasture: both cars side by side fill the near half of the picture, the pasture and the
+		// helicopter over it the far half (the first sweep looked along the row, and one car hid the other).
 		FVector2D A, B;
 		if (!F->Visitors->CarsSpot(TEXT("farm"), A, B)) { A = FVector2D(P->EntryX + 9, P->EntryZ + 6); B = A + FVector2D(3.4, 0); }
 		const FVector2D Cars = (A + B) * .5, Place(P->X, P->Z);
-		const FVector2D Away = (Cars - Place).GetSafeNormal();
-		const FVector2D Eye = Cars + Away * 10 + FVector2D(-Away.Y, Away.X) * 2.5;
+		const FVector2D Eye = Cars + FVector2D(1.0, Cars.Y < Place.Y ? -11 : 11);
 		UE_LOG(LogS47TownDev, Display, TEXT("S47: F10 military: cars at road %.1f %.1f and %.1f %.1f, eye %.1f %.1f"), A.X, A.Y, B.X, B.Y, Eye.X, Eye.Y);
 		StandIn(FS47EventPlaces::AreaOf(*P), Eye, Cars, 6, .14, [this, Pictured]
 		{
