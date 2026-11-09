@@ -201,7 +201,7 @@ return float3(l, l, l);
 """ % (bm[0], bm[1], bm[2]), dict(X=bas['x'], Y=bas['y'], Z=bas['z'], W=weights), F3, -1800, 600)
     # where the land is volcanic: dark country in patches of a kilometre or two, and basalt capping the high ground of some hills,
     # its rim wandering. Height from the mesh's own zero, which is the road's land (build_range.py), wherever the node stands.
-    volcanic_at = node(mat, unreal.MaterialExpressionScalarParameter, -2000, 820, parameter_name='VolcanicAt', default_value=.49)
+    volcanic_at = node(mat, unreal.MaterialExpressionScalarParameter, -2000, 820, parameter_name='VolcanicAt', default_value=.51)
     volcanic = custom(mat, """
 float h = (World.z - Obj.z) * 0.01;
 float field = smoothstep(At, At + 0.08, P2 * 0.6 + P1 * 0.4);
@@ -286,15 +286,15 @@ soil *= lerp(float3(1.0, 1.0, 1.0), bedRatio / float3(0.92, 0.76, 0.66), Beds * 
 float band = M.a * (1.0 - M.a) * 4.0;
 soil = lerp(soil, Dry, band * 0.2);
 // volcanic country: the soil over it a dark grey-brown, its rock the basalt's
-float3 darkSoil = mean * float3(0.50, 0.47, 0.47) * lerp(1.0, 0.85 + 0.3 * saturate((P3 - 0.22) / 0.33), up);
-soil = lerp(soil, darkSoil, Vol * 0.85);
+float3 darkSoil = mean * float3(0.64, 0.60, 0.59) * lerp(1.0, 0.85 + 0.3 * saturate((P3 - 0.22) / 0.33), up);
+soil = lerp(soil, darkSoil, Vol * 0.8);
 // bare rock, cut with the stone's pattern, in its beds. No rock on the fans or at the foot; the map's mask says where, and the
 // steep says a little more (a ledge stands out of a slope above 28 degrees, T16-02)
 float rock = saturate((Col.a + More * 0.45 * smoothstep(26.0, 40.0, deg)) * up);
 float pat = dot(lerp(Stone, Basalt, Vol), float3(0.3, 0.6, 0.1));
 rock *= smoothstep(0.15, 0.55, rock + (pat - 1.0) * 0.5);
 float3 stone = mean * RockTint * bedRatio * Stone;
-float3 basalt = mean * RockTint * float3(0.25, 0.25, 0.28) * Basalt;
+float3 basalt = mean * RockTint * float3(0.34, 0.33, 0.35) * Basalt;
 stone = lerp(stone, basalt, Vol);
 float3 c = lerp(soil, stone, rock);
 // shrubs as a dark speckle: juniper and creosote, thickest on the lower slopes and in what is cut in, thinning upward
