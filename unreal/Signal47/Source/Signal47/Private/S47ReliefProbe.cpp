@@ -396,6 +396,7 @@ namespace
 		FString AreaHere = Life->Area, RoundWhat;
 		const double Limit = 9000;
 		R.Why = TEXT("walked to the probe's limit");
+		TArray<FVector2D> Trail;   // where it stood at each check, road-local: the way back out of what it walked into
 		const auto Move = [&](double Ax, double Az)
 		{
 			const FVector A = S47OpenLand::FromRoad(Life->Area, Rx, Rz), B = S47OpenLand::FromRoad(Life->Area, Rx + Ax, Rz + Az);
@@ -433,11 +434,19 @@ namespace
 				if (bRound && R.Round < 24 && (IsThing(R.Why) || R.Why == TEXT("nothing says no here")))
 				{
 					bool bPast = false;
-					// A straight line can go in by a door or a gate and meet the far wall: sideways finds no way there, so back out the way
-					// it came, 12 m at a time, and try again, as one walks back out of a barn (sweep of 9 November: the barn, the cows' pen).
-					for (int32 Back = 0; Back < 4 && !bPast; ++Back)
+					// A straight line can go in by a door or a gate and meet the far wall: sideways finds no way there, so go back along
+					// the way it came, about 40 m at a time, and try again from there, as one walks back out of a barn or a pen by its gate
+					// (sweeps of 9 November: the barn, the cows' pen).
+					for (int32 Back = 0; Back < 6 && !bPast; ++Back)
 					{
-						for (int32 K = 0; K < (Back ? 24 : 0); ++K) Move(-Dx * Step, -Dz * Step);
+						if (Back > 0 && Trail.Num() > 0)
+						{
+							const FVector2D T = Trail[FMath::Max(0, Trail.Num() - 1 - Back * 5)];
+							const FVector BackAt = S47OpenLand::FromRoad(Life->Area, T.X, T.Y);
+							P->Place(BackAt.X, BackAt.Z, 0);
+							Life->WalkOver();
+							S47OpenLand::RoadOf(Life->Area, P->Pos.X, P->Pos.Z, Rx, Rz);
+						}
 						for (const double Side : { 1., -2. })
 						{
 							const int32 Count = FMath::RoundToInt(FMath::Abs(Side) * 80);
@@ -462,6 +471,7 @@ namespace
 				break;
 			}
 			CheckAt = Along;
+			Trail.Add(FVector2D(Rx, Rz));
 		}
 		R.Metres = (Rx - StartX) * Dx + (Rz - StartZ) * Dz;
 		R.EndX = Rx; R.EndZ = Rz; R.EndArea = Life->Area;
