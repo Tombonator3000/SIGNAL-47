@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47Obj.h"
 #include "S47RoswellWorld.h"
+#include "S47RoadGlimpse.h"
 class US47Main;
 class AS47Web;
 class UStaticMeshComponent;
@@ -29,6 +30,10 @@ struct FS47EventPlace;
 //                 Each skips itself when its model is missing.
 //   figure_near   on foot out in the dark (a danger, from the second week): a figure on the open ground that is gone when it is seen
 //                 and stands nearer the next time, until a light comes down over whoever is still out there (S47Taken).
+//   road_glimpse  at the wheel between midnight and two (the glimpse tier), at most once a week: something tall and thin, or low on
+//                 four, crosses the highway 60 to 120 m ahead in the lights and is gone before the truck comes up; some nights prints
+//                 on the far shoulder the next day (S47RoadGlimpse). The figure on the rise and the one on foot may be Tom's Nordic or
+//                 Cosmic (the seed's, when this build has them); Zet stays in the humorous ones.
 //
 // The build-up (Tom's critics, 8 November): director.json's curve says, week by week, what each level is worth, how likely the
 // night's one danger is and how near things come; each night builds toward their hours (draw.at), with the small things first.
@@ -300,6 +305,8 @@ private:
  bool BeginHumor(const FString& Variant,bool bForced,FString& Why);
  bool BeginFigure(bool bForced,FString& Why);
  void StepFigure(double Dt);
+ // The crossing far ahead now on the road (road_glimpse): its body, side, distance, and whether it stops or leaves prints.
+ S47RoadGlimpse::FPlan Glimpse;
  // What the figure did, for the one record at the end: each time it stood and was seen, how far and which way.
  TArray<FString> FigureSeen;
  double FigureSeenFor=0;int32 FigureStageSeen=-1;

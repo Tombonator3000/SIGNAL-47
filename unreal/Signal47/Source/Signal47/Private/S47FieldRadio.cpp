@@ -166,20 +166,25 @@ bool FS47FieldRadio::Build()
  Root=W->ObjAt(W->AdoptNode(Box,Room.I,TEXT("saro:fieldRadio"))); Hit=Box;
  Root.SetPosition(FVector(3.18,.840,2.70)); Root.SetRotation(FVector(0,.2,0));
  // TRIPO-NEW (Tom's walkie of 9 November): his own model on the desk when this build has it, standing on its foot with its face to
- // the room (-Z); else the three web parts as before. -S47TripoNewOff keeps the old one, for a picture to compare.
+ // the room (-Z); else the three web parts as before. -S47TripoNewOff keeps the old one, for a picture to compare. Tom, 9 November:
+ // the one on the desk is his eighties walkie (S47TripoNew::DeskWalkie, "pakke tripo3d-1"), not the newer-looking one with a display.
+ // Prepared standing 0.52 m with its face toward -X in Blender (Three -X): turned a quarter to face the room, and brought down to a
+ // hand-held height from its own bounds.
  bTripoWalkie=false;
- if(const S47TripoNew::FModel* Own=S47TripoNew::Find(TEXT("walkie"));Own&&S47TripoNew::Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff")))
+ if(const S47TripoNew::FModel* Own=S47TripoNew::DeskWalkie();Own&&S47TripoNew::Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff")))
   if(UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,Own->Path))
   {
+   const double TallCm=Mesh->GetBounds().BoxExtent.Z*2.;
+   const double Scale=TallCm>1.?FMath::Clamp(S47TripoNew::DeskWalkieHeightM*100./TallCm,.2,2.):1.;
    auto* C=NewObject<UStaticMeshComponent>(W,TEXT("SaroFieldRadioTripo"));
    C->SetupAttachment(Box); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Mesh);
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
    C->SetCanEverAffectNavigation(false); C->SetCastShadow(true);
    W->AddInstanceComponent(C); C->RegisterComponent();
    FS47Obj Copy=W->ObjAt(W->AdoptNode(C,Root.I,TEXT("saro:fieldRadio:tripo")));
-   Copy.SetPosition(FVector(0,-.06,0)); Copy.SetRotation(FVector(0,PI,0)); Copy.SetScale(FVector(1));
+   Copy.SetPosition(FVector(0,-.06,0)); Copy.SetRotation(FVector(0,-PI/2,0)); Copy.SetScale(FVector(Scale));
    Copies.Add(C); bTripoWalkie=true;
-   UE_LOG(LogTemp,Display,TEXT("S47: field radio: Tom's Tripo walkie on the desk (%s)"),Own->Path);
+   UE_LOG(LogTemp,Display,TEXT("S47: field radio: Tom's eighties Tripo walkie on the desk (%s, %.0f cm as made, scale %.2f)"),Own->Path,TallCm,Scale);
   }
  for(int32 I=0;I<Parts.Num()&&!bTripoWalkie;++I)
  {

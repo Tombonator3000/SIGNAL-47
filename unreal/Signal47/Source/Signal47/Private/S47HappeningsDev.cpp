@@ -252,6 +252,21 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    Tell(true,TEXT("Something tall and hairy is about to cross in your lights."),5);
   });
  });
+ // GLIMPSE-ROAD-20261109: the glimpse tier's crossing far ahead in the lights (S47RoadGlimpse): Tom's Cosmic or Nordic when this build
+ // has them, else the tall stand-in; on four, the crawler. Gone before the truck comes up; some nights prints on the shoulder.
+ for(const TCHAR* Body:{TEXT("tall"),TEXT("low")})
+ {
+  const FString Want=Body;
+  E.AddFreeform(G,Want==TEXT("tall")?TEXT("Glimpse: something tall crosses far ahead"):TEXT("Glimpse: something low crosses far ahead"),TEXT("00:30, in the truck on the highway; 60 to 120 m ahead in the lights, gone before you get there"),[this,Road,Haps,Want]
+  {
+   Road(.5,4.5,false,[this,Haps,Want]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(TEXT("road_glimpse"),Want,Why)||!H->Live(TEXT("road_glimpse"))){Tell(false,Why);return;}
+    Tell(true,TEXT("Watch the road far ahead, in the lights."),4);
+   });
+  });
+ }
  E.AddFreeform(G,TEXT("Humour: a small man at the pump wants water"),TEXT("22:00, the pump in Caliche; E talks to him"),[this,Humor]
  {
   FStage Stage;Stage.From=22;Stage.To=1;Stage.Area=TEXT("diner");Stage.Yaw=0;

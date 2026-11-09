@@ -23,8 +23,9 @@ const TArray<S47TripoNew::FModel>& S47TripoNew::Models()
   {TEXT("motorhome"),TEXT("Old motorhome, cream and brown"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_Motorhome.SM_Tripo_Motorhome"),Cube,EKind::Vehicle,7.3,0xd8ccb0u},
   {TEXT("convertible"),TEXT("Pink convertible with fins"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_PinkConvertible.SM_Tripo_PinkConvertible"),
    TEXT("/Game/Free/Vehicles/el_alamo_78/StaticMeshes/el_alamo_78.el_alamo_78"),EKind::Vehicle,5.7,0xe58fb4u},
-  {TEXT("walkie"),TEXT("Walkie-talkie"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_Walkie.SM_Tripo_Walkie"),Cube,EKind::Prop,.34,0x1c1d1cu},
-  {TEXT("parcel"),TEXT("Tom's small package"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_Parcel.SM_Tripo_Parcel"),Cube,EKind::Prop,.31,0x9c7c55u},
+  {TEXT("walkie"),TEXT("Walkie-talkie with a display and keypad (too new for 1986, not used)"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_Walkie.SM_Tripo_Walkie"),Cube,EKind::Prop,.34,0x1c1d1cu},
+  // Named a parcel on Tom's desktop ("pakke tripo3d-1"), but an eighties walkie-talkie: the one on the SARO desk (DeskWalkie).
+  {TEXT("parcel"),TEXT("Eighties walkie-talkie (Tom's \"pakke\"), the desk walkie"),TEXT("/Game/Licensed/TripoNew/SM_Tripo_Parcel.SM_Tripo_Parcel"),Cube,EKind::Prop,.31,0x6b6d6au},
  };
  return All;
 }
@@ -34,6 +35,8 @@ const S47TripoNew::FModel* S47TripoNew::Find(const FString& Id)
  for(const FModel& M:Models())if(Id==M.Id)return &M;
  return nullptr;
 }
+
+const S47TripoNew::FModel* S47TripoNew::DeskWalkie(){return Find(TEXT("parcel"));}
 
 bool S47TripoNew::Exists(const TCHAR* ObjectPath)
 {
@@ -66,6 +69,9 @@ bool S47TripoNew::SelfTest(TArray<FString>& Lines)
  Check(Find(TEXT("singer"))&&FString(Find(TEXT("singer"))->Path).EndsWith(TEXT("SM_Tripo_Singer"))&&FString(Find(TEXT("bigfoot"))->Path).EndsWith(TEXT("SM_Tripo_Bigfoot"))
   &&FString(Find(TEXT("zet"))->Path).EndsWith(TEXT("SM_Tripo_Zet"))&&FString(Find(TEXT("motorhome"))->Path).EndsWith(TEXT("SM_Tripo_Motorhome"))
   &&FString(Find(TEXT("convertible"))->Path).EndsWith(TEXT("SM_Tripo_PinkConvertible")),TEXT("Tripo new: the humor events' five paths are the ones imported"));
+ // Tom, 9 November: the "parcel" is an eighties walkie-talkie, and it is the one on the desk; the newer-looking one is not.
+ Check(DeskWalkie()&&FString(DeskWalkie()->Path).EndsWith(TEXT("SM_Tripo_Parcel"))&&DeskWalkie()->Kind==EKind::Prop&&DeskWalkieHeightM>.2&&DeskWalkieHeightM<.45,
+  TEXT("Tripo new: the desk walkie is Tom's eighties one (SM_Tripo_Parcel), at a hand-held height"));
  // Without the private models (a build from Git alone) each still resolves to something drawable.
  FModel Missing=Models()[0];Missing.Path=TEXT("/Game/Licensed/TripoNew/SM_Tripo_NotThere.SM_Tripo_NotThere");Missing.StandIn=TEXT("/Game/Nowhere/SM_Gone.SM_Gone");
  bool bOwn=true;const TCHAR* Got=Resolve(Missing,&bOwn);

@@ -6,6 +6,10 @@
 // Static meshes, each baked in a pose, foot pivot at the floor: a figure faces +Y (Three +Z), a vehicle's front is -Y (Three -Z),
 // as the TripoNPC figures and the TripoFleet trucks. S47Happenings holds its own five paths (S47Hap); they are the same names.
 // A build without them falls back to what stood in before (Resolve), never to nothing.
+// "parcel" (Tom's "pakke tripo3d-1") is no parcel: it is an eighties walkie-talkie, and it is the one on the SARO desk (DeskWalkie,
+// S47FieldRadio). "walkie", with its display and keypad, looks too new for 1986 and is not used in the game.
+// The Nordic and the Cosmic one may be the figure on the rise, the figure on foot and the crossing far ahead (S47RoadGlimpse); Zet
+// stays in the humorous events.
 namespace S47TripoNew
 {
  enum class EKind : uint8 { Figure, Alien, Vehicle, Prop };
@@ -21,6 +25,10 @@ namespace S47TripoNew
  };
  SIGNAL47_API const TArray<FModel>& Models();
  SIGNAL47_API const FModel* Find(const FString& Id);
+ // The walkie on the SARO desk: Tom's eighties one ("parcel", 9 November), its face toward -X in Blender.
+ SIGNAL47_API const FModel* DeskWalkie();
+ // Its height on the desk, metres, antenna included (as prepared it stands 0.52 m: Tripo's scale, sized by its width).
+ inline constexpr double DeskWalkieHeightM=.30;
  // The model if it is in this build, else its stand-in if that is, else a basic cube; bOwn: the model itself.
  SIGNAL47_API const TCHAR* Resolve(const FModel& Model, bool* bOwn = nullptr);
  SIGNAL47_API bool Exists(const TCHAR* ObjectPath);
