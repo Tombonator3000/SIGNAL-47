@@ -53,6 +53,23 @@ namespace
   { P->SetRenderInMainPass(false); P->SetRenderInDepthPass(false); P->SetVisibleInRayTracing(false); P->SetCastShadow(false); }
  }
 
+ // NPC-ANIM: the hips' height over the feet (cm, the skin's component space) at the start of a rigged figure's clip.
+ double HipsCm(FS47TripoCreature& Rig, ES47Clip Clip)
+ {
+  if (!Rig.Clips || !Rig.Clips->Has(Clip)) return 0;
+  TArray<FTransform> Local; Rig.Clips->Sample(Clip, 0, Local);
+  const int32 Pelvis = Rig.Names.IndexOfByKey(FName(TEXT("pelvis")));
+  if (Pelvis < 0 || Local.Num() != Rig.Parents.Num()) return 0;
+  FTransform At = FTransform::Identity;
+  for (int32 B = Pelvis; B >= 0; B = Rig.Parents[B]) At = At * Local[B];
+  return At.GetLocation().Z;
+ }
+ // The static seated bakes' hips over their feet (seat_z_m, unreal-static-2026-10-30/manifest.json): their places are set by these.
+ double BakedSeatM(const FString& Role)
+ {
+  return Role == TEXT("patron") ? .5928 : Role == TEXT("nora") ? .5451 : Role == TEXT("earl") ? .5741 : Role == TEXT("radio_woman") ? .5437 : 0.;
+ }
+
  FTransform Pose(const FVector& Feet, const FQuat& Rotation)
  {
   double E[16]; S47Three::Compose(Feet, Rotation, FVector::OneVector, E);
@@ -71,6 +88,7 @@ struct FS47TripoNpcs::FState
   TSharedPtr<FS47TripoCreature> Rig;
   TWeakObjectPtr<USceneComponent> RigRoot;
   bool bSeated = false; // the figure is a seated one (roles.json): it sits wherever it is put
+  double SeatLowerCm = 0; // a seated one: how far the rig goes down to have its hips where the bake had them
  };
  TArray<FSlot> Slots;
  TWeakObjectPtr<UStaticMeshComponent> Radio;
@@ -142,9 +160,14 @@ void FS47TripoNpcs::Build()
      Rig->Mesh->SetRelativeRotation(FRotator::ZeroRotator);
      Slot.Rig = Rig; Slot.RigRoot = RigRoot;
      for (const TCHAR* Seated : { TEXT("patron"), TEXT("nora"), TEXT("earl"), TEXT("radio_woman") }) Slot.bSeated |= FCString::Strcmp(Role, Seated) == 0;
-     S47TownDay::SetRigged(Role, true, Rig->Clips->Has(ES47Clip::Sit));
-     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s on its own rig: walk %.2f m/s a cycle of %.0f cm, sit clip %s"), Role,
-      Rig->Clips->GaitSpeedMps(ES47Clip::Walk), Rig->Clips->GaitCycleCm(ES47Clip::Walk), Rig->Clips->Has(ES47Clip::Sit) ? TEXT("yes") : TEXT("no"));
+     const double SitHips = HipsCm(*Rig, ES47Clip::Sit), StandHips = HipsCm(*Rig, ES47Clip::Idle);
+     S47TownDay::SetRigged(Role, true, Rig->Clips->Has(ES47Clip::Sit), SitHips / 100., StandHips / 100.);
+     // A seated figure's place was set for its bake's hips (the seat), which sit lower than the clip's: the hips go where they
+     // were, the feet a few centimetres into the floor in front of the seat, at most 6.
+     if (Slot.bSeated && SitHips > 0 && BakedSeatM(Role) > 0) Slot.SeatLowerCm = FMath::Clamp(SitHips - 100. * BakedSeatM(Role), 0., 6.);
+     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s on its own rig: walk %.2f m/s a cycle of %.0f cm, sit clip %s, hips %.0f cm standing and %.0f seated, %s"), Role,
+      Rig->Clips->GaitSpeedMps(ES47Clip::Walk), Rig->Clips->GaitCycleCm(ES47Clip::Walk), Rig->Clips->Has(ES47Clip::Sit) ? TEXT("yes") : TEXT("no"),
+      StandHips, SitHips, Slot.bSeated ? *FString::Printf(TEXT("always seated, %.1f cm down onto the bake's seat"), Slot.SeatLowerCm) : TEXT("seated where its day has it"));
     }
     else
     {
@@ -359,6 +382,7 @@ void FS47TripoNpcs::Update()
   if (!C || !RigRoot || !Slot.Rig || !Slot.Rig->Ready() || !Slot.Rig->Clips) continue;
   C->SetHiddenInGame(true);
   FTransform T = C->GetComponentTransform(); T.SetScale3D(FVector::OneVector);
+  if (Slot.bSeated) T.AddToTranslation(FVector(0, 0, -Slot.SeatLowerCm));
   RigRoot->SetWorldTransform(T);
   FS47ClipPose Clip; Clip.bVisible = C->IsVisible() && Slot.bBound; Clip.Clock = Clock; Clip.Move = ES47Clip::Walk;
   double Sit = 0;

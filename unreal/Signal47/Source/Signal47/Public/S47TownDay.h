@@ -67,7 +67,10 @@ namespace S47TownDay
  // NPC-ANIM (Tom, 9 November: "så de ikke sklir over bakken"): a body that walks and stands on its own clips (FS47TripoNpcs'
  // rigged figures). Pose then gives it the plain path: no steps' rise and fall, sway or breath (the clips have them), and with
  // bSeatInClip no lowering behind the table either (its sit clip sits). Off again with bRigged false.
- SIGNAL47_API void SetRigged(const FString& Role, bool bRigged, bool bSeatInClip);
+ // SitHipsM and StandHipsM: the hips' height over the feet in its sit and idle clips. A sit clip's hips sit higher than the old
+ // figure lowered behind the table had them (a seat a few centimetres up); at a table the rigged body is then lowered by the
+ // difference, at most .12 m, so it sits on the same seat with its feet out of sight under the table.
+ SIGNAL47_API void SetRigged(const FString& Role, bool bRigged, bool bSeatInClip, double SitHipsM = 0, double StandHipsM = 0);
  // How far into a seat Role is now, 0 standing to 1 seated (eased as Pose eases it); false if the day has no place for it now.
  SIGNAL47_API bool SitNow(const FString& Role, double& OutSit);
  // The spot the running plan has Role at now (empty: none).

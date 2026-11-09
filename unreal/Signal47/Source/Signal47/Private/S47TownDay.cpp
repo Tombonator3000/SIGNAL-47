@@ -231,8 +231,9 @@ namespace S47TownDayLocal
  TWeakObjectPtr<UStaticMeshComponent> LunchBox; bool bLunchBuilt = false, bLunchOn = false;
  TMap<FString, float> Lamp;
  bool bHeldCar = false;
- // NPC-ANIM: day keys whose body walks on its own clips (value: its sit clip sits, so no lowering).
- TMap<FString, bool> Rigged;
+ // NPC-ANIM: day keys whose body walks on its own clips: whether its sit clip sits, and how far it is lowered then (metres).
+ struct FRig { bool bSeatInClip = false; double SitLower = 0; };
+ TMap<FString, FRig> Rigged;
 
  const FSpot* SpotOf(const FString& Id) { return S47TownDay::Spot(Id); }
  bool Visible(const FSpot* S) { return S && S->Kind != FSpot::Hidden && S->Kind != FSpot::Away; }
@@ -639,9 +640,9 @@ bool S47TownDay::Pose(const FString& InRole, const FVector& DefaultFeet, double 
  double Yaw = W.Yaw;
  FVector2D At = W.At;
  // NPC-ANIM: a rigged body's clips step, sway and breathe; its sit clip sits. It gets the path as it is.
- if (const bool* SeatInClip = Rigged.Find(Role))
+ if (const FRig* Rig = Rigged.Find(Role))
  {
-  if (!*SeatInClip) Y -= SitDrop * FMath::SmoothStep(0., 1., W.Sit);
+  Y -= (Rig->bSeatInClip ? Rig->SitLower : SitDrop) * FMath::SmoothStep(0., 1., W.Sit);
   OutFeet = FVector(At.X, Y, At.Y); OutYaw = Yaw;
   return true;
  }
@@ -668,10 +669,15 @@ bool S47TownDay::Pose(const FString& InRole, const FVector& DefaultFeet, double 
  return true;
 }
 
-void S47TownDay::SetRigged(const FString& Role, bool bRigged, bool bSeatInClip)
+void S47TownDay::SetRigged(const FString& Role, bool bRigged, bool bSeatInClip, double SitHipsM, double StandHipsM)
 {
- const FString Key = S47TownDayLocal::DayKey(Role);
- if (bRigged) S47TownDayLocal::Rigged.Add(Key, bSeatInClip); else S47TownDayLocal::Rigged.Remove(Key);
+ using namespace S47TownDayLocal;
+ const FString Key = DayKey(Role);
+ if (!bRigged) { Rigged.Remove(Key); return; }
+ FRig Rig; Rig.bSeatInClip = bSeatInClip;
+ // The old figure's hips at a table: standing hips less SitDrop. The clip's are higher; the difference is the seat's.
+ if (bSeatInClip && SitHipsM > 0 && StandHipsM > 0) Rig.SitLower = FMath::Clamp(SitHipsM - (StandHipsM - SitDrop), 0., .12);
+ Rigged.Add(Key, Rig);
 }
 
 bool S47TownDay::SitNow(const FString& Role, double& OutSit)
