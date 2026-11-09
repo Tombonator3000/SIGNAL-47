@@ -6,6 +6,7 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "S47Main.h"
+#include "S47Townsfolk.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -156,11 +157,12 @@ void FS47Town::SetPaper(bool bOn) { bPaperIn = bOn; Paper.SetVisible(bOn); }
 void FS47Town::Update(double T, double Clock, bool bHold)
 {
 	const double Day = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400, 86400.0);
-	const bool bDeputy = S47Timeline::DeputyOnDuty(Clock);
+	// Freeform: one of Caliche's regulars gone (S47Townsfolk) is not at their post, the deputy's car not out front.
+	const bool bDeputy = S47Timeline::DeputyOnDuty(Clock) && !FS47Townsfolk::AwayNow(TEXT("deputy"));
 	if (bDeputy != bDeputyIn && !(bDeputy && bCarOut && bHold)) SetDeputy(bDeputy);
 	const bool bPaper = Day >= 4 * 3600 + 45 * 60 && Day < 12 * 3600;
 	if (bPaper != bPaperIn) SetPaper(bPaper);
-	const bool bWoman = S47Timeline::NightPerson(Clock, 4 * 3600 + 50 * 60), bSmoker = S47Timeline::NightPerson(Clock, 4 * 3600 + 10 * 60);
+	const bool bWoman = S47Timeline::NightPerson(Clock, 4 * 3600 + 50 * 60), bSmoker = S47Timeline::NightPerson(Clock, 4 * 3600 + 10 * 60) && !FS47Townsfolk::AwayNow(TEXT("souvenir_man"));
 	if (bWoman != bWomanIn || bSmoker != bSmokerIn) SetPeople(bWoman, bSmoker);
 	const bool bDraw = bSmoker && FMath::Fmod(T, 9.0) < 1.4;
 	if (bSmoker && bDraw != bDrawing) { bDrawing = bDraw; GlowColor(37, bDraw ? 0xff6a20 : 0x5a2408); }

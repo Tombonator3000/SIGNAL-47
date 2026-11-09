@@ -1,4 +1,5 @@
 #include "S47FreeformWorld.h"
+#include "S47Townsfolk.h"
 #include "S47Mail.h"
 #include "S47FieldLife.h"
 #include "S47Legs.h"
@@ -872,6 +873,8 @@ void FS47FreeformWorld::OpenShop()
   Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to requisition debt even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
   Rows.Add(S47Kit::Button(TEXT("Request feeder-repair fuse / $5 / credit available"),[this]{if(RequestEmergencyFuse())M->UI->Close();},true,EmergencyFuseAvailable()));
  }
+ // The attendant's one thing today, or who is minding the counter while he is gone (TOWNSFOLK-20261108, S47Townsfolk).
+ if(M->Freeform->Townsfolk){const FString Said=M->Freeform->Townsfolk->CounterLine(TEXT("attendant"));if(!Said.IsEmpty())Rows.Add(S47Kit::Small(Said));}
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("CALICHE / SHOP COUNTER"),S47Kit::Col(Rows),880));
 }
 

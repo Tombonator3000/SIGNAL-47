@@ -186,6 +186,8 @@ public:
  // temporary boxes where new buildings will stand (the trailer park, the school, the Grange hall), NEW-PLACES-20261108: S47TownSites.h.
  TSharedPtr<class FS47TownUse> TownUse;
  TSharedPtr<class FS47TownSites> TownSites;
+ // Caliche's regulars, who remember, talk, and are missed when they are gone (TOWNSFOLK-20261108): S47Townsfolk.h.
+ TSharedPtr<class FS47Townsfolk> Townsfolk;
  TSharedPtr<class FS47TruckLamp> TruckLamp;
  TSharedPtr<class FS47YardAlarm> YardAlarm;
  TSharedPtr<class FS47TruckCare> Care;

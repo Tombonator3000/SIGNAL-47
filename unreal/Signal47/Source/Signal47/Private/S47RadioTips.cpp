@@ -4,6 +4,7 @@
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47TownUse.h"
+#include "S47Townsfolk.h"
 #include "S47CB.h"
 #include "S47FieldRadio.h"
 #include "S47Radio.h"
@@ -134,6 +135,11 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
   {TEXT("am43"),TEXT("man"),TEXT("The souvenir man's got a new picture in his window. Lights over the flats, he says, taken by somebody from the dishes."),TEXT("I'll go look. I won't believe it, but I'll look."),nullptr,TEXT("shop:sold_odd"),0},
   {TEXT("am44"),TEXT("old"),TEXT("Took the souvenir man's tour Sunday. Five dollars to look at a rock. He says it's the rock."),TEXT("It's a nice rock, Pete."),nullptr,TEXT("shop:tour"),0},
   {TEXT("am45"),TEXT("woman"),TEXT("My sister in Belen got a postcard of the dishes from somebody who works out there. She wants to know is it safe."),TEXT("Tell her it's a postcard."),nullptr,TEXT("shop:postcard"),0},
+  // One of the town's own gone (S47Townsfolk).
+  {TEXT("am46"),TEXT("woman"),TEXT("Earl, the deputy's car hasn't been in front of the substation in two days and nobody answers the phone there."),TEXT("I'll call Socorro for you."),nullptr,TEXT("town:away_deputy"),0},
+  {TEXT("am47"),TEXT("man"),TEXT("Gas station's got a card in the night window. BACK SOON. It's been up since the start of the week."),TEXT("He'll turn up. They do."),nullptr,TEXT("town:away_attendant"),0},
+  {TEXT("am48"),TEXT("old"),TEXT("The shop man's not on his stoop. Thirty years he's sat on that stoop, Earl."),TEXT("I noticed, Pete."),nullptr,TEXT("town:away_souvenir_man"),0},
+  {TEXT("am49"),TEXT("woman"),TEXT("The Mesa's short a waitress this week. The cook's doing both and he is not happy about it."),TEXT("Tip him, then."),nullptr,TEXT("town:away_waitress"),0},
   {TEXT("am39"),TEXT("woman"),TEXT("I live in the yellow house at the junction. The last one on nights at the dishes waved every morning on the way by. I still look up when that truck comes past."),nullptr,nullptr,TEXT("reyes_locker"),0},
  };
  return L;
@@ -173,6 +179,8 @@ bool FS47RadioTips::Ready(const TCHAR* Needs,int32 Trust) const
  if(Trust>F.TownTrust())return false;
  // Something the town has seen the player do (S47TownUse::Seen): "shop:lure" and the like.
  if(Needs&&FString(Needs).StartsWith(TEXT("shop:")))return F.TownUse&&F.TownUse->Seen(FString(Needs).Mid(5));
+ // One of Caliche's regulars gone (S47Townsfolk::Has): "town:away_deputy" and the like.
+ if(Needs&&FString(Needs).StartsWith(TEXT("town:")))return F.Townsfolk&&F.Townsfolk->Has(FString(Needs).Mid(5));
  return !Needs||F.HasFinding(Needs);
 }
 void FS47RadioTips::Step(double Dt)

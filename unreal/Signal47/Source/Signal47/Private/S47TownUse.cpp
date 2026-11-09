@@ -14,6 +14,7 @@
 #include "S47RadioTips.h"
 #include "S47RoomDecor.h"
 #include "S47Three.h"
+#include "S47Townsfolk.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -226,19 +227,20 @@ S47J::FObj FS47TownUse::Save() const
 
 FVector FS47TownUse::CounterPoint(const FString& Counter) const
 {
-	// Three-space, the road's land (x + 8000). The lobby's cork board on its south end wall, across from the door (Config/Props/
-	// radio_station.json: the lobby is x 8019.3 to 8021.94 and z 2031 to 2038.32, floor 4.497; its east wall is the studio glass); a
+	// Three-space, the road's land (x + 8000). The lobby's cork board on its east end wall, across from the door (Config/Props/
+	// radio_station.json, turned as the door shows: world x = 8025 - local z, world z = 2036 + local x. The lobby runs from the door at
+	// x 8020 east to 8027.32, between z 2030.3 and the studio glass at 2032.94; floor 4.497); a
 	// stand on the Feed & Seed's floor by the loading door, clear of its crates (CalicheAccess Feed: counter x 7981.6 to 7982.33, z
 	// 2195.4 to 2200.1); a card standing on the souvenir shop's own cash counter (Tools/calichestreet/souvenir/build_souvenir.py:
 	// CashCounterTop at Blender 1.80, -2.72, top 1.20 m; world x = 8025 + Blender y, z = 2064 + Blender x).
-	if (Counter == S47TownUseLocal::Radio) return FVector(8020.6, 4.497 + 1.55, 2038.30);
+	if (Counter == S47TownUseLocal::Radio) return FVector(8027.30, 4.497 + 1.55, 2031.6);
 	if (Counter == S47TownUseLocal::Feed)
 	{
 		const double F = S47CalicheAccess::FloorAt(7983.9, 2198.6);
 		return FVector(7983.9, (FMath::IsFinite(F) ? F : 11.3256) + 1.38, 2198.6);
 	}
 	const double F = S47CalicheAccess::FloorAt(8021.6, 2065.2);
-	return FVector(8022.28, (FMath::IsFinite(F) ? F : 4.9528) + 1.2, 2065.0);
+	return FVector(8022.2, (FMath::IsFinite(F) ? F : 4.9528) + 1.2, 2064.5);
 }
 
 bool FS47TownUse::Build()
@@ -280,11 +282,11 @@ bool FS47TownUse::Build()
 		Props.Add(T);
 	};
 	const FColor Ink(30, 28, 26), Chalk(232, 228, 210);
-	// 1420 AM: a cork board on the lobby's south end wall, facing the door (north: Unreal yaw -90).
+	// 1420 AM: a cork board on the lobby's east end wall, facing the door (west: Unreal yaw 180).
 	{
 		const FVector At = CounterPoint(Radio);
-		Part(TEXT("S47TownRadioBoard"), At, FVector(.95, .75, .03), 0x9a7a52, Radio);
-		Words(TEXT("S47TownRadioWords"), TEXT("1420 AM\nTIPS & REQUESTS"), At + FVector(0, .2, -.02), -90, .085, Ink);
+		Part(TEXT("S47TownRadioBoard"), At, FVector(.03, .75, .95), 0x9a7a52, Radio);
+		Words(TEXT("S47TownRadioWords"), TEXT("1420 AM\nTIPS & REQUESTS"), At + FVector(-.02, .2, 0), 180, .085, Ink);
 	}
 	// Feed & Seed: a post and a board on the floor between the counter and the front wall, readable from the door and the counter.
 	{
@@ -578,6 +580,8 @@ void FS47TownUse::OpenSouvenir()
 		return;
 	}
 	Rows.Add(S47Kit::Paper(TEXT("SAUCER CRASH 1947. Postcards on a wire rack, rubber spacemen in a bin, a hand-drawn map under the glass. The man from the stoop is behind the counter in the daytime, in the same hat.")));
+	// His one thing today, or who minds the register while he is gone (S47Townsfolk).
+	if (F.Townsfolk) { const FString Said = F.Townsfolk->CounterLine(TEXT("souvenir_man")); if (!Said.IsEmpty()) Rows.Add(S47Kit::Text(Said)); }
 	// The map of saucer sites: once.
 	if (!bMap)
 		Rows.Add(S47Kit::Two(S47Kit::Small(TEXT("A map of the saucer sites, drawn by hand. Some of them are out there. He will not say which.")),

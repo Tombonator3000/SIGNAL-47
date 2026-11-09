@@ -12,6 +12,10 @@
 #include "S47RadioTips.h"
 #include "S47TownSites.h"
 #include "S47TownUse.h"
+#include "S47Townsfolk.h"
+#include "S47Town.h"
+#include "S47TownLayer.h"
+#include "S47Predecessor.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -115,10 +119,10 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 			bLastOk = true; LastText = TEXT("a counter in Caliche");
 		});
 	};
-	// Road-local: the station's lobby x 19.3 to 21.94, z 2031 to 2038; the Feed & Seed's room x -31 to -15; the souvenir shop x 20.5 to 29.5.
+	// Road-local: the station's lobby x 20 to 27.3, z 2030.3 to 2032.9; the Feed & Seed's room x -31 to -15; the souvenir shop x 20.5 to 29.5.
 	E.AddFreeform(Group, TEXT("1420 AM: the lobby board (tips, parts, Earl's notes)"), TEXT("noon, in the lobby, facing the cork board"), [Counter]
 	{
-		Counter(FVector2D(20.6, 2033.4), FVector2D(20.6, 2038.3), 12, [](FS47TownUse& T) { T.OpenRadio(false); });
+		Counter(FVector2D(22.0, 2031.6), FVector2D(27.3, 2031.6), 12, [](FS47TownUse& T) { T.OpenRadio(false); });
 	});
 	E.AddFreeform(Group, TEXT("1420 AM: the request line from SARO's phone"), TEXT("the same tip line by telephone, wherever you are"), [this, Pictured]
 	{
@@ -157,7 +161,7 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 	});
 	E.AddFreeform(Group, TEXT("Souvenirs: the counter (map, tour, film, prints)"), TEXT("eleven in the morning, inside the shop, facing the counter"), [Counter]
 	{
-		Counter(FVector2D(21.15, 2064.4), FVector2D(22.28, 2065.0), 11, [](FS47TownUse& T) { T.OpenSouvenir(); });
+		Counter(FVector2D(21.15, 2063.6), FVector2D(22.2, 2064.5), 11, [](FS47TownUse& T) { T.OpenSouvenir(); });
 	});
 	E.AddFreeform(Group, TEXT("Souvenirs: the tour now"), TEXT("two hours in his station wagon; a place you had not heard of goes on the map"), [this]
 	{
@@ -178,4 +182,61 @@ void FS47DevFreeform::AddTown(FS47DevEvents& E)
 			Tell(bOk, bOk ? Said : FString(TEXT("the lure could not be set out")), 9);
 		});
 	}
+	// ---- TOWNSFOLK-20261108: the regulars ----
+	const TCHAR* const Folk = TEXT("Townsfolk (M4)");
+	const auto TalkTo = [this, StandAt, Pictured](const FString& Who, const FVector2D& Eye, const FVector2D& Look, double Hour)
+	{
+		StandAt(Eye, Look, Hour, Hour + 1, [this, Who, Pictured]
+		{
+			FS47FreeformSession* F = Session();
+			if (!F || !F->Townsfolk || !F->Predecessor) { Tell(false, TEXT("Freeform only")); return; }
+			if (Who == TEXT("waitress")) F->Townsfolk->OpenDiner(); else F->Predecessor->Talk(Who);
+			Pictured(TEXT("folk"), 1.5f);
+			bLastOk = true; LastText = TEXT("a talk in Caliche");
+		});
+	};
+	E.AddFreeform(Folk, TEXT("Townsfolk: the deputy at the substation"), TEXT("ten in the morning; what he remembers of you, or what is going round"), [TalkTo] { TalkTo(TEXT("deputy"), FVector2D(-8, 2112), FVector2D(-16, 2109), 10); });
+	E.AddFreeform(Folk, TEXT("Townsfolk: the waitress at the Mesa"), TEXT("noon at the counter"), [TalkTo] { TalkTo(TEXT("waitress"), FVector2D(-10, 2000), FVector2D(-22, 2000), 12); });
+	E.AddFreeform(Folk, TEXT("Townsfolk: the attendant at the night window"), TEXT("ten at night"), [TalkTo] { TalkTo(TEXT("attendant"), FVector2D(-12, 2072), FVector2D(-17, 2072), 22); });
+	E.AddFreeform(Folk, TEXT("Townsfolk: what each of them could say (log)"), TEXT("every line each of the four has for you now, newest first, in the log"), [this]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Townsfolk) { Tell(false, TEXT("Freeform only")); return; }
+		int32 N = 0;
+		for (const FString& Who : FS47Townsfolk::People()) for (const FString& Line : F->Townsfolk->Candidates(Who)) { UE_LOG(LogS47TownDev, Display, TEXT("S47: townsfolk %s could say %s"), *Who, *Line); ++N; }
+		Tell(N >= 4, FString::Printf(TEXT("%d lines in the log for the four of them"), N), 5);
+	});
+	for (const bool bDeputy : { true, false })
+	{
+		E.AddFreeform(Folk, bDeputy ? TEXT("Townsfolk: the deputy goes missing") : TEXT("Townsfolk: the souvenir man goes missing"),
+			bDeputy ? TEXT("from tonight: the substation dark and no car out front; the attendant talks of nothing else") : TEXT("ten at night: nobody on the stoop; the waitress talks of nothing else"), [this, bDeputy, StandAt, Pictured]
+		{
+			FS47FreeformSession* F = Session();
+			if (!F || !F->Townsfolk) { Tell(false, TEXT("Freeform only")); return; }
+			F->Townsfolk->DevReturnAll();
+			const FString Who = bDeputy ? TEXT("deputy") : TEXT("souvenir_man");
+			if (!F->Townsfolk->Vanish(Who, FS47Townsfolk::WorksAt(Who))) { Tell(false, TEXT("could not take them")); return; }
+			const FVector2D Eye = bDeputy ? FVector2D(-6, 2114) : FVector2D(8, 2066), Look = bDeputy ? FVector2D(-16, 2106) : FVector2D(20.5, 2066);
+			StandAt(Eye, Look, bDeputy ? 10 : 22, bDeputy ? 11 : 23, [this, bDeputy, Pictured]
+			{
+				After(1.0, [this, bDeputy, Pictured]
+				{
+					FS47FreeformSession* G = Session();
+					const FS47Town* Town = M && M->TownLayer && M->TownLayer->Town ? M->TownLayer->Town.Get() : nullptr;
+					const bool bGone = Town && (bDeputy ? !Town->bDeputyIn : !Town->bSmokerIn);
+					Pictured(TEXT("gone"), .2f);
+					if (G && G->Townsfolk) { if (bDeputy && G->Predecessor) G->Predecessor->Talk(TEXT("attendant")); else G->Townsfolk->OpenDiner(); }
+					Pictured(TEXT("gonetalk"), 1.6f);
+					Tell(bGone, bGone ? FString(TEXT("Gone from the post; the others talk of it (a field record is kept), and 1420's callers will ask.")) : FString(TEXT("the figure is still at the post")), 7);
+				});
+			});
+		});
+	}
+	E.AddFreeform(Folk, TEXT("Townsfolk: everyone comes back"), TEXT("whoever is gone is back today, and will not say where"), [this]
+	{
+		FS47FreeformSession* F = Session();
+		if (!F || !F->Townsfolk) { Tell(false, TEXT("Freeform only")); return; }
+		F->Townsfolk->DevReturnAll();
+		Tell(true, TEXT("All four at their posts."), 4);
+	});
 }
