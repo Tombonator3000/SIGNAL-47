@@ -317,22 +317,22 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
  // lit white where it stands; the parts are placed from its foot so that it grows up off the land as its height is scaled.
  TArray<FPiece> BigColumnParts()
  {
-  return {{Cyl,FVector(0,450,0),FVector(16,900,16),0,0,0,0xcfdcf4,22.f,false},{Cyl,FVector(0,450,0),FVector(5,900,5),0,0,0,0xffffff,80.f,false},
-   {Cyl,FVector(0,.6,0),FVector(34,1.2,34),0,0,0,0xe6eeff,18.f,false}};
+  return {{Cyl,FVector(0,450,0),FVector(44,900,44),0,0,0,0xcfdcf4,22.f,false},{Cyl,FVector(0,450,0),FVector(14,900,14),0,0,0,0xffffff,80.f,false},
+   {Cyl,FVector(0,.6,0),FVector(70,1.2,70),0,0,0,0xe6eeff,18.f,false}};
  }
  // A dozen small lights close together, at uneven heights, that rise as one.
  TArray<FPiece> BigRiseParts()
  {
   TArray<FPiece> Out;
-  for(int32 I=0;I<12;++I){const double A=I*2.4+.3,R=10.+(I%4)*7.;Out.Add({Ball,FVector(FMath::Cos(A)*R,(I%3)*6.-6.,FMath::Sin(A)*R),FVector(6.5),0,0,0,0xfff2d8,70.f,false});}
+  for(int32 I=0;I<12;++I){const double A=I*2.4+.3,R=22.+(I%4)*14.;Out.Add({Ball,FVector(FMath::Cos(A)*R,(I%3)*12.-12.,FMath::Sin(A)*R),FVector(16),0,0,0,0xfff2d8,80.f,false});}
   return Out;
  }
  // What it leaves. Glassed ground: a dark disc gone to glass in a ring of pale ash, and small bare prints round it twice and off.
  TArray<FPiece> BigMarkColumn()
  {
-  const uint32 Ash=0x8a8172,Glass=0x0e1012,Crack=0x3a3832,Print=0x3b342a;
-  TArray<FPiece> Out={{Cyl,FVector(0,.012,0),FVector(6.6,.02,6.6),0,0,0,Ash,0,true},{Cyl,FVector(0,.024,0),FVector(2.1,.024,2.1),0,0,0,Glass,0,true}};
-  for(int32 I=0;I<5;++I)Out.Add({Cube,FVector(0,.038,0),FVector(.025,.006,1.9-.2*I),I*.63,0,0,Crack,0,false});
+  const uint32 Ash=0x4e483e,Glass=0x08090a,Crack=0x2a2824,Print=0x2b251d;
+  TArray<FPiece> Out={{Cyl,FVector(0,.006,0),FVector(6.6,.01,6.6),0,0,0,Ash,0,true},{Cyl,FVector(0,.012,0),FVector(2.1,.012,2.1),0,0,0,Glass,0,true}};
+  for(int32 I=0;I<5;++I)Out.Add({Cube,FVector(0,.02,0),FVector(.025,.004,1.9-.2*I),I*.63,0,0,Crack,0,false});
   for(int32 I=0;I<26;++I){const double A=I*2.*UE_DOUBLE_PI/13.,R=2.55+(I/13)*.32;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.1,.02,.22),-A,0,0,Print,0,false});}
   for(int32 I=0;I<10;++I)Out.Add({Ball,FVector((I%2)*.28-.14,.02,-3.4-I*.8),FVector(.1,.02,.22),0,0,0,Print,0,false});
   return Out;
@@ -340,18 +340,18 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
  // The furrow: burnt along its bottom, a lip of thrown caliche either side, deepest at its end with nothing there, the brush laid flat.
  TArray<FPiece> BigMarkFall()
  {
-  const uint32 Floor=0x16120e,Lip=0x6a5c48,Pit=0x0c0a09,Brush=0x4a3b2a;
-  TArray<FPiece> Out={{Cube,FVector(0,.012,9),FVector(1.2,.03,18),0,0,0,Floor,0,false},{Cube,FVector(.9,.11,9),FVector(.55,.22,18),0,0,.12,Lip,0,false},
-   {Cube,FVector(-.9,.11,9),FVector(.55,.22,18),0,0,-.12,Lip,0,false},{Cyl,FVector(0,.016,0),FVector(2.6,.026,2.6),0,0,0,Pit,0,true}};
-  for(int32 I=0;I<12;++I){const double Side=I%2?1.:-1.,Z=1.5+I*1.4;Out.Add({Ball,FVector(Side*(2.4+(I%3)*.5),.07,Z),FVector(1.5,.12,.55),Side*.5,0,0,Brush,0,false});}
+  const uint32 Floor=0x16120e,Lip=0x4e4234,Pit=0x0c0a09,Brush=0x33291e;
+  TArray<FPiece> Out={{Cube,FVector(0,.008,9),FVector(1.2,.016,18),0,0,0,Floor,0,false},{Ball,FVector(.95,0,9),FVector(.7,.22,18.4),0,0,0,Lip,0,false},
+   {Ball,FVector(-.95,0,9),FVector(.7,.22,18.4),0,0,0,Lip,0,false},{Cyl,FVector(0,.01,0),FVector(2.6,.014,2.6),0,0,0,Pit,0,true}};
+  for(int32 I=0;I<12;++I){const double Side=I%2?1.:-1.,Z=1.5+I*1.4;Out.Add({Ball,FVector(Side*(2.4+(I%3)*.5),.01,Z),FVector(1.5,.06,.55),Side*.5,0,0,Brush,0,false});}
   return Out;
  }
  // Stones turned over: a ring of them dark side up round a middle swept bare, and cattle tracks running out of it every way.
  TArray<FPiece> BigMarkRise()
  {
-  const uint32 Bare=0x8f8572,Stone=0x2e2820,Track=0x2a241c;
-  TArray<FPiece> Out={{Cyl,FVector(0,.012,0),FVector(6.2,.016,6.2),0,0,0,Bare,0,true}};
-  for(int32 I=0;I<28;++I){const double A=I*.9+.2,R=3.3+(I%5)*.45;Out.Add({Ball,FVector(FMath::Cos(A)*R,.05,FMath::Sin(A)*R),FVector(.28,.12,.22),A,0,0,Stone,0,false});}
+  const uint32 Bare=0x5e5444,Stone=0x231e18,Track=0x2a241c;
+  TArray<FPiece> Out={{Cyl,FVector(0,.006,0),FVector(6.2,.008,6.2),0,0,0,Bare,0,true}};
+  for(int32 I=0;I<28;++I){const double A=I*.9+.2,R=3.3+(I%5)*.45;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.28,.08,.22),A,0,0,Stone,0,false});}
   for(int32 D=0;D<8;++D)for(int32 I=0;I<5;++I){const double A=D*UE_DOUBLE_PI/4.+.2,R=5.8+I*.9;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.16,.02,.2),-A,0,0,Track,0,false});}
   return Out;
  }
@@ -2039,7 +2039,19 @@ void FS47Happenings::PlaceSites()
   else if(S.Kind==TEXT("missing"))Show(TEXT("pickup"),At,S.Yaw);
   else if(S.Kind==TEXT("tracks"))Show(TEXT("tracks"),At,S.Yaw);
   // The big night's mark, in its own shape (S47BigNight.cpp).
-  else if(S.Kind==TEXT("bigmark")){const FString Mark=TEXT("bigmark_")+S.Variant;Show(*Mark,At,S.Yaw);}
+  else if(S.Kind==TEXT("bigmark"))
+  {
+   // Laid on the slope it is on, as the ring is: not a flat plate half in the air.
+   FQuat Tilt=FQuat::Identity;
+   if(M->Player&&M->Player->Floor&&Away<300)
+   {
+    const double Ev=M->Player->Floor(At.X+3,At.Z),Wv=M->Player->Floor(At.X-3,At.Z),Sv=M->Player->Floor(At.X,At.Z+3),Nv=M->Player->Floor(At.X,At.Z-3);
+    if(FMath::IsFinite(Ev)&&FMath::IsFinite(Wv)&&FMath::IsFinite(Sv)&&FMath::IsFinite(Nv))
+     Tilt=FQuat::FindBetweenNormals(FVector(0,1,0),FVector(-(Ev-Wv)/6.,1.,-(Sv-Nv)/6.).GetSafeNormal());
+   }
+   const FString Mark=TEXT("bigmark_")+S.Variant;
+   if(FProp* P=Prop(Mark)){PoseProp(*P,At,S.Yaw,Tilt);ShowProp(*P,true);Want.Add(Mark);}
+  }
   else if(S.Kind==TEXT("truck")&&!S.bDone)
   {
    if(S.Variant==TEXT("wrong"))Show(TEXT("handset"),At,S.Yaw);
