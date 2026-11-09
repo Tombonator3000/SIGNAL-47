@@ -37,6 +37,8 @@ class FS47ShedGlow;
 class FS47WeekCase
 {
 public:
+ // Patch 3 (the truck on the yard, the cab, the thoughts, Dale during the case and the mornings of B to E): see the cab's part
+ // below and S47WeekCaseCab.cpp.
  enum class EPhase : uint8 { Hook, Day, Night, Phase1, Phase2, Phase3, Out, Done };
  enum class EOutcome : uint8 { None, A, B, C, D, E };
  static const TCHAR* PhaseName(EPhase P);
@@ -94,6 +96,10 @@ public:
   int32 BigNight=0;     // FS47Happenings::BigHappened: 0 not yet, -1 never in this game
   bool bLive=true;      // the night's own rules run (a developer run has no case of its own)
   bool bAtFarm=false,bAtSaro=false,bDriving=false,bTaken=false,bKnocked=false;
+  // Patch 3: something at the truck, for the cab's rules (StepCab). Patch 4's searcher fills these through SearcherFeed; until it
+  // is in, a plain reserve does (ReserveSearcher): in the shed until the breach, then to the truck after a turn of its key.
+  bool bSearcherNear=false;
+  double SearcherDist=1e4; // metres from the truck to it
  };
  struct FOut
  {
@@ -106,6 +112,60 @@ public:
   FString Why;
  };
  static FOut StepState(FState& S,const FPlan& P,const FIn& In);
+
+ // ---- patch 3: the truck on the yard and the cab (pure; S47WeekCaseCab.cpp) ----
+ // Rolling onto the yard on the case's night, the engine dies at a fixed point (CabYard, within CabYardReach) and wants the key.
+ // A turn of it is heard (a noise at the truck: S47Noise, and the searcher goes to the last sound). In phase two it only cranks,
+ // and at the second turn the kicks stop for a while: something listens. It catches on a turn when the searcher is over CatchFar
+ // away and the player has made no sound for CatchQuiet; on any turn after CatchFuse of being dead, whatever the rest. While the
+ // searcher is at the cab (within NearCab) the key does nothing, the truck rocks and a light sweeps through the windshield; week
+ // one never takes anyone in the cab (MayTakeInCab, and FS47Taken refuses a driver already).
+ static constexpr double CatchFar=40.,CatchQuiet=20.,CatchFuse=300.,NearCab=12.,ListenSecs=14.,StuckSecs=75.,CabYardReach=14.;
+ static constexpr int32 StuckTurns=3;
+ static bool MayTakeInCab(int32 Week){return Week>1;}
+ struct FCab
+ {
+  bool bStalled=false,bCaught=false; // died on the yard this case; caught again since
+  double StallAge=0;  // seconds of play dead
+  double Quiet=0;     // seconds of play since the player last made a sound (a turn of the key, running, the set)
+  int32 Turns=0,Phase2Turns=0;
+  double Listen=0;    // phase two: seconds left of the kicks stopped
+  double NearFor=0;   // seconds the searcher has been at the cab
+  bool bStuckSaid=false;
+ };
+ struct FCabIn
+ {
+  EPhase Phase=EPhase::Hook;
+  double Dt=0;
+  bool bInCab=false,bAtYard=false,bTurned=false,bNoise=false,bSearcherNear=false;
+  double SearcherDist=1e4;
+  int32 Week=1;
+ };
+ struct FCabOut
+ {
+  bool bStallNow=false;     // the engine dies now (a stall wanting the key that never catches by itself)
+  bool bCatch=false;        // this turn of the key catches
+  bool bHoldKey=false;      // the key does nothing just now
+  bool bShake=false,bSweep=false; // the truck rocked, the light through the windshield
+  bool bHeard=false;        // a turn of the key: a noise at the truck
+  bool bListen=false;       // phase two's second turn: the kicks stop, listening
+  bool bTake=false;         // never in week one
+  bool bStuck=false;        // the help text, once, if she is stuck in the dead cab
+  FString Why;
+ };
+ static FCabOut StepCab(FCab& C,const FCabIn& In);
+ // The plain reserve for the searcher until patch 4 (in the shed before the breach; after it, to the truck a little after each turn
+ // of its key, there a while, then off among the buildings). Since: seconds since the last turn (large for none), in phase three.
+ static void ReserveSearcher(EPhase Phase,double ToShed,double SinceTurn,bool& bNear,double& Dist);
+ static constexpr double ReserveCome=9.,ReserveStay=25.;
+ // The thoughts (FS47Thoughts, US47UI::Thought): the two at the door, the help if stuck, the key held.
+ static const TCHAR* ThoughtLocked();
+ static const TCHAR* ThoughtLockedIn();
+ static const TCHAR* ThoughtStuck();
+ static const TCHAR* ThoughtHeld();
+ // Dale's lines (the self-test and F10): his hail and help during the case, and the morning after each way out.
+ static TArray<FString> MorningLines(EOutcome O);
+ static TArray<FString> HelpLines();
  // The phase a save writes: what is on the ground is the night still waiting; Out at the farm too.
  static EPhase SavedPhase(const FState& S);
  static S47J::FObj SaveState(const FState& S);
@@ -133,6 +193,15 @@ public:
  int32 CaseNight() const{return S.CaseNight;}
  FString StateText() const;
  double PhaseAge() const{return S.Age;}
+ // Patch 3: the cab as the case has it (F10, the log).
+ const FCab& CabNow() const{return Cab;}
+ FString CabText() const;
+ // Patch 4's searcher, when it is in: where it is from the truck (metres) and whether it is at the cab. Unset: the reserve.
+ TFunction<bool(double& OutDist,bool& bOutNear)> SearcherFeed;
+ // The last sound the player made at the farm that something could go to (the truck's starter, the door), area metres, and when
+ // (FPlatformTime::Seconds; 0 none). Patch 4's searcher goes there first.
+ FVector LastSoundAt() const{return SoundAt;}
+ double LastSoundTime() const{return SoundTime;}
  // Patch 2: the shed's door and its light (drawn whenever Freeform runs; the case drives them).
  const FS47FarmShedDoor* DoorNow() const{return DoorObj.Get();}
  const FS47ShedGlow* GlowNow() const{return GlowObj.Get();}
@@ -163,6 +232,13 @@ public:
  bool DevPhase(EPhase P,FString& Why);
  // In phase one: a knock at the door as if E were pressed with "Knock".
  bool DevKnock(FString& Why);
+ // Patch 3: on the ground, in the truck: the engine dies now, on the yard's rules; a turn of the key as if E were pressed; the next
+ // turn catches (the rules let it).
+ bool DevStall(FString& Why);
+ bool DevTurnKey(FString& Why);
+ bool DevCatch(FString& Why);
+ // Where the truck dies on the yard (area metres) and which way it faces there (the drive's heading).
+ static FVector CabYard();
  bool DevTouched() const{return bDevBefore;}
  static bool SelfTest(TArray<FString>& Lines);
 private:
@@ -180,6 +256,24 @@ private:
  TSharedPtr<FS47FarmShedDoor> DoorObj;
  TSharedPtr<FS47ShedGlow> GlowObj;
  bool bShedFresh=true;
+ // Patch 3: the cab.
+ FCab Cab;
+ int32 TurnsSeen=0;bool bCatchPending=false,bArmedKeyStall=false,bHeldKey=false,bDevCatch=false;
+ double SinceTurn=1e4,SweepT=0;
+ FVector SoundAt=FVector::ZeroVector;double SoundTime=0;
+ TWeakObjectPtr<class USpotLightComponent> Sweep;
+ bool bThoughtLocked=false,bThoughtHeld=false;double NearDoorFor=0;
+ bool bHailed=false,bHelpSaid=false;
+ void StepCab(double Dt);
+ void ReadSearcher(const FVector& Truck,bool& bNear,double& Dist) const;
+ void StepSweep(double Dt,bool bOn);
+ void StopCab();
+ void StepThoughts(double Dt);
+ void StepHail();
+ // A thought for the HUD (US47UI::Thought, through the one queue), After seconds of play from now.
+ struct FDueThought{double At=0;FString Text;float Secs=4.5f;};
+ TArray<FDueThought> ThoughtsDue;
+ void Think(const TCHAR* Text,float Secs,double After=0);
  void StepShed(double Dt,const FPlan& P);
  FIn ReadIn(double Dt);
  void Apply(const FOut& O);

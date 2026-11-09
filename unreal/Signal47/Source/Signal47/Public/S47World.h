@@ -117,6 +117,9 @@ public:
 	FS47TruckTrouble Trouble;
 	/** The next time the truck is got into, its engine is dead and wants the key (story/abduction.ts). */
 	bool bKeyStall = false;
+	/** WEEKLY-CASE-20261109: something at the cab rocking the truck, 0 to 1 (the eye in the cab jolts with it, unevenly; none with
+	 *  head motion off in Comfort). Set by whoever does it every frame it goes on; it dies away by itself in about a second. */
+	double CabShake = 0;
 
 	void Enter(const FString& NewArea);
 	void PlaceAtStation();

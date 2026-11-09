@@ -680,6 +680,8 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  const int32 RadioNow=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
  if(bRunning&&!bWasRunning&&See.BodyDist<40){See.bNoise=true;See.Sound=Feet;}
  if(bDriving&&!bWasDriving&&See.BodyDist<60){See.bNoise=true;See.Sound=Feet;}
+ // WEEKLY-CASE-20261109, patch 3: the starter turning over in a dead truck is heard as getting in is, each turn once.
+ {static int32 TurnsSeen=0;const int32 Turns=M->World&&M->World->Trouble.Kind()==ES47Trouble::Stall?M->World->Trouble.Turns:0;if(bDriving&&Turns>TurnsSeen&&See.BodyDist<60){See.bNoise=true;See.Sound=Feet;}TurnsSeen=Turns;}
  // The set is the player's to carry, but not their noise: nobody chose that voice.
  const bool bSetSpoke=RadioNow!=RadioSeen&&See.BodyDist<30;
  if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}

@@ -10,6 +10,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Happenings.h"
 #include "S47Main.h"
+#include "S47MessageQueue.h"
 #include "S47NightRhythm.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
@@ -37,6 +38,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47WeekCase,Log,All);
 namespace S47Hap
 {
  bool Clean(const FString& Text);
+ bool Concluding(const FString& Text);
  FString ClockText(double Clock);
 }
 namespace S47Week
@@ -59,10 +61,46 @@ namespace S47Week
   TEXT("But you were busy, I am sure. Nobody pays for a door we did not look at. Out.")};
  const TCHAR* const MorningSlipA=TEXT("A slip by the phone, in a hard square hand: \"Alderete feed shed. Door broken OUTWARD. Padlock still locked. Floor gone like glaze. You were busy, I am sure. D.\"");
  const TCHAR* const FindingA=TEXT("The feed shed at the Alderete place, the morning after, as it came over the walkie: the door broken outward from the inside, the padlock still locked on its chain, and the floor inside gone hard and glossy, like glaze. Nobody from the station was there.");
+ // Patch 3: during the case, his hail on the walkie; answered, the bearing, where to keep out of sight, and the engine.
+ const TCHAR* const HailFirst=TEXT("SARO night. You are at the Alderete place, yes? Answer me.");
+ const TCHAR* const HailAgain=TEXT("SARO night. Pick up. My needle is doing it again.");
+ const TCHAR* const HailGiveUp=TEXT("Fine. Do not answer. Out.");
+ const TCHAR* const HelpLines[]={
+  TEXT("Listen. It is the small shed past the house, the one with the chain. My needle goes to it and stays there."),
+  TEXT("If anything comes out of it, you are not standing in the open. The hay in the barn, under the tractor, behind the water tank, the ditch. Low, and no lamp."),
+  TEXT("And the truck: one turn of the key, then you wait. Do not flood the engine. Out.")};
+ // The morning after B to E, at SARO (A's is above): his words follow the way out.
+ const TCHAR* const MorningB[]={
+  TEXT("The Alderete feed shed. You were there, and you drove off before it broke. Smart, maybe."),
+  TEXT("On my side a burst, a few minutes after you left. So now we have a sound, a log and a door lying in the yard. Somebody out there will write to us about it, you will see. Out.")};
+ const TCHAR* const MorningC[]={
+  TEXT("You stayed. You hid, and you drove when it let you. I did not think you had it in you."),
+  TEXT("On the array the same minute as at that shed. Write down every minute of it, now, before you sleep. Out.")};
+ const TCHAR* const MorningD[]={
+  TEXT("Your truck is standing in the Alderete yard, and you walked home? At night? Out there?"),
+  TEXT("Fetch it in daylight. It costs you the morning, and while you are there, you look at that shed. Out.")};
+ const TCHAR* const MorningE[]={
+  TEXT("Where were you? Hours, and nothing on the set. Your things are lying in the Alderete yard."),
+  TEXT("No. Do not tell me. Not over the radio. Fetch them in daylight, and then we talk. Out.")};
+ FString SlipOf(const TArray<FString>& Lines)
+ {
+  FString All=FString::Join(Lines,TEXT(" "));
+  All.ReplaceInline(TEXT(" Out."),TEXT(""));
+  return FString::Printf(TEXT("A slip by the phone, in a hard square hand: \"%s D.\""),*All);
+ }
  FString FindingKey(int32 Night){return FString::Printf(TEXT("weekcase_shed_a_d%d"),Night);}
  FString Dale(const FString& Text){return FString(TEXT("DALE"))+TEXT(": ")+Text;}
  // The night's pace (F10's natural night runs its minutes at speed), as the big night counts its own seconds.
  double Pace(const US47Main* M){return M&&M->Freeform&&M->Freeform->Director?FMath::Max(1.,M->Freeform->Director->TestPaceNow()):1.;}
+}
+
+// A whole word in a lower-case line (the self-test's spoiler check).
+static bool FS47WeekCaseLocalWord(const FString& L,const TCHAR* W)
+{
+ const int32 N=FCString::Strlen(W);
+ for(int32 At=L.Find(W);At!=INDEX_NONE;At=L.Find(W,ESearchCase::IgnoreCase,ESearchDir::FromStart,At+1))
+  if((At==0||!FChar::IsAlpha(L[At-1]))&&(At+N>=L.Len()||!FChar::IsAlpha(L[At+N])))return true;
+ return false;
 }
 
 const TCHAR* FS47WeekCase::PhaseName(EPhase P)
@@ -309,6 +347,12 @@ FS47WeekCase::FIn FS47WeekCase::ReadIn(double Dt)
  In.bTaken=F->Taken&&(F->Taken->Stage()==FS47Taken::EStage::Lift||F->Taken->Stage()==FS47Taken::EStage::Away);
  // Patch 2: knocked at the shed's door (its knock closed, whether or not anything answered).
  In.bKnocked=DoorObj.IsValid()&&DoorObj->Knocked();
+ // Patch 3: something at the truck (patch 4's searcher, or the reserve), from the truck if she is in it, else from her.
+ {
+  const FS47DriveController* D=In.bDriving&&M->World?M->World->CabDrive():nullptr;
+  const FVector From=D?D->Pos:M->Player?M->Player->Pos:ShedDoor();
+  ReadSearcher(From,In.bSearcherNear,In.SearcherDist);
+ }
  return In;
 }
 
@@ -325,7 +369,13 @@ void FS47WeekCase::Step(double Dt)
   if(S.Phase!=Was)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: %s -> %s (%s) at %s, night %d"),PhaseName(Was),PhaseName(S.Phase),*O.Why,*S47Hap::ClockText(M->Freeform->Clock()),In.Night);
   Apply(O);
   StepDale();
+  // Patch 3: the truck on the yard and the cab, the thoughts, Dale's hail.
+  StepCab(Dt);
+  StepThoughts(M->Freeform->Held()||M->ModalOpen()?0.:Dt);
+  StepHail();
  }
+ // Patch 3: the morning's lines go on being said after the case is done (they were queued as it ended).
+ else StepDale();
  // The door stands whatever the case is doing (open before it, broken a week after it).
  StepShed(Dt,P);
 }
@@ -342,7 +392,8 @@ void FS47WeekCase::StepShed(double Dt,const FPlan& P)
  DoorObj->Plan(F->Seed(),S.CaseNight,P.Rhythm);
  const FS47FarmShedDoor::EState Want=DoorFor(S,Night);
  // A breach is animated only as it happens on the ground; a load or a later night simply finds the door so.
- DoorObj->Set(Want,MoodFor(S.Phase),!bShedFresh&&S.Phase==EPhase::Phase3);
+ // Patch 3: phase two's second turn of the key: the kicks stop for a while, something listening.
+ DoorObj->Set(Want,Cab.Listen>0&&S.Phase==EPhase::Phase2?FS47FarmShedDoor::EMood::Still:MoodFor(S.Phase),!bShedFresh&&S.Phase==EPhase::Phase3);
  bShedFresh=false;
  DoorObj->Step(D);
  GlowObj->Step(D,FS47ShedGlow::LevelFor(S.Phase,S.Age),Want==FS47FarmShedDoor::EState::Broken);
@@ -358,6 +409,8 @@ void FS47WeekCase::Apply(const FOut& O)
  {
   // The night's ground is the case's: the rhythm's one start (a danger, the night's slot), and no script on top of it.
   if(M->Rhythm){M->Rhythm->Began(TEXT("week_case"));bRhythmBegan=true;}
+  // Patch 3: the cab, the thoughts and the hail are this visit's.
+  Cab=FCab();TurnsSeen=0;SinceTurn=1e4;bThoughtLocked=bThoughtHeld=false;NearDoorFor=0;bHailed=false;ThoughtsDue.Reset();
   HoldScripts(true);
   // Patch 2: the door's knocks are this visit's; the light, the sounds and the omen go with every way out.
   if(DoorObj)DoorObj->Calm();
@@ -368,6 +421,8 @@ void FS47WeekCase::Apply(const FOut& O)
   UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: phase one at the shed, %s"),*S47Hap::ClockText(F->Clock()));
  }
  if(O.bEscalated)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: phase two at %s"),*S47Hap::ClockText(F->Clock()));
+ // Patch 3: the truck was the last sound before the breach: it goes there first (the reserve, until patch 4).
+ if(O.bBreach&&SinceTurn<60)SinceTurn=0;
  if(O.bBreach)UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: phase three, the breach, at %s"),*S47Hap::ClockText(F->Clock()));
  if(O.bOver)
  {
@@ -385,6 +440,8 @@ void FS47WeekCase::Clean(const TCHAR* Why)
 {
  const bool bWorld=!IsEngineExitRequested()&&!GExitPurge&&!IsGarbageCollecting()&&IsValid(M);
  if(bStall&&bWorld&&IsValid(M->World))M->World->Trouble.Release();
+ // Patch 3: the stall from the yard catches on the next turn, the shake and the light end (also on a stop with nothing begun).
+ StopCab();ThoughtsDue.Reset();
  bStall=false;
  if(AS47Walker* W=bWorld?Hooked.Get():nullptr)W->CameraOverride=Before;
  Hooked.Reset();Before=nullptr;
@@ -495,10 +552,52 @@ void FS47WeekCase::Morning()
   const FString Key=S47Week::FindingKey(S.CaseNight);
   if(!F->HasFinding(Key))F->RecordEvidence(Key,S47Week::FindingA);
  }
+ else
+ {
+  // Patch 3: B to E, Dale's words at SARO follow the way out (their records are patch 5's): on the set, or the slip by the phone.
+  const TArray<FString> Lines=MorningLines(S.Outcome);
+  bool bSaid=Lines.IsEmpty()||Dale(Lines);
+  if(!bSaid&&FS47FieldRadio::InSaroBuilding(M)&&M->UI){M->UI->Toast(S47Week::SlipOf(Lines),11);bSaid=true;}
+  if(!bSaid)return;
+ }
  // B to E: their records are patch 5's; here only the morning is marked, with the player back at SARO.
  S.bMorning=true;
  UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: the morning after, way out %s"),OutcomeName(S.Outcome));
  M->RequestAutosave();
+}
+
+TArray<FString> FS47WeekCase::MorningLines(EOutcome O)
+{
+ TArray<FString> L;
+ const auto Add=[&L](const auto& Arr){for(const TCHAR* T:Arr)L.Add(T);};
+ switch(O)
+ {
+ case EOutcome::A:Add(S47Week::MorningA);break;case EOutcome::B:Add(S47Week::MorningB);break;case EOutcome::C:Add(S47Week::MorningC);break;
+ case EOutcome::D:Add(S47Week::MorningD);break;case EOutcome::E:Add(S47Week::MorningE);break;default:break;
+ }
+ return L;
+}
+TArray<FString> FS47WeekCase::HelpLines(){TArray<FString> L;for(const TCHAR* T:S47Week::HelpLines)L.Add(T);return L;}
+
+// Patch 3: Dale's hail during the case, a minute or so on the ground (or as the truck dies): heard only if she answers (T), then his
+// help, one line at a time. Not answered, he gives up. One hail a visit; with no set on his channel it is simply not heard.
+void FS47WeekCase::StepHail()
+{
+ if(bHailed||!HoldsGround()||!M->FieldRadio.IsValid()||M->ModalOpen())return;
+ const bool bDue=(S.Phase==EPhase::Phase1&&S.Age>=70.)||(Cab.bStalled&&Cab.StallAge>=8.)||S.Phase==EPhase::Phase2;
+ if(!bDue||!DaleLines.IsEmpty()||M->FieldRadio->DaleSpeaking()||M->FieldRadio->Hailing()||!M->FieldRadio->Owned())return;
+ FS47FieldRadio::FHail H;H.First=S47Week::HailFirst;H.Again=S47Week::HailAgain;H.GiveUp=S47Week::HailGiveUp;
+ const TWeakPtr<uint8> A=Alive;
+ if(M->FieldRadio->Hail(H,[this,A]
+  {
+   if(!A.IsValid())return;
+   UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale answered on the walkie: his help"));
+   if(Dale(HelpLines()))bHelpSaid=true;
+  },[A]{if(A.IsValid())UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale's hail not answered"));}))
+ {
+  bHailed=true;UE_LOG(LogS47WeekCase,Display,TEXT("S47: week case: Dale hails on the walkie"));
+ }
+ else bHailed=true; // not heard (no set, another channel): not asked again every frame
 }
 
 // ---------------------------------------------------------------- F10
@@ -795,6 +894,105 @@ bool FS47WeekCase::SelfTest(TArray<FString>& Lines)
   bool bDark=true;
   for(const EPhase Ph:{EPhase::Hook,EPhase::Day,EPhase::Night,EPhase::Phase1,EPhase::Out,EPhase::Done})for(double Age=0;Age<1500;Age+=11)bDark&=!FS47ShedGlow::LevelFor(Ph,Age).Lit();
   Check(bDark&&FS47ShedGlow::LevelFor(EPhase::Phase2,1).Lit()&&FS47ShedGlow::LevelFor(EPhase::Phase3,1).Lit(),TEXT("the light from inside is out but in phases two and three"));
+ }
+ // Patch 3: the truck on the yard and the cab.
+ {
+  const auto Dead=[](FCab& C,EPhase Ph){C=FCab();FCabIn In;In.Phase=Ph;In.bInCab=true;In.bAtYard=true;In.SearcherDist=30;return StepCab(C,In).bStallNow&&C.bStalled;};
+  FCab C;
+  FCabIn Night;Night.Phase=EPhase::Night;Night.bInCab=true;Night.bAtYard=true;
+  const bool bNotBefore=!StepCab(C,Night).bStallNow&&!C.bStalled;
+  const bool bDies=Dead(C,EPhase::Phase1);
+  FCabIn Again;Again.Phase=EPhase::Phase1;Again.bInCab=true;Again.bAtYard=true;Again.Dt=1;
+  const bool bOnce=!StepCab(C,Again).bStallNow;
+  Check(bNotBefore&&bDies&&bOnce,TEXT("the truck dies on the yard once, on the ground only"));
+  // Always after five minutes: turning the key every few seconds (never quiet), it near but never at the cab, in every phase.
+  bool bFuse=true,bNotSooner=true;
+  for(const EPhase Ph:{EPhase::Phase1,EPhase::Phase2,EPhase::Phase3})for(double Dist:{13.,25.,39.,80.})for(double Every:{2.,3.5,7.})
+  {
+   FCab K;Dead(K,Ph);
+   FCabIn In;In.Phase=Ph;In.bInCab=true;In.SearcherDist=Dist;In.Dt=.5;
+   double Next=Every;bool bCaught=false;
+   for(double T=.5;T<CatchFuse+30&&!bCaught;T+=.5)
+   {
+    In.bTurned=T>=Next;if(In.bTurned)Next=T+Every;
+    const FCabOut O=StepCab(K,In);
+    if(O.bCatch){bCaught=true;bNotSooner&=K.StallAge>=CatchFuse||(Ph!=EPhase::Phase2&&Dist>CatchFar);}
+   }
+   bFuse&=bCaught;
+  }
+  Check(bFuse&&bNotSooner,TEXT("the truck always catches on a turn after five minutes dead, whatever else; never sooner while noisy and close"));
+  // Not while it is at the cab: the key held, no turn counts, not even after the fuse; and nobody is taken in the cab in week one.
+  bool bNever=true,bHeld=true,bSafe=true;
+  for(const EPhase Ph:{EPhase::Phase1,EPhase::Phase2,EPhase::Phase3})
+  {
+   FCab K;Dead(K,Ph);
+   FCabIn In;In.Phase=Ph;In.bInCab=true;In.bSearcherNear=true;In.SearcherDist=3;In.Dt=1;In.Week=1;
+   for(double T=0;T<CatchFuse*2;T+=1)
+   {
+    In.bTurned=FMath::Fmod(T,5.)==0;In.bSearcherNear=FMath::Fmod(T,7.)!=3;In.SearcherDist=In.bSearcherNear?3:8; // within NearCab either way
+    const FCabOut O=StepCab(K,In);
+    bNever&=!O.bCatch&&!K.bCaught;bHeld&=O.bHoldKey&&O.bShake&&O.bSweep;bSafe&=!O.bTake;
+   }
+  }
+  FCab K2;Dead(K2,EPhase::Phase3);FCabIn W2;W2.Phase=EPhase::Phase3;W2.bInCab=true;W2.bSearcherNear=true;W2.Dt=1;W2.Week=2;
+  Check(bNever&&bHeld,TEXT("the truck never catches while it is at the cab, the key held, the truck rocked and the light through the glass"));
+  Check(bSafe&&!MayTakeInCab(1)&&MayTakeInCab(2)&&StepCab(K2,W2).bTake,TEXT("nobody is taken in the cab in week one (from week two it may cost)"));
+  // The rule: far and quiet catches in phases one and three; nineteen seconds is not quiet enough; phase two only cranks, and its
+  // second turn stops the kicks.
+  const auto TurnAfter=[&Dead](EPhase Ph,double Dist,double Quiet){FCab K;Dead(K,Ph);FCabIn In;In.Phase=Ph;In.bInCab=true;In.SearcherDist=Dist;In.Dt=Quiet;StepCab(K,In);In.Dt=0;In.bTurned=true;return StepCab(K,In).bCatch;};
+  Check(TurnAfter(EPhase::Phase3,41,20.5)&&TurnAfter(EPhase::Phase1,60,21)&&!TurnAfter(EPhase::Phase3,41,19)&&!TurnAfter(EPhase::Phase3,39,60)&&!TurnAfter(EPhase::Phase2,80,60),
+   TEXT("it catches when it is over 40 m off and she has been quiet 20 s; in phase two it only cranks"));
+  FCab L;Dead(L,EPhase::Phase2);FCabIn P2;P2.Phase=EPhase::Phase2;P2.bInCab=true;P2.SearcherDist=30;P2.bTurned=true;P2.Dt=1;
+  const FCabOut L1=StepCab(L,P2),L2=StepCab(L,P2);
+  Check(L1.bHeard&&!L1.bListen&&L2.bHeard&&L2.bListen&&L.Listen>0,TEXT("every turn is heard; in phase two the second stops the kicks: something listens"));
+  // The help text only when stuck.
+  FCab St;Dead(St,EPhase::Phase3);FCabIn S3;S3.Phase=EPhase::Phase3;S3.bInCab=true;S3.SearcherDist=30;S3.Dt=1;
+  bool bEarly=false;for(int32 I=0;I<20;++I)bEarly|=StepCab(St,S3).bStuck;
+  int32 Said=0;S3.bTurned=true;for(int32 I=0;I<6;++I)Said+=StepCab(St,S3).bStuck?1:0;
+  Check(!bEarly&&Said==1,TEXT("\"Don't flood it\" comes once, and only when she is stuck turning the key"));
+  // The reserve: shut in until the breach; after it, to the truck after a turn, a while, then off.
+  bool bN=false;double D=0;bool bRes=true;
+  ReserveSearcher(EPhase::Phase2,30,0,bN,D);bRes&=!bN&&D==30;
+  ReserveSearcher(EPhase::Phase3,30,ReserveCome+1,bN,D);bRes&=bN;
+  ReserveSearcher(EPhase::Phase3,30,ReserveCome+ReserveStay+1,bN,D);bRes&=!bN&&D>CatchFar;
+  ReserveSearcher(EPhase::Out,30,0,bN,D);bRes&=!bN&&D>CatchFar;
+  Check(bRes,TEXT("the reserve searcher (until patch 4): in the shed, then to the last turn of the key, then gone"));
+ }
+ // Patch 3: the thoughts, through the one queue, one at a time, behind a voice; in order.
+ {
+  FS47MessageQueue Q;
+  using FQ=FS47MessageQueue;
+  Q.Push(TEXT("WALKIE 1, DALE: Listen."),3.f,FQ::EPri::Dale);
+  Q.Push(S47Thought::Line(ThoughtLocked()),4.f,FQ::EPri::Radio);
+  Q.Push(S47Thought::Line(ThoughtLockedIn()),4.5f,FQ::EPri::Radio);
+  int32 Most=0;TArray<FString> Seen;double Now=0;
+  for(int32 I=0;I<600;++I)
+  {
+   Now+=.05;Q.Step(Now,.05);
+   const FQ::FItem* Sp=Q.Showing(FQ::ELane::Speech);const FQ::FItem* Hi=Q.Showing(FQ::ELane::Hint);
+   Most=FMath::Max(Most,(Sp?1:0)+(Hi&&S47Thought::Is(Hi->Text)?1:0));
+   if(Sp&&(Seen.IsEmpty()||Seen.Last()!=Sp->Text))Seen.Add(Sp->Text);
+  }
+  Check(Most==1&&Seen.Num()==3&&Seen[0].Contains(TEXT("DALE"))&&Seen[1]==S47Thought::Line(ThoughtLocked())&&Seen[2]==S47Thought::Line(ThoughtLockedIn())&&FQ::Classify(Seen[1])==FQ::EPri::Hint&&S47Thought::Words(Seen[1])==ThoughtLocked(),
+   TEXT("the thoughts go through the one queue, one at a time, after a voice, in order"));
+ }
+ // Patch 3: Dale's morning follows the way out; every new line is clean.
+ {
+  bool bEach=true;TSet<FString> Firsts;
+  for(const EOutcome O:{EOutcome::A,EOutcome::B,EOutcome::C,EOutcome::D,EOutcome::E}){const TArray<FString> L=MorningLines(O);bEach&=L.Num()>=2&&L.Last().EndsWith(TEXT("Out."));Firsts.Add(L.IsEmpty()?FString():L[0]);}
+  Check(bEach&&Firsts.Num()==5&&MorningLines(EOutcome::None).IsEmpty()&&MorningLines(EOutcome::A)[0]==S47Week::MorningA[0],TEXT("Dale's morning after follows the way out: A to E each its own"));
+  TArray<FString> All=HelpLines();
+  for(const EOutcome O:{EOutcome::B,EOutcome::C,EOutcome::D,EOutcome::E}){All.Append(MorningLines(O));All.Add(S47Week::SlipOf(MorningLines(O)));}
+  All.Add(S47Week::HailFirst);All.Add(S47Week::HailAgain);All.Add(S47Week::HailGiveUp);
+  for(const TCHAR* T:{ThoughtLocked(),ThoughtLockedIn(),ThoughtStuck(),ThoughtHeld()})All.Add(T);
+  FString Bad;
+  for(const FString& T:All)
+   if(!S47Hap::Clean(T)||!S47Script::LintText(T).IsEmpty()||T.Contains(TEXT("47"))||T.Contains(TEXT("8:15"))||T.Contains(TEXT("20:15"))||T.Contains(TEXT("Reyes"))||S47Hap::Concluding(T))Bad+=T.Left(48)+TEXT(" / ");
+  Check(Bad.IsEmpty(),TEXT("patch 3's words are clean: Dale's hail, help and mornings, the slips, the thoughts ")+Bad);
+  // What Dale says during it helps, but does not say what is in there.
+  bool bNoWhat=true;
+  for(const FString& T:HelpLines()){const FString L=T.ToLower();for(const TCHAR* Wd:{TEXT("creature"),TEXT("monster"),TEXT("arm"),TEXT("taken"),TEXT("alien"),TEXT("tall")})bNoWhat&=!FS47WeekCaseLocalWord(L,Wd);}
+  Check(bNoWhat,TEXT("his help gives the bearing, the cover and the engine, never what it is"));
  }
  OK&=FS47FarmShedDoor::SelfTest(Lines);
  OK&=FS47ShedGlow::SelfTest(Lines);

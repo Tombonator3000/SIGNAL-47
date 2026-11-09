@@ -85,7 +85,7 @@ public:
 private:
 	// what is on screen of the queue's lines: the one each lane shows, and the ones fading out (Id: the queue's; bCorner: a plain line
 	// beside a caption, small in the corner)
-	struct FToast { FString Text, Who, Line; int32 Id = 0; bool bHint = false, bCorner = false; float In = 0.f, Out = -1.f; };
+	struct FToast { FString Text, Who, Line; int32 Id = 0; bool bHint = false, bCorner = false, bThought = false; float In = 0.f, Out = -1.f; };
 	TArray<TSharedRef<FToast>> Toasts;
 	TSharedPtr<SVerticalBox> ToastBox, CornerBox;
 	FS47MessageQueue Queue;

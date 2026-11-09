@@ -456,7 +456,7 @@ void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock, 
 	// into a second narrator or replace the last environmental description.
 	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
 	FRegexMatcher M(Caption, Text);
-	if (!M.FindNext()) LastToast = Text;
+	if (!M.FindNext() && !S47Thought::Is(Text)) LastToast = Text; // (a thought is not a description: WEEKLY-CASE-20261109)
 	// MSG-ONE-20261109: into the one queue, which shows it when it is its turn (SyncToasts). A CB line holds only while the player
 	// sits at the CB (Freeform), a walkie line only while the set is on them; out of date, it is let go unseen.
 	using FQ = FS47MessageQueue;
@@ -494,7 +494,10 @@ void SS47Hud::SyncToasts()
 			T->bCorner = bHint && bCaption;
 			// the speaker over the line; a plain line is stamped with the clock it came at
 			S47Game::SplitCaption(Shown->Text, T->Who, T->Line);
-			if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
+			// WEEKLY-CASE-20261109: a thought has no speaker and no clock over it
+			T->bThought = S47Thought::Is(Shown->Text);
+			if (T->bThought) { T->Who.Reset(); T->Line = S47Thought::Words(Shown->Text); }
+			else if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
 			// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
 			int32 SpokeOn = 1;
 			FString Speaking;
@@ -542,6 +545,29 @@ void SS47Hud::Rebuild()
 			.LineHeightPercentage(LinePercent(Type(Px), Px * 1.4f))
 		];
 		const TWeakPtr<FToast> W = T;
+		const auto Alpha = [W, Dim]
+		{
+			const TSharedPtr<FToast> X = W.Pin();
+			if (!X.IsValid()) return FLinearColor::Transparent;
+			return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In)));
+		};
+		if (T->bThought)
+		{
+			// WEEKLY-CASE-20261109: the player's own thought: pencil on the dark, not ink in a box. The hand in a soft graphite, slanted a
+			// little more than the hand is, a faint shadow under it so that it reads on a lit yard too.
+			const float HandPx = (bLarge ? 40.f : 34.f);
+			ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+			[
+				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.f))).Padding(FMargin(P(18), P(4), P(18), P(6))).ColorAndOpacity_Lambda(Alpha)
+				.RenderTransform(FSlateRenderTransform(FShear2f(-0.16f, 0.f))).RenderTransformPivot(FVector2D(0.5f, 0.5f))
+				[
+					SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Hand(HandPx)).ColorAndOpacity(FLinearColor(0.80f, 0.79f, 0.76f, 0.92f))
+					.ShadowOffset(FVector2D(1.5f, 2.f)).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.6f))
+					.AutoWrapText(T->Line.Len() > 48).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+				]
+			];
+			continue;
+		}
 		(bCorner ? CornerBox : ToastBox)->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center).Padding(0, P(3))
 		[
 			SNew(SBorder).BorderImage(Box(C(0x05070d, bCorner ? 0.5f : 0.72f))).Padding(bCorner ? FMargin(P(14), P(7), P(14), P(8)) : FMargin(P(22), P(10), P(22), P(12)))

@@ -151,6 +151,35 @@ def big_night():
     return out
 
 
+def week_case():
+    """WEEKLY-CASE-20261109: the week's case (S47WeekCase.cpp, namespace S47Week): the hook the morning after the big night, the call
+    at ten to two, his hail and help during the case, and the morning after each way out. The slips and the findings are paper."""
+    path = CPP / 'S47WeekCase.cpp'
+    lines = lines_of(path)
+    spoken = ('HookLines', 'NightCall', 'HailFirst', 'HailAgain', 'HailGiveUp', 'HelpLines',
+              'MorningA', 'MorningB', 'MorningC', 'MorningD', 'MorningE')
+    out = []
+    i = 0
+    while i < len(lines):
+        m = re.match(r'\s*const TCHAR\* const (\w+)(\[\])?=', lines[i])
+        if not m or m.group(1) not in spoken:
+            i += 1
+            continue
+        name, many = m.group(1), bool(m.group(2))
+        n = 0
+        j = i
+        while True:
+            for said in re.finditer(r'TEXT\(' + LIT + r'\)', lines[j]):
+                n += 1
+                out.append({'id': f'FF_WEEK_{name}_{n}' if many else f'FF_WEEK_{name}', 'text': unescape(said.group(1)),
+                            'channel': 'walkie', 'source': f'{rel(path)}:{j + 1}', 'kind': 'week_case'})
+            if lines[j].rstrip().endswith(';'):
+                break
+            j += 1
+        i = j + 1
+    return out
+
+
 def relays():
     out = []
     note = 'A stranger\'s report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).'
@@ -253,7 +282,7 @@ def template_domains():
 
 def build():
     entries = finish(story('EveningShift', 'evening') + story('HorrorStory', 'horror') + predecessor_text() + big_night()
-                     + relays() + director())
+                     + week_case() + relays() + director())
     stats = collections.OrderedDict()
     for e in entries:
         group = f"{e['pack']}/{e['kind']}"

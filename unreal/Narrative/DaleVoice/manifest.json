@@ -11,7 +11,8 @@
    "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp",
    "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp",
    "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp",
-   "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp"
+   "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp"
   ],
   "director": [
    "unreal/Signal47/Content/Director/director.json",
@@ -61,22 +62,26 @@
     "template": 16,
     "total": 16
    },
+   "freeform/week_case": {
+    "voice": 20,
+    "total": 20
+   },
    "freeform/director_script": {
     "disabled": 1,
     "total": 1
    }
   },
   "by_status": {
-   "voice": 140,
+   "voice": 160,
    "alias": 2,
    "template": 25,
    "disabled": 1
   },
   "voice_by_channel": {
    "phone": 78,
-   "walkie": 62
+   "walkie": 82
   },
-  "voice_words": 2418
+  "voice_words": 2795
  },
  "template_domains": {
   "place": {
@@ -1957,6 +1962,186 @@
     "place"
    ],
    "status": "template"
+  },
+  {
+   "id": "FF_WEEK_HookLines_1",
+   "text": "One more thing. Since the dishes went over by themselves, something on the bearing past the Alderete place is chewing my signal.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:52",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HookLines_2",
+   "text": "Every night, a little after two, for a few minutes. Where and when I can tell you. What, I cannot. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:53",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_NightCall",
+   "text": "It's there again. Same bearing.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:55",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_1",
+   "text": "Good morning. The Alderete feed shed. The door is lying in the yard in pieces, and it broke outward. From the inside.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:59",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_2",
+   "text": "The padlock is still on its chain, still locked. And the floor in there has gone hard and shiny, like a pot out of the kiln.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:60",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_3",
+   "text": "But you were busy, I am sure. Nobody pays for a door we did not look at. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:61",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailFirst",
+   "text": "SARO night. You are at the Alderete place, yes? Answer me.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:65",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailAgain",
+   "text": "SARO night. Pick up. My needle is doing it again.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:66",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailGiveUp",
+   "text": "Fine. Do not answer. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:67",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_1",
+   "text": "Listen. It is the small shed past the house, the one with the chain. My needle goes to it and stays there.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:69",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_2",
+   "text": "If anything comes out of it, you are not standing in the open. The hay in the barn, under the tractor, behind the water tank, the ditch. Low, and no lamp.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:70",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_3",
+   "text": "And the truck: one turn of the key, then you wait. Do not flood the engine. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:71",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningB_1",
+   "text": "The Alderete feed shed. You were there, and you drove off before it broke. Smart, maybe.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:74",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningB_2",
+   "text": "On my side a burst, a few minutes after you left. So now we have a sound, a log and a door lying in the yard. Somebody out there will write to us about it, you will see. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:75",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningC_1",
+   "text": "You stayed. You hid, and you drove when it let you. I did not think you had it in you.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:77",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningC_2",
+   "text": "On the array the same minute as at that shed. Write down every minute of it, now, before you sleep. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:78",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningD_1",
+   "text": "Your truck is standing in the Alderete yard, and you walked home? At night? Out there?",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:80",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningD_2",
+   "text": "Fetch it in daylight. It costs you the morning, and while you are there, you look at that shed. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:81",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningE_1",
+   "text": "Where were you? Hours, and nothing on the set. Your things are lying in the Alderete yard.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:83",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningE_2",
+   "text": "No. Do not tell me. Not over the radio. Fetch them in daylight, and then we talk. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:84",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
   },
   {
    "id": "FF_RELAY_lights_w1",

@@ -6,11 +6,13 @@
 #include "S47FarmShedDoor.h"
 #include "S47ShedGlow.h"
 #include "S47WeekCase.h"
+#include "S47World.h"
+#include "HAL/PlatformTime.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47WeekCaseDev,Log,All);
 
 // F10, "Week case (T)" (WEEKLY-CASE-20261109, patch 1): the week's case started now at the farm, way out A carried to its morning, and
-// stopped and cleaned up; patch 2: phase one's rattling, a knock and its answer, phase two's light and kicks, the door bursting. Each line says what the case is in afterwards (LogS47WeekCaseDev too). Nothing here is saved; a stop gives
+// stopped and cleaned up; patch 3: the truck dying on the yard, a turn of its key heard, and catching now; patch 2: phase one's rattling, a knock and its answer, phase two's light and kicks, the door bursting. Each line says what the case is in afterwards (LogS47WeekCaseDev too). Nothing here is saved; a stop gives
 // the case back as it was before F10 touched it. -S47DevSweep=/tmp/dir "-S47DevSweepGroup=Week case (T)" runs the group in turn.
 void FS47DevFreeform::AddWeekCase(FS47DevEvents& E)
 {
@@ -98,6 +100,43 @@ void FS47DevFreeform::AddWeekCase(FS47DevEvents& E)
     WaitFor([Case]{FS47WeekCase* X=Case();return X&&X->DoorNow()&&X->DoorNow()->State()==FS47FarmShedDoor::EState::Broken;},4,[Say]{Say(true,TEXT("the door broke outward"));},
      [Say]{Say(false,TEXT("the breach did not break the door"));});
    });
+  });
+ });
+ // Patch 3: the truck. These need the player in the truck at the Alderete place (drive there: the stage cannot seat her in it).
+ const auto InTruck=[this,Case,Say](TFunction<void(FS47WeekCase*)> Then)
+ {
+  FS47WeekCase* C=Case();
+  if(!C||!M->World){Say(false,TEXT("Freeform only"));return;}
+  if(!M->World->bDriving){Say(false,TEXT("get in the truck and drive it to the Alderete yard first"));return;}
+  if(C->HoldsGround()){Then(C);return;}
+  FString Why;
+  if(!C->DevStart(Why)){Say(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+  WaitFor([Case]{FS47WeekCase* W=Case();return W&&W->HoldsGround();},6,[Case,Then]{if(FS47WeekCase* W=Case())Then(W);},
+   [Say]{Say(false,TEXT("the case did not begin: the truck is not at the farm (within reach of the feed shed)"));});
+ };
+ E.AddFreeform(Group,TEXT("Week case: truck dies on the yard"),TEXT("in the truck at the Alderete place: the case on the ground and the engine dead, wanting the key; it will not catch until it is far off and you have been quiet 20 s, or after five minutes"),[InTruck,Say]
+ {
+  InTruck([Say](FS47WeekCase* C){FString Why;const bool bOk=C->DevStall(Why);Say(bOk,bOk?FString(TEXT("the engine died on the yard: E turns the key. ")+C->CabText()):Why);});
+ });
+ E.AddFreeform(Group,TEXT("Week case: start attempt heard"),TEXT("the dead truck: a turn of the key, the starter cranking and not catching; heard at the truck (a noise for whatever listens, where the searcher goes first)"),[this,InTruck,Case,Say]
+ {
+  InTruck([this,Case,Say](FS47WeekCase* C)
+  {
+   FString Why;const double Was=C->LastSoundTime();
+   if(!C->CabNow().bStalled)C->DevStall(Why);
+   if(!C->DevTurnKey(Why)){Say(false,Why);return;}
+   WaitFor([Case,Was]{FS47WeekCase* W=Case();return W&&W->LastSoundTime()>Was;},4,[Case,Say]{FS47WeekCase* W=Case();Say(true,TEXT("the starter was heard at the truck. ")+(W?W->CabText():FString()));},
+    [Say]{Say(false,TEXT("the turn was not heard (the case let go of the truck?)"));});
+  });
+ });
+ E.AddFreeform(Group,TEXT("Week case: truck catches now"),TEXT("the dead truck catches on this turn of the key, whatever the rules say (not while it is at the cab)"),[this,InTruck,Case,Say]
+ {
+  InTruck([this,Case,Say](FS47WeekCase* C)
+  {
+   FString Why;
+   if(!C->DevCatch(Why)){Say(false,Why);return;}
+   WaitFor([this]{return M->World&&M->World->Trouble.Kind()==ES47Trouble::None;},6,[Case,Say]{FS47WeekCase* W=Case();Say(true,TEXT("the engine caught. ")+(W?W->CabText():FString()));},
+    [Say]{Say(false,TEXT("it cranked but did not catch"));});
   });
  });
  E.AddFreeform(Group,TEXT("Week case: stop and clean"),TEXT("over at once: the stall, the view and whatever is drawn given back; the case as it was before F10"),[Case,Say]

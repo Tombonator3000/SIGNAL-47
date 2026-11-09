@@ -2234,6 +2234,18 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	{
 		const FVector E = EulerYXZ(D.CamQuat);
 		Out.Eye = D.CamPos; Out.Pitch = E.X; Out.Yaw = E.Y; Out.Roll = E.Z;
+		// WEEKLY-CASE-20261109: rocked from outside, in shoves rather than a hum (three slow beats that only now and then line up)
+		if (CabShake > 0 && bDriving)
+		{
+			if (D.bCameraMotion)
+			{
+				const double T = M->T, K = FMath::Min(1.0, CabShake);
+				const double Shove = FMath::Max(0.0, FMath::Sin(T * 5.3) * FMath::Sin(T * 1.7 + 0.6) + 0.25 * FMath::Sin(T * 11.1));
+				Out.Eye += FVector(0.035 * FMath::Sin(T * 7.9), 0.045 * Shove, 0.02 * FMath::Sin(T * 6.1 + 1.3)) * K;
+				Out.Roll += 0.03 * K * Shove * FMath::Sin(T * 2.3);
+			}
+			CabShake = FMath::Max(0.0, CabShake - Dt * 0.9);
+		}
 	}
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);

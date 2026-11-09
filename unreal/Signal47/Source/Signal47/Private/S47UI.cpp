@@ -309,6 +309,12 @@ void US47UI::Alert(const FString& Text, float Secs)
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, {}, int32(FS47MessageQueue::EPri::Danger));
 }
 
+void US47UI::Thought(const FString& Text, float Secs)
+{
+	if (Text.TrimStartAndEnd().IsEmpty()) return;
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(S47Thought::Line(Text), Secs, {}, int32(FS47MessageQueue::EPri::Radio));
+}
+
 void US47UI::ClearToasts()
 {
 	// (and lastDescription with them, SS47Hud's; the closer look's words; the button)

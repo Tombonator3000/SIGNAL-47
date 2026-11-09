@@ -183,6 +183,8 @@ public:
 	void Init(AS47HUD* InHud) { Hud = InHud; }
 
 	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {}); void Alert(const FString& Text, float Secs = 4.f); // Alert, MSG-ONE-20261109: a line of danger, first in the one queue (FS47MessageQueue)
+	// WEEKLY-CASE-20261109: the player's own thought (S47Thought, at the end of this file): through the queue, one at a time. Empty does nothing.
+	void Thought(const FString& Text, float Secs = 4.5f);
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it
@@ -286,3 +288,14 @@ private:
 	void UpdateDescriptionButton();
 	void PlayDescription(const FString& Text, bool bAutomatic = false);
 };
+
+// WEEKLY-CASE-20261109, patch 3: the player's own thoughts. A line that starts with Mark goes through the one queue (FS47MessageQueue)
+// in its speech lane, below Dale and danger (EPri::Radio), so that it is one at a time with every voice and never over one; the HUD
+// draws it as a thought, not a caption: no speaker, no box, the hand in pencil, slanted, at the foot. "~ " is the papers' pencil mark.
+namespace S47Thought
+{
+	inline const TCHAR* Mark() { return TEXT("~ "); }
+	inline bool Is(const FString& Line) { return Line.StartsWith(Mark()); }
+	inline FString Line(const FString& Text) { return FString(Mark()) + Text.TrimStartAndEnd(); }
+	inline FString Words(const FString& Line) { return Is(Line) ? Line.Mid(FCString::Strlen(Mark())) : Line; }
+}

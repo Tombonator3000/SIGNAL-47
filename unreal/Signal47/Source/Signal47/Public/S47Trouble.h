@@ -82,6 +82,10 @@ public:
 	void Release();
 	/** The turn of the key this stall catches on, from now. */
 	void CatchOn(double N);
+	/** WEEKLY-CASE-20261109: a stall held dead or let go again without ending it (bHold: the key does nothing while held). */
+	void HoldKey(bool bOn);
+	/** A stall that is cranking just now (the turn of the key under way). */
+	bool Cranking() const;
 	/** The player turns the key (when WantsKey). */
 	bool TurnKey();
 	/** Everything as it was: the engine runs, the lights and the instruments are the truck's own. */
