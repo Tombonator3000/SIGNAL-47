@@ -30,7 +30,7 @@ namespace
 	double Rand() { return FMath::FRand(); }
 	FLinearColor V4(const FVector& V) { return FLinearColor(float(V.X), float(V.Y), float(V.Z), 0.f); }
 	// PT-MOON-20261109: the textured moon's light (M_S47_Moon's Color, times its albedo: the highlands 1, the seas about .4)
-	TAutoConsoleVariable<float> CvMoonGain(TEXT("s47.moon.Gain"), 1.5f, TEXT("The textured moon's brightness at night (the painted disc of 8 November was 4: one white blot)."));
+	TAutoConsoleVariable<float> CvMoonGain(TEXT("s47.moon.Gain"), .7f, TEXT("The textured moon's brightness at night (the painted disc of 8 November was 4: one white blot)."));
 	TAutoConsoleVariable<float> CvMoonDayGain(TEXT("s47.moon.DayGain"), .55f, TEXT("The textured moon's brightness by day, over the sky."));
 	TAutoConsoleVariable<float> CvMoonEarth(TEXT("s47.moon.Earth"), .035f, TEXT("Earthshine on the moon's dark side at a new crescent, of its lit side."));
 
