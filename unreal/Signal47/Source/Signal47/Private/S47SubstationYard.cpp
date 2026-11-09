@@ -93,9 +93,18 @@ bool Build(AS47Web* W)
    }
   }
  }
- W->AdoptNode(Arms, ParentNode, TEXT("substationYard:wireArms"));
- W->AdoptNode(Strands, ParentNode, TEXT("substationYard:wireStrands"));
- W->AdoptNode(Barbs, ParentNode, TEXT("substationYard:wireBarbs"));
+ // AdoptNode keeps only where a part is: its turn and size go into the node too, or the next time the node is set they are lost.
+ const FQuat ParentQ = W->NodeWorldThree(ParentNode).GetRotation();
+ const FQuat FenceQ = W->NodeWorldThree(FenceNode).GetRotation();
+ const auto Keep = [W, ParentQ](int32 Node, const FQuat& WorldQ, const FVector& Scale)
+ {
+  if (Node < 0) return;
+  W->ObjAt(Node).SetQuaternion(ParentQ.Inverse() * WorldQ);
+  W->ObjAt(Node).SetScale(Scale);
+ };
+ Keep(W->AdoptNode(Arms, ParentNode, TEXT("substationYard:wireArms")), FenceQ, FVector::OneVector);
+ Keep(W->AdoptNode(Strands, ParentNode, TEXT("substationYard:wireStrands")), FenceQ, FVector::OneVector);
+ Keep(W->AdoptNode(Barbs, ParentNode, TEXT("substationYard:wireBarbs")), FenceQ, FVector::OneVector);
 
  // ---- a station-service transformer: the kit's own, at 0.55, on a 3.2 x 1.7 m pad 15 cm over the gravel at x -6.6, y 2.4 ----
  const FVector2D T2(-6.6, 2.4);
@@ -104,7 +113,7 @@ bool Build(AS47Web* W)
  Pad->SetMobility(EComponentMobility::Movable); Pad->SetupAttachment(Parent); Pad->SetStaticMesh(Cube); Pad->SetMaterial(0, Concrete);
  Pad->SetCollisionEnabled(ECollisionEnabled::NoCollision); Pad->SetCastShadow(true); Pad->RegisterComponent();
  Pad->SetWorldTransform(FTransform(FQuat::Identity, S47Three::ToUE(Site(T2, PadTop - .25)), FVector(3.2, 1.7, .5)));
- W->AdoptNode(Pad, ParentNode, TEXT("substationYard:pad2"));
+ Keep(W->AdoptNode(Pad, ParentNode, TEXT("substationYard:pad2")), FQuat::Identity, FVector(3.2, .5, 1.7));
  const FTransform Main = TransformerMesh->GetComponentTransform();
  auto* Second = NewObject<UStaticMeshComponent>(W, TEXT("S47SubstationYard_Transformer2"));
  Second->SetMobility(EComponentMobility::Movable); Second->SetupAttachment(Parent); Second->SetStaticMesh(TransformerMesh->GetStaticMesh());
@@ -112,7 +121,7 @@ bool Build(AS47Web* W)
  Second->SetCollisionEnabled(ECollisionEnabled::NoCollision); Second->SetCastShadow(true); Second->RegisterComponent();
  // The kit is authored round its site origin on the pad's top (z 0): the copy's origin goes to its own pad's top.
  Second->SetWorldTransform(FTransform(Main.GetRotation(), S47Three::ToUE(Site(T2, PadTop)), Main.GetScale3D() * Scale));
- W->AdoptNode(Second, ParentNode, TEXT("substationYard:transformer2"));
+ Keep(W->AdoptNode(Second, ParentNode, TEXT("substationYard:transformer2")), FenceQ, W->ObjAt(TransformerNode).Scale() * Scale);
  UE_LOG(LogS47SubstationYard, Display, TEXT("S47: substation yard: barbed wire on %d arms, %d strands, %d barbs; a second transformer at %.2f on its pad at world %s"),
   NArms, NStrands, NBarbs, Scale, *Site(T2, PadTop).ToString());
  return true;

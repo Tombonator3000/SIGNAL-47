@@ -117,7 +117,8 @@ namespace
  }
  // The first visible thing straight down from From, but none of Ignore.
  // bAnyShown false: whatever is there, drawn now or not (at build an area away is hidden, and its ground is no less there).
- bool Down(UWorld* World, const FVector& From, double Depth, const TArray<UPrimitiveComponent*>& Ignore, double& Y, FString* What = nullptr, bool bShownOnly = true)
+ // MaxY: anything higher is passed through (sweep 3: the highway's feet met a surface at y -0.06, half a metre over the footings).
+ bool Down(UWorld* World, const FVector& From, double Depth, const TArray<UPrimitiveComponent*>& Ignore, double& Y, FString* What = nullptr, bool bShownOnly = true, double MaxY = 1e9)
  {
   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47StreetLampFoot), true);
   for (UPrimitiveComponent* P : Ignore) if (P) Q.AddIgnoredComponent(P);
@@ -126,7 +127,7 @@ namespace
    FHitResult Hit;
    if (!World->LineTraceSingleByChannel(Hit, S47Three::ToUE(From), S47Three::ToUE(From - FVector(0, Depth, 0)), ECC_Visibility, Q)) return false;
    UPrimitiveComponent* P = Hit.GetComponent();
-   if (P && (!bShownOnly || (P->IsVisible() && !P->bHiddenInGame)))
+   if (P && (!bShownOnly || (P->IsVisible() && !P->bHiddenInGame)) && S47Three::ToThree(Hit.ImpactPoint).Y <= MaxY)
    {
     Y = S47Three::ToThree(Hit.ImpactPoint).Y;
     if (What) *What = P->GetName();
@@ -143,7 +144,10 @@ namespace
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
   C->SetCastShadow(true); C->RegisterComponent();
   double Matrix[16]; S47Three::Compose(At, Q, FVector::OneVector, Matrix); C->SetWorldTransform(S47Three::MatToUE(Matrix));
-  W->AdoptNode(C, ParentNode, TEXT("streetLamp:") + Name);
+  // AdoptNode keeps only where it is; the turn goes into the node too, or the next time the node is set the arm swings back to +x
+  // (sweep 3: the heads stood over the road, the arms pointed the other way).
+  const int32 Node = W->AdoptNode(C, ParentNode, TEXT("streetLamp:") + Name);
+  if (Node >= 0) W->ObjAt(Node).SetQuaternion(W->NodeWorldThree(ParentNode).GetRotation().Inverse() * Q);
   return C;
  }
  bool Disabled() { return FParse::Param(FCommandLine::Get(), TEXT("S47StreetLampsOff")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff")); }
@@ -215,7 +219,8 @@ namespace
   for (const double Z : Zs)
   {
    double Y = 0; FString What;
-   if (!Down(World, FVector(-18.5, 1.5, Z), 4, Ignore, Y, &What, false))
+   // The footings' tops lie near -0.61 and the ground at -0.62 (S47RouteLampFeet measured within 12 cm): nothing over -0.3 is a foot.
+   if (!Down(World, FVector(-18.5, 1.5, Z), 4, Ignore, Y, &What, false, -.3))
    { UE_LOG(LogS47StreetLamps, Warning, TEXT("S47: street lamps: nothing under the highway pole at z %.0f; the old lamps stay"), Z); return false; }
    Feet.Add(FVector(-18.5, Y, Z));
    UE_LOG(LogS47StreetLamps, Display, TEXT("S47: street lamp road z %.0f stands on %s at y %.3f"), Z, *What, Y);
