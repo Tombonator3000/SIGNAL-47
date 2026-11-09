@@ -4,7 +4,7 @@
     python3 bake_range_color.py --root <freeformterrain> [--preview]
 
 Reads cache/range_{R,G,D}.npy (build_range.py) and naip/naip_r{0,1}c{0,1}.jpg, USGS NAIP Plus over the map's own 24 km (public domain, KILDER.md).
-Out: range/T_FF_Range_C.png, range/T_FF_Range_B.png.
+Out: range/T_FF_Range_C.png. (range/T_FF_Range_B.png was written here until 9 November; make_range_rock.py writes it now.)
 
 T_FF_Range_C, 4096 px over the map, north at the top, linear:
 - RGB: the soil as a ratio to the plain's soil, over RATIO, so the material's tint still sets the middle tone by day and by night.
@@ -177,8 +177,7 @@ def main():
     out = root / 'range'
     out.mkdir(exist_ok=True)
     Image.fromarray((c * 255 + .5).astype(np.uint8), 'RGBA').save(out / 'T_FF_Range_C.png', compress_level=4)
-    b = np.clip(beds() / RATIO, 0, 1)
-    Image.fromarray((b * 255 + .5).astype(np.uint8), 'RGB').save(out / 'T_FF_Range_B.png')
+    # (T_FF_Range_B is make_range_rock.py's since 9 November, with bolder beds; beds() here stays for the preview strip)
     print('soil ratio over the hills', np.round(soil[h0 > 10].mean(0), 3), 'rock share over the hills', round(float(rock[h0 > 10].mean()), 3))
     if args.preview:
         pv = root / 'preview'
