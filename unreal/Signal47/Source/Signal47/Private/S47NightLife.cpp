@@ -24,6 +24,7 @@
 #include "S47Three.h"
 #include "S47Truck.h"
 #include "S47Walker.h"
+#include "S47Weather.h"
 #include "S47Web.h"
 #include "S47World.h"
 
@@ -252,6 +253,8 @@ void FS47NightLife::Build(US47Main* InM)
 	{
 		MotesBuild(Flash, 900, 61, FVector(3.4, 2.6, 3.4), false);
 		MotesBuild(Head, 3000, 62, FVector(34, 4.6, 34), true);
+		MotesBuild(Sand, 3200, 63, FVector(28, 6, 28), true);
+		MotesBuild(Drops, 700, 64, FVector(14, 9, 14), false);
 	}
 	UE_LOG(LogS47Life2, Display, TEXT("S47: the life in the night: %d areas, moths %s, dust %s"), Areas.Num(), MothBase ? TEXT("yes") : TEXT("no"), MoteBase ? TEXT("yes") : TEXT("no"));
 }
@@ -346,6 +349,7 @@ void FS47NightLife::Update(double Dt, double InT, const FS47Cam& Cam, double Daw
 	for (FArea& A : Areas) if (A.Far) FarUpdate(*A.Far, A.Id, bOn && A.Id == Here, Act.Hour, Night, Cam.Pos);
 	WeedStep(Dt, Cam, bQuiet, bOn && Night > 0.3, !(M->World && M->World->bDriving), bOut);
 	Beams(Dt, Cam, bOn, bLow, bOut);
+	Weather(Dt, Cam, bOn, bLow, bOut, Dawn);
 }
 
 void FS47NightLife::MothsUpdate(FMoths& Mo, double InT, bool bOn, bool bLow, const FVector& Cam)
@@ -690,7 +694,11 @@ void FS47NightLife::Beams(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, bo
 		D->SetScalarParameterValue(TEXT("Fall"), 0.12f); D->SetScalarParameterValue(TEXT("Size"), 0.02f); D->SetScalarParameterValue(TEXT("Head"), 0.f); D->SetScalarParameterValue(TEXT("Near"), 0.8f);
 		D->SetScalarParameterValue(TEXT("Puff"), 2.f);
 		// out in the open a breeze carries it (and a few gnats); indoors it hangs in the air
-		if (bOut) { Flash.Drift(Dt, WIND * 0.35); D->SetScalarParameterValue(TEXT("Wobble"), 0.05f); D->SetScalarParameterValue(TEXT("Density"), bLow ? 0.375f : 0.75f); }
+		// (WEATHER-20261108: in blowing sand the beam is full of it, streaming with the wind)
+		const S47Weather::FLive& Wx = S47Weather::Live();
+		const double SandK = Wx.bOn ? FMath::Clamp(Wx.Dust * 1.5, 0.0, 1.0) : 0.0;
+		const FVector Gale = Wx.bOn ? FVector(Wx.DirX, 0, Wx.DirZ) * (Wx.Mph * 0.447 * 0.6) : FVector::ZeroVector;
+		if (bOut) { Flash.Drift(Dt, WIND * 0.35 + Gale * SandK); D->SetScalarParameterValue(TEXT("Wobble"), float(0.05 + 0.2 * SandK)); D->SetScalarParameterValue(TEXT("Density"), float((bLow ? 0.375 : 0.75) + (bLow ? 0.125 : 0.25) * SandK)); }
 		else { Flash.Drift(Dt, FVector(0.01, 0.006, -0.004)); D->SetScalarParameterValue(TEXT("Wobble"), 0.09f); D->SetScalarParameterValue(TEXT("Density"), bLow ? 0.5f : 1.f); }
 		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(1.6f, 0.9f * 1.6f, 0.75f * 1.6f, 0));
 	}
@@ -728,14 +736,77 @@ void FS47NightLife::Beams(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, bo
 		D->SetVectorParameterValue(TEXT("Cos"), FLinearColor(float(FMath::Cos(0.21)), float(FMath::Cos(0.09)), 0, 0));
 		D->SetScalarParameterValue(TEXT("Head"), 1.f); D->SetScalarParameterValue(TEXT("Near"), 0.8f); D->SetScalarParameterValue(TEXT("Fall"), 0.004f);
 		const double C = Cloud, S = Specks;
-		const double Dens = FMath::Max(0.04, 0.22 * S + 0.7 * C);
+		// (WEATHER-20261108: the headlights full of blowing sand, on the road too)
+		const S47Weather::FLive& Wx = S47Weather::Live();
+		const double SandK = Wx.bOn ? FMath::Clamp(Wx.Dust * 1.4, 0.0, 1.0) : 0.0;
+		const double Dens = FMath::Min(1.0, FMath::Max(0.04, 0.22 * S + 0.7 * C) + 0.75 * SandK);
 		D->SetScalarParameterValue(TEXT("Density"), float(bLow ? Dens * 0.5 : Dens));
 		D->SetScalarParameterValue(TEXT("Size"), 0.03f);
 		D->SetScalarParameterValue(TEXT("Puff"), float(1 - 0.16 * C)); D->SetScalarParameterValue(TEXT("PuffSize"), 2.f); D->SetScalarParameterValue(TEXT("PuffA"), 0.13f);
 		D->SetScalarParameterValue(TEXT("Wobble"), float(0.12 + 0.2 * C));
 		FVector Dv = WIND * 0.6 + Fw * (1.2 * C); Dv.Y = 0.1 * C;
+		if (SandK > 0) Dv += FVector(Wx.DirX, 0, Wx.DirZ) * (Wx.Mph * 0.447 * 0.6 * SandK);
 		Head.Drift(Dt, Dv);
 		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(float(1 - 0.3 * C), float(0.9 * (1 - 0.3 * C)), float(0.72 * (1 - 0.3 * C)), 0));
+	}
+}
+
+void FS47NightLife::Weather(double Dt, const FS47Cam& Cam, bool bOn, bool bLow, bool bOut, double Dawn)
+{
+	// WEATHER-20261108: what the day's weather puts in the air round the eye, out in the open and in the cab (S47Weather::Live)
+	const S47Weather::FLive& Wx = S47Weather::Live();
+	auto Show = [](FMotes& Mo, bool bV) { if (Mo.Mesh.IsValid() && Mo.Mesh->IsVisible() != bV) Mo.Mesh->SetVisibility(bV); };
+	auto V4 = [](const FVector& V) { return FLinearColor(float(V.X), float(V.Y), float(V.Z), 0); };
+	const double Day = FMath::Clamp(Dawn, 0.0, 1.0);
+	const FVector Blow = FVector(Wx.DirX, 0, Wx.DirZ) * (Wx.Mph * 0.447);
+	// Every mote lit alike (the cone wide open, no falloff), brighter toward where the eye looks: the motes' own shader, as the beams
+	// use it, with the day for its light.
+	auto Common = [&](UMaterialInstanceDynamic* D, const FVector& Center, double K)
+	{
+		D->SetScalarParameterValue(TEXT("Time"), float(T));
+		D->SetScalarParameterValue(TEXT("Lines"), float(Lines));
+		D->SetVectorParameterValue(TEXT("Center"), V4(Center));
+		D->SetVectorParameterValue(TEXT("BeamPos0"), V4(Cam.Pos));
+		D->SetVectorParameterValue(TEXT("BeamDir0"), V4(Cam.Forward));
+		D->SetVectorParameterValue(TEXT("BeamK"), FLinearColor(float(K), 0, 0, 0));
+		D->SetVectorParameterValue(TEXT("Cos"), FLinearColor(-2.f, -1.5f, 0, 0));
+		D->SetScalarParameterValue(TEXT("Fall"), 0.f); D->SetScalarParameterValue(TEXT("Head"), 0.f);
+	};
+	// the sand: streaming past with the wind, a few soft puffs of it low down; by night only a little shows (the beams have theirs)
+	const double SandK = bOn && bOut && Wx.bOn ? FMath::Clamp(Wx.Dust, 0.0, 1.0) : 0.0;
+	Show(Sand, SandK > 0.02);
+	if (SandK > 0.02 && Sand.Mid.IsValid())
+	{
+		UMaterialInstanceDynamic* D = Sand.Mid.Get();
+		FVector Center = Cam.Pos + Cam.Forward * 9; Center.Y = Cam.Pos.Y - 0.6;
+		Sand.Mesh->SetWorldLocation(S47Three::ToUE(Center));
+		Common(D, Center, FMath::Lerp(0.06, 0.55, Day));
+		D->SetScalarParameterValue(TEXT("Near"), 0.35f);
+		D->SetScalarParameterValue(TEXT("Size"), 0.012f);
+		D->SetScalarParameterValue(TEXT("Puff"), 0.9f); D->SetScalarParameterValue(TEXT("PuffSize"), 2.6f); D->SetScalarParameterValue(TEXT("PuffA"), float(0.05 * SandK));
+		D->SetScalarParameterValue(TEXT("Wobble"), float(0.18 + 0.25 * Wx.Wind));
+		D->SetScalarParameterValue(TEXT("Density"), float(bLow ? SandK * 0.5 : SandK));
+		FVector Dv = Blow; Dv.Y = 0.25 * FMath::Sin(T * 0.7);
+		Sand.Drift(Dt, Dv);
+		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(.95f, .76f, .52f, 0));
+	}
+	// a shower: a few drops falling past, slanting with the wind
+	const double RainK = bOn && bOut && Wx.bOn ? FMath::Clamp(Wx.Rain, 0.0, 1.0) : 0.0;
+	Show(Drops, RainK > 0.02);
+	if (RainK > 0.02 && Drops.Mid.IsValid())
+	{
+		UMaterialInstanceDynamic* D = Drops.Mid.Get();
+		FVector Center = Cam.Pos + Cam.Forward * 4; Center.Y = Cam.Pos.Y + 1.5;
+		Drops.Mesh->SetWorldLocation(S47Three::ToUE(Center));
+		Common(D, Center, FMath::Lerp(0.1, 0.7, Day));
+		D->SetScalarParameterValue(TEXT("Near"), 0.3f);
+		D->SetScalarParameterValue(TEXT("Size"), 0.008f);
+		D->SetScalarParameterValue(TEXT("Puff"), 2.f);
+		D->SetScalarParameterValue(TEXT("Wobble"), 0.01f);
+		D->SetScalarParameterValue(TEXT("Density"), float((bLow ? 0.25 : 0.5) * RainK));
+		FVector Dv = Blow * 0.3; Dv.Y = -7.5;
+		Drops.Drift(Dt, Dv);
+		D->SetVectorParameterValue(TEXT("Col"), FLinearColor(.75f, .8f, .86f, 0));
 	}
 }
 

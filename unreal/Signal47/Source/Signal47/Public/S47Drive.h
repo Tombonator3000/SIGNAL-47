@@ -98,6 +98,8 @@ public:
 	double Power = 1;
 	/** m/s² of something holding the truck back (story/truckTaken.ts); 0 normally. */
 	double Held = 0;
+	/** WEATHER-20261108: the surface's grip times this (wet dirt after a shower: FS47TruckCare); 1 normally. */
+	double GripScale = 1;
 	/** The head's look kept within this (radians; the waking in the cab, story/abduction.ts), or unset. */
 	struct FLookBox { double Yaw0, Yaw1, Pitch0, Pitch1; };
 	TOptional<FLookBox> LookBox;

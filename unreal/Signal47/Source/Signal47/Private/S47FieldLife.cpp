@@ -27,6 +27,7 @@
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47Weather.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
@@ -146,7 +147,18 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
  FS47EngineSound* Engine=M->World->EngineSound();
  const double Going=FMath::Abs(D.Speed);
  // ---- the sand: it drags and tugs the wheel; driven hard and slow the wheels dig in, and it tells before it sinks ----
- const double Soft=D.Surface.Kind==ES47SurfaceKind::Asphalt?0.:SandAt(RoadX,RoadZ);
+ // (WEATHER-20261108: on a sand day it drifts across the dirt tracks, less on gravel, never on the asphalt)
+ const S47Weather::FLive& Wx=S47Weather::Live();
+ const double Drift=Wx.bOn?Wx.Dust*(D.Surface.Kind==ES47SurfaceKind::Dirt?.18:.08):0.;
+ const double Soft=D.Surface.Kind==ES47SurfaceKind::Asphalt?0.:FMath::Min(1.,SandAt(RoadX,RoadZ)+Drift);
+ // a strong wind pushes the truck off its line at speed, in gusts, the way it blows
+ if(Wx.bOn&&Wx.Wind>.15&&Going>4)
+ {
+  GustT+=Dt;
+  const double Gusting=.55+.45*FMath::Sin(GustT*.9)*FMath::Sin(GustT*.37+1.);
+  const double Toward=-FMath::Cos(D.Heading)*Wx.DirX+FMath::Sin(D.Heading)*Wx.DirZ; // which way turning goes with the wind
+  D.Heading+=Dt*Wx.Wind*.03*Gusting*FMath::Sign(Toward)*FMath::Min(1.,FMath::Abs(Toward)*2.)*FMath::Min(1.,Going/15.);
+ }
  if(!bStuck)
  {
   Bog=FMath::Clamp(Bog+Dt*BogRate(Soft,D.Load,D.Speed,D.Reversing()),0.,1.);
@@ -196,6 +208,12 @@ void FS47TruckCare::Step(double Dt)
  ShowSand();
  if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;Bog=0;return;} // parked at SARO: the next tow is priced from there
  auto* D=M->World->CabDrive();if(!D)return;
+ // (WEATHER-20261108: after a shower the dirt is slick for a few hours, the gravel a little, the asphalt hardly)
+ {
+  const S47Weather::FLive& Wx=S47Weather::Live();
+  const double Wet=Wx.bOn?FMath::Clamp(Wx.Wet,0.,1.):0.;
+  D->GripScale=1.-Wet*(D->Surface.Kind==ES47SurfaceKind::Dirt?.35:D->Surface.Kind==ES47SurfaceKind::Gravel?.2:.06);
+ }
  Hold();
  if(!D->bHandling)return; // The autopilot's road trips have none of this.
  double RoadX=0,RoadZ=0;

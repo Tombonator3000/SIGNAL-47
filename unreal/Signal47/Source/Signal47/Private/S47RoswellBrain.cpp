@@ -101,6 +101,8 @@ TOptional<FVector> FS47RoswellBrain::Heard(const FInput& In,const FWorld& World)
   if (StepsCarry>Reach) { Source=FNoise{In.PlayerFeet,1.}; Reach=StepsCarry; }
  }
  if (!Source) return {};
+ // the wind covers what it can (WEATHER-20261108)
+ if (FMath::IsFinite(In.HearScale)) Reach*=FMath::Clamp(In.HearScale,.3,1.);
  // A roof/wall muffles sound instead of granting a perfect through-wall view.
  // Stationary input cannot generate footsteps; the adapter supplies measured speed.
  if (!World.Sight || !World.Sight(Eye(),Source->At+FVector(0,.3,0))) Reach*=.42;
@@ -420,6 +422,12 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
  Check(!Listener.bHasPlayerMemory,TEXT("stationary player does not create imagined footsteps"));
  In.PlayerSpeed=1.3; Listener.Tick(.1,In,World);
  Check(Listener.bHasPlayerMemory && !Listener.bSeesPlayer,TEXT("nearby real movement can be heard muffled through cover"));
+ {
+  FS47RoswellBrain Windy; Windy.Start(EMode::Curious,FVector::ZeroVector,PI,17);
+  FInput Gale=In; Gale.HearScale=.5;
+  Windy.Tick(.1,Gale,World);
+  Check(!Windy.bHasPlayerMemory,TEXT("a strong wind covers the same steps through cover (WEATHER-20261108)"));
+ }
  In.PlayerSpeed=0; In.Noise=FNoise{FVector(0,0,40),1.}; Listener.Tick(.1,In,World);
  Check(Listener.LastKnownPlayer.Equals(FVector(0,0,3)),TEXT("inaudible distant source cannot retarget an individual"));
  In.Noise.Reset(); In.PlayerFeet=FVector(0,0,5); In.PlayerEye=In.PlayerFeet+FVector(0,1.62,0);

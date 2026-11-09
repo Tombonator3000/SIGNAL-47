@@ -13,4 +13,7 @@ namespace S47Wind
 	SIGNAL47_API FWind& Wind();
 	/** windAt(t): moves the wind on to t seconds (flora.ts, before every picture). */
 	SIGNAL47_API void WindAt(double T);
+	/** WEATHER-20261108, after WindAt: a windy afternoon (K 0 to 1, S47Weather::Live().Wind) sways it up to three and a half times as
+	 *  far and turns it toward the way the day's wind blows (x, z). K 0 leaves it as WindAt has it. */
+	SIGNAL47_API void Storm(double K, const FVector2D& Dir);
 }

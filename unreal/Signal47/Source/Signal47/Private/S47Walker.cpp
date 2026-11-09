@@ -325,7 +325,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		if (S47Keys::Pressed(PC, TEXT("crouch"))) SetCrouch(!bCrouch);
 		if (bCrouch && bRun && Mx * Mx + Mz * Mz > 0.01) SetCrouch(false);
 		// Player.update
-		const double Sp = Speed * (bRun && !bCrouch ? 1.6 : 1.0) * MoveScale * FMath::Lerp(1.0, S47Sneak::Pace, CrouchK);
+		const double Sp = Speed * (bRun && !bCrouch ? 1.0 + 0.6 * FMath::Clamp(RunScale, 0.0, 1.0) : 1.0) * MoveScale * FMath::Lerp(1.0, S47Sneak::Pace, CrouchK);
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
 		const double Vx = (Mx * C + Mz * S) * Sp * Dt, Vz = (-Mx * S + Mz * C) * Sp * Dt;
 		const FVector Before = Pos;

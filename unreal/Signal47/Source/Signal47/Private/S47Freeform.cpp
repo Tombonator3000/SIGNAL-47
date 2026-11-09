@@ -52,6 +52,8 @@
 #include "S47World.h"
 #include "S47Flow.h"
 #include "S47Happenings.h"
+#include "S47Fatigue.h"
+#include "S47WeatherLive.h"
 #include "S47Observing.h"
 #include "S47Inter.h"
 #include "S47Three.h"
@@ -274,6 +276,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Enlarger)Enlarger=MakeShared<FS47Enlarger>(M);
  if(!WardReport)WardReport=MakeShared<FS47WardReport>(M);WardReport->Begin(S47J::Obj(Saved,TEXT("wardReport")));
  if(!SkyAnswer)SkyAnswer=MakeShared<FS47Answer>(M);SkyAnswer->Begin(S47J::Obj(Saved,TEXT("answer")));
+ if(!Weather)Weather=MakeShared<FS47WeatherLive>(M);Weather->Stop();
+ if(!Fatigue)Fatigue=MakeShared<FS47Fatigue>(M);Fatigue->Begin(S47J::Obj(Saved,TEXT("fatigue")));
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -306,6 +310,8 @@ void FS47FreeformSession::Stop()
  if(PinBoard)PinBoard->Stop();
  if(WardReport)WardReport->Stop();
  if(SkyAnswer)SkyAnswer->Stop();
+ if(bCanRestore&&Weather)Weather->Stop();else S47Weather::Live().bOn=false;
+ if(bCanRestore&&Fatigue)Fatigue->Stop();
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -525,6 +531,8 @@ void FS47FreeformSession::Step(double Dt)
  if(PinBoard)PinBoard->Step(Dt);
  if(WardReport)WardReport->Step(Dt);
  if(SkyAnswer)SkyAnswer->Step(Dt);
+ if(Weather)Weather->Step(D);
+ if(Fatigue)Fatigue->Step(D);
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -1200,6 +1208,7 @@ void FS47FreeformSession::TakenAway(double WorldSeconds)
  bAudioPlaying=false;
  FJob* J=Job();if(J&&J->Stage==EJobStage::Integrating){J->Stage=EJobStage::Pointed;J->Elapsed=0;Settle=0;bCrossRunning=false;}
  TestAdvance(WorldSeconds);
+ if(Fatigue)Fatigue->Lost(WorldSeconds); // FATIGUE-20261108: no sleep in it
 }
 void FS47FreeformSession::Recover(const FString& Why)
 {
@@ -1944,7 +1953,10 @@ bool FS47FreeformSession::WaitUntil(double Target)
  // Standby: mains and heating with nobody on shift. What is not there is waived.
  int32 Standby=0;
  if(RulesLive()&&Tutorial==0&&RestPlace==ERest::Station){Standby=FMath::Min(Cash,StandbyFor((bWoken?WokenAt:Target)-WorldClock));Cash-=Standby;StandbyTotal+=Standby;}
+ const double SleptFrom=WorldClock;
  WorldClock=bWoken?WokenAt:Target;DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600.)/SecondsPerDay))+1);AddDay(DayNumber);Settle=0;bAudioPlaying=false;
+ // FATIGUE-20261108: the rest was sleep, where it was had (a cot sleeps worst)
+ if(Fatigue)Fatigue->Slept(WorldClock-SleptFrom,RestPlace==ERest::Motel?FS47Fatigue::EBed::Motel:RestPlace==ERest::Field?FS47Fatigue::EBed::Cot:FS47Fatigue::EBed::Station);
  // Settle unsampled time before any save request, even while the confirmation
  // screen is still modal. No large Dt is passed through observing work.
  if(Field)Field->AdvanceUnobservedTo(WorldClock);
@@ -2588,6 +2600,7 @@ bool FS47FreeformSession::Use(const FString& Id)
  if(Id==TEXT("printer")){Feedback.Empty();if(!CollectChart())Changed(Feedback.IsEmpty()?TEXT("No paper waiting. ")+NextAction():Feedback);return true;}
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord")){OpenArchive();return true;}
  if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(Director&&Director->Use(TEXT("ff:phone")))return true;if(Predecessor&&Predecessor->UsePhone())return true;Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
+ if(Fatigue&&Fatigue->Use(Id))return true; // the coffee (FATIGUE-20261108)
  return Director&&Director->Use(Id);
 }
 FString FS47FreeformSession::Label(const FString& Id)const
@@ -2606,6 +2619,7 @@ FString FS47FreeformSession::Label(const FString& Id)const
  if(Id==TEXT("rack"))return TEXT("Record an independent receiver control");
  if(Id==TEXT("printer"))return PrinterHint();
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord"))return TEXT("File originals and inspect the continuing case archive");
+ if(Fatigue){const FString L=Fatigue->Label(Id);if(!L.IsEmpty())return L;}
  return Director?Director->Label(Id):FString();
 }
 // ---- First shift tutorial ----------------------------------------------------------------------
@@ -2787,6 +2801,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Happenings){const auto Nights=Happenings->Save();if(Nights->Values.Num()>0)S47J::Set(O,TEXT("happenings"),Nights);}
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
+ if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
  if(SkyAnswer){const auto Calls=SkyAnswer->Save();if(Calls->Values.Num()>0)S47J::Set(O,TEXT("answer"),Calls);}
