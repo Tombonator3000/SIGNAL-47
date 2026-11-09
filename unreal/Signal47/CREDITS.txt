@@ -79,6 +79,14 @@ Poly Haven, CC0 (public domain, https://creativecommons.org/publicdomain/zero/1.
 "Television 02" by Poly Haven, CC0, https://polyhaven.com/a/television_02
 "Vintage Radio Transceiver" by Poly Haven, CC0, https://polyhaven.com/a/vintage_radio_transceiver
 
+Freeform terrain textures, Poly Haven, CC0 (Tools/freeformterrain/KILDER.md):
+"Cliff Side" by James Ray Cock, Jenelle van Heerden and Dario Barresi, CC0, https://polyhaven.com/a/cliff_side (sedimentary rock of the hills)
+"Dark Rock 02" by Amal Kumar, CC0, https://polyhaven.com/a/dark_rock_02 (basalt of the hills)
+"Dry Ground Rocks", "Aerial Ground Rock" and "Dry Ground 01" by Rob Tuytel, CC0, https://polyhaven.com/a/dry_ground_rocks https://polyhaven.com/a/aerial_ground_rock https://polyhaven.com/a/dry_ground_01
+"Rocky Trail" by Amal Kumar, CC0, https://polyhaven.com/a/rocky_trail
+"Sandy Gravel 02" by Dario Barresi, CC0, https://polyhaven.com/a/sandy_gravel_02
+Elevation data: U.S. Geological Survey, 3D Elevation Program (public domain). Imagery: USGS, USDA, The National Map: Orthoimagery (public domain).
+
 Daytime sky photography, CC0:
 "Kloppenheim 06 (Pure Sky)" by Greg Zaal / Jarod Guest, CC0, https://polyhaven.com/a/kloppenheim_06_puresky
 
