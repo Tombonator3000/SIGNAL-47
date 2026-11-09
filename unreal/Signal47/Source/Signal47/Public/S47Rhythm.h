@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47NightTiers.h"
 
 class US47Main;
 
@@ -18,6 +19,10 @@ struct FS47RhythmEvent
  FString System,Budget,DrawState;
  bool bGround=true,bEnforce=false,bFixedTable=false;
  ES47RhythmLevel Level=ES47RhythmLevel::Hint;
+ // TIERS-20261109: what it is (tier: hint, glimpse, full; absent: full for their_hours, else hint), and early: an authored start that
+ // may come before its tier's hour on purpose (S47NightTiers).
+ ES47Allowed Tier=ES47Allowed::Hint;
+ bool bEarly=false;
  ES47RhythmHours Hours=ES47RhythmHours::Any;
  double From=0,To=0,PerNight=-1;
  // draw.at: the hours of the night it is drawn in, 19 to 30 (past midnight over 24); -1: the system's own.
@@ -38,6 +43,9 @@ struct FS47RhythmData
 {
  // RestDanger: a pause after a danger, not the rest of the night (Tom's critics, 8 November: was 480 s, two hours of the clock).
  double Earliest=1,Latest=3,End=6,DevFixed=2,TickMin=240,TickMax=420,RestDanger=170,RestOther=45,RestTaken=1800;
+ // globals.tiers, clock hours (S47NightTiers has the same; the self-test holds them equal): glimpses from, full from, and the same
+ // from the fourth week's first night.
+ double TierGlimpse=0,TierFull=2,TierLateGlimpse=23,TierLateFull=1;int32 TierLateNight=22;
  int32 MinorMin=2,MinorMax=4,InvestMin=0,InvestMax=2,SkyMin=0,SkyMax=1,DangerPerNight=-1; // -1: no limit
  TArray<FS47RhythmEvent> Events;
  TArray<FS47RhythmWeek> Weeks; // in order of FromDay; empty: every level at its own chance, everything as near as it is
@@ -109,9 +117,11 @@ public:
  // Days before an event comes again: from Min to Max (cooldown_days), always the same answer for one event's one last day. The
  // Director asks this too (FS47FreeformDirector::CoolFor), so that the panel and the night agree.
  static int32 CoolDays(const FString& Id,int32 Last,int32 Min=2,int32 Max=4);
- // Fixed order, so that the panel and the log say the same: off, tutorial, too_early_day, outside_hours, cooldown, slot_taken:<id>, rest,
+ // Fixed order, so that the panel and the log say the same: off, tutorial, too_early_day, outside_hours, tier, cooldown, slot_taken:<id>, rest,
  // budget, danger_night, humor_night, not_here, needs:<name>, not_drawn_tonight. Need answers for a name; unset: every need holds.
  FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr) const;
+ // The event's tier as the file has it (an unknown id: full, so that nothing unclassified comes early).
+ ES47Allowed TierOf(FName Id) const{const auto* E=Rules.Find(Id);return E?E->Tier:ES47Allowed::Full;}
  // The world's answers, from what each system lets be read.
  FS47RhythmNow ReadNow() const;
  // A system's own question, at the moment it would start, after its dice. True when nothing stops it or its "enforce" is off; with it off,

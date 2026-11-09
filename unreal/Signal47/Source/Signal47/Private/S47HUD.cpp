@@ -265,6 +265,7 @@ void AS47HUD::Start()
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
+		bOk &= S47NightTiers::SelfTest(Lines); // (TIERS-20261109: hint, glimpse, full by the clock and the week)
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
@@ -276,7 +277,7 @@ void AS47HUD::Start()
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);
-		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the 02:00 lock and the lint)
+		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the night's tiers and the lint)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);

@@ -2896,8 +2896,16 @@ void FS47Happenings::StepFigure(double Dt)
 // 2 dogs, 6 a phone in an empty building, 10 a carcass, 12 a lit window in an empty house, 14 a figure on the rise, 15 the cinema,
 // 16 room 6, 17 Caliche's lights, 18 the array's burst, 19 the caller on 1420, 20 the warm hood, 21 tracks round the truck,
 // 22 animals running, 24 a light over the truck (a danger), 25 a dust devil, 26 the missing man. Each leaves a record or a lead.
+namespace S47HapTiers
+{
+ // TIERS-20261109: the moment holds a glimpse but not yet a full meeting (S47NightTiers, on the night the clock belongs to).
+ bool GlimpseOnly(double Clock){return S47NightTiers::AtClock(Clock,FS47FreeformSession::NightOf(Clock))==ES47Allowed::Glimpse;}
+ // How near the player comes before a glimpse on the horizon is gone (a full night's figure waits until 90 m).
+ constexpr double GlimpseGoneAt=130.;
+}
 bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why)
 {
+ using namespace S47HapTiers;
  static_cast<void>(Variant);
  auto* F=M->Freeform.Get();
  const double Clock=F->Clock();
@@ -2997,8 +3005,10 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(!S47Hap::Exists(S47Hap::HairyStandIn))return No(TEXT("no figure for it in this build"));
   if(!Ask(TEXT("horizon_figure")))return No(TEXT("the rhythm says not now"));
   if(!Prop(TEXT("shade")))return No(TEXT("nothing to draw it with"));
-  // On the rise at the edge of the view, a long way off; nearer as the weeks go.
-  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Clamp(190.*NearK,100.,190.);
+  // On the rise at the edge of the view, a long way off; nearer as the weeks go. Before the full tier (TIERS-20261109: a glimpse, from
+  // midnight) it keeps farther off, never nearer than 170 m, and is gone sooner when the player comes (GlimpseGoneAt).
+  const bool bGlimpse=GlimpseOnly(Clock);
+  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Max(FMath::Clamp(190.*NearK,100.,190.),bGlimpse?170.:0.);
   FVector At=Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;
   double X=0,Z=0;
   if(!RoadOfWorld(At,X,Z)||!WorldOf(X,Z,At))return No(TEXT("no ground there"));
@@ -3214,7 +3224,7 @@ bool FS47Happenings::StepMore(double Dt)
   const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&Seen(Now.At+FVector(0,1,0),400,6);
   const double Away=FVector2D(To.X,To.Z).Size();
   if(!Now.bSeen&&SeenLit(Now.At+FVector(0,1.6,0),260,30,LitGround|LitSky,TEXT("shade"))){Now.bSeen=true;Noticed(TEXT("horizon_figure"),Away,TEXT("sight"));}
-  if(Now.Stage==0&&(bLamp||Away<90))
+  if(Now.Stage==0&&(bLamp||Away<(S47HapTiers::GlimpseOnly(Now.Clock)?S47HapTiers::GlimpseGoneAt:90.)))
   {
    Now.Stage=1;Now.Len=Now.Age+1;
    if(Now.bSeen)F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));

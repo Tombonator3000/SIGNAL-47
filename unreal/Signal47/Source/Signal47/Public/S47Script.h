@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47NightTiers.h"
 
 // DIRECTOR-TOOL-20261109 (Tom, 9 November: "en regissør-mulighet i spillet så jeg/vi kan lage skriptede hendelser"). A scripted event
 // is one JSON file in Content/Director/scripted/<id>.json: when it may start (its trigger) and what then happens on a timeline of
@@ -9,7 +10,9 @@
 // keeps a script inside Freeform's limits. Nothing here touches the world.
 //
 // The fixed rules, the same as for the night's own events (DECISIONS, Freeform):
-//   - nothing alien before about two in the morning: a script with a figure only starts between AlienFrom and AlienUntil;
+//   - the night's tiers (S47NightTiers, Tom 9 November): a script with a figure is a full meeting and starts from two in the morning (one
+//     in the fourth week), a glimpse ("tier": "glimpse", every figure vanishing when looked at) from midnight (23:00 in the fourth week),
+//     both until AlienUntil; "early": true, set on purpose, lets an authored one start from AlienEarlyFrom;
 //   - never while another big event holds the night (the Director's event, being taken, a night happening on the ground, the light
 //     over the highway, another script): FS47ScriptNow::bBigEvent;
 //   - the spoiler limits: never the 47 seconds, the 1947 photograph, C, the cable, Tomás, the third silhouette, how anyone was taken,
@@ -80,10 +83,14 @@ struct FS47Script
  bool bEnabled=false;
  ES47ScriptRepeat Repeat=ES47ScriptRepeat::Once;
  double CooldownMin=60;       // Always: minutes of the game's clock before it can come again
+ ES47Allowed Tier=ES47Allowed::Full; // what its figures are: full, or a glimpse (every figure vanishes when looked at); no figure: a hint
+ bool bEarly=false;           // an authored exception: its figures may start before their tier's hour, from AlienEarlyFrom
  FS47ScriptTrigger Trigger;
  TArray<FS47ScriptAction> Actions;
  FString File;                // where it was read from; not written
  bool HasFigure() const;
+ // What it needs of the night's tier: a hint without a figure, else its Tier.
+ ES47Allowed Need() const{return HasFigure()?Tier:ES47Allowed::Hint;}
  double Length() const;       // the last action's start plus what it holds for, seconds
 };
 
@@ -115,8 +122,11 @@ struct FS47ScriptMemory
 
 namespace S47Script
 {
- // About two in the morning until first light: the only hours a script with a figure can start in.
- constexpr double AlienFrom=2.,AlienUntil=6.;
+ // Until first light: a script with a figure starts from its tier's hour (S47NightTiers::FromClockHour) until AlienUntil, or, set
+ // early on purpose, from AlienEarlyFrom. AlienFrom: the full tier's hour in the first three weeks, for the texts.
+ constexpr double AlienFrom=2.,AlienUntil=6.,AlienEarlyFrom=19.;
+ // The clock hour this script's figures may start from on that night.
+ SIGNAL47_API double FigureFrom(const FS47Script& S,int32 Night);
  SIGNAL47_API const TCHAR* ActName(ES47ScriptAct A);
  SIGNAL47_API ES47ScriptAct ActFrom(const FString& Name);
  SIGNAL47_API const TCHAR* RepeatName(ES47ScriptRepeat R);
@@ -157,6 +167,6 @@ namespace S47Script
  SIGNAL47_API bool Ready(const FS47Script& S,const FS47ScriptNow& Now,const FS47ScriptMemory& Mem,FString& Why,bool bPreview=false);
  SIGNAL47_API bool CondHolds(const FS47ScriptCond& C,const FS47ScriptNow& Now);
 
- // HUD's self-test: the JSON both ways, the triggers, the lock against two in the morning and the lint (S47ScriptTest.cpp).
+ // HUD's self-test: the JSON both ways, the triggers, the night's tiers and the lint (S47ScriptTest.cpp).
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

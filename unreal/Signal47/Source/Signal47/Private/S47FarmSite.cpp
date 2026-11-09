@@ -53,10 +53,11 @@ namespace
  FVector FarmCentre(){return S47FarmWorld::RoadToArea(TEXT("saro"),FVector(CentreX,S47FarmWorld::FloorRoad(CentreX,CentreZ),CentreZ));}
 }
 
+// The full tier of the first weeks (S47NightTiers) until six: a session's own night (FS47FreeformSession::TheirHoursNow) creeps in the fourth.
 bool FS47FarmSite::TheirHours(double Clock)
 {
  const double Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
- return Hour>=2&&Hour<6;
+ return S47NightTiers::Allows(ES47Allowed::Full,Hour,1)&&Hour<FS47NightRhythm::EndHour;
 }
 
 FString FS47FarmSite::FindingId() const

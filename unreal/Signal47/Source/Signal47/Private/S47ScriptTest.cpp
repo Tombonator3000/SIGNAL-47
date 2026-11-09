@@ -3,7 +3,8 @@
 #include "Misc/Paths.h"
 
 // DIRECTOR-TOOL-20261109: the scripted events' self-test, called from the HUD's (-S47SelfTest): the JSON both ways, the trigger,
-// the lock against two in the morning, the lock against a big event, and the lint. No world: FS47ScriptNow is filled by hand.
+// the night's tiers (S47NightTiers: a figure waits for two, a glimpse for midnight, sooner in the fourth week, early only when set),
+// the lock against a big event, and the lint. No world: FS47ScriptNow is filled by hand.
 
 namespace S47ScriptTestLocal
 {
@@ -138,6 +139,25 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
   TArray<FString> Warn;
   FS47Script Never=Sample();Never.Trigger.HourFrom=19;Never.Trigger.HourTo=23;
   Check(Lint(Never,&Warn).Num()==0&&Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("never play"));}),TEXT("a figure whose hours never reach 02:00 gets a warning"));
+ }
+
+ // ---- the night's tiers (TIERS-20261109) ----
+ {
+  FS47ScriptMemory Mem;FString Why;
+  FS47Script S=Sample();S.Trigger.DayTo=0;S.Trigger.HourFrom=22;S.Trigger.HourTo=5;
+  Check(!Ready(S,NightAt(23+10/60.,22),Mem,Why)&&Ready(S,NightAt(1+10/60.,22),Mem,Why),TEXT("in the fourth week a full figure waits at 23:10 and plays at 01:10"));
+  Check(!Ready(S,NightAt(1+10/60.,8),Mem,Why)&&Why.Contains(TEXT("02:00")),TEXT("in the second week it still waits for 02:00 at 01:10"));
+  FS47Script G=S;G.Tier=ES47Allowed::Glimpse;
+  Check(Lint(G).Num()==0&&!Ready(G,NightAt(23.5),Mem,Why)&&Ready(G,NightAt(.5),Mem,Why)&&!Ready(G,NightAt(22.9,22),Mem,Why)&&Ready(G,NightAt(23+10/60.,22),Mem,Why),TEXT("a glimpse: not at 23:30, at 00:30; in the fourth week from 23:00"));
+  FS47Script Stays=G;for(FS47ScriptAction& A:Stays.Actions)if(A.Do==ES47ScriptAct::Figure)A.bFlag=false;
+  FS47Script OnlyHint=S;OnlyHint.Tier=ES47Allowed::Hint;
+  Check(Lint(Stays).Num()>0&&Lint(OnlyHint).Num()>0,TEXT("a glimpse whose figure stays is refused, and a figure is never only a hint"));
+  FS47Script Early=S;Early.Trigger.HourFrom=-1;Early.Trigger.HourTo=-1;Early.bEarly=true;
+  FS47Script NotEarly=Early;NotEarly.bEarly=false;
+  Check(!Ready(NotEarly,NightAt(23.5),Mem,Why)&&Ready(Early,NightAt(23.5),Mem,Why)&&!Ready(Early,NightAt(14),Mem,Why),TEXT("an authored early start plays at 23:30 only when it is set, and never by day"));
+  FS47Script Back;FS47Script EG=Early;EG.Tier=ES47Allowed::Glimpse;
+  Check(Read(Write(EG),Back,Why)&&Back.bEarly&&Back.Tier==ES47Allowed::Glimpse&&!Write(S).Contains(TEXT("\"tier\""))&&!Write(S).Contains(TEXT("\"early\"")),TEXT("tier and early are written when set, and read back"));
+  Check(!Read(Write(S).Replace(TEXT("\"id\""),TEXT("\"tier\": \"near\", \"id\"")),Back,Why),TEXT("an unknown tier is turned away"));
  }
 
  // ---- the lint ----

@@ -687,9 +687,10 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   // Noticed at all from where the player is, and the world as it needs it (FS47SmallHints).
   if(S47SmallHints::Is(Id)&&M->Player&&!S47SmallHints::Fits(M,Id,M->Player->Pos,[this](const FVector& At){return InView(At);}))return false;
   if(Today<D->Day||(D->bNight&&!bDark)||(At<0&&(ActiveTime<RestUntil||bTestHush)))return false;
-  // The evening is a normal job: hints, sounds, lights in the sky. A body waits for about two in the morning.
-  // The close pass is a hull beside the player, not a far light: it waits too.
-  if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"))&&!M->Freeform->TheirHoursNow(Clock))return false;
+  // The evening is a normal job: hints, sounds, lights in the sky. What the rhythm file calls full (TIERS-20261109: a body, and the
+  // close pass, a hull beside the player) waits for their hours, which never begin before the full tier (S47NightTiers).
+  const bool bFull=M->Rhythm?M->Rhythm->TierOf(FName(*Id))==ES47Allowed::Full:(Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence")||Id==TEXT("close_pass"));
+  if(bFull&&!M->Freeform->TheirHoursNow(Clock))return false;
   if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(Today-*Last<CoolFor(Id,*Last))return false;
   if(D->Family==TEXT("threat")&&(LastThreatDay==Today||Clock<86400.+19*3600.))return false;
   // Asked at the moment it would start: one dangerous meeting a night, across every system (Tom, 7 November).

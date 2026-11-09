@@ -59,6 +59,16 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  const auto H=S47J::Obj(G,TEXT("their_hours"));
  Out.Earliest=S47J::Num(H,TEXT("earliest"),-1);Out.Latest=S47J::Num(H,TEXT("latest"),-1);Out.End=S47J::Num(H,TEXT("end"),-1);Out.DevFixed=S47J::Num(H,TEXT("dev_fixed"),2);
  if(!(Out.Earliest>=0&&Out.Earliest<=Out.Latest&&Out.Latest<=Out.End&&Out.End<=12)){Why=TEXT("their_hours are impossible");return false;}
+ // The tiers (TIERS-20261109): optional, the code's own when absent; glimpses before full, both in the small hours or the late evening.
+ if(const auto Tiers=S47J::Obj(G,TEXT("tiers")))
+ {
+  Out.TierGlimpse=S47J::Num(Tiers,TEXT("glimpse_from"),-1);Out.TierFull=S47J::Num(Tiers,TEXT("full_from"),-1);
+  Out.TierLateGlimpse=S47J::Num(Tiers,TEXT("late_glimpse_from"),-1);Out.TierLateFull=S47J::Num(Tiers,TEXT("late_full_from"),-1);
+  Out.TierLateNight=S47J::Int(Tiers,TEXT("late_from_night"),-1);
+  const auto Night=[](double H){return H<0||H>=24?-1.:H<12?H+24:H;};
+  if(!(Night(Out.TierGlimpse)>=18&&Night(Out.TierGlimpse)<=Night(Out.TierFull)&&Night(Out.TierLateGlimpse)>=18&&Night(Out.TierLateGlimpse)<=Night(Out.TierLateFull)&&Out.TierLateNight>=1))
+  {Why=TEXT("tiers: glimpse_from before full_from, in the night, and late_from_night a night");return false;}
+ }
  if(!Range(G,TEXT("tick_seconds"),Out.TickMin,Out.TickMax)||Out.TickMin<=0||Out.TickMin>Out.TickMax){Why=TEXT("tick_seconds");return false;}
  const auto Rest=S47J::Obj(G,TEXT("rest_after"));
  Out.RestDanger=S47J::Num(Rest,TEXT("danger"),-1);Out.RestOther=S47J::Num(Rest,TEXT("other"),-1);Out.RestTaken=S47J::Num(Rest,TEXT("taken"),-1);
@@ -126,6 +136,10 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
   if(Hours==TEXT("any"))E.Hours=ES47RhythmHours::Any;else if(Hours==TEXT("night"))E.Hours=ES47RhythmHours::Night;else if(Hours==TEXT("their_hours"))E.Hours=ES47RhythmHours::Theirs;
   else if(Range(O,TEXT("hours"),E.From,E.To)&&E.From>=0&&E.From<=24&&E.To>=0&&E.To<=24)E.Hours=ES47RhythmHours::Window;
   else{Why=Id+TEXT(": hours");return false;}
+  const FString TierName=S47J::Str(O,TEXT("tier"));
+  if(TierName.IsEmpty())E.Tier=E.Hours==ES47RhythmHours::Theirs?ES47Allowed::Full:ES47Allowed::Hint;
+  else if(!S47NightTiers::FromName(TierName,E.Tier)){Why=Id+TEXT(": tier is hint, glimpse or full");return false;}
+  E.bEarly=S47J::Bool(O,TEXT("early"));
   E.Areas=S47J::Strs(O,TEXT("areas"));
   if(const auto Draw=S47J::Obj(O,TEXT("draw")))
   {
@@ -248,6 +262,13 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  case ES47RhythmHours::Theirs:if(!Now.bTheirHours)return No(TEXT("outside_hours"),Now.bQuiet?TEXT("a calm night"):TEXT("not yet their hours"));break;
  case ES47RhythmHours::Window:if(!InWindow(Hour,E->From,E->To))return No(TEXT("outside_hours"),FString::Printf(TEXT("%.1f to %.1f"),E->From,E->To));break;
  default:break;
+ }
+ // The night's tier (TIERS-20261109): a glimpse waits for midnight, a full meeting for two (an hour sooner in the fourth week), unless
+ // the file sets it early on purpose. Being taken is the end of a meeting that was let start in its own tier: not held again here.
+ {
+  const int32 Night=FS47FreeformSession::NightOf(Now.Clock);
+  if(Id!=TEXT("taken")&&!S47NightTiers::Allows(E->Tier,Hour,Night,E->bEarly))
+   return No(TEXT("tier"),FString::Printf(TEXT("%s from %s"),S47NightTiers::Name(E->Tier),*ClockText(S47NightTiers::FromClockHour(E->Tier,Night)*3600.)));
  }
  const FString IdText=Id.ToString();
  if(const int32* Last=Now.LastDays.Find(Id))
@@ -692,6 +713,20 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  }
  {FS47RhythmNow A=N;A.bTheirHours=false;Check(Says(TEXT("service_presence"),A)==TEXT("outside_hours"),TEXT("not outside their hours"));}
  {FS47RhythmNow A=N;A.Clock=4*86400.+12*3600.;Check(Says(TEXT("flyover"),A)==TEXT("outside_hours"),TEXT("a night event not by day"));A.Clock=4*86400.+23*3600.;Check(R.May(TEXT("flyover"),A).bMay,TEXT("and may at 23:00"));}
+ {
+  // TIERS-20261109: the file's tiers are the code's, every event has one, and May holds each to it.
+  Check(D.TierGlimpse==FMath::Fmod(S47NightTiers::GlimpseFrom,24.)&&D.TierFull==S47NightTiers::FullFrom-24.&&D.TierLateGlimpse==S47NightTiers::LateGlimpseFrom&&D.TierLateFull==S47NightTiers::LateFullFrom-24.&&D.TierLateNight==S47NightTiers::LateFromNight,TEXT("the tiers as S47NightTiers has them"));
+  bool bTheirsFull=true;FString Off;
+  for(const FS47RhythmEvent& E:D.Events)if((E.Hours==ES47RhythmHours::Theirs&&E.Tier!=ES47Allowed::Full)||E.bEarly){bTheirsFull=false;Off+=E.Id.ToString()+TEXT(" ");}
+  Check(bTheirsFull&&R.TierOf(TEXT("horizon_figure"))==ES47Allowed::Glimpse&&R.TierOf(TEXT("big_night"))==ES47Allowed::Full&&R.TierOf(TEXT("flyover"))==ES47Allowed::Hint&&R.TierOf(TEXT("no_such_event"))==ES47Allowed::Full,TEXT("what comes in their hours is full, the figure on the horizon a glimpse, lights a hint, and nothing is early yet ")+Off);
+  const auto At=[&](int32 Night,double Hour){FS47RhythmNow A=N;A.Day=Night;A.Clock=(Night-1)*86400.+Hour*3600.+(Hour<12?86400.:0.);return A;};
+  Check(Says(TEXT("horizon_figure"),At(5,23.5))==TEXT("tier")&&R.May(TEXT("horizon_figure"),At(5,.5)).bMay,TEXT("the figure on the horizon not at 23:30 in the first week, and at 00:30"));
+  Check(Says(TEXT("door_visit"),At(5,1.5))==TEXT("tier")&&R.May(TEXT("door_visit"),At(5,2+10/60.)).bMay,TEXT("a visit at the door not at 01:30, and at 02:10"));
+  Check(R.May(TEXT("horizon_figure"),At(22,23+10/60.)).bMay&&Says(TEXT("door_visit"),At(22,.9))==TEXT("tier")&&R.May(TEXT("door_visit"),At(22,1+10/60.)).bMay,TEXT("in the fourth week a glimpse at 23:10 and the door at 01:10"));
+  FS47Rhythm Ex(nullptr);FString W;const bool bExParsed=Parse(FString(S47RhythmDefaultJson).Replace(TEXT("\"id\": \"door_visit\","),TEXT("\"id\": \"door_visit\", \"early\": true,")),Ex.Rules,W);
+  Check(bExParsed&&Ex.Rules.Find(TEXT("door_visit"))&&Ex.Rules.Find(TEXT("door_visit"))->bEarly&&Ex.May(TEXT("door_visit"),At(5,23.5)).bMay&&Says(TEXT("door_visit"),At(5,23.5))==TEXT("tier"),TEXT("an authored early start may come before its tier only when the file sets it"));
+  FS47RhythmData Bad2;Check(!Parse(FString(S47RhythmDefaultJson).Replace(TEXT("\"tier\": \"glimpse\""),TEXT("\"tier\": \"near\"")),Bad2,W),TEXT("an unknown tier is turned away"));
+ }
  {FS47RhythmNow A=N;A.LastDays.Add(TEXT("service_presence"),5);Check(Says(TEXT("service_presence"),A)==TEXT("cooldown"),TEXT("not on the day it was last"));A.LastDays.Add(TEXT("service_presence"),1);Check(R.May(TEXT("service_presence"),A).bMay,TEXT("and may four days on"));}
  {FS47RhythmNow A=N;A.Busy=TEXT("door_visit");Check(Says(TEXT("service_presence"),A)==TEXT("slot_taken:door_visit"),TEXT("one on the ground at a time"));Check(R.May(TEXT("sky_formation"),A).bMay==(A.Clock>=0&&InWindow(HourOf(A.Clock),21.5,5.5)),TEXT("the sky may run under it"));}
  {FS47RhythmNow A=N;A.RestLeft=100;Check(Says(TEXT("door_visit"),A)==TEXT("rest"),TEXT("no one comes during rest"));}
