@@ -404,7 +404,7 @@ bool FS47Visitors::Build()
 		// the cars across it, darker and pressed in.
 		for (int32 K = 0; K < RakePer; ++K)
 		{
-			const uint32 Hex = K < RakeDiscN ? 0xa88c74 : K < RakeDiscN + RakeStripeN ? 0x957a63 : 0x6a5442;
+			const uint32 Hex = K < RakeDiscN ? 0x806652 : K < RakeDiscN + RakeStripeN ? 0x6e5847 : 0x4c3c2f;
 			UStaticMeshComponent* T = Part(FString::Printf(TEXT("S47VisitRaked%s%d"), *Tag, K), K < RakeDiscN ? Cyl : Cube, Hex, Root, false);
 			T->SetCastShadow(false); RakeParts.Add(T);
 		}
@@ -648,10 +648,13 @@ void FS47Visitors::PlaceHeli(const FVisit& V, double Age, double Dt)
 {
 	const FS47EventPlace* P = M->Freeform->EventPlaces ? M->Freeform->EventPlaces->Find(V.Place) : nullptr;
 	const FString Area = P ? FS47EventPlaces::AreaOf(*P) : FString();
-	const bool bFly = P && Age >= 0 && Age <= 80 && Area != TEXT("station01");
-	// North to south over the place at 45 m, lower over it, one pass at about 45 m/s.
-	const double K = FMath::Clamp(Age / 80., 0., 1.);
-	const double X = P ? P->X - 200 + 400 * K : 0, Z = P ? P->Z - 1800 + 3600 * K : 0;
+	const bool bFly = P && Age >= 0 && Age <= 90 && Area != TEXT("station01");
+	// In from the north at about fifty metres a second, lower as it comes; twenty seconds over the place, turning slowly round it at
+	// thirty metres (they are looking); then away south.
+	const bool bHover = Age >= 35 && Age < 55;
+	const double K = Age < 35 ? .5 * Age / 35. : bHover ? .5 : FMath::Clamp(.5 + .5 * (Age - 55) / 35., .5, 1.);
+	const double Round = bHover ? FMath::Sin((Age - 35) / 20. * UE_DOUBLE_PI) * 14 : 0;
+	const double X = P ? P->X - 200 + 400 * K + Round * FMath::Cos((Age - 35) * .35) : 0, Z = P ? P->Z - 1800 + 3600 * K + Round * FMath::Sin((Age - 35) * .35) : 0;
 	const double Over = P ? FMath::Abs(Z - P->Z) : 1e9, Up = 30 + 25 * FMath::Clamp(Over / 600., 0., 1.);
 	const FVector At = bFly ? S47OpenLand::FromRoad(Area, X, Z) : FVector::ZeroVector;
 	const double Y = bFly ? S47FarmWorld::FloorRoad(X, Z) + Up : 0;
