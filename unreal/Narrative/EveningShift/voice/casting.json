@@ -11,7 +11,9 @@
       "kind": "clone",
       "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
       "source_provenance": "web/production/kinski/provenance.json",
-      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio)."
+      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio).",
+      "deprecated_for_new_lines": true,
+      "deprecated_nb": "Utfaset for nye replikker, Tom 9. november ca. 13:45: profilen er en klone av den ekte Klaus Kinskis stemme fra et dokumentarklipp. Dale får en egen, oppdiktet stemme (profil dale). De 56 eksisterende takene står urørt til Tom har lyttet; generate.py lager ingen ny take med denne profilen uten --allow-deprecated. Profilen slettes ikke; det avgjør Tom."
     },
     "waitress": {
       "actors": ["WAITRESS"],
@@ -32,6 +34,50 @@
       "source_provenance": "web/production/radiocast/provenance.json (role old: Kyutai voice-donations/oldNerd.wav, CC0-1.0)",
       "basis_nb": "Ingen eksisterende profil for vanlig lokal kveldsvert. Ikke Earl (494881fc, Art Bell) og ikke Kinski. Valgt fordi referansen er en lett, munter hverdagsprat ('very cozy, a great day to hack') og profilen bare brukes av én anonym innringer i tre klipp hos Earl. Mannlig register (målt median F0 ca. 102 Hz) er ikke verifisert kjønn/alder.",
       "rejected_alternatives_nb": "494881fc er Earl/Art Bell. 1e28f816 er 1947-nyhetsoppleseren i hendelsen; samme stemme som 1986-vert kunne leses som et hint. 1a160d70 brukes i flere innringerklipp (8) og har et svært dypt register (ca. 85 Hz). Ensemblestemmene (Stanton, Stack, Lynch, Price, Serling) er navngitte roller. demo0001 mangler dokumentert kildegrunnlag."
+    },
+    "dale": {
+      "actors": ["DALE"],
+      "status": "proposed",
+      "profile_id": null,
+      "profile_name": "SIGNAL 47 Dale, fictional field maintenance (synthetic design)",
+      "kind": "design",
+      "reference_sha256": null,
+      "proposed_candidate": "dale_de_design",
+      "source_provenance": "unreal/Narrative/DaleVoice/provenance.json",
+      "basis_nb": "Toms godkjenning 9. november ca. 13:45: Dale får en egen, oppdiktet stemme i stedet for kinski. Sint tysker i 50-årene, tung aksent, brå, hes og utålmodig. Temperamentet er inspirasjon; stemmen skal ikke ligne eller etterligne noen virkelig person, og ingen kilde er en kjent person eller hentet fra film eller tv. Forslaget er ren stemmedesign: OmniVoice lager stemmen fra egenskaper uten noe menneskeopptak, og identitetsprøven leses på tysk slik at den tyske aksenten følger med inn i engelsk (samme mekanisme som ga kinski-profilen aksenten, men uten ekte opptak). Profil-ID og referansehash fylles inn av DaleVoice/create_profiles.py --pin når Tom har valgt blant kandidatene; til da hopper generate.py over profilen.",
+      "candidates": {
+        "dale_de_design": {
+          "kind": "design",
+          "language": "German",
+          "instruct": "male, middle-aged, low pitch",
+          "vd_states": {"Gender": "male", "Age": "middle-aged", "Pitch": "low pitch"},
+          "sample_script": "Nein. Nein, nein, nein. Wer hat schon wieder mein Werkzeug genommen? Ich stehe seit sechs Uhr in dieser Werkstatt, und keiner sagt mir etwas. Gut. Dann mache ich es eben selbst.",
+          "source": "OmniVoice voice design (k2-fsa/OmniVoice c5fdb5cc), no human recording",
+          "license": "Synthetic output; model weights CC-BY-NC as for every take in this project. No third-party voice.",
+          "basis_nb": "Anbefalt. Helt oppdiktet. OmniVoice har ingen tysk aksent-tag; derfor leses identitetsprøven (egen, ny tysk tekst, ikke et sitat) på tysk, og engelske replikker kloner fra den. Risiko: aksenten kan bli svak eller for sterk; lytt."
+        },
+        "dale_donor_de": {
+          "kind": "clone",
+          "language": "Auto",
+          "reference_file": "voice-donations/english_with_german_accent.wav",
+          "reference_original_sha256": "9d34c8f669d5190ad8cab05204249532f9fcede9f3f624702ee35a374a7b16d7",
+          "repository": "https://huggingface.co/kyutai/tts-voices",
+          "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+          "license": "CC0-1.0 (voice-donations, pinned README sha256 47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b, the same README already pinned for the radiocast cast)",
+          "source": "Anonymous volunteer of the Kyutai Unmute Voice Donation Project; English with a German accent; 10.0 s, median F0 about 110 Hz (register estimate, not gender/age verification)",
+          "basis_nb": "Tryggeste tyske aksent: ekte engelsk med tysk aksent, donert som CC0 nettopp for stemmesyntese. Ikke en kjent person, ikke film eller tv. Men stemmen vil ligne den anonyme donoren; velg en designkandidat hvis «ingen virkelig person» skal gjelde strengt."
+        },
+        "dale_ru_design": {
+          "kind": "design",
+          "language": "English",
+          "instruct": "male, middle-aged, low pitch, russian accent",
+          "vd_states": {"Gender": "male", "Age": "middle-aged", "Pitch": "low pitch", "EnglishAccent": "russian accent"},
+          "sample_script": "No. No, no, no. Who took my tools again? I have been in this workshop since six o'clock, and nobody tells me anything. Fine. Then I do it myself.",
+          "source": "OmniVoice voice design (k2-fsa/OmniVoice c5fdb5cc), no human recording",
+          "license": "Synthetic output; model weights CC-BY-NC as for every take in this project. No third-party voice.",
+          "basis_nb": "Kontroll: helt oppdiktet, og den nærmeste aksent-taggen OmniVoice har (russisk; tysk finnes ikke). Kan høres østeuropeisk ut i stedet for tysk."
+        }
+      }
     }
   },
   "not_covered": {

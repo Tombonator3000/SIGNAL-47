@@ -1,0 +1,89 @@
+{
+  "synthetic": true,
+  "human_listened": false,
+  "voice_label": "Dale, fictional SARO field maintenance (own synthetic voice; replaces the kinski clone for new lines)",
+  "decision": "Tom 9 November 2026 about 13:45: Dale gets his own invented voice instead of profile kinski (VoiceStudio 3cf0d3a5, a clone of the real Klaus Kinski from a documentary clip). The kinski profile is not used for new lines and is not deleted.",
+  "character_brief": "Angry German in his fifties, heavy accent, abrupt, hoarse and impatient. The temperament is inspiration only: no name, no real quotes, no imitation of a real person (Docs/Active/DECISIONS.md, Dale, 7 November).",
+  "language": "en",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "language": "en",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast (documented VoiceStudio default, same as the Kinski corpus: 80 Hz highpass, compressor, mild shelf EQ, limiter; a studio mastering chain, not a phone/radio channel filter)",
+    "seed_policy": "42 for every take; a broken take may be regenerated with the next seed, logged in retakes.json"
+  },
+  "what_the_software_supports": {
+    "voice_design": "OmniVoice instruct tags, one per category: male/female; child, teenager, young adult, middle-aged, elderly; very low to very high pitch; whisper; accents american, british, australian, chinese, canadian, indian, korean, portuguese, russian, japanese. No German accent tag and no free-text description (VoiceStudio /design/describe maps prose onto these tags). Read from omnivoice/utils/voice_design.py in the installed runtime.",
+    "design_profile": "POST /profiles kind=design renders a deterministic identity sample (seed 42) from instruct + sample script in the profile language and keeps it as the reference, so every line keeps the same voice. Needs the GPU.",
+    "clone_profile": "POST /profiles kind=clone with a reference WAV; an empty ref_text is transcribed once by VoiceStudio (GPU).",
+    "instruct_with_reference": "A design profile conditions on its sample and its instruct together."
+  },
+  "candidates": {
+    "dale_de_design": {
+      "kind": "design",
+      "recommended": true,
+      "source": "No human recording. OmniVoice voice design: male, middle-aged, low pitch. Identity sample read in German from an original script written for this project (not a quotation); English lines are cloned from it, so the German accent comes from the model, as it did for the kinski profile, but without a real person behind it.",
+      "license": "Synthetic. Subject to the OmniVoice weights licence (CC-BY-NC per the downloaded model card), like every take in this project."
+    },
+    "dale_ru_design": {
+      "kind": "design",
+      "source": "No human recording. OmniVoice voice design: male, middle-aged, low pitch, russian accent (the nearest accent tag; there is no German one). Original English sample script.",
+      "license": "Synthetic. Subject to the OmniVoice weights licence (CC-BY-NC)."
+    },
+    "dale_donor_de": {
+      "kind": "clone",
+      "source_recording": {
+        "repository": "https://huggingface.co/kyutai/tts-voices",
+        "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+        "file": "voice-donations/english_with_german_accent.wav",
+        "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/english_with_german_accent.wav",
+        "original_bytes": 480044,
+        "original_sha256": "9d34c8f669d5190ad8cab05204249532f9fcede9f3f624702ee35a374a7b16d7",
+        "enhanced_variant_sha256": "84461083a4eef20a194b56c4dd65144271076ab71b8ecf6fa3e2487c8f53d342",
+        "duration_seconds": 10.0,
+        "format": "WAV PCM16 mono 24 kHz",
+        "license": "CC0-1.0 as stated for voice-donations in the pinned README: \"Voices of volunteers submitted through our Unmute Voice Donation Project, licensed as CC0.\"",
+        "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+        "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+        "readme_same_as": "web/production/radiocast/provenance.json (Selfie.wav, Butter.wav, oldNerd.wav)",
+        "donor": "Anonymous volunteer; the file name is the only description of the accent. Not a known person, not from film or television.",
+        "autocorrelation_f0_median_hz": 109.6,
+        "autocorrelation_f0_iqr_hz": [
+          105.3,
+          118.5
+        ],
+        "method": "40 ms autocorrelation at 16 kHz, RMS gate .015, lag 40-230, normalized correlation > .5 (as radiocast). Register estimate only, not gender or age verification.",
+        "downloaded_utc": "2026-11-09T12:45:00Z",
+        "local_copy": "~/.cache/signal47-dale-voice/donor-kyutai-323332d3/ (outside Git, own empty folder)"
+      },
+      "license": "Reference CC0-1.0; takes subject to the OmniVoice weights licence (CC-BY-NC).",
+      "caveat": "A clone sounds like its donor. The donor gave the voice for synthesis, but if \"no real person\" is meant strictly, choose a design candidate."
+    }
+  },
+  "not_bundled": "Reference WAVs, identity samples, model weights and local profile paths are production inputs only and never ship with the game or enter Git.",
+  "kinski_takes": "The existing Kinski takes for the Evening Shift (56) and HorrorStory H01 (3) stay where they are, untouched, until Tom has listened. The Dale takes go to ~/.cache/signal47-dale-voice/<voice>/ and, with --sync, to Content/Audio/DaleVoice."
+}

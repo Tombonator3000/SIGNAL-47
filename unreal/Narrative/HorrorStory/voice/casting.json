@@ -14,7 +14,9 @@
       "kind": "clone",
       "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
       "source_provenance": "web/production/kinski/provenance.json",
-      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio)."
+      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio).",
+      "deprecated_for_new_lines": true,
+      "deprecated_nb": "Utfaset for nye replikker, Tom 9. november ca. 13:45: klone av den ekte Klaus Kinskis stemme. Nye Dale-takes lages med profilen dale i ../../EveningShift/voice/casting.json via ../../DaleVoice/generate.py. De tre eksisterende H01-takene står urørt til Tom har lyttet; profilen slettes ikke."
     },
     "caliche_dispatch": {
       "actors": [
