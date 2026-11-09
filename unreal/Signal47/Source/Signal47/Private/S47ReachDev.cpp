@@ -13,6 +13,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "Engine/World.h"
+#include "UnrealClient.h"
 #include "GameFramework/PlayerController.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Reach, Log, All);
@@ -44,6 +45,21 @@ namespace
 			if (PC->ProjectWorldLocationToScreen(S47Three::ToUE(P), Screen) && Screen.X >= 0 && Screen.Y >= 0 && Screen.X <= X && Screen.Y <= Y) ++Seen;
 		}
 		return Seen;
+	}
+
+	// The same points as the screen's pixels, " x,y" each, for measuring them on the pictures.
+	FString Pixels(US47Main* M, const TArray<FVector>& Points)
+	{
+		UWorld* W = M && M->Web ? M->Web->GetWorld() : nullptr;
+		APlayerController* PC = W ? W->GetFirstPlayerController() : nullptr;
+		FString Out;
+		for (const FVector& P : Points)
+		{
+			FVector2D Screen;
+			if (PC && PC->ProjectWorldLocationToScreen(S47Three::ToUE(P), Screen)) Out += FString::Printf(TEXT(" %.0f,%.0f"), Screen.X, Screen.Y);
+			else Out += TEXT(" -");
+		}
+		return Out;
 	}
 }
 
@@ -103,10 +119,10 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 				FString Where;
 				for (int32 I = 0; I < FMath::Min(3, Shown.Num()); ++I) Where += FString::Printf(TEXT(" %.0f,%.0f,%.0f"), Shown[I].X, Shown[I].Y, Shown[I].Z);
 				const FString Line = FString::Printf(TEXT("%s: %d lights drawn, %d on the screen (first at%s)"), *Label, Shown.Num(), Seen, *Where);
-				UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), Seen > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
+				UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s; on the screen at%s"), Seen > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line, *Pixels(M, Shown));
 				Tell(Seen > 0, Line, 8);
-				// Gone again once the picture is taken, so the next line starts from the night's own sky.
-				After(3, [this] { if (M->SkyVisitors) { M->SkyVisitors->DevStage(0); M->SkyVisitors->DevFormationStop(); } });
+				// Left up for the picture: a sweep took its picture only when this line's waits were over, and they used to end in
+				// putting the lights out, so the pictures showed an empty sky (9 November). The next line's own start clears them.
 			});
 		});
 	};
@@ -153,6 +169,69 @@ void FS47DevFreeform::AddReach(FS47DevEvents& E)
 			(*Next)(0);
 		});
 	});
+
+	// ---- Tom, 9 November: the lights a little larger, and twinkling as a far plane does low in the sky (FS47SkyGlint) ----
+	// From SARO's yard at 22:00: a formation at a given height, first as it was drawn before (old size, steady) and then as now, a
+	// quick run of pictures so the flicker and the colour show, and in a sweep one with the lights gone to show the ground is unlit.
+	// Pictures only in a sweep (-S47DevSweep, its own directory): <name>-before, <name>-now-00 to -11, <name>-off.
+	static const TCHAR* const GlintGroup = TEXT("Sky lights (T16-05)");
+	struct FGlintLine { const TCHAR* Name; const TCHAR* Label; ES47SkyForm Form; double Lateral, Height; };
+	static const FGlintLine GlintLines[] = {
+		{ TEXT("glint-v20"), TEXT("Glint: V about twenty degrees up, before and now"), ES47SkyForm::V, 2600., 950. },
+		{ TEXT("glint-v8"), TEXT("Glint: V low over the horizon, before and now"), ES47SkyForm::V, 4800., 700. },
+		{ TEXT("glint-scatter8"), TEXT("Glint: scattered, low, before and now"), ES47SkyForm::Scatter, 4800., 700. },
+		{ TEXT("glint-line40"), TEXT("Glint: line high up, forty degrees, before and now"), ES47SkyForm::Line, 1400., 1200. },
+	};
+	for (const FGlintLine& G : GlintLines)
+	{
+		E.AddFreeform(GlintGroup, G.Label, TEXT("22:00, SARO's yard, looking at it: two seconds as before 9 November, then as now"), [this, G]
+		{
+			FStage S; S.From = 22; S.To = 23.5; S.Area = TEXT("saro"); S.Where = [] { return SaroYard; }; S.Yaw = UE_DOUBLE_PI;
+			S.Pitch = FMath::Atan2(G.Height - 1.6, G.Lateral);
+			Go(S, [this, G]
+			{
+				if (!M->SkyVisitors || !M->SkyVisitors->DevFormation(G.Form, 0, G.Lateral, G.Height)) { Tell(false, TEXT("no sky here")); return; }
+				const FString Dir = SweepDir;
+				const auto Shot = [Dir](const FString& Name) { if (!Dir.IsEmpty()) FScreenshotRequest::RequestScreenshot(Dir / (Name + TEXT(".png")), false, false); };
+				const FString Name = G.Name;
+				// Up from nothing in three seconds in the old look, which goes by itself a little later (nothing to put back if this is cut short).
+				FS47SkyGlint::ShowPlain(3.8);
+				After(3.4, [this, Shot, Name]
+				{
+					const TArray<FVector> Shown = M->SkyVisitors ? M->SkyVisitors->ShownPoints() : TArray<FVector>();
+					UE_LOG(LogS47Reach, Display, TEXT("S47: glint %s before: %d lights at%s"), *Name, Shown.Num(), *Pixels(M, Shown));
+					Shot(Name + TEXT("-before"));
+					After(.6, [this, Shot, Name]
+					{
+						// Twelve pictures a tenth of a second apart, each with what the sprites' colours were.
+						TSharedRef<TFunction<void(int32)>> Next = MakeShared<TFunction<void(int32)>>();
+						*Next = [this, Shot, Name, Next](int32 Frame)
+						{
+							if (!M->SkyVisitors) return;
+							const TArray<FVector> Shown = M->SkyVisitors->ShownPoints();
+							if (Frame >= 12)
+							{
+								const int32 Seen = OnScreen(M, Shown);
+								const FString Line = FString::Printf(TEXT("%s: %d lights on the screen, twinkling (size %.2f, twinkle %.2f, colour %.2f)"), *Name, Seen, FS47SkyGlint::SizeScale, FS47SkyGlint::Twinkle, FS47SkyGlint::Chroma);
+								UE_LOG(LogS47Reach, Display, TEXT("S47: T16 %s %s"), Seen > 0 ? TEXT("PASS") : TEXT("FAIL"), *Line);
+								if (SweepDir.IsEmpty()) { Tell(Seen > 0, Line, 8); return; }
+								// The same view with no lights: the ground is to be the same in both.
+								M->SkyVisitors->DevFormationStop();
+								After(.5, [this, Shot, Name, Seen, Line] { Shot(Name + TEXT("-off")); After(.2, [this, Seen, Line] { Tell(Seen > 0, Line, 8); }); });
+								return;
+							}
+							FString Colours;
+							for (const FLinearColor& C : M->SkyVisitors->ShownColors()) Colours += FString::Printf(TEXT(" %.2f/%.2f/%.2f"), C.R, C.G, C.B);
+							UE_LOG(LogS47Reach, Display, TEXT("S47: glint %s now %02d: at%s; colours%s"), *Name, Frame, *Pixels(M, Shown), *Colours);
+							Shot(FString::Printf(TEXT("%s-now-%02d"), *Name, Frame));
+							After(.1, [Next, Frame] { (*Next)(Frame + 1); });
+						};
+						After(.3, [Next] { (*Next)(0); });
+					});
+				});
+			});
+		});
+	}
 
 	// ---- T16-06: the highway, both ways ----
 	for (const bool bNorth : { true, false })

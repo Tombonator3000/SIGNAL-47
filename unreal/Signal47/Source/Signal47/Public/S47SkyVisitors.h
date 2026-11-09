@@ -81,6 +81,27 @@ struct FS47SkyFormationState
  static double NextOpening(double Clock);
 };
 
+// Tom, 9 November: the lights a little larger, and twinkling as a far plane or a bright star does low in the night sky: quick and
+// uneven in strength, and now and then a touch red, green or blue (chromatic scintillation), most near the horizon and little high
+// up. Only the sprite's colour and size: nothing is lit, nothing saved, the paths, sight and observation rules are as they were.
+struct FS47SkyGlint
+{
+ // On every light's sprite, as against before 9 November.
+ static double SizeScale,Twinkle,Chroma;
+ // F10's comparison: drawn as before 9 November (old size, steady) for a few seconds of real time, then by itself as now again.
+ static double PlainUntil;
+ static void ShowPlain(double Seconds);
+ static bool Plain();
+ static constexpr double DefaultSize=1.7,DefaultTwinkle=1.,DefaultChroma=1.;
+ // 0 to 1: how much air the light is seen through, by its height above the horizontal (radians).
+ static double Strength(double Elevation);
+ // Gains on red, green and blue (one on average; their sum is the brightness), and the sprite's size factor. A pure function of
+ // time, the light's own number and its height: two lights, or two moments, never twinkle alike.
+ static FVector Gains(double Time,int32 Light,double Elevation,double* Size=nullptr);
+ // -S47SkyGlint=size,twinkle,chroma in a developer's run, to set them from the command line without a build.
+ static void ReadCommandLine();
+};
+
 class FS47SkyVisitors
 {
 public:
@@ -103,7 +124,8 @@ public:
  void DevStage(int32 Stage);
  // F10 too: one formation now, ahead of the player and high enough to read. Pace 0 slow, 1 fast, 2 slow and it goes out.
  // Nothing saved, no observation, the night's own schedule untouched. False: nowhere to show it from here.
- bool DevFormation(ES47SkyForm Form,int32 Pace);
+ // Lateral and Height (map metres) place it lower or higher in the view: the default is about twenty degrees up.
+ bool DevFormation(ES47SkyForm Form,int32 Pace,double Lateral=2600.,double Height=950.);
  void DevFormationStop();
  // The lone high track, the night's 22 percent, now and from where you stand. Only time is asked of it. False: not outdoors in Freeform.
  bool DevHighTrack();
@@ -111,6 +133,8 @@ public:
  const FS47SkyFormationState& FormationData() const { return Formation; }
  // What is actually drawn: the registered, visible points' places, in three's metres.
  TArray<FVector> ShownPoints() const;
+ // The same points' sprite colours as drawn this frame, for F10's measurements.
+ TArray<FLinearColor> ShownColors() const;
  void TestFormationAge(double Age) { Formation.Age=Age; }
  void TestFormationQuiet(double Clock) { if(!Formation.bDev)Formation.bActive=false; Formation.NextClock=Clock+20*3600.; HidePoints(); }
  static FVector MapPoint(const FVector& World, const FString& Area);

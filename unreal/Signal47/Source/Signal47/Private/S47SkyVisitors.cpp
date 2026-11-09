@@ -90,6 +90,90 @@ namespace
   if (Detail) *Detail = TEXT("32 ignored components exhausted the sight trace");
   return false;
  }
+ // The glint's randomness: a fixed hash of a whole step and a salt, -1 to 1, and a smooth wave through those values.
+ double GlintHash(int64 N, uint32 Salt)
+ {
+  uint32 H = uint32(N) * 0x9E3779B1u ^ uint32(uint64(N) >> 32) * 0x85EBCA77u ^ Salt * 0xC2B2AE3Du;
+  H ^= H >> 15; H *= 0x2C1B3C6Du; H ^= H >> 12; H *= 0x297A2D39u; H ^= H >> 15;
+  return double(H) / 4294967295. * 2. - 1.;
+ }
+ double GlintWave(double T, uint32 Salt)
+ {
+  const double F = FMath::FloorToDouble(T), U = T - F, S = U * U * (3. - 2. * U);
+  return FMath::Lerp(GlintHash(int64(F), Salt), GlintHash(int64(F) + 1, Salt), S);
+ }
+ // A light's height above the eye's horizontal, in radians (three's metres, y up).
+ double GlintElevation(const FVector& Eye, const FVector& At)
+ {
+  const FVector D = At - Eye;
+  return FMath::Atan2(D.Y, FVector2D(D.X, D.Z).Size());
+ }
+ double GlintTime(const US47Main* M)
+ {
+  return M && M->Web && M->Web->GetWorld() ? double(M->Web->GetWorld()->GetTimeSeconds()) : FPlatformTime::Seconds();
+ }
+ // The sprite's colour with the glint on it.
+ FLinearColor Glinted(const FLinearColor& Base, const FVector& Gains)
+ {
+  return FLinearColor(Base.R * float(Gains.X), Base.G * float(Gains.Y), Base.B * float(Gains.Z), Base.A);
+ }
+ // What one light's sprite gets now, seen from Eye: its colour gains, and Swell, the whole size factor on its old size.
+ FVector DrawGlint(const US47Main* M, int32 Light, const FVector& Eye, const FVector& At, double& Swell)
+ {
+  Swell = 1;
+  if (FS47SkyGlint::Plain()) return FVector::OneVector;
+  double Flicker = 1;
+  const FVector G = FS47SkyGlint::Gains(GlintTime(M), Light, GlintElevation(Eye, At), &Flicker);
+  Swell = FS47SkyGlint::SizeScale * Flicker;
+  return G;
+ }
+}
+
+double FS47SkyGlint::SizeScale = FS47SkyGlint::DefaultSize;
+double FS47SkyGlint::Twinkle = FS47SkyGlint::DefaultTwinkle;
+double FS47SkyGlint::Chroma = FS47SkyGlint::DefaultChroma;
+double FS47SkyGlint::PlainUntil = -1;
+void FS47SkyGlint::ShowPlain(double Seconds) { PlainUntil = FPlatformTime::Seconds() + FMath::Clamp(Seconds, 0., 30.); }
+bool FS47SkyGlint::Plain() { return PlainUntil >= 0 && FPlatformTime::Seconds() < PlainUntil; }
+double FS47SkyGlint::Strength(double Elevation)
+{
+ if (!FMath::IsFinite(Elevation)) return 0;
+ // The most air at the horizon; above fifty degrees only the faintest unrest is left.
+ const double Deg = FMath::Clamp(FMath::RadiansToDegrees(Elevation), 0., 90.);
+ return .08 + .92 * FMath::Pow(FMath::Clamp(1. - Deg / 50., 0., 1.), 1.6);
+}
+FVector FS47SkyGlint::Gains(double Time, int32 Light, double Elevation, double* Size)
+{
+ if (Size) *Size = 1;
+ if (!FMath::IsFinite(Time)) return FVector::OneVector;
+ const double S = Strength(Elevation);
+ const uint32 Salt = uint32(Light) * 7919u + 17u;
+ // Strength: two quick waves that have nothing to do with each other, so it never settles into a beat.
+ const double Flicker = .62 * GlintWave(Time * 7.3, Salt) + .38 * GlintWave(Time * 16.9 + 3.7, Salt ^ 0xA511E9B3u);
+ const double Bright = FMath::Max(.2, 1. + Twinkle * S * .45 * Flicker);
+ // Colour: short spells of about a seventh of a second, each red, green or blue at its own small strength (mostly hardly any),
+ // rising and falling within the spell, so it is white in between and never a steady tint.
+ const double Spell = Time * 7. + (GlintHash(Light, 0x5BD1E995u) + 1.) * 2.;
+ const int64 N = int64(FMath::FloorToDouble(Spell));
+ const double U = Spell - FMath::FloorToDouble(Spell);
+ const int32 K = FMath::Clamp(int32((GlintHash(N, Salt ^ 0x27D4EB2Fu) + 1.) * 1.5), 0, 2);
+ const double Amount = FMath::Square((GlintHash(N, Salt ^ 0x165667B1u) + 1.) * .5);
+ const double C = Chroma * S * .6 * Amount * FMath::Sin(UE_DOUBLE_PI * U);
+ FVector G(1. - .5 * C);
+ G[K] = 1. + C;
+ if (Size) *Size = FMath::Clamp(1. + .25 * (Bright - 1.), .8, 1.2);
+ return G * Bright;
+}
+void FS47SkyGlint::ReadCommandLine()
+{
+ FString Text;
+ if (!FParse::Value(FCommandLine::Get(), TEXT("S47SkyGlint="), Text)) return;
+ TArray<FString> Parts;
+ Text.ParseIntoArray(Parts, TEXT(","));
+ if (Parts.Num() > 0) SizeScale = FMath::Clamp(FCString::Atod(*Parts[0]), .5, 4.);
+ if (Parts.Num() > 1) Twinkle = FMath::Clamp(FCString::Atod(*Parts[1]), 0., 3.);
+ if (Parts.Num() > 2) Chroma = FMath::Clamp(FCString::Atod(*Parts[2]), 0., 3.);
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky glint from the command line: size %.2f, twinkle %.2f, colour %.2f"), SizeScale, Twinkle, Chroma);
 }
 
 double FS47SkyVisitorState::Duration(int32 S)
@@ -460,9 +544,10 @@ void FS47SkyVisitors::StepFreeform(double Dt)
   const bool ClearWeather=M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos),S47Three::ToUE(At));
   B->SetVisibility(ClearWeather);
   B->SetWorldLocation(S47Three::ToUE(At));
-  const float Half=float(5.*FMath::Tan(FMath::DegreesToRadians(Cam.Fov)/2)*FVector::Dist(Cam.Pos,At)/900.*100.);
+  double Swell=1;const FVector Glint=DrawGlint(M,I+32,Cam.Pos,At,Swell);
+  const float Half=float(5.*Swell*FMath::Tan(FMath::DegreesToRadians(Cam.Fov)/2)*FVector::Dist(Cam.Pos,At)/900.*100.);
   B->Elements[0].BaseSizeX=B->Elements[0].BaseSizeY=Half;
-  if(auto* D=Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))D->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xe3eeed)*float(Fade*3.));
+  if(auto* D=Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))D->SetVectorParameterValue(TEXT("Color"),Glinted(S47Three::Hex(0xe3eeed)*float(Fade*3.),Glint));
   B->MarkRenderStateDirty();
   const FVector P=Cam.Project(At);
   if(ClearWeather&&Fade>=.6&&P.Z<1&&FMath::Abs(P.X)<.94&&FMath::Abs(P.Y)<.94&&ClearLine(Cam.Pos,At))
@@ -488,6 +573,7 @@ FS47SkyVisitors::FS47SkyVisitors(US47Main* InM) : M(InM)
  TestStage = FMath::Clamp(TestStage, 0, 5);
  bContract = FParse::Param(FCommandLine::Get(), TEXT("S47SkyVisitContract"));
  FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisitProof="), ContractRoot);
+ FS47SkyGlint::ReadCommandLine();
 }
 FS47SkyVisitors::~FS47SkyVisitors()
 {
@@ -566,7 +652,7 @@ double FS47SkyVisitors::DevBoost() const
  const double Day = M && M->Life && M->Life->Sky ? FMath::Clamp(M->Life->Sky->Daylight(), 0., 1.) : 0.;
  return 1. + 14. * Day;
 }
-bool FS47SkyVisitors::DevFormation(ES47SkyForm InForm, int32 Pace)
+bool FS47SkyVisitors::DevFormation(ES47SkyForm InForm, int32 Pace, double InLateral, double InHeight)
 {
  if (!M || !M->World || !M->Player || !M->Web || M->Mode != US47Main::EMode::Play) return false;
  const FString Area = M->World->Area;
@@ -579,7 +665,7 @@ bool FS47SkyVisitors::DevFormation(ES47SkyForm InForm, int32 Pace)
  const FVector Here = MapPoint(Cam.Pos, Area);
  const FVector Out = (MapPoint(Cam.Pos + Ahead * 100., Area) - Here).GetSafeNormal();
  // Side (cos h, -sin h) is out in front of the player, and the way along it crosses from one hand to the other.
- Formation.StartDev(InForm, Pace, Here.X, Here.Z, FMath::Atan2(-Out.Z, Out.X), 2600., 950.);
+ Formation.StartDev(InForm, Pace, Here.X, Here.Z, FMath::Atan2(-Out.Z, Out.X), FMath::Clamp(InLateral, 800., 12000.), FMath::Clamp(InHeight, 150., 4000.));
  UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky formation %s, developer, %s%s, %d lights, in %s"), FS47SkyFormationState::Name(InForm), Formation.bFast ? TEXT("fast") : TEXT("slow"), Formation.bVanish ? TEXT(", goes out") : TEXT(""), Formation.Lights, *Area);
  return true;
 }
@@ -602,6 +688,17 @@ TArray<FVector> FS47SkyVisitors::ShownPoints() const
 {
  TArray<FVector> Out;
  for (const auto& W : Points) if (const auto* B = W.Get()) if (B->IsRegistered() && B->IsVisible()) Out.Add(S47Three::ToThree(B->GetComponentLocation()));
+ return Out;
+}
+TArray<FLinearColor> FS47SkyVisitors::ShownColors() const
+{
+ TArray<FLinearColor> Out;
+ for (const auto& W : Points) if (const auto* B = W.Get()) if (B->IsRegistered() && B->IsVisible())
+ {
+  FLinearColor C = FLinearColor::Black;
+  if (!B->Elements.IsEmpty() && B->Elements[0].Material) B->Elements[0].Material->GetVectorParameterValue(TEXT("Color"), C);
+  Out.Add(C);
+ }
  return Out;
 }
 FVector FS47SkyVisitors::MapPoint(const FVector& W, const FString& Area)
@@ -697,9 +794,10 @@ void FS47SkyVisitors::DrawFormation(double Dt, const FString& Area)
   const bool bClearWeather = Formation.bDev || M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos), S47Three::ToUE(At));
   B->SetVisibility(bClearWeather); if (!bClearWeather) continue;
   B->SetWorldLocation(S47Three::ToUE(At));
-  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  double Swell = 1; const FVector Glint = DrawGlint(M, I, Cam.Pos, At, Swell);
+  const float Half = float(DiscPixels * Swell * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
   B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
-  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material)) D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Level * 4. * Boost));
+  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material)) D->SetVectorParameterValue(TEXT("Color"), Glinted(S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Level * 4. * Boost), Glint));
   B->MarkRenderStateDirty();
   const FVector P = Cam.Project(At);
   if (Level >= .5 && P.Z < 1 && FMath::Abs(P.X) < .94 && FMath::Abs(P.Y) < .94 && ClearLine(Cam.Pos, At)) { ++Seen; SeenAt = At; }
@@ -823,7 +921,8 @@ void FS47SkyVisitors::DrawTrack(const FS47SkyVisitorState& Track, const FVector&
  Count = FS47SkyVisitorState::Count(Track.Stage);
  // Keep SKY01's original six-pixel introduction. Later groups get a larger
  // angular footprint, referenced to 900p so higher resolutions do not hide them.
- // Only the sprite changes: the world paths, sight and observation rules remain.
+ // Only the sprite changes: the world paths, sight and observation rules remain. Since 9 November all of them are FS47SkyGlint's
+ // size larger than these numbers, SKY01 too (Tom: the lights a little larger than the stars), and they twinkle.
  static const double LaterDiscPixels[] = {10., 11., 12., 14.};
  const double DiscPixels = Track.Stage == 1 ? 6.4
   : LaterDiscPixels[FMath::Clamp(Track.Stage - 2, 0, 3)] * FMath::Max(1., Size.Y) / 900.;
@@ -835,10 +934,11 @@ void FS47SkyVisitors::DrawTrack(const FS47SkyVisitorState& Track, const FVector&
   const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(Track.Stage, I, Track.Elapsed), M->World->Area) + Shift;
   B->SetWorldLocation(S47Three::ToUE(At));
   // World location and depth remain physical; only the distant glow keeps size.
-  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  double Swell = 1; const FVector Glint = DrawGlint(M, I + 16, Cam.Pos, At, Swell);
+  const float Half = float(DiscPixels * Swell * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
   B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
   if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
-   D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0 * Boost));
+   D->SetVectorParameterValue(TEXT("Color"), Glinted(S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0 * Boost), Glint));
   B->MarkRenderStateDirty();
  }
 }
@@ -1124,5 +1224,41 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
  Cross=FForm();Cross.StartDev(ES47SkyForm::Circle,1,0,0,0,2600,950);Check(Cross.bFast&&Cross.Lights==8&&Cross.Level(0)==0,TEXT("each formation and pace can be asked for, and it comes up from nothing"));
  for(const TCHAR* Area:{TEXT("saro"),TEXT("road"),TEXT("station01"),TEXT("diner")})
  {const FVector Map(300,1500,-700);Check(MapPoint(WorldPosition(Map,Area),Area).Equals(Map,1e-6),TEXT("the player's place goes back onto the map from any outdoor area"));}
+ // The glint (Tom, 9 November), at its own defaults whatever the command line set.
+ using FGlint=FS47SkyGlint;
+ const double KeepSize=FGlint::SizeScale,KeepTwinkle=FGlint::Twinkle,KeepChroma=FGlint::Chroma;
+ FGlint::SizeScale=FGlint::DefaultSize;FGlint::Twinkle=FGlint::DefaultTwinkle;FGlint::Chroma=FGlint::DefaultChroma;
+ const double Deg=UE_DOUBLE_PI/180.;
+ Check(FGlint::Strength(3*Deg)>.8&&FGlint::Strength(5*Deg)>FGlint::Strength(20*Deg)&&FGlint::Strength(20*Deg)>FGlint::Strength(40*Deg)&&FGlint::Strength(40*Deg)>=FGlint::Strength(70*Deg)&&FGlint::Strength(70*Deg)<.1,TEXT("the glint is strongest low over the horizon and faint high up"));
+ Check(FGlint::DefaultSize>=1.5&&FGlint::DefaultSize<=2.,TEXT("the lights are drawn one and a half to two times their old size"));
+ struct FRun{double Mean[3]={0,0,0},BrightDev=0,Tinted=0,Top=0,Low=9,Swing=0;int32 Turns=0,Kinds[3]={0,0,0};};
+ const auto Watch=[](int32 Light,double Elev)
+ {
+  FRun Run;const int32 Frames=1200;double LastB=0;
+  for(int32 Frame=0;Frame<Frames;++Frame)
+  {
+   double Swell=1;const FVector G=FGlint::Gains(100.+Frame/60.,Light,Elev,&Swell);
+   const double Lum=(G.X+G.Y+G.Z)/3.;
+   for(int32 C=0;C<3;++C){Run.Mean[C]+=G[C]/Frames;Run.Top=FMath::Max(Run.Top,G[C]);Run.Low=FMath::Min(Run.Low,G[C]);}
+   Run.BrightDev+=FMath::Square(Lum-1.)/Frames;Run.Swing=FMath::Max(Run.Swing,FMath::Abs(Swell-1.));
+   if(Frame>0&&(Lum-1.)*(LastB-1.)<0)++Run.Turns;LastB=Lum;
+   const double Hi=G.GetMax(),Lo=G.GetMin();
+   if(Hi>Lo*1.25){Run.Tinted+=1./Frames;++Run.Kinds[G.X>=Hi?0:G.Y>=Hi?1:2];}
+  }
+  Run.BrightDev=FMath::Sqrt(Run.BrightDev);return Run;
+ };
+ const FRun LowRun=Watch(3,5*Deg),HighRun=Watch(3,70*Deg),Other=Watch(4,5*Deg);
+ Lines.Add(FString::Printf(TEXT("sky visitors: glint at 5 degrees: strength varies %.2f, %d turns in 20 s, tinted %.0f%% (red %d, green %d, blue %d frames), gains %.2f to %.2f; at 70 degrees varies %.2f, tinted %.0f%%"),
+  LowRun.BrightDev,LowRun.Turns,LowRun.Tinted*100,LowRun.Kinds[0],LowRun.Kinds[1],LowRun.Kinds[2],LowRun.Low,LowRun.Top,HighRun.BrightDev,HighRun.Tinted*100));
+ bool Balanced=true;for(int32 C=0;C<3;++C)Balanced&=FMath::Abs(LowRun.Mean[C]-1.)<.06&&FMath::Abs(HighRun.Mean[C]-1.)<.03;
+ Check(Balanced,TEXT("on average the glint neither brightens, darkens nor tints a light"));
+ Check(LowRun.BrightDev>.06&&LowRun.BrightDev<.3&&LowRun.Turns>=60&&LowRun.Turns<=600,TEXT("low down it flickers quickly and unevenly, not a slow pulse"));
+ Check(LowRun.Tinted>.05&&LowRun.Tinted<.4&&LowRun.Kinds[0]>0&&LowRun.Kinds[1]>0&&LowRun.Kinds[2]>0,TEXT("low down it is white most of the time and now and then a touch red, green or blue"));
+ Check(LowRun.Top<2.4&&LowRun.Low>.3&&LowRun.Swing<=.2,TEXT("never a disco lamp: no channel far off, the size moves a little"));
+ Check(HighRun.BrightDev<LowRun.BrightDev*.3&&HighRun.Tinted<.03,TEXT("high up it hardly twinkles and keeps its colour"));
+ Check(FGlint::Gains(123.4,3,5*Deg)==FGlint::Gains(123.4,3,5*Deg)&&FMath::Abs(Other.BrightDev-LowRun.BrightDev)<.1&&!FGlint::Gains(123.4,3,5*Deg).Equals(FGlint::Gains(123.4,4,5*Deg),1e-4),TEXT("the glint is fixed by time and light, and no two lights twinkle alike"));
+ FGlint::Twinkle=0;FGlint::Chroma=0;double Plain=0;
+ Check(FGlint::Gains(55.5,2,3*Deg,&Plain).Equals(FVector::OneVector,0.)&&Plain==1.,TEXT("with twinkle and colour at nought a light is drawn as before"));
+ FGlint::SizeScale=KeepSize;FGlint::Twinkle=KeepTwinkle;FGlint::Chroma=KeepChroma;
  return Good;
 }
