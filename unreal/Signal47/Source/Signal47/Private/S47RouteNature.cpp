@@ -299,7 +299,7 @@ TArray<FS47RouteNature::FRock> FS47RouteNature::Rocks() const
    // road-local metres from the component's own frame (it stood at road x 8000 when built; the shared root moves it between areas)
    FTransform L;C->GetInstanceTransform(I,L,false);
    const FVector Road=S47Three::ToThree(L.GetLocation());
-   R.Side=Road.X<0?-1:1;
+   R.Road=Road;R.Side=Road.X<0?-1:1;
    double Best=1e18;
    for(int32 K=0;K<UE_ARRAY_COUNT(Clusters);++K){const double D=FMath::Square(Road.X-Clusters[K].X)+FMath::Square(Road.Z-Clusters[K].Z);if(D<Best){Best=D;R.Cluster=K;}}
    Out.Add(R);

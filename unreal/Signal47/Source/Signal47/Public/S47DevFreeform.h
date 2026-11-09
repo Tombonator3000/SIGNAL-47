@@ -85,6 +85,12 @@ private:
  // T16 (Tom's test, 7 November): how far one gets from the farm every way on foot and at the wheel, and what stops it; the sky's
  // formations and preview, the highway both ways, the Pale One, each by the menu's own line and read back; S47ReachDev.cpp.
  void AddReach(FS47DevEvents& E);
+ // PT-MOON, PT-ROCKS, PT-RANGE-FAR (Tom's test of d36, 9 November): the moon at its phases, by day and behind clouds, before and now;
+ // the roadside rocks group by group from the road and from behind, before and now, with and without ray tracing; the far ranges
+ // from the highway, wide and close. S47WorldFixesDev.cpp. WorldFixesClear gives the moon and the rocks back when another line starts.
+ void AddWorldFixes(FS47DevEvents& E);
+ TFunction<void()> WorldFixesClear;
+ float SavedFov=-1; // the view's own while a World fixes line looks close
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);

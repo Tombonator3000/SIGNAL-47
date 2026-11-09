@@ -173,6 +173,8 @@ def build_material(mat, tex, rock, macro, normal_map, mask_map, fine_noise, colo
     cliff_n = {k: sample(mat, rock['Cliff'], uv_near[k], -2200, i * 100) for i, k in enumerate(sides)}
     cliff_f = {k: sample(mat, rock['Cliff'], uv_far[k], -2200, 300 + i * 100) for i, k in enumerate(sides)}
     bas = {k: sample(mat, rock['Basalt'], uv_bas[k], -2200, 600 + i * 100) for i, k in enumerate(sides)}
+    # PT-RANGE-FAR-20261109: the top face's far size, in the basalt's broken pattern (see stone_d)
+    bas_far_z = sample(mat, rock['Basalt'], uv_far['z'], -2200, 900)
     rock_n = {k: sample(mat, rock['N'], uv_near[k], -2050, i * 100, gray_linear) for i, k in enumerate(sides)}
     bas_n = {k: sample(mat, rock['N'], uv_bas[k], -2050, 600 + i * 100, gray_linear) for i, k in enumerate(sides)}
     obj = node(mat, unreal.MaterialExpressionObjectPositionWS, -3600, -1560)
@@ -187,13 +189,27 @@ def build_material(mat, tex, rock, macro, normal_map, mask_map, fine_noise, colo
     weights = custom(mat, 'float3 w = pow(abs(normalize(N)), 5.0); return w / max(w.x + w.y + w.z, 0.0001);', dict(N=(to_world, '')), F3, -2000, 0)
     cm, bm = rock['means']['Cliff'], rock['means']['Basalt']
     # the cliff as a ratio of mean 1, two sizes multiplied (each kept to its own range), most of its orange taken out: the beds say what colour a bed is
+    # PT-RANGE-FAR-20261109 (Tom, d36: the far ranges' texture overlap shows as stripes): the cliff scan is layered sediment, right on a
+    # rock's sides, where its beds lie level. Projected from above (the triplanar's top face, which carries every slope under about 40
+    # degrees) its straight beds ran in parallel lines across the plan, the same way on every hill, and from the road a whole range read
+    # as diagonal stripes. The top face now takes the basalt's broken, directionless pattern in grey at both sizes; the near size goes
+    # out past 1.5-3.5 km and the far one softens past 3 km, so the tiling does not come back as a grid from afar.
+    bm0 = rock['means']['Basalt']
     stone_d = custom(mat, """
-float3 a = (X * W.x + Y * W.y + Z * W.z) / float3(%f, %f, %f);
-float3 b = (FX * W.x + FY * W.y + FZ * W.z) / float3(%f, %f, %f);
-float3 r = clamp(a, 0.4, 1.8) * clamp(lerp(1.0, b, 0.5), 0.6, 1.5);
+float dist = length(Camera - World) * 0.01;
+float3 cm = float3(%f, %f, %f);
+float bm = dot(float3(%f, %f, %f), float3(0.3, 0.59, 0.11));
+float tn = dot(BZ.rgb, float3(0.3, 0.59, 0.11)) / bm;
+float tf = dot(BFZ.rgb, float3(0.3, 0.59, 0.11)) / bm;
+float3 a = (X * W.x + Y * W.y) / cm + float3(tn, tn, tn) * W.z;
+float3 b = (FX * W.x + FY * W.y) / cm + float3(tf, tf, tf) * W.z;
+float kNear = 1.0 - smoothstep(1500.0, 3500.0, dist);
+float kFar = 0.5 * (1.0 - 0.6 * smoothstep(3000.0, 9000.0, dist));
+float3 r = lerp(float3(1.0, 1.0, 1.0), clamp(a, 0.4, 1.8), kNear) * clamp(lerp(1.0, b, kFar), 0.6, 1.5);
 float l = dot(r, float3(0.3, 0.59, 0.11));
 return lerp(float3(l, l, l), r, 0.2);
-""" % (cm[0], cm[1], cm[2], cm[0], cm[1], cm[2]), dict(X=cliff_n['x'], Y=cliff_n['y'], Z=cliff_n['z'], FX=cliff_f['x'], FY=cliff_f['y'], FZ=cliff_f['z'], W=weights), F3, -1800, 0)
+""" % (cm[0], cm[1], cm[2], bm0[0], bm0[1], bm0[2]), dict(X=cliff_n['x'], Y=cliff_n['y'], BZ=bas['z'], FX=cliff_f['x'], FY=cliff_f['y'], BFZ=bas_far_z, W=weights,
+                                                          Camera=cam, World=wp), F3, -1800, 0)
     basalt_d = custom(mat, """
 float3 a = (X * W.x + Y * W.y + Z * W.z) / float3(%f, %f, %f);
 float l = dot(clamp(a, 0.2, 3.0), float3(0.3, 0.59, 0.11));
@@ -213,13 +229,14 @@ return saturate(max(field, cap) * (1.0 - M.a));
 float3 n = normalize(N);
 float3 w = W;
 float b = Bas;
-float2 x = (lerp(NX.rg, BX.ba, b) * 2.0 - 1.0) * Strength, y = (lerp(NY.rg, BY.ba, b) * 2.0 - 1.0) * Strength, z = (lerp(NZ.rg, BZ.ba, b) * 2.0 - 1.0) * Strength;
+// (PT-RANGE-FAR: from above the basalt's relief only, as its colour: the cliff's beds drew parallel lines across the plan)
+float2 x = (lerp(NX.rg, BX.ba, b) * 2.0 - 1.0) * Strength, y = (lerp(NY.rg, BY.ba, b) * 2.0 - 1.0) * Strength, z = (BZ.ba * 2.0 - 1.0) * Strength;
 float3 X = float3(x, sqrt(saturate(1.0 - dot(x, x)))), Y = float3(y, sqrt(saturate(1.0 - dot(y, y)))), Z = float3(z, sqrt(saturate(1.0 - dot(z, z))));
 float3 tx = float3(X.xy + n.zy, abs(X.z) * n.x);
 float3 ty = float3(Y.xy + n.xz, abs(Y.z) * n.y);
 float3 tz = float3(Z.xy + n.xy, abs(Z.z) * n.z);
 return normalize(tx.zyx * w.x + ty.xzy * w.y + tz.xyz * w.z);
-""", dict(N=(to_world, ''), W=weights, NX=(rock_n['x'], 'RGBA'), NY=(rock_n['y'], 'RGBA'), NZ=(rock_n['z'], 'RGBA'),
+""", dict(N=(to_world, ''), W=weights, NX=(rock_n['x'], 'RGBA'), NY=(rock_n['y'], 'RGBA'),
           BX=(bas_n['x'], 'RGBA'), BY=(bas_n['y'], 'RGBA'), BZ=(bas_n['z'], 'RGBA'), Bas=volcanic,
           Strength=node(mat, unreal.MaterialExpressionScalarParameter, -1800, 400, parameter_name='RockNormal', default_value=1.)), F3, -1600, 300)
 
@@ -294,6 +311,8 @@ float rock = saturate((Col.a + More * 0.45 * smoothstep(26.0, 40.0, deg)) * up);
 float pat = dot(lerp(Stone, Basalt, Vol), float3(0.3, 0.6, 0.1));
 rock *= smoothstep(0.15, 0.55, rock + (pat - 1.0) * 0.5);
 float3 stone = mean * RockTint * bedRatio * Stone;
+// PT-RANGE-FAR: large turned patches over the rock as over the soil, at every distance, so no range is one even pattern
+stone *= lerp(0.86, 1.14, saturate((P1 - 0.22) / 0.33)) * lerp(0.92, 1.08, saturate((P2 - 0.22) / 0.33));
 float3 basalt = mean * RockTint * float3(0.34, 0.33, 0.35) * Basalt;
 stone = lerp(stone, basalt, Vol);
 float3 c = lerp(soil, stone, rock);
@@ -307,7 +326,7 @@ c = lerp(c, Shrub, shrub * near * lerp(0.70, 0.35, saturate(Haze * 2.0)));
 c = lerp(c, Shrub, M.r * (1.0 - rock) * 0.24);
 return c * lerp(0.48, 1.0, M.b);
 """, dict(Soil=l2, Tint=tint, Vc=vc, Macro=macro_c, M=(m_map, 'RGBA'), Col=(c_map, 'RGBA'), Bed=(beds, 'RGBA'), Stone=stone_d, Basalt=basalt_d, Vol=volcanic,
-          RockTint=rock_tint, P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'), N=(to_world, ''), Beds=beds_on, More=rock_more,
+          RockTint=rock_tint, P1=(p1, 'R'), P2=(p2, 'R'), P3=(p3, 'R'), MeanSand=(mean_sand, 'RGB'), MeanGravel=(mean_gravel, 'RGB'), N=(to_world, ''), Beds=beds_on, More=rock_more,
           Shrub=scrub, Dry=dry, Haze=haze, Camera=cam, World=wp, D1=(d1, 'A'), D2=(d2, 'B')), F3, -600, -700)
     base = lerp(mat, land, haze_col, haze, -300, -700)
 

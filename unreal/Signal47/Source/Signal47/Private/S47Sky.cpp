@@ -735,6 +735,13 @@ void FS47Sky::SetMoon(bool bShow, double Az, double El, double Lit, double SunAz
 	MoonStarDim = bShow ? .5 * MoonLit * MoonLit * FMath::SmoothStep(-2.0, 15.0, El) : 0.0;
 }
 
+bool FS47Sky::MoonWorld(FVector& Out) const
+{
+	if (!MoonComp.IsValid() || !MoonComp->IsVisible()) return false;
+	Out = MoonComp->GetComponentLocation();
+	return true;
+}
+
 void FS47Sky::PaintMoon()
 {
 	// The disc lit on its +U side, as much as its phase: the terminator is an ellipse across it. A little earthshine on the rest,

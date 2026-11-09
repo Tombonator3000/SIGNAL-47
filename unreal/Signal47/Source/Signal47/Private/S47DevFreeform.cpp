@@ -163,6 +163,7 @@ void FS47DevFreeform::ClearRunning()
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
+ if(WorldFixesClear)WorldFixesClear();
  S47FloodProbe::StopLive(M);
  if(F->Happenings)F->Happenings->DevClear(false);
  // M2's made-up presences and silences (S47OmenDev.cpp)
@@ -1391,6 +1392,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddEyeGlint(E);
  AddTripoNew(E);
  AddReach(E);
+ AddWorldFixes(E);
 }
 
 void FS47DevFreeform::Stop()
@@ -1399,6 +1401,7 @@ void FS47DevFreeform::Stop()
  Waiting.Reset();bNatural=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
+ if(WorldFixesClear)WorldFixesClear();
  if(Menu)
  {
   Menu->Relabel(TEXT("Natural rhythm: ON"),TEXT("Natural rhythm: off"));

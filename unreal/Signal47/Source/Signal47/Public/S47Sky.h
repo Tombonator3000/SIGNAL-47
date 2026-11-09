@@ -97,6 +97,8 @@ public:
 	static FDevMoon DevMoon;
 	/** The moon's plane uses M_S47_Moon (NASA's near side, its phase shaded, hidden by clouds); false: the painted fallback. */
 	bool MoonTextured() const { return bMoonTex; }
+	/** Where the moon's disc is drawn (Unreal, world), if it is drawn now. */
+	bool MoonWorld(FVector& Out) const;
 	/** meteorNow(): a shooting star now, unless one is crossing already. */
 	void MeteorNow();
 	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
