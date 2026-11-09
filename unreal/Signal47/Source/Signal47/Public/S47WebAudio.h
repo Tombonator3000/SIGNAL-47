@@ -74,6 +74,11 @@ public:
 	// rendering (audio thread, under the lock): the values for this quantum, bConst if all equal
 	const float* Render(int64 Quantum, bool& bConst);
 	double ValueAt(double T) const; // the intrinsic value at a time (tests)
+	int32 NumEvents() const { return Events.Num(); } // the timeline's length (tests)
+
+	// CRASH37-20261109: a timeline stays short while the clock stands still (suspended context,
+	// paused world). From PruneAt events on, an insert prunes first; at MaxEvents it is refused.
+	static constexpr int32 PruneAt = 64, MaxEvents = 4096;
 
 private:
 	friend class FS47AudioNode;

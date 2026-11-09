@@ -3,6 +3,8 @@
 // specification leaves open, it says so.
 #include "S47WebAudio.h"
 
+#include "HAL/PlatformTime.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogS47WebAudio, Log, All);
 
 namespace
@@ -63,6 +65,32 @@ void FS47AudioParam::Insert(FEvent E)
 	FScopeLock L(&Owner.Ctx->Lock);
 	if (!FMath::IsFinite(E.Time) || !FMath::IsFinite(E.V)) return; // the browser throws
 	E.Time = FMath::Max(0.0, E.Time);
+	// CRASH37-20261109: while the context is suspended (pause menu, abduction) its clock stands
+	// still, and the game thread's per-frame setTargetAtTime(v, currentTime) / .value = v used to
+	// pile up one event per frame at the same time. On resume Prune removed them one by one
+	// (quadratic) under the lock: 17 minutes of pause held the game thread for 39 s and the
+	// game was aborted. A value or a target at the time of the last event replaces what is
+	// over by then anyway: a value replaces the values and targets there, a target the targets
+	// there (a target after a value still starts from that value). The result is the same timeline.
+	if (E.Type == EEvent::SetValue || E.Type == EEvent::Target)
+	{
+		while (Events.Num() > 0)
+		{
+			const FEvent& Last = Events.Last();
+			if (Last.Time != E.Time) break;
+			if (Last.Type != EEvent::Target && !(E.Type == EEvent::SetValue && Last.Type == EEvent::SetValue)) break;
+			Events.RemoveAt(Events.Num() - 1, 1, EAllowShrinking::No);
+		}
+	}
+	// (other patterns, ramps for one: what the next render prunes goes now, and a timeline
+	// that still will not end is refused rather than let grow without bound)
+	if (Events.Num() >= PruneAt) Prune(Owner.Ctx->CurrentTime());
+	if (Events.Num() >= MaxEvents)
+	{
+		static bool bWarned = false;
+		if (!bWarned) { bWarned = true; UE_LOG(LogS47WebAudio, Warning, TEXT("S47: an audio parameter has %d scheduled events; further events are dropped"), Events.Num()); }
+		return;
+	}
 	int32 I = Events.Num();
 	while (I > 0 && Events[I - 1].Time > E.Time) --I; // after the events at the same time
 	if (I == 0)
@@ -230,12 +258,16 @@ double FS47AudioParam::ValueAt(double T) const
 
 void FS47AudioParam::Prune(double T)
 {
-	// events whose part is over: what comes after them no longer depends on them
-	while (Events.Num() >= 2 && Events[1].Time <= T)
+	// events whose part is over: what comes after them no longer depends on them. CRASH37-20261109:
+	// counted first and removed in one go (one RemoveAt(0) per event was quadratic); the targets'
+	// starts are cached in order, as before, so each looks back one event only
+	int32 Drop = 0;
+	while (Drop + 1 < Events.Num() && Events[Drop + 1].Time <= T)
 	{
-		if (Events[1].Type == EEvent::Target) TargetStart(1);
-		Events.RemoveAt(0, 1, EAllowShrinking::No);
+		if (Events[Drop + 1].Type == EEvent::Target) TargetStart(Drop + 1);
+		++Drop;
 	}
+	if (Drop > 0) Events.RemoveAt(0, Drop, EAllowShrinking::No);
 	if (Events.Num() == 1 && Events[0].Time <= T)
 	{
 		const FEvent& E = Events[0];
@@ -1355,6 +1387,63 @@ bool S47Wa::SelfTest(TArray<FString>& Out)
 		Tg->Gain.SetTargetAtTime(1.0, 0.0, 0.5).LinearRampToValueAtTime(0.0, 2.0);
 		Near(Tg->Gain.ValueAt(1.0), 1.0 - FMath::Exp(-2.0), 1e-9, TEXT("a ramp after a target starts from the target's value where it takes over"));
 		Near(Tg->Gain.ValueAt(2.0), 0.0, 1e-9, TEXT("... and reaches its own value"));
+	}
+
+	// CRASH37-20261109: events at the same time replace what is over by then, with the same values
+	{
+		TSharedRef<FS47GainNode> G = Ctx->CreateGain();
+		FS47AudioParam& P = G->Gain;
+		P.SetValueAtTime(0.2, 1.0).SetTargetAtTime(0.8, 1.0, 0.5).SetTargetAtTime(0.6, 1.0, 0.5);
+		Check(P.NumEvents() == 2, FString::Printf(TEXT("a second target at the same time replaces the first (%d events)"), P.NumEvents()));
+		Near(P.ValueAt(1.5), 0.6 + (0.2 - 0.6) * FMath::Exp(-1.0), 1e-9, TEXT("... and still starts from the value set at that time"));
+		P.SetValueAtTime(0.3, 1.0);
+		Check(P.NumEvents() == 1, FString::Printf(TEXT("a value at the same time replaces the values and targets there (%d events)"), P.NumEvents()));
+		Near(P.ValueAt(2.0), 0.3, 1e-12, TEXT("... and holds"));
+		P.LinearRampToValueAtTime(1.0, 2.0).SetValueAtTime(0.5, 2.0);
+		Near(P.ValueAt(1.5), 0.65, 1e-12, TEXT("a value after a ramp at the same time leaves the ramp before it"));
+	}
+
+	// CRASH37-20261109: seventeen minutes of the pause menu. The context is suspended, its clock
+	// stands still, and the game still sets the listener and the substation hum every frame; on
+	// resume the first quantum rendered must not grind through a timeline per frame of pause
+	// (d37: the audio thread held the lock in Prune for 39 s, the game thread waited in
+	// StepSiteAudio, the game was aborted).
+	{
+		TSharedRef<FS47AudioContext> C = FS47AudioContext::Make(48000.f);
+		TSharedRef<FS47OscillatorNode> O = C->CreateOscillator();
+		TSharedRef<FS47GainNode> Hum = C->CreateGain(), Ramp = C->CreateGain();
+		TSharedRef<FS47PannerNode> Pan = C->CreatePanner();
+		Pan->SetPosition(0, 0, -2);
+		O->Connect(Hum); Hum->Connect(Ramp); Ramp->Connect(Pan); Pan->Connect(C->Destination); O->Start();
+		FS47AudioParam& Lx = C->Listener->PositionX;
+		TArray<float> Buf; Buf.SetNumZeroed(S47Quantum * 2);
+		Lx.SetTargetAtTime(0.1, C->CurrentTime(), 0.02); Hum->Gain.SetTargetAtTime(0.075, C->CurrentTime(), 0.15);
+		C->Render(Buf.GetData(), S47Quantum);
+		C->Suspend(true);
+		const double Frozen = C->CurrentTime();
+		const int32 Frames = 120 * 60 * 17; // at 120 frames a second
+		for (int32 I = 0; I < Frames; ++I)
+		{
+			const double T = C->CurrentTime();
+			Lx.SetTargetAtTime(0.1 + 0.1 * (I % 2), T, 0.02); // US47Audio::Listener
+			Hum->Gain.SetValue(0); // FS47Substation::StepSiteAudio while held
+			if (I % 3 == 0) Hum->Gain.SetTargetAtTime(0.115, T, 0.15);
+			Ramp->Gain.LinearRampToValueAtTime(0.5 + 0.5 * (I % 2), T + 0.05); // (a pattern nothing replaces)
+			if (I % 400 == 0) C->Render(Buf.GetData(), S47Quantum); // (the synth still asks; a suspended context gives silence)
+		}
+		Check(C->CurrentTime() == Frozen, TEXT("a suspended context's clock stands still"));
+		Check(Lx.NumEvents() <= 2, FString::Printf(TEXT("a target set every frame of the pause leaves %d events (%d frames)"), Lx.NumEvents(), Frames));
+		Check(Hum->Gain.NumEvents() <= 3, FString::Printf(TEXT("values and targets set every frame of the pause leave %d events"), Hum->Gain.NumEvents()));
+		Check(Ramp->Gain.NumEvents() <= FS47AudioParam::MaxEvents, FString::Printf(TEXT("ramps scheduled every frame of the pause stop at %d events (at most %d)"), Ramp->Gain.NumEvents(), FS47AudioParam::MaxEvents));
+		C->Suspend(false);
+		const double W0 = FPlatformTime::Seconds();
+		for (int32 Q = 0; Q < 48000 / S47Quantum; ++Q) C->Render(Buf.GetData(), S47Quantum); // one second
+		const double Took = FPlatformTime::Seconds() - W0;
+		Check(Took < 0.5, FString::Printf(TEXT("after the pause one second renders in %.3f s"), Took));
+		Near(Lx.Value(), 0.2, 1e-4, TEXT("the listener reaches the last target set in the pause"));
+		Near(Hum->Gain.Value(), 0.0, 1e-9, TEXT("the hum holds the last value set in the pause"));
+		Check(Lx.NumEvents() <= 1 && Hum->Gain.NumEvents() <= 1, TEXT("the timelines are pruned after the resume"));
+		O->Stop(); Pan->Disconnect(); C->Close();
 	}
 
 	// the same timeline rendered frame by frame (a-rate), and an oscillator through a gain
