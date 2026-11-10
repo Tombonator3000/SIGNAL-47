@@ -51,6 +51,9 @@ Toms ord (forkortet): avisen skal få et svart-hvitt bilde fra spillverdenen som
 - [ ] **D46-5 Snakker til seg selv:** korte tanker på skjermen i skrivemaskinskrift når ting skjer («What was that noise?», «Is somebody on the roof?», «No. Not again.»).
 - [ ] **D46-6 Kaffe og søvn:** vurderes (Toms spørsmål); bygger på eksisterende tretthet (S47Fatigue).
 - [ ] **D46-7 Jeepen ferdig modellert** av Fable 5.2 (JEEP-FORM-20261108): generisk 1980-talls jeep uten varemerker.
+- [ ] **D46-9 Kaffe og søvn** (Tom sa ja til konseptet): kaffe på SARO eller i dineren skyver trettheten noen timer; for trett gir blunk, tregere gange og tanker som glipper; søvn i køya eller hjemme nullstiller. Bygger på S47Fatigue.
+- [ ] **D46-10 Trip camera-modell** av Fable 5.2 (i dag en grå kube), og et tidlig hint om at den finnes.
+- [ ] **D46-11 Hendelsesmanus:** mer detaljerte manus for alle hendelser, så det kan styres hva som skjer i hver.
 - [ ] **D46-8 Cosmos:** gå gjennom alt som er lastet ned og lag en liste over hva som bør lastes ned i tillegg (Tom laster ned selv).
 
 ## Toms fikseliste 10. november (etter nattskiftet, d43)
