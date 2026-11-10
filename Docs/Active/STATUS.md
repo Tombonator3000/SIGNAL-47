@@ -4,7 +4,23 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 06:40 (d43): `7d1ae9ec` på `claude/day-20261109`
+## Installert 10. november kl. 12:40 (d45): `d99bd64f` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4159 kontroller). Tilbakerulling: d43 (`7d1ae9ec`). Ledig disk etterpå: 130 GB. Ikke spilt av Tom. Kandidaten d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen fikk grått standardmateriale i pakket spill, fordi modellens materiale bygger på motorens glTF-standard, som ikke er merket for Nanite. En slik prop tegnes nå uten Nanite (`d99bd64f`).
+
+Nytt siden d43 (Toms retteliste FIX10, se TODO):
+- CRT-skjermene og spolebåndet har fått liv og lyd, OPS har PHOTOGRAPHS, og array-PC-en har en drivprøve (FIX10-1).
+- Nødaggregatet tar over når nettet faller, og åtte stasjonsfiler ligger under OPS / RECORDS (FIX10-2, 3).
+- Første start ved postkassen: velkomstbrevet åpnes med en gang, nøklene ligger der, stasjonen er låst og mørk, og walkie-talkien og opptakeren ligger på kommoden i gangen (FIX10-4, 8).
+- TV-ene: én kanal, bryter, sendeslutt med flagg og nasjonalsang, forstyrrelser ved møter (FIX10-5).
+- F10-menyen i to felt med søk og «Used last» (FIX10-6).
+- Uhyggelag under møter fra det kjøpte lydbiblioteket (FIX10-7), med lavere nivå etter kritikerrunden.
+
+Kontroll på `f4e86536`: regresjon PASS 251, trinnprøvene first, sky, files, menu og tv PASS. På `d99bd64f`: selvtest 4159 OK og first PASS.
+
+Kjente svakheter: se FIX10-10 i TODO; i tillegg gjelder svakhetene under d43.
+
+## Tidligere: installert 10. november kl. 06:40 (d43): `7d1ae9ec` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d42 (`84510b26`). Ledig disk etterpå: 142 GB. Ikke spilt av Tom.
 

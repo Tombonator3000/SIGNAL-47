@@ -2251,3 +2251,7 @@ F10 er skrevet om (`SS47Dev`): 66 grupper under åtte overskrifter til venstre, 
 Kritikerrunden før d44 (tre lesende agenter, regelen «felt, not fired»): skjermer og spole 6/10, første start, aggregat og filer 6/10, TV og uhygge 4/10 (TV-en solid, uhyggen for høy og oppå musikken). Rettet: slagnivå og hvile, sperre mot to slag oppå hverandre (`BoughtUntil`, `NextBought`), musikken viker under grunnen (`FS47EncounterSound::DreadNow`), varemerket i sekkens tekst, synlige rullebånd og tastblink, hørbar pekerlyd og sideskrift, nasjonalsangens rekkevidde, `mains-ride` som spor på land, brevet åpnes med en gang og viser til RECORDS. Resten står som FIX10-10 i [TODO](../Docs/Active/TODO.md).
 
 Kontroll: bygg, selvtest 4159 OK, `-S47FirstStartTest` 18, `-S47SkyCutTest` 14, `-S47StationFilesTest` 10, `-S47DevMenuTest` 16, `-S47TvChannelTest` 17, regresjon PASS 251. Ingen har hørt lyden: nivåene er satt etter måling og kritikernes regnestykke, og Toms øre avgjør.
+
+## 10. november kl. 12:40 (Claude Code, dagskift): d45 installert
+
+d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen ville fått grått standardmateriale i pakket spill (materialet bygger på motorens glTF-standard, som ikke er merket for Nanite og ikke kan lagres om). S47Props tegner nå en slik prop fra det vanlige nettet og fører det i loggen (kommoden, to fjellrygger, utspringet og den knekte stolpen). d45 (`d99bd64f`) pakket, røyktestet og installert: ALL PASS, selvtest 4159 OK, ingen materialadvarsler. Disk 130 GB ledig etterpå.
