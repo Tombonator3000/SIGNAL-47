@@ -24,7 +24,7 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
  static const TArray<FS47KitOffer> Table={
   {TEXT("spotlight"),TEXT("Roof spotlight for the truck"),35,TEXT("one branch of the array back in service, so the stores will talk to you"),TEXT("F in the cab. It throws light a long way, and it can be seen from a long way off.")},
   {TEXT("cot"),TEXT("Field cot in the truck"),20,TEXT("any field record kept"),TEXT("Sleep out at any place on your map. There is no door out there, and you will not sleep through much.")},
-  {TEXT("magnetometer"),TEXT("Survey magnetometer, used"),40,TEXT("a place found out on the land, or marks at a site kept as a record"),TEXT("On foot it leans toward marks, gear and places you have not looked at, and it reads what you find. It says nothing about what they are.")},
+  {TEXT("magnetometer"),TEXT("Survey magnetometer, used"),40,TEXT("a place found out on the land, or marks at a site kept as a record"),TEXT("On foot, the needle pulls toward marks, gear and places you haven't checked yet, and it gives a reading on what you find. It can't tell you what they are.")},
   {TEXT("logger2"),TEXT("Second field logger and contact pickups"),45,TEXT("THE REPEATED INTERVAL concluded, with the first logger on loan"),TEXT("Makes the two-site test on VISITORS AROUND THE BASE possible: the roof and a field post at the same minute.")},
   {TEXT("film"),TEXT("Fast film and a better lens"),30,TEXT("a photograph with a figure in it"),TEXT("One extra roll, fast enough for poor light, and $5 more for each registered incident.")},
   // GEIGER-20261108: not a counter yet, a part of one. The player builds it at the bench (FS47Workshop "geiger", S47Happenings.h).
@@ -42,8 +42,8 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
   {TEXT("truck_engine"),TEXT("Engine rebuild with a four-barrel carburetor"),75,TEXT("a week on the job (day 8) and two kinds of record kept out on the land at night"),TEXT("The truck pulls harder from a stand and runs faster on every road, and drinks about a tenth more fuel."),2},
   // and field gear that opens the night: what a better ear and a better eye can bring back
   {TEXT("field_recorder"),TEXT("Better field recorder and a gun microphone"),60,TEXT("a week on the job (day 8) and a cassette recorded out in the field"),TEXT("The tape hears twice as far, 140 m instead of 70, and catches what is out there from farther off. The cassettes cost the same."),2},
-  {TEXT("night_camera"),TEXT("Image intensifier for the field camera"),85,TEXT("a week on the job (day 8) and the fast film in hand"),TEXT("Surplus night glass on the lens: the film sees in the dark far more than the eye does. What it shows is still only what was there."),2},
-  {TEXT("rdf"),TEXT("Radio direction finder loop for the truck"),120,TEXT("the county's surplus sale, from day 15, and three kinds of night record from out on the land, or a field time that matched the array to the minute"),TEXT("A loop on the cab roof. Out at night, in the cab, it nulls toward whatever keys the band within about three kilometres, and you hear which way. It says nothing of what."),3},
+  {TEXT("night_camera"),TEXT("Image intensifier for the field camera"),85,TEXT("a week on the job (day 8) and the fast film in hand"),TEXT("Surplus night glass on the lens: the film sees far more in the dark than your eye does. It won't invent anything; it only shows what was really there."),2},
+  {TEXT("rdf"),TEXT("Radio direction finder loop for the truck"),120,TEXT("the county's surplus sale, from day 15, and three kinds of night record from out on the land, or a field time that matched the array to the minute"),TEXT("A loop antenna on the cab roof. At night, sitting in the cab, you can turn it toward anything transmitting within about two miles and hear which direction it's coming from. It can't tell you what is sending."),3},
  };
  return Table;
 }

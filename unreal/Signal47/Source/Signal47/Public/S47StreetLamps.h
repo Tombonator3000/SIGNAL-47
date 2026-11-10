@@ -48,7 +48,11 @@ namespace S47StreetLamps
  };
  // The emitter in the head's own terms (three metres): 8 mm under the bowl's lowest point (model_contract.json emitter_three_m).
  SIGNAL47_API FVector EmitterLocal();
- // Where a head's spot stands, in its own terms: 3 cm further down than the emitter (S47ExteriorLighting: aperture + normal x 0.03).
+ // D45-20261110 (Tom, d45: the head lit, the ground dark, black blotches on the bowl): a head's spot stands this far (metres) under
+ // the emitter, 10.8 cm under the bowl, with a 2.5 cm source (S47ExteriorLighting), so no part of the source lies in the bowl or the
+ // housing; the head casts no shadow of its own. It was 3 cm, and a 5.6 cm source reached into the opaque bowl.
+ inline constexpr double SpotBelow = .10;
+ // Where a head's spot stands, in its own terms: SpotBelow further down than the emitter (S47ExteriorLighting: aperture + normal x SpotBelow).
  SIGNAL47_API FVector SpotLocal();
  // Every material slot of a part whose name repeats an earlier slot's (the LOD1/2 copies) drawn with that earlier slot's material
  // as the component has it now. Returns how many slots were set.
@@ -65,7 +69,8 @@ namespace S47StreetLamps
  // measure). False when no lamp has that lens.
  SIGNAL47_API bool Shine(AS47Web* W, const UMaterialInstanceDynamic* Lens, const FLinearColor& Emissive, USpotLightComponent* Light);
  // Every drawn lamp: its spot inside the head's bounds and under the bowl, and the lens and halo lit exactly when the spot is (or
- // dark when it is). Lit: how many glow now. Lines: a summary first, a line a lamp. Returns how many are wrong.
+ // dark when it is). Lit: how many glow now. Lines: a summary first, a line a lamp. Returns how many are wrong. (D45-20261110: each
+ // line also gives the lux its spot puts on the ground straight under it, and the summary how many lit bowls give under 2 lux.)
  SIGNAL47_API int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit);
  // -S47SelfTest: the imported head (when it is there): every LOD draws a lens slot, no slot is left on WorldGridMaterial, the
  // emitter and the spot's place lie in the head's bounds under the lens, and the lens and halo follow on and off.

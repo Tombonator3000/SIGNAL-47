@@ -187,6 +187,14 @@ double S47HudGauges::NoteAlpha(double T)
 	return 0;
 }
 
+// D45-20261110: a count going up inside the task (a recording's percent, a printer's feed) leaves the task as it was
+bool S47HudGauges::SameTask(const FString& A, const FString& B)
+{
+	auto Shape = [](const FString& S) { FString O; O.Reserve(S.Len()); for (const TCHAR C : S.TrimStartAndEnd()) if (!FChar::IsDigit(C) && C != TEXT('.') && C != TEXT('%')) O.AppendChar(C); return O; };
+	const FString Words = Shape(A);
+	return !Words.TrimStartAndEnd().IsEmpty() && Words == Shape(B);
+}
+
 FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 {
 	int32 Upper = 0, Lower = 0;
@@ -573,6 +581,12 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(NoteAlpha(0) == 0 && NoteAlpha(-1) == 0 && NoteAlpha(NoteIn * 0.5) > 0 && bHold && FMath::IsNearlyEqual(NoteAlpha(NoteHold + NoteFade * 0.5), 0.5, 1e-9)
 		&& NoteAlpha(NoteHold + NoteFade) == 0 && NoteAlpha(60) == 0 && NoteAlpha(std::numeric_limits<double>::quiet_NaN()) == 0 && bFalls,
 		TEXT("the task's card stands six seconds after the task changes and fades out over one"));
+	// D45-20261110: the recording's count going up is the same task (the card stood still), another place is a new one
+	Check(SameTask(TEXT("RECEIVER PC // Recording 37% at 100% measurement rate (27/27 antennas)."), TEXT("RECEIVER PC // Recording 38% at 100% measurement rate (27/27 antennas)."))
+		&& SameTask(TEXT("RECEIVER PC // Recording 9%"), TEXT("RECEIVER PC // Recording 10%")) && SameTask(TEXT("PRINTER // Feeding paper (40%)"), TEXT("PRINTER // Feeding paper (41%)"))
+		&& !SameTask(TEXT("RECEIVER PC // Recording 37%"), TEXT("PRINTER // Feeding paper (37%)")) && !SameTask(TEXT("TRACKING PC // POINT THE ARRAY"), TEXT("RECEIVER PC // KEEP IT TUNED"))
+		&& !SameTask(FString(), TEXT("OPS // OPEN DAILY WORK")) && !SameTask(TEXT("OPS // OPEN DAILY WORK"), FString()) && !SameTask(TEXT("12"), TEXT("13")),
+		TEXT("a task whose figures change is the same task, so the card does not flicker with a count; a new place or task brings it in"));
 	Check(Handwritten(TEXT("CALICHE JUNCTION"), true) == TEXT("Caliche Junction") && Handwritten(TEXT("CONTROL ROOM"), true) == TEXT("Control Room")
 		&& Handwritten(TEXT("SARO"), true) == TEXT("SARO") && Handwritten(TEXT("KEEP THE COMPLETED FEEDER RECORD. RETURN TO THE SERVICE TRUCK"), false) == TEXT("Keep the completed feeder record. Return to the service truck")
 		&& Handwritten(TEXT("TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz"), false) == TEXT("Track the unlogged residual near 1420.4 MHz")

@@ -27,6 +27,7 @@
 #include "S47Startup.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47Image.h"
 #include "Misc/Base64.h"
 #include "Engine/World.h"
@@ -77,6 +78,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("scope"),TEXT("night-work-state-fixtures"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SpineLeakTest")))S47J::Set(O,TEXT("scope"),TEXT("story-then-freeform-spine-leak"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -240,6 +242,40 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){StepDevMenu(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
+ // D45-20261110 (-S47FreeformTest -S47SpineLeakTest): a Story night, then Freeform in the same run, as Tom played d45. The spine's
+ // placeholder posts must stay hidden through an area pass, and the Freeform save must carry no "spine" block.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SpineLeakTest")))
+ {
+  if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Spine)return;
+  Age+=FMath::Min(Dt,.2);if(Age>300){Finish(false,TEXT("bounded spine leak timeout"));return;}if(Hold>0){Hold-=Dt;return;}
+  if(Stage==0)
+  {
+   if(!M->Freeform||!M->Freeform->Active()||Age<3)return;
+   Snapshot=S47J::Read(S47J::Write(M->Flow->GameState()));
+   M->Flow->ToTitle();US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(9401,.5);return;
+  }
+  if(Stage==9401)
+  {
+   if(M->IsFreeform())return;
+   // the spine on, as a saved evening night has it; Spine::Step builds the posts on the next ticks
+   auto Saved=S47J::New();S47J::Set(Saved,TEXT("v"),FS47Spine::Version);M->Spine->Begin(Saved,false);Go(9402,1.);return;
+  }
+  if(Stage==9402)
+  {
+   if(!Check(M->Spine->Enabled()&&M->Spine->PostCount()==int32(FS47Spine::GateCount)&&!M->Spine->PostsShown(),TEXT("Story built the spine's placeholder posts and keeps them hidden")))return;
+   M->Flow->ToTitle();US47Flow::FStart Free;Free.bDev=true;Free.State=Snapshot;M->Flow->StartGame(Free);++Restores;Go(9403,.5);return;
+  }
+  if(Stage==9403)
+  {
+   if(!M->Freeform||!M->Freeform->Active())return;
+   M->Web->Enter(M->Web->Area()); // an area pass, as a drive in or out makes (AS47Web::ApplyVisibility)
+   const auto Saved=M->Flow->GameState();
+   if(!Check(M->IsFreeform()&&!M->Spine->Enabled()&&!M->Spine->PostsShown(),TEXT("Freeform after Story: spine off, no placeholder post drawn after an area pass")))return;
+   if(!Check(Saved.IsValid()&&!Saved->HasField(TEXT("spine")),TEXT("the Freeform save carries no spine block")))return;
+   Finish(true,TEXT("Story then Freeform in one run: the spine's placeholder posts stay hidden and Freeform saves no spine"));return;
+  }
+  return;
+ }
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
@@ -478,15 +514,17 @@ void FS47FreeformTest::Step(double Dt)
    if(Age<3)return;
    if(!Check(M->Flow->bDevRun&&M->World->Area==TEXT("saro"),TEXT("isolated SARO service fixture")))return;
    F.Director->Stop();W.AddItem(TEXT("relay"),4);ServiceTrial=0;
-   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);F.Use(TEXT("opsTerminal"));Go(9200,.5);return;
+   // D45-20261110: the work order is issued on the array PC's MAINTENANCE tab
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(P.X,P.Z+1.1,0);F.Use(TEXT("crtLeft"));Go(9200,.5);return;
   }
-  if(Stage==9200){if(!Click(TEXT("SERVICE")))return;Go(9201,.3);return;}
-  if(Stage==9201){if(!Click(TEXT("Accept / use SARO stock")))return;Go(9202,.3);return;}
+  if(Stage==9200){if(!Click(TEXT("MAINTENANCE")))return;Go(9201,.3);return;}
+  if(Stage==9201){Shot(TEXT("service-maintenance-tab"));if(!Click(TEXT("ISSUE WORK ORDER / USE STOCK")))return;Go(9202,.3);return;}
   if(Stage==9202)
   {
-   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&F.OperationsSection()==4&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03"),FString::Printf(TEXT("service acceptance: glass=%d screen=%d ops=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),F.OperationsSection(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
+   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==0&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03")&&F.ActiveServiceGuide()==1,FString::Printf(TEXT("service acceptance on the array PC: glass=%d screen=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
    if(!Check(!F.CanCompleteServiceGuide(),TEXT("unfinished service cannot be archived")))return;
-   Shot(TEXT("service-accepted"));if(!Click(TEXT("Continue service / return to room")))return;Go(9205,.2);return;
+   if(!Check(F.TerminalLines(0).Contains(FString(TEXT("MAINTENANCE / 1 FAULT / NEXT S-03"))),TEXT("the array PC's glass names the open relay order as next")))return;
+   Shot(TEXT("service-accepted"));M->UI->Close(true);Go(9205,.2);return;
   }
   if(Stage==9205)
   {
@@ -544,6 +582,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(ServiceMoved&&M->Web->DishRemoteAvailable(I)&&F.AvailableDishCount()==27&&W.ServiceCompletions()==ServiceBefore+1&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1&&FMath::Abs(FMath::FindDeltaAngleDegrees(InitialAz,M->Web->DishAz(I)))<=.1&&FMath::Abs(InitialEl-M->Web->DishEl(I))<=.1,TEXT("actual outward/return test restores selected antenna once: ")+ServiceTarget))return;
    if(ServiceTrial==0)
    {
+    // D45-20261110: sign-off at OPS stays accepted for one build (orders taken there in d45); the array PC is tested in the journey
     const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);
     if(!Check(F.CompleteServiceGuide(),TEXT("initial S-03 tutorial archives only after actual repair")))return;
    }
@@ -889,7 +928,9 @@ void FS47FreeformTest::Step(double Dt)
    }
    if(OpsNavStep==3)
    {
-    if(!Click(TEXT("Accept / use SARO stock")))return;Go(88031,.3);return;
+    // D45-20261110: OPS / SERVICE is a summary that points to the array PC
+    if(!Check(HasText(TEXT("WORK ORDERS ARE ISSUED AND SIGNED THERE"))&&!HasText(TEXT("ISSUE WORK ORDER")),TEXT("OPS SERVICE points to the array PC and issues nothing itself")))return;
+    if(!Click(TEXT("SHOW ON THE ARRAY PC")))return;Go(88031,.3);return;
    }
    if(OpsNavStep==5)
    {
@@ -900,12 +941,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==88031)
   {
-   if(!Check(StillAtOps()&&F.OperationsSection()==4&&F.Field->HasArrayFault(),TEXT("accepting service order refreshes SERVICE while the same OPS screen stays open")))return;
-   if(!Click(TEXT("Show observing objective / retain unfinished service")))return;Go(88032,.3);return;
-  }
-  if(Stage==88032)
-  {
-   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("Follow service objective")),TEXT("service focus toggle remains inside OPS and offers the inverse action")))return;
+   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("is set to MAINTENANCE"))&&!F.Field->HasArrayFault()&&F.ActiveServiceGuide()!=1,TEXT("SHOW ON THE ARRAY PC keeps the same OPS screen open and starts no work order")))return;
    Go(8804);return;
   }
   if(Stage==8804)
@@ -1488,6 +1524,10 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(Original&&Original->LabStage==0,TEXT("exposed photograph remains undeveloped through full disk Continue")))return;
    Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("photoClock"),Original->Clock);S47J::Set(Snapshot,TEXT("photoTargets"),Original->Targets.Num());
    M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);
+   // D45-20261110 (D45-17): white light blocks the bench; the declared fixture then turns the safelight on (a seam, as SetDoorOpen(...,instant)).
+   if(!Check(F.Darkroom.IsValid(),TEXT("Freeform session owns the darkroom")))return;
+   F.Darkroom->SetSafelight(false,true);if(!Check(!F.Darkroom->Block().IsEmpty()&&F.Darkroom->Block().Contains(TEXT("safelight")),TEXT("door shut but white light on: developing is refused and the line says to switch on the safelight")))return;
+   F.Darkroom->SetSafelight(true,true);if(!Check(F.Darkroom->Block().IsEmpty(),TEXT("door shut and safelight on: the darkroom lets the print be made")))return;
    const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("photo lab uses the existing physical wet-bench object")))return;
    const FVector BenchAt=Bench->Object.WorldPosition();M->Player->Place(BenchAt.X,BenchAt.Z+1,0);Go(80040,.4);return;
   }
@@ -1535,6 +1575,7 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
    if(!Check(Original&&Original->LabStage==1&&!Original->IsDeveloped(),TEXT("tank-processing state survives full disk Continue without becoming a finished print")))return;
+   if(!Check(F.Darkroom&&F.Darkroom->SafelightOn()&&F.Darkroom->PrintAtRisk(),TEXT("the safelight survives full disk Continue and the loaded print in the developer is not fogged")))return; // D45-20261110
    Go(80040,.2);return;
   }
   if(Stage==80044)

@@ -50,6 +50,11 @@ public:
 	// M7-HUD-20261109: how many notebooks opened in the game have closed since it started, so that the HUD can bring the task's card in
 	// again (SS47Hud). A notebook made for a test has no UI and is not counted.
 	static uint32 Shut();
+	// D45-20261110 (Tom: open on a plain to-do list): the page a notebook opens on: NOW when Freeform's NOW has a line not shown before
+	// (FS47NbNowLine::bNew), otherwise Last (the page used last, if this notebook has it). And the head over a group of NOW's lines:
+	// DO FIRST, TONIGHT, WHEN YOU CAN, DONE TONIGHT (empty for the next step, which has the red arrow).
+	static FString OpenOn(const FS47NbExtras& Ex, const FString& Last);
+	static FString NowHead(const FString& Group);
 
 private:
 	TWeakObjectPtr<US47UI> UI;

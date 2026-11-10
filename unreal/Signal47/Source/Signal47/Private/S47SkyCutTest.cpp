@@ -10,6 +10,7 @@
 #include "S47Web.h"
 #include "S47Walker.h"
 #include "S47World.h"
+#include "S47Audio.h"
 #include "UnrealClient.h"
 
 // FIX-20261110 (Tom, point 2), -S47SkyCutTest: a light that crosses over SARO takes the mains. The feeder sags first (dips, torn
@@ -22,6 +23,11 @@ void FS47FreeformTest::StepSkyCut(double Dt)
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI||!M->World||!M->Story||!M->Freeform->Director||!M->Freeform->Field)return;
  auto& F=*M->Freeform;auto& D=*F.Director;
  auto Shot=[&](const TCHAR* Name){FScreenshotRequest::RequestScreenshot(Root/Name,true,false);};
+ // D45-20261110: the generator is heard at the generator (start, its running loop, the stop). A run without an audio context
+ // (-nosound) or without the engine clips checks the logic only.
+ US47Audio* Au=M->Audio.Get();const bool bSound=Au&&Au->Ctx.IsValid()&&Au->Duration(TEXT("engineIdle"))>0&&Au->Duration(TEXT("engineStart"))>0;
+ TArray<FString> Heard;TFunction<void(const FString&,const FS47Sound&)> Mic;
+ auto Listen=[&](bool bOn){if(!bSound)return;if(bOn){Heard.Reset();Mic=Au->Tap;Au->Tap=[&Heard](const FString& Sound,const FS47Sound& Opt){if(Opt.At)Heard.Add(Sound);};}else{Au->Tap=Mic;Mic=nullptr;}};
  if(Stage==0)
  {
   if(Age<3)return;M->UI->Close(true);
@@ -49,13 +55,19 @@ void FS47FreeformTest::StepSkyCut(double Dt)
  if(Stage==4)
  {
   if(!Check(bool(M->Player->OnUse),TEXT("the use callback is ready")))return;
-  M->Player->Place(4.9,9.2,0);M->Player->OnUse(TEXT("ff:generator"));
+  M->Player->Place(4.9,9.2,0);Listen(true);M->Player->OnUse(TEXT("ff:generator"));Listen(false);
   if(!Check(F.Field->GeneratorRunning(),TEXT("the standby generator behind the control room starts on its tank")))return;
+  if(bSound&&!Check(Heard.Contains(TEXT("engineStart")),TEXT("it is heard cranking and catching at the generator")))return;
   Go(5,1.);return;
  }
  if(Stage==5)
  {
   if(!Check(F.HasPowerForReactiveLight()&&!M->Story->bDark&&F.SkyMainsOut(),TEXT("it carries the station while the mains are still out")))return;
+  if(bSound)
+  {
+   const TOptional<FS47LoopState> Run=Au->InspectLoop(TEXT("ffGenerator"));
+   if(!Check(Run.IsSet()&&Run->bPlaying&&Run->bLoop&&Run->Rate<.8,TEXT("and it runs: a slow engine loop placed at the generator")))return;
+  }
   M->Player->Place(0,-1.2,UE_DOUBLE_PI);Go(6,1.);return;
  }
  if(Stage==6){Shot(TEXT("sky-cut-generator.png"));Go(7);return;}
@@ -63,7 +75,8 @@ void FS47FreeformTest::StepSkyCut(double Dt)
  {
   if(F.SkyCutLive()||D.Busy())return;
   if(!Check(F.HasFinding(TEXT("mains-ride")),TEXT("the line recorder's strip is kept as a record of the passage")))return;
-  M->Player->Place(4.9,9.2,0);M->Player->OnUse(TEXT("ff:generator"));
+  M->Player->Place(4.9,9.2,0);Listen(true);M->Player->OnUse(TEXT("ff:generator"));Listen(false);
+  if(bSound&&!Check(Heard.Contains(TEXT("engineOff"))&&!Au->InspectLoop(TEXT("ffGenerator")).IsSet(),TEXT("stopping it is heard, and its running loop is gone")))return;
   if(!Check(!F.Field->GeneratorRunning()&&F.HasPowerForReactiveLight(),TEXT("the mains came back by themselves: the generator is stopped and the station stays lit")))return;
   if(!Check(!F.Save()->HasField(TEXT("skySag"))&&!F.Save()->HasField(TEXT("skyOut")),TEXT("nothing of it is in the save")))return;
   Finish(true,TEXT("Sky cut: the feeder sags, the mains go under the passage, the generator carries the station and leaves a record, the mains return by themselves."));return;

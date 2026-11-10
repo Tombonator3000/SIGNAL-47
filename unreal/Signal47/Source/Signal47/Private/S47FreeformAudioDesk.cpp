@@ -157,7 +157,8 @@ void FS47FreeformAudioDesk::BindControls()
   const FString Id=StationId;FS47Interactable I;I.Id=Id;I.Object=Deck;I.Range=2.4;
   I.Label=[this,Guard,Owner,Id]{return !IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid()?Label(Id):FString();};
   I.Use=[this,Guard,Owner,Id]{if(!IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid())Use(Id);};
-  I.Examine=I.Label;
+  // D45-20261110: what the deck is for, said when it is looked at, now that its panel keeps to its keys and displays
+  I.Examine=[this,Guard,Owner]{return !IsEngineExitRequested()&&Guard.IsValid()&&Owner.IsValid()&&Ready()?FString(TEXT("A reel-to-reel deck for two tapes of one job: the ORIGINAL the antennas recorded, and the CONTROL, the station's own reference with the antennas out. A sound on both comes from the equipment. A sound only on the original came from outside.")):FString();};
   M->Inter->Add(I);M->Web->MarkUsable(Deck.I,Id);
  }
 }
@@ -221,7 +222,7 @@ void FS47FreeformAudioDesk::Step(double Dt)
  if(M->IsFreeform())
  {
   const auto& F=*M->Freeform;const auto* J=F.CurrentJob();Source=F.AudioSource();Cursor=F.AudioPosition();Playing=F.AudioPlaying();
-  if(J){HeardO=J->OriginalCovered;HeardC=J->ControlCovered;MarkIn=J->MarkStart;MarkOut=J->MarkEnd;Control=J->ControlAt;Reviewed=J->bAudioReviewed;Original=J->bAnomaly&&J->Stage>=FS47FreeformSession::EJobStage::Recorded;}
+  if(J){HeardO=J->OriginalCovered;HeardC=J->ControlCovered;MarkIn=J->MarkStart;MarkOut=J->MarkEnd;Control=J->ControlAt;Reviewed=J->bAudioReviewed;Original=J->bAnomaly&&J->Stage>=FS47FreeformSession::EJobStage::Chart;} // D45-20261110: on tape from the end of the take
  }
  else
  {
@@ -233,7 +234,7 @@ void FS47FreeformAudioDesk::Step(double Dt)
  if(Powered()&&M->IsFreeform()&&M->Freeform)
  {
   const auto* J=M->Freeform->CurrentJob();
-  if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Recorded||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
+  if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Chart||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
   else if(J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
   const FString CaptureStatus=M->Freeform->AudioCaptureStatus();if(!CaptureStatus.IsEmpty())Line+=TEXT("\n")+CaptureStatus;
 

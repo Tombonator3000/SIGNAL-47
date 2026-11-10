@@ -691,8 +691,25 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 		// .al-view: one free print big, over the notebook
 		+ SOverlay::Slot()[SAssignNew(BigSlot, SBox).Visibility_Lambda([this] { return Big != INDEX_NONE ? EVisibility::Visible : EVisibility::Collapsed; })]
 	];
-	// show(): the tab used last, if this notebook has it
-	Show(UI.IsValid() && (Order.Contains(UI->NbTab) || UI->NbTab == TEXT("notes") || UI->NbTab == TEXT("people") || UI->NbTab == TEXT("photos") || UI->NbTab == TEXT("controls")) ? UI->NbTab : FString(TEXT("tasks")));
+	// show(): the tab used last, if this notebook has it; D45-20261110: opened with its own key (not at a page asked for), NOW when
+	// something new is on it
+	const FString Last = UI.IsValid() && (Order.Contains(UI->NbTab) || UI->NbTab == TEXT("notes") || UI->NbTab == TEXT("people") || UI->NbTab == TEXT("photos") || UI->NbTab == TEXT("controls")) ? UI->NbTab : FString(TEXT("tasks"));
+	const bool bPlain = S47TonightNote::Seen().bPlain; S47TonightNote::Seen().bPlain = false;
+	Show(bPlain ? OpenOn(X, Last) : Last);
+}
+
+FString SS47Notebook::OpenOn(const FS47NbExtras& Ex, const FString& Last)
+{
+	return Ex.bFreeform && Ex.bNow && Ex.Now.ContainsByPredicate([](const FS47NbNowLine& N) { return N.bNew && !N.bDone; }) ? FString(TEXT("tasks")) : Last;
+}
+
+FString SS47Notebook::NowHead(const FString& Group)
+{
+	// D45-20261110: by importance (S47TonightNote::RankOf); the older groups' words for a list made the old way
+	static const TMap<FString, FString> Heads = { { TEXT("first"), TEXT("DO FIRST") }, { TEXT("tonight"), TEXT("TONIGHT") }, { TEXT("later"), TEXT("WHEN YOU CAN") }, { TEXT("done"), TEXT("DONE TONIGHT") },
+		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") } };
+	const FString* Hd = Heads.Find(Group);
+	return Hd ? *Hd : FString();
 }
 
 namespace { uint32 NotebooksShut = 0; }
@@ -931,10 +948,10 @@ void SS47Notebook::Build()
 	};
 	if (IsNow())
 	{
-		// PT-NOTEBOOK-20261109: NOW as the pause menu's note at full length, in its words: the next step with the red arrow, BY THE CLOCK,
-		// TO DO, ALSO OPEN (the job cards on one line that opens), DONE TONIGHT struck through
+		// PT-NOTEBOOK-20261109: NOW as the pause menu's note at full length, in its words: the next step with the red arrow, then
+		// (D45-20261110) DO FIRST, TONIGHT, WHEN YOU CAN (the job cards on one line that opens), DONE TONIGHT struck through; NEW in red
+		// before a line not shown before
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
-		static const TMap<FString, FString> Heads = { { TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") }, { TEXT("done"), TEXT("DONE TONIGHT") } };
 		FString Group;
 		const float Px = bLarge ? 30.f : 27.f;
 		for (int32 I = 0; I < NowRows.Num(); ++I)
@@ -953,7 +970,7 @@ void SS47Notebook::Build()
 			if (N.Group != Group)
 			{
 				Group = N.Group;
-				if (const FString* Hd = Heads.Find(Group)) L->AddSlot().AutoHeight().Padding(0, P(I ? 12 : 2), 0, P(2))[SNew(STextBlock).Text(FText::FromString(*Hd)).Font(Term(19, 2)).ColorAndOpacity(Ph2Red())];
+				if (const FString Hd = NowHead(Group); !Hd.IsEmpty()) L->AddSlot().AutoHeight().Padding(0, P(I ? 12 : 2), 0, P(2))[SNew(STextBlock).Text(FText::FromString(Hd)).Font(Term(19, 2)).ColorAndOpacity(Ph2Red())];
 			}
 			const bool bDone = N.bDone, bNext = N.Group == TEXT("next");
 			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
@@ -961,14 +978,18 @@ void SS47Notebook::Build()
 			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
 			if (bNext) Mark = SNew(SNextArrow);
-			else if (N.Group == TEXT("also")) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
+			else if (N.Group == TEXT("also") || N.bSummary) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
 			else Mark = SNew(SBox).WidthOverride(P(16)).HeightOverride(P(16))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Ink, 1.5f)).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
-				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(Ink)]];
+				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") ? Ph2Red() : Ink)]];
+			const bool bFresh = N.bNew && !bDone;
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Entry(I, SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(26))[Mark]]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(9), bFresh ? P(8) : 0.f, 0)[SNew(STextBlock).Visibility(bFresh ? EVisibility::Visible : EVisibility::Collapsed).Text(FText::FromString(TEXT("NEW"))).Font(Term(16, 2)).ColorAndOpacity(Ph2Red())]
 				+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))])];
-			Read.Add(N.Text);
+			Read.Add(bFresh ? TEXT("New. ") + N.Text : N.Text);
 		}
+		// D45-20261110: what has been shown is no longer new the next time the notebook opens
+		if (X.bFreeform) for (const FS47NbNowLine& N : X.Now) if (N.bNew && !N.Key.IsEmpty()) S47TonightNote::Seen().Keys.Add(N.Key);
 		LeftSlot->SetContent(Lay(Head(TEXT("Now"), Heading), NowRows.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing.")), LeftScroll));
 	}
 	else if (Tab == TEXT("tasks") || Tab == TEXT("guide"))
@@ -996,16 +1017,16 @@ void SS47Notebook::Build()
 			// tonight's tasks on the left, the observations so far on the right
 			const FString Line = !Tasks.Num() ? FString(TEXT("TASKS")) : Open ? FString::Printf(TEXT("TASKS · %d OPEN"), Open) : FString(TEXT("TASKS · ALL DONE"));
 			LeftSlot->SetContent(Lay(Head(Heading, Line), Tasks.Num() ? Lines(TaskText, 0, TaskText.Num(), true) : Empty(TEXT("Nothing yet. Dale left the shift log on the desk.")), LeftScroll));
-			RightSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Notes.Num(), false) : Empty(TEXT("Nothing worth writing down. Yet.")), RightScroll, 146.f, true));
+			RightSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Notes.Num(), false) : Empty(TEXT("Nothing worth writing down so far.")), RightScroll, 146.f, true)); // D45-20261110: no one-word sentence
 			if (Tasks.Num()) Read = TaskText; else Read.Add(TEXT("Nothing yet. Dale left the shift log on the desk."));
 		}
 		else
 		{
 			// the observations across the spread: the first half on the left, the rest on the right
 			const int32 Half = (Notes.Num() + 1) / 2;
-			LeftSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Half, false) : Empty(TEXT("Nothing worth writing down. Yet.")), LeftScroll));
+			LeftSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Half, false) : Empty(TEXT("Nothing worth writing down so far.")), LeftScroll));
 			if (Notes.Num() > Half) RightSlot->SetContent(Lay(SNullWidget::NullWidget, Lines(Notes, Half, Notes.Num(), false), RightScroll, 146.f, true));
-			if (Notes.Num()) Read = Notes; else Read.Add(TEXT("Nothing worth writing down. Yet."));
+			if (Notes.Num()) Read = Notes; else Read.Add(TEXT("Nothing worth writing down so far."));
 		}
 	}
 	else if (Tab == TEXT("findings"))
@@ -1476,7 +1497,7 @@ void SS47Notebook::BuildRight()
 				if (S.Side == TEXT("them") && S.Box == Name) { Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[ScribbleLine(S, 24.f, Follow(S))]; Said.Add(S.Text); }
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x3a3a40, 0.45f), 1.2f, 2.f)).Padding(FMargin(P(12), P(6)))[Bx]];
 		}
-		const FString None = TEXT("Nothing out there I could put a name to. Yet.");
+		const FString None = TEXT("Nothing out there I could put a name to so far."); // D45-20261110: no one-word sentence
 		RightSlot->SetContent(SNew(SOverlay) + SOverlay::Slot()[SNew(SGraphPaper)]
 			+ SOverlay::Slot()
 			[
@@ -1595,7 +1616,13 @@ void SS47Notebook::Activate()
 		return;
 	}
 	if (Tab == TEXT("tasks") && X.WorkItems.IsValidIndex(I)) { if (X.OnFollow && X.WorkItems[I].bCanFollow && !X.WorkItems[I].bDone) { auto Fn = X.OnFollow; const FString Id = X.WorkItems[I].Id; Close(); Fn(Id); } return; }
-	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I)) { if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id); Build(); return; }
+	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I))
+	{
+		if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id);
+		// D45-20261110: the field guide's first entry is tonight's list; Enter turns to it on NOW
+		if (X.GuideEntries[I].Id == TEXT("guide:tonight") && X.bNow) { Show(TEXT("tasks")); return; }
+		Build(); return;
+	}
 
 	if ((Tab == TEXT("findings") && Findings.IsValidIndex(I)) || (Tab == TEXT("papers") && Papers.IsValidIndex(I)))
 	{
@@ -2076,6 +2103,23 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Check(TEXT("Freeform NOW: with the history, the filed card too"), Free->Count() == Fx.Now.Num() + 3, FString::FromInt(Free->Count()));
 		Free->Choose(0);
 		Check(TEXT("Freeform NOW: the next step first, the night's done lines last, struck"), Free->X.Now[Free->NowRows[0].Line].Group == TEXT("next") && Free->X.Now[Free->NowRows.Last().Line].bDone);
+		// D45-20261110 (Tom: a plain to-do list by importance): the heads in order, NOW first when something new is on it (also when the
+		// field guide was the page used last), and the field guide's first entry, tonight's list, turns to NOW.
+		Check(TEXT("Freeform NOW: the heads are DO FIRST, TONIGHT, WHEN YOU CAN and DONE TONIGHT"), NowHead(TEXT("first")) == TEXT("DO FIRST") && NowHead(TEXT("tonight")) == TEXT("TONIGHT")
+			&& NowHead(TEXT("later")) == TEXT("WHEN YOU CAN") && NowHead(TEXT("done")) == TEXT("DONE TONIGHT") && NowHead(TEXT("next")).IsEmpty());
+		{
+			FS47NbExtras Nx = Fx;
+			Nx.Now = { Line(TEXT("first"), TEXT("FEEDER: Power is out.")), Line(TEXT("tonight"), TEXT("BEARING SLIP: New circle on your map.")), Line(TEXT("later"), TEXT("STATION GOAL: Array 19 of 27.")),
+				Line(TEXT("done"), TEXT("OPS: One job card registered and filed."), true) };
+			Nx.Now[1].bNew = true; Nx.Now[1].Key = TEXT("d45-selftest:slip");
+			Nx.GuideEntries = { { TEXT("guide:tonight"), TEXT("Tonight's list"), TEXT("TONIGHT\n- BEARING SLIP: New circle on your map.") }, { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
+			FS47NbExtras Looked = Nx; Looked.Now[1].bNew = false;
+			Check(TEXT("Freeform: the notebook opens on NOW when something new is on it, even after the field guide; otherwise where it was left"),
+				OpenOn(Nx, TEXT("guide")) == TEXT("tasks") && OpenOn(Looked, TEXT("guide")) == TEXT("guide") && OpenOn(FS47NbExtras(), TEXT("map")) == TEXT("map"));
+			const auto Ranked = SNew(SS47Notebook).Docs(All).Extras(Nx);
+			Ranked->Show(TEXT("guide")); Ranked->Choose(0); Ranked->Activate();
+			Check(TEXT("Freeform field guide: its first entry is tonight's list, and it turns to NOW"), Ranked->Tab == TEXT("tasks") && Ranked->Count() == Nx.Now.Num(), Ranked->Tab);
+		}
 		bool bLint = true;
 		for (const FS47NbNowLine& N : Fx.Now) bLint &= S47Script::LintText(N.Text).IsEmpty();
 		for (const FS47PersonCard& Pc : *Fx.People) bLint &= S47Script::LintText(Pc.Name + TEXT(" ") + Pc.Role + TEXT(" ") + Pc.Note).IsEmpty();

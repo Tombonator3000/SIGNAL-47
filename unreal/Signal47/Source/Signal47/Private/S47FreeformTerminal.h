@@ -20,6 +20,13 @@ namespace S47FreeformTerminal
  // The reel deck's own look (Tom's reference, 5 Nov): dark olive, cream text, amber action. Widgets
  // built while one of these lives keep it; the green workstation screens are untouched.
  struct FReelLook { FReelLook(); ~FReelLook(); };
+ // D45-20261110 (Tom: the reel deck must fit one screen without scrolling): Frame's header and footer on a fixed faceplate, the
+ // body clipped to its place instead of scrolled. The owner gives it its size (1200 x 900 in a scale box). No tube effects.
+ FW Faceplate(const FString& Title,FW Body,TSharedPtr<SWidget> Footer=nullptr);
+ // D45-20261110: the faceplate's small parts: a square lamp (its colour live), and a live line of text at a size and colour of its own
+ // (bWrap: wraps to its column; the owner gives it the height it may take).
+ FW Lamp(TAttribute<FLinearColor> Lit,float Size=12);
+ FW Note(TAttribute<FString> Value,int32 Size,TAttribute<FLinearColor> Colour,bool bWrap=true);
  FW Toggle(const FString& Text,TAttribute<bool> On,TFunction<void()> Action,TAttribute<bool> Enabled=true); // filled when on
  FW Filled(const FString& Text,TFunction<void()> Action,TAttribute<bool> Enabled=true); // the one thing to do
  // The right-hand header clock ("DAY 01 | 19:10"). The owner clears it when it stops.
@@ -34,8 +41,23 @@ namespace S47FreeformTerminal
  // 0..1, what is on the air around the station: lines drop out and the picture tears with it.
  void SetInterference(TFunction<float()> Level);
  float Interference();
- // The set was just switched to (not a page change): the next frame opens from a line.
+ // The set was just switched on: the open terminal and the idle pictures open from a line. D45-20261110: only when the supply
+ // comes back (FS47FreeformSession::Step), not each time the operator sits down.
  void PowerOn();
+ double PowerAge(); // seconds since PowerOn
+ // D45-20261110 (Tom: the band was too big and always there; not like a real CRT): the tube's one rare, faint, soft hum bar,
+ // shared by the open terminal and the idle picture on the monitor across the room (SS47Crt). Seed: the screen (0 array status,
+ // 1 receiver, 2 tracking, 3 OPS), so both pictures of one monitor agree. A is 0 while there is none, which is most of the time.
+ struct FHum { float Y=0,H=0,A=0; };
+ FHum HumBar(double T,int32 Seed,float ScreenH);
+ void PaintHum(FSlateWindowElementList& Out,int32 Layer,const FGeometry& G,const FVector2f& Size,int32 Seed,const FLinearColor& Phosphor);
+ void PaintPowerOn(FSlateWindowElementList& Out,int32 Layer,const FGeometry& G,const FVector2f& Size,const FLinearColor& Phosphor);
+ void SetHumScreen(int32 Screen); // the screen the next Frame is for; -1 none. The owner clears it with the clock.
+ // D45-2: the tracking plot's search tick (Near 0 far off to 1 on the source) and how near a plot position is to the source. The
+ // owner gives both while its terminal is open and clears them when it closes.
+ void SetProbeSound(TFunction<void(float Near)> Sink);
+ void SetNearness(TFunction<double(FVector2D AzEl)> Near);
+ bool SelfTest(TArray<FString>& Report);
 
  // --- Workstation layout (UI-03) ---
  struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; };

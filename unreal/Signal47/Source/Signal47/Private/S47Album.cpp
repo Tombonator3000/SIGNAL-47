@@ -404,6 +404,15 @@ bool FS47Album::AdvanceLabPhoto(const FString& Id, int32 ExpectedStage)
 	return true;
 }
 
+// D45-20261110 (D45-17): a fogged print goes back one step; nothing else about the original changes, so it is still paid once.
+bool FS47Album::FogLabPhoto(const FString& Id)
+{
+	FS47AlbumShot* S = Data.Shots.FindByPredicate([&](const FS47AlbumShot& P) { return P.Id == Id; });
+	if (!S || S->bUnavailable || S->Url.IsEmpty() || S->LabStage != 1) return false;
+	S->LabStage = 0;
+	return true;
+}
+
 double FS47Album::Dev(const FS47AlbumShot& S, double Clock) const
 {
 	if (S.LabStage >= 0) return S.IsDeveloped() ? 1.0 : 0.0;
@@ -630,6 +639,16 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	Check(Lab.PendingLabPhoto() && Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(TEXT("missing"), 1), TEXT("physical tank action advances once; stale and unknown photo actions are rejected"));
 	FS47Album LabRestored(Deps); LabRestored.Restore(S47J::Read(S47J::Write(Lab.SaveData())));
 	Check(LabRestored.Shots()[0].LabStage == 1 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("tank-processed photograph stays unpaid and unfinished after Continue"));
+	{
+		// D45-20261110 (D45-17): light on a print in the developer sends it back to exposed film, the original untouched; only from stage 1.
+		FS47Album Fog(Deps); Fog.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
+		const int32 FogTargets = Fog.Shots()[0].Targets.Num(); const FString FogNeg = Fog.Shots()[0].Neg;
+		const bool bFogged = Fog.FogLabPhoto(OriginalId) && Fog.Shots()[0].LabStage == 0 && !Fog.FogLabPhoto(OriginalId);
+		Check(bFogged && Fog.Shots()[0].Id == OriginalId && Fog.Shots()[0].Url == OriginalUrl && Fog.Shots()[0].Clock == OriginalClock && Fog.Shots()[0].Targets.Num() == FogTargets && Fog.Shots()[0].Neg == FogNeg,
+			TEXT("a fogged print returns to exposed film with its id, image, time, targets and negative kept"));
+		Check(!Fog.FogLabPhoto(TEXT("missing")) && Fog.AdvanceLabPhoto(OriginalId, 0) && Fog.AdvanceLabPhoto(OriginalId, 1) && !Fog.FogLabPhoto(OriginalId) && Fog.AdvanceLabPhoto(OriginalId, 2) && !Fog.FogLabPhoto(OriginalId) && Fog.Shots()[0].IsDeveloped()
+			&& !Fog.FogLabPhoto(Fog.Shots()[1].Id), TEXT("a new print from the negative is made as before; fixed, collected and instant prints cannot fog"));
+	}
 	Check(LabRestored.AdvanceLabPhoto(OriginalId, 1) && LabRestored.Shots()[0].LabStage == 2 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("fixer action still requires collection of the original"));
 	Check(LabRestored.AdvanceLabPhoto(OriginalId, 2) && LabRestored.Shots()[0].IsDeveloped() && !LabRestored.AdvanceLabPhoto(OriginalId, 2) && !LabRestored.PendingLabPhoto(), TEXT("collected original qualifies once; development cannot be repeated"));
 	FS47Album Finished(Deps); Finished.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));

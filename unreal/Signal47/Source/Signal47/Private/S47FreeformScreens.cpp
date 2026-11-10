@@ -39,6 +39,14 @@ namespace
   else if(Kind==2)A->Beep(990.f,.020f,.030f,.01f,TEXT("square"));                      // a menu line or tab
   else A->Beep(1480.f,.016f,.030f,.01f,TEXT("square"));                                // any other key
  }
+ // D45-20261110 (Tom: a sound that says you are getting closer): the tracking plot's search tick, Near 0 far off to 1 on the
+ // source. Low and slow far off, higher as the pointer closes in (the plot quickens it); as quiet as a key's detent.
+ void TerminalProbe(US47Audio* A,float Near)
+ {
+  if(!IsValid(A))return;
+  if(Near>=1.f){A->Beep(1480.f,.022f,.030f,0,TEXT("square"));return;}                 // on the source: a steady fast tick
+  A->Beep(FMath::Lerp(420.f,1350.f,Near),.016f,FMath::Lerp(.016f,.028f,Near),0,TEXT("square"));
+ }
  // A page written to the glass: the short chatter of characters arriving down the line.
  void TerminalPage(US47Audio* A,const FString& Title)
  {
@@ -78,16 +86,18 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
  S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
  S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Freeform?Main->Freeform->ScreenInterference():0.f;});
+ S47FreeformTerminal::SetProbeSound([Main](float Near){if(Main.IsValid())TerminalProbe(Main->Audio,Near);});
+ S47FreeformTerminal::SetNearness([Main](FVector2D AzEl){return Main.IsValid()&&Main->Freeform?Main->Freeform->AimNearness(AzEl):0.;});
  if(!bSame)
  {
-  // The set is taken over: the tube opens from a line, the relay behind the glass goes, the coil thumps.
-  S47FreeformTerminal::PowerOn();
+  // The set is taken over: the relay behind the glass goes, the coil thumps. D45-20261110: the picture does not open from a
+  // line here; the set was already on (PowerOn comes with the supply, FS47FreeformSession::Step).
   if(M->Audio){M->Audio->Play(TEXT("rack_switch"),.34f);M->Audio->Beep(58.f,.42f,.060f,.02f,TEXT("sine"));M->Audio->Beep(116.f,.26f,.026f,.02f,TEXT("sine"));}
  }
  if(Title!=TerminalTitle){TerminalPage(M->Audio,Title);TerminalTitle=Title;}
- S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));
+ S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
  auto Content=S47FreeformTerminal::Frame(Title,Body);
- S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString()); // the frame keeps its own copy; Story screens show no stale Freeform clock
+ S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
  {Current->SetScreen(Content,Content);bTelemetry=Live;return;}
  const TWeakObjectPtr<US47Main> Owner=M;
@@ -99,7 +109,7 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;
   if(Owner->Audio){Owner->Audio->ReceiverMonitorOff();Owner->Audio->Play(TEXT("click"),.26f,FVector::ZeroVector,.8f);Owner->Audio->Beep(660.f,.05f,.03f,.02f,TEXT("square"));}
-  S47FreeformTerminal::SetSound(nullptr);TerminalTitle.Reset();
+  S47FreeformTerminal::SetSound(nullptr);S47FreeformTerminal::SetProbeSound(nullptr);S47FreeformTerminal::SetNearness(nullptr);TerminalTitle.Reset();
   TerminalView.Reset();ActiveTerminal=-1;bTelemetry=false;Changed();
  });
  TerminalView=View;ActiveTerminal=Screen;bTelemetry=Live;
@@ -141,11 +151,13 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  if(Screen==0)
  {
   int32 Remote=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Remote;
-  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),TEXT("SELECT A DISH TO DIAGNOSE"),TEXT("LOCAL TEST BEFORE RELEASE")};
+  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),MaintenanceLine(),TEXT("LOCAL TEST BEFORE RELEASE")}; // D45-20261110: the open faults and the next one, from across the room
  }
  else if(Screen==1)
  {
-  L={TEXT("RX BANK 3 / RECEIVER"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("F %.3f MHz"),M->Story->Rx.Frequency),FString::Printf(TEXT("GAIN %.0f / BW %.0f"),M->Story->Rx.Gain,M->Story->Rx.Bandwidth),FString::Printf(TEXT("CARD %.3f / AZ %.1f"),P.F,(P.Az[0]+P.Az[1])*.5),J?FString::Printf(TEXT("REC %.1f / %.1f s"),J->Elapsed,SourceSeconds()):FString(),TEXT("ORIGINALS / PRINTER TRAY")};
+  // D45-20261110: the array's state where the printer tray's static line was, so the line count stays the same
+  const FString Array=!J?FString(TEXT("ARRAY / NO JOB")):PointReady()?FString(Settle>=1?TEXT("ARRAY / LOCKED"):TEXT("ARRAY / SETTLING")):J->Stage==EJobStage::New?FString(TEXT("ARRAY / NOT POINTED")):FString(TEXT("ARRAY / SLEWING"));
+  L={TEXT("RX BANK 3 / RECEIVER"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("F %.3f MHz"),M->Story->Rx.Frequency),FString::Printf(TEXT("GAIN %.0f / BW %.0f"),M->Story->Rx.Gain,M->Story->Rx.Bandwidth),FString::Printf(TEXT("CARD %.3f / AZ %.1f"),P.F,(P.Az[0]+P.Az[1])*.5),J?FString::Printf(TEXT("REC %.1f / %.1f s"),J->Elapsed,SourceSeconds()):FString(),Array};
  }
  else if(Screen==2)
  {
@@ -157,7 +169,7 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
   // To be seen from across the room: it is only ever on the glass when it is wrong.
   if(Aftermath&&Aftermath->PcStuck())L.Insert(FString::Printf(TEXT("SYSTEM CLOCK %s"),*FS47FreeformCases::Clock(FMath::Fmod(Aftermath->PcShown(),86400.))),1);
   for(const auto& W:Work)if(W.Stage!=EJobStage::Filed&&L.Num()<6)L.Add(W.Id+FString::Printf(TEXT(" / SRC%d %s"),W.Source,W.Stage==EJobStage::Filed?TEXT("FILED"):TEXT("OPEN")));
-  L.Add(ServiceGuide==1?TEXT("SERVICE ORDER / IN PROGRESS"):TEXT("SERVICE ORDER / OPTIONAL"));L.Add(TEXT("ORIGINALS / RECORDS"));
+  L.Add(ServiceGuide==1?TEXT("WORK ORDER OPEN / ARRAY PC"):TEXT("MAINTENANCE / AT ARRAY PC"));L.Add(TEXT("ORIGINALS / RECORDS")); // D45-20261110: work orders are issued and signed there
  }
  if(Screen>=0&&Screen<=2)L.Add(FString::Printf(TEXT("ARRAY %d/27 / RATE %.0f%% / %s"),AvailableDishCount(),100*ArrayMeasurementRate(),AvailableDishCount()<(Field&&Field->ArrayWear().bActive?FS47ArrayWear::MinDishes:24)?TEXT("BLOCKED - REPAIR"):AvailableDishCount()<27?(Field&&Field->ArrayWear().DownCount()>0?TEXT("WORN"):TEXT("DEGRADED")):TEXT("FULL")));
  if(const FString NextLine=TerminalNextLine(Objective(),Screen);!NextLine.IsEmpty())L.Insert(NextLine,1);
@@ -217,7 +229,7 @@ FS47Doc FS47FreeformSession::SopCard()
   TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) tunes and records, the PRINTER gives the original. Register the result here.\n")
   TEXT("3. Finish a recording or a control before you switch jobs. Unfinished jobs keep. They pay in full on their day and the next, then less.\n")
   TEXT("4. EARLIER WORK shows what is done and what is carried over. RECORDS keeps originals, field findings, service and closed cases. Read only.\n")
-  TEXT("5. An unusual original is never registered on its own. Compare it with the internal reference at the reel deck (wall table), register the comparison as unresolved (that opens its case on CASE BOARD), collect the packet at the printer and file it in the records-room binder. Payment follows the filing.\n")
+  TEXT("5. An unusual original is never registered on its own. Record its internal control at the receiver right after the take, compare both tapes at the reel deck (wall table), collect the original chart at the printer, then register the comparison as unresolved (that opens its case on CASE BOARD). Collect the packet at the printer and file it in the records-room binder. Payment follows the filing.\n") // D45-20261110
   TEXT("6. A quiet internal reference does not prove a sky source. Only a directional or independent control rules an explanation out.\n")
   TEXT("7. CASE BOARD. A trial case closes when your tests rule out all but one explanation; the records reply comes at once. An assessment can be filed when you choose; its reply prints on the telex next morning. Every test registered prints a result sheet: collect it at the printer.\n")
   TEXT("8. TELEX (by the corridor door). Replies and Dr. Ward's receipts print there. Tear them off at the machine; they go in the tray here. Send night logs from OVERVIEW.\n")

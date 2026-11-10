@@ -83,7 +83,10 @@ void FS47FreeformJourneyTest::Step(double Dt)
   F.Director->Stop();PlaceAt(TEXT("ff:bench"));if(!Check(!F.StartServiceGuide(true),TEXT("service order cannot be accepted remotely")))return;
   const auto* Ops=M->Web->Item(TEXT("opsTerminal"));if(!Check(Ops!=nullptr,TEXT("actual OPS terminal exists")))return;
   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z-.8,0);
-  F.Use(TEXT("opsTerminal"));if(!Check(F.StartServiceGuide(true),TEXT("optional supply route accepted at physical OPS")))return;M->UI->Close(true);
+  // D45-20261110: work orders are issued on the array PC, not at OPS
+  if(!Check(!F.StartServiceGuide(true),TEXT("OPS no longer issues a work order")))return;
+  const FVector ArrayPc=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(ArrayPc.X,ArrayPc.Z+1.1,0);
+  F.Use(TEXT("crtLeft"));if(!Check(F.StartServiceGuide(true),TEXT("optional supply route issued at the physical array PC")))return;M->UI->Close(true);
   ServiceBefore=W.ServiceCompletions();DeliveryBefore=W.ServiceSupplyDeliveries();
   if(!Check(!F.CompleteServiceGuide()&&W.ServiceStage()==1&&!F.ServiceObjective().IsEmpty(),TEXT("unperformed service cannot be archived; diagnosis is the next action")))return;
   F.OpenServiceGuide();FScreenshotRequest::RequestScreenshot(Root/TEXT("service-guide.png"),true,false);Go(100);return;
@@ -221,8 +224,8 @@ void FS47FreeformJourneyTest::Step(double Dt)
   if(W.ServiceStage()!=9)return;
   if(!Check(bSawOutward&&W.ServiceCompletions()==ServiceBefore+1&&F.HasFinding(TEXT("service-s03")),TEXT("real S-03 outward and return movement retains service evidence")))return;
   if(!Check(F.ServiceFeedbackCount()==1,TEXT("one local relay response follows the actual completed service test")))return;
-  const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z-.8,0);
-  if(!Check(F.CompleteServiceGuide()&&F.HasFinding(TEXT("service-work-order")),TEXT("physical OPS verifies and archives actual service")))return;
+  const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(P.X,P.Z+1.1,0); // D45-20261110: signed off on the array PC
+  if(!Check(F.CompleteServiceGuide()&&F.HasFinding(TEXT("service-work-order")),TEXT("the physical array PC verifies and signs off actual service")))return;
   const int32 Count=F.FindingCount();if(!Check(!F.CompleteServiceGuide()&&F.FindingCount()==Count&&F.Budget()==105,TEXT("repeat archive cannot duplicate record or payment")))return;
   if(!Restore(TEXT("legacy-v1-without-guide"),true))return;Go(11);return;
  }

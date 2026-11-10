@@ -117,6 +117,71 @@ double S47CB::SecsOf(const FString& Text)
 	return FMath::Clamp(1.1 + SplitWs(Text).Num() * 0.32, 2.4, 7.5);
 }
 
+// ---------- D45-20261110: the static voice ----------
+// Tom (10 November, d45): the mumbled horn on the CB and the radio ("wah wah wah") is gone; static that says something is on
+// the channel instead. The "wah" was a saw through a sharp low-pass swept on every syllable; here nothing is pitched and nothing
+// sweeps: the set's static, in a speech band that steps per syllable, is pushed up and pulled down in the words' own rhythm,
+// with dry pops and a slow fade. Random every time (FMath, not the line's seed). The caption carries the words.
+
+S47CB::FStaticBed S47CB::StaticBed(const US47Audio* Audio)
+{
+	// the bought static when the build has it, the context's white noise when not, each brought to white noise's level
+	// (rms .577), so one set of gains serves both
+	FStaticBed Bed;
+	if (!Audio) return Bed;
+	const TSharedPtr<FS47AudioBuffer> Bought = Audio->Lic(TEXT("radio_static"));
+	Bed.Buffer = Bought.IsValid() && Bought->Length() > 0 ? Bought : Audio->NoiseBuffer();
+	if ((!Bed.Buffer.IsValid() || Bed.Buffer->Length() <= 0) && Audio->Ctx.IsValid())
+	{
+		// a context that never made its noise (a test's own context): two seconds of white noise of its own
+		const TSharedRef<FS47AudioBuffer> Own = Audio->Ctx->CreateBuffer(1, int32(Audio->Ctx->SampleRate * 2), Audio->Ctx->SampleRate);
+		float* W = Own->GetChannelData(0);
+		for (int32 I = 0; I < Own->Length(); ++I) W[I] = FMath::FRandRange(-1.f, 1.f);
+		Bed.Buffer = Own;
+	}
+	if (!Bed.Buffer.IsValid() || Bed.Buffer->Length() <= 0) { Bed.Buffer.Reset(); return Bed; }
+	const float* P = Bed.Buffer->GetChannelData(0);
+	const int32 Frames = FMath::Min(Bed.Buffer->Length(), int32(Bed.Buffer->SampleRate() * 4));
+	double Sum = 0;
+	for (int32 I = 0; I < Frames; ++I) Sum += double(P[I]) * P[I];
+	Bed.Makeup = FMath::Clamp(0.577 / FMath::Max(1e-4, FMath::Sqrt(Sum / FMath::Max(1, Frames))), 0.25, 16.0);
+	return Bed;
+}
+
+void S47CB::StaticLine(const TSharedRef<FS47AudioContext>& Ctx, const TSharedPtr<FS47AudioNode>& Dest, const FStaticBed& Bed, const TSharedPtr<FS47AudioBuffer>& Pop, const FString& Text, double Secs, double LineAt, double Skip, double Level, TArray<TSharedPtr<FS47BufferSourceNode>>& Sources)
+{
+	if (!Bed.Buffer.IsValid() || !Dest.IsValid() || Secs <= Skip) return;
+	constexpr double Peak = 0.30, Under = 0.07; // over the squelch's hiss (.035); the horn peaked at .5
+	auto Src = Ctx->CreateBufferSource(); Src->Buffer = Bed.Buffer; Src->bLoop = true;
+	auto Band = Ctx->CreateBiquadFilter(); Band->SetType(TEXT("bandpass")); Band->Frequency.SetValue(1500); Band->Q.SetValue(0.7);
+	auto Gate = Ctx->CreateGain(); Gate->Gain.SetValue(0);
+	auto Drift = Ctx->CreateGain(); Drift->Gain.SetValue(1); // the far set drifting up and down (QSB)
+	Src->Connect(Band); Band->Connect(Gate); Gate->Connect(Drift); Drift->Connect(Dest);
+	const double From = LineAt + Skip, Near = Peak * Level * Bed.Makeup * FMath::FRandRange(0.75f, 1.f), Low = Under * Level * Bed.Makeup; // each speaker a little nearer or farther
+	FS47AudioParam& G = Gate->Gain;
+	FS47AudioParam& Bf = Band->Frequency;
+	for (double D = Skip; D < Secs + 0.7; D += 0.7) Drift->Gain.LinearRampToValueAtTime(FMath::FRandRange(0.7f, 1.15f), LineAt + D);
+	for (const S47CB::FSyllable& Y : S47CB::Syllables(Text, Secs))
+	{
+		if (Y.At < Skip) continue;
+		const double Ts = LineAt + Y.At, K = FMath::FRandRange(0.5f, 1.f);
+		Bf.SetValueAtTime(FMath::FRandRange(1150.f, 1900.f), Ts); // a step per syllable, never a ramp
+		G.SetValueAtTime(Low, Ts); G.LinearRampToValueAtTime(Near * K, Ts + 0.02); G.SetValueAtTime(Near * K, Ts + Y.D * 0.6); G.LinearRampToValueAtTime(Low, Ts + Y.D);
+		if (FMath::FRand() < 0.2f)
+		{
+			// a dry pop: the bought short crackle when it is there, else six milliseconds of the bed
+			const double Pt = Ts + FMath::FRand() * Y.D, Pl = (Pop.IsValid() ? 1.0 : 0.35 * Bed.Makeup) * Level * FMath::FRandRange(0.4f, 1.f), Pd = Pop.IsValid() ? FMath::Min(0.4, Pop->Duration()) : 0.006;
+			auto P = Ctx->CreateBufferSource(); P->Buffer = Pop.IsValid() ? Pop : Bed.Buffer; P->PlaybackRate.SetValue(FMath::FRandRange(0.8f, 1.3f));
+			auto Ph = Ctx->CreateBiquadFilter(); Ph->SetType(TEXT("highpass")); Ph->Frequency.SetValue(1800);
+			auto Pg = Ctx->CreateGain(); Pg->Gain.SetValue(0); Pg->Gain.SetValueAtTime(Pl, Pt); Pg->Gain.LinearRampToValueAtTime(0, Pt + Pd);
+			P->Connect(Ph); Ph->Connect(Pg); Pg->Connect(Dest);
+			P->Start(Pt, Pop.IsValid() ? 0.0 : FMath::FRand() * FMath::Max(0.0, Bed.Buffer->Duration() - 0.1)); P->Stop(Pt + Pd + 0.05); Sources.Add(P);
+		}
+	}
+	G.SetValueAtTime(Low, LineAt + Secs); G.LinearRampToValueAtTime(0, LineAt + Secs + 0.06);
+	Src->Start(From, FMath::FRand() * FMath::Max(0.1, Bed.Buffer->Duration() - 1.0)); Src->Stop(LineAt + Secs + 0.15); Sources.Add(Src);
+}
+
 const S47CB::FEngineTimes& S47CB::ENGINE()
 {
 	static const FEngineTimes E;
@@ -228,7 +293,7 @@ double FS47CB::Call(const TArray<FS47CBLine>& Lines, const TOptional<FVector>& A
 	bBusy = true;
 	FS47AudioContext::FBatch B(*Ctx);
 	// VOICE-OUT-3 (Tom 9 November 2026): N. Vega's recorded CB words were the bacall clone, now gone; every
-	// CB line is the mumbled horn under its caption until a speaker has a recording of her own
+	// CB line is the static voice under its caption (D45-20261110, StaticLine) until a speaker has a recording of her own
 	TArray<TSharedPtr<FS47AudioBuffer>> Selected;
 	Selected.Init(nullptr, Lines.Num());
 	bool bRecorded = false;
@@ -243,28 +308,21 @@ double FS47CB::Call(const TArray<FS47CBLine>& Lines, const TOptional<FVector>& A
 	const TSharedPtr<FS47AudioNode> Pan = At ? A->Spatial(FVector(At->X, At->Y + 1.1, At->Z), 1.0f, RadioBus) : RadioBus;
 	if (!Pan.IsValid()) { bBusy = false; return 0; }
 	Out0->Connect(Bp); Bp->Connect(Lp); Lp->Connect(Sh); Sh->Connect(Pan);
-	// the voice
-	auto Horn = Ctx->CreateOscillator(); Horn->SetType(TEXT("sawtooth"));
-	auto Vib = Ctx->CreateOscillator(); Vib->Frequency.SetValue(5.8);
-	auto Vd = Ctx->CreateGain(); Vd->Gain.SetValue(2.6); Vib->Connect(Vd); Vd->Connect(Horn->Frequency);
-	auto Mute = Ctx->CreateBiquadFilter(); Mute->SetType(TEXT("lowpass")); Mute->Frequency.SetValue(400); Mute->Q.SetValue(6.5);
-	auto Voice = Ctx->CreateGain(); Voice->Gain.SetValue(0);
-	Horn->Connect(Mute); Mute->Connect(Voice); Voice->Connect(Out0);
+	// the voice (D45-20261110: the channel's static in the words' rhythm, no horn; StaticLine)
+	const S47CB::FStaticBed Bed = S47CB::StaticBed(A);
+	const TSharedPtr<FS47AudioBuffer> Pop = A->Lic(TEXT("radio_crackle_short"));
 	// the squelch: hiss that bursts open, sits low under the voice, and bursts again at the end
 	auto N = Ctx->CreateBufferSource(); N->Buffer = Noise; N->bLoop = true;
 	auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(700);
 	auto Sq = Ctx->CreateGain(); Sq->Gain.SetValue(0);
 	N->Connect(Hp); Hp->Connect(Sq); Sq->Connect(Out0);
 	// the lines, one after the other
-	FS47AudioParam& Fq = Horn->Frequency;
-	FS47AudioParam& Mf = Mute->Frequency;
-	FS47AudioParam& G = Voice->Gain;
 	double At0 = LEAD;
 	TArray<double> Starts, Durations;
 	for (int32 I = 0; I < Lines.Num(); ++I)
 	{
 		const FS47CBLine& L = Lines[I];
-		const double Secs = bRecorded ? Selected[I]->Duration() : S47CB::SecsOf(L.Text), Base = S47CB::Pitch(L.Who);
+		const double Secs = bRecorded ? Selected[I]->Duration() : S47CB::SecsOf(L.Text);
 		Durations.Add(Secs);
 		Starts.Add(At0);
 		if (bRecorded)
@@ -272,21 +330,14 @@ double FS47CB::Call(const TArray<FS47CBLine>& Lines, const TOptional<FVector>& A
 			auto Source = Ctx->CreateBufferSource(); Source->Buffer = Selected[I]; Source->Connect(Out0);
 			Source->Start(T0 + At0); Sources.Add(Source); At0 += Secs + GAP; continue;
 		}
-		Fq.SetValueAtTime(Base, T0 + At0);
-		for (const S47CB::FSyllable& Y : S47CB::Syllables(L.Text, Secs))
-		{
-			const double Ts = T0 + At0 + Y.At, F = Base * Y.F;
-			Fq.SetValueAtTime(F, Ts); Fq.LinearRampToValueAtTime(F * 0.94, Ts + Y.D);
-			Mf.SetValueAtTime(330, Ts); Mf.LinearRampToValueAtTime(1300, Ts + Y.D * 0.3); Mf.LinearRampToValueAtTime(420, Ts + Y.D);
-			G.SetValueAtTime(0, Ts); G.LinearRampToValueAtTime(0.5, Ts + 0.025); G.SetValueAtTime(0.5, Ts + Y.D * 0.7); G.LinearRampToValueAtTime(0, Ts + Y.D);
-		}
+		S47CB::StaticLine(Ctx, Out0, Bed, Pop, L.Text, Secs, T0 + At0, 0, 1, Sources);
 		At0 += Secs + GAP;
 	}
 	const double End = At0;
 	FS47AudioParam& S = Sq->Gain;
 	S.SetValueAtTime(0, T0); S.LinearRampToValueAtTime(0.55, T0 + 0.02); S.SetTargetAtTime(0.035, T0 + 0.16, 0.06);
 	S.SetValueAtTime(0.035, T0 + End); S.LinearRampToValueAtTime(0.5, T0 + End + 0.03); S.SetTargetAtTime(0, T0 + End + 0.2, 0.03);
-	Horn->Start(T0); Vib->Start(T0); N->Start(T0);
+	N->Start(T0);
 	// Silent source-end markers use the same pausable clock as the speaker.
 	// No wall timer can caption the next sentence or finish the call during Pause.
 	TSharedRef<TArray<TSharedPtr<FS47BufferSourceNode>>> All = MakeShared<TArray<TSharedPtr<FS47BufferSourceNode>>>(Sources);
@@ -300,15 +351,14 @@ double FS47CB::Call(const TArray<FS47CBLine>& Lines, const TOptional<FVector>& A
 	};
 	const TWeakPtr<FS47CB> Self = AsShared();
 	const uint32 Id = ++Calls;
-	const TSharedPtr<FS47OscillatorNode> HornP = Horn, VibP = Vib;
 	const TSharedPtr<FS47BufferSourceNode> NP = N;
 	const bool bOwnPan = Pan != RadioBus;
 	TSharedRef<FS47AudioContext> C = Ctx;
-	TFunction<void()> StopFn = [Self, Id, C, All, HornP, VibP, NP, Out0, Pan, bOwnPan]
+	TFunction<void()> StopFn = [Self, Id, C, All, NP, Out0, Pan, bOwnPan]
 	{
 		FS47AudioContext::FBatch Bt(*C);
 		for (const TSharedPtr<FS47BufferSourceNode>& Source : *All) { Source->OnEnded = nullptr; Source->Stop(); Source->Disconnect(); }
-		for (const TSharedPtr<FS47ScheduledSourceNode>& X : TArray<TSharedPtr<FS47ScheduledSourceNode>>{ HornP, VibP, NP }) X->Stop();
+		NP->Stop();
 		Out0->Disconnect();
 		if (bOwnPan) Pan->Disconnect();
 		if (const TSharedPtr<FS47CB> P = Self.Pin(); P.IsValid() && P->StopId == Id) { P->bBusy = false; P->StopAll = nullptr; }
@@ -395,5 +445,27 @@ bool FS47CB::SelfTest(TArray<FString>& Lines)
 	Check(Up > Dead * 5 && Tail > Dead * 2, FString::Printf(TEXT("the engine on the channel %.4f, dead %.5f, the tail %.4f"), Up, Dead, Tail));
 	Halt();
 	Ctx->Close();
+	// D45-20261110: a line on the channel is the set's static in the words' rhythm: there while the line lasts and gone after it,
+	// noise and not a pitched horn (many zero crossings), pushed up and pulled down per syllable, and never the same twice
+	auto RenderLine = [&](TArray<float>& Mono)
+	{
+		TSharedRef<FS47AudioContext> Lc = FS47AudioContext::Make(48000.f);
+		S47CB::FStaticBed Bed; Bed.Buffer = Noise; Bed.Makeup = 1;
+		TArray<TSharedPtr<FS47BufferSourceNode>> Made;
+		{ FS47AudioContext::FBatch Bt(*Lc); S47CB::StaticLine(Lc, Lc->Destination, Bed, nullptr, TEXT("SARO seven, this is Sierra. You hear me?"), 3.66, 0.1, 0, 1, Made); }
+		TArray<float> Two; Two.SetNumZeroed(int32(4.4 * 48000) * 2); Lc->Render(Two.GetData(), int32(4.4 * 48000), 2);
+		Mono.SetNumZeroed(Two.Num() / 2); for (int32 I = 0; I < Mono.Num(); ++I) Mono[I] = Two[I * 2];
+		Lc->Close();
+		return Made.Num();
+	};
+	TArray<float> First, Second;
+	const int32 Started = RenderLine(First); RenderLine(Second);
+	auto Span = [&](double From, double To) { double Sum = 0; int32 Count = 0; for (int32 I = int32(From * 48000); I < FMath::Min(First.Num(), int32(To * 48000)); ++I, ++Count) Sum += double(First[I]) * First[I]; return FMath::Sqrt(Sum / FMath::Max(1, Count)); };
+	const double On = Span(0.15, 3.7), After = Span(4.0, 4.4);
+	int32 Crossings = 0; for (int32 I = int32(0.15 * 48000) + 1; I < int32(3.7 * 48000); ++I) if ((First[I] >= 0) != (First[I - 1] >= 0)) ++Crossings;
+	double Loud = 0, Quiet = 1e9; for (double W = 0.2; W < 3.6; W += 0.05) { const double V = Span(W, W + 0.05); Loud = FMath::Max(Loud, V); Quiet = FMath::Min(Quiet, V); }
+	double Apart = 0; for (int32 I = 0; I < FMath::Min(First.Num(), Second.Num()); ++I) Apart += FMath::Abs(First[I] - Second[I]);
+	const double PerSec = Crossings / 3.55;
+	Check(Started >= 1 && On > 0.01 && After < On * 0.05 && PerSec > 1000 && Loud > Quiet * 2 && Apart > 1, FString::Printf(TEXT("D45: the static voice: line %.4f, after it %.5f, %.0f crossings a second, syllables %.4f over %.4f, two takes apart by %.1f"), On, After, PerSec, Loud, Quiet, Apart));
 	return bOk;
 }

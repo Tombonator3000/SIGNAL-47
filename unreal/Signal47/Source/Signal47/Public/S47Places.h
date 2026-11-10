@@ -42,8 +42,27 @@ public:
  // A bearing on the map. From SARO, or (bCar) from where the truck stood when the direction finder nulled (From, road-local x and z),
  // so that two from different places can cross. Clock: when it was taken; Until: when it goes cold (the next noon). Older saves have
  // neither (-1): no time, never cold, from SARO.
- struct FBearing{int32 Day=0;double Az=0,Spread=0;FString Target;double Clock=-1,Until=-1;bool bCar=false;double FromX=0,FromZ=0;};
+ // D45-20261110 (Tom: the slip's mark landed far south, off the land): what a slip from SARO points at (To, road-local, never shown
+ // exactly) and the pencilled circle "look about here" round it (Ring, R metres), always on the land, inside the bearing's sector; and
+ // whether the player has stood inside it while it was live. Saved with the bearing; an older save has none (the wedge alone).
+ struct FBearing{int32 Day=0;double Az=0,Spread=0;FString Target;double Clock=-1,Until=-1;bool bCar=false;double FromX=0,FromZ=0;
+  bool bTo=false;double ToX=0,ToZ=0;bool bRing=false;double RingX=0,RingZ=0,RingR=0;bool bVisited=false;};
  const TArray<FBearing>& Bearings() const{return Fixes;}
+ // D45-20261110: the circle's radius by the spread (the mended branches): 450 m with none, down to 140 m with four or more.
+ static double RingFor(double Spread){return Spread>=40?450.:Spread>=20?320.:Spread>=12?240.:Spread>=7?180.:140.;}
+ // Pure: the circle round B's To, its centre off To by up to .45 R (Roll 0 to 1), the whole circle inside the rim, not on a hill that
+ // stops a truck, its centre inside the sector; pulled halfway back toward To until it is, To itself at worst (the circle then made
+ // smaller if the rim is that near). Sets bRing; needs bTo.
+ static void RingOf(FBearing& B,float Roll);
+ // "south-southwest": the sixteen points, as the survey sheet says them (S47FieldMap::Compass). Pure.
+ static FString CompassWord(double Az);
+ // "1.1 miles south-southwest of SARO": where the circle is (an older bearing: only which way). Pure.
+ static FString SlipWhere(const FBearing& B);
+ // The slip's own words under its line: what a branch is and what it does to the area, and where the circle is. Pure, upper case.
+ static FString SlipNote(const FBearing& B,int32 Branches);
+ // NOW and the task list (FS47FreeformSession::Tasks): each live slip from SARO, newest first, two at most, ticked off once the circle
+ // has been stood in (or its place found). The words stay the same done or not, so the note's key holds.
+ TArray<TPair<FString,bool>> SlipRows(double Now) const;
  // LOOP-1-20261109: no branch mended is a wide sector (±40), never none; every mended branch narrows it.
  static double SpreadFor(int32 Branches){return Branches<=0?40.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
  // Whether registered work points out at all: a discrepancy always, routine work with a mended branch.
@@ -52,9 +71,10 @@ public:
  // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
  static int32 SlipPoints(bool bMarks,bool bTonight,bool bUnknown){return bMarks?1:bTonight?2:bUnknown?3:0;}
  // A bearing from SARO (From, road-local) toward To, as a registration takes it: the spread by the branches, the line off the true
- // one by up to half of it (Roll 0 to 1), whole degrees, cold by the next noon.
- static FBearing StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target);
- // The bearing slip, as the printer has it: "BEARING ABOUT 110° ±40° / 19:52 / COLD BY NOON".
+ // one by up to half of it (Roll 0 to 1), whole degrees, cold by the next noon. D45-20261110: it keeps To and its circle (RingRoll).
+ static FBearing StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target,float RingRoll=.37f);
+ // The bearing slip, as the printer has it (D45-20261110, plain words and no degree sign):
+ // "DIRECTION 110 DEGREES (EAST-SOUTHEAST), GIVE OR TAKE 40 / LOGGED 19:52 / GOOD UNTIL NOON".
  static FString SlipLine(const FBearing& B);
  // A clock for paper, hh:mm, that is never Story's (08:15, 20:15, or a 47 anywhere): a minute on is as good.
  static FString SlipClock(double Clock);
@@ -109,8 +129,9 @@ private:
  TSharedPtr<uint8> Life;
  TWeakObjectPtr<AS47Web> Scene;
  bool bBuilt=false;
- double NeedleIn=0;
+ double NeedleIn=0,SlipIn=0;
  int32 LastFixDay=0;
+ void StepSlips(double Dt); // D45-20261110: the player inside a live slip's circle checks it
  static void SaroRoad(double& X,double& Z);
  bool bHasFound(const FString& Id) const;
  bool Build();

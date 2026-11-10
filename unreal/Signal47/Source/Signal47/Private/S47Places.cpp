@@ -15,6 +15,7 @@
 #include "S47NightRhythm.h"
 #include "S47OpenLand.h"
 #include "S47Relief.h"
+#include "S47Script.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47TownUse.h"
@@ -22,6 +23,7 @@
 #include "S47UI.h"
 #include "S47FieldLife.h"
 #include "S47Walker.h"
+#include "SS47FieldMap.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "Components/StaticMeshComponent.h"
@@ -146,6 +148,14 @@ void FS47Places::Begin(const S47J::FObj& Saved)
    if(From.Num()!=2||!FMath::IsFinite(From[0])||!FMath::IsFinite(From[1])||!S47OpenLand::InRim(From[0],From[1]))continue;
    B.FromX=From[0];B.FromZ=From[1];
   }
+  else
+  {
+   // D45-20261110: what the slip points at and its circle, both on the land; an older save has neither (the wedge alone).
+   const TArray<double> To=S47J::Nums(O,TEXT("to")),Ring=S47J::Nums(O,TEXT("ring"));
+   if(To.Num()==2&&FMath::IsFinite(To[0])&&FMath::IsFinite(To[1])&&S47OpenLand::InRim(To[0],To[1])){B.bTo=true;B.ToX=To[0];B.ToZ=To[1];}
+   if(Ring.Num()==3&&FMath::IsFinite(Ring[0])&&FMath::IsFinite(Ring[1])&&FMath::IsFinite(Ring[2])&&S47OpenLand::InRim(Ring[0],Ring[1])&&Ring[2]>50&&Ring[2]<=600)
+   {B.bRing=true;B.RingX=Ring[0];B.RingZ=Ring[1];B.RingR=Ring[2];B.bVisited=S47J::Bool(O,TEXT("visited"));}
+  }
   if(FMath::IsFinite(B.Az)&&FMath::IsFinite(B.Spread)&&B.Az>=0&&B.Az<=360&&B.Spread>0&&B.Spread<=45&&Fixes.Num()<MaxFixes){Fixes.Add(B);if(!B.bCar)LastFixDay=FMath::Max(LastFixDay,B.Day);}
  }
  if(!M||!IsValid(M->Web.Get()))return;
@@ -169,6 +179,9 @@ S47J::FObj FS47Places::Save() const
    if(B.Clock>=0)S47J::Set(X,TEXT("clock"),B.Clock);
    if(B.Until>=0)S47J::Set(X,TEXT("until"),B.Until);
    if(B.bCar){S47J::Set(X,TEXT("car"),true);S47J::Set(X,TEXT("from"),TArray<double>{FMath::RoundToDouble(B.FromX*10)/10,FMath::RoundToDouble(B.FromZ*10)/10});}
+   // D45-20261110: new keys, written only when there is something (an older save reads as before)
+   if(B.bTo)S47J::Set(X,TEXT("to"),TArray<double>{FMath::RoundToDouble(B.ToX*10)/10,FMath::RoundToDouble(B.ToZ*10)/10});
+   if(B.bRing){S47J::Set(X,TEXT("ring"),TArray<double>{FMath::RoundToDouble(B.RingX*10)/10,FMath::RoundToDouble(B.RingZ*10)/10,FMath::RoundToDouble(B.RingR*10)/10});if(B.bVisited)S47J::Set(X,TEXT("visited"),true);}
    List.Add(MakeShared<FJsonValueObject>(X));
   }
   O->SetArrayField(TEXT("fixes"),List);
@@ -333,6 +346,23 @@ void FS47Places::Step(double Dt)
   }
  }
  StepNeedle(Dt);
+ StepSlips(Dt);
+}
+void FS47Places::StepSlips(double Dt)
+{
+ // D45-20261110: a live slip's circle is checked once the player (on foot or at the wheel) stands inside it; NOW ticks it off.
+ SlipIn-=Dt;if(SlipIn>0)return;SlipIn=.5;
+ double Px=0,Pz=0,Facing=0;FString Area;bool bWheel=false;
+ if(!S47FieldMap::Me(M,Px,Pz,Facing,Area,bWheel))return;
+ const double Now=M->Freeform->Clock();
+ for(FBearing& B:Fixes)
+  if(!B.bCar&&B.bRing&&!B.bVisited&&Live(B,Now)&&FVector2D::Distance(FVector2D(Px,Pz),FVector2D(B.RingX,B.RingZ))<B.RingR)
+  {
+   B.bVisited=true;
+   if(M->UI)M->UI->Toast(TEXT("BEARING SLIP / You are inside the circle on your map. Look around here."),5);
+   UE_LOG(LogTemp,Display,TEXT("S47: bearing slip day %d: the player is inside its circle at %.0f %.0f"),B.Day,Px,Pz);
+   M->RequestAutosave();
+  }
 }
 void FS47Places::StepNeedle(double Dt)
 {
@@ -362,7 +392,7 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  TArray<S47Kit::FW> Rows;
  Rows.Add(S47Kit::Text(D.Finding));
  if(!Extra.IsEmpty())Rows.Add(S47Kit::Text(Extra));
- Rows.Add(S47Kit::Small(bFirst?TEXT("Kept as a field record. It says what is here, not why."):TEXT("Already in your field records.")));
+ Rows.Add(S47Kit::Small(bFirst?TEXT("Kept as a field record: what you found here, and when."):TEXT("Already in your field records."))); // D45-20261110: plain words
  auto* F=M->Freeform.Get();
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
@@ -497,10 +527,69 @@ double FS47Places::Freshness(const FBearing& B,double Now)
 }
 FString FS47Places::SlipLine(const FBearing& B)
 {
+ // D45-20261110 (Tom: "for rart skrevet"): the direction in plain words, its compass point, and when it runs out; no degree sign.
  const FString Az=FString::Printf(TEXT("%03.0f"),Whole(B.Az));
  const FString Spread=FString::Printf(TEXT("%.0f"),FMath::Clamp(FMath::RoundToDouble(B.Spread),1.,45.));
- return B.Clock>=0?FString::Printf(TEXT("BEARING ABOUT %s° ±%s° / %s / COLD BY NOON"),*Az,*Spread,*SlipClock(B.Clock))
-  :FString::Printf(TEXT("BEARING ABOUT %s° ±%s°"),*Az,*Spread);
+ const FString Way=S47FieldMap::Compass(Whole(B.Az)).ToUpper();
+ return B.Clock>=0?FString::Printf(TEXT("DIRECTION %s DEGREES (%s), GIVE OR TAKE %s / LOGGED %s / GOOD UNTIL NOON"),*Az,*Way,*Spread,*SlipClock(B.Clock))
+  :FString::Printf(TEXT("DIRECTION %s DEGREES (%s), GIVE OR TAKE %s"),*Az,*Way,*Spread);
+}
+void FS47Places::RingOf(FBearing& B,float Roll)
+{
+ // D45-20261110: the circle is where to look, not the spot: the target inside it, off its middle by the roll.
+ B.bRing=false;if(!B.bTo)return;
+ const double R=RingFor(B.Spread);
+ const FVector2D To(B.ToX,B.ToZ);
+ const double Turn=double(Roll)*2*UE_DOUBLE_PI,Off=R*.45*FMath::Frac(double(Roll)*7.31);
+ FVector2D C=To+FVector2D(FMath::Cos(Turn),FMath::Sin(Turn))*Off;
+ const auto Good=[&B,R](const FVector2D& P){return S47OpenLand::InRim(P.X,P.Y,R+20)&&!S47Relief::HillStops(P.X,P.Y,5)&&InSector(B,P.X,P.Y);};
+ for(int32 I=0;I<6&&!Good(C);++I)C=FMath::Lerp(C,To,.5);
+ B.RingR=R;
+ if(!Good(C))
+ {
+  // the target itself is on the land (the places and event places are, by their own self-tests): a smaller circle there
+  C=To;
+  const double Room=FMath::Min(FMath::Min(To.X-S47OpenLand::RimX0,S47OpenLand::RimX1-To.X),FMath::Min(To.Y-S47OpenLand::RimZ0,S47OpenLand::RimZ1-To.Y));
+  B.RingR=FMath::Clamp(Room-20,60.,R);
+ }
+ B.RingX=C.X;B.RingZ=C.Y;B.bRing=true;
+}
+FString FS47Places::CompassWord(double Az){return S47FieldMap::Compass(Az);}
+FString FS47Places::SlipWhere(const FBearing& B)
+{
+ double Sx=0,Sz=0;SaroRoad(Sx,Sz);
+ if(!B.bRing&&!B.bTo)return S47FieldMap::Compass(B.Az)+TEXT(" of SARO");
+ const double X=B.bRing?B.RingX:B.ToX,Z=B.bRing?B.RingZ:B.ToZ;
+ const double Metres=FVector2D::Distance(FVector2D(Sx,Sz),FVector2D(X,Z)),Mi=Metres/1609.344;
+ // yards under half a mile, in fifties (never a 47); miles to a tenth above it
+ const FString Far=Mi<.5?FString::Printf(TEXT("%d yards"),FMath::Max(50,FMath::RoundToInt(Metres/.9144/50)*50))
+  :FString::Printf(TEXT("%.1f"),Mi)==TEXT("1.0")?FString(TEXT("1 mile")):FString::Printf(TEXT("%.1f miles"),Mi);
+ return FString::Printf(TEXT("%s %s of SARO"),*Far,*S47FieldMap::Compass(AzimuthOf(Sx,Sz,X,Z)));
+}
+FString FS47Places::SlipNote(const FBearing& B,int32 Branches)
+{
+ // D45-20261110: what "a branch mended" means, said once on the paper, and where the circle is
+ const FString Arms=Branches<=0?FString(TEXT("NO BRANCH OF THE ARRAY IS REPAIRED YET, SO THE AREA IS WIDE."))
+  :Branches==1?FString(TEXT("ONE BRANCH OF THE ARRAY IS REPAIRED, SO THE AREA IS NARROWER."))
+  :FString::Printf(TEXT("%d BRANCHES OF THE ARRAY ARE REPAIRED, SO THE AREA IS NARROWER."),Branches);
+ const FString Map=FS47PlacesLocalMapKey().ToUpper();
+ return Arms+TEXT(" A BRANCH IS ONE ARM OF THE ANTENNA ARRAY. EVERY BRANCH YOU REPAIR MAKES THE AREA SMALLER.\n")
+  +(B.bRing?FString::Printf(TEXT("THE AREA TO SEARCH IS CIRCLED ON YOUR MAP (%s): %s. DRIVE OUT AND LOOK BEFORE NOON."),*Map,*SlipWhere(B).ToUpper())
+   :FString::Printf(TEXT("THE DIRECTION IS PENCILED ON YOUR MAP (%s) UNTIL NOON."),*Map));
+}
+TArray<TPair<FString,bool>> FS47Places::SlipRows(double Now) const
+{
+ // D45-20261110 (D45-7): the slip on the list, the way WORTH A LOOK is (FS47FreeformDirector::MysteryTrailRows). Only a slip with a
+ // noon: an older save's bearing (no time) is never cold and would stay on the list for good.
+ TArray<TPair<FString,bool>> Out;
+ for(int32 I=Fixes.Num()-1;I>=0&&Out.Num()<2;--I)
+ {
+  const FBearing& B=Fixes[I];if(B.bCar||B.Until<0||!Live(B,Now))continue;
+  const bool bDone=B.bVisited||(Def(B.Target)&&bHasFound(B.Target));
+  Out.Add({B.bRing?FString::Printf(TEXT("BEARING SLIP / New circle on your map, %s. Drive out and look before noon."),*SlipWhere(B))
+   :FString::Printf(TEXT("BEARING SLIP / New line on your map, %s. Drive out along it and look before noon."),*SlipWhere(B)),bDone});
+ }
+ return Out;
 }
 bool FS47Places::InSector(const FBearing& B,double X,double Z)
 {
@@ -543,11 +632,13 @@ bool FS47Places::AddCarFix(double FromX,double FromZ,double Az,const FString& Ta
  if(M)M->RequestAutosave();
  return true;
 }
-FS47Places::FBearing FS47Places::StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target)
+FS47Places::FBearing FS47Places::StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target,float RingRoll)
 {
  // Somewhere in the sector, not on its middle line: the roll moves the line up to half the spread either way.
  FBearing B;B.Day=Day;B.Spread=SpreadFor(Branches);B.Az=Whole(AzimuthOf(FromX,FromZ,ToX,ToZ)+(double(Roll)-.5)*B.Spread);B.Target=Target;
  B.Clock=FMath::Max(0.,Clock);B.Until=ColdAt(B.Clock);B.FromX=FromX;B.FromZ=FromZ;
+ // D45-20261110: the place itself is kept (never shown exactly) and the circle round it, on the land
+ if(FMath::IsFinite(ToX)&&FMath::IsFinite(ToZ)&&S47OpenLand::InRim(ToX,ToZ)){B.bTo=true;B.ToX=ToX;B.ToZ=ToZ;RingOf(B,RingRoll);}
  return B;
 }
 void FS47Places::FillMap(FS47MapView& View) const{FillMapAt(View,M&&M->Freeform?M->Freeform->Clock():0.);}
@@ -569,19 +660,40 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
  for(const int32 I:Shown)
  {
   const FBearing& B=Fixes[I];
-  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("D%d truck"),B.Day):FString::Printf(TEXT("D%d"),B.Day);
+  // D45-20261110: "Day 3 slip, 21:40", not "D3" (it read as a grid square). The pin board leaves out what starts with D: still so.
+  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("Day %d truck"),B.Day):FString::Printf(TEXT("Day %d slip"),B.Day);
   // NIGHT-20261110: the pencilled wedge carries the hour the slip was taken (as the slip has it); an older bearing has none.
-  if(B.Clock>=0)S.Label+=TEXT(" ")+SlipClock(B.Clock);
+  if(B.Clock>=0)S.Label+=TEXT(", ")+SlipClock(B.Clock);
   S.bFrom=B.bCar;S.FromX=B.FromX;S.FromZ=B.FromZ;
   // The pencil pales as it cools, never quite away while it is live.
   S.Fade=float(.3+.7*Freshness(B,Now));
   View.Sectors.Add(S);
+  // D45-20261110: the slip's circle on the sheet, with the wedge's own label, ticked once stood in (or its place found)
+  if(!B.bCar&&B.bRing)
+  {
+   S47FieldMap::FSlipCircle Ring;Ring.X=B.RingX;Ring.Z=B.RingZ;Ring.R=B.RingR;Ring.Label=S.Label;Ring.Where=SlipWhere(B);Ring.Fade=S.Fade;
+   Ring.bChecked=B.bVisited||(Def(B.Target)&&bHasFound(B.Target));
+   S47FieldMap::AddSlipCircle(View,Ring);
+  }
  }
  for(int32 A=0;A<Shown.Num();++A)for(int32 C=A+1;C<Shown.Num();++C)
  {
   FVector2D At;
   if(Cross(Fixes[Shown[A]],Fixes[Shown[C]],At)&&S47OpenLand::InRim(At.X,At.Y))View.Crossings.Add(At);
  }
+}
+// D45-20261110 (Tom: the slip read strangely): the field record and the toast in plain words, the same for a registration and the week's
+// case: which way, give or take how much, when, that it is a direction only, and that the circle on the map is where to look.
+static FString FS47PlacesLocalSlipRecord(const FString& Lead,const FS47Places::FBearing& B,double Clock)
+{
+ return FString::Printf(TEXT("%s: about %03.0f degrees from SARO (%s), give or take %.0f, at %s. It only gives a direction; it doesn't say how far out it is or what it is. %s"),
+  *Lead,B.Az,*S47FieldMap::Compass(B.Az),B.Spread,*FS47Places::SlipClock(Clock),
+  B.bRing?*FString::Printf(TEXT("The area to search is circled on the map, %s, until noon."),*FS47Places::SlipWhere(B)):TEXT("It's penciled on the map until noon."));
+}
+static FString FS47PlacesLocalSlipToast(const FS47Places::FBearing& B,bool bSlip)
+{
+ return FString::Printf(TEXT("%sThe array picked up something about %03.0f degrees from the station (%s), give or take %.0f. %s (%s)."),bSlip?TEXT("PRINTER / Bearing slip printing. "):TEXT(""),
+  B.Az,*S47FieldMap::Compass(B.Az),B.Spread,B.bRing?TEXT("It's circled on your map"):TEXT("It's penciled on your map"),*FS47PlacesLocalMapKey());
 }
 bool FS47Places::AfterRegistered(bool bAnomaly)
 {
@@ -627,19 +739,18 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
- const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target);
+ const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
  if(F.Director)F.Director->NotePointOut(Night);
  if(bAhead)F.Happenings->PointedTonight(Night);
- const FString Mended=Branches<=0?FString(TEXT("With no branch mended the array still resolves something off the main beam, broadly"))
-  :FString::Printf(TEXT("With %d mended %s the array resolves something off the main beam tonight"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("%s: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),*Mended,B.Az,Spread,*SlipClock(Now)));
+ const FString Mended=Branches<=0?FString(TEXT("With no branch of the array repaired, the array still picked up something away from where the dishes were pointed, though only roughly"))
+  :FString::Printf(TEXT("With %d %s of the array repaired, the array picked up something away from where the dishes were pointed"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FS47PlacesLocalSlipRecord(Mended,B,Now));
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
- const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
-  :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (%s)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread,*FS47PlacesLocalMapKey()),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night);
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
+ if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0);
  M->RequestAutosave();
  return true;
 }
@@ -653,15 +764,14 @@ bool FS47Places::PointAt(const FString& Target,double ToX,double ToZ)
  if(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day())return false;
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  const double Spread=SpreadFor(Branches);
- const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x5745454bu),Target);
+ const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x5745454bu),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
  if(F.Director)F.Director->NotePointOut(Night);
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FString::Printf(TEXT("The array resolves something off the main beam tonight, by itself: about %03.0f degrees from SARO, within %.0f, at %s. Penciled in on the map, and cold by noon. It says which way, not how far and not what."),B.Az,Spread,*SlipClock(Now)));
- const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),Branches<=0?FString(TEXT("NO BRANCH MENDED: A WIDE SECTOR."))
-  :FString::Printf(TEXT("%d %s MENDED."),Branches,Branches==1?TEXT("BRANCH"):TEXT("BRANCHES")));
- if(M->UI)M->UI->Toast(FString::Printf(TEXT("%sSomething off the main beam: about %03.0f degrees, give or take %.0f. It's on your map (%s)."),bSlip?TEXT("PRINTER / A bearing slip. "):TEXT(""),B.Az,Spread,*FS47PlacesLocalMapKey()),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, the week's case, night %d"),B.Az,Spread,*Target,Branches,Night);
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FS47PlacesLocalSlipRecord(TEXT("Tonight the array picked up something on its own, away from where the dishes were pointed"),B,Now));
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
+ if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s, %d branches, the week's case, night %d; circle %.0f %.0f r%.0f"),B.Az,Spread,*Target,Branches,Night,B.RingX,B.RingZ,B.RingR);
  M->RequestAutosave();
  return true;
 }
@@ -698,12 +808,12 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   const double Clock=3*86400.+19*3600.+52*60.; // day 4, 19:52
   const FBearing B=StationFix(4,Clock,0,Sx,Sz,Sx+500,Sz,.5f,TEXT("windmill"));
   const FString Line=SlipLine(B);
-  Check(Gives(true,0)&&!Gives(false,0)&&Gives(false,2)&&B.Spread==40&&B.Az==90&&Line==TEXT("BEARING ABOUT 090° ±40° / 19:52 / COLD BY NOON")&&InSector(B,Sx+400,Sz+200)&&!InSector(B,Sx,Sz+400),
+  Check(Gives(true,0)&&!Gives(false,0)&&Gives(false,2)&&B.Spread==40&&B.Az==90&&Line==TEXT("DIRECTION 090 DEGREES (EAST), GIVE OR TAKE 40 / LOGGED 19:52 / GOOD UNTIL NOON")&&InSector(B,Sx+400,Sz+200)&&!InSector(B,Sx,Sz+400),
    TEXT("a discrepancy gives a wide bearing and its slip with no branch mended, routine work needs a mended branch, and a place in the sector is in it"));
   // Cold by noon: the next noon, the pencil paling until then, and off the map once it is cold; an older one (no time) never is.
   FS47Places Map(nullptr);Map.Begin(nullptr);Map.Fixes.Add(B);
   FS47MapView Fresh,Later,Cold;Map.FillMapAt(Fresh,Clock+60);Map.FillMapAt(Later,ColdAt(Clock)-3600);Map.FillMapAt(Cold,ColdAt(Clock)+1);
-  FBearing Old=B;Old.Clock=Old.Until=-1;
+  FBearing Old=B;Old.Clock=Old.Until=-1;Old.bTo=Old.bRing=false; // (D45-20261110: an older save has no circle either)
   Check(ColdAt(Clock)==4*86400.+12*3600.&&ColdAt(4*86400.+1*3600.)==4*86400.+12*3600.&&Live(B,ColdAt(Clock)-1)&&!Live(B,ColdAt(Clock))&&Live(Old,1e9)
    &&Fresh.Sectors.Num()==1&&Later.Sectors.Num()==1&&Fresh.Sectors[0].Fade>Later.Sectors[0].Fade&&Later.Sectors[0].Fade>=.3f&&Cold.Sectors.IsEmpty(),
    TEXT("a bearing is cold by the next noon: it pales on the map until then and is off it after"));
@@ -715,6 +825,50 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   for(int32 D=0;D<360;++D){FBearing X=B;X.Az=D;const FString L=SlipLine(X);bClean&=!L.Contains(TEXT("47"))&&Whole(D)!=47&&Whole(D)!=147&&Whole(D)!=247&&Whole(D)!=347;}
   for(int32 Min=0;Min<24*60;++Min){const FString C=SlipClock(Min*60.);bClean&=C.Len()==5&&!C.Contains(TEXT("47"))&&C!=TEXT("08:15")&&C!=TEXT("20:15");}
   Check(bClean&&SlipClock(20*3600.+15*60.)==TEXT("20:16")&&SlipClock(19*3600.+47*60.)==TEXT("19:48"),TEXT("the slip never prints a 47, 08:15 or 20:15: a degree or a minute on"));
+  // D45-20261110: the slip in plain words: the compass point, no degree or plus-minus sign (plain ASCII), what a branch is, the circle.
+  {
+   bool bAscii=true;const FString Paper=Line+SlipLine(Old)+SlipNote(B,0)+SlipNote(B,1)+SlipNote(B,3)+SlipNote(Old,0);
+   for(const TCHAR Ch:Paper)bAscii&=Ch>=9&&Ch<127;
+   Check(bAscii&&SlipLine(Old)==TEXT("DIRECTION 090 DEGREES (EAST), GIVE OR TAKE 40")&&SlipNote(B,0).Contains(TEXT("A BRANCH IS ONE ARM OF THE ANTENNA ARRAY"))&&SlipNote(B,0).Contains(TEXT("CIRCLED ON YOUR MAP"))
+    &&SlipNote(B,0).Contains(TEXT("BEFORE NOON"))&&SlipNote(B,2).Contains(TEXT("2 BRANCHES"))&&!SlipNote(Old,0).Contains(TEXT("CIRCLED"))&&S47Script::LintText(Paper).IsEmpty()&&!Paper.Contains(TEXT("47")),
+    TEXT("the slip says the direction and its compass point, give or take, when it was logged and that it is good until noon, what a branch is, and where the circle is, in plain ASCII"));
+  }
+  // D45-20261110 (Tom's d45 map, the mark far south of the land): every slip from SARO has a circle that holds its target, inside the
+  // rim and with its middle in the sector; the more branches, the smaller. For every place, a few far out near the rim, every roll.
+  {
+   TArray<FVector2D> Targets;for(const FDef& D:Defs())if(FString(D.Id)!=Motel)Targets.Add(FVector2D(D.X,D.Z));
+   Targets.Append({FVector2D(S47OpenLand::RimX0+160,1500),FVector2D(S47OpenLand::RimX1-160,-1200),FVector2D(300,S47OpenLand::RimZ1-160),FVector2D(-560,1340)});
+   bool bRinged=true,bHolds=true,bLand=true,bSector=true;
+   for(const FVector2D& T:Targets)for(int32 Br=0;Br<=4;++Br)for(int32 K=0;K<=10;++K)
+   {
+    const FBearing R=StationFix(3,20*3600.,Br,Sx,Sz,T.X,T.Y,float(K)/10.f,TEXT("t"),float(10-K)/10.f);
+    bRinged&=R.bTo&&R.bRing&&R.RingR>=60&&R.RingR<=RingFor(R.Spread);
+    bHolds&=FVector2D::Distance(FVector2D(R.RingX,R.RingZ),T)<=R.RingR*.45+1;
+    bLand&=S47OpenLand::InRim(R.RingX,R.RingZ,R.RingR);
+    bSector&=InSector(R,R.RingX,R.RingZ);
+   }
+   Check(bRinged&&bHolds&&bLand&&bSector&&RingFor(40)==450&&RingFor(4)==140&&RingFor(20)<RingFor(40)&&RingFor(7)<RingFor(12),
+    TEXT("a slip's circle holds what it points at, stays on the land inside the rim, has its middle in the sector, and shrinks with every branch"));
+   // The circle on the sheet with the wedge's label; the old sheet's label is "Day 4 slip, 19:52", never "D4" (read as a grid square).
+   const TArray<S47FieldMap::FSlipCircle> Circles=S47FieldMap::SlipCircles(Fresh);
+   Check(B.bRing&&Circles.Num()==1&&Circles[0].Label==Fresh.Sectors[0].Label&&Fresh.Sectors[0].Label==TEXT("Day 4 slip, 19:52")&&FMath::IsNearlyEqual(Circles[0].R,B.RingR)&&!Circles[0].bChecked&&Circles[0].Where.EndsWith(TEXT("of SARO"))
+    &&S47FieldMap::SlipCircles(Bare).IsEmpty()&&S47FieldMap::SlipCircles(Cold).IsEmpty(),TEXT("the map carries the live slip's circle with its day and hour; an older bearing has none and a cold one is off the map"));
+   // The slip on NOW: one row, plain words, ticked once stood in, the same words either way, gone at noon; the truck's line is no slip.
+   FS47Places Rows(nullptr);Rows.Begin(nullptr);Rows.Fixes.Add(B);
+   FBearing Truck=B;Truck.bCar=true;Truck.bRing=false;Rows.Fixes.Add(Truck);
+   FBearing Ancient=Old;Ancient.bTo=Ancient.bRing=false;Rows.Fixes.Insert(Ancient,0);
+   const TArray<TPair<FString,bool>> Open=Rows.SlipRows(Clock+60);
+   Rows.Fixes[1].bVisited=true;
+   const TArray<TPair<FString,bool>> Seen=Rows.SlipRows(Clock+120);
+   Check(Open.Num()==1&&!Open[0].Value&&Open[0].Key.StartsWith(TEXT("BEARING SLIP / New circle on your map, "))&&Open[0].Key.EndsWith(TEXT("of SARO. Drive out and look before noon."))&&S47Script::LintText(Open[0].Key).IsEmpty()
+    &&Seen.Num()==1&&Seen[0].Value&&Seen[0].Key==Open[0].Key&&Rows.SlipRows(ColdAt(Clock)+1).IsEmpty(),
+    TEXT("NOW has a row for the live slip, in plain words, ticked off once its circle is stood in, the words the same, gone at noon; none for the truck's line or an older bearing"));
+   // Saved with the bearing and back; a bearing from an older save has no circle and still loads (see the next block).
+   FS47Places Again(nullptr);Again.Begin(S47J::Read(S47J::Write(Rows.Save())));
+   const FBearing* Kept=Again.Bearings().FindByPredicate([](const FBearing& X){return !X.bCar&&X.bRing;});
+   Check(Kept&&Kept->bTo&&Kept->bVisited&&FMath::IsNearlyEqual(Kept->RingX,B.RingX,.11)&&FMath::IsNearlyEqual(Kept->RingZ,B.RingZ,.11)&&FMath::IsNearlyEqual(Kept->RingR,B.RingR,.11)&&FMath::IsNearlyEqual(Kept->ToX,B.ToX,.11)
+    &&Again.Bearings().FilterByPredicate([](const FBearing& X){return X.bRing;}).Num()==1,TEXT("a slip's circle, its target and whether it was stood in survive a Continue"));
+  }
   // The direction finder: a line from where the truck stands, into Fixes; one near the last toward the same thing replaces it;
   // two from different places cross, and the crossing is on the map. Two from SARO never cross.
   FS47Places Truck(nullptr);Truck.Begin(nullptr);
@@ -751,7 +905,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  FS47Places Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));
  {
   double Sx=0,Sz=0;SaroRoad(Sx,Sz);const FBearing& Was=Back.Bearings()[0];
-  Check(Back.Heard(TEXT("mine"))&&!Back.Heard(TEXT("nowhere"))&&Back.Bearings().Num()==1&&Was.Az==31.&&Was.Clock<0&&Was.Until<0&&!Was.bCar&&Was.FromX==Sx&&Was.FromZ==Sz&&Live(Was,1e9),
+  Check(Back.Heard(TEXT("mine"))&&!Back.Heard(TEXT("nowhere"))&&Back.Bearings().Num()==1&&Was.Az==31.&&Was.Clock<0&&Was.Until<0&&!Was.bCar&&Was.FromX==Sx&&Was.FromZ==Sz&&Live(Was,1e9)&&!Was.bRing&&!Was.bTo&&Back.SlipRows(1e9).IsEmpty(),
    TEXT("heard and bearings survive a Continue, an older bearing is from SARO and never cold, and nonsense is dropped"));
   // A bearing from the truck with no place to stand on is nonsense too.
   auto Bad=S47J::Clone(O);auto Car=S47J::Clone(Fix);S47J::Set(Car,TEXT("car"),true);TArray<TSharedPtr<FJsonValue>> L2;L2.Add(MakeShared<FJsonValueObject>(Car));Bad->SetArrayField(TEXT("fixes"),L2);

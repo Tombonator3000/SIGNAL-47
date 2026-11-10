@@ -35,6 +35,14 @@ namespace S47FieldMap
 	void GatherJobs(US47Main* M, FS47MapView& V);
 	// "north-northeast"
 	FString Compass(double Deg);
+	// D45-20261110 (Tom's d45 map: the slip's mark far off the land): a bearing slip's pencilled search circle, road-local metres, with the
+	// wedge's label ("Day 3 slip, 21:40"), where it is in words ("1.1 miles south-southwest of SARO") and whether it has been stood in.
+	// S47UI.h stays as it is, so it rides in FS47MapView::Marks as Kind "slip_circle" (Freeform's sheet has no Story marks of its own).
+	struct FSlipCircle { double X = 0, Z = 0, R = 0; FString Label, Where; bool bChecked = false; float Fade = 1.f; };
+	void AddSlipCircle(FS47MapView& V, const FSlipCircle& C);
+	TArray<FSlipCircle> SlipCircles(const FS47MapView& V);
+	// How far from O (road-local) along Deg (from north, clockwise) the land runs to the rim, in metres; 0 from outside it.
+	double RimReach(const FVector2D& O, double Deg);
 	// What V reads on the sheet.
 	TArray<FString> Description(const FS47MapView& V);
 	// The next sheet opens at this scale (page units a metre), on the player. A developer run's pictures.

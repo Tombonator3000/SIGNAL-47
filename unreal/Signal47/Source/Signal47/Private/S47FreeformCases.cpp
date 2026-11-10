@@ -67,7 +67,7 @@ namespace
   {{TEXT("post_empty"),TEXT("Their place in Caliche"),{
     TEXT("Their place in town: the till locked and the float gone with the key, the coat hook by the back door empty, the radio switched off at the wall. People who mean to go tidy up first. People who mean to come back do too."),
     TEXT("Their place in town: the door on the latch and two sets of tire tracks in the dust out front, one of them wide, like a county car or bigger. A cigarette end on the step, not a brand anybody here smokes. Plenty of people stop on that street."),
-    TEXT("Their place in town: everything where it was left, the phone ringing to nobody, a cup half full on the counter with a skin on it. The clock on the wall says ten past three and has stopped there. Clocks stop.")},
+    TEXT("Their place in town: everything where it was left, the phone ringing to nobody, a cup half full on the counter with a skin on it. The clock on the wall has stopped at ten past three. Clocks do stop.")},
     TEXT("not looked at yet. Their place in town, while it still stands as it was left.")},
    {TEXT("post_chart"),TEXT("SARO receiver log, that night"),{
     TEXT("Receiver log, the night they went: nothing on the horizon channel toward town but the town's own lights, steady all night, as on any night. Whatever happened there made no noise the dishes could hear."),
@@ -221,7 +221,7 @@ namespace
  },
  {
   TEXT("THE SAME MINUTE"),
-  TEXT("A burst of hash crossed the receiver one night, and the remote feeder on the county road may have something to do with it. Whichever you have seen, the other is worth a look: the chart at the rack, or the feeder after midnight, and neither lasts past noon. One of the traces tells it straight; where they disagree, a test recording tells them apart, and nobody will say which reading is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  TEXT("A burst of hash crossed the receiver one night, and the remote feeder on the county road may have something to do with it. Whichever you have seen, the other is worth a look: the chart at the rack, or the feeder after midnight, and neither lasts past noon. If the two traces disagree, a test recording can show which one is right; nobody else will tell you. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
@@ -269,7 +269,7 @@ namespace
  },
  {
   TEXT("THE PRINTED MINUTE"),
-  TEXT("The Sky Watch's bulletin gave a night and a minute, and at that minute the receiver chart has a burst on it. Look at the chart at the rack, and at the cairn on the rise where they said to watch from; neither keeps long. One of them tells it straight; where they disagree, a test recording tells them apart. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  TEXT("The Sky Watch's bulletin gave a night and a minute, and at that minute the receiver chart has a burst on it. Look at the chart at the rack, and at the cairn on the rise where they said to watch from; neither will last long. If the two disagree, a test recording can show which one is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Somebody keying a set on time"),TEXT("A timer on the county line"),TEXT("Not accounted for")},
   {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},

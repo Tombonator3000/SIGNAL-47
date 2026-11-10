@@ -16,6 +16,7 @@
 #include "S47SaroCot.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
+#include "S47Darkroom.h"
 #include "S47WardReport.h"
 #include "S47Answer.h"
 #include "S47LeftGear.h"
@@ -72,6 +73,11 @@
 #include "S47Keys.h"
 #include "S47Three.h"
 #include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SScaleBox.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SOverlay.h"
+#include "Widgets/SBoxPanel.h"
+#include "Styling/CoreStyle.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Framework/Application/SlateApplication.h"
@@ -91,6 +97,9 @@ namespace
  const double BeamOffsets[]={-.5,.5,0};
  bool Specialized(const FString& Id){return Id==TEXT("wrong_source")||Id==TEXT("time_disagreement")||Id==TEXT("duplicate_print");}
  bool MarkCoversTicks(double In,double Out){return In>=0&&In<=9.30&&Out>=12.60&&Out-In<=6;}
+ // D45-20261110 (Tom: compare and retain looked the same every time): one tape's own look on the displays. The same tape keeps its
+ // trace; another job, day or tape (original 0, control 1) has another one. Nothing of it is saved: it follows from the job.
+ uint32 TakeSeed(const FS47FreeformSession::FJob& J,int32 Tape){return HashCombine(GetTypeHash(J.Id),GetTypeHash(Tape*7919+J.Day));}
  double BeamLevel(double ActualAz,double SourceAz)
  {return .08+.92*FMath::Exp(-FMath::Square(FMath::FindDeltaAngleDegrees(ActualAz,SourceAz)/.35));}
  FString InstrumentConclusion(const FString& Id)
@@ -343,6 +352,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Tape)Tape=MakeShared<FS47Tape>(M);Tape->Begin(S47J::Obj(Saved,TEXT("tape")));
  if(!PinBoard)PinBoard=MakeShared<FS47PinBoard>(M);PinBoard->Begin(S47J::Obj(Saved,TEXT("pinBoard")));
  if(!Enlarger)Enlarger=MakeShared<FS47Enlarger>(M);
+ if(!Darkroom)Darkroom=MakeShared<FS47Darkroom>(M);Darkroom->Begin(S47J::Obj(Saved,TEXT("darkroom"))); // D45-20261110
  if(!WardReport)WardReport=MakeShared<FS47WardReport>(M);WardReport->Begin(S47J::Obj(Saved,TEXT("wardReport")));
  if(!SkyAnswer)SkyAnswer=MakeShared<FS47Answer>(M);SkyAnswer->Begin(S47J::Obj(Saved,TEXT("answer")));
  if(!Weather)Weather=MakeShared<FS47WeatherLive>(M);Weather->Stop();
@@ -385,6 +395,7 @@ void FS47FreeformSession::Stop()
  if(NightLog)NightLog->Stop();
  if(Tape)Tape->Stop();
  if(PinBoard)PinBoard->Stop();
+ if(Darkroom)Darkroom->Stop(); // D45-20261110: white light back for Story or the next case (it checks the world itself)
  if(WardReport)WardReport->Stop();
  if(SkyAnswer)SkyAnswer->Stop();
  if(bCanRestore&&Weather)Weather->Stop();else S47Weather::Live().bOn=false;
@@ -543,6 +554,26 @@ double FS47FreeformSession::ReceiverReception()const
  const double Reception=Field&&Field->ArrayWear().bActive?FMath::Sqrt(FMath::Clamp(Sum/27.,0.,1.)):FMath::Clamp(Sum/27.,0.,1.);
  return PointReady()?Reception*(.25+.75*FMath::Clamp(Settle,0.,1.)):FMath::Min(.6,Reception);
 }
+// D45-20261110 (Tom: the target does not show on the receiver until the array has locked): what the receiver shows and plays of the
+// source while the array comes round. Before pointing a trace of it in the side lobes; while slewing it grows with how close the
+// dishes are (a beam of some degrees, not the recording's narrow one); on target it rises with the settle. Picture and sound only.
+double FS47FreeformSession::ReceiverApproach()const
+{
+ const FJob* J=CurrentJob();if(!J||!M||!M->Web||!HasPower())return 0;
+ if(J->Stage==EJobStage::New)return .12;
+ if(PointReady())return FMath::Lerp(.8,1.,FMath::Clamp(Settle,0.,1.));
+ double Sum=0;int32 N=0;const double Az=TargetAz(),El=TargetEl();
+ for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))
+ {++N;const double E=FMath::Sqrt(FMath::Square(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az))+FMath::Square(M->Web->DishEl(I)-El));Sum+=FMath::Exp(-FMath::Square(E/6.));}
+ return FMath::Clamp(.12+.68*(N?Sum/N:0.),0.,.8);
+}
+double FS47FreeformSession::ArrayErrorDeg()const
+{
+ if(!CurrentJob()||!M||!M->Web)return 0;
+ double Worst=0;const double Az=TargetAz(),El=TargetEl();
+ for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))Worst=FMath::Max(Worst,FMath::Max(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az)),FMath::Abs(M->Web->DishEl(I)-El)));
+ return Worst;
+}
 FString FS47FreeformSession::ArrayMeasurementStatus()const
 {
  const int32 N=AvailableDishCount();const bool Worn=Field&&Field->ArrayWear().bActive;const int32 Least=Worn?FS47ArrayWear::MinDishes:24;
@@ -565,6 +596,14 @@ bool FS47FreeformSession::AimOnTarget()const
  // The plot covers azimuth 0 to 180, so a target is compared where the plot can show it.
  static constexpr double Tolerance=3;
  return CurrentJob()&&AimJob==CurrentJob()->Id&&FMath::Abs(Aim.X-FMath::Clamp(TargetAz(),0.,180.))<=Tolerance&&FMath::Abs(Aim.Y-FMath::Clamp(TargetEl(),0.,90.))<=Tolerance;
+}
+double FS47FreeformSession::AimNearness(FVector2D AzEl)const
+{
+ // D45-20261110: the tracking plot's search tick and cursor; the larger of the two axis errors, so 1 is exactly where AimOnTarget locks
+ static constexpr double Tolerance=3,Far=60;
+ if(!CurrentJob())return 0;
+ const double E=FMath::Max(FMath::Abs(AzEl.X-FMath::Clamp(TargetAz(),0.,180.)),FMath::Abs(AzEl.Y-FMath::Clamp(TargetEl(),0.,90.)));
+ return FMath::IsFinite(E)?1-FMath::Clamp((E-Tolerance)/(Far-Tolerance),0.,1.):0.;
 }
 void FS47FreeformSession::SetAim(FVector2D AzEl)
 {
@@ -653,6 +692,7 @@ void FS47FreeformSession::Step(double Dt)
    const bool Local=Field&&Field->ServiceStage()>=7&&Field->ServiceStage()<=8&&M->Web->DishId(I)==Field->ServiceDishId();
    M->Web->PointDish(I,Targets[I].X,Targets[I].Y,Local||bCrossRunning?2.2:9.,true);
   }
+  if(bPowerApplied&&!bLastPower&&Powered)S47FreeformTerminal::PowerOn(); // D45-20261110: the sets come on with the supply (not on load, not on sitting down)
   M->Story->Rx.bPowered=Powered;bPowerApplied=true;bLastPower=Powered;
   if(!Powered&&TerminalOnGlass()&&M->UI)M->UI->Close();
  }
@@ -696,6 +736,7 @@ void FS47FreeformSession::Step(double Dt)
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
  if(PinBoard)PinBoard->Step(Dt);
+ if(Darkroom)Darkroom->Step(D);
  if(WardReport)WardReport->Step(Dt);
  if(SkyAnswer)SkyAnswer->Step(Dt);
  if(Weather)Weather->Step(D);
@@ -726,7 +767,8 @@ void FS47FreeformSession::Step(double Dt)
   const bool Listen=Job&&Powered&&M->Story->Rx.bPowered&&!Held()&&TerminalOnGlass()&&ActiveTerminal==1&&M->World&&M->World->Area==TEXT("saro");
   if(LiveCapture)LiveCapture->Audible(Listen);
   if(LiveCapture&&LiveCapture->Pending())M->Audio->ReceiverMonitorOff();
-  else if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),ReceiverReception());
+  // D45-20261110: what is heard fades in over the slew instead of stepping in at lock (the capture keeps ReceiverReception)
+  else if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),FMath::Max(ReceiverReception(),ReceiverApproach()*.6));
   else M->Audio->ReceiverMonitorOff();
  }
  // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
@@ -768,14 +810,14 @@ FString FS47FreeformSession::PrinterHint()const
  {
   const FResultSheet& Sh=CaseSheets[0];
   if(IsBearingSlip(Sh))return Sh.Feed>=PrinterSeconds?FString(TEXT("PRINTER: Collect the bearing slip."))
-   :FString::Printf(TEXT("PRINTER: bearing slip %s (%.0f%%). %s"),HasPower()?TEXT("feeding paper"):TEXT("feed paused"),100*Sh.Feed/PrinterSeconds,HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
+   :FString::Printf(TEXT("PRINTER: bearing slip %s. %s"),HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained.")); // D45-20261110: no ticking figure on the task card
   if(Sh.Feed>=PrinterSeconds)return FString::Printf(TEXT("PRINTER: Collect the case %d result sheet, %s."),Sh.Line+1,FS47FreeformCases::Def(Sh.Line).Title);
-  return FString::Printf(TEXT("PRINTER: case %d result sheet %s (%.0f%%). %s"),Sh.Line+1,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),100*Sh.Feed/PrinterSeconds,HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
+  return FString::Printf(TEXT("PRINTER: case %d result sheet %s. %s"),Sh.Line+1,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
  }
  if(I==INDEX_NONE)return TEXT("PRINTER: No paper waiting.");
  const auto& J=Work[I];const int32 Kind=PendingPrint(J);const double Progress=PrintFeed(J,Kind);
  if(Progress>=PrinterSeconds)return TEXT("PRINTER: Collect ")+J.Id+(Kind==0?TEXT(" original chart."):Kind==1?TEXT(" registered packet."):TEXT(" separate duplicate; retain the original."));
- return FString::Printf(TEXT("PRINTER: %s %s (%.0f%%). %s"),*J.Id,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),100*Progress/PrinterSeconds,HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
+ return FString::Printf(TEXT("PRINTER: %s %s. %s"),*J.Id,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
 }
 void FS47FreeformSession::StopPrinterFeedback()
 {
@@ -870,7 +912,11 @@ void FS47FreeformSession::StepWork(double Dt)
    }
    if(J->Elapsed>=SourceSeconds()&&!bCrossRunning)
    {
-    J->Stage=EJobStage::Chart;Changed(TEXT("PRINTER: Recording complete; paper feed queued. Wait for the printer to finish, then collect the original chart."));
+    J->Stage=EJobStage::Chart;
+    // D45-20261110 (Tom: record the control right after the take, then analyse at the reel deck): an unusual take says so here,
+    // on the receiver, and its control is the next thing; the chart prints meanwhile and is collected on the way to OPS.
+    if(J->bAnomaly&&!Specialized(J->Phenomenon))Changed(TEXT("RECEIVER (centre PC): This take has extra ticks that are not on the work card. Record the 8-second control now, right here. The chart prints by itself; collect it on your way to OPS."));
+    else Changed(TEXT("PRINTER: Recording complete; paper feed queued. Wait for the printer to finish, then collect the original chart."));
    }
   }
  }
@@ -907,6 +953,7 @@ void FS47FreeformSession::StepWork(double Dt)
     if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare and register the retained instrument measurements to compare original and control clock offsets."));
     else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Register check complete; duplicate feed queued. Wait for the printer to finish, then collect and compare it with the retained original at OPS (corner PC)."));
     else Changed(TEXT("REEL DECK (wall table): Review the original and control recordings; the internal control is complete."));
+    // (D45-20261110: a control recorded before the chart was collected says the same; the chart waits at the printer for OPS)
     if(Director)Director->Use(TEXT("ff:control"));
    }
   }
@@ -927,11 +974,15 @@ bool FS47FreeformSession::SelectJob(int32 Index)
  if(Tutorial>0&&Work[Index].Id!=TutorialJobId){Changed(TEXT("Finish your FIRST SHIFT job before switching work orders. The other jobs will still be waiting in DAILY WORK."));return false;}
  const FJob* Current=CurrentJob();if(Current&&(Current->Stage==EJobStage::Integrating||(Current->bControl&&Current->ControlAt<8))){Changed(TEXT("Finish the active recording or control before selecting another job."));return false;}
  CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();
- Selected=Index;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
+ Selected=Index;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;
+ // D45-20261110: the card's bearing is the receiver's bearing from the moment the job is chosen, so the target is on the receiver at
+ // once; pointing is still judged by the encoders (PointReady, ReceiverReady).
+ if(M&&M->Story)M->Story->Rx.Azimuth=TargetAz();
+ Changed();return true;
 }
 bool FS47FreeformSession::ChooseThird(bool bVirgo)
 {
- FJob* J=Job();if(!J||J->Slot!=2||J->Stage!=EJobStage::New)return false;J->Source=bVirgo?3:2;J->Card=FS47FreeformJobs::Make(JobSeed,J->Day,J->Slot,J->Source);J->bGenerated=true;Changed();return true;
+ FJob* J=Job();if(!J||J->Slot!=2||J->Stage!=EJobStage::New)return false;J->Source=bVirgo?3:2;J->Card=FS47FreeformJobs::Make(JobSeed,J->Day,J->Slot,J->Source);J->bGenerated=true;if(M&&M->Story)M->Story->Rx.Azimuth=TargetAz();Changed();return true; // D45-20261110
 }
 bool FS47FreeformSession::PointSelected()
 {
@@ -963,7 +1014,8 @@ FString FS47FreeformSession::ReceiverNextAction() const
   if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("RECEIVER (centre PC): Restore the work card tuning to resume recording; valid seconds are retained.");
   if(!PointReady()||Settle<1)return bCrossRunning?TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; collect the original at the PRINTER when recording finishes."):TEXT("TRACKING (right-hand PC): Restore array pointing to resume recording; valid seconds are retained.");
  }
- if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording %.0f%% at %.0f%% measurement rate (%d/27 antennas). Keep tuning valid; collect the original at the PRINTER when complete."),100*J->Elapsed/SourceSeconds(),100*ArrayMeasurementRate(),AvailableDishCount());
+ // D45-20261110 (Tom: the task card flickered with the count): the line names the step, the receiver's own readout counts.
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%d/27 antennas). Keep the tuning, pointing and power valid until the take ends."),AvailableDishCount());
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
  if(Settle<1)return TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card.");
@@ -1016,7 +1068,7 @@ bool FS47FreeformSession::StartAcquisition()
  if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->Source==1&&J->Day==1&&J->Slot==1&&J->CaseTest<0&&FMath::IsNearlyEqual(SourceSeconds(),18.,1e-6))
  {J->CaptureOriginal.Begin(J->Id+TEXT("/original"),false,J->TraceTicks);if(LiveCapture)LiveCapture->Stop();}
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
- Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid; collect the original at the PRINTER when complete."));return true;
+ Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid until the take ends."));return true; // D45-20261110: the end of the take says what comes next
 }
 void FS47FreeformSession::PrintJob(bool bPacket)
 {
@@ -1101,7 +1153,7 @@ FString FS47FreeformSession::ControlSummary(const FJob& J)const
   for(int32 I=0;I<J.BeamAz.Num()&&I<J.BeamEl.Num()&&I<J.BeamAmplitude.Num();++I)Text+=FString::Printf(TEXT("%s: AZ %.3f EL %.3f / LEVEL %.3f\n"),I==0?TEXT("WEST"):I==1?TEXT("EAST"):TEXT("CENTRE"),J.BeamAz[I],J.BeamEl[I],J.BeamAmplitude[I]);
   return Text+(J.bBeamVerified?TEXT("All samples follow one second of actual encoder settling. Compare the off-centre maximum against the schedule."):TEXT("Control incomplete; no off-source conclusion yet."));
  }
- if(J.Phenomenon==TEXT("time_disagreement"))return FString::Printf(TEXT("SIMULTANEOUS DEVICE CLOCK READBACKS\nORIGINAL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\nINTERNAL CONTROL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\n%s"),J.ReceiverClock,J.ReferenceClock,J.ReceiverClock-J.ReferenceClock,J.ControlReceiverClock,J.ControlReferenceClock,J.ControlReceiverClock-J.ControlReferenceClock,J.bClockMeasured?TEXT("The timing discrepancy survives the internal reference; it is not evidence of missing time or a sky source."):TEXT("Timed independent control still required."));
+ if(J.Phenomenon==TEXT("time_disagreement"))return FString::Printf(TEXT("SIMULTANEOUS DEVICE CLOCK READBACKS\nORIGINAL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\nINTERNAL CONTROL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\n%s"),J.ReceiverClock,J.ReferenceClock,J.ReceiverClock-J.ReferenceClock,J.ControlReceiverClock,J.ControlReferenceClock,J.ControlReceiverClock-J.ControlReferenceClock,J.bClockMeasured?TEXT("The clocks still disagree when checked against the station's own reference. That alone doesn't prove time went missing, or that anything in the sky caused it."):TEXT("Timed independent control still required.")); // D45-20261110: plain words, no "not evidence"
  if(J.Phenomenon==TEXT("duplicate_print"))return FString::Printf(TEXT("ORIGINAL: COUNTER %.3f / INTERVAL %.3f s\nSEPARATE COPY: COUNTER %.3f / INTERVAL %.3f s\n%s"),J.ReferenceClock,J.Elapsed,J.DuplicateClock,J.DuplicateInterval,J.bDuplicateCollected?TEXT("The physical copies are retained separately. Compare them with the independent master register; never amend the original."):TEXT("Collect the separate copy at the printer before comparing."));
  return TEXT("Original and internal-reference recordings retained.");
 }
@@ -1127,9 +1179,17 @@ bool FS47FreeformSession::CompareInstrument()
  }
  J->bAudioReviewed=true;RecordEvidence(J->Phenomenon,ControlSummary(*J));if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register the supported instrumental conclusion; the measured comparison is retained."));return true;
 }
+bool FS47FreeformSession::CanRecordControl()const
+{
+ // D45-20261110: the extra-tick take is on tape the moment it ends (Chart); its chart is only the paper copy, collected later.
+ // The instrument discrepancies keep their own order (printer first; their controls are compared at OPS).
+ const FJob* J=CurrentJob();
+ return J&&J->bAnomaly&&!J->bControl&&HasPower()&&(J->Stage==EJobStage::Recorded?J->Phenomenon!=TEXT("wrong_source"):J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon));
+}
 bool FS47FreeformSession::StartControl()
 {
- FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bAnomaly||J->bControl||!HasPower())return false;
+ // D45-20261110: also straight after the take (Chart), for the extra-tick take; the old order (chart collected first) stays legal.
+ FJob* J=Job();if(!J||!(J->Stage==EJobStage::Recorded||(J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon)))||!J->bAnomaly||J->bControl||!HasPower())return false;
  FieldFocus=-1;bGuideFocus=false;J->bControl=true;J->ControlAt=0;
  if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->CaptureOriginal.Enabled()&&J->Source==1&&!Specialized(J->Phenomenon)&&J->CaseTest<0)
  {J->CaptureControl.Begin(J->Id+TEXT("/control"),true,{});if(LiveCapture)LiveCapture->Stop();}
@@ -1179,7 +1239,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(Director)Director->Use(TEXT("ff:compare"));
   // Tom, 9 November: RETAIN keeps the comparison and says the next step, nothing more. The case opens when the job is registered at
   // OPS (FirstCaseHeld, OpenFirstCase), and its repeat window still goes from this original's own clock.
-  Feedback=TEXT("RETAINED. NEXT: OPS / DAILY WORK, Register comparison: source unresolved.");Changed(Feedback);
+  Feedback=J->Stage==EJobStage::Chart?TEXT("RETAINED. NEXT: collect the original chart at the PRINTER, then register the comparison at OPS / DAILY WORK: source unresolved."):TEXT("RETAINED. NEXT: OPS / DAILY WORK, Register comparison: source unresolved.");Changed(Feedback); // D45-20261110
  }
  else return false;
  Changed();return true;
@@ -1269,7 +1329,10 @@ FString FS47FreeformSession::AudioDisplay()const{const FString Status=AudioCaptu
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
- FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded)return false;
+ FJob* J=Job();
+ // D45-20261110: a comparison made before the chart was collected is registered with its paper: say where it is, never refuse silently.
+ if(J&&J->Stage==EJobStage::Chart&&J->bAnomaly){Feedback=J->ChartFeed<PrinterSeconds?PrinterHint():FString::Printf(TEXT("PRINTER: Collect the original chart of %s first. The comparison is registered together with its paper."),*J->Id);Changed(Feedback);return false;}
+ if(!J||J->Stage!=EJobStage::Recorded)return false;
  if(J->bDuplicateRejected){Feedback=ControlSummary(*J);return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
@@ -1525,7 +1588,7 @@ namespace
   using E=FS47FreeformSession::EJobStage;
   if(J.CaseTest>=0&&!J.bCaseValid&&J.Stage<E::Filed)return TEXT("TEST SPOILED"); // stays on the row, not only in a toast
   if(J.Stage==E::New)return bSelected?TEXT("READY"):J.Slot==2?TEXT("OPTIONAL"):TEXT("QUEUED");
-  if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return TEXT("AT PRINTER");
+  if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return J.bAnomaly&&!Specialized(J.Phenomenon)?TEXT("INVESTIGATE"):TEXT("AT PRINTER"); // D45-20261110
   if(J.Stage==E::Recorded)return J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
  }
 }
@@ -1616,6 +1679,12 @@ void FS47FreeformSession::OpenOperations()
    }
    else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?FString::Printf(TEXT("Register observation and case test result / $%d"),JobPay(*J)):J->bPaid?FString(TEXT("Register retained reference / no additional payment")):FString::Printf(TEXT("Register routine result / $%d"),JobPay(*J)),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
+  // D45-20261110: compared before its chart came off the printer: the register says what is still missing, and its button says why
+  else if(J->Stage==EJobStage::Chart&&J->bAnomaly&&!Specialized(J->Phenomenon)&&J->bAudioReviewed)
+  {
+   A.Add(T::Small(TEXT("COMPARISON RETAINED / THE ORIGINAL CHART IS STILL AT THE PRINTER: COLLECT IT, THEN REGISTER HERE")));
+   A.Add(T::Button(TEXT("Register comparison: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+  }
   return S47Kit::Col(A);
  };
  int32 Remaining=0,TodayRemaining=0,EarlierRemaining=0,Rejected=0;
@@ -1679,7 +1748,7 @@ void FS47FreeformSession::OpenOperations()
    else Continue.Add(T::Small(Rejected>0?TEXT("QUEUE / LEGACY ORIGINALS ONLY / REFERENCE CHECK BELOW, NO PAYMENT / NEW JOBS 08:00"):TEXT("QUEUE / DAILY OBSERVATIONS COMPLETE / REFERENCE CHECK BELOW, NO PAYMENT")));
    FString Photo;
    const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
-   if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS.");
+   if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: close the door and switch on the safelight, then develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS."); // D45-20261110
    else if(CameraLeftOut())Photo=TEXT("YOUR CAMERA is still out where you stood before the gap. Your film and prints are safe here; go and get it.");
    else if(M&&M->FieldCamera&&!M->FieldCamera->bHave)Photo=TEXT("PHOTO LAB / ARCHIVE BENCH: collect the camera before going out. The reserve-film carton is beside it; prepare for an observation whenever you choose.");
    else if(Album&&Album->Left()<=0)Photo=InventoryCount(TEXT("film"))>0?TEXT("PHOTO LAB / RESERVE-FILM CARTON: load one stock roll into your camera; retained photographs remain unchanged."):TEXT("CALICHE STORE: buy a film roll and deliver it to GARAGE RECEIVING; then load it at PHOTO LAB. Your existing photographs remain retained.");
@@ -2006,7 +2075,7 @@ void FS47FreeformSession::FinishDriveCheck()
  const int32 Count=M&&M->Web?M->Web->DishCount():27,Up=AvailableDishCount();
  const FString Next=Field?Field->NextServiceDish():FString();
  const bool bReserve=HasUpgrade(0);
- if(Field&&Field->HasArrayFault()){DriveCheckTone=2;DriveCheckResult=FString::Printf(TEXT("%s: DRIVE FAULT CONFIRMED / SERVICE ORDER AT OPS"),*Field->ServiceDishId());}
+ if(Field&&Field->HasArrayFault()){DriveCheckTone=2;DriveCheckResult=FString::Printf(TEXT("%s: DRIVE FAULT CONFIRMED / SEE MAINTENANCE"),*Field->ServiceDishId());} // D45-20261110: the order is issued on this PC now
  else if(FaultDueLater())
  {
   DriveCheckTone=2;
@@ -2030,10 +2099,16 @@ void FS47FreeformSession::FinishDriveCheck()
 void FS47FreeformSession::OpenStatus()
 {
  if(!RequirePower()||!M||!M->UI||!M->Web)return;
+ // D45-20261110 (Tom: maintenance is done on this PC): STATUS is the page it was, MAINTENANCE the faults, their order and the work orders
+ static const TCHAR* StatusTabs[]={TEXT("STATUS"),TEXT("MAINTENANCE")};
+ TArray<T::FNav> TabItems;for(int32 I=0;I<2;++I)TabItems.Add({StatusTabs[I],StatusTab==I,[this,I]{StatusTab=I;OpenStatus();}});
+ if(StatusTab==1){OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col({T::Tabs(TabItems),MaintenancePage()}),true);return;}
  const int32 Count=M->Web->DishCount();SelectedDish=FMath::Clamp(SelectedDish,0,FMath::Max(0,Count-1));
  auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
  auto State=[this](int32 I){if(DriveCheckAt>=0)return I==DriveCheckDish?1:!M->Web->DishRemoteAvailable(I)?2:0;if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
- auto Pick=[this](int32 I){SelectedDish=I;if(Field&&M->Web->DishId(I)==Field->ServiceDishId()){Field->DiagnoseService();RecordEvidence(TEXT("service-diagnosed-")+Field->ServiceDishId(),Field->ServiceDishId()+TEXT(" command/encoder status inspected at the status terminal."));}OpenStatus();};
+ // D45-20261110: a fault picked on the grid is also the one MAINTENANCE opens on
+ auto Pick=[this](int32 I){SelectedDish=I;if(Field){if(const auto* Down=Field->ArrayWear().BranchOfDish(M->Web->DishId(I)))MaintPick=Down->Id;else if(M->Web->DishId(I)==Field->ServiceDishId()&&(Field->HasArrayFault()||ServiceGuide==1))MaintPick=TEXT("relay");}
+  if(Field&&M->Web->DishId(I)==Field->ServiceDishId()){Field->DiagnoseService();RecordEvidence(TEXT("service-diagnosed-")+Field->ServiceDishId(),Field->ServiceDishId()+TEXT(" command/encoder status inspected at the status terminal."));}OpenStatus();};
  auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
   T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([this,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),AvailableDishCount(),Count);}),TAttribute<bool>::CreateLambda([this,Count]{return AvailableDishCount()<Count;}))},
               {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):SkySag>0?FString(TEXT("LINE VOLTAGE SAGGING")):SkyOut>0?FString(TEXT("MAINS LOST / ON GENERATOR")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault||SkyCutLive();}))}}),
@@ -2053,9 +2128,11 @@ void FS47FreeformSession::OpenStatus()
   T::Value(TEXT("DRIVE"),TAttribute<FString>::CreateLambda([this,Dish]{return !M->Web->DishRemoteAvailable(Dish)?FString(TEXT("SERVICE")):FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(Dish),M->Web->DishTargetAz(Dish)))>.1||FMath::Abs(M->Web->DishEl(Dish)-M->Web->DishTargetEl(Dish))>.1?FString(TEXT("MOVING")):FString(TEXT("READY"));}),true),
   T::Value(TEXT("RELAY"),TAttribute<FString>::CreateLambda([this,Dish]{return Field&&M->Web->DishId(Dish)==Field->ServiceDishId()&&Field->HasArrayFault()?FString(TEXT("FAULT")):FString(TEXT("OK"));}),true)}),true);
  TArray<S47Kit::FW> Service;
- if(Field)Service.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
+ // D45-20261110: the fault list and the work orders are on the MAINTENANCE tab; here only what is open and the way there
+ Service.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return MaintenanceLine();}),TAttribute<int32>::CreateLambda([this]{return Field&&(Field->HasArrayFault()||Field->ArrayWear().DownCount()>0||ServiceGuide==1)?-1:0;})));
+ Service.Add(T::Big(FString(TEXT("OPEN MAINTENANCE")),[this]{StatusTab=1;OpenStatus();},1));
  Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
- TArray<S47Kit::FW> Rows;
+ TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
  Rows.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0)));
  // FIX-20261110: what the array has been pulled toward (FS47Places' bearings, as the slips print them) and what it is picking up
  // out of band right now (the same interference the screens tear with).
@@ -2067,26 +2144,124 @@ void FS47FreeformSession::OpenStatus()
   const auto& Fixes=Places->Bearings();
   for(int32 I=Fixes.Num()-1;I>=0&&I>=Fixes.Num()-3;--I)
   {
+   // D45-20261110: in plain words and no degree sign, as the slip has it now
    const auto& B=Fixes[I];const bool bWarm=FS47Places::Live(B,WorldClock);
-   Beam.Add(T::Text(FString::Printf(TEXT("D%02d %s / %03.0f° ±%.0f°%s / %s"),B.Day,B.Clock>=0?*FS47Places::SlipClock(B.Clock):TEXT("--:--"),B.Az,B.Spread,B.bCar?TEXT(" / FROM THE TRUCK"):TEXT(""),bWarm?TEXT("WARM: ON YOUR MAP"):TEXT("COLD")),bWarm?-1:0));
+   Beam.Add(T::Text(FString::Printf(TEXT("DAY %d %s / %03.0f DEG (%s), GIVE OR TAKE %.0f%s / %s"),B.Day,B.Clock>=0?*FS47Places::SlipClock(B.Clock):TEXT("--:--"),B.Az,*FS47Places::CompassWord(B.Az).ToUpper(),B.Spread,B.bCar?TEXT(" / FROM THE TRUCK"):TEXT(""),
+    bWarm?(B.bRing?TEXT("CIRCLED ON YOUR MAP UNTIL NOON"):TEXT("ON YOUR MAP UNTIL NOON")):TEXT("EXPIRED")),bWarm?-1:0));
   }
  }
- else Beam.Add(T::Small(TEXT("NOTHING OFF THE MAIN BEAM ON RECORD. A registered observation can leave a bearing: which way, not how far and not what.")));
+ else Beam.Add(T::Small(TEXT("NO BEARINGS YET. When a registered observation picks up something away from where the dishes were pointed, its direction from the station shows here and on your map.")));
  Rows.Add(T::Columns({{.6f,S47Kit::Col({Grid,T::Panel(TEXT("OFF THE MAIN BEAM"),S47Kit::Col(Beam))})},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
+}
+FString FS47FreeformSession::MaintenanceLine()const
+{
+ // D45-20261110: open faults (branches and the relay order) and the one the operator works next
+ if(!Field)return TEXT("MAINTENANCE / NO OPEN FAULTS");
+ const auto& Wear=Field->ArrayWear();const bool bRelay=Field->HasArrayFault()||ServiceGuide==1;
+ int32 Open=bRelay?1:0;if(Wear.bActive)Open+=Wear.Ordered().Num();
+ if(Open==0)return TEXT("MAINTENANCE / NO OPEN FAULTS");
+ const auto* Next=Wear.NextBranch();
+ const FString Unit=bRelay&&(!Next||(ServiceGuide==1&&bGuideFocus))?Field->ServiceDishId():FString(Next->Junction);
+ return FString::Printf(TEXT("MAINTENANCE / %d FAULT%s / NEXT %s"),Open,Open==1?TEXT(""):TEXT("S"),*Unit);
+}
+TSharedRef<SWidget> FS47FreeformSession::MaintenancePage()
+{
+ // D45-20261110 (Tom: the array PC is where maintenance is done, and the player picks what is mended first and in what order, as long
+ // as the parts are there): every open fault with the parts on hand, the order it is worked in (MAKE THIS NEXT / MOVE UP / MOVE DOWN),
+ // and the relay work order issued and signed off here. The work itself stays at the cabinets. At most six rows: no scrolling.
+ struct FFault{FString Id,Unit,Where,Parts;int32 Kind=0;}; // Kind 0 branch, 1 relay work order, 2 off remote for another reason
+ TArray<FFault> Faults;
+ const bool bWear=Field&&Field->ArrayWear().bActive;
+ const bool bRelay=Field&&(Field->HasArrayFault()||ServiceGuide==1);
+ const bool bRelayFirst=bRelay&&(ServiceGuide==1&&bGuideFocus);
+ auto AddRelay=[this,&Faults]{const int32 S=Field->ServiceStage();Faults.Add({TEXT("relay"),Field->ServiceDishId()+TEXT(" RELAY"),Field->ServiceDishId(),S==9?TEXT("TESTED"):S>=5?TEXT("FITTED"):Field->InventoryCount(TEXT("relay"))>0?TEXT("READY"):TEXT("SHORT"),1});};
+ if(bRelayFirst)AddRelay();
+ if(bWear)for(const auto* B:Field->ArrayWear().Ordered())Faults.Add({B->Id,B->Title,FString::Printf(TEXT("%s +%d"),B->Junction,B->Dishes.Num()-1),Field->BranchNeeds(*B).IsEmpty()?TEXT("READY"):TEXT("SHORT"),0});
+ if(bRelay&&!bRelayFirst)AddRelay();
+ if(M&&M->Web)for(int32 I=0;I<M->Web->DishCount()&&Faults.Num()<6;++I)
+ {
+  const FString Dish=M->Web->DishId(I);
+  if(M->Web->DishRemoteAvailable(I)||(Field&&(Field->ArrayWear().BranchOfDish(Dish)||(bRelay&&Dish==Field->ServiceDishId()))))continue;
+  Faults.Add({TEXT("dish:")+Dish,Dish+TEXT(" OFF REMOTE"),Dish,TEXT("-"),2});
+ }
+ // "planned": a relay work order with no fault open yet (the first S-03 service, or planned maintenance)
+ if(!Faults.ContainsByPredicate([this](const FFault& Fa){return Fa.Id==MaintPick;})&&!(MaintPick==TEXT("planned")&&!bRelay))MaintPick=Faults.Num()?Faults[0].Id:FString(TEXT("planned"));
+ TArray<T::FRow> Lines;
+ for(int32 I=0;I<Faults.Num();++I)
+ {
+  const FFault& Fa=Faults[I];const FString Pick=Fa.Id;
+  Lines.Add({{Fa.Kind==2?FString(TEXT("-")):FString::FromInt(I+1),Fa.Unit,Fa.Where,Fa.Parts},Fa.Id==MaintPick,[this,Pick]{MaintPick=Pick;OpenStatus();},I==0&&Fa.Kind!=2?FString(TEXT("NEXT")):FString()});
+ }
+ TArray<S47Kit::FW> Left;
+ if(Faults.Num())Left.Add(T::Table({TEXT("#"),TEXT("FAULT"),TEXT("ANTENNAS"),TEXT("PARTS")},{.08f,.40f,.27f,.25f},Lines));
+ else Left.Add(T::Text(TEXT("NO OPEN FAULTS. RUN THE DRIVE CHECK ON THE STATUS TAB TO CATCH THE NEXT ONE BEFORE IT FAILS."),0));
+ if(Faults.Num()&&!bRelay)Left.Add(T::Button(ServiceGuide==0?TEXT("FIRST RELAY SERVICE / S-03"):TEXT("PLANNED RELAY SERVICE"),[this]{MaintPick=TEXT("planned");OpenStatus();}));
+ Left.Add(T::Small(TEXT("Parts go in your pouch from GARAGE RECEIVING. The repair itself is done at the cabinet in the field.")));
+ TArray<S47Kit::FW> R;FString Title;
+ static const auto PartName=[](const FString& Part){return Part==TEXT("fuse")?FString(TEXT("CONTROL FUSE")):Part==TEXT("relay")?FString(TEXT("DRIVE RELAY")):Part==TEXT("splice_kit")?FString(TEXT("SPLICE KIT")):Part==TEXT("drive_motor")?FString(TEXT("DRIVE MOTOR")):Part.ToUpper();};
+ if(const auto* B=bWear?FS47ArrayWear::Branch(MaintPick):nullptr;B&&!Field->ArrayWear().IsRestored(MaintPick))
+ {
+  Title=FString(B->Title)+TEXT(" / ORDER");
+  R.Add(T::Text(FString(B->Fault),0));
+  for(const auto& Need:B->Needs){const int32 Have=Field->InventoryCount(Need.Item);R.Add(T::Text(FString::Printf(TEXT("%s / NEED %d / HAVE %d"),*PartName(Need.Item),Need.Count,Have),Have<Need.Count?-1:0));}
+  R.Add(T::Small(FString::Printf(TEXT("Work at the junction cabinet beside %s. %d antennas come back with it."),B->Junction,B->Dishes.Num())));
+  const TArray<const FS47ArrayWear::FBranch*> Order=Field->ArrayWear().Ordered();const int32 At=Order.IndexOfByKey(B);
+  const bool bFirst=Field->ArrayWear().NextBranch()==B&&!bRelayFirst;const FString Id(B->Id);
+  R.Add(T::Big(FString(TEXT("MAKE THIS NEXT")),[this,Id]{
+   Field->PlanBranch(Id,0);bGuideFocus=false; // an open relay order is kept, only no longer first
+   if(const auto* Picked=FS47ArrayWear::Branch(Id))Feedback=FString::Printf(TEXT("%s IS NEXT. The station goal and the lamps in the field now point to its junction at %s."),Picked->Title,Picked->Junction);
+   Changed(Feedback);OpenStatus();},1,!bFirst));
+  R.Add(T::Columns({{.5f,T::Button(TEXT("MOVE UP"),[this,Id,At]{Field->PlanBranch(Id,At-1);OpenStatus();},false,At>0)},{.5f,T::Button(TEXT("MOVE DOWN"),[this,Id,At]{Field->PlanBranch(Id,At+1);OpenStatus();},false,At>=0&&At<Order.Num()-1)}},10));
+ }
+ else if(MaintPick.StartsWith(TEXT("dish:")))
+ {
+  const FString Dish=MaintPick.Mid(5);Title=Dish;
+  R.Add(T::Text(FString::Printf(TEXT("%s is held off remote control by other work. No fault is logged against it here, and nothing needs ordering."),*Dish),0));
+ }
+ else
+ {
+  const FString Dish=Field?Field->ServiceDishId():FString(TEXT("S-03"));const int32 Have=Field?Field->InventoryCount(TEXT("relay")):0;
+  Title=((Field&&Field->HasArrayFault())||ServiceGuide==1?Dish+TEXT(" RELAY"):FString(TEXT("RELAY SERVICE")))+TEXT(" / ORDER");
+  if(ServiceGuide==1&&Field)
+  {
+   R.Add(T::Text(ServiceObjective(),-1));
+   R.Add(T::Text(FString::Printf(TEXT("DRIVE RELAY / NEED %d / HAVE %d"),Field->ServiceStage()<5?1:0,Have),Field->ServiceStage()<5&&Have<1?-1:0));
+   if(CanCompleteServiceGuide())R.Add(T::Big(FString(TEXT("SIGN OFF: REMOTE RESTORED")),[this]{CompleteServiceGuide();OpenStatus();},1));
+   else R.Add(T::Big(FString(TEXT("MAKE THIS NEXT")),[this]{bGuideFocus=true;FieldFocus=-1;Feedback=ServiceObjective();Changed(Feedback);OpenStatus();},1,!bGuideFocus));
+  }
+  else
+  {
+   R.Add(T::Text(Field&&Field->HasArrayFault()?FString::Printf(TEXT("%s: its command relay has failed. The work order keeps it off remote until a new relay is in and its movement test has passed."),*Dish)
+    :ServiceGuide==0?FString(TEXT("FIRST RELAY SERVICE / S-03. Learn to change a drive relay and run its movement test. The order takes S-03 off remote until then."))
+    :FString(TEXT("PLANNED RELAY SERVICE. The order picks one antenna and takes it off remote until its relay is changed and tested.")),0));
+   R.Add(T::Text(FString::Printf(TEXT("DRIVE RELAY / NEED 1 / HAVE %d"),Have),Have<1?-1:0));
+   R.Add(T::Big(FString(TEXT("ISSUE WORK ORDER / USE STOCK")),[this]{if(StartServiceGuide(false))MaintPick=TEXT("relay");OpenStatus();},1));
+   R.Add(T::Button(TEXT("ISSUE WORK ORDER / BUY AND HAUL PARTS"),[this]{if(StartServiceGuide(true))MaintPick=TEXT("relay");OpenStatus();}));
+   R.Add(T::Small(TEXT("Buy and haul: a relay or donor bought in Caliche, carried in the truck and unpacked at GARAGE RECEIVING. Donors are tested at CALIBRATION / REPAIR first.")));
+  }
+ }
+ return T::Columns({{.58f,T::Panel(TEXT("FAULT LIST / YOUR ORDER"),S47Kit::Col(Left))},{.42f,T::Panel(Title,S47Kit::Col(R),true)}},12);
 }
 void FS47FreeformSession::OpenReceiver()
 {
  if(!RequirePower()||!M||!M->UI||!M->Story||!CurrentJob())return;
  auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());
- if(CurrentJob()->Stage!=EJobStage::New)R.Azimuth=TargetAz(); // No second, contradictory azimuth dial after physical tracking.
+ R.Azimuth=TargetAz(); // No second, contradictory azimuth dial. D45-20261110: the card's bearing from its selection on (SelectJob).
  const FString Name=FS47Observing::Runs()[CurrentJob()->Source].Source;
  static const TCHAR* TabNames[]={TEXT("ACQUIRE"),TEXT("TUNE"),TEXT("ARRAY"),TEXT("RECORD"),TEXT("DATA")};
  TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I)TabItems.Add({TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}});
  TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
- Rows.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0)));
- Rows.Add(T::Small(TEXT("Carrier lock = tuning. Measurement rate = observing seconds.")));
+ // D45-20261110 (Tom: the target showed only once the array had locked): what the array is doing stands beside the measurement
+ // line on every tab, from the job's selection on. Recording keeps its strict rule (ReceiverReady).
+ auto ArrayState=[this]{const FJob* J=CurrentJob();if(!J)return FString();
+  if(PointReady())return Settle>=1?FString(TEXT("LOCKED")):FString(TEXT("SETTLING"));
+  return J->Stage==EJobStage::New?FString(TEXT("NOT POINTED")):FString::Printf(TEXT("SLEWING / %.1f\u00b0 TO GO"),ArrayErrorDeg());};
+ Rows.Add(T::Columns({{1.55f,T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0))},{1.f,T::Value(TEXT("ARRAY"),TAttribute<FString>::CreateLambda(ArrayState),true)}}));
+ if(ReceiverTab!=0)Rows.Add(T::Small(TEXT("Carrier lock = tuning. Measurement rate = observing seconds."))); // ACQUIRE has the tape strip instead
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
+ // D45-20261110: the spectrum shows the source as the array comes round (ReceiverApproach); CARRIER LOCK stays the tuning meter.
+ auto Seen=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverApproach():0.;};
  auto Controls=[this]{return T::Columns({
   {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
   {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
@@ -2095,14 +2270,38 @@ void FS47FreeformSession::OpenReceiver()
  if(ReceiverTab==0)
  {
   Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("FREQUENCY SPECTRUM (MHz)"),FString::Printf(TEXT("SOURCE: %s  |  REQ GAIN: %.0f-%.0f  |  REQ BW: %.0f-%.0f kHz"),*Name,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1])),
-   T::Spectrum([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality)})));
+   T::Spectrum([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Seen)})));
   Rows.Add(Banner());
   Rows.Add(Controls());
-  auto Start=T::Big(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):J&&J->Stage==EJobStage::Integrating?FString(TEXT("RECORDING...")):FString(TEXT("START RECORDING"));}),[this]{StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();}));
+  // D45-20261110 (Tom: record the control at the receiver right after the take): the same key records an unusual take's control.
+  auto Start=T::Big(TAttribute<FString>::CreateLambda([this]
+  {
+   const auto* J=CurrentJob();if(!J)return FString(TEXT("START RECORDING"));
+   if(J->Stage==EJobStage::Integrating)return FString(TEXT("RECORDING..."));
+   if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return FString::Printf(TEXT("CONTROL %.1f / 8 s"),J->ControlAt);
+   if(CanRecordControl())return FString(TEXT("RECORD CONTROL / 8 s"));
+   if(J->bAnomaly&&!Specialized(J->Phenomenon)&&J->bControl&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("TAPES READY / REEL DECK"));
+   return J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):FString(TEXT("START RECORDING"));
+  }),[this]{if(CanRecordControl())StartControl();else StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady()||CanRecordControl();}));
   Rows.Add(T::Split({
    {1.f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}))},
    {1.f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}))},
    {1.1f,Start}}));
+  // D45-20261110 (Tom: cooler animations when you record): the receiver's own tape, seen while the take or its control is written and
+  // while an unusual take waits for its control: REC lamp, reels, needles and the pen. Collapsed otherwise; an idle page stays still.
+  auto OnControl=[this]{const auto* J=CurrentJob();return J&&J->bControl&&J->Phenomenon!=TEXT("wrong_source");};
+  auto Writing=[this,OnControl]{const auto* J=CurrentJob();return J&&(J->Stage==EJobStage::Integrating||(OnControl()&&J->ControlAt<8));};
+  auto Rolling=[this,Writing]{const auto* J=CurrentJob();if(!J||!Writing())return false;return J->Stage!=EJobStage::Integrating||(PointReady()&&Settle>=1&&M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J)));};
+  auto TapeAt=[this,OnControl]{const auto* J=CurrentJob();return !J?0.:OnControl()?J->ControlAt:J->Elapsed;};
+  auto TapeSpan=[this,OnControl]{return OnControl()?8.:SourceSeconds();};
+  auto TapeTicks=[this,OnControl]{const auto* J=CurrentJob();return J&&!OnControl()?J->TraceTicks:TArray<double>();};
+  auto TapeKey=[this,OnControl]{const auto* J=CurrentJob();return J?TakeSeed(*J,OnControl()?1:0):0u;};
+  auto TapePulse=[this]{const auto* J=CurrentJob();return J&&J->Source==1?PulsarPeriod:0.;};
+  auto TapeName=[this,OnControl]{const auto* J=CurrentJob();return !J?FString():OnControl()?FString(TEXT("CONTROL / ANTENNAS OUT, THE STATION'S OWN REFERENCE")):TEXT("TAKE ")+J->Id+TEXT(" / WHAT THE ANTENNAS HEAR");};
+  const TAttribute<EVisibility> StripShown=TAttribute<EVisibility>::CreateLambda([this,Writing]{const auto* J=CurrentJob();return J&&(Writing()||(J->bAnomaly&&!Specialized(J->Phenomenon)&&(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Recorded)))?EVisibility::Visible:EVisibility::Collapsed;});
+  Rows.Add(SNew(SBox).Visibility(StripShown).HeightOverride(120)[T::Columns({
+   {1.f,SNew(SS47TapeReels).Phosphor(true).Recording_Lambda(Writing).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse)},
+   {1.35f,SNew(SS47TapeScope).Phosphor(true).Recording(true).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse).Caption_Lambda(TapeName)}},10)]);
  }
  else if(ReceiverTab==1)
  {
@@ -2125,7 +2324,7 @@ void FS47FreeformSession::OpenReceiver()
  else if(ReceiverTab==3)
  {
   const FJob* J=CurrentJob();
-  const bool ControlPanel=J->bAnomaly&&J->Stage==EJobStage::Recorded;
+  const bool ControlPanel=J->bAnomaly&&(J->Stage==EJobStage::Recorded||(J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon))); // D45-20261110: also before the chart is collected
   TArray<S47Kit::FW> JobRows={
    T::Value(TEXT("JOB"),J->Id,true),T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true),
    T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.1f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),true),
@@ -2171,62 +2370,95 @@ void FS47FreeformSession::OpenTapePanel()
  // FIX-20261110: this is a machine, not a terminal: its keys are heavy and nothing beeps (the motor is heard in TransportSound)
  {const TWeakObjectPtr<US47Main> Main=M;T::SetSound([Main](int32 Kind){if(Main.IsValid()&&Main->Audio&&Main->Freeform&&Main->Freeform->TapePanelOpen()&&Kind<3)Main->Audio->Play(Kind==1?TEXT("rack_switch"):TEXT("small_switch"),Kind==1?.42f:.38f,FVector::ZeroVector,Kind==2?1.1f:.95f);});}
  auto Press=[this](const TCHAR* Action){return [this,Action]{if(AudioDesk)AudioDesk->Use(FString(TEXT("ff:audio:"))+Action);};};
- auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);});
- auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
+ // D45-20261110 (Tom: record the control right after the take, then analyse at the reel deck): the take is on tape from the end of
+ // the take (Chart); its chart is only the paper copy, collected on the way to OPS.
+ auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);});
+ auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
  auto Pick=[this](int32 Index){return TAttribute<bool>::CreateLambda([this,Index]{return AudioSourceIndex==Index;});};
  TArray<S47Kit::FW> Rows;
- auto Ready=[this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);};
- // Light strip first (concept 08): the one sentence of what to do, then the two recordings explained.
- Rows.Add(S47Kit::Banner(TEXT("WHAT TO DO HERE"),TEXT("Listen to the whole original and the whole control. Mark the extra ticks on the original, then retain."),
-  TEXT("HERE you compare two recordings of the same job. ORIGINAL: what the antennas recorded. CONTROL: the station's own reference, antennas out of the path. If the odd sound is on both, the equipment makes it. If it is only on the original, it came from outside."),TEXT("COMPARE"),0));
-  const S47Kit::FW Steps=T::Text(TAttribute<FString>::CreateLambda([this]
-  {
-   const auto* J=CurrentJob();
-   if(!J||!J->bAnomaly||J->Stage<EJobStage::Recorded)return FString(TEXT("Nothing to compare yet. An unusual observation needs its original chart from the printer first."));
-   if(!J->bControl||J->ControlAt<8)return FString(TEXT("The control is missing. Record it first: receiver (centre PC), RECORD tab."));
-   if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
-   if(J->Stage>=EJobStage::Registered||J->bAudioReviewed)return FString::Printf(TEXT("JOB %s: comparison retained. Register the conclusion at OPS (corner PC)."),*J->Id);
-   const bool Heard=J->OriginalCovered>=18,Marked=MarkCoversTicks(J->MarkStart,J->MarkEnd),Control=J->ControlCovered>=8;
-   const int32 Now=!Heard?1:!Marked?2:!Control?3:4;
-   auto Line=[Now](int32 N,const FString& Text){return FString::Printf(TEXT("%s %d  %s\n"),N<Now?TEXT("[X]"):N==Now?TEXT("[>]"):TEXT("[ ]"),N,*Text);};
-   FString Mark=TEXT("MARK THE EXTRA TICKS ON THE ORIGINAL: click the trace where they begin, then where they end");
-   if(J->MarkStart>=0&&J->MarkEnd>=0&&!Marked)Mark=TEXT("MARK AGAIN: the mark must run from before the first extra tick to after the last one");
-   return FString::Printf(TEXT("JOB %s\n"),*J->Id)
-    +Line(1,FString::Printf(TEXT("LISTEN TO THE WHOLE ORIGINAL: %.0f / 18 s heard"),J->OriginalCovered))
-    +Line(2,Mark)
-    +Line(3,FString::Printf(TEXT("LISTEN TO THE WHOLE CONTROL: %.0f / 8 s heard. Are the ticks there?"),J->ControlCovered))
-    +Line(4,TEXT("PRESS RETAIN, then register the conclusion at OPS (corner PC)"));
-  }),TAttribute<int32>(0));
+ auto Ready=[this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);};
+ // D45-20261110 (Tom: a 1980s high-tech deck that fits one screen without scrolling): one fixed faceplate, every row its own height.
+ // A: the four steps as lamps (amber now, green done, dark to come), or the one line that says why there is nothing to compare yet.
+ const FLinearColor LampOff=S47Kit::Css(0x3a3e2b),LampOn=S47Kit::Css(0xf0b040),LampDone=S47Kit::Css(0xa4d890),Cream=S47Kit::Css(0xf1e8cf);
+ auto StepNow=[this]
+ {
+  const auto* J=CurrentJob();if(!J)return 0;if(J->Stage>=EJobStage::Registered||J->bAudioReviewed)return 5;
+  return J->OriginalCovered<18?1:!MarkCoversTicks(J->MarkStart,J->MarkEnd)?2:J->ControlCovered<8?3:4;
+ };
+ auto StepCell=[StepNow,LampOff,LampOn,LampDone,Cream](int32 N,TFunction<FString()> Says)
+ {
+  const auto Tone=[StepNow,N,LampOff,LampOn,LampDone]{const int32 Current=StepNow();return N<Current?LampDone:N==Current?LampOn:LampOff;};
+  return S47Kit::FW(SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)[T::Lamp(TAttribute<FLinearColor>::CreateLambda(Tone),14)]
+   +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda(Says),18,TAttribute<FLinearColor>::CreateLambda([Tone,LampOff,Cream]{const FLinearColor C=Tone();return C==LampOff?Cream*FLinearColor(1,1,1,.6f):C;}),false)]);
+ };
+ const S47Kit::FW Lamps=T::Columns({
+  {1.55f,StepCell(1,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("1 LISTEN TO THE WHOLE ORIGINAL %02.0f/18"),J?FMath::Min(18.,J->OriginalCovered):0.);})},
+  {1.f,StepCell(2,[this]{const auto* J=CurrentJob();return FString(J&&J->MarkStart>=0&&J->MarkEnd>=0&&!MarkCoversTicks(J->MarkStart,J->MarkEnd)?TEXT("2 MARK THE TICKS AGAIN"):TEXT("2 MARK THE EXTRA TICKS"));})},
+  {1.f,StepCell(3,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("3 PLAY THE CONTROL %.0f/8"),J?FMath::Min(8.,J->ControlCovered):0.);})},
+  {1.15f,StepCell(4,[this]{const auto* J=CurrentJob();return FString(!J||(!J->bAudioReviewed&&J->Stage<EJobStage::Registered)?TEXT("4 RETAIN"):J->Stage==EJobStage::Chart?TEXT("RETAINED: CHART, THEN OPS"):TEXT("RETAINED: REGISTER AT OPS"));})}});
+ const S47Kit::FW Why=T::Note(TAttribute<FString>::CreateLambda([this]
+ {
+  const auto* J=CurrentJob();
+  if(!J||!J->bAnomaly||J->Stage<EJobStage::Chart)return FString(TEXT("Nothing unusual on tape yet. An unusual take is recorded at the receiver (centre PC) first."));
+  if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
+  if(!J->bControl||J->ControlAt<8)return FString(TEXT("The control is missing. Record it at the receiver (centre PC), right after the take."));
+  return FString();
+ }),20,TAttribute<FLinearColor>(LampOn));
+ Rows.Add(SNew(SBox).HeightOverride(46).VAlign(VAlign_Center)[SNew(SOverlay)
+  +SOverlay::Slot().VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([Ready]{return Ready()?EVisibility::Visible:EVisibility::Collapsed;})[Lamps]]
+  +SOverlay::Slot().VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([Ready]{return Ready()?EVisibility::Collapsed:EVisibility::Visible;})[Why]]]);
+ // B: the transport, the take's label on it, the counter's window with the memory marks; C: the tape head's trace and the band display.
+ auto TakeKey=[this]{const auto* J=CurrentJob();return J?TakeSeed(*J,AudioSourceIndex):0u;};
+ auto Kept=[this]{const auto* J=CurrentJob();return J&&J->bAudioReviewed;};
+ auto Pulse=[this]{const auto* J=CurrentJob();return J&&J->Source==1?PulsarPeriod:0.;};
+ Rows.Add(SNew(SBox).HeightOverride(200)[SNew(SS47TapeReels)
+  .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
+  .Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;}).Loading_Lambda([this]{return CaptureStartStage!=0;})
+  .Control_Lambda([this]{return AudioSourceIndex!=0;})
+  .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
+  .Seed_Lambda(TakeKey).Retained_Lambda(Kept).Period_Lambda(Pulse)
+  .MarkIn_Lambda([this]{const auto* J=CurrentJob();return J?J->MarkStart:-1.;}).MarkOut_Lambda([this]{const auto* J=CurrentJob();return J?J->MarkEnd:-1.;})
+  .Caption_Lambda([this]{const auto* J=CurrentJob();return !J?FString():FString::Printf(TEXT("TAKE %s / %s"),*J->Id,AudioSourceIndex==0?TEXT("ORIGINAL 18 s"):TEXT("CONTROL 8 s"));})]);
  const auto Scope=SNew(SS47TapeScope)
   .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
   .Control_Lambda([this]{return AudioSourceIndex!=0;}).Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;})
   .MarkIn_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkStart:-1.;}).MarkOut_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkEnd:-1.;})
   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
+  .Seed_Lambda(TakeKey).Retained_Lambda(Kept).Period_Lambda(Pulse)
   .CanMark(Marking).OnMark([this](double At){MarkAudioAt(At);});
- auto Mark=[this](bool bIn){return TAttribute<FString>::CreateLambda([this,bIn]{const auto* J=CurrentJob();const double At=!J?-1.:bIn?J->MarkStart:J->MarkEnd;return At<0?FString(TEXT("--")):FString::Printf(TEXT("%.1f s"),At);});};
- const S47Kit::FW TapeBox=T::Panel(TEXT("TAPE"),S47Kit::Col({
-  T::Columns({{1.f,T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare)},{1.f,T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare)}}),
-  // FIX-20261110: the transport itself, moving (position and state are read off it)
-  SNew(SBox).HeightOverride(168)[SNew(SS47TapeReels)
-   .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
-   .Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;}).Loading_Lambda([this]{return CaptureStartStage!=0;})
-   .Control_Lambda([this]{return AudioSourceIndex!=0;})
-   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})],
-  T::Heading(TEXT("LISTENED"),24),
-  T::Meter(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 18 s"),J?J->OriginalCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->OriginalCovered/18.,0.,1.)):0.f;})),
-  T::Meter(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 8 s"),J?J->ControlCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->ControlCovered/8.,0.,1.)):0.f;})),
-  T::Split({{1.f,T::Text(FString(TEXT("MARKED ON ORIGINAL")),0)},{1.f,S47Kit::Col({T::Value(TEXT("IN"),Mark(true),true),T::Value(TEXT("OUT"),Mark(false),true)},0.f)}}),
-  T::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK: NOT SET"));if(J->MarkEnd<0)return FString(TEXT("MARK: the end is still missing"));return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString(TEXT("MARK COVERS THE TICKS")):FString(TEXT("MARK MISSES TICKS"));}),TAttribute<int32>(0)),
-  T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
-  T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);}))}}),
-  T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
- Rows.Add(T::Columns({{1.45f,S47Kit::Col({T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(340)[Scope]),T::Panel(TEXT("NEXT STEP"),Steps)})},{1.f,TapeBox}}));
- // The chip says what the references are for: a listening aid, never proof.
- Rows.Add(T::Panel(TEXT("LISTENING REFERENCES"),S47Kit::Col({
-  T::Columns({{1.f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("FOR YOUR EAR, NOT EVIDENCE"),-1)]},{1.4f,T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0))}}),
-  T::Columns({{1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)}})})));
+ Rows.Add(SNew(SBox).HeightOverride(240)[Scope]);
+ // D: one row of transport keys with a lamp over each (lit: the tape loaded, playing, a mark set, the comparison retained).
+ auto Keyed=[LampOff,LampOn](TFunction<bool()> On,S47Kit::FW Key)
+ {
+  return S47Kit::FW(SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,0,0,5)[T::Lamp(TAttribute<FLinearColor>::CreateLambda([On,LampOff,LampOn]{return On&&On()?LampOn:LampOff;}),10)]
+   +SVerticalBox::Slot().AutoHeight()[Key]);
+ };
+ Rows.Add(SNew(SBox).HeightOverride(76)[T::Columns({
+  {1.5f,Keyed([this]{return AudioSourceIndex==0;},T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare))},
+  {1.35f,Keyed([this]{return AudioSourceIndex==1;},T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare))},
+  {1.f,Keyed(nullptr,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare))},
+  {1.f,Keyed([this]{return bAudioPlaying||CaptureStartStage!=0;},T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare))},
+  {1.05f,Keyed([this]{const auto* J=CurrentJob();return J&&J->MarkStart>=0;},T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking))},
+  {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->MarkEnd>=0;},T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking))},
+  {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->bAudioReviewed;},T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);})))}},10)]);
+ // E: what the mark covers and what the deck last said, in two lines at most.
+ Rows.Add(SNew(SBox).HeightOverride(56)[T::Columns({
+  {1.f,T::Note(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK: NOT SET. Click the trace where the extra ticks begin, then where they end."));if(J->MarkEnd<0)return FString(TEXT("MARK: the end is still missing"));return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString(TEXT("MARK COVERS THE TICKS")):FString(TEXT("MARK MISSES TICKS: from before the first to after the last"));}),20,TAttribute<FLinearColor>(LampOn))},
+  {1.3f,T::Note(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),20,TAttribute<FLinearColor>(Cream))}},14)]);
+ // F: the listening references. The chip says what they are for, in plain words (D45-20261110).
+ Rows.Add(SNew(SBox).HeightOverride(60)[T::Columns({
+  {1.25f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("KNOWN SOUNDS TO COMPARE BY EAR"),-1)]},
+  {1.6f,SNew(SBox).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),18,TAttribute<FLinearColor>(Cream))]},
+  {1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},
+  {1.1f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)}},12)]);
  auto Leave=[this]{if(M&&M->UI)M->UI->Close();};
- SetPanel(SNew(SS47TapePanel).OnLeave(Leave)[T::Frame(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows),T::Button(TEXT("ESC / RETURN TO ROOM"),Leave))],false,true);bTapePanel=true;
+ // The faceplate is drawn at 1200 x 900 and scaled to the view, so it is one screen at any size; the room is dimmed around it.
+ SetPanel(SNew(SS47TapePanel).OnLeave(Leave)
+  [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.006f,.007f,.004f,.94f)).Padding(0)
+   [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::Both)
+    [SNew(SBox).WidthOverride(1200).HeightOverride(900)[T::Faceplate(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows),T::Button(TEXT("ESC / RETURN TO ROOM"),Leave))]]]],false,true);bTapePanel=true;
 }
 void FS47FreeformSession::OpenArchive()
 {
@@ -2681,10 +2913,11 @@ void FS47FreeformSession::QueueResultSheet(int32 Line,int32 Test,const FString& 
 bool FS47FreeformSession::QueueBearingSlip(int32 Day,const FString& Line,const FString& Note)
 {
  if(Line.IsEmpty()||CaseSheets.Num()>=8)return false;
- FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d"),Sh.Day);Sh.Stamp=TEXT("COLD BY NOON");
+ // D45-20261110 (Tom: "bearing slip er for rart skrevet"): plain words; Note says what a branch is and where the circle is (FS47Places::SlipNote)
+ FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d"),Sh.Day);Sh.Stamp=TEXT("CHECK BEFORE NOON");
  if(CaseSheets.ContainsByPredicate([&](const FResultSheet& X){return X.Job==Sh.Job;}))return false;
- Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nFROM SARO, OFF THE MAIN BEAM. WHICH WAY, NOT HOW FAR AND NOT WHAT.\n%s\nPENCILED IN ON THE MAP (%s)."),
-  *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note,*S47Keys::MapSaid().ToUpper());
+ Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nTHE ARRAY PICKED UP SOMETHING AWAY FROM WHERE THE DISHES WERE POINTED.\nIT GIVES A DIRECTION ONLY. IT DOES NOT SAY HOW FAR OUT IT IS OR WHAT IT IS.\n%s"),
+  *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note);
  CaseSheets.Add(Sh);Changed();return true;
 }
 bool FS47FreeformSession::CollectResultSheet()
@@ -2699,7 +2932,7 @@ bool FS47FreeformSession::CollectResultSheet()
   if(M&&M->Audio)M->Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.45f});
   if(M&&M->Story)M->Story->AddDoc(Doc);
   if(M&&M->UI)M->UI->Document(Doc);
-  Feedback=FString::Printf(TEXT("BEARING SLIP: which way, cold by noon. It is on your map (%s)."),*S47Keys::MapSaid());Changed(Feedback);return true;
+  Feedback=FString::Printf(TEXT("BEARING SLIP: a new circle on your map (%s). Drive out and look before noon."),*S47Keys::MapSaid());Changed(Feedback);return true; // D45-20261110
  }
  FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-sheet%d-d%d"),Sh.Line+1,Sh.Test+1,Sh.Day);Doc.Title=FString::Printf(TEXT("Result sheet: %s, test %d"),FS47FreeformCases::Def(Sh.Line).Title,Sh.Test+1);
  Doc.Kind=TEXT("printout");Doc.Stamp=Sh.Stamp;Doc.Page=Sh.Page;Doc.Transcript=Sh.Page;
@@ -2966,7 +3199,7 @@ void FS47FreeformSession::StepLandTest()
 bool FS47FreeformSession::SetCaseHunch(int32 Line,int32 Cause)
 {
  if(!Cases.SetHunch(Line,Cause))return false;
- Changed(TEXT("Working hunch noted. This is not evidence and grants no result or reward."));return true;
+ Changed(TEXT("Hunch noted. It's only a note for you: it doesn't count as a result and doesn't pay."));return true; // D45-20261110: plain words
 }
 void FS47FreeformSession::ClearCompletedSelection()
 {
@@ -3427,7 +3660,8 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
 bool FS47FreeformSession::FirstCaseHeld()const
 {
  if(const auto* C=Cases.Get(0);!C||C->bOpen)return false;
- return Work.ContainsByPredicate([](const FJob& J){return J.bAnomaly&&J.bAudioReviewed&&J.CaseTest<0&&!Specialized(J.Phenomenon)&&J.Stage==EJobStage::Recorded&&!J.bDuplicateRejected;});
+ // D45-20261110: a comparison retained before its chart was collected (Chart) waits for its registration the same way
+ return Work.ContainsByPredicate([](const FJob& J){return J.bAnomaly&&J.bAudioReviewed&&J.CaseTest<0&&!Specialized(J.Phenomenon)&&(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Recorded)&&!J.bDuplicateRejected;});
 }
 bool FS47FreeformSession::OpenFirstCase(const FJob& J)
 {
@@ -3739,7 +3973,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    TArray<S47Kit::FW> Choices;
    if(Cases.Remaining(Line)==1)
    {for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Choices.Add(S47FreeformTerminal::Button(FString(TEXT("Register supported conclusion: "))+D.Causes[I],[this,Line,I]{ConcludeCase(Line,I);OpenCaseBoard(Line);},true));}
-   else Rows.Add(S47FreeformTerminal::Small(TEXT("CONCLUDE / ONLY WHEN YOUR TESTS RULE OUT THE OTHERS / A HUNCH IS NOT EVIDENCE")));
+   else Rows.Add(S47FreeformTerminal::Small(TEXT("CONCLUDE / OPENS WHEN YOUR TESTS HAVE RULED OUT THE OTHER EXPLANATIONS. A HUNCH ALONE DOESN'T COUNT."))); // D45-20261110: plain words
    if(!Choices.IsEmpty())Rows.Add(S47Kit::Row(Choices));
   }
   else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents.")));
@@ -3794,7 +4028,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    // The hunch last and muted: a note, never evidence; no button of it stands out.
    TArray<S47Kit::FW> Hunches;
    for(int32 Cause=0;Cause<FS47FreeformCases::CauseCount;++Cause)Hunches.Add(S47FreeformTerminal::Button(FString(C->Hunch==Cause?TEXT("HUNCH: "):TEXT("Consider: "))+D.Short[Cause],[this,Line,Cause]{SetCaseHunch(Line,Cause);OpenCaseBoard(Line);},false));
-   Rows.Add(S47FreeformTerminal::Small(!D.Mystery&&C->Hunch<0?TEXT("OPTIONAL WORKING HUNCH / a note, not evidence / note one to see what each test predicts"):TEXT("OPTIONAL WORKING HUNCH / a note, not evidence"))); // CHAIN-3-20261109
+   Rows.Add(S47FreeformTerminal::Small(!D.Mystery&&C->Hunch<0?TEXT("YOUR WORKING HUNCH (OPTIONAL) / just a note for yourself. Pick one to see what each test would show if it's right."):TEXT("YOUR WORKING HUNCH (OPTIONAL) / just a note for yourself"))); // CHAIN-3-20261109; D45-20261110: plain words, no "not evidence"
    Rows.Add(S47Kit::Row(Hunches));
   }
  }
@@ -3992,7 +4226,17 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
   case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");
   case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)");
   case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"); // the printer stays on the card (critic round 5)
-  case EJobStage::Chart:return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
+  case EJobStage::Chart:
+   // D45-20261110 (Tom): the extra-tick take goes control, reel deck, then the chart on the way to OPS. Its chart prints meanwhile.
+   if(J->bAnomaly&&!Specialized(J->Phenomenon))
+   {
+    if(!HasPower()&&(!J->bControl||J->ControlAt<8)&&J->ChartFeed>=PrinterSeconds)return TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"); // no power to record: the printed chart can still be had
+    if(!J->bControl)return TEXT("RECEIVER (centre PC): RECORD THE CONTROL TAKE NOW");
+    if(J->ControlAt<8)return TEXT("RECEIVER (centre PC): THE CONTROL IS RECORDING; THEN REVIEW BOTH TAPES AT THE REEL DECK ON THE WALL TABLE");
+    if(!J->bAudioReviewed)return TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
+    return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE ORIGINAL CHART, THEN REGISTER THE COMPARISON AT OPS"));
+   }
+   return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
   case EJobStage::Recorded:
    if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. LEGACY ORIGINAL RETAINED; UNVERIFIABLE DUPLICATE REMOVED FROM PRINTER QUEUE WITHOUT A FINDING OR PAYMENT.");
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
@@ -4031,6 +4275,8 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Pointed)return &J==CurrentJob()&&PointReady()&&Settle>=1?TEXT("Receiver / centre screen"):TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
+ // D45-20261110: the extra-tick take's control and review come before its chart
+ if(J.Stage==EJobStage::Chart&&J.bAnomaly&&!Specialized(J.Phenomenon)&&!J.bAudioReviewed)return J.bControl&&J.ControlAt>=8?TEXT("Reel deck / wall table"):TEXT("Receiver / centre screen");
  if(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Registered)return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
  if(J.Stage==EJobStage::Packet)return TEXT("Binder / records room");
  if(J.bDuplicateRejected)return TEXT("OPS / DAILY WORK: retained legacy observation; select another job");
@@ -4056,6 +4302,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
  if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,Director->ReportDone()});} // PT-FEEDER-20261109
+ if(Places)for(const TPair<FString,bool>& Slip:Places->SlipRows(Clock()))Result.Add({Slip.Key,Slip.Value}); // D45-20261110: the slip's circle to look at, ticked once stood in
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
@@ -4137,6 +4384,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
+ if(Darkroom){const auto Dark=Darkroom->Save();if(Dark->Values.Num()>0)S47J::Set(O,TEXT("darkroom"),Dark);} // D45-20261110: optional, absent = white
  if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
  if(SkyAnswer){const auto Calls=SkyAnswer->Save();if(Calls->Values.Num()>0)S47J::Set(O,TEXT("answer"),Calls);}
  if(Predecessor)S47J::Set(O,TEXT("predecessor"),Predecessor->Save());
@@ -4147,6 +4395,7 @@ S47J::FObj FS47FreeformSession::Save()const
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=S47CaptureSound::SelfTest(Lines);auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
  for(int I=0;I<360;++I)SoundPolicy.Append(I*.05,(I+1)*.05,.05,1,1420.11,50,50,1);SoundPolicy.Complete=true;
  const FString RetainedSound=S47J::Write(SoundPolicy.Save());
@@ -4260,6 +4509,26 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   }
   WJ->Stage=NextWas;
   Check(NextFits,TEXT("Every stage of a job gives every workstation a NEXT line that fits the glass"));
+ }
+ {
+  // D45-20261110 (Tom): an unusual take goes control at the receiver, then the reel deck, then its chart on the way to OPS; each
+  // step's NEXT line fits the glass, OPS says the chart is still missing, a control half done survives Continue, and the instrument
+  // discrepancies keep their printer-first order.
+  const bool D45Anomaly=WJ->bAnomaly;const EJobStage D45Stage=WJ->Stage;bool D45Order=true;
+  WJ->bAnomaly=true;WJ->Stage=EJobStage::Chart;WJ->ChartFeed=PrinterSeconds;WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
+  auto D45Next=[&](){return TerminalNextLine(Workflow.JobNextAction(*WJ),3);};
+  D45Order&=D45Next()==TEXT("NEXT / RECEIVER (CENTRE PC)")&&TerminalNextLine(Workflow.JobNextAction(*WJ),1)==TEXT("NEXT / USE THIS PC")&&Workflow.CanRecordControl()&&Workflow.JobLocation(*WJ).StartsWith(TEXT("Receiver"))&&StatusWord(*WJ,true)==TEXT("INVESTIGATE");
+  D45Order&=Workflow.StartControl()&&WJ->bControl&&WJ->ControlAt==0&&WJ->Stage==EJobStage::Chart&&!Workflow.CanRecordControl()&&!Workflow.StartControl();
+  WJ->ControlAt=4;
+  {FS47FreeformSession D45Again(nullptr);D45Again.Begin(Workflow.Save());const FJob* D45J=D45Again.CurrentJob();
+   D45Order&=D45J&&D45J->Stage==EJobStage::Chart&&D45J->bAnomaly&&D45J->bControl&&FMath::IsNearlyEqual(D45J->ControlAt,4.)&&D45Again.JobNextAction(*D45J).Contains(TEXT("CONTROL IS RECORDING"));D45Again.Stop();}
+  WJ->ControlAt=8;D45Order&=D45Next()==TEXT("NEXT / REEL DECK (WALL TABLE)")&&Workflow.JobLocation(*WJ).StartsWith(TEXT("Reel deck"));
+  WJ->bAudioReviewed=true;D45Order&=D45Next()==TEXT("NEXT / PRINTER")&&!Workflow.RegisterComparison(TEXT("unresolved"))&&Workflow.FeedbackText().Contains(TEXT("PRINTER"))&&WJ->Stage==EJobStage::Chart;
+  WJ->Phenomenon=TEXT("time_disagreement");WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
+  D45Order&=!Workflow.CanRecordControl()&&!Workflow.StartControl()&&Workflow.JobNextAction(*WJ).StartsWith(TEXT("PRINTER"))&&StatusWord(*WJ,true)==TEXT("AT PRINTER");
+  WJ->Phenomenon.Empty();WJ->bAnomaly=D45Anomaly;WJ->Stage=D45Stage;WJ->ChartFeed=0;Workflow.Feedback.Empty();
+  Check(D45Order,TEXT("D45: an unusual take is controlled at the receiver, compared at the reel deck, then its chart; OPS asks for the chart"));
+  Check(Workflow.ReceiverApproach()==0&&Workflow.ArrayErrorDeg()==0,TEXT("D45: with no array loaded the receiver shows nothing of the source and no slew"));
  }
  Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
  Check(TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),0)==TEXT("NEXT / USE THIS PC")&&TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),1)==TEXT("NEXT / ARRAY STATUS (LEFT-HAND PC)"),TEXT("A blocked array sends every workstation to the status PC"));
@@ -4557,13 +4826,27 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  {
   // LOOP-1-20261109: a bearing slip waits on the printer as a paper of no case, one a day, survives a Continue, and is collected there.
   FS47FreeformSession Sl(nullptr);Sl.Begin(nullptr);Sl.Tutorial=0;
-  const bool bQueued=Sl.QueueBearingSlip(4,TEXT("BEARING ABOUT 110° ±40° / 19:52 / COLD BY NOON"),TEXT("NO BRANCH MENDED: A WIDE SECTOR."))&&!Sl.QueueBearingSlip(4,TEXT("again"),TEXT("again"));
+  // D45-20261110: the slip as FS47Places writes it now (plain words, no degree sign), and its row on the list from the bearing it left
+  FS47Places::FBearing Fix=FS47Places::StationFix(4,Sl.WorldClock,0,33,-300,-560,1340,.5f,TEXT("mine"));
+  const bool bQueued=Sl.QueueBearingSlip(4,FS47Places::SlipLine(Fix),FS47Places::SlipNote(Fix,0))&&!Sl.QueueBearingSlip(4,TEXT("again"),TEXT("again"));
   FS47FreeformSession SlR(nullptr);SlR.Begin(S47J::Read(S47J::Write(Sl.Save())));
   const bool bKept=SlR.CaseSheets.Num()==1&&IsBearingSlip(SlR.CaseSheets[0])&&SlR.CaseSheets[0].Page==Sl.CaseSheets[0].Page;
-  Check(bQueued&&Sl.CaseSheets.Num()==1&&Sl.SheetIndex()==0&&Sl.PrinterHint().Contains(TEXT("bearing slip"))&&bKept&&Sl.CaseSheets[0].Page.Contains(TEXT("COLD BY NOON"))&&!Sl.CaseSheets[0].Page.Contains(TEXT("47")),
-   TEXT("Bearing slip: queued on the printer once a day, kept over a Continue, and no 47 on it"));
+  bool bAscii=true;for(const TCHAR Ch:Sl.CaseSheets[0].Page)bAscii&=Ch==TEXT('\n')||(Ch>=32&&Ch<127);
+  Check(bQueued&&Sl.CaseSheets.Num()==1&&Sl.SheetIndex()==0&&Sl.PrinterHint().Contains(TEXT("bearing slip"))&&bKept&&Sl.CaseSheets[0].Page.Contains(TEXT("GOOD UNTIL NOON"))&&Sl.CaseSheets[0].Page.Contains(TEXT("DIRECTION ONLY"))
+   &&Sl.CaseSheets[0].Page.Contains(TEXT("CIRCLED ON YOUR MAP"))&&Sl.CaseSheets[0].Page.Contains(TEXT("A BRANCH IS ONE ARM"))&&bAscii&&!Sl.CaseSheets[0].Page.Contains(TEXT("47"))&&S47Script::LintText(Sl.CaseSheets[0].Page).IsEmpty(),
+   TEXT("Bearing slip: queued on the printer once a day, kept over a Continue, in plain words with no degree sign, and no 47 on it"));
+  {
+   // the bearing's own row on the list (FS47Places::SlipRows), through a save as the game keeps it
+   auto Fx=S47J::New();S47J::Set(Fx,TEXT("day"),4);S47J::Set(Fx,TEXT("az"),Fix.Az);S47J::Set(Fx,TEXT("spread"),Fix.Spread);S47J::Set(Fx,TEXT("target"),Fix.Target);
+   S47J::Set(Fx,TEXT("clock"),Fix.Clock);S47J::Set(Fx,TEXT("until"),Fix.Until);S47J::Set(Fx,TEXT("to"),TArray<double>{Fix.ToX,Fix.ToZ});S47J::Set(Fx,TEXT("ring"),TArray<double>{Fix.RingX,Fix.RingZ,Fix.RingR});
+   auto Pl=S47J::New();TArray<TSharedPtr<FJsonValue>> One;One.Add(MakeShared<FJsonValueObject>(Fx));Pl->SetArrayField(TEXT("fixes"),One);
+   if(Sl.Places)Sl.Places->Begin(Pl);
+   const TArray<FS47Task> Listed=Sl.Tasks();
+   Check(Fix.bRing&&Sl.Places&&Listed.ContainsByPredicate([](const FS47Task& Tk){return Tk.Text.StartsWith(TEXT("BEARING SLIP / New circle on your map, "))&&Tk.Text.EndsWith(TEXT("Drive out and look before noon."))&&!Tk.bDone;}),
+    TEXT("Bearing slip: a live slip is on the task list, and so on NOW: a new circle on the map, look before noon"));
+  }
   Sl.CaseSheets[0].Feed=PrinterSeconds;
-  Check(Sl.CollectChart()&&Sl.CaseSheets.IsEmpty()&&Sl.BoardLine<0&&Sl.FeedbackText().StartsWith(TEXT("BEARING SLIP")),TEXT("Bearing slip: collected at the printer like a result sheet, with no case board to open on"));
+  Check(Sl.CollectChart()&&Sl.CaseSheets.IsEmpty()&&Sl.BoardLine<0&&Sl.FeedbackText().StartsWith(TEXT("BEARING SLIP"))&&Sl.FeedbackText().Contains(TEXT("before noon")),TEXT("Bearing slip: collected at the printer like a result sheet, with no case board to open on"));
   Sl.Stop();SlR.Stop();
  }
  {

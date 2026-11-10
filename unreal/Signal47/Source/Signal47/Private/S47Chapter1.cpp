@@ -1,6 +1,7 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
 #include "S47Enlarger.h"
+#include "S47Darkroom.h"
 #include "S47T02Photo.h"
 #include "S47Album.h"
 #include "S47Night.h"
@@ -660,6 +661,10 @@ void US47Chapter1::Interactables()
 		Inter->FallbackLabel = [Prev, Self](const FString& Id)
 		{
 			FString L = Prev ? Prev(Id) : FString();
+			// D45-20261110 (D45-17): Freeform's darkroom says it too, while a print is in the developer and the door is shut.
+			if (Id == TEXT("labDoor") && !L.IsEmpty() && Self.IsValid() && Self->M && Self->M->IsFreeform() && Self->M->Freeform && Self->M->Freeform->Darkroom
+				&& Self->M->Web && !Self->M->Web->IsDoorOpen(TEXT("labDoor")) && Self->M->Freeform->Darkroom->SafelightOn() && Self->M->Freeform->Darkroom->PrintAtRisk())
+				return L + TEXT(" (a print is in the developer: opening the door ruins it)");
 			if (Id == TEXT("labDoor") && !L.IsEmpty() && Self.IsValid() && Self->Active && !Self->bLabOpen)
 				L += Self->Developing() ? TEXT(" (darkroom in use: light will fog the print)") : TEXT(" (darkroom: keep the door shut while developing)");
 			return L;
@@ -755,25 +760,35 @@ void US47Chapter1::UseWetBench()
 		if (!Shot) { S47Panels::WetBench(Ui(), FString(), 0, TEXT("No exposed photographs are waiting. Completed originals remain in the notebook album; submit field evidence at OPS."), [] {}); return; }
 		const FString Id = Shot->Id;
 		const int32 Stage = Shot->LabStage;
-		if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door before processing the photograph.")); return; }
+		// D45-20261110 (D45-17): one rule with the enlarger (FS47Darkroom): the door shut and the safelight on before the paper sees
+		// the developer or the fixer. A fixed print is safe in any light.
+		FS47Darkroom* const DarkLab = M->Freeform->Darkroom.Get();
+		const FString Why = Stage >= 2 ? FString() : DarkLab ? DarkLab->Block() : M->Web->IsDoorOpen(TEXT("labDoor")) ? FString(TEXT("PHOTO LAB: Close the door first.")) : FString();
+		if (!Why.IsEmpty()) { Toast(Why, 4.f); return; }
+		const bool bReprint = Stage == 0 && DarkLab && DarkLab->WasFogged(Id);
 		// Refresh this same bench session after each action; Story keeps its timed panel.
 		TArray<S47Kit::FW> Rows;
 		const TArray<TPair<FString, FString>> LabSteps = {
-			{ TEXT("1 / DEVELOP EXPOSED FILM"), TEXT("Keep the door closed. The original negative is retained.") },
-			{ TEXT("2 / TRANSFER PRINT TO FIXER"), TEXT("Stabilize the contact print in the adjacent tray.") },
-			{ TEXT("3 / COLLECT THE ORIGINAL"), TEXT("Take the finished photograph to OPS for registration.") }
+			{ TEXT("1 / DEVELOP EXPOSED FILM"), TEXT("Door shut, safelight on. The original negative is kept.") },
+			{ TEXT("2 / TRANSFER PRINT TO FIXER"), TEXT("Until it is fixed, white light ruins the print.") },
+			{ TEXT("3 / COLLECT THE ORIGINAL"), TEXT("The print is safe in any light now. Take it to OPS.") }
 		};
 		Rows.Add(S47Kit::Section(TEXT("SARO / PHOTO LAB"), TEXT("FILM: ") + Id + TEXT("  /  ") + Shot->Place));
 		Rows.Add(S47Kit::Steps(LabSteps, Stage));
+		if (bReprint) Rows.Add(S47Kit::Small(TEXT("Light ruined the last print. The negative is fine, and a new print costs nothing.")));
 		if (Stage == 2) Rows.Add(SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(Shot->Url), 480.f)]);
-		const FString Label = Stage == 0 ? TEXT("LOAD SEALED FILM INTO TANK") : Stage == 1 ? TEXT("TRANSFER CONTACT PRINT TO FIXER") : TEXT("COLLECT AND EXAMINE PRINT");
+		const FString Label = bReprint ? TEXT("MAKE A NEW PRINT FROM THE NEGATIVE") : Stage == 0 ? TEXT("LOAD SEALED FILM INTO TANK") : Stage == 1 ? TEXT("TRANSFER CONTACT PRINT TO FIXER") : TEXT("COLLECT AND EXAMINE PRINT");
 		Rows.Add(S47Kit::Action(Label, [this, Id, Stage, LabSteps]
 		{
 			if (!M || !M->IsFreeform() || !M->Night || !M->Night->Album || !M->Freeform || !M->Player || !Yard) return;
 			if (FVector::Distance(M->Player->Pos, Yard->Obj(TEXT("wetBench")).WorldPosition()) > 2.6) { Toast(TEXT("PHOTO LAB: Return to the wet bench to continue processing.")); return; }
 			if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power; your original is retained.")); return; }
-			if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door; your original is retained.")); return; }
+			// D45-20261110: the same darkroom rule again, the door or the switch may have changed while the panel was up.
+			FS47Darkroom* const Room = M->Freeform->Darkroom.Get();
+			const FString Held = Stage >= 2 ? FString() : Room ? Room->Block() : M->Web->IsDoorOpen(TEXT("labDoor")) ? FString(TEXT("PHOTO LAB: Close the door first.")) : FString();
+			if (!Held.IsEmpty()) { Toast(Held, 4.f); return; }
 			if (!M->Night->Album->AdvanceLabPhoto(Id, Stage)) return;
+			if (Room && Stage == 0) Room->Reprinted(Id);
 			if (US47Audio* A = Au()) A->PourThree(Yard->WetPrint.WorldPosition());
 			Toast(Stage == 0 ? TEXT("PHOTO LAB: Contact print ready. Transfer it to the fixer.") : Stage == 1 ? TEXT("PHOTO LAB: Print fixed. Collect the original.") : TEXT("OPS: Submit the developed field photograph. The original is retained in your album."), 4.5f);
 			M->RequestAutosave();
@@ -858,6 +873,12 @@ FString US47Chapter1::BenchLabel() const
 	if (M && M->IsFreeform() && M->Night && M->Night->Album)
 	{
 		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		// D45-20261110 (D45-17): the bench says what the darkroom still needs before developing or fixing.
+		if (Shot && Shot->LabStage < 2 && M->Freeform && M->Freeform->Darkroom && M->Web && M->Freeform->HasPowerForReactiveLight())
+		{
+			const bool bDoor = M->Web->IsDoorOpen(TEXT("labDoor")), bSafeOn = M->Freeform->Darkroom->SafelightOn();
+			if (bDoor || !bSafeOn) return FString(bDoor && !bSafeOn ? TEXT("Wet bench / close the door and switch on the safelight") : bDoor ? TEXT("Wet bench / close the door first") : TEXT("Wet bench / switch on the safelight first"));
+		}
 		return !Shot ? FString(TEXT("Photo lab wet bench")) : Shot->LabStage == 0 ? FString(TEXT("Develop exposed photograph")) : Shot->LabStage == 1 ? FString(TEXT("Transfer photograph to fixer")) : FString(TEXT("Collect developed photograph"));
 	}
 	if (!Active) return FString();

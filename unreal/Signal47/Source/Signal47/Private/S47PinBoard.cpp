@@ -393,8 +393,11 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 		if (Id.StartsWith(TEXT("bearing_d")))
 			if (const FS47Places::FBearing* const* B = FixOfDay.Find(FCString::Atoi(*Id.RightChop(9))))
 			{
+				// D45-20261110: in plain words, as the slip has it now, and where its circle is
 				Cd.Title = FString::Printf(TEXT("BEARING %03.0f FROM SARO"), (*B)->Az);
-				Cd.Text = FString::Printf(TEXT("Give or take %.0f degrees. Which way, not how far."), (*B)->Spread);
+				FString Way = S47FieldMap::Compass((*B)->Az); if (!Way.IsEmpty()) Way[0] = FChar::ToUpper(Way[0]);
+				const FString Circled = (*B)->bRing ? TEXT(" Circled on the map, ") + FS47Places::SlipWhere(**B) + TEXT(".") : FString();
+				Cd.Text = FString::Printf(TEXT("%s, give or take %.0f degrees. A direction only: it doesn't say how far.%s"), *Way, (*B)->Spread, *Circled);
 			}
 		if (Cd.Text.IsEmpty())
 		{

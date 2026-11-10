@@ -91,12 +91,13 @@ namespace S47TonightNoteLocal
  }
  // A task in the card's words (S47HudGauges::CardLine: the screens' short names, the place before its //), what to do after the
  // place in its first sentences, written as a sentence.
- void Split(const FString& Text, FString& Where, FString& What)
+ // D45-20261110: NOW (bAll) has room for the second sentence the note leaves off ("Drive out and look before noon.")
+ void Split(const FString& Text, FString& Where, FString& What, int32 Most = MostChars)
  {
   const FString Card = S47HudGauges::CardLine(Text, 1000);
   FString Head, Body;
-  if (Card.Split(TEXT(" // "), &Head, &Body)) { Where = Sign(Head); What = Sentences(Body, MostChars); }
-  else What = Sentences(Card, MostChars);
+  if (Card.Split(TEXT(" // "), &Head, &Body)) { Where = Sign(Head); What = Sentences(Body, Most); }
+  else What = Sentences(Card, Most);
   What = S47HudGauges::Handwritten(What.TrimStartAndEnd(), false);
   What.ReplaceInline(TEXT("ff-D"), TEXT("FF-D"), ESearchCase::CaseSensitive); // a job's id ("FF-D0002-0001") keeps its capitals
   if (Where.IsEmpty()) Where = Named(Text);
@@ -170,7 +171,7 @@ FNote BuildNote(const FIn& In, bool bAll)
   W.Order = I;
   W.Key = Key(S47HudGauges::CardLine(Text));
   W.L.Source = Text;
-  Split(Text, W.L.Where, W.L.What);
+  Split(Text, W.L.Where, W.L.What, bAll ? 2 * MostChars : MostChars);
   for (const FWindow& Wd : In.Windows) if (Wd.Text.TrimStartAndEnd() == Text) { W.Start = Wd.Start; W.End = Wd.End; }
   // the same thing twice (a case's step in the list and its window, the objective's card) is one line
   if (W.L.What.IsEmpty() || All.ContainsByPredicate([&W](const FWork& X) { return X.Key == W.Key; })) continue;
@@ -182,7 +183,7 @@ FNote BuildNote(const FIn& In, bool bAll)
   const FString K = Key(S47HudGauges::CardLine(Wd.Text));
   if (Wd.Text.TrimStartAndEnd().IsEmpty() || All.ContainsByPredicate([&K](const FWork& X) { return X.Key == K; })) continue;
   FWork W; W.Order = In.Tasks.Num() + 1; W.Key = K; W.Start = Wd.Start; W.End = Wd.End; W.L.Source = Wd.Text.TrimStartAndEnd();
-  Split(Wd.Text, W.L.Where, W.L.What);
+  Split(Wd.Text, W.L.Where, W.L.What, bAll ? 2 * MostChars : MostChars);
   All.Add(W);
  }
  // tonight's filed cards, ticked off on one line
@@ -193,6 +194,8 @@ FNote BuildNote(const FIn& In, bool bAll)
   All.Insert(W, 0);
  }
  for (FWork& W : All) if (W.Windowed()) W.L.When = Window(W.Start, W.End, In.Clock, In.bFreeform);
+ // D45-20261110: how much each matters (a window open now is DO FIRST)
+ for (FWork& W : All) W.L.Rank = S47TonightNote::RankOf(W.L.Source, W.Windowed() && In.Clock >= W.Start && In.Clock < W.End);
  // the spoiler limits before anything is chosen, so that what is counted is what could be shown
  All.RemoveAll([&In](const FWork& W) { return !Clean(In, LineText(W.L)); });
  for (FWork& W : All) W.L.Key = W.Key;
@@ -249,16 +252,21 @@ FNote BuildNote(const FIn& In, bool bAll)
   if (I == Next) continue;
   (!IsOpen(All[I]) ? Done : All[I].Windowed() ? Windows : Rest).Add(All[I]);
  }
- Windows.Sort([](const FWork& A, const FWork& B) { return A.Start < B.Start; });
- Rest.Sort([](const FWork& A, const FWork& B) { return A.Order < B.Order; });
+ // D45-20261110: in Freeform by importance first (Story keeps its list's own order): what must be done first has room on the
+ // note before a window that waits, and both before the chores
+ const bool bRanked = In.bFreeform;
+ Windows.Sort([bRanked](const FWork& A, const FWork& B) { return bRanked && A.L.Rank != B.L.Rank ? A.L.Rank < B.L.Rank : A.Start < B.Start; });
+ Rest.Sort([bRanked](const FWork& A, const FWork& B) { return bRanked && A.L.Rank != B.L.Rank ? A.L.Rank < B.L.Rank : A.Order < B.Order; });
  Done.Sort([](const FWork& A, const FWork& B) { return A.Order < B.Order; });
  const int32 HasNext = Next != INDEX_NONE ? 1 : 0;
  const int32 OpenCount = Windows.Num() + Rest.Num();
  int32 DoneShown = bAll ? Done.Num() : FMath::Min(Done.Num(), MostDone);
  if (!bAll && HasNext + OpenCount + DoneShown > MostLines) DoneShown = FMath::Min(Done.Num(), 1);
  int32 Room = bAll ? OpenCount : FMath::Max(0, MostLines - HasNext - DoneShown);
+ int32 FirstShown = 0;
+ if (bRanked) { for (const FWork& W : Rest) FirstShown += W.L.Rank == 0 ? 1 : 0; FirstShown = FMath::Min(FirstShown, Room); Room -= FirstShown; }
  const int32 WindowsShown = FMath::Min(Windows.Num(), Room); Room -= WindowsShown;
- const int32 RestShown = FMath::Min(Rest.Num(), Room);
+ const int32 RestShown = FirstShown + FMath::Min(Rest.Num() - FirstShown, Room);
  N.More = OpenCount - WindowsShown - RestShown;
  for (int32 I = Done.Num() - DoneShown; I < Done.Num(); ++I) N.Lines.Add(Done[I].L);
  if (HasNext) { FLine L = All[Next].L; L.Mark = EMark::Next; N.Lines.Add(L); }
@@ -313,6 +321,18 @@ FNote BuildNote(const FIn& In, bool bAll)
 S47TonightNote::FNote S47TonightNote::Gather(const FIn& In, bool bAll) { return S47TonightNoteLocal::BuildNote(In, bAll); }
 S47TonightNote::FNote S47TonightNote::Build(const FIn& In) { return Gather(In, false); }
 S47TonightNote::FDone& S47TonightNote::Tonight() { static FDone Mem; return Mem; }
+S47TonightNote::FSeen& S47TonightNote::Seen() { static FSeen Mem; return Mem; }
+
+uint8 S47TonightNote::RankOf(const FString& Source, bool bWindowOpen)
+{
+ // D45-20261110: by the task's own words, as FS47FreeformSession::Tasks writes them (keep these heads when a line is reworded)
+ const FString Up = Source.TrimStartAndEnd().ToUpper();
+ if (bWindowOpen || Up.StartsWith(TEXT("FEEDER /")) || Up.StartsWith(TEXT("SERVICE TRUCK / TANK EMPTY")) || Up.StartsWith(TEXT("TRUCK /")) || Up.Contains(TEXT("/ DIAGNOSE AT THE STATUS PC"))) return 0;
+ static const TCHAR* const Later[] = { TEXT("STATION GOAL /"), TEXT("ROUND /"), TEXT("MAILBOX /"), TEXT("MAIL ORDER /"), TEXT("OPS / THERE IS A LETTER"), TEXT("OPS / DR. WARD"), TEXT("LEFT BEHIND /"), TEXT("SERVICE WORK ORDER") };
+ for (const TCHAR* Head : Later) if (Up.StartsWith(Head)) return 2;
+ if (Up.StartsWith(TEXT("CASE /")) && Up.Contains(TEXT("CHOOSE A TEST"))) return 2;
+ return 1;
+}
 
 bool S47TonightNote::SelfTest(TArray<FString>& Lines)
 {
@@ -390,7 +410,7 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  // PT-NOTEBOOK-20261109: the remote feeder looked at is ticked off and stays struck through until 08:00, also once the list lets it go.
  {
   FDone Mem;
-  const FString Feeder = TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Gone by noon.");
+  const FString Feeder = TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Check it before noon."); // D45-20261110: as the Director words it
   FIn Trail; Trail.bFreeform = true; Trail.Done = &Mem; Trail.Clock = Day2 + 86400. + 1.2 * 3600.;
   Trail.Tasks = { { Feeder, false }, { TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false } };
   FNote T = Gather(Trail, true);
@@ -412,6 +432,30 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   Trail.Tasks.RemoveAt(0); Trail.Game = 7; Trail.Clock += 600;
   Check(Find(Gather(Trail, true), TEXT("remote feeder")) == INDEX_NONE, TEXT("another game loaded the same night forgets what this one did"));
   Check(S47Script::LintText(Plain(T)).IsEmpty(), TEXT("the remembered lines keep to the spoiler limits"));
+ }
+ // D45-20261110 (Tom: a plain list, by importance): the feeder first, the bearing slip tonight, the station goal when you can; a window
+ // open now first; on the six-line note the feeder before the chores even at the end of the list; NOW with the slip's second sentence.
+ {
+  const FString Slip = TEXT("BEARING SLIP / New circle on your map, 1.1 miles south-southwest of SARO. Drive out and look before noon.");
+  Check(RankOf(TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."), false) == 0 && RankOf(Slip, false) == 1
+   && RankOf(TEXT("STATION GOAL / ARRAY 19 OF 27: REPAIR THE WEST BRANCH AT ANTENNA S-13. YOU HAVE THE PARTS."), false) == 2 && RankOf(TEXT("PHOTO LAB: DEVELOP"), true) == 0
+   && RankOf(TEXT("S-13 / Diagnose at the status PC, replace the relay and run the local out-and-back test."), false) == 0 && RankOf(TEXT("ROUND / Today: the tank."), false) == 2,
+   TEXT("DO FIRST the feeder and a dish's fault, TONIGHT the bearing slip, WHEN YOU CAN the station goal and the round; a window open now is first"));
+  FIn Order; Order.bFreeform = true; Order.Clock = Day2 + 21 * 3600.;
+  for (int32 I = 0; I < 7; ++I) Order.Tasks.Add({ FString::Printf(TEXT("ROUND / Today: stop number %d."), I + 1), false });
+  Order.Tasks.Add({ Slip, false });
+  Order.Tasks.Add({ TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."), false });
+  const FNote Short = Build(Order), Long = Gather(Order, true);
+  const int32 Feed = Find(Short, TEXT("FEEDER")), Bear = Find(Short, TEXT("New circle")), Stop = Find(Short, TEXT("stop number 1"));
+  const int32 LongSlip = Find(Long, TEXT("New circle"));
+  Check(Short.Lines.Num() == MostLines && Feed == 0 && Bear == 1 && (Stop == INDEX_NONE || Stop > Bear) && Short.Lines[Feed].Rank == 0 && Short.Lines[Bear].Rank == 1 && Short.More == 3,
+   TEXT("the six-line note puts DO FIRST before TONIGHT before the chores, whatever the list's order, and counts the rest"));
+  Order.Tasks[7].bDone = true;
+  const FNote Ticked = Gather(Order, true);
+  const int32 TickedSlip = Find(Ticked, TEXT("New circle"));
+  Check(LongSlip != INDEX_NONE && Long.Lines[LongSlip].What.EndsWith(TEXT("Drive out and look before noon.")) && Short.Lines[Bear].What == TEXT("New circle on your map, 1.1 miles south-southwest of SARO.")
+   && TickedSlip != INDEX_NONE && Ticked.Lines[TickedSlip].Mark == EMark::Done && Ticked.Lines[TickedSlip].Key == Long.Lines[LongSlip].Key && S47Script::LintText(Plain(Long)).IsEmpty(),
+   TEXT("NOW has the slip's whole words, the note its first sentence; ticked off it keeps its key"));
  }
  // Story (chapter 2): the list's own order, the first thing not done is next with the objective's place; Story's words are its own.
  FIn Story;

@@ -95,6 +95,62 @@ namespace
   }
   return B;
  }
+ // D45-20261110 (Tom: no more "wah wah" on the radios): a message on the set is the set's static breaking up in the rhythm of
+ // speech, not a voice: the same timing as MessageBuffer (squelch open, syllables, drop-outs, squelch close), but the "voice" is
+ // the static (the bought lic:radio_static when given, else white noise) in a fixed speech band that steps per syllable and never
+ // sweeps (the moving resonators were the "wah"), with dry pops (the bought short crackle when given). A new one every call.
+ TSharedPtr<FS47AudioBuffer> GarbleBuffer(const TSharedPtr<FS47AudioBuffer>& Bed,const TSharedPtr<FS47AudioBuffer>& Pop,int32 Seed)
+ {
+  static constexpr int32 MsgRate=22050;static constexpr double Dur=3.5,Open=.16,Close=.14,VoiceRms=.16;
+  auto B=MakeShared<FS47AudioBuffer>(1,FMath::RoundToInt(MsgRate*Dur),MsgRate);FRandomStream R(Seed);
+  float* Out=B->GetChannelData(0);const int32 N=B->Length();
+  struct FSyl{double At,Len,Fc,K;};TArray<FSyl> Syl;
+  for(double T=Open+.06;T<Dur-Close-.2;){const double Len=R.FRandRange(.09f,.24f);Syl.Add({T,Len,R.FRandRange(1150.f,1900.f),R.FRandRange(.5f,1.f)});T+=Len+(R.FRand()<.2f?R.FRandRange(.14f,.3f):R.FRandRange(.02f,.06f));}
+  const bool bBed=Bed.IsValid()&&Bed->Length()>0;const float* Bs=bBed?Bed->GetChannelData(0):nullptr;
+  const double Step=bBed?Bed->SampleRate()/double(MsgRate):1.;double Read=bBed?R.FRandRange(0.f,float(Bed->Length())):0.;
+  // The static through the band: one biquad (the Web Audio band-pass, Q .7), re-tuned at each syllable.
+  TArray<double> V;V.SetNumZeroed(N);double C[5]={0,0,0,0,0},X1=0,X2=0,Y1=0,Y2=0,Sum=0;int32 S=-1,Count=0;
+  for(int32 I=0;I<N;++I)
+  {
+   const double T=double(I)/MsgRate;
+   int32 Now=S;while(Now<Syl.Num()-1&&T>=Syl[Now+1].At)++Now;
+   if(Now!=S||I==0){S=Now;FS47BiquadFilterNode::Coefficients(ES47BiquadType::Bandpass,MsgRate,S>=0?Syl[S].Fc:1500.,0,.7,0,C);}
+   double In=R.FRand()*2.-1.;if(bBed){In=Bs[FMath::Clamp(int32(Read),0,Bed->Length()-1)];Read+=Step;if(Read>=Bed->Length())Read=0;}
+   const double Y=C[0]*In+C[1]*X1+C[2]*X2-C[3]*Y1-C[4]*Y2;X2=X1;X1=In;Y2=Y1;Y1=Y;
+   // the gate: low between syllables while the carrier is up, pushed up through each syllable
+   double Env=0;
+   if(T>=Open&&T<=Dur-Close)
+   {
+    Env=.22;
+    if(S>=0){const FSyl& Y0=Syl[S];const double U=(T-Y0.At)/Y0.Len;if(U>=0&&U<=1)Env=.22+(Y0.K-.22)*FMath::Min(1.,FMath::Min(U/.1,(1.-U)/.35));}
+   }
+   V[I]=Y*Env;if(Env>.22){Sum+=V[I]*V[I];++Count;}
+  }
+  const double Lift=VoiceRms/FMath::Max(1e-5,FMath::Sqrt(Sum/FMath::Max(1,Count))); // either bed at the same level
+  const bool bPop=Pop.IsValid()&&Pop->Length()>0;
+  double Crack=0;
+  for(int32 I=0;I<N;++I)
+  {
+   const double T=double(I)/MsgRate;
+   // the set dropping words now and then
+   if(R.FRand()<.00012f)Crack=R.FRandRange(.03f,.1f);
+   const double Keep=Crack>0?.1:1.;Crack=FMath::Max(0.,Crack-1./MsgRate);
+   const double Voice=FMath::Atan(V[I]*Lift*2.)*.5*Keep; // a small, overdriven speaker
+   const bool Sq=T<Open||T>Dur-Close;
+   const double Hiss=(R.FRand()*2.f-1.f)*(Sq?.5:.05);
+   const double Click=FMath::Exp(-T*340.)*.45+FMath::Exp(-FMath::Max(0.,T-(Dur-Close))*340.)*(T>Dur-Close?.3:0.);
+   const double Fade=FMath::Clamp((Dur-T)/.01,0.,1.);
+   Out[I]=float((Voice+Hiss+Click)*Fade);
+  }
+  // dry pops in about one syllable in five
+  for(const FSyl& Y0:Syl)if(R.FRand()<.2f)
+  {
+   const int32 At0=FMath::Clamp(int32((Y0.At+R.FRand()*Y0.Len)*MsgRate),0,N-1);const double Pk=R.FRandRange(.25f,.6f);
+   if(bPop){const float* Ps=Pop->GetChannelData(0);const double Ps0=Pop->SampleRate()/double(MsgRate);for(int32 I=0;At0+I<N&&int32(I*Ps0)<Pop->Length();++I)Out[At0+I]=FMath::Clamp(Out[At0+I]+float(Ps[int32(I*Ps0)]*Pk*2.),-1.f,1.f);}
+   else{double Last=0;for(int32 I=0;I<int32(MsgRate*.006)&&At0+I<N;++I){const double P=(R.FRand()*2.f-1.f)*Pk*FMath::Exp(-double(I)/MsgRate*2000.);Out[At0+I]=FMath::Clamp(Out[At0+I]+float(P-Last*.6),-1.f,1.f);Last=P;}}
+  }
+  return B;
+ }
  TSharedPtr<FS47AudioBuffer> HissBuffer()
  {
   auto B=MakeShared<FS47AudioBuffer>(1,Rate*2,Rate); FRandomStream R(47241);
@@ -193,9 +249,10 @@ bool FS47EncounterSound::Bind(US47Audio* A)
 bool FS47EncounterSound::Message(US47Audio* Audio)
 {
  if(!Bind(Audio)||bHeld)return false;
- if(!MessageSound)MessageSound=MessageBuffer();
+ // D45-20261110: the set's static breaking up in speech's rhythm, made anew each time (Talk keeps the slowed voice)
+ const TSharedPtr<FS47AudioBuffer> Garble=GarbleBuffer(Owner->Lic(TEXT("radio_static")),Owner->Lic(TEXT("radio_crackle_short")),FMath::Rand());
  FS47AudioContext::FBatch Batch(*Context);
- auto Src=Context->CreateBufferSource();Src->Buffer=MessageSound;
+ auto Src=Context->CreateBufferSource();Src->Buffer=Garble;
  auto Level=Context->CreateGain();Level->Gain.SetValue(.8*FMath::Clamp(double(Owner->RadioLevel),.35,1.));
  Src->Connect(Level);Level->Connect(Owner->SfxBus);Src->Start(Context->CurrentTime());
  MessageSource=Src;
@@ -494,6 +551,16 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
   const double Rms=FMath::Sqrt(Mid/FMath::Max(1,Count));
   Lines.Add(FString::Printf(TEXT("INFO walkie message RMS %.3f peak %.2f"),Rms,Peak));
   Check(Rms>.05&&Rms<.5&&Peak<=1.2f,TEXT("walkie message is audible, with a voice over its hiss"));
+ }
+ {
+  // D45-20261110: the walkie message is the set's static in speech's rhythm: audible over its hiss, noise and not a pitched
+  // voice (many zero crossings), and never the same twice
+  const auto One=GarbleBuffer(nullptr,nullptr,4701),Two=GarbleBuffer(nullptr,nullptr,4702);const float* P=One->GetChannelData(0);const float* Q=Two->GetChannelData(0);
+  double Mid=0,Apart=0;int32 Count=0,Crossings=0;float Peak=0;
+  for(int32 I=0;I<One->Length();++I){Peak=FMath::Max(Peak,FMath::Abs(P[I]));Apart+=FMath::Abs(P[I]-Q[I]);const double Sec=double(I)/22050;if(Sec>.3&&Sec<3.2){Mid+=P[I]*P[I];++Count;if(I>0&&(P[I]>=0)!=(P[I-1]>=0))++Crossings;}}
+  const double Rms=FMath::Sqrt(Mid/FMath::Max(1,Count)),PerSec=Crossings/2.9;
+  Lines.Add(FString::Printf(TEXT("INFO walkie static message RMS %.3f peak %.2f, %.0f crossings a second, two apart by %.0f"),Rms,Peak,PerSec,Apart));
+  Check(Rms>.05&&Rms<.5&&Peak<=1.2f&&PerSec>1000&&Apart>10,TEXT("D45: walkie message is static breaking up in speech's rhythm, audible over its hiss, new each time"));
  }
  auto* A=OfflineAudio(); FS47EncounterSound Mix;
  TArray<float> Samples; Samples.SetNumZeroed(Rate/4*2);

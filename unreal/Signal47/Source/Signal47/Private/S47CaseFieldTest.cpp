@@ -133,7 +133,7 @@ void FS47CaseFieldTest::Step(double Dt)
  if(O.Stage==9688){O.Finish(true,TEXT("Roof preparation and explicit gate disturbance geometry rendered; visual review required, no window completion claimed."));return;}
  if(O.Stage==9600)
  {
-  if(!Check(F.TerminalOnGlass()&&HasText(TEXT("Visitors around the base"))&&HasText(TEXT("OPTIONAL WORKING HUNCH")),TEXT("native case board shows compact controls and optional hunch separately")))return;
+  if(!Check(F.TerminalOnGlass()&&HasText(TEXT("Visitors around the base"))&&HasText(TEXT("YOUR WORKING HUNCH (OPTIONAL)")),TEXT("native case board shows compact controls and optional hunch separately")))return;
   O.Shot(TEXT("casefield-board-before"));if(!Click(TEXT("Plan this test: Controlled access")))return;O.Go(9601,.4);return;
  }
  if(O.Stage==9601)

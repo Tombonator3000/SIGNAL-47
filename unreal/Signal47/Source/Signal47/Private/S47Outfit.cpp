@@ -51,7 +51,7 @@ FS47TruckTune FS47Outfit::TuneFor(const FS47FreeformSession* F)
 FString FS47Outfit::RdfLine(double Metres,const TCHAR* Way)
 {
  const TCHAR* How=Metres<800?TEXT("loud, close"):Metres<1800?TEXT("clear"):TEXT("faint, a long way off");
- return FString::Printf(TEXT("The direction finder's loop nulls toward the %s: something keying the band, %s. It says nothing of what."),Way?Way:TEXT("?"),How);
+ return FString::Printf(TEXT("The direction finder points %s: something is transmitting out there, %s. No way to tell what."),Way?Way:TEXT("?"),How); // D45-20261110: plain words
 }
 
 FString FS47Outfit::Compare(const FS47TruckTune& Now)

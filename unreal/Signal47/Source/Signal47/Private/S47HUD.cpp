@@ -14,6 +14,7 @@
 #include "S47FieldRadio.h"
 #include "S47DaleVoice.h"
 #include "S47HudGauges.h"
+#include "S47FreeformTerminal.h"
 #include "S47MessageQueue.h"
 #include "S47TonightNote.h"
 #include "S47SaroSave.h"
@@ -85,6 +86,7 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47RoomLights.h"
+#include "S47Darkroom.h"
 #include "S47RoomLightsTest.h"
 #include "S47ReactiveLightTest.h"
 #include "S47FarmWorld.h"
@@ -270,6 +272,7 @@ void AS47HUD::Start()
 		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
 		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)
 		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)
 		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines); // (M5: PHYSICS-20261108 and its lure, SARO-COT)
 		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
@@ -304,6 +307,7 @@ void AS47HUD::Start()
 		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);
+		bOk &= FS47Darkroom::SelfTest(Lines); // (D45-20261110: the darkroom's door and safelight rule, the fogged print, its saved switch)
 		bOk &= S47FarmWorld::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);

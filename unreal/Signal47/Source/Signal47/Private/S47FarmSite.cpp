@@ -807,7 +807,7 @@ bool FS47FarmSite::Use()
    UE_LOG(LogTemp,Display,TEXT("S47: daylight look at %s: reading %d"),*Place,Read);
    M->RequestAutosave();
   }
-  M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col({S47Kit::Text(Page),S47Kit::Small(bFirst?TEXT("Kept as a field record. Gone by noon."):TEXT("Already in your field records."))}),760));
+  M->UI->Open(S47Kit::Shell(M->UI,Title.ToUpper(),S47Kit::Col({S47Kit::Text(Page),S47Kit::Small(bFirst?TEXT("Kept as a field record. The marks won't last past noon."):TEXT("Already in your field records."))}),760)); // D45-20261110: plain words
   return true;
  }
  if(bNew)M->Freeform->RecordEvidence(FindingId(),bFarm

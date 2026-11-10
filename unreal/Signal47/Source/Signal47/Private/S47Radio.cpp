@@ -1,6 +1,7 @@
 #include "S47Radio.h"
 
 #include "S47Audio.h"
+#include "S47CB.h"
 #include "S47Timeline.h"
 #include "S47Media.h"
 #include "S47NightLine.h"
@@ -14,16 +15,6 @@ namespace
 	double Day(double Clock) { return FMath::Fmod(FMath::Fmod(Clock, 86400.) + 86400., 86400.); }
 	FString Cap(FString S) { if (!S.IsEmpty()) S[0] = FChar::ToUpper(S[0]); return S; }
 	bool Caller(const FString& Who) { return Who == TEXT("woman") || Who == TEXT("man") || Who == TEXT("old") || Who == TEXT("boy") || Who == TEXT("news"); }
-	double Pitch(const FString& Who)
-	{
-		if (Who == TEXT("woman")) return 212;
-		if (Who == TEXT("man")) return 138;
-		if (Who == TEXT("roswell")) return 126;
-		if (Who == TEXT("boy")) return 262;
-		if (Who == TEXT("news")) return 150;
-		if (Who == TEXT("old")) return 104;
-		return 116;
-	}
 	TSharedPtr<FS47RadioSeg> Segment(const FString& Kind, double Len = 0)
 	{
 		auto S = MakeShared<FS47RadioSeg>(); S->Kind = Kind; S->Len = Len; return S;
@@ -556,15 +547,12 @@ void FS47Station::Wake()
 	auto X = MakeShared<FNodes>();
 	{
 	FS47AudioContext::FBatch Batch(*Ctx);
-	X->Horn = Ctx->CreateOscillator(); X->Horn->SetType(TEXT("sawtooth")); X->Horn->Frequency.SetValue(120);
-	X->Vib = Ctx->CreateOscillator(); X->Vib->Frequency.SetValue(5.3);
-	auto Vd = Ctx->CreateGain(); Vd->Gain.SetValue(2.2); X->Vib->Connect(Vd); Vd->Connect(X->Horn->Frequency);
-	X->Mute = Ctx->CreateBiquadFilter(); X->Mute->SetType(TEXT("lowpass")); X->Mute->Frequency.SetValue(400); X->Mute->Q.SetValue(6.5);
-	X->Voice = Ctx->CreateGain(); X->Voice->Gain.SetValue(0); X->Horn->Connect(X->Mute); X->Mute->Connect(X->Voice); X->Voice->Connect(B);
+	// D45-20261110: a line without a take is the station's static in the words' rhythm (S47CB::StaticLine, into Voice), no horn
+	X->Voice = Ctx->CreateGain(); X->Voice->Gain.SetValue(1); X->Voice->Connect(B);
 	X->Osc = Ctx->CreateOscillator(); X->Osc->Frequency.SetValue(760);
 	X->Car = Ctx->CreateGain(); X->Car->Gain.SetValue(0); X->Osc->Connect(X->Car); X->Car->Connect(B);
 	X->Mus = Ctx->CreateGain(); X->Mus->Gain.SetValue(1); X->Mus->Connect(B);
-	X->Horn->Start(); X->Vib->Start(); X->Osc->Start(); N = X;
+	X->Osc->Start(); N = X;
 	}
 	Sync(); AnnounceRecordedLine();
 }
@@ -572,7 +560,7 @@ void FS47Station::Sleep()
 {
 	const auto X = N; if (!X) return; N.Reset(); CancelArchive(); CancelHost();
 	if (X->Music) X->Music->Stop(); StopAnthem(*X); StopTrack(*X);
-	X->Horn->Stop(); X->Vib->Stop(); X->Osc->Stop(); X->Voice->Disconnect(); X->Car->Disconnect(); X->Mus->Disconnect();
+	X->Osc->Stop(); X->Voice->Disconnect(); X->Car->Disconnect(); X->Mus->Disconnect();
 }
 void FS47Station::Sync()
 {
@@ -593,11 +581,11 @@ void FS47Station::Sync()
 	{
 		FS47AudioContext::FBatch Batch(*Ctx); auto Src = Ctx->CreateBufferSource(); Src->Buffer = Tune; Src->bLoop = true; Src->Connect(X->Mus); Src->Start(Now, FMath::Fmod(At, Tune->Duration())); X->Music = Src;
 	}
-	{
-		FS47AudioContext::FBatch Batch(*Ctx);
-		X->Horn->Frequency.CancelScheduledValues(Now); X->Mute->Frequency.CancelScheduledValues(Now); X->Voice->Gain.CancelScheduledValues(Now); X->Voice->Gain.SetValueAtTime(0, Now);
-	}
 	if (S.Kind == TEXT("talk") && !bHostReady) { PrepareHost(); return; }
+	// D45-20261110: the static voice's bed and pops (the bought static and crackle when the build has them); its sources are
+	// host sources, so the StopHostSources above ends a line that was sounding
+	const S47CB::FStaticBed Bed = S.Kind == TEXT("talk") ? S47CB::StaticBed(Radio.Audio) : S47CB::FStaticBed();
+	const TSharedPtr<FS47AudioBuffer> Pop = Radio.Audio->Lic(TEXT("radio_crackle_short"));
 	{
 		FS47AudioContext::FBatch Batch(*Ctx);
 		if (S.Kind == TEXT("talk") && bHostReady)
@@ -621,14 +609,17 @@ void FS47Station::Sync()
 						PartAt += Buffer->Duration() + FRAGMENT_GAP;
 					}
 				}
-				else if (L.Line.Who != TEXT("evening") && L.Line.Who != TEXT("retimed") && L.At + L.Secs > At) for (const auto& Y : S47Radio::Syllables(L.Text, L.Secs))
+				else if (L.Line.Who != TEXT("evening") && L.Line.Who != TEXT("retimed") && L.At + L.Secs > At)
 				{
-					if (L.At + Y.At < At) continue;
-					const double Ts = Now + L.At + Y.At - At, F = Pitch(L.Line.Who) * Y.F;
-					auto& Fq = X->Horn->Frequency; auto& Mf = X->Mute->Frequency; auto& G = X->Voice->Gain;
-					Fq.SetValueAtTime(F, Ts); Fq.LinearRampToValueAtTime(F * 0.94, Ts + Y.D);
-					Mf.SetValueAtTime(330, Ts); Mf.LinearRampToValueAtTime(1350, Ts + Y.D * 0.3); Mf.LinearRampToValueAtTime(430, Ts + Y.D);
-					G.SetValueAtTime(0, Ts); G.LinearRampToValueAtTime(0.42, Ts + 0.025); G.SetValueAtTime(0.42, Ts + Y.D * 0.7); G.LinearRampToValueAtTime(0, Ts + Y.D);
+					// D45-20261110 (Tom: no "wah wah"): the rest of the line as static breaking up in its syllables, at the old voice's .42 of the CB's .5
+					TArray<TSharedPtr<FS47BufferSourceNode>> Made;
+					S47CB::StaticLine(Ctx.ToSharedRef(), X->Voice, Bed, Pop, L.Text, L.Secs, Now + L.At - At, FMath::Max(0., At - L.At), 0.85, Made);
+					for (const auto& Source : Made)
+					{
+						TWeakPtr<FS47Station> Weak = AsShared(); TWeakPtr<FS47BufferSourceNode> Ws = Source;
+						Source->OnEnded = [Weak, Ws] { if (auto St = Weak.Pin()) { if (auto Src = Ws.Pin()) { Src->Disconnect(); St->HostSources.Remove(Src); } } };
+						HostSources.Add(Source);
+					}
 				}
 			}
 		}

@@ -25,6 +25,18 @@ Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemer
 - [ ] **D45-15 Gule bokser SC4 og SSC08:** hva de er; bort eller erstattes.
 - [ ] **D45-16 Gatelysene:** fortsatt ikke lys fra armaturene.
 - [ ] **D45-17 Fremkalling:** døra må lukkes og rødlysbryteren slås på før man kan fremkalle.
+- [ ] **D45-18 Butikklista på OPS:** må sorteres bedre.
+- [ ] **D45-19 Bodycam-innstilling:** i tillegg til VHS-innstillingen: bodycam-look blandet med VHS-effekter (sjekk hvordan bodycam ser ut).
+- [ ] **D45-20 «Array 12 of 27»:** står alltid det samme uansett hvor mange som er reparert.
+- [ ] **D45-21 S13 på kartet:** beskjed om å reparere S13, men den er ikke merket på kartet.
+- [ ] **D45-22 Tall One og musikken:** testet Tall One ved fôrbutikken (F10): den dukket ikke opp, og vanlig bymusikk spilte; musikken skal gå over til skrekk når en alien kommer nærmere. Toms spørsmål: har spillet et trip camera?
+- [ ] **D45-23 Lommelyktlader:** hvor er laderen til lommelyktbatteriet?
+- [ ] **D45-24 Caliche Ledger:** skal se ut som en ekte avis; kanskje kan man trykke på en artikkel med merkelig info og få stedet på kartet.
+- [ ] **D45-25 Pinboard:** Tom er usikker på om den er en god idé og om den virker; kritikerrunde og tilbakemelding.
+- [ ] **D45-26 Dag 1:** mer action, så spilleren blir hektet og vil finne ut mer.
+- [ ] **D45-27 Geigertelleren:** mer ekte geigertellerlyd.
+- [ ] **D45-28 Brente ringer:** skal se ekte ut: oser litt røyk, knitrer litt, glør på bakken.
+- [ ] **D45-29 Alien-bobblehead:** Toms nedlastede `alienbubblehead.glb` (skrivebordet) på dashbordet i bilen.
 
 ## Toms fikseliste 10. november (etter nattskiftet, d43)
 

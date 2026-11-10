@@ -440,8 +440,9 @@ void SS47Hud::Construct(const FArguments& InArgs)
 void SS47Hud::Objective(const FString& Text)
 {
 	if (Text == ObjectiveText) return;
-	// HUD-D-20261109: a new task brings its card in; none takes it away
-	NoteT = Text.TrimStartAndEnd().IsEmpty() ? -1.f : 0.f;
+	// HUD-D-20261109: a new task brings its card in; none takes it away. D45-20261110 (Tom: the card flickered with the count while a
+	// signal recorded): the same task with new figures is no new task, so the card is rewritten where it stands and is not brought in again.
+	if (!S47HudGauges::SameTask(ObjectiveText, Text)) NoteT = Text.TrimStartAndEnd().IsEmpty() ? -1.f : 0.f;
 	ObjectiveText = Text;
 	// "FRAME 01 // INSPECT THE PRINT": the head goes on the tag line, before the clock; without one
 	// the tag is the place

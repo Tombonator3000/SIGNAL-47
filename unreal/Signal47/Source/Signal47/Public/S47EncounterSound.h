@@ -30,9 +30,10 @@ public:
  // 0 to 1: how much of the bought ground is asked for now. The score stands back for it (S47Main): two beds on one bus was mud.
  double DreadNow() const;
  void UpdateRadio(US47Audio* Audio,double Level,TOptional<FVector> AtThree={},bool bHeld=false);
- // A message on the set: click, squelch, a voice too broken to make out, and the squelch closing.
+ // A message on the set: click, squelch, the set's static breaking up in speech's rhythm (D45-20261110: no voice babble; the
+ // caption carries the words), new each time, and the squelch closing.
  bool Message(US47Audio* Audio);
- // The same broken voice, slowed and from a place: not quite speech, not through any set.
+ // A broken made voice, slowed and from a place: not quite speech, not through any set (the alien at the door; unchanged).
  bool Talk(US47Audio* Audio,const FVector& AtThree);
  // One small burst of crackle on the set, over the hiss. Strength 0 to 1. False if the set is not sounding yet.
  bool Crackle(US47Audio* Audio,double Strength);

@@ -1,5 +1,6 @@
 #include "S47StreetLamps.h"
 #include "S47Night.h"
+#include "S47SaroPower.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "CollisionQueryParams.h"
@@ -117,6 +118,9 @@ namespace
    for (uint32 I = 0; I < Colors; ++I) Dst.VertexBuffers.ColorVertexBuffer.VertexColor(I) = B.ColorVertexBuffer.VertexColor(I);
   }
   Dst.bHasColorVertexData = Colors > 0; Dst.bBuffersInlined = true; Dst.bIsOptionalLOD = false;
+  // D45-20261110: keep the cut copy's indices on the CPU (as S47MotelV2's cut does). In a packaged game the RHI upload discarded them,
+  // so Field(), cutting the array's posts from Highway()'s copy of g26, read no triangles and the eleven field heads were never built.
+  Dst.IndexBuffer.TrySetAllowCPUAccess(true);
   Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0; Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
   bool InitRT = Out->bSupportRayTracing;
 #if !WITH_EDITOR
@@ -187,6 +191,8 @@ namespace
    L.Pole = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:pole"), Family, I), PoleMesh, Feet[I], Q, FVector(1, Height, 1));
    L.Arm = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:arm"), Family, I), ArmMesh, Root, Q);
    UStaticMeshComponent* Head = Place(W, ParentComp, ParentNode, FString::Printf(TEXT("%s:%d:head"), Family, I), HeadMesh, Slip, Q);
+   // D45-20261110: the head casts no shadow, so its bowl and housing never shade its own spot (pole and arm keep theirs).
+   Head->SetCastShadow(false);
    L.Head = Head;
    L.Emitter = Slip + Q.RotateVector(EmitAt); L.Normal = Q.RotateVector(EmitNormal);
    // STREETLAMP-GLOW: one dark lens material on every LOD's lens slot (it was on LOD0's alone) and the halo under the bowl
@@ -681,7 +687,7 @@ namespace
 }
 
 FVector EmitterLocal() { return EmitAt; }
-FVector SpotLocal() { return EmitAt + EmitNormal * .03; }
+FVector SpotLocal() { return EmitAt + EmitNormal * SpotBelow; }
 
 int32 MatchLodSlots(UStaticMeshComponent* Part)
 {
@@ -790,7 +796,8 @@ int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit)
  const TArray<FLamp>* Lamps = W ? All().Find(W) : nullptr;
  if (!Lamps || Lamps->IsEmpty()) { Lines.Add(TEXT("Street lamp glow: none of the new lamps is built (no models, or -S47StreetLampsOff)")); return 0; }
  const bool bHaloWanted = CVarHalo.GetValueOnAnyThread() > 0;
- int32 Bad = 0, Measured = 0, Away = 0;
+ UWorld* World = W->GetWorld();
+ int32 Bad = 0, Measured = 0, Away = 0, Dim = 0;
  TArray<FString> Each;
  for (const FLamp& L : *Lamps)
  {
@@ -801,7 +808,7 @@ int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit)
   const USpotLightComponent* S = L.Spot.Get();
   const FTransform T = Head->GetComponentTransform();
   const FVector Emit = T.TransformPosition(S47Three::ToUE(EmitAt));
-  const FBox Box = Head->Bounds.GetBox().ExpandBy(5.0);
+  const FBox Box = Head->Bounds.GetBox().ExpandBy(FVector(5, 5, 5 + SpotBelow * 100), FVector(5.0)); // D45-20261110: the spot is SpotBelow under the bowl
   const bool bIn = S && Box.IsInside(S->GetComponentLocation());
   const double Off = S ? FVector::Dist(S->GetComponentLocation(), Emit) : 1e6; // centimetres
   // straight down is -Z in Unreal; the spot's tilt from it
@@ -809,13 +816,35 @@ int32 MeasureGlow(AS47Web* W, TArray<FString>& Lines, int32& Lit)
   const bool bSpot = S && S->IsVisible() && S->Intensity > 0;
   const bool bHalo = L.Glow.Halo.IsValid() && L.Glow.Halo->GetVisibleFlag();
   Lit += L.Glow.bLit;
-  const bool bOk = bIn && Off <= 6 && Tilt <= 45 && (!bSpot || L.Glow.bLit) && bHalo == (L.Glow.bLit && bHaloWanted && L.Glow.Halo.IsValid());
+  // D45-20261110: the lux the spot gives the ground straight under it: candelas x the cone's falloff x the radius window over the
+  // drop squared (Unreal's own spot and radius falloff), so a dark pool under a lit bowl shows here.
+  double Lux = -1, Drop = 0;
+  if (S && World)
+  {
+   const FVector From = S47Three::ToThree(S->GetComponentLocation());
+   const TArray<UPrimitiveComponent*> Own = { L.Pole.Get(), L.Arm.Get(), L.Head.Get() };
+   double Ground = 0;
+   if (Down(World, From, 15, Own, Ground))
+   {
+    Drop = FMath::Max(.1, From.Y - Ground);
+    const double CosIn = FMath::Cos(FMath::DegreesToRadians(double(S->InnerConeAngle))), CosOut = FMath::Cos(FMath::DegreesToRadians(double(S->OuterConeAngle)));
+    const double Falloff = FMath::Square(FMath::Clamp((FMath::Cos(FMath::DegreesToRadians(Tilt)) - CosOut) / FMath::Max(1e-4, CosIn - CosOut), 0.0, 1.0));
+    const double Window = FMath::Square(FMath::Clamp(1.0 - FMath::Square(FMath::Square(Drop * 100.0 / FMath::Max(1.0, double(S->AttenuationRadius)))), 0.0, 1.0));
+    Lux = bSpot && S->IntensityUnits == ELightUnits::Candelas ? double(S->Intensity) * Falloff * Window / (Drop * Drop) : 0.0;
+   }
+  }
+  Dim += bSpot && L.Glow.bLit && Lux >= 0 && Lux < 2;
+  // D45-20261110: the highway's heads are the county's (S47SaroPower.h): none may stand where SARO's power would dim it.
+  const bool bFeed = !L.Light.StartsWith(TEXT("Highway")) || !FS47SaroPower::SaroAt(L.Emitter.X, L.Emitter.Z);
+  const bool bOk = bIn && Off <= SpotBelow * 100 + 3 && Tilt <= 45 && (!bSpot || L.Glow.bLit) && bHalo == (L.Glow.bLit && bHaloWanted && L.Glow.Halo.IsValid()) && bFeed;
   Bad += !bOk;
-  Each.Add(FString::Printf(TEXT("  %s %s: spot %s the head's bounds, %.0f mm from the emitter, %.0f degrees off straight down; spot %s, lens %s (%.2f), halo %s"),
+  Each.Add(FString::Printf(TEXT("  %s %s: spot %s the head's bounds, %.0f mm from the emitter, %.0f degrees off straight down; spot %s, lens %s (%.2f), halo %s; %s%s"),
    bOk ? TEXT("ok") : TEXT("WRONG"), *L.Light, bIn ? TEXT("inside") : S ? TEXT("OUTSIDE") : TEXT("(none yet)"), Off * 10, Tilt,
-   bSpot ? TEXT("on") : TEXT("off"), L.Glow.bLit ? TEXT("lit") : TEXT("dark"), Peak(L.Glow.Emissive), bHalo ? TEXT("shown") : L.Glow.Halo.IsValid() ? TEXT("hidden") : TEXT("(none: no M_WebGlow)")));
+   bSpot ? TEXT("on") : TEXT("off"), L.Glow.bLit ? TEXT("lit") : TEXT("dark"), Peak(L.Glow.Emissive), bHalo ? TEXT("shown") : L.Glow.Halo.IsValid() ? TEXT("hidden") : TEXT("(none: no M_WebGlow)"),
+   Lux < 0 ? TEXT("no ground found under it") : *FString::Printf(TEXT("%.0f cd, the ground %.1f m under it gets %.1f lux"), S ? S->Intensity : 0.f, Drop, Lux),
+   bFeed ? TEXT("") : TEXT("; ON SARO'S POWER")));
  }
- Lines.Add(FString::Printf(TEXT("Street lamp glow: %d measured here, %d lit, %d wrong (%d in other places, not drawn now)"), Measured, Lit, Bad, Away));
+ Lines.Add(FString::Printf(TEXT("Street lamp glow: %d measured here, %d lit, %d wrong, %d lit bowls over a pool under 2 lux (%d in other places, not drawn now)"), Measured, Lit, Bad, Dim, Away));
  Lines.Append(Each);
  return Bad;
 }
@@ -831,7 +860,7 @@ namespace
    if (L.Light.StartsWith(FieldPrefix) && FMath::Square(L.Foot.X - X) + FMath::Square(L.Foot.Z - Z) < 9.0) return &L;
   return nullptr;
  }
- FVector FieldSpot(const FLamp& L) { return L.Emitter + L.Normal * .03; } // as S47ExteriorLighting puts a cobra head's spot
+ FVector FieldSpot(const FLamp& L) { return L.Emitter + L.Normal * SpotBelow; } // as S47ExteriorLighting puts a cobra head's spot
 }
 
 bool FieldHead(AS47Web* W, double X, double Z, FVector& Spot, FVector& Aim)
@@ -890,7 +919,7 @@ int32 MeasureField(AS47Web* W, TArray<FString>& Lines)
    // the spot's place inside the head's bounds, under the bowl (not down the pole), and the lens and halo there
    const FBox Box = Head->Bounds.GetBox();
    const FVector Spot = S47Three::ToUE(FieldSpot(*L));
-   const bool bIn = Box.ExpandBy(5.0).IsInside(Spot) && Spot.Z < Box.Min.Z + 5.0;
+   const bool bIn = Box.ExpandBy(FVector(5, 5, 5 + SpotBelow * 100), FVector(5.0)).IsInside(Spot) && Spot.Z < Box.Min.Z + 5.0; // (D45-20261110: SpotBelow under the bowl)
    const USpotLightComponent* S = L->Spot.Get();
    const double Off = S ? FVector::Dist(S->GetComponentLocation(), Spot) : 0; // centimetres
    const bool bLens = L->Glow.Lens.IsValid(), bHalo = L->Glow.Halo.IsValid();
@@ -956,7 +985,15 @@ bool SelfTest(TArray<FString>& Lines)
  const FVector Emit = S47Three::ToUE(EmitterLocal()), Spot = S47Three::ToUE(SpotLocal());
  const auto UnderLens = [](const FVector& P) { return FMath::Abs(P.X - EmitAt.X) <= LensWidth / 200. && FMath::Abs(P.Z - EmitAt.Z) <= LensDepth / 200.; };
  Check(Box.ExpandBy(2.0).IsInside(Emit) && UnderLens(EmitterLocal()) && EmitNormal.Y < -.99, FString::Printf(TEXT("the emitter %s lies in the head's bounds %s (2 cm slack) under the lens"), *Emit.ToString(), *Box.ToString()));
- Check(Box.ExpandBy(5.0).IsInside(Spot) && UnderLens(SpotLocal()) && Spot.Z < Box.Min.Z + 5.0, FString::Printf(TEXT("the spot %s lies in the head's bounds (5 cm slack), under the bowl, not down the pole"), *Spot.ToString()));
+ // D45-20261110: the spot hangs SpotBelow (10 cm) under the emitter, clear of the bowl: 5 cm slack round the head, 15 cm below it
+ Check(Box.ExpandBy(FVector(5, 5, 5 + SpotBelow * 100), FVector(5.0)).IsInside(Spot) && UnderLens(SpotLocal()) && Spot.Z < Box.Min.Z + 5.0 && Spot.Z < Emit.Z - SpotBelow * 100 + .5,
+  FString::Printf(TEXT("the spot %s lies %.0f mm under the emitter, under the bowl, not down the pole"), *Spot.ToString(), (Emit.Z - Spot.Z) * 10));
+ // D45-20261110: the highway's eight heads hang over the road at x -20.7, on the county's line: SARO's power never dims them
+ const FQuat Over(FVector(0, 1, 0), PI);
+ const double RoadX = -18.5 + Over.RotateVector(ArmOnPole + ArmEnd + EmitAt).X;
+ bool bCounty = true;
+ for (const double Z : { 70., 2., -168. }) bCounty &= !FS47SaroPower::SaroAt(RoadX, Z);
+ Check(bCounty, FString::Printf(TEXT("the highway's heads at x %.2f are the county's, not on SARO's power"), RoadX));
  // on and off: the lens takes what it is given, the halo shows with it and goes with it
  const FLinearColor On = Sodium() * 6.f;
  Shine(G, On);

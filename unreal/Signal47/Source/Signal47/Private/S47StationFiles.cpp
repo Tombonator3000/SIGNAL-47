@@ -6,13 +6,14 @@ namespace S47StationFiles
  // Canon kept (10 Nov): 27 antennas S-01 to S-27, the 1962 annex, the March 1979 feeder trouble, the 1983 receivers, the 1984 carrier,
  // Station 01 of the survey, the hill man's years ('58, '66, '73, '79), initials at the rock back to 1951, population 412, the couch
  // at the gate, eleven years of field maintenance. New here: first antennas 1958, the last in 1971, one contract operator from 1984.
+ // D45-20261110: Tom found the terse lines clumsy ("Read it once", "The form does not ask why they leave"); plain memo English now, same facts.
  static const FFile Files[]=
  {
   {TEXT("station-01"),TEXT("01 STATION HISTORY"),1,TEXT(R"TXT(SARO / STATION FILE 01
 STATION HISTORY, SUMMARY FOR NEW STAFF
 Revised January 1986
 
-1955  The survey party at Station 01 reports its radios useless on some nights, for no reason it can find. The district asks why. Nobody can tell it.
+1955  The survey party at Station 01 reports its radios useless on some nights, and cannot find a reason. The district asks why. Nobody can tell them.
 1956  The district and the county agree to build a listening station on the flat north of Caliche. Cheap ground, dry air, and nothing out here to make radio noise. That was the argument.
 1958  First six antennas in service. First night log.
 1962  Annex built: records room, photo lab, east wing.
@@ -27,7 +28,7 @@ The first is the sky survey: the same sources, measured every night, year after 
 
 The second has never had a line in the budget. Things are seen and heard over this valley that are not in any catalog. The station was put here because of them. Its job is to be listening, with a record that will stand, when they happen.
 
-Do not explain this in town. They know.)TXT")},
+Don't bother explaining any of this in town. They already know.)TXT")},
   {TEXT("station-02"),TEXT("02 STANDBY GENERATOR"),1,TEXT(R"TXT(SARO / STATION FILE 02
 MEMORANDUM
 TO: All operators
@@ -41,9 +42,9 @@ Why it is there. Three times this spring the station lost the mains with nothing
 
 Each time the line recorder shows the same thing: the voltage sags in steps for most of a minute, the lamps dip, and then everything goes. Each time the night log has a light in it. And each time the receivers were dead while it was overhead, so we have a line in a log and no record.
 
-So. When the lamps dip under a clear sky you do not go to the window. You go out the back and start the generator. Then you go to the window.
+So here is the rule. When the lamps dip and the sky is clear, do not go to the window first. Go out the back and start the generator. Then go to the window.
 
-A station that is dark has seen nothing.
+If the station goes dark, nothing is recorded. Then as far as anyone can prove, we saw nothing.
 
 - D.)TXT")},
   {TEXT("station-03"),TEXT("03 THE VALLEY IN NORWAY"),3,TEXT(R"TXT(SARO / STATION FILE 03
@@ -70,24 +71,24 @@ Noted. Approved for the next contract. - W.)TXT")},
 CONTRACT NIGHT OPERATOR: TERMS OF ENGAGEMENT
 Form 4-N, revised 1985
 
-The operator is engaged by the district, by the week, and paid by the job filed.
+The district hires the night operator by the week and pays by the job filed.
 
-The operator will:
+Duties:
 1. Run the evening's observing jobs and register the results.
-2. Keep the array in repair, with field maintenance.
-3. Go out when the terminals or the telex report something on the land, and bring back what can be filed: a photograph, a sample, a reading, a time and a place.
-4. Keep every original. A thing that was seen and not recorded was not seen.
+2. Keep the array in repair, working with field maintenance.
+3. When the terminals or the telex report something out on the land, go and look, and bring back something that can be filed: a photograph, a sample, a reading, or a time and a place.
+4. Keep every original. If it wasn't recorded, the station can't use it.
 
-The operator will not:
-1. Discuss the station's records in town or with the newspaper.
-2. Carry a story back in place of a record.
+The operator may not:
+1. Discuss station records in town or with the newspaper.
+2. Turn in a story instead of a record.
 
-The operator is advised to be indoors by 02:00. The station has no opinion on why. The advice was added to the form in 1985, at the request of field maintenance.
+Operators are advised to be indoors by 02:00. Field maintenance asked for that line to be added in 1985. Nobody has said why.
 
-Operators engaged under this form since 1984: seven.
-Longest engagement: five months.
+Operators hired on this form since 1984: seven.
+Longest stay: five months.
 Shortest: one night.
-The form does not ask why they leave.)TXT")},
+None of them gave a reason for leaving.)TXT")},
   {TEXT("station-05"),TEXT("05 TOWN LEAFLET"),4,TEXT(R"TXT(SARO / STATION FILE 05
 CLIPPING, KEPT BY RECORDS
 Caliche Chamber of Commerce, visitor leaflet, 1985
@@ -121,7 +122,7 @@ He has been asked more than once why he stays. The answer on record: "Because th
 
 He does not come in after dark. He does answer the telephone.
 
-Assessment: keep him. Do not explain anything to him. He would only shout, and then he would be right.)TXT")},
+Assessment: keep him. Don't try to explain anything to him. He will shout, and then he will turn out to be right.)TXT")},
   {TEXT("station-07"),TEXT("07 REPORTS BY YEAR"),2,TEXT(R"TXT(SARO / STATION FILE 07
 REPORTS RECEIVED, BY YEAR (EXTRACT)
 Kept by Records from telephone calls, the sheriff's substation and the station's own night log.
@@ -137,29 +138,29 @@ Kept by Records from telephone calls, the sheriff's substation and the station's
 1985  Fall. Lights over the mesa, many callers.
 1986  To April: 11. The sheriff's office has asked us to stop asking.
 
-Every spring. Most years the fall as well. The town says ditch fires, trucks, the evening star. The town is sometimes right.
+Every spring. Most years the fall as well. The town says ditch fires, trucks, the evening star. Sometimes the town is right.
 
 What this list does not have, for any year, is one photograph with a time and a place on the back.)TXT")},
-  {TEXT("station-08"),TEXT("08 WHAT THE STATION KEEPS"),1,TEXT(R"TXT(SARO / STATION FILE 08
-WHAT THE STATION KEEPS
-Card for the night operator. Read it once.
+  {TEXT("station-08"),TEXT("08 HOW THE JOB WORKS"),1,TEXT(R"TXT(SARO / STATION FILE 08
+HOW THE JOB WORKS
+A card for the night operator. Keep it by the desk.
 
-The work goes in a circle, and it starts at the desks.
+The work goes in a loop, and it starts at the desks.
 
-1. THE TERMINALS. OPS issues the evening's jobs at 08:00. TRACKING points the array, RECEIVER records, the PRINTER gives the original, STATUS shows what is broken. The terminals and the telex also tell you when something out on the land wants looking at: a place, a bearing, a time.
+1. THE TERMINALS. OPS posts the evening's jobs at 08:00. TRACKING points the array, RECEIVER records, the PRINTER gives you the original, and STATUS shows what is broken. The terminals and the telex will also tell you when there is something out on the land worth checking: a place, a direction, a time.
 
-2. THE LAND. Take the truck, the field radio, the recorder and the camera. Go to the place. Look before you touch.
+2. THE LAND. Take the truck, the field radio, the recorder and the camera. Drive out to the place. Look around before you touch anything.
 
-3. WHAT TO BRING BACK, in order of worth:
-- a photograph, developed here, with its time and place;
+3. WHAT TO BRING BACK, best first:
+- a photograph, developed here, with the time and place on it;
 - a sample, bagged, for the bench;
 - a reading or a tape made on the spot;
-- a time and a place in your own hand.
-A story is worth nothing. Two of the above that agree are worth a case.
+- a time and a place written down in your own hand.
+A story on its own counts for nothing. Two of these that agree are enough to open a case.
 
-4. THE DESKS AGAIN. Develop the film in the photo lab. Register the finding on OPS. It goes to RECORDS, to PHOTOGRAPHS or to the CASE BOARD, and the board says what would settle it. Then the terminals send you out again.
+4. BACK AT THE DESKS. Develop the film in the photo lab. Register what you found on OPS. It goes to RECORDS, PHOTOGRAPHS or the CASE BOARD, and the board tells you what would settle it. Then the terminals send you out again.
 
-You are paid for the jobs. The station is kept open for the rest.)TXT")},
+The jobs are what you're paid for. The rest is why the station stays open.)TXT")},
  };
  int32 Count(){return UE_ARRAY_COUNT(Files);}
  const FFile& Get(int32 Index){return Files[FMath::Clamp(Index,0,Count()-1)];}

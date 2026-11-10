@@ -12,6 +12,8 @@ class UStaticMesh;
 class UMaterialInterface;
 class UTextRenderComponent;
 class FS47FreeformCarry;
+class FS47BufferSourceNode;
+class FS47GainNode;
 
 // Freeform-only physical supply, service and transport layer. No Story facts.
 class FS47FreeformWorld
@@ -42,6 +44,10 @@ public:
  const FS47ArrayWear& ArrayWear() const { return Wear; }
  void OpenBranch(const FString& BranchId);
  bool RepairBranch(const FString& BranchId);
+ // D45-20261110: the array PC's MAINTENANCE order (FS47ArrayWear::Move), saved like any other world change
+ bool PlanBranch(const FString& BranchId,int32 To);
+ // D45-20261110: what an antenna's cabinet pilot shows: -1 not set by Freeform, 0 green, 1 red, 2 amber (local work or test), 3 red blinking (next)
+ int32 PilotState(int32 Dish) const { return Dish>=0&&Dish<27?PilotShown[Dish]:-1; }
  FString BranchNeeds(const FS47ArrayWear::FBranch& B) const; // empty when stock covers the repair
  bool BranchStrandsFeeder(const FS47ArrayWear::FBranch& B,bool bFault) const; // would spend the outage's credit fuse
  void RestoreWholeArrayFixture(); // declared test fixture: no parts, evidence or player feedback
@@ -128,6 +134,11 @@ private:
  TMap<int32,FVector2D> WearPose;
  FS47Obj WearLamps[4];
  void ApplyWear();
+ // D45-20261110: the 27 drive-cabinet pilots (world.field.glow.points) follow their antenna's state while Freeform runs;
+ // the exported colour, size and blink are kept to give them back when it stops.
+ int32 PilotOf[27];int8 PilotShown[27];FLinearColor PilotBase[27];float PilotSize[27];FVector2D PilotBlink[27];const void* PilotGlow=nullptr; // the points they were taken from (a new scene maps again)
+ void ApplyPilots();
+ void RestorePilots();
  void FinishBranch(const FString& BranchId);
  FS47Obj TrayParts[FS47Workshop::TraySize];
  void FinishWorkshopJob(const FString& Job);
@@ -228,6 +239,17 @@ private:
  bool ServiceUse();
  bool FeederUse();
  bool GeneratorUse();
+ // D45-20261110 (Tom: the backup generator needs sound): the standby diesel is heard where it stands. Cranked, a running loop that
+ // follows its state every frame (so it is right after a load, a time jump or leaving SARO), hunting in the last minutes of its tank,
+ // stalling dry, cranking without catching when there is no fuel. The truck's own Jeep clips, slower and muffled.
+ enum class EGenSound : uint8 { Start, Dry, Off, Stall };
+ void GeneratorSound(EGenSound Kind);
+ void StepGeneratorSound(double Dt);
+ void StopGeneratorSound();
+ bool bGenSound = false;
+ double GenCoughIn = 0, GenLoopDelay = 0;
+ TSharedPtr<FS47BufferSourceNode> GenSrc;
+ TSharedPtr<FS47GainNode> GenGain;
  bool ParcelUse();
  bool CargoUse();
  bool Deposit(const FString& Station);

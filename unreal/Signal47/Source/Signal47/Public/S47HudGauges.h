@@ -86,6 +86,9 @@ namespace S47HudGauges
 	 *  strength T seconds after the change. */
 	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0;
 	SIGNAL47_API double NoteAlpha(double T);
+	/** D45-20261110: two task lines that differ only in their figures ("Recording 37%" and "Recording 38%") are the same task, and the
+	 *  card does not come in again for them. Never true for an empty line. */
+	SIGNAL47_API bool SameTask(const FString& A, const FString& B);
 	/** A task in capitals as the player's hand writes it on the card: Title for the place ("Caliche Junction"), sentence case for
 	 *  the task ("Back to the truck. Keep the record"). Figures and the station's capitals (SARO, CB, MHz) stay as they are; words
 	 *  already written in small letters are left alone. */

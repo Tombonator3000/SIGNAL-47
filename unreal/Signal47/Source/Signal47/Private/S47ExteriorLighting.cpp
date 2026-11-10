@@ -2,6 +2,7 @@
 
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "HAL/IConsoleManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "S47Three.h"
@@ -32,6 +33,8 @@ namespace
 	// the night mask here, halos over three metres come down to at most 2.5 m, and the crossing signal (0 and 1, blinking in Story)
 	// keeps a lens-sized glint and no halo. Per world: the glow nodes this owns.
 	TMap<TWeakObjectPtr<const AS47Web>, TArray<int32>>& TownNightGlows() { static TMap<TWeakObjectPtr<const AS47Web>, TArray<int32>> A; return A; }
+	// D45-20261110: the cobra heads' candelas times this, for tuning the pools live against the fixed exposure (F10 Looks M6 gives lux).
+	TAutoConsoleVariable<float> CVarStreetPoolGain(TEXT("s47.lamps.PoolGain"), 1.f, TEXT("D45-20261110: the cobra heads' light on the ground, times (1: period sodium candelas)."));
 }
 
 void AS47Web::BuildExteriorLighting()
@@ -45,6 +48,9 @@ void AS47Web::BuildExteriorLighting()
 	// STREETLAMPS-20261108: the highway's cobra heads (S47StreetLamps, built with the world) carry the old feeds' lights.
 	Fixtures.Append(S47StreetLamps::Fixtures(this));
 	if (Fixtures.Contains(TEXT("FireExit")) && SaroArrival) SaroArrival->RetireCanopyLight();
+	// D45-20261110: a cobra head gets period sodium candelas (Head); the old lamps (no models, -S47StreetLampsOff) keep theirs (Old),
+	// for before and after.
+	const auto HeadOr = [&Fixtures](const FString& Lamp, float Head, float Old) { return Fixtures.Contains(FName(*Lamp)) ? Head : Old; };
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
 		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone, float Source = 8.f, float SoftSource = 6.f)
 	{
@@ -58,11 +64,13 @@ void AS47Web::BuildExteriorLighting()
 		const auto* Fixture = Fixtures.Find(Name);
 		if (Fixture && Fixture->bStreetLamp)
 		{
-			// A cobra head: the source just under its bowl, aimed where the old one was (over the road), a small finite source.
-			P.At = Fixture->Aperture + Fixture->Normal * .03;
+			// A cobra head: the source under its bowl, aimed where the old one was (over the road), a small finite source.
+			// D45-20261110 (Tom: the head lit, the ground dark): 10.8 cm under the bowl with a 2.5 cm source, wholly outside the
+			// opaque bowl and housing (it was 3.8 cm with 5.6 cm, half inside them, and the shadow rays started in the bowl).
+			P.At = Fixture->Aperture + Fixture->Normal * S47StreetLamps::SpotBelow;
 			P.Diffuser = Fixture->Lens; P.Fixture = Fixture->Mesh; P.bAuthoredLens = true; P.bStreetHead = true;
-			Source = FMath::Min(Fixture->Width, Fixture->Height) * .2f;
-			SoftSource = Source * .6f;
+			Source = 2.5f;
+			SoftSource = 1.5f;
 		}
 		else if (Fixture)
 		{
@@ -138,7 +146,8 @@ void AS47Web::BuildExteriorLighting()
 			const FVector At = T.TransformPosition(G->Pos[Point]);
 			const FString Name = FString::Printf(TEXT("Highway%02d"), I + 1);
 			Add(*Name, TEXT("ext.group"), Site, 5 + FMath::Min(I, 2), TEXT("ext.glow.points"), Point,
-				At, FVector(-24, -0.62, At.Z), 480.f, 26.f, 70.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees; at 220 cd the pool was still small)
+				At, FVector(-24, -0.62, At.Z), HeadOr(Name, 2400.f, 480.f), HeadOr(Name, 40.f, 26.f), 70.f); // STREETLAMPS: a 250 W sodium head lights a wide, warm cone on the road (was 90 cd, 16 m, 58 degrees; at 220 cd the pool was still small)
+				// (D45-20261110: 2400 cd, about 37 lux under an 8 m head, as a 1986 250 W sodium cobra head; it was 480 cd and 26 m, some 7 lux)
 		}
 	}
 	// Building wall packs: a shared material pool never substitutes for the real housings.
@@ -157,7 +166,8 @@ void AS47Web::BuildExteriorLighting()
 	for (int32 I = 0; I < 4; ++I)
 	{
 		const FString Name = FString::Printf(TEXT("Yard%02d"), I + 1);
-		Add(*Name, TEXT("yard.group"), Site, 12 + I, TEXT("yard.glow.points"), I, YardAt[I], YardTarget[I], 65.f, 9.f, 55.f);
+		// D45-20261110: 700 cd from 4.5 m, some 35 lux on the walk (a 100 W sodium head); it was 65 cd, 9 m, 55 degrees: 3 lux
+		Add(*Name, TEXT("yard.group"), Site, 12 + I, TEXT("yard.glow.points"), I, YardAt[I], YardTarget[I], HeadOr(Name, 700.f, 65.f), HeadOr(Name, 16.f, 9.f), HeadOr(Name, 65.f, 55.f));
 	}
 	Add(TEXT("B12Reference"), TEXT("yard.group"), Site, 16, TEXT("yard.glow.points"), 4,
 		FVector(9.42, 2.82, -17.7), FVector(9.9, 2.35, -18.35), 12.f, 3.f, 45.f);
@@ -187,7 +197,7 @@ void AS47Web::BuildExteriorLighting()
 			const double Z = I == 0 ? 18 : 47;
 			const FString Name = FString::Printf(TEXT("CourtLot%02d"), I + 1);
 			Add(*Name, TEXT("world.motel.group"), Court, 10 + I, TEXT("ext.glow.points"), 34 + I,
-				Motel.LocalToWorld(FVector(-29.55, 6.235, Z)), Motel.LocalToWorld(FVector(-32, 0, Z)), 150.f, 12.f, 58.f);
+				Motel.LocalToWorld(FVector(-29.55, 6.235, Z)), Motel.LocalToWorld(FVector(-32, 0, Z)), HeadOr(Name, 900.f, 150.f), HeadOr(Name, 20.f, 12.f), 58.f); // D45-20261110: head 900 cd, 20 m
 		}
 		// The office doorway's old spill pool has no fixture. The indoor lamp and the real
 		// window source already transmit its light; never leave another floating source here.
@@ -238,7 +248,7 @@ void AS47Web::BuildExteriorLighting()
 		const FString GlintPath = FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2);
 		const bool bNewGlow = !OldStreetGlow() && Glow(GlintPath);
 		Add(*Name, TEXT("world.town.group"), Town, I, bNewGlow ? *GlintPath : TEXT(""), bNewGlow ? 0 : -1,
-			At, At + FVector(2.3, -7.5, 0), 200.f, 20.f, 64.f, 18.f, 8.f); // STREETLAMPS: was 120 cd, 16 m, 61 degrees
+			At, At + FVector(2.3, -7.5, 0), HeadOr(Name, 1600.f, 200.f), HeadOr(Name, 30.f, 20.f), 64.f, 18.f, 8.f); // STREETLAMPS: was 120 cd, 16 m, 61 degrees (D45-20261110: a head 1600 cd, 30 m)
 		if (bNewGlow)
 			if (FS47GlowPoints* Halo = Glow(FString::Printf(TEXT("world.town.runtime.glows[%d]"), I * 2 + 1)))
 				if (Halo->Num() > 0) { Halo->SetSize(0, 0.f); Halo->SetOutputScale(0, 0.f); }
@@ -383,7 +393,8 @@ void AS47Web::UpdateExteriorLighting()
 		}
 		const float Gain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		// Unreal's setters ignore unchanged values; colour-only HDR changes still update power.
-		L->SetIntensity(bOn ? P.Candela * K * Gain * Near : 0.f);
+		const float Pool = P.bStreetHead ? FMath::Max(0.f, CVarStreetPoolGain.GetValueOnGameThread()) : 1.f; // D45-20261110
+		L->SetIntensity(bOn ? P.Candela * K * Gain * Near * Pool : 0.f);
 		L->SetLightColor(C / Gain);
 		if (P.bAuthoredLens)
 		{

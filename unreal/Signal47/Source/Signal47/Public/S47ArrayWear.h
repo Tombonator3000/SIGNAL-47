@@ -17,11 +17,16 @@ public:
  bool bActive=false;
  TArray<FString> Restored;
  FString Job;double JobSeconds=0;
- void Start(){bActive=true;Restored.Reset();Job.Empty();JobSeconds=0;}
+ // D45-20261110 (Tom: the player picks which branch is repaired next): the operator's order from the array PC. Empty is the
+ // table order, as older saves have it; NextBranch, the HUD goal and the OPS summary follow it.
+ TArray<FString> Plan;
+ void Start(){bActive=true;Restored.Reset();Plan.Reset();Job.Empty();JobSeconds=0;}
  bool IsRestored(const FString& Id) const { return Restored.Contains(Id); }
  const FBranch* BranchOfDish(const FString& Dish) const; // nullptr when that dish is working
  const FBranch* DownJunction(const FString& Dish) const;
  const FBranch* NextBranch() const;
+ TArray<const FBranch*> Ordered() const; // D45-20261110: open branches, the plan first, then the rest in table order
+ bool Move(const FString& Id,int32 To);  // D45-20261110: puts an open branch at place To of that order; false if nothing changed
  int32 DownCount() const;
  bool Restore(const FString& Id);
  S47J::FObj Save() const;

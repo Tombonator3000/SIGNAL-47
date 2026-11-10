@@ -275,6 +275,8 @@ public:
  TSharedPtr<class FS47PinBoard> PinBoard;
  // The photo lab's enlarger, by the wet bench (ENLARGE-20261108): S47Enlarger.h.
  TSharedPtr<class FS47Enlarger> Enlarger;
+ // D45-20261110 (D45-17): the lab as a darkroom, its SAFELIGHT switch by the door and the one rule for bench and enlarger: S47Darkroom.h.
+ TSharedPtr<class FS47Darkroom> Darkroom;
  // The weekly report to Dr. Ward, made from the night logs, what goes in the player's choice (WARD-REPORT-20261108): S47WardReport.h.
  TSharedPtr<class FS47WardReport> WardReport;
  // A point of the sky held off schedule, and what may answer from it the next night (ANSWER-20261108): S47Answer.h.
@@ -470,6 +472,9 @@ public:
  double PrinterProgress() const; // -1 empty, otherwise paper fraction 0..1
  bool PrinterFeedbackActive() const { return bPrinterFeedback; }
  bool StartControl();
+ // D45-20261110 (Tom: record the control at the receiver right after the take): an unusual take that is on tape (its chart may
+ // still be at the printer) and has no control yet can have its 8-second control recorded now. The old order stays legal.
+ bool CanRecordControl() const;
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
@@ -581,6 +586,8 @@ public:
  // The yellow marker on the tracking plot: the array can be commanded once it is on the source.
  FVector2D AimAzEl();
  bool AimOnTarget() const;
+ // D45-20261110: how near a plot position (az 0..180, el 0..90) is to the source: 0 far off, 1 inside AimOnTarget's tolerance
+ double AimNearness(FVector2D AzEl) const;
  void SetAim(FVector2D AzEl);
  void AimAtSource(){SetAim(FVector2D(TargetAz(),TargetEl()));}
  TSharedPtr<FS47FreeformDirector> Director;
@@ -678,6 +685,10 @@ private:
  void IngestObservations();
  int32 IngestedObservations=0;
  int32 OpsSection=0,ReceiverTab=0;
+ // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
+ int32 StatusTab=0;FString MaintPick;
+ TSharedRef<class SWidget> MaintenancePage();
+ FString MaintenanceLine() const; // the array PC's line across the room: "MAINTENANCE / 3 FAULTS / NEXT S-13"
  // CASES-OPS-20261109: the result sheets on the printer (FResultSheet), the case the next OPS visit opens on (-1: the overview), the
  // test whose sheet was last collected (its row is marked on the board), and whether the board's traces are folded (presentation only).
  TArray<FResultSheet> CaseSheets;
@@ -753,6 +764,11 @@ private:
  void TransportSound(); // FIX-20261110: the reel deck's motor, rewind, tape change and marks, heard
  bool bTransportPrimed=false,bTransportRun=false;int32 TransportSource=0;double TransportCursor=0,TransportMark=0;
  double ReceiverReception() const;
+ // D45-20261110 (Tom: the target shows on the receiver only once the array has locked): how much of the source the receiver shows
+ // and plays while the array comes round (wide, so it grows over the slew), and the largest dish error left. The recording and
+ // its gate keep ReceiverReception, PointReady and Settle.
+ double ReceiverApproach() const;
+ double ArrayErrorDeg() const;
  void PrintJob(bool bPacket);
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);

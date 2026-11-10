@@ -1237,8 +1237,8 @@ TArray<TPair<FString,bool>> FS47FreeformDirector::MysteryTrailRows() const
  // (the trail opens with the first clue found, so one row is always ticked; the words stay the same done or not, so the note's key holds)
  TArray<TPair<FString,bool>> Out;
  if(MysteryClearAt<=0)return Out;
- Out.Add({TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Gone by noon."),(MysterySeen&2)!=0});
- Out.Add({TEXT("WORTH A LOOK / The receiver chart at the rack. Gone by noon."),(MysterySeen&1)!=0});
+ Out.Add({TEXT("WORTH A LOOK / The remote feeder on the county road, after midnight. Check it before noon."),(MysterySeen&2)!=0}); // D45-20261110: says when, not a riddle
+ Out.Add({TEXT("WORTH A LOOK / The receiver chart at the rack. Check it before noon."),(MysterySeen&1)!=0});
  return Out;
 }
 void FS47FreeformDirector::StepOwed()

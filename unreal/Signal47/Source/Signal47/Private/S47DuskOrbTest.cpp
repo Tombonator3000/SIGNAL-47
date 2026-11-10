@@ -10,6 +10,7 @@
 #include "S47Flow.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47FieldCamera.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -202,7 +203,8 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!Check(!F.Director->PlanLocalNoiseCheck(PhotoClaimId)&&!F.Director->PlanLocalNoiseCheck(TEXT("missing-photo-incident")),TEXT("optional noise idea rejects undeveloped photo and absent incident")))return;
   if(!Check(F.CanRegisterPhotoEvidence()&&Original()&&Original()->LabStage==0&&!F.Director->PlanPhotoControl(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("physical OPS rejects control plan and payment while real orb original is undeveloped")))return;
-  M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));
+  M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);if(F.Darkroom)F.Darkroom->SetSafelight(true,true); // D45-20261110: the declared darkroom fixture
+  const auto* Bench=M->Inter->Get(TEXT("wetBench"));
   if(!Check(Bench&&bool(Bench->Object),TEXT("orb print uses actual wet-bench world object")))return;
   const FVector P=Bench->Object.WorldPosition();M->Player->Place(P.X,P.Z+1,0);Go(9504,.3);return;
  }
@@ -363,7 +365,8 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9601)
  {
   if(!Check(!F.Director->RegisterPhotoControl(PhotoClaimId,S47J::Str(Snapshot,TEXT("baselineId")))&&!F.Director->RegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Budget()==PhotoBudget,TEXT("OPS rejects reuse of original and an undeveloped control without payment")))return;
-  JobIndex=1;M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("return control uses same physical photo lab")))return;
+  JobIndex=1;M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);if(F.Darkroom)F.Darkroom->SetSafelight(true,true); // D45-20261110
+  const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("return control uses same physical photo lab")))return;
   const auto P=Bench->Object.WorldPosition();M->Player->Place(P.X,P.Z+1,0);Go(9504,.3);return;
  }
  if(Stage==9604)
@@ -747,6 +750,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9708)
  {
   M->UI->Close(true);
+  {const FVector ArrayPc=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(ArrayPc.X,ArrayPc.Z+1.1,0);} // D45-20261110: work orders are issued at the array PC
   if(!NotebookCheck(F.Field->TriggerServiceFault(false,TEXT("S-07"))&&F.StartServiceGuide(false)&&F.Field->ServiceDishId()==TEXT("S-07"),TEXT("explicit real S-07 service-fault fixture and production work-order acceptance; no simulated completed repair")))return;
   M->Flow->OpenNotebook();Go(9709,.5);return;
  }

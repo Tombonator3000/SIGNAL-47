@@ -1020,11 +1020,18 @@ US47Audio::FStepPick US47Audio::StepPick(const FString& Surface) const
 void US47Audio::Step(const FString& Surface)
 {
 	const FSteps& S = STEPS(Surface);
-	const int32 Len = S.Names.Num();
-	FString Name = S.Names[FMath::Min(Len - 1, int32(FMath::FRand() * Len))];
-	if (Name == LastStep) Name = S.Names[(S.Names.IndexOfByKey(Name) + 1 + int32(FMath::FRand() * (Len - 1))) % Len];
+	// D45-20261110: Tom's Cosmos footsteps (eight walk takes per surface, levelled to the old set's peak) when they are
+	// in this build; tile has no take of its own and uses concrete a little brighter, as before.
+	const FString Kind = Surface == TEXT("tile") ? TEXT("concrete") : Surface;
+	TArray<FString> Bought;
+	for (int32 I = 0; I < 8; ++I) { const FString Take = FString::Printf(TEXT("lic:step_%s_%d"), *Kind, I); if (Buf.Contains(Take)) Bought.Add(Take); }
+	const bool bBought = Bought.Num() > 1;
+	const TArray<FString>& Names = bBought ? Bought : S.Names;
+	const int32 Len = Names.Num();
+	FString Name = Names[FMath::Min(Len - 1, int32(FMath::FRand() * Len))];
+	if (Name == LastStep) Name = Names[(Names.IndexOfByKey(Name) + 1 + int32(FMath::FRand() * (Len - 1))) % Len];
 	LastStep = Name;
-	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f) * FMath::Clamp(StepScale, 0.f, 1.f); O.Rate = S.Rate * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
+	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f) * FMath::Clamp(StepScale, 0.f, 1.f); O.Rate = (bBought ? (Surface == TEXT("tile") ? 1.08f : 1.f) : S.Rate) * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
 	Sfx(Name, O);
 }
 

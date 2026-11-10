@@ -146,7 +146,7 @@ bool FS47FreeformSession::AskSameMinute(const FString& RecordId,double Clock,con
  else Case=TEXT("OUT ON THE LAND / KEPT AS A RECORD WITH ITS TIME. NOTHING STRUCK.");
  const FString Page=FString::Printf(TEXT("SARO OPS V4.2  ARRAY LOG QUERY  %s\nRECORD / %s, %s\nASKED / THE ARRAY'S OWN LOG, THE SAME MINUTE\n\nSAME MINUTE ON ARRAY: %s\n%s\n%s"),
   *TerminalDate(WorldClock),*What.ToUpper(),*At,bYes?TEXT("YES"):TEXT("NO"),
-  bYes?TEXT("THE ARRAY LOGGED SOMETHING OFF SCHEDULE IN THAT MINUTE. IT SAYS WHEN, NOT WHAT."):*FString::Printf(TEXT("NOTHING ON THE ARRAY'S LOG FROM %s TO %s."),*FS47Places::SlipClock(Clock-60),*FS47Places::SlipClock(Clock+60)),*Case);
+  bYes?TEXT("THE ARRAY LOGGED SOMETHING OFF SCHEDULE IN THAT MINUTE. THE LOG GIVES THE TIME ONLY; IT CAN'T SAY WHAT IT WAS."):*FString::Printf(TEXT("NOTHING ON THE ARRAY'S LOG FROM %s TO %s."),*FS47Places::SlipClock(Clock-60),*FS47Places::SlipClock(Clock+60)),*Case);
  const bool bTelex=QueueTelex(TEXT("telex-minute-")+Id,TEXT("Array log query: ")+What,bYes?TEXT("SAME MINUTE / YES"):TEXT("SAME MINUTE / NO"),Page);
  UE_LOG(LogS47FreeformMinute,Display,TEXT("S47: same minute on array for %s at %s: %s%s%s"),*RecordId,*At,bYes?TEXT("yes"):TEXT("no"),bStruck?TEXT(", animals and weather struck"):TEXT(""),bTelex?TEXT(""):TEXT(" (telex full: the record only)"));
  S47TrimAsked(Asked,MostAsked,[this](const FString& A){const FString S=Safe(A);return HasFinding(TEXT("minute_yes_")+S)||HasFinding(TEXT("minute_no_")+S);});

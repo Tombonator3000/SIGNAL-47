@@ -11,22 +11,27 @@
 
 namespace
 {
- bool AtOperations(US47Main* M)
+ bool AtDesk(US47Main* M,const TCHAR* Prop)
  {
-  if(!M||!M->Web||!M->Player||M->Web->Area()!=TEXT("saro")||!M->Web->Item(TEXT("opsTerminal")))return false;
-  const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
+  if(!M||!M->Web||!M->Player||M->Web->Area()!=TEXT("saro"))return false;
+  const FVector U=M->Web->PropLocation(Prop);if(U.IsNearlyZero())return false;
+  const FVector P=S47Three::ToThree(U);
   return FVector2D::Distance(FVector2D(P.X,P.Z),FVector2D(M->Player->Pos.X,M->Player->Pos.Z))<3.5&&FMath::Abs(P.Y-M->Player->FloorY)<2.5;
  }
+ bool AtOperations(US47Main* M){return AtDesk(M,TEXT("opsTerminal"));}
+ // D45-20261110 (Tom: maintenance is done on the array PC): work orders are issued and signed at ARRAY STATUS. Signing at OPS still
+ // works for this build, so an order taken at OPS in d45 can be finished where the player expects.
+ bool AtServiceDesk(US47Main* M){return AtDesk(M,TEXT("crtLeft"));}
 }
 bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
 {
  if(!bActive||ServiceGuide==1||!Field)return false;
- if(!AtOperations(M)){Feedback=TEXT("Use the OPS workstation inside SARO to accept service.");Changed(Feedback);UE_LOG(LogTemp,Warning,TEXT("S47 service rejected: not at OPS"));return false;}
+ if(!AtServiceDesk(M)){Feedback=TEXT("Work orders are issued at ARRAY STATUS (left-hand PC), on its MAINTENANCE tab.");Changed(Feedback);UE_LOG(LogTemp,Warning,TEXT("S47 service rejected: not at the array PC"));return false;}
  if(!RequirePower())return false;
  if(!Field->HasArrayFault()&&!Field->TriggerServiceFault(ServiceGuide==0)){Feedback=TEXT("Service target unavailable. Restore station power and try again.");Changed(Feedback);return false;}
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
  ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;FieldFocus=-1;
- Feedback=FString::Printf(TEXT("SERVICE ACCEPTED / %s. Go to its local cabinet outside: inspect / isolate, fit one relay, then close and test. ARRAY STATUS (left-hand PC) offers an optional diagnosis. Remote operation stays suspended until relay replacement and the movement test."),*Field->ServiceDishId());Changed(Feedback);
+ Feedback=FString::Printf(TEXT("WORK ORDER ISSUED / %s. At its cabinet outside: open the hatch and switch it to LOCAL, fit one relay, then close it and run the movement test. It stays off remote until the test passes; sign off here on MAINTENANCE after that."),*Field->ServiceDishId());Changed(Feedback);
  return true;
 }
 FString FS47FreeformSession::ServiceObjective()const
@@ -60,9 +65,10 @@ FString FS47FreeformSession::ServiceObjective()const
   case 4:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY"));
   case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: CLOSE THE RELAY COVER AND RUN THE MOVEMENT TEST"));
   case 6:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST"));
-  case 7:case 8:return At(TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN THE SERVICE ORDER AT OPS"));
-  case 9:return TEXT("OPS (corner PC), SERVICE ORDER: VERIFY REMOTE RESTORATION AND ARCHIVE THE TEST");
-  default:return TEXT("OPS (corner PC), SERVICE ORDER: INSPECT THE OPEN WORK ORDER");
+  case 7:case 8:return At(TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN OFF THE WORK ORDER AT ARRAY STATUS (LEFT-HAND PC)"));
+  // D45-20261110: the work order is signed off on the array PC's MAINTENANCE tab
+  case 9:return TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: CHECK REMOTE IS BACK AND SIGN OFF THE WORK ORDER");
+  default:return TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: SEE THE OPEN WORK ORDER");
  }
 }
 bool FS47FreeformSession::CanCompleteServiceGuide() const
@@ -73,7 +79,7 @@ bool FS47FreeformSession::CanCompleteServiceGuide() const
 }
 bool FS47FreeformSession::CompleteServiceGuide()
 {
- if(ServiceGuide!=1||!Field||!AtOperations(M)||!RequirePower())return false;
+ if(ServiceGuide!=1||!Field||!(AtServiceDesk(M)||AtOperations(M))||!RequirePower())return false;
  if(Field->ServiceStage()!=9||Field->ServiceCompletions()<=GuideServiceBaseline)
  {Feedback=ServiceObjective();Changed(Feedback);return false;}
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
@@ -81,41 +87,34 @@ bool FS47FreeformSession::CompleteServiceGuide()
  const int32 Dish=Field->ServiceDishIndex();
  if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish)){Feedback=TEXT("REMOTE is not restored. Inspect the target antenna at ARRAY STATUS.");Changed(Feedback);return false;}
  const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the truck and unpacked at SARO garage receiving during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
- RecordEvidence(HasFinding(TEXT("service-work-order"))?FString::Printf(TEXT("service-work-order-%d-%s"),Field->ServiceCompletions(),*Field->ServiceDishId()):FString(TEXT("service-work-order")),FString::Printf(TEXT("%s planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Field->ServiceDishId(),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
- ServiceGuide=2;bGuideFocus=false;Feedback=FString::Printf(TEXT("WORK ORDER ARCHIVED / %s is back in REMOTE. Select DAILY WORK or RECORDS."),*Field->ServiceDishId());Changed(Feedback);return true;
+ RecordEvidence(HasFinding(TEXT("service-work-order"))?FString::Printf(TEXT("service-work-order-%d-%s"),Field->ServiceCompletions(),*Field->ServiceDishId()):FString(TEXT("service-work-order")),FString::Printf(TEXT("%s planned relay service / signed at %s.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Field->ServiceDishId(),AtServiceDesk(M)?TEXT("ARRAY STATUS"):TEXT("OPS"),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
+ ServiceGuide=2;bGuideFocus=false;Feedback=FString::Printf(TEXT("WORK ORDER SIGNED OFF / %s is back on remote. The record is filed under RECORDS at OPS."),*Field->ServiceDishId());Changed(Feedback);return true;
 }
 void FS47FreeformSession::OpenServiceGuide()
 {
+ // D45-20261110 (Tom: OPS can point to the array PC): a summary only. Faults, their order, work orders and sign-off are on
+ // ARRAY STATUS (left-hand PC), MAINTENANCE.
  if(!bActive||!M||!M->UI||!RequirePower())return;
  TArray<S47Kit::FW> Rows;
  const FString Dish=Field?Field->ServiceDishId():FString(TEXT("S-03"));
  Rows.Add(S47FreeformTerminal::Paper(ServiceGuide==1?FString::Printf(TEXT("SARO / %s SERVICE WORK ORDER / IN PROGRESS"),*Dish):TEXT("SARO / ARRAY SERVICE WORK ORDERS")));
+ Rows.Add(S47FreeformTerminal::Text(TEXT("ARRAY MAINTENANCE IS DONE AT THE ARRAY STATUS PC (LEFT-HAND). WORK ORDERS ARE ISSUED AND SIGNED THERE."),-1));
  if(!Feedback.IsEmpty())Rows.Add(S47FreeformTerminal::Text(Feedback,1));
  if(Field&&Field->ArrayWear().bActive)
  {
+  // In the operator's order: the next one first, then the rest of the open ones, then those in service.
   const auto& Wear=Field->ArrayWear();TArray<S47FreeformTerminal::FRow> Lines;const auto* Next=Wear.NextBranch();
-  for(const auto& B:FS47ArrayWear::Branches())
+  TArray<const FS47ArrayWear::FBranch*> Order=Wear.Ordered();for(const auto& B:FS47ArrayWear::Branches())if(Wear.IsRestored(B.Id))Order.Add(&B);
+  for(const auto* B:Order)
   {
-   const bool Done=Wear.IsRestored(B.Id);const FString Missing=Done?FString():Field->BranchNeeds(B);
-   Lines.Add({{FString(B.Title),FString::Printf(TEXT("%d AT %s"),B.Dishes.Num(),B.Junction),Done?TEXT("IN SERVICE"):Missing.IsEmpty()?TEXT("PARTS READY"):TEXT("NEEDS PARTS")},&B==Next,nullptr,FString()});
+   const bool Done=Wear.IsRestored(B->Id);const FString Missing=Done?FString():Field->BranchNeeds(*B);
+   Lines.Add({{FString(B->Title),FString::Printf(TEXT("%d AT %s"),B->Dishes.Num(),B->Junction),Done?TEXT("IN SERVICE"):Missing.IsEmpty()?TEXT("PARTS READY"):TEXT("NEEDS PARTS")},B==Next,nullptr,B==Next?FString(TEXT("NEXT")):FString()});
   }
   Rows.Add(S47FreeformTerminal::Panel(FString::Printf(TEXT("STATION RESTORATION / %d OF 27"),27-Wear.DownCount()),S47FreeformTerminal::Table({TEXT("BRANCH"),TEXT("ANTENNAS"),TEXT("STATE")},{.42f,.26f,.32f},Lines)));
  }
- if(ServiceGuide!=1)
- {
-  if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN RECORDS")));
-  Rows.Add(S47FreeformTerminal::Text(Field&&Field->HasArrayFault()?FString::Printf(TEXT("%s needs service. Accept the existing fault below; other antennas and observing jobs remain available."),*Dish):ServiceGuide==0?TEXT("FIRST SERVICE / S-03. Learn to diagnose, replace a relay and run its real movement test. Accepting isolates S-03 from remote operation."):TEXT("Optional planned maintenance. The next order selects an antenna from the array; its identity is retained until repaired. Accepting isolates only that antenna.")));
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Use a relay from stock, or choose a new supply trip: buy a relay or donor in Caliche, carry its parcel in the truck, then unpack at GARAGE RECEIVING. Donors must be tested at CALIBRATION / REPAIR.")));
-  Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{StartServiceGuide(false);OpenServiceGuide();},true));
-  Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / collect and transport new supplies"),[this]{StartServiceGuide(true);OpenServiceGuide();}));
- }
- else
- {
-  Rows.Add(S47FreeformTerminal::Paper(ServiceObjective()));
-  Rows.Add(S47FreeformTerminal::Text(FString::Printf(TEXT("REPAIR TARGET: %s. At its outside cabinet: LOCAL, cover, relay, cover, local movement test. Return here only after REMOTE is restored."),*Dish)));
-  if(CanCompleteServiceGuide())Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
-  else Rows.Add(S47FreeformTerminal::Button(TEXT("Continue service / return to room"),[this]{bGuideFocus=true;FieldFocus=-1;Feedback=ServiceObjective();Changed(Feedback);M->UI->Close(true);},true));
-  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;if(bGuideFocus)FieldFocus=-1;Feedback=bGuideFocus?ServiceObjective():TEXT("OBSERVING FOCUS / unfinished service retained.");Changed(Feedback);OpenServiceGuide();}));
- }
+ if(ServiceGuide==1)Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("OPEN WORK ORDER / %s / %s"),*Dish,*ServiceObjective())));
+ else if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN RECORDS")));
+ if(ServiceGuide!=1&&Field&&Field->HasArrayFault())Rows.Add(S47FreeformTerminal::Text(FString::Printf(TEXT("%s needs a new relay. Its work order is issued at the array PC."),*Dish)));
+ Rows.Add(S47FreeformTerminal::Button(TEXT("SHOW ON THE ARRAY PC"),[this]{StatusTab=1;Feedback=TEXT("ARRAY STATUS (left-hand PC) is set to MAINTENANCE. Work orders are issued and signed there.");Changed(Feedback);OpenServiceGuide();},true));
  OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),OpsShell(4,S47Kit::Col(Rows)));
 }

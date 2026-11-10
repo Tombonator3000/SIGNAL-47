@@ -398,6 +398,7 @@ void US47Flow::Init(US47Main* InM)
 			if (M->Story && !M->Story->IsCinematic())
 			{
 				if (Tab) M->UI->NotebookAt(Tab);
+				S47TonightNote::Seen().bPlain = !Tab; // D45-20261110: the plain notebook key may open on NOW when something is new there
 				OpenNotebook();
 			}
 			return true;
@@ -1107,6 +1108,8 @@ void US47Flow::StartGame(const FStart& O)
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (!bFreeform && M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (!bFreeform && M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()),O.State.IsValid() && O.State->HasField(TEXT("spine")));
+ // D45-20261110: a Story night earlier in the same run left the spine on: its posts came back and Freeform saves carried "spine".
+ else if (bFreeform && M->Spine) M->Spine->Begin(nullptr,false,false);
  if (!bFreeform && M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (!bFreeform && M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
 
@@ -2342,31 +2345,68 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			TSet<FString> Used;
 			const auto Add = [&](const TCHAR* Group, const S47TonightNote::FLine& L)
 			{
-				FS47NbNowLine N; N.Group = Group; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
+				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
 				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
 				if (!N.Item.IsEmpty()) Used.Add(N.Item);
 				X.Now.Add(N);
 			};
+			// D45-20261110 (Tom: the field guide as a plain to-do list, by importance): the next step (the red arrow), then DO FIRST,
+			// TONIGHT and WHEN YOU CAN (S47TonightNote::RankOf), each with its windows first, then DONE TONIGHT. The job cards' line is
+			// tonight's; the cases waiting, the post and work with no line of its own are for when you can.
 			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Next) Add(TEXT("next"), L);
-			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && !L.When.IsEmpty()) Add(TEXT("clock"), L);
-			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.When.IsEmpty()) Add(TEXT("todo"), L);
+			static const TCHAR* const Ranks[] = { TEXT("first"), TEXT("tonight"), TEXT("later") };
 			bool bCases = false;
-			for (int32 I = 0; I < Note.Also.Num(); ++I)
+			for (uint8 R = 0; R < 3; ++R)
 			{
-				FS47NbNowLine N; N.Group = TEXT("also"); N.Text = N.What = N.Why = Note.Also[I]; N.Key = Note.AlsoKeys.IsValidIndex(I) ? Note.AlsoKeys[I] : FString();
-				if (N.Key == TEXT("cards") || N.Key == TEXT("cases")) N.Fold = N.Key;
-				bCases |= N.Key == TEXT("cases");
-				X.Now.Add(N);
-			}
-			for (const FS47NbWorkItem& W : X.WorkItems)
-			{
-				if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || (bCases && W.Id.StartsWith(TEXT("case/")))) continue;
-				if (!S47Script::LintText(W.Title).IsEmpty()) continue;
-				FS47NbNowLine N; N.Group = TEXT("also"); N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; X.Now.Add(N);
+				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && !L.When.IsEmpty()) Add(Ranks[R], L);
+				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && L.When.IsEmpty()) Add(Ranks[R], L);
+				for (int32 I = 0; I < Note.Also.Num(); ++I)
+				{
+					const FString AlsoKey = Note.AlsoKeys.IsValidIndex(I) ? Note.AlsoKeys[I] : FString();
+					if ((AlsoKey == TEXT("cards") ? 1 : 2) != R) continue;
+					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.bSummary = true; N.Text = N.What = N.Why = Note.Also[I]; N.Key = AlsoKey;
+					if (N.Key == TEXT("cards") || N.Key == TEXT("cases")) N.Fold = N.Key;
+					bCases |= N.Key == TEXT("cases");
+					X.Now.Add(N);
+				}
+				if (R != 2) continue;
+				for (const FS47NbWorkItem& W : X.WorkItems)
+				{
+					if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || (bCases && W.Id.StartsWith(TEXT("case/")))) continue;
+					if (!S47Script::LintText(W.Title).IsEmpty()) continue;
+					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; X.Now.Add(N);
+				}
 			}
 			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Done) Add(TEXT("done"), L);
 			X.NowClock = Note.Clock;
 			X.bNow = true;
+			// D45-20261110: a line NOW has not shown before is NEW, and the notebook opens on NOW for it (SS47Notebook, which counts it
+			// seen once shown). A game just begun or loaded counts what it has at first as seen, so that only what comes after is new.
+			{
+				S47TonightNote::FSeen& Shown = S47TonightNote::Seen();
+				const uint64 GameId = (uint64(uint32(CaseId)) << 32) | uint32(F->Seed());
+				const bool bFresh = !Shown.bBegun || Shown.Game != GameId;
+				if (bFresh) { Shown.Keys.Reset(); Shown.Game = GameId; Shown.bBegun = true; }
+				for (FS47NbNowLine& N : X.Now)
+				{
+					if (N.Key.IsEmpty() || N.bDone) continue;
+					if (bFresh) Shown.Keys.Add(N.Key); else N.bNew = !Shown.Keys.Contains(N.Key);
+				}
+			}
+			// D45-20261110: the field guide starts with tonight's list (Enter turns to NOW), whatever Tom calls the book
+			{
+				static const TCHAR* const Heads[] = { TEXT("DO FIRST"), TEXT("TONIGHT"), TEXT("WHEN YOU CAN") };
+				TArray<FString> Plan;
+				for (const FS47NbNowLine& N : X.Now) if (N.Group == TEXT("next")) Plan.Add(TEXT("NEXT: ") + N.Text);
+				for (uint8 R = 0; R < 3; ++R)
+				{
+					TArray<FString> Rows;
+					for (const FS47NbNowLine& N : X.Now) if (N.Group == Ranks[R] && !N.bDone) Rows.Add(TEXT("- ") + N.Text);
+					if (Rows.Num()) Plan.Add(FString(Heads[R]) + TEXT("\n") + FString::Join(Rows, TEXT("\n")));
+				}
+				if (!Note.Clock.IsEmpty()) Plan.Add(Note.Clock);
+				X.GuideEntries.Insert(FS47NbGuideEntry{ TEXT("guide:tonight"), TEXT("Tonight's list"), (Plan.Num() ? FString::Join(Plan, TEXT("\n\n")) : FString(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing."))) + TEXT("\n\nEnter or A: turn to NOW, the same list with its details.") }, 0);
+			}
 		}
 		X.OnFollow = [Self](const FString& Id)
 		{
@@ -2378,7 +2418,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			Self->OpenNotebook();
 		};
 		X.GuideEntries.Add({ TEXT("guide:observation"), TEXT("An observing shift"), TEXT("OPS assigns work and registers retained results. The tracking PC points the array; requested coordinates and actual encoders must agree. The receiver tunes frequency, gain and bandwidth and records the signal. Wait for the recording to finish, then collect its original at the printer.\n\nRoutine results return to OPS for payment. If the work order asks for comparison, retain the original and complete the requested control or measurement first. The audio desk compares recorded material; a live signal alone is not a completed review. Register the reviewed packet at OPS, collect it from the printer and file it in the archive binder.") });
-		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench: load the tank, transfer to fixer, then collect the print. A qualifying developed incident photograph earns $20 field allowance when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs do not qualify."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
+		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench. First close the lab door and switch on the safelight (the switch is by the door, inside); white light ruins a print until it is fixed. Then load the tank, transfer to fixer, and collect the print. A qualifying developed incident photograph earns $20 field allowance when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs do not qualify."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
 		else X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Collect the field camera"), TEXT("The SARO field camera is on the dry archive bench in the PHOTO LAB, in the service yard east of the control room. Follow the PHOTOGRAPHIC LAB sign, enter the lab and look at the south end of the bench along its east wall. Approach the camera and use Collect field camera. It then appears in Kit.\n\nExpose a photograph with the camera, process it at the wet bench in this same lab, then take a qualifying developed incident photograph to the physical OPS terminal for registration.") });
 		X.GuideEntries.Add({ TEXT("guide:transport"), TEXT("Supplies and physical cargo"), TEXT("The service truck starts on its pad outside the SERVICE YARD exit. Check Kit for its current area before setting out. Caliche and its supply counter inside the gas station are south of SARO; the map shows the route and opening hours. Take the truck for the supply trip.\n\nBuy several items at the counter without leaving the shop menu. Paid items are packed together in one parcel beside the counter; collect it when your order is ready. A parcel at the shop, in your hands, in the truck or set down outside is not delivered stock. Carry it to the truck and secure it in the cargo rack. Back at SARO, unload and deliver it at GARAGE RECEIVING. Kit shows the current parcel separately from usable stock. Fuel in the vehicle and generator is separate from spare cans.") });
 		X.GuideEntries.Add({ TEXT("guide:service"), TEXT("Power and array service"), TEXT("Read the status and physical service labels before replacing anything. Backup power can keep the station operating while the feeder is repaired. Repairs require the relevant physical panel, parts and tests. The service bay lists retained supplies and workbench progress. If a feeder fault leaves you without a fuse or purchasing power, check the emergency fuse requisition at Caliche's indoor supply counter.") });
@@ -2532,7 +2572,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
 	// WALKIE-USE-20261108: the set in the player's own hand, and its channel
-	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. A sound alone is not a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
+	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. Something you only heard on it doesn't count as a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
 	// TAPE-20261108: the field recorder, while it is carried; its cassettes either way, once there are any.
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Tape && (M->Freeform->Tape->Carried() || M->Freeform->Tape->Takes().Num()))
 	{

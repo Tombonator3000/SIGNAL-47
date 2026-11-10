@@ -130,9 +130,8 @@ private:
 	TArray<TSharedPtr<FS47BufferSourceNode>> HostSources;
 	struct FNodes
 	{
-		TSharedPtr<FS47GainNode> Voice, Car, Mus;
-		TSharedPtr<FS47OscillatorNode> Horn, Vib, Osc;
-		TSharedPtr<FS47BiquadFilterNode> Mute;
+		TSharedPtr<FS47GainNode> Voice, Car, Mus; // Voice: where a line without a take is said as static (D45-20261110: no horn)
+		TSharedPtr<FS47OscillatorNode> Osc;
 		TSharedPtr<FS47BufferSourceNode> Music;
 		TSharedPtr<FS47MediaSource> Anthem, Track;
 		TSharedPtr<FS47GainNode> AnthemGain, TrackGain;

@@ -54,7 +54,8 @@ namespace S47Week
  const TCHAR* const HookLines[]={
   TEXT("One more thing. Since the dishes went over by themselves, something on the bearing past the Alderete place is chewing my signal."),
   TEXT("The last nights, a little after two, for a few minutes. Tomorrow night, I think. Where and when I can tell you. What, I cannot. Out.")};
- const TCHAR* const HookSlipWords=TEXT("\"Something on the bearing past the Alderete place chews my signal a little after two. Tomorrow night, I think. Where and when. Not what. D.\"");
+ // D45-20261110: the slip is paper (no clip says it), so it reads as a note now, not a riddle; Dale stays stiff, no contractions.
+ const TCHAR* const HookSlipWords=TEXT("\"Something out past the Alderete place is chewing up my signal, a little after two in the morning. It will be back tomorrow night, I think. I can tell you where and when. I cannot tell you what it is. D.\"");
  // Under the big night's slip when there is one, else a slip of its own.
  FString HookSlip(bool bSecond)
  {

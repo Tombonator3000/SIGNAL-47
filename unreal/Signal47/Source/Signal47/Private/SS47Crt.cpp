@@ -10,6 +10,7 @@
 #include "S47Theme.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47FreeformTerminal.h"
 
 namespace
 {
@@ -249,8 +250,9 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
   FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(),WhiteBrush.Get(),ESlateDrawEffect::None,CrtCss(0x020a04));
   const auto Lines=M->Freeform->TerminalLines(int32(Kind));
   // FIX-20261110 (Tom: more life on the screens, the look stays): the same lines, closer set, over
-  // one live strip per station; a pale band rolls through the tube; what is on the air around the
-  // station tears lines out of the picture and the glass's own light in the room goes with it.
+  // one live strip per station; what is on the air around the station tears lines out of the picture
+  // and the glass's own light in the room goes with it. D45-20261110: the always-rolling band is gone;
+  // the tube shares the open terminal's rare, faint hum bar, and opens from a line when the supply comes back.
   const double T=FPlatformTime::Seconds();const float Jam=M->Freeform->ScreenInterference();
   const double Beat=FMath::FloorToDouble(T*12)+int32(Kind)*17.;
   auto Hash=[](double X){const double V=FMath::Sin(X*12.9898)*43758.5453;return float(V-FMath::FloorToDouble(V));};
@@ -262,9 +264,9 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
   for(int32 I=0;I<Lines.Num()&&I<9;++I)Txt(G,Out,Layer+1,Lines[I],16+Tear,36+I*Step,I==0?25:20,I==0?Bright:Lines[I].StartsWith(TEXT("NEXT / "))?Warn:Phosphor);
   FreeformStrip(G,Out,Layer+1,T);
   auto Band=[&](float Y,float H,const FLinearColor& C){FSlateDrawElement::MakeBox(Out,Layer+7,G.ToPaintGeometry(FVector2f(512.f,H),FSlateLayoutTransform(FVector2f(0,Y))),WhiteBrush.Get(),ESlateDrawEffect::None,C);};
-  const float Roll=-60+504*float(FMath::Fmod(T*.11+int32(Kind)*.23,1.));
-  Band(Roll,60,CrtCss(0x8cffa4,.06f));Band(Roll+56,4,CrtCss(0x8cffa4,.12f));
+  S47FreeformTerminal::PaintHum(Out,Layer+7,G,FVector2f(512.f,384.f),int32(Kind),Phosphor);
   for(int32 I=0;I<int32(1+Jam*7)&&Jam>.03f;++I)if(Hash(Beat+I*7.31)<Jam*.9f)Band(384*Hash(Beat*1.7+I*3.1),2+18*Hash(Beat*.37+I)*Jam,Hash(Beat+I)<.6f?FLinearColor(0,0,0,.85f):CrtCss(0x8cffa4,.12f+.25f*Jam));
+  S47FreeformTerminal::PaintPowerOn(Out,Layer+7,G,FVector2f(512.f,384.f),Phosphor);
   Scanlines(G,Out,Layer+8);return Layer+9;
  }
 	if (Kind == EKind::Ops)

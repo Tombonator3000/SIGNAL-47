@@ -16,6 +16,7 @@
 #include "S47Places.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
+#include "S47Darkroom.h"
 #include "S47WardReport.h"
 #include "S47Answer.h"
 #include "S47Weather.h"
@@ -352,6 +353,9 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 			const bool bNeg = Frame && !Frame->Neg.IsEmpty();
 			Fs->Enlarger->DevSet(2, 4);
 			Fs->Enlarger->Open(ShotId);
+			// D45-20261110 (D45-17): the print needs the darkroom shut and red, as the player's does; the F10 jump sets both.
+			if (M->Web) M->Web->SetDoorOpen(TEXT("lab"), false, true);
+			if (Fs->Darkroom) Fs->Darkroom->SetSafelight(true, true);
 			const FString Made = Fs->Enlarger->DevMake(ShotId, 2, 4);
 			Pictured(TEXT("enlarge"), 1.2f);
 			Tell(bShot && bNeg && !Made.IsEmpty(), FString::Printf(TEXT("Frame %s: negative %s, enlargement %s"), *ShotId, bNeg ? TEXT("kept") : TEXT("missing"), Made.IsEmpty() ? TEXT("not printed") : *Made));

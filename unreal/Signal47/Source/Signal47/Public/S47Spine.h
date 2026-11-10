@@ -71,6 +71,9 @@ public:
  void TestOpenSC11() { if (bEnabled && State[SC11] == 0) State[SC11] = 1; }
  // -S47SpineContract=sc08 (with -S47Jump=chapter2) or =sc11 (with -S47Jump=chapter4), -S47EveningTimeline.
  void ControlTest(double Dt);
+ // D45-20261110: true when any placeholder post or sign (component or web node) would be drawn; they never should be.
+ bool PostsShown() const;
+ int32 PostCount() const { return Posts.Num(); }
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bTestSC03 = false;
@@ -78,6 +81,7 @@ private:
  int32 State[GateCount] = { 0, 0, 0 };
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Signs;
+ TArray<int32> PostNodes, SignNodes; // D45-20261110: their web nodes, hidden with them
  bool bBuilt = false;
  FS47SC04 Act04;
  FS47SC08 Act08;

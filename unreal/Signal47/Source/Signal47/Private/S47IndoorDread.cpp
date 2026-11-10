@@ -131,7 +131,7 @@ void FS47IndoorDread::SurvivedFlood(const FVector& At,const FString& Area,int32 
  UE_LOG(LogTemp,Display,TEXT("S47: flood room remembered in %s at %s, %d times"),*Area,*At.ToCompactString(),FloodCount);
  if(bSameRoom&&FloodCount>=2)
  {
-  FString Note=FString::Printf(TEXT("%s, the same room as before. The light came back to it and I got out of it again. It says where and when, not why here."),*Title);
+  FString Note=FString::Printf(TEXT("%s, the same room as before. The light came back and I got out again. I don't know why it's always this room."),*Title);
   Note[0]=FChar::ToUpper(Note[0]);
   M->Freeform->RecordEvidence(FString::Printf(TEXT("flood-room-%d-%d"),M->Freeform->Day(),FloodCount),Note);
  }

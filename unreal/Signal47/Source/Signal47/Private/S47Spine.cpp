@@ -128,8 +128,8 @@ bool FS47Spine::ResumeAfterSC03()
 void FS47Spine::Stop()
 {
  Act04.Stop(); Act08.Stop(); Act11.Stop();
- for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
- for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
+ // D45-20261110: hidden at node level (ShowPosts), so an area change after Story cannot draw them again in Freeform.
+ ShowPosts();
 }
 
 S47J::FObj FS47Spine::Save() const
@@ -273,7 +273,8 @@ void FS47Spine::Build()
   C->RegisterComponent(); C->SetWorldLocation(S47Three::ToUE(GatePoint(E)));
   const FVector Scale(.3, .5, .3);
   C->SetWorldScale3D(S47Three::DirToUE(Scale));
-  FS47Obj Obj = W->ObjAt(W->AdoptNode(C, Parent, FString::Printf(TEXT("spine:post%d"), G))); Obj.SetScale(Scale);
+  const int32 PostNode = W->AdoptNode(C, Parent, FString::Printf(TEXT("spine:post%d"), G));
+  FS47Obj Obj = W->ObjAt(PostNode); Obj.SetScale(Scale);
   auto* T = NewObject<UTextRenderComponent>(W, *(Name + TEXT("Text")));
   T->SetMobility(EComponentMobility::Movable); T->SetupAttachment(ParentComp);
   T->SetText(FText::FromString(FString::Printf(TEXT("%s\nPLACEHOLDER"), Scenarios()[E == SC04 ? 3 : E == SC08 ? 7 : 10].Id)));
@@ -283,8 +284,8 @@ void FS47Spine::Build()
   const FVector Face = (StandPoint(E) - GatePoint(E)).GetSafeNormal2D();
   T->SetWorldLocation(S47Three::ToUE(GatePoint(E) + FVector(Face.X * .17, .32, Face.Z * .17)));
   T->SetWorldRotation(FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Face.X, Face.Z)), 0));
-  W->AdoptNode(T, Parent, FString::Printf(TEXT("spine:sign%d"), G));
-  Posts.Add(C); Signs.Add(T);
+  const int32 SignNode = W->AdoptNode(T, Parent, FString::Printf(TEXT("spine:sign%d"), G));
+  Posts.Add(C); Signs.Add(T); PostNodes.Add(PostNode); SignNodes.Add(SignNode); // D45-20261110: for the node-level hide
   FS47Interactable It; It.Id = GateItem(E); It.Object = Obj; It.Range = 2.4;
   It.Label = [this, E]() { return Label(GateItem(E)); };
   It.Use = [this, E] { Use(GateItem(E)); };
@@ -296,13 +297,36 @@ void FS47Spine::Build()
 
 void FS47Spine::ShowPosts()
 {
+ // D45-20261110 (Tom saw "SC04 / SC08 PLACEHOLDER" in Freeform after a Story night in the same run): the component alone was
+ // hidden, its web node stayed visible, and the next area pass (AS47Web::ApplyVisibility) drew it again. The node is hidden now,
+ // and only while it still holds this post (a reloaded web reuses indices).
+ AS47Web* W = nullptr;
+ if (M) W = M->Web;
+ const auto Hide = [W](const TArray<int32>& Nodes, int32 G, const USceneComponent* Comp, bool bOn)
+ {
+  const FS47WebNode* N = W && Comp && Nodes.IsValidIndex(G) ? W->Node(Nodes[G]) : nullptr;
+  if (N && N->Comp.Get() == Comp) W->SetVisible(Nodes[G], bOn);
+ };
  for (int32 G = 0; G < Posts.Num() && G < GateCount; ++G)
  {
   const bool bShow = false; // every gate is built now (SC04, SC08, SC11); the posts stay for older saves' code paths
   if (Posts[G].IsValid()) Posts[G]->SetVisibility(bShow);
   if (Signs.IsValidIndex(G) && Signs[G].IsValid()) Signs[G]->SetVisibility(bShow);
+  Hide(PostNodes, G, Posts[G].Get(), bShow);
+  if (Signs.IsValidIndex(G)) Hide(SignNodes, G, Signs[G].Get(), bShow);
   if (Posts[G].IsValid()) Posts[G]->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
  }
+}
+
+bool FS47Spine::PostsShown() const
+{
+ const AS47Web* W = nullptr;
+ if (M) W = M->Web;
+ bool bAny = false;
+ for (const auto& P : Posts) bAny |= P.IsValid() && P->IsVisible();
+ for (const auto& S : Signs) bAny |= S.IsValid() && S->IsVisible();
+ if (W) for (const TArray<int32>* Nodes : { &PostNodes, &SignNodes }) for (const int32 I : *Nodes) bAny |= W->IsVisible(I) && W->Node(I)->Name.StartsWith(TEXT("spine:"));
+ return bAny;
 }
 
 void FS47Spine::Step(double Dt)
@@ -369,11 +393,16 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  Guard.Begin(nullptr,false);
  const bool MissingRecoverable=Guard.bMissingSavedSpine && !Guard.PreserveUnknownSave();
  const bool SaveBoundary=FutureKept && MalformedKept && MissingRecoverable;
- const bool Ok = Thirteen && Ordered && Chapters && Cards && Protects && SaveBoundary;
+ // D45-20261110: Flow resets the spine when Freeform starts: an enabled Story spine goes off and saves nothing.
+ auto Live = S47J::New(); S47J::Set(Live, TEXT("v"), Version); Guard.Begin(Live, false);
+ const bool bWasOn = Guard.Enabled(); Guard.Begin(nullptr, false, false);
+ const bool FreeformReset = bWasOn && !Guard.Enabled() && !Guard.Save().IsValid() && !Guard.PreserveUnknownSave() && !Guard.PostsShown();
+ const bool Ok = Thirteen && Ordered && Chapters && Cards && Protects && SaveBoundary && FreeformReset;
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
  Lines.Add(FString::Printf(TEXT("%s spine: every active authored gate is protected until complete"), Protects ? TEXT("PASS") : TEXT("FAIL")));
  Lines.Add(FString::Printf(TEXT("%s spine: only absent legacy state is recoverable; unknown and malformed present fields are retained"), SaveBoundary ? TEXT("PASS") : TEXT("FAIL")));
+ Lines.Add(FString::Printf(TEXT("%s spine: the Freeform reset turns a Story spine off, with no save block and no post shown"), FreeformReset ? TEXT("PASS") : TEXT("FAIL")));
  return Ok;
 }
 

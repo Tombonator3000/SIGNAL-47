@@ -24,6 +24,8 @@
 #include "S47Night.h"
 #include "S47Glow.h"
 #include "S47Album.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
@@ -112,7 +114,7 @@ namespace
  }
 }
 
-FS47FreeformWorld::FS47FreeformWorld(US47Main* InM) : M(InM), Carry(MakeShared<FS47FreeformCarry>(InM)) {}
+FS47FreeformWorld::FS47FreeformWorld(US47Main* InM) : M(InM), Carry(MakeShared<FS47FreeformCarry>(InM)) { for(int32 I=0;I<27;++I){PilotOf[I]=-1;PilotShown[I]=-1;PilotSize[I]=.14f;PilotBlink[I]=FVector2D::ZeroVector;} }
 FS47FreeformWorld::~FS47FreeformWorld() { Stop(); Life.Reset(); }
 bool FS47FreeformWorld::Ready() const { return bActive && M && M->Freeform && M->Freeform->Active() && M->Web && M->Player; }
 int32 FS47FreeformWorld::InventoryCount(const FString& Id) const { return Stock.FindRef(Id); }
@@ -221,6 +223,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
 void FS47FreeformWorld::Stop()
 {
  bActive=false;bPumping=false;if(Carry)Carry->Stop();
+ StopGeneratorSound(); // D45-20261110: the generator's loop goes with the session (guarded for engine exit); a load brings it back
  // The shared session is also released from US47Main's UObject destructor.
  // At purge/engine exit its actor-owned maps and callbacks may already be gone.
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))
@@ -236,6 +239,7 @@ void FS47FreeformWorld::Stop()
  if(!Live(Web)||Web->IsActorBeingDestroyed())return;
  RestorePumpModel();
  RestoreServiceCabinet();
+ RestorePilots();
  SetFieldZone(false);PlacedTarget.Empty();bFirstDoorStep=true;DoorK=0;
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=false;
  if(ServiceDishIndex()>=0)Web->SetDishRemoteAvailable(ServiceDishIndex(),true);
@@ -687,7 +691,8 @@ bool FS47FreeformWorld::Build()
  for(int32 I=0;I<FS47ArrayWear::Branches().Num()&&I<4;++I)
  {
   const FVector At=InteractionPoint(FString(TEXT("field:"))+FS47ArrayWear::Branches()[I].Junction);
-  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.80,0),FVector(.11,.09,.11),0xd08a2c,Saro);
+  // D45-20261110: red, as the cabinet pilots of the dead antennas are; this one marks where the branch is mended
+  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.80,0),FVector(.11,.09,.11),0xd8321e,Saro);
  }
  // EASTWING workshop tray: one small part per slot on the free right of the worktop.
  for(int32 I=0;I<FS47Workshop::TraySize;++I)
@@ -779,7 +784,7 @@ void FS47FreeformWorld::Apply()
   const FS47ArrayWear::FBranch& B=FS47ArrayWear::Branches()[I];const bool Down=bActive&&Wear.bActive&&!Wear.IsRestored(B.Id);
   WearLamps[I].SetVisible(Down);
   if(const auto* N=M->Web->Node(WearLamps[I].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  if(Down)WearLamps[I].SetEmissive(S47Three::Hex(0xd08a2c),Wear.Job==B.Id?1.f:.45f);
+  if(Down){WearLamps[I].SetColor(S47Three::Hex(0xd8321e));WearLamps[I].SetEmissive(S47Three::Hex(0xd8321e),Wear.Job==B.Id||Wear.NextBranch()==&B?1.f:.6f);} // D45-20261110: brighter on the next one
  }
  for(int32 I=0;I<FS47Workshop::TraySize;++I)if(TrayParts[I])
  {
@@ -807,6 +812,61 @@ void FS47FreeformWorld::Apply()
  {
   const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetRenderInMainPass(false);C->SetRenderInDepthPass(false);C->SetCastShadow(false);C->SetVisibleInRayTracing(false);}Pair.Key.SetVisible(Show);
  }
+ ApplyPilots();
+}
+void FS47FreeformWorld::ApplyPilots()
+{
+ // D45-20261110 (Tom: every box out there shows green): each drive cabinet's pilot says what its antenna is doing. Green in service,
+ // red out of service, amber under local work or test, red blinking on the one the operator has made next. Set only on a change.
+ // While SARO is dark FS47SaroPower owns these lamps (a colour set then would become the lamp's own); the first lit frame catches up.
+ if(!bActive||!M||!M->Web||!M->Freeform)return;
+ if(!M->Freeform->HasPowerForReactiveLight()||(IsValid(M->SaroNight)&&M->SaroNight->Power&&M->SaroNight->Power->Out()))return;
+ FS47GlowPoints* G=M->Web->Glow(TEXT("world.field.glow.points"));if(!G||G->Num()==0)return;
+ const int32 N=FMath::Min(M->Web->DishCount(),27);
+ if(PilotGlow!=G)
+ {
+  // The pilot nearest each cabinet (the export adds them in antenna order; S-03's sits on its service box)
+  const FS47GlowView View(M->Web,TEXT("world.field.glow.points"));
+  for(int32 I=0;I<27;++I)
+  {
+   PilotOf[I]=-1;PilotShown[I]=-1;if(I>=N)continue;
+   const FVector Cab=InteractionPoint(TEXT("field:")+M->Web->DishId(I));double Best=3.;
+   if(!Cab.IsNearlyZero())for(int32 K=0;K<G->Num();++K){const FVector At=View.Pos(K);const double D=FVector2D(At.X-Cab.X,At.Z-Cab.Z).Size();if(D<Best){Best=D;PilotOf[I]=K;}}
+   if(PilotOf[I]<0&&G->Num()==N)PilotOf[I]=I;
+   const int32 Pk=PilotOf[I];if(Pk<0)continue;
+   PilotBase[I]=View.Col(Pk);PilotSize[I]=G->Size.IsValidIndex(Pk)?G->Size[Pk]:.14f;PilotBlink[I]=G->Blink.IsValidIndex(Pk)?G->Blink[Pk]:FVector2D::ZeroVector;
+  }
+  PilotGlow=G;
+ }
+ static const FLinearColor PilotRed=S47Three::Hex(0xff3424),PilotAmber=S47Three::Hex(0xffa040),PilotGreen=S47Three::Hex(0x7dff9a);
+ const FS47ArrayWear::FBranch* Next=Wear.NextBranch();
+ const FS47ArrayWear::FBranch* Working=Wear.Job.IsEmpty()?nullptr:FS47ArrayWear::Branch(Wear.Job);
+ const bool bRelayNext=HasArrayFault()&&Service<=2&&(M->Freeform->ServiceGuideFocused()||!Next); // as MAINTENANCE lists it first
+ for(int32 I=0;I<N;++I)
+ {
+  const int32 Pk=PilotOf[I];if(Pk<0||Pk>=G->Num())continue;
+  const FString Id=M->Web->DishId(I);
+  int32 Want=Wear.BranchOfDish(Id)||!M->Web->DishRemoteAvailable(I)?1:0;
+  if(bRelayNext?Id==ServiceTarget:Next&&Id==Next->Junction)Want=3;
+  if((Id==ServiceTarget&&Service>=3&&Service<=8)||(Working&&Id==Working->Junction))Want=2;
+  if(Want==PilotShown[I])continue;
+  PilotShown[I]=int8(Want);
+  G->SetColor(Pk,Want==0?(Id==TEXT("S-03")?PilotGreen:PilotBase[I]):Want==2?PilotAmber:PilotRed);
+  G->SetBlink(Pk,Want==3?FVector2D(4.2,0):PilotBlink[I]);
+  G->SetSize(Pk,Want==0?PilotSize[I]:FMath::Max(PilotSize[I],.20f)); // a lit fault reads from the apron, not only up close
+ }
+}
+void FS47FreeformWorld::RestorePilots()
+{
+ // D45-20261110: outside Freeform (Story, the title) the pilots are as exported again
+ FS47GlowPoints* G=M&&IsValid(M->Web)?M->Web->Glow(TEXT("world.field.glow.points")):nullptr;
+ for(int32 I=0;I<27;++I)
+ {
+  const int32 Pk=PilotOf[I];
+  if(G&&G==PilotGlow&&PilotShown[I]>=0&&Pk>=0&&Pk<G->Num()){G->SetColor(Pk,PilotBase[I]);G->SetBlink(Pk,PilotBlink[I]);G->SetSize(Pk,PilotSize[I]);}
+  PilotShown[I]=-1;
+ }
+ PilotGlow=nullptr;
 }
 
 void FS47FreeformWorld::TrackPowerFault(bool bFault)
@@ -1265,6 +1325,12 @@ void FS47FreeformWorld::FinishBranch(const FString& BranchId)
  M->Freeform->RecordEvidence(TEXT("service-branch-")+BranchId,FString(B->Title)+FString::Printf(TEXT(" repaired and tested at its junction. %d of 27 antennas in service."),Up));
  Change(FString::Printf(TEXT("%s back in service. ARRAY %d/27 / MEASUREMENT %.0f%%."),B->Title,Up,100*FS47ArrayWear::RateForCount(Up))+(Wear.DownCount()==0?TEXT(" SARO is whole again."):TEXT("")));
 }
+bool FS47FreeformWorld::PlanBranch(const FString& BranchId,int32 To)
+{
+ // D45-20261110: the order is the operator's; the repair itself stays at the junction cabinet
+ if(!bActive||!Wear.Move(BranchId,To))return false;
+ Change();return true;
+}
 void FS47FreeformWorld::RestoreWholeArrayFixture()
 {
  if(!M||!M->Web)return;
@@ -1393,16 +1459,17 @@ int32 FS47FreeformWorld::SkyTransfer()
  if(!Ready()||bGenerator||!M->Freeform->HasKit(TEXT("transfer")))return -1;
  if(GeneratorSeconds<=0&&Consume(TEXT("fuel")))GeneratorSeconds=6*3600.;
  if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
- if(GeneratorSeconds<=0)return 0;
- bGenerator=true;if(M->Audio)M->Audio->Sfx(TEXT("engineStart"),FS47Sound{.Gain=.45f});Change();
+ if(GeneratorSeconds<=0){GeneratorSound(EGenSound::Dry);return 0;} // D45-20261110: it turns over and does not catch
+ bGenerator=true;GeneratorSound(EGenSound::Start);Change();
  return 1;
 }
 bool FS47FreeformWorld::GeneratorUse()
 {
  if(!Near(GeneratorAt,2.9))return true;
- if(bGenerator){bGenerator=false;Change(TEXT("Backup generator stopped. Remaining tank fuel is retained."));return true;}
- if(GeneratorSeconds<=0){if(!Consume(TEXT("fuel"))){Change(TEXT("Generator tank empty. Bring a fuel can from the depot or Caliche."));return true;}GeneratorSeconds=6*3600.;}
- bGenerator=true;Change(TEXT("Backup generator running. A full can keeps it going for six hours."));return true;
+ // D45-20261110: each use is heard at the generator: the stop, a dry crank, the start (the loop follows in StepGeneratorSound)
+ if(bGenerator){bGenerator=false;GeneratorSound(EGenSound::Off);Change(TEXT("Backup generator stopped. Remaining tank fuel is retained."));return true;}
+ if(GeneratorSeconds<=0){if(!Consume(TEXT("fuel"))){GeneratorSound(EGenSound::Dry);Change(TEXT("Generator tank empty. Bring a fuel can from the depot or Caliche."));return true;}GeneratorSeconds=6*3600.;}
+ bGenerator=true;GeneratorSound(EGenSound::Start);Change(TEXT("Backup generator running. A full can keeps it going for six hours."));return true;
 }
 bool FS47FreeformWorld::FeederUse()
 {
@@ -1506,20 +1573,21 @@ void FS47FreeformWorld::Step(double Dt)
   if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
   if(GeneratorSeconds>0)
   {
-   bGenerator=true;if(M->Audio)M->Audio->Sfx(TEXT("engineStart"),FS47Sound{.Gain=.45f});
+   bGenerator=true;GeneratorSound(EGenSound::Start); // D45-20261110: placed at the generator, and its running loop follows
    Change(TEXT("The lights dip. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator coughs and takes the load."));
   }
-  else Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator turns and does not catch: no fuel for it."));
+  else{GeneratorSound(EGenSound::Dry);Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator turns and does not catch: no fuel for it."));}
   UE_LOG(LogTemp,Display,TEXT("S47: transfer switch: generator %s"),bGenerator?TEXT("started"):TEXT("dry"));
  }
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);
- if(M->Freeform->Held()||WorldDelta>3.){AdvanceUnobservedTo(Now);Apply();return;}
+ if(M->Freeform->Held()||WorldDelta>3.){AdvanceUnobservedTo(Now);Apply();StepGeneratorSound(Dt);return;} // D45-20261110: a jump that drained the tank fades the loop
  LastClock=Now;
  StepLogger(Dt,WorldDelta);
  StepPump(Dt);
- if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
+ if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){GeneratorSound(EGenSound::Stall);bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
+ StepGeneratorSound(Dt); // D45-20261110: the running loop follows the generator's state every frame
  if(M->World&&M->World->bDriving)
  {
   // (M7: the engine rebuild drinks a tenth more, FS47Outfit)
@@ -1537,7 +1605,7 @@ void FS47FreeformWorld::Step(double Dt)
   const int32 I=ServiceDishIndex();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
    const bool On=FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Target))<=.1&&FMath::Abs(M->Web->DishEl(I)-ServiceEl)<=.1;
    Settle=On?Settle+FMath::Min(Dt,.1):0;
-   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
+   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: Local test passed and REMOTE is back. Sign off the work order there."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
   }
  }
  if(!Wear.Job.IsEmpty())
@@ -1884,4 +1952,60 @@ void FS47FreeformWorld::StepLogger(double Dt,double WorldDelta)
  }
  else Logger.Sample(Now,WorldDelta,GeneratorRunning(),M->Freeform->PowerFault(),Id,Acquired,P?P->F:0);
  if(Was&&!Logger.bRecording)Change(TEXT("Field logger recording window ended. The original remains at its field post until physically retrieved."));
+}
+
+// D45-20261110 (Tom's test of d45: the backup generator needs sound). No generator recording in the free or the bought sounds, so the
+// truck's Jeep clips (engineStart, engineIdle, engineOff; Freesound, credited) played slower and through the housing, as the RV's
+// generator (FS47Happenings) and Story's standby diesel (FS47Observing) do, placed at the control box behind the control room.
+namespace { const TCHAR* const GenLoopKey=TEXT("ffGenerator"); constexpr double GenRate=.62,GenLevel=.34; }
+void FS47FreeformWorld::GeneratorSound(EGenSound Kind)
+{
+ US47Audio* A=M&&IsValid(M->Audio)?M->Audio.Get():nullptr;
+ if(!A||!A->Ctx.IsValid()||!M->Web||M->Web->Area()!=TEXT("saro"))return; // heard only at SARO; elsewhere the loop is already gone
+ FS47Sound O;O.At=GeneratorAt;O.Lp=2400;O.Rate=.82f;O.Gain=.6f; // a bigger, slower engine than the truck's, through its housing
+ switch(Kind)
+ {
+ case EGenSound::Start:A->Sfx(TEXT("engineStart"),O);GenLoopDelay=2.3/.82;break; // the loop takes over as the clip settles (2.3 s of it)
+ case EGenSound::Dry: // the starter turns it twice (the clip's cranking, 0-1.4 s, before it catches) and it does not catch
+  O.Dur=1.4f;A->Sfx(TEXT("engineStart"),O);O.When=1.9f;O.Rate=.76f;O.Dur=1.2f;A->Sfx(TEXT("engineStart"),O);break;
+ case EGenSound::Off:O.Gain=.5f;A->Sfx(TEXT("engineOff"),O);A->Stop(GenLoopKey,.35f);bGenSound=false;GenSrc.Reset();GenGain.Reset();break;
+ case EGenSound::Stall: // dry: it chugs and winds down (the rate falls as the CB's engine dies, S47CB.cpp)
+  O.Gain=.5f;O.Rate=.72f;A->Sfx(TEXT("engineOff"),O);
+  if(GenSrc.IsValid()){FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime();GenSrc->PlaybackRate.CancelAndHoldAtTime(T);GenSrc->PlaybackRate.ExponentialRampToValueAtTime(.22,T+1.2);}
+  A->Stop(GenLoopKey,.45f);bGenSound=false;GenSrc.Reset();GenGain.Reset();break;
+ }
+}
+void FS47FreeformWorld::StepGeneratorSound(double Dt)
+{
+ US47Audio* A=M&&IsValid(M->Audio)?M->Audio.Get():nullptr;
+ GenLoopDelay=FMath::Max(0.,GenLoopDelay-Dt);
+ if(bGenSound) // stopped by someone else (a new audio context, a stop-all): start it again
+ {
+  bool bGone=!A||!A->Ctx.IsValid()||!GenSrc.IsValid();if(!bGone){FS47AudioContext::FBatch B(*A->Ctx);bGone=GenSrc->Ended();}
+  if(bGone){bGenSound=false;GenSrc.Reset();GenGain.Reset();}
+ }
+ const bool bWant=A&&A->Ctx.IsValid()&&GeneratorRunning()&&M->Web&&M->Web->Area()==TEXT("saro");
+ if(bWant&&!bGenSound)
+ {
+  FS47Sound O;O.At=GeneratorAt;O.Gain=float(GenLevel);O.Rate=float(GenRate);O.Lp=900;O.bLoop=true;O.When=float(GenLoopDelay);
+  const FS47Play P=A->LoopSfx(GenLoopKey,TEXT("engineIdle"),O);bGenSound=P.IsValid();GenSrc=P.Src;GenGain=P.Gain;GenCoughIn=FMath::FRandRange(5.f,12.f);
+  if(GenGain.IsValid()&&GenLoopDelay>0) // fades in under the start clip's tail, so the two engines meet without a seam
+  {FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime()+GenLoopDelay;GenGain->Gain.SetValueAtTime(0,T);GenGain->Gain.LinearRampToValueAtTime(GenLevel,T+.5);}
+  GenLoopDelay=0;
+ }
+ else if(!bWant&&bGenSound){if(A)A->Stop(GenLoopKey,.8f);bGenSound=false;GenSrc.Reset();GenGain.Reset();}
+ // the last twenty minutes in the tank: it hunts now and then, more often as it runs out
+ if(bGenSound&&GenGain.IsValid()&&GeneratorSeconds<1200&&(GenCoughIn-=Dt)<=0)
+ {
+  FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime();
+  FS47AudioParam& G=GenGain->Gain;G.CancelAndHoldAtTime(T);G.LinearRampToValueAtTime(GenLevel*.1,T+.09);G.LinearRampToValueAtTime(GenLevel*1.15,T+.26);G.LinearRampToValueAtTime(GenLevel,T+.45);
+  FS47AudioParam& R=GenSrc->PlaybackRate;R.CancelAndHoldAtTime(T);R.LinearRampToValueAtTime(GenRate*.72,T+.12);R.LinearRampToValueAtTime(GenRate,T+.4);
+  GenCoughIn=FMath::FRandRange(2.5f,8.f)*(.3+GeneratorSeconds/1200.);
+ }
+}
+void FS47FreeformWorld::StopGeneratorSound()
+{
+ const bool bWas=bGenSound;bGenSound=false;GenLoopDelay=GenCoughIn=0;GenSrc.Reset();GenGain.Reset();
+ if(!bWas||IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||!IsValid(M->Audio))return;
+ M->Audio->Stop(GenLoopKey,.2f);
 }

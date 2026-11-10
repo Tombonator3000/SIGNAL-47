@@ -164,6 +164,9 @@ public:
 	const FS47AlbumShot* PendingLabPhoto() const;
 	/** Advance exactly one physical bench action; stale UI actions cannot advance twice. */
 	bool AdvanceLabPhoto(const FString& Id, int32 ExpectedStage);
+	/** D45-20261110 (D45-17): light reached a print in the developer (stage 1). Back to exposed film from the same negative, so a new
+	 *  print can be made; its id, image, time, pose and targets are kept. Only from stage 1. */
+	bool FogLabPhoto(const FString& Id);
 	/** What a frame taken now would name, without taking it (the tests). */
 	TPair<TArray<FString>, TArray<FString>> Peek();
 	/** A save opened, or a new night. */
