@@ -1234,7 +1234,7 @@ FString FS47Happenings::WordOfTonight(const FString& Who)
  if(!F||!F->RulesLive()||F->InTutorial())return FString();
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  const double H=HourOfNight(F->Clock());
- if(Night<=0||WordNight==Night||H<20||H>=29.5)return FString();
+ if(Night<=0||WordNight==Night||(H<20&&Who!=TEXT("printer"))||H>=29.5)return FString(); // (NIGHT-20261110: the chart comes off before 20, and its line with it)
  FString Event,Title;double X=0,Z=0;bool bAhead=false;
  if(!OutTonight(Night,Event,Title,X,Z,bAhead))return FString();
  // Which way only for what has come, or for what a slip has pointed at already: no word points anywhere the night has not.

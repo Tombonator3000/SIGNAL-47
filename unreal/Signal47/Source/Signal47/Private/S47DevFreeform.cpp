@@ -1558,6 +1558,12 @@ void FS47DevFreeform::Step(double Dt)
    else Waiting.Add(MoveTemp(W));
   }
  }
+ // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
+ {
+  static double ModalHeld=0;
+  if(bNatural&&M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>6){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
+  else ModalHeld=0;
+ }
  if(!Session())return;
  if(!bFlagRead)
  {

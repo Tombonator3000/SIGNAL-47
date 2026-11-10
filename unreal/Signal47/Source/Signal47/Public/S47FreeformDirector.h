@@ -28,6 +28,9 @@ public:
  // (FS47Happenings::BigOwns): it owns the night. And lights heard of (town_lights) send the player out, so they are the night's one
  // pointing-out: not after a bearing slip, and none after them (Start notes it).
  static bool LightsMayCome(const FString& Id,bool bBigOwnsNight,bool bMayPointOut){return !bBigOwnsNight&&(Id!=TEXT("town_lights")||bMayPointOut);}
+ // FEEDER-LEAD-20261110: a feeder fault on a night with a lead drawn would leave the lead unreachable (no power, no pointing, until the road
+ // cabinet is mended): none starts then. Mended, or already out, it is as before.
+ static bool FeederMayFail(bool bLeadTonight){return !bLeadTonight;}
  // Whether what an event left out on the land may be pointed at now: the event's tier in director.json against the hour
  // (S47NightTiers: before midnight only a hint). An event the file does not have counts as full.
  bool MayPointAt(const FString& EventId,double Clock,int32 Night) const;

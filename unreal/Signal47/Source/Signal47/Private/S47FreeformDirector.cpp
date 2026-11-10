@@ -712,6 +712,12 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
   // Asked at the moment it would start: one dangerous meeting a night, across every system (Tom, 7 November).
   if(At<0&&D->Family==TEXT("threat")&&M->Rhythm&&!M->Rhythm->Allow(FName(*Id)))return false;
   if(D->Family==TEXT("major")&&(Today-LastMajorDay<3||Clock<3*86400.+19*3600.))return false;
+  // FEEDER-LEAD-20261110: the lead is drawn from 08:00 (DrawLead), so a fault never starts on a night that has one, or one the big night owns.
+  if(Id==TEXT("feeder_fault")&&M->Freeform->Happenings)
+  {
+   const int32 FaultNight=FS47FreeformSession::NightOf(Clock);FString LeadEvent,LeadTitle;double LeadX=0,LeadZ=0;bool bLeadAhead=false;
+   if(!FeederMayFail(M->Freeform->Happenings->BigOwns(FaultNight)||M->Freeform->Happenings->OutTonight(FaultNight,LeadEvent,LeadTitle,LeadX,LeadZ,bLeadAhead)))return false;
+  }
  }
  if(Id==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow())return false;
  // The inspector's letter says that was the last loose sheet, and so it was.
@@ -1979,6 +1985,7 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   const bool bFree=LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(5));Rep.NotePointOut(5);
   const bool bSpent=!LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(5))&&LightsMayCome(TEXT("farm_lights"),false,Rep.MayPointOut(5))&&LightsMayCome(TEXT("town_lights"),false,Rep.MayPointOut(6));
   Check(bOwns&&bApart&&bFree&&bSpent,TEXT("the big night and the lights' report never overlap: the big night owns its night, before and after it comes, and a report is the night's one pointing-out"));
+  Check(FeederMayFail(false)&&!FeederMayFail(true),TEXT("FEEDER-LEAD-20261110: no feeder fault starts on a night with a lead drawn or owned by the big night"));
  }
  auto Active=S47J::Clone(Saved);S47J::Set(Active,TEXT("event"),TEXT("extra_pulse"));S47J::Set(Active,TEXT("age"),12.5);S47J::Set(Active,TEXT("controlled"),true);R.Begin(Active);
  Check(R.ActiveEvent()==TEXT("extra_pulse")&&R.EventAge()==12.5&&R.Busy(),TEXT("pending incident restores its selected identity, control and phase"));
