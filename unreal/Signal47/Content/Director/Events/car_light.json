@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "car_light",
+  "name": "A white light over the stalled truck",
+  "notes": "N1110-5. Played by S47Happenings when the light stands over the truck on the road (a danger, one a night; the stall and the boom are the code's). Silence, a low hum, the gear answering, and two thoughts. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 14, "level": 0.03 },
+    { "at": 0, "do": "tone", "hz": 44, "secs": 20, "gain": 0.05, "wave": "sine" },
+    { "at": 0.5, "do": "light", "kind": "gear", "strength": 0.9, "secs": 10 },
+    { "at": 3, "do": "thought", "text": "The engine is dead, and there is a white light sitting right over the cab.", "secs": 5 },
+    { "at": 10, "do": "thought", "text": "Stay in the truck.", "secs": 3.5 }
+  ]
+}

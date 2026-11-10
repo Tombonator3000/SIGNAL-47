@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "figure_near_steps",
+  "name": "Steps in the gravel, off to one side",
+  "notes": "N1110-5. Played by S47Happenings when the figure stands off to one side and three steps are heard. Point: figure (where it stands). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "stepGravel2", "point": "figure", "gain": 0.35, "lp": 2400 },
+    { "at": 0, "do": "sound", "sound": "stepGravel3", "point": "figure", "gain": 0.35, "lp": 2400, "delay": 0.55 },
+    { "at": 0, "do": "sound", "sound": "stepGravel4", "point": "figure", "gain": 0.35, "lp": 2400, "delay": 1.1 },
+    { "at": 0.2, "do": "light", "kind": "gear", "point": "figure", "strength": 0.3, "secs": 3 },
+    { "at": 2.2, "do": "thought", "text": "Those were footsteps. They were not mine.", "secs": 4, "if": ["on_foot"] }
+  ]
+}

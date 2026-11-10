@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "horizon_figure_gone",
+  "name": "The figure on the rise is gone",
+  "notes": "N1110-5. Played by S47Happenings when the figure on the rise is gone, only if the player saw it. Deniable: a question, not a statement. The finding is the one the code kept before. Words: {dir} (the direction it stood in) {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "horizon_figure_d{day}", "text": "At {clock} a figure stood on the rise to the {dir}, a long way off, dead still. Then there was nobody on the rise." },
+    { "at": 0.3, "do": "light", "kind": "gear", "strength": 0.25, "secs": 2.5 },
+    { "at": 1.8, "do": "thought", "text": "Was that somebody on the rise? There is nobody there now.", "secs": 4.5 }
+  ]
+}

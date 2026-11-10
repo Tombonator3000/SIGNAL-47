@@ -9,6 +9,7 @@
 #include "S47Three.h"
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47DoorLoop.h"
 #include "S47IndoorDread.h"
 #include "S47Props.h"
 #include "S47UI.h"
@@ -254,6 +255,8 @@ void Init(US47Main* M)
     {
      // Something on the other side of this one just now: E is about that, not the door as such.
      if(Main.IsValid()&&Main->Freeform&&Main->Freeform->IndoorDread&&Main->Freeform->IndoorDread->DoorPressed(TEXT("access:")+Id))return;
+     // N1110 (N1110-7): a room's door while something is after the player, or the door loop's chase running: it leads back inside.
+     if(Main.IsValid()&&Main->Freeform&&Main->Freeform->DoorLoop&&Main->Freeform->DoorLoop->Use(TEXT("access:")+Id))return;
      UseDoor(Id);
     };
     M->Inter->Add(It);

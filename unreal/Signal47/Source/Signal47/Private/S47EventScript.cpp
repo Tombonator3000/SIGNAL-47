@@ -280,16 +280,24 @@ bool GatesHold(const FS47EventGates& G,const FS47ScriptNow& Now,const FString& A
 }
 
 // N1110: eyes_window, beam_figure and dish_lights are the camera moments' (FS47Happenings::BeginMore), each with one named point.
-const TArray<FString>& Wired(){static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights")};return L;}
+// N1110-5: and the beats of four more happenings, each in the stages the code calls them at (horizon_figure, figure_near, landing, car_light).
+const TArray<FString>& Wired()
+{
+ static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights"),
+  TEXT("horizon_figure"),TEXT("horizon_figure_gone"),TEXT("figure_near"),TEXT("figure_near_steps"),TEXT("figure_near_close"),TEXT("figure_near_light"),TEXT("figure_near_end"),
+  TEXT("landing_warning"),TEXT("landing_seen_log"),TEXT("landing_logged"),TEXT("car_light"),TEXT("car_light_end")};
+ return L;
+}
 const TArray<FString>& WordsOf(const FString& Id)
 {
- static const TArray<FString> Burst={TEXT("az"),TEXT("spread"),TEXT("target"),TEXT("burst_night")},None;
- return Id==TEXT("array_burst")?Burst:None;
+ static const TArray<FString> Burst={TEXT("az"),TEXT("spread"),TEXT("target"),TEXT("burst_night")},Gone={TEXT("dir")},Ended={TEXT("place"),TEXT("seen"),TEXT("end")},
+  Land={TEXT("az"),TEXT("spread"),TEXT("landing_night")},Lit={TEXT("outcome")},None;
+ return Id==TEXT("array_burst")?Burst:Id==TEXT("horizon_figure_gone")?Gone:Id==TEXT("figure_near_end")?Ended:Id==TEXT("landing_seen_log")||Id==TEXT("landing_logged")?Land:Id==TEXT("car_light_end")?Lit:None;
 }
 const TArray<FString>& PointsOf(const FString& Id)
 {
  static const TArray<FString> Truck={TEXT("truck")},Eyes={TEXT("eyes")},Figure={TEXT("figure")},Lights={TEXT("lights")},None;
- return Id==TEXT("hood_warm")?Truck:Id==TEXT("eyes_window")?Eyes:Id==TEXT("beam_figure")?Figure:Id==TEXT("dish_lights")?Lights:None;
+ return Id==TEXT("hood_warm")?Truck:Id==TEXT("eyes_window")?Eyes:Id==TEXT("beam_figure")||Id==TEXT("figure_near_steps")||Id==TEXT("figure_near_close")||Id==TEXT("figure_near_light")?Figure:Id==TEXT("dish_lights")?Lights:None;
 }
 const TArray<TPair<FString,FString>>& BuiltIn()
 {
@@ -641,6 +649,9 @@ bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
  const FS47FreeformSession* F=M->Freeform.Get();
  Ctx.Words.Add(TEXT("az"),TEXT("120"));Ctx.Words.Add(TEXT("spread"),TEXT("18"));Ctx.Words.Add(TEXT("target"),FString());
  Ctx.Words.Add(TEXT("burst_night"),FString::FromInt(F->Day()));
+ // (N1110-5: and for the stages of horizon_figure, figure_near, landing and car_light)
+ Ctx.Words.Add(TEXT("dir"),TEXT("north-east"));Ctx.Words.Add(TEXT("place"),TEXT("the open ground"));Ctx.Words.Add(TEXT("seen"),TEXT("a figure stood off to one side, about 60 metres off, dead still."));
+ Ctx.Words.Add(TEXT("end"),TEXT(" I walked away fast and kept walking."));Ctx.Words.Add(TEXT("landing_night"),FString::FromInt(F->Day()));Ctx.Words.Add(TEXT("outcome"),TEXT(" I stayed in the cab, and after about twenty seconds it went up."));
  // (N1110: a point a camera moment looks at is put six metres ahead, so that the snap is seen to turn)
  if(M->Player)for(const FString& P:S47EventScript::PointsOf(Id))
  {

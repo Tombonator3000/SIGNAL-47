@@ -1,6 +1,7 @@
 #include "S47FarmHouse.h"
 #include "S47RoadTerrain.h"
 #include "S47Audio.h"
+#include "S47DoorLoop.h"
 #include "S47Freeform.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -310,6 +311,8 @@ void FS47FarmHouseDoors::Begin(const S47J::FObj& Saved)
     if(!Guard.IsValid()||!Doors.IsValidIndex(I))return;
     // Something on the other side of this one just now: E is about that, not the door as such.
     if(M&&M->Freeform&&M->Freeform->IndoorDread&&M->Freeform->IndoorDread->DoorPressed(Doors[I].Id))return;
+    // N1110 (N1110-7): an outer door while something is after the player, or the door loop's chase running: it leads back inside.
+    if(M&&M->Freeform&&M->Freeform->DoorLoop&&M->Freeform->DoorLoop->Use(Doors[I].Id))return;
     Use(I);
    };
    It.Examine=It.Label;

@@ -90,4 +90,167 @@ static const TCHAR* const S47EventScriptBuiltIn[][2]={
     { "at": 7.0, "do": "evidence", "key": "dish_lights_d{day}", "text": "At {clock} a cluster of lights hung over the array, dead still, for about five seconds. Then they went out all at once, like a switch." }
   ]
 })S47JSON")},
+ {TEXT("horizon_figure"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "horizon_figure",
+  "name": "Somebody on the rise, a long way off",
+  "notes": "N1110-5. Played by S47Happenings when the figure is put on the rise (out on foot, or at a control room window): the night's own sound drops and a low hum sits under it. The code draws the figure and decides whether it is seen (horizon_figure_gone says what then). The hour and the tier are the rhythm's (director.json) and the code's (a glimpse keeps farther off). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 7, "level": 0.05 },
+    { "at": 1, "do": "tone", "hz": 52, "secs": 6, "gain": 0.03, "wave": "sine" },
+    { "at": 2.5, "do": "light", "kind": "gear", "strength": 0.2, "secs": 3 }
+  ]
+})S47JSON")},
+ {TEXT("horizon_figure_gone"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "horizon_figure_gone",
+  "name": "The figure on the rise is gone",
+  "notes": "N1110-5. Played by S47Happenings when the figure on the rise is gone, only if the player saw it. Deniable: a question, not a statement. The finding is the one the code kept before. Words: {dir} (the direction it stood in) {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "horizon_figure_d{day}", "text": "At {clock} a figure stood on the rise to the {dir}, a long way off, dead still. Then there was nobody on the rise." },
+    { "at": 0.3, "do": "light", "kind": "gear", "strength": 0.25, "secs": 2.5 },
+    { "at": 1.8, "do": "thought", "text": "Was that somebody on the rise? There is nobody there now.", "secs": 4.5 }
+  ]
+})S47JSON")},
+ {TEXT("figure_near"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "figure_near",
+  "name": "Somebody out there in the dark, following",
+  "notes": "N1110-5. Played by S47Happenings when the figure that follows a walker begins (out on foot; a danger, one a night). The code's own warning (crickets, the lamp) stays; this adds the hum and a thought. Its stages call figure_near_steps, figure_near_close and figure_near_light, and its end figure_near_end. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 48, "secs": 8, "gain": 0.03, "delay": 2, "wave": "sine" },
+    { "at": 6, "do": "thought", "text": "No crickets. No wind. Just my own boots.", "secs": 4, "if": ["on_foot"] }
+  ]
+})S47JSON")},
+ {TEXT("figure_near_steps"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "figure_near_steps",
+  "name": "Steps in the gravel, off to one side",
+  "notes": "N1110-5. Played by S47Happenings when the figure stands off to one side and three steps are heard. Point: figure (where it stands). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "stepGravel2", "point": "figure", "gain": 0.35, "lp": 2400 },
+    { "at": 0, "do": "sound", "sound": "stepGravel3", "point": "figure", "gain": 0.35, "lp": 2400, "delay": 0.55 },
+    { "at": 0, "do": "sound", "sound": "stepGravel4", "point": "figure", "gain": 0.35, "lp": 2400, "delay": 1.1 },
+    { "at": 0.2, "do": "light", "kind": "gear", "point": "figure", "strength": 0.3, "secs": 3 },
+    { "at": 2.2, "do": "thought", "text": "Those were footsteps. They were not mine.", "secs": 4, "if": ["on_foot"] }
+  ]
+})S47JSON")},
+ {TEXT("figure_near_close"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "figure_near_close",
+  "name": "One step, close behind",
+  "notes": "N1110-5. Played by S47Happenings when the figure has come right up behind the walker and one step is heard (the night's danger is met). Point: figure. The camera_snap plays only after 02:00 (the code leaves it out earlier: the step and the thought alone). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "stepGravel4", "point": "figure", "gain": 0.5, "lp": 2400 },
+    { "at": 0.4, "do": "camera_snap", "point": "figure", "fov": 40, "in": 0.25, "hold": 0.9, "out": 0.9, "shake": 0.2, "scare": "soft" },
+    { "at": 2.4, "do": "thought", "text": "Right behind me.", "secs": 3.5, "if": ["on_foot"] }
+  ]
+})S47JSON")},
+ {TEXT("figure_near_light"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "figure_near_light",
+  "name": "The light comes down where it stood",
+  "notes": "N1110-5. Played by S47Happenings when the light comes down over where the figure stood. The code's own hush, boom and the lamp going out stay; this adds the sub tone, the gear and a thought. Point: figure. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 45, "secs": 6, "gain": 0.06, "wave": "sine" },
+    { "at": 0, "do": "light", "kind": "gear", "point": "figure", "strength": 0.8, "secs": 6 },
+    { "at": 0.3, "do": "shake", "strength": 0.2 },
+    { "at": 1.2, "do": "thought", "text": "A light, coming down right where it stood. Move.", "secs": 4 }
+  ]
+})S47JSON")},
+ {TEXT("figure_near_end"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "figure_near_end",
+  "name": "What the walker kept of the figure",
+  "notes": "N1110-5. Played by S47Happenings when the figure is over, only if the player met it. The code builds the sentences (what was seen, in order, then how it ended); the script keeps them. Words: {place} {seen} {end} {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "figure_near_d{day}", "text": "At {clock}, out on {place}: {seen}{end}" }
+  ]
+})S47JSON")},
+ {TEXT("landing_warning"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "landing_warning",
+  "name": "The night goes quiet before lights come down",
+  "notes": "N1110-5. Played by S47Happenings 1.5 s into a landing (the crickets stop and a dog barks far off in the code; at 6 s the code makes the power falter). Silence before the sight, a low hum, a thought by where the player is, the gear answering and Dale on the walkie. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 48, "secs": 9, "gain": 0.03, "wave": "sine" },
+    { "at": 2, "do": "thought", "text": "Every cricket out here just quit at once.", "secs": 4, "if": ["outdoors"] },
+    { "at": 2, "do": "thought", "text": "The whole building has gone quiet, like it is holding its breath.", "secs": 4, "if": ["in_saro"] },
+    { "at": 4.5, "do": "light", "kind": "gear", "strength": 0.5, "secs": 4 },
+    { "at": 8, "do": "line", "who": "dale", "text": "You out there? The needles went flat on me a second ago. Over." }
+  ]
+})S47JSON")},
+ {TEXT("landing_seen_log"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "landing_seen_log",
+  "name": "Lights seen coming down",
+  "notes": "N1110-5. Played by S47Happenings when lights that were seen have come down and gone out on the ground: the bearing goes on the map (the code), the finding is kept. Words: {az} {spread} {landing_night} {clock} {day} {night} {map_key}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "landing_seen_d{landing_night}", "text": "At {clock} lights came down out on the land, about {az} degrees from SARO, give or take {spread}, and went out on the ground." },
+    { "at": 0, "do": "toast", "text": "Bearing on your map ({map_key}).", "secs": 5 },
+    { "at": 0, "do": "shake", "strength": 0.12 },
+    { "at": 0.2, "do": "light", "kind": "gear", "strength": 0.6, "secs": 4 },
+    { "at": 2.5, "do": "thought", "text": "Straight down, slow, and then out like a pulled plug.", "secs": 4.5 }
+  ]
+})S47JSON")},
+ {TEXT("landing_logged"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "landing_logged",
+  "name": "Lights the array logged",
+  "notes": "N1110-5. Played by S47Happenings when lights nobody saw have come down and the array logged them. The beeps, the printer, the line on the screen and the thought are for one in the building only. Words: {az} {spread} {landing_night} {clock} {day} {night} {map_key}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 1320, "secs": 0.06, "gain": 0.05, "wave": "square", "repeat": 4, "every": 0.18, "if": ["in_saro"] },
+    { "at": 0, "do": "printer", "gain": 0.3, "delay": 0.9, "stop": 3, "if": ["in_saro"] },
+    { "at": 0, "do": "toast", "text": "ARRAY / A bearing logged, on your map ({map_key}).", "secs": 5, "if": ["in_saro"] },
+    { "at": 0, "do": "evidence", "key": "landing_logged_d{landing_night}", "text": "At {clock} the array logged something low on the horizon coming down, about {az} degrees from SARO, give or take {spread}." },
+    { "at": 2.5, "do": "thought", "text": "Something just came down out there, and the array knows it.", "secs": 4.5, "if": ["in_saro"] }
+  ]
+})S47JSON")},
+ {TEXT("car_light"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "car_light",
+  "name": "A white light over the stalled truck",
+  "notes": "N1110-5. Played by S47Happenings when the light stands over the truck on the road (a danger, one a night; the stall and the boom are the code's). Silence, a low hum, the gear answering, and two thoughts. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 14, "level": 0.03 },
+    { "at": 0, "do": "tone", "hz": 44, "secs": 20, "gain": 0.05, "wave": "sine" },
+    { "at": 0.5, "do": "light", "kind": "gear", "strength": 0.9, "secs": 10 },
+    { "at": 3, "do": "thought", "text": "The engine is dead, and there is a white light sitting right over the cab.", "secs": 5 },
+    { "at": 10, "do": "thought", "text": "Stay in the truck.", "secs": 3.5 }
+  ]
+})S47JSON")},
+ {TEXT("car_light_end"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "car_light_end",
+  "name": "The white light is gone from the road",
+  "notes": "N1110-5. Played by S47Happenings when the light over the truck is over. The finding is the one the code kept before; {outcome} says what the player did, with its first space. Words: {outcome} {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "car_light_d{day}", "text": "At {clock} a white light stood over the truck on the road and the engine died under it.{outcome}" },
+    { "at": 0.6, "do": "thought", "text": "The light is gone. It is just the road and the dark again.", "secs": 4.5 }
+  ]
+})S47JSON")},
 };

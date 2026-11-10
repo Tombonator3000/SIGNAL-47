@@ -79,6 +79,9 @@ public:
  // D45-20261110: the body out now walks at the player and is near (13 m), not held back by a lamp: what the music calls being
  // come at (FS47FieldRadio). Standing off, sitting or walking up from far off is not.
  bool VisitBodyComing() const{return bBodyOut&&bBodyComing;}
+ // N1110 (N1110-7): the door loop's chase has the player now: the body goes, and how it ends is the loop's (gone, or the taking),
+ // so it leaves no record of its own here.
+ void YieldToDoors(){if(Visit>=1&&Visit<=3)EndVisit(true);}
  // After being taken, no new visit before this clock.
  void SetCalm(double Until){CalmUntil=Until;}
  void TestReadyVisit(){Visit=0;VisitDwell=0;}

@@ -1,6 +1,6 @@
 # Hendelsesmanus (event scripts)
 
-**Status:** Under arbeid. **Gjelder:** SIGNAL / 47, Unreal, Freeform (D46-11, kodemerke `D46-20261110`; kamera-slaget og de tre kameramomentene N1110-3, kodemerke `N1110`). **Sist kontrollert:** 10. november 2026, kildekode bare: ikke bygget eller prøvd i spillet.
+**Status:** Under arbeid. **Gjelder:** SIGNAL / 47, Unreal, Freeform (D46-11, kodemerke `D46-20261110`; kamera-slaget og de tre kameramomentene N1110-3, og fire hendelser i flere slag N1110-5, kodemerke `N1110`). **Sist kontrollert:** 10. november 2026, kildekode bare: ikke bygget eller prøvd i spillet.
 
 Et hendelsesmanus er én JSON-fil per hendelse, `unreal/Signal47/Content/Director/Events/<id>.json`. Fila sier hva som skjer *inne i* en hendelse spillet allerede har: lyder, lys, linjer, tanker, funn og kartmerker i rekkefølge, og eventuelle porter som kan holde hendelsen tilbake. Ingen ny mekanikk: hvert slag kaller de samme funksjonene hendelsene brukte før.
 
@@ -10,11 +10,11 @@ Et hendelsesmanus er én JSON-fil per hendelse, `unreal/Signal47/Content/Directo
 | --- | --- | --- |
 | Hvilke hendelser, nivå, budsjett, fra dag, tier, timer, odds per natt, nedkjøling, behov | `Content/Director/director.json` (innebygd kopi `S47RhythmDefaults.inl`) | Ja |
 | Om den kan starte der spilleren er (i bygget, i bilen, til fots), sted, peiling, lastebilen | Hendelsens kode (`S47Happenings.cpp`, `S47FreeformDirector.cpp`) | Nei |
-| Slagene inne i hendelsen (lyd, lys, linje, funn, kamera) | Før: hardkodet. Nå: hendelsesmanuset for de seks som er koblet | Ja, for `array_burst`, `town_blackout`, `hood_warm`, `eyes_window`, `beam_figure`, `dish_lights` |
+| Slagene inne i hendelsen (lyd, lys, linje, funn, kamera) | Før: hardkodet. Nå: hendelsesmanuset for de som er koblet | Ja, for `array_burst`, `town_blackout`, `hood_warm`, `eyes_window`, `beam_figure`, `dish_lights` og (N1110-5) `horizon_figure`, `figure_near`, `landing`, `car_light`, hver i flere manus, ett per trinn |
 | Frittstående, egne hendelser med figurer, himmel og antenner | `Content/Director/scripted/*.json` (Regissørverktøyet, F10 «Director scripts») | Ja |
 | F10-linjer | `S47DevFreeform.cpp`, `S47HappeningsDev.cpp`, `S47DevEvents.cpp`; nå også F10 «Event scripts» | – |
 
-Koblet nå: `array_burst`, `town_blackout` og `hood_warm` (nattens hendelser i `S47Happenings`), og fra N1110 de tre kameramomentene `eyes_window`, `beam_figure` og `dish_lights` (se eget avsnitt). `roof_steps` og `s03_failure` ligger i `S47FreeformDirector`, som en annen agent eier i dag. De kobles i en senere runde på samme måte: koden gir ord og punkter, og manuset står for slagene. Det samme gjelder resten av hendelsene.
+Koblet nå: `array_burst`, `town_blackout` og `hood_warm` (nattens hendelser i `S47Happenings`), og fra N1110 de tre kameramomentene `eyes_window`, `beam_figure` og `dish_lights` (se eget avsnitt). Fire av de skumleste hendelsene har fått flere slag (avsnittet «Fire hendelser i flere trinn», N1110-5). `roof_steps` og `s03_failure` ligger i `S47FreeformDirector`, som en annen agent eier i dag. De kobles i en senere runde på samme måte: koden gir ord og punkter, og manuset står for slagene. Det samme gjelder resten av hendelsene.
 
 ## Slik leses det
 
@@ -71,7 +71,28 @@ Felles for alle slag: `at` (sekunder fra start), `if` (betingelser som må holde
 | `tube` | `tube` (2–7; kontrollrommets takrør, 0 og 1 er arbeidslyset og røres aldri) | `FS47FreeformSession::BreakTube` (N1110, PLAY-31-34): røret knitrer og er av for godt i dette spillet; lagres (`brokenTubes`), holder gjennom strømretur, Continue og områdebytte; F10 knitrer bare |
 | `camera_snap` | `pos`/`point` (det som ses på), `fov` (grader, 20–90, 45 som standard), `in`/`hold`/`out` (sekunder: snapp mot, hold, tilbake; 0,25/1,2/0,9 som standard, til sammen 0,3–5 s), `shake` 0–1 (0 som standard), `scare` (soft, hard, braam, swell: et kjøpt skrekkslag samtidig) | `FS47CameraMoment` (N1110), `FS47FieldRadio::Scare` |
 
-Ord i tekst: `{clock}`, `{day}`, `{night}` og `{map_key}` finnes alltid. `array_burst` gir også `{az}`, `{spread}`, `{target}` og `{burst_night}`. `hood_warm` gir punktet `truck`; `eyes_window` gir `eyes`, `beam_figure` gir `figure` og `dish_lights` gir `lights`. Et ord hendelsen ikke gir, blir stående som skrevet, og kontrollen advarer om det.
+Ord i tekst (N1110-5: de nye trinnmanusene gir ordene i tabellene under): `{clock}`, `{day}`, `{night}` og `{map_key}` finnes alltid. `array_burst` gir også `{az}`, `{spread}`, `{target}` og `{burst_night}`. `hood_warm` gir punktet `truck`; `eyes_window` gir `eyes`, `beam_figure` gir `figure` og `dish_lights` gir `lights`. Et ord hendelsen ikke gir, blir stående som skrevet, og kontrollen advarer om det.
+
+## Fire hendelser i flere trinn (N1110-5)
+
+Hendelsene `horizon_figure`, `figure_near`, `landing` og `car_light` (alle i `S47Happenings`) har fått sine slag flyttet ut i manuslaget. Koden beholder det den alene vet (sted, retning, hvem som ser, når et trinn er nådd, porter, regler, bokføring, kartmerket, lommelyktas egen slukking og knallen) og kaller et manus på hvert trinn. Spilles ikke manuset (ingen løper, for mange manus på gang), gjør koden det den gjorde før. Funnene har samme nøkler og samme tekst som før (ledgeren og samme-minutt-kontrollen leser dem). Porter står tomme i alle tolv: rytmen i `director.json`, nattens tier og koden bestemmer fortsatt når og hvor; trinnmanusene har ingen egne porter. Kamera snapper kun ett sted (`figure_near_close`), og bare etter 02:00 (koden slår snappen av før det, som for `beam_figure`). Én fare per natt gjelder som før (`figure_near` og `car_light` er farer i koden).
+
+| Hendelse | Manus (kalles når) | Slagene | Ord og punkter |
+| --- | --- | --- | --- |
+| `horizon_figure` | `horizon_figure` (figuren settes på høyden) | 0 s stillhet 7 s; 1 s brum 52 Hz; 2,5 s utstyret svarer svakt | – |
+| | `horizon_figure_gone` (borte, og bare hvis den ble sett) | funn; 0,3 s utstyr; 1,8 s tanke som spørsmål | `{dir}` |
+| `figure_near` (fare) | `figure_near` (den begynner) | 0 s ingenting; 2 s brum 48 Hz; 6 s tanke «ingen sirisser» til fots | – |
+| | `figure_near_steps` (står til siden; tre skritt) | tre skritt i grusen med 0,55 s mellom, utstyret svarer, tanke etter 2,2 s | punkt `figure` |
+| | `figure_near_close` (rett bak; ett skritt) | ett skritt, 0,4 s `camera_snap` (myk, bare etter 02:00), tanke etter 2,4 s | punkt `figure` |
+| | `figure_near_light` (lyset kommer ned) | brum 45 Hz, utstyret svarer sterkt, risting, tanke | punkt `figure` |
+| | `figure_near_end` (over, og bare hvis den ble møtt) | funnet | `{place}` `{seen}` `{end}` |
+| `landing` | `landing_warning` (1,5 s inn: sirisser og hund i koden) | brum; tanke ute eller på SARO; 4,5 s utstyret svarer; 8 s Dale på walkien | – |
+| | `landing_seen_log` (sett, og ned) | funn, linje på skjermen, risting, utstyret svarer, tanke | `{az}` `{spread}` `{landing_night}` |
+| | `landing_logged` (bare arrayet så det) | fire pip, skriveren fra 0,9 s, linje og tanke for den som er i bygget; funn | `{az}` `{spread}` `{landing_night}` |
+| `car_light` (fare) | `car_light` (lyset over bilen; stopp og knall i koden) | stillhet 14 s, brum 44 Hz, utstyret svarer, to tanker | – |
+| | `car_light_end` (borte) | funn med utfall; tanke | `{outcome}` |
+
+Et forced landing (F10) som ingen så bruker den gamle koden for pip og funn. Ordene er korte setninger koden bygger: `{seen}` er det som ble sett i rekkefølge (eller skrittene når man ikke så noe), `{end}` hvordan det endte (med mellomrom først), `{outcome}` hva spilleren gjorde (med mellomrom først). F10 «Event scripts» → «Run: <id>» spiller hvert trinn med prøveord. Selvtesten kontrollerer funnnøklene og tekstene, stillheten først, de tre skrittene, snappen (ett sted), pip og skriver og at ingen har egne porter.
 
 ## Stillhet før, flimmer under (N1110)
 

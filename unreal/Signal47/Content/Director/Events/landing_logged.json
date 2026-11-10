@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "landing_logged",
+  "name": "Lights the array logged",
+  "notes": "N1110-5. Played by S47Happenings when lights nobody saw have come down and the array logged them. The beeps, the printer, the line on the screen and the thought are for one in the building only. Words: {az} {spread} {landing_night} {clock} {day} {night} {map_key}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 1320, "secs": 0.06, "gain": 0.05, "wave": "square", "repeat": 4, "every": 0.18, "if": ["in_saro"] },
+    { "at": 0, "do": "printer", "gain": 0.3, "delay": 0.9, "stop": 3, "if": ["in_saro"] },
+    { "at": 0, "do": "toast", "text": "ARRAY / A bearing logged, on your map ({map_key}).", "secs": 5, "if": ["in_saro"] },
+    { "at": 0, "do": "evidence", "key": "landing_logged_d{landing_night}", "text": "At {clock} the array logged something low on the horizon coming down, about {az} degrees from SARO, give or take {spread}." },
+    { "at": 2.5, "do": "thought", "text": "Something just came down out there, and the array knows it.", "secs": 4.5, "if": ["in_saro"] }
+  ]
+}

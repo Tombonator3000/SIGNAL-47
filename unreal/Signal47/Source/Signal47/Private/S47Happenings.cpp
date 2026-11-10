@@ -3160,6 +3160,7 @@ void FS47Happenings::StepLanding(double Dt)
   Now.Stage=1;
   S47HapOmen::Forewarn(M,TEXT("happen:landing_warning"),Eye(),bHere?&Ground:nullptr,160,.5,60);
   if(A&&bHere)A->Far(TEXT("dog1"),Ground+FVector(40,2,-30),.25f,.95f);
+  {FS47EventCtx Quiet;S47EventScript::Play(M,TEXT("landing_warning"),Quiet);} // N1110-5: the hum, the thought, the gear and Dale are its script's
  }
  if(Now.Stage==1&&Now.Age>6)
  {
@@ -3218,15 +3219,25 @@ void FS47Happenings::StepLanding(double Dt)
  if(R&&(bSeenLater||(bFirstLog&&(Now.bSeen||Now.bForced||(bLogged&&TakePointOut(F?F->Director.Get():nullptr,FS47FreeformSession::NightOf(Now.Clock)))))))
  {
   R->bKnown=true;
+  // N1110-5: the beeps, the printer, the line on the screen and the finding are its script's (landing_seen_log when it was seen,
+  // landing_logged when only the array has it); the old ones play only if the script cannot, and for a forced one nobody saw.
+  bool bScripted=false;
+  if(Now.bSeen||!Now.bForced)
+  {
+   FS47EventCtx Pulse;Pulse.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));
+   Pulse.Words.Add(TEXT("az"),FString::Printf(TEXT("%.0f"),R->Az));Pulse.Words.Add(TEXT("spread"),FString::Printf(TEXT("%.0f"),R->Spread));Pulse.Words.Add(TEXT("landing_night"),FString::FromInt(R->Night));
+   bScripted=S47EventScript::Play(M,Now.bSeen?TEXT("landing_seen_log"):TEXT("landing_logged"),Pulse);
+  }
   // Only what it means for the map: what came down was on the screen, or on the array's monitor with its beeps and the printer.
-  if(bAtMonitor&&!Now.bSeen&&M->Audio)
+  if(!bScripted&&bAtMonitor&&!Now.bSeen&&M->Audio)
   {
    for(int32 K=0;K<4;++K)M->Audio->Beep(1320.f,.06f,.05f,.18f*K,TEXT("square"));
    FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=.9f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
    if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
   }
-  if(M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString::Printf(TEXT("Bearing on your map (%s)."),*S47Keys::MapSaid()):FString::Printf(TEXT("ARRAY / A bearing logged, on your map (%s)."),*S47Keys::MapSaid()),5);
-  if(Now.bSeen||Now.bForced)F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d"),R->Night),FString::Printf(TEXT("At %s lights came down out on the land, about %.0f degrees from SARO, give or take %.0f, and went out on the ground."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
+  if(!bScripted&&M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString::Printf(TEXT("Bearing on your map (%s)."),*S47Keys::MapSaid()):FString::Printf(TEXT("ARRAY / A bearing logged, on your map (%s)."),*S47Keys::MapSaid()),5);
+  if(bScripted){}
+  else if(Now.bSeen||Now.bForced)F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d"),R->Night),FString::Printf(TEXT("At %s lights came down out on the land, about %.0f degrees from SARO, give or take %.0f, and went out on the ground."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   else F->RecordEvidence(FString::Printf(TEXT("landing_logged_d%d"),R->Night),FString::Printf(TEXT("At %s the array logged something low on the horizon coming down, about %.0f degrees from SARO, give or take %.0f."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   if(Now.bSeen)Deed(TEXT("You watched the lights come down."));
  }
@@ -3668,6 +3679,7 @@ bool FS47Happenings::BeginFigure(const FString& Variant,bool bForced,FString& Wh
  // Before anything shows: the crickets stop.
  S47HapOmen::Forewarn(M,TEXT("happen:figure_near"),Eye(),&Now.At,0,.6,45);
  UsedPlace(Now.Place,TEXT("figure_near"));
+ {FS47EventCtx Follow;S47EventScript::Play(M,TEXT("figure_near"),Follow);} // N1110-5: the hum and the thought are its script's
  return true;
 }
 void FS47Happenings::StepFigure(double Dt)
@@ -3685,7 +3697,12 @@ void FS47Happenings::StepFigure(double Dt)
  const auto Record=[&](const FString& End)
  {
   if(!Now.bMet&&FigureSeen.IsEmpty())return;
-  F->RecordEvidence(FString::Printf(TEXT("figure_near_d%d"),F->Day()),FString::Printf(TEXT("At %s, out on %s: %s%s"),*S47Hap::ClockText(Now.Clock),*Now.Title,FigureSeen.IsEmpty()?TEXT("I saw nothing. There were steps in the gravel, and then one close behind me."):*FString::Join(FigureSeen,TEXT(" ")),End.IsEmpty()?TEXT(""):*(TEXT(" ")+End)));
+  // N1110-5: kept by its script (figure_near_end), with the sentences built here; the old line only if the script cannot play
+  const FString Said=FigureSeen.IsEmpty()?FString(TEXT("I saw nothing. There were steps in the gravel, and then one close behind me.")):FString::Join(FigureSeen,TEXT(" "));
+  const FString Ending=End.IsEmpty()?FString():TEXT(" ")+End;
+  FS47EventCtx Kept;Kept.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Kept.Words.Add(TEXT("place"),Now.Title);Kept.Words.Add(TEXT("seen"),Said);Kept.Words.Add(TEXT("end"),Ending);
+  if(!S47EventScript::Play(M,TEXT("figure_near_end"),Kept))
+   F->RecordEvidence(FString::Printf(TEXT("figure_near_d%d"),F->Day()),FString::Printf(TEXT("At %s, out on %s: %s%s"),*S47Hap::ClockText(Now.Clock),*Now.Title,*Said,*Ending));
  };
  const auto Over=[&](bool bGot,const FString& End)
  {
@@ -3740,6 +3757,7 @@ void FS47Happenings::StepFigure(double Dt)
     Now.Stage=5;Now.Yaw=Now.Age;
     if(A){if(A->Night)A->Night->Hush(30,.02,.2,3.);A->Boom(.25f);}
     if(M->Night&&M->Night->Flashlight)M->Night->Flashlight->FlickerOut(1.2);
+    {FS47EventCtx Down;Down.Points.Add(TEXT("figure"),Now.At+FVector(0,1.4,0));S47EventScript::Play(M,TEXT("figure_near_light"),Down);} // N1110-5: the hum, the gear and the thought
     UE_LOG(LogS47Happen,Display,TEXT("S47: happening figure_near: the light comes down, %.0f m from the player"),Away);
    }
    else{++Now.Stage;Now.Yaw=Now.Age;}
@@ -3758,7 +3776,14 @@ void FS47Happenings::StepFigure(double Dt)
    return;
   }
   ++Now.Stage;Now.Yaw=Now.Age;
-  if(A)
+  // N1110-5: the steps (and, close behind and after 02:00, the view turning to it) are its script's; the old steps only if it cannot play
+  bool bScripted=false;
+  {
+   FS47EventCtx Step;Step.Points.Add(TEXT("figure"),Now.At+FVector(0,1.4,0));
+   Step.bNoSnap=!Now.bForced&&NightHour(F->Clock())<26.;
+   bScripted=S47EventScript::Play(M,Now.Stage==2?TEXT("figure_near_steps"):TEXT("figure_near_close"),Step);
+  }
+  if(A&&!bScripted)
   {
    const int32 Steps=Now.Stage==2?3:1;
    for(int32 K=0;K<Steps;++K){FS47Sound O;O.At=Now.At+FVector(0,.1,0);O.Gain=Now.Stage==2?.35f:.5f;O.When=.55f*K;O.Lp=2400;A->Sfx(FString::Printf(TEXT("stepGravel%d"),(K+Now.Stage)%5),O);}
@@ -3934,6 +3959,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   double X=0,Z=0;
   if(!RoadOfWorld(At,X,Z)||!WorldOf(X,Z,At))return No(TEXT("no ground there"));
   Arm(TEXT("horizon_figure"),120);Now.Variant=Body;Now.At=At;Now.X=X;Now.Z=Z;
+  {FS47EventCtx Rise;S47EventScript::Play(M,TEXT("horizon_figure"),Rise);} // N1110-5: the quiet and the low hum come from its script
   return true;
  }
  // N1110 (N1110-3): three camera moments. The code says where and draws what is there; the event's script (Content/Director/Events/
@@ -4152,6 +4178,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   Now.Watch=Now.Len-1;MeetDanger();
   FS47TroubleOpts O;O.bKey=true;M->World->Trouble.Start(ES47Trouble::Stall,O);
   if(M->Audio)M->Audio->Boom(.5f);
+  {FS47EventCtx Stalled;S47EventScript::Play(M,TEXT("car_light"),Stalled);} // N1110-5: the quiet, the hum, the gear and the thoughts are its script's
   return true;
  }
  if(Id==TEXT("dust_devil"))
@@ -4232,7 +4259,13 @@ bool FS47Happenings::StepMore(double Dt)
   if(Now.Stage==0&&(bLamp||Away<(S47HapTiers::GlimpseOnly(Now.Clock)?S47HapTiers::GlimpseGoneAt:90.)))
   {
    Now.Stage=1;Now.Len=Now.Age+1;
-   if(Now.bSeen)F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));
+   if(Now.bSeen)
+   {
+    // N1110-5: the finding, the gear and the thought are its script's (horizon_figure_gone); the old line only if the script cannot play
+    FS47EventCtx Gone;Gone.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Gone.Words.Add(TEXT("dir"),DirectionFrom(Feet,Now.At));
+    if(!S47EventScript::Play(M,TEXT("horizon_figure_gone"),Gone))
+     F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));
+   }
   }
   if(Now.Age>=Now.Len)EndEvent(Now.Stage>0);
   return true;
@@ -4382,8 +4415,11 @@ bool FS47Happenings::StepMore(double Dt)
   if(Now.Age>=Now.Len||Now.Stage>=7)
   {
    M->World->Trouble.Dim=1;bDimmed=false;
-   F->RecordEvidence(FString::Printf(TEXT("car_light_d%d"),F->Day()),FString::Printf(TEXT("At %s a white light stood over the truck on the road and the engine died under it.%s"),*S47Hap::ClockText(Now.Clock),
-    Now.Stage==0?TEXT(" I stayed in the cab, and after about twenty seconds it went up."):Now.Stage==7?TEXT(" I got out under it, and it went up."):TEXT(" I got out under it.")));
+   // N1110-5: kept by its script (car_light_end); the old line only if the script cannot play
+   const FString Outcome=Now.Stage==0?TEXT(" I stayed in the cab, and after about twenty seconds it went up."):Now.Stage==7?TEXT(" I got out under it, and it went up."):TEXT(" I got out under it.");
+   FS47EventCtx Left;Left.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Left.Words.Add(TEXT("outcome"),Outcome);
+   if(!S47EventScript::Play(M,TEXT("car_light_end"),Left))
+    F->RecordEvidence(FString::Printf(TEXT("car_light_d%d"),F->Day()),FString::Printf(TEXT("At %s a white light stood over the truck on the road and the engine died under it.%s"),*S47Hap::ClockText(Now.Clock),*Outcome));
    Deed(Now.Stage==0?TEXT("You sat in the truck under the light and did not get out."):TEXT("You got out of the truck under the light."));
    EndEvent(true);
   }

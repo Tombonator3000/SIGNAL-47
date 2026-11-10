@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "figure_near_light",
+  "name": "The light comes down where it stood",
+  "notes": "N1110-5. Played by S47Happenings when the light comes down over where the figure stood. The code's own hush, boom and the lamp going out stay; this adds the sub tone, the gear and a thought. Point: figure. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 45, "secs": 6, "gain": 0.06, "wave": "sine" },
+    { "at": 0, "do": "light", "kind": "gear", "point": "figure", "strength": 0.8, "secs": 6 },
+    { "at": 0.3, "do": "shake", "strength": 0.2 },
+    { "at": 1.2, "do": "thought", "text": "A light, coming down right where it stood. Move.", "secs": 4 }
+  ]
+}

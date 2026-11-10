@@ -416,7 +416,8 @@ void FS47Attention::StepVisit(double Dt)
   Visit=EVisit::Taking;
   return;
  }
- if(F->Taken&&F->Taken->Busy()&&VisitT<600)return;
+ // N1110 (N1110-7): the door loop's chase, if the player ran for a door from the light, is still this visit.
+ if(((F->Taken&&F->Taken->Busy())||(F->DoorLoop&&F->DoorLoop->Chasing()))&&VisitT<600)return;
  const bool bTaken=F->TimesTaken()>TakenBefore;
  if(!bTaken)Play(VisitEscaped);
  EndVisit(EOutcome::Flood,bTaken);

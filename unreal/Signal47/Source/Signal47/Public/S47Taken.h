@@ -35,6 +35,9 @@ public:
  void Step(double Dt);
  enum class EStage : uint8 { None, Dread, Flood, Lift, Away };
  EStage Stage() const{return Now;}
+ // N1110 (N1110-7): who is looking and at what place, for the door loop's chase to hand back to (TakeNow).
+ ES47Taker Who() const{return Taker;}
+ const FString& PlaceNow() const{return Place;}
  bool Busy() const{return Now!=EStage::None;}
  // From the first sign. Under a roof it begins overhead; in the open the light comes straight away.
  bool Begin(ES47Taker Who,const FString& Title,bool bOnlyDread=false);

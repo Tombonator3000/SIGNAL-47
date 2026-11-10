@@ -138,6 +138,60 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   T=S;T.Beats[0].In=0;Check(Lint(T).Num()>0,TEXT("camera_snap: no way in is refused"));}
  }
 
+ // ---- N1110-5: four more happenings in the script layer (horizon_figure, figure_near, landing, car_light) ----
+ {
+  const auto Evid=[&Built](const TCHAR* Id,const TCHAR* Key,const TCHAR* Part)
+  {
+   const FS47EventScript* S=Built.Find(Id);const FS47Beat* E=S?First(*S,ES47Beat::Evidence):nullptr;
+   return S&&E&&CountOf(*S,ES47Beat::Evidence)==1&&E->At==0&&E->Key==Key&&E->Text.Contains(Part);
+  };
+  Check(Evid(TEXT("horizon_figure_gone"),TEXT("horizon_figure_d{day}"),TEXT("stood on the rise to the {dir}, a long way off, dead still")),TEXT("horizon_figure_gone: the finding the code kept, with the direction"));
+  Check(Evid(TEXT("figure_near_end"),TEXT("figure_near_d{day}"),TEXT("out on {place}: {seen}{end}")),TEXT("figure_near_end: the finding the code kept, built from what was seen and how it ended"));
+  Check(Evid(TEXT("landing_seen_log"),TEXT("landing_seen_d{landing_night}"),TEXT("{az} degrees from SARO, give or take {spread}, and went out on the ground")),TEXT("landing_seen_log: the finding the code kept (the ledger and the same-minute check read its key)"));
+  Check(Evid(TEXT("landing_logged"),TEXT("landing_logged_d{landing_night}"),TEXT("the array logged something low on the horizon coming down")),TEXT("landing_logged: the array's finding the code kept"));
+  Check(Evid(TEXT("car_light_end"),TEXT("car_light_d{day}"),TEXT("the engine died under it.{outcome}")),TEXT("car_light_end: the finding the code kept, with what the player did"));
+  // the quiet before: a start script opens with the night going still, and nothing else comes before it
+  for(const TCHAR* Id:{TEXT("horizon_figure"),TEXT("car_light")})
+  {
+   const FS47EventScript* S=Built.Find(Id);
+   Check(S&&S->Beats.Num()>=3&&S->Beats[0].Do==ES47Beat::Silence&&S->Beats[0].At==0&&CountOf(*S,ES47Beat::Silence)==1&&CountOf(*S,ES47Beat::Tone)==1&&First(*S,ES47Beat::Light)&&S->Beats[0].Strength<=.1,
+    FString::Printf(TEXT("%s: the night goes still first, then a low hum, and the gear answers"),Id));
+  }
+  // steps and a step: heard at the figure's point
+  if(const FS47EventScript* S=Built.Find(TEXT("figure_near_steps")))
+  {
+   int32 Steps=0;double Last=-1;bool bAt=true;
+   for(const FS47Beat& B:S->Beats)if(B.Do==ES47Beat::Sound){++Steps;bAt&=B.Point==TEXT("figure")&&B.Name.StartsWith(TEXT("stepGravel"))&&B.Delay>Last;Last=B.Delay;}
+   Check(Steps==3&&bAt&&FMath::IsNearlyEqual(Last,1.1),TEXT("figure_near_steps: three steps in the gravel at the figure, .55 s apart"));
+  }
+  if(const FS47EventScript* S=Built.Find(TEXT("figure_near_close")))
+  {
+   const FS47Beat* Step=First(*S,ES47Beat::Sound);const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
+   Check(Step&&C&&CountOf(*S,ES47Beat::Sound)==1&&Step->At<C->At&&C->Point==TEXT("figure")&&C->Kind==TEXT("soft")&&C->In+C->Hold+C->Out<=2.5,TEXT("figure_near_close: one step, then the view turns to it (a soft sting, under 2.5 s)"));
+  }
+  // the view is taken only where it is earned: one place in all of them, and the code leaves it out before 02:00
+  int32 Snaps=0;
+  for(const TCHAR* Id:{TEXT("horizon_figure"),TEXT("horizon_figure_gone"),TEXT("figure_near"),TEXT("figure_near_steps"),TEXT("figure_near_close"),TEXT("figure_near_light"),TEXT("figure_near_end"),TEXT("landing_warning"),TEXT("landing_seen_log"),TEXT("landing_logged"),TEXT("car_light"),TEXT("car_light_end")})
+   if(const FS47EventScript* S=Built.Find(Id))Snaps+=CountOf(*S,ES47Beat::CameraSnap);
+  Check(Snaps==1,TEXT("N1110-5: the camera is taken in one place only (figure_near_close, after 02:00)"));
+  if(const FS47EventScript* S=Built.Find(TEXT("landing_logged")))
+  {
+   const FS47Beat* Beep=First(*S,ES47Beat::Tone);const FS47Beat* Pr=First(*S,ES47Beat::Printer);const FS47Beat* To=First(*S,ES47Beat::Toast);
+   Check(Beep&&Pr&&To&&Beep->Repeat==4&&FMath::IsNearlyEqual(Beep->Hz,1320.)&&FMath::IsNearlyEqual(Beep->Every,.18)&&FMath::IsNearlyEqual(Pr->Delay,.9)&&FMath::IsNearlyEqual(Pr->Stop,3.)&&Beep->If.Num()==1&&Pr->If.Num()==1&&To->If.Num()==1&&To->Text.Contains(TEXT("{map_key}")),
+    TEXT("landing_logged: four beeps, the printer from .9 s and the line on the screen, for one in the building, as the code did"));
+  }
+  if(const FS47EventScript* S=Built.Find(TEXT("landing_warning")))
+  {
+   const FS47Beat* Dale=First(*S,ES47Beat::Line);
+   Check(Dale&&Dale->Who==TEXT("dale")&&Dale->At>=6&&CountOf(*S,ES47Beat::Thought)==2&&CountOf(*S,ES47Beat::Tone)==1&&First(*S,ES47Beat::Tone)->At==0,TEXT("landing_warning: a hum at once, a thought by where the player is, and Dale on the walkie after the power falters"));
+  }
+  // the gates stay where they were: the rhythm and the code's own (a start script has none of its own, nor any of the stages)
+  bool bNoGates=true;
+  for(const TCHAR* Id:{TEXT("horizon_figure"),TEXT("horizon_figure_gone"),TEXT("figure_near"),TEXT("figure_near_steps"),TEXT("figure_near_close"),TEXT("figure_near_light"),TEXT("figure_near_end"),TEXT("landing_warning"),TEXT("landing_seen_log"),TEXT("landing_logged"),TEXT("car_light"),TEXT("car_light_end")})
+   if(const FS47EventScript* S=Built.Find(Id))bNoGates&=!S->Gates.Any()&&S->bEnabled;
+  Check(bNoGates,TEXT("N1110-5: the twelve scripts add no gates of their own (the rhythm, the tiers and the code's rules are as they were)"));
+ }
+
  // ---- every file it reads: parses, known beats, clean; a wired one as it is built in, or said ----
  int32 Files=0;
  for(const FString& Dir:ReadDirs())
