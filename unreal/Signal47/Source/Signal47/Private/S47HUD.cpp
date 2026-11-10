@@ -77,6 +77,7 @@
 #include "S47WeekCase.h"
 #include "S47Script.h"
 #include "S47EventScript.h"
+#include "S47CameraMoment.h"
 #include "S47FieldLife.h"
 #include "S47Outfit.h"
 #include "S47NightLog.h"
@@ -311,6 +312,7 @@ void AS47HUD::Start()
 		bOk &= FS47WeekCase::SelfTest(Lines); // (WEEKLY-CASE-20261109: the week's case, its ways out, the gate on Story's minute)
 		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the night's tiers and the lint)
 		bOk &= S47EventScript::SelfTest(Lines); // (D46-20261110: every event script parses, knows its beats and keeps to the rules)
+		bOk &= S47CameraMoment::SelfTest(Lines); // (N1110: the camera moment's curve, look-at and reduced motion)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);

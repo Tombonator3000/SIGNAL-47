@@ -298,6 +298,8 @@ public:
  TSharedPtr<class FS47Handling> Handling;
  // The cot at SARO, the same rest as OPS (SARO-COT): S47SaroCot.h.
  TSharedPtr<class FS47SaroCot> Cot;
+ // N1110 (N1110-1, N1110-2): how much the player has been bothering them, and what comes of it (S47Attention.h). Saved "attention".
+ TSharedPtr<class FS47Attention> Attention;
  // A fault is drawn for today and has not yet come: what a round can still catch.
  bool FaultDueLater() const;
  int32 RecordsOnDay(int32 OnDay) const;

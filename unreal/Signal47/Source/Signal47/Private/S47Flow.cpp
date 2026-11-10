@@ -316,6 +316,7 @@ void US47Flow::Init(US47Main* InM)
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
 	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
+	bCameraMoments = S47J::Bool(Store, TEXT("cameraMoments"), true); // N1110
 	bVehicleMirrors = S47J::Bool(Store, TEXT("vehicleMirrors"), true);
 	{
 		bool bRun = bVehicleMirrors;
@@ -1537,6 +1538,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
 	O.bHeadMotion = bHeadMotion;
 	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
+	O.bCameraMoments = bCameraMoments; // N1110: read by FS47CameraMoment::Start as a moment is asked for
+	O.OnCameraMoments = [this](bool V) { bCameraMoments = V; StoreSet(TEXT("cameraMoments"), V); };
 	O.bVehicleMirrors = bVehicleMirrors;
 	O.OnVehicleMirrors = [this](bool V) { bVehicleMirrors = V; S47Mirrors::SetEnabled(V); StoreSet(TEXT("vehicleMirrors"), V); };
 	O.bAbduct = bAbductOn;

@@ -62,6 +62,38 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   Check(Ticks==2&&T&&T->Name==TEXT("hap:tick")&&T->Point==TEXT("truck")&&S->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Sound&&FMath::IsNearlyEqual(B.Delay,2.6)&&FMath::IsNearlyEqual(B.Rate,.9);}),TEXT("hood_warm: two ticks at the truck, the second slower after 2.6 s"));
  }
 
+ // ---- N1110 (N1110-3): the camera moments' three, and the camera_snap beat ----
+ for(const TCHAR* Id:{TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights")})
+ {
+  const FS47EventScript* S=Built.Find(Id);
+  const FS47Beat* C=S?First(*S,ES47Beat::CameraSnap):nullptr;
+  const double Whole=C?C->In+C->Hold+C->Out:0;
+  Check(S&&C&&CountOf(*S,ES47Beat::CameraSnap)==1&&!C->Point.IsEmpty()&&PointsOf(Id).Contains(C->Point)&&Whole>=.6&&Whole<=2.5&&C->Fov>=30&&C->Fov<=45&&!C->Kind.IsEmpty()&&CountOf(*S,ES47Beat::Evidence)==1&&S->Gates.Any(),
+   FString::Printf(TEXT("%s: one snap of the view at its point, 0.6 to 2.5 s, to 30 to 45 degrees, with a sting, a finding and gates"),Id));
+ }
+ if(const FS47EventScript* S=Built.Find(TEXT("eyes_window")))
+ {
+  const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
+  Check(S->Gates.bTier&&S->Gates.Tier==ES47Allowed::Full&&S->Gates.HourFrom==2&&C&&C->Kind==TEXT("hard")&&FMath::IsNearlyEqual(C->Hold,1.2)&&C->Strength>0,TEXT("eyes_window: after two, in the full tier, a hard hit, held 1.2 s with a little shake"));
+ }
+ if(const FS47EventScript* S=Built.Find(TEXT("dish_lights")))
+ {
+  const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
+  Check(C&&FMath::IsNearlyEqual(C->At,5.)&&C->Kind==TEXT("swell")&&S->Gates.Areas.Contains(TEXT("saro")),TEXT("dish_lights: the lights hold five seconds before the view goes up to them; SARO only"));
+ }
+ {
+  FS47EventScript S;FString Why;
+  const bool bRead=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":1,\"do\":\"camera_snap\",\"point\":\"eyes\",\"fov\":38,\"in\":0.2,\"hold\":1.2,\"out\":0.9,\"shake\":0.25,\"scare\":\"hard\"},{\"at\":2,\"do\":\"camera_snap\",\"pos\":[1,2,3]}]}"),S,Why);
+  Check(bRead&&S.Beats.Num()==2&&S.Beats[0].Do==ES47Beat::CameraSnap&&S.Beats[0].Point==TEXT("eyes")&&S.Beats[0].Fov==38&&FMath::IsNearlyEqual(S.Beats[0].In,.2)&&FMath::IsNearlyEqual(S.Beats[0].Hold,1.2)&&FMath::IsNearlyEqual(S.Beats[0].Out,.9)&&FMath::IsNearlyEqual(S.Beats[0].Strength,.25)&&S.Beats[0].Kind==TEXT("hard"),TEXT("camera_snap: its point, degrees, seconds, shake and sting are read"));
+  Check(bRead&&S.Beats[1].Pos.IsSet()&&S.Beats[1].Fov==45&&FMath::IsNearlyEqual(S.Beats[1].In,.25)&&FMath::IsNearlyEqual(S.Beats[1].Hold,1.2)&&FMath::IsNearlyEqual(S.Beats[1].Out,.9)&&S.Beats[1].Strength==0&&S.Beats[1].Kind.IsEmpty(),TEXT("camera_snap: as made, 45 degrees in .25 s, held 1.2 s, back in .9 s, no shake and no sting"));
+  Check(bRead&&Lint(S).IsEmpty(),TEXT("camera_snap: both are clean"));
+  FS47EventScript T=S;if(bRead){T.Beats[0].Fov=10;Check(Lint(T).Num()>0,TEXT("camera_snap: 10 degrees is refused"));
+  T=S;T.Beats[0].Hold=6;Check(Lint(T).Num()>0,TEXT("camera_snap: six seconds held is refused"));
+  T=S;T.Beats[0].Kind=TEXT("loud");Check(Lint(T).Num()>0,TEXT("camera_snap: an unknown sting is refused"));
+  T=S;T.Beats[0].Point.Reset();Check(Lint(T).Num()>0,TEXT("camera_snap: without a point or a pos it is refused"));
+  T=S;T.Beats[0].In=0;Check(Lint(T).Num()>0,TEXT("camera_snap: no way in is refused"));}
+ }
+
  // ---- every file it reads: parses, known beats, clean; a wired one as it is built in, or said ----
  int32 Files=0;
  for(const FString& Dir:ReadDirs())
@@ -88,7 +120,7 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
  {
   FS47EventScript S;FString Why;
   bool bEvery=Read(ExampleText,S,Why)&&!S.bEnabled;
-  for(const TCHAR* B:{TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("shake")}){ES47Beat Do=ES47Beat::Count;bEvery&=BeatFrom(B,Do)&&CountOf(S,Do)>0;}
+  for(const TCHAR* B:{TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("shake"),TEXT("camera_snap")}){ES47Beat Do=ES47Beat::Count;bEvery&=BeatFrom(B,Do)&&CountOf(S,Do)>0;}
   Check(bEvery&&S.Gates.Any(),TEXT("the example shows the beats and the gates, and is switched off"));
  }
 

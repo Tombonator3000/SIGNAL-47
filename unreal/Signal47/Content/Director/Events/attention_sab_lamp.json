@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "attention_sab_lamp",
+  "name": "Warm cells",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the flashlight's cell drained: a dry cell or the charger at SARO.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "lamp",
+      "strength": 0.8,
+      "secs": 2
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "The flashlight's nearly dead. The cells are warm, like it's been on all night."
+    },
+    {
+      "at": 3,
+      "do": "evidence",
+      "key": "attention_lamp_d{day}",
+      "text": "At {clock} the flashlight went weak all at once. The cells were warm in my hand."
+    }
+  ]
+}

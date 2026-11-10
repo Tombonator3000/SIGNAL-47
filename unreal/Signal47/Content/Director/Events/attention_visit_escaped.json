@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "attention_visit_escaped",
+  "name": "Out of the light",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when the light came looking and the player kept out of it.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 1,
+      "do": "thought",
+      "text": "It's gone. I think it's gone."
+    },
+    {
+      "at": 2,
+      "do": "evidence",
+      "key": "attention_visit_dark_d{day}",
+      "text": "At {clock} the station was dark and a light came in through the windows, looking along the floor. I kept out of it until it went out."
+    }
+  ]
+}

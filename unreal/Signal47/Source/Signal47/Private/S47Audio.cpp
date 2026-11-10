@@ -2,6 +2,7 @@
 // core/Audio.ts are in S47AudioWeb.cpp.
 #include "S47Audio.h"
 #include "S47Ambience.h"
+#include "S47SoundExport.h"
 
 #include "Camera/PlayerCameraManager.h"
 #include "Components/AudioComponent.h"
@@ -57,6 +58,19 @@ void US47Audio::Init(UWorld* InWorld)
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47AudioTour="), TourPath)) Tour(TourPath);
 	FString CompareDir;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47AudioCompare="), CompareDir)) Compare(CompareDir);
+#if !UE_BUILD_SHIPPING
+	S47SoundExport::RunIfAsked(*this); // N1110: -S47ExportSounds=<dir> [-S47ExportSoundsQuit]
+#endif
+}
+
+// N1110 (dev): the shadow the sound export renders on (S47SoundExport.cpp): the same recordings and levels, a context of its own.
+US47Audio* US47Audio::MakeOffline(const US47Audio& Live)
+{
+	US47Audio* Shadow = NewObject<US47Audio>(GetTransientPackage());
+	Shadow->Volume = Live.Volume; Shadow->MusicLevel = Live.MusicLevel; Shadow->RadioLevel = Live.RadioLevel; Shadow->bCharacterVoices = Live.bCharacterVoices;
+	Shadow->Unlock(false, false); // the context, the buses and the noise, no speaker and no decoding
+	Shadow->Buf = Live.Buf; Shadow->ByFile = Live.ByFile; Shadow->CharacterKeys = Live.CharacterKeys;
+	return Shadow;
 }
 
 void US47Audio::Unlock(bool bWithSynth, bool bDecode)

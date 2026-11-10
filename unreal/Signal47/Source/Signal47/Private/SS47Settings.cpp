@@ -388,6 +388,8 @@ void SS47Settings::BuildRows()
 			TEXT("Larger words in the notebook, on the case board's evidence and question cards, and at the end of the night."));
 		AddToggle(TEXT("Head motion and bumps"), &FS47PauseOpts::bHeadMotion, &FS47PauseOpts::OnHeadMotion, true,
 			TEXT("Walking bob, camera roll, landing dip and camera shake, plus engine vibration and suspension bumps while driving, and the chest sway of the Bodycam 1986 picture. Turn off for a steadier view; movement and vehicle handling stay the same."));
+		AddToggle(TEXT("Camera moments"), &FS47PauseOpts::bCameraMoments, &FS47PauseOpts::OnCameraMoments, true,
+			TEXT("Now and then at night the view snaps toward something for a second or two and comes back. Turn off to keep the view your own the whole time; the sounds and the notebook entry stay. With Head motion and bumps off the snap is gentler: half the zoom, no shake."));
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
 			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;

@@ -63,6 +63,10 @@ public:
 	// (radians, as Look takes them; zero while the walker is not active), it says where the eye is
 	// and returns true; the walker then neither walks nor picks. False: the walker is itself.
 	TFunction<bool(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out)> CameraOverride;
+	// N1110 (N1110-3): a layer on the walker's own view (FS47CameraMoment): given the frame's step and the look as the player has
+	// it (yaw, pitch, radians), it may turn what is rendered and scale the field of view (FovK times Fov) and return true. The
+	// player keeps walking, looking and picking underneath; false, or unset, is the view as it is. Not asked while CameraOverride holds.
+	TFunction<bool(double Dt, double& Yaw, double& Pitch, float& FovK)> ViewLayer;
 
 	FVector EyeUE() const;
 	FVector ForwardUE() const;

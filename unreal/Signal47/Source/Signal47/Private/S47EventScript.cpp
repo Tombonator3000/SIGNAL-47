@@ -1,5 +1,6 @@
 #include "S47EventScript.h"
 #include "S47Audio.h"
+#include "S47CameraMoment.h"
 #include "S47DevEvents.h"
 #include "S47FieldRadio.h"
 #include "S47Flashlight.h"
@@ -31,7 +32,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
 
 namespace S47EventScriptLocal
 {
- const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake")};
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap")};
  // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
  bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area");}
  bool CondKnown(const FString& If){return OwnCond(If)||S47Script::CondKinds().Contains(If);}
@@ -96,6 +97,12 @@ namespace S47EventScriptLocal
   B.Rate=S47J::Num(J,TEXT("rate"),1);B.Lp=S47J::Num(J,TEXT("lp"));B.Delay=S47J::Num(J,TEXT("delay"));B.Stop=S47J::Num(J,TEXT("stop"));
   B.Secs=S47J::Num(J,TEXT("secs"));B.Hz=S47J::Num(J,TEXT("hz"),1200);B.Every=S47J::Num(J,TEXT("every"));
   B.Strength=S47J::Num(J,TEXT("strength"),.5);B.Max=S47J::Num(J,TEXT("max"));B.Repeat=S47J::Int(J,TEXT("repeat"),1);
+  // N1110: camera_snap's own words: fov, in, hold, out, shake (its strength, none unless asked) and scare (its kind).
+  if(B.Do==ES47Beat::CameraSnap)
+  {
+   B.Fov=S47J::Num(J,TEXT("fov"),45);B.In=S47J::Num(J,TEXT("in"),.25);B.Hold=S47J::Num(J,TEXT("hold"),1.2);B.Out=S47J::Num(J,TEXT("out"),.9);
+   B.Strength=S47J::Num(J,TEXT("shake"),0);B.Kind=S47J::Str(J,TEXT("scare"));
+  }
   return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
  }
  // The words a text asks for: {az} -> az.
@@ -225,6 +232,12 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
   case ES47Beat::Evidence:Need(!B.Key.IsEmpty()&&!B.Text.IsEmpty(),TEXT("needs key and text"));break;
   case ES47Beat::Map:Need(!B.Name.IsEmpty(),TEXT("needs place"));break;
   case ES47Beat::Prop:case ES47Beat::Show:case ES47Beat::Hide:Need(!B.Name.IsEmpty(),TEXT("needs node, the scene's key"));break;
+  case ES47Beat::CameraSnap: // N1110
+   Need(B.Pos.IsSet()||!B.Point.IsEmpty(),TEXT("needs pos or point, what it looks at"));
+   Need(B.Fov>=S47CameraMoment::FovMin&&B.Fov<=S47CameraMoment::FovMax,TEXT("fov is 20 to 90 degrees"));
+   Need(B.In>0&&B.Out>0&&B.Hold>=0&&B.In+B.Hold+B.Out>=S47CameraMoment::LeastSeconds&&B.In+B.Hold+B.Out<=S47CameraMoment::MostSeconds,TEXT("in and out above 0, hold 0 or more, in + hold + out 0.3 to 5 seconds"));
+   Need(B.Kind.IsEmpty()||B.Kind==TEXT("soft")||B.Kind==TEXT("hard")||B.Kind==TEXT("braam")||B.Kind==TEXT("swell"),TEXT("scare is soft, hard, braam or swell"));
+   break;
   default:break;
   }
   const FString Why=PlayerWords(B.Text);
@@ -260,7 +273,8 @@ bool GatesHold(const FS47EventGates& G,const FS47ScriptNow& Now,const FString& A
  return true;
 }
 
-const TArray<FString>& Wired(){static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm")};return L;}
+// N1110: eyes_window, beam_figure and dish_lights are the camera moments' (FS47Happenings::BeginMore), each with one named point.
+const TArray<FString>& Wired(){static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights")};return L;}
 const TArray<FString>& WordsOf(const FString& Id)
 {
  static const TArray<FString> Burst={TEXT("az"),TEXT("spread"),TEXT("target"),TEXT("burst_night")},None;
@@ -268,8 +282,8 @@ const TArray<FString>& WordsOf(const FString& Id)
 }
 const TArray<FString>& PointsOf(const FString& Id)
 {
- static const TArray<FString> Truck={TEXT("truck")},None;
- return Id==TEXT("hood_warm")?Truck:None;
+ static const TArray<FString> Truck={TEXT("truck")},Eyes={TEXT("eyes")},Figure={TEXT("figure")},Lights={TEXT("lights")},None;
+ return Id==TEXT("hood_warm")?Truck:Id==TEXT("eyes_window")?Eyes:Id==TEXT("beam_figure")?Figure:Id==TEXT("dish_lights")?Lights:None;
 }
 const TArray<TPair<FString,FString>>& BuiltIn()
 {
@@ -354,6 +368,14 @@ bool Play(US47Main* M,const FString& Id,const FS47EventCtx& Ctx)
  }
  return Runner->Start(*S,Ctx);
 }
+
+bool CameraSnap(US47Main* M,const FS47CameraSnap& Snap,FString& Why)
+{
+ FS47ScriptPlayer* P=FS47ScriptPlayer::Of(M);
+ FS47EventBeats* Runner=P?P->EventBeats():nullptr;
+ if(!Runner){Why=TEXT("no runner here");return false;}
+ return Runner->Snap(Snap,Why);
+}
 }
 
 // ---------- the runner ----------
@@ -390,6 +412,7 @@ void FS47EventBeats::Step(double Dt)
 void FS47EventBeats::Stop()
 {
  Runs.Reset();
+ if(Camera)Camera->Stop();
  if(LampLeft>0&&M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,S47EventScriptLocal::LampFrom);
  LampLeft=0;
 }
@@ -545,8 +568,30 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
   if(M->Player)M->Player->Shake=FMath::Max(M->Player->Shake,FMath::Clamp(B.Strength,0.,1.));
   Log(TEXT(""));
   break;
+ case ES47Beat::CameraSnap:
+ {
+  // N1110: the sting first (it is the sight that hits: whatever was heard last, as F10's audition), then the view toward the point.
+  FString What;
+  if(!B.Kind.IsEmpty()&&M->FieldRadio)
+  {
+   const int32 Scare=B.Kind==TEXT("soft")?int32(FS47EncounterSound::EScare::Soft):B.Kind==TEXT("hard")?int32(FS47EncounterSound::EScare::Hard):B.Kind==TEXT("braam")?int32(FS47EncounterSound::EScare::Braam):int32(FS47EncounterSound::EScare::Swell);
+   What=M->FieldRadio->Scare(Scare,1.,true)?B.Kind+TEXT(" hit, "):B.Kind+TEXT(" hit missing (no file), ");
+  }
+  if(!bAt){Log(What+TEXT("no point to look at"));break;}
+  FS47CameraSnap S;S.At=At;S.Fov=B.Fov;S.In=B.In;S.Hold=B.Hold;S.Out=B.Out;S.Shake=FMath::Clamp(B.Strength,0.,1.);
+  FString Why;
+  Log(What+(Snap(S,Why)?FString::Printf(TEXT("the view to %.0f degrees for %.1f s"),B.Fov,B.In+B.Hold+B.Out):TEXT("the view stays: ")+Why));
+  break;
+ }
  default:break;
  }
+}
+
+bool FS47EventBeats::Snap(const FS47CameraSnap& S,FString& Why)
+{
+ if(!M){Why=TEXT("no game");return false;}
+ if(!Camera)Camera=MakeShared<FS47CameraMoment>(M);
+ return Camera->Start(S,Why);
 }
 
 bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
@@ -561,7 +606,13 @@ bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
  const FS47FreeformSession* F=M->Freeform.Get();
  Ctx.Words.Add(TEXT("az"),TEXT("120"));Ctx.Words.Add(TEXT("spread"),TEXT("18"));Ctx.Words.Add(TEXT("target"),FString());
  Ctx.Words.Add(TEXT("burst_night"),FString::FromInt(F->Day()));
- if(M->Player)for(const FString& P:S47EventScript::PointsOf(Id))Ctx.Points.Add(P,FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z));
+ // (N1110: a point a camera moment looks at is put six metres ahead, so that the snap is seen to turn)
+ if(M->Player)for(const FString& P:S47EventScript::PointsOf(Id))
+ {
+  const bool bAhead=P==TEXT("eyes")||P==TEXT("figure")||P==TEXT("lights");
+  const FVector Ahead=bAhead?FVector(-FMath::Sin(M->Player->Yaw)*6,P==TEXT("lights")?4.:.6,-FMath::Cos(M->Player->Yaw)*6):FVector::ZeroVector;
+  Ctx.Points.Add(P,FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z)+Ahead);
+ }
  if(!Start(*S,Ctx)){Why=TEXT("too many scripts playing");return false;}
  Why=FString::Printf(TEXT("%s, %d beats (%s)"),*Id,S->Beats.Num(),S->Source==TEXT("built in")?TEXT("built in"):TEXT("from its file"));
  return true;

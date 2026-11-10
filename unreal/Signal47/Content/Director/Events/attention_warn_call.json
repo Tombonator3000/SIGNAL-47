@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "id": "attention_warn_call",
+  "name": "Two rings and nobody",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) a warning at SARO. The control room's phone rings twice and stops.",
+  "enabled": true,
+  "gates": {
+    "hours": [
+      "18:00",
+      "05:30"
+    ],
+    "tier": "hint",
+    "areas": [
+      "saro"
+    ]
+  },
+  "beats": [
+    {
+      "at": 0,
+      "do": "sound",
+      "sound": "phoneRing",
+      "pos": [
+        -4,
+        1,
+        2
+      ],
+      "gain": 0.8,
+      "stop": 2.4
+    },
+    {
+      "at": 4.5,
+      "do": "sound",
+      "sound": "phoneRing",
+      "pos": [
+        -4,
+        1,
+        2
+      ],
+      "gain": 0.8,
+      "stop": 2.4
+    },
+    {
+      "at": 8,
+      "do": "thought",
+      "text": "Two rings. Nobody calls out here at this hour."
+    },
+    {
+      "at": 9,
+      "do": "evidence",
+      "key": "attention_call_d{day}",
+      "text": "At {clock} the station phone rang twice and quit before I could get to it. The line was open and quiet when I picked it up."
+    }
+  ]
+}

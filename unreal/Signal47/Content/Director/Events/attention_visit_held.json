@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "id": "attention_visit_held",
+  "name": "It leaves the lights be",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when a visit finds the player inside with power: it holds, and goes.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.4,
+      "secs": 4
+    },
+    {
+      "at": 1,
+      "do": "sound",
+      "sound": "thudSoft",
+      "pos": [
+        -4,
+        6,
+        2
+      ],
+      "gain": 0.5,
+      "rate": 0.5
+    },
+    {
+      "at": 3,
+      "do": "thought",
+      "text": "It's going. The lights held."
+    },
+    {
+      "at": 4,
+      "do": "evidence",
+      "key": "attention_visit_held_d{day}",
+      "text": "At {clock} something came right over the station and stayed there while the mains were out. The lamps stayed on, I stayed inside, and after a while it went."
+    }
+  ]
+}

@@ -4,6 +4,8 @@
 #include "S47NightTiers.h"
 #include "S47Script.h"
 class US47Main;
+struct FS47CameraSnap;
+class FS47CameraMoment;
 
 // D46-20261110 (D46-11, Tom 10 November: "mer detaljerte manus for alle hendelser, så man mer kan styre hva som skal skje i en
 // hendelse"). An event script is one JSON file per event, Content/Director/Events/<id>.json, that says what happens inside an
@@ -34,6 +36,8 @@ class US47Main;
 //   prop     node (an AS47Web key, "room.objs.mug"): moved by [x, y, z] metres, or to, with "to": true. Not saved.
 //   show     node shown; hide: node hidden. Not saved.
 //   shake    the view shakes a little (strength 0 to 1, the walker's own)
+//   camera_snap  N1110: the view snaps toward pos/point and closes in to fov degrees over in seconds, holds hold seconds and eases
+//            back over out (FS47CameraMoment); shake 0 to 1 as it lands; scare: a bought hit with it (soft, hard, braam, swell).
 // Any beat: "if": conditions that must hold when its time comes (else it is left out); "wait": conditions it waits for, at most
 // "max" seconds (else it is left out). Conditions are the scripted events' (S47Script::CondKinds), and in_saro, area.
 // Gates (all optional): from_day, to_day, hours [from, to] (clock hours, from > to past midnight), tier (hint, glimpse, full: the
@@ -41,7 +45,7 @@ class US47Main;
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Count };
 
 struct FS47Beat
 {
@@ -53,6 +57,7 @@ struct FS47Beat
  FVector By=FVector::ZeroVector;
  bool bTo=false;
  double Gain=1,Rate=1,Lp=0,Delay=0,Stop=0,Secs=0,Hz=1200,Every=0,Strength=.5,Max=0;
+ double Fov=45,In=.25,Hold=1.2,Out=.9; // N1110: camera_snap's degrees and seconds (its shake is Strength, its scare is Kind)
  int32 Repeat=1;
  TArray<FS47ScriptCond> If,Wait;
 };
@@ -122,6 +127,9 @@ namespace S47EventScript
  // Plays the event's script now (its first beats at once, before this returns). False: no script (switched off, or none), or no
  // runner here (not Freeform): the caller has nothing else to play.
  SIGNAL47_API bool Play(US47Main* M,const FString& Id,const FS47EventCtx& Ctx);
+ // N1110: a camera moment outside any script (the attention system, a visit at the door): the same as the camera_snap beat, with
+ // the same settings. False with Why: no runner here, or FS47CameraMoment::Start's reasons.
+ SIGNAL47_API bool CameraSnap(US47Main* M,const FS47CameraSnap& Snap,FString& Why);
 
  // HUD's self-test (S47EventScriptTest.cpp).
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
@@ -141,10 +149,13 @@ public:
  void AddDevLines();
  // F10: this script now, with sample words where the event's code would give them. Why: what it did, or what stopped it.
  bool DevRun(const FString& Id,FString& Why);
+ // N1110: the camera moment (S47CameraMoment.h), the beat's and the hook's; made when first asked for, stopped with the runs.
+ bool Snap(const FS47CameraSnap& S,FString& Why);
 private:
  US47Main* M=nullptr;
  struct FRun{FS47EventScript S;FS47EventCtx Ctx;double T=0,Waited=0;int32 Next=0;};
  TArray<FRun> Runs;
+ TSharedPtr<FS47CameraMoment> Camera;
  // The flashlight's flicker, given back after its seconds.
  double LampLeft=0;
  TSet<FString> LinesFor;

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "attention_hint_visit",
+  "name": "Dale: keep the lights on and stay inside",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the first sabotage ever. What to do if they come to the station.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 6,
+      "do": "line",
+      "who": "dale",
+      "text": "Gear acting up after you've been out poking at them? That's how it starts. If they ever come right up to the station, keep the lights on and stay inside. Generator's out back of the control room. Over."
+    },
+    {
+      "at": 6,
+      "do": "evidence",
+      "key": "attention_rule_station",
+      "text": "Dale, on the walkie: if they come right up to the station, keep the lights on and stay inside. The standby generator is behind the control room."
+    }
+  ]
+}

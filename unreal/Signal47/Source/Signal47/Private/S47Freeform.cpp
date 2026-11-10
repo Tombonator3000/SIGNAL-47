@@ -15,6 +15,7 @@
 #include "S47Tape.h"
 #include "S47Handling.h"
 #include "S47SaroCot.h"
+#include "S47Attention.h"
 #include "S47PinBoard.h"
 #include "S47Enlarger.h"
 #include "S47Darkroom.h"
@@ -364,6 +365,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Fatigue)Fatigue=MakeShared<FS47Fatigue>(M);Fatigue->Begin(S47J::Obj(Saved,TEXT("fatigue")));
  if(!Handling)Handling=MakeShared<FS47Handling>(M);Handling->Begin();
  if(!Cot)Cot=MakeShared<FS47SaroCot>(M);Cot->Begin();
+ if(!Attention)Attention=MakeShared<FS47Attention>(M);Attention->Begin(S47J::Obj(Saved,TEXT("attention"))); // N1110
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
  if(!FarmNight)FarmNight=MakeShared<FS47FarmNight>(M);
  if(!HouseDoors)HouseDoors=MakeShared<FS47FarmHouseDoors>(M);HouseDoors->Begin(S47J::Obj(Saved,TEXT("houseDoors")));
@@ -408,6 +410,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&Fatigue)Fatigue->Stop();
  if(bCanRestore&&Handling)Handling->Stop();
  if(bCanRestore&&Cot)Cot->Stop();
+ if(Attention)Attention->Stop(); // N1110
  if(Mail)Mail->Stop();
  TerminalView.Reset();ActiveTerminal=-1;
  if(bCanRestore){M->Web->SetWorkMotionPaused(false);if(bActive)M->Web->SetPrinterPaper(-1.f);}
@@ -756,6 +759,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Fatigue)Fatigue->Step(D);
  if(Handling)Handling->Step(D);
  if(Cot)Cot->Step(D);
+ if(Attention&&!Held())Attention->Step(D); // N1110
  if(IndoorDread)IndoorDread->Step(D);
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
@@ -4734,6 +4738,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));
+ if(Attention){const S47J::FObj Heed=Attention->Save();if(Heed->Values.Num()>0)S47J::Set(O,TEXT("attention"),Heed);} // N1110: optional, absent = nothing yet
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(Darkroom){const auto Dark=Darkroom->Save();if(Dark->Values.Num()>0)S47J::Set(O,TEXT("darkroom"),Dark);} // D45-20261110: optional, absent = white
  if(WardReport){const auto Weekly=WardReport->Save();if(Weekly->Values.Num()>0)S47J::Set(O,TEXT("wardReport"),Weekly);}
@@ -4747,6 +4752,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=S47CaptureSound::SelfTest(Lines);auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
  OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
+ OK&=FS47Attention::SelfTest(Lines); // N1110: the attention curve, its thresholds, sabotage and the visit
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
  for(int I=0;I<360;++I)SoundPolicy.Append(I*.05,(I+1)*.05,.05,1,1420.11,50,50,1);SoundPolicy.Complete=true;
  const FString RetainedSound=S47J::Write(SoundPolicy.Save());

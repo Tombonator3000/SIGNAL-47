@@ -129,6 +129,8 @@ public:
 	TSharedPtr<FS47AudioBuffer> CharacterBuffer(const FString& Voice, const FString& Text) const;
 	bool PhonePlaying() const { return PhoneSession.IsValid(); }
 	void SetVolume(float V);
+	/** N1110 (dev, -S47ExportSounds): a shadow of Live for offline rendering: a fresh context at time zero with its own buses at Live's levels and Live's recordings. */
+	static US47Audio* MakeOffline(const US47Audio& Live);
 	float MusicLevel = 0.7f; // the music's own level (the pause menu), 0..1
 	void SetMusic(float V);
 	float RadioLevel = 1.f;  // the radios' own level (the pause menu), 0..1

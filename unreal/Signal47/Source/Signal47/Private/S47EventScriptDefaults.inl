@@ -43,4 +43,47 @@ static const TCHAR* const S47EventScriptBuiltIn[][2]={
     { "at": 0, "do": "evidence", "key": "hood_warm_d{day}", "text": "At {clock} the truck had been sitting a good while, and its engine was ticking as it cooled when I came back to it. The hood was warm to the hand." }
   ]
 })S47JSON")},
+ {TEXT("eyes_window"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "eyes_window",
+  "name": "Eyes at the window",
+  "notes": "N1110. Played by S47Happenings after two in the morning, inside SARO's control room, at the window the player is looking out of: a pair of big dark eyes with a wet glint are outside the glass for a moment. The code draws them and takes them away at 1.9 s; this file says what the camera, the gear and the notebook do. Point: eyes (just outside the pane, at a face's height). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": { "tier": "full", "hours": [2, 5], "if": ["in_saro"] },
+  "beats": [
+    { "at": 0.2, "do": "camera_snap", "point": "eyes", "fov": 38, "in": 0.2, "hold": 1.2, "out": 0.9, "shake": 0.25, "scare": "hard" },
+    { "at": 0.3, "do": "light", "kind": "gear", "strength": 0.5, "secs": 4 },
+    { "at": 2.6, "do": "thought", "text": "Something was right there. Right at the glass.", "secs": 4.5 },
+    { "at": 2.6, "do": "evidence", "key": "eyes_window_d{day}", "text": "At {clock} something looked in through the control room window. Two big dark eyes, wet in the light, a hand's width from the glass. Then nothing out there but the night." }
+  ]
+})S47JSON")},
+ {TEXT("beam_figure"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "beam_figure",
+  "name": "A figure at the end of the flashlight beam",
+  "notes": "N1110. Played by S47Happenings after midnight, out on foot with the flashlight on: at the far end of the beam somebody stands on the land, the view snaps to it, and it is gone. The code draws the body and takes it away at 1.7 s; this file says what the camera, the lamp and the notebook do. Point: figure (its chest). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": { "tier": "glimpse", "hours": [0, 4.5], "if": ["outdoors", "on_foot"] },
+  "beats": [
+    { "at": 0.3, "do": "camera_snap", "point": "figure", "fov": 42, "in": 0.22, "hold": 1.0, "out": 0.8, "shake": 0.15, "scare": "soft" },
+    { "at": 0.4, "do": "light", "kind": "lamp", "strength": 0.5, "secs": 1.6 },
+    { "at": 2.4, "do": "thought", "text": "There was somebody standing out there.", "secs": 4 },
+    { "at": 2.4, "do": "evidence", "key": "beam_figure_d{day}", "text": "At {clock}, out on foot, the flashlight picked out somebody standing dead still at the far end of the beam, maybe thirty yards off. When I got the light back on the spot there was nobody." }
+  ]
+})S47JSON")},
+ {TEXT("dish_lights"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "dish_lights",
+  "name": "Lights over the dishes",
+  "notes": "N1110. Played by S47Happenings after one in the morning at SARO, outdoors or at a control room window toward the array: a cluster of lights hangs dead still over the dishes for five seconds, the view snaps up to them, and they go out. The code draws them and takes them away at 5.45 s; this file says what is heard, what the camera does and what the notebook keeps. Point: lights. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": { "tier": "glimpse", "hours": [1, 5], "areas": ["saro"] },
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 58, "secs": 5.6, "gain": 0.04, "wave": "sine" },
+    { "at": 0.6, "do": "light", "kind": "gear", "strength": 0.4, "secs": 6 },
+    { "at": 5.0, "do": "camera_snap", "point": "lights", "fov": 36, "in": 0.3, "hold": 0.9, "out": 0.9, "scare": "swell" },
+    { "at": 7.0, "do": "thought", "text": "They were right over the dishes. And then they just went out.", "secs": 4.5 },
+    { "at": 7.0, "do": "evidence", "key": "dish_lights_d{day}", "text": "At {clock} a cluster of lights hung over the array, dead still, for about five seconds. Then they went out all at once, like a switch." }
+  ]
+})S47JSON")},
 };

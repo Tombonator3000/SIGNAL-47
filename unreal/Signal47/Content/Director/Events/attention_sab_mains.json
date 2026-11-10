@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "attention_sab_mains",
+  "name": "A scorched smell in the service bay",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the mains taken (FS47FreeformSession::SkyCutBegin): the standby generator rides it, and the mains come back.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 28,
+      "do": "thought",
+      "text": "The whole place smells like a struck match."
+    },
+    {
+      "at": 30,
+      "do": "evidence",
+      "key": "attention_mains_d{day}",
+      "text": "At {clock} the mains sagged and went with no storm and no fault on the feeder. Afterward the transfer panel smelled scorched, like a struck match."
+    }
+  ]
+}

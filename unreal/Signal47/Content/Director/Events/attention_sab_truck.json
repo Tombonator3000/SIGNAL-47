@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "attention_sab_truck",
+  "name": "Frost on the hood",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when the truck will not start (S47World's key stall): the key, a few turns.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0.5,
+      "do": "thought",
+      "text": "Frost on the hood. On a night like this."
+    },
+    {
+      "at": 1,
+      "do": "evidence",
+      "key": "attention_truck_d{day}",
+      "text": "At {clock} the truck would not start. There was frost on the hood and nowhere else, and the cab smelled like hot wiring."
+    }
+  ]
+}

@@ -416,13 +416,16 @@ void AS47Walker::Tick(float DeltaSeconds)
 	}
 	Shake = FMath::Max(0.0, Shake - Dt * 1.4);
 	const double Sh = bHeadMotion ? Shake * Shake : 0;
+	// N1110 (N1110-3): a camera moment may turn what is rendered and close the view in for a moment (ViewLayer); the look stays the player's
+	double ViewYaw = Yaw, ViewPitch = Pitch; float ViewFovK = 1.f;
+	if (ViewLayer && !ViewLayer(Dt, ViewYaw, ViewPitch, ViewFovK)) { ViewYaw = Yaw; ViewPitch = Pitch; ViewFovK = 1.f; }
 	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye - S47Sneak::EyeDrop * CrouchK + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 * (1.0 - 0.5 * CrouchK) : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
-	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
+	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(ViewYaw, ViewPitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
 	// D45-20261110 (D45-19): the chest camera under the eye (BODYCAM 1986 only; exactly zero otherwise)
 	const float BodyFov = StepBodycam(Dt, false, (PC && bInput) ? LookX * LookFine : 0.0, (PC && bInput) ? LookY * LookFine : 0.0, Mx, bChestRun, bChestStep);
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-	Camera->SetFieldOfView(HorizontalFov(Fov * FovScale * BodyFov, float(Size.X / FMath::Max(1.0, Size.Y))));
+	Camera->SetFieldOfView(HorizontalFov(Fov * FovScale * BodyFov * FMath::Clamp(ViewFovK, 0.2f, 1.5f), float(Size.X / FMath::Max(1.0, Size.Y))));
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
 	// Interaction.update: what the line of sight picks, within its range, with something to offer

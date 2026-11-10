@@ -14,6 +14,7 @@
     { "at": 5, "do": "printer", "gain": 0.3, "stop": 2, "text": "PRINTER / One line, no header, no time stamp." },
     { "at": 7, "do": "shake", "strength": 0.25 },
     { "at": 8, "do": "line", "who": "dale", "text": "You hear that up top? Stay inside. Over." },
+    { "at": 9, "do": "camera_snap", "pos": [0, 2.2, -6], "fov": 40, "in": 0.25, "hold": 1.0, "out": 0.8, "shake": 0.2, "scare": "soft" },
     { "at": 10, "do": "tone", "hz": 1400, "secs": 0.05, "gain": 0.05, "repeat": 3, "every": 0.15 },
     { "at": 12, "do": "toast", "text": "The steps stop right over the desk.", "secs": 4 },
     { "at": 14, "do": "thought", "text": "What was that noise?", "wait": [{ "if": "outdoors" }], "max": 30 },

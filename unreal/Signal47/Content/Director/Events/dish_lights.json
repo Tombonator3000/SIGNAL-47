@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "dish_lights",
+  "name": "Lights over the dishes",
+  "notes": "N1110. Played by S47Happenings after one in the morning at SARO, outdoors or at a control room window toward the array: a cluster of lights hangs dead still over the dishes for five seconds, the view snaps up to them, and they go out. The code draws them and takes them away at 5.45 s; this file says what is heard, what the camera does and what the notebook keeps. Point: lights. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": { "tier": "glimpse", "hours": [1, 5], "areas": ["saro"] },
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 58, "secs": 5.6, "gain": 0.04, "wave": "sine" },
+    { "at": 0.6, "do": "light", "kind": "gear", "strength": 0.4, "secs": 6 },
+    { "at": 5.0, "do": "camera_snap", "point": "lights", "fov": 36, "in": 0.3, "hold": 0.9, "out": 0.9, "scare": "swell" },
+    { "at": 7.0, "do": "thought", "text": "They were right over the dishes. And then they just went out.", "secs": 4.5 },
+    { "at": 7.0, "do": "evidence", "key": "dish_lights_d{day}", "text": "At {clock} a cluster of lights hung over the array, dead still, for about five seconds. Then they went out all at once, like a switch." }
+  ]
+}
