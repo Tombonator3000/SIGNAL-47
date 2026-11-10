@@ -59,6 +59,18 @@ Toms ord (forkortet): avisen skal få et svart-hvitt bilde fra spillverdenen som
 - [ ] **D46-16 Referanselydene:** i dag seks offentlige NASA-opptak og én syntetisk tekstur, bare til å sammenligne på øret uten følge. Skal få et poeng: kjente kilder (lynsus, plystrere, fly-radar, nettbrum, satellitt, pulsar) som kan utelukke en forklaring.
 - [ ] **D46-17 Typer romvesener og hendelser:** Roswell nysgjerrig, Tall og Pale skumle og slemme, Nordic harmoniske, Cosmic vil opplyse menneskene; overvekt av skrekk. Hver type får sin egen oppførsel, sitt eget signal og sine egne hendelser.
 - [ ] **D46-18 Dag 1 ved vindmølla:** Tom fant ringen rundt vindmølla, men «ingenting der». Funnet er bare et feltnotat ved E på tårnet. Trenger synlige spor (ny tråd på halevingen, dekkspor som slutter, nedtråkket kratt), en tanke ved ankomst, tydelig E-hint, mindre ring på dag 1, og NOW-linje som knytter funnet til nattens peiling.
+- [ ] **D46-19 Hendelseslogg i notatboka:** et sted der spilleren logger de forskjellige hendelsene (hva, når, hvor, hvilken type), og kan begynne på en ny oppføring selv.
+- [ ] **D46-20 Gjentatte prøver uten å flytte noe:** Tom kan ta mange array-prøver på rad bare med RECORDS og POINT ARRAY, uten å peke arrayen på nytt eller stille inn receiveren. Hver jobb må kreve ny peking og innstilling.
+- [ ] **D46-21 Musepekeren på tracking-PC-en** detter innimellom bort fra skjermen.
+- [ ] **D46-22 OPS CASE BOARD:** bedre design og logisk oppbygging (Fable 5.2).
+- [ ] **D46-23 SERVICE-fanen bort fra OPS:** tekstene viser til array-PC-en i stedet.
+- [ ] **D46-24 Trip camera på kartet:** kartet viser hvor trip camera skal settes ut.
+- [ ] **D46-25 Ballongen:** ekte modell (sammenfalt værballong, oransje fallskjerm, snor, instrumentboks med returlapp) og noe å få for den: ta med boksen, send den i returposten eller ring skolen (Ledger-annonsen), og bruk den som prøve i saken («bare en ballong»).
+- [ ] **D46-26 UFO-lysene:** ser ut som flate hvite skiver (bilde over ranchen); trenger bedre Unreal-effekter (glød, halo, flimring, farge, dis) så de ser mystiske ut, også på foto.
+- [ ] **D46-27 Sted på bildet:** bildet viser hvor det er tatt (påtrykt dato og sted på bildet, slik kameraer med databakstykke gjorde i 1986).
+- [ ] **D46-28 PHOTOGRAPHS-fanen og skjermflaten:** PHOTOGRAPHS på OPS må bli bedre (større bilder, tydeligere innhold), og bildet på alle PC-skjermene skal fylle mer av det indre glasset så ingenting blir for smått.
+- [ ] **D46-12 Startskjerm:** versjonsnummer synlig; ikke «New Mexico» eller dato på startskjerm eller i meny. **Bygget 10. nov:** «VERSION 0.9.47» (tredje tall = byggnummer), bare klokkeslett på båndet.
+- [ ] **D46-13 Trip camera med bodycam-preg:** når man ser på det trip camera har tatt opp, vises det med bodycam/VHS-preget (overvåkningskamera med tidsstempel).
 - [ ] **D46-8 Cosmos:** gå gjennom alt som er lastet ned og lag en liste over hva som bør lastes ned i tillegg (Tom laster ned selv).
 
 ## Toms fikseliste 10. november (etter nattskiftet, d43)

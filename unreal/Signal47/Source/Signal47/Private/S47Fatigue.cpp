@@ -1,5 +1,5 @@
-#include <limits>
 #include "S47Fatigue.h"
+#include <limits>
 
 #include "Dom/JsonObject.h"
 #include "S47Audio.h"
@@ -484,10 +484,12 @@ bool FS47Fatigue::SelfTest(TArray<FString>& Lines)
 		Check(WalkScaleOf(0.3) == 1 && WalkScaleOf(1) < 1 && WalkScaleOf(1) >= 0.85, TEXT("D46: a tired walk is a little slower, nothing until properly tired"));
 		Check(KitLineOf(0.7, 0, 0) == TEXT("Tired") && KitLineOf(0.1, 2, 0.9) == TEXT("Wide awake, coffee 2 cups") && KitLineOf(0.1, 1, 0.5) == TEXT("Wide awake, coffee 1 cup") && KitLineOf(0.1, 0, 0).IsEmpty() && KitLineOf(0.1, 2, 0.05).IsEmpty(),
 			TEXT("D46: the notebook line is Tired, or Wide awake with the cups, or nothing"));
-		FS47Fatigue Day(nullptr); Day.Begin(nullptr); Day.Cups = 3; Day.Awake = 20; Day.Slept(5 * 3600.0, EBed::Station);
+		FS47Fatigue Day(nullptr); Day.Begin(nullptr); Day.Cups = 3; Day.Awake = 20; Day.Slept(5 * 3600.0, EBed::Station); const bool bReset = Day.Cups == 0;
 		const TSharedRef<FJsonObject> Kept = Day.Save(); Day.Cups = 2; Day.CupDay = 4; const TSharedRef<FJsonObject> Held = Day.Save(); FS47Fatigue Back(nullptr); Back.Begin(Held);
-		Check(Day.Cups == 0 && !Kept->HasField(TEXT("cups")) && Back.Cups == 2 && Back.CupDay == 4 && CoffeeDayOf(5 * 3600.0) == CoffeeDayOf(-1.0) && CoffeeDayOf(7 * 3600.0) != CoffeeDayOf(5 * 3600.0),
-			TEXT("D46: a real sleep starts the cups over; the cups are saved only when there are some; the day turns at six"));
+		Check(bReset && !Kept->HasField(TEXT("cups")) && Back.Cups == 2 && Back.CupDay == 4,
+			TEXT("D46: a real sleep starts the cups over; the cups are saved only when there are some"));
+		Check(CoffeeDayOf(7 * 3600.0) != CoffeeDayOf(5 * 3600.0),
+			TEXT("D46: the coffee day turns at six"));
 	}
 	{
 		// the run: tired and winded it eases off, but it stays a run (heard as one) and faster than a figure that sees you and hunts

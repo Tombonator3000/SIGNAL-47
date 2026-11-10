@@ -141,7 +141,7 @@ FString FS47NightLog::RemarkFor(const FNight& Nt)
 	for (const FString& Job : Nt.Work) bPoor |= Job.Contains(TEXT("will not read"));
 	if (bLost) return TEXT("There is time on this sheet nobody can account for. Check the station clock against WWVB at dusk, and again when you come in.");
 	if (bPoor) return TEXT("A recording that will not read is a night's work lost. Retune before you record, not after.");
-	if (bGear) return TEXT("Tag whatever failed and leave it on the bench with the time on it.");
+	if (bGear) return TEXT("Whatever failed, put down what it was and the time it quit. Bring it to the CALIBRATION / REPAIR bench in the garage and test it there.");
 	if (bSeen) return TEXT("This is what I want: what, where and when. Keep it that way.");
 	return TEXT("A quiet night is worth a sheet too.");
 }

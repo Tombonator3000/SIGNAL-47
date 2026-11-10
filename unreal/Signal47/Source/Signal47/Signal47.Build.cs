@@ -6,7 +6,7 @@ public class Signal47 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "Slate", "SlateCore" });
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara", "PhysicsCore" }); // D46: the trip camera reads its body setup
 		// Opt-in developer finale capture; ordinary screenshots retain their existing path.
 		PrivateDependencyModuleNames.Add("ImageWriteQueue");
 		if (Target.bBuildEditor)
