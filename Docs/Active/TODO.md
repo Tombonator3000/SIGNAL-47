@@ -734,7 +734,7 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 - [x] **LOGIC-08 / P2:** Rett SC08s journalattribusjon eller lag faktisk spolekontroll; dokumentlesing er ikke en egen utført lydprøve. **Levert i PR272 og installert pakke `f32d4553`; kontrollgrenser står i leveringsrapporten.**
 - [x] **LOGIC-09 / P2:** Samordne tilfeldige bortføringsvinduer med ny tidslinje og ingen tidstap; bevar gamle saker og beskytt manussekvenser. **Levert i PR272 og installert pakke `f32d4553`; kontrollgrenser står i leveringsrapporten.**
 
-- [ ] **STORY-06, forslag etter spilltesten:** Vurder [gameplay, skrekk og uro for åpningen og hver SC01–SC13-del](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md). Prioriter tydelige neste handlinger, normale lyder som senere svikter, gjenkjennelige avtrykk, lesbar fiendesøking og reelle pustepauser. Ideene er forslag, ikke besluttet implementasjon.
+- [ ] **STORY-06, forslag etter spilltesten:** Vurder [gameplay, skrekk og uro for åpningen og hver SC01–SC13-del](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md). Prioriter tydelige neste handlinger, normale lyder som senere svikter, gjenkjennelige avtrykk, lesbar fiendesøking og reelle pustepauser. Ideene er forslag, ikke besluttet implementasjon. **Triage 10. november:** tabell nederst i dokumentet (7 flettet, 6 overstyrt, 14 åpne, seks av dem foreslått videre i Freeform). Gjenstår: Toms valg blant de åpne.
 
 Gameplayforslag og mulig konkurranse med ambientinnslag står separat i rapporten. De er ikke bekreftede runtimefeil. Nye motor-/bygge-/spilltester skal fortsatt ikke overlappe Toms spilling.
 
