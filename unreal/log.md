@@ -2229,3 +2229,9 @@ Kontroll av d43 (`7d1ae9ec`): månedsprøvene investigator (431) og taken (424) 
 ## 10. november kl. 10:15 (Claude Code, dagskift): fikslisten, punkt 1, 2 (aggregatet), 4 og 8
 
 Toms fiksliste av 10. november (FIX10 i TODO). `9aa027db`: skjermene og spolebåndet (punkt 1). Denne leveransen: første start ved postkassen med Wards brev og nøklene, mørk stasjon med glødende brytere, walkie og opptaker på kommoden i gangen (punkt 4 og 8), og aggregatets funksjon (punkt 2): et lys over SARO tar nettet, aggregatet bærer stasjonen og etterlater en strimmel som funn. Selvtest 4116 OK, første start PASS 18, garasjestart PASS 12, nettbrudd PASS 14, full Freeform-regresjon PASS 251 før nettbruddet kom inn (ny kjøring pågår). Ikke installert; kritikerrunde og d44 gjenstår.
+
+## 10. november kl. 10:43 (Claude Code, dagskift): stasjonsfilene og oversikt over kjøpte biblioteker
+
+`dc82b37a`: SAROs egne stasjonsfiler (FIX10-2 og 3). Åtte filer under OPS / RECORDS (fane STATION) og i arkivpermen; fire fra dag 1, resten slippes kl. 08 på dag 2 til 5 og merker RECORDS. Språkvask i selvtesten (`S47StationFiles::Lint`), prøve `-S47StationFilesTest` PASS 10, selvtest 4117 OK. Nye årstall og fakta i filene, funnet på her og ikke hentet fra eldre kilder: kartleggingslag ved Station 01 i 1955, avtale 1956, de seks første antennene 1958, tilbygget 1962, S-27 i 1971, nødaggregatet juni 1979, én kontraktsoperatør siden 1984 og sju operatører siden da, Dale på SAROs liste siden 1975, «indoors by 02:00» lagt til i skjemaet 1985.
+
+Toms kjøpte biblioteker er kartlagt i [Docs/Research/Assets](../Docs/Research/Assets/README.md): lydbiblioteket (2335 filer målt, tabell og skript i `Tools/sfx-catalog`) og Cosmos-inventaret (78 oppføringer, vurdert fra offentlige sider). Ingen lyd- eller assetfiler er lagt i Git. Spillet brukte allerede 17 klipp fra lydbiblioteket.
