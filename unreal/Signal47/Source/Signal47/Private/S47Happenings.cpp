@@ -1820,6 +1820,12 @@ void FS47Happenings::Noticed(const FString& Id,double Dist,const TCHAR* How,int3
  const int32 Key=Ser>0?Ser:Now.Serial;
  if(Key<=0||NoticedSerials.Contains(Key))return;
  NoticedSerials.Add(Key);
+ // DREAD-20261110: what is first seen out there is felt too (a bought hit; nothing without the files, and never twice for one thing).
+ if(How&&FCString::Strstr(How,TEXT("sight"))&&M->FieldRadio)
+ {
+  const int32 Scare=FS47EncounterSound::ScareFor(Id.IsEmpty()?Now.Id:Id,Dist);
+  if(Scare>=0)M->FieldRadio->Scare(Scare,Dist<0?1.:FMath::Clamp(1.-Dist/600.,.3,1.));
+ }
  const bool bForced=Ser<=0&&Now.bForced;
  if(!bForced){++Tally.NNoticed;if(bNear)++Tally.NNear;if(Dist<1e5)Tally.Nearest=FMath::Min(Tally.Nearest,FMath::Max(0.,Dist));}
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s noticed day %d %s %s by %s%s"),Id.IsEmpty()?*Now.Id:*Id,M->Freeform->Day(),*S47Hap::ClockText(M->Freeform->Clock()),Dist<0?TEXT("at the player"):Dist>=1e5?TEXT("far off"):*FString::Printf(TEXT("at %.0f m"),Dist),How?How:TEXT("here"),bForced?TEXT(", F10"):TEXT(""));

@@ -1525,6 +1525,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddSaroFixes(E);
  AddFarmLights(E);
  AddFarmGate(E);
+ AddDread(E);
  AddTownDay(E);
  AddWeekCase(E);
 }

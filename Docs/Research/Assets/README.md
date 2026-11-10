@@ -13,7 +13,7 @@ Måletabellen lages på nytt med `python3 Tools/sfx-catalog/analyze.py` (trenger
 
 - **Ingen kjøpte filer i Git.** Lyd går inn gjennom den private klonen (`web/src/assets/licensed/tools/build_sfx.py`, så `Scripts/import-audio.sh`) og havner i `Content/Licensed/`, som Git ignorerer. Cosmos-innhold legges under `Content/Licensed/` på samme måte. Begge lisensene forbyr å gjøre råfilene tilgjengelige for andre.
 - **Cosmos forbyr bruk som treningsdata eller «reference material» for AI-verktøy.** Cosmos-modeller og -bilder skal derfor ikke mates inn i bilde-til-3D, bildegenerering eller som referansebilder til en agent. Vanlig bruk som assets i Unreal er dekket.
-- **Lydlisensen er ikke bekreftet mot kilden.** Biblioteket har ingen lisensfil. Vilkårene vi bygger på, står bare i vårt eget notat i den private klonen (`LICENSES.md`). Tom bekrefter mot Function Loops' EULA før spillet deles.
+- **Lyden er klarert for bruk i spill (Tom, 10. november 2026).** Kjøpt på Humble Bundle («Ultimate SFX for Games», Function Loops; alle tre nivåene: $5, $15 og $25 Content). Biblioteket har selv ingen lisensfil, og pakkesiden ([humblealerts](https://humblealerts.com/software/ultimate-sfx-for-games/)) gjengir ingen vilkår; vilkårene vi følger, står i den private klonens `LICENSES.md`: redigerte klipp i spillet, aldri råfilene videre.
 - **Cosmos-lisensen etter abonnementet er uavklart.** Last ned det som trengs i løpet av måneden, ta vare på kvittering, og spør Leartes skriftlig før lansering. Environments og tools er ikke med i abonnementet.
 - Et klipp er ikke i spillet før det står i `sfx/MANIFEST.md` i den private klonen med kilde, utsnitt og bruk.
 
@@ -56,10 +56,10 @@ Biler: trolig for nye for 1986, bare som bakgrunn. Fantasy, cyberpunk og tegnese
 | Dato | Hva | Hvor i spillet |
 |---|---|---|
 | Før 10. november | 17 klipp fra lydbiblioteket (`lic:`-lydene: dører, brytere, nøkler, radiosus, TV-brum, «pressure») | Se `sfx/MANIFEST.md` i den private klonen. |
+| 10. november | 9 klipp til uhyggen under et møte: `dread_low`, `dread_high` (Horror Ambience 18 og 26), `scare_soft_1`–`2` og `scare_hard_1`–`3` (Horror Screamers 21, 02, 27, 30, 26), `sky_braam` og `sky_swell` (Orchestral Braams 06 og 09). Stereo, målt, ikke hørt. | Grunnen toner inn på musikkbussen når noe er nær, laget over når det sees eller jakter; slaget ved første syn (hviler 75 s, ved jakt 40 s); braam for en landing eller storenatta, svell for lys og skikkelser på avstand. Nivåene samlet i `S47EncounterSound.cpp`; prøvelytting i F10 «Dread sound (T)». Uten filene låter spillet som før. |
 
 ## Åpne spørsmål til Tom
 
-1. Bekrefte lydlisensen mot Function Loops' EULA (spillbygg med redigerte klipp, ikke råfiler).
-2. Hva abonnementet faktisk gir (Individual eller Studio, kreditter per asset), og om nedlastet innhold er lisensiert etter måneden.
-3. Hva som er innløst fra Humble-nivåene (Cosmos-siden for innløsning og Humble-biblioteket).
-4. Om Rocket-pluginen virker på Unreal 5.8 under Linux; ellers zip fra nettsiden og manuell kopiering.
+1. Hva abonnementet faktisk gir (Individual eller Studio, kreditter per asset), og om nedlastet innhold er lisensiert etter måneden.
+2. Hva som er innløst fra Humble-nivåene (Cosmos-siden for innløsning og Humble-biblioteket).
+3. Om Rocket-pluginen virker på Unreal 5.8 under Linux; ellers zip fra nettsiden og manuell kopiering.

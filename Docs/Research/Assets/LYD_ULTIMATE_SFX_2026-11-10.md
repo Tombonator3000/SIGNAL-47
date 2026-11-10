@@ -74,6 +74,8 @@ Jeg søkte i hele biblioteket etter lisens-, readme-, EULA-, txt-, pdf-, rtf-, h
 
 Det som står om vilkår, står i prosjektets egne notater, ikke i pakken: `web/src/assets/licensed/LICENSES.md` (privat klone `Tombonator3000/SIGNAL-47-assets`) sier: «Vilkår (Function Loops' EULA): fri bruk i kommersielle produksjoner og spill, lov å redigere, ingen krav om kreditering; ikke lov å selge videre, lisensiere videre, laste opp eller dele lydene som lydfiler.» Dette er Toms/Claudes tidligere referat; jeg kan ikke bekrefte det mot noen kilde i pakken. **Må bekreftes av Tom** mot Function Loops' gjeldende EULA / Humble-ordren før noe regnes som avklart: (1) at EULA-en gjelder akkurat denne Humble-pakken, (2) at spillbygg som inneholder redigerte klipp er dekket, men ikke selve råfilene (trolig et skille mellom «innebygd i produksjon» og «videredistribusjon som lydfil»), (3) at pluginen/MIDI/presets har samme vilkår. Inntil da: ikke legg råfiler eller hele mapper i Git (se under).
 
+**Avklart av Tom 10. november 2026:** lydene er kjøpt på Humble Bundle (alle tre nivåene) og klarert for bruk i spill. Pakkesiden (humblealerts.com/software/ultimate-sfx-for-games) bekrefter at alle 38 pakkene ligger på disken, men gjengir ingen vilkår. Regelen om råfiler står: bare redigerte klipp i spillet, ingen lydfiler i Git.
+
 ## Kortlister
 
 Tall i tabellene er fra `sfx_catalog.csv`. «Sentroide» = spektral tyngdepunkt (lavt = mørkt). Nivåsvingning = standardavvik i dB over 100 ms-vinduer (lavt = jevnt). Start/slutt-diff = nivåforskjell første/siste del (lavt = lett å løkke).

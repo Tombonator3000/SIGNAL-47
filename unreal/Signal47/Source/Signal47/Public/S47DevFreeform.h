@@ -97,6 +97,8 @@ private:
  void AddFarmLights(FS47DevEvents& E);
  // FARM-GATE-20261109: "Farm gate (T)": the Jeep and the walker through the farm's open gate, both ways (S47FarmGateDev.cpp).
  void AddFarmGate(FS47DevEvents& E);
+ // DREAD-20261110: "Dread sound (T)": the bought ground and each hit by itself, to set their levels by ear (S47DreadDev.cpp).
+ void AddDread(FS47DevEvents& E);
  // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
  void AddWeekCase(FS47DevEvents& E);
  void AddTownDay(FS47DevEvents& E); // NPC-DAY: "Town day (T)" (S47TownDayDev.cpp)

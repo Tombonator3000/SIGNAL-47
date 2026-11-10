@@ -17,6 +17,10 @@ public:
  void Begin(const S47J::FObj& Saved);
  void Stop();
  void Step(double Dt);
+ // DREAD-20261110: one bought hit for something first seen (FS47EncounterSound::EScare by number); silent without the files.
+ // bAudition: F10, whatever was heard last. And the ground held up for a few seconds, to hear it alone (F10).
+ bool Scare(int32 Kind,double Strength=1.,bool bAudition=false);
+ void DreadAudition(double Low,double High,double Secs){AuditionLow=Low;AuditionHigh=High;AuditionFor=Secs;}
  S47J::FObj Save() const;
  bool Owned() const { return bOwned; }
  bool Ready() const { return Root.IsValid(); }
@@ -153,6 +157,7 @@ private:
  double SinceMessage=1e9;
  bool LastSeen=false,LastHunt=false;
  int32 LastCue=-1,TestStage=0;
+ double AuditionLow=0,AuditionHigh=0,AuditionFor=0;
  // The player's hand on it (WALKIE-USE-20261108). Chan is saved; the rest is the moment.
  int32 Chan=1,HailCount=0,HintsShown=0;
  int32 DeskCallCount=0,DeskHints=0,DeskDay=-1; // M7-WALKIE-20261109: the hail heard from the desk (DeskCall)

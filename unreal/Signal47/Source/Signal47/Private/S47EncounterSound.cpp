@@ -21,6 +21,19 @@ namespace
  double Smooth(double X) { X=FMath::Clamp(X,0.,1.); return X*X*(3.-2.*X); }
  int32 Index(FS47EncounterSound::EKind K) { return FMath::Clamp(int32(K),0,2); }
  double Duration(int32 K) { return K==0?.95:K==1?1.35:1.9; }
+ // DREAD-20261110. Every level of the bought dread in one place, for Tom's ear. Nothing here has been heard, only measured: the
+ // hits are cut to a momentary maximum of -14 LUFS and the two grounds to -23 LUFS integrated (web/src/assets/licensed/tools).
+ namespace Dread
+ {
+  const double Bed[2]={.55,.5};               // the ground when one is near, and the layer over it when it is seen or hunts
+  const double Hit[4]={.5,.72,.6,.5};          // soft (seen), hard (hunted), braam (a thing in the sky, near), swell (far off)
+  // Seconds before the same kind of bought hit may come again. A scare that repeats stops being one: the plain cue stands in.
+  const double Rest[4]={75.,40.,25.,25.};
+  const double In=.9,Out=3.2,Cut=.12;          // time constants: the ground coming up, sinking away, and cut under a menu
+  const TCHAR* const Beds[2]={TEXT("dread_low"),TEXT("dread_high")};
+  const TCHAR* const Hits[4][3]={{TEXT("scare_soft_1"),TEXT("scare_soft_2"),nullptr},{TEXT("scare_hard_1"),TEXT("scare_hard_2"),TEXT("scare_hard_3")},
+   {TEXT("sky_braam"),nullptr,nullptr},{TEXT("sky_swell"),nullptr,nullptr}};
+ }
  TSharedPtr<FS47AudioBuffer> CueBuffer(int32 K)
  {
   const double Dur=Duration(K), Base=K==0?70.:K==1?184.:82., Drop=K==0?4.:K==1?68.:12.;
@@ -233,6 +246,8 @@ bool FS47EncounterSound::Cue(US47Audio* A,EKind Kind,TOptional<FVector> At,doubl
  // One shared mixer avoids a chorus when six Roswells become visible. A new
  // discovery/chase may replace a subtler cue, but cannot stack over its peak.
  if (Now<NextKind[K] || (Now<NextAny && !(K>LastKind && Now>=NextAny-3.1))) return false;
+ // DREAD-20261110: the sight and the hunt take a bought hit when one is there and rested; else the cue made here, as before.
+ if (K>=1 && Hit(A,K==1?EScare::Soft:EScare::Hard,Strength,Now)) { NextKind[K]=Now+(K==1?9.:7.); LastKind=K; return true; }
  FS47AudioContext::FBatch Batch(*Context);
  Voices.RemoveAll([](const FVoice& V){ return !V.Source || V.Source->Ended(); });
  FadeVoices(.07);
@@ -249,6 +264,97 @@ bool FS47EncounterSound::Cue(US47Audio* A,EKind Kind,TOptional<FVector> At,doubl
  NextAny=Now+3.5; NextKind[K]=Now+(K==0?18.:K==1?9.:7.); LastKind=K;
  CueUntil=Now+Duration(K); RadioMix();
  return true;
+}
+
+bool FS47EncounterSound::Hit(US47Audio* A,EScare Kind,double Strength,double Now)
+{
+ const int32 S=int32(Kind);
+ if (Now<NextScare[S]) return false;
+ // Never the same recording twice running, where there is more than one.
+ TSharedPtr<FS47AudioBuffer> B;
+ for (int32 Try=0;Try<3 && !B;++Try)
+ {
+  const int32 I=(ScareTurn[S]+Try)%3;
+  if (Dread::Hits[S][I]) B=A->Lic(Dread::Hits[S][I]);
+  if (B) ScareTurn[S]=(I+1)%3;
+ }
+ if (!B) return false;
+ {
+  FS47AudioContext::FBatch Batch(*Context);
+  Voices.RemoveAll([](const FVoice& V){ return !V.Source || V.Source->Ended(); });
+  FadeVoices(.07);
+  auto Src=Context->CreateBufferSource(); Src->Buffer=B;
+  // Nearness counts for less than with the plain cue: it is the sight that hits, not the metres.
+  auto Gain=Context->CreateGain(); Gain->Gain.SetValue(Dread::Hit[S]*(.6+.4*FMath::Clamp(Strength,0.,1.))); Src->Connect(Gain);
+  Gain->Connect(A->SfxBus); Src->Start(Now); Voices.Add({Src,Gain,Now+B->Duration()});
+ }
+ NextScare[S]=Now+Dread::Rest[S]; NextAny=Now+3.5; CueUntil=Now+FMath::Min(B->Duration(),2.2); ++NBought; RadioMix();
+ return true;
+}
+
+bool FS47EncounterSound::Scare(US47Audio* A,EScare Kind,double Strength,bool bAudition)
+{
+ if ((bHeld && !bAudition) || !FMath::IsFinite(Strength) || Strength<=0 || !Bind(A)) return false;
+ const double Now=Context->CurrentTime();
+ if (bAudition) NextScare[int32(Kind)]=0;
+ else if (Now<NextAny) return false;
+ return Hit(A,Kind,Strength,Now);
+}
+
+void FS47EncounterSound::DreadFor(double Level,bool bSeen,bool bHunt,double& Low,double& High)
+{
+ // Nothing under a twentieth: the set's hiss is the first warning, and the ground comes up after it.
+ double K=FMath::Clamp((Level-.05)/.45,0.,1.); K=K*K*(3.-2.*K);
+ Low=bHunt?1.:FMath::Max(K,bSeen?.6:0.);
+ High=bHunt?1.:bSeen?.45+.4*K:0.;
+}
+
+int32 FS47EncounterSound::ScareFor(const FString& Id,double DistM)
+{
+ if (Id==TEXT("landing") || Id==TEXT("big_night")) return int32(DistM<250?EScare::Braam:EScare::Swell);
+ if (Id==TEXT("figure_near") || Id==TEXT("road_glimpse")) return int32(EScare::Soft);
+ if (Id==TEXT("horizon_figure") || Id==TEXT("cattle_ring")) return int32(EScare::Swell);
+ return -1;
+}
+
+void FS47EncounterSound::Dread(US47Audio* A,double Low,double High)
+{
+ if (!Bind(A) || !A->Music) return;
+ const double Now=Context->CurrentTime();
+ const double In[2]={Low,High};
+ for (int32 I=0;I<2;++I)
+ {
+  FVoice& V=Beds[I];
+  const double Want=bHeld || !FMath::IsFinite(In[I])?0.:FMath::Clamp(In[I],0.,1.)*Dread::Bed[I];
+  if (!V.Source)
+  {
+   if (Want<=0) continue;
+   const auto B=A->Lic(Dread::Beds[I]);
+   if (!B) continue;
+   FS47AudioContext::FBatch Batch(*Context);
+   V.Source=Context->CreateBufferSource(); V.Source->Buffer=B; V.Source->bLoop=true;
+   V.Gain=Context->CreateGain(); V.Gain->Gain.SetValue(0); V.Source->Connect(V.Gain); V.Gain->Connect(A->Music);
+   // Not from the top each time: the loop has its own turns, and a meeting should not always open on the same one.
+   V.Source->Start(Now,FMath::FRandRange(0.,FMath::Max(0.,B->Duration()-.1))); BedWant[I]=0; V.End=Now;
+  }
+  if (FMath::Abs(Want-BedWant[I])>.01 || (Want<=0 && BedWant[I]>0))
+  {
+   FS47AudioContext::FBatch Batch(*Context);
+   V.Gain->Gain.CancelAndHoldAtTime(Now); V.Gain->Gain.SetTargetAtTime(Want,Now,Want>BedWant[I]?Dread::In:Dread::Out);
+   BedWant[I]=Want;
+  }
+  // Silent for a while: let the loop go, it starts again when wanted.
+  if (Want>0) V.End=Now;
+  else if (Now-V.End>25.) { FS47AudioContext::FBatch Batch(*Context); V.Source->Stop(); V.Source.Reset(); V.Gain.Reset(); }
+ }
+}
+
+void FS47EncounterSound::BedsDown(double Tc)
+{
+ if (!Context) return;
+ FS47AudioContext::FBatch Batch(*Context); const double Now=Context->CurrentTime();
+ for (int32 I=0;I<2;++I) if (Beds[I].Gain && BedWant[I]>0)
+ { Beds[I].Gain->Gain.CancelAndHoldAtTime(Now); Beds[I].Gain->Gain.SetTargetAtTime(0,Now,Tc); BedWant[I]=0; }
 }
 
 void FS47EncounterSound::RadioMix()
@@ -337,7 +443,7 @@ void FS47EncounterSound::Hold(bool bInHeld)
 {
  if (bHeld==bInHeld) return;
  bHeld=bInHeld;
- if (bHeld) { FadeVoices(.035); CueUntil=0; if(Transmission) { StopTransmission(); } }
+ if (bHeld) { FadeVoices(.035); BedsDown(Dread::Cut); CueUntil=0; if(Transmission) { StopTransmission(); } }
  RadioMix();
 }
 
@@ -348,6 +454,8 @@ void FS47EncounterSound::Reset()
   FS47AudioContext::FBatch Batch(*Context);
   for (auto& V:Voices) if (V.Source)
   { V.Gain->Gain.CancelScheduledValues(0); V.Gain->Gain.SetValue(0); V.Source->Stop(); }
+  for (auto& V:Beds) if (V.Source)
+  { V.Gain->Gain.CancelScheduledValues(0); V.Gain->Gain.SetValue(0); V.Source->Stop(); }
   if (RadioVolume) RadioVolume->Gain.SetValue(0);
   if (RadioSource) RadioSource->Stop();
   if (Transmission) Transmission->Stop();
@@ -356,6 +464,9 @@ void FS47EncounterSound::Reset()
  Voices.Reset(); Cues.Reset(); RadioSource.Reset(); RadioGain.Reset(); RadioVolume.Reset(); RadioPan.Reset();
  Context.Reset(); Owner.Reset(); bHeld=bRadioPlaced=false; RadioLevel=NextAny=CueUntil=0; LastKind=-1;
  for (double& T:NextKind) T=0;
+ for (auto& V:Beds) V=FVoice();
+ for (int32 I=0;I<4;++I) { NextScare[I]=0; ScareTurn[I]=0; }
+ BedWant[0]=BedWant[1]=0; NBought=0;
 }
 
 bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
@@ -432,6 +543,60 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
  Peak=0; for (int32 I=256;I<Samples.Num();++I) Peak=FMath::Max(Peak,FMath::Abs(double(Samples[I])));
  Check(Peak<.00001,TEXT("global quiet scene suppresses the receiver through the existing SFX bus"));
  A->SfxBus->Gain.SetValue(1);
+ {
+  // DREAD-20261110, with stand-ins for the bought files: the private audio is never needed to prove this.
+  double Low=0,High=0; DreadFor(0,false,false,Low,High);
+  Check(Low==0 && High==0,TEXT("DREAD: nothing near, no ground"));
+  DreadFor(.03,false,false,Low,High); const double Faint=Low;
+  DreadFor(.5,false,false,Low,High);
+  Check(Faint==0 && Low>.9 && High==0,TEXT("DREAD: the ground comes up with the nearness, and unseen it has no layer over it"));
+  DreadFor(0,true,false,Low,High); const double SeenLow=Low,SeenHigh=High;
+  DreadFor(.2,false,true,Low,High);
+  Check(SeenLow>=.5 && SeenHigh>.3 && SeenHigh<1 && Low==1 && High==1,TEXT("DREAD: seen far off it is there, hunted it is all there"));
+  Check(ScareFor(TEXT("landing"),80)==int32(EScare::Braam) && ScareFor(TEXT("landing"),900)==int32(EScare::Swell) && ScareFor(TEXT("big_night"),-1)==int32(EScare::Braam)
+   && ScareFor(TEXT("figure_near"),30)==int32(EScare::Soft) && ScareFor(TEXT("horizon_figure"),400)==int32(EScare::Swell)
+   && ScareFor(TEXT("house_lit"),50)<0 && ScareFor(TEXT("phone_empty"),1)<0,
+   TEXT("DREAD: a light near is a braam, far off a swell, a figure a soft hit, and the ordinary oddities say nothing"));
+  const auto Run=[&](double Secs){ for (double T=0;T<Secs;T+=.25) { A->Ctx->Render(Samples.GetData(),Rate/4,2); A->Ctx->Tick(.25); } };
+  const auto Top=[&]{ double P=0; for (float V:Samples) P=FMath::Max(P,FMath::Abs(double(V))); return P; };
+  A->Music=A->Ctx->CreateGain(); A->Music->Gain.SetValue(.7); A->Music->Connect(A->Master);
+  Mix.Reset(); Mix.Bind(A);
+  Mix.Dread(A,1,1);
+  Check(!Mix.Beds[0].Source && !Mix.Beds[1].Source && !Mix.Scare(A,EScare::Soft),TEXT("DREAD: without the bought files there is no ground and no hit"));
+  Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==0,TEXT("DREAD: without them the sight still has the cue made here"));
+  static const TCHAR* const StandIns[]={TEXT("lic:dread_low"),TEXT("lic:dread_high"),TEXT("lic:scare_soft_1"),TEXT("lic:scare_soft_2"),TEXT("lic:scare_hard_1"),TEXT("lic:sky_braam")};
+  for (const TCHAR* N:StandIns) A->Buf.Add(N,CueBuffer(2));
+  Mix.Reset(); Mix.Bind(A);
+  Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==1,TEXT("DREAD: the first sight takes a bought hit"));
+  const auto FirstHit=Mix.Voices.Num()?Mix.Voices.Last().Source->Buffer:nullptr;
+  Run(.5);
+  Check(Top()>.01 && Top()<.5,TEXT("DREAD: the hit is heard, and well under full level"));
+  Check(!Mix.Scare(A,EScare::Braam),TEXT("DREAD: a second hit cannot land on the first"));
+  Run(12.);
+  Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==1,TEXT("DREAD: seen again inside the minute it is the plain cue, not the scare once more"));
+  Run(1.);
+  Check(Mix.Cue(A,EKind::Hunt) && Mix.NBought==2,TEXT("DREAD: the hunt takes its own, harder hit over a sight just cued"));
+  Mix.NextScare[0]=0; Mix.NextKind[1]=0; Mix.NextAny=0;
+  Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==3 && Mix.Voices.Num() && Mix.Voices.Last().Source->Buffer!=FirstHit,
+   TEXT("DREAD: rested, the sight hits again, with the other recording"));
+  Mix.NextAny=0;
+  Check(Mix.Scare(A,EScare::Braam) && !Mix.Scare(A,EScare::Swell,1.,true),TEXT("DREAD: a light near has its braam; a kind with no file stays silent even asked for outright"));
+  Run(4.);
+  Mix.Dread(A,1,0);
+  Check(Mix.Beds[0].Source && !Mix.Beds[1].Source && Mix.BedWant[0]>.3,TEXT("DREAD: something near and unseen starts the ground alone"));
+  Run(3.);
+  Check(Top()>.002 && Top()<.2,TEXT("DREAD: the ground is heard on the music's bus, low"));
+  Mix.Dread(A,1,1);
+  Check(bool(Mix.Beds[1].Source),TEXT("DREAD: seen, the layer comes in over it"));
+  Mix.Hold(true); Run(1.5);
+  Check(Top()<.0005 && Mix.BedWant[0]==0 && Mix.BedWant[1]==0,TEXT("DREAD: a menu cuts the ground"));
+  Mix.Hold(false); Mix.Dread(A,1,0);
+  Check(Mix.BedWant[0]>.3,TEXT("DREAD: and it comes back after the menu"));
+  Mix.Dread(A,0,0); Run(26.); Mix.Dread(A,0,0);
+  Check(!Mix.Beds[0].Source && !Mix.Beds[1].Source,TEXT("DREAD: quiet for a while, the loops are let go"));
+  Mix.Dread(A,1,1);
+  for (const TCHAR* N:StandIns) A->Buf.Remove(N);
+ }
  Mix.Reset();
  A->Ctx->Render(Samples.GetData(),Rate/4,2); A->Ctx->Tick(.25);
  Peak=0; for (float V:Samples) Peak=FMath::Max(Peak,FMath::Abs(double(V)));

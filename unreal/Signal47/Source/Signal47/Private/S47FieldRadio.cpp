@@ -618,6 +618,10 @@ double FS47FieldRadio::ObservedThreat() const
 {
  return M && M->Player?ObservedThreat(S47Three::ToThree(M->Player->EyeUE()),Nearby()):0;
 }
+bool FS47FieldRadio::Scare(int32 Kind,double Strength,bool bAudition)
+{
+ return M && M->Audio && Kind>=0 && Kind<4 && Sound.Scare(M->Audio,FS47EncounterSound::EScare(Kind),Strength,bAudition);
+}
 void FS47FieldRadio::Step(double Dt)
 {
  if(!M) return;
@@ -636,7 +640,8 @@ void FS47FieldRadio::Step(double Dt)
  double Level=0,Heard=0; bool Visible=false,Hunting=false;
  // The cues and the music keep to the short range. In Freeform the set itself hears them from further off.
  const double Reach=M->IsFreeform()?FreeformReach:18.;
- for(const auto& A:Nearby())
+ const TArray<FPresence> Near=Nearby();
+ for(const auto& A:Near)
  {
   const double K=Proximity(Eye,A); Level=FMath::Max(Level,K);
   Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
@@ -654,6 +659,14 @@ void FS47FieldRadio::Step(double Dt)
  if(QuietFor>8) LastCue=-1;
  int32 Want=Hunting?2:SeenFor>.25?1:ThreatFor>1.1?0:-1;
  if(!M->ModalOpen() && Want>LastCue && Want>=0 && Sound.Cue(M->Audio,FS47EncounterSound::EKind(Want),{},FMath::Max(.3,Level))) LastCue=Want;
+ // DREAD-20261110: the ground under a meeting. Near (the cues' 18 m) it comes up with the nearness; one in view further off
+ // (35 m, as the music counts it) has it too. It sinks away by itself when they are gone.
+ {
+  const double Far=ObservedThreat(Eye,Near);
+  double Low=0,High=0; FS47EncounterSound::DreadFor(Level,Visible||Far>0,Hunting||Far>=1,Low,High);
+  if(AuditionFor>0){AuditionFor-=Dt;Low=FMath::Max(Low,AuditionLow);High=FMath::Max(High,AuditionHigh);}
+  Sound.Dread(M->Audio,Low,High);
+ }
  // One shared interference voice: carried set, active monitor or powered AM set.
  // The historical Room 6 radio and its authored 4/7 sequence are untouched.
  TOptional<FVector> Speaker;
