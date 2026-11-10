@@ -2276,13 +2276,13 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				const bool Selected = !W.bDone && F->Director->PhotoControlFocusId() == Claim.Id;
 				W.bCanFollow = !W.bDone && Available && F->CanRegisterPhotoEvidence();
 				W.Status = W.bDone ? TEXT("Comparison retained / no further payment") : !Available ? TEXT("Reference unavailable / plan retained") : Selected ? TEXT("Camera return guide / selected") : TEXT("Camera return plan retained");
-				W.NextAction = W.bDone ? TEXT("Both originals and the comparison remain in OPS / SUPPLIES.") : F->Director->PhotoControlHint(Claim.Id);
-				W.Location = W.bDone || !Available ? TEXT("OPS / corner PC / SUPPLIES") : TEXT("SARO / original viewpoint; directions from S-03 above");
+				W.NextAction = W.bDone ? TEXT("Both originals and the comparison remain in OPS / PHOTOGRAPHS.") : F->Director->PhotoControlHint(Claim.Id);
+				W.Location = W.bDone || !Available ? TEXT("OPS / corner PC / PHOTOGRAPHS") : TEXT("SARO / original viewpoint; directions from S-03 above");
 				if (!W.bDone && Available && M->Night && M->Night->Album)
 				{
 					bool Exposed=false,Developed=false;
 					for (const auto& P : M->Night->Album->Shots()) if (!P.bUnavailable && !P.Url.IsEmpty() && P.Targets.ContainsByPredicate([&](const auto& T){return T.Key == TEXT("freeform-control:") + Claim.Id;})) { Exposed=true; Developed |= P.IsDeveloped(); }
-					if (Developed) { W.NextAction=TEXT("OPS / SUPPLIES: compare the two developed originals and retain the comparison; no extra payment."); W.Location=TEXT("OPS / corner PC"); }
+					if (Developed) { W.NextAction=TEXT("OPS / PHOTOGRAPHS: compare the two developed originals and retain the comparison; no extra payment."); W.Location=TEXT("OPS / corner PC"); }
 					else if (Exposed) { W.NextAction=TEXT("PHOTO LAB: develop, fix and collect the separate return photograph, then compare at OPS."); W.Location=TEXT("PHOTO LAB / wet bench"); }
 					else if (Selected) { bool Ready=false; W.NextAction=F->Director->PhotoControlFieldHint(Ready)+TEXT("\n")+W.NextAction; }
 				}

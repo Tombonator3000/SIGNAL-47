@@ -1340,6 +1340,12 @@ void FS47FreeformWorld::RoadsideAssist()
 }
 
 void FS47FreeformWorld::SkipFaultToday(){if(M&&M->Freeform)LastFaultDay=M->Freeform->Day();}
+FString FS47FreeformWorld::NextServiceDish() const
+{
+ int32 Serial=OrdinaryServiceSerial;
+ for(int32 Skip=0;Skip<27&&Wear.BranchOfDish(OrdinaryServiceDish(Serial));++Skip)Serial=(Serial+1)%27;
+ return OrdinaryServiceDish(Serial);
+}
 bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& RequestedDish)
 {
  if(!Ready()||HasArrayFault()||M->Freeform->PowerFault()||(Service==9&&M->Freeform->ActiveServiceGuide()==1))return false;

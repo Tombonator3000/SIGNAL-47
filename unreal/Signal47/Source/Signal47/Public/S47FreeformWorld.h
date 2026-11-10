@@ -75,6 +75,7 @@ public:
  int32 ParcelRoom() const;
  bool HasVehicleFuel() const { return Fuel > .001; }
  void SkipFaultToday();
+ FString NextServiceDish() const; // FIX-20261110: the element the next ordinary relay fault falls on (the array PC's drive check names it)
  void TestBuiltTripCamera(){Crafting.Built.AddUnique(TEXT("trip_camera"));}
  void TestRoadside(){RoadsideAssist();}
  bool StartPump();

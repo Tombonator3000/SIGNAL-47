@@ -105,12 +105,21 @@ public:
  bool TerminalWindowRendered() const;
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  int32 OperationsSection() const { return OpsSection; }
+ bool DriveCheckRunning() const { return DriveCheckAt>=0; }
+ const FString& DriveCheckText() const { return DriveCheckResult; }
+ bool DriveCheckedToday() const { return DriveCheckAt<0&&DriveCheckDay==DayNumber; }
  TArray<FString> TerminalLines(int32 Screen) const;
+ // FIX-20261110: the live strip under an idle screen's lines (SS47Crt), and what is on the air
+ // around the station (the gear's own level: the lamp, the walkie and the watch feel the same thing).
+ struct FTerminalIdle { TArray<uint8> Dish; float Tuned=0,Card=0,Az=0,El=0,AimAz=0,AimEl=0,Rec=-1; bool bReady=false,bWaiting=false; };
+ FTerminalIdle TerminalIdle(int32 Screen) const;
+ float ScreenInterference() const;
  // One line for screen 0 to 3 from the HUD's objective: "NEXT / USE THIS PC", "NEXT / <place>", or empty if it will not fit.
  static FString TerminalNextLine(const FString& Text,int32 Screen);
  FString MeasurementRecord() const;
  bool ArrayBlocked() const; // too few antennas to measure at all
  void OpenArchive();
+ void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0;FString ArchivePick; // presentation only, never saved
  void OpenCaseBoard(int32 Line=-1);
  bool PlanCaseTest(int32 Line,int32 Test);
@@ -595,6 +604,7 @@ private:
  void CommandFeedback();
  int32 RecoveryEpoch=0,JobSeed=470047,ActiveTerminal=-1;
  TWeakPtr<class SS47ScreenView> TerminalView;
+ FString TerminalTitle; // FIX-20261110: the page on the glass (a new one is heard arriving)
  int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
  // First shift tutorial (0 done/off, 1 accept a job at OPS, 2.. follows the job to filing).
  int32 Tutorial=0;FString TutorialJobId;void StepTutorial();FString TutorialObjective()const;
@@ -684,6 +694,9 @@ private:
  bool FirstCaseHeld() const;
  bool OpenFirstCase(const FJob& J);
  TSharedRef<class SWidget> OpsShell(int32 Section,TSharedRef<class SWidget> Content);
+ void PhotoDeskRows(TArray<TSharedRef<class SWidget>>& Rows);void PhotoPickSheet();
+ bool FieldRecordDue(const struct FS47AlbumShot& P) const;bool PhotoDeskDue() const;
+ FString PhotoPick;int32 PhotoPage=0;
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;
  FString Feedback, PhenomenonId;
@@ -710,6 +723,13 @@ private:
  void PointCross();
  void StepWork(double Dt);
  void StepAudio(double Dt);
+ // FIX-20261110 (Tom: the array PC has too little to do): the drive check. The left-hand PC runs every element's drive against a
+ // dummy load, one after the other, and says what it heard: a relay that will not last the day (FaultDueLater: the fault the
+ // station round catches with a relay in stock), one that is creeping for tomorrow, or nothing. Nothing new is decided here.
+ void StartDriveCheck();void StepDriveCheck(double Dt);void FinishDriveCheck();
+ double DriveCheckAt=-1;int32 DriveCheckDay=0,DriveCheckDish=-1,DriveCheckTone=0;FString DriveCheckResult;
+ void TransportSound(); // FIX-20261110: the reel deck's motor, rewind, tape change and marks, heard
+ bool bTransportPrimed=false,bTransportRun=false;int32 TransportSource=0;double TransportCursor=0,TransportMark=0;
  double ReceiverReception() const;
  void PrintJob(bool bPacket);
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);

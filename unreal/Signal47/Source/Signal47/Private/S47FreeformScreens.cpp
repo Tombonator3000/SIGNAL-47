@@ -1,5 +1,7 @@
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47GearFlicker.h"
+#include "S47FreeformDirector.h"
 #include "S47Aftermath.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -22,9 +24,67 @@ bool FS47FreeformSession::TerminalOnGlass()const
 {const auto View=TerminalView.Pin();return ActiveTerminal>=0&&View.IsValid()&&View->OnGlass()&&M&&M->ModalOpen();}
 bool FS47FreeformSession::TerminalWindowRendered()const
 {const auto V=TerminalView.Pin();return TerminalOnGlass()&&V->RenderedFrames()>0;}
+namespace
+{
+ // FIX-20261110 (Tom: more feedback and sound on the screens). What the hand hears at a 1986
+ // station: the key's own click and the terminal's bell chip answering it, by kind of control
+ // (S47FreeformTerminal::SetSound). Quiet: this is heard a thousand times a night.
+ void TerminalKey(US47Audio* A,int32 Kind)
+ {
+  if(!IsValid(A))return;
+  if(Kind==4){A->Beep(3100.f,.004f,.010f,0,TEXT("sine"));return;}                      // the cursor arrives on a control
+  if(Kind==3){A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;}                    // a knob's detent
+  A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
+  if(Kind==1){A->Beep(1320.f,.030f,.040f,.01f,TEXT("square"));A->Beep(1760.f,.045f,.040f,.055f,TEXT("square"));} // the action taken
+  else if(Kind==2)A->Beep(990.f,.020f,.030f,.01f,TEXT("square"));                      // a menu line or tab
+  else A->Beep(1480.f,.016f,.030f,.01f,TEXT("square"));                                // any other key
+ }
+ // A page written to the glass: the short chatter of characters arriving down the line.
+ void TerminalPage(US47Audio* A,const FString& Title)
+ {
+  if(!IsValid(A))return;
+  uint32 H=GetTypeHash(Title);
+  for(int32 K=0;K<7;++K){H=H*1664525u+1013904223u;A->Beep(1500.f+float((H>>16)%1500),.009f,.016f,.028f*K,TEXT("square"));}
+ }
+}
+float FS47FreeformSession::ScreenInterference()const{return M&&M->Gear?float(FMath::Clamp(M->Gear->Level(),0.,1.)):0.f;}
+FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Screen)const
+{
+ FTerminalIdle I;if(!Active()||!M||!M->Story||!M->Web)return I;
+ const FJob* J=CurrentJob();
+ if(Screen==0)
+ {
+  // per dish: 0 on the line, 1 not answering remotely, 2 moving
+  for(int32 D=0;D<M->Web->DishCount();++D)I.Dish.Add(M->Web->DishMoving(D)?2:M->Web->DishRemoteAvailable(D)?0:1);
+ }
+ else if(Screen==1)
+ {
+  const double Span=S47Signal::FMax-S47Signal::FMin;
+  I.Tuned=float((M->Story->Rx.Frequency-S47Signal::FMin)/Span);I.Card=J?float((EffectiveProfile(*J).F-S47Signal::FMin)/Span):-1.f;
+  if(J&&J->Stage<EJobStage::Recorded&&J->Elapsed>0&&SourceSeconds()>0)I.Rec=float(FMath::Clamp(J->Elapsed/SourceSeconds(),0.,1.));
+ }
+ else if(Screen==2){I.Az=float(M->Web->DishAz(0));I.El=float(M->Web->DishEl(0));I.AimAz=float(TargetAz());I.AimEl=float(TargetEl());I.bReady=PointReady();}
+ else
+ {
+  I.bWaiting=CaseAwaitingChoice()>=0||ServiceGuide==1||(Field&&Field->HasArrayFault());
+  if(Director)for(const auto& C:Director->PhotoClaims())I.bWaiting|=!C.bPaid;
+ }
+ return I;
+}
 void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live)
 {
  if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
+ const TWeakObjectPtr<US47Main> Main=M;
+ const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
+ S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
+ S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Gear?float(Main->Gear->Level()):0.f;});
+ if(!bSame)
+ {
+  // The set is taken over: the tube opens from a line, the relay behind the glass goes, the coil thumps.
+  S47FreeformTerminal::PowerOn();
+  if(M->Audio){M->Audio->Play(TEXT("rack_switch"),.34f);M->Audio->Beep(58.f,.42f,.060f,.02f,TEXT("sine"));M->Audio->Beep(116.f,.26f,.026f,.02f,TEXT("sine"));}
+ }
+ if(Title!=TerminalTitle){TerminalPage(M->Audio,Title);TerminalTitle=Title;}
  S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));
  auto Content=S47FreeformTerminal::Frame(Title,Body);
  S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString()); // the frame keeps its own copy; Story screens show no stale Freeform clock
@@ -38,7 +98,8 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  M->UI->Open(View,[Owner,this]
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;
-  if(Owner->Audio)Owner->Audio->ReceiverMonitorOff();
+  if(Owner->Audio){Owner->Audio->ReceiverMonitorOff();Owner->Audio->Play(TEXT("click"),.26f,FVector::ZeroVector,.8f);Owner->Audio->Beep(660.f,.05f,.03f,.02f,TEXT("square"));}
+  S47FreeformTerminal::SetSound(nullptr);TerminalTitle.Reset();
   TerminalView.Reset();ActiveTerminal=-1;bTelemetry=false;Changed();
  });
  TerminalView=View;ActiveTerminal=Screen;bTelemetry=Live;

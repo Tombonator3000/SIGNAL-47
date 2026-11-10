@@ -629,6 +629,8 @@ void FS47FreeformSession::Step(double Dt)
  if(FarmNight)FarmNight->Step(D);
  if(HouseDoors)HouseDoors->Step(D);
  if(bAudioOpen&&!Held())StepAudio(CaptureStartStage?Dt:D);
+ TransportSound();
+ StepDriveCheck(Dt);
  if(M->Audio&&(!bAudioPlaying||!bAudioOpen||Held()||!HasPower()||!AudioDesk||!AudioDesk->ListeningPosition()))M->Audio->ReceiverRecordingOff();
  if(Field)Field->Step(D);
  if(CaseField)CaseField->Step(D);
@@ -1109,6 +1111,31 @@ void FS47FreeformSession::NoteAudioStop(const TCHAR* Why,double Dt)
 {
  AudioStopWhy=Why;UE_LOG(LogTemp,Display,TEXT("S47 capture playback stopped: %s cursor=%.3f source=%d dt=%.3f"),Why,AudioCursor,AudioSourceIndex,Dt);
 }
+// FIX-20261110 (Tom: more sound on the reel). The deck's transport is heard as a machine: the motor
+// taking up and letting go, the rewind running back, a tape changed, a mark set. Read off the state
+// each tick, so the wall deck's own keys and the panel's sound the same.
+void FS47FreeformSession::TransportSound()
+{
+ if(!M||!M->Audio||!AudioDesk)return;
+ const FJob* J=CurrentJob();const bool Run=bAudioPlaying||CaptureStartStage!=0;const double MarkSum=J?J->MarkStart+J->MarkEnd*3:0;
+ const bool Hear=bAudioOpen&&AudioDesk->ListeningPosition()&&!Held();
+ if(Hear&&bTransportPrimed)
+ {
+  US47Audio* A=M->Audio;
+  if(Run&&!bTransportRun){A->Play(TEXT("rack_switch"),.5f,FVector::ZeroVector,.8f);A->Beep(96.f,.30f,.05f,.02f,TEXT("sine"));A->Beep(192.f,.18f,.02f,.05f,TEXT("sine"));}
+  else if(!Run&&bTransportRun){A->Play(TEXT("click"),.5f,FVector::ZeroVector,.7f);A->Beep(72.f,.14f,.05f,.01f,TEXT("sine"));}
+  if(AudioSourceIndex!=TransportSource){A->Play(TEXT("thud_soft"),.36f);A->Play(TEXT("click"),.4f,FVector::ZeroVector,.6f);}
+  else if(!Run&&FMath::Abs(AudioCursor-TransportCursor)>.5)
+  {
+   // the tape runs back (or on) to the place: a whirr as long as the way, and the stop at the end
+   const double Way=FMath::Abs(AudioCursor-TransportCursor);const int32 N=FMath::Clamp(int32(Way*1.6),3,22);const bool Back=AudioCursor<TransportCursor;
+   A->Play(TEXT("small_switch"),.4f);
+   for(int32 K=0;K<N;++K){const float U=float(K)/N;A->Beep((Back?620.f+520.f*U:1140.f-380.f*U),.034f,.022f*(1-.5f*U),.03f+.03f*K,TEXT("sawtooth"));}
+  }
+  if(J&&!FMath::IsNearlyEqual(MarkSum,TransportMark)){A->Beep(1568.f,.03f,.05f,0,TEXT("square"));A->Beep(2093.f,.05f,.04f,.04f,TEXT("square"));}
+ }
+ bTransportPrimed=true;bTransportRun=Run;TransportCursor=AudioCursor;TransportSource=AudioSourceIndex;TransportMark=MarkSum;
+}
 void FS47FreeformSession::StepAudio(double Dt)
 {
  if(!HasPower()){if(bAudioPlaying)NoteAudioStop(TEXT("no power"),Dt);bAudioPlaying=false;return;}
@@ -1429,19 +1456,20 @@ TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidg
 {
  OpsSection=Section;
  const bool CaseWaiting=CaseAwaitingChoice()>=0,Service=ServiceGuide==1||(Field&&Field->HasArrayFault());
- bool Photos=false;if(Director)for(const auto& C:Director->PhotoClaims())Photos|=!C.bPaid;
  TArray<T::FNav> Items;
  Items.Add({TEXT("OVERVIEW"),Section==0,[this]{Feedback.Empty();OpsSection=0;OpenOperations();}});
  Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();}});
  Items.Add({TEXT("CASE BOARD"),Section==2,[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseWaiting});
  Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();OpenArchive();}}); // CASES-OPS-20261109: was CASE ARCHIVE
  Items.Add({TEXT("SERVICE"),Section==4,[this]{Feedback.Empty();OpenServiceGuide();},Service});
- Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();},Photos});
+ Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();}});
+ Items.Add({TEXT("PHOTOGRAPHS"),Section==6,[this]{Feedback.Empty();OpenPhotos();},PhotoDeskDue()}); // FIX-20261110: the film record and its allowance desk
  return T::Columns({{.21f,S47Kit::Col({T::Nav(Items),T::Small(TEXT("ESC / EXIT  SOP / CARD AT DESK"))})},{.79f,Content}},16);
 }
 void FS47FreeformSession::OpenOperations()
 {
  if(!RequirePower()||!M||!M->UI)return;
+ if(OpsSection==6){OpenPhotos();return;} // FIX-20261110: a refresh of the film record stays on it
  const int32 Section=OpsSection==1||OpsSection==5?OpsSection:0;
  TArray<S47Kit::FW> Rows;
  auto Rows4=[this](bool bAll)
@@ -1634,6 +1662,28 @@ void FS47FreeformSession::OpenOperations()
   }
   Rows.Add(T::Panel(TEXT("STORES LIST"),SNew(SBox).HeightOverride(150)[Offers]));
  }
+ if(Director&&PhotoDeskDue())Rows.Add(T::Small(TEXT("FIELD PHOTOGRAPHS / An allowance is waiting under PHOTOGRAPHS.")));
+ if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
+ OpenTerminal(3,TEXT("OPS / SUPPLIES"),OpsShell(5,S47Kit::Col(Rows)));
+}
+
+// FIX-20261110 (Tom: OPS gets its own tab for the photographs the operator takes). The film record: every frame exposed, read off the
+// station's video digitizer in the tube's own phosphor, with what the lab and the allowance desk have done with it. The claims and the
+// field records OPS pays for stand here now (they stood under SUPPLIES); a frame that is not developed has nothing to read yet.
+bool FS47FreeformSession::FieldRecordDue(const FS47AlbumShot& P) const
+{
+ if(P.bUnavailable||P.Url.IsEmpty()||!P.Enlarged.IsEmpty()||NightPhotoRegistered(P.Id))return false;
+ if(!P.Text.StartsWith(TEXT("Trip camera"))&&NightPhotoFrom(P.Clock).IsEmpty())return false;
+ return !Director||!Director->PhotoClaims().ContainsByPredicate([&P](const auto& C){return C.PhotoId==P.Id;});
+}
+bool FS47FreeformSession::PhotoDeskDue() const
+{
+ if(Director)for(const auto& C:Director->PhotoClaims())if(!C.bPaid)return true;
+ if(M&&M->Night&&M->Night->Album){const auto& Shots=M->Night->Album->Shots();for(int32 I=Shots.Num()-1;I>=0&&I>=Shots.Num()-12;--I)if(Shots[I].IsDeveloped()&&FieldRecordDue(Shots[I]))return true;}
+ return false;
+}
+void FS47FreeformSession::PhotoDeskRows(TArray<TSharedRef<SWidget>>& Rows)
+{
  if(Director)
  {
   TArray<S47Kit::FW> Claims;
@@ -1648,7 +1698,7 @@ void FS47FreeformSession::OpenOperations()
    else if(!Shot->IsDeveloped())Claims.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect this photograph at the wet bench before submitting it.")));
    else
    {
-    if(!Claim.bPaid)Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d field allowance"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
+    if(!Claim.bPaid)Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d field allowance"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenPhotos();},true,CanRegisterPhotoEvidence()));
     else Claims.Add(T::Small(TEXT("ORIGINAL REGISTERED / Field allowance already received.")));
    }
    // Payment follows the current best incident image; an existing control plan
@@ -1663,7 +1713,7 @@ void FS47FreeformSession::OpenOperations()
      {
       const bool Available=Baseline&&!Baseline->bUnavailable&&!Baseline->Url.IsEmpty()&&Baseline->IsDeveloped()&&Baseline->Pose.IsSet()&&Baseline->Pose->Valid();
       if(Director->PhotoControlFocusId()==Id)Claims.Add(T::Small(TEXT("FOLLOWING THIS RETURN PLAN / Camera and NOW guidance")));
-      else Claims.Add(T::Button(TEXT("Follow this return plan"),[this,Id]{if(Director)Director->FollowPhotoControl(Id);OpenOperations();},false,Available&&CanRegisterPhotoEvidence()));
+      else Claims.Add(T::Button(TEXT("Follow this return plan"),[this,Id]{if(Director)Director->FollowPhotoControl(Id);OpenPhotos();},false,Available&&CanRegisterPhotoEvidence()));
      }
      const auto* Control=Planned?AlbumShots.FindByPredicate([&](const FS47AlbumShot& S){return !S.bUnavailable&&!S.Url.IsEmpty()&&S.IsDeveloped()&&(Claim.ControlPhotoId.IsEmpty()?S.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+Id;}):S.Id==Claim.ControlPhotoId);}):nullptr;
      auto PhotoCard=[](const FS47AlbumShot* S,const FString& Label)->S47Kit::FW
@@ -1671,7 +1721,7 @@ void FS47FreeformSession::OpenOperations()
       if(!S||S->bUnavailable||!S->IsDeveloped()||S->Url.IsEmpty())return T::Small(Label+TEXT(" / ORIGINAL UNAVAILABLE"));
       const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,S->Clock),86400.)),Day=FMath::Max(1,int32(FMath::FloorToDouble((S->Clock-28800.)/86400.))+1);
       return S47Kit::Col({T::Small(Label),
-       SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(S->Url),240.f)],
+       SNew(SBox).HAlign(HAlign_Center)[T::Picture(S47Image::FromDataUrl(S->Url),240.f)],
        T::Small(FString::Printf(TEXT("%s / D%d %02d:%02d:%02d"),*S->Id,Day,Seconds/3600,(Seconds/60)%60,Seconds%60))});
      };
      if(Control)
@@ -1679,14 +1729,14 @@ void FS47FreeformSession::OpenOperations()
       Claims.Add(T::Columns({{.5f,PhotoCard(Baseline,TEXT("FIRST ORIGINAL"))},{.5f,PhotoCard(Control,TEXT("LATER CONTROL"))}},10));
       const FString ControlId=Control->Id;
       if(Claim.ControlPhotoId.IsEmpty()&&!Director->CanRegisterPhotoControl(Id,ControlId))Claims.Add(T::Small(TEXT("COMPARISON UNAVAILABLE / Powered OPS and both developed originals with matching-view records are required. Existing records stay unchanged.")));
-      if(Claim.ControlPhotoId.IsEmpty())Claims.Add(T::Button(TEXT("Retain comparison / no payment"),[this,Id,ControlId]{if(Director)Director->RegisterPhotoControl(Id,ControlId);OpenOperations();},false,Director->CanRegisterPhotoControl(Id,ControlId)));
+      if(Claim.ControlPhotoId.IsEmpty())Claims.Add(T::Button(TEXT("Retain comparison / no payment"),[this,Id,ControlId]{if(Director)Director->RegisterPhotoControl(Id,ControlId);OpenPhotos();},false,Director->CanRegisterPhotoControl(Id,ControlId)));
       else Claims.Add(T::Small(TEXT("COMPARISON RETAINED / Both originals unchanged. Identity and shared cause unresolved.")));
      }
      else
      {
       Claims.Add(PhotoCard(Baseline,TEXT("FIRST ORIGINAL")));
       Claims.Add(T::Small(Director->PhotoControlHint(Id)));
-      if(!Planned&&Shot&&Shot->Pose.IsSet())Claims.Add(T::Button(TEXT("Plan return to original viewpoint / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+      if(!Planned&&Shot&&Shot->Pose.IsSet())Claims.Add(T::Button(TEXT("Plan return to original viewpoint / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenPhotos();},false,CanRegisterPhotoEvidence()));
       if(Planned)Claims.Add(T::Small(!Baseline||Baseline->bUnavailable||Baseline->Url.IsEmpty()||!Baseline->IsDeveloped()||!Baseline->Pose.IsSet()||!Baseline->Pose->Valid()?TEXT("CONTROL UNAVAILABLE / The frozen original view is unavailable. This plan and existing originals remain retained without a comparison."):TEXT("NEXT / After the passage ends, take the matching view and develop the separate original at PHOTO LAB. Compare both here.")));
      }
    }
@@ -1697,7 +1747,7 @@ void FS47FreeformSession::OpenOperations()
     else if(Shot&&!Shot->bUnavailable&&!Shot->Url.IsEmpty()&&Shot->IsDeveloped())
     {
      Claims.Add(T::Small(TEXT("Optional: keep an idea for a later local-noise recording. It does not explain the light or unlock equipment. You can repeat the photograph now.")));
-     Claims.Add(T::Button(TEXT("Keep a local-noise check for later / no payment"),[this,Id]{if(Director)Director->PlanLocalNoiseCheck(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+     Claims.Add(T::Button(TEXT("Keep a local-noise check for later / no payment"),[this,Id]{if(Director)Director->PlanLocalNoiseCheck(Id);OpenPhotos();},false,CanRegisterPhotoEvidence()));
     }
    }
   }
@@ -1712,19 +1762,83 @@ void FS47FreeformSession::OpenOperations()
    for(int32 I=Shots.Num()-1;I>=0&&Listed<4;--I)
    {
     const FS47AlbumShot& P=Shots[I];
-    if(P.bUnavailable||P.Url.IsEmpty()||!P.Enlarged.IsEmpty()||NightPhotoRegistered(P.Id))continue;
-    if(!P.Text.StartsWith(TEXT("Trip camera"))&&NightPhotoFrom(P.Clock).IsEmpty())continue;
-    if(Director->PhotoClaims().ContainsByPredicate([&P](const auto& C){return C.PhotoId==P.Id;}))continue;
+    if(!FieldRecordDue(P))continue;
     ++Listed;const FString ShotId=P.Id;
     Records.Add(T::Small(FString::Printf(TEXT("%s / %s / %s"),*P.Id,*FS47Places::SlipClock(P.Clock),*P.Text.Left(60))));
     if(!P.IsDeveloped())Records.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect it at the wet bench first.")));
-    else Records.Add(T::Button(FString::Printf(TEXT("Register field record / $%d field allowance"),int32(FieldRecordPay)),[this,ShotId]{if(Director)Director->RegisterFieldRecord(ShotId);OpenOperations();},false,CanRegisterPhotoEvidence()));
+    else Records.Add(T::Button(FString::Printf(TEXT("Register field record / $%d field allowance"),int32(FieldRecordPay)),[this,ShotId]{if(Director)Director->RegisterFieldRecord(ShotId);OpenPhotos();},false,CanRegisterPhotoEvidence()));
    }
   }
   if(!Records.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD RECORDS / A NIGHT OUT ON THE LAND"),S47Kit::Col(Records)));
  }
+}
+void FS47FreeformSession::OpenPhotos()
+{
+ if(!RequirePower()||!M||!M->UI)return;
+ static const TArray<FS47AlbumShot> None;
+ const TArray<FS47AlbumShot>& Shots=M->Night&&M->Night->Album?M->Night->Album->Shots():None;
+ auto Lost=[](const FS47AlbumShot& P){return P.bUnavailable||P.Url.IsEmpty();};
+ auto Paid=[this](const FS47AlbumShot& P){return NightPhotoRegistered(P.Id)||(Director&&Director->PhotoClaims().ContainsByPredicate([&P](const auto& C){return C.PhotoId==P.Id&&C.bPaid;}));};
+ auto Due=[this,&Lost](const FS47AlbumShot& P){return !Lost(P)&&((Director&&Director->PhotoClaims().ContainsByPredicate([&P](const auto& C){return C.PhotoId==P.Id&&!C.bPaid;}))||FieldRecordDue(P));};
+ int32 Latent=0,Registered=0,Owed=0,Pick=INDEX_NONE,FirstDue=INDEX_NONE;
+ for(int32 I=Shots.Num()-1;I>=0;--I)
+ {
+  const FS47AlbumShot& P=Shots[I];
+  if(!Lost(P)&&!P.IsDeveloped())++Latent;
+  if(Paid(P))++Registered;else if(Due(P)){++Owed;if(FirstDue<0&&P.IsDeveloped())FirstDue=I;}
+  if(P.Id==PhotoPick)Pick=I;
+ }
+ constexpr int32 PerSheet=9;const int32 Sheets=FMath::Max(1,(Shots.Num()+PerSheet-1)/PerSheet);
+ if(Pick<0&&Shots.Num()){Pick=FirstDue>=0?FirstDue:Shots.Num()-1;PhotoPick=Shots[Pick].Id;PhotoPage=(Shots.Num()-1-Pick)/PerSheet;}
+ PhotoPage=FMath::Clamp(PhotoPage,0,Sheets-1);
+ TArray<S47Kit::FW> Rows,Desk;
+ PhotoDeskRows(Desk);
+ Rows.Add(T::Banner(FString::Printf(TEXT("FILM RECORD / %d FRAME%s / %d NOT DEVELOPED / %d REGISTERED / %d ALLOWANCE DUE"),Shots.Num(),Shots.Num()==1?TEXT(""):TEXT("S"),Latent,Registered,Owed),Owed>0));
+ if(Shots.IsEmpty())
+  Rows.Add(T::Paper(TEXT("NO FRAMES ON RECORD.\n\nCarry the field camera when you go out. Develop, fix and collect the film at the PHOTO LAB wet bench.\n\nThis terminal reads developed originals off the video digitizer. A photograph the station can put a time and a place to is worth a field allowance, registered here.")));
+ else
+ {
+  TArray<S47Kit::FW> Sheet;
+  for(int32 Line=0;Line<3;++Line)
+  {
+   TArray<TPair<float,S47Kit::FW>> Cells;
+   for(int32 C=0;C<3;++C)
+   {
+    const int32 I=Shots.Num()-1-(PhotoPage*PerSheet+Line*3+C);
+    if(I<0){Cells.Add({1.f/3,S47Kit::FW(SNew(SBox))});continue;}
+    const FS47AlbumShot& P=Shots[I];const FString Id=P.Id;const bool bRead=!Lost(P)&&P.IsDeveloped();
+    const TCHAR* Mark=Lost(P)?TEXT(" LOST"):!P.IsDeveloped()?TEXT(" FILM"):Paid(P)?TEXT(" REG"):Due(P)?TEXT(" DUE"):TEXT("");
+    Cells.Add({1.f/3,T::Picture(bRead?S47Image::FromDataUrl(P.Url):nullptr,132.f,FString::Printf(TEXT("F%02d%s"),I+1,Mark),I==Pick,[this,Id]{PhotoPick=Id;OpenPhotos();},bRead&&Due(P))});
+   }
+   Sheet.Add(T::Columns(Cells,8));
+  }
+  if(Sheets>1)Sheet.Add(T::Columns({{.3f,T::Button(TEXT("< NEWER"),[this]{--PhotoPage;PhotoPick.Reset();PhotoPickSheet();},false,PhotoPage>0)},
+   {.4f,T::Small(FString::Printf(TEXT("SHEET %d / %d"),PhotoPage+1,Sheets))},
+   {.3f,T::Button(TEXT("OLDER >"),[this]{++PhotoPage;PhotoPick.Reset();PhotoPickSheet();},false,PhotoPage<Sheets-1)}},8));
+  const FS47AlbumShot& P=Shots[Pick];const bool bRead=!Lost(P)&&P.IsDeveloped();
+  const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,P.Clock),86400.)),Day=FMath::Max(1,int32(FMath::FloorToDouble((P.Clock-28800.)/86400.))+1);
+  const FString State=Lost(P)?TEXT("ORIGINAL LOST / NOTHING TO READ"):P.LabStage==0?TEXT("EXPOSED / NOT DEVELOPED"):P.LabStage==1?TEXT("IN THE TANK / FIX IT NEXT"):P.LabStage==2?TEXT("FIXED / COLLECT IT AT THE WET BENCH")
+   :Paid(P)?TEXT("REGISTERED / ALLOWANCE PAID"):Due(P)?TEXT("ALLOWANCE DUE / REGISTER IT BELOW"):TEXT("ON FILE / NO ALLOWANCE");
+  TArray<S47Kit::FW> Detail;
+  Detail.Add(SNew(SBox).HAlign(HAlign_Center)[T::Picture(bRead?S47Image::FromDataUrl(P.Url):nullptr,330.f)]);
+  Detail.Add(T::Value(TEXT("TAKEN"),FString::Printf(TEXT("DAY %02d  %02d:%02d:%02d"),Day,Seconds/3600,(Seconds/60)%60,Seconds%60)));
+  if(!P.Place.IsEmpty())Detail.Add(T::Value(TEXT("PLACE"),P.Place.ToUpper().Left(26)));
+  if(!P.Enlarged.IsEmpty())Detail.Add(T::Value(TEXT("ENLARGED FROM"),P.Enlarged.Left(18)));
+  if(bRead&&!P.Text.IsEmpty())Detail.Add(T::Small(P.Text.Left(150)));
+  if(bRead&&P.bOdd)Detail.Add(T::Small(TEXT("OPERATOR MARK / Something is in this frame.")));
+  Detail.Add(T::Banner(State,Due(P)&&bRead));
+  Rows.Add(T::Columns({{.52f,T::Panel(TEXT("CONTACT SHEET / NEWEST FIRST"),S47Kit::Col(Sheet))},{.48f,T::Panel(FString::Printf(TEXT("FRAME %02d / %s"),Pick+1,*P.Id.Left(20)),S47Kit::Col(Detail),true)}},12));
+ }
+ // What pays stands first while something is owed; after that the sheet leads and the desk keeps its retained comparisons underneath.
+ if(Owed>0)Rows.Insert(Desk,1);else Rows.Append(Desk);
  if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
- OpenTerminal(3,TEXT("OPS / SUPPLIES"),OpsShell(5,S47Kit::Col(Rows)));
+ OpenTerminal(3,TEXT("OPS / PHOTOGRAPHS"),OpsShell(6,S47Kit::Col(Rows)));
+}
+// Turning the sheet: the newest frame on the sheet turned to is the one read.
+void FS47FreeformSession::PhotoPickSheet()
+{
+ if(M&&M->Night&&M->Night->Album){const auto& Shots=M->Night->Album->Shots();const int32 I=Shots.Num()-1-FMath::Max(0,PhotoPage)*9;if(Shots.IsValidIndex(I))PhotoPick=Shots[I].Id;}
+ OpenPhotos();
 }
 void FS47FreeformSession::OpenTracking()
 {
@@ -1758,17 +1872,77 @@ void FS47FreeformSession::OpenTracking()
  Rows.Add(T::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit slower acquisition (24/27: 79% rate); fewer than 24 block array measurements until repaired.")));
  OpenTerminal(2,TEXT("TRACKING / ARRAY CONTROL"),S47Kit::Col(Rows),true);
 }
+void FS47FreeformSession::StartDriveCheck()
+{
+ if(DriveCheckAt>=0||!RequirePower()||!M||!M->Web)return;
+ DriveCheckAt=0;DriveCheckDish=-1;DriveCheckResult.Reset();DriveCheckTone=0;
+ if(M->Audio){M->Audio->Play(TEXT("rack_switch"),.40f);M->Audio->Beep(180.f,.30f,.030f,.02f,TEXT("sawtooth"));}
+}
+void FS47FreeformSession::StepDriveCheck(double Dt)
+{
+ if(DriveCheckAt<0||!M||!M->Web)return;
+ // The check belongs to the terminal: leaving it, or losing the feeder, drops the run and nothing is learnt.
+ if(ActiveTerminal!=0||!HasPower()){DriveCheckAt=-1;DriveCheckDish=-1;if(M->Audio)M->Audio->Beep(220.f,.12f,.03f);return;}
+ if(Held())return;
+ DriveCheckAt+=Dt;
+ const int32 Count=M->Web->DishCount(),Now=int32(DriveCheckAt/.3);
+ if(Now>=Count){FinishDriveCheck();return;}
+ if(Now!=DriveCheckDish)
+ {
+  DriveCheckDish=Now;
+  if(M->Audio)
+  {
+   const bool bUp=M->Web->DishRemoteAvailable(Now);
+   M->Audio->Play(TEXT("small_switch"),bUp?.22f:.12f,FVector::ZeroVector,bUp?1.35f:.8f);
+   M->Audio->Beep(bUp?620.f+14.f*Now:240.f,.045f,.020f,.03f,bUp?TEXT("square"):TEXT("sawtooth"));
+  }
+ }
+}
+void FS47FreeformSession::FinishDriveCheck()
+{
+ DriveCheckAt=-1;DriveCheckDish=-1;DriveCheckDay=DayNumber;
+ const int32 Count=M&&M->Web?M->Web->DishCount():27,Up=AvailableDishCount();
+ const FString Next=Field?Field->NextServiceDish():FString();
+ const bool bReserve=HasUpgrade(0);
+ if(Field&&Field->HasArrayFault()){DriveCheckTone=2;DriveCheckResult=FString::Printf(TEXT("%s: DRIVE FAULT CONFIRMED / SERVICE ORDER AT OPS"),*Field->ServiceDishId());}
+ else if(FaultDueLater())
+ {
+  DriveCheckTone=2;
+  DriveCheckResult=FString::Printf(TEXT("%s: RELAY CHATTERS UNDER LOAD. IT WILL NOT LAST PAST %02d:00. A STATION ROUND WITH A RELAY IN STOCK CATCHES IT / RELAYS IN STOCK %d"),*Next,int32(FS47NightRhythm::FaultHour(JobSeed,DayNumber)),InventoryCount(TEXT("relay")));
+ }
+ else if(RulesLive()&&FS47NightRhythm::FaultDay(JobSeed,DayNumber+1,bReserve))
+ {
+  DriveCheckTone=1;
+  DriveCheckResult=FString::Printf(TEXT("%s: CONTACT RESISTANCE CREEPING. NOT TODAY. HAVE A RELAY IN STOCK TOMORROW / RELAYS IN STOCK %d"),*Next,InventoryCount(TEXT("relay")));
+ }
+ else if(Up<Count){DriveCheckTone=1;DriveCheckResult=FString::Printf(TEXT("%d OF %d DRIVES ANSWER. THE REST ARE ISOLATED AT THE PEDESTAL: FIELD WORK"),Up,Count);}
+ else{DriveCheckTone=0;DriveCheckResult=FString::Printf(TEXT("%d DRIVES WITHIN LIMITS"),Count);}
+ if(M&&M->Audio)
+ {
+  if(DriveCheckTone==2){M->Audio->Beep(440.f,.16f,.045f);M->Audio->Beep(330.f,.26f,.045f,.20f);M->Audio->Beep(440.f,.16f,.045f,.56f);M->Audio->Beep(330.f,.26f,.045f,.76f);}
+  else if(DriveCheckTone==1){M->Audio->Beep(660.f,.10f,.035f);M->Audio->Beep(495.f,.20f,.035f,.14f);}
+  else{M->Audio->Beep(880.f,.07f,.03f);M->Audio->Beep(1175.f,.07f,.03f,.09f);M->Audio->Beep(1568.f,.12f,.03f,.18f);}
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: drive check: day %d, %s"),DayNumber,*DriveCheckResult);
+}
 void FS47FreeformSession::OpenStatus()
 {
  if(!RequirePower()||!M||!M->UI||!M->Web)return;
  const int32 Count=M->Web->DishCount();SelectedDish=FMath::Clamp(SelectedDish,0,FMath::Max(0,Count-1));
  auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
- auto State=[this](int32 I){if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
+ auto State=[this](int32 I){if(DriveCheckAt>=0)return I==DriveCheckDish?1:!M->Web->DishRemoteAvailable(I)?2:0;if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
  auto Pick=[this](int32 I){SelectedDish=I;if(Field&&M->Web->DishId(I)==Field->ServiceDishId()){Field->DiagnoseService();RecordEvidence(TEXT("service-diagnosed-")+Field->ServiceDishId(),Field->ServiceDishId()+TEXT(" command/encoder status inspected at the status terminal."));}OpenStatus();};
  auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
   T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([this,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),AvailableDishCount(),Count);}),TAttribute<bool>::CreateLambda([this,Count]{return AvailableDishCount()<Count;}))},
               {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault;}))}}),
-  T::Small(TEXT("KEY / outline READY / amber SELECTED / red ISOLATED OR FAULT / blinking MOVING"))}));
+  // FIX-20261110 (Tom: the array PC has too little to do): the drive check runs every element against a dummy load and says what
+  // it heard (see StartDriveCheck); the grid above shows the element under test.
+  T::Columns({{.62f,T::Meter(TEXT("DRIVE CHECK"),TAttribute<FString>::CreateLambda([this,Short]{return DriveCheckAt>=0&&DriveCheckDish>=0?Short(DriveCheckDish)+TEXT(" / DUMMY LOAD"):DriveCheckDay==DayNumber?FString(TEXT("RUN TODAY")):FString(TEXT("NOT RUN TODAY"));}),
+    TAttribute<float>::CreateLambda([this,Count]{return DriveCheckAt>=0?float(FMath::Clamp(DriveCheckAt/(.3*FMath::Max(1,Count)),0.,1.)):DriveCheckDay==DayNumber?1.f:0.f;}))},
+   {.38f,T::Big(FString(TEXT("RUN DRIVE CHECK")),[this]{StartDriveCheck();},1,TAttribute<bool>::CreateLambda([this]{return DriveCheckAt<0;}))}}),
+  T::Text(TAttribute<FString>::CreateLambda([this]{return DriveCheckAt>=0?FString(TEXT("TESTING / KEEP THE TERMINAL OPEN")):DriveCheckDay==DayNumber?DriveCheckResult:FString(TEXT("Runs every drive against a dummy load. About 8 seconds."));}),
+   TAttribute<int32>::CreateLambda([this]{return DriveCheckAt<0&&DriveCheckDay==DayNumber&&DriveCheckTone>0?-1:0;})),
+  T::Small(TEXT("KEY / outline READY / amber SELECTED OR UNDER TEST / red ISOLATED OR FAULT / blinking MOVING"))}));
  const int32 Dish=SelectedDish;
  auto Detail=T::Panel(Short(Dish)+TEXT(" / ANTENNA DETAIL"),S47Kit::Col({
   T::Value(TEXT("MODE"),TAttribute<FString>::CreateLambda([this,Dish]{return M->Web->DishRemoteAvailable(Dish)?FString(TEXT("REMOTE")):FString(TEXT("ISOLATED / LOCAL"));}),true),
@@ -1781,7 +1955,22 @@ void FS47FreeformSession::OpenStatus()
  Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
  TArray<S47Kit::FW> Rows;
  Rows.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0)));
- Rows.Add(T::Columns({{.6f,Grid},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
+ // FIX-20261110: what the array has been pulled toward (FS47Places' bearings, as the slips print them) and what it is picking up
+ // out of band right now (the same interference the screens tear with).
+ TArray<S47Kit::FW> Beam;
+ Beam.Add(T::Meter(TEXT("OUT-OF-BAND PICKUP"),TAttribute<FString>::CreateLambda([this]{const float L=ScreenInterference();return FString(L>.55f?TEXT("STRONG / NOT A SOURCE ON THE CARD"):L>.18f?TEXT("RISING"):L>.04f?TEXT("TRACE"):TEXT("QUIET"));}),
+  TAttribute<float>::CreateLambda([this]{return ScreenInterference();})));
+ if(Places&&Places->Bearings().Num())
+ {
+  const auto& Fixes=Places->Bearings();
+  for(int32 I=Fixes.Num()-1;I>=0&&I>=Fixes.Num()-3;--I)
+  {
+   const auto& B=Fixes[I];const bool bWarm=FS47Places::Live(B,WorldClock);
+   Beam.Add(T::Text(FString::Printf(TEXT("D%02d %s / %03.0f° ±%.0f°%s / %s"),B.Day,B.Clock>=0?*FS47Places::SlipClock(B.Clock):TEXT("--:--"),B.Az,B.Spread,B.bCar?TEXT(" / FROM THE TRUCK"):TEXT(""),bWarm?TEXT("WARM: ON YOUR MAP"):TEXT("COLD")),bWarm?-1:0));
+  }
+ }
+ else Beam.Add(T::Small(TEXT("NOTHING OFF THE MAIN BEAM ON RECORD. A registered observation can leave a bearing: which way, not how far and not what.")));
+ Rows.Add(T::Columns({{.6f,S47Kit::Col({Grid,T::Panel(TEXT("OFF THE MAIN BEAM"),S47Kit::Col(Beam))})},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenReceiver()
@@ -1877,6 +2066,8 @@ void FS47FreeformSession::OpenTapePanel()
  if(!M||!M->UI||!RequirePower()||!AudioDesk||!AudioDesk->Ready())return;
  if(!AudioDesk->ListeningPosition()){OpenAudio();return;}
  const T::FReelLook ReelLook;
+ // FIX-20261110: this is a machine, not a terminal: its keys are heavy and nothing beeps (the motor is heard in TransportSound)
+ {const TWeakObjectPtr<US47Main> Main=M;T::SetSound([Main](int32 Kind){if(Main.IsValid()&&Main->Audio&&Main->Freeform&&Main->Freeform->TapePanelOpen()&&Kind<3)Main->Audio->Play(Kind==1?TEXT("rack_switch"):TEXT("small_switch"),Kind==1?.42f:.38f,FVector::ZeroVector,Kind==2?1.1f:.95f);});}
  auto Press=[this](const TCHAR* Action){return [this,Action]{if(AudioDesk)AudioDesk->Use(FString(TEXT("ff:audio:"))+Action);};};
  auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);});
  auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
@@ -1913,8 +2104,12 @@ void FS47FreeformSession::OpenTapePanel()
  auto Mark=[this](bool bIn){return TAttribute<FString>::CreateLambda([this,bIn]{const auto* J=CurrentJob();const double At=!J?-1.:bIn?J->MarkStart:J->MarkEnd;return At<0?FString(TEXT("--")):FString::Printf(TEXT("%.1f s"),At);});};
  const S47Kit::FW TapeBox=T::Panel(TEXT("TAPE"),S47Kit::Col({
   T::Columns({{1.f,T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare)},{1.f,T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare)}}),
-  T::Display(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%04.1f / %.0f s"),AudioCursor,AudioSourceIndex==0?18.:8.);}),
-   TAttribute<FString>::CreateLambda([this]{return FString(CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));})),
+  // FIX-20261110: the transport itself, moving (position and state are read off it)
+  SNew(SBox).HeightOverride(168)[SNew(SS47TapeReels)
+   .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
+   .Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;}).Loading_Lambda([this]{return CaptureStartStage!=0;})
+   .Control_Lambda([this]{return AudioSourceIndex!=0;})
+   .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})],
   T::Heading(TEXT("LISTENED"),24),
   T::Meter(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 18 s"),J?J->OriginalCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->OriginalCovered/18.,0.,1.)):0.f;})),
   T::Meter(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.1f / 8 s"),J?J->ControlCovered:0.);}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(FMath::Clamp(J->ControlCovered/8.,0.,1.)):0.f;})),

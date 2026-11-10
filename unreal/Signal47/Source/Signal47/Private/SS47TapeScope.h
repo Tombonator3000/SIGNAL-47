@@ -39,6 +39,31 @@ private:
  TAttribute<TArray<double>> Ticks;
 };
 
+// FIX-20261110 (Tom: the reel needs more effects and animation). The deck's transport as a picture:
+// two reels whose tape packs follow the cursor, the tape over the head, two needles and the counter.
+// A rewind is seen: the picture winds to the new position, it does not jump. Picture only.
+class SS47TapeReels : public SLeafWidget
+{
+public:
+ SLATE_BEGIN_ARGS(SS47TapeReels){}
+  SLATE_ATTRIBUTE(double,Cursor)
+  SLATE_ATTRIBUTE(double,Length)
+  SLATE_ATTRIBUTE(bool,Playing)
+  SLATE_ATTRIBUTE(bool,Loading)
+  SLATE_ATTRIBUTE(bool,Control)
+  SLATE_ATTRIBUTE(TArray<double>,Ticks)
+ SLATE_END_ARGS()
+ void Construct(const FArguments& Args);
+ virtual FVector2D ComputeDesiredSize(float) const override{return FVector2D(420,168);}
+ virtual int32 OnPaint(const FPaintArgs& Args,const FGeometry& G,const FSlateRect& Cull,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle& Style,bool bParentEnabled) const override;
+private:
+ TAttribute<double> Cursor,Length;
+ TAttribute<bool> Playing,Loading,Control;
+ TAttribute<TArray<double>> Ticks;
+ // what the picture shows (winds toward the real cursor), the reels' angles, the needles and their peak lamps
+ mutable double Shown=-1,Last=0,AngleL=0,AngleR=0,Needle[2]={0,0},Peak[2]={0,0},PeakAt[2]={-10,-10},HeadGlow=0;
+};
+
 // The reel deck panel fills the view away from the workstation glass, so nothing around it can
 // be clicked: it holds the keyboard itself and leaves on the same keys as the workstation screens.
 class SS47TapePanel : public SCompoundWidget

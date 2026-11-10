@@ -36,4 +36,5 @@ private:
 	void Tracking(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	void Ops(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	void Scanlines(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
+	void FreeformStrip(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, double T) const; // FIX-20261110: the live instrument under Freeform's idle lines
 };

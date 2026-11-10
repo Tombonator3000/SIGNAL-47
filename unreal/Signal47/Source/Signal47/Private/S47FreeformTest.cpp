@@ -90,7 +90,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all seven pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit roof_steps case lead and production PlanCaseTest(2,1), followed by real disk/Flow Continue. Tests retained pending plan only; no enacted world test, field evidence or reward claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
@@ -831,7 +831,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))
  {
-  if(Age>60){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
+  if(Age>90){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
   auto Roots=[&](){TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
    if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User){TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);return Out;};
   auto Click=[&](const FString& Label){TArray<TSharedRef<SButton>> Buttons;for(const auto& W:Roots())PhotoButtons(W,Label,Buttons);
@@ -846,7 +846,7 @@ void FS47FreeformTest::Step(double Dt)
   Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
   auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
   auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
-  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SERVICE"),TEXT("SUPPLIES")}; // CASES-OPS-20261109: CASE ARCHIVE is RECORDS
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SERVICE"),TEXT("SUPPLIES"),TEXT("PHOTOGRAPHS")}; // CASES-OPS-20261109: CASE ARCHIVE is RECORDS; FIX-20261110: the film record
   if(Stage==0)
   {
    if(Age<3)return;
@@ -881,6 +881,11 @@ void FS47FreeformTest::Step(double Dt)
    {
     if(!Click(TEXT("Accept / use SARO stock")))return;Go(88031,.3);return;
    }
+   if(OpsNavStep==5)
+   {
+    if(!Check(HasText(TEXT("FILM RECORD /")),TEXT("PHOTOGRAPHS opens the film record inside OPS")))return;
+    Shot(TEXT("ops-photographs"));Go(8804,.3);return;
+   }
    Go(8804);return;
   }
   if(Stage==88031)
@@ -900,7 +905,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8805)
   {
    if(!Check(StillAtOps()&&F.OperationsSection()==0,TEXT("OVERVIEW returns home without a physical exit")))return;
-   if(++OpsNavStep<5){Go(8802);return;}
+   if(++OpsNavStep<6){Go(8802);return;}
    // Explicit completed-work/retained-original fixture for the two alternate UI states.
    auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
    for(const auto& V:Jobs)S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));
@@ -926,7 +931,24 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8806)
   {
    if(!Check(!F.TerminalOnGlass()&&!M->UI->Modal()&&F.ActiveTerminalScreen()==-1,TEXT("separate physical leave returns to room and clears OPS modal")))return;
-   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return and physical leave passed."));return;
+   // FIX-20261110: the array PC has work of its own: the drive check runs every element and says what it heard.
+   const FVector Left=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(Left.X,Left.Z+1.1,0);F.Use(TEXT("crtLeft"));Go(8807,1.);return;
+  }
+  if(Stage==8807)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==0&&HasText(TEXT("OFF THE MAIN BEAM"))&&HasText(TEXT("NOT RUN TODAY"))&&!F.DriveCheckedToday(),TEXT("array PC offers the drive check and the off-beam log")))return;
+   Shot(TEXT("array-status"));if(!Click(TEXT("RUN DRIVE CHECK")))return;Go(8808,3.);return;
+  }
+  if(Stage==8808)
+  {
+   if(!Check(F.DriveCheckRunning()&&HasText(TEXT("TESTING /")),TEXT("drive check runs on the open array terminal")))return;
+   Shot(TEXT("array-drive-check"));Go(8809,7.);return;
+  }
+  if(Stage==8809)
+  {
+   if(!Check(F.DriveCheckedToday()&&!F.DriveCheckText().IsEmpty()&&HasText(TEXT("RUN TODAY")),FString(TEXT("drive check reports a result: "))+F.DriveCheckText()))return;
+   Shot(TEXT("array-drive-result"));
+   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return, physical leave and the array drive check passed."));return;
   }
   return;
  }
@@ -1584,8 +1606,13 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(F.AudioPlaying())return;
   if(!Check(F.CurrentJob()->ControlCovered>=8,TEXT("independent control recording really played through")))return;
-  F.AudioAction(TEXT("original"));F.SeekAudio(9.1);F.AudioAction(TEXT("mark_start"));F.SeekAudio(13.0);F.AudioAction(TEXT("mark_end"));Shot(TEXT("audio-comparison"));Go(8,.3);return;
+  F.AudioAction(TEXT("original"));F.SeekAudio(9.1);F.AudioAction(TEXT("mark_start"));F.SeekAudio(13.0);F.AudioAction(TEXT("mark_end"));Shot(TEXT("audio-comparison"));Go(FParse::Param(FCommandLine::Get(),TEXT("S47ReelShots"))?71:8,.3);return;
  }
+ // FIX-20261110: -S47ReelShots stops here with the reel deck panel open, still and then running (pictures only).
+ if(Stage==71){F.OpenTapePanel();Go(72,1.2);return;}
+ if(Stage==72){Shot(TEXT("reel-panel"));F.AudioAction(TEXT("play"));Go(73,1.6);return;}
+ if(Stage==73){Shot(TEXT("reel-panel-playing"));Go(74,.5);return;}
+ if(Stage==74){Finish(true,TEXT("Reel deck panel pictures taken; the journey was not continued."));return;}
  if(Stage==8)
  {
   if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed,TEXT("supported interval is retained only after both recordings")))return;

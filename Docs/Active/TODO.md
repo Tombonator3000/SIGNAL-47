@@ -5,6 +5,20 @@
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
 
+## Toms fikseliste 10. november (etter nattskiftet, d43)
+
+Toms ord: «Ta alt dette nå til skal fikses, start med design vfx/ sfx på saro pc skjermene/systemene og reel». Svar på morgenrapporten: feltbesøk er ok; rutinekort beholdes; kartet skal vise stedet; en spiller som blir inne må få mer å merke og kl. 02 er veiledende, ikke låst; Dales nye replikker tas senere. Kodemerke `FIX-20261110`.
+
+- [ ] **FIX10-1 Skjermer og spolebånd:** flottere effekter og mer tilbakemelding og lyd på CRT-skjermene og grensesnittet, og på spolebåndet, uten å endre hovedutseendet. Alle PC-er skal ha noe å gjøre; array-PC-en har lite; OPS får egen fane for bilder. **Bygget 10. nov (ikke installert, ikke spilt av Tom):** rullebånd, flimmer, tastløft, sideskift, forstyrrelse og påslag på glasset; tastelyder per kontrolltype; levende striper på hvilende skjermer; animerte spoler med VU og teller; OPS / PHOTOGRAPHS (kontaktark, bildedetalj, feltgodtgjørelsen flyttet hit fra SUPPLIES); array-PC med drivprøve (RUN DRIVE CHECK, varsler dagens og morgendagens reléfeil), peilelogg og måler for mottak utenfor båndet. Prøver: selvtest 4116, Freeform-regresjon 251, OPS-navigasjon 46, dusk-orb 107.
+- [ ] **FIX10-2 Nødaggregat og SARO-historie:** aggregatet skal ha en funksjon knyttet til strømbrudd eller mystiske hendelser. Filer om SAROs historie som antyder at SARO ser Caliche som USAs svar på Hessdalen (alltid rare lys og hendelser; innbyggerne prøver å se positivt på det; Twin Peaks blandet med Night Vale). SARO leier inn folk for å finne signaler og ta bilder som bevis. Dale har overlevd lengst, aner ugler i mosen, men liker jobben.
+- [ ] **FIX10-3 Spillsløyfen tydelig:** PC-ene på SARO (hente signaler, hint og beskjeder om feltarbeid) → dra ut → skaffe bilder, prøver og bevis.
+- [ ] **FIX10-4 Første start:** ved postkassen med velkomstbrev som forklarer jobben; alt lys er av og må slås på.
+- [ ] **FIX10-5 TV-er:** av/på-knapp på Dales TV; alle TV-er viser Unarius på én kanal; ved sendeslutt nasjonalsang og flagg, deretter snø eller prøvebilde; snø, blafring og rare lyder når noe er i nærheten.
+- [ ] **FIX10-6 F10-menyen:** bedre enn én lang rulleliste.
+- [ ] **FIX10-7 Effekter og lyd generelt:** mer bruk av Unreal-effekter og flere lydeffekter.
+- [ ] **FIX10-8 Gangen og nøklene:** walkie-talkie og kassettopptaker på kommoden i gangen (det første spilleren ser); SARO er låst første gang og nøklene ligger i postkassen.
+- [ ] **FIX10-9 Fra svarene:** kartet viser stedet for sporet; mer å merke for den som blir inne; kl. 02 veiledende.
+
 ## Toms test av installasjonen 7. november kl. 16
 
 Toms ord: «fjell: ser ok ut. men må få bedre new mexico texturer, får aldri sjekket om man stoppes mot dem da det er usynlige vegger rundt hele spillet så får bare kjørt litt rundt gården. Bakke: ser bra ut, noen feil rundt gården med store flater med overlapp mellom to forskjellige teksturer? Motorvei: ser bra ut! Lyskuler skal være sporadisk, alt fra en til tre, svever rundt og undersøker (som droner). Føles bra kjøring.»

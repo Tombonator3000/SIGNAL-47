@@ -27,6 +27,15 @@ namespace S47FreeformTerminal
  // CASES-OPS-20261109: the left-hand header ("SARO OPS V4.2  TERM 1  OPR NIGHT", as Story's operations system heads its screen).
  // Empty: the old "SARO / LOCAL WORKSTATION". The owner clears it with the clock.
  void SetStation(const FString& Station);
+ // FIX-20261110: the operator's feedback and the tube's own life (the look itself is unchanged).
+ // Sound: one sink for every control on the station. Kind 0 key, 1 the amber/primary action,
+ // 2 a menu line or tab, 3 a knob step, 4 the cursor arriving on a control.
+ void SetSound(TFunction<void(int32 Kind)> Sink);
+ // 0..1, what is on the air around the station: lines drop out and the picture tears with it.
+ void SetInterference(TFunction<float()> Level);
+ float Interference();
+ // The set was just switched to (not a page change): the next frame opens from a line.
+ void PowerOn();
 
  // --- Workstation layout (UI-03) ---
  struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; };
@@ -52,4 +61,7 @@ namespace S47FreeformTerminal
  FW Columns(const TArray<TPair<float,FW>>& Columns,float Gap=14);
  FW Split(const TArray<TPair<float,FW>>& Columns);   // one outlined strip, vertical rules between columns
  FW TitleRow(const FString& Left,TAttribute<FString> Right);
+ // FIX-20261110: a frame off the video digitizer, in the tube's own phosphor (no image: nothing to read yet). With an action it
+ // is a key, framed amber when it is the one selected.
+ FW Picture(class UTexture2D* Image,float Width,const FString& Caption=FString(),bool bSelected=false,TFunction<void()> Action=nullptr,bool bDue=false);
 }

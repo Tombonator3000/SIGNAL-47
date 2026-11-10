@@ -251,13 +251,14 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==95060)
  {
-  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies opens optional noise idea")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
 #endif
-  Go(95061,.5);return;
+  Go(950605,.5);return;
  }
+ if(Stage==950605){Shot(TEXT("orb-photographs-desk"));Go(95061,.4);return;} // FIX-20261110: the film record with a developed frame on it
  if(Stage==95061)
  {
   if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("Keep a local-noise check for later / no payment"));
@@ -367,7 +368,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==9604)
  {
-  const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native OPS supplies navigation is available for paired originals")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
@@ -376,7 +377,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==96041)
  {
-  if(!Check(F.OperationsSection()==5,TEXT("OPS displays developed photographic comparison in supplies")))return;
+  if(!Check(F.OperationsSection()==6,TEXT("OPS displays developed photographic comparison in supplies")))return;
   if(!F.TerminalWindowRendered())return;
   const auto Buttons=NativeButtons(TEXT("Retain comparison / no payment"));
   if(!Check(Buttons.Num()==1,TEXT("paired originals have one comparison action to scroll into view")))return;
@@ -491,7 +492,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9611)
  {
   if(!F.TerminalWindowRendered())return;
-  const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!FocusCheck(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies navigation available for focus fixture")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
@@ -516,7 +517,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!F.TerminalWindowRendered())return;
   const auto Buttons=NativeButtons(TEXT("Follow this return plan"));
-  if(!FocusCheck(F.OperationsSection()==5&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
+  if(!FocusCheck(F.OperationsSection()==6&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
   TSharedPtr<SWidget> W=Buttons[0];while(W.IsValid())
   {
    if(W->GetTypeAsString()==TEXT("SScrollBox")){StaticCastSharedPtr<SScrollBox>(W)->ScrollDescendantIntoView(Buttons[0],false);break;}

@@ -102,6 +102,95 @@ FCursorReply SS47TapeScope::OnCursorQuery(const FGeometry& G,const FPointerEvent
  double At=0;
  return CanMark.Get(false)&&TimeAt(G,E.GetScreenSpacePosition(),At)?FCursorReply::Cursor(EMouseCursor::Hand):FCursorReply::Unhandled();
 }
+void SS47TapeReels::Construct(const FArguments& A)
+{
+ Cursor=A._Cursor;Length=A._Length;Playing=A._Playing;Loading=A._Loading;Control=A._Control;Ticks=A._Ticks;
+ SetCanTick(false);ForceVolatile(true);SetVisibility(EVisibility::HitTestInvisible);
+}
+int32 SS47TapeReels::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle&,bool) const
+{
+ const FVector2f S(G.GetLocalSize());if(S.X<200||S.Y<90)return Layer;
+ const FSlateBrush* White=FCoreStyle::Get().GetBrush("WhiteBrush");
+ auto Box=[&](float X,float Y,float W,float H,const FLinearColor& C){FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(W,H),FSlateLayoutTransform(FVector2f(X,Y))),White,ESlateDrawEffect::None,C);};
+ auto Line=[&](const TArray<FVector2f>& P,const FLinearColor& C,float Thick){FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),P,ESlateDrawEffect::None,C,true,Thick);};
+ auto Label=[&](const FString& T,float X,float Y,const FLinearColor& C,int32 Size=15){FSlateDrawElement::MakeText(Out,Layer,G.ToPaintGeometry(FVector2f(220,26),FSlateLayoutTransform(FVector2f(X,Y))),T,S47Style::Mono(Size),ESlateDrawEffect::None,C);};
+ auto Ring=[&](const FVector2f& C,float R,const FLinearColor& Col,float Thick)
+ {
+  const int32 N=FMath::Clamp(int32(R*.9f),14,48);TArray<FVector2f> P;P.Reserve(N+1);
+  for(int32 I=0;I<=N;++I){const float A=2*PI*I/N;P.Add(C+FVector2f(FMath::Cos(A),FMath::Sin(A))*R);}
+  Line(P,Col,Thick);
+ };
+ const double Now=FPlatformTime::Seconds(),Dt=FMath::Clamp(Now-Last,0.,.1);Last=Now;
+ const double L=FMath::Max(1.,Length.Get(18.)),At=FMath::Clamp(Cursor.Get(0.),0.,L);const bool Run=Playing.Get(false),Load=Loading.Get(false);
+ // The picture winds to where the tape is: at playing speed it simply follows, a rewind or a jump is run at winding speed.
+ if(Shown<0||Shown>L)Shown=At;
+ const double Before=Shown,Gap=At-Shown;const bool Wind=FMath::Abs(Gap)>.35;
+ Shown=Wind?Shown+FMath::Sign(Gap)*FMath::Min(FMath::Abs(Gap),Dt*26.):At;
+ const double Moved=Shown-Before,U=Shown/L;
+ // Tape packs: the supply reel empties as the take-up reel fills (area, not radius, is what moves).
+ const float R=FMath::Min(S.Y*.5f-12,S.X*.17f),Hub=R*.34f;
+ auto Pack=[&](double Full){return Hub+4+float(FMath::Sqrt(FMath::Clamp(Full,0.,1.)))*(R-Hub-8);};
+ const float PackL=Pack(1-U*.82),PackR=Pack(.18+U*.82);
+ AngleL+=Moved*38./FMath::Max(8.f,PackL);AngleR+=Moved*38./FMath::Max(8.f,PackR);
+ const FVector2f CL(R+8,R+8),CR(S.X-R-8,R+8);
+ auto Reel=[&](const FVector2f& C,float PackR2,double Angle)
+ {
+  for(float Rr=Hub+3;Rr<PackR2;Rr+=2.5f)Ring(C,Rr,FLinearColor(.16f,.10f,.05f),2.6f);      // the wound tape, brown oxide
+  Ring(C,PackR2,FLinearColor(.34f,.22f,.10f),1.5f);
+  Ring(C,R,Cream*FLinearColor(1,1,1,.75f),1.6f);Ring(C,Hub,Cream,1.6f);Ring(C,Hub*.34f,Cream,1.4f);
+  for(int32 K=0;K<3;++K)
+  {
+   const float A=float(Angle)+2*PI*K/3;const FVector2f D(FMath::Cos(A),FMath::Sin(A)),N(-D.Y,D.X);
+   // three windows in the flange, turning with the reel
+   Line({C+D*(Hub+5)+N*5,C+D*(R-6)+N*9,C+D*(R-6)-N*9,C+D*(Hub+5)-N*5,C+D*(Hub+5)+N*5},Cream*FLinearColor(1,1,1,.55f),1.2f);
+   Line({C+D*(Hub*.34f),C+D*Hub},Cream,1.4f);
+  }
+ };
+ Reel(CL,PackL,AngleL);Reel(CR,PackR,AngleR);
+ // Tape path: off the supply pack, round two guides, across the head, onto the take-up pack.
+ const float HeadY=S.Y-20,Mid=S.X*.5f;const FVector2f G1(CL.X+R*.9f,HeadY),G2(CR.X-R*.9f,HeadY);
+ const FLinearColor Oxide(.42f,.27f,.12f);
+ Line({CL+FVector2f(-PackL*.2f,PackL*.98f),G1,G2,CR+FVector2f(PackR*.2f,PackR*.98f)},Oxide,2);
+ Ring(G1,4,Cream,1.4f);Ring(G2,4,Cream,1.4f);
+ HeadGlow=FMath::FInterpTo(float(HeadGlow),Run?1.f:Wind?.35f:0.f,float(Dt),9.f);
+ Box(Mid-13,HeadY-4,26,14,FLinearColor(.07f,.08f,.04f));Box(Mid-11,HeadY-2,22,10,FMath::Lerp(Dim,Amber,float(HeadGlow)));
+ if(HeadGlow>.05)Box(Mid-22,HeadY+11,44,2,Amber*FLinearColor(1,1,1,.5f*float(HeadGlow)));
+ // Needles: what passes the head now. A tick on the tape kicks them; the peak lamp holds a moment.
+ double Level=0;if(Run)
+ {
+  Level=.30+.16*Hash(FMath::FloorToDouble(Now*17))+.07*FMath::Sin(Now*9.);
+  for(double Tick:Ticks.Get(TArray<double>())){const double D=At-Tick;if(D>=0&&D<.3)Level=FMath::Max(Level,.96-D*1.5);}
+  if(Control.Get(false))Level*=.62;
+ }
+ else if(Wind)Level=.12+.08*Hash(FMath::FloorToDouble(Now*30));
+ const float Mw=FMath::Min(92.f,(CR.X-CL.X-2*R-26)*.5f),Mh=58,My=8;
+ for(int32 Ch=0;Ch<2&&Mw>40;++Ch)
+ {
+  const double Want=FMath::Clamp(Level*(Ch?.93:1.)+(Run?.04*Hash(Now*13+Ch*5):0),0.,1.);
+  Needle[Ch]+=(Want-Needle[Ch])*FMath::Min(1.,Dt*(Want>Needle[Ch]?22.:6.)); // quick up, slow back, as a real meter
+  if(Needle[Ch]>.8){Peak[Ch]=1;PeakAt[Ch]=Now;}else if(Now-PeakAt[Ch]>.7)Peak[Ch]=0;
+  const float X=Mid+(Ch?5:-Mw-5);const FVector2f Pivot(X+Mw*.5f,My+Mh+10);
+  Line({FVector2f(X,My),FVector2f(X+Mw,My),FVector2f(X+Mw,My+Mh),FVector2f(X,My+Mh),FVector2f(X,My)},Cream*FLinearColor(1,1,1,.7f),1.2f);
+  for(int32 K=0;K<=10;++K)
+  {
+   const float A=FMath::DegreesToRadians(-48.f+96.f*K/10.f);const FVector2f D(FMath::Sin(A),-FMath::Cos(A));
+   Line({Pivot+D*(Mh-2),Pivot+D*(Mh+(K%5?3:7))},K>=8?Amber:Cream,K>=8?2.f:1.2f);
+  }
+  const float A=FMath::DegreesToRadians(-48.f+96.f*float(Needle[Ch]));const FVector2f D(FMath::Sin(A),-FMath::Cos(A));
+  Line({Pivot+D*14,Pivot+D*(Mh-4)},Cream,1.8f);
+  Label(Ch?TEXT("VU R"):TEXT("VU L"),X+4,My+Mh-20,Cream*FLinearColor(1,1,1,.7f),13);
+  Box(X+Mw-13,My+5,8,8,Peak[Ch]>0?Amber:Ghost);
+ }
+ // The counter and the transport's state.
+ const TCHAR* State=Load?TEXT("LOADING"):Wind?(Gap<0?TEXT("<< REWIND"):TEXT(">> WIND")):Run?TEXT("> PLAY"):TEXT("STOP");
+ const FString Count=FString::Printf(TEXT("%04d"),FMath::Clamp(int32(Shown*10+.5),0,9999));
+ const float Cw=88,Cx=Mid-Cw*.5f,Cy=My+Mh+16;
+ Box(Cx,Cy,Cw,30,FLinearColor(.02f,.022f,.012f));
+ for(int32 K=0;K<4;++K){Label(Count.Mid(K,1),Cx+7+K*20,Cy+2,K==3?Amber:Cream,22);if(K)Box(Cx+3+K*20,Cy+2,1,26,Ghost);}
+ Label(State,Mid+Cw*.5f+10,Cy+5,Run||Wind||Load?Amber:Cream*FLinearColor(1,1,1,.7f),17);
+ Label(FString::Printf(TEXT("%04.1f / %.0f s"),At,L),Mid-Cw*.5f-118,Cy+5,Cream,17);
+ return Layer;
+}
 void SS47TapePanel::Construct(const FArguments& A)
 {
  OnLeave=A._OnLeave;

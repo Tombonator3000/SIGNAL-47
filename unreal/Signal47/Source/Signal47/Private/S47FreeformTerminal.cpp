@@ -7,6 +7,7 @@
 #include "Styling/CoreStyle.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SSlider.h"
+#include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SScrollBox.h"
@@ -37,6 +38,17 @@ namespace S47FreeformTerminal
   TFunction<FString()> ClockSource;
   FString StationSource; // CASES-OPS-20261109 (SetStation)
   double Now(){return FPlatformTime::Seconds();}
+  // FIX-20261110 (Tom: more effects, feedback and sound on the screens; the look stays).
+  // The operator's hand on the station: every control reports its kind here, the glass
+  // acknowledges it (SGlassFx) and the owner's sink gives it a sound.
+  TFunction<void(int32)> SoundSink;TFunction<float()> JamSource;
+  double KeyAt=-10,HoverAt=-10,PowerAt=-10;FString PageTitle;
+  void Key(int32 Kind)
+  {
+   const double T=Now();if(Kind==3&&T-KeyAt<.07)return; // a dragged knob ticks, it does not buzz
+   KeyAt=T;if(SoundSink)SoundSink(Kind);
+  }
+  void Hover(){const double T=Now();if(T-KeyAt<.2||T-HoverAt<.06)return;HoverAt=T;if(SoundSink)SoundSink(4);}
   float Pulse(double Speed=3.){return .55f+.45f*float(FMath::Sin(Now()*Speed));}
   const FSlateBrush* Fill(){static const FSlateColorBrush B(FLinearColor::White);return &B;}
   const FSlateBrush* Outline(){static const FSlateRoundedBoxBrush B(FLinearColor::Transparent,2.f,FLinearColor::White,2.f);return &B;}
@@ -94,7 +106,7 @@ namespace S47FreeformTerminal
  FW Small(const FString& Value){return SNew(STextBlock).Text(FText::FromString(Value)).Font(S47Style::Mono(20)).ColorAndOpacity(Green*.8f).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>()).Margin(FMargin(0,6));}
  FW ButtonLive(TAttribute<FString> Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled)
  {
-  return SNew(SButton).ButtonStyle(Primary?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+  return SNew(SButton).ButtonStyle(Primary?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action,Primary]{Key(Primary?1:0);if(Action)Action();return FReply::Handled();})
   [SNew(STextBlock).Text_Lambda([Text]{return FText::FromString(Text.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);}).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>())];
  }
  FW Toggle(const FString& Text,TAttribute<bool> On,TFunction<void()> Action,TAttribute<bool> Enabled)
@@ -104,12 +116,12 @@ namespace S47FreeformTerminal
   return SNew(SOverlay)
    +SOverlay::Slot()[SNew(SBox).Visibility(Off)[Button(Text,Action,false,Enabled)]]
    +SOverlay::Slot()[SNew(SBox).Visibility(Lit)
-    [SNew(SButton).ButtonStyle(bReel?&ReelFilled():&FilledStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+    [SNew(SButton).ButtonStyle(bReel?&ReelFilled():&FilledStyle()).ContentPadding(FMargin(12,7)).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action]{Key(0);if(Action)Action();return FReply::Handled();})
      [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(24)).ColorAndOpacity(Ink)]]];
  }
  FW Filled(const FString& Text,TFunction<void()> Action,TAttribute<bool> Enabled)
  {
-  return SNew(SButton).ButtonStyle(&SelectedStyle()).ContentPadding(FMargin(12,7)).HAlign(HAlign_Center).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+  return SNew(SButton).ButtonStyle(&SelectedStyle()).ContentPadding(FMargin(12,7)).HAlign(HAlign_Center).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action]{Key(1);if(Action)Action();return FReply::Handled();})
    [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(26)).ColorAndOpacity_Lambda([Enabled,DimNow=Dim]{return FSlateColor(Enabled.Get()?Ink:DimNow*1.6f);})];
  }
  FW Button(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled){return ButtonLive(TAttribute<FString>(Text),Action,Primary,Enabled);}
@@ -117,8 +129,8 @@ namespace S47FreeformTerminal
  {return SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(1).Padding(0,0,12,0)[Left]+SHorizontalBox::Slot().FillWidth(1)[Right];}
  FW Control(const FString& Name,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange)
  {
-  auto Nudge=[Value,OnChange,Min,Max](float By){if(OnChange)OnChange(FMath::Clamp(Value.Get()+By,Min,Max));return FReply::Handled();};
-  auto Key=[](const TCHAR* Glyph){return SNew(STextBlock).Text(FText::FromString(Glyph)).Font(S47Style::Mono(30)).ColorAndOpacity(Green).Justification(ETextJustify::Center);};
+  auto Nudge=[Value,OnChange,Min,Max](float By){Key(3);if(OnChange)OnChange(FMath::Clamp(Value.Get()+By,Min,Max));return FReply::Handled();};
+  auto Glyph=[](const TCHAR* Glyph){return SNew(STextBlock).Text(FText::FromString(Glyph)).Font(S47Style::Mono(30)).ColorAndOpacity(Green).Justification(ETextJustify::Center);};
   // One SVerticalBox per control holding its name and one slider: the evidence journey
   // locates the real receiver controls by exactly this structure.
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(FMargin(12,5))
@@ -129,17 +141,84 @@ namespace S47FreeformTerminal
      +SHorizontalBox::Slot().AutoWidth().Padding(10,0,0,0)[SNew(STextBlock).Text_Lambda([Shown]{return FText::FromString(Shown.Get());}).Font(S47Style::Mono(28)).ColorAndOpacity(Amber)]]
    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,1)
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(-Step);})[Key(TEXT("-"))]]]
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(-Step);})[Glyph(TEXT("-"))]]]
      +SHorizontalBox::Slot().FillWidth(1).Padding(10,0)
       [SNew(SBox).HeightOverride(40).VAlign(VAlign_Fill)
        [SNew(SSlider).Style(&KnobStyle()).MinValue(Min).MaxValue(Max).StepSize(Step).MouseUsesStep(true).Value(Value)
-        .SliderBarColor(Line).SliderHandleColor(Amber).OnValueChanged_Lambda([OnChange](float V){if(OnChange)OnChange(V);})]]
-     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(Step);})[Key(TEXT("+"))]]]]];
+        .SliderBarColor(Line).SliderHandleColor(Amber).OnValueChanged_Lambda([OnChange](float V){Key(3);if(OnChange)OnChange(V);})]]
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(Step);})[Glyph(TEXT("+"))]]]]];
  }
  FW Knob(const FString& Name,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange)
  {return Control(Name,Shown,Min,Max,Step,Value,OnChange);}
  void SetClock(TFunction<FString()> Clock){ClockSource=MoveTemp(Clock);}
  void SetStation(const FString& Station){StationSource=Station;}
+ void SetSound(TFunction<void(int32)> Sink){SoundSink=MoveTemp(Sink);}
+ void SetInterference(TFunction<float()> Level){JamSource=MoveTemp(Level);}
+ void PowerOn(){PowerAt=Now();PageTitle.Reset();}
+ float Interference(){return JamSource?FMath::Clamp(JamSource(),0.f,1.f):0.f;}
+ // What a tube does that a drawing of one does not: the picture opens from a line when the set
+ // comes on, a new page is written down the glass behind the beam, a pale band rolls through
+ // it, a key is acknowledged, and what is on the air tonight tears lines out of it. Drawn over
+ // the page and under the glass's own scan lines; it takes no clicks and moves no layout.
+ class SGlassFx:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SGlassFx){} SLATE_END_ARGS()
+  double Born=0,Power=-10;bool bNewPage=false;TFunction<float()> Jam;FLinearColor GreenNow,AmberNow,BlackNow;
+  void Construct(const FArguments&){GreenNow=Green;AmberNow=Amber;BlackNow=Black;ForceVolatile(true);SetVisibility(EVisibility::HitTestInvisible);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1,1);}
+  static float Hash(double X){const double V=FMath::Sin(X*12.9898)*43758.5453;return float(V-FMath::FloorToDouble(V));}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
+  {
+   const FVector2f S(G.GetLocalSize());const double T=Now(),Age=T-Born,On=T-Power;
+   auto Box=[&](float Y,float H,FLinearColor C,int32 Layer){if(H>0)FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(S.X,H),FSlateLayoutTransform(FVector2f(0,Y))),Fill(),ESlateDrawEffect::None,C);};
+   auto Tint=[](FLinearColor C,float A){C.A=A;return C;};
+   // The rolling band: the mains beat against the frame rate, one slow pass every seven seconds.
+   const float Roll=-110+(S.Y+220)*float(FMath::Fmod(T*.14,1.));
+   Box(Roll,110,Tint(GreenNow,.022f),L);Box(Roll+104,6,Tint(GreenNow,.045f),L);
+   // The supply's breath: never still, never enough to read as a fault.
+   Box(0,S.Y,Tint(FLinearColor::Black,FMath::Max(0.f,.016f+.016f*float(FMath::Sin(T*45.9)*FMath::Sin(T*2.3)))),L);
+   // A key acknowledged: the whole tube lifts for a twelfth of a second.
+   if(const double K=T-KeyAt;K>=0&&K<.085)Box(0,S.Y,Tint(GreenNow,.05f*float(1-K/.085)),L+1);
+   // A page written: black below the beam, the beam a bright line with its glow above it.
+   const double Wipe=bNewPage?.30:.10;
+   if(Age>=0&&Age<Wipe)
+   {
+    const float Y=S.Y*float(Age/Wipe);
+    Box(Y,S.Y-Y,Tint(BlackNow,bNewPage?1.f:.5f),L+2);Box(Y-22,22,Tint(GreenNow,.07f),L+2);Box(Y-2,3,Tint(GreenNow,bNewPage?.9f:.45f),L+3);
+   }
+   // On the air: lines drop out, a band of snow crosses, the frame dims on a bad beat.
+   if(const float J=Jam?FMath::Clamp(Jam(),0.f,1.f):0.f;J>.03f)
+   {
+    const double Beat=FMath::FloorToDouble(T*17);
+    const int32 Bars=1+int32(J*9);
+    for(int32 I=0;I<Bars;++I)
+    {
+     if(Hash(Beat+I*7.31)>J*.9f)continue;
+     const float Y=S.Y*Hash(Beat*1.7+I*3.1),H=2+26*Hash(Beat*.37+I)*J;
+     Box(Y,H,Hash(Beat+I)<.6f?Tint(BlackNow,.85f):Tint(GreenNow,.10f+.25f*J),L+4);
+    }
+    const float Snow=S.Y*float(FMath::Fmod(T*.61,1.));
+    for(int32 I=0;I<int32(60*J);++I)
+    {
+     const float X=S.X*Hash(Beat*2.3+I*1.37),Y=Snow+60*Hash(Beat+I*5.9)-30;
+     FSlateDrawElement::MakeBox(Out,L+4,G.ToPaintGeometry(FVector2f(6+18*Hash(I+Beat),2),FSlateLayoutTransform(FVector2f(X,Y))),Fill(),ESlateDrawEffect::None,Tint(GreenNow,.25f+.5f*J));
+    }
+    if(Hash(Beat*.91)<J*.35f)Box(0,S.Y,Tint(FLinearColor::Black,.25f+.4f*J),L+4);
+   }
+   // The set coming on: a line across the middle that opens into the picture.
+   if(On>=0&&On<.55)
+   {
+    const float Open=float(FMath::Clamp((On-.12)/.3,0.,1.));const float Half=S.Y*.5f*Open*Open*(3-2*Open),Mid=S.Y*.5f;
+    Box(0,Mid-Half-1,FLinearColor::Black,L+5);Box(Mid+Half+1,S.Y-Mid-Half-1,FLinearColor::Black,L+5);
+    const float Wd=S.X*float(FMath::Clamp(On/.12,0.,1.));
+    if(Open<1)FSlateDrawElement::MakeBox(Out,L+6,G.ToPaintGeometry(FVector2f(Wd,3),FSlateLayoutTransform(FVector2f((S.X-Wd)*.5f,Mid-Half-2))),Fill(),ESlateDrawEffect::None,Tint(GreenNow,.95f));
+    if(Open>0&&Open<1)FSlateDrawElement::MakeBox(Out,L+6,G.ToPaintGeometry(FVector2f(S.X,3),FSlateLayoutTransform(FVector2f(0,Mid+Half-1))),Fill(),ESlateDrawEffect::None,Tint(GreenNow,.95f));
+    Box(0,S.Y,Tint(GreenNow,.10f*float(1-On/.55)),L+6);
+   }
+   return L+7;
+  }
+ };
  FW Frame(const FString& Title,FW Body,TSharedPtr<SWidget> Footer)
  {
   // One header row as in the mockups: station | screen title | day and clock.
@@ -148,7 +227,18 @@ namespace S47FreeformTerminal
   auto Bar=[]{return SNew(STextBlock).Text(FText::FromString(TEXT("|"))).Font(S47Style::Mono(26)).ColorAndOpacity(Green);};
   // The glass is 1200 wide; the frame's padding takes 24 of it (FS47WrapMark).
   S47Kit::FirstFrameWrap(Body,1176.f);
-  return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(12,6))
+  const auto Fx=SNew(SGlassFx);Fx->Born=Now();Fx->Power=PowerAt;Fx->bNewPage=Title!=PageTitle;Fx->Jam=JamSource;PageTitle=Title;
+  const TFunction<float()> Jam=bReel?TFunction<float()>():JamSource; // the reel deck is a panel of lamps, not a tube
+  // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth.
+  const auto Tear=TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([Jam]
+  {
+   const float J=Jam?FMath::Clamp(Jam(),0.f,1.f):0.f;if(J<.15f)return TOptional<FSlateRenderTransform>();
+   const double Beat=FMath::FloorToDouble(Now()*13);const float H=SGlassFx::Hash(Beat*3.3);
+   return H<J*.4f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f((SGlassFx::Hash(Beat)-.5f)*36*J,0))):TOptional<FSlateRenderTransform>();
+  });
+  return SNew(SOverlay)
+  +SOverlay::Slot()
+  [SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(12,6)).RenderTransform(Tear)
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
     [SNew(SHorizontalBox)
@@ -164,7 +254,8 @@ namespace S47FreeformTerminal
    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,8)[Rule(Green)]
    +SVerticalBox::Slot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[Body]]
    // Below the scroll area, so the way out stays in view however long the page is.
-   +SVerticalBox::Slot().AutoHeight().Padding(0,8,0,0)[Footer.IsValid()?Footer.ToSharedRef():SNullWidget::NullWidget]];
+   +SVerticalBox::Slot().AutoHeight().Padding(0,8,0,0)[Footer.IsValid()?Footer.ToSharedRef():SNullWidget::NullWidget]]]
+  +SOverlay::Slot()[bReel?S47Kit::FW(SNullWidget::NullWidget):S47Kit::FW(Fx)];
  }
  FW Nav(const TArray<FNav>& Items)
  {
@@ -173,7 +264,7 @@ namespace S47FreeformTerminal
   {
    const bool Sel=I.bSelected,Attention=I.bAttention;const TFunction<void()> Act=I.Action;
    Box->AddSlot().AutoHeight()
-    [SNew(SButton).ButtonStyle(Sel?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(12,8)).OnClicked_Lambda([Act]{if(Act)Act();return FReply::Handled();})
+    [SNew(SButton).ButtonStyle(Sel?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(12,8)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26)).ColorAndOpacity(Sel?Ink:Green)]
       +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Attention?TEXT("*"):TEXT(""))).Font(S47Style::Mono(26)).ColorAndOpacity_Lambda([Sel]{return FSlateColor((Sel?Ink:Amber)*Pulse(5));})]]];
@@ -188,7 +279,7 @@ namespace S47FreeformTerminal
   {
    const bool Sel=I.bSelected;const TFunction<void()> Act=I.Action;
    Box->AddSlot().AutoWidth().Padding(0,0,10,0)
-    [SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(16,2)).OnClicked_Lambda([Act]{if(Act)Act();return FReply::Handled();})
+    [SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(16,2)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
      [SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26)).ColorAndOpacity(Sel?Ink:Green)]];
   }
   return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,3,0,6)[Rule()];
@@ -217,9 +308,20 @@ namespace S47FreeformTerminal
  FW Big(TAttribute<FString> V,TFunction<void()> Action,int32 Kind,TAttribute<bool> Enabled)
  {
   const FButtonStyle* S=Kind==2?&FilledStyle():Kind==1?&PrimaryStyle():&OutlineStyle();
-  return SNew(SButton).ButtonStyle(S).ContentPadding(FMargin(16,9)).HAlign(HAlign_Center).IsEnabled(Enabled).OnClicked_Lambda([Action]{if(Action)Action();return FReply::Handled();})
+  return SNew(SButton).ButtonStyle(S).ContentPadding(FMargin(16,9)).HAlign(HAlign_Center).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action,Kind]{Key(Kind?1:0);if(Action)Action();return FReply::Handled();})
    [SNew(STextBlock).Text_Lambda([V]{return FText::FromString(V.Get());}).Font(S47Style::Mono(28)).Justification(ETextJustify::Center).AutoWrapText(true).AddMetaData(MakeShared<FS47WrapMark>())
     .ColorAndOpacity_Lambda([Kind,Enabled]{return FSlateColor(!Enabled.Get()?Dim*1.8f:Kind==2?Ink:Kind==1?Amber:Green);})];
+ }
+ FW Picture(UTexture2D* Image,float Width,const FString& Caption,bool bSelected,TFunction<void()> Action,bool bDue)
+ {
+  const TSharedPtr<FSlateBrush> B=S47Kit::BrushFor(Image);
+  const float H=B.IsValid()?Width*B->ImageSize.Y/FMath::Max(1.,B->ImageSize.X):Width*.72f;
+  const FW Face=B.IsValid()?FW(SNew(SImage).Image(B.Get()).ColorAndOpacity(FLinearColor(.46f,1.f,.60f)))
+   :FW(SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Dim*1.6f).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("NO IMAGE"))).Font(S47Style::Mono(Width>200?24:16)).ColorAndOpacity(Dim*2.2f)]);
+  TSharedRef<SVerticalBox> Col=SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SBox).WidthOverride(Width).HeightOverride(H)[Face]];
+  if(!Caption.IsEmpty())Col->AddSlot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(Caption)).Font(S47Style::Mono(18)).ColorAndOpacity(bDue||bSelected?Amber:Green).Justification(ETextJustify::Center)];
+  if(!Action)return Col;
+  return SNew(SButton).ButtonStyle(bSelected?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(4,4)).HAlign(HAlign_Center).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action]{Key(2);Action();return FReply::Handled();})[Col];
  }
  FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows)
  {
@@ -237,7 +339,7 @@ namespace S47FreeformTerminal
   {
    const TFunction<void()> Act=R.Action;
    Box->AddSlot().AutoHeight().Padding(0,2)
-    [SNew(SButton).ButtonStyle(R.bSelected?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(6,7)).OnClicked_Lambda([Act]{if(Act)Act();return FReply::Handled();})[Cells(R.Cells,R.bSelected?Ink:Green,23,R.Badge)]];
+    [SNew(SButton).ButtonStyle(R.bSelected?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(6,7)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})[Cells(R.Cells,R.bSelected?Ink:Green,23,R.Badge)]];
    Box->AddSlot().AutoHeight()[Rule(Dim)];
   }
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(2)[Box];
@@ -385,9 +487,9 @@ namespace S47FreeformTerminal
    OnAim(FVector2D(180.*(1-Th/PI),90.*(1-Rr/R)));
   }
   virtual FReply OnMouseButtonDown(const FGeometry& G,const FPointerEvent& E)override
-  {if(!OnAim||E.GetEffectingButton()!=EKeys::LeftMouseButton)return FReply::Unhandled();AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
+  {if(!OnAim||E.GetEffectingButton()!=EKeys::LeftMouseButton)return FReply::Unhandled();Key(3);AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
   virtual FReply OnMouseMove(const FGeometry& G,const FPointerEvent& E)override
-  {if(!OnAim||!E.IsMouseButtonDown(EKeys::LeftMouseButton))return FReply::Unhandled();AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
+  {if(!OnAim||!E.IsMouseButtonDown(EKeys::LeftMouseButton))return FReply::Unhandled();Key(3);AimFrom(G,E.GetScreenSpacePosition());return FReply::Handled();}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    // Half-sky plot: zenith at the centre of the base line, horizon on the rim,
@@ -466,7 +568,7 @@ namespace S47FreeformTerminal
   TFunction<FString()> Label;TFunction<int32()> State;TFunction<void()> Click;
   void Construct(const FArguments&){ForceVolatile(true);}
   virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(64,64);}
-  virtual FReply OnMouseButtonDown(const FGeometry&,const FPointerEvent& E)override{if(E.GetEffectingButton()==EKeys::LeftMouseButton&&Click){Click();return FReply::Handled();}return FReply::Unhandled();}
+  virtual FReply OnMouseButtonDown(const FGeometry&,const FPointerEvent& E)override{if(E.GetEffectingButton()==EKeys::LeftMouseButton&&Click){Key(0);Click();return FReply::Handled();}return FReply::Unhandled();}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    const FVector2f S(G.GetLocalSize());const int32 St=State?State():0;
