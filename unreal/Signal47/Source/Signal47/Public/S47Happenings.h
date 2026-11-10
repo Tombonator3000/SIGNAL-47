@@ -353,6 +353,9 @@ private:
  double RumorTry=0;
  // A draw has its window: an hour and a half from its time, then it is gone (or given to one that fits, StepSwap).
  static constexpr double DrawWindow=1.5;
+ // LEAD-FIX-20261110: hours of the night each draw was held back by a pointed landing sitting on the ground (S47Hap::SitHold), added
+ // to its window (Due) so it comes right after instead of losing its night; and the clock when that was last counted (-1: not sitting).
+ TMap<FString,double> SitHeld;double SitHeldClock=-1;
  // Between 23 and 01: tonight's hour for the reserve, and the nights that keep a hush instead.
  double LateAt=24.5;bool bLateHush=false;
  // The truck walked back to after a while away (hood_warm, truck_tracks): main's seconds then, and how long away (game seconds).

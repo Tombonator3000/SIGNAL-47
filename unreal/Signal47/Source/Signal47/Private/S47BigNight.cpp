@@ -181,6 +181,31 @@ namespace S47Big
  const TCHAR* const DaleArray=TEXT("Herrgott. The printer ran by itself: all channels over range, nine seconds of it, every one on {azwords}. And the array is still looking there. I did not tell it to.");
  const TCHAR* const DaleGo=TEXT("Out at {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.");
  const TCHAR* const DaleWard=TEXT("And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories.");
+ // DALE-ROUNDS-20261110: Dale's lines by round (BigRound 0, 1, 2): round 0 is the lines above, as they were; rounds 1 and 2 keep the same bearing,
+ // place, distance and instruction in other words (he knows it has happened before; then he is worn and looks after the operator). A new text has
+ // no recorded take (the bank is found by the whole text), so it plays as text only until it is recorded.
+ enum EDale{DSee,DNudge,DArray,DGo,DWard,DFirst,DSlept,DLast,DSlip,DCount};
+ const TCHAR* const DaleAlt[2][DCount]={
+  {TEXT("Again. Bearing {azwords} from the station, low on the horizon, out past {place}. The dishes went round to it by themselves, same as before. Look that way."),
+   TEXT("Look {way} of the station, over {place}. Same sky as last time. Go and look, before it stops."),
+   TEXT("Herrgott. The printer ran by itself again: all channels over range, nine seconds, every one on {azwords}. The array is looking there. I did not tell it to. I did not tell it last time either."),
+   TEXT("Out at {place}, {miles} from the station. Put it on your map. Daylight only, the walkie on you, and you look at the ground before you walk on it. You know the rule now."),
+   TEXT("Write it in the night log now: the hour, the bearing, what you saw. Ward will want the times for the case. Do it while you still have it."),
+   TEXT("Herrgott. Again. Every dish on remote is looking at {az} this morning, {el} degrees up. Same as last time. Not on my log. Not on yours?"),
+   TEXT("Herrgott. You slept through this one. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths again. Not on my log."),
+   TEXT("Leave the array where it is until I have read the encoders. Daylight, and you take the walkie. You know the drill. Out."),
+   TEXT("A slip by the phone, in a hard square hand: \"Array on remote all at {az} this morning, {el} up. Again. Not me. Not you? Leave it so. If you go out to {place}, go by day. D.\"")},
+  {TEXT("Bearing {azwords} from the station, out past {place}, low on the horizon. The dishes are on it already. Again, then. Look that way, and stay close to the door."),
+   TEXT("Look {way} of the station, over {place}. I would not ask if I did not have to. Go on, and come straight back in."),
+   TEXT("Herrgott. The printer again: all channels over range, nine seconds, every one on {azwords}. I have stopped asking why. The array is still looking there."),
+   TEXT("{place}, {miles} from the station. Put it on your map. Not tonight. Daylight, the walkie on you, and look at the ground first. I would rather you did not go at all, but I know better."),
+   TEXT("Write it in the night log: the hour, the bearing, what you saw. Ward wants the times. Do it now, and then sit down. You sound like you need it."),
+   TEXT("Herrgott. Again. Every dish on remote is looking at {az} this morning, {el} degrees up. I am tired of saying it. Not on my log. Are you all right?"),
+   TEXT("Herrgott. You slept through it. Good. Sleep when you can. Every dish on remote is looking at {az} this morning, {el} degrees up. Not on my log."),
+   TEXT("Leave the array where it is until I have read the encoders. If you go out there, go by daylight and take the walkie. And call me if anything is wrong. Any hour. Out."),
+   TEXT("A slip by the phone, in a hard square hand: \"Array on remote all at {az} this morning, {el} up. Again. Not me. If you go out to {place}, go by day, take the walkie, and come back. D.\"")}};
+ const TCHAR* const Dale0[DCount]={DaleSee,DaleNudge,DaleArray,DaleGo,DaleWard,DaleFirst,DaleSlept,DaleLast,Slip};
+ const TCHAR* DaleFor(int32 Round,int32 K){return Round<=0?Dale0[K]:DaleAlt[FMath::Min(Round,2)-1][K];}
  // On the CB from somebody else out on the road, as the shape stands: first line, second line, for each shape.
  const TCHAR* const CbLive[3][2]={
   {TEXT("Breaker one-nine, anybody else seeing this? There's a light standing straight up out past {place}. I'm {from} and I can read my map by it."),TEXT("It's just standing there, like a post. And my radio's singing one note at me.")},
@@ -689,8 +714,8 @@ void FS47Happenings::StepBig(double Dt)
  if(Crossed(Turn))BigTurnArray(false);
  if(bBigMotors&&Age>Turn+3&&M->Web&&!M->Web->DishesMoving()){if(A)A->StopMotors();bBigMotors=false;}
  // Dale, as the array turns: where to look. Then, while it waits for the eyes and nobody looks, once more.
- if(Crossed(Turn+2.5)&&!B.bSee){B.bSee=true;QueueBig(0,{Dale(Fill(DaleSee,Place,BigAz))},FString(),0,25);}
- if(!B.Hold.bReleased&&!B.bNudge&&B.Hold.Held>=14&&!bLooking){B.bNudge=true;QueueBig(0,{Dale(Fill(DaleNudge,Place,BigAz,S47Hap::Compass(BigAz)))},FString(),0,20);}
+ if(Crossed(Turn+2.5)&&!B.bSee){B.bSee=true;QueueBig(0,{Dale(Fill(DaleFor(BigRound,DSee),Place,BigAz))},FString(),0,25);}
+ if(!B.Hold.bReleased&&!B.bNudge&&B.Hold.Held>=14&&!bLooking){B.bNudge=true;QueueBig(0,{Dale(Fill(DaleFor(BigRound,DNudge),Place,BigAz,S47Hap::Compass(BigAz)))},FString(),0,20);}
  if(Crossed(Climax))
  {
   B.bUp=true;
@@ -771,9 +796,9 @@ void FS47Happenings::StepBig(double Dt)
    B.bAfter=true;
    double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
    const FString Far=Miles(FVector2D::Distance(FVector2D(SaroX,SaroZ),FVector2D(BigX,BigZ)));
-   QueueBig(0,{Dale(Fill(DaleArray,Place,BigAz))},FString(),6,60);
-   QueueBig(0,{Dale(Fill(DaleGo,Place,BigAz,FString(),Far))},FString(),7,80);
-   QueueBig(0,{Dale(Fill(DaleWard,Place,BigAz))},FString(),8,100);
+   QueueBig(0,{Dale(Fill(DaleFor(BigRound,DArray),Place,BigAz))},FString(),6,60);
+   QueueBig(0,{Dale(Fill(DaleFor(BigRound,DGo),Place,BigAz,FString(),Far))},FString(),7,80);
+   QueueBig(0,{Dale(Fill(DaleFor(BigRound,DWard),Place,BigAz))},FString(),8,100);
    if(FSite* S=SiteOf(TEXT("bigmark")))S->bKnown=true;
   }
   M->RequestAutosave();
@@ -1036,9 +1061,9 @@ void FS47Happenings::StepBigAfter()
      if(!Guard.IsValid())return;
      const S47Big::FWords& Wd=S47Big::Words[FMath::Clamp(BigVar,0,2)];
      BigDaleLines.Reset();
-     BigDaleLines.Add(S47Big::Dale(S47Big::Put(bSlept?S47Big::DaleSlept:S47Big::DaleFirst,Place,FString(),FString(),BigAz,BigEl)));
+     BigDaleLines.Add(S47Big::Dale(S47Big::Put(S47Big::DaleFor(BigRound,bSlept?S47Big::DSlept:S47Big::DFirst),Place,FString(),FString(),BigAz,BigEl)));
      BigDaleLines.Add(S47Big::Dale(S47Big::Put(Wd.DaleLine,Place)));
-     BigDaleLines.Add(S47Big::Dale(S47Big::DaleLast));
+     BigDaleLines.Add(S47Big::Dale(S47Big::DaleFor(BigRound,S47Big::DLast)));
      BigDaleIn=Paced+1.5;
      BigFollow.Add(TEXT("dale"));
      if(FSite* S=SiteOf(TEXT("bigmark")))S->bKnown=true;
@@ -1052,7 +1077,7 @@ void FS47Happenings::StepBigAfter()
   const bool bNoSet=!M->FieldRadio.IsValid()||!M->FieldRadio->Owned();
   if((bNoSet||BigFollow.Contains(TEXT("missed")))&&Hour>=8.5&&bSaro&&!Outdoors()&&!M->ModalOpen()&&M->UI)
   {
-   M->UI->Toast(S47Big::Put(S47Big::Slip,Place,FString(),FString(),BigAz,BigEl),11);
+   M->UI->Toast(S47Big::Put(S47Big::DaleFor(BigRound,S47Big::DSlip),Place,FString(),FString(),BigAz,BigEl),11);
    BigFollow.Add(TEXT("slip"));
    if(FSite* S=SiteOf(TEXT("bigmark")))S->bKnown=true;
    UE_LOG(LogS47BigNight,Display,TEXT("S47: big night: Dale's slip by the phone read"));
@@ -1320,6 +1345,25 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   Check(FMath::Abs(Never-(Climax+HoldMost))<1.,FString::Printf(TEXT("BIGNIGHT-SEEN: never looked at, its height comes at the latest %.0f s later (at %.1f s)"),HoldMost,Never));
   Check(Always>0&&Always<Climax+.5,FString::Printf(TEXT("BIGNIGHT-SEEN: looked at as it builds, its height comes on time (at %.1f s)"),Always));
   Check(Late>50+GazeNeed-.2&&Late<50+GazeNeed+1.5,FString::Printf(TEXT("BIGNIGHT-SEEN: looked at from 50 s on, it waits for %.1f s of looking and comes then (at %.1f s)"),GazeNeed,Late));
+ }
+ {
+  // DALE-ROUNDS-20261110: three rounds, three wordings; each keeps the bearing, place, distance and way, and none says what it must not.
+  using namespace S47Big;
+  bool bFilled=true,bClean=true;FString Why;
+  for(int32 K=0;K<DCount;++K)for(int32 Rd=0;Rd<3;++Rd)
+  {
+   const FString F=Fill(DaleFor(Rd,K),TEXT("the salt lick"),175,TEXT("south"),Miles(2018));
+   const FString P=Put(DaleFor(Rd,K),TEXT("the salt lick"),FString(),FString(),175,4);
+   const bool bBear=K==DSee||K==DArray?F.Contains(TEXT("one-seven-five")):(K==DFirst||K==DSlept||K==DSlip)?P.Contains(TEXT("175")):true;
+   const bool bPlace=K==DSee||K==DNudge||K==DGo?F.Contains(TEXT("the salt lick")):K==DSlip?P.Contains(TEXT("the salt lick")):true;
+   const bool bFar=K==DGo?F.Contains(TEXT("a mile and a half")):K==DNudge?F.Contains(TEXT("south")):true;
+   bFilled&=bBear&&bPlace&&bFar&&!F.Contains(TEXT("{azwords}"))&&!F.Contains(TEXT("{miles}"))&&!F.Contains(TEXT("{way}"))&&!P.Contains(TEXT("{az}"))&&!P.Contains(TEXT("{el}"))&&!P.Contains(TEXT("{place}"));
+   for(const TCHAR* Not:{TEXT("47"),TEXT("1947"),TEXT("8.15"),TEXT("cable"),TEXT("Tom"),TEXT("silhouette"),TEXT("taken"),TEXT("alien"),TEXT("UFO"),TEXT("saucer"),TEXT("Reyes")})if(F.Contains(Not)||P.Contains(Not)){bClean=false;Why=F.Left(40);}
+   if(!S47Hap::Clean(F)||S47Hap::Concluding(F)){bClean=false;Why=F.Left(40);}
+   if(Rd>0&&FString(DaleFor(Rd,K))==FString(DaleFor(0,K))){bFilled=false;Why=F.Left(40);}
+  }
+  Check(bFilled&&bClean&&FString(DaleFor(0,DSee))==FString(DaleSee)&&FString(DaleFor(1,DSee))!=FString(DaleFor(2,DSee))&&FString(DaleFor(0,DSee))!=FString(DaleFor(1,DSee))&&DaleFor(5,DGo)==DaleFor(2,DGo)&&DaleFor(-1,DGo)==DaleGo,
+   TEXT("BIG-ROUNDS: round 0 is as it was, rounds 2 and 3 have their own wording for every line on the walkie, all with bearing, place, distance and way filled, none saying what it must not ")+Why);
  }
  {
   using namespace S47Big;

@@ -125,14 +125,21 @@ namespace S47Hap
  bool LeadEarly(double AwayM,bool bInSaro,double HourOfNight){return !bInSaro&&HourOfNight>=19&&AwayM>=0&&AwayM<=LeadEarlyM;}
  // Too near its place: put out along the line from the player through it, past the least distance its kind keeps. Still out by that
  // place and never on top of the player, instead of drawn somewhere else (as it was: the slip then pointed at nothing).
- FVector2D LeadOut(const FVector2D& Player,const FVector2D& Place,const FVector2D& Saro,double MinM)
+ FVector2D LeadOut(const FVector2D& Player,const FVector2D& Place,const FVector2D& Saro,double MinM,double Way=1.)
  {
   const FVector2D To=Place-Player;const double D=To.Size();
   if(D>=MinM)return Place;
-  FVector2D Dir=D>1.?To/D:(Place-Saro).GetSafeNormal();
-  if(Dir.IsNearlyZero())Dir=FVector2D(1,0);
+  // LEAD-FIX-20261110: out along SARO's own line through the place, past it, to the first point the least distance and fifty metres
+  // from the player: the bearing the slip printed then still holds (moved sideways from the player it could fall outside the slip's
+  // ±N, and so could the ring's logged bearing). The slip says which way, not how far. Way -1: on the same line, back toward SARO.
+  const FVector2D Ray=(Place-Saro).GetSafeNormal();
+  if(!Ray.IsNearlyZero()){const double Along=FVector2D::DotProduct(To,Ray),R=MinM+50.;return Place+Ray*(-Along+Way*FMath::Sqrt(FMath::Max(0.,Along*Along-(D*D-R*R))));}
+  FVector2D Dir=D>1.?To/D:FVector2D(1,0);
   return Player+Dir*(MinM+50.);
  }
+ // LEAD-FIX-20261110: hours of the night since the clock last counted, while a pointed landing sits and holds a draw back (none at
+ // the first count; a minute of the night at most at once, so a skip or a sleep is not counted as held).
+ double SitHold(double LastClock,double ClockNow){return LastClock<0?0.:FMath::Clamp(ClockNow-LastClock,0.,60.)/3600.;}
  // What does not hold the ground: lasting things out on the land, the clock, a word on the radio.
  bool Background(const FString& Id)
  {
@@ -735,6 +742,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
+ SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
@@ -1159,7 +1167,10 @@ FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,d
  if(!LeadNow.bPointed&&!LeadFits(Away,MinM,MaxM,false)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
  S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;
  // LEAD-FELT-20261110: pointed at, and the player stands too near it: out past them by that place (S47Hap::LeadOut), not elsewhere.
- if(LeadNow.bPointed&&Away>=0&&Away<MinM){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);const FVector2D Out=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM);S.X=Out.X;S.Z=Out.Y;}
+ if(LeadNow.bPointed&&Away>=0&&Away<MinM){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);FVector2D Out=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM);
+  // LEAD-FIX-20261110: past the place it would leave the land: on the same bearing back toward SARO instead, never past SARO.
+  if(!S47OpenLand::InRim(Out.X,Out.Y,50)){const FVector2D Back=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM,-1.);if(S47OpenLand::InRim(Back.X,Back.Y,50)&&FVector2D::DotProduct(Back-FVector2D(SaroX,SaroZ),FVector2D(E->X-SaroX,E->Z-SaroZ))>0)Out=Back;}
+  S.X=Out.X;S.Z=Out.Y;}
  // Asked on every try while the rhythm holds it back: said once for each night's place.
  static FString SaidLead;const FString Key=FString::Printf(TEXT("%d/%s/%d"),LeadNow.Night,*E->Id,LeadNow.bPointed?1:0);
  if(SaidLead!=Key){SaidLead=Key;UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,LeadNow.bPointed?TEXT(", a slip pointed there"):TEXT(""));}
@@ -1556,6 +1567,7 @@ void FS47Happenings::PlanTonight(int32 Night)
 {
  CloseTally(Night);
  Plan.Reset();PlanNight=Night;bLate=false;HumorKind.Empty();DangerAt=-1;RefusedSaid.Reset();LateDrawSaid.Reset();
+ SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return;
  const int32 Seed=F->Seed();
  // This week's row of the curve: how much each level is worth, how near things come, how likely the night's danger is.
@@ -1725,7 +1737,8 @@ bool FS47Happenings::Due(const FString& Id) const
   double Px=0,Pz=0;
   if(PlayerRoad(Px,Pz)&&S47Hap::LeadEarly(FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)),FS47FieldRadio::InSaroBuilding(M),H)&&(LeadNow.Kind!=TEXT("landing")||H>=24.))Start=H; // (a landing never before midnight: the evening has hints only)
  }
- return S47Hap::DueAt(H,Start,IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow)&&!(Last&&*Last==M->Freeform->Day());
+ // LEAD-FIX-20261110: and as long again as a pointed landing sitting on the ground held it back (SitHeld): it comes after, not never.
+ return S47Hap::DueAt(H,Start,(IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow)+SitHeld.FindRef(Id))&&!(Last&&*Last==M->Freeform->Day());
 }
 bool FS47Happenings::MayStart(const FString& Id)
 {
@@ -2040,6 +2053,11 @@ void FS47Happenings::Step(double Dt)
  if(F->RulesLive()&&!F->InTutorial())
  {
   StepSwap();
+  // LEAD-FIX-20261110: a landing a slip pointed at, sitting (StartLanding gave it more than a landing's own length): what it holds back
+  // below is held for that long more (SitHeld, Due), one at a time and right after, never two on the ground at once.
+  const bool bSitHolds=Now.Id==TEXT("landing")&&!Now.bForced&&Now.Len>S47Hap::LandingLen;
+  const double SitDt=bSitHolds?S47Hap::SitHold(SitHeldClock,F->Clock()):0.;
+  SitHeldClock=bSitHolds?F->Clock():-1.;
   static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("road_glimpse"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
    TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
    TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller")};
@@ -2048,7 +2066,7 @@ void FS47Happenings::Step(double Dt)
    if(!Due(Id)||Paced<TryAt.FindRef(Id))continue;
    const bool bGround=!S47Hap::Background(FString(Id));
    // Nothing else, not even a word on the CB, while a danger holds the ground.
-   if((bGround||Now.bDanger)&&!Now.Id.IsEmpty())continue;
+   if((bGround||Now.bDanger)&&!Now.Id.IsEmpty()){if(bGround&&SitDt>0&&Now.Id!=Id)SitHeld.FindOrAdd(FString(Id))+=SitDt;continue;}
    FString Why;
    if(StartEvent(Id,FString(),false,Why))break;
    // Not here, not now: said once for each reason, and asked again in a few seconds of the night's pace, not every frame.
@@ -4625,6 +4643,16 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
    const FVector2D Far=H::LeadOut(FVector2D(-100,0),Place,Saro,250),Near=H::LeadOut(FVector2D(380,0),Place,Saro,250),On=H::LeadOut(Place,Place,Saro,250);
    Check(Far.Equals(Place)&&FVector2D::Distance(Near,FVector2D(380,0))>=250&&Near.X>400&&FVector2D::Distance(On,Place)>=250&&On.X>400,
     TEXT("standing at a pointed lead's place, it comes down past the player beyond that place (away from SARO), never on top of them and never elsewhere"));
+   // LEAD-FIX-20261110: beside the place (not between it and SARO), still out on the slip's own bearing, not off to the side of it.
+   const FVector2D Side=H::LeadOut(FVector2D(400,100),Place,Saro,250);
+   const FVector2D Inward=H::LeadOut(FVector2D(380,0),Place,Saro,250,-1.);
+   Check(FMath::Abs(Side.Y)<.01&&Side.X>400&&FVector2D::Distance(Side,FVector2D(400,100))>=250&&FMath::Abs(Inward.Y)<.01&&Inward.X>0&&Inward.X<380&&FVector2D::Distance(Inward,FVector2D(380,0))>=250,
+    TEXT("one beside a pointed lead's place sees it come down on SARO's line through that place, so the slip's bearing and the ring's agree"));
+   // LEAD-FIX-20261110: the 9 November car_dies drawn for 22:44 came at 23:27 behind a sitting landing; near its window's end it was lost.
+   const double Drawn44=22.+44./60.,Held=H::SitHold(100,101)*396.;
+   Check(H::SitHold(-1,100)==0&&FMath::IsNearlyEqual(H::SitHold(100,101),1./3600.)&&FMath::IsNearlyEqual(H::SitHold(100,5000),60./3600.)
+    &&!H::DueAt(Drawn44+DrawWindow+.05,Drawn44,Drawn44+DrawWindow)&&H::DueAt(Drawn44+DrawWindow+.05,Drawn44,Drawn44+DrawWindow+Held),
+    TEXT("a draw held back by a pointed landing sitting on the ground keeps its window as long again, and comes after it; a skip is not held time"));
   }
   FS47Happenings Empty(nullptr);FString E,T;double X=0,Z=0;bool bAhead=true;
   Check(!Empty.Lead().IsSet()&&!Empty.OutTonight(3,E,T,X,Z,bAhead)&&!bAhead,TEXT("with nothing drawn there is nothing out there for a slip to point at"));

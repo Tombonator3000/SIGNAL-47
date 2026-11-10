@@ -292,7 +292,10 @@ FNote BuildNote(const FIn& In, bool bAll)
   for (const FWork& W : All) if (IsOpen(W) && W.Windowed() && W.Start > Clock && (!Soon || W.Start < Soon->Start)) Soon = &W;
   const double Hour = FMath::Fmod(Clock, Day) / 3600.;
   FString Say;
-  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + TEXT(". Be there for it: up to 20 minutes may go unwatched, but time skipped past it records nothing.") /* LEFTOVERS-CHAIN-TEXT-20261110 */;
+  // LEAD-FIX-20261110: as the gates in FS47CaseFieldTests have it: the roof wants a minute heard in the control room; the gate and the
+  // field post count 20 minutes skipped (FS47FreeformCases::UnwatchedAllowance); a job's window simply has to be worked in.
+  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + (Now->L.Source.StartsWith(TEXT("CONTROL ROOM")) ? TEXT(". One minute of it heard in the control room will do; skipped time is not heard.")
+   : Now->L.Source.Contains(TEXT("SERVICE GATE")) || Now->L.Source.Contains(TEXT("FIELD POST")) ? TEXT(". Up to 20 minutes of it may be skipped or slept; more, and it records nothing.") : TEXT(". Time skipped past it records nothing."));
   else if (Soon)
   {
    const FString At = NightOf(Soon->Start) != NightOf(Clock) ? FString::Printf(TEXT("%s on shift day %d"), *HourMinute(Soon->Start), NightOf(Soon->Start)) : HourMinute(Soon->Start);
@@ -319,7 +322,7 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  // Freeform, shift day 2 at 22:39 (Tom's picture, 9 November): the roof test planned for 01:30 to 04:30, film in the lab, a card
  // filed and two open (one the evening's), a case with no test, a paper from the box not read.
  const double Day2 = 86400.;
- const FString Roof = TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. SHIFT DAY 2 / 01:30 to SHIFT DAY 2 / 04:30 (after midnight). Skipping time past the window counts for nothing; be in the room for it.");
+ const FString Roof = TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. SHIFT DAY 2 / 01:30 to SHIFT DAY 2 / 04:30 (after midnight). One minute of it must be heard from the control room, in wind like the ribbon's; skipped time is not heard.");
  FIn In;
  In.bFreeform = true;
  In.Clock = Day2 + 22 * 3600. + 39 * 60.;
@@ -351,7 +354,7 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  In.Clock = Day2 + 86400. + 2 * 3600.;
  N = Build(In);
  const int32 Roofed = Find(N, TEXT("CONTROL ROOM"));
- Check(Roofed != INDEX_NONE && N.Lines[Roofed].Mark == EMark::Next && N.Clock.StartsWith(TEXT("The window is open until 04:30.")), TEXT("in the window the roof is the next step, and the clock says until when"));
+ Check(Roofed != INDEX_NONE && N.Lines[Roofed].Mark == EMark::Next && N.Clock.StartsWith(TEXT("The window is open until 04:30.")) && N.Clock.Contains(TEXT("control room")) && !N.Clock.Contains(TEXT("20 minutes")), TEXT("in the window the roof is the next step, and the clock says until when, and that a minute in the room is what counts (LEAD-FIX-20261110)"));
  // Freeform never shows a spoiler, from wherever it comes.
  FIn Bad = In;
  Bad.Tasks.Add({ TEXT("RECORDS ROOM / File the 1947 photograph with the others."), false });
