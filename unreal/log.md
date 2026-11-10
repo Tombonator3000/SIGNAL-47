@@ -2209,3 +2209,7 @@ d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet
 ## 10. november kl. 04:11 (Claude Code, nattskift): d41 installert
 
 `f2ca5e72`: Dales replikker for runde 2 og 3, utpekt landing som ikke tar andres trekkvindu, ingen mateledningsfeil på netter med ledetråd, skriverlinja følger kveldskartet, tekstrettinger, kritikerrunde med tre rettinger. Selvtest 4116 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS på `219a46c5`. Testspilling n13 (natt 15–25, store netter på): runde 3 natt 18, utpekte landinger natt 15, 19 og 23, mateledningsfeil bare dag 16 og 24 (uten ledetråd). Ledig disk 152 GB; tilbakerulling d40. Ved neste samlede rydding kan d36, d37 og d38 tas (d39, d40, d41 beholdes).
+
+## 10. november kl. 05:39 (Claude Code, nattskift): d42 installert
+
+`84510b26`: utpekt landing venter til midnatt også når den var trukket for kvelden, feltbesøket venter på den store natta og kommer etter nattens utpekte landing, testspilleren kan stå ute og se mot hendelsene (`-S47NaturalStand=land`). Selvtest 4116 OK, røyktest av kandidat og installert. Testspilling n14/n16 (spiller ute, natt 5–14): 22 startet, 18 merket; etter rettingen stor natt sett natt 10 og utpekt landing natt 13. Månedsprøver routine og cases PASS på `f2ca5e72`. Ledig disk 147 GB; tilbakerulling d41. Ved neste samlede rydding kan d36–d39 tas (d40, d41, d42 beholdes).

@@ -4,7 +4,16 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 04:11 (d41): `f2ca5e72` på `claude/day-20261109`
+## Installert 10. november kl. 05:39 (d42): `84510b26` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d41 (`f2ca5e72`). Ledig disk etterpå: 147 GB. Ikke spilt av Tom.
+
+Nytt siden d41, funnet i automatisk testspilling med en spiller som står ute fra kl. 21 (natt 5–14):
+- En utpekt landing kommer nå aldri før midnatt. I d40 og d41 kunne den komme om kvelden når den var trukket for kvelden (sett kl. 22:34 natt 6).
+- Feltbesøket på jordet venter på netter som eies av den store natta, og kommer etter nattens utpekte landing. Før tok det plassen til begge (natt 10 og natt 13).
+- Samme spilling: 22 hendelser startet og 18 merket på ti netter, første merket mellom 22:15 og 00:16, utpekte landinger sett natt 6, 9 og 13, stor natt sett natt 10. Feltbesøk fem av ti netter for en spiller som står ved gården.
+
+## Tidligere: installert 10. november kl. 04:11 (d41): `f2ca5e72` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d40 (`7c26148b`). Ledig disk etterpå: 152 GB. Månedsprøvene routine og cases besto på `219a46c5`, ikke på endelig commit. Ikke spilt av Tom.
 
@@ -23,7 +32,7 @@ Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4112 kontroller)
 
 Nytt siden d39 (nattskift 9.–10. november):
 - [Sammenfletting](../Research/Gameplay/SAMMENFLETTING_2026-11-09.md) trinn 2–5: nattark med tre linjer (penger, åpnet, Ward), funn åpner varer, Ward krever én sak med noe hentet ute, sakene velges før prøven vises og ett spor stemmer alltid, store netter også i uke 2 og 3 (ubrukte varianter, nye steder), regelrettingene, glimt fra SARO-vinduene og Earl/CB som nevner natta.
-- Utpekt landing står tent på bakken 180–360 s, letter når spilleren nærmer seg (300/200/120 m etter tidsnivå), kan ses fra vinduene og kommer aldri før midnatt. Sett i automatisk testspilling natt 6 og 9; kortspilleren ser ikke ut, så «sett» er ikke målt.
+- Utpekt landing står tent på bakken 180–360 s, letter når spilleren nærmer seg (300/200/120 m etter tidsnivå), kan ses fra vinduene. Den kunne likevel komme før midnatt når den var trukket for kvelden; rettet i d42. Sett i automatisk testspilling natt 6 og 9; kortspilleren ser ikke ut, så «sett» er ikke målt.
 - Stor natt i uke 2 kjørt i testspilling (natt 9, «fallet» ved den tørre bekken, 1625 m). Dales replikker er de samme som i uke 1; egne replikker ligger som patch.
 - UFO-lys større med fargeblink og størrelsesblink; dempes av innstillingen for rolige blink.
 - Feltpengene heter «field allowance» overalt; ukearket viser taket.
