@@ -25,7 +25,8 @@ public:
  // channel 1; a voice too broken to make out comes on any. DALE-WIRE-20261109: in Freeform a line of Dale's with a take in the
  // "dale" bank (FS47DaleVoice, looked up whole before the set breaks it up) is heard in his own voice instead of the set's chatter,
  // and its caption follows his measured speech; without one it is as before.
- bool Message(const FString& Text);
+ bool Message(const FString& Text,bool bDeskToo=false);
+ bool OnDesk() const { return !bOwned && !bLeftOut && bAvailable && !bUnsupported && Chan==1; }
  // Dale is speaking on the set in his own voice just now.
  bool DaleSpeaking() const;
  // MSG-ONE-20261109: Dale's voice is on the carried set now: a CB call does not start over him, it waits (one speaker at a time).

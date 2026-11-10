@@ -212,9 +212,10 @@ bool FS47FieldRadio::Build()
  for(auto C:Copies) if(C.IsValid()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  return true;
 }
-bool FS47FieldRadio::Message(const FString& Text)
+bool FS47FieldRadio::Message(const FString& Text,bool bDeskToo)
 {
- if(!bOwned||bLeftOut||!M)return false;
+ // NIGHT-20261110: a set never taken off the SARO desk is still on, and is heard in the building (the big night's Dale, play n18).
+ if(!M||bLeftOut||(!bOwned&&!(bDeskToo&&OnDesk()&&InSaroBuilding(M))))return false;
  // CB-WALKIE-20261108: the walkie is Dale's. His come on channel 1 only, under the set's own caption head; a voice that is too
  // broken to make out comes on whatever channel it is on.
  FString Who,Said=Text;

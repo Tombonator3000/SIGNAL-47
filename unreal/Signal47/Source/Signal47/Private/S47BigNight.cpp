@@ -916,8 +916,8 @@ void FS47Happenings::SayBig()
  double Secs=0;bool bSaid=false;
  if(S.Kind==0)
  {
-  if(!R||!R->Owned()){Drop(TEXT("no walkie"));return;}
-  bSaid=R->Message(S.Lines[0]);Secs=4.+S.Lines[0].Len()/15.;
+  if(!R||!(R->Owned()||(R->OnDesk()&&FS47FieldRadio::InSaroBuilding(M)))){Drop(TEXT("no walkie"));return;}
+  bSaid=R->Message(S.Lines[0],true);Secs=4.+S.Lines[0].Len()/15.;
  }
  else if(S.Kind==1)
  {
