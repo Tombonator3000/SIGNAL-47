@@ -65,10 +65,10 @@ public:
 	/** True once, when the swap has run its time; the caller then spends the spare and calls Refill. */
 	bool TakeSwapDone() { const bool bDone = bSwapDone; bSwapDone = false; return bDone; }
 	/** A fresh dry cell. */
-	void Refill() { Battery = 1; bSaidLow = bSaidDead = false; }
+	void Refill() { Battery = 1; SputterT = 0; bSaidLow = bSaidDead = false; }
 	/** SARO's charger: K is a share of a full charge. */
 	void Charge(double K) { Battery = FMath::Clamp(Battery + K, 0.0, 1.0); if (Battery >= LowLevel) bSaidLow = false; if (Battery > 0) bSaidDead = false; }
-	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
+	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); SputterT = 0; bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
 	/** A weak cell (Freeform, M2): now and then the bulb drops out for a moment, oftener the lower it is, like a loose contact or
 	 *  something near (FS47GearFlicker). Times a second; 0 for a good cell. */
 	static double CellDropRate(double Full);
@@ -78,6 +78,13 @@ public:
 	int32 TakeNotice();
 	/** The beam's share of full for this battery level: 1 down to LowLevel, then falling to a faint glow. */
 	static double BatteryGain(double Full);
+	/** N1110 FLASHLIGHT-BATTERY-03: a weak cell goes warmer and amber (0 at the low mark, 1 empty). Alien interference never changes the colour. */
+	static double WarmShare(double Full);
+	/** N1110: the one short sputter when the cell falls under the low mark: three quick dips of falling spacing (a slow, tired rhythm,
+	 *  not the fast uneven flutter of something near). Seconds since it began; the share of the beam kept, 1 outside it. */
+	static constexpr double SputterSeconds = 0.9;
+	static double SputterGain(double Seconds);
+	bool Sputtering() const { return SputterT > 0; }
 
 	/** three's intensity now (the tests): 0 when off. */
 	double Intensity() const { return ThreeIntensity; }
@@ -100,7 +107,7 @@ private:
 	bool bNativeNearReady = false, bLogNear = false;
 	TMap<FString, double> Flicks, Sags;
 	double SagK = 0;
-	double Battery = 1, CellDark = 0;
+	double Battery = 1, CellDark = 0, SputterT = 0, WarmNow = -1;
 	int32 Cuts = 0;
 	double SwapT = 0;
 	bool bSwapDone = false;

@@ -25,6 +25,7 @@
 #include "S47Fatigue.h"
 #include "S47Handling.h"
 #include "S47SaroCot.h"
+#include "S47Hide.h"
 #include "S47WeatherLive.h"
 #include "S47Sneak.h"
 #include "S47Omen.h"
@@ -287,7 +288,7 @@ void AS47HUD::Start()
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)
 		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)
-		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines); // (M5: PHYSICS-20261108 and its lure, SARO-COT)
+		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines) & FS47Hide::SelfTest(Lines); // (N1110: hiding; M5: PHYSICS-20261108 and its lure, SARO-COT)
 		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);

@@ -298,6 +298,8 @@ public:
  TSharedPtr<class FS47Handling> Handling;
  // The cot at SARO, the same rest as OPS (SARO-COT): S47SaroCot.h.
  TSharedPtr<class FS47SaroCot> Cot;
+ // N1110 (HORROR-IDEAS-20261106-10 point 6): hiding under the control-room desk or the archive table (S47Hide.h). Nothing saved.
+ TSharedPtr<class FS47Hide> Hide;
  // N1110 (N1110-1, N1110-2): how much the player has been bothering them, and what comes of it (S47Attention.h). Saved "attention".
  TSharedPtr<class FS47Attention> Attention;
  // N1110 (N1110-6): the door loop at SARO, the visit's other shape (S47DoorLoop.h). Nothing saved.

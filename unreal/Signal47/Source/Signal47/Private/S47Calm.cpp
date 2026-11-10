@@ -1,6 +1,7 @@
 #include "S47Calm.h"
 #include "S47EventScript.h"
 #include "S47Freeform.h"
+#include "S47FarmSite.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
@@ -53,6 +54,7 @@ void FS47Calm::Reset()
 	Night = Played = 0;
 	NextTry = 0;
 	DangerEnd = -1e9;
+	LastAlarm = -1e9;
 	ReliefAt = -1;
 	PrevBusy = NAME_None;
 	bPrevDanger = false;
@@ -96,14 +98,20 @@ void FS47Calm::Step(double Dt)
 		if (Clock < ReliefAt) return;
 		if (bDriving) return;  // wait until the wheel is let go
 		ReliefAt = -1;
+		// N1110: by day (before 19:30 or after 05:30) the relief is dropped: a thought about the dark and a radio at night make no sense in daylight
+		const double Rh = NightHourOf(Clock);
+		if (Rh < 19.5 || Rh > 29.5) { UE_LOG(LogS47Calm, Display, TEXT("S47: calm: no relief in daylight (hour %.1f), %.0f s after the danger"), Rh, Clock - DangerEnd); return; }
 		FS47EventCtx Ctx;
-		if (S47EventScript::Play(M, ReliefScript(), Ctx)) { ++Reliefs; UE_LOG(LogS47Calm, Display, TEXT("S47: calm: the night eases, day %d"), F->Day()); }
+		if (S47EventScript::Play(M, ReliefScript(), Ctx)) { ++Reliefs; UE_LOG(LogS47Calm, Display, TEXT("S47: calm: the night eases, day %d, %.0f s of the clock after the danger"), F->Day(), Clock - DangerEnd); }
 		return;
 	}
 
 	// False alarms: evening only, not the first shift, in the dark, nothing else near.
 	if (F->Day() < 2 || bDriving || Played >= AlarmsFor(F->Seed(), Night)) return;
 	if (M->T < NextTry) return;
+	// N1110: not on top of a reader, a repair or any other open panel, nor a pause, a visit or anything the Director holds
+	if (F->Held() || M->ModalOpen() || M->OneAtATime() || (F->Taken && F->Taken->Busy()) || (F->FarmSite && F->FarmSite->VisitWantsGround())) { NextTry = M->T + 5.; return; }
+	if (!GapOK(LastAlarm, Clock)) return;  // N1110: two alarms are at least twenty minutes of the clock apart
 	NextTry = M->T + 5.;
 	const double H = NightHourOf(Clock);
 	if (H < SlotHour(F->Seed(), Night, Played) || H > 25.5) return;
@@ -117,6 +125,7 @@ void FS47Calm::Step(double Dt)
 		FS47EventCtx Ctx;
 		if (!S47EventScript::Play(M, Id, Ctx)) continue;
 		++Played;
+		LastAlarm = Clock;
 		F->Director->RestFor(30.);
 		UE_LOG(LogS47Calm, Display, TEXT("S47: calm: false alarm %s, night %d, %d of %d"), *Id, Night, Played, AlarmsFor(F->Seed(), Night));
 		return;
@@ -171,6 +180,10 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 			bFinding |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Silence;
 		}
 		Check(bGood && bDale && bThought && !bFinding, TEXT("calm_after: night sounds, a calm thought, Dale checks in; no finding, no silence, no camera"));
+	}
+	{
+		// the gap between two alarms is the clock's, not the frame's: the same twenty minutes the danger rest uses
+		Check(GapOK(-1e9, 0.) && !GapOK(1000., 1060.) && GapOK(1000., 1000. + 20 * 60.), TEXT("an alarm waits twenty clock minutes after the last one"));
 	}
 	FS47Calm Bare(nullptr);
 	Bare.Step(1.);

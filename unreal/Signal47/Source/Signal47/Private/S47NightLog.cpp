@@ -20,6 +20,8 @@
 #include "S47Story.h"
 #include "S47Taken.h"
 #include "S47UI.h"
+#include "S47Places.h"
+#include "S47Witness.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47NightLog, Log, All);
 
@@ -357,6 +359,15 @@ TArray<FS47NightLog::FEvent> FS47NightLog::Events() const
 		E.Clock = O.Clock; E.When = WhenOf(O.Clock); E.Place = O.Place; E.Kind = O.Kind; E.Text = O.Text; E.bOwn = true;
 		Out.Add(E);
 	}
+	// N1110 PHOTO-03: what people said they saw, kept with who and where; not confirmed until the player's own photograph matches
+	if (M && M->Freeform && M->Freeform->Tips)
+		for (const FS47Witness::FRec& R : M->Freeform->Tips->Witness().Records())
+		{
+			const FS47Places::FDef* Def = FS47Places::Def(R.PlaceId);
+			FEvent E;
+			E.Clock = R.Clock; E.When = WhenOf(R.Clock); E.Place = Def ? FString(Def->Title) : FString(TEXT("place not noted")); E.Kind = TEXT("other"); E.Text = FS47Witness::NoteText(R);
+			Out.Add(E);
+		}
 	Out.StableSort([](const FEvent& A, const FEvent& B) { return A.Clock > B.Clock; });
 	return Out;
 }

@@ -43,9 +43,11 @@ public:
  bool TakeBroke() { const bool B = bBroke; bBroke = false; return B; }
  bool TakeTurned() { const bool B = bTurned; bTurned = false; return B; }
  bool EndedInside() const { return bEndedInside; }
+ // It came on for its 25 s and the player was still standing there in the dark (not inside, not gone): it gave up by itself.
+ bool EndedByTime() const { return bEndedByTime; }
  static bool SelfTest(TArray<FString>& Lines);
 private:
  EPart P = EPart::Watching;
  double Still = 0, T = 0;
- bool bBroke = false, bTurned = false, bEndedInside = false;
+ bool bBroke = false, bTurned = false, bEndedInside = false, bEndedByTime = false;
 };

@@ -12,7 +12,7 @@ class AS47Web;
 // what they do:
 //
 //   the draft    a steady cold draft out of the mouth, slow in and out (a made loop of low noise, about twelve seconds a breath,
-//                through the audio graph like any placed sound): louder near the mouth, stronger at night, gone past 75 m.
+//                through the audio graph like any placed sound): louder near the mouth, stronger at night, gone past 40 m.
 //   the words    the sign, the plaque by the gate, the hut's window card (the leaflet at the gas station tells the rest).
 //   the record   looking at the gate or the plaque the first time keeps a field record, "cave_breather".
 //   the night    after 02:00 on a full-tier night, rarely (the script's odds, and never twice in one week), standing at the gate:
@@ -26,7 +26,7 @@ namespace S47Breather
 	constexpr double GateReach = 2.4;      // metres from Gate() that count as standing at it
 	constexpr double Breath = 12.0;        // seconds a breath, in and out
 	constexpr double LoopSecs = 24.0;      // the loop: two breaths, a little different from each other
-	constexpr double Gone = 75.0;          // metres from the mouth past which nothing is heard
+	constexpr double Gone = 40.0;          // metres from the mouth past which nothing is heard
 	const TCHAR* const HushScript = TEXT("breather_hush");
 	const TCHAR* const Finding = TEXT("cave_breather");
 

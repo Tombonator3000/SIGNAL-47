@@ -33,6 +33,7 @@
 #include "S47Walker.h"
 #include "S47Story.h"
 #include "S47Album.h"
+#include "S47Witness.h"
 #include "S47FieldCamera.h"
 #include "S47Image.h"
 #include "S47Three.h"
@@ -1973,6 +1974,7 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  }
  // M7 (Tom, 9 November): the documentation credit is field-work money: inside the week's cap (FS47FreeformSession::EarnSide)
  C->Reward=PhotoReward(C->Id,C->Quality);C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
+ FS47Witness::PayPhoto(M,*Shot); // N1110 PHOTO-03: a statement of the same place, backed by this photograph, pays a small bonus once
  M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nField allowance: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
  if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d field allowance."),Credit):FString(TEXT("OPS registered the field photograph. This week's field allowance is used up: no payment.")),5);
  return true;
@@ -1986,6 +1988,7 @@ bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
  if(!Shot->IsDeveloped()){if(M->UI)M->UI->Toast(TEXT("PHOTO LAB: Develop the photograph before submitting it"),5);return false;}
  const int32 Paid=M->Freeform->RegisterNightPhoto(Shot->Id,Shot->Clock,true,Shot->Text);
  if(Paid<0)return false;
+ FS47Witness::PayPhoto(M,*Shot); // N1110 PHOTO-03
  Changed();
  if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field allowance."),Paid):FString(TEXT("OPS registered the field record. This week's field allowance is used up: no payment.")),5);
  return true;

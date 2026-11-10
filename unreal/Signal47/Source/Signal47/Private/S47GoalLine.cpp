@@ -15,8 +15,15 @@ namespace
  {
   const FString Body = Text.TrimStartAndEnd();
   for (int32 I = 0; I + 1 < Body.Len(); ++I)
-   if ((Body[I] == TEXT('?') || Body[I] == TEXT('.') || Body[I] == TEXT('!')) && Body[I + 1] == TEXT(' ')) return S47GoalLine::FirstSentence(Body.Left(I + 1), 110);
+   if ((Body[I] == TEXT('?') || Body[I] == TEXT('.') || Body[I] == TEXT('!')) && Body[I + 1] == TEXT(' ') && !Body.Left(I + 1).EndsWith(TEXT("Dr.")) && !Body.Left(I + 1).EndsWith(TEXT("Mr."))) return S47GoalLine::FirstSentence(Body.Left(I + 1), 110);
   return S47GoalLine::FirstSentence(Body, 110);
+ }
+ // runs of blanks become one (the schedule's lines are set with two)
+ FString Squash(FString Text)
+ {
+  Text = Text.TrimStartAndEnd();
+  while (Text.Contains(TEXT("  "))) Text.ReplaceInline(TEXT("  "), TEXT(" "));
+  return Text;
  }
  FString Sentence(const FString& Text)
  {
@@ -37,8 +44,8 @@ FString S47GoalLine::FirstSentence(const FString& Text, int32 Most)
   const bool bEnd = I + 1 == Body.Len() || ((Ch == TEXT('.') || Ch == TEXT('?') || Ch == TEXT('!')) && Body[I + 1] == TEXT(' '));
   if (!bEnd) continue;
   const FString Piece = Body.Mid(From, I + 1 - From).TrimStartAndEnd();
+  if (Piece.EndsWith(TEXT("Dr.")) || Piece.EndsWith(TEXT("Mr."))) continue; // (N1110: From stays, so "Dr. Smith called." stays whole)
   From = I + 1;
-  if (Piece.EndsWith(TEXT("Dr.")) || Piece.EndsWith(TEXT("Mr."))) continue;
   if (Out.IsEmpty()) { Out = Piece; if (Out.Len() >= Most) break; }
   else if (Out.Len() + 1 + Piece.Len() <= Most) Out += TEXT(" ") + Piece;
   else break;
@@ -57,10 +64,10 @@ TArray<FString> S47GoalLine::FGoals::Lines() const
 S47GoalLine::FGoals S47GoalLine::Make(const FIn& In)
 {
  FGoals G;
- G.Tonight = Clean(In.Next.IsEmpty() ? FString(TEXT("Tonight: nothing is due. Rest, or work the array.")) : TEXT("Tonight: ") + Sentence(FirstSentence(In.Next, 120)));
+ G.Tonight = Clean(In.Next.IsEmpty() ? FString(TEXT("Tonight: nothing is due. Rest, or work the array.")) : TEXT("Tonight: ") + Sentence(FirstSentence(Squash(In.Next), 120)));
  if (In.ReviewDay > 0)
  {
-  FString W = FString::Printf(TEXT("This week: the weekly sheet falls due on day %d, $%d so far."), In.ReviewDay, FMath::Max(0, In.SheetSoFar));
+  FString W = FString::Printf(TEXT("This week: the weekly sheet is due on day %d. Costs so far: $%d."), In.ReviewDay, FMath::Max(0, In.SheetSoFar));
   if (In.AllowanceLeft >= 0) W += FString::Printf(TEXT(" $%d of field allowance left."), In.AllowanceLeft);
   G.Week = Clean(W);
  }
@@ -82,6 +89,8 @@ bool S47GoalLine::SelfTest(TArray<FString>& Lines)
  FIn None;
  const FGoals E = Make(None);
  Check(E.Tonight.Contains(TEXT("nothing is due")) && E.Week.IsEmpty() && E.Question.Contains(TEXT("none open")) && E.Lines().Num() == 2, TEXT("N1110-9: with nothing due and no sheet or case the lines say so and the week line is left off"));
+ Check(FirstSentence(TEXT("Dr. Smith called. Then he hung up."), 110) == TEXT("Dr. Smith called. Then he hung up.") && OneSentence(TEXT("Dr. Smith called. Then he hung up.")) == TEXT("Dr. Smith called."), TEXT("N1110-9: Dr. and Mr. do not end a sentence"));
+ Check(!G.Tonight.Contains(TEXT("  ")), TEXT("N1110-9: the tonight line has no double blanks"));
  Check(FirstSentence(FString::ChrN(300, TEXT('a')), 110).Len() <= 110, TEXT("N1110-9: a line with no stop is cut to the limit"));
  bool bLint = true;
  for (const FGoals* X : { &G, &E }) for (const FString& L : X->Lines()) bLint &= S47Script::LintText(L).IsEmpty();

@@ -378,6 +378,49 @@ const TArray<FString>& S47TownDay::People()
   TEXT("mesa_waitress"), TEXT("earl"), TEXT("bench_woman"), TEXT("regular") }; // (CALICHE-HOMES: the last four)
  return P;
 }
+// NPC-DAY-FOLLOW-20261109 (N1110). Hours to places, and one habit each. The places are the plan's (home, diner, radio, bench, gas)
+// or, for the two with no plan, "county road" (Dale) and "baca" (Eloy Baca, the Baca place under the east rim).
+const TArray<S47TownDay::FHabit>& S47TownDay::Routine()
+{
+ static const TArray<FHabit> T = {
+  // Dale: never met. Only his pickup, his porch light and when the phone rings.
+  { TEXT("dale"), 0, 6, TEXT("county road"), TEXT("The porch light out on the county road is still on, long after anyone sensible would be up.") },
+  { TEXT("dale"), 6, 8, TEXT("county road"), TEXT("A pickup goes by on the county road with its headlights on, the same time every morning, and does not slow for anything.") },
+  { TEXT("dale"), 8, 18, TEXT("county road"), TEXT("The truck is gone from the yard out on the county road. The porch light is off.") },
+  { TEXT("dale"), 18, 21, TEXT("county road"), TEXT("The porch light out on the county road comes on at dusk, and the truck is back in the yard.") },
+  { TEXT("dale"), 21, 24, TEXT("county road"), TEXT("If the phone is going to ring tonight, it rings about now, never before nine.") },
+  // Earl, 1420 AM: the station building (a low block building east of the road, the mast behind it) and his car.
+  { TEXT("earl"), 8, 11, TEXT("home"), TEXT("His car is in the yard of the sixth house, under a blanket of dust. The curtains are shut.") },
+  { TEXT("earl"), 11, 19, TEXT("home"), TEXT("His lamp is lit and the radio inside is going: he is up, and not yet at work.") },
+  { TEXT("earl"), 19, 21, TEXT("radio"), TEXT("His car pulls up at the station building a little after seven, and the sign lights up in the window.") },
+  { TEXT("earl"), 21, 24, TEXT("radio"), TEXT("The 1420 window is lit and the mast light blinks over the roof. He is on the air.") },
+  { TEXT("earl"), 1, 4, TEXT("radio"), TEXT("The 1420 window is lit and the mast light blinks over the roof. He is on the air.") },
+  { TEXT("earl"), 4, 5, TEXT("home"), TEXT("The station goes dark and his car goes down the road home.") },
+  // The bench woman: her radio and her blanket.
+  { TEXT("bench_woman"), 13, 18, TEXT("home"), TEXT("Her lamp is lit, and she is hanging wash on the line behind the house.") },
+  { TEXT("bench_woman"), 18, 20, TEXT("bench"), TEXT("She sits down on the laundromat bench at six with her radio and her blanket, the same way every evening.") },
+  { TEXT("bench_woman"), 20, 24, TEXT("bench"), TEXT("She turns the radio down when somebody walks by, and up again when they have passed.") },
+  { TEXT("bench_woman"), 0, 4, TEXT("bench"), TEXT("She is still on the bench, blanket to her chin, the radio turned low.") },
+  // Eloy Baca: under the east rim.
+  { TEXT("eloy"), 6, 8, TEXT("baca"), TEXT("Coffee on the porch at first light, with his hat on the rail.") },
+  { TEXT("eloy"), 8, 12, TEXT("baca"), TEXT("He is on the porch, looking at the sky as if it owed him something.") },
+  { TEXT("eloy"), 12, 17, TEXT("baca"), TEXT("The truck is in the shed with the hood up, and he is somewhere under it.") },
+  { TEXT("eloy"), 18, 19, TEXT("baca"), TEXT("He feeds the dog at the windmill every evening at six, whatever the weather.") },
+  { TEXT("eloy"), 19, 22, TEXT("baca"), TEXT("The kitchen lamp is lit at the Baca place, and it goes out at ten.") },
+  // The Mesa waitress, nights, and the day cook.
+  { TEXT("mesa_waitress"), 13, 18, TEXT("home"), TEXT("Her lamp is lit in the afternoon, and her shoes are on the step.") },
+  { TEXT("mesa_waitress"), 19, 23, TEXT("diner"), TEXT("She wipes the same stretch of counter whenever nobody is talking to her.") },
+  { TEXT("mesa_waitress"), 0, 5, TEXT("diner"), TEXT("She tops up the coffee before you ask, and watches the road.") },
+  { TEXT("cook"), 6, 14, TEXT("diner"), TEXT("The kitchen light is on at six and the smell of grease is out the door by half past.") },
+  { TEXT("cook"), 15, 15.3, TEXT("diner"), TEXT("The cook smokes behind the diner at three, a hand on the wall, for about as long as one cigarette takes.") },
+ };
+ return T;
+}
+FString S47TownDay::HabitAt(const FString& Who, double Hour, FString* OutPlace)
+{
+ for (const FHabit& H : Routine()) if (Who == H.Who && Hour >= H.From && Hour < H.To) { if (OutPlace) *OutPlace = H.Place; return H.Seen; }
+ return FString();
+}
 const TArray<S47TownDay::FSpot>& S47TownDay::Spots() { return S47TownDayLocal::AllSpots; }
 FString S47TownDay::HomeOf(const FString& Who) { return S47TownDayLocal::HouseOf(S47TownDayLocal::DayKey(Who)); }
 const S47TownDay::FSpot* S47TownDay::Spot(const FString& Id)
@@ -446,8 +489,8 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
  }
  else if (Who == TEXT("cook"))
  {
-  // The diner's cook: 06 to 21 every day, a break in the afternoon.
-  const double Arrive = J(5.7, 5.95), Leave = J(20.7, 20.95), B0 = J(14.3, 14.8), Sleep = J(22.3, 23.0);
+  // The diner's cook: 06 to 21 every day, a break about 15:00 (N1110: out the back for a cigarette, see Routine).
+  const double Arrive = J(5.7, 5.95), Leave = J(20.7, 20.95), B0 = J(14.8, 15.1), Sleep = J(22.3, 23.0);
   Add(Rows, 0, Arrive - .6, TEXT("sleep.cook")); Add(Rows, Arrive - .6, Arrive, TEXT("home.cook"));
   const auto Kitchen = [&](double From, double To)
   { Fill(Rows, From, To, R, { { TEXT("diner.range"), 3.f, .2f, .6f }, { TEXT("diner.kitchen"), 2.f, .1f, .35f } }); };
@@ -809,6 +852,25 @@ bool S47TownDay::SelfTest(TArray<FString>& Lines)
  Check(bCook, TEXT("the diner's cook in the kitchen at 07, 12 and 19, home at night"));
  Check(bShop, TEXT("the souvenir man in his shop through its hours (FS47TownUse 10 to 17), home at 20"));
  Check(bGas, TEXT("the attendant at the station all day and night (the night window)"));
+ {
+   // N1110: the table of hours and habits: every row inside the day, the people with a plan where their plan has them.
+   bool bRows = Routine().Num() > 0, bPlan = true, bFolks = true; FString Bad;
+   TSet<FString> Folks;
+   for (const FHabit& H : Routine())
+   {
+    bRows &= H.From >= 0 && H.To <= 24 && H.To > H.From && FCString::Strlen(H.Seen) > 20 && !FString(H.Seen).Contains(TEXT("taken"));
+    Folks.Add(H.Who);
+    if (FString(H.Who) == TEXT("dale") || FString(H.Who) == TEXT("eloy")) continue;
+    for (int32 Seed : Seeds) for (int32 Day = 0; Day < 14; ++Day)
+    {
+     const FString Place = PlaceOf(SpotIn(Plan(Seed, Day, Day % 7, H.Who), (H.From + H.To) * .5));
+     if (Place != H.Place) { bPlan = false; Bad = FString::Printf(TEXT("%s %.2f seed %d day %d: %s"), H.Who, (H.From + H.To) * .5, Seed, Day, *Place); }
+    }
+   }
+   for (const TCHAR* Nm : { TEXT("dale"), TEXT("eloy"), TEXT("earl"), TEXT("bench_woman"), TEXT("mesa_waitress"), TEXT("cook") }) bFolks &= Folks.Contains(Nm);
+   Check(bRows && bFolks && bPlan && HabitAt(TEXT("cook"), 15.1).Contains(TEXT("smokes")) && HabitAt(TEXT("eloy"), 18.2).Contains(TEXT("dog")) && HabitAt(TEXT("dale"), 12.).Len() > 0,
+    TEXT("hours to places and one noticeable habit each for Dale, Earl, the bench woman, Eloy Baca, the waitress and the cook, following their plans") + (Bad.IsEmpty() ? FString() : TEXT(" (") + Bad + TEXT(")")));
+  }
  {
   bool bRoutes = true;
   for (const FString& Who : People())

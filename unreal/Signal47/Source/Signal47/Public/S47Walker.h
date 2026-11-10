@@ -106,7 +106,11 @@ public:
 	bool bCrouch = false;
 	double CrouchK = 0;
 	void SetCrouch(bool bOn);
-	double Sneak() const { return CrouchK; }
+	// N1110 (HORROR-IDEAS-20261106-10 point 6): under a table (S47Hide.h). bHideLock holds the player still and low, HideK is the body
+	// getting in, 0 to 1; Sneak() then runs from 1 (crouching) to 2 (hidden). Place, the truck and being taken clear it. Not saved.
+	bool bHideLock = false;
+	double HideK = 0;
+	double Sneak() const { return CrouchK + HideK; }
 	/** A footstep's loudness now, 1 standing (US47Audio::StepScale is set from it). */
 	double StepLoudness() const;
 

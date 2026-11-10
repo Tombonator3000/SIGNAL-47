@@ -78,6 +78,14 @@ namespace S47TownDay
  SIGNAL47_API FString DevState(US47Main* M);
  // In the running game: every planned standing spot and every path between them against the walk's colliders (diner/road), and
  // inside the rooms against their furniture. Lines: a summary first. Returns how many are in something.
+ // NPC-DAY-FOLLOW-20261109 (N1110): the day's hours for the people whose bodies are not drawn here, as a table: where each is by the
+ // hour, and one small thing a player who keeps the same hours can notice. Dale (never met: his truck, his porch light, when the
+ // phone rings) and Eloy Baca (under the east rim) have no plan above; the others' rows follow their plan (self-tested). Day times
+ // run 0 to 24, a row does not cross midnight.
+ struct FHabit { const TCHAR* Who; double From, To; const TCHAR* Place; const TCHAR* Seen; };
+ SIGNAL47_API const TArray<FHabit>& Routine();
+ // What Who is doing at Hour that can be noticed ("" if nothing in particular), and the place from the table.
+ SIGNAL47_API FString HabitAt(const FString& Who, double Hour, FString* OutPlace = nullptr);
  SIGNAL47_API int32 MeasureSpots(AS47Web* W, TArray<FString>& Lines);
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

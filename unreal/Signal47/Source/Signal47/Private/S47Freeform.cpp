@@ -17,6 +17,7 @@
 #include "S47Tape.h"
 #include "S47Handling.h"
 #include "S47SaroCot.h"
+#include "S47Hide.h"
 #include "S47Attention.h"
 #include "S47DoorLoop.h"
 #include "S47PinBoard.h"
@@ -369,6 +370,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Fatigue)Fatigue=MakeShared<FS47Fatigue>(M);Fatigue->Begin(S47J::Obj(Saved,TEXT("fatigue")));
  if(!Handling)Handling=MakeShared<FS47Handling>(M);Handling->Begin();
  if(!Cot)Cot=MakeShared<FS47SaroCot>(M);Cot->Begin();
+ if(!Hide)Hide=MakeShared<FS47Hide>(M);Hide->Begin(); // N1110
  if(!Attention)Attention=MakeShared<FS47Attention>(M);Attention->Begin(S47J::Obj(Saved,TEXT("attention"))); // N1110
  if(!DoorLoop)DoorLoop=MakeShared<FS47DoorLoop>(M);DoorLoop->Begin(); // N1110 (N1110-6)
  if(!Mail)Mail=MakeShared<FS47Mail>(M);Mail->Begin(S47J::Obj(Saved,TEXT("mail")),Saved.IsValid());
@@ -415,6 +417,7 @@ void FS47FreeformSession::Stop()
  if(bCanRestore&&Fatigue)Fatigue->Stop();
  if(bCanRestore&&Handling)Handling->Stop();
  if(bCanRestore&&Cot)Cot->Stop();
+ if(Hide)Hide->Stop(); // N1110: out from under the table
  if(Attention)Attention->Stop(); // N1110
  if(DoorLoop&&bCanRestore)DoorLoop->Stop(); // N1110 (N1110-6): the lights and the eye as they were
  if(Mail)Mail->Stop();
@@ -765,6 +768,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Fatigue)Fatigue->Step(D);
  if(Handling)Handling->Step(D);
  if(Cot)Cot->Step(D);
+ if(Hide)Hide->Step(D); // N1110
  if(Attention&&!Held())Attention->Step(D); // N1110
  if(DoorLoop&&!Held())DoorLoop->Step(D); // N1110 (N1110-6)
  if(IndoorDread)IndoorDread->Step(D);

@@ -158,7 +158,7 @@ const TArray<FS47RadioTips::FCall>& FS47RadioTips::AmCalls()
 }
 void FS47RadioTips::Begin(const S47J::FObj& Saved)
 {
- Used.Reset();Tipped.Reset();CbIn=FMath::FRandRange(30.f,60.f);AmIn=FMath::FRandRange(40.f,80.f);
+ Used.Reset();Tipped.Reset();Wit.Load(S47J::Obj(Saved,TEXT("witness")));CbIn=FMath::FRandRange(30.f,60.f);AmIn=FMath::FRandRange(40.f,80.f);
  for(const FString& S:S47J::Strs(Saved,TEXT("said")))if(!S.IsEmpty()&&S.Len()<16)Used.Add(S);
  for(const auto& V:S47J::Arr(Saved,TEXT("given")))
  {
@@ -170,7 +170,8 @@ void FS47RadioTips::Begin(const S47J::FObj& Saved)
 }
 S47J::FObj FS47RadioTips::Save() const
 {
- auto O=S47J::New();if(Used.IsEmpty()&&Tipped.IsEmpty())return O;
+ auto O=S47J::New();if(Used.IsEmpty()&&Tipped.IsEmpty()&&Wit.Records().IsEmpty())return O;
+ if(!Wit.Records().IsEmpty())S47J::Set(O,TEXT("witness"),Wit.Save()); // N1110
  if(!Used.IsEmpty()){TArray<FString> A=Used.Array();A.Sort();S47J::Set(O,TEXT("said"),A);}
  if(!Tipped.IsEmpty())
  {
@@ -230,6 +231,12 @@ void FS47RadioTips::StepCb()
  if(M->UI)M->UI->Toast(FString(TEXT("CB: "))+L->Text,7);
  MarkSaid(SaidId);
 }
+void FS47RadioTips::KeepStatement(const FString& Id,const FString& Who,const FString& Place,const FString& Text)
+{
+ if(!M||!M->Freeform)return;
+ FS47Witness::FRec R;R.Id=Id;R.Who=Who;R.PlaceId=Place;R.Text=Text;R.Clock=M->Freeform->Clock();
+ if(Wit.Add(R))UE_LOG(LogTemp,Display,TEXT("S47: witness statement %s kept (%s)"),*Id,*Place);
+}
 void FS47RadioTips::MarkSaid(const FString& Id)
 {
  if(!M||!M->Freeform||Used.Contains(Id))return;
@@ -237,6 +244,7 @@ void FS47RadioTips::MarkSaid(const FString& Id)
  if(!L)return;
  Used.Add(Id);
  if(L->Place&&M->Freeform->Places)M->Freeform->Places->Hear(L->Place);
+ if(L->Place)KeepStatement(L->Id,TEXT("A driver on the CB"),L->Place,L->Text); // N1110 PHOTO-03
  UE_LOG(LogTemp,Display,TEXT("S47: CB %s%s"),L->Id,L->Place?TEXT(" (points somewhere)"):TEXT(""));
  M->RequestAutosave();
 }
@@ -262,6 +270,7 @@ void FS47RadioTips::StepAm()
  if(!(*Found)->Slot(Lines,M->Story->Clock()))return; // Not its turn: it tries again later, with nothing spent.
  Used.Add(C->Id);
  if(C->Place&&M->Freeform->Places)M->Freeform->Places->Hear(C->Place);
+ if(C->Place)KeepStatement(C->Id,FString(TEXT("A "))+(FCString::Stricmp(C->Who,TEXT("old"))==0?TEXT("old-timer"):FCString::Stricmp(C->Who,TEXT("woman"))==0?TEXT("woman"):TEXT("man"))+TEXT(" calling 1420"),C->Place,C->Text); // N1110 PHOTO-03
  UE_LOG(LogTemp,Display,TEXT("S47: 1420 AM %s%s"),C->Id,C->Place?TEXT(" (points somewhere)"):TEXT(""));
  M->RequestAutosave();
 }
@@ -320,6 +329,8 @@ bool FS47RadioTips::SelfTest(TArray<FString>& Lines)
  auto O=S47J::New();S47J::Set(O,TEXT("said"),TArray<FString>{TEXT("am02"),TEXT("cb01")});FS47RadioTips Back(nullptr);Back.Begin(S47J::Read(S47J::Write(O)));Check(Back.Said().Num()==2&&S47J::Write(Back.Save())==S47J::Write(O),TEXT("what was said stays said after a Continue"));
  // NIGHT-RADIO-20261109: Earl's Night Line, made for each night (S47NightLine).
  OK&=S47NightLine::SelfTest(Lines);
+ // N1110 PHOTO-03: witness statements and the photograph that backs them up
+ OK&=FS47Witness::SelfTest(Lines);
  return OK;
 }
 
@@ -406,6 +417,7 @@ void FS47RadioTips::Back(FGiven& G)
  FString Where,Answer;
  G.Back=CallBack(G,Where,Answer);G.BackPlace=Where;G.Stage=2;
  if(!Where.IsEmpty()&&M&&M->Freeform&&M->Freeform->Places)M->Freeform->Places->Hear(Where);
+ if(!Where.IsEmpty())KeepStatement(FString(TEXT("back-"))+G.Place+FString::FromInt(G.Day),TEXT("A caller on 1420"),Where,G.Back); // N1110 PHOTO-03
  UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s called back about: %s"),*G.Place,Where.IsEmpty()?TEXT("nothing new"):*Where);
  if(M)M->RequestAutosave();
 }

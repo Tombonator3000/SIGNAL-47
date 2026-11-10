@@ -28,6 +28,8 @@ public:
 	static double ReliefDelay(int32 Seed, int32 Day);
 	/** The false alarm scripts, in the order this night tries them (pure, seeded). */
 	static TArray<FString> AlarmOrder(int32 Seed, int32 Night);
+	/** Twenty clock minutes or more since the last false alarm (pure). */
+	static bool GapOK(double LastAlarmClock, double Clock) { return Clock - LastAlarmClock >= 20 * 60.; }
 	static const TCHAR* ReliefScript() { return TEXT("calm_after"); }
 
 	/** Once a frame from FS47Happenings::Step. */
@@ -42,6 +44,7 @@ public:
 
 private:
 	bool Quiet(double Clock) const;
+	double LastAlarm = -1e9;       // clock seconds of the last false alarm
 	US47Main* M = nullptr;
 	int32 Night = 0, Played = 0, Reliefs = 0;
 	double NextTry = 0;            // real seconds (US47Main::T) before the next question

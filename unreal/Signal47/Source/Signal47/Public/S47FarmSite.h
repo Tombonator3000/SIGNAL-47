@@ -201,6 +201,7 @@ private:
  // the small one has lost the player so far this visit.
  FS47RuleBreak RuleBreak;
  double StillHeld=0;
+ bool bRuleBrokenThisSession=false; // N1110: set at the break, so that a full finding list cannot let it break twice
  // Hunt clock and how long it stays interested. Both slow or quicken with what the player gives it to go on.
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;

@@ -664,7 +664,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(StillHeld>=5.&&M->Freeform&&!M->Freeform->HasFinding(TEXT("rule-still-held")))
   {
    if(M->UI)M->UI->Thought(TEXT("It has lost me. Lamp off, standing still, and it looks past."),5.f);
-   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and they pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
    UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
   }
   for(const auto& I:G->Individuals())
@@ -683,16 +683,24 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
    FS47RuleBreak::FIn Rule;
    const double Clock=M->Freeform->Clock();
    Rule.Night=FS47FreeformSession::NightOf(Clock);Rule.Hour=FMath::Fmod(Clock,86400.)/3600.;Rule.bPale=true;
-   Rule.bLearned=M->Freeform->HasFinding(TEXT("rule-still-held"));Rule.bSpent=M->Freeform->HasFinding(TEXT("rule-pale-broken"));
+   Rule.bLearned=M->Freeform->HasFinding(TEXT("rule-still-held"));Rule.bSpent=bRuleBrokenThisSession||M->Freeform->HasFinding(TEXT("rule-pale-broken"));
    Rule.bStillDark=bNothingToGoOn;Rule.bInside=Tk->Indoors();Rule.Dist=To;
    RuleBreak.Step(Dt,Rule);
    if(RuleBreak.TakeBroke())
    {
-    M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked before: lamp off, standing still. This one stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
+    bRuleBrokenThisSession=true; // (spent for the session even if the finding cap refuses the record)
+    if(M->UI)M->UI->Thought(TEXT("It has stopped. It is facing away."),3.f);
+    // the record says what was done only if it was: still and dark, and the stop is the moment of the break
+    if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
     UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the Pale One stopped %.0f m off and turned (night %d)"),To,Rule.Night);
    }
-   if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It has stopped. It is looking at me. Move."),4.f);
-   if(RuleBreak.Over()){if(RuleBreak.EndedInside()&&M->UI)M->UI->Thought(TEXT("It stopped at the door. After a while it went."),4.5f);EndVisit(false);return;}
+   if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It is looking at me. Move."),4.f);
+   if(RuleBreak.Over())
+   {
+    if(M->UI&&RuleBreak.EndedInside())M->UI->Thought(TEXT("It stopped at the door. After a while it went."),4.5f);
+    else if(M->UI&&RuleBreak.EndedByTime())M->UI->Thought(TEXT("It stopped. After a while it went."),4.5f);
+    EndVisit(false);return;
+   }
   }
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
   double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);

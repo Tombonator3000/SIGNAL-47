@@ -2,6 +2,7 @@
 #include "SS47ScreenView.h"
 #include "SS47Notebook.h"
 #include "S47Freeform.h"
+#include "S47Hide.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
@@ -975,6 +976,8 @@ void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 
 		Reach = FMath::Max(Reach, float(M->Freeform->Fatigue->EdgeReach()));
 		Lids = float(M->Freeform->Fatigue->Lids());
 	}
+	// N1110 (HORROR-IDEAS-20261106-10 point 6): under a table, the edge of the top comes down over the view (the same lids)
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Hide) Lids = FMath::Max(Lids, float(M->Freeform->Hide->Frame()));
 	// VIGNETTE-STEPS-20261109 (Tom, d37): the lids and the rim were frames laid on frames (12 and 14 boxes), which showed as hard
 	// rectangles, each a step darker, round the lights and the abduction's glare. Now each is one smooth shade: a mesh whose vertices
 	// carry the darkness (S47HudGauges::RimShade, LidShade) and the card blends between them, one element each. Same colours,

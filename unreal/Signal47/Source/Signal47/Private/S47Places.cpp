@@ -577,12 +577,14 @@ FString FS47Places::DayTrace(const FString& Id,int32 Seed,int32 Day)
  if(Open.IsEmpty())return FString();
  const int32 Pick=int32(FS47NightRhythm::Roll(Seed,Day,0x54524331u)*Open.Num())%Open.Num();
  if(Id!=Open[Pick]->Id)return FString();
- switch((Day+int32(FS47NightRhythm::Roll(Seed,0,0x54524332u)*4.f))%4)
+ switch((Day+int32(FS47NightRhythm::Roll(Seed,0,0x54524332u)*6.f))%6)
  {
- case 0:return TEXT("A line of bare tracks comes across the dirt here and stops in the open. Nothing leads on from the last one, and there is no turning round.");
+ case 0:return TEXT("A line of bare tracks comes across the dirt here and stops in the open. Nothing leads away from the last one.");
  case 1:return TEXT("A circle of grass about the size of a table has died here, brown and dry to the root. The grass around it is green.");
  case 2:return TEXT("The wire of the fence nearby has been cut clean, both ends bright. There are no marks from pliers on either one.");
- default:return TEXT("A dozen birds sit on the rail and the wire, and every one of them faces the same way. They do not turn their heads when you come near.");
+ case 3:return TEXT("A dozen birds sit on the rail and the wire, and every one of them faces the same way. They do not turn their heads when you come near.");
+ case 4:return TEXT("A patch of sand has been fused glassy in a ring about the size of a plate. It is still smooth, and nothing else near it is burned.");
+ default:return TEXT("A cow stands alone on the open ground, facing the station. She does not move when you come near.");
  }
 }
 FString FS47Places::NeedleReading(const FString& Needle,bool bStirred)
@@ -1122,7 +1124,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
    bOne&=Here==1;Days+=Here;
   }
   bool bDayOne=true;for(const FDef& D:Defs())bDayOne&=DayTrace(D.Id,47,1).IsEmpty();
-  Check(bOne&&Days==59&&bDayOne&&bPlain&&Kinds.Num()==4,TEXT("N1110: from day 2 one place a day carries one unexplained trace in plain words, four kinds, none on day 1"));
+  Check(bOne&&Days==59&&bDayOne&&bPlain&&Kinds.Num()==6,TEXT("N1110: from day 2 one place a day carries one unexplained trace in plain words, six kinds, none on day 1"));
  }
  OK&=FS47Calm::SelfTest(Lines);
  return OK;

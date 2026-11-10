@@ -29,7 +29,7 @@ void FS47RuleBreak::Step(double Dt, const FIn& In)
  case EPart::Coming:
   T += Dt;
   if (In.bInside) { bEndedInside = true; P = EPart::Over; }
-  else if (T >= ComeSeconds || In.Dist > GiveUpFar) P = EPart::Over;
+  else if (T >= ComeSeconds || In.Dist > GiveUpFar) { bEndedByTime = T >= ComeSeconds && In.bStillDark; P = EPart::Over; }
   break;
  case EPart::Over: break;
  }
@@ -67,6 +67,7 @@ bool FS47RuleBreak::SelfTest(TArray<FString>& Lines)
  Check(Broke == 1 && Turned == 1, TEXT("N1110-6: it breaks once and turns once, and says so once each"));
  Check(FastestWhileHeld == 0. && PaceComing <= FS47RuleBreak::ComePace + 1e-9, TEXT("N1110-6: it is still while it stops and turns, and never faster than a walk after"));
  Check(B.Over() && Longest <= FS47RuleBreak::StopSeconds + FS47RuleBreak::TurnSeconds + FS47RuleBreak::ComeSeconds + 0.3 && !B.EndedInside(), TEXT("N1110-6: it ends by itself, within 30 s from the stop"));
+ Check(B.EndedByTime(), TEXT("N1110-6: when its 25 s run out with the player still standing in the dark it says so, for the thought"));
  FIn Moving = In; Moving.bStillDark = false;
  FS47RuleBreak Mv; for (int32 I = 0; I < 600; ++I) Mv.Step(0.1, Moving);
  Check(Mv.Part() == FS47RuleBreak::EPart::Watching && Mv.Speed(1.2) == 1.2, TEXT("N1110-6: a player who moves or has the lamp on never sees it: the visit goes on as it always did"));

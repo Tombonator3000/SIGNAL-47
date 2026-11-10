@@ -29,7 +29,9 @@ namespace S47BreatherLocal
 	const TCHAR* const UseHut = TEXT("ff:breather:hut");
 	// What the player reads and is told. Plain 1986 English; the leaflet at the gas station door has the tours' prices and rules.
 	const TCHAR* const SignText = TEXT("THE BREATHER. CAVE TOURS. CLOSED FOR THE SEASON. Under it, painted smaller: Saturdays and Sundays, 10 to 3, from Memorial Day. A constant 54 degrees. Ask at the Trujillo house.");
-	const TCHAR* const PlaqueText = TEXT("A bronze plaque set in a stone by the gate. THE BREATHER. In 1923 a well driller on Main Street lost his bit into open air sixty feet down, and a cold wind came up the hole. The limestone cave he had found runs under much of the town. It draws air in and lets it out again with the hour and the weather, and that is how it got its name. Opened to visitors in 1931 by the Trujillo family. Caliche Chamber of Commerce, 1976.");
+	// (two toasts, one after the other in the HUD's queue: one long one was too much to read at once)
+	const TCHAR* const PlaqueText = TEXT("A bronze plaque set in a stone by the gate. THE BREATHER. In 1923 a well driller on Main Street lost his drill bit into open air sixty feet down, and a cold wind came up the hole.");
+	const TCHAR* const PlaqueText2 = TEXT("The limestone cave he had found runs under much of the town. It draws air in and lets it out again with the hour and the weather, and that is how it got its name. Opened to visitors in 1931 by the Trujillo family. Caliche Chamber of Commerce, 1976.");
 	const TCHAR* const GateText = TEXT("A chain through the gate and a padlock on it, and a card wired to the mesh: CLOSED FOR THE SEASON. Through the fence, cold air comes up out of the dark in the rock, slow, and then draws back the other way. It smells of wet stone.");
 	const TCHAR* const GateLook = TEXT("Past the wire, a concrete landing with a pipe rail along it, up to a dark opening in the rock. The draft reaches you through the fence, and goes back.");
 	const TCHAR* const HutText = TEXT("TICKETS. Plywood over the window, and a price card still in the frame of the door: ADULTS $3, CHILDREN $1, LANTERNS FURNISHED. Under it, in marker: BRING A WRAP. IT IS COLD BELOW.");
@@ -134,7 +136,7 @@ double S47Breather::Level(double Metres, double Hour)
 {
 	if (!FMath::IsFinite(Metres) || Metres >= Gone) return 0;
 	const double Near = 1 - S47BreatherLocal::Smooth(Gone * 0.4, Gone, FMath::Max(0.0, Metres));
-	return (0.2 + 0.18 * S47BreatherLocal::NightWeight(Hour)) * Near;
+	return (0.12 + 0.26 * S47BreatherLocal::NightWeight(Hour)) * Near;
 }
 
 double S47Breather::Held(double Since, double Secs)
@@ -198,7 +200,7 @@ void FS47Breather::Begin(AS47Web* W, const TMap<FString, int32>& Nodes)
 	const auto Say = [this](const TCHAR* Text, float Secs) { if (M && M->UI) M->UI->Toast(Text, Secs); };
 	Add(UseGate, TEXT("The Breather / the gate"), [this, Say] { Say(GateText, 7.f); Record(); }, GateLook, 3.0);
 	Add(UseSign, TEXT("Sign"), [Say] { Say(SignText, 8.f); }, TEXT("THE BREATHER / CAVE TOURS / CLOSED FOR THE SEASON, in white on green, and the hours painted smaller."), 4.5);
-	Add(UsePlaque, TEXT("Plaque"), [this, Say] { Say(PlaqueText, 16.f); Record(); }, TEXT("Bronze, gone green at the edges. THE BREATHER, and a date: 1923."), 3.0);
+	Add(UsePlaque, TEXT("Plaque"), [this, Say] { Say(PlaqueText, 8.f); Say(PlaqueText2, 9.f); Record(); }, TEXT("Bronze, gone green at the edges. THE BREATHER, and a date: 1923."), 3.0);
 	Add(UseHut, TEXT("Ticket hut"), [Say] { Say(HutText, 7.f); }, TEXT("A little stucco hut, the window boarded over for the winter."), 3.0);
 	UE_LOG(LogS47Breather, Display, TEXT("S47: the Breather is up at road %.1f %.1f (gate %.1f %.1f), %d uses"), S47Breather::Mouth().X, S47Breather::Mouth().Y, S47Breather::Gate().X, S47Breather::Gate().Y, Nodes.Num());
 }
@@ -237,7 +239,7 @@ void FS47Breather::StepSound(double Dt, double Metres, double Hour, bool bHere)
 	using namespace S47BreatherLocal;
 	US47Audio* A = IsValid(M->Audio) ? M->Audio.Get() : nullptr;
 	if (!A || !A->Ctx.IsValid()) { bSound = false; return; }
-	const bool bWant = bHere && Metres < S47Breather::Gone + 5;
+	const bool bWant = bHere && Metres < S47Breather::Gone + 5 && !(M->World && M->World->bDriving); // (N1110: never at the wheel)
 	if (!bWant) { if (bSound) { A->Stop(LoopKey, 0.8f); bSound = false; } return; }
 	// (a new audio context, or the loop let go by someone else: started again)
 	const TOptional<FS47LoopState> Now = A->InspectLoop(LoopKey);
@@ -267,10 +269,12 @@ void FS47Breather::StepHush(double Dt, bool bAtGate, double Hour)
 	if (AtGate < 3) return;
 	const int32 Night = FS47FreeformSession::NightOf(F->Clock());
 	const FString Flag = S47Breather::WeekFlag(S47Breather::WeekOf(Night));
-	if (AskedNight == Night || !F->TownUse || F->TownUse->Seen(Flag) || F->InTutorial() || !F->RulesLive()) return;
+	const FString AskedFlag = FString::Printf(TEXT("breather_asked_n%d"), Night);
+	if (AskedNight == Night || !F->TownUse || F->TownUse->Seen(Flag) || F->TownUse->Seen(AskedFlag) || F->InTutorial() || !F->RulesLive()) return;
 	// Not on top of anything else the night is doing.
 	if (M->Rhythm && !M->Rhythm->ReadNow().Busy.IsNone()) return;
 	AskedNight = Night;
+	F->TownUse->Note(AskedFlag);  // (N1110: kept with the town, so that a reload does not throw the night's odds again)
 	FString Why;
 	if (!S47EventScript::Allows(M, S47Breather::HushScript, Why)) { UE_LOG(LogS47Breather, Display, TEXT("S47: the Breather: no hush tonight (%s)"), *Why); return; }
 	FS47EventCtx Ctx;
@@ -305,8 +309,8 @@ bool S47Breather::SelfTest(TArray<FString>& Lines)
 		Check(A == B && bFinite && Top > 0.5f && Top <= 0.61f && bLen && Seam <= Steps * 3 + 1e-3 && Quarter > Same * 1.5,
 			FString::Printf(TEXT("the draft is %.1f s, made the same each time, peak %.2f, no seam at the loop (%.4f), and breathes every %.0f s (loudness a breath apart differs %.3f, a quarter breath %.3f)"), A.Num() / double(Hz), Top, Seam, Breath, Same, Quarter));
 	}
-	Check(Level(3, 23) > Level(50, 23) && Level(50, 23) > 0 && Level(Gone, 23) == 0 && Level(200, 3) == 0 && Level(3, 2) > Level(3, 13) * 1.6 && FMath::IsNearlyEqual(Level(3, 3), Level(3, 23), 1e-9),
-		TEXT("louder near the mouth, nothing past 75 m, stronger at night than by day"));
+	Check(Level(3, 23) > Level(30, 23) && Level(30, 23) > 0 && Level(Gone, 23) == 0 && Level(200, 3) == 0 && Level(3, 2) > Level(3, 13) * 1.6 && FMath::IsNearlyEqual(Level(3, 3), Level(3, 23), 1e-9),
+		TEXT("louder near the mouth, nothing past 40 m, stronger at night than by day"));
 	Check(Held(-1, 5) == 1 && Held(0, 5) == 1 && Held(0.5, 5) == 0 && Held(4.9, 5) == 0 && Held(6.5, 5) > 0 && Held(6.5, 5) < 1 && Held(8.1, 5) == 1,
 		TEXT("a hush stops the draft in under half a second, holds it, and lets it back over three"));
 	Check(WeekOf(1) == 0 && WeekOf(7) == 0 && WeekOf(8) == 1 && WeekOf(15) == 2 && WeekFlag(WeekOf(8)).Len() < 24 && WeekFlag(0) != WeekFlag(1),
@@ -326,7 +330,7 @@ bool S47Breather::SelfTest(TArray<FString>& Lines)
 		Check(S && S->bLandmark && Mo.X < -42 && Ga.X > Mo.X && FVector2D::Distance(Mo, Ga) < 8 && S47OpenLand::InRim(Mo.X, Mo.Y, 50),
 			FString::Printf(TEXT("the mouth at road %.1f %.1f, west of the town's fence, the gate %.1f m in front of it"), Mo.X, Mo.Y, FVector2D::Distance(Mo, Ga)));
 		bool bClean = true; FString Bad;
-		for (const TCHAR* T : { SignText, PlaqueText, GateText, GateLook, HutText, FindingText })
+		for (const TCHAR* T : { SignText, PlaqueText, PlaqueText2, GateText, GateLook, HutText, FindingText })
 		{
 			const FString Why = S47Script::LintText(T);
 			if (!Why.IsEmpty()) { bClean = false; Bad = Why; }
