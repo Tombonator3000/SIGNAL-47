@@ -884,6 +884,7 @@ TArray<FS47Mail::FPiece> FS47Mail::TakeOut()
  for(const FPiece& Pc:Out)
  {
   if(Pc.Kind==TEXT("ward")&&Ses.Predecessor)Ses.Predecessor->FromMail(Pc.Ref);
+  if(Pc.Id==TEXT("ward:letter"))Ses.StationKeyFound(); // FIX-20261110: the station's keys are in the envelope
   if(Pc.Kind==TEXT("catalog"))bCatalog=true;
   // The map with a place circled: the circle goes onto the player's own map, as a place heard of.
   if(Pc.Kind==TEXT("nobody")&&!Pc.Place.IsEmpty()&&Ses.Places&&FS47Places::Def(Pc.Place)&&!Ses.Places->Heard(Pc.Place)&&!Ses.Places->Found(Pc.Place)){Ses.Places->Hear(Pc.Place);++Marked;}
@@ -943,6 +944,7 @@ bool FS47Mail::LiftParcel(const FString& Id)
 void FS47Mail::OpenBox()
 {
  if(!M||!M->UI||!M->Freeform||!Live())return;
+ const bool bWasLocked=M->Freeform->bStationLocked;
  const TArray<FPiece> Came=TakeOut();
  TArray<S47Kit::FW> Panel;
  const TWeakPtr<uint8> Guard=Life;
@@ -959,6 +961,8 @@ void FS47Mail::OpenBox()
   Panel.Add(S47Kit::Section(Came.IsEmpty()?TEXT("NOT READ YET"):TEXT("WHAT CAME")));
   bool bWard=false;
   for(int32 I=0;I<Unopened.Num();++I){Panel.Add(ReadButton(Unopened[I],I==0));bWard|=Unopened[I].Kind==TEXT("ward");}
+  // FIX-20261110: the keys came out with the letter, and the panel says so where the letter is listed.
+  if(bWasLocked&&!M->Freeform->bStationLocked)Panel.Add(S47Kit::Paper(TEXT("In the envelope with the letter: a ring of keys on a paper tag, SARO in ballpoint. The station's outside doors are yours to open.")));
   if(bWard)Panel.Add(S47Kit::Small(TEXT("Dr. Ward's mail goes to the OPS tray as well, and waits there until it is read.")));
  }
  bool bParcelShown=false;

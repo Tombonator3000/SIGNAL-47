@@ -117,6 +117,10 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
+ // FIX-20261110 (Tom, point 2): the next forced flyover or close pass takes the mains as one in play does (a fixture otherwise
+ // keeps its older, immediate life). Sag: seconds of dips before it; After: seconds the mains stay out once it has gone.
+ void SkyCutNext(double Sag=45,double After=75){bSkyCutNext=true;SkyCutSag=FMath::Max(1.,Sag);SkyCutAfter=FMath::Max(1.,After);}
+ bool SkyCutHeld() const{return SkyPrelude>0;}
  bool ForceLights(const FString& Place); // town lights at one named place, same conditions as Force
  // F10: this event at this place from the list (S47EventPlaces), same conditions as Force. Place empty: the draw, as in play.
  bool ForceAt(const FString& Id,const FString& Place);
@@ -245,6 +249,7 @@ private:
  int32 OrbLightProbe=0;
  int32 OrbStopLogged[FS47DuskOrb::Count]={-1,-1,-1};
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
+ double SkyPrelude=0,SkyCutSag=45,SkyCutAfter=75;bool bSkyCut=false,bSkyCutNext=false; // not saved: see FS47FreeformSession::SkyCutBegin
  FVector Anchor=FVector::ZeroVector;
  FRandomStream Random;
  TMap<FString,int32> LastDays;

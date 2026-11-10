@@ -153,6 +153,7 @@ FString FS47EastWing::DoorLabel() const
 void FS47EastWing::UseDoor()
 {
  if(!M||!M->IsFreeform())return;
+ if(!bDoorUp&&!bDoorMoving&&M->Freeform&&M->Freeform->RefuseLocked(TEXT("eastwing:garage-door-out")))return; // FIX-20261110
  const FVector At=S47Three::ToUE(FVector(38.,1.3,5.3));
  if(M->Audio)M->Audio->Play(TEXT("rack_switch"),.7f,At);
  if(bDoorMoving){bDoorMoving=bDoorHand=false;if(M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.15f);M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.8f);}return;}
@@ -186,6 +187,8 @@ S47J::FObj FS47EastWing::Save() const
 void FS47EastWing::UseLeaf(int32 Index)
 {
  if(!M||!M->IsFreeform()||Index<0||Index>1)return;
+ // FIX-20261110: locked with the rest of the station until the keys are out of the mailbox (closing is never refused).
+ if(!LeafOpen[Index]&&M->Freeform&&M->Freeform->RefuseLocked(Index==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door")))return;
  LeafOpen[Index]=!LeafOpen[Index];
  if(M->Audio)M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(Index==0?FVector(21.3,1,5.5):FVector(38.6,1,1.2)));
 }

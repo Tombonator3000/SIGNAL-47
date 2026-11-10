@@ -2225,3 +2225,7 @@ Månedsprøvene routine (stasjonen stenger, som den skal for ren rutine) og case
 ## 10. november kl. 07:50 (Claude Code, nattskift): slutt på skiftet
 
 Kontroll av d43 (`7d1ae9ec`): månedsprøvene investigator (431) og taken (424) PASS; testspilling n20 (spiller ute, natt 15–24): 27 startet, 22 merket, stor natt runde 3 natt 18 sett på 1016 m, utpekte landinger natt 15, 17, 19, 23, ingen før midnatt, feltbesøk fem netter (tatt natt 19). Nattens installasjoner: d40, d41, d42, d43. Åpne spørsmål til Tom står i sluttrapporten og i STATUS under kjente svakheter. Ledig disk 142 GB.
+
+## 10. november kl. 10:15 (Claude Code, dagskift): fikslisten, punkt 1, 2 (aggregatet), 4 og 8
+
+Toms fiksliste av 10. november (FIX10 i TODO). `9aa027db`: skjermene og spolebåndet (punkt 1). Denne leveransen: første start ved postkassen med Wards brev og nøklene, mørk stasjon med glødende brytere, walkie og opptaker på kommoden i gangen (punkt 4 og 8), og aggregatets funksjon (punkt 2): et lys over SARO tar nettet, aggregatet bærer stasjonen og etterlater en strimmel som funn. Selvtest 4116 OK, første start PASS 18, garasjestart PASS 12, nettbrudd PASS 14, full Freeform-regresjon PASS 251 før nettbruddet kom inn (ny kjøring pågår). Ikke installert; kritikerrunde og d44 gjenstår.

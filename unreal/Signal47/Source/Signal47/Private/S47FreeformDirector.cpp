@@ -738,6 +738,16 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  for(int32& Logged:OrbStopLogged)Logged=-1;
  bForcedEvent=Forced;OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  bCarTaken=false;CarStage=0;CarLightClock=-1;
+ // FIX-20261110 (Tom, point 2: the generator's use, tied to what happens here): what crosses over SARO takes the mains first. The
+ // event waits out the sag (Step), which is the operator's time to get to the standby generator; then it comes, in the dark or not.
+ SkyPrelude=0;bSkyCut=false;
+ if((Id==TEXT("flyover")||Id==TEXT("close_pass"))&&(bSkyCutNext||(!Forced&&!M->Freeform->InTutorial()))&&Scene==TEXT("saro")&&!M->Freeform->PowerFault()&&!M->Freeform->SkyCutLive())
+ {
+  const auto* D=Definition(Id);const double Sag=bSkyCutNext?SkyCutSag:45,After=bSkyCutNext?SkyCutAfter:75;
+  M->Freeform->SkyCutBegin(Sag,(D?D->Duration:40)+After);
+  if(M->Freeform->SkySagging()){SkyPrelude=Sag;bSkyCut=true;}
+ }
+ bSkyCutNext=false;
  bCarLight=Id==TEXT("empty_car")&&M->Freeform->TheirHoursNow(M->Freeform->Clock())&&(CarDice>=0?CarDice:(Forced||(M->Flow&&M->Flow->bDevRun))?1.f:FMath::FRand())<.35f;
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  PlaceId.Empty();bTracePlaced=false;
@@ -1379,6 +1389,7 @@ void FS47FreeformDirector::Step(double Dt)
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
   if(Start(Id,false)){const auto* D=Definition(Id);if(D->Family==TEXT("minor")||D->Family==TEXT("maintenance"))--MinorLeft;else if(Id==TEXT("response_lights")||Id==TEXT("quiet_zone"))--SkyLeft;else --InvestLeft;Changed();}return;
  }
+ if(SkyPrelude>0){SkyPrelude-=Dt;if(SkyPrelude>0&&M->Freeform->SkySagging())return;SkyPrelude=0;}
  Apply();if(!bApplied||Event.IsEmpty())return;Age+=Dt*TestPace;Draw();const auto* Def=Definition(Event);if(!Def){Finish(false);return;}
  // MILITARY-20261108: they got to the marked ground first. Nothing left to photograph or pick up; their raked circle where it lay.
  if(TraceRaked())
@@ -1570,6 +1581,15 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  // After the first photograph a visit pays nothing more: what it gives is what it leaves at the antenna it was over (M7).
  if(Event==TEXT("dusk_orb")&&DuskOrb.VisitAfterPhoto()&&M&&M->Freeform)
  {FString Dish;FVector At;if(OrbDish(M,Anchor,Dish,At))DuskOrb.LeaveFor(TEXT("orb"),Dish,At,M->Freeform->Clock(),DuskOrb.VisitClock());}
+ // FIX-20261110: the standby generator carried the station through it: the line recorder kept writing, and that strip is a record
+ // of its own, seen or not, photographed or not. In the dark there is nothing but what the operator saw.
+ if(bSkyCut&&M&&M->Freeform&&M->Freeform->SkyRode())
+ {
+  const int32 Sec=int32(FMath::Fmod(FMath::Max(0.,M->Freeform->Clock()),86400.));
+  const FString Key=M->Freeform->HasFinding(TEXT("mains-ride"))?FString::Printf(TEXT("mains-ride.day%d"),M->Freeform->Day()):FString(TEXT("mains-ride"));
+  M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("Mains failure under a clear sky, %02d:%02d. The standby generator carried the station and the line recorder kept writing: the feeder voltage sags in steps for most of a minute before the light crosses, and the mains are gone while it is overhead. No fault found on the feeder. Strip kept."),Sec/3600,(Sec/60)%60));
+ }
+ bSkyCut=false;SkyPrelude=0;
  if(Evidence&&M&&M->Freeform&&D)
  {
   FString Record=Text.IsEmpty()?D->Finding:Text;

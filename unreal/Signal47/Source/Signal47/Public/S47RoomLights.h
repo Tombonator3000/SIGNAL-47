@@ -37,6 +37,8 @@ private:
  void ManualInput(int32 Index);
  TArray<FS47Obj> Parts;
  FS47Obj Plates[4], Levers[4];
+ // FIX-20261110: a lighted toggle, as the period's were: the lever's neon glows while the switch is off, so it is found in the dark.
+ TWeakObjectPtr<class UMaterialInstanceDynamic> LeverGlow[4];
  double Retry = 0;
  bool Build();
  bool Available(int32 Index) const;

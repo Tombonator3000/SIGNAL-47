@@ -1388,6 +1388,15 @@ bool FS47FreeformWorld::ServiceUse()
  }
  return true;
 }
+int32 FS47FreeformWorld::SkyTransfer()
+{
+ if(!Ready()||bGenerator||!M->Freeform->HasKit(TEXT("transfer")))return -1;
+ if(GeneratorSeconds<=0&&Consume(TEXT("fuel")))GeneratorSeconds=6*3600.;
+ if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
+ if(GeneratorSeconds<=0)return 0;
+ bGenerator=true;if(M->Audio)M->Audio->Sfx(TEXT("engineStart"),FS47Sound{.Gain=.45f});Change();
+ return 1;
+}
 bool FS47FreeformWorld::GeneratorUse()
 {
  if(!Near(GeneratorAt,2.9))return true;

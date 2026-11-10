@@ -47,7 +47,7 @@ namespace
   for(int32 K=0;K<7;++K){H=H*1664525u+1013904223u;A->Beep(1500.f+float((H>>16)%1500),.009f,.016f,.028f*K,TEXT("square"));}
  }
 }
-float FS47FreeformSession::ScreenInterference()const{return M&&M->Gear?float(FMath::Clamp(M->Gear->Level(),0.,1.)):0.f;}
+float FS47FreeformSession::ScreenInterference()const{return FMath::Max(SkyLevel(),M&&M->Gear?float(FMath::Clamp(M->Gear->Level(),0.,1.)):0.f);}
 FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Screen)const
 {
  FTerminalIdle I;if(!Active()||!M||!M->Story||!M->Web)return I;
@@ -77,7 +77,7 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  const TWeakObjectPtr<US47Main> Main=M;
  const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
  S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
- S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Gear?float(Main->Gear->Level()):0.f;});
+ S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Freeform?Main->Freeform->ScreenInterference():0.f;});
  if(!bSame)
  {
   // The set is taken over: the tube opens from a line, the relay behind the glass goes, the coil thumps.

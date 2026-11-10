@@ -1,4 +1,8 @@
 #include "S47Freeform.h"
+#include "S47SaroSave.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
+#include "S47RoomLights.h"
 #include "S47Image.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47RoomDecor.h"
@@ -159,10 +163,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  Stop();
  bOldCalendar=Saved.IsValid()&&!Saved->HasField(TEXT("calendar"));
  bActive=true;bDeadly=bLethal;bDead=bPowerFault=bAnomaly=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;
+ SkySag=SkyOut=SkyDip=SkyDipAt=SkyDark=0;bSkyRode=false;SkyTold=0;
  ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
  Tutorial=!Saved&&M&&M->Flow&&(!M->Flow->bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTutorial")))?1:0;
- TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;
+ TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;bStationLocked=bDarkTold=false;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;SideWeek=SidePaid=Repairs=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
@@ -172,6 +177,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  {
   if(!JsonVersion(Saved)) { bActive=false;return; }
   Tutorial=FMath::Clamp(SafeInt(Saved,TEXT("tutorial")),0,6);
+  bStationLocked=S47J::Bool(Saved,TEXT("stationLocked"));bDarkTold=!bStationLocked;
   TutorialJobId=S47J::Str(Saved,TEXT("tutorialJobId"));
   FieldFocus=FMath::Clamp(SafeInt(Saved,TEXT("fieldFocus"),-1),-1,FS47FreeformCases::CaseCount-1);
   JobSeed=int32(FMath::Clamp(SafeNum(Saved,TEXT("jobSeed"),JobSeed),double(MIN_int32),double(MAX_int32)));
@@ -401,7 +407,70 @@ bool FS47FreeformSession::HasPower() const
 {
  // Closed: the county line is open at the meter (FS47Predecessor::Close). Only a fuelled generator runs anything.
  if(Predecessor&&Predecessor->StationClosed())return Field&&Field->HasBackupPower();
- return !bPowerFault||(Field&&Field->HasBackupPower());
+ return (!bPowerFault&&!SkyMainsOut())||(Field&&Field->HasBackupPower());
+}
+// FIX-20261110 (Tom, point 2): the mains under a passage. See SkyCutBegin in the header.
+void FS47FreeformSession::SkyCutBegin(double Sag,double Out)
+{
+ if(!bActive||SkyCutLive()||bPowerFault||(Predecessor&&Predecessor->StationClosed()))return;
+ SkySag=SkySagAll=FMath::Max(1.,Sag);SkyOut=FMath::Max(1.,Out);SkyDipAt=FMath::Min(2.,SkySag*.2);SkyDip=SkyDark=0;bSkyRode=false;SkyTold=0;
+ UE_LOG(LogTemp,Display,TEXT("S47: sky cut: the feeder sags for %.0f s, then the mains are out for %.0f s"),SkySag,SkyOut);
+}
+float FS47FreeformSession::SkyLevel() const
+{
+ if(SkySag>0)return float(.18+.42*(1-SkySag/SkySagAll));
+ return SkyOut>0?.45f:0.f;
+}
+void FS47FreeformSession::StepSky(double Dt)
+{
+ if(!SkyCutLive()||!M)return;
+ const bool bAtSaro=M->Web&&M->Web->Area()==TEXT("saro")&&M->World&&M->World->Area==TEXT("saro");
+ const bool bIn=bAtSaro&&S47SaroSave::InStation(M);
+ const bool Backup=Field&&Field->HasBackupPower();
+ auto Tell=[&](const TCHAR* Text,float Seconds){if(bAtSaro&&M->UI)M->UI->Toast(Text,Seconds);};
+ auto DipOver=[&]{if(SkyDip>0&&M->Web){M->Web->SetLightsScale(1.f,1.f);M->Web->SetTubes(true);}SkyDip=0;};
+ if(bPowerFault){DipOver();SkySag=SkyOut=0;return;} // an ordinary feeder fault on top of it: that one is the operator's to mend
+ if(SkySag>0)
+ {
+  SkySag-=Dt;
+  if(SkyDip>0){SkyDip-=Dt;if(SkyDip<=0)DipOver();}
+  else if(!Backup&&SkySag>1.2&&(SkyDipAt-=Dt)<=0&&M->Web&&!(M->SaroNight&&M->SaroNight->Power&&M->SaroNight->Power->Out()))
+  {
+   // The room sags for a moment, as Story's dip after the relay does (AS47Story::LightsDip); the switches' own state is untouched.
+   SkyDip=FMath::FRandRange(.16,.5);SkyDipAt=FMath::FRandRange(3.5,8.)*FMath::Clamp(SkySag/SkySagAll+.35,.4,1.);
+   M->Web->SetLightsScale(.24f,.35f);M->Web->SetTubes(false);
+   if(M->Audio&&bAtSaro){M->Audio->Sfx(TEXT("rack_switch"),FS47Sound{.Gain=bIn?.32f:.1f,.Rate=FMath::FRandRange(.7f,.9f)});M->Audio->Beep(52.f,float(SkyDip)+.25f,bIn?.05f:.02f,0.f,TEXT("sine"));}
+   if(SkyTold==0){SkyTold=1;Tell(bIn?TEXT("The lamps dip and come back. On the rack the line-voltage needle is sagging, and there is not a cloud out there."):TEXT("The station's lamps dip and come back. Not a cloud in the sky."),6);}
+   else if(SkyTold==1&&SkySag<SkySagAll*.55)
+   {
+    SkyTold=2;
+    Tell(HasKit(TEXT("transfer"))?TEXT("Again, and deeper. The feeder is going. The transfer switch in the service bay will throw the standby generator in, if it has fuel.")
+     :TEXT("Again, and deeper. The feeder is going. The standby generator is outside, behind the control room."),7);
+   }
+  }
+  if(SkySag<=0)
+  {
+   SkySag=0;DipOver();
+   const int32 Thrown=Backup||!Field?-1:Field->SkyTransfer();
+   const bool Up=Field&&Field->HasBackupPower();bSkyRode=Up;SkyDark=0;
+   if(M->Audio&&bAtSaro&&!Up){M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.5f,.Rate=.7f});M->Audio->Beep(110.f,.7f,.05f,0.f,TEXT("sine"));}
+   Tell(Thrown==1?TEXT("The mains drop out. Down in the service bay the transfer switch clunks over, and behind the control room the standby generator coughs and takes the load.")
+    :Thrown==0?TEXT("The mains drop out. The transfer switch clunks over and the standby generator turns and does not catch: no fuel for it. Every lamp in the station is out.")
+    :Up?TEXT("The mains drop out. The standby generator takes the load: the lamps dip once and hold, and the line recorder goes on writing.")
+    :TEXT("Every lamp in the station goes out at once. No storm, no fault bell. The mains are just gone."),8);
+   UE_LOG(LogTemp,Display,TEXT("S47: sky cut: mains out for %.0f s, standby %s"),SkyOut,Up?TEXT("carrying the station"):Thrown==0?TEXT("dry"):TEXT("not running"));
+  }
+  return;
+ }
+ SkyOut-=Dt;if(!Backup)SkyDark+=Dt;else if(SkyDark<12)bSkyRode=true;
+ if(SkyOut<=0)
+ {
+  SkyOut=0;
+  if(M->Audio&&bAtSaro)for(int32 K=0;K<3;++K)M->Audio->Sfx(TEXT("rack_switch"),FS47Sound{.Gain=bIn?.4f:.12f,.Rate=.8f+.1f*K,.When=.22f*K});
+  Tell(Backup?TEXT("The mains are back by themselves. Relays clatter through the rack. The standby generator is still running on its tank; it can be stopped.")
+   :TEXT("The mains come back by themselves. Relays clatter through the rack and the tubes strike one after another."),7);
+  UE_LOG(LogTemp,Display,TEXT("S47: sky cut: mains back by themselves (dark for %.0f s, standby %s)"),SkyDark,Backup?TEXT("running"):TEXT("off"));
+ }
 }
 bool FS47FreeformSession::RequirePower()
 {
@@ -554,11 +623,18 @@ void FS47FreeformSession::InterruptCapture(const FString& Why)
 void FS47FreeformSession::Step(double Dt)
 {
  if(!bActive||!M||!M->Web||!M->Story||!FMath::IsFinite(Dt)||Dt<=0)return;
+ // FIX-20261110 (Tom, point 4): the first step inside the dark station says where the switches are, once.
+ if(bMailboxStart&&!bDarkTold&&!bStationLocked&&M->RoomLights&&S47SaroSave::InStation(M))
+ {
+  bDarkTold=true;
+  if(!M->RoomLights->ManualEnabled(TEXT("corridor"))&&M->UI)M->UI->Toast(TEXT("Dark inside, and it smells of dust and warm electronics. The light switches glow orange on the walls."),7);
+ }
  if(bRestoreAngles&&M->Web->IsLoaded())
  {
   bRestoreAngles=false;for(int32 I=0;I<27;++I){M->Web->SnapDish(I,SavedAngles[I*4],SavedAngles[I*4+1]);M->Web->PointDish(I,SavedAngles[I*4+2],SavedAngles[I*4+3],9,true);}
  }
  const double D=FMath::Min(Dt,.1);
+ if(!Held())StepSky(D);
  const bool Powered=HasPower();
  if(Dt>.100001||ArrayMotionHeld()||!Powered)InterruptCapture(TEXT("Continuous receiver capture interrupted; retained measurements use compatible reference sound."));
  if(CaptureStartStage&&(!Powered||Held()||!bAudioOpen||!AudioDesk||!AudioDesk->ListeningPosition()))
@@ -875,7 +951,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  const FJob* J=CurrentJob();if(!J)return TEXT("OPS (corner PC): Select an observation in DAILY WORK.");
  if(EveningGated(*J))return AvailableActivities();
  if(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Packet||J->Stage==EJobStage::Filed)return JobNextAction(*J);
- if(!HasPower()){if(PrinterProgress()>=1)return PrinterHint();return TEXT("Restore the SARO feeder, or start the fuelled standby generator outside behind the control room.");}
+ if(!HasPower()){if(PrinterProgress()>=1)return PrinterHint();return SkyMainsOut()&&!bPowerFault?TEXT("MAINS OUT, NO FAULT ON THE FEEDER. The fuelled standby generator behind the control room carries the station; or wait in the dark."):TEXT("Restore the SARO feeder, or start the fuelled standby generator outside behind the control room.");}
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
@@ -1934,7 +2010,7 @@ void FS47FreeformSession::OpenStatus()
  auto Pick=[this](int32 I){SelectedDish=I;if(Field&&M->Web->DishId(I)==Field->ServiceDishId()){Field->DiagnoseService();RecordEvidence(TEXT("service-diagnosed-")+Field->ServiceDishId(),Field->ServiceDishId()+TEXT(" command/encoder status inspected at the status terminal."));}OpenStatus();};
  auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
   T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([this,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),AvailableDishCount(),Count);}),TAttribute<bool>::CreateLambda([this,Count]{return AvailableDishCount()<Count;}))},
-              {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault;}))}}),
+              {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):SkySag>0?FString(TEXT("LINE VOLTAGE SAGGING")):SkyOut>0?FString(TEXT("MAINS LOST / ON GENERATOR")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault||SkyCutLive();}))}}),
   // FIX-20261110 (Tom: the array PC has too little to do): the drive check runs every element against a dummy load and says what
   // it heard (see StartDriveCheck); the grid above shows the element under test.
   T::Columns({{.62f,T::Meter(TEXT("DRIVE CHECK"),TAttribute<FString>::CreateLambda([this,Short]{return DriveCheckAt>=0&&DriveCheckDish>=0?Short(DriveCheckDish)+TEXT(" / DUMMY LOAD"):DriveCheckDay==DayNumber?FString(TEXT("RUN TODAY")):FString(TEXT("NOT RUN TODAY"));}),
@@ -3159,9 +3235,10 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // M7-WALKIE-20261109: once the first shift is done, the field radio on the control room desk is Dale's way to the player and the
  // night's rules; until it is taken every line says where it is. (Out in the field where the player was taken, it is not on the desk.)
  const bool bOnDesk=Tutorial==0&&M&&M->FieldRadio&&M->FieldRadio->Ready()&&!M->FieldRadio->Owned()&&!M->FieldRadio->LeftOut();
- const FString Radio=bOnDesk?FString(TEXT(" CONTROL ROOM DESK: TAKE THE FIELD RADIO (DALE, CHANNEL 1).")):FString();
+ const bool bHall=bOnDesk&&M->FieldRadio->InHall(); // FIX-20261110: on the hall dresser
+ const FString Radio=bOnDesk?FString(bHall?TEXT(" HALL DRESSER: TAKE THE FIELD RADIO (DALE, CHANNEL 1)."):TEXT(" CONTROL ROOM DESK: TAKE THE FIELD RADIO (DALE, CHANNEL 1).")):FString();
  // The card: the task in a line it has room for, then the walkie and the array while there is room.
- const FString RadioCard=bOnDesk?FString(TEXT(" WALKIE: ON THE DESK.")):FString();
+ const FString RadioCard=bOnDesk?FString(bHall?TEXT(" WALKIE: ON THE HALL DRESSER."):TEXT(" WALKIE: ON THE DESK.")):FString();
  const FString ArrayCard=Next?FString::Printf(TEXT(" ARRAY %d OF 27."),27-Field->ArrayWear().DownCount()):FString();
  const bool bDark=GoalWaits(WorldClock);
  auto Say=[Card,&Radio,&RadioCard,&ArrayCard](const FString& Full,const FString& Short=FString())
@@ -3664,6 +3741,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
 bool FS47FreeformSession::Use(const FString& Id)
 {
  if(!bActive)return false;
+ if(RefuseLocked(Id))return true; // FIX-20261110: the station's doors, before the keys are out of the mailbox
  if(Fatigue&&Id==TEXT("diner:waitress"))Fatigue->AtDiner(); // the cup she pours is drunk (M5 critic 3; FS47Fatigue checks she is there)
  if(Townsfolk&&Townsfolk->Use(Id))return true; // the Mesa's waitress (TOWNSFOLK-20261108)
  if(AudioDesk&&AudioDesk->Use(Id))return true;
@@ -3749,6 +3827,49 @@ void FS47FreeformSession::StepTutorial()
  if(Step>Tutorial&&Step<UE_ARRAY_COUNT(Why)&&Why[Step])Changed(FString(TEXT("FIRST SHIFT / "))+Why[Step]);
  Tutorial=Step;
 }
+// FIX-20261110 (Tom, points 4 and 8): the ways into the station. Every one is shut at a new game (US47Flow), so a locked latch on
+// each keeps the operator out until the letter and its keys are in hand. Closing is never refused.
+bool FS47FreeformSession::StationDoor(const FString& Id)
+{
+ return Id==TEXT("exitDoor")||Id==TEXT("doorEast")||Id==TEXT("labDoor")||Id==TEXT("eastwing:personnel-door")||Id==TEXT("eastwing:service-door")||Id.StartsWith(TEXT("eastwing:garage-door-"));
+}
+bool FS47FreeformSession::StationLocked()
+{
+ if(!bStationLocked)return false;
+ // No letter left to find the keys with (a box emptied some other way, or no post in this run): the latch is simply open.
+ if(!Mail||!Mail->Holds(TEXT("ward:letter"))){bStationLocked=false;bDarkTold=true;UE_LOG(LogTemp,Display,TEXT("S47: station unlocked: no letter in the box to hold its keys"));}
+ return bStationLocked;
+}
+void FS47FreeformSession::LockStation()
+{
+ if(!bActive||!Mail||!Mail->Holds(TEXT("ward:letter")))return;
+ bStationLocked=true;bDarkTold=false;
+ UE_LOG(LogTemp,Display,TEXT("S47: station locked: the keys are in the mailbox with Dr. Ward's letter"));
+}
+void FS47FreeformSession::StationKeyFound()
+{
+ if(!bStationLocked)return;
+ bStationLocked=false;
+ if(M&&M->Audio)
+ {
+  // A ring of keys tipped out of an envelope into the hand: a handful of small bright strikes, none of them a tone.
+  const float Ring[]={3100.f,4350.f,3720.f,5200.f,2890.f,4680.f};const float At[]={.42f,.47f,.55f,.60f,.71f,.78f};
+  for(int32 I=0;I<UE_ARRAY_COUNT(Ring);++I)M->Audio->Beep(Ring[I],.035f,.022f,At[I],TEXT("triangle"));
+  M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.22f,.Rate=1.9f,.When=.5f});
+ }
+ if(M&&M->UI)M->UI->Toast(TEXT("A ring of keys slides out of the envelope with the letter: SARO, every outside door. The station is yours to open."),7);
+ UE_LOG(LogTemp,Display,TEXT("S47: station keys taken out of the mailbox, day %d"),DayNumber);
+ if(M)M->RequestAutosave();
+}
+bool FS47FreeformSession::RefuseLocked(const FString& DoorId)
+{
+ if(!bStationLocked||!StationDoor(DoorId)||!StationLocked())return false;
+ if(M&&M->Audio)M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"),TEXT("switch")),FS47Sound{.Gain=.5f,.Rate=.85f});
+ if(M&&M->UI)M->UI->Toast(TEXT("LOCKED. Nobody is in, and nobody gave you a key. Dr. Ward's office said there would be a letter in the box at the road."),5);
+ UE_LOG(LogTemp,Display,TEXT("S47: station door %s refused: locked, keys still in the mailbox"),*DoorId);
+ return true;
+}
+
 FString FS47FreeformSession::TutorialObjective()const
 {
  if(Tutorial==1)return TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"); // whole on the HUD's card (critic round 5)
@@ -3771,6 +3892,7 @@ FString FS47FreeformSession::Objective()const
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  // SPAWN-MAILBOX-20261109 (Tom): a new game starts at the box at the road; Dr. Ward's letter in it comes first, then the HUD's card
  // points in to OPS in the control room (the first shift's first step), as before. Once inside, the shift's step whatever the box.
+ if(bStationLocked&&Mail&&Mail->Holds(TEXT("ward:letter")))return TEXT("MAILBOX / The keys to the station are in the box.");
  if(bMailboxStart&&Tutorial==1&&Mail&&Mail->Holds(TEXT("ward:letter"))&&M&&M->World&&M->Player&&M->World->Area==TEXT("saro")&&!M->World->Indoors(M->Player->Pos))
   return TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
  if(Tutorial>0){const FString T=TutorialObjective();if(!T.IsEmpty())return T;}
@@ -3898,7 +4020,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 }
 S47J::FObj FS47FreeformSession::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;

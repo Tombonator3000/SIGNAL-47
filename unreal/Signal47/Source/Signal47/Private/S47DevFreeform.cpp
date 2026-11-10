@@ -273,6 +273,14 @@ void FS47DevFreeform::AddDirector(FS47DevEvents& E)
   const FString Id=L.Id,Say=L.Say;const bool bAim=L.bAim;
   E.AddFreeform(L.Group,L.Label,L.Note,[this,Id,Stage,bAim,Say]{StartDirector(Id,Stage,bAim,Say);});
  }
+ {
+  // FIX-20261110: as in play, where a passage over SARO takes the mains first (the fixtures above keep their immediate life).
+  FStage Stage;Stage.From=EveningFrom;Stage.To=EveningTo;Stage.Area=TEXT("saro");Stage.Where=[]{return ControlRoom();};Stage.Yaw=UE_DOUBLE_PI;
+  E.AddFreeform(Small,TEXT("Flyover that takes the mains"),TEXT("22:00, control room; 45 s of dips, then dark"),[this,Stage]
+  {
+   StartDirector(TEXT("flyover"),Stage,false,TEXT("The lamps dip for 45 seconds, then the mains go and a light crosses overhead. The generator is outside behind the control room; the mains come back by themselves."),[this]{if(auto* F=Session())if(F->Director)F->Director->SkyCutNext();});
+  });
+ }
  // Where the Director's own rule puts them: at the cabinet they belong to.
  for(const bool bFeeder:{true,false})
  {

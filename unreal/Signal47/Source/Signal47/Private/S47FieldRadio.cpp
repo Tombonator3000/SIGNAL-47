@@ -25,6 +25,7 @@
 #include "S47Keys.h"
 #include "S47Predecessor.h"
 #include "S47TripoNew.h"
+#include "S47Props.h"
 #include "S47DaleVoice.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -212,6 +213,24 @@ bool FS47FieldRadio::Build()
  for(auto C:Copies) if(C.IsValid()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  return true;
 }
+// FIX-20261110 (Tom, point 8): where the set lies when nobody carries it. Looked for once a second (the props are placed after
+// the web, and a Story game after a Freeform one has it back on the desk); the place is the dresser's own top, from its bounds.
+void FS47FieldRadio::Rest(double Dt)
+{
+ HallRetry-=Dt;if(!Root||HallRetry>0||!M)return;
+ HallRetry=1;
+ const UStaticMeshComponent* Dresser=M->IsFreeform()?AS47Props::PlacedMesh(TEXT("hallDresser")):nullptr;
+ const bool bWant=Dresser!=nullptr;
+ if(bWant==bHall)return;
+ bHall=bWant;
+ if(bHall)
+ {
+  const FBox B=Dresser->Bounds.GetBox();const FVector C=S47Three::ToThree(B.GetCenter());
+  Root.SetPosition(FVector(C.X+.34,B.Max.Z/100.+.06,C.Z-.03));Root.SetRotation(FVector(0,PI-.25,0)); // its face to the corridor (+Z)
+  UE_LOG(LogTemp,Display,TEXT("S47: field radio: on the hall dresser (%.2f %.2f %.2f)"),C.X+.34,B.Max.Z/100.+.06,C.Z-.03);
+ }
+ else{Root.SetPosition(FVector(3.18,.840,2.70));Root.SetRotation(FVector(0,.2,0));}
+}
 bool FS47FieldRadio::Message(const FString& Text,bool bDeskToo)
 {
  // NIGHT-20261110: a set never taken off the SARO desk is still on, and is heard in the building (the big night's Dale, play n18).
@@ -324,7 +343,7 @@ bool FS47FieldRadio::PressTalk()
  if(M->Story&&(M->Story->IsPaused()||M->Story->IsCinematic()))return false;
  if(!bOwned||bLeftOut)
  {
-  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie isn't on you. It's out there somewhere."):TEXT("No walkie on you. SARO's field set is on the desk in the control room."),4);
+  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie isn't on you. It's out there somewhere."):*FString::Printf(TEXT("No walkie on you. SARO's field set is %s."),Where()),4);
   return true;
  }
  if(HailLeft>0){Answer();return true;}
@@ -409,7 +428,7 @@ void FS47FieldRadio::DeskCall(const FHail& Words)
   const FVector At=Root.WorldPosition();
   if(FVector::Distance(S47Three::ToThree(M->Player->EyeUE()),At)>DeskHearing)return;
   if(M->Audio)S47FieldRadioSet::DeskCall(M->Audio,At);
-  if(DeskHints<3&&M->UI){++DeskHints;M->UI->Toast(TEXT("Something on the control room desk gives two beeps and a hiss."),5);}
+  if(DeskHints<3&&M->UI){++DeskHints;M->UI->Toast(bHall?TEXT("Something on the hall dresser gives two beeps and a hiss."):TEXT("Something on the control room desk gives two beeps and a hiss."),5);}
  }
  DeskDay=Day;++DeskCallCount;
  UE_LOG(LogTemp,Display,TEXT("S47: walkie: Dale's hail heard from the desk, day %d"),Day);
@@ -604,7 +623,7 @@ void FS47FieldRadio::Step(double Dt)
  if(!M) return;
  SinceMessage+=Dt;
  StepCaption();
- Build();
+ Build();Rest(Dt);
  const bool Play=bAvailable && !bUnsupported && M->Mode==US47Main::EMode::Play;
  const bool Shown=Play && !bOwned && !bLeftOut && M->Web && M->Web->Area()==TEXT("saro");
  if(Root) Root.SetVisible(Shown);
@@ -690,7 +709,7 @@ void FS47FieldRadio::ControlTest(double Dt)
   const auto* Old=M->Web->Node(M->Web->Obj(TEXT("world.room6.objs.walkie")).I);
   if(!Check(Old && Old->Children.Num()==3,TEXT("Room 6 original remains separate and complete")))return;
   if(!Check(LastLevel==0,TEXT("quiet room does not warn about dormant or future enemies")))return;
-  M->Player->Place(3.18,3.7,0); M->Player->Pitch=-.65;
+  {const FVector R=Root.WorldPosition();M->Player->Place(R.X,R.Z+1.,0);} M->Player->Pitch=-.65; // the desk, or the hall dresser (FIX-20261110)
   FString Shot;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47FieldRadioShot="),Shot))
    FScreenshotRequest::RequestScreenshot(Shot,true,false);

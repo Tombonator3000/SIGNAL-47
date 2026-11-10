@@ -42,6 +42,9 @@ private:
  TFunction<void(const S47J::FObj&)> RestorePatch; // declared fixture, applied once to the next Restore's saved state
  double RescueClock=0;
  void StepGarageStart(double Dt);
+ void StepFirstStart(double Dt); // -S47FirstStartTest (S47FirstStartTest.cpp)
+ void StepSkyCut(double Dt); // -S47SkyCutTest (S47SkyCutTest.cpp)
+ double BoxX=0,BoxZ=0,BoxYaw=0;
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;
  TSharedPtr<struct FS47LoggerJourneyState> LoggerJourney;

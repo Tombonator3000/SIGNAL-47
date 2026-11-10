@@ -490,6 +490,15 @@ public:
  // SPAWN-MAILBOX-20261109: this new game began at the box at the road (US47Flow), so Dr. Ward's letter there is the HUD's first
  // task, before the first shift's OPS. Not saved: a Continue goes on with the tutorial as it was.
  bool bMailboxStart=false;
+ // FIX-20261110 (Tom, points 4 and 8): a new operator finds the station shut up and dark; the keys are in the envelope with
+ // Dr. Ward's letter in the box at the road. Saved only while locked: an older save, a developer start and every game after the
+ // letter is out of the box have the keys. Never a trap: a locked station with no letter left in the box opens (StationLocked).
+ bool StationLocked();
+ void LockStation();            // US47Flow, the new game at the box
+ void StationKeyFound();        // FS47Mail, the letter taken out
+ bool RefuseLocked(const FString& DoorId); // true: this way in is locked, and the player was told so
+ static bool StationDoor(const FString& Id);
+ bool bStationLocked=false,bDarkTold=false;
  void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);
@@ -505,6 +514,16 @@ public:
  bool Consume(const FString& Id);
  void SetPowerFault(bool bFault);
  bool PowerFault() const { return bPowerFault; }
+ // FIX-20261110 (Tom, point 2): what passes over SARO takes the mains with it. Sag seconds of dips and torn screens first (time to
+ // get to the standby generator), then the mains are out for Out seconds and come back by themselves. A running generator carries
+ // the station through it, and the line recorder keeps writing (SkyRode: the record the passage leaves). Nothing of it is saved:
+ // a passage is one sitting, and a save opened in the middle of one has its mains.
+ void SkyCutBegin(double Sag,double Out);
+ bool SkySagging() const { return SkySag>0; }
+ bool SkyMainsOut() const { return SkySag<=0&&SkyOut>0; }
+ bool SkyCutLive() const { return SkySag>0||SkyOut>0; }
+ bool SkyRode() const { return bSkyRode&&SkyDark<12; }
+ float SkyLevel() const;
  bool HasPowerForReactiveLight() const { return HasPower(); }
  void SetAnomaly(bool bValue);
  bool Anomaly() const { return bAnomaly; }
@@ -586,6 +605,8 @@ private:
  bool ValidJournalEntry(const FString& Id) const;
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false,bOldCalendar=false;
+ double SkySag=0,SkySagAll=1,SkyOut=0,SkyDipAt=0,SkyDip=0,SkyDark=0;bool bSkyRode=false;int32 SkyTold=0;
+ void StepSky(double Dt);
  FString ArchiveNote;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
  bool bPowerApplied=false,bLastPower=true;

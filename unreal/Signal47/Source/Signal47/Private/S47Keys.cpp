@@ -62,7 +62,7 @@ namespace S47KeysLocal
 			// GEIGER-20261108: the counter in the player's own hand once it is built, as the walkie is
 			A(TEXT("counter"), TEXT("Counter"), Low, TEXT("Hold the Geiger counter up, or put it away, once you have built it. Put away, it stays down even where it climbs."), EKeys::Z),
 			// TAPE-20261108: the field recorder off the desk by the array's PC, as the counter is
-			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back on the desk by the array's PC."), EKeys::U),
+			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back where the recorder is kept at SARO."), EKeys::U),
 			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground.
 			// STONE-POCKET-20261109: a tap puts a stone in the pocket (three fit); empty-handed, the key takes one out first.
 			A(TEXT("throw"), TEXT("Throw / set down"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap to set it down; a stone goes in your pocket instead while there is room (three fit), and looking at bare ground you pick up the next. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. The Use key picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),

@@ -27,6 +27,11 @@ public:
  // and its caption follows his measured speech; without one it is as before.
  bool Message(const FString& Text,bool bDeskToo=false);
  bool OnDesk() const { return !bOwned && !bLeftOut && bAvailable && !bUnsupported && Chan==1; }
+ // FIX-20261110 (Tom, point 8): in Freeform the set lies on the dresser in the hall inside the visitor entrance (Config/Props/
+ // saro.json "hallDresser"), the first thing a new operator sees; in Story, or in a build without that model, on the control room desk.
+ bool InHall() const { return bHall; }
+ FVector RootAt() const { return Root?Root.WorldPosition():FVector::ZeroVector; } // metres, three.js terms
+ const TCHAR* Where() const { return bHall?TEXT("on the dresser in the hall"):TEXT("on the desk in the control room"); }
  // Dale is speaking on the set in his own voice just now.
  bool DaleSpeaking() const;
  // MSG-ONE-20261109: Dale's voice is on the carried set now: a CB call does not start over him, it waits (one speaker at a time).
@@ -139,6 +144,8 @@ private:
  bool bOwned=false,bUnsupported=false,bAvailable=false,bLeftOut=false;
  // Tom's Tripo walkie stands on the desk in place of the three web parts (TRIPO-NEW, S47TripoNew).
  bool bTripoWalkie=false;
+ bool bHall=false; double HallRetry=0;
+ void Rest(double Dt);
  S47J::FObj Unknown;
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0,OrdHiss=0,OrdCrackle=0,RealNear=0;
  double StrengthNow=1,StrengthWant=1,StrengthIn=0,SinceNoise=1e9,SinceCrackle=1e9;

@@ -1057,7 +1057,7 @@ void US47Flow::StartGame(const FStart& O)
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
   // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
   // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
-  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
+  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
   {
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
    if(M->World)M->World->PlaceTruck(TEXT("saro"),Pose);
@@ -1069,15 +1069,29 @@ void US47Flow::StartGame(const FStart& O)
    // same line beyond it. The letter is in the box from the first second (as FS47Predecessor posts it at the shift's start), and the
    // HUD's card asks for it before the first shift's OPS (FS47FreeformSession::Objective). Tests written for the visitor ramp
    // (-S47GarageStartTest, -S47RescueJourneyTest and other developer runs) keep that start; -S47MailboxStart asks for this one.
-   const bool bAtBox=!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47MailboxStart"));
+   const bool bAtBox=!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47MailboxStart"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"));
    const double BoxX=FS47MailBoxModel::PostX,BoxZ=FS47MailBoxModel::PostZ,StandX=BoxX-.95,StandZ=BoxZ+1.35;
    if(M->Player&&bAtBox&&(M->Player->Walkable(StandX,StandZ)||!M->Player->Walkable(-9.5,5.7)))
    {
     // Facing the box's middle (1.17 m up), the eyes a little down to it and the station on the horizon past it.
     M->Player->Place(StandX,StandZ,FMath::Atan2(-(BoxX-StandX),-(BoxZ-StandZ)));M->Player->Pitch=-.12;
     M->Freeform->bMailboxStart=true;
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){M->Freeform->TestLiveRules();if(M->Freeform->Mail)M->Freeform->Mail->TestOn();} // the real game's rules in a developer run
     if(M->Freeform->Mail&&M->Freeform->Mail->Live()&&!M->Freeform->Mail->Ever(TEXT("ward:letter")))M->Freeform->Mail->PostWard(TEXT("letter"),true);
-    UE_LOG(LogS47Flow,Display,TEXT("S47: new Freeform operator at the mailbox (%.2f %.2f), letter %s"),StandX,StandZ,M->Freeform->Mail&&M->Freeform->Mail->Holds(TEXT("ward:letter"))?TEXT("in the box"):TEXT("not posted"));
+    // FIX-20261110 (Tom, points 4 and 8): the station is shut up and dark. The keys are in the envelope with the letter (the
+    // doors stay locked until it is out of the box, FS47FreeformSession::RefuseLocked), and every room's light is off at its
+    // switch for the operator to put on. -S47StationOpen keeps a developer's mailbox start unlocked and lit.
+    if(!FParse::Param(FCommandLine::Get(),TEXT("S47StationOpen")))
+    {
+     M->Freeform->LockStation();
+     if(M->RoomLights)
+     {
+      auto Dark=S47J::New();S47J::Set(Dark,TEXT("v"),1);
+      for(const TCHAR* Room:{TEXT("control"),TEXT("corridor"),TEXT("records"),TEXT("office")})S47J::Set(Dark,Room,false);
+      M->RoomLights->Begin(Dark);
+     }
+    }
+    UE_LOG(LogS47Flow,Display,TEXT("S47: new Freeform operator at the mailbox (%.2f %.2f), letter %s, station %s"),StandX,StandZ,M->Freeform->Mail&&M->Freeform->Mail->Holds(TEXT("ward:letter"))?TEXT("in the box"):TEXT("not posted"),M->Freeform->bStationLocked?TEXT("locked and dark"):TEXT("open"));
    }
    else if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
   }
@@ -2524,9 +2538,9 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	{
 		const FS47Tape& Tp = *M->Freeform->Tape;
 		Kit.Add({ TEXT("Field recorder"), Tp.Carried()
-			? FString::Printf(TEXT("Sony TC-D5 from the desk by the array's PC, a C-60 in it. %s starts and stops it. Play the cassettes back on that desk."), *S47Keys::Said(TEXT("tape")))
-			: FString(TEXT("On the desk by the array's PC. Its cassettes play back there.")),
-			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the desk / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
+			? FString::Printf(TEXT("Sony TC-D5, SARO's field recorder, a C-60 in it. %s starts and stops it. Its place is %s; play the cassettes back there."), *S47Keys::Said(TEXT("tape")), Tp.Where())
+			: FString::Printf(TEXT("It is %s. Its cassettes play back there."), Tp.Where()),
+			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the %s / %d %s"), Tp.Top(), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
 			FString(), FString() });
 	}
 	// STONE-POCKET-20261109: the stones in the jacket pocket, said in words, not as a number

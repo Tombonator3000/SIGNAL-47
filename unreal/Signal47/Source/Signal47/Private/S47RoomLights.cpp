@@ -132,15 +132,17 @@ bool FS47RoomLights::Build()
  for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)
  {
   const auto& S=Switches[I];const FS47Obj Parent=M->Web->Obj(S.Parent);
+  UMaterialInstanceDynamic* Made=nullptr;
   auto Box=[&](const FString& Name,const FVector& At,const FVector& Size,uint32 Color)
   {
-   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Color));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);Mat->SetScalarParameterValue(TEXT("Roughness"),.7f);
+   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Made=Mat;Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Color));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);Mat->SetScalarParameterValue(TEXT("Roughness"),.7f);
    auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->Node(Parent.I)->Comp.Get());C->SetStaticMesh(Mesh);C->SetMaterial(0,Mat);
    C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(Size));C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
    FS47Obj O=M->Web->ObjAt(M->Web->AdoptNode(C,Parent.I,Name));Parts.Add(O);M->Web->MarkUsable(O.I,IdOf(I));return O;
   };
   Plates[I]=Box(FString(TEXT("RoomLightPlate_"))+S.Room,S.At,S.bSideWall?FVector(.022,.15,.09):FVector(.09,.15,.022),0xc3baa5);
   Levers[I]=Box(FString(TEXT("RoomLightLever_"))+S.Room,InteractionPoint(S.Room),S.bSideWall?FVector(.026,.055,.025):FVector(.025,.055,.026),0xe0d8c5);
+  LeverGlow[I]=Made;if(Made){Made->SetVectorParameterValue(TEXT("Emissive"),S47Three::Hex(0xff8a1c));Made->SetScalarParameterValue(TEXT("EmissivePower"),0);}
   auto* Text=NewObject<UTextRenderComponent>(M->Web);Text->SetupAttachment(M->Web->Node(Parent.I)->Comp.Get());Text->SetMobility(EComponentMobility::Movable);Text->SetText(FText::FromString(FString(S.Title)+TEXT("\nCEILING")));Text->SetTextRenderColor(FColor(212,203,179));Text->SetWorldSize(1.6f);Text->SetHorizontalAlignment(EHTA_Center);Text->SetVerticalAlignment(EVRTA_TextCenter);Text->SetCollisionEnabled(ECollisionEnabled::NoCollision);Text->RegisterComponent();Text->SetWorldLocation(S47Three::ToUE(S.At+FVector(0,.14,0)+Facing(I)*.016));Text->SetWorldRotation(FRotator(0,S.bSideWall?180:S.Normal*90,0));
   Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(Text,Parent.I,FString(TEXT("RoomLightLabel_"))+S.Room)));
   FS47Interactable Item;Item.Id=IdOf(I);Item.Object=Plates[I];Item.Range=2.2;
@@ -167,6 +169,7 @@ void FS47RoomLights::Apply()
    Parts[K].SetVisible(Show);
    if(const auto* N=M->Web->Node(Parts[K].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Show&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
+  if(auto* Glow=LeverGlow[I].Get())Glow->SetScalarParameterValue(TEXT("EmissivePower"),Show&&!ManualEnabled(Switches[I].Room)&&!(M->Story&&M->Story->bDark)?4.f:0.f);
   // Adopted Web nodes do not retain the native mesh scale; avoid SetRotX here.
   if(const auto* N=M->Web->Node(Levers[I].I))if(auto* C=N->Comp.Get())C->SetWorldRotation(Switches[I].bSideWall?FRotator((RoomEnabled(Switches[I].Room)?-22.:22.)*Switches[I].Normal,0,0):FRotator(0,0,(RoomEnabled(Switches[I].Room)?-22.:22.)*Switches[I].Normal));
  }

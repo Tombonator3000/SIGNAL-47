@@ -65,6 +65,9 @@ public:
  FString ServiceStatus() const;
  bool GeneratorRunning() const { return bGenerator && GeneratorSeconds > 0; }
  bool HasBackupPower() const { return GeneratorRunning(); }
+ // FIX-20261110: the transfer switch throws for mains the sky took as it does for a feeder fault. 1 caught, 0 dry, -1 no switch or already running.
+ int32 SkyTransfer();
+ void TestGeneratorFuel(){GeneratorSeconds=FMath::Max(GeneratorSeconds,3600.);}
  double GeneratorHours() const { return GeneratorSeconds / 3600.; }
  double VehicleFuel() const { return Fuel; }
  // M7 (Tom, 9 November): the truck's tank (FS47Outfit: four units, six with the auxiliary tank), what a pump dollar buys this week,
