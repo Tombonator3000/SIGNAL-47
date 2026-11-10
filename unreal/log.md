@@ -2255,3 +2255,7 @@ Kontroll: bygg, selvtest 4159 OK, `-S47FirstStartTest` 18, `-S47SkyCutTest` 14, 
 ## 10. november kl. 12:40 (Claude Code, dagskift): d45 installert
 
 d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen ville fått grått standardmateriale i pakket spill (materialet bygger på motorens glTF-standard, som ikke er merket for Nanite og ikke kan lagres om). S47Props tegner nå en slik prop fra det vanlige nettet og fører det i loggen (kommoden, to fjellrygger, utspringet og den knekte stolpen). d45 (`d99bd64f`) pakket, røyktestet og installert: ALL PASS, selvtest 4159 OK, ingen materialadvarsler. Disk 130 GB ledig etterpå.
+
+## 10. november kl. 16:47 (Claude Code, dagskift): d46 installert, Toms funn i d45
+
+Tom testet d45 og ga 29 punkter (TODO «Toms testfunn i d45»). Kartlagt og skrevet av agenter i scratchpad, satt sammen, bygget og testet her; kritikerrunde på Sonnet (tekst 7, skjermer 7, lyd 8 av 10) med billige rettinger. Cosmos-gjerdet migrert fra UE 4.22 i et engangsprosjekt, bobbleheaden delt i hode og kropp og importert uten Nanite, Cosmos-røyken kopiert inn, bodycam-materialet bygget. d46 (`ebe038ad`) ALL PASS, selvtest 4297 OK. Agentene i dag arvet Opus fordi modell ikke var satt; heretter settes modell på hver agent.

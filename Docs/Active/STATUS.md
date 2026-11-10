@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 12:40 (d45): `d99bd64f` på `claude/day-20261109`
+## Installert 10. november kl. 16:47 (d46): `ebe038ad` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4297 kontroller; ingen materialadvarsler). Tilbakerulling: d45 (`d99bd64f`). Ledig disk etterpå: 124 GB. Ikke spilt av Tom.
+
+Nytt siden d45: Toms 29 funn fra testingen av d45 (TODO «Toms testfunn i d45», D45-1..29): roligere CRT, sikte og tikk på tracking, kontrollopptak rett etter opptaket og ny reel-front, vedlikehold med valgfri rekkefølge og røde lamper, peilelapp med ring på kartet og NOW-liste etter viktighet, naturlige tekster, aggregatlyd og skurring i stedet for «wah wah», sterkere gatelys, mørkerom med rødlys, butikkliste i bånd, levende array-tall, lader på kommoden, Bodycam 1986, Tall One og musikk som går over i skrekk, Caliche Ledger som ekte avis med klikkbare steder, mer på natt 1, geigerklikk, glør og røyk ved brente ringer, alien-bobblehead på dashbordet, Cosmos-gjerdet og Cosmos-fotsteg. Private filer (gjerde, bobblehead, røyk, fotsteg) er utenfor Git.
+
+Kontroll: regresjon PASS 251; trinnprøvene first, sky, files, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Kjente testproblemer står i TODO. Nivåer på lyd er målt, ikke hørt.
+
+## Tidligere: installert 10. november kl. 12:40 (d45): `d99bd64f` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4159 kontroller). Tilbakerulling: d43 (`7d1ae9ec`). Ledig disk etterpå: 130 GB. Ikke spilt av Tom. Kandidaten d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen fikk grått standardmateriale i pakket spill, fordi modellens materiale bygger på motorens glTF-standard, som ikke er merket for Nanite. En slik prop tegnes nå uten Nanite (`d99bd64f`).
 
