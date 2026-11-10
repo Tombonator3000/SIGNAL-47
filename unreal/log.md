@@ -2221,3 +2221,7 @@ Månedsprøvene routine (stasjonen stenger, som den skal for ren rutine) og case
 ## 10. november kl. 06:40 (Claude Code, nattskift): d43 installert
 
 `7d1ae9ec`: Dales replikker under den store natta høres fra walkien på pulten når den ikke er tatt med (funnet i testspilling n18, bekreftet i n19: fem replikker levert natt 2). Kritikerrunde uten alvorlige funn, selvtest 4116 OK, røyktest av kandidat og installert. Ledig disk 142 GB; tilbakerulling d42. Ved neste samlede rydding kan d36–d40 tas (d41, d42, d43 beholdes). STORY-06: triagetabell lagt nederst i forbedringsdokumentet.
+
+## 10. november kl. 07:50 (Claude Code, nattskift): slutt på skiftet
+
+Kontroll av d43 (`7d1ae9ec`): månedsprøvene investigator (431) og taken (424) PASS; testspilling n20 (spiller ute, natt 15–24): 27 startet, 22 merket, stor natt runde 3 natt 18 sett på 1016 m, utpekte landinger natt 15, 17, 19, 23, ingen før midnatt, feltbesøk fem netter (tatt natt 19). Nattens installasjoner: d40, d41, d42, d43. Åpne spørsmål til Tom står i sluttrapporten og i STATUS under kjente svakheter. Ledig disk 142 GB.

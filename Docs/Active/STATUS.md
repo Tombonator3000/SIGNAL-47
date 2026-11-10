@@ -10,7 +10,9 @@ Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller)
 
 Nytt siden d42: under den store natta høres Dales replikker også fra walkien som ligger igjen på pulten, når spilleren er i SARO-bygget og ikke har tatt den med. Før falt alle replikkene bort, også «Get outside and look south of the station» (testspilling inne, natt 2). Replikkene for runde 2 og 3 og de nye linjene er tekst med apparatets lyd; Dales stemme er ikke spilt inn for dem.
 
-Kontroll av d42 gjelder fortsatt koden under: månedsprøvene routine og cases PASS på `84510b26`.
+Kontroll av d42 gjelder fortsatt koden under: månedsprøvene routine og cases PASS på `84510b26`. På `7d1ae9ec` (d43): månedsprøvene investigator (431 kontroller) og taken (424) PASS, og testspilling med spiller ute natt 15–24 uten feil (27 hendelser startet, 22 merket, stor natt runde 3 sett natt 18).
+
+Kjente svakheter: en landing som holdes igjen av en annen, mister ventetiden ved lasting midt i natta; meldingen om en sett landing kan komme to ganger; relieftabellen har et sprang på 53 m i ytterkanten (TERRAIN-01, ikke rørt); en spiller som blir inne, har lite å merke natt 1 og 3; feltbesøk kommer omtrent annenhver natt for en spiller som står ved gården.
 
 ## Tidligere: installert 10. november kl. 05:39 (d42): `84510b26` på `claude/day-20261109`
 
