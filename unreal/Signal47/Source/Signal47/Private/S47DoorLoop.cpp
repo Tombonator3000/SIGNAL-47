@@ -43,10 +43,10 @@ namespace S47DoorLoopLocal
  bool Outer(const FString& Name){return Name.StartsWith(TEXT("north"))||Name.StartsWith(TEXT("south"));}
  FString HouseId(const FString& Name){return TEXT("ff:olddoor:")+Name;}
  FString RoomId(const FString& Room){return TEXT("access:")+Room;}
- const TCHAR* const AtTheDoor=TEXT("It's at the door.");
+ const TCHAR* const AtTheDoor=TEXT("It's at the door. Get out. Use another door.");
  // The light at the windows: white, amber, blue, green.
  const FLinearColor FloodColors[4]={FLinearColor(.92f,.94f,1.f),FLinearColor(1.f,.6f,.18f),FLinearColor(.32f,.48f,1.f),FLinearColor(.38f,1.f,.48f)};
- constexpr double StrobeAfter=1.5,StrobeEvery=4.6,StrobeLong=1.,StrobeRate=7.;
+ constexpr double StrobeAfter=1.5,StrobeEvery=4.6,StrobeLong=1.,StrobeRate=2.5; // N1110 critic: at most three flashes a second for everyone (photosensitivity); Calm takes the bursts away
  FString Upper(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return S;}
 }
 
@@ -145,7 +145,7 @@ const TCHAR* FS47DoorLoop::ChaseThought(int32 N)
 {
  switch(N)
  {
- case 1:return TEXT("It's right outside.");
+ case 1:return TEXT("That was the front door. I'm back inside.");
  case 2:return TEXT("Something went past the window.");
  case 3:return TEXT("The handle. Somebody's trying the handle.");
  default:return TEXT("");
@@ -502,7 +502,7 @@ void FS47DoorLoop::Cut(EStep S,int32 FromDoor)
   const FS47Obj Set=M->Web->Obj(TEXT("room.objs.radio"));
   if(Set){M->Audio->AmRadioThree(Set.WorldPosition());bRadioOurs=true;RadioOff=4.5;}
  }
- if(N==3&&M->Audio)
+ if(N==3&&M->Audio&&!bChase) // (the chase has the handle and the light at this step: no phone over them)
  {
   const FS47WebItem* Phone=M->Web->Item(TEXT("phone"));
   FS47Sound Ring;Ring.Gain=.45f;Ring.When=1.2f;Ring.Dur=1.1f;
@@ -980,7 +980,7 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   }
   for(int32 I=0;I<Ons.Num();++I){int32 N=0;for(const double O:Ons)N+=O>=Ons[I]&&O<Ons[I]+1.?1:0;MostInSecond=FMath::Max(MostInSecond,N);if(I==0||Ons[I]-Ons[I-1]>2.)++Bursts;}
   Check(CalmStep<.01&&CalmTop<1.35&&CalmLow>1.&&ShadeK(0,true)==1.&&ShadeK(ShadeFor(true)*.5,true)>.4,TEXT("chase: with calm flashes the light only breathes, and the shape crossing it is a slow dimming"));
-  Check(Bursts>=6&&MostInSecond>=4&&MostInSecond<=7&&FloodK(1.,false)>1.1&&ShadeK(ShadeFor(false)*.5,false)<.1,TEXT("chase: otherwise strong, with bursts of strobe at most seven a second, and the shape all but blacks it"));
+  Check(Bursts>=6&&MostInSecond>=1&&MostInSecond<=3&&FloodK(1.,false)>1.1&&ShadeK(ShadeFor(false)*.5,false)<.1,TEXT("chase: otherwise strong, with bursts of strobe at most three a second, and the shape all but blacks it"));
   bool bColours=true;
   for(const bool bCalm:{false,true})for(const FLinearColor& Want:S47DoorLoopLocal::FloodColors)
   {

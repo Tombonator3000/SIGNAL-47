@@ -10,6 +10,6 @@
     { "at": 2, "do": "thought", "text": "Every cricket out here just quit at once.", "secs": 4, "if": ["outdoors"] },
     { "at": 2, "do": "thought", "text": "The whole building has gone quiet, like it is holding its breath.", "secs": 4, "if": ["in_saro"] },
     { "at": 4.5, "do": "light", "kind": "gear", "strength": 0.5, "secs": 4 },
-    { "at": 8, "do": "line", "who": "dale", "text": "You out there? The needles went flat on me a second ago. Over." }
+    { "at": 11, "do": "line", "who": "dale", "text": "You out there? The needles went flat on me a second ago. Over." }
   ]
 }
