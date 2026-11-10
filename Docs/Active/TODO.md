@@ -48,6 +48,8 @@ Toms ord (forkortet): jobb til kl. 08; iterer gameplay og effekter; studer spill
 - [ ] **N1110-2 Sabotasje:** romvesener kan sabotere utstyr.
 - [ ] **N1110-3 Kamera-sekvenser:** hendelser kan ha korte sekvenser der kameraet zoomer brått mot noe (store øyne som stirrer inn på SARO, med skrekkskrik i lydbildet). *Kode skrevet 10. nov (patch `camera`, ikke bygget): slaget `camera_snap` i manuslaget, `FS47CameraMoment`, innstillingen Camera moments, hendelsene `eyes_window`, `beam_figure`, `dish_lights`; se EVENT_SCRIPTS.md. Gjenstår: bygg, prøve i spillet, øynenes utseende på nært hold.*
 - [ ] **N1110-4 Studie:** spilldesign (engasjerende og morsomt uten å overkomplisere) og skrekk i spill; konklusjoner inn i manus og hendelser.
+- [ ] **N1110-6 Dørsløyfen (Toms forslag):** etter noe rart prøver spilleren å gå ut en dør på SARO, men kommer inn sidedøra igjen og igjen; til slutt kommer man inn fra taket og så fra gulvet. Desorienterende, som Toms eksempelvideo.
+- [ ] **N1110-7 Dørsløyfen under jakt:** sløyfen kan også starte når et romvesen jakter spilleren og prøver å ta ham (han flykter gjennom en dør). Senere også andre steder (gårdshuset, motellet). Toms tillegg: flomlys inn i rommet i kombinasjon, med strobe og flere farger.
 - [ ] **N1110-5 Scriptede hendelser:** flere hendelser over i manuslaget (D46-11) med flere detaljer.
 
 ## Toms ønsker etter d46, 10. november kveld

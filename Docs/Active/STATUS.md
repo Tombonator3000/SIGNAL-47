@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 20:31 (d47): `d44bc8b3` på `claude/day-20261109`
+## Installert 10. november kl. 22:00 (d48): `d6b9679a` på `claude/day-20261109`
+
+Versjon 0.9.48. Pakket, røyktestet og installert (selvtest OK, 4532 kontroller; ingen materialadvarsler). Tilbakerulling: d47 (`d44bc8b3`). Disk etterpå: 129 GB. Ikke spilt av Tom.
+
+Nytt siden d47 (nattskift, TODO «Nattskift 10.–11. november»): oppmerksomhet og sabotasje (stirrer man for lenge eller plager dem, kommer advarsler, sabotasje og til slutt besøk på SARO), kameramomenter (øyne i vinduet, skikkelse i lyktestrålen, lys over antennene), stillhet før og flimmer under, dyr som varsler, lysrør som går to og to ved sabotasje med nye rør å kjøpe, batteribytte i lykta, Caliches historie i spillet (avis, skilt, dineren, hulebrosjyre, nattradio, stasjonsfil 09), rettinger etter skrekk-kritikken.
+
+Kontroll: regresjon PASS 251; first, sky, files, dusk PASS.
+
+## Tidligere: installert 10. november kl. 20:31 (d47): `d44bc8b3` på `claude/day-20261109`
 
 Versjon 0.9.47. Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4422 kontroller; ingen materialadvarsler). Tilbakerulling: d46 (`ebe038ad`). Disk etterpå: 134 GB. Ikke spilt av Tom.
 

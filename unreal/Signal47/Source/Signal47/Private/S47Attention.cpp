@@ -1,5 +1,6 @@
 #include "S47Attention.h"
 #include "S47DevEvents.h"
+#include "S47DoorLoop.h"
 #include "S47EventScript.h"
 #include "S47FieldCamera.h"
 #include "S47Flashlight.h"
@@ -371,6 +372,13 @@ void FS47Attention::StepVisitDraw(double Dt,double Hour,int32 Night,int32 Day)
  if(FS47ScriptPlayer::BigEvent(M,Why)||(F->Taken&&F->Taken->Busy())||!Gated(VisitId))return;
  if((VisitWait+=Dt)<VisitDelay)return;
  VisitWait=0;
+ // N1110 (N1110-6): inside with the power on, the visit may come as the door loop instead (S47DoorLoop.h); it is spent the same way.
+ if(F->DoorLoop&&F->DoorLoop->TakeVisit())
+ {
+  VisitNight=Night;++VisitCount;Value=AfterVisit(EOutcome::Held,false,Value);
+  UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the visit comes as the door loop, now %.0f"),Value);
+  return;
+ }
  BeginVisit();
 }
 
