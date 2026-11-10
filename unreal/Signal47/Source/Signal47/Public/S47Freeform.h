@@ -100,6 +100,8 @@ public:
  void OpenTracking();
  void OpenStatus();
  void OpenReceiver();
+ // D48-20261110 (D46-16): the operator says the take sounds like a known reference (the reel deck's MATCH key, the DATA page's MATCH key).
+ void MarkReference(int32 Reference);
  void OpenAudio();
  void OpenTapePanel();
  bool TapePanelOpen() const { return bTapePanel; }
@@ -125,7 +127,7 @@ public:
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
  uint32 StationFilesSeen=0;bool StationFileDue() const; // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS
- void OpenCaseBoard(int32 Line=-1);
+ void OpenCaseBoard(int32 Line=-1,bool bNotes=false); // D48-20261110: bNotes opens it with the case notes (traces, leads, records) unfolded
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);
  bool FocusFieldCase(int32 Line);
@@ -241,6 +243,8 @@ public:
  bool CameraLeftOut() const;
  TSharedPtr<class FS47LeftGear> Gear;
  TSharedPtr<class FS47Places> Places;
+ // D48-20261110: the balloon find's model, its blinking beacon and its instrument box, and what the box brings (S47Balloon.h).
+ TSharedPtr<class FS47Balloon> Balloon;
  // Where a night's event happens: one list for the whole land, the farm one place on it (S47EventPlaces.h).
  TSharedPtr<class FS47EventPlaces> EventPlaces;
  // The operator before you, Ward's review, and the keys (Tom, 7 November).
@@ -606,6 +610,8 @@ public:
 private:
  FString WorkActivities(FString* Card) const; // AvailableActivities without the letter
  FVector2D Aim=FVector2D::ZeroVector;FString AimJob;bool bAimLocked=false;
+ FString ArrayJob; // D48-20261110: the job whose pointing the array and receiver last held (saved "arrayJob"; an older save has none)
+ void ReleaseForNewJob(); // D48-20261110: a new job on the same target as the last starts from a released array and a stood-down receiver
  TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
  bool UsesCapturedAudio() const;
  int32 CaptureStartStage=0; // 1 prepare; 2 discard build frame; 3 start on stable frame
@@ -691,6 +697,7 @@ private:
  void IngestObservations();
  int32 IngestedObservations=0;
  int32 OpsSection=0,ReceiverTab=0;
+ int32 DataRef=0; // D48-20261110 (D46-16): the reference the receiver's DATA page shows beside the take; not saved
  // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
  int32 StatusTab=0;FString MaintPick;
  TSharedRef<class SWidget> MaintenancePage();
@@ -699,6 +706,7 @@ private:
  // test whose sheet was last collected (its row is marked on the board), and whether the board's traces are folded (presentation only).
  TArray<FResultSheet> CaseSheets;
  int32 BoardLine=-1,FreshLine=-1,FreshTest=-1;bool bCaseDetails=false;
+ int32 BoardPick=-1,BoardPickLine=-1; // D48-20261110: the test card selected on the board, and the case it belongs to (presentation only)
  void QueueResultSheet(int32 Line,int32 Test,const FString& Job);
  bool CollectResultSheet();
  int32 SheetIndex() const;

@@ -26,7 +26,7 @@ public:
  static double SixOf(int32 N){return (N-1)*86400.+30*3600.;}
 
  enum class EPart:uint8{Seen,Time,Gear,Work};
- struct FLine{double Clock=0;EPart Part=EPart::Seen;FString At;FString Text;};
+ struct FLine{double Clock=0;EPart Part=EPart::Seen;FString At;FString Text;FString Place;}; // D48-20261110: Place, where the player stood when it was noticed (optional in a save)
  // A night as it is typed. Pure: the tests and the developer's menu build one by hand.
  struct FNight
  {
@@ -64,6 +64,19 @@ public:
  void Received(int32 N);
  static FString ReceiptId(int32 N){return FString::Printf(TEXT("telex-nightlog-%d"),N);}
 
+ // D48-20261110 (D46-19, the notebook's EVENTS page): every happening the player has met, newest first, by date, time, place and a plain
+ // kind word; the sheets' SEEN AND HEARD lines (and gear that failed out there) and what the player has logged by hand. Own entries are
+ // saved under "own" in this object; an older save has none.
+ struct FEvent{double Clock=0;FString When,Place,Kind,Text;bool bOwn=false;};
+ TArray<FEvent> Events() const;
+ static const TArray<FString>& EventKinds();   // lights, sounds, figure, power, animals, signal, other
+ static const TArray<FString>& EventPhrases(); // the short notes to choose from
+ static FString KindOf(const FString& Text);   // a line's plain kind word, from its words
+ FString PlaceNow() const;                     // where the player stands (the save card's place name)
+ // "Log something you saw": the kind and the note by their number; the place is where the player stands and the time is now. False: not
+ // possible now (no game, a number out of range, the same entry again within the minute).
+ bool LogOwn(int32 Kind,int32 Phrase);
+ int32 OwnCount() const{return Own.Num();}
  // F10 and tests: type tonight's sheet now with what it has so far; a stretch of lost time; open the last sheet.
  bool DevTypeNow();
  void DevLostTime(double Minutes);
@@ -72,6 +85,9 @@ public:
 private:
  US47Main* M=nullptr;
  TArray<FSheet> Logs;
+ struct FOwn{double Clock=0;FString Kind,Place,Text;};
+ TArray<FOwn> Own; // D48-20261110
+ FString WhenOf(double Clock) const;
  // Tonight, as it goes (saved): the night, when it began for the sheet, the money, the lines, the gear's counts.
  int32 Night=0;
  double From=0;

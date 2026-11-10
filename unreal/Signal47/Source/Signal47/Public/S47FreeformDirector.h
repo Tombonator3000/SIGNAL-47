@@ -136,6 +136,15 @@ public:
  FVector LightPlacePoint(const FString& Place) const;
  FString LightPlaceTitle(const FString& Place) const;
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
+ // D48-20261110 (Tom: every photo of aliens, events and strange things pays, if it is good enough). A strange subject outside the
+ // Director's own incidents (a visitor's body, a figure on the road, the lights in the high sky, a landing's ring, a dead cow, ...)
+ // makes a claim named "strange.<group>.n<night>": one a group a night, the best frame stands, paid once at OPS through the same
+ // path. StrangeGroupOf: a happenings prop kind's group, empty for the ordinary (dust devil, animals, people, cars, humour: no pay).
+ // StrangeBase: the group's pay before quality (rarer pays more, never above the week's side cap); PhotoReward: the claim's pay,
+ // 20 for the Director's own incidents as before, base times 0.6 (just legible) to 1.25 (large in frame) for the rest.
+ static FString StrangeGroupOf(const FString& PropKind);
+ static int32 StrangeBase(const FString& Group);
+ static int32 PhotoReward(const FString& ClaimId,double Quality);
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
  // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): OPS's one way to register what came back from the field. A claim (one of the Director's

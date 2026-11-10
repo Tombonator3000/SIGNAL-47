@@ -93,12 +93,13 @@ bool FS47FreeformSession::CompleteServiceGuide()
 void FS47FreeformSession::OpenServiceGuide()
 {
  // D45-20261110 (Tom: OPS can point to the array PC): a summary only. Faults, their order, work orders and sign-off are on
- // ARRAY STATUS (left-hand PC), MAINTENANCE.
+ // ARRAY STATUS (left-hand PC), MAINTENANCE. D48-20261110: no SERVICE section in the OPS nav any more; this page hangs off
+ // OVERVIEW's ARRAY PC / MAINTENANCE key and off the tests, and says where the work is done.
  if(!bActive||!M||!M->UI||!RequirePower())return;
  TArray<S47Kit::FW> Rows;
  const FString Dish=Field?Field->ServiceDishId():FString(TEXT("S-03"));
- Rows.Add(S47FreeformTerminal::Paper(ServiceGuide==1?FString::Printf(TEXT("SARO / %s SERVICE WORK ORDER / IN PROGRESS"),*Dish):TEXT("SARO / ARRAY SERVICE WORK ORDERS")));
- Rows.Add(S47FreeformTerminal::Text(TEXT("ARRAY MAINTENANCE IS DONE AT THE ARRAY STATUS PC (LEFT-HAND). WORK ORDERS ARE ISSUED AND SIGNED THERE."),-1));
+ Rows.Add(S47FreeformTerminal::Paper(ServiceGuide==1?FString::Printf(TEXT("ARRAY PC / MAINTENANCE / %s WORK ORDER IN PROGRESS"),*Dish):TEXT("ARRAY PC / MAINTENANCE / WORK ORDERS")));
+ Rows.Add(S47FreeformTerminal::Text(TEXT("ARRAY MAINTENANCE IS DONE AT THE ARRAY PC (LEFT-HAND), ON ITS MAINTENANCE TAB. WORK ORDERS ARE ISSUED AND SIGNED THERE. THIS IS A SUMMARY."),-1));
  if(!Feedback.IsEmpty())Rows.Add(S47FreeformTerminal::Text(Feedback,1));
  if(Field&&Field->ArrayWear().bActive)
  {
@@ -116,6 +117,6 @@ void FS47FreeformSession::OpenServiceGuide()
  if(ServiceGuide==1)Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("OPEN WORK ORDER / %s / %s"),*Dish,*ServiceObjective())));
  else if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN RECORDS")));
  if(ServiceGuide!=1&&Field&&Field->HasArrayFault())Rows.Add(S47FreeformTerminal::Text(FString::Printf(TEXT("%s needs a new relay. Its work order is issued at the array PC."),*Dish)));
- Rows.Add(S47FreeformTerminal::Button(TEXT("SHOW ON THE ARRAY PC"),[this]{StatusTab=1;Feedback=TEXT("ARRAY STATUS (left-hand PC) is set to MAINTENANCE. Work orders are issued and signed there.");Changed(Feedback);OpenServiceGuide();},true));
- OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),OpsShell(4,S47Kit::Col(Rows)));
+ Rows.Add(S47FreeformTerminal::Button(TEXT("SHOW ON THE ARRAY PC"),[this]{StatusTab=1;Feedback=TEXT("ARRAY PC (left-hand) is set to MAINTENANCE. Work orders are issued and signed there.");Changed(Feedback);OpenServiceGuide();},true));
+ OpenTerminal(3,TEXT("OPS / ARRAY PC / MAINTENANCE"),OpsShell(0,S47Kit::Col(Rows))); // D48-20261110: under OVERVIEW
 }

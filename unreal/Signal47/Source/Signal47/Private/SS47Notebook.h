@@ -68,6 +68,8 @@ private:
 	TArray<FS47Doc> Photos, Findings, Papers, AllPapers;
 	TArray<FS47NbWorkItem> AllWorkItems;
 	FString PaperQuery;
+	int32 EvKind = INDEX_NONE, EvPhrase = INDEX_NONE; // D48-20261110 (D46-19): the entry being made on the EVENTS page
+	FString EvDone;
 	bool bShowHistory = false;
 	void FilterDocuments(const FString& Query);
 	void FilterWork();

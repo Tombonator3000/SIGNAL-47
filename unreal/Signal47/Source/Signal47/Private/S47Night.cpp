@@ -38,6 +38,7 @@
 #include "S47FieldCamera.h"
 #include "S47FilmFace.h"
 #include "S47Flashlight.h"
+#include "S47GameStyle.h"
 #include "S47Flow.h"
 #include "S47Geo.h"
 #include "S47Glimpses.h"
@@ -196,6 +197,14 @@ void US47Night::Init(US47Main* InM)
 	};
 	A.Place = [Self] { return Self.IsValid() ? (Self->M->IsFreeform() && Self->M->Freeform ? FString::Printf(TEXT("DAY %d / %s"),Self->M->Freeform->Day(),*Self->PlaceName()) : Self->PlaceName()) : FString(); };
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
+	// D48-20261110 (D46-27): the data back's date. Freeform's clock runs from 08:00 on the first day's date (DateOfDay(1)), so the
+	// calendar day is the clock's whole days from nought; the Story is 13 April before midnight and 14 after (S47Game::GameDate).
+	A.Date = [Self](double Clock) -> FDateTime
+	{
+		if (Self.IsValid() && Self->M->IsFreeform() && Self->M->Freeform)
+			return Self->M->Freeform->DateOfDay(1) + FTimespan::FromDays(FMath::Clamp(FMath::FloorToDouble(Clock / 86400.0), 0.0, 36500.0));
+		return S47Game::GameDate(false, 1, Clock);
+	};
 	A.RequiresLab = [Self] { return Self.IsValid() && Self->M->IsFreeform(); };
 	// ENLARGE-20261108: the darkroom's enlarger works from the negative.
 	A.Negative = [Self] { return Self.IsValid() && Self->M->IsFreeform(); };

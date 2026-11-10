@@ -4,6 +4,7 @@
 #include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47NightRhythm.h"
+#include "S47AlienKinds.h"
 #include "S47Openings.h"
 #include "S47FieldLife.h"
 #include "S47Aftermath.h"
@@ -128,6 +129,8 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  }
  Visit=1;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
  VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,FMath::FRand());
+ // D48-20261110 (D46-17): leaned toward the night's own kind (S47AlienKinds), as the take on the receiver sounded it.
+ VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(F.Seed(),Night),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(F.Seed(),Night,0x4c45414eu));
  UE_LOG(LogTemp,Display,TEXT("S47: field visit begins from the night's own draw, kind %d at %s, night %d"),VisitWho,*Title,Night);
 }
 void FS47FarmSite::RestoreHome()
@@ -431,6 +434,19 @@ double FS47FarmSite::VisitBodyDistance() const
  return -1;
 }
 
+UPrimitiveComponent* FS47FarmSite::VisitPhotoBody() const
+{
+ // D48-20261110: the crab or the tall one, only while it is out and actually drawn (the small ones are the glimpses' own bodies).
+ if(!bBodyOut||!VisitBody||!VisitBody->Rendered())return nullptr;
+ return VisitBody->Creature.Mesh.Get();
+}
+TArray<UPrimitiveComponent*> FS47FarmSite::PhotoMarks() const
+{
+ TArray<UPrimitiveComponent*> Out;
+ for(const auto& C:Marks)if(UStaticMeshComponent* P=C.Get())if(P->IsRegistered()&&P->IsVisible()&&!P->bHiddenInGame)Out.Add(P);
+ return Out;
+}
+
 bool FS47FarmSite::PutBody(const FVector& Near)
 {
  if(!M||!M->Web||!M->Player)return false;
@@ -571,8 +587,10 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(VisitDwell<12)return;
   if(M->Rhythm&&!M->Rhythm->Allow(TEXT("site_visit")))return;
   if(M->Rhythm)M->Rhythm->Began(TEXT("site_visit"));
-  const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
+  const bool bNaturalWho=TestRoll<0;const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
   Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
+  // D48-20261110 (D46-17): the night's own kind leans on it (S47AlienKinds); a test's set roll keeps the kind it asked for.
+  if(bNaturalWho){const int32 WhoNight=FS47FreeformSession::NightOf(Clock);VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(M->Freeform->Seed(),WhoNight),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(M->Freeform->Seed(),WhoNight,0x4c45414eu));}
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
   if(M->Freeform->EventPlaces){M->Freeform->EventPlaces->Used(Place,TEXT("site_visit"));FS47EventPlaces::LogPick(TEXT("site_visit"),PlaceOnList(),FString::Printf(TEXT("kind %d"),VisitWho));}
  }
@@ -639,7 +657,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  VisitPatience-=Dt*(bNothingToGoOn&&!Tk->Busy()?2.:1.);
  if(VisitWho==0)
  {
-  if(Visit==2&&VisitHunt>22){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;VisitPatience=FMath::Max(VisitPatience,60.);UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
+  // D48-20261110 (D46-17): curious, they keep off and watch longer before they come (S47AlienKinds::FTemper::HuntAfter, was 22 s).
+  if(Visit==2&&VisitHunt>S47AlienKinds::Temper(ES47AlienKind::Roswell).HuntAfter){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;VisitPatience=FMath::Max(VisitPatience,60.);UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
   for(const auto& I:G->Individuals())
   {
    bVisitSeen|=I.bRendered;

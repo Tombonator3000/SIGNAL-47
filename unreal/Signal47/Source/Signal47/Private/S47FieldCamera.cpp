@@ -310,6 +310,67 @@ double US47FieldCamera::FilmLook(TArray<FColor>& Raw, int32 W, int32 H, double S
 	return Sum / (double(W) * H);
 }
 
+FString US47FieldCamera::DataBackText(const FDateTime& Date)
+{
+	// The American order of a back bought in New Mexico: month, day, the year's last two figures behind a tick.
+	return FString::Printf(TEXT("%d %d '%02d"), Date.GetMonth(), Date.GetDay(), Date.GetYear() % 100);
+}
+
+void US47FieldCamera::DataBack(TArray<FColor>& Px, int32 W, int32 H, const FString& Text)
+{
+	if (W <= 0 || H <= 0 || Px.Num() < W * H || Text.IsEmpty()) return;
+	// A seven-segment cell: a b c d e f g as bits (a the top, b upper right, c lower right, d the bottom, e lower left, f upper left,
+	// g the middle), each a stroke between two of the cell's six corner points.
+	static const uint8 Digits[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
+	static const int32 Ends[7][4] = { { 0, 0, 1, 0 }, { 1, 0, 1, 1 }, { 1, 1, 1, 2 }, { 0, 2, 1, 2 }, { 0, 1, 0, 2 }, { 0, 0, 0, 1 }, { 0, 1, 1, 1 } };
+	// The cell: the digits' height a twentieth of the frame (nine pixels on the small print, eighteen on the negative), slanted a
+	// little as the LEDs were, sitting in from the lower right corner.
+	const double Ch = FMath::Max(7., H / 22.), Cw = Ch * .56, Gap = Ch * .38, Stroke = FMath::Max(1.2, Ch / 7.), Slant = .14;
+	const int32 N = Text.Len();
+	const double Right = W - W * .045, Bottom = H - H * .07, Top = Bottom - Ch;
+	double X0 = Right - (N * Cw + (N - 1) * Gap);
+	struct FStroke { double Ax, Ay, Bx, By; };
+	TArray<FStroke> Strokes;
+	for (int32 I = 0; I < N; ++I, X0 += Cw + Gap)
+	{
+		const TCHAR C = Text[I];
+		uint8 Mask = 0;
+		if (C >= '0' && C <= '9') Mask = Digits[C - '0'];
+		const auto At = [&](int32 Cx, int32 Cy, double& Ox, double& Oy) { Oy = Top + Cy * Ch / 2; Ox = X0 + Cx * Cw + (Bottom - Oy) * Slant; };
+		for (int32 S = 0; S < 7; ++S) if (Mask & (1 << S))
+		{
+			FStroke K; At(Ends[S][0], Ends[S][1], K.Ax, K.Ay); At(Ends[S][2], Ends[S][3], K.Bx, K.By); Strokes.Add(K);
+		}
+		if (C == '\'') { FStroke K; At(0, 0, K.Ax, K.Ay); K.Bx = K.Ax - Cw * .15; K.By = K.Ay + Ch * .3; K.Ax += Cw * .1; Strokes.Add(K); }
+		if (C == ':') for (int32 D = 0; D < 2; ++D) { FStroke K; At(0, 0, K.Ax, K.Ay); K.Ax += Cw * .5; K.Ay += Ch * (D ? .72 : .28); K.Bx = K.Ax + .01; K.By = K.Ay; Strokes.Add(K); }
+	}
+	if (Strokes.IsEmpty()) return;
+	// Burned in: an orange LED through the film, hot in the stroke, with a soft bleed round it; shortened a little at each end so the
+	// segments do not run together at the corners.
+	const double R = Stroke / 2, Bleed = Stroke * 1.4;
+	const int32 Y0 = FMath::Clamp(int32(Top - Bleed - 2), 0, H - 1), Y1 = FMath::Clamp(int32(Bottom + Bleed + 2), 0, H - 1);
+	const int32 Xa = FMath::Clamp(int32(Right - (N * Cw + (N - 1) * Gap) - Bleed - 2), 0, W - 1), Xb = FMath::Clamp(int32(Right + Ch * Slant + Bleed + 2), 0, W - 1);
+	for (int32 Y = Y0; Y <= Y1; ++Y) for (int32 X = Xa; X <= Xb; ++X)
+	{
+		double Near = 1e9;
+		for (const FStroke& K : Strokes)
+		{
+			const double Dx = K.Bx - K.Ax, Dy = K.By - K.Ay, L2 = Dx * Dx + Dy * Dy;
+			double T = L2 > 1e-9 ? ((X + .5 - K.Ax) * Dx + (Y + .5 - K.Ay) * Dy) / L2 : 0.;
+			T = FMath::Clamp(T, .08, .92);
+			const double Px_ = K.Ax + Dx * T, Py_ = K.Ay + Dy * T;
+			Near = FMath::Min(Near, FMath::Sqrt(FMath::Square(X + .5 - Px_) + FMath::Square(Y + .5 - Py_)));
+		}
+		const double Hot = FMath::Clamp((R + .6 - Near) / 1.2, 0., 1.), Soft = FMath::Clamp(1. - Near / Bleed, 0., 1.);
+		const double A = Hot + .22 * Soft * Soft * (1. - Hot);
+		if (A <= 0) continue;
+		FColor& D = Px[Y * W + X];
+		D.R = FS47Canvas::Clamp8(D.R + A * 250);
+		D.G = FS47Canvas::Clamp8(D.G + A * 105);
+		D.B = FS47Canvas::Clamp8(D.B + A * 16);
+	}
+}
+
 void US47FieldCamera::MakePrint(TArray<FColor>& Raw, const FString& Caption, const FString& Time, double Seed, TArray<FColor>& OutPrint)
 {
 	// The case print: the film look, then the paper around it.
@@ -343,6 +404,36 @@ bool US47FieldCamera::SelfTest(TArray<FString>& Lines)
 		Check(bSame && FMath::Abs(Mean - 94.148667) < 1e-5, FString::Printf(TEXT("film look as filmLook (mean %.6f)"), Mean));
 	}
 	Check(ToUint32(-1) == 4294967295u && ToUint32(4294967296.0 + 5) == 5u && ToUint32(12.9) == 12u, TEXT("seed >>> 0"));
+	// D48-20261110 (D46-27): the data back's imprint
+	{
+		Check(DataBackText(FDateTime(1986, 4, 29)) == TEXT("4 29 '86") && DataBackText(FDateTime(1986, 5, 3)) == TEXT("5 3 '86") && DataBackText(FDateTime(1986, 4, 13, 23, 58)) == TEXT("4 13 '86"), TEXT("the data back reads month, day and '86"));
+		const int32 W = 640, H = 400;
+		TArray<FColor> Dark; Dark.Init(FColor(8, 9, 14, 255), W * H);
+		TArray<FColor> Same = Dark;
+		DataBack(Dark, W, H, TEXT("4 29 '86"));
+		int32 Lit = 0, Outside = 0, Hot = 0, MinX = W, MaxX = 0, MinY = H, MaxY = 0;
+		bool bOrange = true;
+		for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+		{
+			const FColor& C = Dark[Y * W + X];
+			if (C == Same[Y * W + X]) continue;
+			++Lit; MinX = FMath::Min(MinX, X); MaxX = FMath::Max(MaxX, X); MinY = FMath::Min(MinY, Y); MaxY = FMath::Max(MaxY, Y);
+			if (C.R > 60) bOrange &= C.R > C.G && C.G > C.B;
+			if (C.R > 200) ++Hot;
+			if (X < W * .6 || Y < H * .8) ++Outside;
+		}
+		Lines.Add(FString::Printf(TEXT("field camera: data back lit %d pixels (%d hot) in x %d-%d, y %d-%d of %dx%d"), Lit, Hot, MinX, MaxX, MinY, MaxY, W, H));
+		Check(Lit > 150 && Hot > 40 && Outside == 0 && bOrange && MaxX > W * .9 && MaxY > H * .88 && MaxY < H && MaxY - MinY >= 14 && MaxY - MinY <= 32 && MaxX - MinX > 60 && MaxX - MinX < 180,
+			TEXT("the imprint is a small orange line of digits in the lower right corner"));
+		TArray<FColor> Twice = Same; DataBack(Twice, W, H, TEXT("4 29 '86"));
+		Check(Twice == Dark, TEXT("the imprint is the same every time (no randomness)"));
+		TArray<FColor> Blank = Same; DataBack(Blank, W, H, TEXT("abc")); DataBack(Blank, W, H, FString()); DataBack(Blank, 0, 0, TEXT("1"));
+		Check(Blank == Same, TEXT("letters, nothing and no frame burn nothing"));
+		TArray<FColor> Small; Small.Init(FColor(0, 0, 0, 255), 320 * 200);
+		DataBack(Small, 320, 200, TEXT("12 31 '86"));
+		int32 LitSmall = 0; for (const FColor& C : Small) if (C.R > 0) ++LitSmall;
+		Check(LitSmall > 60 && LitSmall < 2500, TEXT("on the small print the digits still come out"));
+	}
 	// project(): a camera at the S-03 apron, yaw 0.2, pitch 0.31 (values from three's project)
 	{
 		US47FieldCamera* F = NewObject<US47FieldCamera>();

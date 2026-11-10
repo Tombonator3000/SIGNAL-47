@@ -52,6 +52,13 @@ public:
  // The statement of a weekly review (its finding, FS47FreeformSession::StepWeeklyReview), and the county's bill for a tow.
  void PostWeekStatement(int32 Week);
  void PostTowBill(int32 Fee,bool bPaidInCash);
+ // D48-20261110: something of the station's left in the box for the carrier that is no order: the balloon's instrument box in its
+ // mailing bag (FS47Balloon::Mail). Id: once in a game. What: the line the box's panel and the task list say of it. Rounds: the
+ // carrier's rounds after it is taken until Reply comes back to the box. A reply of kind "letter" has its title in Ref and, with
+ // "dollars" in its Goods, a check in it, cashed to the budget when it is taken out. The flag goes up for it as for an order.
+ // False: posted before, or no reply to come.
+ bool PostOut(const FString& Id,const FString& What,int32 InRounds,const FPiece& Reply);
+ bool OutWaiting(const FString& Id) const;
  bool Holds(const FString& Id) const;
  bool Coming(const FString& Id) const;
  bool Ever(const FString& Id) const{return Posted.Contains(Id);}
@@ -152,6 +159,9 @@ private:
  struct FOrder{int32 Serial=0,Paid=0,Picked=0,Due=0;TMap<FString,int32> Goods;};
  TArray<FOrder> Orders;
  struct FClip{FString Id,What;int32 Price=0,Until=0;};
+ // D48-20261110: left in the box for the carrier (PostOut): taken on the next round, its reply then pending for its due day.
+ struct FOut{FString Id,What;int32 Rounds=1;FPiece Reply;};
+ TArray<FOut> Outbound;
  TArray<FClip> Coupons;
  // A printed paper: its front page as printed and the templates it used, the sheriff's lines from the week's findings, and whether
  // the trucker's thanks was in it. Photo (D46-1-20261110): the front page's picture of the lead's place from the world, a small grey

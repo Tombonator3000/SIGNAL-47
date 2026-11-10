@@ -116,7 +116,9 @@ void FS47CaseFieldTest::Step(double Dt)
  if(O.Stage==9683){O.Shot(TEXT("casefield-preview-roof-after"));O.Go(9684,.6);return;}
  if(O.Stage==9684){Board();O.Go(96841,.4);return;}
  if(O.Stage==96841){if(!Click(TEXT("Cancel this field plan")))return;O.Go(9685,.4);return;}
- if(O.Stage==9685)
+ // D48-20261110: the board plans the selected test only; a test row is selected first
+ if(O.Stage==9685){if(!Click(TEXT("Controlled access")))return;O.Go(96851,.3);return;}
+ if(O.Stage==96851)
  {
   if(!Click(TEXT("Plan this test: Controlled access")))return;
   ApproachControl(1);M->UI->ClearToasts();O.Go(9686,.5);return;
@@ -133,9 +135,11 @@ void FS47CaseFieldTest::Step(double Dt)
  if(O.Stage==9688){O.Finish(true,TEXT("Roof preparation and explicit gate disturbance geometry rendered; visual review required, no window completion claimed."));return;}
  if(O.Stage==9600)
  {
-  if(!Check(F.TerminalOnGlass()&&HasText(TEXT("Visitors around the base"))&&HasText(TEXT("YOUR WORKING HUNCH (OPTIONAL)")),TEXT("native case board shows compact controls and optional hunch separately")))return;
-  O.Shot(TEXT("casefield-board-before"));if(!Click(TEXT("Plan this test: Controlled access")))return;O.Go(9601,.4);return;
+  // D48-20261110: the title line, the explanations' standing and the hunch note on one glass; a row is selected before it is planned
+  if(!Check(F.TerminalOnGlass()&&HasText(TEXT("VISITORS AROUND THE BASE"))&&HasText(TEXT("STILL POSSIBLE"))&&HasText(TEXT("YOUR WORKING HUNCH (OPTIONAL)")),TEXT("native case board shows the case, its explanations and the optional hunch")))return;
+  O.Shot(TEXT("casefield-board-before"));if(!Click(TEXT("Controlled access")))return;O.Go(96001,.3);return;
  }
+ if(O.Stage==96001){if(!Click(TEXT("Plan this test: Controlled access")))return;O.Go(9601,.4);return;}
  if(O.Stage==9601)
  {
   double Target=0;

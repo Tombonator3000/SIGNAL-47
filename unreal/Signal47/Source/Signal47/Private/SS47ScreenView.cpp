@@ -132,6 +132,7 @@ void SS47ScreenView::Construct(const FArguments& InArgs)
 
 SS47ScreenView::~SS47ScreenView()
 {
+	ReleasePointer();
 	if(bCountedActive){--ActiveWorldScreens;bCountedActive=false;}
 	if (!bWorld) return;
 	if (bStarted && !bLeft)
@@ -157,11 +158,12 @@ void SS47ScreenView::SetScreen(const TSharedRef<SWidget>& InContent, const TShar
 	{
 		// Controls and instructions live inside the same physical aperture. The
 		// outer image is masked by the world material, never a second HUD bezel.
+		// D48-20261110: the content out to ContentInset of the picture (was 7.5 %), the hint line stepped in from the corner
 		Window->SetContent(SNew(SS47CrtGlass)
-		 [SNew(SBox).Padding(FMargin(Units*.075f,Units*.75f*.075f))
+		 [SNew(SBox).Padding(FMargin(Units*ContentInset,Units*.75f*ContentInset))
 		  [SNew(SVerticalBox)
 		   +SVerticalBox::Slot().FillHeight(1)[InContent]
-		   +SVerticalBox::Slot().AutoHeight().Padding(4,8)
+		   +SVerticalBox::Slot().AutoHeight().Padding(FMargin(14,8,4,6))
 		    [SNew(STextBlock).Text(FText::FromString(TEXT("ESC / RETURN TO ROOM     CLICK / SELECT     SCROLL / PAGE"))).Font(S47Style::Mono(18)).ColorAndOpacity(Css(0x8cffa4,.8f))]]]);
 		ChildSlot[SNew(SBox)];
 		return;
@@ -194,6 +196,7 @@ void SS47ScreenView::Finish()
 {
 	if (bLeft) return;
 	bLeft = true;
+	ReleasePointer();
 	if(bCountedActive){--ActiveWorldScreens;bCountedActive=false;}
 	if (bStarted)
 	{
@@ -246,11 +249,42 @@ void SS47ScreenView::Tick(const FGeometry& G, const double InCurrentTime, const 
 		UE_LOG(LogTemp, Display, TEXT("S47: screen %d in use on the glass (%.0f x %.0f cm)"), Screen, Size.X, Size.Y);
 	}
 	T = bLeaving ? FMath::Max(0.f, T - Dt / StepSecs) : FMath::Min(1.f, T + Dt / StepSecs);
+	HoldPointer();
+	// D48-20261110 (D46-21): while the camera is still going up to the glass or back, the glass slides under a pointer that sends no
+	// move of its own, so the screen kept showing the pointer where the glass had been (the sky plot's reticle stood off from the
+	// hand). Carry the virtual pointer to where the real one now meets the glass, every frame it moves, and once more as it stops.
+	const bool bMovingNow = bLeaving || T < 1.f;
+	if ((bMovingNow || bGlassMoving) && Held.IsEmpty() && FSlateApplication::IsInitialized())
+	{
+		const FVector2D Cursor = FSlateApplication::Get().GetCursorPos();
+		const FPointerEvent Carry(0, 0, Cursor, Cursor, TSet<FKey>(), FKey(), 0.f, FSlateApplication::Get().GetModifierKeys());
+		Route(G, Carry, RMove);
+	}
+	bGlassMoving = bMovingNow;
 	// opening the modal gave every user (this one too) the modal's focus: the keys go to the screen
 	if (!KeysInside()) FocusInside();
 	Renderer->DrawWindow(Target.Get(), Window->GetHittestGrid(), Window.ToSharedRef(), PicW / Units, FVector2D(PicW, PicH), Dt);
  ++DrawFrames;
 	if (bLeaving && T <= 0.f) Finish();
+}
+
+// D48-20261110 (D46-21): the pointer over the sky plot has no cursor of its own (the plot draws a reticle), and a UI-only modal
+// leaves the real pointer free (DoNotLock): it slid out past the window's edge or to the other monitor with nothing to see where it
+// went, and the reticle stopped following. While a screen is on the glass the pointer stays inside the game's viewport.
+void SS47ScreenView::HoldPointer()
+{
+	UGameViewportClient* Vp = GEngine ? GEngine->GameViewport : nullptr;
+	if (!Vp || bLeft) return;
+	if (!bLocked) { PrevLock = uint8(Vp->GetMouseLockMode()); bLocked = true; }
+	// (a new input mode set by the menus under it puts the lock back to what it was; asked again each frame, it logs only on a change)
+	if (Vp->GetMouseLockMode() != EMouseLockMode::LockAlways) Vp->SetMouseLockMode(EMouseLockMode::LockAlways);
+}
+
+void SS47ScreenView::ReleasePointer()
+{
+	if (!bLocked) return;
+	bLocked = false;
+	if (UGameViewportClient* Vp = GEngine ? GEngine->GameViewport : nullptr) Vp->SetMouseLockMode(EMouseLockMode(PrevLock));
 }
 
 bool SS47ScreenView::KeysInside() const
@@ -435,7 +469,11 @@ bool SS47ScreenView::SelfTest(TArray<FString>& Lines)
 	const FVector2D Mid = Pixel(C, C, R, U, S), Corner = Pixel(C + R * S.X / 2 + U * S.Y / 2, C, R, U, S);
 	Check(Mid.Equals(FVector2D(PicW / 2, PicH / 2), 0.01) && Corner.Equals(FVector2D(PicW, 0), 0.01), FString::Printf(TEXT("glass to pixels: middle %s, top right %s"), *Mid.ToString(), *Corner.ToString()));
 	Check(PictureContains(Mid)&&!PictureContains(FVector2D(0,0))&&!PictureContains(FVector2D(PicW*ApertureInset,PicH*ApertureInset)),TEXT("rounded glass accepts centre and rejects the clipped corner/background"));
-	Check(PictureContains(FVector2D(PicW*.08,PicH*.08))&&!PictureContains(FVector2D(PicW*.01,PicH*.5)),TEXT("inner content margin is hittable; outer bezel is never a hidden control"));
+	// D48-20261110: the content's first header letters (12 units in and down from its corner, as Frame pads them) and its left
+	// edge at mid height are on the glass; the masked rim outside the content never is
+	const double InX=ContentInset+12./Units,InY=ContentInset+12./(Units*.75);
+	Check(ContentInset>ApertureInset&&PictureContains(FVector2D(PicW*InX,PicH*InY))&&PictureContains(FVector2D(PicW*(ContentInset+.002),PicH*.5))&&!PictureContains(FVector2D(PicW*.01,PicH*.5)),
+		FString::Printf(TEXT("content margin %.1f %% is hittable to its corner (%.0f, %.0f px); outer bezel is never a hidden control"),ContentInset*100,PicW*InX,PicH*InY));
 	int32 Left = 0;
 	const TSharedRef<SS47ScreenView> Fallback = SNew(SS47ScreenView).OnLeft([&Left] { ++Left; });
 	const auto Key = [](const FKey& K) { return FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0); };

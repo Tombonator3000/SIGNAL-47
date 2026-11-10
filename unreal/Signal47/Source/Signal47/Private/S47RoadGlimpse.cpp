@@ -1,6 +1,7 @@
 #include "S47RoadGlimpse.h"
 #include "S47NightRhythm.h"
 #include "S47TripoNew.h"
+#include "S47AlienKinds.h"
 
 namespace S47RoadGlimpseLocal
 {
@@ -86,8 +87,10 @@ FString S47RoadGlimpse::FigureFor(int32 Seed,int32 Night,uint32 Salt,TFunctionRe
  if(Want==TEXT("nordic")||Want==TEXT("cosmic"))Pick=Want;
  else if(Want.IsEmpty())
  {
+  // D48-20261110 (D46-17): by the night's lean (S47AlienKinds): mostly the Nordic on his nights, the Cosmic one on hers, and the
+  // shade on the Tall and Pale ones' nights (was a quarter each, the shade half).
   const float Roll=FS47NightRhythm::Roll(Seed,Night,Salt^0x46494755u);
-  Pick=Roll<.25f?TEXT("nordic"):Roll<.5f?TEXT("cosmic"):TEXT("");
+  Pick=S47AlienKinds::LeanFigure(S47AlienKinds::NightLean(Seed,Night),Roll);
  }
  // Only Tom's own: without it the shade stands there as before.
  const TCHAR* Path=Pick.IsEmpty()?nullptr:PathOf(Pick);
@@ -243,5 +246,7 @@ bool S47RoadGlimpse::SelfTest(TArray<FString>& Lines)
   const FString A=Record(T,TEXT("00:40")),B=Record(L,TEXT("01:15"));
   Check(A.Contains(TEXT("00:40"))&&A.Contains(TEXT("from the left"))&&A.Contains(TEXT("crown"))&&B.Contains(TEXT("four legs"))&&B.Contains(TEXT("from the right"))&&TracksRecord(true,TEXT("09:10"),true).Contains(TEXT("fours"))&&TracksRecord(false,TEXT("01:30"),false).Contains(TEXT("by the lamp")),TEXT("the record says when, from which side, and what it looked like"));
  }
+ // D48-20261110: the visitors' tempers, the night's lean and their signatures (S47AlienKinds).
+ OK&=S47AlienKinds::SelfTest(Lines);
  return OK;
 }

@@ -98,7 +98,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Rejected legacy copy must release the queue without evidence or reward; no natural acquisition claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, normal digital completion and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early array PC MAINTENANCE/accept clicks (D48-20261110: OPS has no SERVICE section), initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("method"),TEXT("Prepared routine/legacy packet and completed-day fixtures; production registration, case planning/focus and optional-reference callbacks; disk/Flow Continue. No natural acquisition or human input asserted."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest"))){S47J::Set(O,TEXT("scope"),TEXT("night-logger-film-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit case-access and player-placement fixtures, actual timed bench calibration, production custody callbacks, native camera and film ray, three disk/Flow Continue rounds. No full field recording or natural travel claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-native-controls"));S47J::Set(O,TEXT("method"),TEXT("Explicit session-seed/open-case/player-placement fixtures. Actual native planning/wait buttons, interaction rays, physical preparation/inspection, natural active clock ticks through the entire gate window and timed roof listening, paused/absent listening checks and disk/Flow Continue. Time jumps occur before valid windows or deliberately invalidate the skipped window. No human input, natural lead discovery or subjective listening acceptance."));}
@@ -895,7 +895,8 @@ void FS47FreeformTest::Step(double Dt)
   Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
   auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
   auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
-  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SERVICE"),TEXT("SUPPLIES"),TEXT("PHOTOGRAPHS")}; // CASES-OPS-20261109: CASE ARCHIVE is RECORDS; FIX-20261110: the film record
+  // CASES-OPS-20261109: CASE ARCHIVE is RECORDS; FIX-20261110: the film record; D48-20261110: no SERVICE section (the array PC's MAINTENANCE tab owns it), so the sections skip 4
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SUPPLIES"),TEXT("PHOTOGRAPHS")};static const int32 Sections[]={1,2,3,5,6};
   if(Stage==0)
   {
    if(Age<3)return;
@@ -913,7 +914,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==8803)
   {
-   if(!Check(StillAtOps()&&F.OperationsSection()==OpsNavStep+1,FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
+   if(!Check(StillAtOps()&&F.OperationsSection()==Sections[OpsNavStep],FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
    if(OpsNavStep==0)
    {
     if(!Check(HasText(TEXT("MORE WORK /")),TEXT("daily work explains available and carried-over jobs")))return;
@@ -926,29 +927,24 @@ void FS47FreeformTest::Step(double Dt)
     if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("INDEXED HERE AS THEY ARE RETAINED")),TEXT("empty archive explains where retained records come from")))return;
     Shot(TEXT("ops-empty-archive"));Go(8804,.3);return;
    }
-   if(OpsNavStep==3)
+   if(OpsNavStep==1)
    {
-    // D45-20261110: OPS / SERVICE is a summary that points to the array PC
-    if(!Check(HasText(TEXT("WORK ORDERS ARE ISSUED AND SIGNED THERE"))&&!HasText(TEXT("ISSUE WORK ORDER")),TEXT("OPS SERVICE points to the array PC and issues nothing itself")))return;
-    if(!Click(TEXT("SHOW ON THE ARRAY PC")))return;Go(88031,.3);return;
+    // D48-20261110: the board without an open case says what opens one, and the nav has no SERVICE
+    if(!Check((HasText(TEXT("NO OPEN CASE"))||HasText(TEXT("CASES")))&&!HasText(TEXT("SERVICE")),TEXT("CASE BOARD explains what opens a case, or lists the cases; OPS has no SERVICE section")))return;
+    Shot(TEXT("ops-case-board-empty"));Go(8804,.3);return;
    }
-   if(OpsNavStep==4)
+   if(OpsNavStep==3)
    {
     // D45-20261110 (Tom: the stores list must be sorted better): the work in hand on top, the depot's parts and cells, then the bands
     if(!Check(HasText(TEXT("FOR THE WORK NOW"))&&HasText(TEXT("DEPOT STOCK"))&&HasText(TEXT("DRY CELLS"))&&HasText(TEXT("DRIVE MOTOR"))&&HasText(TEXT("SPLICE KIT"))
      &&HasText(TEXT("CAN BUY NOW"))&&HasText(TEXT("COMING")),TEXT("SUPPLIES: the work in hand on top, parts and dry cells in stock, the stores list in bands")))return;
     Shot(TEXT("ops-supplies"));Go(8804,.3);return;
    }
-   if(OpsNavStep==5)
+   if(OpsNavStep==4)
    {
     if(!Check(HasText(TEXT("FILM RECORD /")),TEXT("PHOTOGRAPHS opens the film record inside OPS")))return;
     Shot(TEXT("ops-photographs"));Go(8804,.3);return;
    }
-   Go(8804);return;
-  }
-  if(Stage==88031)
-  {
-   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("is set to MAINTENANCE"))&&!F.Field->HasArrayFault()&&F.ActiveServiceGuide()!=1,TEXT("SHOW ON THE ARRAY PC keeps the same OPS screen open and starts no work order")))return;
    Go(8804);return;
   }
   if(Stage==8804)
@@ -958,7 +954,19 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8805)
   {
    if(!Check(StillAtOps()&&F.OperationsSection()==0,TEXT("OVERVIEW returns home without a physical exit")))return;
-   if(++OpsNavStep<6){Go(8802);return;}
+   if(++OpsNavStep<5){Go(8802);return;}
+   // D48-20261110: the summary that points to the array PC hangs off OVERVIEW (its ARRAY PC / MAINTENANCE key, shown once the first
+   // shift is accepted); opened directly here, under OVERVIEW, and it issues nothing itself
+   F.OpenServiceGuide();Go(88031,.3);return;
+  }
+  if(Stage==88031)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0&&HasText(TEXT("WORK ORDERS ARE ISSUED AND SIGNED THERE"))&&!HasText(TEXT("ISSUE WORK ORDER")),TEXT("OPS points to the array PC's MAINTENANCE tab and issues nothing itself")))return;
+   if(!Click(TEXT("SHOW ON THE ARRAY PC")))return;Go(88032,.3);return;
+  }
+  if(Stage==88032)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0&&HasText(TEXT("is set to MAINTENANCE"))&&!F.Field->HasArrayFault()&&F.ActiveServiceGuide()!=1,TEXT("SHOW ON THE ARRAY PC keeps the same OPS screen open and starts no work order")))return;
    // Explicit completed-work/retained-original fixture for the two alternate UI states.
    auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
    for(const auto& V:Jobs)S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));

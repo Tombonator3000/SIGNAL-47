@@ -123,7 +123,7 @@ struct FS47NbWorkItem
 	TArray<FString> Hints;
 	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false; bool bCard = false; // bCard: a job card, folded under one line on NOW (PT-NOTEBOOK-20261109)
 };
-struct FS47NbGuideEntry { FString Id, Title, Text; };
+struct FS47NbGuideEntry { FString Id, Title, Text; }; struct FS47NbEvent { FString When, Place, Kind, Text; bool bOwn = false; }; // D48-20261110: one line of the EVENTS page (D46-19)
 struct FS47NbExtras
 {
 	bool bFreeform = false;
@@ -140,7 +140,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; // MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
+	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; bool bEvents = false; TArray<FS47NbEvent> Events; TArray<FString> EventKinds, EventPhrases; FString EventNow, EventPlace; TFunction<bool(int32, int32)> OnLogEvent; TFunction<TArray<FS47NbEvent>()> GetEvents; // D48-20261110 (D46-19): the EVENTS page, Freeform only. MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
 };
 
 // UI.viewfinder's options

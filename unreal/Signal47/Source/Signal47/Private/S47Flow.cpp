@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47NightLog.h"
 #include "S47RoomDecor.h"
 #include "S47EastWing.h"
 #include "SS47FreeformStart.h"
@@ -2199,6 +2200,22 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		if (M->Story) S47Marginalia::Fill(S47Marginalia::FactsOf(*M->Freeform, M->Story->Docs()), X.Scribbles);
 		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
 		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
+		// D48-20261110 (D46-19): the EVENTS page: what the player has met, by date, time, place and kind, and a way to log one by hand
+		if (M->Freeform->NightLog)
+		{
+			TWeakObjectPtr<US47Main> Mw = M;
+			const auto Gather = [Mw]() -> TArray<FS47NbEvent>
+			{
+				TArray<FS47NbEvent> Got;
+				if (!Mw.IsValid() || !Mw->Freeform || !Mw->Freeform->NightLog) return Got;
+				for (const FS47NightLog::FEvent& E : Mw->Freeform->NightLog->Events()) { FS47NbEvent N; N.When = E.When; N.Place = E.Place; N.Kind = E.Kind; N.Text = E.Text; N.bOwn = E.bOwn; Got.Add(N); }
+				return Got;
+			};
+			X.bEvents = true; X.Events = Gather(); X.GetEvents = Gather;
+			X.EventKinds = FS47NightLog::EventKinds(); X.EventPhrases = FS47NightLog::EventPhrases();
+			X.EventPlace = M->Freeform->NightLog->PlaceNow(); X.EventNow = S47TonightNote::HourMinute(M->Freeform->Clock());
+			X.OnLogEvent = [Mw](int32 Kind, int32 Phrase) { return Mw.IsValid() && Mw->Freeform && Mw->Freeform->NightLog && Mw->Freeform->NightLog->LogOwn(Kind, Phrase); };
+		}
 	}
 	else X.People = PeopleItems();
 	US47Flow* Self = const_cast<US47Flow*>(this);

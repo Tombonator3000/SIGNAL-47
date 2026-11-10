@@ -1,5 +1,6 @@
 #include "S47Places.h"
 #include "S47Audio.h"
+#include "S47Balloon.h"
 #include "S47FarmSite.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -66,7 +67,9 @@ namespace
   if(Kind==TEXT("windmill"))return {{Cyl,{2.8,.4,1.2},{1.8,.8,1.8},Rust,0,0},{Cube,{-1.1,4.5,-1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,-1.1},{.09,9,.09},Steel,0,-7},{Cube,{-1.1,4.5,1.1},{.09,9,.09},Steel,0,7},{Cube,{1.1,4.5,1.1},{.09,9,.09},Steel,0,-7},{Cube,{0,9,0},{.9,.08,.9},Wood,0,0},{Cyl,{0,9.9,-.2},{2.6,.1,2.6},Rust,0,90},{Cube,{0,9.9,.9},{.05,.7,1.5},Steel,0,0}};
   if(Kind==TEXT("tank"))return {{Cyl,{0,1.3,0},{7,2.6,7},Steel,0,0},{Cube,{4,.3,0},{1.4,.6,.5},Rust,0,0},{Cube,{0,2.7,0},{7.2,.05,.3},Rust,30,0}};
   if(Kind==TEXT("mine"))return {{Cube,{-1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{1,1.2,0},{.25,2.4,.25},Wood,0,0},{Cube,{0,2.45,0},{2.5,.28,.28},Wood,0,0},{Cube,{0,1.1,.5},{1.8,2.2,1},Dark,0,0},{Cone,{-4.5,.7,2.5},{6.5,1.4,5},Dirt,0,0},{Cone,{4.5,.9,2},{7.5,1.8,6},Dirt,0,0},{Cube,{0,.1,-1.5},{.9,.1,3},Rust,0,0}};
-  if(Kind==TEXT("balloon"))return {{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-1.6,.12,-1.3},{.2,.22,.14},Pale,15,8},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
+  // D48-20261110: the balloon's model where Tools/balloon imported it (FS47Balloon draws every piece then, and the place's "look closer"
+  // with it); otherwise the rubber, the chute and the cord as basic shapes. The instrument box with its beacon is always FS47Balloon's.
+  if(Kind==TEXT("balloon"))return FS47Balloon::HaveModel()?TArray<FPart>{}:TArray<FPart>{{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
   if(Kind==TEXT("cow"))return {{CowBody,{0,.42,0},{1,1,1},0,30,86},{CowHead,{0,.42,0},{1,1,1},0,30,86}};
   if(Kind==TEXT("stake"))return {{Cube,{0,.65,0},{.05,1.3,.05},Wood,0,2},{Cube,{.13,1.15,0},{.26,.13,.012},Flag,0,0},{Cube,{.6,.04,.3},{.04,.08,.04},Wood,0,0}};
   if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
@@ -93,6 +96,33 @@ namespace
   // The Sierra Motor Court's office, as far as a player needs it: a bell and a key rack on the wall by the door.
   if(Kind==TEXT("motel"))return {{Cube,{0,1.05,0},{.5,.7,.06},Wood,0,0},{Cube,{0,1.5,0},{.14,.14,.14},Rust,0,0}};
   return {};
+ }
+ // D48-20261110 (D46-18, Tom: at the windmill and "nothing there"): what the first day shows there, from shapes the place already
+ // uses. The head turned toward the bearing Az (compass degrees; the wheel and the vane are the parts 6 and 7 of the windmill), a bright
+ // new wire down from the vane, two tyre tracks that stop short of the tower, a ring of flattened brush. Returns where the traces begin.
+ int32 MillTraces(TArray<FPart>& P,double Az)
+ {
+  const uint32 Wire=0xe9e4d2,Track=0x3b3126,Flat=0xa89868,Bare=0x9c8b66;
+  const double Rad=FMath::DegreesToRadians(Az),Sx=FMath::Sin(Rad),Sz=-FMath::Cos(Rad); // d: toward the bearing, x east and z south
+  const auto Along=[Sx,Sz](double Out,double Side,double Y,const FVector& Size,uint32 Colour,float Yaw)->FPart{return {Cube,{Sx*Out+Sz*-Side,Y,Sz*Out+Sx*Side},Size,Colour,Yaw,0};};
+  if(P.Num()>7)
+  {
+   P[6].At=FVector(Sx*.2,9.9,Sz*.2);P[6].Yaw=float(Az);
+   P[7].At=FVector(-Sx*.9,9.9,-Sz*.9);P[7].Yaw=float(Az);
+  }
+  const int32 From=P.Num();
+  // the new wire: a bright line down from the tail to the tower leg, and bright turns round the vane's root and the leg
+  P.Add(Along(-1.6,0,7.9,{.03,4.1,.03},Wire,float(Az)));
+  P.Add(Along(-.5,0,10.3,{.035,.035,1.7},Wire,float(Az)));
+  P.Add(Along(-.2,0,9.9,{.16,.16,.16},Wire,float(Az)));
+  P.Add({Cube,{-1.1,6.6,-1.1},{.2,.1,.2},Wire,0,0});
+  // a ring of flattened brush round the tower, laid all one way, and the bare ground it left
+  P.Add({Cyl,{0,.03,0},{16,.06,16},Bare,0,0});
+  for(int32 I=0;I<18;++I){const double A=I*UE_DOUBLE_PI/9;P.Add({Cube,{8.2*FMath::Cos(A),.07,8.2*FMath::Sin(A)},{2.2,.07,.55},Flat,float(FMath::RadiansToDegrees(A)+90.),0});}
+  // two tyre tracks coming in from the SARO side, stopping all at once about eight metres short of the tower
+  for(int32 Side=-1;Side<=1;Side+=2)P.Add(Along(-17,Side*.95,.05,{.28,.1,18},Track,float(Az)));
+  P.Add(Along(-8,0,.04,{3.2,.08,.5},Track,float(Az)));
+  return From;
  }
  FLinearColor Tone(uint32 Hex){return S47Three::Hex(Hex);}
  const TCHAR* const Motel=TEXT("motel");
@@ -243,6 +273,13 @@ bool FS47Places::Spot(const FString& Id,double& OutX,double& OutZ) const
  if(B){OutX=B->X;OutZ=B->Z;return true;}
  const FDef* D=Def(Id);if(!D)return false;OutX=D->X;OutZ=D->Z;return true;
 }
+bool FS47Places::Stand(const FString& Id,FVector& OutWorld,bool& bOutSeated) const
+{
+ // D48-20261110: where a built place stands with its ground (Seat), for what else is drawn there (FS47Balloon).
+ const FBuilt* B=Built.FindByPredicate([&](const FBuilt& X){return X.Id==Id;});if(!B)return false;
+ const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+ OutWorld=B->Id==Motel?FVector(B->X,B->Y,B->Z):FVector(Road.X+B->X,B->Y,Road.Z+B->Z);bOutSeated=B->bSeated;return true;
+}
 bool FS47Places::Build()
 {
  if(bBuilt)return true;
@@ -272,8 +309,16 @@ bool FS47Places::Build()
    UE_LOG(LogTemp,Display,TEXT("S47: place %s stands at road %.0f %.0f%s"),D.Id,B.X,B.Z,bClear?TEXT(""):TEXT(" (no clear ground found: as planned)"));
   }
   bool bFirst=true;
-  for(const FPart& P:PartsOf(D.Kind))
+  TArray<FPart> Shapes=PartsOf(D.Kind);
+  // D48-20261110: on the first days the windmill shows what was done to it, its head turned toward the bearing from SARO
+  if(M->Freeform&&Traced(D.Id,M->Freeform->Seed(),M->Freeform->Day()))
   {
+   double Sx=0,Sz=0;SaroRoad(Sx,Sz);
+   B.TraceFrom=MillTraces(Shapes,ArcBearing(M->Freeform->Seed(),Sx,Sz,B.X,B.Z,SpreadFor(0)));
+  }
+  for(int32 Index=0;Index<Shapes.Num();++Index)
+  {
+   const FPart& P=Shapes[Index];
    if(!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(P.Mesh))))continue;
    auto* Mesh=LoadObject<UStaticMesh>(nullptr,P.Mesh);if(!Mesh)continue;
    const FString Name=FString::Printf(TEXT("S47Place_%s_%d"),D.Id,B.Parts.Num());
@@ -304,7 +349,13 @@ bool FS47Places::Build()
   {
    const FString Id=D.Id;
    FS47Interactable I;I.Id=UseId(D.Id);I.Object=B.Hit;I.Range=bMotel?2.6:6;
-   I.Label=[this,Guard,Id]{return Guard.IsValid()?FString::Printf(TEXT("%s / look closer"),Def(Id)->Title):FString();};
+   // D48-20261110 (D46-18): the windmill on the first days says what to do, and is reached from well off (the whole wheel and tower and
+   // the ground round it are the target)
+   const bool bMill=Id==TEXT("windmill");if(bMill)I.Range=14;
+   I.Label=[this,Guard,Id,bMill]{
+    if(!Guard.IsValid())return FString();
+    if(bMill&&M&&M->Freeform&&Traced(Id,M->Freeform->Seed(),M->Freeform->Day())&&!bHasFound(Id))return FString(TEXT("Look at the windmill"));
+    return FString::Printf(TEXT("%s / look closer"),Def(Id)->Title);};
    I.Use=[this,Guard,Id]{if(Guard.IsValid())Use(Id);};
    I.Examine=I.Label;M->Inter->Add(I);M->Web->MarkUsable(B.Hit.I,I.Id);
   }
@@ -353,6 +404,19 @@ void FS47Places::Step(double Dt)
   const FVector World=B.Id==Motel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
   const double Away=FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size();
   if(!B.bSeated&&Away<300)Seat(B);
+  // D48-20261110 (D46-18): the traces are for the first days; after them the windmill stands as it was. The head stays as it is turned.
+  if(B.TraceFrom>=0)
+  {
+   const bool bOn=M->Freeform->Day()<=2;
+   if(bOn!=B.bTraceOn){B.bTraceOn=bOn;for(int32 I=B.TraceFrom;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetVisibility(bOn);}
+   // arriving at the first one: a thought of the player's own, once (not once found: then the record has it)
+   if(bOn&&!bMillThought&&Away<40&&!bHasFound(B.Id)&&M->UI)
+   {
+    bMillThought=true;
+    M->UI->Thought(TEXT("Why would anyone tie it to point there?"),5.f);
+    UE_LOG(LogTemp,Display,TEXT("S47: windmill: the first day's traces, the player is near"));
+   }
+  }
   // Not while anyone is near enough to see it go.
   if(Drifts(B.Id)&&B.ShiftDay!=M->Freeform->Day()&&Away>200)
   {
@@ -450,6 +514,14 @@ bool FS47Places::Use(const FString& Id)
  if(bFirst)
  {
   FString Page=FString(D->Finding);if(!Page.Contains(TEXT("records")))Page+=TEXT(" This records what is here.");
+  // D48-20261110 (D46-18): what the first day shows there, in the record: the new wire, tracks that stop, brush laid flat
+  if(Traced(Id,F.Seed(),F.Day()))
+  {
+   // the finding's own words for where the wheel faces are the turned head's: toward the bearing from SARO
+   double Sx=0,Sz=0,Mx=0,Mz=0;SaroRoad(Sx,Sz);
+   if(Spot(Id,Mx,Mz))Page.ReplaceInline(TEXT("a little east of north-northeast"),*CompassWord(ArcBearing(F.Seed(),Sx,Sz,Mx,Mz,SpreadFor(0))));
+   Page+=TEXT(" Tire tracks come in from the array's side and stop all at once, short of the tower. The brush is laid flat in a ring around it, and the wire on the tail is bright and clean.");
+  }
   F.RecordEvidence(Key,Page);
   UE_LOG(LogTemp,Display,TEXT("S47: place found: %s"),*Id);
   M->RequestAutosave();
@@ -574,6 +646,13 @@ void FS47Places::RingOf(FBearing& B,float Roll)
  }
  B.RingX=C.X;B.RingZ=C.Y;B.bRing=true;
 }
+void FS47Places::ArcRing(FBearing& B)
+{
+ // D48-20261110 (D46-18): the first day's circle is about 150 m and centred on the place; only where the rim leaves no room, smaller
+ if(!B.bTo)return;
+ const double Room=FMath::Min(FMath::Min(B.ToX-S47OpenLand::RimX0,S47OpenLand::RimX1-B.ToX),FMath::Min(B.ToZ-S47OpenLand::RimZ0,S47OpenLand::RimZ1-B.ToZ));
+ B.RingX=B.ToX;B.RingZ=B.ToZ;B.RingR=FMath::Clamp(Room-20,60.,150.);B.bRing=true;
+}
 FString FS47Places::CompassWord(double Az){return S47FieldMap::Compass(Az);}
 FString FS47Places::SlipWhere(const FBearing& B)
 {
@@ -609,6 +688,10 @@ TArray<TPair<FString,bool>> FS47Places::SlipRows(double Now) const
   Out.Add({B.bRing?FString::Printf(TEXT("BEARING SLIP / New circle on your map, %s. Drive out and look before noon."),*SlipWhere(B))
    :FString::Printf(TEXT("BEARING SLIP / New line on your map, %s. Drive out along it and look before noon."),*SlipWhere(B)),bDone});
  }
+ // D48-20261110 (D46-18): the windmill found on the first day: the wire was put there on purpose, and the bearing may come back tonight
+ for(const FBearing& B:Fixes)
+  if(!B.bCar&&B.Until>=0&&Live(B,Now)&&B.Day==1&&B.Target==TEXT("windmill")&&FreeSlip(1,B.Clock)&&bHasFound(B.Target))
+  {Out.Add({TEXT("SARO / Somebody wired that windmill on purpose. The bearing may come back tonight."),false});break;}
  return Out;
 }
 bool FS47Places::InSector(const FBearing& B,double X,double Z)
@@ -766,7 +849,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
  FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
- if(bArc){B.Az=ArcBearing(F.Seed(),SaroX,SaroZ,ToX,ToZ,Spread);RingOf(B,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));} // the line's own number
+ if(bArc){B.Az=ArcBearing(F.Seed(),SaroX,SaroZ,ToX,ToZ,Spread);RingOf(B,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));ArcRing(B);} // the line's own number; D48-20261110: a small circle on the place
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
  if(F.Director&&!bFree)F.Director->NotePointOut(Night);
@@ -807,7 +890,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s places: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  TSet<FString> Ids;bool bWords=true,bParts=true;
- for(const FDef& D:Defs()){Ids.Add(D.Id);bWords&=FCString::Strlen(D.Finding)>40&&FCString::Strlen(D.Finding)<320&&FCString::Strlen(D.Needle)>4&&!FString(D.Finding).Contains(TEXT("alien"));bParts&=PartsOf(D.Kind).Num()>0;}
+ for(const FDef& D:Defs()){Ids.Add(D.Id);bWords&=FCString::Strlen(D.Finding)>40&&FCString::Strlen(D.Finding)<320&&FCString::Strlen(D.Needle)>4&&!FString(D.Finding).Contains(TEXT("alien"));bParts&=PartsOf(D.Kind).Num()>0||(FString(D.Id)==TEXT("balloon")&&FS47Balloon::HaveModel());} // (D48: the balloon's model draws the place itself)
  Check(Ids.Num()==Defs().Num()&&Defs().Num()>=9&&Defs().Num()<=11,TEXT("eight to ten places besides the motel, each once"));
  // PT-SAUCER-ROCK-20261109: Saucer Rock is on the land where the souvenir man's map has it, with something to see at any hour.
  {
@@ -980,6 +1063,28 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   // In daylight on the first day a slip leaves the night's pointing-out for the dark; at dusk, after midnight, or another day it does not.
   Check(FreeSlip(1,12.5*3600.)&&FreeSlip(1,8*3600.)&&!FreeSlip(1,18*3600.)&&!FreeSlip(1,22*3600.)&&!FreeSlip(1,86400.+7*3600.)&&!FreeSlip(2,86400.+12*3600.),
    TEXT("only the first day's daylight slip is free of the night's one pointing-out"));
+  // D48-20261110 (D46-18): day 1 at the windmill. The circle is small (150 m at most) and on the place whatever the roll or the branches;
+  // the traces are there on the first two days and not after; the head is turned toward the bearing; the NOW line comes with the
+  // finding, only for the first day's slip, and is plain.
+  if(Mill)
+  {
+   bool bRing=true;
+   for(int32 Br=0;Br<=4;++Br)for(int32 K=0;K<=10;++K)
+   {
+    FBearing R=StationFix(1,12.5*3600.,Br,Sx,Sz,Mill->X,Mill->Z,float(K)/10.f,TEXT("windmill"),float(10-K)/10.f);
+    ArcRing(R);
+    bRing&=R.bRing&&R.RingR>=60&&R.RingR<=150&&FMath::IsNearlyEqual(R.RingX,Mill->X)&&FMath::IsNearlyEqual(R.RingZ,Mill->Z)&&S47OpenLand::InRim(R.RingX,R.RingZ,R.RingR)&&InSector(R,R.RingX,R.RingZ);
+   }
+   TArray<FPart> Mine=PartsOf(Mill->Kind);const int32 Plain=Mine.Num();const int32 From=MillTraces(Mine,90.);
+   bool bHead=Plain>7&&From==Plain&&Mine.Num()>Plain+20&&FMath::IsNearlyEqual(Mine[6].At.X,.2,.001)&&FMath::IsNearlyEqual(Mine[7].At.X,-.9,.001)&&FMath::IsNearlyEqual(Mine[7].Yaw,90.f);
+   Check(bRing&&bHead&&Traced(TEXT("windmill"),47,1)&&Traced(TEXT("windmill"),47,2)&&!Traced(TEXT("windmill"),47,3)&&!Traced(TEXT("tank"),47,1),
+    TEXT("day 1 at the windmill: a small circle on the place, the head turned toward the bearing, wire and tracks and flattened brush there for the first two days only"));
+   FBearing Slip=StationFix(1,12.5*3600.,0,Sx,Sz,Mill->X,Mill->Z,.5f,TEXT("windmill"));ArcRing(Slip);
+   FS47Places Quiet(nullptr);Quiet.Begin(nullptr);Quiet.Fixes.Add(Slip);
+   const FString Line=TEXT("SARO / Somebody wired that windmill on purpose. The bearing may come back tonight.");
+   Check(Quiet.SlipRows(12.6*3600.).Num()==1&&S47Script::LintText(Line).IsEmpty()&&!Line.Contains(TEXT("47")),
+    TEXT("the slip is the only NOW row until the windmill is found, and the line that follows the finding is plain"));
+  }
  }
  return OK;
 }

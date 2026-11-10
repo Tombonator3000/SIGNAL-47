@@ -40,6 +40,16 @@ Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemer
 
 **Bygget 10. nov (D45-1..29 unntatt 25 pinboard og 26 delvis):** alle punktene over er kodet, bygget og selvtestet (4297 kontroller OK), regresjon PASS 251; trinnprøvene first, sky, files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Ikke spilt av Tom. Kjente testproblemer: `-S47OpsNavigationTest` finner ikke ORIGINALS-fanen som unik knapp etter at RECORDS åpner stasjonsfilen (testoppsett), `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), `-S47FreeformInWorldTest` og `-S47FreeformEvidenceTest` forstyrres av den generelle testløypa som lukker skjermen; ikke avklart om de feilet før i dag. Natt 1 (D45-26) har fått de seks billigste grepene; cliffhangeren kl. 00:41 venter på Tom. Pinboard (D45-25) venter på Toms svar.
 
+## Nattskift 10.–11. november (Toms bestilling)
+
+Toms ord (forkortet): jobb til kl. 08; iterer gameplay og effekter; studer spilldesign og hvordan skrekk virker best; kritikere og iterasjon; mer detaljerte, scriptede hendelser. Kodemerke `N1110`.
+
+- [ ] **N1110-1 Oppmerksomhet:** leter man for mye på ett punkt på himmelen eller plager romvesenene for mye, får man besøk på SARO av noen som vil ta spilleren med seg.
+- [ ] **N1110-2 Sabotasje:** romvesener kan sabotere utstyr.
+- [ ] **N1110-3 Kamera-sekvenser:** hendelser kan ha korte sekvenser der kameraet zoomer brått mot noe (store øyne som stirrer inn på SARO, med skrekkskrik i lydbildet).
+- [ ] **N1110-4 Studie:** spilldesign (engasjerende og morsomt uten å overkomplisere) og skrekk i spill; konklusjoner inn i manus og hendelser.
+- [ ] **N1110-5 Scriptede hendelser:** flere hendelser over i manuslaget (D46-11) med flere detaljer.
+
 ## Toms ønsker etter d46, 10. november kveld
 
 Toms ord (forkortet): avisen skal få et svart-hvitt bilde fra spillverdenen som passer artikkelen (lite, JPEG); pinboard tas bort; første døgn må ha mer action og et solid manus som fenger; mer vær; Jeepen modelleres ferdig av Fable 5.2; sjekk Cosmos-filene; vurder kaffe og søvn og «snakker til seg selv»-tekst. Kodemerke `D46-20261110`.

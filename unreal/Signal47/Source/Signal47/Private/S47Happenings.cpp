@@ -1728,6 +1728,23 @@ void FS47Happenings::PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQua
   F->SetWorldLocation(S47Three::ToUE(Foot+Tilt.RotateVector(D.At)));F->SetWorldScale3D(FVector(D.R/5.,D.R/5.,D.H/5.));
  }
 }
+void FS47Happenings::PhotoSubjects(TArray<FPhotoSubject>& Out) const
+{
+ // D48-20261110: the props that are drawn in the area the player is in, with the box round their drawn parts.
+ if(!M||!IsValid(M->Web.Get()))return;
+ for(const auto& P:Props)
+ {
+  if(!P||!P->bShown||P->Area!=M->Web->Area())continue;
+  FPhotoSubject S;S.Kind=P->Kind;
+  for(const FProp::FPart& Pt:P->Parts)
+  {
+   const UStaticMeshComponent* C=Pt.C.Get();
+   if(!IsValid(C)||!C->IsRegistered()||!C->IsVisible()||C->bHiddenInGame)continue;
+   S.Box+=C->Bounds.GetBox();S.Parts.Add(C);
+  }
+  if(S.Box.IsValid&&S.Parts.Num())Out.Add(MoveTemp(S));
+ }
+}
 void FS47Happenings::ShowProp(FProp& P,bool bOn)
 {
  if(!M||!IsValid(M->Web.Get()))return;

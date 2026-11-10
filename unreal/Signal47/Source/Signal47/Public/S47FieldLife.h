@@ -128,6 +128,10 @@ public:
  bool Out() const{return bOut;}
  bool CanSet() const;
  bool SetHere(const FString& Title,bool bAtMarks);
+ // D48-20261110 (D46-24): for the field map. Where it stands (the area's own terms) while it is out; and, while it can be set out for the
+ // land test OPS planned, the place to set it: where the last record was kept (the marks standing now, else the place most lately used).
+ bool StandsAt(FString& OutArea,FVector& OutAt) const{if(!bOut)return false;OutArea=Area;OutAt=At;return true;}
+ bool SetOutPlace(FVector2D& OutRoad,FString& OutTitle) const;
  // What it caught, strongest first: a body near it, a light over its ground, nothing.
  enum class ECatch:uint8{None,Light,Body};
  static constexpr double BodyReach=18,LightReach=60;

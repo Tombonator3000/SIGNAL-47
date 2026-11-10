@@ -408,7 +408,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==331)
   {
    // CHAIN-3-20261109: with no working hunch noted, the board names each test but holds back what it predicts.
-   bool Board=false;for(const auto& Root:Roots(M))Board|=Text(Root,TEXT("THE REPEATED INTERVAL"),false)&&Text(Root,TEXT("STILL POSSIBLE"),false)&&Text(Root,TEXT("NOTE YOUR WORKING HUNCH BELOW FIRST"),false)&&!Text(Root,TEXT("ticks vanish"),false);
+   bool Board=false;for(const auto& Root:Roots(M))Board|=Text(Root,TEXT("THE REPEATED INTERVAL"),false)&&Text(Root,TEXT("STILL POSSIBLE"),false)&&Text(Root,TEXT("NOTE YOUR WORKING HUNCH FIRST"),false)&&!Text(Root,TEXT("ticks vanish"),false);
    if(!Check(M,Board,TEXT("actual case board shows the question, three open explanations, and no test prediction before a hunch")))return;Photo(TEXT("03b-case-board"));Go(332,1.2);return;
   }
   if(S.Stage==332)

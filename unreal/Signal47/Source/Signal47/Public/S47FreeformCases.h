@@ -70,6 +70,8 @@ public:
   int32 ConcludeDay=0;bool bReplied=false; // mystery lines only
   bool bBeyondWind=false; // the visitors' case after a taking or a flooded room; follows from the findings, never saved
   double OpenClock=0; // seconds into the day the case opened
+  // D48-20261110 (D46-16): the explanations a matched reference sound ruled out (bit per cause) and the matches tried so far.
+  int32 RefRuled=0,RefTries=0;
  // CASES-OPS-20261109: what the repeat window is measured from: the first original's own day and clock (SetReference), or, for a
  // case opened on a trace or an observation, the day and clock it opened. Saved only when it differs from the opening.
  int32 RefDay=0;double RefClock=0;
@@ -103,6 +105,14 @@ public:
  // Records a finished test. Returns false if it was not the planned test, or the case is already concluded.
  bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);
  bool Excluded(int32 Line,int32 Cause) const;
+ // D48-20261110 (D46-16, the receiver's known sounds): the player says the take sounds like a reference. FeederCause is the line's
+ // explanation that reference stands for (-1: a natural sound or none). Only the first case (the repeated interval, extra ticks) takes
+ // it. A correct match (the reference is the hidden cause, a man-made one) rules out the explanation that follows the sky; an unusual
+ // take (the sky) matches nothing. At most RefTriesMax (two) matches a case, so that trying every sound is not a test.
+ enum class EMatch : uint8 { Closed, NoMatch, Matched };
+ static constexpr int32 RefTriesMax=2, SkyCause=2;
+ EMatch MarkReference(int32 Line,int32 FeederCause);
+ int32 RefTriesLeft(int32 Line) const;
  // Lost time or a room lit up from outside: the visitors' case can no longer be the wind. Never leaves a case with nothing.
  // CASES-OPS-20261109: the hidden cause moves off the wind only before any result is retained, or later only to a cause every
  // retained result agrees with; with none, it stays the wind, which the retained tests then leave as the one explanation.
@@ -128,6 +138,7 @@ public:
  // Empty when the current world implements this test; saved legacy results remain valid.
  static FString UnavailableReason(int32 Line,int32 Test,bool bSecondLogger=false);
  static FString Prediction(int32 Line,int32 Test);
+ static FString PredictionFor(int32 Line,int32 Test,int32 Cause); // D48-20261110: one explanation's word for one test, as Prediction joins them
  static FString ResultText(int32 Line,bool bPresent);
  static FString TestResultText(int32 Line,int32 Test,bool bPresent);
  static FString Clock(double DayClock);

@@ -77,6 +77,12 @@ public:
  // The same in any Continue; nothing saved. Pure.
  static FString ArcPlace(int32 Seed);
  static double ArcBearing(int32 Seed,double FromX,double FromZ,double ToX,double ToZ,double Spread);
+ // D48-20261110 (D46-18: Tom found "nothing there"): the first day's circle is small and sits on the place: about 150 m, centred on To
+ // (smaller only where the rim leaves no room), whatever the branches. Needs bTo. Pure.
+ static void ArcRing(FBearing& B);
+ // D48-20261110: whether the first day's traces stand at a place (the arc place, on the first two days) and the head of the windmill
+ // is turned toward the bearing (compass degrees); the NOW line once the place is found. Pure.
+ static bool Traced(const FString& Id,int32 Seed,int32 Day){return Id==TEXT("windmill")&&Day<=2&&ArcPlace(Seed)==Id;}
  // D45-20261110: a slip printed in daylight on the first day (08:00 to 18:00 of night 1) does not take the night's one pointing-out:
  // it leaves it for the dark hours (the burst; AfterRegistered: so does any slip that night while the burst is still to come). Once
  // that day, still.
@@ -119,6 +125,9 @@ public:
  static bool Drifts(const FString& Id);
  // Where the place really stands, road-local, after the land has had its say.
  bool Spot(const FString& Id,double& OutX,double& OutZ) const;
+ // D48-20261110: where a built place stands with its ground, three-space world metres (the motel on SARO's ground, the rest on the
+ // road's), and whether the player's own floor has been measured there yet (Seat). False before it is built.
+ bool Stand(const FString& Id,FVector& OutWorld,bool& bOutSeated) const;
  // The player's own pencil marks on the notebook's map (MAP-20261108): road-local, numbered in the order they were made. One within
  // Within metres of a mark already there rubs that one out instead. Saved; false when nothing changed.
  const TArray<FVector2D>& MapMarks() const{return Marks;}
@@ -132,7 +141,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;};
+ struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;int32 TraceFrom=-1;bool bTraceOn=true;};
  TArray<FBuilt> Built;
  TSet<FString> HeardOf;
  TArray<FBearing> Fixes;
@@ -141,6 +150,7 @@ private:
  TWeakObjectPtr<AS47Web> Scene;
  bool bBuilt=false;
  double NeedleIn=0,SlipIn=0;
+ bool bMillThought=false; // D48-20261110
  int32 LastFixDay=0;
  void StepSlips(double Dt); // D45-20261110: the player inside a live slip's circle checks it
  static void SaroRoad(double& X,double& Z);

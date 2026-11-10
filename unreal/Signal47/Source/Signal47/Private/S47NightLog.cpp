@@ -4,6 +4,7 @@
 #include "S47EventPlaces.h"
 #include "S47FieldLife.h"
 #include "S47Flashlight.h"
+#include "S47Flow.h"
 #include "S47Freeform.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -150,7 +151,7 @@ FString FS47NightLog::RemarkFor(const FNight& Nt)
 
 void FS47NightLog::Begin(const S47J::FObj& Saved)
 {
-	Logs.Reset(); Lines.Reset();
+	Logs.Reset(); Lines.Reset(); Own.Reset();
 	Night = 0; From = 0; CashFrom = CashIn = CashOut = 0; Flickers = Drifts = Coughs = Jumps = 0;
 	bPrimed = false; bDevLost = false; Known.Reset(); SaidKnown.Reset();
 	Side = 0; LastSideLeft = -1; OpenAtDusk.Reset(); bOpenKnown = false; // CHAIN-2-20261109
@@ -173,6 +174,7 @@ void FS47NightLog::Begin(const S47J::FObj& Saved)
 			if (Sh.Facts.Num() >= 40 || !Fv.IsValid() || !Fv->TryGetArray(Four) || !Four || Four->Num() < 4) continue;
 			FLine L; L.Clock = (*Four)[0]->AsNumber(); L.Part = EPart(FMath::Clamp(int32((*Four)[1]->AsNumber()), 0, 3));
 			L.At = (*Four)[2]->AsString().Left(80); L.Text = (*Four)[3]->AsString().Left(300);
+			if (Four->Num() >= 5) L.Place = (*Four)[4]->AsString().Left(80); // D48-20261110
 			if (FMath::IsFinite(L.Clock) && !L.Text.IsEmpty()) Sh.Facts.Add(L);
 		}
 		if (Sh.Night > 0 && !Sh.Page.IsEmpty() && !Logs.ContainsByPredicate([&Sh](const FSheet& Had) { return Had.Night == Sh.Night; })) Logs.Add(Sh);
@@ -196,9 +198,20 @@ void FS47NightLog::Begin(const S47J::FObj& Saved)
 			L.Part = EPart(FMath::Clamp(S47J::Int(*O, TEXT("part")), 0, 3));
 			L.At = S47J::Str(*O, TEXT("at")).Left(8);
 			L.Text = S47J::Str(*O, TEXT("text")).Left(200);
+			L.Place = S47J::Str(*O, TEXT("place")).Left(80); // D48-20261110
 			if (!L.Text.IsEmpty() && Lines.Num() < 60) Lines.Add(L);
 		}
 		if (Night <= 0) Lines.Reset();
+	}
+	// D48-20261110: what the player logged by hand; kinds outside the list are other, nonsense dropped
+	for (const auto& V : S47J::Arr(Saved, TEXT("own")))
+	{
+		const S47J::FObj* O = nullptr;
+		if (!V.IsValid() || !V->TryGetObject(O) || !O || Own.Num() >= 60) continue;
+		FOwn E;
+		E.Clock = S47J::Num(*O, TEXT("clock")); E.Kind = S47J::Str(*O, TEXT("kind")); E.Place = S47J::Str(*O, TEXT("place")).Left(80); E.Text = S47J::Str(*O, TEXT("text")).Left(120);
+		if (!EventKinds().Contains(E.Kind)) E.Kind = TEXT("other");
+		if (FMath::IsFinite(E.Clock) && !E.Text.IsEmpty()) Own.Add(E);
 	}
 }
 
@@ -217,7 +230,7 @@ S47J::FObj FS47NightLog::Save() const
 			{
 				TArray<TSharedPtr<FJsonValue>> Facts;
 				for (const FLine& L : Sh.Facts)
-					Facts.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueNumber>(int32(L.Part)), MakeShared<FJsonValueString>(L.At), MakeShared<FJsonValueString>(L.Text) }));
+					Facts.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueNumber>(int32(L.Part)), MakeShared<FJsonValueString>(L.At), MakeShared<FJsonValueString>(L.Text), MakeShared<FJsonValueString>(L.Place) }));
 				E->SetArrayField(TEXT("facts"), Facts);
 			}
 			List.Add(MakeShared<FJsonValueObject>(E));
@@ -237,10 +250,22 @@ S47J::FObj FS47NightLog::Save() const
 		{
 			auto E = S47J::New();
 			S47J::Set(E, TEXT("clock"), L.Clock); S47J::Set(E, TEXT("part"), int32(L.Part)); S47J::Set(E, TEXT("at"), L.At); S47J::Set(E, TEXT("text"), L.Text);
+			if (!L.Place.IsEmpty()) S47J::Set(E, TEXT("place"), L.Place);
 			List.Add(MakeShared<FJsonValueObject>(E));
 		}
 		Tn->SetArrayField(TEXT("lines"), List);
 		S47J::Set(O, TEXT("tonight"), Tn);
+	}
+	if (!Own.IsEmpty())
+	{
+		TArray<TSharedPtr<FJsonValue>> List;
+		for (const FOwn& E : Own)
+		{
+			auto Eo = S47J::New();
+			S47J::Set(Eo, TEXT("clock"), E.Clock); S47J::Set(Eo, TEXT("kind"), E.Kind); S47J::Set(Eo, TEXT("place"), E.Place); S47J::Set(Eo, TEXT("text"), E.Text);
+			List.Add(MakeShared<FJsonValueObject>(Eo));
+		}
+		O->SetArrayField(TEXT("own"), List);
 	}
 	return O;
 }
@@ -265,8 +290,86 @@ void FS47NightLog::Add(double Clock, EPart Part, const FString& Text, const FStr
 		const int32 Hh = FCString::Atoi(*L.At.Left(2)), Mm = FCString::Atoi(*L.At.Mid(3, 2));
 		L.Clock = (Night - 1) * 86400.0 + (Hh < 12 ? Hh + 24 : Hh) * 3600.0 + Mm * 60.0;
 	}
+	L.Place = PlaceNow(); // D48-20261110
 	Lines.Add(L);
 	UE_LOG(LogS47NightLog, Display, TEXT("S47: night log %d: %s %s"), Night, *L.At, *Text);
+}
+
+// D48-20261110 (D46-19): the EVENTS page
+const TArray<FString>& FS47NightLog::EventKinds()
+{
+	static const TArray<FString> Kinds = { TEXT("lights"), TEXT("sounds"), TEXT("figure"), TEXT("power"), TEXT("animals"), TEXT("signal"), TEXT("other") };
+	return Kinds;
+}
+
+const TArray<FString>& FS47NightLog::EventPhrases()
+{
+	static const TArray<FString> Phrases = { TEXT("I watched it for a while."), TEXT("It was over in a few seconds."), TEXT("I was alone when it happened."), TEXT("I could not tell what it was."),
+		TEXT("It stopped when I looked straight at it."), TEXT("It happened more than once.") };
+	return Phrases;
+}
+
+FString FS47NightLog::KindOf(const FString& Text)
+{
+	// by the line's own words, the first list that fits; the padding keeps a short word from matching inside a longer one
+	const FString T = TEXT(" ") + Text.ToLower() + TEXT(" ");
+	const auto Has = [&T](std::initializer_list<const TCHAR*> Words) { for (const TCHAR* W : Words) if (T.Contains(W)) return true; return false; };
+	if (Has({ TEXT("power"), TEXT("mains"), TEXT("generator"), TEXT("blackout"), TEXT("went dark"), TEXT("lights went out"), TEXT("feeder") })) return TEXT("power");
+	if (Has({ TEXT("cattle"), TEXT(" cow"), TEXT(" dog"), TEXT("coyote"), TEXT("horse"), TEXT(" bird"), TEXT(" owl"), TEXT("animal"), TEXT(" herd"), TEXT(" steer"), TEXT(" calf"), TEXT("howl") })) return TEXT("animals");
+	if (Has({ TEXT("figure"), TEXT("person"), TEXT("someone"), TEXT(" man "), TEXT(" woman "), TEXT(" shape"), TEXT("standing"), TEXT("silhouette"), TEXT("footsteps") })) return TEXT("figure");
+	if (Has({ TEXT("light"), TEXT("glow"), TEXT(" lamp"), TEXT(" beam"), TEXT(" orb"), TEXT("flash") })) return TEXT("lights");
+	if (Has({ TEXT("signal"), TEXT("radio"), TEXT("receiver"), TEXT("carrier"), TEXT("frequency"), TEXT("array"), TEXT("pulse"), TEXT("static"), TEXT(" cb"), TEXT("walkie"), TEXT("1420") })) return TEXT("signal");
+	if (Has({ TEXT("heard"), TEXT("sound"), TEXT("noise"), TEXT(" hum"), TEXT("knock"), TEXT("voice"), TEXT(" tone"), TEXT("whistle"), TEXT("buzz"), TEXT(" bang"), TEXT("scream"), TEXT("music"), TEXT("whisper"), TEXT("drone"), TEXT("ringing"), TEXT(" rang") })) return TEXT("sounds");
+	return TEXT("other");
+}
+
+FString FS47NightLog::PlaceNow() const
+{
+	if (M && M->Flow) { const FString Name = M->Flow->PlaceName(); if (!Name.IsEmpty()) return Name; }
+	return Place();
+}
+
+FString FS47NightLog::WhenOf(double Clock) const
+{
+	// the calendar day of a clock: the world clock starts at 08:00 on shift day 1, so each 24 hours is a date
+	const int32 CalendarDay = FMath::Max(1, int32(FMath::FloorToDouble(Clock / 86400.0)) + 1);
+	const FString Hour = S47NightLogLocal::ClockOf(Clock);
+	if (M && M->Freeform) return S47Game::DateLine(M->Freeform->DateOfDay(CalendarDay)) + TEXT("  ") + Hour;
+	return FString::Printf(TEXT("DAY %d  %s"), CalendarDay, *Hour);
+}
+
+TArray<FS47NightLog::FEvent> FS47NightLog::Events() const
+{
+	TArray<FEvent> Out;
+	const auto Take = [this, &Out](const FLine& L)
+	{
+		// the work and the paperwork are not happenings; neither is a night's count of failures (no time of its own)
+		if (L.Part == EPart::Work || L.Text.IsEmpty() || (L.Part == EPart::Gear && L.At.IsEmpty())) return;
+		FEvent E;
+		E.Clock = L.Clock; E.When = WhenOf(L.Clock); E.Place = L.Place.IsEmpty() ? FString(TEXT("place not noted")) : L.Place; E.Kind = KindOf(L.Text); E.Text = L.Text;
+		Out.Add(E);
+	};
+	for (const FSheet& Sh : Logs) for (const FLine& L : Sh.Facts) Take(L);
+	for (const FLine& L : Lines) Take(L);
+	for (const FOwn& O : Own)
+	{
+		FEvent E;
+		E.Clock = O.Clock; E.When = WhenOf(O.Clock); E.Place = O.Place; E.Kind = O.Kind; E.Text = O.Text; E.bOwn = true;
+		Out.Add(E);
+	}
+	Out.StableSort([](const FEvent& A, const FEvent& B) { return A.Clock > B.Clock; });
+	return Out;
+}
+
+bool FS47NightLog::LogOwn(int32 Kind, int32 Phrase)
+{
+	if (!M || !M->Freeform || !EventKinds().IsValidIndex(Kind) || !EventPhrases().IsValidIndex(Phrase)) return false;
+	FOwn E;
+	E.Clock = M->Freeform->Clock(); E.Kind = EventKinds()[Kind]; E.Place = PlaceNow(); E.Text = EventPhrases()[Phrase];
+	if (Own.ContainsByPredicate([&E](const FOwn& Had) { return Had.Kind == E.Kind && Had.Place == E.Place && Had.Text == E.Text && FMath::Abs(Had.Clock - E.Clock) < 60.0; })) return false;
+	if (Own.Num() >= 60) Own.RemoveAt(0);
+	Own.Add(E);
+	return true;
 }
 
 FString FS47NightLog::Place() const
@@ -692,6 +795,32 @@ bool FS47NightLog::SelfTest(TArray<FString>& Lines)
 			FS47NightLog Od(nullptr);
 			Od.Begin(S47J::Read(S47J::Write(Old)));
 			Check(Od.Night == 4 && Od.Side == 0 && !Od.bOpenKnown, TEXT("CHAIN-2: an older save's night has no field allowance and reads the stores list again"));
+		}
+		// D48-20261110 (D46-19): the EVENTS page: plain kinds, newest first, the player's own entries kept and an older save without them
+		{
+			Check(KindOf(TEXT("Lights came down over the flat.")) == TEXT("lights") && KindOf(TEXT("A low hum from the ridge.")) == TEXT("sounds") && KindOf(TEXT("Someone stood at the fence.")) == TEXT("figure")
+				&& KindOf(TEXT("The mains went out.")) == TEXT("power") && KindOf(TEXT("Cattle bunched at the wire.")) == TEXT("animals") && KindOf(TEXT("A caller on 1420 AM.")) == TEXT("signal") && KindOf(TEXT("Dust.")) == TEXT("other"),
+				TEXT("D46-19: a line gets a plain kind word from its words"));
+			FS47NightLog OwnLog(nullptr);
+			OwnLog.Begin(nullptr);
+			FSheet OwnSheet; OwnSheet.Night = 2; OwnSheet.Page = TEXT("x");
+			OwnSheet.Facts.Add({ DuskOf(2) + 3600, EPart::Seen, TEXT("20:00"), TEXT("A light low over the flat."), TEXT("Highway south") });
+			OwnSheet.Facts.Add({ SixOf(2), EPart::Gear, FString(), TEXT("Flashlight cut out once.") });
+			OwnSheet.Facts.Add({ SixOf(2), EPart::Work, FString(), TEXT("Job filed.") });
+			OwnLog.Logs.Add(OwnSheet);
+			OwnLog.Own.Add({ DuskOf(3) + 600, TEXT("sounds"), TEXT("Mesa Diner"), TEXT("It happened more than once.") });
+			const TArray<FEvent> OwnList = OwnLog.Events();
+			Check(OwnList.Num() == 2 && OwnList[0].bOwn && OwnList[0].Kind == TEXT("sounds") && OwnList[0].Place == TEXT("Mesa Diner") && OwnList[1].Kind == TEXT("lights") && OwnList[1].Place == TEXT("Highway south") && OwnList[0].Clock > OwnList[1].Clock,
+				TEXT("D46-19: the events are the seen lines and the player's own, newest first; work and a night's gear count are not happenings"));
+			FS47NightLog OwnBack(nullptr);
+			OwnBack.Begin(S47J::Read(S47J::Write(OwnLog.Save())));
+			const TArray<FEvent> OwnAgain = OwnBack.Events();
+			Check(OwnAgain.Num() == 2 && OwnAgain[0].Text == TEXT("It happened more than once.") && OwnAgain[1].Place == TEXT("Highway south") && OwnBack.OwnCount() == 1 && !OwnBack.LogOwn(0, 0),
+				TEXT("D46-19: the player's own entries and a line's place survive a save; logging needs a game"));
+			auto OwnOld = OwnLog.Save(); OwnOld->RemoveField(TEXT("own"));
+			FS47NightLog OwnBare(nullptr);
+			OwnBare.Begin(S47J::Read(S47J::Write(OwnOld)));
+			Check(OwnBare.OwnCount() == 0 && OwnBare.Events().Num() == 1, TEXT("D46-19: a save without own entries loads with none"));
 		}
 		FS47NightLog Cn(nullptr);
 		Cn.Begin(nullptr);

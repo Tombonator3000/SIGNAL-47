@@ -127,6 +127,43 @@ namespace
   Swell = FS47SkyGlint::SizeScale * Flicker;
   return G * FMath::Pow(FS47SkyGlint::SizeScale, -FS47SkyGlint::Core);
  }
+ // D48-20261110 (D46-26): one light's four sprites, from what its track decided (At, the core's half-size with the glint's swell
+ // in it, its hue and power and the glint's gains): the core small and hot, the halo wide and dim, the streaks on the brightest,
+ // the breath, the tint and the wander. Nothing here changes At for the observation: only where the sprites are drawn.
+ void DressLight(UMaterialBillboardComponent* B, int32 Light, double Time, const FS47Cam& Cam, const FVector& At, double Half, const FLinearColor& Hue, double Power, const FVector& Gains)
+ {
+  using G = FS47SkyGlint;
+  if (!B || B->Elements.Num() < G::Sprites) return;
+  const bool bPlain = G::Plain();
+  const double Breath = bPlain ? 1. : G::Breath(Time, Light);
+  const FLinearColor Tint = bPlain ? Hue : G::Tint(Time, Light, Hue);
+  const double Haze = G::Strength(GlintElevation(Cam.Pos, At));
+  double HaloK = 0, HaloGain = 0, StreakK = 0, StreakGain = 0;
+  G::Looks(Haze, Power * Breath, HaloK, HaloGain, StreakK, StreakGain);
+  // Where it is drawn: a slow wander and the odd jump, across and up in the view, as a share of the distance.
+  FVector Drawn = At;
+  if (!bPlain)
+  {
+   const FVector2D W = G::Wander(Time, Light);
+   Drawn += (Cam.Right * W.X + Cam.Up * W.Y) * FVector::Dist(Cam.Pos, At);
+  }
+  B->SetWorldLocation(S47Three::ToUE(Drawn));
+  const float Core = float(bPlain ? Half : Half * G::CoreK);
+  const float HaloHalf = float(Half * HaloK), AcrossX = float(Half * StreakK), AcrossY = float(Half * .45), UpX = float(Half * .4), UpY = float(Half * StreakK * .7);
+  const float Sizes[G::Sprites][2] = { { Core, Core }, { HaloHalf, HaloHalf }, { AcrossX, AcrossY }, { UpX, UpY } };
+  const FLinearColor CoreCol = Glinted(Tint * float(Power * Breath), Gains);
+  const FLinearColor Colors[G::Sprites] = {
+   CoreCol,
+   bPlain ? FLinearColor::Black : Tint * float(HaloGain * Power * Breath),
+   bPlain ? FLinearColor::Black : Tint * float(StreakGain),
+   bPlain ? FLinearColor::Black : Tint * float(StreakGain * .55) };
+  for (int32 E = 0; E < G::Sprites; ++E)
+  {
+   B->Elements[E].BaseSizeX = Sizes[E][0]; B->Elements[E].BaseSizeY = Sizes[E][1];
+   if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[E].Material)) D->SetVectorParameterValue(TEXT("Color"), Colors[E]);
+  }
+  B->MarkRenderStateDirty();
+ }
 }
 
 double FS47SkyGlint::SizeScale = FS47SkyGlint::DefaultSize;
@@ -176,6 +213,64 @@ void FS47SkyGlint::ReadCommandLine()
  if (Parts.Num() > 2) Chroma = FMath::Clamp(FCString::Atod(*Parts[2]), 0., 3.);
  if (Parts.Num() > 3) Core = FMath::Clamp(FCString::Atod(*Parts[3]), 0., 2.);
  UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky glint from the command line: size %.2f, twinkle %.2f, colour %.2f, core %.2f"), SizeScale, Twinkle, Chroma, Core);
+}
+// D48-20261110 (D46-26): the look beyond the glint, every function fixed by time and the light's number.
+double FS47SkyGlint::Breath(double Time, int32 Light)
+{
+ if (!FMath::IsFinite(Time)) return 1.;
+ const uint32 Salt = uint32(Light) * 2654435761u + 977u;
+ // Two slow waves of their own rates (periods of three to nine seconds), so it never settles into a pulse; -1 to 1 about nought.
+ const double Rate = .11 + .07 * (GlintHash(Light, 0x7F4A7C15u) + 1.), Other = Rate * 1.73;
+ const double W = .65 * GlintWave(Time * Rate, Salt) + .35 * GlintWave(Time * Other + 1.3, Salt ^ 0x3C6EF372u);
+ return FMath::Clamp(1. + .22 * W, .75, 1.2);
+}
+FLinearColor FS47SkyGlint::Tint(double Time, int32 Light, const FLinearColor& Base)
+{
+ if (!FMath::IsFinite(Time)) return Base;
+ // One slow cycle (twenty to forty seconds), its phase the light's own: warmer on one side of it (a little red, less blue), cooler
+ // on the other (less red, a little blue, a touch of green). Base itself in the middle, and on average.
+ const double Period = 20. + 20. * (GlintHash(Light, 0x1B873593u) + 1.) * .5;
+ const double Phase = (GlintHash(Light, 0xCC9E2D51u) + 1.) * UE_DOUBLE_PI;
+ const double S = FMath::Sin(Time * 2. * UE_DOUBLE_PI / Period + Phase);
+ const double Warm = .09 * S;
+ return FLinearColor(FMath::Clamp(Base.R * float(1. + Warm), 0.f, 4.f), FMath::Clamp(Base.G * float(1. - .25 * Warm), 0.f, 4.f), FMath::Clamp(Base.B * float(1. - 1.3 * Warm), 0.f, 4.f), Base.A);
+}
+FVector2D FS47SkyGlint::Wander(double Time, int32 Light, bool* bJump)
+{
+ if (bJump) *bJump = false;
+ if (!FMath::IsFinite(Time)) return FVector2D::ZeroVector;
+ const uint32 Salt = uint32(Light) * 40503u + 7u;
+ // The slow wander: two waves of a period near half a minute, within a tenth of a degree.
+ const double Rate = .025 + .015 * (GlintHash(Light, 0xE6546B64u) + 1.);
+ FVector2D W(.0015 * GlintWave(Time * Rate, Salt), .0015 * GlintWave(Time * Rate * 1.31 + 2.1, Salt ^ 0x85EBCA6Bu));
+ // The jump: the clock is cut into spells of 24 to 48 s, each the light's own; in a spell with a jump in it the light sits a third
+ // of a degree off for .4 s from a moment of the spell's own, then is back.
+ const double Spell = 24. + 24. * (GlintHash(Light, 0x27D4EB2Fu) + 1.) * .5;
+ const double U = Time / Spell + (GlintHash(Light, 0x165667B1u) + 1.) * .5;
+ const int64 N = int64(FMath::FloorToDouble(U));
+ const double In = (U - FMath::FloorToDouble(U)) * Spell;
+ const bool bHas = GlintHash(N, Salt ^ 0xD3A2646Cu) > -.2; // three spells in five
+ const double From = 2. + (GlintHash(N, Salt ^ 0xFD7046C5u) + 1.) * .5 * (Spell - 4.);
+ if (bHas && In >= From && In < From + .4)
+ {
+  const double A = GlintHash(N, Salt ^ 0xB55A4F09u) * UE_DOUBLE_PI;
+  W += FVector2D(FMath::Cos(A), FMath::Sin(A)) * .005;
+  if (bJump) *bJump = true;
+ }
+ return W;
+}
+void FS47SkyGlint::Looks(double Haze, double Power, double& HaloK, double& HaloGain, double& StreakK, double& StreakGain)
+{
+ Haze = FMath::Clamp(FMath::IsFinite(Haze) ? Haze : 0., 0., 1.);
+ Power = FMath::Clamp(FMath::IsFinite(Power) ? Power : 0., 0., 64.);
+ // The halo: wider and a little stronger low over the horizon, where the air spreads a light; its peak (gain times power, the
+ // sprite's centre) stays under one, so its whole gradient survives, with or without bloom.
+ HaloK = HaloBase + HaloHaze * Haze;
+ HaloGain = (HaloGainBase + HaloGainHaze * Haze) * FMath::Min(1., 4. / FMath::Max(Power, 1e-6));
+ // The streaks: nothing on a faint light, full on one at four times its colour and over; longer low down.
+ const double Bright = FMath::Clamp((Power - StreakFrom) / StreakOver, 0., 1.);
+ StreakK = 5. + 3. * Haze;
+ StreakGain = Bright * (.3 + .2 * Haze);
 }
 
 double FS47SkyVisitorState::Duration(int32 S)
@@ -545,12 +640,9 @@ void FS47SkyVisitors::StepFreeform(double Dt)
   const FVector At=WorldPosition(FreeformState.Position(I),Area);
   const bool ClearWeather=M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos),S47Three::ToUE(At));
   B->SetVisibility(ClearWeather);
-  B->SetWorldLocation(S47Three::ToUE(At));
   double Swell=1;const FVector Glint=DrawGlint(M,I+32,Cam.Pos,At,Swell);
   const float Half=float(5.*Swell*FMath::Tan(FMath::DegreesToRadians(Cam.Fov)/2)*FVector::Dist(Cam.Pos,At)/900.*100.);
-  B->Elements[0].BaseSizeX=B->Elements[0].BaseSizeY=Half;
-  if(auto* D=Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))D->SetVectorParameterValue(TEXT("Color"),Glinted(S47Three::Hex(0xe3eeed)*float(Fade*3.),Glint));
-  B->MarkRenderStateDirty();
+  DressLight(B,I+32,GlintTime(M),Cam,At,Half,S47Three::Hex(0xe3eeed),Fade*3.,Glint); // D48-20261110: core, halo, streaks (was one disc)
   const FVector P=Cam.Project(At);
   if(ClearWeather&&Fade>=.6&&P.Z<1&&FMath::Abs(P.X)<.94&&FMath::Abs(P.Y)<.94&&ClearLine(Cam.Pos,At))
   {++Seen;SeenAt=At;}
@@ -597,9 +689,13 @@ void FS47SkyVisitors::Build()
  {
   auto* B = NewObject<UMaterialBillboardComponent>(M->Web, *FString::Printf(TEXT("SkyVisitor%d"), I));
   B->SetupAttachment(M->Web->GetRootComponent()); B->SetMobility(EComponentMobility::Movable);
-  auto* D = UMaterialInstanceDynamic::Create(Glow, M->Web);
-  D->SetVectorParameterValue(TEXT("Color"), FLinearColor::Black);
-  B->AddElement(D, nullptr, false, 50, 50, nullptr);
+  // D48-20261110 (D46-26): four sprites a light (FS47SkyGlint::Sprites), each its own copy of the glow: the core first, as before.
+  for (int32 E = 0; E < FS47SkyGlint::Sprites; ++E)
+  {
+   auto* D = UMaterialInstanceDynamic::Create(Glow, M->Web);
+   D->SetVectorParameterValue(TEXT("Color"), FLinearColor::Black);
+   B->AddElement(D, nullptr, false, 50, 50, nullptr);
+  }
   B->SetCollisionEnabled(ECollisionEnabled::NoCollision); B->SetCastShadow(false);
   B->RegisterComponent(); B->SetVisibility(false); Points.Add(B);
  }
@@ -795,12 +891,10 @@ void FS47SkyVisitors::DrawFormation(double Dt, const FString& Area)
   // A developer asked to see it; the night's own stay behind the weather as the single track does.
   const bool bClearWeather = Formation.bDev || M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos), S47Three::ToUE(At));
   B->SetVisibility(bClearWeather); if (!bClearWeather) continue;
-  B->SetWorldLocation(S47Three::ToUE(At));
   double Swell = 1; const FVector Glint = DrawGlint(M, I, Cam.Pos, At, Swell);
   const float Half = float(DiscPixels * Swell * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
-  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
-  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material)) D->SetVectorParameterValue(TEXT("Color"), Glinted(S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Level * 4. * Boost), Glint));
-  B->MarkRenderStateDirty();
+  // D48-20261110 (D46-26): a core with a halo and glare, not a disc; the third light of each three pale amber, the rest blue-white.
+  DressLight(B, I, GlintTime(M), Cam, At, Half, S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff), Level * 4. * Boost, Glint);
   const FVector P = Cam.Project(At);
   if (Level >= .5 && P.Z < 1 && FMath::Abs(P.X) < .94 && FMath::Abs(P.Y) < .94 && ClearLine(Cam.Pos, At)) { ++Seen; SeenAt = At; }
  }
@@ -934,14 +1028,11 @@ void FS47SkyVisitors::DrawTrack(const FS47SkyVisitorState& Track, const FVector&
   B->SetVisibility(I < Count && Fade > 0);
   if (I >= Count || B->Elements.IsEmpty()) continue;
   const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(Track.Stage, I, Track.Elapsed), M->World->Area) + Shift;
-  B->SetWorldLocation(S47Three::ToUE(At));
   // World location and depth remain physical; only the distant glow keeps size.
   double Swell = 1; const FVector Glint = DrawGlint(M, I + 16, Cam.Pos, At, Swell);
   const float Half = float(DiscPixels * Swell * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
-  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
-  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
-   D->SetVectorParameterValue(TEXT("Color"), Glinted(S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0 * Boost), Glint));
-  B->MarkRenderStateDirty();
+  // D48-20261110 (D46-26): the same four sprites as the formation's; the wander is drawn, the observation keeps At.
+  DressLight(B, I + 16, GlintTime(M), Cam, At, Half, S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff), Fade * 4.0 * Boost, Glint);
  }
 }
 
@@ -1262,5 +1353,42 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
  FGlint::Twinkle=0;FGlint::Chroma=0;double Plain=0;
  Check(FGlint::Gains(55.5,2,3*Deg,&Plain).Equals(FVector::OneVector,0.)&&Plain==1.,TEXT("with twinkle and colour at nought a light is drawn as before"));
  FGlint::SizeScale=KeepSize;FGlint::Twinkle=KeepTwinkle;FGlint::Chroma=KeepChroma;
+ // D48-20261110 (D46-26): the look beyond the glint. Two lights watched for two minutes at sixty frames a second.
+ {
+  struct FWatch{double BreathLo=9,BreathHi=0,BreathMean=0,WanderMax=0,JumpShare=0,JumpMax=0,Cov=0,Var=0,VarOther=0;int32 BreathTurns=0;FLinearColor TintMean=FLinearColor::Black;float TintLo=9,TintHi=0;};
+  const FLinearColor Amber=S47Three::Hex(0xffdfb4);
+  const auto Look=[&Amber](int32 Light,int32 Other)
+  {
+   FWatch Wt;const int32 Frames=7200;double Prev=1;
+   for(int32 Frame=0;Frame<Frames;++Frame)
+   {
+    const double Tm=300.+Frame/60.,Br=FGlint::Breath(Tm,Light);
+    Wt.BreathLo=FMath::Min(Wt.BreathLo,Br);Wt.BreathHi=FMath::Max(Wt.BreathHi,Br);Wt.BreathMean+=Br/Frames;
+    if(Frame>0&&(Br-1.)*(Prev-1.)<0)++Wt.BreathTurns;Prev=Br;
+    const double Bo=FGlint::Breath(Tm,Other);Wt.Cov+=(Br-1.)*(Bo-1.);Wt.Var+=FMath::Square(Br-1.);Wt.VarOther+=FMath::Square(Bo-1.);
+    bool bJump=false;const FVector2D Away=FGlint::Wander(Tm,Light,&bJump);
+    if(bJump){Wt.JumpShare+=1./Frames;Wt.JumpMax=FMath::Max(Wt.JumpMax,Away.Size());}else Wt.WanderMax=FMath::Max(Wt.WanderMax,Away.Size());
+    const FLinearColor Tc=FGlint::Tint(Tm,Light,Amber);
+    Wt.TintMean+=Tc/float(Frames);Wt.TintLo=FMath::Min(Wt.TintLo,Tc.B/Tc.R);Wt.TintHi=FMath::Max(Wt.TintHi,Tc.B/Tc.R);
+   }
+   return Wt;
+  };
+  const FWatch WA=Look(2,5),WB=Look(5,2);
+  const double InStep=WA.Var>0&&WA.VarOther>0?FMath::Abs(WA.Cov)/FMath::Sqrt(WA.Var*WA.VarOther):1.;
+  Lines.Add(FString::Printf(TEXT("sky visitors: look: breath %.2f to %.2f (mean %.3f, %d turns in 120 s, correlation %.2f with another light); wander to %.4f, jumps %.2f%% of the time to %.4f; tint blue/red %.2f to %.2f"),
+   WA.BreathLo,WA.BreathHi,WA.BreathMean,WA.BreathTurns,InStep,WA.WanderMax,WA.JumpShare*100,WA.JumpMax,WA.TintLo,WA.TintHi));
+  Check(WA.BreathLo>=.75&&WA.BreathHi<=1.2&&WA.BreathHi-WA.BreathLo>.15&&FMath::Abs(WA.BreathMean-1.)<.08&&WA.BreathTurns>=8&&WA.BreathTurns<=120,TEXT("each light breathes slowly and unevenly, about its own brightness"));
+  Check(InStep<.5&&FMath::Abs(WA.BreathMean-WB.BreathMean)<.1,TEXT("no two lights breathe in step"));
+  Check(WA.WanderMax>.0005&&WA.WanderMax<=.0022&&WA.JumpShare>.001&&WA.JumpShare<.03&&WA.JumpMax>.0035&&WA.JumpMax<.008,TEXT("a light wanders within a tenth of a degree and now and then jumps a third of one for under half a second"));
+  Check(FMath::Abs(WA.TintMean.R-Amber.R)<.01f&&FMath::Abs(WA.TintMean.B-Amber.B)<.01f&&WA.TintLo<Amber.B/Amber.R*.9f&&WA.TintHi>Amber.B/Amber.R*1.1f&&WA.TintHi<Amber.B/Amber.R*1.4f,TEXT("the colour drifts slowly warmer and cooler about the light's own, never far"));
+  double HaloLow=0,HaloHigh=0,GainLow=0,GainHigh=0,StreakLow=0,StreakHigh=0,StreakGainFull=0,StreakGainFaint=0,GainBoost=0,HaloBoost=0;
+  FGlint::Looks(FGlint::Strength(3*Deg),4.,HaloLow,GainLow,StreakLow,StreakGainFull);
+  FGlint::Looks(FGlint::Strength(60*Deg),4.,HaloHigh,GainHigh,StreakHigh,StreakGainFull);
+  FGlint::Looks(FGlint::Strength(3*Deg),1.,HaloLow,GainLow,StreakLow,StreakGainFaint);
+  FGlint::Looks(.5,60.,HaloBoost,GainBoost,StreakLow,StreakGainFull);
+  Check(HaloLow>HaloHigh&&HaloLow>=4.&&HaloHigh>=2.&&GainLow*4.<1.&&GainHigh*4.<1.&&GainLow>GainHigh&&GainBoost*60.<1.&&HaloBoost>HaloHigh,TEXT("the halo is wide and dim, wider low over the horizon, and never clips at any power"));
+  Check(StreakGainFull>.25&&StreakGainFaint==0.&&StreakLow>StreakHigh&&FGlint::CoreK<.7,TEXT("glare streaks on the brightest only, longer low down; the hot core is small"));
+  Check(FGlint::Sprites==4&&FGlint::Breath(12.,3)==FGlint::Breath(12.,3)&&FGlint::Wander(12.,3)==FGlint::Wander(12.,3)&&FGlint::Tint(12.,3,Amber)==FGlint::Tint(12.,3,Amber),TEXT("the look is fixed by time and light (nothing drawn at random, nothing saved)"));
+ }
  return Good;
 }

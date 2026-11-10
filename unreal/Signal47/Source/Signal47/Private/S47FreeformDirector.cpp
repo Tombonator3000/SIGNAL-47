@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include <limits>
 #include "S47SmallHints.h"
 #include "S47Rhythm.h"
 #include "S47Taken.h"
@@ -419,7 +420,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   {
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
    FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
-   P.Quality=S47J::Num(*C,TEXT("quality"));
+   P.Quality=S47J::Num(*C,TEXT("quality"));P.Reward=PhotoReward(P.Id,P.Quality);
    P.LocalNoiseOriginalId=S47J::Str(*C,TEXT("localNoiseOriginal")).Left(128);P.LocalNoisePlannedAt=S47J::Num(*C,TEXT("localNoisePlannedAt"),-1);
    if(!FMath::IsFinite(P.LocalNoisePlannedAt)||P.LocalNoisePlannedAt<0||P.LocalNoiseOriginalId.IsEmpty()){P.LocalNoisePlannedAt=-1;P.LocalNoiseOriginalId.Empty();}
    P.ControlOriginalId=S47J::Str(*C,TEXT("controlOriginal"));P.ControlPhotoId=S47J::Str(*C,TEXT("controlPhoto"));P.ControlPlannedAt=S47J::Num(*C,TEXT("controlPlannedAt"),-1);
@@ -1693,6 +1694,54 @@ namespace
   return Sum/((X1-X0)*(Y1-Y0));
  }
 }
+// D48-20261110: the table of what is strange enough to pay. Base is dollars before quality; the week's side cap (35) still rules the sum.
+// Rarer and stranger pays more: lights in the high sky 14, ground evidence 12 to 16, the Director's own incidents 20, a figure or a
+// shade 20 to 28, the small grey and the aftermath 24, the pale and the tall one in the open 30 to 32, the big night 35.
+// Ordinary things are not in it and pay nothing: dust devil, rabbits, cattle, tracks of the truck, the hitchhiker, cars, humour,
+// lit windows, the balloon.
+FString FS47FreeformDirector::StrangeGroupOf(const FString& K)
+{
+ if(K==TEXT("glimpse_nordic"))return TEXT("nordic");
+ if(K==TEXT("glimpse_cosmic"))return TEXT("cosmic");
+ if(K==TEXT("glimpse_tall"))return TEXT("tallfigure");
+ if(K==TEXT("glimpse_shadow"))return TEXT("shadow");
+ if(K==TEXT("glimpse_crawler"))return TEXT("crawler");
+ if(K==TEXT("shade"))return TEXT("shade");
+ if(K==TEXT("carcass")||K==TEXT("deadcow"))return TEXT("cattle");
+ if(K==TEXT("ring")||K==TEXT("embers"))return TEXT("scorch");
+ if(K==TEXT("roadtracks_low")||K==TEXT("roadtracks_tall"))return TEXT("prints");
+ if(K==TEXT("bigglow_column")||K==TEXT("bigglow_fall")||K==TEXT("bigglow_rise"))return TEXT("bigglow");
+ if(K==TEXT("bigmark_column")||K==TEXT("bigmark_fall")||K==TEXT("bigmark_rise"))return TEXT("bigmark");
+ return FString();
+}
+int32 FS47FreeformDirector::StrangeBase(const FString& G)
+{
+ static const TPair<const TCHAR*,int32> Table[]={
+  {TEXT("sky"),14},{TEXT("marks"),12},{TEXT("prints"),12},{TEXT("scorch"),14},{TEXT("cattle"),16},{TEXT("bigmark"),28},{TEXT("bigglow"),35},
+  {TEXT("shade"),20},{TEXT("shadow"),22},{TEXT("tallfigure"),26},{TEXT("crawler"),24},{TEXT("nordic"),28},{TEXT("cosmic"),30},
+  {TEXT("roswell"),24},{TEXT("pale"),30},{TEXT("tall"),32},{TEXT("aftermath"),24}};
+ for(const auto& T:Table)if(G==T.Key)return T.Value;
+ return 0;
+}
+namespace
+{
+ FString StrangeTitleOf(const FString& G)
+ {
+  static const TPair<const TCHAR*,const TCHAR*> Names[]={
+   {TEXT("nordic"),TEXT("Nordic figure")},{TEXT("cosmic"),TEXT("Cosmic figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
+   {TEXT("crawler"),TEXT("low crawler")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
+   {TEXT("prints"),TEXT("prints on the shoulder")},{TEXT("bigglow"),TEXT("big light")},{TEXT("bigmark"),TEXT("big night marks")}};
+  for(const auto& N:Names)if(G==N.Key)return N.Value;
+  return G;
+ }
+}
+int32 FS47FreeformDirector::PhotoReward(const FString& ClaimId,double Quality)
+{
+ if(!ClaimId.StartsWith(TEXT("strange.")))return 20;
+ FString G=ClaimId.Mid(8);int32 Dot=INDEX_NONE;if(G.FindChar('.',Dot))G.LeftInline(Dot);
+ const int32 Base=StrangeBase(G);if(Base<=0||!FMath::IsFinite(Quality))return 0;
+ return FMath::Max(1,FMath::RoundToInt(Base*FMath::Lerp(.6,1.25,FMath::Clamp(Quality/.25,0.,1.))));
+}
 void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
 {
  TaggedShot.Empty();TaggedIncident.Empty();TaggedTitle.Empty();bTaggedLamps=false;TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);PhotoSubjectMean=-1;
@@ -1707,7 +1756,9 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  }
  const FString RoadIncident=M->HighwayUfo?M->HighwayUfo->PhotoIncidentId():FString();
  const bool RoadPhoto=!RoadIncident.IsEmpty();
- if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||!SameScene()))return;
+ // D48-20261110: without an incident of the Director's own in this scene the frame is still looked at for the strange things
+ // that are out (below), not dropped.
+ const bool bOwn=RoadPhoto||!(Event.IsEmpty()||IncidentId.IsEmpty()||!SameScene());
  auto* Camera=M->FieldCamera.Get();
  auto Qualify=[&](const FVector& At,double Height,const UPrimitiveComponent* Target,double Minimum=.025)->double
  {
@@ -1729,7 +1780,8 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   }
   return FMath::Clamp(Size,0.,1.);
  };
- if(!RoadPhoto&&(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")))
+ if(!bOwn){}
+ else if(!RoadPhoto&&(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")))
  {
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
    TaggedQuality=FMath::Max(TaggedQuality,Qualify(I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id)));
@@ -1766,10 +1818,107 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
    if(VisibleLights==3)TaggedQuality=FMath::Max(TaggedQuality,FMath::Clamp(FVector2D(Right-Left,Bottom-Top).Size(),0.,1.));
   }
  }
+
+ // D48-20261110 (Tom: every photo of aliens, events and strange things pays, if it is good enough). When no incident of the
+ // Director's own is in the frame, the strange things out there are: each by the same rules (in the frame, large enough, in the
+ // clear, lit enough to read in Photo), one claim a group a night, the best-paying one in the frame.
+ FString StrangeKey,StrangeTitle;bool bStrangeLamps=false;
+ if(TaggedQuality<.025&&M->Freeform)
+ {
+  const int32 NightNo=FS47FreeformSession::NightOf(M->Freeform->Clock());
+  double BestQ=0;int32 BestPay=0;FBox2D BestRegion(ForceInit);
+  auto Offer=[&](const FString& Group,const FString& Title,bool bLamps,double Q,const FBox2D& Region,const FString& Extra=FString())
+  {
+   if(Q<.025)return;
+   const FString Key=FString::Printf(TEXT("strange.%s.n%d%s"),*Group,NightNo,*Extra);
+   const int32 Pay=PhotoReward(Key,Q);
+   // A group already registered this night does not offer again; one still waiting offers its better frame.
+   const auto* Have=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==Key;});
+   if(Pay<=0||(Have&&Have->bPaid))return;
+   if(Pay>BestPay||(Pay==BestPay&&Q>BestQ)){BestPay=Pay;BestQ=Q;BestRegion=Region;StrangeKey=Key;StrangeTitle=Title;bStrangeLamps=bLamps;}
+  };
+  // A single native body: Qualify sets the region of its bounds in TaggedRegion, read and cleared here for each.
+  auto Body=[&](const FString& Group,const FString& Title,const FVector& At,double Height,const UPrimitiveComponent* C)
+  {
+   TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
+   const double Q=C?Qualify(At,Height,C):0.;
+   Offer(Group,Title,false,Q,TaggedRegion);
+   TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
+  };
+  // Boxes of drawn props (UE centimetres), any of whose parts may stand in the line.
+  auto Boxed=[&](const FString& Group,const FString& Title,const FBox& Box,const TArray<const UPrimitiveComponent*>& Parts,bool bLamps)
+  {
+   if(!Box.IsValid)return;
+   const double Height=FMath::Max(.1,Box.GetSize().Z*.01);
+   // Flat things on the ground are looked at from just above it, or the ground itself would be in the way.
+   const FVector At=S47Three::ToThree(Box.GetCenter())+FVector(0,FMath::Max(0.,.35-Height*.5),0);
+   const auto P=Camera->Project(At),Top=Camera->Project(At+FVector(0,Height*.5,0)),Bottom=Camera->Project(At-FVector(0,Height*.5,0));
+   if(!P.bFront||!Top.bFront||!Bottom.bFront||P.U<.06||P.U>.94||Top.V<.04||Bottom.V>.96)return;
+   FBox2D Bounds(ForceInit);bool Front=true;
+   for(int32 I=0;I<8;++I)
+   {
+    const FVector Corner((I&1)?Box.Max.X:Box.Min.X,(I&2)?Box.Max.Y:Box.Min.Y,(I&4)?Box.Max.Z:Box.Min.Z);
+    const auto Q=Camera->Project(S47Three::ToThree(Corner));Front&=Q.bFront;Bounds+=FVector2D(Q.U,Q.V);
+   }
+   if(!Front||!Bounds.bIsValid)return;
+   // How large it is in the frame: its taller side, a ground mark counted by its width.
+   const double Size=FMath::Clamp(FMath::Max(Bounds.Max.X-Bounds.Min.X,Bounds.Max.Y-Bounds.Min.Y),0.,1.);
+   if(Size<.025)return;
+   FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
+   if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params)&&!Parts.Contains(Hit.Component.Get()))return;
+   Offer(Group,Title,bLamps,Size,Bounds);
+  };
+  // The small ones: the glimpses' bodies, wherever they came from (the base, the cabinets, a site's cover, a window).
+  if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered)
+   Body(TEXT("roswell"),TEXT("grey visitor"),I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id));
+  // The crab and the tall one in the open: their own skinned bodies (S47FarmSite).
+  if(M->Freeform->FarmSite)if(const auto Eye=M->Freeform->FarmSite->VisitBodyEye())if(const UPrimitiveComponent* Mesh=M->Freeform->FarmSite->VisitPhotoBody())
+  {
+   const bool bCrab=M->Freeform->FarmSite->VisitKind()==1;
+   Body(bCrab?TEXT("pale"):TEXT("tall"),bCrab?TEXT("pale visitor"):TEXT("tall visitor"),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
+  }
+  // Drawn props of the happenings: the figures on the road and the height, the dead cow, a landing's ring, prints, the big night.
+  if(M->Freeform->Happenings)
+  {
+   TArray<FS47Happenings::FPhotoSubject> Props;M->Freeform->Happenings->PhotoSubjects(Props);
+   for(const auto& P:Props)
+   {
+    const FString Group=StrangeGroupOf(P.Kind);if(Group.IsEmpty())continue;
+    const bool bLamps=Group==TEXT("bigglow");
+    Boxed(Group,StrangeTitleOf(Group),P.Box,P.Parts,bLamps);
+   }
+  }
+  // The marks a landing left at a place (the pressed ground, the scorch): one group a night and place.
+  if(M->Freeform->FarmSite)
+  {
+   const TArray<UPrimitiveComponent*> Marks=M->Freeform->FarmSite->PhotoMarks();
+   FBox Box(ForceInit);TArray<const UPrimitiveComponent*> Parts;
+   for(const UPrimitiveComponent* C:Marks){Box+=C->Bounds.GetBox();Parts.Add(C);}
+   if(Parts.Num())Boxed(TEXT("marks"),TEXT("marks in the ground"),Box,Parts,false);
+  }
+  // The lights in the high sky (a formation, the lone track): the points drawn, each in the clear of roofs and mesas; three in the
+  // frame make a formation, fewer a track.
+  if(M->SkyVisitors)
+  {
+   const FVector Eye=S47Three::ToThree(Camera->PhotoLoc);int32 Seen=0;double L=1,R=0,T=1,B=0;
+   for(const FVector& At:M->SkyVisitors->ShownPoints())
+   {
+    const auto P=Camera->Project(At);
+    if(!P.bFront||P.U<.06||P.U>.94||P.V<.04||P.V>.96||!M->SkyVisitors->ClearLine(Eye,At))continue;
+    ++Seen;L=FMath::Min(L,P.U);R=FMath::Max(R,P.U);T=FMath::Min(T,P.V);B=FMath::Max(B,P.V);
+   }
+   if(Seen>0)Offer(TEXT("sky"),Seen>=3?TEXT("lights in formation"):TEXT("light in the sky"),true,Seen>=3?FMath::Clamp(FVector2D(R-L,B-T).Size(),.05,1.):.03,FBox2D(ForceInit));
+  }
+  // What the album itself named in the frame as not to be there (its own size and distance rules): the one in the SARO jacket,
+  // the ring of frost. The whole middle of the frame must be readable.
+  if(Shot.bOdd&&(Shot.Text.Contains(TEXT("SARO jacket"))||Shot.Text.Contains(TEXT("ring of flattened grass"))))
+   Offer(TEXT("aftermath"),TEXT("what was left out there"),false,.08,FBox2D(FVector2D(.2,.2),FVector2D(.8,.8)));
+  TaggedQuality=BestQ;TaggedRegion=BestRegion;
+ }
  if(TaggedQuality<.025)return;
- TaggedShot=Shot.Id;TaggedIncident=RoadPhoto?RoadIncident:IncidentId;
- TaggedTitle=RoadPhoto?TEXT("highway light"):Event.Replace(TEXT("_"),TEXT(" "));
- bTaggedLamps=RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights")||Event==TEXT("town_lights");
+ TaggedShot=Shot.Id;TaggedIncident=!StrangeKey.IsEmpty()?StrangeKey:RoadPhoto?RoadIncident:IncidentId;
+ TaggedTitle=!StrangeKey.IsEmpty()?StrangeTitle:RoadPhoto?FString(TEXT("highway light")):Event.Replace(TEXT("_"),TEXT(" "));
+ bTaggedLamps=bStrangeLamps||(StrangeKey.IsEmpty()&&(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights")||Event==TEXT("town_lights")));
  Shot.Targets.Add({TEXT("freeform:")+TaggedIncident,FVector2D(.5,.5)});
 }
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
@@ -1798,9 +1947,9 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
   ObserveVisitor(ObservedAt);
  }
  auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==TaggedIncident;});
- if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;Claims.Add(C);}
- else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;}
- Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("Already registered. The new photograph stays in the album; no extra credit."):TEXT("Photograph taken. Develop it in the PHOTO LAB, then register it at OPS for $20."),5);
+ if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;C.Reward=PhotoReward(C.Id,C.Quality);Claims.Add(C);Existing=&Claims.Last();}
+ else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;Existing->Reward=PhotoReward(Existing->Id,Existing->Quality);}
+ Changed();if(M&&M->UI)M->UI->Toast(Existing->bPaid?FString(TEXT("Already registered. The new photograph stays in the album; no extra credit.")):FString::Printf(TEXT("Photograph taken. Develop it in the PHOTO LAB, then register it at OPS for $%d."),Existing->Reward),5);
 }
 bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 {
@@ -1814,7 +1963,7 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
   return false;
  }
  // M7 (Tom, 9 November): the documentation credit is field-work money: inside the week's cap (FS47FreeformSession::EarnSide)
- C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
+ C->Reward=PhotoReward(C->Id,C->Quality);C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
  M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nField allowance: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
  if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d field allowance."),Credit):FString(TEXT("OPS registered the field photograph. This week's field allowance is used up: no payment.")),5);
  return true;
@@ -2083,6 +2232,30 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(Photos.Claims.Num()==1&&Photos.Claims[0].bPaid,TEXT("Duplicate serialized photo incident cannot create a second claim"));
  auto LegacyPhoto=S47J::Clone(Active);LegacyPhoto->RemoveField(TEXT("incidentId"));LegacyPhoto->RemoveField(TEXT("photoClaims"));Photos.Begin(LegacyPhoto);const FString LegacyIncident=Photos.IncidentId;Photos.Begin(Photos.Save());
  Check(Photos.Claims.IsEmpty()&&!LegacyIncident.IsEmpty()&&Photos.IncidentId==LegacyIncident,TEXT("Legacy active incident gets stable identity without inventing paid photographs"));
+
+ // D48-20261110: the table of what is photographed -> what it pays. Pure: not native image or render qualification.
+ {
+  const TCHAR* const Strange[]={TEXT("glimpse_nordic"),TEXT("glimpse_cosmic"),TEXT("glimpse_tall"),TEXT("glimpse_shadow"),TEXT("glimpse_crawler"),TEXT("shade"),TEXT("carcass"),TEXT("deadcow"),
+   TEXT("ring"),TEXT("embers"),TEXT("roadtracks_low"),TEXT("roadtracks_tall"),TEXT("bigglow_column"),TEXT("bigglow_fall"),TEXT("bigglow_rise"),TEXT("bigmark_column"),TEXT("bigmark_fall"),TEXT("bigmark_rise")};
+  bool bAllPay=true;for(const TCHAR* K:Strange){const FString G=StrangeGroupOf(K);bAllPay&=!G.IsEmpty()&&StrangeBase(G)>0&&PhotoReward(TEXT("strange.")+G+TEXT(".n1"),.1)>0;}
+  Check(bAllPay,TEXT("D48: every strange prop kind (figures, dead cow, ring, prints, the big night) maps to a group that pays when photographed"));
+  const TCHAR* const Ordinary[]={TEXT("devil"),TEXT("rabbits"),TEXT("cattle"),TEXT("tracks"),TEXT("hitcher"),TEXT("pickup"),TEXT("rv"),TEXT("truck"),TEXT("darkcar"),TEXT("hairy"),TEXT("singer"),TEXT("zet"),TEXT("window"),TEXT("litwin"),TEXT("balloon"),TEXT("")};
+  bool bNonePay=true;for(const TCHAR* K:Ordinary){const FString G=StrangeGroupOf(K);bNonePay&=G.IsEmpty()&&PhotoReward(TEXT("strange.")+G+TEXT(".n1"),.5)==0;}
+  Check(bNonePay&&PhotoReward(TEXT("strange.balloon.n2"),.5)==0&&PhotoReward(TEXT("strange.dust_devil.n2"),.5)==0,TEXT("D48: dust devil, animals, cars, people, humour, lit windows and the balloon pay nothing"));
+  const TCHAR* const Groups[]={TEXT("sky"),TEXT("marks"),TEXT("prints"),TEXT("scorch"),TEXT("cattle"),TEXT("bigmark"),TEXT("bigglow"),TEXT("shade"),TEXT("shadow"),TEXT("tallfigure"),TEXT("crawler"),TEXT("nordic"),TEXT("cosmic"),TEXT("roswell"),TEXT("pale"),TEXT("tall"),TEXT("aftermath")};
+  bool bScale=true;for(const TCHAR* G:Groups)
+  {
+   const FString Id=FString(TEXT("strange."))+G+TEXT(".n4");const int32 Base=StrangeBase(G),Low=PhotoReward(Id,.03),High=PhotoReward(Id,.4);
+   bScale&=Base>0&&Low>=FMath::RoundToInt(Base*.6)-1&&Low<High&&High==FMath::RoundToInt(Base*1.25)&&High<=44;
+  }
+  Check(bScale,TEXT("D48: every group pays 0.6 to 1.25 of its base by quality (just legible to large in frame)"));
+  Check(StrangeBase(TEXT("tall"))>=StrangeBase(TEXT("pale"))&&StrangeBase(TEXT("pale"))>StrangeBase(TEXT("roswell"))&&StrangeBase(TEXT("roswell"))>StrangeBase(TEXT("shade"))&&StrangeBase(TEXT("shade"))>StrangeBase(TEXT("sky"))&&StrangeBase(TEXT("bigglow"))>=StrangeBase(TEXT("tall")),TEXT("D48: the rarer and stranger, the more it pays: lights in the sky least, then a figure, the small grey, the pale and the tall one, the big night most"));
+  Check(PhotoReward(TEXT("observer.day3.7"),.03)==20&&PhotoReward(TEXT("dusk_orb.n2"),.9)==20&&PhotoReward(TEXT("strange.tall.n1"),std::numeric_limits<double>::quiet_NaN())==0,TEXT("D48: the Director's own incidents still pay their fixed 20; a strange claim with no usable quality pays nothing"));
+  FS47FreeformDirector Wonder(nullptr);Wonder.Begin(nullptr);
+  FPhotoClaim A;A.Id=TEXT("strange.tall.n2");A.PhotoId=TEXT("album9");A.Title=TEXT("tall visitor");A.Quality=.2;Wonder.Claims.Add(A);
+  FS47FreeformDirector StrangeCopy(nullptr);StrangeCopy.Begin(S47J::Read(S47J::Write(Wonder.Save())));
+  Check(StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Reward==PhotoReward(A.Id,.2)&&StrangeCopy.Claims[0].Reward>StrangeCopy.PhotoReward(TEXT("strange.roswell.n2"),.2),TEXT("D48: a strange claim's pay follows its quality after Continue without a new save field; one claim a group a night keeps its id"));
+ }
  // Pure selection/serialization fixtures: not native image/render qualification.
  FS47FreeformDirector FocusModel(nullptr);FocusModel.Begin(nullptr);
  FPhotoClaim FA;FA.Id=TEXT("dusk_orb.focus-a");FA.PhotoId=FA.ControlOriginalId=TEXT("original-a");FA.Quality=.5;FA.ControlPlannedAt=100;FA.bPaid=true;

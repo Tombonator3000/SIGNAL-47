@@ -47,6 +47,10 @@ public:
  uint64 RenderedFrames() const { return DrawFrames; }
 	/** Shared by the physical material mask and pointer hit testing (normalised glass UVs). */
 	static constexpr float ApertureInset = .035f, ApertureRadius = .06f;
+	// D48-20261110 (Tom: the picture sat small in the glass, a wide dark margin round it): the content's margin inside the
+	// picture, as a share of its width (and of its height; the picture is 4:3). Just outside the tube's masked rim
+	// (ApertureInset), with the header's first letters and the hint line clear of the rounded corners. Was .075.
+	static constexpr float ContentInset = .042f;
 	static bool PictureContains(const FVector2D& Pixel);
 	static bool AnyWorldScreenActive();
 	/** The camera's turn towards the glass, the glass's pixels and the steps' easing. */
@@ -91,6 +95,12 @@ private:
 	TStrongObjectPtr<UTextureRenderTarget2D> Target;
 	FVector2D Last = FVector2D(-1, -1);
 	TSet<FKey> Held;
+	// D48-20261110 (D46-21): the real pointer kept inside the window while a screen is on the glass, and the virtual pointer carried along
+	// while the glass moves under it
+	bool bLocked = false, bGlassMoving = false;
+	uint8 PrevLock = 0;
+	void HoldPointer();
+	void ReleasePointer();
 
 	FEye Now() const;
 	void Finish();

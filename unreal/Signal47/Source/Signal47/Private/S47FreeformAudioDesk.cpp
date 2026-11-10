@@ -164,6 +164,7 @@ void FS47FreeformAudioDesk::BindControls()
 }
 FString FS47FreeformAudioDesk::ReferenceLabel()const{return Reference?Reference->Label():FString(TEXT("Press NEXT to load a reference recording."));}
 bool FS47FreeformAudioDesk::ReferencePlaying()const{return Reference&&Reference->Playing();}
+int32 FS47FreeformAudioDesk::ReferenceIndex()const{return Reference?Reference->Index():-1;}
 FString FS47FreeformAudioDesk::Label(const FString& Id)const
 {
  if(Id==StationId)return !Ready()||!M->IsFreeform()?FString():Powered()?FString(TEXT("Reel deck / compare recordings")):FString(TEXT("Reel deck unpowered / restore feeder or generator"));

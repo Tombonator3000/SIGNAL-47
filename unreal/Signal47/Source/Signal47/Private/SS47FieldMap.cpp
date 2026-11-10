@@ -606,6 +606,14 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 		FString Area; double X = 0, Z = 0;
 		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(Area, X, Z, TEXT("mail in the box"));
 	}
+	// D48-20261110 (Tom, D46-24: told to leave the trip camera where the last record was kept, and the sheet did not say where): the
+	// place to set it out while the land test is planned, then where it stands, until it is collected.
+	if (Fs.TripCamera)
+	{
+		FVector2D Road; FString Title, CamArea; FVector CamAt;
+		if (Fs.TripCamera->StandsAt(CamArea, CamAt)) Write(CamArea, CamAt.X, CamAt.Z, TEXT("Trip camera (set)"));
+		else if (Fs.TripCamera->SetOutPlace(Road, Title)) { FS47MapJob Job; Job.X = Road.X; Job.Z = Road.Y; Job.Text = TEXT("Trip camera: set it out here"); V.Jobs.Add(Job); }
+	}
 	// The truck, when it is in trouble where it stands.
 	if (Fs.Care && Fs.Care->NeedsRescue())
 	{

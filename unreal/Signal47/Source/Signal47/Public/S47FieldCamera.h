@@ -100,6 +100,12 @@ public:
 	static void MakePrint(TArray<FColor>& Raw, const FString& Caption, const FString& Time, double Seed, TArray<FColor>& OutPrint);
 	// JavaScript's x >>> 0
 	static uint32 ToUint32(double V);
+	// D48-20261110 (D46-27): the camera's data back, as a 1986 quartz-date back burns it into the lower right of every frame: small
+	// orange seven-segment digits, month, day and year, "4 29 '86". Drawn on the frame before the film look (so it is in the negative
+	// and under the grain, and an enlargement of another part of the frame does not carry it), never in the scene. Digits, space,
+	// apostrophe and colon only; anything else is left blank, as the back would.
+	static FString DataBackText(const FDateTime& Date);
+	static void DataBack(TArray<FColor>& Px, int32 W, int32 H, const FString& Text);
 
 	static bool SelfTest(TArray<FString>& Lines);
 

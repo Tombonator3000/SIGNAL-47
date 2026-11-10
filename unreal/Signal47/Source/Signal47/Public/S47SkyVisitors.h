@@ -101,6 +101,27 @@ struct FS47SkyGlint
  static FVector Gains(double Time,int32 Light,double Elevation,double* Size=nullptr);
  // -S47SkyGlint=size,twinkle,chroma,core in a developer's run, to set them from the command line without a build.
  static void ReadCommandLine();
+
+ // D48-20261110 (D46-26, Tom's photograph): the lights read as flat white paper discs. One M_WebGlow sprite was drawn at four times
+ // its colour, so all of it but the rim clipped to white, and the field camera's capture keeps no bloom to soften that. Now every
+ // light is four sprites on its billboard: a small hot core, a wide dim halo that never clips (its gradient is in the material, so
+ // the photograph has it too), and two faint glare streaks across and up that only the brightest show. Low over the horizon the
+ // halo is larger and dimmer (haze); each light breathes slowly at its own pace, drifts slowly in colour about its own kind (pale
+ // amber, white, faint blue-green), wanders very slowly and now and then jumps a little. All of it pure functions of time and the
+ // light's number: no two in step, nothing saved, the paths, sight and observation rules as they were.
+ static constexpr int32 Sprites=4; // the billboard's elements: 0 core, 1 halo, 2 glare across, 3 glare up
+ static constexpr double CoreK=.55,HaloBase=2.4,HaloHaze=2.6,HaloGainBase=.09,HaloGainHaze=.07,StreakFrom=2.4,StreakOver=1.6;
+ // .75 to 1.2: a slow uneven breath (periods of 3 to 9 s), one on average.
+ static double Breath(double Time,int32 Light);
+ // Base with a slow tint on it (a cycle of 20 to 40 s): a touch warmer, then cooler, never far from Base, Base on average.
+ static FLinearColor Tint(double Time,int32 Light,const FLinearColor& Base);
+ // The drawn place against the true one: an offset across and up as a share of the distance. Ordinarily within .0015 (a tenth
+ // of a degree), and once in half a minute or so a quick jump to .005 for under half a second. bJump: in a jump now.
+ static FVector2D Wander(double Time,int32 Light,bool* bJump=nullptr);
+ // The halo's and the streaks' size factors on the core's half-size, and their colour gains on the light's hue, by the air seen
+ // through (Haze, Strength(Elevation)) and the core's power (its old colour multiplier, Level x 4 x Boost). The halo's gain times
+ // the power stays under one: it never clips, in the eye or in the field camera.
+ static void Looks(double Haze,double Power,double& HaloK,double& HaloGain,double& StreakK,double& StreakGain);
 };
 
 class FS47SkyVisitors

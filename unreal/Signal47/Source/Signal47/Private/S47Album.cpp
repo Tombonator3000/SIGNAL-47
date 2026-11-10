@@ -147,7 +147,13 @@ FS47AlbumShot FS47Album::Expose()
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
 	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
-	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
+	// D48-20261110 (D46-27): the data back's date in the corner of every frame, on the film before the grain (and on the face's frame too)
+	const FString Imprint = D.Date ? US47FieldCamera::DataBackText(D.Date(Clock)) : FString();
+	if (bFace || !Imprint.IsEmpty()) O.Post = [Seed, Side, bFace, Imprint](TArray<FColor>& Raw, int32 W, int32 H)
+	{
+		if (bFace) S47FilmFace::FilmFace(Raw, W, H, Seed, Side);
+		if (!Imprint.IsEmpty()) US47FieldCamera::DataBack(Raw, W, H, Imprint);
+	};
  FS47PhotoPose Pose;
  if(F&&D.Web){Pose.Scene=D.Web->Area();Pose.Eye=S47Three::ToThree(F->PhotoLoc);Pose.Forward=S47Three::ToThree(F->PhotoRot.Vector()).GetSafeNormal();Pose.Fov=US47FieldCamera::PHOTO_FOV;}
 	FS47Snap Snap;
@@ -213,6 +219,9 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	const bool bSmall = D.Small && D.Small();
 	O.W = bSmall ? 320 : 640;
 	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
+	// D48-20261110 (D46-27): the trip camera has a data back of its own kind; the same date in the same corner
+	const FString Imprint = D.Date ? US47FieldCamera::DataBackText(D.Date(Clock)) : FString();
+	if (!Imprint.IsEmpty()) O.Post = [Imprint](TArray<FColor>& Raw, int32 W, int32 H) { US47FieldCamera::DataBack(Raw, W, H, Imprint); };
 	const FS47Snap Snap = F->Snap(O);
 	F->PhotoLoc = OldLoc;
 	F->PhotoRot = OldRot;
@@ -667,6 +676,38 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
  Wrong=Pose;Wrong.Forward=FVector(1,0,0);Check(!Pose.Matches(Wrong),TEXT("control facing another direction is rejected"));
  Wrong=Pose;Wrong.Scene=TEXT("road");Check(!Pose.Matches(Wrong),TEXT("matching coordinates in another scene are not a same-place control"));
  Wrong=Pose;Wrong.Forward=FVector::ZeroVector;Check(!Wrong.Valid(),TEXT("malformed capture direction is not accepted"));
+	// D48-20261110 (D46-27): the data back. A camera without a world exposes a dark frame; with Deps.Date the date is burned into its
+	// lower right (orange through the JPEG), without it nothing is.
+	{
+		FS47AlbumDeps Stamped = Deps;
+		Stamped.Fcam = NewObject<US47FieldCamera>();
+		Stamped.Date = [](double AtClock) { return FDateTime(1986, 4, 28) + FTimespan::FromDays(FMath::FloorToDouble(AtClock / 86400.0)); };
+		const auto Orange = [](const FString& Url, int32& Corner, int32& Elsewhere)
+		{
+			Corner = Elsewhere = 0;
+			TArray<FColor> Px; int32 W = 0, H = 0;
+			if (!S47Image::DecodePixels(Url, Px, W, H)) return false;
+			for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+			{
+				const FColor& C = Px[Y * W + X];
+				// (the film look's vignette and lift leave the corner's hot orange near 100/50/20, the dark frame near 10/9/12 plus grain)
+				if (C.R > 70 && C.R > C.G + 20 && C.G >= C.B) (X >= W * .6 && Y >= H * .8 ? Corner : Elsewhere)++;
+			}
+			return W > 0 && H > 0;
+		};
+		Clock = 86400 + 3 * 3600 + 40 * 60; // D2 03:40: the 29th
+		FS47Album WithBack(Stamped);
+		const FS47AlbumShot Shot = WithBack.Expose();
+		int32 Corner = 0, Elsewhere = 0;
+		const bool bRead = Orange(Shot.Url, Corner, Elsewhere);
+		Lines.Add(FString::Printf(TEXT("album: data back on an unlit frame: %d orange pixels in the corner, %d elsewhere"), Corner, Elsewhere));
+		Check(bRead && Corner > 30 && Elsewhere < Corner / 10, TEXT("the data back's date is burned into the lower right of the print and nowhere else"));
+		Check(US47FieldCamera::DataBackText(Stamped.Date(Clock)) == TEXT("4 29 '86"), TEXT("at 03:40 on the second night the back reads the 29th"));
+		FS47AlbumDeps Plain = Deps; Plain.Fcam = Stamped.Fcam;
+		FS47Album WithoutBack(Plain);
+		const FS47AlbumShot Bare = WithoutBack.Expose();
+		Check(Orange(Bare.Url, Corner, Elsewhere) && Corner == 0, TEXT("a camera without a data back burns nothing"));
+	}
 
 	return bOk;
 }

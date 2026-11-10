@@ -7,6 +7,7 @@ class US47Main;
 class AS47Web;
 class FS47FreeformSession;
 class UStaticMeshComponent;
+class UPrimitiveComponent;
 class ULocalFogVolumeComponent;
 struct FS47EventPlace;
 enum class ES47Clip : uint8;
@@ -71,6 +72,9 @@ public:
  void TestFreshPatience(){VisitPatience=120;}
  double VisitPatienceLeft() const{return VisitPatience;}
  double VisitHuntClock() const{return VisitHunt;}
+ // D48-20261110: the body out now as the camera can see it (its skinned mesh, only while it is drawn), and the marks standing, drawn.
+ UPrimitiveComponent* VisitPhotoBody() const;
+ TArray<UPrimitiveComponent*> PhotoMarks() const;
  TOptional<FVector> VisitBodyEye() const{return bBodyOut?TOptional<FVector>(BodyAt+FVector(0,VisitWho==1?.6:1.9,0)):TOptional<FVector>();}
  // D45-20261110: the body out now walks at the player and is near (13 m), not held back by a lamp: what the music calls being
  // come at (FS47FieldRadio). Standing off, sitting or walking up from far off is not.

@@ -25,6 +25,7 @@ public:
  bool ListeningPosition() const;
  FString ReferenceLabel() const;
  bool ReferencePlaying() const;
+ int32 ReferenceIndex() const; // D48-20261110: the reference loaded on the deck, -1 before NEXT or PLAY has loaded one
  FVector InteractionPoint(const FString& Id) const;
 private:
  US47Main* M=nullptr;

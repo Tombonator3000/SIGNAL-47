@@ -98,6 +98,9 @@ struct FS47AlbumDeps
 	TFunction<TArray<FS47Subject>()> Subjects;
 	TFunction<FString()> Place;
 	TFunction<double()> Clock;
+	/** D48-20261110 (D46-27): the calendar date at a clock, for the camera's data back (US47FieldCamera::DataBack): month, day
+	 *  and year burned into the lower right of the frame. Unset: no data back (the tests, an old camera). */
+	TFunction<FDateTime(double)> Date;
 	/** Freeform exposures use physical processing; existing Story prints keep instant development. */
 	TFunction<bool()> RequiresLab;
 	/** Exposures on the roll that were not the player's. */

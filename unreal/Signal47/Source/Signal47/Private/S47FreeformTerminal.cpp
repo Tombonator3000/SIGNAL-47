@@ -371,7 +371,7 @@ namespace S47FreeformTerminal
   if(!Action)return Col;
   return SNew(SButton).ButtonStyle(bSelected?&PrimaryStyle():&OutlineStyle()).ContentPadding(FMargin(4,4)).HAlign(HAlign_Center).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action]{Key(2);Action();return FReply::Handled();})[Col];
  }
- FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows)
+ FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows,int32 Size)
  {
   auto Cells=[&Widths](const TArray<FString>& Values,FLinearColor C,int32 Size,const FString& Badge)
   {
@@ -381,13 +381,12 @@ namespace S47FreeformTerminal
    return H;
   };
   TSharedRef<SVerticalBox> Box=SNew(SVerticalBox);
-  Box->AddSlot().AutoHeight().Padding(12,6)[Cells(Head,Green,22,FString())];
-  Box->AddSlot().AutoHeight()[Rule()];
+  if(!Head.IsEmpty()){Box->AddSlot().AutoHeight().Padding(12,6)[Cells(Head,Green,22,FString())];Box->AddSlot().AutoHeight()[Rule()];} // D48-20261110
   for(const FRow& R:Rows)
   {
    const TFunction<void()> Act=R.Action;
    Box->AddSlot().AutoHeight().Padding(0,2)
-    [SNew(SButton).ButtonStyle(R.bSelected?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(6,7)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})[Cells(R.Cells,R.bSelected?Ink:Green,23,R.Badge)]];
+    [SNew(SButton).ButtonStyle(R.bSelected?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(6,7)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})[Cells(R.Cells,R.bSelected?Ink:Green,Size,R.Badge)]];
    Box->AddSlot().AutoHeight()[Rule(Dim)];
   }
   return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(2)[Box];
@@ -516,6 +515,84 @@ namespace S47FreeformTerminal
  };
  FW Spectrum(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality)
  {const auto W=SNew(SSpectrum);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(170)[W];}
+
+
+ // D48-20261110 (D46-14, Tom: TUNE must have something to do): the spectrum zoomed on the target. The window is a few times the card's
+ // tolerance wide, so turning the frequency dial one step moves the amber marker visibly; the peak rises as the carrier lock does.
+ class STuneZoom:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(STuneZoom){} SLATE_END_ARGS()
+  TFunction<FS47Rx()> Rx;TFunction<FS47Profile()> Card;TFunction<double()> Q;
+  void Construct(const FArguments&){ForceVolatile(true);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1100,190);}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
+  {
+   const FVector2f S(G.GetLocalSize());const float X0=60,Y0=26,W=S.X-X0-10,H=S.Y-Y0-28;
+   const FS47Rx R=Rx?Rx():FS47Rx();const FS47Profile P=Card?Card():R.Profile();const double Quality=R.bPowered&&Q?FMath::Clamp(Q(),0.,1.):0.;
+   const double Half=FMath::Max(.04,P.FTol*5),Lo=P.F-Half;
+   auto Fx=[&](double F){return X0+float((F-Lo)/(2*Half))*W;};
+   for(int32 I=0;I<=3;++I){const float Y=Y0+H*I/3;Lines(Out,L,G,{{X0,Y},{X0+W,Y}},Dim,1);}
+   for(int32 I=0;I<=8;++I)
+   {
+    const float X=X0+W*I/8;Lines(Out,L,G,{{X,Y0},{X,Y0+H}},I==4?Line:Dim,1);
+    if(I%2==0)Text2(Out,L,G,FString::Printf(TEXT("%.3f"),Lo+2*Half*I/8),X-(I==8?62:I==0?0:30),Y0+H+5,16,Green*.85f);
+   }
+   Lines(Out,L,G,{{X0,Y0},{X0,Y0+H},{X0+W,Y0+H}},Line,1.5f);
+   Text2(Out,L,G,TEXT("ZOOM"),6,Y0-6,18,Green*.85f);
+   if(!R.bPowered){Text2(Out,L+2,G,TEXT("NO POWER / RECEIVER OFF"),X0+W*.36f,Y0+H*.4f,28,Amber);return L+3;}
+   const double T=FPlatformTime::Seconds();const float Peak=Fx(P.F),Tune=Fx(R.Frequency);
+   const float Sigma=FMath::Max(3.f,float(P.FTol/(2*Half)*W*.8));
+   const float Bw=FMath::Clamp(float(R.Bandwidth/1000./(2*Half)*W),2.f,W);
+   const float B0=FMath::Clamp(Tune-Bw*.5f,X0,X0+W),B1=FMath::Clamp(Tune+Bw*.5f,X0,X0+W);
+   if(B1>B0)FSlateDrawElement::MakeBox(Out,L+1,G.ToPaintGeometry(FVector2f(B1-B0,H),FSlateLayoutTransform(FVector2f(B0,Y0))),Fill(),ESlateDrawEffect::None,FLinearColor(.1f,.5f,.2f,.12f));
+   TArray<FVector2f> Trace;Trace.Reserve(241);
+   for(int32 I=0;I<=240;++I)
+   {
+    const double X=X0+W*I/240.,Noise=(FMath::Sin(X*.31+T*5)*2+FMath::Sin(X*.97+T*9)*3+FMath::Sin(I*12.9898+T*13)*1.5)*(R.Bandwidth/35+.2)*H/220;
+    // The peak is what the dishes hear, so it follows the lock; a dial far off it hardly shows, one on it stands up.
+    const double Amp=(8+130*Quality*(.35+.65*R.Gain/100))*H/200;
+    const double Y=Y0+H*.82-Noise-Amp*FMath::Exp(-FMath::Square((X-Peak)/Sigma));
+    Trace.Add(FVector2f(float(X),FMath::Clamp(float(Y),Y0+2,Y0+H-2)));
+   }
+   Lines(Out,L+1,G,Trace,FLinearColor(.25f,.8f,.35f,.18f),4);Lines(Out,L+2,G,Trace,Green,1.6f);
+   Dashed(Out,L+2,G,{Peak,Y0},{Peak,Y0+H},Green,6,2);Text2(Out,L+2,G,TEXT("TARGET"),FMath::Min(Peak+8,X0+W-90),Y0-24,18,Green);
+   const bool In=Tune>=X0&&Tune<=X0+W;
+   if(In)
+   {
+    Lines(Out,L+3,G,{{Tune,Y0},{Tune,Y0+H}},Amber,2.5f);
+    Text2(Out,L+3,G,FString::Printf(TEXT("TUNED %.3f"),R.Frequency),FMath::Clamp(Tune+8,X0,X0+W-140),Y0+H-22,18,Amber);
+   }
+   else Text2(Out,L+3,G,R.Frequency<Lo?TEXT("<< TUNED BELOW THIS WINDOW"):TEXT("TUNED ABOVE THIS WINDOW >>"),R.Frequency<Lo?X0+8:X0+W-330,Y0+8,20,Amber);
+   return L+4;
+  }
+ };
+ FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality)
+ {const auto W=SNew(STuneZoom);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(190)[W];}
+ // D48-20261110 (D46-14): a grid of tube-green cells, time across and low frequency at the foot. Brightest cells go amber.
+ class SSpectrogram:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SSpectrogram){} SLATE_END_ARGS()
+  TFunction<float(float,float)> Sample;TFunction<bool()> Has;
+  void Construct(const FArguments&){ForceVolatile(true);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(560,120);}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
+  {
+   const FVector2f S(G.GetLocalSize());Rect(Out,L,G,FVector2f(0,0),S,Line,false);
+   if(!Has||!Has()||!Sample){Text2(Out,L+1,G,TEXT("NOTHING RECORDED YET"),S.X*.5f-130,S.Y*.5f-12,22,Amber);return L+2;}
+   constexpr int32 Cols=56,Rows=12;const float Cw=(S.X-4)/Cols,Ch=(S.Y-4)/Rows;
+   for(int32 C=0;C<Cols;++C)for(int32 Rw=0;Rw<Rows;++Rw)
+   {
+    const float V=FMath::Clamp(Sample((C+.5f)/Cols,1.f-(Rw+.5f)/Rows),0.f,1.f);if(V<.05f)continue;
+    const FLinearColor Base=V>.85f?Amber:Green;
+    FSlateDrawElement::MakeBox(Out,L+1,G.ToPaintGeometry(FVector2f(Cw+.5f,Ch+.5f),FSlateLayoutTransform(FVector2f(2+C*Cw,2+Rw*Ch))),Fill(),ESlateDrawEffect::None,FLinearColor(Base.R,Base.G,Base.B,.15f+.85f*V));
+   }
+   return L+2;
+  }
+ };
+ FW Spectrogram(TFunction<float(float,float)> Sample,TFunction<bool()> Has,float Height)
+ {const auto W=SNew(SSpectrogram);W->Sample=Sample;W->Has=Has;return SNew(SBox).HeightOverride(Height)[W];}
 
  class SSkyPlot:public SLeafWidget
  {

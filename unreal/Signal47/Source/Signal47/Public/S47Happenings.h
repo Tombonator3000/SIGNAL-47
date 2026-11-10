@@ -9,6 +9,7 @@ class AS47Web;
 class FS47FreeformDirector;
 class UStaticMeshComponent;
 class UPointLightComponent;
+class UPrimitiveComponent;
 struct FS47MapView;
 struct FS47RhythmNow;
 struct FS47EventPlace;
@@ -252,6 +253,9 @@ public:
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
  struct FProp;
+ // D48-20261110: what the camera may find among the drawn props of this area: its kind, the box round its drawn parts (UE) and those parts.
+ struct FPhotoSubject{FString Kind;FBox Box=FBox(ForceInit);TArray<const UPrimitiveComponent*> Parts;};
+ void PhotoSubjects(TArray<FPhotoSubject>& Out) const;
 private:
  US47Main* M=nullptr;
  TSharedPtr<uint8> Life;

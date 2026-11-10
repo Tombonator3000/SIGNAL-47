@@ -340,6 +340,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
  // WEEKLY-CASE-20261109: what the week's case leaves (S47WeekCase), a lead out on the land; never a night record (FS47Happenings).
  if(Id.StartsWith(TEXT("weekcase_")))return LandLine;
+ // D48-20261110: the balloon's instrument box taken while lights were seen over that ground (FS47Balloon): the plain thing that would
+ // account for them, a lead on the land like the others; never a result, never proof.
+ if(Id.StartsWith(TEXT("balloon_lights_d")))return LandLine;
  // Critics, 10 Nov: the line recorder's strip from a night the generator carried (S47FreeformDirector) was filed under no question at
  // all, so starting the generator paid nothing. A light over the valley that takes the mains is a lead on the land.
  if(DatedKey(Id,TEXT("mains-ride")))return LandLine;
@@ -410,6 +413,8 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
    const auto X=R[T]->AsObject();auto& Out=C.Results[T];Out.bDone=S47J::Bool(X,TEXT("done"));
    Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&S47J::Bool(X,TEXT("present"),PresentFor(I,C.Truth,T));
   }
+  // D48-20261110: older saves have neither. The hidden cause is never ruled out by a match, whatever the file says.
+  C.RefTries=C.bOpen?FMath::Clamp(S47J::Int(O,TEXT("refTries")),0,RefTriesMax):0;C.RefRuled=C.bOpen&&I==0?(S47J::Int(O,TEXT("refRuled"))&((1<<CauseCount)-1)&~(1<<C.Truth)):0;
   C.FoldedLeads=FMath::Clamp(S47J::Int(O,TEXT("folded")),0,100000);C.LastLeadDay=C.bOpen?FMath::Clamp(S47J::Int(O,TEXT("lastLeadDay")),0,36500):0;
   for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)){if(C.Leads.Num()>=LeadCap(I)){C.Leads.RemoveAt(0);++C.FoldedLeads;}C.Leads.Add(L);}
   if(C.bConcluded&&C.Conclusion<0)C.bConcluded=false;
@@ -452,6 +457,7 @@ S47J::FObj FS47FreeformCases::Save() const
   if(C.bOpen&&(C.RefDay!=C.OpenDay||C.RefClock!=C.OpenClock)){S47J::Set(X,TEXT("refDay"),C.RefDay);S47J::Set(X,TEXT("refClock"),C.RefClock);}
   if(C.bReplied)S47J::Set(X,TEXT("replied"),true);
   if(C.FoldedLeads>0)S47J::Set(X,TEXT("folded"),C.FoldedLeads);
+  if(C.RefTries>0)S47J::Set(X,TEXT("refTries"),C.RefTries);if(C.RefRuled!=0)S47J::Set(X,TEXT("refRuled"),C.RefRuled);
   if(C.bOpen&&C.LastLeadDay>0)S47J::Set(X,TEXT("lastLeadDay"),C.LastLeadDay);
   X->SetArrayField(TEXT("results"),R);List.Add(MakeShared<FJsonValueObject>(X));
  }
@@ -526,6 +532,7 @@ int32 FS47FreeformCases::ValidTestsTotal() const{int32 N=0;for(const FCase& C:Ca
 bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
 {
  const FCase* C=Get(Line);if(!C)return false;
+ if(Cause>=0&&Cause<CauseCount&&(C->RefRuled&(1<<Cause))!=0)return true; // D48-20261110: a matched reference sound
  const auto ByTests=[&](int32 Which){for(int32 T=0;T<TestCount;++T)if(C->Results[T].bDone&&PresentFor(Line,Which,T)!=C->Results[T].bPresent)return true;return false;};
  // LOOP-WHOLE-20261109: the land's records can disagree (the trip camera's frames are the world's own); when every explanation is
  // contradicted by one of them, they rule none out.
@@ -539,6 +546,16 @@ bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
  if(C->bBeyondWind&&Cause==0)for(int32 Other=1;Other<CauseCount;++Other)if(!ByTests(Other))return true;
  return false;
 }
+FS47FreeformCases::EMatch FS47FreeformCases::MarkReference(int32 Line,int32 FeederCause)
+{
+ // D48-20261110: line 0 only, while it is open and not concluded.
+ if(Line!=0||!Cases.IsValidIndex(Line))return EMatch::Closed;
+ FCase& C=Cases[Line];if(!C.bOpen||C.bConcluded||C.RefTries>=RefTriesMax)return EMatch::Closed;
+ ++C.RefTries;
+ if(FeederCause<0||FeederCause>=SkyCause||FeederCause!=C.Truth)return EMatch::NoMatch;
+ C.RefRuled|=1<<SkyCause;return EMatch::Matched; // the hidden cause (0 or 1) is never the one struck
+}
+int32 FS47FreeformCases::RefTriesLeft(int32 Line) const{const FCase* C=Get(Line);return C&&C->bOpen&&!C->bConcluded&&Line==0?FMath::Max(0,RefTriesMax-C->RefTries):0;}
 void FS47FreeformCases::RuleOutWind(int32 Line)
 {
  // LOOP-3-20261109: OUT ON THE LAND strikes its first explanation (animals and weather) the same way, when the array had something in
@@ -650,16 +667,16 @@ bool FS47FreeformCases::InRepeatWindow(int32 Line,int32 Day,double DayClock) con
  // From the first original's own clock and day (SetReference), not from when the case was opened (CASES-OPS-20261109).
  const FCase* C=Get(Line);return C&&C->bOpen&&Day>C->RefDay&&FMath::IsFinite(DayClock)&&DayDelta(DayClock,C->RefClock)<=RepeatWindow;
 }
+FString FS47FreeformCases::PredictionFor(int32 Line,int32 Test,int32 Cause)
+{
+ const FCaseDef& D=Def(Line);const bool Ticks=D.Observable==EObservable::ExtraTicks;
+ const FTestDef& T=D.Tests[FMath::Clamp(Test,0,TestCount-1)];const bool P=PresentFor(Line,FMath::Clamp(Cause,0,CauseCount-1),Test);
+ return T.Yes&&T.No?FString(P?T.Yes:T.No):FString(P?(Ticks?TEXT("ticks remain"):TEXT("records still disagree")):(Ticks?TEXT("ticks vanish"):TEXT("records agree")));
+}
 FString FS47FreeformCases::Prediction(int32 Line,int32 Test)
 {
- const FCaseDef& D=Def(Line);const bool Ticks=D.Observable==EObservable::ExtraTicks;TArray<FString> Out;
- const FTestDef& T=D.Tests[FMath::Clamp(Test,0,TestCount-1)];
- for(int32 C=0;C<CauseCount;++C)
- {
-  const bool P=PresentFor(Line,C,Test);
-  const FString Word=T.Yes&&T.No?FString(P?T.Yes:T.No):FString(P?(Ticks?TEXT("ticks remain"):TEXT("records still disagree")):(Ticks?TEXT("ticks vanish"):TEXT("records agree")));
-  Out.Add(FString(D.Short[C])+TEXT(": ")+Word);
- }
+ const FCaseDef& D=Def(Line);TArray<FString> Out;
+ for(int32 C=0;C<CauseCount;++C)Out.Add(FString(D.Short[C])+TEXT(": ")+PredictionFor(Line,Test,C));
  return FString::Join(Out,TEXT(". "))+TEXT(".");
 }
 FString FS47FreeformCases::TestResultText(int32 Line,int32 Test,bool bPresent)
@@ -927,11 +944,12 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
     bLand&=Y->Replies[2][2].Effect==EReply::None;
    }
    for(int32 T=0;T<TestCount;++T)bLand&=UnavailableReason(LandLine,T).IsEmpty();
-   static const TCHAR* const Out[]={TEXT("cattle_ring_d4"),TEXT("road_tracks_d6"),TEXT("geiger_sample_3"),TEXT("place_windmill_moved_d5"),TEXT("tripcam_d3"),TEXT("roadcar_b2"),TEXT("place_saucer_rock_night4_t3")};
+   static const TCHAR* const Out[]={TEXT("cattle_ring_d4"),TEXT("road_tracks_d6"),TEXT("geiger_sample_3"),TEXT("place_windmill_moved_d5"),TEXT("tripcam_d3"),TEXT("roadcar_b2"),TEXT("place_saucer_rock_night4_t3"),TEXT("balloon_lights_d5")};
    static const TCHAR* const Home[]={TEXT("roof_steps"),TEXT("observer.day3"),TEXT("door-visit-5"),TEXT("door-marks-5"),TEXT("peek-4"),TEXT("flood-room-5-2"),TEXT("taken-3"),TEXT("farm_gate_visit"),TEXT("farm_trace_daylight_d3")};
    for(const TCHAR* Id:Out)bLand&=LineForFinding(Id)==LandLine;
    for(const TCHAR* Id:Home)bLand&=LineForFinding(Id)==2;
    bLand&=LineForFinding(TEXT("place_windmill_needle"))==-1&&LineForFinding(TEXT("place_windmill"))==-1&&LineForFinding(TEXT("place_saucer_rock_night4_t1"))==-1;
+   bLand&=LineForFinding(TEXT("place_balloon_box"))==-1&&LineForFinding(TEXT("place_balloon_school"))==-1; // (D48: the box itself and its errands are no lead)
    // A record out there opens the land's case, not the visitors'.
    FS47FreeformCases K;K.Reset(5);K.AddLead(LineForFinding(TEXT("cattle_ring_d4")),TEXT("cattle_ring_d4"),4,23*3600.);
    bLand&=K.Get(LandLine)->bOpen&&!K.Get(2)->bOpen&&K.Get(LandLine)->Leads.Num()==1&&K.Get(LandLine)->LastLeadDay==4;
@@ -978,6 +996,23 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  // CASETEST-20261109: twenty minutes of a field window may go unwatched in all; more, or a window not watched through, counts for nothing.
  Good&=WindowKept(10800,10800,0)&&WindowKept(10800,10800-UnwatchedAllowance,UnwatchedAllowance)&&!WindowKept(10800,10800-UnwatchedAllowance-60,UnwatchedAllowance+60)
   &&!WindowKept(10800,0,10800)&&!WindowKept(10800,5400,0)&&!WindowKept(0,0,0);
+ {
+  // D48-20261110 (D46-16): a correct reference match strikes the sky explanation, a wrong one or an unusual take strikes nothing, tries are limited, saved.
+  bool Ref=true;
+  for(int32 Truth=0;Truth<CauseCount;++Truth)
+  {
+   int32 Seed=0;while(Seeded(Seed,0)!=Truth&&Seed<4000)++Seed;
+   FS47FreeformCases K;K.Reset(Seed);K.Open(0,1,0);Ref&=K.Cases[0].Truth==Truth;
+   Ref&=K.MarkReference(0,-1)==EMatch::NoMatch&&!K.Excluded(0,SkyCause);
+   const EMatch Got=K.MarkReference(0,Truth);
+   if(Truth<SkyCause)Ref&=Got==EMatch::Matched&&K.Excluded(0,SkyCause)&&!K.Excluded(0,Truth)&&K.Remaining(0)==2;
+   else Ref&=Got==EMatch::NoMatch&&K.Remaining(0)==3;
+   FS47FreeformCases L;L.Load(K.Save(),Seed);Ref&=L.Excluded(0,SkyCause)==K.Excluded(0,SkyCause)&&L.RefTriesLeft(0)==K.RefTriesLeft(0);
+   K.MarkReference(0,-1);K.MarkReference(0,-1);Ref&=K.MarkReference(0,Truth)==EMatch::Closed&&K.RefTriesLeft(0)==0;
+  }
+  FS47FreeformCases N;N.Reset(0);Ref&=N.MarkReference(0,0)==EMatch::Closed&&N.MarkReference(2,0)==EMatch::Closed;
+  Good&=Ref;Lines.Add(FString::Printf(TEXT("%s / Freeform cases: a matched reference sound strikes the sky explanation only when the take has that known source, never an unusual take, two matches at most, saved"),Ref?TEXT("PASS"):TEXT("FAIL")));
+ }
  Lines.Add(FString::Printf(TEXT("%s / Freeform cases: nine data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground; and OUT ON THE LAND, split from the visitors: the night's records out there go to it, an older save's move over, records that disagree rule nothing out, no lead dropped at the cap), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the repeat window from the first original's clock, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }

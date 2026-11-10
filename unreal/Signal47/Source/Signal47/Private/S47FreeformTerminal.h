@@ -69,7 +69,8 @@ namespace S47FreeformTerminal
  // Kind: 0 outline green, 1 primary amber outline, 2 filled green
  FW Big(TAttribute<FString> Label,TFunction<void()> Action,int32 Kind=0,TAttribute<bool> Enabled=true);
  struct FRow { TArray<FString> Cells; bool bSelected=false; TFunction<void()> Action; FString Badge; };
- FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows);
+ // D48-20261110: Size is the rows' type size (the head stays 22); an empty Head draws no head row. A cell may hold a line break.
+ FW Table(const TArray<FString>& Head,const TArray<float>& Widths,const TArray<FRow>& Rows,int32 Size=23);
  FW Value(const FString& Label,TAttribute<FString> Shown,bool bAmber=false); // label left, value right
  FW Readout(const FString& Label,TAttribute<FString> Shown,TAttribute<float> Fill=-1.f); // big number, optional bar
  FW Meter(const FString& Label,TAttribute<FString> Shown,TAttribute<float> Fill); // one line (name left, value right) over a thin progress bar
@@ -78,6 +79,10 @@ namespace S47FreeformTerminal
  FW Spectrum(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
  FW SkyPlot(TFunction<FVector2D()> Target,TFunction<FVector2D()> Current,const FString& Source,TFunction<void(FVector2D)> OnAim=nullptr,TFunction<bool()> OnTarget=nullptr);
  FW FivePoint(TFunction<int32()> Done,TFunction<bool()> Running,TFunction<bool()> Required);
+ // D48-20261110 (D46-14): the TUNE page's fine-tuning window (the spectrum zoomed on the target, the tuned marker moving as the dial turns,
+ // the peak growing with the carrier lock) and the DATA page's spectrogram (Sample: time 0..1, frequency 0..1 to brightness 0..1; Has false: nothing yet).
+ FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
+ FW Spectrogram(TFunction<float(float,float)> Sample,TFunction<bool()> Has,float Height);
  // State per element: 0 ready, 1 selected, 2 isolated/fault, 3 moving
  FW AntennaGrid(int32 Count,TFunction<FString(int32)> Label,TFunction<int32(int32)> State,TFunction<void(int32)> Pick);
  FW Columns(const TArray<TPair<float,FW>>& Columns,float Gap=14);

@@ -1,4 +1,5 @@
 #include "S47Predecessor.h"
+#include "S47Balloon.h"
 #include "S47Album.h"
 #include "S47Audio.h"
 #include "S47Docs.h"
@@ -952,6 +953,13 @@ bool FS47Predecessor::UsePhone()
  if(!bWard)Rows.Add(Para(TEXT("A note under the card: \"Dr. Ward's office takes calls from 08:00 to 21:00. Anything urgent goes on the slip and waits for the morning.\""),760.f,true));
  Rows.Add(S47Kit::Button(bWard?FString(TEXT("Dr. Ward, duty officer")):FString(TEXT("Dr. Ward, duty officer / office closed until 08:00")),[this,Guard]{if(Guard.IsValid()&&WardAvailable())ShowTalk(TEXT("ward"),FString());},false,bWard));
  // TOWN-USE-20261108: Caliche's station takes tips on its request line, any hour (S47TownUse, FS47RadioTips).
+ // D48-20261110: the Ledger's WANTED ad (old weather balloons and their boxes: call the high school office) with the box in hand (FS47Balloon).
+ if(M->Freeform&&M->Freeform->Balloon&&M->Freeform->Balloon->Carried())
+ {
+  const bool bSchool=FS47Balloon::SchoolOpen(M->Freeform->Clock());
+  Rows.Add(S47Kit::Button(bSchool?FString(TEXT("The high school office, about the balloon's instrument box (the Ledger's ad)")):FString(TEXT("The high school office, about the balloon's instrument box / office closed, 08:00 to 16:00")),
+   [this,Guard]{if(Guard.IsValid()&&M&&M->Freeform&&M->Freeform->Balloon)M->Freeform->Balloon->CallSchool();},false,bSchool));
+ }
  if(M->Freeform&&M->Freeform->TownUse)Rows.Add(S47Kit::Button(TEXT("1420 AM, the request line in Caliche"),[this,Guard]{if(Guard.IsValid()&&M&&M->Freeform&&M->Freeform->TownUse)M->Freeform->TownUse->OpenRadio(true);}));
  Rows.Add(S47Kit::Button(TEXT("Put it down"),[this]{if(M&&M->UI)M->UI->Close();}));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO OPERATIONS LINE"),S47Kit::Col(Rows),760));

@@ -243,10 +243,11 @@ namespace
   // the same under another cause; a real control closes what it should and the board stops offering it; filed right, the
   // morning brings what the table says for it, once, also after a disk Continue; back from before the control, filed wrong,
   // it is accepted, survives a Continue before the reply, is answered next morning with no gain, and Rest still goes on.
-  void MysteryBoardOpen(US47Main* M)
+  // D48-20261110: bNotes unfolds the case notes (the traces) as the [+] CASE NOTES key on the board does
+  void MysteryBoardOpen(US47Main* M,bool bNotes=false)
   {
    M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
-   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine);
+   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine,bNotes);
   }
   // What the player can read about it, less the running clock.
   FString MysteryShown(US47Main* M) const
@@ -370,7 +371,7 @@ namespace
      if(!MysteryRestore(M,MysteryBefore))return false;
      MysterySub=1;return true;
     }
-    if(MysterySub==1){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=2;return true;}
+    if(MysterySub==1){MysteryBoardOpen(M,true);DreadAt=Elapsed;MysterySub=2;return true;}
     if(MysterySub==2)
     {
      MysteryBoard=MysteryShown(M);
@@ -384,7 +385,7 @@ namespace
     if(MysterySub==3)
     {
      if(C->Truth==MysteryTruth)return Fail(TEXT("the other seed must mean another cause"));
-     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+     MysteryBoardOpen(M,true);DreadAt=Elapsed;MysterySub=4;return true;
     }
     if(MysterySub==4)
     {
@@ -401,6 +402,12 @@ namespace
     // A real control, on the real job. Off the beam needs no fuel and no second night.
     if(Elapsed-DreadAt<.6)return true;
     if(MysterySub==0)
+    {
+     // D48-20261110: the board plans the selected test; its row is selected first
+     if(!MysteryClick(M,FString(Def.Tests[1].Name)))return Fail(TEXT("the board lists the control"));
+     DreadAt=Elapsed;MysterySub=10;return true;
+    }
+    if(MysterySub==10)
     {
      if(!MysteryClick(M,FString(TEXT("Plan this test: "))+Def.Tests[1].Name))return Fail(TEXT("the board offers the control"));
      DreadAt=Elapsed;MysterySub=1;return true;

@@ -664,6 +664,22 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
  if(M->UI)M->UI->Toast(M->Freeform->InventoryCount(TEXT("wire"))>0?TEXT("Trip camera set, and fence wire run out from it across the way in, thirty yards each side. It reads in the morning."):TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: trip camera set at %s, marks %d"),*Title,bAtMarks);M->RequestAutosave();return true;
 }
+bool FS47TripCamera::SetOutPlace(FVector2D& OutRoad,FString& OutTitle) const
+{
+ // Only for the land test that is planned and not yet read, with the camera built and in the kit, not out.
+ if(!M||!M->Freeform||!M->Freeform->EventPlaces||!CanSet())return false;
+ if(M->Freeform->PlannedFieldTest(FS47FreeformCases::LandLine)!=FS47FreeformCases::LandCamera)return false;
+ const FS47EventPlaces& Places=*M->Freeform->EventPlaces;
+ const FS47EventPlace* Where=nullptr;
+ if(M->Freeform->FarmSite&&M->Freeform->FarmSite->Armed())Where=Places.Find(M->Freeform->FarmSite->PlaceId());
+ if(!Where)
+ {
+  int32 Latest=0;
+  for(const FS47EventPlace& P:Places.All()){const int32 Night=Places.LastNight(P.Id);if(Night>Latest){Latest=Night;Where=&P;}}
+ }
+ if(!Where||!FMath::IsFinite(Where->X)||!FMath::IsFinite(Where->Z))return false;
+ OutRoad=FVector2D(Where->X,Where->Z);OutTitle=Where->Title;return true;
+}
 int32 FS47TripCamera::Reading(ECatch Got,int32 Seed,int32 Night)
 {
  if(Got==ECatch::Body)return 3;

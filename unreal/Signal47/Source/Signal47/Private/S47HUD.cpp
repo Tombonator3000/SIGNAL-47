@@ -59,6 +59,7 @@
 #include "S47NightRhythm.h"
 #include "S47DeputyRound.h"
 #include "S47LeftGear.h"
+#include "S47Balloon.h"
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
@@ -297,6 +298,7 @@ void AS47HUD::Start()
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= FS47Balloon::SelfTest(Lines); // (D48-20261110: the balloon find, its beacon and its instrument box)
 		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
