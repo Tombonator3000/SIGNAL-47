@@ -67,9 +67,15 @@ Felles for alle slag: `at` (sekunder fra start), `if` (betingelser som må holde
 | `prop` | `node` (scene-nøkkel, `room.objs.mug`), `by` [x, y, z] eller `to: true` | `AS47Web::SetPosition` (lagres ikke) |
 | `show` / `hide` | `node` | `AS47Web::SetVisible` (lagres ikke) |
 | `shake` | `strength` 0–1 | gåerens egen risting |
+| `silence` | `secs` (0,5–30), `level` (hva som er igjen av nattens lyd, 0,04 som standard) | `FS47Ambience::Hush` (N1110, SOUNDSCAPE): sirisser og vind stopper brått og kommer sakte tilbake |
+| `tube` | `tube` (2–7; kontrollrommets takrør, 0 og 1 er arbeidslyset og røres aldri) | `FS47FreeformSession::BreakTube` (N1110, PLAY-31-34): røret knitrer og er av for godt i dette spillet; lagres (`brokenTubes`), holder gjennom strømretur, Continue og områdebytte; F10 knitrer bare |
 | `camera_snap` | `pos`/`point` (det som ses på), `fov` (grader, 20–90, 45 som standard), `in`/`hold`/`out` (sekunder: snapp mot, hold, tilbake; 0,25/1,2/0,9 som standard, til sammen 0,3–5 s), `shake` 0–1 (0 som standard), `scare` (soft, hard, braam, swell: et kjøpt skrekkslag samtidig) | `FS47CameraMoment` (N1110), `FS47FieldRadio::Scare` |
 
 Ord i tekst: `{clock}`, `{day}`, `{night}` og `{map_key}` finnes alltid. `array_burst` gir også `{az}`, `{spread}`, `{target}` og `{burst_night}`. `hood_warm` gir punktet `truck`; `eyes_window` gir `eyes`, `beam_figure` gir `figure` og `dish_lights` gir `lights`. Et ord hendelsen ikke gir, blir stående som skrevet, og kontrollen advarer om det.
+
+## Stillhet før, flimmer under (N1110)
+
+Regelen for de store hendelsene: nattens lyd stopper først (`silence`), så kommer synet, og utstyret svarer samtidig (`light` med `gear` eller `lamp`, 1–3 s). `eyes_window` og `beam_figure` venter `S47Hap::SilenceLead` (3 s) med å tegne øynene og skikkelsen, slik at stillheten kommer først; manusets slag ligger 3 s senere. `dish_lights` har stillheten over de fem sekundene lysene henger. Også `attention_visit` og `attention_warn_lights` åpner med stillhet. `attention_sab_mains` tar to av de fire takrørene i kontrollrommet for godt (`tube` 2 og 3) når strømmen kommer tilbake. Oppmerksomhetssystemet og FS47Soundscape stilner også nattens lyd av seg selv når noe farlig nærmer seg (FS47Omen); `silence` er den forfattede varianten.
 
 ## Kameramomenter (N1110-3)
 
@@ -96,3 +102,7 @@ Betingelser: de samme som i regissørverktøyet (`finding`, `no_finding`, `case_
 Spillertekst kontrolleres med regissørverktøyets kontroll (`S47Script::LintText`, spoilergrensene) og i tillegg mot ordet «taken». Et ukjent slag eller en ukjent betingelse avvises med navn. Selvtesten (`-S47SelfTest`, `S47EventScript::SelfTest`) kontrollerer innebygde kopier og alle filer, at de tre koblede manusene har de gamle slagene, rekkefølge, ord, kontroll og porter. Den sier fra med NOTE når en fil avviker fra den innebygde kopien.
 
 F10 «Event scripts» → «Run: <id>» spiller et manus med en gang, med prøveord der koden ellers ville gitt sine. I et vanlig spill lagres ikke funn fra F10. I en utviklerkjøring lagres de.
+
+## Dyr som varsel (N1110, ANIMALS-20261108)
+
+`animals_warn_birds` og `animals_warn_coyote` spilles av `FS47AnimalWarn` (ikke av en hendelses egen kode), like før `horizon_figure`, `beam_figure`, `dish_lights` og `figure_near` når spilleren er ute til fots: en flokk vaktler letter alle på én gang, eller en coyote 18 til 30 m unna stopper og stirrer på spilleren i 7 sekunder og løper. Hendelsen holdes tilbake de sju sekundene og starter som ellers. Dyrene er de spillet allerede har (`FS47Animals::Warn`); manuset sier tanke og funn, og portene (`hours`, `odds`) sier når og hvor ofte: de samme hver gang samme natt spørres. Høyst ett varsel per natt, aldri i første skift. `"enabled": false` slår varselet av. Militæret (MILITARY-20261108) var allerede kodet i `S47Visitors`.

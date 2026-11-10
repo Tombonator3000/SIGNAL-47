@@ -56,6 +56,14 @@ public:
 	double BatteryLevel() const { return Battery; }
 	bool Dead() const { return bDrains && Battery <= 0; }
 	bool Low() const { return bDrains && Battery < LowLevel; }
+	/** N1110 FLASHLIGHT-BATTERY: changing the cell takes SwapSeconds, can be done on the move, and the lamp is dark meanwhile. The spare
+	 *  is spent only when the swap is finished (TakeSwapDone), so a swap that is cut short costs nothing. F cancels it. */
+	static constexpr double SwapSeconds = 2.5;
+	bool Swapping() const { return SwapT > 0; }
+	void BeginSwap() { if (bHave && bDrains) { SwapT = SwapSeconds; bSwapDone = false; bOn = false; } }
+	void CancelSwap() { SwapT = 0; bSwapDone = false; }
+	/** True once, when the swap has run its time; the caller then spends the spare and calls Refill. */
+	bool TakeSwapDone() { const bool bDone = bSwapDone; bSwapDone = false; return bDone; }
 	/** A fresh dry cell. */
 	void Refill() { Battery = 1; bSaidLow = bSaidDead = false; }
 	/** SARO's charger: K is a share of a full charge. */
@@ -94,5 +102,7 @@ private:
 	double SagK = 0;
 	double Battery = 1, CellDark = 0;
 	int32 Cuts = 0;
+	double SwapT = 0;
+	bool bSwapDone = false;
 	bool bSaidLow = false, bSaidDead = false;
 };

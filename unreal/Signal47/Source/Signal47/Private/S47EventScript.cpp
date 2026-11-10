@@ -1,4 +1,5 @@
 #include "S47EventScript.h"
+#include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47CameraMoment.h"
 #include "S47DevEvents.h"
@@ -32,7 +33,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
 
 namespace S47EventScriptLocal
 {
- const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap")};
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube")};
  // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
  bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area");}
  bool CondKnown(const FString& If){return OwnCond(If)||S47Script::CondKinds().Contains(If);}
@@ -103,6 +104,9 @@ namespace S47EventScriptLocal
    B.Fov=S47J::Num(J,TEXT("fov"),45);B.In=S47J::Num(J,TEXT("in"),.25);B.Hold=S47J::Num(J,TEXT("hold"),1.2);B.Out=S47J::Num(J,TEXT("out"),.9);
    B.Strength=S47J::Num(J,TEXT("shake"),0);B.Kind=S47J::Str(J,TEXT("scare"));
   }
+  // N1110: silence's level (what is left of the night's sound, as strength) and the tube beat's tube.
+  if(B.Do==ES47Beat::Silence)B.Strength=S47J::Num(J,TEXT("level"),.04);
+  if(B.Do==ES47Beat::Tube)B.Tube=S47J::Int(J,TEXT("tube"),-1);
   return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
  }
  // The words a text asks for: {az} -> az.
@@ -238,6 +242,8 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
    Need(B.In>0&&B.Out>0&&B.Hold>=0&&B.In+B.Hold+B.Out>=S47CameraMoment::LeastSeconds&&B.In+B.Hold+B.Out<=S47CameraMoment::MostSeconds,TEXT("in and out above 0, hold 0 or more, in + hold + out 0.3 to 5 seconds"));
    Need(B.Kind.IsEmpty()||B.Kind==TEXT("soft")||B.Kind==TEXT("hard")||B.Kind==TEXT("braam")||B.Kind==TEXT("swell"),TEXT("scare is soft, hard, braam or swell"));
    break;
+  case ES47Beat::Silence:Need(B.Secs>=.5&&B.Secs<=30,TEXT("needs secs, 0.5 to 30: how long the night holds still"));break; // N1110 (level is checked as strength)
+  case ES47Beat::Tube:Need(B.Tube>=2&&B.Tube<=7,TEXT("needs tube, 2 to 7 (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
   default:break;
   }
   const FString Why=PlayerWords(B.Text);
@@ -581,6 +587,26 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
   FS47CameraSnap S;S.At=At;S.Fov=B.Fov;S.In=B.In;S.Hold=B.Hold;S.Out=B.Out;S.Shake=FMath::Clamp(B.Strength,0.,1.);
   FString Why;
   Log(What+(Snap(S,Why)?FString::Printf(TEXT("the view to %.0f degrees for %.1f s"),B.Fov,B.In+B.Hold+B.Out):TEXT("the view stays: ")+Why));
+  break;
+ }
+ case ES47Beat::Silence:
+ {
+  // N1110 (SOUNDSCAPE): the night's own bed (crickets, wind, the far-off ones) drops at once and comes back slowly after secs.
+  FS47Ambience* Bed=M->Audio?M->Audio->Night.Get():nullptr;
+  if(Bed)Bed->Hush(FMath::Clamp(B.Secs,.5,30.),FMath::Clamp(B.Strength,0.,1.),.12,3.5);
+  Log(Bed?FString::Printf(TEXT("the night holds still for %.1f s"),B.Secs):FString(TEXT("no night bed here")));
+  break;
+ }
+ case ES47Beat::Tube:
+ {
+  // N1110 (PLAY-31-34): a control room ceiling tube sparks and goes out for good. The light follows the saved break (FS47FreeformSession::
+  // TubeBroken, read by AS47Web::TubeLit); an F10 run keeps nothing, so the tube only crackles.
+  if(!F||B.Tube<2||B.Tube>7){Log(TEXT("no such tube"));break;}
+  const bool bNew=R.Ctx.bKeep?F->BreakTube(B.Tube):!F->TubeBroken(B.Tube);
+  if(bNew&&M->Audio&&FS47FieldRadio::InSaroBuilding(M))
+   for(int32 J=0;J<10;++J)M->Audio->Beep(float(900+((J*7919+B.Tube*131)%1700)),float(.02+.01*(J%3)),.05f,float(J*.045+(J%2)*.03),TEXT("sawtooth"));
+  if(!R.Ctx.bKeep&&M->UI)M->UI->Toast(FString::Printf(TEXT("(F10: tube %d crackles but is not put out in a real game)"),B.Tube),3);
+  Log(bNew?FString::Printf(TEXT("tube %d sparks and is out"),B.Tube):FString::Printf(TEXT("tube %d was already out"),B.Tube));
   break;
  }
  default:break;

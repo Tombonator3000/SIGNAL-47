@@ -68,6 +68,11 @@ public:
 	bool DevCoyote(FString& Why, bool bThreat = true);
 	/** F10: the nearest dog barks now; then something comes near it, so it stops. */
 	bool DevDog(FString& Why);
+	/** N1110 (ANIMALS-20261108): a warning a few seconds before an event, from FS47AnimalWarn. Out on foot only. bBirds: a covey goes
+	 *  up out of the brush near the player all at once, away from Threat (three-space, a point in the way of what comes); else
+	 *  (night only, off the towns and the buildings) a coyote 18 to 30 m off stops and stares at the player for Lead seconds, then
+	 *  runs. False with Why: no cover or room here, one is out already, not outdoors. */
+	bool Warn(bool bBirds, const FVector& Threat, double Lead, FString& Why);
 
 	// ---------- the pure rules (tested) ----------
 	/** Flat, away from From, from At. */
@@ -195,7 +200,7 @@ private:
 
 	void StepCoyote(double Dt);
 	bool StartCrossing(bool bAhead, double Dist);
-	bool StartOut();
+	bool StartOut(double StareFor = 0);
 	void BeginStare(const FVector& Toward, bool bAtNothing);
 	void PoseCoyote(double Dt);
 	double ShineOf(const FVector& EyeAt, const FVector& Facing) const;

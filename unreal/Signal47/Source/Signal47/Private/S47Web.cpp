@@ -1339,7 +1339,10 @@ void AS47Web::SetTubes(bool bOn, int32 KeepOff)
 
 bool AS47Web::TubeLit(int32 K) const
 {
-	return TubePowered.IsValidIndex(K) && TubePowered[K];
+	if (!TubePowered.IsValidIndex(K) || !TubePowered[K]) return false;
+	// N1110 (PLAY-31-34): a tube that has gone out for good stays dark through a power return, Continue and a change of area.
+	const US47Main* Main = US47Main::Get(this);
+	return !(Main && Main->Freeform && Main->Freeform->TubeBroken(K));
 }
 
 void AS47Web::SetTube(int32 K, bool bLit)

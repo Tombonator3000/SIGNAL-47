@@ -1,4 +1,5 @@
 #include "S47Animals.h"
+#include "S47AnimalWarn.h"
 
 #include "Animation/AnimSequence.h"
 #include "AnimationRuntime.h"
@@ -599,7 +600,7 @@ bool FS47Animals::StartCrossing(bool bAhead, double Dist)
 	return true;
 }
 
-bool FS47Animals::StartOut()
+bool FS47Animals::StartOut(double StareFor)
 {
 	// A coyote out on its own business: off to one side of where the player looks, 18 to 30 m out on foot (inside the lamp's reach),
 	// trotting across or away; from the cab, crossing in the headlights further on. Never by a building.
@@ -631,6 +632,13 @@ bool FS47Animals::StartOut()
 	Cy.Gait = FMath::FRandRange(0.f, 6.f); Cy.Ground = Start.Y; Cy.GroundIn = 0.2; Cy.Yaw = S47AnimalsLocal::YawOf(Way); Cy.HeadYaw = 0; Cy.bLooked = false; Cy.Shine = 0;
 	Cy.SniffIn = FMath::FRandRange(5.f, 12.f); Cy.Out = 0; Cy.Glance = 0; Cy.bAtNothing = false;
 	++CoyotesOut;
+	// N1110: a warning (Warn): it is already stopped, looking at the player, and stays so for StareFor seconds
+	if (StareFor > 0)
+	{
+		BeginStare(Eye, false);
+		Cy.StareAt = StareToward(Cy.At, Eye, 6.0, FMath::FRand());
+		Cy.Left = StareFor; Cy.Glance = 0.3;
+	}
 	PoseCoyote(0);
 	if (bLog)
 	{
@@ -1089,6 +1097,32 @@ bool FS47Animals::DevCoyote(FString& Why, bool bThreat)
 	return true;
 }
 
+bool FS47Animals::Warn(bool bBirds, const FVector& Threat, double Lead, FString& Why)
+{
+	if (!M || !M->IsFreeform() || !M->Player || !Build()) { Why = TEXT("Freeform only"); return false; }
+	if (!Outdoors()) { Why = TEXT("not out on foot"); return false; }
+	const FVector Stand(M->Player->Pos.X, M->Player->FloorY, M->Player->Pos.Z);
+	if (bBirds)
+	{
+		if (Covey.Mode == ECovey::Flying) { Why = TEXT("a covey is up already"); return false; }
+		// one sitting near is the one; else one is put near, 16 to 30 m off, where there is cover (not by a building)
+		if (Covey.Mode != ECovey::Sitting || S47AnimalsLocal::Flat(Stand, Covey.At) > 40)
+		{
+			Covey.Mode = ECovey::None;
+			PlaceCovey(Stand, FS47Cam::Of(M->Player).Forward);
+		}
+		if (Covey.Mode != ECovey::Sitting) { Why = TEXT("no cover for a covey here"); return false; }
+		Flush(Threat, EFlush::Danger);
+		return true;
+	}
+	if (!NightNow()) { Why = TEXT("coyotes are out at night"); return false; }
+	if (Coyote.Mode != ECoyote::None) { Why = TEXT("one is out already"); return false; }
+	FVector2D RoadAt;
+	if (M->Freeform && M->Freeform->EventPlaces && RoadOf(EyeNow(), RoadAt) && M->Freeform->EventPlaces->NearestTo(RoadAt, 90, ES47PlaceTrait::Town)) { Why = TEXT("not in town"); return false; }
+	if (!StartOut(Lead)) { Why = TEXT("too near a building here"); return false; }
+	return true;
+}
+
 bool FS47Animals::DevDog(FString& Why)
 {
 	FVector2D From;
@@ -1122,6 +1156,10 @@ bool FS47Animals::SelfTest(TArray<FString>& Lines)
 	Check(DogQuiet(1) > DogQuiet(0.2) && DogQuiet(0) >= 25, TEXT("the dog keeps quiet longer the worse it was"));
 	FS47Animals Bare(nullptr); Bare.Step(1); Bare.Reset();
 	FVector From = FVector::ZeroVector;
+	{
+		FString Why;
+		Check(!Bare.Warn(true, FVector::ZeroVector, 7, Why) && !Bare.Warn(false, FVector::ZeroVector, 7, Why) && !Bare.CoyoteOut() && Bare.Flushes() == 0, TEXT("without a game the warning puts no animal out"));
+	}
 	Check(Bare.HerdFear(FVector::ZeroVector, From) == 0 && !Bare.CoyoteOut() && !Bare.CoveyHere() && Bare.Flushes() == 0, TEXT("without a game no animal is out and nothing frightens the herd"));
 	// M2 critic: the rig's bones are "FF.L" in the glTF and "FF_L" as Unreal imported them; both are looked for
 	{
@@ -1197,5 +1235,6 @@ bool FS47Animals::SelfTest(TArray<FString>& Lines)
 		}
 		Check(bAside, TEXT("on foot a coyote is first out off to one side, within the lamp's reach, never paraded across the middle of the view"));
 	}
+	bOk &= FS47AnimalWarn::SelfTest(Lines);
 	return bOk;
 }

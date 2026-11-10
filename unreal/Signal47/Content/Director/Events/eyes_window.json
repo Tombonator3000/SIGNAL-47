@@ -2,13 +2,14 @@
   "version": 1,
   "id": "eyes_window",
   "name": "Eyes at the window",
-  "notes": "N1110. Played by S47Happenings after two in the morning, inside SARO's control room, at the window the player is looking out of: a pair of big dark eyes with a wet glint are outside the glass for a moment. The code draws them and takes them away at 1.9 s; this file says what the camera, the gear and the notebook do. Point: eyes (just outside the pane, at a face's height). Words: {clock} {day} {night}.",
+  "notes": "N1110. Played by S47Happenings after two in the morning, inside SARO's control room, at the window the player is looking out of: a pair of big dark eyes with a wet glint are outside the glass for a moment. The night goes quiet first (silence), and the code draws them 3 s later (S47Hap::SilenceLead) and takes them away 1.9 s after that; this file says what the camera, the gear and the notebook do. Point: eyes (just outside the pane, at a face's height). Words: {clock} {day} {night}.",
   "enabled": true,
   "gates": { "tier": "full", "hours": [2, 5], "if": ["in_saro"] },
   "beats": [
-    { "at": 0.2, "do": "camera_snap", "point": "eyes", "fov": 38, "in": 0.2, "hold": 1.2, "out": 0.9, "shake": 0.25, "scare": "hard" },
-    { "at": 0.3, "do": "light", "kind": "gear", "strength": 0.5, "secs": 4 },
-    { "at": 2.6, "do": "thought", "text": "Something was right there. Right at the glass.", "secs": 4.5 },
-    { "at": 2.6, "do": "evidence", "key": "eyes_window_d{day}", "text": "At {clock} something looked in through the control room window. Two big dark eyes, wet in the light, a hand's width from the glass. Then nothing out there but the night." }
+    { "at": 0, "do": "silence", "secs": 6, "level": 0.03 },
+    { "at": 3.2, "do": "camera_snap", "point": "eyes", "fov": 38, "in": 0.2, "hold": 1.2, "out": 0.9, "shake": 0.25, "scare": "hard" },
+    { "at": 3.3, "do": "light", "kind": "gear", "strength": 0.5, "secs": 4 },
+    { "at": 5.6, "do": "thought", "text": "Something was right there. Right at the glass.", "secs": 4.5 },
+    { "at": 5.6, "do": "evidence", "key": "eyes_window_d{day}", "text": "At {clock} something looked in through the control room window. Two big dark eyes, wet in the light, a hand's width from the glass. Then nothing out there but the night." }
   ]
 }

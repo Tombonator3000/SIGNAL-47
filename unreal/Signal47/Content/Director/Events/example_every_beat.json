@@ -7,6 +7,7 @@
   "gates": { "from_day": 2, "hours": [22, 4], "tier": "hint", "areas": ["saro"], "odds": 0.5, "if": [{ "if": "indoors" }] },
   "beats": [
     { "at": 0, "do": "light", "kind": "gear", "strength": 0.35, "secs": 8 },
+    { "at": 0.2, "do": "silence", "secs": 5, "level": 0.04 },
     { "at": 0.5, "do": "sound", "sound": "thudSoft", "pos": [-1.5, 3.5, -1], "gain": 0.45, "lp": 1800 },
     { "at": 1.5, "do": "thought", "text": "Is somebody on the roof?", "secs": 4 },
     { "at": 3, "do": "light", "kind": "lamp", "strength": 0.6, "secs": 2 },
@@ -15,6 +16,7 @@
     { "at": 7, "do": "shake", "strength": 0.25 },
     { "at": 8, "do": "line", "who": "dale", "text": "You hear that up top? Stay inside. Over." },
     { "at": 9, "do": "camera_snap", "pos": [0, 2.2, -6], "fov": 40, "in": 0.25, "hold": 1.0, "out": 0.8, "shake": 0.2, "scare": "soft" },
+    { "at": 9.5, "do": "tube", "tube": 3 },
     { "at": 10, "do": "tone", "hz": 1400, "secs": 0.05, "gain": 0.05, "repeat": 3, "every": 0.15 },
     { "at": 12, "do": "toast", "text": "The steps stop right over the desk.", "secs": 4 },
     { "at": 14, "do": "thought", "text": "What was that noise?", "wait": [{ "if": "outdoors" }], "max": 30 },

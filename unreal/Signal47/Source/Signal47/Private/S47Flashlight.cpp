@@ -170,6 +170,7 @@ void FS47Flashlight::ApplyBeam()
 bool FS47Flashlight::Toggle()
 {
 	if (!bHave) return false;
+	if (SwapT > 0) { CancelSwap(); return true; }
 	bOn = !bOn;
 	return true;
 }
@@ -221,6 +222,8 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 		Battery = FMath::Max(0.0, Battery - Dt / RunSeconds);
 		if (Battery <= 0) bOn = false;
 	}
+	// N1110: the cell is being changed: the clock runs only while the game is not held
+	if (SwapT > 0 && !bHeld && FMath::IsFinite(Dt) && Dt > 0 && (SwapT -= Dt) <= 0) { SwapT = 0; bSwapDone = true; }
 	const double Want = bHave && bOn && !bOff ? 1 : 0;
 	Level += (Want - Level) * FMath::Min(1.0, Dt * 14);
 	// a weak contact now and then when something is near: a dip, sometimes out for a moment
@@ -334,6 +337,14 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		Check(B.TakeNotice() == 2 && B.TakeNotice() == 0, TEXT("the empty lamp says so once"));
 		B.bOn = false; B.Refill();
 		Check(B.BatteryLevel() == 1 && !B.Dead() && B.TakeNotice() == 0, TEXT("a dry cell fills it"));
+		B.SetBattery(0.1); B.BeginSwap(); B.Update(1.0, 0, Cam, false);
+		Check(B.Swapping() && !B.bOn && B.Intensity() == 0 && !B.TakeSwapDone() && FMath::IsNearlyEqual(B.BatteryLevel(), 0.1, 0.0001), TEXT("a cell change takes time, the lamp is dark, nothing is spent yet (N1110)"));
+		B.Update(1.0, 0, Cam, false, true);
+		Check(B.Swapping(), TEXT("the swap clock waits while the game is held (N1110)"));
+		B.Update(2.0, 0, Cam, false);
+		Check(!B.Swapping() && B.TakeSwapDone() && !B.TakeSwapDone(), TEXT("the swap finishes once (N1110)"));
+		B.BeginSwap(); B.Toggle();
+		Check(!B.Swapping() && !B.TakeSwapDone() && !B.bOn, TEXT("F cancels a swap and nothing is lost (N1110)"));
 		B.SetBattery(0); B.Charge(1.0 / 3.0); B.Charge(1.0 / 3.0);
 		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 2.0 / 3.0, 0.0001) && !B.Dead(), TEXT("SARO's charger fills it by degrees"));
 		B.Charge(5); Check(B.BatteryLevel() == 1, TEXT("charging stops at full"));

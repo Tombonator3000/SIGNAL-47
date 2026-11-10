@@ -7,6 +7,7 @@
 class US47Main;
 class AS47Web;
 class FS47FreeformDirector;
+class FS47AnimalWarn;
 class UStaticMeshComponent;
 class UPointLightComponent;
 class UPrimitiveComponent;
@@ -542,6 +543,7 @@ private:
   bool bPrimed=false,bLoaded=false,bMissed=false,bMotors=false;
  };
  FFirstDayNow FirstDay;
+ TSharedPtr<FS47AnimalWarn> AnimalWarn; // N1110 (ANIMALS-20261108): the animals a few seconds before some events (S47AnimalWarn.cpp)
  void StepFirstDay();
  void EndFirstDay();
  bool FirstBeat(const FString& Id);

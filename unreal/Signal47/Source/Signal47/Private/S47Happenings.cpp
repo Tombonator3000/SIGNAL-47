@@ -1,5 +1,6 @@
 #include "S47Happenings.h"
 #include "S47Album.h"
+#include "S47AnimalWarn.h"
 #include "S47Ambience.h"
 #include "S47ArrayShot.h"
 #include "S47Audio.h"
@@ -94,6 +95,8 @@ namespace S47Hap
  const TCHAR* const SingerModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Singer.SM_Tripo_Singer");
  const TCHAR* const SingerStandIn=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_souvenir_man.SM_Tripo_souvenir_man"); // in white
  const TCHAR* const HairyModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Bigfoot.SM_Tripo_Bigfoot");
+ // N1110 (SOUNDSCAPE): the eyes and the figure wait this long after the night's sound stops (the script's silence beat), so the quiet comes first.
+ constexpr double SilenceLead=3.;
  const TCHAR* const HairyStandIn=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_shadow_man.SM_Tripo_shadow_man"); // brown, a head taller
  const TCHAR* const ZetModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Zet.SM_Tripo_Zet"); // stand-in: basic shapes (ZetParts)
  // Standing, in one muted tone in the headlights (the radio woman sits, so she would not do).
@@ -2288,6 +2291,15 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  if(!bForced&&bGround&&Id!=TEXT("humor")&&FS47WeekCase::HoldsFarm(M)){Why=TEXT("the week's case has the night");return false;}
  // D46-20261110 (D46-11): the event's script may hold it back by its gates (Content/Director/Events/<id>.json); never an F10 start.
  if(!bForced&&!S47EventScript::Allows(M,Id,Why))return false;
+ // N1110 (ANIMALS-20261108): out on foot, the animals go first (a covey up all at once, a coyote stopped and staring) and the event follows
+ // a few seconds later (FS47AnimalWarn, its scripts animals_warn_*.json); once a night at most, and only when the event is likely to come.
+ if(!bForced&&FS47AnimalWarn::Warned(Id))
+ {
+  if(!AnimalWarn)AnimalWarn=MakeShared<FS47AnimalWarn>(M);
+  const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
+  const bool bFit=(SituationNow()&S47Hap::NeedFoot)&&(Id!=TEXT("beam_figure")||bLamp)&&(Id!=TEXT("dish_lights")||M->Web->Area()==TEXT("saro"));
+  if(!AnimalWarn->Hold(Id,Variant,bFit,Why))return false;
+ }
  bool bOk=false;const int32 SitesBefore=Sites.Num();
  if(Id==TEXT("car_dies"))bOk=BeginCar(bForced,Why);
  else if(Id==TEXT("clock_ahead"))bOk=BeginAhead(bForced,Why);
@@ -2428,6 +2440,8 @@ void FS47Happenings::Step(double Dt)
  StepUnease(Dt);
  StepGeiger(Dt);
  StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
+ // N1110 (ANIMALS-20261108): an event the animals went ahead of, its few seconds up
+ if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;if(!StartEvent(WId,WVar,false,WWhy))Refused(WId,WWhy);}}
 }
 
 // Tom, 8 November: something every night, also between eleven and one. If nothing has come by half past twelve, the best of these that
@@ -3934,7 +3948,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(!Ask(TEXT("eyes_window")))return No(TEXT("the rhythm says not now"));
   if(!Prop(TEXT("eyes")))return No(TEXT("nothing to draw them with"));
   const FVector EyesAt=bWindow?FVector(Pane.X,Feet.Y+1.5,Pane.Y)+Through*.45:Feet+Fwd*2.+FVector(0,1.5,0);
-  Arm(TEXT("eyes_window"),2.8);Now.At=EyesAt;
+  Arm(TEXT("eyes_window"),2.8+S47Hap::SilenceLead);Now.At=EyesAt;
   FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("eyes"),EyesAt);
   S47EventScript::Play(M,TEXT("eyes_window"),Beats);
   return true;
@@ -3951,7 +3965,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   FVector Stand=Feet+Fwd*(bForced?22.:34.);
   double X=0,Z=0;
   if(!RoadOfWorld(Stand,X,Z)||!WorldOf(X,Z,Stand))return No(TEXT("no ground there"));
-  Arm(TEXT("beam_figure"),3.);Now.Variant=Body;Now.At=Stand;Now.X=X;Now.Z=Z;
+  Arm(TEXT("beam_figure"),3.+S47Hap::SilenceLead);Now.Variant=Body;Now.At=Stand;Now.X=X;Now.Z=Z;
   FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("figure"),Stand+FVector(0,1.4,0));
   S47EventScript::Play(M,TEXT("beam_figure"),Beats);
   return true;
@@ -4227,13 +4241,14 @@ bool FS47Happenings::StepMore(double Dt)
  {
   const bool bEyes=Id==TEXT("eyes_window"),bFigure=Id==TEXT("beam_figure");
   // Gone: the eyes while the view is still closed in on them, the figure as the lamp steadies, the lights the moment the view lands.
-  const double GoneAt=bEyes?1.9:bFigure?1.7:5.45;
+  const double Lead=bEyes||bFigure?S47Hap::SilenceLead:0.; // N1110: their scripts open with the night going quiet, and the sight comes after
+  const double GoneAt=Lead+(bEyes?1.9:bFigure?1.7:5.45);
   FProp* P=Prop(bEyes?FString(TEXT("eyes")):bFigure?S47Hap::ShadeKind(Now.Variant):FString(TEXT("lander")));
   if(bFigure){FVector Ground;if(WorldOf(Now.X,Now.Z,Ground))Now.At=Ground;}
   const FVector To=Feet-Now.At;
-  if(P){PoseProp(*P,Now.At,bEyes||bFigure?FMath::Atan2(To.X,To.Z):0.);ShowProp(*P,Now.Age<GoneAt);}
+  if(P){PoseProp(*P,Now.At,bEyes||bFigure?FMath::Atan2(To.X,To.Z):0.);ShowProp(*P,Now.Age>=Lead&&Now.Age<GoneAt);}
   // Seen: the script's snap turns the view onto it, so what is drawn is what is seen; noticed once, as the snap lands.
-  if(Now.Stage==0&&Now.Age>=(bEyes?.4:bFigure?.5:5.3)){Now.Stage=1;Noticed(Id,FVector2D(To.X,To.Z).Size(),TEXT("sight"));}
+  if(Now.Stage==0&&Now.Age>=Lead+(bEyes?.4:bFigure?.5:5.3)){Now.Stage=1;Noticed(Id,FVector2D(To.X,To.Z).Size(),TEXT("sight"));}
   if(Now.Age>=Now.Len)EndEvent(true);
   return true;
  }

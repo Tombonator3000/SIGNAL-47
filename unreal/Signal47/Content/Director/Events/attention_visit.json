@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_visit",
   "name": "Something comes to the station",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when a visit begins at SARO, as the mains sag. The code looks for the player when the mains are out. Gates: an early: true here is an authored escalation (from midnight).",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when a visit begins at SARO, as the mains sag. The code looks for the player when the mains are out. Gates: an early: true here is an authored escalation (from midnight). The night goes quiet as the mains sag (silence beat).",
   "enabled": true,
   "gates": {
     "tier": "full",
@@ -11,6 +11,12 @@
     ]
   },
   "beats": [
+    {
+      "at": 0,
+      "do": "silence",
+      "secs": 10,
+      "level": 0.03
+    },
     {
       "at": 0,
       "do": "light",

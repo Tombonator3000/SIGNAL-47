@@ -293,15 +293,19 @@ void US47Night::ToggleLight()
 	if (M->Mode == EMode::Play && !Modal() && !Cinematic() && Driving() && M->IsFreeform() && M->Freeform && M->Freeform->TruckLamp && M->Freeform->TruckLamp->Toggle()) return;
 	if (M->Mode != EMode::Play || Modal() || Cinematic() || Driving()) return;
 	// Freeform: an empty battery is filled with a dry cell from the store (the stock the workbench also uses), or at SARO's charger.
-	if (Flashlight->bHave && !Flashlight->bOn && Flashlight->Dead())
+	// N1110 FLASHLIGHT-BATTERY: a weak or dead lamp that is off takes a spare when F is pressed. The change takes a few seconds on the move, the lamp is dark
+	// meanwhile, and the spare is spent only when it is done (see FlashlightStep). F again cancels it.
+	if (Flashlight->bHave && Flashlight->Swapping()) { Flashlight->Toggle(); M->UI->Toast(TEXT("You leave the old cell in."), 2); return; }
+	if (Flashlight->bHave && !Flashlight->bOn && Flashlight->bDrains && Flashlight->Low())
 	{
 		const TSharedPtr<FS47FreeformWorld> Field = M->IsFreeform() && M->Freeform ? M->Freeform->Field : nullptr;
-		if (Field.IsValid() && Field->Consume(TEXT("cell")))
+		if (Field.IsValid() && Field->InventoryCount(TEXT("cell")) > 0)
 		{
-			Flashlight->Refill();
-			M->UI->Toast(TEXT("A fresh dry cell goes into the flashlight."), 3);
+			Flashlight->BeginSwap();
+			M->UI->Toast(TEXT("You pop the old cell out and thumb in a spare."), 2.5f);
+			return;
 		}
-		else
+		if (Flashlight->Dead())
 		{
 			M->UI->Toast(TEXT("The flashlight is dead. ") + S47NightFlashlight::Help(M), 6); // D45-20261110: where the charger is, and where cells are sold
 			return;
@@ -771,6 +775,17 @@ void US47Night::FlashlightStep(double Dt)
 		Flashlight->Charge(Dt / FS47Flashlight::ChargeSeconds);
 	// (held: the pause menu or a panel open; the battery is not used then, as the charger above does not charge)
 	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic(), M->bPausedByMenu || Modal());
+	if (Flashlight->bDrains && Flashlight->TakeSwapDone())
+	{
+		// N1110: the swap ran its time: the spare is spent now, not before, and the lamp comes on
+		const TSharedPtr<FS47FreeformWorld> Field = M->IsFreeform() && M->Freeform ? M->Freeform->Field : nullptr;
+		if (Field.IsValid() && Field->Consume(TEXT("cell")))
+		{
+			Flashlight->Refill();
+			Flashlight->bOn = true;
+			if (M->UI) M->UI->Toast(TEXT("A fresh cell is in. The lamp is bright again."), 3);
+		}
+	}
 	if (Flashlight->bDrains && M->Mode == EMode::Play && M->UI)
 	{
 		const int32 Notice = Flashlight->TakeNotice();

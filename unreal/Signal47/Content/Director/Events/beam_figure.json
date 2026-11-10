@@ -2,13 +2,15 @@
   "version": 1,
   "id": "beam_figure",
   "name": "A figure at the end of the flashlight beam",
-  "notes": "N1110. Played by S47Happenings after midnight, out on foot with the flashlight on: at the far end of the beam somebody stands on the land, the view snaps to it, and it is gone. The code draws the body and takes it away at 1.7 s; this file says what the camera, the lamp and the notebook do. Point: figure (its chest). Words: {clock} {day} {night}.",
+  "notes": "N1110. Played by S47Happenings after midnight, out on foot with the flashlight on: at the far end of the beam somebody stands on the land, the view snaps to it, and it is gone. The night goes quiet first (silence), and the code draws the body 3 s later (S47Hap::SilenceLead) and takes it away 1.7 s after that; this file says what the camera, the lamp and the notebook do. Point: figure (its chest). Words: {clock} {day} {night}.",
   "enabled": true,
   "gates": { "tier": "glimpse", "hours": [0, 4.5], "if": ["outdoors", "on_foot"] },
   "beats": [
-    { "at": 0.3, "do": "camera_snap", "point": "figure", "fov": 42, "in": 0.22, "hold": 1.0, "out": 0.8, "shake": 0.15, "scare": "soft" },
-    { "at": 0.4, "do": "light", "kind": "lamp", "strength": 0.5, "secs": 1.6 },
-    { "at": 2.4, "do": "thought", "text": "There was somebody standing out there.", "secs": 4 },
-    { "at": 2.4, "do": "evidence", "key": "beam_figure_d{day}", "text": "At {clock}, out on foot, the flashlight picked out somebody standing dead still at the far end of the beam, maybe thirty yards off. When I got the light back on the spot there was nobody." }
+    { "at": 0, "do": "silence", "secs": 6, "level": 0.03 },
+    { "at": 3.3, "do": "camera_snap", "point": "figure", "fov": 42, "in": 0.22, "hold": 1.0, "out": 0.8, "shake": 0.15, "scare": "soft" },
+    { "at": 3.4, "do": "light", "kind": "lamp", "strength": 0.5, "secs": 1.6 },
+    { "at": 3.4, "do": "light", "kind": "gear", "strength": 0.3, "secs": 2.5 },
+    { "at": 5.4, "do": "thought", "text": "There was somebody standing out there.", "secs": 4 },
+    { "at": 5.4, "do": "evidence", "key": "beam_figure_d{day}", "text": "At {clock}, out on foot, the flashlight picked out somebody standing dead still at the far end of the beam, maybe thirty yards off. When I got the light back on the spot there was nobody." }
   ]
 }

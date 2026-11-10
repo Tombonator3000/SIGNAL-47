@@ -668,6 +668,16 @@ private:
  int32 DeskNight=0,DeskCards=0;
  void DeskWork(const FJob& J);
  TSet<FString> Kit;
+ // N1110 (PLAY-31-34): the control room's ceiling tubes that have gone out for good in this game (indices 2 to 7 of room.tubes; 0 and 1 are the
+ // working light and never go). Saved "brokenTubes", absent = none; AS47Web::TubeLit keeps them dark through a power return, Continue and a change of area.
+ TSet<int32> BrokenTubes;
+public:
+ bool TubeBroken(int32 K) const{return BrokenTubes.Contains(K);}
+ // True when it was whole until now. Only tubes 2 to 7.
+ bool BreakTube(int32 K){return K>=2&&K<=7&&!BrokenTubes.Contains(K)&&(BrokenTubes.Add(K),true);}
+ static TSet<int32> TubesFrom(const TArray<double>& Saved);
+ static TArray<double> TubesToSave(const TSet<int32>& Broken);
+private:
  ERest RestPlace=ERest::Station;
  int32 TakenCount=0; // follows from the findings: an older save has it too, nothing new is stored
  bool LiveFlow() const;

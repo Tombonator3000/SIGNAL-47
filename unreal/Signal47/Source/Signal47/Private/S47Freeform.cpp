@@ -334,6 +334,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Deputy)Deputy=MakeShared<FS47DeputyRound>(M);Deputy->Begin(S47J::Obj(Saved,TEXT("deputy")));
  if(!Gear)Gear=MakeShared<FS47LeftGear>(M);Gear->Begin(S47J::Obj(Saved,TEXT("gear")));
  Kit.Reset();for(const FString& Have:S47J::Strs(Saved,TEXT("kit")))if(FS47Openings::Def(Have))Kit.Add(Have);
+ BrokenTubes=TubesFrom(S47J::Nums(Saved,TEXT("brokenTubes"))); // N1110: optional, absent = none
  if(!Places)Places=MakeShared<FS47Places>(M);Places->Begin(S47J::Obj(Saved,TEXT("places")));
  if(!EventPlaces)EventPlaces=MakeShared<FS47EventPlaces>(M);EventPlaces->Begin(S47J::Obj(Saved,TEXT("eventPlaces")));
  if(!Balloon)Balloon=MakeShared<FS47Balloon>(M);Balloon->Begin(S47J::Obj(Saved,TEXT("balloon"))); // D48-20261110 (after Places: it stands where the place does)
@@ -4738,6 +4739,7 @@ S47J::FObj FS47FreeformSession::Save()const
  if(NightLog){const auto Sheets=NightLog->Save();if(Sheets->Values.Num()>0)S47J::Set(O,TEXT("nightLog"),Sheets);}
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));
+ if(!BrokenTubes.IsEmpty())S47J::Set(O,TEXT("brokenTubes"),TubesToSave(BrokenTubes)); // N1110: optional, absent = none
  if(Attention){const S47J::FObj Heed=Attention->Save();if(Heed->Values.Num()>0)S47J::Set(O,TEXT("attention"),Heed);} // N1110: optional, absent = nothing yet
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(Darkroom){const auto Dark=Darkroom->Save();if(Dark->Values.Num()>0)S47J::Set(O,TEXT("darkroom"),Dark);} // D45-20261110: optional, absent = white
@@ -4748,11 +4750,31 @@ S47J::FObj FS47FreeformSession::Save()const
  if(CaseField)S47J::Set(O,TEXT("fieldTests"),CaseField->Save());
  if(Field)S47J::Set(O,TEXT("field"),Field->Save());if(Decor)S47J::Set(O,TEXT("decor"),Decor->Save());if(FarmSite)S47J::Set(O,TEXT("farmSite"),FarmSite->Save());if(Deputy){const auto DeputyState=Deputy->Save();if(DeputyState->Values.Num()>0)S47J::Set(O,TEXT("deputy"),DeputyState);}if(Gear){const auto Lying=Gear->Save();if(Lying->Values.Num()>0)S47J::Set(O,TEXT("gear"),Lying);}if(!Kit.IsEmpty()){TArray<FString> KitList=Kit.Array();KitList.Sort();S47J::Set(O,TEXT("kit"),KitList);}if(Places){const auto Known=Places->Save();if(Known->Values.Num()>0)S47J::Set(O,TEXT("places"),Known);}if(Balloon){const auto Sonde=Balloon->Save();if(Sonde->Values.Num()>0)S47J::Set(O,TEXT("balloon"),Sonde);}if(EventPlaces){const auto Where=EventPlaces->Save();if(Where->Values.Num()>0)S47J::Set(O,TEXT("eventPlaces"),Where);}if(Tips){const auto Said=Tips->Save();if(Said->Values.Num()>0)S47J::Set(O,TEXT("tips"),Said);}if(YardAlarm){const auto Horn=YardAlarm->Save();if(Horn->Values.Num()>0)S47J::Set(O,TEXT("alarm"),Horn);}if(Care){const auto Truck=Care->Save();if(Truck->Values.Num()>0)S47J::Set(O,TEXT("care"),Truck);}if(TripCamera){const auto Trip=TripCamera->Save();if(Trip->Values.Num()>0)S47J::Set(O,TEXT("tripCamera"),Trip);}if(Outfit){const auto Rolled=Outfit->Save();if(Rolled->Values.Num()>0)S47J::Set(O,TEXT("outfit"),Rolled);}if(Round){const auto Sheet=Round->Save();if(Sheet->Values.Num()>0)S47J::Set(O,TEXT("round"),Sheet);}if(RoadCar){const auto Pickup=RoadCar->Save();if(Pickup->Values.Num()>0)S47J::Set(O,TEXT("roadCar"),Pickup);}if(HouseDoors)S47J::Set(O,TEXT("houseDoors"),HouseDoors->Save());if(IndoorDread){const auto Dread=IndoorDread->Save();if(Dread->Values.Num()>0)S47J::Set(O,TEXT("indoorDread"),Dread);}if(Aftermath){const auto After=Aftermath->Save();if(After->Values.Num()>0)S47J::Set(O,TEXT("aftermath"),After);}if(TownUse){const auto Town=TownUse->Save();if(Town->Values.Num()>0)S47J::Set(O,TEXT("townUse"),Town);}if(Townsfolk){const auto Folk=Townsfolk->Save();if(Folk->Values.Num()>0)S47J::Set(O,TEXT("townsfolk"),Folk);}if(Visitors){const auto Out=Visitors->Save();if(Out->Values.Num()>0)S47J::Set(O,TEXT("visitors"),Out);}if(MotelNight){const auto Motel=MotelNight->Save();if(Motel->Values.Num()>0)S47J::Set(O,TEXT("motelNight"),Motel);}if(Director)S47J::Set(O,TEXT("director"),Director->Save());return O;
 }
+TSet<int32> FS47FreeformSession::TubesFrom(const TArray<double>& Saved)
+{
+ TSet<int32> Out;
+ for(const double D:Saved)if(FMath::IsFinite(D)&&D>=2&&D<=7)Out.Add(int32(D)); // N1110: nonsense in a save is dropped
+ return Out;
+}
+TArray<double> FS47FreeformSession::TubesToSave(const TSet<int32>& Broken)
+{
+ TArray<int32> Sorted=Broken.Array();Sorted.Sort();
+ TArray<double> Out;
+ for(const int32 K:Sorted)Out.Add(K);
+ return Out;
+}
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=S47CaptureSound::SelfTest(Lines);auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
  OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
  OK&=FS47Attention::SelfTest(Lines); // N1110: the attention curve, its thresholds, sabotage and the visit
+ { // N1110 (PLAY-31-34): broken ceiling tubes keep through a save; nonsense is dropped; 0 and 1 (the working light) never break
+  FS47FreeformSession Tubes(nullptr);
+  const bool bFirst=Tubes.BreakTube(3),bAgain=Tubes.BreakTube(3),bWork=Tubes.BreakTube(0)||Tubes.BreakTube(1)||Tubes.BreakTube(8);
+  const TSet<int32> Back=TubesFrom(TubesToSave(Tubes.BrokenTubes));
+  Check(bFirst&&!bAgain&&!bWork&&Tubes.TubeBroken(3)&&!Tubes.TubeBroken(2)&&!Tubes.TubeBroken(0)&&!Tubes.TubeBroken(1),TEXT("Tubes: a ceiling tube breaks once; the working light never does"));
+  Check(Back.Num()==1&&Back.Contains(3)&&TubesFrom({0.,1.,2.,9.,-1.,NAN}).Num()==1&&TubesFrom({}).IsEmpty(),TEXT("Tubes: the break is saved and read back; an older save has none; nonsense is dropped"));
+ }
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
  for(int I=0;I<360;++I)SoundPolicy.Append(I*.05,(I+1)*.05,.05,1,1420.11,50,50,1);SoundPolicy.Complete=true;
  const FString RetainedSound=S47J::Write(SoundPolicy.Save());

@@ -36,6 +36,10 @@ class FS47CameraMoment;
 //   prop     node (an AS47Web key, "room.objs.mug"): moved by [x, y, z] metres, or to, with "to": true. Not saved.
 //   show     node shown; hide: node hidden. Not saved.
 //   shake    the view shakes a little (strength 0 to 1, the walker's own)
+//   silence  N1110 (SOUNDSCAPE): the night's crickets and wind stop at once for secs (level: what is left, 0.04 as made) and come back slowly;
+//            put it a few seconds before the sight, as the warning. Heard on the night's own bed only (FS47Ambience::Hush).
+//   tube     N1110 (PLAY-31-34): tube N (2 or 3) of the control room's ceiling tubes sparks and dies for good in this game (saved, kept through
+//            Continue and a change of area; the working light, tubes 0 and 1, is never touched). Not kept in an F10 run.
 //   camera_snap  N1110: the view snaps toward pos/point and closes in to fov degrees over in seconds, holds hold seconds and eases
 //            back over out (FS47CameraMoment); shake 0 to 1 as it lands; scare: a bought hit with it (soft, hard, braam, swell).
 // Any beat: "if": conditions that must hold when its time comes (else it is left out); "wait": conditions it waits for, at most
@@ -45,7 +49,7 @@ class FS47CameraMoment;
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Count };
 
 struct FS47Beat
 {
@@ -59,6 +63,7 @@ struct FS47Beat
  double Gain=1,Rate=1,Lp=0,Delay=0,Stop=0,Secs=0,Hz=1200,Every=0,Strength=.5,Max=0;
  double Fov=45,In=.25,Hold=1.2,Out=.9; // N1110: camera_snap's degrees and seconds (its shake is Strength, its scare is Kind)
  int32 Repeat=1;
+ int32 Tube=-1;                 // N1110: the tube beat's index into the control room's ceiling tubes (2 or 3)
  TArray<FS47ScriptCond> If,Wait;
 };
 

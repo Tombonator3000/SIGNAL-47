@@ -81,6 +81,29 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
   Check(C&&FMath::IsNearlyEqual(C->At,5.)&&C->Kind==TEXT("swell")&&S->Gates.Areas.Contains(TEXT("saro")),TEXT("dish_lights: the lights hold five seconds before the view goes up to them; SARO only"));
  }
+ // ---- N1110 (SOUNDSCAPE, GEAR-FLICKER, PLAY-31-34): the silence beat before the sight, the gear answering, the tube beat ----
+ for(const TCHAR* Id:{TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights")})
+ {
+  const FS47EventScript* S=Built.Find(Id);
+  const FS47Beat* Quiet=S?First(*S,ES47Beat::Silence):nullptr;const FS47Beat* C=S?First(*S,ES47Beat::CameraSnap):nullptr;const FS47Beat* Gear=S?First(*S,ES47Beat::Light):nullptr;
+  Check(Quiet&&C&&Gear&&CountOf(*S,ES47Beat::Silence)==1&&Quiet->At==0&&Quiet->At+2.<C->At&&Quiet->Secs>=C->At&&Quiet->Strength<=.1,
+   FString::Printf(TEXT("%s: the night goes quiet first, stays quiet through the sight, and the gear answers with it"),Id));
+ }
+ {
+  FS47EventScript S;FString Why;
+  const bool bRead=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":0,\"do\":\"silence\",\"secs\":6,\"level\":0.03},{\"at\":1,\"do\":\"silence\",\"secs\":3},{\"at\":2,\"do\":\"tube\",\"tube\":3}]}"),S,Why);
+  Check(bRead&&S.Beats.Num()==3&&S.Beats[0].Do==ES47Beat::Silence&&FMath::IsNearlyEqual(S.Beats[0].Strength,.03)&&FMath::IsNearlyEqual(S.Beats[1].Strength,.04)&&S.Beats[2].Do==ES47Beat::Tube&&S.Beats[2].Tube==3&&Lint(S).IsEmpty(),TEXT("silence and tube: read with their level (0.04 as made) and tube, and clean"));
+  FS47EventScript T=S;
+  if(bRead){T.Beats[0].Secs=0;Check(Lint(T).Num()>0,TEXT("silence: no length is refused"));
+  T=S;T.Beats[0].Secs=99;Check(Lint(T).Num()>0,TEXT("silence: a minute and a half is refused"));
+  T=S;T.Beats[2].Tube=1;Check(Lint(T).Num()>0,TEXT("tube: the working light (tube 1) is refused"));
+  T=S;T.Beats[2].Tube=-1;Check(Lint(T).Num()>0,TEXT("tube: no tube is refused"));}
+ }
+ {
+  FString MainsText;FS47EventScript S;FString Why;
+  if(FFileHelper::LoadFileToString(MainsText,*(FPaths::ProjectContentDir()/TEXT("Director/Events/attention_sab_mains.json")))&&Read(MainsText,S,Why))
+   Check(CountOf(S,ES47Beat::Tube)==2&&Lint(S).IsEmpty(),TEXT("attention_sab_mains: the mains' return puts two ceiling tubes out for good, and the script is clean"));
+ }
  {
   FS47EventScript S;FString Why;
   const bool bRead=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":1,\"do\":\"camera_snap\",\"point\":\"eyes\",\"fov\":38,\"in\":0.2,\"hold\":1.2,\"out\":0.9,\"shake\":0.25,\"scare\":\"hard\"},{\"at\":2,\"do\":\"camera_snap\",\"pos\":[1,2,3]}]}"),S,Why);
@@ -120,7 +143,7 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
  {
   FS47EventScript S;FString Why;
   bool bEvery=Read(ExampleText,S,Why)&&!S.bEnabled;
-  for(const TCHAR* B:{TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("shake"),TEXT("camera_snap")}){ES47Beat Do=ES47Beat::Count;bEvery&=BeatFrom(B,Do)&&CountOf(S,Do)>0;}
+  for(const TCHAR* B:{TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube")}){ES47Beat Do=ES47Beat::Count;bEvery&=BeatFrom(B,Do)&&CountOf(S,Do)>0;}
   Check(bEvery&&S.Gates.Any(),TEXT("the example shows the beats and the gates, and is switched off"));
  }
 
