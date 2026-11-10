@@ -13,6 +13,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
 #include "S47Script.h"
+#include "S47StationFiles.h"
 #include "S47Marginalia.h"
 #include "S47Image.h"
 #include "S47Kit.h"
@@ -2055,6 +2056,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 			const bool bMarg = S47Marginalia::SelfTest(Marg);
 			Lines.Append(Marg);
 			Check(TEXT("Freeform WHO & WHAT: the scribbles keep to what happened, the tiers and the spoiler limits (S47Marginalia)"), bMarg);
+			Check(TEXT("Freeform station files: SARO's own history keeps to the spoiler limits and names nobody real (S47StationFiles)"), S47StationFiles::Lint().IsEmpty(), S47StationFiles::Lint());
 			Check(TEXT("Freeform WHO & WHAT: a struck guess has a line through it that Slate draws, a standing one none"),
 				!PencilStyle(24.f, true).StrikeBrush.GetResourceName().IsNone() && PencilStyle(24.f, false).StrikeBrush.GetResourceName().IsNone() && !StrikeBrush(S47Game::InkBlue()).GetResourceName().IsNone());
 			FS47NbExtras Mx = Fx;

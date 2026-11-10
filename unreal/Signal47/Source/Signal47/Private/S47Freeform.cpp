@@ -1,6 +1,7 @@
 #include "S47Freeform.h"
 #include "S47SaroSave.h"
 #include "S47SaroNight.h"
+#include "S47StationFiles.h"
 #include "S47SaroPower.h"
 #include "S47RoomLights.h"
 #include "S47Image.h"
@@ -1528,6 +1529,31 @@ namespace
   if(J.Stage==E::Recorded)return J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
  }
 }
+// A station file as pages: whole paragraphs where they fit, a long one broken between two sentences.
+static TArray<FString> S47StationPages(const FString& Text,int32 Wide,int32 Budget)
+{
+ TArray<FString> Pages,Paras;Text.ParseIntoArray(Paras,TEXT("\n\n"),true);FString Page;int32 Used=0;
+ const auto Lines=[Wide](const FString& P){TArray<FString> Ls;P.ParseIntoArray(Ls,TEXT("\n"),false);int32 N=0;for(const FString& L:Ls)N+=FMath::Max(1,FMath::CeilToInt32(L.Len()/float(Wide)));return N;};
+ const auto Flush=[&]{if(!Page.IsEmpty())Pages.Add(Page);Page.Empty();Used=0;};
+ for(FString Para:Paras)while(!Para.IsEmpty())
+ {
+  const int32 Gap=Page.IsEmpty()?0:1,Room=Budget-Used-Gap;
+  if(Lines(Para)<=Room){if(Gap)Page+=TEXT("\n\n");Page+=Para;Used+=Gap+Lines(Para);break;}
+  int32 Cut=INDEX_NONE;
+  if(Room>=4)for(int32 I=Para.Len()-2;I>1;--I) // a list breaks between its lines, running text between two sentences
+   if((Para[I]==TEXT('\n')||(!Para.Contains(TEXT("\n"))&&Para[I]==TEXT(' ')&&(Para[I-1]==TEXT('.')||Para[I-1]==TEXT('?')||Para[I-1]==TEXT('"'))))&&Lines(Para.Left(I))<=Room){Cut=I;break;}
+  if(Cut!=INDEX_NONE&&Lines(Para.Left(Cut))>=2){if(Gap)Page+=TEXT("\n\n");Page+=Para.Left(Cut);Para=Para.Mid(Cut+1);Flush();}
+  else if(Page.IsEmpty()){Page=Para;Para.Empty();Flush();} // longer than a page and nowhere to break: let it run
+  else Flush();
+ }
+ Flush();if(Pages.IsEmpty())Pages.Add(Text);return Pages;
+}
+bool FS47FreeformSession::StationFileDue()const
+{
+ // A file released this morning and not yet opened in this sitting marks RECORDS.
+ for(int32 I=0;I<S47StationFiles::Count();++I)if(S47StationFiles::Get(I).Day==Day()&&!(StationFilesSeen&(1u<<I)))return true;
+ return false;
+}
 TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidget> Content)
 {
  OpsSection=Section;
@@ -1536,7 +1562,7 @@ TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidg
  Items.Add({TEXT("OVERVIEW"),Section==0,[this]{Feedback.Empty();OpsSection=0;OpenOperations();}});
  Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();}});
  Items.Add({TEXT("CASE BOARD"),Section==2,[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseWaiting});
- Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();OpenArchive();}}); // CASES-OPS-20261109: was CASE ARCHIVE
+ Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();OpenArchive();},StationFileDue()}); // CASES-OPS-20261109: was CASE ARCHIVE
  Items.Add({TEXT("SERVICE"),Section==4,[this]{Feedback.Empty();OpenServiceGuide();},Service});
  Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();}});
  Items.Add({TEXT("PHOTOGRAPHS"),Section==6,[this]{Feedback.Empty();OpenPhotos();},PhotoDeskDue()}); // FIX-20261110: the film record and its allowance desk
@@ -2231,7 +2257,14 @@ void FS47FreeformSession::OpenArchive()
   Rows.Add(Computer?S47FreeformTerminal::Button(Gap,Open):S47Kit::Button(Gap,Open));
  }
  struct FEntry{FString Key,Title,Tag,Detail;};
- TArray<FEntry> Tabs[4];
+ TArray<FEntry> Tabs[5];
+ // FIX-20261110: the station's own files, as the duty officer releases them. Read only, nothing saved.
+ int32 FilesHeld=0;
+ for(int32 I=0;I<S47StationFiles::Count();++I)
+ {
+  const auto& F=S47StationFiles::Get(I);if(F.Day>Day()){++FilesHeld;continue;}
+  Tabs[4].Add({F.Key,F.Title,FString::Printf(TEXT("RELEASED DAY %02d / READ ONLY"),F.Day),F.Text});
+ }
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
  {
   const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):FString(TEXT("CONTROL NOT RECORDED"));
@@ -2261,30 +2294,60 @@ void FS47FreeformSession::OpenArchive()
   if(const FString Reply=FindingText(FString::Printf(TEXT("case%d-reply"),Line+1));!Reply.IsEmpty())Detail+=TEXT("\n\n")+Reply;
   Tabs[3].Add({FString::Printf(TEXT("case-%d"),Line),FString::Printf(TEXT("CASE %02d %s"),Line+1,D.Title),Tag,Detail});
  }
- if(Tabs[0].IsEmpty()&&Tabs[1].IsEmpty()&&Tabs[2].IsEmpty()&&Tabs[3].IsEmpty())
-  Rows.Add(Paper(TEXT("NO RETAINED RECORDS YET\nORIGINALS, FIELD FINDINGS, SERVICE AND CLOSED CASES ARE INDEXED HERE AS THEY ARE RETAINED. PROCEDURE: THE SOP CARD AT THE TERMINAL.")));
- else
+ const bool bNoneRetained=Tabs[0].IsEmpty()&&Tabs[1].IsEmpty()&&Tabs[2].IsEmpty()&&Tabs[3].IsEmpty();
+ const FString NoneYet=TEXT("NO RETAINED RECORDS YET. ORIGINALS, FIELD FINDINGS, SERVICE AND CLOSED CASES ARE INDEXED HERE AS THEY ARE RETAINED. PROCEDURE: THE SOP CARD AT THE TERMINAL.");
  {
-  ArchiveTab=FMath::Clamp(ArchiveTab,0,3);
-  if(Tabs[ArchiveTab].IsEmpty())ArchiveTab=!Tabs[0].IsEmpty()?0:!Tabs[1].IsEmpty()?1:!Tabs[2].IsEmpty()?2:3;
-  static const TCHAR* TabNames[]={TEXT("ORIGINALS"),TEXT("FIELD FINDINGS"),TEXT("SERVICE AND BENCH"),TEXT("CASES")};
+  ArchiveTab=FMath::Clamp(ArchiveTab,0,4);
+  if(Tabs[ArchiveTab].IsEmpty())ArchiveTab=!Tabs[0].IsEmpty()?0:!Tabs[1].IsEmpty()?1:!Tabs[2].IsEmpty()?2:!Tabs[3].IsEmpty()?3:4;
+  static const TCHAR* TabNames[]={TEXT("ORIGINALS"),TEXT("FIELD FINDINGS"),TEXT("SERVICE AND BENCH"),TEXT("CASES"),TEXT("STATION FILES")};
+  static const TCHAR* GlassTabs[]={TEXT("ORIGINALS"),TEXT("FINDINGS"),TEXT("SERVICE"),TEXT("CASES"),TEXT("STATION")}; // five fit the glass
   const auto& List=Tabs[ArchiveTab];const FEntry* Pick=List.FindByPredicate([&](const FEntry& E){return E.Key==ArchivePick;});if(!Pick)Pick=&List[0];
   TSharedRef<SScrollBox> Scroll=SNew(SScrollBox);
-  if(Computer)
+  if(ArchiveTab==4)
   {
-   TArray<T::FNav> Bar;for(int32 I=0;I<4;++I)Bar.Add({FString::Printf(TEXT("%s %d"),TabNames[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();OpenArchive();}});
+   // A file is longer than the glass: it is read a page at a time.
+   for(int32 I=0;I<S47StationFiles::Count();++I)if(Pick->Key==S47StationFiles::Get(I).Key)StationFilesSeen|=1u<<I;
+   const TArray<FString> Pages=S47StationPages(Pick->Detail,Computer?54:68,Computer?24:30);
+   ArchivePage=FMath::Clamp(ArchivePage,0,Pages.Num()-1);
+   TArray<S47Kit::FW> Sheet;Sheet.Add(Plain(Pages[ArchivePage]));
+   if(Pages.Num()>1)
+   {
+    const FString Turn=FString::Printf(TEXT("PAGE %d OF %d / %s"),ArchivePage+1,Pages.Num(),ArchivePage+1<Pages.Num()?TEXT("NEXT PAGE"):TEXT("BACK TO PAGE 1"));
+    const auto Next=[this,N=Pages.Num()]{ArchivePage=(ArchivePage+1)%N;OpenArchive();};
+    Sheet.Add(Computer?S47FreeformTerminal::Button(Turn,Next,true):S47Kit::Button(Turn,Next,true));
+   }
+   const FString Held=FilesHeld>0?FString::Printf(TEXT("%d MORE WITH THE DUTY OFFICER / RELEASED AT 08:00, NOT EVERY MORNING"),FilesHeld):FString(TEXT("ALL FILES RELEASED / READ ONLY"));
+   if(Computer)
+   {
+    TArray<T::FNav> Bar;for(int32 I=0;I<5;++I)Bar.Add({FString::Printf(TEXT("%s %d"),GlassTabs[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();ArchivePage=0;OpenArchive();}});
+    Rows.Add(T::Tabs(Bar));
+    TArray<T::FRow> Lines;for(const auto& E:List)Lines.Add({{E.Title},&E==Pick,[this,Key=E.Key]{ArchivePick=Key;ArchivePage=0;OpenArchive();},FString()});
+    TArray<S47Kit::FW> Left;Left.Add(T::Table({TEXT("STATION FILE")},{1.f},Lines));Left.Add(T::Small(Held));if(bNoneRetained)Left.Add(T::Small(NoneYet));
+    Rows.Add(T::Columns({{.37f,S47Kit::Col(Left)},{.63f,T::Panel(Pick->Tag,S47Kit::Col(Sheet))}},14));
+   }
+   else
+   {
+    TArray<S47Kit::FW> Bar;for(int32 I=0;I<5;++I)Bar.Add(S47Kit::Choice(FString::Printf(TEXT("%s %d"),TabNames[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();ArchivePage=0;OpenArchive();}));
+    Rows.Add(S47Kit::Row(Bar));
+    TArray<S47Kit::FW> Left;for(const auto& E:List)Left.Add(S47Kit::Choice(E.Title,&E==Pick,[this,Key=E.Key]{ArchivePick=Key;ArchivePage=0;OpenArchive();}));
+    Left.Add(S47Kit::Small(Held));if(bNoneRetained)Left.Add(S47Kit::Small(NoneYet));
+    Rows.Add(SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(.36f).Padding(0,0,18,0)[S47Kit::Col(Left)]+SHorizontalBox::Slot().FillWidth(.64f)[S47Kit::Col(Sheet)]);
+   }
+  }
+  else if(Computer)
+  {
+   TArray<T::FNav> Bar;for(int32 I=0;I<5;++I)Bar.Add({FString::Printf(TEXT("%s %d"),GlassTabs[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();ArchivePage=0;OpenArchive();}});
    Rows.Add(T::Tabs(Bar));
    TArray<T::FRow> Lines;for(const auto& E:List)Lines.Add({{E.Title,E.Tag},&E==Pick,[this,Key=E.Key]{ArchivePick=Key;OpenArchive();},FString()});
    Scroll->AddSlot()[T::Table({TEXT("RECORD"),TEXT("STATE")},{.56f,.44f},Lines)];
   }
   else
   {
-   TArray<S47Kit::FW> Bar;for(int32 I=0;I<4;++I)Bar.Add(S47Kit::Choice(FString::Printf(TEXT("%s %d"),TabNames[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();OpenArchive();}));
+   TArray<S47Kit::FW> Bar;for(int32 I=0;I<5;++I)Bar.Add(S47Kit::Choice(FString::Printf(TEXT("%s %d"),TabNames[I],Tabs[I].Num()),I==ArchiveTab,[this,I]{ArchiveTab=I;ArchivePick.Empty();ArchivePage=0;OpenArchive();}));
    Rows.Add(S47Kit::Row(Bar));
    for(const auto& E:List)Scroll->AddSlot()[S47Kit::Choice(E.Title,&E==Pick,[this,Key=E.Key]{ArchivePick=Key;OpenArchive();},false,E.Tag)];
   }
-  Rows.Add(SNew(SBox).HeightOverride(210).VAlign(VAlign_Top)[Scroll]);
-  Rows.Add(Paper(Pick->Detail));
+  if(ArchiveTab!=4){Rows.Add(SNew(SBox).HeightOverride(210).VAlign(VAlign_Top)[Scroll]);Rows.Add(Paper(Pick->Detail));}
  }
  if(Computer)OpenTerminal(3,TEXT("OPS / RECORDS"),OpsShell(3,S47Kit::Col(Rows)));
  else SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / RECORDS"),S47Kit::Col(Rows),1000));

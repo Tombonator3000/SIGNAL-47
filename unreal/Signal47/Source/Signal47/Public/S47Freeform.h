@@ -120,7 +120,8 @@ public:
  bool ArrayBlocked() const; // too few antennas to measure at all
  void OpenArchive();
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
- int32 ArchiveTab=0;FString ArchivePick; // presentation only, never saved
+ int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
+ uint32 StationFilesSeen=0;bool StationFileDue() const; // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS
  void OpenCaseBoard(int32 Line=-1);
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);

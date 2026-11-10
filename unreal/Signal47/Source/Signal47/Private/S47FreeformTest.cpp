@@ -108,6 +108,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){S47J::Set(O,TEXT("scope"),TEXT("array-wear-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with explicit stock and player-placement fixtures; physical eye-ray at branch junctions, actual repair button, disk/Flow restore. No drive to the antennas or shop trip."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){S47J::Set(O,TEXT("scope"),TEXT("station-files-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. The files are shown through the session's own records screen, on the OPS glass and as the binder's paper; the clock is advanced to the third morning."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){S47J::Set(O,TEXT("scope"),TEXT("sky-cut-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. A flyover forced with its sag (SkyCutNext, 6 s and 8 s instead of 45 and 75), the generator given a fuelled tank and started at its own control."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("first-start-native"));S47J::Set(O,TEXT("method"),TEXT("New game at the mailbox (-S47MailboxStart). Production door, mailbox and switch callbacks without aiming; real walking through the visitor entrance; the trips between the box and the door are declared placements."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){S47J::Set(O,TEXT("scope"),TEXT("workshop-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit stock, player-placement and tuning fixtures; physical bench ray, actual SButton callbacks, three disk/Flow restores. No shop trip, natural discovery or full two-hour tape."));}
@@ -233,6 +234,7 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){StepGarageStart(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){StepFirstStart(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){StepSkyCut(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
