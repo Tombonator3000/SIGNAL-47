@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 16:47 (d46): `ebe038ad` på `claude/day-20261109`
+## Installert 10. november kl. 20:31 (d47): `d44bc8b3` på `claude/day-20261109`
+
+Versjon 0.9.47. Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4422 kontroller; ingen materialadvarsler). Tilbakerulling: d46 (`ebe038ad`). Disk etterpå: 134 GB. Ikke spilt av Tom.
+
+Nytt siden d46 (TODO «Toms ønsker etter d46», D46-1..28): avisbilde fra verdenen, pinboard bort i Freeform, første døgn med flere hendelser og cliffhanger kl. 00:41, mer vær, tanker på skjermen, kaffe og søvn, hendelsesmanus i JSON, ny jeep med frontrute og trip camera-modell (Fable), versjon på startskjermen uten sted og dato; romvesentyper med egne signaler, receiver-fanene og referanser som teller, vindmølla på dag 1, hendelseslogg i notatboka, nytt CASE BOARD og PHOTOGRAPHS, skjermene fyller mer av glasset, mykere UFO-lys med datostempel på bildene, bildeutbetaling for alt rart, ballongen med modell, blinker og belønning, trip camera på kartet, musepekeren holdt i vinduet.
+
+Kontroll: regresjon PASS 251; trinnprøvene ictlearly, mail, first, service, wear, dusk, sky, files, ictl, spine PASS. `-S47OpsNavigationTest` stopper på at ORIGINALS-fanen ikke er unik (testoppsett). Lyd og nye effekter er ikke hørt eller sett av Tom.
+
+## Tidligere: installert 10. november kl. 16:47 (d46): `ebe038ad` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4297 kontroller; ingen materialadvarsler). Tilbakerulling: d45 (`d99bd64f`). Ledig disk etterpå: 124 GB. Ikke spilt av Tom.
 

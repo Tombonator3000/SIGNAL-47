@@ -2259,3 +2259,7 @@ d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen ville fått g
 ## 10. november kl. 16:47 (Claude Code, dagskift): d46 installert, Toms funn i d45
 
 Tom testet d45 og ga 29 punkter (TODO «Toms testfunn i d45»). Kartlagt og skrevet av agenter i scratchpad, satt sammen, bygget og testet her; kritikerrunde på Sonnet (tekst 7, skjermer 7, lyd 8 av 10) med billige rettinger. Cosmos-gjerdet migrert fra UE 4.22 i et engangsprosjekt, bobbleheaden delt i hode og kropp og importert uten Nanite, Cosmos-røyken kopiert inn, bodycam-materialet bygget. d46 (`ebe038ad`) ALL PASS, selvtest 4297 OK. Agentene i dag arvet Opus fordi modell ikke var satt; heretter settes modell på hver agent.
+
+## 10. november kl. 20:31 (Claude Code, dagskift og nattskift): d47 installert
+
+Toms ønsker etter d46 (D46-1..28) skrevet av agenter med modell per oppgave (Sonnet, Opus, Fable for jeep, trip camera, ballong, CASE BOARD, PHOTOGRAPHS og UFO-lys, Haiku for oversikter), satt sammen og bygget her. Jeep, trip camera og ballong importert uten Nanite. d41, d42 og avvist d44 ryddet for plass. d47 (`d44bc8b3`) ALL PASS, selvtest 4422 OK.
