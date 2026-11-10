@@ -3,7 +3,7 @@
  "export_dir": "truck/Export",
  "meshes": {
   "SM_TripoJeep_WheelBody": {
-   "triangles": 52719,
+   "triangles": 60041,
    "materials": [
     "M_TripoFleet_classic_jeep_00_CabTrim",
     "M_JeepInterior_CJTireRubber",
@@ -14,12 +14,13 @@
     "M_Truck_Trim",
     "M_Truck_Steel",
     "M_Truck_Lens",
-    "M_Truck_Amber"
+    "M_Truck_Amber",
+    "M_Truck_Tire"
    ],
    "bounds_local_m": [
     [
      -0.9539999961853027,
-     -2.200000047683716,
+     -2.4200000762939453,
      0.32764267921447754
     ],
     [

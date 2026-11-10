@@ -62,6 +62,9 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		[Out] { Out(17, 19.5, FS47WeatherLive::EDev::Shower, 600, false, TEXT("Just after a stray shower: the cloud going off downwind, the ground still dark and wet. Drive on the dirt: less grip, the tyres hiss."), 1.2, 9); });
 	E.AddFreeform(Group, TEXT("A stray shower: two hours after"), TEXT("17:00, open land: two hours after the rain, the ground drying, wet still in the low patches and the washes, the rises dry"),
 		[Out] { Out(17, 19.5, FS47WeatherLive::EDev::Shower, 400, false, TEXT("Two hours after a stray shower: the ground drying from the rises, still dark in the low patches. Dry in another two hours."), 3.2, -6); });
+	// D46-20261110 (D46-4): a storm on the horizon after dark, as the opening's storm night and some nights after have it
+	E.AddFreeform(Group, TEXT("Dry lightning on the horizon"), TEXT("23:00, open land: a storm standing on the horizon where the night's own would, flashing every few seconds, two or three strokes at a time, thunder far off; four minutes"),
+		[Out] { Out(23, 4.5, FS47WeatherLive::EDev::Lightning, 240, false, TEXT("Dry lightning for four minutes: turn until you find the flashes low on the horizon (F10 \"Today's weather\" says which way), and listen for the thunder after."), FS47WeatherLive::DevShowerHours, 4); });
 	E.AddFreeform(Group, TEXT("Morning haze"), TEXT("06:30, open land: the low haze, the far land pale; four minutes"),
 		[Out] { Out(6.5, 8.5, FS47WeatherLive::EDev::Haze, 240, false, TEXT("Haze for four minutes, as on a still morning or the morning after a shower.")); });
 	E.AddFreeform(Group, TEXT("The day's own weather again"), TEXT("whatever F10 set is gone; in a developer run the day's weather stays on the world until the run ends"), [this, Weather]
@@ -72,16 +75,18 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 		Tell(true, TEXT("The day's own weather, as the paper has it."), 5);
 	});
 	// The next real one: the clock goes on to it, and the day's own weather shows it, as the paper prints it.
-	const auto Next = [this, Weather](bool bSand)
+	// (D46-20261110: Kind 0 a sand day, 1 a shower, 2 a storm night)
+	const auto Next = [this, Weather](int32 Kind)
 	{
+		const bool bSand = Kind == 0;
 		FS47FreeformSession* F = Session(); FS47WeatherLive* Wx = Weather();
 		if (!F || !Wx) { Tell(false, TEXT("Freeform only")); return; }
 		const int32 Today = int32(FMath::FloorToDouble(F->Clock() / 86400.0)) + 1;
 		for (int32 Day = Today; Day < Today + 40; ++Day)
 		{
 			const S47Weather::FDay D = S47Weather::Day(F->Seed(), Day);
-			if (bSand ? !D.bDust : !D.bShower) continue;
-			const double Hour = bSand ? 16.0 : D.ShowerAt + 0.1;
+			if (Kind == 2 ? !D.Storm() : bSand ? !D.bDust : !D.bShower) continue;
+			const double Hour = Kind == 2 ? 22.5 : bSand ? 16.0 : D.ShowerAt + 0.1;
 			const double Target = (Day - 1) * 86400.0 + Hour * 3600.0;
 			if (Target <= F->Clock() + 60) continue;
 			ClearRunning();
@@ -90,10 +95,11 @@ void FS47DevFreeform::AddWeather(FS47DevEvents& E)
 			Tell(true, FString::Printf(TEXT("Day %d at %02d:%02d, the day's own weather. The paper says: %s"), Day, int32(Hour), int32(FMath::Fmod(Hour, 1.0) * 60), *S47Weather::Words(D)), 12);
 			return;
 		}
-		Tell(false, bSand ? TEXT("no sand day in the next forty days of this game") : TEXT("no shower in the next forty days of this game"));
+		Tell(false, Kind == 2 ? TEXT("no storm night in the next forty days of this game") : bSand ? TEXT("no sand day in the next forty days of this game") : TEXT("no shower in the next forty days of this game"));
 	};
-	E.AddFreeform(Group, TEXT("Go to the next sand day"), TEXT("the clock goes on to 16:00 on the next day of this game that has blowing sand; the weather is the day's own"), [Next] { Next(true); });
-	E.AddFreeform(Group, TEXT("Go to the next shower"), TEXT("the clock goes on to the next stray shower of this game; the weather is the day's own"), [Next] { Next(false); });
+	E.AddFreeform(Group, TEXT("Go to the next sand day"), TEXT("the clock goes on to 16:00 on the next day of this game that has blowing sand; the weather is the day's own"), [Next] { Next(0); });
+	E.AddFreeform(Group, TEXT("Go to the next shower"), TEXT("the clock goes on to the next stray shower of this game; the weather is the day's own"), [Next] { Next(1); });
+	E.AddFreeform(Group, TEXT("Go to the next storm night"), TEXT("the clock goes on to 22:30 on the next night of this game with a storm on the horizon; the weather is the night's own"), [Next] { Next(2); });
 	// ---- the hours awake ----
 	const auto Awake = [this, Body](double Hours, const TCHAR* Say)
 	{

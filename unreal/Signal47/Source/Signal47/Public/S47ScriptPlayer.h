@@ -5,6 +5,7 @@
 #include "Misc/DateTime.h"
 class US47Main;
 class FS47FreeformSession;
+class FS47EventBeats;
 
 // DIRECTOR-TOOL-20261109: plays the scripted events (S47Script.h) in Freeform. It reads every script in Content/Director/scripted
 // (and the developer's own copies, WriteDir), asks each enabled one every two seconds whether its trigger holds (S47Script::Ready,
@@ -76,6 +77,8 @@ public:
  // in the editor, the game's Saved/Director/scripted otherwise; -S47ScriptDir=<path> for either (the repository's own folder).
  static TArray<FString> ReadDirs();
  static FString WriteDir();
+ // D46-20261110 (D46-11): the event scripts' runner (S47EventScript.h), stepped and stopped with this one.
+ FS47EventBeats* EventBeats() const{return Beats.Get();}
 private:
  US47Main* M=nullptr;
  FS47FreeformSession* Session() const;
@@ -129,4 +132,5 @@ private:
  // The player looks at this, within Degrees.
  bool LookingAt(const FVector& At,double Degrees) const;
  static TSet<FString>& Holders();
+ TUniquePtr<FS47EventBeats> Beats;
 };

@@ -5,6 +5,7 @@
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47Happenings.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
@@ -452,6 +453,8 @@ bool FS47Predecessor::Meets(const TCHAR* Needs) const
  // Wagon 23 seen and its call-out read in the first weeks, and the trip meter not yet: somebody has been at it since.
  if(Need==TEXT("trip_due"))return Seen.Contains(WagonId)&&Seen.Contains(TEXT("callout"))&&!Seen.Contains(TEXT("trip"))&&F.Day()>=LateTripDay;
  if(Need==TEXT("array_low"))return F.AvailableDishCount()<20;
+ // D46-20261110 (D46-3): the first night's array found turned (its field record), said on the second or third day and not after.
+ if(Need==TEXT("turned1"))return F.HasFinding(FS47Happenings::FirstTurnKey)&&F.Day()>=2&&F.Day()<=3;
  if(Need==TEXT("assess7"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=7&&AssessDay-F.Day()>3;
  return Seen.Contains(Need);
 }
@@ -1720,6 +1723,16 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
     &&DayOneSecond(TEXT("tag"))&&DayOneSecond(TEXT("locker"))&&DayOneSecond(TEXT("mine"))&&!DayOneSecond(TEXT("filed1"))&&!DayOneSecond(TEXT("hello"))&&!DayOneSecond(nullptr)&&bAnswers
     &&!Quiet.SecondBarkToday()&&!Quiet.HelloWaitsForWalkie()&&Quiet.BarksSaid()==0,
     TEXT("the first day: his bench after his hello, and a second line only for the tag, the locker or the mine; without a game neither"));
+  }
+  // D46-20261110 (D46-3): the second day's first line answers the array that turned by itself in the night; his bench was off.
+  {
+   const TArray<X::FBark>& All=X::Barks();
+   const X::FBark* Turned=All.FindByPredicate([](const X::FBark& Q){return FCString::Strcmp(Q.Id,TEXT("turned"))==0;});
+   const FString Said=Turned?FString(Turned->Line):FString();
+   Check(Turned&&All.Num()>1&&FCString::Strcmp(All[1].Id,TEXT("turned"))==0&&Turned->FromDay==2&&Turned->Needs&&FCString::Strcmp(Turned->Needs,TEXT("turned1"))==0
+    &&Said.StartsWith(TEXT("Not my bench."))&&Said.EndsWith(TEXT("Dale out."))&&!Said.ToLower().Contains(TEXT("remote"))&&!Said.ToLower().Contains(TEXT("cable"))&&!Said.Contains(TEXT("47"))
+    &&!DayOneSecond(TEXT("turned"))&&!Quiet.Meets(TEXT("turned1")),
+    TEXT("the second day: his first line is that the array was not his bench, and only once the turned array is on the record"));
   }
   FS47Predecessor NoGame(nullptr);
   Check(NoGame.AnswerWalkie().IsEmpty()&&NoGame.RelayLine(TEXT("A rancher reports lights.")).IsEmpty()&&NoGame.ServiceBand().IsEmpty(),TEXT("without a Freeform game there is no Dale on the walkie and no carrier on the band"));

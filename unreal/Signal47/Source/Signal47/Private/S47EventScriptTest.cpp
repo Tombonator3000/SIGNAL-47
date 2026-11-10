@@ -1,0 +1,148 @@
+#include "S47EventScript.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
+// D46-20261110 (D46-11): the event scripts' self-test, called from the HUD's (-S47SelfTest). No world: every script there is (built
+// in, and every file in the folders it is read from) parses, names only beats and conditions that exist and keeps to the rules; the
+// three wired events keep the beats they had in code; the gates and the words, by hand.
+
+namespace S47EventScriptTestLocal
+{
+ FS47ScriptNow At(int32 Day,double Hour)
+ {
+  FS47ScriptNow N;N.Day=Day;N.Night=Day;N.Clock=(Day-1)*86400.+Hour*3600.;
+  if(Hour<8)N.Clock+=86400.; // the small hours belong to the next calendar day, still this night
+  N.bIndoors=true;N.Weather={TEXT("clear"),TEXT("calm")};
+  return N;
+ }
+ int32 CountOf(const FS47EventScript& S,ES47Beat Do){int32 N=0;for(const FS47Beat& B:S.Beats)N+=B.Do==Do;return N;}
+ const FS47Beat* First(const FS47EventScript& S,ES47Beat Do){return S.Beats.FindByPredicate([Do](const FS47Beat& B){return B.Do==Do;});}
+}
+
+bool S47EventScript::SelfTest(TArray<FString>& Lines)
+{
+ using namespace S47EventScriptTestLocal;
+ bool bAll=true;
+ const auto Check=[&](bool bOk,const FString& What){bAll&=bOk;Lines.Add(FString(bOk?TEXT("PASS "):TEXT("FAIL "))+TEXT("event scripts: ")+What);};
+
+ // ---- every built-in one: it parses, it is clean, it is wired and asks only for what its event gives ----
+ TMap<FString,FS47EventScript> Built;
+ for(const auto& P:BuiltIn())
+ {
+  FS47EventScript S;FString Why;TArray<FString> Warn;
+  const bool bRead=Read(P.Value,S,Why);
+  const TArray<FString> Errors=bRead?Lint(S,&Warn):TArray<FString>();
+  Check(bRead&&S.Id==P.Key&&Errors.IsEmpty()&&Warn.IsEmpty()&&Wired().Contains(S.Id),FString::Printf(TEXT("built in %s parses, is clean and is played by its event%s"),*P.Key,
+   !bRead?*(TEXT(": ")+Why):Errors.Num()?*(TEXT(": ")+Errors[0]):Warn.Num()?*(TEXT(": ")+Warn[0]):TEXT("")));
+  if(bRead)Built.Add(S.Id,S);
+ }
+ for(const FString& Id:Wired())Check(Built.Contains(Id),FString::Printf(TEXT("%s, wired, has its beats built in"),*Id));
+
+ // ---- the three that were code: the same beats ----
+ if(const FS47EventScript* S=Built.Find(TEXT("array_burst")))
+ {
+  const FS47Beat* Tone=First(*S,ES47Beat::Tone);const FS47Beat* Pr=First(*S,ES47Beat::Printer);const FS47Beat* Ev=First(*S,ES47Beat::Evidence);const FS47Beat* To=First(*S,ES47Beat::Toast);const FS47Beat* Mp=First(*S,ES47Beat::Map);
+  Check(Tone&&Tone->Repeat==6&&FMath::IsNearlyEqual(Tone->Hz,1400.)&&FMath::IsNearlyEqual(Tone->Every,.12)&&FMath::IsNearlyEqual(Tone->Gain,.06)&&Tone->Kind==TEXT("square"),TEXT("array_burst: six square beeps at 1400 Hz, .12 s apart"));
+  Check(Pr&&FMath::IsNearlyEqual(Pr->Gain,.3)&&FMath::IsNearlyEqual(Pr->Delay,1.)&&FMath::IsNearlyEqual(Pr->Stop,3.),TEXT("array_burst: the printer from one second, stopped at three"));
+  Check(Ev&&Ev->At==0&&Ev->Key==TEXT("array_burst_d{burst_night}")&&Ev->Text.Contains(TEXT("{az} degrees from SARO, give or take {spread}")),TEXT("array_burst: the finding at once, under the burst's night, with the bearing and the spread"));
+  Check(To&&FMath::IsNearlyEqual(To->At,.8)&&FMath::IsNearlyEqual(To->Secs,5.)&&To->Text.Contains(TEXT("{map_key}")),TEXT("array_burst: the line on the screen after .8 s, for 5 s"));
+  Check(Mp&&Mp->At==0&&Mp->Name==TEXT("{target}")&&S->Beats[0].Do==ES47Beat::Map,TEXT("array_burst: the place is heard of on the map first"));
+ }
+ if(const FS47EventScript* S=Built.Find(TEXT("town_blackout")))
+ {
+  const FS47Beat* L=First(*S,ES47Beat::Light);
+  Check(L&&L->Kind==TEXT("town")&&CountOf(*S,ES47Beat::Tone)==2&&CountOf(*S,ES47Beat::Evidence)==1&&First(*S,ES47Beat::Evidence)->Key==TEXT("blackout_d{day}"),TEXT("town_blackout: the lamps, the two hums and the finding"));
+  const FS47Beat* Hum=First(*S,ES47Beat::Tone);
+  Check(Hum&&FMath::IsNearlyEqual(Hum->Hz,60.)&&FMath::IsNearlyEqual(Hum->Secs,40.)&&FMath::IsNearlyEqual(Hum->Delay,1.)&&Hum->Kind==TEXT("sine"),TEXT("town_blackout: the 60 Hz hum, forty seconds from one"));
+ }
+ if(const FS47EventScript* S=Built.Find(TEXT("hood_warm")))
+ {
+  const int32 Ticks=CountOf(*S,ES47Beat::Sound);const FS47Beat* T=First(*S,ES47Beat::Sound);
+  Check(Ticks==2&&T&&T->Name==TEXT("hap:tick")&&T->Point==TEXT("truck")&&S->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Sound&&FMath::IsNearlyEqual(B.Delay,2.6)&&FMath::IsNearlyEqual(B.Rate,.9);}),TEXT("hood_warm: two ticks at the truck, the second slower after 2.6 s"));
+ }
+
+ // ---- every file it reads: parses, known beats, clean; a wired one as it is built in, or said ----
+ int32 Files=0;
+ for(const FString& Dir:ReadDirs())
+ {
+  TArray<FString> Names;
+  IFileManager::Get().FindFiles(Names,*(Dir/TEXT("*.json")),true,false);
+  for(const FString& Name:Names)
+  {
+   FString Text,Why;FS47EventScript S;
+   ++Files;
+   if(!FFileHelper::LoadFileToString(Text,*(Dir/Name))){Check(false,Name+TEXT(" could not be read"));continue;}
+   const bool bRead=Read(Text,S,Why);
+   const TArray<FString> Errors=bRead?Lint(S):TArray<FString>();
+   Check(bRead&&Errors.IsEmpty()&&S.Id+TEXT(".json")==Name,FString::Printf(TEXT("%s parses, names only known beats, keeps to the rules and is named by its id%s"),*Name,!bRead?*(TEXT(": ")+Why):Errors.Num()?*(TEXT(": ")+Errors[0]):TEXT("")));
+   for(const auto& P:BuiltIn())
+    if(P.Key==S.Id&&Text.Replace(TEXT("\r"),TEXT("")).TrimStartAndEnd()!=FString(P.Value).Replace(TEXT("\r"),TEXT("")).TrimStartAndEnd())
+     Lines.Add(FString::Printf(TEXT("NOTE event scripts: %s differs from the built-in copy (edited: the file plays; S47EventScriptDefaults.inl keeps the old beats)"),*Name));
+  }
+ }
+ if(!Files)Lines.Add(TEXT("NOTE event scripts: no files beside this build (Content/Director/Events): the built-in copies play"));
+ const FString Example=FPaths::ProjectContentDir()/TEXT("Director/Events/example_every_beat.json");
+ FString ExampleText;
+ if(FFileHelper::LoadFileToString(ExampleText,*Example))
+ {
+  FS47EventScript S;FString Why;
+  bool bEvery=Read(ExampleText,S,Why)&&!S.bEnabled;
+  for(const TCHAR* B:{TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("shake")}){ES47Beat Do=ES47Beat::Count;bEvery&=BeatFrom(B,Do)&&CountOf(S,Do)>0;}
+  Check(bEvery&&S.Gates.Any(),TEXT("the example shows the beats and the gates, and is switched off"));
+ }
+
+ // ---- reading: what is not known is refused by name; the order of the clock ----
+ {
+  FS47EventScript S;FString Why;
+  Check(!Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":0,\"do\":\"explode\"}]}"),S,Why)&&Why.Contains(TEXT("explode")),TEXT("an unknown beat is refused by name"));
+  Check(!Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":0,\"do\":\"toast\",\"text\":\"a\",\"if\":[\"upside_down\"]}]}"),S,Why)&&Why.Contains(TEXT("upside_down")),TEXT("an unknown condition is refused by name"));
+  Check(!Read(TEXT("{\"version\":2,\"id\":\"x\"}"),S,Why)&&!Read(TEXT("not json"),S,Why)&&!Read(TEXT("{\"version\":1,\"id\":\"x\",\"gates\":{\"tier\":\"soon\"}}"),S,Why),TEXT("another version, broken text or an unknown tier is refused"));
+  const bool bRead=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":5,\"do\":\"toast\",\"text\":\"b\"},{\"at\":1,\"do\":\"toast\",\"text\":\"a\"},{\"at\":5,\"do\":\"thought\",\"text\":\"c\",\"wait\":[{\"if\":\"area\",\"is\":\"saro\"}],\"max\":9}]}"),S,Why);
+  Check(bRead&&S.Beats.Num()==3&&S.Beats[0].Text==TEXT("a")&&S.Beats[1].Text==TEXT("b")&&S.Beats[2].Do==ES47Beat::Thought&&S.Beats[2].Wait.Num()==1&&S.Beats[2].Wait[0].Arg==TEXT("saro"),TEXT("beats in the order of the clock, the same second as written; a wait keeps its condition"));
+ }
+
+ // ---- the lint ----
+ {
+  FS47EventScript S;S.Id=TEXT("lint_test");
+  FS47Beat B;B.Do=ES47Beat::Thought;B.Text=TEXT("No. Not again.");S.Beats.Add(B);
+  TArray<FString> Warn;
+  Check(Lint(S,&Warn).IsEmpty()&&Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("F10 only"));}),TEXT("a clean script for no event is clean, and said to run from F10 only"));
+  for(const TCHAR* Bad:{TEXT("They were taken."),TEXT("The radio said 1947."),TEXT("Forty seven seconds on the tape.")})
+  {
+   FS47EventScript T=S;T.Beats[0].Text=Bad;
+   Check(Lint(T).Num()>0,FString::Printf(TEXT("refused: \"%s\""),Bad));
+  }
+  FS47EventScript T=S;T.Beats[0].Do=ES47Beat::Line;T.Beats[0].Who=TEXT("ghost");
+  Check(Lint(T).Num()>0,TEXT("a line needs dale, voice, cb or radio"));
+  T=S;T.Beats[0].Wait.Add(FS47ScriptCond());T.Beats[0].Max=0;
+  Check(Lint(T).Num()>0,TEXT("a wait needs its most seconds"));
+  T=S;T.Id=TEXT("array_burst");T.Beats[0].Text=TEXT("About {azimuth} degrees.");Warn.Reset();Lint(T,&Warn);
+  Check(Warn.ContainsByPredicate([](const FString& W){return W.Contains(TEXT("{azimuth}"));}),TEXT("a word the event does not give is warned about"));
+ }
+
+ // ---- the words ----
+ {
+  const TMap<FString,FString> W={{TEXT("az"),TEXT("120")},{TEXT("clock"),TEXT("22:40")}};
+  Check(Fill(TEXT("At {clock}, about {az} degrees ({az}); {nothing}."),W)==TEXT("At 22:40, about 120 degrees (120); {nothing}."),TEXT("words filled in, an unknown one left as written"));
+ }
+
+ // ---- the gates ----
+ {
+  FS47EventGates G;FString Why;
+  Check(!G.Any()&&GatesHold(G,At(1,21),TEXT("saro"),.99,Why),TEXT("no gates: it always may"));
+  G.DayFrom=3;G.HourFrom=22;G.HourTo=4;
+  Check(!GatesHold(G,At(2,23),TEXT("saro"),0,Why)&&GatesHold(G,At(3,23),TEXT("saro"),0,Why)&&GatesHold(G,At(3,3),TEXT("saro"),0,Why)&&!GatesHold(G,At(3,21),TEXT("saro"),0,Why),TEXT("days and hours past midnight"));
+  G=FS47EventGates();G.bTier=true;G.Tier=ES47Allowed::Full;
+  Check(!GatesHold(G,At(5,23.5),TEXT("road"),0,Why)&&GatesHold(G,At(5,2.5),TEXT("road"),0,Why)&&GatesHold(G,At(22,1.5),TEXT("road"),0,Why),TEXT("a full tier waits for two, one in the fourth week"));
+  G.bEarly=true;
+  Check(GatesHold(G,At(5,23.5),TEXT("road"),0,Why),TEXT("early, on purpose, lets it come sooner"));
+  G=FS47EventGates();G.Areas={TEXT("saro")};G.Odds=.4;
+  Check(GatesHold(G,At(5,23),TEXT("saro"),.39,Why)&&!GatesHold(G,At(5,23),TEXT("saro"),.4,Why)&&!GatesHold(G,At(5,23),TEXT("road"),.1,Why),TEXT("areas and odds"));
+  G=FS47EventGates();FS47ScriptCond C;C.If=TEXT("outdoors");G.If.Add(C);
+  Check(!GatesHold(G,At(5,23),TEXT("saro"),0,Why)&&Why.Contains(TEXT("outdoors")),TEXT("a condition holds it back, and says which"));
+  G.If[0].If=TEXT("area");G.If[0].Arg=TEXT("saro");
+  Check(GatesHold(G,At(5,23),TEXT("saro"),0,Why,[](const FS47ScriptCond& X){return X.Arg==TEXT("saro");})&&!GatesHold(G,At(5,23),TEXT("saro"),0,Why),TEXT("its own conditions are asked of the game, and fail without it"));
+ }
+ return bAll;
+}

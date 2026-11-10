@@ -11,7 +11,11 @@
 //   - now and then a stray shower late in the day, most of it drying before it reaches the ground (virga): a few drops, thunder
 //     far off; the dirt is slick for a few hours after;
 //   - haze some mornings, always the morning after a shower.
-// Dry lightning far off every night is the sky's own (FS47Sky::Update). The almanac is the sky's: sunrise 05:30 and sunset 18:27
+// D46-20261110 (D46-4): the night's dry lightning is the day's too (FDay::Lightning): none to speak of on a quiet night, far off now
+// and then on most, and now and then a storm standing on the horizon that flickers all night, with thunder far off (FS47Sky::Update
+// reads it through Live()); an afternoon may cloud over high and thin toward evening (bHighCloud). The first three days of a game are
+// written, not drawn: one windy afternoon with blowing sand and one storm night on the horizon, in one of two orders by the seed.
+// The almanac is the sky's: sunrise 05:30 and sunset 18:27
 // (FS47Sky::SetClock), Halley's comet low in the south from the evening until a little after three (FS47Sky::SetCometClock) and,
 // since MOON-20261108, the real moon of the date (Moon, Almanac(Date)); Almanac() alone is the sun and the comet. Pure: no world and
 // no clock, the same for a seed and a day whatever is loaded or waited through. The paper keeps the word dust out (its own test):
@@ -33,9 +37,16 @@ namespace S47Weather
   bool bThunder=false;        // thunder with it, far off
   bool bHaze=false;           // haze in the morning
   float HazeK=0;              // how thick, .5 to 1
-  bool bLightning=true;       // dry lightning far off after dark: every night, as the sky has it
+  bool bLightning=true;       // dry lightning far off after dark (Lightning at least LitNight)
+  float Lightning=1.f;        // D46-20261110: the night's dry lightning, 0 none, 1 far off now and then, StormNight and up a storm on the horizon
+  float LightningAz=225.f;    // where it stands (degrees from north, clockwise), as FS47Sky draws its flashes on a storm night
+  bool bHighCloud=false;      // D46-20261110: high cloud thickening through the afternoon, an overcast evening, thinning by night
   bool Windy() const{return WindMph>=18;}
+  bool Storm() const{return Lightning>=StormNight;}
+  static constexpr float LitNight=.5f,StormNight=1.5f;
  };
+ // D46-20261110: the way a storm night's lightning stands ("southwest"), for the paper and the radio.
+ SIGNAL47_API FString LightningWay(const FDay& D);
  // The day's weather in this game (the seed is FS47FreeformSession::Seed(); the day is the shift day, whose daytime is that date's).
  SIGNAL47_API FDay Day(int32 Seed,int32 ShiftDay);
  // What a forecast written on IssuedOn said about ForDay: the day itself with a forecaster's errors in the warmth and the wind, the
@@ -52,7 +63,8 @@ namespace S47Weather
  // ShowerH (SHOWER-LOOK-20261109): hours since the day's shower set in (FDay::ShowerAt), NoShower on a day without one; the sky
  // walks the shower's cloud past on it (FS47Sky::CellPlace), upwind before and downwind after.
  constexpr double NoShower=-99;
- struct FNow{double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower;bool bThunder=false;};
+ // Lightning, LightningAz (D46-20261110): the night's (after noon the day's, before dawn the night before's), as FS47Sky flashes it.
+ struct FNow{double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower,Lightning=1,LightningAz=225;bool bThunder=false;};
  SIGNAL47_API FNow Now(int32 Seed,int32 CalendarDay,double ClockOfDay);
  // A shower's own course, Hours after it set in: the rain (about three quarters of an hour at its fullest), the wet dirt (slick from a
  // third of an hour in, drying from an hour and a half, dry by four), thunder far off with it if bThunder, and what its cloud adds to
@@ -65,13 +77,13 @@ namespace S47Weather
  struct FLive
  {
   bool bOn=false;
-  double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower;
+  double Wind=0,Mph=8,Dust=0,Rain=0,Haze=0,Wet=0,CloudBias=0,Storm=0,DirX=.6,DirZ=-.8,ShowerH=NoShower,Lightning=1,LightningAz=225;
   double FogAdd=0,TintK=0,HorizonK=0;
   FLinearColor Tint=FLinearColor(.5f,.38f,.24f);
  };
  SIGNAL47_API FLive& Live();
  // For a paper's "last week" (S47Ledger still prints its own, "no rain"): the highs and lows of the days From to To-1, and whether it
- // rained or blew sand.
+ // rained or blew sand, and how many nights had lightning (D46-20261110).
  SIGNAL47_API FString LastWeek(int32 Seed,int32 FromDay,int32 ToDay);
  // The sky's own times (seconds after midnight).
  constexpr double SunriseClock=5*3600.+30*60.,SunsetClock=18*3600.+27*60.;

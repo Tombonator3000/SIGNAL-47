@@ -17,7 +17,7 @@ namespace
 {
  constexpr ES47Allowed Hint = ES47Allowed::Hint, Glimpse = ES47Allowed::Glimpse, Full = ES47Allowed::Full;
  constexpr ESide People = ESide::People, Them = ESide::Them;
- constexpr EFollow NoFollow = EFollow::None, ToMap = EFollow::Map, ToBoard = EFollow::Board;
+ constexpr EFollow NoFollow = EFollow::None, ToMap = EFollow::Map; // D46-20261110: no pinboard in Freeform; a scribble points on to the map or nowhere
  bool Starts(const FString& S, const TCHAR* Prefix) { return S.StartsWith(Prefix, ESearchCase::CaseSensitive); }
  // The rows the facts unlock, by index in Table(), and whether each is struck through.
  TArray<int32> Shown(const FFacts& Facts, TArray<bool>* Struck = nullptr)
@@ -46,7 +46,7 @@ const TArray<FRow>& Table()
  static const TArray<FRow> Rows = {
   // ---------- PEOPLE ----------
   { TEXT("dale"), People, TEXT("DALE"), TEXT("Field maintenance. A voice on the phone"), TEXT("dale"), TEXT("dale:talk"), Hint,
-    TEXT("Never seen him. Only the voice. Yells about the logs like someone reads them. WHO reads them?"), TEXT(""), ToBoard, TEXT("Who reads the night logs?") },
+    TEXT("Never seen him. Only the voice. Yells about the logs like someone reads them. WHO reads them?"), TEXT(""), NoFollow, TEXT("") },
   { TEXT("earl"), People, TEXT("EARL, 1420 AM"), TEXT("The night show out of Caliche"), TEXT("earl"), TEXT("earl:call"), Hint,
     TEXT("Takes calls about lights like they're the weather. Never laughs at one. Why not?"), TEXT(""), NoFollow, TEXT("") },
   { TEXT("deputy"), People, TEXT("THE DEPUTY"), TEXT("Deputy at the substation"), TEXT("deputy"), TEXT("told:deputy:"), Hint,
@@ -64,14 +64,14 @@ const TArray<FRow>& Table()
   { TEXT("baca_gone"), People, TEXT("ELOY BACA"), TEXT("Ranch under the east rim"), TEXT("baca"), TEXT("gone:baca"), Hint,
     TEXT("Door open at the Baca place. Nobody home. Nobody asks."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("ward"), People, TEXT("DR. WARD"), TEXT("The district office. Office hours only"), TEXT("ward"), TEXT("ward:talk"), Hint,
-    TEXT("Signs for the paper. Not for what's on it."), TEXT(""), ToBoard, TEXT("What does the office do with the paper?") },
+    TEXT("Signs for the paper. Not for what's on it."), TEXT(""), NoFollow, TEXT("") },
   // ---------- THEM: only what the player would call them ----------
   { TEXT("lights"), Them, TEXT("THE LIGHTS"), TEXT(""), TEXT(""), TEXT("landing_seen_d"), Hint,
-    TEXT("Lights came down out on the flat and went OUT on the ground. Planes don't land out there in the dark."), TEXT(""), ToBoard, TEXT("Where did they come down? Take a bearing next time.") },
+    TEXT("Lights came down out on the flat and went OUT on the ground. Planes don't land out there in the dark."), TEXT(""), ToMap, TEXT("Where did they come down? Take a bearing next time.") },
   { TEXT("balloon"), Them, TEXT("THE LIGHTS"), TEXT(""), TEXT(""), TEXT("landing_seen_d"), Hint,
     TEXT("Weather balloon. Has to be."), TEXT("lights_trace_landing_d"), NoFollow, TEXT("") },
   { TEXT("ring"), Them, TEXT("THE LIGHTS"), TEXT(""), TEXT(""), TEXT("lights_trace_landing_d"), Hint,
-    TEXT("A balloon doesn't burn a ring in the caliche. Four marks pressed in. Something with WEIGHT."), TEXT(""), ToBoard, TEXT("What sets down on four legs, and leaves?") },
+    TEXT("A balloon doesn't burn a ring in the caliche. Four marks pressed in. Something with WEIGHT."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("shade"), Them, TEXT("SHADOWS"), TEXT(""), TEXT(""), TEXT("rise:shade"), Glimpse,
     TEXT("Something tall on the ridge. Dark. Gone when I looked twice."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("steps"), Them, TEXT("SHADOWS"), TEXT(""), TEXT(""), TEXT("near:steps"), Full,
@@ -190,7 +190,7 @@ void Fill(const FFacts& Facts, TArray<FS47NbScribble>& Out)
   S.Side = R.Side == People ? TEXT("people") : TEXT("them");
   S.Box = R.Box; S.Role = R.Role; S.Text = R.Text; S.bStruck = Struck[N];
   // A guess proved wrong points nowhere any more.
-  if (!S.bStruck && R.Follow != NoFollow) { S.Follow = R.Follow == ToMap ? TEXT("map") : TEXT("board"); S.FollowText = R.FollowText; }
+  if (!S.bStruck && R.Follow != NoFollow) { S.Follow = TEXT("map"); S.FollowText = R.FollowText; }
   Out.Add(S);
  }
 }

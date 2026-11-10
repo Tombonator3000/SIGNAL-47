@@ -141,10 +141,12 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- bool bOut=false,bAtMarksThen=false,bBuilt=false;
+ // D46-20261110 (Tom, D46-10): bModel while the imported model stands for it (Tools/tripcam, /Game/Licensed: never in Git); without it the
+ // plain box as before. Yaw (three's, radians) is the way the player faced when it was set: the lens looks at the likely way in.
+ bool bOut=false,bAtMarksThen=false,bBuilt=false,bModel=false;
  FString Area,Title,PhotoId;
  FVector At=FVector::ZeroVector;
- double SetClock=0,CaughtClock=-1,LookIn=0;
+ double SetClock=0,CaughtClock=-1,LookIn=0,Yaw=0;
  ECatch Caught=ECatch::None;
  TWeakObjectPtr<UStaticMeshComponent> PropSaro,PropRoad;
  // What is in front of it now, looked for a few times a second while it is out and the world it stands in is the loaded one.

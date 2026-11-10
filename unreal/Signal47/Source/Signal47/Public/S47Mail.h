@@ -154,8 +154,9 @@ private:
  struct FClip{FString Id,What;int32 Price=0,Until=0;};
  TArray<FClip> Coupons;
  // A printed paper: its front page as printed and the templates it used, the sheriff's lines from the week's findings, and whether
- // the trucker's thanks was in it.
- struct FKept{int32 No=0,Day=0;bool bThanks=false;TArray<FString> Heads,Bodies,Leads,Keys,Log;TArray<int32> LogAgo;};
+ // the trucker's thanks was in it. Photo (D46-1-20261110): the front page's picture of the lead's place from the world, a small grey
+ // JPEG data URL; empty until the world could be photographed by day (then the drawn picture is printed).
+ struct FKept{int32 No=0,Day=0;bool bThanks=false;TArray<FString> Heads,Bodies,Leads,Keys,Log;TArray<int32> LogAgo;FString Photo;};
  TArray<FKept> Issues;
  TArray<FSeen> Seen;
  int32 SeenCount=-1;
@@ -173,6 +174,11 @@ private:
  void NoteFindings();
  bool PlaceOf(const FString& Id,const FString& Text,bool bHere,FString& OutPlace,FString& OutId) const;
  void PrintLedger(int32 OnDay);
+ // D46-1-20261110: photograph the lead story's place for the front page: by day, from a few tens of metres, with nothing film-only
+ // shown. False (and nothing kept) when it cannot be done now; PhotoTries counts the attempts that rendered and failed.
+ bool TakePhoto(FKept& K);
+ double PhotoWait=0;
+ TMap<int32,int32> PhotoTries;
  bool IssueOf(int32 No,S47Ledger::FIssue& Out) const;
  // The paper's panel: a sheet of the issue, the lead buttons for keyboard and pad, the coupons inside, and the page turn.
  void ShowLedger(const S47Ledger::FIssue& Issue,int32 Sheet,const FString& Title,int32 No);

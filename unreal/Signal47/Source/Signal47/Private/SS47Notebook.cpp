@@ -493,7 +493,7 @@ namespace
 			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(S.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 30))];
 		if (!S.FollowText.IsEmpty())
 		{
-			const FString Tag = S.Follow == TEXT("map") ? TEXT("  [MAP]") : S.Follow == TEXT("board") ? TEXT("  [BOARD]") : TEXT("");
+			const FString Tag = S.Follow == TEXT("map") ? TEXT("  [MAP]") : TEXT("");
 			const TSharedRef<SWidget> F = SNew(STextBlock).Text(FText::FromString(TEXT("-> ") + S.FollowText + Tag)).Font(Hand(Px - 2.f)).ColorAndOpacity(StampRed()).AutoWrapText(true);
 			L->AddSlot().AutoHeight().Padding(P(18), 0, 0, 0)[OnFollow ? StaticCastSharedRef<SWidget>(Click(F, OnFollow)) : F];
 		}
@@ -539,6 +539,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	Tasks = InArgs._Tasks;
 	Notes = InArgs._Notes;
 	X = InArgs._Extras;
+	if (X.bFreeform) OnBoard = nullptr; // D46-20261110: no pinboard in Freeform: no B key, tab or action for it
 	Album = X.Album;
 	static const FRegexPattern Pnn(TEXT("^p\\d\\d$"));
 	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return D.Kind == TEXT("fieldnote") || D.Kind == TEXT("comparison") || M.FindNext() || D.Id == TEXT("finding") || (D.Id == TEXT("anomaly:n01") || D.Id == TEXT("anomaly:n02") || D.Id == TEXT("anomaly:a02") || D.Id == TEXT("anomaly:p01")); };
@@ -614,8 +615,8 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	TSharedRef<SHorizontalBox> Keys = SNew(SHorizontalBox);
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(TEXT("Q E")), TEXT("TAB / , SECTIONS"), nullptr)];
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Arrows, TEXT("CHOOSE"), nullptr)];
-	// CASES-OPS-20261109: Freeform's B is the PINBOARD (CASE BOARD is the OPS screen there)
-	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(S47Keys::Label(TEXT("board")).ToUpper()), X.bFreeform ? TEXT("PINBOARD") : TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
+	// D46-20261110: Freeform has no pinboard, so OnBoard is empty there and no B hint shows
+	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(S47Keys::Label(TEXT("board")).ToUpper()), TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
 	Keys->AddSlot().AutoWidth()[Bar(Keycap(S47Keys::Label(TEXT("notebook")).ToUpper()), TEXT("CLOSE"), [this] { Close(); })];
 
 	const FVector2D Book(150, 70);
@@ -1262,8 +1263,7 @@ void SS47Notebook::Build()
 		// the player's own scribbles under each (X.Scribbles' PEOPLE), and a box for each one met only there (Dale, Earl, Baca, Ward).
 		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
 		{
-			if (S.Follow == TEXT("map")) return [this] { Show(TEXT("map")); };
-			if (S.Follow == TEXT("board") && OnBoard) return [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); };
+			if (S.Follow == TEXT("map") || S.Follow == TEXT("board")) return [this] { Show(TEXT("map")); }; // D46-20261110: what pointed at the pinboard points at the map
 			return nullptr;
 		};
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
@@ -1482,8 +1482,7 @@ void SS47Notebook::BuildRight()
 		// their own names, never what it is), the scribbles under it as they grew, the wrong guesses struck through.
 		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
 		{
-			if (S.Follow == TEXT("map")) return [this] { Show(TEXT("map")); };
-			if (S.Follow == TEXT("board") && OnBoard) return [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); };
+			if (S.Follow == TEXT("map") || S.Follow == TEXT("board")) return [this] { Show(TEXT("map")); }; // D46-20261110: what pointed at the pinboard points at the map
 			return nullptr;
 		};
 		TArray<FString> Boxes, Said;
@@ -2062,6 +2061,14 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		for (int32 I = 0; I < 3; ++I) { FS47NbWorkItem W; W.Id = FString::Printf(TEXT("FF-D0002-J%d/0"), I); W.Title = W.Id; W.bCard = true; W.bCanFollow = true; W.bDone = I == 2; Fx.WorkItems.Add(W); }
 		TArray<FS47Task> Ft; Ft.Add({ TEXT("MAILBOX / One paper you took out of the box is not read yet."), false });
 		const auto Free = SNew(SS47Notebook).Tasks(Ft).Docs(All).Extras(Fx);
+		// D46-20261110: Freeform has no pinboard: Y and B open nothing there even when a host passes OnBoard (Story's book still does, above)
+		{
+			int32 FreeBoards = 0;
+			const auto FreeNb = SNew(SS47Notebook).Tasks(Ft).Docs(All).OnBoard([&FreeBoards] { ++FreeBoards; }).Extras(Fx);
+			FreeNb->OnKeyDown(FGeometry(), FKeyEvent(EKeys::Gamepad_FaceButton_Top, FModifierKeysState(), 0, false, 0, 0));
+			FreeNb->OnKeyDown(FGeometry(), FKeyEvent(EKeys::B, FModifierKeysState(), 0, false, 0, 0));
+			Check(TEXT("Freeform: no pinboard, Y and B open no board"), FreeBoards == 0);
+		}
 		bool bNoNotes = true, bOnce = true, bNoOld = true, bNoPhoto = true;
 		TSet<FString> Seen;
 		for (const FS47Doc& D : Free->Papers) { bNoNotes &= D.Kind != TEXT("fieldnote"); bNoOld &= D.Id != OldCase.Id; bNoPhoto &= D.Kind != TEXT("photo"); }

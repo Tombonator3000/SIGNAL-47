@@ -20,6 +20,7 @@
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47UI.h"
+#include "S47Thoughts.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -322,6 +323,7 @@ void FS47IndoorDread::StartPeek(const FS47Cam& Cam,const FCandidate& C)
  Stage=EStage::Up;PeekArea=M->Web->Area();BasePos=C.Feet;Cover=C.Cover;bWindow=C.bIsWindow;bSeen=bDuckSound=false;
  Facing=FMath::Atan2(Cam.Pos.X-BasePos.X,Cam.Pos.Z-BasePos.Z);T=Noticed=LeftAt=0;Withdraw=-1;ExposureNow=0;++PeekCount;
  Draw();
+ S47Thoughts::Think(M,TEXT("peek")); // D46-5-20261110
  UE_LOG(LogTemp,Display,TEXT("S47: peek starts in %s, %s, %.1f m from the eyes, in view %d, at clock %.0f"),*PeekArea,bWindow?TEXT("window"):TEXT("corner"),FVector::Dist(Cam.Pos,BasePos),C.bInView,M->Freeform->Clock());
  // Which place on the list it was: the SARO building, the motel, a room in town, the old house.
  if(auto* Places=M->Freeform->EventPlaces.Get())

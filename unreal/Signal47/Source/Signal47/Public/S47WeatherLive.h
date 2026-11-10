@@ -19,6 +19,7 @@ class UMaterialInstanceDynamic;
 //                 the wet is heard as the tyres' hiss on it, and the first slide on it says why (StepWet, M5 critic 3)
 //   the ears      a storm covers footsteps and breathing from what listens (FS47RoswellGroup)
 //   the night     a stormy night is a little busier (FS47Rhythm reads Day().NightStorm)
+//   the lightning D46-20261110: the night's dry lightning (none, far off, or a storm on the horizon) and its thunder (FS47Sky::Update)
 // Nothing makes the game unplayable: the thickest sand adds no more fog than a light mist (S47Weather::Live().FogAdd at most .03).
 // A developer run has no weather unless F10 or -S47Weather asks, so that the fixtures' pictures keep their plain sky.
 class SIGNAL47_API FS47WeatherLive
@@ -32,8 +33,9 @@ public:
 	void Stop();
 
 	/** F10: this weather now, for this long, over the day's own (None: the day's own again). A shower runs its own course on the
-	 *  clock from ShowerHours after it set in (S47Weather::ShowerCourse): the rain, then the wet dirt drying over the hours after. */
-	enum class EDev : uint8 { None, Sand, Shower, Haze, Calm };
+	 *  clock from ShowerHours after it set in (S47Weather::ShowerCourse): the rain, then the wet dirt drying over the hours after.
+	 *  Lightning (D46-20261110): a storm on the horizon throwing dry lightning, where the night's own would stand. */
+	enum class EDev : uint8 { None, Sand, Shower, Haze, Calm, Lightning };
 	void Dev(EDev Kind, double Seconds, double ShowerHours = DevShowerHours);
 	static constexpr double DevShowerHours = .5;
 	EDev DevNow() const { return DevLeft > 0 ? DevWhat : EDev::None; }

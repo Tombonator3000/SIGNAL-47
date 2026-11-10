@@ -10,5 +10,6 @@
 - [Xbox-/kontrollerbindinger](GAMEPAD.md).
 - [Porterings- og koordinatkonvensjoner](PORTERING.md).
 - [Fast arbeidsmal for bygninger i Blender og Unreal](BLENDER_BUILDING_WORKFLOW.md).
+- [Hendelsesmanus: slagene inne i Freeform-hendelsene](EVENT_SCRIPTS.md).
 
 [Start her](../../README.md).

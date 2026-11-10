@@ -284,6 +284,8 @@ namespace
   // Tonight's low is the one before tomorrow's daylight (the forecast's for the next day); now is on the way down to it.
   const int32 Low=Next.LowF,Now=NowF>=0?NowF:FMath::RoundToInt(Low+(Today.HighF-Low)*FMath::Clamp((26.-Hour)*.08,0.,.5));
   I.Lines.Add(Line(FString::Printf(TEXT("%s Tonight %s, low around %s. %s"),Heads[V],*Sky(Today.CloudNight,true),*Number(Low),*Wind),TEXT("host")));
+  // D46-20261110 (D46-4): a storm night's lightning, where the sky flashes it and the paper prints it
+  if(Today.Storm())I.Lines.Add(Line(FString::Printf(TEXT("And there's dry lightning out to the %s tonight, a long way off. No rain in it, so mind your cigarettes in the brush."),*S47Weather::LightningWay(Today)),TEXT("host")));
   if(Hour>=22)I.Lines.Add(Line(FString::Printf(TEXT("It's %s degrees in Caliche right now. %s"),*Number(Now),*Tomorrow),TEXT("host")));
   else I.Lines.Add(Line(Tomorrow,TEXT("host")));
   return I;

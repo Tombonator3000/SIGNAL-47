@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "hood_warm",
+  "name": "The parked truck's hood is warm",
+  "notes": "Played by S47Happenings when the player comes back to the truck after a long while away. Point: truck (a metre over where it stands). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "hap:tick", "point": "truck", "gain": 0.55 },
+    { "at": 0, "do": "sound", "sound": "hap:tick", "point": "truck", "gain": 0.4, "rate": 0.9, "delay": 2.6 },
+    { "at": 0, "do": "evidence", "key": "hood_warm_d{day}", "text": "At {clock} the truck had been sitting a good while, and its engine was ticking as it cooled when I came back to it. The hood was warm to the hand." }
+  ]
+}

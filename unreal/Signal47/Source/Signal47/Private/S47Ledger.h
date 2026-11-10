@@ -38,6 +38,7 @@ namespace S47Ledger
   TArray<FAd> Ads;
   TArray<FNote> Letters;
   FString Showing,LastWeek,Almanac;
+  FString Photo; // D46-1-20261110: the front page's photo from the world (PhotoFromPixels); empty: the drawn picture
  };
  // What an ad's coupon gives, until the day before the next paper. What: a supply at the Caliche counter (FS47FreeformWorld's id),
  // "motel", "post" (postage on a mail order), or "mail:<id>" (that line of the catalog).
@@ -68,6 +69,12 @@ namespace S47Ledger
  FString LeadTitle(const FString& Lead);
  // Every article of the issue with a lead the map can show, front page first, each lead once to a sheet.
  TArray<FLeadRef> LeadsOf(const FIssue& Issue);
+ // D46-1-20261110 (Tom: «tar et svarthvitt bilde fra verdenen som passer til artikkelen»): the front page's photo, made in the
+ // world at the lead story's place and kept with the issue as a small grey JPEG data URL (about 320x170, 5 to 12 KB). Any frame
+ // (BGRA, top row first) to that, empty if it cannot be made; and whether a kept URL is one the paper will print.
+ constexpr int32 PhotoStoreW=320,PhotoStoreH=170,PhotoQuality=60,PhotoMaxChars=32000;
+ FString PhotoFromPixels(const TArray<FColor>& Px,int32 W,int32 H);
+ bool PhotoValid(const FString& Url);
  // The paper as a page: newsprint, a nameplate, six columns, a photo on the front, the ads inside. Its coupons are clipped from
  // under it (FS47Mail). Sheet: 0 the front, 1 inside. An article with a lead can be clicked to pencil it onto the map (Hooks).
  TSharedRef<SWidget> Page(const FIssue& Issue,int32 Sheet=0,const FLeadHooks& Hooks=FLeadHooks());

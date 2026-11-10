@@ -41,6 +41,7 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/PackageName.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "UObject/GarbageCollection.h"
 
 // ---------- the truck
@@ -554,16 +555,36 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 namespace
 {
  FVector TripWorld(const FVector& At){return At+FVector(0,.3,0);}
+ // D46-20261110 (Tom, D46-10): the trip camera as Tools/tripcam/import_assets.sh imports it (a 31 cm olive box on its ground stake,
+ // pivot at the stake's foot, lens towards three's -Z). Only with every material bound and collision to answer the use trace;
+ // otherwise nothing, and the box stands for it as before.
+ UStaticMesh* TripModel()
+ {
+  const FString Package=TEXT("/Game/Licensed/Models/tripcam/StaticMeshes/tripcam");
+  if(!FPackageName::DoesPackageExist(Package))return nullptr;
+  UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*(Package+TEXT(".tripcam")));
+  if(!Mesh||Mesh->GetStaticMaterials().IsEmpty())return nullptr;
+  for(const FStaticMaterial& Slot:Mesh->GetStaticMaterials())if(!Slot.MaterialInterface){UE_LOG(LogTemp,Warning,TEXT("S47: trip camera model has an unbound material slot; the box stands for it"));return nullptr;}
+  const UBodySetup* Body=Mesh->GetBodySetup();
+  if(!Body||(Body->AggGeom.GetElementCount()==0&&Body->GetCollisionTraceFlag()!=CTF_UseComplexAsSimple)){UE_LOG(LogTemp,Warning,TEXT("S47: trip camera model has no collision (import it again); the box stands for it"));return nullptr;}
+  return Mesh;
+ }
+ // The saved yaw, or none: an older save (before D46) left it out, and the lens then looks down -Z as it always stood.
+ double TripYaw(const S47J::FObj& Saved)
+ {
+  const double Y=S47J::Num(Saved,TEXT("yaw"),0);
+  return FMath::IsFinite(Y)?FMath::Clamp(Y,-UE_DOUBLE_TWO_PI,UE_DOUBLE_TWO_PI):0;
+ }
 }
 void FS47TripCamera::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
+ Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;Yaw=0;
  if(Saved.IsValid()&&S47J::Bool(Saved,TEXT("out")))
  {
   const auto A=S47J::Nums(Saved,TEXT("at"));const double Clock=S47J::Num(Saved,TEXT("clock"));Area=S47J::Str(Saved,TEXT("area"));Title=S47J::Str(Saved,TEXT("title"));
   if(A.Num()==3&&FMath::IsFinite(Clock)&&!Area.IsEmpty())
   {
-   At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;
+   At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;Yaw=TripYaw(Saved);
    Caught=ECatch(FMath::Clamp(S47J::Int(Saved,TEXT("caught")),0,2));CaughtClock=S47J::Num(Saved,TEXT("caughtClock"),-1);PhotoId=S47J::Str(Saved,TEXT("photo"));
   }
  }
@@ -576,6 +597,7 @@ S47J::FObj FS47TripCamera::Save() const
 {
  auto O=S47J::New();if(!bOut)return O;
  S47J::Set(O,TEXT("out"),true);S47J::Set(O,TEXT("area"),Area);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("clock"),SetClock);S47J::Set(O,TEXT("marks"),bAtMarksThen);S47J::Set(O,TEXT("at"),TArray<double>{At.X,At.Y,At.Z});
+ if(Yaw!=0)S47J::Set(O,TEXT("yaw"),Yaw); // D46-20261110: added to the record; a save without it reads as before
  if(Caught!=ECatch::None){S47J::Set(O,TEXT("caught"),int32(Caught));S47J::Set(O,TEXT("caughtClock"),CaughtClock);}
  if(!PhotoId.IsEmpty())S47J::Set(O,TEXT("photo"),PhotoId);
  return O;
@@ -587,11 +609,18 @@ bool FS47TripCamera::Build()
  const int32 SaroRoot=M->Web->Handle(TEXT("ext.group")),RoadRoot=M->Web->Handle(TEXT("world.legs.road.area.group"));if(SaroRoot<0||RoadRoot<0)return false;
  auto* Box=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));if(!Box||!Base)return false;
+ // D46-20261110 (D46-10): the imported model when it is there, with its own materials and the stake's foot as its pivot; else the box.
+ UStaticMesh* Model=TripModel();bModel=Model!=nullptr;
+ if(bModel)UE_LOG(LogTemp,Display,TEXT("S47: trip camera drawn from %s (%d triangles)"),*Model->GetPathName(),Model->GetNumTriangles(0));
  const auto Prop=[&](int32 Root,const TCHAR* Name,FS47Obj& Out)
  {
-  auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.14f,.13f,.1f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
-  auto* C=NewObject<UStaticMeshComponent>(M->Web.Get(),Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Box);C->SetMaterial(0,Mat);
-  C->SetWorldScale3D(FVector(.2,.14,.6));
+  auto* C=NewObject<UStaticMeshComponent>(M->Web.Get(),Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());
+  if(bModel){C->SetStaticMesh(Model);C->SetForceDisableNanite(true);C->SetCastShadow(true);} // (imported without Nanite: its glTF materials are not marked for it, D44)
+  else
+  {
+   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.14f,.13f,.1f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
+   C->SetStaticMesh(Box);C->SetMaterial(0,Mat);C->SetWorldScale3D(FVector(.2,.14,.6));
+  }
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
   Out=M->Web->ObjAt(M->Web->AdoptNode(C,Root,Name));return C;
  };
@@ -611,7 +640,11 @@ void FS47TripCamera::Layout()
   if(!C)continue;
   const bool bThis=bOut&&(C==PropSaro.Get())==(Area==TEXT("saro"));
   C->SetVisibility(bThis);C->SetHiddenInGame(!bThis);C->SetCollisionEnabled(bThis?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
-  if(bThis)C->SetWorldLocation(S47Three::ToUE(TripWorld(At)));
+  if(!bThis)continue;
+  // D46-20261110: the model stands on the ground where it was set (its pivot is the stake's foot), its lens the way the player faced;
+  // the box as before, lifted to stand on its lower end.
+  if(bModel){double E[16];S47Three::Compose(At,S47Three::Euler(0,Yaw,0),FVector::OneVector,E);C->SetWorldTransform(S47Three::MatToUE(E));}
+  else C->SetWorldLocation(S47Three::ToUE(TripWorld(At)));
  }
 }
 bool FS47TripCamera::CanSet() const
@@ -625,6 +658,7 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
  bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
  if(Area==TEXT("diner"))Area=TEXT("road");
  At=FVector(M->Player->Pos.X+1.5,M->Player->FloorY,M->Player->Pos.Z);
+ Yaw=FMath::IsFinite(M->Player->Yaw)?FMath::Fmod(M->Player->Yaw,UE_DOUBLE_TWO_PI):0; // D46-20261110: it watches the way the player looked
  if(!bBuilt)Build();
  Layout();
  if(M->UI)M->UI->Toast(M->Freeform->InventoryCount(TEXT("wire"))>0?TEXT("Trip camera set, and fence wire run out from it across the way in, thirty yards each side. It reads in the morning."):TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
@@ -736,6 +770,12 @@ bool FS47TripCamera::SelfTest(TArray<FString>& Lines)
  FS47TripCamera B(nullptr);B.Begin(S47J::Read(S47J::Write(O)));Check(B.Out()&&S47J::Num(B.Save(),TEXT("clock"))==90000.,TEXT("one left out stays out after a Continue"));
  S47J::Set(O,TEXT("caught"),2);S47J::Set(O,TEXT("caughtClock"),97000.);S47J::Set(O,TEXT("photo"),TEXT("trip4@97000"));
  FS47TripCamera Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(O)));Check(Kept.CaughtTonight()==ECatch::Body&&S47J::Str(Kept.Save(),TEXT("photo"))==TEXT("trip4@97000"),TEXT("what it caught, and its frame, survive a Continue"));
+ // D46-20261110 (D46-10): the way it faces is in the record; a save from before it has none and reads as it always stood
+ Check(Kept.Yaw==0&&!Kept.Save()->Values.Contains(TEXT("yaw")),TEXT("an older record without a yaw stands as before, and writes none"));
+ S47J::Set(O,TEXT("yaw"),-2.25);
+ FS47TripCamera Faced(nullptr);Faced.Begin(S47J::Read(S47J::Write(O)));Check(FMath::IsNearlyEqual(Faced.Yaw,-2.25)&&FMath::IsNearlyEqual(S47J::Num(Faced.Save(),TEXT("yaw")),-2.25)&&Faced.Out(),TEXT("the way it faces survives a Continue"));
+ S47J::Set(O,TEXT("yaw"),1e30);
+ FS47TripCamera Wild(nullptr);Wild.Begin(S47J::Read(S47J::Write(O)));Check(Wild.Out()&&FMath::Abs(Wild.Yaw)<=UE_DOUBLE_TWO_PI,TEXT("a yaw out of all bounds is held to a turn, and the camera is still out"));
  return OK;
 }
 

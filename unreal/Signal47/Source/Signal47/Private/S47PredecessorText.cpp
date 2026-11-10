@@ -230,6 +230,9 @@ const TArray<FBark>& Barks()
 {
  static const TArray<FBark> Table={
   {TEXT("hello"),TEXT("letter"),1,TEXT("Dale, field maintenance. You are the new one. Amber is NORMAL. Do not touch Bank Three. I do not care who you are. Dale out.")},
+  // D46-20261110 (D46-3): the first night's array turned by itself at 00:41 (FS47Happenings::TurnFirstArray), and his bench was his cover
+  // for the printer the day before. His first line on the second day, before anything else of his; only while it is fresh (Meets).
+  {TEXT("turned"),TEXT("turned1"),2,TEXT("Not my bench. My bench was off all night. Who put my whole array on one bearing at twenty to one? You write down the time, and you lock the door. Dale out.")},
   {TEXT("filed1"),TEXT("filed1"),1,TEXT("One job filed. I will alert the newspapers. Now the next one.")},
   {TEXT("locker"),TEXT("locker"),1,TEXT("Who told you to go in that locker? Nobody. That is who. Leave the mug where it is.")},
   {TEXT("tag"),TEXT("tag_windmill"),1,TEXT("You are out on my survey now? Nobody asked you. You read the tags, you do not add to them. Dale out.")},

@@ -233,6 +233,13 @@ bool FS47Fleet::Audit(TArray<FString>& Lines)const
   for(auto& Part:NativeParts){auto* C=Part.Get();Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetNumLODs()==3&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("three source LODs; transport collision remains explicit"));}
   const auto* Body=NativeParts.Num()?NativeParts[0].Get():nullptr;
   Check(Body&&Body->GetStaticMesh()&&Body->GetStaticMesh()->GetName()==(bJeepWheels?TEXT("SM_TripoJeep_WheelBody"):(bJeepCab?TEXT("SM_TripoJeep_InteriorBody"):TEXT("SM_TripoFleet_ClassicJeep"))),TEXT("actual body matches complete wheel rig or fused fallback; no duplicate tyres"));
+  // D46-20261110 (D46-7, JEEP-FORM): the lamp anchors the switches drive lie on the body actually imported, whichever
+  // front end it carries. Truck terms are metres (x, up, -nose); the body asset is Blender metres as UE cm (x, -forward, up).
+  if(Body&&Body->GetStaticMesh())
+  {
+   const FBox BodyBox=Body->GetStaticMesh()->GetBoundingBox().ExpandBy(6.);
+   for(int32 Side=0;Side<2;++Side){const FVector Anchor=Headlamp(Side);Check(BodyBox.IsInsideOrOn(FVector(Anchor.X*100,Anchor.Z*100,Anchor.Y*100)),FString::Printf(TEXT("Jeep headlamp%d anchor on the imported body (%s)"),Side,*Body->GetStaticMesh()->GetName()));}
+  }
   const bool CompleteWheels=WheelParts.Num()==4&&WheelAt.Num()==4&&WheelRadius.Num()==4&&ExpectedWheels.Num()==4;
   Check(bJeepWheels?(bJeepCab&&CompleteWheels):(WheelParts.IsEmpty()&&WheelAt.IsEmpty()&&WheelRadius.IsEmpty()&&ExpectedWheels.IsEmpty()),TEXT("all four native wheels installed together or absent with complete fused fallback"));
   if(bJeepWheels&&CompleteWheels)

@@ -1,7 +1,7 @@
 // LOOP-3-20261109 (HELHETLIG_LOKKE step 3, Tom 9 November: "Tidsstempel og samme minutt bærer bevisene"). What the player brings back
 // from out on the land comes home as a question that only the station can answer: was there something on the array in the same
 // minute? The array keeps its own log of what it caught off schedule (ArrayMarks); a time from the field is set against it when the
-// player is back at SARO (the pin board's PinWhatCameBack: no new button), and the answer prints on the telex as "SAME MINUTE ON
+// player is back at SARO (the session's Step, once a second: no new button, no pinboard), and the answer prints on the telex as "SAME MINUTE ON
 // ARRAY: YES/NO". It is a field record of OUT ON THE LAND (FS47FreeformCases::LandLine): YES strikes Animals and weather there, by
 // the visitors' own way of striking the wind (RuleOutWind), NO strikes nothing. No new trust, no threads: the time carries it.
 // A photograph from one of the night's happenings out there is also a field record OPS pays for once, under the week's cap.

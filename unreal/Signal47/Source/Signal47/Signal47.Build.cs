@@ -32,5 +32,7 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/*.json", StagedFileType.UFS);
 		// Tom's scripted events (S47ScriptPlayer), one file each.
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/scripted/*.json", StagedFileType.UFS);
+		// D46-20261110: the night's events' own scripts (S47EventScript), one file each.
+		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/Events/*.json", StagedFileType.UFS);
 	}
 }

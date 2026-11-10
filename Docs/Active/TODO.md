@@ -54,6 +54,11 @@ Toms ord (forkortet): avisen skal få et svart-hvitt bilde fra spillverdenen som
 - [ ] **D46-9 Kaffe og søvn** (Tom sa ja til konseptet): kaffe på SARO eller i dineren skyver trettheten noen timer; for trett gir blunk, tregere gange og tanker som glipper; søvn i køya eller hjemme nullstiller. Bygger på S47Fatigue.
 - [ ] **D46-10 Trip camera-modell** av Fable 5.2 (i dag en grå kube), og et tidlig hint om at den finnes.
 - [ ] **D46-11 Hendelsesmanus:** mer detaljerte manus for alle hendelser, så det kan styres hva som skjer i hver.
+- [ ] **D46-14 Receiver-fanene:** TUNE, ARRAY, RECORD og DATA må få mer innhold og noe å gjøre.
+- [ ] **D46-15 Fremmede signaler:** signaler som peker til steder på kartet skal høres fremmede og skumle ut, med rare lyder.
+- [ ] **D46-16 Referanselydene:** i dag seks offentlige NASA-opptak og én syntetisk tekstur, bare til å sammenligne på øret uten følge. Skal få et poeng: kjente kilder (lynsus, plystrere, fly-radar, nettbrum, satellitt, pulsar) som kan utelukke en forklaring.
+- [ ] **D46-17 Typer romvesener og hendelser:** Roswell nysgjerrig, Tall og Pale skumle og slemme, Nordic harmoniske, Cosmic vil opplyse menneskene; overvekt av skrekk. Hver type får sin egen oppførsel, sitt eget signal og sine egne hendelser.
+- [ ] **D46-18 Dag 1 ved vindmølla:** Tom fant ringen rundt vindmølla, men «ingenting der». Funnet er bare et feltnotat ved E på tårnet. Trenger synlige spor (ny tråd på halevingen, dekkspor som slutter, nedtråkket kratt), en tanke ved ankomst, tydelig E-hint, mindre ring på dag 1, og NOW-linje som knytter funnet til nattens peiling.
 - [ ] **D46-8 Cosmos:** gå gjennom alt som er lastet ned og lag en liste over hva som bør lastes ned i tillegg (Tom laster ned selv).
 
 ## Toms fikseliste 10. november (etter nattskiftet, d43)

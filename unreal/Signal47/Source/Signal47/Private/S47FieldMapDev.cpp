@@ -296,58 +296,30 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		});
 	});
 
-	// ---- the case board (CASEBOARD-20261108) ----
-	static const TCHAR* const BoardGroup = TEXT("Case board (M3)");
-	E.AddFreeform(BoardGroup, TEXT("Case board: field records brought back and put up, with threads"), TEXT("two records at the windmill, one behind the church on the same line of inquiry, a Ledger letter naming the windmill pinned from the tray; back at SARO they go up; one thread of your own; the board"), [this, Stand, AtDesk, Pictured]
+	// ---- the pinboard is gone (D46-20261110; was the case board, CASEBOARD-20261108) ----
+	static const TCHAR* const BoardGroup = TEXT("No pinboard (D46)");
+	E.AddFreeform(BoardGroup, TEXT("No pinboard: B opens nothing, the same-minute question still goes at SARO"), TEXT("at the desk at SARO; B shows no board and no hint, the old board's book is not listed, and the station still asks what came back (AskWhatCameBack) with no toast about pinning"), [this, AtDesk]
 	{
-		Stand(TEXT("windmill"), 3, [this, Stand, AtDesk, Pictured](const FVector2D&, double)
+		AtDesk([this]
 		{
-			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
-			const int32 Dn = Fs->Day();
-			Fs->RecordEvidence(FString::Printf(TEXT("observer.day%d"), Dn), TEXT("F10: small prints in a ring by the windmill, nothing leading in or out."));
-			After(.4, [this, Stand, AtDesk, Pictured, Dn]
-			{
-				FS47FreeformSession* Fs1 = Session(); if (!Fs1) return;
-				Fs1->RecordEvidence(FString::Printf(TEXT("pinboard_mill_d%d"), Dn), TEXT("F10: the brake wire on the windmill, cut and twisted back on itself."));
-				Stand(TEXT("church"), 0, [this, AtDesk, Pictured, Dn](const FVector2D&, double)
-				{
-					FS47FreeformSession* Fs2 = Session(); if (!Fs2 || !M || !M->Story) return;
-					Fs2->RecordEvidence(FString::Printf(TEXT("landing_trace.day%d"), Dn), TEXT("F10: a ring of pressed-down ground behind the church, thirty feet across."));
-					FS47Doc Paper; Paper.Id = FString::Printf(TEXT("dev-ledger-d%d"), Dn); Paper.Kind = TEXT("typed"); Paper.Stamp = TEXT("THE LEDGER");
-					Paper.Title = TEXT("The Caliche County Ledger, letters");
-					Paper.Page = TEXT("LIGHTS AGAIN\nEditor: What sat over the windmill on the Baca lease the other night was not a plane. I would like somebody to tell me what it wasn't. / Baca lease");
-					Paper.Transcript = Paper.Page;
-					M->Story->AddDoc(Paper);
-					const bool bClip = Fs2->PinBoard && Fs2->PinBoard->DevClip(Paper.Id);
-					AtDesk([this, Pictured, Dn, bClip]
-					{
-						After(1.6, [this, Pictured, Dn, bClip]
-						{
-							FS47FreeformSession* Fs3 = Session(); if (!Fs3 || !Fs3->PinBoard || !M) return;
-							FS47PinBoard& Pb = *Fs3->PinBoard;
-							const FString Mine = FString::Printf(TEXT("ff:f:pinboard_mill_d%d"), Dn), Church = FString::Printf(TEXT("ff:f:landing_trace.day%d"), Dn);
-							if (Pb.Book()) Pb.Book()->Connect(Mine, Church, false); // a second time would untie it
-							const int32 Station = Pb.StationThreads().Num();
-							if (M->Board.Open) M->Board.Open(FString(), FString());
-							Pictured(TEXT("board"), .35f); // the next line opens the tray half a second after this one ends
-							const bool bOk = Pb.AtSaro() && Pb.UpCount() >= 4 && Station >= 2 && Pb.ThreadCount() >= 1 && bClip;
-							Tell(bOk, FString::Printf(TEXT("On the board: %d up, %d station threads, %d of your own, clipping %s"), Pb.UpCount(), Station, Pb.ThreadCount(), bClip ? TEXT("up") : TEXT("refused")));
-						});
-					});
-				});
-			});
+			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard || !M) { Tell(false, TEXT("no old board data in this run")); return; }
+			const bool bAtSaro = Fs->PinBoard->AtSaro();
+			const bool bListed = Fs->PinBoard->Book() && M->Books.Contains(Fs->PinBoard->Book());
+			const int32 Asked = Fs->AskWhatCameBack();
+			Tell(bAtSaro && !bListed && Asked >= 0, FString::Printf(TEXT("At SARO %s, old board listed %s, %d asked just now. Press B: nothing opens; the key hints show no PINBOARD"), bAtSaro ? TEXT("yes") : TEXT("no"), bListed ? TEXT("yes") : TEXT("no"), Asked));
 		});
 	});
-	E.AddFreeform(BoardGroup, TEXT("Case board: the tray of papers"), TEXT("the papers that are not field material, by the board; one names a place and can be pinned"), [this, AtDesk, Pictured]
+	E.AddFreeform(BoardGroup, TEXT("Papers: a letter naming the windmill stays in the notebook's DOCUMENTS"), TEXT("a Ledger letter that names the windmill added as a paper; the notebook's DOCUMENTS lists it (FS47PinBoard::Papers) and the map is the place to look for the windmill"), [this]
 	{
-		AtDesk([this, Pictured]
-		{
-			FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard) { Tell(false, TEXT("no case board in this run")); return; }
-			Fs->PinBoard->OpenTray();
-			Pictured(TEXT("board"), 1.f);
-			const int32 InTray = Fs->PinBoard->Papers().Num();
-			Tell(true, FString::Printf(TEXT("The tray: %d %s"), InTray, InTray == 1 ? TEXT("paper") : TEXT("papers")));
-		});
+		FS47FreeformSession* Fs = Session(); if (!Fs || !Fs->PinBoard || !M || !M->Story) { Tell(false, TEXT("no papers in this run")); return; }
+		FS47Doc Paper; Paper.Id = FString::Printf(TEXT("dev-ledger-d%d"), Fs->Day()); Paper.Kind = TEXT("typed"); Paper.Stamp = TEXT("THE LEDGER");
+		Paper.Title = TEXT("The Caliche County Ledger, letters");
+		Paper.Page = TEXT("LIGHTS AGAIN\nEditor: What sat over the windmill on the Baca lease the other night was not a plane. I would like somebody to tell me what it wasn't. / Baca lease");
+		Paper.Transcript = Paper.Page;
+		M->Story->AddDoc(Paper);
+		const TArray<FS47Doc> Pile = Fs->PinBoard->Papers();
+		const bool bHas = Pile.ContainsByPredicate([&Paper](const FS47Doc& D) { return D.Id == Paper.Id; });
+		Tell(bHas && !FS47PinBoard::PlaceNamed(Paper.Page + TEXT("\n") + Paper.Title).IsEmpty(), FString::Printf(TEXT("%d papers in DOCUMENTS, the letter %s, it names a place on the land"), Pile.Num(), bHas ? TEXT("among them") : TEXT("missing")));
 	});
 
 	// ---- the enlarger (ENLARGE-20261108) ----

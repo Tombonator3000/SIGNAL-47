@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "array_burst",
+  "name": "The array catches a burst off the main beam",
+  "notes": "Played by S47Happenings when the burst starts. The code picks the place and the bearing; this file says what the player hears, sees and keeps. Words: {az} {spread} {target} {burst_night} {map_key} {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "map", "place": "{target}" },
+    { "at": 0, "do": "tone", "hz": 1400, "secs": 0.05, "gain": 0.06, "wave": "square", "repeat": 6, "every": 0.12 },
+    { "at": 0, "do": "printer", "gain": 0.3, "delay": 1, "stop": 3 },
+    { "at": 0, "do": "evidence", "key": "array_burst_d{burst_night}", "text": "At {clock} the array caught a short burst off the main beam, about {az} degrees from SARO, give or take {spread}. The printer ran a line by itself." },
+    { "at": 0.8, "do": "toast", "text": "ARRAY / Off the main beam: about {az} degrees. On your map ({map_key}).", "secs": 5 }
+  ]
+}

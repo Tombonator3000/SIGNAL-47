@@ -7,6 +7,7 @@
 #include "S47Drive.h"
 #include "S47EyeGlint.h"
 #include "S47EventPlaces.h"
+#include "S47EventScript.h"
 #include "S47Visitors.h"
 #include "S47FarmLights.h"
 #include "S47FarmSite.h"
@@ -44,11 +45,13 @@
 #include "S47TripoNew.h"
 #include "S47Truck.h"
 #include "S47UI.h"
+#include "S47Thoughts.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Story.h"
 #include "S47Theme.h"
+#include "S47TvProgramme.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Components/LocalFogVolumeComponent.h"
@@ -930,6 +933,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
  Glimpse=S47RoadGlimpse::FPlan();Paced=0;NearK=1;DangerAt=-1;Tally=FTally();NoticedSerials.Reset();RefusedSaid.Reset();LateDrawSaid.Reset();LoopsOn.Reset();SoundNext=0;HeldTips.Reset();FigureSeen.Reset();FigureSeenFor=0;SwapTry=0;RumorTry=0;
  DimLeft=0;bDimmed=false;Dose=0;Needle=0;GmMeter=0;GeigerUpFor=0;GeigerNoteIn=0;bGeigerUp=false;bGeigerHeld=false;bDevGeiger=false;bGeigerAway=false;bGmRoar=false;
  ResetBig();
+ FirstDay=FFirstDayNow();FirstDay.bLoaded=Saved.IsValid(); // D46-20261110 (D46-3)
  if(Saved.IsValid())
  {
   LoadBig(S47J::Obj(Saved,TEXT("big")));
@@ -1063,7 +1067,7 @@ void FS47Happenings::Stop()
  EndBigEffects();
  // At process exit the object array may already be gone: IsValid(M) itself faults there (seen in the Reyes and journey runs
  // after the test passed). Only plain state is reset then.
- if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();bGmRoar=false;Now=FActive();Says.Reset();return;}
+ if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();bGmRoar=false;Now=FActive();Says.Reset();FirstDay.bMotors=false;FirstDay.Later.Reset();return;}
  if(bDimmed&&IsValid(M)&&IsValid(M->World)&&!IsEngineExitRequested()){M->World->Trouble.Dim=1;}
  if(!Now.Id.IsEmpty()&&IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())M->Audio->Stop(TEXT("hapEngine"),.2f);
  if(Uneasy.I>=0&&IsValid(M)&&!IsEngineExitRequested()&&!IsGarbageCollecting())EndUneasy();
@@ -1075,6 +1079,7 @@ void FS47Happenings::Stop()
  if(bGmRoar&&IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())M->Audio->Stop(S47Hap::GmRoarKey,.1f);
  bGmRoar=false;
  if(!Now.Id.IsEmpty()&&IsValid(M)&&!IsEngineExitRequested()&&!IsGarbageCollecting())PutAway(Now.Id);
+ EndFirstDay(); // D46-20261110: the first day's motors and what its beats had still to do
  Now=FActive();Says.Reset();
  if(!IsEngineExitRequested()&&!IsGarbageCollecting())HideAll();
 }
@@ -2191,6 +2196,8 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  if(bGround&&!Now.Id.IsEmpty()){Why=FString::Printf(TEXT("%s is on"),*Now.Id);return false;}
  // CRIT9-20261109: from ten to two the night is the week's case's (FS47WeekCase::HoldsFarm): nothing on the ground but the humor.
  if(!bForced&&bGround&&Id!=TEXT("humor")&&FS47WeekCase::HoldsFarm(M)){Why=TEXT("the week's case has the night");return false;}
+ // D46-20261110 (D46-11): the event's script may hold it back by its gates (Content/Director/Events/<id>.json); never an F10 start.
+ if(!bForced&&!S47EventScript::Allows(M,Id,Why))return false;
  bool bOk=false;const int32 SitesBefore=Sites.Num();
  if(Id==TEXT("car_dies"))bOk=BeginCar(bForced,Why);
  else if(Id==TEXT("clock_ahead"))bOk=BeginAhead(bForced,Why);
@@ -2228,6 +2235,8 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  const FString& PlaceId=Made?Made->Place:Now.Place;
  if(!PlaceId.IsEmpty()&&F->EventPlaces)FS47EventPlaces::LogPick(Id,F->EventPlaces->Find(PlaceId),TEXT("night event"));
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening start %s%s day %d %s in %s at %s, %s%s"),*Id,Now.Id==Id&&!Now.Variant.IsEmpty()?*FString::Printf(TEXT(" (%s)"),*Now.Variant):TEXT(""),F->Day(),*S47Hap::ClockText(F->Clock()),*M->Web->Area(),*AtTitle,Away<0?TEXT("no distance"):*FString::Printf(TEXT("%.0f m from the player"),Away),bForced?TEXT(", F10"):TEXT(""));
+ // D46-5-20261110: the player's own thought as it starts (S47Thoughts: its own pool, one in 90 real seconds, through the one queue).
+ S47Thoughts::Think(M,Id);
  M->RequestAutosave();
  return true;
 }
@@ -2328,6 +2337,7 @@ void FS47Happenings::Step(double Dt)
  StepReport();
  StepUnease(Dt);
  StepGeiger(Dt);
+ StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
 }
 
 // Tom, 8 November: something every night, also between eleven and one. If nothing has come by half past twelve, the best of these that
@@ -3868,9 +3878,10 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(!bTown&&!bForced)return No(TEXT("not in Caliche"));
   FS47Town* T=M->TownLayer?M->TownLayer->Town.Get():nullptr;if(!T)return No(TEXT("no town here"));
   if(!Ask(TEXT("town_blackout")))return No(TEXT("the rhythm says not now"));
-  T->LampWave(M->T);
-  if(M->Audio){M->Audio->Beep(60.f,40.f,.05f,1.f,TEXT("sine"));M->Audio->Beep(120.f,40.f,.025f,1.f,TEXT("square"));}
-  F->RecordEvidence(FString::Printf(TEXT("blackout_d%d"),F->Day()),FString::Printf(TEXT("At %s every light in Caliche went out, one after another down the street, and the transformer hummed loud enough to hear across town. Then they came back."),*S47Hap::ClockText(Clock)));
+  // D46-20261110 (D46-11): the lamps going out down the street, the transformer's hum and the finding are the event's script
+  // (Content/Director/Events/town_blackout.json, built in the same: S47EventScript.h).
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));
+  S47EventScript::Play(M,TEXT("town_blackout"),Beats);
   Deed(TEXT("You stood in Caliche when the lights went out."));
   Arm(TEXT("town_blackout"),30);
   return true;
@@ -3897,16 +3908,16 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   FSite S;S.Kind=TEXT("burst");S.Place=Target;S.Title=Target;S.Night=F->Day();S.Serial=Serial+1;S.X=ToX;S.Z=ToZ;S.Az=Az;S.Spread=Spread;S.Until=Clock+4*86400.;
   Sites.RemoveAll([](const FSite& Old){return Old.Kind==TEXT("burst");});Sites.Add(S);
   if(!bForced)TakePointOut(F->Director.Get(),PointNight);
-  if(F->Places&&FS47Places::Def(Target))F->Places->Hear(Target);
-  if(M->Audio)
-  {
-   for(int32 K=0;K<6;++K)M->Audio->Beep(1400.f,.05f,.06f,.12f*K,TEXT("square"));
-   FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=1.f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
-   if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
-  }
-  Say(FString::Printf(TEXT("ARRAY / Off the main beam: about %.0f degrees. On your map (%s)."),Az,*S47Keys::MapSaid()),.8,5);
+  // D46-20261110 (D46-11): the place heard of on the map, the beeps, the printer, the finding and the line on the screen are the
+  // event's script (Content/Director/Events/array_burst.json, built in the same: S47EventScript.h); here only its words.
+  FS47EventCtx Beats;
+  Beats.Words.Add(TEXT("az"),FString::Printf(TEXT("%.0f"),Az));Beats.Words.Add(TEXT("spread"),FString::Printf(TEXT("%.0f"),Spread));
+  Beats.Words.Add(TEXT("target"),Target);Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));
   // D45-20261110: the first night's under its night even after midnight, so that 1420's caller tells it back the next evening (S47NightLine)
-  F->RecordEvidence(FString::Printf(TEXT("array_burst_d%d"),PointNight==1?1:F->Day()),FString::Printf(TEXT("At %s the array caught a short burst off the main beam, about %.0f degrees from SARO, give or take %.0f. The printer ran a line by itself."),*S47Hap::ClockText(Clock),Az,Spread));
+  Beats.Words.Add(TEXT("burst_night"),FString::FromInt(PointNight==1?1:F->Day()));
+  S47EventScript::Play(M,TEXT("array_burst"),Beats);
+  // D46-20261110 (D46-3): on the first night Dale's set in OPS goes to snow with it for a moment (1420's caller says so the next evening).
+  if(PointNight==1)FS47TvProgramme::JamFor(.95,2.);
   Arm(TEXT("array_burst"),5);
   return true;
  }
@@ -3952,9 +3963,12 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   }
   if(!Ask(TEXT("hood_warm")))return No(TEXT("the rhythm says not now"));
   HoodNight=F->Day();
-  // The engine ticking as it cools, as it does just after a drive: the truck has been sitting a good while.
-  if(M->Audio){FS47Sound O;O.At=T->Position+FVector(0,1,0);O.Gain=.55f;M->Audio->Sfx(Synth(TEXT("tick")),O);FS47Sound O2=O;O2.When=2.6f;O2.Gain=.4f;O2.Rate=.9f;M->Audio->Sfx(Synth(TEXT("tick")),O2);}
-  F->RecordEvidence(FString::Printf(TEXT("hood_warm_d%d"),F->Day()),FString::Printf(TEXT("At %s the truck had been sitting a good while, and its engine was ticking as it cooled when I came back to it. The hood was warm to the hand."),*S47Hap::ClockText(Clock)));
+  // The engine ticking as it cools, as it does just after a drive: the truck has been sitting a good while. D46-20261110 (D46-11):
+  // the ticks and the finding are the event's script (Content/Director/Events/hood_warm.json, built in the same), at the point
+  // "truck"; its recording "hap:tick" is made here first.
+  Synth(TEXT("tick"));
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("truck"),T->Position+FVector(0,1,0));
+  S47EventScript::Play(M,TEXT("hood_warm"),Beats);
   Deed(TEXT("You came back to the truck."));
   return true;
  }
@@ -5072,7 +5086,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  // it that is not a log line or a path. Nothing named, no make or brand, American spelling, nothing from Story's far side.
  {
   int32 Read=0;TArray<FString> Bad,Tells;
-  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp"),TEXT("Signal47/Private/S47RoadGlimpse.cpp")})
+  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp"),TEXT("Signal47/Private/S47RoadGlimpse.cpp"),TEXT("Signal47/Private/S47FirstDay.cpp")})
   {
    FString Src;if(!FFileHelper::LoadFileToString(Src,*(FPaths::GameSourceDir()/File)))continue;
    TArray<FString> SrcLines;Src.ParseIntoArrayLines(SrcLines,false);
@@ -5293,5 +5307,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  OK&=S47RoadGlimpse::SelfTest(Lines);
  // M7: the first big night's plan, its save and its words (S47BigNight.cpp).
  OK&=BigSelfTest(Lines);
+ // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp).
+ OK&=FirstDaySelfTest(Lines);
  return OK;
 }

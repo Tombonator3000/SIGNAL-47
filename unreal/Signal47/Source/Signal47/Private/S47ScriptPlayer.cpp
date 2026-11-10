@@ -4,6 +4,7 @@
 #include "S47DevEvents.h"
 #include "S47Docs.h"
 #include "S47EventPlaces.h"
+#include "S47EventScript.h"
 #include "S47FarmWorld.h"
 #include "S47FieldRadio.h"
 #include "S47Flow.h"
@@ -61,6 +62,7 @@ namespace S47ScriptPlayerLocal
 FS47ScriptPlayer::FS47ScriptPlayer(US47Main* Main):M(Main),Bodies(MakeUnique<FBodies>())
 {
  S47ScriptPlayerLocal::Registry().Add(Main,this);
+ Beats=MakeUnique<FS47EventBeats>(Main); // D46-20261110
 }
 
 FS47ScriptPlayer::~FS47ScriptPlayer()
@@ -106,6 +108,8 @@ FS47FreeformSession* FS47ScriptPlayer::Session() const{return M&&M->IsFreeform()
 void FS47ScriptPlayer::Begin(const S47J::FObj& Saved)
 {
  StopRun();
+ if(Beats)Beats->Stop();
+ S47EventScript::Reload(); // D46-20261110: the event scripts, read again with each session
  Memory.Load(S47J::Obj(Saved,TEXT("played")));
  Reload();
  CheckIn=4;
@@ -115,6 +119,7 @@ void FS47ScriptPlayer::Begin(const S47J::FObj& Saved)
 void FS47ScriptPlayer::Stop()
 {
  StopRun();
+ if(Beats)Beats->Stop();
  if(Bodies)for(int32 K=0;K<3;++K)if(Bodies->Body[K].bBuilt)Bodies->Body[K].Apply(false,FVector::ZeroVector,0,0,0,0,0,FS47PaleBody::EPose::Walk);
 }
 
@@ -175,6 +180,8 @@ bool FS47ScriptPlayer::Store(const FS47Script& S,FString& Why)
 
 void FS47ScriptPlayer::AddDevLines()
 {
+ // D46-20261110 (D46-11): the event scripts' lines are there in any Freeform night, not only a developer's run.
+ if(Beats)Beats->AddDevLines();
  if(bLinesAdded||!M||!M->DevEvents||!DevAllowed(M))return;
  static const TCHAR* const Group=TEXT("Director scripts");
  bLinesAdded=true;
@@ -401,8 +408,9 @@ void FS47ScriptPlayer::Step(double Dt)
  if(!M)return;
  AddDevLines();
  FS47FreeformSession* F=Session();
- if(!F){if(bRun)StopRun(TEXT("left Freeform"));return;}
+ if(!F){if(bRun)StopRun(TEXT("left Freeform"));if(Beats&&Beats->Live())Beats->Stop();return;}
  if(F->Held()||Dt<=0)return; // a menu, a paper, a held scene: the timeline waits where it is
+ if(Beats)Beats->Step(Dt); // D46-20261110: the beats of the night's events (S47EventScript.h)
  if(bRun)
  {
   Advance(Dt);

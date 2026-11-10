@@ -804,7 +804,7 @@ void US47Flow::ShowTitle()
 	O.OnQuit = [this] { UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false); };
 	FString Version;
 	if (!GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni)) GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GEngineIni);
-	O.Version = FString::Printf(TEXT("UNREAL %s \u00B7 TAPE B"), Version.IsEmpty() ? TEXT("0.0") : *Version);
+	O.Version = FString::Printf(TEXT("VERSION %s"), Version.IsEmpty() ? TEXT("0.0") : *Version); // D46: Tom wants the version on the start screen
 	O.OnContinue = [this] { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); };
 	O.OnFreeform = [this] { RequestNewFreeform(); };
 	O.OnStart = [this]

@@ -83,6 +83,7 @@ void US47CaseBoard::Init(US47Main* InM)
 	{
 		if (!Self.IsValid() || !Self->M || !Self->M->UI || Self->M->Mode != US47Main::EMode::Play) return false;
 		US47Main* Main = Self->M;
+		if (Main->IsFreeform()) return false; // D46-20261110: B opens no board in Freeform
 		if (Main->UI->Modal())
 		{
 			if (Self->View.IsValid()) { Main->UI->Close(); return true; }
@@ -299,8 +300,8 @@ void US47CaseBoard::Open(const FString& Place, const FString& Region)
 	const FString Current = H.Region ? H.Region() : FString(TEXT("ns"));
 	const int32 Now = FMath::Max(0, RegionIndex(Current));
 	FS47BoardSpec O;
-	// CASES-OPS-20261109: in Freeform this is the PINBOARD; CASE BOARD is the OPS screen there (FS47FreeformSession::OpenCaseBoard).
-	const FString Board = M->IsFreeform() ? TEXT("PINBOARD") : TEXT("CASE BOARD");
+	// D46-20261110: Freeform has no pinboard; its CASE BOARD is the OPS screen (FS47FreeformSession::OpenCaseBoard), and B does not open this.
+	const FString Board = TEXT("CASE BOARD");
 	O.Title = Place.IsEmpty() ? Board : Board + TEXT(" / ") + Place;
 	O.Size = SizeAt(Now); O.Focus = Region.IsEmpty() ? Current : Region;
 	O.Status = [this] { return Status(); };

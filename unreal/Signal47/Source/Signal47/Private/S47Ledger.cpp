@@ -1,5 +1,6 @@
 #include "S47Ledger.h"
 #include "S47GameStyle.h"
+#include "S47Image.h"
 #include "S47Places.h"
 #include "S47Weather.h"
 #include "SS47Widgets.h"
@@ -7,6 +8,7 @@
 #include "HAL/FileManager.h"
 #include "Math/RandomStream.h"
 #include "Misc/App.h"
+#include "Misc/Base64.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
 #include "Styling/SlateStyle.h"
@@ -424,13 +426,10 @@ namespace S47LedgerLocal
   const float Sub=Subject(Kind,Qx,Qy,W*.6f,Hz+(H-Hz)*.62f);
   return FMath::Clamp(Sub>=0.f?Sub:Lum,0.f,1.f);
  }
- UTexture2D* Halftone(const FString& Kind,uint32 Seed)
+ // The screen of ink dots at 45 degrees over a luminance (0 black, 1 white) at the photo's x and y; shared by the drawn picture and
+ // the world's photo (D46-1-20261110).
+ UTexture2D* Screened(TFunctionRef<float(float,float)> Luminance)
  {
-  static TMap<FString,TStrongObjectPtr<UTexture2D>> Made;
-  const uint32 Var=Seed%3u;
-  const FString Key=FString::Printf(TEXT("%s/%u"),*Kind,Var);
-  if(const TStrongObjectPtr<UTexture2D>* Got=Made.Find(Key))return Got->Get();
-  if(!FApp::CanEverRender())return nullptr;
   constexpr float Cell=4.2f,Rt=.70710678f;
   const FColor Dot=Ink().ToFColor(true);
   TArray<FColor> Pixels;Pixels.SetNumZeroed(PhotoW*PhotoH);
@@ -439,11 +438,41 @@ namespace S47LedgerLocal
    const float Fx=Ix+.5f,Fy=Iy+.5f,U=(Fx+Fy)*Rt,V=(Fy-Fx)*Rt;
    const float Cu=(FMath::FloorToFloat(U/Cell)+.5f)*Cell,Cv=(FMath::FloorToFloat(V/Cell)+.5f)*Cell;
    const float Sx=FMath::Clamp((Cu-Cv)*Rt,0.f,PhotoW-1.f),Sy=FMath::Clamp((Cu+Cv)*Rt,0.f,PhotoH-1.f);
-   const float Lum=FMath::Clamp((Scene(Kind,Var,Sx,Sy)-.5f)*1.25f+.55f,0.f,1.f);
+   const float Lum=Luminance(Sx,Sy);
    const float Rad=Cell*.72f*FMath::Sqrt(1.f-Lum),D=FMath::Sqrt(FMath::Square(U-Cu)+FMath::Square(V-Cv));
    Pixels[Iy*PhotoW+Ix]=FColor(Dot.R,Dot.G,Dot.B,uint8(FMath::RoundToInt(FMath::Clamp(Rad-D+.5f,0.f,1.f)*235.f)));
   }
-  UTexture2D* T=MakeTex(PhotoW,PhotoH,Pixels,true);
+  return MakeTex(PhotoW,PhotoH,Pixels,true);
+ }
+ UTexture2D* Halftone(const FString& Kind,uint32 Seed)
+ {
+  static TMap<FString,TStrongObjectPtr<UTexture2D>> Made;
+  const uint32 Var=Seed%3u;
+  const FString Key=FString::Printf(TEXT("%s/%u"),*Kind,Var);
+  if(const TStrongObjectPtr<UTexture2D>* Got=Made.Find(Key))return Got->Get();
+  if(!FApp::CanEverRender())return nullptr;
+  UTexture2D* T=Screened([&Kind,Var](float Sx,float Sy){return FMath::Clamp((Scene(Kind,Var,Sx,Sy)-.5f)*1.25f+.55f,0.f,1.f);});
+  if(T)Made.Add(Key,TStrongObjectPtr<UTexture2D>(T));
+  return T;
+ }
+ // D46-1-20261110: the photo the game made of the place (Issue.Photo, a small grey JPEG) in the same screen of dots, so it looks
+ // printed on the same press; null when it cannot be read (the caller then draws the picture).
+ UTexture2D* PhotoHalftone(const FString& Url)
+ {
+  static TMap<uint32,TStrongObjectPtr<UTexture2D>> Made;
+  const uint32 Key=GetTypeHash(Url);
+  if(const TStrongObjectPtr<UTexture2D>* Got=Made.Find(Key))return Got->Get();
+  if(!FApp::CanEverRender()||!S47Ledger::PhotoValid(Url))return nullptr;
+  TArray<FColor> Grey;int32 W=0,H=0;
+  if(!S47Image::DecodePixels(Url,Grey,W,H)||W<8||H<8||Grey.Num()!=W*H)return nullptr;
+  const auto At=[&Grey,W,H](float Fx,float Fy)
+  {
+   const float X=FMath::Clamp(Fx*W/float(PhotoW)-.5f,0.f,W-1.001f),Y=FMath::Clamp(Fy*H/float(PhotoH)-.5f,0.f,H-1.001f);
+   const int32 X0=int32(X),Y0=int32(Y);const float Tx=X-X0,Ty=Y-Y0;
+   const auto G=[&Grey,W](int32 Ix,int32 Iy){return Grey[Iy*W+Ix].G/255.f;};
+   return FMath::Lerp(FMath::Lerp(G(X0,Y0),G(X0+1,Y0),Tx),FMath::Lerp(G(X0,Y0+1),G(X0+1,Y0+1),Tx),Ty);
+  };
+  UTexture2D* T=Screened([&At](float Sx,float Sy){return FMath::Clamp((At(Sx,Sy)-.5f)*1.1f+.52f,0.f,1.f);});
   if(T)Made.Add(Key,TStrongObjectPtr<UTexture2D>(T));
   return T;
  }
@@ -453,11 +482,12 @@ namespace S47LedgerLocal
   if(const FS47Places::FDef* D=FS47Places::Def(Lead))return Titled(D->Title)+PhotoLine;
   return WildCaption;
  }
- TSharedRef<SWidget> Photo(const FString& Lead,uint32 Seed)
+ TSharedRef<SWidget> Photo(const FString& Lead,uint32 Seed,const FString& World)
  {
   FString Kind;
   if(Lead==TEXT("wagon"))Kind=Lead;else if(const FS47Places::FDef* D=FS47Places::Def(Lead))Kind=D->Kind;
-  UTexture2D* T=Halftone(Kind,Seed);
+  UTexture2D* T=World.IsEmpty()?nullptr:PhotoHalftone(World); // D46-1-20261110: the world's own photo; absent or unreadable, the drawn one
+  if(!T)T=Halftone(Kind,Seed);
   const TSharedRef<SWidget> Pic=T?TSharedRef<SWidget>(SNew(SImage).Image(S47Game::Picture(T))):TSharedRef<SWidget>(SNew(SBorder).BorderImage(S47Game::Box(S47Game::C(0xa8a294))));
   return SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
@@ -617,7 +647,7 @@ namespace S47LedgerLocal
   {
    const FStory Lead=Issue.Front.IsValidIndex(0)?Issue.Front[0]:FStory();
    const TSharedRef<SHorizontalBox> Under=SNew(SHorizontalBox);
-   Cell(Under,2,Photo(Lead.Lead,uint32(FMath::Max(1,Issue.No))),false);
+   Cell(Under,2,Photo(Lead.Lead,uint32(FMath::Max(1,Issue.No)),Issue.Photo),false);
    const TSharedRef<SVerticalBox> Words1=SNew(SVerticalBox);
    Words1->AddSlot().AutoHeight().Padding(0,0,0,4)[Words(ByStaff,Serif(8.5f,EFace::Bold,80),ColW,Faded())];
    Words1->AddSlot().AutoHeight()[Para(Bold(Dateline)+Esc(Lead.Body),13.f,ColW,Ink())];
@@ -1024,6 +1054,48 @@ TArray<FString> S47Ledger::AllText()
  return Out;
 }
 
+// D46-1-20261110: the front page's photo, made from the world (US47Mail takes the picture). Any frame to a small grey newsprint JPEG:
+// cropped to the photo's shape, scaled to PhotoStoreW x PhotoStoreH, the levels stretched and the tones flattened as a weekly's press
+// would, then ~60 quality. Empty when it cannot be made.
+FString S47Ledger::PhotoFromPixels(const TArray<FColor>& Px,int32 W,int32 H)
+{
+ if(W<PhotoStoreW/2||H<PhotoStoreH/2||Px.Num()!=W*H)return FString();
+ const double Want=double(PhotoStoreW)/PhotoStoreH;
+ int32 Cw=W,Ch=H;
+ if(double(W)/H>Want)Cw=FMath::Max(1,FMath::RoundToInt(H*Want));else Ch=FMath::Max(1,FMath::RoundToInt(W/Want));
+ const int32 X0=(W-Cw)/2,Y0=(H-Ch)/2;
+ TArray<float> Lum;Lum.SetNumUninitialized(PhotoStoreW*PhotoStoreH);
+ int32 Hist[256]={};
+ for(int32 Y=0;Y<PhotoStoreH;++Y)for(int32 X=0;X<PhotoStoreW;++X)
+ {
+  const int32 Xa=X0+X*Cw/PhotoStoreW,Xb=FMath::Max(Xa+1,X0+(X+1)*Cw/PhotoStoreW),Ya=Y0+Y*Ch/PhotoStoreH,Yb=FMath::Max(Ya+1,Y0+(Y+1)*Ch/PhotoStoreH);
+  float Sum=0;int32 N=0;
+  for(int32 Sy=Ya;Sy<Yb&&Sy<H;++Sy)for(int32 Sx=Xa;Sx<Xb&&Sx<W;++Sx){const FColor& C=Px[Sy*W+Sx];Sum+=C.R*.30f+C.G*.59f+C.B*.11f;++N;}
+  const float L=N>0?Sum/N:0.f;
+  Lum[Y*PhotoStoreW+X]=L;++Hist[FMath::Clamp(int32(L),0,255)];
+ }
+ // The 2nd and 98th percentile become the paper's white and black, so a bright long exposure and a dim one print alike.
+ const int32 Total=PhotoStoreW*PhotoStoreH;int32 Lo=0,Hi=255,Acc=0;
+ for(int32 I=0;I<256;++I){Acc+=Hist[I];if(Acc>=Total/50){Lo=I;break;}}
+ Acc=0;for(int32 I=255;I>=0;--I){Acc+=Hist[I];if(Acc>=Total/50){Hi=I;break;}}
+ if(Hi-Lo<24){const int32 Mid=(Hi+Lo)/2;Lo=FMath::Max(0,Mid-12);Hi=Lo+24;}
+ TArray<FColor> Out;Out.SetNumUninitialized(PhotoStoreW*PhotoStoreH);
+ for(int32 I=0;I<Out.Num();++I)
+ {
+  const float T=FMath::Clamp((Lum[I]-Lo)/float(Hi-Lo),0.f,1.f);
+  const float Tone=FMath::Clamp(.06f+.86f*(T*T*(3.f-2.f*T)*.55f+T*.45f),0.f,1.f);
+  const uint8 G=uint8(FMath::RoundToInt(Tone*255.f));
+  Out[I]=FColor(G,G,G,255);
+ }
+ const FString Url=S47Image::ToDataUrl(Out,PhotoStoreW,PhotoStoreH,true,PhotoQuality);
+ return PhotoValid(Url)?Url:FString();
+}
+// A data URL the paper will print and keep: a JPEG, no longer than PhotoMaxChars (an old or a hand-edited save cannot swell the file).
+bool S47Ledger::PhotoValid(const FString& Url)
+{
+ return Url.StartsWith(TEXT("data:image/jpeg;base64,"))&&Url.Len()>40&&Url.Len()<=PhotoMaxChars;
+}
+
 bool S47Ledger::SelfTest(TArray<FString>& Lines)
 {
  namespace L=S47LedgerLocal;namespace X=S47LedgerText;
@@ -1177,6 +1249,39 @@ bool S47Ledger::SelfTest(TArray<FString>& Lines)
    TEXT("D45-24: the search story points at the wagon, the lights at the windmill and a quiet week's talk at the line shack, each on the front"));
   Check(LeadTitle(TEXT("wagon")).Contains(TEXT("wagon"))&&LeadTitle(TEXT("cairn"))==TEXT("the cairn on the rise")&&LeadTitle(TEXT("church")).IsEmpty()&&LeadTitle(FString()).IsEmpty(),
    TEXT("D45-24: a lead is named as the map names it, and what the map cannot show is not offered"));
+  // D46-1-20261110: the world's photo is a small grey JPEG: made from any frame, read back the same size and still grey, bright sky
+  // over dark ground, small enough to keep in a save (the bound), and only such a URL is accepted from one.
+  {
+   constexpr int32 PhW=960,PhH=600;
+   TArray<FColor> PhFrame;PhFrame.SetNumUninitialized(PhW*PhH);
+   uint32 PhSeed=47u;
+   for(int32 Y=0;Y<PhH;++Y)for(int32 X=0;X<PhW;++X)
+   {
+    PhSeed=PhSeed*1664525u+1013904223u;
+    const int32 Grain=int32(PhSeed>>28)-8;
+    const bool bBox=X>380&&X<560&&Y>300&&Y<430;
+    const int32 Base=Y<300?200-Y/6:(bBox?120:70+(Y-300)/10);
+    PhFrame[Y*PhW+X]=FColor(uint8(FMath::Clamp(Base+Grain+8,0,255)),uint8(FMath::Clamp(Base+Grain,0,255)),uint8(FMath::Clamp(Base+Grain-14,0,255)),255);
+   }
+   const FString PhUrl=PhotoFromPixels(PhFrame,PhW,PhH);
+   TArray<FColor> PhBack;int32 PhBw=0,PhBh=0;
+   const bool bDecoded=!PhUrl.IsEmpty()&&S47Image::DecodePixels(PhUrl,PhBack,PhBw,PhBh)&&PhBw==PhotoStoreW&&PhBh==PhotoStoreH&&PhBack.Num()==PhBw*PhBh;
+   bool bGrey=bDecoded;double Top=0,Low=0;
+   if(bDecoded)
+   {
+    for(int32 I=0;I<PhBack.Num();++I)bGrey&=FMath::Abs(int32(PhBack[I].R)-int32(PhBack[I].B))<=4;
+    for(int32 X=0;X<PhBw;++X)for(int32 Y=0;Y<20;++Y){Top+=PhBack[Y*PhBw+X].G;Low+=PhBack[(PhBh-1-Y)*PhBw+X].G;}
+   }
+   Check(bDecoded&&bGrey&&Top>Low+20.*PhBw*10.,TEXT("D46-1: the world's photo reads back as a grey picture the size of the page's photo, sky light over dark ground"));
+   int32 PhBytes=0;{TArray<uint8> Raw;if(FBase64::Decode(PhUrl.Mid(PhUrl.Find(TEXT(","))+1),Raw))PhBytes=Raw.Num();}
+   Check(PhUrl.Len()>500&&PhUrl.Len()<=PhotoMaxChars*2/3&&PhBytes>300&&PhBytes<=PhotoMaxChars*3/4,FString::Printf(TEXT("D46-1: the photo is a few KB in the save (%d chars, %d bytes; at most %d chars are accepted)"),PhUrl.Len(),PhBytes,PhotoMaxChars));
+   Check(PhotoValid(PhUrl)&&!PhotoValid(FString())&&!PhotoValid(TEXT("data:image/png;base64,AAAA"))&&!PhotoValid(TEXT("data:image/jpeg;base64,")+FString::ChrN(PhotoMaxChars,TEXT('A')))
+    &&PhotoFromPixels(PhFrame,PhW,PhH-1).IsEmpty()&&PhotoFromPixels(TArray<FColor>(),0,0).IsEmpty(),
+    TEXT("D46-1: only a small JPEG is printed from a save, and a frame of the wrong size makes no photo (the drawn picture stays)"));
+   FIssue PhIssue;PhIssue.No=1;PhIssue.Date=FDateTime(1986,5,1);PhIssue.Photo=PhUrl;
+   const FIssue PhCopy=PhIssue;
+   Check(PhCopy.Photo==PhUrl&&FIssue().Photo.IsEmpty()&&PlainText(PhCopy).Len()>0&&!PlainText(PhCopy).Contains(TEXT("base64")),TEXT("D46-1: an issue without a photo has none (the drawn picture), and the notebook's text never carries the picture"));
+  }
   // The photo's caption is the paper's, never "taken" or a "photograph of" (Clean, over AllText, holds the fixed ones).
   bool bCaptions=true;FString Bad;
   for(const FS47Places::FDef& D:FS47Places::Defs()){const FString Cap=L::Caption(D.Id);bCaptions&=Cap.EndsWith(TEXT("Ledger photo."))&&!Cap.ToLower().Contains(TEXT("taken"))&&!Cap.ToLower().Contains(TEXT("photograph of"));if(!bCaptions&&Bad.IsEmpty())Bad=Cap;}

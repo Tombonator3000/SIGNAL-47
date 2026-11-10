@@ -276,8 +276,7 @@ public:
  TSharedPtr<class FS47NightLog> NightLog;
  // The field recorder off the desk by the array's PC, and its cassettes (TAPE-20261108): S47Tape.h.
  TSharedPtr<class FS47Tape> Tape;
- // The case board's field material, put up at SARO, with the station's loose threads and the player's own (CASEBOARD-20261108):
- // S47PinBoard.h.
+ // The old pinboard's data (CASEBOARD-20261108): no screen any more (D46-20261110); kept for the save key, the papers and AtSaro. S47PinBoard.h.
  TSharedPtr<class FS47PinBoard> PinBoard;
  // The photo lab's enlarger, by the wet bench (ENLARGE-20261108): S47Enlarger.h.
  TSharedPtr<class FS47Enlarger> Enlarger;
@@ -415,8 +414,8 @@ public:
  // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): what comes back from the field comes home as a question. The array keeps its own log of
  // what it caught off schedule, minute by minute (ArrayLog: a landing, whether anyone saw it, a burst off the main beam, the big
  // night's turn, an answer on the monitor channel). A time from the field (a developed photograph from a night out there, a trip
- // camera frame, the loan field logger's loudest minute) is set against it when the player is back at SARO (FS47PinBoard::
- // PinWhatCameBack, no button of its own): "SAME MINUTE ON ARRAY: YES/NO" on the telex, and a field record of OUT ON THE LAND. YES
+ // camera frame, the loan field logger's loudest minute) is set against it when the player is back at SARO (FS47PinBoard::AtSaro,
+ // the session's Step, no button of its own): "SAME MINUTE ON ARRAY: YES/NO" on the telex, and a field record of OUT ON THE LAND. YES
  // strikes Animals and weather there (FS47FreeformCases::RuleOutWind); NO strikes nothing. Asked once a record. Saved under
  // "minutes"; an older save has none and its log is read again from the array's own records (the "At 02:14" in them).
  struct FArrayMark{double From=0,To=0;FString Kind;};
@@ -437,9 +436,10 @@ public:
  // Asked already: its YES or NO record is kept for good (Findings, saved), or it is in Asked (a record primed from an older save, which
  // has none). The records are the mark, so trimming Asked never makes a record due again.
  bool AskedSameMinute(const FString& RecordId) const;
- // At SARO (the pin board): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
+ // At SARO (asked from Step once a second, D46-20261110): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
  // asked yet, the newest first, at most MostAskedAtOnce at a time. The number asked.
  int32 AskWhatCameBack();
+ double MinuteLook=0; // D46-20261110: seconds since AskWhatCameBack was last tried at SARO
  // OPS (FS47FreeformDirector::RegisterFieldRecord): a developed photograph from one of the night's happenings out there is a field
  // record the station pays for once, as field money under the week's cap (EarnSide, FieldRecordPay). -1: refused (not developed, not
  // from a night out there, already registered); otherwise what was paid (0 when the week's field money is used up).

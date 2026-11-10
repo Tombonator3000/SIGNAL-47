@@ -123,7 +123,7 @@ FString FS47Enlarger::Print(const FS47AlbumShot& Sh, int32 Part, int32 Power)
 	UE_LOG(LogS47Enlarger, Display, TEXT("S47: enlarger: %s, part %d at %dx from the %s, printed as %s"), *From.Id, Part, Power, bNeg ? TEXT("negative") : TEXT("print"), *Id);
 	if (!Id.IsEmpty())
 	{
-		if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: The enlargement is in your album. It goes up on the PINBOARD with the first print."), 4.5f);
+		if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: The enlargement is in your album, beside the first print."), 4.5f);
 		M->RequestAutosave();
 	}
 	return Id;

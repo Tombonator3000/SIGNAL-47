@@ -2,8 +2,10 @@
 #include "S47Audio.h"
 #include "S47Docs.h"
 #include "S47EventPlaces.h"
+#include "S47FieldCamera.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
+#include "S47Image.h"
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Kit.h"
@@ -15,7 +17,9 @@
 #include "S47Openings.h"
 #include "S47Places.h"
 #include "S47Predecessor.h"
+#include "S47RoadTerrain.h"
 #include "S47Story.h"
+#include "S47Three.h"
 #include "S47Taken.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -24,6 +28,7 @@
 #include "S47WebAudio.h"
 #include "S47World.h"
 #include "CoreGlobals.h"
+#include "Engine/World.h"
 #include "UObject/GarbageCollection.h"
 
 namespace S47MailLocal
@@ -171,6 +176,7 @@ void FS47Mail::Begin(const S47J::FObj& Saved,bool bSavedGame)
    K.Heads=S47J::Strs(O,TEXT("heads"));K.Bodies=S47J::Strs(O,TEXT("bodies"));K.Leads=S47J::Strs(O,TEXT("leads"));K.Keys=S47J::Strs(O,TEXT("keys"));
    K.Log=S47J::Strs(O,TEXT("log"));for(const double Ago:S47J::Nums(O,TEXT("logAgo")))K.LogAgo.Add(FMath::Clamp(int32(Ago),0,14));
    if(K.Log.Num()!=K.LogAgo.Num()){K.Log.Reset();K.LogAgo.Reset();}
+   {const FString Pic=S47J::Str(O,TEXT("photo"));if(S47Ledger::PhotoValid(Pic))K.Photo=Pic;} // D46-1-20261110: an older save has none: the drawn picture
    if(K.Heads.Num()==K.Bodies.Num()&&K.Heads.Num()==K.Leads.Num()&&!Issues.ContainsByPredicate([&](const FKept& Q){return Q.No==K.No;}))Issues.Add(K);
   }
   Issues.Sort([](const FKept& A,const FKept& B){return A.No<B.No;});
@@ -242,6 +248,7 @@ S47J::FObj FS47Mail::Save() const
   {
    auto V=S47J::New();S47J::Set(V,TEXT("no"),K.No);S47J::Set(V,TEXT("day"),K.Day);if(K.bThanks)S47J::Set(V,TEXT("thanks"),true);
    S47J::Set(V,TEXT("heads"),K.Heads);S47J::Set(V,TEXT("bodies"),K.Bodies);S47J::Set(V,TEXT("leads"),K.Leads);S47J::Set(V,TEXT("keys"),K.Keys);
+   if(!K.Photo.IsEmpty())S47J::Set(V,TEXT("photo"),K.Photo); // D46-1-20261110
    if(!K.Log.IsEmpty()){TArray<double> Ago;for(const int32 Each:K.LogAgo)Ago.Add(Each);S47J::Set(V,TEXT("log"),K.Log);S47J::Set(V,TEXT("logAgo"),Ago);}
    A.Add(MakeShared<FJsonValueObject>(V));
   }
@@ -320,6 +327,14 @@ void FS47Mail::Step(double Dt)
    if(Now<Due)break;
   }
   LastRound=OnDay;Round(OnDay);
+ }
+ // D46-1-20261110: the newest paper printed while the world could not be photographed (night, not loaded) gets its picture when it can.
+ PhotoWait-=Dt;
+ if(PhotoWait<=0&&!Issues.IsEmpty())
+ {
+  PhotoWait=4.;
+  FKept& Newest=Issues.Last();
+  if(Newest.Photo.IsEmpty()&&Today-Newest.Day<=6&&PhotoTries.FindRef(Newest.No)<3)TakePhoto(Newest);
  }
 }
 
@@ -700,11 +715,62 @@ void FS47Mail::PrintLedger(int32 OnDay)
  FKept K;K.No=No;K.Day=OnDay;K.bThanks=Facts.ContainsByPredicate([](const S47Ledger::FFact& Fact){return Fact.Topic==S47Ledger::ETopic::Helped;});
  for(const S47Ledger::FStory& St:Front){K.Heads.Add(St.Head);K.Bodies.Add(St.Body);K.Leads.Add(St.Lead);K.Keys.Add(St.Key);}
  for(const S47Ledger::FLogLine& Line:Log){K.Log.Add(Line.Text);K.LogAgo.Add(Line.Ago);}
+ TakePhoto(K); // D46-1-20261110: if the world cannot be photographed now, Step tries again when it can
  Issues.Add(K);
  FPiece Pc;Pc.Id=FString::Printf(TEXT("ledger:%d"),No);Pc.Kind=TEXT("ledger");Pc.Ref=FString::FromInt(No);Pc.Day=OnDay;
  Box.Add(Pc);Posted.Add(Pc.Id);
  UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d printed, day %d: %d facts from day %d to %d, front \"%s\" / \"%s\", %d in the sheriff's log"),No,OnDay,Facts.Num(),FromDay,OnDay-1,
   Front.Num()>0?*Front[0].Head:TEXT(""),Front.Num()>1?*Front[1].Head:TEXT(""),Log.Num());
+}
+// D46-1-20261110 (Tom: «tar et svarthvitt bilde fra verdenen som noenlunde passer til artikkelen»): the front page's photo. Taken in the
+// world at the lead story's place, by day only (so no light, figure or night-film object is in it: the film-only objects are left
+// off, as the album's trips do not show them either), from a standing eye 38 to 52 m off, looking at the place. Then grey, flattened
+// and small (S47Ledger::PhotoFromPixels), and kept with the issue. The wagon and stories with no place keep the drawn picture.
+bool FS47Mail::TakePhoto(FKept& K)
+{
+ if(!K.Photo.IsEmpty()||K.Leads.IsEmpty()||!M||!M->Freeform||!M->FieldCamera||!M->Player||!IsValid(M->Web.Get())||!M->Web->IsLoaded())return false;
+ auto& Ses=*M->Freeform;
+ const FString Lead=K.Leads[0];
+ if(!FS47Places::Def(Lead)||!Ses.Places.IsValid())return false;
+ const double Hour=FMath::Fmod(Ses.Clock(),86400.)/3600.;
+ if(Hour<S47Weather::SunriseClock/3600.+2.5||Hour>S47Weather::SunsetClock/3600.-2.5)return false;
+ UWorld* World=M->Web->GetWorld();
+ double Wx=0,Wz=0;
+ if(!World||!Ses.Places->Spot(Lead,Wx,Wz))return false;
+ const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+ const FVector Target(Road.X+Wx,Road.Y+S47RoadTerrain::SurfaceY(Wx,Wz)+2.4,Road.Z+Wz);
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47LedgerPhoto),true);
+ // The first of eight bearings (by the paper's number) where the ground is there to stand on, level enough with the place, and the
+ // line to it clear.
+ bool bFound=false;FVector Eye=FVector::ZeroVector;
+ for(int32 Try=0;Try<16&&!bFound;++Try)
+ {
+  const double Ang=((K.No*3+Try)%8)*UE_DOUBLE_PI/4.,Away=Try<8?38.:52.;
+  const double Rx=Wx+FMath::Cos(Ang)*Away,Rz=Wz+FMath::Sin(Ang)*Away;
+  const double Base=Road.Y+S47RoadTerrain::SurfaceY(Rx,Rz);
+  FHitResult Hit;
+  if(!World->LineTraceSingleByChannel(Hit,S47Three::ToUE(FVector(Road.X+Rx,Base+30.,Road.Z+Rz)),S47Three::ToUE(FVector(Road.X+Rx,Base-30.,Road.Z+Rz)),ECC_Visibility,Q))continue;
+  const FVector Stand=S47Three::ToThree(Hit.ImpactPoint);
+  if(FMath::Abs(Stand.Y-(Target.Y-2.4))>12.)continue;
+  const FVector From(Stand.X,Stand.Y+1.7,Stand.Z);
+  FHitResult Block;
+  if(World->LineTraceSingleByChannel(Block,S47Three::ToUE(From),S47Three::ToUE(Target),ECC_Visibility,Q)&&FVector::Dist(S47Three::ToThree(Block.ImpactPoint),Target)>6.)continue;
+  Eye=From;bFound=true;
+ }
+ if(!bFound){++PhotoTries.FindOrAdd(K.No);return false;}
+ US47FieldCamera* Cam=M->FieldCamera;
+ const FVector OldLoc=Cam->PhotoLoc;const FRotator OldRot=Cam->PhotoRot;
+ const TFunction<void(bool)> OldExposure=Cam->OnExposure;
+ Cam->OnExposure=nullptr; // the film-only objects (the director's orbs) stay off
+ Cam->PhotoLoc=S47Three::ToUE(Eye);
+ Cam->PhotoRot=(S47Three::ToUE(Target)-Cam->PhotoLoc).Rotation();
+ FS47SnapOptions O;O.W=480;O.Seed=K.No*7919.;
+ const FS47Snap Snap=Cam->Snap(O);
+ Cam->PhotoLoc=OldLoc;Cam->PhotoRot=OldRot;Cam->OnExposure=OldExposure;
+ if(Snap.bRendered)K.Photo=S47Ledger::PhotoFromPixels(Snap.Px,Snap.W,Snap.H);
+ if(K.Photo.IsEmpty()){++PhotoTries.FindOrAdd(K.No);UE_LOG(LogTemp,Warning,TEXT("S47: mail: the Ledger no. %d: no photo of %s (rendered %d)"),K.No,*Lead,Snap.bRendered?1:0);return false;}
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d: a photo of %s, %d chars, from %.0f m"),K.No,*Lead,K.Photo.Len(),FVector::Dist(Eye,Target));
+ return true;
 }
 bool FS47Mail::IssueOf(int32 No,S47Ledger::FIssue& Out) const
 {
@@ -717,6 +783,7 @@ bool FS47Mail::IssueOf(int32 No,S47Ledger::FIssue& Out) const
   Out.Front.Add(St);
  }
  for(int32 I=0;I<K->Log.Num();++I){S47Ledger::FLogLine Line;Line.Text=K->Log[I];Line.Ago=K->LogAgo[I];Out.Log.Add(Line);}
+ Out.Photo=K->Photo;
  S47Ledger::Fill(Out,M->Freeform->Seed(),K->bThanks);
  return true;
 }
@@ -1364,7 +1431,8 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   FOrder Ord;Ord.Serial=5;Ord.Paid=21;Ord.Picked=3;Ord.Due=5;Ord.Goods.Add(TEXT("relay"),1);A.Orders.Add(Ord);
   FOrder Waiting;Waiting.Serial=6;Waiting.Paid=8;Waiting.Goods.Add(TEXT("cell"),2);A.Orders.Add(Waiting);A.NextSerial=7;A.bFlag=true;
   FClip Clipping;Clipping.Id=TEXT("cell3");Clipping.What=TEXT("cell");Clipping.Price=3;Clipping.Until=10;A.Coupons.Add(Clipping);
-  FKept K;K.No=1;K.Day=4;K.bThanks=true;K.Heads={TEXT("A")};K.Bodies={TEXT("B")};K.Leads={TEXT("windmill")};K.Keys={TEXT("KEY")};K.Log={TEXT("Tuesday night. Something.")};K.LogAgo={2};A.Issues.Add(K);
+  FKept K;K.No=1;K.Day=4;K.bThanks=true;K.Heads={TEXT("A")};K.Bodies={TEXT("B")};K.Leads={TEXT("windmill")};K.Keys={TEXT("KEY")};K.Log={TEXT("Tuesday night. Something.")};K.LogAgo={2};K.Photo=TEXT("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAAAAAAAAAAAA");A.Issues.Add(K);
+  FKept Plain;Plain.No=2;Plain.Day=11;Plain.Heads={TEXT("C")};Plain.Bodies={TEXT("D")};Plain.Leads={FString()};Plain.Photo=TEXT("data:image/png;base64,AAAA");A.Issues.Add(Plain);
   FSeen Note;Note.Id=TEXT("cattle_ring_d3");Note.Day=3;Note.Place=TEXT("the church");A.Seen.Add(Note);
   A.ReadIssues.Add(TEXT("ledger:1"));A.LastRound=4;A.Rounds=3;A.NobodySent=1;
   FS47Mail B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())),true);
@@ -1373,9 +1441,9 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   const FPiece* Circle=B.Box.FindByPredicate([](const FPiece& Pc){return Pc.Id==TEXT("nobody:1");});
   const bool bGoods=Back&&Back->Goods.FindRef(TEXT("cell"))==3&&Back->Goods.FindRef(TEXT("kit:film"))==1&&Back->Text.Contains(TEXT("PACKING SLIP"))&&Circle&&Circle->Place==TEXT("cairn");
   const bool bRest=B.Orders.Num()==2&&B.Orders[0].Due==5&&B.Orders[0].Goods.FindRef(TEXT("relay"))==1&&B.NextSerial==7&&B.Coupons.Num()==1&&B.Coupons[0].Until==10
-   &&B.Issues.Num()==1&&B.Issues[0].bThanks&&B.Issues[0].Leads[0]==TEXT("windmill")&&B.Issues[0].Keys[0]==TEXT("KEY")&&B.Issues[0].Log.Num()==1&&B.Issues[0].LogAgo[0]==2
+   &&B.Issues.Num()==2&&B.Issues[0].Photo.EndsWith(TEXT("AAAAAAAA"))&&B.Issues[1].Photo.IsEmpty()&&B.Issues[0].bThanks&&B.Issues[0].Leads[0]==TEXT("windmill")&&B.Issues[0].Keys[0]==TEXT("KEY")&&B.Issues[0].Log.Num()==1&&B.Issues[0].LogAgo[0]==2
    &&B.Seen.Num()==1&&B.Seen[0].Place==TEXT("the church")&&B.ReadIssues.Contains(TEXT("ledger:1"))&&B.LastRound==4&&B.Rounds==3&&B.NobodySent==1;
-  Check(bBox&&bGoods&&bRest,TEXT("the box, the post on its way, orders, coupons, printed papers with their templates and log, the noted findings and the rounds survive a Continue"));
+  Check(bBox&&bGoods&&bRest,TEXT("the box, the post on its way, orders, coupons, printed papers with their templates, log and photo (D46-1: a photo that is not a small JPEG is dropped, the drawn picture stays), the noted findings and the rounds survive a Continue"));
   Check(!B.Post(Ward,true),TEXT("nothing is posted twice, a Continue included"));
   // The flag follows the orders, not the box: with the waiting order taken back it is down, the box still full.
   B.Orders.RemoveAll([](const FOrder& O){return O.Picked==0;});B.Begin(S47J::Read(S47J::Write(B.Save())),true);

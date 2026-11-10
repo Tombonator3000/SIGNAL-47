@@ -18,6 +18,7 @@
 #include "S47HudGauges.h"
 #include "S47FreeformTerminal.h"
 #include "S47MessageQueue.h"
+#include "S47Thoughts.h"
 #include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
@@ -74,6 +75,7 @@
 #include "S47Happenings.h"
 #include "S47WeekCase.h"
 #include "S47Script.h"
+#include "S47EventScript.h"
 #include "S47FieldLife.h"
 #include "S47Outfit.h"
 #include "S47NightLog.h"
@@ -278,6 +280,7 @@ void AS47HUD::Start()
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
+		bOk &= S47Thoughts::SelfTest(Lines); // D46-5-20261110
 		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)
@@ -305,6 +308,7 @@ void AS47HUD::Start()
 		bOk &= FS47Happenings::SelfTest(Lines);
 		bOk &= FS47WeekCase::SelfTest(Lines); // (WEEKLY-CASE-20261109: the week's case, its ways out, the gate on Story's minute)
 		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the night's tiers and the lint)
+		bOk &= S47EventScript::SelfTest(Lines); // (D46-20261110: every event script parses, knows its beats and keeps to the rules)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);

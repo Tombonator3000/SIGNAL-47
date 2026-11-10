@@ -34,6 +34,7 @@ void FS47WeatherLive::Shown(const S47Weather::FNow& Now, double Daylight, double
 	Out.bOn = true;
 	Out.Wind = Now.Wind; Out.Mph = Now.Mph; Out.Dust = Now.Dust; Out.Rain = Now.Rain; Out.Haze = Now.Haze; Out.Wet = Now.Wet;
 	Out.CloudBias = Now.CloudBias; Out.Storm = Now.Storm; Out.DirX = Now.DirX; Out.DirZ = Now.DirZ; Out.ShowerH = Now.ShowerH;
+	Out.Lightning = Now.Lightning; Out.LightningAz = Now.LightningAz; // D46-20261110: the night's lightning, for FS47Sky
 	const double Day = FMath::Clamp(Daylight, 0.0, 1.0), Open = FMath::Clamp(InOutdoors, 0.0, 1.0);
 	// how thick the air is where the player is: the sand most, the morning's haze, a little in a shower
 	Out.FogAdd = FMath::Min(MaxFog, (SandFog * Now.Dust + HazeFog * Now.Haze + RainFog * Now.Rain) * FMath::Lerp(IndoorShare, 1.0, Open));
@@ -59,6 +60,7 @@ void FS47WeatherLive::Ease(S47Weather::FNow& Cur, const S47Weather::FNow& Want, 
 	Cur.DirX = Dir.X; Cur.DirZ = Dir.Y;
 	Cur.bThunder = Want.bThunder;
 	Cur.ShowerH = Want.ShowerH; // (a clock, not a quantity: the cloud's walk is already smooth)
+	Cur.Lightning = Want.Lightning; Cur.LightningAz = Want.LightningAz; // (D46-20261110: read a flash at a time, nothing to smooth)
 }
 
 void FS47WeatherLive::Override(EDev Kind, S47Weather::FNow& Now, double ShowerHours)
@@ -75,7 +77,8 @@ void FS47WeatherLive::Override(EDev Kind, S47Weather::FNow& Now, double ShowerHo
 		break;
 	}
 	case EDev::Haze: Now.Haze = 1; Now.Dust = 0; Now.Wind = 0; Now.Mph = 4; break;
-	case EDev::Calm: Now = S47Weather::FNow(); break;
+	case EDev::Calm: Now = S47Weather::FNow(); Now.Lightning = 0; break;
+	case EDev::Lightning: Now.Lightning = 2.2; Now.Dust = 0; Now.Rain = 0; break; // D46-20261110
 	default: break;
 	}
 }
@@ -196,9 +199,9 @@ FString FS47WeatherLive::Describe() const
 {
 	const S47Weather::FLive& L = S47Weather::Live();
 	if (!L.bOn) return TEXT("no weather on the world (not a live Freeform game: F10 or -S47Weather turns it on)");
-	static const TCHAR* const Kinds[] = { TEXT("the day's own"), TEXT("sand (F10)"), TEXT("shower (F10)"), TEXT("haze (F10)"), TEXT("calm (F10)") };
-	return FString::Printf(TEXT("day %d, %s: wind %.0f mph (%.2f), sand %.2f, rain %.2f, wet %.2f, haze %.2f, cloud %+.2f, night storm %.2f; fog +%.4f, tint %.2f, horizon %.2f"),
-		CalDay, Kinds[int32(DevNow())], L.Mph, L.Wind, L.Dust, L.Rain, L.Wet, L.Haze, L.CloudBias, L.Storm, L.FogAdd, L.TintK, L.HorizonK);
+	static const TCHAR* const Kinds[] = { TEXT("the day's own"), TEXT("sand (F10)"), TEXT("shower (F10)"), TEXT("haze (F10)"), TEXT("calm (F10)"), TEXT("lightning (F10)") };
+	return FString::Printf(TEXT("day %d, %s: wind %.0f mph (%.2f), sand %.2f, rain %.2f, wet %.2f, haze %.2f, cloud %+.2f, night storm %.2f, lightning %.2f at %.0f deg; fog +%.4f, tint %.2f, horizon %.2f"),
+		CalDay, Kinds[int32(DevNow())], L.Mph, L.Wind, L.Dust, L.Rain, L.Wet, L.Haze, L.CloudBias, L.Storm, L.Lightning, L.LightningAz, L.FogAdd, L.TintK, L.HorizonK);
 }
 
 bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
@@ -239,6 +242,39 @@ bool FS47WeatherLive::SelfTest(TArray<FString>& Lines)
 		S47Weather::FNow R; Override(EDev::Shower, R);
 		S47Weather::FNow C = N; Override(EDev::Calm, C);
 		Check(N.Dust == 1 && N.Wind >= .8 && R.Rain == 1 && R.Wet == 1 && R.bThunder && C.Dust == 0 && C.Wind == 0, TEXT("F10's sand, shower and calm"));
+	}
+	{
+		// D46-20261110 (D46-4): the sky's lightning follows the night's weather: none on a quiet night, the sky's own far-off flicker
+		// at 1, a storm on the horizon flashing far more often where the weather stands it, with thunder; no weather, the sky's own
+		const S47Weather::FLive Was = S47Weather::Live();
+		struct FCount { int32 Flashes = 0, Thunder = 0, Near = 0; };
+		const auto TenMinutes = [](bool bOn, double Lightning, double Az)
+		{
+			S47Weather::FLive& L = S47Weather::Live();
+			L = S47Weather::FLive(); L.bOn = bOn; L.Lightning = Lightning; L.LightningAz = Az;
+			FS47Sky Sky; FCount C; bool bWas = false;
+			Sky.OnThunder = [&C](double, double) { ++C.Thunder; };
+			for (int32 Fr = 0; Fr < 30 * 600; ++Fr)
+			{
+				Sky.Update(1 / 30.0, Fr / 30.0);
+				const bool bLit = Sky.Flash > 0;
+				if (bLit && !bWas)
+				{
+					++C.Flashes;
+					const double FlashAz = FMath::RadiansToDegrees(FMath::Atan2(Sky.FlashDir.X, -Sky.FlashDir.Z));
+					C.Near += FMath::Abs(FMath::FindDeltaAngleDegrees(FlashAz, Az)) < 15 ? 1 : 0;
+				}
+				bWas = bLit;
+			}
+			return C;
+		};
+		const FCount Quiet = TenMinutes(true, 0, 225), Far = TenMinutes(true, 1, 225), Storm = TenMinutes(true, 2.2, 250), Own = TenMinutes(false, 0, 225);
+		S47Weather::Live() = Was;
+		Check(Quiet.Flashes == 0 && Quiet.Thunder == 0 && Far.Flashes >= 12 && Far.Thunder > 0 && Storm.Flashes > 2 * Far.Flashes && Storm.Near * 10 >= Storm.Flashes * 9 && Storm.Thunder > Far.Thunder && Own.Flashes >= 12,
+			FString::Printf(TEXT("ten minutes of night: quiet %d flashes, far off %d, a storm on the horizon %d (%d where it stands, %d thunder), no weather %d"), Quiet.Flashes, Far.Flashes, Storm.Flashes, Storm.Near, Storm.Thunder, Own.Flashes));
+		S47Weather::FNow Lit; Override(EDev::Lightning, Lit); S47Weather::FNow Still; Override(EDev::Calm, Still);
+		S47Weather::FLive LitShown; Shown(Lit, 0, 1, LitShown);
+		Check(Lit.Lightning >= FS47Sky::StormRate && Still.Lightning < FS47Sky::QuietRate && LitShown.Lightning == Lit.Lightning && LitShown.LightningAz == Lit.LightningAz, TEXT("F10's lightning is a storm on the horizon, its calm a quiet night, and the world shows the weather's lightning"));
 	}
 	{
 		// M5 sweep 2: the sky's veil (FS47Sky): brown and thick in the sand by day, grey under a shower, nothing on a plain day

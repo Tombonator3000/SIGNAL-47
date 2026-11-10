@@ -554,16 +554,16 @@ void SS47Hud::Rebuild()
 		};
 		if (T->bThought)
 		{
-			// WEEKLY-CASE-20261109: the player's own thought: pencil on the dark, not ink in a box. The hand in a soft graphite, slanted a
-			// little more than the hand is, a faint shadow under it so that it reads on a lit yard too.
-			const float HandPx = (bLarge ? 40.f : 34.f);
+			// WEEKLY-CASE-20261109: the player's own thought, no box. D46-5-20261110 (Tom): in the typewriter face like a caption in a
+			// case-file show (Special Elite), pale on the dark with a hard shadow under it so that it reads on a lit yard too; low on the
+			// screen like the captions (the same lane, so one at a time with them).
+			const float TypePx = (bLarge ? 32.f : 27.f);
 			ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
 			[
 				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.f))).Padding(FMargin(P(18), P(4), P(18), P(6))).ColorAndOpacity_Lambda(Alpha)
-				.RenderTransform(FSlateRenderTransform(FShear2f(-0.16f, 0.f))).RenderTransformPivot(FVector2D(0.5f, 0.5f))
 				[
-					SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Hand(HandPx)).ColorAndOpacity(FLinearColor(0.80f, 0.79f, 0.76f, 0.92f))
-					.ShadowOffset(FVector2D(1.5f, 2.f)).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.6f))
+					SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(TypePx, 1.f)).ColorAndOpacity(FLinearColor(0.93f, 0.92f, 0.88f, 0.96f))
+					.ShadowOffset(FVector2D(2.f, 2.f)).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f))
 					.AutoWrapText(T->Line.Len() > 48).WrapTextAt(P(676)).Justification(ETextJustify::Center)
 				]
 			];
@@ -676,8 +676,8 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 			HintRow->ClearChildren();
 			auto Add = [this](const FString& K, const TCHAR* L) { HintRow->AddSlot().AutoWidth().Padding(P(14), 0)[KeyHint(*K, L)]; };
 			Add(S47Keys::Label(TEXT("notebook")).ToUpper(), TEXT("NOTEBOOK"));
-			// CASES-OPS-20261109: Freeform's B is the PINBOARD (CASE BOARD is the OPS screen there)
-			if (bBoard) Add(S47Keys::Label(TEXT("board")).ToUpper(), M->IsFreeform() ? TEXT("PINBOARD") : TEXT("CASE BOARD"));
+			// D46-20261110: Freeform has no pinboard (CASE BOARD is the OPS screen there): B is Story's case board only
+			if (bBoard && !M->IsFreeform()) Add(S47Keys::Label(TEXT("board")).ToUpper(), TEXT("CASE BOARD"));
 			if (bLight) Add(S47Keys::Label(TEXT("light")).ToUpper(), TEXT("FLASHLIGHT"));
 			Add(S47Keys::Label(TEXT("pause")), TEXT("PAUSE"));
 		}

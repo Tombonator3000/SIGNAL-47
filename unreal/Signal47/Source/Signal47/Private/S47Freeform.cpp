@@ -742,7 +742,7 @@ void FS47FreeformSession::Step(double Dt)
  if(Scripts)Scripts->Step(D);
  if(NightLog)NightLog->Step(D);
  if(Tape)Tape->Step(Dt);
- if(PinBoard)PinBoard->Step(Dt);
+ if(PinBoard&&Active()){MinuteLook+=Dt;if(MinuteLook>=1.){MinuteLook=0;if(PinBoard->AtSaro())AskWhatCameBack();}} // D46-20261110: the same-minute question at SARO, once a second, now that no pinboard asks it
  if(Darkroom)Darkroom->Step(D);
  if(WardReport)WardReport->Step(Dt);
  if(SkyAnswer)SkyAnswer->Step(Dt);
@@ -4389,6 +4389,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(const FString Goal=StationGoalLine();!Goal.IsEmpty())Result.Add({Goal,false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
+ if(Fatigue){const FString Tired=Fatigue->KitLine();if(!Tired.IsEmpty())Result.Add({TEXT("YOU / ")+Tired,false});} // D46-20261110: Tired / Wide awake, coffee 2 cups
  return Result;
 }
 S47J::FObj FS47FreeformSession::Save()const

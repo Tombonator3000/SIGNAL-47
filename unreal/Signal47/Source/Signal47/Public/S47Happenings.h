@@ -231,6 +231,24 @@ public:
  const FString& BigPlaceTitle() const{return BigTitle;}
  static bool BigSelfTest(TArray<FString>& Lines);
 
+ // D46-20261110 (D46-3, Tom 10 November: "must have more action/events the first 24 hours"; S47FirstDay.cpp). The first day's
+ // script: small authored beats across day 1 and night 1 from what the game already has (the CB in the truck, Dale's set in OPS, a
+ // dog far off, the rack, the phone), each one that can be explained away before midnight and only machinery and sound after it,
+ // and the cliffhanger at 00:41: every dish on remote turns by itself to the night's line (the burst's bearing) and stays there; slept
+ // through or away, it is found turned at SARO before the evening after. Its once-flag is the field record FirstTurnKey (no new save
+ // key); Dale's first line on day 2 answers it (FS47Predecessor, bark "turned"). The beats themselves are not saved: a Continue drops
+ // those whose window has opened. Hours are hours from midnight before day 1 (night 1 is 8 to 32).
+ struct FFirstBeat{const TCHAR* Id;double From,Until;bool bHint;};
+ static const TArray<FFirstBeat>& FirstBeats();
+ static constexpr double FirstTurnHour=24.+41./60.,FirstTurnLive=25.5,FirstFoundUntil=24.+18.;
+ static constexpr const TCHAR* FirstTurnKey=TEXT("array_turn_d1");
+ // What the cliffhanger does now: wait, turn in front of the player, be found turned, or never (past the evening after).
+ enum class EFirstTurn:uint8{Wait,Live,Found,Never};
+ static EFirstTurn FirstTurnFate(double Hour,bool bAtSaro,bool bPowered,bool bMissed,bool bBusy);
+ // Real minutes from 08:00 on day 1 to Hour on an unheld clock (daylight 13 h in 30 minutes, the dark 11 h in 45).
+ static double FirstRealMinutes(double Hour);
+ static bool FirstDaySelfTest(TArray<FString>& Lines);
+
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
  struct FProp;
@@ -511,4 +529,18 @@ private:
  void PoseGeiger(bool bShow);
  // D45-20261110: a landing's coals and their smoke at its ring, Hot and SmokeK from 1 down to 0 over the hours after it came down.
  void StepEmbers(FProp& P,double Hot,double SmokeK);
+ // ---- the first day's script (S47FirstDay.cpp, D46-20261110) ----
+ struct FFirstDayNow
+ {
+  TSet<FString> Done;
+  TArray<TPair<double,TFunction<void()>>> Later; // what a beat does a few seconds on (Paced)
+  double LastHour=-1,MotorsAt=0;
+  bool bPrimed=false,bLoaded=false,bMissed=false,bMotors=false;
+ };
+ FFirstDayNow FirstDay;
+ void StepFirstDay();
+ void EndFirstDay();
+ bool FirstBeat(const FString& Id);
+ double FirstBearing() const;
+ void TurnFirstArray(bool bFound);
 };

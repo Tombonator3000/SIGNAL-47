@@ -55,6 +55,10 @@ public:
 	double HeardWithin() const { return HeardFor > 0 ? HeardReach : 0.0; }
 	/** F10: this many hours awake now, felt in a developer run too (negative: as the game has it again). */
 	void DevSet(double Hours);
+	/** D46-20261110: the notebook's one short line ("Tired", "Wide awake, coffee 2 cups"), empty when there is nothing to say. */
+	FString KitLine() const;
+	/** Cups drunk since six this morning (a half-full mug counts half). */
+	double CupsToday() const { return Cups; }
 	FString Describe() const;
 
 	// ---------- the pure rules (tested) ----------
@@ -78,6 +82,12 @@ public:
 	static double LidsOf(double Tired, double Spell, double Droop, double Waking);
 	/** Seconds from one heavy spell to the next (U a draw 0 to 1): never under MinSpellGap, rarer when only a little tired. */
 	static double SpellGapOf(double Tired, double U);
+	/** D46-20261110: the next cup of the day (CupsBefore drunk already) gives less: each takes 0.7 of the one before, never under a fifth. */
+	static double CupStrengthOf(double CupsBefore);
+	/** A tired walk: up to 12 percent slower, nothing until properly tired. */
+	static double WalkScaleOf(double Tired);
+	static FString KitLineOf(double Tired, double CupsToday, double Caffeine);
+	static int32 CoffeeDayOf(double Clock) { return int32(FMath::FloorToDouble((Clock - 6 * 3600.0) / 86400.0)); }
 	static constexpr double CupCaffeine = 0.6, MostCaffeine = 1.5, CaffeineHalfLife = 3 * 3600.0, RestedAfterArrival = 2, WiredCaffeine = 1.0;
 	static constexpr double RunFloor = 0.9, MinSpellGap = 20, WakeSeconds = 22;
 	static bool SelfTest(TArray<FString>& Lines);
@@ -95,6 +105,11 @@ private:
 	double Wind = 1, BreathIn = 0, HeardFor = 0, HeardReach = 0, SinceRun = 1e9;
 	FVector LastFeet = FVector::ZeroVector;
 	bool bHaveFeet = false;
+	// D46-20261110: cups today (the day turns at six), the day they were counted on, and when the last tired thought was given
+	double Cups = 0, ThoughtAt = -1e9;
+	int32 CupDay = -100000, ThoughtNo = 0;
+	void RollDay();
+	void TiredThought();
 	double DinerAt = -1e9; // the clock when the Mesa's cup was last drunk
 	int32 Mug = 0; // the mug: 0 empty, 1 full, 2 half
 	bool bDev = false;

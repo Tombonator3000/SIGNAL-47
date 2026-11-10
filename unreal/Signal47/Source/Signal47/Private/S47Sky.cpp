@@ -810,7 +810,7 @@ void FS47Sky::Update(double Dt, double T)
 	// Sunlit daytime and the friendly arrival have no forced night storm or thunder.
 	if (Evening > 0 || Midday > 0)
 	{
-		Flash = 0; FlashT = 0;
+		Flash = 0; FlashT = 0; Restrikes = 0;
 		// (WEATHER-20261108: a shower's afternoon has thunder a long way off, heard and not seen)
 		if (DayThunder > 0 && (DayThunderIn -= Dt) <= 0)
 		{
@@ -820,21 +820,54 @@ void FS47Sky::Update(double Dt, double T)
 		return;
 	}
 	NextFlash -= Dt;
-	if (NextFlash <= 0)
+	const double Rate = LightningRate();
+	if (NextFlash <= 0 && Rate < QuietRate)
+	{
+		// D46-20261110: a quiet night, nothing on the horizon (looked at again a little later, should the night change)
+		NextFlash = 10; Restrikes = 0;
+	}
+	else if (NextFlash <= 0 && Restrikes > 0)
+	{
+		// a storm's flash strikes again a moment later, in the same place, its thunder already on its way
+		--Restrikes; FlashT = 1; FlashPeak = .7 + .3 * Rand();
+		NextFlash = Restrikes > 0 ? .25 + Rand() * .45 : (14 + Rand() * 26) / FMath::Pow(Rate, 1.5);
+	}
+	else if (NextFlash <= 0)
 	{
 		FlashT = 1;
-		NextFlash = 14 + Rand() * 26;
-		const double A = -0.2 + Rand() * 1.6;
-		FlashDir = FVector(FMath::Sin(A), 0.04, -FMath::Cos(A)).GetSafeNormal();
-		if (OnThunder) OnThunder(3 + Rand() * 5, 0.4 + Rand() * 0.6);
+		if (Rate >= StormRate)
+		{
+			// the storm on the horizon, where the weather has it: often, bright, two or three strokes, thunder sooner and louder
+			const double A = FMath::DegreesToRadians(S47Weather::Live().LightningAz) + (Rand() - .5) * .4;
+			FlashDir = FVector(FMath::Sin(A), 0.03 + Rand() * 0.03, -FMath::Cos(A)).GetSafeNormal();
+			FlashPeak = 1; Restrikes = Rand() < .6 ? 1 + int32(Rand() * 2) : 0;
+			NextFlash = Restrikes > 0 ? .25 + Rand() * .45 : (14 + Rand() * 26) / FMath::Pow(Rate, 1.5);
+			if (OnThunder) OnThunder(2.5 + Rand() * 3.5, FMath::Min(1.0, 0.55 + Rand() * 0.45));
+		}
+		else
+		{
+			// the sky's own far-off flicker (Rate 1: as it always was); fainter and rarer on a night with little of it
+			NextFlash = (14 + Rand() * 26) / FMath::Pow(FMath::Max(Rate, QuietRate), 1.5);
+			const double A = -0.2 + Rand() * 1.6;
+			FlashDir = FVector(FMath::Sin(A), 0.04, -FMath::Cos(A)).GetSafeNormal();
+			FlashPeak = FMath::Min(1.0, Rate);
+			const double Delay = 3 + Rand() * 5, Loud = (0.4 + Rand() * 0.6) * FMath::Min(1.0, Rate);
+			if (OnThunder) OnThunder(Delay, Loud);
+		}
 	}
 	if (FlashT > 0)
 	{
 		FlashT = FMath::Max(0.0, FlashT - Dt * 2.2);
 		const double Flick = FlashT > 0.55 ? (FMath::Sin(T * 90) > 0 ? 1 : 0.3) : FlashT;
-		Flash = Flick * FlashT;
+		Flash = Flick * FlashT * FlashPeak;
 	}
 	else Flash = 0;
+}
+
+double FS47Sky::LightningRate()
+{
+	const S47Weather::FLive& Wx = S47Weather::Live();
+	return Wx.bOn ? FMath::Clamp(Wx.Lightning, 0.0, 2.5) : 1.0;
 }
 
 // ---------- Unreal ----------

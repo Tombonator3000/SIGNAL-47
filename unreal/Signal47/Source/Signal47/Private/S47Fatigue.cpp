@@ -1,3 +1,4 @@
+#include <limits>
 #include "S47Fatigue.h"
 
 #include "Dom/JsonObject.h"
@@ -62,6 +63,41 @@ double FS47Fatigue::AfterSleep(double AwakeHours, double SleptHours, EBed Where,
 	const double Wired = 1.0 + FMath::Clamp((FMath::IsFinite(CaffeineAtBed) ? CaffeineAtBed : 0.0) - WiredCaffeine, 0.0, MostCaffeine - WiredCaffeine);
 	const double Tau = (Where == EBed::Motel ? TauMotel : Where == EBed::Cot ? TauCot : TauStation) * Wired;
 	return Was * FMath::Exp(-Deep / Tau);
+}
+
+double FS47Fatigue::CupStrengthOf(double CupsBefore)
+{
+	// D46-20261110: diminishing returns within a day
+	return FMath::Max(0.2, FMath::Pow(0.7, FMath::Clamp(FMath::IsFinite(CupsBefore) ? CupsBefore : 0.0, 0.0, 20.0)));
+}
+
+double FS47Fatigue::WalkScaleOf(double Tired) { return 1.0 - 0.12 * S47FatigueLocal::Smooth(0.5, 1.0, Tired); }
+
+FString FS47Fatigue::KitLineOf(double Tired, double CupsToday, double Caffeine)
+{
+	if (Tired >= 0.45) return TEXT("Tired");
+	const int32 N = FMath::RoundToInt(CupsToday);
+	if (N >= 1 && Caffeine > 0.25) return FString::Printf(TEXT("Wide awake, coffee %d cup%s"), N, N == 1 ? TEXT("") : TEXT("s"));
+	return FString();
+}
+
+FString FS47Fatigue::KitLine() const { return Live() ? KitLineOf(Level(), Cups, Caf) : FString(); }
+
+void FS47Fatigue::RollDay()
+{
+	if (!M || !M->Freeform) return;
+	const int32 Day = CoffeeDayOf(M->Freeform->Clock());
+	if (Day != CupDay) { CupDay = Day; Cups = 0; }
+}
+
+void FS47Fatigue::TiredThought()
+{
+	// D46-20261110: now and then, in a heavy spell, the player's own thought (one through the queue; never twice in four minutes)
+	static const TCHAR* Lines[] = { TEXT("Read that line again. It did not go in."), TEXT("Coffee. There has to be a pot somewhere."), TEXT("Eyes keep closing on their own."),
+		TEXT("Just rest them a second. No."), TEXT("A cot would do. Anything flat.") };
+	if (!M || !M->UI || T - ThoughtAt < 240) return;
+	ThoughtAt = T;
+	M->UI->Thought(Lines[(ThoughtNo++) % int32(UE_ARRAY_COUNT(Lines))], 4.f);
 }
 
 double FS47Fatigue::RunScaleOf(double Tired, double InWind)
@@ -134,6 +170,8 @@ void FS47Fatigue::Begin(const TSharedPtr<FJsonObject>& Saved)
 	Awake = Saved.IsValid() ? FMath::Max(0.0, S47J::Num(Saved, TEXT("awake"), RestedAfterArrival)) : RestedAfterArrival;
 	Caf = Saved.IsValid() ? FMath::Clamp(S47J::Num(Saved, TEXT("caffeine"), 0), 0.0, MostCaffeine) : 0.0;
 	Mug = Saved.IsValid() ? FMath::Clamp(S47J::Int(Saved, TEXT("mug"), 0), 0, 2) : 0;
+	Cups = Saved.IsValid() ? FMath::Clamp(S47J::Num(Saved, TEXT("cups"), 0), 0.0, 20.0) : 0.0;
+	CupDay = Saved.IsValid() ? S47J::Int(Saved, TEXT("cupDay"), -100000) : -100000; ThoughtAt = -1e9; ThoughtNo = 0; // D46-20261110
 	LastClock = -1; Droop = 0; DroopAge = -1; T = 0; bDev = false;
 	SpellIn = 30; SpellAge = -1; Spell = 0; bSpellDroop = false; WakeAge = -1; YawnIn = -1;
 	Wind = 1; BreathIn = 0; HeardFor = 0; SinceRun = 1e9; bHaveFeet = false; DinerAt = -1e9;
@@ -146,12 +184,14 @@ TSharedRef<FJsonObject> FS47Fatigue::Save() const
 	O->SetNumberField(TEXT("awake"), FMath::RoundToDouble(Awake * 100) / 100);
 	if (Caf > 0.005) O->SetNumberField(TEXT("caffeine"), FMath::RoundToDouble(Caf * 100) / 100);
 	if (Mug > 0) O->SetNumberField(TEXT("mug"), Mug);
+	if (Cups > 0) { O->SetNumberField(TEXT("cups"), Cups); O->SetNumberField(TEXT("cupDay"), CupDay); } // D46-20261110
 	return O;
 }
 
 void FS47Fatigue::Stop()
 {
 	if (M && M->Player) M->Player->RunScale = 1;
+	if (M && M->Player) M->Player->TiredWalk = 1;
 	Droop = 0; DroopAge = -1; bDev = false; Spell = 0; SpellAge = -1; WakeAge = -1; YawnIn = -1; Wind = 1; HeardFor = 0; bHaveFeet = false;
 }
 
@@ -250,7 +290,9 @@ void FS47Fatigue::Step(double Dt)
 	T += Dt;
 	const double Tired = Level();
 	const bool bPlay = M->Mode == US47Main::EMode::Play && Live();
+	const bool bWasSpell = SpellAge >= 0;
 	StepLids(Dt, Tired, bPlay);
+	if (!bWasSpell && SpellAge >= 0 && bPlay && Tired > 0.55) TiredThought(); // D46-20261110
 	if (YawnIn >= 0 && (YawnIn -= Dt) < 0) { YawnIn = -1; if (bPlay) Yawn(FMath::Lerp(0.6, 1.0, TiredK(Tired))); }
 	// the run: tired, it winds you; out of wind it eases off and the breath comes hard (heard a little way off), but it stays a run
 	if (HeardFor > 0) HeardFor -= Dt;
@@ -276,7 +318,7 @@ void FS47Fatigue::Step(double Dt)
 		WindedBreath(FMath::Lerp(0.45, 0.85, Out));
 		HeardFor = 1.2; HeardReach = FMath::Lerp(1.5, 3.0, Out);
 	}
-	if (M->Player) M->Player->RunScale = RunScaleOf(Tired, Wind);
+	if (M->Player) { M->Player->RunScale = RunScaleOf(Tired, Wind); M->Player->TiredWalk = Live() ? WalkScaleOf(Tired) : 1.0; }
 }
 
 void FS47Fatigue::Slept(double Seconds, EBed Where)
@@ -290,6 +332,7 @@ void FS47Fatigue::Slept(double Seconds, EBed Where)
 	if (Seconds < NapSeconds) { Awake += Seconds / 3600.0; return; }
 	const double Was = Awake;
 	Awake = AfterSleep(Awake, Seconds / 3600.0, Where, CafAtBed);
+	Cups = 0; // D46-20261110: a real sleep starts the day's cups over
 	const bool bWired = CafAtBed > WiredCaffeine;
 	Droop = 0; DroopAge = -1; Spell = 0; SpellAge = -1; SpellIn = 40; Wind = 1;
 	UE_LOG(LogS47Fatigue, Display, TEXT("S47: fatigue: slept %.1f h (%d), awake %.1f h -> %.1f h"), Seconds / 3600.0, int32(Where), Was, Awake);
@@ -342,7 +385,8 @@ void FS47Fatigue::AtDiner()
 	// the pot is left in reach: one cup a visit, and a visit is a half hour or so
 	if (Clock - DinerAt < 30 * 60) return;
 	DinerAt = Clock;
-	Caf = FMath::Min(MostCaffeine, Caf + CupCaffeine);
+	RollDay();
+	Caf = FMath::Min(MostCaffeine, Caf + CupCaffeine * CupStrengthOf(Cups)); Cups += 1; // D46-20261110
 	if (M->Audio) M->Audio->Pour(FVector::ZeroVector);
 	UE_LOG(LogS47Fatigue, Display, TEXT("S47: fatigue: the Mesa's coffee, caffeine %.2f"), Caf);
 }
@@ -361,7 +405,9 @@ bool FS47Fatigue::Use(const FString& Id)
 	if (Id == TEXT("mug"))
 	{
 		if (Mug == 0) { if (M->UI) M->UI->Toast(TEXT("Empty. The coffee machine is in the corner."), 2.6f); return true; }
-		Caf = FMath::Min(MostCaffeine, Caf + (Mug == 1 ? CupCaffeine : CupCaffeine * 0.5));
+		RollDay(); // D46-20261110: diminishing returns within a day
+		const double Part = Mug == 1 ? 1.0 : 0.5;
+		Caf = FMath::Min(MostCaffeine, Caf + CupCaffeine * Part * CupStrengthOf(Cups)); Cups += Part;
 		Mug = Mug == 1 ? 2 : 0; ShowMug();
 		if (M->Audio) M->Audio->Play(TEXT("thud_soft"), 0.25f, M->Web->PropLocation(TEXT("mug")));
 		if (M->UI) M->UI->Toast(Caf > WiredCaffeine ? TEXT("Another one. Your hands are not quite steady, and sleep will be slow to come.") : Mug == 2 ? TEXT("Burnt. It helps.") : TEXT("The last of it, gone cold."), 2.8f);
@@ -430,6 +476,18 @@ bool FS47Fatigue::SelfTest(TArray<FString>& Lines)
 		Cot = AfterSleep(Cot + 19.5, 4.5, EBed::Cot); Five = AfterSleep(Five + 21, 3, EBed::Station);
 		Check(Cot > Wake3 && Five > Wake3 && FMath::Abs(Cot - CotThen) < 0.2 && FMath::Abs(Five - FiveThen) < 0.2 && LevelOf(Five + 11, 0, 19 * 3600.0) < 0.2,
 			TEXT("a cot every night, or up until five every night: more tired, never a debt that grows without end, still fit at the start of the evening"));
+	}
+	{
+		// D46-20261110: coffee in a day: each cup gives less, the walk slows a little when tired, the notebook says it in a few words, a real sleep starts over
+		Check(CupStrengthOf(0) == 1 && CupStrengthOf(1) < CupStrengthOf(0) && CupStrengthOf(3) < CupStrengthOf(1) && CupStrengthOf(50) >= 0.2 && CupStrengthOf(std::numeric_limits<double>::quiet_NaN()) == 1,
+			TEXT("D46: each cup in a day gives less than the one before, never under a fifth"));
+		Check(WalkScaleOf(0.3) == 1 && WalkScaleOf(1) < 1 && WalkScaleOf(1) >= 0.85, TEXT("D46: a tired walk is a little slower, nothing until properly tired"));
+		Check(KitLineOf(0.7, 0, 0) == TEXT("Tired") && KitLineOf(0.1, 2, 0.9) == TEXT("Wide awake, coffee 2 cups") && KitLineOf(0.1, 1, 0.5) == TEXT("Wide awake, coffee 1 cup") && KitLineOf(0.1, 0, 0).IsEmpty() && KitLineOf(0.1, 2, 0.05).IsEmpty(),
+			TEXT("D46: the notebook line is Tired, or Wide awake with the cups, or nothing"));
+		FS47Fatigue Day(nullptr); Day.Begin(nullptr); Day.Cups = 3; Day.Awake = 20; Day.Slept(5 * 3600.0, EBed::Station);
+		const TSharedRef<FJsonObject> Kept = Day.Save(); Day.Cups = 2; Day.CupDay = 4; const TSharedRef<FJsonObject> Held = Day.Save(); FS47Fatigue Back(nullptr); Back.Begin(Held);
+		Check(Day.Cups == 0 && !Kept->HasField(TEXT("cups")) && Back.Cups == 2 && Back.CupDay == 4 && CoffeeDayOf(5 * 3600.0) == CoffeeDayOf(-1.0) && CoffeeDayOf(7 * 3600.0) != CoffeeDayOf(5 * 3600.0),
+			TEXT("D46: a real sleep starts the cups over; the cups are saved only when there are some; the day turns at six"));
 	}
 	{
 		// the run: tired and winded it eases off, but it stays a run (heard as one) and faster than a figure that sees you and hunts

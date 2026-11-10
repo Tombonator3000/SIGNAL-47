@@ -117,7 +117,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(Pad(0, 40, 56, 0))[SNew(SS47Osd).Text(FString(TEXT("SP")))]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 56, 70))
 		[
-			SNew(SS47Osd).Px(30).Text_Lambda([this] { return Stamp(S47MenusLocal::TITLE_CLOCK + T); })
+			SNew(SS47Osd).Px(30).Text_Lambda([this] { FString D, Clock; return Stamp(S47MenusLocal::TITLE_CLOCK + T).Split(TEXT("  "), &D, &Clock) ? Clock : FString(); }) // D46: Tom: no place or date on the title, only the tape's clock
 		]
 		// .logo: SIGNAL / 47 with the tape's red and cyan edges, and the line under it
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Pad(118, LogoTop, 0, 0))
@@ -129,7 +129,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Pad(118, 128 + 129 + 18, 0, 0))
 		[
-			SNew(STextBlock).Text(FText::FromString(TEXT("NEW MEXICO, 1986. NIGHT SHIFT AT SARO."))).Font(Term(30, 3)).ColorAndOpacity(Amber())
+			SNew(STextBlock).Text(FText::FromString(TEXT("NIGHT SHIFT AT SARO."))).Font(Term(30, 3)).ColorAndOpacity(Amber())
 		]
 		// .menu, or the gate before it
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Pad(104, 418, 0, 0))
@@ -168,7 +168,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 40, 28))
 		[
-			SNew(STextBlock).Text(FText::FromString(O.Version)).Font(Term(20, 1)).ColorAndOpacity(Css(0x5f5a50))
+			SNew(STextBlock).Text(FText::FromString(O.Version)).Font(Term(24, 1)).ColorAndOpacity(Css(0x9a927f)) // D46: the build is readable
 		]
 		+ SOverlay::Slot()[Scanlines()]
 	];
@@ -546,7 +546,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(Pad(0, 40, 56, 0))[SNew(SS47Osd).Text(FString(TEXT("PAUSE"))).bPause(true)]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 56, 40))
 		[
-			SNew(SS47Osd).Px(30).Text(P->Clock >= 0 ? Stamp(P->Clock) : FString())
+			SNew(SS47Osd).Px(30).Text([&P] { FString D, Clock; return P->Clock >= 0 && Stamp(P->Clock).Split(TEXT("  "), &D, &Clock) ? Clock : FString(); }()) // D46: no date in the menu
 		]
 		// .card, bottom right, turned 1.4 degrees
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 120, 150))

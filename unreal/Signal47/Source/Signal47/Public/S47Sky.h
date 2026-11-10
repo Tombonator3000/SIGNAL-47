@@ -108,8 +108,13 @@ public:
 	void MeteorNow();
 	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
 	void MeteorFrom(const FVector& Dir);
-	/** update(dt, t, follow): the shooting stars and the lightning (the group's place: Draw). */
+	/** update(dt, t, follow): the shooting stars and the lightning (the group's place: Draw). D46-20261110 (D46-4): in Freeform the
+	 *  night's lightning is the day's weather's (S47Weather::Live().Lightning, LightningRate): none on a quiet night, the sky's own far-off
+	 *  flicker at 1, and from StormRate a storm standing on the horizon where the weather puts it, flashing more often, two or three
+	 *  strokes at a time, its thunder nearer. With no weather on the world (Story, a developer run) the sky's own, as before. */
 	void Update(double Dt, double T);
+	static double LightningRate();
+	static constexpr double QuietRate = .3, StormRate = 1.5;
 
 	// ---------- Unreal ----------
 	/** The sky group's parts from the export (AS47Web, its life data): false when there is no live sky. */
@@ -208,6 +213,7 @@ private:
 	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
 	FMet Met;
 	double FlashT = 0, NextFlash = 9, DayThunderIn = 8;
+	double FlashPeak = 1; int32 Restrikes = 0; // D46-20261110: how bright this flash is, and the strokes of a storm's flash still to come
 	// the streak as meteorStep lays it out (its corners are the material's: M_WebMeteor)
 	bool bMetVisible = false;
 	double MetI = 0, Head = 0, Back = 0;

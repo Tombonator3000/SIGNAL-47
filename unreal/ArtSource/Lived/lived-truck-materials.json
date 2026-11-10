@@ -40,13 +40,13 @@
    "roughness": "textures/T_Lived_Enamel_R.png"
   },
   "texture_tint_linear": [
-   0.66,
-   0.64,
-   0.575
+   0.6,
+   0.57,
+   0.49
   ],
   "metallic": 0,
   "specular": 0.5,
-  "roughness": 0.5,
+  "roughness": 0.45,
   "base_color_linear": [
    1,
    1,
@@ -88,7 +88,7 @@
   ],
   "metallic": 0.9,
   "specular": 0.5,
-  "roughness": 0.5,
+  "roughness": 0.4,
   "base_color_linear": [
    1,
    1,

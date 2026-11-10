@@ -1,0 +1,603 @@
+#include "S47EventScript.h"
+#include "S47Audio.h"
+#include "S47DevEvents.h"
+#include "S47FieldRadio.h"
+#include "S47Flashlight.h"
+#include "S47Flow.h"
+#include "S47Freeform.h"
+#include "S47Keys.h"
+#include "S47Main.h"
+#include "S47Night.h"
+#include "S47NightRhythm.h"
+#include "S47Omen.h"
+#include "S47Places.h"
+#include "S47Radio.h"
+#include "S47ScriptPlayer.h"
+#include "S47Town.h"
+#include "S47TownLayer.h"
+#include "S47UI.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "HAL/FileManager.h"
+#include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
+
+// D46-20261110 (D46-11): the event scripts' data, library, gates and runner (S47EventScript.h). Tests: S47EventScriptTest.cpp.
+
+#include "S47EventScriptDefaults.inl"
+
+namespace S47EventScriptLocal
+{
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake")};
+ // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
+ bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area");}
+ bool CondKnown(const FString& If){return OwnCond(If)||S47Script::CondKinds().Contains(If);}
+ // The printer at the rack, where the night's events have always run it (scene metres at SARO).
+ const FVector PrinterAt(-4,1,2);
+ const TCHAR* const LampFrom=TEXT("eventscript");
+ constexpr int32 MostRuns=8;
+ constexpr double MostSeconds=600;
+
+ // A condition: "outdoors", or { "if": "weather", "is": "clear" } with the scripted events' own fields.
+ bool CondFrom(const TSharedPtr<FJsonValue>& V,FS47ScriptCond& C,FString& Why)
+ {
+  C=FS47ScriptCond();
+  FString Word;
+  const S47J::FObj* J=nullptr;
+  if(V.IsValid()&&V->TryGetString(Word))C.If=Word;
+  else if(V.IsValid()&&V->TryGetObject(J)&&J)
+  {
+   C.If=S47J::Str(*J,TEXT("if"));
+   if(C.If==TEXT("finding")||C.If==TEXT("no_finding"))C.Arg=S47J::Str(*J,TEXT("id"));
+   else if(C.If.StartsWith(TEXT("case_")))C.Num=S47J::Num(*J,TEXT("case"),-1);
+   else if(C.If==TEXT("weather")||C.If==TEXT("area"))C.Arg=S47J::Str(*J,TEXT("is"));
+   else if(C.If==TEXT("moon_min")||C.If==TEXT("moon_max"))C.Num=S47J::Num(*J,TEXT("lit"));
+   else if(C.If==TEXT("near")||C.If==TEXT("far")){C.Arg=S47J::Str(*J,TEXT("place"));C.Num=S47J::Num(*J,TEXT("m"),100);}
+  }
+  if(!CondKnown(C.If)){Why=FString::Printf(TEXT("condition \"%s\" is not known"),*C.If);return false;}
+  return true;
+ }
+ bool CondsFrom(const S47J::FObj& O,const TCHAR* K,TArray<FS47ScriptCond>& Out,FString& Why)
+ {
+  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(O,K)){FS47ScriptCond C;if(!CondFrom(V,C,Why))return false;Out.Add(C);}
+  return true;
+ }
+ bool VecFrom(const S47J::FObj& O,const TCHAR* K,FVector& Out)
+ {
+  const TArray<double> V=S47J::Nums(O,K);
+  if(V.Num()!=3||!FMath::IsFinite(V[0])||!FMath::IsFinite(V[1])||!FMath::IsFinite(V[2]))return false;
+  Out=FVector(V[0],V[1],V[2]);return true;
+ }
+ // An hour as a number (23.5) or as text ("23:30").
+ double HourFrom(const TSharedPtr<FJsonValue>& V)
+ {
+  double D=-1;FString S;
+  if(V.IsValid()&&V->TryGetNumber(D))return FMath::IsFinite(D)?FMath::Fmod(FMath::Max(0.,D),24.):-1;
+  if(V.IsValid()&&V->TryGetString(S))return S47Script::ParseHour(S);
+  return -1;
+ }
+ bool BeatOf(const S47J::FObj& J,FS47Beat& B,FString& Why)
+ {
+  const FString Do=S47J::Str(J,TEXT("do"));
+  if(!S47EventScript::BeatFrom(Do,B.Do)){Why=FString::Printf(TEXT("beat \"%s\" is not known"),*Do);return false;}
+  B.At=S47J::Num(J,TEXT("at"));
+  B.Name=B.Do==ES47Beat::Sound?S47J::Str(J,TEXT("sound")):B.Do==ES47Beat::Map?S47J::Str(J,TEXT("place")):S47J::Str(J,TEXT("node"));
+  B.Kind=B.Do==ES47Beat::Tone?S47J::Str(J,TEXT("wave"),TEXT("square")):S47J::Str(J,TEXT("kind"));
+  B.Who=S47J::Str(J,TEXT("who"));B.Text=S47J::Str(J,TEXT("text"));B.Key=S47J::Str(J,TEXT("key"));B.Point=S47J::Str(J,TEXT("point"));
+  FVector V;
+  if(VecFrom(J,TEXT("pos"),V))B.Pos=V;
+  if(VecFrom(J,TEXT("by"),V))B.By=V;
+  B.bTo=S47J::Bool(J,TEXT("to"));
+  // The printer's and a tone's own levels, as the events had them.
+  B.Gain=S47J::Num(J,TEXT("gain"),B.Do==ES47Beat::Printer?.3:B.Do==ES47Beat::Tone?.12:1.);
+  B.Rate=S47J::Num(J,TEXT("rate"),1);B.Lp=S47J::Num(J,TEXT("lp"));B.Delay=S47J::Num(J,TEXT("delay"));B.Stop=S47J::Num(J,TEXT("stop"));
+  B.Secs=S47J::Num(J,TEXT("secs"));B.Hz=S47J::Num(J,TEXT("hz"),1200);B.Every=S47J::Num(J,TEXT("every"));
+  B.Strength=S47J::Num(J,TEXT("strength"),.5);B.Max=S47J::Num(J,TEXT("max"));B.Repeat=S47J::Int(J,TEXT("repeat"),1);
+  return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
+ }
+ // The words a text asks for: {az} -> az.
+ TArray<FString> WordsIn(const FString& Text)
+ {
+  TArray<FString> Out;
+  int32 From=0;
+  while(true)
+  {
+   const int32 Open=Text.Find(TEXT("{"),ESearchCase::CaseSensitive,ESearchDir::FromStart,From);if(Open<0)break;
+   const int32 Close=Text.Find(TEXT("}"),ESearchCase::CaseSensitive,ESearchDir::FromStart,Open+1);if(Close<0)break;
+   Out.AddUnique(Text.Mid(Open+1,Close-Open-1));From=Close+1;
+  }
+  return Out;
+ }
+ // The player's words: the spoiler lint, and never the word for being carried off.
+ FString PlayerWords(const FString& Text)
+ {
+  const FString Why=S47Script::LintText(Text);
+  if(!Why.IsEmpty())return Why;
+  TArray<FString> Parts;Text.ToLower().ParseIntoArray(Parts,TEXT(" "));
+  for(FString P:Parts){P=P.TrimStartAndEnd();while(P.Len()&&!FChar::IsAlpha(P[P.Len()-1]))P.LeftChopInline(1);while(P.Len()&&!FChar::IsAlpha(P[0]))P.RightChopInline(1);if(P==TEXT("taken"))return TEXT("the word \"taken\" is never said to the player");}
+  return FString();
+ }
+
+ struct FLib
+ {
+  TArray<FS47EventScript> Scripts;
+  TMap<FString,FString> Bad;
+  bool bRead=false;
+ };
+ FLib& Lib(){static FLib L;return L;}
+ void ReadOnce(){if(!Lib().bRead)S47EventScript::Reload();}
+}
+
+namespace S47EventScript
+{
+const TCHAR* BeatName(ES47Beat B){return int32(B)<int32(ES47Beat::Count)?S47EventScriptLocal::Names[int32(B)]:TEXT("?");}
+bool BeatFrom(const FString& Name,ES47Beat& Out)
+{
+ for(int32 I=0;I<int32(ES47Beat::Count);++I)if(Name==S47EventScriptLocal::Names[I]){Out=ES47Beat(I);return true;}
+ return false;
+}
+const TArray<FString>& BeatNames()
+{
+ static const TArray<FString> L=[]{TArray<FString> Out;for(int32 I=0;I<int32(ES47Beat::Count);++I)Out.Add(S47EventScriptLocal::Names[I]);return Out;}();
+ return L;
+}
+
+bool Read(const FString& Text,FS47EventScript& Out,FString& Why)
+{
+ using namespace S47EventScriptLocal;
+ Out=FS47EventScript();
+ S47J::FObj O;
+ if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O.IsValid()){Why=TEXT("not JSON");return false;}
+ if(S47J::Int(O,TEXT("version"),0)!=FS47EventScript::Version){Why=FString::Printf(TEXT("not version %d"),FS47EventScript::Version);return false;}
+ Out.Id=S47J::Str(O,TEXT("id"));Out.Name=S47J::Str(O,TEXT("name"));Out.Notes=S47J::Str(O,TEXT("notes"));
+ Out.bEnabled=S47J::Bool(O,TEXT("enabled"),true);
+ if(Out.Id.IsEmpty()){Why=TEXT("no id");return false;}
+ const S47J::FObj G=S47J::Obj(O,TEXT("gates"));
+ if(G.IsValid())
+ {
+  FS47EventGates& Gt=Out.Gates;
+  Gt.DayFrom=FMath::Max(0,S47J::Int(G,TEXT("from_day")));Gt.DayTo=FMath::Max(0,S47J::Int(G,TEXT("to_day")));
+  const TArray<TSharedPtr<FJsonValue>> H=S47J::Arr(G,TEXT("hours"));
+  if(H.Num()==2){Gt.HourFrom=HourFrom(H[0]);Gt.HourTo=HourFrom(H[1]);}
+  else if(H.Num()){Why=TEXT("gates: hours is [from, to]");return false;}
+  if(S47J::Has(G,TEXT("tier")))
+  {
+   if(!S47NightTiers::FromName(S47J::Str(G,TEXT("tier")),Gt.Tier)){Why=TEXT("gates: tier is hint, glimpse or full");return false;}
+   Gt.bTier=true;
+  }
+  Gt.bEarly=S47J::Bool(G,TEXT("early"));
+  Gt.Areas=S47J::Strs(G,TEXT("areas"));
+  Gt.Odds=S47J::Num(G,TEXT("odds"),1);
+  if(!CondsFrom(G,TEXT("if"),Gt.If,Why)){Why=TEXT("gates: ")+Why;return false;}
+ }
+ const TArray<TSharedPtr<FJsonValue>> Beats=S47J::Arr(O,TEXT("beats"));
+ for(int32 I=0;I<Beats.Num();++I)
+ {
+  const S47J::FObj* J=nullptr;
+  if(!Beats[I].IsValid()||!Beats[I]->TryGetObject(J)||!J){Why=FString::Printf(TEXT("beat %d is not an object"),I+1);return false;}
+  FS47Beat B;
+  if(!BeatOf(*J,B,Why)){Why=FString::Printf(TEXT("beat %d: %s"),I+1,*Why);return false;}
+  Out.Beats.Add(B);
+ }
+ // The order of the clock; the same second keeps the order written.
+ Out.Beats.StableSort([](const FS47Beat& X,const FS47Beat& Y){return X.At<Y.At;});
+ return true;
+}
+
+TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
+{
+ using namespace S47EventScriptLocal;
+ TArray<FString> E;
+ const auto Warn=[Warnings](const FString& W){if(Warnings)Warnings->Add(W);};
+ if(S.Id.IsEmpty()||S47Script::CleanId(S.Id)!=S.Id)E.Add(TEXT("id: a to z, 0 to 9 and _ only"));
+ const FS47EventGates& G=S.Gates;
+ if(G.DayTo>0&&G.DayFrom>G.DayTo)E.Add(TEXT("gates: the days run backwards"));
+ if((G.HourFrom<0)!=(G.HourTo<0))E.Add(TEXT("gates: an hour window needs both ends"));
+ if(!(G.Odds>=0&&G.Odds<=1))E.Add(TEXT("gates: odds are 0 to 1"));
+ for(const FString& A:G.Areas)if(A.IsEmpty())E.Add(TEXT("gates: an empty area"));
+ if(G.Odds<=0)Warn(TEXT("gates: odds 0, it never starts"));
+ const bool bWired=Wired().Contains(S.Id);
+ if(!bWired)Warn(TEXT("no event's code plays this one: it runs from F10 only"));
+ if(!S.bEnabled&&bWired)Warn(TEXT("switched off: the built-in beats play instead"));
+ TArray<FString> Words={TEXT("clock"),TEXT("day"),TEXT("night"),TEXT("map_key")};Words.Append(WordsOf(S.Id));
+ TArray<FString> Points={TEXT("here")};Points.Append(PointsOf(S.Id));
+ for(int32 I=0;I<S.Beats.Num();++I)
+ {
+  const FS47Beat& B=S.Beats[I];
+  const FString At=FString::Printf(TEXT("beat %d (%s)"),I+1,BeatName(B.Do));
+  const auto Need=[&E,&At](bool bOk,const TCHAR* What){if(!bOk)E.Add(At+TEXT(": ")+What);};
+  Need(B.At>=0&&B.At<=MostSeconds,TEXT("at is 0 to 600 seconds"));
+  Need(B.Gain>=0&&B.Gain<=2,TEXT("gain is 0 to 2"));
+  Need(B.Delay>=0&&B.Delay<=30,TEXT("delay is 0 to 30 seconds"));
+  Need(B.Stop>=0&&B.Stop<=MostSeconds&&B.Secs>=0&&B.Secs<=MostSeconds,TEXT("stop and secs are 0 to 600 seconds"));
+  Need(B.Strength>=0&&B.Strength<=1,TEXT("strength is 0 to 1"));
+  Need(B.Wait.IsEmpty()||B.Max>0,TEXT("a wait needs max, the most seconds it waits"));
+  switch(B.Do)
+  {
+  case ES47Beat::Sound:Need(!B.Name.IsEmpty(),TEXT("needs sound, the recording's name"));Need(B.Who.IsEmpty()||B.Who==TEXT("radio")||B.Who==TEXT("cb")||B.Who==TEXT("walkie"),TEXT("who is radio, cb or walkie"));Need(B.Rate>=.25&&B.Rate<=4,TEXT("rate is 0.25 to 4"));break;
+  case ES47Beat::Tone:Need(B.Hz>=20&&B.Hz<=8000,TEXT("hz is 20 to 8000"));Need(B.Repeat>=1&&B.Repeat<=32,TEXT("repeat is 1 to 32"));Need(B.Kind==TEXT("square")||B.Kind==TEXT("sine")||B.Kind==TEXT("sawtooth")||B.Kind==TEXT("triangle"),TEXT("wave is square, sine, sawtooth or triangle"));break;
+  case ES47Beat::Light:Need(B.Kind==TEXT("town")||B.Kind==TEXT("lamp")||B.Kind==TEXT("gear"),TEXT("kind is town, lamp or gear"));break;
+  case ES47Beat::Line:Need(B.Who==TEXT("dale")||B.Who==TEXT("voice")||B.Who==TEXT("cb")||B.Who==TEXT("radio"),TEXT("who is dale, voice, cb or radio"));Need(!B.Text.IsEmpty(),TEXT("needs text"));break;
+  case ES47Beat::Thought:case ES47Beat::Toast:Need(!B.Text.IsEmpty(),TEXT("needs text"));break;
+  case ES47Beat::Evidence:Need(!B.Key.IsEmpty()&&!B.Text.IsEmpty(),TEXT("needs key and text"));break;
+  case ES47Beat::Map:Need(!B.Name.IsEmpty(),TEXT("needs place"));break;
+  case ES47Beat::Prop:case ES47Beat::Show:case ES47Beat::Hide:Need(!B.Name.IsEmpty(),TEXT("needs node, the scene's key"));break;
+  default:break;
+  }
+  const FString Why=PlayerWords(B.Text);
+  if(!Why.IsEmpty())E.Add(At+TEXT(": ")+Why);
+  for(const FString* T:{&B.Text,&B.Key,&B.Name})for(const FString& W:WordsIn(*T))if(!Words.Contains(W))Warn(FString::Printf(TEXT("%s: {%s} is not a word this event gives"),*At,*W));
+  if(!B.Point.IsEmpty()&&!Points.Contains(B.Point))Warn(FString::Printf(TEXT("%s: point \"%s\" is not one this event gives"),*At,*B.Point));
+ }
+ return E;
+}
+
+FString Fill(const FString& Text,const TMap<FString,FString>& Words)
+{
+ if(!Text.Contains(TEXT("{")))return Text;
+ FString Out=Text;
+ for(const auto& W:Words)Out.ReplaceInline(*(TEXT("{")+W.Key+TEXT("}")),*W.Value,ESearchCase::CaseSensitive);
+ return Out;
+}
+
+bool GatesHold(const FS47EventGates& G,const FS47ScriptNow& Now,const FString& Area,double Roll,FString& Why,TFunction<bool(const FS47ScriptCond&)> Extra)
+{
+ using namespace S47EventScriptLocal;
+ if(G.DayFrom>0&&Now.Day<G.DayFrom){Why=FString::Printf(TEXT("the script waits for day %d"),G.DayFrom);return false;}
+ if(G.DayTo>0&&Now.Day>G.DayTo){Why=FString::Printf(TEXT("the script ended on day %d"),G.DayTo);return false;}
+ if(G.HourFrom>=0&&G.HourTo>=0&&!S47Script::InHours(Now.Hour(),G.HourFrom,G.HourTo)){Why=TEXT("not the script's hours");return false;}
+ if(G.bTier&&!S47NightTiers::Allows(G.Tier,Now.Hour(),Now.Night,G.bEarly)){Why=FString::Printf(TEXT("the night's tier is not %s yet"),S47NightTiers::Name(G.Tier));return false;}
+ if(G.Areas.Num()&&!G.Areas.Contains(Area)){Why=TEXT("not in the script's areas");return false;}
+ if(Roll>=G.Odds){Why=TEXT("the script's odds say not tonight");return false;}
+ for(const FS47ScriptCond& C:G.If)
+ {
+  const bool bOk=OwnCond(C.If)?(Extra&&Extra(C)):S47Script::CondHolds(C,Now);
+  if(!bOk){Why=FString::Printf(TEXT("the script's condition %s"),*C.If);return false;}
+ }
+ return true;
+}
+
+const TArray<FString>& Wired(){static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm")};return L;}
+const TArray<FString>& WordsOf(const FString& Id)
+{
+ static const TArray<FString> Burst={TEXT("az"),TEXT("spread"),TEXT("target"),TEXT("burst_night")},None;
+ return Id==TEXT("array_burst")?Burst:None;
+}
+const TArray<FString>& PointsOf(const FString& Id)
+{
+ static const TArray<FString> Truck={TEXT("truck")},None;
+ return Id==TEXT("hood_warm")?Truck:None;
+}
+const TArray<TPair<FString,FString>>& BuiltIn()
+{
+ static const TArray<TPair<FString,FString>> L=[]{TArray<TPair<FString,FString>> Out;for(const auto& P:S47EventScriptBuiltIn)Out.Add(TPair<FString,FString>(P[0],P[1]));return Out;}();
+ return L;
+}
+
+TArray<FString> ReadDirs()
+{
+ TArray<FString> Dirs={FPaths::ProjectContentDir()/TEXT("Director/Events"),FPaths::ProjectSavedDir()/TEXT("Director/Events")};
+ FString Own;
+ if(FParse::Value(FCommandLine::Get(),TEXT("S47EventDir="),Own)&&!Own.IsEmpty())Dirs.Add(Own);
+ TArray<FString> Out;
+ for(FString D:Dirs){FPaths::NormalizeDirectoryName(D);FPaths::CollapseRelativeDirectories(D);Out.AddUnique(D);}
+ return Out;
+}
+
+void Reload()
+{
+ using namespace S47EventScriptLocal;
+ FLib& L=Lib();
+ L.bRead=true;L.Bad.Reset();
+ TMap<FString,FS47EventScript> ById;
+ for(const auto& P:BuiltIn())
+ {
+  FS47EventScript S;FString Why;
+  if(!Read(P.Value,S,Why)||S.Id!=P.Key){L.Bad.Add(TEXT("built in ")+P.Key,Why.IsEmpty()?TEXT("its id"):Why);continue;}
+  S.Source=TEXT("built in");
+  ById.Add(S.Id,S);
+ }
+ for(const FString& Dir:ReadDirs())
+ {
+  TArray<FString> Files;
+  IFileManager::Get().FindFiles(Files,*(Dir/TEXT("*.json")),true,false);
+  Files.Sort();
+  for(const FString& File:Files)
+  {
+   const FString Path=Dir/File;
+   FString Text,Why;FS47EventScript S;
+   if(!FFileHelper::LoadFileToString(Text,*Path)){L.Bad.Add(Path,TEXT("could not be read"));continue;}
+   if(!Read(Text,S,Why)){L.Bad.Add(Path,Why);UE_LOG(LogS47EventScript,Warning,TEXT("S47: event script %s refused: %s"),*Path,*Why);continue;}
+   const TArray<FString> Errors=Lint(S);
+   if(Errors.Num()){L.Bad.Add(Path,Errors[0]);UE_LOG(LogS47EventScript,Warning,TEXT("S47: event script %s will not play: %s"),*Path,*Errors[0]);continue;}
+   // Switched off: an event with built-in beats keeps them.
+   if(!S.bEnabled&&ById.Contains(S.Id)&&ById.FindChecked(S.Id).Source==TEXT("built in")){UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s is switched off: the built-in beats play"),*Path);continue;}
+   S.Source=Path;
+   ById.Add(S.Id,S);
+  }
+ }
+ L.Scripts.Reset();
+ for(auto& P:ById)L.Scripts.Add(P.Value);
+ L.Scripts.Sort([](const FS47EventScript& A,const FS47EventScript& B){return A.Id<B.Id;});
+ UE_LOG(LogS47EventScript,Display,TEXT("S47: event scripts: %d (%d from files), %d refused"),L.Scripts.Num(),L.Scripts.FilterByPredicate([](const FS47EventScript& S){return S.Source!=TEXT("built in");}).Num(),L.Bad.Num());
+}
+
+const TArray<FS47EventScript>& Library(){S47EventScriptLocal::ReadOnce();return S47EventScriptLocal::Lib().Scripts;}
+const FS47EventScript* Find(const FString& Id){return Library().FindByPredicate([&Id](const FS47EventScript& S){return S.Id==Id;});}
+const TMap<FString,FString>& Refused(){S47EventScriptLocal::ReadOnce();return S47EventScriptLocal::Lib().Bad;}
+
+bool Allows(US47Main* M,const FString& Id,FString& Why)
+{
+ const FS47EventScript* S=Find(Id);
+ if(!S||!S->Gates.Any())return true;
+ FS47FreeformSession* F=M?M->Freeform.Get():nullptr;
+ const FS47ScriptPlayer* P=FS47ScriptPlayer::Of(M);
+ if(!F||!P)return true;
+ const FS47ScriptNow Now=P->Now();
+ const double Roll=FS47NightRhythm::Roll(F->Seed(),Now.Night,GetTypeHash(Id)^0x45565453u);
+ const FString Area=M->Web?M->Web->Area():FString();
+ return GatesHold(S->Gates,Now,Area,Roll,Why,[M,&Area](const FS47ScriptCond& C){return C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):C.If==TEXT("area")&&Area==C.Arg;});
+}
+
+bool Play(US47Main* M,const FString& Id,const FS47EventCtx& Ctx)
+{
+ const FS47EventScript* S=Find(Id);
+ FS47ScriptPlayer* P=FS47ScriptPlayer::Of(M);
+ FS47EventBeats* Runner=P?P->EventBeats():nullptr;
+ if(!S||!Runner)
+ {
+  UE_LOG(LogS47EventScript,Display,TEXT("S47: event %s has %s"),*Id,!S?TEXT("no script"):TEXT("no runner here"));
+  return false;
+ }
+ return Runner->Start(*S,Ctx);
+}
+}
+
+// ---------- the runner ----------
+
+bool FS47EventBeats::Start(const FS47EventScript& S,const FS47EventCtx& Ctx)
+{
+ if(!M||Runs.Num()>=S47EventScriptLocal::MostRuns)return false;
+ FRun R;R.S=S;R.Ctx=Ctx;
+ // The words every event gives, unless its code gave its own.
+ const FS47FreeformSession* F=M->Freeform.Get();
+ const double Clock=F?F->Clock():0;
+ const int32 Sec=int32(FMath::Fmod(FMath::Max(0.,Clock),86400.));
+ if(R.Ctx.Words.FindRef(TEXT("clock")).IsEmpty())R.Ctx.Words.Add(TEXT("clock"),FString::Printf(TEXT("%02d:%02d"),Sec/3600,(Sec/60)%60));
+ if(!R.Ctx.Words.Contains(TEXT("day")))R.Ctx.Words.Add(TEXT("day"),FString::FromInt(F?F->Day():1));
+ if(!R.Ctx.Words.Contains(TEXT("night")))R.Ctx.Words.Add(TEXT("night"),FString::FromInt(FS47FreeformSession::NightOf(Clock)));
+ if(!R.Ctx.Words.Contains(TEXT("map_key")))R.Ctx.Words.Add(TEXT("map_key"),S47Keys::MapSaid());
+ UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s starts (%s, %d beats)"),*S.Id,*S.Source,S.Beats.Num());
+ Runs.Add(R);
+ // What comes at once comes now, before the event's code goes on.
+ if(Advance(Runs.Last(),0))Runs.RemoveAt(Runs.Num()-1);
+ return true;
+}
+
+void FS47EventBeats::Step(double Dt)
+{
+ if(LampLeft>0&&(LampLeft-=Dt)<=0)
+ {
+  LampLeft=0;
+  if(M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,S47EventScriptLocal::LampFrom);
+ }
+ for(int32 I=Runs.Num()-1;I>=0;--I)if(Advance(Runs[I],Dt))Runs.RemoveAt(I);
+}
+
+void FS47EventBeats::Stop()
+{
+ Runs.Reset();
+ if(LampLeft>0&&M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,S47EventScriptLocal::LampFrom);
+ LampLeft=0;
+}
+
+bool FS47EventBeats::Advance(FRun& R,double Dt)
+{
+ R.T+=Dt;
+ while(R.Next<R.S.Beats.Num())
+ {
+  const FS47Beat B=R.S.Beats[R.Next];
+  if(B.At>R.T)return false;
+  if(B.Wait.Num()&&!Holds(B.Wait))
+  {
+   // A beat that waits holds the ones after it; past its most it is left out.
+   R.Waited+=Dt;
+   if(R.Waited<B.Max)return false;
+   UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s: beat %d (%s) waited %.0f s and is left out"),*R.S.Id,R.Next+1,S47EventScript::BeatName(B.Do),B.Max);
+   ++R.Next;R.Waited=0;continue;
+  }
+  ++R.Next;R.Waited=0;
+  if(B.If.IsEmpty()||Holds(B.If))Fire(B,R);
+ }
+ return true;
+}
+
+bool FS47EventBeats::Holds(const TArray<FS47ScriptCond>& Conds) const
+{
+ const FS47ScriptPlayer* P=FS47ScriptPlayer::Of(M);
+ if(!P)return false;
+ const FS47ScriptNow Now=P->Now();
+ const FString Area=M->Web?M->Web->Area():FString();
+ for(const FS47ScriptCond& C:Conds)
+ {
+  const bool bOk=C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):C.If==TEXT("area")?Area==C.Arg:S47Script::CondHolds(C,Now);
+  if(!bOk)return false;
+ }
+ return true;
+}
+
+bool FS47EventBeats::PosOf(const FS47Beat& B,const FRun& R,FVector& Out) const
+{
+ if(B.Pos.IsSet()){Out=B.Pos.GetValue();return true;}
+ if(B.Point.IsEmpty())return false;
+ if(const FVector* P=R.Ctx.Points.Find(B.Point)){Out=*P;return true;}
+ if(B.Point==TEXT("here")&&M->Player){Out=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z);return true;}
+ return false;
+}
+
+void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
+{
+ using namespace S47EventScriptLocal;
+ FS47FreeformSession* F=M->Freeform.Get();
+ const FString Text=S47EventScript::Fill(B.Text,R.Ctx.Words),Name=S47EventScript::Fill(B.Name,R.Ctx.Words),Key=S47EventScript::Fill(B.Key,R.Ctx.Words);
+ const auto Log=[&R,&B](const FString& What){UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s at %.1f s: %s %s"),*R.S.Id,B.At,S47EventScript::BeatName(B.Do),*What);};
+ FVector At=FVector::ZeroVector;
+ const bool bAt=PosOf(B,R,At);
+ // A sign the gear, the lamp and the screens answer to (FS47Omen), at the point or the player.
+ const auto Sign=[this,&R,&B,bAt,&At](const TCHAR* Tag)
+ {
+  if(!M->Omen)return false;
+  FS47OmenSource Src;Src.Id=FString::Printf(TEXT("event:%s%s"),*R.S.Id,Tag);
+  Src.At=bAt?At:(M->Player?FVector(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z):FVector::ZeroVector);
+  Src.Severity=FMath::Clamp(B.Strength,0.,1.);Src.Reach=FS47Omen::ReachFor(Src.Severity);
+  M->Omen->Post(Src,FMath::Max(1.,B.Secs));
+  return true;
+ };
+ switch(B.Do)
+ {
+ case ES47Beat::Sound:
+ case ES47Beat::Printer:
+ {
+  if(!M->Audio){Log(TEXT("no sound"));break;}
+  const bool bPrinter=B.Do==ES47Beat::Printer;
+  FS47Sound O;O.Gain=float(FMath::Clamp(B.Gain,0.,2.));O.Rate=float(FMath::Clamp(B.Rate,.25,4.));O.Lp=float(FMath::Max(0.,B.Lp));O.When=float(FMath::Max(0.,B.Delay));
+  if(bAt)O.At=At;else if(bPrinter)O.At=PrinterAt;
+  if(!bPrinter&&B.Who==TEXT("radio"))O.Dest=TEXT("radio");
+  else if(!bPrinter&&B.Who==TEXT("cb")){if(!FS47FieldRadio::CbAtHand(M)){Log(TEXT("not heard: no CB at hand"));break;}O.Dest=TEXT("radioBus");O.Lp=2600;}
+  else if(!bPrinter&&B.Who==TEXT("walkie")){if(!M->FieldRadio||!M->FieldRadio->Owned()){Log(TEXT("not heard: no walkie"));break;}O.Lp=2200;O.Gain*=.7f;}
+  const FS47Play Played=M->Audio->Sfx(bPrinter?FString(TEXT("printer")):Name,O);
+  if(Played&&B.Stop>0&&M->Audio->Ctx.IsValid())Played.Src->Stop(M->Audio->Ctx->CurrentTime()+B.Stop);
+  if(bPrinter&&!Text.IsEmpty()&&M->UI)M->UI->Toast(Text,float(B.Secs>0?B.Secs:4));
+  Log(bPrinter?FString(TEXT("the rack")):Name);
+  break;
+ }
+ case ES47Beat::Tone:
+  if(!M->Audio)break;
+  for(int32 K=0;K<FMath::Clamp(B.Repeat,1,32);++K)M->Audio->Beep(float(B.Hz),float(B.Secs>0?B.Secs:.08),float(B.Gain),float(FMath::Max(0.,B.Delay)+K*FMath::Max(0.,B.Every)),B.Kind);
+  Log(FString::Printf(TEXT("%.0f Hz x%d"),B.Hz,B.Repeat));
+  break;
+ case ES47Beat::Light:
+  if(B.Kind==TEXT("town"))
+  {
+   FS47Town* T=M->TownLayer?M->TownLayer->Town.Get():nullptr;
+   if(T)T->LampWave(M->T);
+   Log(T?TEXT("Caliche's lamps"):TEXT("no town here"));
+  }
+  else if(B.Kind==TEXT("lamp"))
+  {
+   FS47Flashlight* L=M->Night?M->Night->Flashlight.Get():nullptr;
+   if(L){L->Flicker(FMath::Clamp(B.Strength,0.,1.),LampFrom);LampLeft=FMath::Max(LampLeft,B.Secs>0?B.Secs:1.5);}
+   Log(L?TEXT("the flashlight"):TEXT("no flashlight"));
+  }
+  else Log(Sign(TEXT(""))?TEXT("the gear"):TEXT("no signs here"));
+  break;
+ case ES47Beat::Tv:
+  if(M->Audio)M->Audio->TvHiss(bAt?TOptional<FVector>(At):TOptional<FVector>());
+  if(B.Secs>0&&B.Strength>0)Sign(TEXT(":tv"));
+  Log(TEXT(""));
+  break;
+ case ES47Beat::Line:
+ {
+  bool bSaid=false;
+  if(B.Who==TEXT("dale"))bSaid=M->FieldRadio&&M->FieldRadio->Message(FString(TEXT("DALE: "))+Text);
+  else if(B.Who==TEXT("voice"))bSaid=M->FieldRadio&&M->FieldRadio->Message(Text);
+  else if(B.Who==TEXT("cb"))bSaid=FS47FieldRadio::CbSay(M,{Text},TEXT("man"));
+  else if(B.Who==TEXT("radio")&&M->Radio&&F)
+  {
+   const TSharedPtr<FS47Station>* St=M->Radio->Stations.Find(TEXT("caliche"));
+   bSaid=St&&St->IsValid()&&(*St)->CutIn({FS47RadioLine(Text,TEXT("host"),TEXT("the host"))},FMath::Fmod(F->Clock(),86400.))>0;
+  }
+  Log(bSaid?B.Who:B.Who+TEXT(": not heard (no set, or busy)"));
+  break;
+ }
+ case ES47Beat::Thought:
+  if(M->UI)M->UI->Thought(Text,float(B.Secs>0?B.Secs:4.5));
+  Log(TEXT(""));
+  break;
+ case ES47Beat::Toast:
+  if(M->UI)M->UI->Toast(Text,float(B.Secs>0?B.Secs:4));
+  Log(TEXT(""));
+  break;
+ case ES47Beat::Evidence:
+  if(!F)break;
+  if(R.Ctx.bKeep){F->RecordEvidence(Key,Text);Log(Key);}
+  else{if(M->UI)M->UI->Toast(FString::Printf(TEXT("(F10: the finding %s is not kept in a real game)"),*Key),3);Log(TEXT("F10: not kept"));}
+  break;
+ case ES47Beat::Map:
+  if(F&&F->Places&&FS47Places::Def(Name)){F->Places->Hear(Name);Log(Name);}
+  else Log(Name.IsEmpty()?FString(TEXT("no place")):Name+TEXT(": not a place on the map"));
+  break;
+ case ES47Beat::Prop:
+ case ES47Beat::Show:
+ case ES47Beat::Hide:
+ {
+  const int32 Node=M->Web?M->Web->Handle(Name):-1;
+  if(Node<0){Log(Name+TEXT(": not in this scene"));break;}
+  if(B.Do==ES47Beat::Prop){const FS47WebNode* N=M->Web->Node(Node);if(N)M->Web->SetPosition(Node,B.bTo?B.By:N->P+B.By);}
+  else M->Web->SetVisible(Node,B.Do==ES47Beat::Show);
+  Log(Name);
+  break;
+ }
+ case ES47Beat::Shake:
+  if(M->Player)M->Player->Shake=FMath::Max(M->Player->Shake,FMath::Clamp(B.Strength,0.,1.));
+  Log(TEXT(""));
+  break;
+ default:break;
+ }
+}
+
+bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
+{
+ const FS47EventScript* S=S47EventScript::Find(Id);
+ if(!S){Why=TEXT("no script ")+Id;return false;}
+ if(!M||!M->Freeform||!M->Freeform->Active()){Why=TEXT("not in Freeform");return false;}
+ FS47EventCtx Ctx;
+ // A real game keeps nothing of an F10 run; a developer's run keeps what it records.
+ Ctx.bKeep=M->Flow&&M->Flow->bDevRun;
+ // Sample words where the event's code would give its own.
+ const FS47FreeformSession* F=M->Freeform.Get();
+ Ctx.Words.Add(TEXT("az"),TEXT("120"));Ctx.Words.Add(TEXT("spread"),TEXT("18"));Ctx.Words.Add(TEXT("target"),FString());
+ Ctx.Words.Add(TEXT("burst_night"),FString::FromInt(F->Day()));
+ if(M->Player)for(const FString& P:S47EventScript::PointsOf(Id))Ctx.Points.Add(P,FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z));
+ if(!Start(*S,Ctx)){Why=TEXT("too many scripts playing");return false;}
+ Why=FString::Printf(TEXT("%s, %d beats (%s)"),*Id,S->Beats.Num(),S->Source==TEXT("built in")?TEXT("built in"):TEXT("from its file"));
+ return true;
+}
+
+void FS47EventBeats::AddDevLines()
+{
+ if(!M||!M->DevEvents)return;
+ static const TCHAR* const Group=TEXT("Event scripts");
+ US47Main* Main=M;
+ const auto Have=[Main](const FString& Label){return Main->DevEvents->Events().ContainsByPredicate([&Label](const FS47DevEvents::FEvent& E){return E.Group==Group&&E.Label==Label;});};
+ // The menu outlives a session: each line is added once.
+ const FString Again=TEXT("Read the event scripts again");
+ if(!LinesFor.Contains(Again))
+ {
+  LinesFor.Add(Again);
+  if(!Have(Again))M->DevEvents->AddFreeform(Group,Again,TEXT("Content/Director/Events, Saved/Director/Events; a new file gets its own line"),[Main]
+  {
+   S47EventScript::Reload();
+   if(Main->UI)Main->UI->Toast(FString::Printf(TEXT("Developer event: %d event scripts, %d refused%s."),S47EventScript::Library().Num(),S47EventScript::Refused().Num(),S47EventScript::Refused().Num()?*(TEXT(" (first: ")+S47EventScript::Refused().CreateConstIterator().Value()+TEXT(")")):TEXT("")),5);
+  });
+ }
+ for(const FS47EventScript& S:S47EventScript::Library())
+ {
+  const FString Label=TEXT("Run: ")+S.Id;
+  if(LinesFor.Contains(Label))continue;
+  LinesFor.Add(Label);
+  if(Have(Label))continue;
+  const FString Id=S.Id;
+  M->DevEvents->AddFreeform(Group,Label,S.Name.IsEmpty()?FString(TEXT("its beats now, with sample words")):S.Name+TEXT("; its beats now, with sample words"),[Main,Id]
+  {
+   FS47ScriptPlayer* P=FS47ScriptPlayer::Of(Main);
+   FS47EventBeats* Runner=P?P->EventBeats():nullptr;
+   FString Why=TEXT("no runner here");
+   const bool bOk=Runner&&Runner->DevRun(Id,Why);
+   if(Main->UI)Main->UI->Toast(FString(TEXT("Developer event: "))+(bOk?TEXT("event script "):TEXT("not now: "))+Why,4);
+  });
+ }
+}
