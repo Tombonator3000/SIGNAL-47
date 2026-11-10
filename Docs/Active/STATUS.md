@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 05:39 (d42): `84510b26` på `claude/day-20261109`
+## Installert 10. november kl. 06:40 (d43): `7d1ae9ec` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d42 (`84510b26`). Ledig disk etterpå: 142 GB. Ikke spilt av Tom.
+
+Nytt siden d42: under den store natta høres Dales replikker også fra walkien som ligger igjen på pulten, når spilleren er i SARO-bygget og ikke har tatt den med. Før falt alle replikkene bort, også «Get outside and look south of the station» (testspilling inne, natt 2). Replikkene for runde 2 og 3 og de nye linjene er tekst med apparatets lyd; Dales stemme er ikke spilt inn for dem.
+
+Kontroll av d42 gjelder fortsatt koden under: månedsprøvene routine og cases PASS på `84510b26`.
+
+## Tidligere: installert 10. november kl. 05:39 (d42): `84510b26` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d41 (`f2ca5e72`). Ledig disk etterpå: 147 GB. Ikke spilt av Tom.
 

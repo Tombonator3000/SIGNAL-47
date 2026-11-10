@@ -2217,3 +2217,7 @@ d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet
 ## 10. november kl. 06:10 (Claude Code, nattskift): kontroll av d42
 
 Månedsprøvene routine (stasjonen stenger, som den skal for ren rutine) og cases (396 kontroller, beholdt) PASS på `84510b26`. Testspilling n17 (spiller ute, natt 1–4): stor natt natt 2 kl. 02:13 sett på 2326 m, feltbesøket ventet den natta og kom natt 3 (sett, ikke tatt). Ingen krasj.
+
+## 10. november kl. 06:40 (Claude Code, nattskift): d43 installert
+
+`7d1ae9ec`: Dales replikker under den store natta høres fra walkien på pulten når den ikke er tatt med (funnet i testspilling n18, bekreftet i n19: fem replikker levert natt 2). Kritikerrunde uten alvorlige funn, selvtest 4116 OK, røyktest av kandidat og installert. Ledig disk 142 GB; tilbakerulling d42. Ved neste samlede rydding kan d36–d40 tas (d41, d42, d43 beholdes). STORY-06: triagetabell lagt nederst i forbedringsdokumentet.
