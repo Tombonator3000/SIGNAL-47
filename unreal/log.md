@@ -2213,3 +2213,7 @@ d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet
 ## 10. november kl. 05:39 (Claude Code, nattskift): d42 installert
 
 `84510b26`: utpekt landing venter til midnatt også når den var trukket for kvelden, feltbesøket venter på den store natta og kommer etter nattens utpekte landing, testspilleren kan stå ute og se mot hendelsene (`-S47NaturalStand=land`). Selvtest 4116 OK, røyktest av kandidat og installert. Testspilling n14/n16 (spiller ute, natt 5–14): 22 startet, 18 merket; etter rettingen stor natt sett natt 10 og utpekt landing natt 13. Månedsprøver routine og cases PASS på `f2ca5e72`. Ledig disk 147 GB; tilbakerulling d41. Ved neste samlede rydding kan d36–d39 tas (d40, d41, d42 beholdes).
+
+## 10. november kl. 06:10 (Claude Code, nattskift): kontroll av d42
+
+Månedsprøvene routine (stasjonen stenger, som den skal for ren rutine) og cases (396 kontroller, beholdt) PASS på `84510b26`. Testspilling n17 (spiller ute, natt 1–4): stor natt natt 2 kl. 02:13 sett på 2326 m, feltbesøket ventet den natta og kom natt 3 (sett, ikke tatt). Ingen krasj.
