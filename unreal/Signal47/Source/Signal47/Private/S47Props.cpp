@@ -11,6 +11,7 @@
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Math/RandomStream.h"
 #include "Engine/StaticMesh.h"
@@ -290,6 +291,17 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("Prop_%s_%d"), *Id, Placed.Num()));
 		C->SetMobility(EComponentMobility::Movable);
 		C->SetStaticMesh(Mesh);
+		// D44-20261110: a Nanite model whose material's base was never marked for Nanite draws with the grey default material in the
+		// packaged game, though not in the editor (which marks it in memory). The hall dresser's base is the engine's own glTF
+		// default, which cannot be saved. Such a prop is drawn from its ordinary mesh instead, decided before it is registered.
+		if (Mesh->HasValidNaniteData())
+			for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials())
+				if (const UMaterial* Base = Slot.MaterialInterface ? Slot.MaterialInterface->GetMaterial() : nullptr; Base && !Base->bUsedWithNanite)
+				{
+					C->SetForceDisableNanite(true);
+					UE_LOG(LogS47Props, Display, TEXT("S47: props: %s %s: drawn without Nanite (%s is not marked for it)"), *Name, *Id, *Base->GetPathName());
+					break;
+				}
 		if(Id==TEXT("stationPayphone"))S47StationPhone::Register(W,C);
 		// the floor and sight see it; the use trace only when it stands for a thing to use
 		C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
