@@ -24,6 +24,7 @@
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47Main.h"
+#include "S47Room6.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -101,12 +102,16 @@ FS47MotelTv::FS47MotelTv(US47Main* InM, FS47MotelTvDeps InD) : M(InM), D(MoveTem
 		{
 			const TOptional<FS47Doc> Doc = D.Document ? D.Document() : TOptional<FS47Doc>();
 			if (Mode == TEXT("card") && Doc) { if (D.Open) D.Open(*Doc); return; }
+			if (bChannel && Mode == TEXT("card") && Air == FS47TvProgramme::EAir::SignOff) { Toast(TEXT("The station is signing off for the night: the flag, and the anthem off a worn tape."), 4); return; }
+			if (Snowing()) { Toast(TEXT("Snow and a hiss. The station signed off at two; nobody has turned the set off."), 4); return; }
 			if (Mode == TEXT("card") && Seen(TEXT("ev:tv"))) { Toast(ShowsFilm() ? TEXT("The broadcast is back. The notebook has the observation, but the picture from that earlier case is unavailable.") : TEXT("The test card again. The notebook has the observation, but the picture from that earlier case is unavailable."), 5); return; }
 			Toast(Mode == TEXT("card") && ShowsFilm() ? TEXT("A strange late-night broadcast. Robes, spacecraft and a promise of visitors from the stars.") : Mode == TEXT("card") ? TEXT("A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.")
 				: Mode == TEXT("carrier") ? TEXT("Nothing on the screen but grey, and the hum.") : TEXT("The lot, from straight above. The truck exactly where you left it."), 4);
 		};
 		It.Examine = [this]
 		{
+			if (bChannel && Mode == TEXT("card") && Air == FS47TvProgramme::EAir::SignOff) return FString(TEXT("The flag in a slow wind, and the anthem. The station is signing off for the night."));
+			if (Snowing()) return FString(TEXT("Snow and a hiss: the station is off the air until six. Nobody has turned it off."));
 			return Mode == TEXT("card") && ShowsFilm() && !Seen(TEXT("ev:tv")) ? FString(TEXT("A faded broadcast of a cosmic pageant, flickering behind the glass.")) : Mode == TEXT("card") ? D.Document && D.Document() ? FString(ShowsFilm() ? TEXT("The broadcast is back. The single picture of the lot is kept in the notebook.") : TEXT("The test card again. The single picture of the lot is kept in the notebook."))
 				: Seen(TEXT("ev:tv")) ? FString(ShowsFilm() ? TEXT("The broadcast is back. The notebook has the observation, but the earlier picture is unavailable.") : TEXT("The test card again. The notebook has the observation, but the earlier picture is unavailable.")) : FString(TEXT("Colour bars, and a thin tone. Nobody has turned it off."))
 				: Mode == TEXT("carrier") ? FString(TEXT("A grey field. The hum of a carrier with nothing on it.")) : FString(TEXT("The motel lot, straight down. Your truck, at the same angle you parked it. No camera could stand there."));
@@ -148,7 +153,18 @@ void FS47MotelTv::Update(double Dt, const FS47MotelTvIn& S)
 	const bool bCould = Mode == TEXT("card") && S.bOk && S.bSaro && S.bHere && !Seen(TEXT("ev:tv")) && S.bTruckOnLot && S.Clock >= NotBefore && S.Clock - Last() >= GAP
 		&& Day >= 2 * 3600 + 30 * 60 && Day < 5 * 3600 + 5 * 60;
 	bWaiting = bCould;
-	Unrest = bCould ? FMath::Clamp(S.Unrest, 0.0, 1.0) : 0;
+	Unrest = FMath::Max(bCould ? FMath::Clamp(S.Unrest, 0.0, 1.0) : 0.0, FMath::IsFinite(S.Jam) ? FMath::Clamp(S.Jam, 0.0, 1.0) : 0.0);
+	if (bChannel)
+	{
+		// the one channel: the station's feed (its programme or its sign-off), at the station's own moment of it when it comes on
+		const bool bSign = Air == FS47TvProgramme::EAir::SignOff;
+		if (Programme.SignOff() != bSign || (ShowsFilm() && !bWasFilm))
+		{
+			const double At = bSign ? FS47TvProgramme::AirInto() : FS47TvProgramme::ChannelTime();
+			Programme.Silence(); Programme.Tune(bSign, At); Programme.Time = At; PaintedFrame = -1;
+		}
+		bWasFilm = ShowsFilm();
+	}
 	if (Mode == TEXT("card"))
 	{
 		if (bCould && S.May != TOptional<bool>(false) && Dwell > DWELL)
@@ -364,7 +380,16 @@ void FS47MotelTv::Paint(double InT)
 		TArray<FColor> Film;
 		const bool bBroadcast = M && Mode == TEXT("card") && !bCardOnly && Programme.Frame(Film, W, H);
 		if (bBroadcast) PaintedFrame = Programme.FrameIndex();
-		const TArray<FColor>& Src = bBroadcast ? Film : Mode == TEXT("frame") && Shot.Num() == W * H ? Shot : Card;
+		// (TV-CHANNEL-20261110: off the air for the night, room 6's snow drawn up to the card's size in the card's place)
+		TArray<FColor> Off;
+		if (!bBroadcast && Snowing())
+		{
+			TArray<FColor> Snow;
+			US47Room6::DrawSnow(Snow, InT, [] { return double(FMath::FRand()); });
+			Off.SetNumUninitialized(W * H);
+			for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X) Off[Y * W + X] = Snow[(Y * US47Room6::TV_H / H) * US47Room6::TV_W + X * US47Room6::TV_W / W];
+		}
+		const TArray<FColor>& Src = bBroadcast ? Film : Off.Num() ? Off : Mode == TEXT("frame") && Shot.Num() == W * H ? Shot : Card;
 		// drawImage(src, 6, 5, W - 12, H - 10, ...): the card's overscan; the broadcast's is as even, so it stays 4:3
 		const double Cx = bBroadcast ? (W - (H - 10) * 4.0 / 3) / 2 : 6;
 		const int32 J = FMath::FRand() < 0.08 ? 1 : 0;
@@ -461,9 +486,10 @@ void FS47MotelTv::Sound(double InDist)
 	const double Now = Ctx->CurrentTime();
 	auto Set = [Now](const TSharedPtr<FS47GainNode>& G, double V) { G->Gain.SetTargetAtTime(V, Now, 0.04); };
 	const double U = Mode == TEXT("card") ? Unrest : 0, Waver = U > 0 ? 1 - U * (0.35 + 0.65 * FMath::FRand() * FMath::FRand()) : 1;
-	Set(Snd->Tone, Mode == TEXT("card") && !ShowsFilm() ? 0.03 * (Roll ? 0.3 : Waver) : 0);
+	Set(Snd->Tone, Mode == TEXT("card") && !ShowsFilm() && !Snowing() ? 0.03 * (Roll ? 0.3 : Waver) : 0);
 	Set(Snd->Hum, Mode == TEXT("carrier") ? 0.11 * Snd->HumK : 0.05 * U * U * Snd->HumK);
-	Set(Snd->Hiss, Mode == TEXT("carrier") ? 0.014 : Mode == TEXT("card") ? 0.006 : 0);
+	// (TV-CHANNEL-20261110: the snow's hiss off the air; in Freeform the hiss comes up under what is on the air, bChannel)
+	Set(Snd->Hiss, Mode == TEXT("carrier") ? 0.014 : Snowing() ? 0.09 : Mode == TEXT("card") ? 0.006 + (bChannel ? 0.07 * U * U : 0.0) : 0);
 	Set(Snd->Whine, Mode == TEXT("frame") ? 0 : 0.0016);
 }
 

@@ -433,7 +433,7 @@ void FS47Office::Init()
  {
   // The unproduced tape still has no substitute image: the set is on the late station instead (TV-SCHEDULE-20261109, Tom), its
   // KELVORA screen and pilot driven by FS47OfficeTv. Without its screen slot it stays dark, as before.
-  if (C->GetNumMaterials() > 2) Visual->Tv = MakeUnique<FS47OfficeTv>(M, C, TVObj, [this] { return M && M->Player && Contains(M->Player->Pos); });
+  if (C->GetNumMaterials() > 2) Visual->Tv = MakeUnique<FS47OfficeTv>(M, C, TVObj, [this] { return M && M->Player && Contains(M->Player->Pos); }, &bTvOff);
   else { if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink); }
  }
  Collider(TEXT("office:deckFoot"), -.77, -.17, 7.43, 8.07);
@@ -547,7 +547,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
- ReadDocuments.Reset();
+ ReadDocuments.Reset(); bTvOff = false;
  DoorK = DrawerK = FieldSheetAt = SyncWait = 0;
  double Version = 0;
  if (Saved.IsValid() && Saved->HasTypedField<EJson::Number>(TEXT("v")) && Saved->TryGetNumberField(TEXT("v"), Version) && Version == 1.)
@@ -560,7 +560,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
   bKey = S47J::Bool(Saved, TEXT("key")); bUnlocked = bKey && S47J::Bool(Saved, TEXT("unlocked"));
   bEverOpened = bUnlocked && S47J::Bool(Saved, TEXT("everOpened")); bEntered = bEverOpened && S47J::Bool(Saved, TEXT("entered"));
   bDoorInspected = S47J::Bool(Saved, TEXT("doorInspected")); bDoorTarget = bUnlocked && S47J::Bool(Saved, TEXT("doorOpen"));
-  bDrawerTarget = S47J::Bool(Saved, TEXT("drawerOpen"));
+  bDrawerTarget = S47J::Bool(Saved, TEXT("drawerOpen")); bTvOff = S47J::Bool(Saved, TEXT("tvOff"));
   bDeskSeen = bEntered && S47J::Bool(Saved, TEXT("deskSeen")); bIndexRead = bEntered && S47J::Bool(Saved, TEXT("indexRead"));
   bClippingsRead = bEntered && S47J::Bool(Saved, TEXT("clippingsRead")); bNoteRead = bEntered && S47J::Bool(Saved, TEXT("noteRead")); bContactRead = bEntered && S47J::Bool(Saved, TEXT("contactRead"));
   const bool bHasAcquisitionTime = Saved->HasTypedField<EJson::Number>(TEXT("fieldSheetAt")) && Saved->TryGetNumberField(TEXT("fieldSheetAt"), FieldSheetAt) && FMath::IsFinite(FieldSheetAt);
@@ -741,6 +741,7 @@ void FS47Office::SyncFacts()
  // There is no produced 72-second tape. Neither tape-start nor vhs_seen is acknowledged.
 }
 
+FS47OfficeTv* FS47Office::Television() const { return Visual ? Visual->Tv.Get() : nullptr; }
 void FS47Office::Changed() { Apply(); SyncFacts(); if (M) M->RequestAutosave(); }
 
 bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
@@ -1065,6 +1066,7 @@ S47J::FObj FS47Office::Save() const
  if (bFieldSheet && FMath::IsFinite(FieldSheetAt)) S47J::Set(O, TEXT("fieldSheetAt"), FieldSheetAt);
  TArray<TSharedPtr<FJsonValue>> Read; for (const FString& Id : ReadDocuments) if (DocumentRead(Id)) Read.Add(MakeShared<FJsonValueString>(Id));
  O->SetArrayField(TEXT("readDocuments"), Read);
+ if (bTvOff) S47J::Set(O, TEXT("tvOff"), true); // (an optional field: a set left on saves as it always did)
  S47J::Set(O, TEXT("hasFieldSheet"), HasFieldSheet()); S47J::Set(O, TEXT("departed"), DepartureReleased()); return O;
 }
 

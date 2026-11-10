@@ -164,7 +164,18 @@ void US47Main::Step(double Dt)
 	const FVector P = Player->Pos;
 	// TV-SCHEDULE-20261109 (Tom): the late programme on the motel office's set in both modes, by the station's hours; the test card
 	// the rest of the day (and at every hour without the local frame pack). -S47MotelTvFilm or -S47TvOnAir: the film at any hour.
-	if (TownLayer && TownLayer->MotelTv) TownLayer->MotelTv->bCardOnly = !(FS47TvProgramme::ForcedOnAir() || FS47TvProgramme::OnAir(bFree && Freeform ? Freeform->Clock() : Story ? Story->Clock() : 0));
+	// TV-CHANNEL-20261110 (Tom: every set on the one channel): the station's day goes on here, once a frame. Freeform: on the air
+	// from six until two, then the sign-off in front of whoever is watching, the card and snow (FS47TvProgramme::Advance); the
+	// story keeps the late station's hours. Dale's set (S47OfficeTv) and the motel office's read it.
+	const double TvClock = bFree && Freeform ? Freeform->Clock() : Story ? Story->Clock() : 0;
+	FS47TvProgramme::ChannelStep(TvClock, Mode == EMode::Play ? Dt : 0.0, bFree && Freeform);
+	if (TownLayer && TownLayer->MotelTv)
+	{
+		FS47MotelTv& Set = *TownLayer->MotelTv;
+		Set.bChannel = bFree && Freeform; Set.Air = FS47TvProgramme::Air();
+		Set.bCardOnly = Set.bChannel ? Set.Air != FS47TvProgramme::EAir::Programme && Set.Air != FS47TvProgramme::EAir::SignOff
+			: !(FS47TvProgramme::ForcedOnAir() || FS47TvProgramme::OnAir(TvClock));
+	}
 	if (!bFree && Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
 	// MOTEL-REAL-20261108: in Freeform the town layer's world step does not run, so the motel office's set never got past the
 	// first frame it was painted with. Its picture (the late programme, or the test card and its snow) and its sound go on here;
@@ -172,6 +183,7 @@ void US47Main::Step(double Dt)
 	if (bFree && Mode == EMode::Play && TownLayer && TownLayer->MotelTv && Web && !FParse::Param(FCommandLine::Get(), TEXT("S47MotelTvFrozen")))
 	{
 		FS47MotelTvIn Tv; Tv.bSaro = Web->Area() == TEXT("saro"); Tv.Cam = FS47Cam::Of(Player, 5000); Tv.Clock = Freeform ? Freeform->Clock() : 0;
+		Tv.Jam = FMath::Max(Freeform ? double(Freeform->ScreenInterference()) : 0.0, FS47TvProgramme::JamAsked());
 		TownLayer->MotelTv->Update(Dt, Tv);
 	}
 	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);

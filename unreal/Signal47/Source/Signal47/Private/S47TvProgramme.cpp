@@ -14,6 +14,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Tv, Log, All);
 namespace
 {
 	const int32 PW = 320, PH = 240;
+	const double FLAG_FPS = 12;
 	// the set's little speaker: about 250 Hz to 4 kHz, a box resonance, a little saturation
 	const double LOW = 250, HIGH = 4000, BOX = 1400, BOX_DB = 4, DRIVE = 1.25, SHAPE = 1.6;
 	// through a wall: duller and quieter
@@ -73,11 +74,18 @@ namespace
 
 FS47TvProgramme::~FS47TvProgramme() { Silence(); }
 
-bool FS47TvProgramme::Available() const { return Programme().Fps != 0; }
+bool FS47TvProgramme::Available() const { return bSign || Programme().Fps != 0; }
 bool FS47TvProgramme::HasSound() const { return SoundBuffer().IsValid(); }
-double FS47TvProgramme::Length() const { return TestLength > 0 ? TestLength : Programme().Length(); }
-double FS47TvProgramme::Fps() const { return Programme().Fps; }
-TSharedPtr<FS47AudioBuffer> FS47TvProgramme::SoundBuffer() const { return TestSound.IsValid() ? TestSound : Available() ? ProgrammeSound() : nullptr; }
+double FS47TvProgramme::Length() const { return TestLength > 0 ? TestLength : bSign ? SIGN_OFF : Programme().Length(); }
+double FS47TvProgramme::Fps() const { return bSign ? FLAG_FPS : Programme().Fps; }
+TSharedPtr<FS47AudioBuffer> FS47TvProgramme::SoundBuffer() const { return TestSound.IsValid() ? TestSound : bSign ? Anthem() : Available() ? ProgrammeSound() : nullptr; }
+
+void FS47TvProgramme::Tune(bool bSignOff, double At)
+{
+	if (bSign == bSignOff) return;
+	Silence();
+	bSign = bSignOff; LastFrame = -1; Time = Wrap(At);
+}
 
 double FS47TvProgramme::Wrap(double Seconds) const
 {
@@ -89,6 +97,7 @@ double FS47TvProgramme::Wrap(double Seconds) const
 
 int32 FS47TvProgramme::FrameIndex() const
 {
+	if (bSign) return int32(Wrap(Time) * FLAG_FPS);
 	const FProgramme& P = Programme();
 	if (!P.Fps) return -1;
 	return FMath::Clamp(int32(Wrap(Time) * P.Fps), 0, P.Offsets.Num() - 2);
@@ -136,9 +145,17 @@ void FS47TvProgramme::Fit(const TArray<FColor>& Src, int32 Sw, int32 Sh, TArray<
 bool FS47TvProgramme::Frame(TArray<FColor>& Out, int32 Width, int32 Height, double Aspect)
 {
 	const FProgramme& P = Programme();
-	if (!P.Fps || Width <= 0 || Height <= 0) return false;
+	if ((!bSign && !P.Fps) || Width <= 0 || Height <= 0) return false;
 	const int32 Index = FrameIndex();
-	if (Index != LastFrame)
+	if (bSign && Index != LastFrame)
+	{
+		Flag(Pixels, Wrap(Time));
+		double Sum = 0;
+		for (int32 Y = 0; Y < PH; Y += 2) for (int32 X = 0; X < PW; X += 2) { const FColor& C = Pixels[Y * PW + X]; Sum += 0.299 * C.R + 0.587 * C.G + 0.114 * C.B; }
+		Lum = Sum / (255.0 * (PW / 2) * (PH / 2));
+		LastFrame = Index;
+	}
+	else if (Index != LastFrame)
 	{
 		auto& Module = FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
 		const auto Decoder = Module.CreateImageWrapper(EImageFormat::JPEG);
@@ -238,6 +255,135 @@ void FS47TvProgramme::Silence()
 	Src.Reset(); Gain.Reset(); Wall.Reset(); Ctx.Reset();
 }
 
+// ---------- the sign-off: the flag and the anthem ----------
+
+void FS47TvProgramme::Flag(TArray<FColor>& Out, double T)
+{
+	Out.SetNumUninitialized(PW * PH);
+	// up from black, and down to it before the card
+	const double Fade = FMath::Clamp(T / 1.5, 0.0, 1.0) * FMath::Clamp((SIGN_OFF - 0.6 - T) / 2.5, 0.0, 1.0);
+	const double StarX = 0.4 * 0.88 * PW / 6, StarY = 7.0 / 13 * 0.8 * PH / 9;
+	for (int32 Y = 0; Y < PH; ++Y) for (int32 X = 0; X < PW; ++X)
+	{
+		const double U = ((X + 0.5) / PW - 0.06) / 0.88;
+		// the cloth: the wave runs out from the hoist, larger toward the fly, and its folds catch the light
+		const double Phase = 2 * UE_DOUBLE_PI * (1.7 * U - 0.42 * T), Amp = 0.035 * (0.25 + 0.75 * FMath::Clamp(U, 0.0, 1.0));
+		const double V = ((Y + 0.5) / PH - 0.10 - Amp * FMath::Sin(Phase)) / 0.80;
+		double R = 8 + 6.0 * Y / PH, G = 12 + 10.0 * Y / PH, B = 28 + 16.0 * Y / PH;   // the night behind it
+		if (U >= 0 && U <= 1 && V >= 0 && V <= 1)
+		{
+			const bool bRed = (FMath::Min(12, int32(V * 13)) & 1) == 0;
+			R = bRed ? 170 : 232; G = bRed ? 38 : 230; B = bRed ? 50 : 222;
+			if (U < 0.4 && V < 7.0 / 13)
+			{
+				R = 44; G = 48; B = 104;
+				// nine rows of stars, six and five in turn
+				const double Row = V / (7.0 / 13) * 9, Col = U / 0.4 * 6;
+				const int32 Ri = FMath::Min(8, int32(Row));
+				const double Centre = (Ri & 1) ? FMath::Clamp(FMath::RoundToDouble(Col), 1.0, 5.0) : FMath::Clamp(FMath::FloorToDouble(Col) + 0.5, 0.5, 5.5);
+				const double Dx = (Col - Centre) * StarX, Dy = (Row - (Ri + 0.5)) * StarY;
+				if (Dx * Dx + Dy * Dy < 2.3 * 2.3) { R = 232; G = 230; B = 222; }
+			}
+			const double Shade = 0.82 + 0.2 * FMath::Cos(Phase);
+			R *= Shade; G *= Shade; B *= Shade;
+		}
+		Out[Y * PW + X] = FColor(uint8(FMath::Clamp(FMath::RoundToInt(R * Fade), 0, 255)), uint8(FMath::Clamp(FMath::RoundToInt(G * Fade), 0, 255)), uint8(FMath::Clamp(FMath::RoundToInt(B * Fade), 0, 255)), 255);
+	}
+}
+
+TSharedPtr<FS47AudioBuffer> FS47TvProgramme::Anthem()
+{
+	// The Star-Spangled Banner (the tune is John Stafford Smith's, about 1775; nobody's recording is used): the melody in C, each
+	// note a small band of harmonics with the octave under it, as a station's worn tape through a two-inch speaker would give it.
+	static const TSharedPtr<FS47AudioBuffer> Sound = []
+	{
+		struct FNote { int32 Midi; double Beats; };
+		static const FNote A[] = { {67,.75},{64,.25},{60,1},{64,1},{67,1},{72,2},{76,.75},{74,.25},{72,1},{64,1},{66,1},{67,2},{67,.5},{67,.5},{76,1.5},{74,.5},{72,1},{71,2},{69,.75},{71,.25},{72,1},{72,1},{67,1},{64,1},{60,1} };
+		static const FNote B[] = { {76,.5},{76,.5},{76,1},{77,1},{79,1},{79,2},{77,.5},{76,.5},{74,1},{76,1},{77,1},{77,2},{77,1},{76,1.5},{74,.5},{72,1},{71,2},{69,.75},{71,.25},{72,1},{64,1},{66,1},{67,2} };
+		static const FNote C[] = { {67,1},{72,1},{72,1},{72,.5},{71,.5},{69,1},{69,1},{69,1},{74,1},{77,.5},{76,.5},{74,.5},{72,.5},{72,1},{71,2},{67,.5},{67,.5},{72,1.5},{74,.5},{76,.5},{77,.5},{79,3},{72,.5},{74,.5},{76,1.5},{77,.5},{74,1},{72,3} };
+		const float Rate = 16000.f;
+		const int32 N = int32(SIGN_OFF * Rate);
+		TSharedRef<FS47AudioBuffer> Buf = MakeShared<FS47AudioBuffer>(1, N, Rate);
+		float* Out = Buf->GetChannelData(0);
+		FMemory::Memzero(Out, N * sizeof(float));
+		double At = 2.0;
+		const double Beat = 0.56;
+		auto Play = [&](const FNote* Notes, int32 Count, int32 SlowFrom)
+		{
+			for (int32 I = 0; I < Count; ++I)
+			{
+				// (the last line is held back a little, as it is always played)
+				const double Len = Notes[I].Beats * Beat * (I >= SlowFrom ? 1.18 : 1.0), Sounding = FMath::Max(0.06, Len - 0.035);
+				const double F = 440.0 * FMath::Pow(2.0, (Notes[I].Midi - 69) / 12.0);
+				const int32 From = int32(At * Rate), Samples = int32(Sounding * Rate);
+				for (int32 S = 0; S < Samples && From + S < N; ++S)
+				{
+					const double T = S / double(Rate);
+					const double Env = FMath::Min(1.0, T / 0.025) * (0.72 + 0.28 * FMath::Exp(-T / 0.22)) * FMath::Min(1.0, (Sounding - T) / 0.05);
+					const double Ph = 2 * UE_DOUBLE_PI * F * T + (T > 0.15 ? 0.25 * FMath::Sin(2 * UE_DOUBLE_PI * 5.2 * T) : 0.0);
+					const double Tone = FMath::Sin(Ph) + 0.55 * FMath::Sin(2 * Ph) + 0.38 * FMath::Sin(3 * Ph) + 0.2 * FMath::Sin(4 * Ph) + 0.1 * FMath::Sin(5 * Ph)
+						+ 0.4 * FMath::Sin(Ph / 2) + 0.14 * FMath::Sin(Ph);
+					Out[From + S] += float(0.22 * Env * Tone);
+				}
+				At += Len;
+			}
+		};
+		const int32 Na = int32(UE_ARRAY_COUNT(A)), Nb = int32(UE_ARRAY_COUNT(B)), Nc = int32(UE_ARRAY_COUNT(C));
+		Play(A, Na, MAX_int32); Play(A, Na, MAX_int32); Play(B, Nb, MAX_int32); Play(C, Nc, Nc - 6);
+		UE_LOG(LogS47Tv, Display, TEXT("S47: the station's sign-off made: the anthem ends %.1f s into %.0f s"), At, SIGN_OFF);
+		return TSharedPtr<FS47AudioBuffer>(Buf);
+	}();
+	return Sound;
+}
+
+// ---------- the channel ----------
+
+namespace
+{
+	FS47TvProgramme::FChannel& Channel() { static FS47TvProgramme::FChannel C; return C; }
+	double JamLevel = 0, JamLeft = 0;
+	double DayOf(double Clock) { return FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0); }
+}
+
+void FS47TvProgramme::Advance(FChannel& C, double Clock, double Dt, bool bDay, bool bForced)
+{
+	Dt = FMath::IsFinite(Dt) ? FMath::Max(0.0, Dt) : 0.0;
+	C.Time += Dt;
+	double Was = C.Clock; C.Clock = Clock;
+	// another night altogether (a load, a new game, a sleep): nothing of the old one goes on
+	if (Was >= 0 && (Clock < Was - 1 || Clock - Was > 3600) && !C.bAsked) { C.Air = EAir::Snow; C.Into = -1; Was = -1; }
+	if (C.bAsked && C.Air == EAir::SignOff) { if ((C.Into += Dt) < SIGN_OFF) return; C.bAsked = false; C.Air = EAir::Card; C.Into = 0; return; }
+	const double Day = DayOf(FMath::IsFinite(Clock) ? Clock : 0.0);
+	if (bForced || (bDay ? Day >= DAY_ON || Day < DAY_OFF : OnAir(Clock))) { C.Air = EAir::Programme; C.Into = -1; return; }
+	if (!bDay) { C.Air = EAir::Snow; C.Into = -1; return; }
+	const double Past = DayOf(Day - DAY_OFF), ToOn = DayOf(DAY_ON - Day);
+	// the day ended in front of us (not skipped over by a sleep or a load): the station signs off
+	if (C.Air == EAir::Programme && Was >= 0 && Clock >= Was && Clock - Was < 600 && Past < 1800) { C.Air = EAir::SignOff; C.Into = 0; return; }
+	if (C.Air == EAir::SignOff && Past < 3 * 3600) { if ((C.Into += Dt) >= SIGN_OFF) { C.Air = EAir::Card; C.Into = 0; } return; }
+	if (C.Air == EAir::Card && C.Into >= 0 && C.Into < CARD_AFTER && Past < 3 * 3600) { C.Into += Dt; return; }
+	C.Air = ToOn <= 900 ? EAir::Card : EAir::Snow; C.Into = -1;
+}
+
+void FS47TvProgramme::ChannelStep(double Clock, double Dt, bool bDay)
+{
+	const EAir Was = Channel().Air;
+	Advance(Channel(), Clock, Dt, bDay, ForcedOnAir());
+	if (Channel().Air != Was)
+	{
+		static const TCHAR* const Names[] = { TEXT("the programme"), TEXT("the sign-off"), TEXT("the card"), TEXT("snow") };
+		const int32 Day = int32(DayOf(FMath::IsFinite(Clock) ? Clock : 0.0));
+		UE_LOG(LogS47Tv, Display, TEXT("S47: the station has %s at %02d:%02d (%s)"), Names[int32(Channel().Air)], Day / 3600, Day / 60 % 60, bDay ? TEXT("the valley's day") : TEXT("the late station"));
+	}
+	if (JamLeft > 0 && (JamLeft -= FMath::Max(0.0, Dt)) <= 0) JamLevel = 0;
+}
+FS47TvProgramme::EAir FS47TvProgramme::Air() { return Channel().Air; }
+bool FS47TvProgramme::Staged() { return Programme().Fps != 0; }
+double FS47TvProgramme::AirInto() { return FMath::Max(0.0, Channel().Into); }
+double FS47TvProgramme::ChannelTime() { return Channel().Time; }
+void FS47TvProgramme::SignOffNow() { FChannel& C = Channel(); C.Air = EAir::SignOff; C.Into = 0; C.bAsked = true; }
+void FS47TvProgramme::JamFor(double Level, double Seconds) { JamLevel = FMath::Clamp(Level, 0.0, 1.0); JamLeft = FMath::Max(0.0, Seconds); }
+double FS47TvProgramme::JamAsked() { return JamLeft > 0 ? JamLevel : 0.0; }
+
 // ---------- the station's hours ----------
 
 bool FS47TvProgramme::OnAir(double Clock)
@@ -312,5 +458,57 @@ bool FS47TvProgramme::SelfTest(TArray<FString>& Lines)
 	// the station's hours: on from 23:30 to 03:30, wrapping round midnight and any day
 	Check(!OnAir(23 * 3600 + 29 * 60) && OnAir(23.5 * 3600) && OnAir(0) && OnAir(86400 + 2 * 3600) && OnAir(-1800) && !OnAir(3.5 * 3600) && !OnAir(12 * 3600) && !OnAir(-12 * 3600),
 		TEXT("the programme's hours: from half past eleven to half past three, the card or snow the rest of the day"));
+	// TV-CHANNEL-20261110: the one channel. Freeform's broadcast day, its sign-off in real seconds, the card and the snow after it.
+	{
+		FChannel Ch;
+		auto Run = [&](double From, double To, double Step, bool bDay) { for (double K = From; K <= To; K += Step) Advance(Ch, K, 1.0, bDay, false); };
+		Advance(Ch, 20 * 3600, 0, true, false);
+		Check(Ch.Air == EAir::Programme, TEXT("channel: the programme through the evening"));
+		Run(25 * 3600 + 3540, 26 * 3600 + 13, 13, true);
+		Check(Ch.Air == EAir::SignOff && Ch.Into < 3, TEXT("channel: at two the station signs off in front of whoever is watching"));
+		const double Programme0 = Ch.Time;
+		for (int32 I = 0; I < 62; ++I) Advance(Ch, 26 * 3600 + 30 + I * 13, 1.0, true, false);
+		const bool bStill = Ch.Air == EAir::SignOff;
+		for (int32 I = 0; I < 4; ++I) Advance(Ch, 26 * 3600 + 900 + I * 13, 1.0, true, false);
+		Check(bStill && Ch.Air == EAir::Card && Ch.Time > Programme0 + 60, TEXT("channel: the flag and the anthem for their minute of real time, then the card"));
+		for (int32 I = 0; I < int32(CARD_AFTER) + 2; ++I) Advance(Ch, 26 * 3600 + 1000 + I * 13, 1.0, true, false);
+		Check(Ch.Air == EAir::Snow, TEXT("channel: then snow"));
+		Advance(Ch, 29 * 3600 + 2400, 1.0, true, false); const bool bCardBefore = Ch.Air == EAir::Snow;
+		Advance(Ch, 29 * 3600 + 2800, 1.0, true, false);
+		Check(bCardBefore && Ch.Air == EAir::Card, TEXT("channel: the card again a quarter of an hour before sign-on"));
+		Advance(Ch, 30 * 3600 + 5, 1.0, true, false);
+		Check(Ch.Air == EAir::Programme, TEXT("channel: on the air again at six"));
+		Advance(Ch, 49 * 3600, 1.0, true, false); Advance(Ch, 51 * 3600, 1.0, true, false);
+		Check(Ch.Air == EAir::Snow, TEXT("channel: a night slept through has no sign-off waiting at the end of it"));
+		Advance(Ch, 60 * 3600, 1.0, true, false); Ch.Air = EAir::SignOff; Ch.Into = 0; Ch.bAsked = true;
+		Advance(Ch, 60 * 3600 + 13, 1.0, true, false);
+		Check(Ch.Air == EAir::SignOff, TEXT("channel: asked for outright, the sign-off plays at any hour"));
+		FChannel St;
+		Advance(St, 1 * 3600, 1.0, false, false); const bool bLate = St.Air == EAir::Programme;
+		Advance(St, 3.5 * 3600 + 5, 1.0, false, false); const bool bAfter = St.Air == EAir::Snow;
+		Advance(St, 12 * 3600, 1.0, false, true);
+		Check(bLate && bAfter && St.Air == EAir::Programme, TEXT("channel: the story keeps the late station's hours and its snow; a test can force the programme"));
+	}
+	{
+		const TSharedPtr<FS47AudioBuffer> Song = Anthem();
+		double Loud = 0, Lead = 0, End = 0;
+		if (Song.IsValid())
+		{
+			const float* D = Song->GetChannelData(0); const int32 N = Song->Length(); const int32 R = int32(Song->SampleRate());
+			for (int32 I = 0; I < N; ++I) { const double V = FMath::Abs(double(D[I])); Loud = FMath::Max(Loud, V); if (I < R) Lead = FMath::Max(Lead, V); if (I > N - R) End = FMath::Max(End, V); }
+		}
+		Check(Song.IsValid() && FMath::IsNearlyEqual(Song->Duration(), SIGN_OFF, 0.01) && Loud > 0.2 && Loud < 0.95 && Lead == 0 && End == 0,
+			FString::Printf(TEXT("sign-off: the anthem fills its minute and no more (peak %.2f)"), Loud));
+		FS47TvProgramme Set; Set.Tune(true, 20);
+		TArray<FColor> Shown;
+		const bool bFrame = Set.Available() && Set.Frame(Shown, PW, PH) && Shown.Num() == PW * PH;
+		int32 Red = 0, Pale = 0, Blue = 0;
+		if (bFrame) for (const FColor& P : Shown) { if (P.R > 110 && P.G < 70) ++Red; else if (P.R > 150 && P.G > 150 && P.B > 150) ++Pale; else if (P.B > 70 && P.R < 70) ++Blue; }
+		TArray<FColor> Black; Flag(Black, 0);
+		Check(bFrame && Red > 12000 && Pale > 9000 && Blue > 4000 && Set.Brightness() > 0.2 && Black[PW * 120 + 160].R == 0,
+			FString::Printf(TEXT("sign-off: the flag is on the screen (red %d, white %d, blue %d), up from black"), Red, Pale, Blue));
+		Set.Tune(false, 5);
+		Check(!Set.SignOff() && Set.Fps() == Programme().Fps, TEXT("sign-off: tuned back, the set has the programme's feed again"));
+	}
 	return bOk;
 }

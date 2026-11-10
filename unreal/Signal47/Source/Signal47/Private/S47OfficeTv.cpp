@@ -50,12 +50,16 @@ namespace
 	}
 	const TCHAR* Name(FS47OfficeTv::EShow S)
 	{
-		return S == FS47OfficeTv::EShow::Programme ? TEXT("programme") : S == FS47OfficeTv::EShow::Card ? TEXT("card") : S == FS47OfficeTv::EShow::Snow ? TEXT("snow") : TEXT("off");
+		return S == FS47OfficeTv::EShow::Programme ? TEXT("programme") : S == FS47OfficeTv::EShow::Card ? TEXT("card") : S == FS47OfficeTv::EShow::Snow ? TEXT("snow")
+			: S == FS47OfficeTv::EShow::SignOff ? TEXT("sign-off") : TEXT("off");
 	}
+	// TV-CHANNEL-20261110: the tube coming up from a line and going down to a dot (seconds); the sliding tone and the hiss of
+	// something on the air (levels beside the card's own)
+	const double WARM_S = 0.45, FADE_S = 0.5, ODD = 0.05, JAM_HISS = 0.12;
 }
 
-FS47OfficeTv::FS47OfficeTv(US47Main* InM, UStaticMeshComponent* InSet, const FS47Obj& InObj, TFunction<bool()> InInside)
-	: M(InM), Set(InSet), Obj(InObj), Inside(MoveTemp(InInside))
+FS47OfficeTv::FS47OfficeTv(US47Main* InM, UStaticMeshComponent* InSet, const FS47Obj& InObj, TFunction<bool()> InInside, bool* InOff)
+	: M(InM), Set(InSet), Obj(InObj), Inside(MoveTemp(InInside)), Off(InOff)
 {
 	Card = FS47MotelTv::CardPicture();
 	AS47Web* W = M ? M->Web.Get() : nullptr;
@@ -86,15 +90,29 @@ FS47OfficeTv::FS47OfficeTv(US47Main* InM, UStaticMeshComponent* InSet, const FS4
 	if (M->Inter && Obj)
 	{
 		InSet->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
-		FS47Interactable It; It.Id = TEXT("office:tv"); It.Object = Obj; It.Label = [] { return FString(); }; It.Use = [] {}; It.bLook = true; It.ExamineRange = 4;
+		// (the story's set is only looked at, as before; in Freeform it has its switch: Step sets bLook by the mode)
+		// The switch is reached from right at the set (1.5 m from the eye): from a chair's distance the picture is watched with no
+		// prompt across it.
+		FS47Interactable It; It.Id = TEXT("office:tv"); It.Object = Obj; It.bLook = true; It.ExamineRange = 4; It.Range = 1.5;
+		It.Label = [this]() -> FString
+		{
+			if (!M || !M->IsFreeform() || (Inside && !Inside())) return FString();
+			return Switched() ? TEXT("Television / switch off") : TEXT("Television / switch on");
+		};
+		It.Use = [this] { if (M && M->IsFreeform() && !(Inside && !Inside())) Switch(); };
 		It.Examine = [this]() -> FString
 		{
 			if (Inside && !Inside()) return FString();
+			const bool bFree = M && M->IsFreeform();
+			if (bFree && !Switched()) return TEXT("Dale's portable set, switched off. The one station it gets is on from six in the morning until two at night.");
+			if (bFree && Show != EShow::Off && Jam > 0.3) return TEXT("Dale's set. The picture tears and rolls and goes to snow, and something slides about under the hiss. It is not the aerial.");
 			switch (Show)
 			{
-			case EShow::Programme: return TEXT("Dale's set, left on with the sound low. A late broadcast: robes, painted spacecraft and a promise of visitors from the stars.");
-			case EShow::Card: return TEXT("Dale's set, left on. The station's test card, and a thin tone.");
-			case EShow::Snow: return TEXT("Dale's set, left on. Snow and a hiss: nothing on the air at this hour.");
+			case EShow::Programme: return bFree ? TEXT("Dale's set, the sound low. The one station it gets: robes, painted spacecraft and a promise of visitors from the stars, all day until two.")
+				: TEXT("Dale's set, left on with the sound low. A late broadcast: robes, painted spacecraft and a promise of visitors from the stars.");
+			case EShow::SignOff: return TEXT("Dale's set. The station is signing off for the night: the flag, and the anthem off a worn tape.");
+			case EShow::Card: return bFree ? TEXT("Dale's set. The station's test card, and a thin tone: off the air until six.") : TEXT("Dale's set, left on. The station's test card, and a thin tone.");
+			case EShow::Snow: return bFree ? TEXT("Dale's set. Snow and a hiss: the station signed off at two.") : TEXT("Dale's set, left on. Snow and a hiss: nothing on the air at this hour.");
 			default: return TEXT("Dale's portable set, dark. No power.");
 			}
 		};
@@ -137,30 +155,94 @@ FS47OfficeTv::EShow FS47OfficeTv::ShowAt(double InClock, bool bPowered, bool bHa
 	return EShow::Snow;
 }
 
+FS47OfficeTv::EShow FS47OfficeTv::ShowOn(FS47TvProgramme::EAir Air, bool bPowered, bool bSwitched, bool bHaveProgramme)
+{
+	if (!bPowered || !bSwitched) return EShow::Off;
+	switch (Air)
+	{
+	case FS47TvProgramme::EAir::Programme: return bHaveProgramme ? EShow::Programme : EShow::Card;
+	case FS47TvProgramme::EAir::SignOff: return EShow::SignOff;
+	case FS47TvProgramme::EAir::Card: return EShow::Card;
+	default: return EShow::Snow;
+	}
+}
+
+double FS47OfficeTv::Break(double InJam, double T)
+{
+	if (!FMath::IsFinite(InJam) || InJam < 0.06) return 0;
+	// gusts: two slow waves against each other, so it comes and goes without a beat to it
+	const double Gust = 0.5 + 0.5 * FMath::Sin(T * 1.7) * FMath::Sin(T * 4.3 + 1.1);
+	return FMath::Clamp(FMath::Min(1.0, InJam) * (0.22 + 1.15 * Gust), 0.0, 1.0);
+}
+
+void FS47OfficeTv::Switch()
+{
+	if (!Off) return;
+	*Off = !*Off;
+	if (*Off && Show != EShow::Off) Fade = FADE_S;
+	if (M && M->Audio)
+	{
+		US47Audio* A = M->Audio.Get();
+		FS47Sound O; O.At = Speaker(); O.Gain = 0.5f; O.Rate = *Off ? 0.9f : 1.05f;
+		A->Sfx(A->Or(TEXT("small_switch"), TEXT("click")), O);
+	}
+	UE_LOG(LogS47OfficeTv, Display, TEXT("S47: Operations television switched %s"), *Off ? TEXT("off") : TEXT("on"));
+}
+
 void FS47OfficeTv::Step(double Dt)
 {
 	if (!M || !M->Web || !Set.IsValid()) return;
 	const bool bPlay = M->Mode == US47Main::EMode::Play && M->Player && M->Web->Area() == TEXT("saro");
+	const bool bFree = M->IsFreeform() && M->Freeform;
+	if (bLookOnly != !bFree) if (FS47Interactable* It = M->Inter ? M->Inter->Get(TEXT("office:tv")) : nullptr) { It->bLook = !bFree; bLookOnly = !bFree; }
 	const EShow Was = Show;
-	Show = ShowAt(Clock(), Powered(), Programme.Available(), FS47TvProgramme::ForcedOnAir());
-	if (Show != Was) { UE_LOG(LogS47OfficeTv, Display, TEXT("S47: Operations television %s"), Name(Show)); SetScreen(Show != EShow::Off); PaintedFrame = -1; PaintT = 1; }
+	Show = bFree ? ShowOn(FS47TvProgramme::Air(), Powered(), Switched(), FS47TvProgramme::Staged())
+		: ShowAt(Clock(), Powered(), Programme.Available(), FS47TvProgramme::ForcedOnAir());
+	if (Show != Was)
+	{
+		UE_LOG(LogS47OfficeTv, Display, TEXT("S47: Operations television %s"), Name(Show));
+		if (Show != EShow::Off) { SetScreen(true); Fade = 0; if (Was == EShow::Off) Warm = 0; }
+		else if (Fade > 0) Silence();   // (switched off: the tube goes down to its dot first)
+		else SetScreen(false);
+		PaintedFrame = -1; PaintT = 1;
+	}
+	if (Show == EShow::Off && Fade > 0) { if ((Fade -= Dt) > 0) PaintDot(); else SetScreen(false); }
+	Warm = FMath::Min(1.0, Warm + Dt / WARM_S);
 	const double Dist = bPlay ? FVector::Distance(M->Player->Pos, Speaker()) : TNumericLimits<double>::Max();
 	const bool bThrough = !(Inside && Inside());
-	// The station's programme: its clock is the station's when it comes on (every set on the same moment of it), then it goes on
-	// with its own sound; heard only near, and stepping back under a phone, a call or a voice.
-	const bool bProgramme = Show == EShow::Programme;
-	if (bProgramme && !bShowing) Programme.Time = FMath::Fmod(FMath::Fmod(Clock() - FS47TvProgramme::ON_AIR, 86400.0) + 86400.0, 86400.0);
-	bShowing = bProgramme;
-	if (bProgramme)
+	// What is on the air around the station (Freeform: the screens' own measure; F10 can ask for it), and what it costs the picture now.
+	const double Felt = Show == EShow::Off ? 0.0 : FMath::Max(bFree ? double(M->Freeform->ScreenInterference()) : 0.0, FS47TvProgramme::JamAsked());
+	Jam += (Felt - Jam) * FMath::Clamp(Dt * 4, 0.0, 1.0);
+	const double WasLost = Lost;
+	Lost = Break(Jam, M->T);
+	if (Lost > 0.55 && WasLost <= 0.55 && bPlay && Dist <= HEARD && !bThrough && M->Audio)
+	{
+		// a gust of it: a crackle off the speaker (the bought one where it is staged)
+		US47Audio* A = M->Audio.Get();
+		FS47Sound O; O.At = Speaker(); O.Gain = float(0.2 + 0.25 * Jam); O.Rate = 0.85f + 0.4f * FMath::FRand();
+		A->Sfx(A->Or(TEXT("radio_crackle_short"), TEXT("click")), O);
+	}
+	// The station's feed, the programme or its sign-off: its clock is the station's when it comes on (every set on the same moment
+	// of it), then it goes on with its own sound; heard only near, and stepping back under a phone, a call or a voice.
+	const bool bSign = Show == EShow::SignOff, bFeed = bSign || Show == EShow::Programme;
+	if (bFeed && (!bShowing || Programme.SignOff() != bSign))
+	{
+		const double At = bSign ? FS47TvProgramme::AirInto() : bFree ? FS47TvProgramme::ChannelTime() : FMath::Fmod(FMath::Fmod(Clock() - FS47TvProgramme::ON_AIR, 86400.0) + 86400.0, 86400.0);
+		Programme.Silence(); Programme.Tune(bSign, At); Programme.Time = At;
+	}
+	bShowing = bFeed;
+	if (bFeed)
 	{
 		const double Duck = M->Story ? M->Story->VoicesDuck() : 1.0;
-		Programme.Update(Dt, M->Audio.Get(), Speaker(), Dist <= HEARD ? PROGRAMME * Duck : 0.0, bThrough);
+		Programme.Update(Dt, M->Audio.Get(), Speaker(), Dist <= HEARD ? PROGRAMME * Duck * (1 - 0.85 * Lost) : 0.0, bThrough);
 	}
 	else Programme.Silence();
-	// The picture: drawn while it can be seen, the programme at its own rate, the card and the snow at 15 a second.
+	// The picture: drawn while it can be seen, the programme at its own rate, the card and the snow at 15 a second (and at that
+	// rate too while it is coming up or breaking up).
 	PaintT += Dt;
-	if (Show != EShow::Off && Dist < SEEN && (bProgramme ? Programme.FrameIndex() != PaintedFrame : PaintT >= 1.0 / 15)) { PaintT = 0; Paint(); }
-	const bool bLit = Show != EShow::Off && Dist < SEEN;
+	const bool bOwnRate = bFeed && Warm >= 1 && Lost <= 0.02;
+	if (Show != EShow::Off && Dist < SEEN && (bOwnRate ? Programme.FrameIndex() != PaintedFrame : PaintT >= 1.0 / 15)) { PaintT = 0; Paint(); }
+	const bool bLit = (Show != EShow::Off || Fade > 0) && Dist < SEEN;
 	Light += ((bLit ? FMath::Clamp(FMath::Sqrt(FMath::Max(0.0, Lum) / 0.25), 0.35, 1.35) * (0.94 + 0.06 * FMath::FRand()) : 0.0) - Light) * FMath::Clamp(Dt * 12, 0.0, 1.0);
 	if (Glow.IsValid()) { Glow->SetVisibility(Light > 0.01); Glow->SetIntensity(float(GLOW_LM * Light)); }
 	Sound(bPlay ? Dist : TNumericLimits<double>::Max(), bThrough);
@@ -181,7 +263,7 @@ void FS47OfficeTv::SetScreen(bool bOn)
 void FS47OfficeTv::Paint()
 {
 	TArray<FColor> Px;
-	const bool bFilm = Show == EShow::Programme && Programme.Frame(Px, TW, TH, 4.0 / 3);
+	const bool bFilm = (Show == EShow::Programme || Show == EShow::SignOff) && Programme.Frame(Px, TW, TH, 4.0 / 3);
 	if (bFilm) { PaintedFrame = Programme.FrameIndex(); Lum = Programme.Brightness(); }
 	else if (Show == EShow::Snow)
 	{
@@ -204,6 +286,22 @@ void FS47OfficeTv::Paint()
 		}
 		Lum = Mean(Px);
 	}
+	if (Lost > 0.02) Disturb(Px);
+	if (Warm < 1)
+	{
+		// switched on: the picture opens from a bright line across the middle of the glass
+		const double K = FMath::Clamp(Warm, 0.0, 1.0), Half = FMath::Max(1.0, TH / 2.0 * K * K);
+		const TArray<FColor> Whole = Px;
+		for (int32 Y = 0; Y < TH; ++Y) for (int32 X = 0; X < TW; ++X)
+		{
+			const double V = (Y + 0.5 - TH / 2.0) / Half;
+			FColor& P = Px[Y * TW + X];
+			if (FMath::Abs(V) > 1) { P = FColor::Black; continue; }
+			P = Whole[FMath::Clamp(int32(TH / 2.0 + V * TH / 2.0), 0, TH - 1) * TW + X];
+			Blend(P, FColor(215, 225, 255), (1 - K) * 0.8);
+		}
+		Lum = FMath::Max(Lum * K, 0.25 * (1 - K));
+	}
 	// the tube: every other line darker, a few specks, its corners falling off and a breath of the whole picture (S47MotelTv::Paint)
 	for (int32 Y = 0; Y < TH; Y += 2) for (int32 X = 0; X < TW; ++X) Blend(Px[Y * TW + X], FColor::Black, 0.24);
 	if (Show != EShow::Snow) for (int32 I = 0; I < 60; ++I)
@@ -218,6 +316,46 @@ void FS47OfficeTv::Paint()
 		const double A = FMath::Clamp((Radius - TH * 0.32) / (TW * 0.66 - TH * 0.32), 0.0, 1.0) * 0.6;
 		Blend(Px[Y * TW + X], FColor::Black, A); Blend(Px[Y * TW + X], FColor::Black, Breath);
 	}
+	Upload(Px);
+}
+
+void FS47OfficeTv::Disturb(TArray<FColor>& Px)
+{
+	// Something on the air: the frame rolls when it is strong, bands of it are pulled sideways, lines drop out, snow comes through
+	// the picture and the whole of it flickers. Lost (Break) is how much of it is gone at this moment.
+	const double T = M ? M->T : 0.0;
+	TArray<FColor> Snow;
+	US47Room6::DrawSnow(Snow, T, [] { return double(FMath::FRand()); });
+	const TArray<FColor> Whole = Px;
+	const int32 Roll = Jam > 0.45 ? int32(FMath::Fmod(T * (30 + 110 * Jam), double(TH))) : 0;
+	const double Through = FMath::Pow(Lost, 1.6), Dim = 1 - 0.5 * Lost * FMath::FRand();
+	for (int32 Y = 0; Y < TH; ++Y)
+	{
+		const int32 Sy = (Y + Roll) % TH;
+		const double Band = FMath::Sin(Y * 0.11 + T * 7.3) * FMath::Sin(Y * 0.037 - T * 3.1);
+		const int32 Shift = FMath::RoundToInt(Lost * 30 * Band * (FMath::FRand() < 0.06 ? 2.2 : 1.0));
+		const bool bGone = FMath::FRand() < 0.2 * Lost * Lost;
+		for (int32 X = 0; X < TW; ++X)
+		{
+			FColor C = Whole[Sy * TW + ((X + Shift) % TW + TW) % TW];
+			Blend(C, Snow[(Y * US47Room6::TV_H / TH) * US47Room6::TV_W + X * US47Room6::TV_W / TW], bGone ? 1.0 : Through);
+			C.R = uint8(C.R * Dim); C.G = uint8(C.G * Dim); C.B = uint8(C.B * Dim);
+			Px[Y * TW + X] = C;
+		}
+	}
+	Lum = Mean(Px);
+}
+
+void FS47OfficeTv::PaintDot()
+{
+	// switched off: the picture falls in to a line, the line to a dot, and the dot goes out
+	const double K = FMath::Clamp(Fade / FADE_S, 0.0, 1.0);
+	const double Hw = FMath::Max(1.5, TW / 2.0 * FMath::Pow(K, 1.4)), Hh = FMath::Max(1.0, TH / 2.0 * FMath::Pow(K, 7.0)), Bright = FMath::Min(1.0, K * 2.5);
+	TArray<FColor> Px; Px.Init(FColor::Black, TW * TH);
+	for (int32 Y = FMath::Max(0, int32(TH / 2.0 - Hh)); Y < FMath::Min(TH, int32(TH / 2.0 + Hh) + 1); ++Y)
+		for (int32 X = FMath::Max(0, int32(TW / 2.0 - Hw)); X < FMath::Min(TW, int32(TW / 2.0 + Hw) + 1); ++X)
+			Px[Y * TW + X] = FColor(uint8(215 * Bright), uint8(225 * Bright), uint8(255 * Bright), 255);
+	Lum = 0.3 * K * K;
 	Upload(Px);
 }
 
@@ -260,12 +398,28 @@ void FS47OfficeTv::Sound(double Dist, bool bThrough)
 		N->Connect(Hp); Hp->Connect(Bh); Bh->Connect(Hiss);
 		const auto Whine = Gain(); const auto WOsc = Ctx->CreateOscillator(); WOsc->Frequency.SetValue(15734); WOsc->Connect(Whine);
 		TOsc->Start(); N->Start(); WOsc->Start();
-		Snd = FSnd{ Tone, Hiss, Whine, Wall, [TOsc, N, WOsc, Spk] { TOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); } };
+		Snd = FSnd{ Tone, Hiss, Whine, Wall, TOsc, [TOsc, N, WOsc, Spk] { TOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); } };
+		bOdd = false;
 	}
 	const double Now = Ctx->CurrentTime(), K = bThrough ? THROUGH : 1.0;
 	auto Ramp = [Now](const TSharedPtr<FS47GainNode>& G, double V) { G->Gain.SetTargetAtTime(V, Now, 0.04); };
-	Ramp(Snd->Tone, Show == EShow::Card ? TONE * K : 0);
-	Ramp(Snd->Hiss, (Show == EShow::Snow ? SNOW_HISS : Show == EShow::Card ? CARD_HISS : 0) * K);
+	// Something on the air: now and then the tone leaves its thousand cycles and slides somewhere else and back, a second or so
+	// of it, sooner again the stronger it is; the hiss comes up with every gust.
+	const double T = M->T;
+	if (Jam > 0.15 && !bOdd && T >= OddNext)
+	{
+		const double Len = 0.5 + 1.1 * FMath::FRand(), F0 = 180 * FMath::Pow(2.0, 3.6 * FMath::FRand()), F1 = 180 * FMath::Pow(2.0, 3.6 * FMath::FRand());
+		Snd->Osc->Frequency.CancelScheduledValues(Now);
+		Snd->Osc->Frequency.SetValueAtTime(F0, Now); Snd->Osc->Frequency.ExponentialRampToValueAtTime(F1, Now + Len);
+		bOdd = true; OddUntil = T + Len; OddNext = OddUntil + (1.2 + 5.5 * FMath::FRand()) * (1.35 - FMath::Min(1.0, Jam));
+	}
+	else if (bOdd && T >= OddUntil)
+	{
+		Snd->Osc->Frequency.CancelScheduledValues(Now); Snd->Osc->Frequency.SetValueAtTime(1000, Now + 0.12);
+		bOdd = false;
+	}
+	Ramp(Snd->Tone, ((Show == EShow::Card ? TONE : 0) + (bOdd ? ODD * FMath::Min(1.0, 0.4 + Jam) : 0)) * K);
+	Ramp(Snd->Hiss, ((Show == EShow::Snow ? SNOW_HISS : Show == EShow::Card ? CARD_HISS : 0) + JAM_HISS * Lost) * K);
 	Ramp(Snd->Whine, WHINE * K);
 	Snd->Wall->Frequency.SetTargetAtTime(bThrough ? WALL_LP : OPEN_LP, Now, 0.12);
 }
@@ -292,7 +446,7 @@ void FS47OfficeTv::Hush()
 
 FString FS47OfficeTv::State() const
 {
-	return FString::Printf(TEXT("%s%s"), Name(Show), Show == EShow::Programme ? *(TEXT(", ") + Programme.Describe()) : TEXT(""));
+	return FString::Printf(TEXT("%s%s%s"), Name(Show), Show == EShow::Programme || Show == EShow::SignOff ? *(TEXT(", ") + Programme.Describe()) : TEXT(""), Lost > 0.02 ? TEXT(", breaking up") : TEXT(""));
 }
 
 bool FS47OfficeTv::SelfTest(TArray<FString>& Lines)
@@ -305,5 +459,19 @@ bool FS47OfficeTv::SelfTest(TArray<FString>& Lines)
 	Check(ShowAt(1 * 3600, false, true, true) == EShow::Off, TEXT("dark without power"));
 	Check(StoryLit(false) && !StoryLit(true) && ShowAt(1 * 3600, StoryLit(true), true, false) == EShow::Off && ShowAt(1 * 3600, StoryLit(false), true, false) == EShow::Programme,
 		TEXT("in the story the set follows the room's power (its lamps' !bDark, the feeder in it), not RX bank 3"));
+	// TV-CHANNEL-20261110
+	using EAir = FS47TvProgramme::EAir;
+	Check(ShowOn(EAir::Programme, true, true, true) == EShow::Programme && ShowOn(EAir::Programme, true, true, false) == EShow::Card && ShowOn(EAir::SignOff, true, true, false) == EShow::SignOff
+		&& ShowOn(EAir::Card, true, true, true) == EShow::Card && ShowOn(EAir::Snow, true, true, true) == EShow::Snow,
+		TEXT("on the one channel: the programme, the sign-off (needing no clip), the card and snow as the station has them"));
+	Check(ShowOn(EAir::Programme, true, false, true) == EShow::Off && ShowOn(EAir::SignOff, false, true, true) == EShow::Off, TEXT("switched off or without power the set is dark whatever is on the air"));
+	double Worst = 0, Mild = 0, Least = 1; bool bGrows = true;
+	for (double T = 0; T < 30; T += 0.05)
+	{
+		Worst = FMath::Max(Worst, Break(1, T)); Mild = FMath::Max(Mild, Break(0.3, T)); Least = FMath::Min(Least, Break(1, T));
+		bGrows &= Break(0.8, T) >= Break(0.4, T);
+	}
+	Check(Break(0, 3) == 0 && Break(0.05, 3) == 0 && Worst > 0.95 && Least > 0.1 && Mild < 0.45 && Mild > 0.1 && bGrows,
+		FString::Printf(TEXT("something on the air: nothing under a trace, gusts that take the whole picture at the worst (%.2f), a little of it at a little (%.2f)"), Worst, Mild));
 	return bOk;
 }
