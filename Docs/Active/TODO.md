@@ -40,6 +40,19 @@ Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemer
 
 **Bygget 10. nov (D45-1..29 unntatt 25 pinboard og 26 delvis):** alle punktene over er kodet, bygget og selvtestet (4297 kontroller OK), regresjon PASS 251; trinnprøvene first, sky, files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Ikke spilt av Tom. Kjente testproblemer: `-S47OpsNavigationTest` finner ikke ORIGINALS-fanen som unik knapp etter at RECORDS åpner stasjonsfilen (testoppsett), `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), `-S47FreeformInWorldTest` og `-S47FreeformEvidenceTest` forstyrres av den generelle testløypa som lukker skjermen; ikke avklart om de feilet før i dag. Natt 1 (D45-26) har fått de seks billigste grepene; cliffhangeren kl. 00:41 venter på Tom. Pinboard (D45-25) venter på Toms svar.
 
+## Toms ønsker etter d46, 10. november kveld
+
+Toms ord (forkortet): avisen skal få et svart-hvitt bilde fra spillverdenen som passer artikkelen (lite, JPEG); pinboard tas bort; første døgn må ha mer action og et solid manus som fenger; mer vær; Jeepen modelleres ferdig av Fable 5.2; sjekk Cosmos-filene; vurder kaffe og søvn og «snakker til seg selv»-tekst. Kodemerke `D46-20261110`.
+
+- [ ] **D46-1 Avisbilde:** spillet tar et svart-hvitt bilde fra verdenen der artikkelen handler om, legger det i avisen som rasterfoto, lagret lite (JPEG).
+- [ ] **D46-2 Pinboard bort i Freeform** (Toms avgjørelse): B åpner ikke brettet, hint fjernet, «samme minutt» beholdes, gamle lagringer lastes.
+- [ ] **D46-3 Første døgn:** et solid manus for dag 1 og natt 1 med flere hendelser, inkludert cliffhangeren kl. 00:41 og Dales «Not my bench» på dag 2.
+- [ ] **D46-4 Mer vær:** vær utover klart (vind, støv, overskyet, tørrlyn, sjelden regn) som spilleren faktisk ser.
+- [ ] **D46-5 Snakker til seg selv:** korte tanker på skjermen i skrivemaskinskrift når ting skjer («What was that noise?», «Is somebody on the roof?», «No. Not again.»).
+- [ ] **D46-6 Kaffe og søvn:** vurderes (Toms spørsmål); bygger på eksisterende tretthet (S47Fatigue).
+- [ ] **D46-7 Jeepen ferdig modellert** av Fable 5.2 (JEEP-FORM-20261108): generisk 1980-talls jeep uten varemerker.
+- [ ] **D46-8 Cosmos:** gå gjennom alt som er lastet ned og lag en liste over hva som bør lastes ned i tillegg (Tom laster ned selv).
+
 ## Toms fikseliste 10. november (etter nattskiftet, d43)
 
 Toms ord: «Ta alt dette nå til skal fikses, start med design vfx/ sfx på saro pc skjermene/systemene og reel». Svar på morgenrapporten: feltbesøk er ok; rutinekort beholdes; kartet skal vise stedet; en spiller som blir inne må få mer å merke og kl. 02 er veiledende, ikke låst; Dales nye replikker tas senere. Kodemerke `FIX-20261110`.
