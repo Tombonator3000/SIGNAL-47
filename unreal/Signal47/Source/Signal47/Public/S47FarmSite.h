@@ -172,7 +172,7 @@ private:
  int32 FieldNight=0;
  // Draws out on foot since the last field visit came, saved: each one that came to nothing makes the next likelier.
  int32 FieldMisses=0;
- double FieldDwell=0;
+ double FieldDwell=0;int32 FieldHeldNight=0;
  float FieldRoll=-1;
  void StepFieldDraw(double Dt);
  void RestoreHome();

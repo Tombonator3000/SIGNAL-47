@@ -89,6 +89,18 @@ void FS47FarmSite::StepFieldDraw(double Dt)
  const bool bAtMarks=Armed()&&Here()&&FVector2D(Foot.X-Middle.X,Foot.Y-Middle.Z).Size()<140; // Those marks have their own visit.
  const bool bQuiet=G&&F.Director&&F.Director->ActiveEvent().IsEmpty()&&G->Individuals().IsEmpty()&&!F.Taken->Busy()&&!(F.IndoorDread&&F.IndoorDread->DoorActive())&&!FS47WeekCase::HoldsFarm(M);
  if(bAtMarks||!bQuiet||M->ModalOpen()||!OutOnFoot(M->Web->Area(),Foot.Size(),M->World->bDriving,F.Taken->Indoors())){FieldDwell=0;return;}
+ // NIGHT-20261110: not on the big night's own night, and not ahead of the landing tonight's slip is out for: the night's one pointing-out
+ // comes first (the visit held the slot from 02:14 to morning and the big night and the pointed landing never came, play n14).
+ if(F.Happenings)
+ {
+  FString LeadEvent,LeadTitle;double LeadX=0,LeadZ=0;bool bLeadAhead=false;
+  const bool bBig=F.Happenings->BigOwns(Night);
+  if(bBig||(F.Happenings->OutTonight(Night,LeadEvent,LeadTitle,LeadX,LeadZ,bLeadAhead)&&bLeadAhead&&LeadEvent==TEXT("landing")))
+  {
+   if(FieldHeldNight!=Night){FieldHeldNight=Night;UE_LOG(LogTemp,Display,TEXT("S47: field visit: waits tonight, night %d (%s)"),Night,bBig?TEXT("the big night's own"):TEXT("the landing a slip may point at comes first"));}
+   FieldDwell=0;return;
+  }
+ }
  // Active seconds, as their hours are: F10's natural night at x30 runs the hours by in forty real seconds, and a real-time minute
  // of standing out there never came (krit9field: nine nights in the open, no draw at all).
  FieldDwell+=Dt*(F.Director?F.Director->TestPaceNow():1.);if(FieldDwell<FieldDwellSeconds)return;
