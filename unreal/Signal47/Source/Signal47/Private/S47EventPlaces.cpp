@@ -420,7 +420,7 @@ void FS47EventPlaces::LogPick(const FString& Kind,const FS47EventPlace* P,const 
 TArray<FString> FS47EventPlaces::Ids()
 {
  TArray<FString> Out;for(const auto& S:S47EventPlacesLocal::Seeds())Out.Add(S.Id);
- for(const auto& S:S47TownSites::Sites())Out.Add(S.Id);
+ for(const auto& S:S47TownSites::EventPlaces())Out.Add(S.Id); // (N1110: a landmark, the Breather, is not a place for events)
  return Out;
 }
 

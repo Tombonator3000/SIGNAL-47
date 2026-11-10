@@ -1,5 +1,6 @@
 #include "S47SoundExport.h"
 #include "S47AlienKinds.h"
+#include "S47Breather.h"
 #include "S47CB.h"
 #include "S47EncounterSound.h"
 #include "S47ReceiverSound.h"
@@ -140,6 +141,24 @@ namespace
 			if (Enc.Scare(R.Audio(), FS47EncounterSound::EScare(S), 1., true)) { R.Go(6.0); Add(Names[S], Wheres[S], R); }
 		}
 
+		{ // N1110: the Breather's draft as heard at its gate by night, then the once-a-week hush (FS47Breather::StepSound with Level and
+		  // Held, copied, keep in step; the panner's fall-off at 5 m from the mouth, reference 3 m, rolloff 1.2, put in by hand)
+			FRun R(Live);
+			US47Audio* Au = R.Audio();
+			const TCHAR* const Key = TEXT("n1110Breather");
+			const double AtGate = S47Breather::Level(5.0, 2.5) * 3.0 / (3.0 + 1.2 * (5.0 - 3.0));
+			if (S47Breather::StartLoop(Au, Key, TOptional<FVector>(), float(AtGate)).IsValid())
+			{
+				Au->LoopLevel(Key, float(AtGate), 1.f, 1200.f);
+				R.Go(S47Breather::LoopSecs);
+				const double Hold = S47Breather::HushSecs();
+				for (double Since = 0; Since < Hold + 4.0; Since += 0.05) { Au->LoopLevel(Key, float(AtGate * S47Breather::Held(Since, Hold)), 1.f, 1200.f); R.Go(0.05); }
+				R.Go(12.0);
+				Au->Stop(Key, .5f); R.Go(.6);
+				Add(TEXT("breather_draft_and_hush"), *FString::Printf(TEXT("Freeform, Caliche: the Breather, the cave tour gate west of Main Street (road x -57.5, z 2146). The cave's cold draft as heard at the gate after 02:00, unplaced: two breaths of about %.0f s (0 to %.0f s), then the hush that comes at most once a week (the draft stops in under half a second and holds %.1f s, then comes back over 3 s; in the game the night's crickets and wind hold with it), then one more breath. Louder near the mouth, quieter by day, gone past %.0f m."), S47Breather::Breath, S47Breather::LoopSecs, Hold, S47Breather::Gone), R);
+			}
+			else UE_LOG(LogS47SoundExport, Warning, TEXT("S47: export: the Breather's draft did not start"));
+		}
 		{ // six steps on each surface, the game's Step (random takes, gain, rate and low-pass per surface)
 			for (const TCHAR* const Surface : { TEXT("tile"), TEXT("concrete"), TEXT("dirt"), TEXT("wood"), TEXT("carpet") })
 			{

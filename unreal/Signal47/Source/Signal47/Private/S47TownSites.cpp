@@ -1,4 +1,5 @@
 #include "S47TownSites.h"
+#include "S47Breather.h"
 #include "S47EventPlaces.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
@@ -34,6 +35,9 @@ namespace S47TownSitesLocal
 		{ TEXT("school"), 48, 2245, 0 },     // east side at the south end of town, behind the power line, facing the highway
 		{ TEXT("grange"), -40, 2272, 0 },    // west side at the south end, past the last house, across from the school
 		{ TEXT("baca"), 820, 1350, 0 },      // NEIGHBOR-20261108: the old rancher's place, alone on the flat under the east rim
+		// N1110 (Caliche history): the Breather's tour entrance, a landmark and not a box: west of the town's fence (x -42), behind the
+		// laundromat and the Plaza, facing the street. Its mouth looks east, its gate is 40 m from Main Street's west walk.
+		{ TEXT("breather"), -62, 2146, 0 },
 	};
 	// Pale grey, as a model maker's grey box is, with the parts a shade apart so the shapes read.
 	constexpr uint32 Grey = 0xb4b0a6, GreyDark = 0x8e8a82, GreyLight = 0xc9c5bb, Board = 0x2b2a27, Steel = 0x8b8e8a, CarA = 0x6f4a3c, CarB = 0x4d5866;
@@ -107,6 +111,69 @@ namespace S47TownSitesLocal
 			S.Parts.Add(Box(10, -2, 7, 11, 4.2, GreyDark));          // the shed
 			{ FPart Tank = Box(4, 13, 5, 5, 1.2, Steel); Tank.bRound = true; S.Parts.Add(Tank); }
 			S.Words.Add({ S.Sign, -8, 4.06, 2.6, 180, .55 });
+		}
+		else if (S.Id == TEXT("breather"))
+		{
+			// N1110 (Caliche history, approved by Tom 10 November; S47Breather.h): the cave's tour entrance as the Trujillos keep it. An
+			// outcrop of the hard caliche rock with a dark opening in its east face, a poured concrete surround and landing with a pipe
+			// rail, a chain-link fence from the rock round the front with a padlocked gate, a sign on two posts, a bronze plaque on a
+			// stone, and the stucco ticket hut. The rock and the fence stop the walker; nobody goes down tonight.
+			S.Sign = TEXT("THE BREATHER"); S.Title = TEXT("the Breather, the cave west of Main Street"); S.MapName = TEXT("The Breather");
+			S.Traits = ES47PlaceTrait::Town | ES47PlaceTrait::Open;
+			S.Radius = 14; S.Up = 20; S.NameSide = -1; S.bLandmark = true;
+			S.PlaceX = 4.5; S.PlaceZ = .3; S.EntryX = 6; S.EntryZ = .3;
+			constexpr uint32 Rock = 0x8c7258, RockDark = 0x76604b, RockLight = 0x9e8468, Concrete = 0xaaa499, Dark = 0x050505, Mesh = 0x6f736f,
+				Stucco = 0xd9c8a5, Roof = 0x7a4b33, Ply = 0x8a6a45, Green = 0x2f4a36, Bronze = 0x6b5530, Brass = 0xa08c48, Post = 0x4a3b2c, Card = 0xe6dfc8;
+			const TCHAR* const Gate = TEXT("ff:breather:gate");
+			const auto Add = [&S](double X, double Z, double W, double D, double H, uint32 Colour, bool bSolid, double Lift, const TCHAR* Use, bool bRound = false)
+			{
+				FPart P = Box(X, Z, W, D, H, Colour, bSolid); P.Lift = Lift; P.bRound = bRound; if (Use) P.Use = Use; S.Parts.Add(P);
+			};
+			// The outcrop: three blocks of rock in a ragged line, and a cap.
+			Add(-4.5, .3, 8, 10, 3.6, Rock, true, 0, Gate);
+			Add(-3.2, -6.2, 6, 3.6, 2.5, RockDark, true, 0, Gate);
+			Add(-3.8, 6.8, 5.4, 3.4, 2.1, RockLight, true, 0, Gate);
+			Add(-5.5, -.6, 5, 6.5, 1.5, RockDark, false, 3.3, nullptr);
+			// The mouth in its concrete surround, and the landing in front of it with its rail.
+			Add(-.47, .3, .1, 2.0, 1.85, Dark, false, 0, Gate);
+			Add(-.38, .3, .26, 2.6, .28, Concrete, false, 1.85, nullptr);
+			for (const double Jz : { -.85, 1.45 }) Add(-.38, Jz, .26, .3, 1.85, Concrete, false, 0, nullptr);
+			Add(1.4, .3, 3.6, 3.0, .14, Concrete, false, 0, nullptr);
+			for (const double Rz : { -1.1, 1.7 })
+			{
+				for (const double Px : { .4, 2.8 }) Add(Px, Rz, .06, .06, 1.0, Steel, false, 0, nullptr, true);
+				Add(1.6, Rz, 2.5, .05, .05, Steel, false, .95, nullptr);
+			}
+			// The fence at x 3.6 with its gate between z -0.9 and 1.5, and back to the rock at each end. The mesh panels and the gate's
+			// top rail stop the walker.
+			for (const double Fz : { -6.6, -3.75, -.9, 1.5, 4.35, 7.2 }) Add(3.6, Fz, .07, .07, 2.0, Steel, false, 0, nullptr, true);
+			for (const double Cz : { -3.75, 4.35 }) { Add(3.6, Cz, .02, 5.7, 1.75, Mesh, true, .1, Gate); Add(3.6, Cz, .05, 5.7, .05, Steel, false, 1.85, nullptr); }
+			Add(1.65, -6.6, 3.9, .02, 1.75, Mesh, true, .1, Gate);
+			Add(1.2, 7.2, 4.8, .02, 1.75, Mesh, true, .1, Gate);
+			Add(3.6, .3, .05, 2.4, .05, Steel, true, 1.75, Gate);
+			Add(3.6, .3, .05, 2.4, .05, Steel, false, .12, nullptr);
+			Add(3.6, .3, .05, .05, 1.8, Steel, false, 0, nullptr, true);
+			Add(3.64, -.35, .02, .7, .45, Card, false, 1.0, Gate);
+			Add(3.65, .3, .03, .14, .34, Steel, false, .85, Gate);
+			Add(3.68, .3, .05, .07, .09, Brass, false, .82, Gate);
+			S.Words.Add({ TEXT("CLOSED FOR\nTHE SEASON"), 3.66, -.35, 1.22, 90, .085 });
+			// The sign, on two posts north of the gate, toward the street.
+			const TCHAR* const SignUse = TEXT("ff:breather:sign");
+			for (const double Sz : { -4.5, -1.7 }) Add(4.9, Sz, .1, .1, 2.6, Post, true, 0, SignUse);
+			Add(4.9, -3.1, .08, 3.2, 1.3, Green, false, 1.2, SignUse);
+			S.Words.Add({ TEXT("THE BREATHER\nCAVE TOURS\nCLOSED FOR THE SEASON"), 4.95, -3.1, 1.85, 90, .19, true });
+			S.Words.Add({ TEXT("THE BREATHER\nCAVE TOURS\nCLOSED FOR THE SEASON"), 4.85, -3.1, 1.85, 270, .19, true });
+			// The plaque, on a stone south of the gate.
+			Add(4.4, 2.6, .7, .6, .9, RockLight, true, 0, TEXT("ff:breather:plaque"));
+			Add(4.77, 2.6, .03, .5, .36, Bronze, false, .33, TEXT("ff:breather:plaque"));
+			S.Words.Add({ TEXT("THE BREATHER\n1923"), 4.80, 2.6, .53, 90, .06, true });
+			// The ticket hut: stucco, a flat roof, its window boarded for the winter, its door on the north side.
+			const TCHAR* const Hut = TEXT("ff:breather:hut");
+			Add(6.5, 9.5, 3.0, 3.2, 2.7, Stucco, true, 0, Hut);
+			Add(6.5, 9.5, 3.5, 3.7, .22, Roof, false, 2.7, nullptr);
+			Add(8.03, 9.2, .06, 1.1, .7, Ply, false, 1.0, Hut);
+			Add(6.0, 7.87, .9, .06, 2.0, 0x5a4632, false, 0, Hut);
+			S.Words.Add({ TEXT("TICKETS"), 8.07, 9.2, 2.1, 90, .2 });
 		}
 		else if (S.Id == TEXT("grange"))
 		{
@@ -198,6 +265,7 @@ TArray<FS47EventPlace> S47TownSites::EventPlaces()
 	TArray<FS47EventPlace> Out;
 	for (const FSite& S : Sites())
 	{
+		if (S.bLandmark) continue;
 		FS47EventPlace P; P.Id = S.Id; P.Title = S.Title; P.Region = S.Id == TEXT("baca") ? TEXT("land") : TEXT("caliche");
 		const FVector2D At = ToRoad(S, S.PlaceX, S.PlaceZ), In = ToRoad(S, S.EntryX, S.EntryZ);
 		P.X = At.X; P.Z = At.Y; P.EntryX = In.X; P.EntryZ = In.Y; P.Traits = S.Traits; P.Radius = S.Radius; P.Up = S.Up;
@@ -211,14 +279,15 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 	using namespace S47TownSitesLocal;
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("temp sites: ") + What); };
-	Check(Sites().Num() == 4 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")) && Find(TEXT("baca")), TEXT("the trailer park, the school, the Grange hall and the Baca place are in the table"));
+	Check(Sites().Num() == 5 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")) && Find(TEXT("baca")) && Find(TEXT("breather")), TEXT("the trailer park, the school, the Grange hall, the Baca place and the Breather are in the table"));
 	bool bNamed = true, bTitled = true, bInRim = true, bOffRoad = true, bWords = true;
 	int32 Trailers = 0, Cars = 0;
 	for (const FSite& S : Sites())
 	{
-		bNamed &= S.Sign.EndsWith(TEXT("(TEMP)")) && S.MapName.EndsWith(TEXT("(temp)")) && !S.Words.IsEmpty();
+		// (N1110: a landmark is there for good, and says so nowhere.)
+		bNamed &= S.bLandmark ? !S.Sign.Contains(TEXT("TEMP")) && !S.MapName.Contains(TEXT("temp")) && !S.Words.IsEmpty() : S.Sign.EndsWith(TEXT("(TEMP)")) && S.MapName.EndsWith(TEXT("(temp)")) && !S.Words.IsEmpty();
 		bTitled &= !S.Title.IsEmpty() && FChar::IsLower(S.Title[0]) && S.Title.StartsWith(TEXT("the "));
-		for (const FWords& W : S.Words) bWords &= W.Text.Contains(TEXT("(TEMP)"));
+		for (const FWords& W : S.Words) bWords &= S.bLandmark ? !W.Text.Contains(TEXT("TEMP")) : W.Text.Contains(TEXT("(TEMP)"));
 		for (const FPart& P : S.Parts)
 		{
 			if (!P.bSolid) continue;
@@ -233,7 +302,7 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 			if (S.Id == TEXT("trailers") && P.H < 1.6 && P.D > 4 && P.D < 5) ++Cars;
 		}
 	}
-	Check(bNamed && bWords, TEXT("each says TEMP on its board or wall, and (temp) on the sheet"));
+	Check(bNamed && bWords, TEXT("each box says TEMP on its board or wall, and (temp) on the sheet; the Breather does not"));
 	Check(bTitled, TEXT("each title reads in a radio line (lower case, with its article)"));
 	Check(bInRim && bOffRoad, TEXT("every box stands on the land, off the highway and clear of the power line"));
 	Check(Trailers >= 6 && Trailers <= 10 && Cars >= 2, FString::Printf(TEXT("the trailer park has %d trailers and %d cars"), Trailers, Cars));
@@ -269,7 +338,8 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 	}
 	// On the catalogue, with what an event needs of them.
 	const TArray<FS47EventPlace> Places = EventPlaces();
-	bool bPlaces = Places.Num() == Sites().Num();
+	int32 Boxes = 0; for (const FSite& S : Sites()) Boxes += S.bLandmark ? 0 : 1;
+	bool bPlaces = Places.Num() == Boxes && !Places.ContainsByPredicate([](const FS47EventPlace& P) { return P.Id == TEXT("breather"); });
 	for (const FS47EventPlace& P : Places) bPlaces &= P.HasAny(ES47PlaceTrait::Open | ES47PlaceTrait::Lot) && !P.Has(ES47PlaceTrait::Door) && !P.Has(ES47PlaceTrait::Window) && S47OpenLand::InRim(P.X, P.Z);
 	Check(bPlaces, TEXT("each is a place for events: open ground or a lot, and no door or window it does not have"));
 	// Turned by its row: the trailer park turned a quarter round keeps its middle and its entrance swings to the south.
@@ -278,6 +348,25 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 		const FVector2D In = ToRoad(T, T.EntryX, T.EntryZ);
 		Check(FMath::IsNearlyEqual(In.X, T.X, 1e-6) && FMath::IsNearlyEqual(In.Y, T.Z + T.EntryX, 1e-6), TEXT("a row's Yaw turns the whole site about its middle, clockwise"));
 	}
+	// N1110: the Breather's pieces carry its four uses, and its rock and fence close the mouth off all round.
+	if (const FSite* B = Find(TEXT("breather")))
+	{
+		TSet<FString> Uses; for (const FPart& P : B->Parts) if (!P.Use.IsEmpty()) Uses.Add(P.Use);
+		const FVector2D Mouth = ToRoad(*B, -.47, .3), Out = ToRoad(*B, 4.5, .3);
+		bool bClosed = true;
+		// Every way out of the mouth to the gate's side crosses something solid: the lines from it to points round the front.
+		for (double Z = -9; Z <= 10; Z += .5)
+		{
+			const FVector2D To = ToRoad(*B, 6.0, Z);
+			bool bCross = false;
+			for (const FPart& P : B->Parts) if (P.bSolid) for (const FBox2D& Fp : Footprint(*B, P))
+				for (double U = .02; U <= 1 && !bCross; U += .002) if (Fp.ExpandBy(.01).IsInside(Mouth + (To - Mouth) * U) && !Fp.IsInside(Mouth)) bCross = true;
+			bClosed &= bCross;
+		}
+		Check(Uses.Num() == 4 && Uses.Contains(TEXT("ff:breather:gate")) && bClosed && FVector2D::Distance(Mouth, Out) < 6,
+			FString::Printf(TEXT("the Breather: %d uses on its pieces (gate, sign, plaque, hut), and no way from the mouth out to the street but through the fence"), Uses.Num()));
+	}
+	bAll &= S47Breather::SelfTest(Lines);
 	return bAll;
 }
 
@@ -338,7 +427,7 @@ bool FS47TownSites::Build()
 			T->SetText(FText::FromString(Wd.Text)); T->SetWorldSize(float(Wd.Size * 100.0));
 			T->SetHorizontalAlignment(EHTA_Center); T->SetVerticalAlignment(EVRTA_TextCenter);
 			// White on the dark board; near black on a grey wall.
-			const bool bOnBoard = S.Id == TEXT("trailers") && Wd.Size < .6;
+			const bool bOnBoard = Wd.bLight || (S.Id == TEXT("trailers") && Wd.Size < .6);
 			T->SetTextRenderColor(bOnBoard ? FColor(236, 232, 214) : FColor(32, 30, 28));
 			T->SetCollisionEnabled(ECollisionEnabled::NoCollision); T->SetCastShadow(false);
 			T->RegisterComponent();
@@ -346,8 +435,19 @@ bool FS47TownSites::Build()
 		}
 	}
 	for (const FSite& S : Sites()) Seat(S.Id, false);
-	// Into the road's area, so that they come and go with it as the town does.
-	for (const FBuiltPart& B : Parts) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(B.Comp.Get())) W->AdoptNode(C, Root, C->GetName());
+	// Into the road's area, so that they come and go with it as the town does. A part with a use is what a look picks for it (N1110).
+	UseNodes.Reset();
+	for (const FBuiltPart& B : Parts)
+	{
+		UPrimitiveComponent* C = Cast<UPrimitiveComponent>(B.Comp.Get());
+		if (!C) continue;
+		const int32 Node = W->AdoptNode(C, Root, C->GetName());
+		const FSite* Owner = B.bWords || Node < 0 ? nullptr : Find(B.Site);
+		const FString Use = Owner && Owner->Parts.IsValidIndex(B.Part) ? Owner->Parts[B.Part].Use : FString();
+		if (Use.IsEmpty()) continue;
+		W->MarkUsable(Node, Use);
+		if (!UseNodes.Contains(Use)) UseNodes.Add(Use, Node);
+	}
 	bBuilt = true;
 	UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites built: %d sites, %d parts and boards"), Sites().Num(), Parts.Num());
 	return true;
@@ -477,6 +577,9 @@ void FS47TownSites::HidePlants(bool bHide)
 	// would otherwise stand up through a trailer's roof. Shrunk to nothing, never removed, so that every count they keep is as it was.
 	TArray<FBox2D> Under;
 	for (const FBox2D& B : S47TownSites::SolidFootprints()) Under.Add(B.ExpandBy(1.0));
+	// (N1110: and the Breather's landing and surround, inside its fence.)
+	for (const S47TownSites::FSite& S : S47TownSites::Sites()) if (S.bLandmark)
+		for (const S47TownSites::FPart& P : S.Parts) if (!P.bSolid && P.Lift <= 0) for (const FBox2D& B : S47TownSites::Footprint(S, P)) Under.Add(B.ExpandBy(.5));
 	const FVector Road = S47Legs::ORIGINS(TEXT("road"));
 	TArray<UInstancedStaticMeshComponent*> All;
 	M->Web->GetComponents<UInstancedStaticMeshComponent>(All);
@@ -520,9 +623,11 @@ void FS47TownSites::Begin()
 {
 	if (!M || !M->IsFreeform() || !IsValid(M->Web.Get())) return;
 	// A new world (a load that built the scene again): everything is made afresh in it.
-	if (Scene.Get() != M->Web.Get()) { Parts.Reset(); Hidden.Reset(); SeatedSites.Reset(); Obstacles.Reset(); bBuilt = false; bDriveAdded = false; }
+	if (Scene.Get() != M->Web.Get()) { Parts.Reset(); Hidden.Reset(); SeatedSites.Reset(); Obstacles.Reset(); UseNodes.Reset(); bBuilt = false; bDriveAdded = false; }
 	Scene = M->Web;
 	if (!Build()) return;
+	if (!BreatherPart) BreatherPart = MakeShared<FS47Breather>(M);
+	BreatherPart->Begin(M->Web.Get(), UseNodes);
 	ShowAll(true); SetColliders(true); HidePlants(true);
 	bActive = true; SeatIn = 0;
 	SetDrive(true);
@@ -530,6 +635,7 @@ void FS47TownSites::Begin()
 
 void FS47TownSites::Stop()
 {
+	if (BreatherPart) BreatherPart->Stop();
 	if (!bActive) return;
 	bActive = false;
 	if (!IsValid(Scene.Get())) return;
@@ -589,6 +695,7 @@ void FS47TownSites::Step(double Dt)
 	if (!M || M->Web.Get() != Scene.Get()) { Begin(); return; }
 	// The truck's list is made once the world has its legs, which may be after the session began.
 	if (!bDriveAdded) SetDrive(true);
+	if (BreatherPart) BreatherPart->Step(Dt); // (N1110: every frame: the draft's level follows the player)
 	if (Hidden.IsEmpty() && PlantTries < 6 && (PlantIn -= Dt) <= 0) { PlantIn = 5; ++PlantTries; HidePlants(true); }
 	SeatIn -= Dt;
 	if (SeatIn > 0 || !M->Player || !M->Web) return;

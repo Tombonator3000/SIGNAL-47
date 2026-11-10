@@ -27,9 +27,10 @@ namespace S47TownSites
 		uint32 Colour = 0xa8a49b;
 		bool bSolid = true;                         // stops the walker and the truck, and is drawn on the sheet
 		bool bRound = false;                        // a cylinder (the tank, a pole) instead of a box
+		FString Use;                                // N1110: what a look at it picks (an interactable's id, FS47Breather's); empty: none
 	};
 	// Words on a board or a wall: where, which way they face (degrees clockwise from north, before the site is turned), how big.
-	struct FWords { FString Text; double X = 0, Z = 0, Up = 2, Facing = 90, Size = 1; };
+	struct FWords { FString Text; double X = 0, Z = 0, Up = 2, Facing = 90, Size = 1; bool bLight = false; }; // bLight: pale paint on a dark board
 	struct FSite
 	{
 		FString Id;        // "trailers": the place catalogue's id, the colliders' and components' names
@@ -43,6 +44,8 @@ namespace S47TownSites
 		double Radius = 20, Up = 24;
 		TArray<FPart> Parts;
 		TArray<FWords> Words;
+		// N1110: a landmark that is there for good (the Breather), not a temporary box: no "(TEMP)", and not a place for events.
+		bool bLandmark = false;
 	};
 	// Every site, built once from Spots and the shapes below; fixed after that.
 	const TArray<FSite>& Sites();
@@ -54,7 +57,7 @@ namespace S47TownSites
 	TArray<FBox2D> Footprint(const FSite& S, const FPart& P);
 	// All of them, for the survey sheet.
 	TArray<FBox2D> SolidFootprints();
-	// The catalogue's entries for these sites (S47EventPlaces appends them to its own list).
+	// The catalogue's entries for these sites (S47EventPlaces appends them to its own list); a landmark is not one.
 	TArray<FS47EventPlace> EventPlaces();
 	bool SelfTest(TArray<FString>& Lines);
 }
@@ -74,7 +77,11 @@ public:
 	int32 ColliderCount() const;
 	int32 HiddenPlants() const { return Hidden.Num(); }
 	bool Seated(const FString& Id) const;
+	// N1110: the Breather's draft, words and night (S47Breather.h), on the pieces of its row.
+	class FS47Breather* Breather() const { return BreatherPart.Get(); }
 private:
+	TSharedPtr<class FS47Breather> BreatherPart;
+	TMap<FString, int32> UseNodes; // a use's id to the first node of a part that carries it
 	US47Main* M = nullptr;
 	TWeakObjectPtr<AS47Web> Scene;
 	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; TWeakObjectPtr<USceneComponent> Comp; };
