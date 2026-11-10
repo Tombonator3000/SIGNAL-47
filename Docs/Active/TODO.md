@@ -5,6 +5,27 @@
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
 
+## Toms testfunn i d45, 10. november ettermiddag
+
+Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemerke `D45-20261110`. Rekkefølgen er Toms nummerering.
+
+- [ ] **D45-1 CRT-båndet:** den grønne streken er for stor, går hele tiden og hopper når man bytter meny; skal se ut som en ekte CRT (sjelden, svak, naturlig).
+- [ ] **D45-2 Tracking array:** grønt blink over hele skjermen når musa beveges skal bort. I stedet: lyd og pekerstørrelse som sier at man nærmer seg rett sted å skanne.
+- [ ] **D45-3 Receiver-lappen:** lappen øverst til venstre blafrer i takt med nedlastingen.
+- [ ] **D45-4 Rare signaler og reel:** ta opp rett etter mottatt signal og så gå til reel for analyse (ikke skriver og tilbake til receiver); kulere opptaksanimasjon; reel som et 1980-talls high-tech lydsystem; alt på én skjerm uten rulling. Compare/retain skal ha tilfeldige animasjoner i lydvisningen, ikke den samme hver gang.
+- [ ] **D45-5 Kjeitete setninger:** «not for your ears», «not evidence», «read it once», «the form does not ask why they leave» og lignende skrives naturlig.
+- [ ] **D45-6 Peilelappen:** bedre språk.
+- [ ] **D45-7 Field guide:** en grei TODO-liste med viktighet; peilelappen står der med beskjed om at noe er lagt på kartet og må undersøkes.
+- [ ] **D45-8 Peilelappens sted:** koordinatene lå langt sør, utenfor selve kartet (merket «D1 12:28» i seksjon 31/32).
+- [ ] **D45-9 Nødaggregatet:** lydeffekter.
+- [ ] **D45-10 Receiver-målet:** målet kommer ikke på receiver-PC-en før arrayene har låst seg.
+- [ ] **D45-11 Vedlikehold:** array maintenance-PC-en brukes til vedlikehold (OPS kan vise til den); spilleren velger selv hvilke feilede antenner som repareres og i hvilken rekkefølge, så lenge det er deler; feilede antenner har rødt lys på boksen.
+- [ ] **D45-12 Radio og CB:** bort med «wah wah»-lyden; skurring eller lignende som antyder at noe skjer.
+- [ ] **D45-14 Gjerdet ved SARO:** byttes til bedre modell fra Cosmos (MilitaryBarriers, wired fence).
+- [ ] **D45-15 Gule bokser SC4 og SSC08:** hva de er; bort eller erstattes.
+- [ ] **D45-16 Gatelysene:** fortsatt ikke lys fra armaturene.
+- [ ] **D45-17 Fremkalling:** døra må lukkes og rødlysbryteren slås på før man kan fremkalle.
+
 ## Toms fikseliste 10. november (etter nattskiftet, d43)
 
 Toms ord: «Ta alt dette nå til skal fikses, start med design vfx/ sfx på saro pc skjermene/systemene og reel». Svar på morgenrapporten: feltbesøk er ok; rutinekort beholdes; kartet skal vise stedet; en spiller som blir inne må få mer å merke og kl. 02 er veiledende, ikke låst; Dales nye replikker tas senere. Kodemerke `FIX-20261110`.
