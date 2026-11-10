@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 22:00 (d48): `d6b9679a` på `claude/day-20261109`
+## Installert 10. november kl. 23:05 (d49): `9f8ed0ba` på `claude/day-20261109`
+
+Versjon 0.9.49. Pakket, røyktestet og installert (selvtest OK, 4607 kontroller; ingen materialadvarsler). Tilbakerulling: d48 (`d6b9679a`). Disk etterpå: 124 GB. Ikke spilt av Tom.
+
+Nytt siden d48: dørsløyfen på SARO (N1110-6), dørsløyfen under jakt med flomlys, strobe (maks tre blink i sekundet) og farger på SARO, i gårdshuset og i rom i byen (N1110-7), fire hendelser i trinnvise manus (horizon_figure, figure_near, landing, car_light), rettinger etter kritikken.
+
+Kontroll: regresjon PASS 251; first, sky, service, mail, dusk, casefield PASS.
+
+## Tidligere: installert 10. november kl. 22:00 (d48): `d6b9679a` på `claude/day-20261109`
 
 Versjon 0.9.48. Pakket, røyktestet og installert (selvtest OK, 4532 kontroller; ingen materialadvarsler). Tilbakerulling: d47 (`d44bc8b3`). Disk etterpå: 129 GB. Ikke spilt av Tom.
 
