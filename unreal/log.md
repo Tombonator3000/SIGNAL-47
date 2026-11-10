@@ -2201,3 +2201,7 @@ d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet
 ## 9. november kl. 22:15 (Claude Code): d39 installert
 
 `17e11f59`: sammenfletting trinn 1 og første retting av saksprøvene. Editor BUILD 0, selvtest 4073 OK, røyktest av kandidat og installert. Ikke spilt. Kandidatpakkene d30–d35 kan ryddes ved neste samlede kjøring; 127 GB ledig.
+
+## 10. november kl. 02:38 (Claude Code, nattskift): d40 installert
+
+`7c26148b`: sammenfletting trinn 2–5, store netter i uke 2 og 3, utpekt landing som blir stående, UFO-blink, «field allowance», kritikerrunde med fire rettinger. Selvtest 4112 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS (før siste rettinger). Testspilling n10/n11: lapp pekte på låven natt 6 og 9, stor natt runde 2 natt 9. 157 GB ledig. d36 kan ryddes ved neste samlede kjøring (d37–d39 beholdes som eldre versjoner… to eldre holder: d38 og d39).

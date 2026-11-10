@@ -1,10 +1,24 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 9. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 10. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 22:15 (d39): `17e11f59` på `claude/day-20261109`
+## Installert 10. november kl. 02:38 (d40): `7c26148b` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4112 kontroller). Tilbakerulling: d39 (`17e11f59`). Ledig disk etterpå: 157 GB. Månedsprøvene routine og cases besto på `148151bb` pluss tekstpatchen, ikke på endelig commit. Ikke spilt av Tom.
+
+Nytt siden d39 (nattskift 9.–10. november):
+- [Sammenfletting](../Research/Gameplay/SAMMENFLETTING_2026-11-09.md) trinn 2–5: nattark med tre linjer (penger, åpnet, Ward), funn åpner varer, Ward krever én sak med noe hentet ute, sakene velges før prøven vises og ett spor stemmer alltid, store netter også i uke 2 og 3 (ubrukte varianter, nye steder), regelrettingene, glimt fra SARO-vinduene og Earl/CB som nevner natta.
+- Utpekt landing står tent på bakken 180–360 s, letter når spilleren nærmer seg (300/200/120 m etter tidsnivå), kan ses fra vinduene og kommer aldri før midnatt. Sett i automatisk testspilling natt 6 og 9; kortspilleren ser ikke ut, så «sett» er ikke målt.
+- Stor natt i uke 2 kjørt i testspilling (natt 9, «fallet» ved den tørre bekken, 1625 m). Dales replikker er de samme som i uke 1; egne replikker ligger som patch.
+- UFO-lys større med fargeblink og størrelsesblink; dempes av innstillingen for rolige blink.
+- Feltpengene heter «field allowance» overalt; ukearket viser taket.
+- Småpunkter: PT-MAIL, MOON-DARK, PT-TONIGHT-NOTE, WARD-PHONE, tørt aggregat ødelegger prøve, kort som ikke tas faller ut kl. 08.
+
+Kjente svakheter: en landing som står, holder andre bakkehendelser tilbake (opptil 1,5 spilltime); mateledningen faller ofte ut (natt 5, 8, 10, 12 i testspilling) og stopper peilingen til den er reparert.
+
+## Tidligere: installert 9. november kl. 22:15 (d39): `17e11f59` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4073 kontroller). Tilbakerulling: d38 (`53cfda05`). Ledig disk etterpå: 127 GB. Kandidatpakkene d30–d35 er overflødige og kan ryddes ved neste samlede kjøring.
 
