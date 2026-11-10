@@ -4,7 +4,20 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 02:38 (d40): `7c26148b` på `claude/day-20261109`
+## Installert 10. november kl. 04:11 (d41): `f2ca5e72` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d40 (`7c26148b`). Ledig disk etterpå: 152 GB. Månedsprøvene routine og cases besto på `219a46c5`, ikke på endelig commit. Ikke spilt av Tom.
+
+Nytt siden d40:
+- Dale har egne replikker i runde 2 og 3 av den store natta (16 nye, uten opptak, vises som tekst). Runde 3 («stigningen», natt 18) er kjørt i automatisk testspilling.
+- En utpekt landing som står på bakken, tar ikke lenger trekkvinduet fra andre hendelser, og flyttes langs peilelinja når spilleren står for nær.
+- Mateledningen faller ikke ut på netter med ledetråd eller stor natt. Sett i testspilling natt 15–25: to feil, begge på netter uten ledetråd.
+- Skriverens linje om natta følger kveldskartet (tidligst kl. 19). Før kom den nesten aldri, fordi kartet tas før kl. 20.
+- Lappen om i kveld og saksprøvene sier det samme som reglene (takprøve: ett minutt i kontrollrommet i vind som referansen; hoppet tid teller ikke).
+
+Kjente svakheter: lagring og lasting mens en utpekt landing står, nullstiller tiden andre hendelser ble holdt tilbake. Kortspilleren i testene går aldri ut, så «sett» og feltpenger er ikke målt.
+
+## Tidligere: installert 10. november kl. 02:38 (d40): `7c26148b` på `claude/day-20261109`
 
 Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4112 kontroller). Tilbakerulling: d39 (`17e11f59`). Ledig disk etterpå: 157 GB. Månedsprøvene routine og cases besto på `148151bb` pluss tekstpatchen, ikke på endelig commit. Ikke spilt av Tom.
 

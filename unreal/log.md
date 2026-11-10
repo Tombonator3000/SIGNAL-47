@@ -2205,3 +2205,7 @@ d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet
 ## 10. november kl. 02:38 (Claude Code, nattskift): d40 installert
 
 `7c26148b`: sammenfletting trinn 2–5, store netter i uke 2 og 3, utpekt landing som blir stående, UFO-blink, «field allowance», kritikerrunde med fire rettinger. Selvtest 4112 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS (før siste rettinger). Testspilling n10/n11: lapp pekte på låven natt 6 og 9, stor natt runde 2 natt 9. 157 GB ledig. d36 og d37 kan ryddes ved neste samlede kjøring; d38 og d39 beholdes som eldre versjoner.
+
+## 10. november kl. 04:11 (Claude Code, nattskift): d41 installert
+
+`f2ca5e72`: Dales replikker for runde 2 og 3, utpekt landing som ikke tar andres trekkvindu, ingen mateledningsfeil på netter med ledetråd, skriverlinja følger kveldskartet, tekstrettinger, kritikerrunde med tre rettinger. Selvtest 4116 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS på `219a46c5`. Testspilling n13 (natt 15–25, store netter på): runde 3 natt 18, utpekte landinger natt 15, 19 og 23, mateledningsfeil bare dag 16 og 24 (uten ledetråd). Ledig disk 152 GB; tilbakerulling d40. Ved neste samlede rydding kan d36, d37 og d38 tas (d39, d40, d41 beholdes).
