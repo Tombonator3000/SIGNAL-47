@@ -9,7 +9,7 @@
     { "at": 0, "do": "silence", "secs": 7, "level": 0.03 },
     { "at": 0, "do": "tone", "hz": 58, "secs": 5.6, "gain": 0.04, "wave": "sine" },
     { "at": 0.6, "do": "light", "kind": "gear", "strength": 0.4, "secs": 6 },
-    { "at": 5.0, "do": "camera_snap", "point": "lights", "fov": 36, "in": 0.3, "hold": 0.9, "out": 0.9, "scare": "swell" },
+    { "at": 4.2, "do": "camera_snap", "point": "lights", "fov": 36, "in": 0.3, "hold": 0.9, "out": 0.9, "scare": "swell" },
     { "at": 7.0, "do": "thought", "text": "They were right over the dishes. And then they just went out.", "secs": 4.5 },
     { "at": 7.0, "do": "evidence", "key": "dish_lights_d{day}", "text": "At {clock} a cluster of lights hung over the array, dead still, for about five seconds. Then they went out all at once, like a switch." }
   ]

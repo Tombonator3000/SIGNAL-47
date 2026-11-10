@@ -33,7 +33,7 @@ namespace S47AttentionLocal
  const TCHAR* const VisitHeld=TEXT("attention_visit_held");
  const TCHAR* const VisitEscaped=TEXT("attention_visit_escaped");
  // A sabotage on the mains: a short sag, then out long enough that the standby generator matters.
- constexpr double SabSag=20,SabOut=240;
+ constexpr double SabSag=20,SabOut=150;
  // Marks are walked into within this, and left beyond the second (so a step out and back is not a return).
  constexpr double MarksIn=15,MarksOut=40;
  FS47FreeformSession* Session(US47Main* M){return M?M->Freeform.Get():nullptr;}
@@ -52,7 +52,7 @@ double FS47Attention::StareGain(double HeldFor,double Dt,bool bCamera)
 double FS47Attention::ReturnGain(int32 Times){return Times<=1?0.:ReturnAgain*FMath::Min(Times-1,2);}
 double FS47Attention::PhotoGain(double Quality){return PhotoBase+PhotoClose*FMath::Clamp(Quality,0.,1.);}
 bool FS47Attention::WarnHours(double Hour){return Hour>=18||Hour<5.5;}
-bool FS47Attention::SabotageHours(double Hour){return Hour>=21||Hour<5;}
+bool FS47Attention::SabotageHours(double Hour){return Hour>=23.5||Hour<5;}
 bool FS47Attention::VisitHours(double Hour,int32 Night,bool bEarly)
 {
  const double H=S47NightTiers::NightHour(Hour);
@@ -102,14 +102,14 @@ void FS47Attention::Begin(const S47J::FObj& Saved)
  for(const FString& Id:S47J::Strs(Saved,TEXT("claims")))Claims.Add(Id);
  // An older save, or one from before anything counted: what is already recorded is not counted again on the first step.
  bBaseline=S47J::Has(Saved,TEXT("score"));
- bDev=bTruckArmed=false;WarnWait=SabWait=VisitWait=StareFor=VisitT=0;ChaseDist=-1;Visit=EVisit::None;Who=0;TakenBefore=0;
+ bDev=bTruckArmed=false;WarnWait=SabWait=VisitWait=StareFor=VisitT=0;ChaseDist=-1;SpareIn=-1;LearnNight=0;Visit=EVisit::None;Who=0;TakenBefore=0;
  Returns.Reset();NearMarks.Reset();ReturnNight=0;
 }
 
 void FS47Attention::Stop()
 {
  // A visit under way is not kept: its sky cut and its light are the session's and FS47Taken's, which stop with it.
- Visit=EVisit::None;VisitT=0;bTruckArmed=false;
+ Visit=EVisit::None;VisitT=0;bTruckArmed=false;SpareIn=-1;
 }
 
 S47J::FObj FS47Attention::Save() const
@@ -231,6 +231,14 @@ void FS47Attention::Gains(double Dt)
  }
  NearMarks=MoveTemp(NearNow);
  StareFor=bStare?StareFor+Dt:0;
+ // N1110 (critic): the first long look of a night is answered once by the gear, weakly and without a word, so the rule can be learned.
+ if(LearnNight!=Night&&bStare&&(StareFor>=20||(bCamera&&StareFor>=8)))
+ {
+  LearnNight=Night;
+  FS47OmenSource Src;Src.Id=TEXT("script:attention_learn"); // "script:" is skipped by the gains above: this is not a source to stare at
+  Src.At=Feet;Src.Severity=.15;Src.Reach=FS47Omen::ReachFor(Src.Severity);
+  M->Omen->Post(Src,1.5);
+ }
  Add(StareGain(StareFor,Dt,bCamera),bCamera?TEXT("a long look through the camera"):TEXT("a long look"));
  if(bLit)Add(LampPerSec*Dt,TEXT("the flashlight on one of them"));
  if(Nearest>=0&&ChaseDist>=0&&(ChaseDist-Nearest)/Dt>ChaseMps)Add(ChasePerSec*Dt,TEXT("closing on one of them"));
@@ -285,7 +293,7 @@ bool FS47Attention::CanSab(ESab K) const
  {
  case ESab::Relay:return F->Field&&!F->Field->HasArrayFault()&&!F->PowerFault();
  case ESab::Mains:return !F->SkyCutLive()&&!F->PowerFault();
- case ESab::Lamp:return L&&L->bHave&&L->bDrains&&L->BatteryLevel()>.3;
+ case ESab::Lamp:return L&&L->bHave&&L->bDrains&&L->BatteryLevel()>.3&&((F->Field&&F->Field->InventoryCount(TEXT("cell"))>0)||AtSaro()); // N1110 (critic): never with no way to put it right
  case ESab::Truck:return M->World&&!M->World->bDriving&&!M->World->bKeyStall&&!M->World->Trouble.WantsKey();
  default:return false;
  }
@@ -318,7 +326,7 @@ bool FS47Attention::DoSabotage(bool bForced)
  {
  case ESab::Relay:bDone=F->Field&&F->Field->TriggerServiceFault(false);break;
  case ESab::Mains:F->SkyCutBegin(SabSag,SabOut);bDone=F->SkyCutLive();break;
- case ESab::Lamp:if(FS47Flashlight* L=Lamp(M)){L->SetBattery(FMath::Min(L->BatteryLevel(),.06));bDone=true;}break;
+ case ESab::Lamp:if(FS47Flashlight* L=Lamp(M)){L->SetBattery(FMath::Min(L->BatteryLevel(),.06));bDone=true;if(F->Field&&F->Field->InventoryCount(TEXT("cell"))>0)SpareIn=6.;}break; // N1110 (critic): with a spare, a word on how
  case ESab::Truck:M->World->bKeyStall=true;bTruckArmed=true;bDone=true;break;
  default:break;
  }
@@ -333,6 +341,10 @@ bool FS47Attention::DoSabotage(bool bForced)
 
 void FS47Attention::StepSabotage(double Dt,double Hour,int32 Night,int32 Day)
 {
+ // N1110 (critic): the thought about the spare cell, after the script's own lines.
+ if(SpareIn>=0&&(SpareIn-=Dt)<0){SpareIn=-1;if(Sab==ESab::Lamp&&M->UI)M->UI->Thought(TEXT("I have a spare cell. Switch the lamp off, then press F."),4.5f);}
+ // N1110 (critic): a truck sabotage nobody met by morning is let go on a new night, or no further sabotage could ever come.
+ if(Sab==ESab::Truck&&SabNight!=0&&Night>SabNight){UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the truck's trouble from night %d is let go"),SabNight);Sab=ESab::None;bTruckArmed=false;} // (the stall itself stays: it is the truck's own trouble until the key is turned)
  // The truck that wants the key: its trace when the player is at the wheel and it does not start.
  if(Sab==ESab::Truck&&bTruckArmed&&M->World&&!M->World->bKeyStall)
  {
@@ -443,7 +455,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  Check(TierOf(0)==0&&TierOf(WarnAt-.1)==0&&TierOf(WarnAt)==1&&TierOf(SabotageAt)==2&&TierOf(VisitAt)==3&&TierOf(Top)==3&&WarnAt<SabotageAt&&SabotageAt<VisitAt&&VisitAt<Top,TEXT("warnings, then sabotage, then a visit, in that order"));
  // The curve: it falls slowly, over days.
  Check(FMath::IsNearlyEqual(Fall(80,86400.),80.-FallPerDay)&&Fall(10,2*86400.)==0&&Fall(50,-5)==50,TEXT("it falls by itself, FallPerDay a game day, never below nothing"));
- Check(Fall(VisitAt,3*86400.)>WarnAt&&Fall(Top,7*86400.)<WarnAt,TEXT("from a visit's level it still warns three days on, and a quiet week is calm again"));
+ Check(Fall(VisitAt,2*86400.)>WarnAt&&Fall(Top,7*86400.)<WarnAt&&Fall(WarnAt+FallPerDay*.5,86400.)<WarnAt,TEXT("from a visit's level it still warns two days on, a quiet week is calm again, and a calm day cools a warning level below it"));
  // A look costs nothing; a long one does, more through the camera.
  const auto Look=[](double Seconds,bool bCamera){double Sum=0,Held=0;for(double T=0;T<Seconds-1e-9;T+=.05){Held+=.05;Sum+=StareGain(Held,.05,bCamera);}return Sum;};
  Check(Look(3,false)==0&&Look(1.5,true)==0,TEXT("a glance, even through the camera, adds nothing"));
@@ -461,7 +473,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  }
  // The hours of each tier.
  Check(WarnHours(18.5)&&WarnHours(4)&&!WarnHours(12)&&!WarnHours(6),TEXT("warnings from 18:00 to 05:30"));
- Check(SabotageHours(22)&&SabotageHours(3)&&!SabotageHours(20)&&!SabotageHours(5.5),TEXT("sabotage from 21:00 to 05:00"));
+ Check(SabotageHours(23.5)&&SabotageHours(3)&&!SabotageHours(22)&&!SabotageHours(20)&&!SabotageHours(5.5),TEXT("sabotage from 23:30 to 05:00 (evenings stay deniable)"));
  Check(!VisitHours(23,3,false)&&!VisitHours(1.5,3,false)&&VisitHours(2.5,3,false)&&VisitHours(5,3,false)&&!VisitHours(6,3,false),TEXT("a visit only in the full tier, after two, before half past five"));
  Check(VisitHours(1,3,true)&&!VisitHours(23,3,true)&&VisitHours(1.5,S47NightTiers::LateFromNight,false),TEXT("the authored escalation from midnight, and the late nights' earlier full tier"));
  Check(!VisitMay(1,1,0)&&VisitMay(2,2,0)&&!VisitMay(3,3,2)&&VisitMay(4,4,2),TEXT("no visit on the first day, at most one in two nights"));
@@ -504,6 +516,22 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
   }
   if(Found==0)Lines.Add(TEXT("NOTE attention: no attention_* event scripts beside this build: plain lines play instead"));
   else Check(bClean&&Found==Ids.Num(),FString::Printf(TEXT("all %d of its event scripts are there and clean%s"),Ids.Num(),First.IsEmpty()?TEXT(""):*(TEXT(": ")+First)));
+  // N1110 (critic): the mains' tubes come when they return; Dale's word 10 s after the warning's; the dog's quiet; the lights over SARO only.
+  {
+   const FS47EventScript* Mn=S47EventScript::Find(TEXT("attention_sab_mains"));
+   const FS47EventScript* Hn=S47EventScript::Find(S47AttentionLocal::HintRule);
+   const FS47EventScript* Dg=S47EventScript::Find(TEXT("attention_warn_dog"));
+   const FS47EventScript* Li=S47EventScript::Find(TEXT("attention_warn_lights"));
+   if(Mn)
+   {
+    bool bAfter=true;int32 Tubes=0;
+    for(const FS47Beat& B:Mn->Beats)if(B.Do==ES47Beat::Tube){++Tubes;bAfter&=B.At>S47AttentionLocal::SabSag+S47AttentionLocal::SabOut;}
+    Check(Tubes==1&&bAfter,TEXT("the mains' tube beat comes after the outage, not in the dark"));
+   }
+   if(Hn)Check(Hn->Beats.Num()>0&&Hn->Beats[0].At>=10,TEXT("Dale's hint comes 10 s or more after the warning starts"));
+   if(Dg)Check(Dg->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Silence;}),TEXT("the dog warning goes quiet"));
+   if(Li)Check(Li->Gates.Areas.Contains(TEXT("saro")),TEXT("the lights over the station are SARO's only"));
+  }
   const FS47EventScript* V=S47EventScript::Find(S47AttentionLocal::VisitId);
   if(V)Check(V->Gates.bTier&&V->Gates.Tier==ES47Allowed::Full&&!V->Gates.bEarly,TEXT("the visit's script keeps to the full tier (no early escalation as shipped)"));
  }

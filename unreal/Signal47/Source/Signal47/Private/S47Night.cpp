@@ -311,6 +311,12 @@ void US47Night::ToggleLight()
 			return;
 		}
 	}
+	// N1110 (critic): F on a weak lamp that is lit only switches it off; with a spare in the bag, say once how the swap goes.
+	if (Flashlight->bHave && Flashlight->bOn && Flashlight->bDrains && Flashlight->Low() && M->IsFreeform() && M->Freeform && M->Freeform->Field.IsValid() && M->Freeform->Field->InventoryCount(TEXT("cell")) > 0)
+	{
+		static bool bTold = false;
+		if (!bTold) { bTold = true; M->UI->Toast(TEXT("Lamp off first, then F again to swap the cell."), 3.5f); }
+	}
 	if (!Flashlight->Toggle()) M->UI->Toast(TEXT("No flashlight. There is one on the passenger seat of the truck."), 3);
 }
 

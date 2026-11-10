@@ -9,7 +9,10 @@
       "18:00",
       "05:30"
     ],
-    "tier": "hint"
+    "tier": "hint",
+    "areas": [
+      "saro"
+    ]
   },
   "beats": [
     {

@@ -578,6 +578,7 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
  {
   // N1110: the sting first (it is the sight that hits: whatever was heard last, as F10's audition), then the view toward the point.
   FString What;
+  if(R.Ctx.bNoSnap){Log(TEXT("left out: not the hour for it yet"));break;}
   if(!B.Kind.IsEmpty()&&M->FieldRadio)
   {
    const int32 Scare=B.Kind==TEXT("soft")?int32(FS47EncounterSound::EScare::Soft):B.Kind==TEXT("hard")?int32(FS47EncounterSound::EScare::Hard):B.Kind==TEXT("braam")?int32(FS47EncounterSound::EScare::Braam):int32(FS47EncounterSound::EScare::Swell);

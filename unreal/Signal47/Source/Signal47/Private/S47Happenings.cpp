@@ -3962,11 +3962,12 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(!Ask(TEXT("beam_figure")))return No(TEXT("the rhythm says not now"));
   const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(Clock),0x4245414du,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
   if(!Prop(S47Hap::ShadeKind(Body)))return No(TEXT("nothing to draw it with"));
-  FVector Stand=Feet+Fwd*(bForced?22.:34.);
+  FVector Stand=Feet+Fwd*(bForced?22.:24.); // N1110 (critic): 24 m, near enough to read as a person in the beam
   double X=0,Z=0;
   if(!RoadOfWorld(Stand,X,Z)||!WorldOf(X,Z,Stand))return No(TEXT("no ground there"));
   Arm(TEXT("beam_figure"),3.+S47Hap::SilenceLead);Now.Variant=Body;Now.At=Stand;Now.X=X;Now.Z=Z;
   FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("figure"),Stand+FVector(0,1.4,0));
+  Beats.bNoSnap=!bForced&&NightHour(Clock)<26.; // N1110 (critic): before 02:00 the quiet and the figure alone, the view is not taken
   S47EventScript::Play(M,TEXT("beam_figure"),Beats);
   return true;
  }
@@ -4248,7 +4249,7 @@ bool FS47Happenings::StepMore(double Dt)
   const FVector To=Feet-Now.At;
   if(P){PoseProp(*P,Now.At,bEyes||bFigure?FMath::Atan2(To.X,To.Z):0.);ShowProp(*P,Now.Age>=Lead&&Now.Age<GoneAt);}
   // Seen: the script's snap turns the view onto it, so what is drawn is what is seen; noticed once, as the snap lands.
-  if(Now.Stage==0&&Now.Age>=Lead+(bEyes?.4:bFigure?.5:5.3)){Now.Stage=1;Noticed(Id,FVector2D(To.X,To.Z).Size(),TEXT("sight"));}
+  if(Now.Stage==0&&Now.Age>=Lead+(bEyes?.4:bFigure?.5:4.5)){Now.Stage=1;Noticed(Id,FVector2D(To.X,To.Z).Size(),TEXT("sight"));}
   if(Now.Age>=Now.Len)EndEvent(true);
   return true;
  }

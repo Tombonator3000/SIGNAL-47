@@ -95,6 +95,7 @@ struct FS47EventCtx
 {
  TMap<FString,FString> Words;
  TMap<FString,FVector> Points;
+ bool bNoSnap=false;          // N1110: a camera_snap beat is left out (the sting too): not the hour for it yet
  bool bKeep=true;             // what it records is kept (an F10 run in a real game keeps nothing)
 };
 

@@ -79,7 +79,12 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
  if(const FS47EventScript* S=Built.Find(TEXT("dish_lights")))
  {
   const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
-  Check(C&&FMath::IsNearlyEqual(C->At,5.)&&C->Kind==TEXT("swell")&&S->Gates.Areas.Contains(TEXT("saro")),TEXT("dish_lights: the lights hold five seconds before the view goes up to them; SARO only"));
+  Check(C&&FMath::IsNearlyEqual(C->At,4.2)&&C->Kind==TEXT("swell")&&S->Gates.Areas.Contains(TEXT("saro")),TEXT("dish_lights: the lights hold four seconds before the view goes up to them (N1110 critic); SARO only"));
+ }
+ if(const FS47EventScript* S=Built.Find(TEXT("beam_figure")))
+ {
+  const FS47Beat* C=First(*S,ES47Beat::CameraSnap);
+  Check(C&&FMath::IsNearlyEqual(C->In,.3)&&C->Kind==TEXT("soft"),TEXT("beam_figure: a soft sting and the view in over 0.3 s (the code leaves the snap out before 02:00)"));
  }
  // ---- N1110 (SOUNDSCAPE, GEAR-FLICKER, PLAY-31-34): the silence beat before the sight, the gear answering, the tube beat ----
  for(const TCHAR* Id:{TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights")})

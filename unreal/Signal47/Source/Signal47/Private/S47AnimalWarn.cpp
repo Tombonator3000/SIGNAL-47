@@ -28,13 +28,16 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 	FS47FreeformSession* F = M ? M->Freeform.Get() : nullptr;
 	if (!F || !Warned(Id) || !M->Animals) return true;
 	const int32 Now = FS47FreeformSession::NightOf(F->Clock());
-	if (Now != Night) { Night = Now; bUsed = false; Asked.Reset(); Pending.Reset(); }
+	if (Now != Night)
+	{
+		if (Pending.Num()) UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn: a new night, %d event(s) still waiting on their lead are dropped"), Pending.Num()); // N1110 (critic)
+		Night = Now; bUsed = false; Asked.Reset(); Pending.Reset();
+	}
 	// Its lead is running: it waits for it, and when Due() hands it back it is let through at once.
 	for (const FWait& W : Pending)
 		if (W.Id == Id) { Why = TEXT("the animals first"); return false; }
 	if (Asked.Contains(Id) || bUsed || !bOnFoot) return true;
 	if (!F->RulesLive() || F->InTutorial()) return true;
-	Asked.Add(Id);
 	const EKind First0 = First(F->Seed(), Night, Id);
 	// Away from where the event will be, which is not known yet: a random way, 90 m out. The animals go the other.
 	const double Bearing = FMath::FRand() * 2 * UE_DOUBLE_PI;
@@ -48,6 +51,8 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 		if (!S || !S->bEnabled) continue;
 		FString Fail;
 		if (!M->Animals->Warn(Kind == EKind::Birds, Threat, Lead, Fail)) { UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn %s: no %s here: %s"), *Id, Kind == EKind::Birds ? TEXT("covey") : TEXT("coyote"), *Fail); continue; }
+		// N1110 (critic): asked about only once the odds said yes and the warning really started; a roll that failed leaves it open.
+		Asked.Add(Id);
 		bUsed = true; ++Count;
 		FWait W; W.Id = Id; W.Variant = Variant; W.At = M->T + Lead; Pending.Add(W);
 		FS47EventCtx Ctx;
@@ -66,6 +71,7 @@ bool FS47AnimalWarn::Due(FString& OutId, FString& OutVariant)
 		if (M->T >= Pending[I].At)
 		{
 			OutId = Pending[I].Id; OutVariant = Pending[I].Variant;
+			UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn: the lead of %s is up, handed back to start (if it is refused now, it is dropped: see the Refused line)"), *OutId); // N1110 (critic)
 			Pending.RemoveAt(I);
 			return true;
 		}

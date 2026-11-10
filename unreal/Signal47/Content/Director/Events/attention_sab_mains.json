@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_sab_mains",
   "name": "A scorched smell in the service bay",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the mains taken (FS47FreeformSession::SkyCutBegin): the standby generator rides it, and the mains come back. Every sabotage costs the control room the next two working ceiling tubes of 2 to 7 for good (tube beat with next, saved; the working light, tubes 0 and 1, stays). A pair of tubes from the store puts them back (FS47FreeformWorld depot).",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the mains taken (FS47FreeformSession::SkyCutBegin): the standby generator rides it, and the mains come back (150 s after the sag, 20 s): the tube beat and its thought wait for the mains to return. Every sabotage costs the control room the next two working ceiling tubes of 2 to 7 for good (tube beat with next, saved; the working light, tubes 0 and 1, stays). A pair of tubes from the store puts them back (FS47FreeformWorld depot).",
   "enabled": true,
   "gates": {},
   "beats": [
@@ -19,18 +19,18 @@
       "text": "The whole place smells like a struck match."
     },
     {
-      "at": 29.2,
-      "do": "tube",
-      "next": 2
-    },
-    {
       "at": 30,
       "do": "evidence",
       "key": "attention_mains_d{day}",
       "text": "At {clock} the mains sagged and went with no storm and no fault on the feeder. Afterward the transfer panel smelled scorched, like a struck match. Two of the ceiling tubes in the control room never struck again."
     },
     {
-      "at": 33,
+      "at": 171,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 174,
       "do": "thought",
       "text": "Two more of the tubes in here never came back.",
       "if": [

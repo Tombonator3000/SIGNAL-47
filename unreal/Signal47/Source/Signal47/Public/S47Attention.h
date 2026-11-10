@@ -21,7 +21,7 @@ class US47Main;
 // What it does, each at most once a night, in the hours of its tier (S47NightTiers):
 //   WarnAt      a warning (event scripts attention_warn_*: the TV in snow, two rings and nobody, the dog stopping, lights over
 //               the station, a thought), the first with Dale's word (attention_hint_dale): don't stare at them too long
-//   SabotageAt  one piece of equipment, never two at once, from day 2, 21:00 to 05:00: a relay fault on the array, the mains
+//   SabotageAt  one piece of equipment, never two at once, from day 2, 23:30 to 05:00 (the evenings stay deniable): a relay fault on the array, the mains
 //               (the sky cut, which the standby generator rides), the flashlight's cell, the truck that wants the key. Each has
 //               its existing repair, and a trace (attention_sab_*: frost on the cabinet logged by the printer, a scorched smell,
 //               warm cells). The first sabotage brings Dale's second word (attention_hint_visit): lights on and stay inside.
@@ -43,10 +43,10 @@ public:
  S47J::FObj Save() const;
 
  // ---- the rule, pure ----
- static constexpr double WarnAt=25,SabotageAt=50,VisitAt=75,Top=100,FallPerDay=14;
+ static constexpr double WarnAt=25,SabotageAt=50,VisitAt=75,Top=100,FallPerDay=20; // N1110 (critic): calm play must not creep up
  static constexpr double StareGrace=4,CameraGrace=2,StarePerSec=.25,CameraPerSec=.6,LampPerSec=1.5,ChasePerSec=.8,ChaseMps=1.5;
  static constexpr double ReturnAgain=6,PhotoBase=1,PhotoClose=6,TrackRecorded=5,TrackAgain=5,TrackPerSec=.04;
- static constexpr double WarnDelay=40,SabotageDelay=90,VisitDelay=30,VisitSag=30,VisitOut=150,VisitLook=VisitSag+6;
+ static constexpr double WarnDelay=15,SabotageDelay=90,VisitDelay=30,VisitSag=30,VisitOut=150,VisitLook=VisitSag+6;
  static constexpr int32 FirstDay=2,RepeatDays=3;
  // 0 calm, 1 warnings, 2 sabotage, 3 a visit.
  static int32 TierOf(double Score);
@@ -57,7 +57,7 @@ public:
  static double ReturnGain(int32 Times);
  static double PhotoGain(double Quality);
  static bool WarnHours(double Hour);     // 18:00 to 05:30
- static bool SabotageHours(double Hour); // 21:00 to 05:00
+ static bool SabotageHours(double Hour); // 23:30 to 05:00
  // The visit's own hours: the full tier to 05:30 (bEarly: the authored escalation, from midnight).
  static bool VisitHours(double Hour,int32 Night,bool bEarly);
  static bool VisitMay(int32 Day,int32 Night,int32 LastVisitNight);
@@ -92,7 +92,8 @@ private:
  int32 WarnNight=0,WarnCount=0,SabNight=0,SabCount=0,VisitNight=0,VisitCount=0,TakenBefore=0;
  ESab Sab=ESab::None;
  bool bBaseline=false,bDev=false,bTruckArmed=false,bLinesAdded=false;
- double WarnWait=0,SabWait=0,VisitWait=0,StareFor=0,VisitT=0,ChaseDist=-1;
+ double WarnWait=0,SabWait=0,VisitWait=0,StareFor=0,VisitT=0,ChaseDist=-1,SpareIn=-1;
+ int32 LearnNight=0; // N1110 (critic): the night the weak gear flicker for a long stare was played (not saved)
  EVisit Visit=EVisit::None;
  int32 Who=0;
  // What has been counted already: anomalous cards recorded, photo claims. Saved, so a Continue does not count them again.

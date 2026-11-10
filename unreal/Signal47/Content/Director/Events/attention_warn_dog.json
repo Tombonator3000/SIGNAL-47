@@ -46,6 +46,12 @@
       "secs": 8
     },
     {
+      "at": 4,
+      "do": "silence",
+      "secs": 6,
+      "level": 0.1
+    },
+    {
       "at": 7,
       "do": "thought",
       "text": "The dog quit all at once. Like somebody told it to."
