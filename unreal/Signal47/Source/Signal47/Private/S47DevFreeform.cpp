@@ -820,7 +820,9 @@ void FS47DevFreeform::StepStand()
  if(StandPlace.IsEmpty()||StandPlace==TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
  const double Hour=FMath::Fmod(F->Clock(),86400.)/3600.;
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
- if(Hour<21||StandNight==Night)return;
+ // NIGHT-20261110: out there already tonight, they look at what is on the ground while it lasts, as someone standing out would.
+ if(StandNight==Night){FVector Live;if(F->Happenings&&F->Happenings->LiveAt(Live))AimAt(Live);return;}
+ if(Hour<21)return;
  StandNight=Night;
  const FVector House=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
  if(StandPlace==TEXT("house")){M->Player->Place(House.X,House.Z,0);M->Player->Pitch=0;}

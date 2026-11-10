@@ -1737,6 +1737,8 @@ bool FS47Happenings::Due(const FString& Id) const
   double Px=0,Pz=0;
   if(PlayerRoad(Px,Pz)&&S47Hap::LeadEarly(FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)),FS47FieldRadio::InSaroBuilding(M),H)&&(LeadNow.Kind!=TEXT("landing")||H>=24.))Start=H; // (a landing never before midnight: the evening has hints only)
  }
+ // NIGHT-20261110: the landing a slip pointed at sits lit on the ground; drawn for the evening it waits for midnight (hints only before).
+ if(bPromised&&LeadNow.Kind==TEXT("landing"))Start=FMath::Max(Start,24.);
  // LEAD-FIX-20261110: and as long again as a pointed landing sitting on the ground held it back (SitHeld): it comes after, not never.
  return S47Hap::DueAt(H,Start,(IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow)+SitHeld.FindRef(Id))&&!(Last&&*Last==M->Freeform->Day());
 }
