@@ -175,11 +175,11 @@ namespace S47FreeformTerminal
    auto Tint=[](FLinearColor C,float A){C.A=A;return C;};
    // The rolling band: the mains beat against the frame rate, one slow pass every seven seconds.
    const float Roll=-110+(S.Y+220)*float(FMath::Fmod(T*.14,1.));
-   Box(Roll,110,Tint(GreenNow,.022f),L);Box(Roll+104,6,Tint(GreenNow,.045f),L);
+   Box(Roll,110,Tint(GreenNow,.05f),L);Box(Roll+104,6,Tint(GreenNow,.12f),L);   // critics, 10 Nov: at .022 and .045 nobody saw it
    // The supply's breath: never still, never enough to read as a fault.
    Box(0,S.Y,Tint(FLinearColor::Black,FMath::Max(0.f,.016f+.016f*float(FMath::Sin(T*45.9)*FMath::Sin(T*2.3)))),L);
-   // A key acknowledged: the whole tube lifts for a twelfth of a second.
-   if(const double K=T-KeyAt;K>=0&&K<.085)Box(0,S.Y,Tint(GreenNow,.05f*float(1-K/.085)),L+1);
+   // A key acknowledged: the whole tube lifts for an eighth of a second, held for the first third of it.
+   if(const double K=T-KeyAt;K>=0&&K<.12)Box(0,S.Y,Tint(GreenNow,.13f*float(K<.04?1.:1-(K-.04)/.08)),L+1);
    // A page written: black below the beam, the beam a bright line with its glow above it.
    const double Wipe=bNewPage?.30:.10;
    if(Age>=0&&Age<Wipe)

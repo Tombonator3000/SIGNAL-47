@@ -25,6 +25,9 @@ namespace
 	// the tube (4:3), the card's size (S47MotelTv), how far the picture is drawn and heard
 	const int32 TW = 192, TH = 144, CW = 320, CH = 240;
 	const double SEEN = 25, HEARD = 14, NEAR_WALL = 3;
+	// Critics, 10 Nov: the anthem at sign-off is the one thing on the set meant to be heard from the control room. It carries
+	// further and comes up a little; the programme stays in Dale's office as before.
+	const double HEARD_ANTHEM = 34, ANTHEM = 1.7;
 	// the programme from the set's speaker, as loud as the motel office's (S47MotelTv PROGRAMME); the card's thin tone, the snow's
 	// hiss and the tube's whine as the motel's set and room 6's (S47Audio TvHiss) have them
 	const double PROGRAMME = 0.3, TONE = 0.03, CARD_HISS = 0.006, SNOW_HISS = 0.09, WHINE = 0.0016;
@@ -234,7 +237,7 @@ void FS47OfficeTv::Step(double Dt)
 	if (bFeed)
 	{
 		const double Duck = M->Story ? M->Story->VoicesDuck() : 1.0;
-		Programme.Update(Dt, M->Audio.Get(), Speaker(), Dist <= HEARD ? PROGRAMME * Duck * (1 - 0.85 * Lost) : 0.0, bThrough);
+		Programme.Update(Dt, M->Audio.Get(), Speaker(), Dist <= (bSign ? HEARD_ANTHEM : HEARD) ? PROGRAMME * (bSign ? ANTHEM : 1.0) * Duck * (1 - 0.85 * Lost) : 0.0, bThrough);
 	}
 	else Programme.Silence();
 	// The picture: drawn while it can be seen, the programme at its own rate, the card and the snow at 15 a second (and at that

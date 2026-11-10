@@ -1562,7 +1562,7 @@ TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidg
  Items.Add({TEXT("OVERVIEW"),Section==0,[this]{Feedback.Empty();OpsSection=0;OpenOperations();}});
  Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();}});
  Items.Add({TEXT("CASE BOARD"),Section==2,[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseWaiting});
- Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();OpenArchive();},StationFileDue()}); // CASES-OPS-20261109: was CASE ARCHIVE
+ Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();if(StationFileDue())ArchiveTab=4;OpenArchive();},StationFileDue()}); // CASES-OPS-20261109: was CASE ARCHIVE
  Items.Add({TEXT("SERVICE"),Section==4,[this]{Feedback.Empty();OpenServiceGuide();},Service});
  Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();}});
  Items.Add({TEXT("PHOTOGRAPHS"),Section==6,[this]{Feedback.Empty();OpenPhotos();},PhotoDeskDue()}); // FIX-20261110: the film record and its allowance desk

@@ -26,9 +26,14 @@ namespace
  namespace Dread
  {
   const double Bed[2]={.55,.5};               // the ground when one is near, and the layer over it when it is seen or hunts
-  const double Hit[4]={.5,.72,.6,.5};          // soft (seen), hard (hunted), braam (a thing in the sky, near), swell (far off)
+  // Critics, 10 Nov: at .5 to .72 a hit was some 8 to 12 dB over the quiet cue it stands in for, the old complaint again. Now
+  // about the cue's own level; the hard one is still the loudest thing in a meeting, and comes once in one.
+  const double Hit[4]={.17,.24,.21,.17};       // soft (seen), hard (hunted), braam (a thing in the sky, near), swell (far off)
   // Seconds before the same kind of bought hit may come again. A scare that repeats stops being one: the plain cue stands in.
-  const double Rest[4]={75.,40.,25.,25.};
+  const double Rest[4]={75.,120.,40.,40.};
+  // No cue of any kind lands on a bought hit while it sounds (at most Sounding seconds of it), and no second bought hit of any
+  // kind inside Apart seconds: seen and then hunted within a second was two stings, the second chopping the first.
+  const double Sounding=3.,Apart=20.;
   const double In=.9,Out=3.2,Cut=.12;          // time constants: the ground coming up, sinking away, and cut under a menu
   const TCHAR* const Beds[2]={TEXT("dread_low"),TEXT("dread_high")};
   const TCHAR* const Hits[4][3]={{TEXT("scare_soft_1"),TEXT("scare_soft_2"),nullptr},{TEXT("scare_hard_1"),TEXT("scare_hard_2"),TEXT("scare_hard_3")},
@@ -243,6 +248,7 @@ bool FS47EncounterSound::Cue(US47Audio* A,EKind Kind,TOptional<FVector> At,doubl
  if (bHeld || !FMath::IsFinite(Strength) || Strength<=0 || !Bind(A)) return false;
  if (At && (At->ContainsNaN())) return false;
  const int32 K=Index(Kind); const double Now=Context->CurrentTime();
+ if (Now<BoughtUntil) return false;   // the caller asks again each frame: the cue comes when the hit has had its say
  // One shared mixer avoids a chorus when six Roswells become visible. A new
  // discovery/chase may replace a subtler cue, but cannot stack over its peak.
  if (Now<NextKind[K] || (Now<NextAny && !(K>LastKind && Now>=NextAny-3.1))) return false;
@@ -269,7 +275,7 @@ bool FS47EncounterSound::Cue(US47Audio* A,EKind Kind,TOptional<FVector> At,doubl
 bool FS47EncounterSound::Hit(US47Audio* A,EScare Kind,double Strength,double Now)
 {
  const int32 S=int32(Kind);
- if (Now<NextScare[S]) return false;
+ if (Now<NextScare[S] || Now<NextBought) return false;
  // Never the same recording twice running, where there is more than one.
  TSharedPtr<FS47AudioBuffer> B;
  for (int32 Try=0;Try<3 && !B;++Try)
@@ -289,6 +295,7 @@ bool FS47EncounterSound::Hit(US47Audio* A,EScare Kind,double Strength,double Now
   Gain->Connect(A->SfxBus); Src->Start(Now); Voices.Add({Src,Gain,Now+B->Duration()});
  }
  NextScare[S]=Now+Dread::Rest[S]; NextAny=Now+3.5; CueUntil=Now+FMath::Min(B->Duration(),2.2); ++NBought; RadioMix();
+ BoughtUntil=Now+FMath::Min(B->Duration(),Dread::Sounding); NextBought=Now+Dread::Apart;
  return true;
 }
 
@@ -296,7 +303,7 @@ bool FS47EncounterSound::Scare(US47Audio* A,EScare Kind,double Strength,bool bAu
 {
  if ((bHeld && !bAudition) || !FMath::IsFinite(Strength) || Strength<=0 || !Bind(A)) return false;
  const double Now=Context->CurrentTime();
- if (bAudition) NextScare[int32(Kind)]=0;
+ if (bAudition) { NextScare[int32(Kind)]=0; NextBought=0; }
  else if (Now<NextAny) return false;
  return Hit(A,Kind,Strength,Now);
 }
@@ -307,6 +314,12 @@ void FS47EncounterSound::DreadFor(double Level,bool bSeen,bool bHunt,double& Low
  double K=FMath::Clamp((Level-.05)/.45,0.,1.); K=K*K*(3.-2.*K);
  Low=bHunt?1.:FMath::Max(K,bSeen?.6:0.);
  High=bHunt?1.:bSeen?.45+.4*K:0.;
+}
+
+double FS47EncounterSound::DreadNow() const
+{
+ if (!Beds[0].Source && !Beds[1].Source) return 0;
+ return FMath::Clamp(FMath::Max(BedWant[0]/Dread::Bed[0],BedWant[1]/Dread::Bed[1]),0.,1.);
 }
 
 int32 FS47EncounterSound::ScareFor(const FString& Id,double DistM)
@@ -466,7 +479,7 @@ void FS47EncounterSound::Reset()
  for (double& T:NextKind) T=0;
  for (auto& V:Beds) V=FVoice();
  for (int32 I=0;I<4;++I) { NextScare[I]=0; ScareTurn[I]=0; }
- BedWant[0]=BedWant[1]=0; NBought=0;
+ BedWant[0]=BedWant[1]=0; NBought=0; BoughtUntil=NextBought=0;
 }
 
 bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
@@ -570,16 +583,19 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
   Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==1,TEXT("DREAD: the first sight takes a bought hit"));
   const auto FirstHit=Mix.Voices.Num()?Mix.Voices.Last().Source->Buffer:nullptr;
   Run(.5);
-  Check(Top()>.01 && Top()<.5,TEXT("DREAD: the hit is heard, and well under full level"));
+  Check(Top()>.003 && Top()<.25,TEXT("DREAD: the hit is heard, and well under full level"));
   Check(!Mix.Scare(A,EScare::Braam),TEXT("DREAD: a second hit cannot land on the first"));
-  Run(12.);
+  Check(!Mix.Cue(A,EKind::Hunt) && Mix.NBought==1,TEXT("DREAD: hunted a moment after the sight, the cue waits for the hit to end"));
+  Run(20.);
   Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==1,TEXT("DREAD: seen again inside the minute it is the plain cue, not the scare once more"));
   Run(1.);
   Check(Mix.Cue(A,EKind::Hunt) && Mix.NBought==2,TEXT("DREAD: the hunt takes its own, harder hit over a sight just cued"));
-  Mix.NextScare[0]=0; Mix.NextKind[1]=0; Mix.NextAny=0;
+  Mix.NextScare[0]=0; Mix.NextKind[1]=0; Mix.NextAny=0; Mix.BoughtUntil=0;
+  Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==2,TEXT("DREAD: no second bought hit close on the last, whatever its kind: the plain cue"));
+  Mix.NextScare[0]=0; Mix.NextKind[1]=0; Mix.NextAny=0; Mix.BoughtUntil=0; Mix.NextBought=0;
   Check(Mix.Cue(A,EKind::Discovery) && Mix.NBought==3 && Mix.Voices.Num() && Mix.Voices.Last().Source->Buffer!=FirstHit,
    TEXT("DREAD: rested, the sight hits again, with the other recording"));
-  Mix.NextAny=0;
+  Mix.NextAny=0; Mix.NextBought=0;
   Check(Mix.Scare(A,EScare::Braam) && !Mix.Scare(A,EScare::Swell,1.,true),TEXT("DREAD: a light near has its braam; a kind with no file stays silent even asked for outright"));
   Run(4.);
   Mix.Dread(A,1,0);

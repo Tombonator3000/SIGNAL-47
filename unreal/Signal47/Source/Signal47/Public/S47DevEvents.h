@@ -23,6 +23,8 @@ public:
  // Renames a line in place, for a line that says what it is set to now.
  void Relabel(const FString& OldLabel, const FString& NewLabel);
  void Open();
+ // The F10 screen while it is open (SS47Dev.h), for -S47DevMenuTest.
+ TSharedPtr<class SS47Dev> Menu() const { return MenuEl.Pin(); }
  void Step(double Dt);
  void Stop();
  void ControlTest(double Dt);
@@ -35,6 +37,7 @@ private:
  // Freeform's own lines and the night run at speed (S47DevFreeform.h).
  TSharedPtr<class FS47DevFreeform> FreeformLines;
  FString ReopenGroup;
+ TWeakPtr<class SS47Dev> MenuEl;
  double ShowerLeft = 0, ShowerNext = 0;
  FS47PaleBody Pale;
  // Tall, crab and Pale One, coming from a distance so their gait can be judged. The Pale One is Pale above, one body.

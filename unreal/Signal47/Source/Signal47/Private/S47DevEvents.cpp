@@ -185,7 +185,7 @@ void FS47DevEvents::Open()
  TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS")).bCategories(true).InitialGroup(ReopenGroup)
   .Note(Line)
   .OnBack([this] { if (M && M->UI) M->UI->Close(true); });
- M->UI->Open(El);
+ M->UI->Open(El);MenuEl=El;
  FSlateApplication::Get().SetKeyboardFocus(El);
 }
 

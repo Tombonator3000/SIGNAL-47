@@ -263,7 +263,7 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
   FreeformStrip(G,Out,Layer+1,T);
   auto Band=[&](float Y,float H,const FLinearColor& C){FSlateDrawElement::MakeBox(Out,Layer+7,G.ToPaintGeometry(FVector2f(512.f,H),FSlateLayoutTransform(FVector2f(0,Y))),WhiteBrush.Get(),ESlateDrawEffect::None,C);};
   const float Roll=-60+504*float(FMath::Fmod(T*.11+int32(Kind)*.23,1.));
-  Band(Roll,60,CrtCss(0x8cffa4,.035f));Band(Roll+56,4,CrtCss(0x8cffa4,.07f));
+  Band(Roll,60,CrtCss(0x8cffa4,.06f));Band(Roll+56,4,CrtCss(0x8cffa4,.12f));
   for(int32 I=0;I<int32(1+Jam*7)&&Jam>.03f;++I)if(Hash(Beat+I*7.31)<Jam*.9f)Band(384*Hash(Beat*1.7+I*3.1),2+18*Hash(Beat*.37+I)*Jam,Hash(Beat+I)<.6f?FLinearColor(0,0,0,.85f):CrtCss(0x8cffa4,.12f+.25f*Jam));
   Scanlines(G,Out,Layer+8);return Layer+9;
  }

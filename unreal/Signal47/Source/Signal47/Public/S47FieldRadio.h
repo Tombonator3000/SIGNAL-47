@@ -131,6 +131,7 @@ public:
  static EBack BackFor(bool bSomethingNear,float Roll);
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
+ double DreadNow() const { return Sound.DreadNow(); }
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
  static bool SelfTest(TArray<FString>& Lines);
 private:

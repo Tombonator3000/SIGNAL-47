@@ -27,6 +27,8 @@ public:
  // What a Freeform happening sounds like the moment it is first seen, by its distance in metres (under 0: at the player): -1 nothing.
  static int32 ScareFor(const FString& Happening,double DistM);
  int32 BoughtHits() const { return NBought; }
+ // 0 to 1: how much of the bought ground is asked for now. The score stands back for it (S47Main): two beds on one bus was mud.
+ double DreadNow() const;
  void UpdateRadio(US47Audio* Audio,double Level,TOptional<FVector> AtThree={},bool bHeld=false);
  // A message on the set: click, squelch, a voice too broken to make out, and the squelch closing.
  bool Message(US47Audio* Audio);
@@ -57,7 +59,7 @@ private:
  bool bHeld=false,bRadioPlaced=false;
  double RadioLevel=0,NextAny=0,NextKind[3]={0,0,0},CueUntil=0;
  int32 LastKind=-1;
- FVoice Beds[2]; double BedWant[2]={0,0},NextScare[4]={0,0,0,0}; int32 ScareTurn[4]={0,0,0,0},NBought=0;
+ FVoice Beds[2]; double BedWant[2]={0,0},NextScare[4]={0,0,0,0},BoughtUntil=0,NextBought=0; int32 ScareTurn[4]={0,0,0,0},NBought=0;
  bool Hit(US47Audio* Audio,EScare Kind,double Strength,double Now);
  void BedsDown(double TimeConstant);
  bool Bind(US47Audio* Audio);

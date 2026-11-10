@@ -46,6 +46,7 @@ private:
  void StepSkyCut(double Dt); // -S47SkyCutTest (S47SkyCutTest.cpp)
  void StepStationFiles(double Dt); // -S47StationFilesTest (S47StationFilesTest.cpp)
  void StepTvChannel(double Dt); // -S47TvChannelTest (S47TvChannelTest.cpp)
+ void StepDevMenu(double Dt); // -S47DevMenuTest (S47DevMenuTest.cpp)
  double BoxX=0,BoxZ=0,BoxYaw=0;
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;

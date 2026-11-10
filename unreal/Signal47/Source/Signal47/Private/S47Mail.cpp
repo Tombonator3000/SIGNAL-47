@@ -999,6 +999,9 @@ void FS47Mail::OpenBox()
  Panel.Add(S47Kit::Button(TEXT("Shut the box"),[this]{if(M&&M->UI)M->UI->Close();}));
  if(Came.IsEmpty()&&M->Audio)M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.4f});
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("THE MAILBOX AT THE ROAD"),S47Kit::Col(Panel),820));
+ // Critics, 10 Nov: the keys came out with the letter, and the letter is what says what the job is. It is opened in the hand at
+ // once, not left as a button a new operator can shut the box on.
+ if(bWasLocked&&!M->Freeform->bStationLocked)for(const FPiece& Pc:Came)if(Pc.Id==TEXT("ward:letter")){const FPiece Copy=Pc;ReadPiece(Copy);break;}
 }
 
 // ---------- the catalog and its orders ----------

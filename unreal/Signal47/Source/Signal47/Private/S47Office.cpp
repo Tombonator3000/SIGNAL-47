@@ -7,6 +7,7 @@
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
+#include "SS47Dev.h"
 #include "S47OfficeTv.h"
 #include "S47OfficeWindow.h"
 #include "S47Sky.h"
@@ -1104,5 +1105,6 @@ bool FS47Office::SelfTest(TArray<FString>& Lines)
  SharedRoom.bDeparted=true;
  Check(SharedRoom.DepartureReleased(),TEXT("Story retains an explicitly released departure"));
  Ok &= FS47OfficeTv::SelfTest(Lines);
+ Ok &= SS47Dev::SelfTest(Lines); // FIX10-6: where a group stands in the F10 screen, and what a search finds
  return Ok;
 }

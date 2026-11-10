@@ -340,6 +340,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
  // WEEKLY-CASE-20261109: what the week's case leaves (S47WeekCase), a lead out on the land; never a night record (FS47Happenings).
  if(Id.StartsWith(TEXT("weekcase_")))return LandLine;
+ // Critics, 10 Nov: the line recorder's strip from a night the generator carried (S47FreeformDirector) was filed under no question at
+ // all, so starting the generator paid nothing. A light over the valley that takes the mains is a lead on the land.
+ if(DatedKey(Id,TEXT("mains-ride")))return LandLine;
  return -1;
 }
 bool FS47FreeformCases::IsCaseRecord(const FString& Key)

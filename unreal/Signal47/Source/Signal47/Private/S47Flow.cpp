@@ -2538,7 +2538,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	{
 		const FS47Tape& Tp = *M->Freeform->Tape;
 		Kit.Add({ TEXT("Field recorder"), Tp.Carried()
-			? FString::Printf(TEXT("Sony TC-D5, SARO's field recorder, a C-60 in it. %s starts and stops it. Its place is %s; play the cassettes back there."), *S47Keys::Said(TEXT("tape")), Tp.Where())
+			? FString::Printf(TEXT("A portable cassette recorder, SARO's field set, a C-60 in it. %s starts and stops it. Its place is %s; play the cassettes back there."), *S47Keys::Said(TEXT("tape")), Tp.Where())
 			: FString::Printf(TEXT("It is %s. Its cassettes play back there."), Tp.Where()),
 			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the %s / %d %s"), Tp.Top(), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
 			FString(), FString() });

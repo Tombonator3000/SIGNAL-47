@@ -32,7 +32,7 @@ namespace
  void TerminalKey(US47Audio* A,int32 Kind)
  {
   if(!IsValid(A))return;
-  if(Kind==4){A->Beep(3100.f,.004f,.010f,0,TEXT("sine"));return;}                      // the cursor arrives on a control
+  if(Kind==4){A->Beep(1900.f,.012f,.025f,0,TEXT("square"));return;}                   // the cursor arrives on a control (critics, 10 Nov: 3.1 kHz for 4 ms was not heard at all)
   if(Kind==3){A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;}                    // a knob's detent
   A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
   if(Kind==1){A->Beep(1320.f,.030f,.040f,.01f,TEXT("square"));A->Beep(1760.f,.045f,.040f,.055f,TEXT("square"));} // the action taken
@@ -44,7 +44,7 @@ namespace
  {
   if(!IsValid(A))return;
   uint32 H=GetTypeHash(Title);
-  for(int32 K=0;K<7;++K){H=H*1664525u+1013904223u;A->Beep(1500.f+float((H>>16)%1500),.009f,.016f,.028f*K,TEXT("square"));}
+  for(int32 K=0;K<7;++K){H=H*1664525u+1013904223u;A->Beep(900.f+float((H>>16)%1200),.014f,.030f,.028f*K,TEXT("square"));}
  }
 }
 float FS47FreeformSession::ScreenInterference()const{return FMath::Max(SkyLevel(),M&&M->Gear?float(FMath::Clamp(M->Gear->Level(),0.,1.)):0.f);}
