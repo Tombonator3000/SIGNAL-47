@@ -44,6 +44,13 @@ Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com)
 Source: https://github.com/google/fonts/tree/main/ofl/vt323
 The complete supplied font license and copyright notice are included in VT323-OFL.txt beside the game executable. The font is bundled under its original license.
 
+## Liberation Serif — SIL Open Font License 1.1
+
+Digitized data copyright (c) 2010 Google Corporation with Reserved Font Arimo, Tinos and Cousine.
+Copyright (c) 2012 Red Hat, Inc. with Reserved Font Name Liberation.
+Source: https://github.com/liberationfonts/liberation-fonts (version 2.1, from the fonts-liberation package)
+LiberationSerif-Regular.ttf, LiberationSerif-Bold.ttf and LiberationSerif-Italic.ttf set the body, nameplate and captions of the in-game newspaper (The Caliche Ledger). They are bundled unmodified under their original license; the complete license and copyright notice are in LiberationSerif-OFL.txt beside them in Content/Fonts.
+
 ## Scott Buckley — CC BY 4.0
 
 'Signal to Noise' by Scott Buckley — released under CC-BY 4.0. www.scottbuckley.com.au

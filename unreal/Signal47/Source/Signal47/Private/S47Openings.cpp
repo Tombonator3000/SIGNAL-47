@@ -49,6 +49,13 @@ const TArray<FS47KitOffer>& FS47Openings::Defs()
 }
 const FS47KitOffer* FS47Openings::Def(const FString& Id){return Defs().FindByPredicate([&](const FS47KitOffer& O){return Id==O.Id;});}
 int32 FS47Openings::FirstDay(const FString& Id){const auto* O=Def(Id);return O?(FMath::Max(1,O->Week)-1)*7+1:1;}
+const TCHAR* FS47Openings::Kind(const FString& Id)
+{
+ // D45-20261110: the truck and what rides on it, the gear carried on foot, and what is fitted at the station
+ if(Id==TEXT("spotlight")||Id==TEXT("cot")||Id==TEXT("rdf")||Id.StartsWith(TEXT("truck_")))return TEXT("TRUCK");
+ if(Id==TEXT("alarm")||Id==TEXT("transfer")||Id==TEXT("array_alarm"))return TEXT("STATION");
+ return Def(Id)?TEXT("FIELD"):TEXT("");
+}
 namespace S47OpeningsLocal
 {
  // The late, dear ones (from day 15): what a full budget in weeks 3 and 4 can go on.
@@ -70,6 +77,12 @@ bool FS47Openings::SelfTest(TArray<FString>& Lines)
   else{Total+=O.Price;EarlyDearest=FMath::Max(EarlyDearest,O.Price);}
  }
  Check(Ids.Num()==Defs().Num()&&bWords,TEXT("each has a price, what it waits for, and what it does"));
+ // D45-20261110: each stands on OPS SUPPLIES under one of three kinds
+ {
+  int32 Trucks=0,Fields=0,Stations=0;
+  for(const auto& O:Defs()){const FString K=Kind(O.Id);Trucks+=K==TEXT("TRUCK")?1:0;Fields+=K==TEXT("FIELD")?1:0;Stations+=K==TEXT("STATION")?1:0;}
+  Check(Trucks+Fields+Stations==Defs().Num()&&Trucks==7&&Fields==6&&Stations==3&&FString(Kind(TEXT("nothing"))).IsEmpty(),TEXT("D45: each offer is tagged TRUCK, FIELD or STATION"));
+ }
  Check(Total<=300,TEXT("all the early ones together are about five days' full pay"));
  // M7 (C): the money model for days 1 to 30 leaves $150 to $300 a week unspent in weeks 3 and 4 on two or three cards an evening.
  // M7 (Tom, 9 November, E's model): prices step up by the week; two cards an evening cannot buy all of it in a month.

@@ -7,6 +7,7 @@ class AS47Web;
 class UMaterialBillboardComponent;
 class UMaterialInstanceDynamic;
 class USpotLightComponent;
+class UStaticMesh;
 class UStaticMeshComponent;
 
 // STREETLAMPS-20261108: the street lamps as New Mexico had them in 1986: a tapered steel pole, an upswept davit arm and a cobra head
@@ -95,4 +96,14 @@ namespace S47StreetLamps
  // The field's lamps: no old post left in the pole batch, no old glow over a post's top, and every lamp a head with a lens, a halo
  // and its spot inside the head under the bowl. Lines: a summary first, a line a lamp. Returns how many are wrong.
  SIGNAL47_API int32 MeasureField(AS47Web* W, TArray<FString>& Lines);
+
+ // ---- D45-20261110 (D45-14, Tom: the fence at SARO, the better wired fence): the runtime cut, shared with S47ArrayFence ----
+ // The array fence's old 5 cm posts are in the same pole batch (node 35, g26) as the lamps' old poles; one cut routine for both.
+ // Batch with every triangle wholly inside one of the boxes (the mesh's own terms, three metres) taken out: the same render-data clone
+ // the lamps use, every other triangle, vertex, UV, colour, slot and the collision body kept, its CPU data kept for the next cut.
+ // Counts: the triangles taken per box. Null: the batch has no CPU data (nothing is changed). The caller sets it on the component
+ // (InitResources first), as the lamps do.
+ SIGNAL47_API UStaticMesh* CutBatch(AS47Web* W, UStaticMeshComponent* Batch, const TArray<FBox>& Boxes, TArray<int32>& Counts);
+ // How many of a batch's triangles lie wholly inside each box, from its CPU data only. False: not readable.
+ SIGNAL47_API bool CountBatch(const UStaticMeshComponent* Batch, const TArray<FBox>& Boxes, TArray<int32>& Counts);
 }

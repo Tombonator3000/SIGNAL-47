@@ -1,4 +1,6 @@
 #include "S47HUD.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "S47StreetLamps.h"
 #include "S47CarPaint.h"
 #if PLATFORM_LINUX
@@ -60,6 +62,7 @@
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
 #include "S47Mail.h"
+#include "S47ArrayFence.h"
 #include "S47RadioTips.h"
 #include "S47TownSites.h"
 #include "S47CalicheNewHomes.h"
@@ -177,6 +180,7 @@
 #include "S47UI.h"
 #include "S47World.h"
 #include "S47Mirrors.h"
+#include "S47Bobblehead.h"
 #include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
@@ -228,6 +232,7 @@ void AS47HUD::Start()
 		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		bOk &= S47Drive::SelfTest(Lines);
 		bOk &= FS47Mirrors::SelfTest(Lines); // (the Jeep's live mirrors: switch, captures in the cab only, their render targets)
+		bOk &= FS47BobbleSpring::SelfTest(Lines); // (D45-20261110, D45-29: the dashboard bobblehead's head on its spring, and its place on the Jeep's dash)
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
@@ -250,6 +255,9 @@ void AS47HUD::Start()
 		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.
 		bOk &= S47CarPaint::SelfTest(Lines);
 		if (Saro.IsValid() && !Saro->AuditStaffFleet(Lines) && !Lines.Last().StartsWith(TEXT("SKIP"))) bOk = false;
+		// D45-20261110 (D45-14): the array fence's panel layout (counts, stretch within 10 %), and the fence as built when the kit is imported.
+		bOk &= S47ArrayFence::SelfTest(Lines);
+		if (Saro.IsValid() && S47ArrayFence::Audit(Saro.Get(), Lines) > 0) bOk = false;
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
@@ -319,6 +327,8 @@ void AS47HUD::Start()
 		for (const FString& L : Lines)
 			if (L.StartsWith(TEXT("FAIL")) || L.Contains(TEXT(": FAIL")) || L.EndsWith(TEXT(" FAIL")))
 				UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+		// D45-20261110: a failure whose line has none of the markers above is still findable: every line goes to Saved
+		if (!bOk) FFileHelper::SaveStringArrayToFile(Lines, *(FPaths::ProjectSavedDir() / TEXT("S47SelfTest-lines.txt")));
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
 

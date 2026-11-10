@@ -20,6 +20,12 @@
 #include "S47FreeformWorld.h"
 #include "S47Audio.h"
 #include "S47Sneak.h"
+#include "S47Flow.h"
+#include "S47Picture.h"
+#include "S47FieldCamera.h"
+#include "S47Night.h"
+#include "S47Flashlight.h"
+#include "SS47ScreenView.h"
 
 using namespace S47Three;
 
@@ -266,6 +272,38 @@ double AS47Walker::FloorAt(double X, double Z) const
 }
 
 FVector AS47Walker::EyeUE() const { return Camera->GetComponentLocation(); }
+
+float AS47Walker::StepBodycam(double Dt, bool bHeld, double Turn, double Tilt, double Strafe, bool bRunning, bool bStepped)
+{
+	// D45-20261110 (D45-19): the chest camera. Mode 5 with its shader present (else the VHS fallback,
+	// and no mount either), strength above zero. The view, the crosshair and the line of sight all come
+	// from the camera component, so what is picked is what is seen.
+	const US47Main* BodyMain = US47Main::Get(this);
+	const US47Flow* BodyFlow = BodyMain ? BodyMain->Flow.Get() : nullptr;
+	FS47Bodycam::FIn In;
+	In.bOn = BodyFlow && S47Picture::IsBody(S47Picture::Mode(BodyFlow->Picture)) && BodyFlow->PictureStrength > 0.f && FS47Bodycam::HasShader();
+	In.bHeadMotion = bHeadMotion;
+	In.bCalm = BodyFlow && (BodyFlow->bCalmFlash || BodyFlow->bStillShots);
+	In.bRaised = BodyMain && BodyMain->FieldCamera && BodyMain->FieldCamera->bRaised;
+	In.bScreen = SS47ScreenView::AnyWorldScreenActive();
+	In.bHeld = bHeld;
+	In.bLamp = BodyMain && BodyMain->Night && BodyMain->Night->Flashlight && BodyMain->Night->Flashlight->bOn;
+	In.bRun = bRunning; In.bStep = bStepped;
+	In.Dt = Dt; In.Turn = Turn; In.Tilt = Tilt; In.Strafe = Strafe; In.Bob = Bob;
+	const FS47Bodycam::FOut& O = Bodycam.Step(In);
+	if (O.Mount <= 0)
+	{
+		// every other picture mode, and while the camera is held: exactly the camera as it always was
+		Camera->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
+		return O.Fov;
+	}
+	// down along the world's up and ahead along the level heading, whatever the look's pitch
+	const FRotator Facing = GetActorRotation();
+	const FRotator Heading(0, Facing.Yaw, 0);
+	const FVector Shift = (Heading.Vector() * O.Offset.Z + FRotationMatrix(Heading).GetUnitAxis(EAxis::Y) * O.Offset.X + FVector::UpVector * O.Offset.Y) * 100.0 * O.Mount;
+	Camera->SetRelativeLocationAndRotation(Facing.UnrotateVector(Shift), FRotator(-O.DownDeg, O.YawDeg, O.RollDeg) * O.Mount);
+	return O.Fov;
+}
 FVector AS47Walker::ForwardUE() const { return Camera->GetForwardVector(); }
 
 void AS47Walker::Tick(float DeltaSeconds)
@@ -312,16 +350,20 @@ void AS47Walker::Tick(float DeltaSeconds)
 		bCrouch = false; CrouchK = 0; // (nor keeping low)
 		if (US47Main* CabMain = US47Main::Get(this); CabMain && CabMain->Audio) CabMain->Audio->StepScale = 1.f;
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
+		// D45-20261110 (D45-19): the cab or the screen holds the camera: no chest offset, the lens fades out
+		const float CabBodyFov = StepBodycam(Dt, true, 0, 0, 0, false, false);
 		FVector2D Size(16, 9);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-		Camera->SetFieldOfView(HorizontalFov(Fov * FovScale, float(Size.X / FMath::Max(1.0, Size.Y))));
+		Camera->SetFieldOfView(HorizontalFov(Fov * FovScale * CabBodyFov, float(Size.X / FMath::Max(1.0, Size.Y))));
 		if (Web.IsValid()) Web->SetPlayerEye(ToUE(View.Eye));
 		return;
 	}
+	bool bChestRun = false, bChestStep = false; // D45-20261110 (D45-19): for the chest camera's sway
 	if (PC && bInput)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
+		bChestRun = bRun && !bCrouch && Mx * Mx + Mz * Mz > 0.01;
 		// SNEAK-20261108: the Crouch key keeps low, or stands up again; setting off at a run stands up first
 		if (S47Keys::Pressed(PC, TEXT("crouch"))) SetCrouch(!bCrouch);
 		if (bCrouch && bRun && Mx * Mx + Mz * Mz > 0.01) SetCrouch(false);
@@ -338,7 +380,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 			Bob += Moved * 7.2;
 			StepDist += Moved;
 			// (low, the steps are shorter and softer: US47Audio::StepScale)
-			if (StepDist > FMath::Lerp(0.8, S47Sneak::StepEvery, CrouchK)) { StepDist = 0; if (OnStep) OnStep(); }
+			if (StepDist > FMath::Lerp(0.8, S47Sneak::StepEvery, CrouchK)) { StepDist = 0; bChestStep = true; if (OnStep) OnStep(); }
 		}
 		else if (!bAir) Bob *= 0.9;
 		// the Jump key as bound (Space unless changed); with the camera raised Space is the shutter
@@ -376,9 +418,11 @@ void AS47Walker::Tick(float DeltaSeconds)
 	const double Sh = bHeadMotion ? Shake * Shake : 0;
 	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye - S47Sneak::EyeDrop * CrouchK + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 * (1.0 - 0.5 * CrouchK) : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
 	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
+	// D45-20261110 (D45-19): the chest camera under the eye (BODYCAM 1986 only; exactly zero otherwise)
+	const float BodyFov = StepBodycam(Dt, false, (PC && bInput) ? LookX * LookFine : 0.0, (PC && bInput) ? LookY * LookFine : 0.0, Mx, bChestRun, bChestStep);
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-	Camera->SetFieldOfView(HorizontalFov(Fov * FovScale, float(Size.X / FMath::Max(1.0, Size.Y))));
+	Camera->SetFieldOfView(HorizontalFov(Fov * FovScale * BodyFov, float(Size.X / FMath::Max(1.0, Size.Y))));
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
 	// Interaction.update: what the line of sight picks, within its range, with something to offer

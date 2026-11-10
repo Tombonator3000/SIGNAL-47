@@ -270,6 +270,8 @@ const TArray<FWalkieLine>& WalkieLines()
   {TEXT("hail_again"),TEXT("Night operator! I know you have the set. Come in!")},
   {TEXT("hail_gone"),TEXT("Nothing? Fine. Then it goes on a slip by the phone. Dale out.")},
   {TEXT("finally"),TEXT("Finally. Next time you answer the first time.")},
+  // D45-20261110 (D45-26): after his hello, the cover for the night's burst on the printer (FS47Predecessor::StepBench). No take yet.
+  {TEXT("bench"),TEXT("One more thing. If the printer runs a line by itself tonight, that is my bench in the shop, running the array up and down. You ignore it. Dale out.")},
   // He is called: by the hour, and by what the player is doing.
   {TEXT("again"),TEXT("Again? What. Nothing? Then take your thumb off the button. Dale out.")},
   {TEXT("enough"),TEXT("That is four times today. Four! I am turning my set to the wall. Call the service line in the morning. Dale out.")},

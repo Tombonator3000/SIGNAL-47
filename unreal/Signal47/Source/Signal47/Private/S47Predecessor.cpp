@@ -420,6 +420,7 @@ void FS47Predecessor::StepNews(double Dt)
    UE_LOG(LogTemp,Display,TEXT("S47: predecessor: the phone rings: %d known"),Known());
   }
  }
+ StepBench();
  StepDale();
  // The assessment. It costs nothing that was secured; it only reads it.
  if(Today>=AssessDay&&Outcome==EOutcome::None&&!F.InTutorial()&&!M->OneAtATime()&&!(M->World&&M->World->bDriving))
@@ -454,16 +455,39 @@ bool FS47Predecessor::Meets(const TCHAR* Needs) const
  if(Need==TEXT("assess7"))return Outcome==EOutcome::None&&AssessDay-F.Day()<=7&&AssessDay-F.Day()>3;
  return Seen.Contains(Need);
 }
-const S47PredecessorText::FBark* FS47Predecessor::NextBark() const
+const S47PredecessorText::FBark* FS47Predecessor::NextBark(bool bSecondToday) const
 {
  const int32 Today=M&&M->Freeform?M->Freeform->Day():1;
- for(const X::FBark& B:X::Barks())if(!Seen.Contains(FString(TEXT("bark_"))+B.Id)&&Today>=B.FromDay&&Meets(B.Needs))return &B;
+ for(const X::FBark& B:X::Barks())if(!Seen.Contains(FString(TEXT("bark_"))+B.Id)&&Today>=B.FromDay&&Meets(B.Needs)&&(!bSecondToday||DayOneSecond(B.Id)))return &B;
  return nullptr;
+}
+// D45-20261110 (D45-26): Dale on the first day. His hello on the walkie once the first shift is done, then the line about his bench;
+// and a second line that day only for something the player went and did out there.
+bool FS47Predecessor::DayOneSecond(const TCHAR* Id){return Id&&(FCString::Strcmp(Id,TEXT("tag"))==0||FCString::Strcmp(Id,TEXT("locker"))==0||FCString::Strcmp(Id,TEXT("mine"))==0);}
+int32 FS47Predecessor::BarksSaid() const{int32 N=0;for(const FString& S:Seen)N+=S.StartsWith(TEXT("bark_"))?1:0;return N;}
+bool FS47Predecessor::SecondBarkToday() const
+{
+ if(!M||!M->Freeform||M->Freeform->Day()!=1||DaleDay!=1)return false;
+ return BarksSaid()<2&&!(DaleMissDay==1&&DaleMisses>=2);
+}
+bool FS47Predecessor::HelloWaitsForWalkie() const
+{
+ if(!M||!M->Freeform||M->Freeform->Day()!=1)return false;
+ return M->Freeform->InTutorial()||(M->FieldRadio&&M->FieldRadio->Owned()&&!(DaleMissDay==1&&DaleMisses>=2));
+}
+void FS47Predecessor::StepBench()
+{
+ // Once his hello has had its time on the set, and he is off the air: no take of his for it yet, so the set's own voice and the caption.
+ if(BenchAt<0||FPlatformTime::Seconds()<BenchAt||!M||!M->FieldRadio||M->FieldRadio->Hailing()||FS47FieldRadio::DaleOnAir(M)||M->ModalOpen())return;
+ BenchAt=-1;
+ const bool bSaid=M->FieldRadio->Message(FString(TEXT("DALE: "))+X::WalkieLine(TEXT("bench")));
+ UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: his bench%s"),bSaid?TEXT(""):TEXT(" (not heard: the set is not on his channel)"));
 }
 void FS47Predecessor::StepDale()
 {
  auto& F=*M->Freeform;
- if(F.InTutorial()||DaleDay==F.Day()||!M->FieldRadio||M->ModalOpen())return;
+ const bool bSecond=SecondBarkToday(); // D45-20261110
+ if(F.InTutorial()||(DaleDay==F.Day()&&!bSecond)||!M->FieldRadio||M->ModalOpen())return;
  // One hail out at a time, and after one that nobody answered, a while before the next.
  if(M->FieldRadio->Hailing()||F.Clock()<DaleRetryClock)return;
  // Not into the middle of something: an event under way, a light that is taking someone, or something near enough to break up the
@@ -472,7 +496,7 @@ void FS47Predecessor::StepDale()
  // Not on top of another message: wait until the last one has had its time on the screen.
  if(M->UI){const FString Last=M->UI->LastDescription();if(Last!=ToastSeen){ToastSeen=Last;ToastAt=FPlatformTime::Seconds();}}
  if(FPlatformTime::Seconds()-ToastAt<9)return;
- const X::FBark* B=NextBark();if(!B)return;
+ const X::FBark* B=NextBark(bSecond);if(!B)return;
  // WALKIE-USE-20261108: he hails first, and says it only to somebody who answers (T). No set in hand, or the set on another
  // channel: it waits, and is on a message slip by the phone (UsePhone).
  const FString Id=B->Id;const TWeakPtr<uint8> Guard=Life;
@@ -487,9 +511,12 @@ void FS47Predecessor::SayBark(const FString& Id)
  // Already on the slip by the phone, or no longer his to say: a word of his own instead.
  FString Line=B&&!Seen.Contains(FString(TEXT("bark_"))+B->Id)?FString(B->Line):X::WalkieLine(TEXT("evening"));
  if(bDaleMissed)Line=X::WalkieLine(TEXT("finally"))+TEXT(" ")+Line;
+ const bool bHello=B&&FCString::Strcmp(B->Id,TEXT("hello"))==0&&!Seen.Contains(TEXT("bark_hello")); // D45-20261110
  if(!M->FieldRadio->Message(FString(TEXT("DALE: "))+Line))return;
  bDaleMissed=false;DaleMisses=0;
  if(B){Seen.Add(FString(TEXT("bark_"))+B->Id);DaleDay=M->Freeform->Day();}
+ // D45-20261110: after his hello (its caption's reading time, and a breath), the line about his bench
+ if(bHello)BenchAt=FPlatformTime::Seconds()+FMath::Clamp(3.+Line.Len()/18.,6.,11.)+1.5;
  UE_LOG(LogTemp,Display,TEXT("S47: predecessor: Dale on the walkie: %s, day %d"),*Id,M->Freeform->Day());
  M->RequestAutosave();
 }
@@ -554,6 +581,7 @@ FString FS47Predecessor::AnswerWalkie()
  if(Due)
  {
   Seen.Add(FString(TEXT("bark_"))+Due->Id);DaleDay=Today;bDaleMissed=false;DaleMisses=0;
+  if(FCString::Strcmp(Due->Id,TEXT("hello"))==0)BenchAt=FPlatformTime::Seconds()+14.; // D45-20261110: then his bench, after the answer
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: called on the walkie, Dale says his due line %s"),Due->Id);
   M->RequestAutosave();
   return FString(TEXT("DALE: "))+Due->Line;
@@ -904,7 +932,10 @@ bool FS47Predecessor::UsePhone()
  // Who to call: the duty officer, or the service line. Whatever Dale meant to say over a walkie you did not have is on a slip.
  TArray<S47Kit::FW> Rows;
  const TWeakPtr<uint8> Guard=Life;
- if(const X::FBark* B=NextBark())
+ // D45-20261110 (D45-26): his hello waits for the walkie on the first day (HelloWaitsForWalkie); with no set in hand it is here as before.
+ const X::FBark* Slip=NextBark();
+ if(Slip&&FCString::Strcmp(Slip->Id,TEXT("hello"))==0&&HelloWaitsForWalkie())Slip=nullptr;
+ if(const X::FBark* B=Slip)
  {
   Rows.Add(Para(TEXT("A message slip by the phone, in capitals, pressed hard enough to go through:"),760.f,true));
   Rows.Add(S47Kit::Paper(FString(B->Line).ToUpper()));
@@ -1680,6 +1711,16 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   for(const X::FWalkieLine& L:X::WalkieLines()){LineIds.Add(L.Id);bLines&=FCString::Strlen(L.Line)>10&&FCString::Strlen(L.Line)<190;}
   for(const TCHAR* Want:{TEXT("hail"),TEXT("hail_again"),TEXT("hail_gone"),TEXT("finally"),TEXT("again"),TEXT("enough"),TEXT("missed"),TEXT("driving"),TEXT("hours"),TEXT("late_in"),TEXT("late_out"),TEXT("midnight"),TEXT("day"),TEXT("station"),TEXT("array"),TEXT("far"),TEXT("evening"),TEXT("relay_pre"),TEXT("relay_post")})bLines&=!X::WalkieLine(Want).IsEmpty();
   Check(bLines&&LineIds.Num()==X::WalkieLines().Num(),TEXT("every walkie reply has its words, each id once, and they fit a toast"));
+  // D45-20261110 (D45-26): the first day. After his hello the line about his bench (his own words, never a remote cable), and a
+  // second line that day only for something the player went and did; never the jobs filed.
+  {
+   const FString Bench=X::WalkieLine(TEXT("bench"));
+   bool bAnswers=true;for(const X::FBark& Each:X::Barks())bAnswers&=!DayOneSecond(Each.Id)||(Each.Needs&&FCString::Strlen(Each.Needs)>0&&Each.FromDay<=1);
+   Check(Bench.Contains(TEXT("printer"))&&Bench.Contains(TEXT("my bench"))&&Bench.EndsWith(TEXT("Dale out."))&&!Bench.ToLower().Contains(TEXT("remote"))&&!Bench.ToLower().Contains(TEXT("cable"))
+    &&DayOneSecond(TEXT("tag"))&&DayOneSecond(TEXT("locker"))&&DayOneSecond(TEXT("mine"))&&!DayOneSecond(TEXT("filed1"))&&!DayOneSecond(TEXT("hello"))&&!DayOneSecond(nullptr)&&bAnswers
+    &&!Quiet.SecondBarkToday()&&!Quiet.HelloWaitsForWalkie()&&Quiet.BarksSaid()==0,
+    TEXT("the first day: his bench after his hello, and a second line only for the tag, the locker or the mine; without a game neither"));
+  }
   FS47Predecessor NoGame(nullptr);
   Check(NoGame.AnswerWalkie().IsEmpty()&&NoGame.RelayLine(TEXT("A rancher reports lights.")).IsEmpty()&&NoGame.ServiceBand().IsEmpty(),TEXT("without a Freeform game there is no Dale on the walkie and no carrier on the band"));
  }

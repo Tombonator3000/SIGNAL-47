@@ -127,7 +127,20 @@ public:
  FS47Obj StageBox(const FString& Name,const FVector& At,const FVector& Size,uint32 Colour,int32 Parent)
  {FS47Obj O=Box(Name,At,Size,Colour,Parent);if(O)O.SetScale(Size);Parts.RemoveAll([&](const FS47Obj& P){return P==O;});return O;}
  static bool SelfTest(TArray<FString>& Lines);
+ // D45-20261110 (Tom: where is the flashlight's charger?): a charger on the hall dresser, beside the walkie and the recorder. The rule
+ // is the old one (S47Night::FlashlightStep: the lamp off, indoors at SARO, on station power); the charger is the place it points to.
+ // Its pilot: 0 dark (no station power), 1 amber (charging), 2 green (full, or nothing on it). Without the dresser there is no charger.
+ bool ChargerPlaced() const { return bool(ChargerBody); }
+ bool LampCharging() const;
+ int32 ChargerState() const;
+ // Where to charge the lamp and where to buy cells, in one plain line (the toasts, the notebook, the first time it is taken).
+ static FString FlashlightHelpFor(bool bCharger);
+ FString FlashlightHelp() const { return FlashlightHelpFor(ChargerPlaced()); }
 private:
+ FS47Obj ChargerBody, ChargerLamp;
+ double ChargerRetry = 0;
+ int32 ChargerShown = -1;
+ void StepCharger(double Dt);
  FS47FieldLogger Logger;
  FS47Workshop Crafting;
  FS47ArrayWear Wear;

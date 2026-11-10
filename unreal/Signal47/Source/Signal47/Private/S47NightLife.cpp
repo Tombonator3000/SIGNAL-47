@@ -78,7 +78,8 @@ namespace
 	/** Tape keeps its 480-line footprint. Film and Clean use the viewport's full resolution. */
 	double LinesNow(const US47Main* M)
 	{
-		const bool bTape = M && M->Flow && S47Picture::Mode(M->Flow->Picture) == 1 && M->Flow->PictureStrength > 0.f;
+		// D45-20261110 (D45-19): Bodycam 1986 is on the same tape
+		const bool bTape = M && M->Flow && S47Picture::IsTape(S47Picture::Mode(M->Flow->Picture)) && M->Flow->PictureStrength > 0.f;
 		FVector2D Size(1600, 900);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
 		return bTape ? FMath::Min(FMath::Max(1.0, Size.Y), 480.0) : FMath::Max(1.0, Size.Y);

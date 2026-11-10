@@ -70,6 +70,12 @@ namespace
  const TCHAR* const PlaceIds[]={TEXT("cinema"),TEXT("feed"),TEXT("church"),TEXT("gas")};
  const TCHAR* const PlaceNames[]={TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station")};
  const TCHAR* const TakerNames[3]={TEXT("small Roswell"),TEXT("crab"),TEXT("tall one")};
+ // D45-20261110: where something is from where the player faces (Yaw as S47Walker turns: plus is to the left).
+ const TCHAR* WhichWay(double Turn)
+ {
+  const double A=FMath::UnwindRadians(Turn);
+  return FMath::Abs(A)<PI/4?TEXT("ahead of you"):FMath::Abs(A)>PI*.75?TEXT("behind you"):A>0?TEXT("off to your left"):TEXT("off to your right");
+ }
  const TCHAR* const SpeedLabels[]={TEXT("x1"),TEXT("x5"),TEXT("x15"),TEXT("x30"),TEXT("x60")};
  const double SpeedValues[]={1,5,15,30,60};
  FString ClockText(double Clock)
@@ -525,13 +531,26 @@ void FS47DevFreeform::AddSites(FS47DevEvents& E)
    ToMarks(Id,[this,Name]{auto* F=Session();if(F&&F->FarmSite)F->FarmSite->TestRollWho(-1.f);Tell(true,FString::Printf(TEXT("Nine marks, a low haze and an occasional sound at %s. Until noon. E on them keeps a record."),*Name));});
   });
   for(int32 Who=0;Who<3;++Who)
-   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s: %s"),*Name,TakerNames[Who]),TEXT("03:12, at the marks, it comes now and can take you"),[this,ToMarks,Id,Name,Who]
+   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s: %s"),*Name,TakerNames[Who]),
+    Who==2?TEXT("03:12, at the marks, it comes now and can take you; it stands this time. Stay in the open: under a roof the light comes for you once it is near")
+     :TEXT("03:12, at the marks, it comes now and can take you"),[this,ToMarks,Id,Name,Who]
    {
     ToMarks(Id,[this,Name,Who]
     {
      auto* F=Session();if(!F||!F->FarmSite)return;
+     // D45-20261110 (Tom, d45: "the tall one did not show up"): it sat 58 m behind him in the dark. Here it stands, and once it is
+     // out the line says where to look. The game's own visits keep the dice.
+     if(Who==2)F->FarmSite->TestSitRoll(1.f);
      F->FarmSite->TestVisit(Who);
      Tell(true,FString::Printf(TEXT("The warning, then the %s comes at %s. The truck will not start. Lamp and noise change what it does."),TakerNames[Who],*Name),8);
+     if(Who==2)WaitFor([this]{auto* S=Session();return S&&S->FarmSite&&S->FarmSite->VisitBodyEye().IsSet();},30,[this]
+     {
+      auto* S=Session();if(!S||!S->FarmSite||!M->Player)return;
+      const TOptional<FVector> Eye=S->FarmSite->VisitBodyEye();if(!Eye)return;
+      const FVector D=*Eye-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+      Tell(true,FString::Printf(TEXT("The tall one stands about %.0f m off, %s. Stay in the open: under a roof the light comes for you once it is near."),
+       FVector2D(D.X,D.Z).Size(),WhichWay(FMath::Atan2(-D.X,-D.Z)-M->Player->Yaw)),9);
+     },[this]{Tell(false,TEXT("no ground in sight for the tall one here"));});
     });
    });
   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s by the night's own dice"),*Name),TEXT("03:12, at the marks; 12 seconds, it picks who comes"),[this,ToMarks,Id,Name]

@@ -214,6 +214,19 @@ void FS47DevFreeform::AddMapLog(FS47DevEvents& E)
 		Leads();
 		Stand(TEXT("saro_yard"), 0, [this, Sheet](const FVector2D&, double) { Sheet(.22); Tell(true, TEXT("Map: work and leads, the land around")); });
 	});
+	// D45-20261110 (Tom: told to repair S-13, but it was not on the map): the station goal's junction is inked by its number
+	E.AddFreeform(MapGroup, TEXT("Map: the station goal's junction inked (S-13 on a new station)"), TEXT("on a worn station the next branch's junction is written on the sheet ('S-13: mend the west branch'); the sheet close in at the array"), [this, Stand, Sheet]
+	{
+		FS47FreeformSession* Fs = Session();
+		const FS47ArrayWear::FBranch* Goal = Fs && Fs->Field && Fs->Field->ArrayWear().bActive ? Fs->Field->ArrayWear().NextBranch() : nullptr;
+		if (!Goal) { Tell(false, TEXT("Map: this station's array is not worn, so there is no station goal to ink")); return; }
+		FS47MapView View;
+		S47FieldMap::GatherJobs(M, View);
+		const FString Want = FString(Goal->Junction) + TEXT(": mend the ") + FString(Goal->Title).ToLower();
+		const bool bInked = View.Jobs.ContainsByPredicate([&Want](const FS47MapJob& Job) { return Job.Text.StartsWith(Want); });
+		UE_LOG(LogS47FieldMapDev, Display, TEXT("S47: map station goal %s: '%s' %s"), bInked ? TEXT("PASS") : TEXT("FAIL"), *Want, bInked ? TEXT("is on the sheet") : TEXT("is missing"));
+		Stand(TEXT("saro_yard"), 0, [this, Sheet, bInked, Want](const FVector2D&, double) { Sheet(1.1); Tell(bInked, FString::Printf(TEXT("Map: '%s' %s"), *Want, bInked ? TEXT("is inked on the sheet") : TEXT("is missing"))); });
+	});
 	E.AddFreeform(MapGroup, TEXT("Map: the whole sheet"), TEXT("the map zoomed all the way out, on you"), [Sheet] { Sheet(.1); });
 	E.AddFreeform(MapGroup, TEXT("Map: the station, the farm and the motel at once"), TEXT("from the county road turnoff, the scale a driver reads"), [this, Stand, Sheet]
 	{

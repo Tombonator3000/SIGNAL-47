@@ -108,9 +108,10 @@ void FS47FreeformSession::OpenServiceGuide()
   for(const auto* B:Order)
   {
    const bool Done=Wear.IsRestored(B->Id);const FString Missing=Done?FString():Field->BranchNeeds(*B);
-   Lines.Add({{FString(B->Title),FString::Printf(TEXT("%d AT %s"),B->Dishes.Num(),B->Junction),Done?TEXT("IN SERVICE"):Missing.IsEmpty()?TEXT("PARTS READY"):TEXT("NEEDS PARTS")},B==Next,nullptr,B==Next?FString(TEXT("NEXT")):FString()});
+   Lines.Add({{FString(B->Title),FString::Printf(TEXT("%s%d AT %s"),Done?TEXT(""):TEXT("+"),B->Dishes.Num(),B->Junction),Done?TEXT("IN SERVICE"):Missing.IsEmpty()?TEXT("PARTS READY"):TEXT("NEEDS PARTS")},B==Next,nullptr,B==Next?FString(TEXT("NEXT")):FString()});
   }
-  Rows.Add(S47FreeformTerminal::Panel(FString::Printf(TEXT("STATION RESTORATION / %d OF 27"),27-Wear.DownCount()),S47FreeformTerminal::Table({TEXT("BRANCH"),TEXT("ANTENNAS"),TEXT("STATE")},{.42f,.26f,.32f},Lines)));
+  // D45-20261110: the live count (ArrayUpCount) and the branches mended, beside what the next one brings back
+  Rows.Add(S47FreeformTerminal::Panel(FString::Printf(TEXT("STATION RESTORATION / ARRAY %d OF 27 / BRANCHES %d OF %d"),ArrayUpCount(),Wear.Restored.Num(),FS47ArrayWear::Branches().Num()),S47FreeformTerminal::Table({TEXT("BRANCH"),TEXT("ANTENNAS"),TEXT("STATE")},{.42f,.26f,.32f},Lines)));
  }
  if(ServiceGuide==1)Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("OPEN WORK ORDER / %s / %s"),*Dish,*ServiceObjective())));
  else if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN RECORDS")));

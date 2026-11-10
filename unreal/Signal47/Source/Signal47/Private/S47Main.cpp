@@ -211,11 +211,26 @@ void US47Main::Step(double Dt)
 	// main.ts: the music by cue (core/score.ts)
 	if (Mode == EMode::Play && Score && !bOpening)
 	{
-		const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
-		Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
+		// D45-20261110 (Tom, d45: the town's piece played on while the tall one came at the feed store): in Freeform the set's own
+		// reading of what is near picks the cue (FS47FieldRadio::MusicMood: heard, eerie; seen or close, tension; coming, action).
+		// Story keeps the music it had: only a body in view asks for anything.
+		if (bFree && FieldRadio)
+		{
+			double MoodUrgency = 0;
+			const FString MoodCue = FieldRadio->MusicMood(MoodUrgency);
+			Score->RequestMood(MoodCue, MoodUrgency);
+		}
+		else
+		{
+			const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
+			Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
+		}
 		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
 		// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
-		Score->SetDuck(Score->MusicDuck() * (1. - .66 * (FieldRadio ? FieldRadio->DreadNow() : 0.)));
+		// D45-20261110: in Freeform a place's own piece (town, dawn, the motel, the drive) goes all but under it, and already as
+		// something is heard coming, until the cue for it has crossed in.
+		Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bFree && Score->PlacePieceSounding(), FieldRadio ? FieldRadio->DreadNow() : 0.,
+			bFree && FieldRadio ? FieldRadio->Approach() : 0.));
 	}
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);

@@ -402,7 +402,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;bEveningTold=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
  PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
@@ -1213,6 +1213,19 @@ void FS47FreeformDirector::EndForRest()
  if(Event==TEXT("feeder_fault")&&bEffectsApplied)bOwedFeeder=true;
  Finish(bPhoto,TEXT("I turned in before it was over."));
 }
+FString FS47FreeformDirector::EveningLightsAt(double Clock,int32 NightVisits,double NightDue)
+{
+ // D45-20261110: only on the first night, from 19:00, before its first visit has started and while it can still come (its hour's window).
+ if(!FMath::IsFinite(Clock)||Clock<0||FS47FreeformSession::NightOf(Clock)!=1||NightVisits>0||!FMath::IsFinite(NightDue)||NightDue<0)return FString();
+ const double Hour=FMath::Fmod(Clock,86400.)/3600.;
+ if(Hour<19||Clock>NightDue+3600.||NightDue-Clock>6*3600.)return FString();
+ return TEXT("YARD / Lights show up over the dishes most evenings around nine. Watch from the yard, and stay well back.");
+}
+FString FS47FreeformDirector::EveningLightsLine() const
+{
+ if(!M||!M->Freeform||!M->Freeform->Active()||!M->Freeform->RulesLive()||M->Freeform->InTutorial())return FString();
+ return EveningLightsAt(M->Freeform->Clock(),DuskOrb.NightVisitCount(),DuskOrb.NextNightClock());
+}
 FString FS47FreeformDirector::ReportedLine() const
 {
  FString Where;
@@ -1332,6 +1345,8 @@ void FS47FreeformDirector::Step(double Dt)
   bWasFirstShift=bFirstShift;
  }
  if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
+ // D45-20261110 (D45-26): the first evening's appointment, said once as it goes on the note.
+ if(!bEveningTold){const FString Watch=EveningLightsLine();if(!Watch.IsEmpty()){bEveningTold=true;if(M->UI)M->UI->Toast(Watch,8);UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: the first evening's appointment on the note: the lights around nine"));}}
  // What a night left out there waits for the player to come to it, on foot, by the next morning; then it is gone.
  {
   const double Clock=M->Freeform->Clock();
@@ -1991,6 +2006,15 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   const bool bAfterSlip=!FS47Happenings::TakePointOut(&Night,7);
   const bool bBurst=FS47Happenings::TakePointOut(&Night,8)&&!Night.MayPointOut(8)&&!FS47Happenings::TakePointOut(&Night,8);
   Check(bAfterSlip&&bBurst&&FS47Happenings::TakePointOut(&Night,9)&&FS47Happenings::TakePointOut(nullptr,9),TEXT("the array's burst and a logged landing count against the night's one pointing-out, as the bearing slip does"));
+ }
+ {
+  // D45-20261110 (D45-26): the first evening's appointment. On the first night from 19:00 until the night's first visit has come (or
+  // its window has gone); never before 19:00, never on another night, never once a visit has been; plain words, no Story.
+  const double Visit=21.25*3600.;
+  const FString Line=EveningLightsAt(19*3600.,0,Visit);
+  Check(!Line.IsEmpty()&&Line.Contains(TEXT("around nine"))&&!EveningLightsAt(21.5*3600.,0,Visit).IsEmpty()&&EveningLightsAt(18.9*3600.,0,Visit).IsEmpty()&&EveningLightsAt(22.3*3600.,0,Visit).IsEmpty()
+   &&EveningLightsAt(20*3600.,1,Visit).IsEmpty()&&EveningLightsAt(86400.+20*3600.,0,86400.+Visit).IsEmpty()&&EveningLightsAt(20*3600.,0,-1).IsEmpty()&&S47Script::LintText(Line).IsEmpty()&&!Line.Contains(TEXT("47")),
+   TEXT("the first evening's note says the lights come over the dishes around nine, from 19:00 until the first visit, and only then"));
  }
  {
   // PT-FEEDER-20261109 (d37: lights at the feeder at 03:22, the big night at 03:35, the site's visit refused for the big night's slot):

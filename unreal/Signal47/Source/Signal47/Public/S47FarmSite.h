@@ -72,6 +72,9 @@ public:
  double VisitPatienceLeft() const{return VisitPatience;}
  double VisitHuntClock() const{return VisitHunt;}
  TOptional<FVector> VisitBodyEye() const{return bBodyOut?TOptional<FVector>(BodyAt+FVector(0,VisitWho==1?.6:1.9,0)):TOptional<FVector>();}
+ // D45-20261110: the body out now walks at the player and is near (13 m), not held back by a lamp: what the music calls being
+ // come at (FS47FieldRadio). Standing off, sitting or walking up from far off is not.
+ bool VisitBodyComing() const{return bBodyOut&&bBodyComing;}
  // After being taken, no new visit before this clock.
  void SetCalm(double Until){CalmUntil=Until;}
  void TestReadyVisit(){Visit=0;VisitDwell=0;}
@@ -158,7 +161,7 @@ private:
  double FreezeLeft=0;
  bool bFreezeTried=false,bSitsFar=false,bSatLogged=false;
  float SitRoll=-1;
- bool bBodyOut=false;
+ bool bBodyOut=false,bBodyComing=false;
  bool bStallSet=false,bNudged=false,bFalseCall=false;
  int32 EmptyTipNight=0;
  bool Hours(double Clock) const;

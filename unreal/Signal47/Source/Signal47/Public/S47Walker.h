@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "S47Bodycam.h"
 #include "S47Walker.generated.h"
 
 class UCameraComponent;
@@ -111,6 +112,10 @@ public:
 	double RunScale = 1; // FATIGUE-20261108: how much of the run is left when tired (FS47Fatigue); the run is 1 + 0.6 times this
 	bool bTestRun = false;
 
+	// D45-20261110 (D45-19): BODYCAM 1986 on the chest (S47Bodycam.h). Only the camera component moves:
+	// the head (Web->SetPlayerEye), the walk and the floor stay as they are. US47WorldLife reads Last().
+	FS47Bodycam Bodycam;
+
 private:
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UCameraComponent> Camera;
 	bool bActive = false;
@@ -122,4 +127,6 @@ private:
 	void Resolve(bool bX, double Old);
 	bool Inside(double MinX, double MaxX, double MinZ, double MaxZ, double X, double Z) const;
 	double FloorAt(double X, double Z) const;
+	// steps the chest camera and places the camera component; returns the field of view factor
+	float StepBodycam(double Dt, bool bHeld, double Turn, double Tilt, double Strafe, bool bRunning, bool bStepped);
 };

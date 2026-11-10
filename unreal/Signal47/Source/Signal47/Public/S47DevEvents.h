@@ -31,6 +31,15 @@ public:
  const TArray<FEvent>& Events() const { return List; }
  FS47DevFreeform* FreeformDev() const { return FreeformLines.Get(); }
  TOptional<FVector> PalePresence() const { return PaleLeft>0 && Pale.Rendered()?TOptional<FVector>(PaleAt+FVector(0,1.8,0)):TOptional<FVector>(); }
+ // D45-20261110: the look-only walks (tall, crab, Pale One walking), at the head while they are out, so that the set, the dread
+ // ground and the music hear them as they hear any body (FS47FieldRadio::Nearby). Never hunting: they only walk up and away.
+ TArray<FVector> GaitPresence() const
+ {
+  TArray<FVector> Out;
+  for (int32 Kind = 0; Kind < GaitCount; ++Kind)
+   if (Gaits[Kind].Left > 0) Out.Add(Gaits[Kind].At + FVector(0, Kind == GaitCrab ? .6 : Kind == GaitPale ? 1.8 : 1.9, 0));
+  return Out;
+ }
 private:
  US47Main* M = nullptr;
  TArray<FEvent> List;

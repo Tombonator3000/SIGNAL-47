@@ -146,7 +146,7 @@ namespace
   for(const FSyl& Y0:Syl)if(R.FRand()<.2f)
   {
    const int32 At0=FMath::Clamp(int32((Y0.At+R.FRand()*Y0.Len)*MsgRate),0,N-1);const double Pk=R.FRandRange(.25f,.6f);
-   if(bPop){const float* Ps=Pop->GetChannelData(0);const double Ps0=Pop->SampleRate()/double(MsgRate);for(int32 I=0;At0+I<N&&int32(I*Ps0)<Pop->Length();++I)Out[At0+I]=FMath::Clamp(Out[At0+I]+float(Ps[int32(I*Ps0)]*Pk*2.),-1.f,1.f);}
+   if(bPop){const float* Ps=Pop->GetChannelData(0);const double Ps0=Pop->SampleRate()/double(MsgRate);for(int32 I=0;At0+I<N&&int32(I*Ps0)<Pop->Length();++I)Out[At0+I]=FMath::Clamp(Out[At0+I]+float(Ps[int32(I*Ps0)]*Pk*.8),-1.f,1.f);}
    else{double Last=0;for(int32 I=0;I<int32(MsgRate*.006)&&At0+I<N;++I){const double P=(R.FRand()*2.f-1.f)*Pk*FMath::Exp(-double(I)/MsgRate*2000.);Out[At0+I]=FMath::Clamp(Out[At0+I]+float(P-Last*.6),-1.f,1.f);Last=P;}}
   }
   return B;
@@ -365,11 +365,13 @@ bool FS47EncounterSound::Scare(US47Audio* A,EScare Kind,double Strength,bool bAu
  return Hit(A,Kind,Strength,Now);
 }
 
-void FS47EncounterSound::DreadFor(double Level,bool bSeen,bool bHunt,double& Low,double& High)
+void FS47EncounterSound::DreadFor(double Level,bool bSeen,bool bHunt,double& Low,double& High,double Heard)
 {
  // Nothing under a twentieth: the set's hiss is the first warning, and the ground comes up after it.
  double K=FMath::Clamp((Level-.05)/.45,0.,1.); K=K*K*(3.-2.*K);
- Low=bHunt?1.:FMath::Max(K,bSeen?.6:0.);
+ // D45-20261110: and from further off in Freeform, faint, with what the set hears (never the layer over it: that is for a sight).
+ const double Early=FMath::IsFinite(Heard)?.45*FMath::Clamp(Heard,0.,1.):0.;
+ Low=bHunt?1.:FMath::Max(FMath::Max(K,bSeen?.6:0.),Early);
  High=bHunt?1.:bSeen?.45+.4*K:0.;
 }
 
@@ -633,6 +635,12 @@ bool FS47EncounterSound::SelfTest(TArray<FString>& Lines)
   DreadFor(0,true,false,Low,High); const double SeenLow=Low,SeenHigh=High;
   DreadFor(.2,false,true,Low,High);
   Check(SeenLow>=.5 && SeenHigh>.3 && SeenHigh<1 && Low==1 && High==1,TEXT("DREAD: seen far off it is there, hunted it is all there"));
+  // D45-20261110: the ground under the eerie music while something is heard coming, before the 18 m.
+  DreadFor(0,false,false,Low,High,1); const double EarlyLow=Low,EarlyHigh=High;
+  DreadFor(0,false,false,Low,High,.2); const double FaintEarly=Low;
+  DreadFor(.5,false,false,Low,High,.2);
+  Check(FMath::IsNearlyEqual(EarlyLow,.45) && EarlyHigh==0 && FMath::IsNearlyEqual(FaintEarly,.09) && Low>.9 && High==0,
+   TEXT("DREAD: heard on the set from far off the ground comes up to .45 of it, no layer over it, and near the cues' own level wins"));
   Check(ScareFor(TEXT("landing"),80)==int32(EScare::Braam) && ScareFor(TEXT("landing"),900)==int32(EScare::Swell) && ScareFor(TEXT("big_night"),-1)==int32(EScare::Braam)
    && ScareFor(TEXT("figure_near"),30)==int32(EScare::Soft) && ScareFor(TEXT("horizon_figure"),400)==int32(EScare::Swell)
    && ScareFor(TEXT("house_lit"),50)<0 && ScareFor(TEXT("phone_empty"),1)<0,

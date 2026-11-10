@@ -53,6 +53,7 @@
 #include "S47CaseFieldTests.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Flashlight.h"
 #include "S47Album.h"
 #include "S47FieldCamera.h"
 #include "S47Story.h"
@@ -529,6 +530,12 @@ int32 FS47FreeformSession::AvailableDishCount()const
 {
  int32 Count=0;if(M&&M->Web)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Count;
  return Count;
+}
+int32 FS47FreeformSession::ArrayUpCount()const
+{
+ // D45-20261110: one count wherever the station goal is shown (the goal line, OPS, the notebook, the toasts)
+ if(M&&M->Web&&M->Web->DishCount()>0)return AvailableDishCount();
+ return Field&&Field->ArrayWear().bActive?27-Field->ArrayWear().DownCount():27;
 }
 double FS47FreeformSession::MeasurementRateForCount(int32 Count)
 {
@@ -1583,6 +1590,12 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
 namespace
 {
  namespace T=S47FreeformTerminal;
+ // D45-20261110: a stock item in the station's own words, for the array PC's orders and the OPS SUPPLIES page alike
+ FString SupplyPartName(const FString& Part)
+ {
+  return Part==TEXT("fuse")?FString(TEXT("CONTROL FUSE")):Part==TEXT("relay")?FString(TEXT("DRIVE RELAY")):Part==TEXT("splice_kit")?FString(TEXT("SPLICE KIT")):Part==TEXT("drive_motor")?FString(TEXT("DRIVE MOTOR"))
+   :Part==TEXT("cell")?FString(TEXT("DRY CELLS")):Part==TEXT("donor")?FString(TEXT("DONOR CONTROLLERS")):Part==TEXT("fuel")?FString(TEXT("FUEL CANS")):Part==TEXT("film")?FString(TEXT("FILM ROLLS")):Part.ToUpper();
+ }
  FString StatusWord(const FS47FreeformSession::FJob& J,bool bSelected)
  {
   using E=FS47FreeformSession::EJobStage;
@@ -1767,7 +1780,7 @@ void FS47FreeformSession::OpenOperations()
   Rows.Add(Actions());
   if(const FString Plan=TonightPlan();!Plan.IsEmpty())Rows.Add(T::Panel(FString(),T::Small(Plan)));
   if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
-  const double Dusk=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay+19*3600.;
+  const double Dusk=DuskWaitAt(WorldClock,DayNumber); // D45-20261110: 18:20 on the first day
   if(Dusk>WorldClock+60)Rows.Add(T::Button(TEXT("Wait until dusk / review time and equipment first"),[this,Dusk]{OpenWaitConfirmation(Dusk);}));
   double Up=0;
   if(const FJob* Later=NextEveningCard(Up))
@@ -1809,29 +1822,78 @@ void FS47FreeformSession::OpenOperations()
   return;
  }
  // SUPPLIES: stock, purchases and documentation credits.
- TArray<S47Kit::FW> Stock;
- for(const TCHAR* Item:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("film")})Stock.Add(T::Value(FString(Item).ToUpper(),FString::Printf(TEXT("%d"),InventoryCount(Item))));
- if(Field)Stock.Add(T::Value(TEXT("GENERATOR TANK"),FString::Printf(TEXT("%.1f h"),Field->GeneratorHours())));
- Rows.Add(T::Columns({{.5f,T::Panel(TEXT("DEPOT STOCK"),S47Kit::Col(Stock))},{.5f,Account}}));
- static const TCHAR* Names[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
- TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(T::Button(Upgrades[I]?FString(Names[I])+TEXT(" / INSTALLED"):FString(Names[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}
- Rows.Add(T::Panel(TEXT("UPGRADES"),S47Kit::Col({T::Small(TEXT("Relay reserve reduces recurrent failures; the field kit includes two fuses and a relay. Manual reference comparison is included.")),S47Kit::Row(U)})));
+ // D45-20261110 (Tom: the stores list must be sorted better): what the work in hand needs on top (the next branch's parts, an open relay
+ // order, the lamp's dry cells), the depot's stock beside it; then the stores list in bands: what can be bought now (what the budget
+ // covers first, then by price), what is coming (by its first day, then price) and what is in hand. Each with TRUCK, FIELD or STATION.
+ // The work block stands outside the list's box, so it is always in sight; the box takes what the 1200 x 900 tube has left.
  {
-  // What is on offer, what it costs and what it waits for. Everything the station can get hold of stands here.
-  TSharedRef<SScrollBox> Offers=SNew(SScrollBox);
+  TArray<S47Kit::FW> NowRows;
+  if(Field&&Field->ArrayWear().bActive)if(const auto* GoalBranch=Field->ArrayWear().NextBranch())
+  {
+   NowRows.Add(T::Small(FString::Printf(TEXT("STATION GOAL / %s AT %s (+%d ANTENNAS)"),GoalBranch->Title,GoalBranch->Junction,GoalBranch->Dishes.Num())));
+   for(const auto& Need:GoalBranch->Needs){const int32 Have=InventoryCount(Need.Item);NowRows.Add(T::Value(SupplyPartName(Need.Item),FString::Printf(TEXT("NEED %d / HAVE %d"),Need.Count,Have),Have<Need.Count));}
+   NowRows.Add(T::Small(FString(GoalBranch->Id)==TEXT("centre")?TEXT("The splice is made up at CALIBRATION / REPAIR from two good antenna leads and foil."):TEXT("The CALICHE STORE sells the parts. Unpack the parcel at GARAGE RECEIVING.")));
+  }
+  if(Field&&(Field->HasArrayFault()||ServiceGuide==1))
+  {
+   const int32 Have=InventoryCount(TEXT("relay"));const bool bFitted=Field->ServiceStage()>=5;
+   NowRows.Add(T::Value(Field->ServiceDishId()+TEXT(" RELAY ORDER"),bFitted?FString(TEXT("FITTED")):FString::Printf(TEXT("NEED 1 / HAVE %d"),Have),!bFitted&&Have<1));
+  }
+  if(M&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bHave)
+   NowRows.Add(T::Value(TEXT("FLASHLIGHT"),FString::Printf(TEXT("%.0f%% / DRY CELLS %d"),100*M->Night->Flashlight->BatteryLevel(),InventoryCount(TEXT("cell"))),M->Night->Flashlight->Low()&&InventoryCount(TEXT("cell"))<1));
+  if(NowRows.IsEmpty())NowRows.Add(T::Small(TEXT("NOTHING ON ORDER FOR THE WORK IN HAND.")));
+  NowRows.Add(T::Value(TEXT("OPERATING BUDGET"),Loan>0?FString::Printf(TEXT("$%d / REQUISITION $%d"),Cash,Loan):FString::Printf(TEXT("$%d"),Cash)));
+  TArray<S47Kit::FW> Stock;
+  for(const TCHAR* Item:{TEXT("fuse"),TEXT("relay"),TEXT("drive_motor"),TEXT("splice_kit"),TEXT("donor"),TEXT("cell"),TEXT("fuel"),TEXT("film")})Stock.Add(T::Value(SupplyPartName(Item),FString::Printf(TEXT("%d"),InventoryCount(Item))));
+  if(Field)Stock.Add(T::Value(TEXT("GENERATOR TANK"),FString::Printf(TEXT("%.1f h"),Field->GeneratorHours())));
+  Rows.Add(T::Columns({{.52f,T::Panel(TEXT("FOR THE WORK NOW"),S47Kit::Col(NowRows))},{.48f,T::Panel(TEXT("DEPOT STOCK"),S47Kit::Col(Stock))}},12));
+ }
+ static const TCHAR* Names[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
+ if(Upgrades[0]&&Upgrades[2])Rows.Add(T::Small(TEXT("UPGRADES / RELAY RESERVE AND FIELD SERVICE KIT INSTALLED.")));
+ else
+ {
+  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(T::Button(Upgrades[I]?FString(Names[I])+TEXT(" / INSTALLED"):FString(Names[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}
+  Rows.Add(T::Panel(TEXT("UPGRADES"),S47Kit::Col({T::Small(TEXT("A relay reserve means fewer repeat failures. The field kit has two fuses and a relay, and you can compare readings by hand.")),S47Kit::Row(U)})));
+ }
+ {
+  // What is on offer, what it costs and what it waits for. Everything the station can get hold of stands here, in its band.
+  struct FOffer{const FS47KitOffer* Def;int32 Price;FString Waits;};
+  TArray<FOffer> CanBuy,Coming,InHand;
   for(const auto& Offer:FS47Openings::Defs())
   {
-   const FString Id=Offer.Id,Waits=KitWaits(Id);
-   if(HasKit(Id))Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / IN HAND. %s"),Offer.Title,Offer.What))];
-   else if(!Waits.IsEmpty())Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),Offer.Title,KitPrice(Id),*Waits))];
-   else
-   {
-    const int32 Price=KitPrice(Id);
-    Offers->AddSlot()[T::Small(Offer.What)];
-    Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),Offer.Title,Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=Price)];
-   }
+   const FOffer Entry{&Offer,KitPrice(Offer.Id),KitWaits(Offer.Id)};
+   (HasKit(Offer.Id)?InHand:Entry.Waits.IsEmpty()?CanBuy:Coming).Add(Entry);
   }
-  Rows.Add(T::Panel(TEXT("STORES LIST"),SNew(SBox).HeightOverride(150)[Offers]));
+  CanBuy.StableSort([this](const FOffer& A,const FOffer& B){const bool CA=Cash>=A.Price,CB=Cash>=B.Price;return CA!=CB?CA:A.Price<B.Price;});
+  Coming.StableSort([](const FOffer& A,const FOffer& B){const int32 DA=FS47Openings::FirstDay(A.Def->Id),DB=FS47Openings::FirstDay(B.Def->Id);return DA!=DB?DA<DB:A.Price<B.Price;});
+  const auto Tagged=[](const FOffer& O){return FString::Printf(TEXT("%s / %s"),FS47Openings::Kind(O.Def->Id),O.Def->Title);};
+  const auto Under=[](const FString& Words){return SNew(SBox).Padding(FMargin(22,0,0,6))[T::Small(Words)];};
+  TSharedRef<SScrollBox> Offers=SNew(SScrollBox);
+  Offers->AddSlot()[T::Text(CanBuy.IsEmpty()?FString(TEXT("CAN BUY NOW / NOTHING YET")):FString::Printf(TEXT("CAN BUY NOW / BUDGET $%d"),Cash),1)];
+  for(const FOffer& O:CanBuy)
+  {
+   const FString Id=O.Def->Id;
+   Offers->AddSlot()[T::Button(FString::Printf(TEXT("%s / $%d"),*Tagged(O),O.Price),[this,Id]{BuyKit(Id);OpenOperations();},false,Cash>=O.Price)];
+   Offers->AddSlot()[Under(O.Def->What)];
+  }
+  if(!Coming.IsEmpty())Offers->AddSlot()[T::Text(TEXT("COMING"),1)];
+  for(int32 I=0;I<Coming.Num();++I)
+  {
+   const FOffer& O=Coming[I];const int32 From=FS47Openings::FirstDay(O.Def->Id);
+   if(DayNumber<From)
+   {
+    Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / FROM DAY %d"),*Tagged(O),O.Price,From))];
+    if(I<2)Offers->AddSlot()[Under(TEXT("Then it waits for ")+O.Waits+TEXT("."))];
+   }
+   else Offers->AddSlot()[T::Small(FString::Printf(TEXT("%s / $%d / WAITS FOR %s"),*Tagged(O),O.Price,*O.Waits.ToUpper()))];
+  }
+  if(!InHand.IsEmpty())
+  {
+   TArray<FString> HeldNames;for(const FOffer& O:InHand)HeldNames.Add(Tagged(O));
+   Offers->AddSlot()[T::Text(TEXT("IN HAND"),1)];
+   Offers->AddSlot()[T::Small(FString::Join(HeldNames,TEXT("; ")))];
+  }
+  Rows.Add(T::Panel(TEXT("STORES LIST"),SNew(SBox).HeightOverride(Upgrades[0]&&Upgrades[2]?330:270)[Offers]));
  }
  if(Director&&PhotoDeskDue())Rows.Add(T::Small(TEXT("FIELD PHOTOGRAPHS / An allowance is waiting under PHOTOGRAPHS.")));
  if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
@@ -2199,18 +2261,17 @@ TSharedRef<SWidget> FS47FreeformSession::MaintenancePage()
  if(Faults.Num()&&!bRelay)Left.Add(T::Button(ServiceGuide==0?TEXT("FIRST RELAY SERVICE / S-03"):TEXT("PLANNED RELAY SERVICE"),[this]{MaintPick=TEXT("planned");OpenStatus();}));
  Left.Add(T::Small(TEXT("Parts go in your pouch from GARAGE RECEIVING. The repair itself is done at the cabinet in the field.")));
  TArray<S47Kit::FW> R;FString Title;
- static const auto PartName=[](const FString& Part){return Part==TEXT("fuse")?FString(TEXT("CONTROL FUSE")):Part==TEXT("relay")?FString(TEXT("DRIVE RELAY")):Part==TEXT("splice_kit")?FString(TEXT("SPLICE KIT")):Part==TEXT("drive_motor")?FString(TEXT("DRIVE MOTOR")):Part.ToUpper();};
  if(const auto* B=bWear?FS47ArrayWear::Branch(MaintPick):nullptr;B&&!Field->ArrayWear().IsRestored(MaintPick))
  {
   Title=FString(B->Title)+TEXT(" / ORDER");
   R.Add(T::Text(FString(B->Fault),0));
-  for(const auto& Need:B->Needs){const int32 Have=Field->InventoryCount(Need.Item);R.Add(T::Text(FString::Printf(TEXT("%s / NEED %d / HAVE %d"),*PartName(Need.Item),Need.Count,Have),Have<Need.Count?-1:0));}
+  for(const auto& Need:B->Needs){const int32 Have=Field->InventoryCount(Need.Item);R.Add(T::Text(FString::Printf(TEXT("%s / NEED %d / HAVE %d"),*SupplyPartName(Need.Item),Need.Count,Have),Have<Need.Count?-1:0));}
   R.Add(T::Small(FString::Printf(TEXT("Work at the junction cabinet beside %s. %d antennas come back with it."),B->Junction,B->Dishes.Num())));
   const TArray<const FS47ArrayWear::FBranch*> Order=Field->ArrayWear().Ordered();const int32 At=Order.IndexOfByKey(B);
   const bool bFirst=Field->ArrayWear().NextBranch()==B&&!bRelayFirst;const FString Id(B->Id);
   R.Add(T::Big(FString(TEXT("MAKE THIS NEXT")),[this,Id]{
    Field->PlanBranch(Id,0);bGuideFocus=false; // an open relay order is kept, only no longer first
-   if(const auto* Picked=FS47ArrayWear::Branch(Id))Feedback=FString::Printf(TEXT("%s IS NEXT. The station goal and the lamps in the field now point to its junction at %s."),Picked->Title,Picked->Junction);
+   if(const auto* Picked=FS47ArrayWear::Branch(Id))Feedback=FString::Printf(TEXT("%s IS NEXT. The station goal and the lamps in the field now point to its junction at %s. Marked on your map."),Picked->Title,Picked->Junction); // D45-20261110
    Changed(Feedback);OpenStatus();},1,!bFirst));
   R.Add(T::Columns({{.5f,T::Button(TEXT("MOVE UP"),[this,Id,At]{Field->PlanBranch(Id,At-1);OpenStatus();},false,At>0)},{.5f,T::Button(TEXT("MOVE DOWN"),[this,Id,At]{Field->PlanBranch(Id,At+1);OpenStatus();},false,At>=0&&At<Order.Num()-1)}},10));
  }
@@ -2299,7 +2360,7 @@ void FS47FreeformSession::OpenReceiver()
   auto TapePulse=[this]{const auto* J=CurrentJob();return J&&J->Source==1?PulsarPeriod:0.;};
   auto TapeName=[this,OnControl]{const auto* J=CurrentJob();return !J?FString():OnControl()?FString(TEXT("CONTROL / ANTENNAS OUT, THE STATION'S OWN REFERENCE")):TEXT("TAKE ")+J->Id+TEXT(" / WHAT THE ANTENNAS HEAR");};
   const TAttribute<EVisibility> StripShown=TAttribute<EVisibility>::CreateLambda([this,Writing]{const auto* J=CurrentJob();return J&&(Writing()||(J->bAnomaly&&!Specialized(J->Phenomenon)&&(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Recorded)))?EVisibility::Visible:EVisibility::Collapsed;});
-  Rows.Add(SNew(SBox).Visibility(StripShown).HeightOverride(120)[T::Columns({
+  Rows.Add(SNew(SBox).Visibility(StripShown).HeightOverride(78)[T::Columns({ // D45: 120 ran 37 over the glass (InternalControlEarly)
    {1.f,SNew(SS47TapeReels).Phosphor(true).Recording_Lambda(Writing).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse)},
    {1.35f,SNew(SS47TapeScope).Phosphor(true).Recording(true).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse).Caption_Lambda(TapeName)}},10)]);
  }
@@ -2390,7 +2451,7 @@ void FS47FreeformSession::OpenTapePanel()
   const auto Tone=[StepNow,N,LampOff,LampOn,LampDone]{const int32 Current=StepNow();return N<Current?LampDone:N==Current?LampOn:LampOff;};
   return S47Kit::FW(SNew(SHorizontalBox)
    +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)[T::Lamp(TAttribute<FLinearColor>::CreateLambda(Tone),14)]
-   +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda(Says),18,TAttribute<FLinearColor>::CreateLambda([Tone,LampOff,Cream]{const FLinearColor C=Tone();return C==LampOff?Cream*FLinearColor(1,1,1,.6f):C;}),false)]);
+   +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda(Says),16,TAttribute<FLinearColor>::CreateLambda([Tone,LampOff,Cream]{const FLinearColor C=Tone();return C==LampOff?Cream*FLinearColor(1,1,1,.6f):C;}),false)]);
  };
  const S47Kit::FW Lamps=T::Columns({
   {1.55f,StepCell(1,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("1 LISTEN TO THE WHOLE ORIGINAL %02.0f/18"),J?FMath::Min(18.,J->OriginalCovered):0.);})},
@@ -3212,8 +3273,9 @@ FString FS47FreeformSession::StationGoalLine()const
  const FString Missing=Field->BranchNeeds(*Next);
  const FString Parts=Missing.IsEmpty()?FString(TEXT("YOU HAVE THE PARTS.")):TEXT("NEEDS ")+Missing.ToUpper()+TEXT(".");
  // M7-HUD-20261109: not out to the antennas in the small hours (Dale: "after two... be in the building")
- if(GoalWaits(WorldClock))return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: THE %s AT ANTENNA %s WAITS FOR DAYLIGHT. %s"),27-Field->ArrayWear().DownCount(),Next->Title,Next->Junction,*Parts);
- return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: REPAIR THE %s AT ANTENNA %s. %s"),27-Field->ArrayWear().DownCount(),Next->Title,Next->Junction,*Parts);
+ // D45-20261110: the live count (ArrayUpCount), and what this repair brings back
+ if(GoalWaits(WorldClock))return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: THE %s AT ANTENNA %s (+%d ANTENNAS) WAITS FOR DAYLIGHT. %s"),ArrayUpCount(),Next->Title,Next->Junction,Next->Dishes.Num(),*Parts);
+ return FString::Printf(TEXT("STATION GOAL / ARRAY %d OF 27: REPAIR THE %s AT ANTENNA %s (+%d ANTENNAS). %s"),ArrayUpCount(),Next->Title,Next->Junction,Next->Dishes.Num(),*Parts);
 }
 bool FS47FreeformSession::EveningGated(const FJob& J)const
 {
@@ -3527,19 +3589,19 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // The array is what the whole station is working toward: whatever else is on the line, it stays in sight.
  const FString Goal=StationGoalLine();
  const auto* Next=Field&&Field->ArrayWear().bActive?Field->ArrayWear().NextBranch():nullptr;
- const FString Tail=Next?FString::Printf(TEXT(" STATION GOAL: ARRAY %d OF 27."),27-Field->ArrayWear().DownCount()):FString();
+ // D45-20261110 (Tom: the same number everywhere reads as static text): the count stands once, on the STATION GOAL line of the note and
+ // the notebook (StationGoalLine), not after every other task and on every card as well.
  // M7-WALKIE-20261109: once the first shift is done, the field radio on the control room desk is Dale's way to the player and the
  // night's rules; until it is taken every line says where it is. (Out in the field where the player was taken, it is not on the desk.)
  const bool bOnDesk=Tutorial==0&&M&&M->FieldRadio&&M->FieldRadio->Ready()&&!M->FieldRadio->Owned()&&!M->FieldRadio->LeftOut();
  const bool bHall=bOnDesk&&M->FieldRadio->InHall(); // FIX-20261110: on the hall dresser
  const FString Radio=bOnDesk?FString(bHall?TEXT(" HALL DRESSER: TAKE THE FIELD RADIO (DALE, CHANNEL 1)."):TEXT(" CONTROL ROOM DESK: TAKE THE FIELD RADIO (DALE, CHANNEL 1).")):FString();
- // The card: the task in a line it has room for, then the walkie and the array while there is room.
+ // The card: the task in a line it has room for, then the walkie while there is room.
  const FString RadioCard=bOnDesk?FString(bHall?TEXT(" WALKIE: ON THE HALL DRESSER."):TEXT(" WALKIE: ON THE DESK.")):FString();
- const FString ArrayCard=Next?FString::Printf(TEXT(" ARRAY %d OF 27."),27-Field->ArrayWear().DownCount()):FString();
  const bool bDark=GoalWaits(WorldClock);
- auto Say=[Card,&Radio,&RadioCard,&ArrayCard](const FString& Full,const FString& Short=FString())
+ auto Say=[Card,&Radio,&RadioCard](const FString& Full,const FString& Short=FString())
  {
-  if(Card)*Card=S47HudGauges::CardWith(Short.IsEmpty()?Full:Short,{RadioCard,ArrayCard});
+  if(Card)*Card=S47HudGauges::CardWith(Short.IsEmpty()?Full:Short,{RadioCard});
   return Full+Radio;
  };
  auto SayGoal=[&]()
@@ -3554,18 +3616,18 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // case step after the station goal, the most pressing first.
  // CASES-OPS-20261109: a case's result sheet on the printer comes first of the case steps: it says what the test showed.
  // LOOP-1-20261109: a bearing slip once it is the printer's turn (a job's paper first); a case's own sheet as before.
- if(!CaseSheets.IsEmpty()&&IsBearingSlip(CaseSheets[0])){if(SheetIndex()==0)return Say(FString(TEXT("PRINTER: COLLECT THE BEARING SLIP."))+Tail,TEXT("PRINTER // BEARING SLIP."));}
- else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title)+Tail,TEXT("PRINTER // CASE RESULT SHEET."));
+ if(!CaseSheets.IsEmpty()&&IsBearingSlip(CaseSheets[0])){if(SheetIndex()==0)return Say(FString(TEXT("PRINTER: COLLECT THE BEARING SLIP.")),TEXT("PRINTER // BEARING SLIP."));}
+ else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title),TEXT("PRINTER // CASE RESULT SHEET."));
  const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
- if(Step.Step==ECaseStep::Conclude||(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0))return Say(Step.Next+Tail,Step.Card);
- if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending)+Tail,
+ if(Step.Step==ECaseStep::Conclude||(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0))return Say(Step.Next,Step.Card);
+ if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending),
   FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")));
  // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
  if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark)return SayGoal();
- if(Urgent>=0)return Say(Step.Next+Tail,Step.Card);
- if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."))+Tail,TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
+ if(Urgent>=0)return Say(Step.Next,Step.Card);
+ if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH.")),TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
  if(ServiceGuide==1)return Say(ServiceObjective());
- if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine()+Tail,Gear->TaskLine());
+ if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine(),Gear->TaskLine());
  // An idle loan logger is an option, not the next thing to do: it never again stands in front of the goal (T16-17, 10).
  if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Say(Field->FieldLogger().NextAction());
  if(Evening)return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
@@ -4302,6 +4364,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
  if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,Director->ReportDone()});} // PT-FEEDER-20261109
+ if(Director){const FString Watch=Director->EveningLightsLine();if(!Watch.IsEmpty())Result.Add({Watch,false});} // D45-20261110: the first evening's appointment
  if(Places)for(const TPair<FString,bool>& Slip:Places->SlipRows(Clock()))Result.Add({Slip.Key,Slip.Value}); // D45-20261110: the slip's circle to look at, ticked once stood in
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
@@ -5137,9 +5200,12 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   {
    FString Card;G.WorldClock=Base+10*3600.;
    const FString Work=G.AvailableActivities(&Card);
-   Check(Work.Contains(TEXT("UNFINISHED OBSERVATIONS"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Contains(TEXT("OBSERVATIONS WAITING"))&&Card.Contains(TEXT("OF 27"))&&Card.Len()<=S47HudGauges::CardMost,
-    TEXT("HUD card: the day's work in one short line, with the station goal still on it"));
+   Check(Work.Contains(TEXT("UNFINISHED OBSERVATIONS"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Contains(TEXT("OBSERVATIONS WAITING"))&&!Card.Contains(TEXT("OF 27"))&&!Work.Contains(TEXT("OF 27"))&&Card.Len()<=S47HudGauges::CardMost,
+    TEXT("D45: HUD card: the day's work in one short line; the array count is not repeated on it (it stands on the STATION GOAL line)"));
    Check(G.StationGoalLine().Contains(TEXT("REPAIR THE"))&&!G.StationGoalLine().Contains(TEXT("DAYLIGHT")),TEXT("Station goal: by day, the repair"));
+   // D45-20261110: the count is the live one, and the line says what this repair brings back
+   Check(G.ArrayUpCount()==27-G.Field->ArrayWear().DownCount()&&G.StationGoalLine().Contains(FString::Printf(TEXT("ARRAY %d OF 27"),G.ArrayUpCount()))
+    &&G.StationGoalLine().Contains(FString::Printf(TEXT("(+%d ANTENNAS)"),Next->Dishes.Num())),TEXT("D45: Station goal: the live array count once, and what the next repair brings back"));
    G.WorldClock=Base+2.5*3600.;
    Check(G.StationGoalLine().Contains(TEXT("WAITS FOR DAYLIGHT"))&&!G.StationGoalLine().Contains(TEXT("REPAIR THE")),TEXT("Station goal: at 02:30 it waits for daylight"));
    G.WorldClock=Base+.5*3600.;const bool bLate=!G.StationGoalLine().Contains(TEXT("DAYLIGHT"));G.WorldClock=Base+6*3600.;

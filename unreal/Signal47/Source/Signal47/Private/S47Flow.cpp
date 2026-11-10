@@ -85,6 +85,7 @@
 #include "S47World.h"
 #include "S47Phones.h"
 #include "S47Picture.h"
+#include "S47Bodycam.h"
 #include "S47SaroNight.h"
 #include "S47ArrayBack.h"
 #include "S47Away.h"
@@ -1580,7 +1581,15 @@ void US47Flow::ApplyPicture(const FString& P, bool bChosen)
 	{
 		const int32 Mode = S47Picture::Mode(Picture);
 		const float Strength = S47Picture::Strength(PictureStrength);
-		I->SetScalarParameterValue(TEXT("PictureMode"), float(Mode));
+		// D45-20261110 (D45-19): Bodycam 1986 needs the rebuilt M_WebTone (MPC_Body); older content keeps the VHS look.
+		const bool bBodyShader = FS47Bodycam::HasShader();
+		static bool bToldBody = false;
+		if (S47Picture::IsBody(Mode) && !bBodyShader && !bToldBody)
+		{
+			bToldBody = true;
+			UE_LOG(LogS47Flow, Warning, TEXT("S47: picture bodycam needs MPC_Body (import_web.py S47_ONLY=picture); showing the VHS tape look"));
+		}
+		I->SetScalarParameterValue(TEXT("PictureMode"), float(S47Picture::ShaderMode(Mode, bBodyShader)));
 		I->SetScalarParameterValue(TEXT("Vhs"), Mode == 0 ? 0.f : Strength);
 		I->SetScalarParameterValue(TEXT("PictureStrength"), Strength);
 		I->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
@@ -2266,11 +2275,13 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		if (F->Field && F->Field->ArrayWear().bActive)
 			if (const auto* Next = F->Field->ArrayWear().NextBranch())
 			{
-				const int32 Up = 27 - F->Field->ArrayWear().DownCount();
+				// D45-20261110: the live count (ArrayUpCount), the branches mended, what this one brings back, and its junction inked on the map
+				const int32 Up = F->ArrayUpCount();
 				const FString Missing = F->Field->BranchNeeds(*Next);
-				FS47NbWorkItem W; W.Id = TEXT("array/") + FString(Next->Id); W.Title = FString::Printf(TEXT("Restore the array / %d of 27"), Up); W.Status = TEXT("Station goal");
-				W.NextAction = FString::Printf(TEXT("%s: %s %s"), Next->Title, Next->Fault, Missing.IsEmpty() ? TEXT("You have what it needs.") : *(TEXT("Needs ") + Missing + TEXT(".")));
-				W.Location = FString::Printf(TEXT("%s junction, beside antenna %s"), Next->Title, Next->Junction);
+				FS47NbWorkItem W; W.Id = TEXT("array/") + FString(Next->Id); W.Title = FString::Printf(TEXT("Restore the array / %d of 27, branches %d of %d"), Up, F->Field->ArrayWear().Restored.Num(), FS47ArrayWear::Branches().Num()); W.Status = TEXT("Station goal");
+				W.NextAction = FString::Printf(TEXT("%s (+%d antennas): %s %s"), Next->Title, Next->Dishes.Num(), Next->Fault, Missing.IsEmpty() ? TEXT("You have what it needs.") : *(TEXT("Needs ") + Missing + TEXT(".")));
+				W.Location = FString::Printf(TEXT("%s junction, beside antenna %s. Marked on your map."), Next->Title, Next->Junction);
+				W.Hints = { FString::Printf(TEXT("The junction beside %s is inked on your map, and its fault lamp is lit out there."), Next->Junction), W.NextAction };
 				X.WorkItems.Add(W);
 			}
 		if (F->ActiveServiceGuide() > 0)
@@ -2558,7 +2569,19 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	}
 	if (M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)
 	{
-		Kit.Add({ TEXT("Flashlight"), FString::Printf(TEXT("From the passenger seat of the truck. %s switches it."), *S47Keys::Said(TEXT("light"))), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
+		// D45-20261110 (Tom: where is the charger?): in Freeform its battery, whether it is charging, the dry cells, and where it charges
+		const FS47Flashlight& Lamp = *M->Night->Flashlight;
+		const TSharedPtr<FS47FreeformWorld> Field = M->IsFreeform() && M->Freeform ? M->Freeform->Field : nullptr;
+		if (Field.IsValid())
+		{
+			const int32 Cells = Field->InventoryCount(TEXT("cell"));
+			const FString Help = FString::Printf(TEXT("From the passenger seat of the truck. %s switches it. It runs about half a night lit. Battery %d%%. Dry cells: %d. %s"),
+				*S47Keys::Said(TEXT("light")), FMath::RoundToInt32(100 * Lamp.BatteryLevel()), Cells, *Field->FlashlightHelp());
+			const FString State = Lamp.bOn ? FString::Printf(TEXT("On / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel())) : Field->LampCharging() ? FString::Printf(TEXT("Charging / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel()))
+				: FString::Printf(TEXT("Off / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel()));
+			Kit.Add({ TEXT("Flashlight"), Help, State, TEXT("flashlight"), FString() });
+		}
+		else Kit.Add({ TEXT("Flashlight"), FString::Printf(TEXT("From the passenger seat of the truck. %s switches it."), *S47Keys::Said(TEXT("light"))), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
 	}
 	if (bCh1) Kit.Add({ TEXT("Truck keys"), M->IsFreeform() ? TEXT("The service truck starts on the pad outside the SERVICE YARD exit. The keys stay in it. Its current area is recorded below.") : TEXT("The service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SERVICE") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Documents keeps the originals; Knowledge links retained evidence."), FString::FromInt(Papers), TEXT("papers"), FString() });
@@ -2595,7 +2618,8 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 		const auto F = M->Freeform->Field;
 		Kit.Add({ TEXT("Operating budget"), TEXT("Available funds and outstanding station advance. Register completed work and eligible photographs at OPS; repayments are deducted from earnings."), FString::Printf(TEXT("$%d available / $%d advance"), M->Freeform->Budget(), M->Freeform->Debt()), FString(), FString() });
 		for (const auto& Item : TArray<TPair<FString, FString>>{ {TEXT("fuse"), TEXT("Control fuses")}, {TEXT("relay"), TEXT("Compatible relays")}, {TEXT("donor"), TEXT("Donor controllers")}, {TEXT("fuel"), TEXT("Fuel cans")}, {TEXT("film"), TEXT("Film stock")}, {TEXT("recorder_donor"), TEXT("Used field recorders")}, {TEXT("cell"), TEXT("Dry cells")}, {TEXT("foil"), TEXT("Shielding foil")} })
-			if (F->InventoryCount(Item.Key) > 0 || (Item.Key != TEXT("recorder_donor") && Item.Key != TEXT("cell") && Item.Key != TEXT("foil")))
+			if (F->InventoryCount(Item.Key) > 0 || (Item.Key != TEXT("recorder_donor") && Item.Key != TEXT("cell") && Item.Key != TEXT("foil"))
+				|| (Item.Key == TEXT("cell") && M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)) // D45-20261110: the lamp's cells, always while it is carried
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });
@@ -2677,6 +2701,7 @@ bool US47Flow::OpenTestView(const FString& View)
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
 	bool bOk = S47Picture::SelfTest(Out);
+	bOk &= FS47Bodycam::SelfTest(Out); // D45-20261110 (D45-19)
 	bOk &= FS47Rhythm::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{

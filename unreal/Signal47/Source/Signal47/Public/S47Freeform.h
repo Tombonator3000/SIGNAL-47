@@ -57,6 +57,9 @@ public:
  bool ArrayMotionHeld() const;
  bool MotorFeedbackActive() const { return bMotorFeedback; }
  int32 AvailableDishCount() const;
+ // D45-20261110 (Tom: "array 12 of 27" never moved): the one station-goal count, live. The antennas on remote now, so a relay fault and
+ // its repair move it as well as a mended branch; without the world (self-tests) 27 less the worn branches.
+ int32 ArrayUpCount() const;
  static double MeasurementRateForCount(int32 Count);
  double ArrayMeasurementRate() const;
  FString ArrayMeasurementStatus() const;
@@ -166,6 +169,9 @@ public:
  void TestLiveRules(){bTestRules=true;}
  // Whose night a clock falls in: the shift day it belongs to. Bodies keep to their own start each night (S47NightRhythm.h).
  static int32 NightOf(double AtClock){return FMath::Max(1,int32(FMath::FloorToDouble((AtClock-8*3600.)/SecondsInDay))+1);}
+ // D45-20261110 (D45-26): where OPS's "Wait until dusk" ends on the day of AtClock: 19:00, and on the first day 18:20, so that the
+ // first dusk's light (18:30) starts in front of the player instead of half over by the time the wait is done.
+ static double DuskWaitAt(double AtClock,int32 ShiftDay){return FMath::FloorToDouble(AtClock/SecondsInDay)*SecondsInDay+(ShiftDay==1?18*3600.+20*60.:19*3600.);}
  // The last night that is over: from four in the morning after it. A rest that jumps the clock to 08:00 has slept through it, and
  // whatever settles a night in the morning (S47Townsfolk, S47Visitors) settles every night up to this one, not only the night of now.
  static int32 NightsOver(double AtClock){return NightOf(AtClock+4*3600.)-1;}

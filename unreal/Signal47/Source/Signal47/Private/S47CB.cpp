@@ -170,7 +170,7 @@ void S47CB::StaticLine(const TSharedRef<FS47AudioContext>& Ctx, const TSharedPtr
 		if (FMath::FRand() < 0.2f)
 		{
 			// a dry pop: the bought short crackle when it is there, else six milliseconds of the bed
-			const double Pt = Ts + FMath::FRand() * Y.D, Pl = (Pop.IsValid() ? 1.0 : 0.35 * Bed.Makeup) * Level * FMath::FRandRange(0.4f, 1.f), Pd = Pop.IsValid() ? FMath::Min(0.4, Pop->Duration()) : 0.006;
+			const double Pt = Ts + FMath::FRand() * Y.D, Pl = (Pop.IsValid() ? 0.25 : 0.35 * Bed.Makeup) * Level * FMath::FRandRange(0.4f, 1.f), Pd = Pop.IsValid() ? FMath::Min(0.4, Pop->Duration()) : 0.006;
 			auto P = Ctx->CreateBufferSource(); P->Buffer = Pop.IsValid() ? Pop : Bed.Buffer; P->PlaybackRate.SetValue(FMath::FRandRange(0.8f, 1.3f));
 			auto Ph = Ctx->CreateBiquadFilter(); Ph->SetType(TEXT("highpass")); Ph->Frequency.SetValue(1800);
 			auto Pg = Ctx->CreateGain(); Pg->Gain.SetValue(0); Pg->Gain.SetValueAtTime(Pl, Pt); Pg->Gain.LinearRampToValueAtTime(0, Pt + Pd);

@@ -21,7 +21,8 @@ namespace S47Ledger
  // A finding as the paper hears of it. Night: "Tuesday night". Place: how people would say where ("the church"); PlaceId: a place on
  // the land (FS47Places) or empty. Id: the finding it came from.
  struct FFact{ETopic Topic=ETopic::Lights;int32 Day=0;FString Night,Place,PlaceId,Id;};
- // Lead: what reading it points the player at: a place on the land (FS47Places), "wagon" (wagon 23), or nothing. Key: the template
+ // Lead: what it points the player at: a place on the land (FS47Places), "wagon" (wagon 23), or nothing; since D45-24 the player
+ // pencils it onto the map by clicking the story (FS47Mail::MarkLead), reading alone marks nothing. Key: the template
  // it was written from (kept, so the next weeks use another). FactId: the finding it tells, if any.
  struct FStory{FString Head,Body,Lead,Key,FactId;};
  struct FAd{FString Name,Body,Coupon;};
@@ -53,8 +54,23 @@ namespace S47Ledger
  TArray<FLogLine> LogLines(const TArray<FFact>& Facts,const TArray<FStory>& Front,int32 OnDay,int32 Most);
  // Everything but the front page and the log's findings, from the seed and the issue's number and date.
  void Fill(FIssue& Issue,int32 Seed,bool bHelped);
- // The paper as a page: newsprint, a masthead, columns, the ads. Its coupons are clipped from under it (FS47Mail).
- TSharedRef<SWidget> Page(const FIssue& Issue);
+ // D45-24-20261110 (Tom: «skal se ut som en ekte avis; kanskje kan man trykke på en artikkel med merkelig info og få stedet på
+ // kartet»). What the page asks of the one who reads it: whether a lead is on the player's map already (what the map knows: heard
+ // of or found, so nothing new is saved), and to pencil one onto it. Empty: the stories cannot be clicked (the tests' pages).
+ struct FLeadHooks{TFunction<bool(const FString&)> Marked;TFunction<void(const FString& Lead,const FString& Head)> Mark;};
+ // An article that points somewhere: its lead, its head, and the sheet it is printed on (0 the front, 1 inside).
+ struct FLeadRef{FString Lead,Head;int32 Sheet=0;};
+ // The paper has two sheets: the front page (the two stories, a photo, the county briefs) and the inside (the sheriff's log, the
+ // letters and classifieds, the weather, the almanac, the picture show and the ads).
+ constexpr int32 Sheets=2;
+ // How the paper names a lead: the place's own title ("the windmill on the Baca lease"), the district's wagon for "wagon", empty
+ // for anything the map cannot show.
+ FString LeadTitle(const FString& Lead);
+ // Every article of the issue with a lead the map can show, front page first, each lead once to a sheet.
+ TArray<FLeadRef> LeadsOf(const FIssue& Issue);
+ // The paper as a page: newsprint, a nameplate, six columns, a photo on the front, the ads inside. Its coupons are clipped from
+ // under it (FS47Mail). Sheet: 0 the front, 1 inside. An article with a lead can be clicked to pencil it onto the map (Hooks).
+ TSharedRef<SWidget> Page(const FIssue& Issue,int32 Sheet=0,const FLeadHooks& Hooks=FLeadHooks());
  // The same as plain text, for the notebook.
  FString PlainText(const FIssue& Issue);
  FString DateLine(const FDateTime& Date);   // "THURSDAY, MAY 1, 1986"

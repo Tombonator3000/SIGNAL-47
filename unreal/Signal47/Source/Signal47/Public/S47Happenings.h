@@ -114,6 +114,9 @@ public:
  float GeigerReading() const{return Dose;}
  bool GeigerShown() const{return bGeigerUp;}
  void DevGeiger(bool bGive,bool bHold){bDevGeiger|=bGive;bGeigerHeld=bHold;}
+ // D45-20261110 (F10): the ring's coals as they are now (shown, heat, smoke and how it is drawn, crackle), and the ring made Hours older.
+ bool DevEmbers(FString& Out) const;
+ bool DevAgeRing(double Hours);
  // The bench's job for the counter (FS47FreeformWorld): empty when the tube is there.
  static FString GeigerBench(const US47Main* M);
 
@@ -133,6 +136,15 @@ public:
  // the array's own burst and by a landing the array logs with nobody watching, as by the bearing slip: true when this one may point
  // out (and it is counted); without a Director, always.
  static bool TakePointOut(FS47FreeformDirector* Director,int32 Night);
+ // D45-20261110 (D45-26: night 1 had nothing an operator indoors could meet). The first night's one sure thing before midnight is the
+ // array's burst at SARO, drawn between 22:00 and 23:15 (FirstBurstHour, from the seed), toward the noon slip's place with its bearing
+ // (FS47Places::ArcPlace). It waits for the player to be in the building until 01:30 (FirstBurstUntil) and is never swapped away; until
+ // it has come the night's one pointing-out is kept for it (FirstBurstOwed: a slip printed before it does not take it). The
+ // night's one unease is pinned before midnight too, half an hour or more from the burst (FirstUneaseHour). Pure but the last.
+ static constexpr double FirstBurstFrom=22.,FirstBurstSpan=1.25,FirstBurstUntil=25.5;
+ static double FirstBurstHour(int32 Seed);
+ static double FirstUneaseHour(int32 Seed);
+ bool FirstBurstOwed(int32 Night) const;
  // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
  // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
  // bearing's sector: a needle that swung wherever a bearing points would be a metal detector.
@@ -271,7 +283,9 @@ private:
  // The passing over the truck, and the truck's electrics while it is over them.
  double DimLeft=0;bool bDimmed=false;
  // The counter.
- float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false;
+ // D45-20261110: no tick debt any more (the counts are a Poisson process, S47Hap::PoissonCount): GmMeter is the dial's own count rate,
+ // counts a second through its time constant, and bGmRoar whether the dense loop of counts is playing where it pegs.
+ float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
@@ -495,4 +509,6 @@ private:
  void StepGeiger(double Dt);
  float DoseAt(const FVector& Foot,FString& Near,double& NearM) const;
  void PoseGeiger(bool bShow);
+ // D45-20261110: a landing's coals and their smoke at its ring, Hot and SmokeK from 1 down to 0 over the hours after it came down.
+ void StepEmbers(FProp& P,double Hot,double SmokeK);
 };

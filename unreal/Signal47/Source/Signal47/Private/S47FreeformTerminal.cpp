@@ -170,7 +170,7 @@ namespace S47FreeformTerminal
  // a pass every four minutes or so, eleven seconds long, fading in and out. Tune here by eye: Slot, Chance, Peak.
  FHum HumBar(double T,int32 Seed,float ScreenH)
  {
-  constexpr double Slot=90,Pass=11,Chance=.4;constexpr float Peak=.028f;
+  constexpr double Slot=90,Pass=11,Chance=.4;constexpr float Peak=.05f; // D45 critic: .028 summed to about .02 on the glass, which nobody sees
   if(!FMath::IsFinite(T)||!(ScreenH>0))return FHum();
   auto Rnd=[](double X){const double V=FMath::Sin(X*12.9898)*43758.5453;return V-FMath::FloorToDouble(V);};
   const int32 Sd=FMath::Max(0,Seed);const double At=T+Sd*.37*Slot,N=FMath::FloorToDouble(At/Slot);
@@ -213,7 +213,7 @@ namespace S47FreeformTerminal
    int32 Off=0,Steps=0,Seen=0;float Most=0,Jump=0,Was=HumBar(1000,Sd,900).A;
    for(int32 I=0;I<6000;++I,++Steps){const float A=HumBar(1000+I*.1,Sd,900).A;Off+=A<=0?1:0;Most=FMath::Max(Most,A);Jump=FMath::Max(Jump,FMath::Abs(A-Was));Was=A;}
    for(int32 I=0;I<3600;++I)Seen+=HumBar(5000+I,Sd,900).A>0?1:0;
-   const bool bScreen=Off*2>=Steps&&Most<=.03f&&Jump<.005f&&Seen>0&&Seen*2<3600;
+   const bool bScreen=Off*2>=Steps&&Most<=.06f&&Jump<.008f&&Seen>0&&Seen*2<3600;
    Report.Add(FString::Printf(TEXT("%s freeform terminal: screen %d hum bar off %d of %d steps, strongest %.3f, largest step %.4f, on %d s of an hour"),bScreen?TEXT("ok"):TEXT("FAIL"),Sd,Off,Steps,Most,Jump,Seen));
    bOk&=bScreen;
   }
@@ -585,7 +585,7 @@ namespace S47FreeformTerminal
    Rect(Out,L+2,G,Tp-FVector2f(4,4),FVector2f(8,8),Amber,false);
    Rect(Out,L+3,G,Cp-FVector2f(8,8),FVector2f(16,16),Green,false);Lines(Out,L+3,G,{Cp-FVector2f(5,5),Cp+FVector2f(5,5)},Green,1.5f);
    // D45-20261110: the operator's own cursor and the search tick, while the pointer is on the plot
-   if(OnAim&&IsHovered())
+   if(OnAim&&IsHovered()&&MovedAt>0) // (not before the pointer has moved: HoverLocal is still the corner)
    {
     const float N=Near();const bool bOn=N>=1;const FLinearColor Col=bOn?Amber:Green*FMath::Lerp(.65f,1.f,N);
     const float Gap=FMath::Lerp(34.f,7.f,N*N),Leg=FMath::Lerp(9.f,5.f,N),W=FMath::Lerp(1.5f,2.6f,N);const FVector2f P=HoverLocal;

@@ -1,4 +1,5 @@
 #include "S47DevFreeform.h"
+#include "S47ArrayFence.h"
 #include "S47Blockers.h"
 #include "S47CalicheGround.h"
 #include "S47DevEvents.h"
@@ -223,6 +224,31 @@ void FS47DevFreeform::AddLooks(FS47DevEvents& E)
  });
  E.AddFreeform(Group, TEXT("Caliche's lamps at night"), TEXT("22:00 on Main Street"), [View]
  { View(TEXT("diner"), 22, FVector2D(3, 2138), FVector(-6, 4.5, 2150), TEXT("Main Street's lamps at night")); });
+ // ---- D45-20261110 (D45-14): the array's wired fence (S47ArrayFence), measured from the yard by the walk gate, and seen by day and night ----
+ E.AddFreeform(Group, TEXT("Array fence: as built"), TEXT("11:00 in the yard by the array gate: the old planes and posts gone, the panels per run, each foot on the ground, the gate leaf on its hinge (the log has each)"), [this, Log, Saro, Saro3]
+ {
+  const FVector2D EyeRoad = Saro(-4, -15.5);
+  const FVector Eye = S47FarmWorld::RoadToArea(TEXT("saro"), FVector(EyeRoad.X, 0, EyeRoad.Y));
+  const FVector LookRoad = Saro3(-1, .2, -20);
+  const FVector Look = S47FarmWorld::RoadToArea(TEXT("saro"), FVector(LookRoad.X, 0, LookRoad.Z));
+  FStage S; S.From = 11; S.To = 12.5; S.Area = TEXT("saro"); S.Where = [Eye] { return FVector2D(Eye.X, Eye.Z); };
+  Go(S, [this, Log, Look, LookRoad]
+  {
+   if (!M->Player) { Tell(false, TEXT("no player")); return; }
+   AimAt(FVector(Look.X, M->Player->FloorY + M->Player->Eye + LookRoad.Y, Look.Z));
+   After(1.2, [this, Log]
+   {
+    TArray<FString> Lines;
+    const int32 Bad = S47ArrayFence::Audit(M->Web, Lines);
+    Log(Lines);
+    Tell(Bad == 0 && Lines.Num() > 1, Lines.Num() ? Lines[0] : FString(TEXT("no array fence")), 12);
+   });
+  });
+ });
+ E.AddFreeform(Group, TEXT("Array fence by day"), TEXT("11:00 in the yard west of the array gate, looking along the fence"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 11, Saro(-9, -14), Saro3(-1.5, .4, -20), TEXT("The array fence: wired panels on posts, barbed strands on the arms, the gate leaf, on the ground")); });
+ E.AddFreeform(Group, TEXT("Array fence at night"), TEXT("22:00 in the yard west of the array gate"), [View, Saro, Saro3]
+ { View(TEXT("saro"), 22, Saro(-9, -14), Saro3(-1.5, .4, -20), TEXT("The array fence at night: lit by the yard's lamps and the moon, not glowing")); });
 
  // ---- M6 part 2 (9 November): the motel, the farm's and the motel's lamps, Caliche's glows and its buildings' feet ----
  // The motel stands in SARO's terms (S47Geo::MOTEL_AT, the court group at x -2.5, z 650): the reception x -48.1..-43.7, z 672.3..677.5,

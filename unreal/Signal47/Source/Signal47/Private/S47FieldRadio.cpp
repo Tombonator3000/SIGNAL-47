@@ -130,7 +130,7 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; MusicNow=EMusicTier::Place; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
  if(Voice)Voice->Stop(); bCaption=false;
  HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
@@ -593,11 +593,14 @@ TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
    Add(A.EyePosition(),A.State()==FS47HorrorThreat::EState::Chase || A.State()==FS47HorrorThreat::EState::Capture);
  }
  if(M->DevEvents) if(auto At=M->DevEvents->PalePresence()) Add(*At,false);
+ // D45-20261110: F10's look-only walks are heard as any body is (they never moved the music before).
+ if(M->DevEvents) for(const FVector& GaitHead:M->DevEvents->GaitPresence()) Add(GaitHead,false);
  if(M->IsFreeform()&&M->Freeform)
  {
   if(M->Freeform->FarmSite)
   {
-   if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,true);
+   // D45-20261110: hunting only while it walks at the player near by; standing off it was the chase's music at 34 m.
+   if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,M->Freeform->FarmSite->VisitBodyComing());
    // No body yet: it breaks up on the place itself. Heard, never seen.
    if(auto At=M->Freeform->FarmSite->VisitWarningAt()) Add(*At,false,false);
   }
@@ -617,6 +620,26 @@ double FS47FieldRadio::ObservedThreat(const FVector& Eye,const TArray<FPresence>
 double FS47FieldRadio::ObservedThreat() const
 {
  return M && M->Player?ObservedThreat(S47Three::ToThree(M->Player->EyeUE()),Nearby()):0;
+}
+FS47FieldRadio::EMusicTier FS47FieldRadio::MusicTierFor(double Heard,double Level,double Seen,bool bHunt,bool bWasNear)
+{
+ // D45-20261110: what the player can tell, in order: coming at them, in view or close, heard on the set, nothing.
+ if(Seen>=1 || bHunt) return EMusicTier::Action;
+ if(Seen>0 || Level>.04) return EMusicTier::Tension;
+ return Heard>=(bWasNear?ApproachOut:ApproachIn)?EMusicTier::Eerie:EMusicTier::Place;
+}
+const TCHAR* FS47FieldRadio::MoodOf(EMusicTier In)
+{
+ return In==EMusicTier::Action?TEXT("action"):In==EMusicTier::Tension?TEXT("tension"):In==EMusicTier::Eerie?TEXT("eerie"):TEXT("");
+}
+FString FS47FieldRadio::MusicMood(double& Severity) const
+{
+ // D45-20261110: steps on the roof and the lamp failing: the take owns the room, the place's piece goes in two seconds (urgent).
+ if(M && M->IsFreeform() && M->Freeform && M->Freeform->Taken && M->Freeform->Taken->Stage()==FS47Taken::EStage::Dread)
+ {Severity=1; return TEXT("tension");}
+ // Eerie stays under the Score's urgent .75: it crossfades in four seconds, never cuts.
+ Severity=MusicNow==EMusicTier::Action?1.:MusicNow==EMusicTier::Tension?.55:MusicNow==EMusicTier::Eerie?FMath::Clamp(RealNear,.1,.7):0.;
+ return MoodOf(MusicNow);
 }
 bool FS47FieldRadio::Scare(int32 Kind,double Strength,bool bAudition)
 {
@@ -663,7 +686,9 @@ void FS47FieldRadio::Step(double Dt)
  // (35 m, as the music counts it) has it too. It sinks away by itself when they are gone.
  {
   const double Far=ObservedThreat(Eye,Near);
-  double Low=0,High=0; FS47EncounterSound::DreadFor(Level,Visible||Far>0,Hunting||Far>=1,Low,High);
+  // D45-20261110: in Freeform the ground starts early, with what the set hears (to .45 of it), before the cues' 18 m.
+  double Low=0,High=0; FS47EncounterSound::DreadFor(Level,Visible||Far>0,Hunting||Far>=1,Low,High,M->IsFreeform()?RealNear:0.);
+  MusicNow=MusicTierFor(M->IsFreeform()?RealNear:0.,Level,Far,Hunting,MusicNow!=EMusicTier::Place);
   if(AuditionFor>0){AuditionFor-=Dt;Low=FMath::Max(Low,AuditionLow);High=FMath::Max(High,AuditionHigh);}
   Sound.Dread(M->Audio,Low,High);
  }
@@ -788,6 +813,30 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  C(ObservedThreat(FVector::ZeroVector,{A})==1,TEXT("observed nearby chase requests action music"));
  A.bHunting=false;
  C(ObservedThreat(FVector::ZeroVector,{A})==.55,TEXT("observed presence requests tension rather than action"));
+ {
+  // D45-20261110: the music's four tiers, from what the player can tell only.
+  FPresence T; T.bActive=true; T.At=FVector(0,0,40);
+  const double At40=Proximity(FVector::ZeroVector,T,FreeformReach); T.At.Z=58;
+  const double At58=Proximity(FVector::ZeroVector,T,FreeformReach); T.At.Z=40;
+  C(MusicTierFor(0,0,0,false,false)==EMusicTier::Place && MoodOf(EMusicTier::Place)[0]==0,TEXT("nothing near: the place's own music"));
+  C(At58==0 && MusicTierFor(At58,0,0,false,false)==EMusicTier::Place,TEXT("the tall one 58 m off, past the set's reach, changes nothing"));
+  C(MusicTierFor(At40,Proximity(FVector::ZeroVector,T),0,false,false)==EMusicTier::Eerie && FCString::Strcmp(MoodOf(EMusicTier::Eerie),TEXT("eerie"))==0,
+   TEXT("something heard on the set 40 m off takes the town's piece to eerie"));
+  C(MusicTierFor(.04,0,0,false,true)==EMusicTier::Eerie && MusicTierFor(.04,0,0,false,false)==EMusicTier::Place && MusicTierFor(.02,0,0,false,true)==EMusicTier::Place,
+   TEXT("in at .05, out only under .025: no chatter at the edge"));
+  T.bHunting=true;
+  C(ObservedThreat(FVector::ZeroVector,{T})==0 && MusicTierFor(At40,0,ObservedThreat(FVector::ZeroVector,{T}),false,false)==EMusicTier::Eerie,
+   TEXT("one hunting unseen 40 m off is only heard: eerie, never the chase"));
+  T.bHunting=false; T.bVisible=true; T.At.Z=34;
+  C(MusicTierFor(.3,0,ObservedThreat(FVector::ZeroVector,{T}),false,true)==EMusicTier::Tension && FCString::Strcmp(MoodOf(EMusicTier::Tension),TEXT("tension"))==0,
+   TEXT("one standing in view 34 m off is tension, not the chase"));
+  C(MusicTierFor(.6,.3,0,false,true)==EMusicTier::Tension,TEXT("close enough for the cues, unseen: tension"));
+  T.bHunting=true;
+  C(MusicTierFor(.3,0,ObservedThreat(FVector::ZeroVector,{T}),false,true)==EMusicTier::Action && MusicTierFor(.9,.5,0,true,true)==EMusicTier::Action
+   && FCString::Strcmp(MoodOf(EMusicTier::Action),TEXT("action"))==0,TEXT("one coming at them, seen or close by: action"));
+  FS47FieldRadio Q(nullptr); double Sev=-1;
+  C(Q.MusicMood(Sev).IsEmpty() && Sev==0 && Q.Approach()==0,TEXT("outside a game the set asks nothing of the music"));
+ }
  FS47FieldRadio R(nullptr); R.Begin(nullptr); C(!R.Owned(),TEXT("old and new cases leave pickup available"));
  auto S=R.Save();S47J::Set(S,TEXT("owned"),true);R.Begin(S);C(R.Owned(),TEXT("ownership survives serialize/restore"));
  S47J::Set(S,TEXT("v"),99); R.Begin(S); C(!R.Owned() && S47J::Write(R.Save())==S47J::Write(S),TEXT("unknown future version is preserved and inactive"));

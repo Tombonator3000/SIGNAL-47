@@ -517,6 +517,8 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
   }
   if(ShhLeft>0||FreezeLeft>0)Speed=0;
  }
+ // D45-20261110: walking at the player and near, not held back by a lamp: the music hears that as being come at (FS47FieldRadio).
+ bBodyComing=Speed>0&&!bHeldNow&&FVector::Dist(BodyAt,Feet)<13.;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodyWay),true);
  for(const auto& Part:VisitBody->All)if(auto* C=Part.Get())Q.AddIgnoredComponent(C);
  // Straight for the player, a little round what is in the way. Walls hold it, and doors give time.
@@ -544,7 +546,7 @@ void FS47FarmSite::HideBody()
   if(BodyKind==1)VisitBody->ApplyCrab(false,BodyAt,BodyYaw,BodyYaw,BodyClock,1,false);
   else VisitBody->Apply(false,BodyAt,BodyYaw,BodyYaw,0,0,BodyClock,FS47PaleBody::EPose::Walk);
  }
- bBodyOut=false;
+ bBodyOut=false;bBodyComing=false;
 }
 
 void FS47FarmSite::StepVisit(double Dt,double Dist)
@@ -593,7 +595,13 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
   RadioIn=!bTestHoldHunt&&FMath::FRand()<.35f?FMath::FRandRange(10.f,30.f):-1.;
  }
- if(VisitRounds<2&&!bDriving&&!Tk->Busy()&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))++VisitRounds;
+ // D45-20261110 (Tom, d45: at the feed store the tall one never showed; he had stepped under the dock's roof and the light came for
+ // him while it still stood 58 m off). The tall one and the crab must be out, past their first wait, and near before the light comes
+ // over a roof: the tall one within 26 m (where it is on its feet), the crab within 14. The small ones come from cover, as before.
+ // Shut in where no body can be put in sight at all (18 s of the visit and still none out), the light comes over the roof as it did.
+ const bool bRoofNear=VisitWho==0||(bBodyOut&&BodyClock>=(VisitWho==2?TallStands:1.6)&&FVector::Dist(BodyAt,Feet)<(VisitWho==2?SitBeyond:14.))
+  ||(Visit==1&&!bBodyOut&&VisitAge>=18.);
+ if(VisitRounds<2&&!bDriving&&!Tk->Busy()&&bRoofNear&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))++VisitRounds;
  if(Visit==1)
  {
   // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.

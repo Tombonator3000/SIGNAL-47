@@ -133,6 +133,20 @@ public:
  double ObservedThreat() const;
  double DreadNow() const { return Sound.DreadNow(); }
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
+ // D45-20261110 (Tom, d45: the town's saxophone played on while the tall one came at the feed store). In Freeform the music follows
+ // the tells the player already has, never a hidden place: nothing near, the place's own piece; something the set hears within about
+ // 42 m (its hiss, the lamp's flicker), eerie, and the ground comes up early under it; one in view within 35 m or near enough for
+ // the cues (18 m), tension; one coming at them, action. In at ApproachIn, out again only under ApproachOut.
+ enum class EMusicTier : uint8 { Place, Eerie, Tension, Action };
+ static constexpr double ApproachIn=.05,ApproachOut=.025;
+ static EMusicTier MusicTierFor(double Heard,double Level,double Seen,bool bHunt,bool bWasNear);
+ static const TCHAR* MoodOf(EMusicTier In);
+ EMusicTier MusicTier() const { return MusicNow; }
+ // What the score is asked for now (empty: the place's own) and how urgently, 0 to 1. Under a roof with the light coming over it:
+ // tension at once, so that the place's piece is gone before the light comes on.
+ FString MusicMood(double& Severity) const;
+ // How near anything real is, as the Freeform set hears it (its 48 m and what FS47GearFlicker says), 0 to 1. 0 outside Freeform's reach.
+ double Approach() const { return RealNear; }
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
@@ -157,6 +171,7 @@ private:
  int32 Crackled=0,MessageCount=0,DropCount=0,CrackleRun=0;
  double SinceMessage=1e9;
  bool LastSeen=false,LastHunt=false;
+ EMusicTier MusicNow=EMusicTier::Place; // D45-20261110
  int32 LastCue=-1,TestStage=0;
  double AuditionLow=0,AuditionHigh=0,AuditionFor=0;
  // The player's hand on it (WALKIE-USE-20261108). Chan is saved; the rest is the moment.

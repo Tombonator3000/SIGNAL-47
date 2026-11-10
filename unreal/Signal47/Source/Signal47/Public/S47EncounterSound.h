@@ -23,7 +23,9 @@ public:
  // One bought hit, not placed anywhere. False when its file is missing, it has just been heard, or another cue is sounding.
  // bAudition (F10) plays it whatever was heard last.
  bool Scare(US47Audio* Audio,EScare Kind,double Strength=1.,bool bAudition=false);
- static void DreadFor(double Level,bool bSeen,bool bHunt,double& Low,double& High);
+ // Heard (D45-20261110): how near anything is as the Freeform set hears it (FS47FieldRadio::Approach, 48 m): the ground comes up to
+ // .45 of that before the cues' 18 m, so that it is there under the eerie music while something comes. 0: as before.
+ static void DreadFor(double Level,bool bSeen,bool bHunt,double& Low,double& High,double Heard=0);
  // What a Freeform happening sounds like the moment it is first seen, by its distance in metres (under 0: at the player): -1 nothing.
  static int32 ScareFor(const FString& Happening,double DistM);
  int32 BoughtHits() const { return NBought; }

@@ -3,6 +3,7 @@
 #include "S47Drive.h"
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47Happenings.h"
 #include "S47Keys.h"
 #include "S47Main.h"
@@ -147,7 +148,8 @@ void FS47Outfit::Step(double Dt)
   {
    M->Night->Flashlight->SetBattery(0);M->Night->Flashlight->bOn=false;
    F.BreakGear(TEXT("flashlight"),4);
-   if(M->UI)M->UI->Toast(TEXT("The flashlight goes hot in your hand and dies. The cell is cooked, and the contacts with it: a fresh cell from the store, and $4 on the next sheet for the repair."),6);
+   // D45-20261110: plain words for where it charges and where a fresh cell is sold (the store was nowhere in particular)
+   if(M->UI)M->UI->Toast(TEXT("The flashlight goes hot in your hand and dies. The cell is burnt out and the contacts with it. The repair, $4, goes on the next sheet. ")+(F.Field?F.Field->FlashlightHelp():FS47FreeformWorld::FlashlightHelpFor(false)),7);
   }
   else
   {

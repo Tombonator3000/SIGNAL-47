@@ -1008,4 +1008,13 @@ bool SelfTest(TArray<FString>& Lines)
  Check(!G.Halo.IsValid() || !G.Halo->GetVisibleFlag(), TEXT("a hidden head shows no halo, lit or not"));
  return bOk;
 }
+
+// D45-20261110 (D45-14): the cut and the count for S47ArrayFence, which takes the array fence's old posts out of the same batch.
+UStaticMesh* CutBatch(AS47Web* W, UStaticMeshComponent* Batch, const TArray<FBox>& Boxes, TArray<int32>& Counts)
+{
+ Counts.Init(0, Boxes.Num());
+ return W && Batch ? Cut(W, Batch, Boxes, Counts) : nullptr;
+}
+
+bool CountBatch(const UStaticMeshComponent* Batch, const TArray<FBox>& Boxes, TArray<int32>& Counts) { return CountIn(Batch, Boxes, Counts); }
 }

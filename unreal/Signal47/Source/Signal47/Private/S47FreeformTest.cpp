@@ -932,6 +932,13 @@ void FS47FreeformTest::Step(double Dt)
     if(!Check(HasText(TEXT("WORK ORDERS ARE ISSUED AND SIGNED THERE"))&&!HasText(TEXT("ISSUE WORK ORDER")),TEXT("OPS SERVICE points to the array PC and issues nothing itself")))return;
     if(!Click(TEXT("SHOW ON THE ARRAY PC")))return;Go(88031,.3);return;
    }
+   if(OpsNavStep==4)
+   {
+    // D45-20261110 (Tom: the stores list must be sorted better): the work in hand on top, the depot's parts and cells, then the bands
+    if(!Check(HasText(TEXT("FOR THE WORK NOW"))&&HasText(TEXT("DEPOT STOCK"))&&HasText(TEXT("DRY CELLS"))&&HasText(TEXT("DRIVE MOTOR"))&&HasText(TEXT("SPLICE KIT"))
+     &&HasText(TEXT("CAN BUY NOW"))&&HasText(TEXT("COMING")),TEXT("SUPPLIES: the work in hand on top, parts and dry cells in stock, the stores list in bands")))return;
+    Shot(TEXT("ops-supplies"));Go(8804,.3);return;
+   }
    if(OpsNavStep==5)
    {
     if(!Check(HasText(TEXT("FILM RECORD /")),TEXT("PHOTOGRAPHS opens the film record inside OPS")))return;
@@ -962,6 +969,11 @@ void FS47FreeformTest::Step(double Dt)
   {
    if(!Check(StillAtOps()&&HasText(TEXT("ALL OBSERVING WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
    if(!Click(TEXT("RECORDS")))return;Go(88052,.3);return;
+  }
+  if(Stage==88052&&F.OperationsSection()==3&&!HasText(F.Jobs()[0].Id+TEXT(" / ORIGINAL"))&&!bOriginalsTab)
+  {
+   // FIX10-2: RECORDS opens on a station file that is due (day 1 has two); the originals are one tab over
+   bOriginalsTab=true;if(!Click(TEXT("ORIGINALS")))return;Go(88052,.3);return;
   }
   if(Stage==88052)
   {
@@ -1617,13 +1629,15 @@ void FS47FreeformTest::Step(double Dt)
  {
   M->UI->Close(true);F.SelectJob(JobIndex);const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("selected job supplies real receiver profile")))return;
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
-  if(JobIndex==1)F.SetAnomaly(true);InitialAz=M->Web->DishAz(2);InitialEl=M->Web->DishEl(2);
+  // D45-20261110: watch a dish that is on remote (a journey's diagnosed fault or a worn branch may hold dish 2 in place)
+  WatchDish=2;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){WatchDish=I;break;}
+  if(JobIndex==1)F.SetAnomaly(true);InitialAz=M->Web->DishAz(WatchDish);InitialEl=M->Web->DishEl(WatchDish);
   if(!Check(!F.StartAcquisition()&&F.PointSelected(),TEXT("receiver cannot acquire before a physical pointing command")))return;
   F.OpenTracking();Go(2,.5);return;
  }
  if(Stage==2)
  {
-  if(!Check(FMath::Abs(M->Web->DishAz(2)-InitialAz)>.01||FMath::Abs(M->Web->DishEl(2)-InitialEl)>.01,TEXT("actual native antenna encoders move while tracking telemetry is open")))return;
+  if(!Check(FMath::Abs(M->Web->DishAz(WatchDish)-InitialAz)>.01||FMath::Abs(M->Web->DishEl(WatchDish)-InitialEl)>.01,TEXT("actual native antenna encoders move while tracking telemetry is open")))return;
   Shot(TEXT("tracking"));M->UI->Close(true);Go(3,.1);return;
  }
  if(Stage==3)

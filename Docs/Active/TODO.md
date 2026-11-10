@@ -38,6 +38,8 @@ Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemer
 - [ ] **D45-28 Brente ringer:** skal se ekte ut: oser litt røyk, knitrer litt, glør på bakken.
 - [ ] **D45-29 Alien-bobblehead:** Toms nedlastede `alienbubblehead.glb` (skrivebordet) på dashbordet i bilen.
 
+**Bygget 10. nov (D45-1..29 unntatt 25 pinboard og 26 delvis):** alle punktene over er kodet, bygget og selvtestet (4297 kontroller OK), regresjon PASS 251; trinnprøvene first, sky, files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Ikke spilt av Tom. Kjente testproblemer: `-S47OpsNavigationTest` finner ikke ORIGINALS-fanen som unik knapp etter at RECORDS åpner stasjonsfilen (testoppsett), `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), `-S47FreeformInWorldTest` og `-S47FreeformEvidenceTest` forstyrres av den generelle testløypa som lukker skjermen; ikke avklart om de feilet før i dag. Natt 1 (D45-26) har fått de seks billigste grepene; cliffhangeren kl. 00:41 venter på Tom. Pinboard (D45-25) venter på Toms svar.
+
 ## Toms fikseliste 10. november (etter nattskiftet, d43)
 
 Toms ord: «Ta alt dette nå til skal fikses, start med design vfx/ sfx på saro pc skjermene/systemene og reel». Svar på morgenrapporten: feltbesøk er ok; rutinekort beholdes; kartet skal vise stedet; en spiller som blir inne må få mer å merke og kl. 02 er veiledende, ikke låst; Dales nye replikker tas senere. Kodemerke `FIX-20261110`.

@@ -9,6 +9,7 @@
 #include "HAL/PlatformTime.h"
 #include "Misc/CommandLine.h"
 #include "S47Audio.h"
+#include "S47Bodycam.h"
 #include "S47Chapter1.h"
 #include "S47Flora.h"
 #include "S47FarmWorld.h"
@@ -28,6 +29,7 @@
 #include "S47Startup.h"
 #include "S47Story.h"
 #include "S47Three.h"
+#include "S47Picture.h"
 #include "S47Ultra.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -415,6 +417,30 @@ void US47WorldLife::Step(double Dt)
 	const S47Wind::FWind& Wd = S47Wind::Wind();
 	W->SetEnvScalar(TEXT("WindTime"), float(Wd.Time));
 	W->SetEnvScalar(TEXT("WindAmp"), float(Wd.Strength));
+	// D45-20261110 (D45-19): BODYCAM 1986's lens, turn and burned-in date (MPC_Body, S47Bodycam.h). The stamp is the
+	// wall clock as the HUD has it, the calendar date in Freeform and Story's own night; never anything else.
+	{
+		const bool bBodyPicture = M->Flow && S47Picture::IsBody(S47Picture::Mode(M->Flow->Picture)) && M->Flow->PictureStrength > 0.f;
+		FLinearColor BodyStamp(0, 0, 0, 0);
+		FLinearColor BodyCam = M->Player->Bodycam.Last().Cam;
+		BodyCam.A = 0.f;
+		if (bBodyPicture && !bTitle && M->Mode == US47Main::EMode::Play)
+		{
+			if (M->IsFreeform() && M->Freeform)
+			{
+				const double FreeClock = M->Freeform->Clock();
+				const FDateTime On = M->Freeform->DateOfDay(int32(FMath::FloorToDouble(FreeClock / 86400.0)) + 1);
+				BodyStamp = FS47Bodycam::Stamp(On.GetMonth(), On.GetDay(), On.GetYear(), FreeClock);
+			}
+			else
+			{
+				const double StorySec = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+				BodyStamp = FS47Bodycam::Stamp(4, StorySec >= 12 * 3600 ? 13 : 14, 1986, StorySec);
+			}
+			BodyCam.A = 1.f;
+		}
+		FS47Bodycam::Write(W->GetWorld(), bBodyPicture ? M->Player->Bodycam.Last().Lens : FLinearColor(0, 0, 0, 0), bBodyPicture ? BodyCam : FLinearColor(0, 0, 0, 0), BodyStamp);
+	}
 	for (const TSharedPtr<FS47Flora>& F : Flora)
 	{
 		F->SyncVisibility();

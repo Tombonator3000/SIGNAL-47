@@ -61,6 +61,16 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Night, Log, All);
 
+namespace S47NightFlashlight
+{
+	// D45-20261110: where the lamp charges (the charger on the hall dresser when it is there, FS47FreeformWorld) and where cells are sold
+	FString Help(const US47Main* Main)
+	{
+		const TSharedPtr<FS47FreeformWorld> World = Main && Main->IsFreeform() && Main->Freeform ? Main->Freeform->Field : nullptr;
+		return World.IsValid() ? World->FlashlightHelp() : FS47FreeformWorld::FlashlightHelpFor(false);
+	}
+}
+
 namespace
 {
 	using EMode = US47Main::EMode;
@@ -142,7 +152,9 @@ void US47Night::Init(US47Main* InM)
 			if (!Self.IsValid() || Self->Flashlight->bHave) return;
 			Self->Flashlight->bHave = true;
 			// which button switches it, the first time on this device
-			Self->M->UI->Toast(FString(TEXT("You take the flashlight off the passenger seat.")) + (!FirstTime(TEXT("flashlight")) ? FString() : FString::Printf(TEXT(" %s switches it on."), *S47Keys::Said(TEXT("light")))), 4.5f);
+			// D45-20261110 (Tom: where is the charger?): in Freeform, once, the first time it is taken: how long it runs and where it charges
+			const FString Battery = Self->M->IsFreeform() ? TEXT(" It runs about half a night lit. ") + S47NightFlashlight::Help(Self->M) : FString();
+			Self->M->UI->Toast(FString(TEXT("You take the flashlight off the passenger seat.")) + (!FirstTime(TEXT("flashlight")) ? FString() : FString::Printf(TEXT(" %s switches it on."), *S47Keys::Said(TEXT("light")))) + Battery, Battery.IsEmpty() ? 4.5f : 8.f);
 		};
 	}
 	// ---------- more that can happen in the night, anywhere (story/nightEvents.ts) ----------
@@ -282,7 +294,7 @@ void US47Night::ToggleLight()
 		}
 		else
 		{
-			M->UI->Toast(TEXT("The flashlight battery is dead. It charges on the shelf at SARO, or take a dry cell from the store."), 4);
+			M->UI->Toast(TEXT("The flashlight is dead. ") + S47NightFlashlight::Help(M), 6); // D45-20261110: where the charger is, and where cells are sold
 			return;
 		}
 	}
@@ -753,8 +765,9 @@ void US47Night::FlashlightStep(double Dt)
 	if (Flashlight->bDrains && M->Mode == EMode::Play && M->UI)
 	{
 		const int32 Notice = Flashlight->TakeNotice();
-		if (Notice == 1) M->UI->Toast(TEXT("The flashlight is getting weak."), 3);
-		else if (Notice == 2) M->UI->Toast(TEXT("The flashlight battery is dead."), 3);
+		// D45-20261110: each says where it charges and where cells are sold
+		if (Notice == 1) M->UI->Toast(TEXT("The flashlight is getting weak. ") + S47NightFlashlight::Help(M), 5);
+		else if (Notice == 2) M->UI->Toast(TEXT("The flashlight battery is dead. ") + S47NightFlashlight::Help(M), 5);
 	}
 }
 
@@ -984,6 +997,9 @@ bool US47Night::SelfTest(TArray<FString>& Lines)
 	// M7 (C): the lamp's battery is a pressure: half a night lit (FS47FreeformSession's night is 2700 s), a quarter hour on the charger
 	Check(FS47Flashlight::RunSeconds >= 1200 && FS47Flashlight::RunSeconds <= 1500 && FS47Flashlight::ChargeSeconds >= 600 && FS47Flashlight::ChargeSeconds <= 1200,
 		FString::Printf(TEXT("M7: the flashlight runs %.0f s lit and charges in %.0f s at SARO, on station power"), FS47Flashlight::RunSeconds, FS47Flashlight::ChargeSeconds));
+	// D45-20261110 (Tom: where is the charger?): the dead lamp's words name the charger and where cells are sold; without a world the old rule
+	Check(S47NightFlashlight::Help(nullptr).Contains(TEXT("indoors at SARO")) && S47NightFlashlight::Help(nullptr).Contains(TEXT("Feed & Seed")) && FS47FreeformWorld::FlashlightHelpFor(true).Contains(TEXT("hall dresser")),
+		TEXT("D45: the flashlight's toasts say where it charges (the hall dresser's charger) and where dry cells are sold"));
 	bOk &= S47FilmFace::SelfTest(Lines);
 	bOk &= FS47Album::SelfTest(Lines);
 	return bOk;

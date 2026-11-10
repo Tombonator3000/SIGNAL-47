@@ -22,6 +22,8 @@
 #include "S47Substation.h"
 #include "S47Audio.h"
 #include "S47Night.h"
+#include "S47Flashlight.h"
+#include "S47Props.h"
 #include "S47Glow.h"
 #include "S47Album.h"
 #include "S47SaroNight.h"
@@ -223,6 +225,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
 void FS47FreeformWorld::Stop()
 {
  bActive=false;bPumping=false;if(Carry)Carry->Stop();
+ ChargerShown=-1; // D45-20261110: the charger is hidden with the other parts below; its next lit frame shows it again
  StopGeneratorSound(); // D45-20261110: the generator's loop goes with the session (guarded for engine exit); a load brings it back
  // The shared session is also released from US47Main's UObject destructor.
  // At purge/engine exit its actor-owned maps and callbacks may already be gone.
@@ -1321,7 +1324,7 @@ void FS47FreeformWorld::FinishBranch(const FString& BranchId)
   M->Web->SetDishRemoteAvailable(I,true);M->Web->PointDish(I,Aim.X,Aim.Y,2.2,true); // visibly comes back up
   WearPose.Remove(I);
  }
- const int32 Up=M->Web->DishCount()-Wear.DownCount();
+ const int32 Up=M->Freeform->ArrayUpCount(); // D45-20261110: the one live count, as the station goal shows it
  M->Freeform->RecordEvidence(TEXT("service-branch-")+BranchId,FString(B->Title)+FString::Printf(TEXT(" repaired and tested at its junction. %d of 27 antennas in service."),Up));
  Change(FString::Printf(TEXT("%s back in service. ARRAY %d/27 / MEASUREMENT %.0f%%."),B->Title,Up,100*FS47ArrayWear::RateForCount(Up))+(Wear.DownCount()==0?TEXT(" SARO is whole again."):TEXT("")));
 }
@@ -1485,6 +1488,18 @@ bool FS47FreeformWorld::FeederUse()
 bool FS47FreeformWorld::Use(const FString& Id)
 {
  if(!Ready())return false;
+ if(Id==TEXT("ff:charger"))
+ {
+  // D45-20261110: the lamp goes off on the charger; the old rule does the charging (off, indoors at SARO, on station power)
+  FS47Flashlight* Lamp=M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+  if(Lamp&&Lamp->bHave&&Lamp->bOn&&Lamp->Toggle())
+  {
+   if(M->UI)M->UI->Toast(TEXT("You switch the flashlight off and stand it on the charger. It fills while you're in the building and the station has power."),5);
+   return true;
+  }
+  if(M->UI)M->UI->Toast(Label(Id),4);
+  return true;
+ }
  if(Id==TEXT("ff:film"))return LoadFilmAtPhotoLab();
  if(Id==TEXT("ff:logger-device"))return Logger.Site>=0&&LoggerAction(Logger.Site==0?TEXT("site0"):TEXT("site1"));
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return LoggerAction(Id==TEXT("ff:logger-a")?TEXT("site0"):TEXT("site1"));
@@ -1513,6 +1528,16 @@ bool FS47FreeformWorld::Use(const FString& Id)
 FString FS47FreeformWorld::Label(const FString& Id) const
 {
  if(!Ready())return FString();
+ if(Id==TEXT("ff:charger"))
+ {
+  // D45-20261110: the charger says what it is doing
+  const FS47Flashlight* Lamp=M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+  if(!Lamp||!Lamp->bHave)return TEXT("Flashlight charger / the flashlight is still on the truck's passenger seat");
+  const int32 Pct=FMath::RoundToInt32(100*Lamp->BatteryLevel());
+  if(ChargerState()==0)return FString::Printf(TEXT("Flashlight charger / no station power / the lamp at %d%%"),Pct);
+  if(Lamp->bOn)return FString::Printf(TEXT("Flashlight charger / switch the lamp off and leave it to charge (%d%%)"),Pct);
+  return Pct>=100?FString(TEXT("Flashlight charger / the lamp is full")):FString::Printf(TEXT("Flashlight charger / charging, %d%%"),Pct);
+ }
  if(Id==TEXT("ff:film"))return FString::Printf(TEXT("PHOTO LAB: Load photographic film / 36 exposures / %d packs in stock"),InventoryCount(TEXT("film")));
  if(Id==TEXT("ff:logger-device"))return Logger.Site>=0?TEXT("Retrieve field logger and original tape"):FString();
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return !LoggerAccess()?FString():FString(Id==TEXT("ff:logger-a")?TEXT("FIELD SITE A / generator path / "):TEXT("FIELD SITE B / array east / "))+(Logger.Site==(Id==TEXT("ff:logger-a")?0:1)?TEXT("retrieve logger and original tape"):TEXT("place carried logger and start two-hour record"));
@@ -1563,6 +1588,7 @@ void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
  SetFieldZone(true);StepServiceDoor(Dt);
+ StepCharger(Dt); // D45-20261110
  const bool bFaultBefore=bTrackedPowerFault;
  TrackPowerFault(M->Freeform->PowerFault());
  // M7 (C): the transfer switch from OPS (week 3 on, FS47Openings "transfer"): a feeder fault as it starts throws the backup generator
@@ -1605,7 +1631,7 @@ void FS47FreeformWorld::Step(double Dt)
   const int32 I=ServiceDishIndex();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
    const bool On=FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Target))<=.1&&FMath::Abs(M->Web->DishEl(I)-ServiceEl)<=.1;
    Settle=On?Settle+FMath::Min(Dt,.1):0;
-   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: Local test passed and REMOTE is back. Sign off the work order there."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
+   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(FString(M->Freeform->ActiveServiceGuide()==1?TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: Local test passed and REMOTE is back. Sign off the work order there."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."))+FString::Printf(TEXT(" ARRAY %d/27."),M->Freeform->ArrayUpCount()));}} // D45-20261110: a relay fix moves the count too
   }
  }
  if(!Wear.Job.IsEmpty())
@@ -1641,9 +1667,57 @@ void FS47FreeformWorld::Step(double Dt)
  Apply();
 }
 
+bool FS47FreeformWorld::LampCharging() const
+{
+ // D45-20261110: S47Night::FlashlightStep's rule, read here for the pilot and the notebook (it is not changed)
+ const FS47Flashlight* Lamp=M&&M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+ if(!Lamp||!Lamp->bHave||Lamp->bOn||Lamp->BatteryLevel()>=1||M->Space!=TEXT("room"))return false;
+ const FString Where=M->World?M->World->Area:M->Web?M->Web->Area():FString(TEXT("saro"));
+ return Where==TEXT("saro")&&M->Freeform&&M->Freeform->HasPowerForReactiveLight();
+}
+int32 FS47FreeformWorld::ChargerState() const
+{
+ if(!M||!M->Freeform||!M->Freeform->HasPowerForReactiveLight())return 0;
+ return LampCharging()?1:2;
+}
+FString FS47FreeformWorld::FlashlightHelpFor(bool bCharger)
+{
+ return bCharger?FString(TEXT("Put the lamp on the charger on the hall dresser, or buy dry cells at Earl's (1420 AM) or the Feed & Seed."))
+  :FString(TEXT("Switch it off indoors at SARO and it charges on station power, or buy dry cells at Earl's (1420 AM) or the Feed & Seed."));
+}
+void FS47FreeformWorld::StepCharger(double Dt)
+{
+ // D45-20261110: looked for once a second until the dresser is placed (the props come after the web; FS47FieldRadio::Rest does the
+ // same), then its pilot follows the lamp, set only on a change. On the dresser's top from its bounds: between the recorder at its
+ // left end and the walkie at its right (C.X+.34), a squat dark box with the pilot on its face to the corridor (+Z).
+ if(!ChargerBody||ChargerBody.W!=M->Web.Get())
+ {
+  ChargerRetry-=Dt;if(ChargerRetry>0||!bActive)return;
+  ChargerRetry=1;
+  const UStaticMeshComponent* Dresser=AS47Props::PlacedMesh(TEXT("hallDresser"));
+  const int32 Saro=M->Web->Handle(TEXT("ext.group"));
+  if(!Dresser||Saro<0)return;
+  const FBox Top=Dresser->Bounds.GetBox();const FVector C=S47Three::ToThree(Top.GetCenter());const double Y=Top.Max.Z/100.;
+  ChargerBody=Box(TEXT("FreeformFlashlightCharger"),FVector(C.X+.04,Y+.045,C.Z+.02),FVector(.17,.09,.12),0x2f322d,Saro,TEXT("ff:charger"));
+  if(!ChargerBody)return;
+  ChargerLamp=Box(TEXT("FreeformFlashlightChargerPilot"),FVector(C.X+.10,Y+.06,C.Z+.083),FVector(.018,.018,.008),0x1a1a16,Saro);
+  if(ChargerLamp)M->Web->MarkUsable(ChargerLamp.I,TEXT("ff:charger"));
+  ChargerShown=-1;
+  UE_LOG(LogTemp,Display,TEXT("S47: flashlight charger: on the hall dresser (%.2f %.2f %.2f)"),C.X+.04,Y,C.Z+.02);
+ }
+ const int32 Want=bActive?ChargerState():-1;
+ if(Want==ChargerShown)return;
+ ChargerShown=Want;
+ ChargerBody.SetVisible(bActive);ChargerLamp.SetVisible(bActive);
+ const FLinearColor Pilot=S47Three::Hex(Want==1?0xffa040:Want==2?0x7dff9a:0x1a1a16);
+ ChargerLamp.SetColor(Pilot);ChargerLamp.SetEmissive(Pilot,Want==1?1.f:Want==2?.6f:0.f);
+}
 bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto C=[&](bool B,const TCHAR* T){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+T);};
+ // D45-20261110 (Tom: where is the flashlight's charger?): the help says where it charges and where cells are sold, plainly
+ C(FlashlightHelpFor(true).Contains(TEXT("charger on the hall dresser"))&&FlashlightHelpFor(true).Contains(TEXT("Feed & Seed"))&&FlashlightHelpFor(true).Contains(TEXT("Earl's"))
+  &&!FlashlightHelpFor(false).Contains(TEXT("dresser"))&&FlashlightHelpFor(false).Contains(TEXT("indoors at SARO")),TEXT("D45: the flashlight help names the charger on the hall dresser and the two counters that sell dry cells"));
  FS47FreeformWorld W(nullptr);W.Begin();C(W.InventoryCount(TEXT("fuse"))==3&&W.InventoryCount(TEXT("relay"))==1&&W.InventoryCount(TEXT("fuel"))==2,TEXT("Freeform depot starts with bounded essential spares"));
  W.AddItem(TEXT("relay"),200);C(W.InventoryCount(TEXT("relay"))==99,TEXT("Freeform stock is bounded"));for(int32 I=0;I<99;++I)W.Consume(TEXT("relay"));C(!W.Consume(TEXT("relay"))&&W.InventoryCount(TEXT("relay"))==0,TEXT("Freeform cannot consume nonexistent stock"));
  W.Item=TEXT("fuel");W.Contents.Add(TEXT("fuel"),1);W.Payload=3;W.bParcelWasLoaded=true;W.Delivered=4;W.DeliveredByTruck=3;W.ServiceDeliveries=2;W.DonorTests=1;W.ServiceTests=2;W.Service=4;W.Fuel=.7;W.BenchJob=TEXT("donor");W.BenchSeconds=1.2;W.GeneratorSeconds=7200;W.bGenerator=true;

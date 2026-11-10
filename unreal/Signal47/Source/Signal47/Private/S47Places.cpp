@@ -217,6 +217,26 @@ FString FS47Places::NextUnknown(int32 Salt) const
  const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47;
  return Left[int32(FS47NightRhythm::Roll(Seed,Salt,0x504c4143u)*Left.Num())%Left.Num()];
 }
+FString FS47Places::ArcPlace(int32 Seed)
+{
+ // D45-20261110 (D45-26): the windmill while it stands on the land; else one with a survey tag, by the seed (Saucer Rock has none).
+ TArray<FString> Fit;
+ for(const FDef& D:Defs())
+ {
+  const FString Id=D.Id;
+  if(Id==Motel||Id==TEXT("cairn")||Id==TEXT("saucer_rock")||!S47OpenLand::InRim(D.X,D.Z,60))continue;
+  if(Id==TEXT("windmill"))return Id;
+  Fit.Add(Id);
+ }
+ if(Fit.IsEmpty())return FString();
+ return Fit[int32(FS47NightRhythm::Roll(Seed,1,0x41524350u)*Fit.Num())%Fit.Num()];
+}
+double FS47Places::ArcBearing(int32 Seed,double FromX,double FromZ,double ToX,double ToZ,double Spread)
+{
+ const double Most=FMath::Max(0.,.45*Spread);
+ const double Off=FMath::Clamp((double(FS47NightRhythm::Roll(Seed,1,0x41524342u))-.5)*10.,-Most,Most);
+ return Whole(AzimuthOf(FromX,FromZ,ToX,ToZ)+Off);
+}
 bool FS47Places::Spot(const FString& Id,double& OutX,double& OutZ) const
 {
  const FBuilt* B=Built.FindByPredicate([&](const FBuilt& X){return X.Id==Id;});
@@ -705,7 +725,10 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(!Gives(bAnomaly,Branches))return false;
  const double Now=F.Clock();const int32 Night=FS47FreeformSession::NightOf(Now);
  // At most one thing a night at SARO points out at the land: the Director holds it (director.json point_out_per_night).
- if(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day())return false;
+ // D45-20261110 (D45-26): on the first day a slip in daylight (FreeSlip), or any slip on the first night while the array's burst is still
+ // to come (FS47Happenings::FirstBurstOwed), is once that day and leaves the night's one pointing-out to the burst.
+ const bool bFree=FreeSlip(Night,Now)||(F.Happenings&&F.Happenings->FirstBurstOwed(Night));
+ if(bFree?LastFixDay==F.Day():(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day()))return false;
  // PT-FEEDER-20261109: the big night's night is its own (FS47Happenings::BigOwns): it points, nothing else does, before it or after.
  if(F.Happenings&&F.Happenings->BigOwns(Night))return false;
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
@@ -736,13 +759,17 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
   }
   else bAhead=false;
  }
+ // D45-20261110 (D45-26): on the first night the line the night's burst will come back on (ArcPlace), inside the rim.
+ bool bArc=false;
+ if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
  if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
- const FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
+ FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
+ if(bArc){B.Az=ArcBearing(F.Seed(),SaroX,SaroZ,ToX,ToZ,Spread);RingOf(B,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));} // the line's own number
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
- if(F.Director)F.Director->NotePointOut(Night);
+ if(F.Director&&!bFree)F.Director->NotePointOut(Night);
  if(bAhead)F.Happenings->PointedTonight(Night);
  const FString Mended=Branches<=0?FString(TEXT("With no branch of the array repaired, the array still picked up something away from where the dishes were pointed, though only roughly"))
   :FString::Printf(TEXT("With %d %s of the array repaired, the array picked up something away from where the dishes were pointed"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
@@ -750,7 +777,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
  const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
  if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0);
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d%s"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):bArc?TEXT("the first night's line"):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0,bFree?TEXT("; the night's pointing-out left for the burst"):TEXT(""));
  M->RequestAutosave();
  return true;
 }
@@ -931,6 +958,28 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   const bool bOff=!Pencil.ToggleMark(99999,0,10);
   FS47Places Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Pencil.Save())));
   Check(bDown&&bRubbed&&bOff&&Kept.MapMarks().Num()==1&&Kept.MapMarks()[0].Equals(FVector2D(-300,900),.11),TEXT("pencil marks go down, rub out where they are touched, stay on the land and survive a Continue"));
+ }
+ {
+  // D45-20261110 (D45-26): the first night's line. The windmill, on the land, never the cairn; one bearing to it for the noon slip and
+  // the burst whatever their spread (no branch to two mended), the same for a seed, inside each sector, never Story's number.
+  double Sx=0,Sz=0;SaroRoad(Sx,Sz);
+  const FDef* Mill=Def(TEXT("windmill"));
+  bool bPlace=Mill!=nullptr,bOne=true,bInside=true,bNumber=true;
+  for(int32 Sd=1;Sd<=400&&Mill;++Sd)
+  {
+   const FString P=ArcPlace(Sd);
+   bPlace&=P==TEXT("windmill")&&S47OpenLand::InRim(Mill->X,Mill->Z,60);
+   const double Slip=ArcBearing(Sd,Sx,Sz,Mill->X,Mill->Z,SpreadFor(0)),Burst=ArcBearing(Sd,Sx,Sz,Mill->X,Mill->Z,18.);
+   bOne&=Slip==Burst&&Slip==ArcBearing(Sd,Sx,Sz,Mill->X,Mill->Z,SpreadFor(1))&&Slip==ArcBearing(Sd,Sx,Sz,Mill->X,Mill->Z,SpreadFor(2));
+   FBearing Line;Line.Az=Slip;Line.Spread=SpreadFor(2);Line.FromX=Sx;Line.FromZ=Sz;
+   bInside&=InSector(Line,Mill->X,Mill->Z);
+   const FString Said=FString::Printf(TEXT("%03.0f"),Slip);
+   bNumber&=!Said.Contains(TEXT("47"))&&Slip>=0&&Slip<360;
+  }
+  Check(bPlace&&bOne&&bInside&&bNumber,TEXT("the first night's line: the windmill, on the land, one bearing for the slip and the burst that holds it, and no 47"));
+  // In daylight on the first day a slip leaves the night's pointing-out for the dark; at dusk, after midnight, or another day it does not.
+  Check(FreeSlip(1,12.5*3600.)&&FreeSlip(1,8*3600.)&&!FreeSlip(1,18*3600.)&&!FreeSlip(1,22*3600.)&&!FreeSlip(1,86400.+7*3600.)&&!FreeSlip(2,86400.+12*3600.),
+   TEXT("only the first day's daylight slip is free of the night's one pointing-out"));
  }
  return OK;
 }

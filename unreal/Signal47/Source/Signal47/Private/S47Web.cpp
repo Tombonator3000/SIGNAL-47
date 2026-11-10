@@ -16,6 +16,7 @@
 #include "S47GraphicsReview.h"
 #include "S47RenderAudit.h"
 #include "S47Picture.h"
+#include "S47Bodycam.h"
 #include "S47Startup.h"
 #include "S47Props.h"
 #include "S47SaroArrival.h"
@@ -23,6 +24,7 @@
 #include "S47SaroLampFeet.h"
 #include "S47RouteLampFeet.h"
 #include "S47StreetLamps.h"
+#include "S47ArrayFence.h"
 #include "S47StationPhone.h"
 #include "S47CalicheGround.h"
 #include "S47SubstationYard.h"
@@ -770,6 +772,8 @@ void AS47Web::BeginPlay()
 	S47RouteLampFeet::Build(this);
 	// STREETLAMPS-20261108: cobra heads on davit arms in place of the highway's old poles, standing on those footings.
 	S47StreetLamps::Build(this);
+	// D45-20261110 (D45-14): the Military Barriers wired fence in place of the array's chain-link planes; after the lamps (the same pole batch).
+	S47ArrayFence::Build(this);
 	BuildHighwayRanch();
 	BuildHighwayLandscape();
 	// CALICHE-REAL-20261108: a concrete stem wall under each of Caliche's building walls that measures floating over the land.
@@ -826,7 +830,8 @@ void AS47Web::BeginPlay()
 		float Strength = 1.f, Calm = 0.f;
 		FParse::Value(FCommandLine::Get(), TEXT("S47PictureStrength="), Strength);
 		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
-		E->SetScalarParameterValue(TEXT("PictureMode"), S47Picture::Mode(Picture));
+		// D45-20261110 (D45-19): Bodycam 1986 keeps the VHS look until M_WebTone is rebuilt with MPC_Body
+		E->SetScalarParameterValue(TEXT("PictureMode"), S47Picture::ShaderMode(S47Picture::Mode(Picture), FS47Bodycam::HasShader()));
 		E->SetScalarParameterValue(TEXT("Vhs"), S47Picture::Mode(Picture) == 0 ? 0.f : S47Picture::Strength(Strength));
 		E->SetScalarParameterValue(TEXT("PictureStrength"), S47Picture::Strength(Strength));
 		E->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));

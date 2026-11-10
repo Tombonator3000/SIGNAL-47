@@ -38,18 +38,22 @@ void FS47DevFreeform::AddEconomy(FS47DevEvents& E)
 			S::PayAfterDays(0), S::PayAfterDays(2), S::PayAfterDays(3), S::PayAfterDays(4), S::OnTimeBonus, S::CleanBonus, S::CleanRecordQuality, S::ControlBonus,
 			S::PayAfterDays(0) + S::OnTimeBonus + S::CleanBonus, S::PayAfterDays(0) + S::OnTimeBonus, S::PayAfterDays(3)), 14);
 	});
-	E.AddFreeform(Group, TEXT("Stores list: what is open, what waits"), TEXT("each offer with its price and week, and what it waits for today"), [this]
+	// D45-20261110: in the bands OPS SUPPLIES shows them (can buy now, coming, in hand), each with its kind
+	E.AddFreeform(Group, TEXT("Stores list: can buy now, coming, in hand"), TEXT("each offer in its band on OPS SUPPLIES, with its kind, price and week"), [this]
 	{
 		FS47FreeformSession* F = Session();
 		if (!F) { Tell(false, TEXT("Freeform only")); return; }
-		TArray<FString> Lines;
+		TArray<FString> CanBuy, Coming, Held;
 		for (const FS47KitOffer& O : FS47Openings::Defs())
 		{
 			const FString Waits = F->KitWaits(O.Id);
-			Lines.Add(FString::Printf(TEXT("%s $%d wk%d %s"), O.Id, F->KitPrice(O.Id), O.Week, F->HasKit(O.Id) ? TEXT("IN HAND") : Waits.IsEmpty() ? TEXT("OPEN") : TEXT("waits")));
+			const FString Line = FString::Printf(TEXT("%s %s $%d wk%d"), FS47Openings::Kind(O.Id), O.Id, F->KitPrice(O.Id), O.Week);
+			(F->HasKit(O.Id) ? Held : Waits.IsEmpty() ? CanBuy : Coming).Add(Line);
 		}
-		UE_LOG(LogTemp, Display, TEXT("S47: F10 economy: stores on day %d: %s"), F->Day(), *FString::Join(Lines, TEXT("; ")));
-		Tell(true, FString::Printf(TEXT("Day %d: %s"), F->Day(), *FString::Join(Lines, TEXT("; "))), 16);
+		const FString Said = FString::Printf(TEXT("Day %d. CAN BUY NOW: %s. COMING: %s. IN HAND: %s."), F->Day(), CanBuy.IsEmpty() ? TEXT("none") : *FString::Join(CanBuy, TEXT("; ")),
+			Coming.IsEmpty() ? TEXT("none") : *FString::Join(Coming, TEXT("; ")), Held.IsEmpty() ? TEXT("none") : *FString::Join(Held, TEXT("; ")));
+		UE_LOG(LogTemp, Display, TEXT("S47: F10 economy: stores: %s"), *Said);
+		Tell(true, Said, 16);
 	});
 	E.AddFreeform(Group, TEXT("Truck: as it is now, against stock"), TEXT("top speed and the pull from a stand on the blacktop and on dirt, the tank and range, the parcel"), [this]
 	{
@@ -74,6 +78,20 @@ void FS47DevFreeform::AddEconomy(FS47DevEvents& E)
 		if (!F) { Tell(false, TEXT("Freeform only")); return; }
 		for (const TCHAR* Id : { TEXT("truck_tires"), TEXT("truck_rack"), TEXT("truck_tank"), TEXT("truck_engine") }) F->TestTakeKit(Id);
 		Tell(true, TEXT("Stock again. ") + FS47Outfit::Compare(FS47Outfit::TuneFor(F)), 10);
+	});
+	// D45-20261110 (D45-29): the alien bobblehead on the dash: where it sits, how its head stands, and a shove to see it wobble
+	// (from the driver's seat it is on the pad to the right of the compass). Without the imported meshes: says so.
+	E.AddFreeform(Group, TEXT("Truck: the dashboard bobblehead"), TEXT("where it sits and how its head stands, and a shove to its head; sit in the truck to see it wobble"), [this]
+	{
+		FS47Truck* T = M->World ? M->World->TruckHere() : nullptr;
+		if (!T && M->World) T = M->World->SaroTruck();
+		FS47Bobblehead* B = T ? T->Bobblehead() : nullptr;
+		if (!B) { Tell(false, T ? TEXT("No bobblehead on this truck: import it (Tools/alienbubblehead/import_assets.sh), Jeep cab only") : TEXT("No truck here"), 10); return; }
+		B->Spring.Kick(2.5, 1.5);
+		TArray<FString> Lines;
+		const bool bOk = B->Audit(Lines, false, true);
+		UE_LOG(LogTemp, Display, TEXT("S47: F10 truck bobblehead: %s %s"), *B->Describe(), *FString::Join(Lines, TEXT("; ")));
+		Tell(true, (bOk ? FString() : FString(TEXT("CHECK FAILED (see the log). "))) + B->Describe(), 12);
 	});
 	E.AddFreeform(Group, TEXT("Gear gives out: the flashlight"), TEXT("as if close to something: the lamp's cell cooks, and $4 goes on the next sheet"), [this]
 	{

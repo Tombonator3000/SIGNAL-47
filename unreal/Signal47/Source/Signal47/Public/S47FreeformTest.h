@@ -16,6 +16,8 @@ private:
  void StepDuskOrb(double Dt);
  US47Main* M=nullptr;
  bool bStoryAccessReady=false;
+ bool bOriginalsTab=false; // D45: the OPS RECORDS check has moved to the ORIGINALS tab once
+ int32 WatchDish=2; // D45: the dish the tracking check watches (one on remote)
  bool bInit=false,bDone=false,bAudioMarked=false,bFieldResume=false,bCarRoundTrip=false;
  int32 Stage=0,Checks=0,Restores=0,JobIndex=0,EventIndex=0,DayRuns=0,TripHoldSamples=0;
  double Age=0,At=0,Hold=0,InitialAz=0,InitialEl=0,PausedAz=0,PausedEl=0;

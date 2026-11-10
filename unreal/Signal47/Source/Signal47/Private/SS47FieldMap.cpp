@@ -564,6 +564,17 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 	if (Fs.Field && Fs.Field->HasArrayFault() && M->Web)
 		for (int32 I = 0; I < M->Web->DishCount(); ++I)
 			if (M->Web->DishId(I) == Fs.Field->ServiceDishId()) { Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Fs.Field->ServiceDishId() + TEXT(" drive fault")); break; }
+	// D45-20261110 (Tom: told to repair S-13, and it was not on the map): the station goal's junction, by its number. Only the next
+	// branch, so the sheet stays clean; the fault lamp on its box says the same out there.
+	if (Fs.Field && Fs.Field->ArrayWear().bActive && M->Web)
+		if (const FS47ArrayWear::FBranch* Goal = Fs.Field->ArrayWear().NextBranch())
+			for (int32 I = 0; I < M->Web->DishCount(); ++I)
+				if (M->Web->DishId(I) == Goal->Junction)
+				{
+					const FString Mend = FString::Printf(TEXT("%s: mend the %s%s"), Goal->Junction, *FString(Goal->Title).ToLower(), FS47FreeformSession::GoalWaits(Fs.Clock()) ? TEXT(", by daylight") : TEXT(""));
+					Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Mend);
+					break;
+				}
 	// The feeder, when the station's power is off.
 	if (Fs.PowerFault() && Fs.EventPlaces)
 		if (const FS47EventPlace* Feeder = Fs.EventPlaces->Find(TEXT("feeder"))) { FS47MapJob Job; Job.X = Feeder->EntryX; Job.Z = Feeder->EntryZ; Job.Text = TEXT("fix the feeder"); V.Jobs.Add(Job); }

@@ -21,6 +21,8 @@ struct SIGNAL47_API FS47Openings
  static const FS47KitOffer* Def(const FString& Id);
  // The first day it can be had at all (Week's first day).
  static int32 FirstDay(const FString& Id);
+ // D45-20261110 (Tom: the stores list sorted better): what it is for, as OPS SUPPLIES tags it: TRUCK, FIELD or STATION.
+ static const TCHAR* Kind(const FString& Id);
  static bool SelfTest(TArray<FString>& Lines);
 };
 

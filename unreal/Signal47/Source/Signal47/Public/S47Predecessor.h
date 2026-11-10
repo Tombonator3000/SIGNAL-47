@@ -263,8 +263,19 @@ private:
  void StepNews(double Dt);
  void StepRing(double Dt);
  void Hear(const FString& Id);
- // Dale's next line that is due, if any; marked said by whoever delivers it.
- const S47PredecessorText::FBark* NextBark() const;
+ // Dale's next line that is due, if any; marked said by whoever delivers it. D45-20261110 (D45-26): bSecondToday, a second line on the
+ // first day: only one that answers something the player went and did (DayOneSecond: the windmill's tag, the locker, the mine).
+ const S47PredecessorText::FBark* NextBark(bool bSecondToday=false) const;
+ static bool DayOneSecond(const TCHAR* Id);
+ // D45-20261110: how many of his lines have been said (or left on the slip) in this game; on the first day, how many today.
+ int32 BarksSaid() const;
+ // D45-20261110: on the first day he may say two (his hello and one answer), unless he gave up calling today.
+ bool SecondBarkToday() const;
+ // D45-20261110: his hello is for the walkie: not on the slip by the phone in the first shift, nor while the set is in hand and he has
+ // not given up calling today. After it, his line about his bench (BenchAt, real seconds; -1 none; in memory only).
+ bool HelloWaitsForWalkie() const;
+ double BenchAt=-1;
+ void StepBench();
  void StepDale();
  // The walkie (not saved: after a Continue he simply calls again). How often he has answered today, when he last did, whether
  // a hail of his went unanswered, when he tries again, and which stretch of lost time he has already said something about.

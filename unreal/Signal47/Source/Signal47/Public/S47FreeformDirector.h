@@ -95,6 +95,11 @@ public:
  void EndForRest();
  // A task row while lights are reported somewhere, and while their marks stand. Empty otherwise.
  FString ReportedLine() const;
+ // D45-20261110 (D45-26: Tom rested at 21:02 and never saw the 21:15 visit). The first evening's appointment: from 19:00 on the first
+ // night while the night's first visit of the low lights is still to come, a task row (and a toast once, as it goes on the note) that
+ // they are seen over the dishes most evenings around nine. Empty otherwise. EveningLightsAt: the same, pure.
+ FString EveningLightsLine() const;
+ static FString EveningLightsAt(double Clock,int32 NightVisits,double NightDue);
  // PT-FEEDER-20261109 (d37: the feeder looked at, the line still open): the report on tonight's note is ticked off once the player
  // has been to the place and found something there, or found it gone over and empty (FS47FarmSite::Checked). Not while the lights
  // are still up, and not for a landing's report, which is its own.
@@ -242,6 +247,7 @@ private:
  bool bTestHush=false;
  // The first shift was on at the last tick (Step): its end gives the scheduler an ordinary interval before its first draw.
  bool bWasFirstShift=false;
+ bool bEveningTold=false; // D45-20261110: EveningLightsLine's toast said in this sitting (a Continue in the evening says it again)
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them

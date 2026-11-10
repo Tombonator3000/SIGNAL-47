@@ -476,6 +476,30 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    });
   });
  });
+ // D45-20261110 (Tom, d45): a fresh ring smokes a little, crackles close to and has coals glowing at its edge; hours on they have cooled.
+ for(const double Hours:{0.,4.})
+ {
+  E.AddFreeform(G,Hours>0?TEXT("Scorched ring: four hours on"):TEXT("Scorched ring: coals, smoke and crackle"),
+   Hours>0?TEXT("the same ring as it is four hours after it came down: the smoke gone, the coals dull"):TEXT("23:00, on foot a few steps off a fresh ring, looking at it; makes one first if there is none"),[this,Haps,Hours]
+  {
+   FS47Happenings* H=Haps();FString Why;if(!H){Tell(false,TEXT("Freeform only"));return;}
+   if((Hours<=0||!H->HasSite(TEXT("landing")))&&!H->DevStart(TEXT("landing"),TEXT("ring"),Why)){Tell(false,Why);return;}
+   if(Hours>0)H->DevAgeRing(Hours);
+   FStage Stage;Stage.From=23;Stage.To=4.5;Stage.Area=TEXT("road");Stage.Yaw=0;Stage.Pitch=-.3;
+   Stage.Where=[Haps]{FVector At;FS47Happenings* Hs=Haps();if(Hs&&Hs->SiteHere(TEXT("landing"),At))return FVector2D(At.X,At.Z+7);return FVector2D(8000,0);};
+   Go(Stage,[this,Haps,Hours]
+   {
+    After(4,[this,Haps,Hours]
+    {
+     FS47Happenings* Ha=Haps();FString Said;
+     const bool bShown=Ha&&Ha->DevEmbers(Said);
+     UE_LOG(LogS47HappenDev,Display,TEXT("S47: F10 scorched ring: %s"),*Said);
+     // Four hours on the coals are still there, dull, and the smoke is done; fresh, it smokes and crackles.
+     Tell(bShown&&(Hours>0?Said.Contains(TEXT("smoke 0.00")):Said.Contains(TEXT("crackle on"))&&!Said.Contains(TEXT("smoke 0.00"))),Said,7);
+    });
+   });
+  });
+ }
  // ---- M7: the first big night (S47BigNight.cpp), each shape where it can be met, and the day after ----
  // -S47DevSweep=/tmp/dir "-S47DevSweepGroup=First big night (M7)" runs it in turn; its own pictures are bignight-<what>.png beside the
  // sweep's. The natural line comes first: it needs a game that has not reached night 2 or 3 yet.

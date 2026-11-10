@@ -2375,6 +2375,16 @@ namespace
      return true;
     }
     {static double NextLog=0;if(Elapsed>=NextLog){NextLog=Elapsed+5;UE_LOG(LogTemp,Display,TEXT("S47: taken watch, stage %d, visit %d, in light %.1f, body %.1f m, indoors %d"),int32(Tk.Stage()),Site.VisitStage(),Tk.LightOn(),Site.VisitBodyDistance(),Tk.Indoors());}}
+    // D45-20261110: the tall one under a roof: its light comes only once it is out and near (26 m), or when none could be put in sight.
+    {
+     static bool bTallBegan=false;
+     if(TakenKind==2&&!bTallBegan&&Tk.Busy())
+     {
+      bTallBegan=true;const double Body=Site.VisitBodyDistance();
+      UE_LOG(LogTemp,Display,TEXT("S47: taken: the tall one's light begins, body %.1f m off, indoors %d"),Body,Tk.Indoors());
+      if(Body>FS47FarmSite::SitBeyond+1.)return Fail(TEXT("under a roof the tall one's light must wait until it is near"));
+     }
+    }
     if(Stage==150)
     {
      if(Tk.Stage()==FS47Taken::EStage::Dread&&!TakenShot[0]&&Elapsed-VisitFrom>3){TakenShot[0]=true;Shot(TEXT("taken-dread.png"));return true;}

@@ -30,6 +30,9 @@ namespace S47MailLocal
 {
  const TCHAR* const BoxUse=TEXT("ff:mail:box");
  const TCHAR* const BoxRect=TEXT("ff:mailbox");
+ // D45-24-20261110: kept among the read issues once the reader has been told a story can be clicked onto the map (no new save key).
+ const TCHAR* const LedgerHint=TEXT("ledger:hint");
+ FString LedgerHintText(){return FString::Printf(TEXT("A story in the paper names a place. Click it, or use the buttons under the page, to pencil it in on your map (%s)."),*S47Keys::MapSaid());}
  const TCHAR* const WeekNames[]={TEXT("Monday"),TEXT("Tuesday"),TEXT("Wednesday"),TEXT("Thursday"),TEXT("Friday"),TEXT("Saturday"),TEXT("Sunday")};
  const TCHAR* const MonthNames[]={TEXT("January"),TEXT("February"),TEXT("March"),TEXT("April"),TEXT("May"),TEXT("June"),TEXT("July"),TEXT("August"),TEXT("September"),TEXT("October"),TEXT("November"),TEXT("December")};
  const TCHAR* const Points[]={TEXT("north"),TEXT("northeast"),TEXT("east"),TEXT("southeast"),TEXT("south"),TEXT("southwest"),TEXT("west"),TEXT("northwest")};
@@ -722,25 +725,25 @@ FString FS47Mail::IssueText(int32 No) const
  S47Ledger::FIssue Issue;
  return IssueOf(No,Issue)?S47Ledger::PlainText(Issue):FString();
 }
-void FS47Mail::OpenLedger(int32 No)
+void FS47Mail::OpenLedger(int32 No,int32 Sheet)
 {
  if(!M||!M->UI||!M->Freeform)return;
- auto& Ses=*M->Freeform;
  S47Ledger::FIssue Issue;if(!IssueOf(No,Issue))return;
  const FString ReadKey=FString::Printf(TEXT("ledger:%d"),No);
  if(!ReadIssues.Contains(ReadKey))
  {
-  // The first reading: what the paper mentions goes on the map in pencil, and wagon 23 with it.
-  ReadIssues.Add(ReadKey);int32 Marked=0;
-  TArray<FString> Leads;for(const S47Ledger::FStory& St:Issue.Front)Leads.Add(St.Lead);for(const S47Ledger::FNote& Cnt:Issue.Letters)Leads.Add(Cnt.Lead);
-  for(const FString& Lead:Leads)
+  // D45-24-20261110: the first reading used to pencil every lead onto the map without a word the player noticed (Tom's game: two
+  // places marked he never saw). Now nothing is marked by reading; the reader clicks a story (MarkLead). Once in a game, the first
+  // paper with a lead not on the map yet says how ("ledger:hint" among the read, so nothing new is saved).
+  ReadIssues.Add(ReadKey);
+  const TArray<S47Ledger::FLeadRef> Refs=S47Ledger::LeadsOf(Issue);
+  const bool bNew=Refs.ContainsByPredicate([this](const S47Ledger::FLeadRef& Ref){return !LeadMarked(Ref.Lead);});
+  if(bNew&&!ReadIssues.Contains(S47MailLocal::LedgerHint))
   {
-   if(Lead.IsEmpty())continue;
-   if(Lead==TEXT("wagon")){if(Ses.Predecessor&&!Ses.Predecessor->Heard(Lead)&&!Ses.Predecessor->Found(Lead)){Ses.Predecessor->HearOf(Lead);++Marked;}}
-   else if(Ses.Places&&FS47Places::Def(Lead)&&!Ses.Places->Heard(Lead)&&!Ses.Places->Found(Lead)){Ses.Places->Hear(Lead);++Marked;}
+   ReadIssues.Add(S47MailLocal::LedgerHint);
+   M->UI->Toast(S47MailLocal::LedgerHintText(),7);
   }
-  if(Marked>0)M->UI->Toast(FString::Printf(TEXT("You pencil what the paper mentions onto your map (%s)."),*S47Keys::MapSaid()),5);
-  UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d read, %d places marked"),No,Marked);
+  UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d read, %d articles point at a place"),No,Refs.Num());
   M->RequestAutosave();
  }
  if(M->Story)
@@ -748,23 +751,88 @@ void FS47Mail::OpenLedger(int32 No)
   FS47Doc D;D.Id=TEXT("mail-")+ReadKey;D.Title=FString::Printf(TEXT("The Caliche Ledger, %s"),*DayText(Issue.Day));D.Kind=TEXT("typed");D.Stamp=TEXT("THE LEDGER");
   D.Page=S47Ledger::PlainText(Issue);D.Transcript=D.Page;M->Story->AddDoc(D);
  }
+ ShowLedger(Issue,Sheet,FString::Printf(TEXT("THE LEDGER / %s"),*S47Ledger::DateLine(Issue.Date)),No);
+}
+void FS47Mail::ShowLedger(const S47Ledger::FIssue& Issue,int32 Sheet,const FString& Title,int32 No)
+{
+ if(!M||!M->UI||!M->Freeform)return;
+ auto& Ses=*M->Freeform;
+ const int32 Side=FMath::Clamp(Sheet,0,S47Ledger::Sheets-1);
+ const TWeakPtr<uint8> Guard=Life;
+ // D45-24-20261110: a story is clicked on the page (S47Ledger::Page) or by its button under it, for the keyboard and the pad;
+ // both pencil it in by MarkLead, and both show what the map knows.
+ S47Ledger::FLeadHooks Hooks;
+ Hooks.Marked=[this,Guard](const FString& Id){return Guard.IsValid()&&LeadMarked(Id);};
+ Hooks.Mark=[this,Guard,No](const FString& Id,const FString& Said){if(Guard.IsValid())MarkLead(No,Id,Said);};
  TArray<S47Kit::FW> Panel;
- Panel.Add(S47Ledger::Page(Issue));
- const TWeakPtr<uint8> Guard=Life;const int32 Until=Issue.Day+6;
- for(const S47Ledger::FAd& Ad:Issue.Ads)
+ Panel.Add(S47Ledger::Page(Issue,Side,Hooks));
+ TArray<S47Kit::FW> Pencil;
+ for(const S47Ledger::FLeadRef& Ref:S47Ledger::LeadsOf(Issue))
  {
-  const S47Ledger::FCoupon* Cp=Ad.Coupon.IsEmpty()?nullptr:S47Ledger::Coupon(Ad.Coupon);if(!Cp)continue;
-  const FString Id=Cp->Id,Line=Cp->Line,Through=DayText(Until);
-  const bool bValid=Ses.Day()<=Until;
-  Panel.Add(S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this,Guard,Id,Line,Through,bValid]
+  if(Ref.Sheet!=Side)continue;
+  const FString LeadId=Ref.Lead,HeadText=Ref.Head,Where=S47Ledger::LeadTitle(Ref.Lead);
+  Pencil.Add(S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this,Guard,LeadId,HeadText,Where]
   {
-   if(!bValid||!Guard.IsValid())return FString::Printf(TEXT("Coupon: %s. It ran out on %s."),*Line,*Through);
-   return Clipped(Id)?FString::Printf(TEXT("Clipped: %s, good through %s"),*Line,*Through):FString::Printf(TEXT("Clip the coupon: %s, good through %s"),*Line,*Through);
-  }),[this,Guard,Id,Until]{if(Guard.IsValid()&&!Clipped(Id))Clip(Id,Until);},false,TAttribute<bool>::CreateLambda([this,Guard,Id,bValid]{return bValid&&Guard.IsValid()&&!Clipped(Id);})));
+   return Guard.IsValid()&&LeadMarked(LeadId)?FString::Printf(TEXT("On your map: %s (%s)"),*HeadText,*Where):FString::Printf(TEXT("Pencil it in on the map: %s (%s)"),*HeadText,*Where);
+  }),[this,Guard,No,LeadId,HeadText]{if(Guard.IsValid())MarkLead(No,LeadId,HeadText);},false,TAttribute<bool>::CreateLambda([this,Guard,LeadId]{return Guard.IsValid()&&!LeadMarked(LeadId);})));
  }
- Panel.Add(S47Kit::Button(TEXT("Fold the paper"),[this]{if(M&&M->UI)M->UI->Close();},true));
+ if(!Pencil.IsEmpty())Panel.Add(S47Kit::Row(Pencil));
+ // The coupon is clipped from the inside page, where its ad is (the front's ear says so).
+ if(Side==1)
+ {
+  const int32 Until=Issue.Day+6;
+  for(const S47Ledger::FAd& Ad:Issue.Ads)
+  {
+   const S47Ledger::FCoupon* Cp=Ad.Coupon.IsEmpty()?nullptr:S47Ledger::Coupon(Ad.Coupon);if(!Cp)continue;
+   const FString Id=Cp->Id,Line=Cp->Line,Through=DayText(Until);
+   const bool bValid=Ses.Day()<=Until&&No>0;
+   Panel.Add(S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this,Guard,Id,Line,Through,bValid]
+   {
+    if(!bValid||!Guard.IsValid())return FString::Printf(TEXT("Coupon: %s. It ran out on %s."),*Line,*Through);
+    return Clipped(Id)?FString::Printf(TEXT("Clipped: %s, good through %s"),*Line,*Through):FString::Printf(TEXT("Clip the coupon: %s, good through %s"),*Line,*Through);
+   }),[this,Guard,Id,Until]{if(Guard.IsValid()&&!Clipped(Id))Clip(Id,Until);},false,TAttribute<bool>::CreateLambda([this,Guard,Id,bValid]{return bValid&&Guard.IsValid()&&!Clipped(Id);})));
+  }
+ }
+ TArray<S47Kit::FW> Foot;
+ const S47Ledger::FIssue Kept=Issue;
+ Foot.Add(S47Kit::Button(Side==0?TEXT("Turn the page"):TEXT("Back to the front"),[this,Guard,Kept,Side,Title,No]{if(Guard.IsValid())ShowLedger(Kept,1-Side,Title,No);},true));
+ Foot.Add(S47Kit::Button(TEXT("Fold the paper"),[this]{if(M&&M->UI)M->UI->Close();}));
+ Panel.Add(S47Kit::Row(Foot));
  if(M->Audio)M->Audio->Sfx(TEXT("paper0"),FS47Sound{.Gain=.5f});
- M->UI->Open(S47Kit::Shell(M->UI,FString::Printf(TEXT("THE LEDGER / %s"),*S47Ledger::DateLine(Issue.Date)),S47Kit::Col(Panel),1120));
+ M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Col(Panel),1120));
+}
+bool FS47Mail::LeadMarked(const FString& Lead) const
+{
+ if(!M||!M->Freeform)return false;
+ const auto& Ses=*M->Freeform;
+ if(Lead==TEXT("wagon"))return Ses.Predecessor&&(Ses.Predecessor->Heard(Lead)||Ses.Predecessor->Found(Lead));
+ return Ses.Places&&(Ses.Places->Heard(Lead)||Ses.Places->Found(Lead));
+}
+bool FS47Mail::MarkLead(int32 No,const FString& Lead,const FString& Head)
+{
+ if(!M||!M->Freeform)return false;
+ auto& Ses=*M->Freeform;
+ const FString Where=S47Ledger::LeadTitle(Lead);
+ const bool bWagon=Lead==TEXT("wagon");
+ if(Where.IsEmpty()||(bWagon&&!Ses.Predecessor)||(!bWagon&&!Ses.Places))return false;
+ const bool bFound=bWagon?Ses.Predecessor->Found(Lead):Ses.Places->Found(Lead);
+ const FString Key=S47Keys::MapSaid();
+ if(bFound||LeadMarked(Lead))
+ {
+  if(M->UI)M->UI->Toast(bFound?FString::Printf(TEXT("You have already been to %s. It is on your map (%s)."),*Where,*Key):FString::Printf(TEXT("Already on your map: %s (%s)."),*Where,*Key),4);
+  return false;
+ }
+ if(bWagon)Ses.Predecessor->HearOf(Lead);else Ses.Places->Hear(Lead);
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("Marked on your map: %s (%s)."),*Where,*Key),5);
+ if(M->Audio)M->Audio->Sfx(TEXT("paper1"),FS47Sound{.Gain=.4f});
+ UE_LOG(LogTemp,Display,TEXT("S47: mail: the Ledger no. %d: \"%s\" pencilled onto the map by the player (%s)"),No,*Head,*Lead);
+ M->RequestAutosave();
+ return true;
+}
+TArray<S47Ledger::FLeadRef> FS47Mail::IssueLeads(int32 No) const
+{
+ S47Ledger::FIssue Issue;
+ return IssueOf(No,Issue)?S47Ledger::LeadsOf(Issue):TArray<S47Ledger::FLeadRef>();
 }
 void FS47Mail::Clip(const FString& CouponId,int32 Until)
 {
@@ -1171,8 +1239,8 @@ void FS47Mail::TestLedger()
  Issue.Log=S47Ledger::LogLines(Facts,Issue.Front,Issue.Day,2);
  S47Ledger::Fill(Issue,Ses.Seed(),Facts.ContainsByPredicate([](const S47Ledger::FFact& Fact){return Fact.Topic==S47Ledger::ETopic::Helped;}));
  UE_LOG(LogTemp,Display,TEXT("S47: mail: test: this week's Ledger from %d facts since day %d"),Facts.Num(),FromDay);
- TArray<S47Kit::FW> Panel;Panel.Add(S47Ledger::Page(Issue));Panel.Add(S47Kit::Button(TEXT("Fold the paper"),[this]{if(M&&M->UI)M->UI->Close();},true));
- M->UI->Open(S47Kit::Shell(M->UI,TEXT("THE LEDGER / AS IT WOULD BE PRINTED TODAY"),S47Kit::Col(Panel),1120));
+ // D45-24-20261110: the same panel as the box's paper, both sheets, the stories clickable (on the map of this developer run).
+ ShowLedger(Issue,0,TEXT("THE LEDGER / AS IT WOULD BE PRINTED TODAY"),0);
 }
 void FS47Mail::TestParcel()
 {
@@ -1221,6 +1289,15 @@ TArray<FString> FS47Mail::AllText()
   TEXT("Not read yet: Dr. Ward's mail, in the OPS tray."),TEXT("Not read yet: 2 papers from the mailbox, and Dr. Ward's mail in the OPS tray."),
   TEXT("MAILBOX / One paper you took out of the box is not read yet."),TEXT("MAILBOX / 2 papers you took out of the box are not read yet.")})Out.Add(Line);
  Out.Add(FString::Printf(TEXT("You copy the pencil circle onto your map (%s)."),*S47Keys::MapSaid()));
+ // D45-24-20261110: the paper's pencil: the hint, the buttons under the page and what a click says.
+ {
+  const FString Key=S47Keys::MapSaid(),Where=TEXT("the windmill on the Baca lease"),Head=TEXT("LIGHTS AGAIN");
+  Out.Add(S47MailLocal::LedgerHintText());
+  Out.Add(FString::Printf(TEXT("Marked on your map: %s (%s)."),*Where,*Key));Out.Add(FString::Printf(TEXT("Already on your map: %s (%s)."),*Where,*Key));
+  Out.Add(FString::Printf(TEXT("You have already been to %s. It is on your map (%s)."),*Where,*Key));
+  Out.Add(FString::Printf(TEXT("Pencil it in on the map: %s (%s)"),*Head,*Where));Out.Add(FString::Printf(TEXT("On your map: %s (%s)"),*Head,*Where));
+  for(const TCHAR* Line:{TEXT("Turn the page"),TEXT("Back to the front"),TEXT("Fold the paper")})Out.Add(Line);
+ }
  Out.Add(FString::Printf(TEXT("Not read yet: one paper from the mailbox. %s at the box."),*S47Keys::Said(TEXT("use"))));
  return Out;
 }
@@ -1303,6 +1380,15 @@ bool FS47Mail::SelfTest(TArray<FString>& Lines)
   // The flag follows the orders, not the box: with the waiting order taken back it is down, the box still full.
   B.Orders.RemoveAll([](const FOrder& O){return O.Picked==0;});B.Begin(S47J::Read(S47J::Write(B.Save())),true);
   Check(!B.FlagUp()&&B.MailIn(),TEXT("the flag is up only for an order waiting for the carrier, never for what came"));
+ }
+ {
+  // D45-24-20261110: with no game nothing is pencilled in, and the mark that the hint was given is kept among the read across a
+  // Continue without reading as a paper (no new save key).
+  FS47Mail H(nullptr);H.Begin(nullptr,false);H.ReadIssues.Add(S47MailLocal::LedgerHint);
+  FS47Mail G(nullptr);G.Begin(S47J::Read(S47J::Write(H.Save())),true);
+  Check(!H.MarkLead(1,TEXT("wagon"),TEXT("SEARCH FOR MISSING PAIR SCALED BACK"))&&!H.LeadMarked(TEXT("windmill"))&&H.IssueLeads(1).IsEmpty()
+   &&G.ReadIssues.Contains(S47MailLocal::LedgerHint)&&G.UnreadPieces().Num()==H.UnreadPieces().Num(),
+   TEXT("D45-24: the paper marks nothing on its own, and the hint is given once in a game and survives a Continue"));
  }
  {
   // PT-MAIL-20261109 (Tom): the letters went missing when he opened the mail order first. The box with Dr. Ward's letter, a statement,

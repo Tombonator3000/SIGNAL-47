@@ -432,8 +432,12 @@ namespace
      if(F.Director->Busy()||S47J::Num(D,TEXT("activeTime"))<S47J::Num(D,TEXT("restUntil")))
      {M->UI->Close(true);Go(399);break;}
      if(!Check(!S47J::Bool(Orb,TEXT("photographed")),TEXT("unphotographed natural invitation; any prior cooldown elapsed through active time")))return false;
-     const double Dusk=FMath::FloorToDouble(F.Clock()/86400.)*86400.+19*3600.;
-     const bool NextDay=S47J::Num(Orb,TEXT("dueClock"))>Dusk||F.Clock()>=Dusk-60;
+     // D45-20261110: OPS's own dusk (18:20 on the first day, 19:00 after); the light is today's while it is due by 19:00, and one still
+     // to come after the first day's 18:20 is waited for where it comes (405), not slept through.
+     const double Dusk=FS47FreeformSession::DuskWaitAt(F.Clock(),F.Day()),OrbDue=S47J::Num(Orb,TEXT("dueClock"));
+     const double Evening=FMath::FloorToDouble(F.Clock()/86400.)*86400.+19*3600.;
+     if(OrbDue<=Evening&&OrbDue>=F.Clock()-60&&F.Clock()>=Dusk-60&&F.Clock()<Evening){M->UI->Close(true);Go(405);break;}
+     const bool NextDay=OrbDue>Evening||F.Clock()>=Dusk-60;
      if(!Check(++Waits<=3,TEXT("bounded ordinary wait sequence"))||!Click(NextDay?TEXT("REST UNTIL MORNING"):TEXT("Wait until dusk / review time and equipment first")))return false;
      Go(NextDay?402:404);break;
     }

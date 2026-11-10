@@ -70,6 +70,17 @@ public:
  // CHAIN-1-20261109: what the slip points at, in this order: 1 marks standing at a place, 2 what is out there tonight
  // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
  static int32 SlipPoints(bool bMarks,bool bTonight,bool bUnknown){return bMarks?1:bTonight?2:bUnknown?3:0;}
+ // D45-20261110 (D45-26): the first night's line. One place on the land for the noon slip and the night's burst to share (inside the
+ // rim, never the cairn, which landed off the map in d45): the windmill, which Ward's case paper already puts on the map, while it
+ // stands there; otherwise one of the others with a survey tag, by the seed. And the one bearing to it from SARO, off the true line by
+ // up to five degrees by the seed (never more than .45 of the narrowest sector it is printed in), whole degrees, never Story's number.
+ // The same in any Continue; nothing saved. Pure.
+ static FString ArcPlace(int32 Seed);
+ static double ArcBearing(int32 Seed,double FromX,double FromZ,double ToX,double ToZ,double Spread);
+ // D45-20261110: a slip printed in daylight on the first day (08:00 to 18:00 of night 1) does not take the night's one pointing-out:
+ // it leaves it for the dark hours (the burst; AfterRegistered: so does any slip that night while the burst is still to come). Once
+ // that day, still.
+ static bool FreeSlip(int32 Night,double Clock){const double H=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return Night==1&&H>=8&&H<18;}
  // A bearing from SARO (From, road-local) toward To, as a registration takes it: the spread by the branches, the line off the true
  // one by up to half of it (Roll 0 to 1), whole degrees, cold by the next noon. D45-20261110: it keeps To and its circle (RingRoll).
  static FBearing StationFix(int32 Day,double Clock,int32 Branches,double FromX,double FromZ,double ToX,double ToZ,float Roll,const FString& Target,float RingRoll=.37f);

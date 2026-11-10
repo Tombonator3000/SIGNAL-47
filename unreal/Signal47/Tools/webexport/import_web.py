@@ -9,7 +9,7 @@
 # with S47_WEB=<export folder> (default ~/scratch-bm/Signal47-web).
 # S47_ONLY=materials rebuilds Base and Mat only, without touching shared Tex or WebData.
 # S47_ONLY=masters updates Base graphs in place, retaining all material instances and parents.
-# S47_ONLY=picture updates only MPC_Web and M_WebTone; scene materials/assets stay in place.
+# S47_ONLY=picture updates only MPC_Web, MPC_Body (D45-19 bodycam) and M_WebTone; scene materials/assets stay in place.
 # S47_ONLY=moths updates only M_WebMoths in place; no texture, MPC or scene import.
 import json
 import os
@@ -1541,14 +1541,39 @@ def build_life():
     log('the world\'s own life: sky dome, band, stars, meteor, cones, haze, window light, moths, motes')
 
 
+BODY_PATH = '/Game/Web/Base/MPC_Body'
+
+
+def body_collection():
+    # D45-20261110 (D45-19): Bodycam 1986's lens, turn and date stamp (FS47Bodycam writes them each frame).
+    # A collection of its own, referenced by M_WebTone only: adding it leaves MPC_Web's layout, and with it
+    # every scene material's shaders and the bundled PSO cache, as they are. The game falls back to the
+    # VHS look while this asset is missing (old content).
+    body = eal.load_asset(BODY_PATH) if eal.does_asset_exist(BODY_PATH) else None
+    if body is None:
+        body = tools.create_asset('MPC_Body', '/Game/Web/Base', unreal.MaterialParameterCollection, unreal.MaterialParameterCollectionFactoryNew())
+    vp = list(body.get_editor_property('vector_parameters'))
+    have = {str(p.get_editor_property('parameter_name')) for p in vp}
+    # BodyLens: barrel, fringe px, lens gate, vignette; BodyCam: gain kick, turn and tilt rate (rad/s), stamp alpha;
+    # BodyStamp: month*100+day, year, hour*10000+min*100+sec (12-hour), PM. All zero: no lens, no stamp.
+    for nm in ('BodyLens', 'BodyCam', 'BodyStamp'):
+        if nm in have:
+            continue
+        p = unreal.CollectionVectorParameter(); p.set_editor_property('parameter_name', nm); p.set_editor_property('default_value', unreal.LinearColor(0, 0, 0, 0)); vp.append(p)
+    body.set_editor_property('vector_parameters', vp)
+    eal.save_loaded_asset(body)
+    return body
+
+
 def build_picture():
+    body = body_collection()
     t = fresh('/Game/Web/Base/M_WebTone')
     t.set_editor_property('material_domain', unreal.MaterialDomain.MD_POST_PROCESS)
     t.set_editor_property('blendable_location', unreal.BlendableLocation.BL_REPLACING_TONEMAPPER)
     tc = mel.create_material_expression(t, unreal.MaterialExpressionCustom, -400, 0)
     tc.set_editor_property('code', TONE); tc.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT3)
     ins = []
-    for nm in ('UV', 'K', 'Dens', 'FogCol', 'Time', 'Mode', 'Vhs', 'Strength', 'Calm', 'HazeK', 'Native', 'Dummy'):
+    for nm in ('UV', 'K', 'Dens', 'FogCol', 'Time', 'Mode', 'Vhs', 'Strength', 'Calm', 'HazeK', 'Native', 'Dummy', 'Lens', 'Cam', 'Stamp'):
         ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); ins.append(ci)
     tc.set_editor_property('inputs', ins)
     sp = mel.create_material_expression(t, unreal.MaterialExpressionScreenPosition, -800, 0)
@@ -1576,9 +1601,13 @@ def build_picture():
         e = mel.create_material_expression(t, unreal.MaterialExpressionCollectionParameter, -800, 400 + k * 150)
         e.set_editor_property('collection', mpc); e.set_editor_property('parameter_name', nm)
         mel.connect_material_expressions(e, '', tc, pin)
+    for k, (nm, pin) in enumerate((('BodyLens', 'Lens'), ('BodyCam', 'Cam'), ('BodyStamp', 'Stamp'))):
+        e = mel.create_material_expression(t, unreal.MaterialExpressionCollectionParameter, -1100, 400 + k * 150)
+        e.set_editor_property('collection', body); e.set_editor_property('parameter_name', nm)
+        mel.connect_material_expressions(e, '', tc, pin)
     mel.connect_material_property(tc, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mel.recompile_material(t); eal.save_loaded_asset(t)
-    log('film picture: Clean / VHS / Carpenter 35 mm / Documentary 16 mm / Super 8')
+    log('film picture: Clean / VHS / Carpenter 35 mm / Documentary 16 mm / Super 8 / Bodycam 1986 (MPC_Body)')
 
 
 if moths_only:

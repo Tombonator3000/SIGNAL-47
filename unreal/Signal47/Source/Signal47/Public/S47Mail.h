@@ -4,7 +4,7 @@
 class US47Main;
 class FS47MailBoxModel;
 class FS47MailCarModel;
-namespace S47Ledger{struct FIssue;struct FFact;}
+namespace S47Ledger{struct FIssue;struct FFact;struct FLeadRef;}
 
 // MAILBOX-20261108 (Tom: «Inkluder post funksjon til SARO og lag postboks utenfor SARO»). Freeform only. A rural box on a post where
 // the service road meets the highway (S47MailBox.cpp), and the post that comes to it: the carrier once a day, Monday to Saturday,
@@ -20,7 +20,7 @@ namespace S47Ledger{struct FIssue;struct FFact;}
 // What is taken out stays on the box's list as NOT READ YET until it is read (PT-MAIL-20261109, Tom: the letters he took out with
 // the catalog and the parcel were never seen again), and the list of things to do and the parcel's note say where it is.
 //   ledger    THE CALICHE LEDGER on Thursdays (S47Ledger): what the station registered in the nights, at its place, on the front page,
-//             coupons, places to look.
+//             coupons, places to look (D45-24: the reader clicks a story to pencil its place onto the map).
 //   catalog   Western Surplus & Radio Supply's catalog, in the box on the first day: parts and gear by mail, cheaper than Caliche,
 //             ordered with a money order left in the box with the flag up; the carrier takes it, and the parcel comes one to three
 //             rounds later, on top of the box. Lifted down, a parcel is in both hands, for GARAGE RECEIVING like any other.
@@ -80,7 +80,16 @@ public:
  // The box: E on it.
  void OpenBox();
  void OpenCatalog();
- void OpenLedger(int32 No);
+ // Sheet: 0 the front page, 1 inside ("Turn the page" goes between them).
+ void OpenLedger(int32 No,int32 Sheet=0);
+ // D45-24-20261110 (Tom: «trykke på en artikkel med merkelig info og få stedet på kartet»): the reader circles an article and its
+ // lead goes on the map as a place heard of (FS47Places::Hear; the wagon by FS47Predecessor::HearOf), with a word to say so.
+ // Reading a paper marks nothing by itself any more. True: it was not on the map before. No: the issue (0 for F10's paper).
+ bool MarkLead(int32 No,const FString& Lead,const FString& Head);
+ // Whether a lead is on the map already, heard of or found: what the page rings in pencil. Nothing of its own is saved.
+ bool LeadMarked(const FString& Lead) const;
+ // The articles of a printed paper that point somewhere, with their sheets (the tests read them).
+ TArray<S47Ledger::FLeadRef> IssueLeads(int32 No) const;
  // What the Caliche counter charges for a supply with this week's coupon clipped (Base without one), and the motel's room.
  int32 CounterPrice(const FString& Item,int32 Base) const;
  int32 MotelPrice(int32 Base) const;
@@ -165,6 +174,8 @@ private:
  bool PlaceOf(const FString& Id,const FString& Text,bool bHere,FString& OutPlace,FString& OutId) const;
  void PrintLedger(int32 OnDay);
  bool IssueOf(int32 No,S47Ledger::FIssue& Out) const;
+ // The paper's panel: a sheet of the issue, the lead buttons for keyboard and pad, the coupons inside, and the page turn.
+ void ShowLedger(const S47Ledger::FIssue& Issue,int32 Sheet,const FString& Title,int32 No);
  int32 NobodyDay(int32 Which) const;
  // Everything but a parcel out of the box onto the desk, not read yet (the pure part of TakeOut): letters first, the catalog last.
  TArray<FPiece> Unbox();
