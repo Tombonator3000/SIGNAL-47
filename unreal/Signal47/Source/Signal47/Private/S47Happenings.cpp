@@ -1169,7 +1169,7 @@ FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,d
  // LEAD-FELT-20261110: pointed at, and the player stands too near it: out past them by that place (S47Hap::LeadOut), not elsewhere.
  if(LeadNow.bPointed&&Away>=0&&Away<MinM){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);FVector2D Out=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM);
   // LEAD-FIX-20261110: past the place it would leave the land: on the same bearing back toward SARO instead, never past SARO.
-  if(!S47OpenLand::InRim(Out.X,Out.Y,50)){const FVector2D Back=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM,-1.);if(S47OpenLand::InRim(Back.X,Back.Y,50)&&FVector2D::DotProduct(Back-FVector2D(SaroX,SaroZ),FVector2D(E->X-SaroX,E->Z-SaroZ))>0)Out=Back;}
+  if(!S47OpenLand::InRim(Out.X,Out.Y,50)){const FVector2D Back=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM,-1.);if(S47OpenLand::InRim(Back.X,Back.Y,50)&&FVector2D::DotProduct(Back-FVector2D(SaroX,SaroZ),FVector2D(E->X-SaroX,E->Z-SaroZ))>0)Out=Back;else Out=FVector2D(E->X,E->Z);}
   S.X=Out.X;S.Z=Out.Y;}
  // Asked on every try while the rhythm holds it back: said once for each night's place.
  static FString SaidLead;const FString Key=FString::Printf(TEXT("%d/%s/%d"),LeadNow.Night,*E->Id,LeadNow.bPointed?1:0);
@@ -1234,7 +1234,7 @@ FString FS47Happenings::WordOfTonight(const FString& Who)
  if(!F||!F->RulesLive()||F->InTutorial())return FString();
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  const double H=HourOfNight(F->Clock());
- if(Night<=0||WordNight==Night||(H<20&&Who!=TEXT("printer"))||H>=29.5)return FString(); // (NIGHT-20261110: the chart comes off before 20, and its line with it)
+ if(Night<=0||WordNight==Night||H<(Who==TEXT("printer")?19.:20.)||H>=29.5)return FString(); // (NIGHT-20261110: the chart comes off before 20, and its line with it)
  FString Event,Title;double X=0,Z=0;bool bAhead=false;
  if(!OutTonight(Night,Event,Title,X,Z,bAhead))return FString();
  // Which way only for what has come, or for what a slip has pointed at already: no word points anywhere the night has not.

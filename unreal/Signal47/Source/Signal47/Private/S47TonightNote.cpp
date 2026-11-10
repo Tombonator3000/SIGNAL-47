@@ -294,7 +294,7 @@ FNote BuildNote(const FIn& In, bool bAll)
   FString Say;
   // LEAD-FIX-20261110: as the gates in FS47CaseFieldTests have it: the roof wants a minute heard in the control room; the gate and the
   // field post count 20 minutes skipped (FS47FreeformCases::UnwatchedAllowance); a job's window simply has to be worked in.
-  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + (Now->L.Source.StartsWith(TEXT("CONTROL ROOM")) ? TEXT(". One minute of it heard in the control room will do; skipped time is not heard.")
+  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + (Now->L.Source.StartsWith(TEXT("CONTROL ROOM")) ? TEXT(". One minute of it heard in the control room will do, in wind like the ribbon's; skipped time is not heard.")
    : Now->L.Source.Contains(TEXT("SERVICE GATE")) || Now->L.Source.Contains(TEXT("FIELD POST")) ? TEXT(". Up to 20 minutes of it may be skipped or slept; more, and it records nothing.") : TEXT(". Time skipped past it records nothing."));
   else if (Soon)
   {
