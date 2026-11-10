@@ -890,7 +890,12 @@ void FS47DevFreeform::StepCards()
   }
   if(!F->CollectChart()){Say(TEXT("could not collect the chart"));CardsStage=-1;return;}
   if(M->UI)M->UI->Close(true);
+  // The printer hands over the oldest waiting sheet first (last night's packet): a player takes the next one, so this does too.
+  static int32 Older=0;
+  if(Card.Stage==J::Chart&&++Older<6){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the printer gave an older sheet first; taking the next"),Night);F->SelectJob(CardsJob);return;}
+  Older=0;
   if(!Card.bAnomaly){CardsStage=9;return;}
+  F->SelectJob(CardsJob);
   CardsStage=25;return;
  }
  if(CardsStage==25)
@@ -1573,6 +1578,8 @@ void FS47DevFreeform::Step(double Dt)
    }
    FParse::Value(FCommandLine::Get(),TEXT("S47NaturalStand="),StandPlace);
    {int32 CardsFlag=0;bCards=FParse::Value(FCommandLine::Get(),TEXT("S47NaturalCards="),CardsFlag)&&CardsFlag>0;}
+   // -S47NaturalBig=1: the big nights of a real game in this run too (a run begun after night 3 gets the week 2 and 3 rounds).
+   {int32 BigFlag=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalBig="),BigFlag)&&BigFlag>0&&M->Freeform&&M->Freeform->Happenings){M->Freeform->Happenings->DevBigNatural();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: big nights on for this run"));}}
    // -S47NaturalHold=0: nothing drops the speed to x1, for a run over many nights where what matters is what comes and where.
    int32 HoldFlag=1;
    if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalHold="),HoldFlag)&&HoldFlag==0)

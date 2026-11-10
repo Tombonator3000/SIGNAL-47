@@ -466,14 +466,14 @@ namespace
     case 415:if(Age-At<1)return true;if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(420);break;
     case 420:if(!Use(TEXT("opsTerminal")))return false;Go(421);break;
     case 421:if(!Click(TEXT("SUPPLIES")))return false;Go(422);break;
-    case 422:if(!Click(TEXT("Register photograph / $20 documentation credit")))return false;Go(423);break;
+    case 422:if(!Click(TEXT("Register photograph / $20 field allowance")))return false;Go(423);break;
     case 423:
-     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 field allowance")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
      if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(430);break;
     case 430:if(!Use(TEXT("opsTerminal")))return false;Go(431);break;
     case 431:if(!Click(TEXT("SUPPLIES")))return false;Go(432);break;
     case 432:
-     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Documentation credit already received."))&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Field allowance already received."))&&!VisibleText(TEXT("Register photograph / $20 field allowance")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
      SaveMenu();break;
     case 600:
     {

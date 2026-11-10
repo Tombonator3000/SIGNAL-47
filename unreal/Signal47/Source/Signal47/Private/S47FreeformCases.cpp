@@ -221,7 +221,7 @@ namespace
  },
  {
   TEXT("THE SAME MINUTE"),
-  TEXT("A burst of hash crossed the receiver one night, and the remote feeder on the county road may have something to do with it. Whichever you have seen, the other is worth a look: the chart at the rack, or the feeder after midnight, and neither lasts past noon. The traces need not agree, and nobody is going to tell you which reading is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  TEXT("A burst of hash crossed the receiver one night, and the remote feeder on the county road may have something to do with it. Whichever you have seen, the other is worth a look: the chart at the rack, or the feeder after midnight, and neither lasts past noon. One of the traces tells it straight; where they disagree, a test recording tells them apart, and nobody will say which reading is right. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
@@ -253,7 +253,7 @@ namespace
  },
  {
   TEXT("THE EMPTY POST"),
-  TEXT("Somebody in Caliche is not at their post, and their place stands as if they had only stepped out. Look at it while it is like that, and look at what the station logged toward town that night: the receiver log is at the rack. No recording here tests a person; the traces need not agree. File what you think it was. The reply comes the next morning, and the county acts on what you file."),
+  TEXT("Somebody in Caliche is not at their post, and their place stands as if they had only stepped out. Look at it while it is like that, and look at what the station logged toward town that night: the receiver log is at the rack. No recording here tests a person; both traces will say the same, and neither can be tested further. File what you think it was. The reply comes the next morning, and the county acts on what you file."),
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("They left on their own"),TEXT("Somebody came for them"),TEXT("Not accounted for")},
   {TEXT("Left"),TEXT("Somebody"),TEXT("Unaccounted")},
@@ -269,7 +269,7 @@ namespace
  },
  {
   TEXT("THE PRINTED MINUTE"),
-  TEXT("The Sky Watch's bulletin gave a night and a minute, and at that minute the receiver chart has a burst on it. Look at the chart at the rack, and at the cairn on the rise where they said to watch from; neither keeps long, and they need not agree. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
+  TEXT("The Sky Watch's bulletin gave a night and a minute, and at that minute the receiver chart has a burst on it. Look at the chart at the rack, and at the cairn on the rise where they said to watch from; neither keeps long. One of them tells it straight; where they disagree, a test recording tells them apart. Test recordings show whether the extra ticks come back. File what you think it was: the reply comes the next morning, and acting on the wrong answer has a cost."),
   FS47FreeformCases::EObservable::ExtraTicks,
   {TEXT("Somebody keying a set on time"),TEXT("A timer on the county line"),TEXT("Not accounted for")},
   {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},
@@ -285,7 +285,7 @@ namespace
  },
  {
   TEXT("THE RAKED GROUND"),
-  TEXT("After a night out on the land somebody came at first light, a helicopter low and two cars at the way in, and went over the ground before you got there. Look at it while the rake marks are still in it, and at what the station heard that morning: the receiver log is at the rack. No recording here tests what they came for; the traces need not agree. File what you think it was. The reply comes the next morning."),
+  TEXT("After a night out on the land somebody came at first light, a helicopter low and two cars at the way in, and went over the ground before you got there. Look at it while the rake marks are still in it, and at what the station heard that morning: the receiver log is at the rack. No recording here tests what they came for; both traces will say the same, and neither can be tested further. File what you think it was. The reply comes the next morning."),
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("Something of theirs came down"),TEXT("Somebody cleaning up after themselves"),TEXT("Not accounted for")},
   {TEXT("Theirs"),TEXT("Cleaning up"),TEXT("Unaccounted")},

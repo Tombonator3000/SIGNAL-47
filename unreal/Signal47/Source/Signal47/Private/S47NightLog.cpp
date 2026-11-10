@@ -118,7 +118,7 @@ FString FS47NightLog::Type(const FNight& Nt)
 	for (const FString& Job : Nt.Work) { Page += Job + TEXT("\n"); bAnyWork = true; }
 	if (!bAnyWork) Page += TEXT("Nothing outstanding.\n");
 	// CHAIN-2-20261109: what the night delivered, the same three lines every morning.
-	FString Money = Nt.Side > 0 ? FString::Printf(TEXT("Field money tonight: $%d%s."), Nt.Side, Nt.bSameNight ? TEXT(", the same-night rate in it") : TEXT("")) : FString(TEXT("No field money tonight."));
+	FString Money = Nt.Side > 0 ? FString::Printf(TEXT("Field allowance tonight: $%d%s."), Nt.Side, Nt.bSameNight ? TEXT(", the same-night rate in it") : TEXT("")) : FString(TEXT("No field allowance tonight."));
 	if (Nt.SideLeft >= 0) Money += FString::Printf(TEXT(" $%d left of the week's $%d."), Nt.SideLeft, int32(FS47FreeformSession::SideCap));
 	Page += TEXT("\nDELIVERED\nMONEY   ") + Money + TEXT("\n");
 	Page += TEXT("OPENED  ") + (Nt.Opened.IsEmpty() ? FString(TEXT("Nothing new.")) : TEXT("On the stores list now: ") + FString::Join(Nt.Opened, TEXT("; ")) + TEXT(".")) + TEXT("\n");
@@ -433,7 +433,7 @@ void FS47NightLog::Step(double Dt)
 	const int32 Cash = Fs.Budget();
 	if (Night > 0) { if (Cash > LastCash) CashIn += Cash - LastCash; else CashOut += LastCash - Cash; }
 	LastCash = Cash;
-	// CHAIN-2-20261109: field money is what comes off the week's cap (FS47FreeformSession::EarnSide); the cap filling again is no money.
+	// CHAIN-2-20261109: field allowance is what comes off the week's cap (FS47FreeformSession::EarnSide); the cap filling again is no money.
 	const int32 SideLeft = Fs.SideLeftThisWeek();
 	if (Night > 0 && LastSideLeft >= 0 && SideLeft < LastSideLeft) Side += LastSideLeft - SideLeft;
 	LastSideLeft = SideLeft;
@@ -653,11 +653,11 @@ bool FS47NightLog::SelfTest(TArray<FString>& Lines)
 		Check(Quiet.Contains(TEXT("NIGHT OF THU MAY 1 TO FRI MAY 2, 1986")) && Quiet.Contains(TEXT("Nothing out of the ordinary.")) && Quiet.Contains(TEXT("No faults.")) && Quiet.Contains(TEXT("$142 at dusk, $167 at 06:00. In $40, out $15.")), TEXT("a quiet night still gets its sheet, with the money"));
 		Check(RemarkFor(Nt).Contains(TEXT("quiet night")), TEXT("Ward's line for a quiet night"));
 		// CHAIN-2-20261109
-		Check(Quiet.Contains(TEXT("\nDELIVERED\nMONEY   No field money tonight.\nOPENED  Nothing new.\nWARD    Nothing from out on the land tonight.\n")) && Quiet.Find(TEXT("DELIVERED")) < Quiet.Find(TEXT("ACCOUNT")), TEXT("CHAIN-2: a quiet night still has its three lines of what it delivered, before the account"));
+		Check(Quiet.Contains(TEXT("\nDELIVERED\nMONEY   No field allowance tonight.\nOPENED  Nothing new.\nWARD    Nothing from out on the land tonight.\n")) && Quiet.Find(TEXT("\nDELIVERED\n")) < Quiet.Find(TEXT("\nACCOUNT\n")), TEXT("CHAIN-2: a quiet night still has its three lines of what it delivered, before the account"));
 		FNight Paid = Nt;
 		Paid.Side = 12; Paid.SideLeft = 23; Paid.bSameNight = true; Paid.Opened.Add(TEXT("Survey magnetometer, used ($40)")); Paid.Ward = TEXT("1 field record from out on the land tonight.");
 		const FString Sheet = Type(Paid);
-		Check(Sheet.Contains(TEXT("MONEY   Field money tonight: $12, the same-night rate in it. $23 left of the week's $35.\n")) && Sheet.Contains(TEXT("OPENED  On the stores list now: Survey magnetometer, used ($40).\n")) && Sheet.Contains(TEXT("WARD    1 field record from out on the land tonight.\n")),
+		Check(Sheet.Contains(TEXT("MONEY   Field allowance tonight: $12, the same-night rate in it. $23 left of the week's $35.\n")) && Sheet.Contains(TEXT("OPENED  On the stores list now: Survey magnetometer, used ($40).\n")) && Sheet.Contains(TEXT("WARD    1 field record from out on the land tonight.\n")),
 			TEXT("CHAIN-2: the money tonight with what is left of the week's cap, what opened on the stores list, and how it counts for Ward"));
 	}
 	for (int32 I = 0; I < 8; ++I) Nt.Lines.Add({ 23 * 3600. + I * 60, EPart::Seen, FString::Printf(TEXT("%02d:%02d"), 23, I), FString::Printf(TEXT("Thing %d."), I) });
@@ -686,12 +686,12 @@ bool FS47NightLog::SelfTest(TArray<FString>& Lines)
 		FS47NightLog B(nullptr);
 		B.Begin(S47J::Read(S47J::Write(A.Save())));
 		Check(B.Logs.Num() == 1 && B.ReadCount() == 1 && B.Logs[0].Sent == Sh.Sent && B.Night == 4 && B.CashFrom == 90 && B.CashIn == 15 && B.Flickers == 2 && B.Lines.Num() == 1 && B.Lines[0].At == TEXT("20:00"), TEXT("sheets, what Ward has had, and tonight so far survive a Continue"));
-		Check(B.Side == 8 && B.bOpenKnown && B.OpenAtDusk.Num() == 1 && B.OpenAtDusk.Contains(TEXT("cot")), TEXT("CHAIN-2: tonight's field money and the stores list at dusk survive a Continue, nonsense dropped"));
+		Check(B.Side == 8 && B.bOpenKnown && B.OpenAtDusk.Num() == 1 && B.OpenAtDusk.Contains(TEXT("cot")), TEXT("CHAIN-2: tonight's field allowance and the stores list at dusk survive a Continue, nonsense dropped"));
 		{
 			auto Old = A.Save(); S47J::Obj(Old, TEXT("tonight"))->RemoveField(TEXT("side")); S47J::Obj(Old, TEXT("tonight"))->RemoveField(TEXT("open"));
 			FS47NightLog Od(nullptr);
 			Od.Begin(S47J::Read(S47J::Write(Old)));
-			Check(Od.Night == 4 && Od.Side == 0 && !Od.bOpenKnown, TEXT("CHAIN-2: an older save's night has no field money and reads the stores list again"));
+			Check(Od.Night == 4 && Od.Side == 0 && !Od.bOpenKnown, TEXT("CHAIN-2: an older save's night has no field allowance and reads the stores list again"));
 		}
 		FS47NightLog Cn(nullptr);
 		Cn.Begin(nullptr);

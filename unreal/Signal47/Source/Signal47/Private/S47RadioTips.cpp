@@ -432,8 +432,8 @@ bool FS47RadioTips::StepTipped(FS47Station& Station)
    G.Stage=1;G.ReadDay=Today;const int32 Paid=M->Freeform->EarnSide(TipPay,TEXT("1420 tip"));UE_LOG(LogTemp,Display,TEXT("S47: 1420 tip %s read on the air, $%d"),*G.Place,Paid);
    // CRIT6-20261109: what the tip paid is said, as the photo credit and the souvenir copies say theirs (one set of words for the cap).
    if(M->UI)M->UI->Toast(Paid>=TipPay?FString::Printf(TEXT("1420 / Earl reads your tip: $%d from the station."),Paid)
-    :Paid>0?FString::Printf(TEXT("1420 / Earl reads your tip: $%d of the $%d, and with that this week's field money is used up."),Paid,int32(TipPay))
-    :FString(TEXT("1420 / Earl reads your tip. This week's field money is used up: no payment.")),5);
+    :Paid>0?FString::Printf(TEXT("1420 / Earl reads your tip: $%d of the $%d, and with that this week's field allowance is used up."),Paid,int32(TipPay))
+    :FString(TEXT("1420 / Earl reads your tip. This week's field allowance is used up: no payment.")),5);
    M->RequestAutosave();
   }
   else Back(G);

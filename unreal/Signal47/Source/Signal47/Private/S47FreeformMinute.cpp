@@ -196,7 +196,7 @@ int32 FS47FreeformSession::RegisterNightPhoto(const FString& ShotId,double ShotC
  if(ShotId.IsEmpty()||!bDeveloped||NightPhotoRegistered(ShotId))return -1;
  const FString From=NightPhotoFrom(ShotClock);const bool bTrip=Title.StartsWith(TEXT("Trip camera"));
  if(From.IsEmpty()&&!bTrip)return -1;
- // Field money, under the week's cap (EarnSide): Dr. Ward counts the photograph in the album whether or not it is registered here.
+ // Field allowance, under the week's cap (EarnSide): Dr. Ward counts the photograph in the album whether or not it is registered here.
  // CHAIN-2-20261109: brought in the same night as tonight's lead (the card off, the slip out there), the best rate, still capped.
  const int32 ShotNight=NightOf(ShotClock);
  const bool bSameNight=!bTrip&&Happenings&&Happenings->Lead().IsSet()&&Happenings->Lead().bPointed&&Happenings->Lead().Night==ShotNight&&NightOf(WorldClock)==ShotNight;
@@ -204,7 +204,7 @@ int32 FS47FreeformSession::RegisterNightPhoto(const FString& ShotId,double ShotC
  const int32 Paid=EarnSide(Offered,TEXT("field record"));
  const FString SameLine=bSameNight&&Paid>FieldRecordPay?FString::Printf(TEXT("\n%s: brought in the night the station's own work pointed out there, $%d more."),SameNightMark,Paid-FieldRecordPay):FString();
  RecordEvidence(TEXT("field-registration.")+ShotId,FString::Printf(TEXT("OPS FIELD RECORD RECEIPT\nPhotograph: %s, %s\nFrom: %s\nField record credit: $%d%s.%s\nPaid once per photograph."),
-  *ShotId,*FS47Places::SlipClock(ShotClock),bTrip?TEXT("the trip camera, read in the morning"):TEXT("a night out on the land"),Paid,Paid<Offered?TEXT(" (this week's field money is used up)"):TEXT(""),
+  *ShotId,*FS47Places::SlipClock(ShotClock),bTrip?TEXT("the trip camera, read in the morning"):TEXT("a night out on the land"),Paid,Paid<Offered?TEXT(" (this week's field allowance is used up)"):TEXT(""),
   *SameLine));
  UE_LOG(LogS47FreeformMinute,Display,TEXT("S47: field record %s registered at OPS (%s), $%d"),*ShotId,bTrip?TEXT("trip camera"):*From,Paid);
  return Paid;
@@ -273,7 +273,7 @@ bool FS47FreeformSession::MinuteSelfTest(TArray<FString>& Lines)
   FS47FreeformSession R(nullptr);R.Begin(S47J::Read(S47J::Write(S.Save())));
   Check(R.ArrayLog().Num()==1&&R.NightPhotoFrom(Shot)==TEXT("landing_seen_d4")&&R.AskedSameMinute(TEXT("F-0012"))&&!R.AskSameMinute(TEXT("F-0012"),Shot,TEXT("x"))&&R.CaseFile().Excluded(FS47FreeformCases::LandLine,0),
    TEXT("the array's log, the night's records and what was asked survive a Continue, and the struck explanation stays struck"));
-  // Registration at OPS: once, as field money under the week's cap; a photograph from no night out there is refused.
+  // Registration at OPS: once, as field allowance under the week's cap; a photograph from no night out there is refused.
   S.TestLiveRules();S.SideWeek=1;S.SidePaid=FS47FreeformSession::SideCap-5;const int32 Cash0=S.Budget();
   const int32 Paid=S.RegisterNightPhoto(TEXT("F-0012"),Shot,true,TEXT("Kodak"));
   Check(Paid==5&&S.Budget()==Cash0+5&&S.SidePaid==FS47FreeformSession::SideCap&&S.NightPhotoRegistered(TEXT("F-0012"))&&S.RegisterNightPhoto(TEXT("F-0012"),Shot,true,TEXT("Kodak"))==-1

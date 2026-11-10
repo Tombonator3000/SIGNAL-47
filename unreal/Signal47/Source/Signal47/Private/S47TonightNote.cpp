@@ -292,7 +292,7 @@ FNote BuildNote(const FIn& In, bool bAll)
   for (const FWork& W : All) if (IsOpen(W) && W.Windowed() && W.Start > Clock && (!Soon || W.Start < Soon->Start)) Soon = &W;
   const double Hour = FMath::Fmod(Clock, Day) / 3600.;
   FString Say;
-  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + TEXT(". Skipping time past it counts for nothing; be there for it.");
+  if (Now) Say = TEXT("The window is open until ") + HourMinute(Now->End) + TEXT(". Be there for it: up to 20 minutes may go unwatched, but time skipped past it records nothing.") /* LEFTOVERS-CHAIN-TEXT-20261110 */;
   else if (Soon)
   {
    const FString At = NightOf(Soon->Start) != NightOf(Clock) ? FString::Printf(TEXT("%s on shift day %d"), *HourMinute(Soon->Start), NightOf(Soon->Start)) : HourMinute(Soon->Start);

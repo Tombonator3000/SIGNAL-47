@@ -1774,8 +1774,8 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  }
  // M7 (Tom, 9 November): the documentation credit is field-work money: inside the week's cap (FS47FreeformSession::EarnSide)
  C->bPaid=true;const int32 Credit=M->Freeform->EarnSide(C->Reward+(M->Freeform->HasKit(TEXT("film"))?5:0),TEXT("photo credit"));
- M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
- if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d documentation credit."),Credit):FString(TEXT("OPS registered the field photograph. This week's field money is used up: no payment.")),5);
+ M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nField allowance: $%d (applied to outstanding supply credit first).\nThe subject is in frame and visible. Paid once per incident."),*C->Title,*C->PhotoId,Credit));Changed();
+ if(M->UI)M->UI->Toast(Credit>0?FString::Printf(TEXT("OPS registered the field photograph: $%d field allowance."),Credit):FString(TEXT("OPS registered the field photograph. This week's field allowance is used up: no payment.")),5);
  return true;
 }
 bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
@@ -1788,7 +1788,7 @@ bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
  const int32 Paid=M->Freeform->RegisterNightPhoto(Shot->Id,Shot->Clock,true,Shot->Text);
  if(Paid<0)return false;
  Changed();
- if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field credit."),Paid):FString(TEXT("OPS registered the field record. This week's field money is used up: no payment.")),5);
+ if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field allowance."),Paid):FString(TEXT("OPS registered the field record. This week's field allowance is used up: no payment.")),5);
  return true;
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);

@@ -1599,7 +1599,7 @@ void FS47FreeformSession::OpenOperations()
    if(!J->bPaid)D.Add(T::Value(TEXT("PAYS NOW"),FString::Printf(TEXT("$%d%s%s"),JobPay(*J),J->bDocked?TEXT(" / HALF RATE"):DayNumber-J->Day>1?TEXT(" / LATE"):TEXT(""),
     RulesLive()&&!TrainingCard(*J)&&J->Stage<EJobStage::Recorded?*FString::Printf(TEXT(" / +$%d IF THE RECORDING READS"),CleanBonus):TEXT(""))));
    // M7: what the evening's cards have taken (time is the second currency)
-   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / FIELD ALLOWANCE LEFT THIS WEEK $%d OF $%d"),CardsTonight(),SideLeftThisWeek(),int32(SideCap))));
+   if(RulesLive())D.Add(T::Value(TEXT("TONIGHT"),FString::Printf(TEXT("%d CARDS FILED / FIELD ALLOWANCE LEFT THIS WEEK $%d OF $%d (PHOTOS, RECORDS AND TIPS PAY FROM IT)"),CardsTonight(),SideLeftThisWeek(),int32(SideCap))));
    D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true));
   }
   else D.Add(T::Small(TEXT("NO JOB SELECTED")));
@@ -1648,8 +1648,8 @@ void FS47FreeformSession::OpenOperations()
    else if(!Shot->IsDeveloped())Claims.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect this photograph at the wet bench before submitting it.")));
    else
    {
-    if(!Claim.bPaid)Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
-    else Claims.Add(T::Small(TEXT("ORIGINAL REGISTERED / Documentation credit already received.")));
+    if(!Claim.bPaid)Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d field allowance"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
+    else Claims.Add(T::Small(TEXT("ORIGINAL REGISTERED / Field allowance already received.")));
    }
    // Payment follows the current best incident image; an existing control plan
    // retains its independently frozen original even if that newer image is absent
@@ -1701,9 +1701,9 @@ void FS47FreeformSession::OpenOperations()
     }
    }
   }
-  if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));
+  if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / FIELD ALLOWANCE"),S47Kit::Col(Claims)));
   // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): a photograph from one of the night's happenings out there, or a trip camera frame, is a
-  // field record OPS registers once for field money under the week's cap (FS47FreeformDirector::RegisterFieldRecord). Dr. Ward counts
+  // field record OPS registers once for field allowance under the week's cap (FS47FreeformDirector::RegisterFieldRecord). Dr. Ward counts
   // the album either way; this only pays. The newest few.
   TArray<S47Kit::FW> Records;int32 Listed=0;
   if(M&&M->Night&&M->Night->Album)
@@ -1718,7 +1718,7 @@ void FS47FreeformSession::OpenOperations()
     ++Listed;const FString ShotId=P.Id;
     Records.Add(T::Small(FString::Printf(TEXT("%s / %s / %s"),*P.Id,*FS47Places::SlipClock(P.Clock),*P.Text.Left(60))));
     if(!P.IsDeveloped())Records.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect it at the wet bench first.")));
-    else Records.Add(T::Button(FString::Printf(TEXT("Register field record / $%d field credit"),int32(FieldRecordPay)),[this,ShotId]{if(Director)Director->RegisterFieldRecord(ShotId);OpenOperations();},false,CanRegisterPhotoEvidence()));
+    else Records.Add(T::Button(FString::Printf(TEXT("Register field record / $%d field allowance"),int32(FieldRecordPay)),[this,ShotId]{if(Director)Director->RegisterFieldRecord(ShotId);OpenOperations();},false,CanRegisterPhotoEvidence()));
    }
   }
   if(!Records.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD RECORDS / A NIGHT OUT ON THE LAND"),S47Kit::Col(Records)));
@@ -2765,7 +2765,7 @@ void FS47FreeformSession::StepWeeklyReview()
   if(Care)Care->WeekBilled();
   Repairs=0;
   FString Running=FString::Printf(TEXT("\nTRUCK: TIRES, OIL AND WEAR, %.0f KM $%d\nFILM AND DARKROOM CHEMICALS, %d %s $%d"),X.Km,X.Wear,X.Prints,X.Prints==1?TEXT("PRINT"):TEXT("PRINTS"),X.Film);
-  Running+=FString::Printf(TEXT("\nFIELD ALLOWANCE FROM THE UNIVERSITY, FIXED AT $%d A WEEK, NOT A DOLLAR MORE. RECEIVED $%d (CREDIT, NOT BILLED)"),int32(SideCap),SideWeek==ReviewWeek?SidePaid:0); // CHAIN-5-20261109
+  Running+=FString::Printf(TEXT("\nFIELD ALLOWANCE FROM THE UNIVERSITY, FIXED AT $%d A WEEK, NOT A DOLLAR MORE. RECEIVED $%d THIS WEEK"),int32(SideCap),SideWeek==ReviewWeek?SidePaid:0); // CHAIN-5-20261109
   if(X.Tapes>0)Running+=FString::Printf(TEXT("\nCASSETTES, %d %s $%d"),X.Tapes,X.Tapes==1?TEXT("TAKE"):TEXT("TAKES"),X.Tape);
   if(X.Repairs>0)Running+=FString::Printf(TEXT("\nREPAIRS TO GEAR DAMAGED IN THE FIELD $%d"),X.Repairs);
   if(X.Poor>0)Running+=FString::Printf(TEXT("\nDR. WARD: RE-CHECK OF %d %s NOBODY CAN READ $%d. Tune before you record."),X.Poor,X.Poor==1?TEXT("RECORDING"):TEXT("RECORDINGS"),X.Fee);
@@ -3354,7 +3354,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    if(!Unavailable.IsEmpty()&&!Res.bDone&&C->Planned!=T)continue;
    // CHAIN-3-20261109: a tested case says what each explanation predicts once a working hunch is noted, or the result is in.
    const bool bShowPrediction=D.Mystery||C->Hunch>=0||C->bConcluded||Res.bDone;
-   FString Card=FString::Printf(TEXT("TEST %d / %s\n%s\nPREDICTION / %s"),T+1,*FString(D.Tests[T].Name).ToUpper(),D.Tests[T].Instruction,bShowPrediction?*FS47FreeformCases::Prediction(Line,T):TEXT("note your working hunch below first. Then the board shows what each explanation predicts here."));
+   FString Card=FString::Printf(TEXT("TEST %d / %s\n%s\nPREDICTION / %s"),T+1,*FString(D.Tests[T].Name).ToUpper(),D.Tests[T].Instruction,bShowPrediction?*FS47FreeformCases::Prediction(Line,T):TEXT("NOTE YOUR WORKING HUNCH BELOW FIRST. THEN THE BOARD SHOWS WHAT EACH EXPLANATION PREDICTS HERE."));
    if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s%s"),Res.Day,*FS47FreeformCases::TestResultText(Line,T,Res.bPresent),T==Mark?TEXT("  << THIS SHEET"):TEXT(""));
    else if(!Unavailable.IsEmpty())Card+=TEXT("\nUNAVAILABLE / ")+Unavailable+(C->Planned==T?TEXT(" Cancel this retained plan to choose another control."):TEXT(""));
    else if(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access))Card+=TEXT("\nNEEDS / the loan field logger (conclude THE REPEATED INTERVAL)");

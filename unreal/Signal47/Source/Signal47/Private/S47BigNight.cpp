@@ -123,7 +123,7 @@ namespace S47Big
    TEXT("GLASSED GROUND"),
    TEXT("A disc of ground about two yards across has gone to glass: dark, glossy, cracked like a dry pond, still a little warm under the hand. A ring of pale ash around it. In the ash, small bare prints go round the glass twice, close together, and then go off in one line."),
    TEXT(" The line of prints goes off toward {place}. It is on your map."),
-   TEXT("Out past {place} a disc of ground gone to glass, still warm, with a ring of ash around it. Small bare prints in the ash go round it twice and then off in one line.")},
+   TEXT("Out at {place} a disc of ground gone to glass, still warm, with a ring of ash around it. Small bare prints in the ash go round it twice and then off in one line.")},
   {TEXT("At {clock} a light came down fast out past {place}, {way}, and lit up the ground where it went out. A boom came after it, late."),
    TEXT("The county had three calls before four about something coming down out past {place}. And a boom that woke every dog in Caliche. A boom. Not a plane. I asked them."),
    TEXT("Earl, something came down out past {place} the other night. Lit the whole sky white and then a boom like they used to make at the mine. My windows are still talking about it."),TEXT("man"),
@@ -133,7 +133,7 @@ namespace S47Big
    TEXT("THE FURROW"),
    TEXT("A furrow about twenty yards long, a foot deep at its end, the caliche thrown up in a lip on either side and burnt black along the bottom. It starts shallow and goes deeper, and at the deep end there is nothing: no hole, no piece of anything. The brush either side is laid down flat, all pointing away."),
    TEXT(" Sighted along it, the furrow points back the way it came: toward {place}. It is on your map."),
-   TEXT("Out past {place} a burnt furrow about twenty yards long, deepest at the end, and nothing at the end of it. The brush either side laid flat, pointing away.")},
+   TEXT("Out at {place} a burnt furrow about twenty yards long, deepest at the end, and nothing at the end of it. The brush either side laid flat, pointing away.")},
   {TEXT("At {clock} a dozen small lights rose together off the land out past {place}, {way}, slowly, keeping together, and went out all at once high up."),
    TEXT("And the ranch out past {place} says the cattle went through two fences before the lights went up. Before! Something told them first."),
    TEXT("Earl, my cows are in my neighbor's yard and his are in mine. Something went up out past {place}, a whole string of lights going up slow, and every animal on the place ran from it."),TEXT("old"),
@@ -143,7 +143,7 @@ namespace S47Big
    TEXT("STONES TURNED OVER"),
    TEXT("In a ring about ten yards across every stone has been turned over, damp side up, as if each one were lifted and put back the wrong way. The middle is swept bare. Cattle tracks run out of the ring in every direction, flat out, the way animals go when they run."),
    TEXT(" One line of tracks runs straight and does not scatter: toward {place}. It is on your map."),
-   TEXT("Out past {place} a ring of ground where every stone was turned over, damp side up, and the middle swept bare. Cattle tracks running out of it every way.")},
+   TEXT("Out at {place} a ring of ground where every stone was turned over, damp side up, and the middle swept bare. Cattle tracks running out of it every way.")},
  };
  static_assert(UE_ARRAY_COUNT(Words)==3,"one set of words for each shape");
  // The same words on every line of Dale's morning, whatever the shape. PT-BIGNIGHT-20261109 (Tom): Dale says "Herrgott", awake or
@@ -179,7 +179,7 @@ namespace S47Big
  const TCHAR* const DaleSee=TEXT("Are you seeing this? Bearing {azwords} from the station, low on the horizon, out past {place}. Every dish on remote just swung round to it by itself. Look that way.");
  const TCHAR* const DaleNudge=TEXT("Get outside and look {way} of the station, over {place}. The sky there is lit like a ballpark. Go and look, before it stops.");
  const TCHAR* const DaleArray=TEXT("Herrgott. The printer ran by itself: all channels over range, nine seconds of it, every one on {azwords}. And the array is still looking there. I did not tell it to.");
- const TCHAR* const DaleGo=TEXT("Out past {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.");
+ const TCHAR* const DaleGo=TEXT("Out at {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.");
  const TCHAR* const DaleWard=TEXT("And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories.");
  // On the CB from somebody else out on the road, as the shape stands: first line, second line, for each shape.
  const TCHAR* const CbLive[3][2]={

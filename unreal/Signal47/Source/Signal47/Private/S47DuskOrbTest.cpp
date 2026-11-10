@@ -504,7 +504,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!F.TerminalWindowRendered())return;
   const auto Follow=NativeButtons(TEXT("Follow this return plan"));
-  if(!FocusCheck(Original()&&!Original()->IsDeveloped()&&Follow.Num()==1&&Follow[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("newer undeveloped claim-photo fixture leaves frozen plan Follow available, without payment action")))return;
+  if(!FocusCheck(Original()&&!Original()->IsDeveloped()&&Follow.Num()==1&&Follow[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("newer undeveloped claim-photo fixture leaves frozen plan Follow available, without payment action")))return;
   // Second case: current claim image is unavailable, frozen original is intact.
   M->Night->Album->Restore(S47J::Clone(S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum"))));
   auto MissingClaim=F.Director->Save();auto Plans=S47J::Arr(MissingClaim,TEXT("photoClaims"));
@@ -516,7 +516,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!F.TerminalWindowRendered())return;
   const auto Buttons=NativeButtons(TEXT("Follow this return plan"));
-  if(!FocusCheck(F.OperationsSection()==5&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
+  if(!FocusCheck(F.OperationsSection()==5&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
   TSharedPtr<SWidget> W=Buttons[0];while(W.IsValid())
   {
    if(W->GetTypeAsString()==TEXT("SScrollBox")){StaticCastSharedPtr<SScrollBox>(W)->ScrollDescendantIntoView(Buttons[0],false);break;}
