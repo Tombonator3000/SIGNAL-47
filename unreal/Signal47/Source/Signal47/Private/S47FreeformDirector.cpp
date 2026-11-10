@@ -26,6 +26,7 @@
 #include "S47Night.h"
 #include "S47SkyVisitors.h"
 #include "S47Glimpses.h"
+#include "S47Aftermath.h"
 #include "S47Audio.h"
 #include "S47UI.h"
 #include "S47Inter.h"
@@ -1719,7 +1720,7 @@ int32 FS47FreeformDirector::StrangeBase(const FString& G)
  static const TPair<const TCHAR*,int32> Table[]={
   {TEXT("sky"),14},{TEXT("marks"),12},{TEXT("prints"),12},{TEXT("scorch"),14},{TEXT("cattle"),16},{TEXT("bigmark"),28},{TEXT("bigglow"),35},
   {TEXT("shade"),20},{TEXT("shadow"),22},{TEXT("tallfigure"),26},{TEXT("crawler"),24},{TEXT("nordic"),28},{TEXT("cosmic"),30},
-  {TEXT("roswell"),24},{TEXT("pale"),30},{TEXT("tall"),32},{TEXT("aftermath"),24}};
+  {TEXT("roswell"),24},{TEXT("pale"),30},{TEXT("tall"),32},{TEXT("aftermath"),24},{TEXT("cowlift"),34}};
  for(const auto& T:Table)if(G==T.Key)return T.Value;
  return 0;
 }
@@ -1730,7 +1731,7 @@ namespace
   static const TPair<const TCHAR*,const TCHAR*> Names[]={
    {TEXT("nordic"),TEXT("Nordic figure")},{TEXT("cosmic"),TEXT("Cosmic figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
    {TEXT("crawler"),TEXT("low crawler")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
-   {TEXT("prints"),TEXT("prints on the shoulder")},{TEXT("bigglow"),TEXT("big light")},{TEXT("bigmark"),TEXT("big night marks")}};
+   {TEXT("prints"),TEXT("prints on the shoulder")},{TEXT("cowlift"),TEXT("cow in the light")},{TEXT("bigglow"),TEXT("big light")},{TEXT("bigmark"),TEXT("big night marks")}};
   for(const auto& N:Names)if(G==N.Key)return N.Value;
   return G;
  }
@@ -1876,6 +1877,14 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   {
    const bool bCrab=M->Freeform->FarmSite->VisitKind()==1;
    Body(bCrab?TEXT("pale"):TEXT("tall"),bCrab?TEXT("pale visitor"):TEXT("tall visitor"),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
+  }
+  // PHOTO-02 (N1110): a cow lifted into the air. It pays only with the lift really up there to be seen: the craft and the beam drawn, the
+  // cow clear of the grass, and the cow herself inside the frame. The craft is the body that must stand in the clear (Qualify).
+  if(M->Freeform->Aftermath&&M->Freeform->Aftermath->CowLifting().Visible())
+  {
+   const FS47CowLift& Raised=M->Freeform->Aftermath->CowLifting();
+   const auto RaisedAt=Camera->Project(Raised.CowNow());
+   if(RaisedAt.bFront&&RaisedAt.U>.06&&RaisedAt.U<.94&&RaisedAt.V>.04&&RaisedAt.V<.96)Body(TEXT("cowlift"),TEXT("cow in the light"),Raised.CraftAt(),3.,Raised.Hull());
   }
   // Drawn props of the happenings: the figures on the road and the height, the dead cow, a landing's ring, prints, the big night.
   if(M->Freeform->Happenings)
@@ -2242,7 +2251,7 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   const TCHAR* const Ordinary[]={TEXT("devil"),TEXT("rabbits"),TEXT("cattle"),TEXT("tracks"),TEXT("hitcher"),TEXT("pickup"),TEXT("rv"),TEXT("truck"),TEXT("darkcar"),TEXT("hairy"),TEXT("singer"),TEXT("zet"),TEXT("window"),TEXT("litwin"),TEXT("balloon"),TEXT("")};
   bool bNonePay=true;for(const TCHAR* K:Ordinary){const FString G=StrangeGroupOf(K);bNonePay&=G.IsEmpty()&&PhotoReward(TEXT("strange.")+G+TEXT(".n1"),.5)==0;}
   Check(bNonePay&&PhotoReward(TEXT("strange.balloon.n2"),.5)==0&&PhotoReward(TEXT("strange.dust_devil.n2"),.5)==0,TEXT("D48: dust devil, animals, cars, people, humour, lit windows and the balloon pay nothing"));
-  const TCHAR* const Groups[]={TEXT("sky"),TEXT("marks"),TEXT("prints"),TEXT("scorch"),TEXT("cattle"),TEXT("bigmark"),TEXT("bigglow"),TEXT("shade"),TEXT("shadow"),TEXT("tallfigure"),TEXT("crawler"),TEXT("nordic"),TEXT("cosmic"),TEXT("roswell"),TEXT("pale"),TEXT("tall"),TEXT("aftermath")};
+  const TCHAR* const Groups[]={TEXT("sky"),TEXT("marks"),TEXT("prints"),TEXT("scorch"),TEXT("cattle"),TEXT("bigmark"),TEXT("bigglow"),TEXT("shade"),TEXT("shadow"),TEXT("tallfigure"),TEXT("crawler"),TEXT("nordic"),TEXT("cosmic"),TEXT("roswell"),TEXT("pale"),TEXT("tall"),TEXT("aftermath"),TEXT("cowlift")};
   bool bScale=true;for(const TCHAR* G:Groups)
   {
    const FString Id=FString(TEXT("strange."))+G+TEXT(".n4");const int32 Base=StrangeBase(G),Low=PhotoReward(Id,.03),High=PhotoReward(Id,.4);

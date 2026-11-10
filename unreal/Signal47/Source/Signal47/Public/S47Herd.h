@@ -60,9 +60,17 @@ public:
 	// Freeform: one cow away for now (S47Herd::MISSING, the one with the machinery for it), -1 for all nine. Story's own
 	// count is never touched, and without this call Freeform's herd is whole, as it always was.
 	void SetAway(int32 Cow);
+	// PHOTO-02 (N1110): one cow (by her stable index, S47Herd::MISSING) held up in the air for a lift: Height metres above the grass, Spin
+	// radians about her own axis. -1 or 0 puts her down exactly where she stood. Not saved here: S47CowLift owns the pose and its save.
+	void SetLift(int32 Cow, double Height, double Spin);
+	double LiftHeight() const { return LiftCow >= 0 ? LiftH : 0; }
+	// Where she stands on the grass, in the herd's world terms (Y is the ground), for the craft and the beam above her.
+	FVector LiftGround() const;
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	int32 LiftCow = -1;
+	double LiftH = 0, LiftSpin = 0;
 	US47Main* M = nullptr;
 	FS47Obj Bodies, Heads, Ring;
 	FVector4 BeamPos = FVector4(0, -999, 0, 0);

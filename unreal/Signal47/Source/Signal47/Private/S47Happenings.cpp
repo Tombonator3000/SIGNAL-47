@@ -4,6 +4,7 @@
 #include "S47Ambience.h"
 #include "S47ArrayShot.h"
 #include "S47Audio.h"
+#include "S47Calm.h"
 #include "S47CB.h"
 #include "S47Docs.h"
 #include "S47Drive.h"
@@ -2442,6 +2443,9 @@ void FS47Happenings::Step(double Dt)
  StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
  // N1110 (ANIMALS-20261108): an event the animals went ahead of, its few seconds up
  if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;if(!StartEvent(WId,WVar,false,WWhy))Refused(WId,WWhy);}}
+ // N1110 (rhythm): a false alarm in the evening, the ease eight to ten minutes after a danger
+ if(!Calm)Calm=MakeShared<FS47Calm>(M);
+ Calm->Step(Dt);
 }
 
 // Tom, 8 November: something every night, also between eleven and one. If nothing has come by half past twelve, the best of these that

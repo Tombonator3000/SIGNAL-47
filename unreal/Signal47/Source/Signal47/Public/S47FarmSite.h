@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47Obj.h"
 #include "S47VisitAttention.h"
+#include "S47RuleBreak.h"
 class US47Main;
 class AS47Web;
 class FS47FreeformSession;
@@ -196,6 +197,10 @@ private:
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;
  FS47VisitAttention Attention;
+ // N1110 (N1110-6): the rule taught (lamp off and still, they pass) and broken once by the Pale One (S47RuleBreak.h); StillHeld: seconds
+ // the small one has lost the player so far this visit.
+ FS47RuleBreak RuleBreak;
+ double StillHeld=0;
  // Hunt clock and how long it stays interested. Both slow or quicken with what the player gives it to go on.
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;

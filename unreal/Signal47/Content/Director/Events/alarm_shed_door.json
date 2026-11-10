@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "alarm_shed_door",
+  "name": "False alarm: the wind on the shed door",
+  "notes": "N1110 (rhythm, item 5). Played by FS47Calm. A door banging twice in the dark, then the wind that did it. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint" },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 3.5 },
+    { "at": 3.2, "do": "sound", "sound": "doorMetal", "gain": 0.45, "lp": 1500, "rate": 0.85 },
+    { "at": 5.2, "do": "sound", "sound": "doorMetal", "gain": 0.32, "lp": 1300, "rate": 0.8 },
+    { "at": 6, "do": "thought", "text": "That was a door.", "secs": 2.5 },
+    { "at": 8.5, "do": "sound", "sound": "gust", "gain": 0.3 },
+    { "at": 10, "do": "thought", "text": "Wind. That shed door never did latch right.", "secs": 4.5 }
+  ]
+}

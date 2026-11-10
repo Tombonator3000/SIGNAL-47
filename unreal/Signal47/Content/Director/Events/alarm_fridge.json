@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "alarm_fridge",
+  "name": "False alarm: the refrigerator clunks",
+  "notes": "N1110 (rhythm, item 5). Played by FS47Calm, indoors. The low hum in the room stops, something clunks, then the hum starts up again. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "if": ["indoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4 },
+    { "at": 4, "do": "sound", "sound": "thudSoft", "gain": 0.5, "lp": 500 },
+    { "at": 4.5, "do": "tone", "hz": 58, "secs": 2.5, "gain": 0.05, "wave": "sine" },
+    { "at": 6.5, "do": "thought", "text": "Just the refrigerator. It does that.", "secs": 4.5 }
+  ]
+}

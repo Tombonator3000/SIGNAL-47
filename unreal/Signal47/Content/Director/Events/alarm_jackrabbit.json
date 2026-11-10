@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "alarm_jackrabbit",
+  "name": "False alarm: a jackrabbit in the brush",
+  "notes": "N1110 (rhythm, item 5). Played by FS47Calm. Something moves in the brush close by, then a jackrabbit breaks and runs. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "if": ["outdoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 3 },
+    { "at": 1.2, "do": "sound", "sound": "gust", "gain": 0.18, "rate": 1.6 },
+    { "at": 2.4, "do": "sound", "sound": "thudSoft", "gain": 0.5, "lp": 900 },
+    { "at": 2.9, "do": "sound", "sound": "thudSoft", "gain": 0.42, "lp": 900 },
+    { "at": 3.3, "do": "sound", "sound": "thudSoft", "gain": 0.3, "lp": 800 },
+    { "at": 4.8, "do": "thought", "text": "A jackrabbit. Nearly stopped my heart.", "secs": 4.5 }
+  ]
+}

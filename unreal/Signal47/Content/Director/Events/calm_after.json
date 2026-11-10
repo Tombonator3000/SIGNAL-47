@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "calm_after",
+  "name": "The night eases after a danger",
+  "notes": "N1110 (rhythm, item 11). Played by FS47Calm eight to ten minutes of the clock after a danger has ended (not after a long absence): the wind and a far dog come back gently, one calm thought, the radio at 1420 AM finds an ordinary program if the player is indoors, Dale checks in. No finding, no map mark, no new event. The director's own rest after a danger (rest_after.danger) holds the night meanwhile.",
+  "enabled": true,
+  "gates": { "from_day": 2, "tier": "hint" },
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "gust", "gain": 0.16, "lp": 1800 },
+    { "at": 3.5, "do": "sound", "sound": "dog0", "gain": 0.1, "lp": 900 },
+    { "at": 7, "do": "thought", "text": "Crickets again. Good.", "secs": 4 },
+    { "at": 10, "do": "line", "who": "radio", "text": "...clear and cool out there tonight, folks, light wind out of the southwest. Here's one for the long drive home.", "if": ["indoors"] },
+    { "at": 16, "do": "line", "who": "dale", "text": "You still with me? Over." }
+  ]
+}

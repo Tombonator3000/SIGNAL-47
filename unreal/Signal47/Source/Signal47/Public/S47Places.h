@@ -83,6 +83,10 @@ public:
  // D48-20261110: whether the first day's traces stand at a place (the arc place, on the first two days) and the head of the windmill
  // is turned toward the bearing (compass degrees); the NOW line once the place is found. Pure.
  static bool Traced(const FString& Id,int32 Seed,int32 Day){return Id==TEXT("windmill")&&Day<=2&&ArcPlace(Seed)==Id;}
+ // N1110 (rhythm, item 12): the one thing the land shows by day that nobody explains. From day 2 one place a day (seeded, never the
+ // cairn or Saucer Rock, which stand off the map) has a trace of the night in plain words, one of four: tracks that stop, a dead circle
+ // of grass, a fence wire cut clean, birds all facing one way. Empty: no trace there that day (or day 1). Pure.
+ static FString DayTrace(const FString& Id,int32 Seed,int32 Day);
  // D45-20261110: a slip printed in daylight on the first day (08:00 to 18:00 of night 1) does not take the night's one pointing-out:
  // it leaves it for the dark hours (the burst; AfterRegistered: so does any slip that night while the burst is still to come). Once
  // that day, still.

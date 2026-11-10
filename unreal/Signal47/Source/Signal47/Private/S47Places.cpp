@@ -1,5 +1,6 @@
 #include "S47Places.h"
 #include "S47Audio.h"
+#include "S47Calm.h"
 #include "S47Balloon.h"
 #include "S47FarmSite.h"
 #include "S47Freeform.h"
@@ -534,6 +535,15 @@ bool FS47Places::Use(const FString& Id)
   Extra=TEXT("It is not where you noted it. Your record puts it some paces from here, and nothing shows it was dragged.");
   F.RecordEvidence(Moved,FString::Printf(TEXT("Not where I recorded it: %s, some paces off. No drag marks that I can see."),D->Title));
  }
+// N1110 (rhythm, item 12): by day, the place may carry the night's one unexplained trace; said once a day, kept once.
+ {
+  const double Hd=FMath::Fmod(F.Clock(),86400.)/3600.;const FString Trace=DayTrace(Id,F.Seed(),F.Day());
+  if(!Trace.IsEmpty()&&Hd>=6.&&Hd<19.)
+  {
+   Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+Trace;
+   F.RecordEvidence(FString::Printf(TEXT("place_trace_d%d"),F.Day()),FString::Printf(TEXT("At %s: %s"),D->Title,*Trace));
+  }
+ }
  if(F.HasKit(TEXT("magnetometer")))
  {
   // LOOP-4-20261109 (HELHETLIG_LOKKE step 4): the needle has a history. Where something happened near the place in the last two
@@ -558,6 +568,22 @@ bool FS47Places::Use(const FString& Id)
   }
  }
  Panel(*D,bFirst,Extra);return true;
+}
+FString FS47Places::DayTrace(const FString& Id,int32 Seed,int32 Day)
+{
+ if(Day<2)return FString();
+ TArray<const FDef*> Open;
+ for(const FDef& D:Defs())if(FCString::Strcmp(D.Id,TEXT("cairn"))!=0&&FCString::Strcmp(D.Id,TEXT("saucer_rock"))!=0)Open.Add(&D);
+ if(Open.IsEmpty())return FString();
+ const int32 Pick=int32(FS47NightRhythm::Roll(Seed,Day,0x54524331u)*Open.Num())%Open.Num();
+ if(Id!=Open[Pick]->Id)return FString();
+ switch((Day+int32(FS47NightRhythm::Roll(Seed,0,0x54524332u)*4.f))%4)
+ {
+ case 0:return TEXT("A line of bare tracks comes across the dirt here and stops in the open. Nothing leads on from the last one, and there is no turning round.");
+ case 1:return TEXT("A circle of grass about the size of a table has died here, brown and dry to the root. The grass around it is green.");
+ case 2:return TEXT("The wire of the fence nearby has been cut clean, both ends bright. There are no marks from pliers on either one.");
+ default:return TEXT("A dozen birds sit on the rail and the wire, and every one of them faces the same way. They do not turn their heads when you come near.");
+ }
 }
 FString FS47Places::NeedleReading(const FString& Needle,bool bStirred)
 {
@@ -1086,5 +1112,18 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
     TEXT("the slip is the only NOW row until the windmill is found, and the line that follows the finding is plain"));
   }
  }
+ // N1110 (rhythm, item 12): one place a day, none on day 1, plain words, the four kinds all come, the same each time it is asked
+ {
+  int32 Days=0;bool bOne=true,bPlain=true;TSet<FString> Kinds;
+  for(int32 Day=2;Day<=60;++Day)
+  {
+   int32 Here=0;
+   for(const FDef& D:Defs()){const FString T=DayTrace(D.Id,47,Day);if(!T.IsEmpty()){++Here;Kinds.Add(T);bPlain&=S47Script::LintText(T).IsEmpty()&&!T.Contains(TEXT("taken"))&&T==DayTrace(D.Id,47,Day);}}
+   bOne&=Here==1;Days+=Here;
+  }
+  bool bDayOne=true;for(const FDef& D:Defs())bDayOne&=DayTrace(D.Id,47,1).IsEmpty();
+  Check(bOne&&Days==59&&bDayOne&&bPlain&&Kinds.Num()==4,TEXT("N1110: from day 2 one place a day carries one unexplained trace in plain words, four kinds, none on day 1"));
+ }
+ OK&=FS47Calm::SelfTest(Lines);
  return OK;
 }

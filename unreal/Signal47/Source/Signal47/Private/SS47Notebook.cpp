@@ -956,6 +956,12 @@ void SS47Notebook::Build()
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
 		FString Group;
 		const float Px = bLarge ? 30.f : 27.f;
+		// N1110 (N1110-9): the three goals over the list, tonight, this week, the question (S47GoalLine.h; Freeform fills X.Goals)
+		for (const FString& Goal : X.Goals)
+		{
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(Goal)).Font(Hand(Px - 2.f)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
+			Read.Add(Goal);
+		}
 		for (int32 I = 0; I < NowRows.Num(); ++I)
 		{
 			const FNowRow& R = NowRows[I];
@@ -992,7 +998,7 @@ void SS47Notebook::Build()
 		}
 		// D45-20261110: what has been shown is no longer new the next time the notebook opens
 		if (X.bFreeform) for (const FS47NbNowLine& N : X.Now) if (N.bNew && !N.Key.IsEmpty()) S47TonightNote::Seen().Keys.Add(N.Key);
-		LeftSlot->SetContent(Lay(Head(TEXT("Now"), Heading), NowRows.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing.")), LeftScroll));
+		LeftSlot->SetContent(Lay(Head(TEXT("Now"), Heading), NowRows.Num() || X.Goals.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing.")), LeftScroll));
 	}
 	else if (Tab == TEXT("tasks") || Tab == TEXT("guide"))
 	{

@@ -70,6 +70,7 @@
 #include "S47Marginalia.h"
 #include "S47PinBoard.h"
 #include "S47TonightNote.h"
+#include "S47GoalLine.h"
 #include "S47Image.h"
 #include "S47Keys.h"
 #include "S47Mirrors.h"
@@ -2411,6 +2412,25 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Done) Add(TEXT("done"), L);
 			X.NowClock = Note.Clock;
 			X.bNow = true;
+			// N1110 (N1110-9): the three goals over the list: tonight (the note's next step, else the first thing open), this week (the
+			// weekly sheet) and the bigger question (the open case), from what NOW already has (S47GoalLine.h)
+			{
+				S47GoalLine::FIn Goal;
+				const S47TonightNote::FLine* Step = Note.Lines.FindByPredicate([](const S47TonightNote::FLine& L) { return L.Mark == EMark::Next; });
+				if (!Step) Step = Note.Lines.FindByPredicate([](const S47TonightNote::FLine& L) { return L.Mark == EMark::Open; });
+				if (Step) Goal.Next = S47TonightNote::LineText(*Step);
+				if (F->RulesLive())
+				{
+					Goal.ReviewDay = F->NextReviewDay();
+					Goal.SheetSoFar = F->ReviewPowerNow() + FS47FreeformSession::ReviewFuel + F->WeekCosts((F->NextReviewDay() - 1) / 7).Total() + F->Arrears();
+					Goal.AllowanceLeft = F->SideLeftThisWeek();
+				}
+				int32 Open = F->UrgentCase();
+				for (int32 C = 0; Open < 0 && C < FS47FreeformCases::CaseCount; ++C)
+					if (const FS47FreeformCases::FCase* K = F->CaseFile().Get(C); K && K->bOpen && !K->bConcluded) Open = C;
+				if (Open >= 0) { Goal.CaseTitle = FS47FreeformCases::Def(Open).Title; Goal.CaseQuestion = F->CaseFile().QuestionText(Open); }
+				X.Goals = S47GoalLine::Make(Goal).Lines();
+			}
 			// D45-20261110: a line NOW has not shown before is NEW, and the notebook opens on NOW for it (SS47Notebook, which counts it
 			// seen once shown). A game just begun or loaded counts what it has at first as seen, so that only what comes after is new.
 			{

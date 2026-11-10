@@ -124,6 +124,19 @@ Spillertekst kontrolleres med regissørverktøyets kontroll (`S47Script::LintTex
 
 F10 «Event scripts» → «Run: <id>» spiller et manus med en gang, med prøveord der koden ellers ville gitt sine. I et vanlig spill lagres ikke funn fra F10. I en utviklerkjøring lagres de.
 
+## Falske alarmer og lettelse (N1110, rytme)
+
+`FS47Calm` (`S47Calm.cpp`, kalt fra `FS47Happenings::Step`) spiller to slags manus utenfor rytmens budsjett: ingen funn, kartmerke, kamera eller fare.
+
+| Manus | Når | Slagene |
+| --- | --- | --- |
+| `alarm_cow`, `alarm_jackrabbit` (ute), `alarm_fridge` (inne), `alarm_shed_door` (begge) | én eller to ganger hver kveld (første 20:00–23:00, andre 23:30–01:15, seeded), fra dag 2, i mørket, når ingenting annet pågår, ingen ro løper, ingen fare er sett i kveld og ingen fare nettopp er over (20 min) | stillhet først (`silence` ved 0), lyder, så en tanke som avslører det vanlige |
+| `calm_after` | 8–10 minutter av klokka etter at en fare er over (ikke etter bortføring, som har sin egen lange ro) | vind og en fjern hund kommer tilbake, en rolig tanke, radioen (1420 AM) finner et vanlig program inne, Dale: «You still with me? Over.» |
+
+Direktørens egen ro etter fare (`rest_after.danger`, 170 s) holder natta imens og er uendret. Selvtesten (`FS47Calm::SelfTest`, kalt fra `FS47Places::SelfTest`) kontrollerer antall, tider, at hvert manus har stillhet først, en avsløring til slutt og ingenting utover lyd og tanke, og at lettelsen har Dale og en tanke. De fem filene har ingen innebygd kopi i `.inl` ennå: de leses fra `Content/Director/Events`.
+
+**Spor om dagen (rytme, punkt 12):** `FS47Places::DayTrace` gir fra dag 2 ett sted om dagen ett uforklart spor (sporene som stopper, en død sirkel av gress, en gjerdetråd klippet rent, fugler som alle ser samme vei) i stedet for en ny rekvisitt; teksten legges til stedets panel og lagres én gang per dag som funn `place_trace_d<dag>`.
+
 ## Dyr som varsel (N1110, ANIMALS-20261108)
 
 `animals_warn_birds` og `animals_warn_coyote` spilles av `FS47AnimalWarn` (ikke av en hendelses egen kode), like før `horizon_figure`, `beam_figure`, `dish_lights` og `figure_near` når spilleren er ute til fots: en flokk vaktler letter alle på én gang, eller en coyote 18 til 30 m unna stopper og stirrer på spilleren i 7 sekunder og løper. Hendelsen holdes tilbake de sju sekundene og starter som ellers. Dyrene er de spillet allerede har (`FS47Animals::Warn`); manuset sier tanke og funn, og portene (`hours`, `odds`) sier når og hvor ofte: de samme hver gang samme natt spørres. Høyst ett varsel per natt, aldri i første skift. `"enabled": false` slår varselet av. Militæret (MILITARY-20261108) var allerede kodet i `S47Visitors`.

@@ -503,7 +503,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  const FVector FaceAt=bHeldNow?Attention.LookAt():Feet;
  if(bHeldNow)Speed=Attention.BackSpeed();
  const double Face=FMath::Atan2(FaceAt.Z-BodyAt.Z,FaceAt.X-BodyAt.X);
- BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5);
+ if(!(VisitWho==1&&RuleBreak.Facing()))BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5); // (N1110-6: stopped, it faces away until it turns)
  if(VisitWho==2)
  {
   // Far off it watches, looks about, and waits, in long turns. Held in a lamp close by, and only when it is really seen, it
@@ -608,7 +608,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   bShhTried=false;ShhLeft=0;bFreezeTried=false;FreezeLeft=0;bSatLogged=false;
   bSitsFar=(SitRoll>=0?SitRoll:FMath::FRand())<SitChance;SitRoll=-1;
-  VisitRounds=0;VisitHunt=0;VisitPatience=120;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
+  VisitRounds=0;VisitHunt=0;VisitPatience=120;RuleBreak.Reset();StillHeld=0;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
   RadioSeen=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
   RadioIn=!bTestHoldHunt&&FMath::FRand()<.35f?FMath::FRandRange(10.f,30.f):-1.;
@@ -619,7 +619,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  // Shut in where no body can be put in sight at all (18 s of the visit and still none out), the light comes over the roof as it did.
  const bool bRoofNear=VisitWho==0||(bBodyOut&&BodyClock>=(VisitWho==2?TallStands:1.6)&&FVector::Dist(BodyAt,Feet)<(VisitWho==2?SitBeyond:14.))
   ||(Visit==1&&!bBodyOut&&VisitAge>=18.);
- if(VisitRounds<2&&!bDriving&&!Tk->Busy()&&bRoofNear&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))++VisitRounds;
+ if(VisitRounds<2&&!bDriving&&!Tk->Busy()&&bRoofNear&&!RuleBreak.Active()&&FMath::Fmod(VisitAge,1.)<=Dt&&Tk->Indoors()&&Tk->Begin(Who,Title))++VisitRounds; // (N1110-6: not while it is breaking the rule: going inside is the way out)
  if(Visit==1)
  {
   // The warning: the sound of the place, now close, and any radio breaking up. Time enough to go.
@@ -659,6 +659,14 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   // D48-20261110 (D46-17): curious, they keep off and watch longer before they come (S47AlienKinds::FTemper::HuntAfter, was 22 s).
   if(Visit==2&&VisitHunt>S47AlienKinds::Temper(ES47AlienKind::Roswell).HuntAfter){G->DevMode(FS47RoswellBrain::EMode::Hunt);Visit=3;VisitPatience=FMath::Max(VisitPatience,60.);UE_LOG(LogTemp,Display,TEXT("S47: site visit: it hunts now"));}
+  // N1110 (N1110-6): the rule, taught once: lamp off and still, and the small one loses the player and looks past (the field record is the proof it was learned)
+  StillHeld=bNothingToGoOn&&Visit==2&&!G->Individuals().IsEmpty()?StillHeld+Dt:0.;
+  if(StillHeld>=5.&&M->Freeform&&!M->Freeform->HasFinding(TEXT("rule-still-held")))
+  {
+   if(M->UI)M->UI->Thought(TEXT("It has lost me. Lamp off, standing still, and it looks past."),5.f);
+   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and they pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+   UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
+  }
   for(const auto& I:G->Individuals())
   {
    bVisitSeen|=I.bRendered;
@@ -668,8 +676,27 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  else
  {
   const double To=FVector::Dist(BodyAt,Feet);
+  // N1110 (N1110-6): once in the game, from night 4 and after two, the Pale One does not pass the player who has learned to stand still in the dark
+  // (S47RuleBreak.h): it stops, turns its head, and comes on at a walk. The record is the log and spends it.
+  if(VisitWho==1&&M->Freeform)
+  {
+   FS47RuleBreak::FIn Rule;
+   const double Clock=M->Freeform->Clock();
+   Rule.Night=FS47FreeformSession::NightOf(Clock);Rule.Hour=FMath::Fmod(Clock,86400.)/3600.;Rule.bPale=true;
+   Rule.bLearned=M->Freeform->HasFinding(TEXT("rule-still-held"));Rule.bSpent=M->Freeform->HasFinding(TEXT("rule-pale-broken"));
+   Rule.bStillDark=bNothingToGoOn;Rule.bInside=Tk->Indoors();Rule.Dist=To;
+   RuleBreak.Step(Dt,Rule);
+   if(RuleBreak.TakeBroke())
+   {
+    M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked before: lamp off, standing still. This one stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
+    UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the Pale One stopped %.0f m off and turned (night %d)"),To,Rule.Night);
+   }
+   if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It has stopped. It is looking at me. Move."),4.f);
+   if(RuleBreak.Over()){if(RuleBreak.EndedInside()&&M->UI)M->UI->Thought(TEXT("It stopped at the door. After a while it went."),4.5f);EndVisit(false);return;}
+  }
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
-  const double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);
+  double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);
+  if(VisitWho==1)Speed=RuleBreak.Speed(Speed);
   StepBody(Dt,Speed);
   // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
   const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;

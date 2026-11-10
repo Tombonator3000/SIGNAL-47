@@ -1,4 +1,6 @@
 #include "S47Freeform.h"
+#include "S47GoalLine.h"
+#include "S47RuleBreak.h"
 #include "S47Balloon.h"
 #include "S47SaroSave.h"
 #include "S47SaroNight.h"
@@ -4774,6 +4776,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
  OK&=FS47Attention::SelfTest(Lines); // N1110: the attention curve, its thresholds, sabotage and the visit
  OK&=FS47DoorLoop::SelfTest(Lines); // N1110 (N1110-6): the door loop's steps, cap, reset and words
+ OK&=S47GoalLine::SelfTest(Lines); // N1110 (N1110-9): the three goal lines on NOW
+ OK&=FS47RuleBreak::SelfTest(Lines); // N1110 (N1110-6): the rule taught, and broken once
  { // N1110 (PLAY-31-34): broken ceiling tubes keep through a save; nonsense is dropped; 0 and 1 (the working light) never break
   FS47FreeformSession Tubes(nullptr);
   const bool bFirst=Tubes.BreakTube(3),bAgain=Tubes.BreakTube(3),bWork=Tubes.BreakTube(0)||Tubes.BreakTube(1)||Tubes.BreakTube(8);
