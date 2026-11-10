@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 10. november kl. 23:05 (d49): `9f8ed0ba` på `claude/day-20261109`
+## Installert 11. november kl. 00:12 (d50): versjon 0.9.50 på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4671 kontroller; ingen materialadvarsler). Tilbakerulling: d49 (`9f8ed0ba`). Disk etterpå: 127 GB (kandidatpakkene d45 og d46 ryddet for plass). Ikke spilt av Tom.
+
+Nytt siden d49: falske alarmer, lettelse etter fare, ett uforklart spor om dagen, mål på tre nivåer i notatboka, regelen som læres og brytes én gang (Pale), PHOTO-02/GAMEPLAY-04, hulen the Breather i Caliche.
+
+Kontroll: regresjon PASS 251; first, sky, files, casefield, dusk PASS.
+
+## Tidligere: installert 10. november kl. 23:05 (d49): `9f8ed0ba` på `claude/day-20261109`
 
 Versjon 0.9.49. Pakket, røyktestet og installert (selvtest OK, 4607 kontroller; ingen materialadvarsler). Tilbakerulling: d48 (`d6b9679a`). Disk etterpå: 124 GB. Ikke spilt av Tom.
 
