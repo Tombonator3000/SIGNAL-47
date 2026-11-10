@@ -63,7 +63,8 @@ struct FS47Beat
  double Gain=1,Rate=1,Lp=0,Delay=0,Stop=0,Secs=0,Hz=1200,Every=0,Strength=.5,Max=0;
  double Fov=45,In=.25,Hold=1.2,Out=.9; // N1110: camera_snap's degrees and seconds (its shake is Strength, its scare is Kind)
  int32 Repeat=1;
- int32 Tube=-1;                 // N1110: the tube beat's index into the control room's ceiling tubes (2 or 3)
+ int32 Tube=-1;                 // N1110: the tube beat's index into the control room's ceiling tubes (2 to 7)
+ int32 Next=0;                  // N1110: or, instead of a tube, how many of the next still-working ones go out (1 to 6): {"beat":"tube","next":2}
  TArray<FS47ScriptCond> If,Wait;
 };
 

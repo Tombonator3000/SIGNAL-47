@@ -100,9 +100,25 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   T=S;T.Beats[2].Tube=-1;Check(Lint(T).Num()>0,TEXT("tube: no tube is refused"));}
  }
  {
-  FString MainsText;FS47EventScript S;FString Why;
-  if(FFileHelper::LoadFileToString(MainsText,*(FPaths::ProjectContentDir()/TEXT("Director/Events/attention_sab_mains.json")))&&Read(MainsText,S,Why))
-   Check(CountOf(S,ES47Beat::Tube)==2&&Lint(S).IsEmpty(),TEXT("attention_sab_mains: the mains' return puts two ceiling tubes out for good, and the script is clean"));
+  // N1110: every sabotage (relay, mains, lamp, truck) puts out the next two working ceiling tubes, and each script is clean.
+  bool bSabs=true,bFound=false;
+  for(const TCHAR* Sab:{TEXT("relay"),TEXT("mains"),TEXT("lamp"),TEXT("truck")})
+  {
+   FString Text;FS47EventScript S;FString Why;
+   if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Director/Events/attention_sab_")+Sab+TEXT(".json")))||!Read(Text,S,Why))continue;
+   bFound=true;const FS47Beat* T=First(S,ES47Beat::Tube);
+   bSabs&=T&&CountOf(S,ES47Beat::Tube)==1&&T->Next==2&&T->Tube<0&&Lint(S).IsEmpty();
+  }
+  if(bFound)Check(bSabs,TEXT("attention_sab_*: every sabotage puts out the next two working ceiling tubes (tube beat, next 2), and the scripts are clean"));
+  FS47EventScript N;FString NoWhy;
+  const bool bNext=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":0,\"do\":\"tube\",\"next\":2}]}"),N,NoWhy);
+  Check(bNext&&N.Beats.Num()==1&&N.Beats[0].Next==2&&N.Beats[0].Tube<0&&Lint(N).IsEmpty(),TEXT("tube beat: next 2 is read and clean"));
+  if(bNext)
+  {
+   FS47EventScript T=N;T.Beats[0].Next=0;Check(Lint(T).Num()>0,TEXT("tube beat: neither tube nor next is refused"));
+   T=N;T.Beats[0].Next=7;Check(Lint(T).Num()>0,TEXT("tube beat: next 7 is refused (six tubes can go)"));
+   T=N;T.Beats[0].Tube=3;Check(Lint(T).Num()>0,TEXT("tube beat: tube and next together are refused"));
+  }
  }
  {
   FS47EventScript S;FString Why;

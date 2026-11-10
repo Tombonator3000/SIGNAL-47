@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_sab_truck",
   "name": "Frost on the hood",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when the truck will not start (S47World's key stall): the key, a few turns.",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when the truck will not start (S47World's key stall): the key, a few turns. Two more ceiling tubes go out in the control room (tube beat, next 2).",
   "enabled": true,
   "gates": {},
   "beats": [
@@ -10,6 +10,11 @@
       "at": 0.5,
       "do": "thought",
       "text": "Frost on the hood. On a night like this."
+    },
+    {
+      "at": 0.8,
+      "do": "tube",
+      "next": 2
     },
     {
       "at": 1,

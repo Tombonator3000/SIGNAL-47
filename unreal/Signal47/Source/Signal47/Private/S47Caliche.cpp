@@ -301,7 +301,12 @@ void FS47Caliche::BindTown()
 		I.ExamineRange = FMath::Max(8., Range + 2); M->Inter->Add(I);
 	};
 	auto Say = [this](const FString& T, double S = 3.6) -> TFunction<void()> { return [this, T, S] { M->UI->Toast(T, S); }; };
-	auto Flyer = [this] { Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.")); };
+	auto Flyer = [this]
+	{
+		Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four."));
+		// N1110 (Caliche history, approved by Tom 10 November): the cave tour leaflet in the rack by the door.
+		Once(TEXT("leaflet"), TEXT("Caliche, the gas station door: a rack with a leaflet. SEE THE BREATHER! Caliche's own cave, right under Main Street. Guided tours Saturday and Sunday, 10 to 3. Adults $3, children $1. Constant 54 degrees all year. The cave breathes in by day and out by night, as many caves do. On the rare day it does otherwise, the tour is canceled and your money is refunded. Ask at the Trujillo house. On the back: Please stay with your guide. Please do not call out names in the lower room. The echo is unusual. Flash pictures are allowed."));
+	};
 	// Unreal only (Tom, 23.10): the station is walked into now, its door (S47Props) opens; where the
 	// model is not there the door is locked as in the web version
 	Add(TEXT("gasDoor"), [] { return AS47Props::IsDoorOpen(TEXT("gasDoor")) ? TEXT("Close the door") : TEXT("Gas station door"); }, [this, Flyer] { if (AS47Props::UseDoor(TEXT("gasDoor"))) { Flyer(); return; } M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
@@ -342,8 +347,8 @@ void FS47Caliche::BindTown()
 	Add(TEXT("souvenir"), [] { return TEXT("Shop window"); }, [this] { M->UI->Toast(M->TownSeen.Contains(TEXT("ev:cutout")) && !Town->bCutoutOut ? TEXT("The cardboard alien is back in the window. There is dew on it, and grit from the road along its feet.") : TEXT("A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS."), 4.6); }, [] { return TEXT("The foil has been crumpled by hand. There is a price sticker on the alien too."); });
 	Add(TEXT("souvenirSign"), [] { return TEXT("Sign"); }, Say(TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Painted by hand, and painted over at least once."), 3.8), {}, 3.4);
 	Add(TEXT("souvenirDoor"), [] { return TEXT("Door"); }, Say(TEXT("CLOSED. The hours are on a card faded white."), 3));
-	Add(TEXT("letters"), [] { return TEXT("Letter board"); }, Say(TEXT("THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. A bulb over it, burning all night."), 3.8), {}, 3);
-	Add(TEXT("churchDoor"), [] { return TEXT("Church door"); }, Say(TEXT("Locked. Sunday 10 AM, it says. All welcome."), 3));
+	Add(TEXT("letters"), [] { return TEXT("Letter board"); }, Say(TEXT("SAN ISIDRO. THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. A bulb over it, burning all night."), 3.8), {}, 3);
+	Add(TEXT("churchDoor"), [] { return TEXT("Church door"); }, Say(TEXT("Locked. San Isidro, it says on the door. Sunday 10 AM. All welcome."), 3.4));
 	auto Tv1On = [this] { return Day() >= 18 * 3600 || Day() < 3 * 3600 + 40 * 60; };
 	Add(TEXT("tv1"), [] { return TEXT("Window"); }, [this, Tv1On] { M->UI->Toast(Tv1On() ? TEXT("A television on in a dark front room, and someone asleep in the chair in front of it.") : TEXT("The television is off now. The chair is empty."), 3.8); }, [Tv1On] { return Tv1On() ? FString(TEXT("The late movie, black and white, with the sound down.")) : FString(); }, 6.5);
 	Add(TEXT("tv2"), [] { return TEXT("Window"); }, Say(TEXT("A television on with nobody watching it. Snow, then the test pattern, then snow."), 3.8), {}, 6.5);

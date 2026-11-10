@@ -161,6 +161,20 @@ A story on its own counts for nothing. Two of these that agree are enough to ope
 4. BACK AT THE DESKS. Develop the film in the photo lab. Register what you found on OPS. It goes to RECORDS, PHOTOGRAPHS or the CASE BOARD, and the board tells you what would settle it. Then the terminals send you out again.
 
 The jobs are what you're paid for. The rest is why the station stays open.)TXT")},
+  {TEXT("station-09"),TEXT("09 THE TOWN"),2,TEXT(R"TXT(SARO / STATION FILE 09
+THE TOWN, FOR NEW STAFF
+
+Caliche is older than this station by a long way.
+
+Herders were bringing their sheep in off the flat before midnight in 1800. The miners cleared the shaft before two in 1888. The town has kept its porch lights off by eleven for as long as anybody remembers.
+
+An army surveyor wrote down four lights in a line over the salt flat in October 1868. Our copy of his diary is in the records room, drawer three.
+
+Do not mistake the town's manners for ignorance. They have been keeping a record longer than we have. They simply keep it in habits instead of logs.
+
+The furniture at the gate is theirs. Leave it.
+
+- W.)TXT")},
  };
  int32 Count(){return UE_ARRAY_COUNT(Files);}
  const FFile& Get(int32 Index){return Files[FMath::Clamp(Index,0,Count()-1)];}

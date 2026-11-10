@@ -1646,7 +1646,7 @@ namespace
  FString SupplyPartName(const FString& Part)
  {
   return Part==TEXT("fuse")?FString(TEXT("CONTROL FUSE")):Part==TEXT("relay")?FString(TEXT("DRIVE RELAY")):Part==TEXT("splice_kit")?FString(TEXT("SPLICE KIT")):Part==TEXT("drive_motor")?FString(TEXT("DRIVE MOTOR"))
-   :Part==TEXT("cell")?FString(TEXT("DRY CELLS")):Part==TEXT("donor")?FString(TEXT("DONOR CONTROLLERS")):Part==TEXT("fuel")?FString(TEXT("FUEL CANS")):Part==TEXT("film")?FString(TEXT("FILM ROLLS")):Part.ToUpper();
+   :Part==TEXT("cell")?FString(TEXT("DRY CELLS")):Part==TEXT("donor")?FString(TEXT("DONOR CONTROLLERS")):Part==TEXT("fuel")?FString(TEXT("FUEL CANS")):Part==TEXT("film")?FString(TEXT("FILM ROLLS")):Part==TEXT("tubes")?FString(TEXT("TUBE PAIRS")):Part.ToUpper();
  }
  FString StatusWord(const FS47FreeformSession::FJob& J,bool bSelected)
  {
@@ -1896,7 +1896,7 @@ void FS47FreeformSession::OpenOperations()
   if(NowRows.IsEmpty())NowRows.Add(T::Small(TEXT("NOTHING ON ORDER FOR THE WORK IN HAND.")));
   NowRows.Add(T::Value(TEXT("OPERATING BUDGET"),Loan>0?FString::Printf(TEXT("$%d / REQUISITION $%d"),Cash,Loan):FString::Printf(TEXT("$%d"),Cash)));
   TArray<S47Kit::FW> Stock;
-  for(const TCHAR* Item:{TEXT("fuse"),TEXT("relay"),TEXT("drive_motor"),TEXT("splice_kit"),TEXT("donor"),TEXT("cell"),TEXT("fuel"),TEXT("film")})Stock.Add(T::Value(SupplyPartName(Item),FString::Printf(TEXT("%d"),InventoryCount(Item))));
+  for(const TCHAR* Item:{TEXT("fuse"),TEXT("relay"),TEXT("drive_motor"),TEXT("splice_kit"),TEXT("donor"),TEXT("cell"),TEXT("fuel"),TEXT("film"),TEXT("tubes")})Stock.Add(T::Value(SupplyPartName(Item),FString::Printf(TEXT("%d"),InventoryCount(Item))));
   if(Field)Stock.Add(T::Value(TEXT("GENERATOR TANK"),FString::Printf(TEXT("%.1f h"),Field->GeneratorHours())));
   Rows.Add(T::Columns({{.52f,T::Panel(TEXT("FOR THE WORK NOW"),S47Kit::Col(NowRows))},{.48f,T::Panel(TEXT("DEPOT STOCK"),S47Kit::Col(Stock))}},12));
  }
@@ -4773,6 +4773,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   const bool bFirst=Tubes.BreakTube(3),bAgain=Tubes.BreakTube(3),bWork=Tubes.BreakTube(0)||Tubes.BreakTube(1)||Tubes.BreakTube(8);
   const TSet<int32> Back=TubesFrom(TubesToSave(Tubes.BrokenTubes));
   Check(bFirst&&!bAgain&&!bWork&&Tubes.TubeBroken(3)&&!Tubes.TubeBroken(2)&&!Tubes.TubeBroken(0)&&!Tubes.TubeBroken(1),TEXT("Tubes: a ceiling tube breaks once; the working light never does"));
+  { // N1110: every sabotage takes the next two working tubes of 2 to 7, lowest first, until only the working light is left; a pair from the store puts back the last two
+   FS47FreeformSession Dark(nullptr);bool bOrder=true;
+   for(int32 Round=0;Round<3;++Round){const TArray<int32> Hit=Dark.NextTubes(2);bOrder&=Hit.Num()==2&&Hit[0]==2+Round*2&&Hit[1]==3+Round*2;for(const int32 K:Hit){Dark.BreakTube(K);}}
+   const bool bNone=Dark.NextTubes(2).IsEmpty()&&!Dark.TubeBroken(0)&&!Dark.TubeBroken(1)&&Dark.BrokenTubes.Num()==6;
+   const int32 Back2=Dark.MendTubes(2);
+   Check(bOrder&&bNone&&Back2==2&&!Dark.TubeBroken(6)&&!Dark.TubeBroken(7)&&Dark.TubeBroken(5)&&Dark.NextTubes(2).Num()==2&&Dark.MendTubes(9)==4&&Dark.BrokenTubes.IsEmpty(),TEXT("Tubes: each sabotage puts out the next two working ones until the room is dark but for the working light; a pair from the store puts the last two back"));
+  }
   Check(Back.Num()==1&&Back.Contains(3)&&TubesFrom({0.,1.,2.,9.,-1.,NAN}).Num()==1&&TubesFrom({}).IsEmpty(),TEXT("Tubes: the break is saved and read back; an older save has none; nonsense is dropped"));
  }
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});

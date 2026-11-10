@@ -25,7 +25,7 @@ void FS47FreeformTest::StepStationFiles(double Dt)
   if(Age<3)return;M->UI->Close(true);
   if(!Check(S47StationFiles::Lint().IsEmpty(),TEXT("the files keep to the spoiler limits: ")+S47StationFiles::Lint()))return;
   int32 First=0;for(int32 I=0;I<S47StationFiles::Count();++I)First+=S47StationFiles::Get(I).Day<=1;
-  if(!Check(S47StationFiles::Count()==8&&First==4&&F.StationFileDue(),TEXT("eight files, four of them there on the first day and marked on RECORDS")))return;
+  if(!Check(S47StationFiles::Count()==9&&First==4&&F.StationFileDue(),TEXT("nine files, four of them there on the first day and marked on RECORDS")))return;
   if(!Check(F.Use(TEXT("opsTerminal")),TEXT("the OPS terminal opens")))return;Go(1,.6);return;
  }
  if(Stage==1)
@@ -57,6 +57,6 @@ void FS47FreeformTest::StepStationFiles(double Dt)
  {
   M->UI->Close(true);
   if(!Check(!F.Save()->HasField(TEXT("stationFiles")),TEXT("nothing of it is in the save")))return;
-  Finish(true,TEXT("Station files: eight of SARO's own papers under OPS / RECORDS and in the binder, released by day, paged, within the limits."));return;
+  Finish(true,TEXT("Station files: nine of SARO's own papers under OPS / RECORDS and in the binder, released by day, paged, within the limits."));return;
  }
 }

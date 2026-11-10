@@ -7,6 +7,8 @@
 #include "S47FreeformWorld.h"
 #include "S47Happenings.h"
 #include "S47Inter.h"
+#include "S47Legs.h"
+#include "S47RoadTerrain.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Night.h"
@@ -406,6 +408,30 @@ bool FS47TownUse::Build()
 		Part(TEXT("S47TownSouvenirSign"), FVector(Top.X, Top.Y + .19, Top.Z), FVector(.03, .36, .6), 0x2b2a27, Souvenir);
 		Words(TEXT("S47TownSouvenirWords"), TEXT("TOURS - FILM\nWE BUY PHOTOS"), FVector(Top.X - .02, Top.Y + .19, Top.Z), 180, .055, Chalk);
 	}
+	// N1110 (Caliche history, approved by Tom 10 November): two boards on the east shoulder of the highway, readable from the road, each
+	// a post and a board with its heading on both faces; the whole text is read at the board. The marker by the Mesa Diner, the turnout
+	// south of town for the Lights Lookout. Placed on the road's own ground (S47RoadTerrain), as the places on the land are.
+	struct FRoadside { const TCHAR* Key; const TCHAR* Face; const TCHAR* Label; const TCHAR* Text; double RoadZ; uint32 Hex; };
+	static const FRoadside Boards[] = {
+		{ TEXT("marker"), TEXT("OFFICIAL SCENIC\nHISTORIC MARKER\nCALICHE"), TEXT("Historic marker"),
+		  TEXT("OFFICIAL SCENIC HISTORIC MARKER / CALICHE. Spanish herders wintered sheep on this plain before 1800 and called it el Llano del Salado. Silver brought a camp of 1,800 to the west hills in 1887; the price of silver sent them away by 1894. The town took its name from the hard white crust beneath it. Ranching, the highway and the observatory to the north have kept it here since."), 1985., 0x4b3d2e },
+		{ TEXT("lookout"), TEXT("LIGHTS LOOKOUT\nplease do not signal"), TEXT("Lights Lookout"),
+		  TEXT("LIGHTS LOOKOUT, on a painted board, and under it, smaller: PLEASE DO NOT SIGNAL. Somebody has added a bench, facing the playa."), 2420., 0x6a5a45 },
+	};
+	{
+		const FVector Road = S47Legs::ORIGINS(TEXT("road"));
+		for (const FRoadside& B : Boards)
+		{
+			const double LocalX = 16.6;
+			const double Ground = Road.Y + S47RoadTerrain::SurfaceY(LocalX, B.RoadZ);
+			const FVector Foot(Road.X + LocalX, Ground, Road.Z + B.RoadZ);
+			const FString Name(B.Key);
+			Part(TEXT("S47RoadPost_") + Name, Foot + FVector(0, .8, 0), FVector(.12, 1.6, .12), 0x4a3b2c, Name);
+			Part(TEXT("S47RoadBoard_") + Name, Foot + FVector(0, 1.7, 0), FVector(.05, .9, 1.5), B.Hex, Name);
+			Words(TEXT("S47RoadWordsW_") + Name, B.Face, Foot + FVector(-.04, 1.7, 0), 180, .075, Chalk);
+			Words(TEXT("S47RoadWordsE_") + Name, B.Face, Foot + FVector(.04, 1.7, 0), 0, .075, Chalk);
+		}
+	}
 	const auto Label = [this, Guard](const FString& Counter) -> FString
 	{
 		if (!Guard.IsValid() || !bLive || !M || !M->IsFreeform()) return FString();
@@ -425,6 +451,17 @@ bool FS47TownUse::Build()
 				: Counter == S47TownUseLocal::Feed ? FString(TEXT("A price board in chalk: salt, range cubes, wire, a few things for a truck."))
 				: FString(TEXT("A card on the counter, in chalk: TOURS - FILM. WE BUY PHOTOS. The same hand as the sign outside."));
 		};
+		M->Inter->Add(I);
+	}
+	for (const FRoadside& B : Boards)
+	{
+		const FString Name(B.Key);
+		FS47Interactable I; I.Id = UseId(Name); I.Range = 5.5;
+		if (const int32* Node = FirstNode.Find(Name)) I.Object = W->ObjAt(*Node);
+		I.Label = [Guard, this, Title = FString(B.Label)] { return Guard.IsValid() && bLive && M && M->IsFreeform() ? Title : FString(); };
+		I.Use = [this, Guard, Text = FString(B.Text)] { if (Guard.IsValid() && bLive && M && M->UI) M->UI->Toast(Text, 16.f); };
+		I.ExamineRange = 12.;
+		I.Examine = [Guard, Text = FString(B.Text)] { return Guard.IsValid() ? Text : FString(); };
 		M->Inter->Add(I);
 	}
 	// What the town's wares put out into the world: drawn only when they are there (StepThings).

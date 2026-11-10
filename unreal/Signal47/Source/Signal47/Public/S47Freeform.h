@@ -673,8 +673,13 @@ private:
  TSet<int32> BrokenTubes;
 public:
  bool TubeBroken(int32 K) const{return BrokenTubes.Contains(K);}
+ int32 BrokenTubeCount() const{return BrokenTubes.Num();}
  // True when it was whole until now. Only tubes 2 to 7.
  bool BreakTube(int32 K){return K>=2&&K<=7&&!BrokenTubes.Contains(K)&&(BrokenTubes.Add(K),true);}
+ // N1110: the next N still-working tubes of 2 to 7, lowest first (what every sabotage puts out: {"beat":"tube","next":2}); nothing is changed.
+ TArray<int32> NextTubes(int32 N) const{TArray<int32> Out;for(int32 K=2;K<=7&&Out.Num()<N;++K)if(!BrokenTubes.Contains(K))Out.Add(K);return Out;}
+ // N1110: a pair of tubes from the store (PARTS STORAGE) puts back the last N that went out, highest first. Returns how many came back.
+ int32 MendTubes(int32 N){int32 Mended=0;for(int32 K=7;K>=2&&Mended<N;--K)if(BrokenTubes.Remove(K))++Mended;return Mended;}
  static TSet<int32> TubesFrom(const TArray<double>& Saved);
  static TArray<double> TubesToSave(const TSet<int32>& Broken);
 private:

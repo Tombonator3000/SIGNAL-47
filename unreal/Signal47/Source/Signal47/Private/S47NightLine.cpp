@@ -106,6 +106,10 @@ namespace
   {TEXT("h11"),TEXT("old"),TEXT("Little green light down in the arroyo a while ago. Kids with a flashlight, I'd guess. Didn't hear any kids."),TEXT("host"),TEXT("Kids are quiet when they're up to something.")},
   {TEXT("h12"),TEXT("man"),TEXT("There's a smell like a struck match all down the county road tonight. No fire anywhere I can see."),TEXT("host"),TEXT("Somebody burning trash where they shouldn't. Call the fire department if you see smoke.")},
   {TEXT("h13"),TEXT("woman"),TEXT("The porch light keeps going dim and coming back. The kitchen light doesn't."),TEXT("host"),TEXT("Bulb's going. Or the co-op's tired.")},
+  // N1110 (Caliche history, approved by Tom 10 November): a grandmother's rule, the cave under Main Street, the motel's register card.
+  {TEXT("h14"),TEXT("woman"),TEXT("Earl, my grandmother told me never to wave at the lights. I waved at one tonight. Just a little. I'd like to know if anybody else ever did that, and what happened. No, I'm fine. I'm just asking."),TEXT("host"),TEXT("Your grandmother was a wise woman. You're fine. Just don't make a habit of it.")},
+  {TEXT("h15"),TEXT("man"),TEXT("Earl, the Breather was going the wrong way this evening. I felt it come up through the grate on Main Street. Cold as a cellar. I went home and turned the porch light off."),TEXT("host"),TEXT("Caves do that when the weather changes. Porch light was a good idea anyway.")},
+  {TEXT("h16"),TEXT("woman"),TEXT("Earl, I'm calling from the motel. I've got the register card here, and it has a box that says Lights, with a question mark. Do I check it if I'm not sure?"),TEXT("host"),TEXT("Check it. Everybody does. Then get some sleep.")},
  };
 
  // Midnight to two (Glimpse): a figure or a light a long way off, gone when anybody looks again. Never near, never touched. The

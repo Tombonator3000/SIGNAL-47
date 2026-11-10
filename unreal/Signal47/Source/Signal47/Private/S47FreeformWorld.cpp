@@ -84,15 +84,15 @@ namespace
  const FVector GeneratorBox(.27,.37,.20); // the control box's own, a centimetre proud of it all round: one dark box, a bigger mark to aim at
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
- const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };
+ const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare"), TEXT("tubes") }; // N1110: tubes, a pair of ceiling fluorescents for the control room (FS47FreeformSession::MendTubes)
  // TOWN-USE-20261108: what the Feed & Seed sells besides the counter's own supplies (S47TownUse.cpp); carried and unpacked the same way.
  // rope: the come-along digs the truck out quicker (FS47TruckCare); wire: a longer trip line (FS47TripCamera); salt and feed: set out
  // at a place on the land, they say in the morning what came to them (FS47TownUse).
  const TCHAR* TownItems[] = { TEXT("rope"), TEXT("wire"), TEXT("salt"), TEXT("feed") };
  TArray<const TCHAR*> AllItems() { TArray<const TCHAR*> A; for(const TCHAR* I:Items)A.Add(I); for(const TCHAR* I:TownItems)A.Add(I); return A; }
- int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:Id==TEXT("rope")?12:Id==TEXT("wire")?4:Id==TEXT("salt")?3:Id==TEXT("feed")?6:0; }
+ int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:Id==TEXT("rope")?12:Id==TEXT("wire")?4:Id==TEXT("salt")?3:Id==TEXT("feed")?6:Id==TEXT("tubes")?4:0; }
  // D46-20261110 (D46-10): the stores list is where a new operator first reads that a trip camera can be built from a donor at the bench.
- FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench for a logger or a trip camera"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):Id==TEXT("rope")?TEXT("tow rope and come-along"):Id==TEXT("wire")?TEXT("roll of smooth fence wire"):Id==TEXT("salt")?TEXT("salt lick block"):Id==TEXT("feed")?TEXT("sack of range cubes"):TEXT("six-hour fuel can"); }
+ FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench for a logger or a trip camera"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):Id==TEXT("rope")?TEXT("tow rope and come-along"):Id==TEXT("wire")?TEXT("roll of smooth fence wire"):Id==TEXT("salt")?TEXT("salt lick block"):Id==TEXT("feed")?TEXT("sack of range cubes"):Id==TEXT("tubes")?TEXT("fluorescent tubes, pair / for the control room ceiling"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
@@ -201,7 +201,7 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
-  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
+  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed"),TEXT("tubes")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
  if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  // Old saves already carrying the device retain their physical loan. New loans
@@ -270,7 +270,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
- S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
+ S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed"),TEXT("tubes")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
 }
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
@@ -1368,6 +1368,19 @@ void FS47FreeformWorld::OpenDepot()
  R.Add(S47Kit::Paper(FString::Printf(TEXT("PARTS STORAGE\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")))));
  R.Add(S47Kit::Small(!LoggerAccess()?TEXT("EQUIPMENT CHECKOUT LOCKED: Complete a supported conclusion in The repeated interval."):!Logger.bLoanIssued?TEXT("EQUIPMENT CHECKOUT / fieldlogger01: First issue only. Collect the loan kit here, then carry it to CALIBRATION / REPAIR for assembly and clock calibration."):TEXT("EQUIPMENT CHECKOUT / fieldlogger01: Already issued. All preparation, collection, return and original comparison now happen at CALIBRATION / REPAIR.")));
  if(LoggerAccess()&&!Logger.bLoanIssued)R.Add(S47Kit::Button(TEXT("Issue loan field logger / carry kit to workbench"),[this]{LoggerAction(TEXT("issue"));},true,Payload==0));
+ // N1110 (Tom): the sabotage takes two ceiling tubes each time. A pair from the store (CALICHE / SHOP COUNTER, $4) puts the last two back.
+ if(M->Freeform->BrokenTubeCount()>0||InventoryCount(TEXT("tubes"))>0)
+ {
+  const int32 Out=M->Freeform->BrokenTubeCount(),Pairs=InventoryCount(TEXT("tubes"));
+  R.Add(S47Kit::Small(FString::Printf(TEXT("CONTROL ROOM CEILING / %d tubes dark, %d pairs of tubes in stock. A pair is $4 at the Caliche shop counter."),Out,Pairs)));
+  R.Add(S47Kit::Button(TEXT("Fit a pair of fluorescent tubes in the control room ceiling"),[this]
+  {
+   if(!Ready()||M->Freeform->BrokenTubeCount()<=0||!Consume(TEXT("tubes")))return;
+   const int32 Back=M->Freeform->MendTubes(2);
+   Change(Back>1?FString(TEXT("A pair of tubes goes up in the control room ceiling. The room is brighter.")):FString(TEXT("The last dark tube is replaced. The control room ceiling is whole again.")));
+   OpenDepot();
+  },false,Out>0&&Pairs>0));
+ }
  R.Add(S47Kit::Small(TEXT("Small spares travel in your service pouch. GARAGE RECEIVING: Unpack purchased parcels. PHOTO LAB: Load the stocked 36-exposure photographic film at the dry bench.")));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / PARTS STORAGE"),S47Kit::Col(R),880));
 }

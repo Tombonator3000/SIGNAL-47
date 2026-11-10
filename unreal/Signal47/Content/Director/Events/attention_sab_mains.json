@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_sab_mains",
   "name": "A scorched smell in the service bay",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the mains taken (FS47FreeformSession::SkyCutBegin): the standby generator rides it, and the mains come back. The mains' return costs the control room two ceiling tubes for good (tube beat, saved; the working light stays).",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the mains taken (FS47FreeformSession::SkyCutBegin): the standby generator rides it, and the mains come back. Every sabotage costs the control room the next two working ceiling tubes of 2 to 7 for good (tube beat with next, saved; the working light, tubes 0 and 1, stays). A pair of tubes from the store puts them back (FS47FreeformWorld depot).",
   "enabled": true,
   "gates": {},
   "beats": [
@@ -21,12 +21,7 @@
     {
       "at": 29.2,
       "do": "tube",
-      "tube": 2
-    },
-    {
-      "at": 30.4,
-      "do": "tube",
-      "tube": 3
+      "next": 2
     },
     {
       "at": 30,
@@ -37,7 +32,7 @@
     {
       "at": 33,
       "do": "thought",
-      "text": "Two of the tubes in here never came back.",
+      "text": "Two more of the tubes in here never came back.",
       "if": [
         "in_saro"
       ]

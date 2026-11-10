@@ -444,7 +444,7 @@ void US47Chapter5::BindDiner(FS47Diner& Dn)
 		Add(TEXT("clipping"), Str(TEXT("The clipping by the door")), [W] { if (W.IsValid()) W->ReadClipping(); });
 		Add(TEXT("payphone"), [W, On] { return FString(On() && !W->S.bWard ? TEXT("Payphone") : TEXT("Payphone")); }, [W] { if (W.IsValid()) W->UsePayphone(); });
 		Add(TEXT("booth"), [W, On] { return FString(On() ? (W->S.bP13 ? TEXT("The maps on the table") : TEXT("Spread the maps on the table")) : TEXT("A booth by the window")); },
-			[W, On] { if (!W.IsValid()) return; if (On()) W->OpenMap(); else W->Toast(TEXT("A booth by the window. The vinyl is cold."), 2.6f); });
+			[W, On] { if (!W.IsValid()) return; if (On()) W->OpenMap(); else W->Toast(TEXT("A booth by the window, the vinyl cold. The paper placemat: WELCOME TO CALICHE! A LITTLE HISTORY WHILE YOU WAIT. 1819: The Alderete family grazes sheep here. 1887: Silver! 1894: No more silver. 1897: The post office names us for our dirt. 1923: A well driller finds a cave under Main Street. 1937: The highway is paved. 1958: The dishes go up north of town. Today: You! Ask your waitress about the lights. She will say: what about them!"), 16.f); }); // N1110: the placemat (Caliche history)
 		Add(TEXT("menu"), Str(TEXT("Menu board")), Say(TEXT("Coffee .35. Two eggs any style 1.95. Green chile stew 2.95. Pie .95, under a glass dome on the counter."), 4.2f));
 		Add(TEXT("jukebox"), Str(TEXT("Jukebox")), Say(TEXT("A card in the glass, in ballpoint: OUT OF ORDER. It has been there a while."), 3.2f));
 		Add(TEXT("window"), Str(TEXT("Window")), [W]

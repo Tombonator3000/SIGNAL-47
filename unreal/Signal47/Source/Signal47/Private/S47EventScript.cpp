@@ -106,7 +106,7 @@ namespace S47EventScriptLocal
   }
   // N1110: silence's level (what is left of the night's sound, as strength) and the tube beat's tube.
   if(B.Do==ES47Beat::Silence)B.Strength=S47J::Num(J,TEXT("level"),.04);
-  if(B.Do==ES47Beat::Tube)B.Tube=S47J::Int(J,TEXT("tube"),-1);
+  if(B.Do==ES47Beat::Tube){B.Tube=S47J::Int(J,TEXT("tube"),-1);B.Next=S47J::Int(J,TEXT("next"),0);}
   return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
  }
  // The words a text asks for: {az} -> az.
@@ -243,7 +243,7 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
    Need(B.Kind.IsEmpty()||B.Kind==TEXT("soft")||B.Kind==TEXT("hard")||B.Kind==TEXT("braam")||B.Kind==TEXT("swell"),TEXT("scare is soft, hard, braam or swell"));
    break;
   case ES47Beat::Silence:Need(B.Secs>=.5&&B.Secs<=30,TEXT("needs secs, 0.5 to 30: how long the night holds still"));break; // N1110 (level is checked as strength)
-  case ES47Beat::Tube:Need(B.Tube>=2&&B.Tube<=7,TEXT("needs tube, 2 to 7 (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
+  case ES47Beat::Tube:Need((B.Tube>=2&&B.Tube<=7&&B.Next==0)||(B.Tube<0&&B.Next>=1&&B.Next<=6),TEXT("needs tube, 2 to 7, or next, 1 to 6, not both (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
   default:break;
   }
   const FString Why=PlayerWords(B.Text);
@@ -601,12 +601,20 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
  {
   // N1110 (PLAY-31-34): a control room ceiling tube sparks and goes out for good. The light follows the saved break (FS47FreeformSession::
   // TubeBroken, read by AS47Web::TubeLit); an F10 run keeps nothing, so the tube only crackles.
-  if(!F||B.Tube<2||B.Tube>7){Log(TEXT("no such tube"));break;}
-  const bool bNew=R.Ctx.bKeep?F->BreakTube(B.Tube):!F->TubeBroken(B.Tube);
-  if(bNew&&M->Audio&&FS47FieldRadio::InSaroBuilding(M))
-   for(int32 J=0;J<10;++J)M->Audio->Beep(float(900+((J*7919+B.Tube*131)%1700)),float(.02+.01*(J%3)),.05f,float(J*.045+(J%2)*.03),TEXT("sawtooth"));
-  if(!R.Ctx.bKeep&&M->UI)M->UI->Toast(FString::Printf(TEXT("(F10: tube %d crackles but is not put out in a real game)"),B.Tube),3);
-  Log(bNew?FString::Printf(TEXT("tube %d sparks and is out"),B.Tube):FString::Printf(TEXT("tube %d was already out"),B.Tube));
+  // {"beat":"tube","next":2}: the next still-working tubes of 2 to 7, lowest first, so each sabotage darkens the room a little more.
+  TArray<int32> Hit;
+  if(F&&B.Tube<0&&B.Next>=1&&B.Next<=6)Hit=F->NextTubes(B.Next);
+  else if(F&&B.Tube>=2&&B.Tube<=7&&!F->TubeBroken(B.Tube))Hit.Add(B.Tube);
+  else if(!F||B.Tube<2||B.Tube>7){Log(TEXT("no such tube"));break;}
+  for(const int32 K:Hit)
+  {
+   if(R.Ctx.bKeep)F->BreakTube(K);
+   if(M->Audio&&FS47FieldRadio::InSaroBuilding(M))
+    for(int32 J=0;J<10;++J)M->Audio->Beep(float(900+((J*7919+K*131)%1700)),float(.02+.01*(J%3)),.05f,float(J*.045+(J%2)*.03),TEXT("sawtooth"));
+   if(!R.Ctx.bKeep&&M->UI)M->UI->Toast(FString::Printf(TEXT("(F10: tube %d crackles but is not put out in a real game)"),K),3);
+   Log(FString::Printf(TEXT("tube %d sparks and is out"),K));
+  }
+  if(Hit.IsEmpty())Log(B.Next>0?TEXT("no working tube is left to put out"):FString::Printf(TEXT("tube %d was already out"),B.Tube));
   break;
  }
  default:break;

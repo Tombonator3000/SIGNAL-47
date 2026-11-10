@@ -2,7 +2,9 @@
 
 Forslag til kanon for SIGNAL / 47 (10. november 2026). Dokumentet bygger på det som allerede står i spillet og motsier det ikke: stasjonsfilene 01–07, Caliche-dialogene, The Caliche Ledger (grunnlagt 1925, bind 61 våren 1986), stedene på landet og alientype-bibelen fra D48. Alle personer, firmaer og stedsnavn i Caliche er oppdiktet. Roswell nevnes bare som nabobyen med sin egen historie.
 
-**Dette er nytt og må godkjennes av Tom før bruk:** hulen under byen (*the Breather*), Esperanza-gruva som navn på gruva på vestsiden, jernbanegrunnlaget som forklaring på «the old grade», kirkenavnet San Isidro og utsiktslommen ved motorveien.
+**Godkjent av Tom 10. november 2026 (N1110): de nye elementene under er kanon, og tekstene i avsnitt 4 er lagt inn i spillet (Ledger, skilt og serviett, brosjyre, Night Line, stasjonsfil 09, steder). Tekst 20 (plakett ved SARO-porten) er ikke lagt inn ennå.**
+
+**Dette var nytt:** hulen under byen (*the Breather*), Esperanza-gruva som navn på gruva på vestsiden, jernbanegrunnlaget som forklaring på «the old grade», kirkenavnet San Isidro og utsiktslommen ved motorveien.
 
 **Avklart motsetning:** Skiltet og brosjyren fra 1985 sier POP. 412, som er folketellingen fra 1980. I april 1986 bor det rundt 300 i selve byen. Skolekretsen teller 214 barn fordi den også dekker ranchene i dalen. Folk lar skiltet stå: «It was true once.»
 

@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_sab_relay",
   "name": "Frost on the cabinet",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with a relay fault on the array (FS47FreeformWorld::TriggerServiceFault): its repair is the usual one. Point: cabinet.",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with a relay fault on the array (FS47FreeformWorld::TriggerServiceFault): its repair is the usual one. Point: cabinet. Two more ceiling tubes go out in the control room (tube beat, next 2).",
   "enabled": true,
   "gates": {},
   "beats": [
@@ -25,6 +25,11 @@
       "at": 5,
       "do": "thought",
       "text": "Twenty-eight degrees in there. On a warm night."
+    },
+    {
+      "at": 6.5,
+      "do": "tube",
+      "next": 2
     },
     {
       "at": 5,

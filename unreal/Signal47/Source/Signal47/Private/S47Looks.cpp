@@ -201,7 +201,7 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("diner:counter"), TEXT("A radio on the shelf behind the counter, between the pie dome and the register."));
 	Looks(TEXT("diner:clipping"), TEXT("Yellow newsprint behind a strip of tape, the date cut off."));
 	Looks(TEXT("diner:payphone"), TEXT("A payphone in a niche. Numbers written all over the wall around it."));
-	Looks(TEXT("diner:booth"), TEXT("Red vinyl, split and taped. The window beside it is cold."));
+	Looks(TEXT("diner:booth"), TEXT("Red vinyl, split and taped. The window beside it is cold. A paper placemat, and in its lower corner: KIDS! Count the cows on the drive home. Count them again. Did you get the same number? Write them both down for Mom."));
 	Looks(TEXT("diner:menu"), TEXT("White letters pushed into a felt board. The P in PIE is upside down."));
 	Looks(TEXT("diner:jukebox"), TEXT("OUT OF ORDER, in ballpoint behind the glass. A record still on the arm."));
 	Looks(TEXT("diner:window"), TEXT("The lot, the truck, the highway, and past it the dark."));
@@ -216,8 +216,8 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("town:amDoor"), TEXT("1420 AM. STUDIO IN USE, PLEASE WAIT. The buzzer button is worn white."), 6);
 	Looks(TEXT("town:souvenirSign"), TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Under the paint, an older word: BAIT."), 10);
 	Looks(TEXT("town:souvenirDoor"), TEXT("CLOSED. The hours on the card have faded white."), 6);
-	Looks(TEXT("town:letters"), TEXT("THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked."), 10);
-	Looks(TEXT("town:churchDoor"), TEXT("SUNDAY 10 AM. ALL WELCOME. The doors are new; the step is worn hollow."), 8);
+	Looks(TEXT("town:letters"), TEXT("SAN ISIDRO. THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked."), 10);
+	Looks(TEXT("town:churchDoor"), TEXT("SAN ISIDRO. SUNDAY 10 AM. ALL WELCOME. The doors are new; the step is worn hollow."), 8);
 	Looks(TEXT("town:tv2"), TEXT("Snow, then the test pattern, then snow. Nobody in the room."), 9);
 	Looks(TEXT("town:kitchen"), TEXT("A kitchen light behind a curtain, and a shadow that does not move."), 7);
 }
